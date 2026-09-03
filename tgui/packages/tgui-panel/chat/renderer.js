@@ -9,7 +9,9 @@ import { EventEmitter } from 'common/events';
 import { classes } from 'common/react';
 import { createLogger } from 'tgui/logging';
 
-import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
+import highlightSoundUrl from '../assets/chat_notify.ogg';
+import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
+import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
 
@@ -57,12 +59,89 @@ const isScrollTracked = node => (
   getDistanceFromBottom(node) <= SCROLL_TRACKING_TOLERANCE
 );
 
+const STYLE_OVERRIDE_SHEET_ID = 'cs-style-overrides';
+
+const FONT_OVERRIDE_CSS = {
+  normal: 'font-weight: normal; font-style: normal;',
+  italic: 'font-weight: normal; font-style: italic;',
+  bold: 'font-weight: bold; font-style: normal;',
+  bolditalic: 'font-weight: bold; font-style: italic;',
+};
+
+/**
+ * Builds CSS text for font/size/animation overrides of message styles.
+ * Colors go through CSS custom properties instead (see setStyleOverrides),
+ * because their theme defaults differ between dark and light.
+ */
+const buildStyleOverrideCss = (overrides) => {
+  let css = '';
+  for (const style of MESSAGE_STYLES) {
+    const override = overrides[style.id];
+    if (!override || override.disabled) {
+      continue;
+    }
+    const classNames = [style.id, ...(style.extraClasses || [])];
+    const decls = [];
+    if (FONT_OVERRIDE_CSS[override.font]) {
+      decls.push(FONT_OVERRIDE_CSS[override.font]);
+    }
+    const size = parseFloat(override.size);
+    if (size && size !== 100) {
+      const clamped = Math.min(200, Math.max(50, size));
+      decls.push('font-size: ' + clamped + '%;');
+    }
+    if (decls.length > 0) {
+      css += classNames.map(cls => '.Chat .' + cls).join(', ')
+        + ' { ' + decls.join(' ') + ' }\n';
+    }
+    const anim = MESSAGE_STYLE_ANIMATIONS.find(a => a.id === override.anim);
+    if (anim?.css) {
+      // :not() держит специфичность выше темы, но уступает глобальному
+      // тумблеру Chat--fxAnimOff.
+      css += classNames
+        .map(cls => '.Chat:not(.Chat--fxAnimOff) .' + cls)
+        .join(', ')
+        + ' { animation: ' + anim.css + '; }\n';
+    }
+  }
+  return css;
+};
+
+const updateStyleOverrideSheet = (cssText) => {
+  let node = document.getElementById(STYLE_OVERRIDE_SHEET_ID);
+  if (!cssText) {
+    node?.remove();
+    return;
+  }
+  if (!node) {
+    node = document.createElement('style');
+    node.id = STYLE_OVERRIDE_SHEET_ID;
+    document.head.appendChild(node);
+  }
+  if (node.textContent !== cssText) {
+    node.textContent = cssText;
+  }
+};
+
 const createHighlightNode = (text, color) => {
   const node = document.createElement('span');
   node.className = 'Chat__highlight';
   node.setAttribute('style', 'background-color:' + color);
   node.textContent = text;
   return node;
+};
+
+const createHighlightProbeNode = (message) => {
+  const node = document.createElement('span');
+  if (message.text) {
+    node.appendChild(document.createTextNode(message.text));
+    return node;
+  }
+  if (message.html) {
+    node.innerHTML = message.html;
+    return node;
+  }
+  return null;
 };
 
 const formatTimestamp = (createdAt, format) => {
@@ -104,20 +183,54 @@ const createTimeDividerNode = (timestamp) => {
   return node;
 };
 
+// Ресурсы BYOND едут по тому же каналу, что и всё остальное, и на забитом канале
+// приезжают позже; внешние ссылки (админ вставил в ЛС картинку с чужого хоста)
+// не приедут никогда, и каждая попытка - это лишний HTTP-запрос и строка в логе.
+// Сверяем именно origin разрешённого адреса, а не наличие схемы в атрибуте:
+// после первого же ретрая мы сами переписываем src абсолютным адресом, и
+// проверка "есть схема - значит чужой" отсекала бы собственные картинки.
+const isRetriableImage = node => {
+  const attribute = node.getAttribute('src');
+  if (!attribute) {
+    return false;
+  }
+  if (attribute.startsWith('data:')) {
+    return true;
+  }
+  const resolved = node.src;
+  if (!resolved) {
+    return true;
+  }
+  // Сверяем origin разбором URL, а не префиксом: "https://host" - префикс и для
+  // "https://host.evil", то есть чужой хост проходил фильтр и собирал свои ретраи.
+  try {
+    return new URL(resolved).origin === window.location.origin;
+  }
+  catch {
+    return false;
+  }
+};
+
 const handleImageError = e => {
+  /** @type {HTMLImageElement} */
+  const node = e.target;
+  if (!isRetriableImage(node)) {
+    return;
+  }
+  const attempts = parseInt(node.getAttribute('data-reload-n'), 10) || 0;
+  if (attempts >= IMAGE_RETRY_LIMIT) {
+    logger.error(`failed to load an image after ${attempts} attempts`);
+    return;
+  }
+  // Экспоненциальная выдержка: прежний бюджет 10 x 250 мс = 2.5 с был короче
+  // одного худшего round-trip, замеренного на проде.
+  const delay = Math.min(IMAGE_RETRY_DELAY * 2 ** attempts, IMAGE_RETRY_MAX_DELAY);
   setTimeout(() => {
-    /** @type {HTMLImageElement} */
-    const node = e.target;
-    const attempts = parseInt(node.getAttribute('data-reload-n'), 10) || 0;
-    if (attempts >= IMAGE_RETRY_LIMIT) {
-      logger.error(`failed to load an image after ${attempts} attempts`);
-      return;
-    }
     const src = node.src.split('#')[0];
     node.removeAttribute('src');
     node.src = src + '#' + attempts;
     node.setAttribute('data-reload-n', attempts + 1);
-  }, IMAGE_RETRY_DELAY);
+  }, delay);
 };
 
 /**
@@ -205,6 +318,11 @@ export class ChatRenderer {
     this.smoothScroll = false;
     this._pendingAppearance = null;
     this._currentBgAnim = null;
+    // Highlight state
+    this.highlightRegex = null;
+    this.highlightColor = null;
+    this.highlightSoundEnabled = false;
+    this.highlightSoundNode = null;
     // Timestamps & time dividers
     this.enableTimestamps = false;
     this.timestampFormat = 'hm';
@@ -288,6 +406,43 @@ export class ChatRenderer {
     const flags = 'g' + (matchCase ? '' : 'i');
     this.highlightRegex = new RegExp(pattern, flags);
     this.highlightColor = color;
+  }
+
+  setHighlightSound(enabled) {
+    this.highlightSoundEnabled = !!enabled;
+  }
+
+  messageWouldHighlight(message) {
+    if (!this.highlightRegex || message.avoidHighlighting) {
+      return false;
+    }
+    const node = createHighlightProbeNode(message);
+    if (!node) {
+      return false;
+    }
+    return highlightNode(
+      node,
+      this.highlightRegex,
+      text => document.createTextNode(text),
+    ) > 0;
+  }
+
+  playHighlightSound() {
+    if (!this.highlightSoundEnabled || typeof Audio !== 'function') {
+      return;
+    }
+    if (!this.highlightSoundNode) {
+      this.highlightSoundNode = new Audio(highlightSoundUrl);
+      this.highlightSoundNode.preload = 'auto';
+    }
+    try {
+      this.highlightSoundNode.currentTime = 0;
+    }
+    catch {
+      // Ignore seek errors from browsers that block early media access.
+    }
+    const playResult = this.highlightSoundNode.play?.();
+    playResult?.catch?.(() => {});
   }
 
   setTimestamps(enable, format) {
@@ -388,6 +543,9 @@ export class ChatRenderer {
       prepend,
       notifyListeners = true,
     } = options;
+    const canPlayHighlightSound = this.highlightSoundEnabled
+      && !prepend
+      && notifyListeners;
     const shouldAutoScroll = this.scrollTracking || (
       this.scrollNode && isScrollTracked(this.scrollNode)
     );
@@ -405,12 +563,16 @@ export class ChatRenderer {
     // Insert messages
     const fragment = document.createDocumentFragment();
     const countByType = {};
+    let shouldPlayBatchHighlightSound = false;
     let node;
     for (let payload of batch) {
       const message = createMessage(payload);
       // Combine messages
       const combinable = this.getCombinableMessage(message);
       if (combinable) {
+        if (canPlayHighlightSound && this.messageWouldHighlight(message)) {
+          shouldPlayBatchHighlightSound = true;
+        }
         combinable.times = (combinable.times || 1) + 1;
         updateMessageBadge(combinable);
         continue;
@@ -465,6 +627,9 @@ export class ChatRenderer {
             ));
           if (highlighted) {
             node.className += ' ChatMessage--highlighted';
+            if (canPlayHighlightSound) {
+              shouldPlayBatchHighlightSound = true;
+            }
           }
         }
         // Linkify text
@@ -503,6 +668,9 @@ export class ChatRenderer {
         fragment.appendChild(node);
         this.visibleMessages.push(message);
       }
+    }
+    if (shouldPlayBatchHighlightSound) {
+      this.playHighlightSound();
     }
     if (node) {
       const firstChild = this.rootNode.childNodes[0];
@@ -630,6 +798,56 @@ export class ChatRenderer {
     }
   }
 
+  /**
+   * Applies per-style customization: color overrides via CSS custom
+   * properties (--cs-<id>-color), "plain look" via Chat--plain-<id>
+   * classes, font/size/animation via a dynamic stylesheet, plus the
+   * global span animation toggle (Chat--fxAnimOff).
+   * @param {Object} overrides map of styleId ->
+   *   { color, disabled, font, size, anim }
+   * @param {boolean} spanAnimations
+   */
+  setStyleOverrides(overrides = {}, spanAnimations = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      styleOverrides: overrides,
+      spanAnimations,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    const root = this.rootNode;
+    const toRemove = [];
+    for (const cls of root.classList) {
+      if (cls.startsWith('Chat--plain-') || cls === 'Chat--fxAnimOff') {
+        toRemove.push(cls);
+      }
+    }
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    if (!spanAnimations) {
+      root.classList.add('Chat--fxAnimOff');
+    }
+    // Iterate the full known style list rather than the passed map,
+    // so a partial or empty overrides object still clears every stale
+    // --cs-* variable from previous calls.
+    for (const style of MESSAGE_STYLES) {
+      const override = overrides[style.id];
+      const prop = '--cs-' + style.id + '-color';
+      if (override?.color) {
+        root.style.setProperty(prop, override.color);
+      }
+      else {
+        root.style.removeProperty(prop);
+      }
+      if (override?.disabled) {
+        root.classList.add('Chat--plain-' + style.id);
+      }
+    }
+    updateStyleOverrideSheet(buildStyleOverrideCss(overrides));
+  }
+
   setCustomProperties(props) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -670,6 +888,9 @@ export class ChatRenderer {
     }
     if (p._customProps) {
       this.setCustomProperties(p._customProps);
+    }
+    if (p.styleOverrides !== undefined) {
+      this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
     }
     this._pendingAppearance = null;
   }

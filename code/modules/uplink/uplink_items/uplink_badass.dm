@@ -16,7 +16,7 @@
 /datum/uplink_item/badass/costumes
 	cost = 4
 	cant_discount = TRUE
-	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/badass/costumes/centcom_official
 	name = "CentCom Official Costume"
@@ -34,6 +34,7 @@
 	desc = "A very high impact toolbox. Excels at destroying stationary structures."
 	item = /obj/item/storage/toolbox/plastitanium
 	cost = 2		//18 damage on mobs, 50 on objects, 4.5 stam/hit
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/badass/balloon
 	name = "Syndicate Balloon"
@@ -43,7 +44,7 @@
 	cost = 20
 	cant_discount = TRUE
 	illegal_tech = FALSE
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/badass/balloon/inteq_ballon
 	name = "InteQ Balloon"
@@ -79,7 +80,7 @@
 	item = /obj/item/storage/fancy/cigarettes/cigpack_syndicate
 	cost = 2
 	illegal_tech = FALSE
-	purchasable_from = UPLINK_SYNDICATE // Bluemoon Changes
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW // Bluemoon Changes
 
 /datum/uplink_item/badass/inteqcigs // Bluemoon Changes
 	name = "InteQ Smokes"
@@ -87,7 +88,7 @@
 	item = /obj/item/storage/fancy/cigarettes/cigpack_inteq
 	cost = 2
 	illegal_tech = FALSE
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/badass/tactical_naptime
 	name = "Sleepy Time Pajama Bundle"
@@ -118,4 +119,4 @@
 	cost = 1
 	cant_discount = TRUE
 	illegal_tech = FALSE
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)

@@ -34,7 +34,7 @@ Nothing else in the console has ID requirements.
 	req_access = list(ACCESS_TOX)	//lA AND SETTING MANIPULATION REQUIRES SCIENTIST ACCESS.
 
 	var/locked = FALSE
-	var/id_cache = list()
+	var/list/id_cache = list()
 	var/id_cache_seq = 1
 	var/compact = TRUE
 
@@ -44,26 +44,29 @@ Nothing else in the console has ID requirements.
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
 		return material.name
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+	var/reagent_from_list = GLOB.chemical_reagents_list[ID]
+	if(reagent_from_list)
+		var/datum/reagent/reagent = reagent_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuNominative(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_nominative(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_nominative, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuGenitive(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_genitive(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_genitive, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 
@@ -160,6 +163,8 @@ Nothing else in the console has ID requirements.
 		if(stored_research == SSresearch.science_tech)
 			SSblackbox.record_feedback("associative", "science_techweb_unlock", 1, list("id" = "[id]", "name" = TN.display_name, "price" = "[json_encode(price)]", "time" = SQLtime()))
 		if(stored_research.research_node_id(id))
+			SSresearch.on_node_researched(id)	// Отправка id на упаковку
+			SEND_GLOBAL_SIGNAL(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, id)	// Запрос синхронизации печатной машинерии с облаком
 			say("Successfully researched [TN.display_name].")
 			var/logname = "Unknown"
 			if(isAI(user))
@@ -222,7 +227,7 @@ Nothing else in the console has ID requirements.
 
 /obj/machinery/computer/rdconsole/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs)
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
 	)
 
 // heavy data from this proc should be moved to static data when possible
@@ -349,7 +354,7 @@ Nothing else in the console has ID requirements.
 
 	// Build design cache
 	var/design_cache = list()
-	var/datum/asset/spritesheet/research_designs/spritesheet = get_asset_datum(/datum/asset/spritesheet/research_designs)
+	var/datum/asset/spritesheet_batched/research_designs/spritesheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
 	var/size32x32 = "[spritesheet.name]32x32"
 	for (var/design_id in SSresearch.techweb_designs)
 		var/datum/design/design = SSresearch.techweb_designs[design_id] || SSresearch.error_design
@@ -357,6 +362,7 @@ Nothing else in the console has ID requirements.
 		var/size = spritesheet.icon_size_id(design.id)
 		design_cache[compressed_id] = list(
 			design.name,
+			design.hacked_only,
 			"[size == size32x32 ? "" : "[size] "][design.id]"
 		)
 
@@ -417,15 +423,9 @@ Nothing else in the console has ID requirements.
 			var/slot = text2num(params["slot"])
 			var/datum/design/design = SSresearch.techweb_design_by_id(params["selectedDesign"])
 			if(design)
-				var/autolathe_friendly = TRUE
-				if(design.reagents_list.len)
-					autolathe_friendly = FALSE
+				var/autolathe_friendly = design.is_autolathe_compatible()
+				if(!autolathe_friendly)
 					design.category -= "Imported"
-				else
-					for(var/material in design.materials)
-						if( !(material in list(/datum/material/iron, /datum/material/glass)))
-							autolathe_friendly = FALSE
-							design.category -= "Imported"
 
 				if(design.build_type & (AUTOLATHE|PROTOLATHE)) // Specifically excludes circuit imprinter and mechfab
 					design.build_type = autolathe_friendly ? (design.build_type | AUTOLATHE) : design.build_type

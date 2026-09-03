@@ -1,39 +1,15 @@
-//This proc allows download of past server logs saved within the data/logs/ folder.
+/// Браузер всех серверных логов в data/logs/.
 /client/proc/getserverlogs()
 	set name = "Get Server Logs"
 	set desc = "View/retrieve logfiles."
-	set category = "Admin"
+	set category = "Admin.Game"
 
-	browseserverlogs()
+	open_log_viewer(list())
 
+/// Браузер логов текущего раунда.
 /client/proc/getcurrentlogs()
 	set name = "Get Current Logs"
 	set desc = "View/retrieve logfiles for the current round."
-	set category = "Admin"
+	set category = "Admin.Game"
 
-	browseserverlogs("[GLOB.log_directory]/")
-
-/client/proc/browseserverlogs(path = "data/logs/")
-	if(!check_rights(R_SENSITIVE))
-		return
-	path = browse_files(path)
-	if(!path)
-		return
-
-	if(file_spam_check())
-		return
-
-	message_admins("[key_name_admin(src)] accessed file: [path]")
-	switch(alert("View (in game), Open (in your system's text editor), or Download?", path, "View", "Open", "Download"))
-		if ("View")
-			var/datum/browser/popup = new(src, "viewfile_[ckey(path)]", "File: [path]")
-			popup.set_content("<pre style='word-wrap: break-word;'>[html_encode(file2text(file(path)))]</pre>")
-			popup.open(FALSE)
-		if ("Open")
-			src << run(file(path))
-		if ("Download")
-			src << ftp(file(path))
-		else
-			return
-	to_chat(src, "Attempting to send [path], this may take a fair few minutes if the file is very large.", confidential = TRUE)
-	return
+	open_log_viewer(admin_log_segments_for_current_round())

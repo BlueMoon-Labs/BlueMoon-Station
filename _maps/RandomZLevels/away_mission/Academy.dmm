@@ -44,7 +44,6 @@
 /obj/structure/chair/office/light{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/wizard,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/academy/headmaster)
 "aj" = (
@@ -2999,10 +2998,6 @@
 /obj/item/stock_parts/manipulator,
 /turf/open/floor/glass/reinforced,
 /area/awaymission/academy/academyaft)
-"iC" = (
-/mob/living/simple_animal/hostile/wizard,
-/turf/open/floor/carpet/purple,
-/area/awaymission/academy/headmaster)
 "iD" = (
 /obj/structure/toilet{
 	dir = 4
@@ -3845,7 +3840,7 @@
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kQ" = (
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kR" = (
@@ -3939,6 +3934,7 @@
 /obj/structure/safe/floor,
 /obj/item/clothing/suit/space/hardsuit/wizard,
 /obj/item/gun/magic/wand/fireball/inert,
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/academy/headmaster)
 "ll" = (
@@ -4116,6 +4112,7 @@
 /area/awaymission/academy/academyengine)
 "lQ" = (
 /obj/structure/table,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating,
 /area/awaymission/academy/academyengine)
 "lR" = (
@@ -4531,13 +4528,6 @@
 /obj/machinery/vending/drugs,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
-"nT" = (
-/mob/living/simple_animal/hostile/wizard,
-/obj/structure/chair/wood/wings{
-	dir = 1
-	},
-/turf/open/floor/plasteel,
-/area/awaymission/academy/headmaster)
 "nU" = (
 /obj/machinery/door/window{
 	dir = 1
@@ -4929,7 +4919,7 @@
 /obj/structure/filingcabinet/filingcabinet,
 /obj/item/stack/medical/bruise_pack,
 /obj/item/stack/medical/bruise_pack,
-/obj/item/pda/medical,
+/obj/item/modular_computer/pda/medical,
 /obj/item/organ/cyberimp/eyes/hud/medical,
 /obj/machinery/light{
 	dir = 4;
@@ -5185,6 +5175,10 @@
 /obj/machinery/portable_atmospherics/canister/nob,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
+"tW" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/mineral/plastitanium/red,
+/area/awaymission/academy/academycellar)
 "tX" = (
 /turf/open/floor/grass/grass0,
 /area/awaymission/academy/academygate)
@@ -5380,6 +5374,7 @@
 "vM" = (
 /obj/structure/table/plasmaglass,
 /obj/item/disk/medical/defib_speed,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
 "vP" = (
@@ -7164,6 +7159,10 @@
 /obj/item/weldingtool/experimental/brass,
 /turf/open/floor/clockwork/reebe,
 /area/awaymission/academy)
+"JU" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating,
+/area/awaymission/academy/academyengine)
 "JY" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -7559,13 +7558,6 @@
 /obj/structure/closet/crate/coffin/metalcoffin,
 /turf/open/floor/plating,
 /area/awaymission/academy/academyengine)
-"NN" = (
-/obj/structure/chair/wood/wings{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/wizard,
-/turf/open/floor/wood,
-/area/awaymission/academy/headmaster)
 "NO" = (
 /obj/structure/table/wood,
 /obj/item/paper_bin,
@@ -8071,10 +8063,6 @@
 /obj/machinery/deepfryer,
 /turf/open/floor/plasteel/white,
 /area/awaymission/academy/classrooms)
-"RB" = (
-/mob/living/simple_animal/hostile/wizard,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/academy/headmaster)
 "RC" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/condiment/soymilk,
@@ -12321,7 +12309,7 @@ mN
 mN
 nm
 mN
-nm
+mN
 mN
 mD
 aG
@@ -13614,7 +13602,7 @@ aa
 aa
 aa
 mY
-Jm
+tW
 Qx
 nK
 Jm
@@ -14474,7 +14462,7 @@ kz
 el
 el
 el
-xw
+dc
 dc
 zW
 bs
@@ -15629,7 +15617,7 @@ AS
 ZK
 bB
 ZI
-ox
+bB
 cO
 cZ
 bz
@@ -17431,7 +17419,7 @@ aX
 Ts
 LJ
 aF
-NN
+LJ
 aW
 ab
 GO
@@ -17644,7 +17632,7 @@ kn
 CO
 uL
 kf
-mG
+kf
 Un
 jS
 aa
@@ -17775,7 +17763,7 @@ Ao
 ky
 mF
 kf
-mG
+kf
 jS
 aa
 aa
@@ -17840,7 +17828,7 @@ yh
 yh
 yh
 yh
-iC
+yh
 yh
 yh
 yh
@@ -17870,7 +17858,7 @@ AE
 gF
 fF
 fF
-kC
+fF
 fF
 fF
 fF
@@ -18225,7 +18213,7 @@ as
 cL
 pT
 oq
-nT
+ZU
 yh
 yh
 an
@@ -19005,7 +18993,7 @@ ab
 UI
 ab
 bO
-RB
+cd
 cl
 cd
 cl
@@ -19950,7 +19938,7 @@ Bq
 fF
 uX
 fF
-kC
+fF
 ho
 kC
 ho
@@ -20569,7 +20557,7 @@ VI
 bT
 Rg
 bT
-Rg
+bT
 Ub
 bs
 zr
@@ -25104,7 +25092,7 @@ lt
 ll
 lv
 lL
-lv
+JU
 ll
 tF
 Lz

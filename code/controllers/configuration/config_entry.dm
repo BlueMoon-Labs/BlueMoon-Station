@@ -276,6 +276,10 @@
 /datum/config_entry/multi_keyed_flag
 	vv_VAS = FALSE
 	abstract_type = /datum/config_entry/multi_keyed_flag
+	// Тип по своей природе набирается многими строками одного ключа, и предупреждение о
+	// дубликате тут ложное: в прод-раунде оно дало 456 строк из 543 в config_error.log
+	// и полностью скрыло настоящие ошибки конфигурации.
+	dupes_allowed = TRUE
 	default = list()
 	var/delimiter = "|"
 

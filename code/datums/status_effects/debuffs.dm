@@ -381,7 +381,7 @@
 
 /datum/status_effect/vtec_disabled
 	id = "vtec_disable"
-	tick = FALSE
+	tick_interval = -1 //конечная duration истекает в process(), сам tick() не нужен
 
 /datum/status_effect/vtec_disabled/on_creation(mob/living/new_owner, set_duration)
 	if(isnum(set_duration))
@@ -1406,5 +1406,30 @@
 /datum/status_effect/bola_snared/proc/bola_teleport(channel, turf/origin, turf/destination)
 	SIGNAL_HANDLER
 	was_teleported = TRUE
+
+/datum/status_effect/rust_corruption
+	id = "rust_turf_effects"
+	alert_type = null
+	tick_interval = 2 SECONDS
+
+/datum/status_effect/rust_corruption/tick()
+	if(!owner)
+		return
+	// tick_interval is in deciseconds; scale SPLURT per-second values to our tick length.
+	var/tick_s = tick_interval * 0.1
+	if(issilicon(owner) || isbot(owner))
+		owner.adjustBruteLoss(10 * tick_s, FALSE, TRUE)
+		return
+	if(iscarbon(owner))
+		var/mob/living/carbon/carbon_owner = owner
+		carbon_owner.adjust_disgust(5 * tick_s)
+		carbon_owner.adjustToxLoss(2 * tick_s, FALSE, TRUE) // heretic rust (extra vs SPLURT: tox on carbons)
+		carbon_owner.reagents?.remove_all(0.75 * tick_s)
+		for(var/obj/item/bodypart/limb as anything in carbon_owner.bodyparts)
+			if(limb.is_robotic_limb())
+				limb.receive_damage(10, 0, 0, 0, FALSE)
+		carbon_owner.updatehealth()
+		return
+	owner.adjustToxLoss(2 * tick_s, FALSE, TRUE)
 
 /////////////////////////////////////////////////////

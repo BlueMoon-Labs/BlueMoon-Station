@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Dropdown, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 
-export const BrigTimer = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BrigTimer = (props) => {
+  const { act, data } = useBackend();
   data.nameText = data.occupant;
   if (data.timing) {
     if (data.prisoner_hasrec) {
@@ -51,7 +51,7 @@ export const BrigTimer = (props, context) => {
               {data.time_left}
             </LabeledList.Item>
             <LabeledList.Item label="Actions">
-              <Fragment>
+              <>
                 <Button
                   icon="lightbulb-o"
                   content="Flash"
@@ -72,7 +72,7 @@ export const BrigTimer = (props, context) => {
                   content="Release Prisoner"
                   disabled={!data.timing || !data.isAllowed}
                   onClick={() => act('stop')} />
-              </Fragment>
+              </>
             </LabeledList.Item>
           </LabeledList>
         </Section>

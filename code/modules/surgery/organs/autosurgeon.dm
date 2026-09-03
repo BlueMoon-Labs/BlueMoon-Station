@@ -86,7 +86,7 @@
 /obj/item/autosurgeon/gloweyes
 	desc = "A single use autosurgeon that contains a set of Luminescent Eyes augments. A screwdriver can be used to remove it, but implants can't be placed back in."
 	uses = 1
-	starting_organ = /obj/item/organ/eyes/robotic/glow
+	starting_organ = /obj/item/organ/eyes/robotic/toggled/glow
 
 /obj/item/autosurgeon/syndicate
 	name = "Suspicious Autosurgeon"
@@ -99,10 +99,10 @@
 	. += "<span class='notice'>В этом предмете осталось <b>[uses]</b> использований.</span>"
 
 /obj/item/autosurgeon/syndicate/thermal_eyes
-	starting_organ = /obj/item/organ/eyes/robotic/thermals
+	starting_organ = /obj/item/organ/eyes/robotic/toggled/thermals
 
 /obj/item/autosurgeon/syndicate/xray_eyes
-	starting_organ = /obj/item/organ/eyes/robotic/xray
+	starting_organ = /obj/item/organ/eyes/robotic/toggled/xray
 
 /obj/item/autosurgeon/syndicate/anti_stun
 	starting_organ = /obj/item/organ/cyberimp/brain/anti_stun
@@ -114,7 +114,7 @@
 	starting_organ = /obj/item/organ/cyberimp/brain/anti_drop
 
 /obj/item/autosurgeon/syndicate/inteq/revitilzer
-	starting_organ = /obj/item/organ/cyberimp/chest/revitilzer
+	starting_organ = /obj/item/organ/cyberimp/chest/healer/revitilzer
 
 /obj/item/autosurgeon/syndicate/biomorphedheart
 	starting_organ = /obj/item/organ/heart/bioaegis/t3/antag

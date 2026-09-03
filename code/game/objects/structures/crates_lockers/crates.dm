@@ -10,6 +10,7 @@
 	allow_objects = TRUE
 	allow_dense = TRUE
 	dense_when_open = TRUE
+	pass_flags_self = PASSJUMP
 	climbable = TRUE
 	climb_time = 10 //real fast, because let's be honest stepping into or onto a crate is easy
 	climb_stun = 0 //climbing onto crates isn't hard, guys
@@ -78,11 +79,11 @@
 /obj/structure/closet/crate/open(mob/living/user, force = FALSE)
 	. = ..()
 	if(. && manifest)
+		var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+		set_manifest(null)
 		to_chat(user, "<span class='notice'>The manifest is torn off [src].</span>")
 		playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
-		manifest.forceMove(get_turf(src))
-		manifest = null
-		update_icon()
+		torn_manifest.forceMove(get_turf(src))
 
 // cit specific
 /obj/structure/closet/crate/handle_lock_addition()
@@ -92,12 +93,32 @@
 	return
 
 /obj/structure/closet/crate/proc/tear_manifest(mob/user)
+	if(!manifest)
+		return
+	var/obj/item/paper/fluff/jobs/cargo/manifest/torn_manifest = manifest
+	set_manifest(null)
 	to_chat(user, "<span class='notice'>You tear the manifest off of [src].</span>")
 	playsound(src, 'sound/items/poster_ripped.ogg', 75, TRUE)
 
-	manifest.forceMove(loc)
+	torn_manifest.forceMove(loc)
 	if(ishuman(user))
-		user.put_in_hands(manifest)
+		user.put_in_hands(torn_manifest)
+
+/// Накладная лежит в contents ящика и умирает вместе с ним от взрыва - ссылка на неё
+/// обязана опускаться сама, иначе open()/tear_manifest() двигали qdel-нутую бумагу
+/// (прод-раунд 10150).
+/obj/structure/closet/crate/proc/set_manifest(obj/item/paper/fluff/jobs/cargo/manifest/new_manifest)
+	if(manifest == new_manifest)
+		return
+	if(manifest)
+		UnregisterSignal(manifest, COMSIG_PARENT_QDELETING)
+	manifest = new_manifest
+	if(manifest)
+		RegisterSignal(manifest, COMSIG_PARENT_QDELETING, PROC_REF(on_manifest_deleted))
+	update_icon()
+
+/obj/structure/closet/crate/proc/on_manifest_deleted(datum/source)
+	SIGNAL_HANDLER
 	manifest = null
 	update_icon()
 
@@ -168,7 +189,7 @@
 //Snowflake organ freezer code
 //Order is important, since we check source, we need to do the check whenever we have all the organs in the crate
 
-/obj/structure/closet/crate/freezer/open()
+/obj/structure/closet/crate/freezer/open(mob/living/user, force = FALSE)
 	recursive_organ_check(src)
 	..()
 
@@ -291,3 +312,12 @@
 	..()
 	for(var/i in 1 to 5)
 		new /obj/item/coin/silver(src)
+
+/obj/structure/closet/crate/tarkov
+	name = "Tarkov Crate"
+	icon_state = "exocrate"
+
+/obj/structure/closet/crate/syndie
+	name = "Syndicate Crate"
+	icon = 'icons/obj/crates_new.dmi'
+	icon_state = "syndicrate"

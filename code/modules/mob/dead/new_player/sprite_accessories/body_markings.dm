@@ -94,7 +94,7 @@ datum/sprite_accessory/mam_body_markings/shark/datashark // BLUEMOON CHANGE PORT
 
 /datum/sprite_accessory/mam_body_markings/fennec
 	name = "Fennec"
-	icon_state = "Fennec"
+	icon_state = "fennec" //в mam_markings.dmi состояния лежат в нижнем регистре, с "Fennec" маркинг не рисовался вообще
 	covered_limbs = list("Head" = MATRIX_RED_GREEN, "Chest" = MATRIX_RED_GREEN, "Left Leg" = MATRIX_RED_GREEN, "Right Leg" = MATRIX_RED_GREEN, "Left Arm" = MATRIX_RED_GREEN, "Right Arm" = MATRIX_RED_GREEN)
 
 /datum/sprite_accessory/mam_body_markings/fox
@@ -241,6 +241,7 @@ datum/sprite_accessory/mam_body_markings/shark/datashark // BLUEMOON CHANGE PORT
 	name = "Xeno"
 	icon_state = "xeno"
 	icon = 'modular_citadel/icons/mob/markings_notmammals.dmi'
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
 	covered_limbs = list("Head" = MATRIX_BLUE, "Chest" = MATRIX_GREEN, "Left Leg" = MATRIX_GREEN, "Right Leg" = MATRIX_GREEN, "Left Arm" = MATRIX_GREEN, "Right Arm" = MATRIX_GREEN)
 
 // sticking old lizard markings here for now

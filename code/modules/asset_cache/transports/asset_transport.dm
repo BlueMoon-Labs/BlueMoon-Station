@@ -25,15 +25,22 @@
 		addtimer(CALLBACK(src, PROC_REF(send_assets_slow), C, preload), 1 SECONDS)
 
 
-/// Register a browser asset with the asset cache system
-/// asset_name - the identifier of the asset
-/// asset - the actual asset file (or an asset_cache_item datum)
-/// returns a /datum/asset_cache_item.
-/// mutiple calls to register the same asset under the same asset_name return the same datum
-/datum/asset_transport/proc/register_asset(asset_name, asset)
+/**
+ * Register a browser asset with the asset cache system.
+ * returns a /datum/asset_cache_item.
+ * multiple calls to register the same asset under the same asset_name return the same datum.
+ *
+ * Arguments:
+ * * asset_name - the identifier of the asset.
+ * * asset - the actual asset file (or an asset_cache_item datum).
+ * * file_hash - optional, hash of the asset file's contents. Skips rehashing inside asset_cache_item.
+ * * dmi_file_path - optional, means the given asset is from the rsc (a stable dmi file)
+ *   so we can use the cheap md5(rsc_ref) path instead of md5asfile().
+ */
+/datum/asset_transport/proc/register_asset(asset_name, asset, file_hash, dmi_file_path)
 	var/datum/asset_cache_item/ACI = asset
 	if (!istype(ACI))
-		ACI = new(asset_name, asset)
+		ACI = new(asset_name, asset, file_hash, dmi_file_path)
 		if (!ACI || !ACI.hash)
 			CRASH("ERROR: Invalid asset: [asset_name]:[asset]:[ACI]")
 	if (SSassets.cache[asset_name])
@@ -53,6 +60,9 @@
 	SSassets.cache[asset_name] = ACI
 	return ACI
 
+/// Immediately removes an asset from the asset cache.
+/datum/asset_transport/proc/unregister_asset(asset_name)
+	SSassets.cache.Remove(asset_name)
 
 /// Returns a url for a given asset.
 /// asset_name - Name of the asset.
@@ -127,6 +137,11 @@
 			if (!keep_local_name)
 				new_asset_name = "asset.[ACI.hash][ACI.ext]"
 			log_asset("Sending asset `[asset_name]` to client `[client]` as `[new_asset_name]`")
+			// Книга недатумных аллокаций: очередь browse() держит полезную нагрузку в памяти
+			// до доставки, и при волне реконнекта эти байты умножаются на число клиентов.
+			// Считаем ТОЛЬКО реально отправленное: попадания в client.sent_assets отсеяны выше.
+			if(isfile(ACI.resource))
+				note_nondatum_alloc(NONDATUM_LEDGER_ASSET_BYTES, length(ACI.resource))
 			client << browse_rsc(ACI.resource, new_asset_name)
 
 			client.sent_assets[new_asset_name] = ACI.hash

@@ -125,6 +125,7 @@
 	pixel_x = -4
 	pixel_y = -4 //so the sprites line up right in the map editor
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 
 	if(!blacklisted_turfs)
 		blacklisted_turfs = typecacheof(list(
@@ -163,6 +164,15 @@
 	if(exposed_temperature > 300)
 		take_damage(5, BURN, 0, 0)
 
+// Flame contact keeps the old 300 K trigger; hot air alone needs a burning
+// room, since lavaland ambient (315-320 K) would otherwise eat ash walker
+// nests without a single flame.
+/obj/structure/alien/weeds/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/alien/weeds/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
+
 //Weed nodes
 /obj/structure/alien/weeds/node
 	name = "glowing resin"
@@ -173,6 +183,11 @@
 	var/lon_range = 4
 	var/node_range = NODERANGE
 	var/weak = FALSE // BLUEMOON ADD - xenohybrids_improvements - если включено, то трава не распространяется
+	/// Remainder of the current radius sweep, consumed across process() calls. A
+	/// plain `if(TICK_CHECK) return` with no cursor kept restarting range() from
+	/// the same deterministic head, so under sustained tick pressure the far side
+	/// of the radius - the growth frontier - never got its expand() call at all.
+	var/list/growth_sweep_queue
 
 /obj/structure/alien/weeds/node/Initialize(mapload)
 	icon = 'icons/obj/smooth_structures/alien/weednode.dmi'
@@ -186,13 +201,34 @@
 
 /obj/structure/alien/weeds/node/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	growth_sweep_queue = null
 	return ..()
 
 /obj/structure/alien/weeds/node/process()
-	for(var/obj/structure/alien/weeds/W in range(node_range, src))
+	// A mature node can cover dozens of weeds, and the whole radius used to be
+	// walked in a single process() call (observed at 70ms on a 50ms server tick).
+	// Hand the tick back to SSobj once the budget is spent - but resume from where
+	// the sweep stopped, not from the head of range(): its iteration order is
+	// deterministic, so restarting would service the same near weeds every fire
+	// and starve the growth frontier for as long as the pressure lasts. The queue
+	// is rebuilt from a fresh range() walk once fully drained, so newly grown
+	// weeds join the next sweep.
+	if(!length(growth_sweep_queue))
+		growth_sweep_queue = list()
+		for(var/obj/structure/alien/weeds/W in range(node_range, src))
+			growth_sweep_queue += W
+	while(length(growth_sweep_queue))
+		var/obj/structure/alien/weeds/W = growth_sweep_queue[length(growth_sweep_queue)]
+		growth_sweep_queue.len--
+		if(QDELETED(W))
+			continue
 		if(W.last_expand <= world.time)
 			if(W.expand())
 				W.last_expand = world.time + rand(growth_cooldown_low, growth_cooldown_high)
+		// Checked after the work rather than before it, so a call that already
+		// paid for the queue refill never leaves without expanding anything.
+		if(TICK_CHECK)
+			return
 
 #undef NODERANGE
 
@@ -223,6 +259,7 @@
 
 /obj/structure/alien/egg/Initialize(mapload)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	update_icon()
 	if(status == GROWING || status == GROWN)
 		child = new(src)
@@ -304,6 +341,12 @@
 /obj/structure/alien/egg/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 500)
 		take_damage(5, BURN, 0, 0)
+
+/obj/structure/alien/egg/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > 500
+
+/obj/structure/alien/egg/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 
 /obj/structure/alien/egg/HasProximity(atom/movable/AM)

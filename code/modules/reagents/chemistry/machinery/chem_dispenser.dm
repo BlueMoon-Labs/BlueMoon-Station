@@ -11,6 +11,48 @@
 		else
 			return ckey(id)
 
+/// JSON-safe finite number for TGUI payloads (NaN/INF crash json_encode on BYOND 516).
+/proc/sanitize_num_for_json(num, default = 0)
+	if(!isnum(num) || (num != num))
+		return default
+	if(num >= 1e100 || num <= -1e100)
+		return default
+	return num
+
+/// pH value safe for TGUI JSON.
+/proc/sanitize_ph_json(ph)
+	if(!isnum(ph) || (ph != ph))
+		return 7
+	if(ph >= 1e100 || ph <= -1e100)
+		return 7
+	return clamp(ph, -20, 20)
+
+/// pH color label for chem dispenser UI. Avoids `switch` ranges with INFINITY (BYOND 516 Linux crash).
+/proc/chem_disp_ph_to_col(pH)
+	if(!isnum(pH) || (pH != pH))
+		return "average"
+	if(pH < 1)
+		return "red"
+	if(pH < 2)
+		return "orange"
+	if(pH < 3)
+		return "average"
+	if(pH < 4)
+		return "yellow"
+	if(pH < 5)
+		return "olive"
+	if(pH < 6)
+		return "good"
+	if(pH < 8)
+		return "green"
+	if(pH < 9.5)
+		return "teal"
+	if(pH < 11)
+		return "blue"
+	if(pH < 12.5)
+		return "violet"
+	return "purple"
+
 /obj/machinery/chem_dispenser
 	name = "Chem Dispenser"
 	desc = "Создаёт и выдаёт препараты."
@@ -104,8 +146,15 @@
 
 	/// Cached game recipes for this dispenser's current reagent set.
 	var/list/cached_dispenser_game_recipes
+	/// Категория -> сколько в ней рецептов. Едет в нагрузке вместо самой книги.
+	var/list/cached_dispenser_recipe_counts
 	/// Hash of dispensable_reagents used to validate the instance cache.
 	var/cached_dispensable_reagents_hash = ""
+	/// Книга рецептов этого набора реагентов, зарегистрированная как JSON-ассет.
+	/// Сама книга в нагрузку tgui не попадает вовсе: одно такое сообщение - это
+	/// непрерывный мегабайт-другой памяти у 32-битного DreamDaemon (краш раунда
+	/// 9948, предупреждение раунда 9954 на 1.17 МБ). Интерфейс тянет её файлом.
+	var/datum/asset/json/chem_dispenser_recipes/cached_dispenser_recipes_asset
 	/// Current manipulator tier (1-6).
 	var/manipulator_tier = 1
 	/// Cached capacitor rating used for beaker pH display precision.
@@ -114,9 +163,15 @@
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 	/// Cooldown for recipe-dispense actions.
 	COOLDOWN_DECLARE(dispense_cooldown)
+	var/static/list/chem_disp_category_cache = list()
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
 	var/static/list/shared_dispenser_recipe_caches
+	/// Shared cache: reagent hash -> категория рецепта -> сколько их.
+	var/static/list/shared_dispenser_recipe_count_caches
+
+	/// Shared cache: reagent hash -> экземпляр JSON-ассета книги рецептов.
+	var/static/list/shared_dispenser_recipe_asset_caches
 
 	/// Maps reagent type to dispenser type bitflags that can provide it.
 	var/static/list/reagent_to_dispenser_type
@@ -351,20 +406,20 @@
 				alt_recipes += list(list(
 					"required" = alt_required,
 					"catalysts" = alt_catalysts,
-					"temp" = alt_R.required_temp,
+					"temp" = sanitize_num_for_json(alt_R.required_temp),
 					"is_cold" = alt_R.is_cold_recipe,
-					"result_amount" = alt_R.results[result_type] || 1,
+					"result_amount" = sanitize_num_for_json(alt_R.results[result_type] || 1, 1),
 					"sub_recipes" = alt_sub_recipes,
 					"is_fermichem" = alt_R.FermiChem,
-					"optimal_temp_min" = alt_R.OptimalTempMin,
-					"optimal_temp_max" = alt_R.OptimalTempMax,
-					"explode_temp" = alt_R.ExplodeTemp,
-					"optimal_ph_min" = alt_R.OptimalpHMin,
-					"optimal_ph_max" = alt_R.OptimalpHMax,
-					"react_ph_lim" = alt_R.ReactpHLim,
-					"purity_min" = alt_R.PurityMin,
-					"thermic_constant" = alt_R.ThermicConstant,
-					"h_ion_release" = alt_R.HIonRelease,
+					"optimal_temp_min" = sanitize_num_for_json(alt_R.OptimalTempMin),
+					"optimal_temp_max" = sanitize_num_for_json(alt_R.OptimalTempMax),
+					"explode_temp" = sanitize_num_for_json(alt_R.ExplodeTemp),
+					"optimal_ph_min" = sanitize_ph_json(alt_R.OptimalpHMin),
+					"optimal_ph_max" = sanitize_ph_json(alt_R.OptimalpHMax),
+					"react_ph_lim" = sanitize_num_for_json(alt_R.ReactpHLim),
+					"purity_min" = sanitize_num_for_json(alt_R.PurityMin),
+					"thermic_constant" = sanitize_num_for_json(alt_R.ThermicConstant, 1),
+					"h_ion_release" = sanitize_num_for_json(alt_R.HIonRelease, 0.1),
 					"fermi_explode" = alt_R.FermiExplode
 				))
 				alt_recipe_datums["[recipe_name]|[alt_index]"] = alt_R
@@ -374,21 +429,21 @@
 			"required" = required,
 			"catalysts" = catalysts,
 			"category" = recipe_category,
-			"temp" = R.required_temp,
+			"temp" = sanitize_num_for_json(R.required_temp),
 			"is_cold" = R.is_cold_recipe,
 			"desc" = recipe_desc,
-			"result_amount" = result_amount,
+			"result_amount" = sanitize_num_for_json(result_amount, 1),
 			"sub_recipes" = sub_recipes,
 			"is_fermichem" = R.FermiChem,
-			"optimal_temp_min" = R.OptimalTempMin,
-			"optimal_temp_max" = R.OptimalTempMax,
-			"explode_temp" = R.ExplodeTemp,
-			"optimal_ph_min" = R.OptimalpHMin,
-			"optimal_ph_max" = R.OptimalpHMax,
-			"react_ph_lim" = R.ReactpHLim,
-			"purity_min" = R.PurityMin,
-			"thermic_constant" = R.ThermicConstant,
-			"h_ion_release" = R.HIonRelease,
+			"optimal_temp_min" = sanitize_num_for_json(R.OptimalTempMin),
+			"optimal_temp_max" = sanitize_num_for_json(R.OptimalTempMax),
+			"explode_temp" = sanitize_num_for_json(R.ExplodeTemp),
+			"optimal_ph_min" = sanitize_ph_json(R.OptimalpHMin),
+			"optimal_ph_max" = sanitize_ph_json(R.OptimalpHMax),
+			"react_ph_lim" = sanitize_num_for_json(R.ReactpHLim),
+			"purity_min" = sanitize_num_for_json(R.PurityMin),
+			"thermic_constant" = sanitize_num_for_json(R.ThermicConstant, 1),
+			"h_ion_release" = sanitize_num_for_json(R.HIonRelease, 0.1),
 			"fermi_explode" = R.FermiExplode,
 			"is_extract_recipe" = is_extract_recipe,
 			"extract_container_name" = extract_container_name,
@@ -469,8 +524,11 @@
 		upgrade_reagents4 = sort_list(upgrade_reagents4, GLOBAL_PROC_REF(cmp_reagents_asc))
 	create_reagents(CHEM_DISPENSER_BASE_STORAGE, NO_REACT)
 	update_icon()
-	build_game_recipes_cache()
-	build_dispenser_recipes_cache()
+	// Книги рецептов здесь НЕ строятся: это делает ensure_recipes_asset() при первом
+	// открытии интерфейса, как и написано в его же комментарии. Эагерная сборка на
+	// инициализации машины сводила ту ленивость на нет и держала книгу (747 рецептов,
+	// в каждом вложенные списки) на каждый уникальный набор реагентов с первой секунды
+	// раунда, даже если диспенсер за раунд никто не открыл.
 
 /obj/machinery/chem_dispenser/Destroy()
 	QDEL_NULL(beaker)
@@ -550,6 +608,32 @@
 	if(A == beaker)
 		beaker = null
 		update_icon()
+
+/**
+ * Ассет книги рецептов для текущего набора реагентов.
+ *
+ * Кодирование и регистрация происходят один раз на набор: все диспенсеры с тем же
+ * набором делят готовый файл. Создаётся лениво - при первом открытии интерфейса,
+ * а не на инициализации машины: на старте раунда книга никому не нужна.
+ */
+/obj/machinery/chem_dispenser/proc/ensure_recipes_asset()
+	RETURN_TYPE(/datum/asset/json/chem_dispenser_recipes)
+	build_game_recipes_cache()
+	build_dispenser_recipes_cache()
+	if(cached_dispenser_recipes_asset)
+		return cached_dispenser_recipes_asset
+	if(!shared_dispenser_recipe_asset_caches)
+		shared_dispenser_recipe_asset_caches = list()
+	cached_dispenser_recipes_asset = shared_dispenser_recipe_asset_caches[cached_dispensable_reagents_hash]
+	if(!cached_dispenser_recipes_asset)
+		// Ключ кэша - это длинная строка из путей реагентов; в имя файла идёт её md5.
+		cached_dispenser_recipes_asset = new(rustg_hash_string(RUSTG_HASH_MD5, cached_dispensable_reagents_hash), cached_dispenser_game_recipes)
+		shared_dispenser_recipe_asset_caches[cached_dispensable_reagents_hash] = cached_dispenser_recipes_asset
+	return cached_dispenser_recipes_asset
+
+/obj/machinery/chem_dispenser/ui_assets(mob/user)
+	. = ..() || list()
+	. += ensure_recipes_asset()
 
 /obj/machinery/chem_dispenser/ui_interact(mob/user, datum/tgui/ui)
 	if(HAS_TRAIT(user, TRAIT_PACIFISM) && !istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter))
@@ -790,9 +874,11 @@
 
 /obj/machinery/chem_dispenser/ui_static_data(mob/user)
 	var/list/data = list()
-	build_game_recipes_cache()
-	build_dispenser_recipes_cache()
-	data["gameRecipes"] = cached_dispenser_game_recipes
+	// Книга рецептов в нагрузку не входит - она уезжает файлом через транспорт
+	// ассетов (см. ui_assets), здесь только имя файла и счётчик по категориям
+	// для ярлыка вкладки.
+	data["gameRecipesAsset"] = "[ensure_recipes_asset().name].json"
+	data["gameRecipeCounts"] = cached_dispenser_recipe_counts
 
 	data["dispenserType"] = dispenser_type
 	data["isDrinkDispenser"] = !!(dispenser_type & DISPENSER_TYPE_DRINKS)
@@ -801,8 +887,9 @@
 	for(var/re in dispensable_reagents)
 		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
 		if(temp)
+			var/ph_safe = sanitize_ph_json(temp.pH)
 			var/category = get_reagent_category(re)
-			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
+			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = temp.color, "category" = category)))
 	data["chemicals"] = chemicals
 
 	var/datum/reagent/best_acid = null
@@ -816,9 +903,9 @@
 		if(!best_base || temp.pH > best_base.pH)
 			best_base = temp
 	data["phAcidName"] = best_acid?.name
-	data["phAcidPH"] = best_acid?.pH
+	data["phAcidPH"] = best_acid ? sanitize_ph_json(best_acid.pH) : null
 	data["phBaseName"] = best_base?.name
-	data["phBasePH"] = best_base?.pH
+	data["phBasePH"] = best_base ? sanitize_ph_json(best_base.pH) : null
 
 	return data
 
@@ -839,7 +926,8 @@
 	var/beakerCurrentVolume = 0
 	if(beaker && beaker.reagents && beaker.reagents.reagent_list.len)
 		for(var/datum/reagent/R in beaker.reagents.reagent_list)
-			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = R.pH, "pHCol" = ConvertpHToCol(R.pH), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
+			var/ph_safe = sanitize_ph_json(R.pH)
+			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
 			beakerCurrentVolume += R.volume
 	data["beakerContents"] = beakerContents
 
@@ -849,9 +937,10 @@
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
 		// pH precision scales with capacitor rating.
 		var/ph_precision = max(10**-(capacitor_rating+1), 0.0001)
-		var/rounded_ph = round(beaker.reagents.pH, ph_precision)
+		var/safe_beaker_ph = sanitize_ph_json(beaker.reagents.pH)
+		var/rounded_ph = round(safe_beaker_ph, ph_precision)
 		data["beakerCurrentpH"] = rounded_ph
-		data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
+		data["beakerCurrentpHCol"] = chem_disp_ph_to_col(rounded_ph)
 
 	else
 		data["beakerCurrentVolume"] = null
@@ -868,8 +957,9 @@
 				var/chemname = temp.name
 				if(prob(5))
 					chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
+				var/ph_safe = sanitize_ph_json(temp.pH)
 				var/category = get_reagent_category(re)
-				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
+				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = temp.color, "category" = category)))
 		data["chemicals"] = chemicals
 
 	var/mob/living/L = user
@@ -891,7 +981,8 @@
 	var/storedContents[0]
 	if(reagents.total_volume)
 		for(var/datum/reagent/N in reagents.reagent_list)
-			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = N.pH, "pHCol" = ConvertpHToCol(N.pH), "reagentColor" = N.color)))
+			var/ph_safe = sanitize_ph_json(N.pH)
+			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = N.color)))
 	data["storedContents"] = storedContents
 
 	return data
@@ -937,11 +1028,15 @@
 		shared_dispenser_recipe_caches = list()
 	if(shared_dispenser_recipe_caches[current_hash])
 		cached_dispenser_game_recipes = shared_dispenser_recipe_caches[current_hash]
+		cached_dispenser_recipe_counts = shared_dispenser_recipe_count_caches?[current_hash]
+		cached_dispenser_recipes_asset = shared_dispenser_recipe_asset_caches?[current_hash]
 		cached_dispensable_reagents_hash = current_hash
 		return
 
 	cached_dispenser_game_recipes = list()
 	cached_dispensable_reagents_hash = current_hash
+	// Набор реагентов сменился (апгрейд, emag) - у нового набора свой файл книги.
+	cached_dispenser_recipes_asset = null
 
 	// Assign upgrade tiers first so RefreshParts() reagents keep proper tier
 	var/list/reagent_tiers = list()
@@ -1151,6 +1246,17 @@
 
 	shared_dispenser_recipe_caches[current_hash] = cached_dispenser_game_recipes
 
+	// Счётчик по категориям заменяет книгу на вкладке, пока её не открыли: интерфейсу
+	// нужно только число на ярлыке, а сортировку по «напиткам» он делает сам.
+	cached_dispenser_recipe_counts = list()
+	for(var/recipe_name in cached_dispenser_game_recipes)
+		var/list/recipe_data = cached_dispenser_game_recipes[recipe_name]
+		var/category = recipe_data["category"] || "other"
+		cached_dispenser_recipe_counts[category] += 1
+	if(!shared_dispenser_recipe_count_caches)
+		shared_dispenser_recipe_count_caches = list()
+	shared_dispenser_recipe_count_caches[current_hash] = cached_dispenser_recipe_counts
+
 /obj/machinery/chem_dispenser/ui_act(action, params)
 	if(..())
 		return
@@ -1160,6 +1266,14 @@
 		if(!COOLDOWN_FINISHED(src, dispense_cooldown))
 			return
 	switch(action)
+		if("load_game_recipes")
+			// Страховка для окна, пережившего смену набора реагентов (апгрейд, emag):
+			// открытые окна не получают маппинг нового файла сами, интерфейс просит
+			// его повторной отправкой ассета, когда fetch не нашёл файл.
+			var/datum/tgui/ui = SStgui.get_open_ui(usr, src)
+			if(ui)
+				ui.send_asset(ensure_recipes_asset())
+			. = TRUE
 		if("toggle_view")
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
@@ -1815,55 +1929,11 @@
 		replace_beaker(user)
 		return TRUE
 
-/obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	if(recursion_depth > 0)
-		return "average"
-	recursion_depth++
-	. = "average"
-	if(!isnum(pH) || (pH != pH)) // null or NaN
-		recursion_depth--
-		return
-	switch(pH)
-		if(-INFINITY to 1)
-			. = "red"
-		if(1 to 2)
-			. = "orange"
-		if(2 to 3)
-			. = "average"
-		if(3 to 4)
-			. = "yellow"
-		if(4 to 5)
-			. = "olive"
-		if(5 to 6)
-			. = "good"
-		if(6 to 8)
-			. = "green"
-		if(8 to 9.5)
-			. = "teal"
-		if(9.5 to 11)
-			. = "blue"
-		if(11 to 12.5)
-			. = "violet"
-		if(12.5 to INFINITY)
-			. = "purple"
-		else
-			. = "average"
-	recursion_depth--
-
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	var/static/list/category_cache = list()
-	if(recursion_depth > 0)
-		return "other"
-	if(reagent_type && category_cache[reagent_type])
-		return category_cache[reagent_type]
-	recursion_depth++
+	if(reagent_type && chem_disp_category_cache[reagent_type])
+		return chem_disp_category_cache[reagent_type]
 	var/result = "other"
 	if(!reagent_type)
-		recursion_depth--
 		return result
 	if(ispath(reagent_type, /datum/reagent/medicine))
 		result = "medicine"
@@ -1893,8 +1963,7 @@
 	else if(ispath(reagent_type, /datum/reagent))
 		result = "elements"
 	if(reagent_type)
-		category_cache[reagent_type] = result
-	recursion_depth--
+		chem_disp_category_cache[reagent_type] = result
 	return result
 
 

@@ -141,6 +141,7 @@
 			"belly_name" = selected.name,
 			"is_wet" = selected.is_wet,
 			"wet_loop" = selected.wet_loop,
+			"can_victim_see" = selected.can_victim_see,
 			"mode" = selected.digest_mode,
 			"verb" = selected.vore_verb,
 			"desc" = selected.desc,
@@ -222,7 +223,7 @@
 			if(host.vore_organs.len >= BELLIES_MAX)
 				return FALSE
 
-			var/new_name = html_encode(input(usr,"New belly's name:","New Belly") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"New belly's name:","New Belly") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
@@ -283,11 +284,10 @@
 				unsaved_changes = FALSE
 			return TRUE
 		if("setflavor")
-			var/new_flavor = html_encode(input(usr,"What your character tastes like (400ch limit). This text will be printed to the pred after 'X tastes of...' so just put something like 'strawberries and cream':","Character Flavor",host.vore_taste) as text|null)
+			var/new_flavor = html_encode_readable(input(usr,"What your character tastes like (400ch limit). This text will be printed to the pred after 'X tastes of...' so just put something like 'strawberries and cream':","Character Flavor",host.vore_taste) as text|null)
 			if(!new_flavor)
 				return FALSE
 
-			new_flavor = readd_quotes(new_flavor)
 			if(length(new_flavor) > FLAVOR_MAX)
 				tgui_alert_async(usr, "Entered flavor/taste text too long. [FLAVOR_MAX] character limit.","Error!")
 				return FALSE
@@ -295,11 +295,10 @@
 			unsaved_changes = TRUE
 			return TRUE
 		if("setsmell")
-			var/new_smell = html_encode(input(usr,"What your character smells like (400ch limit). This text will be printed to the pred after 'X smells of...' so just put something like 'strawberries and cream':","Character Smell",host.vore_smell) as text|null)
+			var/new_smell = html_encode_readable(input(usr,"What your character smells like (400ch limit). This text will be printed to the pred after 'X smells of...' so just put something like 'strawberries and cream':","Character Smell",host.vore_smell) as text|null)
 			if(!new_smell)
 				return FALSE
 
-			new_smell = readd_quotes(new_smell)
 			if(length(new_smell) > FLAVOR_MAX)
 				tgui_alert_async(usr, "Entered perfume/smell text too long. [FLAVOR_MAX] character limit.","Error!")
 				return FALSE
@@ -498,7 +497,7 @@
 	var/attr = params["attribute"]
 	switch(attr)
 		if("b_name")
-			var/new_name = html_encode(input(usr,"Belly's new name:","New Name") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"Belly's new name:","New Name") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
@@ -523,6 +522,12 @@
 		if("b_wetloop")
 			host.vore_selected.wet_loop = !host.vore_selected.wet_loop
 			. = TRUE
+		if("b_can_victim_see")
+			var/obj/belly/belly = host.vore_selected
+			belly.can_victim_see = !belly.can_victim_see
+			for(var/mob/living/L in belly.contents)
+				belly.set_blinding(L)
+			. = TRUE
 		if("b_mode")
 			var/list/menu_list = host.vore_selected.digest_modes.Copy()
 			var/new_mode = tgui_input_list(usr, "Choose Mode (currently [host.vore_selected.digest_mode])", "Mode Choice", menu_list)
@@ -532,10 +537,9 @@
 			host.vore_selected.digest_mode = new_mode
 			. = TRUE
 		if("b_desc")
-			var/new_desc = html_encode(input(usr,"Belly Description ([BELLIES_DESC_MAX] char limit):","New Description",host.vore_selected.desc) as message|null)
+			var/new_desc = html_encode_readable(input(usr,"Belly Description ([BELLIES_DESC_MAX] char limit):","New Description",host.vore_selected.desc) as message|null)
 
 			if(new_desc)
-				new_desc = readd_quotes(new_desc)
 				if(length(new_desc) > BELLIES_DESC_MAX)
 					tgui_alert_async(usr, "Entered belly desc too long. [BELLIES_DESC_MAX] character limit.","Error")
 					return FALSE

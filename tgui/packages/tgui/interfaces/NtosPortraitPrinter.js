@@ -3,11 +3,11 @@ import { useBackend, useSharedState } from '../backend';
 import { Button, Flex, Input, NoticeBox, PixelArtImage, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosPortraitPrinter = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tabIndex, setTabIndex] = useSharedState(context, 'tabIndex', 0);
-  const [listIndex, setListIndex] = useSharedState(context, 'listIndex', 0);
-  const [query, setQuery] = useSharedState(context, 'query', '');
+export const NtosPortraitPrinter = (props) => {
+  const { act, data } = useBackend();
+  const [tabIndex, setTabIndex] = useSharedState('tabIndex', 0);
+  const [listIndex, setListIndex] = useSharedState('listIndex', 0);
+  const [query, setQuery] = useSharedState('query', '');
   const {
     library,
     library_secure,
@@ -15,6 +15,7 @@ export const NtosPortraitPrinter = (props, context) => {
     library_large,
     library_large_private,
     favorite_paintings_md5 = [],
+    is_admin = false,
   } = data;
 
   const allPortraits = [
@@ -142,6 +143,19 @@ export const NtosPortraitPrinter = (props, context) => {
                       selected={isFavorite}
                       onClick={() => act('toggle_favorite', {
                         md5: currentPortrait.md5,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && is_admin && (
+                    <Button.Confirm
+                      icon="trash"
+                      color="bad"
+                      tooltip="Delete this painting from the database"
+                      tooltipPosition="bottom"
+                      confirmContent="Are you sure?"
+                      onClick={() => act('delete_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
                       })}
                     />
                   )}

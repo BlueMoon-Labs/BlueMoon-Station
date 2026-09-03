@@ -38,6 +38,7 @@
 	return ..()
 
 /obj/item/pet_carrier/Exited(atom/movable/occupant)
+	. = ..() //без родителя переноска вечно держала питомца в important_recursive_contents
 	if(occupant in occupants && isliving(occupant))
 		var/mob/living/L = occupant
 		occupants -= occupant

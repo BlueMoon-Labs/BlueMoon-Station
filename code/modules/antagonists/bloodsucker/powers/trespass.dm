@@ -2,7 +2,7 @@
 
 /datum/action/cooldown/bloodsucker/targeted/trespass
 	name = "Trespass"
-	desc = "Become mist and advance two tiles in one direction, ignoring all obstacles except for walls. Useful for skipping past doors and barricades."
+	desc = "Станьте туманом и продвиньтесь на две плитки в одном направлении, игнорируя все препятствия, кроме стен. Полезно для того, чтобы проскакивать мимо дверей и баррикад."
 	button_icon_state = "power_tres"
 	bloodcost = 30
 	cooldown_time = 180
@@ -50,8 +50,8 @@
 		// ERROR! Wall!
 		if(iswallturf(from_turf))
 			if (display_error)
-				var/wallwarning = (i == 1) ? "in the way" : "at your destination"
-				to_chat(owner, "<span class='warning'>There is a solid wall [wallwarning].</span>")
+				var/wallwarning = (i == 1) ? "на вашем пути" : "в пункте назначения"
+				to_chat(owner, "<span class='warning'>Стена находится [wallwarning] и мешает вам.</span>")
 			return FALSE
 	// Done
 	target_turf = from_turf
@@ -66,8 +66,8 @@
 	var/mob/living/carbon/user = owner
 	var/turf/my_turf = get_turf(owner)
 
-	user.visible_message("<span class='warning'>[user]'s form dissipates into a cloud of mist!</span>", \
-					 	 "<span class='notice'>You disspiate into formless mist.</span>")
+	user.visible_message("<span class='warning'>[user] превращается в облако тумана!</span>", \
+					 	 "<span class='notice'>Вы растворяетесь в бесформенном тумане.</span>")
 
 
 	// Effect Origin

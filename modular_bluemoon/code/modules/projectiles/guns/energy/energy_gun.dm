@@ -37,3 +37,8 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	icon_state = "gravpulser"
 	ammo_type = list(/obj/item/ammo_casing/energy/electrode/legax, /obj/item/ammo_casing/energy/bolt/legax)
+
+/obj/item/gun/energy/xray
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	slot_flags = ITEM_SLOT_BACK

@@ -269,7 +269,15 @@
 	if(!visualsOnly)
 		apply_fingerprints(H)
 		if(internals_slot)
-			H.internal = H.get_item_by_slot(internals_slot)
+			//в слоте может лежать что угодно (кастомные админские аутфиты задают
+			//internals_slot вручную) - в internal пускаем только баллон, иначе дыхание
+			//каждый тик падает на remove_air_volume()
+			//старый источник тоже сбрасываем: до этой проверки слот перезаписывался безусловно,
+			//и аутфит, снявший с моба баллон, оставлял бы H.internal висеть на удалённом предмете
+			H.internal = null
+			var/obj/item/tank/internals_tank = H.get_item_by_slot(internals_slot)
+			if(istype(internals_tank))
+				H.internal = internals_tank
 			H.update_action_buttons_icon()
 		if(implants)
 			for(var/implant_type in implants)
@@ -279,12 +287,12 @@
 		if(cybernetic_implants)
 			for (var/cybernetic_implant_type in cybernetic_implants)
 				var/obj/item/organ/C = new cybernetic_implant_type()
-				C.Insert(H)
+				C.Insert(H, TRUE, FALSE)
 
 		// Активируем пермиты
 		if(istype(H.w_uniform, /obj/item/clothing/under))
 			var/obj/item/clothing/under/U = H.w_uniform
-			for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+			for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
 				if(permit.first_inited)
 					continue
 				permit.bind_to_user(H, TRUE)

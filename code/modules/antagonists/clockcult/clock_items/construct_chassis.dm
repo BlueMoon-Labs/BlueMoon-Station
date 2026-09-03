@@ -1,10 +1,10 @@
 //Construct shells that can be activated by ghosts.
 /obj/item/clockwork/construct_chassis
 	name = "construct chassis"
-	desc = "A shell formed out of brass, presumably for housing machinery."
-	clockwork_desc = "A construct chassis. It can be activated at any time by a willing ghost."
+	desc = "Корпус из латуни, предположительно предназначенный для размещения механизмов."
+	clockwork_desc = "Конструктивное шасси. Его может активировать в любой момент любой желающий призрак."
 	var/construct_name = "basic construct"
-	var/construct_desc = "<span class='alloy'>There is no construct for this chassis. Report this to a coder.</span>"
+	var/construct_desc = "<span class='alloy'>Для этой платформы нет готового шаблона. Сообщите об этом программисту.</span>"
 	icon_state = "anime_fragment"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
@@ -15,7 +15,7 @@
 	. = ..()
 	var/area/A = get_area(src)
 	if(A && construct_type)
-		notify_ghosts("A [construct_name] chassis has been created in [A.name]!", 'sound/magic/clockwork/fellowship_armory.ogg', source = src, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_key = POLL_IGNORE_CONSTRUCT, ignore_dnr_observers = TRUE)
+		notify_ghosts("Шасси [construct_name] создано в [A.name]!", 'sound/magic/clockwork/fellowship_armory.ogg', source = src, action = NOTIFY_ATTACK, flashwindow = FALSE, ignore_key = POLL_IGNORE_CONSTRUCT, ignore_dnr_observers = TRUE)
 	GLOB.poi_list += src
 	LAZYADD(GLOB.mob_spawners[name], src)
 
@@ -33,7 +33,7 @@
 
 /obj/item/clockwork/construct_chassis/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(w_class >= WEIGHT_CLASS_HUGE)
-		to_chat(user, "<span class='warning'>[src] is too cumbersome to carry! Drag it around instead!</span>")
+		to_chat(user, "<span class='warning'>[src] слишком громоздкий, чтобы носить с собой! Лучше просто тащи его за собой!</span>")
 		return
 	. = ..()
 
@@ -42,16 +42,16 @@
 	if(!user.can_reenter_round())
 		return FALSE
 	if(!SSticker.mode)
-		to_chat(user, "<span class='danger'>You cannot use that before the game has started.</span>")
+		to_chat(user, "<span class='danger'>Вы не можете использовать это до начала игры.</span>")
 		return
 	if(QDELETED(src))
-		to_chat(user, "<span class='danger'>You were too late! Better luck next time.</span>")
+		to_chat(user, "<span class='danger'>Вы опоздали! Удачи в следующий раз.</span>")
 		return
 	user.forceMove(get_turf(src)) //If we attack through the alert, jump to the chassis so we know what we're getting into
-	if(alert(user, "Become a [construct_name]? You can no longer be cloned!", construct_name, "Yes", "Cancel") == "Cancel")
+	if(alert(user, "Стать [construct_name]? Вы больше не сможете быть клонированы!", construct_name, "Да", "Нет") == "Нет")
 		return
 	if(QDELETED(src))
-		to_chat(user, "<span class='danger'>You were too late! Better luck next time.</span>")
+		to_chat(user, "<span class='danger'>Вы опоздали! Удачи в следующий раз.</span>")
 		return
 	pre_spawn()
 	visible_message(creation_message)
@@ -71,31 +71,31 @@
 //Marauder armor, used to create clockwork marauders - sturdy frontline combatants that can deflect projectiles.
 /obj/item/clockwork/construct_chassis/clockwork_marauder
 	name = "marauder armor"
-	desc = "A pile of sleek and well-polished brass armor. A small red gemstone sits in its faceplate."
+	desc = "Куча гладких и тщательно отполированных латунных доспехов. В лицевой пластине вставлен небольшой красный драгоценный камень."
 	icon_state = "marauder_armor"
 	construct_name = "clockwork marauder"
-	construct_desc = "<span class='neovgre_small'>It will become a <b>clockwork marauder,</b> a well-rounded frontline combatant.</span>"
-	creation_message = "<span class='neovgre_small bold'>Crimson fire begins to rage in the armor as it rises into the air with its armaments!</span>"
+	construct_desc = "<span class='neovgre_small'>Он станет <b>часовым мародером,</b> универсальным бойцом на передовой.</span>"
+	creation_message = "<span class='neovgre_small bold'>В доспехах разгорается багровый огонь, и они поднимаются в воздух со всем своим вооружением!</span>"
 	construct_type = /mob/living/simple_animal/hostile/clockwork/marauder
 
 //Marauder armor, used to create clockwork marauders - sturdy frontline combatants that can deflect projectiles.
 /obj/item/clockwork/construct_chassis/clocktank
 	name = "Clocktank Chassis"
-	desc = "A pile of sleek and well-polished brass armor. A two small red gemstone sits in its faceplate."
+	desc = "Куча гладких и тщательно отполированных латунных доспехов. На лицевой пластине вставлены два маленьких красных драгоценных камня."
 	icon_state = "smashed_anime_fragment"
 	construct_name = "clockwork tahk"
-	construct_desc = "<span class='neovgre_small'>It will become a <b>clocktank,</b> a well-rounded frontline combatant that can fire his gun.</span>"
-	creation_message = "<span class='neovgre_small bold'>Crimson fire begins to rage in the armor as it rises into the air with its armaments!</span>"
+	construct_desc = "<span class='neovgre_small'>Он превратится в <b>часовой танк,</b> универсального бойца на передовой, способного вести огонь из своего оружия.</span>"
+	creation_message = "<span class='neovgre_small bold'>В доспехах разгорается багровый огонь, и они поднимаются в воздух со всем своим вооружением!</span>"
 	construct_type = /mob/living/simple_animal/hostile/clockwork/clocktank
 
 //Cogscarab shell, used to create cogcarabs - fragile but zippy little drones that build and maintain the base.
 /obj/item/clockwork/construct_chassis/cogscarab
 	name = "cogscarab shell"
-	desc = "A small, complex shell that resembles a repair drone, but much larger and made out of brass."
+	desc = "Небольшой сложный корпус, напоминающий ремонтный дрон, но гораздо больше по размеру и изготовленный из латуни."
 	icon_state = "cogscarab_shell"
 	construct_name = "cogscarab"
-	construct_desc = "<span class='alloy'>It will become a <b>cogscarab,</b> a small and fragile drone that builds, repairs, and maintains.</span>"
-	creation_message = "<span class='alloy bold'>The cogscarab clicks and whirrs as it hops up and springs to life!</span>"
+	construct_desc = "<span class='alloy'>Он превратится в <b>жука-шестерню,</b> небольшого и хрупкого дрона, который занимается строительством, ремонтом и техническим обслуживанием.</span>"
+	creation_message = "<span class='alloy bold'>Жук-шестерня щелкает и жужжит, подпрыгивая и оживая!</span>"
 	construct_type = /mob/living/simple_animal/drone/cogscarab
 	w_class = WEIGHT_CLASS_SMALL
 	var/infinite_resources = FALSE //No.

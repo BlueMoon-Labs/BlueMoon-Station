@@ -16,8 +16,9 @@
 	RegisterSignal(new_pawn, COMSIG_ITEM_EQUIPPED, PROC_REF(on_equip))
 	return ..() //Run parent at end
 
-/datum/ai_controller/haunted/UnpossessPawn()
-	UnregisterSignal(pawn, COMSIG_ITEM_EQUIPPED)
+/datum/ai_controller/haunted/UnpossessPawn(destroy)
+	if(pawn)
+		UnregisterSignal(pawn, COMSIG_ITEM_EQUIPPED)
 	return ..() //Run parent at end
 
 ///Signal response for when the item is picked up; stops listening for follow up equips, just waits for a drop.

@@ -16,6 +16,8 @@
 	icon_screen = "civ_bounty"
 	icon_keyboard = "id_key"
 	circuit = /obj/item/circuitboard/computer/bountypad
+	//Родитель неразрушаем ради антагонистов, а станционный пульт наград ломается как обычная машина.
+	resistance_flags = NONE
 	var/obj/item/card/id/inserted_scan_id
 
 /obj/machinery/computer/piratepad_control/civilian/Initialize()
@@ -305,7 +307,10 @@
 	radio.recalculateChannels()
 
 /obj/item/bounty_cube/Destroy()
+	STOP_PROCESSING(SSobj, src) // парный к START_PROCESSING в set_up
 	QDEL_NULL(radio)
+	bounty_handler_account = null
+	bounty_holder_account = null
 	. = ..()
 
 /obj/item/bounty_cube/examine()

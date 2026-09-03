@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/medical/medigax
-	desc = "A Gygax with it's actuator overload stripped and a slick white paint scheme, for medical use, These exosuits are developed and produced by Vey-Med. (&copy; All rights reserved)."
+	desc = "Gygax с гладкой белой окраской, для медицинского использования. Эти экзокостюмы разработаны и произведены Vey-Med. (&copy; Все права защищены)."
 	name = "\improper Medical Gygax"
 	icon_state = "medigax"
 	allow_diagonal_movement = TRUE
@@ -12,6 +12,8 @@
 	wreckage = /obj/structure/mecha_wreckage/gygax
 	internal_damage_threshold = 35
 	normal_step_energy_drain = 6
+	bumpsmash = TRUE
+	force = 25
 	infra_luminosity = 6
 	internals_req_access = list(ACCESS_ROBOTICS, ACCESS_MEDICAL)
 

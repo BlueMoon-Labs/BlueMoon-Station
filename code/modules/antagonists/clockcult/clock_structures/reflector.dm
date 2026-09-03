@@ -1,13 +1,13 @@
 /obj/structure/destructible/clockwork/reflector
 	name = "reflector"
-	desc = "A large mirror-like structure made of thin brass on one side. It looks fragile."
-	clockwork_desc = "A large mirror-like structure made of thin brass on one side. It can redirect laser fire on one side"
+	desc = "Большая зеркальная конструкция, выполненная из тонкой латуни с одной стороны. Она выглядит хрупкой."
+	clockwork_desc = "Большая зеркальная конструкция, выполненная из тонкой латуни с одной стороны. Она может перенаправлять лазерный луч с одной стороны."
 	icon_state = "reflector"
 	unanchored_icon = "reflector_unwrenched"
 	max_integrity = 40
 	construction_value = 5
 	layer = WALL_OBJ_LAYER
-	break_message = "<span class='warning'>The reflectors's fragile shield shatters into pieces!</span>"
+	break_message = "<span class='warning'>Хрупкий экран отражателя разлетается вдребезги!</span>"
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	light_color = "#DAAA18"
 	var/list/allowed_projectile_typecache = list(
@@ -61,7 +61,7 @@
 
 /obj/structure/destructible/clockwork/reflector/proc/can_be_rotated(mob/user,rotation_type)
 	if(anchored)
-		to_chat(user, "<span class='warning'>[src] cannot be rotated while it is fastened to the floor!</span>")
+		to_chat(user, "<span class='warning'>[src] нельзя поворачивать, пока он прикреплен к полу!</span>")
 		return FALSE
 
 	return TRUE
@@ -81,6 +81,6 @@
 		return ..()
 
 	anchored = !anchored
-	to_chat(user, "<span class='notice'>You [anchored ? "secure" : "unsecure"] \the [src].</span>")
+	to_chat(user, "<span class='notice'>Вы [anchored ? "прикручиваете [src] к полу" : "откручиваете [src] от пола"].</span>")
 	I.play_tool_sound(src)
 	return TRUE

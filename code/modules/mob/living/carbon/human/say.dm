@@ -114,7 +114,7 @@
 	set waitfor = FALSE		// WINGET IS A SLEEP. DO. NOT. SLEEP.
 	if(stat == CONSCIOUS)
 		if(client)
-			var/temp = winget(client, "input", "text")
+			var/temp = tracked_winget(client, "input", "text")
 			var/say_starter = "Say \"" //"
 			if(findtextEx(temp, say_starter, 1, length(say_starter) + 1) && length(temp) > length(say_starter))	//case sensitive means
 

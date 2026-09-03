@@ -13,6 +13,18 @@ Reproductive extracts:
 	var/last_produce = 0
 	var/cooldown = 30 // 3 seconds.
 
+/obj/item/slimecross/reproductive/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ATOM_PRE_STORAGE_GATHER, PROC_REF(on_pre_storage_gather))
+
+/// Био-мешок обязан кормить нас кубиком, а не подбирать нас с пола: компонент
+/// хранилища перехватывает pre_attack и без этого до attackby() дело не доходит.
+/obj/item/slimecross/reproductive/proc/on_pre_storage_gather(datum/source, obj/item/storage_item, mob/user)
+	SIGNAL_HANDLER
+	if(!istype(storage_item, /obj/item/storage/bag/bio))
+		return
+	return COMPONENT_CANCEL_STORAGE_GATHER
+
 /obj/item/slimecross/reproductive/attackby(obj/item/O, mob/user)
 	if((last_produce + cooldown) > world.time)
 		to_chat(user, "<span class='warning'>[src] is still digesting!</span>")

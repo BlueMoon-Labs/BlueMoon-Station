@@ -278,6 +278,10 @@
 		door.name = base_name
 	door.previous_airlock = previous_assembly
 	electronics.forceMove(door)
+	// Владение электроникой ушло двери. Без обнуления Destroy() сборки ниже по стеку
+	// сделает QDEL_NULL(electronics) и убьёт электронику уже живой двери - дверь
+	// останется с висячей ссылкой, а electronics уйдёт в hard delete (прод-раунд 9807).
+	electronics = null
 	door.autoclose = TRUE
 	door.close()
 	door.update_appearance()
@@ -312,9 +316,12 @@
 	target.setAnchored(source.anchored)
 	if(previous)
 		target.previous_assembly = source.type
-	if(electronics)
+	// Читаем и чистим именно source: qdel(source) в конце иначе унесёт с собой
+	// электронику, только что отданную target (см. finish_door).
+	if(source.electronics)
 		target.electronics = source.electronics
 		source.electronics.forceMove(target)
+		source.electronics = null
 	target.update_appearance()
 	target.update_name()
 	qdel(source)

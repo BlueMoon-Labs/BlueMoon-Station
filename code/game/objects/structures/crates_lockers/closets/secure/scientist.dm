@@ -22,3 +22,16 @@
 	new /obj/item/storage/garment_case/RD(src)
 	new /obj/item/small_delivery/silo_multitool(src) //BLUEMOON ADD
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON add
+
+/obj/structure/closet/secure_closet/vanguard //Bluemoon add
+	name = "\proper vanguard operative locker"
+	req_access = list(ACCESS_GATEWAY)
+	icon_state = "vanguard"
+
+/obj/structure/closet/secure_closet/vanguard/PopulateContents()
+	new /obj/item/gps(src)
+	new /obj/item/gun/energy/kinetic_accelerator(src)
+	new /obj/item/storage/bag/strangerock(src)
+	new /obj/item/storage/bag/plants(src)
+	new /obj/item/storage/bag/ore(src)
+	new /obj/item/stack/sheet/mineral/sandbags(src, 5)

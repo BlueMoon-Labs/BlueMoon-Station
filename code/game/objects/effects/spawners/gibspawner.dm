@@ -39,9 +39,9 @@
 			dna_to_add = blood_dna || source_mob.get_blood_dna_list() //ez pz
 		if(ishuman(source_mob))
 			var/mob/living/carbon/human/H = source_mob
-			if(H.dna.species.use_skintones)
+			if(H.dna?.species?.use_skintones)
 				body_coloring = SKINTONE2HEX(H.skin_tone)
-			else
+			else if(H.dna?.features)
 				body_coloring = "#[H.dna.features["mcolor"]]"
 
 	else if(gib_mob_type)
@@ -71,7 +71,7 @@
 				gib = new gibType(loc, diseases, blood_data_to_add)
 				if(iscarbon(loc))
 					var/mob/living/carbon/digester = loc
-					digester.stomach_contents += gib
+					digester.add_to_stomach(gib)
 
 				if(dna_to_add && dna_to_add.len && istype(gib))
 					gib.add_blood_DNA(dna_to_add)

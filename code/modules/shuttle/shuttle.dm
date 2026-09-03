@@ -180,7 +180,10 @@
 // Say that A in the absolute (rectangular) bounds of this shuttle or no.
 /obj/docking_port/proc/is_in_shuttle_bounds(atom/A)
 	var/turf/T = get_turf(A)
-	if(T.z != z)
+	// Атом в нульспейсе не находится в границах никакого шаттла. Проверка стоит
+	// здесь, а не только у вызывающих: прок перебирается по всем докам разом, и один
+	// удалённый моб давал полсотни рантаймов на каждое обращение.
+	if(!T || T.z != z)
 		return FALSE
 	var/list/bounds = return_coords()
 	var/x0 = bounds[1]
@@ -250,7 +253,10 @@
 	SSshuttle.stationary -= src
 
 /obj/docking_port/stationary/Destroy(force)
-	if(force)
+	// Одноразовую кастомную точку посадки навигационная консоль разрегистрирует сразу
+	// при переназначении, а удаляется порт позже, в enterTransit(). Повторный
+	// unregister() на нём выдавал "docking_port unregistered multiple times".
+	if(force && registered)
 		unregister()
 	. = ..()
 
@@ -313,7 +319,7 @@
 	dwidth = 11
 	height = 22
 	width = 35
-	shuttlekeys = list("whiteship_meta", "whiteship_pubby", "whiteship_box", "whiteship_cere", "whiteship_kilo", "whiteship_donut", "whiteship_delta", "whiteship_fournal")
+	shuttlekeys = list("whiteship_meta", "whiteship_pubby", "whiteship_box", "whiteship_cere", "whiteship_kilo", "whiteship_donut", "whiteship_delta")
 
 /obj/docking_port/stationary/picked
 	///Holds a list of map name strings for the port to pick from
@@ -335,7 +341,7 @@
 	dwidth = 11
 	height = 22
 	width = 35
-	shuttlekeys = list("whiteship_meta", "whiteship_pubby", "whiteship_box", "whiteship_cere", "whiteship_kilo", "whiteship_donut", "whiteship_delta", "whiteship_fournal")
+	shuttlekeys = list("whiteship_meta", "whiteship_pubby", "whiteship_box", "whiteship_cere", "whiteship_kilo", "whiteship_donut", "whiteship_delta")
 
 /obj/docking_port/mobile
 	name = "shuttle"
@@ -384,7 +390,9 @@
 	var/list/hidden_turfs = list()
 
 	/// parallax speed in seconds per loop
-	var/parallax_speed = 25
+	var/parallax_speed = PARALLAX_SHUTTLE_SCROLL_SPEED
+	/// In-flight hyperspace events (tg-style; processed while docked to a transit Z-level)
+	var/list/datum/shuttle_event/event_list = list()
 
 /obj/docking_port/mobile/register(replace = FALSE)
 	. = ..()
@@ -420,6 +428,9 @@
 		QDEL_NULL(assigned_transit) //don't need it where we're goin'!
 		shuttle_areas = null
 		remove_ripples()
+		for(var/datum/shuttle_event/E in event_list)
+			qdel(E)
+		event_list.Cut()
 	. = ..()
 
 /obj/docking_port/mobile/Initialize(mapload)
@@ -749,6 +760,23 @@
 		shuttle_area.parallax_moving = FALSE
 		shuttle_area.parallax_move_speed = 0
 		shuttle_area.parallax_move_angle = 0
+
+/obj/docking_port/mobile/proc/process_events()
+	var/list/removees = list()
+	for(var/datum/shuttle_event/event as anything in event_list)
+		if(event.event_process() == SHUTTLE_EVENT_CLEAR)
+			removees += event
+		CHECK_TICK
+	for(var/datum/shuttle_event/E in removees)
+		event_list -= E
+		qdel(E)
+
+/obj/docking_port/mobile/proc/add_shuttle_event(event_type)
+	if(!ispath(event_type, /datum/shuttle_event))
+		return null
+	var/datum/shuttle_event/event = new event_type(src)
+	event_list += event
+	return event
 
 /obj/docking_port/mobile/proc/check_transit_zone()
 	if(assigned_transit)

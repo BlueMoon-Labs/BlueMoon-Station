@@ -24,19 +24,24 @@
 
 /datum/component/storage/concrete/pockets/small/collar/Initialize()
 	. = ..()
-	can_hold = typecacheof(list(
+	// Static typecaches throughout this file: these Initialize() procs run on
+	// every spawn of the owning item, and typecacheof() walks typesof() per
+	// entry. Shared lists must never be mutated in place.
+	var/static/list/collar_can_hold = typecacheof(list(
 	/obj/item/reagent_containers/food/snacks/cookie,
 	/obj/item/reagent_containers/food/snacks/sugarcookie,
 	/obj/item/card,
 	/obj/item/key/collar)) // SPLURT EDIT
+	can_hold = collar_can_hold
 
 /datum/component/storage/concrete/pockets/small/collar/locked/Initialize()
 	. = ..()
-	can_hold = typecacheof(list(
+	var/static/list/locked_collar_can_hold = typecacheof(list(
 	/obj/item/reagent_containers/food/snacks/cookie,
 	/obj/item/reagent_containers/food/snacks/sugarcookie,
 	/obj/item/key/collar,
 	/obj/item/card))
+	can_hold = locked_collar_can_hold
 
 /datum/component/storage/concrete/pockets/tiny
 	max_items = 1
@@ -53,8 +58,8 @@
 
 /datum/component/storage/concrete/pockets/shoes/Initialize()
 	. = ..()
-	cant_hold = typecacheof(list(/obj/item/screwdriver/power))
-	can_hold = typecacheof(list(
+	var/static/list/shoes_cant_hold = typecacheof(list(/obj/item/screwdriver/power))
+	var/static/list/shoes_can_hold = typecacheof(list(
 		/obj/item/kitchen/knife, /obj/item/switchblade, /obj/item/pen, /obj/item/melee/cultblade/dagger,
 		/obj/item/scalpel, /obj/item/reagent_containers/syringe, /obj/item/dnainjector,
 		/obj/item/reagent_containers/hypospray/medipen, /obj/item/reagent_containers/dropper,
@@ -63,11 +68,13 @@
 		/obj/item/toy/plush/snakeplushie, /obj/item/gun/energy/e_gun/mini, /obj/item/gun/ballistic/derringer,
 		/obj/item/toy/crayon/ritualdagger
 		))
+	cant_hold = shoes_cant_hold
+	can_hold = shoes_can_hold
 
 /datum/component/storage/concrete/pockets/shoes/clown/Initialize()
 	. = ..()
-	cant_hold = typecacheof(list(/obj/item/screwdriver/power))
-	can_hold = typecacheof(list(
+	var/static/list/clown_shoes_cant_hold = typecacheof(list(/obj/item/screwdriver/power))
+	var/static/list/clown_shoes_can_hold = typecacheof(list(
 		/obj/item/kitchen/knife, /obj/item/switchblade, /obj/item/pen, /obj/item/melee/cultblade/dagger,
 		/obj/item/scalpel, /obj/item/reagent_containers/syringe, /obj/item/dnainjector,
 		/obj/item/reagent_containers/hypospray/medipen, /obj/item/reagent_containers/dropper,
@@ -75,6 +82,8 @@
 		/obj/item/firing_pin, /obj/item/bikehorn, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/energy/e_gun/mini,
 		/obj/item/toy/crayon/ritualdagger
 		))
+	cant_hold = clown_shoes_cant_hold
+	can_hold = clown_shoes_can_hold
 
 /datum/component/storage/concrete/pockets/pocketprotector
 	max_items = 3
@@ -84,12 +93,13 @@
 /datum/component/storage/concrete/pockets/pocketprotector/Initialize()
 	original_parent = parent
 	. = ..()
-	can_hold = typecacheof(list( //Same items as a PDA
+	var/static/list/protector_can_hold = typecacheof(list( //Same items as a PDA
 		/obj/item/pen,
 		/obj/item/toy/crayon,
 		/obj/item/lipstick,
 		/obj/item/flashlight/pen,
 		/obj/item/clothing/mask/cigarette))
+	can_hold = protector_can_hold
 
 /datum/component/storage/concrete/pockets/pocketprotector/Destroy()
 	original_parent = null
@@ -105,8 +115,9 @@
 
 /datum/component/storage/concrete/pockets/small/rushelmet/Initialize()
 	. = ..()
-	can_hold = typecacheof(list(/obj/item/reagent_containers/glass/bottle,
+	var/static/list/rushelmet_can_hold = typecacheof(list(/obj/item/reagent_containers/glass/bottle,
 								/obj/item/ammo_box/a762))
+	can_hold = rushelmet_can_hold
 
 /datum/component/storage/concrete/pockets/void_cloak
 	quickdraw = TRUE

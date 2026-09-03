@@ -54,6 +54,12 @@
 	if(!istype(C))
 		return
 
+	if(C.handcuffed)
+		return
+
+	if(C in user.do_afters)
+		return
+
 	if(iscarbon(user) && (HAS_TRAIT(user, TRAIT_CLUMSY) && prob(50)))
 		to_chat(user, "<span class='warning'>М-м-м... А как оно вообще работает?!</span>")
 		apply_cuffs(user,user)
@@ -72,6 +78,9 @@
 
 			playsound(loc, cuffsound, 30, 1, -2)
 			if(do_mob(user, C, 30) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
+				if(C.handcuffed)
+					to_chat(user, "<span class='warning'>Вы не смогли надеть наручники на [C]!</span>")
+					return
 				if(iscyborg(user))
 					apply_cuffs(C, user, TRUE)
 				else
@@ -195,7 +204,7 @@
 			to_chat(user, "<span class='notice'>Вы обернули стяжки вокруг верхушки прута.</span>")
 			qdel(src)
 		else
-			to_chat(user, "<span class='warning'>Вам нужна один прут, чтобы обернуть вокруг него кабель!</span>")
+			to_chat(user, "<span class='warning'>Вам нужен один прут, чтобы обернуть вокруг него кабель!</span>")
 			return
 	else if(istype(I, /obj/item/stack/sheet/metal))
 		var/obj/item/stack/sheet/metal/M = I
@@ -273,6 +282,13 @@
 /obj/item/restraints/legcuffs/proc/on_removed()
 	return
 
+/datum/status_effect/beartrap_ensnared
+	id = "bola_snared"
+	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = null
+	var/was_teleported = FALSE // для проверки на факт телепортации
+	var/obj/item/restraints/legcuffs/beartrap/beartrap
+
 /obj/item/restraints/legcuffs/beartrap
 	name = "bear trap"
 	throw_speed = 1
@@ -311,6 +327,8 @@
 			var/def_zone = BODY_ZONE_CHEST
 			if(L.movement_type & (FLYING | FLOATING))
 				snap = FALSE
+			else if(HAS_TRAIT(L, TRAIT_JUMPING))
+				snap = FALSE
 			else if(!ignore_weight && (L.mob_size <= MOB_SIZE_TINY || (L.mob_size <= MOB_SIZE_SMALL && L.mob_weight < MOB_WEIGHT_NORMAL)))
 				snap = FALSE
 			if(iscarbon(L))
@@ -332,6 +350,7 @@
 				L.visible_message("<span class='danger'>[L] активирует \the [src].</span>", \
 						"<span class='userdanger'>Вы активируете \the [src]!</span>")
 				L.apply_damage(trap_damage, BRUTE, def_zone)
+				L.apply_status_effect(/datum/status_effect/beartrap_ensnared)
 	..()
 
 /obj/item/restraints/legcuffs/beartrap/energy

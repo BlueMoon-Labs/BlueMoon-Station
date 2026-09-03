@@ -49,7 +49,15 @@
 
 /datum/looping_sound/tape_recorder_hiss
 	mid_sounds = list('sound/items/taperecorder/taperecorder_hiss_mid.ogg' = 1)
-	start_sound = list('sound/items/taperecorder/taperecorder_hiss_start.ogg' = 1)
+	// Без mid_length цикл получал addtimer(..., null) и шипел КАЖДЫЙ тик -
+	// десяток playsound в секунду на каждый включённый диктофон вместо четырёх.
+	// 2.5 - реальная длина taperecorder_hiss_mid.ogg (0.25 с), то есть такт
+	// ровно стыкует семплы, а не накладывает их друг на друга.
+	mid_length = 2.5
+	// start_sound уходит прямо в play() и обязан быть файлом: список сюда
+	// попадал по инерции от mid_sounds и давал sound(list(...)), то есть
+	// стартовое шипение не звучало вовсе.
+	start_sound = 'sound/items/taperecorder/taperecorder_hiss_start.ogg'
 	volume = 10
 
 /datum/looping_sound/siren

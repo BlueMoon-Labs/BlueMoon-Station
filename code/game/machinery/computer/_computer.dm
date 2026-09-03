@@ -23,6 +23,10 @@
 	var/list/typing_users = list() // list(user = last_typing_time)
 	var/typing = FALSE
 	var/datum/looping_sound/computer_typing/soundloop_press
+	/// Plain consoles only process to time out the typing overlay, so let them machine_sleep()
+	/// between keystrokes. Subtypes whose process() does real periodic work MUST set this to
+	/// FALSE, or a `..()` call in their process() will park them off SSmachines for good.
+	var/idle_sleeps = TRUE
 
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
@@ -82,6 +86,7 @@
 		return
 
 	typing_users[user] = world.time
+	machine_wake() // resume timing out the typing overlay
 	check_typing()
 
 /obj/machinery/computer/proc/stop_typing(mob/living/user, no_check = FALSE)
@@ -97,13 +102,15 @@
 	return FALSE
 
 /obj/machinery/computer/process(delta_time)
-	. = is_operational()
+	. = is_operational
 
 	check_typing()
 	if(typing)
 		soundloop_press.start()
 	else
 		soundloop_press.stop()
+		if(idle_sleeps && !length(typing_users))
+			return machine_sleep() // nothing to time out; start_typing() wakes us back up
 
 /obj/machinery/computer/ratvar_act()
 	if(!clockwork)
@@ -175,7 +182,7 @@
 		return
 	. = ..()
 	if(. && !(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		typing = FALSE
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, TRUE)
 		set_light(0)
@@ -201,9 +208,14 @@
 			A.circuit = circuit
 			// Circuit removal code is handled in /obj/machinery/Exited()
 			circuit.forceMove(A)
+			// Вычёркивать плату из component_parts нужно ДО обнуления circuit:
+			// "component_parts -= null" ничего не убирал, плата уезжала во фрейм,
+			// а Destroy машины ниже проходил по component_parts и удалял её.
+			// Фрейм оставался с QDELETED-платой: "doMove qdel-нутого
+			// /obj/item/circuitboard/computer/..." при снятии ломиком (раунд 9827).
+			component_parts -= circuit
 			// no it's not 4head the circuit's in nullspace which means this won't be called!!
 			circuit = null
-			component_parts -= circuit
 			A.set_anchored(TRUE)
 			if(machine_stat & BROKEN)
 				if(user)

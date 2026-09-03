@@ -106,7 +106,7 @@
 				for(var/J in 1 to components_of_type.len)
 					var/datum/component/C = components_of_type[J]
 					if(C.type != our_type) //but not over other exact matches
-						components_of_type.Insert(J, I)
+						components_of_type.Insert(J, src)
 						inserted = TRUE
 						break
 				if(!inserted)
@@ -124,18 +124,25 @@
 /datum/component/proc/_RemoveFromParent()
 	var/datum/P = parent
 	var/list/dc = P.datum_components
-	for(var/I in _GetInverseTypeList())
-		var/list/components_of_type = dc[I]
-		if(length(components_of_type))	//
-			var/list/subtracted = components_of_type - src
-			if(subtracted.len == 1)	//only 1 guy left
-				dc[I] = subtracted[1]	//make him special
-			else
-				dc[I] = subtracted
-		else	//just us
-			dc -= I
-	if(!dc.len)
-		P.datum_components = null
+	// datum_components бывает уже пуст: турф сменился/умер раньше нас, а компонент
+	// доезжает сюда позже (wet_floor из очереди SSwet_floors). Без гарда "bad index"
+	// ронял Destroy посреди пути: UnregisterFromParent не отрабатывал, и сигналы
+	// COMSIG_TURF_* оставались вешаться на удалённый компонент.
+	if(dc)
+		for(var/I in _GetInverseTypeList())
+			var/list/components_of_type = dc[I]
+			if(length(components_of_type))	//
+				var/list/subtracted = components_of_type - src
+				if(!subtracted.len)
+					dc -= I
+				else if(subtracted.len == 1)	//only 1 guy left
+					dc[I] = subtracted[1]	//make him special
+				else
+					dc[I] = subtracted
+			else	//just us
+				dc -= I
+		if(!dc.len)
+			P.datum_components = null
 
 	UnregisterFromParent()
 
@@ -316,8 +323,17 @@
 		if(!src_procs)
 			return NONE
 		var/proctype = src_procs[sigtype]
-		return NONE | CallAsync(C, proctype, arguments)
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			return NONE
+		// Signals are synchronous: return flags and lifecycle cleanup must be
+		// observable before the emitter continues or finishes Destroy().
+		return NONE | call(C, proctype)(arglist(arguments))
 	. = NONE
+	// Snapshot both receiver and proc before invoking anything. A receiver may
+	// unregister itself or another receiver; mutating comp_lookup mid-iteration
+	// must not make the remaining cleanup handlers miss this final signal.
+	var/list/queued_calls = list()
 	for(var/I in target)
 		var/datum/C = I
 		if(!istype(C) || !C.signal_enabled)
@@ -326,7 +342,12 @@
 		if(!src_procs)
 			continue
 		var/proctype = src_procs[sigtype]
-		. |= CallAsync(C, proctype, arguments)
+		if(!proctype)
+			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
+			continue
+		queued_calls.Add(C, proctype)
+	for(var/i in 1 to length(queued_calls) step 2)
+		. |= call(queued_calls[i], queued_calls[i + 1])(arglist(arguments))
 
 // The type arg is casted so initial works, you shouldn't be passing a real instance into this
 /**
@@ -434,6 +455,8 @@
 						old_comp.InheritComponent(arglist(arguments))
 					else
 						old_comp.InheritComponent(new_comp, TRUE)
+						qdel(new_comp)
+						new_comp = null
 				if(COMPONENT_DUPE_SELECTIVE)
 					var/list/arguments = raw_args.Copy()
 					arguments[1] = new_comp

@@ -7,6 +7,9 @@
 /obj/item/fireaxe/boneaxe
 	unique_reskin = null
 
+/obj/item/fireaxe/metal_h2_axe
+	unique_reskin = null
+
 /obj/item/fireaxe/energy
 	unique_reskin = null
 

@@ -1,8 +1,16 @@
 import { useBackend } from '../../../backend';
-import { Button, Stack } from '../../../components';
+import { Box, Button, Stack } from '../../../components';
 
 type ContentPrefsInfo = {
+  tab_interactions_enabled: boolean,
+  tab_genital_options_enabled: boolean,
+  tab_character_prefs_enabled: boolean,
+  tab_sex_animations_enabled: boolean,
+  tab_custom_enabled: boolean,
+  dynamic_window_size: boolean,
+  compact_custom_tab: boolean,
   verb_consent: boolean,
+  custom_verb_consent: boolean,
   ranged_verb_pref : boolean,
   lewd_verb_sounds: boolean,
   arousable: boolean,
@@ -32,10 +40,18 @@ type ContentPrefsInfo = {
   sex_jitter: boolean,
 }
 
-export const ContentPreferencesTab = (props, context) => {
-  const { act, data } = useBackend<ContentPrefsInfo>(context);
+export const ContentPreferencesTab = (props) => {
+  const { act, data } = useBackend<ContentPrefsInfo>();
   const {
+    tab_interactions_enabled,
+    tab_genital_options_enabled,
+    tab_character_prefs_enabled,
+    tab_sex_animations_enabled,
+    tab_custom_enabled,
+    dynamic_window_size,
+    compact_custom_tab,
     verb_consent,
+    custom_verb_consent,
     ranged_verb_pref,
     lewd_verb_sounds,
     arousable,
@@ -67,6 +83,88 @@ export const ContentPreferencesTab = (props, context) => {
   return (
     <Stack vertical fill>
       <Stack.Item>
+        <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5em', textAlign: 'center' }}>
+          <Box style={{ flex: '1 1 auto' }}>
+            <Button
+              fluid
+              content="Interactions"
+              icon={tab_interactions_enabled ? "eye" : "eye-slash"}
+              color={tab_interactions_enabled ? "green" : "default"}
+              onClick={() => act('pref', {
+                pref: 'tab_interactions_enabled',
+              })} />
+          </Box>
+          <Box style={{ flex: '1 1 auto' }}>
+            <Button
+              fluid
+              content="Custom"
+              icon={tab_custom_enabled ? "eye" : "eye-slash"}
+              color={tab_custom_enabled ? "green" : "default"}
+              onClick={() => act('pref', {
+                pref: 'tab_custom_enabled',
+              })} />
+          </Box>
+          <Box style={{ flex: '1 1 auto' }}>
+            <Button
+              fluid
+              content="Genital Options"
+              icon={tab_genital_options_enabled ? "eye" : "eye-slash"}
+              color={tab_genital_options_enabled ? "green" : "default"}
+              onClick={() => act('pref', {
+                pref: 'tab_genital_options_enabled',
+              })} />
+          </Box>
+          <Box style={{ flex: '1 1 auto', display: 'flex', gap: '0.5em' }}>
+            <Box style={{ flex: '1 1 auto' }}>
+              <Button
+                fluid
+                content="Character Prefs"
+                icon={tab_character_prefs_enabled ? "eye" : "eye-slash"}
+                color={tab_character_prefs_enabled ? "green" : "default"}
+                onClick={() => act('pref', {
+                  pref: 'tab_character_prefs_enabled',
+                })} />
+            </Box>
+            <Box style={{ flex: '1 1 auto' }}>
+              <Button
+                fluid
+                content="Sex Animations"
+                icon={tab_sex_animations_enabled ? "eye" : "eye-slash"}
+                color={tab_sex_animations_enabled ? "green" : "default"}
+                onClick={() => act('pref', {
+                  pref: 'tab_sex_animations_enabled',
+                })} />
+            </Box>
+          </Box>
+        </Box>
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Dynamic window size"
+          tooltip="Изменение размера окна в зависимости от включенных вкладок"
+          icon={dynamic_window_size ? "toggle-on" : "toggle-off"}
+          selected={dynamic_window_size}
+          onClick={() => act('pref', {
+            pref: 'dynamic_window_size',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Compact custom tab"
+          tooltip="Компактная вкладка Custom"
+          icon={compact_custom_tab ? "toggle-on" : "toggle-off"}
+          selected={compact_custom_tab}
+          onClick={() => act('pref', {
+            pref: 'compact_custom_tab',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
         <Button
           fluid
           mb={-0.7}
@@ -75,6 +173,19 @@ export const ContentPreferencesTab = (props, context) => {
           selected={verb_consent}
           onClick={() => act('pref', {
             pref: 'verb_consent',
+          })}
+        />
+      </Stack.Item>
+      <Stack.Item>
+        <Button
+          fluid
+          mb={-0.7}
+          content="Allow custom verbs"
+          icon={custom_verb_consent ? "toggle-on" : "toggle-off"}
+          selected={custom_verb_consent}
+          tooltip="Разрешить другим использовать твои/направленные на тебя кастомные интеракты"
+          onClick={() => act('pref', {
+            pref: 'custom_verb_consent',
           })}
         />
       </Stack.Item>

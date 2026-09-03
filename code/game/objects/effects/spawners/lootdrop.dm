@@ -24,7 +24,11 @@
 	var/item_spawn_delay = null
 
 /obj/effect/spawner/lootdrop/Initialize(mapload)
-	..()
+	// . = ..(), а не голый ..(): возврат родителя выбрасывался, и ветка отложенного спавна
+	// проваливалась за конец прока с null - SSatoms писал в initialize.log "Didn't return an
+	// Initialize hint" (в раунде 9831 на /obj/effect/spawner/lootdrop/syndicate_present,
+	// который с вероятностью 75% как раз остаётся отложенным).
+	. = ..()
 	if(!src.x || !src.y || !src.z)
 		return INITIALIZE_HINT_QDEL // Failcheck на случай ублюдочного маппинга "Внутри коробки, которая внутри шкафчика"
 	if(delayed_spawn && should_spawn_on_init())
@@ -158,7 +162,7 @@
 				/obj/item/clothing/accessory/padding = 5,
 				/obj/item/clothing/accessory/kevlar = 5,
 				/obj/item/clothing/accessory/plastics = 5,
-				/obj/item/cartridge/virus/syndicate = 2,
+				/obj/item/cartridge/virus/detomatix = 2,
 				/obj/item/multitool/ai_detect = 2,
 				/obj/item/pen/edagger = 3,
 				/obj/item/storage/box/inteq_kit/conversion_kit = 1,
@@ -217,7 +221,7 @@
 				/obj/item/kitchen/knife/shiv/carrot = 1,
 				/obj/item/kitchen/knife = 1,
 				/obj/item/storage/wallet/random = 1,
-				/obj/item/pda = 1
+				/obj/item/modular_computer/pda = 1
 				)
 
 /obj/effect/spawner/lootdrop/gambling
@@ -548,7 +552,8 @@
 				/obj/item/ai_module/core/full/reporter,
 				/obj/item/ai_module/core/full/robocop,
 				/obj/item/ai_module/core/full/liveandletlive,
-				/obj/item/ai_module/core/full/hulkamania
+				/obj/item/ai_module/core/full/hulkamania,
+				/obj/item/ai_module/core/full/gentleman
 				)
 
 /obj/effect/spawner/lootdrop/ai_module_harmful // These will get the shuttle called
@@ -670,11 +675,10 @@
 
 /obj/effect/spawner/lootdrop/techstorage/command
 	name = "secure command circuit board spawner"
-	lootcount = 3
+	lootcount = 2
 	loot = list(
 				/obj/item/circuitboard/computer/crew,
-				/obj/item/circuitboard/computer/communications,
-				/obj/item/circuitboard/computer/card
+				/obj/item/circuitboard/computer/communications
 				)
 
 /obj/effect/spawner/lootdrop/techstorage/RnD_secure

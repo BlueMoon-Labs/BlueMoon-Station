@@ -272,6 +272,11 @@ GLOBAL_LIST_INIT(blacklisted_borg_hats, typecacheof(list( //Hats that don't real
 
 /mob/living/silicon/robot/bullet_act(obj/item/projectile/P, def_zone)
 	. = ..()
+	//..() доходит до P.on_hit(), а тот вправе уничтожить цель: болт превращения зовёт
+	//wabbajack() -> qdel(src). Дальше hud_list уже null, и updatehealth() валит три
+	//рантайма bad index в diag_hud_set_*, а spark_system к тому моменту тоже мёртв.
+	if(QDELETED(src))
+		return
 	updatehealth()
 	if(prob(75) && P.damage > 0)
 		spark_system.start()

@@ -4,9 +4,8 @@
  * @license MIT
  */
 
-import { BooleanLike, classes, pureComponentHooks } from 'common/react';
-import { createVNode, InfernoNode } from 'inferno';
-import { ChildFlags, VNodeFlags } from 'inferno-vnode-flags';
+import { BooleanLike, classes } from 'common/react';
+import { createElement, CSSProperties, memo, ReactNode } from 'react';
 
 import { CSS_COLORS } from '../constants';
 
@@ -14,7 +13,7 @@ export interface BoxProps {
   [key: string]: any;
   as?: string;
   className?: string | BooleanLike;
-  children?: InfernoNode;
+  children?: ReactNode;
   position?: string | BooleanLike;
   overflow?: string | BooleanLike;
   overflowX?: string | BooleanLike;
@@ -117,7 +116,7 @@ const mapBooleanPropTo = (attrName, attrValue) => (style, value) => {
 const mapDirectionalUnitPropTo = (attrName, unit, dirs) => (style, value) => {
   if (typeof value === 'number' || typeof value === 'string') {
     for (let i = 0; i < dirs.length; i++) {
-      style[attrName + '-' + dirs[i]] = unit(value);
+      style[attrName + dirs[i]] = unit(value);
     }
   }
 };
@@ -132,69 +131,69 @@ const styleMapperByPropName = {
   // Direct mapping
   position: mapRawPropTo('position'),
   overflow: mapRawPropTo('overflow'),
-  overflowX: mapRawPropTo('overflow-x'),
-  overflowY: mapRawPropTo('overflow-y'),
+  overflowX: mapRawPropTo('overflowX'),
+  overflowY: mapRawPropTo('overflowY'),
   top: mapUnitPropTo('top', unit),
   bottom: mapUnitPropTo('bottom', unit),
   left: mapUnitPropTo('left', unit),
   right: mapUnitPropTo('right', unit),
   width: mapUnitPropTo('width', unit),
-  minWidth: mapUnitPropTo('min-width', unit),
-  maxWidth: mapUnitPropTo('max-width', unit),
+  minWidth: mapUnitPropTo('minWidth', unit),
+  maxWidth: mapUnitPropTo('maxWidth', unit),
   height: mapUnitPropTo('height', unit),
-  minHeight: mapUnitPropTo('min-height', unit),
-  maxHeight: mapUnitPropTo('max-height', unit),
-  fontSize: mapUnitPropTo('font-size', unit),
-  fontFamily: mapRawPropTo('font-family'),
+  minHeight: mapUnitPropTo('minHeight', unit),
+  maxHeight: mapUnitPropTo('maxHeight', unit),
+  fontSize: mapUnitPropTo('fontSize', unit),
+  fontFamily: mapRawPropTo('fontFamily'),
   lineHeight: (style, value) => {
     if (typeof value === 'number') {
-      style['line-height'] = value;
+      style['lineHeight'] = value;
     }
     else if (typeof value === 'string') {
-      style['line-height'] = unit(value);
+      style['lineHeight'] = unit(value);
     }
   },
   opacity: mapRawPropTo('opacity'),
-  textAlign: mapRawPropTo('text-align'),
-  verticalAlign: mapRawPropTo('vertical-align'),
+  textAlign: mapRawPropTo('textAlign'),
+  verticalAlign: mapRawPropTo('verticalAlign'),
   // Boolean props
   inline: mapBooleanPropTo('display', 'inline-block'),
-  bold: mapBooleanPropTo('font-weight', 'bold'),
-  italic: mapBooleanPropTo('font-style', 'italic'),
-  nowrap: mapBooleanPropTo('white-space', 'nowrap'),
-  preserveWhitespace: mapBooleanPropTo('white-space', 'pre-wrap'),
+  bold: mapBooleanPropTo('fontWeight', 'bold'),
+  italic: mapBooleanPropTo('fontStyle', 'italic'),
+  nowrap: mapBooleanPropTo('whiteSpace', 'nowrap'),
+  preserveWhitespace: mapBooleanPropTo('whiteSpace', 'pre-wrap'),
   // Margins
   m: mapDirectionalUnitPropTo('margin', halfUnit, [
-    'top', 'bottom', 'left', 'right',
+    'Top', 'Bottom', 'Left', 'Right',
   ]),
   mx: mapDirectionalUnitPropTo('margin', halfUnit, [
-    'left', 'right',
+    'Left', 'Right',
   ]),
   my: mapDirectionalUnitPropTo('margin', halfUnit, [
-    'top', 'bottom',
+    'Top', 'Bottom',
   ]),
-  mt: mapUnitPropTo('margin-top', halfUnit),
-  mb: mapUnitPropTo('margin-bottom', halfUnit),
-  ml: mapUnitPropTo('margin-left', halfUnit),
-  mr: mapUnitPropTo('margin-right', halfUnit),
-  // Margins
+  mt: mapUnitPropTo('marginTop', halfUnit),
+  mb: mapUnitPropTo('marginBottom', halfUnit),
+  ml: mapUnitPropTo('marginLeft', halfUnit),
+  mr: mapUnitPropTo('marginRight', halfUnit),
+  // Paddings
   p: mapDirectionalUnitPropTo('padding', halfUnit, [
-    'top', 'bottom', 'left', 'right',
+    'Top', 'Bottom', 'Left', 'Right',
   ]),
   px: mapDirectionalUnitPropTo('padding', halfUnit, [
-    'left', 'right',
+    'Left', 'Right',
   ]),
   py: mapDirectionalUnitPropTo('padding', halfUnit, [
-    'top', 'bottom',
+    'Top', 'Bottom',
   ]),
-  pt: mapUnitPropTo('padding-top', halfUnit),
-  pb: mapUnitPropTo('padding-bottom', halfUnit),
-  pl: mapUnitPropTo('padding-left', halfUnit),
-  pr: mapUnitPropTo('padding-right', halfUnit),
+  pt: mapUnitPropTo('paddingTop', halfUnit),
+  pb: mapUnitPropTo('paddingBottom', halfUnit),
+  pl: mapUnitPropTo('paddingLeft', halfUnit),
+  pr: mapUnitPropTo('paddingRight', halfUnit),
   // Color props
   color: mapColorPropTo('color'),
   textColor: mapColorPropTo('color'),
-  backgroundColor: mapColorPropTo('background-color'),
+  backgroundColor: mapColorPropTo('backgroundColor'),
   // Utility props
   fillPositionedParent: (style, value) => {
     if (value) {
@@ -209,7 +208,7 @@ const styleMapperByPropName = {
 
 export const computeBoxProps = (props: BoxProps) => {
   const computedProps: Record<string, any> = {};
-  const computedStyles = {};
+  const computedStyles: CSSProperties = {};
   // Compute props
   for (let propName of Object.keys(props)) {
     if (propName === 'style') {
@@ -224,19 +223,11 @@ export const computeBoxProps = (props: BoxProps) => {
       computedProps[propName] = propValue;
     }
   }
-  // Concatenate styles
-  let style = '';
-  for (let attrName of Object.keys(computedStyles)) {
-    const attrValue = computedStyles[attrName];
-    style += attrName + ':' + attrValue + ';';
-  }
-  if (props.style) {
-    for (let attrName of Object.keys(props.style)) {
-      const attrValue = props.style[attrName];
-      style += attrName + ':' + attrValue + ';';
-    }
-  }
-  if (style.length > 0) {
+  const style = {
+    ...computedStyles,
+    ...props.style,
+  };
+  if (Object.keys(style).length > 0) {
     computedProps.style = style;
   }
   return computedProps;
@@ -251,7 +242,7 @@ export const computeBoxClassName = (props: BoxProps) => {
   ]);
 };
 
-export const Box = (props: BoxProps) => {
+const BoxInner = (props: BoxProps) => {
   const {
     as = 'div',
     className,
@@ -260,20 +251,19 @@ export const Box = (props: BoxProps) => {
   } = props;
   // Render props
   if (typeof children === 'function') {
-    return children(computeBoxProps(props));
+    return (children as (props: Record<string, any>) => ReactNode)(
+      computeBoxProps(props),
+    );
   }
   const computedClassName = typeof className === 'string'
     ? className + ' ' + computeBoxClassName(rest)
     : computeBoxClassName(rest);
   const computedProps = computeBoxProps(rest);
   // Render a wrapper element
-  return createVNode(
-    VNodeFlags.HtmlElement,
-    as,
-    computedClassName,
-    children,
-    ChildFlags.UnknownChildren,
-    computedProps);
+  return createElement(as, {
+    ...computedProps,
+    className: computedClassName,
+  }, children);
 };
 
-Box.defaultHooks = pureComponentHooks;
+export const Box = memo(BoxInner);

@@ -4,8 +4,8 @@ import { Window } from '../layouts';
 
 const DEFAULT_TEAMSIZE = 3;
 
-export const StartThunderome = (props, context) => {
-  const { act, data } = useBackend(context);
+export const StartThunderome = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       title={"Start Thunderome"}
@@ -35,8 +35,8 @@ export const StartThunderome = (props, context) => {
   );
 };
 
-const TeamSection = (props, context) => {
-  const { data, act } = useBackend(context);
+const TeamSection = (props) => {
+  const { data, act } = useBackend();
   const { teamNumber } = props;
   return (
     <Section title={`Команда ${teamNumber}`} textAlign="center">

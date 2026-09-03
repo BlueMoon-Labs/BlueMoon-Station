@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Blink, Box, Button, Section, Slider } from '../components';
 import { Window } from '../layouts';
 
-export const Telesci = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Telesci = (props) => {
+  const { act, data } = useBackend();
   const {
     telepad,
     inserted_gps,

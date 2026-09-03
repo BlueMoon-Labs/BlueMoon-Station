@@ -28,6 +28,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/captain/suit
 	name = "captain's suit"
@@ -45,6 +46,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/captain/parade
 	name = "captain's parade uniform"
@@ -81,6 +83,7 @@
 	item_state = "bridgesecf"
 	body_parts_covered = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/bridgeofficer/formal
 	name = "bridge officer formal outfit"

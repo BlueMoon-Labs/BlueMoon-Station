@@ -300,17 +300,18 @@
 
 	// Non-subspace radios will check in a couple of seconds, and if the signal
 	// was never received, send a mundane broadcast (no headsets).
-	addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 20)
+	if(!QDELETED(src))
+		addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 20)
 
 /obj/item/radio/proc/backup_transmission(datum/signal/subspace/vocal/signal)
 	var/turf/T = get_turf(src)
-	if (signal.data["done"] && (T.z in signal.levels))
+	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
 
 	// Okay, the signal was never processed, send a mundane broadcast.
 	signal.data["compression"] = 0
 	signal.transmission_method = TRANSMISSION_RADIO
-	signal.levels = list(T.z)
+	signal.levels = T ? list(T.z) : list(0)
 	signal.broadcast()
 
 /obj/item/radio/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
@@ -410,11 +411,15 @@
 	for (var/ch_name in channels)
 		channels[ch_name] = 0
 	on = FALSE
-	spawn(200)
-		if(emped == curremp) //Don't fix it if it's been EMP'd again
-			emped = 0
-			if (!istype(src, /obj/item/radio/intercom)) // intercoms will turn back on on their own
-				on = TRUE
+	addtimer(CALLBACK(src, PROC_REF(end_emp_effect), curremp), 20 SECONDS)
+
+///Окончание действия ЭМИ: сабтипы с внешним питанием (интерком) переопределяют
+///и сверяются с сетью вместо безусловного включения.
+/obj/item/radio/proc/end_emp_effect(curremp)
+	if(emped != curremp) //Don't fix it if it's been EMP'd again
+		return
+	emped = 0
+	on = TRUE
 
 ///////////////////////////////
 //////////Borg Radios//////////

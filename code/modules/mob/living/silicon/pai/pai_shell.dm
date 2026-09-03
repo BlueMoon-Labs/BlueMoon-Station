@@ -18,9 +18,9 @@
 
 	emitter_next_use = world.time + emittercd
 	density = TRUE
-	if(istype(card.loc, /obj/item/pda))
-		var/obj/item/pda/P = card.loc
-		P.pai = null
+	if(istype(card.loc, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/P = card.loc
+		P.inserted_pai = null
 		P.visible_message("<span class='notice'>[src] ejects itself from [P]!</span>")
 	if(isliving(card.loc))
 		var/mob/living/L = card.loc
@@ -115,17 +115,17 @@
 	return FALSE
 
 /mob/living/silicon/pai/proc/toggle_integrated_light()
-	if(!light_range)
-		set_light(brightness_power)
-		to_chat(src, "<span class='notice'>You enable your integrated light.</span>")
+	flashlight_on = !flashlight_on
+	if(flashlight_on)
+		set_light(5, 5, l_color = LIGHT_COLOR_WHITE)
 	else
 		set_light(0)
-		to_chat(src, "<span class='notice'>You disable your integrated light.</span>")
+	to_chat(src, "<span class='notice'>Фонарик [flashlight_on ? "включён" : "выключен"].</span>")
 
 /mob/living/silicon/pai/verb/toggle_chassis_sit()
 	set name = "Toggle Chassis Sit"
 	set category = "IC"
-	set desc = "Whether or not to try to use a sitting icon versus a resting icon. Takes priority over belly-up resting."
+	set desc = "Использовать ли сидячую иконку вместо лежачей. Имеет приоритет над отдыхом на спине."
 	dynamic_chassis_sit = !dynamic_chassis_sit
 	to_chat(usr, "<span class='boldnotice'>You are now [dynamic_chassis_sit? "sitting" : "lying down"].</span>")
 	update_icon()
@@ -133,7 +133,7 @@
 /mob/living/silicon/pai/verb/toggle_chassis_bellyup()
 	set name = "Toggle Chassis Belly Up"
 	set category = "IC"
-	set desc = "Whether or not to try to use a belly up icon while resting. Overridden by sitting."
+	set desc = "Использовать ли иконку лёжа на спине во время отдыха. Переопределяется сидением."
 	dynamic_chassis_bellyup = !dynamic_chassis_bellyup
 	to_chat(usr, "<span class='boldnotice'>You are now lying on your [dynamic_chassis_bellyup? "back" : "front"].</span>")
 	update_icon()

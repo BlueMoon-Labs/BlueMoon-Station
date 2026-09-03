@@ -1,12 +1,13 @@
 /datum/uplink_item/inteq
 	category = "InteQ Technologies"
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/inteq/poster
 	name = "Propaganda poster"
 	desc = "Пусть они знают, кто здесь Босс!"
 	item = /obj/item/storage/box/inteq_box/posters
-	cost = 5
+	cost = 2
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/clothes_box
@@ -25,11 +26,11 @@
 	cost = 3
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
 
-/datum/uplink_item/suits/hardsuit/elite // Traitor ELITE EXPENSIVE hardsuit, not for the nuke ops
+/datum/uplink_item/suits/hardsuit/elite // Traitor ELITE hardsuit, not for the nuke ops
 	name = "Elite InteQ Hardsuit"
 	desc = "Последний разработки ЧВК InteQ в сфере Хардсьюитов. БОЛЬШЕ БРОНИИИИИ!!!"
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq
-	cost = 16
+	cost = 12
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/inteq/ak12
@@ -69,7 +70,7 @@
 			Экипаж Nanotrasen при виде этих костюмов впадает в панику."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/inteq
 	cost = 6
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
 
 /datum/uplink_item/suits/hardsuit/elite
 	name = "Elite InteQ Hardsuit"

@@ -133,6 +133,14 @@
 	limited = 1
 	cost = 1
 
+/datum/contractor_item/inteq_pai
+	name = "InteQ Personal AI"
+	desc = "Модифицированный pAI с предустановленными модулями для скрытных операций: закрытый канал связи, камерный жучок, Security HUD, термальное зрение и инъектор химикатов."
+	item = /obj/item/paicard/inteq
+	item_icon = "microchip"
+	limited = 1
+	cost = 2
+
 /datum/contractor_item/contractor_partner
 	name = "Reinforcements"
 	desc = "Upon purchase we'll contact available units in the area. Should there be an agent free, we'll send them down to assist you immediately. If no units are free, we give a full refund."
@@ -165,7 +173,7 @@
 	uniform = /obj/item/clothing/under/chameleon
 	suit = /obj/item/clothing/suit/chameleon
 	back = /obj/item/storage/backpack
-	belt = /obj/item/pda/chameleon
+	belt = /obj/item/modular_computer/pda/chameleon
 	mask = /obj/item/clothing/mask/cigarette/syndicate
 	shoes = /obj/item/clothing/shoes/chameleon/noslip
 	ears = /obj/item/radio/headset/chameleon
@@ -245,9 +253,18 @@
 	desc = "A handheld tracking device that locks onto certain signals. Ignores suit sensors, but is much less accurate."
 	icon_state = "pinpointer_hunter"
 	item_state = "pinpointer_black"
-	minimum_range = 10
+	var/imprecise_range = 10
 	has_owner = TRUE
 	ignore_suit_sensor_level = TRUE
+
+/obj/item/pinpointer/crew/contractor/Initialize(mapload)
+	. = ..()
+	minimum_range = imprecise_range
+
+/obj/item/pinpointer/crew/contractor/scan_for_target()
+	if(ishuman(target))
+		update_person_tracking_precision(target, imprecise_range)
+	return ..()
 
 /obj/item/storage/box/contractor/fulton_extraction
 	name = "Fulton Extraction Kit"

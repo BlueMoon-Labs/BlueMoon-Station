@@ -3,6 +3,7 @@
  */
 /datum/controller/subsystem/persistence
 	var/list/saved_modes = list(1,2,3)
+	var/list/saved_round_types = list()
 	var/list/saved_chaos = list(5,5,5)
 	var/list/saved_dynamic_rules = list(list(),list(),list())
 	var/average_threat = 50
@@ -17,6 +18,7 @@
 /datum/controller/subsystem/persistence/LoadServerPersistence()
 	. = ..()
 	LoadRecentModes()
+	LoadRecentRoundTypes()
 	LoadRecentChaos()
 	LoadRecentRulesets()
 	LoadRecentMaps()
@@ -30,6 +32,7 @@
 		saved_modes[3] = saved_modes[2]
 		saved_modes[2] = saved_modes[1]
 		saved_modes[1] = SSticker.mode.config_tag
+		RecordRecentRoundType(GLOB.round_type)
 		json_file = file("data/RecentModes.json")
 		file_data["data"] = saved_modes
 		fdel(json_file)
@@ -115,6 +118,30 @@
 	if(!json)
 		return
 	saved_modes = json["data"]
+
+/datum/controller/subsystem/persistence/proc/RecordRecentRoundType(roundtype)
+	if(!roundtype)
+		return
+	LAZYINITLIST(saved_round_types)
+	while(saved_round_types.len < 3)
+		saved_round_types += ""
+	saved_round_types[3] = saved_round_types[2]
+	saved_round_types[2] = saved_round_types[1]
+	saved_round_types[1] = roundtype
+	var/json_file = file("data/RecentRoundTypes.json")
+	var/list/file_data = list()
+	file_data["data"] = saved_round_types
+	fdel(json_file)
+	WRITE_FILE(json_file, json_encode(file_data))
+
+/datum/controller/subsystem/persistence/proc/LoadRecentRoundTypes()
+	var/json_file = file("data/RecentRoundTypes.json")
+	if(!fexists(json_file))
+		return
+	var/list/json = json_decode(file2text(json_file))
+	if(!json)
+		return
+	saved_round_types = json["data"]
 
 /datum/controller/subsystem/persistence/proc/LoadRecentChaos()
 	var/json_file = file("data/RecentChaos.json")

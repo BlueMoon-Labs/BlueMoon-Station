@@ -101,6 +101,14 @@
 	id = "freezer"
 	build_path = /obj/item/circuitboard/machine/thermomachine/freezer
 
+/datum/design/board/crystallizer
+	name = "Machine Design (Crystallizer Board)"
+	desc = "The circuit board for a crystallizer."
+	id = "crystallizer"
+	build_path = /obj/item/circuitboard/machine/crystallizer
+	category = list ("Engineering Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
+
 /datum/design/board/stasis
 	name = "Machine Design (Lifeform Stasis Unit)"
 	desc = "The circuit board for a stasis unit."

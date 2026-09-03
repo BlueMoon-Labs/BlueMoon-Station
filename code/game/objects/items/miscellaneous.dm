@@ -231,7 +231,9 @@
 /obj/item/choice_beacon/box/carpet //donator carpet beacon
 	name = "choice box (carpet)"
 	desc = "Contains 50 of a selected carpet inside!"
-	var/static/list/carpet_list = list(/obj/item/stack/tile/carpet/black/fifty = "Black Carpet",
+	radial_menu = TRUE
+	var/static/list/carpet_list = list(
+		"Black Carpet" = /obj/item/stack/tile/carpet/black/fifty,
 		"Black & Red Carpet" = /obj/item/stack/tile/carpet/blackred/fifty,
 		"Monochrome Carpet" = /obj/item/stack/tile/carpet/monochrome/fifty,
 		"Blue Carpet" = /obj/item/stack/tile/carpet/blue/fifty,
@@ -241,7 +243,8 @@
 		"Purple Carpet" = /obj/item/stack/tile/carpet/purple/fifty,
 		"Red Carpet" = /obj/item/stack/tile/carpet/red/fifty,
 		"Royal Black Carpet" = /obj/item/stack/tile/carpet/royalblack/fifty,
-		"Royal Blue Carpet" = /obj/item/stack/tile/carpet/royalblue/fifty)
+		"Royal Blue Carpet" = /obj/item/stack/tile/carpet/royalblue/fifty,
+	)
 
 /obj/item/choice_beacon/box/carpet/generate_display_names()
 	return carpet_list
@@ -313,3 +316,17 @@
 
 /obj/item/choice_beacon/box/desk/generate_display_names()
 	return toy_desk
+
+/obj/item/choice_beacon/departmental_protholate
+	name = "Spare departmental protolathe circuitbords!"
+	desc = "For those in need when your lathe have been stolen or eaten! Opens with Department head acces. ATTENTION: case made from pure adminium, and indesctructable"
+
+/obj/item/choice_beacon/departmental_protholate/generate_display_names()
+	var/static/list/departmental_protholate_list
+	if(!departmental_protholate_list)
+		departmental_protholate_list = list()
+		var/list/templist = subtypesof(/obj/item/storage/lockbox/departmental_lathe/) //we have to convert type = name to name = type, how lovely!
+		for(var/V in templist)
+			var/atom/A = V
+			departmental_protholate_list[initial(A.name)] = A
+	return departmental_protholate_list

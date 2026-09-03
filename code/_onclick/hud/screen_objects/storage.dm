@@ -64,19 +64,29 @@
 /atom/movable/screen/storage/volumetric_box/Destroy()
 	makeItemInactive()
 	if(our_item)
-		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT))
+		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT, COMSIG_PARENT_QDELETING))
 	our_item = null
 	return ..()
 
 /atom/movable/screen/storage/volumetric_box/proc/set_item(obj/item/new_item)
+	//см. item_holder/set_item: на уже удалённый предмет сигнал не придёт
+	if(QDELETED(new_item))
+		new_item = null
 	if(our_item == new_item)
 		return
 	if(our_item)
-		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT))
+		UnregisterSignal(our_item, list(COMSIG_ITEM_MOUSE_ENTER, COMSIG_ITEM_MOUSE_EXIT, COMSIG_PARENT_QDELETING))
 	our_item = new_item
 	if(our_item)
 		RegisterSignal(our_item, COMSIG_ITEM_MOUSE_ENTER, PROC_REF(on_item_mouse_enter))
 		RegisterSignal(our_item, COMSIG_ITEM_MOUSE_EXIT, PROC_REF(on_item_mouse_exit))
+		//коробка уезжает в пул вместе с предметом; удалённый предмет обязан
+		//отпускаться сам, иначе он живёт в our_item до конца раунда
+		RegisterSignal(our_item, COMSIG_PARENT_QDELETING, PROC_REF(on_item_deleted))
+
+/atom/movable/screen/storage/volumetric_box/proc/on_item_deleted(datum/source)
+	SIGNAL_HANDLER
+	set_item(null)
 
 /atom/movable/screen/storage/volumetric_box/Click(location, control, params)
 	if(!our_item)
@@ -147,7 +157,9 @@
 	cut_overlays()
 	vis_contents.Cut()
 	//our icon size is 32 pixels.
-	var/multiplier = (pixels - (VOLUMETRIC_STORAGE_BOX_BORDER_SIZE * 2)) / VOLUMETRIC_STORAGE_BOX_ICON_SIZE
+	//Ящик ровно в две рамки шириной даёт нулевой множитель, а ниже стоит 1 / multiplier:
+	//"Division by zero" ловилось на предметах с крошечным w_class-весом.
+	var/multiplier = max((pixels - (VOLUMETRIC_STORAGE_BOX_BORDER_SIZE * 2)) / VOLUMETRIC_STORAGE_BOX_ICON_SIZE, 1 / VOLUMETRIC_STORAGE_BOX_ICON_SIZE)
 	transform = matrix(multiplier, 0, 0, 0, 1, 0)
 	if(our_item)
 		if(!holder)
@@ -221,12 +233,26 @@
 	return ..()
 
 /atom/movable/screen/storage/item_holder/proc/set_item(obj/item/I)
+	//предмет мог умереть между сбором содержимого и отрисовкой (слияние стеков):
+	//на удалённый COMSIG_PARENT_QDELETING уже не придёт, ссылку держать нельзя
+	if(QDELETED(I))
+		I = null
 	if(our_item == I)
 		return
 	vis_contents.Cut()
+	if(our_item)
+		UnregisterSignal(our_item, COMSIG_PARENT_QDELETING)
 	our_item = I
 	if(I)
+		RegisterSignal(I, COMSIG_PARENT_QDELETING, PROC_REF(on_item_deleted))
 		vis_contents += I
+
+/// Экраны хранилища живут в пуле дольше своего содержимого. Стек, слившийся
+/// с другим, или осколок, переплавленный в стекло, оставался в our_item
+/// единственной внешней ссылкой - готовый hard delete до конца раунда.
+/atom/movable/screen/storage/item_holder/proc/on_item_deleted(datum/source)
+	SIGNAL_HANDLER
+	set_item(null)
 
 /atom/movable/screen/storage/item_holder/Click(location, control, params)
 	if (!our_item)

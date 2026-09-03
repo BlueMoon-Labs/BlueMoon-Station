@@ -84,6 +84,10 @@
 	desc = "A pair of latex socks."
 	icon_state = "socks_latex"
 
+/obj/item/clothing/underwear/socks/latex/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
 /obj/item/clothing/underwear/socks/pantyhose
 	name = "pantyhose"
 	desc = "Pantyhose."
@@ -256,6 +260,10 @@
 	desc = "A pair of stockings."
 	body_parts_covered = LEGS | FEET
 	icon_state = "stockings_latex"
+
+/obj/item/clothing/underwear/socks/thigh/l_stockings/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 
 /obj/item/clothing/underwear/socks/thigh/leggings_stir
 	name = "Thigh-high Stirrups (Black)"

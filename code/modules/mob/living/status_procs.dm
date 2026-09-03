@@ -400,7 +400,7 @@
 	if(AmountImmobilized() > amount)
 		SetImmobilized(amount, FALSE, ignore_canstun)
 	if(AmountDazed() > amount)
-		SetImmobilized(amount, FALSE, ignore_canstun)
+		SetDazed(amount, FALSE, ignore_canstun)
 	if(AmountStaggered() > amount)
 		SetStaggered(amount, FALSE, ignore_canstun)
 	if(updating)
@@ -603,6 +603,13 @@
 	ADD_TRAIT(src, TRAIT_NEARSIGHT, source)
 
 /mob/living/proc/cure_husk(source)
+	// Снятие хаска с не-хаска обязано быть no-op. Иначе всё, что зовёт cure_husk()
+	// "на всякий случай" (скелет в become_husk, лечение ожогов, пробуждение
+	// бладсакера), гоняет полный update_body() + update_hair() на каждый вызов.
+	// В проде это был мёртвый цикл updatehealth -> become_husk("burn") ->
+	// cure_husk() на каждом трупе-скелете: 12% всего времени SSmobs.
+	if(!HAS_TRAIT(src, TRAIT_HUSK))
+		return FALSE
 	REMOVE_TRAIT(src, TRAIT_HUSK, source)
 	if(!HAS_TRAIT(src, TRAIT_HUSK))
 		REMOVE_TRAIT(src, TRAIT_DISFIGURED, "husk")
@@ -755,7 +762,19 @@
  * Sets [confusion][/datum/status_effect/decaying/confusion] if it's higher than zero.
  */
 /mob/living/proc/SetConfused(amount)
+	if(status_flags & GODMODE)
+		return
 	SET_STATUS_EFFECT_STRENGTH(STATUS_EFFECT_CONFUSION, amount)
+
+/**
+ * Scales transient confusion strength (deciseconds) into the 0–100 movement roll range used by legacy `confused`.
+ */
+/mob/living/proc/get_confusion_movement_level()
+	var/level = confused
+	var/strength = get_confusion()
+	if(strength > 0)
+		level = max(level, min(round(strength / 20), 100))
+	return level
 
 /**
  * Sets [confusion][/datum/status_effect/decaying/confusion] if it's higher than current.
@@ -774,4 +793,6 @@
  * * bound_upper - Maximum bound to set up to. Defaults to infinity.
  */
 /mob/living/proc/AdjustConfused(amount, bound_lower = 0, bound_upper = INFINITY)
+	if(status_flags & GODMODE)
+		return
 	SetConfused(directional_bounded_sum(get_confusion(), amount, bound_lower, bound_upper))

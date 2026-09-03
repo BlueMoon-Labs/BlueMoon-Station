@@ -175,6 +175,8 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/atom/movable/screen/map_view/gateway_port/portal_visuals
 	var/teleportion_possible = FALSE
 	var/transport_active = FALSE
+	/// PACT siege red-channel visuals: null, "calibrating", or "open"
+	var/pact_siege_visual = null
 
 	//SKYRAT EDIT ADDITION
 	var/requires_key = FALSE
@@ -216,15 +218,36 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	destination.name = destination_name
 	destination.target_gateway = src
 	GLOB.gateway_destinations += destination
+	sync_destination_identity()
+
+/obj/machinery/gateway/proc/sync_destination_identity()
+	if(!destination)
+		return
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	if(is_pact_siege_level(T.z))
+		destination.hidden = TRUE
+		return
+	if(destination_name != initial(destination_name))
+		return
+	var/datum/space_level/level = SSmapping.get_level(T.z)
+	if(!level?.name)
+		return
+	destination_name = level.name
+	destination.name = level.name
 
 /obj/machinery/gateway/proc/deactivate()
 	var/datum/gateway_destination/dest = target
 	target = null
 	playsound(src, 'sound/machines/gateway/gateway_close.ogg', 140, TRUE, TRUE, SOUND_RANGE)
-	dest.deactivate(src)
+	if(dest)
+		dest.deactivate(src)
 	QDEL_NULL(portal)
 	use_power(IDLE_POWER_USE)
 	transport_active = FALSE
+	teleportion_possible = FALSE
+	process()
 	update_appearance()
 	portal_visuals.reset_visuals()
 
@@ -237,6 +260,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(teleportion_possible)
 		return
 	for(var/datum/gateway_destination/possible_destination as anything in GLOB.gateway_destinations)
+		if(possible_destination.hidden)
+			continue
+		if(!istype(possible_destination, /datum/gateway_destination/point))
+			continue
 		if(!valid_destination(possible_destination) || !possible_destination.is_available())
 			continue
 		teleportion_possible = TRUE
@@ -248,7 +275,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		return FALSE
 	if(istype(possible_destination, /datum/gateway_destination/gateway))
 		var/datum/gateway_destination/gateway/gateway_dest = possible_destination
-		if(gateway_dest.target_gateway == gateway_dest.target_gateway)
+		if(gateway_dest.target_gateway == src)
 			return FALSE
 	return TRUE
 
@@ -266,6 +293,25 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/gateway/update_overlays()
 	. = ..()
+	if(pact_siege_visual)
+		/// Red channel: custom portal_light (replaces the default untinted one)
+		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
+		glow.color = "#ff2525"
+		. += glow
+		. += emissive_appearance(icon, "portal_light", src)
+		if(pact_siege_visual == "calibrating")
+			/// Drawn last so it sits in front of the frame / red light
+			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")
+			loading.layer = FLOAT_LAYER + 0.2
+			. += loading
+		else if(pact_siege_visual == "open")
+			var/mutable_appearance/mask = mutable_appearance(icon, "portal_mask")
+			mask.color = "#ff3030"
+			mask.alpha = 220
+			mask.layer = FLOAT_LAYER + 0.2
+			. += mask
+		. += show_light_overlays("portal_effect", transport_active)
+		return
 	. += show_light_overlays("portal_light", teleportion_possible)
 	. += show_light_overlays("portal_effect", transport_active)
 
@@ -335,6 +381,12 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	density = TRUE
 	use_power = NO_POWER_USE
 
+/obj/machinery/gateway/away/Initialize(mapload)
+	. = ..()
+	var/turf/T = get_turf(src)
+	if(T && SSmapping.level_trait(T.z, ZTRAIT_AWAY) && !is_pact_siege_level(T.z))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(sync_away_gateway_calibration_wait), T.z), 0)
+
 /obj/machinery/gateway/away/interact(mob/user)
 	. = ..()
 	if(!target)
@@ -377,6 +429,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	var/list/destinations = list()
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)
+			if(possible_destination.hidden)
+				continue
+			if(!istype(possible_destination, /datum/gateway_destination/point))
+				continue
 			if(!G.valid_destination(possible_destination))
 				continue
 			destinations += list(possible_destination.get_ui_data())

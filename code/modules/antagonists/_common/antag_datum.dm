@@ -44,6 +44,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/preview_outfit
 	/// If set to true, the antag will not be added to the living antag list.
 	var/soft_antag = FALSE
+	/// Взводится add_antag_wrapper перед штатной уборкой заготовки, которую
+	/// admin_add не забрал себе (clockcult и подобные заводят собственный датум
+	/// через add_servant_of_ratvar). Такой сироте владелец не положен, и ругаться
+	/// на него в Destroy незачем.
+	var/discarded_before_gain = FALSE
 
 	//Antag panel properties
 	///This will hide adding this antag type in antag panel, use only for internal subtypes that shouldn't be added directly but still show if possessed by mind
@@ -52,6 +57,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/antagpanel_category = "Uncategorized"
 	///Will append antagonist name in admin listings - use for categories that share more than one antag type
 	var/show_name_in_check_antagonists = FALSE
+	/// If FALSE, excluded from the admin Check Antagonists / round status listing (orbit panel etc. unchanged)
+	var/show_in_check_antagonists = TRUE
 	/// Should this antagonist be shown as antag to ghosts? Shouldn't be used for stealthy antagonists like traitors
 	var/show_to_ghosts = FALSE
 //ambition start
@@ -90,8 +97,18 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	//Напоминалка снимала датум из списка только после того, как счётчик догорит до
+	//нуля - это 2 x 12 минут. Снятый раньше антаг оставался в глобальном списке
+	//навсегда: owner уже null, поэтому remind_them_they_are_antagonists проваливался
+	//в пустую ветку и никогда не доходил до строчки снятия.
+	GLOB.antagonists_to_remind -= src
+	//кнопка живёт на теле и убивает себя сама при его удалении, но датуму об этом
+	//не сообщает: обнуление было только в on_removal, поэтому снятый мимо него
+	//антаг оставался единственным держателем уже мёртвой кнопки
+	QDEL_NULL(info_button)
 	if(!owner)
-		stack_trace("Destroy()ing antagonist datum when it has no owner.")
+		if(!discarded_before_gain)
+			stack_trace("Destroy()ing antagonist datum when it has no owner.")
 	else
 //ambition start
 		owner?.do_remove_antag_datum(src)
@@ -145,6 +162,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 // BLUEMOON ADD START - напоминание антагонистам о том, кто они и что должны делать
 /datum/antagonist/proc/remind_them_they_are_antagonists()
+	//Напоминать некому: разум отвалился раньше, чем счётчик догорел. Без этого
+	//выхода датум крутится в глобальном списке до конца раунда вхолостую.
+	if(!owner)
+		GLOB.antagonists_to_remind -= src
+		return
 	if(reminded_times_left)
 		if(owner)
 			if(time_of_last_antag_remind + time_needed_to_remind < world.time)
@@ -203,7 +225,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!silent)
 		greet()
 		if(ui_name)
-			to_chat(owner.current, span_big("You are \a [src]."))
+			to_chat(owner.current, span_big("You are [src]."))
 			to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
 			info_button.Trigger()
 	apply_innate_effects()
@@ -251,7 +273,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 /datum/antagonist/proc/replace_banned_player()
 	set waitfor = FALSE
 
-	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Do you want to play as a [name]?", "[name]", job_rank, 50, owner.current)
+	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Do you want to play as a [name]?", job_rank, null, 0, 50, owner.current, priority_check = FALSE)
 	if(LAZYLEN(candidates))
 		var/mob/dead/observer/C = pick(candidates)
 		to_chat(owner, "Your mob has been taken over by a ghost! Appeal your job ban if you want to avoid this in the future!")
@@ -424,7 +446,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 /datum/antagonist/proc/render_preview_outfit(datum/outfit/outfit, mob/living/carbon/human/dummy)
 	dummy = dummy || new /mob/living/carbon/human/dummy/consistent
 	dummy.equipOutfit(outfit, visualsOnly = TRUE)
-	var/icon = getFlatIcon(dummy)
+	var/icon = getFlatIcon(dummy, no_anim = TRUE) //статичное превью: кадры анимаций кратно удорожают Blend
 
 	// We don't want to qdel the dummy right away, since its items haven't initialized yet.
 	SSatoms.prepare_deletion(dummy)
@@ -557,6 +579,14 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	. = ..()
 	src.antag_datum = antag_datum
 	name += " [antag_datum.name]"
+
+/datum/action/antag_info/Destroy()
+	//кнопка сносит себя сама по clear_ref, когда удаляют тело; без обратной
+	//отвязки антаг-датум оставался с мёртвой кнопкой в поле
+	if(antag_datum?.info_button == src)
+		antag_datum.info_button = null
+	antag_datum = null
+	return ..()
 
 /datum/action/antag_info/Trigger()
 	if(antag_datum)

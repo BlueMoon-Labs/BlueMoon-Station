@@ -1,7 +1,7 @@
 #define CONFUSION_STACK_MAX_MULTIPLIER 2
 /obj/item/assembly/flash
 	name = "flash"
-	desc = "A powerful and versatile flashbulb device, with applications ranging from disorienting attackers to acting as visual receptors in robot production."
+	desc = "Мощное и универсальное устройство с вспышкой, применяемое от дезориентации нападающих до использования в качестве визуальных рецепторов при производстве киборгов."
 	icon_state = "flashtool"
 	item_state = "flashtool"
 	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
@@ -114,14 +114,12 @@
 	if(user)
 		log_combat(user, M, "[targeted? "flashed(targeted)" : "flashed(AOE)"]", src)
 	else //caused by emp/remote signal
-		M.log_message("was [targeted? "flashed(targeted)" : "flashed(AOE)"]",LOG_ATTACK)
+		M.log_message("was [targeted? "flashed(targeted)" : "flashed(AOE)"]",LOG_ATTACK, target = user)
 	if(generic_message && M != user)
 		to_chat(M, "<span class='disarm'>[src] производит резкую вспышку неприятного свечения!</span>")
 	if(targeted)
 		if(M.flash_act(1, 1))
-			if(M.confused < power)
-				var/diff = power * CONFUSION_STACK_MAX_MULTIPLIER - M.confused
-				M.confused += min(power, diff)
+			M.AdjustConfused(power * 2 SECONDS, 0, power * CONFUSION_STACK_MAX_MULTIPLIER * 2 SECONDS)
 			if(user)
 				terrible_conversion_proc(M, user)
 				visible_message("<span class='disarm'>[user] ошеломляет [M] флешером!</span>")
@@ -140,8 +138,7 @@
 			to_chat(M, "<span class='danger'>[src] не удалось ошеломить тебя!</span>")
 	else
 		if(M.flash_act())
-			var/diff = power * CONFUSION_STACK_MAX_MULTIPLIER - M.confused
-			M.confused += min(power, diff)
+			M.AdjustConfused(power * 2 SECONDS, 0, power * CONFUSION_STACK_MAX_MULTIPLIER * 2 SECONDS)
 
 /obj/item/assembly/flash/attack(mob/living/M, mob/user)
 	if(!try_use_flash(user))
@@ -155,8 +152,7 @@
 			log_combat(user, R, "flashed", src)
 			update_icon(1)
 			R.DefaultCombatKnockdown(rand(80,120))
-			var/diff = 5 * CONFUSION_STACK_MAX_MULTIPLIER - M.confused
-			R.confused += min(5, diff)
+			R.AdjustConfused(10 SECONDS, 0, 20 SECONDS)
 			R.flash_act(affect_silicon = 1)
 			user.visible_message("<span class='disarm'>[user] перегружает сенсоры [R] флешером!</span>", "<span class='danger'>Ты перегружаешь сенсоры [R] флешером!</span>")
 			return TRUE
@@ -222,7 +218,7 @@
 
 /obj/item/assembly/flash/armimplant
 	name = "photon projector"
-	desc = "A high-powered photon projector implant normally used for lighting purposes, but also doubles as a flashbulb weapon. Self-repair protocols fix the flashbulb if it ever burns out."
+	desc = "Высокомощный фотонный проектор-имплант, обычно используемый для освещения, но также служащий оружием со вспышкой. Протоколы саморемонта восстанавливают вспышку, если она перегорает."
 	var/flashcd = 20
 	var/overheat = 0
 	var/obj/item/organ/cyberimp/arm/flash/I = null
@@ -262,7 +258,7 @@
 
 //ported from tg - check to make sure it can't appear where it's not supposed to.
 /obj/item/assembly/flash/hypnotic
-	desc = "A modified flash device, programmed to emit a sequence of subliminal flashes that can send a vulnerable target into a hypnotic trance."
+	desc = "Модифицированное устройство со вспышкой, запрограммированное излучать последовательность сублиминальных вспышек, способных погрузить уязвимую цель в гипнотический транс."
 	flashing_overlay = "flash-hypno" //I cannot find this icon no matter how hard I look in tg, so I might just make my own.
 	light_color = LIGHT_COLOR_PINK
 	cooldown = 20
@@ -276,7 +272,7 @@
 	if(user)
 		log_combat(user, M, "[targeted? "hypno-flashed(targeted)" : "hypno-flashed(AOE)"]", src)
 	else //caused by emp/remote signal
-		M.log_message("was [targeted? "hypno-flashed(targeted)" : "hypno-flashed(AOE)"]",LOG_ATTACK)
+		M.log_message("was [targeted? "hypno-flashed(targeted)" : "hypno-flashed(AOE)"]",LOG_ATTACK, target = user)
 	if(generic_message && M != user)
 		to_chat(M, "<span class='disarm'>[src] emits a soothing light...</span>")
 	if(targeted)
@@ -289,7 +285,7 @@
 
 			if(!hypnosis)
 				to_chat(M, "<span class='notice'>The light makes you feel oddly relaxed...</span>")
-				M.confused += min(M.confused + 10, 20)
+				M.AdjustConfused(20 SECONDS, 0, 20 SECONDS)
 				M.dizziness += min(M.dizziness + 10, 20)
 				M.drowsyness += min(M.drowsyness + 10, 20)
 				M.apply_status_effect(STATUS_EFFECT_PACIFY, 100)
@@ -303,6 +299,6 @@
 
 	else if(M.flash_act())
 		to_chat(M, "<span class='notice'>Such a pretty light...</span>")
-		M.confused += min(M.confused + 4, 20)
+		M.AdjustConfused(8 SECONDS, 0, 20 SECONDS)
 		M.dizziness += min(M.dizziness + 4, 20)
 		M.drowsyness += min(M.drowsyness + 4, 20)

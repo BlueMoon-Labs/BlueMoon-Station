@@ -53,11 +53,6 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	if (!turf_source)
 		return
 
-	//allocate a channel if necessary now so its the same for everyone
-	channel = channel || SSsounds.random_available_channel()
-
-	// Looping through the player list has the added bonus of working for mobs inside containers
-	var/sound/S = sound(get_sfx(soundin))
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
 	var/turf/above_turf = SSmapping.get_turf_above(turf_source)
@@ -67,26 +62,71 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	// Extra listener lists to iterate separately when we can avoid Copy()
 	var/list/extra_listeners_1
 	var/list/extra_listeners_2
+	// Наблюдатели слышат сквозь стены даже у не проникающих звуков: в view-пути
+	// их добирает отдельный проход (в грид-пути они уже в канале CLIENTS)
+	var/list/extra_dead_listeners
 
-	if(!ignore_walls) //these sounds don't carry through walls
-		listeners = SSmobs.clients_by_zlevel[source_z].Copy()
-		listeners = listeners & hearers(maxdistance,turf_source)
+	if(SSspatial_grid.initialized)
+		// Канал CLIENTS спатиал-грида вместо обхода всех клиентов z-уровня:
+		// платим за ячейки вокруг источника, а не за онлайн. Мобов в контейнерах
+		// канал тоже знает (important_recursive_contents).
+		if(!ignore_walls) //these sounds don't carry through walls
+			listeners = get_hearers_in_view(maxdistance, turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-		if(above_turf && istransparentturf(above_turf))
-			listeners += hearers(maxdistance,above_turf)
+			if(above_turf && istransparentturf(above_turf))
+				listeners += get_hearers_in_view(maxdistance, above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-		if(below_turf && istransparentturf(turf_source))
-			listeners += hearers(maxdistance,below_turf)
+			if(below_turf && istransparentturf(turf_source))
+				listeners += get_hearers_in_view(maxdistance, below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-	else
-		// No Copy needed — iterate the original list plus extras separately
-		listeners = SSmobs.clients_by_zlevel[source_z]
+			extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)
+		else
+			listeners = SSspatial_grid.orthogonal_range_search(turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-		if(above_turf && istransparentturf(above_turf))
-			extra_listeners_1 = SSmobs.clients_by_zlevel[above_turf.z]
+			if(above_turf && istransparentturf(above_turf))
+				extra_listeners_1 = SSspatial_grid.orthogonal_range_search(above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-		if(below_turf && istransparentturf(turf_source))
-			extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
+			if(below_turf && istransparentturf(turf_source))
+				extra_listeners_2 = SSspatial_grid.orthogonal_range_search(below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
+	else //фолбэк до инита грида: старый обход клиентов z-уровня
+		// Реестры читаем через гарды: до MaxZChanged() строки под свежий z в них ещё нет,
+		// и прямое индексирование даёт рантайм "cannot read from list" прямо на
+		// инициализации мира, где погасить его нечем.
+		if(!ignore_walls)
+			var/list/z_listeners = SSmobs.clients_on_zlevel(source_z)
+			listeners = z_listeners ? z_listeners.Copy() : list()
+			listeners = listeners & hearers(maxdistance,turf_source)
+
+			if(above_turf && istransparentturf(above_turf))
+				listeners += hearers(maxdistance,above_turf)
+
+			if(below_turf && istransparentturf(turf_source))
+				listeners += hearers(maxdistance,below_turf)
+		else
+			listeners = SSmobs.clients_on_zlevel(source_z)
+
+			if(above_turf && istransparentturf(above_turf))
+				extra_listeners_1 = SSmobs.clients_on_zlevel(above_turf.z)
+
+			if(below_turf && istransparentturf(turf_source))
+				extra_listeners_2 = SSmobs.clients_on_zlevel(below_turf.z)
+
+		extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)
+
+	// Слушателей нет - выходим ДО выделения канала и до постройки /sound.
+	// Перепись датумов раунда 10060 (Delta, 3.5 часа без единого игрока):
+	// 1.6 млн /sound за раунд, ~127 штук в секунду. Каждый строился здесь и
+	// умирал, не дойдя ни до одного клиента, а канал из SSsounds занимался
+	// впустую. Проверяем именно собранные списки, а не число клиентов в мире:
+	// слушателем может быть и мёртвый на этом z, и клиент с этажа выше/ниже.
+	if(!length(listeners) && !length(extra_listeners_1) && !length(extra_listeners_2) && !length(extra_dead_listeners))
+		return
+
+	//allocate a channel if necessary now so its the same for everyone
+	channel = channel || SSsounds.random_available_channel()
+
+	// Looping through the player list has the added bonus of working for mobs inside containers
+	var/sound/S = sound(get_sfx(soundin))
 
 	for(var/mob/M as anything in listeners)
 		var/dist = get_dist(M, turf_source)
@@ -100,7 +140,9 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
 			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
-	for(var/mob/M as anything in SSmobs.dead_players_by_zlevel[source_z])
+	for(var/mob/M as anything in extra_dead_listeners)
+		if(M in listeners) //уже получил звук из канала CLIENTS (был в поле зрения)
+			continue
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
 			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
@@ -124,8 +166,40 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 
 */
 
+/// Пара "[envdry]|[envwet]" -> готовый список эха. Глобалкой, а не статиком внутри прока:
+/// статик из теста не снять и не вернуть, а тест обязан проверять именно предел роста -
+/// то есть заполнять кэш мусором и убирать за собой.
+GLOBAL_LIST_EMPTY(sound_echo_cache)
+
+/**
+ * Список из восемнадцати слотов для sound.echo.
+ *
+ * Меняются в нём ровно два: первый (envdry) и третий (envwet). Оба приходят АРГУМЕНТАМИ
+ * вызова, то есть у всех слушателей одного playsound() одинаковые - а список строился
+ * заново на КАЖДОГО слушателя. По переписи раунда 10125 это двадцать пять звуков в
+ * секунду, при восьми слушателях на звук - около двухсот восемнадцатислотовых списков в
+ * секунду, которых не видит ни одна строка переписи: список не датум, /datum/New() на нём
+ * не срабатывает, и в глобальных списках его нет.
+ *
+ * Отдавать один и тот же список всем безопасно: после присваивания S.echo его никто не
+ * мутирует. Единственные записи в S.echo[3]/S.echo[4] лежат в закомментированном
+ * tg-блоке реверба ниже по playsound_local(), и S.environment = 7 его в любом случае
+ * обесточивает. Если блок вернут - писать он обязан в личную копию, а не в общий список.
+ */
+/proc/sound_echo_for(envdry, envwet)
+	var/key = "[envdry]|[envwet]"
+	var/list/cached = GLOB.sound_echo_cache[key]
+	if(cached)
+		return cached
+	var/list/built = list(envdry, null, envwet, null, null, null, null, null, null, null, null, null, null, 1, 1, 1, null, null)
+	if(length(GLOB.sound_echo_cache) < SOUND_ECHO_CACHE_MAX)
+		GLOB.sound_echo_cache[key] = built
+	return built
+
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance,
 	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer)
+	if(QDELETED(src))
+		return
 	if(audiovisual_redirect)
 		virtual_hearer = get_turf(src)
 		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer)
@@ -140,7 +214,11 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 		return
 
 	S.wait = 0 //No queue
-	S.channel = channel || SSsounds.random_available_channel()
+	if(!isnum(channel) || channel <= 0)
+		channel = SSsounds.random_available_channel()
+	if(!channel)
+		return
+	S.channel = channel
 	S.volume = vol
 	// CITADEL EDIT - Force citadel reverb
 	S.environment = 7
@@ -186,7 +264,7 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 			//End Atmosphere affecting sound
 
 			/// Citadel edit - Citadel reverb
-			S.echo = list(envdry, null, envwet, null, null, null, null, null, null, null, null, null, null, 1, 1, 1, null, null)
+			S.echo = sound_echo_for(envdry, envwet)
 			/// End
 
 		if(S.volume <= 0)
@@ -230,20 +308,49 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 
 	SEND_SOUND(src, S)
 
-/proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S)
+/proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S, sound_id)
 	if(!S)
 		S = sound(get_sfx(soundin))
 	for(var/mob/M as anything in GLOB.player_list)
 		if(!isnewplayer(M))
-			M.playsound_local(M, null, volume, vary, frequency, null, channel, pressure_affected, S)
+			var/vol = volume
+			if(sound_id && M.client?.prefs)
+				vol = round(volume * M.client.prefs.get_sound_volume(sound_id) / 100)
+			M.playsound_local(M, null, vol, vary, frequency, null, channel, pressure_affected, S)
 
+/**
+ * Команды каналу (стоп и громкость) шлются одним и тем же датумом на весь раунд.
+ *
+ * SEND_SOUND - это `target << sound`, и BYOND сериализует состояние датума прямо в
+ * момент вывода: после отправки датум никому не принадлежит и переиспользуется без
+ * последствий. Ровно на этом уже держится сама playsound() (один S на всех слушателей)
+ * и джукбокс, который мутирует один долгоживущий датум под каждого моба.
+ *
+ * Цена вопроса не в размере, а в черне аллокатора: process_decay() инструментов зовёт
+ * set_sound_channel_volume() на КАЖДЫЙ живой канал КАЖДОМУ слышащему КАЖДЫЙ тик - до
+ * 128 каналов на инструмент. Один играющий на гитаре закрывает бюджет в три миллиона
+ * /sound за раунд (перепись раунда 10113) в одиночку, а этот черн двигает храповик
+ * VmSize в 32-битном DreamDaemon.
+ *
+ * Оба датума не имеют состояния сверх полей, которые переписываются перед каждой
+ * отправкой, поэтому залипнуть между вызовами нечему. Спать между присвоением и
+ * SEND_SOUND тут негде - иначе общий датум успел бы уехать чужому адресату.
+ */
 /mob/proc/stop_sound_channel(chan)
-	SEND_SOUND(src, sound(null, repeat = 0, wait = 0, channel = chan))
+	if(QDELETED(src) || !isnum(chan) || chan <= 0)
+		return
+	var/static/sound/channel_stop = sound(null, repeat = 0, wait = 0)
+	channel_stop.channel = chan
+	SEND_SOUND(src, channel_stop)
 
 /mob/proc/set_sound_channel_volume(channel, volume)
-	var/sound/S = sound(null, FALSE, FALSE, channel, volume)
-	S.status = SOUND_UPDATE
-	SEND_SOUND(src, S)
+	if(QDELETED(src) || !isnum(channel) || channel <= 0)
+		return
+	var/static/sound/channel_volume = sound(null, FALSE, FALSE)
+	channel_volume.channel = channel
+	channel_volume.volume = volume
+	channel_volume.status = SOUND_UPDATE
+	SEND_SOUND(src, channel_volume)
 
 /client/proc/playtitlemusic(vol = 85)
 	set waitfor = FALSE

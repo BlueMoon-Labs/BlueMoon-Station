@@ -2,6 +2,7 @@
 	name = "technology fabricator"
 	desc = "Makes researched and prototype items with materials and energy."
 	layer = BELOW_OBJ_LAYER
+	wires_type = /datum/wires/rnd/production
 	var/consoleless_interface = TRUE			//Whether it can be used without a console.
 	var/print_cost_coeff = 1				//Materials needed * coeff = actual.
 	var/list/categories = list()
@@ -11,18 +12,27 @@
 	var/allowed_buildtypes = NONE
 	var/list/cached_designs = list()
 	var/list/_ui_cached_designs = list()
+	/// Кэш дизайнов уже строился полным пересбором хотя бы раз - можно доклеивать инкрементально
+	var/designs_cache_built = FALSE
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
+	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
 
 	var/lathe_prod_time = 0.5
-	var/emaggable = FALSE
+	var/emag_only_access = TRUE
 
 	/// What color is this machine's stripe? Leave null to not have a stripe.
 	var/stripe_color = null
 	COOLDOWN_DECLARE(cooldown_say) // Отвечает за КД SAY машины и за КД update_research()
+	var/deferred_sync_timer	// Отвечает за кд перед автосинхронизацией, и не даёт упёршимся в него же сигналам изучений потеряться *temp*
 	var/const/cooldown_say_time = 1.5 SECONDS
 	var/const/max_build_amount = 60 // Отвечает за максимум в кнопке [Max: XXX] TGUI и максимум пердметов на печать в 1 пачке
+
+
+	vocal_pitch = 0.8
+	vocal_speed = 4
+	vocal_volume = 15
 
 /obj/machinery/rnd/production/Initialize(mapload)
 	. = ..()
@@ -33,8 +43,14 @@
 	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
+	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
+	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
 
 /obj/machinery/rnd/production/Destroy()
+	if(deferred_sync_timer)
+		deltimer(deferred_sync_timer)
+		deferred_sync_timer = null
+	UnregisterSignal(SSdcs, list(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE))
 	materials = null
 	cached_designs = null
 	QDEL_NULL(stored_research)
@@ -66,19 +82,33 @@
 	. += stripe
 
 /obj/machinery/rnd/production/emag_act()
-	if(!emaggable || obj_flags & EMAGGED)
+	if(obj_flags & EMAGGED || (hacked && emag_only_access))
 		return
 	. = ..()
 	balloon_alert(usr, span_balloon_warning("emagged"))
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	obj_flags |= EMAGGED
 	req_access = list()
 	req_one_access = list()
+	hacked = TRUE // Это для лампочки на техфабе, само по себе ничего не делает
 	update_research()
+	if(!emag_only_access)
+		obj_flags |= EMAGGED
 
 /obj/machinery/rnd/production/proc/update_research()
+	// Снапшот "что уже знали" ДО синка: после него доклеиваем только новые дизайны.
+	// Полный пересбор (весь researched_designs через techweb_design_by_id) гонялся
+	// каждой машиной раз в 1.5с на волне исследований - 75k вызовов за 18с на проде.
+	// Судить о "первом ли это синке" по снапшоту нельзя: свежий /datum/techweb
+	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
+	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
+	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
 	host_research.copy_research_to(stored_research, TRUE)
-	update_designs()
+	if(previously_known)
+		update_designs_incremental(previously_known)
+	else
+		update_designs()
+	if(last_design_count == 0)
+		last_design_count = length(cached_designs)
 
 /obj/machinery/rnd/production/proc/update_designs()
 	cached_designs.Cut()
@@ -87,7 +117,23 @@
 		if((isnull(allowed_department_flags) || (d.departmental_flags & allowed_department_flags)) && (d.build_type & allowed_buildtypes))
 			cached_designs |= d
 
+	designs_cache_built = TRUE
 	update_designs_ui()
+
+/// Доклейка только новых (после снапшота previously_known) дизайнов в cached_designs.
+/// Синк только добавляет дизайны (copy_research_to), удаление - редкий путь полного
+/// пересбора (on_design_deletion -> recalculate_nodes -> update_designs).
+/obj/machinery/rnd/production/proc/update_designs_incremental(list/previously_known)
+	var/added = FALSE
+	for(var/design_id in stored_research.researched_designs)
+		if(previously_known[design_id])
+			continue
+		var/datum/design/new_design = SSresearch.techweb_design_by_id(design_id)
+		if((isnull(allowed_department_flags) || (new_design.departmental_flags & allowed_department_flags)) && (new_design.build_type & allowed_buildtypes))
+			cached_designs |= new_design
+			added = TRUE
+	if(added)
+		update_designs_ui()
 
 /obj/machinery/rnd/production/proc/update_designs_ui()
 	_ui_cached_designs.Cut()
@@ -125,6 +171,17 @@
 		for(var/datum/design/D in all_categories[category])
 			if(!D.build_path)
 				continue
+
+			// Скрытые дизайны
+			if(D.hacked_only && !(obj_flags & EMAGGED))
+				continue
+
+			// Проверка дизайна на ограничение по коду + его описание в одном проке
+			var/sec_desc = design_sec_level_desc(D)
+			// Если продакшн вне станции и не имеет доступов, разрешаем только предметы без требований к коду
+			if(sec_desc && hide_sec_designs)
+				continue
+
 			var/obj/item_path = D.build_path // ispath
 
 			// Формируем стоимость в материалах
@@ -147,12 +204,6 @@
 				desc = strip_html_tags(initial(circuit_build_path.desc))
 			if(!desc)
 				desc = strip_html_tags(initial(item_path.desc))
-
-			// Проверка дизайна на ограничение по коду + его описание в одном проке
-			var/sec_desc = design_sec_level_desc(D)
-			// Если продакшн вне станции и не имеет доступов, разрешаем только предметы без требований к коду
-			if(sec_desc && hide_sec_designs)
-				continue
 
 			cat["items"] += list(list(
 				"id" = D.id,
@@ -183,8 +234,8 @@
 
 /obj/machinery/rnd/production/ui_assets(mob/user)
 	. = list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials),
 	)
 
 /obj/machinery/rnd/production/ui_data(mob/user)
@@ -212,6 +263,11 @@
 	.["hacked"] = (obj_flags & EMAGGED)
 	.["maxBuildButtonAmount"] = max_build_amount
 	.["categories"] = _ui_cached_designs
+	// Размер спрайта нужен интерфейсу, чтобы вписать крупную иконку в строку списка
+	// целиком. Карта общая на весь лист и короткая, так что фильтровать её по
+	// дизайнам конкретной машины смысла нет.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	.["design_sizes"] = design_sheet.oversized_icon_classes()
 
 /obj/machinery/rnd/production/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -413,3 +469,28 @@
 	for(var/n in D.min_security_level to D.max_security_level)
 		levels += NUM2SECLEVEL(n)
 	. += english_list(levels, and_text = ", ")
+
+/obj/machinery/rnd/production/proc/on_node_unlocked(datum/source, node_id)	// Дизайны обновляются после изучения ноды на консоли
+	SIGNAL_HANDLER
+	if(deferred_sync_timer)	// Если мы всё ещё в кулдауне, не делаем ничего - нет необходимости
+		return
+	deferred_sync_timer = addtimer(CALLBACK(src, PROC_REF(perform_deferred_sync)), 1.5 SECONDS, TIMER_STOPPABLE)	// Синхронизация проводится после таймера, по совместительству очищая его и открывая гейт новым сигналам
+
+/obj/machinery/rnd/production/proc/perform_deferred_sync()	// Временный фикс нагрузки сервера update_research() проками. Потом сделаю нормальный, минималистичный on_auto_sync для работы с единичными нодами
+	if(QDELETED(src))
+		return
+	deferred_sync_timer = null	// Проведение синхронизации происходит вместе с очисткой таймера
+	INVOKE_ASYNC(src, PROC_REF(update_research))	// Асинк в качестве второй защиты от обсёра, надеюсь даже после 100+ нод этого будет достаточно
+
+/obj/machinery/rnd/production/proc/on_research_batch_complete(datum/source, list/node_ids)	// Регистрация сигнала завершения упаковки пакета нод
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(handle_research_batch_complete))
+
+/obj/machinery/rnd/production/proc/handle_research_batch_complete()	// Рабочая процедура расчёта и локального оповещения
+	var/new_count = length(cached_designs)
+	var/added = new_count - last_design_count
+	last_design_count = new_count
+	if(added <= 0)
+		return
+	sleep(rand(0, 2 SECONDS)) // Рандомный дилей перед уведомлением о получении дизайнов, уменьшает звуковую нагрузку (надеюсь)
+	say("Синхронизация с базой изучений. Количество новых чертежей: [added]")

@@ -4,12 +4,14 @@
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/aurora_caelus
 	max_occurrences = 1
-	weight = 5
+	// Редкое зрелище, как и кометный пояс: на весе 10 большие шоу приедаются
+	// (жалоба прода на кометы), держим оба на 3.
+	weight = 3
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A colourful display can be seen through select windows. And the kitchen."
 
-/datum/round_event_control/aurora_caelus/canSpawnEvent(players, gamemode)
+/datum/round_event_control/aurora_caelus/can_fire(datum/director_signals/signals)
 	if(!CONFIG_GET(flag/starlight))
 		return FALSE
 	return ..()
@@ -22,6 +24,9 @@
 	var/aurora_progress = 0 //this cycles from 1 to 8, slowly changing colors from gentle green to gentle blue
 	var/list/ion_overlays = list()
 	var/list/pacif_mobs = list()
+	/// Космо-турфы starlight-зон, собранные один раз в start(): перескан GLOB.sortedAreas
+	/// с истайп-фильтром contents на КАЖДЫЙ перекрас стоил сотен мс атомарно в фаере директора.
+	var/list/turf/open/space/aurora_turfs = list()
 
 /datum/round_event/aurora_caelus/announce()
 	priority_announce("[station_name()]: Безвредное облако ионов приближается к вашей станции, истощая свою энергию и стукаясь о корпус. NanoTrasen разрешает всем сотрудникам сделать короткий перерыв, чтобы расслабиться и понаблюдать за этим редким событием. В это время звездный свет будет ярким, но мягким, переходя от тихого зеленого к яркому синему цвету. Любой сотрудник, желающий увидеть эти огни самостоятельно, может отправиться в ближайший к ним район с видом на космос. Надеемся, что вам понравится это сияние.",
@@ -30,7 +35,7 @@
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
 		if((M.client.prefs.toggles & SOUND_MIDI) && is_station_level(M.z))
-			M.playsound_local(M, 'sound/ambience/aurora_caelus.ogg', 20, FALSE, pressure_affected = FALSE)
+			M.playsound_local(M, 'sound/ambience/aurora_caelus.ogg', 20, FALSE, channel = CHANNEL_EVENT_MUSIC, pressure_affected = FALSE)
 
 /datum/round_event/aurora_caelus/start()
 	SSnightshift.starlight_override = TRUE
@@ -38,7 +43,9 @@
 		var/area/A = area
 		if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
 			for(var/turf/open/space/S in A)
+				aurora_turfs += S
 				S.set_light(S.light_range * 3, S.light_power * 0.5)
+				CHECK_TICK
 	for(var/V in GLOB.player_list)
 		var/mob/M = V
 		if(is_station_level(M.z))
@@ -53,11 +60,12 @@
 	if(activeFor % 5 == 0)
 		aurora_progress = (aurora_progress % aurora_colors.len) + 1
 		var/aurora_color = aurora_colors[aurora_progress]
-		for(var/area in GLOB.sortedAreas)
-			var/area/A = area
-			if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
-				for(var/turf/open/space/S in A)
-					S.set_light(l_color = aurora_color)
+		for(var/turf/open/space/S as anything in aurora_turfs)
+			// Турф мог смениться на пол стройкой посреди события - перекрашивать его уже не надо
+			if(!isspaceturf(S))
+				continue
+			S.set_light(l_color = aurora_color)
+			CHECK_TICK
 		for(var/client/C in ion_overlays)
 			var/atom/movable/screen/aurora_ion_overlay/overlay = ion_overlays[C]
 			if(overlay)
@@ -66,11 +74,7 @@
 /datum/round_event/aurora_caelus/end()
 	SSnightshift.starlight_override = FALSE
 	SSnightshift.last_starlight_color = null // Force recalc next fire
-	for(var/area in GLOB.sortedAreas)
-		var/area/A = area
-		if(initial(A.dynamic_lighting) == DYNAMIC_LIGHTING_IFSTARLIGHT)
-			for(var/turf/open/space/S in A)
-				fade_to_black(S)
+	fade_all_to_black()
 	for(var/mob/M in pacif_mobs)
 		REMOVE_TRAIT(M, TRAIT_PACIFISM, TRAIT_SOURCE)
 	pacif_mobs.Cut()
@@ -80,15 +84,34 @@
 	sound = 'sound/misc/notice2.ogg',
 	sender_override = "Отдел Метеорологии NanoTrasen")
 
-/datum/round_event/aurora_caelus/proc/fade_to_black(turf/open/space/S)
+/// Плавное гашение сияния: один асинхронный прок ступенями ведёт ВСЕ турфы разом.
+/// Раньше на каждый космо-турф спавнился отдельный прок с циклом sleep(30) -
+/// тысячи одновременно спящих проков и шторм set_light в один и тот же момент.
+/datum/round_event/aurora_caelus/proc/fade_all_to_black()
 	set waitfor = FALSE
-	var/new_light = initial(S.light_range)
-	while(S.light_range > new_light)
-		S.set_light(S.light_range - 0.2)
+	// Страховка от вечного цикла: диапазон утроен в start(), шаг 0.2 гасит его за ~20 ступеней
+	var/steps_left = 40
+	while(steps_left > 0)
+		var/still_fading = FALSE
+		for(var/turf/open/space/S as anything in aurora_turfs)
+			if(!isspaceturf(S))
+				continue
+			if(S.light_range > initial(S.light_range))
+				S.set_light(max(S.light_range - 0.2, initial(S.light_range)))
+				still_fading = TRUE
+			CHECK_TICK
+		if(!still_fading)
+			break
+		steps_left--
 		sleep(30)
-	var/reset_color = GLOB.current_starlight_color || initial(S.light_color)
-	var/reset_power = GLOB.current_starlight_power || initial(S.light_power)
-	S.set_light(new_light, reset_power, reset_color)
+	for(var/turf/open/space/S as anything in aurora_turfs)
+		if(!isspaceturf(S))
+			continue
+		var/reset_color = GLOB.current_starlight_color || initial(S.light_color)
+		var/reset_power = GLOB.current_starlight_power || initial(S.light_power)
+		S.set_light(initial(S.light_range), reset_power, reset_color)
+		CHECK_TICK
+	aurora_turfs.Cut()
 
 /datum/round_event/aurora_caelus/proc/add_ion_overlay(client/C)
 	if(!C || ion_overlays[C])

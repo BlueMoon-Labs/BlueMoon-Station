@@ -4,12 +4,11 @@
 	desc = "Watch your step."
 	baseturfs = /turf/open/chasm
 	smooth = SMOOTH_TRUE | SMOOTH_BORDER | SMOOTH_MORE
-	icon = 'icons/turf/floors/chasms.dmi'
+	icon = 'icons/turf/floors/Chasms.dmi'
 	icon_state = "smooth"
 	canSmoothWith = list(/turf/open/floor/fakepit, /turf/open/chasm)
 	density = TRUE //This will prevent hostile mobs from pathing into chasms, while the canpass override will still let it function like an open turf
 	bullet_bounce_sound = null //abandon all hope ye who enter
-	dirt_buildup_allowed = FALSE
 
 /turf/open/chasm/Initialize(mapload)
 	. = ..()
@@ -54,6 +53,9 @@
 		var/obj/item/stack/rods/R = C
 		var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 		if(!L)
+			if(!HasAdjacentSupport())
+				user.balloon_alert(user, "Не за что крепить! Нужна опора!")
+				return
 			if(R.use(1))
 				to_chat(user, "<span class='notice'>You construct a lattice.</span>")
 				playsound(src, 'sound/weapons/genhit.ogg', 50, 1)

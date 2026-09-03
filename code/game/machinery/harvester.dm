@@ -187,9 +187,12 @@
 	else
 		to_chat(user,"<span class='warning'>[src] is active and can't be opened!</span>") //rip
 
-/obj/machinery/harvester/Exited(atom/movable/user)
+/obj/machinery/harvester/Exited(atom/movable/user, atom/newloc)
+	//резист до родителя: machinery/Exited обнуляет occupant; ..() обязателен -
+	//без него ушедший навсегда оставался в important_recursive_contents машины
 	if (!state_open && user == occupant)
 		container_resist(user)
+	return ..()
 
 /obj/machinery/harvester/relaymove(mob/user)
 	if (!state_open)

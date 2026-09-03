@@ -5,7 +5,7 @@
 	icon_state = "vortexcell"
 	maxcharge = 60000
 	custom_materials = list(/datum/material/glass=600)
-	chargerate = 800 //Recharges slowly.
+	chargerate = 1500 //Recharges slowly.
 	self_recharge = 1
 	rating = 6
 

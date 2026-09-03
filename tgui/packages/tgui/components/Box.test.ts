@@ -87,59 +87,63 @@ describe('halfUnit', () => {
 });
 
 describe('computeBoxProps', () => {
-  test('maps width number to style string with unit', () => {
+  test('maps width number to style with unit', () => {
     const result = computeBoxProps({ width: 10 });
-    expect(result.style).toContain('width:10rem;');
+    expect(result.style).toEqual({ width: '10rem' });
   });
 
-  test('maps width string to style string', () => {
+  test('maps width string to style', () => {
     const result = computeBoxProps({ width: '100%' });
-    expect(result.style).toContain('width:100%;');
+    expect(result.style).toEqual({ width: '100%' });
   });
 
   test('maps height to style', () => {
     const result = computeBoxProps({ height: 5 });
-    expect(result.style).toContain('height:5rem;');
+    expect(result.style).toEqual({ height: '5rem' });
   });
 
   test('maps margin shorthand with halfUnit', () => {
     const result = computeBoxProps({ m: 2 });
     // m=2 -> halfUnit(2) = 1rem for all four directions
-    expect(result.style).toContain('margin-top:1rem;');
-    expect(result.style).toContain('margin-bottom:1rem;');
-    expect(result.style).toContain('margin-left:1rem;');
-    expect(result.style).toContain('margin-right:1rem;');
+    expect(result.style).toEqual({
+      marginTop: '1rem',
+      marginBottom: '1rem',
+      marginLeft: '1rem',
+      marginRight: '1rem',
+    });
   });
 
   test('maps padding shorthand with halfUnit', () => {
     const result = computeBoxProps({ p: 1 });
     // p=1 -> halfUnit(1) = 0.5rem for all four directions
-    expect(result.style).toContain('padding-top:0.5rem;');
-    expect(result.style).toContain('padding-bottom:0.5rem;');
-    expect(result.style).toContain('padding-left:0.5rem;');
-    expect(result.style).toContain('padding-right:0.5rem;');
+    expect(result.style).toEqual({
+      paddingTop: '0.5rem',
+      paddingBottom: '0.5rem',
+      paddingLeft: '0.5rem',
+      paddingRight: '0.5rem',
+    });
   });
 
   test('maps mx to horizontal margins only', () => {
     const result = computeBoxProps({ mx: 2 });
-    expect(result.style).toContain('margin-left:1rem;');
-    expect(result.style).toContain('margin-right:1rem;');
-    expect(result.style).not.toContain('margin-top');
-    expect(result.style).not.toContain('margin-bottom');
+    expect(result.style).toEqual({
+      marginLeft: '1rem',
+      marginRight: '1rem',
+    });
   });
 
   test('maps my to vertical margins only', () => {
     const result = computeBoxProps({ my: 2 });
-    expect(result.style).toContain('margin-top:1rem;');
-    expect(result.style).toContain('margin-bottom:1rem;');
-    expect(result.style).not.toContain('margin-left');
-    expect(result.style).not.toContain('margin-right');
+    expect(result.style).toEqual({
+      marginTop: '1rem',
+      marginBottom: '1rem',
+    });
   });
 
   test('maps individual margin direction', () => {
     const result = computeBoxProps({ mt: 4 });
     // mt=4 -> halfUnit(4) = 2rem
-    expect(result.style).toContain('margin-top:2rem;');
+    expect(result.style).toEqual({ marginTop: '2rem' });
   });
 
   test('passes through non-style props', () => {
@@ -154,77 +158,81 @@ describe('computeBoxProps', () => {
       width: 5,
       style: { color: 'red' },
     });
-    expect(result.style).toContain('width:5rem;');
-    expect(result.style).toContain('color:red;');
+    expect(result.style).toEqual({
+      width: '5rem',
+      color: 'red',
+    });
   });
 
-  test('bold sets font-weight:bold', () => {
+  test('bold sets fontWeight bold', () => {
     const result = computeBoxProps({ bold: true });
-    expect(result.style).toContain('font-weight:bold;');
+    expect(result.style).toEqual({ fontWeight: 'bold' });
   });
 
-  test('italic sets font-style:italic', () => {
+  test('italic sets fontStyle italic', () => {
     const result = computeBoxProps({ italic: true });
-    expect(result.style).toContain('font-style:italic;');
+    expect(result.style).toEqual({ fontStyle: 'italic' });
   });
 
-  test('inline sets display:inline-block', () => {
+  test('inline sets display inline-block', () => {
     const result = computeBoxProps({ inline: true });
-    expect(result.style).toContain('display:inline-block;');
+    expect(result.style).toEqual({ display: 'inline-block' });
   });
 
-  test('nowrap sets white-space:nowrap', () => {
+  test('nowrap sets whiteSpace nowrap', () => {
     const result = computeBoxProps({ nowrap: true });
-    expect(result.style).toContain('white-space:nowrap;');
+    expect(result.style).toEqual({ whiteSpace: 'nowrap' });
   });
 
-  test('preserveWhitespace sets white-space:pre-wrap', () => {
+  test('preserveWhitespace sets whiteSpace pre-wrap', () => {
     const result = computeBoxProps({ preserveWhitespace: true });
-    expect(result.style).toContain('white-space:pre-wrap;');
+    expect(result.style).toEqual({ whiteSpace: 'pre-wrap' });
   });
 
   test('fillPositionedParent sets position absolute and all edges', () => {
     const result = computeBoxProps({ fillPositionedParent: true });
-    expect(result.style).toContain('position:absolute;');
-    expect(result.style).toContain('top:0;');
-    expect(result.style).toContain('bottom:0;');
-    expect(result.style).toContain('left:0;');
-    expect(result.style).toContain('right:0;');
+    expect(result.style).toEqual({
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    });
   });
 
   test('lineHeight number is raw value', () => {
     const result = computeBoxProps({ lineHeight: 1.5 });
-    expect(result.style).toContain('line-height:1.5;');
+    expect(result.style).toEqual({ lineHeight: 1.5 });
   });
 
   test('lineHeight string goes through unit()', () => {
     const result = computeBoxProps({ lineHeight: '24px' });
-    expect(result.style).toContain('line-height:2rem;');
+    expect(result.style).toEqual({ lineHeight: '2rem' });
   });
 
   test('position is raw string', () => {
     const result = computeBoxProps({ position: 'relative' });
-    expect(result.style).toContain('position:relative;');
+    expect(result.style).toEqual({ position: 'relative' });
   });
 
   test('opacity is raw number', () => {
     const result = computeBoxProps({ opacity: 0.5 });
-    expect(result.style).toContain('opacity:0.5;');
+    expect(result.style).toEqual({ opacity: 0.5 });
   });
 
   test('textAlign is raw string', () => {
     const result = computeBoxProps({ textAlign: 'center' });
-    expect(result.style).toContain('text-align:center;');
+    expect(result.style).toEqual({ textAlign: 'center' });
   });
 
   test('fontSize uses unit()', () => {
     const result = computeBoxProps({ fontSize: 2 });
-    expect(result.style).toContain('font-size:2rem;');
+    expect(result.style).toEqual({ fontSize: '2rem' });
   });
 
   test('color code goes to style (not class)', () => {
     const result = computeBoxProps({ color: '#ff0000' });
-    expect(result.style).toContain('color:#ff0000;');
+    expect(result.style).toEqual({ color: '#ff0000' });
   });
 
   test('CSS color class name does NOT go to style', () => {
@@ -236,7 +244,7 @@ describe('computeBoxProps', () => {
 
   test('backgroundColor code goes to style', () => {
     const result = computeBoxProps({ backgroundColor: '#00ff00' });
-    expect(result.style).toContain('background-color:#00ff00;');
+    expect(result.style).toEqual({ backgroundColor: '#00ff00' });
   });
 
   test('boolean false does not set style', () => {

@@ -3,7 +3,7 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 */
 
 /obj/machinery/atmospherics/components/binary/valve
-	icon_state = "mvalve_map-2"
+	icon_state = "mvalve_map-3"
 	name = "manual valve"
 	desc = "A pipe with a valve that can be used to disable flow of gas through it."
 
@@ -39,7 +39,8 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 		update_icon_nopipes()
 		update_parents()
 		var/datum/pipeline/parent1 = parents[1]
-		parent1.reconcile_air()
+		if(parent1)
+			parent1.reconcile_air()
 		investigate_log("was opened by [usr ? key_name(usr) : "a remote signal"]", INVESTIGATE_ATMOS)
 
 /obj/machinery/atmospherics/components/binary/valve/interact(mob/user)
@@ -55,7 +56,7 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 	switching = FALSE
 
 /obj/machinery/atmospherics/components/binary/valve/digital // can be controlled by AI
-	icon_state = "dvalve_map-2"
+	icon_state = "dvalve_map-3"
 	name = "digital valve"
 	desc = "A digitally controlled valve."
 	valve_type = "d"
@@ -63,7 +64,7 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 	interaction_flags_machine = INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OFFLINE | INTERACT_MACHINE_OPEN | INTERACT_MACHINE_OPEN_SILICON
 
 /obj/machinery/atmospherics/components/binary/valve/digital/update_icon_nopipes(animation)
-	if(!is_operational())
+	if(!is_operational)
 		normalize_cardinal_directions()
 		icon_state = "dvalve_nopower"
 		return
@@ -74,9 +75,17 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 	piping_layer = 1
 	icon_state = "mvalve_map-1"
 
-/obj/machinery/atmospherics/components/binary/valve/layer3
-	piping_layer = 3
-	icon_state = "mvalve_map-3"
+/obj/machinery/atmospherics/components/binary/valve/layer2
+	piping_layer = 2
+	icon_state = "mvalve_map-2"
+
+/obj/machinery/atmospherics/components/binary/valve/layer4
+	piping_layer = 4
+	icon_state = "mvalve_map-4"
+
+/obj/machinery/atmospherics/components/binary/valve/layer5
+	piping_layer = 5
+	icon_state = "mvalve_map-5"
 
 /obj/machinery/atmospherics/components/binary/valve/on
 	on = TRUE
@@ -85,17 +94,33 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 	piping_layer = 1
 	icon_state = "mvalve_map-1"
 
-/obj/machinery/atmospherics/components/binary/valve/on/layer3
-	piping_layer = 3
-	icon_state = "mvalve_map-3"
+/obj/machinery/atmospherics/components/binary/valve/on/layer2
+	piping_layer = 2
+	icon_state = "mvalve_map-2"
+
+/obj/machinery/atmospherics/components/binary/valve/on/layer4
+	piping_layer = 4
+	icon_state = "mvalve_map-4"
+
+/obj/machinery/atmospherics/components/binary/valve/on/layer5
+	piping_layer = 5
+	icon_state = "mvalve_map-5"
 
 /obj/machinery/atmospherics/components/binary/valve/digital/layer1
 	piping_layer = 1
 	icon_state = "dvalve_map-1"
 
-/obj/machinery/atmospherics/components/binary/valve/digital/layer3
-	piping_layer = 3
-	icon_state = "dvalve_map-3"
+/obj/machinery/atmospherics/components/binary/valve/digital/layer2
+	piping_layer = 2
+	icon_state = "dvalve_map-2"
+
+/obj/machinery/atmospherics/components/binary/valve/digital/layer4
+	piping_layer = 4
+	icon_state = "dvalve_map-4"
+
+/obj/machinery/atmospherics/components/binary/valve/digital/layer5
+	piping_layer = 5
+	icon_state = "dvalve_map-5"
 
 /obj/machinery/atmospherics/components/binary/valve/digital/on
 	on = TRUE
@@ -104,6 +129,14 @@ It's like a regular ol' straight pipe, but you can turn it on and off.
 	piping_layer = 1
 	icon_state = "dvalve_map-1"
 
-/obj/machinery/atmospherics/components/binary/valve/digital/on/layer3
-	piping_layer = 3
-	icon_state = "dvalve_map-3"
+/obj/machinery/atmospherics/components/binary/valve/digital/on/layer2
+	piping_layer = 2
+	icon_state = "dvalve_map-2"
+
+/obj/machinery/atmospherics/components/binary/valve/digital/on/layer4
+	piping_layer = 4
+	icon_state = "dvalve_map-4"
+
+/obj/machinery/atmospherics/components/binary/valve/digital/on/layer5
+	piping_layer = 5
+	icon_state = "dvalve_map-5"

@@ -26,6 +26,7 @@
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=centcom'>Make CentCom Response Team (Requires Ghosts)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=abductors'>Make Abductor Team (Requires Ghosts)</a><br>
 		<a href='?src=[REF(src)];[HrefToken()];makeAntag=revenant'>Make Revenant (Requires Ghost)</a><br>
+		<a href='?src=[REF(src)];[HrefToken()];makeAntag=massshooter'>Make Mass Shooter (Requires Ghost)</a><br>
 		"}
 	//<a href='?src=[REF(src)];[HrefToken()];makeAntag=qareen'>Make Qareen (Requires Ghost)</a><br> 	Temporary removed. - Gardelin0
 
@@ -371,6 +372,7 @@
 		newtemplate = text2path(newtemplate)
 	newtemplate = new newtemplate
 	.["mainsettings"]["teamsize"]["value"] = newtemplate.teamsize
+	.["mainsettings"]["maxteamsize"]["value"] = newtemplate.maxteamsize
 	.["mainsettings"]["mission"]["value"] = newtemplate.mission
 	.["mainsettings"]["polldesc"]["value"] = newtemplate.polldesc
 	.["mainsettings"]["ertphrase"]["value"] = newtemplate.ertphrase
@@ -436,7 +438,8 @@
 		"preview_callback" = CALLBACK(src, PROC_REF(makeERTPreviewIcon)),
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = ertemplate.teamsize),
+		"teamsize" = list("desc" = "Мин. кол-во бойцов", "type" = "number", "value" = ertemplate.teamsize),
+		"maxteamsize" = list("desc" = "Макс. кол-во бойцов", "type" = "number", "value" = ertemplate.maxteamsize),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = ertemplate.mission),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -463,6 +466,11 @@
 			ertemplate = new templtype
 
 		ertemplate.teamsize = prefs["teamsize"]["value"]
+		ertemplate.maxteamsize = prefs["maxteamsize"]["value"]
+		if(!isnum(ertemplate.maxteamsize) || ertemplate.maxteamsize < 1)
+			ertemplate.maxteamsize = max(ertemplate.teamsize, 1)
+		if(ertemplate.maxteamsize < ertemplate.teamsize)
+			ertemplate.maxteamsize = ertemplate.teamsize
 		ertemplate.mission = prefs["mission"]["value"]
 		ertemplate.polldesc = prefs["polldesc"]["value"]
 		ertemplate.ertphrase = prefs["ertphrase"]["value"]
@@ -473,13 +481,13 @@
 		if(ertemplate.notify_players)
 			priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
-		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize)
+		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
 		var/team_name = ertemplate.polldesc || ertemplate.rename_team || ertemplate.code
-		message_admins("Выбрано игроков: [candidates.len], для [team_name], минимум необходимо: [ertemplate.teamsize]")
+		message_admins("Выбрано игроков: [candidates.len], для [team_name], минимум: [ertemplate.teamsize], максимум: [ertemplate.maxteamsize]")
 		var/teamSpawned = FALSE
 		if(candidates.len > 0)
 			//Pick the (un)lucky players
-			var/numagents = min(ertemplate.teamsize,candidates.len)
+			var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 			//Create team
 			var/datum/team/ert/ert_team = new ertemplate.team

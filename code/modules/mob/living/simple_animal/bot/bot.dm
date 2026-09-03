@@ -56,7 +56,11 @@
 	var/turf/ai_waypoint //The end point of a bot's path, or the target location.
 	var/list/path = list() //List of turfs through which a bot 'steps' to reach the waypoint, associated with the path image, if there is one.
 	var/pathset = 0
-	var/list/ignore_list = list() //List of unreachable targets for an ignore-list enabled bot to ignore.
+	/// Недостижимые цели, которые бот пропускает. Ассоциативное множество REF -> TRUE,
+	/// а не плоский список: скан клинбота бьёт по нему сотнями кандидатов за проход, и
+	/// `in` по списку из 50 элементов - это линейный обход на каждого кандидата.
+	/// Порядок вставки DM сохраняет, поэтому вытеснение самого старого через Cut(1,2) работает.
+	var/list/ignore_list = list()
 	var/mode = BOT_IDLE //Standardizes the vars that indicate the bot is busy with its function.
 	var/tries = 0 //Number of times the bot tried and failed to move.
 	var/remote_disabled = 0 //If enabled, the AI cannot *Remotely* control a bot. It can still control it through cameras.
@@ -101,8 +105,16 @@
 	var/commissioned = FALSE // Will other (noncommissioned) bots salute this bot?
 	var/can_salute = TRUE
 	var/salute_delay = 60 SECONDS
-	var/patrol_emote = "Включение режима патруля."
+	var/patrol_emote = "Вход в режим патруля."
 	var/patrol_fail_emote = "Невозможно начать патруль."
+
+	/// ЗАТЫЧКА пока не будут сделаны overlay версии лампочек ON/OFF для всех ботов. На момент комментария сделано для флурботов
+	var/overlay_system = FALSE
+
+/// Возвращает боту право салютовать. Отдельным проком, чтобы таймер салюта висел
+/// на самом боте и снимался вместе с ним.
+/mob/living/simple_animal/bot/proc/restore_salute()
+	can_salute = TRUE
 
 /mob/living/simple_animal/bot/proc/set_commissioned(new_value)
 	if(commissioned == new_value)
@@ -268,7 +280,9 @@
 	diag_hud_set_botmode()
 
 	if (ignorelistcleanuptimer % 300 == 0) // Every 300 actions, clean up the ignore list from old junk
-		for(var/ref in ignore_list)
+		// Копия обязательна: правка списка прямо в for() по нему пропускает каждый второй
+		// элемент, и половина протухших ссылок оставалась в списке навсегда.
+		for(var/ref in ignore_list.Copy())
 			var/atom/referredatom = locate(ref)
 			if (!referredatom || !istype(referredatom) || QDELETED(referredatom))
 				ignore_list -= ref
@@ -286,7 +300,11 @@
 			if(get_dist(src, commissioned_bot) <= 5)
 				visible_message("<b>[src]</b> performs an elaborate salute for [commissioned_bot]!")
 				can_salute = FALSE
-				addtimer(VARSET_CALLBACK(src, can_salute, TRUE), salute_delay)
+				//Именно CALLBACK на src, а не VARSET_CALLBACK: у последнего object -
+				//это GLOBAL_PROC, поэтому таймер не попадает в bot.active_timers и
+				///datum/Destroy его не снимает. Бот висел бы у таймера в аргументах
+				//ещё минуту после qdel.
+				addtimer(CALLBACK(src, PROC_REF(restore_salute)), salute_delay)
 				break
 
 	switch(mode) //High-priority overrides are processed first. Bots can do nothing else while under direct command.
@@ -324,7 +342,7 @@
 			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
 			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
-	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))
+	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
 			to_chat(user, "Управление робота теперь [locked ? "заблокировано." : "разблокировано."]")
@@ -420,9 +438,17 @@
 		Radio.talk_into(src, message, message_mode, spans, language)
 		return REDUCE_RANGE
 
+/// Выкладывает деталь бота на пол. Ждёт ТИППАТ: по нему делается new().
+/// Экземпляр тоже принимаем - иначе new() рантаймит и рвёт вызывающую цепочку,
+/// а вызывают этот прок в том числе из Destroy.
 /mob/living/simple_animal/bot/proc/drop_part(obj/item/drop_item, dropzone)
+	if(!ispath(drop_item))
+		var/atom/movable/existing_item = drop_item
+		if(istype(existing_item) && dropzone)
+			existing_item.forceMove(dropzone)
+		return existing_item
+
 	var/dropped_item = new drop_item(dropzone)
-	drop_item = null
 
 	if(istype(dropped_item, /obj/item/stock_parts/cell))
 		var/obj/item/stock_parts/cell/dropped_cell = dropped_item
@@ -481,7 +507,7 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 /mob/living/simple_animal/bot/proc/checkscan(scan, scan_type, old_target)
 	if(!istype(scan, scan_type)) //Check that the thing we found is the type we want!
 		return FALSE //If not, keep searching!
-	if( (REF(scan) in ignore_list) || (scan == old_target) ) //Filter for blacklisted elements, usually unreachable or previously processed oness
+	if(ignore_list[REF(scan)] || (scan == old_target)) //Filter for blacklisted elements, usually unreachable or previously processed oness
 		return FALSE
 
 	var/scan_result = process_scan(scan) //Some bots may require additional processing when a result is selected.
@@ -503,11 +529,12 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 
 
 /mob/living/simple_animal/bot/proc/add_to_ignore(subject)
-	if(ignore_list.len < 50) //This will help keep track of them, so the bot is always trying to reach a blocked spot.
-		ignore_list += REF(subject)
-	else  //If the list is full, insert newest, delete oldest.
+	var/subject_ref = REF(subject)
+	if(ignore_list[subject_ref]) //Already ignored, don't churn the eviction order for nothing.
+		return
+	if(ignore_list.len >= 50) //If the list is full, insert newest, delete oldest.
 		ignore_list.Cut(1,2)
-		ignore_list += REF(subject)
+	ignore_list[subject_ref] = TRUE //This will help keep track of them, so the bot is always trying to reach a blocked spot.
 
 /*
 Movement proc for stepping a bot through a path generated through A-star.
@@ -515,7 +542,11 @@ Pass a positive integer as an argument to override a bot's default speed.
 */
 /mob/living/simple_animal/bot/proc/bot_move(dest, move_speed)
 	if(!dest || !path || path.len == 0) //A-star failed or a path/destination was not set.
-		set_path(null)
+		// Keep empty paths as a plain list; avoid set_path(null) HUD work when there is nothing to clear.
+		if(length(path))
+			set_path(null)
+		else
+			path = list()
 		return FALSE
 	dest = get_turf(dest) //We must always compare turfs, so get the turf of the dest var if dest was originally something else.
 	var/turf/last_node = get_turf(path[path.len]) //This is the turf at the end of the path, it should be equal to dest.
@@ -606,7 +637,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 	set_path(null)
 	summon_target = null
 	pathset = 0
-	access_card.access = prev_access
+	//карты доступа у бота может не быть вовсе (catmedbot), а bot_reset зовётся
+	//в том числе из Logout() - там разыменование её роняло каждый выход
+	if(access_card)
+		access_card.access = prev_access
 	tries = 0
 	mode = BOT_IDLE
 	diag_hud_set_botstat()
@@ -858,8 +892,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 		return
 	switch(action)
 		if("power")
-			on = !on
-			update_appearance()
+			if(on)
+				turn_off()
+			else
+				turn_on()
 		if("maintenance")
 			open = !open
 		if("patrol")
@@ -895,7 +931,8 @@ Pass a positive integer as an argument to override a bot's default speed.
 	return
 
 /mob/living/simple_animal/bot/update_icon_state()
-	icon_state = "[initial(icon_state)][on]"
+	if(!overlay_system)
+		icon_state = "[initial(icon_state)][on]"
 
 // Machinery to simplify topic and access calls
 /obj/machinery/bot_core
@@ -908,6 +945,13 @@ Pass a positive integer as an argument to override a bot's default speed.
 	owner = loc
 	if(!istype(owner))
 		return INITIALIZE_HINT_QDEL
+
+//Бот в своём Destroy делает QDEL_NULL(bot_core), но обратной ссылки не рвал никто:
+//пока ядро не соберётся, оно держит бота, и любая задержка со сбором ядра
+//автоматически превращается в hard delete самого бота.
+/obj/machinery/bot_core/Destroy()
+	owner = null
+	return ..()
 
 /mob/living/simple_animal/bot/proc/topic_denied(mob/user) //Access check proc for bot topics! Remember to place in a bot's individual Topic if desired.
 	if(!user.canUseTopic(src))
@@ -996,15 +1040,22 @@ Pass a positive integer as an argument to override a bot's default speed.
 	path = newpath ? newpath : list()
 	if(!path_hud)
 		return
-	var/list/path_huds_watching_me = list(GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED])
-	if(path_hud)
-		path_huds_watching_me += path_hud
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	var/list/path_huds_watching_me = list()
+	var/datum/atom_hud/diagnostic_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
+	if(diagnostic_hud)
+		path_huds_watching_me += diagnostic_hud
+	path_huds_watching_me += path_hud
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.remove_from_hud(src)
 
-	var/list/path_images = hud_list[DIAG_PATH_HUD]
-	QDEL_LIST(path_images)
+	var/list/path_images = hud_list?[DIAG_PATH_HUD]
+	if(isnull(path_images))
+		path_images = list()
+		hud_list[DIAG_PATH_HUD] = path_images
+	else
+		QDEL_LIST(path_images)
 	if(newpath)
 		for(var/i in 1 to newpath.len)
 			var/turf/T = newpath[i]
@@ -1042,8 +1093,9 @@ Pass a positive integer as an argument to override a bot's default speed.
 			path[T] = I
 			path_images += I
 
-	for(var/V in path_huds_watching_me)
-		var/datum/atom_hud/H = V
+	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
+		if(!H)
+			continue
 		H.add_to_hud(src)
 
 

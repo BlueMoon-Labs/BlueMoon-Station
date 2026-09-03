@@ -48,6 +48,8 @@ SUBSYSTEM_DEF(mapping)
 	var/max_plane_offset = 0
 
 	var/loading_ruins = FALSE
+	/// Имя z-уровня, который грузится прямо сейчас. Только для чёрного ящика МК, см. map_template.dm.
+	var/loading_template
 	var/list/turf/unused_turfs = list()				//Not actually unused turfs they're unused but reserved for use for whatever requests them. "[zlevel_of_turf]" = list(turfs)
 	var/list/datum/turf_reservations		//list of turf reservations
 	var/list/used_turfs = list()				//list of turf = datum/turf_reservation
@@ -62,6 +64,11 @@ SUBSYSTEM_DEF(mapping)
 	var/station_start  // should only be used for maploading-related tasks
 	var/space_levels_so_far = 0
 	var/list/z_list
+	/// Кэш гравитации по z (индекс = номер z-уровня): max(setting) включённых
+	/// генераторов на уровне, иначе ZTRAIT_GRAVITY. Горячий путь has_gravity()
+	/// читает его вместо обхода GLOB.gravity_generators + level_trait().
+	/// Пересчёт - calculate_z_level_gravity(), зовётся из update_list() генератора.
+	var/list/gravity_by_z_level = list()
 	var/datum/space_level/transit
 	var/datum/space_level/empty_space
 	var/num_of_res_levels = 1
@@ -90,6 +97,13 @@ SUBSYSTEM_DEF(mapping)
 /datum/controller/subsystem/mapping/PreInit()
 	if(!obfuscation_secret)
 		obfuscation_secret = md5(GUID())		//HAH! Guess this!
+
+/datum/controller/subsystem/mapping/last_task()
+	if(loading_template)
+		return "грузится z-уровень [loading_template]"
+	if(loading_ruins)
+		return "расстановка руин"
+	return "z-уровней [world.maxz], резервных [num_of_res_levels]"
 
 /datum/controller/subsystem/mapping/Initialize(timeofday)
 	HACK_LoadMapConfig()
@@ -250,6 +264,7 @@ SUBSYSTEM_DEF(mapping)
 	clearing_reserved_turfs = SSmapping.clearing_reserved_turfs
 
 	z_list = SSmapping.z_list
+	gravity_by_z_level = SSmapping.gravity_by_z_level
 
 /datum/controller/subsystem/mapping/proc/LoadGroup(list/errorList, name, path, files, list/traits, list/default_traits, silent = FALSE, orientation = SOUTH)
 	. = list()

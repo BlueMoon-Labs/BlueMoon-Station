@@ -108,7 +108,7 @@
 				L.adjustFireLoss(-healing)
 			impatience += 50
 			if(prob(impatience))
-				FindTarget()//so we don't focus on some unconscious dude when we could get our eyes on the prize
+				LoseTarget()//so we don't focus on some unconscious dude; the controller picks a fresh target
 				impatience = 0
 				say("Bah!!")
 			return

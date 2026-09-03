@@ -35,10 +35,14 @@
 	..()
 	assume_disguise(old_species, H)
 	RegisterSignal(H, COMSIG_MOB_SAY, PROC_REF(handle_speech))
+	var/datum/component/neural_interface/interface = H.LoadComponent(/datum/component/neural_interface)
+	interface?.AddSource("SPECIES")
 
 /datum/species/synth/on_species_loss(mob/living/carbon/human/H)
 	. = ..()
 	UnregisterSignal(H, COMSIG_MOB_SAY)
+	var/datum/component/neural_interface/interface = H.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
 
 /datum/species/synth/handle_chemicals(datum/reagent/chem, mob/living/carbon/human/H)
 	if(chem.type == /datum/reagent/medicine/synthflesh)

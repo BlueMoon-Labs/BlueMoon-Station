@@ -1,6 +1,7 @@
 
 /obj/machinery/computer/prisoner/management
 	name = "Prisoner Management Console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Used to manage tracking implants placed inside criminals."
 	icon_screen = "explosive"
 	icon_keyboard = "security_key"

@@ -47,7 +47,7 @@
 /obj/item/gun/energy/pulse/pistol/inteq
 	name = "Melter"
 	desc = "<span class='danger'>Не направлять рабочую часть на органику</span>"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	icon_state = "melter"
 	charge_delay = 4
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/melter, /obj/item/ammo_casing/energy/laser/melter/destroy)
@@ -97,7 +97,7 @@
 	desc = "Энергетический пистолет довольно старого образца. Создан для использования спецслужбами Солнечной Федерации, но со временем был замещён более удачными образцами. Выглядит сильно модернизированным."
 	icon_state = "canceller"
 	item_state = "canceller"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler)
@@ -109,29 +109,29 @@
 	burst_shot_delay = 2
 
 /// AA12
-/obj/item/ammo_box/magazine/aa12/small
+/obj/item/ammo_box/magazine/aa12
 	name = "AA12 magazine (12g buckshot)"
 	desc = "Здоровый коробчатый магазин для патрон 12 калибра"
 	icon_state = "mag-aa-small"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 8
 
-/obj/item/ammo_box/magazine/aa12/small/update_icon()
+/obj/item/ammo_box/magazine/aa12/update_icon()
 	..()
 	icon_state = "mag-aa-small-[ammo_count() ? "1" : "0"]"
 
-/obj/item/ammo_box/magazine/aa12
+/obj/item/ammo_box/magazine/aa12/drum
 	name = "AA12 drum magazine (12g buckshot)"
 	desc = "Здоровый барабанный магазин для патрон 12 калибра"
 	icon_state = "mag-aa"
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = "shotgun"
 	max_ammo = 20
 
-/obj/item/ammo_box/magazine/aa12/update_icon()
+/obj/item/ammo_box/magazine/aa12/drum/update_icon()
 	..()
 	icon_state = "mag-aa-[ammo_count() ? "1" : "0"]"
 
@@ -142,11 +142,11 @@
 	item_state = "minotaur"
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file =  'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 2
-	mag_type = /obj/item/ammo_box/magazine/aa12/small
+	mag_type = /obj/item/ammo_box/magazine/aa12
 	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
 	automatic_burst_overlay = FALSE
 	can_suppress = FALSE
@@ -174,18 +174,8 @@
 	return
 
 //Огнемёт крутой
-/obj/item/projectile/bullet/incendiary/m2a100
-	name = "Fire"
-	damage = 7
-	fire_stacks = 10
-	damage_type = BURN
-	icon_state = ""
-	hitsound_wall = ""
-	projectile_piercing = PASSMOB
-	range = 15
-
 /obj/item/ammo_casing/energy/laser/m2a100
-	projectile_type = /obj/item/projectile/bullet/incendiary/m2a100
+	projectile_type = /obj/item/projectile/bullet/flamethrower
 	pellets = 6
 	variance = 35
 	e_cost = 50
@@ -199,7 +189,7 @@
 	item_state = "m240_0"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/guns.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/m2a100)
 	attack_verb = list("attacked", "bumped", "hited")
 	force = 12

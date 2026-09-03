@@ -19,6 +19,10 @@
 	},
 /turf/open/indestructible/spooknecropolis,
 /area/awaymission/Killthemall/Level)
+"af" = (
+/obj/item/disk/gatereward,
+/turf/open/misc/grass,
+/area/awaymission/Killthemall/Level)
 "ai" = (
 /obj/structure/ladder/unbreakable/rune{
 	color = "#ff0000";
@@ -114,6 +118,7 @@
 /obj/item/seeds/carrot/parsnip,
 /obj/structure/closet/crate,
 /obj/item/seeds/kudzu,
+/obj/item/disk/gatereward,
 /turf/open/misc/grass,
 /area/awaymission/Killthemall/Level)
 "bK" = (
@@ -278,7 +283,7 @@
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "eL" = (
-/turf/closed/wall/mineral/titanium/spaceship,
+/turf/closed/wall/mineral/titanium,
 /area/space)
 "eP" = (
 /obj/structure/destructible/cult/pylon{
@@ -327,13 +332,7 @@
 /area/awaymission/Killthemall/Level)
 "ft" = (
 /obj/item/clothing/suit/straight_jacket,
-/mob/living/simple_animal/hostile/gigachad_inteq{
-	health = 480;
-	maxHealth = 480;
-	inertia_move_delay = 0;
-	faction = list("shiz");
-	stop_automated_movement = 1
-	},
+/mob/living/simple_animal/hostile/gigachad_inteq/shooter/sniper,
 /turf/open/floor/padded,
 /area/awaymission/Killthemall/Level)
 "fv" = (
@@ -396,7 +395,8 @@
 	},
 /area/awaymission/Killthemall/Boss)
 "gb" = (
-/mob/living/simple_animal/hostile/syndicate/melee{
+/obj/effect/turf_decal/delivery/blue,
+/mob/living/simple_animal/hostile/syndicate/ranged/shotgun{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -497,7 +497,7 @@
 /turf/open/indestructible,
 /area/awaymission/Killthemall/start)
 "hU" = (
-/mob/living/simple_animal/hostile/syndicate/melee/space/stormtrooper{
+/mob/living/simple_animal/hostile/inteq/melee/space/stormtrooper{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -578,7 +578,7 @@
 /turf/closed/wall/mineral/cult,
 /area/awaymission/Killthemall/Level)
 "jN" = (
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot{
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq{
 	icon_dead = "russianmelee_dead";
 	icon_living = "russianofficer";
 	icon_state = "russianofficer";
@@ -702,7 +702,7 @@
 	},
 /area/awaymission/Killthemall/start)
 "mk" = (
-/turf/closed/wall/mineral/titanium/spaceship,
+/turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
 "mp" = (
 /mob/living/simple_animal/hostile/construct/builder/hostile{
@@ -789,7 +789,7 @@
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "nP" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+/mob/living/simple_animal/hostile/inteq/ranged/smg{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -800,14 +800,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "nV" = (
-/obj/structure/spacevine,
-/obj/structure/spacevine,
-/mob/living/simple_animal/hostile/venus_human_trap{
-	stop_automated_movement = 1;
-	stop_automated_movement_when_pulled = 1;
-	turns_per_move = 0
-	},
-/turf/open/misc/grass,
+/mob/living/simple_animal/hostile/syndicate/space,
+/turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "nX" = (
 /obj/structure/destructible/cult/pylon,
@@ -998,7 +992,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "qQ" = (
-/obj/vehicle/sealed/mecha/combat/gygax/bluespace,
+/obj/vehicle/sealed/mecha/combat/gygax/loaded,
 /obj/effect/decal/cleanable/oil,
 /turf/open/floor/circuit/red,
 /area/awaymission/Killthemall/Boss)
@@ -1055,6 +1049,10 @@
 	name = "\improper TOTALLY LEGIT PORTAL OF FUN"
 	},
 /turf/open/indestructible,
+/area/awaymission/Killthemall/start)
+"rB" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel/kitchen/herringbone,
 /area/awaymission/Killthemall/start)
 "rE" = (
 /obj/machinery/computer/mech_bay_power_console{
@@ -1404,7 +1402,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "xg" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun{
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun{
 	inertia_move_delay = 0;
 	stop_automated_movement = 1;
 	stop_automated_movement_when_pulled = 1;
@@ -1453,6 +1451,13 @@
 "xO" = (
 /turf/closed/indestructible/necropolis,
 /area/space)
+"xU" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/indestructible{
+	icon = 'icons/turf/floors/carpet.dmi';
+	icon_state = "carpet"
+	},
+/area/awaymission/Killthemall/Boss)
 "xY" = (
 /obj/structure/stone_tile/burnt{
 	dir = 8
@@ -1488,9 +1493,6 @@
 "yo" = (
 /obj/structure/shipping_container/kosmologistika,
 /turf/open/floor/mineral/plastitanium,
-/area/awaymission/Killthemall/Level)
-"yq" = (
-/turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
 "ys" = (
 /obj/item/trash/candy,
@@ -1546,7 +1548,7 @@
 /area/awaymission/Killthemall/Level)
 "zk" = (
 /obj/machinery/status_display/syndie,
-/turf/closed/wall/mineral/titanium/spaceship,
+/turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
 "zl" = (
 /obj/effect/decal/cleanable/blood,
@@ -1572,6 +1574,15 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"zN" = (
+/obj/structure/stone_tile/block/burnt{
+	dir = 1
+	},
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating/asteroid/basalt{
+	initial_gas_mix = "o2=19;n2=32;TEMP=293.15"
+	},
+/area/awaymission/Killthemall/Boss)
 "zU" = (
 /obj/structure/flora/tree/jungle{
 	layer = 9
@@ -1721,6 +1732,10 @@
 /obj/machinery/door/airlock/external,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"Cm" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/padded,
+/area/awaymission/Killthemall/Level)
 "Cn" = (
 /turf/open/floor/circuit/red,
 /area/awaymission/Killthemall/Boss)
@@ -1778,6 +1793,13 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"Dk" = (
+/obj/item/disk/gatereward/bigest,
+/turf/open/indestructible/cobble{
+	name = "void";
+	icon_state = "black"
+	},
+/area/awaymission/Killthemall/start)
 "Dl" = (
 /mob/living/simple_animal/hostile/skeleton/templar{
 	health = 80;
@@ -1933,6 +1955,7 @@
 	pixel_x = -5
 	},
 /obj/machinery/recharger,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "Fo" = (
@@ -2117,6 +2140,7 @@
 "HU" = (
 /obj/structure/destructible/cult/talisman,
 /obj/item/book/granter/spell/random,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel/cult,
 /area/awaymission/Killthemall/Boss)
 "HW" = (
@@ -2200,17 +2224,6 @@
 	name = "\improper TOTALLY LEGIT PORTAL OF FUN"
 	},
 /turf/open/floor/fakespace,
-/area/awaymission/Killthemall/Level)
-"JN" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper/anthro{
-	inertia_move_delay = 0;
-	stop_automated_movement = 1;
-	stop_automated_movement_when_pulled = 1;
-	turns_per_move = 0
-	},
-/obj/effect/turf_decal/delivery/blue,
-/obj/effect/decal/cleanable/wrapping,
-/turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
 "JQ" = (
 /obj/structure/flora/tree/jungle{
@@ -2501,7 +2514,7 @@
 /area/awaymission/Killthemall/Level)
 "Op" = (
 /obj/structure/salvage/protolathe,
-/turf/closed/wall/mineral/titanium/spaceship,
+/turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
 "Ou" = (
 /obj/effect/decal/hammerandsickle,
@@ -2612,7 +2625,7 @@
 /area/awaymission/Killthemall/Level)
 "PJ" = (
 /obj/machinery/computer/security/telescreen/entertainment,
-/turf/closed/wall/mineral/titanium/spaceship,
+/turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
 "PM" = (
 /obj/structure/chair/office,
@@ -2768,10 +2781,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/awaymission/Killthemall/Level)
 "Sz" = (
-/obj/structure/salvage/destructive_analyzer,
-/obj/item/clothing/suit/space/hardsuit/syndi/owl{
-	armor = list("melee" = 50, "bullet" = 50, "laser" = 50, "energy" = 50, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 50, "acid" = 90, "wound" = 50)
-	},
+/obj/machinery/suit_storage_unit/syndicate,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/Killthemall/Level)
 "SI" = (
@@ -2822,13 +2832,7 @@
 	},
 /area/awaymission/Killthemall/start)
 "Td" = (
-/mob/living/simple_animal/hostile/werewolf{
-	melee_damage_lower = 40;
-	melee_damage_upper = 50;
-	stop_automated_movement = 1;
-	stop_automated_movement_when_pulled = 1;
-	turns_per_move = 0
-	},
+/mob/living/simple_animal/hostile/werewolf/weakend,
 /turf/open/misc/grass,
 /area/awaymission/Killthemall/Level)
 "Tf" = (
@@ -3188,6 +3192,11 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/rust,
 /area/awaymission/Killthemall/Level)
+"YU" = (
+/obj/structure/flora/tree/spookylog,
+/obj/item/disk/gatereward,
+/turf/open/misc/grass,
+/area/awaymission/Killthemall/Level)
 "Zr" = (
 /turf/open/floor/plating/asteroid/basalt{
 	initial_gas_mix = "o2=19;n2=32;TEMP=293.15"
@@ -3218,6 +3227,9 @@
 /turf/open/floor/padded,
 /area/awaymission/Killthemall/Level)
 "ZJ" = (
+/obj/item/a_gift/anything{
+	name = "Gift"
+	},
 /obj/item/a_gift/anything{
 	name = "Gift"
 	},
@@ -5619,7 +5631,7 @@ nM
 Rq
 nM
 yd
-VC
+nM
 nM
 yt
 sU
@@ -5789,7 +5801,7 @@ Kt
 Kt
 Kt
 Kt
-Kt
+nV
 zC
 LV
 Kt
@@ -6304,7 +6316,7 @@ Kt
 Kt
 Kt
 Kt
-gb
+Kt
 Kt
 Kt
 Pi
@@ -6483,13 +6495,13 @@ lK
 lK
 lK
 lK
-oZ
 lK
 lK
 lK
 lK
 lK
-oZ
+lK
+lK
 lK
 lK
 lm
@@ -6565,7 +6577,7 @@ Kt
 Kt
 Kt
 zC
-LV
+gb
 Kt
 Kt
 TG
@@ -6822,7 +6834,7 @@ Kt
 Kt
 Kt
 zC
-JN
+WK
 Kt
 Kt
 TG
@@ -6998,7 +7010,7 @@ SX
 Dc
 gm
 Kt
-Dc
+Kt
 Kt
 Kt
 gm
@@ -7448,7 +7460,7 @@ TH
 TH
 TH
 TH
-mp
+TH
 TH
 in
 in
@@ -7734,11 +7746,11 @@ Gm
 Mf
 Mf
 Mf
-Dl
 Mf
 Mf
 Mf
-Dl
+Mf
+Mf
 Mf
 Mf
 Mf
@@ -8539,7 +8551,7 @@ lK
 lK
 lK
 lK
-oZ
+lK
 lK
 lK
 oZ
@@ -11662,7 +11674,7 @@ xH
 Vn
 FS
 MB
-fw
+zN
 fW
 fI
 MB
@@ -17052,25 +17064,25 @@ ab
 ab
 ab
 xO
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
 xO
 ab
 ab
@@ -17309,7 +17321,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -17327,7 +17339,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -17566,8 +17578,8 @@ ab
 ab
 ab
 xO
-yq
-yq
+mk
+mk
 lj
 lj
 Tz
@@ -17584,7 +17596,7 @@ Tz
 lj
 lj
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -17823,7 +17835,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -17841,7 +17853,7 @@ zd
 bV
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -18080,7 +18092,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -18098,7 +18110,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -18337,7 +18349,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 bV
 lj
@@ -18353,9 +18365,9 @@ lj
 lj
 Tz
 cq
-lj
+Cm
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -18565,7 +18577,7 @@ Zr
 Zr
 Zr
 Zr
-EQ
+Zr
 Zr
 Zr
 ue
@@ -18594,7 +18606,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -18612,7 +18624,7 @@ zd
 lj
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -18851,7 +18863,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -18869,7 +18881,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -19108,7 +19120,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 WX
 lj
@@ -19126,7 +19138,7 @@ Tz
 lj
 lj
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -19365,7 +19377,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -19383,7 +19395,7 @@ zd
 lj
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -19591,7 +19603,7 @@ ON
 Zr
 Zr
 Zr
-fq
+Zr
 Zr
 Zr
 Zr
@@ -19622,7 +19634,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -19640,7 +19652,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -19847,9 +19859,9 @@ ON
 ON
 ON
 Zr
-Qc
 Zr
-EQ
+Zr
+Zr
 Zr
 Zr
 Zr
@@ -19879,25 +19891,25 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 lj
 lj
 Tz
 lj
 lj
-yq
+mk
 zd
 PB
 zd
-yq
+mk
 lj
 lj
 Tz
 lj
 lj
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -20136,7 +20148,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -20154,7 +20166,7 @@ zd
 dl
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -20327,7 +20339,7 @@ SM
 Pe
 Uj
 uS
-nV
+qV
 HG
 ol
 Bi
@@ -20393,7 +20405,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -20411,7 +20423,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -20650,7 +20662,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 lj
 lj
@@ -20668,7 +20680,7 @@ Tz
 lj
 bV
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -20907,7 +20919,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -20925,7 +20937,7 @@ zd
 lj
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -21164,25 +21176,25 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
 Qr
 lj
 lj
-yq
+mk
 zd
 zd
 zd
-yq
+mk
 lj
 lj
 Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -21421,7 +21433,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 lj
 vp
@@ -21439,7 +21451,7 @@ Tz
 lj
 lj
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -21678,7 +21690,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -21696,7 +21708,7 @@ zd
 lj
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -21935,7 +21947,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -21953,7 +21965,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -22192,7 +22204,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 lj
 lj
@@ -22210,7 +22222,7 @@ Tz
 bW
 lj
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -22449,7 +22461,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 rS
 lj
@@ -22467,7 +22479,7 @@ zd
 lj
 rS
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -22540,7 +22552,7 @@ fv
 fv
 fv
 fv
-aZ
+fv
 fv
 fv
 fv
@@ -22706,7 +22718,7 @@ ab
 ab
 ab
 xO
-yq
+mk
 Qr
 Qr
 Qr
@@ -22724,7 +22736,7 @@ Qr
 Qr
 Qr
 Qr
-yq
+mk
 xO
 ab
 ab
@@ -22963,25 +22975,25 @@ ab
 ab
 ab
 xO
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
 lj
 lj
 lj
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
 xO
 ab
 ab
@@ -23225,15 +23237,15 @@ xO
 xO
 xO
 xO
-yq
-yq
-yq
+mk
+mk
+mk
 lj
 lj
 lj
-yq
-yq
-yq
+mk
+mk
+mk
 xO
 xO
 xO
@@ -23482,15 +23494,15 @@ ab
 ab
 ab
 xO
-yq
-yq
+mk
+mk
 lj
 lj
 lj
 lj
 lj
-yq
-yq
+mk
+mk
 xO
 ab
 ab
@@ -23739,15 +23751,15 @@ ab
 ab
 ab
 xO
-yq
+mk
 iw
 KH
 lj
 lj
 lj
 lj
-yq
-yq
+mk
+mk
 xO
 ab
 ab
@@ -23996,15 +24008,15 @@ ab
 ab
 ab
 xO
-yq
-yq
+mk
+mk
 UA
 lj
 ZI
 lj
 lj
-yq
-yq
+mk
+mk
 xO
 ab
 ab
@@ -24253,15 +24265,15 @@ ab
 ab
 ab
 xO
-yq
-yq
+mk
+mk
 dB
 lj
 lj
 lj
 lj
-yq
-yq
+mk
+mk
 xO
 ab
 ab
@@ -24335,7 +24347,7 @@ fv
 Es
 fv
 fv
-aZ
+fv
 fv
 fv
 fv
@@ -24510,15 +24522,15 @@ ab
 ab
 ab
 xO
-yq
-yq
+mk
+mk
 Qs
 lj
 lj
 lj
 lj
-yq
-yq
+mk
+mk
 xO
 ab
 ab
@@ -24767,15 +24779,15 @@ ab
 ab
 ab
 xO
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
 xO
 ab
 ab
@@ -25024,15 +25036,15 @@ ab
 ab
 ab
 xO
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
-yq
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
+mk
 xO
 ab
 ab
@@ -26391,7 +26403,7 @@ ab
 xO
 kH
 kH
-fv
+af
 fv
 fv
 fv
@@ -26460,7 +26472,7 @@ ab
 xO
 kH
 kH
-QY
+YU
 fv
 fv
 fv
@@ -61274,7 +61286,7 @@ mc
 mc
 Oy
 wd
-mc
+Dk
 mc
 mc
 Tc
@@ -63658,7 +63670,7 @@ wO
 wO
 uv
 is
-wO
+rB
 uK
 vM
 ab
@@ -63706,7 +63718,7 @@ ab
 ab
 xO
 kd
-AC
+xU
 wA
 AC
 kd

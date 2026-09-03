@@ -19,3 +19,14 @@
 /obj/effect/temp_visual/telegraphing/lift_travel/Initialize(mapload, duration)
 	src.duration = duration
 	return ..()
+
+///Прицеливание перед тяжёлым залпом: окно, за которое можно уйти за укрытие.
+/obj/effect/temp_visual/telegraphing/ranged_burst
+	icon = 'icons/mob/telegraphing/telegraph.dmi'
+	icon_state = "target_circle"
+	duration = 0.6 SECONDS
+
+/obj/effect/temp_visual/telegraphing/ranged_burst/Initialize(mapload, telegraph_duration)
+	if(telegraph_duration)
+		duration = telegraph_duration
+	return ..()

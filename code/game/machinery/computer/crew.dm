@@ -11,7 +11,6 @@
 	circuit = /obj/item/circuitboard/computer/crew
 	var/obj/item/radio/headset/radio = /obj/item/radio/headset/headset_med
 	light_color = LIGHT_COLOR_BLUE
-	COOLDOWN_DECLARE(data_update_cooldown)
 
 /obj/machinery/computer/crew/Initialize()
 	. = ..()
@@ -25,28 +24,24 @@
 /obj/machinery/computer/crew/proc/radioAnnounce(message)
 	radio?.talk_into(src, message, MODE_DEPARTMENT)
 
-/obj/machinery/computer/crew/process(delta_time)
-	. = ..()
-	if(!.)
-		return
-	if(COOLDOWN_FINISHED(src, data_update_cooldown))
-		COOLDOWN_START(src, data_update_cooldown, SENSORS_UPDATE_PERIOD)
-		var/sector = z
-		if(!sector)
-			var/turf/T = get_turf(src)
-			sector = T.z
-		GLOB.crewmonitor.update_data(sector)
+// No process() override on purpose. The console used to rebuild GLOB.crewmonitor's per-z sensor
+// snapshot every SENSORS_UPDATE_PERIOD, but nothing reads that snapshot except
+// /datum/crewmonitor/ui_data(), which calls update_data() itself and gets the same cache. So every
+// console on the station was walking GLOB.carbon_list on a timer to warm a cache no one was
+// reading - and holding itself awake on SSmachines to do it (idle_sleeps = FALSE), which in turn
+// kept its area drawing dynamically and blocked the area's APC from parking.
 
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
 	radio = null
 
-/obj/machinery/computer/crew/interact(mob/user)
+/obj/machinery/computer/crew/ui_interact(mob/user, datum/tgui/ui)
 	GLOB.crewmonitor.show(user,src)
 
 GLOBAL_DATUM_INIT(crewmonitor, /datum/crewmonitor, new)
 GLOBAL_DATUM_INIT(crewmonitor_security, /datum/crewmonitor/security, new)
 GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
+GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
 /datum/crewmonitor
 	var/list/ui_sources = list() //List of user -> ui source
@@ -85,7 +80,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	jobs["Research Director"] = 30
 	jobs["Scientist"] = 31
 	jobs["Roboticist"] = 32
-	jobs["Expeditor"] = 33 //BlueMoon edit
+	jobs["Vanguard operative"] = 33 //BlueMoon edit
 	// Engineering
 	jobs["Chief Engineer"] = 40
 	jobs["Station Engineer"] = 41
@@ -134,6 +129,12 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 
 /datum/crewmonitor/ui_host(mob/user)
 	return ui_sources[user]
+
+/datum/crewmonitor/ui_close(mob/user)
+	//запись живёт с show() до закрытия UI; без чистки глобальный синглтон
+	//вечно держит и юзера, и источник (ИИ открывает консоль сам на себя)
+	ui_sources -= user
+	return ..()
 
 /datum/crewmonitor/ui_data(mob/user)
 	var/z = user.z
@@ -202,7 +203,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					continue
 
 				if (nanite_sensors || U.sensor_mode >= SENSOR_LIVING)
-					life_status = (!H.stat ? TRUE : FALSE)
+					life_status = H.stat != DEAD
 				else
 					life_status = null
 
@@ -222,7 +223,11 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 				if (nanite_sensors || U.sensor_mode >= SENSOR_COORDS)
 					if (!pos)
 						pos = get_turf(H)
-					area = get_area_name(H, TRUE)
+					var/turf/mob_turf = get_turf(H)
+					if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+						area = "Hilbert Hotel"
+					else
+						area = get_area_name(H, TRUE)
 					pos_x = pos.x
 					pos_y = pos.y
 				else
@@ -308,6 +313,89 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 	jobs["Blueshield"] = 69
 
 	src.jobs = jobs
+
+/datum/crewmonitor/siege
+	selected_jobs = -1
+
+/datum/crewmonitor/siege/update_data(z)
+	if(data_by_z["[z]"] && last_update["[z]"] && world.time <= last_update["[z]"] + SENSORS_UPDATE_PERIOD)
+		return data_by_z["[z]"]
+
+	var/list/results_damaged = list()
+	var/list/results_undamaged = list()
+
+	var/obj/item/clothing/under/U
+	var/turf/pos
+	var/name
+	var/oxydam
+	var/toxdam
+	var/burndam
+	var/brutedam
+	var/totaldam
+	var/area
+	var/pos_x
+	var/pos_y
+	var/life_status
+
+	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
+		if(!HAS_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER))
+			continue
+		if(H.z != 0 && H.z != z)
+			continue
+		if(!istype(H.w_uniform, /obj/item/clothing/under))
+			continue
+		U = H.w_uniform
+		if(U.has_sensor <= 0 || !U.sensor_mode)
+			continue
+
+		pos = U.sensor_mode == SENSOR_COORDS ? get_turf(H) : null
+		if(H.z == 0 && (!pos || pos.z != z))
+			continue
+
+		name = H.name || "Unknown"
+
+		if(U.sensor_mode >= SENSOR_LIVING)
+			life_status = H.stat != DEAD
+		else
+			life_status = null
+
+		if(U.sensor_mode >= SENSOR_VITALS)
+			oxydam = round(H.getOxyLoss(), 1)
+			toxdam = round(H.getToxLoss(), 1)
+			burndam = round(H.getFireLoss(), 1)
+			brutedam = round(H.getBruteLoss(), 1)
+			totaldam = oxydam + toxdam + burndam + brutedam
+		else
+			oxydam = null
+			toxdam = null
+			burndam = null
+			brutedam = null
+			totaldam = 0
+
+		if(U.sensor_mode >= SENSOR_COORDS)
+			if(!pos)
+				pos = get_turf(H)
+			area = get_area_name(H, TRUE)
+			pos_x = pos.x
+			pos_y = pos.y
+		else
+			area = null
+			pos_x = null
+			pos_y = null
+
+		var/total_list = list("name" = name, "assignment" = "Defender", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "can_track" = H.can_track(null))
+
+		if(totaldam)
+			results_damaged[++results_damaged.len] = total_list
+		else
+			results_undamaged[++results_undamaged.len] = total_list
+
+	var/list/returning = sortTim(results_damaged, GLOBAL_PROC_REF(damage_compare)) + sortTim(results_undamaged, GLOBAL_PROC_REF(ijob_compare))
+
+	data_by_z["[z]"] = returning
+	last_update["[z]"] = world.time
+
+	return returning
 
 GLOBAL_LIST_EMPTY(crew_sensor_monitors)
 

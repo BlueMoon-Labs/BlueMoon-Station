@@ -108,22 +108,21 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 			var/content
 			if(flavor_name == "OOC Notes")
 
-				content += "[L]'s OOC Notes: <br> <b>ERP:</b> [L.client.prefs.erppref] <b>| Non-Con:</b> [L.client.prefs.nonconpref] <b>| Vore:</b> [L.client.prefs.vorepref] <b>| Mob Non-Con Sex:</b> [L.client.prefs.mobsexpref] <b>| Horny Antags:</b> [L.client.prefs.hornyantagspref]"
+				content += "[L]'s OOC Notes: <br> <b>ERP:</b> [L.client.prefs.erppref] <b>| Non-Con:</b> [L.client.prefs.nonconpref] <b>| Vore:</b> [L.client.prefs.vorepref] <b>| Mob Non-Con Sex:</b> [L.client.prefs.mobsexpref]"
 
 				if(L.client.prefs.unholypref == "Yes")
 					content += " <b>| Unholy:</b> [L.client.prefs.unholypref]\n"
 				else
 					content += "\n"
 
+				content += " <b>| Unholy Hard:</b> [L.client.prefs.unholyhardpref]\n"
+
 //				content += " <b>| Stomping Interactions:</b> [L.client.prefs.stomppref ? "Yes" : "No"]\n"
 
 				if(L.client.prefs.extremepref == "Yes")
 					content += "<br><b>Extreme content:</b> [L.client.prefs.extremepref] <b>| Extreme content harm:</b> [L.client.prefs.extremeharm]\n"
 
-				if(L.client.prefs.be_victim == BEVICTIM_ASK || L.client.prefs.be_victim == BEVICTIM_YES)
-					content += "<br><b>Be antag victim:</b> [L.client.prefs.be_victim]\n"
-
-				content += "\n"
+			content += "\n"
 
 			content += text
 			if(flavor_name == "Headshot") //SPLURT edit
@@ -161,11 +160,13 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 	else if(issilicon(src))
 		if(!src.mind)
 			return
+		changeable_texts.Add("Хедшоты")
 		changeable_texts.Add("Синтетический флавор")
 
 	var/chosen = tgui_input_list(src, "Выберите параметр, который должен быть изменён. Изменения действуют только в течении раунда и не затрагивают сами преференсы. Если вам нужно ввести многострочный текст с ENTER-ами, то лучше введите его вне игры и скопируйте сюда.", "Управление флавор-текстами", changeable_texts, changeable_texts[1])
 	if(!chosen)
 		return
+
 	switch(chosen)
 		if("Флавор")
 			var/mob/living/carbon/our_mob = src
@@ -193,47 +194,6 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				var/new_text = tgui_input_text(our_borgy, "Введите новые ООС-заметки своего киборга (максимум [MAX_FLAVOR_LEN] символов).", "Новые ООС-заметки", our_borgy.mind.ooc_notes, MAX_FLAVOR_LEN, TRUE, TRUE)
 				if(new_text)
 					our_borgy.mind.ooc_notes = new_text
-		if("Хедшоты", "Хедшоты без одежды")
-			var/mob/living/carbon/our_mob = src
-			var/chosen_headshot_id = tgui_input_list(our_mob, "Выберите номер хедшота, который хотите изменить.", "Управление флавор-текстами", list("1", "2", "3"), "1")
-			// var/max_headshots = 3
-			if(!chosen_headshot_id || !isnum(text2num(chosen_headshot_id)))
-				return
-			chosen_headshot_id = text2num(chosen_headshot_id)
-			var/list/headshots = chosen == "Хедшоты без одежды" ? our_mob.dna.headshot_naked_links : our_mob.dna.headshot_links
-			var/has_headshot_id = chosen_headshot_id <= headshots.len
-			var/usr_input = tgui_input_text(our_mob, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg')", "Headshot Image", has_headshot_id ? headshots[chosen_headshot_id] : "", 100, FALSE, FALSE)
-			if(isnull(usr_input))
-				return
-
-			if(!usr_input && has_headshot_id)
-				headshots[chosen_headshot_id] = null
-				listclearnulls(headshots)
-				return
-
-			var/static/link_regex = regex("^(https://i\\.gyazo\\.com|https://static1\\.e621\\.net|https://i\\.ibb\\.co/)")
-			var/static/end_regex = regex("(\\.jpg|\\.png|\\.jpeg)$")
-
-			if(!findtext(usr_input, link_regex))
-				to_chat(our_mob, span_warning("The link needs to be an unshortened Gyazo, iBB, E621 link!"))
-				return
-
-			if(!findtext(usr_input, end_regex))
-				to_chat(our_mob, span_warning("You need either \".png\", \".jpg\", or \".jpeg\" in the end of the link!"))
-				return
-
-			var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
-			var/new_link = sanitize(usr_input, repl_chars)
-			if(has_headshot_id && headshots[chosen_headshot_id] == new_link)
-				return
-
-			to_chat(our_mob, span_notice("Если картинка не отображается в игре должным образом, убедитесь, что это прямая ссылка на изображение, которая правильно открывается в обычном браузере."))
-			to_chat(our_mob, span_notice("Имейте в виду, что размер фотографии будет уменьшен до 256x256 пикселей, поэтому чем квадратнее фотография, тем лучше она будет выглядеть."))
-
-			if(has_headshot_id)
-				headshots[chosen_headshot_id] = new_link
-			else
-				LAZYADD(headshots, new_link)
 		if("Временный Флавор (Поза)")
 			var/mob/living/our_mob = src
 			var/new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа (максимум 1024 символа).", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)
@@ -244,6 +204,81 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				var/new_text = tgui_input_text(our_borgy, "Введите новый синт-флавор (максимум [MAX_FLAVOR_LEN] символов). Изменения действуют только в течении раунда и не затрагивают сами преференсы.", "Новый синт-флавор", our_borgy.mind.silicon_flavor_text, MAX_FLAVOR_LEN, TRUE, TRUE)
 				if(new_text)
 					our_borgy.mind.silicon_flavor_text = new_text
+		if("Хедшоты", "Хедшоты без одежды")
+			var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)$", "i")
+
+			var/list/headshots
+			var/is_naked_headshot = chosen == "Хедшоты без одежды" && !issilicon(src)
+			var/max_headshots = is_naked_headshot ? MAX_HEADSHOTS_NAKED : MAX_HEADSHOTS
+			if(issilicon(src))
+				headshots = mind?.headshot_links
+			else
+				var/mob/living/carbon/our_mob = src
+				headshots = is_naked_headshot ? our_mob.dna?.headshot_naked_links : our_mob.dna?.headshot_links
+
+			if(!headshots)
+				return
+
+			var/list/temp = list()
+			for(var/i = 1, i <= headshots.len, i++)
+				temp += i
+			if(headshots.len < max_headshots)
+				temp += "Add"
+			var/chosen_headshot_id = tgui_input_list(src,"Выберите номер хедшота, который хотите изменить.","Смена хедшота",temp)
+
+			if(!chosen_headshot_id)
+				return
+
+			if(chosen_headshot_id == "Add")
+				if(headshots.len >= max_headshots)
+					to_chat(src, span_warning("Достигнут максимум хедшотов: [max_headshots]"))
+					return
+				chosen_headshot_id = headshots.len+1
+			else
+				chosen_headshot_id = text2num(chosen_headshot_id)
+
+			var/has_headshot_id = chosen_headshot_id <= headshots.len
+			var/usr_input = tgui_input_text(
+				src,
+				"Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')",
+				"Headshot Image",
+				has_headshot_id ? headshots[chosen_headshot_id] : "",
+				100,
+				FALSE,
+				FALSE
+			)
+
+			if(!has_headshot_id && headshots.len >= max_headshots)
+				to_chat(src, span_warning("Достигнут максимум хедшотов: [max_headshots]"))
+				return
+
+			if(isnull(usr_input))
+				return
+
+			if(!usr_input && has_headshot_id)
+				headshots[chosen_headshot_id] = null
+				listclearnulls(headshots)
+				return
+
+			if(!findtext(usr_input, link_regex))
+				to_chat(src, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
+				return
+			var/static/list/repl_chars = list(
+				"\n" = "",
+				"\t" = "",
+				"'" = "",
+				"\"" = "",
+				" " = ""
+			)
+			var/new_link = sanitize(usr_input, repl_chars)
+			if(has_headshot_id && headshots[chosen_headshot_id] == new_link)
+				return
+			to_chat(src, span_notice("Если картинка не отображается в игре должным образом, убедитесь, что это прямая ссылка на изображение, которая правильно открывается в обычном браузере."))
+			to_chat(src, span_notice("Имейте в виду, что размер фотографии будет уменьшен до 256x256 пикселей, поэтому чем квадратнее фотография, тем лучше она будет выглядеть."))
+			if(has_headshot_id)
+				headshots[chosen_headshot_id] = new_link
+			else
+				headshots += new_link
 // BLUEMOON EDIT END
 
 /mob/proc/set_pose()
@@ -255,7 +290,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 
 	if(!istype(our_mob))
 		return
-		
+
 	var/new_text = ""
 	if(our_mob.client?.prefs.tgui_input_verbs)
 		new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа.", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)

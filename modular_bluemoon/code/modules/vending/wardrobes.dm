@@ -58,6 +58,8 @@
 		/obj/item/clothing/mask/balaclava/breath/alliance = 6,
 		/obj/item/clothing/mask/gas/sechailer = 4,
 		/obj/item/clothing/mask/gas/nri = 2,
+		/obj/item/clothing/head/warden/campaignhat = 5,
+		/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/deputysheriff = 5,
 		/obj/item/clothing/under/rank/security/officer/skirt = 5,
 		/obj/item/clothing/under/rank/security/officer/grey = 5,
 		/obj/item/clothing/under/rank/security/officer/tacticool = 3,
@@ -75,6 +77,7 @@
 		/obj/item/clothing/suit/armor/secjacket = 5,
 		/obj/item/clothing/under/rank/security/officer/util = 5,
 		/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp = 5,
+		/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/deputysheriff = 5,
 		/obj/item/clothing/neck/cloak/security = 6,
 		/obj/item/clothing/head/beret/sec/peacekeeper/cap = 5,
 		/obj/item/clothing/head/beret/sec/peacekeeper = 5,
@@ -155,6 +158,7 @@
 		/obj/item/clothing/suit/hooded/wintercoat/paramedic = 2,
 		/obj/item/clothing/under/rank/medical/doctor/nurse = 5,
 		/obj/item/clothing/head/nursehat = 5,
+		/obj/item/clothing/suit/hospitaller = 3,
 		/obj/item/clothing/under/rank/medical/doctor/skirt= 5,
 		/obj/item/clothing/under/rank/medical/doctor/blue = 5,
 		/obj/item/clothing/under/rank/medical/doctor/green = 5,
@@ -482,9 +486,6 @@
 		/obj/item/book/granter/crafting_recipe/coldcooking = 2,
 		/obj/item/clothing/gloves/color/white = 3,
 	)
-	contraband = list(
-		/obj/item/card_sticker/muck = 2,
-	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
 
@@ -505,6 +506,7 @@
 		/obj/item/clothing/gloves/color/black = 2,
 		/obj/item/clothing/head/soft/purple = 2,
 		/obj/item/broom = 2,
+		/obj/item/wirebrush = 2,
 		/obj/item/paint/paint_remover = 2,
 		/obj/item/melee/flyswatter = 2,
 		/obj/item/flashlight = 2,
@@ -601,6 +603,8 @@
 		/obj/item/clothing/suit/chaplain/clownpriest = 3, //BlueMoon changes,
 		/obj/item/clothing/suit/chaplain/shrinehand = 3, //BlueMoon changes,
 		/obj/item/clothing/suit/hooded/chaplain_hoodie/monk_robe = 2, //BlueMoon changes,
+		/obj/item/clothing/suit/hooded/genetor = 2, //BlueMoon changes,
+		/obj/item/clothing/suit/hooded/genetor_follower = 4, //BlueMoon changes,
 		/obj/item/clothing/neck/oldcross = 6,  //BlueMoon changes,
 		/obj/item/clothing/neck/epitrachelion = 1, //BlueMoon changes,
 		/obj/item/clothing/neck/cloak/bishop = 1, //BlueMoon changes,
@@ -771,6 +775,8 @@
 					/obj/item/clothing/under/bm/caprevskirt = 2, // BlueMoon Add
 					/obj/item/clothing/under/bm/regaloutfit = 2, // BlueMoon Add
 					/obj/item/clothing/suit/captunic = 1,
+					/obj/item/clothing/suit/toggle/captains_parade/syndicate/winter = 1, // BlueMoon Add
+					/obj/item/clothing/suit/toggle/captains_parade/syndicate = 1, // BlueMoon Add
 					/obj/item/clothing/under/rank/captain/femformal = 2,
 					/obj/item/clothing/glasses/sunglasses/gar/supergar = 1,
 					/obj/item/clothing/gloves/color/captain = 1,
@@ -1000,8 +1006,8 @@
 		/obj/item/clothing/under/rank/blueshield/formal/skirt = 2,
 		/obj/item/clothing/shoes/jackboots/tall = 2,
 		/obj/item/clothing/shoes/jackboots/tall_default = 2,
-		/obj/item/clothing/suit/armor/vest/bluesheid/spacecoat = 2,
-		/obj/item/clothing/suit/armor/vest/bluesheid/jacket = 2,
+		/obj/item/clothing/suit/armor/vest/blueshield/spacecoat = 2,
+		/obj/item/clothing/suit/armor/vest/blueshield/jacket = 2,
 		/obj/item/clothing/under/rank/blueshield/formal/pmc_leader_jumpsuit = 2,
 		/obj/item/clothing/mask/balaclava/pmc_leader_balaclava = 2,
 		/obj/item/clothing/head/HoS/pmc_leader_cap = 2,
@@ -1069,6 +1075,8 @@
 		/obj/item/clothing/under/rank/security/head_of_security/parade/female = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/parade = 1,
 		/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/hoscorp = 1,
+		/obj/item/clothing/head/warden/campaignhat = 1,
+		/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/sheriff = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/skirt = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/alt = 1,
 		/obj/item/clothing/under/rank/security/head_of_security/alt/skirt = 1,

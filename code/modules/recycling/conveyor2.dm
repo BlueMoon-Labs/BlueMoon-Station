@@ -9,15 +9,18 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 	name = "conveyor belt"
 	desc = "A conveyor belt."
 	layer = BELOW_OPEN_DOOR_LAYER
-	var/operating = 0	// 1 if running forward, -1 if backwards, 0 if off
+	var/operating = CONVEYOR_OFF	// CONVEYOR_FORWARD if running forward, CONVEYOR_BACKWARDS if backwards, CONVEYOR_OFF if off
 	var/operable = 1	// true if can operate (no broken segments in this belt run)
 	var/forwards		// this is the default (forward) direction, set by the map dir
 	var/backwards		// hopefully self-explanatory
 	var/movedir			// the actual direction to move stuff in
 
-	var/list/affecting	// the list of all items that will be moved this ptick
 	var/id = ""			// the control ID	- must match controller ID
 	var/verted = 1		// Inverts the direction the conveyor belt moves.
+	//Последняя команда свитча, CONVEYOR_*. operating - фактическое состояние, оно обнуляется на
+	//любое отключение питания, а PROCESS_KILL вышвыривает ленту из SSfastprocess. Без запомненной
+	//команды лента после восстановления питания оставалась стоять до ручного передёргивания рычага.
+	var/last_command = CONVEYOR_OFF
 	speed_process = TRUE
 
 /obj/machinery/conveyor/centcom_auto
@@ -36,22 +39,8 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // Auto conveyour is always on unless unpowered
 
 /obj/machinery/conveyor/auto/Initialize(mapload, newdir)
+	last_command = CONVEYOR_FORWARD //до ..(): базовый Initialize уже зовёт update_move_direction()
 	. = ..()
-	operating = TRUE
-	update_move_direction()
-
-/obj/machinery/conveyor/auto/update()
-	if(machine_stat & BROKEN)
-		icon_state = "conveyor-broken"
-		operating = FALSE
-		return
-	else if(!operable)
-		operating = FALSE
-	else if(machine_stat & NOPOWER)
-		operating = FALSE
-	else
-		operating = TRUE
-	icon_state = "conveyor[operating * verted]"
 
 // create a conveyor
 /obj/machinery/conveyor/Initialize(mapload, newdir, newid)
@@ -106,32 +95,33 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		var/temp = forwards
 		forwards = backwards
 		backwards = temp
-	if(operating == 1)
-		movedir = forwards
-	else
-		movedir = backwards
 	update()
 
 /obj/machinery/conveyor/proc/update()
 	if(machine_stat & BROKEN)
 		icon_state = "conveyor-broken"
-		operating = FALSE
+		operating = CONVEYOR_OFF
 		return
-	if(!operable)
-		operating = FALSE
-	if(machine_stat & NOPOWER)
-		operating = FALSE
+	//Питание/целостность решают, можем ли мы крутиться, но не в какую сторону: направление
+	//задаёт последняя команда свитча, иначе лента после блэкаута стоит с включённым рычагом.
+	if(!operable || (machine_stat & NOPOWER))
+		operating = CONVEYOR_OFF
+	else
+		operating = last_command
+	movedir = (operating == CONVEYOR_FORWARD) ? forwards : backwards
 	icon_state = "conveyor[operating * verted]"
+	if(operating)
+		START_PROCESSING(SSfastprocess, src)
 
 	// machine process
 	// move items to the target location
 /obj/machinery/conveyor/process()
 	if(machine_stat & (BROKEN | NOPOWER))
-		return
+		return PROCESS_KILL
 	if(!operating)
-		return
+		return PROCESS_KILL
 	use_power(6)
-	affecting = loc.contents - src		// moved items will be all in loc
+	var/list/affecting = loc.contents - src		// moved items will be all in loc
 	addtimer(CALLBACK(src, PROC_REF(convey), affecting), 1)
 
 /obj/machinery/conveyor/proc/convey(list/affecting)
@@ -180,7 +170,7 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // make the conveyor broken
 // also propagate inoperability to any connected conveyor with the same ID
 /obj/machinery/conveyor/proc/broken()
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	update()
 
 	var/obj/machinery/conveyor/C = locate() in get_step(src, dir)
@@ -218,11 +208,12 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 	desc = "A conveyor control switch."
 	icon = 'icons/obj/recycling.dmi'
 	icon_state = "switch-off"
-	speed_process = TRUE
+	//свитч событийный: do_process() зовётся из interact(), молотить
+	//SSfastprocess ради флага operated незачем
+	init_process = FALSE
 
-	var/position = 0			// 0 off, -1 reverse, 1 forward
-	var/last_pos = -1			// last direction setting
-	var/operated = 1			// true if just operated
+	var/position = CONVEYOR_OFF		// CONVEYOR_OFF, CONVEYOR_BACKWARDS или CONVEYOR_FORWARD
+	var/last_pos = CONVEYOR_BACKWARDS	// last direction setting
 	var/oneway = FALSE			// if the switch only operates the conveyor belts in a single direction.
 	var/invert_icon = FALSE		// If the level points the opposite direction when it's turned on.
 
@@ -234,6 +225,10 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 		id = newid
 	update_icon()
 	LAZYADD(GLOB.conveyors_by_id[id], src)
+
+/obj/machinery/conveyor_switch/LateInitialize()
+	. = ..()
+	do_process() //синхронизация лент с позицией свитча на старте
 
 /obj/machinery/conveyor_switch/Destroy()
 	LAZYREMOVE(GLOB.conveyors_by_id[id], src)
@@ -251,12 +246,12 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 // update the icon depending on the position
 
 /obj/machinery/conveyor_switch/update_icon_state()
-	if(position<0)
+	if(position < CONVEYOR_OFF)
 		if(invert_icon)
 			icon_state = "switch-fwd"
 		else
 			icon_state = "switch-rev"
-	else if(position>0)
+	else if(position > CONVEYOR_OFF)
 		if(invert_icon)
 			icon_state = "switch-rev"
 		else
@@ -271,35 +266,29 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 /obj/machinery/conveyor_switch/proc/do_process()
 	set waitfor = FALSE
 	for(var/obj/machinery/conveyor/C in GLOB.conveyors_by_id[id])
-		C.operating = position
-		C.update_move_direction()
+		C.last_command = position
+		C.update_move_direction() //внутри update(): состояние, направление, иконка и возврат в SSfastprocess
 		CHECK_TICK
-
-/obj/machinery/conveyor_switch/process()
-	if(!operated)
-		return
-	operated = 0
-	do_process()
 
 // attack with hand, switch position
 /obj/machinery/conveyor_switch/interact(mob/user)
 	add_fingerprint(user)
-	if(position == 0)
+	if(position == CONVEYOR_OFF)
 		if(oneway)   //is it a oneway switch
 			position = oneway
 		else
-			if(last_pos < 0)
-				position = 1
-				last_pos = 0
+			if(last_pos < CONVEYOR_OFF)
+				position = CONVEYOR_FORWARD
+				last_pos = CONVEYOR_OFF
 			else
-				position = -1
-				last_pos = 0
+				position = CONVEYOR_BACKWARDS
+				last_pos = CONVEYOR_OFF
 	else
 		last_pos = position
-		position = 0
+		position = CONVEYOR_OFF
 
-	operated = 1
 	update_icon()
+	do_process()
 
 	// find any switches with same id as this one, and set their positions to match us
 	for(var/obj/machinery/conveyor_switch/S in GLOB.conveyors_by_id[id])

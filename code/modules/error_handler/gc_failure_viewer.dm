@@ -95,6 +95,10 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/list/failures = list()
 	var/list/failure_sources = list()
 	var/total_failures = 0
+	/// Быстрый лукап последних фейлов: ref-строка -> entry (для каскад-группировки).
+	var/list/failures_by_ref = list()
+	/// Сколько фейлов помечено вторичными (внутри другого утёкшего объекта).
+	var/cascade_children_total = 0
 
 /datum/gc_failure_viewer/gc_failure_cache/proc/get_ordered_sources()
 	var/list/ordered_sources = list()
@@ -115,6 +119,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	html += "<b>[total_failures]</b> GC failures"
 	if (length(failures) != total_failures)
 		html += " (retained: [length(failures)])"
+	if (cascade_children_total)
+		html += " — из них <b>[cascade_children_total]</b> вторичных (лежали внутри других утёкших)"
 	html += "<br><br>"
 	if (!linear)
 		html += "organized | [make_link("linear", null, 1)]<hr>"
@@ -126,11 +132,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		html += "[make_link("organized", null)] | linear<hr>"
 		for (var/i = length(failures), i >= 1, i--)
 			var/datum/gc_failure_viewer/gc_failure_entry/entry = failures[i]
-			html += "[entry.make_link(null, src, 1)]<br>"
+			html += "[entry.cascade_decoration_prefix()][entry.make_link(null, src, 1)][entry.cascade_decoration_suffix()]<br>"
 
 	browse_to(user, html)
 
-/datum/gc_failure_viewer/gc_failure_cache/proc/log_gc_failure(datum/D, type_path, ref_id, origin_time, qdel_hint = null)
+/datum/gc_failure_viewer/gc_failure_cache/proc/log_gc_failure(datum/D, type_path, ref_id, origin_time, qdel_hint = null, external_refs = -1)
 	total_failures++
 	var/type_key = "[type_path]"
 	var/datum/gc_failure_viewer/gc_failure_source/source = failure_sources[type_key]
@@ -139,18 +145,63 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		failure_sources[type_key] = source
 
 	source.total_failures++
-	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(D, type_path, ref_id, origin_time, qdel_hint)
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(D, type_path, ref_id, origin_time, qdel_hint, external_refs)
 	entry.failure_source = source
 	failures += entry
+	if (ref_id)
+		failures_by_ref[ref_id] = entry
+	LinkCascade(entry)
 	if(length(failures) > GC_FAILURE_ENTRY_LIMIT)
+		var/datum/gc_failure_viewer/gc_failure_entry/dropped = failures[1]
+		if (dropped && dropped.ref_id && failures_by_ref[dropped.ref_id] == dropped)
+			failures_by_ref -= dropped.ref_id
 		failures.Cut(1, 2)
 	source.failures += entry
 	if(length(source.failures) > GC_FAILURE_SOURCE_ENTRY_LIMIT)
 		source.failures.Cut(1, 2)
-	// In TESTING mode, auto-launch world scan while D is still guaranteed alive
-	#ifdef TESTING
-	INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), null, D)
-	#endif
+	// Full world scans are intentionally on-demand. Starting one suspended scan
+	// per warnfail retains every failed datum in a proc frame and turns a burst
+	// of real failures into minutes of reftracker CPU and manufactured refs.
+	return entry
+
+/// Окно, в котором фейлы считаются одним каскадом (деспавн моба тянет инвентарь тем же тиком).
+#define GC_CASCADE_WINDOW (2 MINUTES)
+
+/// Связывает фейл с каскадом: утёкший предмет внутри утёкшего контейнера/моба помечается вторичным.
+/// Двунаправленно: дети могут попадать в кэш раньше родителя (инвентарь qdel'ится внутри Destroy моба).
+/datum/gc_failure_viewer/gc_failure_cache/proc/LinkCascade(datum/gc_failure_viewer/gc_failure_entry/entry)
+	// Вперёд: в нашей loc-цепочке уже зафейленный объект - мы вторичны.
+	if (entry.loc_ref_chain)
+		for (var/loc_ref in entry.loc_ref_chain)
+			var/datum/gc_failure_viewer/gc_failure_entry/parent = failures_by_ref[loc_ref]
+			if (!parent || parent == entry)
+				continue
+			if (world.time - parent.failure_time > GC_CASCADE_WINDOW)
+				continue
+			entry.cascade_parent_ref = parent.ref_id
+			entry.cascade_parent_type = "[parent.type_path]"
+			parent.cascade_children++
+			cascade_children_total++
+			return
+	// Назад: недавние фейлы, лежавшие внутри нас - помечаем их вторичными.
+	if (!entry.ref_id)
+		return
+	for (var/i = length(failures), i >= 1, i--)
+		var/datum/gc_failure_viewer/gc_failure_entry/other = failures[i]
+		if (other == entry)
+			continue
+		if (world.time - other.failure_time > GC_CASCADE_WINDOW)
+			break // дальше только старее
+		if (other.cascade_parent_ref || !other.loc_ref_chain)
+			continue
+		if (!(entry.ref_id in other.loc_ref_chain))
+			continue
+		other.cascade_parent_ref = entry.ref_id
+		other.cascade_parent_type = "[entry.type_path]"
+		entry.cascade_children++
+		cascade_children_total++
+
+#undef GC_CASCADE_WINDOW
 
 /datum/gc_failure_viewer/gc_failure_source
 	var/list/failures = list()
@@ -205,7 +256,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 	for (var/i = length(failures), i >= 1, i--)
 		var/datum/gc_failure_viewer/gc_failure_entry/entry = failures[i]
-		html += "[entry.make_link(null, src)]<br>"
+		html += "[entry.cascade_decoration_prefix()][entry.make_link(null, src)][entry.cascade_decoration_suffix()]<br>"
 
 	browse_to(user, html)
 
@@ -220,9 +271,21 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/origin_time
 	var/extra_info
 	var/datum_ref
+	/// gc_destroyed цели на момент фейла - identity-метка против переиспользования ref-слота.
+	var/target_gc_destroyed
 	// --- Extended diagnostic data (always collected) ---
 	/// The QDEL_HINT_* value returned by Destroy()
 	var/qdel_hint
+	/// Число внешних ссылок на момент фейла (-1 = неизвестно).
+	var/external_refs_at_failure = -1
+	/// REF-строки цепочки loc на момент фейла (для каскад-группировки), внешний loc первым.
+	var/list/loc_ref_chain
+	/// REF родительского фейла, внутри которого мы лежали (вторичный фейл каскада).
+	var/cascade_parent_ref
+	/// Тип родительского фейла для отображения.
+	var/cascade_parent_type
+	/// Сколько других фейлов лежало внутри нас (мы - корень каскада).
+	var/cascade_children = 0
 	/// String: types of attached components
 	var/components_info
 	/// String: registered signal summary
@@ -242,7 +305,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	/// String: aggregate qdel_item statistics for this type
 	var/qdel_stats_info
 	/// Found references: locations in GLOB where references to the failed datum were found
-	var/list/found_references
+	var/list/found_references = list()
 	/// Whether the full world scan has been performed for this entry
 	var/world_scan_done = FALSE
 	/// Whether the world scan is currently running
@@ -260,24 +323,48 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/list/timer_details
 #endif
 
-/datum/gc_failure_viewer/gc_failure_entry/New(datum/D, path, refid, qdel_origin_time, hint)
+/// Диагностический лимит глубины loc-цепочки для каскад-группировки.
+#define GC_FAILURE_LOC_CHAIN_DEPTH 6
+
+/datum/gc_failure_viewer/gc_failure_entry/New(datum/D, path, refid, qdel_origin_time, hint, external_refs = -1)
 	type_path = path
 	ref_id = refid
 	failure_time = world.time
 	origin_time = qdel_origin_time
 	qdel_hint = hint
+	external_refs_at_failure = external_refs
 	if (D)
 		if (isatom(D))
 			var/atom/A = D
 			obj_name = A.name
+			// Цепочка loc для каскад-группировки: утёкший предмет внутри утёкшего моба.
+			var/atom/loc_walker = A.loc
+			var/loc_depth = 0
+			while (loc_walker && loc_depth < GC_FAILURE_LOC_CHAIN_DEPTH)
+				LAZYADD(loc_ref_chain, REF(loc_walker))
+				loc_walker = loc_walker.loc
+				loc_depth++
 		datum_ref = REF(D)
+		target_gc_destroyed = D.gc_destroyed
 		extra_info = build_extra_info(D)
 		build_extended_info(D)
 		#ifdef TESTING
-		build_reference_info(D)
+		// Warnfail handling runs inside SSgarbage and must stay bounded. Direct
+		// self-cycles are cheap to inspect; global/subsystem/world ownership is
+		// available through the explicit scan link for a selected failure.
+		found_references = list()
+		build_self_reference_info(D)
 		build_testing_info(D)
 		#endif
 	name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> GC failure: <b>[type_path]</b>[obj_name ? " \"[html_encode(obj_name)]\"" : ""] ([ref_id])"
+
+/// Префикс списка для вторичных фейлов каскада (визуальный отступ).
+/datum/gc_failure_viewer/gc_failure_entry/proc/cascade_decoration_prefix()
+	return cascade_parent_ref ? "&nbsp;&nbsp;&nbsp;&nbsp;<span style='color:#888'>внутри:</span> " : ""
+
+/// Суффикс списка для корней каскада (сколько вторичных фейлов внутри).
+/datum/gc_failure_viewer/gc_failure_entry/proc/cascade_decoration_suffix()
+	return cascade_children ? " <b style='color:#FFAA44'>(+[cascade_children] внутри)</b>" : ""
 
 /datum/gc_failure_viewer/gc_failure_entry/proc/build_extra_info(datum/D)
 	var/list/info = list()
@@ -309,6 +396,17 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			info += "ckey: [M.ckey]"
 		else if (M.key)
 			info += "key: [M.key]"
+		if (M.pending_native_prompts > 0)
+			// Висящий нативный input()/alert() = спящий фрейм, который пинит моба
+			// невидимо для ref-сканов - главная зацепка при "найдено 0 из N".
+			info += "нативных промптов: [M.pending_native_prompts]"
+
+	if (istype(D, /datum/callback))
+		var/datum/callback/leaked_callback = D
+		// Destroy() колбека обнуляет object/arguments, но delegate переживает - только он и опознаёт утечку.
+		info += "delegate: [leaked_callback.delegate || "null"]"
+		if (leaked_callback.object && leaked_callback.object != GLOBAL_PROC)
+			info += "object: [leaked_callback.object.type]"
 
 	if (!length(info))
 		return null
@@ -505,9 +603,24 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 /// Targeted reference search. Scans GLOB vars and reverse-checks neighbors for back-references.
 /// Much faster than full find_references() — milliseconds instead of minutes. Safe for production.
+/datum/gc_failure_viewer/gc_failure_entry/proc/build_self_reference_info(datum/D)
+	for (var/varname in D.vars)
+		if (varname == "vars" || varname == "vis_locs")
+			continue
+		var/self_value = D.vars[varname]
+		if (self_value == D)
+			found_references += "SELF.[varname] = [type_path]"
+			continue
+		if (islist(self_value))
+			scan_list_for_ref(D, self_value, "SELF.[varname]")
+
 /datum/gc_failure_viewer/gc_failure_entry/proc/build_reference_info(datum/D)
 	found_references = list()
-	// 1. Scan all GLOB vars (includes all global lists like mob_list, machines, etc.)
+	// 1. Inspect the failed datum itself. A self-reference is enough to prevent
+	// collection, but a world scan skips the target and cannot otherwise see it.
+	build_self_reference_info(D)
+
+	// 2. Scan all GLOB vars (includes all global lists like mob_list, machines, etc.)
 	for (var/varname in GLOB.vars)
 		if (varname == "vars")
 			continue
@@ -518,7 +631,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		if (islist(value))
 			scan_list_for_ref(D, value, "GLOB.[varname]")
 
-	// 2. Scan all subsystem controllers (SSair, SSmachines, etc.)
+	// 3. Scan all subsystem controllers (SSair, SSmachines, etc.)
 	if (Master?.subsystems)
 		for (var/datum/controller/subsystem/SS in Master.subsystems)
 			for (var/ssvar in SS.vars)
@@ -531,7 +644,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 				if (islist(ssval))
 					scan_list_for_ref(D, ssval, "[SS.type].[ssvar]")
 
-	// 3. Reverse neighbor scan: for each datum that D references,
+	// 4. Reverse neighbor scan: for each datum that D references,
 	//    check if that datum holds a reference BACK to D.
 	//    Catches circular references (A->B, B->A where B.Destroy() didn't clean up).
 	for (var/varname in D.vars)
@@ -552,7 +665,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 					continue
 				check_neighbor_for_backref(D, neighbor, "self.[varname]")
 
-	// 4. Scan SSgarbage queues — maybe queued multiple times?
+	// 5. Scan SSgarbage queues — maybe queued multiple times?
 	for (var/queue_idx in 1 to GC_QUEUE_COUNT)
 		var/list/refs = SSgarbage.queue_refs[queue_idx]
 		var/head = SSgarbage.queue_heads[queue_idx]
@@ -593,6 +706,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		if (entry == target)
 			found_references += "[path]\[[idx]\] = [type_path]"
 			continue
+		if (isimage(entry) && !isimage(target))
+			var/image/attached_entry = entry
+			if (attached_entry.loc == target)
+				found_references += "[path]\[[idx]\] - image [REF(attached_entry)] с loc=цель"
+			continue
 		// Check associative values
 		if (!isnum(entry) && IS_NORMAL_LIST(L))
 			var/assoc_val = L[entry]
@@ -604,26 +722,48 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		if (islist(entry))
 			scan_list_for_ref(target, entry, "[path]\[[idx]\]", depth + 1)
 
+/// QDELING-цель и есть штатный объект диагностики: останавливаемся только после настоящего del()/GC.
+/datum/gc_failure_viewer/gc_failure_entry/proc/can_scan_target(datum/target)
+	return !isnull(target)
+
+/// Возвращает объект фейла по сохранённому ref, если это всё ещё именно он.
+/// Голого locate() + проверки типа недостаточно: BYOND переиспользует ref-слоты,
+/// и после hard-delete слот может занять чужой объект того же типа (обсерверы и
+/// new_player черняться постоянно). Метка gc_destroyed однозначна: новый жилец
+/// слота либо жив (null), либо qdel-нут строго позже освобождения слота.
+/datum/gc_failure_viewer/gc_failure_entry/proc/resolve_target()
+	if (isnull(datum_ref))
+		return null
+	var/datum/D = locate(datum_ref)
+	if (isnull(D) || "[D.type]" != "[type_path]" || D.gc_destroyed != target_gc_destroyed)
+		return null
+	return D
+
 /// Full world scan for references to the GC-failed datum.
 /// Scans all atoms in world and (in TESTING) all datums. Uses CHECK_TICK to yield.
 /// Can be called automatically (D passed directly) or on-demand via button (D = null, located by ref).
 /// user can be null for automatic calls (no chat feedback).
-/datum/gc_failure_viewer/gc_failure_entry/proc/trigger_world_scan(client/user, datum/D)
+/datum/gc_failure_viewer/gc_failure_entry/proc/trigger_world_scan(client/user, datum/D, references_to_find = INFINITY)
 	if (world_scan_done || world_scan_in_progress)
 		return
+	// Older/debug entries may predate the typed initialization. Keep the scan
+	// result shape stable for the viewer and machine-readable benchmark export.
+	if (!islist(found_references))
+		found_references = found_references ? list("[found_references]") : list()
 	// If D not passed directly, try to locate by saved ref (on-demand button click)
 	if (!D)
 		if (!datum_ref)
 			if (user)
 				to_chat(user, span_warning("Нет ссылки на объект для сканирования."))
 			return
-		D = locate(datum_ref)
-		if (!D || D.type != text2path(type_path))
+		D = resolve_target()
+		if (!D)
 			if (user)
 				to_chat(user, span_warning("Объект больше не существует, сканирование невозможно."))
 			world_scan_done = TRUE
 			return
 	world_scan_in_progress = TRUE
+	var/found_reference_count_at_start = length(found_references)
 	if (user)
 		to_chat(user, span_boldnotice("Запуск полного сканирования мира... Это может занять 10-60 секунд."))
 	// Scan ALL atoms (objs, turfs, mobs, areas).
@@ -631,8 +771,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	// for(var/atom/thing) iterates every atom that exists — correct for a full scan.
 	var/scan_count = 0
 	for (var/atom/thing)
-		if (QDELETED(D))
-			break // Target is gone or pending deletion; stop the expensive scan.
+		if (!can_scan_target(D))
+			break // Target was actually collected or hard-deleted; stop the expensive scan.
 		if (thing == D)
 			continue
 		scan_count++
@@ -643,13 +783,21 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			if (tval == D)
 				found_references += "WORLD: [thing.type]([REF(thing)]).[tvar]"
 				continue
+			if (isimage(tval) && !isimage(D))
+				var/image/attached = tval
+				if (attached.loc == D)
+					found_references += "WORLD: [thing.type]([REF(thing)]).[tvar] - image [REF(attached)] с loc=цель"
+				continue
 			if (islist(tval))
 				scan_list_for_ref(D, tval, "WORLD: [thing.type]([REF(thing)]).[tvar]", 1)
+		if (length(found_references) - found_reference_count_at_start >= references_to_find)
+			break
 		CHECK_TICK
-#ifdef TESTING
-	// Also scan pure datums (not atoms) — only in TESTING
+	// Also scan pure datums (not atoms). CHECK_TICK keeps this production-safe.
 	for (var/datum/thing)
-		if (isnull(D))
+		if (length(found_references) - found_reference_count_at_start >= references_to_find)
+			break
+		if (!can_scan_target(D))
 			break // D was hard-deleted during scan, stop
 		if (thing == D)
 			continue
@@ -663,10 +811,14 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			if (tval == D)
 				found_references += "DATUM: [thing.type]([REF(thing)]).[tvar]"
 				continue
+			if (isimage(tval) && !isimage(D))
+				var/image/attached = tval
+				if (attached.loc == D)
+					found_references += "DATUM: [thing.type]([REF(thing)]).[tvar] - image [REF(attached)] с loc=цель"
+				continue
 			if (islist(tval))
 				scan_list_for_ref(D, tval, "DATUM: [thing.type]([REF(thing)]).[tvar]", 1)
 		CHECK_TICK
-#endif
 	world_scan_atom_count = scan_count
 	world_scan_in_progress = FALSE
 	world_scan_done = TRUE
@@ -694,12 +846,10 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			return "QDEL_HINT_SLOWDESTROY (ожидается медленный softcheck)"
 		if (QDEL_HINT_QUEUE_THEN_HARDDEL)
 			return "QDEL_HINT_QUEUE_THEN_HARDDEL (softcheck → harddel, минуя warnfail)"
-		#ifdef REFERENCE_TRACKING
 		if (QDEL_HINT_FINDREFERENCE)
 			return "QDEL_HINT_FINDREFERENCE (поиск ссылок)"
 		if (QDEL_HINT_IFFAIL_FINDREFERENCE)
 			return "QDEL_HINT_IFFAIL_FINDREFERENCE (поиск при фейле)"
-		#endif
 	if (isnull(qdel_hint))
 		return "неизвестно (null)"
 	return "неизвестный ([qdel_hint])"
@@ -722,6 +872,13 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	if (!isnull(origin_time))
 		html += "<span class='gc_failure_line'><b>В очереди GC:</b> ~[DisplayTimeText(failure_time - origin_time)]</span><br>"
 	html += "<span class='gc_failure_line'><b>QDEL Hint:</b> [qdel_hint_to_text()]</span><br>"
+	if (external_refs_at_failure >= 0)
+		html += "<span class='gc_failure_line'><b>Внешних ссылок на момент фейла:</b> [external_refs_at_failure]</span><br>"
+	if (cascade_parent_ref)
+		html += "<span class='gc_failure_line'><b>Каскад:</b> вторичный фейл - лежал внутри [cascade_parent_type] ([cascade_parent_ref]); чинить нужно корень</span><br>"
+	else if (cascade_children)
+		html += "<span class='gc_failure_line'><b>Каскад:</b> корень - внутри лежало ещё [cascade_children] утёкших</span><br>"
+	html += "<a href='?_src_=holder;[HrefToken()];viewgcfailure_refcount=[REF(src)]'>Пересчитать refcount сейчас</a><br>"
 	html += "</div>"
 
 	// Components
@@ -770,7 +927,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		html += "<div class='gc_failure'>[html_encode(qdel_stats_info)]</div>"
 		html += "</details>"
 
-	// Found references — on-demand in production, auto-collected in TESTING
+	// Direct self-references are collected at warnfail; expensive ownership scans are on-demand.
 	if (length(found_references))
 		html += "<details open><summary><b style='color:#FF6666'>Найденные ссылки ([length(found_references)])</b></summary>"
 		html += "<div class='gc_failure'>"
@@ -778,10 +935,12 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			html += "[html_encode(line)]<br>"
 		html += "</div></details>"
 	else if (islist(found_references))
-		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> не найдено быстрым сканированием (GLOB, подсистемы, соседи)</span><br>"
+		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> самоссылок не найдено; глобальный поиск запускается вручную</span><br>"
 	else
+		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> сканирование ещё не запускалось</span><br>"
+	if (!length(found_references))
 		html += "<br><a href='?_src_=holder;[HrefToken()];viewgcfailure_refscan=[REF(src)]' style='background:#333;color:#88AAFF;padding:4px 12px;border:1px solid #555;border-radius:4px;text-decoration:none;font-family:Courier New'>"
-		html += "Сканировать ссылки (GLOB, подсистемы, соседи) — может вызвать лаг!</a><br>"
+		html += "Сканировать GLOB, подсистемы и соседей — может вызвать лаг!</a><br>"
 
 	// World scan button / status
 	if (world_scan_done)
@@ -825,8 +984,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 	// VV link to the object if it still exists
 	if (datum_ref)
-		var/datum/D = locate(datum_ref)
-		if (D && D.type == text2path(type_path))
+		var/datum/D = resolve_target()
+		if (D)
 			html += "<br><b>Объект</b>: <a href='?_src_=vars;[HrefToken()];Vars=[datum_ref]'>VV</a>"
 		else
 			html += "<br><b>Объект</b>: больше не существует ([ref_id])"

@@ -50,56 +50,60 @@
 /// * `message_override` - if set to some string, will replace the emote message with the provided string. If `params` is used,
 /// this string can contain `%t`, which will be replaced with `message`.
 /datum/emote/proc/run_emote(mob/user, params, type_override, intentional = FALSE, message_override = null)
-	. = TRUE
-	if(!can_run_emote(user, TRUE, intentional))
-		return FALSE
+    . = TRUE
+    if(!can_run_emote(user, TRUE, intentional))
+        return FALSE
 
-	var/msg = ""
-	if(message_override)
-		msg = message_override
-	else
-		msg = select_message_type(user)
+    var/msg = ""
+    if(message_override)
+        msg = message_override
+    else
+        msg = select_message_type(user)
 
-	if(params && message_param)
-		msg = select_param(user, params)
+    if(params && message_param)
+        msg = select_param(user, params)
 
-	msg = replace_pronoun(user, msg)
+    msg = replace_pronoun(user, msg)
 
-	if(isliving(user))
-		var/mob/living/L = user
-		for(var/obj/item/implant/I in L.implants)
-			I.trigger(key, L)
+    if(isliving(user))
+        var/mob/living/L = user
+        for(var/obj/item/implant/I in L.implants)
+            I.trigger(key, L)
 
-	if(!msg)
-		return
+    if(!msg)
+        return
 
-	user.log_message(message_override ? "[select_message_type(user)] | [msg]" : msg, LOG_EMOTE)
-	//msg = "<b>[user]</b> " + msg //SKYRAT CHANGE
-	var/dchatmsg = "<span class='emote'><b>[user]</b> [msg]</span>" //SKYRAT CHANGE
+    user.log_message(message_override ? "[select_message_type(user)] | [msg]" : msg, LOG_EMOTE)
+    var/dchatmsg = "<span class='emote'><b>[user]</b> [msg]</span>"
+    var/blind_msg = "<span class='emote'><b>Кто-то</b> [msg]</span>"
 
-	var/blind_msg = "<span class='emote'><b>Кто-то</b> [msg]</span>"
-	if(emote_type != EMOTE_VISIBLE)
-		play_fov_effect(user, 3, "talk", ignore_self = FALSE)
-	if(user.client)
-		for(var/mob/M in GLOB.dead_mob_list)
-			if(!M.client || isnewplayer(M))
-				continue
-			var/T = get_turf(user)
-			if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
-				M.show_message(dchatmsg)
+    if(emote_type != EMOTE_VISIBLE)
+        play_fov_effect(user, 3, "talk", ignore_self = FALSE)
+    if(user.client)
+        for(var/mob/M in GLOB.dead_mob_list)
+            if(!M.client || isnewplayer(M))
+                continue
+            var/T = get_turf(user)
+            if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+                M.show_message(dchatmsg)
 
-	if(emote_type == EMOTE_AUDIBLE)
-		user.audible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_VISIBLE)
-		user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_BOTH)
-		user.visible_message(dchatmsg, blind_message = blind_msg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_OMNI)
-		user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
-	//Skyrat change
-	if(image_popup)
-		flick_emote_popup_on_mob(user, image_popup, 40)
-	//End of skyrat changes
+    if(emote_type == EMOTE_AUDIBLE)
+        user.audible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_VISIBLE)
+        user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_BOTH)
+        user.visible_message(dchatmsg, blind_message = blind_msg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_OMNI)
+        user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
+
+    if(image_popup)
+        flick_emote_popup_on_mob(user, image_popup, 40)
+
+    if(isliving(user))
+        var/turf/T = get_turf(user)
+        if(T)
+            for(var/mob/camera/aiEye/eye in GLOB.aiEyes)
+                eye.SeeEmote(user, msg)
 
 /datum/emote/proc/get_sound(mob/living/user)
 	return sound //by default just return this var.
@@ -211,11 +215,12 @@
 
 /datum/emote/sound/can_run_emote(mob/living/user, status_check, intentional = FALSE)
 	. = ..()
-
 	// Check parent return
 	if(!.)
 		return FALSE
 
+	if(!emote_cooldown)
+		user?.nextsoundemote = initial(user?.nextsoundemote)
 	// Check cooldown
 	if(user?.nextsoundemote >= world.time)
 		return FALSE
@@ -226,7 +231,10 @@
 /datum/emote/sound/run_emote(mob/user, params)
 	. = ..()
 	if(. && !(user?.is_muzzled() && !muzzle_ignore))
-		playsound(user.loc, sound, emote_volume, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
+		if(user.client?.prefs && !(user.client.prefs.toggles & SOUND_EMOTE))
+			return TRUE
+		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote")) / 100)
+		playsound(user.loc, sound, vol, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
 
 		//Cooldown.
 		user.nextsoundemote = world.time + emote_cooldown

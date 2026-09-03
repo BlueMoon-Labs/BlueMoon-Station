@@ -8,6 +8,10 @@
 	mob_overlay_icon = 'modular_splurt/icons/mobs/gloves.dmi'
 	mutantrace_variation = NONE
 
+/obj/item/clothing/gloves/latexsleeves/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
 /obj/item/clothing/gloves/latexsleeves/security
 	name = "security sleeves"
 	desc = "A pair of latex sleeves, with a band of red above the elbows denoting that the wearer is part of the security team."
@@ -84,6 +88,7 @@
 	heat_protection = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	//armor = list("melee" = 60, "bullet" = 80, "laser" = 80, "energy" = 90, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 50, "acid" = 50)
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/centcomdress/vk
 	name = "Virginkiller CentCom Dress Uniform"

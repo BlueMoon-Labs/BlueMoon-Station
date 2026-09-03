@@ -65,6 +65,23 @@
 		network -= i
 		network += "[idnum][i]"
 
+/// Сеть консоли живёт только в её типе, поэтому сборка из фрейма всегда давала
+/// заводской набор. Читаем настройку с платы - её задают мультитулом и она же
+/// запоминается при разборке.
+/obj/machinery/computer/security/on_construction()
+	. = ..()
+	var/obj/item/circuitboard/computer/security/board = circuit
+	if(istype(board))
+		board.configure_machine(src)
+
+/// Разбор обязан оставить в плате ту сеть, на которой консоль работала, иначе
+/// собранный обратно монитор смотрит в пустоту.
+/obj/machinery/computer/security/on_deconstruction()
+	. = ..()
+	var/obj/item/circuitboard/computer/security/board = circuit
+	if(istype(board))
+		board.network = network?.Copy()
+
 /obj/machinery/computer/security/ui_interact(mob/user, datum/tgui/ui)
 	// Update UI
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -123,8 +140,15 @@
 
 	if(action == "switch_camera")
 		var/c_tag = params["name"]
-		var/list/cameras = get_available_cameras()
-		var/obj/machinery/camera/selected_camera = cameras[c_tag]
+		//точечный поиск по кэшу сетей вместо пересборки всего списка на каждый клик
+		var/obj/machinery/camera/selected_camera
+		for(var/network_name in network)
+			var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
+			selected_camera = network_cameras?[c_tag]
+			if(selected_camera)
+				break
+		if(selected_camera && selected_camera.z != z && (is_away_level(z) || is_away_level(selected_camera.z)))
+			selected_camera = null //фильтр away-уровней, как в get_available_cameras
 		active_camera = selected_camera
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
 
@@ -187,7 +211,7 @@
 	// Living creature or not, we remove you anyway.
 	concurrent_users -= user_ref
 	// Unregister map objects
-	user.client.clear_map(map_name)
+	user?.client?.clear_map(map_name)
 	// Turn off the console
 	if(length(concurrent_users) == 0 && is_living)
 		active_camera = null
@@ -201,22 +225,15 @@
 
 // Returns the list of cameras accessible from this computer
 /obj/machinery/computer/security/proc/get_available_cameras()
-	var/list/L = list()
-	for (var/obj/machinery/camera/C in GLOB.cameranet.cameras)
-		if((is_away_level(z) || is_away_level(C.z)) && (C.z != z))//if on away mission, can only receive feed from same z_level cameras
-			continue
-		L.Add(C)
 	var/list/D = list()
-	for(var/obj/machinery/camera/C in L)
-		if(!C.network)
-			stack_trace("Camera in a cameranet has no camera network")
-			continue
-		if(!(islist(C.network)))
-			stack_trace("Camera in a cameranet has a non-list camera network")
-			continue
-		var/list/tempnetwork = C.network & network
-		if(tempnetwork.len)
-			D["[C.c_tag]"] = C
+	var/console_away = is_away_level(z)
+	for(var/network_name in network)
+		var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
+		for(var/tag in network_cameras)
+			var/obj/machinery/camera/C = network_cameras[tag]
+			if(C.z != z && (console_away || is_away_level(C.z)))//if on away mission, can only receive feed from same z_level cameras
+				continue
+			D[tag] = C
 	return D
 
 // SECURITY MONITORS

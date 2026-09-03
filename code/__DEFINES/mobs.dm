@@ -15,12 +15,12 @@
 #define BLOOD_VOLUME_MAX_LETHAL		2150
 #define BLOOD_VOLUME_EXCESS			2100
 #define BLOOD_VOLUME_MAXIMUM		2000
-#define BLOOD_VOLUME_SLIME_SPLIT	1120
-#define BLOOD_VOLUME_NORMAL			560
-#define BLOOD_VOLUME_SAFE			475
-#define BLOOD_VOLUME_OKAY			336
-#define BLOOD_VOLUME_BAD			224
-#define BLOOD_VOLUME_SURVIVE		122
+#define BLOOD_VOLUME_SLIME_SPLIT	1680
+#define BLOOD_VOLUME_NORMAL			840
+#define BLOOD_VOLUME_SAFE			712
+#define BLOOD_VOLUME_OKAY			504
+#define BLOOD_VOLUME_BAD			336
+#define BLOOD_VOLUME_SURVIVE		183
 
 // Sizes of mobs, used by mob/living/var/mob_size
 #define MOB_SIZE_TINY 0
@@ -74,7 +74,7 @@
 #define BODYPART_DISABLED_WOUND 3
 
 #define DEFAULT_BODYPART_ICON 'icons/mob/human_parts.dmi'
-#define DEFAULT_BODYPART_ICON_ORGANIC 'modular_bluemoon/icons/mob/species_legs.dmi' // BLUEMOON CHANGES - was 'icons/mob/human_parts_greyscale.dmi'
+#define DEFAULT_BODYPART_ICON_ORGANIC 'modular_bluemoon/icons/mob/human/species.dmi' // BLUEMOON CHANGES - was 'icons/mob/human_parts_greyscale.dmi'
 #define DEFAULT_BODYPART_ICON_ROBOTIC 'icons/mob/augmentation/augments.dmi'
 
 #define MONKEY_BODYPART  "monkey"
@@ -203,6 +203,12 @@
 // Slime extract crossing. Controls how many extracts is required to feed to a slime to core-cross.
 #define SLIME_EXTRACT_CROSSING_REQUIRED 10
 
+// How long a slime waits before re-scanning view() for prey after a scan that found no targets.
+// Keeps idle pens from paying a full view(7) scan every Life tick.
+#define SLIME_HUNT_SCAN_COOLDOWN (4 SECONDS)
+/// world.time gate between aimless wander steps of a slime with no target and no leader.
+#define SLIME_WANDER_COOLDOWN (4 SECONDS)
+
 // Slime commands defines
 #define SLIME_FRIENDSHIP_FOLLOW 			3 // Min friendship to order it to follow
 #define SLIME_FRIENDSHIP_STOPEAT 			5 // Min friendship to order it to stop eating someone
@@ -231,6 +237,9 @@
 /// Distance within which a player must be for NPC AI to remain active
 #define NEARBY_PLAYER_DISTANCE 15
 
+/// Distance within which a player must be for full Life() processing of clientless mobs
+#define NEARBY_LIVING_DISTANCE 20
+
 // determines if a mob can smash through it
 #define ENVIRONMENT_SMASH_NONE		  0
 #define ENVIRONMENT_SMASH_STRUCTURES (1<<0)	// crates, lockers, ect
@@ -244,6 +253,10 @@
 #define SLIDE_ICE			 (1<<4)
 #define SLIP_WHEN_CRAWLING	 (1<<5)	// clown planet ruin amongst others
 #define SLIP_WHEN_JOGGING	 (1<<6)	// slips prevented by walking are also dodged if the mob is nor sprinting or fatigued... unless this flag is on.
+// BLUEMOON ADD - скольжение не глохнет на 4 тайлах: жертва улетает, пока не во что-то не врежется
+#define SLIDE_INTO_SPACE	 (1<<7)
+/// На сколько тайлов вперёд планирует траекторию скольжение с SLIDE_INTO_SPACE
+#define SLIDE_INTO_SPACE_RANGE 14
 
 
 #define MAX_CHICKENS 50

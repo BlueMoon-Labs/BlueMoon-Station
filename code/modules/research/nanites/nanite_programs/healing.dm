@@ -22,9 +22,15 @@
 		var/list/parts = C.get_damaged_bodyparts(TRUE,TRUE, status = list(BODYPART_ORGANIC, BODYPART_NANITES))
 		if(!parts.len)
 			return
+		// Heal every limb first and recompute health once — letting each limb run
+		// its own updatehealth() made this program cost milliseconds per tick.
+		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(0.5/parts.len, 0.5/parts.len))
-				host_mob.update_damage_overlays()
+			if(L.heal_damage(0.5/parts.len, 0.5/parts.len, updating_health = FALSE))
+				update = TRUE
+		host_mob.updatehealth()
+		if(update)
+			host_mob.update_damage_overlays()
 	else
 		host_mob.adjustBruteLoss(-0.5, TRUE)
 		host_mob.adjustFireLoss(-0.5, TRUE)
@@ -123,7 +129,7 @@
 /datum/nanite_program/blood_restoring/active_effect()
 	if(iscarbon(host_mob))
 		var/mob/living/carbon/C = host_mob
-		C.adjust_integration_blood(2)
+		C.adjust_integration_blood(2, 2)
 
 /datum/nanite_program/repairing
 	name = "Mechanical Repair"
@@ -153,8 +159,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE)) //much faster than organic healing
+			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE, updating_health = FALSE)) //much faster than organic healing
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
@@ -199,8 +206,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(3/parts.len, 3/parts.len, 0))
+			if(L.heal_damage(3/parts.len, 3/parts.len, 0, updating_health = FALSE))
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
@@ -256,14 +264,18 @@
 	sleep(30)
 	playsound(C, 'sound/machines/defib_zap.ogg', 50, FALSE)
 	if(check_revivable())
+		var/breathless = HAS_TRAIT(C, TRAIT_NOBREATH)
 		playsound(C, 'sound/machines/defib_success.ogg', 50, FALSE)
 		C.set_heartattack(FALSE)
 		var/oxydamage = C.getOxyLoss()
 		if(C.health < HEALTH_THRESHOLD_FULLCRIT && oxydamage)
 			var/diff = C.health - HEALTH_THRESHOLD_FULLCRIT
 			C.adjustOxyLoss(diff)	//Heal their oxydamage up to hardcrit (or if less, as much as they have, since the proc has sanity)
-		C.revive(full_heal = FALSE, admin_revive = FALSE)
-		C.emote("gasp")
+		C.revive(full_heal = FALSE, admin_revive = FALSE, post_revive_effects = TRUE)
+		if(breathless)
+			C.emote("twitch")
+		else
+			C.emote("gasp")
 		C.Jitter(100)
 		SEND_SIGNAL(C, COMSIG_LIVING_MINOR_SHOCK)
 		// BLUEMOON EDIT START - изменение памяти после смерти
@@ -303,3 +315,27 @@
 	else
 		target.visible_message("...[target]'s posibrain flickers a few times, before the lights fade yet again...")
 		return FALSE
+
+/datum/nanite_program/heal_wounds
+	name = "Recovery Wounds"
+	desc = "Nanites use themselves to restore the body, replacing damage and thus healing wounds."
+	use_rate = 10
+	rogue_types = list(/datum/nanite_program/necrotic)
+
+/datum/nanite_program/heal_wounds/check_conditions()
+	. = ..()
+	if(!. || !iscarbon(host_mob))
+		return FALSE
+
+	var/mob/living/carbon/host_carbon = host_mob
+	if(!host_carbon.all_wounds?.len)
+		return FALSE
+
+	return TRUE
+
+/datum/nanite_program/heal_wounds/active_effect()
+	var/mob/living/carbon/host_carbon = host_mob
+	var/datum/wound/heal_wound = pick(host_carbon.all_wounds)
+	if(!heal_wound)
+		return FALSE
+	heal_wound.on_xadone(5)

@@ -704,6 +704,7 @@
 
 	can_be_asked_input = TRUE
 	demands_object_input = TRUE
+	expected_object_type = /obj/item/tank/internals
 	can_input_object_when_closed = TRUE
 
 	var/obj/item/tank/internals/current_tank

@@ -148,7 +148,9 @@
 	if(stage < 2)
 		return FALSE
 
-	if(receiver && isliving(target))
+	//receiver приходит не только гениталией: оральный контакт передаёт сюда желудок,
+	//у которого нет genital_flags - откладываем на пол, как и в остальных случаях
+	if(isgenital(receiver) && isliving(target))
 		if(CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
 			return lay_eg(receiver, senders_cum)
 	return lay_eg(get_turf(carrier), senders_cum)
@@ -181,26 +183,30 @@
 /datum/component/pregnancy/proc/handle_life(seconds)
 	SIGNAL_HANDLER
 
-	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
+	var/mob/living/active_carrier = carrier
+	if(!active_carrier || QDELETED(active_carrier))
+		return
+
+	if(!HAS_TRAIT(active_carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
 		if(oviposition)
 			handle_ovi_preg()
 		else
 			handle_incubation()
 
-	if((stage >= 2) && !revealed && carrier)
+	if((stage >= 2) && !revealed)
 		revealed = TRUE
-		carrier.apply_status_effect(/datum/status_effect/pregnancy)
-		carrier.apply_status_effect(/datum/status_effect/lactation)
+		active_carrier.apply_status_effect(/datum/status_effect/pregnancy)
+		active_carrier.apply_status_effect(/datum/status_effect/lactation)
 
-	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
-		if(stage > 3 && ishuman(carrier) && oviposition)
-			SEND_SIGNAL(carrier, COMSIG_ADD_MOOD_EVENT, "pregnancy", /datum/mood_event/pregnant_negative)
+	if(!HAS_TRAIT(active_carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
+		if(stage > 3 && ishuman(active_carrier) && oviposition)
+			SEND_SIGNAL(active_carrier, COMSIG_ADD_MOOD_EVENT, "pregnancy", /datum/mood_event/pregnant_negative)
 
 	if(COOLDOWN_FINISHED(src, stage_time))
 		stage += 1
 		stage = min(stage, max_stage)
-		if(ishuman(carrier) && stage >= 2)
-			inflate_organs(carrier)
+		if(ishuman(active_carrier) && stage >= 2)
+			inflate_organs(active_carrier)
 		COOLDOWN_START(src, stage_time, PREGNANCY_STAGE_DURATION)
 
 /datum/component/pregnancy/proc/inflate_organs(mob/living/carbon/human/gregnant)
@@ -229,6 +235,8 @@
 	if(stage < max_stage)
 		return
 
+	var/obj/item/egg = parent
+	egg.balloon_alert(user, "Вы пытаетесь вылупить яйцо!")
 	INVOKE_ASYNC(src, PROC_REF(hatch), source, I, user, params)
 
 /datum/component/pregnancy/proc/hatch(datum/source, obj/item/I, mob/user, params)
@@ -249,11 +257,28 @@
 	playsound(parent, 'sound/effects/splat.ogg', 70, TRUE)
 	var/mob/living/babby = new baby_type(get_turf(parent))
 
-	if(ishuman(babby))
-		determine_baby_features(babby)
-		determine_baby_dna(babby)
+	if(ishuman(user) && ishuman(babby))
+		var/mob/living/carbon/human/human_attacker = user
+		var/datum/dna/attacker_dna = new /datum/dna
+		human_attacker.dna.copy_dna(attacker_dna)
+		var/mob/living/carbon/human/babby_human = babby
+		attacker_dna.transfer_identity(babby_human, TRUE)
+		babby_human.real_name = attacker_dna.real_name
 
-	player.transfer_ckey(babby, TRUE)
+		var/obj/item/modular_computer/pda/worn = human_attacker.wear_id
+		var/obj/item/card/id/W = human_attacker.wear_id?.GetID()
+		if(W)
+			W.registered_name = babby_human.real_name
+			W.update_label()
+			if(worn && istype(worn, /obj/item/modular_computer/pda))
+				worn.owner = W.registered_name
+				worn.update_label()
+
+		babby_human.updateappearance(mutcolor_update=1)
+		babby_human.domutcheck()
+
+	if(player)
+		player.transfer_ckey(babby, TRUE)
 
 	to_chat(babby, "You are the son (or daughter) of [mother_name ? mother_name : "someone"]!")
 
@@ -266,7 +291,7 @@
 		name = input(babby, "What will be your name?", "Name yourself") as null|text
 
 	if(!name)
-		babby.real_name = random_unique_name(babby.gender, )
+		babby.real_name = random_unique_name(babby.gender)
 		babby.update_name()
 	else
 		babby.real_name = name
@@ -349,44 +374,6 @@
 
 	return TRUE
 
-//not how genetics work but okay
-/datum/component/pregnancy/proc/determine_baby_dna(mob/living/carbon/human/babby)
-	if(mother_dna && father_dna)
-		mother_dna.transfer_identity_random(father_dna, babby)
-	else if(mother_dna && !father_dna)
-		mother_dna.transfer_identity_random(babby.dna, babby)
-	else if(!mother_dna && father_dna)
-		father_dna.transfer_identity_random(babby.dna, babby)
-
-/datum/component/pregnancy/proc/determine_baby_features(mob/living/carbon/human/babby)
-
-	var/list/final_features = list()
-
-	transfer_randomized_list(final_features, mother_features, father_features)
-
-	if(final_features["skin_tone"])
-		babby.skin_tone = final_features["skin_tone"]
-	if(final_features["hair_color"])
-		babby.hair_color = final_features["hair_color"]
-	if(final_features["facial_hair_color"])
-		babby.facial_hair_color = final_features["facial_hair_color"]
-	if(final_features["left_eye_color"])
-		babby.left_eye_color = final_features["left_eye_color"]
-	if(final_features["right_eye_color"])
-		babby.right_eye_color = final_features["right_eye_color"]
-
-	babby.hair_style = pick("Bedhead", "Bedhead 2", "Bedhead 3")
-	babby.facial_hair_style = "Shaved"
-	babby.underwear = "Nude"
-	babby.undershirt = "Nude"
-	babby.socks = "Nude"
-
-	/*
-	babby.saved_underwear = babby.underwear
-	babby.saved_undershirt = babby.undershirt
-	babby.saved_socks = babby.socks
-	*/
-
 /datum/component/pregnancy/proc/generic_pragency_start()
 	if(revealed)
 		carrier.apply_status_effect(/datum/status_effect/pregnancy)
@@ -440,5 +427,5 @@
 /datum/component/pregnancy/proc/handle_damage(datum/source, damage, damagetype, def_zone)
 	SIGNAL_HANDLER
 
-	if(def_zone == BODY_ZONE_CHEST && damage > 5 && prob(40))
+	if(def_zone == BODY_ZONE_PRECISE_GROIN && damagetype == BRUTE && damage > 5 && prob(40))
 		fetus_mortus()

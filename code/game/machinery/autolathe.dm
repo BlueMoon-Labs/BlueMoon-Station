@@ -1,6 +1,11 @@
+#define AUTOLATHE_EFFICIENCY_BASE 100 * 0.01	// базовая эффективность машины (В процентах, для игры 100% = 1)
+#define AUTOLATHE_EFFICIENCY_STEP 9 * 0.01		// эффективность машины за тир деталей (В процентах)
+#define AUTOLATHE_TIME_PROD_BASE 3.2 SECONDS
+#define AUTOLATHE_TIME_PROD_AMMO 0.5 SECONDS
+
 /obj/machinery/autolathe
 	name = "autolathe"
-	desc = "Производит вещи, используя запасы железа, стекла и других материалов."
+	desc = "Собирает разнообразные предметы, используя запасы железа, стекла и других материалов."
 	icon_state = "autolathe"
 	density = TRUE
 	use_power = IDLE_POWER_USE
@@ -22,7 +27,7 @@
 	var/busy = FALSE
 
 	///the multiplier for how much materials the created object takes from this machines stored materials
-	var/creation_efficiency = 1.6
+	var/creation_efficiency = AUTOLATHE_EFFICIENCY_BASE
 
 	var/datum/design/being_built
 	var/datum/techweb/stored_research
@@ -49,9 +54,6 @@
 	set_wires(new /datum/wires/autolathe(src))
 	stored_research = new /datum/techweb/specialized/autounlocking/autolathe
 	matching_designs = list()
-
-/obj/machinery/autolathe/ComponentInitialize()
-	AddComponent(/datum/component/material_container, SSmaterials.materialtypes_by_category[MAT_CATEGORY_RIGID], 0, TRUE, null, null, CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 
 /obj/machinery/autolathe/Destroy()
 	QDEL_NULL(wires)
@@ -85,7 +87,7 @@
 		var/datum/material/M = mat_id
 		var/mineral_count = materials.materials[mat_id]
 		var/list/material_data = list(
-			name = material_to_ru_nominative(M.name),
+			name = vocabulary_to_ru(GLOB.mat_ru_nominative, M.name),
 			mineral_amount = mineral_count,
 			matcolour = M.color,
 		)
@@ -222,7 +224,12 @@
 				to_chat(usr, span_notice("You print [multiplier] item(s) from the [src]"))
 				use_power(power)
 				icon_state = "autolathe_n"
-				var/time = is_stack ? 32 : (32 * coeff * multiplier) ** 0.8
+				var/time
+				if(is_stack)
+					time = AUTOLATHE_TIME_PROD_BASE
+				else
+					var/base_time = ispath(being_built.build_path, /obj/item/ammo_casing) ? AUTOLATHE_TIME_PROD_AMMO : AUTOLATHE_TIME_PROD_BASE
+					time = (base_time * coeff * multiplier) ** 0.8
 				playsound(src, 'sound/machines/prod.ogg', 50)
 				addtimer(CALLBACK(src, PROC_REF(make_item), power, materials_used, custom_materials, multiplier, coeff, is_stack, usr), time)
 				. = TRUE
@@ -357,12 +364,11 @@
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 	materials.max_amount = mat_capacity
 
-	var/efficiency=1.19
+	var/efficiency = AUTOLATHE_EFFICIENCY_BASE
 	for(var/obj/item/stock_parts/manipulator/new_manipulator in component_parts)
-		efficiency -= new_manipulator.rating*0.19
-	efficiency = round(efficiency*100)
-	efficiency /= 100
-	creation_efficiency = min(1,efficiency) // creation_efficiency goes 1 -> 0,8 -> 0,6 -> 0,4 per level of manipulator efficiency
+		efficiency -= (new_manipulator.rating - 1) * AUTOLATHE_EFFICIENCY_STEP
+	efficiency = round(efficiency, 0.01)
+	creation_efficiency = max(0.15, efficiency) // creation_efficiency goes 1 -> 0.91 -> 0.82 -> 0.73 per level of manipulator efficiency
 
 /obj/machinery/autolathe/examine(mob/user)
 	. += ..()
@@ -396,7 +402,7 @@
 			dat += "[D.materials[i] * coeff] [i]"
 		else
 			var/datum/material/M = i
-			dat += "[D.materials[i] * coeff] [material_to_ru_genitive(M.name)] "
+			dat += "[D.materials[i] * coeff] [vocabulary_to_ru(GLOB.mat_ru_genitive, M.name)] "
 	return dat
 
 /obj/machinery/autolathe/proc/reset(wire)
@@ -486,3 +492,8 @@
 /obj/machinery/autolathe/ComponentInitialize()
 	var/list/extra_mats = list(/datum/material/plastic)
 	AddComponent(/datum/component/material_container, SSmaterials.materialtypes_by_category[MAT_CATEGORY_RIGID] + extra_mats, 0, TRUE, null, null, CALLBACK(src, PROC_REF(AfterMaterialInsert)))
+
+#undef AUTOLATHE_EFFICIENCY_BASE
+#undef AUTOLATHE_EFFICIENCY_STEP
+#undef AUTOLATHE_TIME_PROD_BASE
+#undef AUTOLATHE_TIME_PROD_AMMO

@@ -21,8 +21,9 @@
 #define STIMULUM_FIRST_DROP					0.065
 #define STIMULUM_SECOND_RISE				0.0009
 #define STIMULUM_ABSOLUTE_DROP				0.00000335
-#define REACTION_OPPRESSION_THRESHOLD		10
-#define NOBLIUM_FORMATION_ENERGY			2e9 	//1 Mole of Noblium takes the planck energy to condense.
+#define REACTION_OPPRESSION_THRESHOLD		5 // stops reactions when >5 mol and temp > 20 K
+#define NOBLIUM_FORMATION_ENERGY			2e9 	// energy released per mole (exothermic); BZ reduces amount
+#define NOBLIUM_FORMATION_MAX_TEMP			15		// below 15 K only
 //Research point amounts
 #define NOBLIUM_RESEARCH_AMOUNT				25
 #define BZ_RESEARCH_SCALE					4
@@ -30,6 +31,13 @@
 #define QCD_RESEARCH_AMOUNT					0.2 // often made in absolutely massive quantities due to the simple nature of fusion
 #define MIASMA_RESEARCH_AMOUNT				6
 #define STIMULUM_RESEARCH_AMOUNT			50
+//Разовая награда за первый за раунд синтез газа, по уровню сложности синтеза.
+//Платится именно за первый, а не за объём: плата за объём превратила бы атмос в
+//ферму очков и обесценила бы остальную науку. Наградой сделана широта освоенного,
+//поэтому полный обход дерева газов стоит примерно одного крупного узла техвеба.
+#define GAS_DISCOVERY_RESEARCH_BASIC		250
+#define GAS_DISCOVERY_RESEARCH_ADVANCED		750
+#define GAS_DISCOVERY_RESEARCH_EXOTIC		2000
 //Plasma fusion properties
 #define FUSION_ENERGY_THRESHOLD				3e9 	//Amount of energy it takes to start a fusion reaction
 #define FUSION_MOLE_THRESHOLD				250 	//Mole count required (tritium/plasma) to start a fusion reaction
@@ -43,5 +51,120 @@
 #define FUSION_RAD_MAX						2000
 #define FUSION_RAD_COEFFICIENT				(-1000)
 #define FUSION_INSTABILITY_ENDOTHERMALITY   2
+#define FUSION_MAXIMUM_TEMPERATURE 1e8
 // Snowflake fire product types
 #define FIRE_PRODUCT_PLASMA 				0
+
+// Freon — below 0°C (273.15 K) endothermic with O2, down to ~50 K; Proto-Nitrate catalyst up to 310 K; hot ice 120–160 K
+#define FREON_MAXIMUM_BURN_TEMPERATURE		T0C
+#define FREON_CATALYST_MAX_TEMPERATURE		310
+#define FREON_LOWER_TEMPERATURE				60
+#define FREON_TERMINAL_TEMPERATURE			50
+#define FREON_HOT_ICE_MIN_TEMP				120
+#define FREON_HOT_ICE_MAX_TEMP				160
+#define FREON_OXYGEN_FULLBURN				10
+#define FREON_BURN_RATE_DELTA				4
+#define FIRE_FREON_ENERGY_CONSUMED			3e5
+#define FREON_FORMATION_MIN_TEMPERATURE		(FIRE_MINIMUM_TEMPERATURE_TO_EXIST + 100)
+#define FREON_FORMATION_ENERGY_CONSUMED		2e5
+#define OXYGEN_BURN_RATIO_BASE				2
+
+// Halon
+/// Energy released per mole of BZ consumed during electrolytic halon formation.
+#define HALON_FORMATION_ENERGY				91232.1
+#define HALON_COMBUSTION_ENERGY				2500
+#define HALON_COMBUSTION_MIN_TEMPERATURE		(T0C + 70)
+#define HALON_COMBUSTION_TEMPERATURE_SCALE	(FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 10)
+#define HALON_COMBUSTION_MINIMUM_RESIN_MOLES	(0.99 * HALON_COMBUSTION_MIN_TEMPERATURE / HALON_COMBUSTION_TEMPERATURE_SCALE)
+
+// Healium
+#define HEALIUM_FORMATION_MIN_TEMP			25
+#define HEALIUM_FORMATION_MAX_TEMP			300
+#define HEALIUM_FORMATION_ENERGY				9000
+
+// Zauker
+#define ZAUKER_FORMATION_MIN_TEMPERATURE		50000
+#define ZAUKER_FORMATION_MAX_TEMPERATURE	75000
+#define ZAUKER_FORMATION_TEMPERATURE_SCALE	5e-6
+#define ZAUKER_FORMATION_ENERGY				5000
+#define ZAUKER_DECOMPOSITION_MAX_RATE		20
+#define ZAUKER_DECOMPOSITION_ENERGY			460
+
+// Nitrium
+#define NITRIUM_FORMATION_MIN_TEMP			1500
+#define NITRIUM_FORMATION_TEMP_DIVISOR		(FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 8)
+#define NITRIUM_FORMATION_ENERGY			100000
+#define NITRIUM_DECOMPOSITION_MAX_TEMP		(T0C + 70)
+#define NITRIUM_DECOMPOSITION_TEMP_DIVISOR	(FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 8)
+#define NITRIUM_DECOMPOSITION_ENERGY		30000
+
+// Pluoxium formation (CO2 + O2 + Tritium)
+#define PLUOXIUM_FORMATION_MIN_TEMP			50
+#define PLUOXIUM_FORMATION_MAX_TEMP			T0C
+#define PLUOXIUM_FORMATION_MAX_RATE			5
+#define PLUOXIUM_FORMATION_ENERGY			250
+
+// Proto-Nitrate
+#define PN_FORMATION_MIN_TEMPERATURE			5000
+#define PN_FORMATION_MAX_TEMPERATURE			10000
+#define PN_FORMATION_ENERGY					650
+#define PN_HYDROGEN_CONVERSION_THRESHOLD		150
+#define PN_HYDROGEN_CONVERSION_MAX_RATE		5
+#define PN_HYDROGEN_CONVERSION_ENERGY		2500
+#define PN_TRITIUM_CONVERSION_MIN_TEMP		150
+#define PN_TRITIUM_CONVERSION_MAX_TEMP		340
+#define PN_TRITIUM_CONVERSION_ENERGY			10000
+#define PN_BZASE_MIN_TEMP					260
+#define PN_BZASE_MAX_TEMP					280
+#define PN_BZASE_ENERGY						60000
+
+// Antinoblium
+#define ANTINOBLIUM_CONVERSION_DIVISOR		90
+#define REACTION_OPPRESSION_MIN_TEMP			20
+
+// Radiation gas conversions (see /datum/gas_mixture/react_to_radiation)
+#define PLUOXIUM_RADIATION_CO2_DIVISOR		1000
+#define PLUOXIUM_RADIATION_O2_DIVISOR		2000
+#define PLUOXIUM_RADIATION_OUTPUT_DIVISOR	4000
+#define HYDROGEN_IRRADIATION_DIVISOR		1000
+
+// Пиронит - топливо высокого давления.
+//
+// Окно намеренно горячее: разогретая смесь и без того распирает трубу, поэтому
+// игрок приходит к порогу давления сам, просто нагревая контур, и обычная
+// разводка на этом ломается раньше, чем реакция пойдёт.
+#define PYRONITE_FORMATION_MIN_TEMP			1500
+#define PYRONITE_FORMATION_MAX_TEMP			6000
+/// Делитель температуры в скорости реакции: при 6000 K даёт 6 единиц за проход.
+#define PYRONITE_FORMATION_TEMP_DIVISOR		1000
+/// Давление сверх порога ускоряет синтез, но не бесконечно - иначе выгоднее
+/// было бы гнать линию к разрыву, а не строить её с запасом.
+#define PYRONITE_PRESSURE_SCALE_CAP			3
+#define PYRONITE_TRITIUM_PER_UNIT			2
+#define PYRONITE_PLASMA_PER_UNIT			2
+/// Прото-нитрат работает катализатором и тратится в сотню раз медленнее сырья.
+#define PYRONITE_CATALYST_PER_UNIT			0.02
+#define PYRONITE_YIELD_PER_UNIT				3
+/// Синтез эндотермический: контур приходится греть, и сам себя он не разгоняет.
+#define PYRONITE_FORMATION_ENERGY			150000
+/// Теплота сгорания моля пиронита. Вдвое выше плазмы: это и есть ось энергетики,
+/// ради которой строится усиленный контур.
+#define PYRONITE_COMBUSTION_ENERGY			(FIRE_PLASMA_ENERGY_RELEASED * 2)
+
+// Флюксин - катализатор.
+#define FLUXIN_FORMATION_MIN_TEMP			300
+#define FLUXIN_FORMATION_MAX_TEMP			600
+#define FLUXIN_FORMATION_TEMP_DIVISOR		200
+#define FLUXIN_HELIUM_PER_UNIT				2
+#define FLUXIN_BZ_PER_UNIT					0.5
+#define FLUXIN_PLASMA_PER_UNIT				1
+#define FLUXIN_YIELD_PER_UNIT				2
+#define FLUXIN_FORMATION_ENERGY				80000
+/// Сколько молей флюксина в смеси дают полный эффект катализа.
+#define FLUXIN_FULL_EFFECT_MOLES			50
+/// Во сколько раз при полном эффекте раздвигается верхняя граница окна и во
+/// столько же раз дешевле обходится сырьё катализируемой реакции.
+#define FLUXIN_MAX_BONUS					0.5
+/// Расход катализатора на единицу проделанной работы. Катализатор не должен
+/// быть вечным: сваренный один раз, он иначе работал бы всю смену даром.
+#define FLUXIN_CONSUMPTION_PER_UNIT			0.01

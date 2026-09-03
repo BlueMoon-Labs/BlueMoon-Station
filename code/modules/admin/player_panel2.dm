@@ -69,7 +69,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 /datum/admins/proc/show_player_panel2(mob/M)
 	if(!M)
-		to_chat(owner, "You seem to be selecting a mob that doesn't exist anymore.")
+		to_chat(owner, "Вы пытаетесь выбрать моба, который больше не существует.")
 		return
 
 	// this is stupid, thanks byond
@@ -78,10 +78,10 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		src = C.holder
 
 	if(!check_rights())
-		to_chat(owner, "Error: you are not an admin!")
+		to_chat(owner, "Ошибка: вы не администратор!")
 		return
 
-	log_admin("[key_name(usr)] checked the individual player panel for [key_name(M)][isobserver(usr)?"":" while in game"].")
+	log_admin("[key_name(usr)] проверил панель игрока [key_name(M)][isobserver(usr)?"":" во время игры"].")
 
 	if(!M.mob_panel)
 		M.create_player_panel()
@@ -129,6 +129,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 /datum/player_panel/ui_data(mob/user)
 	. = list()
+	.["has_live_client"] = !!targetMob.client
 	.["mob_name"] = targetMob.real_name
 	// .["current_permissions"] = user.client?.holder?.rank.rights
 	.["mob_type"] = targetMob.type
@@ -141,23 +142,33 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		.["is_slept"] = L.admin_sleeping
 		.["mob_scale"] = mobSize
 
+	var/resolved_ckey = resolve_mob_ban_ckey(targetMob)
 	if(targetMob.client)
 		targetClient = targetMob.client
 		.["client_ckey"] = targetClient.ckey
 		.["client_muted"] = targetClient.prefs.muted
 		.["client_rank"] = targetClient.holder ? targetClient.holder.rank : "Player"
+		.["client_hearted"] = client_has_active_heart(targetClient)
+	else
+		targetClient = null
+		.["client_ckey"] = resolved_ckey
+		.["client_muted"] = null
+		.["client_rank"] = null
+		.["client_hearted"] = FALSE
 
+	if(resolved_ckey)
 		if (!roleStatus)
 			updateJobbanStatus()
 		.["roles"] = roleStatus
 		.["antag_ban_reason"] = antagBanReason
 		.["active_role_ban_count"] = activeRoleBans
-
 	else
-		targetClient = null
 		roleStatus = null
 		antagBanReason = null
-		.["client_ckey"] = null
+		activeRoleBans = null
+		.["roles"] = null
+		.["antag_ban_reason"] = null
+		.["active_role_ban_count"] = null
 
 	// Active martial art
 	var/mob/living/carbon/pp_carbon = targetMob
@@ -198,6 +209,16 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 	// Current weight
 	.["mob_weight"] = targetMob.mob_weight
 
+	// Руки симпл мобам (админская)
+	var/mob/living/simple_animal/S = targetMob
+	if(istype(S))
+		.["is_simple_animal"] = TRUE
+		.["is_dextrous"] = S.dextrous
+	else
+		.["is_simple_animal"] = FALSE
+		.["is_dextrous"] = FALSE
+	.["can_toggle_dextrous"] = istype(targetMob, /mob/living/simple_animal) && targetMob.ckey
+
 /datum/player_panel/ui_static_data()
 	. = list()
 
@@ -217,6 +238,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		.["data_account_join_date"] = targetClient.account_join_date
 		.["data_related_cid"] = targetClient.related_accounts_cid
 		.["data_related_ip"] = targetClient.related_accounts_ip
+		.["data_cid"] = targetClient.computer_id
 
 		.["initial_scale"] = targetClient.prefs.features["body_size"]
 
@@ -273,8 +295,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 	var/client/admin = usr.client
 
 	if (!check_rights(R_ADMIN))
-		message_admins("<span class='adminhelp'>WARNING: NON-ADMIN [ADMIN_LOOKUPFLW(admin)] ACCESSING ADMIN PANEL. WARN Casper#3044.</span>")
-		to_chat(admin, "Error: you are not an admin!")
+		message_admins("<span class='adminhelp'>ВНИМАНИЕ: НЕ-АДМИН [ADMIN_LOOKUPFLW(admin)] ПОЛУЧИЛ ДОСТУП К АДМИН-ПАНЕЛИ. ПРЕДУПРЕДИТЬ Casper#3044.</span>")
+		to_chat(admin, "Ошибка: вы не администратор!")
 		return
 
 	switch(action)
@@ -309,6 +331,18 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		if ("set_name")
 			targetMob.vv_auto_rename(params["name"])
 
+		if("commend")
+			if(!targetMob.client?.ckey)
+				to_chat(admin, span_warning("У этого моба нет клиента."))
+				return
+			switch(tgui_alert(admin.mob, "Применить сердечко сейчас или в конце раунда? Немедленное применение сразу видно в OOC.", "<3?", list("Сейчас", "Конец раунда", "Отмена")))
+				if("Сейчас")
+					targetMob.receive_heart(admin.mob, instant = TRUE)
+				if("Конец раунда")
+					targetMob.receive_heart(admin.mob)
+			ui_interact(admin.mob)
+			return TRUE
+
 		if ("heal")
 			admin.cmd_admin_rejuvenate(targetMob)
 
@@ -320,14 +354,14 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			L.adjustFireLoss(-20)
 			L.adjustToxLoss(-20)
 			L.adjustOxyLoss(-20)
-			log_admin("[key_name(admin)] light-healed [key_name(targetMob)] (20 HP all types).")
-			message_admins("<span class='notice'>[key_name_admin(admin)] light-healed [key_name_admin(targetMob)] (20 HP all types).</span>")
+			log_admin("[key_name(admin)] слегка вылечил [key_name(targetMob)] (20 HP все типы).")
+			message_admins("<span class='notice'>[key_name_admin(admin)] слегка вылечил [key_name_admin(targetMob)] (20 HP все типы).</span>")
 
 		if ("ghost")
 			if(targetMob.client)
-				log_admin("[key_name(admin)] ejected [key_name(targetMob)] from their body.")
-				message_admins("[key_name_admin(admin)] ejected [key_name_admin(targetMob)] from their body.")
-				to_chat(targetMob, "<span class='danger'>An admin has ejected you from your body.</span>")
+				log_admin("[key_name(admin)] выгнал [key_name(targetMob)] из тела.")
+				message_admins("[key_name_admin(admin)] выгнал [key_name_admin(targetMob)] из тела.")
+				to_chat(targetMob, "<span class='danger'>Администратор выгнал вас из тела.</span>")
 				targetMob.ghostize(FALSE)
 
 		if ("offer_control")
@@ -347,8 +381,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			targetMob.ckey = adminMob.ckey
 			qdel(adminMob)
 
-			message_admins("<span class='adminnotice'>[key_name_admin(usr)] took control of [targetMob].</span>")
-			log_admin("[key_name(usr)] took control of [targetMob].")
+			message_admins("<span class='adminnotice'>[key_name_admin(usr)] взял контроль над [targetMob].</span>")
+			log_admin("[key_name(usr)] взял контроль над [targetMob].")
 			addtimer(CALLBACK(targetMob.mob_panel, TYPE_PROC_REF(/datum, ui_interact), targetMob), 0.1 SECONDS)
 
 		if ("smite")
@@ -378,15 +412,15 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 		if ("lobby")
 			if(!isobserver(targetMob))
-				to_chat(usr, "<span class='notice'>You can only send ghost players back to the Lobby.</span>")
+				to_chat(usr, "<span class='notice'>Вы можете отправить в Лобби только призраков.</span>")
 				return
 
 			if(!targetMob.client)
-				to_chat(usr, "<span class='warning'>[targetMob] doesn't seem to have an active client.</span>")
+				to_chat(usr, "<span class='warning'>[targetMob] не имеет активного клиента.</span>")
 				return
 
-			log_admin("[key_name(usr)] has sent [key_name(targetMob)] back to the Lobby.")
-			message_admins("[key_name(usr)] has sent [key_name(targetMob)] back to the Lobby.")
+			log_admin("[key_name(usr)] отправил [key_name(targetMob)] обратно в Лобби.")
+			message_admins("[key_name(usr)] отправил [key_name(targetMob)] обратно в Лобби.")
 
 			var/mob/dead/new_player/NP = new()
 			NP.ckey = targetMob.ckey
@@ -413,14 +447,14 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 		if ("prison")
 			if(isAI(targetMob))
-				to_chat(usr, "This cannot be used on instances of type /mob/living/silicon/ai.")
+				to_chat(usr, "Это нельзя использовать на /mob/living/silicon/ai.")
 				return
 
 			targetMob.forceMove(pick(GLOB.prisonwarp))
-			to_chat(targetMob, "<span class='userdanger'>You have been sent to Prison!</span>")
+			to_chat(targetMob, "<span class='userdanger'>Вас отправили в Тюрьму!</span>")
 
-			log_admin("[key_name(admin)] has sent [key_name(targetMob)] to Prison!")
-			message_admins("[key_name_admin(admin)] has sent [key_name_admin(targetMob)] to Prison!")
+			log_admin("[key_name(admin)] отправил [key_name(targetMob)] в Тюрьму!")
+			message_admins("[key_name_admin(admin)] отправил [key_name_admin(targetMob)] в Тюрьму!")
 
 		if ("kick")
 			admin.holder.kick(targetMob)
@@ -429,24 +463,24 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			admin.holder.newBan(targetMob)
 
 		if ("sticky_ban")
-			var/list/ban_settings = list()
-			if(targetMob.client)
-				ban_settings["ckey"] = targetMob.ckey
+			var/tckey = resolve_mob_ban_ckey(targetMob)
+			if(!tckey)
+				to_chat(usr, "<span class='warning'>Не удалось определить ckey для sticky ban.</span>")
+				return
+			var/list/ban_settings = list("ckey" = tckey)
 			admin.holder.stickyban("add", ban_settings)
 
 		if ("notes")
-			if (targetMob.client)
-				browse_messages(target_ckey = targetMob.ckey)
+			var/note_ckey = resolve_mob_ban_ckey(targetMob)
+			if(note_ckey)
+				browse_messages(target_ckey = note_ckey)
 
 		if ("logs")
-			var/source = LOGSRC_MOB
-			if (targetMob.client)
-				source = LOGSRC_CLIENT
-
-			show_individual_logging_panel(targetMob, source)
+			var/datum/log_viewer/LV = new(targetMob)
+			LV.ui_interact(admin.mob)
 
 		if ("job_ban")
-			if(targetMob.client)
+			if(resolve_mob_ban_ckey(targetMob))
 				process_banlist(params["selected_role"], params["is_category"], params["want_to_ban"])
 
 		if ("mute")
@@ -454,7 +488,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				return
 
 			targetMob.client.prefs.muted = text2num(params["mute_flag"])
-			log_admin("[key_name(admin)] set the mute flags for [key_name(targetMob)] to [targetMob.client.prefs.muted].")
+			log_admin("[key_name(admin)] установил флаги мута для [key_name(targetMob)] на [targetMob.client.prefs.muted].")
 
 		if ("mute_all")
 			if(!targetMob.client)
@@ -463,7 +497,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			for(var/bit in GLOB.mute_bits)
 				targetMob.client.prefs.muted |= bit["bitflag"]
 
-			log_admin("[key_name(admin)] mass-muted [key_name(targetMob)].")
+			log_admin("[key_name(admin)] замьютил [key_name(targetMob)] полностью.")
 
 		if ("unmute_all")
 			if(!targetMob.client)
@@ -472,7 +506,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			for(var/bit in GLOB.mute_bits)
 				targetMob.client.prefs.muted &= ~bit["bitflag"]
 
-			log_admin("[key_name(admin)] mass-unmuted [key_name(targetMob)].")
+			log_admin("[key_name(admin)] размьютил [key_name(targetMob)] полностью.")
 
 		if ("related_accounts")
 			if(targetMob.client)
@@ -533,6 +567,36 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				else
 					H.regenerate_limb(limb)
 
+		if ("toggle_dextrous")
+			if(!istype(targetMob, /mob/living/simple_animal))
+				to_chat(admin, "<span class='warning'>Цель должна быть simple animal.</span>")
+				return
+			var/mob/living/simple_animal/S = targetMob
+			if(!S.ckey)
+				to_chat(admin, "<span class='warning'>Simple mob должен иметь ckey для получения рук.</span>")
+				return
+			S.dextrous = !S.dextrous
+			if(S.dextrous)
+				S.held_items = list(null, null)
+				S.active_hand_index = 1
+				S.possible_a_intents = list(INTENT_HELP, INTENT_GRAB, INTENT_DISARM, INTENT_HARM)
+				S.a_intent = INTENT_HELP
+				S.AddComponent(/datum/component/personal_crafting)
+				to_chat(S, "<span class='notice'>Администратор выдал вам руки! Теперь вы можете держать предметы.</span>")
+			else
+				S.drop_all_held_items()
+				S.held_items = list()
+				S.possible_a_intents = null
+				to_chat(S, "<span class='notice'>Администратор забрал у вас руки.</span>")
+			if(S.client)
+				if(S.hud_used)
+					QDEL_NULL(S.hud_used)
+				S.create_mob_hud()
+				if(S.hud_used)
+					S.hud_used.show_hud(1)
+			log_admin("[key_name(admin)] переключил руки [S.dextrous ? "ВКЛ" : "ВЫКЛ"] для [key_name(S)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] переключил руки [S.dextrous ? "ВКЛ" : "ВЫКЛ"] для [key_name_admin(S)].</span>")
+
 		if ("scale")
 			var/mob/living/L = targetMob
 			if(!isnull(params["new_scale"]) && istype(L))
@@ -545,8 +609,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				var/mob/living/L = targetMob
 				L.mob_weight = new_weight
 				L.update_weight(new_weight)
-				log_admin("[key_name(usr)] set [key_name(targetMob)]'s weight to [new_weight].")
-				message_admins("[ADMIN_LOOKUPFLW(usr)] set [ADMIN_LOOKUPFLW(targetMob)]'s weight to [new_weight].")
+				log_admin("[key_name(usr)] установил вес [key_name(targetMob)] на [new_weight].")
+				message_admins("[ADMIN_LOOKUPFLW(usr)] установил вес [ADMIN_LOOKUPFLW(targetMob)] на [new_weight].")
 
 		if ("explode")
 			var/power = text2num(params["power"])
@@ -588,8 +652,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				explosion(usr, power / 3, power / 2, power, power, ignorecap = TRUE)
 
 			var/turf/T = get_turf(usr)
-			message_admins("[ADMIN_LOOKUPFLW(usr)] created an admin[chosen_mode] at [ADMIN_VERBOSEJMP(T)].")
-			log_admin("[key_name(usr)] created an admin[chosen_mode] at [usr.loc].")
+			message_admins("[ADMIN_LOOKUPFLW(usr)] создал admin[chosen_mode] в [ADMIN_VERBOSEJMP(T)].")
+			log_admin("[key_name(usr)] создал admin[chosen_mode] в [usr.loc].")
 
 		if ("narrate")
 			var/list/stylesRaw = params["classes"]
@@ -601,13 +665,13 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			if (params["mode_global"])
 				to_chat(world, "<span style='[styles]'>[params["message"]]</span>")
 				log_admin("GlobalNarrate: [key_name(usr)] : [params["message"]]")
-				message_admins("<span class='adminnotice'>[key_name_admin(usr)] Sent a global narrate</span>")
+				message_admins("<span class='adminnotice'>[key_name_admin(usr)] отправил глобальный нарратив</span>")
 			else
 				for(var/mob/M in view(params["range"], usr))
 					to_chat(M, "<span style='[styles]'>[params["message"]]</span>")
 
-				log_admin("LocalNarrate: [key_name(usr)] at [AREACOORD(usr)]: [params["message"]]")
-				message_admins("<span class='adminnotice'><b> LocalNarrate: [key_name_admin(usr)] at [ADMIN_VERBOSEJMP(usr)]:</b> [params["message"]]<BR></span>")
+				log_admin("LocalNarrate: [key_name(usr)] в [AREACOORD(usr)]: [params["message"]]")
+				message_admins("<span class='adminnotice'><b> LocalNarrate: [key_name_admin(usr)] в [ADMIN_VERBOSEJMP(usr)]:</b> [params["message"]]<BR></span>")
 
 		if ("languages")
 			var/datum/language_holder/H = targetMob.get_language_holder()
@@ -616,7 +680,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		if ("ambitions")
 			var/datum/mind/requesting_mind = targetMob.mind
 			if(!istype(requesting_mind) || QDELETED(requesting_mind))
-				to_chat(usr, "<span class='warning'>This mind reference is no longer valid. It has probably since been destroyed.</span>")
+				to_chat(usr, "<span class='warning'>Эта ссылка на разум больше не действительна. Возможно, она была уничтожена.</span>")
 				return
 			requesting_mind.do_edit_objectives_ambitions()
 
@@ -654,12 +718,12 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			var/ma_path = GLOB.pp_martial_arts[ma_name]
 			var/datum/martial_art/MA = new ma_path
 			if(!MA.teach(H))
-				to_chat(usr, "<span class='warning'>Failed to teach [ma_name] to [H]!</span>")
+				to_chat(usr, "<span class='warning'>Не удалось обучить [H] боевому искусству [ma_name]!</span>")
 				qdel(MA)
 				return
-			to_chat(H, "<span class='userdanger'>You have been granted the martial art: [ma_name]!</span>")
-			log_admin("[key_name(admin)] has taught [ma_name] to [key_name(targetMob)].")
-			message_admins("<span class='notice'>[key_name_admin(admin)] has taught [ma_name] to [key_name_admin(targetMob)].</span>")
+			to_chat(H, "<span class='userdanger'>Вам выдали боевое искусство: [ma_name]!</span>")
+			log_admin("[key_name(admin)] обучил [ma_name] [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] обучил [ma_name] [key_name_admin(targetMob)].</span>")
 
 		if ("remove_martial_art")
 			if(!ishuman(targetMob))
@@ -669,9 +733,9 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				return
 			var/ma_name = H.mind.martial_art.name
 			H.mind.martial_art.remove(H)
-			to_chat(H, "<span class='userdanger'>Your martial art [ma_name] has been removed!</span>")
-			log_admin("[key_name(admin)] removed martial art [ma_name] from [key_name(targetMob)].")
-			message_admins("<span class='notice'>[key_name_admin(admin)] removed martial art [ma_name] from [key_name_admin(targetMob)].</span>")
+			to_chat(H, "<span class='userdanger'>У вас забрали боевое искусство [ma_name]!</span>")
+			log_admin("[key_name(admin)] удалил боевое искусство [ma_name] у [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] удалил боевое искусство [ma_name] у [key_name_admin(targetMob)].</span>")
 
 		if ("toggle_quirk_direct")
 			if(!ishuman(targetMob))
@@ -703,6 +767,14 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			SSjob.equip_loadout(null, targetMob, bypass_prereqs = TRUE)
 			log_admin("[key_name(admin)] applied loadout to [key_name(targetMob)].")
 			message_admins("<span class='notice'>[key_name_admin(admin)] applied loadout to [key_name_admin(targetMob)].</span>")
+
+		if ("update_appearance")
+			if(!ishuman(targetMob) || !targetMob.client?.prefs)
+				return
+			targetMob.client.prefs.copy_to(targetMob, icon_updates = TRUE, roundstart_checks = FALSE)
+			targetMob.regenerate_icons()
+			log_admin("[key_name(admin)] актуализировал внешность [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] актуализировал внешность [key_name_admin(targetMob)].</span>")
 
 		if ("set_organ")
 			if(!iscarbon(targetMob))
@@ -778,7 +850,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		to_chat(usr, "Jobs subsystem not initialized yet!")
 		return
 
-	var/mob/M = targetClient.mob
+	var/mob/M = targetMob
 	var/list/jobs_to_set = list() // All the roles relating to the clicked button
 
 	if (is_category)
@@ -804,9 +876,9 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 	if (jobs_to_set_trimmed.len) // At least one role to get banned / unbanned
 		if (want_to_ban)
-			usr.client.holder.Jobban(targetClient.mob, jobs_to_set_trimmed)
+			usr.client.holder.Jobban(M, jobs_to_set_trimmed)
 		else
-			usr.client.holder.UnJobban(targetClient.mob, jobs_to_set_trimmed)
+			usr.client.holder.UnJobban(M, jobs_to_set_trimmed)
 
 	updateJobbanStatus() // Update TGUI data to reflect new ban statuses
 

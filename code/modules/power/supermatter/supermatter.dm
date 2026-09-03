@@ -74,6 +74,14 @@
 ///to prevent accent sounds from layering
 #define SUPERMATTER_ACCENT_SOUND_MIN_COOLDOWN 2 SECONDS
 
+/// i-th contributing emitter adds i * this much to the arithmetic EER sum (9 emitters -> 120*45 = 5400).
+#define EMITTER_EER_AP_UNIT 120
+#define EMITTER_EER_RANGE 14
+/// Extra deciseconds after an emitter's fire delay before a beam hit registration expires.
+#define EMITTER_BEAM_HIT_SLACK 25
+/// How quickly power ramps toward the arithmetic EER target each atmos tick.
+#define EMITTER_EER_RAMP 0.35
+
 #define DEFAULT_ZAP_ICON_STATE "sm_arc"
 #define SLIGHTLY_CHARGED_ZAP_ICON_STATE "sm_arc_supercharged"
 #define OVER_9000_ZAP_ICON_STATE "sm_arc_dbz_referance" //Witty I know
@@ -196,6 +204,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	/// If the SM is decorated with holiday lights
 	var/holiday_lights = FALSE
+	/// Emitters whose beam struck this crystal (emitter -> world.time of last hit).
+	var/list/emitter_beam_active = list()
 
 /obj/machinery/power/supermatter_crystal/Initialize(mapload)
 	. = ..()
@@ -217,7 +227,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	soundloop = new(src, TRUE)
 
-	if((NEW_YEAR in SSevents.holidays) || (CHRISTMAS in SSevents.holidays))
+	if((NEW_YEAR in SSholidays.holidays) || (CHRISTMAS in SSholidays.holidays))
 		holiday_lights()
 
 /obj/machinery/power/supermatter_crystal/Destroy()
@@ -327,7 +337,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			playsound(src, 'sound/machines/engine_alert1.ogg', 100, FALSE, 30, 30, falloff_distance = 10)
 		if(SUPERMATTER_DANGER)
 			playsound(src, 'sound/machines/engine_alert2.ogg', 100, FALSE, 30, 30, falloff_distance = 10)
-			SSsecurity_level.minimum_security_level(SEC_LEVEL_ORANGE, TRUE, FALSE)
+			SSsecurity_level.minimum_security_level(SEC_LEVEL_ORANGE, FALSE)
 		if(SUPERMATTER_WARNING)
 			playsound(src, 'sound/machines/terminal_alert.ogg', 75)
 
@@ -358,7 +368,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	update_icon()
 
 	var/speaking = "[emergency_alert] The supermatter has reached critical integrity failure. Emergency causality destabilization field has been activated."
-	radio.talk_into(src, speaking, common_channel, language = get_selected_language())
+	radio.talk_into(src, speaking, common_channel, list(SPAN_SUPERMATTER), language = get_selected_language())
 	for(var/i in SUPERMATTER_COUNTDOWN_TIME to 0 step -10)
 		if(damage < explosion_point) // Cutting it a bit close there engineers
 			radio.talk_into(src, "[safe_alert] Failsafe has been disengaged.", common_channel)
@@ -372,7 +382,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			speaking = "[DisplayTimeText(i, TRUE)] remain before causality stabilization."
 		else
 			speaking = "[i*0.1]..."
-		radio.talk_into(src, speaking, common_channel, list(SPAN_COMMAND))	// IT GOT WORSE, LOUD TIME
+		radio.talk_into(src, speaking, common_channel, list(SPAN_SUPERMATTER))	// IT GOT WORSE, LOUD TIME
 		sleep(10)
 
 	explode()
@@ -394,6 +404,16 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			SEND_SOUND(M, 'sound/magic/charge.ogg')
 			to_chat(M, "<span class='boldannounce'>Вы чувствуете, как реальность на мгновение искажается...</span>")
 			SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "delam", /datum/mood_event/delam)
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT || GLOB.round_type == ROUNDTYPE_EXTENDED)
+		investigate_log("has performed a soft delamination (light round type [GLOB.round_type]).", INVESTIGATE_SUPERMATTER)
+		for(var/obj/machinery/light/light in GLOB.machines)
+			if(light.z == z)
+				light.on = TRUE
+				INVOKE_ASYNC(light, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
+				light.on = FALSE
+		radiation_pulse(src, 10000, 5, TRUE)
+		qdel(src)
+		return
 	if(combined_gas > MOLE_PENALTY_THRESHOLD)
 		investigate_log("has collapsed into a singularity.", INVESTIGATE_SUPERMATTER)
 		if(T) //If something fucks up we blow anyhow. This fix is 4 years old and none ever said why it's here. help.
@@ -526,7 +546,12 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 					gas_comp[gasID] = 0
 				gas_comp[gasID] += clamp(max(removed.get_moles(gasID)/combined_gas, 0) - gas_comp[gasID], -1, gas_change_rate)
 
-	var/list/threshold_mod = gases_we_care_about.Copy()
+	// Пороговые множители композиции: ключ - газ, значение - во сколько раз его
+	// доля идёт в модификаторы. Список был копией ПЕРЕЧНЯ газов, то есть плоским
+	// списком идентификаторов, который ниже читают как ассоциативный - на этой
+	// двусмысленности и держалась ошибка со скобкой isnull(). Запись здесь всегда
+	// ровно одна, плюксиумная, и перечень для неё не нужен.
+	var/list/threshold_mod = list()
 
 	var/list/powermix = gas_info[POWER_MIX]
 	var/list/heat = gas_info[HEAT_PENALTY]
@@ -554,7 +579,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	var/powerloss_inhibition_gas = 0
 	var/radioactivity_modifier = 0
 	for(var/gasID in gas_comp)
-		var/this_comp = gas_comp[gasID] * (isnull(threshold_mod[gasID] ? 1 : threshold_mod[gasID]))
+		// Скобка тернарника стояла внутри isnull(), и вклад газа схлопывался в ноль
+		// на ЛЮБОЙ ветке: с порогом (isnull(1) = 0) и без него (isnull(0) = 0). Для
+		// всех газов, кроме плюксиума, порога нет, и null случайно давал верную
+		// единицу - а сам порог плюксиума не отработал ни разу за всё время: газ не
+		// давал ни своих минусов к мощности, ни гейта на 15%, но продолжал занимать
+		// долю композиции и разбавлять плазму.
+		var/this_comp = gas_comp[gasID] * (isnull(threshold_mod[gasID]) ? 1 : threshold_mod[gasID])
 		gasmix_power_ratio += this_comp * powermix[gasID]
 		dynamic_heat_modifier += this_comp * heat[gasID]
 		dynamic_heat_resistance += this_comp * resist[gasID]
@@ -565,6 +596,14 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	power_transmission_bonus *= h2obonus
 	gasmix_power_ratio = clamp(gasmix_power_ratio, 0, 1)
 	dynamic_heat_modifier = max(dynamic_heat_modifier, 0.5)
+	// Множитель порога теплового урона: "Value between 1 and 10". Кламп потерян
+	// апстримом при слиянии шести пер-газовых циклов в один - соседние по строке
+	// клампы gasmix_power_ratio и dynamic_heat_modifier уцелели, а этот нет. Без
+	// него heat_resistance = 0 у всей штатной смеси (N2/O2/CO2/плазма) роняет
+	// порог (T0C + HEAT_PENALTY_THRESHOLD) * dynamic_heat_resistance с 313 K в
+	// ноль, и кристалл берёт урон от АБСОЛЮТНОЙ температуры камеры всегда - даже
+	// стоя на холодном азоте, где обязан лечиться.
+	dynamic_heat_resistance = max(dynamic_heat_resistance, 1)
 
 	//more moles of gases are harder to heat than fewer, so let's scale heat damage around them
 	mole_heat_penalty = max(combined_gas / MOLE_HEAT_PENALTY, 0.25)
@@ -622,9 +661,14 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//Varies based on power, gas content, and heat
 	removed.adjust_moles(GAS_O2, clamp((device_energy * dynamic_heat_modifier + effective_temperature - T0C) / OXYGEN_RELEASE_MODIFIER, 0, 100))
 
+	// Потолок ограничивает СОБСТВЕННЫЙ выброс тепла кристалла ("lower cap on how
+	// much heat can be released per tick" в комментарии дефайна), а не температуру
+	// газа как таковую. Пока set_temperature стоял снаружи, кристалл каждый фаер
+	// срезал вниз ЧУЖОЕ тепло - пожар в камере, эмиттеры, горячий теплоноситель -
+	// то есть работал холодильником собственной камеры и держал её на 2500 * dhm.
 	if(removed.return_temperature() < max_temp_increase)
 		removed.adjust_heat(device_energy * dynamic_heat_modifier * THERMAL_RELEASE_MODIFIER)
-	removed.set_temperature(min(removed.return_temperature(), max_temp_increase))
+		removed.set_temperature(min(removed.return_temperature(), max_temp_increase))
 
 
 	if(produces_gas)
@@ -650,7 +694,17 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//Transitions between one function and another, one we use for the fast inital startup, the other is used to prevent errors with fusion temperatures.
 	//Use of the second function improves the power gain imparted by using co2
 	if(power_changes)
-		power = max(power - min(((power/500)**3) * powerloss_inhibitor, power * 0.83 * powerloss_inhibitor),0)
+		var/emitter_eer_floor = 0
+		var/emitter_count = get_contributing_emitter_count()
+		if(emitter_count)
+			emitter_eer_floor = EMITTER_EER_AP_UNIT * emitter_count * (emitter_count + 1) / 2
+		power -= min(((power/500)**3) * powerloss_inhibitor, power * 0.83 * powerloss_inhibitor)
+		if(emitter_eer_floor)
+			if(power < emitter_eer_floor)
+				power += max(EMITTER_EER_AP_UNIT, (emitter_eer_floor - power) * EMITTER_EER_RAMP)
+			power = max(power, emitter_eer_floor)
+		else
+			power = max(power, 0)
 	//After this point power is lowered
 	//This wraps around to the begining of the function
 	//Handle high power zaps/anomaly generation
@@ -689,7 +743,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if(zap_count >= 1)
 			playsound(src.loc, 'sound/weapons/emitter2.ogg', 100, TRUE, extrarange = 10)
 			for(var/i in 1 to zap_count)
-				supermatter_zap(src, range, clamp(power*2, 4000, 20000), flags)
+				supermatter_zap(src, range, clamp(power*2, 4000, 20000), flags, list(), power)
 
 		if(prob(5))
 			supermatter_anomaly_gen(src, FLUX_ANOMALY, rand(5, 10))
@@ -742,11 +796,73 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	qdel(removed)
 	return TRUE
 
+/// Regular emitters and energy cannons count; CTF cannons do not.
+/proc/is_supermatter_beam_emitter(atom/source)
+	if(!istype(source, /obj/machinery/power/emitter))
+		return FALSE
+	if(istype(source, /obj/machinery/power/emitter/ctf))
+		return FALSE
+	return TRUE
+
+/obj/machinery/power/supermatter_crystal/proc/register_emitter_beam_hit(obj/machinery/power/emitter/E)
+	if(!is_supermatter_beam_emitter(E))
+		return
+	LAZYSET(emitter_beam_active, E, world.time)
+
+/obj/machinery/power/supermatter_crystal/proc/unregister_emitter_beam_hit(obj/machinery/power/emitter/E)
+	LAZYREMOVE(emitter_beam_active, E)
+
+/obj/machinery/power/supermatter_crystal/proc/prune_emitter_beam_hits()
+	for(var/obj/machinery/power/emitter/E in emitter_beam_active)
+		if(QDELETED(E) || !E.active)
+			unregister_emitter_beam_hit(E)
+			continue
+		var/timeout = max(E.maximum_fire_delay, E.fire_delay) + EMITTER_BEAM_HIT_SLACK
+		if(world.time > emitter_beam_active[E] + timeout)
+			unregister_emitter_beam_hit(E)
+
+/obj/machinery/power/supermatter_crystal/proc/is_beam_contributing_emitter(obj/machinery/power/emitter/E)
+	return !QDELETED(E) && LAZYACCESS(emitter_beam_active, E)
+
+/obj/machinery/power/supermatter_crystal/proc/get_contributing_emitter_count()
+	prune_emitter_beam_hits()
+	return length(emitter_beam_active)
+
+/// Arithmetic index (1..n) among emitters whose beam is hitting (nearest = 1); 0 if not contributing.
+/obj/machinery/power/supermatter_crystal/proc/get_emitter_arithmetic_index(obj/machinery/power/emitter/E)
+	prune_emitter_beam_hits()
+	if(!is_beam_contributing_emitter(E))
+		return 0
+	var/index = 1
+	var/my_dist = get_dist(src, E)
+	for(var/obj/machinery/power/emitter/other in emitter_beam_active)
+		if(other == E)
+			continue
+		if(get_dist(src, other) < my_dist)
+			index++
+	return index
+
 /obj/machinery/power/supermatter_crystal/bullet_act(obj/item/projectile/Proj)
 	var/turf/L = loc
 	if(!istype(L))
 		return FALSE
-	if(!istype(Proj.firer, /obj/machinery/power/emitter) && power_changes)
+	if(istype(Proj.firer, /obj/machinery/power/emitter) || istype(Proj.fired_from, /obj/machinery/power/emitter))
+		var/obj/machinery/power/emitter/emitter_source = Proj.fired_from
+		if(!istype(emitter_source))
+			emitter_source = Proj.firer
+		if(is_supermatter_beam_emitter(emitter_source))
+			emitter_source.last_shot_hit_sm = src
+			if(power_changes)
+				var/index = get_emitter_arithmetic_index(emitter_source)
+				if(!index)
+					index = 1
+				power += EMITTER_EER_AP_UNIT * index
+				if(!has_been_powered)
+					investigate_log("has been powered for the first time.", INVESTIGATE_SUPERMATTER)
+					message_admins("[src] has been powered for the first time [ADMIN_JMP(src)].")
+					has_been_powered = TRUE
+		return BULLET_ACT_HIT
+	if(!istype(Proj.firer, /obj/machinery/power/emitter) && !istype(Proj.fired_from, /obj/machinery/power/emitter) && power_changes)
 		investigate_log("has been hit by [Proj] fired by [key_name(Proj.firer)]", INVESTIGATE_SUPERMATTER)
 	if(Proj.flag != BULLET)
 		if(power_changes) //This needs to be here I swear
@@ -870,7 +986,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			playsound(src, 'sound/effects/supermatter.ogg', 50, TRUE)
 			radiation_pulse(src, 50, 3)
 			return
-	if((NEW_YEAR in SSevents.holidays) || (CHRISTMAS in SSevents.holidays))
+	if((NEW_YEAR in SSholidays.holidays) || (CHRISTMAS in SSholidays.holidays))
 		if(istype(W, /obj/item/clothing/head/christmashat) || istype(W, /obj/item/clothing/head/christmashatg))
 			QDEL_NULL(W)
 			RegisterSignal(src, COMSIG_PARENT_EXAMINE, PROC_REF(holiday_hat_examine))
@@ -1056,9 +1172,11 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			if(PYRO_ANOMALY)
 				new /obj/effect/anomaly/pyro(L, 200, SUPERMATTER_ANOMALY_DROP_CHANCE)
 
-/obj/machinery/power/supermatter_crystal/proc/supermatter_zap(atom/zapstart = src, range = 5, zap_str = 4000, zap_flags = ZAP_SUPERMATTER_FLAGS, list/targets_hit = list())
+/obj/machinery/power/supermatter_crystal/proc/supermatter_zap(atom/zapstart = src, range = 5, zap_str = 4000, zap_flags = ZAP_SUPERMATTER_FLAGS, list/targets_hit = list(), power_level = 0)
 	if(QDELETED(zapstart))
 		return
+	if(!power_level && istype(zapstart, /obj/machinery/power/supermatter_crystal))
+		power_level = zapstart:power
 	. = zapstart.dir
 	//If the strength of the zap decays past the cutoff, we stop
 	if(zap_str < zap_cutoff)
@@ -1183,8 +1301,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		//This gotdamn variable is a boomer and keeps giving me problems
 		var/turf/T = get_turf(target)
 		var/pressure = 1
-		if(T && T.return_air())
-			pressure = max(1,T.return_air().return_pressure())
+		if(T)
+			var/datum/gas_mixture/air_mixture = T.return_air()
+			if(air_mixture)
+				pressure = max(1, air_mixture.return_pressure())
+				if(power_level > POWER_PENALTY_THRESHOLD)
+					air_mixture.electrolyze(zap_str / 200, list(ELECTROLYSIS_ARGUMENT_SUPERMATTER_POWER = power_level))
+					T.air_update_turf()
 		//We get our range with the strength of the zap and the pressure, the higher the former and the lower the latter the better
 		var/new_range = clamp(zap_str / pressure * 10, 2, 7)
 		var/zap_count = 1
@@ -1194,7 +1317,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		for(var/j in 1 to zap_count)
 			if(zap_count > 1)
 				targets_hit = targets_hit.Copy() //Pass by ref begone
-			supermatter_zap(target, new_range, zap_str, zap_flags, targets_hit)
+			supermatter_zap(target, new_range, zap_str, zap_flags, targets_hit, power_level)
 
 /obj/machinery/power/supermatter_crystal/proc/holiday_lights()
 	holiday_lights = TRUE

@@ -43,7 +43,7 @@
 	icon = 'modular_splurt/icons/obj/clothing/neck/collars.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/neck.dmi'
 	icon_state = "collar_holo"
-	poly_states = 0
+	poly_colors = list("#33FFFF")
 	is_edible = 0
 
 /obj/item/clothing/neck/petcollar/casino

@@ -1,7 +1,7 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Section, Stack } from '../components';
+import { Box, Button, Modal, Section, Stack, Table } from '../components';
 import { NtosWindow } from '../layouts';
 
 // ---- Constants ----
@@ -50,6 +50,8 @@ class TetrisGame extends Component {
       gameOver: false,
       paused: false,
       started: false,
+      showLeaderboard: false,
+      showResetConfirm: false,
     };
     this.board = [];
     this.colors = [];
@@ -117,6 +119,8 @@ class TetrisGame extends Component {
         this.spawnPiece();
         this.drawPreview();
         this.tick();
+        const { act } = this.props;
+        act('gameStart');
       }
     );
   }
@@ -129,17 +133,20 @@ class TetrisGame extends Component {
     this.currentCells = shape.cells.map(([r, c]) => [r, c]);
     this.pos = { r: 0, c: Math.floor((COLS - 3) / 2) };
     if (!this.isValid(this.currentCells, this.pos)) {
-      this.setState({ gameOver: true });
       this.lockPiece();
-      this.draw();
-      this.drawPreview();
-      const { act, highScore } = this.props;
-      if (this.state.score > highScore) {
-        this.sfx('high_score');
-      } else {
-        this.sfx('game_over');
-      }
-      act('submitScore', { score: this.state.score });
+      // setState асинхронный: рисуем и отправляем счёт в callback,
+      // когда gameOver и очки из clearLines уже применены
+      this.setState({ gameOver: true }, () => {
+        this.draw();
+        this.drawPreview();
+        const { act, highScore } = this.props;
+        if (this.state.score > highScore) {
+          this.sfx('high_score');
+        } else {
+          this.sfx('game_over');
+        }
+        act('submitScore', { score: this.state.score });
+      });
     }
   }
 
@@ -218,14 +225,17 @@ class TetrisGame extends Component {
     }
     if (cleared > 0) {
       const points = [0, 100, 300, 500, 800];
+      const prevLevel = this.state.level;
+      // Updater должен быть чистым: React может вызвать его повторно
       this.setState((prevState) => {
         const score = prevState.score + 20 + (points[cleared] || 800) * prevState.level;
         const lines = prevState.lines + cleared;
         const level = Math.min(12, Math.max(prevState.level, Math.floor(lines / 10) + 1));
-        if (level > prevState.level) {
+        return { score, lines, level };
+      }, () => {
+        if (this.state.level > prevLevel) {
           this.sfx('level_up');
         }
-        return { score, lines, level };
       });
       if (cleared >= 4) {
         this.sfx('tetris');
@@ -361,11 +371,107 @@ class TetrisGame extends Component {
   }
 
   render() {
-    const { score, level, lines, gameOver, paused, started } = this.state;
-    const { highScore } = this.props;
+    const { score, level, lines, gameOver, paused, started, showLeaderboard, showResetConfirm } = this.state;
+    const { highScore, leaderboard = [], personal_best = 0, is_admin = false } = this.props;
+    const isAdmin = !!is_admin;
 
     return (
       <Stack fill>
+        {/* Leaderboard modal */}
+        {showLeaderboard && (
+          <Modal width="280px">
+            <Section
+              title="🏆 Таблица лидеров"
+              buttons={
+                <Button
+                  icon="times"
+                  color="transparent"
+                  onClick={() => this.setState({ showLeaderboard: false })}
+                />
+              }
+            >
+              {leaderboard.length === 0 ? (
+                <Box color="label" textAlign="center" mt={1}>
+                  {'Нет данных. Сыграйте партию!'}
+                </Box>
+              ) : (
+                <Table>
+                  <Table.Row header>
+                    <Table.Cell>{'#'}</Table.Cell>
+                    <Table.Cell>{'Игрок'}</Table.Cell>
+                    <Table.Cell>{'Счёт'}</Table.Cell>
+                    {isAdmin && <Table.Cell />}
+                  </Table.Row>
+                  {leaderboard.map((entry) => (
+                    <Table.Row key={entry.rank}>
+                      <Table.Cell color={entry.rank <= 3 ? 'good' : 'label'}>
+                        {entry.rank}
+                      </Table.Cell>
+                      <Table.Cell>{entry.ckey}</Table.Cell>
+                      <Table.Cell bold>{entry.score}</Table.Cell>
+                      {isAdmin && (
+                        <Table.Cell>
+                          <Button
+                            icon="trash"
+                            color="bad"
+                            compact
+                            tooltip="Удалить рекорд"
+                            onClick={() => this.props.act('deleteRecord', { ckey: entry.ckey })}
+                          />
+                        </Table.Cell>
+                      )}
+                    </Table.Row>
+                  ))}
+                </Table>
+              )}
+              {personal_best > 0 && (
+                <Box mt={1} color="average" fontSize="11px">
+                  {'Ваш рекорд: ' + personal_best}
+                </Box>
+              )}
+              {isAdmin && (
+                <Box mt={1}>
+                  <Button
+                    fluid
+                    icon="sync"
+                    color="bad"
+                    onClick={() => this.setState({ showResetConfirm: true })}>
+                    {'Принудительный недельный сброс'}
+                  </Button>
+                </Box>
+              )}
+            </Section>
+          </Modal>
+        )}
+        {/* Reset confirmation modal */}
+        {showResetConfirm && (
+          <Modal width="280px">
+            <Section
+              title="⚠ Сброс рейтинга"
+              buttons={
+                <Button
+                  icon="times"
+                  color="transparent"
+                  onClick={() => this.setState({ showResetConfirm: false })}
+                />
+              }
+            >
+              <Box mb={1}>
+                {'Вы уверены? Будут выданы награды за текущую неделю, и рейтинг будет очищен.'}
+              </Box>
+              <Button
+                fluid
+                icon="check"
+                color="bad"
+                onClick={() => {
+                  this.setState({ showResetConfirm: false });
+                  this.props.act('forceReset');
+                }}>
+                {'Да, сбросить рейтинг'}
+              </Button>
+            </Section>
+          </Modal>
+        )}
         {/* Game board */}
         <Stack.Item>
           <Box className="ArcadeTetris__board-wrap">
@@ -462,6 +568,15 @@ class TetrisGame extends Component {
                       </Button>
                     </Stack.Item>
                   )}
+                  <Stack.Item>
+                    <Button
+                      fluid
+                      icon="trophy"
+                      color="transparent"
+                      onClick={() => this.setState({ showLeaderboard: true })}>
+                      {'Лидерборд'}
+                    </Button>
+                  </Stack.Item>
                 </Stack>
               </Section>
             </Stack.Item>
@@ -482,14 +597,14 @@ class TetrisGame extends Component {
 }
 
 // ---- Main export ----
-export const NtosTetris = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { high_score = 0 } = data;
+export const NtosTetris = (props) => {
+  const { act, data } = useBackend();
+  const { high_score = 0, personal_best = 0, leaderboard = [], is_admin = false } = data;
 
   return (
     <NtosWindow width={420} height={510}>
       <NtosWindow.Content className="ArcadeTetris">
-        <TetrisGame act={act} highScore={high_score} />
+        <TetrisGame act={act} highScore={high_score} leaderboard={leaderboard} personal_best={personal_best} is_admin={is_admin} />
       </NtosWindow.Content>
     </NtosWindow>
   );

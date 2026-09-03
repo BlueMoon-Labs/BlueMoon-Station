@@ -9,6 +9,9 @@ SUBSYSTEM_DEF(server_maint)
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 	var/list/currentrun
 	var/cleanup_ticker = 0
+	/// Whether this fire sends ping measurements - once per 3 fires (1.8s at wait = 6),
+	/// 0.6s cadence bought nothing but ~80k verb round-trips and stats math per round.
+	var/ping_send_this_fire = FALSE
 	/// Last measured null-cleanup cost in ms.
 	var/cleanup_last_ms = 0
 	/// Running average null-cleanup cost in ms.
@@ -38,6 +41,7 @@ SUBSYSTEM_DEF(server_maint)
 		if(run_null_cleanup(GLOB.clients, "clients"))
 			log_world("Found a null in clients list!")
 		src.currentrun = GLOB.clients.Copy()
+		ping_send_this_fire = (times_fired % 3 == 0)
 
 		switch (cleanup_ticker) // do only one of these at a time, once per 5 fires
 			if (0)
@@ -68,24 +72,28 @@ SUBSYSTEM_DEF(server_maint)
 	var/afk_period
 	if(kick_inactive)
 		afk_period = CONFIG_GET(number/afk_period)
-	for(var/I in currentrun)
-		var/client/C = I
+	while(currentrun.len)
+		var/client/C = currentrun[currentrun.len]
+		currentrun.len--
+		if(!C)
+			continue
 		//handle kicking inactive players
 		if(round_started && kick_inactive && !C.holder && C.is_afk(afk_period))
 			var/cmob = C.mob
 			if (!isnewplayer(cmob) || !SSticker.queued_players.Find(cmob))
 				log_access("AFK: [key_name(C)]")
+				C.disconnect_reason = "сервер: кик за неактивность ([DisplayTimeText(afk_period)])"
 				to_chat(C, "<span class='userdanger'>You have been inactive for more than [DisplayTimeText(afk_period)] and have been disconnected.</span><br><span class='danger'>You may reconnect via the button in the file menu or by <b><u><a href='byond://winset?command=.reconnect'>clicking here to reconnect</a></u></b>.</span>")
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
-		if (!(!C || world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= (wait-1)))
-			winset(C, null, "command=.update_ping+[world.time+world.tick_lag*TICK_USAGE_REAL/100]+[REALTIMEOFDAY]")
+		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= 3000))
+			winset(C, null, "command=.update_ping+[ping_wire_num(world.time+world.tick_lag*TICK_USAGE_REAL/100)]+[ping_wire_num(REALTIMEOFDAY)]")
 
-		if (MC_TICK_CHECK) //one day, when ss13 has 1000 people per server, you guys are gonna be glad I added this tick check
-			return
+		MC_TICK_CHECK
 
 /datum/controller/subsystem/server_maint/Shutdown()
+	log_connection_churn_summary() //до кика лоббистов, иначе он же и раздует статистику
 	kick_clients_in_lobby("<span class='boldannounce'>The round came to an end with you in the lobby.</span>", TRUE) //second parameter ensures only afk clients are kicked
 	var/server = CONFIG_GET(string/server)
 	for(var/thing in GLOB.clients)
@@ -100,14 +108,4 @@ SUBSYSTEM_DEF(server_maint)
 		SSblackbox.record_feedback("text", "server_tools", 1, tgsversion.raw_parameter)
 
 
-/datum/controller/subsystem/server_maint/proc/UpdateHubStatus()
-	// if(!CONFIG_GET(flag/hub) || !CONFIG_GET(number/max_hub_pop))
-	// 	return FALSE //no point, hub / auto hub controls are disabled
-
-	// var/max_pop = CONFIG_GET(number/max_hub_pop)
-
-	// if(GLOB.clients.len > max_pop)
-	// 	world.update_hub_visibility(FALSE)
-	// else
-	// 	world.update_hub_visibility(TRUE)
 #undef PING_BUFFER_TIME

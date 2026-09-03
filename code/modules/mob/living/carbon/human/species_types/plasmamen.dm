@@ -30,6 +30,18 @@
 	balance_point_values = TRUE
 	blacklisted_quirks = list(/datum/quirk/paper_skin)
 
+/datum/species/plasmaman/on_species_gain(mob/living/carbon/C, datum/species/old_species)
+	. = ..()
+	RegisterSignal(C, COMSIG_MOB_SAY, PROC_REF(handle_speech))
+
+/datum/species/plasmaman/on_species_loss(mob/living/carbon/human/C)
+	. = ..()
+	UnregisterSignal(C, COMSIG_MOB_SAY)
+
+/datum/species/plasmaman/proc/handle_speech(datum/source, list/speech_args)
+	SIGNAL_HANDLER
+	speech_args[SPEECH_SPANS] |= SPAN_PLASMAVOICE
+
 /datum/species/plasmaman/spec_life(mob/living/carbon/human/H)
 	var/datum/gas_mixture/environment = H.loc.return_air()
 	var/atmos_sealed = FALSE
@@ -69,7 +81,15 @@
 			O = new J.plasma_outfit
 
 	H.equipOutfit(O, visualsOnly)
-	H.internal = H.get_item_for_held_index(2)
+	//в руке может оказаться не баллон: рука была занята, свой plasma_outfit профессии
+	//положил туда что-то другое. В internal пускаем только танк, иначе дыхание каждый тик
+	//падает на remove_air_volume()
+	var/obj/item/tank/plasma_tank = H.get_item_for_held_index(2)
+	if(istype(plasma_tank))
+		H.internal = plasma_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - без этого она остаётся
+	//выключенной, хотя дыхание уже идёт из баллона (канон - /datum/outfit/equipOutfit)
+	H.update_action_buttons_icon()
 	return FALSE
 
 /datum/species/plasmaman/random_name(gender,unique,lastname)

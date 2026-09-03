@@ -10,7 +10,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	custom_materials = list(/datum/material/iron = 30000)
 	throwforce = 2
-	w_class = WEIGHT_CLASS_TINY
+	w_class = WEIGHT_CLASS_NORMAL
 	throw_speed = 3
 	throw_range = 7
 	var/list/stored_ammo = list()
@@ -23,6 +23,10 @@
 	var/list/bullet_cost
 	var/list/base_cost// override this one as well if you override bullet_cost
 	var/speedloader = FALSE
+
+	/// When inserted into an ammo workbench, does this ammo box check for parent ammunition to search for subtypes of? Relevant for surplus clips, multi-sprite magazines.
+	/// Maybe don't enable this for shotgun ammo boxes.
+	var/multitype = TRUE
 
 /obj/item/ammo_box/Initialize(mapload)
 	. = ..()
@@ -38,6 +42,22 @@
 		for(var/i = 1, i <= max_ammo, i++)
 			stored_ammo += new ammo_type(src)
 	update_icon()
+
+/// Casings live inside us, so every remaining round is a hard reference back to
+/// the box. Leaving them behind means a qdeleted magazine can never soft-GC and
+/// always costs a hard delete - which internal magazines pay on every gun death.
+/obj/item/ammo_box/Destroy()
+	for(var/obj/item/ammo_casing/casing as anything in stored_ammo)
+		if(QDELETED(casing))
+			continue
+		if(casing.loc == src)
+			qdel(casing)
+	stored_ammo.Cut()
+	return ..()
+
+/obj/item/ammo_box/examine(mob/user)
+	. = ..()
+	. += span_notice("There [stored_ammo.len == 1 ? "is" : "are"] [stored_ammo.len] shell\s left!")
 
 /obj/item/ammo_box/proc/get_round(keep = 0)
 	if (!stored_ammo.len)
@@ -114,7 +134,6 @@
 
 /obj/item/ammo_box/update_icon()
 	. = ..()
-	desc = "[initial(desc)] There [stored_ammo.len == 1 ? "is" : "are"] [stored_ammo.len] shell\s left!"
 	if(length(bullet_cost))
 		var/temp_materials = custom_materials.Copy()
 		for (var/material in bullet_cost)
@@ -131,14 +150,19 @@
 			icon_state = "[initial(icon_state)]-[stored_ammo.len ? "[max_ammo]" : "0"]"
 
 //Behavior for magazines
+/obj/item/ammo_box/magazine
+	w_class = WEIGHT_CLASS_SMALL
+
 /obj/item/ammo_box/magazine/proc/ammo_count()
 	return stored_ammo.len
 
 /obj/item/ammo_box/magazine/proc/empty_magazine()
 	var/turf_mag = get_turf(src)
-	for(var/obj/item/ammo in stored_ammo)
+	for(var/obj/item/ammo_casing/ammo as anything in stored_ammo)
 		ammo.forceMove(turf_mag)
 		stored_ammo -= ammo
+		if(istype(ammo))
+			ammo.bounce_away(isnull(ammo.BB))
 
 /obj/item/ammo_box/magazine/handle_atom_del(atom/A)
 	stored_ammo -= A

@@ -111,8 +111,8 @@ const locationInfo = [
   },
 ];
 
-const AdventureStatus = (props, context) => {
-  const { data, act } = useBackend(context);
+const AdventureStatus = (props) => {
+  const { data, act } = useBackend();
   const {
     lings_suspected,
     eventname,
@@ -210,8 +210,8 @@ const AdventureStatus = (props, context) => {
   );
 };
 
-const ORION_STATUS_START = (props, context) => {
-  const { data, act } = useBackend(context);
+const ORION_STATUS_START = (props) => {
+  const { data, act } = useBackend();
   const {
     gamename,
   } = data;
@@ -247,8 +247,8 @@ const ORION_STATUS_START = (props, context) => {
   );
 };
 
-const ORION_STATUS_INSTRUCTIONS = (props, context) => {
-  const { act } = useBackend(context);
+const ORION_STATUS_INSTRUCTIONS = (props) => {
+  const { act } = useBackend();
   const fake_settlers = ["John", "William", "Alice", "Tom"];
   return (
     <Stack vertical fill>
@@ -370,8 +370,8 @@ const ORION_STATUS_INSTRUCTIONS = (props, context) => {
   );
 };
 
-const ORION_STATUS_NORMAL = (props, context) => {
-  const { data, act } = useBackend(context);
+const ORION_STATUS_NORMAL = (props) => {
+  const { data, act } = useBackend();
   const {
     settlers,
     settlermoods,
@@ -432,8 +432,8 @@ const ORION_STATUS_NORMAL = (props, context) => {
   );
 };
 
-const ORION_STATUS_GAMEOVER = (props, context) => {
-  const { data, act } = useBackend(context);
+const ORION_STATUS_GAMEOVER = (props) => {
+  const { data, act } = useBackend();
   const {
     reason,
   } = data;
@@ -463,8 +463,8 @@ const ORION_STATUS_GAMEOVER = (props, context) => {
 
 const marketButtonSpacing = 0.8;
 
-const ORION_STATUS_MARKET = (props, context) => {
-  const { data, act } = useBackend(context);
+const ORION_STATUS_MARKET = (props) => {
+  const { data, act } = useBackend();
   const {
     turns,
     spaceport_raided,
@@ -629,8 +629,8 @@ const ORION_STATUS_MARKET = (props, context) => {
   );
 };
 
-export const OrionGame = (props, context) => {
-  const { act, data } = useBackend(context);
+export const OrionGame = (props) => {
+  const { act, data } = useBackend();
   const {
     gamestatus,
     gamename,

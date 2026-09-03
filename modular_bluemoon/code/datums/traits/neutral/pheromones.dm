@@ -47,7 +47,10 @@
 	processing_quirk = TRUE
 	flavor_quirk = TRUE
 	var/notice_delay = 0
-	var/mob/living/carbon/human/last_feromon
+	/// Слабая ссылка на последнего замеченного носителя феромонов: значение нужно
+	/// только для проверки "уже кого-то видели", а квирк живого игрока держал
+	/// другого игрока до конца раунда - чистка была лишь за двумя ранними return
+	var/datum/weakref/last_feromon_ref
 
 /datum/quirk/sensitive_to_pheramones/add()
 	. = ..()
@@ -79,7 +82,7 @@
 
 	//Return if no dom is found
 	if(!closest_phero)
-		last_feromon = null
+		last_feromon_ref = null
 		return
 
 	//Handle the mood
@@ -90,11 +93,11 @@
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, QMOOD_SENS_PHEROMONS, /datum/mood_event/pheromon/i_need)
 
 	//Don't do anything if a previous dom was found
-	if(last_feromon)
+	if(last_feromon_ref?.resolve())
 		notice_delay = world.time + 15 SECONDS
 		return
 
-	last_feromon = closest_phero
+	last_feromon_ref = WEAKREF(closest_phero)
 
 	if(notice_delay > world.time)
 		return

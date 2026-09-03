@@ -3,9 +3,9 @@
 ///Internal GPS - Extends a GPS you can use.
 /obj/item/mod/module/gps
 	name = "MOD internal GPS module"
-	desc = "This module uses common Nanotrasen technology to calculate the user's position anywhere in space, \
-		down to the exact coordinates. This information is fed to a central database viewable from the device itself, \
-		though using it to help people is up to you."
+	desc = "Этот модуль использует обычную технологию Nanotrasen для вычисления положения пользователя в любом месте космоса \
+		с точностью до координат. Эта информация передаётся в центральную базу данных, доступную с самого устройства, \
+		хотя использовать её для помощи людям — решать вам."
 	icon_state = "gps"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -15,22 +15,37 @@
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_SUPPLY // BLUEMOON ADD
 
-/obj/item/mod/module/gps/Initialize(mapload)
+/obj/item/mod/module/gps/vanguard
+	complexity = 0
+	removable = FALSE
+
+/obj/item/gps/mod
+	name = "MOD internal GPS"
+	icon_state = "gps-trac"
+	desc = "Выдвижной экран GPS, который является образцом самого обычного \
+			модуля позиционирования, разработанного в Nanotrasen. Стоит \
+			осознавать, что вашу позицию будет видно всем остальным владельцам такого устройства."
+
+/obj/item/mod/module/gps/on_install()
 	. = ..()
-	AddComponent(/datum/component/gps/item, "MOD0", state = GLOB.deep_inventory_state, overlay_state = FALSE)
+	var/obj/item/item_to_snap = new /obj/item/gps/mod(src)
+	my_retract_component = AddComponent(/datum/component/mod_retractable, device = item_to_snap, modsuit = mod, retract_sound = my_retract_sound)
+
+/obj/item/mod/module/gps/on_uninstall()
+	. = ..()
+	my_retract_component.RemoveComponent()
+	qdel(my_retract_component)
 
 /obj/item/mod/module/gps/on_use()
 	. = ..()
-	if(!.)
-		return
-	attack_self(mod.wearer)
+	SEND_SIGNAL(my_retract_component, COMSIG_MODULE_ON_USE, src, mod.wearer)
 
 ///Hydraulic Clamp - Lets you pick up and drop crates.
 /obj/item/mod/module/clamp
 	name = "MOD hydraulic clamp module"
-	desc = "A series of actuators installed into both arms of the suit, boasting a lifting capacity of almost a ton. \
-		However, this design has been locked by Nanotrasen to be primarily utilized for lifting various crates. It also can be used to pull especially heavy crewmates around. \
-		A lot of people would say that loading cargo is a dull job, but you could not disagree more. "
+	desc = "Ряд актуаторов, установленных в обе руки костюма, с грузоподъёмностью почти в тонну. \
+		Однако эта конструкция была заблокирована Nanotrasen для использования преимущественно для подъёма различных контейнеров. Также может использоваться для перемещения особенно тяжёлых членов экипажа. \
+		Многие скажут, что погрузка грузов — скучная работа, но вы не могли бы с этим сильнее не согласиться."
 	icon_state = "clamp"
 	module_type = MODULE_ACTIVE
 	complexity = 3
@@ -46,6 +61,7 @@
 	/// The crates stored in the module.
 	var/list/stored_crates = list()
 	mod_module_flags = MOD_MODULE_SUPPLY // BLUEMOON ADD
+	removable = TRUE
 
 /obj/item/mod/module/clamp/on_select_use(atom/target)
 	. = ..()
@@ -53,36 +69,36 @@
 		return
 	if(!mod.wearer.Adjacent(target))
 		return
-	if(istype(target, /obj/structure/closet) || istype(target, /obj/structure/big_delivery))
+	if(istype(target, /obj/structure/closet) || istype(target, /obj/structure/big_delivery) || istype(target, /obj/structure/ore_box))
 		var/atom/movable/picked_crate = target
 		if(!check_crate_pickup(picked_crate))
 			return
-		playsound(src, 'sound/mecha/hydraulic.ogg', 25, TRUE)
+		playsound(mod, 'sound/mecha/hydraulic.ogg', 25, TRUE)
 		if(!do_after(mod.wearer, load_time, target = target))
-			balloon_alert(mod.wearer, "interrupted!")
+			mod.balloon_alert(mod.wearer, "прервано!")
 			return
 		if(!check_crate_pickup(picked_crate))
 			return
 		stored_crates += picked_crate
 		picked_crate.forceMove(src)
-		balloon_alert(mod.wearer, "picked up [picked_crate]")
+		mod.balloon_alert(mod.wearer, "picked up [picked_crate]")
 		drain_power(use_power_cost)
 	else if(length(stored_crates))
 		var/turf/target_turf = get_turf(target)
 		if(is_blocked_turf(target_turf))
 			return
-		playsound(src, 'sound/mecha/hydraulic.ogg', 25, TRUE)
+		playsound(mod, 'sound/mecha/hydraulic.ogg', 25, TRUE)
 		if(!do_after(mod.wearer, load_time, target = target))
-			balloon_alert(mod.wearer, "interrupted!")
+			mod.balloon_alert(mod.wearer, "прервано!")
 			return
 		if(is_blocked_turf(target_turf))
 			return
 		var/atom/movable/dropped_crate = pop(stored_crates)
 		dropped_crate.forceMove(target_turf)
-		balloon_alert(mod.wearer, "dropped [dropped_crate]")
+		mod.balloon_alert(mod.wearer, "dropped [dropped_crate]")
 		drain_power(use_power_cost)
 	else
-		balloon_alert(mod.wearer, "invalid target!")
+		mod.balloon_alert(mod.wearer, "invalid target!")
 
 /obj/item/mod/module/clamp/on_suit_deactivation(deleting = FALSE)
 	if(deleting)
@@ -93,20 +109,19 @@
 
 /obj/item/mod/module/clamp/proc/check_crate_pickup(atom/movable/target)
 	if(length(stored_crates) >= max_crates)
-		balloon_alert(mod.wearer, "too many crates!")
+		mod.balloon_alert(mod.wearer, "too many crates!")
 		return FALSE
 	for(var/mob/living/mob in target.GetAllContents())
 		if(mob.mob_size < MOB_SIZE_HUMAN)
 			continue
-		balloon_alert(mod.wearer, "crate too heavy!")
+		mod.balloon_alert(mod.wearer, "crate too heavy!")
 		return FALSE
 	return TRUE
 
 /obj/item/mod/module/clamp/loader
 	name = "MOD loader hydraulic clamp module"
 	icon_state = "clamp_loader"
-	complexity = 0
-	removable = FALSE
+	complexity = 2
 	overlay_state_inactive = null
 	overlay_state_active = "module_clamp_loader"
 	load_time = 1 SECONDS
@@ -117,7 +132,7 @@
 ///Drill - Lets you dig through rock and basalt.
 /obj/item/mod/module/drill // TODO: Would be cooler with a built-in drill, but meh
 	name = "MOD pickaxe/drill storage module"
-	desc = "Provides a convenient storage compartment for pickaxes and drills."
+	desc = "Предоставляет удобное отделение для хранения кирок и дрелей."
 	icon_state = "drill"
 	complexity = 2
 	incompatible_modules = list(/obj/item/mod/module/drill)
@@ -135,20 +150,20 @@
 	if(!stored)
 		var/obj/item/pickaxe/holding = mod.wearer.get_active_held_item()
 		if(!holding)
-			balloon_alert(mod.wearer, "nothing to store!")
+			mod.balloon_alert(mod.wearer, "нечего хранить!")
 			return
 		if(!istype(holding))
-			balloon_alert(mod.wearer, "it doesn't fit!")
+			mod.balloon_alert(mod.wearer, "не подходит!")
 			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
 			stored = holding
-			balloon_alert(mod.wearer, "mining instrument stored")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+			mod.balloon_alert(mod.wearer, "шахтёрский инструмент вставлен")
+			playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else if(mod.wearer.put_in_active_hand(stored, forced = FALSE, ignore_animation = TRUE))
-		balloon_alert(mod.wearer, "mining instrument retrieved")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+		mod.balloon_alert(mod.wearer, "шахтёрский инструмент возвращён")
+		playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else
-		balloon_alert(mod.wearer, "mining instrument storage full!")
+		mod.balloon_alert(mod.wearer, "в модуле уже что-то есть!")
 
 /obj/item/mod/module/drill/on_uninstall(deleting = FALSE)
 	if(stored)
@@ -165,7 +180,7 @@
 
 /obj/item/mod/module/orebag // TODO
 	name = "MOD mining satchel storage module"
-	desc = "Provides a convenient storage department for a mining satchel."
+	desc = "Предоставляет удобное отделение для хранения шахтёрской сумки."
 	icon_state = "ore"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -184,22 +199,22 @@
 	if(!stored)
 		var/obj/item/storage/bag/ore/holding = mod.wearer.get_active_held_item()
 		if(!holding)
-			balloon_alert(mod.wearer, "nothing to store!")
+			mod.balloon_alert(mod.wearer, "нечего хранить!")
 			return
 		if(!istype(holding))
-			balloon_alert(mod.wearer, "it doesn't fit!")
+			mod.balloon_alert(mod.wearer, "это не подходит!")
 			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
 			stored = holding
-			balloon_alert(mod.wearer, "mining satchel stored")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+			mod.balloon_alert(mod.wearer, "сумка для руды успешно помещена")
+			playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 			RegisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED, PROC_REF(Pickup_ores))
 	else if(mod.wearer.put_in_active_hand(stored, forced = FALSE, ignore_animation = TRUE))
 		UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
-		balloon_alert(mod.wearer, "mining satchel retrieved")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+		mod.balloon_alert(mod.wearer, "сумка для руды возвращена")
+		playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else
-		balloon_alert(mod.wearer, "mining satchel storage full!")
+		mod.balloon_alert(mod.wearer, "сумка для руды переполнена!")
 
 /obj/item/mod/module/orebag/on_uninstall(deleting = FALSE)
 	if(stored)

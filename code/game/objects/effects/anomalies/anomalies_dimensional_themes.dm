@@ -87,7 +87,7 @@
 	if (isfloorturf(affected_turf))
 		if (isindestructiblefloor(affected_turf))
 			return FALSE
-		if (affected_turf.holodeck_compatible)
+		if (affected_turf.turf_flags & TURF_HOLODECK_COMPATIBLE)
 			return FALSE
 		return replace_floors.len > 0
 	if (iswallturf(affected_turf))
@@ -108,7 +108,7 @@
 	if (isfloorturf(affected_turf))
 		if (isindestructiblefloor(affected_turf))
 			return FALSE
-		if (affected_turf.holodeck_compatible)
+		if (affected_turf.turf_flags & TURF_HOLODECK_COMPATIBLE)
 			return FALSE
 		return transform_floor(affected_turf)
 

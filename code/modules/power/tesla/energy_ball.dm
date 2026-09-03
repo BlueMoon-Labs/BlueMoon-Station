@@ -1,5 +1,13 @@
 #define TESLA_DEFAULT_POWER 1738260
 #define TESLA_MINI_POWER 869130
+// Шанс того, что КЗ от шара обернётся мощным взрывом, вскрывающим обшивку до космоса, %
+#define TESLA_BALL_STRONG_EXPLOSION_CHANCE 2
+// Сколько энергии шар вбрасывает в сеть при ударе о кабель
+#define TESLA_BALL_GRID_FEED 20 MEGA * WATT
+// Как долго после вброса АПЦ этой сети продолжают дуговать
+#define TESLA_BALL_ARC_DURATION 30 SECONDS
+// Задержка между вбросами энергии в сеть
+#define TESLA_BALL_FEED_COOLDOWN 5 SECONDS
 //Zap constants, speeds up targeting
 #define BIKE (COIL + 1)
 #define COIL (ROD + 1)
@@ -32,6 +40,8 @@
 	var/energy_to_raise = 32
 	var/energy_to_lower = -20
 	var/obj/machinery/power/grounding_rod/rodtarget
+	var/last_grid_feed = 0 // когда шар в последний раз вбрасывал энергию в сеть
+	var/list/forced_arc_timers = list() // APC -> id таймера снятия force_arcing
 
 /obj/singularity/energy_ball/Initialize(mapload, starting_energy = 50, is_miniball = FALSE)
 	miniball = is_miniball
@@ -69,6 +79,10 @@
 
 		move_the_basket_ball(4 + orbiting_balls.len * 1.5)
 
+		short_out_machinery()
+
+		feed_grid()
+
 		playsound(src.loc, 'sound/magic/lightningbolt.ogg', 100, TRUE, extrarange = 30)
 
 		pixel_x = 0
@@ -90,26 +104,132 @@
 		. += "There are [orbiting_balls.len] mini-balls orbiting it."
 
 /obj/singularity/energy_ball/proc/move_the_basket_ball(var/move_amount)
-	//we face the last thing we zapped, so this lets us favor that direction a bit
-	var/move_bias = pick(GLOB.alldirs)
 	var/move_dir
-	for(var/rod in GLOB.grounding_rods) // grounding rods pull the tesla ball, picks the nearest one
-		if(!rodtarget || get_dist(src,rod)<get_dist(src,rodtarget))
-			rodtarget=rod
+	var/obj/machinery/power/apc/apc_target
+	for(var/obj/machinery/power/apc/APC in GLOB.apcs_list)
+		if(APC.z != z || QDELETED(APC))
+			continue
+		if(!apc_target || get_dist(src, APC) < get_dist(src, apc_target))
+			apc_target = APC
+	for(var/rod in GLOB.grounding_rods)
+		if(!rodtarget || get_dist(src, rod) < get_dist(src, rodtarget))
+			rodtarget = rod
 
 	for(var/i in 0 to move_amount)
-		if(rodtarget)
-			move_dir = pick(GLOB.alldirs + get_dir(src,rodtarget))
+		if(apc_target && !QDELETED(apc_target))
+			move_dir = get_dir(src, apc_target)
+		else if(rodtarget)
+			move_dir = get_dir(src, rodtarget)
+		else if(target)
+			move_dir = get_dir(src, target)
 		else
-			move_dir = pick(GLOB.alldirs + move_bias) //ensures large-ball teslas don't just sit around
-		if(target && prob(10))
-			move_dir = get_dir(src,target)
+			move_dir = pick(GLOB.alldirs)
 		var/turf/T = get_step(src, move_dir)
 		if(can_move(T))
 			forceMove(T)
 			setDir(move_dir)
 			for(var/mob/living/carbon/C in loc)
 				dust_mobs(C)
+
+/// Шар закорачивает технику на своей клетке: обычные зэпы её не берут -
+/// энергоброня (ENERGY = 100 у АПЦ, айралармов и т.д.) глотает весь урон,
+/// а oview() в tesla_zap вообще исключает клетку самого шара.
+/obj/singularity/energy_ball/proc/short_out_machinery()
+	var/turf/T = loc
+	if(!isturf(T))
+		return
+	var/list/to_short = list()
+	for(var/obj/machinery/M in T)
+		to_short += M
+	for(var/obj/machinery/M in to_short)
+		if(QDELETED(M))
+			continue
+		if(istype(M, /obj/machinery/power/grounding_rod))
+			continue // стержень сам переваривает энергию шара, это его работа
+		if(M.level == 1 && istype(T, /turf/open/floor))
+			var/turf/open/floor/floor_turf = T
+			if(floor_turf.has_tile())
+				continue // техника под целым полом шару недоступна
+		short_out(M)
+
+/obj/singularity/energy_ball/proc/short_out(obj/machinery/M)
+	var/turf/T = get_turf(M)
+	do_sparks(rand(3, 6), FALSE, M)
+	playsound(T, "sparks", 70, TRUE, extrarange = SHORT_RANGE_SOUND_EXTRARANGE)
+	var/big_boom = prob(TESLA_BALL_STRONG_EXPLOSION_CHANCE)
+	if(big_boom)
+		burn_open_turf(T)
+	if(istype(M, /obj/machinery/power/apc))
+		// КЗ на АПЦ - короткое замыкание со слабым взрывом и гарантированным выходом из строя.
+		// Только световой радиус (-1,-1,3): severity ниже 3 уже срезает полы до космоса
+		if(!QDELETED(M))
+			if(!big_boom)
+				explosion(T, -1, -1, 3, flame_range = 2, adminlog = FALSE, smoke = FALSE)
+			M.emp_act(75)
+			M.take_damage(M.max_integrity * 2, BURN, ENERGY, FALSE, armour_penetration = 100)
+		return
+	// прочая техника - КЗ: искры, ЭМИ и урон в обход энергоброни
+	M.emp_act(rand(40, 80))
+	M.take_damage(rand(50, 100), BURN, ENERGY, FALSE, armour_penetration = 100)
+	if(QDELETED(M) && !big_boom)
+		explosion(T, -1, -1, 2, adminlog = FALSE, smoke = FALSE)
+
+/// Редкое мощное КЗ: большой взрыв плюс снятые слои турфа - обшивка вскрыта прям до космоса.
+/obj/singularity/energy_ball/proc/burn_open_turf(turf/T)
+	if(QDELETED(T))
+		return
+	if(is_station_level(T.z))
+		for(var/i in 1 to 2)
+			var/turf/scraped = T.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
+			if(!scraped || scraped == T)
+				break
+			T = scraped
+		T.visible_message("<span class='danger'>Мощный разряд выбивает кусок обшивки - путь в открытый космос открыт!</span>")
+	explosion(T, 1, 2, 4, flame_range = 3, adminlog = FALSE, smoke = FALSE)
+
+/// Шар бьёт о кабели под собой: вбрасывает энергию в сеть и заставляет АПЦ этой сети дуговать
+/// (см. modular_bluemoon/code/modules/apc_arcing/apc.dm).
+/obj/singularity/energy_ball/proc/feed_grid()
+	if(world.time < last_grid_feed + TESLA_BALL_FEED_COOLDOWN)
+		return
+	for(var/obj/structure/cable/C in loc)
+		last_grid_feed = world.time
+		feed_powernet(C)
+		return
+
+/obj/singularity/energy_ball/proc/feed_powernet(obj/structure/cable/C)
+	var/datum/powernet/PN = C.powernet
+	if(!PN)
+		return
+	do_sparks(rand(3, 6), FALSE, C)
+	//у /datum/powernet нет add_avail: вброс энергии живёт на кабеле (cable.dm)
+	C.add_avail(TESLA_BALL_GRID_FEED)
+	for(var/obj/machinery/power/apc/APC in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/apc))
+		if(QDELETED(APC) || !APC.terminal || APC.terminal.powernet != PN)
+			continue
+		var/existing_timer = forced_arc_timers[APC]
+		if(existing_timer)
+			deltimer(existing_timer)
+		APC.force_arcing = TRUE
+		APC.apc_unpark()
+		//PROC_REF ищет проц в текущем типе (шар), а end_forced_arcing живёт на АПЦ -
+		//новый компилятор за это падает "undefined type path"
+		forced_arc_timers[APC] = addtimer(CALLBACK(APC, TYPE_PROC_REF(/obj/machinery/power/apc, end_forced_arcing)), TESLA_BALL_ARC_DURATION)
+	// BLUEMOON ADD - провод не выдерживает вброса: энергия успевает уйти в сеть,
+	// затем кабель выгорает (deconstruct роняет моток кабеля на пол)
+	addtimer(CALLBACK(src, PROC_REF(burn_out_cable), C), 1 SECONDS)
+
+/// Выгорание провода, через который шар сбрасывал энергию в сеть
+/obj/singularity/energy_ball/proc/burn_out_cable(obj/structure/cable/C)
+	if(QDELETED(C))
+		return
+	investigate_log("energy ball burned out a power cable at [AREACOORD(C)].", INVESTIGATE_WIRES)
+	do_sparks(rand(4, 8), FALSE, C)
+	playsound(get_turf(C), "sparks", 70, TRUE, extrarange = SHORT_RANGE_SOUND_EXTRARANGE)
+	C.deconstruct()
+
+/obj/machinery/power/apc/proc/end_forced_arcing()
+	force_arcing = FALSE
 
 /obj/singularity/energy_ball/proc/determine_containment()
 	contained=0

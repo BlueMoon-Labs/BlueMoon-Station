@@ -157,6 +157,7 @@
 	initial_gas_mix = FROZEN_ATMOS
 	planetary_atmos = 1
 	initial_temperature = 180
+	temperature = 180
 
 /turf/open/lava/plasma
 	name = "liquid plasma"
@@ -173,6 +174,10 @@
 
 /turf/open/lava/plasma/attackby(obj/item/I, mob/user, params)
 	var/obj/item/reagent_containers/glass/C = I
+	//зачерпнуть плазму можно только тарой: любым другим предметом (RPED, инструмент)
+	//клик по лаве падал на reagents
+	if(!istype(C) || !C.reagents)
+		return ..()
 	if(C.reagents.total_volume >= C.volume)
 		to_chat(user, "<span class='danger'>[C] is full.</span>")
 		return
@@ -466,6 +471,7 @@
 				/obj/item/stack/sheet/mineral/gold{amount = 15} = 10,
 				/obj/item/pickaxe/drill/diamonddrill = 6,
 				/obj/item/borg/upgrade/vtec = 7,
+				/obj/item/borg/upgrade/jukebox = 6,
 				/obj/item/borg/upgrade/disablercooler = 7)
 
 

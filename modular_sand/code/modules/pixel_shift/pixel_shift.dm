@@ -41,11 +41,10 @@
 		client?.pixel_x = 0
 		pixel_y = get_standard_pixel_y_offset() + base_pixel_y
 		client?.pixel_y = 0
-	// BLUEMOON ADD
 	if(is_tilted)
 		transform = transform.Turn(-is_tilted)
 		is_tilted = 0
-	// BLUEMOON ADD END
+	update_small_sprite()
 
 /mob/proc/pixel_shift(direction)
 	return
@@ -64,7 +63,6 @@
 		return
 	passthroughable = FALSE
 
-	// BLUEMOON ADD
 	if(tilting)
 		if(CHECK_BITFIELD(direction, EAST))
 			if(is_tilted < 45)
@@ -77,38 +75,38 @@
 				is_tilted--
 				is_shifted = TRUE
 		return
-	// BLUEMOON ADD END
+	else
+		// Y-axis
+		if(CHECK_BITFIELD(direction, NORTH))
+			if(pixel_y < PIXEL_SHIFT_MAXIMUM + base_pixel_y)
+				pixel_y++
+				if(client && client.prefs.view_pixelshift && client.pixel_y < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+					client.pixel_y++
+				is_shifted = TRUE
+		else if(CHECK_BITFIELD(direction, SOUTH))
+			if(pixel_y > -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
+				pixel_y--
+				if(client && client.prefs.view_pixelshift && client.pixel_y > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+					client.pixel_y--
+				is_shifted = TRUE
 
-	// Y-axis
-	if(CHECK_BITFIELD(direction, NORTH))
-		if(pixel_y < PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-			pixel_y++
-			if(client && client.prefs.view_pixelshift && client.pixel_y < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
-				client.pixel_y++
-			is_shifted = TRUE
-	else if(CHECK_BITFIELD(direction, SOUTH))
-		if(pixel_y > -PIXEL_SHIFT_MAXIMUM + base_pixel_y)
-			pixel_y--
-			if(client && client.prefs.view_pixelshift && client.pixel_y > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
-				client.pixel_y--
-			is_shifted = TRUE
+		// X-axis
+		if(CHECK_BITFIELD(direction, EAST))
+			if(pixel_x < PIXEL_SHIFT_MAXIMUM + base_pixel_x)
+				pixel_x++
+				if(client && client.prefs.view_pixelshift && client.pixel_x < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+					client.pixel_x++
+				is_shifted = TRUE
+		else if(CHECK_BITFIELD(direction, WEST))
+			if(pixel_x > -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
+				pixel_x--
+				if(client && client.prefs.view_pixelshift && client.pixel_x > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
+					client.pixel_x--
+				is_shifted = TRUE
 
-	// X-axis
-	if(CHECK_BITFIELD(direction, EAST))
-		if(pixel_x < PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-			pixel_x++
-			if(client && client.prefs.view_pixelshift && client.pixel_x < PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
-				client.pixel_x++
-			is_shifted = TRUE
-	else if(CHECK_BITFIELD(direction, WEST))
-		if(pixel_x > -PIXEL_SHIFT_MAXIMUM + base_pixel_x)
-			pixel_x--
-			if(client && client.prefs.view_pixelshift && client.pixel_x > -PIXEL_SHIFT_MAXIMUM) //SPLURT Edit
-				client.pixel_x--
-			is_shifted = TRUE
-
-	if(abs(pixel_y - base_pixel_y) >= PIXEL_SHIFT_PASSABLE_THRESHOLD || abs(pixel_x - base_pixel_x) >= PIXEL_SHIFT_PASSABLE_THRESHOLD)
-		passthroughable = TRUE
+		if(abs(pixel_y - base_pixel_y) >= PIXEL_SHIFT_PASSABLE_THRESHOLD || abs(pixel_x - base_pixel_x) >= PIXEL_SHIFT_PASSABLE_THRESHOLD)
+			passthroughable = TRUE
+	update_small_sprite()
 
 /mob/living/Login()
 	. = ..()

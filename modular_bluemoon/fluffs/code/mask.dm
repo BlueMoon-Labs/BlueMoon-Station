@@ -64,6 +64,15 @@
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
 
+/obj/item/clothing/mask/hair_module/on_mob_death(mob/living/L, gibbed)
+	. = ..()
+	if(gibbed)
+		qdel(src)
+
+/obj/item/clothing/mask/hair_module/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+
 /obj/item/clothing/mask/breath/gestapo
 	name = "Truth Enforcer mask"
 	desc = "Filter their thoughts"
@@ -82,3 +91,39 @@
 	icon_state = "winter_mask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_worn_layer = GLASSES_LAYER
+
+/obj/item/clothing/mask/gas/sechailer/star_dust
+	name = "\"Star dust\" rebriser mask"
+	desc = "Сильно модифицированный внутри и лишь незначительно внешне противогаз, превращённый в маску с установленным фильтром и аккумулирующим кислород вместо пользователя мотором. Сверх того, имеет внутри встроенные системы оповещения и некоторой фильтрации изображения. Тактика как она есть."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "star_dust"
+	alternate_worn_layer = BACK_LAYER
+
+/obj/item/modkit/star_dust_kit
+	name = "\"Star dust\" rebriser mask Kit"
+	desc = "A modkit for making a Security Gas Mask into a \"Star dust\" rebriser mask."
+	icon_state = "gas-mask_kit"
+	product = /obj/item/clothing/mask/gas/sechailer/star_dust
+	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
+
+/obj/item/clothing/mask/gas/krieg
+	name = "Противогаз Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "krieg_mask"
+	item_state = "krieg_mask"
+
+/obj/item/clothing/mask/gas/half_mask_skull
+    name = "Skull Gaiter"
+    desc = "Gaiter made from high-quality materials. On the inside, there is a label: Harr."
+    actions_types = list(/datum/action/item_action/adjust)
+    icon_state = "half_mask_skull"
+    item_state = "half_mask_skull"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+    flags_inv = HIDEFACE|HIDEFACIALHAIR
+
+/obj/item/clothing/mask/gas/half_mask_skull/attack_self(mob/user)
+    adjustmask(user)

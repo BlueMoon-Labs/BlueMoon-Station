@@ -14,6 +14,7 @@
 	action_flags = IC_ACTION_COMBAT
 	power_draw_per_use = 200
 	var/mob/living/carbon/integral/mob_for_using_items
+	limit_per_assembly = 1
 
 /mob/living/carbon/integral
 	name = "integrated robotic hand"
@@ -29,6 +30,7 @@
 /mob/living/carbon/integral/Destroy()
 	my_interacter = null
 	QDEL_NULL(mind)
+	bodyparts = list()	// type paths were causing multiple runtimes when each bodypart was qdel'ted. This fixes it. As far as i'm aware.
 	return ..()
 
 /mob/living/carbon/integral/Initialize(mapload)

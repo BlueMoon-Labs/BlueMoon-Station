@@ -51,9 +51,19 @@
 		burst()
 	return ..()
 
+/obj/item/latexballon/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/item/latexballon/temperature_expose(datum/gas_mixture/air, temperature, volume)
 	if(temperature > T0C+100)
 		burst()
+
+/obj/item/latexballon/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + 100)
+
+/obj/item/latexballon/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	burst()
 
 /obj/item/latexballon/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/tank))

@@ -1,7 +1,7 @@
-import { classes } from 'common/react';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -12,10 +12,12 @@ import {
   Input,
   NoticeBox,
   Section,
+  Stack,
   Table,
   Tabs,
 } from '../components';
 import { Window } from '../layouts';
+import { DesignIcon } from './common/DesignIcon';
 import { MaterialAmount, MaterialFormatting, Materials } from './common/Materials';
 
 const COLOR_NONE = 0;
@@ -205,8 +207,8 @@ const costTooltipNode = (item, amt, materialsObj, chemsHaveById, chemsNameById) 
   );
 };
 
-export const Fabricator = (props, context) => {
-  const { data } = useBackend(context);
+export const Fabricator = (props) => {
+  const { data } = useBackend();
   const { busy } = data;
 
   return (
@@ -217,15 +219,15 @@ export const Fabricator = (props, context) => {
           {' Production...'}
         </Dimmer>
       )}
-      <Window.Content overflow="auto">
+      <Window.Content>
         <FabricatorContent />
       </Window.Content>
     </Window>
   );
 };
 
-export const FabricatorContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const FabricatorContent = (props) => {
+  const { act, data } = useBackend();
   const {
     categories = [],
     materials = [],
@@ -247,10 +249,8 @@ export const FabricatorContent = (props, context) => {
     return 0;
   });
 
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [selectedCategory, setSelectedCategory] = useLocalState(
-    context,
-    'category',
+  const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(
     categories[0]?.name,
   );
 
@@ -270,9 +270,9 @@ export const FabricatorContent = (props, context) => {
   const chemsNameById = chemsArrayToNameById(chems);
 
   return (
-    <Section>
-      <Flex direction="column">
-        <Flex.Item>
+    <Section fill minHeight={0}>
+      <Stack fill vertical minHeight={0}>
+        <Stack.Item>
           <Collapsible
             open
             title={materials_text
@@ -289,9 +289,9 @@ export const FabricatorContent = (props, context) => {
               }}
             />
           </Collapsible>
-        </Flex.Item>
+        </Stack.Item>
 
-        <Flex.Item mb={2.5}>
+        <Stack.Item mb={2.5}>
           <Collapsible title="Chemicals" color="transparent">
             <Section
               title={`Stored Chemicals: ${chems_total_volume}u / ${chems_maximum}u`}
@@ -320,11 +320,13 @@ export const FabricatorContent = (props, context) => {
               ))}
             </Section>
           </Collapsible>
-        </Flex.Item>
+        </Stack.Item>
 
-        <Flex.Item>
+        <Stack.Item grow={1} basis={0} minHeight={0}>
           <Section
-            title={hacked ? 'Дизайны (Взлом!)' : 'Дизайны'}
+            fill
+            minHeight={0}
+            title={hacked ? 'Designs (Safety protocols: DISABLED)' : 'Designs'}
             buttons={(
               <>
                 Search:
@@ -348,60 +350,81 @@ export const FabricatorContent = (props, context) => {
               </>
             )}
           >
-            <Flex>
+            <Stack fill minHeight={0}>
+              {/* //категории */}
               {!searchIsActive && (
-                <Flex.Item>
-                  <Tabs vertical>
-                    {categories
-                      .filter((c) => c.items?.length)
-                      .map((category) => (
-                        <Tabs.Tab
-                          mr={1.5}
-                          key={category.name}
-                          selected={category.name === selectedCategory}
-                          onClick={() => {
-                            setSelectedCategory(category.name);
-                            const ae = document.activeElement;
-                            ae?.blur?.();
-                          }}
-                        >
-                          {category.name} ({category.items.length})
-                        </Tabs.Tab>
-                      ))}
-                  </Tabs>
-                </Flex.Item>
+                <>
+                  <Stack.Item>
+                    <Tabs vertical>
+                      {categories
+                        .filter((c) => c.items?.length)
+                        .map((category) => (
+                          <Tabs.Tab
+                            mr={1.5}
+                            key={category.name}
+                            selected={category.name === selectedCategory}
+                            onClick={() => {
+                              setSelectedCategory(category.name);
+                              const ae = document.activeElement;
+                              ae?.blur?.();
+                            }}
+                          >
+                            {category.name} ({category.items.length})
+                          </Tabs.Tab>
+                        ))}
+                    </Tabs>
+                  </Stack.Item>
+
+                  {/* вертикальная линия между категориями и таблицей */}
+                  <Stack.Divider />
+                </>
               )}
 
-              <Flex.Item grow={1} basis={0}>
-                {items.length === 0 && (
-                  <NoticeBox>
-                    {!searchIsActive
-                      ? 'No items in this category.'
-                      : 'No results found.'}
-                  </NoticeBox>
-                )}
+              <Stack.Item grow={1} basis={0} minHeight={0}>
+                <Stack vertical fill minHeight={0}>
+                  <Stack.Item grow={1} basis={0} minHeight={0}>
+                    {/* //содержимое-таблицы */}
+                    {items.length === 0 && (
+                      <NoticeBox>
+                        {!searchIsActive
+                          ? 'No items in this category.'
+                          : 'No results found.'}
+                      </NoticeBox>
+                    )}
 
-                <Table>
-                  <ItemList
-                    items={items}
-                    materialsObj={materialsObj}
-                    chemsHaveById={chemsHaveById}
-                    chemsNameById={chemsNameById}
-                    curSecLevel={current_sec_level}
-                    maxBuildButtonAmount={maxBuildButtonAmount}
-                  />
-                </Table>
-              </Flex.Item>
-            </Flex>
+                    <Section
+                      fill
+                      scrollable
+                      height="calc(100% - 0.4rem)"
+                    >
+                      <Table>
+                        <ItemList
+                          items={items}
+                          materialsObj={materialsObj}
+                          chemsHaveById={chemsHaveById}
+                          chemsNameById={chemsNameById}
+                          curSecLevel={current_sec_level}
+                          maxBuildButtonAmount={maxBuildButtonAmount}
+                        />
+                      </Table>
+                    </Section>
+                  </Stack.Item>
+
+                  {/* горизонтальная линия под содержимым вкладки */}
+                  <Stack.Divider />
+                </Stack>
+              </Stack.Item>
+            </Stack>
           </Section>
-        </Flex.Item>
-      </Flex>
+        </Stack.Item>
+      </Stack>
     </Section>
   );
 };
 
-const ItemList = (props, context) => {
-  const { act } = useBackend(context);
+const ItemList = (props) => {
+  const { act, data } = useBackend();
+  const { design_sizes = {} } = data;
   const {
     items,
     materialsObj,
@@ -421,7 +444,7 @@ const ItemList = (props, context) => {
 
     return (
       <Table.Row key={item.id}>
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             <Flex.Item>
               <Button
@@ -431,8 +454,8 @@ const ItemList = (props, context) => {
                   padding: 0,
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Icon name="circle-question" />
@@ -447,8 +470,8 @@ const ItemList = (props, context) => {
                     padding: 0,
                     height: ROW_BTN_HEIGHT,
                     display: 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   <Icon name="triangle-exclamation" color={!secLevelAllow && "orange"} />
@@ -458,7 +481,7 @@ const ItemList = (props, context) => {
           </Flex>
         </Table.Cell>
 
-        <Table.Cell style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell style={{ verticalAlign: 'middle' }}>
           <Button
             fluid
             color="transparent"
@@ -468,13 +491,13 @@ const ItemList = (props, context) => {
               padding: 0,
               height: ROW_BTN_HEIGHT,
               display: 'flex',
-              'align-items': 'center',
+              alignItems: 'center',
             }}
             onClick={() => act('build', { id: item.id, amount: 1 })}
           >
             <Flex align="center">
               <Flex.Item mr={1}>
-                <span className={classes(['design32x32', item.id])} />
+                <DesignIcon id={item.id} sizeClass={design_sizes[item.id]} />
               </Flex.Item>
               <Flex.Item color={COLOR_KEYS[color1]}>
                 <b style={{ lineHeight: ROW_BTN_HEIGHT }}>{item.name}</b>
@@ -483,7 +506,7 @@ const ItemList = (props, context) => {
           </Button>
         </Table.Cell>
 
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             {button_amounts.map((amt) => {
               const colorN = calcTextColor(materialsObj, chemsHaveById, item, amt);
@@ -496,7 +519,7 @@ const ItemList = (props, context) => {
                     style={{
                       height: ROW_BTN_HEIGHT,
                       display: 'flex',
-                      'align-items': 'center',
+                      alignItems: 'center',
                     }}
                     onClick={() => act('build', { id: item.id, amount: amt })}
                     content={
@@ -515,7 +538,7 @@ const ItemList = (props, context) => {
                 style={{
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
+                  alignItems: 'center',
                 }}
                 content={
                   <Box color={maxBuild <= 0 && 'bad'}>

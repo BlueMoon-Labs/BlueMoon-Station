@@ -128,10 +128,6 @@ jobs:
       - name: Install rust-g
         run: |
           bash tools/ci/install_rust_g.sh
-      - name: Install auxmos
-        run: |
-          sudo apt update || true
-          bash tools/ci/install_auxmos.sh
       - name: Compile and run tests
         run: |
           bash tools/ci/install_byond.sh

@@ -6,6 +6,7 @@
 	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_MOBILITY_NOPICKUP), PROC_REF(update_mobility))
 	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_MOBILITY_NOUSE), PROC_REF(update_mobility))
 	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_MOBILITY_NOREST), PROC_REF(update_mobility))
+	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_RESTRAINED), PROC_REF(update_mobility))
 	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_LIVING_NO_DENSITY), PROC_REF(update_density))
 	RegisterSignal(src, SIGNAL_TRAIT(TRAIT_PUGILIST), PROC_REF(update_pugilism))
 

@@ -2,7 +2,7 @@ import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Icon, Section, Tabs, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-export const SpawnersMenu = (props, context) => {
+export const SpawnersMenu = (props) => {
   return (
     <Window title="Spawners Menu" width={700} height={600}>
       <Window.Content overflow="auto">
@@ -12,9 +12,9 @@ export const SpawnersMenu = (props, context) => {
   );
 };
 
-export const SpawnerContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 'misc');
+export const SpawnerContent = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 'misc');
   const spawners = data.spawners || [];
   const misc = spawners.filter((spawner) => spawner.category === 'misc');
   const syndicate = spawners.filter((spawner) => spawner.category === 'syndicate');
@@ -107,9 +107,9 @@ export const SpawnerContent = (props, context) => {
   );
 };
 
-export const RolelistItem = (props, context) => {
+export const RolelistItem = (props) => {
   const spawner = props.spawner || {};
-  const { act } = useBackend(context);
+  const { act } = useBackend();
 
   return (
     <Section

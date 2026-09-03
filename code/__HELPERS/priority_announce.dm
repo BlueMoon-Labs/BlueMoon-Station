@@ -1,4 +1,98 @@
-/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message)
+/proc/priority_announcement_style(title = "", type, sender_override)
+	var/list/data = list(
+		"theme" = "centcom",
+		"badge" = "CENTCOM",
+		"header" = "[command_name()] Объявляет",
+		"subtitle" = title,
+	)
+
+	switch(type)
+		if("Priority")
+			data["theme"] = "priority"
+			data["badge"] = "PRIORITY"
+			data["header"] = "Приоритетное Объявление"
+		if("Captain", "CommunicationsConsole")
+			data["theme"] = "communications"
+			data["badge"] = "COMMS"
+			data["header"] = "Консоль Связи"
+		if("RequestsConsole")
+			data["theme"] = "requests"
+			data["badge"] = "REQUESTS"
+			data["header"] = "Консоль Запросов"
+		if("Syndicate")
+			data["theme"] = "syndicate"
+			data["badge"] = "SYNDICATE"
+			data["header"] = "Синдикат Объявляет"
+		if("AI", "Silicon")
+			data["theme"] = "silicon"
+			data["badge"] = "SILICON"
+			data["header"] = "Силиконовое Объявление"
+		if("ionstorm")
+			data["theme"] = "ionstorm"
+			data["badge"] = "ИОННЫЙ ШТОРМ"
+			data["header"] = "Ионная Аномалия"
+		if("aimalf")
+			data["theme"] = "aimalf"
+			data["badge"] = "СБОЙ ИИ"
+			data["header"] = "Тревога ИИ"
+		if("outbreak5", "outbreak7")
+			data["theme"] = "biohazard"
+			data["badge"] = "БИОУГРОЗА"
+			data["header"] = "Биологическая Тревога"
+		else
+			if(sender_override)
+				var/sender_lower = lowertext("[sender_override]")
+				var/command_lower = lowertext(command_name())
+				data["theme"] = "custom"
+				data["badge"] = "NOTICE"
+				data["header"] = sender_override
+
+				if(findtext(sender_lower, "центральное командование") || findtext(sender_lower, "central command") || findtext(sender_lower, "centcom") || findtext(sender_lower, command_lower))
+					data["theme"] = "centcom"
+					data["badge"] = "CENTCOM"
+
+	return data
+
+/proc/build_priority_announcement(text, title = "", type, sender_override, has_important_message)
+	var/list/style = priority_announcement_style(title, type, sender_override)
+	var/theme = style["theme"]
+	var/header_text = style["header"]
+	var/subtitle_text = style["subtitle"]
+	var/badge_text = style["badge"]
+	var/list/classes = list(
+		"priority_announcement",
+		"priority_announcement--[theme]",
+	)
+
+	if(has_important_message)
+		classes += "priority_announcement--important"
+
+	var/class_string = jointext(classes, " ")
+	var/header = html_encode(header_text)
+	var/subtitle = html_encode(subtitle_text)
+	var/badge = html_encode(badge_text)
+	var/body
+
+	if(SSstation.announcer.custom_alert_message && !has_important_message)
+		body = "<span class='priority_announcement__body priority_announcement__body--custom'>[SSstation.announcer.custom_alert_message]</span>"
+	else
+		body = "<span class='priority_announcement__body'>[html_encode(text)]</span>"
+
+	var/announcement = "<span class='[class_string]'>"
+	announcement += "<span class='priority_announcement__badge'>[badge]</span>"
+	announcement += "<span class='priority_announcement__header'>"
+	announcement += "<span class='priority_announcement__source'>[header]</span>"
+
+	if(length(subtitle_text))
+		announcement += "<span class='priority_announcement__title'>[subtitle]</span>"
+
+	announcement += "</span>"
+	announcement += body
+	announcement += "</span>"
+
+	return announcement
+
+/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message, sound_id = "announcements")
 	if(!text)
 		return
 
@@ -8,51 +102,68 @@
 	else if(SSstation.announcer.event_sounds[sound])
 		sound = pick(SSstation.announcer.event_sounds[sound])
 
-	if(type == "Priority")
-		announcement += "<h1 class='alert'>Приоритетное Объявление</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-	else if(type == "Captain")
-		if(usr)
-			announcement += "<h1 class='alert'>Капитан Объявляет (— [usr.name])</h1>"
-		else
-			announcement += "<h1 class='alert'>Капитан Объявляет</h1>"
-		GLOB.news_network.SubmitArticle(html_encode(text), "Капитан Объявляет (— [usr.name])", "Станционные Объявления", null)
+	if(type == "Captain" || type == "CommunicationsConsole")
+		var/announcement_title = title
+		if(!length(announcement_title))
+			announcement_title = "Станционное Объявление"
+		GLOB.news_network.SubmitArticle(html_encode(text), announcement_title, "Станционные Объявления", null)
 	else if(type == "Syndicate")
-		announcement += "<h1 class='alert'>Синдикат Объявляет</h1>"
 		GLOB.news_network.SubmitArticle(html_encode(text), "Синдикат Объявляет", "Станционные Объявления", null)
-	else if(type == "AI")
-		announcement += "<h1 class='alert'>Искусственный Интеллект</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-
-	else
-		if(!sender_override)
-			announcement += "<h1 class='alert'>[command_name()] Объявляет</h1>"
-		else
-			announcement += "<h1 class='alert'>[sender_override]</h1>"
-		if (title && length(title) > 0)
-			announcement += "<br><h2 class='alert'>[html_encode(title)]</h2>"
-
+	else if(type != "Priority" && type != "RequestsConsole" && type != "AI" && type != "Silicon")
 		if(!sender_override)
 			if(title == "")
 				GLOB.news_network.SubmitArticle(text, "Центральное Командование Объявляет", "Станционные Объявления", null)
 			else
 				GLOB.news_network.SubmitArticle(title + "<br><br>" + text, "Центральное Командование Объявляет", "Станционные Объявления", null)
 
-	///If the announcer overrides alert messages, use that message.
-	if(SSstation.announcer.custom_alert_message && !has_important_message)
-		announcement += SSstation.announcer.custom_alert_message
-	else
-		announcement += "<br>[span_alert("[html_encode(text)]")]<br>"
-	announcement += "<br>"
+	announcement = build_priority_announcement(text, title, type, sender_override, has_important_message)
 
-	var/s = sound(sound)
-	for(var/mob/M in GLOB.player_list)
-		if(!isnewplayer(M) && M.can_hear())
-			to_chat(M, announcement)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
-				SEND_SOUND(M, s)
+	var/list/sound_listeners = list()
+	for(var/mob/listener in GLOB.player_list)
+		if(isnewplayer(listener) || !listener.can_hear()) //to_chat асинхронный (очередь SSchat), его не батчим
+			continue
+		to_chat(listener, announcement)
+		if(listener.client)
+			sound_listeners += listener.client
+	send_announcement_sound(sound, sound_id, sound_listeners)
+
+/**
+ * Рассылает звук объявления, уважая тумблер SOUND_ANNOUNCEMENTS и ползунок громкости.
+ *
+ * Слушатели группируются по итоговой громкости и получают звук одним нативным выводом
+ * на группу: поштучный SEND_SOUND на ~100 клиентов держал тик на 400+мс на каждое
+ * объявление.
+ *
+ * Arguments:
+ * * announcement_sound - путь до звукового файла либо готовый /sound
+ * * sound_id - ключ ползунка громкости, см. /datum/preferences/proc/get_sound_volume
+ * * listeners - список /client, которым звук предназначен
+ */
+/proc/send_announcement_sound(announcement_sound, sound_id = "announcements", list/listeners)
+	if(!announcement_sound || !length(listeners))
+		return
+	var/sound/played_sound = sound(announcement_sound)
+	var/list/listeners_by_volume = list()
+	for(var/client/listener as anything in listeners)
+		if(!(listener.prefs?.toggles & SOUND_ANNOUNCEMENTS))
+			continue
+		var/pref_vol = listener.prefs?.get_sound_volume(sound_id)
+		if(isnull(pref_vol)) //prefs ещё не загружены - короткое замыкание выше вернуло null, а не 100
+			pref_vol = 100
+		if(pref_vol <= 0)
+			continue
+		var/volume_key = "[pref_vol]"
+		var/list/volume_bucket = listeners_by_volume[volume_key]
+		if(!volume_bucket)
+			volume_bucket = list()
+			listeners_by_volume[volume_key] = volume_bucket
+		volume_bucket += listener
+	for(var/volume_key in listeners_by_volume)
+		played_sound.volume = text2num(volume_key)
+		// Список-адресат обязан лежать в локальной переменной: для LHS-индексации
+		// "a[b] << x" компилятор эмитит стрим-опкод и это рантаймит "bad savefile or list".
+		var/list/send_bucket = listeners_by_volume[volume_key]
+		SEND_SOUND(send_bucket, played_sound)
 
 /**
  * Summon the crew for an emergency meeting
@@ -111,8 +222,72 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, "[span_minorannounce("<font color = red>[title]</font color><BR>[message]")]<BR>")
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
 				if(alert)
-					SEND_SOUND(M, sound('sound/misc/notice1.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
 				else
-					SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
+
+/proc/build_system_notice(title, body, theme = "notice", label = null, focus = null)
+	var/list/classes = list(
+		"system_notice",
+		"system_notice--[theme]",
+	)
+	var/class_string = jointext(classes, " ")
+	var/announcement = "<span class='[class_string]'>"
+
+	if(label)
+		announcement += "<span class='system_notice__label'>[html_encode(label)]</span>"
+
+	announcement += "<span class='system_notice__title'>[html_encode(title)]</span>"
+
+	if(focus)
+		announcement += "<span class='system_notice__focus'>[html_encode(focus)]</span>"
+
+	announcement += "<span class='system_notice__body'>[html_encode(body)]</span>"
+	announcement += "</span>"
+
+	return announcement
+
+/proc/announce_security_level_change(level, message, raised = TRUE)
+	var/state_text = raised ? "УРОВЕНЬ ТРЕВОГИ ПОВЫШЕН" : "УРОВЕНЬ ТРЕВОГИ ИЗМЕНЁН"
+	var/focus = ">> [get_security_level_notice_name(level)] <<"
+	var/theme = get_security_level_notice_theme(level)
+	var/html = build_system_notice(state_text, message, theme, "SECURITY LEVEL", focus)
+
+	for(var/mob/M in GLOB.player_list)
+		if(!isnewplayer(M) && M.can_hear())
+			to_chat(M, html)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
+				if(raised)
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
+				else
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
+
+/proc/announce_captain_arrival(displayed_rank, captain_name)
+	if(!displayed_rank)
+		displayed_rank = "Капитан"
+
+	var/focus = captain_name ? ">> [displayed_rank] [captain_name] <<" : ">> [displayed_rank] <<"
+	var/html = build_system_notice("ПРИБЫТИЕ КОМАНДОВАНИЯ", "Прибытие на '[station_name()]' подтверждено. Мостик ожидает принятия командования.", "captain-arrival", "COMMAND", focus)
+
+	for(var/mob/M in GLOB.player_list)
+		if(!isnewplayer(M) && M.can_hear())
+			to_chat(M, html)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
+				SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
+
+/proc/build_ai_upload_notice(remote_access_restored = FALSE)
+	if(remote_access_restored)
+		return build_system_notice("АПЛОУД ПОДКЛЮЧЁН", "Вы загружены в стационарный терминал. Связь с удалёнными устройствами восстановлена.", "ai-upload", "AI UPLOAD", ">> ДОСТУП ВОССТАНОВЛЕН <<")
+
+	return build_system_notice("АПЛОУД ПОДКЛЮЧЁН", "Вы загружены в стационарный терминал. Удалённый доступ к устройствам с этого терминала недоступен.", "ai-upload", "AI UPLOAD", ">> ЛОКАЛЬНЫЙ РЕЖИМ <<")

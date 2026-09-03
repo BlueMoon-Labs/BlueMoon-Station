@@ -401,6 +401,12 @@
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/plating,
 /area/shuttle/slaveship)
+"No" = (
+/obj/item/bodybag/containment/prisoner,
+/obj/item/bodybag/containment/prisoner,
+/obj/item/bodybag/containment/prisoner,
+/turf/open/floor/plating/rust,
+/area/shuttle/slaveship)
 "NN" = (
 /obj/structure/chair/comfy/shuttle,
 /turf/open/floor/mineral/plastitanium,
@@ -754,7 +760,7 @@ yT
 yT
 Wk
 aN
-rc
+No
 Iu
 ax
 "}

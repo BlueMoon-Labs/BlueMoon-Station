@@ -18,7 +18,7 @@
 /datum/map_template/holodeck/update_blacklist(turf/placement, list/input_blacklist)
 	var/datum/map_template/holo
 	for(var/turf/possible_blacklist as anything in holo.get_affected_turfs(placement))
-		if (possible_blacklist.holodeck_compatible)
+		if (possible_blacklist.turf_flags & TURF_HOLODECK_COMPATIBLE)
 			continue
 		input_blacklist[possible_blacklist] = TRUE
 
@@ -109,6 +109,9 @@
 /area/holodeck/rec_center/spacechess
 	name = "Holodeck - Space Chess"
 
+/area/holodeck/rec_center/spacecheckers
+	name = "Holodeck - Space Checkers"
+
 /area/holodeck/rec_center/kobayashi
 	name = "Holodeck - Kobayashi Maru"
 
@@ -118,6 +121,11 @@
 /area/holodeck/rec_center/wrestlingarena
 	name = "Holodeck - Wrestling Arena"
 
+/area/holodeck/rec_center/photobooth
+	name = "Holodeck - Photobooth"
+
+/area/holodeck/rec_center/skatepark
+	name = "Holodeck - Skate Park"
 // Bad programs
 
 /area/holodeck/rec_center/burn

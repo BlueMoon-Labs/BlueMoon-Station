@@ -1,5 +1,6 @@
 /obj/vehicle/sealed/mecha/combat/durand/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -12,6 +13,7 @@
 
 /obj/vehicle/sealed/mecha/combat/gygax/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -24,6 +26,7 @@
 
 /obj/vehicle/sealed/mecha/medical/odysseus/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -35,6 +38,7 @@
 
 /obj/vehicle/sealed/mecha/medical/medigax/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -46,6 +50,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -63,6 +68,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill/diamonddrill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp(src)
@@ -80,6 +86,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill/diamonddrill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -94,3 +101,27 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/extinguisher(src)
 	ME.attach(src)
+
+/obj/vehicle/sealed/mecha/proc/install_titanfall_premium_parts()
+	QDEL_NULL(cell)
+	QDEL_NULL(scanmod)
+	QDEL_NULL(capacitor)
+	add_cell(new /obj/item/stock_parts/cell/bluespace(src))
+	add_scanmod(new /obj/item/stock_parts/scanning_module/unilatera_triphasic(src))
+	add_capacitor(new /obj/item/stock_parts/capacitor/giga(src))
+	update_part_values()
+	diag_hud_set_mechcell()
+	diag_hud_set_mechstat()
+	install_titanfall_tracker_if_missing()
+
+/obj/vehicle/sealed/mecha/proc/install_titanfall_tracker_if_missing()
+	if(LAZYLEN(trackers))
+		return
+	var/obj/item/mecha_parts/mecha_tracking/MT = new /obj/item/mecha_parts/mecha_tracking(src)
+	MT.attach(src)
+
+/obj/item/choice_beacon/vehicle/create_choice_atom(atom/choice, mob/owner)
+	. = ..()
+	if(istype(., /obj/vehicle/sealed/mecha))
+		var/obj/vehicle/sealed/mecha/beacon_mech = .
+		beacon_mech.install_titanfall_premium_parts()

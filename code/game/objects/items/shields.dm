@@ -447,6 +447,7 @@
 	name = "telescopic shield"
 	desc = "An advanced riot shield made of lightweight materials that collapses for easy storage."
 	icon_state = "teleriot0"
+	base_icon_state = "teleriot"
 	lefthand_file = 'icons/mob/inhands/equipment/shields_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/shields_righthand.dmi'
 	slot_flags = null
@@ -456,6 +457,10 @@
 	throw_range = 4
 	w_class = WEIGHT_CLASS_NORMAL
 	var/active = FALSE
+	var/extend_sound = 'sound/weapons/batonextend.ogg'
+
+/obj/item/shield/riot/tele/update_icon_state()
+	icon_state = "[base_icon_state][active]"
 
 /obj/item/shield/riot/tele/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(!active)
@@ -467,8 +472,8 @@
 
 /obj/item/shield/riot/tele/attack_self(mob/living/user)
 	active = !active
-	icon_state = "teleriot[active]"
-	playsound(src.loc, 'sound/weapons/batonextend.ogg', 50, TRUE)
+	update_icon()
+	playsound(src.loc, extend_sound, 50, TRUE)
 
 	if(active)
 		force = 8

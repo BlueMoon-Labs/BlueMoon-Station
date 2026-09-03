@@ -26,7 +26,7 @@
 
 /obj/item/bot_assembly/proc/can_finish_build(obj/item/I, mob/user)
 	if(istype(loc, /obj/item/storage/backpack))
-		to_chat(user, "<span class='warning'>You must take [src] out of <b>[loc]</b> first!</span>")
+		to_chat(user, span_warning("You must take [src] out of <b>[loc]</b> first!"))
 		return FALSE
 	if(!I || !user || !user.temporarilyRemoveItemFromInventory(I))
 		return FALSE
@@ -144,7 +144,7 @@
 			if(istype(W, /obj/item/stack/cable_coil))
 				var/obj/item/stack/cable_coil/coil = W
 				if(coil.get_amount() < 1)
-					to_chat(user, "<span class='warning'>You need one length of cable to wire the ED-209!</span>")
+					to_chat(user, span_warning("You need one length of cable to wire the ED-209!"))
 					return
 				to_chat(user, "<span class='notice'>You start to wire [src]...</span>")
 				if(coil.use_tool(src, user, 40, 1))
@@ -201,16 +201,33 @@
 
 //Floorbot assemblies
 /obj/item/bot_assembly/floorbot
-	desc = "It's a toolbox with tiles sticking out the top."
+	desc = "Это ящик с инструментами с плиткой, торчащей из под крышки."
 	name = "tiles and toolbox"
 	icon_state = "toolbox_tiles"
 	throwforce = 10
 	created_name = "Floorbot"
 	var/toolbox = /obj/item/storage/toolbox
+	var/box_latches = "single_latch"
+	var/craft_color
 
-/obj/item/bot_assembly/floorbot/Initialize(mapload)
+/obj/item/bot_assembly/floorbot/Initialize(mapload, received_color, parent_type, received_latches)
 	. = ..()
+	toolbox = parent_type
+	box_latches = received_latches
+	determine_skin(received_color)
 	update_icon()
+
+/obj/item/bot_assembly/floorbot/proc/determine_skin(skin_color)
+	switch(skin_color)
+		if("red")
+			icon_state = "red_toolbox_tiles"
+			craft_color = "red"
+		if("yellow")
+			icon_state = "yellow_toolbox_tiles"
+			craft_color = "yellow"
+		else
+			icon_state = "toolbox_tiles"
+			craft_color = "blue"
 
 /obj/item/bot_assembly/floorbot/update_icon()
 	..()
@@ -218,28 +235,38 @@
 		if(ASSEMBLY_FIRST_STEP)
 			desc = initial(desc)
 			name = initial(name)
-			icon_state = initial(icon_state)
 
 		if(ASSEMBLY_SECOND_STEP)
-			desc = "It's a toolbox with tiles sticking out the top and a sensor attached."
+			desc += " Сбоку видно сенсор движения."
 			name = "incomplete floorbot assembly"
-			icon_state = "toolbox_tiles_sensor"
+			update_overlays()
+
+/obj/item/bot_assembly/floorbot/update_overlays()
+	. = ..()
+	switch(build_step)
+		if(ASSEMBLY_SECOND_STEP)
+			add_overlay("toolbox_tiles_sensor")
+	if(box_latches)
+		var/icon/I = icon('icons/obj/storage.dmi', box_latches)
+		. += I
 
 /obj/item/storage/toolbox/attackby(obj/item/stack/tile/plasteel/T, mob/user, params)
 	if(!istype(T, /obj/item/stack/tile/plasteel))
 		..()
 		return
 	if(contents.len >= 1)
-		to_chat(user, "<span class='warning'>They won't fit in, as there is already stuff inside!</span>")
+		to_chat(user, span_warning("Не поместится, внутри что-то находится!"))
+		return
+	if(!floorbot_base)
+		to_chat(user, span_warning("Это не подойдёт для бота-полоукладчика!"))
 		return
 	if(T.use(10))
-		var/obj/item/bot_assembly/floorbot/B = new
-		B.toolbox = type
+		var/obj/item/bot_assembly/floorbot/B = new(null, toolbox_skin_color, type, latches)
 		user.put_in_hands(B)
-		to_chat(user, "<span class='notice'>You add the tiles into the empty [src.name]. They protrude from the top.</span>")
+		to_chat(user, span_notice("Вы добавили плитку внутрь пустого [src.name]. Она торчит из под крышки."))
 		qdel(src)
 	else
-		to_chat(user, "<span class='warning'>You need 10 floor tiles to start building a floorbot!</span>")
+		to_chat(user, span_warning("Вам нужно десять метров плитки для начала создания бота-полоукладчика!"))
 		return
 
 /obj/item/bot_assembly/floorbot/attackby(obj/item/W, mob/user, params)
@@ -249,7 +276,7 @@
 			if(isprox(W))
 				if(!user.temporarilyRemoveItemFromInventory(W))
 					return
-				to_chat(user, "<span class='notice'>You add [W] to [src].</span>")
+				to_chat(user, span_notice("Вы добавили [W] к [src]."))
 				qdel(W)
 				build_step++
 				update_icon()
@@ -258,11 +285,10 @@
 			if(istype(W, /obj/item/bodypart/l_arm/robot) || istype(W, /obj/item/bodypart/r_arm/robot))
 				if(!can_finish_build(W, user))
 					return
-				var/mob/living/simple_animal/bot/floorbot/A = new(drop_location())
+				var/mob/living/simple_animal/bot/floorbot/A = new(drop_location(), toolbox, craft_color, box_latches)
 				A.name = created_name
 				A.robot_arm = W.type
-				A.toolbox = toolbox
-				to_chat(user, "<span class='notice'>You add [W] to [src]. Boop beep!</span>")
+				to_chat(user, span_notice("Вы добавили [W] к [src]. Boop beep!"))
 				qdel(W)
 				qdel(src)
 
@@ -270,7 +296,7 @@
 //Medbot Assembly
 /obj/item/bot_assembly/medbot
 	name = "incomplete medibot assembly"
-	desc = "A first aid kit with a robot arm permanently grafted to it."
+	desc = "Аптечка с неотрывно прикрепплённой к ней роботической рукой."
 	icon_state = "firstaid_arm"
 	created_name = "Medibot" //To preserve the name if it's a unique medbot I guess
 	var/skin = null //Same as medbot, set to tox or ointment for the respective kits.
@@ -290,20 +316,23 @@
 
 	//Making a medibot!
 	if(contents.len >= 1)
-		to_chat(user, "<span class='warning'>You need to empty [src] out first!</span>")
+		to_chat(user, span_warning("Для начала вам нужно опустошить [src]!"))
 		return
 
 	var/obj/item/bot_assembly/medbot/A = new
-	if(istype(src, /obj/item/storage/firstaid/fire))
-		A.skin = "ointment"
-	else if(istype(src, /obj/item/storage/firstaid/toxin))
-		A.skin = "tox"
-	else if(istype(src, /obj/item/storage/firstaid/o2))
-		A.skin = "o2"
-	else if(istype(src, /obj/item/storage/firstaid/brute))
-		A.skin = "brute"
+	switch(src.type)
+		if(/obj/item/storage/firstaid/fire)
+			A.skin = "ointment"
+		if(/obj/item/storage/firstaid/toxin)
+			A.skin = "tox"
+		if(/obj/item/storage/firstaid/o2)
+			A.skin = "o2"
+		if(/obj/item/storage/firstaid/brute)
+			A.skin = "brute"
+		else
+			A.skin = null
 	user.put_in_hands(A)
-	to_chat(user, "<span class='notice'>You add [S] to [src].</span>")
+	to_chat(user, span_notice("Вы добавили [S] к [src]."))
 	A.robot_arm = S.type
 	A.firstaid = type
 	qdel(S)

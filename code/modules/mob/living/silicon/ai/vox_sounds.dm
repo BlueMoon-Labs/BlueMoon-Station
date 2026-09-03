@@ -7,6 +7,55 @@
 
 GLOBAL_LIST_INIT(vox_types, init_vox_list())
 
+/// Через сколько файлов уступать тик при разовом промере каталога.
+#define VOX_SIZE_SCAN_YIELD_EVERY 100
+/// Сколько ждать чужой промер, прежде чем взяться за него самому.
+#define VOX_SIZE_SCAN_WAIT_TIMEOUT (10 SECONDS)
+
+GLOBAL_VAR_INIT(vox_preload_bytes, 0)
+/// TRUE, пока промер каталога идёт. Скан спит на stoplag(), и без флага второй вызывающий
+/// видел ещё нулевой vox_preload_bytes и запускал полный обход второй раз.
+GLOBAL_VAR_INIT(vox_preload_scanning, FALSE)
+
+/// Суммарный вес каталога VOX в байтах. Считается один раз за раунд.
+///
+/// Каталог уходит каждому входящему клиенту целиком (см. /client/proc/send_resources),
+/// поэтому его размер меряют двое: бюджетный тест preload_size_budgets.dm и книга
+/// недатумных аллокаций. Мерить обязаны одинаково - раньше книга брала per-file
+/// length(file) и завышала впятеро: за раунд 10137 колонка ledger_rsc_bytes насчитала
+/// 10.8 ГБ там, где 239 входов по 8.95 МБ дают 2.1 ГБ, а 8.95 МБ - это и размер
+/// каталога на диске, и то, что видит бюджетный тест.
+/proc/get_vox_preload_bytes()
+	if(GLOB.vox_preload_bytes)
+		return GLOB.vox_preload_bytes
+	if(GLOB.vox_preload_scanning)
+		// Промер уже идёт: дожидаемся его результата вместо второго обхода каталога.
+		// Ждём с потолком: рантайм внутри скана оборвал бы прок, не сняв флаг, и голый
+		// UNTIL() повесил бы всех ждущих в stoplag() до конца раунда. По таймауту считаем сами.
+		var/deadline = world.time + VOX_SIZE_SCAN_WAIT_TIMEOUT
+		while(GLOB.vox_preload_scanning && world.time < deadline)
+			stoplag()
+		if(GLOB.vox_preload_bytes)
+			return GLOB.vox_preload_bytes
+	GLOB.vox_preload_scanning = TRUE
+	var/total_bytes = 0
+	var/counted = 0
+	for(var/vox_type in GLOB.vox_types)
+		var/list/word_to_file = GLOB.vox_types[vox_type]
+		for(var/word in word_to_file)
+			var/file = word_to_file[word]
+			if(!isfile(file))
+				continue
+			// file2text на бинарнике отдаёт latin-1 строку ровно в размер файла, и она
+			// живёт до следующей итерации: пик памяти - самый крупный клип (~50 КБ),
+			// а не весь каталог.
+			total_bytes += length(file2text(file))
+			counted++
+			if(!(counted % VOX_SIZE_SCAN_YIELD_EVERY))
+				stoplag()
+	GLOB.vox_preload_bytes = total_bytes
+	GLOB.vox_preload_scanning = FALSE
+	return total_bytes
 
 /proc/init_vox_list()
 	return list(
@@ -1960,4 +2009,6 @@ GLOBAL_LIST_INIT(vox_types, init_vox_list())
 		"fprison_restrictorsdisengaged" = 'modular_bluemoon/sound/voice/vox_sounds_alliance/fprison_restrictorsdisengaged.wav'
 	)
 )
+#undef VOX_SIZE_SCAN_YIELD_EVERY
+#undef VOX_SIZE_SCAN_WAIT_TIMEOUT
 #endif

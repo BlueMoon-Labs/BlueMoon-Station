@@ -48,6 +48,7 @@
 	desc = "Небольшое взрывное устройство, которое можно поместить посреди электроники шлюза. Любой, кто рискнёт открыть такой шлюз ощутит на себе прелести взрывной химической реакции. Поставляется комплектом из пяти штук."
 	item = /obj/item/storage/box/inteq_kit/doorgoboom
 	cost = 3
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/explosives/c4bag
 	name = "Bag of C-4 explosives"
@@ -90,7 +91,7 @@
 	name = "Detomatix PDA Cartridge"
 	desc = "При установке в КПК этот картридж даёт четыре попытки подорвать КПК тех членов экипажа, \
 			у кого включена функция сообщений. Взрывная волна вырубит получателя ненадолго, а оглушит на подольше."
-	item = /obj/item/cartridge/virus/syndicate
+	item = /obj/item/cartridge/virus/detomatix
 	cost = 5
 	restricted = TRUE
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS) //bluemoon change никаких подрывов через ВР
@@ -102,6 +103,7 @@
 			энергетическое оружие охраны и силиконов, когда припрёт."
 	item = /obj/item/storage/box/syndie_kit/emp
 	cost = 2
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/explosives/virus_grenade
 	name = "Fungal Tuberculosis Grenade"
@@ -128,6 +130,7 @@
 	item = /obj/item/pizzabox/bomb
 	cost = 6
 	surplus = 8
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/explosives/syndicate_bomb
 	name = "Syndicate Bomb"
@@ -155,7 +158,8 @@
 			серьёзный урон всем, кто оказался рядом."
 	item = /obj/item/grenade/syndieminibomb
 	cost = 6
-	purchasable_from = ~UPLINK_CLOWN_OPS
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/explosives/syndicate_minibombs
 	name = "Syndicate Minibomb Clusterbang"

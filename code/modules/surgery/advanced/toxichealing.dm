@@ -15,6 +15,7 @@
 	requires_bodypart_type = 0
 	icon_state = "toxin"
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EXTRA
+	ignore_clothes = TRUE
 
 /datum/surgery_step/toxichealing
 	name = "Изъять Токсичную Субстанцию и Плоть"
@@ -35,7 +36,7 @@
 /datum/surgery_step/toxichealing/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	user.visible_message("[user] fixes some of [target]'s wounds.", "<span class='notice'>You succeed in fixing some of [target]'s wounds.</span>")
 	target.heal_bodypart_damage(0,0,30) //Heals stam
-	target.adjustToxLoss(-15, 0, TRUE)
+	target.adjustToxLoss(-15, 0, TRUE, TRUE)
 	target.adjustOxyLoss(-20, 0)
 	return TRUE
 

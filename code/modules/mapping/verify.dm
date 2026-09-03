@@ -60,7 +60,7 @@
 	. = report
 
 	// build_cache will check bad paths for us
-	var/list/modelCache = build_cache(TRUE, report.bad_paths)
+	var/list/modelCache = build_cache(report.bad_paths)
 
 	var/static/regex/area_or_turf = regex(@"/(turf|area)/")
 	for(var/path in report.bad_paths)

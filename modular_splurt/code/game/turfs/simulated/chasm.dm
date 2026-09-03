@@ -5,7 +5,6 @@
 	icon = 'modular_splurt/icons/turf/space.dmi'
 	icon_state = "clouds"
 	plane = PLANE_SPACE
-	tiled_dirt = FALSE
 	baseturfs = /turf/open/chasm/cloud
 	smooth = SMOOTH_FALSE
 	planetary_atmos = TRUE

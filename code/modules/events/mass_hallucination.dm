@@ -8,11 +8,15 @@
 /datum/round_event_control/mass_hallucination
 	name = "Mass Hallucination"
 	typepath = /datum/round_event/mass_hallucination
-	weight = 60
-	max_occurrences = 5
+	// Флавор, но навязчивый: звуки и видения ловит вся станция разом, посреди спокойной сцены
+	// это мешает. Метка mild режет его вес в мягких профилях (Extended/Light).
+	weight = 40
+	max_occurrences = 3
 	min_players = 1
+	disruption = DIRECTOR_DISRUPTION_MILD
 	var/forced_hallucination
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_FLAVOR
 	description = "Multiple crewmembers start to hallucinate the same thing."
 	admin_setup = list(/datum/event_admin_setup/mass_hallucination)
 
@@ -23,27 +27,41 @@
 	/// For admins, what arguments are we passing to said hallucination
 	var/list/admin_forced_args
 
+/// Кому вообще имеет смысл рассылать массовую галлюцинацию.
+/// Проверка клиента здесь ключевая: в раунде 10137 событие создало сто галлюцинаций за одну
+/// секунду, и все сто целей были обезьянами без ключа - показывать их было буквально некому,
+/// а тик и строку в investigate-логе каждая из них съела.
+/datum/round_event/mass_hallucination/proc/get_hallucination_targets()
+	. = list()
+	for(var/mob/living/carbon/carbon_target in GLOB.alive_mob_list)
+		if(!carbon_target.client)
+			continue
+		if(HAS_TRAIT(carbon_target, TRAIT_EXEMPT_HEALTH_EVENTS))
+			continue
+		. += carbon_target
+
 /datum/round_event/mass_hallucination/start()
 	var/datum/round_event_control/mass_hallucination/M = control
+	var/list/targets = get_hallucination_targets()
+	if(!length(targets))
+		return
 	if(M.forced_hallucination)
-		for(var/mob/living/carbon/C in GLOB.alive_mob_list)
-			if (HAS_TRAIT(C,TRAIT_EXEMPT_HEALTH_EVENTS))
-				continue
+		for(var/mob/living/carbon/C as anything in targets)
 			new M.forced_hallucination(C, TRUE)
 		return
 
 	switch(rand(1,4))
 		if(1) //same sound for everyone
 			var/sound = pick("airlock","airlock_pry","console","explosion","far_explosion","mech","glass","alarm","beepsky","mech","wall_decon","door_hack","tesla","seth")
-			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
+			for(var/mob/living/carbon/C as anything in targets)
 				new /datum/hallucination/sounds(C, TRUE, sound)
 		if(2)
 			var/weirdsound = pick("phone","hallelujah","highlander","hyperspace","game_over","creepy","tesla")
-			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
+			for(var/mob/living/carbon/C as anything in targets)
 				new /datum/hallucination/weird_sounds(C, TRUE, weirdsound)
 		if(3)
-			var/stationmessage = pick("ratvar","shuttle_dock","blob_alert","malf_ai","meteors","supermatter")
-			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
+			var/stationmessage = pick("ratvar","shuttle dock","blob alert","malf ai","heretic","cult summon","meteors","supermatter")
+			for(var/mob/living/carbon/C as anything in targets)
 				new /datum/hallucination/stationmessage(C, TRUE, stationmessage)
 		if(4 to 6)
 			var/picked_hallucination = pick(	/datum/hallucination/bolts,
@@ -57,9 +75,7 @@
 												/datum/hallucination/death,
 												/datum/hallucination/delusion,
 												/datum/hallucination/oh_yeah)
-			for(var/mob/living/carbon/C in GLOB.alive_mob_list)
-				if (HAS_TRAIT(C,TRAIT_EXEMPT_HEALTH_EVENTS))
-					continue
+			for(var/mob/living/carbon/C as anything in targets)
 				new picked_hallucination(C, TRUE)
 
 /datum/event_admin_setup/mass_hallucination

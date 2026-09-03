@@ -5,6 +5,7 @@
 	pass_flags = PASSTABLE
 	mob_size = MOB_SIZE_SMALL
 	gender = NEUTER
+	uses_custom_environment_handling = TRUE //свой handle_environment() (стазис от BZ, температурные стан/урон)
 	var/is_adult = 0
 	var/docile = 0
 	faction = list("slime","neutral")
@@ -60,6 +61,9 @@
 	var/target_patience = 0 // AI variable, cooloff-ish for how long it's going to follow its target
 
 	var/list/Friends = list() // A list of friends; they are not considered targets for feeding; passed down after splitting
+	/// Мобы, на удаление которых подписан слайм. Причин три - цель, лидер, дружба, -
+	/// а регистрация на пару (регистрант, цель, сигнал) может быть только одна.
+	var/list/watched_qdel_mobs = list()
 
 	var/list/speech_buffer = list() // Last phrase said near it and person who said it
 
@@ -107,23 +111,25 @@
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_SLIME, 7.5)
 	set_nutrition(rand(650, 800))
 
+	//Событийная погоня/кормёжка вместо блокирующего AIprocess-цикла;
+	//мозг приобретения целей остаётся в handle_targets (Life)
+	new /datum/ai_controller/slime(src)
+
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
 /mob/living/simple_animal/slime/Destroy()
 	deltimer(atkcool_timer_id)
-	AIproc = 0
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	for (var/A in actions)
-		var/datum/action/AC = A
-		AC.Remove(src)
 	Target = null
 	Leader = null
-	AIproc = 0
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	Friends.Cut()
-	speech_buffer.Cut()
+	//подписка одна на моба, снимаем по реестру, а не по Friends: цель и лидер
+	//друзьями быть не обязаны
+	for(var/mob/living/watched_mob as anything in watched_qdel_mobs)
+		UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs = null
+	Friends = null
+	speech_buffer = null
+	for(var/datum/action/innate/slime/A in actions)
+		A.Remove(src)
 	return ..()
 
 /mob/living/simple_animal/slime/proc/initialize_mutations()
@@ -152,7 +158,20 @@
 /mob/living/simple_animal/slime/regenerate_icons()
 	cut_overlays()
 	var/icon_text = "[colour] [is_adult ? "adult" : "baby"] slime"
-	icon_dead = "[icon_text] dead"
+	//Цвет и возраст меняются на лету, а icon_living оставался дефолтным "grey baby
+	//slime" - воскрешённый фиолетовый взрослый слайм рисовался серым детёнышем
+	icon_living = icon_text
+	//Спрайты трупа в slimes.dmi есть только у детёнышей: взрослому подставляем его
+	//же живой спрайт, иначе icon_state = "" и труп не рисуется вообще. Проверку по
+	//иконке кэшируем - regenerate_icons() дёргается на каждой смене настроения.
+	var/static/list/known_dead_states = list()
+	var/dead_state = "[icon_text] dead"
+	var/cache_key = "[icon][dead_state]"
+	var/has_dead_sprite = known_dead_states[cache_key]
+	if(isnull(has_dead_sprite))
+		has_dead_sprite = (dead_state in icon_states(icon))
+		known_dead_states[cache_key] = has_dead_sprite
+	icon_dead = has_dead_sprite ? dead_state : icon_text
 	if(stat != DEAD)
 		icon_state = icon_text
 		if(mood && !stat)
@@ -174,7 +193,8 @@
 
 /mob/living/simple_animal/slime/updatehealth()
 	. = ..()
-	remove_movespeed_modifier(/datum/movespeed_modifier/slime_healthmod)
+	// No remove_movespeed_modifier() here: add_or_update below overwrites the value
+	// in place, and this proc runs every Life tick via handle_environment().
 	var/mod = 0
 	if(!HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
 		var/health_deficiency = (maxHealth - health)
@@ -189,7 +209,11 @@
 	var/mod = 0
 	if(bodytemperature >= 330.23) // 135 F or 57.08 C
 		mod = -1	// slimes become supercharged at high temperatures
-	else if(bodytemperature < 183.222)
+	// Порог обязан совпадать с точкой отсчёта формулы ниже. С опечаткой 183.222
+	// замедление включалось на 40 K ХОЛОДНЕЕ, чем начинает убивать урон от холода
+	// (223.15 K), то есть слайм успевал умереть, ни разу не притормозив, и на
+	// морозе бегал на полной скорости.
+	else if(bodytemperature < 283.222)
 		mod = min(15, (283.222 - bodytemperature) / 10 * 1.75)
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/slime_tempmod, multiplicative_slowdown = mod)
 
@@ -355,11 +379,7 @@
 				if(S.next_step(user,user.a_intent))
 					return TRUE
 	if(istype(W, /obj/item/stack/sheet/mineral/plasma) && !stat) //Let's you feed slimes plasma.
-		if (user in Friends)
-			++Friends[user]
-		else
-			Friends[user] = 1
-			RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(clear_friend))
+		add_friend(user)
 		to_chat(user, "<span class='notice'>You feed the slime the plasma. It chirps happily.</span>")
 		var/obj/item/stack/sheet/mineral/plasma/S = W
 		S.use(1)
@@ -423,17 +443,112 @@
 		visible_message("<span class='warning'>The mutated core shudders, and collapses into a puddle, unable to maintain its form.</span>")
 	qdel(src)
 
+/**
+ * Подписывает слайма на удаление моба.
+ *
+ * Причин следить три - цель, лидер и дружба, - а регистрация на пару
+ * (регистрант, цель, сигнал) может быть только одна: вторая перебивает первую и
+ * роняет в логи "parent_qdeleting overridden". Поэтому подписка общая, а
+ * обработчик один на все три причины.
+ */
+/mob/living/simple_animal/slime/proc/watch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || watched_mob == src || watched_qdel_mobs?[watched_mob])
+		return
+	RegisterSignal(watched_mob, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_mob_qdeleting))
+	watched_qdel_mobs[watched_mob] = TRUE
+
+/// Снимает подписку, но только если у моба не осталось ни одной причины следить.
+/mob/living/simple_animal/slime/proc/unwatch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || !watched_qdel_mobs?[watched_mob])
+		return
+	var/list/current_friends = Friends
+	if(watched_mob == Target || watched_mob == Leader || (current_friends && !isnull(current_friends[watched_mob])))
+		return
+	UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= watched_mob
+
+/// Общий обработчик удаления: снимает моба сразу со всех трёх причин.
+/mob/living/simple_animal/slime/proc/on_watched_mob_qdeleting(mob/living/gone)
+	SIGNAL_HANDLER
+
+	UnregisterSignal(gone, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= gone
+	Friends -= gone
+	if(Leader == gone)
+		Leader = null
+	// speech_buffer держит СКАЗАВШЕГО и опустошается только в handle_speech(), а тот
+	// не вызывается ни у слайма с ckey, ни у слайма не в сознании
+	if(length(speech_buffer) && speech_buffer[1] == gone)
+		speech_buffer = list()
+	if(Target != gone)
+		return
+	Target = null
+	chase_hunger = 0
+	if(ai_controller)
+		ai_controller.clear_blackboard_key(BB_SLIME_TARGET)
+
+/**
+ * Единственная точка правки `Target`.
+ *
+ * Протухшую цель чистит только начало `BiologicalLife()`, а `Life()` целиком
+ * пропускается на z-уровне без клиентов (`code/modules/mob/living/life.dm`), так
+ * что слайм в отставленном загоне держал удалённую обезьяну сколько угодно долго.
+ * Прод-раунд 10151, рефтрекер: "Найден /mob/living/carbon/monkey в
+ * /mob/living/simple_animal/slime, вар Target".
+ */
+/mob/living/simple_animal/slime/proc/set_slime_target(mob/living/new_target)
+	if(Target == new_target)
+		return
+	var/mob/living/previous_target = Target
+	Target = new_target
+	if(previous_target)
+		unwatch_mob_qdel(previous_target)
+	watch_mob_qdel(new_target)
+
+/// Единственная точка правки `Leader` - тот же класс держателя, что и Target.
+/mob/living/simple_animal/slime/proc/set_slime_leader(mob/living/new_leader)
+	if(Leader == new_leader)
+		return
+	var/mob/living/previous_leader = Leader
+	Leader = new_leader
+	if(previous_leader)
+		unwatch_mob_qdel(previous_leader)
+	watch_mob_qdel(new_leader)
+
+/**
+ * Единственная точка добавления друга.
+ *
+ * Половина писателей в `Friends` живёт вне модуля слайма (кроссбриды, стабилизаторы,
+ * железа абдукторов) и подписку на удаление не ставила - ключ держал удалённого
+ * человека до конца жизни слайма, то есть весь раунд.
+ */
+/mob/living/simple_animal/slime/proc/add_friend(mob/living/friend, amount = 1)
+	if(!friend || friend == src)
+		return
+	LAZYINITLIST(Friends)
+	Friends[friend] += amount
+	watch_mob_qdel(friend)
+
+/// Сбрасывает весь список дружбы, не оставляя висячих подписок.
+/mob/living/simple_animal/slime/proc/drop_all_friends()
+	for(var/mob/living/friend as anything in Friends)
+		Friends -= friend
+		unwatch_mob_qdel(friend)
+	Friends = list()
+
 /mob/living/simple_animal/slime/proc/clear_friend(mob/living/friend)
-	UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
 	Friends -= friend
+	unwatch_mob_qdel(friend)
 
 /mob/living/simple_animal/slime/proc/apply_water()
 	adjustBruteLoss(rand(15,20))
-	if(!client)
-		if(Target) // Like cats
-			Target = null
-			++Discipline
-	return
+	// Вода обязана не только жечь, но и срывать слайма с жертвы. Раньше здесь
+	// стоял только сброс Target, да и тот у НЕигровых слаймов: присосавшегося
+	// слайма нельзя было смыть огнетушителем вообще - он держал захват и просто
+	// медленно умирал на жертве, а игровой слайм не замечал воду совсем.
+	// discipline_slime() снимает захват через Feedstop, сбрасывает цель и
+	// коротко оглушает - это и есть штатная реакция слайма на воду.
+	discipline_slime()
 
 /mob/living/simple_animal/slime/examine(mob/user)
 	. = list("<span class='info'>This is [icon2html(src, user)] \a <EM>[src]</EM>!")
@@ -477,8 +592,7 @@
 			if(Discipline == 1)
 				attacked = 0
 
-	if(Target)
-		Target = null
+	set_slime_target(null)
 	if(buckled)
 		Feedstop(silent = TRUE) //we unbuckle the slime from the mob it latched onto.
 

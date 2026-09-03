@@ -25,6 +25,11 @@
 	set_stat(DEAD)
 	cut_overlays()
 
+	// Мёртвый слайм больше не обрабатывает AI - без очистки его Target/Leader
+	// держали бы удалённых мобов до самой переработки тушки
+	set_slime_target(null)
+	set_slime_leader(null)
+
 	update_mobility()
 
 	if(SSticker.mode)

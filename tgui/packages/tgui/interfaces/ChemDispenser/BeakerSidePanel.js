@@ -15,8 +15,8 @@ import {
   Table,
 } from '../../components';
 
-export const BeakerSidePanel = (props, context) => {
-  const { act } = useBackend(context);
+export const BeakerSidePanel = (props) => {
+  const { act } = useBackend();
   const {
     recording,
     isBeakerLoaded,

@@ -27,8 +27,10 @@ SUBSYSTEM_DEF(adjacent_air)
 	var/list/queue = src.queue
 
 	while (length(queue))
-		var/turf/currT = queue[1]
-		queue.Cut(1,2)
+		// Tail pop: Cut(1,2) shifts the whole remaining queue every iteration,
+		// making a big rebuild pass O(n^2). Recalc order does not matter here.
+		var/turf/currT = queue[queue.len]
+		LIST_DEC(queue)
 
 		currT.ImmediateCalculateAdjacentTurfs()
 

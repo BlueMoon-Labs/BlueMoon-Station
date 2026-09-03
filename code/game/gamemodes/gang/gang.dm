@@ -1,7 +1,8 @@
 /datum/game_mode/gang
 	name = "Families"
 	config_tag = "families"
-	antag_flag = ROLE_TRAITOR
+	antag_flag = ROLE_FAMILIES
+	force_antag_preference = TRUE
 	false_report_weight = 5
 	required_players = 0
 	required_enemies = 1

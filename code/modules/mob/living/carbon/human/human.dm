@@ -48,11 +48,30 @@
 /mob/living/carbon/human/Destroy()
 	QDEL_NULL(profile)
 	QDEL_NULL(physiology)
+	QDEL_NULL(mob_panel)
 	QDEL_NULL_LIST(vore_organs) // CITADEL EDIT belly stuff
 	GLOB.human_list -= src
 	GLOB.suit_sensors_list -= src
-	GLOB.latejoiners -= src
-	return ..()
+	. = ..()
+	//экипировка удалена contents-циклом atom/movable/Destroy, но unequip при
+	//QDELING(моб) пропускается (см. /obj/item/Destroy) - обнуляем слот-вары
+	//сами, иначе зависший в GC моб тянет за собой весь свой инвентарь
+	wear_suit = null
+	w_uniform = null
+	w_underwear = null
+	w_socks = null
+	w_shirt = null
+	wrists = null
+	gloves = null
+	glasses = null
+	ears = null
+	ears_extra = null
+	shoes = null
+	belt = null
+	wear_id = null
+	r_store = null
+	l_store = null
+	s_store = null
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
@@ -88,6 +107,26 @@
 			. += ""
 			. += "Chemical Storage: [changeling.chem_charges]/[changeling.chem_storage]"
 			. += "Absorbed DNA: [changeling.absorbedcount]"
+	if(istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/nano))
+		var/obj/item/clothing/suit/space/hardsuit/nano/nanosuit = wear_suit
+		var/datum/gas_mixture/environment = loc?.return_air()
+		. += ""
+		. += "Протоколы Crynet: [nanosuit.shutdown ? "отключены" : "активны"]"
+		. += "Заряд энергии: [(nanosuit.cellon && nanosuit.cell) ? "[round(nanosuit.cell.percent())]%" : "нет данных"]"
+		. += "Режим: [nanosuit.mode]"
+		. += "Общее состояние: [nanosuit.healthon ? "[health]% здоровья" : "нет данных"]"
+		. += "Питание: [nanosuit.healthon ? nutrition : "нет данных"]"
+		. += "Кислородное голодание: [nanosuit.healthon ? getOxyLoss() : "нет данных"]"
+		. += "Уровень токсинов: [nanosuit.healthon ? getToxLoss() : "нет данных"]"
+		. += "Ожоги: [nanosuit.healthon ? getFireLoss() : "нет данных"]"
+		. += "Механические травмы: [nanosuit.healthon ? getBruteLoss() : "нет данных"]"
+		. += "Уровень радиации: [nanosuit.radon ? "[radiation] рад" : "нет данных"]"
+		. += "Температура тела: [nanosuit.healthon ? "[bodytemperature - T0C] °C ([bodytemperature * 1.8 - 459.67] °F)" : "нет данных"]"
+		. += "Давление среды: [(nanosuit.atmoson && environment) ? "[environment.return_pressure()] кПа" : "нет данных"]"
+		. += "Температура среды: [(nanosuit.atmoson && environment) ? "[round(environment.return_temperature() - T0C, 0.01)] °C ([round(environment.return_temperature(), 0.01)] K)" : "нет данных"]"
+	else if(istype(wear_suit, /obj/item/clothing/suit/space/space_ninja))
+		var/obj/item/clothing/suit/space/space_ninja/ninja_suit = wear_suit
+		. += ninja_suit.get_status_readout(src)
 
 
 // called when something steps onto a human
@@ -115,6 +154,20 @@
 			if(!I || I.loc != src) //no item, no limb, or item is not in limb or in the person anymore
 				return
 			SEND_SIGNAL(src, COMSIG_CARBON_EMBED_RIP, I, L)
+			return
+
+	if(href_list["remove_gauze"])
+		if(usr == src && usr.canUseTopic(src, BE_CLOSE, NO_DEXTERY, check_resting = FALSE))
+			var/obj/item/bodypart/L = locate(href_list["gauze_limb"]) in bodyparts
+			if(!L?.current_gauze)
+				return
+			var/obj/item/stack/medical/gauze/g = L.current_gauze
+			var/time_taken = g.self_delay
+			visible_message("<span class='notice'>[usr] начинает снимать [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы начинаете снимать [g] с вашей [L.ru_name_v]...</span>")
+			if(do_after(usr, time_taken, target = src))
+				if(L.current_gauze == g)
+					L.remove_gauze(usr)
+					visible_message("<span class='notice'>[usr] снимает [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы снимаете [g] с вашей [L.ru_name_v].</span>")
 			return
 
 	else if(href_list["character_profile"])
@@ -349,6 +402,21 @@
 /mob/living/carbon/human/proc/canUseHUD()
 	return CHECK_MOBILITY(src, MOBILITY_UI)
 
+/mob/living/carbon/human/proc/is_zone_covered_by_clothing(target_zone)
+	var/covered_part = zone2body_parts_covered_complicated(target_zone)
+	if(!covered_part)
+		if(above_neck(target_zone))
+			covered_part = HEAD
+		else
+			return FALSE
+	for(var/obj/item/I in get_equipped_items())
+		if(!istype(I, /obj/item/clothing))
+			continue
+		var/obj/item/clothing/C = I
+		if(C.body_parts_covered & covered_part)
+			return TRUE
+	return FALSE
+
 /mob/living/carbon/human/can_inject(mob/user, error_msg, target_zone, penetrate_thick = FALSE, bypass_immunity = FALSE)
 	. = 1 // Default to returning true.
 	if(user && !target_zone)
@@ -357,11 +425,11 @@
 		. = 0
 	// If targeting the head, see if the head item is thin enough.
 	// If targeting anything else, see if the wear suit is thin enough.
-	if (!penetrate_thick)
+	if(!penetrate_thick)
 		if(above_neck(target_zone))
 			if(head && istype(head, /obj/item/clothing))
 				var/obj/item/clothing/CH = head
-				if (CH.clothing_flags & THICKMATERIAL)
+				if(CH.clothing_flags & THICKMATERIAL)
 					. = 0
 		else
 			var/obj/item/bodypart/BP = get_bodypart(target_zone)
@@ -369,8 +437,21 @@
 			if(CS && (CS.clothing_flags & THICKMATERIAL))
 				. = 0
 	if(!. && error_msg && user)
-		// Might need re-wording.
 		to_chat(user, "<span class='alert'>Участок тела на [above_neck(target_zone) ? "вашей голове" : "вашем теле"] скрыт или на нём слишком толстый слой одежды!</span>")
+
+// Syringe-specific gate: same as can_inject() plus an extra "is the zone uncovered" check
+// for low-piercing syringes (SYRINGE_PIERCE_NONE). Sutures, patches, hyposprays, antag
+// bites etc. must keep calling can_inject() so they keep working through normal clothing.
+/mob/living/carbon/human/can_inject_syringe(mob/user, error_msg, target_zone, pierce_level = SYRINGE_PIERCE_NONE)
+	if(user && !target_zone)
+		target_zone = user.zone_selected
+	if(!can_inject(user, error_msg, target_zone, pierce_level >= SYRINGE_PIERCE_ALL))
+		return FALSE
+	if(pierce_level < SYRINGE_PIERCE_THICK && is_zone_covered_by_clothing(target_zone))
+		if(error_msg && user)
+			to_chat(user, "<span class='alert'>Участок тела на [above_neck(target_zone) ? "вашей голове" : "вашем теле"] прикрыт одеждой, игла не пройдёт.</span>")
+		return FALSE
+	return TRUE
 
 /mob/living/carbon/human/check_obscured_slots()
 	. = ..()
@@ -432,8 +513,8 @@
 		if(idcard)
 			accesses += idcard.access
 		var/obj/item/clothing/under/U = w_uniform
-		if(U && U.attached_accessories)
-			for(var/obj/item/clothing/accessory/accs in U.attached_accessories)
+		if(U && U.accessories_attached)
+			for(var/obj/item/clothing/accessory/accs in U.accessories_attached)
 				accesses += accs.access
 	// BLUEMOON EDIT END
 		if(!(ACCESS_WEAPONS in accesses))
@@ -581,6 +662,9 @@
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
 		if(..(I, cuff_break = FAST_CUFFBREAK))
 			dropItemToGround(I)
+	else if(iszombie_infectious(src))
+		if(..(I, cuff_break = FAST_CUFFBREAK))
+			dropItemToGround(I)
 	else
 		if(..())
 			dropItemToGround(I)
@@ -588,7 +672,7 @@
 /**
  * Used to update the makeup on a human and apply/remove lipstick traits, then store/unstore them on the head object in case it gets severed
  */
-/mob/living/carbon/human/proc/update_lips(new_style, new_colour, apply_trait)
+/mob/living/carbon/human/proc/update_lips(new_style, new_colour, apply_trait, kiss_uses = -1)
 	lip_style = new_style
 	lip_color = new_colour
 	update_body()
@@ -596,10 +680,12 @@
 	var/obj/item/bodypart/head/hopefully_a_head = get_bodypart(BODY_ZONE_HEAD)
 	REMOVE_TRAITS_IN(src, LIPSTICK_TRAIT)
 	hopefully_a_head?.stored_lipstick_trait = null
+	kiss_uses_remaining = -1
 
 	if(new_style && apply_trait)
 		ADD_TRAIT(src, apply_trait, LIPSTICK_TRAIT)
 		hopefully_a_head?.stored_lipstick_trait = apply_trait
+		kiss_uses_remaining = kiss_uses
 
 /**
  * A wrapper for [mob/living/carbon/human/proc/update_lips] that tells us if there were lip styles to change
@@ -610,6 +696,15 @@
 		return FALSE
 	update_lips(null)
 	return TRUE
+
+/// Вызывается при использовании kiss эмоута. Для ограничения использований.
+/mob/living/carbon/human/proc/use_kiss()
+	if(kiss_uses_remaining <= 0)
+		return
+	kiss_uses_remaining--
+	if(kiss_uses_remaining == 0)
+		to_chat(src, span_warning("Помада размазалась, надо нанести заново."))
+		clean_lips()
 
 /mob/living/carbon/human/clean_blood()
 	var/mob/living/carbon/human/H = src
@@ -650,11 +745,15 @@
 	cut_overlay(MA)
 
 /mob/living/carbon/human/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting = TRUE, silent = FALSE)
+	// Базовый /mob/proc/canUseTopic просто возвращает null и с null-целью живёт,
+	// а этот оверрайд разыменовывает M.loc ниже. За раунд 9838 это дало 39 рантаймов
+	if(isnull(M))
+		return FALSE
 	if(incapacitated() || (check_resting && !CHECK_MOBILITY(src, MOBILITY_STAND)))
 		if(!silent)
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
-	if(!Adjacent(M) && (M.loc != src))
+	if(!Adjacent(M) && (M.loc != src) && !(M in src.GetAllContents()))
 		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
 		if(!silent)
@@ -689,14 +788,87 @@
 	if(glasses)
 		. += glasses.tint
 
+/// Returns a cached appearance for one healthdoll overlay. The doll only ever
+/// draws from a fixed set (six zones x eight states x ui_style), so building a
+/// fresh mutable_appearance per limb per health change was pure waste — it made
+/// /proc/mutable_appearance the third most expensive proc on the whole server.
+/// The cached appearances are never mutated; add_overlay() copies them.
+/proc/get_healthdoll_appearance(doll_icons, icon_state)
+	var/static/list/appearance_cache = list()
+	var/cache_key = "[doll_icons]-[icon_state]"
+	. = appearance_cache[cache_key]
+	if(.)
+		return
+	. = mutable_appearance(doll_icons, icon_state)
+	appearance_cache[cache_key] = .
+
+/// Which of the doll's six damage states this limb is drawn in. Shared by the
+/// renderer and the cache key so the two can never drift apart.
+/obj/item/bodypart/proc/get_healthdoll_state()
+	var/damage = burn_dam + brute_dam
+	if(!damage)
+		return 0
+	var/comparison = max_damage / 5
+	if(damage > (comparison*4))
+		return 5
+	if(damage > (comparison*3))
+		return 4
+	if(damage > (comparison*2))
+		return 3
+	if(damage > comparison)
+		return 2
+	return 1
+
+/// Compact description of everything the healthdoll renderer reads. Equal keys
+/// must imply an identical overlay set — see healthdoll_memo.dm.
+///
+/// Missing limbs and disabled limbs are both pure functions of the (zone,
+/// disabled) pairs over `bodyparts`, so one walk covers all three of the
+/// renderer's loops without paying for get_missing_limbs()/get_disabled_limbs()
+/// and their twelve get_bodypart() scans.
+/mob/living/carbon/human/proc/get_healthdoll_cache_key(ui_style)
+	if(stat == DEAD)
+		return "dead"
+	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
+	var/list/limb_states = list()
+	for(var/obj/item/bodypart/limb as anything in bodyparts)
+		limb_states += "[limb.body_zone][hide_damage ? 0 : limb.get_healthdoll_state()][limb.disabled ? "!" : ""]"
+	return "[ui_style]|[jointext(limb_states, "/")]"
+
+/// Builds the doll's overlay list for the given HUD style.
+/mob/living/carbon/human/proc/build_healthdoll_overlays(ui_style)
+	. = list()
+	var/doll_icons = ui_style_modular(ui_style, "health")
+	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
+	for(var/obj/item/bodypart/limb as anything in bodyparts)
+		var/icon_num = hide_damage ? 0 : limb.get_healthdoll_state()
+		if(icon_num)
+			. += get_healthdoll_appearance(doll_icons, "[limb.body_zone][icon_num]")
+	for(var/zone in get_missing_limbs())
+		. += get_healthdoll_appearance(doll_icons, "[zone]6")
+	for(var/zone in get_disabled_limbs())
+		. += get_healthdoll_appearance(doll_icons, "[zone]7")
+
 /mob/living/carbon/human/update_health_hud()
 	if(!client || !hud_used)
 		return
+	// Один Life-тик приносит несколько updatehealth() подряд (урон, стамина,
+	// каскад органов), и каждый гнал сюда полный ключ хелсдолла - обход всех
+	// конечностей с jointext. Если ни одна цифра, из которой строится HUD, не
+	// сдвинулась с прошлого вызова, перерисовывать нечего.
+	var/stamina_amount = getStaminaLoss()
+	var/hud_signature = "[health];[maxHealth];[stamina_amount];[stat];[hal_screwyhud];[hud_used.ui_style]"
+	//пустой doll_cache_key = хелсдолл только что создан (пересборка HUD) и обязан
+	//быть отрисован, даже если цифры не менялись
+	var/atom/movable/screen/healthdoll/existing_doll = hud_used.healthdoll
+	if(hud_signature == cached_health_hud_signature && (isnull(existing_doll) || existing_doll.doll_cache_key))
+		return
+	cached_health_hud_signature = hud_signature
 	if(dna.species.update_health_hud())
 		return
 	else
 		if(hud_used.healths)
-			var/health_amount = min(health, maxHealth - clamp(getStaminaLoss()-50, 0, 80))//CIT CHANGE - makes staminaloss have less of an impact on the health hud
+			var/health_amount = min(health, maxHealth - clamp(stamina_amount-50, 0, 80))//CIT CHANGE - makes staminaloss have less of an impact on the health hud
 			if(..(health_amount)) //not dead
 				switch(hal_screwyhud)
 					if(SCREWYHUD_CRIT)
@@ -705,35 +877,25 @@
 						hud_used.healths.icon_state = "health7"
 					if(SCREWYHUD_HEALTHY)
 						hud_used.healths.icon_state = "health0"
+
+			if(hud_used.healths_synth)
+				hud_used.healths_synth.icon_state = hud_used.healths.icon_state
+
 		if(hud_used.healthdoll)
-			hud_used.healthdoll.cut_overlays()
-			if(stat != DEAD)
-				hud_used.healthdoll.icon_state = "healthdoll_OVERLAY"
-				for(var/X in bodyparts)
-					var/obj/item/bodypart/BP = X
-					var/damage = BP.burn_dam + BP.brute_dam
-					var/comparison = (BP.max_damage/5)
-					var/icon_num = 0
-					if(damage)
-						icon_num = 1
-					if(damage > (comparison))
-						icon_num = 2
-					if(damage > (comparison*2))
-						icon_num = 3
-					if(damage > (comparison*3))
-						icon_num = 4
-					if(damage > (comparison*4))
-						icon_num = 5
-					if(hal_screwyhud == SCREWYHUD_HEALTHY)
-						icon_num = 0
-					if(icon_num)
-						hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[BP.body_zone][icon_num]"))
-				for(var/t in get_missing_limbs()) //Missing limbs
-					hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[t]6"))
-				for(var/t in get_disabled_limbs()) //Disabled limbs
-					hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[t]7"))
-			else
-				hud_used.healthdoll.icon_state = "healthdoll_DEAD"
+			// The doll has six states per limb, so almost every health change
+			// leaves it looking exactly the same. Only redraw when it wouldn't.
+			var/atom/movable/screen/healthdoll/doll = hud_used.healthdoll
+			var/doll_key = get_healthdoll_cache_key(hud_used.ui_style)
+			if(doll.doll_cache_key != doll_key)
+				doll.doll_cache_key = doll_key
+				doll.cut_overlays()
+				if(stat != DEAD)
+					doll.icon_state = "healthdoll_OVERLAY"
+					var/list/doll_overlays = build_healthdoll_overlays(hud_used.ui_style)
+					if(length(doll_overlays))
+						doll.add_overlay(doll_overlays)
+				else
+					doll.icon_state = "healthdoll_DEAD"
 
 		hud_used.staminas?.update_icon_state()
 		hud_used.staminabuffer?.mark_dirty()
@@ -743,7 +905,6 @@
 		regenerate_limbs()
 		regenerate_organs()
 	remove_all_embedded_objects()
-	set_heartattack(FALSE)
 	drunkenness = 0
 	for(var/datum/mutation/human/HM in dna.mutations)
 		if(HM.quality != POSITIVE)
@@ -752,6 +913,10 @@
 		blood_volume = (BLOOD_VOLUME_NORMAL*blood_ratio)
 	integrating_blood = 0
 	..()
+	//Только после ..(): урон органов обнуляет /mob/living/carbon/fully_heal(), и лишь
+	//тогда сердце перестаёт быть ORGAN_FAILING. Отказавшую помпу set_heartattack(FALSE)
+	//не заводит - её всё равно остановил бы ближайший on_life().
+	set_heartattack(FALSE)
 
 /mob/living/carbon/human/check_weakness(obj/item/weapon, mob/living/attacker)
 	. = ..()
@@ -969,8 +1134,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	else if(HAS_TRAIT(src, TRAIT_QUICK_CARRY) || target.mob_weight < MOB_WEIGHT_NORMAL)
 		carrydelay = 27.5 // BLUEMOON EDIT making this a little bit useful
 		skills_space = "быстро "
-	// BLUEMOON ADDITION AHEAD - тяжёлых и сверхтяжёлых персонажей нельзя нести на плече
-	if(target.mob_weight > MOB_WEIGHT_NORMAL)
+	// BLUEMOON ADDITION AHEAD - тяжёлых и сверхтяжёлых персонажей нельзя нести на плече, если вы не такой-же
+	if(max(mob_weight, MOB_WEIGHT_NORMAL) < target.mob_weight)
 		to_chat(src, span_warning("Вы пытаетесь поднять [target], но [target.ru_who()] слишком тяжелая!"))
 		return
 	// BLUEMOON ADDITION END
@@ -991,17 +1156,22 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		else
 			to_chat(src, span_notice("Вам не удалось поднять [src]."))
 
+#define PIGGYBACK_DELAY_BASE 3.5 SECONDS
+#define PIGGYBACK_DELAYADD_HEAVY 1 SECONDS
+#define PIGGYBACK_DELAYADD_HEAVY_SUPER 3.5 SECONDS
+
 /mob/living/carbon/human/proc/piggyback(mob/living/carbon/target)
 	if(can_piggyback(target))
 		visible_message(span_notice("[target] начинает забираться на [src]..."))
 
 		// BLUEMOON ADDITION START - тяжёлые персонажи дольше забираются на спину
-		var/climb_on_time = 6 SECONDS
-		switch(target.mob_weight)
-			if(MOB_WEIGHT_HEAVY_SUPER)
-				climb_on_time = 9 SECONDS
-			if(MOB_WEIGHT_HEAVY)
-				climb_on_time = 7.5 SECONDS
+		var/climb_on_time = PIGGYBACK_DELAY_BASE
+		if(mob_weight < target.mob_weight)
+			switch(target.mob_weight)
+				if(MOB_WEIGHT_HEAVY_SUPER)
+					climb_on_time += PIGGYBACK_DELAYADD_HEAVY_SUPER
+				if(MOB_WEIGHT_HEAVY)
+					climb_on_time += PIGGYBACK_DELAYADD_HEAVY
 		// BLUEMOON ADDITION END
 
 		if(do_after(target, climb_on_time, src, IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_piggyback), target)))
@@ -1010,7 +1180,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					target.visible_message(span_warning("[target] не может уцепиться за [src]!"))
 					return
 				// BLUEMOON ADDITION START
-				if(target.mob_weight > MOB_WEIGHT_NORMAL)
+				if(target.mob_weight > max(mob_weight, MOB_WEIGHT_NORMAL))
 					target.visible_message(span_warning("[target] слишком много весит для [src]!"))
 					var/obj/item/bodypart/affecting = get_bodypart(BODY_ZONE_CHEST)
 					var/wound_bon = 100
@@ -1031,13 +1201,17 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 					Knockdown(3 SECONDS) // Knocking down the unlucky guy
 					target.Knockdown(1) // simply make the oversized one fall
 					if(get_turf(target) != get_turf(src))
-						target.throw_at(get_turf(src), 1, 1, FALSE, FALSE)
+						target.throw_at(get_turf(src), 1, 1, src, FALSE, FALSE)
 					// BLUEMOON ADDITION END
 				buckle_mob(target, TRUE, TRUE, buckle_type = RIDING_PIGGYBACK, auto_by_type = TRUE)
 		else
 			visible_message(span_warning("[target] не удаётся забраться на [src]!"))
 	else
 		to_chat(target, span_warning("Ты не можешь прокатиться на спине [src] прямо сейчас!"))
+
+#undef PIGGYBACK_DELAY_BASE
+#undef PIGGYBACK_DELAYADD_HEAVY
+#undef PIGGYBACK_DELAYADD_HEAVY_SUPER
 
 /mob/living/carbon/human/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, lying_buckle = 0, hands_needed = 0, target_hands_needed = 0, buckle_type = RIDING_PIGGYBACK, auto_by_type = FALSE)
 	if(!force)//humans are only meant to be ridden through piggybacking and special cases
@@ -1402,7 +1576,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 				to_chat(src, span_warning("\The [S] pulls \the [hand] from your grip!"))
 
 ///Sets up the jump component for the mob. Proc args can be altered so different mobs have different 'default' jump settings
-/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 64, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE)
+/mob/living/proc/set_jump_component(duration = 0.5 SECONDS, cooldown = 1 SECONDS, cost = 48, height = 16, sound = null, flags = JUMP_SHADOW, flags_pass = PASSTABLE|PASSJUMP)
 	if(HAS_TRAIT(src, TRAIT_FREERUNNING))
 		AddComponent(/datum/component/jump, _jump_duration = duration, _jump_cooldown = cooldown, _stamina_cost = 32, _jump_height = height, _jump_sound = sound, _jump_flags = flags, _jumper_allow_pass_flags = flags_pass)
 	else

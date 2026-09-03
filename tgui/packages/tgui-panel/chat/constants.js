@@ -11,6 +11,7 @@ export const MESSAGE_PRUNE_INTERVAL = 60000;
 export const COMBINE_MAX_MESSAGES = 5;
 export const COMBINE_MAX_TIME_WINDOW = 5000;
 export const IMAGE_RETRY_DELAY = 250;
+export const IMAGE_RETRY_MAX_DELAY = 4000;
 export const IMAGE_RETRY_LIMIT = 10;
 export const IMAGE_RETRY_MESSAGE_AGE = 60000;
 
@@ -61,20 +62,20 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_RADIO,
     name: 'Radio',
     description: 'All departments of radio messages',
-    selector: '.alert, .minorannounce, .syndradio, .inteqradio, .pirateradio, .centcomradio, .aiprivradio, .comradio, .secradio, .lawradio, .gangradio, .engradio, .medradio, .sciradio, .suppradio, .servradio, .radio, .deptradio, .binarysay, .newscaster, .resonate',
+    selector: '.alert, .minorannounce, .priority_announcement, .system_notice, .syndradio, .inteqradio, .pirateradio, .centcomradio, .aiprivradio, .comradio, .secradio, .lawradio, .gangradio, .engradio, .medradio, .sciradio, .suppradio, .servradio, .radio, .deptradio, .binarysay, .newscaster, .resonate, .changeling_hivemind, .terror, .supermatter_delam, .broadcast_static',
   },
   {
     type: MESSAGE_TYPE_INFO,
     name: 'Info',
     description: 'Non-urgent messages from the game and items',
     selector:
-      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel',
+      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel, .eldritch, .eldritch_big, .syndicate, .syndicate_big, .telepathy, .telepathybold, .dream, .thought',
   },
   {
     type: MESSAGE_TYPE_WARNING,
     name: 'Warnings',
     description: 'Urgent messages from the game and items',
-    selector: '.warning:not(.pm), .critical, .userdanger, .italics, .alertsyndie, .warningplain',
+    selector: '.warning:not(.pm), .critical, .userdanger, .italics, .alertsyndie, .warningplain, .infernal, .infernal_ascension, .arcane, .revolution, .revolution_big, .mesmerize, .nightmare',
   },
   {
     type: MESSAGE_TYPE_DEADCHAT,
@@ -116,7 +117,7 @@ export const MESSAGE_TYPES = [
     type: MESSAGE_TYPE_LEWD,
     name: 'Lewd messages',
     description: 'You came!',
-    selector: '.userlove, .love, .lewd',
+    selector: '.userlove, .love, .lewd, .purr, .croon',
   },
   {
     type: MESSAGE_TYPE_UNKNOWN,
@@ -175,8 +176,8 @@ export const MESSAGE_TYPES = [
   {
     type: MESSAGE_TYPE_MENTORSAY,
     name: 'Mentor Say',
-    description: 'Mentor Say',
-    selector: '.mentorsay, .mentorsay_admin',
+    description: 'Msay и mentorhelp (тикеты)',
+    selector: '.mentorsay, .mentorsay_admin, .mentornotice',
     mentor: true,
   },
 ];

@@ -78,22 +78,57 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(!GLOB.use_preloader && path == type && !(flags & CHANGETURF_FORCEOP) && (baseturfs == new_baseturfs)) // Don't no-op if the map loader requires it to be reconstructed, or if this is a new set of baseturfs
 		return src
 	if(flags & CHANGETURF_SKIP)
-		return new path(src)
+		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
+		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
+		// clean_old_turfs() (свет ушёл - вычли из нуля).
+		// Оверлей света гасим явно: SKIP идёт мимо qdel/Destroy, замена турфа лишь обнуляет
+		// переменную, а сам мувабл остаётся в contents призраком с протухшей матрицей и
+		// рендерит её следующему жильцу блока (освобождение/выдача резерваций).
+		if(lighting_object)
+			lighting_clear_overlay()
+		// По той же причине снимаем турф с атмоса. Резервации освобождаются
+		// именно этой веткой, и активный транзитный турф оставался бы записью в
+		// SSair.active_turfs, пока новый жилец блока не унаследует её вместе с
+		// протухшей позицией: снятие за O(1) верит своей подсказке, а у свежего
+		// турфа она нулевая, и запись стала бы неудаляемой.
+		if(SSair)
+			SSair.evict_active_turf(src)
+			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
+			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
+			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись
+			// в turf_list группы молча стала бы ссылкой на новый турф с нулевым
+			// обратным указателем, а merge_groups() доверяет спискам групп как
+			// непересекающимся и склеивает их без проверки вхождения. Хороним
+			// группу явно - живые соседи пересоберут её следующим циклом.
+			var/turf/open/open_self = src
+			if(istype(open_self) && open_self.excited_group)
+				open_self.excited_group.garbage_collect()
+		var/skip_dynamic_lumcount = dynamic_lumcount
+		var/turf/skipped_turf = new path(src)
+		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
+		return skipped_turf
 
 	var/old_opacity = opacity
-	var/old_dynamic_lighting = dynamic_lighting
+	var/old_dynamic_lighting = turf_flags & TURF_DYNAMIC_LIGHTING
 	var/old_lighting_object = lighting_object
 	var/old_lc_topright = lc_topright
 	var/old_lc_topleft = lc_topleft
 	var/old_lc_bottomright = lc_bottomright
 	var/old_lc_bottomleft = lc_bottomleft
-	var/old_has_opaque = has_opaque_atom
+	var/old_has_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
 	var/old_shadow_weight = shadow_weight_sum
+	var/old_dynamic_lumcount = dynamic_lumcount
 
 	var/old_exl = explosion_level
 	var/old_exi = explosion_id
 	var/old_bp = blueprint_data
 	blueprint_data = null
+
+// Exposure listeners survive turf replacement: qdel below cleanly severs
+	// every signal registration, so each listener re-registers on the new datum.
+	var/list/old_exposure_listeners = atmos_exposure_listeners
+	//LIQUIDS ADD - cache liquids so we can move them to the new turf
+	var/obj/effect/abstract/liquid_turf/old_liquids = liquids
 
 	var/list/old_baseturfs = baseturfs
 
@@ -103,11 +138,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/datum/component/comp = i
 		comp.RemoveComponent()
 
-	changing_turf = TRUE
+	turf_flags |= TURF_CHANGING
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
-
 	for(var/i in transferring_comps)
 		W.TakeComponent(i)
 
@@ -119,10 +153,53 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	W.explosion_id = old_exi
 	W.explosion_level = old_exl
 
+	if(old_exposure_listeners)
+		W.atmos_exposure_listeners = old_exposure_listeners
+		// Хард-делит обнуляет запись списка на месте, а Destroy слушателя до неё
+		// уже не доберётся - в ассоциативном списке остаётся ключ null. Обход
+		// идёт с конца по индексу: вырезать запись во время прямого прохода
+		// значит пропустить каждую вторую.
+		for(var/i in length(old_exposure_listeners) to 1 step -1)
+			var/datum/listener = old_exposure_listeners[i]
+			if(QDELETED(listener))
+				old_exposure_listeners.Cut(i, i + 1)
+				continue
+			listener.RegisterSignal(W, COMSIG_TURF_EXPOSE, old_exposure_listeners[listener], override = TRUE)
+		if(!length(old_exposure_listeners))
+			W.atmos_exposure_listeners = null
+
 	if(!(flags & CHANGETURF_DEFER_CHANGE))
 		W.AfterChange(flags)
 
 	W.blueprint_data = old_bp
+
+	//LIQUIDS ADD - move liquids to the new turf
+	if(old_liquids)
+		if(W.liquids)
+			var/liquid_cache = W.liquids //Need to cache and re-set some vars due to the cleaning on Destroy(), and turf references
+			if(old_liquids.immutable)
+				old_liquids.remove_turf(src)
+			else
+				qdel(old_liquids, TRUE)
+			W.liquids = liquid_cache
+			W.liquids.my_turf = W
+		else
+			if(flags & CHANGETURF_INHERIT_AIR)
+				W.liquids = old_liquids
+				old_liquids.my_turf = W
+				if(old_liquids.immutable)
+					W.convert_immutable_liquids()
+				else
+					W.reasses_liquids()
+			else
+				if(old_liquids.immutable)
+					old_liquids.remove_turf(src)
+				else
+					qdel(old_liquids, TRUE)
+
+	// dynamic_lumcount переносится безусловно (не только при SSlighting.initialized):
+	// оверлейный свет живёт поверх корнер-системы и может гореть до её инициализации.
+	dynamic_lumcount = old_dynamic_lumcount
 
 	if(SSlighting.initialized)
 		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
@@ -135,17 +212,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		lc_bottomleft = old_lc_bottomleft
 
 		// Restore cached opacity state — contents are unchanged, only turf type changed
-		has_opaque_atom = old_has_opaque
+		if(old_has_opaque)
+			lighting_flags |= TURF_HAS_OPAQUE_ATOM
+		else
+			lighting_flags &= ~TURF_HAS_OPAQUE_ATOM
 		shadow_weight_sum = old_shadow_weight
 		// Only full rescan if the turf's own opacity changed (rare: wall↔floor)
 		if(opacity != old_opacity)
 			recalc_atom_opacity()
 			reconsider_lights()
-		else if(dynamic_lighting != old_dynamic_lighting)
+		else if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
 			reconsider_lights()
 
-		if(dynamic_lighting != old_dynamic_lighting)
-			if(IS_DYNAMIC_LIGHTING(src))
+		if((turf_flags & TURF_DYNAMIC_LIGHTING) != old_dynamic_lighting)
+			if(TURF_IS_DYNAMIC_LIGHTING(src))
 				lighting_build_overlay()
 			else
 				lighting_clear_overlay()
@@ -168,16 +248,21 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if ((flags & CHANGETURF_INHERIT_AIR) && ispath(path, /turf/open))
 		var/datum/gas_mixture/stashed_air = new()
 		stashed_air.copy_from(air)
+		var/obj/effect/abstract/turf_fire/stashed_turf_fire = turf_fire
+		if(stashed_turf_fire)
+			stashed_turf_fire.UnregisterSignal(src, COMSIG_ATOM_ENTERED)
 		. = ..()
 		if (!.) // changeturf failed or didn't do anything
 			QDEL_NULL(stashed_air)
 			return
 		var/turf/open/newTurf = .
-		if(turf_fire)
+		if(stashed_turf_fire && !QDELETED(stashed_turf_fire))
 			if(isgroundlessturf(newTurf))
-				qdel(turf_fire)
+				qdel(stashed_turf_fire)
 			else
-				newTurf.turf_fire = turf_fire
+				stashed_turf_fire.open_turf = newTurf
+				newTurf.turf_fire = stashed_turf_fire
+				stashed_turf_fire.RegisterSignal(newTurf, COMSIG_ATOM_ENTERED, TYPE_PROC_REF(/obj/effect/abstract/turf_fire, on_entered))
 		newTurf.air.copy_from(stashed_air)
 		newTurf.update_air_ref(planetary_atmos ? 1 : 2)
 		QDEL_NULL(stashed_air)
@@ -186,21 +271,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		if(turf_fire)
 			qdel(turf_fire)
 		if(ispath(path,/turf/closed))
-			. = ..()
-			// BLUEMOON EDIT START: Invalid Space Turfs
-			if (!.)
-				return
-			var/turf/open/newTurf = .
-			if (newTurf)
-				newTurf.update_air_ref(-1)
-		else
-			. = ..()
-			if (!.)
-				return
-			var/turf/open/newTurf = .
-			if (newTurf)
-				newTurf.Initalize_Atmos(0)
-			// BLUEMOON EDIT END: Invalid Space Turfs
+			return ..()
+		. = ..()
+		if (!.)
+			return
+		var/turf/open/newTurf = .
+		if (newTurf)
+			newTurf.Initalize_Atmos(0)
 	else
 		. = ..()
 
@@ -369,3 +446,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 /turf/proc/ReplaceWithLattice()
 	ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 	new /obj/structure/lattice(locate(x, y, z))
+
+/turf/proc/HasAdjacentSupport()
+	for(var/support_dir in GLOB.cardinals)
+		var/turf/T = get_step(src, support_dir)
+		if(istype(T, /turf/closed) || istype(T, /turf/open/floor) || locate(/obj/structure/lattice, T))
+			return TRUE
+	return FALSE

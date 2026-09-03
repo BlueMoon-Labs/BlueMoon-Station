@@ -32,7 +32,7 @@
 	current_pipe = null
 	QDEL_NULL(move_packet)
 	..()
-	return QDEL_HINT_HARDDEL_NOW
+	return QDEL_HINT_QUEUE
 
 // initialize a holder from the contents of a disposal unit
 /obj/structure/disposalholder/proc/init(obj/machinery/disposal/D)
@@ -82,6 +82,8 @@
 /obj/structure/disposalholder/proc/start_moving()
 	cleanup_movement_loop()
 	var/delay = world.tick_lag
+	if(hasmob) //mobs should visibly fly through the pipes instead of near-instantly arriving at the exit
+		delay = max(delay, 1)
 	var/datum/move_loop/disposal_holder/our_loop = SSmove_manager.move_disposals(src, delay = delay, timeout = delay * count)
 	if(our_loop)
 		movement_loop = our_loop

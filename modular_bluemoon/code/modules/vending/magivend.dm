@@ -1,3 +1,5 @@
+#define WIZ_DROBE_DEFAULT_COUNT 5
+
 /obj/machinery/vending/magivend
 	name = "\improper MagiVend"
 	desc = "A magic vending machine."
@@ -6,16 +8,22 @@
 	product_slogans = "Накладывайте заклинания правильным способом с помощью MagiVend!;Станьте своим собственным Гудини! Используйте MagiVend!;FJKLFJSD;AJKFLBJAKL;1234 LOONIES;LOL!;>MFW;KOS!!!;GET DAT FUKKEN DISK;HONK!;EI NATH;Destroy the station!;Admin conspiracies since forever!;Space-time bending hardware!"
 	vend_reply = "Have an enchanted evening!"
 	products = list(
-		/obj/item/clothing/head/wizard = 1,
-		/obj/item/clothing/suit/wizrobe = 1,
-		/obj/item/clothing/head/wizard/red = 1,
-		/obj/item/clothing/suit/wizrobe/red = 1,
-		/obj/item/clothing/head/wizard/yellow = 1,
-		/obj/item/clothing/suit/wizrobe/yellow = 1,
-		/obj/item/clothing/head/wizard/black = 1,
-		/obj/item/clothing/suit/wizrobe/black = 1,
-		/obj/item/clothing/shoes/sandal/magic = 1,
-		/obj/item/staff = 2,
+		/obj/item/clothing/head/wizard = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/head/wizard/red = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/red = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/head/wizard/yellow = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/yellow = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/head/wizard/black = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/black = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/head/wizard/magus = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/magusred = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/magusblue = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/shoes/sandal/magic = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/head/wizard/marisa = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/suit/wizrobe/marisa = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/clothing/shoes/sandal/marisa = WIZ_DROBE_DEFAULT_COUNT,
+		/obj/item/staff = WIZ_DROBE_DEFAULT_COUNT,
 	)
 	contraband = list(
 		/obj/item/reagent_containers/glass/bottle/wizarditis = 1
@@ -26,3 +34,5 @@
 	extra_price = PRICE_ABOVE_EXPENSIVE
 	payment_department = ACCOUNT_SRV
 	light_mask = "magivend-light-mask"
+
+#undef WIZ_DROBE_DEFAULT_COUNT

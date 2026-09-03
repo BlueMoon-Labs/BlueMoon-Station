@@ -27,6 +27,7 @@
 	ammo_type = /obj/item/ammo_casing/magic/heal
 	icon_state = "staffofhealing"
 	item_state = "staffofhealing"
+	can_shoot_yourself = FALSE // Dont heal yourself
 
 /obj/item/gun/magic/staff/healing/handle_suicide() //Stops people trying to commit suicide to heal themselves
 	return

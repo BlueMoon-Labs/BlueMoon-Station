@@ -169,11 +169,17 @@
 	var/moved = FALSE
 	if(!istype(I))
 		return FALSE
+	// Дублирует гейт can_be_inserted: force-пути (signal_insertion_attempt) идут мимо
+	// проверок, а удаляемый предмет нельзя возвращать в contents ни по какому пути.
+	if(QDELETED(I))
+		return FALSE
 	if(M)
 		if(!M.temporarilyRemoveItemFromInventory(I))
 			return FALSE
 		else
 			moved = TRUE //At this point if the proc fails we need to manually move the object back to the turf/mob/whatever.
+	if(QDELETED(I))
+		return FALSE
 	if(I.pulledby)
 		I.pulledby.stop_pulling()
 	if(silent)
@@ -186,6 +192,9 @@
 			else
 				I.forceMove(parent.drop_location())
 		return FALSE
+	if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
+		I.pixel_x = I.base_pixel_x
+		I.pixel_y = I.base_pixel_y
 	I.on_enter_storage(master)
 	I.item_flags |= IN_STORAGE
 	refresh_mob_views()

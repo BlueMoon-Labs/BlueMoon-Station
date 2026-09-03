@@ -22,10 +22,10 @@
 	species_category = SPECIES_CATEGORY_INSECT
 	wings_icons = SPECIES_WINGS_INSECT
 
-	allowed_limb_ids = list("insect","apid","moth","moth_not_greyscale")
+	allowed_limb_ids = list("insect","apid","moth","moth_not_greyscale", "insect_wings", "deco_wings")
 
 	eye_type = "insect"
-	
+
 	family_heirlooms = list(
 		/obj/item/flashlight/lantern/heirloom_moth
 	)

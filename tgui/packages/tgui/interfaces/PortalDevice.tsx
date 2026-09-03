@@ -1197,8 +1197,8 @@ const SafetyTabContent = (props: TabProps) => {
 };
 
 // Main component
-export const PortalDevice = (_, context) => {
-  const { act, data } = useBackend<PortalDeviceData>(context);
+export const PortalDevice = (_) => {
+  const { act, data } = useBackend<PortalDeviceData>();
   const {
     device_type,
     device_name,
@@ -1219,7 +1219,7 @@ export const PortalDevice = (_, context) => {
   const isConnected = isPanties ? (connected_count || 0) > 0 : !!connected;
 
   const defaultTab = isPassiveMode ? 'status' : !isPanties && isConnected ? 'remote' : 'control';
-  const [activeTab, setActiveTab] = useLocalState(context, 'activeTab', defaultTab);
+  const [activeTab, setActiveTab] = useLocalState('activeTab', defaultTab);
 
   const tabProps: TabProps = { data, act };
 

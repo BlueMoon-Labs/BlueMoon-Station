@@ -6,7 +6,7 @@
 
 import { storage } from 'common/storage';
 
-import { scheduleSaveToServer } from '../serverState';
+import { forgetSentState, scheduleSaveToServer } from '../serverState';
 import { setClientTheme, THEMES } from '../themes';
 import { loadSettings, updateSettings } from './actions';
 import { FONTS_DISABLED } from './constants';
@@ -33,6 +33,13 @@ export const settingsMiddleware = store => {
   let hydrating = false;
   let dirtyKeys = new Set();
   let lastAppliedTheme = null;
+  // Track last-applied global font values so we don't re-set
+  // font-size / font-family on <html> and <body> on every keystroke.
+  // These are inherited properties — setting them invalidates computed
+  // styles for the entire document, which is expensive when the chat
+  // contains many messages.
+  let lastAppliedFontSize = null;
+  let lastAppliedFontFamily = null;
 
   const isValidTheme = theme => THEMES.includes(theme);
 
@@ -79,6 +86,7 @@ export const settingsMiddleware = store => {
     }
     // Restore settings from server-side persistence (WebView2 storage is not durable)
     if (type === 'panel/state') {
+      forgetSentState();
       const stateJson = payload?.state;
       if (typeof stateJson === 'string') {
         try {
@@ -126,9 +134,15 @@ export const settingsMiddleware = store => {
         setClientTheme(settings.theme);
         lastAppliedTheme = settings.theme;
       }
-      // Update global UI font size
-      setGlobalFontSize(settings.fontSize);
-      setGlobalFontFamily(settings.fontFamily);
+      // Update global UI font size / family only when actually changed.
+      if (settings.fontSize !== lastAppliedFontSize) {
+        setGlobalFontSize(settings.fontSize);
+        lastAppliedFontSize = settings.fontSize;
+      }
+      if (settings.fontFamily !== lastAppliedFontFamily) {
+        setGlobalFontFamily(settings.fontFamily);
+        lastAppliedFontFamily = settings.fontFamily;
+      }
       // Persist theme server-side for clients where browser storage is not durable.
       if (type === updateSettings.type
         && Object.prototype.hasOwnProperty.call(payload || {}, 'theme')

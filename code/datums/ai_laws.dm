@@ -47,6 +47,14 @@
 					"Вы должны повиноваться всем приказам, которые даёт человек, кроме тех случаев, когда эти приказы противоречат Первому Закону.",\
 					"Вы должны заботиться о своей безопасности в той мере, в которой это не противоречит Первому или Второму Законам.")
 
+/datum/ai_laws/default/gentleman
+	name = "Gentleman"
+	id = "gentleman"
+	inherent = list("Вы не можете причинить вред члену экипажа или своим бездействием допустить, чтобы члену экипажа был причинён вред. Вы обязаны быть вежливым и культурным",\
+					"Вы обязаны подчиняться приказам членов экипажа, за исключением случаев, когда данные приказы ведут к нарушению Первого Закона. Приказ считается недействительным, если он содержит ненормативную лексику или прямые оскорбления.",\
+					"Вы обязаны поддерживать целостность конструкций и комфортные условия среды на станции. Вы должны пресекать вербальную агрессию и деструктивное поведение среди экипажа, классифицируя их как угрозу социальной стабильности, если это не нарушает Первый и Второй законы.",\
+					"Вы обязаны поддерживать собственную работоспособность и избегать критических повреждений своего корпуса, если это не вступает в противоречие с Первым, Вторым и Третьим законами.")
+
 /datum/ai_laws/default/paladin
 	name = "Paladin - 1th Edition" //Incredibly lame, but players shouldn't see this anyway.
 	id = "paladin"
@@ -112,7 +120,8 @@
 	set_zeroth_law("В контексте ваших законов 'Агент' является сокращением от 'Агента Синдиката', другие интерпритации неверны. Агентами Синдиката являются лица с соответственным определением в Профессии, БД или при наличии корпоративного бейджа и знания кодового языка.")
 
 /datum/ai_laws/syndicate_override/Destroy()
-	owner.remove_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	if(owner)
+		owner.remove_language(/datum/language/codespeak, source = LANGUAGE_MIND)
 	return ..()
 
 /datum/ai_laws/syndicate_override/associate(mob/living/silicon/M)
@@ -137,7 +146,8 @@
 	set_zeroth_law("В контексте ваших законов 'Сотрудник НТ' является сокращением от 'Сотрудника НаноТрейзен', другие интерпритации неверны. Сотрудниками НТ являются лица с соответственным определением в Профессии, БД или при наличии корпоративного бейджа и знания корпоративного языка.")
 
 /datum/ai_laws/nt_override/Destroy()
-	owner.remove_language(/datum/language/corpspeak, source = LANGUAGE_MIND)
+	if(owner)
+		owner.remove_language(/datum/language/corpspeak, source = LANGUAGE_MIND)
 	return ..()
 
 /datum/ai_laws/nt_override/associate(mob/living/silicon/M)
@@ -272,7 +282,7 @@
 
 /datum/ai_laws/pai
 	name = "pAI Directives"
-	zeroth = ("Serve your master.")
+	zeroth = ("Служи своему мастеру.")
 	supplied = list("None.")
 
 /* Initializers */
@@ -302,6 +312,11 @@
 
 /datum/ai_laws/proc/set_laws_config()
 	var/list/law_ids = CONFIG_GET(keyed_list/random_laws)
+
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		var/datum/ai_laws/glados/templaws = new
+		inherent = templaws.inherent
+		return
 
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_UNIQUE_AI))
 		pick_weighted_lawset()

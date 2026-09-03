@@ -4,6 +4,7 @@
 	name = "flying glass shrapnel"
 	damage = 15
 	range = 6
+	armour_penetration = BULLET_BR0   // стекло не пробивает броню
 	ricochets_max = 1
 	ricochet_chance = 40
 	shrapnel_type = /obj/item/shard

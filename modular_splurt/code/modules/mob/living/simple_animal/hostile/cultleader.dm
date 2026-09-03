@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "cultistangery"
 	icon_living = "cultistangery"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 2

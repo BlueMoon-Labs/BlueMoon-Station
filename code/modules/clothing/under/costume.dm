@@ -7,6 +7,7 @@
 	strip_delay = 100
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/jabroni
 	name = "Jabroni Outfit"
@@ -36,6 +37,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/schoolgirl/red
 	name = "red schoolgirl uniform"
@@ -96,6 +98,7 @@
 	icon_state = "polykilt"
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/kilt/polychromic/ComponentInitialize()
 	. = ..()
@@ -126,6 +129,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/maid/Initialize(mapload)
 	. = ..()
@@ -136,7 +140,7 @@
 	desc = "Just looking at this makes you want to sing."
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|ARMS
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	alternate_worn_layer = DRESS_LAYER
 	can_adjust = FALSE
 
 /obj/item/clothing/under/costume/singer/yellow
@@ -151,7 +155,7 @@
 	name = "blue performer's outfit"
 	icon_state = "bsing"
 	item_state = "bsing"
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	alternate_worn_layer = DRESS_LAYER
 	fitted = FEMALE_UNIFORM_TOP
 
 /obj/item/clothing/under/costume/geisha
@@ -286,6 +290,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 
 /obj/item/clothing/under/costume/qipao/white
@@ -340,6 +345,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/kimono/black
 	name = "Black Kimono"
@@ -381,70 +387,80 @@
 	icon_state = "irs_jumpsuit"
 	item_state = "irs_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/osi
 	name = "O.S.I. jumpsuit"
 	icon_state = "osi_jumpsuit"
 	item_state = "osi_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/tmc
 	name = "Lost MC clothing"
 	icon_state = "tmc_jumpsuit"
 	item_state = "tmc_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/pg
 	name = "powder ganger prison jumpsuit"
 	icon_state = "pg_jumpsuit"
 	item_state = "pg_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/driscoll
 	name = "O'Driscoll outfit"
 	icon_state = "driscoll_jumpsuit"
 	item_state = "driscoll_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/deckers
 	name = "deckers outfit"
 	icon_state = "decker_jumpsuit"
 	item_state = "decker_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/morningstar
 	name = "Morningstar suit"
 	icon_state = "morningstar_jumpsuit"
 	item_state = "morningstar_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/saints
 	name = "Saints outfit"
 	icon_state = "saints_jumpsuit"
 	item_state = "saints_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/phantom
 	name = "Phantom Thief outfit"
 	icon_state = "phantom_jumpsuit"
 	item_state = "phantom_jumpsuit"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/allies
 	name = "allies tanktop"
 	icon_state = "allies_uniform"
 	item_state = "allies_uniform"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/soviet_families
 	name = "soviet conscript uniform"
@@ -452,28 +468,32 @@
 	icon_state = "soviet_uniform"
 	item_state = "soviet_uniform"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/yuri
 	name = "yuri initiate jumpsuit"
 	icon_state = "yuri_uniform"
 	item_state = "yuri_uniform"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/sybil_slickers
 	name = "sybil slickers uniform"
 	icon_state = "football_blue"
 	item_state = "football_blue"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/basil_boys
 	name = "basil boys uniform"
 	icon_state = "football_red"
 	item_state = "football_red"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/swagoutfit
 	name = "Swag outfit"
@@ -488,7 +508,8 @@
 	icon_state = "JackFrostUniform"
 	item_state = "JackFrostUniform"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/yakuza
 	name = "tojo clan pants"
@@ -496,7 +517,8 @@
 	icon_state = "MajimaPants"
 	item_state = "MajimaPants"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 
 /obj/item/clothing/under/costume/dutch
 	name = "dutch's suit"
@@ -504,4 +526,5 @@
 	icon_state = "DutchUniform"
 	item_state = "DutchUniform"
 	can_adjust = FALSE
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'

@@ -3,7 +3,7 @@
 	name = "reinforced floor"
 	desc = "Extremely sturdy."
 	icon_state = "engine"
-	holodeck_compatible = TRUE
+	turf_flags = (TURF_FLAGS_FLOOR | TURF_HOLODECK_COMPATIBLE) & ~TURF_TILED_DIRT
 	thermal_conductivity = 0.025
 	heat_capacity = INFINITY
 	floor_tile = /obj/item/stack/rods
@@ -11,7 +11,6 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
 	flammability = 0 // nope
 
 /turf/open/floor/engine/examine(mob/user)

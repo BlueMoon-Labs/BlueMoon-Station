@@ -6,6 +6,7 @@
 	is_position_sensitive = TRUE
 	drop_sound = 'sound/items/handling/component_drop.ogg'
 	pickup_sound = 'sound/items/handling/component_pickup.ogg'
+	item_flags = NO_PIXEL_RANDOM_DROP
 	var/on = FALSE
 	var/visible = FALSE
 	var/maxlength = 8
@@ -16,9 +17,6 @@
 
 /obj/item/assembly/infra/Initialize(mapload)
 	. = ..()
-	item_flags |= NO_PIXEL_RANDOM_DROP
-	pixel_x = base_pixel_x
-	pixel_y = base_pixel_y
 	beams = list()
 	START_PROCESSING(SSobj, src)
 

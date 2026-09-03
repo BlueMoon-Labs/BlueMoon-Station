@@ -257,9 +257,11 @@
 	var/datum/nanite_extra_setting/inclusive = extra_settings[NES_INCLUSIVE_MODE]
 	if(!sentence.get_value())
 		return
+	// get_value() is html_encoded; the heard message is raw, so decode the trigger
+	// phrase before matching or a phrase containing & < > " ' would never fire.
 	if(inclusive.get_value())
-		if(findtext(hearing_args[HEARING_RAW_MESSAGE], sentence.get_value()))
+		if(findtext(hearing_args[HEARING_RAW_MESSAGE], html_decode(sentence.get_value())))
 			send_code()
 	else
-		if(lowertext(hearing_args[HEARING_RAW_MESSAGE]) == lowertext(sentence.get_value()))
+		if(lowertext(hearing_args[HEARING_RAW_MESSAGE]) == lowertext(html_decode(sentence.get_value())))
 			send_code()

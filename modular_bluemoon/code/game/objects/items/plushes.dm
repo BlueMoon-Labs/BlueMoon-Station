@@ -747,3 +747,272 @@
 	icon_state = "ezuar"
 	squeak_override = list('modular_citadel/sound/voice/hiss.ogg' = 1)
 	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/vox
+	name = "Vox plushie"
+	desc = "Тот самый пернатый ублюдок, которого все ненавидят, но только не вы."
+	icon_state = "vox"
+	squeak_override = list('modular_splurt/sound/voice/shriek1.ogg' = 1)
+
+/obj/item/toy/plush/bm/expie
+	name = "Expie plushie"
+	desc = "Бедняга, все время получающий по морде, ломающий кости, взрывающийся на мине."
+	icon_state = "expie"
+	squeak_override = list('modular_bluemoon/sound/voice/expiebark2.ogg' = 1)
+
+/obj/item/toy/plush/bm/oldman
+	name = "Old Man plushie"
+	desc = "Вам хочется врезать ему."
+	icon_state = "oldman"
+	squeak_override = list('modular_bluemoon/sound/plush/oldman_dont_do_it.ogg' = 1, 'modular_bluemoon/sound/plush/oldman_hate.ogg' = 1, 'modular_bluemoon/sound/plush/oldman_too_old.ogg' = 1)
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/znakekake
+	name = "Dumbass plushie"
+	desc = "Вы можете заметить бирку, на которой написано #2dc12f."
+	icon_state = "2dc12f"
+	squeak_override = list('modular_bluemoon/sound/plush/rizz.ogg' = 1, 'modular_bluemoon/sound/plush/splort.ogg' = 1)
+#define LOVE_INTERACTION_COOLDOWN 5 SECONDS
+#define MAX_REIJO_MICKIE_INTERACTIONS 4
+GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
+/obj/item/toy/plush/bm/reijo
+	name = "Reijo plushie"
+	desc = "Плюшевая игрушка рыжего лиса с белым подбородком. Прическа достаточно пушистая и неряшливая, особенно выделяются большие ушки с розовыми внутренностями. Чуть ниже расположены глазки с гетерохромией, а сама плюшка одета в серую водолазку с джинсами. Сзади имеется подвижный хвостик с белым кончиком."
+	icon_state = "reijo"
+	squeak_override = list('sound/fox/Voice/fox_bark_1.ogg' = 1, 'sound/fox/Voice/fox_aaugh.ogg' = 1, 'sound/fox/Voice/fox_scream.ogg' = 1, 'sound/fox/Voice/fox_trill.ogg' = 1, 'sound/fox/Voice/fox_trill_2.ogg' = 1)
+	var/obj/item/toy/plush/bm/mickie/love_target
+	var/last_love_interaction = 0
+
+/obj/item/toy/plush/bm/reijo/Moved()
+	. = ..()
+	if(GLOB.plush_reijo_mickie_active >= MAX_REIJO_MICKIE_INTERACTIONS)
+		return
+	// Ограничение по процессу и времени на срабатывания
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
+		var/obj/item/toy/plush/bm/mickie/P = locate() in range(3, src)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
+			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
+				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
+					loving_interaction(P)
+
+/obj/item/toy/plush/bm/reijo/proc/loving_interaction(obj/item/toy/plush/bm/mickie/partner)
+	GLOB.plush_reijo_mickie_active++
+	var/turf/start = get_turf(src)
+	var/turf/end = get_turf(partner)
+
+	if(!start || !end) // На всякий случай
+		GLOB.plush_reijo_mickie_active--
+		return
+
+	var/dist = get_dist(src, partner)
+	var/same_tile = (dist == 0)
+
+	love_target = partner
+	partner.love_target = src
+
+	var/list/hug_emotes_src = list(
+		"[src] тихонько урчит, прижавшись к [partner]~",
+		"[src] прячет нос в меху [partner]~",
+		"[src] крепче обхватывает [partner] лапками~",
+		"[src] тихо вздыхает рядом с [partner]~"
+	)
+	var/list/hug_emotes_partner = list(
+		"[partner] щекочет ухо [src] носиком~",
+		"[partner] прижимается к [src] поплотнее~",
+		"[partner] довольно тяфкает, уткнувшись в [src]~",
+		"[partner] обнимает [src] хвостом~"
+	)
+	last_love_interaction = world.time
+	partner.last_love_interaction = world.time
+
+	var/list/original_pixel_offsets = list()
+	for(var/obj/item/toy/plush/plushe in list(src, partner))
+		// Сохраняем оригинальные позиции
+		original_pixel_offsets[plushe] = list(
+			"pixel_x" = plushe.pixel_x,
+			"pixel_y" = plushe.pixel_y)
+		// Останавливаем бросок и таскание
+		plushe.forceMove(get_turf(plushe))
+		qdel(plushe.throwing)
+	if(!same_tile)
+		src.say(pick(
+			"Я останусь с тобой~",
+			"Никуда от меня не денешься~",
+			"Я найду тебя везде!",
+			"Иду к тебе~",
+			"Не убегай от меня~"))
+
+		// Slide-анимация: физически перемещаем src на тайл партнёра,
+		// задаём pixel-смещение "откуда прилетел" и анимируем к нулю
+		var/offset_x = (start.x - end.x) * 32 + src.pixel_x
+		var/offset_y = (start.y - end.y) * 32 + src.pixel_y
+		src.forceMove(end)
+		src.pixel_x = offset_x
+		src.pixel_y = offset_y
+		animate(src, pixel_x = 0, pixel_y = 0, time = 8)
+		sleep(10)
+
+		start = get_turf(src)
+		animate(src, pixel_x = -8, pixel_y = 0, time = 6)
+		animate(partner, pixel_x = 8, pixel_y = 0, time = 6)
+		sleep(6)
+		src.say(pick(
+			"Наконец-то рядом~",
+			"Я же говорил, что найду тебя~",
+			"Больше не потеряемся~",
+			"Мик~ Наконец-то~"))
+		partner.say(pick(
+			"Ты прилетел ко мне~",
+			"Так и знала, что ты придёшь~",
+			"Больше не отпущу тебя~",
+			"Рей~ Ты нашёл меня~"))
+		var/current_src_turf = get_turf(src)
+		var/current_partner_turf = get_turf(partner)
+		for(var/i = 1, i <= 4, i++)
+			if(get_turf(src) != current_src_turf || get_turf(partner) != current_partner_turf) // Если игрушки передвинули в процессе
+				var/static/list/heart_broken_say_rey = list(
+					"Это нечестно...",
+					"Эй!! Отдай её немедленно!",
+					"Я всё равно вернусь к ней.",
+					"Пусти! Мне надо к ней!",
+					"Не смей трогать её!!")
+				var/static/list/heart_broken_say_mick = list(
+					"Рей... Жди меня.",
+					"Я найду его, что бы ни случилось.",
+					"Отпусти меня!! Мне надо к нему!",
+					"Зачем ты нас разлучил?!",
+					"Отдай!")
+				var/say_heart_rey = pick(heart_broken_say_rey)
+				var/say_heart_mick = pick(heart_broken_say_mick)
+				src.say(say_heart_rey)
+				partner.say(say_heart_mick)
+				if(say_heart_rey == "Эй!! Отдай её немедленно!" || say_heart_rey == "Не смей трогать её!!")
+					playsound(src.loc, 'sound/fox/Voice/fox_growl.ogg', 90, TRUE, -1)
+				if(say_heart_mick == "Отпусти меня!! Мне надо к нему!" || say_heart_mick == "Отдай!" || say_heart_mick == "Зачем ты нас разлучил?!")
+					playsound(src.loc, 'sound/voice/growl.ogg', 90, TRUE, -1)
+				break
+			if(i % 2 == 0)
+				src.visible_message(span_notice(pick(hug_emotes_src)))
+				playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+			else
+				partner.visible_message(span_notice(pick(hug_emotes_partner)))
+				playsound(partner.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+			sleep(8)
+	else
+		var/static/list/word_rey = list(
+					"Никуда тебя не отпущу~",
+					"Милота!",
+					"Заглажу~",
+					"Обожаю тебя!",
+					"Тепло~",
+					"Тяфкалка моя~",
+					"Мик~",
+					"Мой фенёк~")
+		var/static/list/word_mick = list(
+					"Привет, милый~",
+					"Кусь!~",
+					"Иди сюда, мой хороший~",
+					"Моя золотая вульпа~",
+					"Заобнимаю~",
+					"Рей~",
+					"ТЯФ~")
+		var/say_rey = pick(word_rey)
+		var/say_mick = pick(word_mick)
+		src.say(say_rey)
+		partner.say(say_mick)
+		if(say_rey == "Никуда тебя не отпущу~" || say_rey == "Тепло~" || say_rey == "Заглажу~")
+			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+		if(say_mick == "Кусь!~")
+			playsound(partner.loc, 'modular_sand/sound/interactions/squelch1.ogg', 90, TRUE, -1)
+		else if(say_mick == "Иди сюда, мой хороший~" || say_mick == "Заобнимаю~")
+			playsound(src.loc, 'sound/weapons/thudswoosh.ogg', 90, TRUE, -1)
+		else if(say_mick == "ТЯФ~")
+			playsound(src.loc, 'sound/fox/Voice/fox_bark_1.ogg', 90, TRUE, -1)
+	love_target = null
+	partner.love_target = null
+	GLOB.plush_reijo_mickie_active--
+
+/obj/item/toy/plush/bm/mickie
+	name = "Mickie plushie"
+	desc = "Самая взрывоопасная тяфкалка в галактике!"
+	icon_state = "mickie"
+	squeak_override = list('sound/fox/Voice/fox_bark_1.ogg' = 30, 'modular_citadel/sound/voice/bark1.ogg' = 30, 'sound/fox/Voice/fox_trill_2.ogg' = 30, 'sound/machines/AISyndiHack.ogg' = 9, 'sound/machines/alarm.ogg' = 1)
+	var/obj/item/toy/plush/bm/reijo/love_target
+	var/last_love_interaction = 0
+
+/obj/item/toy/plush/bm/mickie/Moved()
+	. = ..()
+	if(GLOB.plush_reijo_mickie_active >= MAX_REIJO_MICKIE_INTERACTIONS)
+		return
+	// Ограничение по процессу и времени на срабатывания
+	if(!love_target && istype(src.loc, /turf/open) && world.time - last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
+		var/obj/item/toy/plush/bm/reijo/P = locate() in range(3, src)
+		if(P && istype(P.loc, /turf/open) && !P.love_target && world.time - P.last_love_interaction >= LOVE_INTERACTION_COOLDOWN)
+			spawn(1) // Что-то меняет пиксельную позицую после и так решаем приколы с бросками
+				if(istype(src.loc, /turf/open) && istype(P.loc, /turf/open)) // Изъятие из контейнера изначально считается как на открытом турфе, поэтому перепроверяем еще раз
+					P.loving_interaction(src)
+
+#undef LOVE_INTERACTION_COOLDOWN
+#undef MAX_REIJO_MICKIE_INTERACTIONS
+
+/obj/item/toy/plush/bm/voronka
+	name = "Voronka plushie"
+	desc = "An autistic presence has entered the room."
+	icon_state = "voronka"
+	squeak_override = list('modular_splurt/sound/voice/caw.ogg' = 1)
+
+/obj/item/toy/plush/bm/vulpix
+	name = "Business Red Fox plushie"
+	desc = "Мягкая и приятная на ощупь игрушка важного рыжего лиса в пальто."
+	icon_state = "vulpix"
+	squeak_override = list('sound/fox/Voice/fox_trill_2.ogg' = 1)
+
+#define BASIC_GIZI_SKIN "Gizi Plushie"
+#define ALT_GIZI_SKIN "Gizi-mini Plushie"
+
+/obj/item/toy/plush/bm/gizi
+	name = BASIC_GIZI_SKIN
+	desc = "Игрушка от которой пахнет сигаретным дымом и вайбом старого времени."
+	icon_state = "gizi"
+	item_state = "gizi"
+	squeak_override = list('modular_bluemoon/sound/plush/gizi.ogg' = 1)
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		BASIC_GIZI_SKIN = list(RESKIN_ICON_STATE = "gizi"),
+		ALT_GIZI_SKIN = list(RESKIN_ICON_STATE = "gizi_mini"),
+	)
+
+/obj/item/toy/plush/bm/gizi/reskin_obj(mob/user)
+	. = ..()
+	name = current_skin
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_hands()
+
+#undef BASIC_GIZI_SKIN
+#undef ALT_GIZI_SKIN
+
+#define BASIC_ARIRAL_SKIN "Ariral Plushie"
+#define ALT_ARIRAL_SKIN "Ariral-mini Plushie"
+
+/obj/item/toy/plush/bm/ariral
+	name = BASIC_ARIRAL_SKIN
+	desc = "Voiding..."
+	icon_state = "ariral"
+	item_state = "ariral"
+	squeak_override = list('modular_bluemoon/sound/plush/gizi.ogg' = 1)
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		BASIC_ARIRAL_SKIN = list(RESKIN_ICON_STATE = "ariral"),
+		ALT_ARIRAL_SKIN = list(RESKIN_ICON_STATE = "ariral_mini"),
+	)
+
+/obj/item/toy/plush/bm/ariral/reskin_obj(mob/user)
+	. = ..()
+	name = current_skin
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_hands()
+
+#undef BASIC_ARIRAL_SKIN
+#undef ALT_ARIRAL_SKIN

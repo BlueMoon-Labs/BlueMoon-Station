@@ -187,7 +187,19 @@
 			if (GLOB.security_level == new_sec_level)
 				return
 
-			set_security_level(new_sec_level)
+			var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
+			var/emagged_bypass = (obj_flags & EMAGGED)
+			if(IS_HIGH_SECURITY_LEVEL(current_level) && new_sec_level < SEC_LEVEL_RED)
+				to_chat(usr, span_warning("С высокого кода тревоги можно перейти только на красный — через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			if(GLOB.keycard_secured_level >= SEC_LEVEL_RED && current_level >= SEC_LEVEL_RED && new_sec_level < SEC_LEVEL_RED && !emagged_bypass)
+				to_chat(usr, span_warning("Красный код может быть снят только через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+
+			var/bypass_red_lock = emagged_bypass && !IS_HIGH_SECURITY_LEVEL(current_level)
+			set_security_level(new_sec_level, null, bypass_red_lock)
 
 			to_chat(usr, span_notice("Доступ разрешён. Обновляю уровень угрозы."))
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
@@ -214,7 +226,7 @@
 				return
 			LAZYREMOVE(messages, LAZYACCESS(messages, message_index))
 		if ("emergency_meeting")
-			if(!(SSevents.holidays && SSevents.holidays[APRIL_FOOLS]))
+			if(!(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]))
 				return
 			if (!authenticated_as_silicon_or_captain(usr))
 				return
@@ -271,7 +283,12 @@
 			SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASED
 			SSshuttle.unload_preview()
 			SSshuttle.existing_shuttle = SSshuttle.emergency
-			SSshuttle.action_load(shuttle, replace = TRUE)
+			var/obj/docking_port/mobile/purchased_shuttle = SSshuttle.action_load(shuttle, replace = TRUE)
+			if(!purchased_shuttle)
+				SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE
+				SSshuttle.existing_shuttle = null
+				to_chat(usr, span_alert("Не удалось загрузить шаттл. Попробуйте позже."))
+				return
 			bank_account.adjust_money(-shuttle.credit_cost)
 			minor_announce("[usr.real_name] купил шаттл [shuttle.name] за [shuttle.credit_cost] кредитов.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
 			message_admins("[ADMIN_LOOKUPFLW(usr)] purchased [shuttle.name].")
@@ -548,7 +565,7 @@
 				data["importantActionReady"] = COOLDOWN_FINISHED(src, important_action_cooldown)
 				data["shuttleCalled"] = FALSE
 				data["shuttleLastCalled"] = FALSE
-				data["aprilFools"] = SSevents.holidays && SSevents.holidays[APRIL_FOOLS]
+				data["aprilFools"] = SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]
 				data["alertLevel"] = NUM2SECLEVEL(GLOB.security_level)
 				data["authorizeName"] = authorize_name
 				data["canLogOut"] = !issilicon(user)
@@ -619,10 +636,13 @@
 					data["alertLevelTick"] = alert_level_tick
 					data["canMakeAnnouncement"] = TRUE
 					data["canSetAlertLevel"] = issilicon(user) ? "NO_SWIPE_NEEDED" : "SWIPE_NEEDED"
+					data["redAlertKeycardLocked"] = GLOB.keycard_secured_level >= SEC_LEVEL_RED && GLOB.security_level >= SEC_LEVEL_RED && !(obj_flags & EMAGGED)
+					data["highAlertKeycardLocked"] = GLOB.security_level >= SEC_LEVEL_LAMBDA
 				else if(syndicate)
 					data["canMakeAnnouncement"] = TRUE
 
-				if (SSshuttle.emergency.mode != SHUTTLE_IDLE && SSshuttle.emergency.mode != SHUTTLE_RECALL)
+				var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+				if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_IDLE && emergency_shuttle.mode != SHUTTLE_RECALL)
 					data["shuttleCalled"] = TRUE
 					data["shuttleRecallable"] = SSshuttle.canRecall() || syndicate
 
@@ -633,7 +653,10 @@
 			if (STATE_MESSAGES)
 				data["messages"] = list()
 				data["messagesTrimmed"] = messages_trimmed
-				data["printerCooldown"] = report_print_cooldown
+				// именно булево: COOLDOWN_* хранит абсолютный дедлайн world.time, а
+				// UI кладёт это поле прямо в disabled - сырое число навсегда
+				// запирало кнопку печати после первой же распечатки
+				data["printerCooldown"] = !COOLDOWN_FINISHED(src, report_print_cooldown)
 
 				if (messages)
 					for (var/_message in messages)
@@ -731,7 +754,8 @@
 	if (!authenticated_as_non_silicon_captain(user))
 		return FALSE
 
-	if (SSshuttle.emergency.mode != SHUTTLE_RECALL && SSshuttle.emergency.mode != SHUTTLE_IDLE)
+	var/obj/docking_port/mobile/emergency/emergency_shuttle = SSshuttle.emergency
+	if (emergency_shuttle && emergency_shuttle.mode != SHUTTLE_RECALL && emergency_shuttle.mode != SHUTTLE_IDLE)
 		return "The shuttle is already in transit."
 	if (SSshuttle.shuttle_purchased == SHUTTLEPURCHASE_PURCHASED)
 		return "A replacement shuttle has already been purchased."
@@ -771,7 +795,7 @@
 	var/list/settings = list(
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" =  GLOB.payed_ert[id]["teamsize"]),
+		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = GLOB.payed_ert[id]["teamsize"]),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = GLOB.payed_ert[id]["mission"]),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -797,12 +821,12 @@
 	ertemplate.opendoors = prefs["open_armory"]["value"] == "Yes" ? TRUE : FALSE
 	priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
-	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize)
+	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
 	var/teamSpawned = FALSE
 
 	if(candidates.len > 0)
 		//Pick the (un)lucky players
-		var/numagents = min(ertemplate.teamsize,candidates.len)
+		var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 		//Create team
 		var/datum/team/ert/ert_team = new ertemplate.team
@@ -855,7 +879,7 @@
 
 		if (teamSpawned)
 			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем поздразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
 
 		//Open the Armory doors
 		if(ertemplate.opendoors)

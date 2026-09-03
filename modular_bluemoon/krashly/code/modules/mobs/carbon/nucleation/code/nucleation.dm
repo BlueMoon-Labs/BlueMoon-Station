@@ -54,7 +54,6 @@
 	toxic_food = ANTITOXIC
 
 	burnmod = 4 // ГАЙД КАК СДОХНУТЬ ЗА 4 СЕКУНДЫ ОТ ОГНЯ.
-	heatmod = 4
 	brutemod = 2
 
 	species_traits = list(NOGENITALS,LIPS,NOBLOOD,NOAROUSAL,HAIR) // НЕТ СИСИК, НЕТ ПИСИК, НЕТ КРОВИ (МЫ ВСЁ ТАКИ ФЭМЭЛИ ФРЕНДЛИ СЕРВЕР), А ТАК ЖЕ НИКАКИХ ПОШЛОСТЕЙ.

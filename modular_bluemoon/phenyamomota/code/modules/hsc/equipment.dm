@@ -18,6 +18,7 @@
 	item_state = "hsc_suit"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc
 	mutantrace_variation = STYLE_DIGITIGRADE
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc/medical
 	name = "HSC medical unit helmet"
@@ -29,6 +30,7 @@
 	name = "HSC medical suit"
 	desc = "Cool designed suit for the HSC team."
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc/medical
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/hsc/assistant
 	name = "HSC assistant unit helmet"

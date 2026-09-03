@@ -15,7 +15,6 @@
 	considered_combat_role = TRUE
 	exp_type_department = EXP_TYPE_MEDICAL
 	alt_titles = list(
-		"Syndicate Corpsman", //Синди выше, для удобства
 		"AC Combat Medic",
 		"Brig Doctor",
 		"Combat Medic",
@@ -29,6 +28,8 @@
 		"Security Physician",
 		"Slutcurity Nurse",
 		"Special Operations Medic",
+		"Brig EMT",
+		"Security EMT",
 		"Well-Trained Boy",
 		"Well-Trained Girl"
 		)
@@ -36,8 +37,8 @@
 	outfit = /datum/outfit/job/brigdoc
 	plasma_outfit = /datum/outfit/plasmaman/brigdoc
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_SURGERY, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
 	bounty_types = CIV_JOB_MED
@@ -52,7 +53,7 @@
 	name = "Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	belt = /obj/item/pda/security
+	belt = /obj/item/modular_computer/pda/security/brigdoc
 	ears = /obj/item/radio/headset/headset_brigdoc/alt
 	uniform = /obj/item/clothing/under/syndicate/brigdoc
 	gloves = /obj/item/clothing/gloves/color/latex
@@ -82,7 +83,7 @@
 	name = "Syndicate Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	uniform = /obj/item/clothing/under/rank/security/officer/util
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -96,13 +97,15 @@
 							/obj/item/melee/classic_baton/telescopic,
 							/obj/item/sensor_device_security,
 							/obj/item/choice_beacon/copgun,
-							/obj/item/syndicate_uplink_high=1
+							/obj/item/syndicate_uplink/station=1
 							)
+
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/brigdoc

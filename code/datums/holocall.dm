@@ -39,6 +39,7 @@
 	call_start_time = world.time
 	user = caller
 	calling_pad.outgoing_call = src
+	calling_pad.machine_wake() // idle pads sleep off SSmachines; ongoing calls are process()-driven
 	calling_holopad = calling_pad
 	head_call = elevated_access
 	dialed_holopads = list()
@@ -56,6 +57,7 @@
 			else
 				H.say("Incoming call.")
 			LAZYADD(H.holo_calls, src)
+			H.machine_wake() // ringing and auto-answer run in the pad's process()
 
 	if(!dialed_holopads.len)
 		calling_pad.say("Connection failure.")
@@ -139,6 +141,10 @@
 		return
 
 	if(connected_holopad)
+		//Already answered by this pad: a double-answer from a stale TGUI snapshot
+		//(rapid re-click, or process() auto-answer racing a queued connectcall). No-op.
+		if(connected_holopad == H)
+			return
 		CRASH("Multi-connection holocall")
 
 	for(var/I in dialed_holopads)

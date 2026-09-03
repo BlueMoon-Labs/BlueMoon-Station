@@ -1,3 +1,11 @@
+/datum/config_entry/flag/ssdecay_disabled
+
+/// Roundstart decay: activation chance by config value (1=10%, 2=32%, 3=53%, 4=75%, 5=50% + random intensity 1-4).
+/datum/config_entry/number/ssdecay_intensity
+	default = 5
+	max_val = 5
+	min_val = 1
+
 /// Defines whether or not mentors can see ckeys alongside mobnames.
 /datum/config_entry/flag/mentors_mobname_only
 

@@ -16,13 +16,14 @@ SUBSYSTEM_DEF(title_bm)
 	var/current_sfw_image
 	var/current_nsfw_image
 
-/// Перечитывает lobby_html.txt с диска и пересылает свежий HTML всем игрокам в лобби.
+/// Перечитывает BM_LOBBY_HTML_FILE с диска и пересылает свежий HTML всем игрокам в лобби.
 /// Возвращает количество обновлённых клиентов.
 /datum/controller/subsystem/title_bm/proc/reload_lobby_html()
 	if(fexists(BM_LOBBY_HTML_FILE))
 		lobby_html = _parse_lobby_html(file2text(BM_LOBBY_HTML_FILE))
 	else
-		lobby_html = _parse_lobby_html(file2text('config/bluemoon/lobby_html.txt'))
+		lobby_html = ""
+		log_game("[name]: файл лобби [BM_LOBBY_HTML_FILE] не найден — используется запасная преамбула из кода.")
 	var/refreshed = 0
 	for(var/mob/dead/new_player/player as anything in GLOB.new_player_list)
 		if(!player.client)
@@ -44,11 +45,16 @@ SUBSYSTEM_DEF(title_bm)
 	if(fexists(BM_LOBBY_HTML_FILE))
 		lobby_html = _parse_lobby_html(file2text(BM_LOBBY_HTML_FILE))
 	else
-		lobby_html = _parse_lobby_html(file2text('config/bluemoon/lobby_html.txt'))
+		lobby_html = ""
+		log_game("[name]: файл лобби [BM_LOBBY_HTML_FILE] не найден — используется запасная преамбула из кода.")
 
 	_load_title_images()
 
-	if(fexists(loading_image))
+	var/loading_size = fexists(loading_image) ? length(file(loading_image)) : 0
+	if(loading_size > BM_LOBBY_IMAGE_MAX_BYTES)
+		log_world("## MEMORY: загрузочный фон [loading_image] весит [round(loading_size / (1024 * 1024), 0.1)] МБ и отключён (потолок [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024), 0.1)] МБ) - он уходит каждому входящему по игровому соединению")
+		loading_image = null
+	else if(loading_size)
 		loading_image = fcopy_rsc(loading_image)
 	else
 		log_game("[name]: Файл загрузочного GIF '[loading_image]' не найден. Фон лобби будет пустым до подбора картинки.")
@@ -60,8 +66,7 @@ SUBSYSTEM_DEF(title_bm)
 
 	_build_static_html()
 
-	initialized = TRUE
-	return SS_INIT_SUCCESS
+	return ..()
 
 /datum/controller/subsystem/title_bm/Destroy()
 	UnregisterSignal(SSticker, list(COMSIG_TICKER_ENTER_PREGAME, COMSIG_TICKER_ENTER_SETTING_UP))
@@ -80,7 +85,6 @@ SUBSYSTEM_DEF(title_bm)
 	sfw_images            = SStitle_bm.sfw_images
 	nsfw_images           = SStitle_bm.nsfw_images
 	current_notice        = SStitle_bm.current_notice
-	current_video_payload = SStitle_bm.current_video_payload
 	if(fexists(BM_LOBBY_HTML_FILE))
 		lobby_html = _parse_lobby_html(file2text(BM_LOBBY_HTML_FILE))
 	else
@@ -97,6 +101,7 @@ SUBSYSTEM_DEF(title_bm)
 	parts += {"<div id=\"bm-overlay\"></div>"}
 	parts += {"<div id=\"bm-toasts\"></div>"}
 	parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9654;</div>"}
+	parts += {"<div id=\"bm-disclaimer-btn\" onclick=\"bmShowDisclaimer()\" title=\"Правила сервера\">&#9888;</div>"}
 	cached_static_html = parts.Join("")
 
 /datum/controller/subsystem/title_bm/proc/_load_images_from_dir(dir_path, list/target_list)
@@ -120,6 +125,10 @@ SUBSYSTEM_DEF(title_bm)
 		if(!is_image)
 			continue
 		var/full_path = "[dir_path][filename]"
+		var/image_size = fexists(full_path) ? length(file(full_path)) : 0
+		if(image_size > BM_LOBBY_IMAGE_MAX_BYTES)
+			log_world("## MEMORY: картинка лобби [full_path] весит [round(image_size / (1024 * 1024), 0.1)] МБ и пропущена (потолок [round(BM_LOBBY_IMAGE_MAX_BYTES / (1024 * 1024), 0.1)] МБ: она уходит отдельной копией каждому клиенту)")
+			continue
 		target_list += fcopy_rsc(full_path)
 
 /datum/controller/subsystem/title_bm/proc/_load_title_images()

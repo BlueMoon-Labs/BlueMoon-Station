@@ -22,7 +22,8 @@ SUBSYSTEM_DEF(augury)
 	var/biggest_doom = null
 	var/biggest_threat = null
 
-	for(var/datum/d as anything in doombringers)
+	// Снимок: снятие ключа прямо в цикле сдвигает индекс и пропускает следующую запись.
+	for(var/atom/d as anything in doombringers.Copy())
 		if(!d || QDELETED(d))
 			doombringers -= d
 			continue
@@ -31,6 +32,15 @@ SUBSYSTEM_DEF(augury)
 			biggest_doom = d
 			biggest_threat = threat
 
+	// observers_given_action и watchers - ассоциации по мобам, то есть жёсткие ссылки.
+	// Удалённый гост не вычищается сам ниоткуда, поэтому чистим их на каждом fire().
+	for(var/mob/dead/observer/stale as anything in observers_given_action.Copy())
+		if(QDELETED(stale))
+			observers_given_action -= stale
+	for(var/mob/dead/observer/stale as anything in watchers.Copy())
+		if(QDELETED(stale))
+			watchers -= stale
+
 	if(doombringers.len)
 		for(var/mob/M as anything in GLOB.player_list)
 			if(isobserver(M) && (!(observers_given_action[M])))
@@ -38,14 +48,14 @@ SUBSYSTEM_DEF(augury)
 				A.Grant(M)
 				observers_given_action[M] = TRUE
 	else
-		for(var/i in observers_given_action)
+		for(var/i in observers_given_action.Copy())
 			if(observers_given_action[i] && isobserver(i))
 				var/mob/dead/observer/O = i
 				for(var/datum/action/innate/augury/A in O.actions)
 					qdel(A)
 			observers_given_action -= i
 
-	for(var/mob/dead/observer/O as anything in watchers)
+	for(var/mob/dead/observer/O as anything in watchers.Copy())
 		if(!O)
 			watchers -= O
 			continue

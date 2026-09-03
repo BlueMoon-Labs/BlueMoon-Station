@@ -24,6 +24,9 @@ GLOBAL_LIST_INIT(bitflags, list(
 ))
 
 // for /datum/var/datum_flags
+// NOTE: DF_USE_TAG must stay as `1<<0` because the REF() macro in __DEFINES/_helpers.dm hardcodes
+// the literal `1` (that file loads before this one and can't reference DF_USE_TAG by name).
+// If you ever change DF_USE_TAG, update the literal in REF() too.
 #define DF_USE_TAG		(1<<0)
 #define DF_VAR_EDITED	(1<<1)
 #define DF_ISPROCESSING (1<<2)
@@ -58,13 +61,12 @@ GLOBAL_LIST_INIT(bitflags, list(
 /// Early returns mob.face_atom()
 #define BLOCK_FACE_ATOM_1			(1<<13)
 
-#define HTML_USE_INITAL_ICON_1 (1<<20)
-/// Can players recolor this in-game via vendors (and maybe more if support is added)?
-#define IS_PLAYER_COLORABLE_1 (1<<21)
-#define KEEP_ON_ARENA_1 (1<<22)
+/// This atom is enrolled in SSair.atom_process via /datum/element/atmos_sensitive.
+/// Any-atom flag; do not move into the turf-only block below.
+#define ATMOS_IS_PROCESSING_1 (1<<21)
 
-/// Whether or not this atom is storing contents for a disassociated storage object
-#define HAS_DISASSOCIATED_STORAGE_1 (1<<24)
+/// Disables the right click context menu in MouseEntered()
+#define PREVENT_RIGHT_CLICK_CONTEXT_MENU_1 (1<<22)
 
 
 //turf-only flags
@@ -129,6 +131,8 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define	PASSMACHINE		(1<<7)
 #define PASSSTRUCTURE	(1<<8)
 #define PASSCRAWL		(1<<9) //SPLURT edit
+/// Granted while jumping; put on pass_flags_self of jumpable dense objects that must still stop projectiles (no PASSTABLE).
+#define PASSJUMP		(1<<10)
 
 //Movement Types
 #define GROUND				(1<<0)

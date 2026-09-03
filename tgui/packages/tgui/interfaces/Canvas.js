@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button } from '../components';
@@ -10,7 +10,6 @@ class PaintCanvas extends Component {
   constructor(props) {
     super(props);
     this.canvasRef = createRef();
-    this.onCVClick = props.onCanvasClick;
   }
 
   componentDidMount() {
@@ -54,7 +53,7 @@ class PaintCanvas extends Component {
     const rect = this.canvasRef.current.getBoundingClientRect();
     const x = Math.floor((event.clientX - rect.left) / (rect.width / x_size)) + 1;
     const y = Math.floor((event.clientY - rect.top) / (rect.height / y_size)) + 1;
-    this.onCVClick(x, y);
+    this.props.onCanvasClick(x, y);
   }
 
   render() {
@@ -84,8 +83,8 @@ const getImageSize = value => {
   return [width, height];
 };
 
-export const Canvas = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Canvas = (props) => {
+  const { act, data } = useBackend();
   const dotsize = PX_PER_UNIT;
   const [width, height] = getImageSize(data.grid);
   return (

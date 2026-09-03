@@ -131,6 +131,8 @@
 		return TRUE
 
 /obj/structure/proc/examine_status(mob/user) //An overridable proc, mostly for falsewalls.
+	if(!max_integrity)
+		return
 	var/healthpercent = (obj_integrity/max_integrity) * 100
 	switch(healthpercent)
 		if(50 to 99)

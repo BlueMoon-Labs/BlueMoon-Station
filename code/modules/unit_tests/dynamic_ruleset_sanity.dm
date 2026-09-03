@@ -29,6 +29,12 @@
 			TEST_FAIL("[ruleset] has a null antag_flag!")
 			continue
 
+		// Подтип, унаследовавший флаг от родительского правила (клоун-опы от ядерщиков),
+		// намеренно берёт кандидатов из того же пула предпочтений и конкурентом ему не является.
+		var/datum/dynamic_ruleset/parent_ruleset = type2parent(ruleset)
+		if (ispath(parent_ruleset, /datum/dynamic_ruleset) && initial(parent_ruleset.antag_flag) == antag_flag)
+			continue
+
 		if (antag_flag in known_antag_flags)
 			TEST_FAIL("[ruleset] has a non-unique antag_flag [antag_flag] (used by [known_antag_flags[antag_flag]])!")
 			continue

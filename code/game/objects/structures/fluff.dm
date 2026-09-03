@@ -85,6 +85,7 @@
 	light_power = 0.8
 	light_range = 10
 	light_color = "#ffeeab"
+	light_flags = LIGHT_NO_RANGE_CAP // статичный уличный фонарь: дальность выше базового капа
 
 /obj/structure/fluff/bus
 	name = "bus"

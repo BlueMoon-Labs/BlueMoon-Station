@@ -146,6 +146,20 @@
 	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	color_src = HAIR
 
+/datum/sprite_accessory/tails/human/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/human/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/human/catbig
 	name = "Cat, Big"
 	icon_state = "catbig"
@@ -218,11 +232,17 @@
 
 /datum/sprite_accessory/tails/human/corvid
 	name = "Corvid"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "crow"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/human/corvid
 	name = "Corvid"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "crow"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/human/cow
 	name = "Cow"
@@ -519,11 +539,17 @@
 
 /datum/sprite_accessory/tails/human/straighttail
 	name = "Straight Tail"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "straighttail"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/human/straighttail
 	name = "Straight Tail"
+	icon = 'modular_citadel/icons/mob/mam_tails.dmi'
 	icon_state = "straighttail"
+	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/human/squirrel
 	name = "Squirrel"
@@ -702,6 +728,18 @@
 	icon_state = "cat"
 	color_src = HAIR
 
+/datum/sprite_accessory/tails/mam_tails/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/catalt
+	name = "Cat, Alt"
+	icon_state = "altcat"
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_RED_BLUE
+
 /datum/sprite_accessory/tails/mam_tails/catbig
 	name = "Cat, Big"
 	icon_state = "catbig"
@@ -820,6 +858,16 @@
 /datum/sprite_accessory/tails_animated/mam_tails_animated/fox
 	name = "Fox"
 	icon_state = "fox"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
 	matrixed_sections = MATRIX_RED_GREEN
 
 /datum/sprite_accessory/tails/mam_tails/hawk

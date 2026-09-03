@@ -846,6 +846,10 @@
 	else
 		B.add_stacks(bleed_stacks_per_hit)
 
+///Whether an occupant of the cleave arc is a valid secondary target.
+/obj/item/melee/transforming/cleaving_saw/proc/can_cleave_target(mob/living/user, mob/living/target)
+	return !QDELETED(user) && !QDELETED(target)
+
 /obj/item/melee/transforming/cleaving_saw/AltClick(mob/user)
 	. = ..()
 	roll_orientation = !roll_orientation
@@ -866,7 +870,7 @@
 		for(var/i in cleaving_saw_cleave_angles)
 			var/turf/T = get_step(user_turf, turn(dir_to_target, i))
 			for(var/mob/living/L in T)
-				if(user.Adjacent(L) && L.density)
+				if(user.Adjacent(L) && L.density && can_cleave_target(user, L))
 					melee_attack_chain(user, L)
 		swiping = FALSE
 
@@ -988,7 +992,12 @@
 
 	force = clamp((ghost_counter * 4), 0, 75)
 
-/obj/item/melee/ghost_sword/proc/recursive_orbit_collect(atom/A, list/L)
+/obj/item/melee/ghost_sword/proc/recursive_orbit_collect(atom/movable/A, list/L)
+	// Гард на тип обязателен: ghost_check() зовёт этот прок от loc, а лежащий на полу меч
+	// имеет loc'ом турф. Переменная orbiters живёт на движимом, и обращение к ней через
+	// турф - рантайм на каждом process() лежащего меча.
+	if(!istype(A))
+		return
 	for(var/i in A.orbiters?.orbiters)
 		if(!isobserver(i) || (i in L))
 			continue
@@ -1460,7 +1469,7 @@
 			INVOKE_ASYNC(src, PROC_REF(prepare_icon_update))
 			beacon.icon_state = "hierophant_tele_off"
 			return
-		user.log_message("teleported self from [AREACOORD(source)] to [beacon]")
+		user.log_message("teleported self from [AREACOORD(source)] to [AREACOORD(beacon)]", LOG_GAME)
 		new /obj/effect/temp_visual/hierophant/telegraph/teleport(T, user)
 		new /obj/effect/temp_visual/hierophant/telegraph/teleport(source, user)
 		for(var/t in RANGE_TURFS(1, T))

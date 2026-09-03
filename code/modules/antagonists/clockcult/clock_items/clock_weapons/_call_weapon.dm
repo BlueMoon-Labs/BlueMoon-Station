@@ -2,7 +2,7 @@
 //You can invoke a cooldown period by calling "weapon_reset(cooldown in deciseconds)." By default, this only applies to dismissing weapons.
 /datum/action/innate/call_weapon
 	name = "Call Weapon"
-	desc = "This definitely shouldn't exist."
+	desc = "Этого точно не должно быть."
 	icon_icon = 'icons/mob/actions/actions_clockcult.dmi'
 	button_icon_state = "ratvarian_spear"
 	background_icon_state = "bg_clock"
@@ -22,21 +22,21 @@
 
 /datum/action/innate/call_weapon/Activate()
 	if(!owner.get_empty_held_indexes())
-		to_chat(usr, "<span class='warning'>You need an empty hand to call forth your [initial(weapon_type.name)]!</span>")
+		to_chat(usr, "<span class='warning'>Чтобы вызвать ваш [initial(weapon_type.name)], вам нужна свободная рука!</span>")
 		return
 	if(weapon)
 		if(weapon.loc == owner)
-			owner.visible_message("<span class='danger'>[owner]'s [weapon.name] flickers and disappears!</span>")
-			to_chat(owner, "<span class='brass'>You dismiss [weapon].</span>")
+			owner.visible_message("<span class='danger'>[weapon.name] в руках [owner] мерцает и исчезает!</span>")
+			to_chat(owner, "<span class='brass'>Вы отзываете [weapon].</span>")
 			QDEL_NULL(weapon)
 			weapon_reset(RATVARIAN_WEAPON_COOLDOWN * 0.5)
 			return
 		else
-			weapon.visible_message("<span class='warning'>[weapon] suddenly flickers and disappears!</span>")
-			owner.visible_message("<span class='danger'>A [weapon.name] suddenly flickers into [owner]'s hands!</span>", "<span class='brass'>You recall [weapon] to you.</span>")
+			weapon.visible_message("<span class='warning'>[weapon] внезапно мерцает и исчезает!</span>")
+			owner.visible_message("<span class='danger'>[weapon.name] внезапно появляется в руках [owner]!</span>", "<span class='brass'>Вы возвращаете [weapon] себе.</span>")
 	else
 		weapon = new weapon_type (get_turf(usr), src)
-		owner.visible_message("<span class='warning'>A [weapon.name] materializes in [owner]'s hands!</span>", "<span class='brass'>You call forth your [weapon.name]!</span>")
+		owner.visible_message("<span class='warning'>[weapon.name] материализуется в руках [owner]!</span>", "<span class='brass'>Вы призываете свое [weapon.name]!</span>")
 	weapon.forceMove(get_turf(owner))
 	owner.put_in_hands(weapon)
 	owner.update_action_buttons_icon()

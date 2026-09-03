@@ -31,16 +31,23 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 	var/list/candidates = list()
 	for(var/m in possible_candidates)
 		var/mob/M = m
-		if(M.can_reenter_round(TRUE))
+		// Мы уже итерируем список членства (priority-список - его подмножество):
+		// повторный линейный скан внутри can_reenter_round давал O(гостов^2) на пересбор.
+		if(M.can_reenter_round(TRUE, skip_eligibility_scan = TRUE))
 			candidates += M
 	return candidates
 
-/mob/proc/can_reenter_round(silent = FALSE)
-	if(!(src in GLOB.ghost_eligible_mobs))
+/// skip_eligibility_scan: вызывающий уже итерирует GLOB.ghost_eligible_mobs и ручается
+/// за членство - линейный скан списка здесь превращал пересбор кандидатов в O(N^2).
+/mob/proc/can_reenter_round(silent = FALSE, skip_eligibility_scan = FALSE)
+	if(!skip_eligibility_scan && !(src in GLOB.ghost_eligible_mobs))
 		return FALSE
-	if(!(ckey in GLOB.client_ghost_timeouts))
+	if(isnull(ckey))
 		return TRUE
+	// Хэш-лукап вместо линейного `in` по ключам: значение 0 - легальный "без штрафа".
 	var/timeout = GLOB.client_ghost_timeouts[ckey]
+	if(isnull(timeout))
+		return TRUE
 	if(timeout != CANT_REENTER_ROUND && timeout <= world.realtime)
 		return TRUE
 	if(!silent && client)
@@ -64,6 +71,21 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 		if(!low_priority)
 			GLOB.ghost_eligible_mobs_priority |= M
 
+/**
+ * Достаёт элемент гост-ролей из подписчиков моба на COMSIG_MOB_GHOSTIZE.
+ *
+ * comp_lookup хранит одного подписчика голой ссылкой, а нескольких - ассоциативным
+ * списком "подписчик = TRUE" (см. RegisterSignal). Слепой LAZYACCESS отдавал этот список,
+ * и кнопка звала change_role_lists() у /list.
+ */
+/proc/get_ghost_role_eligibility_element(mob/target)
+	var/listeners = LAZYACCESS(target?.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	if(islist(listeners))
+		for(var/datum/element/ghost_role_eligibility/candidate in listeners)
+			return candidate
+		return null
+	return istype(listeners, /datum/element/ghost_role_eligibility) ? listeners : null
+
 // Кнопка по отключению от доступных к выбору мобов
 /datum/action/cooldown/ghost_role_eligible
 	name = "Участие в распределении гост ролей"
@@ -74,7 +96,7 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 
 /datum/action/cooldown/ghost_role_eligible/UpdateButton(atom/movable/screen/movable/action_button/button, status_only, force)
 	var/mob/action_owner = owner
-	var/datum/element/ghost_role_eligibility/elem = LAZYACCESS(action_owner.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	var/datum/element/ghost_role_eligibility/elem = get_ghost_role_eligibility_element(action_owner)
 	if(elem)
 		button_icon_state = (action_owner in GLOB.ghost_eligible_mobs) ? "ghost" : "ghost_red"
 	else
@@ -85,7 +107,7 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 
 /datum/action/cooldown/ghost_role_eligible/Activate(atom/target)
 	var/mob/action_owner = owner
-	var/datum/element/ghost_role_eligibility/elem = LAZYACCESS(action_owner.comp_lookup, COMSIG_MOB_GHOSTIZE)
+	var/datum/element/ghost_role_eligibility/elem = get_ghost_role_eligibility_element(action_owner)
 	if(elem)
 		var/remove = (action_owner in GLOB.ghost_eligible_mobs)
 		elem.change_role_lists(action_owner, remove = remove)

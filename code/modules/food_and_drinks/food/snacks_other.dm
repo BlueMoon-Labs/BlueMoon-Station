@@ -246,6 +246,25 @@
 	tastes = list("beans" = 1)
 	foodtype = VEGETABLES
 
+/obj/item/reagent_containers/food/snacks/swirl_lollipop
+	name = "Swirl Lollipop"
+	desc = "A massive rainbow swirlled lollipop. Said to contain extra sugar."
+	icon_state = "swirl_lollipop"
+	item_state = "swirl_lollipop"
+	list_reagents = list(
+		/datum/reagent/consumable/sugar = 30,
+		/datum/reagent/drug/happiness = 5, //swirl lollipops make everyone happy!
+		/datum/reagent/medicine/omnizine = 2,
+	)
+	bonus_reagents = list(/datum/reagent/medicine/omnizine = 3)
+	tastes = list("whimsical joy" = 1, "sugar" = 2)
+	foodtype = JUNKFOOD | SUGAR
+	slot_flags = ITEM_SLOT_MASK
+
+/obj/item/reagent_containers/food/snacks/swirl_lollipop/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/chewable)
+
 /obj/item/reagent_containers/food/snacks/spidereggs
 	name = "spider eggs"
 	desc = "A cluster of juicy spider eggs. A great side dish for when you care not for your health."

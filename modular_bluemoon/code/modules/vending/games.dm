@@ -75,6 +75,7 @@
 				/obj/item/lipstick/navy = 5,
 				/obj/item/lipstick/aqua = 5,
 				/obj/item/lipstick/white = 5,
+				/obj/item/lipstick/crocin = 3,
 				/obj/item/nailpolish/red = 5,
 				/obj/item/nailpolish/blue = 5,
 				/obj/item/nailpolish/aqua = 5,
@@ -97,6 +98,7 @@
 		/obj/item/melee/skateboard/pro = 3,
 		/obj/item/melee/skateboard/hoverboard = 1,
 		/obj/item/choice_beacon/box/plushie = 5,
+		/obj/item/tattoo_gun = 2,
 	)
 	refill_canister = /obj/item/vending_refill/games
 	default_price = PRICE_CHEAP

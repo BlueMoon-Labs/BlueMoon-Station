@@ -51,7 +51,10 @@
 
 		overlays_standing[LEGCUFF_LAYER] = legcuffs
 		apply_overlay(LEGCUFF_LAYER)
-		throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
+		if(istype(legcuffed, /obj/item/restraints/legcuffs/beartrap))
+			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed/beartrap)
+		else
+			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
 
 //monkey HUD updates for items in our inventory
 

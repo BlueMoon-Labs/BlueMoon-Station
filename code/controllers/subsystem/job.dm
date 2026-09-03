@@ -109,6 +109,8 @@ SUBSYSTEM_DEF(job)
 			return FALSE
 		if(job.is_species_blacklisted(player.client)) //BLUEMOON ADDITION - XENO SUPREMACY
 			return FALSE //BLUEMOON ADDITION - XENO SUPREMACY
+		if(!player.client.prefs.pref_species.qualifies_for_rank(rank, player.client.prefs.features))
+			return FALSE
 		var/position_limit = job.total_positions
 		if(!latejoin)
 			position_limit = job.spawn_positions
@@ -340,7 +342,11 @@ SUBSYSTEM_DEF(job)
 		CheckHeadPositions(level)
 
 		// Loop through all unassigned players
-		for(var/mob/dead/new_player/player in unassigned)
+		//обходим копию: AssignRole/RejectPlayer правят unassigned прямо в теле цикла,
+		//а на живом списке индекс сдвигался и каждый второй игрок пропускался
+		for(var/mob/dead/new_player/player in unassigned.Copy())
+			if(QDELETED(player) || !(player in unassigned))
+				continue
 			if(PopcapReached())
 				RejectPlayer(player)
 
@@ -390,12 +396,16 @@ SUBSYSTEM_DEF(job)
 	JobDebug("DO, Handling unassigned.")
 	// Hand out random jobs to the people who didn't get any in the last check
 	// Also makes sure that they got their preference correct
-	for(var/mob/dead/new_player/player in unassigned)
+	for(var/mob/dead/new_player/player in unassigned.Copy())
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 		HandleUnassigned(player)
 
 	JobDebug("DO, Handling unrejectable unassigned")
 	//Mop up people who can't leave.
-	for(var/mob/dead/new_player/player in unassigned) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+	for(var/mob/dead/new_player/player in unassigned.Copy()) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 /* BLUEMOON REMOVAL START - убираем вариант получения рандомной роли при получении антажки, оставляя только ассистента
 		if(player.client.prefs.joblessrole == BERANDOMJOB) //Gives the player a random role if their preferences are set to it
 			if(!GiveRandomJob(player))
@@ -516,26 +526,31 @@ SUBSYSTEM_DEF(job)
 			flavor_display_text += "\n<li>Ввиду критической нехватки персонала, ваша ID-карта имеет дополнительный доступ.</li>"
 		if(job.custom_spawn_text)
 			flavor_display_text += "\n<li>[capitalize(job.custom_spawn_text)]</li>"
-	if(H.mind.assigned_role == "Head of Security") // Секция добавления штук для ГСБ
-		for(var/obj/structure/safe/floor/syndi/armory/brigsafe in world)
-			var/code_text = "[brigsafe.tumblers.Join("-")]"
-			flavor_display_text += "\n<li><span class='red'>Вам известен код сейфа оружейной:<br><B>[code_text].</B></span>\n</li>"
-			H.mind.memory += ("Код сейфа оружейной: [code_text].\n") // Нет, add_memory не работает, этот брутфорс был нужен.
 	if(ishuman(H))
 		var/mob/living/carbon/human/wageslave = H
 		flavor_display_text += "\n<li>Номер вашего банковского аккаунта - [wageslave.account_id].</li>"
 		H.add_memory("Номер вашего банковского аккаунта - [wageslave.account_id].")
-	to_chat(M, examine_block(flavor_display_text))
 	// BLUEMOON EDIT END
 	if(job && H)
 		if(job.dresscodecompliant)// CIT CHANGE - dress code compliance
 			equip_loadout(N, H) // CIT CHANGE - allows players to spawn with loadout items
 		job.after_spawn(H, M.client, joined_late) // note: this happens before the mob has a key! M will always have a client, H might not.
 		post_equip_loadout(N, H)//CIT CHANGE - makes players spawn with in-backpack loadout items properly. A little hacky but it works
-		if(joined_late && ishuman(H)) // BLUEMOON ADD
-			give_spare_id_safe_paper(H)
-
+		// BLUEMOON ADDITION
+		switch(rank)
+			if("Head of Security") // Секция добавления штук для ГСБ
+				var/station_armory = GLOB.areas_by_type[/area/ai_monitored/security/armory]
+				if(station_armory)
+					var/obj/structure/safe/floor/syndi/armory/armory_safe
+					for(armory_safe in station_armory)
+						var/code_text = "[armory_safe.tumblers.Join("-")]"
+						flavor_display_text += "\n<li><span class='red'>Вам известен код сейфа оружейной:<br><B>[code_text].</B></span>\n</li>"
+						H.mind.memory += ("Код сейфа оружейной: [code_text].\n") // Нет, add_memory не работает, этот брутфорс был нужен.
+		// BLUEMOON EDIT END
 		handle_roundstart_items(H, M.ckey, H.mind.assigned_role, H.mind.special_role)
+		if(ishuman(H))
+			bm_deliver_metadollar_purchases(H, M.client)
+	to_chat(M, examine_block(flavor_display_text))
 
 	var/list/tcg_cards
 	if(ishuman(H))
@@ -823,6 +838,7 @@ SUBSYSTEM_DEF(job)
 				collar.name = "[initial(collar.name)] - [collar.tagname]"
 
 		var/already_equiped = FALSE
+		var/list/bag_contents = null
 		if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
 			var/obj/item/clothing/accessory/A = I
 			var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)
@@ -832,14 +848,37 @@ SUBSYSTEM_DEF(job)
 		if(!already_equiped && replace_clothing && G.slot)
 			var/obj/item/existing = M.get_item_by_slot(G.slot)
 			if(existing)
+				if(G.slot == ITEM_SLOT_BACK)
+					bag_contents = list()
+					SEND_SIGNAL(existing, COMSIG_TRY_STORAGE_RETURN_INVENTORY, bag_contents, FALSE)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								LAZYADD(bag_contents, AC)
+
 				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
 				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
-				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
 					if(RB)
-						SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								for(var/obj/item/item_in_hand in M.held_items)
+									LAZYADD(bag_contents, item_in_hand)
+								M.drop_all_held_items()
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
 					else if(!can_drop)
 						qdel(existing)
 				else if(!can_drop)
@@ -849,7 +888,7 @@ SUBSYSTEM_DEF(job)
 			if(iscarbon(M))
 				var/mob/living/carbon/C = M
 				var/obj/item/storage/backpack/B = C.back
-				if(!B || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
+				if(!B || istype(I, /obj/item/storage/backpack) || !SEND_SIGNAL(B, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)) // Otherwise, try to put it in the backpack, for carbons.
 					if(can_drop)
 						I.forceMove(get_turf(C))
 					else
@@ -859,11 +898,17 @@ SUBSYSTEM_DEF(job)
 					I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
 				else
 					qdel(I)
+		if(LAZYLEN(bag_contents) && !QDELETED(I) && iscarbon(M))
+			var/mob/living/carbon/CB = M
+			if(CB.back == I)
+				for(var/obj/item/stored_item in bag_contents)
+					if(!QDELETED(stored_item))
+						SEND_SIGNAL(I, COMSIG_TRY_STORAGE_INSERT, stored_item, null, TRUE, TRUE)
 		// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
 		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
 			I.item_flags |= FAMILY_HEIRLOOM
 			if(M.mind)
-				M.mind.assigned_heirloom = I
+				M.mind.set_assigned_heirloom(I)
 			if(!i[LOADOUT_CUSTOM_NAME])
 				var/list/family_name = splittext(M.real_name, " ")
 				if(length(family_name))
@@ -964,14 +1009,34 @@ SUBSYSTEM_DEF(job)
 		if(!already_equiped && replace_clothing && G.slot)
 			var/obj/item/existing = M.get_item_by_slot(G.slot)
 			if(existing)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								old_cloth.attach_accessory(AC, M, TRUE)
 				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
 				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
-				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
 					if(RB)
-						SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								var/list/temp_items = LAZYCOPY(M.held_items)
+								for(var/obj/item/item_in_hand in temp_items)
+									if(M.temporarilyRemoveItemFromInventory(item_in_hand))
+										SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
 					else if(!can_drop)
 						qdel(existing)
 				else if(!can_drop)
@@ -995,7 +1060,7 @@ SUBSYSTEM_DEF(job)
 		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
 			I.item_flags |= FAMILY_HEIRLOOM
 			if(M.mind)
-				M.mind.assigned_heirloom = I
+				M.mind.set_assigned_heirloom(I)
 			if(!i[LOADOUT_CUSTOM_NAME])
 				var/list/family_name = splittext(M.real_name, " ")
 				if(length(family_name))
@@ -1010,7 +1075,7 @@ SUBSYSTEM_DEF(job)
 	// Переоформление пермитов, если у нас была загрузка из префов
 	var/obj/item/clothing/under/U = M.get_item_by_slot(ITEM_SLOT_ICLOTHING)
 	if(istype(U))
-		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
 			if(permit.first_inited && permit.owner_name == M.real_name)
 				continue
 			permit.bind_to_user(M, TRUE)
@@ -1102,8 +1167,8 @@ SUBSYSTEM_DEF(job)
 	if(!tgt_job.department_head[1])
 		return
 	var/boss_title = tgt_job.department_head[1]
-	var/obj/item/pda/target_pda
-	for(var/obj/item/pda/check_pda in GLOB.PDAs)
+	var/obj/item/modular_computer/pda/target_pda
+	for(var/obj/item/modular_computer/pda/check_pda in GLOB.PDAs)
 		if(check_pda.ownjob == boss_title)
 			target_pda = check_pda
 			break

@@ -27,7 +27,9 @@ GLOBAL_LIST_EMPTY(escape_menus)
 
 		datum/screen_object_holder/base_holder
 		datum/screen_object_holder/page_holder
-		list/plane_master_controller
+		/// Слабая ссылка на худ, чьим плейн-мастерам выдан блюр. Прямые ссылки
+		/// на плейн-мастеры пережимали GC худа старого тела при смене моба.
+		datum/weakref/blurred_hud_ref
 
 		menu_page = PAGE_HOME
 
@@ -59,6 +61,7 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	GLOB.escape_menus -= ckey
 
 	remove_blur()
+	client = null
 
 	return ..()
 
@@ -72,8 +75,14 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	SIGNAL_HANDLER
 	PRIVATE_PROC(TRUE)
 
-	if (menu_page == PAGE_LEAVE_BODY)
+	// Страницы кроме домашней ссылаются на старое тело - закрываемся
+	if (menu_page != PAGE_HOME)
 		qdel(src)
+		return
+
+	// Клиент сменил тело: переносим блюр со старого худа на плейн-мастеры нового
+	remove_blur()
+	add_blur()
 
 /datum/escape_menu/proc/show_page()
 	PRIVATE_PROC(TRUE)
@@ -91,9 +100,14 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/populate_base_ui()
 	PRIVATE_PROC(TRUE)
 
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer)
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer/right)
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer/bottom)
+	for(var/dimmer_type in list(
+		/atom/movable/screen/fullscreen/dimmer,
+		/atom/movable/screen/fullscreen/dimmer/right,
+		/atom/movable/screen/fullscreen/dimmer/bottom,
+	))
+		var/atom/movable/screen/fullscreen/dimmer/dimmer = new dimmer_type
+		dimmer.owner_client = client
+		base_holder.give_screen_object(dimmer)
 	add_blur()
 
 	base_holder.give_protected_screen_object(give_escape_menu_title())
@@ -114,41 +128,54 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/add_blur()
 	PRIVATE_PROC(TRUE)
 
-	var/list/plane_master_controllers = client?.mob?.hud_used?.plane_masters
-	if (isnull(plane_master_controllers))
+	var/datum/hud/target_hud = client?.mob?.hud_used
+	if (isnull(target_hud))
 		return
 
-	plane_master_controller = list(
-		plane_master_controllers["[GAME_PLANE]"],
-		plane_master_controllers["[FLOOR_PLANE]"],
-		plane_master_controllers["[WALL_PLANE]"],
-		plane_master_controllers["[ABOVE_WALL_PLANE]"],
-	)
-	for(var/A in plane_master_controller)
-		var/atom/movable/screen/plane_master/P = A
-		if(isnull(P))
-			continue
-		P.add_filter("escape_menu_blur", 1, list("type" = "blur", "size" = 2))
+	blurred_hud_ref = WEAKREF(target_hud)
+	for(var/atom/movable/screen/plane_master/plane as anything in blur_plane_masters(target_hud))
+		plane.add_filter("escape_menu_blur", 1, list("type" = "blur", "size" = 2))
 
 /datum/escape_menu/proc/remove_blur()
 	PRIVATE_PROC(TRUE)
 
-	if(isnull(plane_master_controller))
+	var/datum/hud/target_hud = blurred_hud_ref?.resolve()
+	blurred_hud_ref = null
+	if (isnull(target_hud))
 		return
-	for(var/A in plane_master_controller)
-		var/atom/movable/screen/plane_master/P = A
-		if(isnull(P))
-			continue
-		P.remove_filter("escape_menu_blur")
-	plane_master_controller = null
+
+	for(var/atom/movable/screen/plane_master/plane as anything in blur_plane_masters(target_hud))
+		plane.remove_filter("escape_menu_blur")
+
+/datum/escape_menu/proc/blur_plane_masters(datum/hud/target_hud)
+	PRIVATE_PROC(TRUE)
+
+	var/list/planes = list()
+	for(var/plane_key in list("[GAME_PLANE]", "[FLOOR_PLANE]", "[WALL_PLANE]", "[ABOVE_WALL_PLANE]"))
+		var/atom/movable/screen/plane_master/plane = target_hud.plane_masters[plane_key]
+		if (!isnull(plane))
+			planes += plane
+	return planes
 
 /atom/movable/screen/escape_menu
 	plane = ESCAPE_MENU_PLANE
 	layer = ESCAPE_MENU_DEFAULT_LAYER
 	clear_with_screen = FALSE
+	/// Клиент, которому объект выдан. Штампуется в screen_object_holder при выдаче.
+	var/client/owner_client
 
 /atom/movable/screen/escape_menu/Initialize(mapload, ...)
 	. = ..(mapload)
+
+/// hud_owner здесь намеренно отброшен, поэтому hud и assigned_map всегда null - а значит
+/// обе ветки снятия с экрана в /atom/movable/screen/Destroy() мертвы, и clear_with_screen
+/// = FALSE исключает подметание через /client/clear_screen(). Снимаем себя сами, как это
+/// уже делают диммер того же модуля и /atom/movable/screen/splash: иначе запись в
+/// client.screen переживает qdel объекта и держит его до конца раунда.
+/atom/movable/screen/escape_menu/Destroy()
+	owner_client?.screen -= src
+	owner_client = null
+	return ..()
 
 // The escape menu can be opened before SSatoms
 INITIALIZE_IMMEDIATE(/atom/movable/screen/escape_menu)

@@ -3,7 +3,6 @@ What are the archived variables for?
 	Calculations are done using the archived variables with the results merged into the regular variables.
 	This prevents race conditions that arise based on the order of tile processing.
 */
-#define MINIMUM_HEAT_CAPACITY	0.0003
 #define MINIMUM_MOLE_COUNT		0.01
 
 /datum/gas_mixture
@@ -12,24 +11,88 @@ What are the archived variables for?
 	var/initial_volume = CELL_VOLUME //liters
 	var/list/reaction_results
 	var/list/analyzer_results //used for analyzer feedback - not initialized until its used
-	var/_extools_pointer_gasmixture // Contains the index in the gas vector for this gas mixture in rust land. Don't. Touch. This. Var.
-
-GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
+	var/_extools_pointer_gasmixture // legacy, не используется при нативной атмосфере
+	var/list/gases = list()
+	var/temperature = TCMB
+	var/tmp/temperature_archived = TCMB
+	var/volume = CELL_VOLUME
+	var/min_heat_capacity = 0
+	var/last_share = 0
+	var/gc_share = FALSE
+	/// Heat capacity frozen at mark_immutable() time; immutable mixtures cannot
+	/// change gases afterwards, so hot readers (share_with_template) use this
+	/// instead of re-walking the gas list every call.
+	var/tmp/immutable_heat_capacity = 0
+	var/list/gas_archive
+	/// Native DM atmos registration guard.
+	var/dm_registered_to_ssair = FALSE
+	/// Счётчик мутаций содержимого (газы или температура) для sleeping edges:
+	/// каждый мутатор обязан его бампнуть, чтение - LINDA_turf_tile.dm. Объём
+	/// не считается: compare() его не смотрит. Переполнение float (16.7M) на
+	/// турф-миксах недостижимо за раунд.
+	var/tmp/mutation_rev = 0
+	// Мемо обходов газ-листа. Ключ - mutation_rev: его бампает каждый мутатор
+	// смеси, поэтому обычный путь правки газов кэш инвалидирует.
+	//
+	// Но "невозможно по построению" это НЕ значит, и полагаться на такую формулу
+	// нельзя. Известные обходы API: VV пишет прямо в vars[] (закрыто оверрайдом
+	// vv_edit_var ниже) и share() снимает квантово-нулевые ключи после гейта
+	// бампа - последнее сегодня безобидно, потому что удаляется меньше
+	// MOLAR_ACCURACY моля, но это свойство порога, а не конструкции. Любой новый
+	// путь записи в gases обязан либо идти через мутатор, либо бампать ревизию сам.
+	//
+	// Чисто температурные бампы дают лишние пересчёты, но ни теплоёмкость, ни
+	// сумма молей от температуры не зависят - это потеря части выигрыша, а не
+	// корректности.
+	//
+	// Зачем: осевший турф за цикл обходит собственный газ-лист около десяти раз
+	// (архив, сумма молей на пороги, compare по каждой паре, реакции, визуал), и
+	// три из них - проки, всё тело которых и есть обход. Остальные инлайнят свой
+	// обход и мимо этого мемо проходят; их закрывают нативные редукции в
+	// native_atmos_bindings.dm.
+	var/tmp/total_moles_cache = 0
+	var/tmp/total_moles_rev = -1
+	var/tmp/heat_capacity_cache = 0
+	var/tmp/heat_capacity_rev = -1
+	/// Поколение архива: растёт только когда gas_archive реально переснят.
+	/// archived_heat_capacity() зависит от архива, а не от живой смеси, и
+	/// temperature_share() зовёт её по обоим концам на каждом шере.
+	var/tmp/archive_gen = 0
+	var/tmp/archived_heat_capacity_cache = 0
+	var/tmp/archived_heat_capacity_gen = -1
+	/// mutation_rev на момент последнего снимка архива: равенство означает, что
+	/// Copy() дал бы тот же список, и аллокацию можно не делать.
+	var/tmp/archive_mutation_rev = -1
 
 /datum/gas_mixture/New(volume)
 	if (!isnull(volume))
 		initial_volume = volume
-	if(!GLOB.auxtools_atmos_initialized && auxtools_atmos_init(GLOB.gas_data))
-		GLOB.auxtools_atmos_initialized = TRUE
-	__gasmixture_register()
+	src.volume = initial_volume
+	temperature = TCMB
+	temperature_archived = TCMB
 	reaction_results = new
+	__gasmixture_register()
 
 /datum/gas_mixture/vv_edit_var(var_name, var_value)
 	if(var_name == NAMEOF(src, _extools_pointer_gasmixture))
 		return FALSE // please no. segfaults bad.
 	if(var_name == NAMEOF(src, gas_list_view_only))
 		return FALSE
-	return ..()
+	. = ..()
+	// VV writes straight into vars[], so an admin editing gases (or the list
+	// object wholesale, which is how the list editor applies changes) bypasses
+	// every mutator and therefore every revision bump. The memo caches below key
+	// off mutation_rev, so without this the mixture keeps serving the sum, heat
+	// capacity and overlay it had BEFORE the edit - for the rest of the round,
+	// while the VV panel cheerfully displays the new list. Invalidate everything
+	// unconditionally: a VV edit happens once and is never hot, and enumerating
+	// which vars matter is exactly the kind of list that rots.
+	if(.)
+		mutation_rev++
+		total_moles_rev = -1
+		heat_capacity_rev = -1
+		archived_heat_capacity_gen = -1
+		archive_mutation_rev = -1
 
 /datum/gas_mixture/vv_get_var(var_name)
 	. = ..()
@@ -102,9 +165,21 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 		set_volume(volume)
 
 
+/// Destroy() only ever runs for a mixture somebody bothered to qdel, and most of
+/// them are never qdel-ed: remove(), copy(), the scratch mixture /turf/return_air
+/// builds for a closed tile - all of those just go out of scope and BYOND
+/// reclaims them by refcount, which runs Del() and not Destroy(). Without this
+/// hook the live count only ever went up: one round drifted from 307k to 389k
+/// registered mixtures with nothing actually leaking, so the SSair stat line and
+/// the headless benchmark were both reading a number that meant nothing.
+/// __gasmixture_unregister() is idempotent, so a qdel-ed mixture passing through
+/// Destroy() and then Del() is counted once.
+/datum/gas_mixture/Del()
+	__gasmixture_unregister()
+	return ..()
+
 /datum/gas_mixture/Destroy()
-	if(GLOB.auxtools_atmos_initialized)
-		__gasmixture_unregister()
+	__gasmixture_unregister()
 	reaction_results = null
 	analyzer_results = null
 	..()
@@ -131,11 +206,7 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 	return react(holder)
 
 /datum/gas_mixture/proc/get_last_share()
-
-/datum/gas_mixture/proc/archive()
-	//Update archived versions of variables
-	//Returns: 1 in all cases
-
+	return last_share
 
 /datum/gas_mixture/proc/remove(amount)
 	//Removes amount of gas from the gas_mixture
@@ -153,6 +224,124 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 	//Creates new, identical gas mixture
 	//Returns: duplicate gas mixture
 
+// ===== Exact pressure solver for pumps (tg port) =====
+//
+// The legacy pump formula (pressure_delta * V_out / (T_in * R)) ignores that
+// incoming gas changes the OUTPUT's temperature: with a hot input and a cold
+// output (or vice versa) it over/undershoots the target pressure and the pump
+// keeps rewaking itself and its pipenet for many extra cycles. The solver
+// treats both n and T of the merged output as unknowns, which folds into a
+// quadratic in transferred moles; a Newton-Raphson pass and finally the legacy
+// formula act as fallbacks.
+
+/// Smallest pressure the output would read after receiving MOLAR_ACCURACY moles
+/// from us; transfers below that are pointless churn.
+/datum/gas_mixture/proc/gas_pressure_minimum_transfer(datum/gas_mixture/output_air)
+	var/our_moles = total_moles()
+	if(our_moles <= 0)
+		return INFINITY
+	var/resulting_energy = output_air.thermal_energy() + (MOLAR_ACCURACY / our_moles * thermal_energy())
+	var/resulting_capacity = output_air.heat_capacity() + (MOLAR_ACCURACY / our_moles * heat_capacity())
+	if(resulting_capacity <= 0 || output_air.return_volume() <= 0)
+		return INFINITY
+	return (output_air.total_moles() + MOLAR_ACCURACY) * R_IDEAL_GAS_EQUATION * (resulting_energy / resulting_capacity) / output_air.return_volume()
+
+/// Actually tries to solve the quadratic equation. Mind BYOND's single
+/// precision floats: coefficients can overflow, hence the finite checks.
+/datum/gas_mixture/proc/gas_pressure_quadratic(a, b, c, lower_limit, upper_limit)
+	var/solution
+	if(IS_FINITE(a) && IS_FINITE(b) && IS_FINITE(c))
+		solution = max(SolveQuadratic(a, b, c))
+		if(solution > lower_limit && solution < upper_limit) //SolveQuadratic can return empty lists so be careful here
+			return solution
+	return FALSE
+
+/// Newton-Raphson approximation of the same quadratic, used when the analytic
+/// solve fails (usually float overflow in the discriminant).
+/datum/gas_mixture/proc/gas_pressure_approximate(a, b, c, lower_limit, upper_limit)
+	var/solution
+	if(IS_FINITE(a) && IS_FINITE(b) && IS_FINITE(c))
+		// Start at the extremum plus an offset: converges toward the positive root.
+		solution = (-b / (2 * a)) + 200
+		for(var/iteration in 1 to ATMOS_PRESSURE_APPROXIMATION_ITERATIONS)
+			var/denominator = 2 * a * solution + b
+			if(!denominator)
+				return FALSE
+			var/diff = (a * solution ** 2 + b * solution + c) / denominator // f(sol) / f'(sol)
+			solution -= diff // xn+1 = xn - f(sol) / f'(sol)
+			if(abs(diff) < MOLAR_ACCURACY && (solution > lower_limit) && (solution < upper_limit))
+				return solution
+	return FALSE
+
+/**
+ * Returns the amount of our moles to transfer into output_air to bring it to
+ * target_pressure IN ONE STEP, accounting for the temperature change the
+ * transferred gas causes. FALSE when no transfer is warranted.
+ * ignore_temperature uses the cheap legacy formula (valid when both mixes are
+ * within ~5K of each other, or the output is empty).
+ */
+/datum/gas_mixture/proc/gas_pressure_calculate(datum/gas_mixture/output_air, target_pressure, ignore_temperature = FALSE)
+	var/our_moles = total_moles()
+	var/our_temperature = return_temperature()
+	var/output_moles = output_air.total_moles()
+	var/output_pressure = output_air.return_pressure()
+	var/output_volume = output_air.return_volume()
+
+	if(our_moles <= 0 || our_temperature <= 0)
+		return FALSE
+
+	var/pressure_delta = 0
+	if(output_air.return_temperature() <= 0 || output_moles <= 0)
+		ignore_temperature = TRUE
+		pressure_delta = target_pressure
+	else
+		pressure_delta = target_pressure - output_pressure
+
+	if(pressure_delta < 0.01 || gas_pressure_minimum_transfer(output_air) > target_pressure)
+		return FALSE
+
+	if(ignore_temperature)
+		return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
+	// Analytic mole bounds, assuming the merged mix lands on either input
+	// temperature extreme. The real answer must lie between them.
+	var/pv = target_pressure * output_volume
+	var/pvr = pv / R_IDEAL_GAS_EQUATION
+
+	var/lower_limit = max((pvr / max(our_temperature, output_air.return_temperature())) - output_moles, 0)
+	var/upper_limit = (pvr / min(our_temperature, output_air.return_temperature())) - output_moles
+
+	lower_limit = max(lower_limit - ATMOS_PRESSURE_ERROR_TOLERANCE, 0)
+	upper_limit += ATMOS_PRESSURE_ERROR_TOLERANCE
+
+	// PV=nRT with both n and T of the merged output unknown:
+	// T = (W1 + n/N2 * W2) / (C1 + n/N2 * C2), W thermal energy, C heat
+	// capacity, N2/W2/C2 ours, N1/W1/C1 the output's. Substituting into
+	// (N1 + n) * T = PV/R yields a quadratic in n.
+	var/w2 = thermal_energy()
+	var/n2 = our_moles
+	var/c2 = heat_capacity()
+
+	var/w1 = output_air.thermal_energy()
+	var/n1 = output_moles
+	var/c1 = output_air.heat_capacity()
+
+	if(n2 <= 0 || c2 <= 0)
+		return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
+	var/a_value = w2 / n2
+	var/b_value = ((n1 * w2) / n2) + w1 - (pvr * c2 / n2)
+	var/c_value = (-1 * pvr * c1) + n1 * w1
+
+	. = gas_pressure_quadratic(a_value, b_value, c_value, lower_limit, upper_limit)
+	if(.)
+		return
+	. = gas_pressure_approximate(a_value, b_value, c_value, lower_limit, upper_limit)
+	if(.)
+		return
+	// Both solvers failed (degenerate inputs): legacy formula as the last resort.
+	return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
 /datum/gas_mixture/proc/copy_from_turf(turf/model)
 	//Copies all gas info from the turf into the gas list along with temperature
 	//Returns: 1 if we are mutable, 0 otherwise
@@ -161,9 +350,285 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 	//Copies variables from a particularly formatted string.
 	//Returns: 1 if we are mutable, 0 otherwise
 
-/datum/gas_mixture/proc/share(datum/gas_mixture/sharer)
+/datum/gas_mixture/proc/share(datum/gas_mixture/sharer, our_coeff = 0.25, sharer_coeff = 0.25)
 	//Performs air sharing calculations between two gas_mixtures assuming only 1 boundary length
 	//Returns: amount of gas exchanged (+ if sharer received)
+	if(!sharer || gc_share || sharer.gc_share)
+		return 0
+	our_coeff = clamp(our_coeff, 0, 1)
+	sharer_coeff = clamp(sharer_coeff, 0, 1)
+	if(!our_coeff && !sharer_coeff)
+		return 0
+
+	var/list/cached_gases = gases
+	var/list/sharer_gases = sharer.gases
+	var/list/self_archive = gas_archive || cached_gases
+	var/list/sharer_archive = sharer.gas_archive || sharer_gases
+
+	var/temperature_delta = temperature_archived - sharer.temperature_archived
+	var/abs_temperature_delta = abs(temperature_delta)
+	var/consider_heat = abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER
+
+	// Exact hot path for cool station air. Requiring both the live and archived
+	// lists to contain only O2/N2 preserves the generic path for trace gases that
+	// were consumed or introduced after the cycle archive.
+	if(!consider_heat && length(cached_gases) == 2 && length(sharer_gases) == 2 && length(self_archive) == 2 && length(sharer_archive) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && sharer_gases[GAS_O2] && sharer_gases[GAS_N2] && self_archive[GAS_O2] && self_archive[GAS_N2] && sharer_archive[GAS_O2] && sharer_archive[GAS_N2])
+		var/our_o2 = cached_gases[GAS_O2]
+		var/their_o2 = sharer_gases[GAS_O2]
+		var/o2_delta = QUANTIZE(self_archive[GAS_O2] - sharer_archive[GAS_O2])
+		if(o2_delta > 0)
+			o2_delta *= our_coeff
+		else
+			o2_delta *= sharer_coeff
+		our_o2 -= o2_delta
+		their_o2 += o2_delta
+		cached_gases[GAS_O2] = our_o2
+		sharer_gases[GAS_O2] = their_o2
+
+		var/our_n2 = cached_gases[GAS_N2]
+		var/their_n2 = sharer_gases[GAS_N2]
+		var/n2_delta = QUANTIZE(self_archive[GAS_N2] - sharer_archive[GAS_N2])
+		if(n2_delta > 0)
+			n2_delta *= our_coeff
+		else
+			n2_delta *= sharer_coeff
+		our_n2 -= n2_delta
+		their_n2 += n2_delta
+		cached_gases[GAS_N2] = our_n2
+		sharer_gases[GAS_N2] = their_n2
+
+		var/moved_moles = o2_delta + n2_delta
+		last_share = abs(o2_delta) + abs(n2_delta)
+		if(o2_delta || n2_delta)
+			mutation_rev++
+			sharer.mutation_rev++
+		// A later neighbor in the same cycle still shares from the cycle archive,
+		// so its delta can exhaust a live component already reduced by an earlier
+		// neighbor. Match the generic path's zero/negative key cleanup exactly.
+		if(QUANTIZE(our_o2) <= 0)
+			cached_gases.Remove(GAS_O2)
+		if(QUANTIZE(our_n2) <= 0)
+			cached_gases.Remove(GAS_N2)
+		if(QUANTIZE(their_o2) <= 0)
+			sharer_gases.Remove(GAS_O2)
+		if(QUANTIZE(their_n2) <= 0)
+			sharer_gases.Remove(GAS_N2)
+		if(abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
+			var/our_moles = our_o2 + our_n2
+			var/their_moles = their_o2 + their_n2
+			return (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
+		return 0
+
+	var/old_self_heat_capacity = 0
+	var/old_sharer_heat_capacity = 0
+	if(consider_heat)
+		old_self_heat_capacity = heat_capacity()
+		old_sharer_heat_capacity = sharer.heat_capacity()
+
+	var/heat_capacity_self_to_sharer = 0
+	var/heat_capacity_sharer_to_self = 0
+
+	var/moved_moles = 0
+	var/abs_moved_moles = 0
+	var/list/zero_ours
+	var/list/zero_theirs
+
+	var/list/cached_gasheats = GLOB.gas_data.specific_heats
+	// This runs for every sharing turf pair every cycle: iterate the two key sets
+	// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
+	// final mole recount into the same pass, and collect emptied ids instead of
+	// sweeping full .Copy() snapshots afterwards.
+	for(var/id, ours in cached_gases)
+		var/theirs = sharer_gases[id]
+		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
+		if(delta)
+			if(delta > 0)
+				delta *= our_coeff
+			else
+				delta *= sharer_coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			ours -= delta
+			theirs = (theirs || 0) + delta
+			cached_gases[id] = ours
+			sharer_gases[id] = theirs
+			moved_moles += delta
+			abs_moved_moles += abs(delta)
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+		if(!isnull(theirs) && QUANTIZE(theirs) <= 0)
+			LAZYADD(zero_theirs, id)
+
+	for(var/id, theirs in sharer_gases)
+		// Key-presence test, not a value test: a gas present at exactly zero must
+		// still count as already handled by the loop above. isnull() distinguishes
+		// "missing key" from "key holding 0", which `in` also does - but as an
+		// O(1) lookup instead of a linear scan per sharer gas, in the hottest
+		// loop of the most expensive SSair phase.
+		if(!isnull(cached_gases[id]))
+			continue
+		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
+		if(delta)
+			if(delta > 0)
+				delta *= our_coeff
+			else
+				delta *= sharer_coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			var/ours = -delta
+			theirs += delta
+			cached_gases[id] = ours
+			sharer_gases[id] = theirs
+			moved_moles += delta
+			abs_moved_moles += abs(delta)
+			if(QUANTIZE(ours) <= 0)
+				LAZYADD(zero_ours, id)
+		if(QUANTIZE(theirs) <= 0)
+			LAZYADD(zero_theirs, id)
+
+	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
+		sharer.mutation_rev++
+
+	if(consider_heat)
+		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
+		var/new_sharer_heat_capacity = old_sharer_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
+
+		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
+			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
+
+		if(new_sharer_heat_capacity > MINIMUM_HEAT_CAPACITY)
+			sharer.temperature = (old_sharer_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / new_sharer_heat_capacity
+			sharer.mutation_rev++
+			if(abs(old_sharer_heat_capacity) > MINIMUM_HEAT_CAPACITY)
+				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
+					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
+
+	// Суммы молей обеих сторон нужны ровно для возвращаемого перепада давления, и
+	// только когда он кому-то нужен. Раньше они копились прямо в цикле по газам -
+	// два сложения и лишняя ветка на КАЖДЫЙ ключ, включая те, по которым ничего не
+	// двигалось, - хотя чаще всего результат тут же выбрасывался. Нативная свёртка
+	// снимает ту же сумму за 0.09 us против 0.64 у DM-цикла, поэтому дешевле
+	// спросить её один раз в конце, чем накапливать по дороге.
+	//
+	// Считается ДО чистки нулевых ключей: удаляются значения с QUANTIZE(x) <= 0,
+	// и снять сумму после Remove значило бы вернуть чуть другое число.
+	. = 0
+	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
+		var/our_moles = values_sum(cached_gases)
+		var/their_moles = values_sum(sharer_gases)
+		. = (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
+
+	// Ревизию бампает сама чистка, а не гейт по abs_moved_moles выше: проход, на
+	// котором ни одного моля не сдвинулось, всё равно может выкинуть ключ, и тогда
+	// мемо total_moles/heat_capacity/archive продолжало бы отдавать сумму с уже
+	// удалённым газом до следующей настоящей мутации. Инвариант простой: список
+	// изменился - ревизия изменилась.
+	if(zero_ours)
+		cached_gases.Remove(zero_ours)
+		mutation_rev++
+	if(zero_theirs)
+		sharer_gases.Remove(zero_theirs)
+		sharer.mutation_rev++
+	return .
+
+/// One-sided share() against an immutable template mixture (planetary atmosphere):
+/// src moves toward the template exactly as share(fresh_template_copy, coeff, coeff)
+/// would move it, but nothing is written to the template and no copy is allocated.
+/// The template must be archived with gases matching its archive (parse_gas_string does this).
+/datum/gas_mixture/proc/share_with_template(datum/gas_mixture/template, coeff)
+	if(!template || gc_share)
+		return
+	coeff = clamp(coeff, 0, 1)
+	if(!coeff)
+		return
+
+	var/list/cached_gases = gases
+	var/list/template_gases = template.gases
+	var/list/self_archive = gas_archive || cached_gases
+
+	var/temperature_delta = temperature_archived - template.temperature_archived
+	var/consider_heat = abs(temperature_delta) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER
+
+	var/old_self_heat_capacity = 0
+	var/old_template_heat_capacity = 0
+	if(consider_heat)
+		old_self_heat_capacity = heat_capacity()
+		// The template never changes after mark_immutable(); the fallback only
+		// covers a mutable mixture passed in by mistake.
+		old_template_heat_capacity = template.immutable_heat_capacity || template.heat_capacity()
+
+	var/heat_capacity_self_to_sharer = 0
+	var/heat_capacity_sharer_to_self = 0
+	var/abs_moved_moles = 0
+	var/list/zero_ours
+
+	var/list/cached_gasheats = GLOB.gas_data.specific_heats
+	for(var/id, ours in cached_gases)
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
+		if(delta)
+			delta *= coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			ours -= delta
+			cached_gases[id] = ours
+			abs_moved_moles += abs(delta)
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+
+	for(var/id, template_moles in template_gases)
+		// Key presence, O(1): see the isnull() note in share() above.
+		if(!isnull(cached_gases[id]))
+			continue
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_moles || 0))
+		if(!delta)
+			continue
+		delta *= coeff
+		if(consider_heat)
+			var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+			if(delta > 0)
+				heat_capacity_self_to_sharer += gas_heat_capacity
+			else
+				heat_capacity_sharer_to_self -= gas_heat_capacity
+		var/ours = -delta
+		cached_gases[id] = ours
+		abs_moved_moles += abs(delta)
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+
+	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
+
+	if(consider_heat)
+		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
+		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
+			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * template.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
+		// share() follows up with conductive equalization when the sharer heat
+		// capacity barely changed; replicate that against the template values
+		// through the null-sharer temperature_share path (no writes to template).
+		var/new_template_heat_capacity = old_template_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
+		if(new_template_heat_capacity > MINIMUM_HEAT_CAPACITY && abs(old_template_heat_capacity) > MINIMUM_HEAT_CAPACITY)
+			if(abs(new_template_heat_capacity / old_template_heat_capacity - 1) < 0.1)
+				temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, template.temperature_archived, old_template_heat_capacity)
+
+	if(zero_ours)
+		cached_gases.Remove(zero_ours)
 
 /datum/gas_mixture/remove_by_flag(flag, amount)
 	var/datum/gas_mixture/removed = new type
@@ -183,6 +648,27 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 
 	return removed
 
+/// Removes a specific amount of one gas. Returns a gas_mixture with that gas, or null if amount <= 0.
+/// If into is supplied, that mixture is cleared and filled (no allocation); otherwise a new mixture is created.
+/datum/gas_mixture/proc/remove_specific(gas_id, amount, datum/gas_mixture/into)
+	if(gc_share)
+		return null
+	var/current = get_moles(gas_id)
+	amount = min(amount, current)
+	if(amount <= 0)
+		return null
+	if(into)
+		into.clear()
+		into.set_moles(gas_id, amount)
+		into.set_temperature(return_temperature())
+		adjust_moles(gas_id, -amount)
+		return into
+	var/datum/gas_mixture/removed = new type(return_volume())
+	removed.set_moles(gas_id, amount)
+	removed.set_temperature(return_temperature())
+	adjust_moles(gas_id, -amount)
+	return removed
+
 /datum/gas_mixture/copy()
 	var/datum/gas_mixture/copy = new type
 	copy.copy_from(src)
@@ -190,76 +676,27 @@ GLOBAL_LIST_INIT(auxtools_atmos_initialized,FALSE)
 	return copy
 
 /datum/gas_mixture/copy_from_turf(turf/model)
+	if(gc_share)
+		return FALSE
 	set_temperature(initial(model.initial_temperature))
 	parse_gas_string(model.initial_gas_mix)
 	return TRUE
 
 /datum/gas_mixture/parse_gas_string(gas_string)
-	gas_string = SSair.preprocess_gas_string(gas_string)
-	return __auxtools_parse_gas_string(gas_string)
-/*
-	var/list/gas = params2list(gas_string)
-	if(gas["TEMP"])
-		var/temp = text2num(gas["TEMP"])
-		gas -= "TEMP"
-		if(!isnum(temp) || temp < 2.7)
-			temp = 2.7
-		set_temperature(temp)
+	if(gc_share)
+		return FALSE
+	// Разбор строки кэшируется в SSair: строк на карте пара десятков, а вызовов
+	// сотни тысяч. Списки из кэша только читаем.
+	var/list/parsed = SSair.get_parsed_gas_string(gas_string)
+	var/temperature = parsed[GAS_STRING_TEMP]
+	if(!isnull(temperature))
+		set_temperature(temperature)
 	clear()
-	for(var/id in gas)
-		set_moles(id, text2num(gas[id]))
+	var/list/moles = parsed[GAS_STRING_MOLES]
+	for(var/id in moles)
+		set_moles(id, moles[id])
 	archive()
 	return TRUE
-	*/
-/*
-/datum/gas_mixture/react(datum/holder)
-	. = NO_REACTION
-	if(!total_moles())
-		return
-	var/list/reactions = list()
-	for(var/datum/gas_reaction/G in SSair.gas_reactions)
-		if(get_moles(G.major_gas))
-			reactions += G
-	if(!length(reactions))
-		return
-	reaction_results = new
-	var/temp = return_temperature()
-	var/ener = thermal_energy()
-
-	reaction_loop:
-		for(var/r in reactions)
-			var/datum/gas_reaction/reaction = r
-
-			var/list/min_reqs = reaction.min_requirements
-			if((min_reqs["TEMP"] && temp < min_reqs["TEMP"]) \
-			|| (min_reqs["ENER"] && ener < min_reqs["ENER"]))
-				continue
-
-			for(var/id in min_reqs)
-				if (id == "TEMP" || id == "ENER")
-					continue
-				if(get_moles(id) < min_reqs[id])
-					continue reaction_loop
-			//at this point, all minimum requirements for the reaction are satisfied.
-
-			/*	currently no reactions have maximum requirements, so we can leave the checks commented out for a slight performance boost
-				PLEASE DO NOT REMOVE THIS CODE. the commenting is here only for a performance increase.
-				enabling these checks should be as easy as possible and the fact that they are disabled should be as clear as possible
-			var/list/max_reqs = reaction.max_requirements
-			if((max_reqs["TEMP"] && temp > max_reqs["TEMP"]) \
-			|| (max_reqs["ENER"] && ener > max_reqs["ENER"]))
-				continue
-			for(var/id in max_reqs)
-				if(id == "TEMP" || id == "ENER")
-					continue
-				if(cached_gases[id] && cached_gases[id][MOLES] > max_reqs[id])
-					continue reaction_loop
-			//at this point, all requirements for the reaction are satisfied. we can now react()
-			*/
-			. |= reaction.react(src, holder)
-			if (. & STOP_REACTIONS)
-				break
-*/
 
 /datum/gas_mixture/proc/set_analyzer_results(instability)
 	if(!analyzer_results)
@@ -328,7 +765,41 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 		var/transfer_moles = pressure_delta*output_air.return_volume()/(input_air.return_temperature() * R_IDEAL_GAS_EQUATION)
 
 		//Actually transfer the gas
-		input_air.transfer_to(output_air, transfer_moles)
+		if(output_air.gc_share)
+			if(!input_air.vent_moles(transfer_moles))
+				return FALSE
+		else if(!input_air.transfer_to(output_air, transfer_moles))
+			return FALSE
 
 		return TRUE
 	return FALSE
+
+/// Converts gases when exposed to radiation (pluoxium from CO2+O2, tritium from hydrogen).
+/// Returns TRUE if any conversion occurred.
+/datum/gas_mixture/proc/react_to_radiation(pulse_strength)
+	if(!pulse_strength || pulse_strength <= RAD_BACKGROUND_RADIATION)
+		return FALSE
+	var/remaining = pulse_strength
+	if(get_moles(GAS_CO2) && get_moles(GAS_O2))
+		var/pluox_strength = min(remaining, get_moles(GAS_CO2) * PLUOXIUM_RADIATION_CO2_DIVISOR, get_moles(GAS_O2) * PLUOXIUM_RADIATION_O2_DIVISOR)
+		set_moles(GAS_CO2, max(get_moles(GAS_CO2) - (pluox_strength / PLUOXIUM_RADIATION_CO2_DIVISOR), 0))
+		set_moles(GAS_O2, max(get_moles(GAS_O2) - (pluox_strength / PLUOXIUM_RADIATION_O2_DIVISOR), 0))
+		adjust_moles(GAS_PLUOXIUM, pluox_strength / PLUOXIUM_RADIATION_OUTPUT_DIVISOR)
+		remaining -= pluox_strength
+		. = TRUE
+	var/h2_moles = get_moles(GAS_HYDROGEN)
+	if(remaining && h2_moles)
+		var/trit_strength = min(remaining, h2_moles * HYDROGEN_IRRADIATION_DIVISOR)
+		var/converted = trit_strength / HYDROGEN_IRRADIATION_DIVISOR
+		adjust_moles(GAS_HYDROGEN, -converted)
+		adjust_moles(GAS_TRITIUM, converted)
+		. = TRUE
+
+/// Runs electrolyzer reactions on this gas mixture (see /datum/electrolyzer_reaction).
+/datum/gas_mixture/proc/electrolyze(working_power = 0, list/electrolyzer_args = list())
+	for(var/reaction_id in GLOB.electrolyzer_reactions)
+		var/datum/electrolyzer_reaction/reaction = GLOB.electrolyzer_reactions[reaction_id]
+		if(!reaction.reaction_check(src, electrolyzer_args))
+			continue
+		reaction.react(src, working_power, electrolyzer_args)
+		. = TRUE

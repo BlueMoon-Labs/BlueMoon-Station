@@ -48,6 +48,7 @@
 	caliber = "4.6x30mm"
 	projectile_type = /obj/item/projectile/bullet/c46x30mm/rubber
 	harmful = FALSE
+	custom_materials = list(/datum/material/glass = 400)
 
 /obj/item/ammo_box/magazine/wt550m9/wtrubber
 	name = "wt550 magazine (Rubber bullets 4.6x30mm)"
@@ -91,7 +92,7 @@
 /obj/item/projectile/bullet/cflechetteap	//shreds armor but no wounds
 	name = "flechette (armor piercing)"
 	damage = 15
-	armour_penetration = 100
+	armour_penetration = BULLET_BR5
 	wound_bonus = 10
 
 /obj/item/projectile/bullet/cflechettes		//causes wounds fast but is heavily countered by armor
@@ -99,6 +100,7 @@
 	damage = 15
 	dismemberment = 10
 	wound_bonus = 15
+	armour_penetration = BULLET_BR0
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 
@@ -173,7 +175,7 @@
 	damage = 10
 	dismemberment = 15
 	wound_bonus = 20
-	armour_penetration = 100
+	armour_penetration = BULLET_BR6
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 
@@ -220,8 +222,9 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	burst_size = 1	//Shh.
 	fire_delay = 15
-	var/body_color = "#3333aa"
 	automatic_burst_overlay = FALSE
+	var/body_state = "AM4-Body"
+	var/body_color = "#3333aa"
 
 /obj/item/gun/ballistic/automatic/AM4B/ComponentInitialize()
 	. = ..()
@@ -229,7 +232,9 @@
 
 /obj/item/gun/ballistic/automatic/AM4B/update_overlays()
 	. = ..()
-	var/mutable_appearance/body_overlay = mutable_appearance('modular_citadel/icons/obj/guns/cit_guns.dmi', "AM4-Body")
+	if(!body_state)
+		return
+	var/mutable_appearance/body_overlay = mutable_appearance('modular_citadel/icons/obj/guns/cit_guns.dmi', body_state)
 	if(body_color)
 		body_overlay.color = body_color
 	. += body_overlay

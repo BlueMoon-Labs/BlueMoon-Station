@@ -1,7 +1,7 @@
 #ifdef AI_VOX
 /mob/living/silicon/ai/verb/ai_announcement()
 	set name = "Vox Announcement"
-	set desc = "Make an audible announcement!"
+	set desc = "Сделать аудиальное объявление!"
 	set category = "AI Commands"
 
 	if(incapacitated())

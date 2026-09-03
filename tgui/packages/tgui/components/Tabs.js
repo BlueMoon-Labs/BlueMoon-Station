@@ -55,7 +55,7 @@ const Tab = props => {
         'Tab--color--' + color,
         selected && 'Tab--selected',
         className,
-        ...computeBoxClassName(rest),
+        computeBoxClassName(rest),
       ])}
       {...computeBoxProps(rest)}>
       {canRender(leftSlot) && (

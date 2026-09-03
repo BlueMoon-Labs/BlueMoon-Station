@@ -27,8 +27,10 @@ GLOBAL_LIST_INIT(character_offers, list())
 	LAZYSET(GLOB.character_offers, redemption_code, src)
 
 /datum/character_offer_instance/Destroy(force, ...)
+	// Префы могут быть не из GLOB.preferences_datums (снос датума префов зовёт нас сам).
 	var/datum/preferences/to_remove = LAZYACCESS(GLOB.preferences_datums, owner_ckey)
-	to_remove.offer = null
+	if(to_remove)
+		to_remove.offer = null
 	LAZYREMOVE(GLOB.character_offers, redemption_code)
 	owner_ckey = null
 	character_savefile = null

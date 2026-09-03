@@ -173,7 +173,7 @@
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	l_hand = /obj/item/storage/secure/briefcase
 	id = /obj/item/card/id/syndicate
-	belt = /obj/item/pda/heads
+	belt = /obj/item/modular_computer/pda/heads
 	accessory = list(/obj/item/clothing/accessory/waistcoat)
 
 /datum/outfit/assassin/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
@@ -191,7 +191,7 @@
 	SEND_SIGNAL(sec_briefcase, COMSIG_TRY_STORAGE_INSERT, new /obj/item/ammo_box/a357, null, TRUE, TRUE)
 	SEND_SIGNAL(sec_briefcase, COMSIG_TRY_STORAGE_INSERT, new /obj/item/grenade/plastic/x4, null, TRUE, TRUE)
 
-	var/obj/item/pda/heads/pda = H.belt
+	var/obj/item/modular_computer/pda/heads/pda = H.belt
 	pda.owner = H.real_name
 	pda.ownjob = "Reaper"
 	pda.update_label()
@@ -238,7 +238,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -278,6 +278,8 @@
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
 		/obj/item/storage/box/ert_commander=1,
 		/obj/item/melee/classic_baton/telescopic/centcom/plus = 1,
+		/obj/item/gun/ballistic/revolver/requiem=1,
+		/obj/item/ammo_box/a357/requiem=2,
 		)
 
 	implants = list(
@@ -293,7 +295,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -431,28 +433,38 @@
 	back = /obj/item/storage/backpack/ert_commander/ert_security
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/shield/energy
-	suit_store = /obj/item/tank/internals/emergency_oxygen/double
+	suit_store = /obj/item/tank/internals/doubleoxygen
 	belt = /obj/item/storage/belt/grenade/full
 	r_hand = /obj/item/gun/energy/pulse/destroyer
 	id = /obj/item/card/id/death
 	ears = /obj/item/radio/headset/headset_cent/alt
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
-		/obj/item/storage/box/syndie_kit/revolver=1,\
+		/obj/item/storage/box/syndie_kit/revolver/requiem=1,\
 		/obj/item/storage/firstaid/tactical/slaver=1,\
 		/obj/item/storage/box/flashbangs/super=1,\
 		/obj/item/pinpointer/nuke=1,\
 		/obj/item/grenade/plastic/x4=1)
 
-	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
+	implants = list(/obj/item/implant/mindshield,
+			/obj/item/implant/deathrattle/centcom,
+			/obj/item/implant/weapons_auth,
+			/obj/item/implant/radio/centcom,
+			/obj/item/implant/explosive/macro,
+		)
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
+		/obj/item/organ/cyberimp/arm/shield,
+		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
+		/obj/item/organ/heart/bioaegis/t3/antag,
+		/obj/item/organ/liver/bioaegis/t3/antag,
+		/obj/item/organ/lungs/bioaegis/t3/antag,
 	)
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
@@ -474,14 +486,15 @@
 /datum/outfit/death_commando/officer
 	name = "Death Commando Officer"
 	head = /obj/item/clothing/head/helmet/space/beret
-
+	r_hand = /obj/item/gun/energy/pulse/destroyer/annihilator
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/box/ert_commander=1,
-		/obj/item/storage/box/syndie_kit/revolver=1,\
+		/obj/item/storage/box/syndie_kit/revolver/requiem=1,\
 		/obj/item/storage/firstaid/tactical/slaver=1,\
 		/obj/item/storage/box/flashbangs/super=1,\
 		/obj/item/pinpointer/nuke=1,\
 		/obj/item/grenade/plastic/x4=1)
+
 // BLUEMOON ADD START - командная коробочка для командира
 /datum/outfit/death_commando/officer/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	. = ..()
@@ -504,7 +517,7 @@
 	r_pocket = /obj/item/gun/magic/wand/death/debug
 	shoes = /obj/item/clothing/shoes/magboots/advance/debug
 	id = /obj/item/card/id/debug
-	suit_store = /obj/item/tank/internals/oxygen
+	suit_store = /obj/item/tank/internals/doubleoxygen
 	back = /obj/item/storage/backpack/holding
 	box = /obj/item/storage/box/debugtools
 	internals_slot = ITEM_SLOT_SUITSTORE

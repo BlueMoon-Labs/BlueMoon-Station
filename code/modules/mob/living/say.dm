@@ -177,6 +177,13 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	var/static/list/one_character_prefix = list(MODE_HEADSET = TRUE, MODE_ROBOT = TRUE, MODE_WHISPER = TRUE, MODE_SING = TRUE)
 
+	// Lag switch: per-client slowmode for IC chat (tg SLOWMODE_SAY)
+	if(client && SSlag_switch.measures[SLOWMODE_SAY] && !forced && src == usr && !HAS_TRAIT(src, TRAIT_BYPASS_MEASURES))
+		if(!COOLDOWN_FINISHED(client, say_slowmode))
+			to_chat(src, "<span class='warning'>Включён слоумод чата: подождите [COOLDOWN_TIMELEFT(client, say_slowmode) / 10] сек перед следующим сообщением.</span>")
+			return
+		COOLDOWN_START(client, say_slowmode, SSlag_switch.slowmode_cooldown)
+
 	var/ic_blocked = FALSE
 
 	if(!isclownjob(src))
@@ -255,7 +262,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(saymode && !saymode.handle_message(src, message, language))
 		return
 
-	if(!can_speak_vocal(message))
+	if(!can_speak_vocal(message, language)) //язык ИМЕННО этого сообщения, а не язык по умолчанию
 		to_chat(src, "<span class='warning'>Вы не можете говорить!</span>")
 		return
 
@@ -265,7 +272,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	// BLUEMOON EDIT START - правки last breath'а
 	if(in_critical && !special_crit_modes[message_mode])
-		message_range = 2
+		message_range = 1
 		message_mode = MODE_WHISPER
 		src.log_talk(message, LOG_WHISPER)
 		if(fullcrit)
@@ -287,8 +294,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	else
 		src.log_talk(message, LOG_SAY, forced_by=forced)
 
-	if(message[1] != "!")
-		message = treat_message(message) // unfortunately we still need this
+	if(length(message) && message[1] != "!")
+		message = treat_message(message, language) // unfortunately we still need this
 	var/sigreturn = SEND_SIGNAL(src, COMSIG_MOB_SAY, args)
 	if (sigreturn & COMPONENT_UPPERCASE_SPEECH)
 		message = uppertext(message)
@@ -303,6 +310,17 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		var/datum/language/L = GLOB.language_datum_instances[language]
 		spans |= L.spans
 
+	//BlueMoon add - стили шёпота, последнего вздоха, невнятной и глитч-речи
+	if(message_mode == MODE_WHISPER)
+		spans |= SPAN_WHISPER
+	else if(message_mode == MODE_WHISPER_CRIT)
+		spans |= SPAN_LAST_BREATH
+	if(isrobotic(src))
+		if(slurring || stuttering || derpspeech)
+			spans |= SPAN_GLITCH
+	else if(slurring)
+		spans |= SPAN_SLURRING
+
 // Skyrat edits
 	if(message_mode == MODE_SING)
 	#if DM_VERSION < 513
@@ -314,7 +332,11 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message = "[randomnote] [message] [randomnote]"
 // End of Skyrat edits
 
-	var/radio_return = radio(message, message_mode, spans, language)
+	// По рации жестами не поговорить, и передача всё равно отбивается ниже по цепочке. Но
+	// гарнитура при этом возвращала ITALICS | REDUCE_RANGE, и сообщение молча ужималось до
+	// одной клетки: игрок жал ";", жестикулировал в пустоту и не понимал, почему его не видят.
+	var/is_visual_language = language && initial(language.visual_language)
+	var/radio_return = is_visual_language ? NONE : radio(message, message_mode, spans, language)
 	if(radio_return & ITALICS)
 		spans |= SPAN_ITALICS
 	if(radio_return & REDUCE_RANGE)
@@ -326,7 +348,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/turf/T = get_turf(src)
 	var/datum/gas_mixture/environment = T.return_air()
 	var/pressure = (environment)? environment.return_pressure() : 0
-	if(pressure < SOUND_MINIMUM_PRESSURE)
+	if(pressure < SOUND_MINIMUM_PRESSURE && !is_visual_language) //жесты в вакууме видно как обычно
 		message_range = 1
 
 	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
@@ -346,7 +368,10 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(isliving(speaker))
 		var/turf/sourceturf = get_turf(source)
 		var/turf/T = get_turf(src)
-		if(sourceturf && T && !(sourceturf in get_hear(5, T)))
+		//дальше 5 тайлов view(5) невозможен - без этой отсечки и кэша каждый
+		//слушатель платил бы за собственный view() (см. get_speech_visible_turfs)
+		if(sourceturf && T && sourceturf != T && \
+			(get_dist(sourceturf, T) > 5 || !get_speech_visible_turfs(sourceturf)[T]))
 			. = "<span class='small'>[.]</span>"
 
 /mob/living/Hear(message, atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
@@ -354,7 +379,10 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(!client && !audiovisual_redirect)
 		return
 	// BLUEMOON EDIT - sign language is visual, deaf people should understand it
-	var/is_sign_language = initial(message_language.visual_language)
+	// message_language сюда приходит и пустым (телекомы шлют signal.language как есть), а
+	// initial() по null-переменной рантаймит и роняет Hear() целиком - слушатель молча
+	// теряет сообщение. Остальные шесть мест с visual_language проверку уже делают.
+	var/is_sign_language = message_language && initial(message_language.visual_language)
 	var/deaf_message
 	var/deaf_type
 	if(is_sign_language)
@@ -381,13 +409,19 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
 	var/static/list/eavesdropping_modes = list(MODE_WHISPER = TRUE, MODE_WHISPER_CRIT = TRUE)
+	// Визуальный язык не звучит: его не разносит крик сквозь стены, его не слышно лучше
+	// острым ухом и он не порождает барков. Слушателей набирает get_hearers_in_view,
+	// то есть прямая видимость - всё остальное ниже её обходит через слух.
+	var/is_visual = message_language && initial(message_language.visual_language)
 	var/eavesdrop_range = 0
-	if(eavesdropping_modes[message_mode])
+	// Подслушивание - тоже слуховое правило: оно расширяет набор слушателей и шлёт дальним
+	// звёздочную кашу "не расслышал". У жестов дальность одна, своя.
+	if(eavesdropping_modes[message_mode] && !is_visual)
 		eavesdrop_range = EAVESDROP_EXTRA_RANGE
 	var/list/listening = get_hearers_in_view(message_range+eavesdrop_range, source)
 
 	// ТЕШАРИ - улучшенный слух (слышат шёпот на +2 клетки дальше)
-	if(eavesdropping_modes[message_mode])
+	if(eavesdropping_modes[message_mode] && !is_visual)
 		for(var/mob/living/carbon/human/H in range(message_range + eavesdrop_range + 2, source))
 			if(H in listening)
 				continue
@@ -414,7 +448,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/eavesdropping
 	var/eavesrendered
 	if(eavesdrop_range)
-		eavesdropping = stars(message)
+		eavesdropping = stars(message, 50)
 		eavesrendered = compose_message(src, message_language, eavesdropping, null, spans, message_mode, FALSE, source)
 
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
@@ -453,18 +487,26 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			AM.Hear(rendered, src, message_language, message, null, spans, message_mode, source)
 */
 
-	var/is_yell = (say_test(message) == "2")
+	// say_test даёт "2" любому сообщению с "!" на конце, а process_yelling - это звуковой
+	// флудфилл из кода взрывов: он огибает углы и проходит СКВОЗЬ стены. Жестовое "Привет!"
+	// пробивало стену и ещё десяток тайлов коридора - отсюда "сквозь стены видно, что говорят".
+	var/is_yell = !is_visual && (say_test(message) == "2")
 	if(client && !eavesdrop_range && is_yell)	// Yell hook
 		listening |= process_yelling(listening, rendered, src, message_language, message, spans, message_mode, source)
 
 	//speech bubble
 	var/list/speech_bubble_recipients = list()
 	for(var/mob/M in listening)
-		if(M.client && !M.client.prefs.chat_on_map)
+		if(M.client?.prefs && !M.client.prefs.chat_on_map)
 			speech_bubble_recipients.Add(M.client)
 	var/image/I = image('icons/mob/talk.dmi', src, "[bubble_type][say_test(message)]", FLY_LAYER)
 	I.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), I, speech_bubble_recipients, 30)
+
+	// Барк у всех есть по умолчанию (prefs.bark_id = "mutedc3"), поэтому без этой проверки
+	// каждое жестовое сообщение звучало вслух.
+	if(is_visual)
+		return
 
 	//Listening gets trimmed here if a vocal bark's present. If anyone ever makes this proc return listening, make sure to instead initialize a copy of listening in here to avoid wonkiness
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_QUEUE_BARK, listening, args) || vocal_bark || vocal_bark_id)
@@ -526,10 +568,21 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	return TRUE
 
-/mob/living/proc/can_speak_vocal(message) //Check AFTER handling of xeno and ling channels
+/**
+ * Проверка голосовых возможностей, вызывается ПОСЛЕ разбора ксено- и лингоканалов.
+ *
+ * `speaking` - язык именно ЭТОГО сообщения. Без него проверка смотрела на язык по
+ * умолчанию, и немой, который пишет с префиксом (",9 привет"), получал "Вы не можете
+ * говорить!": язык сообщения жестовый, а язык по умолчанию - нет. Единственным
+ * способом жестикулировать было переключить язык по умолчанию через меню.
+ * Вызовы без языка (заклинания, руны, обелиски) ведут себя как раньше.
+ */
+/mob/living/proc/can_speak_vocal(message, datum/language/speaking = null) //Check AFTER handling of xeno and ling channels
+	if(QDELETED(src))
+		return FALSE
 	var/obj/item/bodypart/leftarm = get_bodypart(BODY_ZONE_L_ARM)
 	var/obj/item/bodypart/rightarm = get_bodypart(BODY_ZONE_R_ARM)
-	var/datum/language/selected_lang = get_selected_language()
+	var/datum/language/selected_lang = speaking || get_selected_language()
 	var/is_visual = selected_lang && initial(selected_lang.visual_language)
 	if(HAS_TRAIT(src, TRAIT_MUTE) && !is_visual)
 		return FALSE
@@ -550,6 +603,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		if (left_disabled && right_disabled) // We want this to only return false if both arms are either missing or disabled since you could technically sign one-handed.
 			return FALSE
 
+	// Дальше идут чисто голосовые препятствия, к жестам они отношения не имеют: намордник
+	// не связывает руки, а IsVocal() у человека - это наличие ЛЁГКИХ. Из-за них жестовый язык
+	// отбивался у людей без лёгких, в наморднике и под мутагенным токсином.
+	if(is_visual)
+		return !mind?.miming //мим - единственная часть IsVocal(), которая должна работать и здесь
+
 	if(is_muzzled())
 		return FALSE
 
@@ -559,11 +618,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	return TRUE
 
 /mob/living/proc/get_key(message)
+	if(!length(message))
+		return
 	var/key = message[1]
 	if((key in GLOB.department_radio_prefixes) && length(message) > length(key))
 		return lowertext(message[1 + length(key)])
 
 /mob/living/proc/get_message_language(message)
+	if(!length(message))
+		return null
 	if(message[1] == ",")
 		var/comma_len = length(message[1])
 		if(length(message) <= comma_len)
@@ -575,7 +638,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 				return LD
 	return null
 
-/mob/living/proc/treat_message(message)
+/mob/living/proc/treat_message(message, datum/language/speaking = null)
 
 	if(HAS_TRAIT(src, TRAIT_UNINTELLIGIBLE_SPEECH))
 		message = unintelligize(message)
@@ -589,6 +652,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(HAS_TRAIT(src, TRAIT_KARTAVII))
 		message = kartavo(message)
 
+	var/skip_vocal_stutter = speaking && initial(speaking.visual_language)
+
 	// BLUEMOON EDIT START - теперь синтетики заикаются более с%инт$тич!ески
 	if(derpspeech)
 		if (isrobotic(src))
@@ -596,7 +661,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		else
 			message = derpspeech(message, stuttering)
 
-	if(stuttering)
+	if(!skip_vocal_stutter && stuttering)
 		if (isrobotic(src))
 			message = machine_slur(message, FALSE, 30)
 		else

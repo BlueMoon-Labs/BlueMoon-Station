@@ -42,6 +42,14 @@
 								/datum/action/innate/elite_attack/bloody_trap,
 								/datum/action/innate/elite_attack/meat_shield,
 								/datum/action/innate/elite_attack/knockdown)
+	/// Current recursive charge step. Stoppable so deleting Candy cannot leave a
+	/// callback retaining and invoking a nullspaced mob.
+	var/blood_charge_timer_id
+
+/mob/living/simple_animal/hostile/asteroid/elite/candy/Destroy()
+	deltimer(blood_charge_timer_id)
+	blood_charge_timer_id = null
+	return ..()
 
 /mob/living/simple_animal/hostile/asteroid/elite/candy/ComponentInitialize()
 	. = ..()
@@ -106,19 +114,29 @@
 			knockdown()
 
 // Candy actions
-/mob/living/simple_animal/hostile/asteroid/elite/candy/proc/bloodcharge(target)
+/mob/living/simple_animal/hostile/asteroid/elite/candy/proc/bloodcharge(atom/target)
+	if(QDELETED(src) || QDELETED(target))
+		return
 	ranged_cooldown = world.time + 50
 	var/dir_to_target = get_dir(get_turf(src), get_turf(target))
 	var/turf/T = get_turf(src)
+	if(!T)
+		return
 	playsound(src,'sound/magic/demon_attack1.ogg', 200, 1)
 	visible_message("<span class='boldwarning'>[src] prepares to charge!</span>")
 	for(var/i in 1 to 6)
+		if(QDELETED(src) || QDELETED(target) || !T)
+			return
 		new /obj/effect/temp_visual/dir_setting/bloodsplatter/candy(T, get_dir(T, target))
 		T = get_step(T, dir_to_target)
 		sleep(1)
-	addtimer(CALLBACK(src, PROC_REF(blood_charge_2), dir_to_target, 0), 5, TIMER_DELETE_ME)
+	if(QDELETED(src) || !loc)
+		return
+	blood_charge_timer_id = addtimer(CALLBACK(src, PROC_REF(blood_charge_2), dir_to_target, 0), 5, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /mob/living/simple_animal/hostile/asteroid/elite/candy/proc/bloodytrap(mob/target)
+	if(QDELETED(src) || !loc || QDELETED(target) || !get_turf(target))
+		return FALSE
 	playsound(src,'sound/magic/Blind.ogg', 200, 1)
 	var/dir_to_target = get_dir(src, target)
 	var/turf/T = get_step(src, dir_to_target)
@@ -130,15 +148,23 @@
 	for(var/turf/J in view(1, target) - get_turf(target))
 		new /obj/effect/temp_visual/bloodwall(J, src)
 	sleep(5)
-	src.bloodcharge(target)
+	if(QDELETED(src) || QDELETED(target))
+		return
+	bloodcharge(target)
+	var/turf/target_turf = get_turf(target)
+	if(QDELETED(src) || !loc || QDELETED(target) || !target_turf)
+		return
 	var/list/bloodwalls = list()
 	for(var/d in GLOB.cardinals)
-		var/turf/N = get_step(target, d)
+		var/turf/N = get_step(target_turf, d)
+		if(!N)
+			continue
 		if(N == get_step(src, src.dir) || N == get_turf(src))
 			continue
-		else
-			for(var/obj/effect/temp_visual/bloodwall/B in N.contents)
-				bloodwalls += B
+		for(var/obj/effect/temp_visual/bloodwall/B in N.contents)
+			bloodwalls += B
+	if(!length(bloodwalls))
+		return
 	var/obj/effect/temp_visual/bloodwall/chosen = pick(bloodwalls)
 	visible_message("<span class='boldwarning'>One of the blood walls disappear!</span>")
 	qdel(chosen)
@@ -181,6 +207,8 @@
 	visible_message("<span class='boldwarning'>[src] clenches his fists and smashes the ground!</span>")
 	var/list/hit_things = list()
 	sleep(10)
+	if(QDELETED(src) || !loc)
+		return
 	for(var/turf/T in view(1, src))
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		for(var/mob/living/L in T.contents)
@@ -191,6 +219,8 @@
 				L.adjustBruteLoss(50)
 	var/source_turf = src.loc
 	sleep(5)
+	if(QDELETED(src) || !source_turf)
+		return
 	for(var/turf/T in view(2, source_turf) - view(1, source_turf))
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		for(var/mob/living/L in T.contents)
@@ -203,9 +233,12 @@
 // Candy helpers
 
 /mob/living/simple_animal/hostile/asteroid/elite/candy/proc/blood_charge_2(var/move_dir, var/times_ran)
-	if(times_ran >= 6)
+	blood_charge_timer_id = null
+	if(QDELETED(src) || !loc || times_ran >= 6)
 		return
 	var/turf/T = get_step(get_turf(src), move_dir)
+	if(!T)
+		return
 	if(ismineralturf(T))
 		var/turf/closed/mineral/M = T
 		M.gets_drilled()
@@ -229,7 +262,9 @@
 		//L.Paralyze(20)
 		L.Stun(20) //substituting this for the Paralyze from the line above, because we don't have tg paralysis stuff
 		L.adjustBruteLoss(50)
-	addtimer(CALLBACK(src, PROC_REF(blood_charge_2), move_dir, (times_ran + 1)), 2, TIMER_DELETE_ME)
+	if(QDELETED(src) || !loc)
+		return
+	blood_charge_timer_id = addtimer(CALLBACK(src, PROC_REF(blood_charge_2), move_dir, (times_ran + 1)), 2, TIMER_STOPPABLE | TIMER_DELETE_ME)
 
 /obj/effect/temp_visual/dir_setting/bloodsplatter/candy
 	duration = 10
@@ -251,6 +286,7 @@
 	queue_smooth(src)
 
 /obj/effect/temp_visual/bloodwall/Destroy()
+	caster = null
 	queue_smooth_neighbors(src)
 	return ..()
 

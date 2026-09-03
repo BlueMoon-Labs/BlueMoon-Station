@@ -67,10 +67,12 @@
 	allowed_typecache = null
 	// if(insertion_check)
 	// 	QDEL_NULL(insertion_check)
-	if(precondition)
-		QDEL_NULL(precondition)
-	if(after_insert)
-		QDEL_NULL(after_insert)
+	//коллбэки нам не принадлежат: remote_materials передаёт контейнеру СВОЙ
+	//after_insert (см. _MakeLocal), и qdel отсюда оставлял в remote_materials
+	//мёртвую ссылку при пересоздании контейнера (подключение к силосу).
+	//Достаточно отпустить ссылки - без держателей датум соберётся сам
+	precondition = null
+	after_insert = null
 	return ..()
 
 /datum/component/material_container/proc/on_examine(datum/source, mob/user, list/examine_list)
@@ -83,7 +85,7 @@
 			var/datum/material/M = I
 			var/amt = materials[I]
 			if(amt)
-				entries += "[amt] см³ [lowertext(material_to_ru_genitive(M.name))]"
+				entries += "[amt] см³ [lowertext(vocabulary_to_ru(GLOB.mat_ru_genitive, M.name))]"
 
 		if(length(entries))
 			examine_list += "<span class='notice'>Внутри хранится [english_list(entries)].</span>"

@@ -25,8 +25,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/dragon/glaurung
 	name = "Glaurung"
 	desc = "An ancient Ash Drake untouched except for age. It's eyes glow a soft blue color as opposed to a regular yellow. It carries itself with more strength than the standard drake, eyeing those who come near with caution. Perhaps it is smarter and capable of speech?"
-	health = 2000
-	maxHealth = 2000
+	health = 2500
+	maxHealth = 2500
 	spacewalk = TRUE
 	initial_language_holder = /datum/language_holder/dragon
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
@@ -41,9 +41,9 @@ Difficulty: Medium
 	friendly_verb_continuous = "stares down"
 	friendly_verb_simple = "stare down"
 	speak_emote = list("roars")
-	armour_penetration = 45
-	melee_damage_lower = 20
-	melee_damage_upper = 40
+	armour_penetration = 50
+	melee_damage_lower = 25
+	melee_damage_upper = 50
 	speed = 1
 	move_to_delay = 4
 	ranged = 1

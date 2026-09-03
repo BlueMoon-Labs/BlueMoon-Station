@@ -10,12 +10,12 @@
 /obj/item/summon_chalk/afterattack(atom/target, mob/user as mob, proximity)
 	if(!proximity || !istype(target, /turf/open/floor))
 		return
-	if(GLOB.master_mode != "Extended")
+	if(!(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)))
 		to_chat(user, "<span class='warning'>Unfortunately, magic does not work.</span>") //*boowomp
 		return
 
 	visible_message("<span class='notice'>[user] starts scribe some kind of runes!</span>")
-	if(do_after(user, 5 SECONDS, target))
+	if(do_after(user, 1.5 SECONDS, target))
 		new /obj/effect/summon_rune(target)
 		qdel(src)
 
@@ -25,6 +25,7 @@
 	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "rune_pink"
 	light_color = LIGHT_COLOR_PINK
+	anchored = TRUE
 	var/cooldown = 0
 
 /obj/effect/summon_rune/Initialize(mapload)
@@ -50,6 +51,8 @@
 		if(!HAS_TRAIT(H, TRAIT_LEWD_SUMMON) || HAS_TRAIT(H, TRAIT_LEWD_SUMMONED))
 			continue
 		if(!H.client)
+			continue
+		if(iszombie_infectious(H))
 			continue
 		applicants += H
 		var/species = "[H.dna.species]"
@@ -78,10 +81,11 @@
 	var/massage_time = world.time + 1 SECONDS //Поглощаем энтропию и теорио вероятности тыкнуть энтер в момент появления
 	var/summoned_approve = TRUE
 	var/summoner_info = "[M.gender]"
-	if(M.dna)
-		var/summoner_species = "[M.dna.species]"
-		if(M.dna.custom_species)
-			summoner_species = "[M.dna.custom_species]"
+	var/mob/living/carbon/summoner = M
+	if(istype(summoner) && summoner.dna)
+		var/summoner_species = "[summoner.dna.species]"
+		if(summoner.dna.custom_species)
+			summoner_species = "[summoner.dna.custom_species]"
 		summoner_info += " [summoner_species]"
 	if(tgui_alert(target, "You have been summoned by [summoner_info]! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
 		summoned_approve = FALSE
@@ -129,15 +133,22 @@
 			if(target.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe))
 				target.ghost_cafe_traits(FALSE) // Выдаём и забираем трэйты в разных места для ситуаций ухода госта обратно домой
 
-	playsound(loc, 'modular_bluemoon/sound/effects/spook.ogg', 50, 1)
-	new /obj/effect/temp_visual/yellowsparkles(target.loc)
+	//руну может уже уносить Destroy, поэтому эффекты рождаем на drop_location():
+	//у выпотрошенного атома loc пуст, и spawn в null оставлял мусор в nullspace
+	var/atom/rune_location = drop_location()
+	playsound(rune_location, 'modular_bluemoon/sound/effects/spook.ogg', 50, 1)
+	//та же причина, что и у гарда на rune_location ниже: сюда приходят и из Destroy() руны,
+	//где цель может быть уже без loc - спавн в null оставлял эффект в нуль-спейсе
+	if(target.loc)
+		new /obj/effect/temp_visual/yellowsparkles(target.loc)
 	if(transfer_target_items)
 		transfer_items(target)
 	do_teleport(target, pos_to_teleport, channel = TELEPORT_CHANNEL_MAGIC, forced = TRUE)
 	if(!HAS_TRAIT(target, TRAIT_LEWD_SUMMONED) && switch_summoned && target.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe))
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = target.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		target.ghost_cafe_traits(TRUE, GC.adittonal_allowed_area)
-	new /obj/effect/temp_visual/yellowsparkles(src.loc)
+	if(rune_location)
+		new /obj/effect/temp_visual/yellowsparkles(rune_location)
 	return TRUE
 
 /obj/effect/summon_rune/return_rune
@@ -161,6 +172,12 @@
 		STOP_PROCESSING(SSobj, src)
 		new /obj/effect/temp_visual/yellowsparkles(src)
 		qdel(src)
+		return
+
+	if(QDELETED(returner) || !returner.loc)
+		STOP_PROCESSING(SSobj, src)
+		qdel(src)
+		return
 
 	var/xdiff=abs(returner.x-src.x)
 	var/ydiff=abs(returner.y-src.y)
@@ -180,24 +197,28 @@
 		qdel(src)
 
 /obj/effect/summon_rune/return_rune/Destroy(force)
-	. = ..()
-	if(returner)
-		teleport_summoned(returner, return_pos, TRUE)
-		returner = null
+	//..() уносит руну в nullspace и уводит её содержимое в qdel, поэтому возврат
+	//обязан отработать ДО родителя: раньше эффекты рождались в уже пустом src.loc,
+	//а вещи из руны уезжали в qdel вместе с ней
+	var/mob/living/carbon/returning = returner
+	returner = null
+	if(returning)
+		teleport_summoned(returning, return_pos, TRUE)
 	return_pos = null
 	listed_items = null
+	return ..()
 
 //Проклятые техники телепортации
 //При телепортации мы помещаем всё "нежелательное" (контейнеры) в руну призыва, а после, когда появляется руна возврата - всё перенесётся в неё (в процессе return_rune/Initialize)
 /obj/effect/summon_rune/proc/transfer_items(mob/living/carbon/human/target)
 	// Деактивируем модсьют во избежание багов
 	var/obj/item/mod/control/modsuit = target.get_item_by_slot(ITEM_SLOT_BACK)
-	if(modsuit && istype(modsuit) && modsuit.active)
+	if(modsuit && istype(modsuit) && modsuit.is_active())
 		modsuit.toggle_activate(target, TRUE)
 		modsuit.conceal(target, target.shoes)
 		modsuit.conceal(target, target.wear_suit)
 		modsuit.conceal(target, target.gloves)
-		if(istype(target.head, /obj/item/clothing/head/mod))
+		if(istype(target.head, /obj/item/clothing/mod_part/head))
 			modsuit.conceal(target, target.head)
 		target.transferItemToLoc(modsuit, src, TRUE)
 
@@ -209,12 +230,12 @@
 /obj/effect/summon_rune/return_rune/transfer_items(mob/living/carbon/human/target)
 	// Деактивируем модсьют во избежание багов
 	var/obj/item/mod/control/modsuit = target.get_item_by_slot(ITEM_SLOT_BACK)
-	if(modsuit && istype(modsuit) && modsuit.active)
+	if(modsuit && istype(modsuit) && modsuit.is_active())
 		modsuit.toggle_activate(target, TRUE)
 		modsuit.conceal(target, target.shoes)
 		modsuit.conceal(target, target.wear_suit)
 		modsuit.conceal(target, target.gloves)
-		if(istype(target.head, /obj/item/clothing/head/mod))
+		if(istype(target.head, /obj/item/clothing/mod_part/head))
 			modsuit.conceal(target, target.head)
 
 	for(var/obj/item/I in target.contents)

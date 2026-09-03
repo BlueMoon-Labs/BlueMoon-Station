@@ -34,9 +34,19 @@
 		var/ahelp_ref = href_list["ahelp"]
 		var/datum/admin_help/AH = locate(ahelp_ref)
 		if(AH)
-			AH.Action(href_list["ahelp_action"])
+			// ahelp_silent=1 means "this came from a quick action button (statbrowser ticket card),
+			// don't pop the full ticket window over it" — see /datum/admin_help/proc/Action.
+			AH.Action(href_list["ahelp_action"], silent_panel = !!href_list["ahelp_silent"])
 		else
 			to_chat(usr, "Ticket [ahelp_ref] has been deleted!")
+
+	else if(href_list["mentorticket"])
+		var/mentorticket_ref = href_list["mentorticket"]
+		var/datum/mentor_ticket/MT = locate(mentorticket_ref)
+		if(MT)
+			MT.Action(href_list["mentorticket_action"])
+		else
+			to_chat(usr, "Mentor ticket [mentorticket_ref] has been deleted!")
 
 	else if(href_list["ahelp_tickets"])
 		GLOB.ahelp_tickets.BrowseTickets(text2num(href_list["ahelp_tickets"]))
@@ -189,6 +199,22 @@
 				else
 					message_admins("[key_name_admin(usr)] tried to create a revenant. Unfortunately, there were no candidates available.")
 					log_admin("[key_name(usr)] failed to create a revenant.")
+			if("massshooter")
+				var/mob/mob_for_role
+				if(alert(usr, "Вы уверены, что собираетесь создать мажорного антагониста \"Массшутер\"?", , "Да.", "Ой, я случайно...") != "Да.")
+					return
+				if(alert(usr, "Запустить голосование среди призраков или выбрать конкретного?", , "Голосование", "Конкретный") == "Конкретный")
+					var/list/cand = get_all_ghost_role_eligible(TRUE, TRUE)
+					mob_for_role = tgui_input_list(usr, "Кто?", , cand, null)
+					if(QDELETED(mob_for_role) || !isobserver(mob_for_role) || !mob_for_role.client || jobban_isbanned(mob_for_role, "pacifist"))
+						to_chat(usr, span_warning("Этот кандидат недоступен для данной роли."))
+						return
+				if(src.makeMassShooter(mob_for_role))
+					message_admins("[key_name(usr)] created a Mass Shooter.[mob_for_role ? " Admin granted role to player <b>[mob_for_role.ckey]</b>" : ""]")
+					log_admin("[key_name(usr)] created a Mass Shooter.[mob_for_role ? " Admin granted role to player <b>[mob_for_role.ckey]</b>" : ""]")
+				else
+					message_admins("[key_name_admin(usr)] tried to create a Mass Shooter. Unfortunately, there were no candidates available.")
+					log_admin("[key_name(usr)] failed to create a Mass Shooter.")
 
 //			if("qareen")	Temporary removed. - Gardelin0
 //				if(src.makeQareen())
@@ -217,7 +243,41 @@
 		DB_ban_edit(banid, banedit)
 		return
 
-	else if(href_list["dbbanaddtype"])
+	else if(href_list["submit_job_unban_sync"])
+		if(!check_rights(R_BAN))
+			return
+		if(!SSdbcore.Connect())
+			to_chat(usr, "<span class='danger'>Failed to establish database connection.</span>")
+			return
+		var/bankey = href_list["dbbanaddkey"]
+		if(!bankey)
+			to_chat(usr, "<span class='warning'>Укажите Key (игрока).</span>")
+			return
+		var/banckey = ckey(bankey)
+		var/list/flat_roles = get_jobban_flat_roles()
+		var/jr_max = text2num(href_list["jr_max"]) || length(flat_roles)
+		var/any_unban = FALSE
+		for(var/i = 1; i <= jr_max; i++)
+			var/was = href_list["was_jr_[i]"]
+			var/now_checked = (href_list["jr_[i]"] == "[i]")
+			if(was && !now_checked)
+				if(i <= length(flat_roles))
+					var/role = flat_roles[i]
+					DB_ban_unban(banckey, BANTYPE_ANY_JOB, role)
+					any_unban = TRUE
+		var/client/C = GLOB.directory[banckey]
+		if(C)
+			jobban_buildcache(C)
+		if(any_unban)
+			message_admins("[key_name_admin(usr)] removed one or more job bans via SQL panel for [bankey].")
+			to_chat(usr, "<span class='adminnotice'>Снятие джоббанов отправлено в БД (см. сообщения об ошибках, если дубликаты записей).</span>")
+		else
+			to_chat(usr, "<span class='notice'>Нет снятых джоббанов: галочки должны быть сняты с ролей, по которым есть активный джоббан (они подгружаются по Key).</span>")
+		var/panel_ckey = href_list["dbsearchckey"] || href_list["dbbanaddkey"]
+		DB_ban_panel(panel_ckey, href_list["dbsearchadmin"], href_list["dbsearchip"], href_list["dbsearchcid"], href_list["dbsearchpage"])
+		return
+
+	else if(href_list["dbbanaddtype"] && !href_list["submit_job_unban_sync"])
 		if(!check_rights(R_BAN))
 			return
 		var/bantype = text2num(href_list["dbbanaddtype"])
@@ -229,6 +289,14 @@
 		var/banjob = href_list["dbbanaddjob"]
 		var/banreason = href_list["dbbanreason"]
 		var/banseverity = href_list["dbbanaddseverity"]
+
+		var/list/jobban_picks = list()
+		var/list/flat_roles = get_jobban_flat_roles()
+		var/jr_max = text2num(href_list["jr_max"]) || length(flat_roles)
+		for(var/i = 1; i <= jr_max; i++)
+			if(href_list["jr_[i]"] == "[i]")
+				if(i <= length(flat_roles))
+					jobban_picks += flat_roles[i]
 
 		var/bantitle = " "
 		switch(bantype)
@@ -247,14 +315,20 @@
 				banjob = null
 			if(BANTYPE_JOB_PERMA)
 				bantitle = "Пермаментная Блокировка Роли"
-				if(!banckey || !banreason || !banjob || !banseverity)
-					to_chat(usr, "Not enough parameters (Requires ckey, severity, reason and job).")
+				if(!banckey || !banreason || !banseverity)
+					to_chat(usr, "Not enough parameters (Requires ckey, severity, and reason).")
+					return
+				if(!length(jobban_picks) && !banjob)
+					to_chat(usr, "Not enough parameters (Requires job from the list or at least one role checkbox).")
 					return
 				banduration = null
 			if(BANTYPE_JOB_TEMP)
 				bantitle = "Блокировка Роли"
-				if(!banckey || !banreason || !banjob || !banduration || !banseverity)
-					to_chat(usr, "Not enough parameters (Requires ckey, severity, reason and job).")
+				if(!banckey || !banreason || !banduration || !banseverity)
+					to_chat(usr, "Not enough parameters (Requires ckey, reason, severity and duration).")
+					return
+				if(!length(jobban_picks) && !banjob)
+					to_chat(usr, "Not enough parameters (Requires job from the list or at least one role checkbox).")
 					return
 			if(BANTYPE_ADMIN_PERMA)
 				bantitle = "Пермаментная Блокировка"
@@ -292,6 +366,32 @@
 				banreason = "[banreason] (CUSTOM CID)"
 		else
 			message_admins("Ban process: A mob matching [playermob.key] was found at location [playermob.x], [playermob.y], [playermob.z]. Custom ip and computer id fields replaced with the ip and computer id from the located mob.")
+
+		if(length(jobban_picks) && (bantype == BANTYPE_JOB_PERMA || bantype == BANTYPE_JOB_TEMP))
+			var/failed = FALSE
+			for(var/job in jobban_picks)
+				if(DB_ban_record(bantype, playermob, banduration, banreason, job, bankey, banip, bancid, suppress_feedback = TRUE) != TRUE)
+					failed = TRUE
+			if(failed)
+				to_chat(usr, "<span class='danger'>[length(jobban_picks) > 1 ? "One or more job bans failed to apply." : "Failed to apply ban."]</span>")
+				return
+			var/jobs_joined = jointext(jobban_picks, ", ")
+			to_chat(usr, "<span class='adminnotice'>Ban saved to database.</span>")
+			message_admins("[key_name_admin(usr)] has added job ban(s) for [bankey] ([jobs_joined]) with the reason: \"[banreason]\" to the ban database.", 1)
+			admin_ticket_log(banckey, "[key_name_admin(usr)] has added job ban(s) for [bankey] ([jobs_joined]) with the reason: \"[banreason]\" to the ban database.")
+			create_message("note", bankey, null, "[banreason] (Jobs: [jobs_joined])", null, null, 0, 0, null, 0, banseverity, dont_announce_to_events = TRUE)
+			GLOB.bot_event_sending_que += list(list(
+				"type" = "ban_a",
+				"title" = bantitle,
+				"player" = bankey,
+				"admin" = usr.key,
+				"reason" = banreason,
+				"banduration" = banduration,
+				"bantimestamp" = SQLtime(),
+				"round" = GLOB.round_id,
+				"additional_info" = list("ban_type" = bantype, "ban_job" = jobs_joined)
+			))
+			return
 
 		if(DB_ban_record(bantype, playermob, banduration, banreason, banjob, bankey, banip, bancid) != TRUE)
 			to_chat(usr, "<span class='danger'>Failed to apply ban.</span>")
@@ -1482,6 +1582,13 @@
 			return tgui_alert(usr, "The game has already started.")
 
 		dynamic_mode_options(usr)
+
+	else if(href_list["director_panel"])
+		if(!check_rights(R_ADMIN))
+			return
+
+		var/datum/director_panel/panel = new
+		panel.ui_interact(usr)
 	/* BLUEMOON REMOVAL START - мы используем GLOB.round_type
 	else if(href_list["f_dynamic_force_extended"])
 		if(!check_rights(R_ADMIN))
@@ -2202,7 +2309,8 @@
 			to_chat(usr, "This can only be used on instances of type /mob.")
 			return
 
-		show_individual_logging_panel(M, href_list["log_src"], href_list["log_type"])
+		var/datum/log_viewer/LV = new(M)
+		LV.ui_interact(usr)
 	else if(href_list["languagemenu"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2251,161 +2359,18 @@
 			return
 		M.mind_initialize()
 
-	else if(href_list["create_object"])
+	else if(href_list["spawn_panel"])
 		if(!check_rights(R_SPAWN))
 			return
-		return create_object(usr)
-
-	else if(href_list["quick_create_object"])
-		if(!check_rights(R_SPAWN))
-			return
-		return quick_create_object(usr)
-
-	else if(href_list["create_turf"])
-		if(!check_rights(R_SPAWN))
-			return
-		return create_turf(usr)
-
-	else if(href_list["create_mob"])
-		if(!check_rights(R_SPAWN))
-			return
-		return create_mob(usr)
+		if(!spawn_panel_instance)
+			spawn_panel_instance = new /datum/spawnpanel(usr)
+		spawn_panel_instance.ui_interact(usr)
+		return
 
 	else if(href_list["dupe_marked_datum"])
 		if(!check_rights(R_SPAWN))
 			return
 		return DuplicateObject(marked_datum, perfectcopy=1, newloc=get_turf(usr))
-
-	else if(href_list["object_list"])			//this is the laggiest thing ever
-		if(!check_rights(R_SPAWN))
-			return
-
-		var/atom/loc = usr.loc
-
-		var/dirty_paths
-		if (istext(href_list["object_list"]))
-			dirty_paths = list(href_list["object_list"])
-		else if (istype(href_list["object_list"], /list))
-			dirty_paths = href_list["object_list"]
-
-		var/paths = list()
-
-		for(var/dirty_path in dirty_paths)
-			var/path = text2path(dirty_path)
-			if(!path)
-				continue
-			else if(!ispath(path, /obj) && !ispath(path, /turf) && !ispath(path, /mob))
-				continue
-			paths += path
-
-		if(!paths)
-			alert("The path list you sent is empty.")
-			return
-		if(length(paths) > 5)
-			alert("Select fewer object types, (max 5).")
-			return
-
-		var/list/offset = splittext(href_list["offset"],",")
-		var/number = clamp(text2num(href_list["object_count"]), 1, 100)
-		var/X = offset.len > 0 ? text2num(offset[1]) : 0
-		var/Y = offset.len > 1 ? text2num(offset[2]) : 0
-		var/Z = offset.len > 2 ? text2num(offset[3]) : 0
-		var/obj_dir = text2num(href_list["object_dir"])
-		if(obj_dir && !(obj_dir in list(1,2,4,8,5,6,9,10)))
-			obj_dir = null
-		var/obj_name = sanitize(href_list["object_name"])
-
-
-		var/atom/target //Where the object will be spawned
-		var/where = href_list["object_where"]
-		if (!( where in list("onfloor","frompod","fromquantumspread","inhand","inmarked") ))
-			where = "onfloor"
-
-
-		switch(where)
-			if("inhand")
-				if (!iscarbon(usr) && !iscyborg(usr))
-					to_chat(usr, "Can only spawn in hand when you're a carbon mob or cyborg.")
-					where = "onfloor"
-				target = usr
-
-			if("onfloor", "frompod", "fromquantumspread")
-				switch(href_list["offset_type"])
-					if ("absolute")
-						target = locate(0 + X,0 + Y,0 + Z)
-					if ("relative")
-						target = locate(loc.x + X,loc.y + Y,loc.z + Z)
-			if("inmarked")
-				if(!marked_datum)
-					to_chat(usr, "You don't have any object marked. Abandoning spawn.")
-					return
-				else if(!istype(marked_datum, /atom))
-					to_chat(usr, "The object you have marked cannot be used as a target. Target must be of type /atom. Abandoning spawn.")
-					return
-				else
-					target = marked_datum
-
-		var/obj/structure/closet/supplypod/centcompod/pod
-		var/datum/effect_system/spark_spread/quantum/sparks
-		if(target)
-			if(where == "frompod")
-				pod = new
-			if(where == "fromquantumspread")
-				sparks = new
-			for (var/path in paths)
-				for (var/i = 0; i < number; i++)
-					if(path in typesof(/turf))
-						var/turf/O = target
-						var/turf/N = O.ChangeTurf(path)
-						if(N && obj_name)
-							N.name = obj_name
-					else
-						var/atom/O
-						if(where == "frompod")
-							O = new path(pod)
-						else
-							O = new path(target)
-						if(!QDELETED(O))
-							O.flags_1 |= ADMIN_SPAWNED_1
-							if(obj_dir)
-								O.setDir(obj_dir)
-							if(obj_name)
-								O.name = obj_name
-								if(ismob(O))
-									var/mob/M = O
-									M.real_name = obj_name
-							if(where == "inhand" && isliving(usr) && isitem(O))
-								var/mob/living/L = usr
-								var/obj/item/I = O
-								L.put_in_hands(I)
-								if(iscyborg(L))
-									var/mob/living/silicon/robot/R = L
-									if(R.module)
-										R.module.add_module(I, TRUE, TRUE)
-										R.activate_module(I)
-
-		if(pod)
-			new /obj/effect/pod_landingzone(get_turf(target), pod)
-
-		if(sparks)
-			playsound(get_turf(target), 'sound/magic/Repulse.ogg', 100, 1)
-			sparks.set_up(10, 1, get_turf(target))
-			sparks.attach(get_turf(target))
-			sparks.start()
-
-		if (number == 1)
-			log_admin("[key_name(usr)] created a [english_list(paths)]")
-			for(var/path in paths)
-				if(ispath(path, /mob))
-					message_admins("[key_name_admin(usr)] created a [english_list(paths)]")
-					break
-		else
-			log_admin("[key_name(usr)] created [number]ea [english_list(paths)]")
-			for(var/path in paths)
-				if(ispath(path, /mob))
-					message_admins("[key_name_admin(usr)] created [number]ea [english_list(paths)]")
-					break
-		return
 
 	else if(href_list["ac_view_wanted"])            //Admin newscaster Topic() stuff be here
 		if(!check_rights(R_ADMIN))
@@ -2637,6 +2602,15 @@
 			return
 		usr.client?.cmd_gc_health_help()
 
+	else if(href_list["gc_reftrack_mode"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/new_reftrack_mode = clamp(text2num(href_list["gc_reftrack_mode"]), GC_REFTRACK_OFF, GC_REFTRACK_ALL)
+		SSgarbage.reftrack_mode = new_reftrack_mode
+		message_admins("[key_name_admin(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode] ([new_reftrack_mode == GC_REFTRACK_OFF ? "выкл" : new_reftrack_mode == GC_REFTRACK_FLAGGED ? "помеченные типы" : "все warnfail"]).")
+		log_admin("[key_name(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode]")
+		usr.client?.cmd_gc_health_panel()
+
 	else if(href_list["gc_toggle_notify"])
 		if(!check_rights(R_DEBUG))
 			return
@@ -2827,6 +2801,20 @@
 			return
 		INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), owner, null)
 
+	else if(href_list["viewgcfailure_refcount"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refcount"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		if(!entry.datum_ref)
+			to_chat(usr, span_warning("Нет ссылки на объект."))
+			return
+		var/datum/refcount_target = entry.resolve_target()
+		if(isnull(refcount_target))
+			to_chat(usr, span_notice("[entry.type_path]: объект уже собран или удалён."))
+			return
+		to_chat(usr, span_notice("[entry.type_path]: внешних ссылок сейчас: [EXTERNAL_REFCOUNT(refcount_target)]."))
+
 	else if(href_list["viewgcfailure_refscan"])
 		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refscan"])
 		if(!istype(entry))
@@ -2838,8 +2826,8 @@
 		var/response = tgui_alert(usr, "Сканирование ссылок пройдёт по всем GLOB-переменным, подсистемам и соседним объектам. Это может вызвать лаг на несколько секунд. Продолжить?", "Сканирование ссылок", list("Да", "Нет"))
 		if(response != "Да")
 			return
-		var/datum/D = locate(entry.datum_ref)
-		if(!D || D.type != text2path(entry.type_path))
+		var/datum/D = entry.resolve_target()
+		if(!D)
 			to_chat(usr, span_warning("Объект больше не существует, сканирование невозможно."))
 			return
 		entry.build_reference_info(D)
@@ -3109,7 +3097,7 @@
 		var/datum/db_query/query_remove_mentor = SSdbcore.NewQuery("DELETE FROM [format_table_name("mentor")] WHERE ckey = '[ckey]'")
 		if(!query_remove_mentor.warn_execute())
 			return
-		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO `[format_table_name("admin_log")]` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
+		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO [format_table_name("admin_log")] (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
 		if(!query_add_admin_log.warn_execute())
 			return
 	else

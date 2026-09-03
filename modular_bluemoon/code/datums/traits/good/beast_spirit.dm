@@ -98,7 +98,7 @@
 			beastskin = "mouse_"
 			beastsound = 'sound/effects/mousesqueek.ogg'
 	if(skin)
-		to_chat(owner, "<span class='notice'>Your inner Beast's skin now will be [skin].</span>")
+		to_chat(owner, span_notice("Your inner Beast's skin now will be [skin]."))
 
 /datum/action/innate/beastsex
 	name = "Toggle Aroused"
@@ -190,11 +190,15 @@
 /obj/effect/proc_holder/spell/targeted/shapeshift/beast/Shapeshift(mob/living/caster)
 	var/obj/shapeshift_holder/H = locate() in caster
 	if(H)
-		to_chat(caster, "<span class='warning'>You're already shapeshifted!</span>")
+		to_chat(caster, span_warning("You're already shapeshifted!"))
 		return
 
 	if(!ishuman(caster))
-		to_chat(caster, "<span class='warning'>You need to be humanoid to be able to do this!</span>")
+		to_chat(caster, span_warning("You need to be humanoid to be able to do this!"))
+		return
+
+	if(iszombie_infectious(caster))
+		to_chat(caster, span_warning("You zombie and can't do this!"))
 		return
 
 	var/mob/living/carbon/human/action_owner = caster
@@ -234,7 +238,7 @@
 	var/mob/living/shape = new shapeshift_type(caster.loc)
 	H = new(shape, src, action_owner)
 	var/mob/living/simple_animal/hostile/beastspirit/BEAST = shape
-	BEAST.AIStatus = AI_OFF //BLUEMOON ADD шейпы не двигаются и не пытаются кого-то убить если выйти
+	BEAST.toggle_ai(AI_OFF) //BLUEMOON ADD шейпы не двигаются и не пытаются кого-то убить если выйти; прямое присвоение AIStatus стрэндит моба в GLOB.simple_animals[AI_ON]
 	BEAST.wander = FALSE //BLUEMOON ADD END
 	BEAST.name = action_owner.name
 	BEAST.beast_type = beast_type
@@ -275,7 +279,7 @@
 /obj/effect/proc_holder/spell/targeted/shapeshift/beast/cast(list/targets, mob/user = usr)
 	if(!(locate(/obj/shapeshift_holder) in targets[1]))
 		if(!ishuman(user))
-			to_chat(user, "<span class='warning'>You need to be humanoid to be able to do this!</span>")
+			to_chat(user, span_warning("You need to be humanoid to be able to do this!"))
 			return
 	var/mob/living/carbon/human/HUMAN = user
 	if(!CHECK_MOBILITY(HUMAN, MOBILITY_USE))

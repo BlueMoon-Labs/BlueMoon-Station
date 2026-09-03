@@ -25,7 +25,7 @@
 //Hierophant Network action, allows a servant with it to communicate to other servants.
 /datum/action/innate/hierophant
 	name = "Hierophant Network"
-	desc = "Allows you to communicate with other Servants."
+	desc = "Позволяет вам общаться с другими Слугами."
 	icon_icon = 'icons/mob/actions/actions_clockcult.dmi'
 	button_icon_state = "hierophant"
 	background_icon_state = "bg_clock"
@@ -41,7 +41,7 @@
 	return ..()
 
 /datum/action/innate/hierophant/Activate()
-	var/input = stripped_input(usr, "Please enter a message to send to other servants.", "Hierophant Network", "")
+	var/input = stripped_input(usr, "Пожалуйста, введите сообщение для отправки другим слугам.", "Сеть Иерофанта", "")
 	if(!input || !IsAvailable())
 		return
 	if(ishuman(owner))

@@ -1,16 +1,13 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const MiningVendor = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [selectedCategory, setCategory] = useLocalState(
-    context,
-    'selectedTab',
-    'Mining Gear'
-  );
+export const MiningVendor = (props) => {
+  const { act, data } = useBackend();
+  const [selectedCategory, setCategory] = useState('Mining Gear');
 
   const allProducts = data?.product_records || [];
   const dataCategories = data?.categories || [];
@@ -88,7 +85,7 @@ export const MiningVendor = (props, context) => {
                           <span
                             className={classes(['vending32x32', product.path])}
                             style={{
-                              'vertical-align': 'middle',
+                              verticalAlign: 'middle',
                             }} />
                         </Box>
                         {' '}<b>{product.name}</b>
@@ -97,8 +94,8 @@ export const MiningVendor = (props, context) => {
                         <Button
                           fluid
                           style={{
-                            'min-width': '100px',
-                            'text-align': 'center',
+                            minWidth: '100px',
+                            textAlign: 'center',
                           }}
                           disabled={!data.user
                             || product.price > data.user.points}

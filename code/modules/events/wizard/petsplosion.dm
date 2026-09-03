@@ -7,14 +7,14 @@
 	var/mobs_to_dupe = 0
 	description = "Rapidly multiplies the animals on the station."
 
-/datum/round_event_control/wizard/petsplosion/preRunEvent()
+/datum/round_event_control/wizard/petsplosion/preRunEvent(admin_window = TRUE)
 	for(var/mob/living/simple_animal/F in GLOB.alive_mob_list)
 		if(!ishostile(F) && is_station_level(F.z))
 			mobs_to_dupe++
 	if(mobs_to_dupe > 100 || !mobs_to_dupe)
 		return EVENT_CANT_RUN
 
-	..()
+	return ..()
 
 /datum/round_event/wizard/petsplosion
 	end_when = 61 //1 minute (+1 tick for end_when not to interfere with tick)

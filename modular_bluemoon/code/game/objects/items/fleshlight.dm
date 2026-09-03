@@ -329,6 +329,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	else if(user.client && user.client.prefs.muted & MUTE_IC)
 		to_chat(user, "Вы не можете отправлять IC сообщения (заглушены).")
 		return FALSE
+	if(!ishuman(user))
+		return FALSE
 	var/mob/living/carbon/human/H_user = user
 
 	var/list/select = list()
@@ -561,6 +563,12 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	LAZYCLEARLIST(remote_vibrations)
 	GLOB.portalpanties -= src
 	GLOB.public_portal_panties -= src
+	// Публичные трусики раздаются по available_panties всем фонарикам (_portal_toys.dm), а
+	// снимались оттуда только при штатном отключении публичности. Один удалённый экземпляр
+	// оставался жить в списке каждого фонарика - и это был самый дорогой del() раунда среди
+	// предметов. Проходим по всем владельцам списка сами.
+	for(var/obj/item/portallight/light as anything in GLOB.fleshlight_portallight)
+		light.available_panties -= src
 	return ..()
 
 // Переименование трусиков
@@ -630,6 +638,15 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(fl_eq?.holder_genital?.owner == G.owner)
 			to_chat(user, span_warning("Сопряжённый фонарик уже внутри этого человека! Это создаст портальную петлю."))
 			return FALSE
+	// No silent stealth insertion: announce the attempt and take time, like other insertable toys
+	if(user == G.owner)
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить [src] в себя!"),\
+			span_warning("Вы пытаетесь вставить [src] в себя!"))
+	else
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить [src] в <b>[G.owner]</b>!"),\
+			span_warning("<b>[user]</b> пытается вставить [src] в вас!"))
+	if(!do_mob(user, G.owner, 5 SECONDS))
+		return FALSE
 	return TRUE
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/genital_inserted(datum/source, obj/item/organ/genital/G, mob/user)
@@ -644,6 +661,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	// Update connected fleshlights
 	update_portal()
 	playsound(src, 'sound/machines/ping.ogg', 50, FALSE)
+	if(G.owner && G.owner != user)
+		to_chat(G.owner, span_userlove("Вы чувствуете, как [src] оказывается внутри!"))
 	// Grant control action to the genital owner and register signals
 	if(G.owner)
 		inserted_control_action = new /datum/action/portal_device_control(src)
@@ -763,6 +782,15 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		if(pp_eq?.holder_genital?.owner == G.owner)
 			to_chat(user, span_warning("Сопряжённые трусики уже внутри этого человека! Это создаст портальную петлю."))
 			return FALSE
+	// No silent stealth insertion: announce the attempt and take time, like other insertable toys
+	if(user == G.owner)
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить [src] в себя!"),\
+			span_warning("Вы пытаетесь вставить [src] в себя!"))
+	else
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить [src] в <b>[G.owner]</b>!"),\
+			span_warning("<b>[user]</b> пытается вставить [src] в вас!"))
+	if(!do_mob(user, G.owner, 5 SECONDS))
+		return FALSE
 	return TRUE
 
 /obj/item/portallight/proc/genital_inserted(datum/source, obj/item/organ/genital/G, mob/user)
@@ -776,6 +804,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			targetting = CUM_TARGET_PENIS
 	update_appearance()
 	playsound(src, 'sound/machines/ping.ogg', 50, FALSE)
+	if(G.owner && G.owner != user)
+		to_chat(G.owner, span_userlove("Вы чувствуете, как [src] оказывается внутри!"))
 	// Grant control action to the genital owner and register signals
 	if(G.owner)
 		inserted_control_action = new /datum/action/portal_device_control(src)

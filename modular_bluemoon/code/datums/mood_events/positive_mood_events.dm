@@ -29,3 +29,8 @@
 	description = span_nicegreen("Мой ИИ похвалил меня! Я чувствую, что моя работа действительно важна.\n")
 	mood_change = 6
 	timeout = 5 MINUTES
+
+/datum/mood_event/hookah_smoked
+	description = span_nicegreen("Кальян отлично бьет в голову. Расслабляет.\n")
+	mood_change = 4
+	timeout = 5 MINUTES

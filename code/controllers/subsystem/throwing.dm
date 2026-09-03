@@ -11,14 +11,26 @@ SUBSYSTEM_DEF(throwing)
 	var/list/currentrun
 	var/list/processing = list()
 
+	/// How many throw impact sounds have happened this tick.
+	var/impact_sounds = 0
+	/// How many throw impact sounds we allow per tick: a grenade dump or a tornado
+	/// unloading a room is hundreds of playsound() bursts in one tick otherwise.
+	var/impact_sounds_cap = 20
+	/// How many sounds we've skipped due to hitting the per-tick cap.
+	var/skipped_sounds = 0
+	/// How many sounds there were last tick.
+	var/last_impact_sounds = 0
+
 /datum/controller/subsystem/throwing/stat_entry(msg)
-	msg = "P:[length(processing)]"
+	msg = "P:[length(processing)] S:[last_impact_sounds]/[skipped_sounds]"
 	return ..()
 
 
 /datum/controller/subsystem/throwing/fire(resumed = 0)
 	if (!resumed)
 		src.currentrun = processing.Copy()
+		last_impact_sounds = impact_sounds
+		impact_sounds = 0
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
@@ -39,6 +51,18 @@ SUBSYSTEM_DEF(throwing)
 			return
 
 	currentrun = null
+
+/// playsound() wrapper for throw impact sounds, capped per tick. When a pile of
+/// thrown items lands in one tick (grenade, explosion throwing a room around),
+/// every impact past the cap is dropped instead of pushing yet another sound to
+/// every listener in range.
+/datum/controller/subsystem/throwing/proc/playsound_capped(atom/source, soundin, vol, vary, extrarange, ignore_walls = TRUE)
+	if(impact_sounds >= impact_sounds_cap)
+		skipped_sounds++
+		return FALSE
+	impact_sounds++
+	playsound(source, soundin, vol, vary, extrarange, ignore_walls = ignore_walls)
+	return TRUE
 
 /datum/thrownthing
 	///Defines the atom that has been thrown (Objects and Mobs, mostly.)

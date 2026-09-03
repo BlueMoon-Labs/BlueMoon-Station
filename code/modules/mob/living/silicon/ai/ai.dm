@@ -14,7 +14,7 @@
 
 /mob/living/silicon/ai
 	name = "AI"
-	icon = 'icons/mob/ai.dmi'
+	icon = 'icons/mob/AI.dmi'
 	icon_state = "ai"
 	move_resist = MOVE_FORCE_OVERPOWERING
 	density = TRUE
@@ -42,7 +42,7 @@
 	var/obj/controlled_equipment //A piece of equipment, to determine whether to relaymove or use the AI eye.
 	var/radio_enabled = TRUE //Determins if a carded AI can speak with its built in radio or not.
 	radiomod = ";" //AIs will, by default, state their laws on the internal radio.
-	var/obj/item/pda/ai/aiPDA
+	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/obj/item/multitool/aiMulti
 	var/datum/weakref/bot_ref
 	var/tracking = FALSE //this is 1 if the AI is currently tracking somebody, but the track has not yet been completed.
@@ -108,6 +108,8 @@
 	var/datum/ai_announcement/ai_announcement
 	/// Lists possible spoken words for announcements
 	var/datum/announcement_help/announcement_help
+	/// Saved AI eye locations for quick camera recall.
+	var/list/turf/saved_camera_positions = list()
 	///remember AI's last location
 	var/atom/lastloc
 	interaction_range = INFINITY
@@ -160,7 +162,7 @@
 
 	set_core_display_icon()
 
-	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"female"))
+	holo_icon = getHologramIcon(icon('icons/mob/AI.dmi',"female"))
 
 	spark_system = new /datum/effect_system/spark_spread()
 	spark_system.set_up(5, 0, src)
@@ -168,10 +170,8 @@
 
 	add_verb(src, /mob/living/silicon/ai/proc/show_laws_verb)
 
-	aiPDA = new/obj/item/pda/ai(src)
-	aiPDA.owner = name
-	aiPDA.ownjob = "AI"
-	aiPDA.name = name + " (" + aiPDA.ownjob + ")"
+	aiPDA = new/obj/item/modular_computer/pda/silicon(src)
+	aiPDA.imprint_id(name, "AI")
 
 	aiMulti = new(src)
 	radio = new /obj/item/radio/headset/silicon/ai(src)
@@ -201,6 +201,11 @@
 /mob/living/silicon/ai/Destroy()
 	GLOB.ai_list -= src
 	GLOB.shuttle_caller_list -= src
+	//боты держат ссылку на вызвавший их ИИ до прибытия к вейпоинту - при
+	//удалении ИИ отвязываемся, иначе calling_ai вечно пиннит удалённого моба
+	for(var/mob/living/simple_animal/bot/called_bot as anything in GLOB.bots_list)
+		if(called_bot.calling_ai == src)
+			called_bot.calling_ai = null
 	SSshuttle.autoEvac()
 	stop_controlling_display()
 	QDEL_NULL(eyeobj) // No AI, no Eye
@@ -231,42 +236,86 @@
 			continue
 		linked_robot.set_connected_ai(null)
 	connected_robots.Cut()
+	// Взломанные малфом APC держат ИИ через malfai/occupier до собственного
+	// Destroy - то есть обычно до конца раунда
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(apc.malfai == src)
+			apc.malfai = null
+		if(apc.occupier == src)
+			apc.occupier = null
 	return ..()
 
 /mob/living/silicon/ai/IgniteMob()
 	fire_stacks = 0
 	. = ..()
 
+// MARK: Core Display Icon
+// (C)Pe4henika | Встроена возможность выбора донатных/приватных дисплейчиков
 /mob/living/silicon/ai/proc/set_core_display_icon(input, client/C)
-	set waitfor = FALSE
-	if(client && !C)
-		C = client
-	if(!input && !C?.prefs?.preferred_ai_core_display)
-		icon_state = initial(icon_state)
-	else
-		var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
-		icon_state = resolve_ai_icon(preferred_icon)
+    set waitfor = FALSE
+    if(client && !C)
+        C = client
+    if(!input && !C?.prefs?.preferred_ai_core_display)
+        icon_state = initial(icon_state)
+        icon = initial(icon)
+    else
+        var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
 
+        var/donor_found = FALSE
+        if(C)
+            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+                if(donor_screen.name == preferred_icon && (C.ckey in donor_screen.ckey_whitelist))
+                    icon = donor_screen.icon
+                    icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
+                    donor_found = TRUE
+                    break
+
+        if(!donor_found)
+            icon = initial(icon)
+            icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
 /mob/living/silicon/ai/verb/pick_icon()
-	set category = "AI Commands"
-	set name = "Set AI Core Display"
-	if(incapacitated())
-		return
-	var/list/iconstates = GLOB.ai_core_display_screens
-	for(var/option in iconstates)
-		if(option == "Random")
-			iconstates[option] = image(icon = src.icon, icon_state = "ai-random")
-			continue
-		iconstates[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+    set category = "AI Commands"
+    set name = "Set AI Core Display"
+    if(incapacitated())
+        return
 
-	view_core()
-	var/ai_core_icon = show_radial_menu(src, src , iconstates, radius = 42)
+    var/list/iconstates = GLOB.ai_core_display_screens.Copy()
 
-	if(!ai_core_icon || incapacitated())
-		return
+    var/client/C = client
+    if(C)
+        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+            if(C.ckey in donor_screen.ckey_whitelist)
+                iconstates += donor_screen.name
 
-	display_icon_override = ai_core_icon
-	set_core_display_icon(ai_core_icon)
+    var/list/icon_images = list()
+    for(var/option in iconstates)
+        if(option == "Random")
+            icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
+            continue
+
+        var/donor_icon = null
+        var/donor_icon_state = null
+        if(C)
+            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+                if(donor_screen.name == option && (C.ckey in donor_screen.ckey_whitelist))
+                    donor_icon = donor_screen.icon
+                    donor_icon_state = donor_screen.icon_state
+                    break
+
+        if(donor_icon)
+            icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
+        else
+            icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+
+    view_core()
+    var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
+
+    if(!ai_core_icon || incapacitated())
+        return
+
+    display_icon_override = ai_core_icon
+    set_core_display_icon(ai_core_icon)
+// --
 
 // (ADD) Pe4henika Bluemonn -- start
 // MARK: Status Tab
@@ -518,7 +567,7 @@
 /mob/living/silicon/ai/proc/botcall()
 	set category = "AI Commands"
 	set name = "Access Robot Control"
-	set desc = "Wirelessly control various automatic robots."
+	set desc = "Беспроводное управление различными автоматическими роботами."
 
 	if(!robot_control)
 		robot_control = new(src)
@@ -534,6 +583,46 @@
 		call_bot(turf_check)
 	else
 		to_chat(src, span_danger("Selected location is not visible."))
+
+/mob/living/silicon/ai/proc/ensure_saved_camera_position_slots()
+	LAZYINITLIST(saved_camera_positions)
+	if(saved_camera_positions.len < 9)
+		saved_camera_positions.len = 9
+
+/mob/living/silicon/ai/proc/save_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/current_turf = get_turf(eyeobj)
+	if(!current_turf)
+		to_chat(src, "<span class='warning'>Failed to save camera position.</span>")
+		return FALSE
+
+	saved_camera_positions[slot] = current_turf
+	to_chat(src, "<span class='notice'>Saved camera position #[slot]: [get_area_name(current_turf, TRUE)].</span>")
+	return TRUE
+
+/mob/living/silicon/ai/proc/restore_camera_position(slot)
+	if(!isnum(slot) || slot < 1 || slot > 9)
+		return FALSE
+	ensure_saved_camera_position_slots()
+	if(QDELETED(eyeobj) || !eyeobj)
+		create_eye()
+	if(QDELETED(eyeobj) || !eyeobj)
+		return FALSE
+
+	var/turf/saved_turf = saved_camera_positions[slot]
+	if(!saved_turf)
+		to_chat(src, "<span class='warning'>No camera position has been saved in slot #[slot] yet.</span>")
+		return FALSE
+
+	eyeobj.setLoc(saved_turf, TRUE)
+	return TRUE
 
 /mob/living/silicon/ai/proc/call_bot(turf/waypoint)
 	var/mob/living/simple_animal/bot/bot = bot_ref.resolve()
@@ -667,7 +756,7 @@
 			new_color = null
 
 	hologram_color = new_color
-	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"female"), FALSE, hologram_color)
+	holo_icon = getHologramIcon(icon('icons/mob/AI.dmi',"female"), FALSE, hologram_color)
 	to_chat(src, "Цвет голограммы изменён на [new_color].")
 
 // MARK: Voice Change
@@ -716,7 +805,7 @@
 //I am the icon meister. Bow fefore me.	//>fefore
 /mob/living/silicon/ai/proc/ai_hologram_change()
 	set name = "Change Hologram"
-	set desc = "Change the default hologram available to AI to something else."
+	set desc = "Изменить стандартную голограмму, доступную ИИ, на другую."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -769,13 +858,13 @@
 						holo_icon = getHologramIcon(icon(icon_list[input], input))
 		else
 			var/list/icon_list = list(
-				"female" = 'icons/mob/ai.dmi',
-				"male" = 'icons/mob/ai.dmi',
-				"floating face" = 'icons/mob/ai.dmi',
-				"green face" = 'icons/mob/ai.dmi',
+				"female" = 'icons/mob/AI.dmi',
+				"male" = 'icons/mob/AI.dmi',
+				"floating face" = 'icons/mob/AI.dmi',
+				"green face" = 'icons/mob/AI.dmi',
 				"xeno queen" = 'icons/Xeno/castes/queen.dmi', // icon_state "Queen Walking"
-				"horror" = 'icons/mob/ai.dmi',
-				"creature" = 'icons/mob/ai.dmi',
+				"horror" = 'icons/mob/AI.dmi',
+				"creature" = 'icons/mob/AI.dmi',
 				"custom"
 				)
 
@@ -787,7 +876,7 @@
 						if(client?.prefs?.custom_holoform_icon)
 							holo_icon = client.prefs.get_filtered_holoform(HOLOFORM_FILTER_AI)
 						else
-							holo_icon = getHologramIcon(icon('icons/mob/ai.dmi', "female"), FALSE, hologram_color)
+							holo_icon = getHologramIcon(icon('icons/mob/AI.dmi', "female"), FALSE, hologram_color)
 					if("xeno queen")
 						holo_icon = getHologramIcon(icon(icon_list[input],"Queen Walking"), FALSE, hologram_color)
 					else
@@ -843,7 +932,7 @@
 
 /mob/living/silicon/ai/proc/control_integrated_radio()
 	set name = "Transceiver Settings"
-	set desc = "Allows you to change settings of your radio."
+	set desc = "Позволяет изменить настройки вашего радио."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -859,7 +948,7 @@
 
 /mob/living/silicon/ai/proc/set_automatic_say_channel()
 	set name = "Set Auto Announce Mode"
-	set desc = "Modify the default radio setting for your automatic announcements."
+	set desc = "Изменить настройки радио по умолчанию для ваших автоматических объявлений."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -936,6 +1025,23 @@
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 	show_message(rendered, MSG_AUDIBLE)
 
+// MARK: Relay_emote
+// (C) Pe4henika | Возможность видеть эмоуты через камеры для ИИ
+/mob/living/silicon/ai/proc/relay_emote(mob/living/speaker, emote_message)
+    if(!client)
+        return
+    var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
+    var/hrefpart = "<a href='?src=[REF(src)];track=[html_encode(namepart)]'>"
+    var/jobpart = "Unknown"
+
+    if(iscarbon(speaker))
+        var/mob/living/carbon/S = speaker
+        if(S.job)
+            jobpart = "[S.job]"
+
+    var/rendered = "<i><span class='game say'>Relayed Emote: <span class='name'>[hrefpart][namepart] ([jobpart])</a> </span><span class='message'>[emote_message]</span></span></i>"
+    show_message(rendered, MSG_VISUAL)
+// --
 /mob/living/silicon/ai/fully_replace_character_name(oldname,newname)
 	..()
 	if(oldname != real_name)
@@ -948,8 +1054,7 @@
 
 /mob/living/silicon/ai/replace_identification_name(oldname,newname)
 	if(aiPDA)
-		aiPDA.owner = newname
-		aiPDA.name = newname + " (" + aiPDA.ownjob + ")"
+		aiPDA.imprint_id(newname, aiPDA.saved_job)
 
 
 /mob/living/silicon/ai/proc/add_malf_picker()
@@ -1011,10 +1116,11 @@
 		ui.open()
 
 /mob/living/silicon/ai/ui_data(mob/user)
-	var/list/data = list()
-	data["name"] = name
-	data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
-	return data
+    var/list/data = ..()
+    data["name"] = name
+    data["malfhacking"] = (malfhacking || (mind && mind.special_role == "malfunction"))
+
+    return data
 
 /mob/living/silicon/ai/ui_act(action, params)
 	if(..())
@@ -1083,7 +1189,7 @@
 		return
 
 	else if(mind)
-		soullink(/datum/soullink/sharedbody, src, target)
+		RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(disconnect_shell))
 		deployed_shell = target
 		target.deploy_init(src)
 		mind.transfer_to(target)
@@ -1091,7 +1197,7 @@
 
 /datum/action/innate/deploy_shell
 	name = "Deploy to AI Shell"
-	desc = "Wirelessly control a specialized cyborg shell."
+	desc = "Беспроводное управление специализированной оболочкой киборга."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_shell"
 
@@ -1103,7 +1209,7 @@
 
 /datum/action/innate/deploy_last_shell
 	name = "Reconnect to shell"
-	desc = "Reconnect to the most recently used AI shell."
+	desc = "Переподключиться к последней использованной оболочке ИИ."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_last_shell"
 	var/mob/living/silicon/robot/last_used_shell
@@ -1122,6 +1228,7 @@
 	return ..()
 
 /mob/living/silicon/ai/proc/disconnect_shell()
+	SIGNAL_HANDLER
 	if(deployed_shell) //Forcibly call back AI in event of things such as damage, EMP or power loss.
 		to_chat(src, "<span class='danger'>Your remote connection has been reset!</span>")
 		deployed_shell.undeploy()
@@ -1143,7 +1250,7 @@
 
 /mob/living/silicon/ai/verb/ai_cryo()
 	set name = "AI Cryogenic Stasis"
-	set desc = "Puts the current AI personality into cryogenic stasis, freeing the space for another."
+	set desc = "Помещает текущую личность ИИ в криогенный стазис, освобождая место для другой."
 	set category = "AI Commands"
 
 	if(incapacitated())

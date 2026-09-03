@@ -59,6 +59,7 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	icon = 'icons/obj/library.dmi'
 	icon_state = "photocopier"
 	density = TRUE
+	pass_flags_self = PASSMACHINE | PASSTABLE
 	max_integrity = 300
 	idle_power_usage = 50
 	active_power_usage = 500

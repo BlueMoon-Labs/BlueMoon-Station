@@ -25,6 +25,16 @@
 
 	footstep_type = FOOTSTEP_MOB_SHOE
 
+/mob/living/simple_animal/hostile/boss/paper_wizard/Destroy(force, ...)
+	var/list/copies_to_delete = copies
+	copies = null
+	for(var/mob/living/simple_animal/hostile/boss/paper_wizard/copy/paper_copy as anything in copies_to_delete)
+		if(QDELETED(paper_copy))
+			continue
+		paper_copy.original = null
+		qdel(paper_copy)
+	return ..()
+
 
 //Summon Ability
 //Lets the wizard summon his art to fight for him
@@ -131,6 +141,12 @@
 	loot = list()
 	var/mob/living/simple_animal/hostile/boss/paper_wizard/original
 
+/mob/living/simple_animal/hostile/boss/paper_wizard/copy/Destroy(force, ...)
+	if(original?.copies)
+		original.copies -= src
+	original = null
+	return ..()
+
 //Hit a fake? eat pain!
 /mob/living/simple_animal/hostile/boss/paper_wizard/copy/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	if(amount > 0) //damage
@@ -138,7 +154,7 @@
 			original.minimum_distance = 3
 			original.retreat_distance = 3
 			original.copies -= src
-			for(var/c in original.copies)
+			for(var/c in original.copies.Copy())
 				qdel(c)
 		for(var/mob/living/L in range(5,src))
 			if(L == original || istype(L, type))
@@ -154,7 +170,7 @@
 	if(. > 0)//damage
 		minimum_distance = 3
 		retreat_distance = 3
-		for(var/copy in copies)
+		for(var/copy in copies.Copy())
 			qdel(copy)
 
 /mob/living/simple_animal/hostile/boss/paper_wizard/copy/examine(mob/user)

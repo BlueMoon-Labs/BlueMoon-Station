@@ -8,8 +8,8 @@ import { Button, Divider, LabeledList, NumberInput, ProgressBar, Section, Stack 
 import { getGasColor, getGasLabel } from '../constants';
 import { Window } from '../layouts';
 
-export const BluespaceVendor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BluespaceVendor = (props) => {
+  const { act, data } = useBackend();
   const {
     on,
     tank_filling_amount,

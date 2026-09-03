@@ -141,9 +141,9 @@
 	damage += 0.15 * severity
 
 /obj/item/organ/ears/ipc
-	name = "auditory sensors"
+	name = "audio sensor array"
 	icon_state = "ears-c"
-	desc = "A pair of microphones intended to be installed in an IPC head, that grant the ability to hear."
+	desc = "A calibrated microphone array intended for IPC chassis."
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_EARS
 	gender = PLURAL

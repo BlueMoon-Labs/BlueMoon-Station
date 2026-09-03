@@ -4,7 +4,7 @@
  * Rendered outside the scrollable area so it stays visible.
  */
 
-import { Component } from 'inferno';
+import { Component } from 'react';
 import { Button, Input } from 'tgui/components';
 
 import { chatRenderer } from './renderer';

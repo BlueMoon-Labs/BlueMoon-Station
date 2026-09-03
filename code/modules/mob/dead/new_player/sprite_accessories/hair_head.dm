@@ -675,6 +675,10 @@
 	name = "Pigtails 3"
 	icon_state = "hair_pigtails2"
 
+/datum/sprite_accessory/hair/pigtailss
+	name = "Pigtails 4"
+	icon_state = "hair_pigtailss"
+
 /datum/sprite_accessory/hair/pixie
 	name = "Pixie Cut"
 	icon_state = "hair_pixie"
@@ -1141,6 +1145,10 @@
 /datum/sprite_accessory/hair_gradient/fadedown
 	name = "Fade Down"
 	icon_state = "fadedown"
+
+/datum/sprite_accessory/hair_gradient/full
+	name = "Full"
+	icon_state = "full"
 
 /datum/sprite_accessory/hair_gradient/vertical_split
 	name = "Vertical Split"

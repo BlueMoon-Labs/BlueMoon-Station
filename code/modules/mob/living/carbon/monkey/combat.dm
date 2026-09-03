@@ -11,6 +11,13 @@
 	var/mode = MONKEY_IDLE
 	var/list/myPath = list()
 	var/list/blacklistItems = list()
+	/// Предметы, на удаление которых подписана обезьяна. Подписка одна на предмет,
+	/// причин у неё две - цель подбора и чёрный список.
+	var/list/watched_qdel_items = list()
+	/// Мобы, на удаление которых подписана обезьяна. Причин тоже две - враг и
+	/// текущая цель, - а регистрация на пару (регистрант, цель, сигнал) может быть
+	/// только одна, поэтому подписка общая, а обработчик один на обе причины.
+	var/list/watched_qdel_mobs = list()
 	var/maxStepsTick = 6
 	var/best_force = 0
 	var/martial_art = new/datum/martial_art
@@ -24,30 +31,122 @@
 /mob/living/carbon/monkey/proc/IsStandingStill()
 	return resisting || pickpocketing || disposing_body
 
+/**
+ * Подписывает обезьяну на удаление предмета.
+ *
+ * Причин следить за предметом две - он выбран целью подбора и/или занесён в чёрный
+ * список, - а регистрация на пару (регистрант, цель, сигнал) может быть только одна:
+ * вторая перебивает первую и роняет в логи "parent_qdeleting overridden". Поэтому
+ * подписка тут общая, а обработчик один на обе причины.
+ */
+/mob/living/carbon/monkey/proc/watch_item_qdel(obj/item/watched_item)
+	if(!watched_item || watched_qdel_items[watched_item])
+		return
+	RegisterSignal(watched_item, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_item_qdeleting))
+	watched_qdel_items[watched_item] = TRUE
+
+/// Снимает подписку, но только если у предмета не осталось ни одной причины следить.
+/mob/living/carbon/monkey/proc/unwatch_item_qdel(obj/item/watched_item)
+	if(!watched_item || !watched_qdel_items[watched_item])
+		return
+	if(watched_item == pickupTargetSignalTarget || blacklistItems[watched_item])
+		return
+	UnregisterSignal(watched_item, COMSIG_PARENT_QDELETING)
+	watched_qdel_items -= watched_item
+
 /mob/living/carbon/monkey/proc/set_pickup_target(obj/item/new_target)
-	if(pickupTargetSignalTarget && pickupTargetSignalTarget != new_target)
-		UnregisterSignal(pickupTargetSignalTarget, COMSIG_PARENT_QDELETING)
-		pickupTargetSignalTarget = null
+	var/obj/item/previous_target = pickupTargetSignalTarget
 
 	pickupTarget = new_target
-	if(!pickupTarget)
+	pickupTargetSignalTarget = new_target
+
+	if(previous_target && previous_target != new_target)
+		unwatch_item_qdel(previous_target)
+
+	if(!new_target)
 		pickupTimer = 0
 		return
 
-	if(pickupTargetSignalTarget != pickupTarget)
-		RegisterSignal(pickupTarget, COMSIG_PARENT_QDELETING, PROC_REF(on_pickup_target_qdeleting))
-		pickupTargetSignalTarget = pickupTarget
+	watch_item_qdel(new_target)
 
-/mob/living/carbon/monkey/proc/on_pickup_target_qdeleting(obj/item/deleted_target)
+/// Общий обработчик удаления: чистит обе причины сразу, иначе мёртвый ключ навсегда
+/// оставался бы в blacklistItems - другой уборки у этого списка нет.
+/mob/living/carbon/monkey/proc/on_watched_item_qdeleting(obj/item/deleted_item)
 	SIGNAL_HANDLER
 
-	if(deleted_target == pickupTargetSignalTarget)
-		UnregisterSignal(deleted_target, COMSIG_PARENT_QDELETING)
+	blacklistItems -= deleted_item
+	if(deleted_item == pickupTargetSignalTarget)
 		pickupTargetSignalTarget = null
-
-	if(deleted_target == pickupTarget)
+	if(deleted_item == pickupTarget)
 		pickupTarget = null
 		pickupTimer = 0
+	unwatch_item_qdel(deleted_item)
+
+/mob/living/carbon/monkey/proc/blacklist_item(obj/item/blacklisted_item)
+	if(!blacklisted_item)
+		return
+	blacklistItems[blacklisted_item]++
+	watch_item_qdel(blacklisted_item)
+
+/**
+ * Подписывает обезьяну на удаление моба.
+ *
+ * Причин следить две - моб занесён во враги и/или выбран текущей целью, - а
+ * регистрация на пару (регистрант, цель, сигнал) может быть только одна.
+ */
+/mob/living/carbon/monkey/proc/watch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || watched_mob == src || watched_qdel_mobs?[watched_mob])
+		return
+	RegisterSignal(watched_mob, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
+	watched_qdel_mobs[watched_mob] = TRUE
+
+/// Снимает подписку, но только если у моба не осталось ни одной причины следить.
+/mob/living/carbon/monkey/proc/unwatch_mob_qdel(mob/living/watched_mob)
+	if(!watched_mob || !watched_qdel_mobs?[watched_mob])
+		return
+	var/list/current_enemies = enemies
+	if(watched_mob == target || (current_enemies && !isnull(current_enemies[watched_mob])))
+		return
+	UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= watched_mob
+
+/**
+ * Единственная точка правки `target`.
+ *
+ * Цель ставится тремя путями МИМО `enemies` - вербовка соседних обезьян
+ * (`M.target = target`), смена цели у агрессивной особи и режим утилизации трупа, -
+ * то есть без всякой подписки на удаление. Чистит её только `handle_combat()`, а
+ * тот не вызывается ни у обезьяны без игрока в радиусе, ни у обезьяны не в
+ * сознании (`monkey/BiologicalLife`): удалённый слайм, мышь или человек висели в
+ * `target` до конца раунда. Прод-раунд 10151, рефтрекер: "Найден
+ * /mob/living/simple_animal/slime в /mob/living/carbon/monkey, вар target".
+ *
+ * Заодно гасим нативный цикл `walk_away()`: замер (unit-тест
+ * native_walk_loop_reference) показал, что walk_to/walk_away/walk_towards держат
+ * свою цель ровно одной ссылкой, невидимой полному ref-скану мира.
+ */
+/mob/living/carbon/monkey/proc/set_monkey_target(mob/living/new_target)
+	if(target == new_target)
+		return
+	var/mob/living/previous_target = target
+	target = new_target
+	if(previous_target)
+		walk(src, 0)
+		unwatch_mob_qdel(previous_target)
+	watch_mob_qdel(new_target)
+
+/mob/living/carbon/monkey/proc/on_enemy_qdeleting(mob/living/enemy)
+	SIGNAL_HANDLER
+
+	// Ключи enemies не имеют другого пути очистки по qdel: мёртвая или спящая
+	// обезьяна не гоняет handle_combat, и удалённый враг (например, слайм с фермы)
+	// висел бы в assoc-списке до харддела
+	UnregisterSignal(enemy, COMSIG_PARENT_QDELETING)
+	watched_qdel_mobs -= enemy
+	enemies -= enemy
+	if(target == enemy)
+		target = null
+		walk(src, 0)
 
 // blocks
 // taken from /mob/living/carbon/human/interactive/
@@ -94,7 +193,9 @@
 		return TRUE
 
 	if(I.anchored || !put_in_hands(I))
-		blacklistItems[I] ++
+		if(pickupTarget == I)
+			set_pickup_target(null)
+		blacklist_item(I)
 		return FALSE
 
 	if(I.force >= best_force)
@@ -134,7 +235,7 @@
 
 /mob/living/carbon/monkey/proc/handle_combat()
 	if(QDELETED(target))
-		target = null
+		set_monkey_target(null)
 	if(QDELETED(pickupTarget))
 		set_pickup_target(null)
 	if(QDELETED(bodyDisposal))
@@ -145,8 +246,9 @@
 		else if(!isobj(loc) || istype(loc, /obj/item/clothing/head/mob_holder))
 			pickupTimer++
 			if(pickupTimer >= 4)
-				blacklistItems[pickupTarget] ++
+				var/obj/item/timed_out_item = pickupTarget
 				set_pickup_target(null)
+				blacklist_item(timed_out_item)
 			else
 				INVOKE_ASYNC(src, PROC_REF(walk2derpless), pickupTarget.loc)
 				if(Adjacent(pickupTarget) || Adjacent(pickupTarget.loc)) // next to target
@@ -179,7 +281,7 @@
 						else
 							bodyDisposal = locate(/obj/machinery/disposal/) in around
 							if(bodyDisposal)
-								target = L
+								set_monkey_target(L)
 								mode = MONKEY_DISPOSE
 								return TRUE
 
@@ -191,7 +293,11 @@
 				else
 					var/mob/living/carbon/human/H = locate(/mob/living/carbon/human/) in oview(2,src)
 					if(H)
-						set_pickup_target(pick(H.held_items))
+						//чёрный список сверяем и здесь: гоняться за уже отвергнутым
+						//предметом бессмысленно, а обе подсистемы следят за ним общей подпиской
+						var/obj/item/snatch_target = pick(H.held_items)
+						if(snatch_target && !blacklistItems[snatch_target])
+							set_pickup_target(snatch_target)
 
 		if(MONKEY_HUNT)		// hunting for attacker
 			if(health < MONKEY_FLEE_HEALTH)
@@ -214,13 +320,13 @@
 			for(var/mob/living/carbon/monkey/M in around)
 				if(M.mode == MONKEY_IDLE && prob(MONKEY_RECRUIT_PROB))
 					M.battle_screech()
-					M.target = target
+					M.set_monkey_target(target)
 					M.mode = MONKEY_HUNT
 
 			// switch targets
 			for(var/mob/living/L in around)
 				if(L != target && should_target(L) && L.stat == CONSCIOUS && prob(MONKEY_SWITCH_TARGET_PROB))
-					target = L
+					set_monkey_target(L)
 					return TRUE
 
 			// if can't reach target for long enough, go idle
@@ -261,12 +367,12 @@
 
 		if(MONKEY_FLEE)
 			var/list/around = view(src, MONKEY_FLEE_VISION)
-			target = null
+			set_monkey_target(null)
 
 			// flee from anyone who attacked us and we didn't beat down
 			for(var/mob/living/L in around)
 				if( enemies[L] && L.stat == CONSCIOUS )
-					target = L
+					set_monkey_target(L)
 
 			if(target != null)
 				walk_away(src, target, MONKEY_ENEMY_VISION, 5)
@@ -341,7 +447,7 @@
 		stop_pulling()
 
 	mode = MONKEY_IDLE
-	target = null
+	set_monkey_target(null)
 	a_intent = INTENT_HELP
 	frustration = 0
 	walk_to(src,0)
@@ -372,14 +478,16 @@
 	// if we are not angry at our target, go back to idle
 	if(enemies[L] <= 0)
 		enemies.Remove(L)
+		unwatch_mob_qdel(L)
 		if( target == L )
 			back_to_idle()
 
 // get angry are a mob
 /mob/living/carbon/monkey/proc/retaliate(mob/living/L)
 	mode = MONKEY_HUNT
-	target = L
+	set_monkey_target(L)
 	if(L != src)
+		watch_mob_qdel(L)
 		enemies[L] += MONKEY_HATRED_AMOUNT
 
 	if(a_intent != INTENT_HARM)

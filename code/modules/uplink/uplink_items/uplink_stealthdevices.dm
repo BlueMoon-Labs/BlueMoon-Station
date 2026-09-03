@@ -15,7 +15,7 @@
 			Некоторые зоны и устройства Syndicate доступны только с такими картами."
 	item = /obj/item/card/id/syndicate
 	cost = 2
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/stealthy_tools/agent_card_inteq
 	name = "Agent Identification Card"
@@ -84,6 +84,7 @@
 	item = /obj/item/flashlight/emp
 	cost = 2
 	surplus = 30
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/stealthy_tools/failsafe
 	name = "Failsafe Uplink Code"
@@ -110,7 +111,7 @@
 	item = /obj/item/reagent_containers/syringe/mulligan
 	cost = 3
 	surplus = 30
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_tools/syndigaloshes
 	name = "No-Slip Chameleon Shoes"

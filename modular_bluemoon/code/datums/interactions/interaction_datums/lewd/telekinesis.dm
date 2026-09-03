@@ -6,7 +6,7 @@
 	required_from_user = INTERACTION_REQUIRE_TK
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKhug"
 	write_log_target = "TKhuged by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
@@ -18,7 +18,7 @@
 	required_from_user = INTERACTION_REQUIRE_TK
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKheadpat"
 	write_log_target = "TKheadpatted by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
@@ -31,24 +31,19 @@
 	required_from_target = INTERACTION_REQUIRE_TAIL
 	interaction_flags = NONE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	write_log_user = "TKtailpull"
 	write_log_target = "TKtailpulled by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/TKhug/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+	hearts_effect = TRUE
 
 /datum/interaction/lewd/slap/TKslap
 	description = "Телекинез. Шлёпнуть по заднице."
 	simple_message = "по заду TARGET что-то приходится шлепком!"
 	big_user_target_text = TRUE
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_RANGED_CONSENT
 	required_from_user = INTERACTION_REQUIRE_TK
 	write_log_user = "TK-ass-slapped"
@@ -61,7 +56,7 @@
 /datum/interaction/lewd/simplified_interaction/TK_interaction
 	required_from_user = INTERACTION_REQUIRE_TK
 	max_distance = TK_MAXRANGE
-	massage_by_user = FALSE
+	message_by_user = FALSE
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 	interaction_flags = INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_RANGED_CONSENT
 	lewd_sounds = 'sound/weapons/thudswoosh.ogg'
@@ -127,7 +122,7 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/simplified_interaction/TK_interaction/penis/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = partner.has_penis()
+	var/has_penis = partner.has_penis(TRUE)
 	start_text = "Что-то обхватывает [has_penis ? "член" : "дилдо"] TARGET."
 	help_text = "Что-то проходится по [has_penis ? "член" : "дилдо"] TARGET, [has_penis ? "" : "безуспешно "]стараясь доставить удовольствие."
 	grab_text = "Что-то бодро скользит по [has_penis ? "член" : "дилдо"] TARGET."

@@ -244,21 +244,6 @@
 	color = rgb(114,228,250)
 	gold_core_spawnable = NO_SPAWN
 
-/mob/living/simple_animal/hostile/poison/giant_spider/handle_automated_action()
-	if(!..()) //AIStatus is off
-		return FALSE
-	if(AIStatus == AI_IDLE)
-		//1% chance to skitter madly away
-		if(!busy && prob(1))
-			stop_automated_movement = 1
-			Goto(pick(urange(20, src, 1)), move_to_delay)
-			addtimer(CALLBACK(src, PROC_REF(resume_spider_movement)), 50, TIMER_DELETE_ME)
-		return TRUE
-
-/mob/living/simple_animal/hostile/poison/giant_spider/proc/resume_spider_movement()
-	stop_automated_movement = 0
-	walk(src, 0)
-
 /mob/living/simple_animal/hostile/poison/giant_spider/nurse/proc/GiveUp(C)
 	addtimer(CALLBACK(src, PROC_REF(giveup_delayed), C), 100, TIMER_DELETE_ME)
 
@@ -268,51 +253,6 @@
 			cocoon_target = null
 		busy = FALSE
 		stop_automated_movement = 0
-
-/mob/living/simple_animal/hostile/poison/giant_spider/nurse/handle_automated_action()
-	if(..())
-		var/list/can_see = view(src, 10)
-		if(!busy && prob(30))	//30% chance to stop wandering and do something
-			//first, check for potential food nearby to cocoon
-			for(var/mob/living/C in can_see)
-				if(C.stat && !istype(C, /mob/living/simple_animal/hostile/poison/giant_spider) && !C.anchored)
-					cocoon_target = C
-					busy = MOVING_TO_TARGET
-					Goto(C, move_to_delay)
-					//give up if we can't reach them after 10 seconds
-					GiveUp(C)
-					return
-
-			//second, spin a sticky spiderweb on this tile
-			var/obj/structure/spider/stickyweb/W = locate() in get_turf(src)
-			if(!W)
-				lay_web.Activate()
-			else
-				//third, lay an egg cluster there
-				if(fed)
-					lay_eggs.Activate()
-				else
-					//fourthly, cocoon any nearby items so those pesky pinkskins can't use them
-					for(var/obj/O in can_see)
-
-						if(O.anchored)
-							continue
-
-						if(isitem(O) || isstructure(O) || ismachinery(O))
-							cocoon_target = O
-							busy = MOVING_TO_TARGET
-							stop_automated_movement = 1
-							Goto(O, move_to_delay)
-							//give up if we can't reach them after 10 seconds
-							GiveUp(O)
-
-		else if(busy == MOVING_TO_TARGET && cocoon_target)
-			if(get_dist(src, cocoon_target) <= 1)
-				cocoon()
-
-	else
-		busy = SPIDER_IDLE
-		stop_automated_movement = FALSE
 
 /mob/living/simple_animal/hostile/poison/giant_spider/nurse/proc/cocoon()
 	if(stat != DEAD && cocoon_target && !cocoon_target.anchored)
@@ -541,6 +481,215 @@
 		adjustBruteLoss(20)
 	else if(bodytemperature > maxbodytemp)
 		adjustBruteLoss(20)
+
+// ===== Адаптер-профиль =====
+// Легаси handle_automated_action декомпозирован: 1%-перебежка (idle-skitter) -
+// сабтри spider_idle_skitter, цикл няньки (кокон беспомощных, паутина, яйца,
+// обмотка предметов) - сабтри spider_nurse_cycle с гейтом "нет цели" (бой
+// важнее плетения: легаси-else точно так же сбрасывал busy при активном AI).
+// Шансы, кулдауны и сообщения сохранены: решения ставятся с каденсом NPC-пула,
+// исполнение - делегацией легаси-прокам (cocoon/GiveUp/Activate).
+
+///Легаси prob(1) на 2-секундный тик NPC-пула = 0.5%/с планировщика
+#define GIANT_SPIDER_SKITTER_PROB_PER_SECOND 0.5
+///Легаси prob(30) на 2-секундный тик NPC-пула = 15%/с планировщика
+#define GIANT_SPIDER_NURSE_PROB_PER_SECOND 15
+///Легаси-таймер resume_spider_movement: перебежка длится не дольше 50дс
+#define GIANT_SPIDER_SKITTER_TIME (5 SECONDS)
+///Легаси-радиус перебежки: pick(urange(20, src, 1))
+#define GIANT_SPIDER_SKITTER_RANGE 20
+///Дедлайн текущей перебежки (world.time)
+#define BB_SPIDER_SKITTER_UNTIL "BB_spider_skitter_until"
+
+///Профиль обычного паука: мили-погоня + случайные перебежки
+/datum/ai_controller/hostile_adapter/melee_chaser/giant_spider
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/spider_idle_skitter,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/hostile_dodge,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Профиль няньки: цикл коконов важнее перебежек, бой важнее всего
+/datum/ai_controller/hostile_adapter/melee_chaser/giant_spider/nurse
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/spider_nurse_cycle,
+		/datum/ai_planning_subtree/spider_idle_skitter,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/hostile_dodge,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+// ===== Перебежка (idle-skitter) =====
+
+///Случайная перебежка: без цели, без занятости, легаси-шанс. Сабтри стоит
+///ПЕРЕД hostile_fsm: начатую перебежку он удерживает в плане (FINISH), чтобы
+///патруль-возврат FSM не отменял её на полпути.
+/datum/ai_planning_subtree/spider_idle_skitter
+
+/datum/ai_planning_subtree/spider_idle_skitter/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/giant_spider/spider = controller.pawn
+	if(!istype(spider))
+		return
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return
+	//дожать начатую перебежку: держим поведение в плане до дедлайна
+	if(world.time < (controller.blackboard[BB_SPIDER_SKITTER_UNTIL] || 0))
+		controller.queue_behavior(/datum/ai_behavior/spider_skitter)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(spider.busy) //легаси: перебежка только когда паук ничем не занят
+		return
+	if(!SPT_PROB(GIANT_SPIDER_SKITTER_PROB_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/spider_skitter)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Сама перебежка: бросок к случайной точке в радиусе 20 не дольше 5 секунд
+///(легаси Goto + таймер resume_spider_movement)
+/datum/ai_behavior/spider_skitter
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+	required_distance = 0
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/spider_skitter/setup(datum/ai_controller/controller)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/giant_spider/spider = controller.pawn
+	if(!istype(spider))
+		return FALSE
+	//легаси-выбор точки: pick(urange(20, src, 1)) мог вернуть и атом - берём его турф
+	var/turf/destination = get_turf(pick(urange(GIANT_SPIDER_SKITTER_RANGE, spider, 1)))
+	if(!destination)
+		return FALSE
+	controller.blackboard[BB_SPIDER_SKITTER_UNTIL] = world.time + GIANT_SPIDER_SKITTER_TIME
+	set_movement_target(controller, destination)
+
+/datum/ai_behavior/spider_skitter/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/poison/giant_spider/spider = controller.pawn
+	if(!istype(spider))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(world.time >= (controller.blackboard[BB_SPIDER_SKITTER_UNTIL] || 0) || get_turf(spider) == controller.current_movement_target)
+		//перебежка окончена: как легаси-разбредание, новое место становится
+		//домом - мирный якорь переезжает (следующий idle-тик поставит его здесь)
+		controller.clear_blackboard_key(BB_AI_PATROL_ANCHOR)
+		controller.blackboard[BB_AI_PATROL_RETURN_FAILS] = 0
+		controller.clear_blackboard_key(BB_AI_PATROL_RETURN_FROM)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_INSTANT //ещё бежим
+
+/datum/ai_behavior/spider_skitter/finish_action(datum/ai_controller/controller, succeeded)
+	. = ..()
+	controller.blackboard[BB_SPIDER_SKITTER_UNTIL] = null
+
+// ===== Цикл няньки =====
+
+///Цикл няньки: работает строго без боевой цели. Стоит ПЕРЕД hostile_fsm, чтобы
+///подход к кокону (может быть за мирным поводком) не отменялся патруль-возвратом.
+/datum/ai_planning_subtree/spider_nurse_cycle
+
+/datum/ai_planning_subtree/spider_nurse_cycle/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/giant_spider/nurse/nurse = controller.pawn
+	if(!istype(nurse))
+		return
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		//бой прерывает плетение, как легаси-else (сброс busy при активном AI);
+		//cocoon_target не трогаем - его чистит легаси-таймер GiveUp
+		if(nurse.busy)
+			nurse.busy = SPIDER_IDLE
+			nurse.stop_automated_movement = FALSE
+		return
+	switch(nurse.busy)
+		if(SPINNING_WEB, LAYING_EGGS, SPINNING_COCOON)
+			//легаси do_after в процессе: не мешаем и не бродим
+			return SUBTREE_RETURN_FINISH_PLANNING
+		if(MOVING_TO_TARGET)
+			if(QDELETED(nurse.cocoon_target))
+				return //GiveUp/чужой сброс докрутит состояние сам
+			controller.queue_behavior(/datum/ai_behavior/spider_wrap_target)
+			return SUBTREE_RETURN_FINISH_PLANNING
+	if(!SPT_PROB(GIANT_SPIDER_NURSE_PROB_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/spider_nurse_weave)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Решение няньки - легаси-приоритеты в том же порядке: кокон беспомощного ->
+///паутина на своём турфе -> кладка яиц (если сыта) -> обмотка предмета.
+///Сообщения и do_after идут делегацией легаси-прокам.
+/datum/ai_behavior/spider_nurse_weave
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/spider_nurse_weave/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/poison/giant_spider/nurse/nurse = controller.pawn
+	if(!istype(nurse) || nurse.busy || nurse.stat == DEAD)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/list/can_see = view(nurse, 10)
+	//first, check for potential food nearby to cocoon
+	for(var/mob/living/C in can_see)
+		if(C.stat && !istype(C, /mob/living/simple_animal/hostile/poison/giant_spider) && !C.anchored)
+			nurse.cocoon_target = C
+			nurse.busy = MOVING_TO_TARGET
+			//give up if we can't reach them after 10 seconds (легаси-таймер)
+			nurse.GiveUp(C)
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	//second, spin a sticky spiderweb on this tile
+	var/obj/structure/spider/stickyweb/W = locate() in get_turf(nurse)
+	if(!W)
+		//Activate спит в do_after - детачимся
+		INVOKE_ASYNC(nurse.lay_web, TYPE_PROC_REF(/datum/action/innate, Activate))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	//third, lay an egg cluster there
+	if(nurse.fed)
+		INVOKE_ASYNC(nurse.lay_eggs, TYPE_PROC_REF(/datum/action/innate, Activate))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	//fourthly, cocoon any nearby items so those pesky pinkskins can't use them
+	for(var/obj/O in can_see)
+		if(O.anchored)
+			continue
+		if(isitem(O) || isstructure(O) || ismachinery(O))
+			nurse.cocoon_target = O
+			nurse.busy = MOVING_TO_TARGET
+			nurse.stop_automated_movement = TRUE
+			nurse.GiveUp(O)
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+
+///Подход к цели кокона и обмотка вплотную (легаси-порог get_dist <= 1;
+///cocoon() сам перепроверит Adjacent и отыграет сообщения/do_after)
+/datum/ai_behavior/spider_wrap_target
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+	required_distance = 1
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/spider_wrap_target/setup(datum/ai_controller/controller)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/giant_spider/nurse/nurse = controller.pawn
+	if(!istype(nurse) || QDELETED(nurse.cocoon_target))
+		return FALSE
+	set_movement_target(controller, nurse.cocoon_target)
+
+/datum/ai_behavior/spider_wrap_target/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/poison/giant_spider/nurse/nurse = controller.pawn
+	if(!istype(nurse) || nurse.busy != MOVING_TO_TARGET || QDELETED(nurse.cocoon_target))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(get_dist(nurse, nurse.cocoon_target) <= 1)
+		//cocoon() спит в do_after - детачимся, как милишка от MeleeAction
+		INVOKE_ASYNC(nurse, TYPE_PROC_REF(/mob/living/simple_animal/hostile/poison/giant_spider/nurse, cocoon))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_INSTANT //ещё идём
+
+#undef GIANT_SPIDER_SKITTER_PROB_PER_SECOND
+#undef GIANT_SPIDER_NURSE_PROB_PER_SECOND
+#undef GIANT_SPIDER_SKITTER_TIME
+#undef GIANT_SPIDER_SKITTER_RANGE
 
 #undef SPIDER_IDLE
 #undef SPINNING_WEB

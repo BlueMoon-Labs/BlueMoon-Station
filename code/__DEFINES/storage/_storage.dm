@@ -1,5 +1,21 @@
 // storage_flags variable on /datum/component/storage
 
+/// Потолок каждого из общих пулов экранных объектов хранилища (GLOB.storage_item_holder_pool
+/// и GLOB.storage_volumetric_box_pool): что не влезло - удаляется, а не копится.
+///
+/// Пул - это список СВОБОДНЫХ объектов между закрытием одного хранилища и открытием
+/// следующего, а не всё, что сейчас на экранах. Считать его надо по обороту, а не по
+/// населению станции: закрылась сумка - столько холдеров и легло в пул до ближайшего
+/// открытия. Одна отрисовка столько никогда не просит: поштучная укладка ограничена
+/// размером экрана, а сыпучее идёт числовой укладкой, где холдер один на ТИП, а не на
+/// предмет (полный мешок помидоров - один холдер, не сто). Так что шестидесяти четырёх
+/// хватает на несколько закрытий подряд; залповое закрытие половины станции разом отдаст
+/// лишнее на qdel - ровно то, что происходило и вовсе без пула.
+///
+/// Больше держать незачем: в раунде 10028 у пер-компонентных пулов накопилось 18 487
+/// холдеров (около 15 МБ адресного пространства) именно потому, что потолка у них не было.
+#define STORAGE_UI_POOL_MAX 64
+
 // Storage limits. These can be combined (and usually are combined).
 /// Check max_items and contents.len when trying to insert
 #define STORAGE_LIMIT_MAX_ITEMS				(1<<0)
@@ -10,7 +26,8 @@
 /// Use max_w_class
 #define STORAGE_LIMIT_MAX_W_CLASS			(1<<3)
 
-#define STORAGE_FLAGS_LEGACY_DEFAULT		(STORAGE_LIMIT_MAX_ITEMS | STORAGE_LIMIT_COMBINED_W_CLASS | STORAGE_LIMIT_MAX_W_CLASS)
+#define STORAGE_FLAGS_LEGACY                (STORAGE_LIMIT_MAX_ITEMS | STORAGE_LIMIT_MAX_W_CLASS)
+#define STORAGE_FLAGS_LEGACY_DEFAULT		(STORAGE_FLAGS_LEGACY | STORAGE_LIMIT_COMBINED_W_CLASS)
 #define STORAGE_FLAGS_VOLUME_DEFAULT		(STORAGE_LIMIT_VOLUME | STORAGE_LIMIT_MAX_W_CLASS)
 
 // UI defines

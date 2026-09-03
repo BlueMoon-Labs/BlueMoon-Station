@@ -125,6 +125,35 @@
 
 	return generate_report(start_date, end_date, admin_filter, grouping, selected_columns, sort_column, sort_order)
 
+/datum/ticket_stats/proc/sql_order_clause(sort_column, sort_order, grouping)
+	var/order_dir = (sort_order == "DESC") ? "DESC" : "ASC"
+	var/list/whitelist_none = list(
+		"admin_name" = "admin_name",
+		"admin_rank" = "admin_rank",
+		"Total_tickets" = "Total_tickets",
+		"Ticket_replies" = "Ticket_replies",
+		"Rejected_count" = "Rejected_count",
+		"Resolved_count" = "Resolved_count",
+		"Closed_count" = "Closed_count",
+		"IC_Issue_count" = "IC_Issue_count",
+		"Interaction_count" = "Interaction_count",
+	)
+	var/list/whitelist_grouped = whitelist_none.Copy()
+	whitelist_grouped["period_group"] = "period_group"
+
+	var/list/allowed = (grouping == "none") ? whitelist_none : whitelist_grouped
+	var/sql_col = allowed[sort_column]
+	if(!sql_col)
+		sql_col = (grouping == "none") ? "admin_name" : "period_group"
+
+	if(grouping == "none")
+		return " ORDER BY [sql_col] [order_dir], admin_name ASC, admin_rank ASC"
+	if(sql_col == "period_group")
+		return " ORDER BY period_group [order_dir], admin_name ASC, admin_rank ASC"
+	if(sql_col == "admin_name" || sql_col == "admin_rank")
+		return " ORDER BY [sql_col] [order_dir], period_group ASC"
+	return " ORDER BY [sql_col] [order_dir], period_group ASC, admin_name ASC, admin_rank ASC"
+
 /datum/ticket_stats/proc/generate_report(start_date, end_date, admin_filter = "", grouping = "none", selected_columns = list(), sort_column = "admin_name", sort_order = "ASC")
 	if(length(start_date) <= 10)
 		start_date += " 00:00:00"
@@ -153,7 +182,8 @@
 		if(admin_filter && admin_filter != "")
 			main_query += " AND a.ckey LIKE '%[admin_filter]%'"
 
-		main_query += " GROUP BY a.ckey, a.rank ORDER BY a.ckey ASC"
+		main_query += " GROUP BY a.ckey, a.rank"
+		main_query += sql_order_clause(sort_column, sort_order, grouping)
 
 	else
 		// Optimized query with grouping using single JOIN
@@ -180,7 +210,7 @@
 
 		main_query += " GROUP BY [period_field], a.ckey, a.rank"
 		main_query += " HAVING period_group IS NOT NULL"
-		main_query += " ORDER BY period_group ASC, a.ckey ASC"
+		main_query += sql_order_clause(sort_column, sort_order, grouping)
 
 	var/datum/db_query/query = SSdbcore.NewQuery(main_query)
 
@@ -214,7 +244,7 @@
 	return list("success" = TRUE, "data" = results, "grouping" = grouping)
 
 /client/proc/show_admin_ticket_stats()
-	set category = "Admin.Game"
+	set category = "Admin"
 	set name = "Show Admin tickets Stats"
 
 	if(!check_rights(R_ADMIN))

@@ -3,11 +3,15 @@
 	typepath = /datum/round_event/falsealarm
 	weight = 20
 	max_occurrences = 5
+	// Раньше 30 минут (дефолт базы) флавор-пул почти пуст и крутится одна пыль - безобидную
+	// ложную тревогу можно пускать раньше для разнообразия.
+	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_BUREAUCRATIC
+	severity = DIRECTOR_SEVERITY_FLAVOR
 	description = "Fakes an event announcement."
 	admin_setup = list(/datum/event_admin_setup/listed_options/false_alarm)
 
-/datum/round_event_control/falsealarm/canSpawnEvent(players_amt, gamemode)
+/datum/round_event_control/falsealarm/can_fire(datum/director_signals/signals)
 	. = ..()
 	if(!.)
 		return .
@@ -26,9 +30,8 @@
 /datum/round_event/falsealarm/announce(fake)
 	if(fake) //What are you doing
 		return
-	var/players_amt = get_active_player_count(alive_check = 1, afk_check = 1, human_check = 1)
 
-	var/events_list = gather_false_events(players_amt)
+	var/events_list = gather_false_events()
 	var/datum/round_event_control/event_control
 	if(forced_type)
 		event_control = forced_type
@@ -40,12 +43,14 @@
 		Event.kill() //do not process this event - no starts, no ticks, no ends
 		Event.announce(TRUE) //just announce it like it's happening
 
-/proc/gather_false_events(players_amt)
+/proc/gather_false_events()
 	. = list()
-	for(var/datum/round_event_control/E in SSevents.control)
+	var/datum/director_signals/signals = SSdirector.collect_signals()
+	for(var/datum/director_action/action as anything in SSdirector.event_controls())
+		var/datum/round_event_control/E = action
 		if(istype(E, /datum/round_event_control/falsealarm))
 			continue
-		if(!E.canSpawnEvent(players_amt))
+		if(!E.can_fire(signals))
 			continue
 
 		var/datum/round_event/event = E.typepath
@@ -58,7 +63,8 @@
 
 /datum/event_admin_setup/listed_options/false_alarm/get_list()
 	var/list/possible_types = list()
-	for(var/datum/round_event_control/event_control in SSevents.control)
+	for(var/datum/director_action/action as anything in SSdirector.event_controls())
+		var/datum/round_event_control/event_control = action
 		var/datum/round_event/event = event_control.typepath
 		if(!initial(event.fakeable))
 			continue

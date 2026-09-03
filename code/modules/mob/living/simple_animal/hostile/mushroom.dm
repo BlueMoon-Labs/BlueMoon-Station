@@ -189,6 +189,8 @@
 
 /mob/living/simple_animal/hostile/mushroom/bullet_act(obj/item/projectile/P)
 	. = ..()
+	if(QDELETED(src)) //on_hit внутри ..() мог уничтожить цель
+		return
 	if(!P.nodamage)
 		Bruise()
 

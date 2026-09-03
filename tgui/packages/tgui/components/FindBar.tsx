@@ -5,7 +5,11 @@
  */
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
-import { Component, createRef } from 'inferno';
+import {
+  Component,
+  createRef,
+  KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 
 import { globalEvents, KeyEvent } from '../events';
 import { Icon } from './Icon';
@@ -196,7 +200,7 @@ export class FindBar extends Component<{}, FindBarState> {
     this.setState({ visible: false, matchCount: 0, currentMatch: -1 });
   };
 
-  handleInputKeyDown = (e: KeyboardEvent) => {
+  handleInputKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (e.key === KEY_ENTER) {
       e.preventDefault();
       this.navigateMatch(e.shiftKey);
@@ -320,18 +324,24 @@ export class FindBar extends Component<{}, FindBarState> {
     if (this.matches.length === 0) {
       return;
     }
-    this.setState((prevState) => {
-      let next = prevState.currentMatch + (backwards ? -1 : 1);
-      if (next >= this.matches.length) {
-        next = 0;
-      }
-      if (next < 0) {
-        next = this.matches.length - 1;
-      }
-      this.applyHighlights(next);
-      this.scrollToMatch(next);
-      return { currentMatch: next };
-    });
+    // The updater must stay pure (React may invoke it more than once),
+    // so the highlight/scroll side effects run in the post-commit callback.
+    this.setState(
+      (prevState) => {
+        let next = prevState.currentMatch + (backwards ? -1 : 1);
+        if (next >= this.matches.length) {
+          next = 0;
+        }
+        if (next < 0) {
+          next = this.matches.length - 1;
+        }
+        return { currentMatch: next };
+      },
+      () => {
+        this.applyHighlights(this.state.currentMatch);
+        this.scrollToMatch(this.state.currentMatch);
+      },
+    );
   }
 
   render() {

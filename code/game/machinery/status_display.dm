@@ -41,6 +41,14 @@
 	var/speed = 0
 	var/power_gen = 4000	// amount of power output at max speed
 
+	/// The (current_mode, line1, line2) the per-tick shuttle/supply timer helpers last pushed
+	/// to set_messages(). They run every SSmachines fire and almost always push the same text
+	/// (e.g. "" / "" while no shuttle timer is running, > 95 % of the round); this lets them
+	/// early-out instead of doing a redundant set_messages() → update_appearance() icon rebuild.
+	var/last_status_push_mode
+	var/last_status_push_line1
+	var/last_status_push_line2
+
 /obj/machinery/status_display/proc/get_power_output()
 	if(speed && !machine_stat && anchored)
 		return power_gen * speed / MAX_SPEED
@@ -111,6 +119,24 @@
 	update_appearance()
 
 /**
+ * Push (line1, line2) to set_messages() only when it differs from what we last pushed.
+ *
+ * The shuttle / supply / evac displays call this from process() every SSmachines fire, and the
+ * text is almost always identical to the previous tick's (e.g. "" / "" while no shuttle timer is
+ * running). Skipping the redundant set_messages() avoids a full update_appearance() icon/overlay
+ * rebuild every fire. set_messages() itself (and all the mode-transition rebuilds that go through
+ * it from receive_signal(), set_picture(), power_change()) is untouched, so this only suppresses
+ * the no-op per-tick rebuilds.
+ */
+/obj/machinery/status_display/proc/set_timer_messages(line1, line2)
+	if(current_mode == last_status_push_mode && line1 == last_status_push_line1 && line2 == last_status_push_line2)
+		return
+	last_status_push_mode = current_mode
+	last_status_push_line1 = line1
+	last_status_push_line2 = line2
+	set_messages(line1, line2)
+
+/**
  * Remove both message objs and null the fields.
  * Don't call this in subclasses.
  */
@@ -137,6 +163,15 @@
 	// if an AI is controlling, we don't update the overlay
 	if(master)
 		return
+
+	// Пока идёт отсчёт шаттла, меняется только вторая строка - короткий таймер вида
+	// "5:32". У короткой строки нет ни маски-фильтра, ни бесконечной анимации бегущей
+	// строки, поэтому весь оверлей-объект (qdel + new + vis_contents) пересоздавался
+	// ради одного maptext раз в секунду на каждом дисплее. Переписываем текст на месте:
+	// итоговый вид тот же - тот же maptext_y, тот же maptext_x = 0, тот же generate_text.
+	if(overlay && length_char(overlay.message) <= CHARS_PER_LINE && length_char(message) <= CHARS_PER_LINE)
+		overlay.set_centered_message(message)
+		return null
 
 	if(overlay)
 		qdel(overlay)
@@ -221,13 +256,13 @@
 			. += "\t<tt>[html_encode(message1_overlay.message)]</tt>"
 		if (message2_overlay.message)
 			. += "\t<tt>[html_encode(message2_overlay.message)]</tt>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 // Helper procs for child display types.
 /obj/machinery/status_display/proc/display_shuttle_status(obj/docking_port/mobile/shuttle)
 	if(!shuttle)
 		// the shuttle is missing - no processing
-		set_messages("shutl?","")
+		set_timer_messages("shutl?","")
 		return PROCESS_KILL
 	else if(shuttle.timer)
 		var/line1 = "-[shuttle.getModeStr()]-"
@@ -235,10 +270,10 @@
 
 		if(length_char(line2) > CHARS_PER_LINE)
 			line2 = "error"
-		set_messages(line1, line2)
+		set_timer_messages(line1, line2)
 	else
 		// don't kill processing, the timer might turn back on
-		set_messages("", "")
+		set_timer_messages("", "")
 
 /obj/machinery/status_display/proc/examine_shuttle(mob/user, obj/docking_port/mobile/shuttle)
 	if (shuttle)
@@ -293,6 +328,18 @@
 		// Centered text
 		maptext = generate_text(line, center = TRUE)
 		maptext_x = 0
+
+/**
+ * Переписывает текст короткой (центрированной) строки на месте.
+ *
+ * Вызывать можно только когда и старое, и новое сообщение укладываются в CHARS_PER_LINE:
+ * у длинной строки на объекте висят alpha_mask_filter и бесконечная animate() бегущей
+ * строки, которые здесь не снимаются.
+ */
+/obj/effect/overlay/status_display_text/proc/set_centered_message(line)
+	message = line
+	maptext = generate_text(line, center = TRUE)
+	maptext_x = 0
 
 /obj/effect/overlay/status_display_text/proc/generate_text(text, center)
 	return {"<div style="font-size:[FONT_SIZE];color:[FONT_COLOR];font:'[FONT_STYLE]'[center ? ";text-align:center" : ""]" valign="top">[text]</div>"}
@@ -415,7 +462,7 @@
 		line2 = SSshuttle.supply.getTimerStr()
 		if(length_char(line2) > CHARS_PER_LINE)
 			line2 = "Error"
-	set_messages(line1, line2)
+	set_timer_messages(line1, line2)
 
 /obj/machinery/status_display/supply/examine(mob/user)
 	. = ..()
@@ -781,10 +828,10 @@
 /obj/machinery/treadmill_monitor/emp_act(severity)
 	..()
 	if(!(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 		spawn(100)
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			update_icon()
 
 #undef CHARS_PER_LINE

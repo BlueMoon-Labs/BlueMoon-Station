@@ -18,6 +18,22 @@ SUBSYSTEM_DEF(pathfinder)
 	var/free
 	var/list/flow
 
+/// Opaque generation token for one pathfinder slot. A timed-out request may
+/// finish much later; the token prevents it from releasing a newer occupant.
+/datum/pathfinder_lease
+	var/datum/flowcache/cache
+	var/slot
+	var/timer
+	var/atom/owner
+
+/datum/pathfinder_lease/Destroy(force, ...)
+	if(timer)
+		deltimer(timer)
+	timer = null
+	cache = null
+	owner = null
+	return ..()
+
 /datum/flowcache/New(n)
 	. = ..()
 	lcount = n
@@ -25,24 +41,49 @@ SUBSYSTEM_DEF(pathfinder)
 	free = 1
 	flow = new/list(lcount)
 
+/datum/flowcache/Destroy(force, ...)
+	for(var/datum/pathfinder_lease/lease as anything in flow)
+		qdel(lease)
+	flow = null
+	return ..()
+
 /datum/flowcache/proc/getfree(atom/M)
 	if(run < lcount)
 		run += 1
 		while(flow[free])
 			CHECK_TICK
 			free = (free % lcount) + 1
-		var/t = addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/flowcache, toolong), free), 150, TIMER_STOPPABLE)
-		flow[free] = t
-		flow[t] = M
-		return free
+		var/datum/pathfinder_lease/lease = new
+		lease.cache = src
+		lease.slot = free
+		lease.owner = M
+		lease.timer = addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/flowcache, toolong), lease), 150, TIMER_STOPPABLE)
+		flow[free] = lease
+		return lease
 	else
 		return FALSE
 
-/datum/flowcache/proc/toolong(l)
-	log_game("Pathfinder route took longer than 150 ticks, src bot [flow[flow[l]]]")
-	found(l)
+/datum/flowcache/proc/toolong(datum/pathfinder_lease/lease)
+	if(QDELETED(lease) || lease.cache != src || flow[lease.slot] != lease)
+		return
+	log_game("Pathfinder route took longer than 150 ticks, src bot [lease.owner]")
+	found(lease, FALSE, FALSE)
 
-/datum/flowcache/proc/found(l)
-	deltimer(flow[l])
-	flow[l] = null
-	run -= 1
+/datum/flowcache/proc/found(datum/pathfinder_lease/lease, cancel_timer = TRUE, delete_lease = TRUE)
+	if(QDELETED(lease))
+		return
+	if(lease.cache != src || flow[lease.slot] != lease)
+		// A timeout already released this generation. Its original request owns
+		// the last reference and disposes the token when it eventually returns.
+		if(!lease.cache && delete_lease)
+			qdel(lease)
+		return
+	if(cancel_timer)
+		deltimer(lease.timer)
+	flow[lease.slot] = null
+	run = max(run - 1, 0)
+	lease.cache = null
+	lease.owner = null
+	lease.timer = null
+	if(delete_lease)
+		qdel(lease)

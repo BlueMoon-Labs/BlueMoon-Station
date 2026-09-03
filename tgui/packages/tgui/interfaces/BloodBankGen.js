@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Icon, NoticeBox, ProgressBar, Section, Stack, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-export const BloodBankGen = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BloodBankGen = (props) => {
+  const { act, data } = useBackend();
   const {
     bank,
     inputBag,

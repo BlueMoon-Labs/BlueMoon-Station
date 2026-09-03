@@ -12,6 +12,10 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"aas" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_rooms)
 "aaO" = (
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /turf/open/floor/plasteel,
@@ -6081,6 +6085,11 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/sectorhnorthoffices)
+"ccR" = (
+/obj/structure/rack/shelf,
+/obj/item/disk/gatereward/bigger,
+/turf/open/indestructible,
+/area/awaymission/ihategordon/big_offices)
 "cdo" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -14041,6 +14050,12 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"eKZ" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating{
+	icon_state = "platingdmg3"
+	},
+/area/awaymission/ihategordon/science_tunnel)
 "eLp" = (
 /obj/effect/festive/street/sidewalkwem,
 /turf/open/floor/plating/cobblestone,
@@ -23431,7 +23446,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular{
@@ -38323,7 +38337,7 @@
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/opposing/comlpex)
 "mKk" = (
-/obj/item/pda/neko,
+/obj/item/modular_computer/pda/neko,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/space)
 "mKp" = (
@@ -41970,6 +41984,7 @@
 /obj/structure/rockpilemesa{
 	icon_state = "stone3"
 	},
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/secret_rooms)
 "nWm" = (
@@ -50140,6 +50155,7 @@
 	pixel_x = 8;
 	pixel_y = 2
 	},
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/science_tunnel)
 "qJa" = (
@@ -55730,6 +55746,7 @@
 /area/awaymission/ihategordon/opposing/comlpex)
 "sAg" = (
 /obj/structure/table/reinforced,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/underground_tunnels)
 "sAh" = (
@@ -59322,7 +59339,6 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular{
@@ -64949,6 +64965,11 @@
 /obj/effect/turf_decal/siding/wideplating/dark,
 /turf/open/floor/plasteel,
 /area/awaymission/ihategordon/opposing/comlpex)
+"vyR" = (
+/obj/effect/festive/street/streetlinewest,
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/cobblestone,
+/area/awaymission/ihategordon/outsideofmesa)
 "vzk" = (
 /obj/structure/urbanismbigcrate{
 	icon_state = "cratealt";
@@ -66451,7 +66472,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
 	req_access_txt = "5"
 	},
 /obj/structure/table/glass,
@@ -70891,6 +70911,7 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
 	},
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/sectorhnorthoffices)
 "xFb" = (
@@ -77998,7 +78019,7 @@ bWZ
 bWZ
 bWZ
 rPb
-rPb
+vyR
 rPb
 ewc
 bWZ
@@ -91404,7 +91425,7 @@ qzE
 qzE
 uIp
 flv
-ieG
+eKZ
 nZO
 szM
 flv
@@ -101876,7 +101897,7 @@ oCO
 vCF
 klO
 cps
-ffD
+aas
 lej
 jXp
 klO
@@ -128715,7 +128736,7 @@ omW
 omW
 omW
 gWK
-gWK
+ccR
 gWK
 gWK
 eDr

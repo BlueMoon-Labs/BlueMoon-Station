@@ -3,8 +3,8 @@ import { AnimatedNumber, Box, Button, Section, Table } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
 
-export const CargoBountyConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CargoBountyConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     bountydata = [],
   } = data;
@@ -103,8 +103,8 @@ export const CargoBountyConsole = (props, context) => {
   );
 };
 
-const BountyHeader = (props, context) => {
-  const { act, data } = useBackend(context);
+const BountyHeader = (props) => {
+  const { act, data } = useBackend();
   const {
     stored_cash,
   } = data;

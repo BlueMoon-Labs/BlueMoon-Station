@@ -210,6 +210,11 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
+/obj/structure/statue/sandstone/venus{
+	dir = 4;
+	pixel_y = 9;
+	anchored = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "cV" = (
@@ -343,6 +348,10 @@
 	specialfunctions = 4
 	},
 /turf/open/floor/carpet/blue,
+/area/awaymission/jungleresort)
+"eS" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating,
 /area/awaymission/jungleresort)
 "eT" = (
 /obj/machinery/light/small{
@@ -1178,8 +1187,9 @@
 /turf/open/floor/wood,
 /area/awaymission/jungleresort)
 "rv" = (
-/obj/item/statuebust,
 /obj/structure/table/wood/fancy,
+/obj/item/his_grace,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "rx" = (
@@ -1714,7 +1724,7 @@
 /turf/open/floor/grass/grass0,
 /area/awaymission/jungleresort)
 "yr" = (
-/obj/structure/statue/sandstone/venus,
+/obj/structure/statue/sandstone/assistant,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "yu" = (
@@ -2663,6 +2673,17 @@
 /obj/structure/stone_tile/slab/burnt,
 /turf/open/floor/plating/dirt/jungle,
 /area/awaymission/jungleresort)
+"JW" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/structure/statue/sandstone/venus{
+	pixel_y = 9;
+	dir = 1;
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/jungleresort)
 "JZ" = (
 /obj/structure/flora/tree/jungle,
 /obj/effect/turf_decal/weather/dirt{
@@ -3026,6 +3047,11 @@
 /area/awaymission/jungleresort)
 "Pp" = (
 /obj/structure/flora/junglebush/c,
+/turf/open/floor/plating/dirt/jungle,
+/area/awaymission/jungleresort)
+"Pq" = (
+/obj/structure/stone_tile/slab,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating/dirt/jungle,
 /area/awaymission/jungleresort)
 "Pu" = (
@@ -5412,7 +5438,7 @@ tT
 RP
 BQ
 aL
-tT
+Pq
 oZ
 AR
 AR
@@ -13463,7 +13489,7 @@ AR
 AR
 AR
 Xj
-cT
+JW
 JF
 Dj
 Dj
@@ -18295,7 +18321,7 @@ AR
 Xj
 qa
 qa
-Ih
+eS
 Ih
 kW
 AR

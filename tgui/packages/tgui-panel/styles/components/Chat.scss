@@ -84,10 +84,17 @@ $color-bg-section: base.$color-bg-section !default;
 
 .Chat__highlight {
   color: #000;
+
+  // Спаны с background-clip: text делают текст прозрачным через
+  // наследуемый -webkit-text-fill-color; без сброса подсветка
+  // превращается в нечитаемую цветную плашку.
+  -webkit-text-fill-color: #000;
+  text-shadow: none;
 }
 
 .Chat__highlight--restricted {
   color: #fff;
+  -webkit-text-fill-color: #fff;
   background-color: #a00;
   font-weight: bold;
 }
@@ -153,4 +160,165 @@ hr {
   margin-right: 2em;
   margin-bottom: 0.3em;
   margin-top: 0.3em;
+}
+
+// Кастомизация стилей сообщений (вкладка настроек "Стили текста").
+// Классы Chat--plain-<стиль> вешаются на корень чата и возвращают
+// выбранному спану вид обычного текста. Цвета переопределяются через
+// CSS-переменные --cs-<стиль>-color в темах goon/chat-dark|light.
+@mixin plain-message-style {
+  color: inherit;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+  font-size: 100%;
+  letter-spacing: inherit;
+  opacity: 1;
+  text-shadow: none;
+  border-left: none;
+  padding-left: 0;
+  animation: none;
+  transform: none;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+}
+
+.Chat--plain-emote .emote {
+  @include plain-message-style;
+}
+
+.Chat--plain-whisper .whisper {
+  @include plain-message-style;
+}
+
+.Chat--plain-singing .singing {
+  @include plain-message-style;
+}
+
+.Chat--plain-lewd .lewd {
+  @include plain-message-style;
+}
+
+.Chat--plain-purr .purr {
+  @include plain-message-style;
+}
+
+.Chat--plain-croon .croon {
+  @include plain-message-style;
+}
+
+.Chat--plain-deadsay .deadsay {
+  @include plain-message-style;
+}
+
+.Chat--plain-telepathy .telepathy,
+.Chat--plain-telepathy .telepathybold {
+  @include plain-message-style;
+}
+
+.Chat--plain-signlang .signlang {
+  @include plain-message-style;
+}
+
+.Chat--plain-signlang .signlang::before {
+  content: none;
+}
+
+.Chat--plain-thought .thought {
+  @include plain-message-style;
+}
+
+.Chat--plain-thought .thought::before {
+  content: none;
+}
+
+.Chat--plain-dream .dream {
+  @include plain-message-style;
+}
+
+// Глобальный тумблер декоративных анимаций особых стилей чата.
+.Chat--fxAnimOff .mesmerize,
+.Chat--fxAnimOff .infernal_ascension,
+.Chat--fxAnimOff .supermatter_delam,
+.Chat--fxAnimOff .ai_corruption,
+.Chat--fxAnimOff .broadcast_static,
+.Chat--fxAnimOff .glitch,
+.Chat--fxAnimOff .dream,
+.Chat--fxAnimOff .last_breath {
+  animation: none;
+}
+
+// Библиотека анимаций для кастомизации стилей игроком.
+// Только opacity/text-shadow/color - transform ломает перенос строк,
+// а на длинных сообщениях это критично.
+@keyframes cs-pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+// text-shadow без цвета = currentColor, свечение подстраивается
+// под выбранный игроком цвет стиля.
+@keyframes cs-glow {
+  0% {
+    text-shadow: 0 0 1px;
+  }
+
+  100% {
+    text-shadow: 0 0 7px;
+  }
+}
+
+@keyframes cs-flicker {
+  0% {
+    opacity: 0.95;
+  }
+
+  25% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  75% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes cs-rainbow {
+  0%, 100% {
+    color: #f06a6a;
+  }
+
+  17% {
+    color: #e8a13c;
+  }
+
+  33% {
+    color: #c9c93e;
+  }
+
+  50% {
+    color: #5cc95c;
+  }
+
+  67% {
+    color: #5aa8e8;
+  }
+
+  83% {
+    color: #b06ae0;
+  }
 }

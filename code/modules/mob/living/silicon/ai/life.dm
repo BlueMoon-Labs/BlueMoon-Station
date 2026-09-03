@@ -9,7 +9,7 @@
 	//I'm not removing that shitton of tabs, unneeded as they are. -- Urist
 		//Being dead doesn't mean your temperature never changes
 
-	update_gravity(mob_has_gravity())
+	refresh_gravity()
 
 	handle_status_effects()
 

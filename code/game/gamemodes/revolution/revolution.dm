@@ -118,6 +118,8 @@
 
 /datum/game_mode/revolution/process()
 	check_counter++
+	if(revolution)
+		revolution.process_shuttle_delay_reinforcement()
 	if(check_counter >= 5)
 		if(!finished && world.time >= completioncheckstart)
 			SSticker.mode.check_win()
@@ -175,6 +177,9 @@
 			if(ishuman(rev_mind.current))
 				return FALSE
 	return TRUE
+
+/datum/game_mode/revolution/proc/living_revolutionary_on_emergency_shuttle()
+	return revolution?.living_revolutionary_on_emergency_shuttle()
 
 
 /datum/game_mode/revolution/set_round_result()

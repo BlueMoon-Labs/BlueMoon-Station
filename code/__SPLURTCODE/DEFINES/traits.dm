@@ -14,6 +14,7 @@
 #define TRAIT_GFLUID_DETECT				"genital_fluid_detect"
 #define TRAIT_ASHRESISTANCE				"ash_resistance"
 #define TRAIT_TOUGHT					"tought"
+#define TRAIT_TOUGHT_DAMAGE				10 // При изменении, поменять desc у /datum/quirk/tough и /datum/mutation/human/bm/tough
 
 // Hyperstation traits
 #define TRAIT_PHARMA            		"hepatic_pharmacokinesis"

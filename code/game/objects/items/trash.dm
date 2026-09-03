@@ -10,6 +10,19 @@
 /obj/item/trash/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/trash)
+	if(isturf(loc))
+		become_cleanbot_targetable()
+
+/obj/item/trash/Destroy()
+	lose_cleanbot_targetable()
+	return ..()
+
+/obj/item/trash/Moved(atom/old_loc, movement_dir, forced)
+	. = ..()
+	if(isturf(loc))
+		become_cleanbot_targetable()
+	else
+		lose_cleanbot_targetable()
 
 /obj/item/trash/raisins
 	name = "\improper 4no raisins"

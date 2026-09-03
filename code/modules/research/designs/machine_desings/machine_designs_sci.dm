@@ -177,3 +177,11 @@
 	build_path = /obj/item/circuitboard/machine/explosive_compressor
 	category = list("Research Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/board/ipc_constructor
+	name = "Machine Design (Synthetic Constructor Board)"
+	desc = "The circuit board for a synthetic constructor."
+	id = "ipc_constructor"
+	build_path = /obj/item/circuitboard/machine/ipc_constructor
+	category = list("Research Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

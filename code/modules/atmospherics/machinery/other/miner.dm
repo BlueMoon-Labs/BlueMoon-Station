@@ -12,6 +12,7 @@
 	icon_state = "miner"
 	density = FALSE
 	resistance_flags = INDESTRUCTIBLE|ACID_PROOF|FIRE_PROOF
+	use_power = IDLE_POWER_USE
 	var/spawn_id = null
 	var/spawn_temp = T20C
 	var/spawn_mol = MOLES_CELLSTANDARD * 10
@@ -71,16 +72,23 @@
 /obj/machinery/atmospherics/miner/proc/set_active(setting)
 	if(active != setting)
 		active = setting
-		update_icon()
+	else
+		active = !setting
+	update_icon()
 
 /obj/machinery/atmospherics/miner/proc/set_broken(setting)
-	if(broken != setting)
-		broken = setting
-		update_icon()
+	if(broken == setting)
+		return // check_operation() calls this every process_atmos() tick — don't rebuild the icon for nothing
+	broken = setting
+	update_icon()
 
 /obj/machinery/atmospherics/miner/proc/update_power()
 	if(!active)
 		active_power_usage = idle_power_usage
+	if(powered() && !active)
+		set_active(active)
+	else if (!powered() && active)
+		set_active(!active)
 	var/turf/T = get_turf(src)
 	var/datum/gas_mixture/G = T.return_air()
 	var/P = G.return_pressure()
@@ -112,6 +120,10 @@
 	cut_overlays()
 	if(broken)
 		add_overlay("broken")
+	else if(!active)
+		var/mutable_appearance/off_overlay = mutable_appearance(icon, "off")
+		off_overlay.color = "#FF0000"
+		add_overlay(off_overlay)
 	else if(active)
 		var/mutable_appearance/on_overlay = mutable_appearance(icon, "on")
 		on_overlay.color = overlay_color
@@ -135,7 +147,12 @@
 	merger.set_temperature(spawn_temp)
 	O.assume_air(merger)
 	qdel(merger)
-	O.air_update_turf(TRUE)
+	// assume_air() already wakes the turf. The `update = TRUE` that used to sit
+	// here additionally ran ImmediateCalculateAdjacentTurfs() and, through it,
+	// excited_group.garbage_collect() - every single fire, for a machine that
+	// never changes adjacency. The group around a running miner was torn down and
+	// rebuilt continuously, so breakdown_cooldown never accumulated and the room
+	// never got averaged once in a whole round.
 
 /obj/machinery/atmospherics/miner/attack_ai(mob/living/silicon/user)
 	if(broken)
@@ -159,7 +176,7 @@
 
 /obj/machinery/atmospherics/miner/toxins
 	name = "\improper Plasma Gas Miner"
-	overlay_color = "#FF0000"
+	overlay_color = "#1cf7ff"
 	spawn_id = GAS_PLASMA
 
 /obj/machinery/atmospherics/miner/carbon_dioxide

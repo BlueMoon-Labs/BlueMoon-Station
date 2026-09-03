@@ -62,6 +62,15 @@
 ///Empty ID define
 #define TIMER_ID_NULL -1
 
+/**
+ * Позиция "не в колесе бакетов".
+ *
+ * Общая для обоих колёс: /datum/timedevent.bucket_pos у SStimer и
+ * /datum/chatmessage.runechat_bucket_pos у SSrunechat. Индексы бакетов начинаются с
+ * единицы, поэтому любое значение меньше её означает "таймера/сообщения в колесе нет".
+ */
+#define BUCKET_POS_NONE -1
+
 //! ## Initialization subsystem
 
 ///New should not call Initialize
@@ -99,6 +108,8 @@
 	}\
 }
 
+/* МЫ НЕ ИСПОЛЬЗУЕМ ЭТИ ДЕФАЙНЫ
+При успешной или не успешной инициализации и т.д. вызывайте return ..()
 //! ### SS initialization hints
 /**
  * Negative values incidate a failure or warning of some kind, positive are good.
@@ -116,6 +127,7 @@
 
 /// Successful, but don't print anything. Useful if subsystem was disabled.
 #define SS_INIT_NO_NEED 3
+*/
 
 //! ### SS initialization load orders
 // Subsystem init_order, from highest priority to lowest priority
@@ -139,6 +151,7 @@
 #define INIT_ORDER_RESEARCH			75
 #define INIT_ORDER_STATION			74 //This is high priority because it manipulates a lot of the subsystems that will initialize after it.
 #define INIT_ORDER_EVENTS			70
+#define INIT_ORDER_DIRECTOR			69
 #define INIT_ORDER_JOBS				65
 #define INIT_ORDER_QUIRKS			60
 #define INIT_ORDER_AI_MOVEMENT 		56 //We need the movement setup
@@ -147,6 +160,7 @@
 // #define INIT_ORDER_TCG				55
 #define INIT_ORDER_MAPPING			50
 #define INIT_ORDER_TIMETRACK		47
+#define INIT_ORDER_SPATIAL_GRID		46 // после маппинга (нужны z-уровни), до инита атомов (они регистрируются в гриде)
 #define INIT_ORDER_NETWORKS			45
 #define INIT_ORDER_ECONOMY			40
 #define INIT_ORDER_HOLODECK			35
@@ -178,6 +192,7 @@
 #define INIT_ORDER_STATPANELS		-98
 #define INIT_ORDER_HILBERTSHOTEL	-99
 #define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
+#define INIT_ORDER_INIT_PROFILER	-101 //Truly last: dumps the init-time profile and clears it from the round profile.
 
 
 // Subsystem fire priority, from lowest to highest priority
@@ -185,6 +200,7 @@
 
 #define FIRE_PRIORITY_VORE			5
 #define FIRE_PRIORITY_MAIL			7 // BLUEMOON ADD
+#define FIRE_PRIORITY_ASSETS		20
 #define FIRE_PRIORITY_ACTIVITY		10
 #define FIRE_PRIORITY_IDLE_NPC		10
 #define FIRE_PRIORITY_SERVER_MAINT	10
@@ -213,7 +229,7 @@
 #define FIRE_PRIORITY_PARALLAX		65
 #define FIRE_PRIORITY_MOBS			100
 #define FIRE_PRIORITY_TGUI			110
-#define FIRE_PRIORITY_PROJECTILES	200
+#define FIRE_PRIORITY_PROJECTILES	850 // Real-time combat lane: below diagnostics/input, above Timer backlog.
 #define FIRE_PRIORITY_TICKER		200
 #define FIRE_PRIORITY_ATMOS_ADJACENCY	300
 #define FIRE_PRIORITY_EXPLOSIONS	350
@@ -221,10 +237,13 @@
 #define FIRE_PRIORITY_CHAT			400
 #define FIRE_PRIORITY_RUNECHAT		410
 #define FIRE_PRIORITY_OVERLAYS		500
-#define FIRE_PRIORITY_CALLBACKS		600
 // #define FIRE_PRIORITY_EXPLOSIONS	666
 #define FIRE_PRIORITY_TIMER			700
 #define FIRE_PRIORITY_SOUND_LOOPS 800
+#define FIRE_PRIORITY_TICK_SPIKES	900 // Замер дрифта тика должен идти до тяжёлых тикеров (таймеры и т.д.), чтобы читать usage до основной работы МК
+#define FIRE_PRIORITY_MOUSE_ENTERED	996 // Схлопнутые ховеры мыши: после отложенных вербов, до остального
+#define FIRE_PRIORITY_SPEECH_CONTROLLER	998 // Отложенная речь исполняется раньше остальных отложенных вербов
+#define FIRE_PRIORITY_DELAYED_VERBS	997 // Очередь SSverb_manager: отложенные при перегрузе тика вербы
 #define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
 
 // SS runlevels
@@ -251,6 +270,15 @@
 #define SSAIR_FINALIZE_TURFS 11
 #define SSAIR_ATMOSMACHINERY_AIR 12
 #define SSAIR_DEFERRED_AIRS 13
+#define SSAIR_DECOMPRESSION 14
+#define SSAIR_ATOMS 15
+
+// Слоты пакета очереди расширения пайпнетов (SSair.expansion_queue): сеть,
+// граница BFS и посещённые трубы. Состояние живёт в пакете, чтобы обход
+// гигантской сети мог отдавать тик и продолжаться со следующего фаера.
+#define SSAIR_REBUILD_PIPELINE 1
+#define SSAIR_REBUILD_BORDER 2
+#define SSAIR_REBUILD_SEEN 3
 
 // Subsystem delta times or tickrates, in seconds. I.e, how many seconds in between each process() call for objects being processed by that subsystem.
 // Only use these defines if you want to access some other objects processing delta_time, otherwise use the delta_time that is sent as a parameter to process()

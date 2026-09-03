@@ -17,6 +17,10 @@
 	considered_combat_role = TRUE
 	alt_titles = list(
 		"Bridge Advisor",
+		"Command Secretary",
+		"Command Officer",
+		"Bridge Secretary",
+		"Bridge Intern",
 		"Bridge Bitch",
 		"Bridge Canine",
 		"Bridge Pet",
@@ -25,7 +29,6 @@
 		"Dick Attachment",
 		"Ensign",
 		"Pussy Attachment",
-		"Secretary"
 		)
 
 	outfit = /datum/outfit/job/bridgeofficer
@@ -39,7 +42,7 @@
 						ACCESS_THEATRE, ACCESS_CHAPEL_OFFICE, ACCESS_LIBRARY, ACCESS_RESEARCH, ACCESS_VAULT,
 						ACCESS_HOP, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH,
 						ACCESS_MEDICAL, ACCESS_RESEARCH, ACCESS_CARGO, ACCESS_ENGINE,
-						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING)
+						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING, ACCESS_PRODUCTION_SERVICE)
 	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_COURT, ACCESS_WEAPONS,
 						ACCESS_MEDICAL, ACCESS_ENGINE, ACCESS_CHANGE_IDS, ACCESS_HEADS,
 						ACCESS_ALL_PERSONAL_LOCKERS, ACCESS_MAINT_TUNNELS, ACCESS_BAR, ACCESS_JANITOR, ACCESS_CONSTRUCTION, ACCESS_MORGUE,
@@ -47,7 +50,7 @@
 						ACCESS_THEATRE, ACCESS_CHAPEL_OFFICE, ACCESS_LIBRARY, ACCESS_RESEARCH, ACCESS_VAULT,
 						ACCESS_HOP, ACCESS_RC_ANNOUNCE, ACCESS_KEYCARD_AUTH,
 						ACCESS_MEDICAL, ACCESS_RESEARCH, ACCESS_CARGO, ACCESS_ENGINE,
-						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING)
+						ACCESS_BRIDGE_OFFICER, ACCESS_MAILSORTING, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_COMMAND
 
 	mind_traits = list(TRAIT_FENCER)
@@ -70,9 +73,9 @@
 	gloves = /obj/item/clothing/gloves/color/black
 	glasses = /obj/item/clothing/glasses/hud/skills
 	shoes = /obj/item/clothing/shoes/laceup
-	l_pocket =  /obj/item/pda/heads
+	l_pocket =  /obj/item/modular_computer/pda/heads
 
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
 	box = /obj/item/storage/box/survival/command
 	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
 
@@ -80,7 +83,7 @@
 	name = "Syndicate Bridge Officer"
 	jobtype = /datum/job/bridgeofficer
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	gloves = /obj/item/clothing/gloves/combat
 	ears = /obj/item/radio/headset/headset_bo/bowman
@@ -89,13 +92,14 @@
 	glasses = /obj/item/clothing/glasses/hud/skills
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer, /obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/plasmaman/bridgeofficer
 	name = "Bridge Officer Plasmaman"

@@ -121,6 +121,7 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "shower"
 	name = "DS-2 'Blessed' | Brig Shower Room"
+	sub_areas = list()
 	valid_to_shower = TRUE
 
 //Service
@@ -141,6 +142,7 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "shower"
 	name = "DS-2 'Blessed' | Shower Room"
+	sub_areas = list()
 	valid_to_shower = TRUE
 
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/lounge
@@ -178,6 +180,7 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "shower"
 	name = "Listening Post Shower"
+	sub_areas = list()
 	valid_to_shower = TRUE
 
 //Port Tarkon
@@ -224,6 +227,7 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "shower"
 	name = "P-T Shower Room"
+	sub_areas = list()
 	valid_to_shower = TRUE
 
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff

@@ -133,13 +133,24 @@ Simple datum which is instanced once per type and is used for every object of sa
 	if(isopenturf(T))
 		if(turf_sound_override)
 			var/turf/open/O = T
-			O.footstep = turf_sound_override
-			O.barefootstep = turf_sound_override + "barefoot"
-			O.clawfootstep = turf_sound_override + "claw"
+			O.footstep = (turf_sound_override in GLOB.footstep) ? turf_sound_override : null
+			O.barefootstep = resolve_footstep_key(GLOB.barefootstep, turf_sound_override, "barefoot")
+			O.clawfootstep = resolve_footstep_key(GLOB.clawfootstep, turf_sound_override, "claw")
 			O.heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	// if(alpha < 255)
 	// 	T.AddElement(/datum/element/turf_z_transparency, TRUE)
 	return
+
+/// Maps a turf_sound_override into a footstep key that actually exists in the given sound list.
+/// Tries the suffixed variant first ("wood" -> "woodbarefoot"), then the plain key ("sand"/"meat"),
+/// otherwise returns null so the footstep code skips playback instead of indexing a missing key.
+/datum/material/proc/resolve_footstep_key(list/sound_list, base_key, suffix)
+	var/suffixed_key = base_key + suffix
+	if(suffixed_key in sound_list)
+		return suffixed_key
+	if(base_key in sound_list)
+		return base_key
+	return null
 
 ///This proc is called when the material is removed from an object.
 /datum/material/proc/on_removed(atom/source, amount, material_flags)

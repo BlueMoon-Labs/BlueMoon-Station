@@ -516,7 +516,7 @@
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Ii" = (
 /turf/open/floor/plasteel/stairs,
@@ -545,7 +545,7 @@
 /area/hilbertshotel)
 "JM" = (
 /obj/structure/window/reinforced,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Kt" = (
 /obj/structure/table,
@@ -653,7 +653,7 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "QO" = (
 /obj/structure/flora/rock/pile/largejungle,

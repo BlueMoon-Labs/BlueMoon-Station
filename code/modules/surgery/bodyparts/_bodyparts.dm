@@ -70,6 +70,8 @@
 
 	var/species_flags_list = list()
 	var/dmg_overlay_type //the type of damage overlay (if any) to use when this bodypart is bruised/burned.
+	/// If we're bleeding, which icon are we displaying on this part
+	var/bleed_overlay_icon
 
 	//Damage messages used by help_shake_act()
 	var/light_brute_msg = "немного повреждена"
@@ -145,6 +147,10 @@
 	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
+		//qdel присоединённой руки мимо drop_limb оставлял протухшую ссылку:
+		//put_in_hand дальше рантаймил на is_disabled с owner=null
+		if(held_index && length(owner.hand_bodyparts) >= held_index && owner.hand_bodyparts[held_index] == src)
+			owner.hand_bodyparts[held_index] = null
 		owner = null
 	return ..()
 
@@ -192,6 +198,8 @@
 		playsound(T, 'sound/misc/splort.ogg', 50, 1, -1)
 	if(current_gauze)
 		QDEL_NULL(current_gauze)
+		if(owner)
+			owner.update_bandage_overlays()
 	for(var/obj/item/organ/drop_organ in get_organs())
 		drop_organ.transfer_to_limb(src, owner)
 
@@ -222,7 +230,7 @@
 //Applies brute and burn damage to the organ. Returns 1 if the damage-icon states changed at all.
 //Damage will not exceed max_damage using this proc
 //Cannot apply negative damage
-/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
+/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE, can_dismember = TRUE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
 	if(owner && (owner.status_flags & GODMODE))
 		return FALSE	//godmode
 	var/dmg_mlt = CONFIG_GET(number/damage_multiplier)
@@ -252,10 +260,10 @@
 	var/wounding_type = (brute > burn ? WOUND_BLUNT : WOUND_BURN)
 	var/wounding_dmg = max(brute, burn)
 	var/mangled_state = get_mangled_state()
-	var/bio_state = owner.get_biological_state()
-	var/easy_dismember = HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
-	var/glass_bones = HAS_TRAIT(owner, TRAIT_GLASS_BONES)
-	var/paper_skin = HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
+	var/bio_state = owner ? owner.get_biological_state() : (BIO_JUST_FLESH | BIO_JUST_BONE)
+	var/easy_dismember = owner && HAS_TRAIT(owner, TRAIT_EASYDISMEMBER) // if we have easydismember, we don't reduce damage when redirecting damage to different types (slashing weapons on mangled/skinless limbs attack at 100% instead of 50%)
+	var/glass_bones = owner && HAS_TRAIT(owner, TRAIT_GLASS_BONES)
+	var/paper_skin = owner && HAS_TRAIT(owner, TRAIT_PAPER_SKIN)
 
 	if(wounding_type == WOUND_BLUNT)
 		if(sharpness == SHARP_EDGED)
@@ -275,7 +283,7 @@
 				wounding_type = WOUND_BLUNT
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// if we're flesh only, all blunt attacks become weakened slashes in terms of wound damage
 		if(BIO_JUST_FLESH)
@@ -283,7 +291,7 @@
 				wounding_type = WOUND_SLASH
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (paper_skin ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// standard humanoids
 		if(BIO_FLESH_BONE)
@@ -300,13 +308,18 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	// now we have our wounding_type and are ready to carry on with wounds and dealing the actual damage
 	if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
 		check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
 
+	// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
+	// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
+	// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
+	// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
+	// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
 	for(var/i in wounds)
 		var/datum/wound/iter_wound = i
 		iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
@@ -355,7 +368,7 @@
 	return update_bodypart_damage_state()
 
 /// Allows us to roll for and apply a wound without actually dealing damage. Used for aggregate wounding power with pellet clouds
-/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE)
+/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE, can_dismember = TRUE)
 	if(!owner || phantom_wounding_dmg <= WOUND_MINIMUM_DAMAGE || wound_bonus == CANT_WOUND)
 		return
 
@@ -379,7 +392,7 @@
 			else if(wounding_type == WOUND_PIERCE)
 				wounding_type = WOUND_BLUNT
 				phantom_wounding_dmg *= (easy_dismember ? 1 : 0.75)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// note that there's no handling for BIO_JUST_FLESH since we don't have any that are that right now (slimepeople maybe someday)
 		// standard humanoids
@@ -393,7 +406,7 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					phantom_wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	check_wounding(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus)
@@ -515,7 +528,11 @@
 //Heals brute and burn damage for the organ. Returns 1 if the damage-icon states changed at all.
 //Damage cannot go below zero.
 //Cannot remove negative damage (i.e. apply damage)
-/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE)
+/obj/item/bodypart/proc/heal_damage(brute, burn, stamina, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
+	// Bloodsucker antags have TRAIT_NONATURALHEAL but they use this proc to heal themselves despite the clear decription of this trait.
+	// Not wise. But I don't want to ruin their mechanics. So let them have this proc.
+	if((brute || burn) && HAS_TRAIT_NOT_FROM(owner, TRAIT_NONATURALHEAL, BLOODSUCKER_TRAIT) && !forced)
+		return
 
 	if(only_robotic && !is_robotic_limb()) //This makes organic limbs not heal when the proc is in Robotic mode.
 		return
@@ -523,9 +540,19 @@
 	if(only_organic && !is_organic_limb(FALSE)) //This makes robolimbs and hybridlimbs not healable by chems.
 		return
 
+	var/brute_was = brute_dam
+	var/burn_was = burn_dam
+	var/stamina_was = stamina_dam
+
 	brute_dam	= round(max(brute_dam - brute, 0), DAMAGE_PRECISION)
 	burn_dam	= round(max(burn_dam - burn, 0), DAMAGE_PRECISION)
 	stamina_dam = round(max(stamina_dam - stamina, 0), DAMAGE_PRECISION)
+
+	// Healing an already-whole limb is the common case for regeneration effects
+	// and used to drag the entire owner.updatehealth() cascade along with it.
+	if(brute_dam == brute_was && burn_dam == burn_was && stamina_dam == stamina_was)
+		return FALSE
+
 	if(owner && updating_health)
 		owner.updatehealth()
 	consider_processing()
@@ -671,7 +698,7 @@
 	var/mob/living/carbon/C
 	if(source)
 		source.create_weakref()
-	else
+	else if(owner)
 		owner.create_weakref()
 	if(source)
 		C = source
@@ -727,6 +754,13 @@
 			should_draw_gender = FALSE
 		else
 			should_draw_gender = S.sexes
+		if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
+			should_draw_gender = TRUE
+			var/list/current_states = icon_states(icon)
+			if(body_zone == BODY_ZONE_HEAD && !(("robotic_head" in current_states) || (("head_f" in current_states) && ("head_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
+			else if(body_zone == BODY_ZONE_CHEST && !(("robotic_chest" in current_states) || (("chest_f" in current_states) && ("chest_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
 
 		var/mut_colors = (MUTCOLORS in S.species_traits)
 		if(mut_colors)
@@ -760,11 +794,12 @@
 					else
 						marking_value = "plain"
 					var/list/color_values
-					if(length(marking) == 3)
+					if(length(marking) >= 3 && islist(marking[3]))
 						color_values = marking[3]
 					else
 						color_values = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
-					body_markings_list += list(list(body_markings_icon, marking_value, color_values))
+					var/emissive_value = (length(marking) >= 4 && marking[4]) ? TRUE : FALSE
+					body_markings_list += list(list(body_markings_icon, marking_value, color_values, emissive_value))
 
 			markings_color = list(colorlist)
 		else
@@ -824,6 +859,28 @@
 		I.pixel_y = px_y
 	add_overlay(standing)
 
+/obj/item/bodypart/proc/resolve_robotic_icon_state(icon_file, state_name)
+	if(!icon_file || !state_name)
+		return state_name
+
+	var/list/available_states = icon_states(icon_file)
+	if(state_name in available_states)
+		return state_name
+
+	var/robotic_state
+	switch(state_name)
+		if("head_f", "head_m")
+			robotic_state = "robotic_head"
+		if("chest_f", "chest_m")
+			robotic_state = "robotic_chest"
+		else
+			robotic_state = "robotic_[state_name]"
+
+	if(robotic_state in available_states)
+		return robotic_state
+
+	return state_name
+
 //Gives you a proper icon appearance for the dismembered limb
 /obj/item/bodypart/proc/get_limb_icon(dropped)
 	cut_overlays()
@@ -845,17 +902,26 @@
 		if(!isnull(body_markings) && is_organic_limb(FALSE))
 			for(var/list/marking_list in body_markings_list)
 				// marking stores icon and value for the specific bodypart
+				var/image/mark
 				if(!use_digitigrade)
 					if(body_zone == BODY_ZONE_CHEST)
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]_[icon_gender]", -MARKING_LAYER, image_dir)
 					else
-						. += image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
+						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 				else
-					. += image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+					mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				if(islist(marking_list[3]))
+					mark.color = marking_list[3]
+				. += mark
+				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+					var/image/mark_emissive = emissive_copy(mark)
+					mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+					. += mark_emissive
 
 	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
 	var/image/second_limb
 	var/list/aux = list()
+	var/list/marking_emissives = list()
 
 	. += limb
 
@@ -918,9 +984,15 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
-					if(color_src && length(marking_list) == 3)
+					if(islist(marking_list[3]))
 						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
 
 		// Citadel End
 
@@ -936,23 +1008,49 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
+		. += marking_emissives
 
 	else
 		limb.icon = icon
 		if(should_draw_gender)
-			limb.icon_state = "[body_zone]_[icon_gender]"
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]_[icon_gender]")
 		else
-			limb.icon_state = "[body_zone]"
-
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]")
+		// BLUEMOON ADD START
+		// prosthetic limbs with digitigrade support
+		// it should be datums, but it's kinda useless because there's only 1 sprite with digi support (morpheus)
+		if(use_digitigrade)
+			var/cache_key = "digi_[body_zone]_front" // cursed af, these prosthetic limbs should be datums
+			var/list/static/prosthetic_digi_limbs_cache = list()
+			var/cache_id = "[limb.icon]-[cache_key]"
+			if(!(cache_id in prosthetic_digi_limbs_cache))
+				prosthetic_digi_limbs_cache[cache_id] = (cache_key in icon_states(limb.icon))
+			if(prosthetic_digi_limbs_cache[cache_id])
+				limb.icon_state = "digi_[body_zone]"
+				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
+					second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir)
+					second_limb.icon = limb.icon
+					var/original_state = limb.icon_state
+					limb.icon_state = "[original_state]_front"
+					second_limb.icon_state = "[original_state]_behind"
+					second_limb.color = limb.color
+					. += second_limb
+		// BLUEMOON ADD END
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				var/image/aux_img = image(limb.icon, "[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, resolve_robotic_icon_state(limb.icon, "[I]"), -aux_layer, image_dir)
 				if(species_id == "husk")
 					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
 					husk_aux_mark.appearance_flags = RESET_COLOR
@@ -961,9 +1059,15 @@
 					for(var/marking_list in body_markings_list)
 						var/image/aux_marking_image = image(marking_list[1], "[marking_list[2]]_[I]", -aux_layer, image_dir)
 						aux_marking_image.appearance_flags = RESET_COLOR
-						if(length(marking_list) == 3)
+						if(islist(marking_list[3]))
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
+						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
+							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
+							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
+							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
 
@@ -987,7 +1091,16 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
+					if(islist(marking_list[3]))
+						mark.color = marking_list[3]
 					limb.overlays += mark
+					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
+						var/image/mark_emissive = emissive_copy(mark)
+						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
+						mark_emissive.pixel_x = limb.pixel_x
+						mark_emissive.pixel_y = limb.pixel_y
+						marking_emissives += mark_emissive
+		. += marking_emissives
 		return
 
 	if(color_src) //TODO - add color matrix support for base species limbs (or dont because color matrixes suck)
@@ -1030,7 +1143,7 @@
 /**
   * update_wounds() is called whenever a wound is gained or lost on this bodypart, as well as if there's a change of some kind on a bone wound possibly changing disabled status
   *
-  * Covers tabulating the damage multipliers we have from wounds (burn specifically), as well as deleting our gauze wrapping if we don't have any wounds that can use bandaging
+  * Covers tabulating the damage multipliers we have from wounds (burn specifically)
   *
   * Arguments:
   * * replaced- If true, this is being called from the remove_wound() of a wound that's being replaced, so the bandage that already existed is still relevant, but the new wound hasn't been added yet
@@ -1043,11 +1156,9 @@
 		var/datum/wound/iter_wound = i
 		dam_mul *= iter_wound.damage_mulitplier_penalty
 
-	if(!LAZYLEN(wounds) && current_gauze && !replaced)
-		owner.visible_message("<span class='notice'>\The [current_gauze] on [owner]'s [name] fall away.</span>", "<span class='notice'>The [current_gauze] on your [name] fall away.</span>")
-		QDEL_NULL(current_gauze)
 	wound_damage_multiplier = dam_mul
 	update_disabled()
+	update_part_wound_overlay()
 
 /obj/item/bodypart/proc/get_bleed_rate()
 	if(!is_organic_limb() && !HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON EDIT - добавлена проверка на robotic_organism
@@ -1062,35 +1173,102 @@
 		if(!embeddies.isEmbedHarmless())
 			bleed_rate += 0.8
 
-	for(var/thing in wounds)
-		var/datum/wound/W = thing
+	// Та же страховка, что строкой выше у embedded_objects: рана, которую добил del(), оставляет
+	// в списке null, и без чистки каждый тик SSmobs давал бы рантайм на W.blood_flow.
+	// Гард обязателен: wounds ленивый и обычно null, а listclearnulls читает .len сразу.
+	if(wounds)
+		listclearnulls(wounds)
+	for(var/datum/wound/W as anything in wounds)
+		if(W.is_bleed_suppressed()) // BLUEMOON EDIT - свежая повязка глушит истечение крови из раны
+			continue
 		bleed_rate += W.blood_flow
 	if(owner.mobility_flags & ~MOBILITY_STAND)
 		bleed_rate *= 1.2
 	return bleed_rate
 
 /**
+ * Updates the bleed overlay icon for this bodypart based on current bleed rate.
+ * Returns TRUE if the overlay icon changed.
+ */
+/obj/item/bodypart/proc/update_part_wound_overlay()
+	if(!owner)
+		return FALSE
+	if(!can_bleed())
+		if(bleed_overlay_icon)
+			bleed_overlay_icon = null
+			owner.update_wound_overlays()
+		return FALSE
+
+	var/bleed_rate = get_bleed_rate() || 0
+	if(SEND_SIGNAL(src, COMSIG_BODYPART_UPDATE_WOUND_OVERLAY, bleed_rate) & COMPONENT_PREVENT_WOUND_OVERLAY_UPDATE)
+		return FALSE
+
+	var/new_bleed_icon = null
+
+	switch(bleed_rate)
+		if(-INFINITY to BLEED_OVERLAY_LOW)
+			new_bleed_icon = null
+		if(BLEED_OVERLAY_LOW to BLEED_OVERLAY_MED)
+			new_bleed_icon = "[body_zone]_1"
+		if(BLEED_OVERLAY_MED to BLEED_OVERLAY_GUSH)
+			if(!(owner.mobility_flags & MOBILITY_STAND) || owner.stat == DEAD)
+				new_bleed_icon = "[body_zone]_2s"
+			else
+				new_bleed_icon = "[body_zone]_2"
+		if(BLEED_OVERLAY_GUSH to INFINITY)
+			if(owner.stat == DEAD)
+				new_bleed_icon = "[body_zone]_2s"
+			else
+				new_bleed_icon = "[body_zone]_3"
+
+	if(new_bleed_icon != bleed_overlay_icon)
+		bleed_overlay_icon = new_bleed_icon
+		owner.update_wound_overlays()
+		return TRUE
+	return FALSE
+
+/obj/item/bodypart/proc/can_bleed()
+	if(!owner)
+		return is_organic_limb()
+	if(ishuman(owner))
+		var/mob/living/carbon/human/human_owner = owner
+		if(NOBLOOD in human_owner.dna?.species?.species_traits)
+			return FALSE
+		if(human_owner.bleedsuppress)
+			return FALSE
+	return is_organic_limb() || HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM)
+
+/**
   * apply_gauze() is used to- well, apply gauze to a bodypart
   *
   * As of the Wounds 2 PR, all bleeding is now bodypart based rather than the old bleedstacks system, and 90% of standard bleeding comes from flesh wounds (the exception is embedded weapons).
   * The same way bleeding is totaled up by bodyparts, gauze now applies to all wounds on the same part. Thus, having a slash wound, a pierce wound, and a broken bone wound would have the gauze
-  * applying blood staunching to the first two wounds, while also acting as a sling for the third one. Once enough blood has been absorbed or all wounds with the ACCEPTS_GAUZE flag have been cleared,
-  * the gauze falls off.
+  * applying blood staunching to the first two wounds, while also acting as a sling for the third one. Gauze must be removed manually via self-examination.
   *
   * Arguments:
   * * gauze- Just the gauze stack we're taking a sheet from to apply here
   */
 /obj/item/bodypart/proc/apply_gauze(obj/item/stack/gauze)
-	if(!istype(gauze) || !gauze.absorption_capacity)
+	if(!gauze || (!istype(gauze, /obj/item/stack/medical/gauze) && !istype(gauze, /obj/item/stack/sticky_tape)) || !gauze.absorption_capacity)
+		return
+	// Киборгский стак умеет существовать только внутри /obj/item/robot_module: его
+	// Initialize() отказывается стартовать где угодно ещё и самоудаляется, а
+	// current_gauze оставался ссылкой на qdel-нутый предмет (прод-раунд 10150,
+	// "Cyborg stack created outside of a robot module"). На конечность кладём
+	// обычный аналог того же типа.
+	var/gauze_type = gauze.is_cyborg ? type2parent(gauze.type) : gauze.type
+	if(!ispath(gauze_type, /obj/item/stack/medical))
 		return
 	QDEL_NULL(current_gauze)
-	current_gauze = new gauze.type(src, 1)
+	current_gauze = new gauze_type(src, 1)
 	gauze.use(1)
+	if(owner)
+		owner.update_bandage_overlays()
 
 /**
   * seep_gauze() is for when a gauze wrapping absorbs blood or pus from wounds, lowering its absorption capacity.
   *
-  * The passed amount of seepage is deducted from the bandage's absorption capacity, and if we reach a negative absorption capacity, the bandages fall off and we're left with nothing.
+  * The passed amount of seepage is deducted from the bandage's absorption capacity, clamped at zero.
   *
   * Arguments:
   * * seep_amt - How much absorption capacity we're removing from our current bandages (think, how much blood or pus are we soaking up this tick?)
@@ -1098,7 +1276,36 @@
 /obj/item/bodypart/proc/seep_gauze(seep_amt = 0)
 	if(!current_gauze)
 		return
-	current_gauze.absorption_capacity -= seep_amt
-	if(current_gauze.absorption_capacity < 0)
-		owner.visible_message("<span class='danger'>\The [current_gauze] on [owner]'s [name] fall away in rags.</span>", "<span class='warning'>\The [current_gauze] on your [name] fall away in rags.</span>", vision_distance=COMBAT_MESSAGE_RANGE)
-		QDEL_NULL(current_gauze)
+	var/old_capacity = current_gauze.absorption_capacity
+	current_gauze.absorption_capacity = max(0, current_gauze.absorption_capacity - seep_amt)
+	// BLUEMOON EDIT - пропитавшийся бинт больше не сдерживает кровотечение.
+	// Если под ним ещё жива рана - кровь пойдёт снова, а если рана успела
+	// свернуться под повязкой - лишь сообщаем, что бинт отработал своё.
+	if(old_capacity > 0 && !current_gauze.absorption_capacity && owner && owner.stat != DEAD)
+		if(get_bleed_rate() > 0)
+			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение возобновилось!")
+		else
+			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение остановилось.")
+
+/**
+  * remove_gauze() removes the gauze wrapping from this bodypart and returns it to the user.
+  *
+  * Arguments:
+  * * user - The mob removing the gauze
+  * * to_hands - If TRUE, attempt to place the gauze in the user's hands
+  */
+/obj/item/bodypart/proc/remove_gauze(mob/user, to_hands = TRUE)
+	if(!current_gauze || !owner)
+		return FALSE
+	var/obj/item/stack/medical/gauze/removed = current_gauze
+	var/mob/living/carbon/gauze_owner = owner
+	current_gauze = null
+	removed.forceMove(user || gauze_owner)
+	if(to_hands && user)
+		user.put_in_hands(removed)
+	gauze_owner.update_bandage_overlays()
+	// BLUEMOON ADD START - сняв повязку, игрок должен узнать, что рана никуда не делась
+	if(gauze_owner.stat != DEAD && gauze_owner.get_total_bleed_rate() > 0)
+		gauze_owner.balloon_alert(gauze_owner, "кровотечение возобновилось!")
+	// BLUEMOON ADD END
+	return TRUE

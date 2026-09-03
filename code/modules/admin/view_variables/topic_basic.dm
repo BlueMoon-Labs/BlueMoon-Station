@@ -46,6 +46,32 @@
 			if (isturf(src))	// show the turf that took its place
 				usr.client.debug_variables(src)
 				return
+		if(href_list[VV_HK_VIEW_REFERENCES])
+			if(isnull(target))
+				to_chat(usr, "<span class='warning'>Объект уже удалён.</span>", confidential = TRUE)
+				return
+			// target - единственная локальная ссылка, контракт EXTERNAL_REFCOUNT соблюдён.
+			to_chat(usr, "<span class='notice'>Внешних ссылок сейчас: [EXTERNAL_REFCOUNT(target)]. Лог поиска: harddels.log.</span>", confidential = TRUE)
+			INVOKE_ASYNC(target, TYPE_PROC_REF(/datum, find_references))
+		if(href_list[VV_HK_FIND_CLIENT_REFS])
+			if(isnull(target))
+				to_chat(usr, "<span class='warning'>Объект уже удалён.</span>", confidential = TRUE)
+				return
+			var/list/client_ref_hits = find_client_references(target)
+			to_chat(usr, "<span class='boldnotice'>Клиентский проб для [target.type]: найдено [length(client_ref_hits)].</span>", confidential = TRUE)
+			for(var/line in client_ref_hits)
+				to_chat(usr, "<span class='notice'>[line]</span>", confidential = TRUE)
+		if(href_list[VV_HK_REFCOUNT_MONITOR])
+			if(isnull(target))
+				to_chat(usr, "<span class='warning'>Объект уже удалён.</span>", confidential = TRUE)
+				return
+			if(length(GLOB.refcount_monitors) >= REFCOUNT_MONITOR_MAX)
+				to_chat(usr, "<span class='warning'>Достигнут лимит одновременных мониторов ([REFCOUNT_MONITOR_MAX]). Stop Refcount Monitors для сброса.</span>", confidential = TRUE)
+				return
+			var/duration_minutes = input(usr, "Длительность мониторинга, минут:", "Монитор refcount", 5) as num|null
+			if(isnull(duration_minutes) || duration_minutes <= 0 || isnull(target))
+				return
+			new /datum/refcount_monitor(target, usr.client, duration_minutes MINUTES)
 
 	if(href_list[VV_HK_MARK])
 		usr.client.mark_datum(target)

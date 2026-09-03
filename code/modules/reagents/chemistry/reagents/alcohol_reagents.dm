@@ -78,7 +78,12 @@ All effects don't start immediately, but rather get worse over time; the rate is
 		M.adjust_fire_stacks(reac_volume / 15)
 
 		// +10% success propability on each step, useful while operating in less-than-perfect conditions
-		M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
+		// boozepwr = 0 - это метка "у напитка свой эффект опьянения", а НЕ "снять стерилизацию".
+		// sterilize() трактует неположительную силу как отмену: гасит таймер и обнуляет
+		// sterilize_power. Из-за этого коктейль без градуса в одной ёмкости со стерилизином
+		// стирал хирургу весь бонус прямо внутри одного reaction().
+		if(boozepwr > 0)
+			M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
 
 	return ..()
 
@@ -1148,10 +1153,10 @@ All effects don't start immediately, but rather get worse over time; the rate is
 	glass_name = "Syndicate Bomb"
 	glass_desc = "A syndicate bomb."
 
-/datum/reagent/consumable/ethanol/syndicatebomb/on_mob_life(mob/living/carbon/M)
-	if(prob(5))
-		playsound(get_turf(M), 'sound/effects/explosionfar.ogg', 100, 1)
-	return ..()
+/datum/reagent/consumable/ethanol/syndicatebomb/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
+	. = ..()
+	if(SPT_PROB(2.5, seconds_per_tick))
+		playsound(get_turf(drinker), 'sound/effects/explosion/explosionfar.ogg', 100, TRUE)
 
 /datum/reagent/consumable/ethanol/hiveminderaser
 	name = "Hivemind Eraser"

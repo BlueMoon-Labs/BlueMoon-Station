@@ -103,20 +103,31 @@
 	lefthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_righthand.dmi'
 	custom_materials = list(/datum/material/iron=150,/datum/material/silver=50,/datum/material/titanium=25)
-
 	usesound = 'sound/items/jaws_pry.ogg'
 	force = 15
 	toolspeed = 0.25
 	can_force_powered = TRUE
+
+/obj/item/crowbar/power/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
 
 /obj/item/crowbar/power/syndicate
 	name = "Syndicate jaws of life"
 	desc = "A pocket sized re-engineered copy of Nanotrasen's standard jaws of life. Can be used to force open airlocks in its crowbar configuration."
 	icon = 'icons/obj/tools.dmi'
 	icon_state = "jaws_syndie_pry"
-	item_state = "jawsoflife"
+	item_state = "jawsoflife_syndi"
 	force = 20
 	toolspeed = 0.20
+
+// Fix of sprite change
+/obj/item/crowbar/power/syndicate/attack_self(mob/user)
+	playsound(get_turf(user), 'sound/items/change_jaws.ogg', 50, 1)
+	var/obj/item/wirecutters/power/syndicate/cutjaws = new /obj/item/wirecutters/power/syndicate(drop_location())
+	cutjaws.name = name
+	to_chat(user, "<span class='notice'>You attach the cutting jaws to [src].</span>")
+	qdel(src)
+	user.put_in_active_hand(cutjaws)
 
 /obj/item/crowbar/power/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is putting [user.ru_ego()] head in [src], it looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -136,16 +147,15 @@
 	desc = "A scientist's almost successful reproduction of an abductor's crowbar, it uses the same technology combined with a handle that can't quite hold it."
 	icon = 'icons/obj/advancedtools.dmi'
 	usesound = 'sound/weapons/sonic_jackhammer.ogg'
-	icon_state = "crowbar"
+	icon_state = "adv_crowbar"
 	toolspeed = 0.2
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
-			RESKIN_ICON_STATE = "crowbar_black",
+			RESKIN_ICON_STATE = "adv_crowbar_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "crowbar",
+			RESKIN_ICON_STATE = "adv_crowbar",
 		)
 	)
 // BLUEMOON ADD END

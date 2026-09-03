@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 export class PixelArtImage extends Component {
   constructor(props) {

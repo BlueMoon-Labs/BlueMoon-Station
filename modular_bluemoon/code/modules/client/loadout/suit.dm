@@ -165,3 +165,7 @@
 /datum/gear/suit/sergal_green_jacket
 	name = "Sergal green jacket"
 	path = /obj/item/clothing/suit/hooded/bm/sergal_green_jacket
+
+/datum/gear/suit/occult
+	name = "Occult collector's coat"
+	path = /obj/item/clothing/suit/hooded/occult

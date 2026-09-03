@@ -8,7 +8,9 @@ import { Box } from '../../../components';
 
 type ContentInfo = {
   interactions: InteractionData[];
+  custom_interactions_list: InteractionData[];
   favorite_interactions: string[];
+  hidden_interactions_keys: string[];
   user_is_blacklisted: boolean;
   target: string;
   target_is_blacklisted: boolean;
@@ -22,6 +24,9 @@ type InteractionData = {
   desc: string;
   type: number;
   additionalDetails: additionalDetailsContent[];
+  interactionFlags?: number;
+  isCustom?: boolean;
+  hidden?: boolean;
 }
 
 type additionalDetailsContent = {
@@ -34,6 +39,7 @@ const INTERACTION_NORMAL = 0;
 const INTERACTION_LEWD = 1;
 const INTERACTION_EXTREME = 2;
 const INTERACTION_UNHOLY = 3; // SPLURT EDIT
+const INTERACTION_UNHOLY_HARD = 4;
 
 const INTERACTION_FLAG_ADJACENT = (1<<0);
 const INTERACTION_FLAG_EXTREME_CONTENT = (1<<1);
@@ -42,24 +48,26 @@ const INTERACTION_FLAG_TARGET_NOT_TIRED = (1<<3);
 const INTERACTION_FLAG_USER_IS_TARGET = (1<<4);
 const INTERACTION_FLAG_USER_NOT_TIRED = (1<<5);
 const INTERACTION_FLAG_UNHOLY_CONTENT = (1<<6);
+const INTERACTION_FLAG_UNHOLY_HARD = (1<<10);
 const INTERACTION_FLAG_REQUIRE_BONDAGE = (1<<7);
 const INTERACTION_FLAG_RANGED_CONSENT = (1<<8);
 const INTERACTION_FLAG_HIDE_IN_PANEL = (1<<9);
 
-export const InteractionsTab = (props, context) => {
-  const { act, data } = useBackend<ContentInfo>(context);
+export const InteractionsTab = (props) => {
+  const { act, data } = useBackend<ContentInfo>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useLocalState('searchText', '');
   const interactions = sortInteractions(
-    data.interactions,
+    [...(data.interactions || []), ...(data.custom_interactions_list || [])],
     searchText,
     data)
     || [];
 
   const favorite_interactions = data.favorite_interactions || [];
-  const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
+  const hidden_keys = data.hidden_interactions_keys || [];
+  const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
   const valid_favorites = interactions.filter(interaction => favorite_interactions.includes(interaction.key));
   const interactions_to_display = inFavorites
     ? valid_favorites
@@ -95,8 +103,9 @@ export const InteractionsTab = (props, context) => {
                     content={interaction.desc}
                     color={interaction.type === INTERACTION_EXTREME ? "red"
                       : interaction.type === INTERACTION_UNHOLY ? "orange"
-                        : interaction.type ? "pink"
-                          : "default"}
+                        : interaction.type === INTERACTION_UNHOLY_HARD ? "brown"
+                          : interaction.type ? "pink"
+                            : "default"}
                     fluid
                     mb={-0.7}
                     onClick={() => act('interact', {
@@ -120,6 +129,16 @@ export const InteractionsTab = (props, context) => {
                       interaction: interaction.key,
                     })}
                     selected={favorite_interactions.includes(interaction.key)}
+                  />
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon={hidden_keys.includes(interaction.key) ? "low-vision" : "eye"}
+                    tooltip={`${hidden_keys.includes(interaction.key) ? "Показать" : "Скрыть"} this interaction`}
+                    onClick={() => act('toggle_hidden_interaction', {
+                      interaction: interaction.key,
+                    })}
+                    selected={hidden_keys.includes(interaction.key)}
                   />
                 </Stack.Item>
               </Stack>
@@ -150,12 +169,14 @@ export const sortInteractions = (interactions, searchText = '', data) => {
   const {
     extreme_pref,
     unholy_pref,
+    unholy_hard_pref,
     isTargetSelf,
     target_has_active_player,
     target_is_blacklisted,
     theyAllowExtreme,
     theyAllowLewd,
     theyAllowUnholy,
+    theyAllowUnholyHard,
     theyAllowRanged,
     theyHaveBondage,
     user_is_blacklisted,
@@ -191,8 +212,11 @@ export const sortInteractions = (interactions, searchText = '', data) => {
           // Unholy interaction
           : interaction.type === INTERACTION_UNHOLY
             ? verb_consent && unholy_pref
-            // Extreme interaction
-            : verb_consent && extreme_pref)),
+            // Unholy hard interaction
+            : interaction.type === INTERACTION_UNHOLY_HARD
+              ? verb_consent && unholy_hard_pref
+              // Extreme interaction
+              : verb_consent && extreme_pref)),
 
     // Filter off interactions depending on target's pref
     filter(interaction =>
@@ -205,19 +229,24 @@ export const sortInteractions = (interactions, searchText = '', data) => {
             // Unholy interaction
             : interaction.type === INTERACTION_UNHOLY
               ? theyAllowLewd && theyAllowUnholy
-              // Extreme interaction
-              : theyAllowLewd && theyAllowExtreme)),
+              // Unholy hard interaction
+              : interaction.type === INTERACTION_UNHOLY_HARD
+                ? theyAllowLewd && theyAllowUnholyHard
+                // Extreme interaction
+                : theyAllowLewd && theyAllowExtreme)),
 
     // Is self
     filter(interaction =>
-      (isTargetSelf ? (INTERACTION_FLAG_USER_IS_TARGET
-        & interaction.interactionFlags)
-        : !(INTERACTION_FLAG_USER_IS_TARGET & interaction.interactionFlags))),
+      interaction.isCustom ? true
+        : (isTargetSelf ? (INTERACTION_FLAG_USER_IS_TARGET
+          & interaction.interactionFlags)
+          : !(INTERACTION_FLAG_USER_IS_TARGET & interaction.interactionFlags))),
     // Has a player or none at all
     filter(interaction =>
-      (!isTargetSelf && (target_has_active_player === 1)
-        ? !(INTERACTION_FLAG_OOC_CONSENT
-          & interaction.interactionFlags) : true)),
+      interaction.isCustom ? true
+        : (!isTargetSelf && (target_has_active_player === 1)
+          ? !(INTERACTION_FLAG_OOC_CONSENT
+            & interaction.interactionFlags) : true)),
     // Has a player or none at all
     filter(interaction =>
       interaction.interactionFlags & INTERACTION_FLAG_RANGED_CONSENT

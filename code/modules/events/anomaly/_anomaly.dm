@@ -3,11 +3,17 @@
 	typepath = /datum/round_event/anomaly
 
 	min_players = 1
-	max_occurrences = 0 //This one probably shouldn't occur! It'd work, but it wouldn't be very fun.
+	// База аномалий - одновременно живое событие: слабый флюкс (harmful-тайминги вместо
+	// dangerous у Hyper-Energetic). В tg заглушена max_occurrences = 0, у нас включена по
+	// просьбе прода; подтипы всё равно ставят enabled явно (наследование не полагается на базу).
+	enabled = TRUE
+	max_occurrences = 5
 	weight = 15
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ANOMALIES
-	description = "This anomaly shocks and explodes. This is the base type."
+	severity = DIRECTOR_SEVERITY_MODERATE // дефолт категории ANOMALIES - MAJOR, слабый флюкс им не является
+	family = "anomaly" // наследуется всеми аномалиями: общий фолл-офф, раунд не превращается в парад аномалий
+	description = "This anomaly shocks and explodes. Weak variant of the Hyper-Energetic Flux."
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)
 
 /datum/round_event/anomaly
@@ -20,6 +26,14 @@
 	var/turf/spawn_location
 
 /datum/round_event/anomaly/announce(fake)
+	// False Alarm creates an event and calls announce(TRUE) without start(). A
+	// normal anomaly has already selected impact_area in start(), but the fake
+	// path still needs a plausible area for its announcement.
+	if(!impact_area)
+		impact_area = spawn_location ? get_area(spawn_location) : placer.findValidArea(fail_silently = TRUE)
+	if(!impact_area)
+		message_admins("Объявление аномалии пропущено: подходящей зоны воздействия не нашлось.")
+		return
 	priority_announce("Обнаружен гипер-энергетический поток на [ANOMALY_ANNOUNCE_DANGEROUS_TEXT] [impact_area.name].", "ВНИМАНИЕ: АНОМАЛИЯ", 'sound/announcer/classic/anomaly/anomaly_flux.ogg')
 
 /datum/round_event/anomaly/start()

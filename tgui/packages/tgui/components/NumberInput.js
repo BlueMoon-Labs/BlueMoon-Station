@@ -6,8 +6,8 @@
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
-import { classes, pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { classes } from 'common/react';
+import { Component, createRef } from 'react';
 
 import { AnimatedNumber } from './AnimatedNumber';
 import { Box } from './Box';
@@ -242,8 +242,8 @@ export class NumberInput extends Component {
           style={{
             display: !editing ? 'none' : undefined,
             height: height,
-            'line-height': lineHeight,
-            'font-size': fontSize,
+            lineHeight: lineHeight,
+            fontSize: fontSize,
           }}
           onBlur={e => {
             if (!editing) {
@@ -309,7 +309,6 @@ export class NumberInput extends Component {
   }
 }
 
-NumberInput.defaultHooks = pureComponentHooks;
 NumberInput.defaultProps = {
   minValue: -Infinity,
   maxValue: +Infinity,

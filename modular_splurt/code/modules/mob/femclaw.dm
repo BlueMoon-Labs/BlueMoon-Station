@@ -3,6 +3,8 @@
 /mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw
 	icon = 'modular_splurt/icons/mob/femclaw/newclaws.dmi'
 	icon_state = "newclaw"
+	icon_living = "newclaw"
+	icon_dead = ""
 	var/base_state = "newclaw"
 	var/cock_state = "newclaw_cocked"
 	var/cock_shown = FALSE
@@ -10,6 +12,7 @@
 /mob/living/simple_animal/hostile/deathclaw/funclaw/gentle/newclaw/alphaclaw
 	name = "Alpha Funclaw"
 	icon_state = "alphaclaw"
+	icon_living = "alphaclaw"
 	base_state = "alphaclaw"
 	cock_state = "alphaclaw_cocked"
 
@@ -41,6 +44,8 @@
 /mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw
 	icon = 'modular_splurt/icons/mob/femclaw/newclaws.dmi'
 	icon_state = "femclaw"
+	icon_living = "femclaw"
+	icon_dead = ""
 	gender = FEMALE
 	has_penis = FALSE
 	has_vagina = TRUE
@@ -57,6 +62,7 @@
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw/mommyclaw
 	icon_state = "mommyclaw"
+	icon_living = "mommyclaw"
 	desc = "A machine that turns her victim's pelvis into pelvwas."
 	name = "Mommy Funclaw"
 	maxHealth = 1200

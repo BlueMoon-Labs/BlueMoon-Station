@@ -565,7 +565,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space/stormtrooper{
+/mob/living/simple_animal/hostile/inteq/melee/sword/space/stormtrooper{
 	faction = list("Syndicate")
 	},
 /turf/open/floor/mineral/plastitanium/red,
@@ -706,7 +706,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/survivalpod/nonpowered)
 "BI" = (
-/mob/living/simple_animal/hostile/syndicate/melee/ushm{
+/mob/living/simple_animal/hostile/inteq/melee/ushm{
 	faction = list("Syndicate")
 	},
 /turf/open/floor/plating/asteroid/airless,

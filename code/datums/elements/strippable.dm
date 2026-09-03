@@ -48,6 +48,11 @@
 		if (cyborg_user.a_intent == INTENT_HARM)
 			return
 
+	// No hands - no stripping: keeps carp/swarmers/roaches and other handless fauna from undressing people.
+	// TRAIT_CAN_STRIP covers mobs with manipulators instead of hands (cyborgs, adult xenomorphs).
+	if (!user.can_hold_items() && !HAS_TRAIT(user, TRAIT_CAN_STRIP) && !isobserver(user))
+		return
+
 	if (!isnull(should_strip_proc_path) && !call(source, should_strip_proc_path)(user))
 		return
 
@@ -101,8 +106,8 @@
 	to_chat(user, span_notice("You try to put [equipping] on [source]..."))
 
 	var/log = "[key_name(source)] is having [equipping] put on them by [key_name(user)]"
-	user.log_message(log, LOG_ATTACK, color="red")
-	source.log_message(log, LOG_VICTIM, color="red", log_globally=FALSE)
+	user.log_message(log, LOG_ATTACK, color="red", target = source)
+	source.log_message(log, LOG_VICTIM, color="red", log_globally=FALSE, target = user)
 
 	return TRUE
 
@@ -149,8 +154,8 @@
 		)
 
 	to_chat(user, strip_silence ? span_danger("You try to remove [source]'s [item]...") : span_notice("You try to remove [source]'s [item]..."))
-	user.log_message("[key_name(source)] is being stripped of [item] by [key_name(user)]", LOG_ATTACK, color="red")
-	source.log_message("[key_name(source)] is being stripped of [item] by [key_name(user)]", LOG_VICTIM, color="red", log_globally=FALSE)
+	user.log_message("[key_name(source)] is being stripped of [item] by [key_name(user)]", LOG_ATTACK, color="red", target = source)
+	source.log_message("[key_name(source)] is being stripped of [item] by [key_name(user)]", LOG_VICTIM, color="red", log_globally=FALSE, target = user)
 	item.add_fingerprint(source)
 
 	if(ishuman(source))
@@ -305,8 +310,8 @@
 	if (!item.doStrip(user, source))
 		return FALSE
 
-	user.log_message("[key_name(source)] has been stripped of [item] by [key_name(user)]", LOG_ATTACK, color="red")
-	source.log_message("[key_name(source)] has been stripped of [item] by [key_name(user)]", LOG_VICTIM, color="red", log_globally=FALSE)
+	user.log_message("[key_name(source)] has been stripped of [item] by [key_name(user)]", LOG_ATTACK, color="red", target = source)
+	source.log_message("[key_name(source)] has been stripped of [item] by [key_name(user)]", LOG_VICTIM, color="red", log_globally=FALSE, target = user)
 
 	// Updates speed in case stripped speed affecting item
 	source.update_equipment_speed_mods()
@@ -344,6 +349,11 @@
 		get_asset_datum(/datum/asset/simple/inventory),
 	)
 
+/// Потолок кэша base64-иконок стрип-меню. Ключи файловые, так что запись живёт весь раунд.
+#define STRIP_ICON_CACHE_MAX 1024
+/// Сколько записей вытесняется при переполнении - четверть кэша, самые старые.
+#define STRIP_ICON_CACHE_EVICT (STRIP_ICON_CACHE_MAX / 4)
+
 /datum/strip_menu/ui_data(mob/user)
 	var/list/data = list()
 
@@ -373,9 +383,37 @@
 
 		LAZYINITLIST(result)
 
-		result["icon"] = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
+		// Strip-menu UI re-runs ui_data() on every refresh while the menu is open,
+		// so without a cache each open menu burns ~10 icon2base64 calls per tick.
+		// Файловые иконки стрингифицируются в свой dmi-путь и стабильны между раундами и
+		// вещами - их и кэшируем.
+		//
+		// Рантаймовая /icon В КЭШ НЕ ИДЁТ. Она стрингифицируется в "/icon" - одинаково для
+		// любой динамической иконки, - и прошлый ключ обходил это через REF(item.icon).
+		// Но REF() - это индекс в таблице BYOND, который переиспользуется после сборки
+		// мусора: собранная иконка отдаёт свой слот следующей, ключ совпадает, и меню
+		// показывает картинку СОВСЕМ ДРУГОЙ вещи. Так на проде и выглядели "спрайты
+		// несуществующей одежды" при открытии чужого инвентаря (раунд 10127, 27.08.2026).
+		// Кэш при этом статический и живёт весь раунд, так что промах не самоисправляется.
+		// Динамических иконок в слотах единицы (грейскейл, хамелеон), их дешевле собрать
+		// заново, чем рисковать чужим спрайтом.
+		var/static/list/strip_icon_cache = list()
+		var/cached_b64
+		if(!isnull(item.icon) && !istype(item.icon, /icon))
+			var/cache_key = "[item.icon]:[item.icon_state]"
+			cached_b64 = strip_icon_cache[cache_key]
+			if(isnull(cached_b64))
+				cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
+				strip_icon_cache[cache_key] = cached_b64
+				if(length(strip_icon_cache) > STRIP_ICON_CACHE_MAX)
+					strip_icon_cache.Cut(1, STRIP_ICON_CACHE_EVICT + 1)
+		else
+			cached_b64 = icon2base64(icon(item.icon, item.icon_state, SOUTH, 1))
+
+		result["icon"] = cached_b64
 		result["name"] = item.name
 		result["alternate"] = item_data.get_alternate_action(owner, user)
+		result["interactable"] = item.interactable_in_strip_menu
 
 		items[strippable_key] = result
 
@@ -392,6 +430,9 @@
 	data["long_strip_menu"] = user.client.prefs.long_strip_menu
 
 	return data
+
+#undef STRIP_ICON_CACHE_MAX
+#undef STRIP_ICON_CACHE_EVICT
 
 /datum/strip_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

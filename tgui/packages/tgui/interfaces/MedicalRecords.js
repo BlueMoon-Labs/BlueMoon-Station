@@ -1,7 +1,7 @@
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from "../backend";
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Flex, Icon, Input, LabeledList, Section, Table, Tabs } from "../components";
 import { ComplexModal, modalOpen, modalRegisterBodyOverride } from "../interfaces/common/ComplexModal";
 import { Window } from "../layouts";
@@ -17,14 +17,14 @@ const severities = {
   "BIOHAZARD THREAT!": "bad",
 };
 
-const doEdit = (context, field) => {
-  modalOpen(context, 'edit', {
+const doEdit = (field) => {
+  modalOpen('edit', {
     field: field.edit,
     value: field.value,
   });
 };
 
-const virusModalBodyOverride = (modal, context) => {
+const virusModalBodyOverride = (modal) => {
   const virus = modal.args;
   return (
     <Section
@@ -56,8 +56,8 @@ const virusModalBodyOverride = (modal, context) => {
   );
 };
 
-export const MedicalRecords = (_properties, context) => {
-  const { data } = useBackend(context);
+export const MedicalRecords = (_properties) => {
+  const { data } = useBackend();
   const {
     loginState,
     screen,
@@ -110,12 +110,12 @@ export const MedicalRecords = (_properties, context) => {
   );
 };
 
-const MedicalRecordsList = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsList = (_properties) => {
+  const { act, data } = useBackend();
   const {
     records,
   } = data;
-  const [searchText, setSearchText] = useLocalState(context, 'medSearchText', '');
+  const [searchText, setSearchText] = useState('');
 
   const filteredRecords = (records || [])
     .filter(
@@ -125,7 +125,7 @@ const MedicalRecordsList = (_properties, context) => {
     );
 
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item grow="1">
           <Input
@@ -155,12 +155,12 @@ const MedicalRecordsList = (_properties, context) => {
           </Table.Row>
         ))}
       </Table>
-    </Fragment>
+    </>
   );
 };
 
-const MedicalRecordsMaintenance = (_properties, context) => {
-  const { act } = useBackend(context);
+const MedicalRecordsMaintenance = (_properties) => {
+  const { act } = useBackend();
   return (
     <Box>
       <Button
@@ -187,14 +187,14 @@ const MedicalRecordsMaintenance = (_properties, context) => {
   );
 };
 
-const MedicalRecordsView = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsView = (_properties) => {
+  const { act, data } = useBackend();
   const {
     medical,
     printing,
   } = data;
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item>
           <Button
@@ -229,12 +229,12 @@ const MedicalRecordsView = (_properties, context) => {
       <Section title="Медицинские данные" level={2}>
         <MedicalRecordsViewMedical />
       </Section>
-    </Fragment>
+    </>
   );
 };
 
-const MedicalRecordsViewGeneral = (_properties, context) => {
-  const { data } = useBackend(context);
+const MedicalRecordsViewGeneral = (_properties) => {
+  const { data } = useBackend();
   const {
     general,
   } = data;
@@ -246,7 +246,7 @@ const MedicalRecordsViewGeneral = (_properties, context) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <Box width="50%" float="left">
         <LabeledList>
           {general.fields.map((field, i) => (
@@ -258,7 +258,7 @@ const MedicalRecordsViewGeneral = (_properties, context) => {
                 <Button
                   icon="pen"
                   ml="0.5rem"
-                  onClick={() => doEdit(context, field)}
+                  onClick={() => doEdit(field)}
                 />
               )}
             </LabeledList.Item>
@@ -286,12 +286,12 @@ const MedicalRecordsViewGeneral = (_properties, context) => {
           ))
         )}
       </Box>
-    </Fragment>
+    </>
   );
 };
 
-const MedicalRecordsViewMedical = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsViewMedical = (_properties) => {
+  const { act, data } = useBackend();
   const {
     medical,
   } = data;
@@ -309,7 +309,7 @@ const MedicalRecordsViewMedical = (_properties, context) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <LabeledList>
         {medical.fields.map((field, i) => (
           <LabeledList.Item
@@ -321,7 +321,7 @@ const MedicalRecordsViewMedical = (_properties, context) => {
             <Button
               icon="pen"
               ml="0.5rem"
-              onClick={() => doEdit(context, field)}
+              onClick={() => doEdit(field)}
             />
             {!!field.line_break && <Box mb="0.5rem" />}
           </LabeledList.Item>
@@ -354,15 +354,15 @@ const MedicalRecordsViewMedical = (_properties, context) => {
           color="good"
           mt="0.5rem"
           mb="0"
-          onClick={() => modalOpen(context, 'add_c')}
+          onClick={() => modalOpen('add_c')}
         />
       </Section>
-    </Fragment>
+    </>
   );
 };
 
-const MedicalRecordsViruses = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsViruses = (_properties) => {
+  const { act, data } = useBackend();
   const {
     virus,
   } = data;
@@ -389,8 +389,8 @@ const MedicalRecordsViruses = (_properties, context) => {
   );
 };
 
-const MedicalRecordsMedbots = (_properties, context) => {
-  const { data } = useBackend(context);
+const MedicalRecordsMedbots = (_properties) => {
+  const { data } = useBackend();
   const {
     medbots,
   } = data;
@@ -413,7 +413,7 @@ const MedicalRecordsMedbots = (_properties, context) => {
           </LabeledList.Item>
           <LabeledList.Item label="Статус">
             {medbot.on ? (
-              <Fragment>
+              <>
                 <Box color="good">
                   Онлайн
                 </Box>
@@ -423,7 +423,7 @@ const MedicalRecordsMedbots = (_properties, context) => {
                     + medbot.total_volume + "/" + medbot.maximum_volume)
                     : "Использует внутренний синтезатор."}
                 </Box>
-              </Fragment>
+              </>
             ) : (
               <Box color="average">
                 Оффлайн
@@ -436,8 +436,8 @@ const MedicalRecordsMedbots = (_properties, context) => {
   ));
 };
 
-const MedicalRecordsNavigation = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsNavigation = (_properties) => {
+  const { act, data } = useBackend();
   const {
     screen,
     general,

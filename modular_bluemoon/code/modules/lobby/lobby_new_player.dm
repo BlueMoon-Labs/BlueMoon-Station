@@ -1,3 +1,13 @@
+/client
+	/// rsc фона лобби, уже уехавший ЭТОМУ подключению, и имя файла, под которым он лежит
+	/// в кэше скина. Фон - это 1.2-2.6 МБ отдельной копией на клиента, а bm_show_lobby()
+	/// зовётся не только на входе: его дёргают ротация фона для незагрузившихся игроков,
+	/// админские верхи и show_to_all() на смену уведомления. Одна и та же картинка уезжала
+	/// заново на каждый такой вызов. Отслеживаем на клиенте, а не на мобе: кэш скина живёт
+	/// ровно столько же, сколько подключение, и на реконнекте честно начинается с нуля.
+	var/bm_lobby_bg_rsc
+	var/bm_lobby_bg_file
+
 /mob/dead/new_player
 	var/bm_lobby_ready = FALSE
 	var/bm_bg_slot = 0
@@ -16,6 +26,7 @@
 	// on_player_ready_change must run before ..() - otherwise we invoke SStitle_bm during/after
 	// destruction when we're invalid, causing "illegal operation" crash in GC (REF/Queue chain).
 	GLOB.new_player_list -= src
+	GLOB.player_list -= src
 	var/was_ready = ready
 	if(was_ready && SStitle_bm)
 		SStitle_bm.on_player_ready_change(-1)
@@ -39,14 +50,14 @@
 	if(!SSticker || SSticker.current_state <= GAME_STATE_STARTUP)
 		var/loading_rsc = SStitle_bm?.loading_image
 		if(loading_rsc)
-			src << browse(loading_rsc, "file=bm_stub_bg.gif;display=0")
+			_bm_send_background(loading_rsc, "bm_stub_bg.gif")
 		src << browse(_bm_build_loading_stub(), "window=bm_lobby_browser")
 		winset(client, "bm_lobby_browser", "is-visible=true")
 		return
 
 	var/img_to_send = _bm_get_current_image()
 	if(img_to_send)
-		src << browse(img_to_send, "file=loading_screen.gif;display=0")
+		_bm_send_background(img_to_send, "loading_screen.gif")
 	src << browse(_bm_build_html(), "window=bm_lobby_browser")
 	winset(client, "bm_lobby_browser", "is-visible=true")
 
@@ -74,6 +85,24 @@
 	winset(client, null, "bm_lobby_browser.is-disabled=true;bm_lobby_browser.is-visible=false;map.is-visible=true;status_bar.is-visible=true")
 	client << browse(null, "window=bm_lobby_browser")
 
+/**
+ * Отправляет фон лобби в кэш скина под заданным именем - но только если этот же rsc
+ * ещё не уехал туда под этим же именем.
+ *
+ * Возвращает имя файла, на которое можно нацеливать браузер. Сравнение идёт по самому
+ * ресурсу: get_image_for_player() отдаёт результат fcopy_rsc(), то есть стабильную
+ * ссылку, у одинаковой картинки одинаковую.
+ */
+/mob/dead/new_player/proc/_bm_send_background(img_rsc, filename)
+	if(!client || !img_rsc)
+		return filename
+	if(client.bm_lobby_bg_rsc == img_rsc && client.bm_lobby_bg_file == filename)
+		return filename
+	src << browse(img_rsc, "file=[filename];display=0")
+	client.bm_lobby_bg_rsc = img_rsc
+	client.bm_lobby_bg_file = filename
+	return filename
+
 /mob/dead/new_player/proc/bm_push_background()
 	if(!client || !bm_lobby_ready)
 		return
@@ -85,9 +114,14 @@
 	var/img_to_send = SStitle_bm?.get_image_for_player(show_nsfw, show_admin_bg)
 	if(!img_to_send)
 		return
+	// Картинка не изменилась (сменилось уведомление, зашёл новый игрок, админ дёрнул
+	// обновление) - перенацеливаем браузер на уже лежащий в кэше файл вместо повторной
+	// отправки мегабайтов. Слот при этом НЕ переключаем: браузеру нужен тот же src.
+	if(client.bm_lobby_bg_rsc == img_to_send && client.bm_lobby_bg_file)
+		client << output(client.bm_lobby_bg_file, "bm_lobby_browser:bm_set_background")
+		return
 	bm_bg_slot = bm_bg_slot ? 0 : 1
-	var/filename = "bm_bg_[bm_bg_slot].gif"
-	src << browse(img_to_send, "file=[filename];display=0")
+	var/filename = _bm_send_background(img_to_send, "bm_bg_[bm_bg_slot].gif")
 	client << output(filename, "bm_lobby_browser:bm_set_background")
 
 /mob/dead/new_player/proc/_bm_build_loading_stub()
@@ -233,18 +267,25 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/list/parts = list()
 	var/R = REF(src)
 
-	if(!SSticker || SSticker.current_state <= GAME_STATE_PREGAME)
+	// Не <= GAME_STATE_PREGAME: SETTING_UP лежит МЕЖДУ пригеймом и игрой, и на этой фазе
+	// меню показывало "ВОЙТИ В ИГРУ", тогда как ядро вход ещё отбивало (IsRoundInProgress).
+	if(!SSticker || SSticker.current_state < GAME_STATE_PLAYING)
 		parts += {"<a id='bm-btn-ready' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_ready'>"}
 		parts += ready ? {"<span class='bm-checked'>☑</span> ГОТОВНОСТЬ"} : {"<span class='bm-unchecked'>☒</span> ГОТОВНОСТЬ"}
 		parts += "</a>"
-		if(check_rights_for(client, R_SERVER))
-			parts += {"<a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>⚡ СТАРТ ИГРЫ</a>"}
 	else
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=late_join'>ВОЙТИ В ИГРУ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=view_manifest'>СПИСОК ЭКИПАЖА</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=character_directory'>БИБЛИОТЕКА ПЕРСОНАЖЕЙ</a>"}
 
 	parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=observe'>БЫТЬ НАБЛЮДАТЕЛЕМ</a>"}
+	parts += {"<div class='bm-metashop-slot'>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	var/metashop_rainbow = (BM_METASHOP_RAINBOW_P >= 100) ? TRUE : prob(BM_METASHOP_RAINBOW_P)
+	var/metashop_ms = metashop_rainbow ? " bm-ms-rainbow" : ""
+	parts += {"<a class='bm-btn bm-metashop[metashop_ms]' href='?src=[R];bm_lobby_action=metashop'>МАГАЗИН</a>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	parts += {"</div>"}
 
 	parts += "<div class='bm-divider'></div>"
 
@@ -259,6 +300,9 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	if(!is_guest_key(src.key) && client?.prefs)
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=changelog'>ПОСЛЕДНИЕ ОБНОВЛЕНИЯ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
+
+	if((!SSticker || SSticker.current_state <= GAME_STATE_PREGAME) && check_rights_for(client, R_SERVER))
+		parts += {"<div class='bm-start-game-wrap'><a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>&#9889; СТАРТ ИГРЫ</a></div>"}
 
 	return parts.Join("")
 
@@ -275,9 +319,20 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	if(!href_list["bm_lobby_action"])
 		return ..()
 
+	// Собственные действия лобби перехватываются до ..(), а возрастной гейт живёт там -
+	// без этого вызова всё меню (вход, наблюдение, магазин, готовность) обходило проверку.
+	// Сейчас AGE_VERIFICATION в конфиге выключен, поэтому дыра латентная, но чинить её надо
+	// здесь, а не когда её включат.
+	if(!age_verify())
+		return FALSE
+
 	var/action = href_list["bm_lobby_action"]
 
 	switch(action)
+		if("show_disclaimer")
+			client.show_disclaimer()
+			return
+
 		if("page_ready")
 			bm_lobby_ready = TRUE
 			bm_push_background()
@@ -306,6 +361,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(QDELETED(src) || !client)
 				return
 			ready = !ready
+			if(ready == PLAYER_READY_TO_PLAY)
+				ready_reward_pending = TRUE
+			else
+				ready_reward_pending = FALSE
 			SStitle_bm?.on_player_ready_change(ready ? 1 : -1)
 			client << output(ready, "bm_lobby_browser:bm_toggle_ready")
 			return
@@ -340,6 +399,15 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 				bm_push_background()
 			return
 
+		if("metashop")
+			_bm_play_click_sound()
+			if(!client?.prefs)
+				client << output("Нужна сохранённая учётная запись (не гость).", "bm_lobby_browser:bm_show_notice")
+				return
+			var/datum/metadollar_shop/shop = new /datum/metadollar_shop(client)
+			shop.ui_interact(src)
+			return
+
 		if("observe")
 			_bm_play_click_sound()
 			var/prev_ready = ready
@@ -352,6 +420,11 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 
 		if("late_join")
 			_bm_play_click_sound()
+			// Кнопка могла остаться на экране с предыдущей отрисовки меню - сверяемся с
+			// тикером сами, иначе игрок получает пустой список работ и отказ по href.
+			if(!SSticker?.IsRoundInProgress())
+				to_chat(src, "<span class='warning'>Раунд ещё не начался.</span>")
+				return
 			LateChoices()
 			return
 
@@ -373,8 +446,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 
 		if("game_options")
 			_bm_play_click_sound()
-			client.prefs.current_tab = PREFERENCES_TAB
-			client.prefs.ShowChoices(src)
+			client.prefs.ui_interact(src)
 			return
 
 		if("polls_menu")
@@ -400,9 +472,25 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
 				return
 			_bm_play_click_sound()
+			if(tgui_alert(src, "Вы действительно хотите начать игру?", "Старт раунда", list("Да", "Нет")) != "Да")
+				return
+			if(QDELETED(src) || !client)
+				return
+			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
+				return
 			SSticker.start_immediately = TRUE
 			log_admin("[key_name(src)] запустил раунд через HTML-лобби.")
 			message_admins("[key_name_admin(src)] запустил раунд через HTML-лобби.")
+			return
+
+		if("video_reject")
+			if(!check_rights_for(client, R_FUN))
+				return
+			if(!SStitle_bm?.current_video_payload)
+				return
+			log_admin("[key_name(src)] убрал видео с лобби (подтверждение не прошло).")
+			message_admins("[key_name_admin(src)] убрал видео с лобби (видео работало некорректно).")
+			SStitle_bm.change_image(null)
 			return
 
 	return ..()

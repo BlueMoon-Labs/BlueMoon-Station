@@ -1,6 +1,6 @@
-import { Component, Fragment } from 'inferno';
+import { Component, Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Grid, Icon, LabeledList, Modal, NoticeBox, Section, Table, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
@@ -27,10 +27,10 @@ export class FakeTerminal extends Component {
       this.setState(prevState => {
         return ({
           currentIndex: prevState.currentIndex + 1,
+          currentDisplay: prevState.currentDisplay.concat(
+            props.allMessages[prevState.currentIndex]),
         });
       });
-      const { currentDisplay } = state;
-      currentDisplay.push(props.allMessages[state.currentIndex]);
     } else {
       clearTimeout(this.timer);
       setTimeout(props.onFinished, props.finishedTimeout);
@@ -51,8 +51,8 @@ export class FakeTerminal extends Component {
   render() {
     return (
       <Box m={1}>
-        {this.state.currentDisplay.map(value => (
-          <Fragment key={value}>
+        {this.state.currentDisplay.map((value, i) => (
+          <Fragment key={i}>
             {value}
             <br />
           </Fragment>
@@ -62,7 +62,7 @@ export class FakeTerminal extends Component {
   }
 }
 
-export const InteQContractor = (props, context) => {
+export const InteQContractor = (props) => {
   return (
     <NtosWindow
       width={500}
@@ -75,8 +75,8 @@ export const InteQContractor = (props, context) => {
   );
 };
 
-export const InteQContractorContent = (props, context) => {
-  const { data, act } = useBackend(context);
+export const InteQContractorContent = (props) => {
+  const { data, act } = useBackend();
 
   const terminalMessages = [
     "Recording biometric data...",
@@ -218,8 +218,8 @@ export const InteQContractorContent = (props, context) => {
   );
 };
 
-export const StatusPane = (props, context) => {
-  const { act, data } = useBackend(context);
+export const StatusPane = (props) => {
+  const { act, data } = useBackend();
 
   return (
     <Section
@@ -272,8 +272,8 @@ export const StatusPane = (props, context) => {
   );
 };
 
-export const SyndPane = (props, context) => {
-  const [tab, setTab] = useLocalState(context, 'tab', 1);
+export const SyndPane = (props) => {
+  const [tab, setTab] = useState(1);
   return (
     <>
       <StatusPane state={props.state} />
@@ -299,8 +299,8 @@ export const SyndPane = (props, context) => {
   );
 };
 
-const ContractsTab = (props, context) => {
-  const { act, data } = useBackend(context);
+const ContractsTab = (props) => {
+  const { act, data } = useBackend();
   const contracts = data.contracts || [];
   return (
     <>
@@ -378,8 +378,8 @@ const ContractsTab = (props, context) => {
   );
 };
 
-const HubTab = (props, context) => {
-  const { act, data } = useBackend(context);
+const HubTab = (props) => {
+  const { act, data } = useBackend();
   const contractor_hub_items = data.contractor_hub_items || [];
   return (
     <Section>

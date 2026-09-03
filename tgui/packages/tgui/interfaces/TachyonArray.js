@@ -2,8 +2,8 @@ import { useBackend, useSharedState } from '../backend';
 import { Button, Flex, LabeledList, NoticeBox, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const TachyonArray = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TachyonArray = (props) => {
+  const { act, data } = useBackend();
   const {
     records = [],
     is_research,
@@ -39,15 +39,15 @@ export const TachyonArray = (props, context) => {
   );
 };
 
-export const TachyonArrayContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TachyonArrayContent = (props) => {
+  const { act, data } = useBackend();
   const {
     records = [],
   } = data;
   const [
     activeRecordName,
     setActiveRecordName,
-  ] = useSharedState(context, 'record', records[0]?.name);
+  ] = useSharedState('record', records[0]?.name);
   const activeRecord = records.find(record => {
     return record.name === activeRecordName;
   });

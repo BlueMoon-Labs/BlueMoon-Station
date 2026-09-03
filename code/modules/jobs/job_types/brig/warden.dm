@@ -14,14 +14,11 @@
 	exp_type = EXP_TYPE_SECURITY
 	considered_combat_role = TRUE
 	alt_titles = list(
-		"Gorlex Marauders Sergeant", //Триглав выше, для удобства
-		"Syndicate Warden", //Синди выше, для удобства
 		"AC Sergeant",
 		"Armory Manager",
 		"Armory Superintendent",
 		"Brig Chief",
 		"Brig Governor",
-		"Brig Overwatch",
 		"Brig Overwatch",
 		"Brig Sentry",
 		"Brig Sergeant",
@@ -37,14 +34,15 @@
 		"SAARE Supervisor",
 		"Safeguard Sergeant",
 		"Slutcurity Captain",
+		"Undersheriff",
 		"Voreden"
 		)
 
 	outfit = /datum/outfit/job/warden
 	plasma_outfit = /datum/outfit/plasmaman/warden
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC) // See /datum/job/warden/get_access()
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_FORENSICS_LOCKERS, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_BRIGDOC, ACCESS_PRODUCTION_SECURITY) // See /datum/job/warden/get_access()
 
 	paycheck = PAYCHECK_HARD
 	paycheck_department = ACCOUNT_SEC
@@ -79,7 +77,7 @@
 	name = "Warden"
 	jobtype = /datum/job/warden
 
-	belt = /obj/item/pda/warden
+	belt = /obj/item/modular_computer/pda/warden
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/warden
 	shoes = /obj/item/clothing/shoes/jackboots/sec
@@ -100,13 +98,11 @@
 
 	implants = list(/obj/item/implant/mindshield)
 
-	chameleon_extras = /obj/item/gun/ballistic/shotgun/automatic/combat/warden
-
 /datum/outfit/job/warden/syndicate
 	name = "Syndicate Warden"
 	jobtype = /datum/job/warden
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer/util
@@ -118,9 +114,10 @@
 	r_pocket = /obj/item/reagent_containers/peacehypo
 	l_pocket = /obj/item/restraints/handcuffs
 	suit_store = /obj/item/gun/energy/pumpaction/defender
-	backpack_contents = list(/obj/item/syndicate_uplink_high=1)
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo

@@ -7,3 +7,13 @@
 
 /// The data file that future station traits are stored in
 #define FUTURE_STATION_TRAITS_FILE "data/future_station_traits.json"
+
+/// Станционный трейт дня рождения.
+#define STATION_TRAIT_BIRTHDAY "station_trait_birthday"
+/// Воздушные шарики для трейта ДР (не водяные и не синдикатские).
+#define BIRTHDAY_STATION_BALLOON_TYPES list(\
+	/obj/item/toy/balloon,\
+	/obj/item/toy/balloon/long,\
+	/obj/item/toy/balloon/heart,\
+	/obj/item/toy/balloon/corgi,\
+)

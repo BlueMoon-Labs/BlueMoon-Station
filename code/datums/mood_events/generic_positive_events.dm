@@ -65,6 +65,11 @@
 	mood_change = 12
 	hidden = TRUE
 
+/datum/mood_event/badass_antag
+	description = "<span class='nicegreen'>I'm a fucking badass and everyone around me knows it.</span>\n"
+	mood_change = 8
+	hidden = TRUE
+
 /datum/mood_event/revolution
 	description = "<span class='nicegreen'>НАШЕ ДЕЛО ПРАВОЕ! ПОБЕДА БУДЕТ ЗА РЕВОЛЮЦИЕЙ!</span>\n"
 	mood_change = 3
@@ -288,3 +293,7 @@
 	description = span_love("Лекарства делают своё дело. Боль от неё крайне приятная.\n")
 	mood_change = 2
 	timeout = 1 MINUTES
+
+/datum/mood_event/birthday
+	description = "<span class='nicegreen'>Сегодня мой день рождения!</span>\n"
+	mood_change = 2

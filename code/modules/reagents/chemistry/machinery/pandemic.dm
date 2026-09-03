@@ -284,7 +284,7 @@
 			if(!A.mutable)
 				return
 			if(A)
-				var/new_name = sanitize_name(html_encode(trim(params["name"], 50)))//, allow_numbers = TRUE)
+				var/new_name = sanitize_name(strip_control_chars(trim(params["name"], 50)))//, allow_numbers = TRUE) - sanitize_name already html_encodes; double-encoding it produced &amp;lt; in the UI
 				if(!new_name || ..())
 					return
 				A.AssignName(new_name)

@@ -1,7 +1,7 @@
 import { classes } from 'common/react';
 import dateformat from 'dateformat';
-import { Component, Fragment } from 'inferno';
 import yaml from 'js-yaml';
+import { Component, Fragment } from 'react';
 
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
@@ -68,7 +68,7 @@ export class Changelog extends Component {
   }
 
   getData = (date, attemptNumber = 1) => {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const self = this;
     const maxAttempts = 6;
 
@@ -99,7 +99,7 @@ export class Changelog extends Component {
   };
 
   componentDidMount() {
-    const { data: { dates = [] } } = useBackend(this.context);
+    const { data: { dates = [] } } = useBackend();
 
     if (dates) {
       dates.forEach(
@@ -112,7 +112,7 @@ export class Changelog extends Component {
 
   render() {
     const { data, selectedDate, selectedIndex } = this.state;
-    const { data: { dates } } = useBackend(this.context);
+    const { data: { dates } } = useBackend();
     const { dateChoices } = this;
 
     const dateDropdown = dateChoices.length > 0 && (
@@ -125,14 +125,17 @@ export class Changelog extends Component {
             onClick={() => {
               const index = selectedIndex - 1;
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(dateChoices[index]);
-              window.scrollTo(
+              // Scroll in the setState callback: React applies state
+              // asynchronously, so the DOM must be measured after commit.
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: dateChoices[index],
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }} />
         </Stack.Item>
@@ -143,14 +146,15 @@ export class Changelog extends Component {
             onSelected={value => {
               const index = dateChoices.indexOf(value);
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(value);
-              window.scrollTo(
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: value,
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }}
             selected={selectedDate}
@@ -164,14 +168,15 @@ export class Changelog extends Component {
             onClick={() => {
               const index = selectedIndex + 1;
 
-              this.setData('Loading changelog data...');
-              this.setSelectedIndex(index);
-              this.setSelectedDate(dateChoices[index]);
-              window.scrollTo(
+              this.setState({
+                data: 'Loading changelog data...',
+                selectedIndex: index,
+                selectedDate: dateChoices[index],
+              }, () => window.scrollTo(
                 0,
                 document.body.scrollHeight
                 || document.documentElement.scrollHeight
-              );
+              ));
               return this.getData(dates[index]);
             }} />
         </Stack.Item>

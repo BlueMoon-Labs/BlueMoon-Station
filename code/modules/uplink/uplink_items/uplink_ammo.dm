@@ -11,7 +11,7 @@
 	name = "Ammo Box - .45-70 GOVT"
 	desc = "Содержит 10 дополнительных патронов .45-70 GOVT. Калибр крайне редкий, поэтому и цена соответствующая."
 	item = /obj/item/ammo_box/g4570
-	cost = 5
+	cost = 2
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/pistol
@@ -25,6 +25,19 @@
 	name = "Ammo Box - 10mm"
 	desc = "Дополнительная коробка патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/c10mm
+	illegal_tech = FALSE
+
+/datum/uplink_item/ammo/pistolzzz
+	name = "10mm Soporific Magazine"
+	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
+			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
+	item = /obj/item/ammo_box/magazine/m10mm/soporific
+	cost = 1
+
+/datum/uplink_item/ammo/pistolzzz/box
+	name = "Ammo Box - 10mm Soporific"
+	desc = "Дополнительная коробка усыпляющих патронов 10mm. В коробке 20 штук, магазин не прилагается."
+	item = /obj/item/ammo_box/c10mm/soporific
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/pistolap
@@ -64,19 +77,6 @@
 	name = "Ammo Box - 10mm Incendiary"
 	desc = "Дополнительная коробка зажигательных патронов 10mm. В коробке 20 штук, магазин не прилагается."
 	item = /obj/item/ammo_box/magazine/m10mm/fire
-	illegal_tech = FALSE
-
-/datum/uplink_item/ammo/pistolzzz
-	name = "10mm Soporific Magazine"
-	desc = "Дополнительный магазин на 8 усыпляющих патронов 10mm для пистолета Стечкин. Вырубают цель в сон. \
-			ВНИМАНИЕ: усыпляющий эффект не мгновенный из-за ограничений калибра. Обычно нужно три попадания."
-	item = /obj/item/ammo_box/magazine/m10mm/soporific
-	cost = 2
-
-/datum/uplink_item/ammo/pistolzzz/box
-	name = "Ammo Box - 10mm Soporific"
-	desc = "Дополнительная коробка усыпляющих патронов 10mm. В коробке 20 штук, магазин не прилагается."
-	item = /obj/item/ammo_box/c10mm/soporific
 	illegal_tech = FALSE
 
 /datum/uplink_item/ammo/shotgun
@@ -132,19 +132,21 @@
 			Подходит для револьвера Syndicate. Когда действительно нужно, чтобы куча народу перестала шевелиться."
 	item = /obj/item/ammo_box/a357
 	cost = 3
-	purchasable_from = ~UPLINK_CLOWN_OPS
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/ammo/revolver/ap
 	name = ".357 Armor Piercing Speed Loader"
 	desc = "Быстрозарядник на семь бронебойных патронов .357 AP Magnum для револьвера Syndicate. \
 			Прошибает как горячий нож сквозь масло."
 	item = /obj/item/ammo_box/a357/ap
+	purchasable_from =  ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/ammo/revolver/dumdum
 	name = ".357 DumDum Speed Loader"
 	desc = "Быстрозарядник на семь разрывных патронов .357 DumDum Magnum для револьвера Syndicate. \
 			Рви и кромсай."
 	item = /obj/item/ammo_box/a357/dumdum
+	purchasable_from =  ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/ammo/a40mm
 	name = "40mm Grenade"
@@ -240,16 +242,16 @@
 
 /datum/uplink_item/ammo/rocket/basic
 	name = "84mm HE Rocket"
-	desc = "Маломощная осколочная ракета 84mm. Отправим вас на тот свет со стилем!"
+	desc = "Мощная осколочная ракета 84mm. Отправляйте на тот свет со стилем!"
 	item = /obj/item/ammo_casing/caseless/rocket
-	cost = 4
+	cost = 2
 
 /datum/uplink_item/ammo/rocket/hedp
 	name = "84mm HEDP Rocket"
 	desc = "Мощная кумулятивно-осколочная ракета 84mm HEDP. Крайне эффективна против бронированных целей \
 			и всех, кто стоит рядом. Вселяйте страх в сердца врагов."
 	item = /obj/item/ammo_casing/caseless/rocket/hedp
-	cost = 6
+	cost = 4
 
 /datum/uplink_item/ammo/pistolaps
 	name = "9mm Handgun Magazine"

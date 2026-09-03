@@ -189,6 +189,13 @@
 	else if(broken)
 		. += span_notice("Замок <b>вкручен</b> внутрь.")
 
+	// Замок на шкаф ставится обычной дверной электроникой, и об этом до сих пор
+	// не было сказано нигде: ни на шкафу, ни на самой электронике.
+	if(secure && !broken && !locked)
+		. += span_notice("Замок можно <b>вывинтить</b> отвёрткой.")
+	else if(!secure && !broken)
+		. += span_notice("Сюда можно поставить замок: приложите <b>дверную электронику</b> с прописанным доступом.")
+
 	if(isobserver(user))
 		. += span_info("Внутри находится: [english_list(contents)].")
 		investigate_log("had its contents examined by [user] as a ghost.", INVESTIGATE_GHOST)
@@ -225,12 +232,13 @@
 				to_chat(user, span_danger("Что-то слишком большое внутри [src] мешает закрыть шкафчик."))
 			return FALSE
 	// BLUEMOON ADD START - крутое ЕРТ кропило против сатанистов
-	for(var/obj/item/aspergillum/ert/holy_thing)
-		if(iscultist(user) || is_servant_of_ratvar(user) || isclockmob(user) || isconstruct(user) || isvampire(user))
+	if(user && (iscultist(user) || is_servant_of_ratvar(user) || isclockmob(user) || isconstruct(user) || isvampire(user)))
+		var/obj/item/aspergillum/ert/holy_thing = locate() in T
+		if(!holy_thing)
+			holy_thing = locate() in src
+		if(holy_thing)
 			to_chat(user, span_cultbold("Священная энергия [holy_thing] не позволяет [src] закрыться!"))
 			return FALSE
-		else
-			break
 	// BLUEMOON ADD END
 	return TRUE
 
@@ -365,6 +373,13 @@
 /obj/structure/closet/deconstruct(disassembled = TRUE)
 	if(ispath(material_drop) && material_drop_amount && !(flags_1 & NODECONSTRUCT_1))
 		new material_drop(loc, material_drop_amount)
+	// Ссылку надо снять ДО qdel: Destroy() удаляет плату безусловно, поэтому разбор шкафа
+	// её съедал - хотя поставить её туда можно, а снять с закрытого шкафа отвёрткой можно.
+	// Ровно так же поступает шлюз (airlock.dm, ветка с electronics = null перед forceMove).
+	if(disassembled && !QDELETED(lockerelectronics))
+		var/obj/item/electronics/airlock/removed_electronics = lockerelectronics
+		lockerelectronics = null
+		removed_electronics.forceMove(drop_location())
 	qdel(src)
 
 /obj/structure/closet/obj_break(damage_flag)
@@ -412,6 +427,7 @@
 			deconstruct(TRUE) //Honestly by this point, if all checks were right and this is the cutting tool, just cut it
 			return
 		if(user.transferItemToLoc(W, drop_location())) // so we put in unlit welder too
+			W.randomize_pixel_position() // При обычном doUnEquip к предмету применяется смещение моба, что в этом случае, нам не требуется
 			return
 	else if(W.tool_behaviour == TOOL_WELDER && can_weld_shut)
 		// eigen check
@@ -755,7 +771,10 @@
 	return TRUE
 
 /obj/structure/closet/proc/handle_lock_removal(mob/user, obj/item/S)
-	if(!S.tool_behaviour == TOOL_SCREWDRIVER)
+	// Было "!S.tool_behaviour == TOOL_SCREWDRIVER" - это разбирается как
+	// "(!S.tool_behaviour) == TOOL_SCREWDRIVER", то есть число против строки, всегда ложь.
+	// Единственный вызывающий и так проверяет отвёртку, так что поведение не меняется.
+	if(S.tool_behaviour != TOOL_SCREWDRIVER)
 		return
 	if(lock_in_use)
 		to_chat(user, span_notice("Wait for work on [src] to be done first!"))

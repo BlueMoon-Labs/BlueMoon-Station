@@ -1,4 +1,5 @@
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useLocalState } from '../../backend';
 import {
@@ -163,7 +164,7 @@ const CategoryBadge = ({ category, isDrinkDispenser }) => {
   );
 };
 
-export const GameRecipesTab = (props, context) => {
+export const GameRecipesTab = (props) => {
   const { gameRecipes, searchQuery, isBeakerLoaded, beakerContents = [], beakerCurrentVolume, beakerMaxVolume, manipulatorTier = 1, isEmagged = false, isDrinkDispenser = false, dispenserType = 0, onOptimisticRecipe, markPending, isActionPending, beginRecipeAction, chemMetadata } = props;
 
   const triggerOptimisticRecipe = (baseIngredients, mult) => {
@@ -192,15 +193,15 @@ export const GameRecipesTab = (props, context) => {
     }
   };
 
-  const [multiplier, setMultiplier] = useLocalState(context, 'recipe_multiplier', 1);
+  const [multiplier, setMultiplier] = useLocalState('recipe_multiplier', 1);
   const defaultExpandedCats = isDrinkDispenser
     ? { alcoholic_drinks: true, soft_drinks: true }
     : { medicine: true };
-  const [expandedCats, setExpandedCats] = useLocalState(context, 'recipe_cats_v2', defaultExpandedCats);
-  const [recipeFavorites, setRecipeFavorites] = useLocalState(context, 'recipe_favorites', []);
+  const [expandedCats, setExpandedCats] = useState(defaultExpandedCats);
+  const [recipeFavorites, setRecipeFavorites] = useLocalState('recipe_favorites', []);
   const recipeFavoritesSet = new Set(recipeFavorites);
-  const [showOnlyMakeable, setShowOnlyMakeable] = useLocalState(context, 'recipe_filter_makeable', false);
-  const [expandedPages, setExpandedPages] = useLocalState(context, 'recipe_pages', {});
+  const [showOnlyMakeable, setShowOnlyMakeable] = useState(false);
+  const [expandedPages, setExpandedPages] = useState({});
 
   const beakerByName = buildBeakerLookup(beakerContents);
 

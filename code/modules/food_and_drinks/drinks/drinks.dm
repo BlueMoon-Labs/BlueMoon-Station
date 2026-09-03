@@ -112,6 +112,25 @@
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
 		to_chat(user, "<span class='notice'>You fill <b>[src]</b> with [trans] units of the contents of <b>[target]</b>.</span>")
 
+	else if(reagents.total_volume && is_drainable() && spillable)
+		if(user.a_intent == INTENT_HARM)
+			user.visible_message("<span class='danger'>[user] pours the contents of [src] onto [target]!</span>", \
+								"<span class='notice'>You pour the contents of [src] onto [target].</span>")
+			reagents.reaction(target, TOUCH)
+			var/turf/splash_turf = get_turf(target)
+			if(splash_turf && !istype(target, /obj/machinery/hydroponics))
+				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
+				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
+				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
+				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					var/datum/reagents/spill_copy = new(reagents.maximum_volume)
+					reagents.trans_to(spill_copy, reagents.total_volume, log = "reagentcontainer-drinks pour spill")
+					addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
+			reagents.clear_reagents()
+
 // /obj/item/reagent_containers/food/drinks/attackby(obj/item/I, mob/user, params)
 // 	var/hotness = I.get_temperature()
 // 	if(hotness && reagents)

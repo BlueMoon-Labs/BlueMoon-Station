@@ -435,7 +435,7 @@
 /area/awaymission/challenge/end)
 "ch" = (
 /obj/structure/chair/comfy/black,
-/mob/living/simple_animal/hostile/syndicate/real_syndicate{
+/mob/living/simple_animal/hostile/syndicate{
 	desc = "It's HIM.";
 	name = "John Syndicate";
 	environment_smash = 0
@@ -491,6 +491,7 @@
 /obj/structure/table/wood,
 /obj/item/paper/fluff/gateway,
 /obj/item/folder/blue,
+/obj/item/disk/gatereward,
 /turf/open/floor/carpet,
 /area/awaymission/challenge/end)
 "cs" = (
@@ -520,10 +521,6 @@
 	pixel_y = -3
 	},
 /turf/open/floor/wood,
-/area/awaymission/challenge/end)
-"cu" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/anthro,
-/turf/open/floor/circuit,
 /area/awaymission/challenge/end)
 "cv" = (
 /obj/structure/chair{
@@ -712,10 +709,6 @@
 "zn" = (
 /turf/open/space/basic,
 /area/awaymission/challenge/end)
-"Db" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper/anthro/fox,
-/turf/open/floor/wood,
-/area/awaymission/challenge/end)
 "Hr" = (
 /mob/living/simple_animal/hostile/syndicate/ranged/smg/anthro,
 /turf/open/floor/circuit,
@@ -767,6 +760,17 @@
 /mob/living/simple_animal/hostile/syndicate/ranged/anthro,
 /turf/open/floor/carpet,
 /area/awaymission/challenge/start)
+"Xm" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/recharger{
+	pixel_y = 4
+	},
+/obj/item/disk/gatereward,
+/turf/open/floor/mineral/plastitanium,
+/area/awaymission/challenge/end)
 "Zw" = (
 /mob/living/simple_animal/hostile/syndicate/melee/space/anthro/lizard,
 /turf/open/floor/plasteel/dark,
@@ -27155,7 +27159,7 @@ cd
 cd
 cd
 cd
-cF
+cd
 do
 bP
 aa
@@ -27652,7 +27656,7 @@ bC
 aF
 aF
 bP
-bR
+Xm
 cb
 cb
 cb
@@ -30996,7 +31000,7 @@ bP
 bZ
 cj
 cj
-Db
+cj
 bP
 cn
 cd
@@ -31005,7 +31009,7 @@ cn
 cn
 cn
 cn
-cu
+cn
 cn
 cn
 cn

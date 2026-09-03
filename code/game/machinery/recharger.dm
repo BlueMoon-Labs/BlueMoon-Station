@@ -23,7 +23,9 @@
 		/obj/item/ammo_casing/mws_batt,
 		/obj/item/ammo_box/magazine/mws_mag,
 		/obj/item/electrostaff,
-		/obj/item/gun/ballistic/automatic/magrifle))
+		/obj/item/melee/tomahawk,
+		/obj/item/gun/ballistic/automatic/magrifle,
+		/obj/item/paicard))
 
 /obj/machinery/recharger/RefreshParts()
 	for(var/obj/item/stock_parts/capacitor/C in component_parts)
@@ -43,8 +45,12 @@
 		. += "<span class='notice'>The status display reads:</span>"
 		. += "<span class='notice'>- Recharging <b>[recharge_coeff*10]%</b> cell charge per cycle.</span>"
 		if(charging)
-			var/obj/item/stock_parts/cell/C = charging.get_cell()
-			. += "<span class='notice'>- \The [charging]'s cell is at <b>[C.percent()]%</b>.</span>"
+			// Часть заряжаемого (например, самозарядные энергопушки) вовсе не имеет ячейки.
+			var/obj/item/stock_parts/cell/charging_cell = charging.get_cell()
+			if(charging_cell)
+				. += "<span class='notice'>- \The [charging]'s cell is at <b>[charging_cell.percent()]%</b>.</span>"
+			else
+				. += "<span class='notice'>- \The [charging] has no readable cell.</span>"
 
 /obj/machinery/recharger/proc/setCharging(new_charging)
 	// Уведомляем старый айтем если это talking gun

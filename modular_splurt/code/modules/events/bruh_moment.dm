@@ -3,8 +3,9 @@
 	typepath = /datum/round_event/bruh_moment
 	weight = 10
 	min_players = 1
-	max_occurrences = 0
+	enabled = FALSE
 	category = EVENT_CATEGORY_FRIENDLY
+	severity = DIRECTOR_SEVERITY_MINOR
 
 /datum/round_event/bruh_moment
 	start_when = 8

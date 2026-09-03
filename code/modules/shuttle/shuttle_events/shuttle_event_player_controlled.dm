@@ -1,0 +1,406 @@
+/// Mobs that try to give ghosts control before appearing near the shuttle (tg-style).
+/datum/shuttle_event/simple_spawner/player_controlled
+	/// If no ghost signs up, still spawn a hostile NPC when TRUE
+	var/spawn_anyway_if_no_player = FALSE
+	var/ghost_alert_string = "Хотите появиться у эвакуационного шаттла?"
+	var/role_type = ROLE_SENTIENCE
+	var/batch_spawn_started = FALSE
+
+/datum/shuttle_event/simple_spawner/player_controlled/spawn_movable(spawn_type)
+	if(batch_spawn_started)
+		return FALSE
+	if(!ispath(spawn_type, /mob/living))
+		return ..()
+	var/list/batch = build_batch_spawn_types()
+	if(!length(batch))
+		return FALSE
+	batch_spawn_started = TRUE
+	INVOKE_ASYNC(src, PROC_REF(async_batch_spawn_players), batch)
+	return TRUE
+
+/// Flatten spawning_list counts into an ordered spawn queue; clears the list when configured.
+/datum/shuttle_event/simple_spawner/player_controlled/proc/build_batch_spawn_types()
+	var/list/result = list()
+	for(var/typepath in spawning_list)
+		var/count = spawning_list[typepath]
+		for(var/i in 1 to count)
+			result += typepath
+	if(remove_from_list_when_spawned)
+		spawning_list.Cut()
+	return result
+
+/datum/shuttle_event/simple_spawner/player_controlled/proc/get_batch_poll_message(count)
+	if(count > 1)
+		return "[ghost_alert_string] (До [count] ролей. Вы не вернётесь в прежнее тело!)"
+	return "[ghost_alert_string] (Вы не вернётесь в прежнее тело!)"
+
+/datum/shuttle_event/simple_spawner/player_controlled/proc/async_batch_spawn_players(list/spawn_types)
+	var/count = length(spawn_types)
+	var/list/winners = pollCandidates(
+		get_batch_poll_message(count),
+		role_type,
+		null,
+		role_type,
+		10 SECONDS,
+		null,
+		TRUE,
+		get_all_ghost_role_eligible(),
+	)
+
+	for(var/spawn_type in spawn_types)
+		var/turf/spawn_point = get_spawn_turf()
+		if(!spawn_point)
+			break
+		var/mob/living/new_mob = new spawn_type(spawn_point)
+		post_spawn(new_mob)
+		if(length(winners))
+			var/mob/chosen = winners[1]
+			winners.Cut(1, 2)
+			if(chosen && isobserver(chosen))
+				if(!assign_ghost_to_mob(chosen, new_mob))
+					qdel(new_mob)
+					continue
+				post_player_assigned(new_mob)
+				continue
+		if(spawn_anyway_if_no_player)
+			on_batch_npc_spawn(new_mob)
+		else
+			qdel(new_mob)
+
+/// Called for batch slots with no ghost player when spawn_anyway_if_no_player is TRUE.
+/datum/shuttle_event/simple_spawner/player_controlled/proc/on_batch_npc_spawn(mob/living/mob)
+	return
+
+/datum/shuttle_event/simple_spawner/player_controlled/proc/post_player_assigned(mob/living/mob)
+	return
+
+/// Transfers a ghost into a living mob and resets camera/orbit state.
+/datum/shuttle_event/simple_spawner/player_controlled/proc/assign_ghost_to_mob(mob/chosen, mob/living/new_mob)
+	if(!chosen || !isobserver(chosen) || !new_mob)
+		return FALSE
+	var/mob/dead/observer/ghost = chosen
+	if(ghost.orbiting)
+		ghost.orbiting.end_orbit(ghost)
+	ghost.reset_perspective(null)
+	ghost.transfer_ckey(new_mob, FALSE)
+	new_mob.reset_perspective(null)
+	return TRUE
+
+/// Alien queen — single ghost role.
+/datum/shuttle_event/simple_spawner/player_controlled/alien_queen
+	name = "Королева ксеноморфов"
+	spawning_list = list(/mob/living/carbon/alien/humanoid/royal/queen = 1)
+	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
+	event_probability = 10
+	spawn_probability_per_process = 10
+	activation_fraction = 0.5
+	spawn_anyway_if_no_player = FALSE
+	ghost_alert_string = "Хотите сыграть за королеву ксеноморфов у шаттла?"
+	remove_from_list_when_spawned = TRUE
+	self_destruct_when_empty = TRUE
+	role_type = ROLE_ALIEN
+
+/datum/shuttle_event/simple_spawner/player_controlled/human
+	name = "Человек (игрок)"
+	admin_forceable = FALSE
+
+/// Up to nine ghost-controlled carp — one poll, full wave.
+/datum/shuttle_event/simple_spawner/player_controlled/carp
+	name = "Космические карпы (игроки)"
+	spawning_list = list(
+		/mob/living/simple_animal/hostile/carp = 10,
+		/mob/living/simple_animal/hostile/carp/megacarp = 2,
+		/mob/living/simple_animal/hostile/carp/ranged = 2,
+		/mob/living/simple_animal/hostile/carp/ranged/chaos = 1,
+	)
+	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
+	event_probability = 20
+	spawn_probability_per_process = 10
+	activation_fraction = 0.4
+	spawn_anyway_if_no_player = TRUE
+	ghost_alert_string = "Хотите сыграть за космического карпа у эвакуационного шаттла?"
+	remove_from_list_when_spawned = TRUE
+	self_destruct_when_empty = TRUE
+	role_type = ROLE_SENTIENCE
+	var/max_carp_spawns = 9
+
+/datum/shuttle_event/simple_spawner/player_controlled/carp/get_batch_poll_message(count)
+	return "[ghost_alert_string] (До [count] карпов. Вы не вернётесь в прежнее тело!)"
+
+/datum/shuttle_event/simple_spawner/player_controlled/carp/New(obj/docking_port/mobile/port)
+	var/list/template = list(
+		/mob/living/simple_animal/hostile/carp = 10,
+		/mob/living/simple_animal/hostile/carp/megacarp = 2,
+		/mob/living/simple_animal/hostile/carp/ranged = 2,
+		/mob/living/simple_animal/hostile/carp/ranged/chaos = 1,
+	)
+	spawning_list.Cut()
+	for(var/j in 1 to max_carp_spawns)
+		var/chosen_type = pickweight(template)
+		spawning_list[chosen_type] = (spawning_list[chosen_type] || 0) + 1
+	. = ..(port)
+
+/// ERT MOPP — ghost roles via supply pod, 5 seconds after the shuttle docks at the station.
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp
+	name = "ОБР MOPP (подкрепление к шаттлу)"
+	spawning_list = list(/mob/living/carbon/human = 5)
+	spawn_anyway_if_no_player = FALSE
+	ghost_alert_string = "Подкрепление ОБР MOPP прибыло на эвакуационный шаттл. Зайти за оперативника?"
+	role_type = ROLE_SENTIENCE
+	event_probability = 0
+	admin_forceable = FALSE
+	var/next_mopp_index = 1
+	var/list/spawning_turfs_pod = list()
+	var/static/list/mopp_outfit_paths = list(
+		/datum/outfit/ert/commander/mopp,
+		/datum/outfit/ert/security/mopp,
+		/datum/outfit/ert/medic/mopp,
+		/datum/outfit/ert/engineer/mopp,
+	)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/get_batch_poll_message(count)
+	return "[ghost_alert_string] (До [count] оперативников. Вы не вернётесь в прежнее тело!)"
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/gather_pod_landing_turfs()
+	spawning_turfs_pod.Cut()
+	if(!port)
+		return
+	var/list/bounding_coords = port.return_coords()
+	if(!length(bounding_coords))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+		return
+	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_HIT_SHUTTLE, port.preferred_direction)
+	spawning_turfs_pod = spawning_turfs_miss?.Copy() || list()
+	if(!length(spawning_turfs_pod))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/trigger_station_dock_spawn()
+	if(batch_spawn_started)
+		return
+	gather_pod_landing_turfs()
+	if(!length(spawning_turfs_pod))
+		return
+	next_mopp_index = 1
+	var/list/batch = build_batch_spawn_types()
+	if(!length(batch))
+		return
+	batch_spawn_started = TRUE
+	INVOKE_ASYNC(src, PROC_REF(async_batch_spawn_ert_mopp), batch)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/async_batch_spawn_ert_mopp(list/spawn_types)
+	var/max_slots = length(spawn_types)
+	var/list/winners = pollCandidates(
+		get_batch_poll_message(max_slots),
+		role_type,
+		null,
+		role_type,
+		15 SECONDS,
+		null,
+		TRUE,
+		get_all_ghost_role_eligible(),
+	)
+	if(!length(winners))
+		qdel(src)
+		return
+	var/spawn_count = min(max_slots, length(winners))
+	priority_announce(
+		"На борту эвакуационного шаттла зафиксировано подкрепление ОБР MOPP ([spawn_count] чел.).",
+		null,
+		"shuttledock",
+		"Priority",
+	)
+	for(var/i in 1 to spawn_count)
+		var/mob/chosen = winners[i]
+		if(!chosen || !isobserver(chosen))
+			continue
+		var/turf/spawn_point = get_spawn_turf()
+		if(!spawn_point)
+			break
+		var/obj/structure/closet/supplypod/centcompod/pod = new()
+		pod.explosionSize = list(0, 0, 0, 0)
+		pod.delays = list(POD_TRANSIT = 15, POD_FALLING = 3, POD_OPENING = 15, POD_LEAVING = 20)
+		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
+		if(chosen.client?.prefs)
+			chosen.client.prefs.copy_to(H)
+		equip_mopp_outfit(H)
+		if(!assign_ghost_to_mob(chosen, H))
+			qdel(H)
+			qdel(pod)
+			continue
+		post_player_assigned(H)
+		H.anchored = FALSE
+		new /obj/effect/pod_landingzone(spawn_point, pod)
+	qdel(src)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/get_spawn_turf()
+	if(!length(spawning_turfs_pod))
+		return null
+	return pick(spawning_turfs_pod)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/post_spawn(atom/movable/spawnee)
+	return
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/post_player_assigned(mob/living/mob)
+	if(!ishuman(mob))
+		return
+	var/mob/living/carbon/human/H = mob
+	ADD_TRAIT(H, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
+	ADD_TRAIT(H, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
+	H.anchored = FALSE
+	if(H.buckled)
+		H.buckled.unbuckle_mob(H)
+	to_chat(H, span_boldannounce("Вы — оперативник ОБР MOPP, прибывший на эвакуационный шаттл для помощи экипажу."))
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/equip_mopp_outfit(mob/living/carbon/human/H)
+	if(QDELETED(H) || !length(mopp_outfit_paths))
+		return
+	var/slot = min(next_mopp_index, mopp_outfit_paths.len)
+	H.equipOutfit(mopp_outfit_paths[slot])
+	next_mopp_index++
+
+#define ERT_MOPP_DOCK_SPAWN_DELAY 5 SECONDS
+#define ERT_MOPP_DOCK_SPAWN_CHANCE 50
+
+/// Must live after /ert_mopp — emergency.dm is compiled earlier in the .dme.
+/obj/docking_port/mobile/emergency/proc/try_station_dock_ert_mopp()
+	if(!prob(ERT_MOPP_DOCK_SPAWN_CHANCE))
+		return
+	addtimer(CALLBACK(src, PROC_REF(trigger_station_dock_ert_mopp)), ERT_MOPP_DOCK_SPAWN_DELAY)
+
+/obj/docking_port/mobile/emergency/proc/trigger_station_dock_ert_mopp()
+	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp(src)
+	event.trigger_station_dock_spawn()
+
+/// Революционное подкрепление — призрачные роли, высаживающиеся на эвакуационный шаттл, когда революция задержала его 5+ минут.
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary
+	name = "Подкрепление революции"
+	spawning_list = list()
+	spawn_anyway_if_no_player = FALSE
+	ghost_alert_string = "Подкрепление революции высаживается на эвакуационный шаттл. Зайти за бойца?"
+	role_type = ROLE_SENTIENCE
+	event_probability = 0
+	admin_forceable = FALSE
+	/// Тим революции, в который добавляются подкреплённые бойцы.
+	var/datum/team/revolution/rev_team
+	var/next_index = 1
+	var/list/spawning_turfs_pod = list()
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/get_batch_poll_message(count)
+	return "[ghost_alert_string] (До [count] бойцов. Вы не вернётесь в прежнее тело!)"
+
+/// Количество подкрепления зависит от числа революционеров: один вооружённый юнит за каждые пять.
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/build_batch_spawn_types()
+	spawning_list = list()
+	var/rev_count = 0
+	if(rev_team)
+		rev_count = rev_team.members.len
+	var/unit_count = max(1, round(rev_count / 5))
+	spawning_list[/mob/living/carbon/human] = unit_count
+	return ..()
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/gather_pod_landing_turfs()
+	spawning_turfs_pod.Cut()
+	if(!port)
+		return
+	var/list/bounding_coords = port.return_coords()
+	if(!length(bounding_coords))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+		return
+	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_HIT_SHUTTLE, port.preferred_direction)
+	spawning_turfs_pod = spawning_turfs_hit?.Copy() || list()
+	if(!length(spawning_turfs_pod))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/trigger_rev_spawn()
+	if(batch_spawn_started)
+		return
+	gather_pod_landing_turfs()
+	if(!length(spawning_turfs_pod))
+		return
+	next_index = 1
+	var/list/batch = build_batch_spawn_types()
+	if(!length(batch))
+		return
+	batch_spawn_started = TRUE
+	INVOKE_ASYNC(src, PROC_REF(async_batch_spawn_rev), batch)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/async_batch_spawn_rev(list/spawn_types)
+	var/max_slots = length(spawn_types)
+	var/list/winners = pollCandidates(
+		get_batch_poll_message(max_slots),
+		role_type,
+		null,
+		role_type,
+		15 SECONDS,
+		null,
+		TRUE,
+		get_all_ghost_role_eligible(),
+	)
+	if(!length(winners))
+		qdel(src)
+		return
+	var/spawn_count = min(max_slots, length(winners))
+	priority_announce(
+		"Зафиксировано высаживание подкрепления революции на эвакуационном шаттле ([spawn_count] чел.).",
+		null,
+		"shuttledock",
+		"Priority",
+	)
+	for(var/i in 1 to spawn_count)
+		var/mob/chosen = winners[i]
+		if(!chosen || !isobserver(chosen))
+			continue
+		var/turf/spawn_point = get_spawn_turf()
+		if(!spawn_point)
+			break
+		var/obj/structure/closet/supplypod/centcompod/pod = new()
+		pod.explosionSize = list(0, 0, 0, 0)
+		pod.delays = list(POD_TRANSIT = 15, POD_FALLING = 3, POD_OPENING = 15, POD_LEAVING = 20)
+		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
+		if(chosen.client?.prefs)
+			chosen.client.prefs.copy_to(H)
+		equip_rev_outfit(H)
+		if(!assign_ghost_to_mob(chosen, H))
+			qdel(H)
+			qdel(pod)
+			continue
+		post_player_assigned(H)
+		H.anchored = FALSE
+		new /obj/effect/pod_landingzone(spawn_point, pod)
+	qdel(src)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/get_spawn_turf()
+	if(!length(spawning_turfs_pod))
+		return null
+	return pick(spawning_turfs_pod)
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/post_spawn(atom/movable/spawnee)
+	return
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/post_player_assigned(mob/living/mob)
+	if(!ishuman(mob))
+		return
+	var/mob/living/carbon/human/H = mob
+	ADD_TRAIT(H, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
+	ADD_TRAIT(H, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
+	H.anchored = FALSE
+	if(H.buckled)
+		H.buckled.unbuckle_mob(H)
+	var/datum/mind/M = H.mind
+	if(M)
+		M.add_antag_datum(/datum/antagonist/rev, rev_team)
+		if(rev_team)
+			M.special_role = ROLE_REV
+	to_chat(H, "<span class='revolution_big'>Вы — боец подкрепления революции, высадившийся на эвакуационный шаттл. Защищайте мятеж и не позволяйте станции уйти от правосудия!</span>")
+
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/proc/equip_rev_outfit(mob/living/carbon/human/H)
+	if(QDELETED(H))
+		return
+	H.equipOutfit(/datum/outfit/ftu/revolutionary)
+
+/obj/docking_port/mobile/emergency/proc/trigger_revolution_reinforcement(datum/team/revolution/team)
+	if(QDELETED(team) || !team)
+		return
+	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/revolutionary(src)
+	event.rev_team = team
+	event.trigger_rev_spawn()

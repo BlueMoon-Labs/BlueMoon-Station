@@ -193,6 +193,7 @@
 	sacs_needed = 5
 	required_atoms = list(/mob/living/carbon/human)
 	route = PATH_VOID
+	parallax_scene = ANTAG_SCENE_HERETIC_VOID
 	///soundloop for the void theme
 	var/datum/looping_sound/void_loop/sound_loop
 	///Reference to the ongoing voidstorm that surrounds the heretic

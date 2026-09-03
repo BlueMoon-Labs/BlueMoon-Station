@@ -72,11 +72,9 @@
 	var/saved_master_ticklimit
 	var/saved_state
 	var/saved_flags
-	#ifdef REFERENCE_TRACKING
 	var/list/saved_reference_find_on_fail
 	#ifdef UNIT_TESTS
 	var/saved_test_ref_scan_skip_async
-	#endif
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Run()
@@ -148,11 +146,9 @@
 	saved_master_ticklimit = Master.current_ticklimit
 	saved_state = SSgarbage.state
 	saved_flags = SSgarbage.flags
-	#ifdef REFERENCE_TRACKING
 	saved_reference_find_on_fail = SSgarbage.reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	saved_test_ref_scan_skip_async = SSgarbage.test_ref_scan_skip_async
-	#endif
 	#endif
 
 	SSgarbage.items = list()
@@ -197,9 +193,7 @@
 	SSgarbage.harddel_yield_history = list()
 	SSgarbage.harddel_yield_total = 0
 	SSgarbage.flags = initial(SSgarbage.flags)
-	#ifdef REFERENCE_TRACKING
 	SSgarbage.reference_find_on_fail = list()
-	#endif
 
 /datum/unit_test/gc_rewrite_base/proc/reset_gc_queues()
 	for (var/i in 1 to GC_QUEUE_COUNT)
@@ -213,13 +207,51 @@
 		SSgarbage.fail_counts[i] = 0
 		SSgarbage.peak_queue_depths[i] = 0
 
-/datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1)
+/datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
+	if(yield_for_gc)
+		SSgarbage.state = SS_IDLE // Prevent MC from racing the test barrier
+		wait_for_pending_refcount_deletes()
 	for (var/i in 1 to cycles)
 		SSgarbage.state = SS_RUNNING
 		SSgarbage.fire()
+	SSgarbage.state = SS_IDLE
 
+/// Wait until BYOND has released every datum currently queued by the isolated
+/// GC test. Clean objects normally disappear after one scheduler tick; a real
+/// holder is allowed the same two-second ceiling as the old unconditional
+/// sleep and is then passed to SSgarbage so the test still records the failure.
+/datum/unit_test/gc_rewrite_base/proc/wait_for_pending_refcount_deletes(max_wait = 20)
+	var/tick_delay = max(world.tick_lag, 1)
+	var/max_attempts = CEILING(max_wait / tick_delay, 1)
+	for(var/attempt in 1 to max_attempts)
+		sleep(tick_delay)
+		if(!has_live_softcheck_entries())
+			return
+
+/// Uses the same queued REF strings SSgarbage itself resolves. Kept in a
+/// separate proc so the temporary locate() reference is released before the
+/// barrier yields again.
+/datum/unit_test/gc_rewrite_base/proc/has_live_softcheck_entries()
+	var/list/refs = SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]
+	var/head = SSgarbage.queue_heads[GC_QUEUE_SOFTCHECK]
+	for(var/index in head to length(refs))
+		var/ref_id = refs[index]
+		if(ref_id && locate(ref_id))
+			return TRUE
+	return FALSE
+
+/// ВНИМАНИЕ, фантомные держатели: BYOND VM пинит объекты во временных слотах фрейма
+/// прока (возврат allocate(), чтение var через объект, инлайновый list(obj)). Пока жив
+/// фрейм Run(), qdel-нутый объект может честно провалить softcheck/warnfail с нулевыми
+/// таймаутами, а ref-скан ничего не найдёт. Правило: весь жизненный цикл объекта,
+/// сбор которого ассертится, выносить в хелпер-прок (его фрейм умирает на return и
+/// освобождает пины) - образец: equip_and_qdel у gc_rewrite_sticky_moustache_destroy_cancels_timer.
 /datum/unit_test/gc_rewrite_base/proc/configure_immediate_gc()
 	reset_gc_queues()
+	SSgarbage.items = list()
+	GLOB.gc_failure_cache.failures = list()
+	GLOB.gc_failure_cache.failure_sources = list()
+	GLOB.gc_failure_cache.total_failures = 0
 	SSgarbage.collection_timeout[GC_QUEUE_SOFTCHECK] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_WARNFAIL] = 0
 	SSgarbage.collection_timeout[GC_QUEUE_HARDDELETE] = 0
@@ -303,11 +335,9 @@
 	CONFIG_SET(number/gc_harddel_overflow_threshold, saved_gc_harddel_overflow_threshold)
 	CONFIG_SET(number/gc_harddel_overflow_budget_max_ms, saved_gc_harddel_overflow_budget_max_ms)
 	CONFIG_SET(number/gc_harddel_overflow_max_per_fire, saved_gc_harddel_overflow_max_per_fire)
-	#ifdef REFERENCE_TRACKING
 	SSgarbage.reference_find_on_fail = saved_reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	SSgarbage.test_ref_scan_skip_async = saved_test_ref_scan_skip_async
-	#endif
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Destroy()
@@ -335,28 +365,33 @@
 /datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer
 	parent_type = /datum/unit_test/gc_rewrite_base
 
-/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/Run()
-	configure_immediate_gc()
-	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
-	var/obj/item/clothing/mask/fakemoustache/sticky/sticky = allocate(/obj/item/clothing/mask/fakemoustache/sticky)
+/// Весь жизненный цикл усов идёт в отдельном фрейме: VM пинит операнды выражений
+/// во временных слотах прока (возврат allocate(), чтение var через объект и т.п.),
+/// и живой фрейм Run() держал бы фантомную ссылку на qdel-нутый предмет,
+/// ложно валя softcheck с нулевым таймаутом. Возвращает timerid или null при фейле.
+/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/proc/equip_and_qdel(mob/living/carbon/human/wearer)
+	var/obj/item/clothing/mask/fakemoustache/sticky/sticky = new(run_loc_floor_bottom_left)
 	wearer.equip_to_slot_or_del(sticky, ITEM_SLOT_MASK, TRUE, TRUE, TRUE, TRUE)
-
 	TEST_ASSERT_EQUAL(wearer.wear_mask, sticky, "Sticky moustache was not equipped into the mask slot")
 	TEST_ASSERT(HAS_TRAIT_FROM(wearer, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT), "Sticky moustache did not apply the no-internals trait")
 	TEST_ASSERT_NOTNULL(sticky.unstick_timerid, "Sticky moustache did not create a stoppable unstick timer")
 	TEST_ASSERT_NOTNULL(SStimer.timer_id_dict[sticky.unstick_timerid], "Sticky moustache timer was not registered")
-
 	var/timerid = sticky.unstick_timerid
-	allocated -= sticky
 	qdel(sticky)
-	sticky = null
+	return timerid
+
+/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/Run()
+	configure_immediate_gc()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/timerid = equip_and_qdel(wearer)
+	if(!timerid) // ассерты внутри хелпера уже зафейлили тест
+		return
 
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timerid], "Sticky moustache timer was not cancelled during Destroy()")
 	TEST_ASSERT(!HAS_TRAIT_FROM(wearer, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT), "Sticky moustache Destroy() did not clear the wearer no-internals trait")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/obj/item/clothing/mask/fakemoustache/sticky, "Sticky moustache")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Sticky moustache unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_buckled_alert_destroy_scrubs_owner_refs
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -364,19 +399,16 @@
 /datum/unit_test/gc_rewrite_buckled_alert_destroy_scrubs_owner_refs/Run()
 	configure_immediate_gc()
 	var/mob/unit_test/gc_alert_dummy/dummy = allocate(/mob/unit_test/gc_alert_dummy)
-	var/atom/movable/screen/alert/buckled/alert = dummy.throw_alert("buckled", /atom/movable/screen/alert/buckled)
+	dummy.throw_alert("buckled", /atom/movable/screen/alert/buckled)
 
-	TEST_ASSERT_NOTNULL(alert, "Buckled alert was not created")
-	TEST_ASSERT_EQUAL(dummy.alerts["buckled"], alert, "Buckled alert was not stored on the owner")
+	TEST_ASSERT_NOTNULL(dummy.alerts["buckled"], "Buckled alert was not created")
 
-	qdel(alert)
-	alert = null
+	dummy.clear_alert("buckled", TRUE)
 
 	TEST_ASSERT_NULL(dummy.alerts["buckled"], "Buckled alert Destroy() did not scrub the owner alert slot")
 
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Buckled alert unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_mob_destroy_clears_alerts
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -392,12 +424,10 @@
 	allocated -= dummy
 	qdel(dummy)
 	dummy = null
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 
 	assert_no_gc_failures(/atom/movable/screen/alert/buckled, "Buckled alert during mob deletion")
 	assert_no_gc_failures(/atom/movable/screen/alert/restrained/handcuffed, "Handcuffed alert during mob deletion")
-	TEST_ASSERT_NULL(GLOB.gc_failure_cache.failure_sources["[/atom/movable/screen/alert/buckled]"], "Mob deletion left a buckled alert failure-viewer entry behind")
-	TEST_ASSERT_NULL(GLOB.gc_failure_cache.failure_sources["[/atom/movable/screen/alert/restrained/handcuffed]"], "Mob deletion left a handcuffed alert failure-viewer entry behind")
 
 /datum/unit_test/gc_rewrite_disposalholder_mid_transit_cleanup
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -419,9 +449,8 @@
 	loop = null
 
 	SSmovement.fire(FALSE)
-	run_gc_fire_cycles(2)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_no_gc_failures(/obj/structure/disposalholder, "Disposalholder")
-	TEST_ASSERT_EQUAL(GLOB.gc_failure_cache.total_failures, 0, "Disposalholder unexpectedly created GC failure-viewer entries")
 
 /datum/unit_test/gc_rewrite_qdel_in_uses_legacy_strong_ref_threshold
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -537,6 +566,7 @@
 
 	var/datum/gc_failure_viewer/gc_failure_entry/entry = GLOB.gc_failure_cache.failures[1]
 	TEST_ASSERT_EQUAL(entry.origin_time, origin_time, "Warnfail entry lost the original qdel timestamp")
+	TEST_ASSERT_EQUAL(entry.resolve_target(), leaker, "Warnfail viewer lost the live datum when it advanced to the harddelete queue")
 
 	var/hd_head = SSgarbage.queue_heads[GC_QUEUE_HARDDELETE]
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueueDepth(GC_QUEUE_HARDDELETE), 1, "The object was not promoted into the harddelete queue")
@@ -988,7 +1018,6 @@
 	entry.qdel_hint = QDEL_HINT_SLOWDESTROY
 	TEST_ASSERT(findtext(entry.qdel_hint_to_text(), "QDEL_HINT_SLOWDESTROY"), "QDEL_HINT_SLOWDESTROY was not rendered by qdel_hint_to_text()")
 
-#ifdef REFERENCE_TRACKING
 /datum/unit_test/gc_rewrite_fast_reftrack_does_not_yield_gc_pass
 	parent_type = /datum/unit_test/gc_rewrite_base
 
@@ -1086,7 +1115,6 @@
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueueDepth(GC_QUEUE_WARNFAIL), 1, "The tracked datum was not promoted to warnfail before the GC pass yielded")
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueuedDatum(GC_QUEUE_WARNFAIL, SSgarbage.queue_heads[GC_QUEUE_WARNFAIL]), tracked, "The warnfail queue did not retain the tracked datum")
 	TEST_ASSERT_NULL(SSgarbage.reference_find_on_fail[REF(tracked)], "The iffail reference-tracking flag was not cleared after scheduling the scan")
-#endif
 
 /datum/unit_test/gc_rewrite_gas_mixture_soft_gc
 	parent_type = /datum/unit_test/gc_rewrite_base

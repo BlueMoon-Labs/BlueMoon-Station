@@ -151,46 +151,6 @@ GLOBAL_LIST(bad_gremlin_items)
 	QDEL_NULL(access_card)
 	return ..()
 
-/mob/living/simple_animal/hostile/gremlin/Life()
-	. = ..()
-	if(!health || stat == DEAD)
-		return
-	//Don't try to path to one target for too long. If it takes longer than a certain amount of time, assume it can't be reached and find a new one
-	if(!client) //don't do this shit if there's a client, they're capable of ventcrawling manually
-		if(in_vent)
-			target = null
-		if(entry_vent && get_dist(src, entry_vent) <= 1)
-			var/list/vents = list()
-			var/datum/pipeline/entry_vent_parent = entry_vent.parents[1]
-			for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in entry_vent_parent.other_atmosmch)
-				vents += temp_vent
-			if(!vents.len)
-				entry_vent = null
-				in_vent = FALSE
-				return
-			exit_vent = pick(vents)
-			visible_message("<span class='notice'>[src] crawls into the ventilation ducts!</span>")
-
-			loc = exit_vent
-			var/travel_time = round(get_dist(loc, exit_vent.loc) / 2)
-			addtimer(CALLBACK(src, PROC_REF(exit_vents)), travel_time) //come out at exit vent in 2 to 20 seconds
-
-
-		if(world.time > min_next_vent && !entry_vent && !in_vent && prob(GREMLIN_VENT_CHANCE)) //small chance to go into a vent
-			for(var/obj/machinery/atmospherics/components/unary/vent_pump/v in view(7,src))
-				if(!v.welded)
-					entry_vent = v
-					in_vent = TRUE
-					walk_to(src, entry_vent)
-					break
-	if(!target)
-		time_chasing_target = 0
-	else
-		if(++time_chasing_target > max_time_chasing_target)
-			LoseTarget()
-			time_chasing_target = 0
-	. = ..()
-
 /mob/living/simple_animal/hostile/gremlin/EscapeConfinement()
 	if(istype(loc, /obj) && CanAttack(loc)) //If we're inside a machine, screw with it
 		var/obj/M = loc
@@ -253,3 +213,118 @@ GLOBAL_LIST(bad_gremlin_items)
 	health = 85
 	maxHealth = 85
 	gold_core_spawnable = 0
+
+// ===== Адаптер-профиль гремлина =====
+// Порча техники и пожирание еды целиком живут в CanAttack/AttackingTarget и
+// работают через делегацию (search_objects = 3 гарантирует игнор мобов).
+// Особости кластера: поводок погони (легаси time_chasing_target) и случайное
+// брождение по вентиляции с 90-секундным кулдауном; целевые вент-заходы к
+// далёкой технике добавляет штатный opportunistic_ventcrawler.
+
+///Легаси prob(1.75) на 2с тик Life = 0.875%/с
+#define GREMLIN_VENT_CHANCE_PER_SECOND (GREMLIN_VENT_CHANCE / 2)
+///Легаси min_next_vent: 90 секунд между кроулами
+#define GREMLIN_VENT_COOLDOWN (90 SECONDS)
+
+///Профиль гремлина: vent_hunter-база + поводок погони + вент-брождение
+/datum/ai_controller/hostile_adapter/vent_hunter/gremlin
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/gremlin_chase_leash,
+		/datum/ai_planning_subtree/gremlin_vent_wander,
+		/datum/ai_planning_subtree/opportunistic_ventcrawler,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
+
+///Поводок погони: легаси time_chasing_target - гремлин быстро бросает цель,
+///до которой не добрался (запертая техника иначе держала бы его вечно).
+///Как и в легаси, лимит тикает даже вплотную: тамперинг сам ротирует цели
+///(50% LoseTarget на удар), а залипшие цели ротируются поводком.
+/datum/ai_planning_subtree/gremlin_chase_leash
+	///Легаси-лимит: max_time_chasing_target тиков Life по 2с = ~6 секунд
+	var/max_chase_time = 6 SECONDS
+
+/datum/ai_planning_subtree/gremlin_chase_leash/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/gremlin/imp = controller.pawn
+	if(!istype(imp))
+		return
+	var/atom/target = controller.blackboard[BB_AI_CURRENT_TARGET]
+	if(QDELETED(target))
+		return
+	var/acquired_at = controller.blackboard[BB_AI_TARGET_ACQUIRED_AT]
+	if(isnull(acquired_at))
+		//цель пришла мимо finder'а (зеркалирование) - часы стартуют сейчас
+		controller.blackboard[BB_AI_TARGET_ACQUIRED_AT] = world.time
+		return
+	if(world.time - acquired_at <= max_chase_time)
+		return
+	//как легаси LoseTarget по таймауту: бросаем цель и не хватаем её же мгновенно
+	controller.clear_engagement_memory()
+	controller.blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_UNREACHABLE_ROUTE_RETRY
+
+///Случайное брождение по вентиляции: шанс и 90с кулдаун из легаси Life.
+///Взведённый маршрут доводится до конца даже при живой цели - легаси walk_to
+///точно так же перехватывал движение у погони.
+/datum/ai_planning_subtree/gremlin_vent_wander
+
+/datum/ai_planning_subtree/gremlin_vent_wander/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/gremlin/imp = controller.pawn
+	if(!istype(imp))
+		return
+	if(istype(imp.loc, /obj/machinery/atmospherics))
+		//якорим легаси-кулдаун на момент выхода: пока мы в трубе, отметка едет
+		//вперёд; выходом рулит opportunistic_ventcrawler (случайный BB_AI_EXIT_VENT
+		//он уважает)
+		imp.min_next_vent = world.time + GREMLIN_VENT_COOLDOWN
+		return
+	var/obj/machinery/atmospherics/entry = controller.blackboard[BB_AI_ENTRY_VENT]
+	if(!isnull(entry))
+		if(QDELETED(entry) || !entry.can_crawl_through())
+			controller.clear_blackboard_key(BB_AI_ENTRY_VENT)
+			controller.clear_blackboard_key(BB_AI_EXIT_VENT)
+			return
+		if(get_turf(imp) != get_turf(entry))
+			controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_AI_ENTRY_VENT)
+			return SUBTREE_RETURN_FINISH_PLANNING
+		controller.queue_behavior(/datum/ai_behavior/enter_vent, BB_AI_ENTRY_VENT)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	if(world.time < imp.min_next_vent)
+		return
+	if(!SPT_PROB(GREMLIN_VENT_CHANCE_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/gremlin_pick_vent_route)
+
+///Выбрать вход (первый неоплавленный вент в поле зрения, как легаси view(7))
+///и СЛУЧАЙНЫЙ выход из его сети (легаси pick(vents))
+/datum/ai_behavior/gremlin_pick_vent_route
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/gremlin_pick_vent_route/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/gremlin/imp = controller.pawn
+	if(!istype(imp) || istype(imp.loc, /obj/machinery/atmospherics))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/candidate in view(7, imp))
+		if(candidate.welded)
+			continue
+		var/datum/pipeline/network = candidate.returnPipenet()
+		if(!network)
+			continue
+		var/list/exits = list()
+		for(var/obj/machinery/atmospherics/components/unary/vent_pump/exit_vent in network.other_atmosmch)
+			if(exit_vent == candidate || exit_vent.welded)
+				continue
+			exits += exit_vent
+		if(!length(exits))
+			continue
+		controller.set_blackboard_key(BB_AI_ENTRY_VENT, candidate)
+		controller.set_blackboard_key(BB_AI_EXIT_VENT, pick(exits))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+
+#undef GREMLIN_VENT_CHANCE_PER_SECOND
+#undef GREMLIN_VENT_COOLDOWN

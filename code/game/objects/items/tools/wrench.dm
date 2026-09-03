@@ -116,7 +116,7 @@
 	item_state = "drill"
 	lefthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/equipment/tools_righthand.dmi'
-	usesound = 'sound/items/drill_use.ogg'
+	usesound = list('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg')
 	custom_materials = list(/datum/material/iron=150,/datum/material/silver=50,/datum/material/titanium=25)
  //done for balance reasons, making them high value for research, but harder to get
 	force = 8 //might or might not be too high, subject to change
@@ -124,6 +124,9 @@
 	throwforce = 8
 	attack_verb = list("drilled", "screwed", "jabbed")
 	toolspeed = 0.25
+
+/obj/item/wrench/power/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', item_state, layer = (FLOAT_LAYER + 0.01))
 
 /obj/item/wrench/power/attack_self(mob/user)
 	playsound(get_turf(user),'sound/items/change_drill.ogg',50,1)
@@ -157,7 +160,7 @@
 	// Let the sound effect finish playing
 	sleep(20)
 
-	if(!user)
+	if(QDELETED(user))
 		return
 
 	for(var/obj/item/W in user)
@@ -167,12 +170,9 @@
 	W.add_fingerprint(user)
 	W.desc += " For some reason, it reminds you of [user.name]."
 
-	if(!user)
-		return
-
 	user.dust()
 
-	return OXYLOSS
+	return MANUAL_SUICIDE
 
 /obj/item/wrench/bolter
 	name = "bolter wrench"
@@ -186,17 +186,16 @@
 	name = "advanced wrench"
 	desc = "A wrench that uses the same magnetic technology that abductor tools use, but slightly more ineffeciently."
 	icon = 'icons/obj/advancedtools.dmi'
-	icon_state = "wrench"
+	icon_state = "adv_wrench"
 	usesound = 'sound/effects/empulse.ogg'
 	toolspeed = 0.2
 // BLUEMOON ADD START black skin
 	unique_reskin = list(
 		"Carbonized" = list(
-			RESKIN_ICON_STATE_FILE = 'modular_bluemoon/icons/obj/advancedtools_black.dmi',
-			RESKIN_ICON_STATE = "wrench_black",
+			RESKIN_ICON_STATE = "adv_wrench_black",
 		),
 		"Titanium" = list(
-			RESKIN_ICON_STATE = "wrench",
+			RESKIN_ICON_STATE = "adv_wrench",
 		)
 	)
 // BLUEMOON ADD END

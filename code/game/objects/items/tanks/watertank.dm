@@ -241,8 +241,10 @@
 
 
 /obj/item/extinguisher/mini/nozzle/doMove(atom/destination)
+	if(!tank)
+		return ..()
 	if(destination && (destination != tank.loc || !ismob(destination)))
-		if(loc != tank)
+		if(loc != tank && tank.loc)
 			to_chat(tank.loc, "<span class='notice'>The nozzle snaps back onto the tank!</span>")
 		destination = tank
 	..()

@@ -1,13 +1,13 @@
 import { toArray } from 'common/collections';
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Box, Button, Flex, Input, LabeledList, Section, Table, Tabs } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
 
-export const Cargo = (props, context) => {
+export const Cargo = (props) => {
   return (
     <Window
       width={780}
@@ -20,9 +20,9 @@ export const Cargo = (props, context) => {
   );
 };
 
-export const CargoContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 'catalog');
+export const CargoContent = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 'catalog');
   const {
     requestonly,
   } = data;
@@ -74,8 +74,8 @@ export const CargoContent = (props, context) => {
   );
 };
 
-const CargoStatus = (props, context) => {
-  const { act, data } = useBackend(context);
+const CargoStatus = (props) => {
+  const { act, data } = useBackend();
   const {
     away,
     docked,
@@ -128,9 +128,9 @@ const CargoStatus = (props, context) => {
   );
 };
 
-export const CargoCatalog = (props, context) => {
+export const CargoCatalog = (props) => {
   const { express } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const {
     self_paid,
     app_cost,
@@ -139,11 +139,11 @@ export const CargoCatalog = (props, context) => {
   const [
     activeSupplyName,
     setActiveSupplyName,
-  ] = useSharedState(context, 'supply', supplies[0]?.name);
+  ] = useSharedState('supply', supplies[0]?.name);
   const activeSupply = supplies.find(supply => {
     return supply.name === activeSupplyName;
   });
-  const [searchText, setSearchText] = useSharedState(context, 'searchText', '');
+  const [searchText, setSearchText] = useSharedState('searchText', '');
   const searchFn = createSearch(searchText, (pack) => pack.name + ' ' + pack.desc);
   const isSearching = searchText.length >= 2;
   let displayedPacks = [];
@@ -156,7 +156,7 @@ export const CargoCatalog = (props, context) => {
     <Section
       title="Catalog"
       buttons={(
-        <Fragment>
+        <>
           {!express && <CargoCartButtons />}
           <Input
             placeholder="Search..."
@@ -169,7 +169,7 @@ export const CargoCatalog = (props, context) => {
             content="Buy Privately"
             checked={self_paid}
             onClick={() => act('toggleprivate')} />
-        </Fragment>
+        </>
       )}>
       <Flex>
         <Flex.Item ml={-1} mr={1}>
@@ -241,8 +241,8 @@ export const CargoCatalog = (props, context) => {
   );
 };
 
-const CargoRequests = (props, context) => {
-  const { act, data } = useBackend(context);
+const CargoRequests = (props) => {
+  const { act, data } = useBackend();
   const {
     requestonly,
     can_send,
@@ -310,8 +310,8 @@ const CargoRequests = (props, context) => {
   );
 };
 
-const CargoCartButtons = (props, context) => {
-  const { act, data } = useBackend(context);
+const CargoCartButtons = (props) => {
+  const { act, data } = useBackend();
   const {
     requestonly,
     can_send,
@@ -323,7 +323,7 @@ const CargoCartButtons = (props, context) => {
     return null;
   }
   return (
-    <Fragment>
+    <>
       <Box inline mx={1}>
         {cart.length === 0 && 'Cart is empty'}
         {cart.length === 1 && '1 item'}
@@ -336,12 +336,12 @@ const CargoCartButtons = (props, context) => {
         color="transparent"
         content="Clear"
         onClick={() => act('clear')} />
-    </Fragment>
+    </>
   );
 };
 
-const CargoCart = (props, context) => {
-  const { act, data } = useBackend(context);
+const CargoCart = (props) => {
+  const { act, data } = useBackend();
   const {
     requestonly,
     away,
@@ -400,7 +400,7 @@ const CargoCart = (props, context) => {
             <Button
               color="green"
               style={{
-                'line-height': '28px',
+                lineHeight: '28px',
                 'padding': '0 12px',
               }}
               content="Confirm the order"

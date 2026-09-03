@@ -38,6 +38,12 @@
 /datum/movespeed_modifier/reagent/nitryl
 	multiplicative_slowdown = -0.65
 
+/datum/movespeed_modifier/reagent/nitrium
+	multiplicative_slowdown = -0.65
+
+/datum/movespeed_modifier/reagent/hypernoblium
+	multiplicative_slowdown = 0.5
+
 /datum/movespeed_modifier/reagent/freon
 	multiplicative_slowdown = 1.6
 

@@ -22,7 +22,17 @@
 	var/persistence_key
 
 	var/traits = null
-	var/space_ruin_levels = 7
+	/// Сколько z-уровней отводится под космические руины. Сам по себе пустой уровень 255x255
+	/// стоит недорого - замерено 9-13 МБ адресного пространства, а не 68, как считалось раньше:
+	/// нетронутый космический турф весит единицы байт, потому что BYOND платит только за
+	/// ЗАПИСАННЫЕ переменные инстанса, а /turf/open/space/basic вообще пропускает Initialize.
+	/// Деньги лежат не в уровнях, а в их СОДЕРЖИМОМ: 50 руин при SPACE_BUDGET = 50 стоят
+	/// около 280 МБ (5.6 МБ за руину). При этом снижение самого space_ruin_levels бюджет руин
+	/// НЕ уменьшает - в отличие от tg, seedRuins берёт SPACE_BUDGET как есть, и руины просто
+	/// плотнее укладываются на оставшиеся уровни. Рабочий рычаг здесь ровно один - SPACE_BUDGET.
+	/// У 32-битного DreamDaemon потолок около 4090 МБ, раунд стартует с 65-86% от него в
+	/// зависимости от карты. Карта может переопределить ключом space_ruin_levels в своём JSON.
+	var/space_ruin_levels = 5
 	var/space_empty_levels = 1
 	// BLUEMOON EDIT START: Invalid Space Turfs
 	/// Boolean that tells us if this is a planetary station. (like IceBoxStation)

@@ -83,13 +83,18 @@
 	desc = "Transform into a statue, regaining energy in the process. Additionally, you will slowly heal while in statue form."
 	icon_icon = 'icons/mob/actions/actions_changeling.dmi'
 	button_icon_state = "ling_camouflage"
+	required_mobility_flags = NONE
 	var/obj/structure/statue/gargoyle/current = null
 
 
 /datum/action/gargoyle/transform/Trigger()
-	.=..()
+	. = ..()
+	if(!.)
+		return FALSE
 	var/mob/living/carbon/human/H = owner
 	var/datum/quirk/gargoyle/T = locate() in H.roundstart_quirks
+	if(!T)
+		return FALSE
 	if(!T.cooldown)
 		if(!T.transformed)
 			if(!isturf(H.loc))
@@ -101,14 +106,18 @@
 			var/newcolor = list(rgb(77,77,77), rgb(150,150,150), rgb(28,28,28), rgb(0,0,0))
 			S.add_atom_colour(newcolor, FIXED_COLOUR_PRIORITY)
 			current = S
+			T.current = S
 			T.transformed = 1
 			T.cooldown = 30
 			T.paused = 0
 			S.dir = H.dir
 			return 1
 		else
-			qdel(current)
+			if(current)
+				qdel(current)
 			T.transformed = 0
+			T.current = null
+			current = null
 			T.cooldown = 30
 			T.paused = 0
 			H.visible_message(span_warning("[H]'s skin rapidly softens, returning them to normal!"), span_userdanger("Your skin softens, freeing your movement once more!"))

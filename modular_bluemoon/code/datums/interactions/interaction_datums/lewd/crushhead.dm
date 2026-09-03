@@ -18,12 +18,22 @@
 
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner)
-	var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
-	if(!head)
-		to_chat(user,span_warning("У цели отсутствует голова!"))
+/datum/interaction/lewd/crushhead/special_check(mob/living/user, mob/living/target)
+	. = ..()
+	if(!.)
 		return
-	var/message = "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
+	if(!target.get_bodypart(BODY_ZONE_HEAD))
+		to_chat(user,span_warning("У цели отсутствует голова!"))
+		return FALSE
+
+/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	var/distance = 7
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
+	var/message = "[is_hidden ? (picked_hidden) : null]" + "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
 					"отпускает голову <b>[partner]</b>, чтобы с новой силой сдавить её своими бедрами.",
 					"нежно прижимает <b>[partner]</b> меж ножками и немного встряхивает своими наушниками.",
 					"обхватывает <b>[partner]</b> своими бедрами и тихо постанывает.",
@@ -34,24 +44,31 @@
 	if(user.a_intent == INTENT_HARM)
 		lust_amount = NORMAL_LUST
 		damage_amount = rand(6, 12)
-		message = "[pick("прижимается к <b>[partner]</b>, своими бедрами, с силой сжимая голову.",
+		message = "[is_hidden ? (picked_hidden) : null]" + "[pick("прижимается к <b>[partner]</b>, своими бедрами, с силой сжимая голову.",
 					"резко сдавливает ляжками <b>[partner]</b>, тем самым вызывая утробный стон жертвы.",
 					"крепко прижимает <b>[partner]</b> к своему паху, сжимая голову с хрустом в шее.",
 					"с силой закрепляется за <b>[partner]</b> своими ногами и хищно наблюдает.",
 					"максимально грубым образом сдавливает голову <b>[partner]</b> до хруста в шее.")]"
 
 		var/mob/living/carbon/human/H = partner
-		if(istype(H) && partner?.client.prefs.extremeharm != "No" && user?.client.prefs.extremeharm != "No")
+		// ?. прикрывал только partner, а client у сгостившегося или SSD-партнёра пуст - отсюда
+		// 19 рантаймов "Cannot read null.prefs" за прод-раунд 9834. Читаем префы в локалки и
+		// отказываем по умолчанию: нет клиента - нет согласия на extreme harm. Голая цепочка
+		// ?. этого не даёт, у неё null != "No" истинно и хардкор разрешился бы сам собой.
+		var/datum/preferences/partner_prefs = partner?.client?.prefs
+		var/datum/preferences/user_prefs = user?.client?.prefs
+		if(istype(H) && partner_prefs?.extremeharm && partner_prefs.extremeharm != "No" && user_prefs?.extremeharm && user_prefs.extremeharm != "No")
 			if(prob(10))
 				H.bleed(2)
 			else if(prob(10))
 				H.adjustOrganLoss(ORGAN_SLOT_BRAIN, rand(1,3))
 				damage_amount += rand(3,6)
-			
+
 			// HeadStomp
-			if(H.InFullCritical()) 
+			if(H.InFullCritical())
 				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"),span_userdanger("ААААА ГОЛОВ-"))
 				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, -1)
+				var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
 				head.drop_limb()
 				head.drop_organs()
 				qdel(head)
@@ -66,13 +83,8 @@
 
 	partner.apply_damage(damage_amount, BRUTE, BODY_ZONE_HEAD, partner.run_armor_check(BODY_ZONE_HEAD, MELEE))
 
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
-
-	user.visible_message(message = message, ignored_mobs = user.get_unconsenting())
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', 50, 1, -1)
+	user.visible_message(message = message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 	if(HAS_TRAIT(partner, TRAIT_MASO))
 		partner.handle_post_sex(lust_amount, null, user)
 
@@ -86,4 +98,4 @@
 					"выдыхает болезненный стон.",
 					"звучно вздыхает от боли.",
 					"сильно вздрагивает.",
-					"вздрагивает, закатывая свои глаза.")]"))
+					"вздрагивает, закатывая свои глаза.")]"), vision_distance = distance)

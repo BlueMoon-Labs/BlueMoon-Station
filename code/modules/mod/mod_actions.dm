@@ -23,28 +23,39 @@
 	return ..()
 
 /datum/action/item_action/mod/Remove(mob/user)
-	if(ai_action && mod && user != mod.ai)
-		return
-	else if(!ai_action && mod && user == mod.ai)
-		return
+	// Фильтр "ИИ-действие снимается только с ИИ" нужен живому костюму: при сносе
+	// (свой qdel или qdel костюма, у которого ai уже занулен) снимать надо безусловно,
+	// иначе действие остаётся в owner.actions с живой кнопкой и держит костюм.
+	if(!QDELING(src) && !QDELETED(mod))
+		if(ai_action && user != mod.ai)
+			return
+		else if(!ai_action && user == mod.ai)
+			return
+	return ..()
+
+/datum/action/item_action/mod/Destroy()
+	mod = null
 	return ..()
 
 /datum/action/item_action/mod/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
-	if(mod.malfunctioning && prob(75))
+	if(mod.is_malfunctioning() && prob(75))
 		mod.balloon_alert(usr, "button malfunctions!")
 		return FALSE
 	return TRUE
 
 /datum/action/item_action/mod/deploy
 	name = "Deploy MODsuit"
-	desc = "Deploy/Conceal a part of the MODsuit."
+	desc = "Развернуть/Скрыть часть MOD-костюма."
 	button_icon_state = "deploy"
+	button_block_right_click_context_menu = TRUE
 
-/datum/action/item_action/mod/deploy/Trigger()
+/datum/action/item_action/mod/deploy/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
+	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
+		return mod.quick_toggle_parts(mod.wearer)
 	mod.choose_deploy(usr)
 	return TRUE
 
@@ -53,7 +64,7 @@
 
 /datum/action/item_action/mod/activate
 	name = "Activate MODsuit"
-	desc = "Activate/Deactivate the MODsuit."
+	desc = "Активировать/Деактивировать MOD-костюм."
 	button_icon_state = "activate"
 
 /datum/action/item_action/mod/activate/Trigger()
@@ -67,7 +78,7 @@
 
 /datum/action/item_action/mod/module
 	name = "Toggle Module"
-	desc = "Toggle a MODsuit module."
+	desc = "Переключить модуль MOD-костюма."
 	button_icon_state = "module"
 
 /datum/action/item_action/mod/module/Trigger()
@@ -81,7 +92,7 @@
 
 /datum/action/item_action/mod/panel
 	name = "MODsuit Panel"
-	desc = "Open the MODsuit's panel."
+	desc = "Открыть панель MOD-костюма."
 	button_icon_state = "panel"
 
 /datum/action/item_action/mod/panel/Trigger()

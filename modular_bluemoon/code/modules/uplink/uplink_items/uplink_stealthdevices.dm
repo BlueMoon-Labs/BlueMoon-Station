@@ -34,7 +34,7 @@
 	. += span_info("Toggle modes by using the fingerprinter in hand.<br>\
 		While on <b>\"Read\"</b> mode, use the tool on someone or something that has prints on it to add all the prints to the tool's print database.<br>\
 		While on <b>\"Plant\"</b> mode, use the tool on anything to add any prints from the database on it.")
-	. += span_warning("The device is forbidden and illegal to use in almost all nations and private organizations, including the Pact.")
+	. += span_warning("The device is forbidden and illegal to use in almost all nations and private organizations, including the PACT.")
 
 /obj/item/device/fingerprinter/attack_self(mob/user)
 	. = ..()
@@ -132,3 +132,13 @@
 	desc = "Устройство, позволяющее сканировать и подбрасывать отпечатки пальцев."
 	item = /obj/item/device/fingerprinter
 	cost = 5
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
+
+/datum/uplink_item/stealthy_tools/adv_pinpointer
+	name = "Advanced Pinpointer"
+	desc = "Усовершенствованный трекер с квантовым детектором сигнатур. \
+		Отслеживает персонал без датчиков, киборгов, ИИ и предметы. \
+		ALT-ЛКМ переключает режим. Точнее контрактного пинпоинтера."
+	item = /obj/item/pinpointer/adv
+	cost = 10
+	purchasable_from = UPLINK_TRAITORS

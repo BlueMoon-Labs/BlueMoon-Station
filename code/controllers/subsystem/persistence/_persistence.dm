@@ -332,6 +332,20 @@ SUBSYSTEM_DEF(persistence)
 	if(fexists(json_file))
 		paintings = json_decode(file2text(json_file))
 
+	if(islist(paintings))
+		for(var/persistence_id in paintings)
+			var/list/entries = paintings[persistence_id]
+			if(!islist(entries))
+				continue
+			var/list/valid_entries = list()
+			for(var/list/entry in entries)
+				var/entry_md5 = entry["md5"]
+				if(!entry_md5)
+					continue
+				if(fexists("data/paintings/[persistence_id]/[entry_md5].png"))
+					valid_entries += list(entry)
+			paintings[persistence_id] = valid_entries
+
 	for(var/obj/structure/sign/painting/P in painting_frames)
 		P.load_persistent()
 

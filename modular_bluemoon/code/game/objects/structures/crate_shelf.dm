@@ -143,6 +143,8 @@
 	name = "crate shelf parts"
 	desc = "Parts of a shelf."
 	construction_type = /obj/structure/crate_shelf
+	custom_materials = list(/datum/material/iron=MINERAL_MATERIAL_AMOUNT*10)
+	buildstackamount = 10
 
 ///called when a mob resists while inside a container that is itself inside something.
 /atom/movable/proc/relay_container_resist_act(mob/living/user, obj/O)

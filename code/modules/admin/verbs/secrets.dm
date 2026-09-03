@@ -199,8 +199,8 @@
 				for(var/mob/living/mob in thunderdome)
 					qdel(mob) //Clear mobs
 			for(var/obj/obj in thunderdome)
-				if(!istype(obj, /obj/machinery/camera) && !istype(obj, /obj/effect/abstract/proximity_checker))
-					qdel(obj) //Clear objects
+				if(!istype(obj, /obj/machinery/camera))
+					qdel(obj) //Clear objects; proximity checkers are recreated when the template is copied
 
 			var/area/template = GLOB.areas_by_type[/area/tdome/arena_source]
 			template.copy_contents_to(thunderdome)
@@ -261,11 +261,11 @@
 				if("Make Your Own")
 					AdminCreateVirus(holder)
 				if("Random")
-					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSevents.control
+					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSdirector.event_controls()
 					E = DC.runEvent()
 				if("Choose")
 					var/virus = input("Choose the virus to spread", "BIOHAZARD") as null|anything in sort_list(typesof(/datum/disease), GLOBAL_PROC_REF(cmp_typepaths_asc))
-					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSevents.control
+					var/datum/round_event_control/disease_outbreak/DC = locate(/datum/round_event_control/disease_outbreak) in SSdirector.event_controls()
 					var/datum/round_event/disease_outbreak/DO = DC.runEvent()
 					DO.virus_type = virus
 					E = DO
@@ -348,7 +348,7 @@
 		if("events")
 			if(!is_funmin)
 				return
-			if(!SSevents.wizardmode)
+			if(!SSdirector.wizardmode)
 				if(alert("Do you want to toggle summon events on?",,"Да","Нет") == "Да")
 					summonevents()
 					SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Activate"))
@@ -359,19 +359,8 @@
 						summonevents()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Intensify"))
 					if("Turn Off Summon Events")
-						SSevents.toggleWizardmode()
-						SSevents.resetFrequency()
+						SSdirector.toggle_wizardmode()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Disable"))
-		if("space_cleaner_spill")
-			if(!is_funmin)
-				return
-			var/event_type = text2path("/datum/round_event_control/space_cleaner_spill")
-			var/datum/round_event_control/EC = locate(event_type) in SSevents.control
-			if(EC)
-				EC.runEvent(announce_chance_override = 100, admin_forced = TRUE)
-				message_admins("[key_name_admin(holder)] запустил ивент: Аварийная очистка космической станции.")
-				log_admin("[key_name(holder)] запустил ивент: Аварийная очистка космической станции.")
-			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Аварийная очистка станции"))
 		if("eagles")
 			if(!is_funmin)
 				return
@@ -434,13 +423,13 @@
 					continue
 				GLOB.dna_for_copying.transfer_identity(H, TRUE)
 				H.real_name = H.dna.real_name
-				var/obj/item/pda/worn = H.wear_id
+				var/obj/item/modular_computer/pda/worn = H.wear_id
 				var/obj/item/card/id/W = H.wear_id?.GetID()
 				if(W)
 					W.registered_name = H.real_name
 					W.update_label()
 					if(worn)
-						if(istype(worn, /obj/item/pda))
+						if(istype(worn, /obj/item/modular_computer/pda))
 							worn.owner = W.registered_name
 							worn.update_label()
 				H.updateappearance(mutcolor_update=1)

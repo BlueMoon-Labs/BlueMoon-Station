@@ -70,11 +70,16 @@
 	var/atom/movable/AM = parent
 	if(isnull(dir))
 		dir = AM.dir
-	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(vehicle_move_delay), FALSE)
+	var/sprite_dir = move_dir_for_riding_sprite(dir)
+	if(!sprite_dir)
+		sprite_dir = AM.dir
+	// Диагональ у транспорта стоит вдвое. Ход не от handle_ride() - буксировка, толчок, бросок -
+	// приходит только сюда, и glide по прямой цене оставлял бы спрайт стоять полпути.
+	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(ISDIAGONALDIR(dir))), FALSE)
 	for(var/i in AM.buckled_mobs)
 		ride_check(i)
-	handle_vehicle_offsets(dir)
-	handle_vehicle_layer(dir)
+	handle_vehicle_offsets(sprite_dir)
+	handle_vehicle_layer(sprite_dir)
 
 /datum/component/riding/proc/ride_check(mob/living/M)
 	var/atom/movable/AM = parent
@@ -189,16 +194,49 @@
 		return (allow_one_away_from_valid_turf && !forbid_turf_typecache[current.type])
 	return TRUE
 
+/// Drops mutually opposite cardinal inputs that leak through as nonsense dirs / inertia fights (bad bitmask edge cases).
+/datum/component/riding/proc/clamp_riding_move_direction(direction)
+	var/dir = direction
+	if((dir & NORTH) && (dir & SOUTH))
+		dir &= ~(NORTH|SOUTH)
+	if((dir & EAST) && (dir & WEST))
+		dir &= ~(EAST|WEST)
+	return dir
+
+/// Riding offset/layer tables only define TEXT_* cardinals; map diagonal moves to a cardinal so sprites/z-order stay stable.
+/datum/component/riding/proc/move_dir_for_riding_sprite(direction)
+	if(!direction || !(direction & (direction - 1)))
+		return direction
+	if(direction & NORTH)
+		return NORTH
+	if(direction & SOUTH)
+		return SOUTH
+	if(direction & EAST)
+		return EAST
+	return WEST
+
+/// Цена шага транспорта, выровненная по тику.
+///
+/// Диагональ у транспорта стоит вдвое, а не в SQRT_2, как обычный шаг - это его
+/// собственная механика, и трогать её здесь незачем. А вот выровнять итог по
+/// тику надо: шаг проверяется на кулдауне, который опрашивается только на тике,
+/// поэтому дробная цена даёт не дробный интервал, а гуляющий.
+/datum/component/riding/proc/get_step_cost(diagonal)
+	return movement_quantize_delay(vehicle_move_delay * (diagonal ? 2 : 1), world.tick_lag)
+
 /datum/component/riding/proc/handle_ride(mob/user, direction)
 	var/atom/movable/AM = parent
 	if(user && user.incapacitated())
 		Unbuckle(user)
 		return
-	if(world.time < last_vehicle_move + ((last_move_diagonal? 2 : 1) * vehicle_move_delay))
+	if(world.time < last_vehicle_move + get_step_cost(last_move_diagonal))
 		return
 	last_vehicle_move = world.time
 
 	if(keycheck(user))
+		direction = clamp_riding_move_direction(direction)
+		if(!direction)
+			return
 		var/turf/next = get_step(AM, direction)
 		var/turf/current = get_turf(AM)
 		if(!istype(next) || !istype(current))
@@ -215,8 +253,18 @@
 		else
 			last_move_diagonal = FALSE
 
-		handle_vehicle_offsets(direction)
-		handle_vehicle_layer(direction)
+		// glide обязан покрывать тот интервал, который реально пройдёт. Диагональ
+		// у транспорта стоит вдвое, а glide ставился по прямому ходу - спрайт
+		// доезжал до тайла за половину пути и вторую половину стоял, ожидая
+		// разрешения. На диагональной езде это видно как шаг через раз.
+		//
+		// Ставим после того, как диагональ стала известна: vehicle_moved() успел
+		// отработать внутри step() выше и знал только про прошлый шаг.
+		AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(last_move_diagonal)))
+
+		var/sprite_dir = move_dir_for_riding_sprite(direction)
+		handle_vehicle_offsets(sprite_dir)
+		handle_vehicle_layer(sprite_dir)
 	else
 		to_chat(user, "<span class='notice'>You'll need the keys in one of your hands to [drive_verb] [AM].</span>")
 
@@ -556,6 +604,8 @@
 /datum/component/riding/cyborg/force_dismount(mob/living/M, from_mob = FALSE)
 	. = ..()
 	var/atom/movable/AM = parent
+	if(!M || QDELETED(M) || !AM || QDELETED(AM))
+		return
 	var/turf/target = get_edge_target_turf(AM, AM.dir)
 	var/turf/targetm = get_step(get_turf(AM), AM.dir)
 	M.Move(targetm)
@@ -583,7 +633,10 @@
 	return FALSE
 
 /datum/component/riding/proc/unequip_buckle_inhands(mob/living/carbon/user)
-	for(var/a in offhands[user])
+	var/list/user_offhands = offhands[user]
+	if(!user_offhands)
+		return TRUE
+	for(var/a in user_offhands.Copy()) // удаление из списка по ходу итерации пропускало каждый второй оффхенд
 		LAZYREMOVE(offhands[user], a)
 		if(a) //edge cases null entries
 			var/obj/item/riding_offhand/O = a
@@ -604,6 +657,9 @@
 	var/mob/living/parent
 	var/selfdeleting = FALSE
 
+/obj/item/riding_offhand/attack_hand()
+	return
+
 /obj/item/riding_offhand/dropped(mob/user)
 	selfdeleting = TRUE
 	. = ..()
@@ -619,6 +675,15 @@
 	if(selfdeleting)
 		if((rider in AM.buckled_mobs) && rider?.buckled == AM)
 			AM.unbuckle_mob(rider)
+	// Самоудаление (DROPDEL при дропе) не выписывало оффхенд из offhands
+	// riding-компонента - зомби-ссылка жила в списке до конца езды,
+	// а незанулённые rider/parent тащили за собой мобов
+	if(parent && !QDELING(parent))
+		var/datum/component/riding/riding_comp = parent.GetComponent(/datum/component/riding)
+		if(riding_comp && rider)
+			LAZYREMOVE(riding_comp.offhands[rider], src)
+	rider = null
+	parent = null
 	. = ..()
 
 /obj/item/riding_offhand/on_thrown(mob/living/carbon/user, atom/target)

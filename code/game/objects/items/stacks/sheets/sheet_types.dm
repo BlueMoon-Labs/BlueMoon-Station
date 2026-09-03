@@ -156,6 +156,7 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("desk bell", /obj/structure/desk_bell, 2, time = 50, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("light switch frame", /obj/item/wallframe/light_switch, 1), \
 	new/datum/stack_recipe("washing machine", /obj/machinery/washing_machine, 5, time = 2.5 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("pool ladder", /obj/item/pool_ladder, 10, time = 20), \
 ))
 
 /obj/item/stack/sheet/metal
@@ -218,6 +219,7 @@ GLOBAL_LIST_INIT(plasteel_recipes, list ( \
 	new/datum/stack_recipe("pressure tank", /obj/machinery/atmospherics/components/unary/tank, 15, time = 60, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("micro powered fan assembly", /obj/machinery/fan_assembly, 5, time = 50, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("plasteel barricade", /obj/structure/deployable_barricade/metal/plasteel, 2, time = 1 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("pool floor tile", /obj/item/stack/tile/plasteel/pool, 1, 4, 20), \
 	new /datum/stack_recipe_list("crates", list( \
 		new /datum/stack_recipe("gray crate", /obj/structure/closet/crate, 5, time = 50, one_per_turf = 1, on_floor = 1), \
 		new /datum/stack_recipe("internals crate", /obj/structure/closet/crate/internals, 5, time = 50, one_per_turf = 1, on_floor = 1), \
@@ -429,6 +431,7 @@ GLOBAL_LIST_INIT(cloth_recipes, list ( \
 	new/datum/stack_recipe("sensorless loincloth", /obj/item/clothing/under/costume/loincloth/cloth, 2), \
 	new/datum/stack_recipe("tunic", /obj/item/clothing/under/tunic, 3), \
 	new/datum/stack_recipe("fancy pillow", /obj/item/fancy_pillow, 3), \
+	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/cloth, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS), \
 	//SPLURT CHANGE: ADD MATTRESSES
 	new/datum/stack_recipe_list("matresses", list( \
 		new/datum/stack_recipe("mattress (random)", /obj/structure/bed/matress, 2, one_per_turf = TRUE, on_floor = TRUE), \
@@ -552,6 +555,7 @@ GLOBAL_LIST_INIT(cardboard_recipes, list ( \
 	new/datum/stack_recipe("cardboard cutout", /obj/item/cardboard_cutout, 5),					\
 	new/datum/stack_recipe("pizza box", /obj/item/pizzabox),									\
 	new/datum/stack_recipe("folder", /obj/item/folder),											\
+	new/datum/stack_recipe("biscuit card", /obj/item/folder/biscuit/unsealed),											\
 	new/datum/stack_recipe("cardboard card", /obj/item/cardboard_card, 1),						\
 	// holy fuck why are there so many boxes
 	new/datum/stack_recipe_list("fancy boxes", list ( \
@@ -884,11 +888,13 @@ GLOBAL_LIST_INIT(bone_recipes, list(
  */
 
 GLOBAL_LIST_INIT(plastic_recipes, list(
+	new/datum/stack_recipe("plastic chair", /obj/item/chair/plastic, 5, one_per_turf = TRUE, on_floor = TRUE), \
 	new /datum/stack_recipe("see-through plastic flaps", /obj/structure/plasticflaps, 5, one_per_turf = TRUE, on_floor = TRUE, time = 40), \
 	new /datum/stack_recipe("opaque plastic flaps", /obj/structure/plasticflaps/opaque, 5, one_per_turf = TRUE, on_floor = TRUE, time = 40), \
 	new /datum/stack_recipe("water bottle", /obj/item/reagent_containers/glass/beaker/waterbottle/empty), \
 	new /datum/stack_recipe("large water bottle", /obj/item/reagent_containers/glass/beaker/waterbottle/large/empty,3), \
 	new /datum/stack_recipe("shower curtain", /obj/structure/curtain, 10, time = 10, one_per_turf = 1, on_floor = 1), \
+	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/plastic, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS), \
 	new /datum/stack_recipe("duct", /obj/item/stack/ducts, 1, 5, 50), \
 	new /datum/stack_recipe("laser pointer case", /obj/item/glasswork/glass_base/laserpointer_shell, 3, 1, 1, 30 SECONDS), \
 	new /datum/stack_recipe("wet floor sign", /obj/item/clothing/suit/caution, 2), \
@@ -1029,15 +1035,3 @@ new /datum/stack_recipe("paper frame door", /obj/structure/mineral_door/paperfra
 	amount = 20
 /obj/item/stack/sheet/sandblock/five
 	amount = 5
-
-// Titanium
-
-GLOBAL_LIST_INIT(bluemoon_titanium_recipes, list(
-	new/datum/stack_recipe("spaceship plating", /obj/item/stack/sheet/spaceship, 1, time = 5),
-))
-
-/obj/item/stack/sheet/mineral/titanium/get_main_recipes()
-	. = ..()
-	. += GLOB.bluemoon_titanium_recipes
-
-//Made ashtrays craftable. - Gardelin0

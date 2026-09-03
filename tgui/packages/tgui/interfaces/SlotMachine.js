@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { AnimatedNumber, Box, Button, Divider, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -75,7 +77,7 @@ const SlotReel = (props) => {
           <div
             className="SlotMachine__reel-strip"
             style={{
-              'animation-delay': (reelIndex * 0.15) + 's',
+              animationDelay: (reelIndex * 0.15) + 's',
             }}>
             {ALL_SYMBOLS.concat(ALL_SYMBOLS).concat(ALL_SYMBOLS).map((sym, i) => (
               <div className="SlotMachine__reel-symbol" key={i}>
@@ -111,8 +113,8 @@ const ConfettiOverlay = () => (
         className="SlotMachine__confetti-piece"
         style={{
           'left': (((i * 37) % 100)) + '%',
-          'animation-delay': ((i * 0.13) % 2) + 's',
-          'animation-duration': (1.5 + (i % 3) * 0.5) + 's',
+          animationDelay: ((i * 0.13) % 2) + 's',
+          animationDuration: (1.5 + (i % 3) * 0.5) + 's',
           'background': ['#ffd700', '#ff6eff', '#00ff88', '#ff4444', '#4488ff'][i % 5],
         }}
       />
@@ -120,9 +122,9 @@ const ConfettiOverlay = () => (
   </div>
 );
 
-export const SlotMachine = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [showIntro, setShowIntro] = useLocalState(context, 'showIntro', true);
+export const SlotMachine = (props) => {
+  const { act, data } = useBackend();
+  const [showIntro, setShowIntro] = useState(true);
   const {
     money,
     plays,
@@ -306,14 +308,14 @@ export const SlotMachine = (props, context) => {
           {free_spins_remaining > 0 && (
             <Stack.Item>
               <div style={{
-                'text-align': 'center',
+                textAlign: 'center',
                 'padding': '6px',
                 'background': 'rgba(0,200,0,0.15)',
                 'border': '1px solid rgba(0,200,0,0.4)',
-                'border-radius': '4px',
+                borderRadius: '4px',
                 'color': '#4f4',
-                'font-weight': 'bold',
-                'font-size': '14px',
+                fontWeight: 'bold',
+                fontSize: '14px',
               }}>
                 🎰 FREE SPINS: {free_spins_remaining} remaining!
               </div>
@@ -324,13 +326,13 @@ export const SlotMachine = (props, context) => {
           {loss_streak >= 5 && !working && (
             <Stack.Item>
               <div style={{
-                'text-align': 'center',
+                textAlign: 'center',
                 'padding': '4px',
                 'background': 'rgba(255,100,0,0.15)',
                 'border': '1px solid rgba(255,100,0,0.4)',
-                'border-radius': '4px',
+                borderRadius: '4px',
                 'color': '#fa3',
-                'font-size': '12px',
+                fontSize: '12px',
               }}>
                 🔥 HOT MACHINE — {loss_streak} losses in a row! Enhanced bonus chance!
               </div>
@@ -406,7 +408,7 @@ export const SlotMachine = (props, context) => {
                       onClick={() => act('set_bet', { amount })}>
                       {amount} cr
                       <br />
-                      <span style={{ 'font-size': '9px', 'opacity': 0.7 }}>
+                      <span style={{ fontSize: '9px', 'opacity': 0.7 }}>
                         {BET_LINES[amount] || 1} line{(BET_LINES[amount] || 1) > 1 ? 's' : ''}
                       </span>
                     </Button>

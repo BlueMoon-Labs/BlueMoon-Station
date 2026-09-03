@@ -1,6 +1,6 @@
 /obj/item/mecha_ammo
 	name = "generic ammo box"
-	desc = "A box of ammo for an unknown weapon."
+	desc = "Коробка боеприпасов для неизвестного оружия."
 	w_class = WEIGHT_CLASS_BULKY
 	icon = 'icons/mecha/mecha_ammo.dmi'
 	icon_state = "empty"
@@ -15,7 +15,7 @@
 /obj/item/mecha_ammo/update_name()
 	if(!rounds)
 		name = "empty ammo box"
-		desc = "An exosuit ammuniton box that has since been emptied. Please recycle."
+		desc = "Коробка боеприпасов экзокостюма, опустевшая. Пожалуйста, утилизируйте."
 		icon_state = "empty"
 
 /obj/item/mecha_ammo/attack_self(mob/user)
@@ -36,28 +36,28 @@
 
 /obj/item/mecha_ammo/incendiary
 	name = "incendiary ammo"
-	desc = "A box of incendiary ammunition for use with exosuit weapons."
+	desc = "Коробка зажигательных боеприпасов для оружия экзокостюма."
 	icon_state = "incendiary"
 	rounds = 24
 	ammo_type = "incendiary"
 
 /obj/item/mecha_ammo/scattershot
 	name = "scattershot ammo"
-	desc = "A box of scaled-up buckshot, for use in exosuit shotguns."
+	desc = "Коробка увеличенной картечи для дробовиков экзокостюма."
 	icon_state = "scattershot"
 	rounds = 40
 	ammo_type = "scattershot"
 
 /obj/item/mecha_ammo/lmg
 	name = "machine gun ammo"
-	desc = "A box of linked ammunition, designed for the Ultra AC 2 exosuit weapon."
+	desc = "Коробка ленточных боеприпасов, предназначенных для оружия экзокостюма Ultra AC 2."
 	icon_state = "lmg"
 	rounds = 300
 	ammo_type = "lmg"
 
 /obj/item/mecha_ammo/missiles_br
 	name = "breaching missiles"
-	desc = "A box of large missiles, ready for loading into a BRM-6 exosuit missile rack."
+	desc = "Коробка крупных ракет, готовых к загрузке в ракетную установку экзокостюма BRM-6."
 	icon_state = "missile_br"
 	rounds = 6
 	round_term = "missile"
@@ -67,7 +67,7 @@
 
 /obj/item/mecha_ammo/missiles_he
 	name = "anti-armor missiles"
-	desc = "A box of large missiles, ready for loading into an SRM-8 exosuit missile rack."
+	desc = "Коробка крупных ракет, готовых к загрузке в ракетную установку экзокостюма SRM-8."
 	icon_state = "missile_he"
 	rounds = 8
 	round_term = "missile"
@@ -78,7 +78,7 @@
 
 /obj/item/mecha_ammo/flashbang
 	name = "launchable flashbangs"
-	desc = "A box of smooth flashbangs, for use with a large exosuit launcher. Cannot be primed by hand."
+	desc = "Коробка светошумовых гранат для использования с крупной установкой экзокостюма. Нельзя активировать вручную."
 	icon_state = "flashbang"
 	rounds = 6
 	round_term = "grenade"
@@ -86,7 +86,7 @@
 
 /obj/item/mecha_ammo/clusterbang
 	name = "launchable flashbang clusters"
-	desc = "A box of clustered flashbangs, for use with a specialized exosuit cluster launcher. Cannot be primed by hand."
+	desc = "Коробка кластерных светошумовых гранат для использования со специализированной кластерной установкой экзокостюма. Нельзя активировать вручную."
 	icon_state = "clusterbang"
 	rounds = 3
 	round_term = "cluster"

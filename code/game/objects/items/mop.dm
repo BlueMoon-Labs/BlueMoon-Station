@@ -1,3 +1,8 @@
+#define MOP_AFTER_LIQUID_CONTINUE 1
+#define MOP_AFTER_LIQUID_CONTINUE_ANIMATE 2
+#define MOP_AFTER_LIQUID_STOP 3
+#define MOP_AFTER_LIQUID_STOP_ANIMATE 4
+
 /obj/item/mop
 	desc = "The world of janitalia wouldn't be complete without a mop."
 	name = "mop"
@@ -69,8 +74,7 @@
 	reagents.reaction(A, TOUCH, 10)	//Needed for proper floor wetting.
 	reagents.remove_any(1)			//reaction() doesn't use up the reagents
 
-
-/obj/item/mop/afterattack(atom/A, mob/user, proximity)
+/obj/item/mop/afterattack(atom/A, mob/user, proximity, click_parameters)
 	. = ..()
 	if(!proximity)
 		return
@@ -78,26 +82,46 @@
 	var/mob/living/L = user
 
 	if(istype(L) && IS_STAMCRIT(L))
-		to_chat(user, "<span class='danger'>You're too exhausted for that.</span>")
+		to_chat(user, span_danger("You're too exhausted for that."))
 		return
 
-	if(reagents.total_volume < 1)
-		to_chat(user, "<span class='warning'>Your mop is dry!</span>")
+	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart) || istype(A, /obj/structure/sink))
 		return
+
+	if(istype(A, /obj/item/reagent_containers)) // BLUEMOON ADD: wring the mop out into any container with Ctrl+click or harm intent
+		var/list/modifiers = params2list(click_parameters)
+		if(A.is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM))
+			if(A.reagents.total_volume >= A.reagents.maximum_volume)
+				to_chat(user, span_warning("[A] is full!"))
+				return
+			reagents.remove_all(reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			reagents.trans_to(A, reagents.total_volume)
+			to_chat(user, span_notice("You squeeze [src] out into [A]."))
+			playsound(A, 'sound/effects/slosh.ogg', 25, 1)
+			return
 
 	var/turf/T = get_turf(A)
-
-	if(istype(A, /obj/item/reagent_containers/glass/bucket) || istype(A, /obj/structure/janitorialcart))
-		return
-
 	if(T)
 		if(!L.UseStaminaBuffer(stamusage, warn = TRUE))
 			return
-		user.visible_message("[user] cleans \the [T] with [src].", "<span class='notice'>You clean \the [T] with [src].</span>")
-		clean(T, user)
-		user.DelayNextAction(CLICK_CD_MELEE)
-		user.do_attack_animation(T, used_item = src)
-		playsound(T, "slosh", 50, 1)
+		var/try_clean = TRUE
+		var/need_animate = FALSE
+		if(T.liquids)
+			var/liquid_result = attack_liquids_turf(A, user, T.liquids)
+			try_clean = liquid_result == MOP_AFTER_LIQUID_CONTINUE || liquid_result == MOP_AFTER_LIQUID_CONTINUE_ANIMATE
+			need_animate = liquid_result == MOP_AFTER_LIQUID_CONTINUE_ANIMATE || liquid_result == MOP_AFTER_LIQUID_STOP_ANIMATE
+
+		if(try_clean)
+			if(reagents.total_volume >= 1)
+				user.visible_message("[user] cleans \the [T] with [src].", span_notice("You clean \the [T] with [src]."))
+				clean(T, user)
+				need_animate = TRUE
+			else if(!need_animate)
+				to_chat(user, span_warning("Your mop is dry!"))
+		if(need_animate)
+			user.DelayNextAction(CLICK_CD_MELEE)
+			user.do_attack_animation(T, used_item = src)
+			playsound(T, "slosh", 50, 1)
 
 /obj/effect/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/mop) || istype(I, /obj/item/soap))
@@ -111,8 +135,24 @@
 		J.mymop=src
 		J.update_icon()
 	else
-		to_chat(user, "<span class='warning'>You are unable to fit your [name] into the [J.name].</span>")
+		to_chat(user, span_warning("You are unable to fit your [name] into the [J.name]."))
 		return
+
+// Remove liquids from a turf using a mop.
+/obj/item/mop/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	if(liquids.fire_state)
+		return MOP_AFTER_LIQUID_STOP
+
+	var/free_space = reagents.maximum_volume - reagents.total_volume
+	if(free_space <= 0)
+		to_chat(user, span_warning("Your [src] can't absorb any more liquid!"))
+		return MOP_AFTER_LIQUID_CONTINUE
+
+	var/datum/reagents/tempr = liquids.take_reagents_flat(free_space)
+	tempr.trans_to(reagents, tempr.total_volume)
+	to_chat(user, span_notice("You soak \the [src] with some liquids."))
+	qdel(tempr)
+	return MOP_AFTER_LIQUID_STOP_ANIMATE
 
 /obj/item/mop/cyborg
 	insertable = FALSE
@@ -133,15 +173,28 @@
 	var/refill_rate = 1 //Rate per process() tick mop refills itself
 	var/refill_reagent = /datum/reagent/water //Determins what reagent to use for refilling, just in case someone wanted to make a HOLY MOP OF PURGING
 
+// Advanced mop has a self-refilling condenser, so it has no room to soak up
+// liquids into its reagents. Instead it straight up removes the whole puddle.
+/obj/item/mop/advanced/attack_liquids_turf(turf/target_turf, mob/living/user, obj/effect/abstract/liquid_turf/liquids)
+	. = MOP_AFTER_LIQUID_CONTINUE_ANIMATE
+	if(liquids.fire_state)
+		return MOP_AFTER_LIQUID_STOP
+
+	liquids.liquid_simple_delete_flat(liquids.total_reagents)
+
 /obj/item/mop/advanced/supermatter
 	name = "Supermatter Mop"
 	icon_state = "adv_smmop"
 	item_state = "smmop"
 	force = 128
 
-/obj/item/mop/advanced/New()
-	..()
-	START_PROCESSING(SSobj, src)
+/obj/item/mop/advanced/Initialize(mapload)
+	. = ..()
+	// Processing must not start before Initialize: the parent creates reagents
+	// here, and a map-loaded mop otherwise gets process() calls with null
+	// reagents for the whole deferred-init window of the map load.
+	if(refill_enabled)
+		START_PROCESSING(SSobj, src)
 
 /obj/item/mop/advanced/AltClick(mob/user)
 	refill_enabled = !refill_enabled
@@ -149,11 +202,10 @@
 		START_PROCESSING(SSobj, src)
 	else
 		STOP_PROCESSING(SSobj,src)
-	to_chat(user, "<span class='notice'>You set the condenser switch to the '[refill_enabled ? "ON" : "OFF"]' position.</span>")
+	to_chat(user, span_notice("You set the condenser switch to the '[refill_enabled ? "ON" : "OFF"]' position."))
 	playsound(user, 'sound/machines/click.ogg', 30, 1)
 
 /obj/item/mop/advanced/process()
-
 	if(reagents.total_volume < mopcap)
 		reagents.add_reagent(refill_reagent, refill_rate)
 
@@ -162,9 +214,15 @@
 	. += span_notice("The condenser switch is set to <b>[refill_enabled ? "ON" : "OFF"]</b>. Alt-Click to toggle.")
 
 /obj/item/mop/advanced/Destroy()
-	if(refill_enabled)
-		STOP_PROCESSING(SSobj, src)
+	// Unconditional: refill_enabled can change over the item's lifetime
+	// (AltClick, VV), and STOP_PROCESSING on a non-processing item is a no-op.
+	STOP_PROCESSING(SSobj, src)
 	return ..()
 
 /obj/item/mop/advanced/cyborg
 	insertable = FALSE
+
+#undef MOP_AFTER_LIQUID_CONTINUE
+#undef MOP_AFTER_LIQUID_CONTINUE_ANIMATE
+#undef MOP_AFTER_LIQUID_STOP
+#undef MOP_AFTER_LIQUID_STOP_ANIMATE

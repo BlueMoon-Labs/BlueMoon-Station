@@ -37,7 +37,7 @@
 	if(heal_fire)
 		owner.adjustFireLoss(-heal_fire, FALSE)
 	if(heal_tox)
-		owner.adjustToxLoss(-heal_tox, TRUE)
+		owner.adjustToxLoss(-heal_tox, FALSE, TRUE)
 	if(heal_oxy)
 		owner.adjustOxyLoss(-heal_oxy, FALSE)
 	if(heal_stamina)

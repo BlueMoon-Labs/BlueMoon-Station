@@ -16,17 +16,18 @@ type Data = {
   hasBeacon: BooleanLike;
   printMsg: string;
   message: string;
+  access_hint: string;
+  beacon_only: BooleanLike;
 };
 
-export const CargoExpress = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
-  const { locked } = data;
+export const CargoExpress = (props) => {
+  const { act, data } = useBackend<Data>();
+  const { locked, access_hint } = data;
 
   return (
     <Window width={600} height={700}>
       <Window.Content scrollable>
-        <InterfaceLockNoticeBox accessText="a Cargo Technician-level ID card" />
-        {/* Кнопка управления блокировкой */}
+        <InterfaceLockNoticeBox accessText={access_hint} />
         <Button
           fluid
           color={locked ? 'green' : 'red'}
@@ -35,15 +36,14 @@ export const CargoExpress = (props, context) => {
           onClick={() => act('toggleLock')}
           mb={1}
         />
-        {/* Контент показывается только если консоль разблокирована */}
         {!locked && <CargoExpressContent />}
       </Window.Content>
     </Window>
   );
 };
 
-const CargoExpressContent = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const CargoExpressContent = (props) => {
+  const { act, data } = useBackend<Data>();
   const {
     hasBeacon,
     message,
@@ -53,6 +53,7 @@ const CargoExpressContent = (props, context) => {
     beaconName,
     canBuyBeacon,
     printMsg,
+    beacon_only,
   } = data;
 
   return (
@@ -67,11 +68,13 @@ const CargoExpressContent = (props, context) => {
         }>
         <LabeledList>
           <LabeledList.Item label="Landing Location">
-            <Button
-              content="Cargo Bay"
-              selected={!usingBeacon}
-              onClick={() => act('LZCargo')}
-            />
+            {!beacon_only && (
+              <Button
+                content="Cargo Bay"
+                selected={!usingBeacon}
+                onClick={() => act('LZCargo')}
+              />
+            )}
             <Button
               selected={usingBeacon}
               disabled={!hasBeacon}

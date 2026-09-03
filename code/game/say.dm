@@ -31,7 +31,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 /atom/movable/proc/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
 	if(!can_speak())
 		return
-	if(message == "" || !message)
+	if(message == "" || !message || QDELING(src))
 		return
 	spans |= speech_span
 	if(!language)
@@ -52,7 +52,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	volume = min(volume, 100)
 	var/turf/T = get_turf(src)
 	for(var/mob/M in hearers)
-		M.playsound_local(T, vol = volume, vary = TRUE, frequency = pitch, max_distance = distance, falloff_distance = 0, falloff_exponent = BARK_SOUND_FALLOFF_EXPONENT(distance), S = vocal_bark, distance_multiplier = 1)
+		var/bark_vol = round((M.client?.prefs?.get_sound_volume("bark")) * volume / 100)
+		M.playsound_local(T, vol = bark_vol, vary = TRUE, frequency = pitch, max_distance = distance, falloff_distance = 0, falloff_exponent = BARK_SOUND_FALLOFF_EXPONENT(distance), S = vocal_bark, distance_multiplier = 1)
 
 /atom/movable/proc/can_speak()
 	return TRUE
@@ -63,19 +64,28 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	for(var/_AM in hearers)
 		var/atom/movable/AM = _AM
 		AM.Hear(rendered, src, message_language, message, , spans, message_mode, source)
+	if(message_language && initial(message_language.visual_language)) //визуальный язык не звучит
+		return
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_QUEUE_BARK, hearers, args) || vocal_bark || vocal_bark_id)
+		// Барк-таймеры ставим только ради слушателей с клиентом и включённым SOUND_BARK:
+		// анонс по всем ньюскастерам станции ставил 500+ таймеров одним тиком в пустые
+		// комнаты (TIMER BURST раунда 9746), а bark() всё равно играет звук только клиентам.
+		var/list/bark_hearers = list()
 		for(var/mob/M in hearers)
 			if(!M.client)
 				continue
 			if(!(M.client.prefs.toggles & SOUND_BARK))
-				hearers -= M
+				continue
+			bark_hearers += M
+		if(!length(bark_hearers))
+			return
 		var/barks = min(round((LAZYLEN(message) / vocal_speed)) + 1, BARK_MAX_BARKS)
 		var/total_delay
 		vocal_current_bark = world.time //this is juuuuust random enough to reliably be unique every time send_speech() is called, in most scenarios
 		for(var/i in 1 to barks)
 			if(total_delay > BARK_MAX_TIME)
 				break
-			addtimer(CALLBACK(src, PROC_REF(bark), hearers, range, vocal_volume, BARK_DO_VARY(vocal_pitch, vocal_pitch_range), vocal_current_bark), total_delay)
+			addtimer(CALLBACK(src, PROC_REF(bark), bark_hearers, range, vocal_volume, BARK_DO_VARY(vocal_pitch, vocal_pitch_range), vocal_current_bark), total_delay)
 			total_delay += rand(DS2TICKS(vocal_speed / BARK_SPEED_BASELINE), DS2TICKS(vocal_speed / BARK_SPEED_BASELINE) + DS2TICKS(vocal_speed / BARK_SPEED_BASELINE)) TICKS
 
 /atom/movable/proc/compose_message(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, face_name = FALSE, atom/movable/source)
@@ -185,6 +195,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 
 /// Quirky citadel proc for our custom sayverbs to strip the verb out. Snowflakey as hell, say rewrite 3.0 when?
 /atom/movable/proc/quoteless_say_quote(input, list/spans = list(speech_span), message_mode)
+	if(!length(input))
+		return ""
 	if((input[1] == "!") && (length_char(input) > 1))
 		return ""
 	var/pos = findtext(input, "*")
@@ -222,6 +234,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	return "[copytext_char("[freq]", 1, 4)].[copytext_char("[freq]", 4, 5)]"
 
 /atom/movable/proc/attach_spans(input, list/spans)
+	if(!length(input))
+		return
 	if((input[1] == "!") && (length(input) > 2))
 		return
 	var/customsayverb = findtext(input, "*")
@@ -271,10 +285,10 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/obj/item/radio/radio
 
 INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
-/atom/movable/virtualspeaker/Initialize(mapload, atom/movable/M, radio)
+/atom/movable/virtualspeaker/Initialize(mapload, atom/movable/M, obj/item/radio/new_radio)
 	. = ..()
-	radio = radio
-	source = M
+	set_source(M)
+	set_radio(new_radio)
 	if (istype(M))
 		name = M.GetVoice()
 		verb_say = M.verb_say
@@ -299,16 +313,44 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 		var/mob/living/silicon/robot/B = M
 		job = "[B.designation] Cyborg"
 	else if(istype(M, /mob/living/silicon/pai))  // Personal AI (pAI)
-		job = "Personal AI"
+		job = M.GetJob()
 	else if(isobj(M))  // Cold, emotionless machines
 		job = "Machine"
 	else  // Unidentifiable mob
 		job = "Unknown"
 
 /atom/movable/virtualspeaker/Destroy()
-	source = null
-	radio = null
+	set_source(null)
+	set_radio(null)
 	return ..()
+
+/atom/movable/virtualspeaker/proc/set_source(atom/movable/new_source)
+	if(source == new_source)
+		return
+	if(source)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	source = new_source
+	if(source)
+		RegisterSignal(source, COMSIG_PARENT_QDELETING, PROC_REF(on_source_qdeleting))
+
+/atom/movable/virtualspeaker/proc/on_source_qdeleting(atom/movable/deleted_source)
+	SIGNAL_HANDLER
+	if(source == deleted_source)
+		set_source(null)
+
+/atom/movable/virtualspeaker/proc/set_radio(obj/item/radio/new_radio)
+	if(radio == new_radio)
+		return
+	if(radio)
+		UnregisterSignal(radio, COMSIG_PARENT_QDELETING)
+	radio = new_radio
+	if(radio)
+		RegisterSignal(radio, COMSIG_PARENT_QDELETING, PROC_REF(on_radio_qdeleting))
+
+/atom/movable/virtualspeaker/proc/on_radio_qdeleting(obj/item/radio/deleted_radio)
+	SIGNAL_HANDLER
+	if(radio == deleted_radio)
+		set_radio(null)
 
 /atom/movable/virtualspeaker/GetJob()
 	return job

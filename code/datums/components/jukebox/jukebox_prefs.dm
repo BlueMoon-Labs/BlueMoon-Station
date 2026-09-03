@@ -4,6 +4,66 @@
 #define PLAYLIST_MAX_NAME_LEN 35
 #define PLAYLIST_MAX_COUNT 40
 
+/// Strict validation for imported track arrays. Associative/hybrid lists are never track arrays.
+/proc/jukebox_track_list_is_valid(candidate, allow_empty = FALSE)
+	if(!islist(candidate))
+		return FALSE
+	var/list/tracks = candidate
+	if(is_assoc_list(tracks) || (!allow_empty && !length(tracks)))
+		return FALSE
+	for(var/song in tracks)
+		if(!istext(song) || !length(song))
+			return FALSE
+	return TRUE
+
+/// Strict validation for the object produced by exporting all playlists.
+/proc/jukebox_playlists_are_valid(candidate)
+	if(!islist(candidate))
+		return FALSE
+	var/list/imported_playlists = candidate
+	if(!length(imported_playlists) || !is_assoc_list(imported_playlists) || length(imported_playlists) > PLAYLIST_MAX_COUNT)
+		return FALSE
+	for(var/playlist_name in imported_playlists)
+		if(!istext(playlist_name) || !length(playlist_name) || length_char(playlist_name) > PLAYLIST_MAX_NAME_LEN)
+			return FALSE
+		if(strip_control_chars(playlist_name) != playlist_name)
+			return FALSE
+		if(!jukebox_track_list_is_valid(imported_playlists[playlist_name], allow_empty = TRUE))
+			return FALSE
+	return TRUE
+
+/// Recovers a persisted preference into a JSON-safe sequential array.
+/proc/sanitize_jukebox_track_list(candidate)
+	if(!islist(candidate))
+		return list()
+	var/list/tracks = candidate
+	if(is_assoc_list(tracks))
+		return list()
+	var/list/sanitized = list()
+	for(var/song in tracks)
+		if(istext(song) && length(song))
+			sanitized |= song
+	return sanitized
+
+/// Recovers persisted playlists, enforcing the same shape and limits as the import UI.
+/proc/sanitize_jukebox_playlists(candidate)
+	if(!islist(candidate))
+		return list()
+	var/list/imported_playlists = candidate
+	if(length(imported_playlists) && !is_assoc_list(imported_playlists))
+		return list()
+	var/list/sanitized = list()
+	for(var/playlist_name in imported_playlists)
+		if(length(sanitized) >= PLAYLIST_MAX_COUNT)
+			break
+		if(!istext(playlist_name))
+			continue
+		var/clean_name = copytext_char(strip_control_chars(playlist_name), 1, PLAYLIST_MAX_NAME_LEN + 1)
+		if(!length(clean_name) || (clean_name in sanitized))
+			continue
+		sanitized[clean_name] = sanitize_jukebox_track_list(imported_playlists[playlist_name])
+	return sanitized
+
 ////////////////////	ОБЩИЕ 	////////////////////
 /datum/preferences/proc/tracks_move(list/track_list, track, up = TRUE)
 	if(!LAZYLEN(track_list) || !track)
@@ -40,14 +100,8 @@
 
 	return moveElementToPos(track_list, from, to_index)
 
-/datum/preferences/proc/track_import_check(list/new_track_list)
-	if(!LAZYLEN(new_track_list))
-		return
-	for(var/song in new_track_list)
-		// Это пустая строка или не текст
-		if(!istext(song) || !song)
-			return
-	return TRUE
+/datum/preferences/proc/track_import_check(new_track_list, allow_empty = FALSE)
+	return jukebox_track_list_is_valid(new_track_list, allow_empty)
 
 //////////////////// ИЗБРАННОЕ ////////////////////
 /datum/preferences/proc/favorite_tracks_toggle(track)
@@ -76,11 +130,16 @@
 	if(!manage_mode)
 		return
 	if(manage_mode == "Импорт")
-		var/list/new_track_list = safe_json_decode(tgui_input_text(parent, "Вставьте экспортированный список", "Import", multiline = TRUE))
-		if(!LAZYLEN(new_track_list))
+		var/import_json = tgui_input_text(parent, "Вставьте экспортированный список", "Import", multiline = TRUE)
+		if(isnull(import_json))
 			return
+		var/decoded = safe_json_decode(import_json)
+		if(!islist(decoded))
+			to_chat(parent, span_warning("Список поврежден: ожидался JSON-массив названий треков."))
+			return
+		var/list/new_track_list = decoded
 		if(!track_import_check(new_track_list))
-			to_chat(parent, span_warning("Список поврежден, все элементы списка должны быть строками!"))
+			to_chat(parent, span_warning("Список поврежден: ожидался JSON-массив непустых названий треков."))
 			return
 		if(favorite_tracks.len)
 			var/mode = tgui_alert(parent, "Желаете заменить список или добавить треки в конец,", "Режим добавления", list("Добавить", "Заменить"))
@@ -130,7 +189,7 @@
 			return
 		playlists -= playlist_name
 	else
-		var/new_playlist_name = tgui_input_text(parent, "Введите имя нового плейлиста", "Изменение плейлиста [playlist_name]", multiline = FALSE)
+		var/new_playlist_name = tgui_input_text(parent, "Введите имя нового плейлиста", "Изменение плейлиста [playlist_name]", multiline = FALSE, max_length = PLAYLIST_MAX_NAME_LEN)
 		if(!new_playlist_name)
 			return
 		if(new_playlist_name in playlists)
@@ -181,33 +240,37 @@
 	if(!manage_mode)
 		return
 	if(manage_mode == "Импорт")
-		var/list/new_track_list = safe_json_decode(tgui_input_text(parent, "Вставьте экспортированный список", "Импорт", multiline = TRUE))
-		if(!LAZYLEN(new_track_list))
+		var/import_json = tgui_input_text(parent, "Вставьте экспортированный список", "Импорт", multiline = TRUE)
+		if(isnull(import_json))
 			return
-
-		// Проверяем, что бы все названия плейлистов или треки были строками
-		if(!track_import_check(new_track_list))
-			to_chat(parent, span_warning("Список поврежден, все элементы списка должны быть строками!"))
+		var/decoded = safe_json_decode(import_json)
+		if(!islist(decoded))
+			to_chat(parent, span_warning("Список поврежден: ожидался JSON-массив треков или объект плейлистов."))
+			return
+		var/list/new_track_list = decoded
+		if(!length(new_track_list))
 			return
 
 		//Если вставили все плейлисты
 		if(is_assoc_list(new_track_list))
-			// Проверяем каждый плейлист
-			for(var/playlist_name in new_track_list)
-				if(!track_import_check(new_track_list[playlist_name]))
-					to_chat(parent, span_warning("Список поврежден, все элементы списка должны быть строками!"))
-					return
+			if(!jukebox_playlists_are_valid(new_track_list))
+				to_chat(parent, span_warning("Список поврежден: проверьте названия плейлистов и массивы треков."))
+				return
+			var/list/imported_playlists = sanitize_jukebox_playlists(new_track_list)
 			if(playlists.len)
 				var/confirm = tgui_alert(parent, "Будут заменены ВСЕ плейлисты. Продолжить?", "Замена всех плейлистов", list("Нет", "Да"))
 				if(confirm != "Да")
 					return
-				playlists.Cut()
+			playlists.Cut()
 
-			// Через цикл, для избежания дубликатов в отдельных плейлистах
-			for(var/playlist_name in new_track_list)
-				playlists[playlist_name] = uniqueList(new_track_list[playlist_name])
+			for(var/playlist_name in imported_playlists)
+				playlists[playlist_name] = imported_playlists[playlist_name]
 			save_preferences()
 			return TRUE
+
+		if(!track_import_check(new_track_list))
+			to_chat(parent, span_warning("Список поврежден: ожидался JSON-массив непустых названий треков."))
+			return
 
 		var/current_playlist_name
 		var/list/track_list

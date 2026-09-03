@@ -19,7 +19,7 @@
  * * call any client login callbacks that exist
  * * grant any actions the mob has to the client
  * * calls [auto_deadmin_on_login](mob.html#proc/auto_deadmin_on_login)
- * * send signal COMSIG_MOB_CLIENT_LOGIN
+ * * send signal COMSIG_MOB_CLIENT_LOGIN on the mob and COMSIG_CLIENT_MOB_LOGIN on the client
  * * attaches the ash listener element so clients can hear weather
  * client can be deleted mid-execution of this proc, chiefly on parent calls, with lag
  */
@@ -40,7 +40,7 @@
 		return FALSE
 	if(hud_used)
 		hud_used.show_hud(hud_used.hud_version)
-		hud_used.update_ui_style(ui_style2icon(client.prefs.UI_style))
+		hud_used.update_ui_style(ui_style2icon(client.prefs?.UI_style)) // клиент может быть в разборке: ui_style2icon(null) отдаёт стиль по умолчанию
 
 	. = ..()
 
@@ -51,6 +51,9 @@
 
 	if (key != client.key)
 		key = client.key
+
+	//спатиал-грид: моб с клиентом попадает в CLIENTS-канал своей ячейки
+	enable_client_mobs_in_contents()
 
 	reset_perspective(loc)
 
@@ -87,13 +90,16 @@
 
 	log_message("Client [key_name(src)] has taken ownership of mob [src]([src.type])", LOG_OWNERSHIP)
 	SEND_SIGNAL(src, COMSIG_MOB_CLIENT_LOGIN, client)
+	SEND_SIGNAL(client, COMSIG_CLIENT_MOB_LOGIN, src)
 	client.init_verbs()
 
 	if(has_field_of_vision && CONFIG_GET(flag/use_field_of_vision))
 		LoadComponent(/datum/component/field_of_vision, field_of_vision_type)
 
-	// load rendering
-	reload_rendering()
+	// Rendering is already (re)loaded twice by this point: show_hud() above runs
+	// reload_rendering() (hud.dm), and view_size.resetToDefault() runs change_view()
+	// which does the same clickcatcher + parallax Reset + fullscreen reload. A third
+	// full parallax rebuild per Login was pure waste.
 
 	AddElement(/datum/element/weather_listener, /datum/weather/ash_storm, ZTRAIT_ASHSTORM, GLOB.ash_storm_sounds)
 

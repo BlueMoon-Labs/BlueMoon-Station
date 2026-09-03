@@ -2,9 +2,11 @@
 	name = "Anomaly: Hyper-Energetic Flux"
 	typepath = /datum/round_event/anomaly/anomaly_flux
 
+	enabled = TRUE // база выключена, подтипы включаются явно
 	min_players = 10
 	max_occurrences = 5
 	weight = 20
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "This anomaly shocks and explodes."
 
 /datum/round_event/anomaly/anomaly_flux

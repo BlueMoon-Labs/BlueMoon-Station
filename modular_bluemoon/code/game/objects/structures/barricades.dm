@@ -15,9 +15,13 @@
 /obj/proc/set_armor(datum/armor/armor)
 	if(src.armor == armor)
 		return
-	if(!(src.armor?.type in GLOB.armor_by_type))
-		qdel(src.armor)
-	src.armor = ispath(armor) ? getArmor(armor) : armor
+	var/datum/armor/old_armor = src.armor
+	var/datum/armor/new_armor = ispath(armor) ? getArmor(armor) : armor
+	src.armor = new_armor
+	// getArmor() и GLOB.armor_by_type шарят помеченные tag-ом датумы. Генераторы
+	// приватных модифицированных armor снимают tag: их после замены нужно удалить.
+	if(old_armor && old_armor != new_armor && !old_armor.tag)
+		qdel(old_armor)
 
 /// Helper to update the atom's armor to a new armor with the specified rating
 /obj/proc/set_armor_rating(damage_type, rating)
@@ -35,6 +39,11 @@
 
 // Snow, wood, sandbags, metal, plasteel
 
+#define BARRICADE_WIRE_JUMP_CUT_CHANCE 50
+#define BARRICADE_WIRE_JUMP_CUT_CHANCE_FREERUNNING 25
+#define BARRICADE_WIRE_JUMP_DAMAGE 12
+#define BARRICADE_WIRE_JUMP_COOLDOWN "barricade_wire_jump"
+
 /obj/structure/deployable_barricade
 	icon = 'modular_bluemoon/icons/obj/barricade.dmi'
 	anchored = TRUE
@@ -44,7 +53,8 @@
 	flags_1 = ON_BORDER_1
 	obj_flags = CAN_BE_HIT | BLOCKS_CONSTRUCTION_DIR | IGNORE_DENSITY
 	max_integrity = 100
-	pass_flags_self = PASSSTRUCTURE | LETPASSTHROW
+	// PASSJUMP lets vaulting clear the face; PASSTABLE/LETPASSTHROW would also clear bullets/spears.
+	pass_flags_self = PASSSTRUCTURE | PASSJUMP
 	///The type of stack the barricade dropped when disassembled if any.
 	var/stack_type
 	///The amount of stack dropped when disassembled at full health
@@ -85,6 +95,7 @@
 		. += span_info("Barbed wire could be added with some <b>cable</b>.")
 	if(is_wired)
 		. += span_info("It has barbed wire along the top.")
+		. += span_warning("Jumping over it is likely to shred your legs.")
 
 /obj/structure/deployable_barricade/proc/on_try_exit(datum/source, atom/movable/leaving)
 	SIGNAL_HANDLER
@@ -95,13 +106,16 @@
 	if(!(leaving.dir & dir))
 		return
 
-	if (!density)
+	if (!density || closed)
 		return
 
-	if (leaving.throwing)
+	// Projectiles are FLYING: allow shooting out over the face from cover.
+	// Thrown items must still bump the facing edge.
+	if ((leaving.movement_type & (PHASING | FLYING | FLOATING)) && !leaving.throwing)
 		return
 
-	if (leaving.movement_type & (PHASING | FLYING | FLOATING))
+	if (leaving.pass_flags & pass_flags_self)
+		try_barbed_wire_jump_cut(leaving)
 		return
 
 	if (leaving.move_force >= MOVE_FORCE_EXTREMELY_STRONG)
@@ -110,25 +124,91 @@
 	leaving.Bump(src)
 	return COMPONENT_ATOM_BLOCK_EXIT
 
-/obj/structure/deployable_barricade/CanPass(atom/movable/mover, turf/target)
+/obj/structure/deployable_barricade/Crossed(atom/movable/AM, oldloc)
 	. = ..()
+	if(!oldloc || !isliving(AM))
+		return
+	if(!(get_dir(loc, oldloc) & dir))
+		return
+	try_barbed_wire_jump_cut(AM)
+
+/// Cuts jumpers who vault the wired face of this barricade.
+/obj/structure/deployable_barricade/proc/try_barbed_wire_jump_cut(mob/living/jumper)
+	if(!is_wired || closed || !density)
+		return
+	if(!isliving(jumper))
+		return
+	if(!HAS_TRAIT_FROM(jumper, TRAIT_SILENT_FOOTSTEPS, JUMP_COMPONENT))
+		return
+	if(TIMER_COOLDOWN_CHECK(jumper, BARRICADE_WIRE_JUMP_COOLDOWN))
+		return
+	TIMER_COOLDOWN_START(jumper, BARRICADE_WIRE_JUMP_COOLDOWN, 1 SECONDS)
+
+	var/cut_chance = HAS_TRAIT(jumper, TRAIT_FREERUNNING) ? BARRICADE_WIRE_JUMP_CUT_CHANCE_FREERUNNING : BARRICADE_WIRE_JUMP_CUT_CHANCE
+	if(!prob(cut_chance))
+		to_chat(jumper, span_notice("You barely clear the barbed wire on [src]!"))
+		return
+
+	jumper.visible_message(
+		span_danger("[jumper] gets caught on the barbed wire on [src]!"),
+		span_userdanger("The barbed wire on [src] tears into your legs!")
+	)
+	playsound(src, 'sound/weapons/slice.ogg', 50, TRUE)
+	jumper.emote("agony")
+
+	var/hit_a_leg = FALSE
+	if(iscarbon(jumper))
+		var/mob/living/carbon/carbon_jumper = jumper
+		for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+			var/obj/item/bodypart/leg = carbon_jumper.get_bodypart(zone)
+			if(!leg)
+				continue
+			hit_a_leg = TRUE
+			jumper.apply_damage(
+				BARRICADE_WIRE_JUMP_DAMAGE,
+				BRUTE,
+				zone,
+				jumper.run_armor_check(zone, MELEE),
+				wound_bonus = 10,
+				bare_wound_bonus = 15,
+				sharpness = SHARP_EDGED
+			)
+	if(!hit_a_leg)
+		jumper.apply_damage(BARRICADE_WIRE_JUMP_DAMAGE * 2, BRUTE, sharpness = SHARP_EDGED)
+
+	jumper.DefaultCombatKnockdown(1.5 SECONDS)
+
+///Deployable cover: CanPass lets projectiles through (adjacent firer always, else a
+///flat chance), so hostile ranged AI treats it as shoot-over cover, not a wall.
+/obj/structure/deployable_barricade/is_ranged_ai_penetrable_cover()
+	return TRUE
+
+/obj/structure/deployable_barricade/CanPass(atom/movable/mover, turf/target)
+	if(closed || !density)
+		return TRUE
+
+	// Cross() passes the mover's old loc as target: only the facing edge blocks.
+	if(!(get_dir(loc, target) & dir))
+		return TRUE
 
 	if(istype(mover, /obj/item/projectile))
 		if(!anchored)
 			return TRUE
-		if(closed)
-			return TRUE
 		var/obj/item/projectile/proj = mover
+		// Point-blank over the lip of the cade, same as /obj/structure/barricade.
 		if(proj.firer && Adjacent(proj.firer))
 			return TRUE
 		if(prob(25))
 			return TRUE
 		return FALSE
 
-	if(get_dir(loc, target) & dir)
-		var/checking = FLYING | FLOATING
-		return . || mover.throwing || mover.movement_type & checking
-	return TRUE
+	. = ..()
+	if(.)
+		return TRUE
+	// Flyers can clear the lip; thrown weapons cannot (no LETPASSTHROW on the face).
+	if((mover.movement_type & (FLYING | FLOATING)) && !mover.throwing)
+		return TRUE
+	return FALSE
 
 /obj/structure/deployable_barricade/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/stack/cable_coil) && can_wire)
@@ -299,7 +379,7 @@
 	stack_type = /obj/item/stack/rods
 	destroyed_stack_amount = 2
 	barricade_type = "railing"
-	pass_flags_self = PASSSTRUCTURE
+	pass_flags_self = PASSSTRUCTURE | PASSJUMP
 	can_wire = FALSE
 
 /obj/structure/deployable_barricade/guardrail/update_icon()
@@ -858,3 +938,8 @@
 		new /obj/item/quickdeploy/barricade/plasteel(src)
 	for(var/i = 0, i < 9, i ++)
 		new /obj/item/quickdeploy/barricade(src)
+
+#undef BARRICADE_WIRE_JUMP_CUT_CHANCE
+#undef BARRICADE_WIRE_JUMP_CUT_CHANCE_FREERUNNING
+#undef BARRICADE_WIRE_JUMP_DAMAGE
+#undef BARRICADE_WIRE_JUMP_COOLDOWN

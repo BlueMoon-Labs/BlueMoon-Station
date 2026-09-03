@@ -1,18 +1,18 @@
-import { Fragment } from "inferno";
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Collapsible, Dropdown, Flex, Input, LabeledList, NoticeBox, NumberInput, Section, Slider, Tabs } from '../components';
+import { Box, Button, Collapsible, Dropdown, Flex, Input, LabeledList, NoticeBox, NumberInput, Section, Slider, Stack, Tabs } from '../components';
 import { Window } from '../layouts';
 
 const PAGES = [
   {
-    title: 'General',
+    title: 'Основное',
     component: () => GeneralActions,
     color: "green",
     icon: "tools",
   },
   {
-    title: 'Smites',
+    title: 'Смайты',
     component: () => SmiteActions,
     color: "orange",
     icon: "hammer",
@@ -21,7 +21,7 @@ const PAGES = [
     },
   },
   {
-    title: 'Mob',
+    title: 'Настройки моба',
     component: () => PhysicalActions,
     color: "yellow",
     icon: "bolt",
@@ -30,19 +30,19 @@ const PAGES = [
     },
   },
   {
-    title: 'Transform',
+    title: 'Трансформация',
     component: () => TransformActions,
     color: "orange",
     icon: "exchange-alt",
   },
   {
-    title: 'Punish',
+    title: 'Наказания & Логи',
     component: () => PunishmentActions,
     color: "red",
     icon: "gavel",
   },
   {
-    title: 'Feature Bans',
+    title: 'Банлисты',
     component: () => FeatureBanTabs,
     color: "red",
     icon: "gavel",
@@ -51,148 +51,158 @@ const PAGES = [
     },
   },
   {
-    title: 'Fun',
+    title: 'Веселье',
     component: () => FunActions,
     color: "blue",
     icon: "laugh",
   },
   {
-    title: 'Antag & Other',
+    title: 'Антаг & Прочее',
     component: () => OtherActions,
     color: "purple",
     icon: "user-secret",
   },
 ];
 
-export const PlayerPanel2 = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [pageIndex, setPageIndex] = useLocalState(context, 'pageIndex', 0);
+export const PlayerPanel2 = (props) => {
+  const { act, data } = useBackend();
+  const [pageIndex, setPageIndex] = useState(0);
   const PageComponent = PAGES[pageIndex].component();
 
   const { mob_name, mob_type, client_ckey, client_rank, playtimes_enabled,
-    playtime } = data;
+    playtime, has_live_client } = data;
 
   return (
     <Window
-      title={`${mob_name} Player Panel`}
+      title={`Панель игрока: ${mob_name}`}
       width={700}
       height={600}
     >
-      <Window.Content scrollable>
-        <Section md={1}>
-          <Flex>
-            <Flex.Item width="80px" color="label" align="center">Name:</Flex.Item>
-            <Flex.Item grow={1}>
-              <Input width="100%" value={mob_name} onChange={(e, value) => act("set_name", { name: value })} />
-            </Flex.Item>
-            {!!client_ckey && (
-              <Flex.Item>
-                <Box inline ml=".75rem" mr=".5rem" color="label">Rank:</Box>
-                <Flex.Item inline>
+      <Window.Content>
+        <Stack fill vertical>
+          <Stack.Item>
+            <Section md={1}>
+              <Flex>
+                <Flex.Item width="80px" color="label" align="center">Имя:</Flex.Item>
+                <Flex.Item grow={1}>
+                  <Input width="100%" value={mob_name} onChange={(e, value) => act("set_name", { name: value })} />
+                </Flex.Item>
+                {!!client_ckey && !!client_rank && (
+                  <Flex.Item>
+                    <Box inline ml=".75rem" mr=".5rem" color="label">Роль:</Box>
+                    <Flex.Item inline>
+                      <Button
+                        minWidth="11rem" textAlign="center"
+                        content={client_rank}
+                        onClick={() => act("edit_rank")}
+                      />
+                    </Flex.Item>
+                  </Flex.Item>
+                )}
+              </Flex>
+              <Flex mt={1} align="center" wrap="wrap" justify="flex-end">
+                <Flex.Item width="80px" color="label">Тип моба:</Flex.Item>
+                <Flex.Item grow={1} align="right">{mob_type}</Flex.Item>
+                <Flex.Item align="right">
                   <Button
                     minWidth="11rem" textAlign="center"
-                    content={client_rank}
-                    onClick={() => act("edit_rank")}
+                    ml=".5rem"
+                    icon="window-restore"
+                    content="Окно VV"
+                    onClick={() => act("access_variables")}
                   />
                 </Flex.Item>
-              </Flex.Item>
-            )}
-          </Flex>
-          <Flex mt={1} align="center" wrap="wrap" justify="flex-end">
-            <Flex.Item width="80px" color="label">Mob Type:</Flex.Item>
-            <Flex.Item grow={1} align="right">{mob_type}</Flex.Item>
-            <Flex.Item align="right">
-              <Button
-                minWidth="11rem" textAlign="center"
-                ml=".5rem"
-                icon="window-restore"
-                content="Access Variables"
-                onClick={() => act("access_variables")}
-              />
-            </Flex.Item>
-            {!!client_ckey && (
-              <Flex.Item>
-                <Button
-                  minWidth="11rem" textAlign="center"
-                  ml=".5rem"
-                  icon="window-restore"
-                  content={playtimes_enabled ? playtime : "Playtimes"}
-                  disabled={!playtimes_enabled}
-                  onClick={() => act("access_playtimes")}
-                />
-              </Flex.Item>
-            )}
-          </Flex>
-          {!!client_ckey && (
-            <Flex mt={1} align="center">
-              <Flex.Item width="80px" color="label">Client:</Flex.Item>
-              <Flex.Item grow={1}>{client_ckey}</Flex.Item>
+                {!!client_ckey && (
+                  <Flex.Item>
+                    <Button
+                      minWidth="11rem" textAlign="center"
+                      ml=".5rem"
+                      icon="window-restore"
+                      content={playtimes_enabled ? playtime : "Время игры"}
+                      disabled={!playtimes_enabled}
+                      onClick={() => act("access_playtimes")}
+                    />
+                  </Flex.Item>
+                )}
+              </Flex>
+              {!!client_ckey && (
+                <Flex mt={1} align="center">
+                  <Flex.Item width="80px" color="label">Клиент:</Flex.Item>
+                  <Flex.Item grow={1}>{client_ckey}</Flex.Item>
 
-              <Flex.Item align="right">
-                <Button
-                  minWidth="11rem" textAlign="center"
-                  mx=".5rem"
-                  icon="comment-dots"
-                  onClick={() => act("private_message")}
-                  content="Private Message"
-                />
-                <Button
-                  minWidth="11rem" textAlign="center"
-                  icon="phone-alt"
-                  onClick={() => act("subtle_message")}
-                  content="Subtle Message"
-                />
-              </Flex.Item>
-            </Flex>
-          )}
-        </Section>
-        <Flex grow>
-          <Flex.Item>
-            <Section fitted>
-              <Tabs vertical>
-                {PAGES.map((page, i) => {
-                  if (page.canAccess && !page.canAccess(data)) {
-                    return;
-                  }
-
-                  return (
-                    <Tabs.Tab
-                      key={i}
-                      color={page.color}
-                      selected={i === pageIndex}
-                      icon={page.icon}
-                      onClick={() => setPageIndex(i)}>
-                      {page.title}
-                    </Tabs.Tab>
-                  );
-                })}
-              </Tabs>
-
+                  <Flex.Item align="right">
+                    <Button
+                      minWidth="11rem" textAlign="center"
+                      mx=".5rem"
+                      icon="comment-dots"
+                      disabled={!has_live_client}
+                      onClick={() => act("private_message")}
+                      content="Админ-PM"
+                    />
+                    <Button
+                      minWidth="11rem" textAlign="center"
+                      icon="phone-alt"
+                      disabled={!has_live_client}
+                      onClick={() => act("subtle_message")}
+                      content="IC-сообщение"
+                    />
+                  </Flex.Item>
+                </Flex>
+              )}
             </Section>
-          </Flex.Item>
-          <Flex.Item grow>
-            <PageComponent />
-          </Flex.Item>
-        </Flex>
+          </Stack.Item>
+          <Stack.Item grow>
+            <Stack fill>
+              <Stack.Item>
+                <Section fitted fill>
+                  <Tabs vertical>
+                    {PAGES.map((page, i) => {
+                      if (page.canAccess && !page.canAccess(data)) {
+                        return;
+                      }
+
+                      return (
+                        <Tabs.Tab
+                          key={i}
+                          color={page.color}
+                          selected={i === pageIndex}
+                          icon={page.icon}
+                          onClick={() => setPageIndex(i)}>
+                          {page.title}
+                        </Tabs.Tab>
+                      );
+                    })}
+                  </Tabs>
+
+                </Section>
+              </Stack.Item>
+              <Stack.Item grow>
+                <Section fill scrollable>
+                  <PageComponent />
+                </Section>
+              </Stack.Item>
+            </Stack>
+          </Stack.Item>
+        </Stack>
       </Window.Content>
     </Window>
   );
 };
 
-const PhysicalActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const PhysicalActions = (props) => {
+  const { act, data } = useBackend();
   const { glob_limbs, godmode, mob_type, initial_scale, active_martial_art,
     martial_arts_list, active_quirks, quirks_list, has_loadout,
     current_organs, organ_slots, current_implants, implants_list,
-    mob_weight, weight_options } = data;
-  const [mobScale, setMobScale] = useLocalState(context, 'mobScale', initial_scale);
+    mob_weight, weight_options, can_toggle_dextrous, is_dextrous } = data;
+  const [mobScale, setMobScale] = useLocalState('mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
-  const [delimbOption, setDelimbOption] = useLocalState(context, "delimb_flags", 0);
-  const [maSearch, setMaSearch] = useLocalState(context, 'maSearch', '');
-  const [quirkSearch, setQuirkSearch] = useLocalState(context, 'quirkSearch', '');
-  const [organSearch, setOrganSearch] = useLocalState(context, 'organSearch', '');
-  const [implantSearch, setImplantSearch] = useLocalState(context, 'implantSearch', '');
+  const [delimbOption, setDelimbOption] = useState(0);
+  const [maSearch, setMaSearch] = useState('');
+  const [quirkSearch, setQuirkSearch] = useState('');
+  const [organSearch, setOrganSearch] = useState('');
+  const [implantSearch, setImplantSearch] = useState('');
 
   const filteredArts = (martial_arts_list || []).filter(art =>
     art.name.toLowerCase().includes(maSearch.toLowerCase())
@@ -229,7 +239,7 @@ const PhysicalActions = (props, context) => {
 
   return (
     <Section fill>
-      <Section title="Quick Actions" buttons={
+      <Section title="Настройки цели" buttons={
         <Button
           icon={godmode ? 'check-square-o' : 'square-o'}
           color={godmode ? 'green' : 'transparent'}
@@ -241,41 +251,68 @@ const PhysicalActions = (props, context) => {
           <Button
             width="100%"
             icon="paw"
-            content="Species"
+            content="Вид"
+            tooltip="Изменить биологический вид цели"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("species")}
           />
           <Button
             width="100%"
             icon="magic"
-            content="Spells"
+            content="Заклинания"
+            tooltip="Добавить/убрать заклинания"
             onClick={() => act("spell")}
           />
           <Button.Confirm
             width="100%"
             icon="suitcase"
-            content="Loadout"
+            content="Лодаут"
             color="teal"
             disabled={!mob_type.includes("/mob/living/carbon/human") || !has_loadout}
-            tooltip={!has_loadout ? "Player has no loadout data" : "Apply player's loadout"}
+            tooltip={!has_loadout ? "Отсутствует loadout data игрока" : "Применить loadout настройки игрока"}
             onClick={() => act("apply_loadout")}
+          />
+          <Button
+            width="100%"
+            icon="user-cog"
+            content="Внешность"
+            disabled={!mob_type.includes("/mob/living/carbon/human")}
+            tooltip="Обновить name, desc и icon игрока"
+            onClick={() => act("update_appearance")}
           />
         </Flex>
       </Section>
 
+      {!!can_toggle_dextrous && (
+        <Section title="Настройки Simple Mob">
+          <Flex>
+            <Button.Confirm
+              width="100%"
+              icon="hand-paper"
+              content={is_dextrous ? "Забрать слоты рук" : "Дать слоты рук"}
+              color={is_dextrous ? 'red' : 'green'}
+              tooltip={is_dextrous
+                ? "Забирает \"ловкость\" (Уронит взятые предметы)"
+                : "Дать \"ловкость\" цели для возможности держать предметы"}
+              onClick={() => act("toggle_dextrous")}
+            />
+          </Flex>
+        </Section>
+      )}
+
       <Section
-        title={"Martial Art (" + (active_martial_art || "None") + ")"}
+        title={"Боевые искусства (" + (active_martial_art || "Отсутствуют") + ")"}
         buttons={active_martial_art ? (
           <Button
             icon="times"
             color="red"
-            content="Remove"
+            content="Убрать"
             onClick={() => act("remove_martial_art")}
           />
         ) : null}
       >
         <Input
-          placeholder="Search martial arts..."
+          placeholder="Поиск боевых искусств..."
           width="100%"
           mb={1}
           onInput={(e, value) => setMaSearch(value)}
@@ -304,25 +341,25 @@ const PhysicalActions = (props, context) => {
       </Section>
 
       <Section
-        title={"Quirks (" + (active_quirks ? active_quirks.length : 0) + " active)"}
+        title={"Квирки (Активных: " + (active_quirks ? active_quirks.length : 0) + ")"}
         buttons={(
           <Button.Confirm
             icon="trash"
             color="red"
-            content="Clear All"
+            content="Убрать все"
             disabled={!active_quirks || !active_quirks.length}
             onClick={() => act("clear_quirks")}
           />
         )}
       >
         <Input
-          placeholder="Search quirks..."
+          placeholder="Поиск квирков..."
           width="100%"
           mb={1}
           onInput={(e, value) => setQuirkSearch(value)}
         />
         <QuirkCategory
-          title="Positive"
+          title="Положительные"
           color="green"
           icon="plus-circle"
           quirks={positiveQuirks}
@@ -331,7 +368,7 @@ const PhysicalActions = (props, context) => {
           act={act}
         />
         <QuirkCategory
-          title="Negative"
+          title="Негативные"
           color="red"
           icon="minus-circle"
           quirks={negativeQuirks}
@@ -340,7 +377,7 @@ const PhysicalActions = (props, context) => {
           act={act}
         />
         <QuirkCategory
-          title="Neutral"
+          title="Нейтральные"
           color="grey"
           icon="circle"
           quirks={neutralQuirks}
@@ -350,7 +387,7 @@ const PhysicalActions = (props, context) => {
         />
       </Section>
 
-      <Section title="Limbs" buttons={(
+      <Section title="Конечности" buttons={(
         <Flex>
           {limbs.map((val, index) => (
             <Button.Checkbox
@@ -373,6 +410,7 @@ const PhysicalActions = (props, context) => {
             width="100%"
             icon="unlink"
             content="Delimb"
+            tooltip="Оторвать ВЫБРАННЫЕ конечности цели"
             color="red"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("limb", {
@@ -387,6 +425,7 @@ const PhysicalActions = (props, context) => {
             height="100%"
             icon="link"
             content="Relimb"
+            tooltip="Восстановить ВЫБРАННЫЕ конечности цели"
             color="green"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("limb", {
@@ -398,10 +437,10 @@ const PhysicalActions = (props, context) => {
         </Flex>
       </Section>
 
-      <Section title={"Organs (" + (current_organs ? current_organs.length : 0) + " installed)"}>
-        <Collapsible title="Organ Slots" color="green">
+      <Section title={"Органы (Установлено: " + (current_organs ? current_organs.length : 0) + ")"}>
+        <Collapsible title="Слоты органов" color="green">
           <Input
-            placeholder="Search organ slots..."
+            placeholder="Поиск слотов органов..."
             width="100%"
             mb={1}
             onInput={(e, value) => setOrganSearch(value)}
@@ -434,10 +473,11 @@ const PhysicalActions = (props, context) => {
         act={act}
       />
 
-      <Section title="Scale" buttons={
+      <Section title="Размеры (Scale)" buttons={
         <Button
           icon="sync"
-          content="Reset"
+          content="Сбросить"
+          tooltip="Задать размеры цели по сохранённому игроком body size"
           onClick={() => {
             setMobScale(initial_scale);
             act("scale", { new_scale: initial_scale });
@@ -461,7 +501,7 @@ const PhysicalActions = (props, context) => {
           />
         </Flex>
       </Section>
-      <Section title="Weight">
+      <Section title="Вес">
         <Flex wrap="wrap" justify="space-between">
           {(weight_options || []).map((opt) => (
             <Flex.Item key={opt.value} width="49%" mb=".25rem">
@@ -475,7 +515,7 @@ const PhysicalActions = (props, context) => {
           ))}
         </Flex>
       </Section>
-      <Section title="Speak">
+      <Section title="Коммуникация">
         <Flex mt={1}>
           <Flex.Item width="100px" color="label">Force Say:</Flex.Item>
           <Flex.Item grow={1}>
@@ -520,7 +560,7 @@ const QuirkCategory = (props) => {
               checked={active_quirks && active_quirks.includes(quirk.name)}
               content={quirk.name}
               tooltip={quirk.desc}
-              color={color}
+              color={active_quirks?.includes(quirk.name) ? color : null}
               disabled={!mob_type.includes("/mob/living/carbon/human")}
               onClick={() => act("toggle_quirk_direct", { quirk_name: quirk.name })}
             />
@@ -531,10 +571,10 @@ const QuirkCategory = (props) => {
   );
 };
 
-const OrganSlotRow = (props, context) => {
+const OrganSlotRow = (props) => {
   const { slot, current, available, mob_type, act } = props;
-  const [expanded, setExpanded] = useLocalState(context, 'organ_' + slot, false);
-  const [organFilter, setOrganFilter] = useLocalState(context, 'organ_filter_' + slot, '');
+  const [expanded, setExpanded] = useState(false);
+  const [organFilter, setOrganFilter] = useState('');
 
   const filtered = available.filter(o =>
     o.name.toLowerCase().includes(organFilter.toLowerCase())
@@ -580,7 +620,7 @@ const OrganSlotRow = (props, context) => {
             <Button
               icon="trash"
               color="red"
-              tooltip={"Remove " + current.name}
+              tooltip={"Убрать " + current.name}
               disabled={!mob_type.includes("/mob/living/carbon")}
               onClick={() => act("remove_organ", { organ_slot: slot })}
             />
@@ -617,10 +657,10 @@ const OrganSlotRow = (props, context) => {
   );
 };
 
-const ImplantSection = (props, context) => {
+const ImplantSection = (props) => {
   const { current_implants, implants_list, implantSearch, setImplantSearch,
     mob_type, act } = props;
-  const [showAdd, setShowAdd] = useLocalState(context, 'implant_showAdd', false);
+  const [showAdd, setShowAdd] = useState(false);
 
   const filteredImplants = (implants_list || []).filter(imp =>
     imp.name.toLowerCase().includes(implantSearch.toLowerCase())
@@ -628,12 +668,12 @@ const ImplantSection = (props, context) => {
 
   return (
     <Section
-      title={"Implants (" + (current_implants ? current_implants.length : 0) + " installed)"}
+      title={"Импланты (Установлено: " + (current_implants ? current_implants.length : 0) + ")"}
       buttons={
         <Button
           icon={showAdd ? "minus" : "plus"}
           color={showAdd ? "red" : "green"}
-          content={showAdd ? "Hide List" : "Add Implant"}
+          content={showAdd ? "Спрятать список" : "Добавить имплант"}
           onClick={() => setShowAdd(!showAdd)}
         />
       }
@@ -661,7 +701,7 @@ const ImplantSection = (props, context) => {
                   <Button
                     icon="trash"
                     color="red"
-                    tooltip={"Remove " + imp.name}
+                    tooltip={"Убрать " + imp.name}
                     onClick={() => act("remove_implant", { implant_ref: imp.ref })}
                   />
                 </Flex.Item>
@@ -671,13 +711,13 @@ const ImplantSection = (props, context) => {
         </Box>
       ) : (
         <Box color="grey" italic mb={showAdd ? 1 : 0}>
-          No implants installed.
+          Нет установленных имплантов.
         </Box>
       )}
       {showAdd && (
         <Box>
           <Input
-            placeholder="Search implants..."
+            placeholder="Поиск имплантов..."
             width="100%"
             mb={1}
             onInput={(e, value) => setImplantSearch(value)}
@@ -704,14 +744,14 @@ const ImplantSection = (props, context) => {
 };
 
 
-const FeatureBanTabs = (props, context) => {
-  const { data } = useBackend(context);
-  const [jobbanTab, setJobbanTab] = useLocalState(context, 'jobbanTab', 0);
+const FeatureBanTabs = (props) => {
+  const { data } = useBackend();
+  const [jobbanTab, setJobbanTab] = useLocalState('jobbanTab', 0);
   const { roles } = data;
   return (
-    <Flex>
-      <Flex.Item>
-        <Section fitted>
+    <Stack fill>
+      <Stack.Item>
+        <Section fill minWidth="8rem">
           <Tabs vertical>
             {roles.map((role_category, i) => { return (
               <Tabs.Tab
@@ -725,27 +765,29 @@ const FeatureBanTabs = (props, context) => {
             ); })}
           </Tabs>
         </Section>
-      </Flex.Item>
-
-      <Flex.Item grow>
-        <FeatureBans />
-      </Flex.Item>
-    </Flex>
+      </Stack.Item>
+      <Stack.Divider />
+      <Stack.Item grow>
+          <Section fill>
+            <FeatureBans />
+          </Section>
+      </Stack.Item>
+    </Stack>
   );
 };
 
-const FeatureBans = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [jobbanTab] = useLocalState(context, 'jobbanTab', 0);
+const FeatureBans = (props) => {
+  const { act, data } = useBackend();
+  const [jobbanTab] = useLocalState('jobbanTab', 0);
   const { roles, antag_ban_reason } = data;
   return (
     <Section fill>
       <Section
         title={roles[jobbanTab].category_name}
         buttons={(
-          <Fragment>
+          <>
             <Button
-              content="Unban All"
+              content="Снять все баны"
               color="good"
               icon="lock-open"
               minWidth="8rem"
@@ -755,7 +797,8 @@ const FeatureBans = (props, context) => {
                 is_category: true,
               })} />
             <Button
-              content="Ban All"
+              content="Выдать все баны"
+              tooltip="Пробанить позиции в открытой категории"
               color="bad"
               icon="lock"
               minWidth="8rem"
@@ -765,7 +808,7 @@ const FeatureBans = (props, context) => {
                 is_category: true,
                 want_to_ban: true,
               })} />
-          </Fragment>
+          </>
         )}
       >
         <Flex wrap="wrap" justify="space-between">
@@ -824,18 +867,19 @@ const FeatureBans = (props, context) => {
   );
 };
 
-const GeneralActions = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { client_ckey, mob_type, admin_mob_type } = data;
+const GeneralActions = (props) => {
+  const { act, data } = useBackend();
+  const { client_ckey, client_hearted, mob_type, admin_mob_type } = data;
   return (
     <Section>
-      <Section title="Damage">
+      <Section title="Повреждения">
         <Flex>
           <Button
             width="100%"
             icon="heart"
             color="green"
-            content="Rejuvenate"
+            content="Восстановить"
+            tooltip="Полностью восстановить здоровье и увечья цели проком Rejuvenate"
             disabled={!mob_type.includes("/mob/living")}
             onClick={() => act("heal")}
           />
@@ -844,47 +888,53 @@ const GeneralActions = (props, context) => {
             height="100%"
             icon="band-aid"
             color="teal"
-            content="Light Heal"
+            content="Исцелить"
+            tooltip="Вылечить все типы урона цели на 20 единиц"
             disabled={!mob_type.includes("/mob/living")}
             onClick={() => act("light_heal")}
           />
         </Flex>
       </Section>
 
-      <Section title="Teleportation">
+      <Section title="Перемещение">
         <Flex>
           <Button.Confirm
             width="100%"
             icon="reply"
-            content="Bring"
+            content="На себя"
+            tooltip="Переместить цель на себя"
             onClick={() => act("bring")}
           />
           <Button
             width="100%"
-            content="Orbit"
+            content="Кружить над целью"
+            tooltip="Телепортироваться к цели как призрак"
             onClick={() => act("orbit")}
           />
           <Button.Confirm
             width="100%"
             height="100%"
             icon="share"
-            content="Jump To"
+            content="К цели"
+            tooltip="Телепортироваться к цели физически"
             onClick={() => act("jump_to")}
           />
         </Flex>
       </Section>
 
-      <Section title="Miscellaneous">
+      <Section title="Прочее">
         <Flex>
           <Button
             width="100%"
-            content="Select Equipment"
+            content="Выбрать снаряжение"
+            tooltip="Выбрать снаряжение в специальном меню"
             icon="user-tie"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
             onClick={() => act("select_equipment")}
           />
           <Button.Confirm
-            content="Drop All Items"
+            content="Снять все предметы"
+            tooltip="Снять с цели все слоты инвентаря"
             icon="trash-alt"
             width="100%"
             height="100%"
@@ -892,9 +942,53 @@ const GeneralActions = (props, context) => {
             onClick={() => act("strip")}
           />
         </Flex>
+        <Flex mt={1}>
+          <Button
+            width="100%"
+            icon="heart"
+            color={client_hearted ? 'pink' : 'default'}
+            content={client_hearted ? 'Сердечко активно' : 'Выдать сердечко'}
+            disabled={!client_ckey}
+            tooltip={client_hearted
+              ? 'У цели уже есть активное OOC-сердечко'
+              : 'Выдать OOC-сердечко на 24 часа'}
+            onClick={() => act('commend')}
+          />
+        </Flex>
+      </Section>
+      <Section title="Контроль над целью">
         <Flex>
           <Button.Confirm
-            content="Send To Cryo"
+            width="100%"
+            icon="ghost"
+            content="Извлечь из тела"
+            tooltip="Вытащить игрока из тела цели и сделать призраком"
+            confirmColor="bad"
+            disabled={!client_ckey || !mob_type.includes("/mob/living")}
+            onClick={() => act("ghost")}
+          />
+          <Button.Confirm
+            width="100%"
+            content="Взять контроль"
+            tooltip="Взять контроль над телом цели"
+            confirmColor="bad"
+            disabled={mob_type.includes("/mob/dead/observer") || !admin_mob_type.includes("/mob/dead/observer")}
+            onClick={() => act("take_control")}
+          />
+          <Button.Confirm
+            width="100%"
+            height="100%" // weird ass bug here, so height set to 100%
+            icon="ghost"
+            content="Предложить контроль"
+            tooltip="Предложить игрокам-призракам контроль над телом цели"
+            disabled={!mob_type.includes("/mob/living")}
+            onClick={() => act("offer_control")}
+          />
+        </Flex>
+        <Flex>
+          <Button.Confirm
+            content="Отправить в криосон"
+            tooltip="Убрать цель из раунда через криосон"
             icon="snowflake"
             width="100%"
             color="orange"
@@ -904,40 +998,12 @@ const GeneralActions = (props, context) => {
           <Button.Confirm
             width="100%"
             height="100%"
-            content="Send To Lobby"
+            content="Отправить в лобби"
             color="orange"
             icon="undo"
             disabled={!mob_type.includes("/mob/dead/observer")}
-            tooltip={mob_type !== "/mob/dead/observer" ? "Can only be used on ghosts" : ""}
+            tooltip={mob_type !== "/mob/dead/observer" ? "Можно использовать только на призраках" : ""}
             onClick={() => act("lobby")}
-          />
-        </Flex>
-      </Section>
-      <Section title="Control">
-        <Flex>
-          <Button.Confirm
-            width="100%"
-            icon="ghost"
-            content="Eject Ghost"
-            confirmColor="bad"
-            disabled={!client_ckey || !mob_type.includes("/mob/living")}
-            onClick={() => act("ghost")}
-          />
-          <Button.Confirm
-            width="100%"
-            content="Take Control"
-            confirmColor="bad"
-            disabled={mob_type.includes("/mob/dead/observer") || !admin_mob_type.includes("/mob/dead/observer")}
-            onClick={() => act("take_control")}
-          />
-          <Button.Confirm
-            width="100%"
-            height="100%" // weird ass bug here, so height set to 100%
-            icon="ghost"
-            content="Offer Control"
-            tooltip="Offers control to ghosts"
-            disabled={!mob_type.includes("/mob/living")}
-            onClick={() => act("offer_control")}
           />
         </Flex>
       </Section>
@@ -945,12 +1011,12 @@ const GeneralActions = (props, context) => {
   );
 };
 
-const PunishmentActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const PunishmentActions = (props) => {
+  const { act, data } = useBackend();
   const { client_ckey, mob_type, is_frozen, is_slept, glob_mute_bits,
-    client_muted, data_related_cid, data_related_ip, data_byond_version,
+    client_muted, data_related_cid, data_related_ip, data_cid, data_byond_version,
     data_player_join_date, data_account_join_date, active_role_ban_count,
-    current_time } = data;
+    current_time, has_live_client } = data;
   return (
     <Section>
       <Flex>
@@ -959,7 +1025,8 @@ const PunishmentActions = (props, context) => {
           py=".5rem"
           icon="clipboard-list"
           color="orange"
-          content="Notes"
+          content="Заметки"
+          tooltip="Открыть заметки игрока"
           textAlign="center"
           disabled={!client_ckey}
           onClick={() => act("notes")}
@@ -970,16 +1037,18 @@ const PunishmentActions = (props, context) => {
           py=".5rem"
           icon="clipboard-list"
           color="orange"
-          content="Logs"
+          content="Логи"
+          tooltip="Открыть логи раунда игрока"
           textAlign="center"
           onClick={() => act("logs")}
         />
       </Flex>
-      <Section title="Contain">
+      <Section title="Сдерживание">
         <Flex>
           <Button
             width="100%"
-            content="Freeze"
+            content="Заморозить"
+            tooltip="Заморозить цель в пространстве"
             color={is_frozen ? "orange" : ""}
             icon={is_frozen ? 'check-square-o' : 'square-o'}
             disabled={!mob_type.includes("/mob/living")}
@@ -987,7 +1056,8 @@ const PunishmentActions = (props, context) => {
           />
           <Button
             width="100%"
-            content="Sleep"
+            content="Усыпить"
+            tooltip="Ввести цель в вечный сон"
             color={is_slept ? "orange" : ""}
             icon={is_slept ? 'check-square-o' : 'square-o'}
             disabled={!mob_type.includes("/mob/living")}
@@ -997,6 +1067,7 @@ const PunishmentActions = (props, context) => {
             width="100%"
             height="100%"
             content="Admin Prison"
+            tooltip="Отправить цель в камеру под Thunderdome"
             icon="share"
             color="bad"
             disabled={!mob_type.includes("/mob/living")}
@@ -1005,21 +1076,23 @@ const PunishmentActions = (props, context) => {
         </Flex>
       </Section>
 
-      <Section title="Banishment">
+      <Section title="Блокировки">
         <Flex>
           <Button.Confirm
             width="100%"
             icon="ban"
             color="red"
-            content="Kick"
-            disabled={!client_ckey}
+            content="Кикнуть"
+            tooltip="Кикнуть игрока с сервера"
+            disabled={!has_live_client}
             onClick={() => act("kick")}
           />
           <Button
             width="100%"
             icon="gavel"
             color="red"
-            content="Ban"
+            content="Забанить"
+            tooltip="Выдать серверный бан игроку"
             disabled={!client_ckey}
             onClick={() => act("ban")}
           />
@@ -1028,30 +1101,32 @@ const PunishmentActions = (props, context) => {
             height="100%"
             icon="gavel"
             color="red"
-            content="Sticky Ban"
+            content="Стики-бан"
+            tooltip="Выдать бан по CID/железу (HWID)"
             disabled={!client_ckey}
             onClick={() => act("sticky_ban")}
           />
         </Flex>
       </Section>
 
-      <Section title="Mute" buttons={
-        <Fragment>
+      <Section title="Мут-панель" buttons={
+        <>
           <Button
             icon="lock-open"
             color="green"
-            content="Unmute All"
-            disabled={!client_ckey}
+            content="Снять все муты"
+            tooltip=""
+            disabled={!has_live_client || !client_ckey}
             onClick={() => act("unmute_all")}
           />
           <Button
             icon="lock"
             color="red"
-            content="Mute All"
-            disabled={!client_ckey}
+            content="Выдать все муты"
+            disabled={!has_live_client || !client_ckey}
             onClick={() => act("mute_all")}
           />
-        </Fragment>
+        </>
       }>
         <Flex>
           {glob_mute_bits.map((bit, i) => {
@@ -1064,18 +1139,18 @@ const PunishmentActions = (props, context) => {
                 icon={isMuted ? 'check-square-o' : 'square-o'}
                 color={isMuted? "bad" : ""}
                 content={bit.name}
-                disabled={!client_ckey}
+                disabled={!has_live_client || !client_ckey}
                 onClick={() => act("mute", { "mute_flag": !isMuted? client_muted | bit.bitflag : client_muted & ~bit.bitflag })}
               />
             );
           }) }
         </Flex>
       </Section>
-      <Section title="Investigate"
+      <Section title="Подробности"
         buttons={(
           <Flex>
             <Flex.Item align="center" mr=".5rem" color="label">
-              Related accounts by:
+              Причастные аккаунты, по:
             </Flex.Item>
             <Button
               minWidth="5rem"
@@ -1100,15 +1175,16 @@ const PunishmentActions = (props, context) => {
         <Collapsible
           width="100%"
           color="orange"
-          content="Details"
+          content="Детали"
           disabled={!client_ckey}
         >
           <LabeledList >
-            <LabeledList.Item label="NOW" color="label">{current_time}</LabeledList.Item>
-            <LabeledList.Item label="Account made">{data_account_join_date}</LabeledList.Item>
-            <LabeledList.Item label="First joined server">{data_player_join_date}</LabeledList.Item>
-            <LabeledList.Item label="Byond version">{data_byond_version}</LabeledList.Item>
-            <LabeledList.Item label="Active bans">{active_role_ban_count}</LabeledList.Item>
+            <LabeledList.Item label="Текущее время" color="label">{current_time}</LabeledList.Item>
+            <LabeledList.Item label="Аккаунт создан">{data_account_join_date}</LabeledList.Item>
+            <LabeledList.Item label="Впервые зашёл">{data_player_join_date}</LabeledList.Item>
+            <LabeledList.Item label="Версия Byond">{data_byond_version}</LabeledList.Item>
+            <LabeledList.Item label="CID">{data_cid || "N/A"}</LabeledList.Item>
+            <LabeledList.Item label="Активных банов">{active_role_ban_count}</LabeledList.Item>
           </LabeledList>
         </Collapsible>
       </Section>
@@ -1116,15 +1192,15 @@ const PunishmentActions = (props, context) => {
   );
 };
 
-const TransformActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const TransformActions = (props) => {
+  const { act, data } = useBackend();
   const { transformables, mob_type } = data;
   return (
     <Section>
 
       <Button
         width="100%"
-        content="Custom"
+        content="Найти и превратить по mob type"
         py=".5rem"
         textAlign="center"
         onClick={() => act("transform", { newType: "/mob/living" })}
@@ -1155,8 +1231,8 @@ const TransformActions = (props, context) => {
   );
 };
 
-const FunActions = (props, context) => {
-  const { act } = useBackend(context);
+const FunActions = (props) => {
+  const { act } = useBackend();
 
   const colours = {
     'White': '#a4bad6',
@@ -1172,47 +1248,47 @@ const FunActions = (props, context) => {
     'Ratvar': '#BE8700',
   };
 
-  const [lockExplode, setLockExplode] = useLocalState(context, "explode_lock_toggle", true);
-  const [empMode, setEmpMode] = useLocalState(context, "empMode", false);
-  const [extinguishMode, setExtinguishMode] = useLocalState(context, "extinguishMode", false);
-  const [expPower, setExpPower] = useLocalState(context, "exp_power", 8);
-  const [narrateSize, setNarrateSize] = useLocalState(context, "narrateSize", 1);
-  const [narrateMessage, setNarrateMessage] = useLocalState(context, "narrateMessage", "");
-  const [narrateColour, setNarrateColour] = useLocalState(context, "narrateColour", Object.keys(colours)[0]);
-  const [narrateFont, setNarrateFont] = useLocalState(context, "narrateFont", "Verdana");
-  const [narrateBold, setNarrateBold] = useLocalState(context, "narrateBold", false);
-  const [narrateItalic, setNarrateItalic] = useLocalState(context, "narrateItalic", false);
-  const [narrateGlobal, setNarrateGlobal] = useLocalState(context, "narrateGlobal", false);
-  const [narrateRange, setNarrateRange] = useLocalState(context, "narrateRange", 7);
+  const [lockExplode, setLockExplode] = useState(true);
+  const [empMode, setEmpMode] = useState(false);
+  const [extinguishMode, setExtinguishMode] = useState(false);
+  const [expPower, setExpPower] = useState(8);
+  const [narrateSize, setNarrateSize] = useLocalState("narrateSize", 1);
+  const [narrateMessage, setNarrateMessage] = useLocalState("narrateMessage", "");
+  const [narrateColour, setNarrateColour] = useLocalState("narrateColour", Object.keys(colours)[0]);
+  const [narrateFont, setNarrateFont] = useLocalState("narrateFont", "Verdana");
+  const [narrateBold, setNarrateBold] = useLocalState("narrateBold", false);
+  const [narrateItalic, setNarrateItalic] = useLocalState("narrateItalic", false);
+  const [narrateGlobal, setNarrateGlobal] = useLocalState("narrateGlobal", false);
+  const [narrateRange, setNarrateRange] = useLocalState("narrateRange", 7);
 
 
 
   const narrateStyles = {
     'color': colours[narrateColour],
-    'font-size': narrateSize + 'rem',
-    'font-weight': (narrateBold ? 'bold' : ''),
-    'font-family': narrateFont,
-    'font-style': (narrateItalic ? 'italic' : ''),
+    fontSize: narrateSize + 'rem',
+    fontWeight: (narrateBold ? 'bold' : ''),
+    fontFamily: narrateFont,
+    fontStyle: (narrateItalic ? 'italic' : ''),
   };
 
   return (
     <Section fill>
       <NoticeBox info textAlign="center">
-        These features are centred on YOUR viewport
+        Действие этих эффектов центрировано от ВАШЕЙ локации
       </NoticeBox>
 
-      <Section title="Explosion" buttons={(
-        <Fragment>
+      <Section title="Сгенерировать взрыв" buttons={(
+        <>
           <Button.Checkbox
             checked={extinguishMode}
             color="transparent"
-            content="Extinguish Mode"
+            content="Огнетушение"
             onClick={() => setExtinguishMode(!extinguishMode)}
           />
           <Button.Checkbox
             checked={empMode}
             color="transparent"
-            content="EMP Mode"
+            content="EMP-режим"
             onClick={() => setEmpMode(!empMode)}
           />
           <Button
@@ -1221,7 +1297,7 @@ const FunActions = (props, context) => {
             onClick={() => setLockExplode(!lockExplode)}
             color={lockExplode? "green" : "bad"}
           />
-        </Fragment>
+        </>
       )}>
         <Flex
           align="right"
@@ -1236,7 +1312,7 @@ const FunActions = (props, context) => {
               disabled={lockExplode}
               onClick={() => act("explode", { power: expPower, emp_mode: empMode, extinguish_mode: extinguishMode })}
             >
-              <Box height="100%" pt={2} pb={2} textAlign="center">Detonate</Box>
+              <Box height="100%" pt={2} pb={2} textAlign="center">Взорвать</Box>
             </Button>
           </Flex.Item>
           <Flex.Item
@@ -1244,7 +1320,7 @@ const FunActions = (props, context) => {
             grow={1}
           >
             <Slider
-              unit="Range"
+              unit="м. радиуса"
               value={expPower}
               stepPixelSize={15}
               onDrag={(e, value) => setExpPower(value)}
@@ -1260,7 +1336,7 @@ const FunActions = (props, context) => {
           </Flex.Item>
         </Flex>
       </Section>
-      <Section title="Narrate"
+      <Section title="Создать лог повествования (Narrate)"
         buttons={
           <Button
             content="Global Narrate"
@@ -1274,7 +1350,7 @@ const FunActions = (props, context) => {
           <Flex width="100%" wrap>
             <Flex.Item width="52%">
               <LabeledList>
-                <LabeledList.Item label="Colour">
+                <LabeledList.Item label="Цвет">
                   <Dropdown
                     width="calc(100% - 1rem)"
                     displayText={narrateColour}
@@ -1282,7 +1358,7 @@ const FunActions = (props, context) => {
                     onSelected={(value) => setNarrateColour(value)}
                   />
                 </LabeledList.Item>
-                <LabeledList.Item label="Font">
+                <LabeledList.Item label="Шрифт">
                   <Dropdown
                     width="calc(100% - 1rem)"
                     displayText={narrateFont}
@@ -1293,7 +1369,7 @@ const FunActions = (props, context) => {
             </Flex.Item>
             <Flex.Item width="20%">
               <LabeledList>
-                <LabeledList.Item label="Bold">
+                <LabeledList.Item label="Жирность">
                   <Button.Checkbox
                     checked={narrateBold}
                     height="100%"
@@ -1301,7 +1377,7 @@ const FunActions = (props, context) => {
                     onClick={() => setNarrateBold(!narrateBold)}
                   />
                 </LabeledList.Item>
-                <LabeledList.Item label="Italic">
+                <LabeledList.Item label="Курсив">
                   <Button.Checkbox
                     checked={narrateItalic}
                     height="100%"
@@ -1313,7 +1389,7 @@ const FunActions = (props, context) => {
             </Flex.Item>
             <Flex.Item width="28%">
               <LabeledList>
-                <LabeledList.Item label="Size">
+                <LabeledList.Item label="Размер">
                   <NumberInput
                     width="100%"
                     value={narrateSize}
@@ -1325,13 +1401,13 @@ const FunActions = (props, context) => {
                     onDrag={(e, value) => setNarrateSize(value)} />
                 </LabeledList.Item>
                 {!narrateGlobal && (
-                  <LabeledList.Item label="Range">
+                  <LabeledList.Item label="Дальность">
                     <NumberInput
                       width="100%"
                       value={narrateRange}
                       minValue={1}
                       maxValue={14}
-                      unit="Tiles"
+                      unit="м."
                       align="center"
                       stepPixelSize="25"
                       onDrag={(e, value) => setNarrateRange(value)} />
@@ -1352,7 +1428,7 @@ const FunActions = (props, context) => {
           </Flex.Item>
 
           <Button
-            content="Broadcast"
+            content="Вещать"
             color="green"
             p=".5rem"
             textAlign="center"
@@ -1374,19 +1450,19 @@ const FunActions = (props, context) => {
   );
 };
 
-const SmiteActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const SmiteActions = (props) => {
+  const { act, data } = useBackend();
   const { smites_list } = data;
-  const [smiteSearch, setSmiteSearch] = useLocalState(context, 'smiteSearch', '');
+  const [smiteSearch, setSmiteSearch] = useState('');
 
   const filteredSmites = (smites_list || []).filter(name =>
     name.toLowerCase().includes(smiteSearch.toLowerCase())
   );
 
   return (
-    <Section title="Smites" fill>
+    <Section title="Смайты (Наказания)" fill>
       <Input
-        placeholder="Search smites..."
+        placeholder="Сломать колени..."
         width="100%"
         mb={1}
         onInput={(e, value) => setSmiteSearch(value)}
@@ -1408,16 +1484,16 @@ const SmiteActions = (props, context) => {
   );
 };
 
-const OtherActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const OtherActions = (props) => {
+  const { act, data } = useBackend();
   const { mob_type, client_ckey } = data;
 
   return (
     <Section fill>
-      <Section title="Antagonist">
+      <Section title="Антагонизм">
         <Button
           width="100%"
-          content="Traitor Panel"
+          content="Панель антагониста (TP)"
           icon="user-secret"
           color="purple"
           p=".5rem"
@@ -1428,7 +1504,7 @@ const OtherActions = (props, context) => {
         />
         <Button
           width="100%"
-          content="Objectives / Ambitions"
+          content="Цели / Амбиции"
           icon="bullseye"
           p=".5rem"
           textAlign="center"
@@ -1436,10 +1512,10 @@ const OtherActions = (props, context) => {
           onClick={(e) => act("ambitions")}
         />
       </Section>
-      <Section title="Miscellaneous">
+      <Section title="Прочее">
         <Button
           width="100%"
-          content="Languages"
+          content="Языки"
           icon="language"
           p=".5rem"
           mb=".5rem"
@@ -1450,7 +1526,8 @@ const OtherActions = (props, context) => {
         <Flex>
           <Button
             width="100%"
-            content="Make Mentor"
+            minHeight="2.5rem"
+            content="Дать права ментора"
             icon="graduation-cap"
             color="green"
             p=".5rem"
@@ -1460,7 +1537,8 @@ const OtherActions = (props, context) => {
           />
           <Button
             width="100%"
-            content="Remove Mentor"
+            minHeight="2.5rem"
+            content="Убрать права ментора"
             icon="user-minus"
             color="red"
             p=".5rem"

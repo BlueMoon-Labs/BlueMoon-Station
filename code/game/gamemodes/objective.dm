@@ -24,9 +24,12 @@ GLOBAL_LIST_EMPTY(objectives)
 
 /datum/objective/Destroy(force, ...)
 	GLOB.objectives -= src
-	if(owner)
-		for(var/datum/antagonist/A in owner.antag_datums)
-			A.objectives -= src
+	//отвязка шла только по текущему owner: цель, которой owner переназначили до
+	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
+	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
+	//Идём по фактическим держателям, а не по одному предполагаемому.
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+		holder.objectives -= src
 	if(team)
 		team.objectives -= src
 	. = ..()
@@ -86,11 +89,36 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/check_midround_completion()
 	return check_completion()
 
+/proc/bm_assassinate_target_eliminated(datum/mind/M)
+	if(!M)
+		return FALSE
+	var/mob/current = M.current
+	if(!current)
+		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
+		// rerolled by cryo_handle_objectives() before their body is deleted.
+		return TRUE
+	if(isobserver(current))
+		return TRUE
+	if(isbrain(current))
+		var/mob/living/brain/B = current
+		if(B.onCentCom() || B.onSyndieBase())
+			return FALSE // мозг спасён и доставлен на ЦК — цель провалена
+		return B.stat == DEAD
+	if(isliving(current))
+		var/mob/living/L = current
+		return L.stat == DEAD
+	return FALSE
+
 /datum/objective/proc/is_unique_objective(possible_target)
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/M in owners)
 		for(var/datum/objective/O in M.get_all_objectives()) //This scope is debatable, probably should be passed in by caller.
-			if(istype(O, type) && O.get_target() == possible_target)
+			if(O.get_target() != possible_target)
+				continue
+			if(istype(O, type))
+				return FALSE
+			// Убийство (once) и уничтожение (assassinate) — разные подтипы, но одна цель недопустима.
+			if(istype(src, /datum/objective/assassinate) && istype(O, /datum/objective/assassinate))
 				return FALSE
 	return TRUE
 
@@ -116,7 +144,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(O.late_joiner)
 			try_target_late_joiners = TRUE
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role())
 			if(!(possible_target in blacklist))
 				// BLUEMOON ADD START - если персонаж сверхтяжёлый и установлена настройка, что сверхтяжёлые персонажи не могут быть по заданию, персонажа не добавляет в пулл
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
@@ -140,7 +168,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/find_target_by_role(role, role_type=0, invert=0)//Option sets either to check assigned role or special role. Default to assigned., invert inverts the check, eg: "Don't choose a Ling"
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role())
 			var/is_role = 0
 			if(role_type)
 				if(possible_target.special_role == role)
@@ -188,11 +216,23 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	target_amount = rand(2,6)
 	return target
 
+/datum/objective/assassinate/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			var/datum/mind/conflict_target = obj.get_target()
+			if(!conflict_target)
+				continue
+			if(istype(obj, /datum/objective/protect) || istype(obj, /datum/objective/assassinate))
+				blacklist |= conflict_target
+	return ..(dupe_search_range, blacklist)
+
 /datum/objective/assassinate/check_completion()
-	return FALSE || ..()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
 
 /datum/objective/assassinate/check_midround_completion()
-	return FALSE
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/assassinate/update_explanation_text()
 	..()
@@ -239,6 +279,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	if(target && !target.current)
 		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Уничтожь эту цель! Кто бы это не был, эта станция будет ему могилой."
 
+/datum/objective/assassinate/internal/check_completion()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
+
+/datum/objective/assassinate/internal/check_midround_completion()
+	return !target || bm_assassinate_target_eliminated(target)
+
 /datum/objective/mutiny
 	name = "mutiny"
 	var/target_role_type=0
@@ -251,8 +297,14 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	return target
 
 /datum/objective/mutiny/check_completion()
+	if(!target)
+		return TRUE
 	var/turf/T = get_turf(target.current)
-	return !T || !is_station_level(T.z)
+	// A dead head's body left on-station must not stall the revolution forever:
+	// treat a dead (or otherwise non-living) target as eliminated, matching the "kill" part of "kill or exile".
+	if(!target.current || !considered_alive(target, FALSE) || !T || !is_station_level(T.z))
+		return TRUE
+	return FALSE
 
 /datum/objective/mutiny/check_midround_completion()
 	return FALSE
@@ -337,6 +389,53 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	..()
 	return target
 
+/datum/objective/protect/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/assassinate) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
+
+// BLUEMOON ADD START - цель защиты не может выпасть без соответствующей цели на
+// убийство этой же цели у другого антагониста. Собираем цели убийства чужих
+// антагонистов и выбираем из них валидную для защиты.
+/datum/objective/protect/proc/find_kill_target()
+	var/list/datum/mind/owners = get_owners()
+	var/list/datum/mind/kill_targets = list()
+	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
+		if(!antag?.owner || (antag.owner in owners))
+			continue
+		for(var/datum/objective/objective in antag.objectives)
+			if(istype(objective, /datum/objective/assassinate) && objective.get_target())
+				kill_targets |= objective.get_target()
+	if(!kill_targets.len)
+		return null
+	var/try_target_late_joiners = FALSE
+	for(var/datum/mind/O in owners)
+		if(O.late_joiner)
+			try_target_late_joiners = TRUE
+	var/list/datum/mind/possible_targets = list()
+	for(var/datum/mind/possible_target in kill_targets)
+		if((possible_target in owners) || !ishuman(possible_target.current) || (possible_target.current.stat == DEAD) || possible_target.is_ghost_role() || !is_unique_objective(possible_target))
+			continue
+		if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
+			possible_targets += possible_target
+	if(try_target_late_joiners)
+		var/list/datum/mind/all_possible_targets = possible_targets.Copy()
+		for(var/datum/mind/PT in all_possible_targets)
+			if(!PT.late_joiner)
+				possible_targets -= PT
+		if(!possible_targets.len)
+			possible_targets = all_possible_targets
+	if(!possible_targets.len)
+		return null
+	target = pick(possible_targets)
+	update_explanation_text()
+	return target
+// BLUEMOON ADD END
+
 /datum/objective/protect/check_completion()
 	return !target || considered_alive(target, enforce_human = human_check)
 
@@ -373,6 +472,10 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(!considered_alive(M) || !SSshuttle.emergency.shuttle_areas[get_area(M.current)])
 			return FALSE
 	return SSshuttle.emergency.is_hijacked()
+
+/datum/objective/hijack/syndicate
+	name = "hijack syndicate"
+	explanation_text = "Захватите аварийный шаттл, взломав его навигационные протоколы через консоль управления (ALT-ЛКМ по консоли аварийного шаттла)! Отведите уцелевших на Синди-Аванпост."
 
 /datum/objective/block
 	name = "no organics on shuttle"
@@ -670,6 +773,8 @@ GLOBAL_LIST_EMPTY(possible_items)
 			for(var/datum/mind/M in owners)
 				if(M.current.mind.assigned_role in possible_item.excludefromjob)
 					continue check_items
+			if(!possible_item.ExtraCheck())
+				continue
 			approved_targets += possible_item
 	return set_target(safepick(approved_targets))
 
@@ -1448,6 +1553,66 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 	else
 		return FALSE
 
+
+// BLUEMOON ADD - цель «Подстава»: добиться, чтобы цель угодила за решётку (бриг / перма-бриг / гулаг)
+/datum/objective/frame
+	name = "frame"
+
+/datum/objective/frame/find_target(blacklist)
+	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain")
+	var/list/possible_targets = list()
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/possible_target in SSticker.minds)
+		if(possible_target in owners)
+			continue
+		var/mob/living/H = possible_target.current
+		if(!ishuman(H) || H.stat == DEAD || H.mind != possible_target) // мертвецы, не-люди и безмозглые не в счёт
+			continue
+		if(possible_target.assigned_role == possible_target.special_role) // антагонисты не в счёт
+			continue
+		if(possible_target.assigned_role in excluded_roles)
+			continue
+		if(possible_target.has_antag_datum(/datum/antagonist/ghost_role)) // BLUEMOON ADD - гостроли (хермит и т.п.) не берутся в оборот
+			continue
+		if(!is_unique_objective(possible_target)) // на одного и того же игрока подстава не выдаётся одному и тому же владельцу дважды
+			continue
+		possible_targets += possible_target
+	if(!length(possible_targets))
+		return
+	target = pick(possible_targets)
+	update_explanation_text()
+	return target
+
+/datum/objective/frame/update_explanation_text()
+	if(target?.current)
+		explanation_text = "Сделай так, чтобы [target.current.real_name], [target.assigned_role], угодил(а) за решётку — в бриг, перма-бриг или на гулаг. Подбрось улики, подай ложный донос или сфабрикуй доказательства. Действуй осторожно и не спались."
+	else
+		explanation_text = "Свободная Задача"
+
+/datum/objective/frame/check_completion()
+	if(!target?.current)
+		return FALSE
+	var/mob/living/human_target = target.current
+	if(!ishuman(human_target) || human_target.stat == DEAD || human_target.mind != target)
+		return FALSE
+	var/target_name = human_target.real_name
+	// 1) В бриге: таймер ячейки тикает на имя цели
+	for(var/obj/machinery/door_timer/cell_timer in GLOB.celltimers_list)
+		if(cell_timer.timing && cell_timer.criminal == target_name)
+			return TRUE
+	// 2) Перма-бриг: шкафчик генпоп оформлен на имя цели
+	for(var/obj/structure/closet/secure_closet/genpop/genpop_locker in world)
+		if(genpop_locker.locked && genpop_locker.registered_id && genpop_locker.registered_id.registered_name == target_name)
+			return TRUE
+	// 3) Гулаг: цель отправлена через трудовой телепорт
+	for(var/obj/machinery/gulag_teleporter/gulag_teleporter_machine in GLOB.machines)
+		if(gulag_teleporter_machine.last_sent_prisoner == target)
+			return TRUE
+	return FALSE
+
+/datum/objective/frame/check_midround_completion()
+	return check_completion()
+// BLUEMOON ADD END
 
 ////////// Ограбление
 

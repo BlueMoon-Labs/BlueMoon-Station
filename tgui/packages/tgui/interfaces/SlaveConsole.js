@@ -1,7 +1,7 @@
 import { map, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
 import { vecLength, vecSubtract } from 'common/vector';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Flex, Icon, LabeledList, NoticeBox, Section, Tabs } from '../components';
@@ -11,9 +11,9 @@ import { GenericUplink } from './Uplink';
 
 const coordsToVec = coords => map(parseFloat)(coords.split(', '));
 
-export const SlaveConsole = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 1);
+export const SlaveConsole = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 1);
   const {
     intercomrecharging,
     cargo_credits,
@@ -111,9 +111,9 @@ export const SlaveConsole = (props, context) => {
   );
 };
 
-const SlavePanel = (props, context) => {
+const SlavePanel = (props) => {
   const { slaves } = props;
-  const { act } = useBackend(context);
+  const { act } = useBackend();
   if (!slaves.length) {
     return (
       <NoticeBox danger>
@@ -127,7 +127,7 @@ const SlavePanel = (props, context) => {
         key={slave.id}
         title={slave.name}
         buttons={(
-          <Fragment>
+          <>
             <Button
               icon="handshake"
               content="Recruit"
@@ -166,7 +166,7 @@ const SlavePanel = (props, context) => {
               onClick={() => act('release', {
                 id: slave.id,
               })} />
-          </Fragment>
+          </>
         )}>
         <LabeledList>
           <LabeledList.Item
@@ -194,7 +194,7 @@ const SlavePanel = (props, context) => {
           </LabeledList.Item>
           <LabeledList.Item label="Price">
             {(!slave.station_rank) && (
-              <Fragment>
+              <>
                 <Button
                   icon="pencil-alt"
                   content={slave.price ? formatMoney(slave.price, null, true) + "cr" : "Set price"}
@@ -208,7 +208,7 @@ const SlavePanel = (props, context) => {
                     (Can be changed in {slave.price_change_cooldown} seconds)
                   </Box>
                 )}
-              </Fragment>
+              </>
             )}
             {(slave.station_rank) && (
               formatMoney(slave.price, null, true) + "cr (" + slave.station_rank + ")"
@@ -234,7 +234,7 @@ const SlavePanel = (props, context) => {
   });
 };
 
-const SupplyPanel = (props, context) => {
+const SupplyPanel = (props) => {
   const { credits } = props;
   return (
     <GenericUplink
@@ -243,8 +243,8 @@ const SupplyPanel = (props, context) => {
   );
 };
 
-const RansomPanel = (props, context) => {
-  const { data } = useBackend(context);
+const RansomPanel = (props) => {
+  const { data } = useBackend();
   const value_table = props.value_table || {};
   const ransom_multiplayer = props.ransom_multiplayer || 1;
 
@@ -257,7 +257,7 @@ const RansomPanel = (props, context) => {
   );
 
   return (
-    <Fragment>
+    <>
       <NoticeBox danger>
         Цены устанавливаются автоматически по прайс-листу
       </NoticeBox>
@@ -291,6 +291,6 @@ const RansomPanel = (props, context) => {
           );
         })}
       </Flex>
-    </Fragment>
+    </>
   );
 };

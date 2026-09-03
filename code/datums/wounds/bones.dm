@@ -6,6 +6,9 @@
 /*
 	Base definition
 */
+/*
+	Base definition
+*/
 /datum/wound/blunt
 	sound_effect = 'sound/effects/wounds/crack1.ogg'
 	wound_type = WOUND_BLUNT
@@ -31,17 +34,50 @@
 	var/trauma_cycle_cooldown
 	/// If this is a chest wound and this is set, we have this chance to cough up blood when hit in the chest
 	var/internal_bleeding_chance = 0
+	// BLUEMOON ADD START - прогрессирующая внутренняя травма CHEST/HEAD
+	/// Текущая интенсивность приступа за тик. Растёт арифметически, пока не начато лечение (gel()).
+	var/internal_injury_intensity = 0
+	/// Шаг прироста интенсивности за тик
+	var/internal_injury_increment = 0
+	/// Раз в сколько тиков handle_process() применяется приступ
+	var/internal_injury_tick_interval = 5
+	/// Внутренний счётчик тиков
+	var/internal_injury_tick_counter = 0
+	// BLUEMOON ADD END
+	/// Cooldown for fumble/drop checks when using an item with a wounded arm
+	var/next_fumble_check = 0
 
 /*
 	Overwriting of base procs
 */
 /datum/wound/blunt/wound_injury(datum/wound/old_wound = null)
+	// BLUEMOON ADD START - разовый сильный приступ при получении тяжёлого перелома груди/головы
+	if((limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD) && severity >= WOUND_SEVERITY_SEVERE)
+		var/is_critical = (severity == WOUND_SEVERITY_CRITICAL)
+		// запускаем прогрессирующий процесс
+		processes = TRUE
+		internal_injury_intensity = is_critical ? 2 : 1
+		internal_injury_increment = is_critical ? 0.6 : 0.3
+		internal_injury_tick_counter = 0
+
+		// разовый приступ прямо сейчас - физическое "так, мне нужно отступать"
+		if(victim.blood_volume)
+			victim.visible_message(
+				span_userdanger("[victim] резко содрогается и [is_critical ? "обильно харкает" : "харкает"] кровью!"),
+				span_userdanger("Резкая боль пронзает вас, и вы [is_critical ? "обильно харкаете" : "харкаете"] кровью!"),
+				vision_distance = COMBAT_MESSAGE_RANGE,
+			)
+			victim.vomit(blood = TRUE, stun = TRUE, distance = 0, message = FALSE, harm = TRUE)
+	// BLUEMOON ADD END
+
 	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group)
 		processes = TRUE
 		active_trauma = victim.gain_trauma_type(brain_trauma_group, TRAUMA_RESILIENCE_WOUND)
 		next_trauma_cycle = world.time + (rand(100-WOUND_BONE_HEAD_TIME_VARIANCE, 100+WOUND_BONE_HEAD_TIME_VARIANCE) * 0.01 * trauma_cycle_cooldown)
 
 	RegisterSignal(victim, COMSIG_HUMAN_EARLY_UNARMED_ATTACK, PROC_REF(attack_with_hurt_hand))
+	if(limb.held_index)
+		RegisterSignal(victim, COMSIG_MOB_CLICKON, PROC_REF(fumble_hurt_hand))
 	if(limb.held_index && victim.get_item_for_held_index(limb.held_index) && (disabling || prob(33 * severity)))
 		var/obj/item/I = victim.get_item_for_held_index(limb.held_index)
 		if(istype(I, /obj/item/offhand))
@@ -56,30 +92,76 @@
 				? span_warning(span_bold("Ваша изнывающая от боли [limb.ru_name] больше не может удержать [I]!")) \
 				: span_warning(span_bold("Ваша [limb.ru_name] травмирована и не может удержать [I]!"))
 			victim.visible_message(message, message_self, vision_distance=COMBAT_MESSAGE_RANGE)
+			if(has_pain)
+				victim.emote("agony")
 
 	update_inefficiencies()
 
 /datum/wound/blunt/remove_wound(ignore_limb, replaced)
 	limp_slowdown = 0
+	// BLUEMOON ADD START - сброс прогрессирующей внутренней травмы при снятии раны
+	internal_injury_intensity = 0
+	internal_injury_tick_counter = 0
+	// BLUEMOON ADD END
 	QDEL_NULL(active_trauma)
 	if(victim)
-		UnregisterSignal(victim, COMSIG_HUMAN_EARLY_UNARMED_ATTACK)
+		UnregisterSignal(victim, list(COMSIG_HUMAN_EARLY_UNARMED_ATTACK, COMSIG_MOB_CLICKON))
 	return ..()
 
 /datum/wound/blunt/handle_process()
 	. = ..()
-	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group && world.time > next_trauma_cycle)
+	// Мёртвый мозг новых травм не наживает: цикл крутился на трупе до конца раунда,
+	// подвешивая на тело травмы, которые всплывали уже после дефибрилляции.
+	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group && world.time > next_trauma_cycle && !victim_appears_dead())
 		if(active_trauma)
 			QDEL_NULL(active_trauma)
 		else
 			active_trauma = victim.gain_trauma_type(brain_trauma_group, TRAUMA_RESILIENCE_WOUND)
 		next_trauma_cycle = world.time + (rand(100-WOUND_BONE_HEAD_TIME_VARIANCE, 100+WOUND_BONE_HEAD_TIME_VARIANCE) * 0.01 * trauma_cycle_cooldown)
 
+	// BLUEMOON ADD START - прогрессирующая внутренняя травма груди/головы.
+	// Арифметический рост: каждый проц увеличивает интенсивность на internal_injury_increment.
+	// Полностью останавливается как только начато лечение (gelled == TRUE).
+	// Бинт (limb.current_gauze) не останавливает, но сильно ЗАМЕДЛЯЕТ рост - отсрочка до хирургии, не замена ей.
+	if(!victim_appears_dead() && internal_injury_intensity > 0 && !gelled && (limb.body_zone == BODY_ZONE_CHEST || limb.body_zone == BODY_ZONE_HEAD))
+		internal_injury_tick_counter++
+		if(internal_injury_tick_counter >= internal_injury_tick_interval)
+			internal_injury_tick_counter = 0
+			if(!victim || !limb)
+				return
+			switch(limb.body_zone)
+				if(BODY_ZONE_CHEST)
+					victim.adjustOxyLoss(internal_injury_intensity)
+					if(prob(35))
+						victim.visible_message(
+							span_danger("[victim] хрипит и кашляет кровью!"),
+							span_userdanger("Ваша грудь горит, вам становится труднее дышать..."),
+							vision_distance = COMBAT_MESSAGE_RANGE,
+						)
+						if(victim.blood_volume)
+							victim.vomit(blood = TRUE, stun = FALSE, distance = 0, message = FALSE, harm = TRUE)
+				if(BODY_ZONE_HEAD)
+					victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, internal_injury_intensity)
+					if(prob(35))
+						victim.visible_message(
+							span_danger("[victim] хватается за голову, теряя ориентацию!"),
+							span_userdanger("Голова раскалывается от боли, перед глазами всё плывёт..."),
+							vision_distance = COMBAT_MESSAGE_RANGE,
+						)
+			// бинт замедляет рост в 4 раза - отсрочка, а не остановка. Без бинта - полный темп.
+			var/effective_increment = limb.current_gauze ? (internal_injury_increment * 0.25) : internal_injury_increment
+			internal_injury_intensity += effective_increment
+	// BLUEMOON ADD END
+
 	if(!regen_points_needed)
 		return
 
 	regen_points_current++
-	if(prob(severity * 2))
+	// Кости срастаются и у мёртвого тела - медики штопают трупы перед дефибом, - но
+	// надрыв тканей и болевые сообщения ему уже не грозят. handle_wounds() зовётся из
+	// /mob/living/BiologicalLife() ДО выхода по stat == DEAD, так что без этого гейта
+	// труп с гелем и лентой ловил свежий урон каждый тик до конца раунда.
+	if(!victim_appears_dead() && prob(severity * 2))
 		victim.take_bodypart_damage(rand(2, severity * 2), stamina=rand(2, severity * 2.5), wound_bonus=CANT_WOUND)
 		if(prob(33))
 			if(limb.is_robotic_limb())
@@ -127,15 +209,61 @@
 				span_userdanger("Вам не удается ударить [target] из-за [has_pain ? "боли и " : ""][robo_limb ? "повреждений" : "перелома"] в вашей конечности - [limb.ru_name]!"), vision_distance=COMBAT_MESSAGE_RANGE
 			)
 			if(has_pain)
-				victim.pain_emote(has_pain)
+				victim.emote("agony")
 				if(has_pain > PAIN_LOW)
 					victim.adjustStaminaLoss(15)
 			victim.Stun(0.5 SECONDS)
 			limb.receive_damage(brute=rand(3,7))
 			return COMPONENT_NO_ATTACK_HAND
 
+/**
+ * Chance to drop a held item when trying to use it with a wounded arm.
+ */
+/datum/wound/blunt/proc/fumble_hurt_hand(mob/source, atom/A, params)
+	SIGNAL_HANDLER
+
+	if(!victim || !limb?.held_index)
+		return
+	if(world.time < next_fumble_check)
+		return
+	if(victim.get_active_hand() != limb)
+		return
+	var/list/modifiers = params2list(params)
+	if(LAZYACCESS(modifiers, SHIFT_CLICK) || LAZYACCESS(modifiers, ALT_CLICK) || LAZYACCESS(modifiers, CTRL_CLICK) || LAZYACCESS(modifiers, MIDDLE_CLICK))
+		return
+	var/obj/item/held = victim.get_active_held_item()
+	if(!held || (held.item_flags & ABSTRACT))
+		return
+
+	next_fumble_check = world.time + 2 SECONDS
+	var/drop_chance = 10 * severity // moderate 10%, severe 20%, critical 30%
+	if(limb.current_gauze)
+		drop_chance *= limb.current_gauze.splint_factor
+	if(victim.has_pain(limb) <= PAIN_LOW)
+		drop_chance *= 0.5
+	if(!prob(drop_chance))
+		return
+
+	if(!victim.dropItemToGround(held))
+		return
+	var/has_pain = victim.has_pain(limb)
+	var/robo_limb = limb.is_robotic_limb()
+	victim.visible_message(
+		span_danger("[victim] роняет [held] из [robo_limb ? "повреждённой" : "сломанной"] [limb.ru_name]!"),
+		span_userdanger("Ваша [limb.ru_name] отказывает, и вы роняете [held]!"),
+		vision_distance = COMBAT_MESSAGE_RANGE
+	)
+	if(has_pain)
+		victim.emote("agony")
+	return COMSIG_MOB_CANCEL_CLICKON
+
 /datum/wound/blunt/receive_damage(wounding_type, wounding_dmg, wound_bonus)
-	if(!victim || wounding_dmg < WOUND_MINIMUM_DAMAGE)
+	// Труп кровью не кашляет. Гейт стоит отдельной строкой рядом с остальными
+	// отбойниками, а не внутри условия ниже: там его легко потерять при следующей
+	// правке switch'а. Проверка через victim_appears_dead(), а не по одному stat -
+	// см. комментарий у прока: тело в торпоре или с квирком "Не-мёртвый" для всех
+	// вокруг труп, но stat у него живой.
+	if(victim_appears_dead() || wounding_dmg < WOUND_MINIMUM_DAMAGE)
 		return
 	if(ishuman(victim))
 		var/mob/living/carbon/human/human_victim = victim
@@ -527,6 +655,11 @@
 	limb.receive_damage(30, stamina=stamina_damage, wound_bonus=CANT_WOUND)
 	if(!gelled)
 		gelled = TRUE
+		// BLUEMOON ADD START - нанесение костного геля полностью останавливает прогрессирующую внутреннюю травму
+		// (сама остановка достигается условием !gelled в handle_process() выше, здесь только обратная связь игроку)
+		if(internal_injury_intensity > 0)
+			to_chat(victim, span_notice("Вы чувствуете, как [limb.body_zone == BODY_ZONE_HEAD ? "давление в голове" : "боль в груди"] начинает отступать - лечение помогает!"))
+		// BLUEMOON ADD END
 
 /// if someone is using surgical tape on our wound
 /datum/wound/blunt/proc/tape(obj/item/stack/sticky_tape/surgical/I, mob/user)

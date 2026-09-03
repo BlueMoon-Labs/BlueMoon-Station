@@ -120,10 +120,6 @@
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
-"w" = (
-/mob/living/simple_animal/hostile/construct/builder,
-/turf/open/floor/plasteel/cult,
-/area/shuttle/escape)
 "x" = (
 /obj/machinery/door/airlock/cult/friendly,
 /obj/docking_port/mobile/emergency{
@@ -139,6 +135,7 @@
 /area/shuttle/escape)
 "z" = (
 /obj/effect/rune/raise_dead,
+/mob/living/simple_animal/hostile/construct/builder,
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
 "A" = (
@@ -150,6 +147,7 @@
 /obj/effect/decal/remains/human,
 /obj/effect/decal/cleanable/blood/gibs/body,
 /obj/effect/decal/cleanable/blood/gibs/core,
+/mob/living/simple_animal/hostile/construct/armored,
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
 "C" = (
@@ -159,6 +157,7 @@
 "D" = (
 /obj/effect/rune/convert,
 /obj/effect/decal/remains/human,
+/mob/living/simple_animal/hostile/construct/armored,
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
 "F" = (
@@ -175,6 +174,7 @@
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
 "H" = (
+/obj/effect/rune/raise_dead,
 /mob/living/simple_animal/hostile/construct/wraith,
 /turf/open/floor/plasteel/cult,
 /area/shuttle/escape)
@@ -324,7 +324,7 @@ v
 j
 A
 j
-z
+H
 j
 A
 j
@@ -348,7 +348,7 @@ j
 y
 B
 F
-H
+C
 j
 D
 A
@@ -368,7 +368,7 @@ j
 o
 b
 j
-w
+j
 j
 j
 j
@@ -416,7 +416,7 @@ j
 j
 r
 j
-w
+j
 j
 j
 j
@@ -444,7 +444,7 @@ j
 A
 D
 j
-H
+C
 j
 D
 A
@@ -468,7 +468,7 @@ j
 v
 A
 j
-z
+H
 j
 A
 j

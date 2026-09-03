@@ -5,7 +5,9 @@ GLOBAL_PROTECT(admin_verbs_default)
 /world/proc/AVerbsDefault()
 	return list(
 	/client/proc/deadmin,				/*destroys our own admin datum so we can play as a regular player*/
+	/client/proc/toggle_deadmin_autodementor,	/*toggle auto-mentor on deadmin*/
 	/client/proc/cmd_admin_say,			/*admin-only ooc chat*/
+	/client/proc/cmd_loud_admin_say,	/*admin-only ooc chat with sound + flash*/
 	/client/proc/hide_verbs,			/*hides all our adminverbs*/
 	/client/proc/hide_most_verbs,		/*hides all our hideable adminverbs*/
 	/client/proc/debug_variables,		/*allows us to -see- the variables of any instance in the game. +VAREDIT needed to modify*/
@@ -33,6 +35,8 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/cmd_admin_rejuvenate, // SPLURT EDIT
 	/client/proc/game_panel,			/*game panel, allows to change game-mode etc*/
 	/client/proc/mail_panel,			/*BLUEMOON ADD - панель управления почтой*/
+	/client/proc/spawn_liquid,			/*LIQUIDS ADD - spawn a liquid on admin's location*/
+	/client/proc/remove_liquid,			/*LIQUIDS ADD - remove liquids in radius*/
 	/client/proc/show_admin_ticket_stats, /*BLUEMOON ADD - панель статистики тикетов*/
 	/client/proc/check_ai_laws,			/*shows AI and borg laws*/
 	// /client/proc/ghost_pool_protection,	/*opens a menu for toggling ghost roles*/
@@ -51,21 +55,19 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/toggle_view_range,		/*changes how far we can see*/
 	/client/proc/getserverlogs,		/*for accessing server logs*/
 	/client/proc/getcurrentlogs,		/*for accessing server logs for the current round*/
+	/client/proc/log_viewer,		/*open log viewer*/
 	/client/proc/cmd_admin_subtle_message,	/*send a message to somebody as a 'voice in their head'*/
 	/client/proc/cmd_admin_delete,		/*delete an instance/object/mob/etc*/
 	/client/proc/cmd_admin_check_contents,	/*displays the contents of an instance*/
 	/client/proc/centcom_podlauncher,/*Open a window to launch a Supplypod and configure it or it's contents*/
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/access_news_network,	/*allows access of newscasters*/
-	/client/proc/jumptocoord,			/*we ghost and jump to a coordinate*/
+	/client/proc/admin_jump_to,			/*jump to interface*/
+	/client/proc/jumptoturf,			/*right-click jump to turf*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
 	/client/proc/fax_panel, /*send a paper to fax*/
 //	/client/proc/sendmob,				/*sends a mob somewhere*/ -Removed due to it needing two sorting procs to work, which were executed every time an admin right-clicked. ~Errorage
-	/client/proc/jumptoarea,
-	/client/proc/jumptokey,				/*allows us to jump to the location of a mob with a certain ckey*/
-	/client/proc/jumptomob,				/*allows us to jump to a specific mob*/
-	/client/proc/jumptoturf,			/*allows us to jump to a specific turf*/
 	/client/proc/admin_end_shift,		/*allows us to end the shift properly, also logs it*/
 	/client/proc/admin_call_shuttle,	/*allows us to call the emergency shuttle*/
 	/client/proc/admin_cancel_shuttle,	/*allows us to cancel the emergency shuttle, sending it back to centcom*/
@@ -84,6 +86,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/toggle_AI_interact, /*toggle admin ability to interact with machines as an AI*/
 	/datum/admins/proc/open_shuttlepanel, /* Opens shuttle manipulator UI */
 	/datum/admins/proc/station_traits_panel, /* Opens station traits UI */
+	/client/proc/cmd_admin_set_birthday_person, /* Set birthday person for the birthday station trait */
 	/client/proc/deadchat,
 	/client/proc/toggleprayers,
 	// /client/proc/toggle_prayer_sound,
@@ -104,8 +107,11 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/datum/admins/proc/display_tags,
 	/client/proc/cmd_admin_set_starlight,	//BLUEMOON ADD dynamic starlight color
 	/client/proc/cmd_admin_toggle_falloff,	//BLUEMOON ADD runtime falloff toggle
+	/client/proc/reload_director_config,	/*горячая перезагрузка config/director.json*/
+	/client/proc/director_simulate_verb,	/*оффлайн-прогон битов директора без ожидания реального времени*/
+	/client/proc/director_panel_verb,	/*TGUI-панель директора*/
 	)
-GLOBAL_LIST_INIT(admin_verbs_ban, list(/client/proc/unban_panel, /client/proc/DB_ban_panel, /client/proc/stickybanpanel))
+GLOBAL_LIST_INIT(admin_verbs_ban, list(/client/proc/DB_ban_panel, /client/proc/stickybanpanel))
 GLOBAL_PROTECT(admin_verbs_ban)
 GLOBAL_LIST_INIT(admin_verbs_sounds, list(/client/proc/play_local_sound, /client/proc/play_sound, /client/proc/manual_play_web_sound, /client/proc/set_round_end_sound))
 GLOBAL_PROTECT(admin_verbs_sounds)
@@ -144,7 +150,7 @@ GLOBAL_LIST_INIT(admin_verbs_fun, list(
 	/client/proc/bm_admin_reload_lobby_html,	//BLUEMOON LOBBY
 	))
 GLOBAL_PROTECT(admin_verbs_fun)
-GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character))
+GLOBAL_LIST_INIT(admin_verbs_spawn, list(/datum/admins/proc/spawn_atom, /datum/admins/proc/podspawn_atom, /datum/admins/proc/spawn_cargo, /datum/admins/proc/spawn_objasmob, /client/proc/respawn_character, /client/proc/spawn_panel_verb))
 GLOBAL_PROTECT(admin_verbs_spawn)
 GLOBAL_LIST_INIT(admin_verbs_sensitive, list(
 	/client/proc/investigate_show		/*various admintools for investigation. Such as a singulo grief-log*/
@@ -181,6 +187,9 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/restart_controller,
 	/client/proc/cmd_admin_list_open_jobs,
 	/client/proc/Debug2,
+	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -193,6 +202,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/test_movable_UI,
 	/client/proc/test_snap_UI,
 	/client/proc/debugNatureMapGenerator,
+	/client/proc/movement_probe_toggle,
 	/client/proc/check_bomb_impacts,
 	/proc/machine_upgrade,
 	/client/proc/populate_world,
@@ -213,6 +223,10 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/view_runtimes,
 	/client/proc/view_gc_failures,
 	/client/proc/pump_random_event,
+	/client/proc/tick_spikes_report,
+	/client/proc/tick_spikes_capture,
+	/client/proc/tick_spikes_simulate,
+	/client/proc/lag_switch_panel,
 	/client/proc/cmd_display_init_log,
 	/client/proc/cmd_display_overlay_log,
 	/client/proc/reload_configuration,
@@ -228,11 +242,20 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	#endif
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
+	/datum/admins/proc/atmos_active_report,
+	/datum/admins/proc/atmos_heat_toggle,
+	/datum/admins/proc/atmos_control_panel,
+	#ifndef TGS
+	/datum/admins/proc/atmos_benchmark,
+	#endif
 	// /client/proc/check_timer_sources,
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	#ifdef TESTING
+	/datum/admins/proc/machines_benchmark,
+	#endif
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, /proc/release))
 GLOBAL_PROTECT(admin_verbs_possess)
@@ -296,6 +319,9 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/callproc,
 	/client/proc/callproc_datum,
 	/client/proc/Debug2,
+	/client/proc/toggle_ntnet_debug,
+	/client/proc/set_parallax_profile,
+	/client/proc/show_parallax_state,
 	/client/proc/reload_admins,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/startSinglo, // tg removed this
@@ -456,9 +482,15 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	if(holder && mob)
 		if(mob.invisibility == INVISIBILITY_OBSERVER)
 			mob.invisibility = initial(mob.invisibility)
+			if(isliving(mob))
+				var/mob/living/L = mob
+				L.update_invisimin_data_huds(FALSE)
 			to_chat(mob, "<span class='boldannounce'>Invisimin off. Invisibility reset.</span>", confidential = TRUE)
 		else
 			mob.invisibility = INVISIBILITY_OBSERVER
+			if(isliving(mob))
+				var/mob/living/L = mob
+				L.update_invisimin_data_huds(TRUE)
 			to_chat(mob, "<span class='adminnotice'><b>Invisimin on. You are now as invisible as a ghost.</b></span>", confidential = TRUE)
 
 /client/proc/check_antagonists()
@@ -470,18 +502,6 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 		if(!isobserver(usr) && SSticker.HasRoundStarted())
 			message_admins("[key_name_admin(usr)] checked antagonists.")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Check Antagonists") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-
-/client/proc/unban_panel()
-	set name = "Unbanning Panel"
-	set category = "Admin"
-	if(!check_rights(R_BAN))
-		return
-	if(holder)
-		if(CONFIG_GET(flag/ban_legacy_system))
-			holder.unbanpanel()
-		else
-			holder.DB_ban_panel()
-	SSblackbox.record_feedback("tally", "admin_verb", 1, "Unban Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 // /client/proc/ban_panel()
 // 	set name = "Banning Panel"
@@ -497,6 +517,16 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 	if(holder)
 		holder.Game()
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Game Panel") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/client/proc/spawn_panel_verb()
+	set name = "Spawn Panel"
+	set category = "Admin.Game"
+	if(!check_rights(R_SPAWN))
+		return
+	if(!holder.spawn_panel_instance)
+		holder.spawn_panel_instance = new /datum/spawnpanel(mob)
+	holder.spawn_panel_instance.ui_interact(mob)
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Panel")
 
 // /client/proc/poll_panel()
 // 	set name = "Server Poll Management"
@@ -831,10 +861,44 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	holder.deactivate()
 
-	to_chat(src, "<span class='interface'>You are now a normal player.</span>")
+	if(!mentor_datum)
+		new /datum/mentors(ckey)
+	dementored = FALSE
+	add_mentor_verbs()
+	GLOB.mentors |= src
+	remove_verb(src, /client/proc/cmd_mentor_rementor)
+
+	if(prefs?.deadmin & DEADMIN_AUTODMENTOR)
+		to_chat(src, "<span class='interface'>You are now a normal player.</span>")
+	else
+		if(!mentor_datum)
+			new /datum/mentors(ckey)
+		dementored = FALSE
+		add_mentor_verbs()
+		GLOB.mentors |= src
+		remove_verb(src, /client/proc/cmd_mentor_rementor)
+		to_chat(src, "<span class='interface'>You are now a normal player.</span>")
+		to_chat(src, "<span class='mentornotice'>Вы стали ментором. Менторские уведомления включены.</span>", confidential = TRUE)
+
 	log_admin("[src] deadminned themselves.")
 	message_admins("[src] deadminned themselves.")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Deadmin")
+
+/client/proc/toggle_deadmin_autodementor()
+	set name = "Toggle Deadmin Autodementor"
+	set category = "Admin"
+	set desc = "Toggle auto-mentor on deadmin. When ON, deadmin does not make you a mentor."
+
+	if(!holder)
+		return
+
+	prefs?.deadmin ^= DEADMIN_AUTODMENTOR
+	prefs?.save_preferences()
+
+	if(prefs?.deadmin & DEADMIN_AUTODMENTOR)
+		to_chat(src, "<span class='notice'>Deadmin Autodementor: ON — при деадмине вы НЕ станете активным ментором.</span>")
+	else
+		to_chat(src, "<span class='notice'>Deadmin Autodementor: OFF — при деадмине вы автоматически станете ментором.</span>")
 
 /client/proc/readmin()
 	set name = "Readmin"
@@ -855,6 +919,12 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	if (!holder)
 		return //This can happen if an admin attempts to vv themself into somebody elses's deadmin datum by getting ref via brute force
+
+	GLOB.mentors -= src
+	remove_verb(src, /client/proc/cmd_mentor_rementor)
+
+	GLOB.mentors -= src
+	remove_verb(src, /client/proc/cmd_mentor_rementor)
 
 	to_chat(src, "<span class='interface'>You are now an admin.</span>", confidential = TRUE)
 	message_admins("[src] re-adminned themselves.")

@@ -1,3 +1,15 @@
+/// Иконка для TGUI без [/proc/getFlatIcon] — у гениталий бывают глубокие цепочки оверлеев; рекурсия в getFlatIcon даёт переполнение стека в libbyond (краш BYOND 516 на Linux).
+/proc/safe_genital_tgui_icon(obj/item/organ/genital/G)
+	if(!istype(G) || !G.icon)
+		return null
+	var/st = G.icon_state
+	var/list/states = icon_states(G.icon)
+	if(!length(states))
+		return null
+	if(!(st in states))
+		st = ("" in states) ? "" : states[1]
+	return icon(G.icon, st, SOUTH)
+
 /// Attempts to open the tgui menu
 /mob/living/carbon/verb/genital_menu()
 	set name = "Genitals Menu"
@@ -12,7 +24,7 @@
 	if(!usr.mind.genitals_menu_holder)
 		usr.mind.genitals_menu_holder= new(usr.mind)
 
-	usr.mind.genitals_menu_holder.target = src
+	usr.mind.genitals_menu_holder.set_target(src)
 	usr.mind.genitals_menu_holder.ui_interact(usr)
 
 /datum/mind
@@ -24,6 +36,30 @@
 
 /datum/genitals_menu
 	var/mob/living/carbon/target
+
+/// Держатель живёт на майнде весь раунд, поэтому голое присвоение target
+/// вечно держало удалённого моба (прод: warnfail по human). Сеттер снимает
+/// цель по её qdel, а ui_close отпускает при закрытии меню.
+/datum/genitals_menu/proc/set_target(mob/living/carbon/new_target)
+	if(target == new_target)
+		return
+	if(target)
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
+	target = new_target
+	if(target)
+		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_deleted))
+
+/datum/genitals_menu/proc/on_target_deleted(datum/source)
+	SIGNAL_HANDLER
+	target = null
+
+/datum/genitals_menu/ui_close(mob/user)
+	. = ..()
+	set_target(null)
+
+/datum/genitals_menu/Destroy()
+	set_target(null)
+	return ..()
 
 /datum/genitals_menu/ui_state(mob/user)
 	return GLOB.conscious_state
@@ -49,7 +85,8 @@
 			continue
 
 		var/list/genital_entry = list()
-		genital_entry["img"] = icon2base64(getFlatIcon(genital, no_anim=TRUE))
+		var/icon/preview_icon = safe_genital_tgui_icon(genital)
+		genital_entry["img"] = preview_icon ? icon2base64(preview_icon) : ""
 		genital_entry["name"] = "[capitalize(genital.name)]" //Prevents code from adding a prefix
 		genital_entry["key"] = REF(genital) //The key is the reference to the object
 

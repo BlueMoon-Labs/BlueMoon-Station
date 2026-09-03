@@ -5,7 +5,7 @@
 
 /obj/structure/mecha_wreckage
 	name = "exosuit wreckage"
-	desc = "Remains of some unfortunate mecha. Completely irreparable, but perhaps something can be salvaged."
+	desc = "Останки какого-то несчастного меха. Полностью непригодны к ремонту, но, возможно, что-то можно спасти."
 	icon = 'icons/mecha/mecha.dmi'
 	density = TRUE
 	anchored = FALSE
@@ -132,7 +132,7 @@
 /obj/structure/mecha_wreckage/mauler
 	name = "\improper Mauler wreckage"
 	icon_state = "mauler-broken"
-	desc = "The syndicate won't be very happy about this..."
+	desc = "Синдикат будет не очень рад этому..."
 
 /obj/structure/mecha_wreckage/seraph
 	name = "\improper Seraph wreckage"
@@ -177,7 +177,7 @@
 /obj/structure/mecha_wreckage/honker
 	name = "\improper H.O.N.K wreckage"
 	icon_state = "honker-broken"
-	desc = "All is right in the universe."
+	desc = "Во Вселенной всё хорошо."
 	parts = list(
 				/obj/item/mecha_parts/part/honker_torso,
 				/obj/item/mecha_parts/part/honker_head,

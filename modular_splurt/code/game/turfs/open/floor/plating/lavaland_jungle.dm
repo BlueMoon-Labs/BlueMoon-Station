@@ -3,24 +3,25 @@
 	desc = "You can't tell if this is real grass or just cheap plastic imitation."
 	icon = 'modular_splurt/icons/turf/smooth/_smooth.dmi'
 	icon_state = "grass"
+	base_icon_state = "grass"
 	flags_1 = NONE
 	bullet_bounce_sound = null
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = null
+	// Раньше список ехал через smoothing_groups, а Initialize() перекладывал его в
+	// canSmoothWith. Переменная smoothing_groups при этом стояла на каждом атоме мира ради
+	// трёх типов турфов; список задаётся прямо здесь, результат тот же.
+	canSmoothWith = list(/turf/closed/indestructible)
 	layer = 2.1
 	attachment_holes = FALSE
-	smoothing_groups = list(/turf/closed/indestructible)
 	var/smooth_icon = 'modular_splurt/icons/turf/smooth/grass.dmi'
 	var/smooth_offset = 8
 
 /turf/open/floor/plating/smooth/Initialize()
-	if(!canSmoothWith)
-		canSmoothWith = smoothing_groups
 	var/matrix/M = new
 	M.Translate(-smooth_offset, -smooth_offset)
 	transform = M
@@ -31,26 +32,28 @@
 	name = "grass patch"
 	desc = "Lush jungle grass."
 	icon_state = "grass"
+	base_icon_state = "grass"
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	layer = 2.1
 	smooth_icon = 'modular_splurt/icons/turf/smooth/grass.dmi'
-	smoothing_groups = list(/turf/open/floor/plating/smooth/grass, /turf/closed/indestructible)
+	canSmoothWith = list(/turf/open/floor/plating/smooth/grass, /turf/closed/indestructible)
 	smooth_offset = 8
 
 /turf/open/floor/plating/smooth/dirt
 	name = "dirt"
 	desc = "Upon closer examination, it's still dirt."
 	icon_state = "dirt"
+	base_icon_state = "dirt"
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	layer = 2.09
 	smooth_icon = 'modular_splurt/icons/turf/smooth/dirt.dmi'
-	smoothing_groups = list(/turf/open/floor/plating/smooth/dirt, /turf/closed/indestructible)
+	canSmoothWith = list(/turf/open/floor/plating/smooth/dirt, /turf/closed/indestructible)
 	smooth_offset = 6
 
 /turf/open/floor/plating/smooth/grass/lavaland_jungle
@@ -69,6 +72,7 @@
 	baseturfs = /turf/open/lava/smooth/lava_land_surface
 	icon = 'modular_splurt/icons/turf/water.dmi'
 	icon_state = "shallow"
+	base_icon_state = "shallow"
 	color = "#648363"
 	slowdown = 3
 

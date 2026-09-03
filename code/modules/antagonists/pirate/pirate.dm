@@ -60,6 +60,9 @@
 	var/obj/machinery/computer/piratepad_control/cargo_hold
 	explanation_text = "Добудьте ценные ресурсы и сложите их в обозначенной области."
 	var/target_value = 75000
+	///Собственная копия набранного. Терминал может исчезнуть (админ, шаттл, взрыв), и прогресс
+	///команды не должен уходить вместе с ним - в отчёте конца раунда была пустая сумма.
+	var/stored_value = 0
 
 /datum/objective/loot/update_explanation_text()
 	if(cargo_hold)
@@ -80,7 +83,9 @@
 	return loot_texts.Join(", ")
 
 /datum/objective/loot/proc/get_loot_value()
-	return cargo_hold.points
+	if(cargo_hold)
+		stored_value = max(stored_value, cargo_hold.total_collected)
+	return stored_value
 
 /datum/objective/loot/check_completion()
 	return ..() || get_loot_value() >= target_value

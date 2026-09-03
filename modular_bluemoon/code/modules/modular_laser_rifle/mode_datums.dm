@@ -31,17 +31,17 @@
 	applied_gun.update_ammo_types()
 	applied_gun.charge_sections = charge_sections
 	applied_gun.fire_delay = shot_delay
+	applied_gun.burst_shot_delay = shot_delay
 	var/new_icon_state = "[applied_gun.base_icon_state]_[weapon_icon_state]"
 	applied_gun.icon_state = new_icon_state
 	applied_gun.item_state = new_icon_state
 	applied_gun.update_appearance()
 	applied_gun.chat_color = gun_runetext_color
-	applied_gun.chat_color_darkened = gun_runetext_color
 
 /// Stuff applied to the passed gun when the weapon mode is given to the gun
 /datum/laser_weapon_mode/proc/apply_to_weapon(obj/item/gun/energy/applied_gun)
 	if(standard_firing_mode)
-		applied_gun.burst_size = 3
+		applied_gun.burst_size = (applied_gun.fire_select == SELECT_BURST_SHOT) ? initial(applied_gun.burst_size) : 1
 		autofire_component = applied_gun.AddComponent(/datum/component/automatic_fire, shot_delay)
 	else
 		applied_gun.fire_select = SELECT_SEMI_AUTOMATIC
@@ -158,7 +158,7 @@
 /datum/laser_weapon_mode/sword/apply_to_weapon(obj/item/gun/energy/modular_laser_rifle/applied_gun)
 	..()
 	playsound(applied_gun, 'sound/items/unsheath.ogg', 25, TRUE)
-	applied_gun.force = 20
+	applied_gun.force = 25
 	applied_gun.sharpness = SHARP_EDGED
 	applied_gun.wound_bonus = 5
 	applied_gun.disabled_for_other_reasons = TRUE

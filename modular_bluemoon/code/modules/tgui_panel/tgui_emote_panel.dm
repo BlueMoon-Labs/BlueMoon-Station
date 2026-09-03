@@ -146,7 +146,7 @@
 						to_chat(client, span_warning("Эмоция [emote_key] не существует!"))
 						return
 
-					var/message_override = tgui_input_text(client.mob, "Какой кастомный текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", emote_key, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE)
+					var/message_override = strip_control_chars(tgui_input_text(client.mob, "Какой кастомный текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", emote_key, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
 					if (!message_override)
 						to_chat(client, span_warning("Текст \"[message_override]\" не подходит!"))
 						return
@@ -159,7 +159,7 @@
 					)
 
 				if ("*me")
-					var/message = tgui_input_text(client.mob, "Какой текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE)
+					var/message = strip_control_chars(tgui_input_text(client.mob, "Какой текст будет у эмоции? (максимум - [TGUI_PANEL_MAX_EMOTE_LENGTH] символов)", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
 					if (!message)
 						to_chat(client, span_warning("Текст \"[message]\" не подходит!"))
 						return
@@ -170,7 +170,7 @@
 						"message" = message,
 					)
 
-			var/emote_name = tgui_input_text(client.mob, "Какое название эмоции будет в панели?", "Название эмоции", suggested_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE)
+			var/emote_name = strip_control_chars(tgui_input_text(client.mob, "Какое название эмоции будет в панели?", "Название эмоции", suggested_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE))
 			if (!emote_name)
 				to_chat(client, span_warning("Название \"[emote_name]\" не подходит!"))
 				return
@@ -235,7 +235,7 @@
 
 
 /datum/tgui_panel/proc/emotes_rename(emote_name)
-	var/new_emote_name = tgui_input_text(client.mob, "Выберите новое название эмоции [emote_name]:", "Название эмоции", emote_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE)
+	var/new_emote_name = strip_control_chars(tgui_input_text(client.mob, "Выберите новое название эмоции [emote_name]:", "Название эмоции", emote_name, TGUI_PANEL_MAX_EMOTE_NAME_LENGTH, FALSE, TRUE))
 	if (!new_emote_name)
 		return FALSE
 	if (new_emote_name == emote_name)
@@ -270,7 +270,7 @@
 		to_chat(client, span_warning("Вы можете добавить текст только обычным эмоциям!"))
 		return FALSE
 
-	var/message_override = tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE)
+	var/message_override = strip_control_chars(tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", "", TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
 	if (!message_override)
 		return FALSE
 	client.prefs.custom_emote_panel[emote_name]["type"] = TGUI_PANEL_EMOTE_TYPE_CUSTOM
@@ -293,9 +293,9 @@
 		to_chat(client, span_warning("У этой эмоции ещё нет кастомного текста!"))
 		return FALSE
 
-	var/message_override = tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", old_message, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE)
-	if (!message_override)
-		return TRUE
+	var/message_override = strip_control_chars(tgui_input_text(client.mob, "Выберите новый кастомный текст для эмоции [emote_name]:", "Кастомный текст", old_message, TGUI_PANEL_MAX_EMOTE_LENGTH, TRUE, TRUE))
+	if (!message_override) // отмена или текст из одних управляющих символов - ничего не меняем
+		return FALSE
 	if (emote_type == TGUI_PANEL_EMOTE_TYPE_CUSTOM)
 		client.prefs.custom_emote_panel[emote_name]["message_override"] = message_override
 	else
@@ -306,6 +306,31 @@
 /datum/tgui_panel/proc/emotes_send_list()
 	var/list/payload = client.prefs.custom_emote_panel
 	window.send_message("emotes/setList", payload)
+
+/// Rebuilds a custom_emote_panel list with control characters stripped from every
+/// emote name (the assoc key) and stored message. Entries whose name becomes empty
+/// after cleaning, or collide with an already-cleaned name, are dropped. This both
+/// repairs legacy emotes whose control-character names could not round-trip through
+/// TGUI (and were therefore impossible to rename or delete) and guards against any
+/// such name re-entering the saved data. Always returns a list.
+/proc/sanitize_custom_emote_panel(list/panel)
+	if(!islist(panel))
+		return list()
+	var/list/cleaned = list()
+	for(var/emote_name in panel)
+		var/clean_name = strip_control_chars(emote_name)
+		if(!length(clean_name))
+			continue // name was entirely control characters - unrecoverable, drop it
+		if(clean_name in cleaned)
+			continue // a cleaned name already claimed this slot - drop the duplicate
+		var/list/emote = panel[emote_name]
+		if(islist(emote))
+			if(emote["message"])
+				emote["message"] = strip_control_chars(emote["message"])
+			if(emote["message_override"])
+				emote["message_override"] = strip_control_chars(emote["message_override"])
+		cleaned[clean_name] = emote
+	return cleaned
 
 #undef TGUI_PANEL_MAX_EMOTES
 #undef TGUI_PANEL_MAX_EMOTE_LENGTH

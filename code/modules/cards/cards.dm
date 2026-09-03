@@ -20,6 +20,10 @@
 	playsound(src, 'sound/items/cardshuffle.ogg', 50, 1)
 	return BRUTELOSS
 
+/obj/item/toy/cards/Destroy()
+	parentdeck = null
+	return ..()
+
 /obj/item/toy/cards/proc/apply_card_vars(obj/item/toy/cards/sourceobj) // Applies variables for supporting multiple types of card deck
 	. = TRUE
 	if(!istype(sourceobj))

@@ -6,3 +6,5 @@
 			с такими проще простого..."
 	item = /obj/item/fuel_rod/material/telecrystal
 	cost = 7
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
+

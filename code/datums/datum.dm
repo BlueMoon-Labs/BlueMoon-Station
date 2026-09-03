@@ -58,14 +58,12 @@
 	var/list/cooldowns
 	var/tmp/unique_datum_id = null
 
-#ifdef REFERENCE_TRACKING
-	var/running_find_references
+	/// Метка последнего прохода рефтрекера по этому датуму (защита от повторного обхода).
 	var/last_find_references = 0
 	#ifdef REFERENCE_TRACKING_DEBUG
 	///Stores info about where refs are found, used for sanity checks and testing
 	var/list/found_refs
 	#endif
-#endif
 
 #ifdef DATUMVAR_DEBUGGING_MODE
 	var/list/cached_vars
@@ -104,6 +102,17 @@
  */
 /datum/proc/Destroy(force=FALSE, ...)
 	SHOULD_CALL_PARENT(TRUE)
+	#ifdef DATUM_CENSUS
+	// Атомы сюда доходят наравне со всеми (Destroy() у них общий), и отсеивать их здесь
+	// нечем - istype на каждом из полутора миллионов qdel стоил бы дороже самого счётчика.
+	// Отсев делает отчёт: он перебирает ключи datum_census_created, куда атом не попадает
+	// вовсе, см. code/datums/datum_census.dm.
+	var/list/census_destroyed = datum_census_destroyed
+	if(!census_destroyed)
+		census_destroyed = list()
+		datum_census_destroyed = census_destroyed
+	census_destroyed[type] += 1
+	#endif
 	tag = null
 	datum_flags &= ~DF_USE_TAG //In case something tries to REF us
 	weak_reference = null	//ensure prompt GCing of weakref.
@@ -116,10 +125,8 @@
 			continue
 		qdel(timer)
 
-	#ifdef REFERENCE_TRACKING
 	#ifdef REFERENCE_TRACKING_DEBUG
 	found_refs = null
-	#endif
 	#endif
 
 	//BEGIN: ECS SHIT

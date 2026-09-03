@@ -132,9 +132,9 @@
 /obj/machinery/light_switch/power_change()
 	if(!otherarea)
 		if(powered(LIGHT))
-			machine_stat &= ~NOPOWER
+			set_machine_stat(machine_stat & ~NOPOWER)
 		else
-			machine_stat |= NOPOWER
+			set_machine_stat(machine_stat | NOPOWER)
 	update_appearance()
 
 /obj/machinery/light_switch/emp_act(severity)

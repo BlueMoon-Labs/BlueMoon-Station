@@ -5,7 +5,7 @@
  */
 
 import { useSelector } from 'common/redux';
-import { useLocalState } from 'tgui/backend';
+import { useState } from 'react';
 import { Button, Section, Stack } from 'tgui/components';
 import { KitchenSink, useDebug } from 'tgui/debug';
 import { IS_DEVELOPMENT } from 'tgui/env';
@@ -18,19 +18,17 @@ import { selectChat } from './chat/selectors';
 import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
-import { PingIndicator } from './ping';
 import { SettingsPanel, useSettings } from './settings';
 
-export const Panel = (props, context) => {
-  const emotes = useEmotes(context);
-  const audio = useAudio(context);
-  const settings = useSettings(context);
-  const game = useGame(context);
-  const chat = useSelector(context, selectChat);
-  const [searchOpen, setSearchOpen] = useLocalState(
-    context, 'chatSearchOpen', false);
+export const Panel = (props) => {
+  const emotes = useEmotes();
+  const audio = useAudio();
+  const settings = useSettings();
+  const game = useGame();
+  const chat = useSelector(selectChat);
+  const [searchOpen, setSearchOpen] = useState(false);
   if (IS_DEVELOPMENT) {
-    const debug = useDebug(context);
+    const debug = useDebug();
     if (debug.kitchenSink) {
       return (
         <KitchenSink panel />
@@ -46,11 +44,8 @@ export const Panel = (props, context) => {
               <Stack.Item
                 grow
                 overflowX="auto"
-                style={{ 'min-width': 0 }}>
+                style={{ minWidth: 0 }}>
                 <ChatTabs />
-              </Stack.Item>
-              <Stack.Item shrink={0}>
-                <PingIndicator />
               </Stack.Item>
               <Stack.Item shrink={0}>
                 <Button

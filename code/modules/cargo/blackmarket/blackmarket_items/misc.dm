@@ -13,7 +13,7 @@
 /datum/blackmarket_item/misc/clear_pda
 	name = "Clear PDA"
 	desc = "Show off your style with this limited edition clear PDA!."
-	item = /obj/item/pda/clear
+	item = /obj/item/modular_computer/pda/clear
 	price_min = 250
 	price_max = 600
 	stock_max = 4

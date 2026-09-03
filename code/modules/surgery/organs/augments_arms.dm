@@ -36,7 +36,8 @@
 
 	// Убираем возможность класть предметы на стол и в инвентарь
 	I.item_flags |= ABSTRACT
-	w_class = WEIGHT_CLASS_HUGE
+	I.w_class = WEIGHT_CLASS_HUGE
+	ADD_TRAIT(I, TRAIT_NODROP, IMPLANT_NODROP)
 
 	items_list += I
 	// ayy only dropped signal for performance, we can't possibly have shitcode that doesn't call it when removing items from a mob, right?
@@ -44,15 +45,18 @@
 	RegisterSignal(I, COMSIG_ITEM_DROPPED, PROC_REF(magnetic_catch))
 
 /obj/item/organ/cyberimp/arm/proc/magnetic_catch(datum/source, mob/user)
+	SIGNAL_HANDLER
 	. = COMPONENT_DROPPED_RELOCATION
 	var/obj/item/I = source			//if someone is misusing the signal, just runtime
 	if(I in items_list)
 		if(I in contents)		//already in us somehow? i probably shouldn't catch this so it's easier to spot bugs but eh..
 			return
-		I.visible_message("<span class='notice'>[I] snaps back into [src]!</span>")
-		I.forceMove(src)
+		I.visible_message(span_notice("[I] snaps back into [src]!"))
 		if(I == holder)
-			holder = null
+			Retract()
+		else
+			I.forceMove(src)
+			RetractPLaySound()
 
 /obj/item/organ/cyberimp/arm/proc/SetSlotFromZone()
 	switch(zone)
@@ -86,9 +90,9 @@
 	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
 	update_icon()
 
-/obj/item/organ/cyberimp/arm/Remove(special = FALSE)
+/obj/item/organ/cyberimp/arm/deactivate(removing)
+	. = ..()
 	Retract()
-	..()
 
 /obj/item/organ/cyberimp/arm/emp_act(severity)
 	. = ..()
@@ -99,21 +103,19 @@
 		// give the owner an idea about why his implant is glitching
 		Retract()
 
-/obj/item/organ/cyberimp/arm/proc/Retract()
+/obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
 	if(!holder || (holder in src))
 		return
 
-	owner.visible_message("<span class='notice'>[owner] retracts [holder] back into [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='notice'>[holder] snaps back into your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>",
-		"<span class='italics'>You hear a short mechanical noise.</span>")
-
 	owner.transferItemToLoc(holder, src, TRUE)
 	holder = null
-	RetractPLaySound()
+	if(!silent)
+		RetractPLaySound()
+	return TRUE
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/RetractPLaySound()
-	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/proc/Extend(obj/item/item)
 	if(!(item in src))
@@ -142,21 +144,14 @@
 	// Activate the hand that now holds our item.
 	owner.swap_hand(result)//... or the 1st hand if the index gets lost somehow
 
-	owner.visible_message(span_notice("[owner] extends [holder] from [owner.ru_ego()] [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
-		span_notice("You extend [holder] from your [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm."),
-		span_notice("You hear a short mechanical noise."))
 	ExtendPlaySound(item)
 	return TRUE
 
 // If it is necessary to process sounds in a special way
 /obj/item/organ/cyberimp/arm/proc/ExtendPlaySound(obj/item/I)
-	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 50, 1)
+	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/ui_action_click(mob/user, actiontype)
-	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
-		to_chat(owner, "<span class='warning'>The implant doesn't respond. It seems to be broken...</span>")
-		return
-
 	if(!holder || (holder in src))
 		holder = null
 		if(contents.len == 1)
@@ -164,13 +159,25 @@
 		else
 			var/list/choice_list = list()
 			for(var/obj/item/I in items_list)
-				choice_list[I] = image(I)
+				var/image/choice_icon = image(I)
+				choice_icon.pixel_x = I.base_pixel_x
+				choice_icon.pixel_y = I.base_pixel_y
+				choice_list[I] = choice_icon
 			var/obj/item/choice = show_radial_menu(owner, owner, choice_list)
 			if(owner && owner == usr && owner.stat != DEAD && (src in owner.internal_organs) && !holder && (choice in contents))
 				// This monster sanity check is a nice example of how bad input is.
 				Extend(choice)
 	else
 		Retract()
+
+/obj/item/organ/cyberimp/arm/activate_allowed(datum/action/action, mob/user, silent)
+	. = ..()
+	if(!.)
+		return
+	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
+		if(!silent)
+			to_chat(owner, span_warning("The [src] doesn't respond. It seems to be broken..."))
+		return FALSE
 
 /obj/item/organ/cyberimp/arm/medibeam
 	name = "integrated medical beamgun"
@@ -184,8 +191,18 @@
 /obj/item/organ/cyberimp/arm/toolset
 	name = "integrated toolset implant"
 	desc = "A stripped-down version of the engineering cyborg toolset, designed to be installed on subject's arm. Contains all necessary tools."
-	contents = newlist(/obj/item/screwdriver/cyborg, /obj/item/wrench/cyborg, /obj/item/weldingtool/largetank/cyborg,
-		/obj/item/crowbar/cyborg, /obj/item/wirecutters/cyborg, /obj/item/multitool/cyborg)
+	contents = newlist(/obj/item/screwdriver/cyborg,
+						/obj/item/crowbar/cyborg,
+						/obj/item/wrench/cyborg,
+						/obj/item/wirecutters/cyborg,
+						/obj/item/weldingtool/largetank/cyborg,
+						/obj/item/multitool/cyborg)
+
+/obj/item/organ/cyberimp/arm/toolset/Retract(silent)
+	var/obj/item/weldingtool/weldingtool = holder
+	. = ..()
+	if(. && istype(weldingtool) && weldingtool.welding)
+		weldingtool.switched_off(owner)
 
 /obj/item/organ/cyberimp/arm/toolset/emag_act()
 	. = ..()
@@ -194,13 +211,20 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/surgery
 	name = "surgical toolset implant"
 	desc = "A set of surgical tools hidden behind a concealed panel on the user's arm."
-	contents = newlist(/obj/item/surgical_drapes, /obj/item/scalpel/augment, /obj/item/hemostat/augment, /obj/item/retractor/augment, /obj/item/cautery/augment, /obj/item/circular_saw/augment, /obj/item/blood_filter/augment, /obj/item/surgicaldrill/augment)
+	contents = newlist(/obj/item/surgical_drapes,
+						/obj/item/scalpel/augment,
+						/obj/item/hemostat/augment,
+						/obj/item/retractor/augment,
+						/obj/item/circular_saw/augment,
+						/obj/item/cautery/augment,
+						/obj/item/blood_filter/augment,
+						/obj/item/surgicaldrill/augment)
 
 /obj/item/organ/cyberimp/arm/surgery/emag_act()
 	. = ..()
@@ -209,7 +233,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/janitor
@@ -224,8 +248,8 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated deluxe cleaning supplies!</span>")
-	items_list += new /obj/item/soap/syndie(src) //We add not replace.
-	items_list += new /obj/item/reagent_containers/spray/cyborg_lube(src)
+	add_item(new /obj/item/soap/syndie) //We add not replace.
+	add_item(new /obj/item/reagent_containers/spray/cyborg_lube)
 	return TRUE
 
 /obj/item/organ/cyberimp/arm/service
@@ -240,7 +264,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s integrated real knife!</span>")
-	items_list += new /obj/item/kitchen/knife/combat/cyborg(src)
+	add_item(new /obj/item/kitchen/knife/combat/cyborg)
 	return TRUE
 
 ///////////////
@@ -326,9 +350,13 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(usr, "<span class='notice'>You unlock [src]'s high-power flash!</span>")
-	var/obj/item/assembly/flash/armimplant/F = new(src)
-	items_list += F
+	var/obj/item/assembly/flash/armimplant/F = new
+	add_item(F)
 	F.I = src
+
+/obj/item/organ/cyberimp/arm/shield/sec_level
+	name = "Corporate arm-mounted riot shield"
+	active_security_level = RIOT_SHIELD_SEC_LEVEL
 
 /////////////////
 
@@ -340,13 +368,13 @@
 
 /obj/item/organ/cyberimp/arm/power_cord
 	name = "power cord implant"
-	desc = "An internal power cord hooked up to a battery. Useful if you run on volts."
+	desc = "Внутренний зарядный кабель, подсоединённый к аккумуляторной батарее. Полезен, если вы \"питаетесь\" вольтами."
 	contents = newlist(/obj/item/apc_powercord)
 	zone = "l_arm"
 
 /obj/item/apc_powercord
 	name = "power cord"
-	desc = "An internal power cord hooked up to a battery. Useful if you run on electricity. Not so much otherwise."
+	desc = "Внутренний зарядный кабель, подсоединённый к аккумуляторной батарее. Полезен, если вы работаете от тока, в противном случае – не слишком."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "wire1"
 	var/in_use = FALSE	//No stacking doafters
@@ -356,15 +384,15 @@
 /obj/item/apc_powercord/examine(user)
 	. = ..()
 	if(in_use)
-		. += span_info("It's already connected to something")
+		. += span_info("К чему-то подсоединено!")
 
 	if(!ishuman(user))
 		return
 	var/mob/living/carbon/human/human_user = user
 
 	if(loc == human_user && isrobotic(human_user) && HAS_TRAIT(human_user, TRAIT_BLUEMOON_POWERSHARING))
-		. += span_info("Powersharing capabilities are currently <b>[power_sharing_mod ? "ON" : "OFF"]</b>, you can toggle them by <b>using in hand</b> your power cord")
-		. += span_green("\n You currently have <b>[human_user.nutrition]</b> charge units or roughly <b>[human_user.nutrition * 6]W</b> left")
+		. += span_info("Режим передачи энергии <b>[power_sharing_mod ? "включён" : "выключен"]</b>, вы можете переключить его, <b>использовав в руке</b> свой зарядный кабель.")
+		. += span_green("\n У вас в текущий момент <b>[human_user.nutrition]</b> юнитов заряда или приблизительно <b>[human_user.nutrition * 6]W</b> мощности остатка.")
 
 /obj/item/apc_powercord/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	user.DelayNextAction(CLICK_CD_MELEE)
@@ -374,17 +402,17 @@
 	var/mob/living/carbon/human/H = user
 
 	if(in_use)
-		to_chat(H, "<span class='warning'>[src] is already connected to something!</span>")
+		to_chat(H, span_warning("[src] уже подключили к чему-то!"))
 		return
 
 	var/obj/item/organ/stomach/ipc/cell = locate(/obj/item/organ/stomach/ipc) in H.internal_organs
 	if(!cell)
-		to_chat(H, "<span class='warning'>Your power cell is missing!</span>")
+		to_chat(H, span_warning("У вас отсутствует аккумуляторная батарея!"))
 		return
 
 	if(power_sharing_mod)
 		if(H.nutrition <= NUTRITION_LEVEL_STARVING)
-			to_chat(user, "<span class='warning'>You have too low energy level to share!</span>")
+			to_chat(user, span_warning("У вас слишком малый заряд для передачи!"))
 			return
 
 		if(istype(target, /obj/machinery/power/apc))
@@ -404,21 +432,21 @@
 		else if(istype(target, /mob/living/carbon/human))
 			var/mob/living/carbon/human/comrade = target
 			if(comrade == H)
-				to_chat(H, span_warning("You can't charge yourself!"))
+				to_chat(H, span_warning("Вы не можете заряжать самого себя!"))
 				return
 			if(!isrobotic(comrade))
-				to_chat(H, span_warning("[target] is organic! Boowomp..."))
+				to_chat(H, span_warning("[target] – органик! Увы..."))
 				return
 			var/obj/item/apc_powercord/c_cord = locate(/obj/item/apc_powercord) in comrade.held_items
 			if(!c_cord)
-				to_chat(H, span_warning("Ask [comrade] to extract [comrade.p_their()] power cord!"))
+				to_chat(H, span_warning("Попросите [comrade] извлечь [comrade.ru_ego()] кабель питания!"))
 				return
 			var/obj/item/organ/stomach/ipc/c_cell = locate(/obj/item/organ/stomach/ipc) in comrade.internal_organs
 			if(!c_cell)
-				to_chat(H, span_warning("[comrade] lacks power cell!"))
+				to_chat(H, span_warning("У [comrade] нет аккумуляторной батареи!"))
 				return
 			if(comrade.nutrition >= NUTRITION_LEVEL_WELL_FED)
-				to_chat(H, span_warning("[comrade] is already charged!"))
+				to_chat(H, span_warning("[comrade] уже заряжен[comrade.ru_a()]!"))
 				return
 			playsound(src, 'sound/misc/menu/ui_select1.ogg', 30, 1, -1)
 			synth_powershare_loop(comrade, H)
@@ -426,21 +454,21 @@
 		else if(istype(target, /mob/living/silicon/robot))
 			var/mob/living/silicon/robot/borgy = target
 			if(!borgy.cell)
-				to_chat(H, span_warning("[borgy] lacks power cell!"))
+				to_chat(H, span_warning("У [borgy] нет аккумуляторной батареи!"))
 				return
 			if(borgy.cell.charge >= borgy.cell.maxcharge - 50)
-				to_chat(H, span_warning("[borgy] is already charged!"))
+				to_chat(H, span_warning("[borgy] имеет полный заряд!"))
 				return
 			in_use = TRUE
 			playsound(src, 'sound/misc/menu/ui_select1.ogg', 30, 1, -1)
 			cyborg_powershare_loop(borgy, H)
 
-		to_chat(H, span_warning("You can't charge [target]!"))
+		to_chat(H, span_warning("Вы не можете зарядить [target]!"))
 		return ..()
 
 	else
 		if(H.nutrition >= NUTRITION_LEVEL_WELL_FED)
-			to_chat(user, "<span class='warning'>You are already fully charged!</span>")
+			to_chat(user, span_warning("Вы полностью заряжены!"))
 			return
 
 		if(istype(target, /obj/machinery/power/apc))
@@ -457,7 +485,7 @@
 				cell_powerdraw_loop(C, H)
 				return
 
-		to_chat(user, "<span class='warning'>There is no charge to draw from [target].</span>")
+		to_chat(user, span_warning("Нет заряда, который можно взять от [target]."))
 		return ..()
 
 /obj/item/apc_powercord/attack_self(mob/user)
@@ -473,151 +501,152 @@
 	to_chat(H, span_notice("Раздача энергии [power_sharing_mod ? "включена" : "выключена"]."))
 
 /obj/item/apc_powercord/proc/apc_powerdraw_loop(obj/machinery/power/apc/A, mob/living/carbon/human/H)
-	H.visible_message("<span class='notice'>[H] inserts a power connector into [A].</span>", "<span class='notice'>You begin to draw power from [A].</span>")
+	H.visible_message(span_notice("[H] подключает разъём питания к [A]."), span_notice("Вы начинаете забирать энергию из [A]."))
 	while(do_after(H, 10, target = A))
 		if(loc != H)
-			to_chat(H, "<span class='warning'>You must keep your connector out while charging!</span>")
+			to_chat(H, span_warning("Чтобы зарядиться, держите разъём питания снаружи!"))
 			break
 		if(A.cell.charge == 0)
-			to_chat(H, "<span class='warning'>[A] doesn't have enough charge to spare.</span>")
+			to_chat(H, span_warning("У [A] недостаточно заряда, чтобы поделиться."))
 			break
 		A.charging = 1
 		if(A.cell.charge >= 500)
 			do_sparks(1, FALSE, A)
 			H.adjust_nutrition(50)
 			A.cell.use(300)
-			to_chat(H, "<span class='notice'>You siphon off some of the stored charge for your own use.</span>")
+			to_chat(H, span_notice("Вы забираете часть накопленного заряда для себя."))
 		else
 			H.adjust_nutrition(A.cell.charge/6)
 			A.cell.use(A.cell.charge)
-			to_chat(H, "<span class='notice'>You siphon off as much as [A] can spare.</span>")
+			to_chat(H, span_notice("Вы забираете столько энергии, сколько [A] может отдать."))
 			break
 		if(H.nutrition > NUTRITION_LEVEL_WELL_FED)
-			to_chat(H, "<span class='notice'>You are now fully charged.</span>")
+			to_chat(H, span_notice("Теперь вы полностью заряжены."))
 			break
 	in_use = FALSE
-	H.visible_message("<span class='notice'>[H] unplugs from [A].</span>", "<span class='notice'>You unplug from [A].</span>")
+	H.visible_message(span_notice("[H] отсоединяется от [A]."), span_notice("Вы отсоединяетесь от [A]."))
 
 /obj/item/apc_powercord/proc/apc_powershare_loop(obj/machinery/power/apc/A, mob/living/carbon/human/H)
-	H.visible_message(span_notice("[H] inserts a power connector into [A]."), span_notice("You begin to share power with [A]."))
+	H.visible_message(span_notice("[H] подключает разъём питания к [A]."), span_notice("Вы начинаете передавать энергию [A]."))
 	while(do_after(H, 10, target = A))
 		if(loc != H)
-			to_chat(H, span_warning("You must keep your connector out while charging!"))
+			to_chat(H, span_warning("Чтобы заряжать, держите разъём питания снаружи!"))
 			break
 		if(!power_sharing_mod)
-			to_chat(H, span_warning("You disabled powersharing mod. Aborting."))
+			to_chat(H, span_warning("Вы отключили режим передачи энергии. Операция прервана."))
 			break
 		if(H.nutrition <= NUTRITION_LEVEL_STARVING)
-			to_chat(H, span_warning("You have too low energy level to share!"))
+			to_chat(H, span_warning("Ваш заряд слишком мал для передачи!"))
 			break
 		if(!A.cell)
-			to_chat(H, span_warning("APC cell is missing!"))
+			to_chat(H, span_warning("В APC отсутствует аккумуляторная батарея!"))
 			break
 		if(A.cell.charge >= A.cell.maxcharge - 50)
-			to_chat(H, span_warning("[A] is fully charged."))
+			to_chat(H, span_warning("[A] полностью заряжен."))
 			break
 
 		H.adjust_nutrition(-50)
+		do_sparks(1, FALSE, A)
 		A.cell.give(300)
-		to_chat(H, span_notice("You share some charge with [A]"))
+		to_chat(H, span_notice("Вы передаёте часть заряда [A]."))
 
 	in_use = FALSE
-	H.visible_message(span_notice("[H] unplugs from [A]"), span_notice("You unplug from [A]."))
+	H.visible_message(span_notice("[H] отсоединяется от [A]."), span_notice("Вы отсоединяетесь от [A]."))
 
 /obj/item/apc_powercord/proc/cell_powerdraw_loop(obj/item/stock_parts/cell/C, mob/living/carbon/human/H)
-	H.visible_message("<span class='notice'>[H] connects a power cord to [C]</span>", "<span class='notice'>You begin to draw power from [C].</span>")
+	H.visible_message(span_notice("[H] подключает кабель питания к [C]."), span_notice("Вы начинаете забирать энергию из [C]."))
 	while(do_after(H, 10, target = C))
 		if(loc != H)
-			to_chat(H, "<span class='warning'>You must keep your connector out while charging!</span>")
+			to_chat(H, span_warning("Чтобы зарядиться, держите разъём питания снаружи!"))
 			break
 		if(C.charge == 0)
-			to_chat(H, "<span class='warning'>[C] doesn't have any charge remaining.</span>")
+			to_chat(H, span_warning("У [C] больше не осталось заряда."))
 			break
 		var/siphoned_charge = min(C.charge, 2000)
 		C.use(siphoned_charge)
 		do_sparks(1, FALSE, C)
 		H.adjust_nutrition(siphoned_charge / 100)	//Less efficient on a pure power basis than APC recharge. Still a very viable way of gaining nutrition. (100 nutrition / base 10k cell)
 		if(H.nutrition > NUTRITION_LEVEL_WELL_FED)
-			to_chat(H, "<span class='notice'>You are now fully charged.</span>")
+			to_chat(H, span_notice("Теперь вы полностью заряжены."))
 			break
 	in_use = FALSE
-	H.visible_message("<span class='notice'>[H] disconnects [src] from [C].</span>", "<span class='notice'>You disconnect from [C].</span>")
+	H.visible_message(span_notice("[H] отсоединяет [src] от [C]."), span_notice("Вы отсоединяетесь от [C]."))
 
 /obj/item/apc_powercord/proc/cell_powershare_loop(obj/item/stock_parts/cell/C, mob/living/carbon/human/H)
-	H.visible_message(span_notice("[H] connects a power cord to [C]."), span_notice("You begin to charge [C]."))
+	H.visible_message(span_notice("[H] подключает кабель питания к [C]."), span_notice("Вы начинаете заряжать [C]."))
 	while(do_after(H, 10, target = C))
 		if(loc != H)
-			to_chat(H, span_warning("You must keep your connector out while charging!"))
+			to_chat(H, span_warning("Чтобы заряжать, держите разъём питания снаружи!"))
 			break
 		if(!power_sharing_mod)
-			to_chat(H, span_warning("You disabled powersharing mod. Aborting."))
+			to_chat(H, span_warning("Вы отключили режим передачи энергии. Операция прервана."))
 			break
 		if(H.nutrition <= NUTRITION_LEVEL_STARVING)
-			to_chat(H, span_warning("You have too low energy level to share!"))
+			to_chat(H, span_warning("Ваш заряд слишком мал для передачи!"))
 			break
 		if(C.charge >= C.maxcharge - 50)
-			to_chat(H, span_warning("[C] is fully charged."))
+			to_chat(H, span_warning("[C] полностью заряжен."))
 			break
 
 		H.adjust_nutrition(-50)
 		C.give(300)
 		do_sparks(1, FALSE, C)
-		to_chat(H, span_notice("You share some charge with [C]"))
+		to_chat(H, span_notice("Вы передаёте часть заряда [C]."))
 
 	in_use = FALSE
-	H.visible_message(span_notice("[H] disconnects from [C]."), span_notice("You disconnect from [C]."))
+	H.visible_message(span_notice("[H] отсоединяется от [C]."), span_notice("Вы отсоединяетесь от [C]."))
 
 /obj/item/apc_powercord/proc/synth_powershare_loop(mob/living/carbon/human/charged_synth, mob/living/carbon/human/H)
-	H.visible_message(span_notice("[H] connects [H.p_their()] power cord with [charged_synth]'s one'."), span_notice("You begin to share power with [charged_synth]."))
+	H.visible_message(span_notice("[H] соединяет [H.p_their()] кабель питания с кабелем [charged_synth]."), span_notice("Вы начинаете передавать энергию [charged_synth]."))
 	while(do_after(H, 10, target = charged_synth))
 		if(loc != H)
-			to_chat(H, span_warning("You must keep your connector out while charging!"))
+			to_chat(H, span_warning("Чтобы заряжать, держите разъём питания снаружи!"))
 			break
 		if(!power_sharing_mod)
-			to_chat(H, span_warning("You disabled powersharing mod. Aborting."))
+			to_chat(H, span_warning("Вы отключили режим передачи энергии. Операция прервана."))
 			break
 		if(H.nutrition <= NUTRITION_LEVEL_STARVING)
-			to_chat(H, span_warning("You have too low energy level to share!"))
+			to_chat(H, span_warning("Ваш заряд слишком мал для передачи!"))
 			break
 		if(charged_synth.nutrition >= NUTRITION_LEVEL_WELL_FED)
-			to_chat(H, span_warning("[charged_synth] is fully charged!"))
+			to_chat(H, span_warning("[charged_synth] полностью заряжен[charged_synth.ru_a()]!"))
 			break
 		var/obj/item/apc_powercord/c_cord = locate(/obj/item/apc_powercord) in charged_synth.held_items
 		if(!c_cord)
-			to_chat(H, span_warning("Ask [charged_synth] to NOT collapse [charged_synth.p_their()] power cord!"))
+			to_chat(H, span_warning("Попросите [charged_synth] не убирать [charged_synth.ru_ego()] кабель питания!"))
 			break
 
 		H.adjust_nutrition(-50)
 		charged_synth.adjust_nutrition(50)
 		do_sparks(1, FALSE, charged_synth)
-		to_chat(H, span_notice("You share some charge with [charged_synth]"))
+		to_chat(H, span_notice("Вы передаёте часть заряда [charged_synth]."))
 
 	in_use = FALSE
-	H.visible_message(span_notice("[charged_synth] separates [H.p_their()] power cord from [charged_synth]."), span_notice("You unplug from [charged_synth]."))
+	H.visible_message(span_notice("[charged_synth] отсоединяет кабель питания [H] от себя."), span_notice("Вы отсоединяетесь от [charged_synth]."))
 
 /obj/item/apc_powercord/proc/cyborg_powershare_loop(mob/living/silicon/robot/B, mob/living/carbon/human/H)
-	H.visible_message(span_notice("[H] inserts a power connector into [B]'s charging port."), span_notice("You begin to share power with [B]."))
+	H.visible_message(span_notice("[H] вставляет разъём питания в зарядный порт [B]."), span_notice("Вы начинаете передавать энергию [B]."))
 	while(do_after(H, 10, target = B))
 		if(loc != H)
-			to_chat(H, span_warning("You must keep your connector out while charging!"))
+			to_chat(H, span_warning("Чтобы заряжать, держите разъём питания снаружи!"))
 			break
 		if(!power_sharing_mod)
-			to_chat(H, span_warning("You disabled powersharing mod. Aborting."))
+			to_chat(H, span_warning("Вы отключили режим передачи энергии. Операция прервана."))
 			break
 		if(H.nutrition <= NUTRITION_LEVEL_STARVING)
-			to_chat(H, span_warning("You have too low energy level to share!"))
+			to_chat(H, span_warning("Ваш заряд слишком мал для передачи!"))
 			break
 		if(!B.cell)
-			to_chat(H, span_warning("Borg's cell is missing!"))
+			to_chat(H, span_warning("У [B] отсутствует аккумуляторная батарея!"))
 			break
 		if(B.cell.charge >= B.cell.maxcharge - 50)
-			to_chat(H, span_warning("[B] is fully charged."))
+			to_chat(H, span_warning("[B] полностью заряжен."))
 			break
 
 		H.adjust_nutrition(-50)
 		B.cell.give(300)
 		do_sparks(1, FALSE, B)
-		to_chat(H, span_notice("You share some charge with [B]"))
+		to_chat(H, span_notice("Вы передаёте часть заряда [B]."))
 
 	in_use = FALSE
-	H.visible_message(span_notice("[H] unplugs from [B]"), span_notice("You unplug from [B]."))
+	H.visible_message(span_notice("[H] отсоединяется от [B]."), span_notice("Вы отсоединяетесь от [B]."))

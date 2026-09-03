@@ -160,5 +160,9 @@ SUBSYSTEM_DEF(move_manager)
 	var/datum/move_loop/our_loop = existing_loops[remove]
 	if(!our_loop)
 		return FALSE
+	if(QDELETED(our_loop))
+		existing_loops -= remove
+		decide_on_running_loop()
+		return TRUE
 	qdel(our_loop)
 	return TRUE

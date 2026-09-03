@@ -12,8 +12,8 @@ const formatPressure = value => {
   return formatSiUnit(value * 1000, 1, 'Па');
 };
 
-export const Canister = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Canister = (props) => {
+  const { act, data } = useBackend();
   const {
     portConnected,
     tankPressure,

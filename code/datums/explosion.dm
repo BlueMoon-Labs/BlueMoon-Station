@@ -4,8 +4,8 @@ GLOBAL_LIST_EMPTY(explosions)
 //Against my better judgement, I will return the explosion datum
 //If I see any GC errors for it I will find you
 //and I will gib you
-/proc/explosion(atom/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog = TRUE, ignorecap = FALSE, flame_range = 0, silent = FALSE, smoke = FALSE)
-	return new /datum/explosion(epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog, ignorecap, flame_range, silent, smoke)
+/proc/explosion(atom/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog = TRUE, ignorecap = FALSE, flame_range = 0, silent = FALSE, smoke = FALSE, mob/living/attacker = null)
+	return new /datum/explosion(epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog, ignorecap, flame_range, silent, smoke, attacker)
 
 //This datum creates 3 async tasks
 //1 GatherSpiralTurfsProc runs spiral_range_turfs(tick_checked = TRUE) to populate the affected_turfs list
@@ -15,6 +15,7 @@ GLOBAL_LIST_EMPTY(explosions)
 /datum/explosion
 	var/explosion_id
 	var/atom/explosion_source
+	var/mob/living/explosion_attacker
 	var/started_at
 	var/running = TRUE
 	var/stopped = 0		//This is the number of threads stopped !DOESN'T COUNT THREAD 2!
@@ -40,13 +41,18 @@ GLOBAL_LIST_EMPTY(explosions)
 #define SHAKE_CLAMP 2.5 //The limit for how much the camera can shake for out of view booms.
 #define FREQ_UPPER 40 //The upper limit for the randomly selected frequency.
 #define FREQ_LOWER 25 //The lower of the above.
+/// How many on-Z mobs to process in the explosion sound loop before a CHECK_TICK (per-mob was yielding constantly on highpop).
+#define EX_EXPLOSION_SOUND_BATCH 24
+/// How many overloaded ticks to accumulate before stoplag() while applying ex_act (yield-every-turf made maxcaps take 10+ seconds of real time).
+#define EX_EXPLOSION_TICK_BATCH 8
 
-/datum/explosion/New(atom/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog, ignorecap, flame_range, silent, smoke)
+/datum/explosion/New(atom/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog, ignorecap, flame_range, silent, smoke, mob/living/attacker = null)
 	set waitfor = FALSE
 
 	var/id = ++id_counter
 	explosion_id = id
 	explosion_source = epicenter
+	explosion_attacker = attacker
 
 	epicenter = get_turf(epicenter)
 	if(!epicenter)
@@ -129,6 +135,7 @@ GLOBAL_LIST_EMPTY(explosions)
 		if(prob(devastation_range*30+heavy_impact_range*5) && on_station) // Huge explosions are near guaranteed to make the station creak and whine, smaller ones might.
 			creaking_explosion = TRUE // prob over 100 always returns true
 
+		var/explosion_sound_batch = 0
 		for(var/mob/M as anything in GLOB.player_list)
 			// Early z-level filter before expensive get_turf()
 			if(M.z != z0)
@@ -170,7 +177,11 @@ GLOBAL_LIST_EMPTY(explosions)
 			if(creaking_explosion) // 5 seconds after the bang, the station begins to creak
 				addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, playsound_local), epicenter, null, rand(FREQ_LOWER, FREQ_UPPER), 1, frequency, null, null, FALSE, hull_creaking_sound, 0), CREAK_DELAY)
 
-			EX_PREPROCESS_CHECK_TICK
+			if(++explosion_sound_batch >= EX_EXPLOSION_SOUND_BATCH)
+				explosion_sound_batch = 0
+				EX_PREPROCESS_CHECK_TICK
+
+		EX_PREPROCESS_CHECK_TICK
 
 	//postpone processing for a bit
 	var/postponeCycles = max(round(devastation_range/8),1)
@@ -207,6 +218,7 @@ GLOBAL_LIST_EMPTY(explosions)
 	//lists are guaranteed to contain at least 1 turf at this point
 
 	var/iteration = 0
+	var/explosion_tick_batch = 0
 	var/affTurfLen = length(affected_turfs)
 	var/expBlockLen = length(cached_exp_block)
 	for(var/TI in affected_turfs)
@@ -278,7 +290,19 @@ GLOBAL_LIST_EMPTY(explosions)
 			//If we've caught up to the turf gathering thread and it's still running
 			break_condition = iteration == affTurfLen && !stopped
 
-		if(break_condition || TICK_CHECK)
+		var/should_stoplag = FALSE
+		if(break_condition)
+			explosion_tick_batch = 0
+			should_stoplag = TRUE
+		else if(TICK_CHECK)
+			explosion_tick_batch++
+			if(explosion_tick_batch >= EX_EXPLOSION_TICK_BATCH)
+				explosion_tick_batch = 0
+				should_stoplag = TRUE
+		else
+			explosion_tick_batch = 0
+
+		if(should_stoplag)
 			stoplag()
 
 			if(!running)
@@ -341,6 +365,8 @@ GLOBAL_LIST_EMPTY(explosions)
 #undef SHAKE_CLAMP
 #undef FREQ_UPPER
 #undef FREQ_LOWER
+#undef EX_EXPLOSION_SOUND_BATCH
+#undef EX_EXPLOSION_TICK_BATCH
 
 #undef EX_PREPROCESS_EXIT_CHECK
 #undef EX_PREPROCESS_CHECK_TICK
@@ -381,6 +407,7 @@ GLOBAL_LIST_EMPTY(explosions)
 		return QDEL_HINT_IWILLGC
 	GLOB.explosions -= src
 	explosion_source = null
+	explosion_attacker = null
 	return ..()
 
 /client/proc/check_bomb_impacts()

@@ -1,7 +1,7 @@
 /obj/machinery/door
 	name = "door"
 	desc = "It opens and closes."
-	icon = 'icons/obj/doors/Doorint.dmi'
+	icon = 'icons/obj/doors/doorint.dmi'
 	icon_state = "door1"
 	opacity = 1
 	density = TRUE
@@ -29,7 +29,7 @@
 	var/operating = FALSE
 	var/glass = FALSE
 	var/welded = FALSE
-	var/normalspeed = 1
+	var/normalspeed = TRUE
 	var/heat_proof = FALSE // For rglass-windowed airlocks and firedoors
 	var/emergency = FALSE // Emergency access override
 	var/sub_door = FALSE // true if it's meant to go under another door.
@@ -41,19 +41,15 @@
 	var/datum/effect_system/spark_spread/spark_system
 
 	var/real_explosion_block	//ignore this, just use explosion_block
-	var/red_alert_access = FALSE //if TRUE, this door will always open on red alert
 	var/poddoor = FALSE
 	var/unres_sides = 0 //Unrestricted sides. A bitflag for which direction (if any) can open the door with no access
 	/// Whether or not the door can be opened by hand (used for blast doors and shutters)
 	var/can_open_with_hands = TRUE
+	/// Whether or not this door can be opened through a door remote
+	var/opens_with_door_remote = FALSE
 
 /obj/machinery/door/examine(mob/user)
 	. = ..()
-	if(red_alert_access)
-		if(GLOB.security_level >= SEC_LEVEL_RED)
-			. += "<span class='notice'>Due to a security threat, its access requirements have been lifted!</span>"
-		else
-			. += "<span class='notice'>In the event of a red alert, its access requirements will automatically lift.</span>"
 	if(!poddoor)
 		. += "<span class='notice'>Its maintenance panel is <b>screwed</b> in place.</span>"
 
@@ -69,11 +65,6 @@
 	if(isnull(held_item) && Adjacent(user))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Open" : "Close"))
 		return CONTEXTUAL_SCREENTIP_SET
-
-/obj/machinery/door/check_access_list(list/access_list)
-	if(red_alert_access && GLOB.security_level >= SEC_LEVEL_RED)
-		return TRUE
-	return ..()
 
 /obj/machinery/door/Initialize(mapload)
 	. = ..()
@@ -194,30 +185,42 @@
 /obj/machinery/door/proc/try_to_crowbar(obj/item/I, mob/user)
 	return
 
-/obj/machinery/door/proc/is_holding_pressure()
-	var/turf/open/T = loc
-	if(!T)
-		return FALSE
+/// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
+/// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
+/obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE)
 	if(!density)
 		return FALSE
-	// alrighty now we check for how much pressure we're holding back
-	var/min_moles = T.air.total_moles()
-	var/max_moles = min_moles
-	// okay this is a bit hacky. First, we set density to 0 and recalculate our adjacent turfs
+	var/turf/open/our_turf = loc
+	// Плитка под дверью может оказаться закрытой: стену строят поверх содержимого
+	// турфа, её же оставляют культ и перенос шаттла. У закрытого турфа нет .air,
+	// и безусловный каст падал рантаймом, а упавший проц возвращает null - то есть
+	// дверь молча считалась не удерживающей ничего и открывалась в разгерметизацию.
+	if(!isopenturf(our_turf) || !our_turf.air)
+		return FALSE
+
+	// Соседей надо видеть так, как если бы дверь уже была открыта, иначе
+	// удерживаемый перепад не виден вовсе. Список снимаем копией и сразу
+	// возвращаем плотность: если чтение смесей ниже когда-нибудь упадёт, дверь
+	// не должна остаться проходимой навсегда.
 	density = FALSE
-	T.ImmediateCalculateAdjacentTurfs()
-	// then we use those adjacent turfs to figure out what the difference between the lowest and highest pressures we'd be holding is
-	for(var/turf/open/T2 in T.atmos_adjacent_turfs)
-		if((flags_1 & ON_BORDER_1) && get_dir(src, T2) != dir)
-			continue
-		var/moles = T2.air.total_moles()
-		if(moles < min_moles)
-			min_moles = moles
-		if(moles > max_moles)
-			max_moles = moles
+	our_turf.ImmediateCalculateAdjacentTurfs()
+	var/list/neighbors = our_turf.atmos_adjacent_turfs?.Copy()
 	density = TRUE
-	T.ImmediateCalculateAdjacentTurfs() // alright lets put it back
-	return max_moles - min_moles > 20
+	our_turf.ImmediateCalculateAdjacentTurfs()
+	if(!length(neighbors))
+		return FALSE
+
+	var/min_pressure = our_turf.air.return_pressure()
+	var/max_pressure = min_pressure
+	for(var/turf/open/adjacent in neighbors)
+		if(!adjacent.air)
+			continue
+		if((flags_1 & ON_BORDER_1) && get_dir(src, adjacent) != dir)
+			continue
+		var/pressure = adjacent.air.return_pressure()
+		min_pressure = min(min_pressure, pressure)
+		max_pressure = max(max_pressure, pressure)
+	return (max_pressure - min_pressure) > pressure_tolerance
 
 /obj/machinery/door/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/access_key))
@@ -450,10 +453,4 @@
  */
 /obj/machinery/door/proc/check_security_level(datum/source, new_level)
 	SIGNAL_HANDLER
-
-	if(new_level <= SEC_LEVEL_BLUE)
-		return
-	if(!red_alert_access)
-		return
-	audible_message(span_notice("[src] whirr[p_s()] as [p_they()] automatically lift[p_s()] access requirements!"))
-	playsound(src, 'sound/machines/boltsup.ogg', 50, TRUE)
+	return

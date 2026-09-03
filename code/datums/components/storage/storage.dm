@@ -51,9 +51,9 @@
 
 	/// Ui objects by person. mob = list(objects)
 	var/list/ui_by_mob = list()
-	/// Reusable UI screen objects to reduce qdel/new churn for storage displays
-	var/list/atom/movable/screen/storage/item_holder/pooled_item_holders = list()
-	var/list/atom/movable/screen/storage/volumetric_box/center/pooled_volumetric_boxes = list()
+	// Пул переиспользуемых экранных объектов у хранилищ общий на весь мир, см.
+	// GLOB.storage_item_holder_pool в ui.dm. Свой пул у каждого компонента означал, что
+	// каждый когда-либо открытый рюкзак держит свои холдеры до конца раунда.
 
 	var/allow_big_nesting = FALSE					//allow storage objects of the same or greater size.
 
@@ -121,18 +121,19 @@
 	update_actions()
 
 /datum/component/storage/Destroy()
+	QDEL_NULL(modeswitch_action)
 	close_all()
 	wipe_ui_objects()
 	LAZYCLEARLIST(is_using)
 	return ..()
 
 /datum/component/storage/proc/wipe_ui_objects()
-	for(var/i in ui_by_mob)
-		var/list/objects = ui_by_mob[i]
+	for(var/mob/M as anything in ui_by_mob)
+		var/list/objects = ui_by_mob[M]
+		if(M.client)
+			M.client.screen -= objects
 		QDEL_LIST(objects)
 	ui_by_mob.Cut()
-	QDEL_LIST(pooled_item_holders)
-	QDEL_LIST(pooled_volumetric_boxes)
 
 /datum/component/storage/PreTransfer()
 	update_actions()
@@ -180,6 +181,13 @@
 					contents.Cut(1, limited_random_access_stack_position + 1)
 				else
 					contents.Cut(1, length(contents) - limited_random_access_stack_position + 1)
+		var/obj/o
+		for(var/i = contents.len to 1 step -1)
+			o = contents[i]
+			if(!istype(o))
+				continue
+			if(o.obj_flags & NOT_VISIBLE_IN_STORAGE)
+				contents.Cut(i,i+1)
 	return contents
 
 /datum/component/storage/proc/canreach_react(datum/source, list/next)
@@ -200,6 +208,10 @@
 
 /datum/component/storage/proc/preattack_intercept(datum/source, obj/O, mob/M, params)
 	if(!isitem(O) || !click_gather || (SEND_SIGNAL(O, COMSIG_CONTAINS_STORAGE) && !quick_gather_storages))
+		return FALSE
+	// цель может хотеть саму сумку, а не поездку в ней: сбор ниже возвращает
+	// COMPONENT_NO_ATTACK и до attackby() цели дело уже не доходит
+	if(SEND_SIGNAL(O, COMSIG_ATOM_PRE_STORAGE_GATHER, parent, M) & COMPONENT_CANCEL_STORAGE_GATHER)
 		return FALSE
 	. = COMPONENT_NO_ATTACK
 	if(check_locked(source, M, TRUE))
@@ -287,13 +299,16 @@
 
 /datum/component/storage/proc/mass_remove_from_storage(atom/target, list/things, datum/progressbar/progress, trigger_on_found = TRUE, mob/user)
 	var/atom/real_location = real_location()
+	var/target_isturf = isturf(target)
 	for(var/obj/item/I in things)
 		things -= I
 		if(I.loc != real_location)
 			continue
 		if(trigger_on_found && user && (user.active_storage != src) && I.on_found(user))
 			return FALSE
-		remove_from_storage(I, target)
+		if(remove_from_storage(I, target))
+			if(target_isturf)
+				I.randomize_pixel_position(user)
 		if(TICK_CHECK)
 			progress.update(progress.goal - length(things))
 			return TRUE
@@ -500,6 +515,11 @@
 /datum/component/storage/proc/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
 	if(!istype(I) || (I.item_flags & ABSTRACT))
 		return FALSE //Not an item
+	// Протухшая ссылка из уснувшего вызова (do_after/опрос) не должна возвращать
+	// удаляемый предмет в contents: Destroy уже вынес его в nullspace, повторная
+	// вставка = гарантированный вечный harddel (прод: магазин e45 в сатчеле).
+	if(QDELETED(I))
+		return FALSE
 	if(I == parent)
 		return FALSE	//no paradoxes for you
 	var/atom/real_location = real_location()
@@ -588,7 +608,12 @@
 	if(rustle_sound)
 		playsound(parent, "rustle", 50, 1, -5)
 	to_chat(user, "<span class='notice'>You put [I] [insert_preposition]to [parent].</span>")
-	for(var/mob/viewing in fov_viewers(world.view, user)-M)
+	// user может быть null (вставка сигналом без юзера) - fov_viewers(null) вернёт 0,
+	// и "0 - M" рантаймил type mismatch. Центр обзора тогда сам M.
+	var/mob/feedback_center = user || M
+	if(!feedback_center)
+		return
+	for(var/mob/viewing in fov_viewers(world.view, feedback_center)-M)
 		if(in_range(M, viewing)) //If someone is standing close enough, they can tell what it is...
 			viewing.show_message("<span class='notice'>[M] puts [I] [insert_preposition]to [parent].</span>", MSG_VISUAL)
 		else if(I && I.w_class >= 3) //Otherwise they can only see large or normal items from a distance...
@@ -621,7 +646,7 @@
 	if(message && . && user)
 		to_chat(user, "<span class='warning'>[parent] seems to be locked!</span>")
 
-/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted)
+/datum/component/storage/proc/signal_take_type(datum/source, type, atom/destination, amount = INFINITY, check_adjacent = FALSE, force = FALSE, mob/user, list/inserted, datum/callback/extra_checks)
 	if(!force)
 		if(check_adjacent)
 			if(!user || !user.CanReach(destination) || !user.CanReach(parent))
@@ -631,10 +656,12 @@
 		taking.len = amount
 	if(inserted)			//duplicated code for performance, don't bother checking retval/checking for list every item.
 		for(var/i in taking)
-			if(remove_from_storage(i, destination))
+			if((!extra_checks || extra_checks.Invoke(i)) && remove_from_storage(i, destination))
 				inserted |= i
 	else
 		for(var/i in taking)
+			if(extra_checks && !extra_checks.Invoke(i))
+				continue
 			remove_from_storage(i, destination)
 	return TRUE
 

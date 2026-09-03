@@ -23,6 +23,7 @@ The console is located at computer/gulag_teleporter.dm
 	var/jumpsuit_type = /obj/item/clothing/under/rank/prisoner
 	var/shoes_type = /obj/item/clothing/shoes/sneakers/orange
 	var/obj/machinery/gulag_item_reclaimer/linked_reclaimer
+	var/datum/mind/last_sent_prisoner
 	var/static/list/telegulag_required_items = typecacheof(list(
 		/obj/item/implant,
 		/obj/item/clothing/suit/space/eva/plasmaman,
@@ -163,6 +164,7 @@ The console is located at computer/gulag_teleporter.dm
 		prisoner.equip_to_appropriate_slot(id)
 	if(R)
 		R.fields["criminal"] = SEC_RECORD_STATUS_INCARCERATED
+	last_sent_prisoner = prisoner.mind
 
 /obj/item/circuitboard/machine/gulag_teleporter
 	name = "labor camp teleporter (Machine Board)"

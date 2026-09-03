@@ -5,8 +5,8 @@ import { useBackend } from '../backend';
 import { Button, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const StationAlertConsole = (props, context) => {
-  const { data } = useBackend(context);
+export const StationAlertConsole = (props) => {
+  const { data } = useBackend();
   const {
     cameraView,
   } = data;
@@ -21,8 +21,8 @@ export const StationAlertConsole = (props, context) => {
   );
 };
 
-export const StationAlertConsoleContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const StationAlertConsoleContent = (props) => {
+  const { act, data } = useBackend();
   const {
     cameraView,
   } = data;

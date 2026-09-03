@@ -14,6 +14,17 @@
 	internal_organs += new /obj/item/organ/alien/plasmavessel/small
 	..()
 
+/mob/living/carbon/alien/humanoid/hunter/update_icons()
+	..()
+	pixel_x = custom_pixel_x_offset
+	pixel_y = custom_pixel_y_offset
+
+/mob/living/carbon/alien/humanoid/hunter/get_standard_pixel_x_offset(lying = 0)
+	return custom_pixel_x_offset
+
+/mob/living/carbon/alien/humanoid/hunter/get_standard_pixel_y_offset(lying = 0)
+	return custom_pixel_y_offset
+
 //Hunter verbs
 
 /mob/living/carbon/alien/humanoid/hunter/proc/toggle_leap(message = 1)

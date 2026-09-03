@@ -1,0 +1,76 @@
+:root {
+	--bg-primary: #202020;
+	--bg-secondary: #1a1a1a;
+	--bg-tertiary: #2a2a2a;
+	--bg-hover: #333333;
+	--text-primary: #abc6ec;
+	--text-secondary: #8a9bb5;
+	--text-muted: #556070;
+	--accent: #dc143c;
+	--accent-hover: #e8354f;
+	--health-good: #4ec94e;
+	--health-warn: #cca700;
+	--health-bad: #f44747;
+	--border: rgba(255, 255, 255, 0.08);
+	--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Verdana, sans-serif;
+	--font-mono: Consolas, "Courier New", monospace;
+	--fav-bg: rgba(232, 168, 32, 0.15);
+	--fav-border: rgba(232, 168, 32, 0.5);
+	--fav-accent: #e8a820;
+	--font-size: 12px;
+	--border-radius: 4px;
+}
+
+body.light {
+	--bg-primary: #ffffff;
+	--bg-secondary: #f3f3f3;
+	--bg-tertiary: #e8e8e8;
+	--bg-hover: #e0e0e0;
+	--text-primary: #1e1e1e;
+	--text-secondary: #555555;
+	--text-muted: #999999;
+	--border: #d4d4d4;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	font-family: var(--font-sans);
+	font-size: var(--font-size);
+	margin: 0;
+	padding: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	background-color: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+a { color: var(--accent); text-decoration: none; cursor: pointer; }
+a:hover { text-decoration: underline; }
+
+img { image-rendering: pixelated; }
+
+/* Focus rings — keyboard-only via :focus-visible so mouse interactions stay clean.
+   Player session can be 4+ hours; without this, keyboard users have zero feedback.
+   The inner rule uses `outline-color` only so per-component CSS can still tweak the look. */
+:focus { outline: none; }
+*:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+
+/* Respect prefers-reduced-motion — disable shuttle pulse and slow transitions for users
+   who've asked the OS to ease up on motion (vestibular triggers, low-power modes). */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

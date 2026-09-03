@@ -84,11 +84,11 @@ GLOBAL_LIST_EMPTY(allCasters)
 	if(machine_stat & BROKEN)
 		return
 	if(powered())
-		machine_stat &= ~NOPOWER
+		set_machine_stat(machine_stat & ~NOPOWER)
 		update_icon()
 	else
 		spawn(rand(0, 15))
-			machine_stat |= NOPOWER
+			set_machine_stat(machine_stat | NOPOWER)
 			update_icon()
 
 /obj/machinery/newscaster/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
@@ -578,7 +578,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 					return
 				to_chat(user, "<span class='notice'>You repair [src].</span>")
 				obj_integrity = max_integrity
-				machine_stat &= ~BROKEN
+				set_machine_stat(machine_stat & ~BROKEN)
 				update_icon()
 		else
 			to_chat(user, "<span class='notice'>[src] does not need repairs.</span>")
@@ -605,7 +605,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 
 /obj/machinery/newscaster/obj_break()
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, 1)
 		update_icon()
 
@@ -644,8 +644,8 @@ GLOBAL_LIST_EMPTY(allCasters)
 	if(ishuman(user))
 		var/mob/living/carbon/human/human_user = user
 		if(human_user.wear_id)
-			if(istype(human_user.wear_id, /obj/item/pda))
-				var/obj/item/pda/P = human_user.wear_id
+			if(istype(human_user.wear_id, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/P = human_user.wear_id
 				if(P.id)
 					scanned_user = "[P.id.registered_name] ([P.id.get_assignment_name()])"
 				else
@@ -686,12 +686,32 @@ GLOBAL_LIST_EMPTY(allCasters)
 	update_icon()
 
 /obj/machinery/newscaster/proc/newsAlert(channel)
+	// Озвучка только при аудитории рядом: публикация новости дёргает этот прок на
+	// КАЖДОМ ньюскастере станции, и say+playsound по пустым коридорам складывались
+	// в ~300мс на новость. Лампочка и таймер сброса работают всегда.
+	var/has_audience = has_nearby_audience()
 	if(channel)
-		say("<b>Свежие новости от [channel]</b>!")
+		if(has_audience)
+			say("<b>Свежие новости от [channel]</b>!")
 		alert = TRUE
 		update_icon()
-		addtimer(CALLBACK(src,PROC_REF(remove_alert)),alert_delay,TIMER_UNIQUE|TIMER_OVERRIDE)
-		playsound(loc, 'sound/machines/twobeep.ogg', 75, 1)
-	else
+		// Джиттер: одинаковый alert_delay у всех ньюскастеров станции разряжал
+		// 500+ таймеров remove_alert одним тиком (TIMER BURST раунда 9746).
+		addtimer(CALLBACK(src,PROC_REF(remove_alert)),alert_delay + rand(0, 5 SECONDS),TIMER_UNIQUE|TIMER_OVERRIDE)
+		if(has_audience)
+			playsound(loc, 'sound/machines/twobeep.ogg', 75, 1)
+	else if(has_audience)
 		say("Attention! Wanted issue distributed!")
 		playsound(loc, 'sound/machines/warning-buzzer.ogg', 75, 1)
+
+/// Есть ли рядом клиент-моб (включая гхостов), ради которого стоит говорить и пищать.
+/obj/machinery/newscaster/proc/has_nearby_audience(distance = 9)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+	if(!SSspatial_grid.initialized)
+		return TRUE // до инициализации грида не гейтим - поведение как раньше
+	for(var/mob/player as anything in SSspatial_grid.orthogonal_range_search(our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, distance))
+		if(get_dist(our_turf, player) <= distance)
+			return TRUE
+	return FALSE

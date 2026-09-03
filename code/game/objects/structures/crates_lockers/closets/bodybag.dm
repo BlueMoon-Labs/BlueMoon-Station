@@ -1,7 +1,7 @@
 
 /obj/structure/closet/body_bag
 	name = "body bag"
-	desc = "A plastic bag designed for the storage and transportation of cadavers."
+	desc = "Пластиковый мешок для хранения и транспортировки кадавров."
 	icon = 'icons/obj/bodybag.dmi'
 	icon_state = "bodybag"
 	density = FALSE
@@ -12,15 +12,31 @@
 	material_drop = /obj/item/stack/sheet/cloth
 	delivery_icon = null //unwrappable
 	anchorable = FALSE
+	// В bodybag.dmi нет ни одного стейта _door/_back/welded: у мешка нет двери,
+	// его состояние целиком живёт в icon_state.
+	has_door_icon = FALSE
+	door_anim_time = 0
 	var/foldedbag_path = /obj/item/bodybag
 	var/tagged = 0 // so closet code knows to put the tag overlay back
+
+/// Суффикс базового стейта для закрытого мешка (у транспортного - застёгнутость).
+/obj/structure/closet/body_bag/proc/bag_icon_suffix()
+	return ""
+
+/obj/structure/closet/body_bag/update_icon_state()
+	. = ..()
+	// Стейт "_open" в bodybag.dmi - это ТОЛЬКО расстёгнутый зев, без корпуса мешка:
+	// он кладётся оверлеем поверх закрытого мешка штатной схемой шкафа. Если подставить
+	// его прямо в icon_state, на полу остаётся одна чёрная клякса без мешка вокруг,
+	// поэтому базовый стейт всегда закрытый мешок, а открытость показывает оверлей.
+	icon_state = "[initial(icon_state)][bag_icon_suffix()]"
 
 /obj/structure/closet/body_bag/attackby(obj/item/I, mob/user, params)
 	if (istype(I, /obj/item/pen) || istype(I, /obj/item/toy/crayon))
 		if(!user.can_write(I))
-			to_chat(user, "<span class='notice'>You scribble illegibly on [src]!</span>")
+			to_chat(user, span_notice("Вы написали тарабарщину на [src]!"))
 			return
-		var/t = stripped_input(user, "What would you like the label to be?", name, null, 53)
+		var/t = stripped_input(user, "Какой должна быть бирка?", name, null, 53)
 		if(user.get_active_held_item() != I)
 			return
 		if(!user.canUseTopic(src, BE_CLOSE))
@@ -33,7 +49,7 @@
 			name = "body bag"
 		return
 	else if(I.tool_behaviour == TOOL_WIRECUTTER)
-		to_chat(user, "<span class='notice'>You cut the tag off [src].</span>")
+		to_chat(user, span_notice("Вы отрезали бирку у [src]."))
 		name = "body bag"
 		tagged = 0
 		update_icon()
@@ -62,43 +78,52 @@
 			return FALSE
 		if(contents.len)
 			return FALSE
-		visible_message("<span class='notice'>[usr] folds up [src].</span>")
+		visible_message(span_notice("[usr] складывает [src]."))
 		var/obj/item/bodybag/B = new foldedbag_path(get_turf(src))
 		usr.put_in_hands(B)
 		qdel(src)
 
 /obj/structure/closet/body_bag/bluespace
 	name = "bluespace body bag"
-	desc = "A bluespace body bag designed for the storage and transportation of cadavers."
+	desc = "Мешок для тел, использующий блюспейс-технологии для хранения и транспортировки кадавров."
 	icon = 'icons/obj/bodybag.dmi'
 	icon_state = "bluebodybag"
 	foldedbag_path = /obj/item/bodybag/bluespace
 	mob_storage_capacity = 15
 	max_mob_size = MOB_SIZE_LARGE
 
+/obj/structure/closet/body_bag/bluespace/close(mob/living/user)
+	if(!..())
+		return FALSE
+	for(var/obj/item/storage/backpack/holding/boh in contents)
+		boh.teleport_damage(rand(25, 75), FALSE)
+	return TRUE
+
 /obj/structure/closet/body_bag/bluespace/MouseDrop(over_object, src_location, over_location)
 	. = ..()
+	if(QDELETED(src)) // родитель уже сложил пустой мешок и удалил src - второй складывать нечего
+		return .
 	if(over_object == usr && Adjacent(usr) && (in_range(src, usr) || usr.contents.Find(src)))
 		if(!ishuman(usr))
 			return FALSE
 		if(contents.len >= mob_storage_capacity / 2)
-			to_chat(usr, "<span class='warning'>There are too many things inside of [src] to fold it up!</span>")
+			to_chat(usr, span_warning("Для складывания [src] внутри находится слишком много вещей!"))
 			return FALSE
 		for(var/obj/item/bodybag/bluespace/B in src)
-			to_chat(usr, "<span class='warning'>You can't recursively fold bluespace body bags!</span>" )
+			to_chat(usr, span_warning("Вы не можете рекурсивно складывать блюспейс мешки для тел!"))
 			return FALSE
-		visible_message("<span class='notice'>[usr] folds up [src].</span>")
+		visible_message(span_notice("[usr] складывает [src]."))
 		var/obj/item/bodybag/B = new foldedbag_path(get_turf(src))
 		usr.put_in_hands(B)
 		for(var/atom/movable/A in contents)
 			A.forceMove(B)
 			if(isliving(A))
-				to_chat(A, "<span class='userdanger'>You're suddenly forced into a tiny, compressed space!</span>")
+				to_chat(A, span_userdanger("Вас внезапно запихнуло в маленькое, сжатое пространство!"))
 		qdel(src)
 
 /obj/structure/closet/body_bag/containment
 	name = "containment body bag"
-	desc = "A folded heavy body bag designed for the storage and transportation of cadavers with heavy radiation."
+	desc = "Тяжёлый мешок для тел, спроектированный для хранения и транспортировки кадавров с высоким облучением."
 	icon = 'icons/obj/bodybag.dmi'
 	icon_state = "radbodybag"
 	mob_storage_capacity = 1
@@ -111,7 +136,7 @@
 
 /obj/structure/closet/body_bag/containment/nanotrasen
 	name = "elite containment protection bag"
-	desc = "A heavily reinforced and insulated bag, capable of fully isolating its contents from external factors."
+	desc = "Тяжёлый, усиленный и изолированный мешок, способный полностью оградить содержимое от внешних факторов."
 	icon = 'icons/obj/bodybag.dmi'
 	icon_state = "ntenvirobag"
 	foldedbag_path = /obj/item/bodybag/containment/nanotrasen
@@ -138,12 +163,22 @@
 		to_chat(the_folder, span_warning("You wrestle with [src], but it won't fold while its straps are fastened."))
 	return ..()
 
-/obj/structure/closet/body_bag/containment/prisoner/update_icon()
+/obj/structure/closet/body_bag/containment/prisoner/bag_icon_suffix()
+	return sinched ? "_sinched" : ""
+
+/obj/structure/closet/body_bag/containment/prisoner/Entered(atom/movable/AM, atom/oldLoc)
 	. = ..()
-	if(sinched)
-		icon_state = initial(icon_state) + "_sinched"
-	else
-		icon_state = initial(icon_state)
+	if(isliving(AM))
+		ADD_TRAIT(AM, TRAIT_RESISTHIGHPRESSURE, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTLOWPRESSURE, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTHEAT, REF(src))
+		ADD_TRAIT(AM, TRAIT_RESISTCOLD, REF(src))
+		ADD_TRAIT(AM, TRAIT_NOBREATH, REF(src))
+
+/obj/structure/closet/body_bag/containment/prisoner/Exited(atom/movable/AM, atom/newLoc)
+	. = ..()
+	if(isliving(AM))
+		REMOVE_TRAITS_IN(AM, REF(src))
 
 /obj/structure/closet/body_bag/containment/prisoner/open(mob/living/user, force = FALSE)
 	if(sinched && !force)
@@ -152,7 +187,7 @@
 	if(opened)
 		return FALSE
 	sinched = FALSE
-	playsound(loc, open_sound, sinch_sound, TRUE, -3)
+	playsound(loc, open_sound, 15, TRUE)
 	opened = TRUE
 	dump_contents()
 	update_appearance()

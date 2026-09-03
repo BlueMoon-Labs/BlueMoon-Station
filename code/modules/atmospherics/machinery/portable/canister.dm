@@ -31,18 +31,26 @@
 	var/starter_temp = T20C
 	// Prototype vars
 	var/prototype = FALSE
-	var/valve_timer = null
+	///world.time срабатывания таймера клапана. Ноль, а не null: сравнение
+	///`valve_timer < world.time` считает null нулём, то есть взведённым в прошлом.
+	var/valve_timer = 0
 	var/timer_set = 30
 	var/default_timer_set = 30
 	var/minimum_timer_set = 1
 	var/maximum_timer_set = 300
 	var/timing = FALSE
+	///key_name взведшего таймер - к моменту срабатывания usr уже бессмыслен,
+	///а админ-пинг об опасных газах обязан называть виновника.
+	var/timer_armer
 	var/restricted = FALSE
 	///Set the tier of the canister and overlay used
 	// var/mode = CANISTER_TIER_1
 	req_access = list()
 
 	var/update = 0
+	///Pressure band currently shown by the sprite (see update_overlays); process_atmos
+	///refreshes the icon only when this moves, instead of rebuilding overlays every fire.
+	var/shown_pressure_band = -1
 	var/static/list/label2types = list(
 		"n2" = /obj/machinery/portable_atmospherics/canister/nitrogen,
 		"o2" = /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -55,12 +63,21 @@
 		"water vapor" = /obj/machinery/portable_atmospherics/canister/water_vapor,
 		"tritium" = /obj/machinery/portable_atmospherics/canister/tritium,
 		"hyper-noblium" = /obj/machinery/portable_atmospherics/canister/nob,
-		"stimulum" = /obj/machinery/portable_atmospherics/canister/stimulum,
 		"pluoxium" = /obj/machinery/portable_atmospherics/canister/pluoxium,
 		"caution" = /obj/machinery/portable_atmospherics/canister,
 		"miasma" = /obj/machinery/portable_atmospherics/canister/miasma,
 		"methane" = /obj/machinery/portable_atmospherics/canister/methane,
-		"methyl bromide" = /obj/machinery/portable_atmospherics/canister/methyl_bromide
+		"hydrogen" = /obj/machinery/portable_atmospherics/canister/hydrogen,
+		"helium" = /obj/machinery/portable_atmospherics/canister/helium,
+		"freon" = /obj/machinery/portable_atmospherics/canister/freon,
+		"halon" = /obj/machinery/portable_atmospherics/canister/halon,
+		"antinoblium" = /obj/machinery/portable_atmospherics/canister/antinoblium,
+		"proto nitrate" = /obj/machinery/portable_atmospherics/canister/proto_nitrate,
+		"zauker" = /obj/machinery/portable_atmospherics/canister/zauker,
+		"healium" = /obj/machinery/portable_atmospherics/canister/healium,
+		"nitrium" = /obj/machinery/portable_atmospherics/canister/nitrium,
+		"pyronite" = /obj/machinery/portable_atmospherics/canister/pyronite,
+		"fluxin" = /obj/machinery/portable_atmospherics/canister/fluxin
 	)
 
 /obj/machinery/portable_atmospherics/canister/interact(mob/user)
@@ -129,6 +146,7 @@
 	icon_state = "brown"
 	gas_type = GAS_NITRYL
 
+// Убраны из label2types (не заказываются), но оставлены для совместимости с картами (Academy, ihategordon, undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/stimulum
 	name = "stimulum canister"
 	desc = "Stimulum. High energy gas, high energy people."
@@ -138,7 +156,7 @@
 /obj/machinery/portable_atmospherics/canister/pluoxium
 	name = "pluoxium canister"
 	desc = "Pluoxium. Like oxygen, but more bang for your buck."
-	icon_state = "darkblue"
+	icon_state = "pluoxium"
 	gas_type = GAS_PLUOXIUM
 
 /obj/machinery/portable_atmospherics/canister/water_vapor
@@ -161,11 +179,101 @@
 	icon_state = "greyblackred"
 	gas_type = GAS_METHANE
 
+// Убраны из label2types (не заказываются), оставлены для совместимости с картами (undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/methyl_bromide
 	name = "methyl bromide canister"
 	desc = "Methyl bromide. A potent toxin to most, essential for the Kharmaan to live."
 	icon_state = "purplecyan"
 	gas_type = GAS_METHYL_BROMIDE
+
+/obj/machinery/portable_atmospherics/canister/hydrogen
+	name = "hydrogen canister"
+	desc = "Hydrogen. Flammable and used in fusion. Ionizing radiation converts it into tritium."
+	icon_state = "hydrogen"
+	gas_type = GAS_HYDROGEN
+
+/obj/machinery/portable_atmospherics/canister/helium
+	name = "helium canister"
+	desc = "Helium. Inert gas, byproduct of fusion."
+	icon_state = "helium"
+	gas_type = GAS_HELIUM
+
+/obj/machinery/portable_atmospherics/canister/freon
+	name = "freon canister"
+	desc = "Freon. Coolant gas. Breathing causes burn damage and slowdown."
+	icon_state = "darkblue"
+	gas_type = GAS_FREON
+
+/obj/machinery/portable_atmospherics/canister/halon
+	name = "halon canister"
+	desc = "Halon. Fire suppressant. Heavy slowdown and heat proof when inhaled."
+	icon_state = "halon"
+	gas_type = GAS_HALON
+
+/obj/machinery/portable_atmospherics/canister/antinoblium
+	name = "antinoblium canister"
+	desc = "Antinoblium. Rare fuel for fusion, replicates by consuming other gases."
+	icon_state = "antinoblium"
+	gas_type = GAS_ANTINOBLIUM
+
+/obj/machinery/portable_atmospherics/canister/proto_nitrate
+	name = "proto nitrate canister"
+	desc = "Proto nitrate. Highly reactive gas, catalyst for many reactions."
+	icon_state = "proto_nitrate"
+	gas_type = GAS_PROTO_NITRATE
+
+/obj/machinery/portable_atmospherics/canister/zauker
+	name = "zauker canister"
+	desc = "Zauker. Incredibly deadly if inhaled."
+	icon_state = "zauker"
+	gas_type = GAS_ZAUKER
+
+/obj/machinery/portable_atmospherics/canister/healium
+	name = "healium canister"
+	desc = "Healium. Healing gas, stronger sleeping agent than N2O."
+	icon_state = "healium"
+	gas_type = GAS_HEALIUM
+
+/obj/machinery/portable_atmospherics/canister/nitrium
+	name = "nitrium canister"
+	desc = "Nitrium. Gaseous stimulant, enhances speed and endurance."
+	icon_state = "nitrium"
+	gas_type = GAS_NITRIUM
+
+/obj/machinery/portable_atmospherics/canister/pyronite
+	name = "pyronite canister"
+	desc = "Pyronite. High pressure fuel; burns twice as hot as plasma."
+	icon_state = "whiters"
+	gas_type = GAS_PYRONITE
+
+/obj/machinery/portable_atmospherics/canister/fluxin
+	name = "fluxin canister"
+	desc = "Fluxin. Catalyst; widens the temperature window of the deeper syntheses."
+	// Свой спрайт, а не общий с метилбромидом: канистры игрок различает в первую
+	// очередь по цвету, и две одинаковых с разным содержимым - это ошибка,
+	// которую замечают уже после того, как открыли не ту.
+	icon_state = "fluxin"
+	gas_type = GAS_FLUXIN
+
+/// Пингует админов списком опасных газов открывшейся в воздух канистры.
+/// admin_source/log_source - кто открыл, в оформлении message_admins и log_admin
+/// соответственно (ручное открытие даёт кликабельный ADMIN_LOOKUPFLW).
+/obj/machinery/portable_atmospherics/canister/proc/report_dangerous_release(admin_source, log_source)
+	var/list/danger = list()
+	for(var/id in air_contents.get_gases())
+		var/gas = air_contents.get_moles(id)
+		if(!(GLOB.gas_data.flags[id] & GAS_FLAG_DANGEROUS))
+			continue
+		if(gas > (GLOB.gas_data.visibility[id] || MOLES_GAS_VISIBLE)) //if moles_visible is undefined, default to default visibility
+			danger[GLOB.gas_data.names[id]] = gas //ex. "plasma" = 20
+	if(!danger.len)
+		return
+	message_admins("[admin_source] opened a canister that contains the following at [ADMIN_VERBOSEJMP(src)]:")
+	log_admin("[log_source] opened a canister that contains the following at [AREACOORD(src)]:")
+	for(var/name in danger)
+		var/msg = "[name]: [danger[name]] moles."
+		log_admin(msg)
+		message_admins(msg)
 
 /obj/machinery/portable_atmospherics/canister/proc/get_time_left()
 	if(timing)
@@ -177,6 +285,14 @@
 	timing = !timing
 	if(timing)
 		valve_timer = world.time + (timer_set * 10)
+		timer_armer = key_name(usr)
+	// Взведение не логировалось совсем: таймер срабатывает через минуты, когда
+	// виновника рядом уже нет, и без этой записи открытие канистры было не к
+	// кому привязать.
+	var/arm_logmsg = timing ? "Valve timer was <b>armed</b> for [timer_set]s by [key_name(usr)].<br>" : "Valve timer was <b>disarmed</b> by [key_name(usr)].<br>"
+	release_log += arm_logmsg
+	investigate_log(arm_logmsg, INVESTIGATE_ATMOS)
+	excite()
 	update_icon()
 
 /obj/machinery/portable_atmospherics/canister/proto
@@ -202,6 +318,10 @@
 	filled = 1
 	release_pressure = ONE_ATMOSPHERE*2
 
+/obj/machinery/portable_atmospherics/canister/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/machinery/portable_atmospherics/canister/New(loc, datum/gas_mixture/existing_mixture)
 	..()
 
@@ -226,8 +346,18 @@
 	air_contents.set_moles(GAS_N2, (N2STANDARD * maximum_pressure * filled) * air_contents.return_volume() / (R_IDEAL_GAS_EQUATION * air_contents.return_temperature()))
 
 /obj/machinery/portable_atmospherics/canister/update_icon_state()
-	if(machine_stat & BROKEN)
-		icon_state = "[icon_state]-1"
+	// Состояние выводится из базового, а не дописывается к текущему. Прежняя форма
+	// `icon_state = "[icon_state]-1"` наращивала суффикс на каждый вызов: вторая
+	// перерисовка сломанной канистры давала "yellow-1-1", такого стейта нет ни в
+	// одном .dmi, и канистра просто исчезала с экрана. Заодно чинится обратный
+	// переход - снятое BROKEN теперь возвращает целый спрайт.
+	//
+	// Базу нельзя брать из initial(icon_state): перелейбливание меняет icon_state
+	// на живом объекте, не меняя его тип, и канистра откатывалась бы к спрайту
+	// того газа, которым была при спавне.
+	if(!base_icon_state)
+		base_icon_state = icon_state
+	icon_state = (machine_stat & BROKEN) ? "[base_icon_state]-1" : base_icon_state
 
 /obj/machinery/portable_atmospherics/canister/update_overlays()
 	. = ..()
@@ -235,19 +365,41 @@
 		. += "can-open"
 	if(connected_port)
 		. += "can-connector"
+	shown_pressure_band = pressure_band()
+	switch(shown_pressure_band)
+		if(4)
+			. += "can-o3"
+		if(3)
+			. += "can-o2"
+		if(2)
+			. += "can-o1"
+		if(1)
+			. += "can-o0"
+
+///Bucket of the pressure indicator lights on the sprite; process_atmos redraws only on change.
+/obj/machinery/portable_atmospherics/canister/proc/pressure_band()
 	var/pressure = air_contents?.return_pressure()
 	if(pressure >= 40 * ONE_ATMOSPHERE)
-		. += "can-o3"
-	else if(pressure >= 10 * ONE_ATMOSPHERE)
-		. += "can-o2"
-	else if(pressure >= 5 * ONE_ATMOSPHERE)
-		. += "can-o1"
-	else if(pressure >= 10)
-		. += "can-o0"
+		return 4
+	if(pressure >= 10 * ONE_ATMOSPHERE)
+		return 3
+	if(pressure >= 5 * ONE_ATMOSPHERE)
+		return 2
+	if(pressure >= 10)
+		return 1
+	return 0
 
 /obj/machinery/portable_atmospherics/canister/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > temperature_resistance)
 		take_damage(5, BURN, 0)
+
+// Flameless path: a canister left in a burning room cooks even after the
+// hotspot on its own tile burns out.
+/obj/machinery/portable_atmospherics/canister/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > temperature_resistance
+
+/obj/machinery/portable_atmospherics/canister/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0)
 
 
 /obj/machinery/portable_atmospherics/canister/deconstruct(disassembled = TRUE)
@@ -282,7 +434,7 @@
 /obj/machinery/portable_atmospherics/canister/obj_break(damage_flag)
 	if((machine_stat & BROKEN) || (flags_1 & NODECONSTRUCT_1))
 		return
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	canister_break()
 
 /obj/machinery/portable_atmospherics/canister/proc/canister_break()
@@ -312,27 +464,50 @@
 			investigate_log("[key_name(user)] started a transfer into [holding].<br>", INVESTIGATE_ATMOS)
 
 /obj/machinery/portable_atmospherics/canister/process_atmos()
-	..()
 	if(machine_stat & BROKEN)
 		return PROCESS_KILL
-	if(timing && valve_timer < world.time)
-		valve_open = !valve_open
-		timing = FALSE
+	// Гард по самому valve_timer, а не только по `timing`: дефолт у него был null,
+	// а null в числовом сравнении DM идёт за ноль, поэтому любой путь, выставивший
+	// `timing` мимо set_active(), открывал бы клапан на ближайшем же фаере. Сейчас
+	// такого пути нет, но цена гарда - одно чтение переменной.
+	if(timing && valve_timer)
+		// An armed valve timer must keep ticking even when nothing else happens.
+		excited = TRUE
+		if(valve_timer < world.time)
+			valve_open = !valve_open
+			timing = FALSE
+			// Единственный путь, который двигает клапан без участия игрока, и до
+			// сих пор он не оставлял следа НИГДЕ: ни в investigate_log, ни в
+			// release_log самой канистры. Сработавший таймер выглядел как канистра,
+			// открывшаяся сама, с последней записью в логе "закрыл такой-то" -
+			// разобрать такую жалобу было нечем.
+			var/timer_logmsg = "Valve was <b>[valve_open ? "opened" : "closed"]</b> by its timer (armed by [timer_armer || "unknown"]), [valve_open ? "starting" : "stopping"] a transfer into \the [holding || "air"].<br>"
+			release_log += timer_logmsg
+			investigate_log(timer_logmsg, INVESTIGATE_ATMOS)
+			// Ручное открытие опасной канистры пингует админов - отложенное
+			// таймером обязано пинговать так же, иначе взведённый таймер это
+			// бесплатный обход надзора.
+			if(valve_open && !holding)
+				report_dangerous_release("Valve timer (armed by [timer_armer || "unknown"])", "Valve timer (armed by [timer_armer || "unknown"])")
 	if(valve_open)
+		// An open valve watches outside pressure (breach -> resume leaking);
+		// there is no wake event for that, so never sleep while open.
+		excited = TRUE
 		var/turf/T = get_turf(src)
 		var/datum/gas_mixture/target_air = holding ? holding.air_contents : T.return_air()
 
 		if(release_gas_to(air_contents, target_air, release_pressure) && !holding)
 			air_update_turf()
 
-	// var/our_pressure = air_contents.return_pressure()
-	// var/our_temperature = air_contents.return_temperature()
+	// Heat damage is not this proc's business: the flameless exposure path
+	// (atmos_expose) and direct flame contact (temperature_expose) both handle
+	// it, and neither needs the canister awake to do so.
 
-	///function used to check the limit of the canisters and also set the amount of damage that the canister can receive, if the heat and pressure are way higher than the limit the more damage will be done
-	// currently unused
-	// if(our_temperature > heat_limit || our_pressure > pressure_limit)
-	// 	take_damage(clamp((our_temperature/heat_limit) * (our_pressure/pressure_limit) * delta_time * 2, 5, 50), BURN, 0)
-	update_icon()
+	// Rebuilding identical overlays every fire costs more than the whole gas
+	// step; redraw only when the indicator lights actually move.
+	if(pressure_band() != shown_pressure_band)
+		update_icon()
+	return ..()
 
 /obj/machinery/portable_atmospherics/canister/ui_state(mob/user)
 	return GLOB.physical_state
@@ -396,7 +571,11 @@
 		return
 	switch(action)
 		if("relabel")
-			var/label = input("New canister label:", name) as null|anything in sort_list(label2types)
+			// Сырой input() усыпляет ЭТОТ фрейм ui_act вместе с src, а BYOND держит
+			// нативный диалог до ответа даже после дисконнекта игрока - брошенное окно
+			// пинило канистру навсегда и уводило её в hard delete. tgui-модалка
+			// разматывается на логауте (SStgui.on_logout -> ui_close -> wait() выходит).
+			var/label = tgui_input_list(usr, "New canister label:", name, sort_list(label2types))
 			if(label && !..())
 				var/newtype = label2types[label]
 				if(newtype)
@@ -404,7 +583,12 @@
 					investigate_log("was relabelled to [initial(replacement.name)] by [key_name(usr)].", INVESTIGATE_ATMOS)
 					name = initial(replacement.name)
 					desc = initial(replacement.desc)
-					icon_state = initial(replacement.icon_state)
+					// База обязана переехать вместе со спрайтом, иначе следующий
+					// update_icon_state() вернёт канистре тот газ, которым она
+					// была при спавне.
+					base_icon_state = initial(replacement.icon_state)
+					icon_state = base_icon_state
+					update_icon()
 		if("restricted")
 			restricted = !restricted
 			if(restricted)
@@ -424,7 +608,8 @@
 				pressure = can_max_release_pressure
 				. = TRUE
 			else if(pressure == "input")
-				pressure = input("New release pressure ([can_min_release_pressure]-[can_max_release_pressure] kPa):", name, release_pressure) as num|null
+				// Тот же класс утечки, что и в "relabel" - см. комментарий выше.
+				pressure = tgui_input_number(usr, "New release pressure ([can_min_release_pressure]-[can_max_release_pressure] kPa):", name, release_pressure, can_max_release_pressure, can_min_release_pressure)
 				if(!isnull(pressure) && !..())
 					. = TRUE
 			else if(text2num(pressure) != null)
@@ -439,21 +624,7 @@
 			if(valve_open)
 				logmsg = "Valve was <b>opened</b> by [key_name(usr)], starting a transfer into \the [holding || "air"].<br>"
 				if(!holding)
-					var/list/danger = list()
-					for(var/id in air_contents.get_gases())
-						var/gas = air_contents.get_moles(id)
-						if(!(GLOB.gas_data.flags[id] & GAS_FLAG_DANGEROUS))
-							continue
-						if(gas > (GLOB.gas_data.visibility[id] || MOLES_GAS_VISIBLE)) //if moles_visible is undefined, default to default visibility
-							danger[GLOB.gas_data.names[id]] = gas //ex. "plasma" = 20
-
-					if(danger.len)
-						message_admins("[ADMIN_LOOKUPFLW(usr)] opened a canister that contains the following at [ADMIN_VERBOSEJMP(src)]:")
-						log_admin("[key_name(usr)] opened a canister that contains the following at [AREACOORD(src)]:")
-						for(var/name in danger)
-							var/msg = "[name]: [danger[name]] moles."
-							log_admin(msg)
-							message_admins(msg)
+					report_dangerous_release("[ADMIN_LOOKUPFLW(usr)]", "[key_name(usr)]")
 			else
 				logmsg = "Valve was <b>closed</b> by [key_name(usr)], stopping the transfer into \the [holding || "air"].<br>"
 			investigate_log(logmsg, INVESTIGATE_ATMOS)
@@ -469,7 +640,8 @@
 				if("increase")
 					timer_set = min(maximum_timer_set, timer_set + 10)
 				if("input")
-					var/user_input = input(usr, "Set time to valve toggle.", name) as null|num
+					// Тот же класс утечки, что и в "relabel" - см. комментарий выше.
+					var/user_input = tgui_input_number(usr, "Set time to valve toggle.", name, timer_set, maximum_timer_set, minimum_timer_set)
 					if(!user_input)
 						return
 					var/N = text2num(user_input)
@@ -483,8 +655,16 @@
 		if("eject")
 			if(holding)
 				if(valve_open)
+					// Кнопка в окне вынимает баллон, НЕ закрывая клапан, а alt-click
+					// закрывает. Асимметрия штатная (иногда стравить в комнату и
+					// надо), но до сих пор о ней узнавали только админы: игрок
+					// видел, как канистра "сама" продолжила выпускать газ.
+					to_chat(usr, span_warning("Вы вынимаете [holding] при открытом клапане - [src] продолжит стравливать содержимое прямо в воздух! Закройте клапан или доставайте баллон alt-кликом, он закрывает его сам."))
 					message_admins("[ADMIN_LOOKUPFLW(usr)] removed [holding] from [src] with valve still open at [ADMIN_VERBOSEJMP(src)] releasing contents into the [span_antigrif("AIR")].")
 					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the [span_antigrif("AIR")].", INVESTIGATE_ATMOS)
 				replace_tank(usr, FALSE)
 				. = TRUE
+	// Any UI interaction may have opened the valve or armed the timer on a
+	// sleeping canister.
+	excite()
 	update_icon()

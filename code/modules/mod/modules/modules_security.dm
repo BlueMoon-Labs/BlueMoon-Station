@@ -3,9 +3,9 @@
 ///Cloaking - Lowers the user's visibility, can be interrupted by being touched or attacked.
 /obj/item/mod/module/stealth
 	name = "MOD prototype cloaking module"
-	desc = "A complete retrofitting of the suit, this is a form of visual concealment tech employing esoteric technology \
-		to bend light around the user, as well as mimetic materials to make the surface of the suit match the \
-		surroundings based off sensor data. For some reason, this tech is rarely seen."
+	desc = "Полная модернизация костюма, форма технологии визуального маскировки, использующей эзотерическую технологию \
+		для изгиба света вокруг пользователя, а также миметические материалы для соответствия поверхности костюма \
+		окружению на основе данных сенсоров. По какой-то причине эта технология встречается редко."
 	icon_state = "cloak"
 	module_type = MODULE_TOGGLE
 	complexity = 4
@@ -67,7 +67,7 @@
 ///Magnetic Harness - Automatically puts guns in your suit storage when you drop them.
 /obj/item/mod/module/magnetic_harness
 	name = "MOD magnetic harness module"
-	desc = "Based off old TerraGov harness kits, this magnetic harness automatically attaches dropped guns back to the wearer."
+	desc = "Основано на старых комплектах подвесок TerraGov, эта магнитная система автоматически возвращает упавшее оружие к носителю."
 	icon_state = "mag_harness"
 	complexity = 2
 	use_power_cost = DEFAULT_CHARGE_DRAIN
@@ -86,13 +86,15 @@
 		guns_typecache = typecacheof(list(/obj/item/gun/ballistic, /obj/item/gun/energy, /obj/item/gun/grenadelauncher, /obj/item/gun/chem, /obj/item/gun/syringe))
 
 /obj/item/mod/module/magnetic_harness/on_install()
-	already_allowed_guns = guns_typecache & mod.chestplate.allowed
-	mod.chestplate.allowed |= guns_typecache
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
+	already_allowed_guns = guns_typecache & chestplate.allowed
+	chestplate.allowed |= guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
+	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	if(deleting)
 		return
-	mod.chestplate.allowed -= (guns_typecache - already_allowed_guns)
+	chestplate.allowed -= (guns_typecache - already_allowed_guns)
 
 /obj/item/mod/module/magnetic_harness/on_suit_activation()
 	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(check_dropped_item))
@@ -105,7 +107,7 @@
 
 	if(!is_type_in_typecache(dropped_item, guns_typecache))
 		return
-	if(new_location != get_turf(src))
+	if(new_location != get_turf(mod))
 		return
 	addtimer(CALLBACK(src, PROC_REF(pick_up_item), dropped_item), magnet_delay)
 
@@ -114,8 +116,8 @@
 		return
 	if(!mod.wearer.equip_to_slot_if_possible(item, ITEM_SLOT_SUITSTORE, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return
-	playsound(src, 'sound/items/modsuit/magnetic_harness.ogg', 50, TRUE)
-	balloon_alert(mod.wearer, "[item] reattached")
+	playsound(mod, 'sound/items/modsuit/magnetic_harness.ogg', 50, TRUE)
+	mod.balloon_alert(mod.wearer, "[item] reattached")
 	drain_power(use_power_cost)
 
 ///Pepper Shoulders
@@ -123,10 +125,10 @@
 ///Holster - Instantly holsters any not huge gun.
 /obj/item/mod/module/holster
 	name = "MOD holster module"
-	desc = "Based off typical storage compartments, this system allows the suit to holster a \
-		standard firearm across its surface and allow for extremely quick retrieval. \
-		While some users prefer the chest, others the forearm for quick deployment, \
-		some law enforcement prefer the holster to extend from the thigh."
+	desc = "Основано на типичных отделениях хранения, эта система позволяет костюму размещать \
+		стандартное огнестрельное оружие на поверхности и обеспечивает крайне быстрое извлечение. \
+		Хотя некоторые пользователи предпочитают грудь, другие — предплечье для быстрого развёртывания, \
+		некоторые представители правопорядка предпочитают, чтобы кобура выдвигалась из бедра."
 	icon_state = "holster"
 	module_type = MODULE_USABLE
 	complexity = 2
@@ -144,20 +146,20 @@
 	if(!holstered)
 		var/obj/item/gun/holding = mod.wearer.get_active_held_item()
 		if(!holding)
-			balloon_alert(mod.wearer, "nothing to holster!")
+			mod.balloon_alert(mod.wearer, "nothing to holster!")
 			return
 		if(!istype(holding) || holding.w_class > WEIGHT_CLASS_BULKY)
-			balloon_alert(mod.wearer, "it doesn't fit!")
+			mod.balloon_alert(mod.wearer, "it doesn't fit!")
 			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
 			holstered = holding
-			balloon_alert(mod.wearer, "weapon holstered")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+			mod.balloon_alert(mod.wearer, "weapon holstered")
+			playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else if(mod.wearer.put_in_active_hand(holstered, forced = FALSE, ignore_animation = TRUE))
-		balloon_alert(mod.wearer, "weapon drawn")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+		mod.balloon_alert(mod.wearer, "weapon drawn")
+		playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else
-		balloon_alert(mod.wearer, "holster full!")
+		mod.balloon_alert(mod.wearer, "holster full!")
 
 /obj/item/mod/module/holster/on_uninstall(deleting = FALSE)
 	if(holstered)
@@ -175,7 +177,7 @@
 ///Megaphone - Lets you speak loud.
 /obj/item/mod/module/megaphone
 	name = "MOD megaphone module"
-	desc = "A microchip megaphone linked to a MODsuit, for very important purposes, like: loudness."
+	desc = "Микрочиповый мегафон, связанный с костюмом MOD, для очень важных целей, таких как: громкость."
 	icon_state = "megaphone"
 	module_type = MODULE_TOGGLE
 	complexity = 1
@@ -184,6 +186,7 @@
 	cooldown_time = 0.5 SECONDS
 	/// List of spans we add to the speaker.
 	var/list/voicespan = list(SPAN_COMMAND)
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/megaphone/on_activation()
 	. = ..()
@@ -201,6 +204,7 @@
 	SIGNAL_HANDLER
 
 	speech_args[SPEECH_SPANS] |= voicespan
+	playsound(get_turf(mod), 'sound/items/megaphone.ogg', 100, 0, 1)
 	drain_power(use_power_cost)
 
 ///Criminal Capture

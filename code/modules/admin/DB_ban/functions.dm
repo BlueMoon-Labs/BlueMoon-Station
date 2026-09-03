@@ -2,7 +2,7 @@
 #define MAX_ADMIN_BANS_PER_HEADMIN 3
 
 //Either pass the mob you wish to ban in the 'banned_mob' attribute, or the banckey, banip and bancid variables. If both are passed, the mob takes priority! If a mob is not passed, banckey is the minimum that needs to be passed! banip and bancid are optional.
-/datum/admins/proc/DB_ban_record(bantype, mob/banned_mob, duration = -1, reason, job = "", bankey = null, banip = null, bancid = null, forced_holder = FALSE)
+/datum/admins/proc/DB_ban_record(bantype, mob/banned_mob, duration = -1, reason, job = "", bankey = null, banip = null, bancid = null, forced_holder = FALSE, suppress_feedback = FALSE)
 
 	if(!forced_holder && !check_rights(R_BAN))
 		return "Not enough rights"
@@ -68,6 +68,11 @@
 	if(ismob(banned_mob))
 		ckey = banned_mob.ckey
 		bankey = banned_mob.key
+		if(!ckey && banned_mob.mind?.key)
+			ckey = ckey(banned_mob.mind.key)
+			bankey = banned_mob.mind.key
+		if(!ckey)
+			return "No ckey"
 		if(banned_mob.client)
 			computerid = banned_mob.client.computer_id
 			ip = banned_mob.client.address
@@ -81,7 +86,8 @@
 
 	var/had_banned_mob = banned_mob != null
 	var/client/banned_client = banned_mob?.client
-	var/banned_mob_guest_key = had_banned_mob && IsGuestKey(banned_mob.key)
+	var/guest_check_key = had_banned_mob && (banned_mob.key || banned_mob.mind?.key)
+	var/banned_mob_guest_key = guest_check_key && IsGuestKey(guest_check_key)
 	banned_mob = null
 	var/datum/db_query/query_add_ban_get_ckey = SSdbcore.NewQuery({"
 		SELECT 1
@@ -169,15 +175,17 @@
 		qdel(query_add_ban)
 		return "Failed to add ban"
 	qdel(query_add_ban)
-	to_chat(usr, "<span class='adminnotice'>Ban saved to database.</span>")
-	var/msg = "[key_name_admin(usr)] has added a [bantype_str] for [bankey] [(job)?"([job])":""] [(duration > 0)?"([duration] minutes)":""] with the reason: \"[reason]\" to the ban database."
-	message_admins(msg,1)
-	var/datum/admin_help/AH = admin_ticket_log(ckey, msg)
+	var/datum/admin_help/AH = null
+	if(!suppress_feedback)
+		to_chat(usr, "<span class='adminnotice'>Ban saved to database.</span>")
+		var/msg = "[key_name_admin(usr)] has added a [bantype_str] for [bankey] [(job)?"([job])":""] [(duration > 0)?"([duration] minutes)":""] with the reason: \"[reason]\" to the ban database."
+		message_admins(msg,1)
+		AH = admin_ticket_log(ckey, msg)
 
 	if(announceinirc)
 		send2adminchat("BAN ALERT","[a_key] applied a [bantype_str] on [bankey]")
 	//splurt edit
-	if(((bantype_str == "PACIFICATION_BAN") || (job == "pacifist")) && banned_client.mob)
+	if(((bantype_str == "PACIFICATION_BAN") || (job == "pacifist")) && banned_client?.mob)
 		ADD_TRAIT(banned_client.mob, TRAIT_PACIFISM, "pacification ban")
 	//
 
@@ -305,7 +313,7 @@
 	switch(param)
 		if("reason")
 			if(!value)
-				value = input("Insert the new reason for [p_key]'s ban", "New Reason", "[reason]", null) as null|text
+				value = tgui_input_text(usr, "Insert the new reason for [p_key]'s ban", "New Reason", reason)
 				if(!value)
 					to_chat(usr, "Cancelled")
 					return
@@ -318,7 +326,7 @@
 			message_admins("[key_name_admin(usr)] has edited a ban for [p_key]'s reason from [reason] to [value]")
 		if("duration")
 			if(!value)
-				value = input("Insert the new duration (in minutes) for [p_key]'s ban", "New Duration", "[duration]", null) as null|num
+				value = tgui_input_number(usr, "Insert the new duration (in minutes) for [p_key]'s ban", "New Duration", duration)
 				if(!isnum(value) || !value)
 					to_chat(usr, "Cancelled")
 					return
@@ -330,7 +338,7 @@
 			qdel(query_edit_ban_duration)
 			message_admins("[key_name_admin(usr)] has edited a ban for [p_key]'s duration from [duration] to [value]")
 		if("unban")
-			if(alert("Unban [p_key]?", "Unban?", "Yes", "No") == "Yes")
+			if(tgui_alert(usr, "Unban [p_key]?", "Unban?", list("Yes", "No")) == "Yes")
 				DB_ban_unban_by_id(banid)
 				return
 			else
@@ -394,9 +402,9 @@
 	))
 
 /client/proc/DB_ban_panel()
-	set category = "Admin"
-	set name = "Banning Panel"
-	set desc = "Edit admin permissions"
+	set category = "Admin.Player Interaction"
+	set name = "Banning & Unbanning"
+	set desc = "SQL ban lookup, custom ban, job role grid (WhiteMoon-style)"
 
 	if(!holder)
 		return
@@ -411,205 +419,5 @@
 	if(!check_rights(R_BAN))
 		return
 
-	if(!SSdbcore.Connect())
-		to_chat(usr, "<span class='danger'>Failed to establish database connection.</span>")
-		return
-
-	var/output = {"<style>
-input, select, textarea {
-	background-color: #1e1e1e;
-	color: #ffffff;
-	border: 1px solid #40628a;
-	padding: 2px 4px;
-}
-th { color: #98B0C3; }
-</style>"}
-	output += "<div align='center'><table width='90%'><tr>"
-
-	output += "<td width='35%' align='center'>"
-	output += "<h1>Banning panel</h1>"
-	output += "</td>"
-
-	output += "<td width='65%' align='center' bgcolor='#2d2d2d'>"
-
-	output += "<form method='GET' action='?src=[REF(src)]'><b>Add custom ban:</b> (ONLY use this if you can't ban through any other method)"
-	output += "<input type='hidden' name='src' value='[REF(src)]'>"
-	output += HrefTokenFormField()
-	output += "<table width='100%'><tr>"
-	output += "<td><b>Ban type:</b><select name='dbbanaddtype'>"
-	output += "<option value=''>--</option>"
-	output += "<option value='[BANTYPE_PERMA]'>PERMABAN</option>"
-	output += "<option value='[BANTYPE_TEMP]'>TEMPBAN</option>"
-	output += "<option value='[BANTYPE_JOB_PERMA]'>JOB PERMABAN</option>"
-	output += "<option value='[BANTYPE_JOB_TEMP]'>JOB TEMPBAN</option>"
-	output += "<option value='[BANTYPE_ADMIN_PERMA]'>ADMIN PERMABAN</option>"
-	output += "<option value='[BANTYPE_ADMIN_TEMP]'>ADMIN TEMPBAN</option>"
-	output += "<option value='[BANTYPE_PACIFIST]'>PACIFICATION BAN</option>"
-	output += "</select></td>"
-	output += "<td><b>Key:</b> <input type='text' name='dbbanaddkey'></td></tr>"
-	output += "<tr><td><b>IP:</b> <input type='text' name='dbbanaddip'></td>"
-	output += "<td><b>Computer id:</b> <input type='text' name='dbbanaddcid'></td></tr>"
-	output += "<tr><td><b>Duration:</b> <input type='text' name='dbbaddduration'></td>"
-	output += "<tr><td><b>Severity:</b><select name='dbbanaddseverity'>"
-	output += "<option value=''>--</option>"
-	output += "<option value='High'>High Severity</option>"
-	output += "<option value='Medium'>Medium Severity</option>"
-	output += "<option value='Minor'>Minor Severity</option>"
-	output += "<option value='None'>No Severity</option>"
-	output += "<td><b>Job:</b><select name='dbbanaddjob'>"
-	output += "<option value=''>--</option>"
-	for(var/j in get_all_jobs())
-		output += "<option value='[j]'>[j]</option>"
-	for(var/j in GLOB.nonhuman_positions)
-		output += "<option value='[j]'>[j]</option>"
-	for(var/j in list(ROLE_TRAITOR, ROLE_CHANGELING, ROLE_OPERATIVE, ROLE_REV, ROLE_CULTIST, ROLE_WIZARD, ROLE_HERETIC))
-		output += "<option value='[j]'>[j]</option>"
-	output += "</select></td></tr></table>"
-	output += "<b>Reason:<br></b><textarea name='dbbanreason' charset='UTF-8' cols='50'></textarea><br>"
-	output += "<input type='submit' value='Add ban'>"
-	output += "</form>"
-
-	output += "</td>"
-	output += "</tr>"
-	output += "</table>"
-
-	output += "<form method='GET' action='?src=[REF(src)]'><b>Search:</b> "
-	output += "<input type='hidden' name='src' value='[REF(src)]'>"
-	output += HrefTokenFormField()
-	output += "<b>Ckey:</b> <input type='text' name='dbsearchckey' value='[playerckey]'>"
-	output += "<b>Admin ckey:</b> <input type='text' name='dbsearchadmin' value='[adminckey]'><br>"
-	output += "<b>IP:</b> <input type='text' name='dbsearchip' value='[ip]'>"
-	output += "<b>CID:</b> <input type='text' name='dbsearchcid' value='[cid]'>"
-	output += "<input type='submit' value='search'>"
-	output += "</form>"
-	output += "Please note that all jobban bans or unbans are in-effect the following round."
-
-	if(adminckey || playerckey || ip || cid)
-		var/list/searchlist = list()
-		var/list/searchlist_args = list()
-		if(playerckey)
-			searchlist += "ckey = :playerckey"
-			searchlist_args["playerckey"] = playerckey
-		if(adminckey)
-			searchlist += "a_ckey = :adminckey"
-			searchlist_args["adminckey"] = adminckey
-		if(ip)
-			searchlist += "ip = INET_ATON(:ip)"
-			searchlist_args["ip"] = ip
-		if(cid)
-			searchlist += "computerid = :cid"
-			searchlist_args["cid"] = cid
-		var/search = searchlist.Join(" AND ") // x = x AND y = z
-		var/bancount = 0
-		var/bansperpage = 15
-		var/pagecount = 0
-		page = text2num(page)
-		var/datum/db_query/query_count_bans = SSdbcore.NewQuery({"
-			SELECT COUNT(id) FROM [format_table_name("ban")]
-			WHERE [search]
-			"}, searchlist_args)
-		if(!query_count_bans.warn_execute())
-			qdel(query_count_bans)
-			return
-		if(query_count_bans.NextRow())
-			bancount = text2num(query_count_bans.item[1])
-		qdel(query_count_bans)
-		if(bancount > bansperpage)
-			output += "<br><b>Page: </b>"
-			while(bancount > 0)
-				output+= "|<a href='?_src_=holder;[HrefToken()];dbsearchckey=[playerckey];dbsearchadmin=[adminckey];dbsearchpage=[pagecount]'>[pagecount == page ? "<b>\[[pagecount]\]</b>" : "\[[pagecount]\]"]</a>"
-				bancount -= bansperpage
-				pagecount++
-			output += "|"
-		var/blcolor = "#352222" //banned light
-		var/bdcolor = "#3d2020" //banned dark
-		var/ulcolor = "#223522" //unbanned light
-		var/udcolor = "#203d20" //unbanned dark
-
-		output += "<table width='90%' bgcolor='#383838' cellpadding='5' cellspacing='0' align='center'>"
-		output += "<tr>"
-		output += "<th width='25%'><b>TYPE</b></th>"
-		output += "<th width='20%'><b>CKEY</b></th>"
-		output += "<th width='20%'><b>TIME APPLIED</b></th>"
-		output += "<th width='20%'><b>ADMIN</b></th>"
-		output += "<th width='15%'><b>OPTIONS</b></th>"
-		output += "</tr>"
-		var/limit = " LIMIT [bansperpage * page], [bansperpage]"
-
-		var/datum/db_query/query_search_bans = SSdbcore.NewQuery({"
-			SELECT id, bantime, bantype, reason, job, duration, expiration_time, IFNULL((SELECT byond_key FROM [format_table_name("player")] WHERE [format_table_name("player")].ckey = [format_table_name("ban")].ckey), ckey), IFNULL((SELECT byond_key FROM [format_table_name("player")] WHERE [format_table_name("player")].ckey = [format_table_name("ban")].a_ckey), a_ckey), unbanned, IFNULL((SELECT byond_key FROM [format_table_name("player")] WHERE [format_table_name("player")].ckey = [format_table_name("ban")].unbanned_ckey), unbanned_ckey), unbanned_datetime, edits, round_id
-			FROM [format_table_name("ban")]
-			WHERE [search] ORDER BY bantime DESC[limit]"}, searchlist_args)
-		if(!query_search_bans.warn_execute())
-			qdel(query_search_bans)
-			return
-
-		while(query_search_bans.NextRow())
-			var/banid = query_search_bans.item[1]
-			var/bantime = query_search_bans.item[2]
-			var/bantype  = query_search_bans.item[3]
-			var/reason = query_search_bans.item[4]
-			var/job = query_search_bans.item[5]
-			var/duration = query_search_bans.item[6]
-			var/expiration = query_search_bans.item[7]
-			var/ban_key = query_search_bans.item[8]
-			var/a_key = query_search_bans.item[9]
-			var/unbanned = query_search_bans.item[10]
-			var/unban_key = query_search_bans.item[11]
-			var/unbantime = query_search_bans.item[12]
-			var/edits = query_search_bans.item[13]
-			var/round_id = query_search_bans.item[14]
-
-			var/lcolor = blcolor
-			var/dcolor = bdcolor
-			if(unbanned)
-				lcolor = ulcolor
-				dcolor = udcolor
-
-			var/typedesc =""
-			switch(bantype)
-				if("PERMABAN")
-					typedesc = "<font color='red'><b>PERMABAN</b></font>"
-				if("TEMPBAN")
-					typedesc = "<b>TEMPBAN</b><br><font size='2'>([duration] minutes [(unbanned) ? "" : "(<a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=duration;dbbanid=[banid]\">Edit</a>))"]<br>Expires [expiration]</font>"
-				if("JOB_PERMABAN")
-					typedesc = "<b>JOBBAN</b><br><font size='2'>([job])"
-				if("JOB_TEMPBAN")
-					typedesc = "<b>TEMP JOBBAN</b><br><font size='2'>([job])<br>([duration] minutes [(unbanned) ? "" : "(<a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=duration;dbbanid=[banid]\">Edit</a>))"]<br>Expires [expiration]"
-				if("ADMIN_PERMABAN")
-					typedesc = "<b>ADMIN PERMABAN</b>"
-				if("ADMIN_TEMPBAN")
-					typedesc = "<b>ADMIN TEMPBAN</b><br><font size='2'>([duration] minutes [(unbanned) ? "" : "(<a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=duration;dbbanid=[banid]\">Edit</a>))"]<br>Expires [expiration]</font>"
-				if("PACIFICATION_BAN")
-					typedesc = "<b>PACIFICATION BAN</b><br><font size='2'>([duration] minutes [(unbanned) ? "" : "(<a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=duration;dbbanid=[banid]\">Edit</a>))"]<br>Expires [expiration]</font>"
-
-			output += "<tr bgcolor='[dcolor]'>"
-			output += "<td align='center'>[typedesc]</td>"
-			output += "<td align='center'><b>[ban_key]</b></td>"
-			output += "<td align='center'>[bantime] (Round ID: [round_id])</td>"
-			output += "<td align='center'><b>[a_key]</b></td>"
-			output += "<td align='center'>[(unbanned) ? "" : "<b><a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=unban;dbbanid=[banid]\">Unban</a></b>"]</td>"
-			output += "</tr>"
-			output += "<tr bgcolor='[lcolor]'>"
-			output += "<td align='center' colspan='5'><b>Reason: [(unbanned) ? "" : "(<a href=\"byond://?src=[REF(src)];[HrefToken()];dbbanedit=reason;dbbanid=[banid]\">Edit</a>)"]</b> <cite>\"[reason]\"</cite></td>"
-			output += "</tr>"
-			if(edits)
-				output += "<tr bgcolor='[dcolor]'>"
-				output += "<td align='center' colspan='5'><b>EDITS</b></td>"
-				output += "</tr>"
-				output += "<tr bgcolor='[lcolor]'>"
-				output += "<td align='center' colspan='5'><font size='2'>[edits]</font></td>"
-				output += "</tr>"
-			if(unbanned)
-				output += "<tr bgcolor='[dcolor]'>"
-				output += "<td align='center' colspan='5'><b>UNBANNED by admin [unban_key] on [unbantime]</b></td>"
-				output += "</tr>"
-			output += "<tr>"
-			output += "<td colspan='5' bgcolor='#1e1e1e'>&nbsp</td>"
-			output += "</tr>"
-		qdel(query_search_bans)
-		output += "</table></div>"
-
-	var/datum/browser/popup = new(usr, "lookupbans", "Ban Lookup", 900, 500)
-	popup.set_content(output)
-	popup.open(FALSE)
+	var/datum/ban_panel/panel = new(playerckey, adminckey, ip, cid, page)
+	panel.ui_interact(usr)

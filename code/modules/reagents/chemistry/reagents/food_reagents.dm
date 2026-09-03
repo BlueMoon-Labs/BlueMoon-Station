@@ -21,7 +21,8 @@
 		current_cycle++
 		M.adjust_nutrition(nutriment_factor, max_nutrition)
 	M.CheckBloodsuckerEatFood(nutriment_factor)
-	holder.remove_reagent(type, metabolization_rate)
+	if(holder)
+		holder.remove_reagent(type, metabolization_rate)
 
 /datum/reagent/consumable/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == INGEST)
@@ -251,15 +252,15 @@
 	description = "This is what makes chilis hot."
 	color = "#B31008" // rgb: 179, 16, 8
 	taste_description = "hot peppers"
-	taste_mult = 1.5
+	taste_mult = 4.5
+	var/safe_heating = TRUE
 
 /datum/reagent/consumable/capsaicin/on_mob_life(mob/living/carbon/M)
 	var/heating = 0
 	switch(current_cycle)
 		if(1 to 15)
 			heating = 5 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/cryostylane))
-				holder.remove_reagent(/datum/reagent/cryostylane, 5)
+			holder.remove_reagent(/datum/reagent/cryostylane, 5)
 			if(isslime(M))
 				heating = rand(5,20)
 		if(15 to 25)
@@ -274,8 +275,27 @@
 			heating = 20 * TEMPERATURE_DAMAGE_COEFFICIENT
 			if(isslime(M))
 				heating = rand(20,25)
-	M.adjust_bodytemperature(heating)
+	if(safe_heating)
+		M.adjust_bodytemperature(heating, max_temp = BODYTEMP_HEAT_DAMAGE_LIMIT)
+	else
+		M.adjust_bodytemperature(heating)
+		if(prob(8))
+			M.blur_eyes(3)
+			to_chat(M, span_warning(pick("Язык жжет огнем!", "Мой рот в огне!", "ОЧЕНЬ остро!")))
 	..()
+
+/datum/reagent/consumable/capsaicin/reaper
+	name = "Reaper Capsaicin Oil"
+	description = "The spiciest thing you can eat, your tongue will experience hell."
+	color = "#a60800"
+	taste_description = "very, VERY HOT"
+	taste_mult = 10
+	safe_heating = FALSE
+
+/datum/reagent/consumable/capsaicin/reaper/on_mob_metabolize(mob/living/L)
+	. = ..()
+	L.adjust_bodytemperature(20 * TEMPERATURE_DAMAGE_COEFFICIENT)
+	to_chat(L, span_warning("Вы чувствуете нестерпимое жжение на языке, ОЧЕНЬ ОСТРО!"))
 
 /datum/reagent/consumable/frostoil
 	name = "Frost Oil"
@@ -290,8 +310,7 @@
 	switch(current_cycle)
 		if(1 to 15)
 			cooling = -10 * TEMPERATURE_DAMAGE_COEFFICIENT
-			if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
-				holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
+			holder.remove_reagent(/datum/reagent/consumable/capsaicin, 5)
 			if(isslime(M))
 				cooling = -rand(5,20)
 		if(15 to 25)
@@ -335,77 +354,76 @@
 		return
 
 	var/mob/living/carbon/victim = M
-	if(method == TOUCH || method == VAPOR)
-		//check for protection
-		var/mouth_covered = 0
-		var/eyes_covered = 0
-		var/obj/item/safe_thing = null
+	if(method != TOUCH && method != VAPOR)
+		return
 
-		//monkeys and humans can have masks
-		if( victim.wear_mask )
-			if ( victim.wear_mask.flags_cover & MASKCOVERSEYES )
-				eyes_covered = 1
-				safe_thing = victim.wear_mask
-			if ( victim.wear_mask.flags_cover & MASKCOVERSMOUTH )
-				mouth_covered = 1
-				safe_thing = victim.wear_mask
+	var/mouth_covered = FALSE
+	var/eyes_covered = FALSE
 
-		//only humans can have helmets and glasses
-		if(ishuman(victim))
-			var/mob/living/carbon/human/H = victim
-			if( H.head )
-				if ( H.head.flags_cover & HEADCOVERSEYES )
-					eyes_covered = 1
-					safe_thing = H.head
-				if ( H.head.flags_cover & HEADCOVERSMOUTH )
-					mouth_covered = 1
-					safe_thing = H.head
-			if(H.glasses)
-				eyes_covered = 1
-				if ( !safe_thing )
-					safe_thing = H.glasses
+	if(victim.wear_mask)
+		if(victim.wear_mask.flags_cover & MASKCOVERSEYES)
+			eyes_covered = TRUE
+		if(victim.wear_mask.flags_cover & MASKCOVERSMOUTH)
+			mouth_covered = TRUE
 
-		//actually handle the pepperspray effects
-		if ( eyes_covered && mouth_covered )
-			return
-		else if ( mouth_covered )	// Reduced effects if partially protected
-			if(prob(50))
-				if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
-					victim.emote("realagony")
-			victim.blur_eyes(8)
-			victim.blind_eyes(5)
-			victim.confused = max(M.confused, 8)
-			victim.damageoverlaytemp = 150
-			victim.Paralyze(min(reac_volume * 3, 20))
-			shake_camera(victim, 8, 2)
-			victim.DefaultCombatKnockdown(200, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 4, 20))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 18 SECONDS)
-			return
-		else if ( eyes_covered ) // Eye cover is better than mouth cover
-			victim.blur_eyes(8)
-			victim.damageoverlaytemp = 80
-			shake_camera(victim, 4, 1)
-			return
-		else // Oh dear :D — full face hit
-			if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
-				victim.emote("realagony")
-			victim.blur_eyes(14)
-			victim.blind_eyes(8)
-			victim.confused = max(M.confused, 16)
-			victim.damageoverlaytemp = 200
-			victim.Paralyze(min(reac_volume * 6, 40))
-			shake_camera(victim, 14, 5)
-			victim.DefaultCombatKnockdown(220, override_hardstun = 0.1, override_stamdmg = min(reac_volume * 6, 35))
-			victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
-			addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 22 SECONDS)
-		victim.update_damage_hud()
+	if(ishuman(victim))
+		var/mob/living/carbon/human/H = victim
+		if(H.head)
+			if(H.head.flags_cover & HEADCOVERSEYES)
+				eyes_covered = TRUE
+			if(H.head.flags_cover & HEADCOVERSMOUTH)
+				mouth_covered = TRUE
+		if(H.glasses && istype(H.glasses, /obj/item/clothing/glasses))
+			var/obj/item/clothing/glasses/G = H.glasses
+			if(G.flash_protect >= 2) // welding-grade eye protection only
+				eyes_covered = TRUE
+
+	if(eyes_covered && mouth_covered)
+		return
+
+	var/can_scream = !HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)
+
+	if(mouth_covered) // Eyes exposed — searing pain
+		if(can_scream)
+			victim.emote("realagony")
+		victim.blur_eyes(12)
+		victim.blind_eyes(8)
+		victim.confused = max(victim.confused, 12)
+		victim.damageoverlaytemp = 200
+		victim.Paralyze(min(reac_volume * 4, 30))
+		shake_camera(victim, 12, 3)
+		victim.DefaultCombatKnockdown(240, override_hardstun = 0.15, override_stamdmg = min(reac_volume * 5, 30))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 22 SECONDS)
+	else if(eyes_covered) // Mouth exposed — inhaled capsaicin
+		victim.emote("cough")
+		victim.confused = max(victim.confused, 14)
+		victim.damageoverlaytemp = 160
+		victim.Paralyze(min(reac_volume * 3, 25))
+		shake_camera(victim, 6, 2)
+		victim.DefaultCombatKnockdown(200, override_hardstun = 0.12, override_stamdmg = min(reac_volume * 5, 28))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 20 SECONDS)
+	else // Full face hit
+		if(can_scream)
+			victim.emote("realagony")
+		victim.emote("cough")
+		victim.blur_eyes(18)
+		victim.blind_eyes(12)
+		victim.confused = max(victim.confused, 20)
+		victim.damageoverlaytemp = 250
+		victim.Paralyze(min(reac_volume * 8, 50))
+		shake_camera(victim, 18, 6)
+		victim.DefaultCombatKnockdown(280, override_hardstun = 0.15, override_stamdmg = min(reac_volume * 8, 45))
+		victim.add_movespeed_modifier(/datum/movespeed_modifier/reagent/pepperspray)
+		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/reagent/pepperspray), 28 SECONDS)
+	victim.update_damage_hud()
 
 /datum/reagent/consumable/condensedcapsaicin/on_mob_life(mob/living/carbon/M)
-	if(prob(12))
-		M.visible_message("<span class='warning'>[M] [pick("dry heaves!","coughs!","splutters!","gags!")]</span>")
-	if(prob(8))
-		M.blur_eyes(2)
+	if(prob(22))
+		M.emote("cough")
+	if(prob(10))
+		M.blur_eyes(3)
 	..()
 
 /datum/reagent/consumable/sodiumchloride

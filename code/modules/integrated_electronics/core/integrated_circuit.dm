@@ -25,7 +25,23 @@
 	var/removable = TRUE 			// Determines if a circuit is removable from the assembly.
 	var/displayed_name = ""
 	var/demands_object_input = FALSE
+	var/expected_object_type = null	// If set, only items of this type will be offered to the circuit upon inserting them into the assembly. Doesn't affect actual circuit's attackby(). Keep null to accept anything, read can_accept_item() proc.
 	var/can_input_object_when_closed = FALSE
+	var/limit_per_assembly = null	// If set to an integer > 0, limits amount of such circuits in one assembly on both printing and istalling manually.
+
+	/// TGUI (IntegratedCircuit): node position when shown in assembly / solo UI
+	var/ie_ui_rel_x = 0
+	var/ie_ui_rel_y = 0
+	/// TGUI: canvas pan when viewing a loose chip (no assembly)
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: одиночный чип без сборки — подсветка импульса по связи
+	var/ie_tgui_solo_pulse_until = 0
+	var/ie_tgui_solo_pulse_out_ref = null
+	var/ie_tgui_solo_pulse_in_ref = null
 
 
 /*
@@ -41,6 +57,23 @@ a creative player the means to solve many problems.  Circuits are held inside an
 // Can be called via electronic_assembly/attackby()
 /obj/item/integrated_circuit/proc/additem(var/obj/item/I, var/mob/living/user)
 	attackby(I, user)
+
+// This proc determines whether this circuit will appear in the choice menu upon inserting an item in an assembly with this circuit installed
+// Override it inside the circuit if you'll need it to support a list of item types. You'll have to keep the expected_object_type null (do not change it in your circuit)
+// For example:
+
+//	/obj/item/integrated_circuit/.../proc/can_accept_item(obj/Item/I)
+//		if(!demands_object_input)
+//			return FALSE
+//		return istype(I, /obj/item/wrench) || istype(I, /obj/item/screwdriver) || istype(I, /obj/item/crowbar)
+
+//	Note that you still have to override circuit's own attackby() proc, it's still called by additem.
+/obj/item/integrated_circuit/proc/can_accept_item(obj/item/I)
+	if(!demands_object_input)
+		return FALSE
+	if(isnull(expected_object_type))
+		return TRUE
+	return istype(I, expected_object_type)
 
 // This should be used when someone is examining while the case is opened.
 /obj/item/integrated_circuit/proc/internal_examine(mob/user)
@@ -96,10 +129,14 @@ a creative player the means to solve many problems.  Circuits are held inside an
 	return
 
 /obj/item/integrated_circuit/Destroy()
+	disconnect_all()
+	if(assembly)
+		assembly.assembly_components -= src
+		assembly = null
 	QDEL_LIST(inputs)
 	QDEL_LIST(outputs)
 	QDEL_LIST(activators)
-	. = ..()
+	return ..()
 
 /obj/item/integrated_circuit/emp_act(severity)
 	for(var/k in inputs)
@@ -128,132 +165,48 @@ a creative player the means to solve many problems.  Circuits are held inside an
 			input = name
 		to_chat(M, "<span class='notice'>The circuit '[name]' is now labeled '[input]'.</span>")
 		displayed_name = input
+		on_rename()
+
+/obj/item/integrated_circuit/proc/on_rename()	// Triggered on circuit name change from both UI types. Override for if you need to react to that.
+	return
 
 /obj/item/integrated_circuit/interact(mob/user)
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		if(assembly)
+			assembly.ie_legacy_ui_interact(user, src)
+		else
+			ie_legacy_ui_interact_chip(user)
+		return
 	ui_interact(user)
 
-/obj/item/integrated_circuit/ui_interact(mob/user)
+/obj/item/integrated_circuit/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(!check_interactivity(user))
 		return
-
 	if(assembly)
 		assembly.ui_interact(user, src)
 		return
-
-	var/table_edge_width = "30%"
-	var/table_middle_width = "40%"
-
-	var/datum/browser/popup = new(user, "scannernew", name, 800, 630) // Set up the popup browser window
-	popup.add_stylesheet("scannernew", 'html/browser/assembly_ui.css')
-
-	var/HTML = "<html><head>[UTF8HEADER]<title>[src.displayed_name]</title></head><body> \
-		<div align='center'> \
-		<table border='1' style='undefined;table-layout: fixed; width: 80%'>"
-
-	if(assembly)
-		HTML += "<a href='?src=[REF(src)];return=1'>Return to Assembly</a><br>"
-
-	HTML += "<a href='?src=[REF(src)]'>Refresh</a>  |  \
-		<a href='?src=[REF(src)];rename=1'>Rename</a>  |  \
-		<a href='?src=[REF(src)];scan=1'>Copy Ref</a>"
-
-	if(assembly && removable)
-		HTML += "  |  <a href='?src=[REF(assembly)];component=[REF(src)];remove=1'>Remove</a>"
-
-	HTML += "<br><colgroup> \
-		<col style='width: [table_edge_width]'> \
-		<col style='width: [table_middle_width]'> \
-		<col style='width: [table_edge_width]'> \
-		</colgroup>"
-
-	var/column_width = 3
-	var/row_height = max(inputs.len, outputs.len, 1)
-
-	for(var/i = 1 to row_height)
-		HTML += "<tr>"
-		for(var/j = 1 to column_width)
-			var/datum/integrated_io/io = null
-			var/words
-			var/height = 1
-			switch(j)
-				if(1)
-					io = get_pin_ref(IC_INPUT, i)
-					if(io)
-						words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-						if(io.linked.len)
-							words += "<ul>"
-							for(var/k in io.linked)
-								var/datum/integrated_io/linked = k
-								words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-							words += "</ul>"
-
-						if(outputs.len > inputs.len)
-							height = 1
-				if(2)
-					if(i == 1)
-						words += "[displayed_name]<br>[name != displayed_name ? "([name])":""]<hr>[desc]"
-						height = row_height
-					else
-						continue
-				if(3)
-					io = get_pin_ref(IC_OUTPUT, i)
-					if(io)
-						words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-						if(io.linked.len)
-							words += "<ul>"
-							for(var/k in io.linked)
-								var/datum/integrated_io/linked = k
-								words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-							words += "</ul>"
-
-						if(inputs.len > outputs.len)
-							height = 1
-			HTML += "<td align='center' rowspan='[height]'>[words]</td>"
-		HTML += "</tr>"
-
-	for(var/activator in activators)
-		var/datum/integrated_io/io = activator
-		var/words
-
-		words += "<b><a href='?src=[REF(src)];act=wire;pin=[REF(io)]'>[io]</a> \
-			<a href='?src=[REF(src)];act=data;pin=[REF(io)]'>[io.data?"\<PULSE OUT\>":"\<PULSE IN\>"]</a></b><br>"
-
-		if(io.linked.len)
-			words += "<ul>"
-			for(var/k in io.linked)
-				var/datum/integrated_io/linked = k
-				words += "<li><a href='?src=[REF(src)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-					@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-			words += "<ul>"
-
-		HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
-
-	HTML += "</table></div> \
-		<br>Complexity: [complexity] \
-		<br>Cooldown per use: [cooldown_per_use/10] sec"
-
-	if(ext_cooldown)
-		HTML += "<br>External manipulation cooldown: [ext_cooldown/10] sec"
-	if(power_draw_idle)
-		HTML += "<br>Power Draw: [power_draw_idle] W (Idle)"
-	if(power_draw_per_use)
-		HTML += "<br>Power Draw: [power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
-
-	HTML += "<br>[extended_desc]</body></html>"
-
-	popup.set_content(HTML)
-	popup.open()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "IntegratedCircuit", "[displayed_name || name]")
+		ui.open()
+	ui.set_autoupdate(TRUE)
 
 /obj/item/integrated_circuit/Topic(href, href_list)
 	if(!check_interactivity(usr))
 		return
 	if(..())
 		return TRUE
+
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		if(assembly)
+			SStgui.close_uis(assembly)
+		else
+			SStgui.close_uis(src)
+		ui_interact(usr)
+		return
 
 	var/update = TRUE
 	var/update_to_assembly = FALSE

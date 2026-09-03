@@ -1060,7 +1060,8 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 	var/datum/component/genital_equipment/equipment = GetComponent(/datum/component/genital_equipment)
 	if(!equipment?.holder_genital)
 		UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
-		portal_settings.owner = null
+		if(portal_settings)
+			portal_settings.owner = null
 		STOP_PROCESSING(SSfastprocess, src)
 		// Revoke target switch action when dropped
 		if(held_target_action)

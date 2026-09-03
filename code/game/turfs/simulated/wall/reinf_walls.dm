@@ -8,6 +8,9 @@
 
 	var/d_state = INTACT
 	hardness = 10
+	//армированную стену грызут только боссы с ENVIRONMENT_SMASH_RWALLS - им и
+	//запаса вдвое больше обычной стены
+	mob_damage_cap = 600
 	sheet_type = /obj/item/stack/sheet/plasteel
 	sheet_amount = 1
 	girder_type = /obj/structure/girder/reinforced
@@ -47,8 +50,7 @@
 	if(!M.environment_smash)
 		return
 	if(M.environment_smash & ENVIRONMENT_SMASH_RWALLS)
-		dismantle_wall(1)
-		playsound(src, 'sound/effects/meteorimpact.ogg', 100, 1)
+		take_mob_smash_damage(M)
 	else
 		playsound(src, 'sound/effects/bang.ogg', 50, 1)
 		to_chat(M, "<span class='warning'>This wall is far too strong for you to destroy.</span>")
@@ -269,7 +271,8 @@
 		return
 	if(prob(70))
 		new /obj/effect/temp_visual/glowing_rune(src)
-	ChangeTurf(/turf/closed/wall/r_wall/rust)
+	var/turf/after = ChangeTurf(/turf/closed/wall/r_wall/rust)
+	after?.AddElement(/datum/element/heretic_rust)
 
 /turf/closed/wall/r_wall/syndicate
 	name = "hull"

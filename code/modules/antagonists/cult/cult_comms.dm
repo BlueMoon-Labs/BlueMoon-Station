@@ -289,6 +289,7 @@
 				to_chat(B.current, "<span class='cultlarge'><b>[ranged_ability_user] has marked [C.cult_team.blood_target] in the [A.name] as the cult's top priority, get there immediately!</b></span>")
 				SEND_SOUND(B.current, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 				B.current.client.images += C.cult_team.blood_target_image
+				C.cult_team.blood_target_image_recipients |= B.current.client // BLUEMOON FIX: track recipient
 		attached_action.owner.update_action_buttons_icon()
 		remove_ranged_ability("<span class='cult'>The marking rite is complete! It will last for 90 seconds.</span>")
 		C.cult_team.blood_target_reset_timer = addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(reset_blood_target),C.cult_team), 900, TIMER_STOPPABLE)
@@ -296,11 +297,18 @@
 	return FALSE
 
 /proc/reset_blood_target(datum/team/cult/team)
-	for(var/datum/mind/B in team.members)
-		if(B.current && B.current.stat != DEAD && B.current.client)
-			if(team.blood_target)
+	// BLUEMOON FIX: notify *current* cultists for UX, but use the recipient list to
+	// actually clean up images. A disconnected or deconverted cultist may no longer be
+	// in team.members yet still has blood_target_image attached to their old client.images.
+	if(team.blood_target)
+		for(var/datum/mind/B in team.members)
+			if(B.current && B.current.stat != DEAD && B.current.client)
 				to_chat(B.current,"<span class='cultlarge'><b>The blood mark has expired!</b></span>")
-			B.current.client.images -= team.blood_target_image
+	for(var/client/recipient as anything in team.blood_target_image_recipients)
+		if(!recipient)
+			continue
+		recipient.images -= team.blood_target_image
+	team.blood_target_image_recipients.Cut()
 	QDEL_NULL(team.blood_target_image)
 	if(team.blood_target)
 		team.UnregisterSignal(team.blood_target, COMSIG_PARENT_QDELETING)
@@ -371,11 +379,13 @@
 	C.cult_team.blood_target_image.pixel_y = -C.cult_team.blood_target.pixel_y
 	SEND_SOUND(owner, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 	owner.client.images += C.cult_team.blood_target_image
+	C.cult_team.blood_target_image_recipients |= owner.client // BLUEMOON FIX: track recipient
 	for(var/datum/mind/B in SSticker.mode.cult)
 		if(B.current && B.current.stat != DEAD && B.current.client)
 			to_chat(B.current, "<span class='cultlarge'><b>[owner] has marked [C.cult_team.blood_target] in the [A.name] as the cult's top priority, get there immediately!</b></span>")
 			SEND_SOUND(B.current, sound(pick('sound/hallucinations/over_here2.ogg','sound/hallucinations/over_here3.ogg'),0,1,75))
 			B.current.client.images += C.cult_team.blood_target_image
+			C.cult_team.blood_target_image_recipients |= B.current.client // BLUEMOON FIX: track recipient
 	to_chat(owner,"<span class='cultbold'>You have marked the [target] for the cult! It will last for [DisplayTimeText(base_cooldown)].</span>")
 	name = "Clear the Blood Mark"
 	desc = "Remove the Blood Mark you previously set."

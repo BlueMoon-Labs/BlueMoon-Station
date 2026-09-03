@@ -387,6 +387,7 @@
 
 		// Increases temperature
 		/datum/reagent/consumable/capsaicin,
+		/datum/reagent/consumable/capsaicin/reaper,
 
 		// Reduces temperature
 		/datum/reagent/consumable/frostoil,

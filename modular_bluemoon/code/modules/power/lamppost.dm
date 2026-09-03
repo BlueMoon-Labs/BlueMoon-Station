@@ -76,17 +76,14 @@
 /obj/machinery/power/floodlight/lamppost/proc/adjust_lamppost_light()
 	for(var/i in 1 to lamp_lights.len)
 		var/obj/effect/dummy/lighting_obj/light_source = lamp_lights[i]
-		if(i <= lamps_active)
-			light_source.set_light(6, 1, "#ffde9b")
-		else
-			light_source.set_light(0, 0, "#ffde9b")
+		// Оверлейный свет: тумблер только через set_light_on(); дальность/мощность/цвет заданы в типе лампы.
+		light_source.set_light_on(i <= lamps_active)
 
 /obj/machinery/power/floodlight/lamppost/Initialize()
 	. = ..()
 	connect_to_network()
 	for(var/i in 1 to number_of_lamps)
-		var/obj/effect/dummy/lighting_obj/light_source = new(loc)
-		light_source.set_light(0, 0, "#ffde9b")
+		var/obj/effect/dummy/lighting_obj/lamppost/light_source = new(loc)
 		lamp_lights += light_source
 	update_lamp_positions()
 
@@ -189,3 +186,11 @@
 	turn_off()
 	balloon_alert(user, "выключено")
 	playsound(src, 'sound/machines/button4.ogg', 50, TRUE)
+
+/// Свет одной лампы фонарного столба. Оверлейный источник, по умолчанию выключенный,
+/// чтобы overlay_lighting не зажигал его при подключении компонента; фонарь управляет
+/// им исключительно через set_light_on() в adjust_lamppost_light().
+/obj/effect/dummy/lighting_obj/lamppost
+	light_range = 6
+	light_color = "#ffde9b"
+	light_on = FALSE

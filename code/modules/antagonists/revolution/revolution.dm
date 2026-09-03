@@ -55,7 +55,7 @@
 
 /datum/antagonist/rev/greet()
 	SEND_SOUND(owner.current, sound('sound/ambience/antag/revolution.ogg'))
-	to_chat(owner, "<span class='userdanger'>Вы - революционер! Помогайте всем, чем можете. Не атакуйте своих товарищей. Вы можете опознать их с помощью красных \"R\" на интерфейсе, а лидеров - с помощью синих \"R\". Лидерам предоставляется скидка 99% на товары с черного рынка. Ведите революцию к победе, помогая убивать глав станции!</span>")
+	to_chat(owner, "<span class='revolution_big'>Вы - революционер! Помогайте всем, чем можете. Не атакуйте своих товарищей. Вы можете опознать их с помощью красных \"R\" на интерфейсе, а лидеров - с помощью синих \"R\". Лидерам предоставляется скидка 99% на товары с черного рынка. Ведите революцию к победе, помогая убивать глав станции!</span>")
 	owner.announce_objectives()
 
 /datum/antagonist/rev/create_team(datum/team/revolution/new_team)
@@ -94,11 +94,17 @@
 	new_revhead.silent = TRUE
 	old_owner.add_antag_datum(new_revhead,old_team)
 	new_revhead.silent = FALSE
-	to_chat(old_owner, "<span class='userdanger'>Вы показали свою преданность идеям восстания! Теперь вы - один из лидеров революции!</span>")
+	to_chat(old_owner, "<span class='revolution_big'>Вы показали свою преданность идеям восстания! Теперь вы - один из лидеров революции!</span>")
 
 /datum/antagonist/rev/get_admin_commands()
 	. = ..()
 	.["Promote"] = CALLBACK(src,PROC_REF(admin_promote))
+	.["Force victory"] = CALLBACK(src,PROC_REF(admin_force_victory))
+
+/datum/antagonist/rev/proc/admin_force_victory(mob/admin)
+	if(!rev_team)
+		return
+	rev_team.admin_force_victory(admin)
 
 /datum/antagonist/rev/proc/admin_promote(mob/admin)
 	var/datum/mind/O = owner
@@ -113,7 +119,7 @@
 	new_owner.add_antag_datum(src)
 	message_admins("[key_name_admin(admin)] has head-rev'ed [new_owner.current].")
 	log_admin("[key_name(admin)] has head-rev'ed [new_owner.current].")
-	to_chat(new_owner.current, "<span class='userdanger'>Теперь вы лидер революции!</span>")
+	to_chat(new_owner.current, "<span class='revolution_big'>Теперь вы лидер революции!</span>")
 
 /datum/antagonist/rev/head/get_admin_commands()
 	. = ..()
@@ -211,7 +217,7 @@
 	new_rev.silent = TRUE
 	old_owner.add_antag_datum(new_rev,old_team)
 	new_rev.silent = FALSE
-	to_chat(old_owner, "<span class='userdanger'>Революционеры разочарованы вашими лидерскими качествами! Вы стали рядовым мятежником!</span>")
+	to_chat(old_owner, "<span class='revolution'>Революционеры разочарованы вашими лидерскими качествами! Вы стали рядовым мятежником!</span>")
 
 /// Checks if the revolution succeeded, and lets them know.
 /datum/antagonist/rev/proc/announce_victorious()
@@ -220,7 +226,7 @@
 	if (!.)
 		return
 
-	to_chat(owner, "<span class='deconversion_message bold'>[victory_message]</span>")
+	to_chat(owner, "<span class='revolution_big'>[victory_message]</span>")
 	var/policy = get_policy(ROLE_REV_SUCCESSFUL)
 	if (policy)
 		to_chat(owner, policy)
@@ -318,6 +324,12 @@
 	var/list/ex_headrevs = list() // Dynamic removes revs on loss, used to keep a list for the roundend report.
 	var/list/ex_revs = list()
 	//var/list/reasons = list()
+	/// С момента как революция начала удерживать шаттл (SHUTTLE_STRANDED), 0 если не удерживает.
+	var/shuttle_delay_started = 0
+	/// Уже спаунил ли революционное подкрепление на задержанном шаттле.
+	var/shuttle_reinforcement_spawned = FALSE
+	/// Сколько времени революция должна удерживать шаттл, чтобы прибыло подкрепление.
+	var/shuttle_delay_reinforcement_time = 5 MINUTES
 
 /datum/team/revolution/proc/update_objectives(initial = FALSE)
 	var/untracked_heads = SSjob.get_all_heads()
@@ -340,6 +352,38 @@
 	for(var/datum/mind/M in members)
 		if(M.has_antag_datum(/datum/antagonist/rev/head))
 			. += M
+
+/// Живой революционер стоит на эвакуационном шаттле — ЦК задерживает отлёт только в этом случае.
+/datum/team/revolution/proc/living_revolutionary_on_emergency_shuttle()
+	var/obj/docking_port/mobile/emergency/evac = SSshuttle.emergency
+	if(!evac?.shuttle_areas)
+		return FALSE
+	for(var/datum/mind/M in members)
+		if(!M?.current)
+			continue
+		if(!M.has_antag_datum(/datum/antagonist/rev))
+			continue
+		if(!isliving(M.current) || M.current.stat == DEAD)
+			continue
+		if(evac.shuttle_areas[get_area(M.current)])
+			return TRUE
+	return FALSE
+
+/// Если революция удерживает эвакуационный шаттл 5+ минут, спаунит подкрепление из трёх бойцов.
+/datum/team/revolution/proc/process_shuttle_delay_reinforcement()
+	if(shuttle_reinforcement_spawned)
+		return
+	var/obj/docking_port/mobile/emergency/evac = SSshuttle.emergency
+	if(!evac || evac.mode != SHUTTLE_STRANDED || !living_revolutionary_on_emergency_shuttle())
+		shuttle_delay_started = 0
+		return
+	if(!shuttle_delay_started)
+		shuttle_delay_started = world.time
+		return
+	if(world.time - shuttle_delay_started < shuttle_delay_reinforcement_time)
+		return
+	shuttle_reinforcement_spawned = TRUE
+	evac.trigger_revolution_reinforcement(src)
 
 /datum/team/revolution/proc/update_heads()
 	if(SSticker.HasRoundStarted())
@@ -385,6 +429,7 @@
 /// Returns who won, at which case this method should no longer be called.
 /// If revs_win_injection_amount is passed, then that amount of threat will be added if the revs win.
 /datum/team/revolution/proc/process_victory(revs_win_injection_amount)
+	process_shuttle_delay_reinforcement()
 	if (check_rev_victory())
 		. = REVOLUTION_VICTORY
 	else if (check_heads_victory())
@@ -414,43 +459,57 @@
 		priority_announce("Похоже, что мятеж на станции был подавлен. Пожалуйста, возвращайтесь к своим предыдущим обязанностям.", null, 'sound/announcer/classic/attention.ogg', null, "Отдел мониторинга лояльности Центрального Командования")
 
 	else
-		for (var/_player in GLOB.player_list)
-			var/mob/player = _player
-			var/datum/mind/mind = player.mind
+		handle_revolution_victory(revs_win_injection_amount)
 
-			if (isnull(mind))
-				continue
+/// Applies all the consequences of a revolution victory and announces it.
+/// Lives on the team so admins can force a win without the kill-all-condition being met.
+/datum/team/revolution/proc/handle_revolution_victory(revs_win_injection_amount)
+	for (var/_player in GLOB.player_list)
+		var/mob/player = _player
+		var/datum/mind/mind = player.mind
 
-			if (!(mind.assigned_role in GLOB.command_positions + GLOB.security_positions))
-				continue
+		if (isnull(mind))
+			continue
 
-			var/mob/living/carbon/target_body = mind.current
+		if (!(mind.assigned_role in GLOB.command_positions + GLOB.security_positions))
+			continue
 
-			mind.add_antag_datum(/datum/antagonist/revolution_enemy)
+		var/mob/living/carbon/target_body = mind.current
 
-			if (!istype(target_body))
-				continue
+		mind.add_antag_datum(/datum/antagonist/revolution_enemy)
 
-			if (target_body.stat == DEAD)
-				target_body.makeUncloneable()
-				target_body.client?.prefs?.dnr_triggered = TRUE
-			else
-				mind.add_antag_datum(/datum/antagonist/rev)
-				mind.announce_objectives()
+		if (!istype(target_body))
+			continue
 
-		for (var/job_name in GLOB.command_positions + GLOB.security_positions)
-			var/datum/job/job = SSjob.GetJob(job_name)
-			job.allow_bureaucratic_error = FALSE
-			job.total_positions = 0
+		if (target_body.stat == DEAD)
+			target_body.makeUncloneable()
+			target_body.client?.prefs?.dnr_triggered = TRUE
+		else
+			mind.add_antag_datum(/datum/antagonist/rev)
+			mind.announce_objectives()
 
-		if (revs_win_injection_amount)
-			var/datum/game_mode/dynamic/dynamic = SSticker.mode
-			dynamic.create_threat(revs_win_injection_amount)
-			dynamic.threat_log += "[worldtime2text()]: Revolution victory. Added [revs_win_injection_amount] threat."
+	for (var/job_name in GLOB.command_positions + GLOB.security_positions)
+		var/datum/job/job = SSjob.GetJob(job_name)
+		job.allow_bureaucratic_error = FALSE
+		job.total_positions = 0
 
-		priority_announce("В результате недавней оценки состояния вашей станции она была отмечена как зона повышенного риска для высокопоставленных представителей NanoTrasen  \
-		В целях безопасности мы заблокировали прибытие на станцию новых сотрудников службы безопасности и командования", null, 'sound/announcer/classic/attention.ogg', \
-		null, "Отдел ЦК по мониторингу лояльности")
+	if (revs_win_injection_amount)
+		var/datum/game_mode/dynamic/dynamic = SSticker.mode
+		dynamic.create_threat(revs_win_injection_amount)
+		dynamic.threat_log += "[worldtime2text()]: Revolution victory. Added [revs_win_injection_amount] threat."
+
+	priority_announce("В результате недавней оценки состояния вашей станции она была отмечена как зона повышенного риска для высокопоставленных представителей NanoTrasen  \
+	В целях безопасности мы заблокировали прибытие на станцию новых сотрудников службы безопасности и командования", null, 'sound/announcer/classic/attention.ogg', \
+	null, "Отдел ЦК по мониторингу лояльности")
+
+/// Admin tool: force the revolution to win right now, regardless of the kill/exile condition.
+/datum/team/revolution/proc/admin_force_victory(mob/admin)
+	message_admins("[key_name_admin(admin)] administratively forced a revolution victory.")
+	log_admin("[key_name(admin)] administratively forced a revolution victory.")
+	SSshuttle.clearHostileEnvironment(src)
+	save_members()
+	handle_revolution_victory(0)
+	round_result(REVOLUTION_VICTORY)
 
 /// Mutates the ticker to report that the revs have won
 /datum/team/revolution/proc/round_result(finished)

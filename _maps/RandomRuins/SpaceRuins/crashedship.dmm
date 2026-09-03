@@ -3006,7 +3006,7 @@
 /turf/open/floor/plating,
 /area/awaymission/BMPship/Midship)
 "tM" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
 /turf/open/floor/plating/airless,
 /area/awaymission/BMPship)
 "ug" = (

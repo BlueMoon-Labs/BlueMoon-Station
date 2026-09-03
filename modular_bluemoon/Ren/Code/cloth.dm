@@ -101,7 +101,7 @@
 	slowdown = 0.3
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/iron_tombstone
 	actions_types = list(/datum/action/item_action/toggle_helmet)
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 // -----------------------------------------------[Космодесантник]-------------------------------------------
 // Взрыв при экипировке
@@ -212,6 +212,7 @@
 	ADD_TRAIT(owner, TRAIT_NOHARDCRIT, GENETIC_MUTATION)
 	ADD_TRAIT(owner, TRAIT_STUNIMMUNE, GENETIC_MUTATION)
 	ADD_TRAIT(owner, TRAIT_PUSHIMMUNE, GENETIC_MUTATION)
+	ADD_TRAIT(owner, TRAIT_HEAVY_MELEE, GENETIC_MUTATION)
 	var/size = get_size(owner)
 	owner.update_size(size * 1.35)
 	owner.visible_message("<span class='danger'>[owner] Внезапно становится больше!</span>", "<span class='notice'>Всё вокруг неожиданно уменьшается..</span>")
@@ -222,6 +223,7 @@
 		REMOVE_TRAIT(owner, TRAIT_NOHARDCRIT, GENETIC_MUTATION)
 		REMOVE_TRAIT(owner, TRAIT_STUNIMMUNE, GENETIC_MUTATION)
 		REMOVE_TRAIT(owner, TRAIT_PUSHIMMUNE, GENETIC_MUTATION)
+		REMOVE_TRAIT(owner, TRAIT_HEAVY_MELEE, GENETIC_MUTATION)
 	return ..()
 
 /obj/item/autosurgeon/syndicate/inteq/astartes
@@ -330,6 +332,8 @@
 	darkness_view = 3
 	flash_protect = -3
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_HIGH
+	color_cutoffs = list(30, 20, 5)
 	vision_flags = SEE_TURFS|SEE_MOBS|SEE_OBJS
 	glass_colour_type = /datum/client_colour/glass_colour/orange
 
@@ -340,6 +344,8 @@
 		return
 	vision_flags = NONE
 	darkness_view = 0
+	lighting_cutoff = 0
+	color_cutoffs = null
 	flash_protect = 0
 	thermal_overload()
 
@@ -350,77 +356,20 @@
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей толстовкой, с которой ты так не захотел расставаться даже на миссии, хиккан."
 	icon_state = "inteq_armor_kit"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
-	w_class = WEIGHT_CLASS_SMALL
+	parent_armor_type = /obj/item/clothing/suit/armor/vest/blueshield
+	kit_slot_flag = ITEM_SLOT_OCLOTHING
+	kit_prefix = "quiet"
 
-/obj/item/armorkit/inteq/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
-	var/used = FALSE
-	if(!isclothing(target))
-		return
-	if(!(isobj(target) && target.slot_flags & ITEM_SLOT_OCLOTHING))
-		return
-	if(target.type in typesof(/obj/item/clothing/suit/toggle/captains_parade, /obj/item/clothing/suit/space, /obj/item/clothing/suit/armor))
-		to_chat(user, span_danger("You cannot modify [target], as it already has armor or is a part of special equipment."))
-		return
-	var/obj/item/clothing/C = target
-	var/obj/item/clothing/suit/armor/vest/bluesheid/A = new /obj/item/clothing/suit/armor/vest/bluesheid(src)
-	C.set_armor(A.armor)
-	C.body_parts_covered = A.body_parts_covered
-	C.cold_protection = A.cold_protection
-	C.heat_protection = A.heat_protection
-	C.resistance_flags = A.resistance_flags
-	C.clothing_flags = A.clothing_flags
-	C.min_cold_protection_temperature = A.min_cold_protection_temperature
-	C.max_heat_protection_temperature = A.max_heat_protection_temperature
-	used = TRUE
-	if(used)
-		C.allowed = GLOB.security_vest_allowed
-		user.visible_message("<span class = 'notice'>[user] reinforces [C] with [src].</span>", \
-		"<span class = 'notice'>You reinforce [C] with [src], making it as protective as a armored vest.</span>")
-		C.name = "quiet [C.name]"
-		C.upgrade_prefix = "quiet"
-		qdel(src)
-		return
-	else
-		to_chat(user, "<span class = 'notice'>You don't need to reinforce [C] any further.")
-		return
 //Голова
 /obj/item/armorkit/helmet/inteq
 	name = "Quiet kid helmet kit"
 	desc = "Набор гибких армированных пластин которые будут совершенно незаметно сидеть под твоей кепкой, с которой ты так не захотел расставаться даже на миссии, хиккан."
 	icon_state = "inteq_helm_kit"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
-	w_class = WEIGHT_CLASS_SMALL
+	parent_armor_type = /obj/item/clothing/head/helmet/sec/blueshield
+	kit_slot_flag = ITEM_SLOT_HEAD
+	kit_prefix = "quiet"
 
-/obj/item/armorkit/helmet/afterattack(obj/item/target, mob/user, proximity_flag, click_parameters)
-	var/used = FALSE
-	if(!isclothing(target))
-		return
-	if(!(isobj(target) && target.slot_flags & ITEM_SLOT_HEAD))
-		return
-	if(target.type in typesof(/obj/item/clothing/head/helmet))
-		to_chat(user, span_danger("You cannot modify [target], as it already has armor or is a part of special equipment."))
-		return
-	var/obj/item/clothing/C = target
-	var/obj/item/clothing/head/helmet/sec/blueshield/A = new /obj/item/clothing/head/helmet/sec/blueshield(src)
-	C.set_armor(A.armor)
-	C.body_parts_covered = A.body_parts_covered
-	C.cold_protection = A.cold_protection
-	C.heat_protection = A.heat_protection
-	C.resistance_flags = A.resistance_flags
-	C.clothing_flags = A.clothing_flags
-	C.min_cold_protection_temperature = A.min_cold_protection_temperature
-	C.max_heat_protection_temperature = A.max_heat_protection_temperature
-	used = TRUE
-	if(used)
-		user.visible_message("<span class = 'notice'>[user] reinforces [C] with [src].</span>", \
-		"<span class = 'notice'>You reinforce [C] with [src], making it as protective as a helmet.</span>")
-		C.name = "quiet [C.name]"
-		C.upgrade_prefix = "quiet"
-		qdel(src)
-		return
-	else
-		to_chat(user, "<span class = 'notice'>You don't need to reinforce [C] any further.")
-		return
 // ретекстур бейсбол набора
 /obj/item/clothing/under/inteq/baseball
 	name = "Striped white shirt"
@@ -449,30 +398,32 @@
 /obj/item/tank/jetpack/suit/fast
 	full_speed = TRUE
 
-/obj/item/clothing/head/helmet/space/hardsuit/security/explorer
-	name = "Expedition hardsuit helmet"
-	desc = "Армированный шлем, в котором не страшно сунуть свой нос даже в самые опасные заброшенные станции и обломки кораблей."
-	icon_state = "hardsuit0-explorer"
-	item_state = "hardsuit0-explorer"
-	hardsuit_type = "explorer"
-	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50)
-	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
-	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
-	brightness_on = 12 // Эу ты куда прёш на дальнем свете
+// /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
+// 	name = "Expedition hardsuit helmet"
+// 	desc = "Армированный шлем, в котором не страшно сунуть свой нос даже в самые опасные заброшенные станции и обломки кораблей."
+// 	icon_state = "hardsuit0-explorer"
+// 	item_state = "hardsuit0-explorer"
+// 	hardsuit_type = "explorer"
+// 	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50)
+// 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
+// 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
+// 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
+// 	brightness_on = 12 // Эу ты куда прёш на дальнем свете
 
-/obj/item/clothing/suit/space/hardsuit/security/explorer
-	name = "Expedition hardsuit"
-	desc = "Армированный костюм, в котором не страшно ступить даже в самые опасные заброшенные станции и обломки кораблей."
-	icon_state = "hardsuit-explorer"
-	item_state = "hardsuit-explorer"
-	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50) // сниженная защита от лазеров и пуль - ценой повешенной мобильности и защиты от бомб
-	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
-	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
-	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
-	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi' // у нас забрали джет, терпим.
-	unique_reskin = list()
-	tail_state = "bombsuit_sci"
+// /obj/item/clothing/suit/space/hardsuit/security/explorer
+// 	name = "Expedition hardsuit"
+// 	desc = "Армированный костюм, в котором не страшно ступить даже в самые опасные заброшенные станции и обломки кораблей."
+// 	icon_state = "hardsuit-explorer"
+// 	item_state = "hardsuit-explorer"
+// 	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50) // сниженная защита от лазеров и пуль - ценой повешенной мобильности и защиты от бомб
+// 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
+// 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
+// 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
+// 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi' // у нас забрали джет, терпим.
+// 	unique_reskin = list()
+// 	tail_state = "bombsuit_sci"
+
+
 
 //-----------------------------------------------------------[Одежда FTU]---------------------------------------------------------------------------------------
 ///Боевой риг
@@ -482,6 +433,7 @@
 	icon_state = "hardsuit0-ftu_combat"
 	item_state = "hardsuit0-ftu_combat"
 	hardsuit_type = "ftu_combat"
+	brightness_on = 5
 	mob_overlay_icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
@@ -498,7 +450,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp.ogg'
 	slowdown = 0.1
-	jetpack = /obj/item/tank/jetpack/suit/fast
+	jetpack = /obj/item/tank/jetpack/suit
 	unique_reskin = list()
 
 ///Инженерный риг

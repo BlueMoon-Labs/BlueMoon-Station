@@ -9,6 +9,7 @@ import {
 import {
   constraintPosition,
   isWindowSizeApplied,
+  parseWingetSize,
   touchRecents,
 } from './drag.utils';
 
@@ -579,5 +580,34 @@ describe('resize math', () => {
     const h = Math.max(initial[1] + matrix[1] * delta[1] + 1, 50);
     expect(w).toBe(401);
     expect(h).toBe(301);
+  });
+});
+
+describe('parseWingetSize', () => {
+  // BYOND hands coordinate properties back as an object, and the old String().split()
+  // path turned that into "[object Object]" - the winget channel of the reveal gate never
+  // matched once in production because of it.
+  test('reads the object shape BYOND actually returns', () => {
+    expect(parseWingetSize({ x: 950, y: 740 })).toEqual([950, 740]);
+  });
+
+  test('still reads a WxH string', () => {
+    expect(parseWingetSize('950x740')).toEqual([950, 740]);
+  });
+
+  test('still reads a comma separated pair', () => {
+    expect(parseWingetSize('950,740')).toEqual([950, 740]);
+  });
+
+  test('reads an array pair', () => {
+    expect(parseWingetSize([950, 740])).toEqual([950, 740]);
+  });
+
+  test('rejects values that are not a numeric pair', () => {
+    expect(parseWingetSize(undefined)).toBe(null);
+    expect(parseWingetSize('')).toBe(null);
+    expect(parseWingetSize('950')).toBe(null);
+    expect(parseWingetSize('wide x tall')).toBe(null);
+    expect(parseWingetSize({ x: 950 })).toBe(null);
   });
 });

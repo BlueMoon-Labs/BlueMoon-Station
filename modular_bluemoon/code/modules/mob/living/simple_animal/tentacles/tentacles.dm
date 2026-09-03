@@ -69,6 +69,8 @@
 	pressure_resistance = 200
 	gold_core_spawnable = HOSTILE_SPAWN
 
+	var/timer = 0
+
 /mob/living/simple_animal/hostile/tentacles/Initialize()
 	. = ..()
 	status_flags &= !CANPUSH
@@ -99,15 +101,18 @@
 	if(tired >=1)
 		tired -= 1
 
-/mob/living/simple_animal/hostile/tentacles/MoveToTarget()
-	stop_automated_movement = 1
-	if(!target || !CanAttack(target))
-		LoseTarget()
-		return 0
-	if(targets_from && isturf(targets_from.loc) && target.Adjacent(targets_from)) //If they're next to us, attack
-		MeleeAction()
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 	else
-		return 1
+		timer = rand(5,20)
+		if(target != null)
+			var/mob/living/M = target
+			if(M.pulledby && !tired)
+				do_lewd_action(M)
+
+///Тентакли вкопаны: адаптер-контроллер не имеет права их двигать
+/mob/living/simple_animal/hostile/tentacles/can_ai_controller_move()
+	return FALSE
 
 //BLUEMOON ADD START || The sex mob will no longer even try to attack targets that are not suitable for prefs.
 /mob/living/simple_animal/hostile/tentacles/CanAttack(atom/the_target)
@@ -166,10 +171,6 @@
 	if(get_refraction_dif() > 0)
 		..()
 		return
-
-	while(M.pulledby && !tired)
-		if(activate_after(src, 25))
-			do_lewd_action(M)
 
 /mob/living/simple_animal/hostile/tentacles/proc/pickNewHole(mob/living/M)
 	var/hole_chosen = pick(1, 2)

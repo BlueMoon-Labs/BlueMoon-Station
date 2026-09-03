@@ -5,11 +5,11 @@
 	filedesc = "AmpCheck"
 	category = PROGRAM_CATEGORY_ENGI
 	program_icon_state = "power_monitor"
-	extended_desc = "This program connects to sensors around the station to provide information about electrical systems"
+	extended_desc = "Подключается к сенсорам вокруг станции для предоставления информации об электрических системах."
 	ui_header = "power_norm.gif"
 	transfer_access = ACCESS_ENGINE
-	usage_flags = PROGRAM_CONSOLE
-	requires_ntnet = 0
+	usage_flags = PROGRAM_ALL
+	requires_ntnet = FALSE
 	size = 9
 	tgui_id = "NtosPowerMonitor"
 	program_icon = "plug"

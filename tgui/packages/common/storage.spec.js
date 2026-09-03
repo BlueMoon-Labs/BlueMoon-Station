@@ -1,9 +1,12 @@
 import {
+  HubStorageBackend,
+  IMPL_HUB_STORAGE,
   IMPL_LOCAL_STORAGE,
   IMPL_MEMORY,
   LocalStorageBackend,
   MemoryBackend,
   storage,
+  StorageProxy,
 } from './storage';
 
 describe('MemoryBackend', () => {
@@ -187,6 +190,149 @@ describe('LocalStorageBackend', () => {
     backend.set('key', { x: 1 });
     const raw = localStorage.getItem('key');
     expect(raw).toBe('{"x":1}');
+  });
+});
+
+describe('HubStorageBackend', () => {
+  let backend;
+  let hubStore;
+
+  beforeEach(() => {
+    localStorage.clear();
+    hubStore = new Map();
+    window.hubStorage = {
+      getItem: jest.fn(async key => hubStore.get(key)),
+      key: jest.fn(async index => [...hubStore.keys()][index]),
+      removeItem: jest.fn(async key => hubStore.delete(key)),
+      setItem: jest.fn(async (key, value) => hubStore.set(key, value)),
+    };
+    Object.defineProperty(window.hubStorage, 'length', {
+      configurable: true,
+      get: () => hubStore.size,
+    });
+    backend = new HubStorageBackend();
+  });
+
+  afterEach(() => {
+    delete window.hubStorage;
+  });
+
+  test('uses a BlueMoon namespace and round-trips JSON values', async () => {
+    await backend.set('panel-settings', { theme: 'dark' });
+
+    expect(window.hubStorage.setItem).toHaveBeenCalledWith(
+      'bluemoon-panel-settings',
+      '{"theme":"dark"}',
+    );
+    await expect(backend.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+    expect(backend.impl).toBe(IMPL_HUB_STORAGE);
+  });
+
+  test('set(undefined) removes the persistent value', async () => {
+    await backend.set('chat-state', { visible: true });
+    await backend.set('chat-state', undefined);
+
+    expect(window.hubStorage.removeItem)
+      .toHaveBeenCalledWith('bluemoon-chat-state');
+    await expect(backend.get('chat-state')).resolves.toBeUndefined();
+  });
+
+  test('clear only removes values owned by the BlueMoon namespace', async () => {
+    hubStore.set('other-project-setting', 'keep me');
+    await backend.set('panel-settings', { theme: 'dark' });
+    await backend.set('chat-state', { visible: true });
+
+    await backend.clear();
+
+    expect(hubStore.get('other-project-setting')).toBe('keep me');
+    await expect(backend.get('panel-settings')).resolves.toBeUndefined();
+    await expect(backend.get('chat-state')).resolves.toBeUndefined();
+  });
+
+  test('StorageProxy prefers a working BYOND backend', async () => {
+    const proxy = new StorageProxy();
+    await proxy.set('key', 'value');
+
+    expect(window.hubStorage.getItem)
+      .toHaveBeenCalledWith('bluemoon-__backend-probe__');
+    await expect(proxy.get('key')).resolves.toBe('value');
+  });
+
+  test('StorageProxy lazily migrates settings from pre-516 storage', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    expect(window.hubStorage.setItem).toHaveBeenCalledWith(
+      'bluemoon-panel-settings',
+      '{"theme":"light"}',
+    );
+  });
+
+  test('StorageProxy does not resurrect a removed legacy value', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('panel-settings', { theme: 'dark' });
+
+    await proxy.remove('panel-settings');
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+  });
+
+  test('StorageProxy set(undefined) also removes the legacy value', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+
+    await proxy.set('panel-settings', undefined);
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+  });
+
+  test('StorageProxy clears hub and legacy values without touching foreign keys', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    hubStore.set('other-project-setting', 'keep me');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('chat-state', { visible: true });
+
+    await proxy.clear();
+
+    await expect(proxy.get('panel-settings')).resolves.toBeUndefined();
+    await expect(proxy.get('chat-state')).resolves.toBeUndefined();
+    expect(localStorage.getItem('panel-settings')).toBeNull();
+    expect(hubStore.get('other-project-setting')).toBe('keep me');
+  });
+
+  test('StorageProxy keeps migrated values current for fallback', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+    await proxy.get('panel-settings');
+    await proxy.set('panel-settings', { theme: 'dark' });
+    window.hubStorage.getItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+  });
+
+  test('StorageProxy returns the legacy value when its migration write fails', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    window.hubStorage.setItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    await expect(proxy.backendPromise).resolves.toBeInstanceOf(LocalStorageBackend);
+  });
+
+  test('StorageProxy falls back when hubStorage rejects after selection', async () => {
+    const proxy = new StorageProxy();
+    await proxy.backendPromise;
+    window.hubStorage.setItem.mockRejectedValueOnce(new Error('WebView2 reset'));
+
+    await expect(proxy.set('fallback-key', 'fallback-value')).resolves.toBeUndefined();
+    await expect(proxy.get('fallback-key')).resolves.toBe('fallback-value');
   });
 });
 

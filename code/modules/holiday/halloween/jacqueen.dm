@@ -145,6 +145,7 @@
 	R.add_reagent(/datum/reagent/fermi/secretcatchem, 10)
 	s.set_up(R, 0, loc)
 	s.start()
+	qdel(R)
 	visible_message("<b>[src]</b> disappears in a puff of smoke!")
 	canmove()
 	health = 25
@@ -536,6 +537,7 @@
 	R.add_reagent(/datum/reagent/fermi/secretcatchem, 10)
 	s.set_up(R, 0, loc)
 	s.start()
+	qdel(R)
 	stopmove()
 	health = 25
 

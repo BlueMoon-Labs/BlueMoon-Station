@@ -47,6 +47,9 @@
 	var/list/open_byondui_elements
 	/// Sequence number of the last processed act (dedup guard for WebView2 double-delivery)
 	var/last_act_seq = 0
+	/// Ключ, под которым SStgui записал интерфейс в open_uis_by_src. Пересчитывать
+	/// его из src_object на снятии с учёта нельзя: к тому моменту поле уже пусто.
+	var/registered_src_key
 
 /**
  * public
@@ -78,8 +81,23 @@
 		src.window_size = list(ui_x, ui_y)
 
 /datum/tgui/Destroy()
+	//close() снимал интерфейс с учёта только когда окно уже было выдано, а
+	//любой другой путь к qdel оставлял мертвеца в трёх списках подсистемы
+	SStgui.unregister_ui(src)
+	if(window?.locked_by == src)
+		window.release_lock()
+	window = null
+	if(parent_ui && parent_ui != 500)
+		parent_ui.children -= src
+	parent_ui = null
+	//дети переживают родителя (их закрывает close, а не Destroy) - иначе каждый
+	//остаётся с parent_ui на покойнике
+	for(var/datum/tgui/child as anything in children)
+		child.parent_ui = null
+	children.Cut()
 	user = null
 	src_object = null
+	state = null
 	return ..()
 
 /**
@@ -90,9 +108,9 @@
  * return bool - TRUE if a new pooled window is opened, FALSE in all other situations including if a new pooled window didn't open because one already exists.
  */
 /datum/tgui/proc/open()
-	if(!user.client)
+	if(!user?.client)
 		return FALSE
-	if(!src_object)
+	if(!src_object || QDELETED(src_object))
 		return FALSE
 	if(window)
 		return FALSE
@@ -102,7 +120,17 @@
 	window = SStgui.request_pooled_window(user)
 	if(!window)
 		return FALSE
-	opened_at = world.time
+	// Окно забирает фокус у карты, и отпускание зажатой клавиши уходит уже в
+	// него. До BYOND оно не доходит, keys_held остаётся с клавишей внутри, и
+	// keyLoop() шагает дальше - персонаж уходит сам, пока клавишу не нажмут
+	// второй раз. Клиентский форвардинг (tgui/hotkeys.ts, orphanedKeyUp.ts)
+	// ловит это не всегда, а промах стоит дорого: уйти можно и в космос.
+	//
+	// Поэтому при открытии окна считаем, что игрок отпустил всё - именно это
+	// с точки зрения игры и произошло, держать клавиши он больше не может.
+	// Если он всё ещё её жмёт, автоповтор ОС дойдёт до окна, и passthrough
+	// пришлёт KeyDown заново - но уже по пути, который умеет и отпускать.
+	user.client?.ForceAllKeysUp()
 	window.acquire_lock(src)
 	if(!window.is_ready())
 		window.initialize(
@@ -112,17 +140,49 @@
 			))
 	else
 		window.send_message("ping")
+	// initialize() спит на отправке ресурсов: логаут за это время успевает
+	// пройти через close() -> qdel(src), и window уже null (клиент, зашедший и
+	// сразу вышедший на ченджлоге, раунд 9875). Гард ниже по коду стоит уже
+	// ПОСЛЕ этих send_asset и опоздал бы.
+	if(QDELETED(src) || !window)
+		return FALSE
 	var/flush_queue = window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/fontawesome))
 	flush_queue |= window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/tgfont))
-	for(var/datum/asset/asset in src_object.ui_assets(user))
+	for(var/datum/asset/asset in src_object?.ui_assets(user))
+		if(!asset)
+			continue
 		flush_queue |= window.send_asset(asset)
+	//initialize/send_asset спят на отправке ресурсов: за это время датум могли
+	//qdel-нуть (логаут, удаление src_object) - Destroy() обнуляет user
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
+		return FALSE
 	if (flush_queue)
 		user.client.browse_queue_flush()
-	window.send_message("update", get_payload(
+	// Отсчёт зомби-таймаута начинаем отсюда, а не с начала open(): выше окно ждало
+	// initialize() и доставку ассетов, и на медленном канале весь бюджет уходил на
+	// байты, которые ещё едут. Судить окно надо с момента, когда ресурсы уехали.
+	opened_at = world.time
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
+		return FALSE
+	var/list/payload = get_payload(
 		with_data = TRUE,
-		with_static_data = TRUE))
+		with_static_data = TRUE)
+	//сбор нагрузки тоже спит: если за это время окно закрыли, открывать нечего.
+	//закрываемся честно, иначе окно останется залоченным за брошенным датумом и
+	//пул не отдаст его следующему интерфейсу
+	if(!payload || !can_send_update())
+		if(!QDELETED(src))
+			close(can_be_suspended = FALSE)
+		return FALSE
+	window.send_message("update", payload)
 	SStgui.on_open(src)
 
 	return TRUE
@@ -138,7 +198,10 @@
 	if(closing)
 		return
 	closing = TRUE
-	for(var/datum/tgui/child in children)
+	//Обход строго по копии: child.close() снимает себя из этого же children
+	//(и там, и в Destroy), от чего индекс сдвигается и каждый второй ребёнок
+	//оставался открытым - с живыми user и src_object в списках подсистемы.
+	for(var/datum/tgui/child as anything in children.Copy())
 		child.close(can_be_suspended, logout)
 	// If we don't have window_id, open proc did not have the opportunity
 	// to finish, therefore it's safe to skip this whole block.
@@ -146,11 +209,17 @@
 		// Windows you want to keep are usually blue screens of death
 		// and we want to keep them around, to allow user to read
 		// the error message properly.
-		window.release_lock()
-		window.close(can_be_suspended, logout)
-		src_object.ui_close(user)
+		//окно могло уехать в пул и достаться другому интерфейсу, пока мы спали в
+		//get_payload(): чужой лок снимать нельзя, иначе мы закроем чужое окно
+		if(window.locked_by == src)
+			window.release_lock()
+			window.close(can_be_suspended, logout)
+		//src_object мог быть qdel-нут - именно по этому пути сюда и приходят из
+		//process(), заметив пропажу владельца. Звать проки трупу нечего
+		if(!QDELETED(src_object))
+			src_object.ui_close(user)
 		SStgui.on_close(src)
-		if(user.client)
+		if(user?.client)
 			terminate_byondui_elements()
 	state = null
 	if(parent_ui && parent_ui != 500)
@@ -217,19 +286,25 @@
  * optional custom_data list Custom data to send instead of ui_data.
  * optional force bool Send an update even if UI is not interactive.
  */
-/datum/tgui/proc/send_full_update(custom_data, force)
-	if(!user.client || !initialized || closing)
+/datum/tgui/proc/send_full_update(custom_data, force, ignore_cooldown = FALSE)
+	if(!user?.client || !initialized || closing)
 		return
-	if(!COOLDOWN_FINISHED(src, refresh_cooldown))
+	if(!ignore_cooldown && !COOLDOWN_FINISHED(src, refresh_cooldown))
 		refreshing = TRUE
 		addtimer(CALLBACK(src, PROC_REF(send_full_update)), TGUI_REFRESH_FULL_UPDATE_COOLDOWN, TIMER_UNIQUE)
 		return
 	refreshing = FALSE
 	var/should_update_data = force || status >= UI_UPDATE
-	window.send_message("update", get_payload(
+	var/list/payload = get_payload(
 		custom_data,
 		with_data = should_update_data,
-		with_static_data = TRUE))
+		with_static_data = TRUE)
+	//get_payload() спит внутри ui_data()/ui_static_data(): за это время окно успевают
+	//закрыть, а close() отдаёт его обратно в пул через release_lock() - пустая
+	//нагрузка приехала бы уже чужому интерфейсу
+	if(!payload || !can_send_update())
+		return
+	window.send_message("update", payload)
 	COOLDOWN_START(src, refresh_cooldown, TGUI_REFRESH_FULL_UPDATE_COOLDOWN)
 
 /**
@@ -241,12 +316,32 @@
  * optional force bool Send an update even if UI is not interactive.
  */
 /datum/tgui/proc/send_update(custom_data, force)
-	if(!user.client || !initialized || closing)
+	if(!user?.client || !initialized || closing)
 		return
 	var/should_update_data = force || status >= UI_UPDATE
-	window.send_message("update", get_payload(
+	var/list/payload = get_payload(
 		custom_data,
-		with_data = should_update_data))
+		with_data = should_update_data)
+	//см. send_full_update(): собирать нагрузку можно долго, а окно за это время
+	//могло уйти в пул к другому интерфейсу
+	if(!payload || !can_send_update())
+		return
+	window.send_message("update", payload)
+
+/**
+ * private
+ *
+ * Окно ещё наше и его есть кому показать: проверка обязана стоять после каждого
+ * потенциально спящего вызова, а не только перед ним.
+ */
+/datum/tgui/proc/can_send_update()
+	if(QDELETED(src) || closing || !window)
+		return FALSE
+	if(window.locked_by != src)
+		return FALSE
+	//именно QDELETED, а не проверка на null: qdel-нутый датум читается как живой,
+	//пока его не соберёт GC, но Destroy у него уже отработал и звать ему проки нельзя
+	return !isnull(user?.client) && !QDELETED(src_object)
 
 /**
  * private
@@ -256,7 +351,7 @@
  * return list
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
-	if (!user.client)
+	if(!user?.client || QDELETED(src_object))
 		return
 	var/list/json_data = list()
 	json_data["config"] = list(
@@ -282,10 +377,22 @@
 			"observer" = isobserver(user),
 		),
 	)
-	var/data = custom_data || with_data && src_object.ui_data(user)
+	var/data = custom_data
+	if(!data && with_data)
+		data = src_object.ui_data(user)
+		//ui_data() имеет полное право уснуть - панель антагов, например, уходит в
+		//jobban_isbanned() и ждёт ответа базы. Пока прок спит, окно успевают закрыть,
+		//а Destroy() обнуляет и user, и src_object: собирать нагрузку больше не для кого
+		if(QDELETED(src) || !user?.client || QDELETED(src_object))
+			return
 	if(data)
 		json_data["data"] = data
-	var/static_data = with_static_data && src_object.ui_static_data(user)
+	var/static_data
+	if(with_static_data)
+		static_data = src_object.ui_static_data(user)
+		//ui_static_data() спит по тем же причинам, что и ui_data()
+		if(QDELETED(src) || !user?.client || QDELETED(src_object))
+			return
 	if(static_data)
 		json_data["static_data"] = static_data
 	if(src_object.tgui_shared_states)
@@ -301,13 +408,21 @@
 /datum/tgui/process(delta_time, force = FALSE)
 	if(closing)
 		return
-	var/datum/host = src_object.ui_host(user)
-	// If the object or user died (or something else), abort.
-	if(!src_object || !host || !user || !window)
+	// Порядок важен: src_object мог быть обнулён в Destroy() или хардделнут, и
+	// разыменование до проверки давало бы ровно тот же класс рантайма, что мы тут
+	// и чиним. Проверка окна включает потерю лока: окно, уехавшее в пул, нам уже
+	// не принадлежит - такой интерфейс надо закрыть, а не молча перестать обновлять.
+	if(QDELETED(src_object) || !user || !window || window.locked_by != src)
 		close(can_be_suspended = FALSE)
 		return
-	// Validate ping
-	if(!initialized && world.time - opened_at > TGUI_PING_TIMEOUT)
+	var/datum/host = src_object.ui_host(user)
+	if(!host)
+		close(can_be_suspended = FALSE)
+		return
+	// Validate ping. opened_at взводится в самом конце open(), уже после доставки
+	// ассетов; пока он пуст, судить окно не по чему - null в арифметике DM это ноль,
+	// и без проверки любое такое окно мгновенно считалось бы просроченным.
+	if(!initialized && opened_at && world.time - opened_at > TGUI_PING_TIMEOUT)
 		log_tgui(user, \
 			"Error: Zombie window detected, killing it with fire.\n" \
 			+ "window_id: [window.id]\n" \
@@ -325,7 +440,10 @@
 		close()
 		return
 	if(needs_update)
-		window.send_message("update", get_payload())
+		var/list/payload = get_payload()
+		if(!payload || !can_send_update())
+			return
+		window.send_message("update", payload)
 
 /**
  * private

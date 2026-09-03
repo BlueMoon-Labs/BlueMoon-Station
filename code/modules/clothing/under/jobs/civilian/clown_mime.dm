@@ -41,6 +41,7 @@
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE //The clown suit must look funny, no taur alpha masks where possible.
 	var/list/poly_colors = list("#FF0000", "#FF99FF", "#FFFF00", "#FFFFFF")
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/polychromic_clown/ComponentInitialize()
 	. = ..()
@@ -54,6 +55,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/green
 	name = "green clown suit"
@@ -63,6 +65,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/yellow
 	name = "yellow clown suit"
@@ -72,6 +75,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/purple
 	name = "purple clown suit"
@@ -81,6 +85,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/orange
 	name = "orange clown suit"
@@ -90,6 +95,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/rainbow
 	name = "rainbow clown suit"
@@ -99,6 +105,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/jester
 	name = "jester suit"
@@ -114,6 +121,7 @@
 	item_state = "sexyclown"
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/clown/Initialize(mapload)
 	. = ..()

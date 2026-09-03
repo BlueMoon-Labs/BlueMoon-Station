@@ -106,7 +106,7 @@
 
 	if(istype(container, /obj/structure/closet/crate))
 		var/obj/structure/closet/crate/C = container
-		C.manifest = manifest_paper
+		C.set_manifest(manifest_paper)
 		C.update_appearance()
 	else
 		container.contents += manifest_paper

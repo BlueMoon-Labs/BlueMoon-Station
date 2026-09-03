@@ -119,8 +119,8 @@
 				to_chat(H, span_notice(pick("Ах-х-~ Как уютно~", "Я бы мог[H.gender == FEMALE? "ла" : ""] уснуть тут, если бы хотел[H.ru_a()]...","Моё маленькое убежище от жестокого мира.","Я чувствую себя в безопасности.")))
 			//sleep(8 SECONDS)
 
-/obj/structure/closet/cardboard/open()
-	if(opened || !can_open())
+/obj/structure/closet/cardboard/open(mob/living/user, force = FALSE)
+	if(opened || !can_open(user, force))
 		return FALSE
 	var/list/alerted = null
 	if(egged < world.time)

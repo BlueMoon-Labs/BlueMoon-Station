@@ -53,9 +53,8 @@
 		if(P.mind && P.mind.has_antag_datum(/datum/antagonist/wizard))
 			return FALSE
 
-	if(SSevents.wizardmode) //If summon events was active, turn it off
-		SSevents.toggleWizardmode()
-		SSevents.resetFrequency()
+	if(SSdirector.wizardmode) //If summon events was active, turn it off
+		SSdirector.toggle_wizardmode()
 
 	return TRUE
 

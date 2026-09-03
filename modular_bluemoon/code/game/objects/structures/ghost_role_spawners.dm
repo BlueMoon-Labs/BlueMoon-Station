@@ -2,8 +2,15 @@
 /datum/antagonist/ghost_role/inteq
 	name = "InteQ Ship Crew"
 
+/datum/antagonist/ghost_role/inteq/is_banned(mob/M)
+	. = ..()
+	if(.)
+		return TRUE
+	return jobban_isbanned(M, ROLE_INTEQ)
+
 /datum/antagonist/ghost_role/ghost_cafe
 	name = "Ghost Cafe"
+	show_in_check_antagonists = FALSE
 	var/area/adittonal_allowed_area
 
 /datum/antagonist/ghost_role/tarkov
@@ -46,7 +53,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	if(switch_on)
 		AddElement(/datum/element/ghost_role_eligibility, free_ghosting = TRUE, _low_priority = TRUE)
 		AddElement(/datum/element/dusts_on_catatonia)
-		var/list/Not_dust_area = list(/area/centcom/holding/exterior,  /area/hilbertshotel)
+		var/list/Not_dust_area = list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel)
 		if(additional_area)
 			Not_dust_area += additional_area
 		AddElement(/datum/element/dusts_on_leaving_area, Not_dust_area)
@@ -64,9 +71,9 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		RemoveElement(/datum/element/dusts_on_catatonia)
 		var/datum/antagonist/ghost_role/ghost_cafe/GC = mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 		if(GC)
-			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior,  /area/hilbertshotel, GC.adittonal_allowed_area))
+			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel, GC.adittonal_allowed_area))
 		else
-			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior,  /area/hilbertshotel))
+			RemoveElement(/datum/element/dusts_on_leaving_area, list(/area/centcom/holding/exterior, /area/centcom/holding/shootingrange, /area/hilbertshotel))
 
 		REMOVE_TRAIT(src, TRAIT_SIXTHSENSE, GHOSTROLE_TRAIT)
 		REMOVE_TRAIT(src, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
@@ -84,10 +91,10 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 			D.Remove(src)
 
 /obj/effect/mob_spawn/qareen/attack_ghost(mob/user, latejoinercalling)
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
 		return . = ..()
 	else
-		return to_chat(user, "<span class='warning'>Игра за ЕРП-антагонистов допускается лишь в Режим Extended!</span>")
+		return to_chat(user, span_warning("Игра за ЕРП-антагонистов допускается лишь в режимах Extended или Dynamic Light!"))
 
 /obj/effect/mob_spawn/qareen //not grief antag u little shits
 	name = "Qareen - The Horny Spirit"
@@ -155,6 +162,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 
 	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/changeling)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
@@ -167,7 +175,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 		/obj/item/implant/radio/centcom,
 		)
 
-/obj/effect/mob_spawn/human/changeling_extended //not grief antag u little shits
+/obj/effect/mob_spawn/human/changeling_extended
 	name = "Changeling - The Horny Creature"
 	desc = "An ancient tomb designed for long-term stasis. This one has the word HORNY scratched all over the surface!"
 	short_desc = "Вы таинственное нечто и абсолютно идеальный организм, который питается возбуждением своих жертв!"
@@ -187,15 +195,45 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 	category = "special"
 
 /obj/effect/mob_spawn/human/changeling_extended/attack_ghost(mob/user, latejoinercalling)
-	if(GLOB.master_mode == "Extended")
+	if(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT))
 		return . = ..()
 	else
-		return to_chat(user, "<span class='warning'>Игра за ЕРП-антагонистов допускается лишь в режим Extended!</span>")
+		return to_chat(user, span_warning("Игра за ЕРП-антагонистов допускается лишь в режимах Extended или Dynamic Light!"))
 
 /obj/effect/mob_spawn/human/changeling_extended/special(mob/living/new_spawn)
 	. = ..()
 	var/mob/living/carbon/human/H = new_spawn
 	H.mind.make_XenoChangeling()
+
+/datum/antagonist/changeling/xenobio/on_gain()
+	. = ..()
+	if(iscarbon(owner?.current))
+		RegisterSignal(owner.current, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_siege_zone_entry))
+
+/datum/antagonist/changeling/xenobio/on_removal()
+	if(owner?.current)
+		UnregisterSignal(owner.current, COMSIG_MOVABLE_Z_CHANGED)
+	return ..()
+
+/datum/antagonist/changeling/xenobio/proc/check_siege_zone_entry(datum/source)
+	SIGNAL_HANDLER
+	var/mob/living/carbon/C = owner?.current
+	if(!istype(C) || QDELETED(C) || C.stat == DEAD)
+		return
+	var/turf/T = get_turf(C)
+	if(!T || !(is_pact_siege_level(T.z) || T.z == GLOB.inteq_pact_siege.resolve_siege_z()))
+		return
+	to_chat(C, span_userdanger("Вам запрещено находиться в зоне осады InteQ! Производится эвакуация на Космическую Станцию."))
+	message_admins("[key_name_admin(C)] (ERP-генокрад) попытался проникнуть на территорию осады InteQ и был возвращён на станцию телепортом.")
+	log_game("Xenobio changeling [key_name(C)] tried to enter pact siege z-level at [AREACOORD(T)] — returned to station via teleport.")
+	INVOKE_ASYNC(src, PROC_REF(send_changeling_home), C)
+
+/// Возврат на станцию простым телепортом — как останки атакующих после осады.
+/datum/antagonist/changeling/xenobio/proc/send_changeling_home(mob/living/carbon/C)
+	var/turf/landing = GLOB.inteq_pact_siege.teleport_to_station(C)
+	if(!landing)
+		return
+	to_chat(C, span_notice("Вас вернули на Космическую Станцию."))
 
 /obj/effect/mob_spawn/human/slavers
 	name = "Slaver"

@@ -330,16 +330,21 @@
 	repairable_by = /obj/item/stack/sheet/metal
 	species_restricted = list("I.P.C.", "Synthetic Lizardperson", "Synthetic", "Military Synth", "Synthetic Anthropomorph")
 	unique_reskin = list(
-		"Roselia" = list("icon_state" = "InlaidDataDress_default", "skin" = "default"),
+		"Roselia" = list("icon_state" = "InlaidDataDress_default", "skin" = "default", "active_echo" = TRUE),
 		"Rose-1" = list("icon_state" = "InlaidDataDress_battle", "skin" = "battle", "active_echo" = FALSE),
 		"Rose-4" = list("icon_state" = "InlaidDataDress_lust", "skin" = "lust", "can_adjust" = FALSE, "body_parts_covered" = NONE, "active_echo" = FALSE),
 	)
+	max_integrity = 380
+	limb_integrity = 60
+	has_sensor = NO_SENSORS
 	var/equipped_slot = FALSE
 	var/obj/effect/distortion_effect/filter_on_user
 	var/obj/effect/dress_particle_holder/particle_effect_holder
 	var/obj/echo
 	var/active_echo = TRUE
 	var/skin = "default"
+	var/datum/component/ntnet_interface/net
+	var/datum/component/neural_interface/neural_interface
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/New()
 	. = ..()
@@ -349,11 +354,46 @@
 
 	filter_on_user = new(src)
 	particle_effect_holder = new(src)
+	net = LoadComponent(/datum/component/ntnet_interface)
 
 	LAZYADD(vis_contents, filter_on_user)
 	LAZYADD(vis_contents, particle_effect_holder)
 
 	START_PROCESSING(SSfastprocess, src)
+	ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/Destroy()
+
+	STOP_PROCESSING(SSfastprocess, src)
+
+	LAZYREMOVE(vis_contents, filter_on_user)
+	LAZYREMOVE(vis_contents, particle_effect_holder)
+
+	QDEL_NULL(echo)
+	QDEL_NULL(filter_on_user)
+	QDEL_NULL(particle_effect_holder)
+	QDEL_NULL(net)
+	if(neural_interface)
+		UnregisterSignal(neural_interface, COMSIG_PARENT_QDELETING)
+		if(!QDELETED(neural_interface))
+			neural_interface.RemoveSource("ROSELIA_DRESS")
+		neural_interface = null
+
+	. = ..()
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/on_mob_death(mob/living/L, gibbed)
+	. = ..()
+	if(gibbed)
+		qdel(src)
+		return TRUE
+
+	SEND_SIGNAL(L, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "HOST_STATUS", "HOST DEAD", 10 SECONDS)
+
+	toggle_open_body(TRUE)
+	var/mob/living/carbon/human/H = L
+	if(istype(H))
+		H.update_inv_w_uniform()
+		H.update_body(TRUE)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/equipped(mob/user, slot)
 	. = ..()
@@ -366,7 +406,27 @@
 	LAZYADD(user.vis_contents, particle_effect_holder)
 	LAZYADD(user.vis_contents, echo)
 
+	user.render_target = user.render_target || ref(user);
 	echo.render_source = user.render_target
+	var/list/monitors = list(
+			/datum/neural_monitor/nt_net = list(src),
+			/datum/neural_monitor/shock,
+			/datum/neural_monitor/observers
+		)
+
+	if(HAS_TRAIT(user, TRAIT_SELF_AWARE))
+		monitors += list(
+			/datum/neural_monitor/health,
+			/datum/neural_monitor/wound,
+			/datum/neural_monitor/nanite
+		)
+
+	var/interface_source = "ROSELIA_DRESS"
+	neural_interface = user.LoadComponent(/datum/component/neural_interface)
+	//компонент общий на моба и самоудаляется, когда пустеет его список
+	//источников - без сигнала вар вечно держал бы мёртвый компонент
+	RegisterSignal(neural_interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
+	neural_interface.add_monitors_by_types(interface_source, monitors)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/dropped(mob/user)
 
@@ -378,18 +438,22 @@
 	LAZYREMOVE(user.vis_contents, particle_effect_holder)
 	LAZYREMOVE(user.vis_contents, echo)
 
-	echo.render_source = null
+	echo?.render_source = null
+
+	if(neural_interface)
+		var/datum/component/neural_interface/old_interface = neural_interface
+		neural_interface = null
+		UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
+		//сигнал может удалить компонент (последний источник) - вар уже отпущен
+		SEND_SIGNAL(old_interface, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, "ROSELIA_DRESS")
 	. = ..()
 
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	neural_interface = null
+
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/toggle_jumpsuit_adjust()
-	if(!body_parts_covered)
-		icon_state = "InlaidDataDress_[skin]"
-		item_state = "InlaidDataDress_[skin]"
-		body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	else
-		icon_state = "InlaidDataDress_[skin]_open"
-		item_state = "InlaidDataDress_[skin]_open"
-		body_parts_covered = NONE
+	toggle_open_body(body_parts_covered)
 	return TRUE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/add_atom_colour(coloration, colour_priority)
@@ -409,8 +473,29 @@
 		particle_effect_holder.remove_atom_colour(coloration, colour_priority)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/process(delta_time)
-	if(active_echo && equipped_slot)
+	if(!equipped_slot)
+		return
+
+	distortion_transform()
+
+	if(active_echo)
 		echo_animation()
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/toggle_open_body(open)
+	if(!can_adjust)
+		return TRUE
+
+	if(neural_interface)
+		SEND_SIGNAL(neural_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "COVERAGE", open ? "OPEN" : "CLOSED", 10 SECONDS)
+	if(open)
+		icon_state = "InlaidDataDress_[skin]_open"
+		item_state = "InlaidDataDress_[skin]_open"
+		body_parts_covered = NONE
+	else
+		icon_state = "InlaidDataDress_[skin]"
+		item_state = "InlaidDataDress_[skin]"
+		body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	return TRUE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/echo_animation()
 	var/matrix/m = matrix()
@@ -418,6 +503,16 @@
 
 	animate(echo, transform = m, alpha = 48, time = 2, loop=0, flags=ANIMATION_END_NOW)
 	animate(transform = m.Invert(), alpha = 0, time = 2)
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/distortion_transform()
+	var/matrix/m = matrix()
+	m.Turn(rand(1, 360))
+	var/x = rand(1,200)/100
+	var/y = rand(1,200)/100
+	m.Scale(x, y)
+	m.Translate(rand(-10, 10), rand(-10,10))
+
+	filter_on_user.transform = m
 
 /obj/effect/distortion_effect
 	icon = 'modular_bluemoon/fluffs/icons/effects/32x32.dmi'
@@ -526,6 +621,19 @@
 	icon_state = "saare"
 	item_state = "saare"
 	can_adjust = TRUE
+
+// Спрайты принадлежат cnaperdodo
+/obj/item/clothing/under/donator/bm/clf_uniform
+	name = "Перекрашенный комплект ЧВК"
+	desc = "Старый перекрашеный комплект ЧВК. По сути своей это когда то было универсальным нижним комплектов для тактических отрядов. А теперь это любят носить те, кто против закона."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_clf_uniform.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_clf_uniform.dmi'
+	icon_state = "clf_uniform"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	item_state = "officer_jumpsuit"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/donator/bm/kladmen_dress
 	name = "Gothic Dress"
@@ -743,3 +851,145 @@
 	item_state = "tshirt_gray_blu"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/sheya
+	name = "Gothic dress"
+	desc = "Готическое платье, почти не закрывающее спину"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "sheya_dress"
+	item_state = "sheya_dress"
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/blood_suit
+	name = "crimson aristocracy suit"
+	desc = "A sophisticated suit, dyed in deep red tones. The jacket is complemented by gold thread and a loose white shirt."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "blood_suit"
+	item_state = "blood_suit"
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/concord
+	name = "Modified Concord Uniform"
+	desc = "Упрощённый вариант формы за авторством ЧВК \"Конкорд\", представляет из себя лёгкую дышащую синт-ткань, в несколько слоёв переплетённую с терморегуляционными трубками и мягкими подкладками. В боевой версии в ней в том числе присутствуют защитные элементы, но эта - лишь лёгкая униформа, что бы попа не потела."
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "concord"
+	item_state = "concord"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+
+/obj/item/clothing/under/donator/bm/concord/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/concord/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
+		return
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	icon_state = "[initial(icon_state)]_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/concord/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		update_icon()
+
+/obj/item/clothing/under/donator/bm/h_pmc_jeans
+	name = "PMC jeans"
+	desc = "Некогда обычные джинсы адаптированные под нужды оперативника неизвестных наемнических структур."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "h_pmc_jeans"
+	item_state = "h_pmc_jeans"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE
+
+/obj/item/clothing/underwear/shirt/h_thin_tshirt
+	name = "Thin T-shirt"
+	desc = "Обычная темная майка."
+	icon_state = "h_thin_tshirt"
+	item_state = "h_thin_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/underwear/briefs/h_thin_slim_tshirt
+	name = "Slim T-shirt"
+	desc = "Когда-то это было обычной майкой... Кто такое носить вообще будет?"
+	icon_state = "h_slim_tshirt"
+	item_state = "h_slim_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt
+	name = "EXTRA Slim T-shirt"
+	desc = "Ты совсем ебанутый?"
+	icon_state = "h_eslim_tshirt"
+	item_state = "h_eslim_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/under/donator/bm/renory_jumpsuit
+	name = "Leather Jumpsuit"
+	desc = "Облегающий угольно-черный комбинезон."
+	icon_state = "renory_jumpsuit"
+	item_state = "syndicate-black"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/ntrdrip
+	name = "Nanotrasen Representative Uniform"
+	desc = "Белые пиджачки чистят мусор"
+	icon_state = "ntrdrip"
+	item_state = "ntrdrip"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/h_slim_body_and_shorts
+	name = "Comfortable short bodysuit with athletic shorts"
+	desc = "Read the name, dunno."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "slim_body_and_shorts"
+	item_state = "slim_body_and_shorts"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/longshirt
+	name = "Long Shirt"
+	desc = "Just a long shirt, no more"
+	icon_state = "longshirt"
+	item_state = "longshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+	fitted = NO_FEMALE_UNIFORM
+	body_parts_covered = NONE
+	can_adjust = TRUE
+	alternate_worn_layer = GLOVES_LAYER

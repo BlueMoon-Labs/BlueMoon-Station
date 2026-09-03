@@ -22,7 +22,10 @@
 		else
 			return
 	if(!user.client.prefs.tgui_input_mode)
-		return input(user, message, title) as null|anything in items
+		var/mob/prompt_mob = begin_native_prompt(user)
+		var/native_answer = input(user, message, title) as null|anything in items
+		end_native_prompt(prompt_mob)
+		return native_answer
 	var/datum/tgui_checkbox_input/input = new(user, message, title, items, min_checked, max_checked, timeout, ui_state)
 	input.ui_interact(user)
 	input.wait()

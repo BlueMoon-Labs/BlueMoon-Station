@@ -79,7 +79,7 @@
 		/obj/item/clothing/head/helmet/goner/officer/fake/poly = 10
 	)
 
-	// if(SSevents.holidays && SSevents.holidays[CHRISTMAS])
+	// if(SSholidays.holidays && SSholidays.holidays[CHRISTMAS])
 	// 	extra_products += list(
 	// 		/obj/item/clothing/accessory/sweater/uglyxmas = 3,
 	// 		/obj/item/clothing/head/beanie/christmas = 3,

@@ -3,8 +3,8 @@
 
 /obj/item/clockwork/brass_claw
 	name = "brass claw"
-	desc = "A very sharp claw made out of brass."
-	clockwork_desc = "A incredibly sharp claw made out of brass. It is quite effective at crippling enemies, though very obvious when extended.\nGains combo on consecutive attacks against a target, causing bonus damage."
+	desc = "Очень острый коготь из латуни."
+	clockwork_desc = "Невероятно острый коготь из латуни. Он весьма эффективен для нанесения увечий врагам, хотя в развернутом состоянии выглядит весьма заметно.\nПри последовательных атаках по одной цели накапливает комбо, нанося дополнительный урон."
 	icon_state = "brass_claw" //Codersprite moment
 	item_state = "brass_claw"
 	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
@@ -16,7 +16,7 @@
 	throw_speed = 0
 	armour_penetration = 20
 	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	attack_verb = list("атакует", "рубит", "колит", "режет")
 	sharpness = SHARP_EDGED
 	wound_bonus = 10
 	bare_wound_bonus = 10
@@ -32,7 +32,7 @@
 
 /obj/item/clockwork/brass_claw/examine(mob/user)
 	if(is_servant_of_ratvar(user))
-		clockwork_desc += "\n<span class='brass'>It has </span><span class='inathneq_small'><b>[combo]</span></b><span class='brass'> combo stacks built up against the current target, causing </span><span class='inathneq_small'><b>[min(maximum_combo_damage, combo * damage_per_combo)]</span></b><span class='brass'> bonus damage.</span>"
+		clockwork_desc += "\n<span class='brass'>На текущей цели накоплено </span><span class='inathneq_small'><b>[combo]</span></b><span class='brass'> стаков комбо, что даёт </span><span class='inathneq_small'><b>[min(maximum_combo_damage, combo * damage_per_combo)]</span></b><span class='brass'> дополнительного урона.</span>"
 	. = ..()
 	clockwork_desc = initial(clockwork_desc)
 

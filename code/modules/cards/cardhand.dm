@@ -90,10 +90,14 @@
 
 /obj/item/toy/cards/cardhand/insert(obj/item/toy/cards/card_item, mob/living/user)
 	var/card_item_cache = card_item
+	var/obj/item/toy/cards/original_parentdeck = card_item.parentdeck
 	. = ..()
 	if(!.)
 		return
 	apply_card_vars(card_item_cache)
+	// The parent insert qdels card_item. Its Destroy() clears parentdeck, so do not
+	// let apply_card_vars() turn the deleted card itself into this hand's deck.
+	parentdeck = original_parentdeck
 
 /obj/item/toy/cards/cardhand/apply_card_vars(obj/item/toy/cards/sourceobj)
 	. = ..()

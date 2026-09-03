@@ -24,7 +24,7 @@
 ////////////////////////
 
 /obj/item/modkit/hahun_jukebox
-	name = "Irrelian Jukebox"
+	name = "Irellian jukebox"
 	desc = "A modkit for making a jukebox into an acradorian version."
 	product = /obj/item/jukebox/hahun
 	fromitem = list(/obj/item/jukebox)
@@ -98,6 +98,47 @@
 		for(var/i = 1 to 3)
 			new path(src)
 
+/obj/item/sign/flag/marine
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+	unique_reskin = list(
+		"United Americas" = list(
+			RESKIN_ICON_STATE = "folded_ua",
+			RESKIN_ITEM_STATE = "folded_ua",
+			sign_path = /obj/structure/sign/flag/marine/ua
+		),
+		"USCMC" = list(
+			RESKIN_ICON_STATE = "folded_uscmc",
+			RESKIN_ITEM_STATE = "folded_uscmc",
+			sign_path = /obj/structure/sign/flag/marine/uscmc)
+	)
+
+/obj/structure/sign/flag/marine
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+
+/obj/item/sign/flag/marine/ua
+	name = "folded flag of United Americas"
+	desc = "folded flag of United Americas, abbreviated as the UA."
+	icon_state = "folded_ua"
+	sign_path = /obj/structure/sign/flag/marine/ua
+
+/obj/structure/sign/flag/marine/ua
+	name = "flag of United Americas"
+	desc = "flag of United Americas. Why did they need to unite them?"
+	icon_state = "flag_ua"
+	item_flag = /obj/item/sign/flag/marine/ua
+
+/obj/item/sign/flag/marine/uscmc
+	name = "folded USCMC flag"
+	desc = "folded flag of United States Colonial Marine Corps. There some sign at corner: \"Delta one love\"."
+	icon_state = "folded_uscmc"
+	sign_path = /obj/structure/sign/flag/marine/uscmc
+
+/obj/structure/sign/flag/marine/uscmc
+	name = "USCMC flag"
+	desc = "flag of United States Colonial Marine Corps. Commonly known as just the Colonial Marines, was the United Americas' primary \"force-in-readiness\". They specialized in force projection, being able to operate independently in environments far from home for extended periods thanks to their technological prowess and sizeable space fleet at their disposal."
+	icon_state = "flag_uscmc"
+	item_flag = /obj/item/sign/flag/marine/uscmc
+
 ////////////////////////
 
 /obj/item/clothing/mask/vape/custom
@@ -114,3 +155,76 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
 	icon_state = "odnorazka"
 	item_state = "odnorazka"
+
+/obj/item/storage/box/cybersun_kit
+	name = "Cybersun kit"
+	desc = "Military box that contains a full kit of Cybersun equipment."
+	icon = 'modular_bluemoon/krashly/icons/obj/box.dmi'
+	icon_state = "syndiebox"
+
+/obj/item/storage/box/cybersun_kit/PopulateContents()
+	new /obj/item/storage/belt/esabre_belt/fluff(src)
+	new /obj/item/modkit/esabre_belt(src)
+	new /obj/item/modkit/energy_sabre/captain(src)
+	new /obj/item/modkit/energy_sabre/syndicate(src)
+	new /obj/item/modkit/energy_sabre/inteq(src)
+
+/obj/item/modkit/esabre_belt
+	name = "Cybersun Sabre Sheath Kit"
+	desc = "A modkit for making most types of sheath into a cybersun sheath."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/storage/belt/esabre_belt/fluff/real
+	fromitem = list(/obj/item/storage/belt/esabre_belt, /obj/item/storage/belt/sabre, /obj/item/storage/belt/sabre/rapier)
+
+/obj/item/modkit/energy_sabre/captain
+	name = "Captain Cybersun Sabre kit"
+	desc = "A modkit for making a captain's sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain
+	fromitem = list(/obj/item/melee/sabre)
+
+/obj/item/modkit/energy_sabre/syndicate
+	name = "Syndicate Cybersun Sabre kit"
+	desc = "A modkit for making a syndicate sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate
+	fromitem = list(/obj/item/melee/rapier)
+
+/obj/item/modkit/energy_sabre/inteq
+	name = "Cybersun Sabre kit"
+	desc = "A modkit for making an energy sabre into cybersun energy sabre."
+	icon_state = "syn_helmet_kit"
+	product = /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	fromitem = list(/obj/item/melee/transforming/energy/sword/energy_sabre)
+
+////////////////////////
+
+/obj/item/modkit/anti_armor
+	name = "\improper Armor Softening Nanites Kit"
+	desc = "Экспериментальный комплект нанитов, предназначенных для размягчения брони и материалов одежды, открывая прямой доступ к телу."
+	icon_state = "blueshield_helmet_kit"
+	product = null
+	fromitem = list(/obj/item/clothing)
+	var/uses = 5
+
+/obj/item/modkit/anti_armor/examine(mob/user)
+	. = ..()
+	. += span_notice("Осталось [uses] использований.")
+
+/obj/item/modkit/anti_armor/afterattack(obj/item/O, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag || !istype(O, /obj/item/clothing))
+		return
+	if(!do_after(user, 1.5 SECONDS, user))
+		return
+	var/obj/item/clothing/cl = O
+	if(istype(cl, /obj/item/clothing/under))
+		var/obj/item/clothing/under/u = cl
+		u.can_adjust = FALSE
+	cl.armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	cl.body_parts_covered = NONE
+	user.visible_message(span_warning("[user] modifies [cl], now it not have armor and not covering anything!"),span_warning("You modify the [cl], now it not have armor and not covering anything!"))
+	uses--
+	if(uses <= 0)
+		qdel(src)
+
+////////////////////////

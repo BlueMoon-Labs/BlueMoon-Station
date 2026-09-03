@@ -1,6 +1,7 @@
 import { filter, map, sortBy, uniq } from 'common/collections';
 import { flow } from 'common/fp';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Dropdown, Icon, Input, PixelArtImage, Section, Stack, Tabs } from '../components';
@@ -11,12 +12,12 @@ import { Window } from '../layouts';
 // custom outfits give a ref keyword instead of path
 const getOutfitKey = outfit => outfit.path || outfit.ref;
 
-const useOutfitTabs = (context, categories) => {
-  return useLocalState(context, 'selected-tab', categories[0]);
+const useOutfitTabs = (categories) => {
+  return useLocalState('selected-tab', categories[0]);
 };
 
-export const SelectEquipment = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SelectEquipment = (props) => {
+  const { act, data } = useBackend();
   const {
     name,
     icon64,
@@ -40,10 +41,9 @@ export const SelectEquipment = (props, context) => {
     ...outfits.map(entry => entry.category),
     'Custom',
   ]);
-  const [tab] = useOutfitTabs(context, categories);
+  const [tab] = useOutfitTabs(categories);
 
-  const [searchText, setSearchText] = useLocalState(
-    context, 'searchText', '');
+  const [searchText, setSearchText] = useState('');
   const searchFilter = createSearch(searchText, entry => (
     entry.name + entry.path
   ));
@@ -114,9 +114,9 @@ export const SelectEquipment = (props, context) => {
   );
 };
 
-const DisplayTabs = (props, context) => {
+const DisplayTabs = (props) => {
   const { categories } = props;
-  const [tab, setTab] = useOutfitTabs(context, categories);
+  const [tab, setTab] = useOutfitTabs(categories);
   return (
     <Tabs textAlign="center">
       {categories.map(category => (
@@ -131,8 +131,8 @@ const DisplayTabs = (props, context) => {
   );
 };
 
-const OutfitDisplay = (props, context) => {
-  const { act, data } = useBackend(context);
+const OutfitDisplay = (props) => {
+  const { act, data } = useBackend();
   const { current_outfit } = data;
   const { entries, currentTab } = props;
   return (
@@ -150,7 +150,7 @@ const OutfitDisplay = (props, context) => {
           onClick={() => act('preview', {
             path: getOutfitKey(entry),
           })}
-          onDblClick={() => act('applyoutfit', {
+          onDoubleClick={() => act('applyoutfit', {
             path: getOutfitKey(entry),
           })} />
       ))}
@@ -167,18 +167,14 @@ const OutfitDisplay = (props, context) => {
   );
 };
 
-const CurrentlySelectedDisplay = (props, context) => {
-  const { act, data } = useBackend(context);
+const CurrentlySelectedDisplay = (props) => {
+  const { act, data } = useBackend();
   const { current_outfit, is_observer = true } = data;
   const { entry } = props;
-  const [delPockets, setPocketDel] = useLocalState(
-    context, 'delPockets', false);
-  const [deployMethod, setDeployMethod] = useLocalState(
-    context, 'deployMethod', "Instant");
-  const [giveReturn, setGiveReturn] = useLocalState(
-    context, 'giveReturn', false);
-  const [randomChar, setRandomChar] = useLocalState(
-    context, 'randomChar', false);
+  const [delPockets, setPocketDel] = useState(false);
+  const [deployMethod, setDeployMethod] = useState("Instant");
+  const [giveReturn, setGiveReturn] = useState(false);
+  const [randomChar, setRandomChar] = useState(false);
   return (
     <Stack align="center">
       {entry?.path && (
@@ -201,8 +197,8 @@ const CurrentlySelectedDisplay = (props, context) => {
           title={entry?.path}
           style={{
             'overflow': 'hidden',
-            'white-space': 'nowrap',
-            'text-overflow': 'ellipsis',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
           }}>
           {entry?.name}
         </Box>

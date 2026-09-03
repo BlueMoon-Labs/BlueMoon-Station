@@ -73,9 +73,9 @@
 /datum/config_entry/number/bluespaceminer_core_work_chanse_no_damage
 	default = 5
 
-// The minimum time after which instability effects can occur after the last trigger
+// Minimum time between instability sector events (per miner; cooldown resets on trigger).
 /datum/config_entry/number/bluespaceminer_instability_cooldown
-	default = 1 MINUTES
+	default = 5 MINUTES
 
 /// TETRIS ARCADE MACHINE ///
 // If the machine should skip producing science points
@@ -91,7 +91,7 @@
 
 // Minimum score required to message admins
 /datum/config_entry/number/tetris_score_high
-	default = 10000
+	default = 50000
 
 // Maximum research points that can be generated
 /datum/config_entry/number/tetris_score_max
@@ -109,3 +109,6 @@
 /// R&D Machinery ///
 // Should production machinery be restricted for skeleton crews?
 /datum/config_entry/flag/protolock_during_lowpop
+
+// Should production machinery be available in code red and above?
+/datum/config_entry/flag/protolock_during_codered

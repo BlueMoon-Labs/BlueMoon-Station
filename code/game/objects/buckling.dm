@@ -33,9 +33,11 @@
 	var/mob/living/carried_mob = riding_item.rider
 	if(carried_mob == user) //Piggyback user.
 		return
+	if(!check_buckle_delay(carried_mob, user))
+		return
 	user.unbuckle_mob(carried_mob)
 	carried_mob.forceMove(get_turf(src))
-	return mouse_buckle_handling(carried_mob, user)
+	return mouse_buckle_handling(carried_mob, user, delay_checked = TRUE)
 
 /atom/movable/MouseDrop_T(mob/living/M, mob/living/user)
 	. = ..()
@@ -50,9 +52,21 @@
  * M - The mob being buckled to src
  * user - The mob buckling M to src
  */
-/atom/movable/proc/mouse_buckle_handling(mob/living/M, mob/living/user)
+/atom/movable/proc/mouse_buckle_handling(mob/living/M, mob/living/user, delay_checked = FALSE)
 	if(can_buckle && istype(M) && istype(user))
+		if(!delay_checked && !check_buckle_delay(M, user))
+			return FALSE
 		return user_buckle_mob(M, user, check_loc = FALSE)
+
+/atom/movable/proc/check_buckle_delay(mob/living/M, mob/living/user)
+	if(M == user || user.a_intent == INTENT_HELP || M.incapacitated() || M.restrained())
+		return TRUE
+	var/atom/m_loc = M.loc
+	if(!do_after(user, 1.5 SECONDS, src))
+		return FALSE
+	if(QDELETED(M) || M.loc != m_loc)
+		return FALSE
+	return TRUE
 
 /atom/movable/proc/has_buckled_mobs()
 	if(!buckled_mobs)
@@ -128,7 +142,9 @@
 	if(!isliving(buckled_mob))
 		CRASH("Non-living [buckled_mob] thing called unbuckle_mob() for source.")
 	if(buckled_mob.buckled != src)
-		CRASH("[buckled_mob] called unbuckle_mob() for source while having buckled as [buckled_mob.buckled].")
+		if(buckled_mob in buckled_mobs)
+			buckled_mobs -= buckled_mob
+		return
 	if(!force && !buckled_mob.can_unbuckle())
 		return
 	. = buckled_mob
@@ -136,7 +152,11 @@
 	buckled_mob.anchored = initial(buckled_mob.anchored)
 	buckled_mob.update_mobility()
 	buckled_mob.clear_alert("buckled")
-	buckled_mob.set_glide_size(DELAY_TO_GLIDE_SIZE(buckled_mob.total_multiplicative_slowdown()))
+	// Цена шага, а не сырая сумма модификаторов: total_multiplicative_slowdown()
+	// складывает и то, что отфильтровано типом движения или конфликтом, и не
+	// знает о подтипах с более широким movement_delay(). Отпущенному мобу нужен
+	// тот же glide, по которому он сделает следующий шаг.
+	buckled_mob.set_glide_size(DELAY_TO_GLIDE_SIZE(buckled_mob.movement_step_cost(FALSE)))
 	buckled_mobs -= buckled_mob
 	SEND_SIGNAL(src, COMSIG_MOVABLE_UNBUCKLE, buckled_mob, force)
 
@@ -206,7 +226,7 @@
 				"<span class='notice'>Вы поднимаетесь с <b>[src]</b>.</span>",\
 				"<span class='italics'>Вы слышите металлический лязг.</span>")
 		add_fingerprint(user)
-	if(isliving(M.pulledby))
+	if(M && isliving(M.pulledby))
 		var/mob/living/L = M.pulledby
 		L.set_pull_offsets(M, L.grab_state)
 	return M

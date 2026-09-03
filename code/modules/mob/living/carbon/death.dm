@@ -21,7 +21,7 @@
 	var/atom/Tsec = drop_location()
 	for(var/mob/M in src)
 		if(M in stomach_contents)
-			stomach_contents.Remove(M)
+			remove_from_stomach(M)
 		M.forceMove(Tsec)
 		M.visible_message("<span class='danger'>[M] bursts out of [src]!</span>",
 			"<span class='danger'>You burst out of [src]!</span>")

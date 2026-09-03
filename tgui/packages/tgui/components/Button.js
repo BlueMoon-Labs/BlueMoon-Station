@@ -5,8 +5,8 @@
  */
 
 import { KEY_ENTER, KEY_ESCAPE, KEY_SPACE } from 'common/keycodes';
-import { classes, pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { classes } from 'common/react';
+import { Component, createRef } from 'react';
 
 import { createLogger } from '../logging';
 import { Box } from './Box';
@@ -44,8 +44,7 @@ export const Button = props => {
     logger.warn(
       `Lowercase 'onclick' is not supported on Button and lowercase`
       + ` prop names are discouraged in general. Please use a camelCase`
-      + `'onClick' instead and read: `
-      + `https://infernojs.org/docs/guides/event-handling`);
+      + ` 'onClick' instead.`);
   }
   let buttonContent = (
     <Box
@@ -64,7 +63,7 @@ export const Button = props => {
           : 'Button--color--default',
         className,
       ])}
-      tabIndex={!disabled && '0'}
+      tabIndex={disabled ? undefined : '0'}
       onClick={e => {
         if (!disabled && onClick) {
           onClick(e);
@@ -115,8 +114,6 @@ export const Button = props => {
 
   return buttonContent;
 };
-
-Button.defaultHooks = pureComponentHooks;
 
 export const ButtonCheckbox = props => {
   const { checked, ...rest } = props;
@@ -193,12 +190,13 @@ export class ButtonInput extends Component {
   }
 
   setInInput(inInput) {
+    // setState is async in React: focus the input only after the rerender
+    // makes it visible, otherwise focus() on a display:none node is a no-op.
     this.setState({
       inInput,
-    });
-    if (this.inputRef) {
+    }, () => {
       const input = this.inputRef.current;
-      if (inInput) {
+      if (inInput && input) {
         input.value = this.props.currentValue || "";
         try {
           input.focus();
@@ -206,7 +204,7 @@ export class ButtonInput extends Component {
         }
         catch {}
       }
-    }
+    });
   }
 
   commitResult(e) {
@@ -260,7 +258,7 @@ export class ButtonInput extends Component {
           className="NumberInput__input"
           style={{
             'display': !this.state.inInput ? 'none' : undefined,
-            'text-align': 'left',
+            textAlign: 'left',
           }}
           onBlur={e => {
             if (!this.state.inInput) {

@@ -27,8 +27,8 @@
 	if(policy)
 		to_chat(current, policy)
 	current.log_message("revived using [revival_method] after [(world.time - current.timeofdeath) / 10] seconds, considered [forgotten ? "late" : "memory-intact"] revival under configured policy limits.", LOG_GAME)
-	message_admins("[ADMIN_LOOKUPFLW(current)] возвращён к жизни и [forgotten ? "всё помнит" : "ничего не помнит"].")
-	log_admin("[current] возвращён к жизни и [forgotten ? "всё помнит" : "ничего не помнит"].")
+	message_admins("[ADMIN_LOOKUPFLW(current)] возвращён к жизни и [forgotten ? "ничего не помнит" : "всё помнит"].")
+	log_admin("[current] возвращён к жизни и [forgotten ? "ничего не помнит" : "всё помнит"].")
 
 
 /// Handles memory loss after a some time being dead

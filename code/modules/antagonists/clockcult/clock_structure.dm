@@ -1,7 +1,7 @@
 //The base clockwork structure. Can have an alternate desc and will show up in the list of clockwork objects.
 /obj/structure/destructible/clockwork
 	name = "meme structure"
-	desc = "Some frog or something, the fuck?"
+	desc = "Какая-то лягушка или что-то в этом роде, какого черта?"
 	var/clockwork_desc //Shown to servants when they examine
 	icon = 'icons/obj/clockwork_objects.dmi'
 	icon_state = "rare_pepe"
@@ -10,7 +10,7 @@
 	density = TRUE
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/can_be_repaired = TRUE //if a fabricator can repair it
-	break_message = "<span class='warning'>The frog isn't a meme after all!</span>" //The message shown when a structure breaks
+	break_message = "<span class='warning'>После всего, лягушка больше не мем!</span>" //The message shown when a structure breaks
 	break_sound = 'sound/magic/clockwork/anima_fragment_death.ogg' //The sound played when a structure breaks
 	debris = list(/obj/item/clockwork/alloy_shards/large = 1, \
 	/obj/item/clockwork/alloy_shards/medium = 2, \
@@ -46,17 +46,17 @@
 	. = ..()
 	desc = initial(desc)
 	if(unanchored_icon)
-		. += "<span class='notice'>[src] is [anchored ? "":"not "]secured to the floor.</span>"
+		. += "<span class='notice'>[src] [anchored ? "":"не "]прикреплен[ru_a(FALSE)] к полу.</span>"
 
 /obj/structure/destructible/clockwork/examine_status(mob/user)
 	if(is_servant_of_ratvar(user) || isobserver(user))
 		var/t_It = ru_who(TRUE)
-		var/t_is = p_are()
+		// var/t_is = p_are() Английская штука. Мы переводим на русский - комментим
 		var/heavily_damaged = FALSE
 		var/healthpercent = (obj_integrity/max_integrity) * 100
 		if(healthpercent < 50)
 			heavily_damaged = TRUE
-		return "<span class='[heavily_damaged ? "alloy":"brass"]'>[t_It] [t_is] at <b>[obj_integrity]/[max_integrity]</b> integrity[heavily_damaged ? "!":"."]</span>"
+		return "<span class='[heavily_damaged ? "alloy":"brass"]'>[t_It] цел на <b>[obj_integrity]/[max_integrity]</b>[heavily_damaged ? "!":"."]</span>"
 	return ..()
 
 /obj/structure/destructible/clockwork/attack_hulk(mob/living/carbon/human/user, does_attack_animation = 0)
@@ -109,7 +109,7 @@
 		if(do_damage)
 			playsound(src, break_sound, 10 * (40 * (1 - get_efficiency_mod())), 1)
 			take_damage(round(max_integrity * 0.25, 1), BRUTE)
-			to_chat(user, "<span class='warning'>As you unsecure [src] from the floor, you see cracks appear in its surface!</span>")
+			to_chat(user, "<span class='warning'>Когда вы откручиваете [src] от пола, вы видите трещины, появляющиеся на нём!</span>")
 
 /obj/structure/destructible/clockwork/emp_act(severity)
 	. = ..()
@@ -124,7 +124,7 @@
 //for the ark and Ratvar
 /obj/structure/destructible/clockwork/massive
 	name = "massive construct"
-	desc = "A very large construction."
+	desc = "Очень большая конструкция."
 	layer = MASSIVE_OBJ_LAYER
 	density = FALSE
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF
@@ -153,9 +153,9 @@
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
 		if(!can_access_clockwork_power(src))
-			. += "<span class='alloy'>It has no access to the power network! Create a sigil of transmission nearby.</span>"
+			. += "<span class='alloy'>У него нет доступа к электросети! Создайте поблизости сигил передачи.</span>"
 		else
-			. += "<span class='brass'>It has access to <b>[DisplayPower(get_clockwork_power())]</b> of power.</span>"
+			. += "<span class='brass'>Он имеет доступ к <b>[DisplayPower(get_clockwork_power())]</b> энергии.</span>"
 
 /obj/structure/destructible/clockwork/powered/Destroy()
 	SSfastprocess.processing -= src
@@ -169,7 +169,7 @@
 /obj/structure/destructible/clockwork/powered/can_be_unfasten_wrench(mob/user, silent)
 	if(active)
 		if(!silent)
-			to_chat(user, "<span class='warning'>[src] needs to be disabled before it can be unsecured!</span>")
+			to_chat(user, "<span class='warning'>[src] необходимо отключить, прежде чем откручивать!</span>")
 		return FAILED_UNFASTEN
 	return ..()
 
@@ -178,9 +178,9 @@
 		if(!is_servant_of_ratvar(user))
 			return FALSE
 		if(!anchored && !active)
-			to_chat(user, "<span class='warning'>[src] needs to be secured to the floor before it can be activated!</span>")
+			to_chat(user, "<span class='warning'>[src] нужно прикрутить, чтобы [ru_ego(FALSE)] включить!</span>")
 			return FALSE
-		visible_message("<span class='notice'>[user] [active ? "dis" : "en"]ables [src].</span>", "<span class='brass'>You [active ? "dis" : "en"]able [src].</span>")
+		visible_message("<span class='notice'>[user] [active ? "вы" : "в"]ключает [src].</span>", "<span class='brass'>Вы [active ? "вы" : "в"]ключаете [src].</span>")
 	active = !active
 	if(active)
 		icon_state = active_icon

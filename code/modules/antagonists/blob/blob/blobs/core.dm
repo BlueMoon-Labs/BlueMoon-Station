@@ -22,7 +22,7 @@
 	. = ..()
 
 /obj/structure/blob/core/proc/generate_announcement()
-	priority_announce("Угроза Пятого Уровня подтверждена на станции [station_name()]; Тип: 'Разумная Биослизь'. Всему персоналу надлежит сдержать её распространение любой ценой!", "ВНИМАНИЕ: БИОЛОГИЧЕСКАЯ УГРОЗА", "outbreak5")
+	priority_announce("Угроза Пятого Уровня подтверждена на станции [station_name()]; Тип: 'Разумная Биослизь'. Всему персоналу надлежит сдержать её распространение любой ценой!", "ВНИМАНИЕ: БИОЛОГИЧЕСКАЯ УГРОЗА", "outbreak5", type = "outbreak5")
 
 /obj/structure/blob/core/scannerreport()
 	return "Directs the blob's expansion, gradually expands, and sustains nearby blob spores and blobbernauts."

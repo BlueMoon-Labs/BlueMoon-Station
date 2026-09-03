@@ -16,6 +16,7 @@
 	var/autounlock_by_boost = TRUE			//boosting this will autounlock this node.
 	var/list/research_costs = list()		//Point cost to research. type = amount
 	var/category = "Misc"				//Category
+	var/list/informing_radio_channels = list() //Список отделов, затрагиваемых технологией
 
 /datum/techweb_node/error_node
 	id = "ERROR"
@@ -104,9 +105,10 @@
 	// Default research tech, prevents bricking
 	design_ids = list("cable_coil_30", "basic_matter_bin", "basic_cell", "basic_scanning", "basic_capacitor", "basic_micro_laser", "micro_mani", "desttagger", "handlabel", "packagewrap",
 	"destructive_analyzer", "circuit_imprinter", "circuit_imprinter_science", "circuit_imprinter_robotic", "experimentor", "rdconsole", "bepis", "design_disk", "tech_disk", "rdserver", "rdservercontrol", "mechfab", "paystand",
-	"space_heater", "beaker", "large_beaker", "xlarge_beaker", "bucket", "hypovial", "large_hypovial", "syringe", "pillbottle",
-	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal",
+	"vendatray", "space_heater", "electrolyzer", "beaker", "large_beaker", "xlarge_beaker", "spray_bottle", "mop", "bucket", "broom", "hypovial", "large_hypovial", "syringe", "pillbottle",
+	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal", "sec_missiles",
 	"rglass","plasteel","plastitanium","plasmaglass","plasmareinforcedglass","titaniumglass","plastitaniumglass", "salestagger",
-	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",
-	)
-	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler"
+	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "bountyvend", "contrabandpad", "contrabandpadterminal", "infiltrator_case_science", "astro_sensor")
+	// Астрометрический сенсор доступен сразу: наблюдать явление за бортом надо в тот
+	// раунд, когда оно идёт, а не после того, как его исследуют.
+	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler" //ещё один add- ammoworkbench staff

@@ -70,10 +70,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	mob.log_talk(raw_msg, LOG_OOC, tag="(OOC)")
 
-	var/keyname = key
-	if(prefs.unlock_content)
-		if(prefs.toggles & MEMBER_PUBLIC)
-			keyname = "<font color='[prefs.ooccolor && (prefs.custom_colors & CUSTOM_OOC) ? prefs.ooccolor : GLOB.normal_ooc_colour]'>[icon2html('icons/obj/plushes.dmi', world, "plushie_nuke")][keyname]</font>"
+	var/keyname = get_ooc_keyname(src)
 
 	//The linkify span classes and linkify=TRUE below make ooc text get clickable chat href links if you pass in something resembling a url
 	for(var/client/C in GLOB.clients)
@@ -277,6 +274,12 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	SSticker.show_roundend_report(src, report_type = SERVER_LAST_ROUND)
 
+/// Сколько раз подряд уточнять положение сплиттера. Каждая итерация - это winget,
+/// то есть ожидание ответа скина клиента. По прод-логам сходимость почти всегда
+/// наступает за нулевую или первую итерацию, а недосошедшийся сплиттер - это лишь
+/// пара лишних пикселей у карты, за которые не стоит держать клиента на линии.
+#define FIT_VIEWPORT_MAX_CORRECTIONS 3
+
 /client/verb/fit_viewport()
 	set name = "Fit Viewport"
 	set category = "OOC"
@@ -287,31 +290,37 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	var/aspect_ratio = view_size[1] / view_size[2]
 
 	// Calculate desired pixel width using window size and aspect ratio
-	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
+	var/list/sizes = params2list(tracked_winget(src, "mainwindow.split;mapwindow", "size"))
 
-	// Client closed the window? Some other error? This is unexpected behaviour, let's
-	// CRASH with some info.
 	if(!sizes["mapwindow.size"])
-		CRASH("sizes does not contain mapwindow.size key. This means a winget failed to return what we wanted. --- sizes var: [sizes] --- sizes length: [length(sizes)]")
+		return
 
 	var/list/map_size = splittext(sizes["mapwindow.size"], "x")
 
-	// Looks like we expect mapwindow.size to be "ixj" where i and j are numbers.
-	// If we don't get our expected 2 outputs, let's give some useful error info.
 	if(length(map_size) != 2)
-		CRASH("map_size of incorrect length --- map_size var: [map_size] --- map_size length: [length(map_size)]")
+		return
 
 	var/height = text2num(map_size[2])
+	if(height <= 0)
+		return
 	var/desired_width = round(height * aspect_ratio)
 	if (text2num(map_size[1]) == desired_width)
 		// Nothing to do
 		return
 
+	if(!sizes["mainwindow.split.size"])
+		return
 	var/split_size = splittext(sizes["mainwindow.split.size"], "x")
+	if(length(split_size) != 2)
+		return
 	var/split_width = text2num(split_size[1])
+	if(split_width <= 300)
+		return
 
 	// Avoid auto-resizing the statpanel and chat into nothing.
 	desired_width = min(desired_width, split_width - 300)
+	if(desired_width <= 0)
+		return
 
 	// Calculate and apply a best estimate
 	// +4 pixels are for the width of the splitter's handle
@@ -320,9 +329,11 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Apply an ever-lowering offset until we finish or fail
 	var/delta
-	for(var/safety in 1 to 10)
-		var/after_size = winget(src, "mapwindow", "size")
+	for(var/safety in 1 to FIT_VIEWPORT_MAX_CORRECTIONS)
+		var/after_size = tracked_winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
+		if(length(map_size) != 2)
+			return
 		var/got_width = text2num(map_size[1])
 
 		if (got_width == desired_width)
@@ -337,6 +348,8 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 		pct += delta
 		winset(src, "mainwindow.split", "splitter=[pct]")
+
+#undef FIT_VIEWPORT_MAX_CORRECTIONS
 
 /client/verb/fix_stat_panel()
 	set name = "Fix Stat Panel"

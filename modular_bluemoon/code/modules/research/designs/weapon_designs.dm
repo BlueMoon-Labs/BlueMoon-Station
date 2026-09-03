@@ -59,7 +59,7 @@
 
 /datum/design/mag_acr5
 	name = "ACR-5 Rifle Magazine (5.8mm)"
-	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m30 rifle, loaded."
+	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m26 rifle, loaded."
 	id = "mag_acr5"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 20000, /datum/material/titanium = 500)
@@ -70,7 +70,7 @@
 
 /datum/design/mag_acr5/empty
 	name = "ACR-5 Rifle Magazine (Empty)"
-	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m30 rifle."
+	desc = "A standart 26 shot magazine for 5.8 mm ACR-5m26 rifle."
 	id = "mag_acr5_empty"
 	materials = list(/datum/material/iron = 6500)
 	build_path = /obj/item/ammo_box/magazine/acr5m30/empty
@@ -131,6 +131,7 @@
 /datum/design/e45_extended/taser
 	name = "Extended Enforcer magazine (.45 Taser)"
 	id = "c45_ext_taser"
+	materials = list(/datum/material/iron = 17000, /datum/material/silver = 800)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/taser
 
 /datum/design/e45_extended/stun
@@ -157,23 +158,26 @@
 	name = "Extended Enforcer magazine (.45 Lethal)"
 	id = "c45_ext_lethal"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/lethal
+	materials = list(/datum/material/iron = 22000)
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/e45_extended/lethal/hotshot
 	name = "Extended Enforcer magazine (.45 Hotshot)"
 	id = "c45_ext_hotshot"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/hotshot
+	materials = list(/datum/material/iron = 17000, /datum/material/plasma = 800)
 
 /datum/design/e45_extended/lethal/hydra
 	name = "Extended Enforcer magazine (.45 Hydra)"
 	id = "c45_ext_hydra"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/hydra
+	materials = list(/datum/material/iron = 20000)
 
 /datum/design/e45_extended/lethal/laser
 	name = "Extended Enforcer magazine (.45 Laser)"
 	id = "c45_ext_laser"
 	build_path = /obj/item/ammo_box/magazine/e45/e45_extended/laser
-	materials = list(/datum/material/iron = 17000, /datum/material/uranium = 800)
+	materials = list(/datum/material/iron = 17000, /datum/material/uranium = 800, /datum/material/plasma = 800)
 
 ////////////////////////
 //Enforcer drum design//
@@ -201,12 +205,14 @@
 	name = "Drum Enforcer magazine (.45 Lethal)"
 	desc = "A drum mag of .45 Lethal for the Mk. 58 Enforcer"
 	id = "e45_drum_lethal"
+	materials = list(/datum/material/iron = 45000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/lethal
 
 /datum/design/e45_drum/taser
 	name = "Drum Enforcer magazine (.45 Taser)"
 	desc = "A drum mag of .45 Taser for the Mk. 58 Enforcer"
 	id = "e45_drum_taser"
+	materials = list(/datum/material/iron = 35000, /datum/material/silver = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/taser
 
 /*
@@ -221,12 +227,14 @@
 	name = "Drum Enforcer magazine (.45 Hotshot)"
 	desc = "A drum mag of .45 Hotshot for the Mk. 58 Enforcer"
 	id = "e45_drum_hot"
+	materials = list(/datum/material/iron = 35000, /datum/material/plasma = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/hotshot
 
 /datum/design/e45_drum/hydra
 	name = "Drum Enforcer magazine (.45 Hydra)"
 	desc = "A drum mag of .45 Hydra-Shock for the Mk. 58 Enforcer"
 	id = "e45_drum_hydra"
+	materials = list(/datum/material/iron = 43000)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/hydra
 
 /datum/design/e45_drum/ion
@@ -298,3 +306,18 @@
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_AMBER
+
+//////////////////
+// Requiem 12.7x55 (syndicate kit disk) //
+//////////////////
+
+/obj/item/disk/design_disk/adv/ammo/requiem
+	name = "Requiem ammo design disk"
+	desc = "Вставьте в автолат, чтобы печатать тяжёлые патроны 12.7x55мм и спидлоадеры для Requiem."
+
+/obj/item/disk/design_disk/adv/ammo/requiem/Initialize(mapload)
+	. = ..()
+	var/datum/design/a127x55/D = new
+	var/datum/design/a127x55_speedloader/S = new
+	blueprints[1] = D
+	blueprints[2] = S

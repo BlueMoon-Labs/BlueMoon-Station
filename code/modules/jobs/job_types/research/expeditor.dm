@@ -1,5 +1,5 @@
 /datum/job/expeditor
-	title = "Expeditor"
+	title = "Vanguard Operative"
 	flag = EXPEDITOR
 	department_head = list("Captain", "Research Director")
 	department_flag = MEDSCI
@@ -15,9 +15,9 @@
 	exp_type_department = EXP_TYPE_SCIENCE
 	considered_combat_role = FALSE
 	outfit = /datum/outfit/job/expeditor
-	custom_spawn_text = "вы — экспедитор, член исследовательского отдела. Вы здесь, чтобы исследовать космос и пространство гейтвэя — на станции вы не имеете никакой власти. Беспрекословно выполняйте приказы капитана и РД. \n<p class='warning'>Не ломайте стреляющие отбойники на табельном оружии без причины, иначе вы будете наказаны.</p>"
-	access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA)
-	minimal_access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA)
+	custom_spawn_text = "вы — боец подразделения Авангард, работающий в тандеме с иследовательским отделом станции. Вы здесь, чтобы исследовать космос и пространство гейтвэя — на станции вы не имеете никакой власти. Беспрекословно выполняйте приказы капитана и РД. \n<p class='warning'>Не ломайте стреляющие отбойники на табельном оружии без причины, иначе вы будете наказаны.</p>"
+	access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA, ACCESS_PRODUCTION_SCIENCE)
+	minimal_access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA, ACCESS_PRODUCTION_SCIENCE)
 	paycheck = PAYCHECK_HARD
 	paycheck_department = ACCOUNT_SCI
 	display_order = JOB_DISPLAY_ORDER_EXPEDITOR
@@ -25,58 +25,60 @@
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
 	threat = 2
 	alt_titles = list(
-		"Space Explorer",
-		"Space Expeditor",
-		"Sexplorer",
-		"Sexpeditor",
-		"Gateway Expeditor",
-		"Exploration Operative",
+		"Junior Vanguard Operative", //Стажер выше, для удобства
+		"Vanguard Trainee", //Стажер выше, для удобства
+		"Space Diver",
+		"Gateway Diver",
+		"Vanguard Combatant",
 		"Exploration Mercenary",
-		"Exploration Field Medic",
-		"Exploration Engineer"
+		"Vanguard Field Medic",
+		"Vanguard Recruit",
+		"Vanguard Demolition Expert",
+		"Ranger",
+		"Expeditor"
 		)
 
 /datum/outfit/job/expeditor
 	name = "Expeditor"
 	jobtype = /datum/job/expeditor
 	id = /obj/item/card/id
-	belt = /obj/item/storage/belt/military/assault
-	ears = /obj/item/radio/headset/headset_sci
+//	belt = /obj/item/storage/belt/military/assault
+	ears = /obj/item/radio/headset/headset_exp/bowman
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
-	suit = /obj/item/clothing/suit/armor/vest/exp
-	head = /obj/item/clothing/head/helmet/exp
+//	suit = /obj/item/clothing/suit/armor/vest/exp
+//	head = /obj/item/clothing/head/helmet/exp
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
-	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
+//	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
-	l_pocket = /obj/item/pda
 	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
-	backpack_contents = list(/obj/item/storage/firstaid/regular = 1)
+	backpack_contents = list(/obj/item/storage/firstaid/regular = 1, /obj/item/vanguard_voucher_class = 1, /obj/item/vanguard_voucher_suit = 1)
 
 /datum/outfit/job/expeditor/syndicate
 	name = "Syndicate Expeditor"
 	jobtype = /datum/job/expeditor
 
-	//l_pocket = /obj/item/pda/syndicate/no_deto
+	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 
-	ears = /obj/item/radio/headset/headset_sci
+	ears = /obj/item/radio/headset/headset_exp/bowman
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
-	suit = /obj/item/clothing/suit/armor/vest/exp
-	head = /obj/item/clothing/head/helmet/exp
+//	suit = /obj/item/clothing/suit/armor/vest/exp
+//	head = /obj/item/clothing/head/helmet/exp
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/combat
-	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
+//	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
-	backpack_contents = list(/obj/item/syndicate_uplink=1, /obj/item/storage/firstaid/regular = 1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/explorer, /obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1, /obj/item/storage/firstaid/regular = 1, /obj/item/vanguard_voucher_class = 1, /obj/item/vanguard_voucher_suit = 1)
 
 /obj/item/radio/headset/headset_exp
 	name = "expeditor's headset"
@@ -93,13 +95,6 @@
 	icon_state = "exp_headset_alt"
 	item_state = "exp_headset_alt"
 	bowman = TRUE
-
-/obj/item/gun/energy/e_gun/mini/expeditor
-	name = "expeditor's miniature energy gun"
-	desc = "Modernized pistol-sized energy gun with a built-in flashlight and expanded cell. It has two settings: stun and kill."
-	w_class = WEIGHT_CLASS_SMALL
-	cell_type = /obj/item/stock_parts/cell{charge = 1200; maxcharge = 1200}
-	pin = /obj/item/firing_pin/explorer
 
 /obj/item/clothing/under/syndicate/combat/exp
 	name = "expeditionary turtleneck"

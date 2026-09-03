@@ -797,21 +797,40 @@
 	require_module = 1
 
 //Yes this is 100% recycled from traitor clockwork slabs and holy water code.
-/obj/item/borg/upgrade/clockwork/action(mob/living/silicon/robot/L, user = usr)
+/obj/item/borg/upgrade/clockwork/action(mob/living/silicon/robot/L, mob/user = usr)
+	. = ..()
+	if(!.)
+		return FALSE
 	if(!is_servant_of_ratvar(L))
 		to_chat(user, "<span class='userdanger'>You slot the [src] into [L], and golden tendrils of light wrap around their frame before being subdued by various holy sigils.</span>")
 		add_servant_of_ratvar(L, FALSE, FALSE, /datum/antagonist/clockcult/neutered/traitor)
 		L.laws = new/datum/ai_laws/hybridclockie
+		L.law_change_counter++
+		var/time = time2text(world.realtime,"hh:mm:ss")
+		var/borgname = L.name
+		var/borgkey = L.ckey
+		var/law_desc = "Neutered Servant (hybridclockie) lawset"
+		GLOB.lawchanges.Add("[time] <B>:</B> [user.name]([user.key]) used [src.name] on [borgname]([borgkey]). Law set: [law_desc]")
+		log_law("[user.key]/[user.name] used [src.name] on [borgkey]/([borgname]) from [AREACOORD(user)]. Law set: [law_desc]")
+		message_admins("[ADMIN_LOOKUPFLW(user)] used [src.name] on [ADMIN_LOOKUPFLW(L)] from [AREACOORD(user)]. Law set: [law_desc]")
 	else
 		to_chat(user, "<span class='userdanger'>[src] falls dark. It appears they were already worthy.</span>")
-	return ..()
+	return TRUE
 
-/obj/item/borg/upgrade/clockwork/deactivate(mob/living/silicon/robot/L, user = usr)
+/obj/item/borg/upgrade/clockwork/deactivate(mob/living/silicon/robot/L, mob/user = usr)
 	. = ..()
 	if (.)
 		to_chat(L, "<span class='userdanger'>A fog spreads through your mind, purging the Justiciar's influence!</span>")
 		remove_servant_of_ratvar(L)
 		L.make_laws()
+		L.law_change_counter++
+		var/time = time2text(world.realtime,"hh:mm:ss")
+		var/borgname = L.name
+		var/borgkey = L.ckey
+		var/law_desc = "laws reset to station defaults (module removed)"
+		GLOB.lawchanges.Add("[time] <B>:</B> [user.name]([user.key]) removed [src.name] from [borgname]([borgkey]). [law_desc]")
+		log_law("[user.key]/[user.name] removed [src.name] from [borgkey]/([borgname]) from [AREACOORD(user)]. [law_desc]")
+		message_admins("[ADMIN_LOOKUPFLW(user)] removed [src.name] from [ADMIN_LOOKUPFLW(L)] from [AREACOORD(user)]. [law_desc]")
 
 /datum/ai_laws/hybridclockie // Needed so no cyborg gets the default clockie lawset and goes ham.
 	name = "Neutered Servant"
@@ -1330,6 +1349,7 @@
 	baseturfs = /turf/open/floor/plating/asteroid/snow/complex/dug
 	floor_variance = FALSE
 	icon_state = "snow_dug"
+	base_icon_state = "snow_dug"
 	slowdown = 1
 
 /obj/effect/baseturf_helper/complex
@@ -1363,13 +1383,6 @@
 
 /obj/machinery/porta_turret/syndicate/pod/russian
 	faction = list("russian")
-
-/obj/item/clothing/suit/armor/hos/platecarrier/makeshift
-	name = "makeshift combat rig"
-	desc = "A hand-sown combat rig made from armor vests and security belts. Trades some protection for utility."
-	body_parts_covered = CHEST|GROIN|ARMS
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
-	strip_delay = 60
 
 /obj/item/card/id/away/mountain
 	name = "A&GR S-08 General Access ID"
@@ -1437,7 +1450,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/clockremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 
@@ -1474,7 +1487,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/bloodremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 

@@ -43,8 +43,8 @@ const createSeeds = seedStrings => {
   ])(objs);
 };
 
-export const SeedExtractor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SeedExtractor = (props) => {
+  const { act, data } = useBackend();
   const seeds = createSeeds(data.seeds);
   return (
     <Window

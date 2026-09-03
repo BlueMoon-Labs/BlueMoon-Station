@@ -90,6 +90,8 @@
 // Various gene procs
 /obj/item/reagent_containers/food/snacks/grown/attack_self(mob/user)
 	if(seed && seed.get_gene(/datum/plant_gene/trait/squash))
+		if(!do_after(user, 0.9 SECONDS, src, timed_action_flags = IGNORE_USER_LOC_CHANGE, progress_loc = user))
+			return
 		squash(user)
 	..()
 
@@ -102,6 +104,8 @@
 				squash(hit_atom)
 
 /obj/item/reagent_containers/food/snacks/grown/proc/squash(atom/target)
+	if(QDELETED(src)) //teleport/slip traits can delete us mid-throw before throw_impact calls squash
+		return
 	var/turf/T = get_turf(target)
 	if(ispath(splat_type, /obj/effect/decal/cleanable/plant_smudge))
 		if(filling_color)
@@ -119,9 +123,10 @@
 		for(var/datum/plant_gene/trait/trait in seed.genes)
 			trait.on_squash(src, target)
 
-	reagents.reaction(T)
-	for(var/A in T)
-		reagents.reaction(A)
+	if(reagents) //on_squash traits (smoke/teleport) may clear or delete our reagents
+		reagents.reaction(T)
+		for(var/A in T)
+			reagents.reaction(A)
 
 	qdel(src)
 
@@ -140,9 +145,10 @@
 	if(ispath(trash, /obj/item/grown) || ispath(trash, /obj/item/reagent_containers/food/snacks/grown))
 		. = new trash(get_turf(src), seed)
 
-/obj/item/reagent_containers/food/snacks/grown/grind_requirements()
+/obj/item/reagent_containers/food/snacks/grown/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE)
 	if(dry_grind && !HAS_TRAIT(src, TRAIT_DRIED))
-		to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
+		if(!silent)
+			to_chat(usr, "<span class='warning'>[src] needs to be dry before it can be ground up!</span>")
 		return
 	return TRUE
 

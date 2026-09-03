@@ -82,7 +82,7 @@
 		return FALSE
 
 	if(receiver && isliving(target))
-		if(CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
+		if(istype(receiver, /obj/item/organ/genital) && CHECK_BITFIELD(receiver.genital_flags, GENITAL_CAN_STUFF))
 			return lay_eg(receiver, senders_cum, anonymous)
 	return lay_eg(get_turf(carrier), senders_cum, anonymous)
 

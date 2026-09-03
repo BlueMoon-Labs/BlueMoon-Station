@@ -22,17 +22,14 @@
 		"Field Surgeon",
 		"Para-Slut",
 		"Para-Stud",
-		"Searh and Rescue Technician",
-		"Trauma Team",
-		"Trauma Team",
-		"Trauma Team Responder"
+		"Search and Rescue Technician",
 		)
 
 	outfit = /datum/outfit/job/paramedic
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_RESEARCH, ACCESS_EVA,)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_RESEARCH, ACCESS_EVA, ACCESS_PRODUCTION_MEDICAL)
 
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_RESEARCH,)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_RESEARCH, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_MED
@@ -75,7 +72,7 @@
 	suit_store = /obj/item/flashlight/pen/paramedic
 	id = /obj/item/card/id
 	r_pocket = /obj/item/pinpointer/crew
-	l_pocket = /obj/item/pda/medical
+	l_pocket = /obj/item/modular_computer/pda/medical
 	backpack_contents = list(/obj/item/roller=1, /obj/item/storage/hypospraykit/regular=1)
 	pda_slot = ITEM_SLOT_LPOCKET
 
@@ -89,7 +86,7 @@
 	name = "Syndicate Paramedic"
 	jobtype = /datum/job/paramedic
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -103,9 +100,11 @@
 
 	r_pocket = /obj/item/pinpointer/crew
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/roller=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/roller=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)

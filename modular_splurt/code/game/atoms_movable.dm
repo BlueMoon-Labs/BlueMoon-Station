@@ -2,10 +2,6 @@
 	. = ..()
 	RegisterSignal(src, COMSIG_MOVABLE_BARK, PROC_REF(handle_special_bark)) //There must be a better way to do this
 
-/atom/movable/Destroy()
-	UnregisterSignal(src, COMSIG_MOVABLE_BARK)
-	. = ..()
-
 /atom/movable/proc/handle_special_bark(atom/movable/source, list/hearers, distance, volume, pitch)
 	SIGNAL_HANDLER
 

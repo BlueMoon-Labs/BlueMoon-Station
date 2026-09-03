@@ -86,6 +86,15 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	force = 25
 	block_chance = 0
 
+/obj/item/claymore/shortsword
+	name = "shortsword"
+	desc = "A mercenary's sword, chipped and worn from battles long gone. You could say it is a swordsman's shortsword short sword."
+	icon_state = "shortsword"
+	item_state = "shortsword"
+	slot_flags = ITEM_SLOT_BELT
+	force = 20
+	block_chance = 30
+
 /obj/item/claymore/highlander //ALL COMMENTS MADE REGARDING THIS SWORD MUST BE MADE IN ALL CAPS
 	desc = "<b><i>THERE CAN BE ONLY ONE, AND IT WILL BE YOU!!!</i></b>\nActivate it in your hand to point to the nearest victim."
 	flags_1 = CONDUCT_1
@@ -1259,7 +1268,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 			if(!in_range(src, target)) //Proximity is probably old news by now, do a new check.
 				return //If they moved away, you can't eat them.
 			to_chat(R, "<span class='notice'>You finish licking off \the [target.name].</span>")
-			if(target?.reagents) // BlueMoon Feature: consuming licked fluids
+			if(target?.reagents && target.reagents.total_volume > 0)
 				target.reagents.reaction(R, INGEST, min(5/target.reagents.total_volume, 1))
 				target.reagents.trans_to(R, target.reagents.total_volume, log = TRUE)
 			qdel(target)

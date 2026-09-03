@@ -80,6 +80,8 @@
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	icon_state = "sparq"
 	item_state = null
+	w_class = WEIGHT_CLASS_SMALL
+
 	ammo_type = list(/obj/item/ammo_casing/energy/electrode/bolestrel)
 
 /obj/item/gun/energy/taser/bolestrel/censor
@@ -100,6 +102,14 @@
 	tracer_type = null
 	muzzle_type = null
 	impact_type = null
+	knockdown = 60
+
+/obj/item/projectile/energy/electrode/security/hos/bolestrel/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(blocked >= 100 || !isliving(target))
+		return
+	var/mob/living/L = target
+	L.emote("realagony")
 
 /obj/item/candle/infinite/candlestick
 	name = "candlestick"
@@ -194,11 +204,11 @@
 /obj/item/gun/ballistic/automatic/ak12
 	name = "\improper AK-12 rifle"
 	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
-	icon = 'modular_bluemoon/krashly/icons/obj/weapons/weapons.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "ak12"
+	item_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
-	item_state = "ak12"
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 	w_class = WEIGHT_CLASS_BULKY
 	mag_type = /obj/item/ammo_box/magazine/ak12
@@ -209,12 +219,8 @@
 	fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'
 
 /obj/item/gun/ballistic/automatic/ak12/update_icon_state()
-	if(magazine)
-		icon_state = "ak12"
-		item_state = "ak12"
-	else
-		icon_state = "ak12_e"
-		item_state = "ak12_e"
+	icon_state = "[initial(icon_state)][!magazine ? "_e" : ""]"
+	item_state = "[initial(item_state)][!magazine ? "_e" : ""]"
 
 /obj/item/ammo_box/magazine/ak12
 	name = "\improper AK-12 magazine"
@@ -259,8 +265,8 @@
 
 /obj/item/ammo_box/magazine/ak12/r
 	name = "\improper Pink AK-12 magazine"
-	icon_state = "akr12_mag"
-	item_state = "akr12_mag"
+	icon_state = "ak12_mag"
+	item_state = "ak12_mag"
 
 /obj/item/gun/ballistic/revolver/inteq
 	icon_state = "revolver_inteq"

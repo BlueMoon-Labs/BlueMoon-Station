@@ -9,9 +9,9 @@
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
 	var/buildable_sign = 1 //unwrenchable and modifiable
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
-	///sign_change_name is used to make nice looking, alphebetized and categorized names when you use a pen on any sign item or structure which is_editable.
+	///Как тип называется в списке выбора у ручки. Без него тип в список не попадёт даже с is_editable.
 	var/sign_change_name
-	///This determines if you can select this sign type when using a pen on a sign backing. False by default, set to true per sign type to override.
+	///Можно ли выбрать этот тип ручкой. Флаг наследуется, поэтому подтип, которому список не нужен, гасит его сам.
 	var/is_editable = FALSE
 
 /obj/structure/sign/basic
@@ -34,10 +34,8 @@
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
 	resistance_flags = FLAMMABLE
 	max_integrity = 100
-	///The type of sign structure that will be created when placed on a turf, the default looks just like a sign backing item.
+	///Тип структуры, которая появится на стене. По умолчанию выглядит так же, как сама подложка.
 	var/sign_path = /obj/structure/sign/basic
-	///This determines if you can select this sign type when using a pen on a sign backing. False by default, set to true per sign type to override.
-	var/is_editable = TRUE
 
 /obj/item/sign/Initialize(mapload) //Signs not attached to walls are always rotated so they look like they're laying horizontal.
 	. = ..()
@@ -45,21 +43,28 @@
 	M.Turn(90)
 	transform = M
 
-/obj/structure/sign/attack_hand(mob/user, list/modifiers)
+/obj/structure/sign/on_attack_hand(mob/user, act_intent = user?.a_intent, unarmed_attack_flags)
 	. = ..()
-	if(. || user.is_blind())
+	if(user.is_blind())
 		return
 	user.examinate(src)
 
 /proc/populate_editable_sign_types()
 	var/list/output = list()
-	for(var/s in subtypesof(/obj/structure/sign))
-		var/obj/structure/sign/potential_sign = s
+	for(var/obj/structure/sign/potential_sign as anything in subtypesof(/obj/structure/sign))
 		if(!initial(potential_sign.is_editable))
 			continue
-		output[initial(potential_sign.sign_change_name)] = potential_sign
-	output = sort_list(output) //Alphabetizes the results.
-	return output
+		// Ключ списка - имя, поэтому безымянный тип занял бы ключ null, а подтип
+		// с унаследованным именем - запись родителя.
+		var/change_name = initial(potential_sign.sign_change_name)
+		if(!change_name)
+			stack_trace("[potential_sign] is editable but has no sign_change_name")
+			continue
+		output[change_name] = potential_sign
+	// sort_list() зовёт sortTim() без associative, а тот на ассоциативном списке роняет
+	// значения: список типов превратился бы в список null. Раньше это не всплывало только
+	// потому, что запись в нём была одна и до сортировки дело не доходило.
+	return sortTim(output, GLOBAL_PROC_REF(cmp_text_asc), associative = TRUE) //Alphabetizes the results.
 
 /obj/item/sign/proc/set_sign_type(obj/structure/sign/fake_type)
 	name = initial(fake_type.name)
@@ -78,14 +83,16 @@
 	var/turf/user_turf = get_turf(user)
 	var/obj/structure/sign/placed_decal = new sign_path(user_turf) //We place the sign on the turf the user is standing, and pixel shift it to the target wall, as below.
 	//This is to mimic how signs and other wall objects are usually placed by mappers, and so they're only visible from one side of a wall.
-	var/dir = get_dir(user_turf, target_turf)
-	if(dir & NORTH)
+	placed_decal.set_custom_materials(custom_materials) //иначе снятый ключом деревянный знак возвращался на стену пластиковым
+	var/wall_dir = get_dir(user_turf, target_turf)
+	placed_decal.setDir(wall_dir) //направленным знакам (флаги, плакаты) иначе доставалось направление по умолчанию
+	if(wall_dir & NORTH)
 		placed_decal.pixel_y = 32
-	else if(dir & SOUTH)
+	else if(wall_dir & SOUTH)
 		placed_decal.pixel_y = -32
-	if(dir & EAST)
+	if(wall_dir & EAST)
 		placed_decal.pixel_x = 32
-	else if(dir & WEST)
+	else if(wall_dir & WEST)
 		placed_decal.pixel_x = -32
 	user.visible_message(span_notice("[user] fastens [src] to [target_turf]."), \
 		span_notice("You attach the sign to [target_turf]."))
@@ -107,101 +114,48 @@
 			playsound(loc, 'sound/items/welder.ogg', 80, 1)
 
 /obj/structure/sign/attackby(obj/item/I, mob/user, params)
-	if(I.tool_behaviour == TOOL_WRENCH && buildable_sign)
-		user.visible_message("<span class='notice'>[user] starts removing [src]...</span>", \
-							"<span class='notice'>You start unfastening [src].</span>")
-		I.play_tool_sound(src)
-		if(I.use_tool(src, user, 40))
-			playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
-			user.visible_message("<span class='notice'>[user] unfastens [src].</span>", \
-								"<span class='notice'>You unfasten [src].</span>")
-			var/obj/item/sign_backing/SB = new (get_turf(user))
-			SB.icon_state = icon_state
-			SB.set_custom_materials(custom_materials) //This is here so picture frames and wooden things don't get messed up.
-			SB.sign_path = type
-			SB.setDir(dir)
-			qdel(src)
-		return
-	else if(istype(I, /obj/item/pen) && buildable_sign)
-		var/list/sign_types = list("Secure Area", "Biohazard", "High Voltage", "Radiation", "Hard Vacuum Ahead", "Disposal: Leads To Space", "Danger: Fire", "No Smoking", "Medbay", "Science", "Chemistry", \
-		"Hydroponics", "Xenobiology")
-		var/obj/structure/sign/sign_type
-		switch(input(user, "Select a sign type.", "Sign Customization") as null|anything in sign_types)
-			if("Blank")
-				sign_type = /obj/structure/sign/basic
-			if("Secure Area")
-				sign_type = /obj/structure/sign/warning/securearea
-			if("Biohazard")
-				sign_type = /obj/structure/sign/warning/biohazard
-			if("High Voltage")
-				sign_type = /obj/structure/sign/warning/electricshock
-			if("Radiation")
-				sign_type = /obj/structure/sign/warning/radiation
-			if("Hard Vacuum Ahead")
-				sign_type = /obj/structure/sign/warning/vacuum
-			if("Disposal: Leads To Space")
-				sign_type = /obj/structure/sign/warning/deathsposal
-			if("Danger: Fire")
-				sign_type = /obj/structure/sign/warning/fire
-			if("No Smoking")
-				sign_type = /obj/structure/sign/warning/nosmoking/circle
-			if("Medbay")
-				sign_type = /obj/structure/sign/departments/medbay/alt
-			if("Science")
-				sign_type = /obj/structure/sign/departments/science
-			if("Chemistry")
-				sign_type = /obj/structure/sign/departments/chemistry
-			if("Hydroponics")
-				sign_type = /obj/structure/sign/departments/botany
-			if("Xenobiology")
-				sign_type = /obj/structure/sign/departments/xenobio
-
-		//Make sure user is adjacent still
-		if(!Adjacent(user))
-			return
-
-		if(!sign_type)
-			return
-
-		//It's import to clone the pixel layout information
-		//Otherwise signs revert to being on the turf and
-		//move jarringly
-		var/obj/structure/sign/newsign = new sign_type(get_turf(src))
-		newsign.pixel_x = pixel_x
-		newsign.pixel_y = pixel_y
-		qdel(src)
-	else
+	if(!buildable_sign)
 		return ..()
 
-/obj/item/sign_backing
-	name = "sign backing"
-	desc = "A sign with adhesive backing."
-	icon = 'icons/obj/decals.dmi'
-	icon_state = "backing"
-	w_class = WEIGHT_CLASS_NORMAL
-	resistance_flags = FLAMMABLE
-	var/sign_path = /obj/structure/sign/basic //the type of sign that will be created when placed on a turf
-
-/obj/item/sign_backing/afterattack(atom/target, mob/user, proximity)
-	. = ..()
-	if(isturf(target) && proximity)
-		var/turf/T = target
-		user.visible_message("<span class='notice'>[user] fastens [src] to [T].</span>", \
-							"<span class='notice'>You attach the sign to [T].</span>")
-		playsound(T, 'sound/items/deconstruct.ogg', 50, 1)
-		var/obj/structure/sign/S = new sign_path(T)
-		S.setDir(dir)
+	if(I.tool_behaviour == TOOL_WRENCH)
+		user.visible_message(span_notice("[user] starts removing [src]..."), span_notice("You start unfastening [src]."))
+		I.play_tool_sound(src)
+		if(!I.use_tool(src, user, 4 SECONDS))
+			return
+		playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
+		user.visible_message(span_notice("[user] unfastens [src]."), span_notice("You unfasten [src]."))
+		var/obj/item/sign/backing = new(get_turf(user))
+		backing.set_sign_type(type)
+		backing.set_custom_materials(custom_materials) //чтобы рамки для картин и деревянные знаки не теряли материал
 		qdel(src)
+		return
 
-/obj/item/sign_backing/Move(atom/new_loc, direct = 0)
-	// pulling, throwing, or conveying a sign backing does not rotate it
-	var/old_dir = dir
-	. = ..()
-	setDir(old_dir)
+	if(istype(I, /obj/item/pen))
+		change_sign_type(user)
+		return
 
-/obj/item/sign_backing/attack_self(mob/user)
-	. = ..()
-	setDir(turn(dir, 90))
+	return ..()
+
+/// Меняет тип знака на выбранный [user] из GLOB.editable_sign_types.
+/obj/structure/sign/proc/change_sign_type(mob/user)
+	set waitfor = FALSE
+
+	if(!user?.client)
+		return
+	var/choice = tgui_input_list(user, "Выберите тип знака.", "Настройка знака", GLOB.editable_sign_types)
+	if(isnull(choice) || QDELETED(src) || !Adjacent(user))
+		return
+	var/obj/structure/sign/sign_type = GLOB.editable_sign_types[choice]
+	if(!sign_type || sign_type == type)
+		return
+
+	// Пиксельный сдвиг и направление обязаны переехать: иначе знак спрыгнет со стены на середину турфа.
+	var/obj/structure/sign/new_sign = new sign_type(get_turf(src))
+	new_sign.set_custom_materials(custom_materials)
+	new_sign.pixel_x = pixel_x
+	new_sign.pixel_y = pixel_y
+	new_sign.setDir(dir)
+	qdel(src)
 
 /obj/structure/sign/nanotrasen
 	name = "\improper Nanotrasen Logo"

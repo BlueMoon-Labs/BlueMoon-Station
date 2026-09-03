@@ -2,7 +2,7 @@
 #define DEFAULT_MAX_COMPLEXITY 18
 
 /// Default cell drain per process on MODsuits
-#define DEFAULT_CHARGE_DRAIN 5
+#define DEFAULT_CHARGE_DRAIN 2
 
 /// Default time for a part to seal
 #define MOD_ACTIVATION_STEP_TIME (0.9 SECONDS)
@@ -15,6 +15,8 @@
 #define MODULE_TOGGLE 2
 /// Actively usable module, you may only have one selected at a time.
 #define MODULE_ACTIVE 3
+//Почти как пассивный модуль, но их не может быть больше чем max_armor_module_count
+#define MODULE_ARMOR  4
 
 //Defines used by the theme for clothing flags and similar
 #define CONTROL_LAYER "control_layer"

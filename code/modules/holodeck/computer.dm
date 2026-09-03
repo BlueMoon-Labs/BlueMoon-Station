@@ -20,6 +20,7 @@
 
 /obj/machinery/computer/holodeck
 	name = "holodeck control console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "A computer used to control a nearby holodeck."
 	icon_screen = "holocontrol"
 	idle_power_usage = 10
@@ -157,7 +158,12 @@
 				do_sparks(2, 1, T)
 				return
 
-	if(!..() || !active)
+	if(!..() || !active || program == offline_program)
+		// power_change() keeps `active` TRUE whenever the console is powered, so an unused
+		// holodeck otherwise walks floorcheck() over every linked turf each fire for nothing.
+		// Sleep until toggle_power()/load_program() bring a real program up.
+		if(!damaged && !length(typing_users))
+			return machine_sleep()
 		return
 
 	if(!floorcheck())
@@ -173,7 +179,9 @@
 			T.hotspot_expose(700,25,1)
 
 	if(!(obj_flags & EMAGGED))
-		for(var/item in spawned)
+		// derez() правит spawned, поэтому обходим снимок - иначе часть уехавших
+		// за пределы голодека предметов проскакивает проверку
+		for(var/item in spawned.Copy())
 			if(!(get_turf(item) in linked))
 				derez(item, 0)
 	for(var/e in effects)
@@ -231,6 +239,7 @@
 	if(active == toggleOn)
 		return
 
+	machine_wake()
 	if(toggleOn)
 		if(last_program && last_program != offline_program)
 			addtimer(CALLBACK(src, PROC_REF(load_program), last_program, TRUE), 25)
@@ -247,7 +256,7 @@
 
 /obj/machinery/computer/holodeck/proc/floorcheck()
 	for(var/turf/T in linked)
-		if(!T.intact || isspaceturf(T))
+		if(!(T.turf_flags & TURF_INTACT) || isspaceturf(T))
 			return FALSE
 	return TRUE
 
@@ -272,6 +281,7 @@
 		current_cd = world.time + HOLODECK_CD
 		if(damaged)
 			current_cd += HOLODECK_DMG_CD
+	machine_wake() // a program swap always needs process() (derez sweep, effects, floorcheck)
 	active = (A != offline_program)
 	use_power = active + IDLE_POWER_USE
 
@@ -279,7 +289,14 @@
 		var/obj/effect/holodeck_effect/HE = e
 		HE.deactivate(src)
 
-	for(var/item in spawned)
+	for(var/turf/T in linked)
+		for(var/obj/effect/O in T)
+			if(is_cleanable(O))
+				qdel(O)
+
+	// derez() правит spawned, снимок обязателен - иначе часть клонов старой
+	// программы остаётся на голодеке до конца раунда
+	for(var/item in spawned.Copy())
 		derez(item, !force)
 
 	program = A
@@ -297,13 +314,23 @@
 
 /obj/machinery/computer/holodeck/proc/finish_spawn()
 	var/list/added = list()
+	// Снимок обязателен: ниже мы правим spawned, а правка списка прямо в обходе
+	// по нему проматывает индекс, и стоящий за удалённым эффект не активируется
+	var/list/pending = list()
 	for(var/obj/effect/holodeck_effect/HE in spawned)
+		pending += HE
+	for(var/obj/effect/holodeck_effect/HE as anything in pending)
+		if(QDELETED(HE))
+			continue
 		effects += HE
 		spawned -= HE
 		var/atom/x = HE.activate(src)
 		if(istype(x) || islist(x))
 			spawned += x // holocarp are not forever
 			added += x
+		// activate() у спавнера мобов создаёт живого симпла со всей обвязкой -
+		// это ~80-110мс на штуку. Прок висит в колбеке таймера, спать безопасно
+		CHECK_TICK
 	for(var/obj/machinery/M in added)
 		M.flags_1 |= NODECONSTRUCT_1
 	for(var/obj/structure/S in added)

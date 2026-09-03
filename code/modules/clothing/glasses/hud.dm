@@ -8,6 +8,10 @@
 	/// Tracks whether this item actually granted a HUD (i.e. was worn in the eyes slot). Prevents spurious remove_hud_from when held in hands.
 	var/hud_granted = FALSE
 
+	var/datum/component/neural_interface/interface
+	var/list/monitors = list()
+	var/interface_source = "HUD GLASSES"
+
 /obj/item/clothing/glasses/hud/CheckParts(list/parts_list)
 	. = ..()
 	if(vision_correction)
@@ -22,6 +26,13 @@
 /obj/item/clothing/glasses/hud/equipped(mob/living/carbon/human/user, slot)
 	..()
 	if(hud_type && slot == ITEM_SLOT_EYES)
+		interface = user.LoadComponent(/datum/component/neural_interface)
+		//компонент общий на моба и самоудаляется, когда пустеет его список
+		//источников - без сигнала вар вечно держал бы мёртвый компонент
+		RegisterSignal(interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
+		interface.AddSource(interface_source)
+		if(monitors?.len)
+			interface.add_monitors_by_types(interface_source, monitors)
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.add_hud_to(user)
 		hud_granted = TRUE
@@ -29,9 +40,27 @@
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
 	if(hud_type && istype(user) && hud_granted)
+		clear_neural_interface()
 		hud_granted = FALSE
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.remove_hud_from(user)
+
+/obj/item/clothing/glasses/hud/Destroy()
+	clear_neural_interface()
+	return ..()
+
+/obj/item/clothing/glasses/hud/proc/clear_neural_interface()
+	var/datum/component/neural_interface/old_interface = interface
+	interface = null
+	if(!old_interface)
+		return
+	UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
+	if(!QDELETED(old_interface))
+		old_interface.RemoveSource(interface_source)
+
+/obj/item/clothing/glasses/hud/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	interface = null
 
 /obj/item/clothing/glasses/hud/emp_act(severity)
 	. = ..()
@@ -61,6 +90,11 @@
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/lightblue
 	glasses_type = "med"
+	monitors = list(
+		/datum/neural_monitor/health_scan,
+		/datum/neural_monitor/health,
+		/datum/neural_monitor/wound
+	)
 
 /obj/item/clothing/glasses/hud/health/prescription/Initialize(mapload)
 	. = ..()
@@ -74,7 +108,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(20, 20, 45)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/hud/health/night/update_icon_state()
+	. = ..()
 
 /obj/item/clothing/glasses/hud/health/night/syndicate
 	name = "combat night vision health scanner HUD"
@@ -106,6 +145,10 @@
 	hud_type = DATA_HUD_DIAGNOSTIC_BASIC
 	glass_colour_type = /datum/client_colour/glass_colour/lightorange
 	glasses_type = "robo"
+	monitors = list(
+		/datum/neural_monitor/cyborg_scan,
+		/datum/neural_monitor/nanite
+	)
 
 /obj/item/clothing/glasses/hud/diagnostic/sunglasses
 	name = "diagnostic HUDSunglasses"
@@ -132,7 +175,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 15, 5)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/hud/diagnostic/night/update_icon_state()
+	. = ..()
 
 ////////////
 //Sec Huds//
@@ -182,7 +230,7 @@
 	tint = 1
 	glass_colour_type = /datum/client_colour/glass_colour/darkred
 
-/obj/item/clothing/glasses/hud/securitygoggles
+/obj/item/clothing/glasses/hud/security/securitygoggles
 	name = "security HUD Goggles"
 	desc = "Be on style! Who needs sunglasses when you have this!?"
 	icon_state = "secgoggles-g"
@@ -199,7 +247,7 @@
 
 	hud_type = null
 
-/obj/item/clothing/glasses/hud/securitygoggles/proc/update_visuals(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/proc/update_visuals(mob/user)
 	if(!ishuman(user))
 		return
 
@@ -214,7 +262,7 @@
 
 	H.update_inv_glasses()
 
-/obj/item/clothing/glasses/hud/securitygoggles/proc/update_hud(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/proc/update_hud(mob/user)
 	if(!ishuman(user))
 		return
 
@@ -225,25 +273,28 @@
 	var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
 
 	if(flags_cover & GLASSESCOVERSEYES)
+		hud_type = DATA_HUD_SECURITY_ADVANCED
 		HUD.add_hud_to(H)
 		hud_granted = TRUE
 	else
+		hud_type = null
 		if(hud_granted)
 			hud_granted = FALSE
 			HUD.remove_hud_from(H)
 
-/obj/item/clothing/glasses/hud/securitygoggles/equipped(mob/living/carbon/human/user, slot)
+/obj/item/clothing/glasses/hud/security/securitygoggles/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
 		update_hud(user)
 
-/obj/item/clothing/glasses/hud/securitygoggles/attack_self(mob/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/attack_self(mob/user)
 	weldingvisortoggle(user)
 	update_hud(user)
 	update_visuals(user)
 
-/obj/item/clothing/glasses/hud/securitygoggles/dropped(mob/living/carbon/human/user)
+/obj/item/clothing/glasses/hud/security/securitygoggles/dropped(mob/living/carbon/human/user)
 	. = ..()
+	hud_type = null
 	if(hud_granted)
 		hud_granted = FALSE
 		var/datum/atom_hud/HUD = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
@@ -260,7 +311,15 @@
 	darkness_view = 8
 	flash_protect = -2 //You either are flashproof or you can see in the dark, pick one.
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(40, 15, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/hud/security/night/update_icon_state()
+	. = ..()
+
+/obj/item/clothing/glasses/night/syndicate/red // this lives here due to icon_state reference
+	icon_state = "securityhudnight"
 
 /obj/item/clothing/glasses/hud/security/night/combat
 	name = "combat night vision security  HUD"
@@ -295,6 +354,7 @@
 	desc = "A hud with multiple functions."
 	actions_types = list(/datum/action/item_action/switch_hud)
 
+
 /obj/item/clothing/glasses/hud/toggle/attack_self(mob/user)
 	if(!ishuman(user))
 		return
@@ -326,6 +386,7 @@
 	hud_type = DATA_HUD_SECURITY_ADVANCED
 	vision_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 8, 5)
 	glass_colour_type = /datum/client_colour/glass_colour/red
 
 /obj/item/clothing/glasses/hud/toggle/thermal/attack_self(mob/user)

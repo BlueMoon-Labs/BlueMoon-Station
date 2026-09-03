@@ -9,6 +9,7 @@
 	light_power = 1.4
 	light_range = 15
 	light_color = "#ffffdd"
+	light_flags = LIGHT_NO_RANGE_CAP // статичный уличный фонарь: дальность выше базового капа
 	icon = 'modular_citadel/code/modules/festive/32x64icons.dmi'
 	icon_state = "lamp_post"
 	max_integrity = 9999999
@@ -22,6 +23,7 @@
 	light_power = 1.6
 	light_range = 15
 	light_color = "#ffffdd"
+	light_flags = LIGHT_NO_RANGE_CAP // статичный уличный фонарь: дальность выше базового капа
 	icon = 'modular_citadel/code/modules/festive/32x64icons.dmi'
 	icon_state = "lamp_post_festive"
 	max_integrity = 9999999
@@ -55,6 +57,7 @@
 	light_power = 2
 	light_range = 30
 	light_color = "#ffeeab"
+	light_flags = LIGHT_NO_RANGE_CAP // статичная праздничная ёлка: большой радиус выше базового капа
 	icon = 'modular_citadel/code/modules/festive/bigtree.dmi'
 	icon_state = "bigtree"
 	max_integrity = 9999999

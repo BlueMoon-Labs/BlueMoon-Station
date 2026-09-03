@@ -13,7 +13,6 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_CREW
 	alt_titles = list(
-		"Syndicate Survey Specialist", //Синди выше, для удобства
 		"AC Recon Agent",
 		"Cinder Dick",
 		"Cooperate Auditor",
@@ -25,6 +24,7 @@
 		"Private Investigator",
 		"Prosecutor",
 		"SAARE Inspector",
+		"Survey Specialist",
 		"Safeguard Investigator",
 		"Slutective",
 		"Stalker",
@@ -36,8 +36,8 @@
 	plasma_outfit = /datum/outfit/plasmaman/detective
 	considered_combat_role = TRUE
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_FORENSICS_LOCKERS, ACCESS_MORGUE, ACCESS_MAINT_TUNNELS, ACCESS_COURT, ACCESS_BRIG, ACCESS_WEAPONS, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_SEC
 
@@ -66,7 +66,7 @@
 	name = "Detective"
 	jobtype = /datum/job/detective
 
-	belt = /obj/item/pda/detective
+	belt = /obj/item/modular_computer/pda/detective
 	ears = /obj/item/radio/headset/headset_sec/alt
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses/aviators
 	uniform = /obj/item/clothing/under/rank/security/detective
@@ -99,7 +99,7 @@
 	name = "Syndicate Detective"
 	jobtype = /datum/job/detective
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_sec/alt
 	uniform = /obj/item/clothing/under/rank/security/officer/util
@@ -116,14 +116,17 @@
 		/obj/item/storage/ifak,
 		/obj/item/storage/box/sec_kit,
 		/obj/item/melee/classic_baton,
-		/obj/item/stamp/security)
+		/obj/item/stamp/security,
+		/obj/item/syndicate_uplink/station
+		)
 	mask = /obj/item/clothing/mask/cigarette/cigar/havana
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/job/detective/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)

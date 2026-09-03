@@ -1,9 +1,9 @@
 /obj/structure/destructible/clockwork/trap/power_nullifier
 	name = "power nullifier"
-	desc = "A well hidden set of wires and connections."
-	clockwork_desc = "When triggered, it sets off a 3x3 emp pulse with the center suffering a stronger pulse."
+	desc = "Хорошо спрятанный набор проводов и соединений."
+	clockwork_desc = "При срабатывании он генерирует импульс ЭМИ 3х3, при этом центр испытывает более сильный импульс."
 	icon_state = "electric_trap"
-	break_message = "<span class='warning'>The power nullifier sparks, then slowly crumbles to debris!</span>"
+	break_message = "<span class='warning'>Нейтрализатор энергии искрит, а затем медленно рассыпается на куски!</span>"
 	max_integrity = 40
 	density = FALSE
 	var/activated = FALSE

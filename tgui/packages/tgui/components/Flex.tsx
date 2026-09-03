@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { BooleanLike, classes, pureComponentHooks } from 'common/react';
+import { BooleanLike, classes } from 'common/react';
 
 import { Box, BoxProps, unit } from './Box';
 
@@ -32,22 +32,24 @@ export const computeFlexProps = (props: FlexProps) => {
       inline && 'Flex--inline',
       className,
     ]),
+    ...rest,
+    // camelCase keys are required: React appends 'px' to numeric values
+    // of unknown (kebab-case) properties, producing invalid CSS.
+    // Absent props must not land in the object even as undefined,
+    // otherwise they clobber the same keys in consumer style.
     style: {
       ...rest.style,
-      'flex-direction': direction,
-      'flex-wrap': wrap === true ? 'wrap' : wrap,
-      'align-items': align,
-      'justify-content': justify,
+      ...(direction !== undefined && { flexDirection: direction }),
+      ...(wrap !== undefined && { flexWrap: wrap === true ? 'wrap' : wrap }),
+      ...(align !== undefined && { alignItems: align }),
+      ...(justify !== undefined && { justifyContent: justify }),
     },
-    ...rest,
   };
 };
 
 export const Flex = props => (
   <Box {...computeFlexProps(props)} />
 );
-
-Flex.defaultHooks = pureComponentHooks;
 
 export interface FlexItemProps extends BoxProps {
   grow?: number;
@@ -73,22 +75,20 @@ export const computeFlexItemProps = (props: FlexItemProps) => {
       'Flex__item',
       className,
     ]),
+    ...rest,
     style: {
       ...style,
-      'flex-grow': grow !== undefined && Number(grow),
-      'flex-shrink': shrink !== undefined && Number(shrink),
-      'flex-basis': unit(basis),
-      'order': order,
-      'align-self': align,
+      ...(grow !== undefined && { flexGrow: Number(grow) }),
+      ...(shrink !== undefined && { flexShrink: Number(shrink) }),
+      ...(basis !== undefined && { flexBasis: unit(basis) }),
+      ...(order !== undefined && { order }),
+      ...(align !== undefined && { alignSelf: align }),
     },
-    ...rest,
   };
 };
 
 const FlexItem = props => (
   <Box {...computeFlexItemProps(props)} />
 );
-
-FlexItem.defaultHooks = pureComponentHooks;
 
 Flex.Item = FlexItem;

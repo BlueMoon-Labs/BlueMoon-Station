@@ -627,7 +627,7 @@
 /obj/item/pickaxe/drill/diamonddrill,
 /obj/item/gun/energy/plasmacutter,
 /obj/structure/closet/syndicate/inteq/personal,
-/obj/item/pda/syndicate,
+/obj/item/modular_computer/pda/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/inteq/armory)
 "bR" = (

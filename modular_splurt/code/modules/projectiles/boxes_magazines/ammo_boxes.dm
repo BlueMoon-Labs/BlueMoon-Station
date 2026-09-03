@@ -6,18 +6,15 @@
 	name = "ammo box (.45 Long Rubber)"
 	desc = "Brought to you at great expense,this box contains .45 Long Rubber cartridges."
 	ammo_type = /obj/item/ammo_casing/g45l
-//	icon_state = "45lbox" // BLUEMOON COMMENTING OUT: using custom states
-//	icon = 'modular_splurt/icons/obj/ammo.dmi' // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "45lbox-r"
 	max_ammo = 24
 
 /obj/item/ammo_box/g45l/lethal
 	name = "ammo box (.45 Long Lethal)"
 	desc = "Brought to you at great expense,this box contains .45 Long Lethal cartridges."
+	icon_state = "45lbox"
 	ammo_type = /obj/item/ammo_casing/g45l/lehtal
-
-/obj/item/ammo_box/c45
-	name = "ammo box (.45 Rubber)"
-//	icon = 'modular_splurt/icons/obj/ammo.dmi' // BLUEMOON COMMENTING OUT: using custom states modular_bluemoon\code\modules\projectiles\boxes_magazines\ammo_boxes.dm modular_splurt/icons/obj/ammo.dmi
 
 /obj/item/ammo_box/c45/taser
 	name = "ammo box (.45 Taser)"
@@ -71,6 +68,7 @@
 
 /obj/item/ammo_box/c9mm/rubber
 	name = "ammo box (9mm Rubber)"
+	icon_state = "9mmbox-rub"
 	ammo_type = /obj/item/ammo_casing/c9mm/rubber
 
 /obj/item/ammo_box/kaiju
@@ -105,6 +103,7 @@
 	custom_materials = list(/datum/material/iron = 5600) // 5000 bullets + 600 clip (10%)
 	max_ammo = 5
 	multiple_sprites = 1
+	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/ammo_box/c308
 	name = "ammo box (.308)"
@@ -211,7 +210,7 @@
 	description = "Ammo for 45 Caliber pistols."
 	prereq_ids = list("weaponry")
 	design_ids = list(
-		"c45r", "c45leath", "c45t", "c45hydra", /*"c45trac",*/ "e45_rubber", "e45_lethal", "e45_taser", /*"e45_trac",*/ "e45_hydra",
+		"c45r", "c45leath", "c45t", "c45hydra", /*"c45trac",*/ "e45", "e45_rubber", "e45_lethal", "e45_taser", /*"e45_trac",*/ "e45_hydra",
 		"c45_ext_empty", "c45_ext", "c45_ext_taser", /*"c45_ext_tracking",*/ "c45_ext_lethal", "c45_ext_hydra"
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
@@ -226,57 +225,6 @@
 		"c45_ext_stun", "c45_ext_ion", "c45_ext_hotshot", "c45_ext_laser"
 		)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 4500)
-
-/datum/design/c45
-	name = "Ammo Box (.45 Rubber)"
-
-/datum/design/c45lethal
-	name = "Ammo Box (.45 Lethal)"
-	id = "c45lethal"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 30000)
-	build_path = /obj/item/ammo_box/c45/lethal
-	category = list("hacked", "Security")
-
-/datum/design/c22
-	name = "Ammo Box (.22)"
-	id = "c22"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 20000)
-	build_path = /obj/item/ammo_box/c22lr
-	category = list("hacked", "Security")
-
-/datum/design/c9mmr
-	name = "Ammo Box (9mm Rubber)"
-	id = "c9mmr"
-	build_type = AUTOLATHE
-	materials = list(/datum/material/iron = 30000)
-	build_path = /obj/item/ammo_box/c9mm/rubber
-	category = list("hacked", "Security")
-
-/datum/design/g45l
-	name = "Ammo Box (.45 Long Rubber)"
-	id = "g45l"
-	build_type = AUTOLATHE
-	materials = list(/datum/material/iron = 30000)
-	build_path = /obj/item/ammo_box/g45l
-	category = list("hacked", "Security")
-
-/datum/design/g45lethal
-	name = "Ammo Box (.45 Long)"
-	id = "g45leath"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 35000)
-	build_path = /obj/item/ammo_box/g45l/lethal
-	category = list("hacked", "Security")
-
-/datum/design/a308
-	name = "Stripper clip (.308)"
-	id = "a308"
-	build_type = AUTOLATHE | NO_PUBLIC_LATHE
-	materials = list(/datum/material/iron = 5600)
-	build_path = /obj/item/ammo_box/a308
-	category = list("hacked", "Security")
 
 /datum/design/a543_lethal
 	name = "Ammo box (.5x43mm Lethal)"

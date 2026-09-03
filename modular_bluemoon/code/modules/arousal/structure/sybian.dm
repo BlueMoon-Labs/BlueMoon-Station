@@ -9,10 +9,16 @@
 	var/on = 0
 	item_chair = null // нельзя брать в руки
 	flags_1 = NODECONSTRUCT_1
+	var/timer = 0
+	var/interval = 1
 
 /obj/structure/chair/sybian/New()
 	..()
 	add_overlay(mutable_appearance('modular_bluemoon/icons/obj/structures/lewd_devices.dmi', "sybian_over", MOB_LAYER + 1))
+
+/obj/structure/chair/sybian/Destroy()
+	STOP_PROCESSING(SSobjlw,src)
+	. = ..()
 
 /obj/structure/chair/sybian/verb/change_mode()
 	set name = "Change mode"
@@ -34,14 +40,20 @@
 	set category = "Object"
 	set src in oview(1)
 	on = !on
-	spawn()
-		while(on)
-			if(activate_after(src, 5))
-				vibrate()
 	if(on)
+		START_PROCESSING(SSobjlw,src)
 		to_chat(usr, "[src] вкл.")
 	else
+		STOP_PROCESSING(SSobjlw,src)
 		to_chat(usr, "[src] выкл.")
+
+/obj/structure/chair/sybian/process(delta_time)
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+	else
+		timer = interval
+	vibrate()
 
 /obj/structure/chair/sybian/proc/vibrate()
 	if(!on)
@@ -54,14 +66,14 @@
 			M.client?.plug13.send_emote(pick(PLUG13_EMOTE_GROIN, PLUG13_EMOTE_ANUS), min(intencity * 5, 100), PLUG13_DURATION_NORMAL)
 			switch(mode)
 				if("low")
-					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 30, 1)
+					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 80, 1)
 					to_chat(M, span_love(pick("Я чувствую слабую вибрацию между ног!", "Оно слабо стимулирует мои гениталии!")))
 				if("normal")
-					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 30, 1)
+					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 80, 1)
 					to_chat(M, span_love(pick("Я чувствую вибрацию между ног!", "Оно вибрирует мои гениталии!")))
 				if("high")
 					to_chat(M, span_userdanger(pick("Сильная вибрация между ног сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции гениталий!")))
-					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand3.ogg", 30, 1)
+					playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand3.ogg", 80, 1)
 					M.Jitter(3)
 					M.Stun(3)
 					if(prob(50))

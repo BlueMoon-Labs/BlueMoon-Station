@@ -138,7 +138,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/vaulttango)
 "ep" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark/textured/half{
 	dir = 1
 	},
@@ -217,7 +217,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/vaulttango)
 "ik" = (
@@ -546,7 +546,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/vaulttango)
 "zZ" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/vaulttango)
 "Ad" = (
@@ -1028,7 +1028,7 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/template_noop)
 "TH" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark/textured/half,
 /area/ruin/space/has_grav/vaulttango)
 "TL" = (

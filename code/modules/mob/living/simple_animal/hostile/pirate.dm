@@ -91,3 +91,144 @@
 	minbodytemp = 0
 	speed = 1
 	spacewalk = TRUE
+
+/mob/living/simple_animal/hostile/pirate/contrabandist
+	name = "Contrabandist."
+	desc = "A man who builds his life on black loot. And maybe you'll be his guest."
+	icon = 'icons/mob/simple_human.dmi'
+	icon_state = "contrabandist_v1"
+	icon_living = "contrabandist_v1"
+	icon_dead = "pirate_dead"
+	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
+	speak_chance = 0
+	turns_per_move = 5
+	response_help_continuous = "pushes"
+	response_help_simple = "push"
+	speed = 1
+	maxHealth = 180
+	health = 180
+	spacewalk = TRUE
+	harm_intent_damage = 20
+	melee_damage_lower = 10
+	melee_damage_upper = 10
+	attack_verb_continuous = "punches"
+	attack_verb_simple = "punch"
+	attack_sound = 'sound/weapons/punch1.ogg'
+	a_intent = INTENT_HARM
+	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
+	unsuitable_atmos_damage = 15
+	speak_emote = list("yarrs")
+	del_on_death = 1
+	faction = list("pirate")
+	loot = list(/obj/item/melee/transforming/energy/sword/pirate)
+	random_loot = list(
+		/obj/item/clothing/shoes/combat/swat/knife = 15,
+		/obj/item/clothing/under/syndicate = 15,
+		null = 70
+	)
+
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger1
+	name = "A gun Contrabandist"
+	icon_state = "contrabandist_v1_MAC15"
+	icon_living = "contrabandist_v1_MAC15"
+	icon_dead = "pirateranged_dead"
+	projectilesound = 'sound/weapons/Gunshot_smg.ogg'
+	ranged = 1
+	rapid = 3
+	rapid_fire_delay = 4
+	retreat_distance = 3
+	minimum_distance = 2
+	ranged_cooldown_time = 40
+	casingtype = /obj/item/ammo_casing/c45/lethal
+
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger2
+	name = "A gun Contrabandist"
+	icon_state = "contrabandist_v2shotgun"
+	icon_living = "contrabandist_v2shotgun"
+	icon_dead = "pirateranged_dead"
+	projectilesound = 'sound/weapons/gunshotshotgunshot.ogg'
+	ranged = 1
+	rapid = 2
+	rapid_fire_delay = 7
+	retreat_distance = 2
+	minimum_distance = 1
+	ranged_cooldown_time = 65
+	casingtype = /obj/item/ammo_casing/shotgun/buckshot
+
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger3
+	name = "A gun Contrabandist"
+	icon_state = "contrabandist_v1FP5000"
+	icon_living = "contrabandist_v1FP5000"
+	icon_dead = "pirateranged_dead"
+	projectilesound = 'sound/weapons/Gunshot_smg.ogg'
+	ranged = 3
+	rapid = 5
+	rapid_fire_delay = 8
+	retreat_distance = 3
+	minimum_distance = 2
+	ranged_cooldown_time = 35
+	casingtype = /obj/item/ammo_casing/c45/lethal
+
+/mob/living/simple_animal/hostile/pirate/contrabandist/ranger4
+	name = "A gun Contrabandist"
+	icon_state = "contrabandist_v2vintovka"
+	icon_living = "contrabandist_v2vintovka"
+	icon_dead = "pirateranged_dead"
+	projectilesound = 'sound/weapons/Gunshot2.ogg'
+	ranged = 12
+	rapid = 1
+	ranged_cooldown_time = 75
+	retreat_distance = 3
+	minimum_distance = 6
+	casingtype = /obj/item/ammo_casing/a308
+	random_loot = list(
+		/obj/item/clothing/shoes/combat/swat/knife = 15,
+		/obj/item/clothing/under/syndicate = 15,
+		/obj/item/gun/ballistic/automatic/m1garand = 5,
+		/obj/item/broken/m1garand = 30,
+		null = 35
+	)
+
+/mob/living/simple_animal/hostile/pirate/contrabandist/leader
+	name = "Contrabandist leader"
+	desc = "A man who builds his life on black loot. And maybe you'll be his guest."
+	icon = 'icons/mob/simple_human.dmi'
+	icon_state = "contrabandist_lider_pulik"
+	icon_living = "contrabandist_lider_pulik"
+	icon_dead = "pirate_dead"
+	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
+	speak_chance = 0
+	turns_per_move = 5
+	response_help_continuous = "pushes"
+	response_help_simple = "push"
+	speed = 1
+	maxHealth = 300
+	health = 300
+	spacewalk = TRUE
+	harm_intent_damage = 35
+	melee_damage_lower = 10
+	melee_damage_upper = 10
+	attack_verb_continuous = "punches"
+	attack_verb_simple = "punch"
+	attack_sound = 'sound/weapons/punch1.ogg'
+	a_intent = INTENT_HARM
+	projectilesound = 'sound/weapons/rifleshot.ogg'
+	ranged = 7
+	rapid = 9
+	rapid_fire_delay = 10
+	ranged_cooldown_time = 80
+	retreat_distance = 2
+	minimum_distance = 2
+	casingtype = /obj/item/ammo_casing/a762
+	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
+	unsuitable_atmos_damage = 15
+	speak_emote = list("yarrs")
+	del_on_death = 1
+	faction = list("pirate")
+	random_loot = list(
+		/obj/item/clothing/shoes/combat/swat/knife = 15,
+		/obj/item/clothing/under/syndicate = 15,
+		/obj/item/gun/ballistic/automatic/ak47/homemade = 5,
+		/obj/item/broken/homemadeak = 30,
+		null = 35
+	)

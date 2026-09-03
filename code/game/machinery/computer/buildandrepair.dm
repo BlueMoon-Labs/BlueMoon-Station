@@ -223,6 +223,8 @@
 				G.add_fingerprint(user)
 				return
 			if(P.tool_behaviour == TOOL_SCREWDRIVER)
+				if(!circuit) // гонка двух сборщиков: плату могли вынуть между кликами
+					return
 				P.play_tool_sound(src)
 				to_chat(user, "<span class='notice'>You connect the monitor.</span>")
 

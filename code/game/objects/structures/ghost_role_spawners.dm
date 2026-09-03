@@ -27,6 +27,13 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /datum/antagonist/ghost_role/get_team()
 	return ghost_team
 
+/datum/antagonist/ghost_role/is_banned(mob/M)
+	if(!M)
+		return FALSE
+	if(QDELETED(M))
+		return TRUE
+	return job_rank && jobban_isbanned(M, job_rank)
+
 //Objects that spawn ghosts in as a certain role when they click on it, i.e. away mission bartenders.
 #define spawnOverride TRUE
 //Preserved terrarium/seed vault: Spawns in seed vault structures in lavaland. Ghosts become plantpeople and are advised to begin growing plants in the room near them.
@@ -176,6 +183,9 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 			GLOB.ashwalker_spawns[new_spawn.ckey] = world.time
 		eggshell.egg = null
 		QDEL_NULL(eggshell)
+		new_spawn.remove_all_languages()
+		new_spawn.grant_language(/datum/language/draconic, ALL, LANGUAGE_ATOM)
+		new_spawn.set_active_language(/datum/language/draconic)
 
 /obj/effect/mob_spawn/human/ash_walker/Initialize(mapload, datum/team/ashwalkers/ashteam)
 	. = ..()
@@ -465,7 +475,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	outfit = /datum/outfit/hotelstaff
 	short_desc = "Вы - член обслуживающего персонала космического отеля."
 	flavour_text = "Вы нанялись в качестве персонала общего профиля для уборки, готовки, обслуживания гостей и всего, что прикажет менеджер на время пребывания на борту космического отеля. Ни в коем случае не грубите, не хамите и не ругайтесь с посетителями. Помните, что в вашем случае, клиент всегда прав."
-	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или установки телепада)."
+	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или установки телепада). Помните, что отель - запасная станция на случай экстренных ситуаций. КЗ и НРП действует на территории отеля и он не защищен от нападения агентов враждебных организаций."
 	assignedrole = "Hotel Staff"
 	can_load_appearance = TRUE
 	loadout_enabled = TRUE
@@ -480,6 +490,9 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	r_pocket = /obj/item/radio/off
 	back = /obj/item/storage/backpack
 	implants = list(/obj/item/implant/mindshield)
+	id = /obj/item/card/id/away/hotel/splurt
+	ears = /obj/item/radio/headset/headset_srv/hotel
+	l_pocket = /obj/item/modular_computer/pda/hotelstaff
 
 /obj/effect/mob_spawn/human/hotel_staff/security
 	name = "hotel security sleeper"
@@ -487,8 +500,12 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	job_description = "Hotel Security"
 	outfit = /datum/outfit/hotelstaff/security
 	short_desc = "Вы - охранник космического отеля."
-	flavour_text = "Вы были назначены в этот отель, чтобы защищать интересы компании Nanotrasen, недавно выкупившей его. Ведите себя вежливо, не размахивайте оружием и бронёй, не грубите посетителям - в первую очередь, вы не должны мешать наслаждаться пребыванием и отпугивать адекватных клиентов."
-	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Не ведите себя как СБ со станции - вы обычный гражданский и не обучены для борьбы с террористами, предателями, аномалиями и другими неординарными сущностями."
+	flavour_text = "Вы были назначены в этот отель, чтобы защищать интересы компании Nanotrasen, недавно выкупившей его. Ведите себя вежливо,\
+	не размахивайте оружием и бронёй, не грубите посетителям - в первую очередь, вы не должны мешать наслаждаться пребыванием и отпугивать адекватных клиентов."
+	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Вы можете вести себя как СБ со станции и \
+	полностью подчиняетесь КЗ и НРП СБ. Любых преступников, или нарушителей порядка вам следует передавать на станцию для вынесения и исполнения приговора. Вам нужно помнить, \
+	что отель не защищен от нападения агентов вражеских организаций."
+	make_bank_account = TRUE
 
 /datum/outfit/hotelstaff/security
 	name = "Hotel Secuirty"
@@ -498,6 +515,16 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	head = /obj/item/clothing/head/helmet/blueshirt
 	back = /obj/item/storage/backpack/security
 	belt = /obj/item/storage/belt/security/full
+	id = /obj/item/card/id/away/hotel/securty
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
+						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
+						/obj/item/ammo_box/magazine/e45/taser=3
+						)
+	suit_store = /obj/item/gun/energy/e_gun/advtaser
+
+	box = /obj/item/storage/box/survival/security
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge)
+	chameleon_extras = list(/obj/item/gun/energy/disabler, /obj/item/clothing/glasses/hud/security/sunglasses, /obj/item/clothing/head/helmet)
 
 /obj/effect/mob_spawn/human/hotel_staff/Destroy()
 	new/obj/structure/fluff/empty_sleeper/syndicate(get_turf(src))
@@ -859,6 +886,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /obj/effect/mob_spawn/human/pirate/special(mob/living/new_spawn)
 	new_spawn.fully_replace_character_name(new_spawn.real_name,generate_pirate_name())
 	new_spawn.mind.add_antag_datum(/datum/antagonist/pirate)
+	for(var/obj/item/I in new_spawn.get_equipped_items(include_pockets = TRUE))
+		ADD_TRAIT(I, TRAIT_NODROP, "pirate_antag")
 
 /obj/effect/mob_spawn/human/pirate/proc/generate_pirate_name()
 	var/beggings = strings(PIRATE_NAMES_FILE, "beginnings")
@@ -994,6 +1023,16 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 		SSquirks.AssignQuirks(new_spawn, new_spawn.client, TRUE, TRUE, null, FALSE, new_spawn)
 		SSlanguage.AssignLanguage(new_spawn, new_spawn.client)
 		new_spawn.ghost_cafe_traits(TRUE, GC.adittonal_allowed_area)
+
+		if(istype(new_spawn.dna.species, /datum/species/lizard/ashwalker))
+			var/obj/item/organ/lungs/old_lungs = new_spawn.getorganslot(ORGAN_SLOT_LUNGS)
+
+			if(old_lungs)
+				qdel(old_lungs)
+			var/obj/item/organ/lungs/new_lungs = new /obj/item/organ/lungs()
+			new_lungs.Insert(new_spawn)
+			to_chat(new_spawn, span_notice("Ваши лёгкие адаптируются к воздуху кафе."))
+
 		to_chat(new_spawn,"<span class='boldwarning'>Ghosting is free!</span>")
 
 /datum/outfit/ghostcafe
@@ -1017,13 +1056,20 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	if (CONFIG_GET(flag/grey_assistants))
 		uniform = suited ? /obj/item/clothing/under/color/grey : /obj/item/clothing/under/color/jumpskirt/grey
 	else
-		if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH])
+		if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH])
 			uniform = suited ? /obj/item/clothing/under/color/rainbow : /obj/item/clothing/under/color/jumpskirt/rainbow
 		else
 			uniform = suited ? /obj/item/clothing/under/color/random : /obj/item/clothing/under/color/jumpskirt/random
 
 /datum/outfit/ghostcafe/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-	H.internal = H.get_item_for_held_index(1)
+	//баллон в руку кладёт только плазмаменская ветка pre_equip - всем остальным сюда
+	//приезжал случайный предмет, и дыхание каждый тик падало на remove_air_volume()
+	H.internal = null
+	var/obj/item/tank/held_tank = H.get_item_for_held_index(1)
+	if(istype(held_tank))
+		H.internal = held_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+	H.update_action_buttons_icon()
 
 /obj/item/storage/box/syndie_kit/chameleon/ghostcafe
 	name = "ghost cafe costuming kit"
@@ -1805,3 +1851,15 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	radio = /obj/item/radio/headset/tarkoff
 	announcement_channel = RADIO_CHANNEL_TARKOFF
 	req_one_access = list(ACCESS_TARKOFF)
+
+/obj/effect/mob_spawn/human/inteqspace/captain/PACTDaivers
+	name = "InteQ 1 arm Captain"
+	short_desc = "Вы -Глава Первой наступательной армии,что разворачивает авангард на одной из производственных плане."
+	flavour_text = "Большая часть сил Пакта на планете уже были подавлены,но вы видели летящие в небе шатлы."
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."
+
+/obj/effect/mob_spawn/human/inteqspace/PACTDaivers
+	name = "InteQ 1 arm Crew Member"
+	short_desc = "Вы - Оперативник  InteQ в составе первой наступательной армии."
+	flavour_text = "Вы член первой экспедеционной армии Интекью. Вы уже подавили большую часть местных войс и развенули часть своих баз,но в небе зияют двигатели челноков.Нужно быть на готове"
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."

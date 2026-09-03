@@ -29,7 +29,6 @@
 /obj/item/paper/contract/employment/Initialize(mapload, new_employee_name)
 	if(!new_employee_name)
 		return INITIALIZE_HINT_QDEL
-	AddElement(/datum/element/update_icon_blocker)
 	. = ..()
 	target = new_employee_name
 	name =  "Подписка о Корпоративной Лояльности Сотрудника [target]"
@@ -336,8 +335,8 @@
 		id.assignment = "Captain"
 		id.update_label()
 		if(worn)
-			if(istype(worn, /obj/item/pda))
-				var/obj/item/pda/PDA = worn
+			if(istype(worn, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/PDA = worn
 				PDA.id = id
 				id.forceMove(worn)
 			else if(istype(worn, /obj/item/storage/wallet))

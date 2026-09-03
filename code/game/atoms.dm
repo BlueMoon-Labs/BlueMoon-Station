@@ -62,15 +62,6 @@
 	///Reagents holder
 	var/datum/reagents/reagents = null
 
-	///all of this atom's HUD (med/sec, etc) images. Associative list of the form: list(hud category = hud image or images for that category).
-	///most of the time hud category is associated with a single image, sometimes its associated with a list of images.
-	///not every hud in this list is actually used. for ones available for others to see, look at active_hud_list.
-	var/list/image/hud_list = null
-	///all of this atom's HUD images which can actually be seen by players with that hud
-	var/list/image/active_hud_list = null
-	///HUD images that this atom can provide.
-	var/list/hud_possible
-
 	///Value used to increment ex_act() if reactionary_explosions is on
 	var/explosion_block = 0
 
@@ -89,30 +80,14 @@
 	  */
 	var/list/atom_colours
 
-	/// a very temporary list of overlays to remove
-	var/list/remove_overlays
-	/// a very temporary list of overlays to add
-	var/list/add_overlays
-
 	///vis overlays managed by SSvis_overlays to automaticaly turn them like other overlays
 	var/list/managed_vis_overlays
 	///overlays managed by [update_overlays][/atom/proc/update_overlays] to prevent removing overlays that weren't added by the same proc
 	var/list/managed_overlays
-
-	///Proximity monitor associated with this atom
-	var/datum/proximity_monitor/proximity_monitor
 	///Last fingerprints to touch this atom
 	var/fingerprintslast
 
 	var/list/filter_data //For handling persistent filters
-
-	///Price of an item in a vending machine, overriding the base vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
-	var/custom_price = 25
-	///Price of an item in a vending machine, overriding the premium vending machine price. Define in terms of paycheck defines as opposed to raw numbers.
-	var/custom_premium_price = 100
-
-	//List of datums orbiting this atom
-	var/datum/component/orbiter/orbiters
 
 	var/rad_flags = NONE // Will move to flags_1 when i can be arsed to
 	/// Radiation insulation types
@@ -124,29 +99,27 @@
 	///Bitfield for how the atom handles materials.
 	var/material_flags = NONE
 	///Modifier that raises/lowers the effect of the amount of a material, prevents small and easy to get items from being death machines.
-	var/material_modifier = 1
 
-	var/datum/wires/wires = null
-
-	var/icon/blood_splatter_icon
+	// Кэш иконки кровавого пятна отсюда убран: читают его только три прока, и все три -
+	// в контексте /obj/item (clean_blood, add_blood_overlay и его оверрайд у нулл-рода).
+	// Кровь на турфе рисуется декалью, а не оверлеем, так что турфу переменная не нужна
+	// вовсе - а стояла она в каждом из полутора миллионов атомов мира. Объявление
+	// переехало в /obj/item, см. code/game/objects/items.dm.
 	var/list/fingerprints
 	var/list/fingerprintshidden
 	var/list/blood_DNA
 	var/list/suit_fibers
 
-	/// Last name used to calculate a color for the chatmessage overlays
-	var/chat_color_name
-	/// Last color calculated for the the chatmessage overlays
-	var/chat_color
-	/// A luminescence-shifted value of the last color calculated for chatmessage overlays
-	var/chat_color_darkened
+	// Цвет рунчата (chat_color/chat_color_name/chat_color_darkened) отсюда убран: он выводится
+	// ИЗ ИМЕНИ говорящего, одинаковые имена дают одинаковый цвет, и кэш ему нужен один общий,
+	// а не по три слота на каждом атоме мира. Кэш живёт в GLOB.runechat_color_names, см.
+	// /datum/chatmessage/proc/generate_image().
 
-	///Icon-smoothing behavior.
-	var/smoothing_flags = NONE
-	///What directions this is currently smoothing with. IMPORTANT: This uses the smoothing direction flags as defined in icon_smoothing.dm, instead of the BYOND flags.
-	var/smoothing_junction = null //This starts as null for us to know when it's first set, but after that it will hold a 8-bit mask ranging from 0 to 255.
-	///What smoothing groups does this atom belongs to, to match canSmoothWith. If null, nobody can smooth with it.
-	var/list/smoothing_groups = null
+	// Битмасочное сглаживание (smoothing_flags / smoothing_junction / smoothing_groups) сюда
+	// не доехало: форк остался на угловом smooth/canSmoothWith из icon_smoothing.dm, а три
+	// переменные так и стояли на КАЖДОМ атоме мира без единого читателя. При полутора
+	// миллионах атомов это десятки мегабайт адресного пространства, которых 32-битному
+	// DreamDaemon не хватает. Порт битмасок вернёт их вместе с собой.
 	// Use SET_BASE_PIXEL(x, y) to set these in typepath definitions, it'll handle pixel_x and y for you
 	///Default pixel x shifting for the atom's icon.
 	var/base_pixel_x = 0
@@ -156,22 +129,8 @@
 	var/base_icon_state
 
 	///Mobs that are currently do_after'ing this atom, to be cleared from on Destroy()
+	///Остаётся на /atom, а не уезжает к движимому: do_after() принимает и турфы.
 	var/list/targeted_by
-
-	///Reference to atom being orbited
-	var/atom/orbit_target
-
-	///AI controller that controls this atom. type on init, then turned into an instance during runtime
-	var/datum/ai_controller/ai_controller
-
-	/// Lazylist of all images (hopefully attached to us) to update when we change z levels
-	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
-	var/list/image/update_on_z
-
-	/// Lazylist of all overlays attached to us to update when we change z levels
-	/// You will need to manage adding/removing from this yourself, but I'll do the updating for you
-	/// Oh and note, if order of addition is important this WILL break that. so mind yourself
-	var/list/image/update_overlays_on_z
 
 /**
  * Called when an atom is created in byond (built in engine proc)
@@ -251,7 +210,7 @@
 
 	if (opacity && isturf(loc))
 		var/turf/T = loc
-		T.has_opaque_atom = TRUE // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
+		T.lighting_flags |= TURF_HAS_OPAQUE_ATOM // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
 
 	if (canSmoothWith)
 		canSmoothWith = typelist("canSmoothWith", canSmoothWith)
@@ -285,27 +244,20 @@
  * Top level of the destroy chain for most atoms
  *
  * Cleans up the following:
- * * Removes alternate apperances from huds that see them
  * * qdels the reagent holder from atoms if it exists
- * * clears the orbiters list
  * * clears overlays and priority overlays
  * * clears the light object
+ *
+ * Альтернативные внешности, орбитёры и монитор близости чистятся не здесь, а в
+ * /atom/movable/Destroy(): сами переменные переехали на движимое, чтобы не стоять
+ * в каждом турфе мира.
  */
 /atom/Destroy()
-	if(alternate_appearances)
-		for(var/K in alternate_appearances)
-			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
-			AA.remove_from_hud(src)
-
 	if(reagents)
 		QDEL_NULL(reagents)
 
-	orbiters = null // The component is attached to us normaly and will be deleted elsewhere
-
 	managed_vis_overlays = null
 	managed_overlays = null
-	remove_overlays = null
-	add_overlays = null
 
 	LAZYCLEARLIST(overlays)
 	clear_filters()
@@ -315,7 +267,10 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
-	QDEL_NULL(light)
+	if(GLOB.lighting_deferred_atoms.Remove(src)) // кэш отложенных z протухает только если атом реально был запаркован
+		GLOB.lighting_deferred_z_cache = null
+	if(light)
+		QDEL_NULL(light)
 
 	return ..()
 
@@ -355,8 +310,11 @@
 	//SHOULD_CALL_PARENT(TRUE)
 	if(mover.pass_flags & pass_flags_self)
 		return TRUE
-	if(mover.throwing && (pass_flags_self & LETPASSTHROW))
-		return TRUE
+	if(mover.throwing)
+		if(pass_flags_self & LETPASSTHROW)
+			return TRUE
+		if(mover.throwing.thrower == src)
+			return TRUE
 	return !density
 
 /**
@@ -535,10 +493,13 @@
 	return
 
 /atom/proc/emp_act(severity)
-	var/protection = SEND_SIGNAL(src, COMSIG_ATOM_EMP_ACT, severity)
-	if(!(protection & EMP_PROTECT_WIRES) && istype(wires))
+	return SEND_SIGNAL(src, COMSIG_ATOM_EMP_ACT, severity) // Pass the protection value collected here upwards
+
+/atom/movable/emp_act(severity)
+	. = ..()
+	// Проводка живёт на движимом, поэтому и импульс по ней раздаётся здесь, а не на /atom.
+	if(!(. & EMP_PROTECT_WIRES) && istype(wires))
 		wires.emp_pulse(severity)
-	return protection // Pass the protection value collected here upwards
 
 /**
  * React to a hit by a projectile object
@@ -591,22 +552,21 @@
 /atom/proc/get_examine_string(mob/user, thats = FALSE)
 	return "[icon2html(src, user)] [thats? "That's ":""][get_examine_name(user)]"
 
-/atom/proc/examine(mob/user)
+/atom/proc/examine(mob/user, silent = FALSE)
 	. = list("[get_examine_string(user, TRUE)].[desc ? "<hr>" : null]")
 
 	if(desc)
 		. += desc
 
-	. += "<hr>"
 	if(custom_materials)
 		var/list/materials_list = list()
 		for(var/i in custom_materials)
 			var/datum/material/M = i
-			materials_list += material_to_ru_genitive(M.name)
+			materials_list += vocabulary_to_ru(GLOB.mat_ru_genitive, M.name)
 		. += "<u>Сделано из [english_list(materials_list)]</u>."
 	if(reagents)
-		. += "<hr>"
 		if(reagents.reagents_holder_flags & TRANSPARENT)
+			. += "<hr>"
 			. += "<b>Внутри находится:</b>"
 			if(length(reagents.reagent_list))
 				if(user.can_see_reagents()) //Show each individual reagent
@@ -633,7 +593,7 @@
 				. += "[R.volume] u [R.name]"
 			. += span_engradio("Температура: [round(reagents.chem_temp, 1)] K ([round(reagents.chem_temp-T0C, 1)] &deg;C)")
 			. += span_radio("pH: [round(reagents.pH, 0.01)]")
-			. += "<hr>"
+		. += "<hr>"
 
 	SEND_SIGNAL(src, COMSIG_PARENT_EXAMINE, user, .)
 
@@ -695,16 +655,64 @@
 		if(LAZYLEN(managed_vis_overlays))
 			SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 
+		// Normalize everything to interned appearances up front so the identity
+		// compare below works: BYOND interns appearances, so equal content means
+		// equal instance. Strings/icons are normalized here too (tg leaves them
+		// raw and never short-circuits string overlays).
 		var/list/new_overlays = update_overlays(updates)
-		if(managed_overlays)
-			cut_overlay(managed_overlays)
-			managed_overlays = null
-		if(length(new_overlays))
-			if (length(new_overlays) == 1)
-				managed_overlays = new_overlays[1]
+		// Some legacy overrides call ..() without `. = ..()` and return a bare
+		// string/appearance instead of a list; the old code fed that straight to
+		// add_overlay(), so wrap it to keep the same result instead of indexing it.
+		if(!islist(new_overlays))
+			new_overlays = new_overlays ? list(new_overlays) : list()
+		var/nulls = 0
+		for(var/i in 1 to length(new_overlays))
+			var/atom/entry = new_overlays[i]
+			if(isnull(entry))
+				nulls++
+				continue
+			if(istext(entry))
+				new_overlays[i] = iconstate2appearance(icon, entry)
+			else if(isicon(entry))
+				new_overlays[i] = icon2appearance(entry)
 			else
-				managed_overlays = new_overlays
-			add_overlay(new_overlays)
+				new_overlays[i] = entry.appearance
+		if(nulls)
+			for(var/i in 1 to nulls)
+				new_overlays -= null
+
+		var/identical = FALSE
+		var/new_length = length(new_overlays)
+		if(!managed_overlays && !new_length)
+			identical = TRUE
+		else if(!islist(managed_overlays))
+			if(new_length == 1 && managed_overlays == new_overlays[1])
+				identical = TRUE
+		else if(length(managed_overlays) == new_length)
+			identical = TRUE
+			for(var/i in 1 to new_length)
+				if(managed_overlays[i] != new_overlays[i])
+					identical = FALSE
+					break
+
+		if(!identical)
+			var/full_control = FALSE
+			if(managed_overlays)
+				full_control = length(overlays) == (islist(managed_overlays) ? length(managed_overlays) : 1)
+				if(full_control)
+					overlays = null
+				else
+					cut_overlay(managed_overlays)
+
+			switch(new_length)
+				if(0)
+					managed_overlays = null
+				if(1)
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays[1]
+				else
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays
 		. |= UPDATE_OVERLAYS
 
 	. |= SEND_SIGNAL(src, COMSIG_ATOM_UPDATED_ICON, updates, .)
@@ -788,6 +796,8 @@
  */
 /atom/proc/hitby(atom/movable/hitting_atom, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
 	SEND_SIGNAL(src, COMSIG_ATOM_HITBY, hitting_atom, skipcatch, hitpush, blocked, throwingdatum)
+	if(QDELETED(src))
+		return FALSE
 	if(density && !has_gravity(hitting_atom)) //thrown stuff bounces off dense stuff in no grav, unless the thrown stuff ends up inside what it hit(embedding, bola, etc...).
 		addtimer(CALLBACK(src, PROC_REF(hitby_react), hitting_atom), 0.2 SECONDS)
 	return FALSE
@@ -890,16 +900,56 @@
 		return
 	add_blood_overlay()
 
+/// Потолок кэша пятен крови: (иконка, стейт, цвет). Множество замкнутое, потолок - страховка.
+#define BLOOD_SPLATTER_ICON_CACHE_MAX 1024
+/// Сколько записей снимается с головы кэша при переполнении - четверть потолка.
+#define BLOOD_SPLATTER_ICON_CACHE_EVICT 256
+
+/**
+ * Пятно крови на предмете, склеенное из иконки предмета и маски крови.
+ *
+ * КЭШ ОБЯЗАТЕЛЕН. Иконка полностью определяется тройкой (исходная иконка, исходный
+ * стейт, цвет крови), а строилась заново на КАЖДОЕ добавление крови. Один кровоточащий
+ * человек раздаёт кровь восьми надетым предметам разом (см. /mob/living/carbon/human/
+ * add_blood_DNA ниже), и каждая такая иконка - отдельный ресурс, который уезжает всем
+ * видящим клиентам и живёт у них до конца сессии. Так и выглядели "случайные текстуры
+ * крови" на проде 28.08.2026.
+ *
+ * fcopy_rsc снимает неизменяемый слепок: повторная выдача той же иконки не рассылается
+ * заново. Образец рядом - /obj/item/clothing/update_overlays().
+ */
 /obj/item/proc/add_blood_overlay()
 	if(!blood_DNA.len)
 		return
 	if(initial(icon) && initial(icon_state))
+		var/static/list/blood_splatter_icons = list()
+		var/blood_key = "[initial(icon)]-[initial(icon_state)]-[blood_DNA_to_color()]"
+		var/icon/cached_splatter = blood_splatter_icons[blood_key]
+		if(!cached_splatter)
+			// Под стражем: промах кэша - это три Blend поверх свежей рантайм-иконки, а отказ
+			// /icon/New() обрывает весь стек молча и до /world/Error не доходит. Пятно крови
+			// не стоит раунда: не собралось - предмет остаётся чистым до следующей капли.
+			// В кэш при отказе не пишется НИЧЕГО: отказ аллокации - состояние минуты, а
+			// запомненная пустышка оставила бы предмет чистым до конца раунда.
+			try
+				var/icon/splatter = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
+				splatter.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
+				splatter.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
+				splatter.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
+				cached_splatter = fcopy_rsc(splatter)
+			catch(var/exception/icon_error)
+				note_icon_alloc_failure("пятно крови на [type]", icon_error)
+				return
+			blood_splatter_icons[blood_key] = cached_splatter
+			if(length(blood_splatter_icons) > BLOOD_SPLATTER_ICON_CACHE_MAX)
+				blood_splatter_icons.Cut(1, BLOOD_SPLATTER_ICON_CACHE_EVICT + 1)
+		// Тот же слепок - работы нет вовсе: снимать оверлей и вешать его обратно значило бы
+		// пересобрать аппиранс предмета впустую на каждой капле.
+		if(blood_splatter_icon == cached_splatter)
+			return
 		if(blood_splatter_icon)
 			cut_overlay(blood_splatter_icon)
-		blood_splatter_icon = icon(initial(icon), initial(icon_state), , 1)		//we only want to apply blood-splatters to the initial icon_state for each object
-		blood_splatter_icon.Blend("#fff", ICON_ADD) 			//fills the icon_state with white (except where it's transparent)
-		blood_splatter_icon.Blend(icon('icons/effects/blood.dmi', "itemblood"), ICON_MULTIPLY) //adds blood and the remaining white areas become transparant
-		blood_splatter_icon.Blend(blood_DNA_to_color(), ICON_MULTIPLY)
+		blood_splatter_icon = cached_splatter
 		add_overlay(blood_splatter_icon)
 
 /obj/item/clothing/gloves/add_blood_DNA(list/blood_dna, list/datum/disease/diseases)
@@ -990,9 +1040,8 @@
 
 /atom/proc/rad_act(strength)
 	var/turf/open/pool/PL = get_turf(src)
-	if(istype(PL))
-		if(PL.filled == TRUE)
-			strength *= 0.15
+	if(istype(PL) && PL.liquids)
+		strength *= 0.15
 	SEND_SIGNAL(src, COMSIG_ATOM_RAD_ACT, strength)
 
 /atom/proc/narsie_act()
@@ -1221,9 +1270,16 @@
 	SEND_SIGNAL(AM, COMSIG_ATOM_ENTERING, src, oldLoc)
 
 /atom/Exit(atom/movable/AM, atom/newLoc)
-	. = ..()
+	// Намеренно НЕ зовём ..(): нативный Exit() обходит contents и дёргает
+	// Uncross() на каждом атоме в турфе. /turf/Exit ниже делает ровно этот обход
+	// сам - с гейтом blocks_exit_checks и с обработкой Bump/PHASING, - так что
+	// нативный проход был вторым, негейтящимся и полностью дублирующим: 553k
+	// вызовов Uncross() за 78 секунд раунда 9800. Апстрим tg выпилил его по той
+	// же причине. Чтобы что-то могло запретить выход, есть COMSIG_ATOM_EXIT
+	// (через /datum/element/connect_loc) либо blocks_exit_checks + Uncross().
 	if(SEND_SIGNAL(src, COMSIG_ATOM_EXIT, AM, newLoc) & COMPONENT_ATOM_BLOCK_EXIT)
 		return FALSE
+	return TRUE
 
 /atom/Exited(atom/movable/AM, atom/newLoc)
 	SEND_SIGNAL(src, COMSIG_ATOM_EXITED, AM, newLoc)
@@ -1250,7 +1306,7 @@
 	return
 
 // Generic logging helper
-/atom/proc/log_message(message, message_type, color=null, log_globally=TRUE)
+/atom/proc/log_message(message, message_type, color=null, log_globally=TRUE, atom/target = null)
 	if(!log_globally)
 		return
 
@@ -1329,6 +1385,13 @@
   * * addition - is any additional text, which will be appended to the rest of the log line
   */
 /proc/log_combat(atom/user, atom/target, what_done, atom/object=null, addition=null)
+	// Атрибуция активности антагов для директора: атака по чужому игровому персонажу двигает
+	// score атакующего. bump_antag_activity сам отсеивает не-антагов - здесь только дешёвые гейты.
+	if(user != target && isliving(user) && ismob(target))
+		var/mob/living/attacking_mob = user
+		var/mob/victim_mob = target
+		if(attacking_mob.mind && victim_mob.mind && victim_mob.mind != attacking_mob.mind)
+			SSdirector.bump_antag_activity(attacking_mob.mind, DIRECTOR_ACTIVITY_ATTACK)
 	var/ssource = key_name(user)
 	var/starget = key_name(target)
 
@@ -1345,11 +1408,13 @@
 	var/postfix = "[sobject][saddition][hp]"
 
 	var/message = "[what_done] [starget][postfix]"
-	user.log_message(message, LOG_ATTACK, color="red")
+	user.log_message(message, LOG_ATTACK, color="red", target = target)
 
-	if(user != target)
+	//цель может быть и null: часть предметов логирует действие "в никуда" (батарейщик,
+	//самоподрыв, срабатывание по площади). Сторона жертвы в этом случае просто не пишется
+	if(!isnull(target) && user != target)
 		var/reverse_message = "has been [what_done] by [ssource][postfix]"
-		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE)
+		target.log_message(reverse_message, LOG_VICTIM, color="orange", log_globally=FALSE, target = user)
 
 /**
   * log_wound() is for when someone is *attacked* and suffers a wound. Note that this only captures wounds from damage, so smites/forced wounds aren't logged, as well as demotions like cuts scabbing over
@@ -1446,10 +1511,15 @@
 
 	var/list/names = islist(name_or_names) ? name_or_names : list(name_or_names)
 
+	var/removed_any = FALSE
 	for(var/name in names)
 		if(filter_data[name])
 			filter_data -= name
-	update_filters()
+			removed_any = TRUE
+	// update_filters() sorts and rebuilds the whole list — pointless if we
+	// removed nothing, which is the common case for speculative removals.
+	if(removed_any)
+		update_filters()
 
 /atom/proc/clear_filters()
 	filter_data = null
@@ -1466,13 +1536,24 @@
 			custom_material.on_removed(src, custom_materials[i], material_flags) //Remove the current materials
 
 	if(!length(materials))
-		custom_materials = null
+		// Гард не косметика: запись null в уже-null переменную BYOND считает настоящей
+		// записью и заводит под неё слот в блоке инстанса (замер: та же цена, что у записи
+		// любого другого значения, ступенями по 4 слота). Материалов нет у подавляющего
+		// большинства из полутора миллионов атомов мира, и раньше каждый из них платил за
+		// эту строчку. Прок при этом по-прежнему зовётся - переопределения у стака и монеты
+		// на своём месте.
+		if(custom_materials)
+			custom_materials = null
 		return
 
 	if(material_flags)
+		// Множитель материала стоит на движимом (стопки, статуи): у турфа он всегда единица,
+		// а слот на каждом турфе мира стоит мегабайты.
+		var/atom/movable/movable_source = ismovable(src) ? src : null
+		var/modifier = movable_source ? movable_source.material_modifier : 1
 		for(var/x in materials)
 			var/datum/material/custom_material = SSmaterials.GetMaterialRef(x)
-			custom_material.on_applied(src, materials[x] * multiplier * material_modifier, material_flags)
+			custom_material.on_applied(src, materials[x] * multiplier * modifier, material_flags)
 
 	custom_materials = SSmaterials.FindOrCreateMaterialCombo(materials, multiplier)
 
@@ -1516,29 +1597,31 @@
 	if(!T)
 		return FALSE
 
-	var/list/forced_gravity = list()
-	SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
-	if(!forced_gravity.len)
-		SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
-	if(forced_gravity.len)
-		var/max_grav
-		for(var/i in forced_gravity)
-			max_grav = max(max_grav, i)
-		return max_grav
+	// Проверяется на каждый шаг каждого моба: аллокация списка и сигналы -
+	// только когда на src или турфе действительно есть подписчик forced gravity
+	if(comp_lookup?[COMSIG_ATOM_HAS_GRAVITY] || T.comp_lookup?[COMSIG_TURF_HAS_GRAVITY])
+		var/list/forced_gravity = list()
+		SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
+		if(!forced_gravity.len)
+			SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
+		if(forced_gravity.len)
+			var/max_grav
+			for(var/i in forced_gravity)
+				max_grav = max(max_grav, i)
+			return max_grav
 
 	if(isspaceturf(T)) // Turf never has gravity
 		return FALSE
 
-	var/area/A = get_area(T)
+	var/area/A = T.loc
 	if(A.has_gravity) // Areas which always has gravity
 		return A.has_gravity
-	else
-		// There's a gravity generator on our z level
-		if(GLOB.gravity_generators["[T.z]"])
-			var/max_grav = 0
-			for(var/obj/machinery/gravity_generator/main/G in GLOB.gravity_generators["[T.z]"])
-				max_grav = max(G.setting,max_grav)
-			return max_grav
+
+	// Кэш по z вместо обхода генераторов и цепочки level_trait->get_level;
+	// уровень новее кэша (окно инита нового z) - читаем трейт напрямую
+	var/list/gravity_cache = SSmapping.gravity_by_z_level
+	if(T.z <= length(gravity_cache))
+		return gravity_cache[T.z]
 	return SSmapping.level_trait(T.z, ZTRAIT_GRAVITY)
 
 /**
@@ -1568,14 +1651,39 @@
 ///Called when something resists while this atom is its loc
 /atom/proc/container_resist_act(mob/living/user)
 
-//Update the screentip to reflect what we're hoverin over
+//Record the hover; SSmouse_entered runs the screentip update for the LAST
+//hovered atom once per tick instead of on every input event (tg port).
 /atom/MouseEntered(location, control, params)
 	. = ..()
-
-	var/mob/user = usr
-	if(isnull(user))
+	if(isnull(usr))
 		return
-	if(!GET_CLIENT(user))
+	var/client/user_client = usr.client
+	if(!user_client)
+		return
+	SSmouse_entered.hovers[usr.client] = src
+	if(CHECK_BITFIELD(flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1))
+		if(isnull(user_client.show_popup_menus_before_disable))
+			user_client.show_popup_menus_before_disable = user_client.show_popup_menus
+			user_client.show_popup_menus = FALSE
+
+/atom/MouseExited(location, control, params)
+	. = ..()
+	if(isnull(usr))
+		return
+	var/client/user_client = usr.client
+	if(!user_client)
+		return
+	if(!isnull(user_client.show_popup_menus_before_disable))
+		user_client.show_popup_menus = user_client.show_popup_menus_before_disable
+		user_client.show_popup_menus_before_disable = null
+
+///Deferred hover handler: called by SSmouse_entered at most once per tick per
+///client, with the most recently hovered atom. Updates the screentip.
+/atom/proc/on_mouse_enter(client/hovering_client)
+	SHOULD_NOT_SLEEP(TRUE)
+
+	var/mob/user = hovering_client?.mob
+	if(isnull(user) || user.client != hovering_client)
 		return
 
 	// Screentips
@@ -1586,7 +1694,16 @@
 	var/screentips_enabled = user.client.prefs.screentip_pref
 	if(screentips_enabled == SCREENTIP_PREFERENCE_DISABLED || (flags_1 & NO_SCREENTIPS_1))
 		active_hud.screentip_text.maptext = ""
+		active_hud.set_screentip_cache(null, null)
 		return
+
+	// Dedup repeat hovers — same atom with same held item produces an identical
+	// maptext, so skip the 8 build_context calls and signal sends. Held item
+	// transitions and atom changes both invalidate the cache.
+	var/obj/item/held_item = user.get_active_held_item()
+	if(active_hud.last_screentip_atom == src && active_hud.last_screentip_held == held_item)
+		return
+	active_hud.set_screentip_cache(src, held_item)
 
 	active_hud.screentip_text.maptext_y = 10 // 10px lines us up with the action buttons top left corner
 	var/lmb_rmb_line = ""
@@ -1605,8 +1722,6 @@
 				auxiliary_name = "\[[collar.tagname]\]"
 
 	if ((isliving(user) || isovermind(user) || isaicamera(user)) && (user.client.prefs.screentip_pref != SCREENTIP_PREFERENCE_NO_CONTEXT))
-		var/obj/item/held_item = user.get_active_held_item()
-
 		if (flags_1 & HAS_CONTEXTUAL_SCREENTIPS_1 || held_item?.item_flags & ITEM_HAS_CONTEXTUAL_SCREENTIPS)
 			var/list/context = list()
 
@@ -1673,6 +1788,15 @@
 						//first extra line pushes atom name line up 11px, subsequent lines push it up 8px, this offsets that and keeps the first line in the same place
 						active_hud.screentip_text.maptext_y = -1 + (extra_lines - 1) * -8
 
+	// Коробка по числу строк, а не по худшему случаю. Платится ОБЪЯВЛЕННЫЙ размер коробки на
+	// КАЖДУЮ уникальную строку maptext, а меняется она по 2-4 раза в секунду, пока игрок водит
+	// мышью. У подавляющего большинства атомов контекстных строк нет вовсе, и им хватает одной
+	// строки имени - прежние фиксированные 128 они платили впустую. См. code/__DEFINES/screentips.dm.
+	var/screentip_height = SCREENTIP_BOX_HEIGHT_BASE
+	if(extra_lines)
+		screentip_height = min(SCREENTIP_BOX_HEIGHT_BASE + extra_lines * SCREENTIP_BOX_HEIGHT_PER_LINE, SCREENTIP_BOX_MAX_HEIGHT)
+	active_hud.screentip_text.maptext_height = screentip_height
+
 	if (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY && extra_context == "")
 		active_hud.screentip_text.maptext = ""
 	else
@@ -1684,7 +1808,7 @@
  *
  * This will work fine without manually passing arguments.
  */
-/atom/proc/get_all_orbiters(list/processed, source = TRUE)
+/atom/movable/proc/get_all_orbiters(list/processed, source = TRUE)
 	var/list/output = list()
 	if (!processed)
 		processed = list()
@@ -1694,7 +1818,7 @@
 		output += src
 	processed += src
 	for (var/o in orbiters?.orbiters)
-		var/atom/atom_orbiter = o
+		var/atom/movable/atom_orbiter = o
 		output += atom_orbiter.get_all_orbiters(processed, source = FALSE)
 	return output
 
@@ -1730,9 +1854,12 @@
 			pixel_x = pixel_west
 
 /// Sets the wire datum of an atom
-/atom/proc/set_wires(datum/wires/new_wires)
+/atom/movable/proc/set_wires(datum/wires/new_wires)
 	wires = new_wires
 
 ///Return the air if we can analyze it
 /atom/proc/return_analyzable_air()
 	return null
+
+#undef BLOOD_SPLATTER_ICON_CACHE_MAX
+#undef BLOOD_SPLATTER_ICON_CACHE_EVICT

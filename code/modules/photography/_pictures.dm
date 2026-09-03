@@ -8,6 +8,13 @@
 	var/psize_y = 96
 	var/has_blueprints = FALSE
 	var/logpath						//If the picture has been logged this is the path.
+	/// Кэш base64-кодировки picture_image для tgui и иконка, с которой он снят.
+	/// Консоли записей кодировали фото на КАЖДЫЙ ui_data (список записей охраны -
+	/// по фото на каждого члена экипажа за раз), а icon2base64 - это запись в
+	/// savefile и ExportText. Иконка сравнивается по ссылке: подмена picture_image
+	/// новым объектом сбрасывает кэш сама.
+	var/base64_cache
+	var/icon/base64_cache_source
 	var/id							//this var is NOT protected because the worst you can do with this that you couldn't do otherwise is overwrite photos, and photos aren't going to be used as attack logs/investigations anytime soon.
 
 /datum/picture/New(name, desc, image, icon, size_x, size_y, bp, caption_, autogenerate_icon)
@@ -19,9 +26,9 @@
 		picture_image = image
 	if(!isnull(icon))
 		picture_icon = icon
-	if(!isnull(psize_x))
+	if(!isnull(size_x))
 		psize_x = size_x
-	if(!isnull(psize_y))
+	if(!isnull(size_y))
 		psize_y = size_y
 	if(!isnull(bp))
 		has_blueprints = bp
@@ -29,6 +36,15 @@
 		caption = caption_
 	if(autogenerate_icon && !picture_icon && picture_image)
 		regenerate_small_icon()
+
+/// Base64 полноразмерной картинки для tgui, с кэшем на время жизни picture_image.
+/datum/picture/proc/get_base64()
+	if(!picture_image)
+		return null
+	if(isnull(base64_cache) || base64_cache_source != picture_image)
+		base64_cache = icon2base64(picture_image)
+		base64_cache_source = picture_image
+	return base64_cache
 
 /datum/picture/proc/get_small_icon(iconstate)
 	if(!picture_icon)

@@ -6,6 +6,8 @@
 #define STATIC_EQUIP 	5
 #define STATIC_LIGHT	6
 #define STATIC_ENVIRON	7
+/// Maps a dynamic power channel (EQUIP/LIGHT/ENVIRON) onto its static counterpart.
+#define DYNAMIC_TO_STATIC_CHANNEL(channel) ((channel) + TOTAL)
 
 //Power use
 #define NO_POWER_USE 0
@@ -73,6 +75,16 @@
 #define PROGRAM_CONSOLE (1<<0)
 #define PROGRAM_LAPTOP (1<<1)
 #define PROGRAM_TABLET (1<<2)
+#define PROGRAM_PDA (1<<3)
+#define PROGRAM_ON_TABLETS (PROGRAM_TABLET | PROGRAM_PDA)
+#define PROGRAM_ON_COMPUTERS (PROGRAM_CONSOLE | PROGRAM_LAPTOP)
+//program_flags
+#define PROGRAM_REQUIRES_NTNET (1<<0)
+#define PROGRAM_ON_NTNET_STORE (1<<1)
+#define PROGRAM_ON_SYNDINET_STORE (1<<2)
+#define PROGRAM_UNIQUE_COPY (1<<3)
+#define PROGRAM_HEADER (1<<4)
+#define PROGRAM_RUNS_WITHOUT_POWER (1<<5)
 //Program states
 #define PROGRAM_STATE_KILLED 0
 #define PROGRAM_STATE_BACKGROUND 1
@@ -83,6 +95,42 @@
 #define PROGRAM_CATEGORY_ROBO "Robotics"
 #define PROGRAM_CATEGORY_SUPL "Supply"
 #define PROGRAM_CATEGORY_MISC "Other"
+#define PROGRAM_CATEGORY_DEVICE "Device Tools"
+#define PROGRAM_CATEGORY_EQUIPMENT "Equipment"
+#define PROGRAM_CATEGORY_GAMES "Games"
+#define PROGRAM_CATEGORY_SECURITY "Security & Records"
+#define PROGRAM_CATEGORY_SCIENCE "Science"
+
+//Modular computer misc defines
+#define PROGRAM_BASIC_CELL_USE (2 WATTS)
+#define DETOMATIX_RESIST_MINOR 1
+#define DETOMATIX_RESIST_MAJOR 2
+#define DETOMATIX_RESIST_MALUS -4
+#define MESSENGER_RINGTONE_DEFAULT "beep"
+#define MESSENGER_RINGTONE_MAX_LENGTH 20
+
+//PDA Themes
+#define PDA_THEME_NTOS "ntos"
+#define PDA_THEME_DARK_MODE "ntos_darkmode"
+#define PDA_THEME_RETRO "retro"
+#define PDA_THEME_SYNTH "ntos_synth"
+#define PDA_THEME_TERMINAL "ntos_terminal"
+#define PDA_THEME_SYNDICATE "syndicate"
+#define PDA_THEME_CAT "ntos_cat"
+#define PDA_THEME_LIGHT_MODE "ntos_lightmode"
+
+//PDA Theme Names
+#define PDA_THEME_NTOS_NAME "NtOS"
+#define PDA_THEME_DARK_MODE_NAME "NtOS Dark Mode"
+#define PDA_THEME_RETRO_NAME "Retro"
+#define PDA_THEME_SYNTH_NAME "Synth"
+#define PDA_THEME_TERMINAL_NAME "Terminal"
+#define PDA_THEME_SYNDICATE_NAME "Syndicate"
+#define PDA_THEME_CAT_NAME "Cat"
+#define PDA_THEME_LIGHT_MODE_NAME "NtOS Light Mode"
+
+/// Formats PDA target display as "Name (Job)"
+#define STRINGIFY_PDA_TARGET(name, job) "[name] ([job])"
 
 #define FIREDOOR_OPEN 1
 #define FIREDOOR_CLOSED 2
@@ -144,3 +192,10 @@
 #define LOGIN_TYPE_AI 2
 #define LOGIN_TYPE_ROBOT 3
 #define LOGIN_TYPE_ADMIN 4
+
+// Конвейеры. Позиция свитча и состояние ленты - один и тот же набор значений: свитч кладёт
+// свою позицию в last_command ленты, а лента разворачивает её в movedir. Числа завязаны на
+// иконки ("conveyor[operating * verted]"), менять их нельзя.
+#define CONVEYOR_BACKWARDS -1
+#define CONVEYOR_OFF 0
+#define CONVEYOR_FORWARD 1

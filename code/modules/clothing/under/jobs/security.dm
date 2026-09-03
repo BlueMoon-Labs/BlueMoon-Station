@@ -61,6 +61,7 @@
 		"Maid red" = list("icon_state" = "secmaid_red", "item_state" = "secmaid_red"),
 		"Maid blue" = list("icon_state" = "secmaid_blue", "item_state" = "secmaid_blue"),
 	) ///bluemoon add
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/officer/skirt/no_armor // Donat stuff - Borisovych
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
@@ -105,6 +106,30 @@
 	icon_state = "hoscorp"
 	item_state = "hoscorp"
 
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/deputysheriff
+	name = "deputy sheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth."
+	icon_state = "deputysheriff"
+	item_state = "deputysheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/undersheriff
+	name = "undersheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth. This one has a single golden star on each side of the collar, indicating the wearer as the sheriff's second-in-command."
+	icon_state = "undersheriff"
+	item_state = "undersheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/sheriff
+	name = "sheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth. This one has two golden stars on each side of the collar, indicating the wearer as the true and only sheriff on the station."
+	icon_state = "sheriff"
+	item_state = "sheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
 /obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/detcorp
 	name = "corporate detective's uniform"
 	icon_state = "detcorp"
@@ -146,6 +171,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alt_covers_chest = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/warden/formal
 	desc = "The insignia on this uniform tells you that this uniform belongs to the Warden."
@@ -184,6 +210,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/detective/grey
 	name = "noir suit"
@@ -200,6 +227,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/detective/grey/skirt/no_armor // Donat stuff - famas098
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
@@ -226,6 +254,7 @@
 	alt_covers_chest = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 
 /obj/item/clothing/under/rank/security/head_of_security/grey
@@ -250,6 +279,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/head_of_security/formal
 	desc = "The insignia on this uniform tells you that this uniform belongs to the Head of Security."
@@ -271,6 +301,7 @@
 	item_state = "r_suit"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /*
  *Spacepol

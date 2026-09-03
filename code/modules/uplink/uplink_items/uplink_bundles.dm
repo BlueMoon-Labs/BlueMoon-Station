@@ -39,8 +39,9 @@
 	item = /obj/item/storage/box/syndie_kit/contract_kit
 	cost = 30
 	player_minimum = 50
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 	restricted = TRUE
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/bundles_tc/northstar_bundle
 	name = "Northstar Bundle"
@@ -49,16 +50,17 @@
 			Совместимы со всеми боевыми искусствами, но носитель не сможет пользоваться огнестрелом и снять наручи."
 	item = /obj/item/storage/box/syndie_kit/northstar
 	cost = 20
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/scarp_bundle
-	name = "Sleeping Carp Bundle"
-	desc = "Станьте едины со своим внутренним карпом! Древние рыбные мастера завещают вам своё учение, священную форму и посох. \
-	Учтите: вы не сможете использовать бесчестное дальнее оружие."
+	name = "Space Carp Bundle"
+	desc = "WHITE WHALE, HOLY GRAIL: космический карповый скафандр без штрафа скорости, кинетический гарпун с колчаном \
+			магнитных копий, маска карпа, граната с карпами и дегидрированный плюшевый карп. \
+			Наденьте шлем — и космические карпы сочтут вас своим."
 	item = /obj/item/storage/box/syndie_kit/scarp
 	cost = 20
 	player_minimum = 20
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/infiltrator_bundle
 	name = "Insidious Infiltration Gear Case"
@@ -90,7 +92,8 @@
 	desc = "Тяжёлый кейс с модульным пистолетом (10мм), глушителем и запасными боеприпасами, \
 		включая снотворные патроны. В комплекте пиджак с бронеподкладкой."
 	item = /obj/item/storage/briefcase/modularbundle
-	cost = 12
+	cost = 4 // was 12; same gun as Makarov (3 TC) + suppressor/sopo/jacket, not a premium sidearm
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/bundles_tc/shredderbundle
 	name = "Shredder bundle"
@@ -116,7 +119,7 @@
 			Закажите СЕЙЧАС - и товарищ Борис подкинет дополнительный спортивный костюм."
 	item = /obj/item/storage/backpack/duffelbag/syndie/firestarter
 	cost = 30
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	purchasable_from = (UPLINK_SYNDICATE)
 
 /datum/uplink_item/bundles_tc/bundle
 	name = "Operative Bundle"
@@ -145,7 +148,7 @@
 	item = /obj/structure/closet/crate
 	cost = 20
 	player_minimum = 25
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 	var/starting_crate_value = 50
 	var/uplink_flags = UPLINK_TRAITORS
 
@@ -156,6 +159,7 @@
 	cost = 40
 	player_minimum = 40
 	starting_crate_value = 125
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/bundles_tc/surplus/purchase(mob/user, datum/component/uplink/U)
 	var/list/uplink_items = get_uplink_items(uplink_flags, FALSE)
@@ -181,12 +185,13 @@
 
 /datum/uplink_item/bundles_tc/reroll
 	name = "Renegotiate Contract"
-	desc = "Сообщите работодателям, что хотите новые задания. Можно сделать только дважды."
+	desc = "Сообщите работодателям, что хотите новые задания. Первый рерол бесплатный, каждый следующий — 1 ТК."
 	item = /obj/effect/gibspawner/generic
 	cost = 0
 	cant_discount = TRUE
 	restricted = TRUE
-	limited_stock = 2
+	limited_stock = -1
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/bundles_tc/reroll/purchase(mob/user, datum/component/uplink/U)
 	var/datum/antagonist/traitor/T = user?.mind?.has_antag_datum(/datum/antagonist/traitor)
@@ -214,7 +219,7 @@
 				continue
 			if(U.telecrystals < I.cost)
 				continue
-			if(I.limited_stock == 0)
+			if(!U.is_uplink_item_visible_to_user(user, I))
 				continue
 			possible_items += I
 
@@ -233,21 +238,21 @@
 	// Don't add telecrystals to the purchase_log since
 	// it's just used to buy more items (including itself!)
 	purchase_log_vis = FALSE
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/telecrystal/five
 	name = "5 Telecrystals"
 	desc = "Five telecrystals in their rawest and purest form; can be utilized on active uplinks to increase their telecrystal count."
 	item = /obj/item/stack/telecrystal/five
 	cost = 5
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/telecrystal/twenty
 	name = "20 Telecrystals"
 	desc = "Twenty telecrystals in their rawest and purest form; can be utilized on active uplinks to increase their telecrystal count."
 	item = /obj/item/stack/telecrystal/twenty
 	cost = 20
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/telecrystal/inteq
 	name = "1 Tele Credit"
@@ -255,21 +260,21 @@
 	item = /obj/item/stack/telecrystal/inteq
 	cost = 1
 	surplus = 0
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/telecrystal/five/inteq
 	name = "5 Tele Credits"
 	desc = "Пять золотых кредитов. Можно вставить в аплинк."
 	item = /obj/item/stack/telecrystal/inteq/five
 	cost = 5
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/telecrystal/twenty/inteq
 	name = "20 Tele Credits"
 	desc = "Двадцать золотых кредитов. Можно вставить в аплинк."
 	item = /obj/item/stack/telecrystal/inteq/twenty
 	cost = 20
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/conversion_kit
 	name = "InteQ Conversion Kit"

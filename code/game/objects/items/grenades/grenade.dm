@@ -27,6 +27,8 @@
 	var/ex_light = 0
 	///how big of a flame explosion radius on prime
 	var/ex_flame = 0
+	///who primed/activated this grenade — passed to explosion for combat logging
+	var/mob/living/primed_by
 
 	// dealing with creating a [/datum/component/pellet_cloud] on prime
 	/// if set, will spew out projectiles of this type
@@ -100,6 +102,7 @@
 /obj/item/grenade/proc/preprime(mob/user, delayoverride, msg = TRUE, volume = 60)
 	var/turf/T = get_turf(src)
 	log_grenade(user, T) //Inbuilt admin procs already handle null users
+	primed_by = user
 	if(user)
 		add_fingerprint(user)
 		if(iscarbon(user))
@@ -122,7 +125,7 @@
 
 	SEND_SIGNAL(src, COMSIG_GRENADE_PRIME, lanced_by)
 	if(ex_dev || ex_heavy || ex_light || ex_flame)
-		explosion(loc, ex_dev, ex_heavy, ex_light, flame_range = ex_flame)
+		explosion(loc, ex_dev, ex_heavy, ex_light, flame_range = ex_flame, attacker = primed_by)
 
 /obj/item/grenade/proc/update_mob()
 	if(ismob(loc))

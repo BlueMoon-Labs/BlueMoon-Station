@@ -30,7 +30,7 @@
 /obj/machinery/magnetic_module/Initialize(mapload)
 	..()
 	var/turf/T = loc
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 	center = T
 	SSradio.add_object(src, freq, RADIO_MAGNETS)
 	return INITIALIZE_HINT_LATELOAD

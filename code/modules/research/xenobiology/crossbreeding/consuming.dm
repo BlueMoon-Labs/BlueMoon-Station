@@ -16,29 +16,52 @@ Consuming extracts:
 	var/cookietype = /obj/item/slime_cookie
 
 /obj/item/slimecross/consuming/attackby(obj/item/O, mob/user)
-	if(istype(O,/obj/item/reagent_containers/food/snacks))
+	if(try_eat(O, user))
+		return
+	return ..()
+
+/obj/item/slimecross/consuming/proc/do_after_checks(mob/user, obj/item/storage/bag/tray/tray)
+	return !QDELETED(tray) && in_range(tray, user) && in_range(src, user)
+
+/obj/item/slimecross/consuming/proc/try_eat(obj/item/O, mob/user)
+	. = FALSE
+	var/obj/item/storage/bag/tray/tray = O
+	if(!istype(tray))
+		tray = null
+	var/obj/item/reagent_containers/food/snacks/to_eat = O
+	if(tray)
+		to_eat = locate() in tray
+	var/list/eated = list()
+	var/list/eated_unhappy = list()
+	while(istype(to_eat) && (!tray || do_after(user, 0.6 SECONDS, src, extra_checks = CALLBACK(src, PROC_REF(do_after_checks), user, tray))))
 		if(last_produced + cooldown > world.time)
-			to_chat(user, "<span class='warning'>[src] is still digesting after its last meal!<span>")
-			return
-		var/datum/reagent/N = O.reagents.has_reagent(/datum/reagent/consumable/nutriment)
+			to_chat(user, span_warning("[src] все еще сытый!"))
+			break
+		var/datum/reagent/N = to_eat.reagents.has_reagent(/datum/reagent/consumable/nutriment)
 		if(N)
 			nutriment_eaten += N.volume
-			to_chat(user, "<span class='notice'>[src] opens up and swallows [O] whole!</span>")
-			qdel(O)
-			playsound(src, 'sound/items/eatfood.ogg', 20, 1)
+			eated += to_eat.name
 		else
-			to_chat(user, "<span class='warning'>[src] burbles unhappily at the offering.</span>")
+			eated_unhappy += to_eat.name
+		QDEL_NULL(to_eat)
+		playsound(src, 'sound/items/eatfood_short.ogg', 20, TRUE)
 		if(nutriment_eaten >= nutriment_required)
 			nutriment_eaten = 0
-			user.visible_message("<span class='notice'>[src] swells up and produces a small pile of cookies!</span>")
-			playsound(src, 'sound/effects/splat.ogg', 40, 1)
+			user.visible_message(span_notice("[src] разбухает и создает небольшую кучку печенья!"))
+			playsound(src, 'sound/effects/splat.ogg', 40, TRUE)
 			last_produced = world.time
 			for(var/i in 1 to cookies)
 				var/obj/item/S = spawncookie()
-				S.pixel_x = rand(-5, 5)
-				S.pixel_y = rand(-5, 5)
-		return
-	..()
+				S.pixel_x = S.base_pixel_x + rand(-5, 5)
+				S.pixel_y = S.base_pixel_y + rand(-5, 5)
+			break
+		else if(tray)
+			to_eat = locate() in tray
+		. = TRUE
+	if(LAZYLEN(eated))
+		to_chat(user, span_notice("[src] поглощает [english_list(eated)]."))
+	if(LAZYLEN(eated_unhappy))
+		to_chat(user, span_notice("[src] грустно булькает, но все равно поглощает [english_list(eated_unhappy)]."))
 
 /obj/item/slimecross/consuming/proc/spawncookie()
 	return new cookietype(get_turf(src))
@@ -62,13 +85,13 @@ Consuming extracts:
 /obj/item/slime_cookie/attack(mob/living/M, mob/user)
 	var/fed = FALSE
 	if(M == user)
-		M.visible_message("<span class='notice'>[user] eats [src]!</span>", "<span class='notice'>You eat [src].</span>")
+		M.visible_message(span_notice("[user] eats [src]!"), span_notice("You eat [src]."))
 		fed = TRUE
 	else
-		M.visible_message("<span class='danger'>[user] tries to force [M] to eat [src]!</span>", "<span class='userdanger'>[user] tries to force you to eat [src]!</span>")
+		M.visible_message(span_danger("[user] tries to force [M] to eat [src]!"), span_userdanger("[user] tries to force you to eat [src]!"))
 		if(do_after(user, 20, target = M))
 			fed = TRUE
-			M.visible_message("<span class='danger'>[user] forces [M] to eat [src]!</span>", "<span class='warning'>[user] forces you to eat [src].</span>")
+			M.visible_message(span_danger("[user] forces [M] to eat [src]!"), span_warning("[user] forces you to eat [src]."))
 	if(fed)
 		to_chat(M, "Tastes like [taste].")
 		playsound(get_turf(M), 'sound/items/eatfood.ogg', 20, 1)
@@ -254,7 +277,7 @@ Consuming extracts:
 
 /obj/item/slime_cookie/cerulean/do_effect(mob/living/M, mob/user)
 	if(prob(50))
-		to_chat(M, "<span class='notice'>A piece of [src] breaks off while you chew, and falls to the ground.</span>")
+		to_chat(M, span_notice("A piece of [src] breaks off while you chew, and falls to the ground."))
 		var/obj/item/slime_cookie/cerulean/C = new(get_turf(M))
 		C.taste = taste + " and a sugar cookie"
 

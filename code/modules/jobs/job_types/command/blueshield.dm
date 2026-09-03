@@ -16,8 +16,7 @@
 	exp_type_department = EXP_TYPE_SECURITY
 	custom_spawn_text = "офицер Синего Щита является представителем сторон отдела по защите Главенствующего Персонала в соответствии приоритету - от <b>секретаря мостика</b> до <b>капитана</b>. Офицер Синего Щита подчиняется <b>ВрИО капитана</b>, <b>капитану</b> и Центральному Командованию."
 	alt_titles = list(
-		"Syndicate Combat Maid", //Синди выше, для удобства
-		"Syndicate Prime-Defender", //Синди выше, для удобства
+		"Prime-Defender",
 		"Blueguard",
 		"Blueshit",
 		"Blueslut",
@@ -37,8 +36,8 @@
 	outfit = /datum/outfit/job/blueshield
 	plasma_outfit = /datum/outfit/plasmaman/blueshield
 
-	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_BLUESHIELD)
-	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_HOS, ACCESS_CE, ACCESS_CMO, ACCESS_QM, ACCESS_RD, ACCESS_BLUESHIELD)
+	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE,ACCESS_BLUESHIELD, ACCESS_PRODUCTION_SECURITY)
+	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_RESEARCH,  ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_MEDICAL, ACCESS_WEAPONS, ACCESS_ENTER_GENPOP, ACCESS_LEAVE_GENPOP, ACCESS_MINERAL_STOREROOM, ACCESS_CARGO, ACCESS_HEADS, ACCESS_MAILSORTING, ACCESS_ENGINE, ACCESS_BLUESHIELD, ACCESS_PRODUCTION_SECURITY)
 	paycheck = PAYCHECK_COMMAND
 	paycheck_department = ACCOUNT_SEC
 
@@ -54,17 +53,17 @@
 	name = "Blueshield"
 	jobtype = /datum/job/blueshield
 
-	belt = /obj/item/pda/security
+	belt = /obj/item/modular_computer/pda/security
 	ears = /obj/item/radio/headset/headset_blueshield
 	uniform = /obj/item/clothing/under/rank/blueshield
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots
 	suit_store = /obj/item/kitchen/knife/combat
 	r_pocket = /obj/item/sensor_device_command
-	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton)
+	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/choice_beacon/blueshied_suit, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton)
 	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
 
 	backpack = /obj/item/storage/backpack/blueshield
@@ -80,22 +79,23 @@
 	name = "Syndicate Blueshield"
 	jobtype = /datum/job/blueshield
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 	ears = /obj/item/radio/headset/headset_blueshield
 	uniform = /obj/item/clothing/under/rank/blueshield
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/kitchen/knife/combat
-	l_pocket = /obj/item/sensor_device_command
-	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/storage/box/blue_shield_hs, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton, /obj/item/syndicate_uplink_high)
+	backpack_contents = list(/obj/item/storage/firstaid/regular, /obj/item/storage/box/death_alert, /obj/item/choice_beacon/blueshied_suit, /obj/item/storage/box/sec_kit,  /obj/item/choice_beacon/hosgun, /obj/item/choice_beacon/bsbaton, /obj/item/syndicate_uplink/station)
+
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo)
+	accessory = list(/obj/item/clothing/accessory/permit/special/blueshield, /obj/item/clothing/accessory/badge/holo, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/blueshield
@@ -144,7 +144,7 @@
 //BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
 ///Subtype of CQC. Only used for the Blueshield.
 /datum/martial_art/cqc/restricted/blueshield
-	name = "Close Quarters Combat, Blueshield Edition"
+	name = "CQC (Blueshield edition)"
 	valid_areas = list(/area/command, /area/command/bridge, /area/command/meeting_room, /area/command/meeting_room/council,
 								/area/command/heads_quarters/captain, /area/command/heads_quarters/ce, /area/command/heads_quarters/ce/private,
 								/area/command/heads_quarters/cmo, /area/command/heads_quarters/cmo/private, /area/command/heads_quarters/hop,

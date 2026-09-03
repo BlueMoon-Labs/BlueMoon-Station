@@ -12,7 +12,7 @@
 	exp_requirements = 60
 	alt_titles = list(
 		"Virologist Intern", //Стажер выше, для удобства
-		"Syndicate Bioweapon Scientist", //Синди выше, для удобства
+		"Bioweapon Scientist",
 		"Biochemist",
 		"Epidemiologist",
 		"Microbiologist",
@@ -26,8 +26,8 @@
 	outfit = /datum/outfit/job/virologist
 	plasma_outfit = /datum/outfit/plasmaman/viro
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_VIROLOGY, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_VIROLOGY, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_VIRO
@@ -55,7 +55,7 @@
 	name = "Virologist"
 	jobtype = /datum/job/virologist
 
-	belt = /obj/item/pda/viro
+	belt = /obj/item/modular_computer/pda/virology
 	ears = /obj/item/radio/headset/headset_med
 	uniform = /obj/item/clothing/under/rank/medical/virologist
 	mask = /obj/item/clothing/mask/surgical
@@ -71,7 +71,7 @@
 	name = "Syndicate Virologist"
 	jobtype = /datum/job/virologist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
@@ -81,9 +81,11 @@
 	suit =  /obj/item/clothing/suit/toggle/labcoat/virologist
 	suit_store =  /obj/item/flashlight/pen
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)

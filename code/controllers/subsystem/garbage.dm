@@ -21,6 +21,15 @@ Note that for any of these tools to work `TESTING` must be defined.
 By using these methods of finding references, you can make your life far, far easier when dealing with `qdel()` failures.
 */
 
+/// Харддел дороже этого (мс) уходит в harddels.log отдельной строкой: именно такие
+/// одиночные del() и рвут тик (в раунде 9847 их было пять по ~169мс).
+#define GC_HARDDEL_LOG_THRESHOLD_MS 10
+/// Дешёвые хардделы копятся и уходят одной сводкой не чаще этого интервала - иначе
+/// поток мелких удалений (те же /datum/gas_mixture) устроил бы лог-шторм.
+#define GC_HARDDEL_LOG_AGGREGATE_INTERVAL (1 MINUTES)
+/// Сколько типов максимум перечислять в сводке по дешёвым хардделам.
+#define GC_HARDDEL_LOG_SUMMARY_MAX_TYPES 25
+
 SUBSYSTEM_DEF(garbage)
 	name = "Garbage"
 	priority = FIRE_PRIORITY_GARBAGE
@@ -113,6 +122,18 @@ SUBSYSTEM_DEF(garbage)
 	var/list/recent_hard_deletes = list()
 	/// Periodic queue depth snapshots. Each entry: list(world.time, depth1, depth2, depth3).
 	var/list/queue_depth_history = list()
+	/// Тип, который прямо сейчас удаляется через del(). Только для чёрного ящика МК, вне HardDelete всегда null.
+	var/hard_deleting_type
+
+	// --- Агрегация дешёвых хардделов для harddels.log ---
+	/// Сколько дешёвых хардделов накопилось с последней сводки.
+	var/harddel_log_pending_count = 0
+	/// Их суммарная стоимость в мс.
+	var/harddel_log_pending_ms = 0
+	/// Их разбивка по типам: строка типа -> count.
+	var/list/harddel_log_pending_types = list()
+	/// world.time последней сводки по дешёвым хардделам (0 = сводок ещё не было).
+	var/harddel_log_last_flush = 0
 	/// Counter for depth sampling — sample every GC_DEPTH_SAMPLE_INTERVAL fires.
 	var/queue_depth_sample_counter = 0
 
@@ -132,16 +153,27 @@ SUBSYSTEM_DEF(garbage)
 	var/list/queue_types
 	var/list/queue_heads
 
-	#ifdef REFERENCE_TRACKING
+	/// Точечные запросы "найти ссылки при фейле": REF-строка -> TRUE.
 	var/list/reference_find_on_fail = list()
-	#ifdef UNIT_TESTS
-	/// Test hook: skip async ref scans while still exercising GC control flow.
+	/// Рантайм-режим авто-сканов ссылок (GC_REFTRACK_*); -1 = ещё не прочитан из конфига.
+	var/reftrack_mode = -1
+	/// world.time последнего авто-скана.
+	var/reftrack_last_autoscan = 0
+	/// Авто-сканов запущено за раунд.
+	var/reftrack_autoscans_this_round = 0
+	/// Авто-сканов по типам за раунд: type string -> count.
+	var/list/reftrack_autoscan_type_counts = list()
+	/// Кэш пробы держателей-мобов: type string -> список реально объявленных "целевых" переменных.
+	var/list/mob_target_var_cache = list()
+	// TESTING builds compile the GC failure viewer branch that reads this hook;
+	// unit tests and Spaceman also need the field even when their define sets differ.
+	#if defined(TESTING) || defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+	/// Diagnostic/test hook: skip async ref scans while still exercising GC control flow.
 	var/test_ref_scan_skip_async = FALSE
 	#endif
 	#ifdef REFERENCE_TRACKING_DEBUG
 	/// Should we save found refs — used for unit testing.
 	var/should_save_refs = FALSE
-	#endif
 	#endif
 
 	#ifdef GC_PROFILER
@@ -203,7 +235,18 @@ SUBSYSTEM_DEF(garbage)
 	msg += "|F:[fail_counts.Join(",")]"
 	return ..()
 
+/datum/controller/subsystem/garbage/last_task()
+	// del() внутри HardDelete - единственное место подсистемы, где мир способен встать
+	// или умереть насовсем, поэтому тип, который сейчас в работе, важнее глубин очередей.
+	if(hard_deleting_type)
+		return "жёсткое удаление [hard_deleting_type]"
+	var/list/depths = list()
+	for(var/queue_index in 1 to GC_QUEUE_COUNT)
+		depths += GetQueueDepth(queue_index)
+	return "очереди сборки [depths.Join("/")]"
+
 /datum/controller/subsystem/garbage/Shutdown()
+	FlushHardDeleteLogSummary()
 	var/list/dellog = list()
 
 	sortTim(items, cmp=GLOBAL_PROC_REF(cmp_qdel_item_time), associative = TRUE)
@@ -253,6 +296,11 @@ SUBSYSTEM_DEF(garbage)
 	var/list/profiler_pass_snap = pass_counts.Copy()
 	var/list/profiler_fail_snap = fail_counts.Copy()
 	#endif
+
+	// Рантайм внутри del() уносит стек мимо строки, которая гасит hard_deleting_type, и
+	// last_task() до конца раунда рапортовал бы о жёстком удалении, которого давно нет.
+	// Снимаем метку здесь: к следующему проходу подсистема заведомо не внутри del().
+	hard_deleting_type = null
 
 	// Reset per-tick counters at the start of softcheck processing.
 	delslasttick = 0
@@ -550,10 +598,10 @@ SUBSYSTEM_DEF(garbage)
 		leak_rate_fail_accumulator = 0
 		leak_rate_fires = 0
 
-/datum/controller/subsystem/garbage/proc/PushRecentFailure(type_path, level, hint)
+/datum/controller/subsystem/garbage/proc/PushRecentFailure(type_path, level, hint, external_refs = -1)
 	if (length(recent_failures) >= GC_FAILURE_RING_SIZE)
 		recent_failures.Cut(1, 2)
-	recent_failures += list(list(world.time, "[type_path]", level, hint))
+	recent_failures += list(list(world.time, "[type_path]", level, hint, external_refs))
 
 /datum/controller/subsystem/garbage/proc/PushWarnfailTime(datum/qdel_item/I)
 	if (!I.failure_times)
@@ -705,9 +753,7 @@ SUBSYSTEM_DEF(garbage)
 			gcedlasttick++
 			totalgcs++
 			pass_counts[level]++
-			#ifdef REFERENCE_TRACKING
 			reference_find_on_fail -= refID
-			#endif
 		else
 			if (hd_level_start)
 				hd_count++
@@ -744,11 +790,13 @@ SUBSYSTEM_DEF(garbage)
 	. = FALSE
 	var/type = D.type
 	var/datum/qdel_item/I = GetOrCreateItem(type)
+	// D держат локаль HandleLevel и наш аргумент; остальное - внешние держатели.
+	var/external_refs = max(refcount(D) - GC_FAIL_PATH_INTERNAL_REFS, 0)
 
 	switch (level)
 		if (GC_QUEUE_SOFTCHECK)
 			I.failures++
-			PushRecentFailure(type, GC_QUEUE_SOFTCHECK, hint)
+			PushRecentFailure(type, GC_QUEUE_SOFTCHECK, hint, external_refs)
 
 			var/extra_name = ""
 			if (isatom(D))
@@ -770,28 +818,18 @@ SUBSYSTEM_DEF(garbage)
 				I.softfail_alert_failures++
 				gc_notify_opted_admins("GC softcheck alert: [type][extra_name] не собрался за [GC_SOFTCHECK_TIMEOUT / 10]с")
 
-			// Fast ref scan if admin-requested for this type
-			#ifdef REFERENCE_TRACKING
-			var/should_scan_refs = FALSE
+			// Точечные запросы (qdel_and_find_ref_if_fail, IFFAIL_FINDREFERENCE) работают в любом режиме.
 			var/should_yield_for_scan = FALSE
-			// Type-wide fast reftrack is a diagnostic aid; do not stall the whole GC pass for it.
-			if (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK)
-				should_scan_refs = TRUE
 			if (reference_find_on_fail[refID])
-				should_scan_refs = TRUE
-				should_yield_for_scan = TRUE
+				// Запись снимается всегда: BYOND переиспользует ref-строки, и застрявший
+				// ключ SKIP_REFSCAN-типа позже запустил бы скан по чужому датуму.
 				reference_find_on_fail -= refID
-			#ifdef GC_FAILURE_HARD_LOOKUP
-			else
-				should_scan_refs = TRUE
-				should_yield_for_scan = TRUE
-			#endif
-			if (I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN)
-				should_scan_refs = FALSE
-				should_yield_for_scan = FALSE
-			if (should_scan_refs)
-				ScheduleReferenceScan(D)
-			#endif
+				if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+					should_yield_for_scan = TRUE
+					ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
+			// Type-wide fast reftrack is a diagnostic aid; do not stall the whole GC pass for it.
+			else if (GetReftrackMode() != GC_REFTRACK_OFF && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) && !(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+				TryAutoScan(D, external_refs)
 
 			if (hint == QDEL_HINT_QUEUE_THEN_HARDDEL)
 				// Skip warnfail stage — no log_world, no admin notifications, no gc_failure_cache.
@@ -799,24 +837,36 @@ SUBSYSTEM_DEF(garbage)
 			else
 				Queue(D, GC_QUEUE_WARNFAIL, hint, origin_time)
 
-			#ifdef REFERENCE_TRACKING
 			if (should_yield_for_scan)
 				return TRUE
-			#endif
 
 		if (GC_QUEUE_WARNFAIL)
 			I.warnfail_count++
 			PushWarnfailTime(I)
 			leak_rate_fail_accumulator++
-			PushRecentFailure(type, GC_QUEUE_WARNFAIL, hint)
+			PushRecentFailure(type, GC_QUEUE_WARNFAIL, hint, external_refs)
 			var/extra_name = ""
 			if (isatom(D))
 				var/atom/A = D
 				extra_name = " \"[A.name]\""
-			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с) --")
-			gc_notify_opted_admins("GC утечка: [type][extra_name] — [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с")
-			GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint)
+			var/prompt_note = ""
+			if (ismob(D))
+				var/mob/leaked_mob = D
+				if (leaked_mob.pending_native_prompts > 0)
+					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
+			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D)]) --")
+			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
+			var/datum/gc_failure_viewer/gc_failure_entry/logged_failure = GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
+			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).
+			var/reftrack_mode_now = GetReftrackMode()
+			if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) && (reftrack_mode_now == GC_REFTRACK_ALL || (reftrack_mode_now == GC_REFTRACK_FLAGGED && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK))))
+				TryAutoScan(D, external_refs)
 			Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
+			// Queue() advances gc_destroyed to the harddelete-stage timestamp.
+			// Keep the viewer's identity marker in sync so its on-demand refscan
+			// can still resolve this exact datum without accepting a reused ref.
+			if(logged_failure)
+				logged_failure.target_gc_destroyed = D.gc_destroyed
 
 		if (GC_QUEUE_HARDDELETE)
 			if (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG)
@@ -934,7 +984,9 @@ SUBSYSTEM_DEF(garbage)
 	var/refID = "\ref[D]"
 
 	var/tick_usage = TICK_USAGE
+	hard_deleting_type = type
 	del(D)
+	hard_deleting_type = null
 	tick_usage = TICK_USAGE_TO_MS(tick_usage)
 
 	var/datum/qdel_item/I = GetOrCreateItem(type)
@@ -958,6 +1010,8 @@ SUBSYSTEM_DEF(garbage)
 		recent_hard_deletes.Cut(1, 2)
 	recent_hard_deletes += list(list(world.time, "[type]", round(tick_usage, 0.1)))
 
+	LogHardDelete("[type]", tick_usage)
+
 	var/time = MS2DS(tick_usage)
 	if (time > 0.1 SECONDS)
 		postpone(time)
@@ -972,6 +1026,50 @@ SUBSYSTEM_DEF(garbage)
 		if (overrun_limit && I.hard_deletes_over_threshold >= overrun_limit)
 			I.qdel_flags |= QDEL_ITEM_SUSPENDED_FOR_LAG
 
+/**
+ * Пишет харддел в harddels.log.
+ *
+ * До этого в файл писал только рефтрекер, и при выключенном gc_reftrack_mode он за
+ * весь раунд оставался пустым - в раунде 9847 при пяти хардделах по ~169мс там не было
+ * ни строчки, и связать спайк в слоте Garbage с конкретным типом было нечем.
+ *
+ * Дорогие (от GC_HARDDEL_LOG_THRESHOLD_MS) пишутся поимённо и сразу - это они рвут тик.
+ * Дешёвые копятся и уходят одной сводкой, чтобы поток мелких удалений не залил лог.
+ */
+/datum/controller/subsystem/garbage/proc/LogHardDelete(type_string, cost_ms)
+	if (cost_ms >= GC_HARDDEL_LOG_THRESHOLD_MS)
+		log_harddel("## HARD DELETE [type_string]: [round(cost_ms, 0.1)]мс, очередь харддела: [GetQueueDepth(GC_QUEUE_HARDDELETE)]")
+		return
+
+	harddel_log_pending_count++
+	harddel_log_pending_ms += cost_ms
+	harddel_log_pending_types[type_string] += 1
+	// Первый дешёвый харддел раунда только заводит окно: сводить нечего.
+	if (!harddel_log_last_flush)
+		harddel_log_last_flush = world.time
+		return
+	if (world.time - harddel_log_last_flush < GC_HARDDEL_LOG_AGGREGATE_INTERVAL)
+		return
+	FlushHardDeleteLogSummary()
+
+/// Сбрасывает накопленную сводку по дешёвым хардделам в harddels.log.
+/datum/controller/subsystem/garbage/proc/FlushHardDeleteLogSummary()
+	harddel_log_last_flush = world.time
+	if (!harddel_log_pending_count)
+		return
+	var/list/parts = list()
+	var/skipped_types = 0
+	for (var/type_string in harddel_log_pending_types)
+		if (length(parts) >= GC_HARDDEL_LOG_SUMMARY_MAX_TYPES)
+			skipped_types++
+			continue
+		parts += "[type_string] x[harddel_log_pending_types[type_string]]"
+	var/tail = skipped_types ? " (и ещё [skipped_types] типов)" : ""
+	log_harddel("## HARD DELETE сводка (дешевле [GC_HARDDEL_LOG_THRESHOLD_MS]мс): [harddel_log_pending_count] шт на [round(harddel_log_pending_ms, 0.1)]мс | [parts.Join(", ")][tail]")
+	harddel_log_pending_count = 0
+	harddel_log_pending_ms = 0
+	harddel_log_pending_types = list()
+
 /// Sends a GC notification message only to admins who have opted into leak notifications.
 /datum/controller/subsystem/garbage/proc/gc_notify_opted_admins(msg)
 	for (var/c in GLOB.admins)
@@ -982,15 +1080,215 @@ SUBSYSTEM_DEF(garbage)
 			continue
 		to_chat(admin, "<span class='warning'>[msg]</span>")
 
+/**
+ * Дешёвый контекст-снапшот для строки warnfail: только прямые улики без ref-сканов.
+ * Ловит самые частые классы держателей: не вынутый из loc/vis_contents предмет,
+ * экран, оставшийся в client.screen живого клиента, живые таймеры с колбеком на датум,
+ * забытый STOP_PROCESSING, бакл-связки мобов. Зовётся только на редких warnfail'ах -
+ * стоимость не влияет на тик.
+ */
+/datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D)
+	var/list/notes = list()
+	if (length(D.active_timers))
+		var/datum/timedevent/first_timer = D.active_timers[1]
+		var/timer_desc = istype(first_timer) && first_timer.callBack ? "[first_timer.callBack.delegate]" : "?"
+		notes += "таймеров на датуме: [length(D.active_timers)] (первый: [timer_desc])"
+	if (D.datum_flags & DF_ISPROCESSING)
+		notes += "DF_ISPROCESSING всё ещё стоит"
+	// datum/Destroy сам снимает все подписки - непустой signal_procs ПОСЛЕ Destroy
+	// означает регистрацию после qdel; цели этих подписок держат датум в comp_lookup.
+	// Гейт по gc_destroyed: у живого датума подписки штатны и уликой не являются.
+	if (D.gc_destroyed && length(D.signal_procs))
+		var/datum/first_signal_target = D.signal_procs[1]
+		notes += "сигналы не сняты с [length(D.signal_procs)] целей (первая: [istype(first_signal_target) ? "[first_signal_target.type]" : "?"])"
+	if (ismovable(D))
+		var/atom/movable/movable = D
+		if (movable.loc)
+			var/loc_desc = "[movable.loc.type]"
+			var/atom/outer = movable.loc.loc
+			if (outer)
+				loc_desc += " -> [outer.type]"
+			notes += "всё ещё в loc: [loc_desc]"
+		if (length(movable.vis_locs))
+			var/atom/vis_holder = movable.vis_locs[1]
+			notes += "в vis_contents у [vis_holder.type] ([length(movable.vis_locs)] держателей)"
+		if (movable.orbiting)
+			var/atom/orbit_parent = movable.orbiting.parent
+			notes += "орбитит [orbit_parent ? "[orbit_parent.type]" : "?"]"
+		if (istype(movable, /atom/movable/screen))
+			for (var/client/candidate in GLOB.clients)
+				if (movable in candidate.screen)
+					notes += "в client.screen у [candidate.ckey]"
+					break
+	if (ismob(D))
+		var/mob/leaked_mob = D
+		if (leaked_mob.client)
+			notes += "клиент ещё привязан: [leaked_mob.client.ckey]"
+		// Именно mind.current -> моб: обратная ссылка пинит. Сам mob.mind после
+		// Destroy штатно не чистится и держателем не является (ложная улика 9746).
+		if (leaked_mob.mind?.current == leaked_mob)
+			notes += "mind.current всё ещё указывает на моба"
+		if (leaked_mob.buckled)
+			notes += "бакнут к [leaked_mob.buckled.type]"
+		if (length(leaked_mob.buckled_mobs))
+			var/mob/living/rider = leaked_mob.buckled_mobs[1]
+			notes += "на нём бакл: [rider.type]"
+		notes += collect_ai_blackboard_holders(leaked_mob)
+	// Прямая ссылка из переменной ДРУГОГО моба - самый частый держатель мобов на
+	// ксенобио-ферме и самый незаметный: полный ref-скан на проде выключен, а ни
+	// одна проба выше в чужие мобы не смотрит. Дёшево (см. collect_mob_target_holders),
+	// но всё равно ищем только там, где остальные улики промолчали.
+	if (!length(notes) && ismob(D))
+		notes += collect_mob_target_holders(D)
+	// Клиентские структуры (images, screen, seen_messages, eye) - не датумы, и полный
+	// ref-скан мира их не видит в принципе.
+	//
+	// Идёт ПОСЛЕДНИМ и только когда все проверки выше промолчали. Проб не бесплатный:
+	// он обходит client.images каждого клиента вручную, а с рунечатом это сотни image
+	// на клиента при сотне с лишним клиентов - и всё это без уступки тика (yield = FALSE
+	// обязателен, проб работает внутри обхода очереди сборки). В раунде 10146 SSgarbage
+	// уже давал прогоны по 405 мс, добавлять ему такой обход на КАЖДЫЙ warnfail нельзя.
+	//
+	// Гейт ничего не теряет: улика ищется ровно там, где остальные ничего не нашли, а
+	// warnfail с уже названным держателем в ней не нуждается.
+	if (!length(notes))
+		var/list/client_hits = find_client_references(D, quiet = TRUE, yield = FALSE)
+		if (length(client_hits))
+			notes += "клиентские держатели ([length(client_hits)]): [client_hits[1]]"
+	if (!length(notes))
+		return ""
+	return "; улики: [notes.Join(", ")]"
+
+/**
+ * Ищет утёкшего моба в блэкбордах живых AI-контроллеров.
+ *
+ * Прод-раунд 10146: 25 легион-брудов и 10 clocktank/weak ушли в hard delete с
+ * "внешних ссылок: 1/2" и пустым списком улик, а по attack.log видно, что дрались
+ * они ДРУГ С ДРУГОМ - то есть первый подозреваемый в держателях это контроллер
+ * противника. Ключи блэкборда снимаются только сигналом qdel цели, так что
+ * уцелевший ключ не виден ни одной из прежних проверок.
+ *
+ * Обход идёт по бакетам статусов (GLOB.ai_controllers_by_status), а не по всем
+ * мобам мира, и останавливается на первой находке: warnfail'ов десятки за раунд,
+ * лишнего тика это стоить не должно.
+ */
+/datum/controller/subsystem/garbage/proc/collect_ai_blackboard_holders(mob/leaked_mob)
+	for (var/status in GLOB.ai_controllers_by_status)
+		for (var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_status[status])
+			if (QDELETED(controller) || controller.pawn == leaked_mob)
+				continue
+			for (var/key in controller.blackboard)
+				if (controller.blackboard[key] != leaked_mob)
+					continue
+				return list("держит блэкборд [controller.type] (паун [controller.pawn?.type || "null"]), ключ [key]")
+	return list()
+
+/// "Целевые" переменные мобов - те, что держат ДРУГОГО моба и чистятся только
+/// собственным AI-тиком владельца. Список закрытый и короткий: проба обязана
+/// оставаться дешёвой, а полный обход vars - это уже ref-скан.
+GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
+	"target",           //monkey/combat.dm, hostile/simple_animal
+	"Target",           //slime
+	"Leader",           //slime
+	"movement_target",  //cat
+	"parrot_interest",  //parrot
+	"parrot_perch",     //parrot
+	"pulling",
+	"pulledby",
+	"riding_target",
+))
+
+/**
+ * Ищет утёкшего моба в "целевых" переменных других живых мобов.
+ *
+ * Прод-раунд 10151: 126 обезьян, 123 слайма, 5 мышей и 8 людей ушли в hard delete
+ * с "внешних ссылок: 1" и ПУСТЫМ списком улик. Держатель этого класса - обычная
+ * переменная соседнего моба (`monkey.target`, `slime.Target`/`Leader`,
+ * `cat.movement_target`, `parrot.parrot_interest`), которую чистит только
+ * собственный AI-тик держателя. Спящий держатель (рядом нет игрока, моб мёртв,
+ * контроллер в IDLE) не тикает вообще, и удалённая цель висит в нём до конца
+ * раунда. Ни блэкборд-проб, ни проверки loc/buckled/mind сюда не смотрят, а
+ * авто-скан ссылок на проде выключен - warnfail печатал пустую строку улик.
+ *
+ * Цена: один проход по GLOB.mob_living_list с парой чтений vars на моба
+ * (набор существующих имён кэшируется по типу), останов на первой находке.
+ *
+ * Ограничение: держатель, сам провалившийся в GC, из GLOB.mob_living_list уже
+ * выписан - взаимная пара двух удалённых мобов этой пробой не ловится.
+ */
+/datum/controller/subsystem/garbage/proc/collect_mob_target_holders(mob/leaked_mob)
+	for (var/mob/living/candidate as anything in GLOB.mob_living_list)
+		if (isnull(candidate) || candidate == leaked_mob)
+			continue
+		var/list/candidate_vars = candidate.vars
+		for (var/var_name in GetMobTargetVarNames(candidate))
+			if (candidate_vars[var_name] != leaked_mob)
+				continue
+			return list("держит [candidate.type] [text_ref(candidate)], вар [var_name]")
+	return list()
+
+/// Какие из GLOB.gc_mob_target_var_names реально объявлены у этого типа мобов.
+/// Кэш по типпасу: `"имя" in vars` - линейный поиск по трёмстам переменным, и без
+/// кэша проба стоила бы сотни тысяч сравнений строк на каждый warnfail.
+/datum/controller/subsystem/garbage/proc/GetMobTargetVarNames(mob/candidate)
+	var/type_key = "[candidate.type]"
+	var/list/cached = mob_target_var_cache[type_key]
+	if (!isnull(cached))
+		return cached
+	cached = list()
+	var/list/candidate_vars = candidate.vars
+	for (var/var_name in GLOB.gc_mob_target_var_names)
+		if (var_name in candidate_vars)
+			cached += var_name
+	mob_target_var_cache[type_key] = cached
+	return cached
+
 /// Schedules a reference scan for a GC-failed datum.
-#ifdef REFERENCE_TRACKING
-/datum/controller/subsystem/garbage/proc/ScheduleReferenceScan(datum/D)
+/// references_to_clear ограничивает поиск числом реально оставшихся ссылок (ранний выход).
+/datum/controller/subsystem/garbage/proc/ScheduleReferenceScan(datum/D, references_to_clear = INFINITY)
 	#ifdef UNIT_TESTS
 	if (test_ref_scan_skip_async)
 		return
 	#endif
-	INVOKE_ASYNC(D, TYPE_PROC_REF(/datum, find_references))
-#endif
+	INVOKE_ASYNC(D, TYPE_PROC_REF(/datum, find_references), references_to_clear, TRUE)
+
+/// Текущий режим авто-сканов; первый вызов читает дефолт из конфига.
+/datum/controller/subsystem/garbage/proc/GetReftrackMode()
+	if (reftrack_mode < 0)
+		var/value = CONFIG_GET(number/gc_reftrack_mode)
+		reftrack_mode = isnum(value) ? clamp(round(value), GC_REFTRACK_OFF, GC_REFTRACK_ALL) : GC_REFTRACK_OFF
+	return reftrack_mode
+
+/// Разрешён ли сейчас авто-скан для этого типа (анти-шторм).
+/datum/controller/subsystem/garbage/proc/CanAutoScan(type_string)
+	var/cooldown_seconds = CONFIG_GET(number/gc_reftrack_autoscan_cooldown_seconds)
+	if (!isnum(cooldown_seconds) || cooldown_seconds < 0)
+		cooldown_seconds = GC_REFTRACK_AUTOSCAN_COOLDOWN / 10
+	if (reftrack_last_autoscan && world.time - reftrack_last_autoscan < cooldown_seconds SECONDS)
+		return FALSE
+	var/max_per_round = CONFIG_GET(number/gc_reftrack_autoscan_max_per_round)
+	if (!isnum(max_per_round) || max_per_round < 0)
+		max_per_round = GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND
+	if (reftrack_autoscans_this_round >= max_per_round)
+		return FALSE
+	if (reftrack_autoscan_type_counts[type_string] >= GC_REFTRACK_AUTOSCAN_MAX_PER_TYPE)
+		return FALSE
+	return TRUE
+
+/// Запускает авто-скан ссылок, если позволяет анти-шторм. TRUE = запущен.
+/datum/controller/subsystem/garbage/proc/TryAutoScan(datum/D, external_refs)
+	// Объект без внешних держателей уже может собраться сам после возврата из GC-прохода.
+	if (external_refs <= 0)
+		return FALSE
+	var/type_string = "[D.type]"
+	if (!CanAutoScan(type_string))
+		return FALSE
+	reftrack_last_autoscan = world.time
+	reftrack_autoscans_this_round++
+	reftrack_autoscan_type_counts[type_string] += 1
+	log_reftracker("АВТО-СКАН #[reftrack_autoscans_this_round]: [type_string] [text_ref(D)], внешних ссылок: [external_refs]")
+	ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
+	return TRUE
 
 /// Returns the qdel_item datum for a type path or type-path string, or null if none exists yet.
 /datum/controller/subsystem/garbage/proc/GetItem(type_path)
@@ -1131,14 +1429,14 @@ SUBSYSTEM_DEF(garbage)
 				SSgarbage.Queue(D, GC_QUEUE_SOFTCHECK, qdel_hint = hint)
 			if (QDEL_HINT_QUEUE_THEN_HARDDEL)
 				SSgarbage.Queue(D, qdel_hint = hint)
-			#ifdef REFERENCE_TRACKING
 			if (QDEL_HINT_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
-				D.find_references()
+				// Только асинхронно: qdel зовётся из не-спящих контекстов (Initialize и далее),
+				// а find_references спит (CHECK_TICK) на протяжении всего обхода мира.
+				SSgarbage.ScheduleReferenceScan(D)
 			if (QDEL_HINT_IFFAIL_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
 				SSgarbage.reference_find_on_fail[REF(D)] = TRUE
-			#endif
 			else
 				#ifdef TESTING
 				if (!I.no_hint)
@@ -1190,3 +1488,7 @@ SUBSYSTEM_DEF(garbage)
 		rustg_log_write("data/logs/gc_profiler_types.csv", "[row]\n", "false")
 
 #endif // GC_PROFILER
+
+#undef GC_HARDDEL_LOG_THRESHOLD_MS
+#undef GC_HARDDEL_LOG_AGGREGATE_INTERVAL
+#undef GC_HARDDEL_LOG_SUMMARY_MAX_TYPES

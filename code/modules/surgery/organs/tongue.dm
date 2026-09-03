@@ -57,8 +57,9 @@
 		/datum/language/mushroom, // BLUEMOON ADD - язык гриболюдов
 		/datum/language/terrorspiders, // BLUEMOON ADD - язык террор-пауков 
 		/datum/language/xenocommon, // BLUEMOON ADD - ксенокоммон 
-		/datum/language/drone, // BLUEMOON ADD - язык дронов 
-		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров 
+		/datum/language/drone, // BLUEMOON ADD - язык дронов
+		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров
+		/datum/language/rootsong, // BLUEMOON ADD - язык дион
 	))
 	healing_factor = STANDARD_ORGAN_HEALING*5 //Fast!!
 	decay_factor = STANDARD_ORGAN_DECAY/2
@@ -153,6 +154,11 @@
 	taste_sensitivity = 25 // you eat vomit, this is a mercy
 	maxHealth = 80 //years of eatting trash has made your tongue strong
 	initial_accents = list(/datum/accent/fly)
+
+//fly tongue has initial_accents, so handle_speech fires - style insect chittering
+/obj/item/organ/tongue/fly/handle_speech(datum/source, list/speech_args)
+	speech_args[SPEECH_SPANS] |= SPAN_CHITVOICE
+	..()
 
 /obj/item/organ/tongue/abductor
 	name = "superlingual matrix"

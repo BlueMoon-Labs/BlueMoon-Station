@@ -38,9 +38,10 @@
 /obj/machinery/computer/telescience/Initialize(mapload)
 	recalibrate()
 	. = ..()
+	if(mapload)
+		crystals = starting_crystals
 
 /obj/machinery/computer/telescience/Destroy()
-	eject()
 	if(inserted_gps)
 		inserted_gps.loc = loc
 		inserted_gps = null
@@ -49,11 +50,6 @@
 /obj/machinery/computer/telescience/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>There are [crystals ? crystals : "no"] bluespace crystal\s in the crystal slots.</span>"
-
-/obj/machinery/computer/telescience/Initialize(mapload)
-	. = ..()
-	if(mapload)
-		crystals = starting_crystals
 
 /obj/machinery/computer/telescience/attack_paw(mob/user)
 	to_chat(user, "<span class='warning'>You are too primitive to use this computer!</span>")

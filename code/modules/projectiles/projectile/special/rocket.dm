@@ -2,6 +2,7 @@
 	name ="explosive bolt"
 	icon_state= "bolter"
 	damage = 50
+	armour_penetration = BULLET_BR2   // BLUEMOON ADD
 
 /obj/item/projectile/bullet/gyro/on_hit(atom/target, blocked = FALSE)
 	..()
@@ -13,18 +14,18 @@
 	name = "\improper HE rocket"
 	desc = "Boom."
 	icon_state= "missile"
-	damage = 60
+	damage = 75
+	armour_penetration = BULLET_BR5   // BLUEMOON ADD: ракета = BR5
 	sharpness = NONE
 	shrapnel_type = null
 	ricochets_max = 0
 	/// Whether we do extra damage when hitting a mech or silicon
-	var/anti_armour_damage = 150
+	var/anti_armour_damage = 75
 	/// Whether the rocket is capable of instantly killing a living target
-	var/random_crits_enabled = TRUE // Worst thing Valve ever added
 
 /obj/item/projectile/bullet/a84mm/on_hit(atom/target, blocked = 0, pierce_hit)
 	var/random_crit_gib = FALSE
-	if(isliving(target) && prob(5) && random_crits_enabled)
+	if(isliving(target) && prob(5))
 		var/mob/living/gibbed_dude = target
 		// if(gibbed_dude.stat < UNCONSCIOUS)
 		gibbed_dude.say("ЭТО ЁБАННАЯ РАКЕТ-", forced = "hit by rocket")
@@ -57,10 +58,10 @@ among other potential differences. This granularity is helpful for things like t
 	name = "\improper HEAP rocket"
 	desc = "I am become death."
 	icon_state = "84mm-heap"
-	damage = 120
+	damage = 125
 	armour_penetration = 100
 	dismemberment = 100
-	anti_armour_damage = 50
+	anti_armour_damage = 25
 
 /obj/item/projectile/bullet/a84mm/he/do_boom(atom/target, blocked=0)
 	explosion(target, devastation_range = -1, heavy_impact_range = 1, light_impact_range = 3, flame_range = 4, flash_range = 1, adminlog = FALSE)
@@ -69,9 +70,10 @@ among other potential differences. This granularity is helpful for things like t
 	name ="\improper HE missile"
 	desc = "Boom."
 	icon_state = "missile"
-	damage = 60
+	damage = 50
+	armour_penetration = BULLET_BR5   // BLUEMOON ADD
 	dismemberment = 50
-	anti_armour_damage = 100
+	anti_armour_damage = 50
 
 /obj/item/projectile/bullet/a84mm/br/on_hit(atom/target, blocked=0)
 	..()

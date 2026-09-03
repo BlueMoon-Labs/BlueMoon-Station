@@ -2,8 +2,10 @@
 	var/list/genital_slot = list()
 	var/obj/item/organ/genital/holder_genital
 	var/list/datum/callback/procs_list = list()
+	/// Предмет не виден при поверхностном осмотре персонажа.
+	var/hidden_inside_flag = FALSE
 
-/datum/component/genital_equipment/Initialize(list/slot, list/procs)
+/datum/component/genital_equipment/Initialize(list/slot, list/procs, hidden_inside = FALSE)
 	if(!slot)
 		return COMPONENT_INCOMPATIBLE
 
@@ -13,6 +15,7 @@
 		genital_slot = slot
 	else
 		LAZYADD(genital_slot, slot)
+	hidden_inside_flag = hidden_inside
 
 /datum/component/genital_equipment/proc/get_wearer()
 	if(!holder_genital)
@@ -51,8 +54,7 @@
 
 	holder_genital = null
 
-	if(!user.put_in_hands(parent))
-		user.transferItemToLoc(get_turf(user))
+	user.put_in_hands(parent)
 
 	var/datum/callback/after_remove = LAZYACCESS(procs_list, "after_removing")
 	after_remove?.Invoke(parent, G, user)

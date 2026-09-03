@@ -9,6 +9,8 @@
 	treatable_by = list(/obj/item/stack/medical/suture)
 	treatable_by_grabbed = list(/obj/item/gun/energy/laser)
 	treatable_tool = TOOL_CAUTERY
+	// BLUEMOON ADD - порезы можно зажимать гемостатом
+	also_treatable_tools = list(TOOL_HEMOSTAT)
 	base_treat_time = 3 SECONDS
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE)
 
@@ -81,7 +83,7 @@
 
 /datum/wound/slash/receive_damage(wounding_type, wounding_dmg, wound_bonus)
 	if(victim.stat != DEAD && wounding_type == WOUND_SLASH) // can't stab dead bodies to make it bleed faster this way
-		blood_flow += 0.05 * wounding_dmg
+		blood_flow += 0.08 * wounding_dmg
 
 /datum/wound/slash/drag_bleed_amount()
 	// say we have 3 severe cuts with 3 blood flow each, pretty reasonable
@@ -94,8 +96,13 @@
 
 	return bleed_amt
 
+// BLUEMOON ADD START - свежая повязка глушит истечение крови из порезов
+/datum/wound/slash/is_bleed_suppressed()
+	return limb && limb.current_gauze && limb.current_gauze.absorption_capacity > 0
+// BLUEMOON ADD END
+
 /datum/wound/slash/handle_process()
-	if(victim.stat == DEAD)
+	if(victim_appears_dead())
 		blood_flow -= max(clot_rate, WOUND_SLASH_DEAD_CLOT_MIN)
 		if(blood_flow < minimum_flow)
 			if(demotes_to)
@@ -103,19 +110,37 @@
 				return
 			qdel(src)
 			return
+		// Ветка трупа обязана выходить сама. Без этого return управление проваливалось
+		// в "живую" логику ниже: тело сворачивало кровь дважды за тик, зря изнашивало
+		// бинт, реагировало на гепарин и писало мёртвому игроку "ваша рука перестала
+		// истекать кровью". У апстрима этот выход есть.
+		if(limb)
+			limb.update_part_wound_overlay()
+		return
 
 	blood_flow = min(blood_flow, WOUND_SLASH_MAX_BLOODFLOW)
 
 	if(victim.reagents?.has_reagent(/datum/reagent/toxin/heparin))
 		blood_flow += 0.5 // old herapin used to just add +2 bleed stacks per tick, this adds 0.5 bleed flow to all open cuts which is probably even stronger as long as you can cut them first
 
-	if(limb.current_gauze)
+	// BLUEMOON EDIT START - повязка глушит кровопотерю, а не сворачивает рану.
+	// Раньше бинт лишь понемногу снижал blood_flow (absorption_rate), и всё это время
+	// рана продолжала минусовать кровь на полную мощность. Теперь кровь не течёт,
+	// пока у повязки есть ресурс, но сама рана никуда не девается: неглубокие порезы
+	// (clot_rate > 0) затягиваются под ней естественным путём, а критические
+	// (артериальные, clot_rate < 0) замирают и возобновляются, когда бинт пропитается
+	// или его снимут.
+	var/fresh_gauze = limb.current_gauze && limb.current_gauze.absorption_capacity > 0
+	if(fresh_gauze)
+		limb.seep_gauze(limb.current_gauze.absorption_rate)
 		if(clot_rate > 0)
 			blood_flow -= clot_rate
-		blood_flow -= limb.current_gauze.absorption_rate
-		limb.seep_gauze(limb.current_gauze.absorption_rate)
+	else if(limb.current_gauze)
+		limb.seep_gauze(limb.current_gauze.absorption_rate) // пропитавшийся бинт донашивается, но уже не держит кровь
+		blood_flow -= clot_rate
 	else
 		blood_flow -= clot_rate
+	// BLUEMOON EDIT END
 
 	if(blood_flow > highest_flow)
 		highest_flow = blood_flow
@@ -123,10 +148,14 @@
 	if(blood_flow < minimum_flow)
 		if(demotes_to)
 			replace_wound(demotes_to)
+			return
 		else
 			to_chat(victim, "<span class='green'>Ваша [limb.ru_name] перестала истекать [HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкость" : "кровью"] из-за порезов!</span>") // BLUEMOON EDIT - добавлена проверка для роботов
 			qdel(src)
+			return
 
+	if(limb)
+		limb.update_part_wound_overlay()
 
 /datum/wound/slash/on_stasis()
 	if(blood_flow >= minimum_flow)
@@ -143,11 +172,12 @@
 		return TRUE
 
 /datum/wound/slash/treat(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+	if(!check_armor_for_treatment(I, user))
 		return
 	if(istype(I, /obj/item/gun/energy/laser))
 		las_cauterize(I, user)
+	else if(I.tool_behaviour == TOOL_HEMOSTAT) // BLUEMOON ADD - зажим сосудов
+		clamp_bleeder(I, user)
 	else if(I.tool_behaviour == TOOL_CAUTERY || I.get_temperature() > 300)
 		tool_cauterize(I, user)
 	else if(istype(I, /obj/item/stack/medical/suture))
@@ -242,13 +272,41 @@
 		limb.receive_damage(burn = 2 + severity, wound_bonus = CANT_WOUND)
 		if(prob(30))
 			victim.emote("scream")
-	var/blood_cauterized = (0.6 / self_penalty_mult)
+	// BLUEMOON EDIT - эффект за один подход поднят с 0.6: у критического пореза пул потока
+	// 3.35 против порога 2.5, и раньше требовалось 3-5 успешных подходов ПОДРЯД (каждый
+	// легко прервать), что выглядело как череда неудач
+	var/blood_cauterized = (1 / self_penalty_mult)
 	blood_flow -= blood_cauterized
 
 	if(blood_flow > minimum_flow)
 		try_treating(I, user)
 	else if(demotes_to)
 		to_chat(user, "<span class='green'>Вы успешно снижаете тяжесть порезов [user == victim ? "на вашей [limb.ru_name_v]" : "на [limb.ru_name_v] персонажа [victim]"].</span>")
+
+// BLUEMOON ADD START - зажим кровоточащих сосудов гемостатом
+/// Если кто-то пережимает сосуды в порезе гемостатом. Сильнее прижигания за подход,
+/// вместо ожога давит ткани, но требует хирургического инструмента и времени.
+/datum/wound/slash/proc/clamp_bleeder(obj/item/I, mob/user)
+	if(HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
+		to_chat(user, "Это не поможет, это же робот!")
+		return
+
+	var/self_penalty_mult = (user == victim ? 1.4 : 1)
+	user.visible_message("<span class='notice'>[user] пытается зажать сосуды на [limb.ru_name_v] персонажа [victim] с помощью [I]...</span>", "<span class='notice'>Вы пытаетесь зажать сосуды [user == victim ? "на своей [limb.ru_name_v]" : "на [limb.ru_name_v] персонажа [victim]"] с помощью [I]...</span>")
+
+	if(!do_after(user, base_treat_time * 1.5 * self_penalty_mult, target=victim, extra_checks = CALLBACK(src, PROC_REF(still_exists))))
+		return
+
+	user.visible_message("<span class='green'>[user] зажимает сосуды в ране персонажа [victim].</span>", "<span class='green'>Вы зажимаете сосуды [user == victim ? "в своей конечности" : "в конечности персонажа [victim]"].</span>")
+	limb.receive_damage(brute = 1 + severity, wound_bonus = CANT_WOUND) // бранши давят ткани
+	var/blood_clamped = (1.25 / self_penalty_mult)
+	blood_flow -= blood_clamped
+
+	if(blood_flow > minimum_flow)
+		try_treating(I, user)
+	else if(demotes_to)
+		to_chat(user, "<span class='green'>Вы успешно снижаете тяжесть порезов [user == victim ? "на вашей [limb.ru_name_v]" : "на [limb.ru_name_v] персонажа [victim]"].</span>")
+// BLUEMOON ADD END
 
 /// If someone is using a suture to close this cut
 /datum/wound/slash/proc/suture(obj/item/stack/medical/suture/I, mob/user)
@@ -284,11 +342,11 @@
 	occur_text = "разрезается, что приводит к кровотечению"
 	sound_effect = 'sound/effects/wounds/blood1.ogg'
 	severity = WOUND_SEVERITY_MODERATE
-	initial_flow = 1.4
+	initial_flow = 1.75
 	minimum_flow = 0.375
 	max_per_type = 3
-	clot_rate = 0.12
-	threshold_minimum = 40
+	clot_rate = 0.1
+	threshold_minimum = 32
 	threshold_penalty = 8
 	status_effect_type = /datum/status_effect/wound/slash/moderate
 	scar_keyword = "slashmoderate"
@@ -319,11 +377,11 @@
 	occur_text = "широко раскрывается, что приводит к венозному кровотечению"
 	sound_effect = 'sound/effects/wounds/blood2.ogg'
 	severity = WOUND_SEVERITY_SEVERE
-	initial_flow = 1.8
+	initial_flow = 2.25
 	minimum_flow = 1.75
-	clot_rate = 0.07
+	clot_rate = 0.05
 	max_per_type = 4
-	threshold_minimum = 65
+	threshold_minimum = 55
 	threshold_penalty = 15
 	demotes_to = /datum/wound/slash/moderate
 	status_effect_type = /datum/status_effect/wound/slash/severe
@@ -356,11 +414,11 @@
 	occur_text = "разрывается, разбрызгивая кровь"
 	sound_effect = 'sound/effects/wounds/blood3.ogg'
 	severity = WOUND_SEVERITY_CRITICAL
-	initial_flow = 2.85
+	initial_flow = 3.35
 	minimum_flow = 2.5
 	clot_rate = -0.05 // critical cuts actively get worse instead of better
 	max_per_type = 5
-	threshold_minimum = 100
+	threshold_minimum = 85
 	threshold_penalty = 25
 	demotes_to = /datum/wound/slash/severe
 	status_effect_type = /datum/status_effect/wound/slash/critical

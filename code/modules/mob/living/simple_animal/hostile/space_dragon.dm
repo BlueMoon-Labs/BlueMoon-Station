@@ -332,7 +332,7 @@
 /mob/living/simple_animal/hostile/space_dragon/proc/dragon_fire_line(turf/T)
 	var/list/hit_list = list()
 	hit_list += src
-	new /obj/effect/hotspot(T)
+	T.ensure_hotspot()
 	T.hotspot_expose(700,50,1)
 	for(var/mob/living/L in T.contents)
 		if(L in hit_list)
@@ -505,6 +505,15 @@
 /datum/action/spell_action/space_dragon
 	default_button_position = SCRN_OBJ_INSERT_FIRST
 
+/// Same pattern as /datum/action/spell_action/spell — so charge_max / recharge shows and blocks like terror spider spells.
+/datum/action/spell_action/space_dragon/IsAvailable(silent = FALSE)
+	if(!target)
+		return FALSE
+	var/obj/effect/proc_holder/spell/S = target
+	if(owner)
+		return S.can_cast(owner, FALSE, silent)
+	return FALSE
+
 /// Ground Slam: same as Alt-click wing gust, but 2x faster (windup and endlag).
 /obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam
 	name = "Ground Slam"
@@ -525,7 +534,7 @@
 /obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/can_target(atom/target, mob/user = usr, silent = FALSE)
 	return istype(get_turf(user), /turf)
 
-/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/can_cast(mob/user = usr, charge_check = TRUE, show_message = FALSE)
+/obj/effect/proc_holder/spell/aoe_turf/space_dragon_slam/can_cast(mob/user = usr, skipcharge = FALSE, silent = FALSE)
 	var/mob/living/simple_animal/hostile/space_dragon/S = user
 	if(istype(S) && S.using_special)
 		return FALSE
@@ -593,12 +602,13 @@
 /obj/structure/carp_rift
 	name = "carp rift"
 	desc = "A rift akin to the ones space carp use to travel long distances."
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	max_integrity = 300
 	icon = 'icons/obj/carp_rift.dmi'
 	icon_state = "carp_rift_carpspawn"
 	light_color = LIGHT_COLOR_PURPLE
 	light_range = 10
+	light_flags = LIGHT_NO_RANGE_CAP // статичный заякоренный рифт: свечение выше базового капа
 	anchored = TRUE
 	density = FALSE
 	layer = MASSIVE_OBJ_LAYER
@@ -697,7 +707,7 @@
 	if(time_charged >= max_charge)
 		charge_state = CHARGE_COMPLETED
 		var/area/A = get_area(src)
-		priority_announce("Межпространственный неопознанный объект достиг пика своей силы в [initial(A.name)]. Пожалуйста, ожидайте.", "Отдел ЦК по наблюдению за дикой природой")
+		priority_announce("Межпространственный неопознанный объект достиг пика своей силы в [initial(A.name)]. Пожалуйста, отреагируйте.", "Отдел ЦК по наблюдению за дикой природой")
 		obj_integrity = INFINITY
 		icon_state = "carp_rift_charged"
 		light_color = LIGHT_COLOR_YELLOW

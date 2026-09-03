@@ -124,7 +124,8 @@
 		if(charge_tick < recharge_rate)
 			return FALSE
 		charge_tick = 0
-		chambered.newshot()
+		if(chambered)
+			chambered.newshot()
 		return TRUE
 	else
 		..()
@@ -622,26 +623,26 @@
 	var/stored_heat_protection = 0
 	var/stored_max_heat_protection_temperature = 0
 
-/obj/item/clothing/accessory/fireresist/attach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/fireresist/attach(obj/item/clothing/cloth, user)
 	. = ..()
-	stored_name = U.name
-	stored_desc = U.desc
-	stored_resistance_flags = U.resistance_flags
-	stored_max_heat_protection_temperature = U.max_heat_protection_temperature
-	stored_heat_protection = U.heat_protection
-	U.name = "fireproofed " + U.name
-	U.desc += " It has been fireproofed with [src]."
-	U.max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	U.heat_protection = FULL_BODY
-	U.resistance_flags |= FIRE_PROOF
+	stored_name = cloth.name
+	stored_desc = cloth.desc
+	stored_resistance_flags = cloth.resistance_flags
+	stored_max_heat_protection_temperature = cloth.max_heat_protection_temperature
+	stored_heat_protection = cloth.heat_protection
+	cloth.name = "fireproofed " + cloth.name
+	cloth.desc += " It has been fireproofed with [src]."
+	cloth.max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	cloth.heat_protection = FULL_BODY
+	cloth.resistance_flags |= FIRE_PROOF
 
-/obj/item/clothing/accessory/fireresist/detach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/fireresist/detach(obj/item/clothing/cloth, user)
 	. = ..()
-	U.name = stored_name
-	U.desc = stored_desc
-	U.max_heat_protection_temperature = stored_max_heat_protection_temperature
-	U.heat_protection = stored_heat_protection
-	U.resistance_flags = stored_resistance_flags
+	cloth.name = stored_name
+	cloth.desc = stored_desc
+	cloth.max_heat_protection_temperature = stored_max_heat_protection_temperature
+	cloth.heat_protection = stored_heat_protection
+	cloth.resistance_flags = stored_resistance_flags
 
 /obj/item/clothing/accessory/lavawalk
 	name = "lava walking medal"
@@ -651,6 +652,7 @@
 	var/effectduration = 10 SECONDS
 	var/timer
 	max_stack = 1 // BLUEMOON EDIT - изменение аксессуаров
+	max_stack_path = /obj/item/clothing/accessory/lavawalk
 
 /obj/item/clothing/accessory/lavawalk/ComponentInitialize()
 	. = ..()
@@ -665,12 +667,12 @@
 	UnregisterSignal(lavawalk, COMSIG_ACTION_TRIGGER)
 	QDEL_NULL(lavawalk)
 
-/obj/item/clothing/accessory/lavawalk/on_uniform_equip(obj/item/clothing/under/U, mob/living/user)
+/obj/item/clothing/accessory/lavawalk/on_uniform_equip(obj/item/clothing/cloth, mob/living/user)
 	. = ..()
 	if(istype(user))
 		lavawalk.Grant(user)
 
-/obj/item/clothing/accessory/lavawalk/on_uniform_dropped(obj/item/clothing/under/U, mob/living/user)
+/obj/item/clothing/accessory/lavawalk/on_uniform_dropped(obj/item/clothing/cloth, mob/living/user)
 	. = ..()
 	if(istype(user))
 		if(timer)
@@ -731,8 +733,8 @@
 	name = "Argent Energy Cell"
 	desc = "Harvested from the necropolis, this autocharging energy cell can be crushed to provide a temporary 90% damage reduction bonus. Also useful for research."
 	self_recharge = 1
-	maxcharge = 1500 //only barely better than a normal power cell now
-	chargerate = 700 //good recharge time doe
+	maxcharge = 15000 //only barely better than a normal power cell now
+	chargerate = 750 //good recharge time doe
 	icon = 'modular_sand/icons/obj/items_and_weapons.dmi'
 	icon_state = "argentcell"
 	ratingdesc = FALSE

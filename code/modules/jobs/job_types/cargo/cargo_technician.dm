@@ -11,7 +11,6 @@
 	alt_titles = list(
 		"Trainee Cargo Technician", //Стажер выше, для удобства
 		"Donk Co. Specialist", //Триглав выше, для удобства
-		"Syndicate Smuggler", //Синди выше, для удобства
 		"Cock Packager",
 		"Commodities Trader",
 		"Cryptocurrency Technician",
@@ -23,7 +22,8 @@
 		"Inventory Associate",
 		"Logistics Technician",
 		"Mail Carrier",
-		"Mailman",
+		"Mail Man",
+		"Mail Woman",
 		"Mailroom Technician",
 		"Merchant",
 		"Package Handler",
@@ -43,8 +43,8 @@
 	plasma_outfit = /datum/outfit/plasmaman/cargo
 
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_MINING,
-				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM)
+				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
+	minimal_access = list(ACCESS_MAINT_TUNNELS, ACCESS_CARGO, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_CAR
 
@@ -68,7 +68,7 @@
 	name = "Cargo Technician"
 	jobtype = /datum/job/cargo_tech
 
-	belt = /obj/item/pda/cargo
+	belt = /obj/item/modular_computer/pda/cargo
 	ears = /obj/item/radio/headset/headset_cargo
 	uniform = /obj/item/clothing/under/rank/cargo/tech
 	l_hand = /obj/item/export_scanner
@@ -77,16 +77,18 @@
 	name = "Syndicate Cargo Technician"
 	jobtype = /datum/job/cargo_tech
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_cargo
 	uniform = /obj/item/clothing/under/rank/cargo/util
 	l_hand = /obj/item/export_scanner
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)

@@ -59,12 +59,12 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon_state = "cracked_pot"
 
-////////////////////////////////////////////
+/*///////////////////////////////////////////
 /obj/item/clothing/head/helmet/cbrn/mopp
 	mutantrace_variation = STYLE_MUZZLE
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/head_muzzled.dmi'
 
-////////////////////////////////////////////
+*////////////////////////////////////////////
 
 /obj/item/clothing/head/fez
 	name = "fez"
@@ -153,3 +153,11 @@
 /obj/item/clothing/head/bm/sergal_knight_helmet
 	name = "Sergal knight's helmet"
 	icon_state = "knight_helmet"
+
+/obj/item/clothing/head/yun_cap
+	name = "strange chinese cap"
+	desc = "幻影陣"
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "yun"
+	strip_delay = 60

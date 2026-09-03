@@ -1,6 +1,8 @@
 /mob/living/carbon/BiologicalLife(delta_time, times_fired)
 	//Reagent processing needs to come before breathing, to prevent edge cases.
-	handle_organs(delta_time, times_fired)
+	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
+	if(client || ((times_fired + life_periodic_phase) % 2 == 0))
+		handle_organs(client ? delta_time : delta_time * 2, times_fired)
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
 		stop_sound_channel(CHANNEL_HEARTBEAT)
@@ -17,6 +19,12 @@
 		if(bprv & BODYPART_LIFE_UPDATE_HEALTH)
 			updatehealth()
 	update_stamina()
+	// Catch-all: update_stat() only refreshes mobility on a stat transition, so
+	// anything that changes a mobility input without calling update_mobility
+	// itself gets picked up here. Полный пересчёт (~70мкс: incapacitated,
+	// restrained, шесть Is*-процов, счёт конечностей) идёт только когда подпись
+	// входов изменилась - плюс принудительно раз в 4 тика на всякий случай.
+	update_mobility_if_dirty(times_fired)
 	doSprintBufferRegen()
 
 	if(stat != DEAD)
@@ -26,7 +34,7 @@
 		handle_liver(delta_time, times_fired)
 
 	if(stat != DEAD)
-		handle_corruption()
+		handle_corruption(delta_time)
 
 
 /mob/living/carbon/PhysicalLife(seconds, times_fired)
@@ -59,7 +67,15 @@
 		if(H.damage > H.high_threshold)
 			next_breath--
 
-	if((times_fired % next_breath) == 0 || failed_last_breath)
+	// Lever 2: a healthy clientless mob breathes half as often - its air is
+	// stable and no client is there to notice, while real distress still forces a
+	// breath via failed_last_breath. Failing organs (next_breath < 4) keep their
+	// faster cadence.
+	if(!client && next_breath >= 4)
+		next_breath *= 2
+
+	var/breath_phase = client ? times_fired : times_fired + life_periodic_phase
+	if((breath_phase % next_breath) == 0 || failed_last_breath)
 		breathe() //Breathe per 4 ticks if healthy, down to 2 if our lungs or heart are damaged, unless suffocating
 		if(failed_last_breath)
 			//SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "suffocation", /datum/mood_event/suffocation)
@@ -122,6 +138,32 @@
 				breath = loc_as_obj.handle_internal_lifeform(src, BREATH_VOLUME)
 
 			else if(isturf(loc)) //Breathe from loc as turf
+				//LIQUIDS ADD - underwater breathing
+				var/turf/our_turf = loc
+				if(our_turf.liquids && !HAS_TRAIT(src, TRAIT_NOBREATH) && ((body_position == LYING_DOWN && our_turf.liquids.liquid_state >= LIQUID_STATE_WAIST) || (body_position == STANDING_UP && our_turf.liquids.liquid_state >= LIQUID_STATE_FULLTILE)))
+					//Officially trying to breathe underwater
+					if(HAS_TRAIT(src, TRAIT_WATER_BREATHING))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
+					var/obj/item/clothing/mouth_cover = get_item_by_slot(ITEM_SLOT_MASK)
+					if(mouth_cover && (mouth_cover.flags_cover & MASKCOVERSMOUTH))
+						failed_last_breath = FALSE
+						clear_alert("not_enough_oxy")
+						return FALSE
+					breath = null // uh oh where'd the air go
+					check_breath(breath)
+					if(oxyloss <= OXYGEN_DAMAGE_CHOKING_THRESHOLD && !(stat >= UNCONSCIOUS || stat >= SOFT_CRIT))
+						to_chat(src, "<span class='userdanger'>You hold in your breath!</span>")
+					else
+						//Try and drink water
+						var/datum/reagents/tempr = our_turf.liquids.take_reagents_flat(CHOKE_REAGENTS_INGEST_ON_BREATH_AMOUNT)
+						tempr.trans_to(src, tempr.total_volume)
+						qdel(tempr)
+						visible_message("<span class='warning'>[src] chokes on [our_turf.liquids.reagents_to_text()]!</span>", \
+									"<span class='userdanger'>You're choking on [our_turf.liquids.reagents_to_text()]!</span>")
+					return FALSE
+
 				var/breath_ratio = 0
 				if(environment)
 					breath_ratio = BREATH_VOLUME/environment.return_volume()
@@ -392,12 +434,30 @@
 		if(BP.needs_processing)
 			. |= BP.on_life(seconds, times_fired)
 
+///Пересобирает кэш органов, которым нужен on_life. processes_on_life - свойство
+///типа, а не состояния, поэтому кэш живёт до ближайшей смены состава органов.
+/mob/living/carbon/proc/rebuild_life_processing_organs()
+	var/list/processing = list()
+	for(var/obj/item/organ/organ as anything in internal_organs)
+		if(organ?.processes_on_life)
+			processing += organ
+	life_processing_organs = processing
+	life_processing_organs_source_count = length(internal_organs)
+	return processing
+
+///Сбрасывает кэш процессящихся органов. Зовётся из Insert()/Remove() органа.
+/mob/living/carbon/proc/invalidate_life_processing_organs()
+	life_processing_organs = null
+
 /mob/living/carbon/proc/handle_organs(seconds, times_fired)
 	if(stat != DEAD)
-		for(var/V in internal_organs)
-			var/obj/item/organ/O = V
-			if(O)
-				O.on_life(seconds, times_fired)
+		//сверка длины ловит прямые правки internal_organs мимо Insert()/Remove()
+		var/list/processing = life_processing_organs
+		if(isnull(processing) || life_processing_organs_source_count != length(internal_organs))
+			processing = rebuild_life_processing_organs()
+		for(var/obj/item/organ/organ as anything in processing)
+			if(organ)
+				organ.on_life(seconds, times_fired)
 	else if(!QDELETED(src))
 		if(reagents?.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents?.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
 			return
@@ -407,6 +467,8 @@
 				O.on_death(seconds, times_fired) //Needed so organs decay while inside the body.
 
 /mob/living/carbon/handle_diseases()
+	if(!length(diseases))
+		return
 	for(var/thing in diseases)
 		var/datum/disease/D = thing
 		if(prob(D.infectivity))
@@ -416,6 +478,8 @@
 			D.stage_act()
 
 /mob/living/carbon/handle_wounds()
+	if(!length(all_wounds))
+		return
 	for(var/thing in all_wounds)
 		var/datum/wound/W = thing
 		if(W.processes) // meh
@@ -460,17 +524,21 @@
 
 /mob/living/carbon/handle_stomach()
 	set waitfor = 0
-	for(var/mob/living/M in stomach_contents)
+	if(!length(stomach_contents))
+		return
+	prune_stomach_contents()
+	for(var/mob/living/M in stomach_contents.Copy())
 		if(M.loc != src)
-			stomach_contents.Remove(M)
+			remove_from_stomach(M)
 			continue
 		if(iscarbon(M) && stat != DEAD)
 			if(M.stat == DEAD)
 				M.death(1)
-				stomach_contents.Remove(M)
+				remove_from_stomach(M)
 				qdel(M)
 				continue
-			if(SSmobs.times_fired%3==1)
+			var/digestion_phase = client ? SSmobs.times_fired : SSmobs.times_fired + life_periodic_phase
+			if(digestion_phase % 3 == 1)
 				if(!(M.status_flags & GODMODE))
 					M.adjustBruteLoss(5)
 				adjust_nutrition(10)
@@ -572,7 +640,7 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 	//Jitteriness
 	if(jitteriness)
 		do_jitter_animation(jitteriness)
-		jitteriness = max(jitteriness - restingpwr, 0)
+		jitteriness = max(jitteriness - restingpwr * 2, 0)
 		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "jittery", /datum/mood_event/jittery)
 	else
 		SEND_SIGNAL(src, COMSIG_CLEAR_MOOD_EVENT, "jittery")
@@ -824,10 +892,10 @@ BLUEMOON REMOVAL END */
 	if(istype(head_item, /obj/item/clothing/head/helmet/space) && istype(suit_item, /obj/item/clothing/suit/space))
 		return TRUE
 
-	if(istype(head_item, /obj/item/clothing/head/mod) && istype(suit_item, /obj/item/clothing/suit/mod))
-		var/obj/item/clothing/suit/mod/modsuit = suit_item
+	if(istype(head_item, /obj/item/clothing/mod_part/head) && istype(suit_item, /obj/item/clothing/mod_part/suit))
+		var/obj/item/clothing/mod_part/suit/modsuit = suit_item
 		var/obj/item/mod/control/mod_control = modsuit.mod
-		if(mod_control && mod_control.active)
+		if(mod_control && mod_control.is_active())
 			return TRUE
 
 	if(T && is_mining_level(T.z) && istype(head_item, /obj/item/clothing/head/hooded/explorer) && istype(suit_item, /obj/item/clothing/suit/hooded/explorer))
@@ -894,7 +962,10 @@ BLUEMOON REMOVAL END */
 	return TRUE
 
 /mob/living/carbon/proc/set_heartattack(status)
-	if(!can_heartattack())
+	// Проверка гейтит только постановку приступа. Снятие обязано работать всегда,
+	// иначе синтетик с остановленной помпой (can_heartattack() = FALSE из-за
+	// ORGAN_SYNTHETIC) не запускался обратно ни дефибом, ни fully_heal().
+	if(status && !can_heartattack())
 		return FALSE
 
 	var/obj/item/organ/heart/heart = getorganslot(ORGAN_SLOT_HEART)
@@ -902,6 +973,13 @@ BLUEMOON REMOVAL END */
 		return
 
 	if(status)
-		heart.Stop()
-	else
-		heart.Restart()
+		return heart.Stop()
+
+	// Отказавшую помпу перезапускать нечем: ближайший on_life() снова её остановит,
+	// а заодно напечатает "Fatal error detected" - у синтетика on_life() сбрасывает
+	// failed на каждом проходе с beating, так что каждый разряд дефиба перевзводил
+	// ровно тот спам, ради которого ставили защиту. Орган надо чинить, а не заводить.
+	if(heart.organ_flags & ORGAN_FAILING)
+		return FALSE
+
+	return heart.Restart()

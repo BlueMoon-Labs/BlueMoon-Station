@@ -1,3 +1,17 @@
+/*
+/////////////////////////	ИНФОРМАЦИЯ: /////////////////////////
+
+При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути
+Пример:
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "My personal enforcer"
+
+Если предмет из категории HIGHRISK, например мультифазка или антикварка,
+	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
+*/
+
 /obj/item/modkit/shigu_kit
 	name = "Butcher Knife Kit"
 	desc = "A modkit for making a Butcher Knife into a Shigu Knife."
@@ -5,6 +19,7 @@
 	fromitem = list(/obj/item/kitchen/knife/butcher)
 
 /obj/item/kitchen/knife/butcher/shigu_knife
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Shigu Butcher Knife"
 	desc = "A ultra-sharp butcher knife. Maybe his seemingly glaring surface can scare!"
 	icon_state = "Shigu_Knife"
@@ -18,6 +33,7 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/kukri
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Кукри-мачете"
 	desc = "Традиционное кукри, с разительным отличием, что делает его похожим на мачете, благодаря своему изогнутому клинку и функционалу как режущего инструмента и оружия. Из-за той же формы лещвия с изгибом центр тяжести смещён к острию, что делает его более эффективным для рубки. На рукояти изображён логотип, напоминающий чёрную розу и круговая надпись Black Rose atelier"
 	item_state = "kukri"
@@ -45,6 +61,7 @@
 	fromitem = list(/obj/item/melee/classic_baton)
 
 /obj/item/melee/classic_baton/impactbaton_jitte
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 1/62-H"
 	desc = "Impact Baton model 1, year 62th \"Hardlight\". Standard carbon fiber baton of Yernela catcrin law enforcements with hardlight technology sword-cutter."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -61,6 +78,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/catcrin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 3/51-H"
 	desc = "Impact Baton model 3, year 51th \"Hardlight\". Easy conсealable telescopic baton of hight-position catcrins with paralitic hardlight elements on the tip and as handguard."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -81,6 +99,7 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/portal_abomination
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Otherworld Portal Weapon"
 	desc = "A portal tool, revealing some part of otherworld undescribable abomination. Use it carefully or it will use you. Who openned the gates to this thing?!"
 	icon_state = "portalabomination"
@@ -100,6 +119,7 @@
 	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dark Omen Sword"
 	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -150,6 +170,7 @@
 	update_icon_state()
 
 /obj/item/melee/baton/twilight_spike
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Twilight Spike"
 	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
 	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
@@ -162,12 +183,178 @@
 	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
 
 /obj/item/melee/baton/twilight_spike/update_icon_state()
-	if(turned_on)
-		icon_state = "[initial(icon_state)]_active"
-		item_state = "[initial(item_state)]_active"
-	else if(!cell)
-		icon_state = "[initial(icon_state)]_nocell"
-		item_state = "[initial(item_state)]"
-	else
-		icon_state = "[initial(icon_state)]"
-		item_state = "[initial(item_state)]"
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Cybersun Energy Sabre"
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be souvenir version without combat properties."
+	force = 0
+	throwforce = 0
+	throw_range = 7
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = 0
+	item_flags = null
+	custom_materials = null
+	total_mass = 0.4
+	total_mass_on = TOTAL_MASS_TOY_SWORD
+	block_parry_data = null
+	throwforce_on = 0
+	force_on = 0
+	clumsy_check = FALSE
+	block_chance = 0
+	wound_bonus = 0
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/toy/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be more thin and poisoned with unknown substance"
+	force = 10
+	throwforce = 15
+	throw_speed = 2
+	throw_range = 7
+	sharpness = SHARP_POINTY
+	embedding = null
+	custom_materials = null
+	armour_penetration = 200
+	flags_1 = CONDUCT_1
+	attack_verb_on = list("stabs", "punctures", "pierces", "pokes")
+	total_mass = 0.4
+	total_mass_on = 0.4
+	block_parry_data = /datum/block_parry_data/traitor_rapier
+	force_on = 15
+	throwforce_on = 25
+	wound_bonus = 4
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/active_parry_reflex_counter(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/return_list, parry_efficiency, list/effect_text)
+	. = ..()
+	if((attack_type & ATTACK_TYPE_PROJECTILE) && (parry_efficiency >= 100))
+		. |= BLOCK_SHOULD_REDIRECT
+		return_list[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_DEFLECT
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 20, 65, 0)
+	AddElement(/datum/element/sword_point)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/syndicate/attack(mob/living/target, mob/living/user)
+	. = ..()
+	if(iscarbon(target))
+		if(HAS_TRAIT(user, TRAIT_PACIFISM))
+			visible_message("<span class='warning'>[user] gently taps [target] with [src].</span>",null,null,COMBAT_MESSAGE_RANGE)
+		log_combat(user, target, "slept", src)
+		var/mob/living/carbon/H = target
+		H.Dizzy(10)
+		H.adjustStaminaLoss(30)
+		if(CHECK_STAMCRIT(H) != NOT_STAMCRIT)
+			H.Sleeping(180)
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain
+	desc = "An elegant weapon, its concentrated beam of energy capable of cutting through armor and flesh alike. This one seems to be made for station captains"
+	flags_1 = CONDUCT_1
+	force = 10
+	throwforce = 10
+	force_on = 18
+	throwforce_on = 15
+	throw_speed = 2
+	throw_range = 7
+	embedding = null
+	block_chance = 50
+	armour_penetration = 75
+	sharpness = SHARP_EDGED
+	attack_verb_on = list("slashed", "cut")
+	custom_materials = list(/datum/material/iron = 1000)
+	total_mass = 3.4
+	total_mass_on = 3.4
+	block_parry_data = /datum/block_parry_data/captain_saber
+	wound_bonus = 4
+	bare_wound_bonus = 0
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/directional_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return, override_direction)
+	if((attack_type & ATTACK_TYPE_PROJECTILE) && is_bullet_reflectable_projectile(object))
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER
+			return BLOCK_SUCCESS | BLOCK_REDIRECTED | BLOCK_SHOULD_REDIRECT
+	return ..()
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/on_active_parry(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/block_return, parry_efficiency, parry_time)
+	. = ..()
+	if(parry_efficiency >= 90)		// perfect parry
+		block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_DEFLECT
+		. |= BLOCK_SHOULD_REDIRECT
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
+	if(is_bullet_reflectable_projectile(object) && (attack_type & ATTACK_TYPE_PROJECTILE))
+		var/reflect_chance = HAS_TRAIT(owner, TRAIT_FENCER) ? 60 : 20 // Определение шанса на рефлект.
+		if(prob(reflect_chance))
+			block_return[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_RETURN_TO_SENDER			//no you
+			owner.visible_message("<span class='danger'>[owner] redirected the sent projectile with his [src]!</span>")
+			playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
+			return BLOCK_SHOULD_REDIRECT | BLOCK_SUCCESS | BLOCK_REDIRECTED
+	return ..()
+
+/obj/item/melee/transforming/energy/sword/energy_sabre/fluff/captain/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 30, 95, 5) //fast and effective, but as a sword, it might damage the results.
+	AddElement(/datum/element/sword_point)
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/scream_knife_kit
+	name = "Knife of scream Kit"
+	desc = "A modkit for making a combat knife into a scream Knife."
+	product = /obj/item/kitchen/knife/combat/scream_knife
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/scream_knife
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Knife of scream"
+	desc = "A cool hunting knife bought at a random 24-hour store. For some unknown reason, it is much more comfortable to hold it in a reverse grip.."
+	item_state = "scream"
+	icon_state = "scream"
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/trenchknife_kit
+	name = "Trench Knife Kit"
+	desc = "A modkit for making a kitchen knife into a Trench Knife."
+	product = /obj/item/kitchen/knife/trenchknife
+	fromitem = list(/obj/item/kitchen/knife)
+
+/obj/item/kitchen/knife/trenchknife
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Trench Knife"
+	desc = "Для своего 600-летнего возраста этот артефакт Первой мировой войны сохранился великолепно. Массивная латунная рукоять-кастет покрыта благородной темной патиной, но не имеет ни единой трещины. Четыре кольца с шипами до сих пор идеально ложатся на пальцы"
+	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
+	icon_state = "knife"
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/bowie_kit
+	name = "Bowie Knife Kit"
+	desc = "A modkit for making a combat knife into a Bowie Knife."
+	product = /obj/item/kitchen/knife/combat/bowie
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/bowie
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Bowie Knife"
+	desc = "Культовый тяжелый тесак, который спустя шесть веков полностью сохранил свою брутальную функциональность. Характерный хищный скос обуха и массивная стальная гарда не расшатались от времени."
+	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
+	icon_state = "buckknife"

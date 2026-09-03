@@ -68,14 +68,16 @@
 			target.update_icon(UPDATE_OVERLAYS)
 			if(!ismob(target) || full_damage_on_mobs)
 				target.ex_act(EXPLODE_HEAVY, target)
+				if(ismob(target) && primed_by && primed_by != target)
+					log_combat(primed_by, target, "detonated C4 on", src)
 	else
 		location = get_turf(src)
 	if(location)
 		if(directional && target && target.density)
 			var/turf/T = get_step(location, aim_dir)
-			explosion(get_step(T, aim_dir), boom_sizes[1], boom_sizes[2], boom_sizes[3])
+			explosion(get_step(T, aim_dir), boom_sizes[1], boom_sizes[2], boom_sizes[3], attacker = primed_by)
 		else
-			explosion(location, boom_sizes[1], boom_sizes[2], boom_sizes[3])
+			explosion(location, boom_sizes[1], boom_sizes[2], boom_sizes[3], attacker = primed_by)
 	if(ismob(target) && can_gib_mobs)
 		var/mob/M = target
 		M.gib()
@@ -119,6 +121,7 @@
 			return
 		target = AM
 
+		primed_by = user
 		message_admins("[ADMIN_LOOKUPFLW(user)] planted [name] on [target.name] at [ADMIN_VERBOSEJMP(target)] with [det_time] second fuse")
 		log_game("[key_name(user)] planted [name] on [target.name] at [AREACOORD(user)] with [det_time] second fuse")
 
@@ -230,7 +233,7 @@
 	else
 		location = get_turf(src)
 	if(location)
-		explosion(location,0,0,3)
+		explosion(location,0,0,3, attacker = primed_by)
 	qdel(src)
 
 /obj/item/grenade/plastic/c4/attack(mob/M, mob/user, def_zone)

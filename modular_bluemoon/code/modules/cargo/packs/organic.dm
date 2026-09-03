@@ -22,3 +22,13 @@
 					/obj/item/reagent_containers/food/drinks/kvass)
 	crate_name = "kvass bottles crate"
 	crate_type = /obj/structure/closet/crate/freezer
+
+/datum/supply_pack/organic/shrimp
+	name = "Shrimp Crate"
+	desc = "Партия свежемороженых креветок для станции. Содержит 3 вакуумные упаковки, в каждой по 8 креветок."
+	cost = 3000
+	contains = list(/obj/item/storage/box/shrimp_pack,
+					/obj/item/storage/box/shrimp_pack,
+					/obj/item/storage/box/shrimp_pack)
+	crate_name = "shrimp crate"
+	crate_type = /obj/structure/closet/crate/freezer

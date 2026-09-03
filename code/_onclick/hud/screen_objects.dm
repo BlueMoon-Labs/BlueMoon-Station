@@ -51,6 +51,16 @@
 /atom/movable/screen/Destroy()
 	if(istype(hud) && hud.mymob?.client)
 		hud.mymob.client.screen -= src
+	// Подметать moused_over_objects больше не нужно: память автопарри держит
+	// текстовые ref'ы (см. register_moused_over), а не сами экраны.
+	// Экраны карт (консоль камер, secureye, под-лаунчер, попапы) регистрируются
+	// в чужих client.screen напрямую и hud'а не имеют - выписываем их сами,
+	// иначе удаление владельца при открытом UI оставляет весь набор
+	// плейн-мастеров жить в клиенте смотрящего.
+	if(assigned_map)
+		for(var/client/viewer as anything in GLOB.clients)
+			if(detach_screen_from_client_maps(viewer.screen_maps, src))
+				viewer.screen -= src
 	set_new_hud(null)
 	master = null
 	vis_contents.Cut()
@@ -95,6 +105,12 @@
 	SIGNAL_HANDLER
 
 	set_new_hud(hud_owner = null)
+
+/atom/movable/screen/proc/clear()
+	invisibility = INVISIBILITY_ABSTRACT
+
+/atom/movable/screen/proc/show()
+	invisibility = 0
 
 /atom/movable/screen/text
 	icon = null
@@ -436,6 +452,10 @@
 	if(iscarbon(usr))
 		var/mob/living/carbon/C = usr
 		C.toggle_throw_mode()
+	else if(istype(usr, /mob/living/simple_animal))
+		var/mob/living/simple_animal/S = usr
+		if(S.dextrous)
+			S.toggle_throw_mode()
 
 /atom/movable/screen/zone_sel
 	name = "damage zone"
@@ -570,7 +590,10 @@
 	plane = FULLSCREEN_PLANE
 
 /atom/movable/screen/damageoverlay
-	icon = 'icons/mob/screen_full.dmi'
+	// Свой лист screen_full.dmi повторял 33 стейта из fullscreen_15x15.dmi слово в слово,
+	// а тип никто не создаёт (screenoverlays не заполняется нигде), так что второй копии
+	// хватило бы только на то, чтобы однажды уехать клиенту целиком.
+	icon = 'icons/screen/fullscreen_15x15.dmi'
 	icon_state = "oxydamageoverlay0"
 	name = "dmg"
 	blend_mode = BLEND_MULTIPLY
@@ -645,10 +668,15 @@
 	screen_loc = ui_health
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
+///////////////////////////////////////////////////
+
 /atom/movable/screen/healthdoll
 	name = "health doll"
 	screen_loc = ui_healthdoll
 	mouse_over_pointer = MOUSE_HAND_POINTER
+	/// Last state the overlays were drawn for, see /mob/living/carbon/human/proc/get_healthdoll_cache_key.
+	/// Lives on the doll rather than the mob so rebuilding the HUD invalidates it for free.
+	var/doll_cache_key
 
 /atom/movable/screen/healthdoll/Click()
 	if (iscarbon(usr))
@@ -660,6 +688,40 @@
 	screen_loc = ui_living_healthdoll
 	var/filtered = FALSE //so we don't repeatedly create the mask of the mob every update
 
+/atom/movable/screen/healthdoll/Click(location, control, params)
+	if(hud?.mymob)
+		return hud.mymob.Click(arglist(args))
+
+/atom/movable/screen/healthdoll/examine(mob/user)
+	if(hud?.mymob)
+		return hud.mymob.examine(arglist(args))
+
+/atom/movable/screen/healthdoll/examine_more(mob/user)
+	if(hud?.mymob)
+		return hud.mymob.examine_more(arglist(args))
+
+/atom/movable/screen/healthdoll/MouseEntered(location, control, params)
+	if(hud?.mymob)
+		return hud.mymob.MouseEntered(arglist(args))
+
+/atom/movable/screen/healthdoll/MouseExited(location, control, params)
+	if(hud?.mymob)
+		return hud.mymob.MouseExited(arglist(args))
+
+/atom/movable/screen/healthdoll/MouseDown(location, control, params)
+	if(hud?.mymob)
+		return hud.mymob.MouseDown(arglist(args))
+
+/atom/movable/screen/healthdoll/MouseUp(location, control, params)
+	if(hud?.mymob)
+		return hud.mymob.MouseUp(arglist(args))
+
+/atom/movable/screen/healthdoll/MouseDrag(over_object, src_location, over_location, src_control, over_control, params)
+	if(hud?.mymob)
+		return hud.mymob.MouseDrag(arglist(args))
+
+///////////////////////////////////////////////////
+
 /atom/movable/screen/mood
 	name = "mood"
 	icon_state = "mood5"
@@ -668,6 +730,13 @@
 
 /atom/movable/screen/mood/attack_tk()
 	return
+
+// Mousedrop won't work, behavior is usually defined on the thing that MouseDrag started on
+/atom/movable/screen/sanity
+	name = "sanity"
+	icon = 'modular_sand/icons/mob/sanity.dmi'
+	icon_state = "sanity3"
+	screen_loc = ui_mood
 
 /atom/movable/screen/splash
 	icon = 'icons/blank_title.png'
@@ -689,13 +758,11 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	if(!visible)
 		alpha = 0
 
-	if(!use_previous_title)
-		if(SStitle.icon)
-			icon = SStitle.icon
-	else
-		if(!SStitle.previous_icon)
-			return INITIALIZE_HINT_QDEL
-		icon = SStitle.previous_icon
+	var/splash_icon = title_splash_icon(use_previous_title)
+	if(use_previous_title && !splash_icon)
+		return INITIALIZE_HINT_QDEL
+	if(splash_icon)
+		icon = splash_icon
 
 	holder.screen += src
 
@@ -753,3 +820,218 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 		var/image/intent_icon = image(icon,src,"combo_[intent_text]")
 		intent_icon.pixel_x = 16 * (i - 1) - 8 * length(streak)
 		add_overlay(intent_icon)
+
+// Z
+/atom/movable/screen/floor_changer
+	name = "Сменить уровень"
+	icon = 'icons/mob/screen_ghost.dmi'
+	icon_state = "floor_change_v" // Иронично
+	mouse_over_pointer = MOUSE_HAND_POINTER
+
+/atom/movable/screen/floor_changer/Click(location, control, params)
+	var/list/modifiers = params2list(params)
+	var/mouse_y = text2num(LAZYACCESS(modifiers, "icon-y"))
+	var/mob/dead/observer/ghost = usr
+	if(!isobserver(ghost))
+		return
+	var/turf/current = get_turf(ghost)
+	if(!current)
+		return
+	var/target_z = (mouse_y > 16) ? current.z + 1 : current.z - 1
+	if(target_z < 1 || target_z > world.maxz)
+		return
+	var/turf/target = locate(current.x, current.y, target_z)
+	if(!target)
+		return
+	ghost.forceMove(target)
+
+/atom/movable/screen/floor_changer/ghost
+	icon = 'icons/mob/screen_ghost.dmi'
+
+/atom/movable/screen/hunger
+	name = "hunger"
+	icon = 'modular_sand/icons/hud/screen_gen.dmi'
+	icon_state = "nutrition0"
+	screen_loc = ui_hunger_thirst
+
+/atom/movable/screen/thirst
+	name = "thirst"
+	icon = 'modular_sand/icons/hud/screen_gen.dmi'
+	icon_state = "hydration0"
+	screen_loc = ui_hunger_thirst
+
+/// "Голод" для синтетов
+/atom/movable/screen/hunger/robotic
+	name = "charge"
+	icon_state = "charge0"
+	mouse_over_pointer = MOUSE_HAND_POINTER
+
+/atom/movable/screen/hunger/robotic/Click(location, control, params)
+	. = ..()
+	if(isliving(usr))
+		var/mob/living/L = usr
+		var/charge_units = max(L.nutrition * 6, 0)
+		var/charge_status
+		switch(charge_units)
+			if(0 to 1100)
+				charge_status = span_danger("низкий")
+			if(1100 to 2200)
+				charge_status = span_notice("средний")
+			else
+				charge_status = span_green("высокий")
+		var/info_text = ""
+		info_text += span_info("<div align=center><b>Диагностика энергосистем</b></div>")
+		info_text += "<hr>"
+		info_text += "<div style='margin-top:6px'>Уровень заряда батареи: <b>[charge_status]</b>.</div>"
+		info_text += "<div style='margin-top:6px'>Текущая доступная мощность: <b>[charge_units]W</b>.</div>"
+		info_text += "<div style='margin-top:6px'>[charge_units <= 1100 ? "Работает энергосберегающий режим. Ожидается торможение физических узлов" : "Включена защита от перезаряда"].</div>"
+		to_chat(L, examine_block(info_text))
+/////////////////////////////////////////
+
+/atom/movable/screen/devil
+	invisibility = INVISIBILITY_ABSTRACT
+
+/atom/movable/screen/devil/soul_counter
+	icon = 'icons/mob/screen_gen.dmi'
+	name = "souls owned"
+	icon_state = "Devil-6"
+	screen_loc = ui_devilsouldisplay
+
+/atom/movable/screen/devil/soul_counter/proc/update_counter(souls = 0)
+	invisibility = 0
+	maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='#FF0000'>[souls]</font></div>")
+	switch(souls)
+		if(0,null)
+			icon_state = "Devil-1"
+		if(1,2)
+			icon_state = "Devil-2"
+		if(3 to 5)
+			icon_state = "Devil-3"
+		if(6 to 8)
+			icon_state = "Devil-4"
+		if(9 to INFINITY)
+			icon_state = "Devil-5"
+		else
+			icon_state = "Devil-6"
+
+/atom/movable/screen/ling
+	invisibility = INVISIBILITY_ABSTRACT
+
+/atom/movable/screen/ling/sting
+	name = "current sting"
+	screen_loc = ui_lingstingdisplay
+	mouse_over_pointer = MOUSE_HAND_POINTER
+
+/atom/movable/screen/ling/sting/Click()
+	if(isobserver(usr))
+		return
+	var/mob/living/carbon/U = usr
+	U.unset_sting()
+
+/atom/movable/screen/ling/chems
+	name = "chemical storage"
+	icon_state = "power_display"
+	screen_loc = ui_lingchemdisplay
+
+/////////////////////////////////////////
+
+/atom/movable/screen/synth
+	invisibility = INVISIBILITY_ABSTRACT
+
+/atom/movable/screen/synth/proc/update_counter(mob/living/carbon/human/owner)
+	invisibility = 0
+
+/atom/movable/screen/synth/coolant_counter
+	icon = 'icons/mob/screen_synth.dmi'
+	name = "hydraulic fluid system" // BLUEMOON EDIT - написал "гидравлическая жидкость"
+	icon_state = "coolant-3-1"
+	screen_loc = ui_coolant_display
+	mouse_over_pointer = MOUSE_HAND_POINTER
+	var/jammed = 0
+
+/atom/movable/screen/synth/coolant_counter/Click(location, control, params)
+	. = ..()
+	show_stats()
+
+/atom/movable/screen/synth/coolant_counter/update_counter(mob/living/carbon/owner)
+	..()
+	var/valuecolor = "#ff2525"
+	if(owner.stat == DEAD)
+		maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:6px'><font color='[valuecolor]'>ERR-0F</font></div>")
+		icon_state = "coolant-3-1"
+		return
+	var/coolant_efficiency
+	var/coolant
+	if(!jammed)
+		coolant_efficiency = owner.get_cooling_efficiency()
+		coolant = owner.blood_volume
+	else
+		coolant_efficiency = rand(1, 15) / 10
+		coolant = rand(1, 600)
+		jammed--
+	if(coolant > BLOOD_VOLUME_SAFE * owner.blood_ratio)	//I unfortunately have to use this else-if stack because switch doesn't support variables.
+		valuecolor =  "#4bbd34"
+	else if(coolant > BLOOD_VOLUME_OKAY * owner.blood_ratio)
+		valuecolor = "#dabb0d"
+	else if(coolant > BLOOD_VOLUME_BAD * owner.blood_ratio)
+		valuecolor =  "#dd8109"
+	else if(coolant > BLOOD_VOLUME_SURVIVE * owner.blood_ratio)
+		valuecolor = "#e7520d"
+	maptext = MAPTEXT("<div align='center' valign='middle' style='position:relative; top:0px; left:0px'><font color='[valuecolor]'>[round((coolant / (BLOOD_VOLUME_NORMAL * owner.blood_ratio)) * 100, 1)]</font></div>")
+	maptext_x = -2
+
+	var/efficiency_suffix
+	var/state_suffix
+	switch(coolant_efficiency)
+		if(-INFINITY to 0.4)
+			efficiency_suffix = "1"
+		if(0.4 to 0.75)
+			efficiency_suffix = "2"
+		if(0.75 to 0.95)
+			efficiency_suffix = "3"
+		if(0.95 to 1.3)
+			efficiency_suffix = "4"
+		else
+			efficiency_suffix = "5"
+	var/obj/item/organ/lungs/ipc/L = owner.getorganslot(ORGAN_SLOT_LUNGS)
+	if(istype(L) && L.is_cooling)
+		state_suffix = "2"
+	else
+		state_suffix = "1"
+	icon_state = "coolant-[efficiency_suffix]-[state_suffix]"
+
+/atom/movable/screen/synth/coolant_counter/proc/show_stats(mob/user)
+	var/mob/living/carbon/human/owner = hud.mymob
+	if(owner.stat == DEAD)
+		return
+	var/coolant
+	var/total_efficiency
+	var/environ_efficiency
+	var/suitlink_efficiency
+	if(!jammed)
+		coolant = owner.blood_volume
+		total_efficiency = owner.get_cooling_efficiency()
+		environ_efficiency = owner.get_environment_cooling_efficiency()
+		suitlink_efficiency = owner.check_suitlinking() // BLUEMOON TODO REDO - suitlink больше нет у синтетиков
+	else
+		coolant = rand(1, 600)
+		total_efficiency = rand(1, 15) / 10
+		environ_efficiency = rand(1, 20) / 10
+	if(isliving(usr))
+		var/mob/living/L = usr
+		var/info_text = ""
+		info_text += span_info("<div align=center><b>Диагностика систем охлаждения</b></div>")
+		info_text += "<hr>"
+		info_text += "<div style='margin-top:6px'>Кол-во гидравлической жидкости: [span_notice("[coolant]u")], <b>[round(coolant / (BLOOD_VOLUME_NORMAL * owner.blood_ratio) * 100, 0.1)]%</b>.</div>"
+		info_text += "<div style='margin-top:6px'>Эффективность охлаждения: <b>[round(total_efficiency * 100, 0.1)]%</b>.</div>"
+		info_text += "<div style='margin-top:6px'>[suitlink_efficiency ? "<font color='green'>Обнаружен активный suit-линк</font>, \
+		обеспечивающий <font color='green'>[suitlink_efficiency * 100]%</font> охладительной эффективности." : \
+		"Охладительная мощность атмосферы: <b>[round(environ_efficiency * 100, 0.1)]%</b>."]</div>"
+		to_chat(L, examine_block(info_text))
+
+/atom/movable/screen/synth/coolant_counter/proc/jam(amount, cap = 20)
+	if(jammed > cap)	//Preserve previous more impactful event.
+		return
+	jammed = min(jammed + amount, cap)
+
+/////////////////////////////////////////

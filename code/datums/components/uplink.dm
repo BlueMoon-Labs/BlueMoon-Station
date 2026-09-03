@@ -27,11 +27,15 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/failsafe_code
 	var/compact_mode = FALSE
 	var/debug = FALSE
+	/// Traitor contract rerolls used this round; first is free, then 1 TC each.
+	var/traitor_contract_rerolls = 0
 	///Instructions on how to access the uplink based on location
 	var/unlock_text
+	var/is_syndicate = FALSE
 	var/list/previous_attempts
 
-/datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT)
+/datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT, syndicate = FALSE)
+	is_syndicate = syndicate
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 
@@ -43,8 +47,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 		RegisterSignal(parent, COMSIG_IMPLANT_IMPLANTING, PROC_REF(implanting))
 		RegisterSignal(parent, COMSIG_IMPLANT_OTHER, PROC_REF(old_implant))
 		RegisterSignal(parent, COMSIG_IMPLANT_EXISTING_UPLINK, PROC_REF(new_implant))
-	else if(istype(parent, /obj/item/pda))
+	else if(istype(parent, /obj/item/modular_computer/pda))
 		RegisterSignal(parent, COMSIG_PDA_CHANGE_RINGTONE, PROC_REF(new_ringtone))
+		RegisterSignal(parent, COMSIG_TABLET_CHANGE_ID, PROC_REF(new_ringtone))
 		// RegisterSignal(parent, COMSIG_PDA_CHECK_DETONATE, PROC_REF(check_detonate))
 	else if(istype(parent, /obj/item/radio))
 		RegisterSignal(parent, COMSIG_RADIO_NEW_FREQUENCY, PROC_REF(new_frequency))
@@ -75,11 +80,17 @@ GLOBAL_LIST_EMPTY(uplinks)
 	lockable |= U.lockable
 	active |= U.active
 	uplink_flag |= U.uplink_flag
+	if((is_syndicate && istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)) || (!is_syndicate && !istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)))
+		return
 	telecrystals += U.telecrystals
 	if(purchase_log && U.purchase_log)
 		purchase_log.MergeWithAndDel(U.purchase_log)
+	traitor_contract_rerolls = max(traitor_contract_rerolls, U.traitor_contract_rerolls)
 
 /datum/component/uplink/Destroy()
+	// Аплинк - src_object собственного tgui: без закрытия открытое окно держит
+	// компонент в SStgui.open_uis после удаления носителя (та же логика уже есть в lock)
+	SStgui.close_uis(src)
 	GLOB.uplinks -= src
 	purchase_log = null
 	return ..()
@@ -110,7 +121,33 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return TRUE
 	return FALSE
 
+/// Те же условия, что и для строки в каталоге (hijack_only, blocked_round_types, роль, вид). Нужен для Random Item и защиты покупки.
+/datum/component/uplink/proc/is_uplink_item_visible_to_user(mob/user, datum/uplink_item/I)
+	if(!I || I.limited_stock == 0)
+		return FALSE
+	if(I.hijack_only && !can_access_hijack_uplink_items(user))
+		return FALSE
+	if(LAZYLEN(I.blocked_round_types) && (GLOB.round_type in I.blocked_round_types))
+		return FALSE
+	if(length(I.restricted_roles))
+		if(!debug && user?.mind && !(user.mind.assigned_role in I.restricted_roles))
+			return FALSE
+	if(I.restricted_species)
+		if(ishuman(user))
+			var/is_inaccessible = TRUE
+			var/mob/living/carbon/human/H = user
+			for(var/F in I.restricted_species)
+				if(F == H.dna.species.id || debug)
+					is_inaccessible = FALSE
+					break
+			if(is_inaccessible)
+				return FALSE
+	return TRUE
+
 /datum/component/uplink/proc/LoadTC(mob/user, obj/item/stack/telecrystal/TC, silent = FALSE)
+	if((is_syndicate && istype(TC, /obj/item/stack/telecrystal/inteq)) || (!is_syndicate && !istype(TC, /obj/item/stack/telecrystal/inteq)))
+		user.balloon_alert(user, "Аплинк не принимает валюту враждебной организации!")
+		return
 	if(!silent)
 		to_chat(user, span_notice("You slot [TC] into [parent] and charge its internal uplink."))
 	var/amt = TC.amount
@@ -186,46 +223,43 @@ GLOBAL_LIST_EMPTY(uplinks)
 	data["telecrystals"] = telecrystals
 	data["lockable"] = lockable
 	data["compactMode"] = compact_mode
+	data["categories"] = build_uplink_shop_categories(user)
 	return data
 
-/datum/component/uplink/ui_static_data(mob/user)
-	var/list/data = list()
-	data["categories"] = list()
+/// Список категорий для TGUI: без позиций, недоступных из‑за hijack_only, blocked_round_types, роли и вида.
+/datum/component/uplink/proc/build_uplink_shop_categories(mob/user)
+	var/list/out = list()
 	for(var/category in uplink_items)
 		var/list/cat = list(
 			"name" = category,
 			"items" = (category == selected_cat ? list() : null))
 		for(var/item in uplink_items[category])
 			var/datum/uplink_item/I = uplink_items[category][item]
-			if(I.limited_stock == 0)
+			if(!is_uplink_item_visible_to_user(user, I))
 				continue
-			if(I.hijack_only && !can_access_hijack_uplink_items(user))
-				continue
-			if(length(I.restricted_roles))
-				if(!debug && !(user.mind.assigned_role in I.restricted_roles))
-					continue
-			if(I.restricted_species)
-				if(ishuman(user))
-					var/is_inaccessible = TRUE
-					var/mob/living/carbon/human/H = user
-					for(var/F in I.restricted_species)
-						if(F == H.dna.species.id || debug)
-							is_inaccessible = FALSE
-							break
-					if(is_inaccessible)
-						continue
 			cat["items"] += list(list(
 				"name" = I.name,
-				"cost" = I.cost,
+				"cost" = get_purchase_cost(I),
 				"desc" = I.desc,
 			))
-		data["categories"] += list(cat)
-	return data
+		out += list(cat)
+	return out
+
+/datum/component/uplink/ui_static_data(mob/user)
+	return list()
 
 /datum/component/uplink/ui_act(action, params)
 	. = ..()
 	if(.)
 		return
+	switch(action)
+		if("lock")
+			active = FALSE
+			locked = TRUE
+			telecrystals += hidden_crystals
+			hidden_crystals = 0
+			SStgui.close_uis(src)
+			return TRUE
 	if(!active)
 		return
 	switch(action)
@@ -238,12 +272,6 @@ GLOBAL_LIST_EMPTY(uplinks)
 				var/datum/uplink_item/I = buyable_items[item_name]
 				MakePurchase(usr, I)
 				return TRUE
-		if("lock")
-			active = FALSE
-			locked = TRUE
-			telecrystals += hidden_crystals
-			hidden_crystals = 0
-			SStgui.close_uis(src)
 		if("select")
 			selected_cat = params["category"]
 			return TRUE
@@ -251,25 +279,32 @@ GLOBAL_LIST_EMPTY(uplinks)
 			compact_mode = !compact_mode
 			return TRUE
 
+/datum/component/uplink/proc/get_purchase_cost(datum/uplink_item/U)
+	if(istype(U, /datum/uplink_item/bundles_tc/reroll))
+		return traitor_contract_rerolls ? 1 : 0
+	return U.cost
+
 /datum/component/uplink/proc/MakePurchase(mob/user, datum/uplink_item/U)
 	if(!istype(U))
 		return
 	if (!user || user.incapacitated())
 		return
-	if(U.hijack_only && !can_access_hijack_uplink_items(user))
-		to_chat(user, "<span class='warning'>InteQ выдает этот чрезвычайно опасный предмет только агентам, получившим особо сложное задание.</span>")
+	if(!is_uplink_item_visible_to_user(user, U))
 		return
 
-	if(telecrystals < U.cost || U.limited_stock == 0)
+	var/purchase_cost = get_purchase_cost(U)
+	if(telecrystals < purchase_cost || U.limited_stock == 0)
 		return
-	telecrystals -= U.cost
+	telecrystals -= purchase_cost
 
 	U.purchase(user, src)
 
-	if(U.limited_stock > 0)
+	if(istype(U, /datum/uplink_item/bundles_tc/reroll))
+		traitor_contract_rerolls++
+	else if(U.limited_stock > 0)
 		U.limited_stock -= 1
 
-	SSblackbox.record_feedback("nested tally", "traitor_uplink_items_bought", 1, list("[initial(U.name)]", "[U.cost]"))
+	SSblackbox.record_feedback("nested tally", "traitor_uplink_items_bought", 1, list("[initial(U.name)]", "[purchase_cost]"))
 	return TRUE
 
 // Implant signal responses
@@ -310,7 +345,6 @@ GLOBAL_LIST_EMPTY(uplinks)
 /datum/component/uplink/proc/new_ringtone(datum/source, mob/living/user, new_ring_text)
 	SIGNAL_HANDLER
 
-	var/obj/item/pda/master = parent
 	if(trim(lowertext(new_ring_text)) != trim(lowertext(unlock_code)))
 		if(trim(lowertext(new_ring_text)) == trim(lowertext(failsafe_code)))
 			failsafe(user)
@@ -319,8 +353,6 @@ GLOBAL_LIST_EMPTY(uplinks)
 	locked = FALSE
 	interact(null, user)
 	to_chat(user, span_hear("The PDA softly beeps."))
-	user << browse(null, "window=pda")
-	master.mode = 0
 	return COMPONENT_STOP_RINGTONE_CHANGE
 
 /datum/component/uplink/proc/check_detonate()
@@ -366,7 +398,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 /datum/component/uplink/proc/setup_unlock_code()
 	unlock_code = generate_code()
 	var/obj/item/P = parent
-	if(istype(parent,/obj/item/pda))
+	if(istype(parent,/obj/item/modular_computer/pda))
 		unlock_note = "<B>Uplink Passcode:</B> [unlock_code] ([P.name])."
 	else if(istype(parent,/obj/item/radio))
 		unlock_note = "<B>Radio Frequency:</B> [format_frequency(unlock_code)] ([P.name])."
@@ -374,7 +406,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 		unlock_note = "<B>Uplink Degrees:</B> [english_list(unlock_code)] ([P.name])."
 
 /datum/component/uplink/proc/generate_code()
-	if(istype(parent,/obj/item/pda))
+	if(istype(parent,/obj/item/modular_computer/pda))
 		return "[rand(100,999)] [pick(GLOB.phonetic_alphabet)]"
 	else if(istype(parent,/obj/item/radio))
 		return return_unused_frequency()

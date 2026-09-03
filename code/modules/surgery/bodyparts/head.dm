@@ -18,7 +18,7 @@
 	stam_damage_coeff = 1
 	max_stamina_damage = 0 //Setting this to 0 since this has the same exact effects as the chest when disabled
 
-	dropped_size = 1.15
+	dropped_size = 1.25
 
 	var/mob/living/brain/brainmob = null //The current occupant.
 	var/obj/item/organ/brain/brain = null //The brain organ
@@ -47,7 +47,18 @@
 	wound_resistance = 10
 	scars_covered_by_clothes = FALSE
 
-/obj/item/bodypart/head/can_dismember(obj/item/I)
+/// Отрезанная голова хранит мозг, мозгомоба и глаза жёсткими ссылками. Своего
+/// Destroy у неё не было, поэтому qdel головы уводил содержимое в qdel штатным
+/// contents-циклом /atom/movable/Destroy, но три поля оставались забиты
+/// покойниками - одна голова тянула за собой три hard delete.
+/obj/item/bodypart/head/Destroy()
+	// Сначала родитель: он и уносит содержимое головы в qdel.
+	. = ..()
+	brainmob = null
+	brain = null
+	eyes = null
+
+/obj/item/bodypart/head/can_dismembered()
 	if(owner && !((owner.stat == DEAD) || owner.InFullCritical()))
 		return FALSE
 	return ..()
@@ -72,6 +83,10 @@
 			if(istype(I, /obj/item/reagent_containers/pill))
 				for(var/datum/action/item_action/hands_free/activate_pill/AP in I.actions)
 					qdel(AP)
+			// Глаза уезжают из головы наравне с остальным содержимым, но поле eyes
+			// оставалось на них ссылкой: голова жила дальше и держала орган.
+			if(I == eyes)
+				eyes = null
 			I.forceMove(T)
 
 /obj/item/bodypart/head/update_limb(dropping_limb, mob/living/carbon/source)
@@ -80,6 +95,9 @@
 		C = source
 	else
 		C = owner
+
+	if(!C)
+		return
 
 	real_name = C.real_name
 	if(HAS_TRAIT(C, TRAIT_HUSK))

@@ -1,0 +1,5 @@
+#define COMSIG_MODULE_ON_USE "module_on_use"
+#define COMSIG_MOD_PART_INSTALLED "mod_part_installed"
+#define COMSIG_MOD_PART_REMOVED   "mod_part_removed"
+#define COMSIG_MOD_MODULE_TOGGLED "mod_module_toggled"
+#define COMSIG_MOD_POWER_CHANGED  "mod_power_changed"

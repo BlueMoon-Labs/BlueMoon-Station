@@ -53,6 +53,7 @@
 		/obj/item/reagent_containers/food/snacks/grown/tomato/blood = 2
 	)
 	result = /obj/item/reagent_containers/food/snacks/soup/blood
+	blacklist = list(/datum/reagent/blood/tomato)
 	subcategory = CAT_SOUP
 
 /datum/crafting_recipe/food/clownstears

@@ -1,4 +1,6 @@
 //Used to process objects.
+// Адаптивный профиль перерасхода живёт в базовом /datum/controller/subsystem
+// (code/controllers/subsystem.dm) - здесь только инструментация fire().
 
 SUBSYSTEM_DEF(processing)
 	name = "Processing"
@@ -15,22 +17,36 @@ SUBSYSTEM_DEF(processing)
 	return ..()
 
 /datum/controller/subsystem/processing/fire(resumed = FALSE)
+	var/slice_start_usage = TICK_USAGE
 	if (!resumed)
 		currentrun = processing.Copy()
+		current_pass_cost_ms = 0
 	//cache for sanic speed (lists are references anyways)
 	var/list/current_run = currentrun
+	var/profiling = profile_armed
+	var/seconds_per_tick = wait * 0.1
 
 	while(current_run.len)
 		var/datum/thing = current_run[current_run.len]
 		current_run.len--
 		if(QDELETED(thing))
 			processing -= thing
-		else if(thing.process(wait * 0.1) == PROCESS_KILL)
+		else if(profiling)
+			var/item_type = thing.type
+			var/item_start_usage = TICK_USAGE
+			if(thing.process(seconds_per_tick) == PROCESS_KILL)
+				// fully stop so that a future START_PROCESSING will work
+				STOP_PROCESSING(src, thing)
+			profile_note(item_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)))
+		else if(thing.process(seconds_per_tick) == PROCESS_KILL)
 			// fully stop so that a future START_PROCESSING will work
 			STOP_PROCESSING(src, thing)
 		if (MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
 
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(processing))
 
 /**
  * This proc is called on a datum on every "cycle" if it is being processed by a subsystem. The time between each cycle is determined by the subsystem's "wait" setting.
@@ -48,3 +64,4 @@ SUBSYSTEM_DEF(processing)
 /datum/proc/process(delta_time)
 	set waitfor = FALSE
 	return PROCESS_KILL
+

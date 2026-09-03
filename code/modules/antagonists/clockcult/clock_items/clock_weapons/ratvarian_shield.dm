@@ -5,8 +5,8 @@
 	name = "ratvarian shield"
 	icon_state = "ratvarian_shield" //Its icons are in the same place the normal shields are in
 	item_state = "ratvarian_shield"
-	desc = "A resilient shield made out of brass.. It feels warm to the touch."
-	var/clockwork_desc = "A powerful shield of ratvarian making. It absorbs blocked attacks to charge devastating bashes."
+	desc = "Прочный щит из латуни... На ощупь - теплый."
+	var/clockwork_desc = "Мощный щит, изготовленный в Ратварии. Он поглощает отраженные атаки, накапливая энергию для нанесения сокрушительных ударов."
 	armor = list(MELEE = 80, BULLET = 70, LASER = -10, ENERGY = -20, BOMB = 60, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	shield_flags = SHIELD_FLAGS_DEFAULT | SHIELD_KINETIC_STRONG | SHIELD_ENERGY_WEAK
 	max_integrity = 300 //High integrity, extremely strong against melee / bullets, but still quite easy to destroy with lasers and energy
@@ -21,7 +21,7 @@
 /obj/item/shield/riot/ratvarian/examine(mob/user)
 	if((is_servant_of_ratvar(user) || isobserver(user)))
 		desc = clockwork_desc
-		desc +="\n <span class='inathneq_small'>The shield has absorbed [dam_absorbed] damage, multiplying the effectiveness of its bashes by [calc_bash_mult()]</span>"
+		desc +="\n <span class='inathneq_small'>Щит поглотил [dam_absorbed] урона, увеличивая эффективность своих ударов в [calc_bash_mult()] раз.</span>"
 	. = ..()
 	desc = initial(desc)
 
@@ -43,7 +43,7 @@
 		return ..()
 
 	if(!is_servant_of_ratvar(owner))
-		owner.visible_message("<span class='warning'>As [owner] blocks the attack with [src], [owner.ru_who()] suddenly drops it, whincing in pain! </span>", "<span class='warning'>As you block the attack with [src], it heats up tremendously, forcing you to drop it from the pain alone! </span>")
+		owner.visible_message("<span class='warning'>Когда [owner] блокирует атаку с помощью [src], [owner.ru_who()] внезапно роняет его, вскрикивая от боли! </span>", "<span class='warning'>Когда вы блокируете атаку с помощью [src], он резко раскаляется, заставляя вас выронить его от одной лишь боли! </span>")
 		owner.emote("realagony")
 		playsound(src, 'sound/machines/fryer/deep_fryer_emerge.ogg', 50)
 		if(iscarbon(owner)) //Type safety for if a drone somehow got a shield (ratvar protect us)

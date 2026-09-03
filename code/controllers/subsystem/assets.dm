@@ -26,7 +26,9 @@ SUBSYSTEM_DEF(assets)
 	for(var/type in typesof(/datum/asset))
 		var/datum/asset/A = type
 		if (type != initial(A._abstract))
-			get_asset_datum(type)
+			// load_asset_datum, а не get_asset_datum: батчёвые спрайтшиты должны
+			// успеть встать в очередь SSasset_loading, а не собраться прямо здесь.
+			load_asset_datum(type)
 
 	transport.Initialize(cache)
 

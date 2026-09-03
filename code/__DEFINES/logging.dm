@@ -19,6 +19,7 @@
 #define INVESTIGATE_RESEARCH "research"
 #define INVESTIGATE_SINGULO "singulo"
 #define INVESTIGATE_SUPERMATTER "supermatter"
+#define INVESTIGATE_HYPERTORUS "hypertorus"
 #define INVESTIGATE_TELESCI "telesci"
 #define INVESTIGATE_WIRES "wires"
 
@@ -53,7 +54,16 @@
 #define INDIVIDUAL_COMMS_LOG		(LOG_PDA | LOG_CHAT | LOG_COMMENT | LOG_TELECOMMS)
 #define INDIVIDUAL_OOC_LOG			(LOG_OOC | LOG_ADMIN)
 #define INDIVIDUAL_OWNERSHIP_LOG	(LOG_OWNERSHIP)
-#define INDIVIDUAL_SHOW_ALL_LOG		(LOG_ATTACK | LOG_SAY | LOG_WHISPER | LOG_EMOTE | LOG_DSAY | LOG_PDA | LOG_CHAT | LOG_COMMENT | LOG_TELECOMMS | LOG_OOC | LOG_ADMIN | LOG_OWNERSHIP | LOG_GAME | LOG_VICTIM | LOG_ECON)
+#define INDIVIDUAL_SHOW_ALL_LOG		(LOG_ATTACK | LOG_SAY | LOG_WHISPER | LOG_EMOTE | LOG_DSAY | LOG_PDA | LOG_CHAT | LOG_COMMENT | LOG_TELECOMMS | LOG_OOC | LOG_ADMIN | LOG_OWNERSHIP | LOG_GAME | LOG_VICTIM | LOG_ECON | LOG_UPLINK)
+
+/// Сколько записей ОДНОГО типа держится в индивидуальном логе моба и его player_details.
+///
+/// Каждая запись - ассоциативный список из тринадцати полей, и держится она дважды: у моба
+/// и у player_details, который живёт весь раунд по ckey. Без предела это накопитель, растущий
+/// пропорционально активности станции; полная история при этом никуда не девается - она в
+/// файлах раунда. Двести на тип - это несколько часов болтовни или пара крупных драк,
+/// то есть заведомо больше, чем админ отматывает в лог-вьювере.
+#define MOB_INDIVIDUAL_LOG_MAX 200
 
 #define LOGSRC_CLIENT "Client"
 #define LOGSRC_MOB "Mob"

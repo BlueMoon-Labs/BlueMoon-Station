@@ -34,7 +34,7 @@
 	name = "CQC Manual"
 	desc = "Руководство по тактическому ближнему бою. Обучает одного пользователя, после чего самоуничтожается."
 	item = /obj/item/book/granter/martial/cqc
-	purchasable_from = ~UPLINK_CLOWN_OPS
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 	cost = 12
 	surplus = 0
 
@@ -59,6 +59,7 @@
 	item = /obj/item/storage/fancy/cigarettes/derringer
 	cost = 6
 	surplus = 30
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/stealthy_weapons/derringerpack/purchase(mob/user, datum/component/uplink/U)
 	if(prob(10)) //For the 10%
@@ -78,6 +79,7 @@
 	desc = "Энергетический кинжал, в выключенном состоянии выглядит и работает как ручка."
 	item = /obj/item/pen/edagger
 	cost = 2
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/stealthy_weapons/martialarts
 	name = "Sleeping Carp Scroll"
@@ -88,7 +90,7 @@
 	cost = 18
 	player_minimum = 25
 	surplus = 0
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/martialartstwo
 	name = "Rising Bass Scroll"
@@ -98,7 +100,7 @@
 	cost = 20
 	player_minimum = 25
 	surplus = 0
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/martialartsthree
 	name = "Krav Maga Scroll"
@@ -117,7 +119,7 @@
 	item = /obj/item/gun/energy/kinetic_accelerator/crossbow
 	cost = 12
 	surplus = 50
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/traitor_chem_bottle
 	name = "Poison Kit"
@@ -125,6 +127,7 @@
 	item = /obj/item/storage/box/syndie_kit/chemical
 	cost = 6
 	surplus = 50
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/stealthy_weapons/romerol_kit
 	name = "Romerol"
@@ -136,7 +139,7 @@
 	player_minimum = 25
 	cant_discount = TRUE
 	hijack_only = TRUE
-	purchasable_from = ~UPLINK_NUKE_OPS
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/sleepy_pen
 	name = "Sleepy Pen"
@@ -146,7 +149,7 @@
 			Учтите: до того как цель уснёт, она ещё сможет двигаться и действовать."
 	item = /obj/item/pen/sleepy
 	cost = 4
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/taeclowndo_shoes
 	name = "Tae-clown-do Shoes"
@@ -179,7 +182,7 @@
 	item = /obj/item/soap/inteq
 	cost = 1
 	surplus = 50
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/soap_clusterbang
 	name = "Slipocalypse Clusterbang"
@@ -190,7 +193,7 @@
 
 /datum/uplink_item/stealthy_weapons/soap_clusterbang/inteq
 	item = /obj/item/grenade/clusterbuster/soap/inteq
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 //BLUEMOON add добавил набор оригами в аплинк.
 
@@ -201,6 +204,6 @@
 	item = /obj/item/storage/box/inteq_kit/origami_bundle
 	cost = 4
 	surplus = 0
-	purchasable_from = ~UPLINK_NUKE_OPS
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 //BLUEMOON add end

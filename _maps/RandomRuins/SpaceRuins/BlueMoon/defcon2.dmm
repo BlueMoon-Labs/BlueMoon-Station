@@ -1,6 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aa" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/structure/chair/sofa/corp{
 	dir = 8
 	},
@@ -9,8 +9,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "ab" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/magic{
 	health = 160;
@@ -19,8 +19,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "ac" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/proteon/hostile,
 /turf/open/floor/plasteel,
@@ -45,8 +45,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "af" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -76,8 +76,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "ak" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/machinery/door/airlock/engineering/glass{
 	name = "P-T Tool Storage"
@@ -105,7 +105,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "ao" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
@@ -134,7 +134,7 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "ar" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/magic{
 	health = 160;
@@ -143,8 +143,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "as" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light/dim/directional/south,
 /obj/machinery/light_switch/directional/south,
@@ -160,16 +160,16 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "au" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/structure/statue/bone/rib{
 	dir = 1
 	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "av" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
@@ -179,7 +179,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "aw" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -195,7 +195,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "ay" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/ghost,
 /turf/open/floor/plasteel/cult,
@@ -206,8 +206,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "aA" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -219,15 +219,15 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "aB" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/ghost,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "aC" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/structure/curtain,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/horror{
@@ -245,7 +245,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "aE" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/spear{
@@ -272,7 +272,7 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "aG" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/loading_area,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/magic{
@@ -282,9 +282,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "aH" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
 	health = 125;
@@ -293,9 +293,9 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "aI" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/proteon/hostile,
@@ -316,7 +316,7 @@
 /turf/open/floor/grass,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "aL" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/machinery/light/small/directional/east,
@@ -329,14 +329,14 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "aN" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/mannequin,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "aO" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
 	health = 125;
@@ -358,15 +358,15 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "aR" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/firealarm/directional/east,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/construct/wraith/hostile,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "aS" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/structure/table/rolling,
@@ -375,7 +375,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "aT" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -400,8 +400,8 @@
 "aX" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/airalarm/directional/north,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
@@ -462,8 +462,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "bg" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /obj/machinery/door/airlock/security{
@@ -497,16 +497,16 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "bk" = (
 /obj/effect/turf_decal/weather/sand/floor,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /mob/living/simple_animal/hostile/cult/ghost,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "bl" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -556,8 +556,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "bs" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -583,7 +583,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "bw" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -651,8 +651,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "bK" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -665,7 +665,7 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav)
 "bX" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
@@ -703,8 +703,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "ck" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
@@ -757,7 +757,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "cD" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -788,7 +788,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "cQ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/blood/tracks,
@@ -810,7 +810,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "cU" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -823,7 +823,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "cY" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/blood,
@@ -857,8 +857,8 @@
 	name = "Fore Primary Hallway";
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/machinery/door/firedoor/solid/closed,
@@ -905,8 +905,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "dq" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -934,14 +934,14 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav)
 "dv" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/east,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/carpet/cyan,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "dw" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/blood/tracks{
@@ -952,8 +952,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "dx" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -980,9 +980,9 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "dC" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -999,8 +999,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "dG" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1008,28 +1008,28 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "dJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "dN" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "dR" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "dT" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 8
 	},
@@ -1041,7 +1041,7 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "dX" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1064,14 +1064,14 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "eg" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "eo" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1083,7 +1083,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "ew" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -1093,8 +1093,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "eA" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -1102,8 +1102,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "eB" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -1135,8 +1135,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "eK" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/east,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -1189,7 +1189,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "ff" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 8
 	},
@@ -1204,7 +1204,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "fi" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -1279,8 +1279,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "fL" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/structure/statue/bone/rib{
 	dir = 1
@@ -1289,8 +1289,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "fP" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1304,15 +1304,15 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "fT" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/light/dim/directional/east,
 /obj/effect/turf_decal/delivery/blue,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "fU" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -1342,8 +1342,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "ge" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 1
 	},
@@ -1466,8 +1466,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "gX" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 4
@@ -1518,8 +1518,8 @@
 	name = "Crew Storage";
 	state_open = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /obj/structure/barricade/wooden/crude,
@@ -1557,15 +1557,15 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Port Primary Hallway"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid/closed,
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "hB" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
@@ -1587,8 +1587,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "hH" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/button/door{
@@ -1619,7 +1619,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "hN" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1630,8 +1630,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -1647,8 +1647,8 @@
 /turf/open/floor/plasteel/freezer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "hY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/door/firedoor/solid/closed,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
@@ -1673,15 +1673,15 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "ii" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "ik" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 4
 	},
@@ -1719,15 +1719,15 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "ir" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "iu" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -1752,7 +1752,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "iy" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
@@ -1760,8 +1760,8 @@
 /obj/machinery/door/airlock/multi_tile/glass{
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/open/floor/plasteel/cult,
@@ -1790,7 +1790,7 @@
 	dir = 4;
 	name = "killroom vent";
 	layer = 3;
-	piping_layer = 3
+	piping_layer = 4
 	},
 /obj/effect/turf_decal/stripes/asteroid{
 	dir = 1
@@ -1809,8 +1809,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "iM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/light/directional/north,
 /obj/machinery/power/apc/auto_name/north{
 	locked = 0;
@@ -1834,7 +1834,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "iU" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/glass,
@@ -1843,7 +1843,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "iZ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/blood,
@@ -1854,8 +1854,8 @@
 /obj/machinery/door/airlock/public{
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/plasteel,
@@ -1871,8 +1871,8 @@
 /area/awaymission)
 "jo" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -1905,7 +1905,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "jz" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -1922,7 +1922,7 @@
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 8;
 	name = "Pipe To Left";
-	piping_layer = 3;
+	piping_layer = 4;
 	layer = 3
 	},
 /turf/open/floor/plasteel,
@@ -1950,7 +1950,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "jJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -1967,7 +1967,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "jM" = (
 /obj/machinery/airalarm/directional/east,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1985,8 +1985,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "jU" = (
@@ -1996,7 +1996,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "jV" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood/tracks{
@@ -2042,8 +2042,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "ko" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/purple/half{
 	dir = 1
 	},
@@ -2084,7 +2084,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "kx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2095,8 +2095,8 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/space/has_grav)
 "kC" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/structure/statue/bone/rib,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2104,8 +2104,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "kD" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
@@ -2117,8 +2117,8 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/space/has_grav)
 "kG" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2126,8 +2126,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "kH" = (
 /obj/machinery/light/dim/directional/south,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 6
@@ -2145,15 +2145,15 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "kJ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/yellow,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "kO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 1
 	},
@@ -2161,7 +2161,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "kR" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2184,8 +2184,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "kW" = (
 /obj/structure/table,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/item/megaphone,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
@@ -2233,7 +2233,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "lr" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -2244,8 +2244,8 @@
 /obj/machinery/door/window/brigdoor/security/cell{
 	req_access = list("tarkon")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid/closed,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
@@ -2296,13 +2296,13 @@
 	name = "Couples Suite";
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "lF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -2401,8 +2401,8 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "lW" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
@@ -2449,8 +2449,8 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "mj" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/item/stack/sheet/metal/twenty,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -2548,8 +2548,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "mO" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
@@ -2572,8 +2572,8 @@
 	name = "Starboard Primary Hallway";
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -2590,7 +2590,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "mW" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
@@ -2605,7 +2605,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "na" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/glass,
@@ -2619,8 +2619,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -2630,7 +2630,7 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "ne" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -2651,8 +2651,8 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "nk" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
@@ -2667,8 +2667,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "nn" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
@@ -2707,8 +2707,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "nH" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 10
@@ -2785,8 +2785,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "oe" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light/dim/directional/west,
 /obj/effect/decal/cleanable/blood,
@@ -2831,8 +2831,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "os" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -2842,8 +2842,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "ov" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /mob/living/simple_animal/hostile/cult/ghost,
 /turf/open/floor/carpet/black,
@@ -2860,7 +2860,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "oC" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral,
@@ -2949,8 +2949,8 @@
 /turf/open/space/basic,
 /area/solars/tarkon)
 "pa" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -2974,8 +2974,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "pf" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/light_switch/directional/east,
 /obj/effect/turf_decal/tile/yellow/anticorner{
 	dir = 4
@@ -3047,8 +3047,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "py" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
@@ -3068,8 +3068,8 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "pC" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3089,7 +3089,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "pH" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3110,8 +3110,8 @@
 "pM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/firealarm/directional/east,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -3119,7 +3119,7 @@
 "pT" = (
 /obj/structure/chair/office,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/red/half,
@@ -3145,14 +3145,14 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "pY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "qb" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/delivery/blue,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 1
@@ -3162,14 +3162,14 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "qe" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "qf" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -3184,11 +3184,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
-"qi" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/mineral/equipment_vendor,
-/turf/open/floor/plasteel/cult,
-/area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "qk" = (
 /obj/structure/window/reinforced{
 	dir = 1
@@ -3211,17 +3206,17 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "qr" = (
 /obj/effect/turf_decal/weather/sand/plating,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "qv" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/mob_spawn/human/corpse/german,
@@ -3234,8 +3229,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "qB" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 6
 	},
@@ -3248,8 +3243,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "qH" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3266,8 +3261,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "qL" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -3284,8 +3279,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "qS" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/power/apc/auto_name/east{
 	locked = 0;
 	start_charge = 0
@@ -3295,8 +3290,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "ra" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -3379,7 +3374,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "rB" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/machinery/airalarm/directional/south,
@@ -3399,7 +3394,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "rF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3455,9 +3450,9 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "rY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "rZ" = (
@@ -3480,8 +3475,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "se" = (
 /obj/machinery/door/airlock/research/glass,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -3498,14 +3493,14 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "sm" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "sn" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral/half,
@@ -3523,8 +3518,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "sr" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/purple/half,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
@@ -3533,8 +3528,8 @@
 /turf/closed/mineral/random/high_chance,
 /area/ruin/space/has_grav)
 "sw" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 6
 	},
@@ -3556,8 +3551,8 @@
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "sE" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3610,15 +3605,15 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "sX" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "tc" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/light_switch/directional/north,
 /obj/machinery/firealarm/directional/south{
 	pixel_y = -31
@@ -3629,7 +3624,7 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "td" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3654,20 +3649,20 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "tn" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "to" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "tp" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light_switch/directional/south,
 /obj/effect/decal/cleanable/blood/tracks{
@@ -3700,7 +3695,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "tz" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/glass,
@@ -3723,8 +3718,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "tE" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/north,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -3738,38 +3733,38 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "tI" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "tJ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "tL" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "tM" = (
 /obj/machinery/door/airlock/cult/unruned/glass,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "tP" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
@@ -3778,8 +3773,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "tQ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -3812,7 +3807,7 @@
 /obj/item/bedsheet/random{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/machinery/button/door/directional/south{
@@ -3855,8 +3850,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "ui" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/power/apc/auto_name/north{
 	locked = 0;
 	start_charge = 0
@@ -3866,14 +3861,14 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "ul" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "un" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3900,7 +3895,7 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "ux" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/structure/statue/bone/rib{
@@ -3910,7 +3905,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "uB" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -3922,8 +3917,8 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "uD" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -3938,8 +3933,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "uI" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -3971,8 +3966,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "vc" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -3985,7 +3980,7 @@
 	locked = 0;
 	start_charge = 0
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -3997,8 +3992,8 @@
 	name = "Private Dorm 3";
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/wood/wood_large,
@@ -4063,8 +4058,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "vA" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 8
 	},
@@ -4085,8 +4080,8 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "vE" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/item/construction/rcd/arcd,
 /obj/item/rcd_ammo,
 /obj/item/rcd_ammo,
@@ -4133,8 +4128,8 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "vZ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
@@ -4163,8 +4158,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "we" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -4178,9 +4173,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "wi" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/structure/statue/bone/rib{
 	dir = 1
 	},
@@ -4198,7 +4193,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "wt" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -4214,7 +4209,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "wx" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4226,7 +4221,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "wM" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/spawner/lootdrop/maintenance/six,
 /turf/open/floor/plasteel,
@@ -4261,8 +4256,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "wZ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 8
 	},
@@ -4278,8 +4273,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "xi" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4298,7 +4293,7 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "xq" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/machinery/airalarm/directional/west,
 /turf/open/floor/carpet/black,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
@@ -4335,8 +4330,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "xE" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 8
 	},
@@ -4356,7 +4351,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "xI" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -4377,15 +4372,15 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "xN" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "xO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -4398,7 +4393,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "xR" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4419,8 +4414,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "xU" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 4
 	},
@@ -4428,7 +4423,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "xY" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/structure/curtain,
@@ -4455,7 +4450,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "yl" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/structure/table/wood,
@@ -4482,8 +4477,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "yq" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -4497,8 +4492,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "yt" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -4528,8 +4523,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "yA" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
@@ -4540,7 +4535,7 @@
 /turf/open/floor/engine/vacuum,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "yD" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood/tracks,
@@ -4575,8 +4570,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "yN" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -4590,8 +4585,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "yS" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/structure/curtain,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -4613,7 +4608,7 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav)
 "zc" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
@@ -4692,8 +4687,8 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "zD" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -4705,7 +4700,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "zJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4722,8 +4717,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "zM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
@@ -4775,7 +4770,7 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Am" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -4810,8 +4805,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
@@ -4833,8 +4828,8 @@
 /turf/open/floor/engine/o2,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "AG" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -4843,7 +4838,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "AI" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/storage/box/rndboards{
 	pixel_y = 4
@@ -4858,8 +4853,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "AM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/delivery/white,
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
@@ -4871,8 +4866,8 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "AO" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4883,8 +4878,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "AT" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
@@ -4908,9 +4903,9 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Bh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -4946,6 +4941,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mineral/equipment_vendor/golem,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Bp" = (
@@ -4963,8 +4959,8 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Bs" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4972,8 +4968,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "Bt" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/delivery/blue,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -4983,8 +4979,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "Bw" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -5004,13 +5000,13 @@
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav)
 "BD" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "BF" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -5064,8 +5060,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Ce" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
@@ -5080,14 +5076,14 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "Ch" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "Ci" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -5117,8 +5113,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Cp" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/decal/cleanable/blood,
@@ -5139,8 +5135,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/turf_decal/weather/sand/floor,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /turf/open/floor/plasteel,
@@ -5170,13 +5166,13 @@
 	name = "Private Dorm 1";
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "CA" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral/half{
@@ -5193,8 +5189,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "CE" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/light/dim/directional/east,
 /obj/effect/turf_decal/tile/red/anticorner,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -5222,15 +5218,15 @@
 /obj/machinery/door/airlock/mining/glass{
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/decal/cleanable/blood,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "CP" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
 	},
@@ -5257,6 +5253,7 @@
 /obj/item/coin,
 /obj/item/coin,
 /obj/machinery/light/directional/north,
+/obj/item/card/id/departmental_budget/tar,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "CX" = (
@@ -5272,8 +5269,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "CY" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/light/dim/directional/east,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -5341,13 +5338,13 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/tarkon)
 "Dv" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "DA" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/anticorner,
 /obj/effect/decal/cleanable/blood/tracks,
@@ -5355,16 +5352,16 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "DH" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "DK" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -5403,7 +5400,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "DS" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 1
 	},
@@ -5418,8 +5415,8 @@
 /area/solars/tarkon)
 "DY" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
@@ -5449,8 +5446,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "El" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -5458,15 +5455,15 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "Eq" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "Er" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -5476,8 +5473,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Et" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/airlock/cult/unruned/glass,
@@ -5492,7 +5489,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Ev" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood/tracks,
@@ -5520,7 +5517,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "EA" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
@@ -5535,15 +5532,15 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "EC" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "ED" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/destructible/cult/pylon,
 /turf/open/floor/plasteel/cult,
@@ -5577,7 +5574,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "EU" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -5608,8 +5605,8 @@
 /turf/open/floor/engine/vacuum,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "EY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -5622,8 +5619,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Fa" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -5696,7 +5693,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "Fq" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/structure/statue/bone/rib,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -5769,8 +5766,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "FN" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/light_switch/directional/south,
 /obj/effect/turf_decal/tile/yellow/anticorner,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -5792,8 +5789,8 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "FU" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
@@ -5837,7 +5834,7 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "Gb" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
 	},
@@ -5889,7 +5886,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Gs" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
@@ -5945,8 +5942,8 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "GL" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
@@ -5956,8 +5953,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "GM" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
@@ -5977,7 +5974,7 @@
 /turf/open/floor/grass,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "GU" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/glass,
@@ -5989,8 +5986,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "GW" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 4
@@ -6015,8 +6012,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "Hf" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -6024,8 +6021,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "Hg" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -6073,8 +6070,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav)
 "Hr" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -6101,13 +6098,13 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "HF" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "HG" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -6117,7 +6114,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "HH" = (
 /obj/effect/turf_decal/weather/sand/plating,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -6135,8 +6132,8 @@
 /obj/machinery/door/airlock/research,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -6156,8 +6153,8 @@
 /obj/machinery/door/airlock/public{
 	req_access = list("tarkoff")
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /turf/open/floor/plasteel,
@@ -6171,7 +6168,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Ic" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -6179,7 +6176,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Id" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -6194,7 +6191,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "If" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/circuitboard/machine/circuit_imprinter/hacked,
 /turf/open/floor/plasteel,
@@ -6212,13 +6209,13 @@
 	},
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Ij" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /mob/living/simple_animal/hostile/cult/ghost,
@@ -6238,7 +6235,7 @@
 /obj/item/bedsheet/random{
 	dir = 1
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/machinery/button/door/directional/north{
@@ -6286,16 +6283,16 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "ID" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "IE" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 8
 	},
@@ -6314,8 +6311,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "IJ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
@@ -6339,7 +6336,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "IO" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -6355,7 +6352,7 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
 "IW" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
 /obj/structure/curtain,
@@ -6372,8 +6369,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "IY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/power/apc/auto_name/west{
 	locked = 0;
@@ -6383,8 +6380,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "Ji" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/carpet/purple,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
@@ -6482,8 +6479,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "JB" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 1
@@ -6495,8 +6492,8 @@
 "JE" = (
 /obj/machinery/airalarm/directional/north,
 /obj/machinery/light/directional/north,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
@@ -6517,9 +6514,9 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "JJ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 10
 	},
@@ -6553,7 +6550,7 @@
 "JO" = (
 /obj/structure/bed/pod,
 /obj/item/bedsheet/random,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/machinery/button/door/directional/south{
@@ -6566,8 +6563,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "JR" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/item/clothing/suit/armor/vest,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -6584,8 +6581,8 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Aft Primary Hallway"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid/closed,
 /obj/effect/decal/cleanable/blood/tracks,
@@ -6625,9 +6622,9 @@
 /area/ruin/space/has_grav)
 "Kf" = (
 /obj/machinery/light/dim/directional/west,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -6646,8 +6643,8 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -6666,16 +6663,16 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Kn" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "Ks" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid/closed,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -6686,8 +6683,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "Kv" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -6705,8 +6702,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "KC" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/eldritch/huge,
 /obj/effect/decal/cleanable/blood,
@@ -6744,8 +6741,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "KK" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -6762,8 +6759,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "KO" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
@@ -6772,7 +6769,7 @@
 /turf/open/floor/engine/vacuum,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "KQ" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -6800,7 +6797,7 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "KW" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -6832,7 +6829,7 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Le" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -6843,8 +6840,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "Lh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -6864,8 +6861,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Lk" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
@@ -6924,8 +6921,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "LG" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -6955,7 +6952,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "LQ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -6969,7 +6966,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "LW" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -6986,15 +6983,15 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "LZ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/structure/statue/bone/rib,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "Mb" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -7016,7 +7013,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Mi" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -7034,7 +7031,7 @@
 /turf/open/space/basic,
 /area/solars/tarkon)
 "Mt" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/structure/curtain,
@@ -7043,7 +7040,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Mv" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /turf/closed/wall/mineral/cult/artificer,
@@ -7079,8 +7076,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "MF" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
@@ -7088,7 +7085,7 @@
 /turf/open/space/basic,
 /area/solars/tarkon)
 "MJ" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
@@ -7109,7 +7106,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "MS" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -7118,7 +7115,7 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "MV" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/firealarm/directional/north,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
@@ -7139,8 +7136,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Nc" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -7160,8 +7157,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Nj" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /obj/machinery/door/airlock/public/glass{
@@ -7173,14 +7170,14 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Nl" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Nq" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/structure/table/rolling,
@@ -7190,8 +7187,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Nr" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -7210,8 +7207,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Nw" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light_switch/directional/west,
 /obj/effect/decal/cleanable/blood,
@@ -7263,8 +7260,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "NL" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/structure/statue/bone/rib,
 /obj/effect/decal/cleanable/blood,
@@ -7272,7 +7269,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "NM" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 1
 	},
@@ -7317,7 +7314,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "Oa" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
@@ -7327,8 +7324,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Oi" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
@@ -7342,7 +7339,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Os" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -7372,8 +7369,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "OF" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -7383,8 +7380,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "OI" = (
 /obj/machinery/light/dim/directional/south,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -7401,8 +7398,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "OP" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -7419,15 +7416,15 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "OZ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Pa" = (
 /obj/structure/bed/double/pod,
 /obj/item/bedsheet/random/double,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/machinery/button/door/directional/north{
@@ -7442,8 +7439,8 @@
 /turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "Pc" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/power/apc/auto_name/south{
 	locked = 0;
@@ -7454,23 +7451,23 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Pf" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/purple/half,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Pk" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Pl" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/vomit/old,
@@ -7485,7 +7482,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Ps" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/blood/tracks,
@@ -7497,8 +7494,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Px" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/door/firedoor/solid,
 /obj/machinery/door/airlock/public/glass{
 	name = "Hydroponics";
@@ -7508,8 +7505,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "Pz" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -7539,8 +7536,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "PK" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/door/firedoor/solid,
 /obj/machinery/door/airlock/atmos/glass{
@@ -7557,8 +7554,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "PO" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/half{
 	dir = 1
@@ -7571,15 +7568,11 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "PS" = (
-/obj/machinery/computer{
-	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
-	dir = 8;
-	name = "Financing Console"
-	},
 /obj/effect/turf_decal/tile/brown/anticorner{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/cargo/express/tar,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "PT" = (
@@ -7671,7 +7664,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Qw" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -7821,8 +7814,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "Rq" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -7834,7 +7827,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "Rx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/brown/half{
@@ -7844,9 +7837,9 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "RB" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -7881,7 +7874,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "RK" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
@@ -7915,7 +7908,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "RT" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
@@ -7951,8 +7944,8 @@
 /turf/open/floor/engine/plasma,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "RZ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -7978,8 +7971,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Sg" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/purple/half,
 /obj/effect/decal/cleanable/blood/tracks,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -7992,8 +7985,8 @@
 /turf/closed/wall/mineral/titanium,
 /area/ruin/space/has_grav)
 "Sj" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/light_switch/directional/south,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -8027,8 +8020,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Sq" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/blue/half{
 	dir = 1
@@ -8057,8 +8050,8 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "SD" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -8079,8 +8072,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "SI" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/neutral/anticorner,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
@@ -8105,8 +8098,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "SQ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/light/directional/north,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/destructible/cult/pylon,
@@ -8134,7 +8127,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "SW" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/turf_decal/delivery/blue,
@@ -8182,7 +8175,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Tk" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -8261,8 +8254,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "TH" = (
 /obj/machinery/airalarm/directional/north,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/tile/neutral/anticorner{
 	dir = 4
@@ -8297,7 +8290,7 @@
 "TQ" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/machinery/airalarm/directional/east,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
@@ -8305,7 +8298,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "TT" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/item/storage/box/stockparts/basic,
@@ -8358,8 +8351,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Ub" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/structure/statue/bone/rib,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -8395,7 +8388,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Ur" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
@@ -8443,7 +8436,7 @@
 /turf/open/space/basic,
 /area/solars/tarkon)
 "UK" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/destructible/cult/pylon,
 /turf/open/floor/plasteel/cult,
@@ -8464,7 +8457,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "UV" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -8505,7 +8498,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "Vg" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/kitchen)
@@ -8530,20 +8523,20 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "Vl" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Vm" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "Vn" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -8552,7 +8545,7 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "Vu" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown/half,
@@ -8560,7 +8553,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Vx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /turf/open/floor/carpet/purple,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "Vy" = (
@@ -8572,7 +8565,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Vz" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/effect/turf_decal/delivery/blue,
@@ -8582,8 +8575,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "VE" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
@@ -8598,8 +8591,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "VJ" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
@@ -8620,7 +8613,7 @@
 /turf/open/floor/engine/o2,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "VT" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -8631,8 +8624,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "VV" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -8668,8 +8661,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "Wh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/east,
 /obj/effect/turf_decal/tile/red/half{
 	dir = 4
@@ -8678,8 +8671,8 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "Wn" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
@@ -8737,8 +8730,10 @@
 /obj/item/storage/box/firingpins,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
-/obj/item/ammo_box/magazine/m357/dumdum,
-/obj/item/ammo_box/magazine/m357/dumdum,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "WE" = (
@@ -8747,8 +8742,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "WL" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
@@ -8762,14 +8757,14 @@
 "WO" = (
 /obj/structure/table/reinforced,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
 "WP" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/structure/window/reinforced/no_firelock,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid/closed,
 /obj/machinery/door/poddoor/shutters{
 	id = "ptatmos"
@@ -8777,7 +8772,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "WQ" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -8793,7 +8788,7 @@
 /turf/open/space/basic,
 /area/template_noop)
 "Xh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
@@ -8812,7 +8807,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Xq" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
@@ -8842,14 +8837,14 @@
 /turf/closed/wall/mineral/cult/artificer,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/toolstorage)
 "Xz" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "XD" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -8900,9 +8895,9 @@
 /turf/open/floor/grass,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "XY" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
@@ -8911,7 +8906,7 @@
 /area/ruin/space/has_grav)
 "Yb" = (
 /obj/machinery/firealarm/directional/east,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
@@ -8924,8 +8919,8 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/tarkon)
 "Yh" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -8940,7 +8935,7 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/starboardhall)
 "Yr" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/blood,
@@ -8958,8 +8953,8 @@
 /turf/open/floor/grass,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/garden)
 "Yy" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/mob_spawn/human/corpse/damaged,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -8976,8 +8971,8 @@
 	start_charge = 0
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/airalarm/directional/south,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -8986,7 +8981,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/dorms)
 "YD" = (
 /obj/machinery/light/dim/directional/west,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
 /obj/structure/statue/bone/rib{
@@ -9017,8 +9012,8 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "YR" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
@@ -9041,9 +9036,9 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall/shower)
 "Zf" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
@@ -9051,8 +9046,8 @@
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "Zg" = (
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -9065,7 +9060,7 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Zl" = (
 /obj/effect/turf_decal/weather/sand/floor,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
@@ -9112,8 +9107,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "Zz" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 10
@@ -9123,8 +9118,8 @@
 /area/ruin/space/has_grav/bluemoon/port_tarkon/porthall)
 "ZC" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/effect/turf_decal/tile/neutral/anticorner,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
@@ -9163,15 +9158,15 @@
 	req_access = list("tarkoff")
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid/closed,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "ZV" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
 /obj/machinery/airalarm/directional/north,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/cult,
@@ -9180,15 +9175,15 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Cryogenics Room"
 	},
-/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor/solid,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "ZY" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
 /obj/machinery/airalarm/directional/west,
@@ -13484,7 +13479,7 @@ zh
 BU
 jo
 TQ
-qi
+BU
 Bo
 Vy
 BU

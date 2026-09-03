@@ -46,6 +46,10 @@
 
 	return INITIALIZE_HINT_LATELOAD //we need turfs to have air
 
+/obj/machinery/disposal/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	machine_wake() // something new to swallow; resume the auto-flush countdown
+
 /obj/machinery/disposal/proc/trunk_check()
 	trunk = locate() in loc
 	if(!trunk)
@@ -365,10 +369,13 @@
 		if("eject")
 			eject()
 			. = TRUE
+	if(.)
+		machine_wake() // flush handle / pump state changed; process() owns the follow-through
 
 /obj/machinery/disposal/bin/alt_attack_hand(mob/user)
 	if(can_interact(usr))
 		flush = !flush
+		machine_wake()
 		update_icon()
 		return TRUE
 	return FALSE
@@ -438,6 +445,11 @@
 /obj/machinery/disposal/bin/process()
 	if(machine_stat & BROKEN) //nothing can happen if broken
 		return
+
+	// pump off/charged, handle idle and nothing waiting for the periodic auto-flush:
+	// nothing left to do per tick; Entered()/ui_act()/alt_attack_hand() wake us back up
+	if(!pressure_charging && !flush && !flushing && !(full_pressure && contents.len))
+		return machine_sleep()
 
 	flush_count++
 	if(flush_count >= flush_every_ticks)

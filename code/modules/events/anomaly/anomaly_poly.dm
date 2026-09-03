@@ -2,8 +2,10 @@
 	name = "Anomaly: Polymorph"
 	typepath = /datum/round_event/anomaly/anomaly_poly
 
+	enabled = TRUE // база выключена, подтипы включаются явно
 	max_occurrences = 10
 	weight = 25
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "This anomaly transforms the appearance of creatures nearby."
 
 /datum/round_event/anomaly/anomaly_poly

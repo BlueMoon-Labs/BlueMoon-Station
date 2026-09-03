@@ -39,7 +39,10 @@
 	port_y_offset = offset[2]
 	//SPLURT EDIT END
 
-	if(!cached_map)
+	// Проверять надо force_cache, а не cached_map: выше по проку уже стоит ранний return по
+	// тому же условию, так что ветка была недостижима, и разобранная карта каждого шаблона
+	// шаттла оставалась в памяти до конца раунда. Кэш просили только ради discover_offset().
+	if(!force_cache && !keep_cached_map)
 		cached_map = null
 
 /* SPLURT EDIT - Refractored in modular
@@ -68,7 +71,12 @@
 	. = ..()
 	if(!.)
 		return
-	var/list/turfs = get_last_loaded_turf_block()
+	// Границы приезжают возвратом родительского load(). get_last_loaded_turf_block() читает их
+	// из cached_map, а шаблон шаттла отпускает разобранную карту сразу после preload_size() -
+	// и на роундстарте прок падал CRASH'ем ещё до port.register(), оставляя шаттл незаехавшим,
+	// а его зону на станции - голым космосом.
+	var/list/bounds = .
+	var/list/turfs = block(locate(bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ]), locate(bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]))
 	for(var/i in 1 to turfs.len)
 		var/turf/place = turfs[i]
 		if(istype(place, /turf/open/space)) // This assumes all shuttles are loaded in a single spot then moved to their real destination.
@@ -174,6 +182,13 @@
 
 /datum/map_template/shuttle/pirate
 	port_id = "pirate"
+	can_be_bought = FALSE
+
+/datum/map_template/shuttle/medieval
+	prefix = "_maps/shuttles/bluemoon/"
+	port_id = "medieval"
+	suffix = "default"
+	name = "Flying scrap"
 	can_be_bought = FALSE
 
 /datum/map_template/shuttle/hunter
@@ -695,10 +710,22 @@
 /datum/map_template/shuttle/escape_pod/default
 	suffix = "default"
 	name = "escape pod (Default)"
+	description = "Base escape pod with 2 tiles of interior space."
 
 /datum/map_template/shuttle/escape_pod/large
 	suffix = "large"
 	name = "escape pod (Large)"
+	description = "Actually the old Pubbystation monastery shuttle."
+
+/datum/map_template/shuttle/escape_pod/luxury
+	suffix = "luxury"
+	name = "escape pod (Luxury)"
+	description = "Upgraded escape pod with 3 tiles of interior space."
+
+/datum/map_template/shuttle/escape_pod/cramped
+	suffix = "cramped"
+	name = "escape pod (Cramped)"
+	description = "Downgraded escape pod that lacks a window and only has one seat, alongside lacking an emergency safe."
 
 /datum/map_template/shuttle/assault_pod/default
 	suffix = "default"
@@ -820,6 +847,33 @@
 	lock_override = NONE
 	shuttlePortId = "lf_haron_custom"
 	jump_to_ports = list("whiteship_away" = 1, "whiteship_home" = 1)
+	view_range = 5.5
+	x_offset = 7
+	y_offset = 1
+
+// Чиню недоделанный шаттл
+/datum/map_template/shuttle/ruin/outpost
+	suffix = "derelict_shuttle"
+	name = "Outpost shuttle"
+
+/obj/machinery/computer/shuttle/outpost_shuttle
+	name = "Outpost shuttle Control"
+	desc = "Used to control the outpost shuttle."
+	icon_screen = "syndishuttle"
+	icon_keyboard = "syndie_key"
+	light_color = LIGHT_COLOR_RED
+	shuttleId = "outpostshuttle"
+	possible_destinations = "outpostshuttle_custom;outpostshuttle_docks;whiteship_home;whiteship_lavaland"
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/outpost_shuttle
+	name = "Outpost shuttle Navigation Computer"
+	desc = "The Navigation console for the Outpost shuttle."
+	icon_screen = "syndishuttle"
+	icon_keyboard = "syndie_key"
+	shuttleId = "outpostshuttle"
+	lock_override = NONE
+	shuttlePortId = "outpostshuttle_custom"
+	jump_to_ports = list("outpostshuttle_docks" = 1, "whiteship_away" = 1, "whiteship_home" = 1)
 	view_range = 5.5
 	x_offset = 7
 	y_offset = 1

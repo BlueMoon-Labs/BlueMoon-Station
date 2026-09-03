@@ -70,6 +70,13 @@
 	summon_backup(15)
 	say("411 in progress, requesting backup!")
 
+//Охрана шаттла записывает во враги того, кто её ударил (RetaliateAgainst из consider_retaliation),
+//а не всех, кто попал в поле зрения в момент урона. Базовый ширококонусный Retaliate() срабатывал
+//на ЛЮБОЙ урон, включая разряд тока и негодную атмосферу, - и охрана открывала огонь по случайному
+//экипажу, который просто стоял рядом. Личная обида на реального обидчика при этом сохраняется.
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/Retaliate()
+	return FALSE
+
 /mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged
 	icon_state = "nanotrasenrangedsmg"
 	icon_living = "nanotrasenrangedsmg"

@@ -6,6 +6,7 @@
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
 "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
+"blatoff", "regiska", "lander231" \
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
@@ -255,15 +256,15 @@
 	unique_reskin = list(
 		"Black" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor"
+			RESKIN_ITEM_STATE = "catcrin_underarmor"
 		),
 		"White" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_white",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_white"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_white"
 		),
 		"Beige" = list(
 			RESKIN_ICON_STATE = "catcrin_underarmor_beige",
-			RESKIN_WORN_ICON_STATE = "catcrin_underarmor_beige"
+			RESKIN_ITEM_STATE = "catcrin_underarmor_beige"
 		)
 	)
 
@@ -312,6 +313,12 @@
 	product = /obj/item/clothing/suit/space/hardsuit/security/mark46_sec
 	fromitem = list(/obj/item/clothing/suit/space/hardsuit/security)
 
+/obj/item/modkit/mark45_kit
+	name = "Catcrin MOD suit"
+	desc = "A modkit for making a security MODsuit into a Mark 45 MOD suit armor."
+	product = /obj/item/mod/control/pre_equipped/security/catcrin
+	fromitem = list(/obj/item/mod/control/pre_equipped/security)
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// Слот шеи.
 
 /obj/item/clothing/neck/tie/maskchalat
@@ -327,6 +334,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Длинноствол.
 
 /obj/item/gun/energy/e_gun/hos/karabiner_m13
+	DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 	name = "\improper Karabiner-M13"
 	desc = "The development of the Catcrin army. It is used extremely rarely and only by the highest ranks. It has several different shooting modes."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/aa_multiphasecarabinb.dmi'
@@ -366,22 +374,7 @@
 	fromitem = list(/obj/item/gun/ballistic/shotgun/automatic/combat)
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/frontline
-	name = "CS-Frontline-2534"
-	desc = "A standard assault automatic shotgun with a 7-shot magazine used by the Catcrin Empire army"
-	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/csfrontline.dmi'
-	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	icon_state = "csfrontline"
-	item_state = "csfrontline"
-	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/frontlineshot.ogg'
-	unique_reskin = null
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_overlays()
-	. = ..()
-	icon_state = "csfrontline[stock ? "" : "c"]"
-	item_state = "csfrontline[stock ? "" : "c"]"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "CS-Frontline-2534"
 	desc = "A standard assault automatic shotgun with a 7-shot magazine used by the Catcrin Empire army"
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/csfrontline.dmi'
@@ -396,12 +389,7 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_icon_state()
 	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-	item_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/frontline/update_overlays()
-	. = ..()
-	icon_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
-	item_state = "csfrontline[stock ? "" : "c"]-[get_ammo(FALSE)]"
+	item_state = icon_state
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -412,6 +400,7 @@
 	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
 
 /obj/item/gun/ballistic/shotgun/riot/yernela
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "PS-Yernela-2525"
 	desc = "A standard assault pump-action shotgun with a 7-shot magazine used by the Catcrin Empire army, was developed on planet Yernela."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/yernela.dmi'
@@ -431,6 +420,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
 
 /obj/item/gun/ballistic/automatic/wt550/gewehr550
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Gewehr-550"
 	desc = "A regular shortened assault rifle made in the Catcrin Empire for fighting in narrow spaces in the likeness of stations and shuttles."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/aa_gewehr550.dmi'
@@ -453,10 +443,11 @@
 /obj/item/modkit/hwal2572
 	name = " H-Wal-2572 Kit"
 	desc = "A modkit for making a hybrid taser into a H-Wal-2572."
-	product = /obj/item/gun/energy/laser/hwal2572
+	product = /obj/item/gun/energy/e_gun/advtaser/hwal2572
 	fromitem = list(/obj/item/gun/energy/e_gun/advtaser)
 
-/obj/item/gun/energy/laser/hwal2572
+/obj/item/gun/energy/e_gun/advtaser/hwal2572
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper H-Wal-2572"
 	desc = "A hybrid taser made by Catcrin's waffenschmied that combines electric and energy shots. There is a small circle on the handle showing the charging level."
 	icon_state = "hwal"
@@ -464,23 +455,11 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/hwal.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	ammo_x_offset = 0
-	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerGrab.ogg'
-	var/last_altfire = 0
-	var/altfire_delay = CLICK_CD_RANGE
+	ammo_x_offset = 0
+	shaded_charge = 1
 	shot_type_overlay = FALSE
-	can_flashlight = 1
-
-/obj/item/gun/energy/laser/hwal2572/altafterattack(atom/target, mob/user, proximity_flag, params)
-	. = TRUE
-	if(last_altfire + altfire_delay > world.time)
-		return
-	var/current_index = current_firemode_index
-	set_firemode_to_type(/obj/item/ammo_casing/energy/electrode)
-	process_afterattack(target, user, proximity_flag, params)
-	set_firemode_index(current_index)
-	last_altfire = world.time
+	ammo_type = list(/obj/item/ammo_casing/energy/disabler/hwal2572, /obj/item/ammo_casing/energy/electrode/security/hwal2572 = FALSE)
 
 /obj/item/ammo_casing/energy/disabler/hwal2572
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
@@ -497,6 +476,7 @@
 	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
 
 /obj/item/melee/baton/stunspear
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "One-handed stun spear"
 	desc = "A standard non-lethal spear used by Catcrin's law enforcement agencies."
 	item_state = "stunspear"
@@ -504,83 +484,33 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/stunspear.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-
-/obj/item/melee/baton/stunspear/switch_status(new_status = FALSE, silent = FALSE)
-	if(turned_on != new_status)
-		turned_on = new_status
-		if(!silent)
-			playsound(loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/stunspear.ogg', 75, 1, -1)
-		if(turned_on)
-			START_PROCESSING(SSobj, src)
-		else
-			STOP_PROCESSING(SSobj, src)
-	update_icon()
+	turn_on_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/stunspear.ogg'
 
 /obj/item/melee/baton/stunspear/update_icon_state()
-	if(turned_on)
-		icon_state = "stunspear_active"
-		item_state = "stunspear_active"
-	else if(!cell)
-		icon_state = "stunspear_nocell"
-		item_state = "stunspear"
-	else
-		icon_state = "stunspear"
-		item_state = "stunspear"
+	. = ..()
+	item_state = "[initial(icon_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/baton/stunspear/get_worn_belt_overlay(icon_file)
-	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "-stunspear")
+	return mutable_appearance(icon_file, "-stunspear")
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/ffshield
 	name = "Force-field riot shield Kit"
 	desc = "A modkit for making an telescopic riot shield into a Catcrin force-field riot shield."
-	product = /obj/item/shield/riot/ffshield
+	product = /obj/item/shield/riot/tele/ffshield
 	fromitem = list(/obj/item/shield/riot/tele)
 
-/obj/item/shield/riot/ffshield
+/obj/item/shield/riot/tele/ffshield
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Force-field riot shield"
 	desc = "A small special shield developed in the Catcrin Empire that uses a force field charge to block physical influences."
 	icon_state = "ffshield0"
+	base_icon_state = "ffshield"
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/ffshield.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
-	slot_flags = null
-	force = 3
-	throwforce = 3
-	throw_speed = 3
-	throw_range = 4
-	w_class = WEIGHT_CLASS_NORMAL
-	var/active = FALSE
-
-/obj/item/shield/riot/ffshield/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
-	if(!active)
-		return BLOCK_NONE
-	return ..()
-
-/obj/item/shield/riot/ffshield/can_active_block()
-	return ..() && active
-
-/obj/item/shield/riot/ffshield/attack_self(mob/living/user)
-	active = !active
-	icon_state = "ffshield[active]"
-	playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg', 50, TRUE)
-
-	if(active)
-		force = 8
-		throwforce = 5
-		throw_speed = 2
-		w_class = WEIGHT_CLASS_BULKY
-		slot_flags = ITEM_SLOT_BACK
-		to_chat(user, "<span class='notice'>You extend \the [src].</span>")
-	else
-		force = 3
-		throwforce = 3
-		throw_speed = 3
-		w_class = WEIGHT_CLASS_NORMAL
-		slot_flags = null
-		to_chat(user, "<span class='notice'>[src] can now be concealed.</span>")
-	add_fingerprint(user)
+	extend_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/ffshield.ogg'
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -591,6 +521,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper B-Wal-2572"
 	desc = "A one-handed pistol used in the regular Catcrin Army."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/bwal.dmi'
@@ -607,6 +538,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/magrifle/nopin) //Иначе не выйдет к сожалению.
 
 /obj/item/gun/ballistic/automatic/magrifle/magrrinei
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "MAG-R-Rinei"
 	desc = "An assault rifle developed on a planet belonging to the Catcrins : - Lar'rinei, the principle of operation is similar to the Gauss system, ammunition and battery charging are needed."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/magweapon.dmi'
@@ -628,6 +560,7 @@
 	fromitem = list(/obj/item/gun/ballistic/automatic/magrifle/pistol/nopin) //Иначе не выйдет к сожалению.
 
 /obj/item/gun/ballistic/automatic/magrifle/pistol/magplar
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "MAG-P-Lar"
 	desc = "A one-handed submachine gun with a slow-motion firing mode made specifically on the basis of Gauss rifle. Due to the reduced appearance, the rate of fire and the magazine suffered, but it is popular among Catcrins due to its compactness and ease of use in the caves of the planet Lar'rinei."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/magweapon.dmi'
@@ -666,9 +599,16 @@
 	icon_state = "syndicate_cool"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	actions_types = list(/datum/action/item_action/maskhalt)
+	var/static/list/halt_sounds = list(
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt0.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt1.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt2.ogg',
+		'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt3.ogg'
+	)
 
-/datum/action/item_action/maskhalt
-	name = "HALT!"
+/obj/item/clothing/mask/gas/syndicate/cool_version/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/maskhalt))
+		maskhalt()
 
 /obj/item/clothing/mask/gas/syndicate/cool_version/verb/maskhalt()
 	set category = "Object"
@@ -679,24 +619,18 @@
 	if(!can_use(usr))
 		return
 
-	var/frase
-	frase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
+	var/phrase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
+	phrase = reject_bad_text(phrase)
+	if(!phrase)
+		return
 
-	if(frase)
-		usr.audible_message("<b>[usr]</b> exclaims, \"<font color='red' size='4'><b>[frase]</b></font>\"")
-		switch(rand(0,3))
-			if(0)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt0.ogg', 100, 1)
-			if(1)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt1.ogg', 100, 1)
-			if(2)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt2.ogg', 100, 1)
-			if(3)
-				playsound(src.loc, 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/misc/catcrin_halt3.ogg', 100, 1)
+	usr.say(message = phrase, spans = list("big warning"))
+	playsound(src.loc, pick(halt_sounds), 100, 1)
 
-/obj/item/clothing/mask/gas/syndicate/cool_version/ui_action_click(mob/user, action)
-	if(istype(action, /datum/action/item_action/maskhalt))
-		maskhalt()
+/datum/action/item_action/maskhalt
+	name = "HALT!"
+
+///////////////////////////////////////////////////
 
 /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_one
 	name = "Tactical combat Catcrin gasmask"
@@ -729,6 +663,7 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/icons/accessories.dmi'
 	icon_state = "banner_catcrin"
 	desc = "Banner of Catcrin Empire"
+	inspiration_available = FALSE
 
 /obj/item/sign/flag/catcrin
 	name = "folded flag of the Catcrin Empire"
@@ -766,6 +701,7 @@
 	new /obj/item/modkit/ffshield(src)
 	new /obj/item/modkit/hopesh_kit(src)
 	new /obj/item/modkit/mark46_kit(src)
+	new /obj/item/modkit/mark45_kit(src)
 	new /obj/item/sign/flag/catcrin(src)
 	new /obj/item/banner/catcrin(src)
 
@@ -787,19 +723,19 @@
 	name = "First Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_one
-	ckeywhitelist = list(CATCRIN_GANG)
+	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_two
 	name = "Second Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_two
-	ckeywhitelist = list(CATCRIN_GANG, "ghos7ik")
+	ckeywhitelist = list(CATCRIN_GANG, "ghos7ik", "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_tree
 	name = "Thrid Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_three
-	ckeywhitelist = list(CATCRIN_GANG)
+	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_kit
 	name = "Catcrin kit"
@@ -820,7 +756,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/head/helmet/sec/mark45_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 
@@ -829,7 +764,6 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/suit/armor/mark45_armor_ce
 	ckeywhitelist = list("silverfoxpaws")
-	subcategory = LOADOUT_SUBCATEGORIES_DON03
 	restricted_desc = "Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 

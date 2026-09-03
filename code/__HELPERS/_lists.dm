@@ -19,6 +19,8 @@
 
 #define LAZYINITLIST(L) if (!L) { L = list(); }
 #define UNSETEMPTY(L) if (L && !length(L)) L = null
+///удалить ключ из ассоц-списка, если его значение-список опустело
+#define ASSOC_UNSETEMPTY(L, K) if (!length(L[K])) L -= K;
 ///Like LAZYCOPY - copies an input list if the list has entries, If it doesn't the assigned list is nulled
 #define LAZYLISTDUPLICATE(L) (L ? L.Copy() : null )
 #define LAZYREMOVE(L, I) if(L) { L -= I; if(!length(L)) { L = null; } }
@@ -41,12 +43,29 @@
 #define LAZYADDASSOC(L, K, V) if(!L) { L = list(); } L[K] += list(V);
 #define LAZYREMOVEASSOC(L, K, V) if(L) { if(L[K]) { L[K] -= V; if(!length(L[K])) L -= K; } if(!length(L)) L = null; }
 #define LAZYACCESSASSOC(L, I, K) L ? L[I] ? L[I][K] ? L[I][K] : null : null : null
-#define QDEL_LAZYLIST(L) for(var/I in L) qdel(I); L = null;
+/// По снапшоту, как и QDEL_LIST: Destroy элемента часто снимает его из этого же списка, а
+/// удаление текущего элемента в обходе сдвигает индексы - каждый второй оставался живым.
+#define QDEL_LAZYLIST(L) if(L) { for(var/qdel_lazylist_item in (L).Copy()) qdel(qdel_lazylist_item); } L = null;
 //These methods don't null the list
 #define LAZYCOPY(L) (L ? L.Copy() : list() ) //Use LAZYLISTDUPLICATE instead if you want it to null with no entries
 #define LAZYCLEARLIST(L) if(L) L.Cut() // Consider LAZYNULL instead
 #define SANITIZE_LIST(L) ( islist(L) ? L : list() )
 #define reverseList(L) reverseRange(L.Copy())
+
+// In-place list resize macros (Baystation port). L.len changes never reallocate,
+// unlike Cut(1,2) which shifts every remaining element - use the tail-pop pattern
+// for queue drain loops where processing order does not matter:
+//   while(length(queue))
+//       var/thing = queue[queue.len]
+//       LIST_DEC(queue)
+/// Increase the size of L by 1 at the end. Evaluates to the old last entry index.
+#define LIST_INC(L) ((L).len++)
+/// Increase the size of L by 1 at the end. Evaluates to the new last entry index.
+#define LIST_PRE_INC(L) (++(L).len)
+/// Decrease the size of L by 1 from the end. Evaluates to the old last entry index.
+#define LIST_DEC(L) ((L).len--)
+/// Decrease the size of L by 1 from the end. Evaluates to the new last entry index.
+#define LIST_PRE_DEC(L) (--(L).len)
 
 /// Performs an insertion on the given lazy list with the given key and value. If the value already exists, a new one will not be made.
 #define LAZYORASSOCLIST(lazy_list, key, value) \
@@ -876,9 +895,20 @@
 	. = default
 	return json_encode(L)
 
+//json decode that will return null on parse error instead of runtiming.
 /proc/safe_json_decode(string, default = list())
-	. = default
-	return json_decode(string)
+	//пустой вход - это отсутствующая запись сейвфайла (новый персонаж, поле ещё не
+	//мигрировало), а не битый JSON. Логировать такое незачем: за раунд набегало
+	//под две сотни трейсов на ровном месте
+	if(isnull(string) || !length("[string]"))
+		return null
+	try
+		return json_decode(string)
+	catch(var/exception/error)
+		//молчаливый null прятал источник битого JSON - оставляем след со стеком
+		//вызова и началом входной строки, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input ([length("[string]")]): [copytext_char("[string]", 1, 200)]")
+		return null
 
 /**
  * Custom binary search sorted insert utilising comparison procs instead of vars.
@@ -914,16 +944,6 @@
 			__BIN_LIST.Insert(__BIN_MID, INPUT);\
 		};\
 	} while(FALSE)
-
-///Returns the src and all recursive contents as a list.
-/atom/proc/get_all_contents(ignore_flag_1)
-	. = list(src)
-	var/i = 0
-	while(i < length(.))
-		var/atom/checked_atom = .[++i]
-		if(checked_atom.flags_1 & ignore_flag_1)
-			continue
-		. += checked_atom.contents
 
 /** Прок ищет объект и его дочерние объекты среди указанного листа.
  * typepath – аргумент атома, обычно записывается как [x.path]

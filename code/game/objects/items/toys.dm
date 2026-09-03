@@ -32,96 +32,7 @@
 	total_mass = TOTAL_MASS_TINY_ITEM
 
 
-/*
- * Balloons
- */
-/obj/item/toy/balloon
-	name = "water balloon"
-	desc = "A translucent balloon. There's nothing in it."
-	icon = 'icons/obj/toys/toy.dmi'
-	icon_state = "waterballoon-e"
-	item_state = "balloon-empty"
-
-
-/obj/item/toy/balloon/Initialize(mapload)
-	. = ..()
-	create_reagents(10)
-
-/obj/item/toy/balloon/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/update_icon_updates_onmob)
-
-/obj/item/toy/balloon/attack(mob/living/carbon/human/M, mob/user)
-	return
-
-/obj/item/toy/balloon/afterattack(atom/A as mob|obj, mob/user, proximity)
-	. = ..()
-	if(!proximity)
-		return
-	if (istype(A, /obj/structure/reagent_dispensers))
-		var/obj/structure/reagent_dispensers/RD = A
-		if(RD.reagents.total_volume <= 0)
-			to_chat(user, "<span class='warning'>[RD] is empty.</span>")
-		else if(reagents.total_volume >= 10)
-			to_chat(user, "<span class='warning'>[src] is full.</span>")
-		else
-			A.reagents.trans_to(src, 10)
-			to_chat(user, "<span class='notice'>You fill the balloon with the contents of [A].</span>")
-			desc = "A translucent balloon with some form of liquid sloshing around in it."
-			update_icon()
-
-/obj/item/toy/balloon/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/reagent_containers/glass))
-		if(I.reagents)
-			if(I.reagents.total_volume <= 0)
-				to_chat(user, "<span class='warning'>[I] is empty.</span>")
-			else if(reagents.total_volume >= 10)
-				to_chat(user, "<span class='warning'>[src] is full.</span>")
-			else
-				desc = "A translucent balloon with some form of liquid sloshing around in it."
-				to_chat(user, "<span class='notice'>You fill the balloon with the contents of [I].</span>")
-				I.reagents.trans_to(src, 10)
-				update_icon()
-	else if(I.get_sharpness())
-		balloon_burst()
-	else
-		return ..()
-
-/obj/item/toy/balloon/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(!..()) //was it caught by a mob?
-		balloon_burst(hit_atom)
-
-/obj/item/toy/balloon/proc/balloon_burst(atom/AT)
-	if(reagents.total_volume >= 1)
-		var/turf/T
-		if(AT)
-			T = get_turf(AT)
-		else
-			T = get_turf(src)
-		T.visible_message("<span class='danger'>[src] bursts!</span>","<span class='italics'>You hear a pop and a splash.</span>")
-		reagents.reaction(T)
-		for(var/atom/A in T)
-			reagents.reaction(A)
-		icon_state = "burst"
-		qdel(src)
-
-/obj/item/toy/balloon/update_icon_state()
-	if(src.reagents.total_volume >= 1)
-		icon_state = "waterballoon"
-		item_state = "balloon"
-	else
-		icon_state = "waterballoon-e"
-		item_state = "balloon-empty"
-
-/obj/item/toy/syndicateballoon
-	name = "syndicate balloon"
-	desc = "There is a tag on the back that reads \"FUK NT!11!\"."
-	icon = 'icons/obj/items_and_weapons.dmi'
-	icon_state = "syndballoon"
-	item_state = "syndballoon"
-	lefthand_file = 'icons/mob/inhands/antag/balloons_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/antag/balloons_righthand.dmi'
-	w_class = WEIGHT_CLASS_BULKY
+// Balloons — see toy_balloons.dm
 
 /*
  * Fake singularity
@@ -463,7 +374,9 @@
 	throwforce = 0
 	throw_speed = 3
 	throw_range = 5
-
+	block_parry_data = /datum/block_parry_data/chair //Раньше он наследовал dualsaber, теперь стул, что честно т.к занимает две руки.
+	block_chance = 50
+	can_reflect = FALSE
 	attack_verb = list("attacked", "struck", "hit")
 	total_mass_on = TOTAL_MASS_TOY_SWORD
 	slowdown_wielded = 0
@@ -475,8 +388,11 @@
 /obj/item/dualsaber/hypereutactic/toy/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	return BLOCK_NONE
 
+/obj/item/dualsaber/hypereutactic/toy/directional_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return, override_direction)
+	return BLOCK_NONE
+
 /obj/item/dualsaber/hypereutactic/toy/rainbow
-	name = "\improper Hyper-Euclidean Reciprocating Trigonometric Zweihander"
+	name = "\improper Hyper-Euclidean Reciprocating Trigonometrc Zweihander"
 	desc = "A custom-built toy with fancy rainbow lights built-in."
 	hacked = TRUE
 

@@ -11,7 +11,9 @@ SUBSYSTEM_DEF(economy)
 										ACCOUNT_MED = ACCOUNT_MED_NAME,
 										ACCOUNT_SRV = ACCOUNT_SRV_NAME,
 										ACCOUNT_CAR = ACCOUNT_CAR_NAME,
-										ACCOUNT_SEC = ACCOUNT_SEC_NAME)
+										ACCOUNT_SEC = ACCOUNT_SEC_NAME,
+										ACCOUNT_TAR = ACCOUNT_TAR_NAME,
+										ACCOUNT_DS = ACCOUNT_DS_NAME)
 	var/list/generated_accounts = list()
 	/// A var that collects the total amount of credits owned in player accounts on station, reset and recounted on fire()
 	var/station_total = 0
@@ -21,6 +23,9 @@ SUBSYSTEM_DEF(economy)
 	var/station_target_buffer = 0
 	/// A var that displays the result of inflation_value for easier debugging and tracking.
 	var/inflation_value = 1
+	/// Множитель цен от события Market Crash: 1 в обычное время, выше во время обвала.
+	/// Применяется поверх штатной инфляции в inflation_value().
+	var/price_surge_mult = 1
 	/// Contains the message to send to newscasters about earnings, updated on price_update()
 	var/civ_bounty_tracker = 0
 	var/full_ancap = FALSE // Enables extra money charges for things that normally would be free, such as sleepers/cryo/cloning.
@@ -72,9 +77,18 @@ SUBSYSTEM_DEF(economy)
 	var/import_total = 0
 
 /datum/controller/subsystem/economy/Initialize(timeofday)
-	var/budget_to_hand_out = round(budget_pool / department_accounts.len)
+	// BLUEMOON ADD START - эти бюджеты стартуют с нуля и не участвуют в общем дележе budget_pool
+	var/list/zero_balance_accounts = list(ACCOUNT_TAR, ACCOUNT_DS)
+	var/list/split_accounts = department_accounts.Copy()
+	for(var/A in zero_balance_accounts)
+		split_accounts -= A
+	// BLUEMOON ADD END
+	var/budget_to_hand_out = round(budget_pool / split_accounts.len) // BLUEMOON EDIT (был department_accounts.len)
 	for(var/A in department_accounts)
-		new /datum/bank_account/department(A, budget_to_hand_out)
+		if(A in zero_balance_accounts) // BLUEMOON ADD
+			new /datum/bank_account/department(A, 0) // BLUEMOON ADD
+		else // BLUEMOON ADD
+			new /datum/bank_account/department(A, budget_to_hand_out)
 	return ..()
 
 /datum/controller/subsystem/economy/Recover()
@@ -187,6 +201,6 @@ SUBSYSTEM_DEF(economy)
  **/
 /datum/controller/subsystem/economy/proc/inflation_value()
 	if(!bank_accounts_by_id.len)
-		return 1
-	inflation_value = max(round(((station_total / bank_accounts_by_id.len) / station_target), 0.1), 1.0)
+		return price_surge_mult
+	inflation_value = max(round(((station_total / bank_accounts_by_id.len) / station_target), 0.1), 1.0) * price_surge_mult
 	return inflation_value

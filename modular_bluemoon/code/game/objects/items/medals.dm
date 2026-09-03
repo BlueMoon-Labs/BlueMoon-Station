@@ -20,7 +20,7 @@ GLOBAL_DATUM_INIT(medals_view_tgui, /datum/medals_view_tgui, new)
 
 /datum/medals_view_tgui/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/medal)
+		get_asset_datum(/datum/asset/spritesheet_batched/medal)
 	)
 
 /client/verb/view_own_medals()
@@ -29,13 +29,11 @@ GLOBAL_DATUM_INIT(medals_view_tgui, /datum/medals_view_tgui, new)
 
 	GLOB.medals_view_tgui.ui_interact(mob)
 
-/datum/asset/spritesheet/medal
+/datum/asset/spritesheet_batched/medal
 	name = "medal"
 
-/datum/asset/spritesheet/medal/register()
+/datum/asset/spritesheet_batched/medal/create_spritesheets()
 	for(var/obj/item/clothing/accessory/medal/medal as anything in subtypesof(/obj/item/clothing/accessory/medal))
-		var/icon/current_icon = icon(initial(medal.icon), initial(medal.icon_state), SOUTH)
 		var/imgid = replacetext("[initial(medal.name)]", " ", "-")
 
-		Insert(imgid, current_icon)
-	return ..()
+		insert_icon(imgid, uni_icon(initial(medal.icon), initial(medal.icon_state), SOUTH))

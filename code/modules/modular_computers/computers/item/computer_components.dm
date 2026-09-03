@@ -49,7 +49,11 @@
 
 	to_chat(user, span_notice("You remove \the [H] from \the [src]."))
 
-	H.forceMove(get_turf(src))
+	// Деталь зовёт uninstall_component из своего же Destroy(), и тогда возвращать её
+	// в мир нельзя: forceMove qdel-нутого атома пинит его ссылкой из contents турфа
+	// (гвард в doMove). Связку разбираем всегда, переезжает только живая деталь.
+	if(!QDELETED(H))
+		H.forceMove(get_turf(src))
 	H.holder = null
 	H.on_remove(src, user)
 	if(enabled && !use_power())

@@ -129,6 +129,16 @@ To fix this kind of problem, run `bin/tgui --clean` and try again.
 When developing with `bin/tgui --dev`, you can use the in-app debugging
 features listed below.
 
+**Hot reload (dev).**
+`bin/tgui --dev` starts the watchers and a local dev-server (HTTP+WS on
+`http://127.0.0.1:3000`). In the game config set `TGUI_DEV_SERVER_IP 127.0.0.1`
+(config/entries/logging.txt). With it set, tgui windows load the live dev
+bundle from the dev-server instead of the compiled asset, so editing JS
+auto-reloads the open window - no DM recompile. The green bug button and
+F11/F12 also appear because the loaded bundle is a development build. Leave
+`TGUI_DEV_SERVER_IP` empty/commented out in production. Requires Node v20.19+
+or v22.12+ (the toolchain does not run on Node v24).
+
 **Kitchen Sink.**
 Press `F12` to open the KitchenSink interface. This interface is a
 playground to test various tgui components.

@@ -13,19 +13,22 @@
 
 /datum/element/mob_holder/micro/proc/on_resize(mob/living/micro, new_size, old_size)
 	var/obj/item/clothing/head/mob_holder/holder = micro.loc
-	if(istype(holder))
-		var/mob/living/living = get_atom_on_turf(micro.loc, /mob/living)
-		var/compare_size = 1
-		if(micro.mob_weight < MOB_WEIGHT_NORMAL)
-			compare_size = 0.8
-		if(living && (COMPARE_SIZES(living, micro)) < (compare_size / CONFIG_GET(number/max_pick_ratio)))
-			living.visible_message(span_warning("\The [living] drops [micro] as [micro.p_they()] grow\s too big to carry."),
-				span_warning("You drop \The [living] as [living.p_they()] grow\s too big to carry."),
-				target = micro,
-				target_message = span_notice("\The [living] drops you as you grow too big to carry."))
-			holder.release()
-		else if(!istype(living)) // Somehow a inside a mob_holder and the mob_holder isn't inside any livings? release.
-			holder.release()
+	if(!istype(holder))
+		return
+	var/atom/movable/topmost = get_atom_on_turf(micro.loc, /mob/living)
+	if(!isliving(topmost))
+		holder.release()
+		return
+	var/mob/living/living = topmost
+	var/compare_size = 1
+	if(micro.mob_weight < MOB_WEIGHT_NORMAL)
+		compare_size = 0.8
+	if(COMPARE_SIZES(living, micro) < (compare_size / CONFIG_GET(number/max_pick_ratio)))
+		living.visible_message(span_warning("\The [living] drops [micro] as [micro.p_they()] grow\s too big to carry."),
+			span_warning("You drop \The [living] as [living.p_they()] grow\s too big to carry."),
+			target = micro,
+			target_message = span_notice("\The [living] drops you as you grow too big to carry."))
+		holder.release()
 
 /datum/element/mob_holder/micro/on_examine(mob/living/source, mob/user, list/examine_list)
 	var/compare_size = 1
@@ -126,7 +129,11 @@
 	if(resisting.incapacitated())
 		to_chat(resisting, span_warning("You can't escape while you're restrained like this!"))
 		return
-	var/mob/living/carrier = get_atom_on_turf(src, /mob/living)
+	var/atom/movable/topmost = get_atom_on_turf(src, /mob/living)
+	if(!isliving(topmost))
+		release()
+		return
+	var/mob/living/carrier = topmost
 	visible_message(span_warning("[resisting] begins to squirm in [carrier]'s grasp!"))
 	var/time_required = COMPARE_SIZES(carrier, resisting) / 4 SECONDS //Scale how fast the resisting will be depending on size difference
 	if(get_size(resisting) > 0.5 && carrier.mob_weight < MOB_WEIGHT_NORMAL) //BLUEMOON ADD персонажу размером больше 50% выбраться из хватки лёгкого большого персонажа достаточно просто

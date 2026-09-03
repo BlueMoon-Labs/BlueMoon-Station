@@ -1,6 +1,7 @@
 //Same as snow_storm basically, but cools outside turf temps. StreetStation only
 #define ICY_SNOW_TEMP 200
 /datum/weather/ice_storm
+	parallax_profile = "planet_snow_storm"
 	name = "Icestorm"
 	desc = "Harsh snowstorms roam the topside of this arctic planet, burying any area unfortunate enough to be in its path."
 	probability = 90

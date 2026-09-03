@@ -316,10 +316,19 @@
 	sharpness = SHARP_NONE
 	wound_bonus = 0
 	bare_wound_bonus = 0
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		"scythe" = list(name = "plasma scythe", icon_state_on = "plasma_scythe_on", icon_state = "plasma_scythe", light_color = "#FF3900" ), // Прошло голосование за смену спрайта с аниме косы на топор
+		"old axe" = list(icon_state_on = "plasma_axe_on", light_color = "#FF3900", icon_state = "plasma_axe" ),
+		"12000 kelvin scythe" = list(icon_state_on = "plasma_scythe_blue_on", icon_state = "plasma_scythe", light_color = "#20214f" ),
+		"30000 kelvin scythe" = list(icon_state_on = "plasma_scythe_green_on", icon_state = "plasma_scythe", light_color = "#1c542d" )
+	)
 
 /obj/item/plasmascythe/toy/ComponentInitialize()
 	AddComponent(/datum/component/two_handed, force_unwielded=0, force_wielded=0, \
 					wieldsound='modular_bluemoon/Ren/Sound/2.1.ogg', unwieldsound='modular_bluemoon/Ren/Sound/2.1.ogg')
+	if(islist(unique_reskin) && length(unique_reskin))
+		AddElement(/datum/element/object_reskinning)
 
 /obj/item/plasmascythe/toy/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	return BLOCK_NONE

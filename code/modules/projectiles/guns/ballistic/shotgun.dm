@@ -59,7 +59,7 @@
 		. = 1
 
 /obj/item/gun/ballistic/shotgun/proc/pump(mob/M, visible = TRUE)
-	if(visible)
+	if(visible && M)
 		M.visible_message("<span class='warning'>[M] racks [src].</span>", "<span class='warning'>Вы досылаете патрон [src].</span>")
 	playsound(M, pumpsound, 60, 1)
 	pump_unload(M)
@@ -257,13 +257,6 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
 	pin = /obj/item/firing_pin/implant/pindicate
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/warden
-	name = "Warden's Combat Shotgun"
-	desc = "A modified version of the semi-automatic combat shotgun with a collapsible stock and a safety that prevents firing while folded. For close encounters."
-	fire_delay = 4
-	recoil = 5
-	spread = 2
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/AltClick(mob/living/user)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)

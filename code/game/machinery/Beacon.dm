@@ -16,7 +16,7 @@
 	Beacon = new(T)
 	Beacon.invisibility = INVISIBILITY_MAXIMUM
 
-	hide(T.intact)
+	hide(T.turf_flags & TURF_INTACT)
 
 /obj/machinery/bluespace_beacon/Destroy()
 	QDEL_NULL(Beacon)

@@ -9,7 +9,7 @@
 	supervisors = "the head of personnel"
 	selection_color = "#bbe291"
 	alt_titles = list(
-		"Assistant Botanist", //Стажер выше, для удобства
+		"Junior Botanist", //Стажер выше, для удобства
 		"Apiarist",
 		"Apiculturist",
 		"Beekeeper",
@@ -30,8 +30,8 @@
 	outfit = /datum/outfit/job/botanist
 	plasma_outfit = /datum/outfit/plasmaman/botany
 
-	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_HYDROPONICS, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_HYDROPONICS, ACCESS_BAR, ACCESS_KITCHEN, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_HYDROPONICS, ACCESS_MORGUE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_SRV
 	bounty_types = CIV_JOB_GROW
@@ -58,7 +58,7 @@
 	name = "Botanist"
 	jobtype = /datum/job/hydro
 
-	belt = /obj/item/pda/botanist
+	belt = /obj/item/modular_computer/pda/botanist
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/hydroponics
 	suit = /obj/item/clothing/suit/apron
@@ -72,7 +72,7 @@
 	name = "Syndicate Botanist"
 	jobtype = /datum/job/hydro
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util
@@ -81,9 +81,11 @@
 	suit_store = /obj/item/plant_analyzer
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
-	backpack_contents = list(/obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT

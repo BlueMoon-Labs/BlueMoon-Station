@@ -4,7 +4,7 @@
 	icon = 'modular_splurt/icons/mobs/werewolf.dmi'
 	icon_state = "Hell_Hound_idle"
 	icon_living = "Hell_Hound_idle"
-	icon_dead = "Hell_Hound__dead"
+	icon_dead = "Hell_Hound_dead"
 	icon_gib = "syndicate_gib"
 	pixel_x = -16
 	gender = MALE
@@ -79,9 +79,9 @@
 	if(!charging)
 		return ..()
 
-/mob/living/simple_animal/hostile/hellhound/Goto(target, delay, minimum_distance)
-	if(!charging)
-		..()
+///Свой чардж (реактивный, из bullet_act): на время полёта контроллер не шагает.
+/mob/living/simple_animal/hostile/hellhound/can_ai_controller_move()
+	return !charging
 
 /mob/living/simple_animal/hostile/hellhound/Move()
 	if(charging)
@@ -106,9 +106,7 @@
 	throw_at(T, get_dist(src, T), 1, src, 0, callback = CALLBACK(src, PROC_REF(charge_end)))
 
 /mob/living/simple_animal/hostile/hellhound/charge_end(list/effects_to_destroy)
-	charging = FALSE
-	if(target)
-		Goto(target, move_to_delay, minimum_distance)
+	charging = FALSE //преследование возобновляет штатный мувер контроллера
 
 /mob/living/simple_animal/hostile/hellhound/Bump(atom/A)
 	if(charging)

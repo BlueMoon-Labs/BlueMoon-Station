@@ -155,6 +155,10 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(!random_seed)
 		#ifdef UNIT_TESTS
 		random_seed = 29051994
+		#elif defined(ATMOS_HEADLESS_BENCH)
+		// Headless atmos A/B runs must be reproducible. The runner may override
+		// this, but otherwise every run gets the same seed instead of rand().
+		random_seed = text2num(world.params["atmos-bench-seed"]) || 29051994
 		#else
 		random_seed = rand(1, 1e9)
 		#endif
@@ -241,6 +245,8 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/datum/controller/subsystem/BadBoy = Master.last_type_processed
 	var/FireHim = FALSE
 	if(istype(BadBoy))
+		var/badboy_task = BadBoy.last_task()
+		log_world("MC: последней перед перезапуском отработала подсистема [BadBoy.name][badboy_task ? ", задача: [badboy_task]" : ""]")
 		msg = null
 		LAZYINITLIST(BadBoy.failure_strikes)
 		switch(++BadBoy.failure_strikes[BadBoy.type])
@@ -287,8 +293,20 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	for (var/datum/controller/subsystem/SS in subsystems)
 		if (SS.flags & SS_NO_INIT || SS.initialized) //Don't init SSs with the correspondig flag or if they already are initialzized
 			continue
+		// Инициализация - самая тяжёлая по памяти часть раунда (карта, свет, миллион атомов),
+		// а петля МК с её ежетиковой записью чёрного ящика стартует только после неё. Пометка
+		// на каждую подсистему - единственная улика, если процесс умрёт, не дойдя до петли.
+		//
+		// Пишется в отдельную переменную, а не в last_type_processed: последнюю читает
+		// Recover(), раздавая подсистемам штрафы за перезапуски МК, и подсовывать ей
+		// подсистему, которая ещё ни разу не запускалась, нельзя.
+		initializing_subsystem = SS
+		// force: инициализация идёт вообще без бюджета тика, и гард по занятости выкинул бы
+		// ровно те пометки, ради которых запись здесь и стоит.
+		write_state_snapshot(force = TRUE)
 		SS.Initialize(REALTIMEOFDAY)
 		CHECK_TICK
+	initializing_subsystem = null
 	current_ticklimit = TICK_LIMIT_RUNNING
 	var/time = (REALTIMEOFDAY - start_timeofday) / 10
 
@@ -298,6 +316,18 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 	if (!current_runlevel)
 		SetRunLevel(1)
+
+	#ifdef ATMOS_HEADLESS_BENCH
+	// Headless benchmark: with no clients the world would sleep_offline after
+	// init (the Master loop halts) and a 0-player round never leaves the lobby,
+	// so SSair would never fire. Keep the world awake and force the game
+	// runlevel - the fully loaded map is enough, no round needed.
+	if(!length(GLOB.clients))
+		sleep_offline_after_initializations = FALSE
+		world.sleep_offline = FALSE
+		SetRunLevel(RUNLEVEL_GAME)
+		log_world("ATMOS-BENCH: headless mode - world kept awake, runlevel GAME forced")
+	#endif
 
 	// Sort subsystems by display setting for easy access.
 	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_display))
@@ -476,6 +506,18 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 			sleep(10)
 			continue
 
+		// Чёрный ящик пишется ДО прогона очереди, а не после: если мир умрёт внутри RunQueue,
+		// на диске останется список подсистем, в который он в этот момент входил. Частоту
+		// подбирает сам чёрный ящик под цену записи, см. adjust_state_snapshot_interval().
+		// max(1, ...) не про адаптацию, а про варедит: интервал 0 - это деление на ноль в
+		// главной петле МК, то есть рантайм каждый тик и мёртвый мастер.
+		// Гард по занятости тика внутри записи откладывает её, а не пропускает: счётчик
+		// следующей записи двигается только на удавшейся, иначе один плотный тик стоил бы
+		// целого интервала слепоты вместо одного прохода петли.
+		if(iteration >= state_snapshot_next_iteration)
+			if(write_state_snapshot())
+				state_snapshot_next_iteration = iteration + max(1, state_snapshot_interval)
+
 		if (queue_head)
 			if (RunQueue() <= 0)
 				if (!SoftReset(tickersubsystems, runlevel_sorted_subsystems))
@@ -513,6 +555,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	for (var/thing in subsystemstocheck)
 		if (!thing)
 			subsystemstocheck -= thing
+			continue
 		SS = thing
 		if (SS.state != SS_IDLE)
 			continue
@@ -600,6 +643,21 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			if (tick_usage < 0)
 				tick_usage = 0
+
+			//сырой (неусреднённый) прогон для диагностики тик-спайков: усреднённый cost прячет одиночные фризы
+			if (SStick_spikes && queue_node != SStick_spikes)
+				//самый тяжёлый прогон тика, а не последний: последним всегда оказывается
+				//подсистема с приоритетом выше детектора, и поле не несло информации
+				if (SStick_spikes.heaviest_run_tick != world.time)
+					SStick_spikes.heaviest_run_tick = world.time
+					SStick_spikes.heaviest_run_subsystem_usage = 0
+					SStick_spikes.heaviest_run_subsystem_name = null
+				if (tick_usage >= SStick_spikes.heaviest_run_subsystem_usage)
+					SStick_spikes.heaviest_run_subsystem_usage = tick_usage
+					SStick_spikes.heaviest_run_subsystem_name = queue_node.name
+				if (tick_usage >= SStick_spikes.heavy_run_threshold)
+					SStick_spikes.record_heavy_run(queue_node, tick_usage)
+
 			queue_node.tick_overrun = max(0, MC_AVG_FAST_UP_SLOW_DOWN(queue_node.tick_overrun, tick_usage-tick_precentage))
 			queue_node.state = state
 

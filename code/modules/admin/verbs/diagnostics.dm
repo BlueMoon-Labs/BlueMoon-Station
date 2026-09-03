@@ -23,7 +23,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Show Air Status") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/radio_report()
-	set category = "Debug"
+	set category = "Debug.9) Debug Verbs"
 	set name = "Radio report"
 
 	var/output = "<b>Radio Report</b><hr>"

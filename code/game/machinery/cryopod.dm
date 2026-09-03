@@ -158,7 +158,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /obj/machinery/cryopod
 	name = "cryogenic freezer"
 	desc = "Suited for Cyborgs and Humanoids, the pod is a safe place for personnel affected by the Space Sleep Disorder to get some rest."
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "cryopod-open"
 	density = TRUE
 	anchored = TRUE
@@ -168,6 +168,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	max_integrity = 500
 	armor = list(MELEE = 10, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	flags_1 = NODECONSTRUCT_1
+	interaction_flags_machine = INTERACT_MACHINE_WIRES_IF_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OPEN_SILICON | INTERACT_MACHINE_SET_MACHINE | INTERACT_MACHINE_OFFLINE
 
 	var/tele = FALSE
 
@@ -180,8 +181,18 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	///Weakref to our controller
 	var/datum/weakref/control_computer_weakref
 
+/obj/machinery/cryopod/tele
+	name = "CentCom Teleporter"
+	desc = "Suited for everyone who wishes to leave the station and go back to CentCom.\n<span class='notice'>This is not for actually getting into CentCom, you will leave the round.</span>"
+	icon = 'modular_sand/icons/obj/machines/cent-tele.dmi'
+	tele = TRUE
+
+	on_store_message = "has been teleported to CentCom."
+	on_store_name = "Teleporter Oversight"
+
 /obj/machinery/cryopod/Initialize(mapload)
 	..()
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
 	return INITIALIZE_HINT_LATELOAD //Gotta populate the cryopod computer GLOB first
 
 /obj/machinery/cryopod/LateInitialize()
@@ -193,10 +204,19 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	control_computer_weakref = null
 	return ..()
 
+/obj/machinery/cryopod/is_operational()
+	return !(machine_stat & (BROKEN|MAINT))
+
+/obj/machinery/cryopod/on_stat_update(old_value)
+	set_is_operational(!(machine_stat & (BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
+
 /obj/machinery/cryopod/close_machine(atom/movable/target)
 	if(!control_computer_weakref)
 		control_computer_weakref = cryo_find_control_computer(src, TRUE)
 	if((isnull(target) || isliving(target)) && state_open && !panel_open)
+		machine_wake() // the despawn countdown runs in process()
 		..(target)
 		var/mob/living/mob_occupant = occupant
 		investigate_log("\The [src] closed with occupant [key_name(occupant)] by user [key_name(target)].", INVESTIGATE_CRYOGENICS)
@@ -225,7 +245,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /obj/machinery/cryopod/process()
 	if(!occupant)
-		return
+		return machine_sleep() // empty pod: close_machine() wakes it when someone climbs in
 
 	var/mob/living/mob_occupant = occupant
 	if(mob_occupant.stat == DEAD)
@@ -390,7 +410,19 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 // This function can not be undone; do not call this unless you are sure
 /obj/machinery/cryopod/proc/despawn_occupant()
+	charge_cryo_exit()
 	cryoMob(occupant, control_computer_weakref, src, tele, initial(name))
+
+/obj/machinery/cryopod/proc/charge_cryo_exit()
+	var/mob/living/mob_occupant = occupant
+	if(!mob_occupant?.ckey || !SSmetadollars)
+		return
+	var/old_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	SSmetadollars.metadollar_adjust(-1, mob_occupant.ckey)
+	var/new_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	log_game("[key_name(mob_occupant)] cryo exit: charged 1 M$ (balance [old_balance] -> [new_balance]).")
+	if(mob_occupant.client)
+		to_chat(mob_occupant, span_warning("Уход в крио забрал 1 М$ из вашего счёта метадолларов."))
 
 /proc/cryoMob(mob/living/mob_occupant, datum/weakref/control_computer_weakref, obj/machinery/cryopod/pod, is_teleporter, initial_name, effects = FALSE)
 	var/list/crew_member = list()
@@ -497,8 +529,8 @@ GLOBAL_LIST_EMPTY(ghost_records)
 				item_content.forceMove(pod)
 
 				// WEE WOO SNOWFLAKE TIME
-				if(istype(item_content, /obj/item/pda))
-					var/obj/item/pda/P = item_content
+				if(istype(item_content, /obj/item/modular_computer/pda))
+					var/obj/item/modular_computer/pda/P = item_content
 					if((P.owner == mind_identity) || (P.owner == occupant_identity))
 						destroying += P
 					else
@@ -536,10 +568,26 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		mob_occupant.ghostize(FALSE, penalize = TRUE, voluntary = TRUE, cryo = TRUE)
 
-	QDEL_LIST(destroying)
 	cryo_handle_objectives(mob_occupant)
-	QDEL_NULL(mob_occupant)
-	QDEL_LIST(destroy_later)
+	// Hand the whole despawn cascade to SSauto_cryo: qdel'ing a geared player mob in one
+	// go eats an entire tick. The mob leaves gameplay right here (nullspace + off the SSD
+	// list so the cryo scan cannot pick it a second time); the deletions are staggered.
+	// FIFO order matters: gear before the mob still wearing part of it, the mob before
+	// destroy_later (borg MMIs must outlive their shell).
+	GLOB.ssd_mob_list -= mob_occupant
+	mob_occupant.moveToNullspace()
+	// Вещи из destroying лежат ВНУТРИ капсулы (их туда кладут выше), а open_machine()
+	// ниже вытряхивает её содержимое на пол. Удаление ступенчатое, поэтому личный КПК
+	// вместе с айди-картой успевает полежать на полу и уйти в чужой карман - а удаление
+	// айди как раз и есть единственная защита крио от кражи доступов. Выносим их из
+	// капсулы прямо сейчас; при pod == null они лежат на мобе и цикл ничего не делает.
+	if(pod)
+		for(var/obj/item/doomed_item as anything in destroying)
+			if(doomed_item.loc == pod)
+				doomed_item.moveToNullspace()
+	SSauto_cryo.queue_deletion_list(destroying)
+	SSauto_cryo.queue_deletion(mob_occupant)
+	SSauto_cryo.queue_deletion_list(destroy_later)
 
 	if (pod)
 		pod.open_machine()

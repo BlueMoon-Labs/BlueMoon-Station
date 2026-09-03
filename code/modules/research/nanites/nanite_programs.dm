@@ -77,6 +77,7 @@
 	if(nanites)
 		nanites.programs -= src
 		nanites.permanent_programs -= src
+		nanites.set_need_sync(null, TRUE)
 	for(var/datum/nanite_rule/rule as anything in rules)
 		rule.remove()
 	rules.Cut()
@@ -125,11 +126,15 @@
 ///You can override this if you need to have special behavior after setting certain settings.
 /datum/nanite_program/proc/set_extra_setting(setting, value)
 	var/datum/nanite_extra_setting/ES = extra_settings[setting]
+	if(!ES)
+		return
 	return ES.set_value(value)
 
 ///You probably shouldn't be overriding this one, but I'm not a cop.
 /datum/nanite_program/proc/get_extra_setting_value(setting)
 	var/datum/nanite_extra_setting/ES = extra_settings[setting]
+	if(!ES)
+		return
 	return ES.get_value()
 
 ///Used for getting information about the extra settings to the frontend
@@ -301,6 +306,7 @@
 				deactivation_code = 0
 				kill_code = 0
 				trigger_code = 0
+				nanites.set_need_sync(null, TRUE)
 		if(3)
 			if(error_flicking)
 				toggle() //enable/disable
@@ -338,6 +344,7 @@
 	if(is_permanent())
 		return
 	qdel(src)
+
 ///A nanite program containing a behaviour protocol. Only one protocol of each class can be active at once.
 /datum/nanite_program/protocol
 	name = "Nanite Protocol"

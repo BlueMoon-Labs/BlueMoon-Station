@@ -169,7 +169,7 @@
 	consume(user)
 	return TRUE
 
-/obj/singularity/Process_Spacemove() //The singularity stops drifting for no man!
+/obj/singularity/Process_Spacemove(movement_dir = 0) //The singularity stops drifting for no man!
 	return FALSE
 
 /obj/singularity/blob_act(obj/structure/blob/B)
@@ -243,7 +243,7 @@
 	last_warning = world.time
 	var/count = locate(/obj/machinery/field/containment) in urange(30, src, 1)
 	if(!count)
-		message_admins("A singulo has been created without containment fields active at [ADMIN_VERBOSEJMP(T)].")
+		message_antigrif(span_big_warning("A singulo has been created without containment fields active at [ADMIN_VERBOSEJMP(T)]."))
 	investigate_log("was created at [AREACOORD(T)]. [count?"":"<font color='red'>No containment fields were active</font>"]", INVESTIGATE_SINGULO)
 
 /obj/singularity/proc/dissipate()
@@ -461,17 +461,59 @@
 		consumedSupermatter = 1
 		set_light(10)
 
+/obj/singularity/proc/get_food_seek_dir()
+	var/search_range = min(grav_pull + consume_range + current_size + 2, 15)
+	// Ключи обязаны быть строками: числовой ключ в DM - это индексация, и
+	// dir_weights[NORTH] по пустому списку падал с "list index out of bounds"
+	// на первой же строке. Прок не отработал ни разу со дня появления - синга
+	// ходила рандомом и писала рантайм в лог каждый process() (раунд 9884:
+	// 416 штук за раунд).
+	var/list/dir_weights = list()
+	var/static/singularity_food_blacklist = typecacheof(list(/obj/singularity, /obj/machinery/field/containment, /obj/machinery/field/generator))
+	// RANGE_TURFS вместо range(): range() перечисляет ещё и каждый атом в
+	// радиусе, а здесь из них нужен только пол под ногами. При search_range 15
+	// это 961 турф каждые ~2 секунды - мувабли в эту цену входить не должны.
+	for(var/turf/T as anything in RANGE_TURFS(search_range, src))
+		var/weight = 0
+		for(var/atom/A in T)
+			if(A == src)
+				continue
+			if(isobj(A))
+				var/obj/O = A
+				if(O.resistance_flags & INDESTRUCTIBLE)
+					continue
+			if(is_type_in_typecache(A, singularity_food_blacklist))
+				continue
+			weight++
+		if(!weight && istype(T, /turf/closed))
+			weight = 1
+		if(weight)
+			var/direction = get_dir(src, T)
+			if(!direction)
+				continue
+			dir_weights["[direction]"] += weight
+	var/best_dir = 0
+	var/best_weight = 0
+	for(var/dir_key in dir_weights)
+		if(dir_weights[dir_key] > best_weight)
+			best_weight = dir_weights[dir_key]
+			best_dir = text2num(dir_key)
+	return best_dir
+
 /obj/singularity/proc/move(force_move = 0)
 	if(!move_self)
 		return FALSE
 
-	var/movement_dir = pick(GLOB.alldirs - last_failed_movement)
+	var/movement_dir
 
 	if(force_move)
 		movement_dir = force_move
-
-	if(target && prob(60))
-		movement_dir = get_dir(src,target) //moves to a singulo beacon, if there is one
+	else if(target)
+		movement_dir = get_dir(src, target)
+	else
+		movement_dir = get_food_seek_dir()
+		if(!movement_dir)
+			movement_dir = pick(GLOB.alldirs - last_failed_movement)
 
 	step(src, movement_dir)
 
@@ -504,6 +546,26 @@
 				steps = 5
 	else
 		steps = step
+
+	// Диагональный шаг - это движение сразу по двум осям, и заслон нужен для
+	// каждой из них. switch() ниже знает только четыре кардинальных дира: на
+	// диагонали dir2 и dir3 оставались нулём, боковые клетки в список не
+	// попадали, и проверка вырождалась в один турф по диагонали. Сами поля не
+	// плотные (density = FALSE), физически сингу держит только этот прок, так
+	// что угол клетки полей был проходим насквозь.
+	if(ISDIAGONALDIR(direction))
+		var/vertical = direction & (NORTH|SOUTH)
+		var/horizontal = direction & (EAST|WEST)
+		if(!vertical || !horizontal)
+			return FALSE
+		if(!check_turfs_in(vertical, steps) || !check_turfs_in(horizontal, steps))
+			return FALSE
+		// Обе грани могут быть чисты, а угол между ними - нет.
+		var/turf/corner = src.loc
+		for(var/i in 1 to steps)
+			corner = get_step(corner, direction)
+		return isturf(corner) && can_move(corner)
+
 	var/list/turfs = list()
 	var/turf/T = src.loc
 	for(var/i = 1 to steps)

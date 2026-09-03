@@ -133,7 +133,7 @@
 
 /obj/machinery/mineral/equipment_vendor/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/vending),
+		get_asset_datum(/datum/asset/spritesheet_batched/vending),
 	)
 
 /obj/machinery/mineral/equipment_vendor/ui_interact(mob/user, datum/tgui/ui)
@@ -429,6 +429,7 @@
 		I.access |= ACCESS_MINING_STATION
 		I.access |= ACCESS_MINERAL_STOREROOM
 		I.access |= ACCESS_CARGO
+		I.access |= ACCESS_PRODUCTION_CARGO
 		to_chat(user, "You upgrade [I] with mining access.")
 		qdel(src)
 

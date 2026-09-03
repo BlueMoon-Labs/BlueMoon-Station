@@ -10,6 +10,10 @@
 	var/gulp_size = 5
 	var/beingChugged = FALSE
 
+/obj/item/reagent_containers/glass/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/glass/attack(mob/M, mob/user, obj/target)
 	if(!canconsume(M, user))
 		return
@@ -117,11 +121,23 @@
 		var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = "reagentcontainer-glass afterattack fill from")
 		to_chat(user, "<span class='notice'>Вы заполнили [src] на [trans] u содержимого [target].</span>")
 
-	else if(reagents.total_volume && reagent_flags & OPENCONTAINER && spillable)
+	else if(reagents.total_volume && is_drainable() && spillable)
 		if(user.a_intent == INTENT_HARM)
 			user.visible_message("<span class='danger'>[user] разливает содержимое [src] на [target]!</span>", \
 								"<span class='notice'>Вы вылили содержимое [src] на [target].</span>")
 			reagents.reaction(target, TOUCH)
+			var/turf/splash_turf = get_turf(target)
+			if(splash_turf && !istype(target, /obj/machinery/hydroponics))
+				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
+				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
+				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
+				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+			if(isturf(target))
+				var/turf/target_turf = target
+				if(target_turf.can_liquid_spill_on_hit())
+					var/datum/reagents/spill_copy = new(reagents.maximum_volume)
+					reagents.trans_to(spill_copy, reagents.total_volume, log = "reagentcontainer-glass pour spill")
+					addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
 			reagents.clear_reagents()
 
 /obj/item/reagent_containers/glass/attackby(obj/item/I, mob/user, params)
@@ -341,13 +357,30 @@
 	container_flags = APTFT_ALTCLICK|APTFT_VERB
 	container_HP = 1
 
+/obj/item/reagent_containers/glass/bucket/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(istype(held_item, /obj/item/mop))
+		. = CONTEXTUAL_SCREENTIP_SET
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Намочить швабру")
+
 /obj/item/reagent_containers/glass/bucket/attackby(obj/O, mob/user, params)
 	if(istype(O, /obj/item/mop))
-		var/obj/item/mop/MOP = O
-		if(reagents.total_volume < 1)
-			to_chat(user, "<span class='warning'>[src] не имеет воды!</span>")
+		var/list/modifiers = params2list(params)
+		if(is_refillable() && (modifiers["ctrl"] || user.a_intent == INTENT_HARM)) //BLUEMOON ADD: Ctrl+click or 4th (harm) intent wrings the mop out into the bucket
+			if(O.reagents.total_volume <= 0)
+				to_chat(user, "<span class='warning'>The mop is dry!</span>")
+				return
+			if(reagents.total_volume >= reagents.maximum_volume)
+				to_chat(user, "<span class='warning'>[src] is full!</span>")
+				return
+			O.reagents.remove_all(O.reagents.total_volume * SQUEEZING_DISPERSAL_RATIO)
+			O.reagents.trans_to(src, O.reagents.total_volume)
+			to_chat(user, "<span class='notice'>You squeeze [O] out into [src].</span>")
+			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
+		else if(reagents.total_volume < 1)
+			to_chat(user, "<span class='warning'>[src] не имеет воды!!</span>")
 		else
-			reagents.trans_to(O, MOP.mopcap, log = "reagentcontainer-bucket fill mop")
+			reagents.trans_to(O, O.reagents.maximum_volume, log = "reagentcontainer-bucket fill mop")
 			to_chat(user, "<span class='notice'>Вы смочили [O] в [src].</span>")
 			playsound(loc, 'sound/effects/slosh.ogg', 25, 1)
 	else if(isprox(O))
@@ -409,6 +442,7 @@
 	list_reagents = list()
 
 /obj/item/reagent_containers/glass/beaker/waterbottle/large
+	name = "large bottle of water"
 	desc = "Новенькая бутылка воды потребительских размеров."
 	icon_state = "largebottle"
 	custom_materials = list(/datum/material/glass=0)

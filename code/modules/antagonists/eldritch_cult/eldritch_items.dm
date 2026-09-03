@@ -8,6 +8,7 @@
 	var/mob/living/carbon/human/target
 	var/datum/antagonist/heretic/sac_targetter	//The heretic who used this to acquire the current target - gets cleared when target gets sacrificed.
 	COOLDOWN_DECLARE(cooldown)
+	COOLDOWN_DECLARE(track_cooldown)
 
 /obj/item/living_heart/Initialize(mapload)
 	. = ..()
@@ -46,35 +47,54 @@
 	if(!target)
 		to_chat(user,"<span class='warning'>Не найдено ни одной цели. Нужно поместить живое сердце на руну чтобы найти новую цель.</span>")
 		return
-	var/dist = get_dist(user.loc,target.loc)
-	var/dir = get_dir(user.loc,target.loc)
+	if(!COOLDOWN_FINISHED(src, track_cooldown))
+		return
+	COOLDOWN_START(src, track_cooldown, 4 SECONDS)
+
+	var/dist = get_dist(user, target)
+	var/dir = get_dir(user, target)
+	var/arrow_color
 
 	if(user.z != target.z)
-		user.balloon_alert(user,"<span class='warning'>[target.real_name] находится на другом плане существования!</span>")
+		user.balloon_alert(user, "[target.real_name] находится на другом плане существования!")
 		to_chat(user,"<span class='warning'>[target.real_name] находится на другом плане существования!</span>")
-	else
-		switch(dist)
-			if(0 to 15)
-				user.balloon_alert(user,"<span class='warning'>[target.real_name] рядом со мной. Он находится на [dir2text_ru(dir)] от меня!</span>")
+		return
 
-				to_chat(user,"<span class='warning'>[target.real_name] облизко ко мне. Он находится на [dir2text_ru(dir)] от меня!</span>")
-			if(16 to 31)
-				user.balloon_alert(user,"<span class='warning'>[target.real_name] поблизости со мной. Он находится на [dir2text_ru(dir)] от меня!</span>")
-
-				to_chat(user,"<span class='warning'>[target.real_name] поблизости со мной. Он находится на [dir2text_ru(dir)] от меня!</span>")
-			if(32 to 222)
-				user.balloon_alert(user,"<span class='warning'>[target.real_name] далеко от меня. Он находится на [dir2text_ru(dir)] от меня!</span>")
-
-				to_chat(user,"<span class='warning'>[target.real_name] далеко от меня. Он находится на [dir2text_ru(dir)] от меня!</span>")
-			else
-				user.balloon_alert(user,"<span class='warning'>[target.real_name] находится за пределами моих возможностей.</span>")
-
-				to_chat(user,"<span class='warning'>[target.real_name] находится за пределами моих возможностей.</span>")
+	switch(dist)
+		if(0 to 15)
+			user.balloon_alert(user, "[target.real_name] рядом со мной. [dir2text_ru(dir)]")
+			to_chat(user,"<span class='warning'>[target.real_name] рядом со мной. [dir2text_ru(dir)]</span>")
+			arrow_color = COLOR_GREEN
+		if(16 to 31)
+			user.balloon_alert(user, "[target.real_name] поблизости. [dir2text_ru(dir)]")
+			to_chat(user,"<span class='warning'>[target.real_name] поблизости. [dir2text_ru(dir)]</span>")
+			arrow_color = COLOR_YELLOW
+		if(32 to 127)
+			user.balloon_alert(user, "[target.real_name] далеко. [dir2text_ru(dir)]")
+			to_chat(user,"<span class='warning'>[target.real_name] далеко. [dir2text_ru(dir)]</span>")
+			arrow_color = COLOR_ORANGE
+		else
+			user.balloon_alert(user, "[target.real_name] за пределами досягаемости.")
+			to_chat(user,"<span class='warning'>[target.real_name] за пределами досягаемости.</span>")
+			arrow_color = COLOR_RED
 
 	if(target.stat == DEAD)
-		user.balloon_alert(user,"<span class='warning'>[target.real_name] мертва. Нужно перенести её на руну трансмутации!</span>")
-
+		user.balloon_alert(user, "[target.real_name] мертва. Нужно перенести её на руну трансмутации!")
 		to_chat(user,"<span class='warning'>[target.real_name] мертва. Нужно перенести её на руну трансмутации!</span>")
+
+	var/datum/hud/user_hud = user.hud_used
+	if(!user_hud || !istype(user_hud, /datum/hud) || !islist(user_hud.infodisplay))
+		return
+
+	var/atom/movable/screen/navigate_arrow/arrow = new(null, user_hud)
+	arrow.color = arrow_color
+	arrow.screen_loc = around_player
+	arrow.transform = matrix(dir2angle(dir), MATRIX_ROTATE)
+
+	user_hud.infodisplay += arrow
+	user_hud.show_hud(user_hud.hud_version)
+
+	QDEL_IN(arrow, 1.6 SECONDS)
 
 /obj/item/melee/sickly_blade
 	name = "Болезненный клинок"
@@ -461,3 +481,16 @@
 	desc = "В течение следующих 60 секунд каждая рана будет заживать на вас, незначительные раны заживают на 1 единицу урона в секунду, средние - на 3, а критические - на 6. Вы также становитесь невосприимчивы к замедленнию от урона."
 	icon_state = "marshal"
 	status_effect = /datum/status_effect/marshal
+
+/atom/movable/screen/navigate_arrow
+	icon = 'icons/effects/multitool_arrows.dmi'
+	icon_state = "navigate_arrow_appear"
+	name = "navigate arrow"
+	pixel_x = -32
+	pixel_y = -32
+
+/atom/movable/screen/navigate_arrow/Destroy()
+	if(hud)
+		hud.infodisplay -= src
+		INVOKE_ASYNC(hud, TYPE_PROC_REF(/datum/hud, show_hud), hud.hud_version)
+	return ..()

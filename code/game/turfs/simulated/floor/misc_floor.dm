@@ -4,7 +4,7 @@
 	icon_state = "plaque"
 	desc = "\"This is a plaque in honour of our comrades on the G4407 Stations. Hopefully TG4407 model can live up to your fame and fortune.\" Scratched in beneath that is a crude image of a meteor and a spaceman. The spaceman is laughing. The meteor is exploding."
 	floor_tile = /obj/item/stack/tile/plasteel
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 */
 
 /turf/open/floor/vault
@@ -240,6 +240,17 @@
 	uses_overlay = FALSE
 	planetary_atmos = TRUE
 
+/turf/open/floor/clockwork/reebe/Initialize(mapload)
+	// Cogplate is mapped decoratively far outside Reebe (necropolis chunks,
+	// lavaland/space clockwork ruins). Its planetary template is default
+	// station air, so outside a Reebe z-level every tile is a foreign sky
+	// endlessly pumping 101 kPa / 293 K air against the local planetary
+	// atmosphere - the 2026-07-06 benchmark measured whole map bands kept
+	// excited forever by this. The infinite void stays only on Reebe itself.
+	if(!is_reebe(z))
+		planetary_atmos = FALSE
+	return ..()
+
 /turf/open/floor/bluespace
 	slowdown = -1
 	icon_state = "bluespace"
@@ -272,6 +283,7 @@
 	name = "rusted plating"
 	desc = "Corrupted steel."
 	icon_state = "plating_rust"
+	base_icon_state = "plating_rust"
 	footstep = FOOTSTEP_RUST
 	barefootstep = FOOTSTEP_RUST
 	clawfootstep = FOOTSTEP_RUST

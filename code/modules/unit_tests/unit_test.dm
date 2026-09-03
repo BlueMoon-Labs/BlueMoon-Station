@@ -47,7 +47,16 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	var/focus = FALSE
 	var/succeeded = TRUE
 	var/list/allocated
+	/// Allocated instances whose Destroy() refuses non-forced deletion (e.g. lighting_object);
+	/// cleaned up with qdel(force = TRUE) so they don't leak into subsequent tests
+	var/list/allocated_force_qdel
 	var/list/fail_reasons
+	/// This test validates production-map content and is excluded from the
+	/// LOWMEMORYMODE hermetic profile. The full-map profile runs only these tests.
+	var/requires_full_map = FALSE
+	/// Подстроки рантаймов, которые тест ОЖИДАЕТ (канарейки-гварды со stack_trace):
+	/// совпавший рантайм не проваливает тест. Матч по findtext с текстом ошибки.
+	var/list/allowed_runtime_patterns
 
 	var/static/datum/turf_reservation/reservation
 
@@ -58,22 +67,50 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	if (QDELETED(reservation))
 		reservation = null
 	if (isnull(reservation))
-		reservation = SSmapping.RequestBlockReservation(5, 5)
-
-	for (var/turf/reserved_turf in reservation.reserved_turfs)
-		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
+		// 9x9 со стеновым кордоном по периметру: рабочая арена - центральные
+		// 5x5, вокруг неё кольцо пола-фартука (часть тестов ставит фикстуры на
+		// get_step(run_loc, WEST/SOUTH) - один тайл за ареной). Без кордона
+		// кромка граничит с космосом резервного z и вентилируется на каждом
+		// фаере SSair; с tg-паритетным полным сбросом арена уходит в вакуум за
+		// секунды, а спейсвинд полной дельтой расшвыривает фикстуры (труп для
+		// кокона паука, питомца pet_bonus) - тесты флачат по скорости раннера.
+		reservation = SSmapping.RequestBlockReservation(9, 9, border_type_override = /turf/closed/wall)
 
 	allocated = new
-	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1], reservation.bottom_left_coords[2], reservation.bottom_left_coords[3])
-	run_loc_floor_top_right = locate(reservation.top_right_coords[1], reservation.top_right_coords[2], reservation.top_right_coords[3])
+	allocated_force_qdel = new
+	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1] + 2, reservation.bottom_left_coords[2] + 2, reservation.bottom_left_coords[3])
+	run_loc_floor_top_right = locate(reservation.top_right_coords[1] - 2, reservation.top_right_coords[2] - 2, reservation.top_right_coords[3])
 
+	// Свет СТРОГО до сброса зоны: create_lighting_for_zlevel может уйти в полный краул z
+	// с CHECK_TICK-снами (self-heal гард видит недофлашенную отложку конкурентного краула,
+	// например шаттлового on-demand инита транзитного z на раундстарте). Если спать ПОСЛЕ
+	// сброса турфов, за время сна успевает отработать SSair: края зоны граничат с космосом
+	// резервного z и вентилируются, по зоне расползаются градиенты - и воздухочувствительные
+	// тесты (atmos_stalled_turf_rests и родня) флачат в зависимости от таймингов раннера.
+	// Сброс зоны - последний шаг, между ним и Run() снов нет.
 	create_lighting_for_zlevel(run_loc_floor_bottom_left.z)
+
+	var/ring_left = reservation.bottom_left_coords[1]
+	var/ring_bottom = reservation.bottom_left_coords[2]
+	var/ring_right = reservation.top_right_coords[1]
+	var/ring_top = reservation.top_right_coords[2]
+	for (var/turf/reserved_turf in reservation.reserved_turfs)
+		// Кордон перестраиваем обратно в стену (тест мог сломать его взрывом),
+		// внутренность - в чистый пол.
+		if(reserved_turf.x == ring_left || reserved_turf.x == ring_right || reserved_turf.y == ring_bottom || reserved_turf.y == ring_top)
+			if(!iswallturf(reserved_turf))
+				reserved_turf.ChangeTurf(/turf/closed/wall)
+			continue
+		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
 
 	TEST_ASSERT(isfloorturf(run_loc_floor_bottom_left), "run_loc_floor_bottom_left was not a floor ([run_loc_floor_bottom_left])")
 	TEST_ASSERT(isfloorturf(run_loc_floor_top_right), "run_loc_floor_top_right was not a floor ([run_loc_floor_top_right])")
 
 /datum/unit_test/Destroy()
 	QDEL_LIST(allocated)
+	for(var/thing in allocated_force_qdel)
+		qdel(thing, force = TRUE)
+	allocated_force_qdel.Cut()
 	// clear the test area
 	for (var/turf/turf in block(locate(1, 1, run_loc_floor_bottom_left.z), locate(world.maxx, world.maxy, run_loc_floor_bottom_left.z)))
 		for (var/content in turf.contents)
@@ -84,6 +121,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 /datum/unit_test/proc/Run()
 	TEST_FAIL("Run() called parent or not implemented")
+
+/// TRUE = этот рантайм ожидаем тестом (проверка канарейки) и не должен его валить.
+/datum/unit_test/proc/runtime_allowed(exception/E)
+	for(var/pattern in allowed_runtime_patterns)
+		if(findtext("[E]", pattern))
+			return TRUE
+	return FALSE
 
 /datum/unit_test/proc/Fail(reason = "No reason", file = "OUTDATED_TEST", line = 1)
 	succeeded = FALSE
@@ -109,6 +153,124 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		instance = new type()
 	allocated += instance
 	return instance
+
+/// Запас в тиках колеса бакетов сверх срока ожидания. Курсор, доехавший ровно до
+/// срока, гарантирует только то, что бакет вскрыт: колбек выдаётся через
+/// InvokeAsync и свою работу может доделывать уже следующим тиком.
+#define UNIT_TEST_WAIT_GRACE_TICKS 10
+/// Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
+/// от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
+/// потолок никогда не подрезал само окно на медленном мировом времени. Потолок
+/// щедрый сознательно: на перегруженном CI-раннере SStimer может не получать
+/// тактов дольше 10 реальных секунд (наблюдалось на layeniastation), и жадный
+/// потолок валит тест раньше, чем колесо доедет до срока. Платим этим временем
+/// только в двух случаях - мёртвый SStimer или задушенный раннер, и в обоих
+/// спешить некуда.
+#define UNIT_TEST_WAIT_HARD_LIMIT (60 SECONDS)
+
+#define WAIT_BUDGET_WORLD_DEADLINE 1
+#define WAIT_BUDGET_REAL_DEADLINE 2
+#define WAIT_BUDGET_TIMER_FIRES 3
+#define WAIT_BUDGET_DESCRIPTION 4
+
+/// Бюджет одного ожидания отложенной работы, см. wait_budget_tick().
+/datum/unit_test/proc/new_wait_budget(max_wait, description)
+	return list(world.time + max_wait, null, null, description)
+
+/// Мировое время, до которого колесо бакетов SStimer уже разобрано. Таймер,
+/// назначенный на более поздний момент, физически не мог сработать: его бакет ещё
+/// не вскрывали. Курсор считается от head_offset, потому что при отставании колеса
+/// он уходит в прошлое относительно world.time - именно эта разница и есть
+/// опоздание таймеров.
+/datum/unit_test/proc/timer_wheel_time()
+	return SStimer.head_offset + TICKS2DS(SStimer.practical_offset - 1)
+
+/// Снимок состояния колеса для сообщения о таймауте. ТОЛЬКО прямые чтения полей:
+/// спящая диагностика чинит то, что описывает, и уводит разбор в сторону
+/// (история флака nightshift_admin_controls).
+/datum/unit_test/proc/wait_budget_diagnostics(list/budget)
+	var/wheel = timer_wheel_time()
+	return "world.time [world.time], срок [budget[WAIT_BUDGET_WORLD_DEADLINE]], курсор колеса [wheel] \
+		(отставание [max(0, world.time - wheel)] дс), проходов SStimer за ожидание \
+		[SStimer.times_fired - budget[WAIT_BUDGET_TIMER_FIRES]], state [SStimer.state], \
+		бакетов [SStimer.bucket_count], second_queue [length(SStimer.second_queue)]"
+
+/// Спит тик и отвечает, остался ли бюджет ожидания. FALSE = сдаёмся.
+///
+/// Окно меряется мировым временем, но истёкшее окно само по себе не приговор: на
+/// перегруженном раннере world.time продолжает идти, пока колесо таймеров ползёт
+/// позади него, так что назначенный внутри окна таймер может ни разу не получить
+/// шанса исполниться - и тест падает на загрузке машины, а не на баге.
+///
+/// Раньше запасом служили десять полных проходов SStimer, и это был неверный
+/// счётчик: МК считает проход только за незапаузенный прогон
+/// (master.dm, times_fired++ стоит после SS_PAUSED-ветки), а задушенный SStimer
+/// паузится каждый фаер - то есть счётчик замирает ровно в том случае, ради
+/// которого запас и вводился. В CI это выглядело как три теста подряд (pet_bonus,
+/// insane_clown, bee_pollination), сжигающих по 60 секунд потолка и падающих с
+/// "SStimer так и не набрал положенных полных проходов".
+///
+/// Честный признак - позиция курсора колеса: пока он не прошёл срок, бакет с нашей
+/// отложкой ещё не вскрывали, и падать не за что. Прошёл - работа была выдана, и
+/// невыполненное условие уже настоящий баг. Потолок по реальному времени остаётся
+/// страховкой на случай совсем вставшего SStimer.
+/datum/unit_test/proc/wait_budget_tick(list/budget)
+	if(world.time >= budget[WAIT_BUDGET_WORLD_DEADLINE])
+		if(isnull(budget[WAIT_BUDGET_REAL_DEADLINE]))
+			budget[WAIT_BUDGET_REAL_DEADLINE] = REALTIMEOFDAY + UNIT_TEST_WAIT_HARD_LIMIT
+			budget[WAIT_BUDGET_TIMER_FIRES] = SStimer.times_fired
+		else if(timer_wheel_time() > budget[WAIT_BUDGET_WORLD_DEADLINE] + TICKS2DS(UNIT_TEST_WAIT_GRACE_TICKS))
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - окно вышло, колесо таймеров его прошло: [wait_budget_diagnostics(budget)]")
+			return FALSE
+		else if(REALTIMEOFDAY >= budget[WAIT_BUDGET_REAL_DEADLINE])
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - потолок по реальному времени, колесо таймеров так и не дошло до срока: [wait_budget_diagnostics(budget)]")
+			return FALSE
+	sleep(world.tick_lag)
+	return TRUE
+
+/// Крутит мир, пока target.var_name не станет expected или не кончится бюджет
+/// ожидания. Отложенную работу (addtimer, spawn) исполняет SStimer/планировщик,
+/// а sleep(N) отмеряет только мировое время: на загруженном раннере колбэк не
+/// успевает за фиксированные 1-2 деци, и тест падает на медленной машине, а не
+/// на баге. TRUE = дождались.
+/datum/unit_test/proc/wait_for_var(datum/target, var_name, expected, max_wait = 2 SECONDS)
+	var/list/budget = new_wait_budget(max_wait, "[target?.type].[var_name] == [expected]")
+	while(!QDELETED(target) && target.vars[var_name] != expected)
+		if(!wait_budget_tick(budget))
+			break
+	return !QDELETED(target) && target.vars[var_name] == expected
+
+/// Крутит мир, пока target не уйдёт в qdel или не кончится бюджет ожидания.
+/// Отложенный qdel живёт на SStimer, поэтому фиксированный sleep его не
+/// гарантирует - см. wait_for_var. TRUE = дождались.
+/datum/unit_test/proc/wait_for_qdeleted(datum/target, max_wait = 2 SECONDS)
+	var/list/budget = new_wait_budget(max_wait, "QDELETED([target?.type])")
+	while(!QDELETED(target))
+		if(!wait_budget_tick(budget))
+			break
+	return QDELETED(target)
+
+#undef UNIT_TEST_WAIT_GRACE_TICKS
+#undef UNIT_TEST_WAIT_HARD_LIMIT
+#undef WAIT_BUDGET_WORLD_DEADLINE
+#undef WAIT_BUDGET_REAL_DEADLINE
+#undef WAIT_BUDGET_TIMER_FIRES
+#undef WAIT_BUDGET_DESCRIPTION
+
+/// Reads repository source files for structural audit tests.
+/// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
+/datum/unit_test/proc/read_source_file(source_path)
+	var/source = file2text(source_path)
+	if(length(source))
+		return source
+
+#ifdef CIBUILDING
+	source = file2text("../[source_path]")
+	if(length(source))
+		return source
+#endif
+
+	return source
 
 /*
 /datum/unit_test/proc/test_screenshot(name, icon/icon)
@@ -145,6 +307,15 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 	return output
 */
+/// Реакция из SSair.gas_reactions по её id, или null. Атмос-тесты дёргают реакции
+/// напрямую (мимо индексатора кандидатов), и один и тот же поиск был скопирован по
+/// файлам пять раз.
+/proc/unit_test_find_gas_reaction(reaction_id)
+	for(var/datum/gas_reaction/candidate as anything in SSair?.gas_reactions)
+		if(candidate.id == reaction_id)
+			return candidate
+	return null
+
 /// Logs a test message. Will use GitHub action syntax found at https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 /datum/unit_test/proc/log_for_test(text, priority, file, line)
 	var/map_name = SSmapping.config.map_name
@@ -205,18 +376,44 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 /proc/RunUnitTests()
 	CHECK_TICK
 
+	// Поздний посев станционных комнат (ticker.dm, addtimer +60с после раундстарта)
+	// иначе идёт параллельно тестам: immediate-GC тесты с нулевыми таймаутами доводят
+	// его qdel-нутые атомы до del() прямо из списка InitializeAtoms - шторм
+	// world-обходов и фантомные warnfail в счётчиках. Сеем синхронно до первого
+	// теста; таймер потом отработает вхолостую по пустому списку лендмарков.
+	SSmapping.seedStation(TRUE)
+
 	var/list/tests_to_run = subtypesof(/datum/unit_test)
 	var/list/focused_tests = list()
+	var/list/test_results = list()
 	for (var/_test_to_run in tests_to_run)
 		var/datum/unit_test/test_to_run = _test_to_run
 		if (initial(test_to_run.focus))
 			focused_tests += test_to_run
 	if(length(focused_tests))
 		tests_to_run = focused_tests
+	else
+		var/list/profile_tests = list()
+		for(var/_test_to_run in tests_to_run)
+			var/datum/unit_test/test_to_run = _test_to_run
+			var/include_test = TRUE
+			#ifdef UNIT_TEST_PROFILE_HERMETIC
+			include_test = !initial(test_to_run.requires_full_map)
+			#endif
+			#ifdef UNIT_TEST_PROFILE_FULL_MAP
+			include_test = initial(test_to_run.requires_full_map)
+			#endif
+			if(include_test)
+				profile_tests += test_to_run
+			else
+				test_results[test_to_run] = list(
+					"status" = UNIT_TEST_SKIPPED,
+					"message" = "Skipped by unit test profile",
+					"name" = test_to_run,
+				)
+		tests_to_run = profile_tests
 
 	tests_to_run = sortTim(tests_to_run, GLOBAL_PROC_REF(cmp_unit_test_priority))
-
-	var/list/test_results = list()
 
 	for(var/unit_path in tests_to_run)
 		CHECK_TICK //We check tick first because the unit test we run last may be so expensive that checking tick will lock up this loop forever
@@ -237,6 +434,19 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	//We have to call this manually because del_text can preceed us, and SSticker doesn't fire in the post game
 	SSticker.ready_for_reboot = TRUE
 	SSticker.standard_reboot()
+
+/// Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
+/// asynchronous. Poll those explicit readiness conditions instead of sleeping
+/// an arbitrary ten seconds before every test run.
+/proc/RunUnitTestsWhenReady(deadline)
+	if(isnull(deadline))
+		deadline = world.time + 2 MINUTES
+	if(world.time > deadline)
+		CRASH("Unit test round bootstrap did not finish ticker PostSetup within two minutes")
+	if(!SSticker.HasRoundStarted() || !SSticker.setup_done)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady), deadline), world.tick_lag)
+		return
+	RunUnitTests()
 
 // /datum/map_template/unit_tests
 // 	name = "Unit Tests Zone"

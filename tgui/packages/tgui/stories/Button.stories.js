@@ -34,7 +34,7 @@ const COLORS_STATES = [
   'white',
 ];
 
-const Story = (props, context) => {
+const Story = (props) => {
   return (
     <Section>
       <Box mb={1}>

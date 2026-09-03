@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NumberInput, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
 
-export const SpaceHeater = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SpaceHeater = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       width={400}
@@ -14,7 +14,7 @@ export const SpaceHeater = (props, context) => {
         <Section
           title="Power"
           buttons={(
-            <Fragment>
+            <>
               <Button
                 icon="eject"
                 content="Eject Cell"
@@ -26,7 +26,7 @@ export const SpaceHeater = (props, context) => {
                 selected={data.on}
                 disabled={!data.hasPowercell}
                 onClick={() => act('power')} />
-            </Fragment>
+            </>
           )}>
           <LabeledList>
             <LabeledList.Item
@@ -77,7 +77,7 @@ export const SpaceHeater = (props, context) => {
             </LabeledList.Item>
             <LabeledList.Item label="Mode">
               {!data.open && 'Auto' || (
-                <Fragment>
+                <>
                   <Button
                     icon="thermometer-half"
                     content="Auto"
@@ -99,7 +99,7 @@ export const SpaceHeater = (props, context) => {
                     onClick={() => act('mode', {
                       mode: 'cool',
                     })} />
-                </Fragment>
+                </>
               )}
             </LabeledList.Item>
             <LabeledList.Divider />

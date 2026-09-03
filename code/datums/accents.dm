@@ -32,7 +32,7 @@
 
 /datum/accent/lizard/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
@@ -46,7 +46,7 @@
 
 /datum/accent/canine/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
@@ -62,7 +62,7 @@
 
 /datum/accent/feline/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
@@ -78,7 +78,7 @@
 
 /datum/accent/bird/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")\
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
@@ -94,7 +94,7 @@
 
 /datum/accent/fly/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 
@@ -157,7 +157,7 @@
 
 /datum/accent/fluffy/modify_speech(list/speech_args)
 	var/message = speech_args[SPEECH_MESSAGE]
-	if(message[1] != "*" && message[1] != "!")
+	if(length(message) && message[1] != "*" && message[1] != "!")
 		speech_args[SPEECH_MESSAGE] = applyAccent(message,replacements)
 	return speech_args
 

@@ -39,6 +39,7 @@ There are several things that need to be remembered:
 
 >	There are also these special cases:
 		update_damage_overlays()	//handles damage overlays for brute/burn damage
+		update_wound_overlays()		//handles bleeding wound overlays
 		update_body()				//Handles updating your mob's body layer and mutant bodyparts
 									as well as sprite-accessories that didn't really fit elsewhere (underwear, undershirts, socks, lips, eyes)
 									//NOTE: update_mutantrace() is now merged into this!
@@ -57,8 +58,21 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_hair(src)
 
+///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
+///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
+///(regenerate_icons) трогает семь слотов одежды подряд, и каждый честно гнал
+///handle_mutant_bodyparts - самый дорогой по self проц в профиле раунда
+///(226мкс на вызов), то есть ~1.6мс мусора на каждую перерисовку. Счётчик, а не
+///флаг, чтобы вложенный regenerate_icons не снимал отсрочку внешнего.
+/mob/living/carbon/human/var/defer_mutant_bodyparts_update = 0
+///Была ли за время отсрочки хоть одна заявка на пересборку мутантных частей.
+/mob/living/carbon/human/var/pending_mutant_bodyparts_update = FALSE
+
 //used when putting/removing clothes that hide certain mutant body parts to just update those and not update the whole body.
 /mob/living/carbon/human/proc/update_mutant_bodyparts(block_recursive_calls = FALSE)
+	if(defer_mutant_bodyparts_update)
+		pending_mutant_bodyparts_update = TRUE
+		return
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_mutant_bodyparts(src, null, block_recursive_calls)
 
@@ -79,6 +93,11 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		if(!..())
 			icon_render_key = null //invalidate bodyparts cache
+			//Все update_inv_* ниже дёргают update_mutant_bodyparts(), и без
+			//отсрочки полная перерисовка гоняла handle_mutant_bodyparts восемь
+			//раз подряд на одном мобе. Копим заявки и выполняем одну в конце,
+			//когда все слои одежды уже на месте.
+			defer_mutant_bodyparts_update++
 			update_body(TRUE, block_recursive_calls)
 			update_hair()
 			update_inv_w_uniform(block_recursive_calls)
@@ -102,11 +121,16 @@ There are several things that need to be remembered:
 			update_inv_wear_suit(block_recursive_calls)
 			update_inv_pockets()
 			update_inv_neck()
+			defer_mutant_bodyparts_update--
+			if(!defer_mutant_bodyparts_update && pending_mutant_bodyparts_update)
+				pending_mutant_bodyparts_update = FALSE
+				update_mutant_bodyparts(block_recursive_calls)
 			update_transform()
 			//mutations
 			update_mutations_overlay()
 			//damage overlays
 			update_damage_overlays()
+			update_bandage_overlays()
 			//antagonism
 			update_antag_overlays()
 			//abductor stealth: re-apply disguise after any full icon refresh so it doesn't break over time
@@ -114,6 +138,7 @@ There are several things that need to be remembered:
 				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
 				if(V.stealth_active && V.disguise)
 					V.ReapplyDisguise()
+			update_small_sprite()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
@@ -718,7 +743,7 @@ There are several things that need to be remembered:
 			inv.update_icon()
 
 		if(wear_suit)
-			var/obj/item/clothing/suit/S = wear_suit
+			var/obj/item/S = wear_suit
 			wear_suit.screen_loc = ui_oclothing
 			if(client && hud_used && hud_used.hud_shown)
 				if(hud_used.inventory_shown)
@@ -728,6 +753,11 @@ There are several things that need to be remembered:
 			var/worn_icon = wear_suit.mob_overlay_icon || 'icons/mob/clothing/suit.dmi'
 			if(dna.species.icon_suit)
 				worn_icon = dna.species.icon_suit
+			if(istype(S, /obj/item/clothing/suit))
+				var/obj/item/clothing/suit/suit = S
+				if(suit.taur_flags_inv_changed)
+					suit.flags_inv |= suit.taur_flags_inv_changed
+					suit.taur_flags_inv_changed = NONE
 			var/worn_state = wear_suit.icon_state
 			var/center = FALSE
 			var/dimension_x = 32
@@ -739,28 +769,46 @@ There are several things that need to be remembered:
 
 			if(S.mutantrace_variation)
 
-				if(T?.taur_mode)
-					var/init_worn_icon = worn_icon
-					variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
-					switch(variation_flag)
-						if(STYLE_HOOF_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_hooved.dmi'
-						if(STYLE_SNEK_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_naga.dmi'
-						if(STYLE_PAW_TAURIC)
-							worn_icon = 'icons/mob/clothing/taur_canine.dmi'
-					if(worn_icon != init_worn_icon) //worn icon sprite was changed, taur offsets will have to be applied.
-						if(S.taur_mob_worn_overlay) //not going to make several new variables for all taur types. Nope.
-							var/static/list/icon_to_state = list('icons/mob/clothing/taur_hooved.dmi' = "_hooved", 'icons/mob/clothing/taur_naga.dmi' = "_naga", 'icons/mob/clothing/taur_canine.dmi' = "_paws")
-							worn_state += icon_to_state[worn_icon]
-							worn_icon = S.taur_mob_worn_overlay
-						center = T.center
-						dimension_x = T.dimension_x
-						dimension_y = T.dimension_y
+				var/taur_builded = FALSE
 
-				else if((DIGITIGRADE in dna.species.species_traits) && S.mutantrace_variation & STYLE_DIGITIGRADE && !(S.mutantrace_variation & STYLE_NO_ANTHRO_ICON)) //not a taur, but digitigrade legs.
-					worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
-					variation_flag |= STYLE_DIGITIGRADE
+				if(istype(S, /obj/item/clothing/suit))
+					var/obj/item/clothing/suit/suit = S
+					if(!isemptylist(suit.taur_types_icon_whitelist))
+						for(var/special_taur_icon in suit.taur_types_icon_whitelist)
+							if(dna.features["taur"] in suit.taur_types_icon_whitelist[special_taur_icon])
+								worn_icon = 'modular_bluemoon/icons/mob/clothing/taur_custom_clothing.dmi'
+								worn_state += special_taur_icon
+								center = !isnull(T) ? T.center : TRUE
+								dimension_x = T?.dimension_x || 64
+								dimension_y = T?.dimension_y || 32
+								suit.flags_inv &= ~HIDETAUR
+								suit.taur_flags_inv_changed |= HIDETAUR
+								taur_builded = TRUE
+								break
+
+				if(!taur_builded)
+					if(T?.taur_mode)
+						var/init_worn_icon = worn_icon
+						variation_flag |= S.mutantrace_variation & T.taur_mode || S.mutantrace_variation & T.alt_taur_mode
+						switch(variation_flag)
+							if(STYLE_HOOF_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_hooved.dmi'
+							if(STYLE_SNEK_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_naga.dmi'
+							if(STYLE_PAW_TAURIC)
+								worn_icon = 'icons/mob/clothing/taur_canine.dmi'
+						if(worn_icon != init_worn_icon) //worn icon sprite was changed, taur offsets will have to be applied.
+							if(S.taur_mob_worn_overlay) //not going to make several new variables for all taur types. Nope.
+								var/static/list/icon_to_state = list('icons/mob/clothing/taur_hooved.dmi' = "_hooved", 'icons/mob/clothing/taur_naga.dmi' = "_naga", 'icons/mob/clothing/taur_canine.dmi' = "_paws")
+								worn_state += icon_to_state[worn_icon]
+								worn_icon = S.taur_mob_worn_overlay
+							center = T.center
+							dimension_x = T.dimension_x
+							dimension_y = T.dimension_y
+
+					else if((DIGITIGRADE in dna.species.species_traits) && S.mutantrace_variation & STYLE_DIGITIGRADE && !(S.mutantrace_variation & STYLE_NO_ANTHRO_ICON)) //not a taur, but digitigrade legs.
+						worn_icon = S.anthro_mob_worn_overlay || 'icons/mob/clothing/suit_digi.dmi'
+						variation_flag |= STYLE_DIGITIGRADE
 
 			overlays_standing[SUIT_LAYER] = S.build_worn_icon(SUIT_LAYER, worn_icon, FALSE, NO_FEMALE_UNIFORM, worn_state, variation_flag, FALSE)
 			var/mutable_appearance/suit_overlay = overlays_standing[SUIT_LAYER]
@@ -947,6 +995,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing = wear_alpha_masked_version(t_state, file2use, layer2use, femaleuniform, alpha_mask)
 	if(!standing)
 		standing = mutable_appearance(file2use, t_state, -layer2use)
+	if(!standing)
+		return
 
 	//Get the overlays for this item when it's being worn
 	//eg: ammo counters, primed grenade flashes, etc.
@@ -955,6 +1005,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing.overlays.Add(worn_overlays)
 
 	standing = center_image(standing, isinhands ? inhand_x_dimension : worn_x_dimension, isinhands ? inhand_y_dimension : worn_y_dimension)
+	if(!standing)
+		return
 
 	//Handle held offsets
 	var/mob/M = loc
@@ -1040,6 +1092,10 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 
 	if(HAS_TRAIT(src, TRAIT_HUSK))
 		. += "-husk"
+
+	if(dna?.features)
+		. += "-allow_emissives=[dna.features["allow_emissives"]]"
+		. += "-emissive_parts=[safe_json_encode(dna.features["emissive_parts"])]"
 
 /mob/living/carbon/human/load_limb_from_cache()
 	..()

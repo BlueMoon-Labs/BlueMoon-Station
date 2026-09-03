@@ -451,7 +451,8 @@
 		C.updatehealth()
 		C.update_damage_overlays()
 
-	QDEL_LIST(C.all_scars)
+	// LAZY-список: qdel шрама внутри цикла зануляет all_scars, и QDEL_LIST падал на null.Cut()
+	QDEL_LAZYLIST(C.all_scars)
 
 /atom/movable/screen/alert/status_effect/fleshmend
 	name = "Fleshmend"

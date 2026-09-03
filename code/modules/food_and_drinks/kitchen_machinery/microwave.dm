@@ -64,9 +64,7 @@
 		ingredients -= gone
 		if(!QDELING(gone) && ingredients.len && isitem(gone))
 			var/obj/item/itemized_ingredient = gone
-			if(!(itemized_ingredient.item_flags & NO_PIXEL_RANDOM_DROP))
-				itemized_ingredient.pixel_x = itemized_ingredient.base_pixel_x + rand(-6, 6)
-				itemized_ingredient.pixel_y = itemized_ingredient.base_pixel_y + rand(-5, 6)
+			itemized_ingredient.randomize_pixel_position()
 	return ..()
 
 

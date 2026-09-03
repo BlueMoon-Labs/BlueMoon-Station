@@ -4,6 +4,9 @@
 	circuit = /obj/item/circuitboard/computer/atmos_alert
 	icon_screen = "alert:0"
 	icon_keyboard = "atmos_key"
+	///Ассоциативные списки зона -> list("cause", "cause_gas", "time", "source").
+	///Раньше здесь лежали одни имена зон, и по консоли нельзя было понять,
+	///что именно случилось и когда.
 	var/list/priority_alarms = list()
 	var/list/minor_alarms = list()
 	var/receive_frequency = FREQ_ATMOS_ALARMS
@@ -28,14 +31,26 @@
 /obj/machinery/computer/atmos_alert/ui_data(mob/user)
 	var/list/data = list()
 
-	data["priority"] = list()
-	for(var/zone in priority_alarms)
-		data["priority"] += zone
-	data["minor"] = list()
-	for(var/zone in minor_alarms)
-		data["minor"] += zone
+	data["priority"] = build_alert_entries(priority_alarms)
+	data["minor"] = build_alert_entries(minor_alarms)
 
 	return data
+
+///Разворачивает хранилище тревог в плоский список для tgui.
+/obj/machinery/computer/atmos_alert/proc/build_alert_entries(list/source)
+	var/list/entries = list()
+	for(var/zone in source)
+		var/list/record = source[zone]
+		var/raised_at = record?["time"]
+		entries += list(list(
+			"zone" = zone,
+			"cause" = record?["cause"],
+			"cause_gas" = record?["cause_gas"],
+			"source" = record?["source"],
+			"clock" = record?["clock"],
+			"age" = isnull(raised_at) ? null : DisplayTimeText(world.time - raised_at),
+		))
+	return entries
 
 /obj/machinery/computer/atmos_alert/ui_act(action, params)
 	if(..())
@@ -44,13 +59,20 @@
 		if("clear")
 			var/zone = params["zone"]
 			if(zone in priority_alarms)
-				to_chat(usr, "<span class='notice'>Priority alarm for [zone] cleared.</span>")
+				to_chat(usr, "<span class='notice'>Тревога высокого приоритета по зоне [zone] снята.</span>")
 				priority_alarms -= zone
 				. = TRUE
 			if(zone in minor_alarms)
-				to_chat(usr, "<span class='notice'>Minor alarm for [zone] cleared.</span>")
+				to_chat(usr, "<span class='notice'>Малая тревога по зоне [zone] снята.</span>")
 				minor_alarms -= zone
 				. = TRUE
+		if("clear_all")
+			if(!length(priority_alarms) && !length(minor_alarms))
+				return
+			to_chat(usr, "<span class='notice'>Все атмосферные тревоги сняты.</span>")
+			priority_alarms.Cut()
+			minor_alarms.Cut()
+			. = TRUE
 	update_icon()
 
 /obj/machinery/computer/atmos_alert/proc/set_frequency(new_frequency)
@@ -70,10 +92,21 @@
 
 	minor_alarms -= zone
 	priority_alarms -= zone
+	if(severity != "severe" && severity != "minor")
+		update_icon()
+		return
+
+	var/list/record = list(
+		"cause" = signal.data["cause"],
+		"cause_gas" = signal.data["cause_gas"],
+		"source" = signal.data["source"],
+		"clock" = gameTimestamp("hh:mm:ss"),
+		"time" = world.time,
+	)
 	if(severity == "severe")
-		priority_alarms += zone
-	else if (severity == "minor")
-		minor_alarms += zone
+		priority_alarms[zone] = record
+	else
+		minor_alarms[zone] = record
 	update_icon()
 	return
 

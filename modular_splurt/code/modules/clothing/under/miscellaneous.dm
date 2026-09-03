@@ -7,6 +7,7 @@
 	can_adjust = FALSE
 	mutantrace_variation = NONE
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/latex
 	name = "full latex jumpsuit"
@@ -16,6 +17,10 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/uniform_digi.dmi'
 	can_adjust = FALSE
+
+/obj/item/clothing/under/latex/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 
 /obj/item/clothing/under/latex/half
 	name = "latex bodysuit"
@@ -73,6 +78,7 @@
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS // Это буквально платье для тонкоспрайтов с Бея. Оно не работает. Очередной наркоманский элемент папки modular_splurt. Заменил на спрайт синего платья как заглушку до того, как перерисуем.
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bluedress
 	name = "Blue Royal Dress"
@@ -85,6 +91,7 @@
 	fitted = NO_FEMALE_UNIFORM // So it won't delete boobs
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/performer
 	name = "Performers one piece"
@@ -97,6 +104,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/blutigen_undergarment
 	name = "Blutigen Undergarments"
@@ -129,6 +137,7 @@
 	body_parts_covered = CHEST
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/skirt/slut
 	name = "slutty security jumpskirt"
@@ -141,6 +150,7 @@
 	can_adjust = FALSE
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	mutantrace_variation = NONE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/skirt/slut/pink
 	desc = "A \"\"\"tactical\"\"\" security jumpsuit with the legs replaced by a skirt. No matter how you adjust it, it always feels a little too small. This one seems to have an experimental color scheme."
@@ -151,6 +161,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	mutantrace_variation = NONE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/stripper
 	name = "security stripper outfit"
@@ -217,6 +228,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/blueshield/skirt
 	name = "blueshield skirt"
@@ -225,6 +237,7 @@
 	item_state = "hosalt_blue_skirt"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/plasmaman/security/blueshield
 	name = "blueshield plasma envirosuit"
@@ -278,6 +291,7 @@
 	body_parts_covered = CHEST|GROIN
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 // GWTB-inspired stuff wooo
 /obj/item/clothing/under/goner
@@ -342,6 +356,7 @@
 	icon = 'modular_splurt/icons/obj/clothing/uniforms.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	icon_state = "poly_performer"
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/performer/polychromic/ComponentInitialize()
 	. = ..()
@@ -416,6 +431,7 @@
 	alt_covers_chest = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/wench/ComponentInitialize()
 	. = ..()
@@ -432,6 +448,7 @@
 	item_state = "tian_dress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/tian_dress/ComponentInitialize()
 	. = ..()
@@ -446,6 +463,7 @@
 	item_state = "vneckdress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/vneck/ComponentInitialize()
 	. = ..()
@@ -460,6 +478,7 @@
 	item_state = "revealingdress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/revealingdress/ComponentInitialize()
 	. = ..()
@@ -489,6 +508,7 @@
 	item_state = "gothic"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/gothic/ComponentInitialize()
 	. = ..()
@@ -503,6 +523,7 @@
 	item_state = "pentagram"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/pentagram/ComponentInitialize()
 	. = ..()
@@ -517,6 +538,7 @@
 	item_state = "swoop"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/swoop/ComponentInitialize()
 	. = ..()
@@ -531,6 +553,7 @@
 	item_state = "asym"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/asym/ComponentInitialize()
 	. = ..()
@@ -545,6 +568,7 @@
 	item_state = "sheer"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/sheer/ComponentInitialize()
 	. = ..()
@@ -559,6 +583,7 @@
 	item_state = "corsetdress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|LEGS
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/corsetdress/ComponentInitialize()
 	. = ..()
@@ -573,6 +598,7 @@
 	item_state = "miniskirt"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = GROIN
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/miniskirt/ComponentInitialize()
 	. = ..()
@@ -587,6 +613,7 @@
 	item_state = "miniskirt_sheer"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = GROIN
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/miniskirt_sheer/ComponentInitialize()
 	. = ..()
@@ -601,3 +628,7 @@
 	icon_state = "latexbodysuit"
 	item_state = "latexbodysuit"
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
+
+/obj/item/clothing/under/latex_bodysuit/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)

@@ -24,7 +24,7 @@
 		. += "...обладает хвостом."
 	// BLUEMOON ADD END
 
-/// The base of all interactions
+	/// The base of all interactions
 /datum/interaction
 	var/description
 	var/simple_message
@@ -48,9 +48,12 @@
 	var/required_from_target_unexposed = NONE
 
 	var/big_user_target_text = FALSE // BLUEMOON ADD большой текстик для TARGET И USER если TRUE
-	var/massage_by_user = TRUE /// BLUEMOON ADD Сообщение и звук происходит от user-а? Если нет, то от цели
+	var/message_by_user = TRUE /// BLUEMOON ADD Сообщение и звук происходит от user-а? Если нет, то от цели
 	/// Additional details to be shown in the interaction menu, accepts more than one entry
 	var/list/additional_details
+
+	var/hearts_effect = FALSE
+	var/custom_interaction_key
 
 /// Checks if user can do an interaction, action_check is for whether you're actually doing it or not (useful for the menu and not removing the buttons)
 /datum/interaction/proc/evaluate_user(mob/living/user, silent = TRUE, apply_cooldown = TRUE)
@@ -113,15 +116,17 @@
 	return TRUE
 
 /// Actually doing the action, has a few checks to see if it's valid, usually overwritten to be make things actually happen and what-not
-/datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/proc/do_action(mob/living/user, mob/living/target, apply_cooldown = TRUE , is_hidden = FALSE)
+	if(QDELETED(user) || QDELETED(target))
+		return FALSE
 	if(!(interaction_flags & INTERACTION_FLAG_USER_IS_TARGET))
 		if(user == target) //tactical href fix
 			to_chat(user, span_warning("Ты не можешь нацелиться на себя."))
 			return FALSE
-	if(get_dist(user, target) > max_distance)
+	if(get_dist(user, target) > max_distance && !is_lewd_portal_relay_interaction(user, target))
 		to_chat(user, span_warning("Слишком далеко."))
 		return FALSE
-	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user)) // BLUEMOON EDIT can interact if in belly
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && !(user.Adjacent(target) && target.Adjacent(user) || isbelly(user.loc) && user.loc:owner == target || isbelly(target.loc) && target.loc:owner == user || is_lewd_portal_relay_interaction(user, target))) // BLUEMOON EDIT can interact if in belly / portal relay
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
 	if(!evaluate_user(user, silent = FALSE, apply_cooldown = apply_cooldown))
@@ -134,27 +139,39 @@
 		return
 	// BLUEMOON ADD END
 
+	if(QDELETED(user) || QDELETED(target))
+		return FALSE
+
 	if(write_log_user)
 		user.log_message("[write_log_user] [target]", LOG_ATTACK)
 	if(write_log_target)
 		target.log_message("[write_log_target] [user]", LOG_VICTIM, log_globally = FALSE)
-
-	display_interaction(user, target)
-	post_interaction(user, target, apply_cooldown)
+	display_interaction(user, target, is_hidden)
+	post_interaction(user, target, apply_cooldown, is_hidden)
 	return TRUE
 
 /// Display the message
-/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, is_hidden = FALSE)
+	if(QDELETED(user) || QDELETED(target))
+		return
+	var/vision_distance = 7
+	var/hidden_message
+	if(is_hidden)
+		vision_distance = 1
+		hidden_message = pick(hidden_additional)
+
 	if(simple_message)
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
-		if(massage_by_user)
-			user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+		if(message_by_user)
+			user.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
 		else
-			target.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+			target.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
 
 /// After the interaction, the base only plays the sound and only if it has one
-/datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
+	if(QDELETED(user) || QDELETED(target))
+		return
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
 	if(interaction_sound)
@@ -168,13 +185,51 @@
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
-		if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
-			playlewdinteractionsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
-		else
-			playsound(get_turf(massage_by_user ? user : target), soundfile_to_play, interaction_sound_volume, 1, -1)
-	return
 
-/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+		play_interaction_sound(message_by_user ? user : target, soundfile_to_play, is_hidden)
+
+	// PLUG 13 INTEGRATION from modular_bluemoon\code\modules\plug13_integration\bluemoon_interaction.dm
+	if (p13user_emote && p13user_strength && p13user_duration)
+		user.client?.plug13?.send_emote(
+			p13user_emote,
+			clamp(p13user_strength + get_lust_modifier(user), 10, 100),
+			p13user_duration
+		)
+
+	if (p13target_emote && p13target_strength && p13target_duration)
+		target.client?.plug13?.send_emote(
+			p13target_emote,
+			clamp(p13target_strength + get_lust_modifier(target), 10, 100),
+			p13target_duration
+		)
+
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && user != target)
+		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
+		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
+
+	if(hearts_effect)
+		user.try_play_interaction_effect(is_hidden)
+		if(user != target)
+			target.try_play_interaction_effect(is_hidden)
+
+/datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
+	var/turf/sound_turf = get_turf(sound_source)
+	if(!sound_turf)
+		return
+	if(!isnum(volume))
+		volume = interaction_sound_volume
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
+		var/list/ignored_mobs
+		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
+			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
+		else if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+			ignored_mobs = sound_source.get_unconsenting(unholy_hard = TRUE)
+		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
+	else
+		playsound(sound_turf, soundin, volume, 1, extrarange)
+
+/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -182,7 +237,7 @@
         return
     . = ..()
 
-/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "dimakr" || user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -190,7 +245,7 @@
         return
     . = ..()
 
-/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	var/obj/item/clothing/mask/screammask/mask = locate() in user.get_equipped_items()
 	if(mask)
 		if(apply_cooldown)
@@ -199,3 +254,26 @@
 		playsound(get_turf(user), soundfile_to_play, 80, FALSE, -1)
 		return
 	. = ..()
+
+// BLUEMOON ADD START
+
+/mob/living/proc/try_play_interaction_effect(is_hidden = FALSE)
+	if(is_hidden)
+		return FALSE
+	var/datum/preferences/prefs = client?.prefs
+	if(prefs && !prefs.show_heart_over_self)
+		return FALSE
+	play_interaction_effect()
+	return TRUE
+
+
+/mob/living/proc/play_interaction_effect()
+	var/effect = client?.prefs?.interaction_effect || INTERACTION_EFFECT_HEART
+	if(!(effect in GLOB.interaction_effects_list))
+		effect = INTERACTION_EFFECT_HEART
+	switch(effect)
+		if(INTERACTION_EFFECT_HEART)
+			new /obj/effect/temp_visual/heart(loc)
+		else
+			new /obj/effect/temp_visual/heart(loc)
+// BLUEMOON ADD END

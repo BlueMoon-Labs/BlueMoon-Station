@@ -27,6 +27,8 @@
 	var/flesh_regeneration
 	var/heal_dead = FALSE // можем ли мы лечить мёртвое тело
 	var/heal_dead_multiplier = 1 // Эффективность лечения мёртвых
+	/// Игнорирование БРОНИ. Не забывайте, пожалуйста, добавлять bypass_armor = TRUE в предметы, которые должны игнорвироать броню. Т.е. скафандры/= броня.
+	var/bypass_armor = FALSE
 
 /obj/item/stack/medical/attack(mob/living/M, mob/user)
 	. = ..()
@@ -44,10 +46,25 @@
 
 	var/heal_zone = check_zone(user.zone_selected)
 
+	if(!heal_dead && patient.stat == DEAD && !HAS_TRAIT(patient, TRAIT_UNDEAD))
+		patient.balloon_alert(user, "мёртв!")
+		return FALSE
+
 	// Проверяем выбранную зону
 	if(!try_heal_checks(patient, user, heal_zone, silent = TRUE))
 		// Если выбранная зона не нуждается в лечении и включен автоматический режим
 		if(iscarbon(patient) && auto_change_zone)
+			var/original_zone = heal_zone
+			var/was_armored = FALSE
+			var/armor_is_spacesuit = FALSE
+			if(ishuman(patient))
+				var/mob/living/carbon/human/H = patient
+				var/obj/item/bodypart/selected_bp = H.get_bodypart(original_zone)
+				if(selected_bp && (selected_bp.get_damage() > 0 || has_treatable_wounds_on(selected_bp)))
+					var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, selected_bp)
+					if(covering && (covering.clothing_flags & THICKMATERIAL))
+						was_armored = TRUE
+						armor_is_spacesuit = istype(covering, /obj/item/clothing/suit/space)
 			// Ищем любую поврежденную часть тела
 			var/mob/living/carbon/carbon_patient = patient
 			var/list/damaged_limbs = list()
@@ -57,13 +74,32 @@
 
 			if(!length(damaged_limbs))
 				if(carbon_patient.getBruteLoss_nonProsthetic() > 0 || carbon_patient.getFireLoss_nonProsthetic() > 0)
+					if(ishuman(patient))
+						var/mob/living/carbon/human/H_bl = patient
+						var/list/blocked_suit_bl = list()
+						var/list/blocked_armor_bl = list()
+						for(var/obj/item/bodypart/bl_limb as anything in H_bl.bodyparts)
+							if(!bl_limb.get_damage() && !has_treatable_wounds_on(bl_limb))
+								continue
+							var/obj/item/clothing/bl_cover = get_bodypart_protecting_clothing_by_coverage(H_bl, bl_limb)
+							if(bl_cover && (bl_cover.clothing_flags & THICKMATERIAL))
+								if(istype(bl_cover, /obj/item/clothing/suit/space))
+									blocked_suit_bl += ru_parse_zone(bl_limb.body_zone)
+								else
+									blocked_armor_bl += ru_parse_zone(bl_limb.body_zone)
+						if(length(blocked_suit_bl))
+							patient.balloon_alert(user, "[blocked_suit_bl.Join(", ")] закрыт[length(blocked_suit_bl) > 1 ? "ы" : "а"] скафандром!")
+						else if(length(blocked_armor_bl))
+							patient.balloon_alert(user, "[blocked_armor_bl.Join(", ")] закрыт[length(blocked_armor_bl) > 1 ? "ы" : "а"] бронёй!")
 					return FALSE
 				patient.balloon_alert(user, "полностью здоров[patient.ru_a()]")
 				return FALSE
 
-			// Берем первую поврежденную часть
 			heal_zone = damaged_limbs[1]
-			patient.balloon_alert(user, "лечим [ru_parse_zone(heal_zone)]...")
+			if(was_armored)
+				patient.balloon_alert(user, "[ru_parse_zone(original_zone)] в [armor_is_spacesuit ? "скафандре" : "броне"], лечим [ru_parse_zone(heal_zone)]...")
+			else
+				patient.balloon_alert(user, "лечим [ru_parse_zone(heal_zone)]...")
 		else
 			// В ручном режиме или для не-карбонов просто выходим
 			return FALSE
@@ -153,6 +189,23 @@
 
 	if(!length(other_affected_limbs))
 		if(patient.getBruteLoss_nonProsthetic() > 0 || patient.getFireLoss_nonProsthetic() > 0)
+			if(ishuman(patient))
+				var/mob/living/carbon/human/H = patient
+				var/list/blocked_spacesuit = list()
+				var/list/blocked_armor = list()
+				for(var/obj/item/bodypart/limb as anything in H.bodyparts)
+					if(!limb.get_damage() && !has_treatable_wounds_on(limb))
+						continue
+					var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, limb)
+					if(covering && (covering.clothing_flags & THICKMATERIAL))
+						if(istype(covering, /obj/item/clothing/suit/space))
+							blocked_spacesuit += ru_parse_zone(limb.body_zone)
+						else
+							blocked_armor += ru_parse_zone(limb.body_zone)
+				if(length(blocked_spacesuit))
+					patient.balloon_alert(user, "[blocked_spacesuit.Join(", ")] [length(blocked_spacesuit) > 1 ? "закрыты" : "закрыта"] скафандром!")
+				else if(length(blocked_armor))
+					patient.balloon_alert(user, "[blocked_armor.Join(", ")] [length(blocked_armor) > 1 ? "закрыты" : "закрыта"] бронёй!")
 			return
 		patient.balloon_alert(user, "полностью вылечен[patient.ru_a()]")
 		return
@@ -174,7 +227,17 @@
 
 
 /obj/item/stack/medical/proc/can_heal(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
-	return patient.can_inject(user, !silent)
+	if(bypass_armor && ishuman(patient))
+		var/mob/living/carbon/human/H = patient
+		var/obj/item/bodypart/BP = H.get_bodypart(healed_zone)
+		if(BP)
+			var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
+			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && (istype(covering, /obj/item/clothing/mod_part)))
+				if(!silent)
+					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
+				return FALSE
+		return patient.can_inject(user, !silent, healed_zone, penetrate_thick = TRUE, bypass_immunity = TRUE)
+	return patient.can_inject(user, !silent, healed_zone, bypass_immunity = TRUE)
 
 /obj/item/stack/medical/proc/has_healable_damage(mob/living/carbon/patient)
 	if(heal_brute && patient.getBruteLoss_nonProsthetic() > 0)
@@ -183,8 +246,30 @@
 		return TRUE
 
 	if((stop_bleeding || flesh_regeneration || sanitization) && LAZYLEN(patient.all_wounds))
-		return TRUE
+		for(var/datum/wound/W as anything in patient.all_wounds)
+			if(item_can_treat_wound(W))
+				return TRUE
 
+	return FALSE
+
+/**
+ * возвращает TRUE если этот предмет способен лечить данную рану.
+ * Проверяет treatable_by и treatable_tool самой раны против типа и поведения предмета.
+ */
+/obj/item/stack/medical/proc/item_can_treat_wound(datum/wound/W)
+	if(W.treatable_by)
+		for(var/allowed_type in W.treatable_by)
+			if(istype(src, allowed_type))
+				return TRUE
+	if(W.treatable_tool && tool_behaviour == W.treatable_tool)
+		return TRUE
+	return FALSE
+
+/// возвращает TRUE если на данной конечности есть хотя бы одна рана, которую предмет умеет лечить
+/obj/item/stack/medical/proc/has_treatable_wounds_on(obj/item/bodypart/affecting)
+	for(var/datum/wound/W as anything in affecting.wounds)
+		if(item_can_treat_wound(W))
+			return TRUE
 	return FALSE
 
 /// Проверяет множество условий для определения возможности лечения пациента, включая can_heal
@@ -193,9 +278,10 @@
 	if(!can_heal(patient, user, healed_zone, silent))
 		return FALSE
 
-	if(!heal_dead && patient.stat == DEAD)
+	if(!heal_dead && patient.stat == DEAD && !HAS_TRAIT(patient, TRAIT_UNDEAD))
 		if(!silent)
 			to_chat(user, "<span class='warning'>[patient] мертв[patient.ru_a()]! Вы не можете [patient.ru_emu()] помочь.</span>")
+			patient.balloon_alert(user, "мёртв!")
 		return FALSE
 
 	if(iscarbon(patient))
@@ -212,8 +298,9 @@
 
 		var/can_heal_brute = heal_brute && affecting.brute_dam > 0
 		var/can_heal_burn = heal_burn && affecting.burn_dam > 0
-		var/can_suture_bleeding = stop_bleeding && LAZYLEN(affecting.wounds)
-		var/can_heal_burn_wounds = (flesh_regeneration || sanitization) && LAZYLEN(affecting.wounds)
+		// проверяем не просто наличие ран, а что предмет умеет лечить именно эти раны
+		var/can_suture_bleeding = stop_bleeding && has_treatable_wounds_on(affecting)
+		var/can_heal_burn_wounds = (flesh_regeneration || sanitization) && has_treatable_wounds_on(affecting)
 
 		if(!can_heal_brute && !can_heal_burn && !can_heal_burn_wounds && !can_suture_bleeding)
 			if(!silent)
@@ -334,17 +421,33 @@
 	desc = "Моток эластичной ткани, идеальной для стабилизации любых видов ранений, от порезов до ожогов и переломов костей."
 	gender = PLURAL
 	singular_name = "medical gauze"
-	icon_state = "gauze"
+	icon = 'icons/obj/medical/stack_medical.dmi'
+	icon_state = "gauze_imp"
 	heal_brute = 5
+	heal_burn = 5
 	self_delay = 50
 	other_delay = 20
 	amount = 15
 	max_amount = 15
-	absorption_rate = 0.25
+	absorption_rate = 0.125
 	absorption_capacity = 5
-	splint_factor = 0.35
+	sanitization = 3
+	flesh_regeneration = 5
+	splint_factor = 0.7
 	custom_price = PRICE_REALLY_CHEAP
 	grind_results = list(/datum/reagent/cellulose = 2)
+	/// Множитель скорости заживления ожогов при перевязке
+	var/burn_cleanliness_bonus = 0.35
+	/// Звук начала перевязки
+	var/heal_begin_sound = SFX_BANDAGE_BEGIN
+	/// Звук окончания перевязки
+	var/heal_end_sound = SFX_BANDAGE_END
+	/// Prefix for bandage overlays on limbs
+	var/gauze_prefix = "gauze"
+	/// Prefix for splint overlays on limbs with bone wounds
+	var/splint_prefix = "splint"
+	/// Whether this gauze can show splint overlays
+	var/can_splint = TRUE
 
 /obj/item/stack/medical/gauze/has_healable_damage(mob/living/carbon/patient)
 	if(..())
@@ -358,9 +461,10 @@
 /obj/item/stack/medical/gauze/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
 	if(!can_heal(patient, user, healed_zone, silent))
 		return FALSE
-	if(!heal_dead && patient.stat == DEAD)
+	if(!heal_dead && patient.stat == DEAD && !HAS_TRAIT(patient, TRAIT_UNDEAD))
 		if(!silent)
 			to_chat(user, "<span class='warning'>[patient] мёртв[patient.ru_a()]! Вы не можете [patient.ru_emu()] помочь.</span>")
+			patient.balloon_alert(user, "мёртв[patient.ru_a()]!")
 		return FALSE
 	if(!iscarbon(patient))
 		return FALSE
@@ -387,31 +491,67 @@
 	if(!limb)
 		to_chat(user, "<span class='notice'>Нечего перевязывать!</span>")
 		return
-	if(!LAZYLEN(limb.wounds))
-		to_chat(user, "<span class='notice'>[user==M ? "Ваша [limb.ru_name]" : "[limb.ru_name_capital] персонажа [M]"] не требует перевязки!</span>")
-		return
 
 	var/gauzeable_wound = FALSE
-	for(var/i in limb.wounds)
-		var/datum/wound/woundies = i
+	for(var/datum/wound/woundies as anything in limb.wounds)
 		if(woundies.wound_flags & ACCEPTS_GAUZE)
 			gauzeable_wound = TRUE
 			break
 	if(!gauzeable_wound)
-		to_chat(user, "<span class='notice'>[user==M ? "Ваша [limb.ru_name]" : "[limb.ru_name_capital] персонажа [M]"] не требует перевязки!</span>")
+		return ..()
+
+	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 1.2 > absorption_capacity))
+		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"], пока ещё в хорошем состоянии!</span>")
+		M.balloon_alert(user, pick("уже перевязано!", "повязка чистая!"))
 		return
 
-	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 0.8 > absorption_capacity)) // игнорируем если новая повязка меньше чем на 20% лучше текущей, чтобы кто-то не перевязывал её 5 раз подряд
-		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа[M]"], пока ещё хорошем состоянии!</span>")
+	var/treatment_delay = (user == M ? self_delay : other_delay)
+	user.visible_message(
+		"<span class='warning'>[user] пытается перевязать рану на [limb.ru_name_v] персонажа [M] с помощью [src]...</span>",
+		"<span class='warning'>Вы пытаетесь перевязать раны на [user == M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"] с помощью [src]...</span>",
+	)
+
+	if(heal_begin_sound)
+		playsound(M, heal_begin_sound, 75, TRUE)
+
+	if(!do_after(user, treatment_delay, target = M))
 		return
 
-	user.visible_message("<span class='warning'>[user] пытается перевязать рану на [limb.ru_name_v] персонажа [M] с помощью [src]...</span>", "<span class='warning'>Вы пытаетесь перевязать раны на [user == M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"] с помощью [src]...</span>")
+	if(heal_end_sound)
+		playsound(M, heal_end_sound, 75, TRUE)
 
-	if(!do_after(user, (user == M ? self_delay : other_delay), target=M))
-		return
-
-	user.visible_message("<span class='green'>[user] наносит [src] на конечность персонажа [M]</span>", "<span class='green'>Вы пытаетесь перевязать раны на [user == M ? "своей конечности" : "конечности персонажа [M]"].</span>")
+	user.visible_message(
+		"<span class='green'>[user] наносит [src] на конечность персонажа [M]</span>",
+		"<span class='green'>Вы перевязали раны на [user == M ? "своей конечности" : "конечности персонажа [M]"].</span>",
+	)
 	limb.apply_gauze(src)
+	on_gauze_applied(M, user, limb)
+	if((heal_brute && limb.brute_dam > 0) || (heal_burn && limb.burn_dam > 0))
+		heal_carbon_new(M, user, healed_zone)
+
+/obj/item/stack/medical/gauze/proc/on_gauze_applied(mob/living/patient, mob/living/user, obj/item/bodypart/limb)
+	if(limb.get_bleed_rate())
+		user.add_mob_blood(patient)
+	for(var/datum/wound/burn/wound in limb.wounds)
+		wound.sanitization += sanitization * (wound.infestation > 0.1 ? 0.2 : 1)
+		wound.flesh_healing += flesh_regeneration * (wound.infestation > 0.1 ? 0 : 1)
+	limb.update_wounds(TRUE)
+	if(iscarbon(patient))
+		var/mob/living/carbon/carbon_patient = patient
+		carbon_patient.update_bandage_overlays()
+
+/// Returns either [splint_prefix] or [gauze_prefix] depending on whether we're splinting a bone wound.
+/obj/item/stack/medical/gauze/proc/get_overlay_prefix(obj/item/bodypart/gauzed_bodypart)
+	var/prefix = is_splinting(gauzed_bodypart) ? splint_prefix : gauze_prefix
+	return "[prefix]_[gauzed_bodypart.body_zone]"
+
+/obj/item/stack/medical/gauze/proc/is_splinting(obj/item/bodypart/gauzed_bodypart)
+	if(!can_splint)
+		return FALSE
+	for(var/datum/wound/iterated_wound as anything in gauzed_bodypart.wounds)
+		if(iterated_wound.wound_flags & BONE_WOUND)
+			return TRUE
+	return FALSE
 
 /obj/item/stack/medical/gauze/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_WIRECUTTER || I.get_sharpness())
@@ -444,24 +584,35 @@
 /obj/item/stack/medical/gauze/improvised
 	name = "improvised gauze"
 	singular_name = "improvised gauze"
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "gauze"
 	heal_brute = 0
-	desc = "Моток грубо обрезанной ткани от чего-то делавшего хорошую работу в стабилизации ран. Делает это не так хорошо, чем полноценная повязка."
+	desc = "Моток грубо обрезанной ткани для стабилизации ран. Делает это хуже, чем полноценная повязка."
 	self_delay = 60
 	other_delay = 30
-	absorption_rate = 0.15
+	absorption_rate = 0.075
 	absorption_capacity = 4
-	splint_factor = 0.15
+	sanitization = 1
+	flesh_regeneration = 3
+	splint_factor = 0.85
+	burn_cleanliness_bonus = 0.7
+	splint_prefix = "splint_improv"
 
 /obj/item/stack/medical/gauze/adv
 	name = "sterilized medical gauze"
 	singular_name = "sterilized medical gauze"
 	desc = "Моток эластичной стерилизованной ткани. Экстремально эффективна для остановки кровотечений и стабилизации ожогов."
+	icon = 'icons/obj/medical/stack_medical.dmi'
+	icon_state = "gauze"
 	heal_brute = 7
 	self_delay = 45
 	other_delay = 15
-	absorption_rate = 0.5
-	absorption_capacity = 12
+	absorption_rate = 0.175
+	absorption_capacity = 10
+	sanitization = 5
+	flesh_regeneration = 7
 	splint_factor = 0.5
+	burn_cleanliness_bonus = 0.25
 
 /obj/item/stack/medical/gauze/adv/one
 	amount = 1
@@ -509,6 +660,7 @@
 	grind_results = list(/datum/reagent/medicine/polypyr = 2)
 	heal_dead = TRUE
 	heal_dead_multiplier = 0.65
+	bypass_armor = TRUE // Лечит сковозь броню.
 
 /obj/item/stack/medical/suture/medicated/one
 	amount = 1
@@ -573,6 +725,7 @@
 	grind_results = list(/datum/reagent/consumable/aloejuice = 1)
 	heal_dead = TRUE
 	heal_dead_multiplier = 0.65
+	bypass_armor = TRUE // Лечит сквозь броню.
 
 /obj/item/stack/medical/mesh/advanced/one
 	amount = 1

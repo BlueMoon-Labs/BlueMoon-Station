@@ -35,6 +35,7 @@
 
 /datum/brain_trauma/special/imaginary_friend/on_lose()
 	..()
+	QDEL_NULL(friend_spawner) // спавнер держит ссылки на trauma/friend, чистим его первым, иначе они не соберутся
 	QDEL_NULL(friend)
 
 //If the friend goes afk, make a brand new friend. Plenty of fish in the sea of imagination.
@@ -50,6 +51,7 @@
 /datum/brain_trauma/special/imaginary_friend/proc/make_friend_spawner()
 	if(!friend)
 		make_friend()
+	QDEL_NULL(friend_spawner) // не плодим спавнеры при рероле
 	friend_spawner = new(friend, src)
 // BLUEMOON ADD END
 
@@ -139,10 +141,14 @@
 	client.images |= current_image
 
 /mob/camera/imaginary_friend/Destroy()
+	// В client.images лежит current_image (image с loc=src), а не human_image (это /icon).
+	// Удаление не той переменной оставляло image в client.images живого владельца,
+	// и тот навсегда держал этого моба (утечка imaginary_friend).
 	if(owner?.client)
-		owner.client.images.Remove(human_image)
+		owner.client.images.Remove(current_image)
 	if(client)
-		client.images.Remove(human_image)
+		client.images.Remove(current_image)
+	current_image = null
 	return ..()
 
 /mob/camera/imaginary_friend/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
@@ -184,8 +190,12 @@
 		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(flick_overlay), MA, list(owner.client), 30)
 
 	for(var/mob/M in GLOB.dead_mob_list)
-		var/link = FOLLOW_LINK(M, owner)
-		to_chat(M, "[link] [dead_rendered]")
+		if(!M.client || !isobserver(M))
+			continue
+		if(get_dist(M, owner) > 7 || M.z != owner.z)
+			if(!(M.client.prefs.chat_toggles & CHAT_GHOSTEARS)) //they're talking normally and we have hearing at any range off
+				continue
+		to_chat(M, "[FOLLOW_LINK(M, owner)] [dead_rendered]")
 
 /mob/camera/imaginary_friend/Move(NewLoc, Dir = 0)
 	if(world.time < move_delay)
@@ -199,13 +209,18 @@
 
 /mob/camera/imaginary_friend/forceMove(atom/destination)
 	dir = get_dir(get_turf(src), destination)
-	loc = destination
+	//голое loc= не звало Moved(): ячейка спатиал-грида слуха оставалась на месте
+	//спавна, и друг перманентно глох - база /mob/camera двигает через Moved
+	..()
 	Show()
 
 /mob/camera/imaginary_friend/proc/recall()
-	if(!owner || loc == owner)
+	//на турф владельца, не в contents: внутри владельца без Entered-пропагации
+	//грид не узнаёт, что владелец носит слушателя, и друг снова глохнет
+	var/turf/owner_turf = get_turf(owner)
+	if(!owner_turf || loc == owner_turf)
 		return FALSE
-	forceMove(owner)
+	forceMove(owner_turf)
 
 /datum/action/innate/imaginary_join
 	name = "Join"

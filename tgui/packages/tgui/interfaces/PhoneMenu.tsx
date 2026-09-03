@@ -1,8 +1,7 @@
+import { useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Button, Input, Section, Stack, Tabs } from 'tgui/components';
 import { Window } from 'tgui/layouts';
-
-import { useLocalState } from '../backend';
 
 type Data = {
   availability: number;
@@ -16,8 +15,8 @@ type Data = {
   }[];
 };
 
-export const PhoneMenu = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PhoneMenu = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window width={500} height={400}>
       <Window.Content>
@@ -27,8 +26,8 @@ export const PhoneMenu = (props, context) => {
   );
 };
 
-const GeneralPanel = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const GeneralPanel = (props) => {
+  const { act, data } = useBackend<Data>();
   const { availability, last_caller } = data;
   const available_transmitters = Object.keys(data.available_transmitters);
   const transmitters = data.transmitters.filter((val1) =>
@@ -43,21 +42,9 @@ const GeneralPanel = (props, context) => {
     categories.push(data.phone_category);
   }
 
-  const [currentSearch, setSearch] = useLocalState(
-    context,
-    'current_search',
-    ''
-  );
-  const [selectedPhone, setSelectedPhone] = useLocalState(
-    context,
-    'selected_phone',
-    null
-  );
-  const [currentCategory, setCategory] = useLocalState(
-    context,
-    'current_category',
-    categories[0]
-  );
+  const [currentSearch, setSearch] = useState('');
+  const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
+  const [currentCategory, setCategory] = useState(categories[0]);
 
   let dnd_tooltip = 'Do Not Disturb is DISABLED';
   let dnd_locked = 'No';

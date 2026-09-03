@@ -8,6 +8,7 @@
 	visual_language = TRUE
 
 	syllables = list(".")
+	spans = list(SPAN_SIGNLANG)
 
 	icon_state = "ssl"
 	default_priority = 90

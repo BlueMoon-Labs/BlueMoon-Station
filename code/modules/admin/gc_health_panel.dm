@@ -33,12 +33,10 @@
 			return "QUEUE"
 		if (QDEL_HINT_QUEUE_THEN_HARDDEL)
 			return "QUEUE_THEN_HARDDEL"
-		#ifdef REFERENCE_TRACKING
 		if (QDEL_HINT_FINDREFERENCE)
 			return "FINDREFERENCE"
 		if (QDEL_HINT_IFFAIL_FINDREFERENCE)
 			return "IFFAIL_FINDREFERENCE"
-		#endif
 	if (isnull(hint))
 		return "-"
 	return "[hint]"
@@ -57,6 +55,13 @@
 	var/notify_label = src.gc_leak_notify ? "<b style='color:lime'>Уведомления: ВКЛ</b>" : "<span style='color:gray'>Уведомления: ВЫКЛ</span>"
 	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_toggle_notify=1'>[notify_label]</A>"
 	output += " — <A href='byond://?src=[REF(holder)];[HrefToken()];gc_health_help=1'>Справочник</A>"
+	var/reftrack_mode_now = SSgarbage.GetReftrackMode()
+	var/list/reftrack_mode_names = list("ВЫКЛ", "ПОМЕЧЕННЫЕ ТИПЫ", "ВСЕ WARNFAIL")
+	output += "<br><b>Авто-скан ссылок:</b> [reftrack_mode_names[reftrack_mode_now + 1]]"
+	output += " \[<A href='byond://?src=[REF(holder)];[HrefToken()];gc_reftrack_mode=0'>выкл</A> | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_reftrack_mode=1'>помеченные</A> | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_reftrack_mode=2'>все</A>]"
+	output += " — сканов за раунд: [SSgarbage.reftrack_autoscans_this_round]"
+	if (length(GLOB.refcount_monitors))
+		output += "<br><b>Активные мониторы refcount:</b> [length(GLOB.refcount_monitors)]"
 	output += "<br><br>"
 
 	// --- Summary stats ---
@@ -91,11 +96,7 @@
 	if (SSgarbage.highest_del_ms)
 		output += "<b>Рекорд hard-del:</b> [SSgarbage.highest_del_ms]мс — [SSgarbage.highest_del_type_string]<br>"
 	output += "</div><br>"
-	#ifdef REFERENCE_TRACKING
-	output += "<div style='color:#ffcc66'><b>Внимание:</b> FAST-REFTRACK запускает поиск ссылок на каждый softcheck miss и может заметно тормозить GC. Включайте его только временно для диагностики.</div><br>"
-	#else
-	output += "<div style='color:#aaaaaa'><b>Примечание:</b> REFERENCE_TRACKING не включён — кнопки FAST-REF и SKIP-REFSCAN неактивны. Это нормально для продакшена. Для отладки утечек на dev-сервере: раскомментируйте <code>#define REFERENCE_TRACKING</code> в <code>code/_compile_options.dm</code>.</div><br>"
-	#endif
+	output += "<div style='color:#ffcc66'><b>Внимание:</b> FAST-REFTRACK запускает поиск ссылок на каждый softcheck miss типа. Включайте точечно и выключайте после охоты.</div><br>"
 
 	// --- Queue levels ---
 	var/list/level_names = list("Softcheck", "Warnfail", "HardDel")
@@ -142,10 +143,8 @@
 		output += "<li>[path][flags_str]"
 		output += " — Fails: [I.failures] | Warnfail: [I.warnfail_count] | HardDel: [I.hard_deletes]"
 		output += " | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_type_detail=[url_encode(path)]'>Подробнее</A>"
-		#ifdef REFERENCE_TRACKING
 		output += " | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_fast_reftrack=[url_encode(path)];gc_return=health'>[I.qdel_flags & QDEL_ITEM_FAST_REFTRACK ? "Откл. fast-ref" : "Вкл. fast-ref"]</A>"
 		output += " | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_skip_refscan=[url_encode(path)];gc_return=health'>[I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN ? "Вкл. ref-scan" : "Откл. ref-scan"]</A>"
-		#endif
 		if (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG)
 			output += " | <A href='byond://?src=[REF(holder)];[HrefToken()];gc_unsuspend=[url_encode(path)];gc_return=health'>Снять суспенд</A>"
 		output += "</li>"
@@ -184,11 +183,12 @@
 	if (length(recent_fails))
 		output += "<b>Последние события GC (последние [length(recent_fails)]):</b>"
 		output += "<table border='1' cellpadding='3' style='border-collapse:collapse; font-family:monospace; font-size:0.9em'>"
-		output += "<tr><th>Тип</th><th>Событие</th><th>Hint</th><th>Тому назад</th></tr>"
+		output += "<tr><th>Тип</th><th>Событие</th><th>Hint</th><th>Ссылки</th><th>Тому назад</th></tr>"
 		for (var/i = length(recent_fails), i >= 1, i--)
 			var/list/entry = recent_fails[i]
 			var/ago = round((world.time - entry[1]) / 10, 0.1)
-			output += "<tr><td>[entry[2]]</td><td>[gc_health_event_text(entry[3], entry[4])]</td><td>[gc_health_hint_text(entry[4])]</td><td>[ago]с</td></tr>"
+			var/refs_text = (length(entry) >= 5 && entry[5] >= 0) ? "[entry[5]]" : "-"
+			output += "<tr><td>[entry[2]]</td><td>[gc_health_event_text(entry[3], entry[4])]</td><td>[gc_health_hint_text(entry[4])]</td><td>[refs_text]</td><td>[ago]с</td></tr>"
 		output += "</table><br>"
 
 	// --- Recent hard deletes ---
@@ -366,18 +366,12 @@
 	output += "<br><b>Действия:</b> "
 	if (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG)
 		output += "<A href='byond://?src=[REF(holder)];[HrefToken()];gc_unsuspend=[url_encode(path_string)];gc_return=detail'>Снять суспенд</A> "
-	#ifdef REFERENCE_TRACKING
 	output += "<A href='byond://?src=[REF(holder)];[HrefToken()];gc_fast_reftrack=[url_encode(path_string)];gc_return=detail'>"
 	output += "[I.qdel_flags & QDEL_ITEM_FAST_REFTRACK ? "Откл. fast-ref" : "Вкл. fast-ref"]</A> "
 	output += "<A href='byond://?src=[REF(holder)];[HrefToken()];gc_skip_refscan=[url_encode(path_string)];gc_return=detail'>"
 	output += "[I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN ? "Вкл. ref-scan" : "Откл. ref-scan"]</A> "
-	#endif
 	output += "</div><br>"
-	#ifdef REFERENCE_TRACKING
 	output += "<span style='color:#ffcc66'>FAST-REFTRACK не должен быть постоянным режимом: он запускает поиск ссылок на каждый softcheck miss.</span><br><br>"
-	#else
-	output += "<span style='color:#aaaaaa'>REFERENCE_TRACKING не включён — поиск ссылок недоступен (это нормально для прода).</span><br><br>"
-	#endif
 
 	// Recent failure timestamps
 	if (I.failure_times && length(I.failure_times))
@@ -569,13 +563,13 @@
 	output += "Объекты этого типа будут накапливаться в памяти, пока суспенд не снимут. Нужно фиксить Destroy() или снимать суспенд вручную.</td></tr>"
 	output += "<tr><td><b style='color:yellow'>FAST_REFTRACK</b></td><td>Включён быстрый поиск ссылок. При каждом softcheck miss GC будет искать, кто держит ссылку. "
 	output += "Полезно для диагностики, но тормозит. Выключайте после того, как нашли проблему. "
-	output += "<b>Требует компиляции с <code>REFERENCE_TRACKING</code></b> (см. <code>code/_compile_options.dm</code>). Без этого флага кнопка не отображается и поиск ссылок не работает.</td></tr>"
+	output += "Работает на любой сборке; результаты пишутся в <code>harddels.log</code>.</td></tr>"
 	output += "<tr><td><b style='color:cyan'>SOFTFAIL_ALERT_SEEN</b></td><td>Тип вернул QDEL_HINT_SOFTFAIL_ALERT из Destroy(). Это значит: «я знаю, что могу не пройти softcheck, но предупредите если не пройду». "
 	output += "Используется для типов, которые иногда задерживаются, но обычно удаляются.</td></tr>"
 	output += "<tr><td><b style='color:#9fd'>SLOWDESTROY_SEEN</b></td><td>Тип вернул QDEL_HINT_SLOWDESTROY. Его Destroy() заведомо медленный (например, с анимациями или fade-out). "
 	output += "GC не будет ругаться на softcheck miss для таких объектов — это ожидаемое поведение.</td></tr>"
 	output += "<tr><td><b>ADMINS_WARNED</b></td><td>Администраторы уже были уведомлены об утечке этого типа. Повторное уведомление не придёт, пока флаг не сбросится.</td></tr>"
-	output += "<tr><td><span style='color:#aaa'>SKIP_REFSCAN</span></td><td>Отключён поиск ссылок для этого типа. По умолчанию включён для /datum/gas_mixture — их слишком много и ref-scan на них неинформативен. Можно переключить кнопкой. Как и FAST_REFTRACK, требует компиляции с <code>REFERENCE_TRACKING</code>.</td></tr>"
+	output += "<tr><td><span style='color:#aaa'>SKIP_REFSCAN</span></td><td>Отключён поиск ссылок для этого типа. По умолчанию включён для /datum/gas_mixture — их слишком много и ref-scan на них неинформативен. Можно переключить кнопкой.</td></tr>"
 	output += "</table><br>"
 
 	// ===== QDEL hints =====
@@ -607,6 +601,25 @@
 	output += "<p>Кроме того, после sleep() состояние объекта может измениться непредсказуемо — другой код может обратиться к полуудалённому объекту.</p>"
 	output += "<p><b>Как фиксить:</b> вынесите асинхронную логику из Destroy(). Если нужна анимация перед удалением — запустите её ДО вызова qdel(), "
 	output += "а в Destroy() делайте только синхронную очистку ссылок.</p>"
+
+	// ===== Фантомные ссылки (VM-пины) =====
+	output += "<h3>Фантомные ссылки — почему «внешних ссылок: N», а скан находит меньше</h3>"
+	output += "<p>BYOND VM пинит объекты во <b>временных слотах фрейма прока</b>: возврат прока через temp-слот, "
+	output += "чтение var через объект, инлайновый list(obj) — всё это оставляет невидимую ссылку, пока жив фрейм "
+	output += "(у долгих проков с циклами и снами — минуты). Такие ссылки <b>не находит ни один скан</b> "
+	output += "(они не в датумах, не в списках, не в клиентских структурах), но refcount() их считает.</p>"
+	output += "<p>Практические следствия:</p>"
+	output += "<ul>"
+	output += "<li>«Внешних ссылок» у softcheck/warnfail-записей может включать +1..+2 фантома от фрейма самого GC и от прока, который вызвал qdel().</li>"
+	output += "<li>Если полный ref-скан нашёл меньше ссылок, чем ожидал — остаток почти наверняка фантомный; лог скана теперь пишет это явно. "
+	output += "Повторите скан через минуту: устойчивый недобор = держатель во внутренностях BYOND, исчезнувший = был VM-пин.</li>"
+	output += "<li>В мониторе refcount короткие скачки на ±1 на секунды — это VM-пины проходящих проков; смотрите на устойчивые уровни и на то, какое действие даёт устойчивую дельту.</li>"
+	output += "<li>Объект, qdel-нутый из долгоживущего прока (подсистемный fire, админ-верб), может честно провалить softcheck из-за пина фрейма вызывающего — warnfail (90с+) такие случаи прощает. "
+	output += "Softcheck miss без warnfail — не утечка.</li>"
+	output += "<li><b>Висящие нативные промпты</b> — BYOND хранит input()/alert() (и спящий фрейм прока с ним) до ответа игрока ДАЖЕ после дисконнекта "
+	output += "(переподключившимся диалоги показываются заново). Брошенный диалог вечно пинит usr/src/локали — классика для обсерверов: «Become X?» у гост-спавнера, пикер Observe. "
+	output += "Счётчик <code>pending_native_prompts</code> на мобе выводится в warnfail-лог и детали фейла: ненулевое значение при «найдено 0 из N» = держатель почти наверняка промпт.</li>"
+	output += "</ul>"
 
 	// ===== Конфиг =====
 	output += "<h3>Конфиг GC — что за параметры</h3>"

@@ -22,6 +22,7 @@
 	bare_wound_bonus = 12
 	tool_behaviour = TOOL_CROWBAR
 	can_force_powered = TRUE
+	usesound = 'sound/items/crowbar.ogg'
 	var/wielded = FALSE // track wielded status on item
 
 /obj/item/fireaxe/Initialize(mapload)
@@ -86,6 +87,30 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=12, force_wielded=35, icon_wielded="bonemetal_axe1")
 
+// Металл-водородный топор — мощнее пожарного, можно вешать на слот костюма Elder Atmosian (из WhiteMoon-station)
+/obj/item/fireaxe/metal_h2_axe
+	icon = 'icons/obj/weapons/fireaxe.dmi'
+	icon_state = "metalh2_axe0"
+	//В руках спрайт берётся по item_state, а его нет - значит по icon_state, и в общих
+	//axes_*hand.dmi стейта metalh2_axe не было: топор был невидим на персонаже. Свои файлы,
+	//чтобы не переписывать общий апстримный лист целиком.
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/metalh2_axe_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/metalh2_axe_righthand.dmi'
+	name = "metal hydrogen fire axe"
+	desc = "Монтировочный топор с очень острым лезвием из металлического водорода — прочнее и опаснее обычного пожарного. Удобно носить в слоте костюма Elder Atmosian, не занимая рюкзак."
+	armour_penetration = 40
+	wound_bonus = 12
+	bare_wound_bonus = 18
+	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_SUITSTORE
+
+/obj/item/fireaxe/metal_h2_axe/update_icon_state()
+	icon_state = "metalh2_axe0"
+
+/obj/item/fireaxe/metal_h2_axe/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=8, force_wielded=38, icon_wielded="metalh2_axe1")
+
 /obj/item/fireaxe/energized
 	desc = "Someone with a love for fire axes decided to turn this one into a high-powered energy weapon. Seems excessive."
 	armour_penetration = 50
@@ -125,3 +150,18 @@
 			target.confused += 15
 			var/atom/throw_target = get_edge_target_turf(M, get_dir(src, get_step_away(M, src)))
 			M.throw_at(throw_target, 5, 1)
+
+// boarding axe - оружие варлорда пиратов
+/obj/item/fireaxe/boardingaxe
+	name = "boarding axe"
+	desc = "A hulking cleaver that feels like a burden just looking at it. Seems excellent at halving obstacles like windows, airlocks, barricades and people."
+	icon_state = "boarding_axe0"
+	throwforce = 25
+	armour_penetration = 40
+
+/obj/item/fireaxe/boardingaxe/update_icon_state()
+	icon_state = "boarding_axe0"
+
+/obj/item/fireaxe/boardingaxe/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=30, icon_wielded="boarding_axe1")

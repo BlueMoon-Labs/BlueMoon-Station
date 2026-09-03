@@ -3,12 +3,47 @@
 	var/min1
 	var/max1
 	var/max2
+	///Заводские значения порогов. Снимаются в New(), чтобы интерфейс мог
+	///откатить строку одной кнопкой вместо ручного набора четырёх чисел.
+	var/list/defaults
 
 /datum/tlv/New(min2 as num, min1 as num, max1 as num, max2 as num)
 	if(min2) src.min2 = min2
 	if(min1) src.min1 = min1
 	if(max1) src.max1 = max1
 	if(max2) src.max2 = max2
+	defaults = list("min2" = src.min2, "min1" = src.min1, "max1" = src.max1, "max2" = src.max2)
+
+///Независимая копия с теми же текущими и заводскими значениями. Присваивать
+///напрямую, а не через New(): порог, выставленный игроком в 0, аргументный
+///конструктор молча превратил бы обратно в дефолт типа.
+/datum/tlv/proc/copy()
+	var/datum/tlv/clone = new
+	clone.min2 = min2
+	clone.min1 = min1
+	clone.max1 = max1
+	clone.max2 = max2
+	clone.defaults = defaults?.Copy()
+	return clone
+
+/datum/tlv/proc/reset_to_defaults()
+	if(!defaults)
+		return FALSE
+	min2 = defaults["min2"]
+	min1 = defaults["min1"]
+	max1 = defaults["max1"]
+	max2 = defaults["max2"]
+	return TRUE
+
+/datum/tlv/proc/is_at_defaults()
+	if(!defaults)
+		return FALSE
+	return min2 == defaults["min2"] && min1 == defaults["min1"] \
+		&& max1 == defaults["max1"] && max2 == defaults["max2"]
+
+///Слепок для tgui: -1 остаётся -1, интерфейс сам рисует его как "отключено".
+/datum/tlv/proc/ui_list()
+	return list("min2" = min2, "min1" = min1, "max1" = max1, "max2" = max2)
 
 /datum/tlv/proc/get_danger_level(val as num)
 	if(max2 != -1 && val >= max2)
@@ -50,12 +85,136 @@
 #define AALARM_MODE_PANIC 3 //like siphon, but stronger (enables widenet)
 #define AALARM_MODE_REPLACEMENT 4 //sucks off all air, then refill and swithes to scrubbing
 #define AALARM_MODE_OFF 5
-#define AALARM_MODE_FLOOD 6 //Emagged mode; turns off scrubbers and pressure checks on vents
+#define AALARM_MODE_FLOOD 6 //Emagged mode; fills to the vent maximum (50 atm)
 #define AALARM_MODE_SIPHON 7 //Scrubbers suck air
 #define AALARM_MODE_CONTAMINATED 8 //Turns on all filtering and widenet scrubbing.
 #define AALARM_MODE_REFILL 9 //just like normal, but with triple the air output
 
+/// Declarative air-alarm operating mode. The legacy command emitter remains a
+/// compatibility boundary for old vents/scrubbers; selection and UI metadata
+/// live here instead of in parallel hardcoded lists.
+/datum/air_alarm_mode
+	var/id
+	///Английское имя: уходит в investigate_log, логи расследований одноязычные.
+	var/name
+	///Подпись в интерфейсе - на русском, как и весь остальной tgui.
+	var/ui_name
+	var/description
+	var/danger = FALSE
+	var/emag_only = FALSE
+
+/datum/air_alarm_mode/proc/apply(obj/machinery/airalarm/alarm)
+	alarm.apply_mode_commands(id)
+
+/datum/air_alarm_mode/scrubbing
+	id = AALARM_MODE_SCRUBBING
+	name = "Filtering"
+	ui_name = "Фильтрация"
+	description = "Держит нормальное давление и вычищает обычную грязь из воздуха."
+
+/datum/air_alarm_mode/contaminated
+	id = AALARM_MODE_CONTAMINATED
+	name = "Contaminated"
+	ui_name = "Заражение"
+	description = "Широкий охват: вычищает все газы, помеченные как опасные."
+
+/datum/air_alarm_mode/venting
+	id = AALARM_MODE_VENTING
+	name = "Draught"
+	ui_name = "Продув"
+	description = "Одновременно откачивает и подаёт воздух."
+
+/datum/air_alarm_mode/refill
+	id = AALARM_MODE_REFILL
+	name = "Refill"
+	ui_name = "Дозаправка"
+	description = "Быстро поднимает давление в помещении до трёх атмосфер."
+	danger = TRUE
+
+/datum/air_alarm_mode/replacement
+	id = AALARM_MODE_REPLACEMENT
+	name = "Cycle"
+	ui_name = "Прокачка"
+	description = "Откачивает воздух досуха, потом возвращается к фильтрации."
+	danger = TRUE
+
+/datum/air_alarm_mode/siphon
+	id = AALARM_MODE_SIPHON
+	name = "Siphon"
+	ui_name = "Откачка"
+	description = "Убирает воздух из помещения через обычную сеть скрубберов."
+	danger = TRUE
+
+/datum/air_alarm_mode/panic
+	id = AALARM_MODE_PANIC
+	name = "Panic Siphon"
+	ui_name = "Аварийная откачка"
+	description = "Быстрая разгерметизация широким охватом. Нужны внутренние баллоны."
+	danger = TRUE
+
+/datum/air_alarm_mode/off
+	id = AALARM_MODE_OFF
+	name = "Off"
+	ui_name = "Выключено"
+	description = "Гасит венты и скрубберы."
+
+/datum/air_alarm_mode/flood
+	id = AALARM_MODE_FLOOD
+	name = "Flood"
+	ui_name = "Затопление"
+	description = "Заполняет помещение до максимума вентов (50 атм)."
+	danger = TRUE
+	emag_only = TRUE
+
+/proc/init_air_alarm_modes()
+	var/list/result = list()
+	// Stable operational order, with destructive modes grouped after the normal
+	// ones. Typepath sorting made this jump around between builds.
+	for(var/path in list(
+		/datum/air_alarm_mode/scrubbing,
+		/datum/air_alarm_mode/contaminated,
+		/datum/air_alarm_mode/venting,
+		/datum/air_alarm_mode/refill,
+		/datum/air_alarm_mode/replacement,
+		/datum/air_alarm_mode/siphon,
+		/datum/air_alarm_mode/panic,
+		/datum/air_alarm_mode/off,
+		/datum/air_alarm_mode/flood,
+	))
+		var/datum/air_alarm_mode/mode = new path
+		if(mode.id)
+			result["[mode.id]"] = mode
+	return result
+
+GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
+
+/proc/get_air_alarm_mode(id)
+	return GLOB.air_alarm_modes["[id]"]
+
 #define AALARM_REPORT_TIMEOUT 100
+
+/// Единственные поля /datum/tlv, которые интерфейс имеет право писать. Без
+/// белого списка params["var"] уходил прямо в tlv.vars[] и позволял писать
+/// в любую переменную датума.
+#define AALARM_THRESHOLD_VARS list("min2", "min1", "max1", "max2")
+
+/// Adaptive process() backoff cap: once danger_level has been stable, the air alarm reads
+/// the turf air at most every this-many SSmachines fires (2 s each). The instant danger_level
+/// changes it snaps back to reading every fire. (Not #undef'd — read by the regression test.)
+#define AALARM_MAX_PROCESS_INTERVAL 2
+/// Backoff cap while the local turf sits outside active atmos exchange entirely (not excited,
+/// no excited group): its air cannot drift, so reads only guard against missed excitations.
+#define AALARM_INACTIVE_PROCESS_INTERVAL 15
+
+/// Потолок, в который затопление гонит венты - он же верхний клапан клампа
+/// set_external_pressure в vent_pump.dm. Со снятой проверкой давления вент не
+/// имел границы вообще и не уходил в простой до конца смены; барокамера на
+/// 5066 кПа - тот же смертельный замысел режима, но с конечным состоянием.
+#define AALARM_FLOOD_TARGET_PRESSURE (ONE_ATMOSPHERE * 50)
+/// Отсек стравлен: ниже этого давления откачивать уже нечего, и режим снимает
+/// себя сам. Без отсечки widenet-скруббер щупает пустую комнату до конца смены -
+/// по своей ветке process_atmos() он в простой не уходит.
+#define AALARM_EMERGENCY_SIPHON_CUTOFF (ONE_ATMOSPHERE * 0.05)
 
 #define AALARM_OVERLAY_OFF		"alarm_off"
 #define AALARM_OVERLAY_GREEN	"alarm_green"
@@ -81,7 +240,18 @@
 	COOLDOWN_DECLARE(decomp_alarm)
 
 	var/danger_level = 0
+	///Что именно вылезло за порог: AALARM_CAUSE_*. Едет в сигнал тревоги.
+	var/danger_source
+	///Идентификатор газа, если причина - газ.
+	var/danger_source_gas
 	var/mode = AALARM_MODE_SCRUBBING
+
+	/// Adaptive process() throttle: how many SSmachines fires between full turf air reads.
+	/// 1 = every fire. Grows toward AALARM_MAX_PROCESS_INTERVAL while danger_level is stable;
+	/// resets to 1 the instant danger_level changes.
+	var/process_interval = 1
+	/// Fires left to skip (cheap early-out) before the next full air read.
+	var/process_skips_left = 0
 
 	var/locked = TRUE
 	var/aidisabled = 0
@@ -94,6 +264,9 @@
 	var/datum/radio_frequency/radio_connection
 	///Represents a signel source of atmos alarms, complains to all the listeners if one of our thresholds is violated
 	var/datum/alarm_handler/alarm_manager
+	///The area this alarm is registered in (area.airalarms); kept so Destroy
+	///removes us from the same list we joined even if areas got rearranged.
+	var/area/alarm_area
 
 	var/list/TLV = list( // Breathable air.
 		"pressure"					= new/datum/tlv(ONE_ATMOSPHERE * 0.8, ONE_ATMOSPHERE*  0.9, ONE_ATMOSPHERE * 1.1, ONE_ATMOSPHERE * 1.2), // kPa
@@ -118,10 +291,53 @@
 
 	)
 
+/// Температурные пороги алярма заданы по человеку: ниже нуля по Цельсию - уже
+/// тревога. В комнате, которую РАЗЛОЖИЛИ холодной, это означает красный алярм с
+/// первой секунды раунда и до конца: телекомы мапятся при 80 K, холодильник
+/// кухни при 259 K, и починить там нечего - комната работает как задумано.
+/// Тревога, которую нельзя ни снять, ни исправить, не сообщает ничего и учит
+/// экипаж не смотреть на алярмы вообще.
+///
+/// Полоса сдвигается под проектную температуру САМОГО турфа и сохраняет свою
+/// ширину, так что отклонения алярм ловит по-прежнему - в телекомах он всё так
+/// же заметит нагрев, просто перестанет ругаться на штатный холод. Заводскими
+/// после сдвига считаются новые значения - иначе кнопка сброса в интерфейсе
+/// одним кликом возвращает вечную тревогу.
+/obj/machinery/airalarm/proc/adapt_temperature_thresholds()
+	var/datum/tlv/temperature_tlv = TLV["temperature"]
+	if(!temperature_tlv || !SSair)
+		return
+	var/turf/here = get_turf(src)
+	if(!isopenturf(here))
+		return
+	var/list/designed = SSair.get_parsed_gas_string(here.initial_gas_mix)
+	var/designed_temperature = designed?[GAS_STRING_TEMP]
+	if(!isnum(designed_temperature))
+		return
+	var/changed = FALSE
+	// -1 это "порог отключён", и трогать его нельзя: у серверного алярма так
+	// отключены вообще все пороги.
+	if(temperature_tlv.min2 != -1 && designed_temperature < temperature_tlv.min2 + AIRALARM_DESIGN_TEMPERATURE_MARGIN)
+		var/warning_band = max(temperature_tlv.min1 - temperature_tlv.min2, 0)
+		temperature_tlv.min2 = designed_temperature - AIRALARM_DESIGN_TEMPERATURE_MARGIN
+		temperature_tlv.min1 = temperature_tlv.min2 + warning_band
+		changed = TRUE
+	if(temperature_tlv.max2 != -1 && designed_temperature > temperature_tlv.max2 - AIRALARM_DESIGN_TEMPERATURE_MARGIN)
+		var/warning_band = max(temperature_tlv.max2 - temperature_tlv.max1, 0)
+		temperature_tlv.max2 = designed_temperature + AIRALARM_DESIGN_TEMPERATURE_MARGIN
+		temperature_tlv.max1 = temperature_tlv.max2 - warning_band
+		changed = TRUE
+	if(changed)
+		temperature_tlv.defaults = temperature_tlv.ui_list()
+
 /obj/machinery/airalarm/proc/regenerate_TLV()
 	var/list/TLVs = GLOB.gas_data.TLVs
 	for(var/g in TLVs)
-		TLV[g] = TLVs[g]
+		// Копия, а не сама глобальная запись: раньше все алярмы станции держали
+		// один и тот же /datum/tlv на газ, и правка порога плазмы в баре
+		// молча меняла его в каждой комнате.
+		var/datum/tlv/shared = TLVs[g]
+		TLV[g] = shared.copy()
 
 /obj/machinery/airalarm/server // No checks here.
 	TLV = list(
@@ -220,6 +436,17 @@
 	var/list/air_scrub_names = list()
 	var/list/air_vent_info = list()
 	var/list/air_scrub_info = list()
+	///Монотонные счётчики номеров в подписях вентиляции. Номер брался как
+	///длина реестра плюс один, а Destroy() запись из реестра удаляет - поэтому
+	///любой снятый вент освобождал свой номер следующему, и в отсеке, который
+	///хоть раз пересобирали, появлялись два и три "#20" разом. Счётчик номера
+	///не возвращает: дырка в нумерации честнее двойника.
+	var/air_vent_serial = 0
+	var/air_scrub_serial = 0
+	///Air alarms in this exact area (not the base-area group). Lazy, maintained
+	///by /obj/machinery/airalarm Initialize/Destroy so per-area consumers never
+	///have to type-scan area contents.
+	var/list/airalarms
 
 /obj/machinery/airalarm/Initialize(mapload, ndir, nbuild)
 	. = ..()
@@ -243,6 +470,33 @@
 	power_change()
 	set_frequency(frequency)
 	register_context()
+	adapt_temperature_thresholds()
+	alarm_area = get_area(src)
+	if(alarm_area)
+		LAZYADD(alarm_area.airalarms, src)
+
+/obj/machinery/airalarm/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	// Тревогу снимаем адресно со СТАРОЙ зоны: alarm_handler определяет область лениво,
+	// через get_area(source_atom), а турф к этому моменту уже переписан на новую. Обычный
+	// clear_alarm() посчитал бы новую зону, не нашёл бы её в sent_alarms и вышел бы с FALSE -
+	// у покинутой области ALARM_ATMOS оставался бы поднятым до конца раунда.
+	// Если воздух в новой зоне по-прежнему плох, apply_danger_level() поднимет тревогу заново.
+	alarm_manager.clear_alarm_from_area(ALARM_ATMOS, old_area)
+	if(alarm_area)
+		LAZYREMOVE(alarm_area.airalarms, src)
+	alarm_area = get_area(src)
+	if(alarm_area)
+		LAZYADD(alarm_area.airalarms, src)
+	// Имя автогенерится от БАЗОВОЙ области (см. Initialize), с ней же и сверяем: у подобласти
+	// собственное имя другое, и переименование молча не срабатывало.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base && name == "[old_base.name] Air Alarm") // имя было автогенерённым - обновляем под новую зону
+		name = "[get_area_name(src, get_base_area = TRUE)] Air Alarm"
+	// Пересчёт по новой зоне: danger_level не менялся, а значит штатный process()
+	// уже не позовёт apply_danger_level() - без этого тревога снялась бы со старой
+	// области и не поднялась бы в новой.
+	apply_danger_level()
 
 /obj/machinery/airalarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -250,6 +504,10 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/airalarm/Destroy()
+	if(alarm_area)
+		LAZYREMOVE(alarm_area.airalarms, src)
+		alarm_area = null
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	SSradio.remove_object(src, frequency)
 	QDEL_NULL(wires)
 	QDEL_NULL(alarm_manager)
@@ -263,8 +521,8 @@
 		if(1)
 			. += "<span class='notice'>Отсутствует проводка.</span>"
 		if(2)
-			. += "<span class='notice'>Alt-click, чтобы [locked ? "заблокировать" : "заблокировать"] интерфейс.</span>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+			. += "<span class='notice'>Alt-click, чтобы [locked ? "раз" : "за"]блокировать интерфейс.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 /obj/machinery/airalarm/ui_status(mob/user)
 	if(hasSiliconAccessInArea(user))
@@ -308,18 +566,22 @@
 	var/pressure = environment.return_pressure()
 	cur_tlv = TLV["pressure"]
 	data["environment_data"] += list(list(
+							"id" = "pressure",
 							"name" = "Pressure",
 							"value" = pressure,
 							"unit" = "kPa",
-							"danger_level" = cur_tlv.get_danger_level(pressure)
+							"danger_level" = cur_tlv.get_danger_level(pressure),
+							"tlv" = cur_tlv.ui_list()
 	))
 	var/temperature = environment.return_temperature()
 	cur_tlv = TLV["temperature"]
 	data["environment_data"] += list(list(
+							"id" = "temperature",
 							"name" = "Temperature",
 							"value" = temperature,
-							"unit" = "K ([round(temperature - T0C, 0.1)]C)",
-							"danger_level" = cur_tlv.get_danger_level(temperature)
+							"unit" = "K",
+							"danger_level" = cur_tlv.get_danger_level(temperature),
+							"tlv" = cur_tlv.ui_list()
 	))
 	var/total_moles = environment.total_moles()
 	var/partial_pressure = R_IDEAL_GAS_EQUATION * environment.return_temperature() / environment.return_volume()
@@ -327,11 +589,18 @@
 		if(!(gas_id in TLV)) // We're not interested in this gas, it seems.
 			continue
 		cur_tlv = TLV[gas_id]
+		// Порог газа проверяется по парциальному давлению, а показывается процент
+		// от смеси. Интерфейсу нужны обе величины, иначе "0.1 %" рядом с красным
+		// флажком выглядит как ошибка прибора.
+		var/gas_partial_pressure = environment.get_moles(gas_id) * partial_pressure
 		data["environment_data"] += list(list(
+								"id" = gas_id,
 								"name" = GLOB.gas_data.names[gas_id],
 								"value" = environment.get_moles(gas_id) / total_moles * 100,
 								"unit" = "%",
-								"danger_level" = cur_tlv.get_danger_level(environment.get_moles(gas_id) * partial_pressure)
+								"partial_pressure" = gas_partial_pressure,
+								"danger_level" = cur_tlv.get_danger_level(gas_partial_pressure),
+								"tlv" = cur_tlv.ui_list()
 		))
 
 	if(!locked || hasSiliconAccessInArea(user, PRIVILEGES_SILICON|PRIVILEGES_DRONE))
@@ -369,47 +638,64 @@
 					"filter_types"			= info["filter_types"]
 				))
 		data["mode"] = mode
+		// Идентификаторы режимов, на которые завязан обзорный экран: пусть
+		// tgui не хардкодит числа из #define, которые здесь же и #undef'ятся.
+		data["panic_mode"] = AALARM_MODE_PANIC
+		data["filtering_mode"] = AALARM_MODE_SCRUBBING
 		data["modes"] = list()
-		data["modes"] += list(list("name" = "Filtering - Scrubs out contaminants", 				"mode" = AALARM_MODE_SCRUBBING,		"selected" = mode == AALARM_MODE_SCRUBBING, 	"danger" = 0))
-		data["modes"] += list(list("name" = "Contaminated - Scrubs out ALL contaminants quickly","mode" = AALARM_MODE_CONTAMINATED,	"selected" = mode == AALARM_MODE_CONTAMINATED,	"danger" = 0))
-		data["modes"] += list(list("name" = "Draught - Siphons out air while replacing",		"mode" = AALARM_MODE_VENTING,		"selected" = mode == AALARM_MODE_VENTING,		"danger" = 0))
-		data["modes"] += list(list("name" = "Refill - Triple vent output",						"mode" = AALARM_MODE_REFILL,		"selected" = mode == AALARM_MODE_REFILL,		"danger" = 1))
-		data["modes"] += list(list("name" = "Cycle - Siphons air before replacing", 			"mode" = AALARM_MODE_REPLACEMENT,	"selected" = mode == AALARM_MODE_REPLACEMENT, 	"danger" = 1))
-		data["modes"] += list(list("name" = "Siphon - Siphons air out of the room", 			"mode" = AALARM_MODE_SIPHON,		"selected" = mode == AALARM_MODE_SIPHON, 		"danger" = 1))
-		data["modes"] += list(list("name" = "Panic Siphon - Siphons air out of the room quickly","mode" = AALARM_MODE_PANIC,		"selected" = mode == AALARM_MODE_PANIC, 		"danger" = 1))
-		data["modes"] += list(list("name" = "Off - Shuts off vents and scrubbers", 				"mode" = AALARM_MODE_OFF,			"selected" = mode == AALARM_MODE_OFF, 			"danger" = 0))
-		if(obj_flags & EMAGGED)
-			data["modes"] += list(list("name" = "Flood - Shuts off scrubbers and opens vents",	"mode" = AALARM_MODE_FLOOD,			"selected" = mode == AALARM_MODE_FLOOD, 		"danger" = 1))
+		for(var/mode_id in GLOB.air_alarm_modes)
+			var/datum/air_alarm_mode/mode_data = GLOB.air_alarm_modes[mode_id]
+			if(mode_data.emag_only && !(obj_flags & EMAGGED))
+				continue
+			data["modes"] += list(list(
+				"name" = mode_data.ui_name || mode_data.name,
+				"description" = mode_data.description,
+				"mode" = mode_data.id,
+				"selected" = mode == mode_data.id,
+				"danger" = mode_data.danger,
+			))
 
-		var/datum/tlv/selected
 		var/list/thresholds = list()
-
-		selected = TLV["pressure"]
-		thresholds += list(list("name" = "Pressure", "settings" = list()))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "pressure", "val" = "min2", "selected" = selected.min2))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "pressure", "val" = "min1", "selected" = selected.min1))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "pressure", "val" = "max1", "selected" = selected.max1))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "pressure", "val" = "max2", "selected" = selected.max2))
-
-		selected = TLV["temperature"]
-		thresholds += list(list("name" = "Temperature", "settings" = list()))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "temperature", "val" = "min2", "selected" = selected.min2))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "temperature", "val" = "min1", "selected" = selected.min1))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "temperature", "val" = "max1", "selected" = selected.max1))
-		thresholds[thresholds.len]["settings"] += list(list("env" = "temperature", "val" = "max2", "selected" = selected.max2))
-
+		var/list/row = build_threshold_row("pressure", "Pressure", "kPa")
+		if(row)
+			thresholds += list(row)
+		row = build_threshold_row("temperature", "Temperature", "K")
+		if(row)
+			thresholds += list(row)
 		for(var/gas_id in GLOB.gas_data.names)
 			if(!(gas_id in TLV)) // We're not interested in this gas, it seems.
 				continue
-			selected = TLV[gas_id]
-			thresholds += list(list("name" = GLOB.gas_data.names[gas_id], "settings" = list()))
-			thresholds[thresholds.len]["settings"] += list(list("env" = gas_id, "val" = "min2", "selected" = selected.min2))
-			thresholds[thresholds.len]["settings"] += list(list("env" = gas_id, "val" = "min1", "selected" = selected.min1))
-			thresholds[thresholds.len]["settings"] += list(list("env" = gas_id, "val" = "max1", "selected" = selected.max1))
-			thresholds[thresholds.len]["settings"] += list(list("env" = gas_id, "val" = "max2", "selected" = selected.max2))
+			// Пороги газов задаются в парциальном давлении, а не в процентах:
+			// без подписи единиц игрок вводит проценты и не понимает, почему
+			// тревога не срабатывает.
+			row = build_threshold_row(gas_id, GLOB.gas_data.names[gas_id], "kPa")
+			if(row)
+				thresholds += list(row)
 
 		data["thresholds"] = thresholds
 	return data
+
+///Одна строка таблицы порогов для tgui: текущие значения, заводские и единицы.
+/obj/machinery/airalarm/proc/build_threshold_row(env, display_name, unit)
+	var/datum/tlv/selected = TLV[env]
+	if(!selected)
+		return null
+	var/list/factory = selected.defaults
+	var/list/settings = list()
+	for(var/threshold_var in list("min2", "min1", "max1", "max2"))
+		settings += list(list(
+			"env" = env,
+			"val" = threshold_var,
+			"selected" = selected.vars[threshold_var],
+			"default" = factory ? factory[threshold_var] : null,
+		))
+	return list(
+		"env" = env,
+		"name" = display_name,
+		"unit" = unit,
+		"is_default" = selected.is_at_defaults(),
+		"settings" = settings,
+	)
 
 /obj/machinery/airalarm/ui_act(action, params)
 	if(..() || buildstage != 2)
@@ -450,35 +736,47 @@
 			send_signal(device_id, list("reset_internal_pressure"), usr)
 			. = TRUE
 		if("threshold")
+			// Значение приходит из tgui-модалки. Раньше здесь стоял блокирующий
+			// input(): окно алярма замирало до ответа, а брошенный диалог
+			// продолжал держать ссылку на игрока после дисконнекта.
 			var/env = params["env"]
-			if(text2path(env))
-				env = text2path(env)
-
 			var/name = params["var"]
-			var/datum/tlv/tlv = TLV[env]
-			if(isnull(tlv))
+			if(!set_threshold(env, name, text2num(params["value"])))
 				return
-			var/value = input("New [name] for [env]:", name, tlv.vars[name]) as num|null
-			if(!isnull(value) && !..())
-				if(value < 0)
-					tlv.vars[name] = -1
-				else
-					tlv.vars[name] = round(value, 0.01)
-				investigate_log(" treshold value for [env]:[name] was set to [value] by [key_name(usr)]",INVESTIGATE_ATMOS)
-				. = TRUE
+			investigate_log(" treshold value for [env]:[name] was set to [params["value"]] by [key_name(usr)]",INVESTIGATE_ATMOS)
+			. = TRUE
+		if("reset_threshold")
+			var/datum/tlv/tlv = TLV[params["env"]]
+			if(isnull(tlv) || !tlv.reset_to_defaults())
+				return
+			investigate_log(" treshold values for [params["env"]] were reset by [key_name(usr)]", INVESTIGATE_ATMOS)
+			. = TRUE
+		if("set_all_filters")
+			. = set_all_filters(device_id, text2num(params["val"]), usr)
+		if("power_all")
+			. = power_all_devices(params["target"], text2num(params["val"]), usr)
 		if("mode")
-			mode = text2num(params["mode"])
+			var/new_mode = text2num(params["mode"])
+			var/datum/air_alarm_mode/mode_data = get_air_alarm_mode(new_mode)
+			if(!mode_data || (mode_data.emag_only && !(obj_flags & EMAGGED)))
+				return
+			mode = new_mode
 			investigate_log("was turned to [get_mode_name(mode)] mode by [key_name(usr)]",INVESTIGATE_ATMOS)
 			apply_mode()
 			. = TRUE
 		if("alarm")
 			if(alarm_manager.send_alarm(ALARM_ATMOS))
-				post_alert(2)
+				post_alert(2, AALARM_CAUSE_MANUAL)
 			. = TRUE
 		if("reset")
 			if(alarm_manager.clear_alarm(ALARM_ATMOS))
 				post_alert(0)
 			. = TRUE
+	if(.)
+		// settings changed (thresholds, mode, vent/scrubber orders): re-read the air on the very
+		// next fire instead of coasting on the adaptive backoff
+		process_interval = 1
+		process_skips_left = 0
 	update_icon()
 
 /obj/machinery/airalarm/proc/reset(wire)
@@ -535,30 +833,65 @@
 
 	return TRUE
 
+///Запись одного порога. Отдельным проком, потому что значение уходит в
+///tlv.vars[]: белый список полей обязан жить ровно в одном месте, иначе
+///params["var"] из интерфейса пишет в любую переменную датума.
+/obj/machinery/airalarm/proc/set_threshold(env, threshold_var, value)
+	if(!(threshold_var in AALARM_THRESHOLD_VARS))
+		return FALSE
+	var/datum/tlv/tlv = TLV[env]
+	if(isnull(tlv) || isnull(value))
+		return FALSE
+	tlv.vars[threshold_var] = value < 0 ? -1 : round(value, 0.01)
+	return TRUE
+
+///Разом гасит или поднимает все фильтры одного скруббера. Руками это
+///пятнадцать с лишним кликов по кнопкам-плиткам.
+/obj/machinery/airalarm/proc/set_all_filters(device_id, enable, mob/user)
+	if(!device_id)
+		return FALSE
+	var/area/our_area = get_base_area(src)
+	var/list/info = our_area.air_scrub_info[device_id]
+	if(!info)
+		return FALSE
+	var/list/gas_ids = list()
+	if(enable)
+		for(var/list/filter as anything in info["filter_types"])
+			gas_ids += filter["gas_id"]
+	send_signal(device_id, list("set_filters" = gas_ids), user)
+	investigate_log("set every filter on [device_id] [enable ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+	return TRUE
+
+///Массовое включение/выключение всех вентов или всех скрубберов зоны.
+/obj/machinery/airalarm/proc/power_all_devices(target, enable, mob/user)
+	var/area/our_area = get_base_area(src)
+	var/list/device_names
+	switch(target)
+		if("vents")
+			device_names = our_area.air_vent_names
+		if("scrubbers")
+			device_names = our_area.air_scrub_names
+		else
+			return FALSE
+	if(!length(device_names))
+		return FALSE
+	for(var/device_id in device_names)
+		send_signal(device_id, list("power" = enable), user)
+	investigate_log("turned every [target] in [our_area] [enable ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+	return TRUE
+
 /obj/machinery/airalarm/proc/get_mode_name(mode_value)
-	switch(mode_value)
-		if(AALARM_MODE_SCRUBBING)
-			return "Filtering"
-		if(AALARM_MODE_CONTAMINATED)
-			return "Contaminated"
-		if(AALARM_MODE_VENTING)
-			return "Draught"
-		if(AALARM_MODE_REFILL)
-			return "Refill"
-		if(AALARM_MODE_PANIC)
-			return "Panic Siphon"
-		if(AALARM_MODE_REPLACEMENT)
-			return "Cycle"
-		if(AALARM_MODE_SIPHON)
-			return "Siphon"
-		if(AALARM_MODE_OFF)
-			return "Off"
-		if(AALARM_MODE_FLOOD)
-			return "Flood"
+	var/datum/air_alarm_mode/mode_data = get_air_alarm_mode(mode_value)
+	return mode_data?.name || "Unknown"
 
 /obj/machinery/airalarm/proc/apply_mode()
+	var/datum/air_alarm_mode/mode_data = get_air_alarm_mode(mode)
+	if(mode_data)
+		mode_data.apply(src)
+
+/obj/machinery/airalarm/proc/apply_mode_commands(mode_to_apply)
 	var/area/A = get_base_area(src)
-	switch(mode)
+	switch(mode_to_apply)
 		if(AALARM_MODE_SCRUBBING)
 			for(var/device_id in A.air_scrub_names)
 				send_signal(device_id, list(
@@ -676,10 +1009,19 @@
 				send_signal(device_id, list(
 					"power" = 0
 				))
+			// Потолок вместо снятой проверки. С "checks" = 0 вент не имел границы
+			// вообще: pressure_delta оставался равным стартовым 10000 кПа, порог
+			// ATMOS_VENT_PRESSURE_EPSILON не достигался никогда, вент не уходил в
+			// простой, а assume_air_moles переактивировал турф каждый фаер до конца
+			// смены - устойчивого состояния у режима не существовало по построению.
+			// EXT_BOUND на верхнем клапане клампа (AALARM_FLOOD_TARGET_PRESSURE,
+			// см. vent_pump.dm) оставляет комнату смертельной барокамерой на
+			// 5066 кПа: замысел режима цел, но атмос получает конечное состояние.
 			for(var/device_id in A.air_vent_names)
 				send_signal(device_id, list(
 					"power" = 1,
-					"checks" = 0,
+					"checks" = 1,
+					"set_external_pressure" = AALARM_FLOOD_TARGET_PRESSURE,
 					"is_pressurizing" = 1
 				))
 				send_signal(device_id, list(
@@ -738,42 +1080,116 @@
 	if((machine_stat & (NOPOWER|BROKEN)) || shorted)
 		return
 
+	// While danger_level has been stable, skip the (relatively expensive) turf air read on
+	// most fires. Snaps back to reading every fire the moment danger_level changes (below).
+	// Exception: if the monitored turf has just entered active atmos exchange it may be drifting
+	// toward a hazard, so cut the backoff short and read now instead of coasting up to ~30s blind.
+	if(process_skips_left > 0)
+		var/turf/open/open_location = get_turf(src)
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			process_skips_left--
+			return
+		process_skips_left = 0
+
 	var/turf/location = get_turf(src)
 	if(!location)
 		return
 
 	var/datum/tlv/cur_tlv
 
+	// Read the mixture's fields directly and walk its gas list once. Every accessor here is a
+	// one-line getter, and the old shape paid for two separate walks of the gas list (total_moles()
+	// inside return_pressure(), then the per-gas danger pass) plus a get_moles() dispatch per gas.
+	// That is ~20 proc calls per alarm per SSmachines fire, on ~400 alarms, forever - the dominant
+	// cost of the whole machinery pass on a live station. Same arithmetic, same danger levels.
 	var/datum/gas_mixture/environment = location.return_air()
-	var/partial_pressure = R_IDEAL_GAS_EQUATION * environment.return_temperature() / environment.return_volume()
+	var/list/environment_gases = environment.gases
+	var/environment_temperature = environment.temperature
+	var/environment_volume = max(0, environment.volume)
+
+	var/total_moles = 0
+	for(var/gas_id in environment_gases)
+		total_moles += environment_gases[gas_id]
+
+	// Both expressions keep the exact operand order the accessors used, so the arithmetic is
+	// bit-identical to before. return_pressure() reported 0 for a volumeless mixture; the
+	// per-mole scale now shares that guard, where the old expression divided by zero instead.
+	var/environment_pressure = environment_volume > 0 ? total_moles * R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
+	var/pressure_per_mole = environment_volume > 0 ? R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
 
 	cur_tlv = TLV["pressure"]
-	var/environment_pressure = environment.return_pressure()
 	var/pressure_dangerlevel = cur_tlv.get_danger_level(environment_pressure)
 
 	cur_tlv = TLV["temperature"]
-	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment.return_temperature())
+	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment_temperature)
 
 	var/gas_dangerlevel = 0
-	for(var/gas_id in environment.get_gases())
-		if(!(gas_id in TLV)) // We're not interested in this gas, it seems.
-			continue
+	var/worst_gas
+	for(var/gas_id in environment_gases)
 		cur_tlv = TLV[gas_id]
-		gas_dangerlevel = max(gas_dangerlevel, cur_tlv.get_danger_level(environment.get_moles(gas_id) * partial_pressure))
+		if(!cur_tlv) // We're not interested in this gas, it seems.
+			continue
+		var/this_gas_level = cur_tlv.get_danger_level(environment_gases[gas_id] * pressure_per_mole)
+		if(this_gas_level > gas_dangerlevel)
+			gas_dangerlevel = this_gas_level
+			worst_gas = gas_id
 
 	var/old_danger_level = danger_level
 	danger_level = max(pressure_dangerlevel, temperature_dangerlevel, gas_dangerlevel)
+	// Что именно вылезло за порог. Консоль тревог показывала одно имя зоны, и
+	// понять по ней, бежать с огнетушителем или с баллоном, было нельзя.
+	if(!danger_level)
+		danger_source = null
+		danger_source_gas = null
+	else if(pressure_dangerlevel == danger_level)
+		danger_source = AALARM_CAUSE_PRESSURE
+		danger_source_gas = null
+	else if(temperature_dangerlevel == danger_level)
+		danger_source = AALARM_CAUSE_TEMPERATURE
+		danger_source_gas = null
+	else
+		danger_source = AALARM_CAUSE_GAS
+		danger_source_gas = worst_gas
 
 	if(old_danger_level != danger_level)
 		apply_danger_level()
-	if(mode == AALARM_MODE_REPLACEMENT && environment_pressure < ONE_ATMOSPHERE * 0.05)
-		mode = AALARM_MODE_SCRUBBING
-		apply_mode()
+
+	// Adaptive backoff: read every fire while danger_level is moving (or we're mid-air-replacement
+	// and watching for the pressure cutoff); coast at AALARM_MAX_PROCESS_INTERVAL once it settles.
+	// A turf parked outside active atmos exchange cannot drift at all, so coast much longer there.
+	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT || mode == AALARM_MODE_PANIC)
+		process_interval = 1
+	else
+		var/max_interval = AALARM_MAX_PROCESS_INTERVAL
+		var/turf/open/open_location = location
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			max_interval = AALARM_INACTIVE_PROCESS_INTERVAL
+		process_interval = min(process_interval + 1, max_interval)
+	process_skips_left = process_interval - 1
+
+	// Аварийная откачка делит набор команд с прокачкой (общий case в
+	// apply_mode_commands), но отсечки по давлению у неё не было ни одной:
+	// widenet-скруббер по своей ветке в process_atmos() не умеет уходить в
+	// простой, поэтому режим молотил уже пустую комнату до конца смены, а
+	// перекушенный провод PANIC вешал его вообще навсегда. Механизм выхода
+	// написан и отлажен на соседнем режиме - распространяем на этот.
+	//
+	// Уходим в Off, а не в Фильтрацию: цель режима достигнута, и надувать отсек
+	// заново - не то, чего просил тот, кто его включил. Воздух назад не пойдёт,
+	// венты погашены той же командой режима.
+	if(environment_pressure < AALARM_EMERGENCY_SIPHON_CUTOFF)
+		if(mode == AALARM_MODE_REPLACEMENT)
+			mode = AALARM_MODE_SCRUBBING
+			apply_mode()
+		else if(mode == AALARM_MODE_PANIC)
+			mode = AALARM_MODE_OFF
+			apply_mode()
+			investigate_log("вышел из аварийной откачки в Off: отсек стравлен до [round(environment_pressure, 0.1)] кПа", INVESTIGATE_ATMOS)
 
 	return
 
 
-/obj/machinery/airalarm/proc/post_alert(alert_level)
+/obj/machinery/airalarm/proc/post_alert(alert_level, cause, cause_gas)
 	var/datum/radio_frequency/frequency = SSradio.return_frequency(alarm_frequency)
 
 	if(!frequency)
@@ -781,7 +1197,12 @@
 
 	var/datum/signal/alert_signal = new(list(
 		"zone" = get_area_name(src, get_base_area = TRUE),
-		"type" = "Atmospheric"
+		"type" = "Atmospheric",
+		// Причина едет вместе с тревогой: одного имени зоны инженеру мало,
+		// чтобы решить, что брать с собой.
+		"cause" = cause,
+		"cause_gas" = cause_gas,
+		"source" = "[src]"
 	))
 	if(alert_level==2)
 		alert_signal.data["alert"] = "severe"
@@ -795,9 +1216,12 @@
 /obj/machinery/airalarm/proc/apply_danger_level()
 	var/area/A = get_base_area(src)
 	var/new_area_danger_level = 0
+	var/obj/machinery/airalarm/loudest
 	for(var/obj/machinery/airalarm/AA in A)
 		if (!(AA.machine_stat & (NOPOWER|BROKEN)) && !AA.shorted)
 			new_area_danger_level = clamp(max(new_area_danger_level, AA.danger_level), 0, 1)
+			if(AA.danger_level && (!loudest || AA.danger_level > loudest.danger_level))
+				loudest = AA
 
 	var/did_anything_happen
 	if(new_area_danger_level)
@@ -805,7 +1229,7 @@
 	else
 		did_anything_happen = alarm_manager.clear_alarm(ALARM_ATMOS)
 	if(did_anything_happen) //if something actually changed
-		post_alert(new_area_danger_level)
+		post_alert(new_area_danger_level, loudest?.danger_source, loudest?.danger_source_gas)
 
 	update_icon()
 
@@ -825,7 +1249,7 @@
 				to_chat(user, "<span class='notice'>The wires have been [panel_open ? "exposed" : "unexposed"].</span>")
 				update_icon()
 				return
-			else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))// trying to unlock the interface with an ID card
+			else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))// trying to unlock the interface with an ID card
 				togglelock(user)
 			else if(panel_open && is_wire_tool(W))
 				wires.interact(user)
@@ -955,8 +1379,16 @@
 		new /obj/item/stack/cable_coil(loc, 3)
 	qdel(src)
 
+/// Полновесная пожарная тревога базового ареала по разгерметизации: сирена,
+/// захлоп файрлоков каждые десять секунд, ручной сброс с панели.
+///
+/// Единственный законный вызов - `SSair.handle_decompression_area()`, то есть уже
+/// ПОДТВЕРЖДЁННОЕ декомп-событие (зона обязана перевзвестись более поздним фаером,
+/// см. `queue_decompression_base`). Вешать этот прок на одиночный замер нельзя:
+/// сама тревога автоматически не снимается ничем, а одноразовый перепад давления
+/// даёт любой цикл шлюза и любой выпуск баллона в проёме.
 /obj/machinery/airalarm/proc/handle_decomp_alarm()
-	if(!is_operational() || !COOLDOWN_FINISHED(src, decomp_alarm))
+	if(!is_operational || !COOLDOWN_FINISHED(src, decomp_alarm))
 		return
 	var/area/A = get_base_area(src)
 	A.firealert(src)
@@ -973,3 +1405,6 @@
 #undef AALARM_MODE_CONTAMINATED
 #undef AALARM_MODE_REFILL
 #undef AALARM_REPORT_TIMEOUT
+#undef AALARM_THRESHOLD_VARS
+#undef AALARM_FLOOD_TARGET_PRESSURE
+#undef AALARM_EMERGENCY_SIPHON_CUTOFF

@@ -293,10 +293,18 @@ Turf and target are separate in case you want to teleport some distance from a t
 			pois[avoid_assoc_duplicate_keys(A.name, namecounts)] = A
 
 	return pois
-//Orders mobs by type then by name
-/proc/sortmobs()
+/**
+ * Orders mobs by type then by name.
+ *
+ * source - какой список раскладывать. По умолчанию все мобы мира, но вызывающему
+ * почти всегда нужно подмножество (например только мобы с ckey). Отфильтровать ДО
+ * вызова дешевле на порядок: sortNames() это Copy() плюс timsort с DM-компаратором,
+ * то есть O(n log n) вызовов прока по всему GLOB.mob_list, а дальше ещё полтора
+ * десятка полных проходов с istype. Фильтрация порядок не меняет.
+ */
+/proc/sortmobs(list/source = GLOB.mob_list)
 	var/list/moblist = list()
-	var/list/sortmob = sortNames(GLOB.mob_list)
+	var/list/sortmob = sortNames(source)
 	for(var/mob/living/silicon/ai/M in sortmob)
 		moblist.Add(M)
 	for(var/mob/camera/M in sortmob)
@@ -353,8 +361,7 @@ Turf and target are separate in case you want to teleport some distance from a t
 /proc/get_mob_by_ckey(key)
 	if(!key)
 		return
-	var/list/mobs = sortmobs()
-	for(var/mob/M in mobs)
+	for(var/mob/M as anything in GLOB.mob_list)
 		if(M.ckey == key)
 			return M
 
@@ -464,11 +471,21 @@ Turf and target are separate in case you want to teleport some distance from a t
 	var/y = min(world.maxy, max(1, A.y + dy))
 	return locate(x,y,A.z)
 
-/*
-	Gets all contents of contents and returns them all in a list.
-*/
+/atom/proc/contains(var/atom/A)
+	if(!A)
+		return FALSE
+	for(var/atom/location = A.loc, location, location = location.loc)
+		if(location == src)
+			return TRUE
 
-/atom/proc/GetAllContents(var/T)
+
+/// Gets all contents of contents and returns them all in a list.
+/atom/proc/GetAllContents(T)
+	if(!length(contents))
+		if(!T || istype(src, T))
+			return list(src)
+		return list()
+
 	var/list/processing_list = list(src)
 	var/i = 0
 	var/lim = 1
@@ -478,16 +495,38 @@ Turf and target are separate in case you want to teleport some distance from a t
 			var/atom/A = processing_list[++i]
 			//Byond does not allow things to be in multiple contents, or double parent-child hierarchies, so only += is needed
 			//This is also why we don't need to check against assembled as we go along
-			processing_list += A.contents
-			lim = processing_list.len
+			if(length(A.contents))
+				processing_list += A.contents
+				lim = processing_list.len
 			if(istype(A,T))
 				. += A
 	else
 		while(i < lim)
 			var/atom/A = processing_list[++i]
-			processing_list += A.contents
-			lim = processing_list.len
+			if(length(A.contents))
+				processing_list += A.contents
+				lim = processing_list.len
 		return processing_list
+
+/**
+ * TRUE если target - это мы сами или что-то вложенное в нас на любой глубине.
+ *
+ * Строго эквивалентно `target in GetAllContents()`, но идёт ВВЕРХ по loc от
+ * target (contents и loc - взаимно обратны в BYOND), поэтому стоит O(глубины
+ * вложенности), а не O(всего дерева). Для проверки "лежит ли предмет у моба"
+ * разница принципиальна: GetAllContents на игроке собирает список из рюкзака,
+ * ящиков в рюкзаке и всего их содержимого - десятки-сотни элементов на каждый
+ * вызов. Инвариант "contains_atom == in GetAllContents" закреплён юнит-тестом.
+ */
+/atom/proc/contains_atom(atom/target)
+	if(isnull(target) || target == src)
+		return !isnull(target)
+	var/atom/probe = target.loc
+	while(probe)
+		if(probe == src)
+			return TRUE
+		probe = probe.loc
+	return FALSE
 
 /atom/proc/GetAllContentsIgnoring(list/ignore_typecache)
 	if(!length(ignore_typecache))
@@ -503,6 +542,29 @@ Turf and target are separate in case you want to teleport some distance from a t
 			lim = processing.len
 			. += A
 
+/// Возвращает список всех объектов указанного типа в цепочке loc
+/atom/proc/get_all_recursive_loc(T)
+	. = list()
+	var/atom/A = src.loc
+
+	while(A)
+		if(istype(A, T))
+			. += A
+
+		A = A.loc
+
+//Recursively checks if an item is inside a given type, even through layers of storage. Returns the atom if it finds it.
+/proc/recursive_loc_check(atom/movable/target, type)
+	var/atom/A = target
+	if(istype(A, type))
+		return A
+
+	while(!istype(A.loc, type))
+		if(!A.loc)
+			return
+		A = A.loc
+
+	return A.loc
 
 //Step-towards method of determining whether one atom can see another. Similar to viewers()
 /proc/can_see(atom/source, atom/target, length=5) // I couldnt be arsed to do actual raycasting :I This is horribly inaccurate.
@@ -526,6 +588,10 @@ Turf and target are separate in case you want to teleport some distance from a t
 	return TRUE
 
 /proc/is_blocked_turf(turf/T, exclude_mobs)
+	// get_step() за краем карты возвращает null; для проходимости это стена
+	// (vomit в раунде 9875 ронял Life-цикл именно здесь).
+	if(!T)
+		return TRUE
 	if(T.density)
 		return TRUE
 	for(var/i in T)
@@ -872,7 +938,7 @@ B --><-- A
 		return
 
 	if(!x_dimension || !y_dimension)
-		return
+		return I
 
 	if((x_dimension == world.icon_size) && (y_dimension == world.icon_size))
 		return I
@@ -1024,13 +1090,6 @@ B --><-- A
 			CHECK_TICK
 
 	return L
-
-/atom/proc/contains(var/atom/A)
-	if(!A)
-		return FALSE
-	for(var/atom/location = A.loc, location, location = location.loc)
-		if(location == src)
-			return TRUE
 
 /proc/flick_overlay_static(O, atom/A, duration)
 	set waitfor = 0
@@ -1379,19 +1438,16 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 
 	return "{[time_high]-[time_mid]-[GUID_VERSION][time_low]-[GUID_VARIANT][time_clock]-[node_id]}"
 
-// \ref behaviour got changed in 512 so this is necesary to replicate old behaviour.
-// If it ever becomes necesary to get a more performant REF(), this lies here in wait
-// #define REF(thing) (thing && istype(thing, /datum) && (thing:datum_flags & DF_USE_TAG) && thing:tag ? "[thing:tag]" : "\ref[thing]")
-/proc/REF(input)
-	if(istype(input, /datum))
-		var/datum/thing = input
-		if(thing.datum_flags & DF_USE_TAG)
-			if(!thing.tag)
-				stack_trace("A ref was requested of an object with DF_USE_TAG set but no tag: [thing]")
-				thing.datum_flags &= ~DF_USE_TAG
-			else
-				return "\[[url_encode(thing.tag)]\]"
-	return "\ref[input]"
+// \ref behaviour got changed in 512 so the DF_USE_TAG branch replicates the old stable-ref behaviour.
+// REF itself is now an inline macro defined in code/__DEFINES/_helpers.dm (must be available before
+// TYPEID, which is itself a macro that expands to REF). The macro delegates the rare DF_USE_TAG path
+// here so the inline expression stays tight and the missing-tag fallback is preserved verbatim.
+/proc/__REF_tagged(datum/thing)
+	if(!thing.tag)
+		stack_trace("A ref was requested of an object with DF_USE_TAG set but no tag: [thing]")
+		thing.datum_flags &= ~DF_USE_TAG
+		return "\ref[thing]"
+	return "\[[url_encode(thing.tag)]\]"
 
 // Makes a call in the context of a different usr
 // Use sparingly
@@ -1483,12 +1539,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 	return pick(typesof(/obj/item/reagent_containers/food/snacks) - blocked)
 
 /proc/get_random_drink()
-	var/list/blocked = list(/obj/item/reagent_containers/food/drinks/soda_cans,
-		/obj/item/reagent_containers/food/drinks/bottle,
-		/obj/item/reagent_containers/food/drinks/flask/russian,
-		/obj/item/reagent_containers/food/drinks/flask/steel
-		)
-	return pick(subtypesof(/obj/item/reagent_containers/food/drinks) - blocked)
+	return /obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_ethanol
 
 /proc/get_random_drug()
     var/list/drugs = subtypesof(/obj/item/reagent_containers/syringe/contraband)
@@ -1605,7 +1656,11 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 
 /proc/generate_items_inside(list/items_list, where_to)
 	for(var/each_item in items_list)
-		for(var/i in 1 to items_list[each_item])
+		var/count = items_list[each_item]
+		if(isnum(count))
+			for(var/i in 1 to count)
+				new each_item(where_to)
+		else
 			new each_item(where_to)
 
 //Checks to see if either the victim has a garlic necklace or garlic in their blood

@@ -81,6 +81,9 @@
 /mob/living/simple_animal/qareen/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_SIXTHSENSE, INNATE_TRAIT)
+	//дух раздевает игроков напрямую: гейт "нет рук - нет стрипа" в strippable
+	//не должен резать эту способность (как у боргов и взрослых ксеносов)
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT)
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/night_vision/qareen(null))
 	AddSpell(new /obj/effect/proc_holder/spell/targeted/telepathy/qareen(null))
 //	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/qareen/defile(null))	Reserved for later. - Gardelin0

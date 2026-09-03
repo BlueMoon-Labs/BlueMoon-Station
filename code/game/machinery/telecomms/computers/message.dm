@@ -29,7 +29,7 @@
 	var/auth = FALSE 		// Are they authenticated?
 
 	// Custom Message Properties
-	var/obj/item/pda/customrecepient = null
+	var/obj/item/modular_computer/pda/customrecepient = null
 	var/customsender = "System Administrator"
 	var/customjob		= "Admin"
 	var/custommessage 	= "This is a test, please ignore."
@@ -277,13 +277,18 @@
 					return
 				if(length(customsender) <= 0 || customsender == "")
 					customsender = "UNKNOWN"
-				//sanitize text!!!
-				var/datum/signal/subspace/pda/signal = new(src, list(
-					"name" = sanitize(customsender),
-					"job" = sanitize(customjob),
+
+				var/datum/computer_file/program/messenger/target_messenger = locate() in customrecepient.get_all_files()
+				if(!istype(target_messenger))
+					message = "NOTICE: No messaging program found on target PDA!"
+					return
+
+				var/datum/signal/subspace/messaging/tablet_message/signal = new(src, list(
 					"message" = sanitize(custommessage),
-					"emojis" = TRUE,
-					"targets" = list("[customrecepient.owner] ([customrecepient.ownjob])")
+					"targets" = list(target_messenger),
+					"automated" = FALSE,
+					"fakename" = sanitize(customsender),
+					"fakejob" = sanitize(customjob),
 				))
 				// this will log the signal and transmit it to the target
 				linkedServer.receive_information(signal, null)
@@ -317,7 +322,7 @@
 
 			if("recepient" in params)
 				// Get out list of viable PDAs
-				var/list/obj/item/pda/sendPDAs = get_viewable_pdas()
+				var/list/obj/item/modular_computer/pda/sendPDAs = get_viewable_pdas()
 				if(GLOB.PDAs && LAZYLEN(GLOB.PDAs) > 0)
 					customrecepient = input(usr, "Select a PDA from the list.") as null|anything in sortNames(sendPDAs)
 				else

@@ -106,7 +106,8 @@
 	new /obj/item/storage/box/survival/security/radio(src)
 	new /obj/item/gun/ballistic/automatic/shotgun/aa12(src)
 	for(var/i in 1 to 3)
-		new /obj/item/ammo_box/magazine/aa12/small(src)
+		new /obj/item/ammo_box/magazine/aa12(src)
+	new /obj/item/ammo_box/magazine/aa12/drum(src)
 	new /obj/item/storage/belt/utility/syndicate(src)
 	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
 
@@ -223,3 +224,27 @@
 	r_pocket = /obj/item/kitchen/knife/combat/survival/knuckledagger
 	id = /obj/item/card/id/away/ftu
 	backpack_contents = list(/obj/item/storage/box/survival/security/radio)
+
+/obj/item/storage/belt/military/assault/ftu_rev
+	name = "FTU revolutionary assault belt"
+	desc = "Тактический разгрузочный пояс, набитый магазинами к FAL."
+
+/obj/item/storage/belt/military/assault/ftu_rev/PopulateContents()
+	for(var/i in 1 to 6)
+		new /obj/item/ammo_box/magazine/fal(src)
+
+/datum/outfit/ftu/revolutionary
+	name = "FTU Revolutionary"
+	uniform = /obj/item/clothing/under/inteq/tactical_gorka
+	neck = /obj/item/clothing/neck/cloak/ftu
+	back = /obj/item/storage/backpack
+	belt = /obj/item/storage/belt/military/assault/ftu_rev
+	suit = /obj/item/clothing/suit/space/hardsuit/security/ftu
+	r_hand = /obj/item/gun/ballistic/automatic/fal
+	backpack_contents = list(
+		/obj/item/storage/box/survival/security/radio = 1,
+		/obj/item/chameleon = 1,
+		/obj/item/storage/firstaid/brute = 1,
+		/obj/item/storage/firstaid/fire = 1,
+		/obj/item/pinpointer/crew/centcom = 1,
+	)

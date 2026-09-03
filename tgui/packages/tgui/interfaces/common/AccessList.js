@@ -1,7 +1,6 @@
 import { sortBy } from 'common/collections';
-import { Fragment } from 'inferno';
+import { useState } from 'react';
 
-import { useLocalState } from '../../backend';
 import { Button, Flex, Grid, Section, Tabs } from '../../components';
 
 const diffMap = {
@@ -19,7 +18,7 @@ const diffMap = {
   },
 };
 
-export const AccessList = (props, context) => {
+export const AccessList = (props) => {
   const {
     accesses = [],
     selectedList = [],
@@ -28,11 +27,12 @@ export const AccessList = (props, context) => {
     denyAll,
     grantDep,
     denyDep,
+    resetButton,
   } = props;
   const [
     selectedAccessName,
     setSelectedAccessName,
-  ] = useLocalState(context, 'accessName', accesses[0]?.name);
+  ] = useState(accesses[0]?.name);
   const selectedAccess = accesses
     .find(access => access.name === selectedAccessName);
   const selectedAccessEntries = sortBy(
@@ -65,7 +65,14 @@ export const AccessList = (props, context) => {
     <Section
       title="Access"
       buttons={(
-        <Fragment>
+        <>
+          {!!resetButton && (
+            <Button.Confirm
+              icon="arrows-rotate"
+              content="Reset Access"
+              color="blue"
+              onClick={() => resetButton()} />
+          )}
           <Button
             icon="check-double"
             content="Grant All"
@@ -76,7 +83,7 @@ export const AccessList = (props, context) => {
             content="Deny All"
             color="bad"
             onClick={() => denyAll()} />
-        </Fragment>
+        </>
       )}>
       <Flex>
         <Flex.Item mr={2}>

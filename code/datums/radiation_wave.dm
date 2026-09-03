@@ -124,6 +124,12 @@
 		var/rad_strength = ((strength-RAD_MINIMUM_CONTAMINATION) * RAD_CONTAMINATION_STR_COEFFICIENT)/contam_atoms.len
 		for(var/A in contam_atoms)
 			var/atom/thing = A
-			thing.AddComponent(/datum/component/radioactive, rad_strength, source)
+			// Вторичное заражение (от волны) само НЕ заражает дальше: иначе цепь
+			// "волна -> предмет -> волна" самоподдерживается быстрее полураспада, и комната
+			// с реактором превращается в вечный фонтан волн (пульсы 4000+ от предметов в логах).
+			// Облучение мобов волнами от таких предметов сохранено полностью. Дизайновые
+			// источники (ядро реактора, стержни, ядерка) создают компонент сами и не затронуты.
+			// Продолжение нерфа RAD_CONTAMINATION_STR_COEFFICIENT 0.99 -> 0.35.
+			thing.AddComponent(/datum/component/radioactive, rad_strength, source, RAD_HALF_LIFE, FALSE)
 			did_contam = 1
 	return did_contam

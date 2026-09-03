@@ -481,7 +481,7 @@
 
 /client/proc/stickybanpanel()
 	set name = "Sticky Ban Panel"
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	if (!holder)
 		return
 	holder.stickyban_show()

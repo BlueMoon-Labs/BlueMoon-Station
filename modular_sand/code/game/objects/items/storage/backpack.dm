@@ -27,6 +27,9 @@
 	icon_state = "infiltrator_case_command"
 	item_state = "infiltrator_case_command"
 
+/obj/item/storage/backpack/case/command/freak
+	w_class = WEIGHT_CLASS_NORMAL
+
 /obj/item/storage/backpack/case/command/freak/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)

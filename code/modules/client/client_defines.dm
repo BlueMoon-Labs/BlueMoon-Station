@@ -21,6 +21,8 @@
 	show_verb_panel = FALSE
 	///Contains admin info. Null if client is not an admin.
 	var/datum/admins/holder = null
+	/// TRUE while blocking input() modal open
+	var/reply_modal_open = FALSE
 	/// If TRUE, this admin receives GC leak notifications (warnfail/softcheck alerts). Toggle via GC Health Panel.
 	var/gc_leak_notify = FALSE
 	var/datum/click_intercept = null // Needs to implement InterceptClickOn(user,params,atom) proc
@@ -50,6 +52,16 @@
 	var/last_turn = 0
 	var/move_delay = 0
 	var/last_move = 0
+	/// Расписание, каким его оставил последний шаг. Если move_delay уехал от
+	/// этого значения - его переставил кто-то ещё (захват, отдача, админ), и
+	/// перебазировать его на смене скорости нельзя. См. movement_reschedule_step().
+	var/last_step_target = 0
+	/// Цена последнего шага, уже кратная тику. Нужна, чтобы на смене скорости
+	/// сдвинуть расписание ровно на разницу цен.
+	var/last_step_cost = 0
+	/// Был ли последний шаг диагональным. Диагональ стоит SQRT_2, и пересчёт
+	/// цены обязан знать, по какой ставке шаг оплачивали.
+	var/last_step_diagonal = FALSE
 	var/area			= null
 
 	/// Timers are now handled by clients, not by doing a mess on the item and multiple people overwriting a single timer on the object, have fun.
@@ -98,27 +110,35 @@
 
 	var/lastping = 0
 	var/avgping = 0
-	/// Last ping measured from realtime clock (RTT in ms).
 	var/lastping_rtt = 0
-	/// Smoothed RTT in ms.
-	var/avgping_rtt = 0
-	/// Last raw RTT sample in ms before jitter filtering.
+	var/avgping_rtt
 	var/lastping_rtt_raw = 0
-	/// Smoothed raw RTT in ms before jitter filtering.
-	var/avgping_rtt_raw = 0
-	/// Last ping measured from server tickstamp clock (includes tick-phase jitter) in ms.
+	var/avgping_rtt_raw
 	var/lastping_tick = 0
-	/// Smoothed tickstamp ping in ms.
-	var/avgping_tick = 0
-	/// Last server-delay component in ms (tick ping - RTT).
 	var/lastping_server = 0
-	/// Smoothed server-delay component in ms.
-	var/avgping_server = 0
-	/// Sliding window of recent raw RTT samples used to produce a stable user-facing ping.
+	/// world.time последнего обновления ping-значений. Сводка по миру обязана отсеивать
+	/// протухшие сэмплы, иначе один подвисший клиент навсегда задирает max и среднее.
+	var/lastping_at = 0
+	var/avgping_server
+	var/avgping_jitter
+	var/ping_updated = FALSE
 	var/list/ping_rtt_window = list()
+	/// Incrementally maintained sorted mirror of ping_rtt_window, see rtt_window_push()
+	var/list/ping_rtt_sorted = list()
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
 	var/connection_timeofday //world.timeofday they connected
+	/// REALTIMEOFDAY подключения. Именно он, а не connection_realtime: world.realtime это
+	/// децисекунды с 2000 года, к 2026-му уже ~8.3e9, и шаг 32-битного float на этой величине
+	/// равен 512 дс. Разность двух world.realtime поэтому квантуется по 51.2 СЕКУНДЫ - в
+	/// раунде 9837 поле "жил" выдало ровно 0 / 51.2 / 102.4 / 153.6 и не несло информации.
+	/// REALTIMEOFDAY не превышает 1.73e6, шаг там ~12 мс, и он же переживает полночь.
+	var/connection_realtimeofday
+	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
+	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
+	var/disconnect_reason
+	/// Какой это по счёту вход этого ckey за раунд. Циклический реконнект видно сразу.
+	var/round_login_index = 1
 
 	var/inprefs = FALSE
 	var/list/topiclimiter
@@ -137,6 +157,9 @@
 	var/last_macro_fix = 0
 	/// Keys currently held
 	var/list/keys_held = list()
+	/// Last initial/repeated movement KeyDown. Native +REP and TGUI repeats lease held movement;
+	/// if focus loss eats KeyUp and the repeats stop, SSinput releases only movement keys.
+	var/last_movement_key_repeat
 	/// These next two vars are to apply movement for keypresses and releases made while move delayed.
 	/// Because discarding that input makes the game less responsive.
  	/// On next move, add this dir to the move that would otherwise be done
@@ -180,6 +203,35 @@
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE
 
+	/// turf currently watched for listed turf dirtiness signals
+	var/turf/listed_turf_watched
+	/// whether the listed turf needs a new visibility snapshot
+	var/listed_turf_dirty = FALSE
+	/// world.time when the listed turf was last marked dirty by a signal — debounces churn on busy turfs
+	var/listed_turf_dirty_at = 0
+	/// whether the listed turf should force-refresh icons on the next snapshot
+	var/listed_turf_icon_refresh_pending = FALSE
+	/// world.time when the listed turf list was last refreshed
+	var/listed_turf_last_refresh = 0
+	/// world.time when the listed turf icons were last refreshed
+	var/listed_turf_last_icon_refresh = 0
+	/// last eye turf ref used to build the listed turf snapshot
+	var/listed_turf_eye_ref
+	/// cached turf REF for statpanel — skip re-rendering if same turf
+	var/cached_turf_ref
+	/// cached encoded turf data for statpanel
+	var/cached_turf_encoded
+	/// tracks which icon REFs have been sent to this client's statbrowser
+	/// (REF -> list(icon_url, weakref владельца); слабая ссылка отсеивает переиспользованные REF)
+	var/list/statpanel_sent_icons = list()
+	/// per-section dirty cache: last-sent encoded payload by channel name (status/spells/voting/tickets/listedturf)
+	/// Suppresses identical re-sends without re-running expensive renderers — DM-side dirty checking.
+	var/list/statpanel_last_sent = list()
+	/// cached MC iteration counter last sent to this client (suppresses stringify-hash work on JS side)
+	var/statpanel_last_mc_iter = -1
+	/// JSON-encoded global server payload version (echoed in update_ping handshake) — bumps when DM payload shape changes
+	var/statpanel_protocol_acked = FALSE
+
 	/// list of all tabs
 	var/list/panel_tabs = list()
 
@@ -187,6 +239,8 @@
 	var/list/spell_tabs = list()
 	/// list of tabs containing verbs
 	var/list/verb_tabs = list()
+
+	var/stat_vote_sent_null = FALSE
 	///A lazy list of atoms we've examined in the last EXAMINE_MORE_TIME (default 1.5) seconds, so that we will call [atom/proc/examine_more()] instead of [atom/proc/examine()] on them when examining
 	var/list/recent_examines
 	///When was the last time we warned them about not cryoing without an ahelp, set to -5 minutes so that rounstart cryo still warns
@@ -222,6 +276,12 @@
 	///Are we locking our movement input?
 	var/movement_locked = FALSE
 
+	// null - Not used at this moment
+	var/show_popup_menus_before_disable
+
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)
 	COOLDOWN_DECLARE(next_mousedrag)
+
+	/// Cooldown for IC chat messages while SSlag_switch SLOWMODE_SAY is active
+	COOLDOWN_DECLARE(say_slowmode)

@@ -274,6 +274,9 @@
 							windoor.req_access = electronics.accesses
 						windoor.electronics = electronics
 						electronics.forceMove(windoor)
+						// Иначе QDEL_NULL(electronics) в Destroy сборки убьёт
+						// электронику уже живого виндора (см. door_assembly).
+						electronics = null
 						if(created_name)
 							windoor.name = created_name
 						qdel(src)
@@ -296,7 +299,10 @@
 						else
 							windoor.req_access = electronics.accesses
 						windoor.electronics = electronics
-						electronics.loc = windoor
+						electronics.forceMove(windoor)
+						// Иначе QDEL_NULL(electronics) в Destroy сборки убьёт
+						// электронику уже живого виндора (см. door_assembly).
+						electronics = null
 						if(created_name)
 							windoor.name = created_name
 						qdel(src)

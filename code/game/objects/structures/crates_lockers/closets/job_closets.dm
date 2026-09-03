@@ -67,6 +67,7 @@
 	new /obj/item/clothing/gloves/color/black(src)
 	new /obj/item/clothing/head/soft/purple(src)
 	new /obj/item/paint/paint_remover(src)
+	new /obj/item/wirebrush(src)
 	new /obj/item/melee/flyswatter(src)
 	new /obj/item/flashlight(src)
 	for(var/i in 1 to 3)

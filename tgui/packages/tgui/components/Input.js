@@ -6,7 +6,7 @@
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { classes } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { Box } from './Box';
 
@@ -47,6 +47,12 @@ export class Input extends Component {
         if (onChange) {
           onChange(e, e.target.value);
         }
+      }
+    };
+    this.handleCompositionEnd = e => {
+      const { onInput } = this.props;
+      if (onInput) {
+        onInput(e, e.target.value);
       }
     };
     this.handleKeyDown = e => {
@@ -177,6 +183,7 @@ export class Input extends Component {
           className="Input__input"
           placeholder={placeholder}
           onInput={this.handleInput}
+          onCompositionEnd={this.handleCompositionEnd}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}

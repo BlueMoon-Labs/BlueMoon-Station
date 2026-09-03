@@ -135,7 +135,7 @@
 /area/ruin/space/has_grav/whiteship/box)
 "ow" = (
 /obj/structure/rack,
-/obj/item/pda/clear,
+/obj/item/modular_computer/pda/clear,
 /turf/open/floor/mineral/titanium/white,
 /area/ruin/space/has_grav/whiteship/box)
 "oC" = (

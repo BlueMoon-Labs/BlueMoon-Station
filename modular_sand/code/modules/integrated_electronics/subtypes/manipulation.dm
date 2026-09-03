@@ -16,6 +16,8 @@
 /obj/item/integrated_circuit/manipulation/activator/do_work(ord)
 	var/obj/acting_object = get_pin_data_as_type(IC_INPUT, 1, /obj/)
 	var/mob/person = get_pin_data_as_type(IC_INPUT, 2, /mob/)
+	if(!acting_object || !person)
+		return
 	acting_object.interact(person)
 	activate_pin(1)
 

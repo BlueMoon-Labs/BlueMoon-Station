@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/durand
-	desc = "An aging combat exosuit utilized by the Nanotrasen corporation. Originally developed to combat hostile alien lifeforms."
+	desc = "Стареющий боевой экзокостюм, используемый корпорацией Nanotrasen. Изначально разработан для борьбы с враждебными инопланетными формами жизни."
 	name = "\improper Durand"
 	icon_state = "durand"
 	movedelay = 4

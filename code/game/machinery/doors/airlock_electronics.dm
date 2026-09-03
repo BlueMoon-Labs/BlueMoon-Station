@@ -19,6 +19,9 @@
 /obj/item/electronics/airlock/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Has a neat <i>selection menu</i> for modifying airlock access levels.</span>"
+	// Электроника ставится не только в дверь: шкаф с ней становится запирающимся,
+	// и единственное место, где об этом можно узнать - вот эта строка.
+	. += "<span class='notice'>Ставится в дверь или прикладывается к шкафу, чтобы навесить на него замок с этим же доступом.</span>"
 
 /obj/item/electronics/airlock/ui_state(mob/user)
 	return GLOB.hands_state

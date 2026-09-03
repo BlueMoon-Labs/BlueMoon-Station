@@ -2,6 +2,8 @@
 #define DATA_ICON_STATE "icon_state"
 #define DATA_S_ASSIGNMENT "special_assignment"
 
+#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen")
+
 /obj/item/card_sticker
 	name = "Card sticker"
 	desc = "Расширение, устанавливаемое поверх стандартной ID-карты. \
@@ -60,8 +62,10 @@
 			if(id_card)
 				// Активируем наклейку
 				if(wrap(id_card, my_owner, silent = TRUE, force = TRUE))
+					// Попытка обновить манифест
+					id_card.update_manifest()
 					// Обновляем ПДА
-					var/obj/item/pda/PDA = locate(/obj/item/pda) in my_owner.contents
+					var/obj/item/modular_computer/pda/PDA = locate(/obj/item/modular_computer/pda) in my_owner.contents
 					if(istype(PDA))
 						PDA.ownjob = id_card.get_assignment_name()
 						PDA.update_label()
@@ -80,6 +84,8 @@
 
 /obj/item/card_sticker/proc/wrap(obj/item/card/id/card, mob/user, silent = FALSE, force = FALSE)
 	. = FALSE
+	if(!istype(card, /obj/item/card/id))
+		return
 	if(card.sticker || (user && INTERACTING_WITH(user, card)))
 		return
 	if(!silent)
@@ -168,17 +174,6 @@
 /obj/item/card_sticker/agony/loadout
 	auto_equip = TRUE
 
-/obj/item/card_sticker/muck
-	name = "Muck sticker"
-	desc = "Sticker for employees with dirty thoughts and such more..."
-	icon_state = "muck_id"
-	prefix = "Mucker"
-	special_assignment = "muck"
-	permit = /obj/item/clothing/accessory/permit/special/deviant/muck
-
-/obj/item/card_sticker/muck/loadout
-	auto_equip = TRUE
-
 /obj/item/card_sticker/vampire
 	name = "Bloodfledge sticker"
 	desc = "An sticker made to easily recognize bloodsucker fledglings without requiring medical scans."
@@ -205,9 +200,20 @@
 	icon_state = "card_black"
 	prefix = "Syndicate"
 	special_assignment = "syndicate"
-	prefix_not_allowed_with = list("Syndi", "NT", "Nanotrasen")
+	prefix_not_allowed_with = SYNDI_NT_PREFIX_LIST
 
 /obj/item/card_sticker/syndicate/loadout
+	auto_equip = TRUE
+
+/obj/item/card_sticker/nanotrasen
+	name = "Nanotrasen Employee sticker"
+	desc = "A sticker designed to recognize Nanotrasen employees and supportives."
+	icon_state = "centcom"
+	prefix = "Nanotrasen"
+	special_assignment = "centcom"
+	prefix_not_allowed_with = SYNDI_NT_PREFIX_LIST
+
+/obj/item/card_sticker/nanotrasen/loadout
 	auto_equip = TRUE
 
 /obj/item/card_sticker/sol
@@ -235,3 +241,5 @@
 #undef DATA_ICON
 #undef DATA_ICON_STATE
 #undef DATA_S_ASSIGNMENT
+
+#undef SYNDI_NT_PREFIX_LIST

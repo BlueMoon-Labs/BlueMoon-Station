@@ -4,7 +4,7 @@ import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, Section } from '../components';
 import { Window } from '../layouts';
 
-export const RemoteRobotControl = (props, context) => {
+export const RemoteRobotControl = (props) => {
   return (
     <Window
       title="Remote Robot Control"
@@ -17,8 +17,8 @@ export const RemoteRobotControl = (props, context) => {
   );
 };
 
-export const RemoteRobotControlContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const RemoteRobotControlContent = (props) => {
+  const { act, data } = useBackend();
   const {
     robots = [],
     commandeering,

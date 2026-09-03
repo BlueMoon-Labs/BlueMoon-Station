@@ -98,8 +98,18 @@
 	category = list("Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/piercesyringe
+/datum/design/piercesyringe_weak
 	name = "Piercing Syringe"
+	desc = "A reinforced syringe tip capable of piercing normal clothing when launched at high velocity, but not thick armor. It can hold up to 10 units."
+	id = "piercesyringe_weak"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/glass = 2000, /datum/material/iron = 500)
+	build_path = /obj/item/reagent_containers/syringe/piercing/weak
+	category = list("Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/piercesyringe
+	name = "Diamond-Tipped Piercing Syringe"
 	desc = "A diamond-tipped syringe that pierces armor when launched at high velocity. It can hold up to 10 units."
 	id = "piercesyringe"
 	build_type = PROTOLATHE
@@ -345,7 +355,7 @@
 	desc = "A bluespace body bag, powered by experimental bluespace technology. It can hold loads of bodies and the largest of creatures."
 	id = "bluespacebodybag"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 3000, /datum/material/plasma = 2000, /datum/material/diamond = 500, /datum/material/bluespace = 500)
+	materials = list(/datum/material/iron = 3000, /datum/material/plasma = 2000, /datum/material/diamond = 500, /datum/material/bluespace = 4000)
 	build_path = /obj/item/bodybag/bluespace
 	category = list("Medical Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
@@ -381,6 +391,26 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000)
 	build_path = /obj/item/wallframe/defib_mount
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/vitals_display
+	name = "Vitals Display Frame"
+	desc = "A wall-mounted screen that displays the vitals of a nearby patient. Connects to stasis beds, operating tables, sleepers and other holding machines using a multitool."
+	id = "vitals_display"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 4000, /datum/material/gold = 500)
+	build_path = /obj/item/wallframe/status_display/vitals
+	category = list("Equipment")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/vitals_display_advanced
+	name = "Advanced Vitals Display Frame"
+	desc = "A vitals display frame that performs a more detailed scan of the patient than the basic display."
+	id = "vitals_display_advanced"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 4000, /datum/material/gold = 1000, /datum/material/silver = 500)
+	build_path = /obj/item/wallframe/status_display/vitals/advanced
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 

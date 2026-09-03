@@ -52,7 +52,15 @@
 		return handle_process_synthetic()
 	// BLUEMOON ADD END
 
+	// Труп с инфекцией не борется: заражение - это реакция живых тканей. Лечение при этом
+	// продолжает работать (санитайзеры, мазь, регенерирующая сетка ниже по проку), чтобы
+	// медик мог обработать тело перед дефибрилляцией, а вот рост заражения, токсины,
+	// потеря конечности и сообщения о ней на мёртвом теле останавливаются.
+	var/reacting = !victim_appears_dead()
+
 	if(strikes_to_lose_limb == 0)
+		if(!reacting)
+			return
 		victim.adjustToxLoss(0.5)
 		if(prob(1))
 			victim.visible_message("<span class='danger'>Инфекция на [limb.ru_name_v] персонажа [victim] тошнотворно пузырится!</span>", "<span class='warning'>Вы чувствуете, как инфекция на вашей - [limb.ru_name_v] пульсирует и распространяется по вашим тканям!</span>")
@@ -86,6 +94,9 @@
 		var/bandage_factor = (limb.current_gauze ? limb.current_gauze.splint_factor : 1)
 		infestation = max(0, infestation - WOUND_BURN_SANITIZATION_RATE)
 		sanitization = max(0, sanitization - (WOUND_BURN_SANITIZATION_RATE * bandage_factor))
+		return
+
+	if(!reacting)
 		return
 
 	infestation += infestation_rate
@@ -612,8 +623,7 @@
     short_circuit_risk = max(0, short_circuit_risk - 0.5)
 
 /datum/wound/burn/treat(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+	if(!check_armor_for_treatment(I, user))
 		return
 
 	// BLUEMOON ADD START - лечение синтетических конечностей
@@ -630,9 +640,6 @@
 
 // BLUEMOON ADD START - обработка лечения для синтетических конечностей (ПРОВОДКА + НАНОГЕЛЬ)
 /datum/wound/burn/proc/treat_synthetic(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Доступ к повреждённым компонентам [victim] закрыт!</span>"))
-		return
 
 	// Основной метод: кабели для внешней проводки
 	if(istype(I, /obj/item/stack/cable_coil))

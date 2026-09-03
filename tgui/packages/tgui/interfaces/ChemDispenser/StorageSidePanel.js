@@ -13,8 +13,8 @@ import {
   Table,
 } from '../../components';
 
-export const StorageSidePanel = (props, context) => {
-  const { act } = useBackend(context);
+export const StorageSidePanel = (props) => {
+  const { act } = useBackend();
   const {
     storedContents,
     storedVol,

@@ -66,6 +66,24 @@
 	var/list/atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0) //Leaving something at 0 means it's off - has no maximum
 	///This damage is taken when atmos doesn't fit all the requirements above.
 	var/unsuitable_atmos_damage = 2
+	///Cached because JPS asks this for many prospective turfs. Refresh explicitly
+	///if code changes atmos_requirements at runtime.
+	var/tmp/atmos_pathing_sensitive = FALSE
+	///Whether any gas bound is active, independently of damage/pathing policy.
+	var/tmp/has_atmos_requirements = FALSE
+	///Сабтип с собственным handle_environment() обязан выставить TRUE, иначе
+	///гейт environment_processing_immune может отключить его обработку среды.
+	var/uses_custom_environment_handling = FALSE
+	///Direct hot-path copies of atmos_requirements. The source list remains the
+	///public configuration API; refresh_atmos_pathing_sensitivity() updates these.
+	var/tmp/atmos_min_oxy = 0
+	var/tmp/atmos_max_oxy = 0
+	var/tmp/atmos_min_tox = 0
+	var/tmp/atmos_max_tox = 0
+	var/tmp/atmos_min_n2 = 0
+	var/tmp/atmos_max_n2 = 0
+	var/tmp/atmos_min_co2 = 0
+	var/tmp/atmos_max_co2 = 0
 
 	///LETTING SIMPLE ANIMALS ATTACK? WHAT COULD GO WRONG. Defaults to zero so Ian can still be cuddly.
 	var/melee_damage_lower = 0
@@ -158,8 +176,16 @@
 
 	var/mob/living/carbon/human/master_commander = null //holding var for determining who own/controls a sentient simple animal (for sentience potions).
 
+	/// If TRUE, observers may click this mob to take control when it has no client and is alive.
+	var/playable_by_ghost = FALSE
+	/// Optional [tgui_alert] title when offering ghost control; defaults to capitalized [name].
+	var/ghost_possess_title = null
+	/// Optional question text; defaults to a generic possess prompt with [name].
+	var/ghost_possess_question = null
+
 /mob/living/simple_animal/Initialize(mapload)
 	. = ..()
+	refresh_atmos_pathing_sensitivity()
 	GLOB.simple_animals[AIStatus] += src
 	if(gender == PLURAL)
 		gender = pick(MALE,FEMALE)
@@ -176,7 +202,16 @@
 		ADD_TRAIT(src, trait, ROUNDSTART_TRAIT)
 
 /mob/living/simple_animal/Destroy()
-	GLOB.simple_animals[AIStatus] -= src
+	// Выписываемся из ВСЕХ бакетов, а не только из GLOB.simple_animals[AIStatus]:
+	// прямое присвоение AIStatus на живом мобе оставляет запись в старом бакете,
+	// и `-= src` по текущему статусу её не находит - труп висит в списке навечно
+	for(var/bucket_index in 1 to length(GLOB.simple_animals))
+		var/list/bucket = GLOB.simple_animals[bucket_index]
+		if(bucket_index == AIStatus)
+			bucket -= src
+		else if(src in bucket)
+			bucket -= src
+			log_world("## GC: [type] найден в бакете simple_animals\[[bucket_index]] при AIStatus=[AIStatus] - страндед-запись вычищена в Destroy()")
 	if (LAZYLEN(SSnpcpool.currentrun))
 		SSnpcpool.currentrun -= src
 
@@ -184,19 +219,14 @@
 		nest.spawned_mobs -= src
 		nest = null
 
-	var/turf/T = get_turf(src)
 	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
-		if (T)
-			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[T.z]
+		// Регистрация в idle_mobs_by_zlevel шла по турфу НА МОМЕНТ toggle_ai(AI_Z_OFF);
+		// если моба с тех пор переместили между z (или он уже в nullspace), чистка по
+		// текущему турфу промахнётся - поэтому выписываемся из всех z-списков
+		for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
+			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
 			if(islist(idle_z_list))
 				idle_z_list -= src
-		else
-			// If we were moved to nullspace before Destroy(), we can no longer resolve our z-level.
-			// Remove from every idle z-list to avoid a dangling subsystem reference blocking GC.
-			for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
-				var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
-				if(islist(idle_z_list))
-					idle_z_list -= src
 
 	return ..()
 
@@ -236,6 +266,9 @@
 	set waitfor = FALSE
 	if(speak_chance)
 		if(prob(speak_chance) || override)
+			//реплика в пустоту - чистый расход: say()/emote() без единого слушателя рядом
+			if(!override && !has_nearby_player(9))
+				return
 			if(speak && speak.len)
 				if((emote_hear && emote_hear.len) || (emote_see && emote_see.len))
 					var/length = speak.len
@@ -269,44 +302,95 @@
 
 
 /mob/living/simple_animal/proc/environment_is_safe(datum/gas_mixture/environment, check_temp = FALSE)
-	. = TRUE
-
+	//Keep the legacy no-argument call checking the mob's current open turf.
+	//Callers which provide a mixture (notably pathfinding) get that exact
+	//prospective atmosphere checked instead.
+	if(!environment && isopenturf(loc))
+		var/turf/open/current_turf = loc
+		environment = current_turf.air
+	. = (environment || isopenturf(loc)) ? atmosphere_is_safe(environment, check_temp) : TRUE
 	if(pulledby && pulledby.grab_state >= GRAB_KILL && atmos_requirements["min_oxy"])
-		. = FALSE //getting choked
+		return FALSE //getting choked
 
-	if(isturf(src.loc) && isopenturf(src.loc))
-		var/turf/open/ST = src.loc
-		if(ST.air)
+///Pure atmosphere check used both by Life() and by pathfinding. Previously the
+///environment argument was ignored and src.loc.air was read instead, making it
+///impossible to evaluate a prospective route without moving the mob there.
+/mob/living/simple_animal/proc/atmosphere_is_safe(datum/gas_mixture/environment, check_temp = FALSE)
+	if(!has_atmos_requirements && !check_temp)
+		return TRUE
+	if(!environment)
+		if(atmos_min_oxy || atmos_min_tox || atmos_min_n2 || atmos_min_co2)
+			return FALSE
+		if(check_temp)
+			var/null_environment_temp = get_temperature(environment)
+			return null_environment_temp >= minbodytemp && null_environment_temp <= maxbodytemp
+		return TRUE
 
-			var/tox = ST.air.get_moles(GAS_PLASMA)
-			var/oxy = ST.air.get_moles(GAS_O2)
-			var/n2  = ST.air.get_moles(GAS_N2)
-			var/co2 = ST.air.get_moles(GAS_CO2)
-
-			if(atmos_requirements["min_oxy"] && oxy < atmos_requirements["min_oxy"])
-				. = FALSE
-			else if(atmos_requirements["max_oxy"] && oxy > atmos_requirements["max_oxy"])
-				. = FALSE
-			else if(atmos_requirements["min_tox"] && tox < atmos_requirements["min_tox"])
-				. = FALSE
-			else if(atmos_requirements["max_tox"] && tox > atmos_requirements["max_tox"])
-				. = FALSE
-			else if(atmos_requirements["min_n2"] && n2 < atmos_requirements["min_n2"])
-				. = FALSE
-			else if(atmos_requirements["max_n2"] && n2 > atmos_requirements["max_n2"])
-				. = FALSE
-			else if(atmos_requirements["min_co2"] && co2 < atmos_requirements["min_co2"])
-				. = FALSE
-			else if(atmos_requirements["max_co2"] && co2 > atmos_requirements["max_co2"])
-				. = FALSE
-		else
-			if(atmos_requirements["min_oxy"] || atmos_requirements["min_tox"] || atmos_requirements["min_n2"] || atmos_requirements["min_co2"])
-				. = FALSE
-
+	if(atmos_min_oxy || atmos_max_oxy)
+		var/oxy = environment.get_moles(GAS_O2)
+		if((atmos_min_oxy && oxy < atmos_min_oxy) || (atmos_max_oxy && oxy > atmos_max_oxy))
+			return FALSE
+	if(atmos_min_tox || atmos_max_tox)
+		var/tox = environment.get_moles(GAS_PLASMA)
+		if((atmos_min_tox && tox < atmos_min_tox) || (atmos_max_tox && tox > atmos_max_tox))
+			return FALSE
+	if(atmos_min_n2 || atmos_max_n2)
+		var/n2 = environment.get_moles(GAS_N2)
+		if((atmos_min_n2 && n2 < atmos_min_n2) || (atmos_max_n2 && n2 > atmos_max_n2))
+			return FALSE
+	if(atmos_min_co2 || atmos_max_co2)
+		var/co2 = environment.get_moles(GAS_CO2)
+		if((atmos_min_co2 && co2 < atmos_min_co2) || (atmos_max_co2 && co2 > atmos_max_co2))
+			return FALSE
 	if(check_temp)
 		var/areatemp = get_temperature(environment)
-		if((areatemp < minbodytemp) || (areatemp > maxbodytemp))
-			. = FALSE
+		if(areatemp < minbodytemp || areatemp > maxbodytemp)
+			return FALSE
+	return TRUE
+
+///Whether entering an open turf would immediately expose this mob to an
+///atmosphere that damages it. Closed turfs are handled as obstacles elsewhere.
+/mob/living/simple_animal/proc/requires_safe_atmosphere()
+	return atmos_pathing_sensitive
+
+/mob/living/simple_animal/proc/refresh_atmos_pathing_sensitivity()
+	atmos_min_oxy = atmos_requirements["min_oxy"]
+	atmos_max_oxy = atmos_requirements["max_oxy"]
+	atmos_min_tox = atmos_requirements["min_tox"]
+	atmos_max_tox = atmos_requirements["max_tox"]
+	atmos_min_n2 = atmos_requirements["min_n2"]
+	atmos_max_n2 = atmos_requirements["max_n2"]
+	atmos_min_co2 = atmos_requirements["min_co2"]
+	atmos_max_co2 = atmos_requirements["max_co2"]
+	has_atmos_requirements = !!(atmos_min_oxy || atmos_max_oxy || atmos_min_tox || atmos_max_tox || atmos_min_n2 || atmos_max_n2 || atmos_min_co2 || atmos_max_co2)
+	atmos_pathing_sensitive = unsuitable_atmos_damage && has_atmos_requirements
+	//Среда не может ни навредить, ни остудить/согреть осмысленно - Life может
+	//вообще не читать атмосферу такого моба (лавовая/космическая фауна).
+	environment_processing_immune = !uses_custom_environment_handling && !has_atmos_requirements && minbodytemp <= 0 && maxbodytemp >= INFINITY
+
+/mob/living/simple_animal/proc/can_safely_enter_turf(turf/candidate, environment_policy_prechecked = FALSE)
+	if(!isopenturf(candidate) || (!environment_policy_prechecked && !requires_safe_atmosphere()))
+		return TRUE
+	return atmosphere_is_safe(candidate.return_air())
+
+///Opening or destroying a pressure barrier affects more than its own turf.
+///Refuse it when a connected open turf would damage the mob.
+/mob/living/simple_animal/proc/can_safely_open_pressure_barrier(obj/barrier)
+	if(!barrier)
+		return FALSE
+	if(!requires_safe_atmosphere())
+		return TRUE
+	var/turf/barrier_turf = get_turf(barrier)
+	if(!can_safely_enter_turf(barrier_turf))
+		return FALSE
+	var/obj/structure/window/window = barrier
+	if((istype(window) && !window.fulltile) || istype(barrier, /obj/machinery/door/window) || istype(barrier, /obj/machinery/door/firedoor/border_only))
+		return can_safely_enter_turf(get_step(barrier, barrier.dir))
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(barrier, direction)
+		if(neighbor && !can_safely_enter_turf(neighbor))
+			return FALSE
+	return TRUE
 
 
 /mob/living/simple_animal/handle_environment(datum/gas_mixture/environment)
@@ -362,13 +446,13 @@
 		verb_say = pick(speak_emote)
 	. = ..()
 
-/mob/living/simple_animal/emote(act, m_type=1, message = null, intentional = FALSE)
+/mob/living/simple_animal/emote(act, m_type=1, message = null, intentional = FALSE, message_override = null)
 	if(stat)
 		return
 	if(act == "scream")
 		message = "makes a loud and pained whimper." //ugly hack to stop animals screaming when crushed :P
 		act = "me"
-	..(act, m_type, message)
+	..(act, m_type, message, intentional, message_override)
 
 /mob/living/simple_animal/proc/set_varspeed(var_value)
 	speed = var_value
@@ -385,9 +469,12 @@
 	. += "Health: [round((health / maxHealth) * 100)]%"
 
 /mob/living/simple_animal/proc/drop_loot()
-	if(loot.len)
-		for(var/i in loot)
-			new i(loc)
+	if(!length(loot))
+		return
+	for(var/loot_type in loot)
+		if(!ispath(loot_type))
+			continue
+		new loot_type(loc)
 
 /mob/living/simple_animal/death(gibbed)
 	movement_type &= ~FLYING
@@ -410,10 +497,28 @@
 		qdel(src)
 	else
 		health = 0
-		icon_state = icon_dead
+		icon_state = corpse_icon_state()
 		density = FALSE
 		lying = 1
 		..()
+
+///Спрайт, в котором остаётся лежать труп. icon_dead по умолчанию пустая строка,
+///а icon_state = "" не рисует вообще ничего: моб без спрайта смерти пропадал с
+///экрана, оставаясь кликабельным и осязаемым. Ровно так же кончается icon_dead,
+///указывающий на несуществующий стейт - тот же невидимый труп, только молча.
+///Поэтому берём первого кандидата, который реально есть в иконке; живой спрайт
+///в этой роли честнее пустоты - труп лежит (lying = 1), не плотный и виден.
+///Мобу, который обязан исчезать, нужен del_on_death, а не пустой icon_dead.
+/mob/living/simple_animal/proc/corpse_icon_state()
+	var/list/available = icon ? icon_states(icon) : null
+	//Иконка с безымянным стейтом невидимой не бывает: BYOND рисует его всегда,
+	//когда запрошенного стейта нет (так живут сгенерированные get_flat_human_icon)
+	if(!length(available) || ("" in available))
+		return icon_dead || icon_living || icon_state
+	for(var/candidate in list(icon_dead, icon_living, icon_state, initial(icon_state)))
+		if(candidate && (candidate in available))
+			return candidate
+	return icon_state
 
 /mob/living/simple_animal/proc/CanAttack(atom/the_target)
 	if(see_invisible < the_target.invisibility)
@@ -619,6 +724,44 @@
 			l_hand.screen_loc = ui_hand_position(get_held_index_of_item(l_hand))
 			client.screen |= l_hand
 
+// Симпл мобы интеракты
+/mob/living/simple_animal/proc/toggle_throw_mode()
+	if(stat)
+		return
+	if(throw_mode)
+		throw_mode_off()
+	else
+		throw_mode_on()
+
+/mob/living/simple_animal/proc/throw_mode_off()
+	throw_mode = FALSE
+	if(client && hud_used && hud_used.throw_icon)
+		hud_used.throw_icon.icon_state = "act_throw_off"
+
+/mob/living/simple_animal/proc/throw_mode_on()
+	throw_mode = TRUE
+	if(client && hud_used && hud_used.throw_icon)
+		hud_used.throw_icon.icon_state = "act_throw_on"
+
+/mob/living/simple_animal/throw_item(atom/target)
+	. = ..()
+	throw_mode_off()
+	update_mouse_pointer()
+	if(!target || !isturf(loc))
+		return FALSE
+	if(istype(target, /atom/movable/screen))
+		return FALSE
+	var/obj/item/held_item = get_active_held_item()
+	if(!held_item)
+		return FALSE
+	visible_message(span_danger("[src] throws [held_item]."))
+	log_message("has thrown [held_item]", LOG_ATTACK)
+	do_attack_animation(target, no_effect = 1)
+	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
+	newtonian_move(get_dir(target, src))
+	held_item.safe_throw_at(target, held_item.throw_range, held_item.throw_speed, src)
+	DelayNextAction(CLICK_CD_THROW)
+
 //ANIMAL RIDING
 
 /mob/living/simple_animal/user_buckle_mob(mob/living/M, mob/user, check_loc)
@@ -642,7 +785,32 @@
 	LoadComponent(/datum/component/riding)
 
 /mob/living/simple_animal/proc/toggle_ai(togglestatus)
+	// Отложенный toggle_ai по уже удалённому мобу (timestop, циклы мегафауны,
+	// подвисшие в currentrun ссылки) заново кладёт его в бакет simple_animals,
+	// откуда Destroy() его уже вынул - моб виснет там навечно (прод: слайм в warnfail)
+	if(QDELING(src))
+		return
 	if(!can_have_ai && (togglestatus != AI_OFF))
+		return
+	//Контроллерный моб не возвращается в легаси-пулы, но старые вызовы
+	//toggle_ai всё ещё обязаны реально останавливать/возобновлять его AI.
+	if(ai_controller)
+		switch(togglestatus)
+			if(AI_OFF)
+				ADD_TRAIT(src, TRAIT_AI_PAUSED, AI_PAUSED_LEGACY_TOGGLE)
+				ai_controller.update_able_to_run()
+			if(AI_Z_OFF)
+				ai_controller.set_ai_status(AI_STATUS_OFF)
+			if(AI_IDLE)
+				REMOVE_TRAIT(src, TRAIT_AI_PAUSED, AI_PAUSED_LEGACY_TOGGLE)
+				ai_controller.update_able_to_run()
+				if(ai_controller.able_to_run)
+					ai_controller.set_ai_status(AI_STATUS_IDLE)
+			if(AI_ON)
+				REMOVE_TRAIT(src, TRAIT_AI_PAUSED, AI_PAUSED_LEGACY_TOGGLE)
+				ai_controller.update_able_to_run()
+				if(ai_controller.able_to_run)
+					ai_controller.set_ai_status(AI_STATUS_ON)
 		return
 	if (AIStatus != togglestatus)
 		if (togglestatus > 0 && togglestatus < 5)
@@ -658,18 +826,49 @@
 		else
 			stack_trace("Something attempted to set simple animals AI to an invalid state: [togglestatus]")
 
+///Вынуть моба из легаси-AI-бакетов насовсем: контроллерный моб планируется
+///SSai_controllers и не должен числиться в GLOB.simple_animals вообще.
+///Обратный путь - обычный toggle_ai(AI_ON) после смерти контроллера.
+/mob/living/simple_animal/proc/unenroll_legacy_ai()
+	if(QDELING(src))
+		return
+	if(AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
+		//регистрация шла по турфу на момент toggle_ai(AI_Z_OFF) - чистим все z-списки
+		for(var/z_index in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
+			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[z_index]
+			if(islist(idle_z_list))
+				idle_z_list -= src
+	//свип по всем бакетам, как в Destroy: страндед-запись в чужом бакете не должна пережить миграцию
+	for(var/bucket_index in 1 to length(GLOB.simple_animals))
+		var/list/bucket = GLOB.simple_animals[bucket_index]
+		bucket -= src
+	if(LAZYLEN(SSnpcpool.currentrun))
+		SSnpcpool.currentrun -= src
+	AIStatus = AI_OFF
+
+///Есть ли у моба живой AI хоть в каком-то состоянии: контроллер (даже спящий -
+///его будят урон/обиды/грид) или легаси-статус, отличный от жёсткого AI_OFF.
+///Единый гард вместо компаундов вида `(AIStatus != AI_OFF || ai_controller)`.
+/mob/living/simple_animal/proc/has_active_ai()
+	if(ai_controller)
+		return !QDELETED(ai_controller)
+	return AIStatus != AI_OFF
+
+///Легаси-эквивалент статуса для старого сабтипового кода на ai_controller.
+/mob/living/simple_animal/proc/get_effective_ai_status()
+	if(!ai_controller)
+		return AIStatus
+	switch(ai_controller.ai_status)
+		if(AI_STATUS_ON)
+			return AI_ON
+		if(AI_STATUS_IDLE)
+			return AI_IDLE
+	return AI_OFF
+
 /// Returns TRUE if any player is within given distance on the same z-level.
-/mob/living/simple_animal/proc/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
-	var/turf/our_turf = get_turf(src)
-	if(!our_turf)
-		return FALSE
-	var/our_z = our_turf.z
-	if(!islist(SSmobs.clients_by_zlevel) || our_z > SSmobs.clients_by_zlevel.len)
-		return FALSE
-	for(var/mob/player as anything in SSmobs.clients_by_zlevel[our_z])
-		if(get_dist(our_turf, player) <= distance)
-			return TRUE
-	return FALSE
+/// Override: simple_animals use tighter NEARBY_PLAYER_DISTANCE (15) by default
+/mob/living/simple_animal/has_nearby_player(distance = NEARBY_PLAYER_DISTANCE)
+	return ..(distance)
 
 /mob/living/simple_animal/proc/consider_wakeup()
 	if (pulledby || shouldwakeup)
@@ -677,7 +876,7 @@
 
 /mob/living/simple_animal/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
-	if(!ckey && !stat)//Not unconscious
+	if(!ckey && !stat && !ai_controller)//Not unconscious; контроллер будит себя сам
 		if(AIStatus == AI_IDLE || AIStatus == AI_Z_OFF)
 			toggle_ai(AI_ON)
 
@@ -727,6 +926,37 @@
 	. = ..()
 	if(. && length(src.damaged_sound))
 		playsound(src, pick(src.damaged_sound), 40, 1)
+
+/mob/living/simple_animal/attack_ghost(mob/user)
+	. = ..()
+	if(.)
+		return
+	if(!playable_by_ghost)
+		return
+	ghost_possess_animal(user)
+
+/// Lets a ghost take this mob if it is still free (same idea as gondola / venus trap).
+/mob/living/simple_animal/proc/ghost_possess_animal(mob/user)
+	if(key || stat || QDELETED(src) || !playable_by_ghost)
+		return
+	if(isobserver(user))
+		var/mob/dead/observer/O = user
+		if(!O.can_reenter_round())
+			to_chat(user, span_warning("Вы не можете войти в эту роль."))
+			return
+	var/title = ghost_possess_title || capitalize(name)
+	var/question = ghost_possess_question || "Вселиться в [name]?"
+	var/ghost_ask = tgui_alert(user, question, title, list("Да", "Нет"))
+	if(ghost_ask != "Да" || QDELETED(src))
+		return
+	if(key || stat)
+		to_chat(user, span_warning("Кто-то уже занял это существо!"))
+		return
+	user.transfer_ckey(src, FALSE)
+	grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
+	sentience_act()
+	to_chat(src, span_notice("Вы вселились в [name]. Вы понимаете речь и можете общаться."))
+	log_game("[key_name(src)] took control of [name] ([type]).")
 
 /mob/living/simple_animal/examine(mob/user)
 	var/list/dat = ..()

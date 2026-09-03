@@ -9,7 +9,8 @@
 
 /datum/component/storage/concrete/implant/Initialize()
 	. = ..()
-	cant_hold = typecacheof(list(/obj/item/disk/nuclear))
+	var/static/list/implant_cant_hold = typecacheof(list(/obj/item/disk/nuclear))
+	cant_hold = implant_cant_hold
 
 /datum/component/storage/concrete/implant/InheritComponent(datum/component/storage/concrete/implant/I, original)
 	if(!istype(I))

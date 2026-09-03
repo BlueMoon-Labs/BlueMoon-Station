@@ -47,7 +47,7 @@
 	))
 	window.send_asset(get_asset_datum(/datum/asset/simple/namespaced/fontawesome))
 	window.send_asset(get_asset_datum(/datum/asset/simple/namespaced/tgfont))
-	window.send_asset(get_asset_datum(/datum/asset/spritesheet/chat))
+	window.send_asset(get_asset_datum(/datum/asset/spritesheet_batched/chat))
 	// Other setup
 	request_telemetry()
 	addtimer(CALLBACK(src, PROC_REF(on_initialize_timed_out)), 5 SECONDS)
@@ -112,7 +112,7 @@
 			return TRUE
 		if(client?.prefs && client.prefs.tgui_panel_state != state_json)
 			client.prefs.tgui_panel_state = state_json
-			client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+			client.prefs.save_single_pref("tgui_panel_state", state_json)
 		return TRUE
 	if(type == "panel/theme_set")
 		var/theme
@@ -123,7 +123,7 @@
 		if(theme in list("default", "light", "dark"))
 			if(client?.prefs && client.prefs.tgui_panel_theme != theme)
 				client.prefs.tgui_panel_theme = theme
-				client.prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				client.prefs.save_single_pref("tgui_panel_theme", theme)
 		return TRUE
 	if(type == "audio/setAdminMusicVolume")
 		client.admin_music_volume = payload["volume"]

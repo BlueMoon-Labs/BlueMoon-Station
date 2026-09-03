@@ -493,3 +493,48 @@
 		'sound/items/knife/knife_slice5.ogg',
 		'sound/items/knife/knife_slice6.ogg'
 	)
+
+/datum/sound_effect/bandage_begin
+	key = SFX_BANDAGE_BEGIN
+	file_paths = list(
+		'sound/items/gauze/bandage_begin1.ogg',
+		'sound/items/gauze/bandage_begin2.ogg',
+		'sound/items/gauze/bandage_begin3.ogg',
+		'sound/items/gauze/bandage_begin4.ogg',
+	)
+
+/datum/sound_effect/bandage_end
+	key = SFX_BANDAGE_END
+	file_paths = list(
+		'sound/items/gauze/bandage_end1.ogg',
+		'sound/items/gauze/bandage_end2.ogg',
+		'sound/items/gauze/bandage_end3.ogg',
+		'sound/items/gauze/bandage_end4.ogg',
+	)
+
+/datum/sound_effect/remote_mode_switch
+	key = SFX_REMOTE_MODE_SWITCH
+	file_paths = list(
+		'sound/items/door_remote/door_remote_switch1.ogg',
+		'sound/items/door_remote/door_remote_switch2.ogg',
+		'sound/items/door_remote/door_remote_switch3.ogg',
+	)
+
+/datum/sound_effect/remote_action
+	key = SFX_REMOTE_ACTION
+	file_paths = list(
+		'sound/items/door_remote/door_remote_action1.ogg',
+		'sound/items/door_remote/door_remote_action2.ogg',
+	)
+
+/datum/sound_effect/writing_pen
+	key = SFX_WRITING_PEN
+	file_paths = list(
+		'sound/effects/writing_pen/writing_pen1.ogg',
+		'sound/effects/writing_pen/writing_pen2.ogg',
+		'sound/effects/writing_pen/writing_pen3.ogg',
+		'sound/effects/writing_pen/writing_pen4.ogg',
+		'sound/effects/writing_pen/writing_pen5.ogg',
+		'sound/effects/writing_pen/writing_pen6.ogg',
+		'sound/effects/writing_pen/writing_pen7.ogg',
+	)

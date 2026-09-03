@@ -17,10 +17,10 @@ const UnreadCountWidget = ({ value }) => (
   </Box>
 );
 
-export const ChatTabs = (props, context) => {
-  const pages = useSelector(context, selectChatPages);
-  const currentPage = useSelector(context, selectCurrentChatPage);
-  const dispatch = useDispatch(context);
+export const ChatTabs = (props) => {
+  const pages = useSelector(selectChatPages);
+  const currentPage = useSelector(selectCurrentChatPage);
+  const dispatch = useDispatch();
   return (
     <Flex align="center">
       <Flex.Item>

@@ -202,7 +202,7 @@
 /obj/machinery/power/rad_collector/obj_break(damage_flag)
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
 		eject()
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 
 /obj/machinery/power/rad_collector/proc/eject()
 	locked = FALSE

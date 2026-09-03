@@ -67,7 +67,7 @@
 /datum/gear/uniform/dress/polyevening
 	name = "Fancy evening dress dress"
 	path = /obj/item/clothing/under/dress/polychromic/evening
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#391D2B", "#F96C72")
 
 /datum/gear/uniform/dress/party

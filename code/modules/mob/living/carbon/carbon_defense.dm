@@ -2,7 +2,7 @@
 /mob/living/carbon/get_eye_protection()
 	var/number = ..()
 
-	if(istype(src.head, /obj/item/clothing/head))			//are they wearing something on their head
+	if(istype(src.head, /obj/item/clothing/head) || istype(src.head, /obj/item/clothing/mod_part/head))			//are they wearing something on their head
 		var/obj/item/clothing/head/HFP = src.head			//if yes gets the flash protection value from that item
 		number += HFP.flash_protect
 
@@ -19,6 +19,9 @@
 		number = INFINITY //Can't get flashed without eyes
 	else
 		number += E.flash_protect
+
+	if(HAS_TRAIT(src, TRAIT_NOFLASH))
+		number = max(number, 1)
 
 	return number
 
@@ -88,26 +91,8 @@
 	I.do_stagger_action(src, user, totitemdamage)
 	if(I.force)
 		apply_damage(totitemdamage, I.damtype, affecting, wound_bonus = I.wound_bonus, bare_wound_bonus = I.bare_wound_bonus, sharpness = I.get_sharpness()) //CIT CHANGE - replaces I.force with totitemdamage
-		if(I.damtype == BRUTE && affecting.is_organic_limb(FALSE))
-			var/basebloodychance = affecting.brute_dam + totitemdamage
-			if(prob(basebloodychance))
-				I.add_mob_blood(src)
-				var/turf/location = get_turf(src)
-				add_splatter_floor(location)
-				if(totitemdamage >= 10 && get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
-					user.add_mob_blood(src)
-
-				if(affecting.body_zone == BODY_ZONE_HEAD)
-					if(wear_mask && prob(basebloodychance))
-						wear_mask.add_mob_blood(src)
-						update_inv_wear_mask()
-					if(wear_neck && prob(basebloodychance))
-						wear_neck.add_mob_blood(src)
-						update_inv_neck()
-					if(head && prob(basebloodychance))
-						head.add_mob_blood(src)
-						update_inv_head()
-
+		if(I.damtype == BRUTE)
+			attack_effects(totitemdamage, impacting_zone, I, user)
 		return TRUE //successful attack
 
 /mob/living/carbon/attack_drone(mob/living/simple_animal/drone/user)
@@ -218,6 +203,7 @@
 
 /mob/living/carbon/emp_act(severity)
 	. = ..()
+	SEND_SIGNAL(src, COMSIG_LIVING_FORCE_EMP, severity)
 	if(. & EMP_PROTECT_CONTENTS)
 		return
 	if(isrobotic(src))
@@ -313,12 +299,7 @@
 			return
 		if(lying)
 			if(buckled)
-				// BLUEMOON ADD START
-				if(istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis))
-					buckled.user_unbuckle_mob(src, M)
-				else
-				// BLUEMOON ADD END
-					to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
+				to_chat(M, "<span class='warning'>Для этого вам для начала нужно отстегнуть <b>[src]</b>!")
 				return
 			// BLUEMON ADD START - проверка для сверхтяжёлых персонажей
 			if(src.mob_weight > MOB_WEIGHT_HEAVY)
@@ -331,7 +312,7 @@
 						can_shake = TRUE
 					if(istype(user.back, /obj/item/mod/control)) // обычные персонажи с активированными клешнями из МОДа на спине могут поднимать
 						var/obj/item/mod/control/MOD = user.back
-						if(MOD.active || istype(MOD.selected_module, /obj/item/mod/module/clamp))
+						if(MOD.is_active() || istype(MOD.selected_module, /obj/item/mod/module/clamp))
 							can_shake = TRUE
 
 				if(!can_shake)
@@ -571,12 +552,19 @@
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>[I] застрял в вашей конечности - [LB.ru_name]!</a>"
 
+		if(LB.current_gauze)
+			if(!embeds)
+				embeds = TRUE
+				visible_message("<span class='notice'><b>[src]</b> осматривает себя.</span>", "")
+				output = "<span class='notice'>Ты осматриваешь себя.</span><hr>"
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+
 	if(output)
 		to_chat(src, examine_block(output))
 
 	return embeds
 
-/mob/living/carbon/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0)
+/mob/living/carbon/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0, duration = 25)
 	. = ..()
 
 	var/damage = override_protection ? intensity : intensity - get_eye_protection()
@@ -682,6 +670,7 @@
 			else if(ears.damage >= 5)
 				to_chat(src, "<span class='warning'>В ушах начинает звенеть!</span>")
 			SEND_SOUND(src, sound('sound/weapons/flash_ring.ogg',0,1,0,250))
+			AdjustConfused(max(10 SECONDS * effect_amount, 4 SECONDS), 0, 30 SECONDS)
 		return effect_amount //how soundbanged we are
 
 
@@ -733,7 +722,7 @@
 		return
 
 	var/extra_wound_details = ""
-	if(I.damtype == BRUTE && hit_bodypart.can_dismember())
+	if(I.damtype == BRUTE && istype(hit_bodypart, /obj/item/bodypart) && hit_bodypart.can_dismembered())
 		var/mangled_state = hit_bodypart.get_mangled_state()
 		var/bio_state = get_biological_state()
 		if(mangled_state == BODYPART_MANGLED_BOTH)

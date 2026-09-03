@@ -15,6 +15,10 @@ SUBSYSTEM_DEF(dbcore)
 
 	var/connection  // Arbitrary handle returned from rust_g.
 
+	/// Последний ответ rustg о живости соединения и момент, до которого ему верим.
+	var/connected_cache = FALSE
+	var/connected_cache_expires_at = 0
+
 /datum/controller/subsystem/dbcore/Initialize()
 	//We send warnings to the admins during subsystem init, as the clients will be New'd and messages
 	//will queue properly with goonchat
@@ -93,6 +97,7 @@ SUBSYSTEM_DEF(dbcore)
 		"max_threads" = thread_limit,
 	))))
 	. = (result["status"] == "ok")
+	InvalidateConnectedCache()
 	if (.)
 		connection = result["handle"]
 	else
@@ -158,13 +163,31 @@ SUBSYSTEM_DEF(dbcore)
 	if (connection)
 		rustg_sql_disconnect_pool(connection)
 	connection = null
+	InvalidateConnectedCache()
+
+/// Сколько держим ответ rustg о живости соединения, прежде чем спросить заново.
+/// Проверка стоит FFI-раундтрип плюс json_decode, а зовут её пачками: один клик
+/// "занять слот" в лобби прогоняет её по полсотне должностей подряд.
+#define DBCORE_CONNECTED_CACHE_TTL (1 SECONDS)
 
 /datum/controller/subsystem/dbcore/proc/IsConnected()
 	if (!CONFIG_GET(flag/sql_enabled))
 		return FALSE
 	if (!connection)
 		return FALSE
-	return json_decode(rustg_sql_connected(connection))["status"] == "online"
+	if (connected_cache_expires_at > world.time)
+		return connected_cache
+	connected_cache = json_decode(rustg_sql_connected(connection))["status"] == "online"
+	connected_cache_expires_at = world.time + DBCORE_CONNECTED_CACHE_TTL
+	return connected_cache
+
+#undef DBCORE_CONNECTED_CACHE_TTL
+
+/// Сбрасывает память о живости соединения - звать всюду, где соединение меняется
+/// или запрос упал, иначе кэш будет какое-то время врать о мёртвой базе.
+/datum/controller/subsystem/dbcore/proc/InvalidateConnectedCache()
+	connected_cache = FALSE
+	connected_cache_expires_at = 0
 
 /datum/controller/subsystem/dbcore/proc/ErrorMsg()
 	if(!CONFIG_GET(flag/sql_enabled))
@@ -173,6 +196,8 @@ SUBSYSTEM_DEF(dbcore)
 
 /datum/controller/subsystem/dbcore/proc/ReportError(error)
 	last_error = error
+	// Упавший запрос - повод перепроверить соединение, а не доверять памяти.
+	InvalidateConnectedCache()
 
 /datum/controller/subsystem/dbcore/proc/NewQuery(sql_query, arguments)
 	if(IsAdminAdvancedProcCall())
@@ -358,7 +383,11 @@ Delayed insert mode was removed in mysql 7 and only works with MyISAM type table
 			last_error = job_result_str
 			return FALSE
 	else
+		// Синхронный путь держит весь мир до ответа БД: DM не исполняется, world.cpu
+		// не растёт, и детектор спайков видит безымянный "внешний столл"
+		var/blocking_started_ms = blocking_call_start()
 		job_result_str = rustg_sql_query_blocking(connection, sql, json_encode(arguments))
+		blocking_call_finish(blocking_started_ms, "SQL (блокирующий)", copytext(sql, 1, 80))
 
 	var/result = json_decode(job_result_str)
 	switch (result["status"])

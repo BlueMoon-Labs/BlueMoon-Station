@@ -116,12 +116,18 @@
 	var/obj/machinery/disposal/bin/target_bin = locate(/obj/machinery/disposal/bin) in next_turf.contents
 	for(var/thing in pushedstuff)
 		var/atom/movable/AM = thing
+		//Волна доехала до ресайклера: тот ест содержимое снаряда из eat() раньше,
+		//чем qdel(projectile) зовёт нас - forceMove трупу давал "doMove qdel-нутого"
+		if(QDELETED(AM))
+			continue
 		if(target_bin)
 			AM.forceMove(target_bin)
 			target_bin.update_icon()
 		else
 			AM.forceMove(proj_turf)
 	for(var/mob/living/L in losers)
+		if(QDELETED(L)) //седока могли стереть, пока он катился на волне
+			continue
 		L.Knockdown(rand(3,7))
 	vis_contents = list()
 	losers = list()
@@ -139,7 +145,7 @@
 	*/
 
 /obj/item/projectile/broom/proc/can_push(atom/movable/AM)
-	if(!ismovable(AM))
+	if(!ismovable(AM) || isdead(AM))
 		return FALSE
 	if(AM.anchored)
 		return FALSE

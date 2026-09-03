@@ -13,6 +13,9 @@
 /datum/status_effect/crusher_damage //tracks the damage dealt to this mob by kinetic crushers
 	id = "crusher_damage"
 	duration = -1
+	//чистый счётчик без tick(): висит на КАЖДОМ майнинг-мобе и мегафауне с
+	//самого спавна, без опт-аута вся фауна планетарок молотит SSstatus_effects
+	tick_interval = -1
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = null
 	var/total_damage = 0
@@ -56,6 +59,7 @@
 /datum/status_effect/in_love
 	id = "in_love"
 	duration = -1
+	tick_interval = -1 //только алерт и alt appearance, тикать нечему
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = /atom/movable/screen/alert/status_effect/in_love
 	var/hearts

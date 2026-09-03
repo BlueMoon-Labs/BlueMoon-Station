@@ -1,10 +1,15 @@
 /datum/round_event_control/scrubber_overflow
 	name = "Scrubber Overflow: Normal"
 	typepath = /datum/round_event/scrubber_overflow
-	weight = 75
-	max_occurrences = 3
+	// Вес 75 (при типичных 25-50 у соседей по MINOR) плюс наследование его всеми подтипами давали
+	// семейству труб ~28% каждого minor-ролла: по 3-5 переливов за раунд. Семейство "scrubbers"
+	// делит фолл-офф повторов и паузу, метка disruptive глушит переливы в мягких профилях.
+	weight = 20
+	max_occurrences = 2
 	min_players = 10
 	category = EVENT_CATEGORY_JANITORIAL
+	family = "scrubbers"
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
 	description = "The scrubbers release a tide of mostly harmless froth."
 	admin_setup = list(/datum/event_admin_setup/listed_options/scrubber_overflow)
 
@@ -103,7 +108,7 @@
 	if(!scrubbers.len)
 		return kill()
 
-/datum/round_event_control/scrubber_overflow/canSpawnEvent(players_amt, allow_magic = FALSE)
+/datum/round_event_control/scrubber_overflow/can_fire(datum/director_signals/signals)
 	. = ..()
 	if(!.)
 		return
@@ -125,8 +130,11 @@
 
 /datum/round_event/scrubber_overflow/start()
 	for(var/obj/machinery/atmospherics/components/unary/vent as anything in scrubbers)
-		if(!vent.loc)
-			CRASH("SCRUBBER SURGE: [vent] has no loc somehow?")
+		// Между setup() и start() проходит несколько тиков - за это время вент
+		// могли снести (взрыв, фауна). CRASH здесь обрывал весь цикл на первом
+		// же снесённом венте и глушил событие целиком (раунд 9915).
+		if(QDELETED(vent) || !vent.loc)
+			continue
 
 		var/datum/reagents/dispensed_reagent = new /datum/reagents(reagents_amount)
 		dispensed_reagent.my_atom = vent
@@ -150,6 +158,7 @@
 	min_players = 25
 	max_occurrences = 1
 	earliest_start = 35 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of moderately harmless froth."
 
 /datum/round_event/scrubber_overflow/threatening
@@ -163,6 +172,7 @@
 	min_players = 35
 	max_occurrences = 1
 	earliest_start = 45 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of mildly harmless froth."
 
 /datum/round_event/scrubber_overflow/catastrophic
@@ -172,7 +182,7 @@
 /datum/round_event_control/scrubber_overflow/every_vent
 	name = "Scrubber Overflow: Every Vent"
 	typepath = /datum/round_event/scrubber_overflow/every_vent
-	weight = 0
+	admin_only = TRUE
 	max_occurrences = 0
 	description = "The scrubbers release a tide of mostly harmless froth, but every scrubber is affected."
 

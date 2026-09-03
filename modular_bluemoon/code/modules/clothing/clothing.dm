@@ -24,10 +24,26 @@
 /obj/item/clothing/get_examine_name(mob/user)
 	. = ..()
 	if(custom_examine_tooltip[1])
-		. = " <span class='chat-tooltip green bold' style='text-decoration: underline dashed green;'>[.]<span class='chat-tooltip__content'>[custom_examine_tooltip[1]]</span></span>"
+		. = " [span_tooltip(custom_examine_tooltip[1], ., "", "green bold", "text-decoration: underline dashed green;")]"
 
 /obj/item/clothing/dropped(mob/user)
 	. = ..()
 	if(custom_examine_tooltip[1] && custom_examine_tooltip[2])
 		if(current_equipped_slot & slot_flags)
 			custom_examine_tooltip[1] = ""
+
+/obj/item/clothing/AltClick(mob/user)
+	. = ..()
+	if(istype(src, /obj/item/clothing/under))
+		var/obj/item/clothing/under/U = src
+		if(length(U.accessories_attached))
+			return // аксессуары снимаются в приоритете
+	var/datum/component/condom_clipping/cc = GetComponent(/datum/component/condom_clipping)
+	if(cc?.unclip_condom(user))
+		return TRUE
+
+/obj/item/clothing/get_examine_string(mob/user, thats)
+	. = ..()
+	var/datum/component/condom_clipping/cc = GetComponent(/datum/component/condom_clipping)
+	if(cc?.attached_condoms)
+		. +=  " with <span bold class='love'><b>[cc.attached_condoms]</b> filled condom[cc.attached_condoms > 1 ? "s" : ""] attached onto it</span>"

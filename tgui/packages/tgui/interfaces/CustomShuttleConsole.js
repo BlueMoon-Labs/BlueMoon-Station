@@ -3,8 +3,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Flex, Icon, LabeledList, Modal, Section, Table, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-export const CustomShuttleConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CustomShuttleConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     docked_location,
     ship_name = "ERROR",

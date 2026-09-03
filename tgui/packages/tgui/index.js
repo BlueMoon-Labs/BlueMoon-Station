@@ -7,20 +7,28 @@
 // Themes
 import './styles/main.scss';
 import './styles/themes/abductor.scss';
+import './styles/themes/disclaimer.scss';
 import './styles/themes/hotpink.scss';
 import './styles/themes/cardtable.scss';
 import './styles/themes/hackerman.scss';
 import './styles/themes/malfunction.scss';
 import './styles/themes/neutral.scss';
 import './styles/themes/ntos.scss';
+import './styles/themes/ntos_darkmode.scss';
+import './styles/themes/ntos_synth.scss';
+import './styles/themes/ntos_terminal.scss';
+import './styles/themes/ntos_cat.scss';
+import './styles/themes/ntos_lightmode.scss';
 import './styles/themes/paper.scss';
 import './styles/themes/retro.scss';
 import './styles/themes/syndicate.scss';
 import './styles/themes/wizard.scss';
 import './styles/themes/clockcult.scss';
 import './styles/themes/inteq.scss';
+import './styles/themes/pact.scss';
 
 import { perf } from 'common/perf';
+import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { FindBar } from './components/FindBar';
 import { isDragOrResizeActive } from './drag';
@@ -29,7 +37,7 @@ import { setupHotKeys } from './hotkeys';
 import { captureExternalLinks } from './links';
 import { createRenderer } from './renderer';
 import { getRoutedComponent } from './routes';
-import { configureStore, StoreProvider } from './store';
+import { configureStore } from './store';
 
 perf.mark('inception', window.performance?.timing?.navigationStart);
 perf.mark('init');
@@ -51,10 +59,10 @@ const getFindBarInstanceKey = () => {
 const renderApp = createRenderer(() => {
   const Component = getRoutedComponent(store);
   return (
-    <StoreProvider store={store}>
+    <>
       <Component />
       <FindBar key={getFindBarInstanceKey()} />
-    </StoreProvider>
+    </>
   );
 });
 
@@ -90,6 +98,10 @@ const setupApp = () => {
   setupGlobalEvents();
   setupHotKeys();
   captureExternalLinks();
+
+  if (process.env.NODE_ENV !== 'production') {
+    setupHotReloading();
+  }
 
   // Subscribe for state updates
   store.subscribe(renderAppIfIdle);

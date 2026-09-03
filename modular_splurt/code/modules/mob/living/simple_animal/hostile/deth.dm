@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "deth"
 	icon_living = "deth"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 10
 	speak = list("mm hmmm", "Shhhhh", "Come on now, don't make me break up the place~" )

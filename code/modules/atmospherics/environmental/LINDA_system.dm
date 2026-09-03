@@ -42,6 +42,13 @@
 
 	conductivity_blocked_directions = 0
 
+	// Sleeping edges: геометрия вокруг тайла меняется (сюда же приходит каждый
+	// Initalize_Atmos, в т.ч. после ChangeTurf со сменой air-датума) - кэши
+	// осевших пар и у нас, и у соседей на нас больше не действительны.
+	var/turf/open/open_self = src
+	if(isopenturf(open_self))
+		open_self.settled_edge_revs = null
+
 	var/src_contains_firelock = 1
 	if(locate(/obj/machinery/door/firedoor) in src)
 		src_contains_firelock |= 2
@@ -50,32 +57,42 @@
 
 	for(var/direction in GLOB.cardinals_multiz)
 		var/turf/current_turf = get_step_multiz(src, direction)
-		if(!isopenturf(current_turf))
+		if(!current_turf)
 			conductivity_blocked_directions |= direction
-
-			if(current_turf)
-				atmos_adjacent_turfs -= current_turf
-				LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
-
 			continue
+
+		//Conductivity Update. Heat is blocked by a zero-conductivity pairing or
+		//by an object that blocks heat (BlockThermalConductivity). A closed
+		//neighbor does NOT set the bit: conduction through solid turfs is
+		//exactly what superconduction models (see LINDA_turf_tile.dm).
+		var/opp = REVERSE_DIR(direction)
+		var/heat_blocked = !thermal_conductivity || !heat_capacity || !current_turf.thermal_conductivity || !current_turf.heat_capacity
+		if(!heat_blocked)
+			for(var/obj/O in contents + current_turf.contents)
+				if(O.BlockThermalConductivity()) 	//the direction and open/closed are already checked on CanAtmosPass() so there are no arguments
+					heat_blocked = TRUE
+					break
+		if(heat_blocked)
+			conductivity_blocked_directions |= direction
+			current_turf.conductivity_blocked_directions |= opp
+		else
+			// Self-healing: a removed blocker (deconstructed heatproof door)
+			// must reopen the neighbor's side toward us too.
+			current_turf.conductivity_blocked_directions &= ~opp
+		//End Conductivity Update
+
+		if(!isopenturf(current_turf))
+			atmos_adjacent_turfs -= current_turf
+			LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
+			continue
+
+		var/turf/open/open_neighbor = current_turf
+		if(open_neighbor.settled_edge_revs)
+			open_neighbor.settled_edge_revs -= src
 
 		var/other_contains_firelock = 1
 		if(locate(/obj/machinery/door/firedoor) in current_turf)
 			other_contains_firelock |= 2
-
-		//Conductivity Update
-		var/opp = REVERSE_DIR(direction)
-		//all these must be above zero for auxmos to even consider them
-		if(!thermal_conductivity || !heat_capacity || !current_turf.thermal_conductivity || !current_turf.heat_capacity)
-			conductivity_blocked_directions |= direction
-			current_turf.conductivity_blocked_directions |= opp
-		else
-			for(var/obj/O in contents + current_turf.contents)
-				if(O.BlockThermalConductivity()) 	//the direction and open/closed are already checked on CanAtmosPass() so there are no arguments
-					conductivity_blocked_directions |= direction
-					current_turf.conductivity_blocked_directions |= opp
-					break
-		//End Conductivity Update
 
 		if(!(blocks_air || current_turf.blocks_air) && ((direction & (UP|DOWN))? (canvpass && CANVERTICALATMOSPASS(current_turf, src)) : (canpass && CANATMOSPASS(current_turf, src))))
 			atmos_adjacent_turfs[current_turf] = other_contains_firelock | src_contains_firelock
@@ -93,8 +110,15 @@
 	block_all_conductivity()
 	for(var/turf/current_turf as anything in atmos_adjacent_turfs)
 		LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
+		if(isopenturf(current_turf))
+			var/turf/open/open_neighbor = current_turf
+			if(open_neighbor.settled_edge_revs)
+				open_neighbor.settled_edge_revs -= src
 		current_turf.__update_auxtools_turf_adjacency_info()
 
+	var/turf/open/open_self = src
+	if(isopenturf(open_self))
+		open_self.settled_edge_revs = null
 	LAZYNULL(atmos_adjacent_turfs)
 	__update_auxtools_turf_adjacency_info()
 
@@ -135,21 +159,38 @@
 
 	return adjacent_turfs
 
-/atom/proc/air_update_turf(calculate_adjacencies = FALSE)
+/atom/proc/air_update_turf(update = FALSE, remove = FALSE)
+	if(!SSair?.initialized)
+		return
 	var/turf/location = get_turf(src)
 	if(!location)
 		return
-	location.air_update_turf(calculate_adjacencies)
+	location.air_update_turf(update, remove)
 
-/turf/air_update_turf(calculate_adjacencies = FALSE)
-	if(!calculate_adjacencies)
+/turf/air_update_turf(update = FALSE, remove = FALSE)
+	if(!SSair?.initialized)
 		return
-	ImmediateCalculateAdjacentTurfs()
+	if(update)
+		ImmediateCalculateAdjacentTurfs()
+		// Adjacency just changed (door, window, densified atom): an excited group
+		// spanning the new blockage would later self_breakdown its averaged mix
+		// across both sides, so it must dismantle; the turfs stay active and
+		// rebuild groups that honor the new adjacency. Pure gas changes go through
+		// add_to_active alone and keep their group.
+		var/turf/open/open_self = src
+		if(istype(open_self) && open_self.excited_group)
+			open_self.excited_group.garbage_collect()
+	if(remove)
+		SSair.remove_from_active(src)
+	else
+		ATMOS_BENCH_WAKE(src, "air_update_turf")
+		SSair.add_to_active(src)
+	liquid_update_turf() //LIQUIDS ADD - update liquids processing when the air around us changes
 
 /atom/movable/proc/move_update_air(turf/T)
 	if(isturf(T))
-		T.air_update_turf(TRUE)
-	air_update_turf(TRUE)
+		T.air_update_turf(TRUE, FALSE)
+	air_update_turf(TRUE, TRUE)
 
 /atom/proc/atmos_spawn_air(text) //because a lot of people loves to copy paste awful code lets just make an easy proc to spawn your plasma fires
 	var/turf/open/T = get_turf(src)

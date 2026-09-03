@@ -3,9 +3,6 @@
 	desc = "A mishmash of a subspace amplifier, a radio, and an analyzer.  Somehow able to access the black market, with a variable inventory in limited stock at inflated prices. No refunds, customer responsible for pick-ups."
 	icon = 'icons/obj/blackmarket.dmi'
 	icon_state = "uplink"
-	// UI variables.
-	var/ui_x = 720
-	var/ui_y = 480
 	var/viewing_category
 	var/viewing_market
 	var/selected_item
@@ -50,10 +47,10 @@
 	user.put_in_hands(holochip)
 	to_chat(user, "<span class='notice'>You withdraw [amount_to_remove] credits into a holochip.</span>")
 
-/obj/item/blackmarket_uplink/ui_interact(mob/user, ui_key = "BlackMarketUplink", datum/tgui/ui = null, force_open = FALSE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.default_state)
+/obj/item/blackmarket_uplink/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, ui_key, name, ui_x, ui_y)
+		ui = new(user, src, "BlackMarketUplink", name)
 		ui.open()
 
 /obj/item/blackmarket_uplink/ui_data(mob/user)
@@ -72,7 +69,7 @@
 	if(viewing_category && market)
 		if(market.available_items[viewing_category])
 			for(var/datum/blackmarket_item/I in market.available_items[viewing_category])
-				if(user.mind.has_antag_datum(/datum/antagonist/rev/head))
+				if(user.mind?.has_antag_datum(/datum/antagonist/rev/head))
 					data["items"] += list(list(
 						"id" = I.type,
 						"name" = I.name,

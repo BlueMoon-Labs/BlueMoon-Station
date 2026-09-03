@@ -33,7 +33,11 @@
 	S["pending_tattoo_removals"] >> temp_pending_removals
 
 	persistent_tattoos = sanitize_integer(temp_persistent, 0, 1, TRUE)
-	tattoos_string = sanitize_text(temp_tattoos)
+	// Strip control chars from saved tattoo text: the ^/~ field/record separators are
+	// printable ASCII and untouched, but a stray C0 byte in the text would break the
+	// whole TattooManager TGUI payload (JSON.parse), making the panel - and thus the
+	// only way to remove the tattoo - unopenable.
+	tattoos_string = strip_control_chars(sanitize_text(temp_tattoos))
 	pending_tattoo_removals = islist(temp_pending_removals) ? temp_pending_removals : list()
 
 // Сохранение настроек татуировок

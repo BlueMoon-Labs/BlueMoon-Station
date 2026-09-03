@@ -1,5 +1,8 @@
 #define STATUS_IDLE "idle"
 #define STATUS_ENTERING_ROOM "enter"
+/// Сколько статус "enter" считается живым: загрузка шаблона спит в CHECK_TICK,
+/// но если чек-ин упал с рантаймом, без протухания игрок остался бы заблокирован до конца раунда
+#define HILBERT_ENTERING_STALE_AFTER (1 MINUTES)
 
 /obj/item/hilbertshotel
 	name = "Hilbert's Hotel"
@@ -15,6 +18,15 @@
 	var/list/storedRooms = list()
 	var/list/checked_in_ckeys = list()
 	var/list/lockedRooms = list()
+	/// Номера комнат, для которых прямо сейчас спит создание/восстановление (загрузка шаблона
+	/// отпускает тик): второй параллельный вход в тот же номер плодил комнату-двойник,
+	/// перезаписывал activeRooms/storedRooms и при следующем восстановлении удалял вещи игрока
+	var/list/rooms_in_flight = list()
+	/// Область, в которую прямо сейчас едет MobTransfer(). Пока перенос не закончен,
+	/// консервировать её нельзя: питомец на поводке, отброшенный назад собственным
+	/// Moved()-обработчиком, дёргал area/Exited() у ещё пустой комнаты, storeRoom()
+	/// сносил резервацию, и хозяина следом ставило на голый космос.
+	var/area/transfer_target
 	light_color = "#5692d6"
 	light_range = 5
 	light_power = 3
@@ -37,6 +49,7 @@
 
 /obj/item/hilbertshotel/Destroy()
 	SShilbertshotel.all_hilbert_spheres -= src
+	transfer_target = null // жёсткая ссылка на область, если сферу снесли посреди переноса
 	ejectRooms()
 	return ..()
 
@@ -85,7 +98,8 @@
 		SShilbertshotel.user_data[user.ckey] = list(
 			"room_number" = 1,
 			"template" = SShilbertshotel.default_template,
-			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE,
+			"status" = STATUS_IDLE
 		)
 
 	data["current_room"] = SShilbertshotel.user_data[user.ckey]["room_number"]
@@ -148,6 +162,10 @@
 			"template" = SShilbertshotel.default_template,
 			"status" = STATUS_IDLE
 		)
+	if(SShilbertshotel.user_data[user.ckey]["donator_tier"] == null)
+		SShilbertshotel.user_data[user.ckey]["donator_tier"] = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+	if(SShilbertshotel.user_data[user.ckey]["status"] == null)
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 
 	user.DelayNextAction(CLICK_CD_RAPID)
 	switch(action)
@@ -168,35 +186,58 @@
 			return TRUE
 
 		if("checkin")
-			if(SShilbertshotel.user_data[user.ckey]["status"] ==  STATUS_ENTERING_ROOM)
+			// Статус протухает: если прошлый чек-ин умер с рантаймом, вечный "enter"
+			// молча блокировал бы игроку все инфинити до конца раунда
+			if(SShilbertshotel.user_data[user.ckey]["status"] == STATUS_ENTERING_ROOM \
+				&& world.time - SShilbertshotel.user_data[user.ckey]["entering_since"] < HILBERT_ENTERING_STALE_AFTER)
+				to_chat(user, span_warning("Комната уже готовится, подождите..."))
 				return FALSE
 			var/template = SShilbertshotel.user_data[user.ckey]["template"]
-			var/room_number = SShilbertshotel.user_data[user.ckey]["room_number"]
+			// Номер берём из интерфейса: user_data мог не обновиться (потерянный update_room),
+			// и чек-ин молча вёл в старый номер вместо введённого
+			var/room_number = params["room"]
+			if(!isnum(room_number))
+				room_number = SShilbertshotel.user_data[user.ckey]["room_number"]
+			else
+				SShilbertshotel.user_data[user.ckey]["room_number"] = room_number
 			if(!room_number || !template || !(template in SShilbertshotel.hotel_map_list))
 				return FALSE
 			SShilbertshotel.user_data[user.ckey]["status"] = STATUS_ENTERING_ROOM
+			SShilbertshotel.user_data[user.ckey]["entering_since"] = world.time
 			if(type == /obj/item/hilbertshotel)
 				user = istype(loc, /mob/living) ? loc : user
 			if(!promptAndCheckIn(user, user, room_number, template))
 				SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 			return TRUE
 
-/obj/item/hilbertshotel/proc/check_user(mob/user)
+/obj/item/hilbertshotel/proc/check_user(mob/user, pulled = FALSE)
+	. = FALSE
+	var/static/list/protected_jobs = list(
+		"Captain", "NanoTrasen Representative", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director", "Head of Security",
+		"Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective"
+	)
+	// Защита от NonCon без последствий для важных ролей
+	if(pulled && iscarbon(user))
+		var/mob/living/carbon/C = user
+		if((C.stat > CONSCIOUS || C.restrained(TRUE)) && ((user.job in protected_jobs) || (user.mind?.assigned_role in protected_jobs)) \
+			&& !is_hilbert_hotel_zlevel(user.z))
+			return
 	if(GLOB.master_mode == "Extended")
 		return TRUE
 	if(!user.mind)
 		return TRUE
 
 	var/datum/mind/mind = user.mind
-	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
-		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
 		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ashwalker))
 		return TRUE
+	if(mind.has_antag_datum(/datum/antagonist/gang))
+		return TRUE
 
-	to_chat(user, "<span class='warning'>Your special role doesn't allow you to enter infinity dormitory.</span>")
-	return FALSE
+	to_chat(user, span_warning("Your special role doesn't allow you to enter infinity dormitory."))
 
 /obj/item/hilbertshotel/proc/promptAndCheckIn(mob/user, mob/target, room_number, template)
 	//SPLURT EDIT - max infinidorms rooms
@@ -216,7 +257,10 @@
 		room_number = input(user, "Select one of your previous rooms", "Room number") as null|anything in mob_dorms[user]
 
 	//SPLURT EDIT END
-	if(!room_number || !user.CanReach(src))
+	if(!room_number)
+		return FALSE
+	if(!user.CanReach(src))
+		to_chat(user, span_warning("Вы слишком далеко от сферы!"))
 		return FALSE
 	if(room_number > SHORT_REAL_LIMIT)
 		to_chat(user, span_warning("You have to check out the first [SHORT_REAL_LIMIT] rooms before you can go to a higher numbered one!"))
@@ -235,9 +279,38 @@
 		return TRUE
 	if(tryStoredRoom(room_number, user))
 		return TRUE
-	sendToNewRoom(room_number, user, template)
+	return sendToNewRoom(room_number, user, template)
+
+/// Помечает номер комнаты "в работе" на время спящих операций (загрузка шаблона отпускает тик).
+/// FALSE = кто-то уже создаёт/восстанавливает эту комнату - параллельный вход плодил двойников.
+/// Метка протухает: рантайм внутри спящей секции не должен запирать номер до конца раунда.
+/obj/item/hilbertshotel/proc/room_op_begin(roomNumber, mob/user)
+	var/started_at = rooms_in_flight["[roomNumber]"]
+	if(started_at && world.time - started_at < HILBERT_ENTERING_STALE_AFTER)
+		if(user)
+			to_chat(user, span_warning("Эта комната уже готовится, попробуйте через пару секунд."))
+		return FALSE
+	rooms_in_flight["[roomNumber]"] = world.time
+	return TRUE
+
+/obj/item/hilbertshotel/proc/room_op_end(roomNumber)
+	rooms_in_flight -= "[roomNumber]"
+
+/// Общий гвард телепорта: зона приземления обязана быть комнатой отеля.
+/// Любой сбой загрузки шаблона раньше молча отправлял игрока в пустой резервный космос.
+/obj/item/hilbertshotel/proc/room_landing_valid(datum/turf_reservation/roomReservation, datum/map_template/hilbertshotel/mapTemplate, mob/user)
+	var/turf/landing = locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3])
+	if(istype(get_area(landing), /area/hilbertshotel))
+		return TRUE
+	stack_trace("Hilbert's Hotel: зона приземления комнаты не является областью отеля ([landing ? "[landing.x],[landing.y],[landing.z]" : "null"])")
+	if(user)
+		to_chat(user, span_warning("Сфера вибрирует и отказывается формировать комнату. Попробуйте ещё раз."))
+	return FALSE
 
 /area/hilbertshotel/proc/storeRoom()
+	if(storing || !reservation)
+		return
+	storing = TRUE
 	// Calculate the actual room size based on the reservation coordinates
 	var/roomWidth = reservation.top_right_coords[1] - reservation.bottom_left_coords[1] + 1
 	var/roomHeight = reservation.top_right_coords[2] - reservation.bottom_left_coords[2] + 1
@@ -254,7 +327,9 @@
 			var/turf/T = locate(reservation.bottom_left_coords[1] + i, reservation.bottom_left_coords[2] + j, reservation.bottom_left_coords[3])
 			var/list/turfContents = list()
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top) || istype(A, /obj/machinery/atmospherics/components)) // Skip pool water and effects, and atmos components
+				if(istype(A, /obj/machinery/atmospherics/components)) // Skip atmos components
+					continue
+				if(istype(A, /atom/movable/lighting_object)) // Оверлей света принадлежит турфу: из стока он вернётся на тайл вторым слоем и зарендерит протухшую тьму
 					continue
 				if(ismob(A) && !isliving(A) || !isturf(A.loc)) // Turf check for items that are inside containers
 					continue // Don't want to store ghosts
@@ -267,6 +342,7 @@
 	var/datum/turf_reservation/old_res = reservation
 	reservation = null
 	qdel(old_res)
+	storing = FALSE
 
 /area/hilbertshotel/proc/update_light_switches() //SPLURT ADDITION: This will update all light switches in the given area
 	for(var/obj/machinery/light_switch/LS in src)
@@ -278,11 +354,21 @@
 		return FALSE
 	var/datum/turf_reservation/roomReservation = activeRooms["[roomNumber]"]
 	var/area/hilbertshotel/currentArea = get_area(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!istype(currentArea) || QDELETED(roomReservation))
+		// Комната физически исчезла, а запись осталась: раньше это давало рантайм
+		// (у чужой области нет roomType) или телепорт в пустой космос. Чистим запись -
+		// дальше по цепочке комната честно восстановится или создастся заново
+		stack_trace("Hilbert's Hotel: activeRooms\[[roomNumber]] указывает на несуществующую комнату (область [currentArea ? currentArea.type : "null"])")
+		activeRooms -= "[roomNumber]"
+		return FALSE
 	var/datum/map_template/hilbertshotel/mapTemplate = getMapTemplate(currentArea.roomType)
+	if(!room_landing_valid(roomReservation, mapTemplate, user))
+		return FALSE
 
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
-	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
+	if(user.ckey && SShilbertshotel.user_data[user.ckey])
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	return TRUE
 
 /obj/item/hilbertshotel/proc/tryStoredRoom(var/roomNumber, var/mob/user)
@@ -299,18 +385,27 @@
 	if(!storageObj)
 		return FALSE // No storage object found for this room number
 
+	if(!room_op_begin(roomNumber, user))
+		return FALSE
 	// Use the stored roomType from the storage object
 	var/datum/map_template/hilbertshotel/mapTemplate = getMapTemplate(storageObj.roomType)
 	var/datum/turf_reservation/roomReservation = SSmapping.RequestBlockReservation(mapTemplate.width, mapTemplate.height)
-	mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!roomReservation)
+		room_op_end(roomNumber)
+		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
+		return FALSE
+	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
+		room_op_end(roomNumber)
+		qdel(roomReservation)
+		return FALSE
 
 	// Clear all movable atoms from the loaded room template
 	for(var/i in 0 to mapTemplate.width - 1)
 		for(var/j in 0 to mapTemplate.height - 1)
 			var/turf/T = locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3])
 			for(var/atom/movable/A in T)
-				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top)) // Skip pool water overlays
-					continue
 				QDEL_LIST(A.contents)
 				qdel(A)
 
@@ -322,18 +417,20 @@
 		for(var/j in 0 to mapTemplate.height - 1)
 			if(turfNumber <= stored_size)
 				for(var/atom/movable/A in stored_data[turfNumber])
-					if(istype(A.loc, /obj/item/abstracthotelstorage)) // Don't want to recall something that's been moved
+					if(istype(A, /atom/movable/lighting_object)) // Сток, отравленный до фикса storeRoom: призрак прошлой эпохи не должен лечь на тайл поверх живого оверлея
+						qdel(A, force = TRUE)
+						continue
+					if(A.loc == storageObj) // Don't want to recall something that's been moved
 						A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
 			turfNumber++
-	for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
-		if((S.roomNumber == roomNumber) && (S.parentSphere == src))
-			qdel(S)
-
 	// Re-Set the room type
 	var/area/hilbertshotel/currentArea = get_area(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
-	if(storageObj)
-		currentArea.roomType = storageObj.roomType // Set the room type for the area
-		currentArea.update_light_switches() // Update all light switches in the area
+	currentArea.roomType = storageObj.roomType // Set the room type for the area
+	currentArea.update_light_switches() // Update all light switches in the area
+
+	// Удаляем только восстановленный сток: qdel всех стоков с этим номером сносил
+	// содержимое комнаты-двойника вместе с вещами игроков
+	qdel(storageObj)
 
 	storedRooms -= "[roomNumber]"
 	activeRooms["[roomNumber]"] = roomReservation
@@ -341,53 +438,97 @@
 	//To send the user one tile above default when teleported
 	// SPLURT EDIT END
 	linkTurfs(roomReservation, roomNumber)
+	room_op_end(roomNumber)
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
-	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
+	if(user.ckey && SShilbertshotel.user_data[user.ckey])
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	return TRUE
 
 /obj/item/hilbertshotel/proc/MobTransfer(mob/living/user, turf/T, depth = 0)
+	var/area/previous_target = transfer_target
+	transfer_target = get_area(T)
+	// Восстановление обязано пережить рантайм внутри переноса: хвостовой строкой оно
+	// пропускалось, transfer_target навсегда оставался приколот к комнате, и та уже
+	// никогда не консервировалась (см. /area/hilbertshotel/Exited), а сфера держала
+	// жёсткую ссылку на /area до конца раунда.
+	try
+		. = perform_mob_transfer(user, T, depth)
+	catch(var/exception/transfer_error)
+		transfer_target = previous_target
+		stack_trace("Hilbert's Hotel: перенос [user] упал - [transfer_error]")
+		return
+	transfer_target = previous_target
+
+/obj/item/hilbertshotel/proc/perform_mob_transfer(mob/living/user, turf/T, depth = 0)
 	depth++
 	if(depth > 4)
 		return
 	if(!istype(T))
 		return
-	var/atom/movable/AM
+	var/atom/movable/pulledAtom
 	if(user.pulling)
-		AM = user.pulling
-		if(istype(AM, /mob/living))
-			if(check_user(AM))
-				MobTransfer(AM, T, depth)
+		pulledAtom = user.pulling
+		if(istype(pulledAtom, /mob/living))
+			if(check_user(pulledAtom, TRUE))
+				MobTransfer(pulledAtom, T, depth)
+			else
+				pulledAtom = null
 		else
-			AM.forceMove(T)
+			Atom_forceMove(pulledAtom, T)
 	if(user.buckled && !user.buckled.anchored)
+		if(!check_user(user, TRUE))
+			return
 		var/atom/movable/seating = user.buckled
 		if(istype(seating, /mob/living))
 			if(check_user(seating))
 				MobTransfer(seating, T, depth)
 			else
-				user.forceMove(T)
+				Atom_forceMove(user, T)
 		else
-			seating.forceMove(T)
-			user.forceMove(T)
+			Atom_forceMove(seating, T)
+			Atom_forceMove(user, T)
 			seating.buckle_mob(user, TRUE, TRUE)
 	else if(user.buckled_mobs)
 		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
 		var/mob/living/buckled_mob
 		for(var/mob/living/I in user.buckled_mobs)
+			if(!check_user(I, TRUE))
+				continue
 			buckled_mob = I
-			I.forceMove(T)
+			Atom_forceMove(I, T)
 		user.unbuckle_all_mobs(TRUE)
-		user.forceMove(T)
-		if(riding_datum_human && ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
-		else
-			user.buckle_mob(buckled_mob, TRUE, TRUE)
+		Atom_forceMove(user, T)
+		if(buckled_mob)
+			if(riding_datum_human && ishuman(user))
+				var/mob/living/carbon/human/H = user
+				H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
+			else
+				user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else
-		user.forceMove(T)
-	if(AM)
-		user.start_pulling(AM)
+		Atom_forceMove(user, T)
+	if(pulledAtom)
+		user.start_pulling(pulledAtom)
+
+/obj/item/hilbertshotel/proc/Atom_forceMove(atom/movable/AM, turf/T)
+	AM.forceMove(T)
+	if(!is_hilbert_hotel_zlevel(AM.z))
+		return
+	if(isliving(AM))
+		var/mob/living/L = AM
+		L.client?.view_size?.zoomIn()
+		L.update_sight(TRUE)
+		RegisterSignal(L, COMSIG_ENTER_AREA, PROC_REF(handler_living_hotel), TRUE)
+
+/obj/item/hilbertshotel/proc/handler_living_hotel(mob/living/L, area/A)
+	SIGNAL_HANDLER
+	if(QDELETED(L))
+		UnregisterSignal(L, COMSIG_ENTER_AREA)
+		return
+	if(is_hilbert_hotel_area(A))
+		return
+	L.update_sight(TRUE)
+	UnregisterSignal(L, COMSIG_ENTER_AREA)
 
 /obj/item/hilbertshotel/proc/getMapTemplate(roomType) // To load a map and remove it's atoms
 	if(roomType == "Mystery Room")
@@ -408,8 +549,19 @@
 	if(!mapTemplate)
 		mapTemplate = SShilbertshotel.hotel_room_template //Default Hotel Room
 
+	if(!room_op_begin(roomNumber, user))
+		return FALSE
 	var/datum/turf_reservation/roomReservation = SSmapping.RequestBlockReservation(mapTemplate.width, mapTemplate.height)
-	mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!roomReservation)
+		room_op_end(roomNumber)
+		to_chat(user, span_warning("Сфера не смогла выделить место для комнаты. Попробуйте ещё раз."))
+		return FALSE
+	// Загрузка спит в CHECK_TICK; результат обязателен - иначе игрок уедет в пустую резервацию
+	var/load_ok = mapTemplate.load(locate(roomReservation.bottom_left_coords[1], roomReservation.bottom_left_coords[2], roomReservation.bottom_left_coords[3]))
+	if(!load_ok || !room_landing_valid(roomReservation, mapTemplate, user))
+		room_op_end(roomNumber)
+		qdel(roomReservation)
+		return FALSE
 	activeRooms["[roomNumber]"] = roomReservation
 
 	// Set the room type for the newly created area
@@ -417,11 +569,14 @@
 	currentArea.roomType = chosen_room // Sets the room type here
 
 	linkTurfs(roomReservation, roomNumber)
+	room_op_end(roomNumber)
 	do_sparks(3, FALSE, get_turf(user))
 	MobTransfer(user, locate(roomReservation.bottom_left_coords[1] + mapTemplate.landingZoneRelativeX, roomReservation.bottom_left_coords[2] + mapTemplate.landingZoneRelativeY, roomReservation.bottom_left_coords[3]))
-	SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
+	if(user.ckey && SShilbertshotel.user_data[user.ckey])
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	if(!mob_dorms[user]?.Find(roomNumber))
 		LAZYADD(mob_dorms[user], roomNumber)
+	return TRUE
 
 /obj/item/hilbertshotel/proc/linkTurfs(var/datum/turf_reservation/currentReservation, var/currentRoomnumber, var/chosen_room)
 	var/area/hilbertshotel/currentArea = get_area(locate(currentReservation.bottom_left_coords[1], currentReservation.bottom_left_coords[2], currentReservation.bottom_left_coords[3]))
@@ -459,9 +614,7 @@
 						var/_y = rand(min,max)
 						var/turf/T = locate(_x, _y, _z)
 						A.forceMove(T)
-			var/area/hilbertshotel/roomArea = get_area(locate(room.bottom_left_coords[1], room.bottom_left_coords[2], room.bottom_left_coords[3]))
-			if(roomArea)
-				roomArea.reservation = null
+			qdel(room)
 	if(storedRooms.len)
 		for(var/x in storedRooms)
 			var/list/atomList = storedRooms[x]
@@ -478,6 +631,10 @@
 				var/_y = rand(min,max)
 				var/turf/T = locate(_x, _y, _z)
 				A.forceMove(T)
+		for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
+			if(S.parentSphere == src)
+				qdel(S)
+		storedRooms.Cut()
 
 //Turfs and Areas
 /turf/closed/indestructible/hotelwall
@@ -491,13 +648,13 @@
 	desc = "Stylish dark wood with extra reinforcement. Secured firmly to the floor to prevent tampering."
 	icon_state = "wood"
 	footstep = FOOTSTEP_WOOD
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/hoteltile
 	desc = "Smooth tile with extra reinforcement. Secured firmly to the floor to prevent tampering."
 	icon_state = "showroomfloor"
 	footstep = FOOTSTEP_FLOOR
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/space/bluespace
 	name = "\proper bluespace hyperzone"
@@ -507,10 +664,17 @@
 	explosion_block = INFINITY
 	var/obj/item/hilbertshotel/parentSphere
 
-/turf/open/space/bluespace/Entered(atom/movable/A)
+/turf/open/space/bluespace/Entered(atom/movable/arrived, atom/old_loc)
 	. = ..()
-	if (parentSphere)
-		A.forceMove(get_turf(parentSphere))
+	if(!parentSphere)
+		return
+	// Exited() исходного турфа успевает утащить или вовсе удалить пришедшего: гиперспейс
+	// сбрасывает предмет в космос, а TRAIT_DEL_ON_SPACE_DUMP - qdel-ит его. Тогда наш
+	// forceMove бил по qdel-нутому (прод-раунд 10150, ящики донк-покетов). Гард ровно
+	// тот же, что стоит у /turf/open/space/Entered и /turf/open/space/transit/Entered.
+	if(QDELETED(arrived) || arrived.loc != src)
+		return
+	arrived.forceMove(get_turf(parentSphere))
 
 /turf/closed/indestructible/hoteldoor
 	name = "Hotel Door"
@@ -640,6 +804,7 @@
 	var/datum/turf_reservation/reservation
 	var/turf/storageTurf
 	var/roomType = "Hotel Room" // SPLURT ADDITION: Default room type
+	var/storing = FALSE
 
 /area/hilbertshotel/illuminated
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
@@ -684,7 +849,7 @@
 			if(L.mind)
 				stillPopulated = TRUE
 				break
-		if(!stillPopulated)
+		if(!stillPopulated && parentSphere?.transfer_target != src)
 			storeRoom()
 
 /area/hilbertshotelstorage
@@ -717,3 +882,4 @@
 
 #undef STATUS_IDLE
 #undef STATUS_ENTERING_ROOM
+#undef HILBERT_ENTERING_STALE_AFTER

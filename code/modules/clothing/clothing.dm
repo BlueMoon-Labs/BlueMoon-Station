@@ -12,7 +12,7 @@
 	var/visor_flags = 0			//flags that are added/removed when an item is adjusted up/down
 	var/visor_flags_inv = 0		//same as visor_flags, but for flags_inv
 	var/visor_flags_cover = 0	//same as above, but for flags_cover
-//what to toggle when toggled with weldingvisortoggle()
+	//what to toggle when toggled with weldingvisortoggle()
 	var/visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT | VISOR_VISIONFLAGS | VISOR_DARKNESSVIEW | VISOR_INVISVIEW
 	lefthand_file = 'icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing_righthand.dmi'
@@ -38,6 +38,9 @@
 	var/list/user_vars_remembered //Auto built by the above + dropped() + equipped()
 
 	var/pocket_storage_component_path
+	/// Adsorbed plasma. Only worn clothing is checked, so contaminated items do
+	/// not need their own processing loop.
+	var/plasma_contamination = 0
 
 	//These allow head/mask items to dynamically alter the user's hair
 	// and facial hair, checking hair_extensions.dmi and facialhair_extensions.dmi
@@ -63,6 +66,25 @@
 	var/list/armor_list = list()
 	///These are armor values that protect the clothing, taken from its armor datum. List updates on examine because it's currently only used to print armor ratings to chat in Topic().
 	var/list/durability_list = list()
+	// This variable tells if this item has been reinforced with an armor kit. Stops procs that affect slot_flags from working.
+	var/reinforced = FALSE
+	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
+	var/obj/item/clothing/reinforcement_path
+	// Наборы брони присваивают защитные переменные с прототипа, а не сливают их.
+	// Для одежды, чья защита собирается снаружи (части МОДа), это стирает
+	// герметичность и холодозащиту без шанса восстановить - такие вещи отписываются.
+	var/can_be_reinforced = TRUE
+	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
+	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
+	var/keep_genitals_below = TRUE
+
+
+	var/max_accessories = 7 // BLUEMOON EDIT - расширено возможное количество аксессуаров с 3 до 7
+	var/max_restricted_accessories = 3 // BLUEMOON ADD - максимальное количество особых (боевых) аксессуаров
+	var/list/obj/item/clothing/accessory/accessories_attached = list()
+	// Отдельно 2 типа оверлея: один применяется на одежду, второй - на спрайт моба. Хранить нужно оба и отдельно.
+	var/list/mutable_appearance/accessory_item_overlays = list()
+	var/list/mutable_appearance/accessory_mob_overlays = list()
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()
@@ -70,6 +92,11 @@
 		actions_types += /datum/action/item_action/toggle_voice_box
 	if(ispath(pocket_storage_component_path))
 		LoadComponent(pocket_storage_component_path)
+
+/obj/item/clothing/worn_overlays(isinhands, icon_file, used_state, style_flags)
+	. = ..()
+	if(length(accessory_mob_overlays))
+		. += accessory_mob_overlays
 
 /obj/item/clothing/MouseDrop(atom/over_object)
 	. = ..()
@@ -105,6 +132,15 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 */
 
 /obj/item/clothing/attackby(obj/item/W, mob/user, params)
+	if(W.sharpness >= SHARP_EDGED && user.a_intent == INTENT_HARM) //осколок стекла, ножик, когти, только в харме
+		if(damaged_clothes == CLOTHING_SHREDDED)
+			return FALSE
+		if(do_after(user, 5 SECONDS, user))
+			take_damage(max_integrity, BRUTE, sound_effect = FALSE)
+			return CLOTHING_DAMAGED
+		else
+			return FALSE
+
 	if(damaged_clothes && istype(W, repairable_by))
 		if(current_equipped_slot && (current_equipped_slot in user.check_obscured_slots()))
 			to_chat(user, "<span class='warning'>You are unable to repair [src] while wearing other garments over it!</span>")
@@ -132,8 +168,16 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	name = initial(name) // remove "tattered" or "shredded" if there's a prefix
 	if(upgrade_prefix)
 		name = upgrade_prefix + " " + initial(name)
-	body_parts_covered = initial(body_parts_covered)
-	slot_flags = initial(slot_flags)
+
+	if(reinforced && ispath(reinforcement_path, /obj/item/clothing))
+		slot_flags = initial(reinforcement_path.slot_flags)
+		body_parts_covered = initial(reinforcement_path.body_parts_covered)
+	else
+		reinforced = FALSE
+		reinforcement_path = null
+		slot_flags = initial(slot_flags)
+		body_parts_covered = initial(body_parts_covered)
+
 	damage_by_parts = null
 	if(user)
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
@@ -188,7 +232,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	if(iscarbon(loc))
 		var/mob/living/carbon/C = loc
 		C.visible_message("<span class='danger'>The [zone_name] on [C]'s [src.name] is [break_verb] away!</span>", "<span class='userdanger'>The [zone_name] on your [src.name] is [break_verb] away!</span>", vision_distance = COMBAT_MESSAGE_RANGE)
-		RegisterSignal(C, COMSIG_MOVABLE_MOVED, PROC_REF(bristle))
+		RegisterSignal(C, COMSIG_MOVABLE_MOVED, PROC_REF(bristle), TRUE)
 
 	zones_disabled++
 	for(var/i in zone2body_parts_covered(def_zone))
@@ -210,6 +254,9 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	update_clothes_damaged_state(CLOTHING_DAMAGED)
 
 /obj/item/clothing/Destroy()
+	QDEL_LIST(accessories_attached)
+	QDEL_LIST(accessory_item_overlays)
+	QDEL_LIST(accessory_mob_overlays)
 	user_vars_remembered = null //Oh god somebody put REFERENCES in here? not to worry, we'll clean it up
 	return ..()
 
@@ -229,9 +276,13 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	..()
 	if (!istype(user))
 		return
+	// Wearing pre-contaminated gear must re-arm the wearer's cheap Life gate.
+	if(plasma_contamination >= 1 && ishuman(user))
+		var/mob/living/carbon/human/wearer = user
+		wearer.plasma_gear_dirty = TRUE
 	if(slot_flags & slot) //Was equipped to a valid slot for this item?
 		if(iscarbon(user) && LAZYLEN(zones_disabled))
-			RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(bristle))
+			RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(bristle), TRUE)
 		if(LAZYLEN(user_vars_to_edit))
 			for(var/variable in user_vars_to_edit)
 				if(variable in user.vars)
@@ -240,6 +291,8 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/examine(mob/user)
 	. = ..()
+	if(plasma_contamination >= 1)
+		. += "<span class='warning'>Резко пахнет плазмой. Стиральная машина может обеззаразить.</span>"
 	if(damaged_clothes == CLOTHING_SHREDDED)
 		. += "<span class='warning'><b>Эта вещь больше походит на лохмотья и требует ремонта!</b></span>"
 		return
@@ -258,7 +311,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 		var/how_cool_are_your_threads = "Открывается [pockets.attack_hand_interact ? "кликом" : "при перетягивании на себя"] и может хранить до \
 									[pockets.max_items] шт. предметов [weight_class_to_text(pockets.max_w_class)] размера или меньше.\
 									[pockets.silent ? " Взятие или добавление предметов бесшумно" : ""]"
-		var/tooltip_to_show = "<span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[how_cool_are_your_threads]</span></span>"
+		var/tooltip_to_show = span_tooltip_fast(how_cool_are_your_threads)
 		. += span_notice("[gender == PLURAL ? "Могут" : "Может"] хранить предметы [tooltip_to_show]. [pockets.quickdraw ? "Вы можете быстро извлечь предмет с помощью Alt-Click." : ""]")
 
 	if(armor)
@@ -290,6 +343,14 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 	if(LAZYLEN(armor_list) || LAZYLEN(durability_list))
 		. += "<span class='notice'>Видно <a href='?src=[REF(src)];list_armor=1'>бирку</a> со списком классов защиты.</span>"
+
+/// Adds contamination in proportion to fabric permeability. Properly sealed
+/// gear remains useful protection and never becomes a hidden poison source.
+/obj/item/clothing/proc/absorb_plasma(partial_pressure)
+	if(partial_pressure < PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE || permeability_coefficient <= PLASMA_CLOTHING_SEALED_PERMEABILITY)
+		return
+	var/exposure = (partial_pressure - PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE) * 0.01 * clamp(permeability_coefficient, 0, 1)
+	plasma_contamination = min(PLASMA_CLOTHING_MAX_CONTAMINATION, plasma_contamination + exposure)
 
 /obj/item/clothing/Topic(href, href_list)
 	. = ..()
@@ -416,6 +477,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/obj_break(damage_flag)
 	damaged_clothes = CLOTHING_DAMAGED
+	playsound(src, 'sound/misc/tear_apart.ogg', 30, 1) //это не круто, когда одежда рвётся без звука.
 	update_clothes_damaged_state()
 	if(ismob(loc)) //It's not important enough to warrant a message if nobody's wearing it
 		var/mob/M = loc
@@ -451,17 +513,25 @@ BLIND     // can't see anything
 */
 
 /proc/generate_alpha_masked_clothing(index,state,icon,female,alpha_masks)
-	var/icon/I = icon(icon, state)
-	if(female)
-		var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
-		I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
-	if(alpha_masks)
-		if(istext(alpha_masks))
-			alpha_masks = list(alpha_masks)
-		for(var/alpha_state in alpha_masks)
-			var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
-			I.Blend(alpha, ICON_MULTIPLY, -15, -15)
-	. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	// Каждая надетая шмотка с маской строит иконку через icon()+Blend, и на этом умер
+	// раунд 10086 (23.08): рантайм в /icon/New() посреди экипировки аутфита, после
+	// которого мир не написал больше ни строки. См. code/__HELPERS/icon_alloc_guard.dm.
+	// Пустышка в кэш не пишется: отказ аллокации - состояние минуты, а запомненная
+	// пустая иконка оставила бы всех в этой одежде голыми до конца раунда.
+	try
+		var/icon/I = icon(icon, state)
+		if(female)
+			var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
+			I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
+		if(alpha_masks)
+			if(istext(alpha_masks))
+				alpha_masks = list(alpha_masks)
+			for(var/alpha_state in alpha_masks)
+				var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
+				I.Blend(alpha, ICON_MULTIPLY, -15, -15)
+		. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	catch(var/exception/icon_error)
+		return note_icon_alloc_failure("одежда с альфа-маской [index]", icon_error)
 
 /obj/item/clothing/proc/weldingvisortoggle(mob/user) //proc to toggle welding visors on helmets, masks, goggles, etc.
 	if(!can_use(user))
@@ -569,5 +639,21 @@ BLIND     // can't see anything
 /obj/item/clothing/proc/attack_reaction(mob/living/L, reaction_type, mob/living/carbon/human/T = null)
 	return
 
-/obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
-	return
+/obj/item/clothing/proc/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	return FALSE
+
+/obj/item/clothing/proc/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	return FALSE
+
+/obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to)
+	if(!ispath(reinforced_to, /obj/item/clothing))
+		return FALSE
+	if(ishuman(src.loc))
+		var/mob/living/carbon/human/H = src.loc
+		if(!(src.current_equipped_slot & kit_flag))
+			H.dropItemToGround(src, force=TRUE)	// Armorkit's afterattack proc handles this scenario, but i'll add a second line of defence just in case
+	src.slot_flags = kit_flag	// Locks reinforced item to specified kit's slot
+	reinforced = TRUE	// Prevents procedures that change slot_flags from working on reinforced item
+	reinforcement_path = reinforced_to
+	return TRUE
+

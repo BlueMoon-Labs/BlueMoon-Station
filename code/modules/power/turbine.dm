@@ -41,8 +41,22 @@
 	var/comp_id = 0
 	var/efficiency
 
+// Компрессор и турбина стоят в стене камеры сгорания - это единственный проём
+// между печью и машинным залом. Газ через них не идёт (ATMOS_PASS_DENSITY), но
+// суперпроводимость видела эту пару турфов как "окно" и тащила температуру
+// печи наружу коэффициентом 0.1: зал грелся до срабатывания пожарки, хотя
+// камера физически закрыта. У tg те же ступени турбины блокируют кондукцию
+// (block_superconductivity), у нас порт этого куска потерялся.
+/obj/machinery/power/compressor/BlockThermalConductivity()
+	return density
+
 /obj/machinery/power/compressor/Destroy()
 	QDEL_NULL(gas_contained)
+	// Соседство считается по содержимому турфа, поэтому снятая ступень обязана
+	// сама попросить пересчёт - иначе печать "здесь газ и тепло не проходят"
+	// переживёт саму машину.
+	density = FALSE
+	air_update_turf(TRUE)
 	if(turbine && turbine.compressor == src)
 		turbine.compressor = null
 	turbine = null
@@ -63,10 +77,15 @@
 	var/lastgen
 	var/productivity = 1
 
+/obj/machinery/power/turbine/BlockThermalConductivity()
+	return density
+
 /obj/machinery/power/turbine/Destroy()
 	if(compressor && compressor.turbine == src)
 		compressor.turbine = null
 	compressor = null
+	density = FALSE
+	air_update_turf(TRUE)
 	return ..()
 
 // the inlet stage of the gas turbine electricity generator
@@ -79,6 +98,10 @@
 	locate_machinery()
 	if(!turbine)
 		obj_break()
+	// До SSair.Initialize это no-op (карта считает соседство сама), а собранной
+	// на месте ступени пересчёт нужен: без него турф не узнает, что проём
+	// закрылся, ни по газу, ни по теплу.
+	air_update_turf(TRUE)
 
 #define COMPFRICTION 5e5
 
@@ -88,7 +111,7 @@
 	turbine = locate() in get_step(src, get_dir(inturf, src))
 	if(turbine)
 		turbine.locate_machinery()
-		machine_stat &= ~BROKEN
+		set_machine_stat(machine_stat & ~BROKEN)
 
 /obj/machinery/power/compressor/RefreshParts()
 	var/E = 0
@@ -111,7 +134,7 @@
 		locate_machinery()
 		if(turbine)
 			to_chat(user, "<span class='notice'>Turbine connected.</span>")
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 		else
 			to_chat(user, "<span class='alert'>Turbine not connected.</span>")
 			obj_break()
@@ -172,6 +195,7 @@
 	if(!compressor)
 		obj_break()
 	connect_to_network()
+	air_update_turf(TRUE)
 
 /obj/machinery/power/turbine/RefreshParts()
 	var/P = 0
@@ -190,12 +214,12 @@
 	compressor = locate() in get_step(src, get_dir(outturf, src))
 	if(compressor)
 		compressor.locate_machinery()
-		machine_stat &= ~BROKEN
+		set_machine_stat(machine_stat & ~BROKEN)
 
 /obj/machinery/power/turbine/process()
 
 	if(!compressor)
-		machine_stat = BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 
 	if((machine_stat & BROKEN) || panel_open)
 		return
@@ -238,7 +262,7 @@
 		locate_machinery()
 		if(compressor)
 			to_chat(user, "<span class='notice'>Compressor connected.</span>")
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 		else
 			to_chat(user, "<span class='alert'>Compressor not connected.</span>")
 			obj_break()

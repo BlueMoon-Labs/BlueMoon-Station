@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, ProgressBar, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -15,9 +17,9 @@ const PASSIVE_INFO = {
   chonker: { emoji: '🐄', label: 'Толстяк' },
 };
 
-export const ArcadeBattle = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [showIntro, setShowIntro] = useLocalState(context, 'showIntro', true);
+export const ArcadeBattle = (props) => {
+  const { act, data } = useBackend();
+  const [showIntro, setShowIntro] = useState(true);
 
   const {
     enemy_name = 'Space Villain',

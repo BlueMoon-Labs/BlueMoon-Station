@@ -11,7 +11,7 @@
 //     but overall network volume is also increased as this increases...
 
 /obj/machinery/atmospherics/components/binary/volume_pump
-	icon_state = "volpump_map-2"
+	icon_state = "volpump_map-3"
 	name = "volumetric gas pump"
 	desc = "A pump that moves gas by volume."
 
@@ -35,6 +35,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/CtrlClick(mob/user)
 	if(user.canUseTopic(src, BE_CLOSE, FALSE,))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 		return ..()
@@ -42,6 +43,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/AltClick(mob/user)
 	if(can_interact(user))
 		transfer_rate = MAX_TRANSFER_RATE
+		atmos_wake()
 		investigate_log("was set to [transfer_rate] L/s by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "volume output set to [transfer_rate] L/s")
 		update_appearance()
@@ -52,11 +54,15 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/binary/volume_pump/update_icon_nopipes()
-	icon_state = on && is_operational() ? "volpump_on" : "volpump_off"
+	icon_state = on && is_operational ? "volpump_on" : "volpump_off"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/process_atmos()
 //	..()
-	if(!on || !is_operational())
+	if(atmos_idle_until > world.time)
+		return
+	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
@@ -67,14 +73,25 @@
 	var/input_starting_pressure = air1.return_pressure()
 	var/output_starting_pressure = air2.return_pressure()
 
-	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
+	if((input_starting_pressure < 0.01) || (output_starting_pressure > VOLUME_PUMP_PRESSURE_CEILING))
+		// Woken by the pipenet pressure-jump broadcast.
+		atmos_consider_idle()
 		return
 
-	var/transfer_ratio = transfer_rate/air1.return_volume()
+	var/input_volume = air1.return_volume()
+	if(input_volume <= 0)
+		atmos_consider_idle()
+		return
 
-	air1.transfer_ratio_to(air2,transfer_ratio)
+	var/transfer_ratio = transfer_rate/input_volume
 
-	update_parents()
+	if(air1.transfer_ratio_to(air2, transfer_ratio))
+		atmos_idle_streak = 0
+		update_parents()
+	else
+		// Zero transfer rate (or nothing actually moved): a no-op must not keep
+		// the pump awake and dirty the pipenet every fire. Woken by UI/signals.
+		atmos_consider_idle()
 
 /obj/machinery/atmospherics/components/binary/volume_pump/proc/set_frequency(new_frequency)
 	SSradio.remove_object(src, frequency)
@@ -106,6 +123,10 @@
 	data["on"] = on
 	data["rate"] = round(transfer_rate)
 	data["max_rate"] = round(MAX_TRANSFER_RATE)
+	// Уставка тут в л/с. Панели нужно текущее давление выхода: без него игрок
+	// не видит, докуда насос уже додавил линию.
+	data["line_pressure"] = output_line_pressure()
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/volume_pump/atmosinit()
@@ -116,6 +137,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/ui_act(action, params)
 	if(..())
 		return
+	atmos_wake()
 	var/turf/T = get_turf(src)
 	var/area/A = get_area(src)
 	switch(action)
@@ -145,6 +167,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	var/old_on = on //for logging
 
 	if("power" in signal.data)
@@ -174,7 +199,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/can_unwrench(mob/user)
 	. = ..()
 	var/area/A = get_area(src)
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 	else
@@ -188,9 +213,17 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/on
 	on = TRUE
@@ -200,6 +233,14 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/on/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"

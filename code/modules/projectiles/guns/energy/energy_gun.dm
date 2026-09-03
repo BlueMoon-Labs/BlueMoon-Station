@@ -145,7 +145,7 @@
 				if(M)
 					to_chat(M, "<span class='userdanger'>Your [name] feels warmer.</span>")
 			if(201 to INFINITY)
-				SSobj.processing.Remove(src)
+				STOP_PROCESSING(SSobj, src)
 				radiation_pulse(src, 200)
 				crit_fail = TRUE
 				var/mob/M = (ismob(loc) && loc) || (ismob(loc.loc) && loc.loc)

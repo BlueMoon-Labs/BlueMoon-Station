@@ -3,8 +3,9 @@
 /datum/round_event_control/ion_storm
 	name = "Ion Storm"
 	typepath = /datum/round_event/ion_storm
-	weight = 65
-	min_players = 2
+	weight = 25
+	max_occurrences = 3 // дефолтные 20 запусков переписывали законы ИИ по несколько раз за длинный раунд
+	min_players = 15
 	category = EVENT_CATEGORY_AI
 	description = "Gives the AI a new, randomized law."
 
@@ -28,7 +29,7 @@
 
 /datum/round_event/ion_storm/announce(fake)
 	if(announceEvent == ION_ANNOUNCE || (announceEvent == ION_RANDOM && prob(announce_chance)) || fake)
-		priority_announce("Вблизи станции обнаружен ионный шторм. Пожалуйста, проверьте все контролируемое ИИ оборудование на наличие ошибок.", "ВНИМАНИЕ: АНОМАЛИЯ", "ionstorm", has_important_message = prob(80))
+		priority_announce("Вблизи станции обнаружен ионный шторм. Пожалуйста, проверьте все контролируемое ИИ оборудование на наличие ошибок.", "ВНИМАНИЕ: АНОМАЛИЯ", "ionstorm", type = "ionstorm", has_important_message = prob(80))
 
 
 /datum/round_event/ion_storm/start()
@@ -90,7 +91,6 @@
 	safe_z_levels |= SSmapping.levels_by_trait(ZTRAIT_VR)
 	safe_z_levels |= SSmapping.levels_by_trait(ZTRAIT_VIRTUAL_REALITY)
 	safe_z_levels |= SSmapping.levels_by_trait(ZTRAITS_LAVALAND)
-	// Делаем больно синтетикам с уязвимостью к ЭМИ
 	for(var/i in GLOB.human_list)
 		var/mob/living/carbon/human/H = i
 		if(!istype(H) || QDELETED(H))
@@ -101,13 +101,14 @@
 			var/protection = SEND_SIGNAL(H, COMSIG_ATOM_EMP_ACT, 1)
 			if(protection & EMP_PROTECT_CONTENTS)
 				continue
-			H.visible_message(span_warning("[H] вздрагивает, когда сквозь [H.ru_ego()] корпус проходит электромагнитный импульс."), span_boldwarning("Электромагнитная буря задела вас! Ауч!"))
-			H.apply_damage(20, BURN)
-			H.adjustToxLoss(20, toxins_type = TOX_SYSCORRUPT)
-			H.Jitter(20)
-			H.Confused(20)
-			H.Stun(5)
-			H.Dizzy(15)
+			H.visible_message(span_warning("[H] вздрагивает, когда сквозь [H.ru_ego()] корпус проходит электромагнитный импульс."), span_boldwarning("Электромагнитная буря сбивает ваши сенсоры! Системы визуализации сбоят..."))
+			H.error_handler(CORRUPTION_ERROR_CRITICAL)
+			H.blur_eyes(30)
+			H.overlay_fullscreen("ion_storm_static", /atom/movable/screen/fullscreen/tiled/flash/static)
+			H.clear_fullscreen("ion_storm_static", 8)
+			H.Jitter(15)
+			H.Dizzy(10)
+			SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "ion_storm", /datum/mood_event/ion_storm)
 
 
 /proc/generate_ion_law(ionMessage)

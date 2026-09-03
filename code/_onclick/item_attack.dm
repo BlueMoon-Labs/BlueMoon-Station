@@ -77,7 +77,7 @@
   * * damage_multiplier - what to multiply the damage by
   */
 /obj/item/proc/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK, M, user) & COMPONENT_ITEM_NO_ATTACK)
+	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK, M, user, damage_multiplier) & COMPONENT_ITEM_NO_ATTACK)
 		return
 	SEND_SIGNAL(user, COMSIG_MOB_ITEM_ATTACK, M, user)
 	if(item_flags & NOBLUDGEON)
@@ -127,13 +127,16 @@
 	user.do_attack_animation(O)
 	O.attacked_by(src, user)
 	if(force >= 20)
-		shake_camera(user, ((force - 15) * 0.01 + 1), ((force - 15) * 0.01))
+		shake_camera(user, (min(0.75, (force - 15) * 0.01) + 1), (min(0.75, (force - 15) * 0.01)))
+
+/obj/item/proc/get_damage_to_obj(obj/O, mob/living/user)
+	return force
 
 /atom/movable/proc/attacked_by()
 	return
 
 /obj/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	var/totitemdamage = I.force * damage_multiplier
+	var/totitemdamage = I.get_damage_to_obj(src, user) * damage_multiplier
 
 	if(I.used_skills && user.mind)
 		if(totitemdamage)
@@ -161,12 +164,7 @@
 	if(I.force)
 		apply_damage(totitemdamage, I.damtype)
 		if(I.damtype == BRUTE)
-			if(prob(33))
-				I.add_mob_blood(src)
-				var/turf/location = get_turf(src)
-				add_splatter_floor(location)
-				if(totitemdamage >= 10 && get_dist(user, src) <= 1)	//people with TK won't get smeared with blood
-					user.add_mob_blood(src)
+			attack_effects(totitemdamage, null, I, user)
 		return TRUE //successful attack
 
 /mob/living/simple_animal/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)

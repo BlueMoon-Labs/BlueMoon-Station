@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/phazon
-	desc = "This is a Phazon exosuit. The pinnacle of scientific research and pride of Nanotrasen, it uses cutting edge bluespace technology and expensive materials."
+	desc = "Это экзокостюм Phazon. Венец научных исследований и гордость Nanotrasen, использует передовую блюспейс-технологию и дорогие материалы."
 	name = "\improper Phazon"
 	icon_state = "phazon"
 	movedelay = 2

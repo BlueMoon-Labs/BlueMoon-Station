@@ -4,6 +4,8 @@
 	var/fall_message = "GAH! Ah... where are you?"
 	var/oblivion_message = "You stumble and stare into the abyss before you. It stares back, and you fall into the enveloping dark."
 
+	/// Кто сейчас падает. Список static, то есть живёт весь раунд на всю карту:
+	/// любой выход из drop() мимо снятия ключа оставляет здесь вечную ссылку.
 	var/static/list/falling_atoms = list() // Atoms currently falling into chasms
 	var/static/list/forbidden_types = typecacheof(list(
 		/obj/singularity,
@@ -79,6 +81,13 @@
 			return FALSE
 	return TRUE
 
+/// Снимает атом с учёта падения. Отдельным проком, потому что звать это надо из
+/// каждого выхода drop(), включая ранние return'ы после sleep.
+/datum/component/chasm/proc/stop_falling(atom/movable/AM)
+	if(!AM)
+		return
+	falling_atoms -= AM
+
 /datum/component/chasm/proc/drop(atom/movable/AM)
 	//Make sure the item is still there after our sleep
 	if(!AM || QDELETED(AM) || SEND_SIGNAL(AM, COMSIG_MOVABLE_CHASM_DROP, src))
@@ -113,13 +122,18 @@
 		animate(AM, transform = matrix() - matrix(), alpha = 0, color = rgb(0, 0, 0), time = 10)
 		for(var/i in 1 to 5)
 			//Make sure the item is still there after our sleep
+			//Пропажу обязательно снимаем с учёта: секунда анимации падения - ровно то
+			//окно, в котором труп тендрила успевают удалить со стороны, и тогда ключ
+			//в falling_atoms остаётся единственной ссылкой на него до конца раунда.
 			if(!AM || QDELETED(AM))
+				stop_falling(AM)
 				return
 			AM.pixel_y--
 			sleep(2)
 
 		//Make sure the item is still there after our sleep
 		if(!AM || QDELETED(AM))
+			stop_falling(AM)
 			return
 
 		if(iscyborg(AM))

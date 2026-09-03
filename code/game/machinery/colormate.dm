@@ -2,6 +2,17 @@
 #define COLORMATE_HSV 2
 #define COLORMATE_MATRIX 3
 
+/// color_presets_* are nested: list(item_type = list(preset_name = value)). The
+/// inner keys are user-entered preset names, so clean control characters out of
+/// them on load - otherwise a control-character name makes a preset permanently
+/// unselectable and undeletable through the UI. Mirrors sanitize_custom_emote_panel.
+/proc/sanitize_color_preset_keys(list/presets)
+	if(!islist(presets))
+		return list()
+	for(var/item_type in presets)
+		presets[item_type] = sanitize_assoc_keys(presets[item_type])
+	return presets
+
 /obj/machinery/gear_painter
 	name = "\improper Color Mate"
 	desc = "A machine to give your apparel a fresh new color!"
@@ -35,10 +46,20 @@
 	var/list/allowed_types = list(
 			/obj/item/clothing,
 			/obj/item/storage/backpack,
-			/obj/item/storage/belt
+			/obj/item/storage/belt,
+			/obj/item/storage/wallet,
 			)
 	/// Temporary messages
 	var/temp_message = ""
+	/// Кэш кадров для tgui и подписи входов, по которым они собраны. Окно Color Mate
+	/// автообновляется, и раньше каждый ui_data снимал два getFlatIcon с предмета и
+	/// дважды гонял icon2base64 (запись в savefile) - по 100-200 мс на каждый тик
+	/// открытого окна. Кадр предмета зависит только от предмета и его цвета; кадр
+	/// превью - ещё и от режима с его параметрами.
+	var/sprite_cache_base64
+	var/sprite_cache_signature
+	var/preview_cache_base64
+	var/preview_cache_signature
 
 /obj/machinery/gear_painter/update_icon_state()
 	if(panel_open)
@@ -167,8 +188,8 @@
 
 	.["item"] = list(
 		"name" = inserted.name,
-		"sprite" = icon2base64(getFlatIcon(inserted, defdir = SOUTH, no_anim = TRUE)),
-		"preview" = icon2base64(build_preview()),
+		"sprite" = get_sprite_base64(),
+		"preview" = get_preview_base64(),
 	)
 
 	var/datum/preferences/prefs = user?.client?.prefs
@@ -227,7 +248,7 @@
 				return
 
 			var/datum/preferences/prefs = user.client.prefs
-			var/preset_name = params["name"]
+			var/preset_name = strip_control_chars(params["name"])
 
 			// Сопоставляем режим (имя поля в prefs, лист пресетов для inserted.type)
 			var/presets_field
@@ -324,6 +345,42 @@
 	playsound(src, 'sound/effects/spray3.ogg', 50, 1)
 	return TRUE
 
+
+/// Подпись предмета для кэша кадров: сам предмет и его текущий цвет (строка или матрица).
+/obj/machinery/gear_painter/proc/get_item_signature()
+	var/color_text = islist(inserted.color) ? jointext(inserted.color, ",") : "[inserted.color]"
+	return "[REF(inserted)]|[color_text]"
+
+/// Подпись превью: предмет плюс параметры АКТИВНОГО режима. color_matrix_last в
+/// HSV-режиме выводится из hue/sat/val прямо внутри build_preview, поэтому в подпись
+/// идут исходные ползунки, а не производная матрица - иначе первый кадр после смены
+/// ползунка собирался бы дважды.
+/obj/machinery/gear_painter/proc/get_preview_signature()
+	var/mode_text
+	switch(active_mode)
+		if(COLORMATE_TINT)
+			mode_text = activecolor
+		if(COLORMATE_HSV)
+			mode_text = "[build_hue],[build_sat],[build_val]"
+		if(COLORMATE_MATRIX)
+			mode_text = jointext(color_matrix_last, ",")
+	return "[get_item_signature()]|[active_mode]|[mode_text]"
+
+/obj/machinery/gear_painter/proc/get_sprite_base64()
+	var/signature = get_item_signature()
+	if(!isnull(sprite_cache_signature) && sprite_cache_signature == signature)
+		return sprite_cache_base64
+	sprite_cache_base64 = icon2base64(getFlatIcon(inserted, defdir = SOUTH, no_anim = TRUE))
+	sprite_cache_signature = signature
+	return sprite_cache_base64
+
+/obj/machinery/gear_painter/proc/get_preview_base64()
+	var/signature = get_preview_signature()
+	if(!isnull(preview_cache_signature) && preview_cache_signature == signature)
+		return preview_cache_base64
+	preview_cache_base64 = icon2base64(build_preview())
+	preview_cache_signature = signature
+	return preview_cache_base64
 
 /// Produces the preview image of the item, used in the UI, the way the color is not stacking is a sin.
 /obj/machinery/gear_painter/proc/build_preview()

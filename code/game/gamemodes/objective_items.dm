@@ -14,6 +14,10 @@
 /datum/objective_item/proc/TargetExists()
 	return TRUE
 
+/// Вызывается непосредственно во время выдачи цели
+/datum/objective_item/proc/ExtraCheck()
+	return TRUE
+
 /datum/objective_item/steal/New()
 	..()
 	if(TargetExists())
@@ -31,59 +35,110 @@
 	difficulty = 8
 	excludefromjob = list("Captain")
 
+/datum/objective_item/steal/traitor/fireaxe
+	name = "пожарный топор."
+	targetitem = /obj/item/fireaxe
+	difficulty = 3
+	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician", "Captain", "Head of Personnel", "Head Of Security", "Quartermaster", "Research Director", "Chief Medical Officer")
+
+/datum/objective_item/steal/traitor/nullrod
+	name = "жезл священника."
+	targetitem = /obj/item/nullrod
+	difficulty = 2
+	excludefromjob = list("Chaplain")
+
+/datum/objective_item/steal/traitor/clown_shoes
+	name = "туфли клоуна."
+	targetitem = /obj/item/clothing/shoes/clown_shoes
+	difficulty = 1
+	excludefromjob = list("Clown", "Cargo Technician", "Quartermaster")
+
+/datum/objective_item/steal/traitor/mime_mask
+	name = "маску мима."
+	targetitem = /obj/item/clothing/mask/gas/mime
+	difficulty = 1
+	excludefromjob = list("Mime", "Cargo Technician", "Quartermaster")
+
+/datum/objective_item/steal/traitor/telebaton
+	name = "телескопическую дубинку главы отдела."
+	targetitem = /obj/item/melee/classic_baton/telescopic
+	difficulty = 3
+	excludefromjob = list("Captain", "Head of Personnel", "Head Of Security", "Chief Engineer", "Chief Medical Officer", "Quartermaster", "Research Director")
+
+/datum/objective_item/steal/traitor/telebaton/check_special_completion(obj/item/thing)
+	return !istype(thing, /obj/item/melee/classic_baton/telescopic/contractor_baton)
+
+/datum/objective_item/steal/traitor/bartender_shotgun
+	name = "двуствольное ружьё бармена."
+	targetitem = /obj/item/gun/ballistic/shotgun/doublebarrel
+	difficulty = 2
+	excludefromjob = list("Bartender")
+
+/datum/objective_item/steal/traitor/det_revolver
+	name = "револьвер детектива."
+	targetitem = /obj/item/gun/ballistic/revolver/detective
+	difficulty = 3
+	excludefromjob = list("Detective")
+
+/datum/objective_item/steal/traitor/chief_engineer_belt
+	name = "пояс главного инженера."
+	targetitem = /obj/item/storage/belt/utility/chief
+	difficulty = 2
+	excludefromjob = list("Chief Engineer")
+
 /datum/objective_item/steal/rubberducky
 	name = "Уточку Капитана."
 	targetitem = /obj/item/bikehorn/rubberducky/captain
 	difficulty = 10
 	excludefromjob = list("Captain")
 
-/datum/objective_item/steal/zippo_cap
-	name = "Зажигалку Капитана."
-	targetitem = /obj/item/lighter/cap
-	difficulty = 10
-	excludefromjob = list("Captain")
+// /datum/objective_item/steal/zippo_cap
+// 	name = "Зажигалку Капитана."
+// 	targetitem = /obj/item/lighter/cap
+// 	difficulty = 10
+// 	excludefromjob = list("Captain")
 
-/datum/objective_item/steal/zippo_hop
-	name = "Зажигалку ГП."
-	targetitem = /obj/item/lighter/hop
-	difficulty = 6
-	excludefromjob = list("Head of Personnel")
+// /datum/objective_item/steal/zippo_hop
+// 	name = "Зажигалку ГП."
+// 	targetitem = /obj/item/lighter/hop
+// 	difficulty = 6
+// 	excludefromjob = list("Head of Personnel")
 
-/datum/objective_item/steal/zippo_hos
-	name = "Зажигалку ГСБ."
-	targetitem = /obj/item/lighter/hos
-	difficulty = 10
-	excludefromjob = list("Head Of Security")
+// /datum/objective_item/steal/zippo_hos
+// 	name = "Зажигалку ГСБ."
+// 	targetitem = /obj/item/lighter/hos
+// 	difficulty = 10
+// 	excludefromjob = list("Head Of Security")
 
-/datum/objective_item/steal/zippo_nt_rep
-	name = "Зажигалку Представителя ПАКТа."
-	targetitem = /obj/item/lighter/nt_rep
-	difficulty = 10
-	excludefromjob = list("NanoTrasen Representative")
+// /datum/objective_item/steal/zippo_nt_rep
+// 	name = "Зажигалку Представителя ПАКТа."
+// 	targetitem = /obj/item/lighter/nt_rep
+// 	difficulty = 10
+// 	excludefromjob = list("NanoTrasen Representative")
 
-/datum/objective_item/steal/zippo_cmo
-	name = "Зажигалку Старшего Медицинского Офицера."
-	targetitem = /obj/item/lighter/cmo
-	difficulty = 5
-	excludefromjob = list("Chief Medical Officer")
+// /datum/objective_item/steal/zippo_cmo
+// 	name = "Зажигалку Старшего Медицинского Офицера."
+// 	targetitem = /obj/item/lighter/cmo
+// 	difficulty = 5
+// 	excludefromjob = list("Chief Medical Officer")
 
-/datum/objective_item/steal/zippo_ce
-	name = "Зажигалку Старшего Инженера."
-	targetitem = /obj/item/lighter/ce
-	difficulty = 5
-	excludefromjob = list("Chief Engineer")
+// /datum/objective_item/steal/zippo_ce
+// 	name = "Зажигалку Старшего Инженера."
+// 	targetitem = /obj/item/lighter/ce
+// 	difficulty = 5
+// 	excludefromjob = list("Chief Engineer")
 
-/datum/objective_item/steal/zippo_rd
-	name = "Зажигалку Научного Руководителя."
-	targetitem = /obj/item/lighter/ce
-	difficulty = 5
-	excludefromjob = list("Research Director")
+// /datum/objective_item/steal/zippo_rd
+// 	name = "Зажигалку Научного Руководителя."
+// 	targetitem = /obj/item/lighter/ce
+// 	difficulty = 5
+// 	excludefromjob = list("Research Director")
 
-/datum/objective_item/steal/zippo_qm
-	name = "Зажигалку Завхоза."
-	targetitem = /obj/item/lighter/qm_engraved
-	difficulty = 2
-	excludefromjob = list("Quartermaster")
+// /datum/objective_item/steal/zippo_qm
+// 	name = "Зажигалку Завхоза."
+// 	targetitem = /obj/item/lighter/qm_engraved
+// 	difficulty = 2
+// 	excludefromjob = list("Quartermaster")
 
 /datum/objective_item/steal/hoslaser
 	name = "личное вооружение Синего Щита или Главы Службы Безопасности."
@@ -125,7 +180,7 @@
 /datum/objective_item/steal/nukedisc
 	name = "Диск Ядерной Аутентификации."
 	targetitem = /obj/item/disk/nuclear
-	difficulty = 5
+	difficulty = 10
 	excludefromjob = list("Captain")
 
 /datum/objective_item/steal/nukedisc/check_special_completion(obj/item/disk/nuclear/N)
@@ -237,6 +292,30 @@
 	if(E.Uses > 0)
 		return TRUE
 	return FALSE
+
+/datum/objective_item/steal/captain_panties
+	name = "ношенные трусы Капитана"
+	targetitem = /obj/item/clothing/underwear/briefs
+	difficulty = 10
+	excludefromjob = list("Captain")
+
+/datum/objective_item/steal/captain_panties/ExtraCheck()
+	. = FALSE
+	var/mob/living/carbon/human/capt
+	for(var/mob/living/carbon/human/H in GLOB.human_list) // только хуманы могут носить трусы. также нам безразлично, чей разум находится в теле капитана.
+		if(H.job == "Captain")
+			capt = H
+			break
+	if(!istype(capt)) // если капитана уже нету в игре еще до выдачи цельки, то искать трусы не особо интересно
+		return FALSE
+	if(capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
+		return TRUE
+	for(var/obj/item/clothing/underwear/briefs/B in world)
+		if(B.worn_by_captain)
+			return TRUE
+
+/datum/objective_item/steal/captain_panties/check_special_completion(obj/item/clothing/underwear/briefs/B)
+	return B.worn_by_captain
 
 //Unique Objectives
 /datum/objective_item/unique/docs_red

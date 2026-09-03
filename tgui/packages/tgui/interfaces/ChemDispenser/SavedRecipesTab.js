@@ -10,8 +10,8 @@ import {
   Table,
 } from '../../components';
 
-export const SavedRecipesTab = (props, context) => {
-  const { act } = useBackend(context);
+export const SavedRecipesTab = (props) => {
+  const { act } = useBackend();
   const {
     recipes,
     recording,

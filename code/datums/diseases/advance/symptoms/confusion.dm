@@ -55,9 +55,14 @@ Bonus
 				to_chat(M, "<span class='warning'>[pick("Your head hurts.", "Your mind blanks for a moment.")]</span>")
 		else
 			to_chat(M, "<span class='userdanger'>You can't think straight!</span>")
-			M.confused = min(100 * power, M.confused + 8)
+			M.AdjustConfused(8 SECONDS * power, 0, min(100 * power, 100) SECONDS)
 			if(brain_damage)
 				M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3 * power, 80)
 				M.updatehealth()
 
 	return
+
+/datum/symptom/confusion/End(datum/disease/advance/A)
+	var/mob/living/carbon/M = A.affected_mob
+	if(M)
+		M.SetConfused(0)

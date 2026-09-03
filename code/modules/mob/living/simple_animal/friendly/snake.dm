@@ -42,22 +42,6 @@
 	. = ..()
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
-/mob/living/simple_animal/hostile/retaliate/poison/snake/ListTargets(atom/the_target)
-	. = oview(vision_range, targets_from) //get list of things in vision range
-	var/list/living_mobs = list()
-	var/list/mice = list()
-	for (var/HM in .)
-		//Yum a tasty mouse
-		if(istype(HM, /mob/living/simple_animal/mouse))
-			mice += HM
-		if(isliving(HM))
-			living_mobs += HM
-
-	// if no tasty mice to chase, lets chase any living mob enemies in our vision range
-	if(length(mice) == 0)
-		//Filter living mobs (in range mobs) by those we consider enemies (retaliate behaviour)
-		return  living_mobs & enemies
-	return mice
 
 /mob/living/simple_animal/hostile/retaliate/poison/snake/AttackingTarget()
 	if(istype(target, /mob/living/simple_animal/mouse))
@@ -66,3 +50,31 @@
 		adjustBruteLoss(-2)
 	else
 		return ..()
+
+// ===== Адаптер-профиль =====
+// Легаси ListTargets змеи (выше) сначала выбирал мышей и лишь при их
+// отсутствии применял retaliate-гейт. Новый путь раскладывает это на
+// стратегию small_prey (мыши - цели без обид) и скорер small_prey_first
+// (видимая мышь важнее любого обидчика). Съедание мыши остаётся в
+// AttackingTarget через делегацию.
+
+///Бонус мыши: перевешивает обиду (+40) и липкость текущей цели (+25) вместе
+#define TARGET_SCORE_SMALL_PREY_BONUS 100
+
+///Скорер змеи: мышь важнее всего остального, как в легаси ListTargets
+/datum/target_scorer/small_prey_first
+
+/datum/target_scorer/small_prey_first/score(datum/ai_controller/controller, atom/candidate, atom/current_target, candidate_distance)
+	. = ..()
+	if(istype(candidate, /mob/living/simple_animal/mouse))
+		. += TARGET_SCORE_SMALL_PREY_BONUS
+
+#undef TARGET_SCORE_SMALL_PREY_BONUS
+
+///Профиль змеи: обычный мили-охотник со стратегией мелкой добычи
+/datum/ai_controller/hostile_adapter/melee_chaser/snake/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	blackboard[BB_AI_TARGETING_STRATEGY] = /datum/targeting_strategy/hostile_legacy/retaliate/small_prey
+	blackboard[BB_AI_TARGET_SCORER] = /datum/target_scorer/small_prey_first

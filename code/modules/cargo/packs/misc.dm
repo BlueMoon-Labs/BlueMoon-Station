@@ -317,6 +317,13 @@
 	contains = list(/obj/machinery/jukebox)
 	crate_name = "Jukebox"
 
+/datum/supply_pack/misc/snow_machine
+	name = "Snow Machine"
+	desc = "Просто добавь воды - и у тебя тоже будет собственная зимняя сказка! Колядники не входят в комплект."
+	cost = 5000
+	contains = list(/obj/machinery/snow_machine)
+	crate_name = "snow machine crate"
+
 /datum/supply_pack/misc/moniq // BLUEMOON FINK ADD
 	name = "Jukebox (Muz-TV)"
 	desc = "Туц туц туц туц"
@@ -364,9 +371,9 @@
 	desc = "Содержит один священный клеймор для особо убеждённых паладинов, три обычных меча для статистов, четыре комплекта рыцарских доспехов для тех, кто хочет тяжело топать по коридорам, и бочку святой воды на случай, если кто-то снова решил дружить с демонами."
 	cost = 24999
 	contains = list(/obj/item/nullrod/claymore,
-					/obj/item/claymore,
-					/obj/item/claymore,
-					/obj/item/claymore,
+					/obj/item/claymore/weak/ceremonial,
+					/obj/item/claymore/weak/ceremonial,
+					/obj/item/claymore/weak/ceremonial,
 					/obj/item/clothing/suit/armor/riot/knight,
 					/obj/item/clothing/suit/armor/riot/knight/blue,
 					/obj/item/clothing/suit/armor/riot/knight/red,

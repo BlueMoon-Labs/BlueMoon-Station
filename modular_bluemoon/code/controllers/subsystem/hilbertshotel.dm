@@ -26,15 +26,14 @@ SUBSYSTEM_DEF(hilbertshotel)
 	var/hhMysteryroom_number
 
 /datum/controller/subsystem/hilbertshotel/Initialize()
-	. = ..()
 	if(!CONFIG_GET(flag/hilbertshotel_enabled))
-		return SS_INIT_NO_NEED
+		return ..()
 	//RegisterSignal(src, COMSIG_HILBERT_ROOM_UPDATED, PROC_REF(on_room_updated))
 	hhMysteryroom_number = hhMysteryroom_number || rand(1, 999999)
 	prepare_rooms()
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(roundtype_check))
 
-	return SS_INIT_SUCCESS
+	return ..()
 
 /// Прок для проверки режима игры и действий со сферой при условии того или иного режима
 /datum/controller/subsystem/hilbertshotel/proc/roundtype_check()
@@ -50,6 +49,8 @@ SUBSYSTEM_DEF(hilbertshotel)
 		return
 	var/datum/map_template/hilbertshotelstorage/storageTemp = new()
 	var/datum/turf_reservation/storageReservation = SSmapping.RequestBlockReservation(3, 3)
+	if(!storageReservation)
+		CRASH("Hilbert's Hotel: не удалось зарезервировать блок под сток комнат")
 	var/turf/bottom_left = get_turf(locate(storageReservation.bottom_left_coords[1], storageReservation.bottom_left_coords[2], storageReservation.bottom_left_coords[3]))
 	storageTemp.load(bottom_left)
 	storageTurf = locate(bottom_left.x + 1, bottom_left.y + 1, bottom_left.z)

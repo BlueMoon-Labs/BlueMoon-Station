@@ -77,7 +77,8 @@
 	if(incapacitated(ignore_restraints = 1))
 		return
 
-	face_atom(A)
+	if(A != src)
+		face_atom(A)
 
 	if(!CheckActionCooldown(immediate = TRUE))
 		return
@@ -102,7 +103,7 @@
 
 	//These are always reachable.
 	//User itself, current loc, and user inventory
-	if(A in DirectAccess())
+	if(in_direct_access(A))
 		if(W)
 			return W.melee_attack_chain(src, A, params)
 		else
@@ -151,12 +152,11 @@
 /atom/movable/proc/CanReach(atom/ultimate_target, obj/item/tool, view_only = FALSE)
 	// A backwards depth-limited breadth-first-search to see if the target is
 	// logically "in" anything adjacent to us.
-	var/list/direct_access = DirectAccess()
 	var/depth = 1 + (view_only ? STORAGE_VIEW_DEPTH : INVENTORY_DEPTH)
 
 	var/list/closed = list()
 	var/list/checking = list(ultimate_target)
-	
+
 	while(checking.len && depth)
 		var/list/next = list()
 		--depth
@@ -167,7 +167,7 @@
 
 			closed[target] = TRUE
 
-			if(isturf(target) || isturf(target.loc) || (target in direct_access)) // Directly accessible atoms
+			if(isturf(target) || isturf(target.loc) || in_direct_access(target)) // Directly accessible atoms
 				// Adjacent or reaching attacks
 				if(target.Adjacent(src) || (tool && CheckToolReach(src, target, tool.reach))) // BLUEMOON EDIT - ModernTG Wide Airlocks.
 					return TRUE
@@ -190,6 +190,27 @@
 
 /mob/living/DirectAccess(atom/target)
 	return ..() + GetAllContents()
+
+/**
+ * Тот же вопрос, что `target in DirectAccess()`, но без сборки списка.
+ *
+ * У /mob/living DirectAccess() разворачивает всё дерево содержимого (рюкзак,
+ * ящики в рюкзаке, всё внутри них), а спрашивают у него РОВНО членство - на
+ * каждый клик и каждый MouseDrop. В проде это 12k полных обходов инвентаря за
+ * 2.6 минуты, 1.2с чистого времени на построение списков под немедленный выброс.
+ * Переопределения обязаны отвечать так же, как `in DirectAccess()`; это
+ * закреплено юнит-тестом.
+ */
+/atom/movable/proc/in_direct_access(atom/target)
+	return target == src || target == loc
+
+/mob/in_direct_access(atom/target)
+	return ..() || (target in contents)
+
+/mob/living/in_direct_access(atom/target)
+	// list(src, loc) + contents + GetAllContents() сводится к "это наш loc, мы
+	// сами, или что-то вложенное в нас на любой глубине".
+	return target == loc || contains_atom(target)
 
 //This is called reach into but it's called on the deepest things first so uh, make sure to account for that!
 /atom/proc/canReachInto(atom/user, atom/target, list/next, view_only, obj/item/tool)
@@ -356,6 +377,8 @@
 
 /mob/living/carbon/human/CtrlClick(mob/user)
 	if(ishuman(user) && Adjacent(user) && !user.incapacitated())
+		if(buckled && (istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis)))
+			buckled.user_unbuckle_mob(src, user)
 		if(!user.CheckActionCooldown())
 			return FALSE
 		var/mob/living/carbon/human/H = user
@@ -395,15 +418,19 @@
 	SEND_SIGNAL(src, COMSIG_CLICK_ALT, user)
 	var/turf/T = get_turf(src)
 	if(T && (isturf(loc) || isturf(src)) && user.TurfAdjacent(T))
-		user.listed_turf = T
-		user.client << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+		if(user.client)
+			user.client.open_listed_turf(T)
+		else
+			user.listed_turf = T
 
 /// Use this instead of [/mob/proc/AltClickOn] where you only want turf content listing without additional atom alt-click interaction
 /atom/proc/AltClickNoInteract(mob/user, atom/A)
 	var/turf/T = get_turf(A)
 	if(T && user.TurfAdjacent(T))
-		user.listed_turf = T
-		user.client << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+		if(user.client)
+			user.client.open_listed_turf(T)
+		else
+			user.listed_turf = T
 
 /mob/proc/TurfAdjacent(turf/T)
 	return T.Adjacent(src)
@@ -440,9 +467,7 @@
 		return
 	DelayNextAction()
 
-	var/obj/item/projectile/beam/LE = new /obj/item/projectile/beam(loc)
-	LE.icon = 'icons/effects/genetics.dmi'
-	LE.icon_state = "eyelasers"
+	var/obj/item/projectile/beam/laser/mutation/LE = new /obj/item/projectile/beam/laser/mutation(loc)
 	playsound(usr.loc, 'sound/weapons/taser2.ogg', 75, 1)
 
 	LE.firer = src
@@ -548,6 +573,33 @@
 
 /mob/proc/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	return
+
+/mob/living/carbon/MouseWheelOn(atom/A, delta_x, delta_y, params)
+	. = ..()
+	var/obj/item/I = get_active_held_item()
+	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	// Смена инструментов импланта
+	if(I && implant && length(implant.items_list) > 1 && implant.items_list.Find(I))
+		if(!implant.activate_allowed(user = src, silent = FALSE))
+			return
+		var/list/implants_list = implant.items_list
+		var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))
+		if(!to_index)
+			return
+		implant.Retract(TRUE)
+		implant.Extend(implants_list[to_index])
+		return
+
+	// Смена выбранной зоны
+	if(!client.check_has_body_select())
+		return
+	var/static/list/b_zones = BODY_ZONE_LIST_ALL
+	var/to_index = delta_y < 0 ? b_zones.Find(next_list_item(zone_selected, b_zones)) : b_zones.Find(previous_list_item(zone_selected, b_zones))
+	if(!to_index)
+		return
+
+	var/atom/movable/screen/zone_sel/selector = hud_used?.zone_select
+	selector?.set_selected_zone(b_zones[to_index], src)
 
 /mob/dead/observer/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	var/list/modifier = params2list(params)

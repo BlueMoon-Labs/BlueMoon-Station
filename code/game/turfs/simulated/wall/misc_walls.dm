@@ -113,7 +113,7 @@
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
 
 /turf/closed/wall/clockwork/dismantle_wall(devastated=0, explode=0)
-	if(devastated)
+	if(devastated || explode)
 		devastate_wall()
 		ScrapeAway()
 	else
@@ -181,7 +181,7 @@
 	canSmoothWith = null
 	hardness = 35
 	slicing_duration = 150 //welding through the ice+metal
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 
 /turf/closed/wall/rust
 	name = "rusted wall"

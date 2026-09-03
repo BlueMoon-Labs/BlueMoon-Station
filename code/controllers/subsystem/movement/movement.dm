@@ -52,9 +52,13 @@ SUBSYSTEM_DEF(movement)
 	while(processing.len)
 		var/datum/move_loop/loop = processing[processing.len]
 		processing.len--
-		loop.process() //This shouldn't get nulls, if it does, runtime
+		// A hard-delete (e.g. SSgarbage force-collecting a still-bucketed, already-qdel'd loop) nulls this slot.
+		// Skip dead/null entries instead of runtiming on null.process(); a deleted loop has nothing left to do.
+		if(QDELETED(loop))
+			continue
+		loop.process()
 		if(!QDELETED(loop)) //Re-Insert the loop
-			loop.timer = world.time + loop.delay
+			loop.timer = world.time + loop.scheduled_delay
 			queue_loop(loop)
 		if (MC_TICK_CHECK)
 			break
@@ -98,7 +102,10 @@ SUBSYSTEM_DEF(movement)
 	buckets[string_time] += loop
 
 /datum/controller/subsystem/movement/proc/dequeue_loop(datum/move_loop/loop)
-	var/list/our_entries = buckets["[loop.timer]"]
+	var/string_time = "[loop.timer]"
+	var/list/our_entries = buckets[string_time]
+	if(!our_entries)
+		return
 	our_entries -= loop
 	if(!length(our_entries))
 		smash_bucket(bucket_time = loop.timer) // We can't pass an index in for context because we don't know our position

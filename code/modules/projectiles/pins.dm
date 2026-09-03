@@ -238,6 +238,27 @@
 	suit_requirement = /obj/item/clothing/suit/bluetag
 	tagcolor = "blue"
 
+/obj/item/firing_pin/access
+	name = "access lock firing pin"
+	fail_message = span_warning("ACCESS CHECK FAILED!")
+	// Для определения доступов используйте req_one_access
+
+/obj/item/firing_pin/access/examine(mob/user)
+	. = ..()
+	if(LAZYLEN(req_one_access))
+		var/list/temp = list()
+		for(var/access_to_show in req_one_access)
+			temp += get_access_desc(access_to_show)
+		. += span_notice("Accesses are required for activation: [english_list(temp, and_text = ", ")].")
+
+/obj/item/firing_pin/access/pin_auth(mob/living/user)
+	return !gun.chambered || allowed(user)
+	
+/obj/item/firing_pin/access/med
+	name = "medical emergency firing pin"
+	req_one_access = list(ACCESS_MEDICAL)
+	fail_message = span_warning("ONLY FOR MEDICAL STAFF!")
+
 /obj/item/firing_pin/security_level
 	name = "security level firing pin"
 	desc = "A sophisticated firing pin that authorizes operation based on its settings and current security level."
@@ -324,7 +345,7 @@
 	. += overlay
 
 /obj/item/firing_pin/security_level/pin_auth(mob/living/user)
-	return (only_lethals && !(gun.chambered?.harmful)) || ISINRANGE(GLOB.security_level, min_sec_level, max_sec_level)
+	return !gun.chambered || (only_lethals && !(gun.chambered.harmful)) || ISINRANGE(GLOB.security_level, min_sec_level, max_sec_level)
 
 // Explorer Firing Pin- Prevents use on station Z-Level, so it's justifiable to give Explorers guns that don't suck.
 /obj/item/firing_pin/explorer
@@ -349,7 +370,7 @@
 	fail_message = "<span class='warning'>НЕКОРРЕКТНЫЙ УРОВЕНЬ ТРЕВОГИ!</span>"
 
 /obj/item/firing_pin/alert_level/pin_auth(mob/living/user)
-	if(gun.chambered?.harmful == FALSE)
+	if(!gun || gun.chambered?.harmful == FALSE)
 		return TRUE
 	return (isnum(GLOB.security_level) && GLOB.security_level >= desired_minimium_alert)
 

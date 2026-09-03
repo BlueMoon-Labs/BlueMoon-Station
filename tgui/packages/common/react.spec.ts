@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { canRender, classes, normalizeChildren, pureComponentHooks, shallowDiffers } from './react';
+import { canRender, classes, normalizeChildren, shallowDiffers } from './react';
 
 describe('classes', () => {
   test('empty', () => {
@@ -138,48 +138,5 @@ describe('canRender', () => {
 
   test('число -> true', () => {
     expect(canRender(42)).toBe(true);
-  });
-});
-
-describe('pureComponentHooks', () => {
-  test('onComponentShouldUpdate — одинаковые props -> false (не обновлять)', () => {
-    const result = pureComponentHooks.onComponentShouldUpdate(
-      { a: 1, b: 'hello' },
-      { a: 1, b: 'hello' },
-    );
-    expect(result).toBe(false);
-  });
-
-  test('onComponentShouldUpdate — разные значения -> true (обновить)', () => {
-    const result = pureComponentHooks.onComponentShouldUpdate(
-      { a: 1 },
-      { a: 2 },
-    );
-    expect(result).toBe(true);
-  });
-
-  test('onComponentShouldUpdate — добавленный ключ -> true', () => {
-    const result = pureComponentHooks.onComponentShouldUpdate(
-      { a: 1 },
-      { a: 1, b: 2 },
-    );
-    expect(result).toBe(true);
-  });
-
-  test('onComponentShouldUpdate — тот же объект -> false', () => {
-    const props = { a: 1 };
-    expect(pureComponentHooks.onComponentShouldUpdate(props, props)).toBe(false);
-  });
-
-  test('onComponentShouldUpdate — deep change не детектируется (shallow)', () => {
-    const nested = { x: 1 };
-    // Одна и та же ссылка -> shallow considers equal
-    expect(
-      pureComponentHooks.onComponentShouldUpdate({ a: nested }, { a: nested }),
-    ).toBe(false);
-    // Разные объекты с одинаковым содержимым -> shallow considers different
-    expect(
-      pureComponentHooks.onComponentShouldUpdate({ a: { x: 1 } }, { a: { x: 1 } }),
-    ).toBe(true);
   });
 });

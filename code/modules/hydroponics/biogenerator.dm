@@ -22,6 +22,7 @@
 	. = ..()
 	stored_research = new /datum/techweb/specialized/autounlocking/biogenerator
 	create_reagents(1000)
+	RefreshParts() // BLUEMOON ADD - синхронизирует рецепт креветки, если femto-манипулятор стоит уже при спавне
 
 /obj/machinery/biogenerator/Destroy()
 	QDEL_NULL(beaker)
@@ -50,6 +51,14 @@
 	efficiency = E
 	productivity = P
 	max_items = max_storage
+	// BLUEMOON ADD START - рецепт креветки открывается только с T4-манипулятором
+	if(stored_research)
+		if(efficiency >= 4)
+			stored_research.add_design_by_id("shrimp")
+		else
+			stored_research.remove_design_by_id("shrimp")
+		update_static_data_for_all_viewers()
+	// BLUEMOON ADD END
 
 /obj/machinery/biogenerator/examine(mob/user)
 	. = ..()
@@ -275,7 +284,7 @@
 
 /obj/machinery/biogenerator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/research_designs),
+		get_asset_datum(/datum/asset/spritesheet_batched/research_designs),
 	)
 
 /obj/machinery/biogenerator/ui_interact(mob/user, datum/tgui/ui)
@@ -320,6 +329,10 @@
 				"cost" = ceil(D.materials[SSmaterials.GetMaterialRef(/datum/material/biomass)]/efficiency),
 			))
 		data["categories"] += list(cat)
+
+	// Крупные спрайты дизайнов интерфейс ужимает до тайла, для чего ему нужен их размер.
+	var/datum/asset/spritesheet_batched/research_designs/design_sheet = get_asset_datum(/datum/asset/spritesheet_batched/research_designs)
+	data["design_sizes"] = design_sheet.oversized_icon_classes()
 
 	return data
 

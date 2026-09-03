@@ -147,11 +147,11 @@
 	return ..()
 
 /obj/machinery/computer/arcade/battle/proc/make_boss_name_with_verb(boss_verb)
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		boss_verb ||= pick_list(ARCADE_FILE, "rpg_action_halloween")
-	else if(SSevents.holidays && SSevents.holidays[CHRISTMAS])
+	else if(SSholidays.holidays && SSholidays.holidays[CHRISTMAS])
 		boss_verb ||= pick_list(ARCADE_FILE, "rpg_action_xmas")
-	else if(SSevents.holidays && SSevents.holidays[VALENTINES])
+	else if(SSholidays.holidays && SSholidays.holidays[VALENTINES])
 		boss_verb ||= pick_list(ARCADE_FILE, "rpg_action_valentines")
 	else
 		boss_verb ||= pick_list(ARCADE_FILE, "rpg_action")
@@ -159,13 +159,13 @@
 	return "[boss_verb] [make_boss_name()]"
 
 /obj/machinery/computer/arcade/battle/proc/make_boss_name(boss_name, boss_adjective)
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		boss_adjective ||= pick_list(ARCADE_FILE, "rpg_adjective_halloween")
 		boss_name ||= pick_list(ARCADE_FILE, "rpg_enemy_halloween")
-	else if(SSevents.holidays && SSevents.holidays[CHRISTMAS])
+	else if(SSholidays.holidays && SSholidays.holidays[CHRISTMAS])
 		boss_adjective ||= pick_list(ARCADE_FILE, "rpg_adjective_xmas")
 		boss_name ||= pick_list(ARCADE_FILE, "rpg_enemy_xmas")
-	else if(SSevents.holidays && SSevents.holidays[VALENTINES])
+	else if(SSholidays.holidays && SSholidays.holidays[VALENTINES])
 		boss_adjective ||= pick_list(ARCADE_FILE, "rpg_adjective_valentines")
 		boss_name ||= pick_list(ARCADE_FILE, "rpg_enemy_valentines")
 	else

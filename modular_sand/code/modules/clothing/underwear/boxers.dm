@@ -5,6 +5,17 @@
 	under_type = /obj/item/clothing/underwear/briefs
 	body_parts_covered = GROIN
 	slot_flags = ITEM_SLOT_UNDERWEAR
+	var/worn_by_captain = FALSE
+
+/obj/item/clothing/underwear/briefs/examine(mob/user)
+	. = ..()
+	if(worn_by_captain)
+		. += "<b>Это однозначно <i>те самые</i> ношенные трусы капитана!</b>" // ты узнаешь их из тысячи...
+
+/obj/item/clothing/underwear/briefs/equipped(mob/user, slot)
+	. = ..()
+	if((user.job == "Captain") && (slot == slot_flags))
+		worn_by_captain = TRUE
 
 // please make sure they're sorted alphabetically and categorized, above is the only exception
 

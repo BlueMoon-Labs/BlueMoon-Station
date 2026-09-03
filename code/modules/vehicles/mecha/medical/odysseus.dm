@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/medical/odysseus
-	desc = "These exosuits are developed and produced by Vey-Med. (&copy; All rights reserved)."
+	desc = "Эти экзокостюмы разработаны и произведены Vey-Med. (&copy; Все права защищены)."
 	name = "\improper Odysseus"
 	icon_state = "odysseus"
 	allow_diagonal_movement = TRUE

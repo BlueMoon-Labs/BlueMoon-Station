@@ -51,6 +51,8 @@
 	var/list/treatable_by_grabbed
 	/// Tools with the specified tool flag will also be able to try directly treating this wound
 	var/treatable_tool
+	/// Дополнительные инструменты (помимо treatable_tool), которыми можно лечить эту рану. BLUEMOON ADD - зажимание сосудов гемостатом
+	var/list/also_treatable_tools
 	/// How long it will take to treat this wound with a standard effective tool, assuming it doesn't need surgery
 	var/base_treat_time = 5 SECONDS
 
@@ -97,7 +99,22 @@
 	var/ru_name_r = ""
 
 /datum/wound/Destroy()
-	remove_wound()
+	// A carbon destroys its wounds after the parent mob Destroy() has already
+	// cleared hands/HUD state. Gameplay removal side effects at that point both
+	// waste work and can runtime while trying to update the deleted victim.
+	if(!QDELETED(victim))
+		remove_wound(QDELETED(limb))
+	// Отцепиться от списков надо ВСЕГДА, а не только при живой жертве. QDELETED(null) в DM
+	// истинно, поэтому у раны с уже обнулённой жертвой (её обнуляет null_victim() по
+	// COMSIG_PARENT_QDELETING) remove_wound() не вызывался вовсе, и рана оставалась лежать в
+	// limb.wounds. Через порог warnfail SSgarbage добивал её через del(), запись в списке
+	// превращалась в null, и get_bleed_rate() начинал падать на каждом тике SSmobs до конца
+	// раунда: прод-раунд 9834 - около двух тысяч рантаймов с одной конечности.
+	// Тот же ignore_limb, что и выше: у удаляемой конечности свой список чистить незачем.
+	if(limb && !QDELETED(limb))
+		LAZYREMOVE(limb.wounds, src)
+	if(victim)
+		LAZYREMOVE(victim.all_wounds, src)
 	limb = null
 	victim = null
 	return ..()
@@ -172,6 +189,31 @@
 	SIGNAL_HANDLER
 	victim = null
 
+/// Конечность пришили обратно к владельцу.
+///
+/// Через apply_wound() этот путь идти не может: рана всё это время лежит в limb.wounds, и
+/// повторное применение продублировало бы и запись в списках (LAZYADD не проверяет вхождение),
+/// и подписку на удаление жертвы. Поэтому связь восстанавливается напрямую.
+/datum/wound/proc/reattach_to_victim(mob/living/carbon/new_victim)
+	if(QDELETED(new_victim) || QDELETED(limb))
+		return
+	if(victim && victim != new_victim)
+		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+		LAZYREMOVE(victim.all_wounds, src)
+	victim = new_victim
+	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(null_victim), override = TRUE)
+	LAZYOR(victim.all_wounds, src)
+	if(status_effect_type)
+		victim.apply_status_effect(status_effect_type, src)
+	// Симметрия с remove_wound(), который отработал при отрыве конечности: он снял общий на все
+	// раны алерт, когда all_wounds опустел, и разослал сигнал потери. Вернуть их больше некому -
+	// throw_alert зовётся только из apply_wound(), а update_wounds() занимается лишь оверлеями,
+	// так что рана работала бы без иконки, а слушатели сигналов считали бы её вылеченной.
+	if(!victim.alerts["wound"])
+		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
+	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
+	limb.update_wounds()
+
 /datum/wound/proc/source_died()
 	SIGNAL_HANDLER
 	qdel(src)
@@ -243,7 +285,7 @@
 	var/allowed = FALSE
 
 	// check if we have a valid treatable tool (or, if cauteries are allowed, if we have something hot)
-	if((I.tool_behaviour == treatable_tool) || (treatable_tool == TOOL_CAUTERY && I.get_temperature()))
+	if((I.tool_behaviour == treatable_tool) || (I.tool_behaviour in also_treatable_tools) || (treatable_tool == TOOL_CAUTERY && I.get_temperature()))
 		allowed = TRUE
 	// failing that, see if we're aggro grabbing them and if we have an item that works for aggro grabs only
 	else if(user.pulling == victim && user.grab_state >= GRAB_AGGRESSIVE && check_grab_treatments(I, user))
@@ -280,6 +322,38 @@
 /datum/wound/proc/treat(obj/item/I, mob/user)
 	return
 
+/**
+ * Проверяет, блокирует ли броня лечение данным предметом.
+ * Продвинутые предметы (bypass_armor = TRUE) проходят сквозь обычную броню, но не сквозь скафандры.
+ * Синтетические раны (synthetic_mode = TRUE) не блокируются бронёй — ремонт инструментами не зависит от брони.
+ */
+/datum/wound/proc/check_armor_for_treatment(obj/item/I, mob/user)
+	if(!ishuman(victim))
+		return TRUE
+
+	var/bypass_armor = FALSE
+	if(istype(src, /datum/wound/burn))
+		var/datum/wound/burn/burn_wound = src
+		if(burn_wound.synthetic_mode)
+			bypass_armor = TRUE
+	if(istype(I, /obj/item/stack/medical))
+		var/obj/item/stack/medical/med = I
+		bypass_armor = med.bypass_armor
+
+	var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(victim, limb)
+	if(!covering || !(covering.clothing_flags & THICKMATERIAL))
+		return TRUE // Нет толстой брони
+
+	if(bypass_armor)
+		// Скафандры блокируют лечение
+		if(istype(covering, /obj/item/clothing/suit/space))
+			to_chat(user, span_warning("Скафандр на [limb.ru_name_v] [victim] мешает лечению!"))
+			return FALSE
+		return TRUE // Обычная броня — продвинутый предмет проходит
+	else
+		to_chat(user, span_warning("Броня на [limb.ru_name_v] [victim] мешает лечению!"))
+		return FALSE
+
 /// If var/processing is TRUE, this is run on each life tick
 /datum/wound/proc/handle_process()
 	return
@@ -287,6 +361,19 @@
 /// For use in do_after callback checks
 /datum/wound/proc/still_exists()
 	return (!QDELETED(src) && limb)
+
+/**
+ * Выглядит ли жертва трупом - то есть должна ли рана молчать вместо телесной реакции
+ * (кашель кровью, хрип, болевой эмоут, попытка вдохнуть).
+ *
+ * TRAIT_FAKEDEATH стоит здесь наравне со stat == DEAD не для красоты: именно этим трейтом
+ * кодовая база помечает тело, которое трупом считают ВСЕ - осмотр (/mob/living/carbon/human/examine),
+ * анализатор здоровья и медибот, СЛР (/mob/living/carbon/human/proc/do_cpr). Торпор вампира,
+ * квирк "Не-мёртвый", притворная смерть генлинга: снаружи это труп, и проверки только по
+ * stat его не ловят - тело формально живо. Ровно эта дыра и осталась после гейта на stat.
+ */
+/datum/wound/proc/victim_appears_dead()
+	return !victim || victim.stat == DEAD || HAS_TRAIT(victim, TRAIT_FAKEDEATH)
 
 /// When our parent bodypart is hurt
 /datum/wound/proc/receive_damage(wounding_type, wounding_dmg, wound_bonus)
@@ -313,6 +400,17 @@
 /// Used when we're being dragged while bleeding, the value we return is how much bloodloss this wound causes from being dragged. Since it's a proc, you can let bandages soak some of the blood
 /datum/wound/proc/drag_bleed_amount()
 	return
+
+/**
+ * BLUEMOON ADD - глушит ли свежая повязка истечение крови из этой раны.
+ *
+ * Бинт не лечит рану, а останавливает кровопотерю: пока на конечности есть
+ * впитывающая повязка с ресурсом, рана не вычитает кровь у жертвы (см.
+ * /obj/item/bodypart/get_bleed_rate), но сама никуда не девается. Когда ресурс
+ * кончается или бинт снимают - кровотечение возобновляется во всей красе.
+ */
+/datum/wound/proc/is_bleed_suppressed()
+	return FALSE
 
 /**
   * get_examine_description() is used in carbon/examine and human/examine to show the status of this wound. Useful if you need to show some status like the wound being splinted or bandaged.

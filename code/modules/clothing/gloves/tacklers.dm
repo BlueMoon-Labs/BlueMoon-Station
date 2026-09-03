@@ -26,8 +26,28 @@
 	var/skill_mod = 1
 
 /obj/item/clothing/gloves/tackler/Destroy()
-	tackler = null
+	clear_tackler_component(TRUE)
 	return ..()
+
+/obj/item/clothing/gloves/tackler/proc/set_tackler_component(datum/component/new_tackler)
+	if(tackler == new_tackler)
+		return
+	if(tackler)
+		UnregisterSignal(tackler, COMSIG_PARENT_QDELETING)
+	tackler = new_tackler
+	if(tackler)
+		RegisterSignal(tackler, COMSIG_PARENT_QDELETING, PROC_REF(on_tackler_qdeleting))
+
+/obj/item/clothing/gloves/tackler/proc/clear_tackler_component(delete_component = FALSE)
+	var/datum/component/old_tackler = tackler
+	set_tackler_component(null)
+	if(delete_component && old_tackler)
+		qdel(old_tackler)
+
+/obj/item/clothing/gloves/tackler/proc/on_tackler_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == tackler)
+		tackler = null
 
 /obj/item/clothing/gloves/tackler/equipped(mob/user, slot)
 	. = ..()
@@ -36,14 +56,13 @@
 	switch(slot) // I didn't like how it looked
 		if(ITEM_SLOT_GLOVES)
 			var/mob/living/carbon/human/H = user
-			tackler = H.AddComponent(/datum/component/tackler, stamina_cost=tackle_stam_cost, base_knockdown = base_knockdown, range = tackle_range, speed = tackle_speed, skill_mod = skill_mod, min_distance = min_distance)
+			set_tackler_component(H.AddComponent(/datum/component/tackler, stamina_cost=tackle_stam_cost, base_knockdown = base_knockdown, range = tackle_range, speed = tackle_speed, skill_mod = skill_mod, min_distance = min_distance))
 		else
-			QDEL_NULL(tackler) // Only wearing it!
+			clear_tackler_component(TRUE) // Only wearing it!
 
 /obj/item/clothing/gloves/tackler/dropped(mob/user)
 	. = ..()
-	if(tackler)
-		QDEL_NULL(tackler)
+	clear_tackler_component(TRUE)
 
 /obj/item/clothing/gloves/tackler/dolphin
 	name = "dolphin gloves"

@@ -335,6 +335,7 @@ GLOBAL_LIST_INIT(titanium_recipes, list ( \
 	point_value = 45
 	merge_type = /obj/item/stack/sheet/mineral/plastitanium
 	walltype = /turf/closed/wall/mineral/plastitanium
+	tableVariant = /obj/structure/table/reinforced/plastitanium
 
 /obj/item/stack/sheet/mineral/plastitanium/fifty
 	amount = 50

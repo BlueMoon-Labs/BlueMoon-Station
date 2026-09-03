@@ -1,8 +1,12 @@
 // Events are sent to the program by the computer.
 // Always include a parent call when overriding an event.
 
-// Called when the ID card is removed from computer. ID is removed AFTER this proc.
-/datum/computer_file/program/proc/event_idremoved(background)
+// Called when the ID card is removed from computer. ID is removed BEFORE this proc.
+/datum/computer_file/program/proc/event_idremoved(is_background, obj/item/card/id/id_card, device_type)
+	return
+
+// Called when the ID card is insert to computer. ID is insert BEFORE this proc.
+/datum/computer_file/program/proc/event_idinsert(is_background, obj/item/card/id/id_card, device_type)
 	return
 
 // Called when the computer fails due to power loss. Override when program wants to specifically react to power loss.

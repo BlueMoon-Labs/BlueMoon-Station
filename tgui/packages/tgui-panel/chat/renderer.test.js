@@ -1,6 +1,7 @@
 import {
   COMBINE_MAX_MESSAGES,
   COMBINE_MAX_TIME_WINDOW,
+  IMAGE_RETRY_DELAY,
   IMAGE_RETRY_LIMIT,
   IMAGE_RETRY_MESSAGE_AGE,
   MAX_VISIBLE_MESSAGES,
@@ -282,6 +283,26 @@ describe('ChatRenderer', () => {
       expect(renderer.messages[0].type).toBe('radio');
     });
 
+    test('detects radio from .priority_announcement CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="priority_announcement">Central command notice</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
+    test('detects radio from .system_notice CSS class', () => {
+      const renderer = createReadyRenderer();
+
+      renderer.processBatch([{
+        html: '<span class="system_notice">Security level changed</span>',
+      }]);
+
+      expect(renderer.messages[0].type).toBe('radio');
+    });
+
     test('detects system from .boldannounce CSS class', () => {
       const renderer = createReadyRenderer();
 
@@ -553,6 +574,87 @@ describe('ChatRenderer', () => {
     });
   });
 
+  describe('highlight sound', () => {
+    test('plays sound for newly highlighted messages when enabled', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not play sound when highlight sound is disabled', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(false);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not play sound for prepended messages', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }], {
+        prepend: true,
+      });
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not play sound while rebuilding chat', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+
+      renderer.setHighlight('important', '#ff0000');
+      renderer.setHighlightSound(true);
+      renderer.processBatch([{
+        html: '<span class="say">important notice</span>',
+      }]);
+      playSpy.mockClear();
+
+      renderer.rebuildChat();
+
+      expect(playSpy).not.toHaveBeenCalled();
+    });
+
+    test('plays sound for combined highlighted messages', () => {
+      const renderer = createReadyRenderer();
+      const playSpy = jest.spyOn(renderer, 'playHighlightSound')
+        .mockImplementation(() => {});
+      const now = 1000000;
+
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+      renderer.setHighlight('hello', '#ff0000');
+      renderer.setHighlightSound(true);
+
+      renderer.processBatch([{ text: 'hello' }]);
+      playSpy.mockClear();
+      renderer.processBatch([{ text: 'hello' }]);
+
+      expect(playSpy).toHaveBeenCalledTimes(1);
+      expect(renderer.visibleMessages[0].times).toBe(2);
+    });
+  });
+
   // ---- Image retry ----
 
   describe('image retry', () => {
@@ -652,6 +754,67 @@ describe('ChatRenderer', () => {
 
       // Should NOT have changed src — at limit
       expect(img.src).toBe(originalSrc);
+      timeoutSpy.mockRestore();
+    });
+
+    test('does not retry images hosted outside the client', () => {
+      const renderer = createReadyRenderer();
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      renderer.processBatch([{
+        html: '<img src="https://tenor.com/view/some-page">',
+        createdAt: now,
+      }]);
+
+      const img = renderer.visibleMessages[0].node.querySelector('img');
+      const originalSrc = img.src;
+      const timeoutSpy = jest.spyOn(global, 'setTimeout');
+      timeoutSpy.mockClear();
+
+      const errorEvent = new Event('error');
+      Object.defineProperty(errorEvent, 'target', { value: img });
+      img.dispatchEvent(errorEvent);
+
+      // Чужой хост не станет доступнее от десяти повторов - только лишние
+      // запросы и десять строк в логе на каждого, кто видит сообщение.
+      expect(timeoutSpy).not.toHaveBeenCalled();
+      expect(img.src).toBe(originalSrc);
+      expect(img.getAttribute('data-reload-n')).toBeNull();
+      timeoutSpy.mockRestore();
+    });
+
+    test('backs off exponentially between retries', () => {
+      const renderer = createReadyRenderer();
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      renderer.processBatch([{
+        html: '<img src="test.png">',
+        createdAt: now,
+      }]);
+
+      const img = renderer.visibleMessages[0].node.querySelector('img');
+      const timeoutSpy = jest.spyOn(global, 'setTimeout');
+      const delays = [];
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        timeoutSpy.mockClear();
+        const errorEvent = new Event('error');
+        Object.defineProperty(errorEvent, 'target', { value: img });
+        img.dispatchEvent(errorEvent);
+
+        const call = timeoutSpy.mock.calls[timeoutSpy.mock.calls.length - 1];
+        delays.push(call[1]);
+        call[0]();
+      }
+
+      // Прежний плоский бюджет 10 x 250 мс был короче худшего round-trip.
+      expect(delays).toEqual([
+        IMAGE_RETRY_DELAY,
+        IMAGE_RETRY_DELAY * 2,
+        IMAGE_RETRY_DELAY * 4,
+      ]);
       timeoutSpy.mockRestore();
     });
 
@@ -794,6 +957,120 @@ describe('ChatRenderer', () => {
       // Root should only have internal/matching messages
       // With empty acceptedTypes, only internal messages show
       expect(renderer.visibleMessages.length).toBe(0);
+    });
+  });
+
+  // ---- setStyleOverrides ----
+
+  describe('setStyleOverrides', () => {
+    test('sets color custom properties and plain classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: false },
+        whisper: { color: '', disabled: true },
+        lewd: {},
+      }, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color'))
+        .toBe('#ff0000');
+      expect(root.style.getPropertyValue('--cs-whisper-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-whisper')).toBe(true);
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('clears stale properties and classes on re-apply', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: true },
+      }, false);
+      expect(renderer.rootNode.classList.contains('Chat--fxAnimOff'))
+        .toBe(true);
+
+      renderer.setStyleOverrides({
+        emote: {},
+      }, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('empty overrides map fully resets root state', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: true },
+        whisper: { color: '#00ff00' },
+      }, false);
+
+      renderer.setStyleOverrides({}, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color')).toBe('');
+      expect(root.style.getPropertyValue('--cs-whisper-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('queues overrides until mount via pending appearance', () => {
+      const renderer = new ChatRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#00ff00' },
+      }, false);
+
+      const rootNode = document.createElement('div');
+      renderer.rootNode = rootNode;
+      renderer.applyPendingAppearance();
+
+      expect(rootNode.style.getPropertyValue('--cs-emote-color'))
+        .toBe('#00ff00');
+      expect(rootNode.classList.contains('Chat--fxAnimOff')).toBe(true);
+    });
+
+    test('font/size/anim overrides emit a dynamic stylesheet', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { font: 'bold', size: 130, anim: 'pulse' },
+        telepathy: { font: 'bolditalic' },
+      }, true);
+
+      const sheet = document.getElementById('cs-style-overrides');
+      expect(sheet).not.toBeNull();
+      const css = sheet.textContent;
+      expect(css).toContain(
+        '.Chat .emote { font-weight: bold; font-style: normal; '
+        + 'font-size: 130%; }');
+      expect(css).toContain(
+        '.Chat:not(.Chat--fxAnimOff) .emote { animation: cs-pulse');
+      // extraClasses получают те же правила
+      expect(css).toContain('.Chat .telepathy, .Chat .telepathybold');
+    });
+
+    test('size is clamped and disabled styles emit no rules', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { size: 500 },
+        whisper: { font: 'bold', size: 150, anim: 'glow', disabled: true },
+      }, true);
+
+      const css = document.getElementById('cs-style-overrides').textContent;
+      expect(css).toContain('font-size: 200%');
+      expect(css).not.toContain('whisper');
+    });
+
+    test('stylesheet is removed when no rules remain', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { font: 'bold' },
+      }, true);
+      expect(document.getElementById('cs-style-overrides')).not.toBeNull();
+
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000' },
+      }, true);
+      expect(document.getElementById('cs-style-overrides')).toBeNull();
     });
   });
 

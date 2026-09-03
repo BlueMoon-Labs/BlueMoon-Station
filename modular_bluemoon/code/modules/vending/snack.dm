@@ -25,6 +25,7 @@
 		/obj/item/reagent_containers/food/snacks/syndicake = 5,
 		/obj/item/reagent_containers/food/snacks/intecookies = 5, // Bluemoon Changes
 		/obj/item/reagent_containers/food/snacks/beans = 2,
+		/obj/item/reagent_containers/food/snacks/lollipop/capsaicin = 4,
 	)
 	premium = list(
 		/obj/item/reagent_containers/food/snacks/lollipop = 2,
@@ -34,9 +35,10 @@
 		/obj/item/storage/box/gum/nicotine = 4,
 		/obj/item/storage/box/gum/bubblegum = 4,
 		/obj/item/reagent_containers/food/snacks/gumball = 4,
-		/obj/item/reagent_containers/food/snacks/chococoin = 1,
-		/obj/item/storage/box/marshmallow = 1,
+		/obj/item/reagent_containers/food/snacks/chococoin = 2,
+		/obj/item/storage/box/marshmallow = 2,
 		/obj/item/storage/box/donkpockets = 2,
+		/obj/item/reagent_containers/food/snacks/swirl_lollipop = 4,
 	)
 	refill_canister = /obj/item/vending_refill/snack
 	req_access = list(ACCESS_KITCHEN)

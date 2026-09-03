@@ -4,6 +4,7 @@
 	max_occurrences = 2
 	weight = 15
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/gigachad_inteq/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/gigachad_inteq_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)
@@ -146,6 +147,7 @@
 	max_occurrences = 2
 	weight = 30
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/space_mosquito/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/mosquito_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)
@@ -233,7 +235,7 @@
 	projectiletype = /obj/item/projectile/bullet/a308
 	projectilesound = 'modular_bluemoon/sound/weapons/carcannon1.ogg'
 	var/alt_projectilesound = 'modular_bluemoon/sound/weapons/rocketlaunch.ogg'
-	var/alternative_fire = /obj/item/projectile/bullet/a84mm/he
+	var/alternative_fire = /obj/item/projectile/bullet/a84mm
 	var/list_sound = list('modular_bluemoon/sound/creatures/drone_speech.ogg', 'modular_bluemoon/sound/creatures/drone_target_search.ogg','modular_bluemoon/sound/creatures/drone_up.ogg','modular_bluemoon/sound/creatures/drone_up2.ogg')
 	icon = 'modular_bluemoon/icons/mob/dron.dmi'
 	icon_dead = "crash"
@@ -247,10 +249,15 @@
 /mob/living/simple_animal/hostile/malf_drone/experimental/Initialize(mapload)
 	. = ..()
 	update_icon(UPDATE_OVERLAYS)
+	// Уникальный лут смерти декларативно через элемент; общий скраповый дроп остался в drop_loot() родителя
+	AddElement(/datum/element/death_drops, list(
+		/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack,
+		/obj/item/robot_module/syndicate/inteq,
+	))
 
 /mob/living/simple_animal/hostile/malf_drone/experimental/update_overlays()
 	. = ..()
-	if(stat != CONSCIOUS || AIStatus == AI_OFF)
+	if(stat != CONSCIOUS || get_effective_ai_status() == AI_OFF)
 		return
 	. += mutable_appearance(icon, "scan")
 
@@ -314,12 +321,6 @@
 	icon_state = "all"
 	anchored = TRUE
 	duration = 10
-
-/mob/living/simple_animal/hostile/malf_drone/experimental/drop_loot()
-	. = ..()
-	var/turf/T = get_turf(src)
-	new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack(T)
-	new /obj/item/robot_module/syndicate/inteq(T)
 
 /mob/living/simple_animal/hostile/alien/queen/king
 	icon = 'modular_bluemoon/icons/mob/king.dmi'

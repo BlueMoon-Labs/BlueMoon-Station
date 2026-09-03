@@ -102,6 +102,26 @@
 	name = "Syndicate Bomb"
 	list_reagents = list(/datum/reagent/consumable/ethanol/syndicatebomb = 50)
 
+/obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_consumable
+	name = "drinking glass"
+
+/obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_consumable/Initialize(mapload)
+	var/list/consumable_types = subtypesof(/datum/reagent/consumable)
+	if(length(consumable_types))
+		list_reagents = list()
+		list_reagents[pick(consumable_types)] = 50
+	. = ..()
+
+/obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_ethanol
+	name = "drinking glass"
+
+/obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_ethanol/Initialize(mapload)
+	var/list/ethanol_types = subtypesof(/datum/reagent/consumable/ethanol)
+	if(length(ethanol_types))
+		list_reagents = list()
+		list_reagents[pick(ethanol_types)] = 50
+	. = ..()
+
 /obj/item/reagent_containers/food/drinks/drinkingglass/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/reagent_containers/food/snacks/egg)) //breaking eggs
 		var/obj/item/reagent_containers/food/snacks/egg/E = I

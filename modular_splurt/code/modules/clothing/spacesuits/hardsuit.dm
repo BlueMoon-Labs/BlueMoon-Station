@@ -43,7 +43,7 @@
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector,
 	/obj/item/hand_tele, /obj/item/aicard)
 	armor = list("melee" = 35, "bullet" = 25, "laser" = 25, "energy" = 5, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 80, "acid" = 100, "wound" = 30) // это костюм защиты от агресивной среды - без защиты от агресивной среды.
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev
 	var/firstpickup = TRUE
 	var/pickupsound = TRUE

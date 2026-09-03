@@ -40,7 +40,7 @@
 		. += getpipeimage(icon, "cap", direction, pipe_color, piping_layer, TRUE)
 
 /obj/machinery/atmospherics/components/trinary/mixer/update_icon_nopipes()
-	var/on_state = on && nodes[1] && nodes[2] && nodes[3] && is_operational()
+	var/on_state = on && nodes[1] && nodes[2] && nodes[3] && is_operational
 	icon_state = "mixer_[on_state ? "on" : "off"][flipped ? "_f" : ""]"
 
 /obj/machinery/atmospherics/components/trinary/mixer/New()
@@ -51,7 +51,7 @@
 
 /obj/machinery/atmospherics/components/trinary/mixer/process_atmos()
 	..()
-	if(!on || !(nodes[1] && nodes[2] && nodes[3]) || !is_operational())
+	if(!on || !(nodes[1] && nodes[2] && nodes[3]) || !is_operational)
 		return
 
 	//Get those gases, mah boiiii
@@ -72,8 +72,11 @@
 	//Calculate necessary moles to transfer using PV=nRT
 	var/general_transfer = (target_pressure - output_starting_pressure) * air3.return_volume() / R_IDEAL_GAS_EQUATION
 
-	var/transfer_moles1 = air1.return_temperature() ? node1_concentration * general_transfer / air1.return_temperature() : 0
-	var/transfer_moles2 = air2.return_temperature() ? node2_concentration * general_transfer / air2.return_temperature() : 0
+	var/combined_heat_capacity = air1.heat_capacity() + air2.heat_capacity()
+	var/equalized_temperature = combined_heat_capacity ? (air1.thermal_energy() + air2.thermal_energy()) / combined_heat_capacity : 0
+
+	var/transfer_moles1 = equalized_temperature ? node1_concentration * general_transfer / equalized_temperature : 0
+	var/transfer_moles2 = equalized_temperature ? node2_concentration * general_transfer / equalized_temperature : 0
 
 	var/air1_moles = air1.total_moles()
 	var/air2_moles = air2.total_moles()
@@ -115,6 +118,9 @@
 		ui = new(user, src, "AtmosMixer", name)
 		ui.open()
 
+/obj/machinery/atmospherics/components/trinary/mixer/ui_port_labels()
+	return list("Узел 1", "Узел 2", "Выход")
+
 /obj/machinery/atmospherics/components/trinary/mixer/ui_data()
 	var/data = list()
 	data["on"] = on
@@ -122,6 +128,7 @@
 	data["max_pressure"] = round(MAX_OUTPUT_PRESSURE)
 	data["node1_concentration"] = round(node1_concentration*100, 1)
 	data["node2_concentration"] = round(node2_concentration*100, 1)
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/trinary/mixer/ui_act(action, params)
@@ -165,7 +172,7 @@
 
 /obj/machinery/atmospherics/components/trinary/mixer/can_unwrench(mob/user)
 	. = ..()
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 
@@ -174,9 +181,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/layer1
 	piping_layer = 1
 	icon_state = "mixer_off_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/layer3
-	piping_layer = 3
-	icon_state = "mixer_off_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/layer2
+	piping_layer = 2
+	icon_state = "mixer_off_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/layer4
+	piping_layer = 4
+	icon_state = "mixer_off_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/layer5
+	piping_layer = 5
+	icon_state = "mixer_off_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/on
 	on = TRUE
@@ -185,9 +200,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/on/layer1
 	piping_layer = 1
 	icon_state = "mixer_on_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/on/layer3
-	piping_layer = 3
-	icon_state = "mixer_on_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer2
+	piping_layer = 2
+	icon_state = "mixer_on_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer4
+	piping_layer = 4
+	icon_state = "mixer_on_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer5
+	piping_layer = 5
+	icon_state = "mixer_on_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/flipped
 	icon_state = "mixer_off_f"
@@ -196,9 +219,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/layer1
 	piping_layer = 1
 	icon_state = "mixer_off_f_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer3
-	piping_layer = 3
-	icon_state = "mixer_off_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer2
+	piping_layer = 2
+	icon_state = "mixer_off_f_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer4
+	piping_layer = 4
+	icon_state = "mixer_off_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer5
+	piping_layer = 5
+	icon_state = "mixer_off_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/on
 	on = TRUE
@@ -207,9 +238,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer1
 	piping_layer = 1
 	icon_state = "mixer_on_f_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer3
-	piping_layer = 3
-	icon_state = "mixer_on_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer2
+	piping_layer = 2
+	icon_state = "mixer_on_f_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer4
+	piping_layer = 4
+	icon_state = "mixer_on_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer5
+	piping_layer = 5
+	icon_state = "mixer_on_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/airmix //For standard airmix to distro
 	name = "air mixer"

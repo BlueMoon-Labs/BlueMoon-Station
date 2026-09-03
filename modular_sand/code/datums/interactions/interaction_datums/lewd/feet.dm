@@ -8,7 +8,13 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/grindface/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/grindface/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/message
 
 	var/shoes = user.get_shoes()
@@ -48,13 +54,9 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry2.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
-						'modular_sand/sound/interactions/foot_dry4.ogg'), 70, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/grindmouth
 	description = "Ножки. Углубиться в ротик."
@@ -66,7 +68,13 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/grindmouth/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/grindmouth/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/message
 
 	//var/u_His = user.ru_ego()
@@ -109,13 +117,9 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg',
-						'modular_sand/sound/interactions/foot_wet3.ogg'), 70, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)
 
 /datum/interaction/lewd/footjob
 	description = "Ножки. Подрочить одной ногой."
@@ -127,26 +131,31 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
-/datum/interaction/lewd/footjob/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//var/u_His = user.ru_ego()
 	var/shoes = user.get_shoes(TRUE)
 	var/genital_name = partner.get_penetrating_genital_name()
-
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(src, CUM_TARGET_FEET))
-		message = "[pick("дрочит [genital_name] <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
-			"ласкает своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] промежность <b>[partner]</b>.",
-			"работает [shoes ? shoes : pick("ножками", "ступнями")], двигая оные вверх-вниз по члену <b>[partner]</b>.")]"
+		message = "[pick("дрочит [genital_name] <b>[partner]</b> своей [shoes ? shoes : pick("ножкой", "ступней")].",
+			"ласкает своей [shoes ? shoes : pick("ножкой", "ступней")] промежность <b>[partner]</b>.",
+			"работает [shoes ? shoes : pick("ножкой", "ступней")], двигая ей вверх-вниз по члену <b>[partner]</b>.")]"
 	else
-		message = "[pick("[shoes ? "занимает своими '[shoes]' позицию на" :"занимает своими ножками позицию на"] \the <b>[partner]</b>'s [genital_name].",
-			"начинает играться с пенисом <b>[partner]</b> своими [shoes ? shoes :"ногами"].")]"
+		message = "[pick("[shoes ? "занимает своей '[shoes]' позицию на" :"занимает своей ножкой позицию на"] \the <b>[partner]</b>'s [genital_name].",
+			"начинает играться с пенисом <b>[partner]</b> своей [shoes ? shoes :"ногой"].")]"
 		partner.set_is_fucking(user, CUM_TARGET_FEET, partner.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), 70, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
 
@@ -155,11 +164,17 @@
 	require_user_num_feet = 2
 	p13target_strength = PLUG13_STRENGTH_NORMAL_PLUS
 
-/datum/interaction/lewd/footjob/double/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/double/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//var/u_His = user.ru_ego()
 	var/shoes = user.get_shoes()
 	var/genital_name = partner.get_penetrating_genital_name()
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
 		message = "[pick("дрочит <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
@@ -174,8 +189,8 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), 70, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
 
@@ -184,30 +199,32 @@
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
 	p13target_emote = PLUG13_EMOTE_VAGINA
 
-/datum/interaction/lewd/footjob/vagina/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/vagina/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	var/picked_hidden = pick(hidden_additional)
+	if(is_hidden)
+		distance = 1
 
 	//var/u_His = user.ru_ego()
 
 	var/shoes = user.get_shoes(TRUE)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
-		message = "[pick("трёт клитор <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
-			"трёт своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] непристойности <b>[partner]</b>.",
-			"растирает своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] вагину <b>[partner]</b>.",
+		message = "[pick("трёт клитор <b>[partner]</b> своей [shoes ? shoes : pick("ножкой", "ступней")].",
+			"трёт своей [shoes ? shoes : pick("ножкой", "ступней")] непристойности <b>[partner]</b>.",
+			"растирает своей [shoes ? shoes : pick("ножкой", "ступней")] вагину <b>[partner]</b>.",
 			"трёт свою ногу об вагину <b>[partner]</b>.")]"
 	else
-		message = "[pick("[shoes ? "занимает своими [shoes] позицию на" :"занимает своими ножками позицию на"] вагине <b>[partner]</b>.",
-			"начинает играться с киской <b>[partner]</b> своими '[shoes ? shoes : "ногами"]'.")]"
+		message = "[pick("[shoes ? "занимает своей [shoes] позицию на" :"занимает своей ножкой позицию на"] вагине <b>[partner]</b>.",
+			"начинает играться с киской <b>[partner]</b> своей '[shoes ? shoes : "ножкой"]'.")]"
 		partner.set_is_fucking(user, CUM_TARGET_FEET, partner.getorganslot(ORGAN_SLOT_VAGINA))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), 70, 1, -1)
-	user.visible_message(message = span_lewd("<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting())
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_VAGINA) //SPLURT edit
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(partner, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(partner.loc)

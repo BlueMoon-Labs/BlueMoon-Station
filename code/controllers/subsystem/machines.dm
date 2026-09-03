@@ -14,6 +14,8 @@ SUBSYSTEM_DEF(machines)
 	var/list/currentrun = list()
 	///List of all powernets on the server.
 	var/list/datum/powernet/powernets = list()
+	///How many machines currently sit in machine_sleep() (off the processing list, drawing statically). Diagnostics only.
+	var/sleeping_machines = 0
 	var/static/list/bluespaceminer_by_zlevel[][] //BLUEMOON ADD счётчик бс майнеров на z уровне
 
 /datum/controller/subsystem/machines/Initialize()
@@ -42,10 +44,13 @@ SUBSYSTEM_DEF(machines)
 			propagate_network(power_cable, power_cable.powernet)
 
 /datum/controller/subsystem/machines/fire(resumed = FALSE)
+	var/slice_start_usage = TICK_USAGE
 	if (!resumed)
 		for(var/datum/powernet/powernet as anything in powernets)
 			powernet.reset() //reset the power state.
 		src.currentrun = processing.Copy()
+		current_pass_cost_ms = 0
+	var/profiling = profile_armed
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
@@ -53,6 +58,14 @@ SUBSYSTEM_DEF(machines)
 	while(currentrun.len)
 		var/obj/machinery/thing = currentrun[currentrun.len]
 		currentrun.len--
+		var/machine_type = thing?.type
+		var/item_start_usage
+		if(profiling)
+			item_start_usage = TICK_USAGE
+#if defined(TESTING) || defined(AI_MOB_ARENA_MACHINES_BENCH)
+		var/datum/machines_benchmark/bench = GLOB.machines_benchmark_run
+		var/bench_tick_start = bench ? TICK_USAGE : 0
+#endif
 		if(!QDELETED(thing) && thing.process(wait * 0.1) != PROCESS_KILL)
 			if(thing.use_power)
 				thing.auto_use_power() //add back the power state
@@ -60,8 +73,17 @@ SUBSYSTEM_DEF(machines)
 			processing -= thing
 			if (!QDELETED(thing))
 				thing.datum_flags &= ~DF_ISPROCESSING
+		if(profiling && machine_type)
+			profile_note(machine_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)))
+#if defined(TESTING) || defined(AI_MOB_ARENA_MACHINES_BENCH)
+		if(bench && machine_type)
+			bench.record_machine_cost(machine_type, TICK_USAGE - bench_tick_start)
+#endif
 		if (MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(processing))
 
 /// Registers a machine with the machine subsystem; should only be called by the machine itself during its creation.
 /datum/controller/subsystem/machines/proc/register_machine(obj/machinery/machine)
@@ -109,8 +131,11 @@ SUBSYSTEM_DEF(machines)
 	return length(machines_by_type)
 
 /datum/controller/subsystem/machines/stat_entry(msg)
-	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|PN:[length(powernets)]"
+	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|SLP:[sleeping_machines]|PN:[length(powernets)]"
 	return ..()
+
+/datum/controller/subsystem/machines/last_task()
+	return "машин в проходе [length(currentrun)] из [length(processing)], спит [sleeping_machines]"
 
 /datum/controller/subsystem/machines/proc/setup_template_powernets(list/cables)
 	var/obj/structure/cable/PC
@@ -122,6 +147,8 @@ SUBSYSTEM_DEF(machines)
 			propagate_network(PC,PC.powernet)
 
 /datum/controller/subsystem/machines/Recover()
+	if(isnum(SSmachines.sleeping_machines))
+		sleeping_machines = SSmachines.sleeping_machines
 	if(islist(SSmachines.processing))
 		processing = SSmachines.processing
 	if(islist(SSmachines.powernets))

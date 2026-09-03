@@ -14,6 +14,10 @@
 	has_fine_manipulation = 1
 	initial_language_holder = /datum/language_holder
 
+/mob/living/carbon/alien/humanoid/drone/maid/Initialize(mapload)
+	AddAbility(new/obj/effect/proc_holder/alien/evolve/maid(null))
+	. = ..(/mob/living/carbon/alien/humanoid)
+
 /mob/living/carbon/alien/humanoid/drone/Initialize(mapload)
 	AddAbility(new/obj/effect/proc_holder/alien/evolve(null))
 	. = ..()
@@ -31,6 +35,11 @@
 
 	action_icon_state = "alien_evolve_drone"
 
+/obj/effect/proc_holder/alien/evolve/maid
+	name = "Evolve to Maid Queen"
+	desc = "Become the Maid Queen of the hive. Only one queen can exist at a time. Maid Queens cannot lay eggs. Costs 450 Plasma."
+	action_icon_state = "alien_evolve_drone"
+
 /obj/effect/proc_holder/alien/evolve/fire(mob/living/carbon/alien/humanoid/user)
 	var/obj/item/organ/alien/hivenode/node = user.getorgan(/obj/item/organ/alien/hivenode)
 	if(!node) //Players are Murphy's Law. We may not expect there to ever be a living xeno with no hivenode, but they _WILL_ make it happen.
@@ -44,6 +53,10 @@
 		to_chat(user, "<span class='notice'>You can't evolve here!</span>")
 		return FALSE
 	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal))
+		if(istype(user, /mob/living/carbon/alien/humanoid/drone/maid) && IS_XENO_MAID_ROUND)
+			var/mob/living/carbon/alien/humanoid/royal/queen/maid/new_maid_queen = new (user.loc)
+			user.alien_evolve(new_maid_queen)
+			return TRUE
 		var/mob/living/carbon/alien/humanoid/royal/praetorian/new_xeno = new (user.loc)
 		user.alien_evolve(new_xeno)
 		return TRUE

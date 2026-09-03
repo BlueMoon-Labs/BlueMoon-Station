@@ -71,6 +71,7 @@
 
 /obj/structure/glowshroom/Initialize(mapload, obj/item/seeds/newseed, mutate_stats, spread)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(newseed)
 		myseed = newseed.Copy()
 		myseed.forceMove(src)
@@ -166,6 +167,8 @@
 				continue
 
 			Decay(TRUE, 2) // Decay before spawning new mushrooms to reduce their endurance
+			if(QDELETED(src) || !myseed) // Decay may have killed us when endurance dropped below 1
+				return
 			var/obj/structure/glowshroom/child = new type(newLoc, myseed, TRUE, TRUE)
 			child.generation = generation + 1
 			shrooms_planted++
@@ -238,6 +241,12 @@
 /obj/structure/glowshroom/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		take_damage(5, BURN, 0, 0)
+
+/obj/structure/glowshroom/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/glowshroom/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 /obj/structure/glowshroom/acid_act(acidpwr, acid_volume)
 	. = 1

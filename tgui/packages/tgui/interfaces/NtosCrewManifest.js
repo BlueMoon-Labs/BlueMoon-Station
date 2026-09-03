@@ -4,8 +4,8 @@ import { useBackend } from '../backend';
 import { Button, Section, Table } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosCrewManifest = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosCrewManifest = (props) => {
+  const { act, data } = useBackend();
   const {
     have_printer,
     manifest = {},
@@ -16,11 +16,11 @@ export const NtosCrewManifest = (props, context) => {
       height={480}>
       <NtosWindow.Content overflow="auto">
         <Section
-          title="Crew Manifest"
+          title="Манифест экипажа"
           buttons={(
             <Button
               icon="print"
-              content="Print"
+              content="Печать"
               disabled={!have_printer}
               onClick={() => act('PRG_print')} />
           )}>

@@ -85,3 +85,17 @@
 /datum/gear/shirt/cheese
 	name = "Cheese-Kini Bra"
 	path = /obj/item/clothing/underwear/shirt/cheese
+
+/datum/gear/shirt/swimsuit
+	name = "Polychromic Swimsuit"
+	path = /obj/item/clothing/underwear/shirt/bra/bikini/swimsuit
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#FFFFFF", "#FFFFFF")
+
+/datum/gear/shirt/swimsuit/alt
+	name = "Polychromic Slim Swimsuit"
+	path = /obj/item/clothing/underwear/shirt/bra/bikini/swimsuit/alt
+
+/datum/gear/shirt/swimsuit/horny
+	name = "Polychromic Slim~ Swimsuit"
+	path = /obj/item/clothing/underwear/shirt/bra/bikini/swimsuit/horny

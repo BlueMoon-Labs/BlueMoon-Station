@@ -86,7 +86,7 @@
 	light_color = "#00111a" //The light can technically cycle on a timer worldwide, but no daynight cycle.
 	baseturfs = /turf/open/floor/plating/spookbase/dirtattachmentpoint //If we explode or die somehow, we just become grass
 	gender = PLURAL //THE GENDER IS PLURAL
-	tiled_dirt = 0 //NO TILESMOOTHING DIRT/DIRT SPAWNS OR SOME SHIT
+	turf_flags = TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT
 
 /turf/open/floor/spooktime/break_tile()
 	return
@@ -106,6 +106,7 @@
 	desc = "Looks like its been dugged out and prepped for construction"
 	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
 	icon_state = "dugdirt"
+	base_icon_state = "dugdirt"
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
@@ -131,6 +132,7 @@
 	desc = "Looks like its been dugged out and prepped for construction"
 	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
 	icon_state = "dugsand"
+	base_icon_state = "dugsand"
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
@@ -217,7 +219,7 @@
 	slowdown = 2
 	light_range = 0
 	light_power = 0
-	bullet_sizzle = 1
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
@@ -801,6 +803,11 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 /turf/open/floor/plasteel/damturf/scorched2
 	icon_state = "floorscorched2"
 
+/turf/open/floor/plating/damturf/welder_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(!QDELETED(src) && !(broken || burnt))
+		ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+
 /turf/open/floor/plating/damturf/scorched
 	icon_state = "panelscorched"
 
@@ -843,7 +850,7 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
 	icon_state = "riverwater_motion"
 	slowdown = 1
-	bullet_sizzle = 1
+	turf_flags = (TURF_FLAGS_FLOOR & ~TURF_TILED_DIRT) | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null //needs a splashing sound one day.
 	footstep = FOOTSTEP_WATER
 	barefootstep = FOOTSTEP_WATER
@@ -864,7 +871,7 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 	barefootstep = FOOTSTEP_LAVA
 	clawfootstep = FOOTSTEP_LAVA
 	heavyfootstep = FOOTSTEP_LAVA
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 //Fermis's umbrella
 

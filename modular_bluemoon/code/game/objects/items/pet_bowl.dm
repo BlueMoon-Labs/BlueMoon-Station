@@ -4,6 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/food/pet_bowl.dmi'
 	icon_state = "pet_bowl"
 	// interaction_flags_item = NONE
+	item_flags = NO_PIXEL_RANDOM_DROP
 	resistance_flags = NONE
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 40, 50, 80)
 	reagent_flags = OPENCONTAINER
@@ -15,15 +16,17 @@
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/Initialize(mapload)
 	. = ..()
-	pixel_x = base_pixel_x
-	pixel_y = base_pixel_y
-	item_flags |= NO_PIXEL_RANDOM_DROP
 	register_context()
+
+/obj/item/reagent_containers/food/snacks/customizable/pet_bowl/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(iscarbon(user) && isnull(held_item))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_HELP, "Eat")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Pick up")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/examine(mob/user)
@@ -114,8 +117,10 @@
 		return FALSE
 	if(reagents?.has_reagent(/datum/reagent/consumable/nutriment))
 		consume_sound = initial(consume_sound)
+		eatverb = pick("bite","chew","nibble","gnaw","gobble","chomp")
 	else
 		consume_sound = 'sound/items/drink.ogg'
+		eatverb = pick("slurp","suck","lick")
 	. = ..()
 	if(isemptylist(ingredients))
 		bitecount = 0
@@ -163,7 +168,6 @@
 		empty_bowl()
 	else
 		if(!reagents?.has_reagent(/datum/reagent/consumable/nutriment))
-			cut_overlays()
 			var/datum/reagent/r = reagents.get_master_reagent()
 			name = "[initial(name)] of [replacetext(r.glass_name, "glass of ", "")]"
 	update_icon()

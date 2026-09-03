@@ -416,7 +416,7 @@
 
 /obj/item/ammo_casing/energy/bolt/spike
 	projectile_type = /obj/item/projectile/spike
-	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/taser.ogg'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/luftkuss_taser.ogg'
 
 /obj/item/gun/energy/kinetic_accelerator/spikethrower
 	name = "spike thrower"
@@ -540,7 +540,7 @@
 
 /mob/living/simple_animal/pet/cat/space/alta/Initialize(mapload)
 	. = ..()
-	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSevents.holidays)
+	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSholidays.holidays)
 		icon_state = "spacealta_santa"
 		icon_living = "spacealta_santa"
 		icon_dead = "spacealta_dead_santa"

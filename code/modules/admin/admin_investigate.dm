@@ -1,8 +1,10 @@
 /atom/proc/investigate_log(message, subject)
 	if(!message || !subject)
 		return
-	var/F = file("[GLOB.log_directory]/[subject].html")
-	WRITE_FILE(F, "<small>[TIME_STAMP("hh:mm:ss", FALSE)] [REF(src)] ([x],[y],[z])</small> || [src] [message]<br>")
+	//Раньше тут на КАЖДУЮ строку создавался файловый датум и делалась синхронная запись
+	//мимо rust-g. Пишем тем же буферизованным логгером, что и весь остальной репозиторий;
+	//формат отключён, потому что метку времени мы ставим свою, внутри разметки
+	WRITE_LOG_NO_FORMAT("[GLOB.log_directory]/[subject].html", "<small>[TIME_STAMP("hh:mm:ss", FALSE)] [REF(src)] ([x],[y],[z])</small> || [src] [message]<br>")
 
 /client/proc/investigate_show()
 	set name = "Investigate"
@@ -10,7 +12,13 @@
 	if(!holder)
 		return
 
-	var/list/investigates = list(INVESTIGATE_RCD, INVESTIGATE_RESEARCH, INVESTIGATE_EXONET, INVESTIGATE_PORTAL, INVESTIGATE_SINGULO, INVESTIGATE_WIRES, INVESTIGATE_TELESCI, INVESTIGATE_GRAVITY, INVESTIGATE_RECORDS, INVESTIGATE_CARGO, INVESTIGATE_SUPERMATTER, INVESTIGATE_ATMOS, INVESTIGATE_EXPERIMENTOR, INVESTIGATE_BOTANY, INVESTIGATE_HALLUCINATIONS, INVESTIGATE_RADIATION, INVESTIGATE_CIRCUIT, INVESTIGATE_NANITES, INVESTIGATE_CRYOGENICS)
+	//Логи уходят в буфер rust-g, и хвост файла может ещё не лежать на диске - без сброса
+	//админ увидел бы обрезанный лог или вовсе счёл его пустым. Отдельного флаша у rust-g
+	//нет, только закрытие всех хендлов; они переоткроются сами на следующей записи,
+	//файлы открываются на дозапись
+	rustg_log_close_all()
+
+	var/list/investigates = list(INVESTIGATE_RCD, INVESTIGATE_RESEARCH, INVESTIGATE_EXONET, INVESTIGATE_PORTAL, INVESTIGATE_SINGULO, INVESTIGATE_WIRES, INVESTIGATE_TELESCI, INVESTIGATE_GRAVITY, INVESTIGATE_RECORDS, INVESTIGATE_CARGO, INVESTIGATE_SUPERMATTER, INVESTIGATE_HYPERTORUS, INVESTIGATE_ATMOS, INVESTIGATE_EXPERIMENTOR, INVESTIGATE_BOTANY, INVESTIGATE_HALLUCINATIONS, INVESTIGATE_RADIATION, INVESTIGATE_CIRCUIT, INVESTIGATE_NANITES, INVESTIGATE_CRYOGENICS)
 
 	var/list/logs_present = list("notes, memos, watchlist")
 	var/list/logs_missing = list("---")

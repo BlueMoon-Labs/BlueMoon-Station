@@ -14,7 +14,7 @@
 
 //shows a list of clients we could send PMs to, then forwards our choice to cmd_admin_pm
 /client/proc/cmd_admin_pm_panel()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Admin PM"
 	if(!holder)
 		to_chat(src, "<span class='danger'>Error: Admin-PM-Panel: Only administrators may use this command.</span>", confidential = TRUE)
@@ -55,10 +55,17 @@
 	if(AH)
 		message_admins("[key_name_admin(src, FALSE)] [ADMIN_FLW(src.mob)] начал отвечать на админхелп [key_name_admin(C, FALSE)] [ADMIN_FLW(C.mob)].",\
 		islog = FALSE, prefix = "AHELP")
+		AH.typing_admins[usr.ckey] = world.time
+		reply_modal_open = TRUE
+	var/mob/prompt_mob = begin_native_prompt(src)
 	var/msg = input(src,"Сообщение:", "Приватное сообщение [C.holder?.fakekey ? "администрации" : key_name(C, FALSE)].") as message|null
+	end_native_prompt(prompt_mob)
+	reply_modal_open = FALSE
 	if (!msg)
 		message_admins("[key_name_admin(src, FALSE)] [ADMIN_FLW(src.mob)] прекратил отвечать на admin help [key_name_admin(C, FALSE)] [ADMIN_FLW(C.mob)].",\
 		islog = FALSE, prefix = "AHELP")
+		if(AH)
+			AH.typing_admins -= usr.ckey
 		return
 	if(!C) //We lost the client during input, disconnected or relogged.
 		if(GLOB.directory[AH.initiator_ckey]) // Client has reconnected, lets try to recover
@@ -67,7 +74,15 @@
 			to_chat(src, "<span class='danger'>Ошибка: Admin-PM: Клиент не найден.</span>", confidential = TRUE)
 			to_chat(src, "<span class='danger'><b>Сообщение не отправлено:</b></span><br>[msg]", confidential = TRUE)
 			AH.AddInteraction("<b>Клиент не найден, сообщение не отправлено:</b><br>[msg]")
+			if(AH)
+				AH.typing_admins -= usr.ckey
 			return
+	if(AH && !AH.handler && holder)
+		AH.handle_issue()
+
+	if(AH)
+		AH.typing_admins -= usr.ckey
+
 	cmd_admin_pm(whom, msg)
 
 //takes input from cmd_admin_pm_context, cmd_admin_pm_panel or /client/Topic and sends them a PM.
@@ -107,7 +122,9 @@
 		if(!ircreplyamount)	//to prevent people from spamming irc/discord
 			return
 		if(!msg)
+			var/mob/external_prompt_mob = begin_native_prompt(src)
 			msg = input(src,"Сообщение:", "Приватное сообщение для администрации") as message|null
+			end_native_prompt(external_prompt_mob)
 
 		if(!msg)
 			return
@@ -118,9 +135,28 @@
 	else
 		//get message text, limit it's length.and clean/escape html
 		if(!msg)
+			//track typing indicator
+			var/datum/admin_help/typing_ticket
+			if(!holder && current_ticket)
+				typing_ticket = current_ticket
+				typing_ticket.initiator_typing_time = world.time
+			else if(holder && recipient?.current_ticket)
+				typing_ticket = recipient.current_ticket
+				typing_ticket.typing_admins[src.ckey] = world.time
+			if(typing_ticket)
+				reply_modal_open = TRUE
+
+			var/mob/prompt_mob = begin_native_prompt(src)
 			msg = input(src,"Сообщение:", "Приватное сообщение для [recipient.holder?.fakekey ? "администрации" : key_name(recipient, 0, 0)].") as message|null
+			end_native_prompt(prompt_mob)
+			reply_modal_open = FALSE
 			msg = trim(msg)
 			if(!msg)
+				if(typing_ticket)
+					if(!holder)
+						typing_ticket.initiator_typing_time = null
+					else
+						typing_ticket.typing_admins -= src.ckey
 				return
 
 		if(!recipient)
@@ -138,7 +174,11 @@
 					if(!check_rights(R_SERVER|R_DEBUG,0)||external)//no sending html to the poor bots
 						msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
 						if(!msg)
+							if(!holder && current_ticket)
+								current_ticket.initiator_typing_time = null
 							return
+					if(!holder && current_ticket)
+						current_ticket.initiator_typing_time = null
 					current_ticket.MessageNoRecipient(msg)
 					return
 
@@ -181,13 +221,17 @@
 				to_chat(src, "<span class='notice'>Админ PM к <b>[key_name(recipient, src, 1)] [ADMIN_FLW(recipient.mob)]</b>: <span class='linkify'>[keywordparsedmsg]</span></span>", confidential = TRUE)
 
 				//omg this is dumb, just fill in both their tickets
-				var/interaction_message = "<font color='#c084fc'>PM от <b>[key_name(src, recipient, 1)]</b> к <b>[key_name(recipient, src, 1)]</b>: [keywordparsedmsg]</font>"
+				var/interaction_message = "<font color='#c084fc'>PM от <b>[src.ckey]</b>: [keywordparsedmsg]</font>"
 				admin_ticket_log(src, interaction_message)
 				if(recipient != src)	//reeee
 					admin_ticket_log(recipient, interaction_message)
 				if(current_ticket)
 					SSblackbox.LogAhelp(current_ticket.id, "Reply", msg, recipient.ckey, src.ckey)
 			else		//recipient is an admin but sender is not
+				//clear initiator
+				if(!holder && current_ticket)
+					current_ticket.initiator_typing_time = null
+
 				var/replymsg = "PM-ответ от <b>[key_name(src, recipient, 1)]</b>: <span class='linkify'>[keywordparsedmsg]</span>"
 				admin_ticket_log(src, "<font color='#f87171'>[replymsg]</font>")
 				to_chat(recipient, "<span class='danger'>[replymsg]</span>", confidential = TRUE)
@@ -195,9 +239,9 @@
 				if(current_ticket)
 					SSblackbox.LogAhelp(current_ticket.id, "Reply", msg, recipient.ckey, src.ckey)
 
-			//play the receiving admin the adminhelp sound (if they have them enabled)
-			if(recipient.prefs.toggles & SOUND_ADMINHELP)
-				SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg'))
+			if(recipient?.prefs?.toggles & SOUND_ADMINHELP)
+				var/ah_vol = recipient.prefs?.get_sound_volume("adminhelp")
+				SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 
 		else
 			if(holder)	//sender is an admin but recipient is not. Do BIG RED TEXT
@@ -207,22 +251,33 @@
 					already_logged = TRUE //BLUEMOON EDIT, enable ticket logging
 					SSblackbox.LogAhelp(recipient.current_ticket.id, "Ticket Opened", msg, recipient.ckey, src.ckey)
 
+				//auto-assign ticket
+				if(recipient.current_ticket && !recipient.current_ticket.handler)
+					recipient.current_ticket.handle_issue()
+
+				//clear typing
+				if(recipient.current_ticket)
+					recipient.current_ticket.typing_admins -= src.ckey
+
 				var/recipient_message = ""
 				recipient_message += "<br><center><font color='red' size='4'><b>-- Administrator private message --</b></font></center>"
-				recipient_message += "<span class='adminsay'>Админ PM от <b>[key_name(src, recipient, 0)]</b>: <span class='linkify'>[msg]</span></span>"
+				var/admin_nickname = src.prefs?.ticket_nickname ? src.prefs.ticket_nickname : "Админ"
+				recipient_message += "<span class='adminsay'>Админ PM от <b><a href='?priv_msg=[src.ckey]'>[admin_nickname]</a></b>: <span class='linkify'>[msg]</span></span>"
 				recipient_message += "<br><span class='adminsay'><i>Нажмите на имя администратора для ответа</i></span>"
 				recipient_message += "<br><br>"
 				to_chat(recipient, recipient_message, confidential = TRUE)
 				to_chat(src, "<span class='notice'>Админ PM к <b>[key_name(recipient, src, 1)] [ADMIN_FLW(recipient.mob)]</b>: <span class='linkify'>[msg]</span></span>", confidential = TRUE)
 
-				admin_ticket_log(recipient, "<font color='#c084fc'>PM от [key_name_admin(src)]: [keywordparsedmsg]</font>")
+				admin_ticket_log(recipient, "<font color='#c084fc'>PM от <b>[src.ckey]</b>: [keywordparsedmsg]</font>")
 
 				if(!already_logged) //Reply to an existing ticket   //BLUEMOON EDIT, enable ticket logging
 					SSblackbox.LogAhelp(recipient.current_ticket.id, "Reply", msg, recipient.ckey, src.ckey) //BLUEMOON EDIT, enable ticket logging
 
 
 				//always play non-admin recipients the adminhelp sound
-				SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg'))
+				if(recipient?.prefs?.toggles & SOUND_ADMINHELP)
+					var/ah_vol = recipient.prefs?.get_sound_volume("adminhelp")
+					SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 
 
 			else		//neither are admins

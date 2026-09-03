@@ -143,7 +143,7 @@
 
 		if("add_tattoo")
 			var/zone = params["zone"]
-			var/text = params["text"]
+			var/text = strip_control_chars(params["text"])
 			var/color = params["color"]
 			var/style = params["style"]
 			if(!zone || !text || !color || !style)
@@ -154,7 +154,7 @@
 		if("edit_tattoo")
 			var/zone = params["zone"]
 			var/index = params["index"]
-			var/new_text = params["text"]
+			var/new_text = strip_control_chars(params["text"])
 			var/new_color = params["color"]
 			var/new_style = params["style"]
 			if(!zone || !index || !new_text || !new_color || !new_style)

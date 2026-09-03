@@ -3,8 +3,8 @@
 	small_icon_state = "ash_whelp"
 
 /datum/action/item_action/toggle_light/Trigger()
-	if(istype(target, /obj/item/pda))
-		var/obj/item/pda/P = target
+	if(istype(target, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/P = target
 		P.toggle_light(owner)
 		return
 	..()

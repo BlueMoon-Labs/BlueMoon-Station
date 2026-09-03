@@ -38,6 +38,7 @@
 ///////////   KNIFE   ///////////
 
 /datum/crafting_recipe/food/raw_noodles
+	name = "Fresh noodles"
 	reqs = list(/obj/item/reagent_containers/food/snacks/rice_dough = 1)
 	result = /obj/item/reagent_containers/food/snacks/spaghetti/rawnoodles
 	subcategory = CAT_EAST

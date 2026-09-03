@@ -92,6 +92,9 @@
 				to_chat(owner, span_danger("Вы не можете открыть больше одного tgui окна выбора!")) //защита от спама кнопки, которая приводит к огромному количеству введенных реагентов
 				return
 	if(!venom_bank.reagent_list.len)
+		if(!my_quirk?.my_reagents)
+			to_chat(owner, span_warning("Не удалось определить яды для укуса (квирк не найден)."))
+			return
 		var/list/reagent_names = list()
 		for(var/key in my_quirk.my_reagents)
 			reagent_names += my_quirk.my_reagents[key]
@@ -162,7 +165,7 @@
 
 	var/target_zone_name = "flesh"
 	var/target_zone_effects = FALSE
-	var/target_zone_check = bite_bodypart?.can_dismember() || TRUE
+	var/target_zone_check = bite_bodypart?.can_dismembered() || TRUE
 
 	switch(target_zone)
 		if(BODY_ZONE_HEAD)

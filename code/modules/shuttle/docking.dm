@@ -101,7 +101,7 @@
 		if(dest_z >= 1 && dest_z <= SSmapping.z_list.len)
 			var/datum/space_level/level = SSmapping.z_list[dest_z]
 			if(!level.lighting_initialized)
-				create_lighting_for_zlevel(dest_z)
+				create_lighting_for_zlevel(dest_z, LIGHTING_INIT_REASON_DOCKING)
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
 	// (expansion is cheap list-building; actual update_starlight() runs in SSlighting's budget)
@@ -204,7 +204,7 @@
 	for(var/i in 1 to areas_to_move.len)
 		CHECK_TICK
 		var/area/internal_area = areas_to_move[i]
-		internal_area.afterShuttleMove(new_parallax_dir) //areas
+		internal_area.afterShuttleMove(new_parallax_dir, parallax_speed) //areas
 
 	for(var/i in 1 to old_turfs.len)
 		CHECK_TICK

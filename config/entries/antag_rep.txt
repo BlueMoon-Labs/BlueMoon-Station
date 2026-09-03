@@ -1,10 +1,12 @@
 ## disclaimer: this is a confusing file. reading and understanding antag rep code is recommended for future headmins/server leads.
 
 ## Use the antagonist reputation system
-# ANTAG_REP
+## The key is USE_ANTAG_REP - plain ANTAG_REP is the keyed list at the bottom of this file,
+## so writing "ANTAG_REP TRUE" only produces a validation error on startup.
+# USE_ANTAG_REP
 
-## Maximum antag roll ticketts someone can have
-# ANTAG_REP_MAXIMUM 200
+## Maximum antag roll tickets someone can have
+## Lives in config/entries/general.txt - keeping a second copy here only makes a duplicate warning.
 
 ## "Free" tickets someone gets on roll
 # DEFAULT_ANTAG_TICKETS 100

@@ -1,6 +1,7 @@
 //A reference to this list is passed into area sound managers, and it's modified in a manner that preserves that reference in ash_storm.dm
 GLOBAL_LIST_EMPTY(ash_storm_sounds)
 /datum/weather/ash_storm
+	parallax_profile = "planet_embers_storm"
 	name = "ash storm"
 	desc = "An intense atmospheric storm lifts ash off of the planet's surface and billows it down across the area, dealing intense fire damage to the unprotected."
 

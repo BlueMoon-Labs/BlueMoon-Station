@@ -26,7 +26,7 @@
 		return
 
 	if(heal_tox)
-		owner.adjustToxLoss(-heal_tox, TRUE) //Doesn't kill slimes. Yes.
+		owner.adjustToxLoss(-heal_tox, FALSE, TRUE) //Doesn't kill slimes. Yes.
 	if(heal_fire)
 		owner.adjustFireLoss(-heal_fire, FALSE)
 	if(heal_stamina)

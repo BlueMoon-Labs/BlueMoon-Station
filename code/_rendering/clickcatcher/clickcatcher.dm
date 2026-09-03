@@ -49,6 +49,10 @@
 	// screen-loc: Pixel coordinates in screen_loc format ("[tile_x]:[pixel_x],[tile_y]:[pixel_y]")
 	if(!scr_loc)
 		return null
+	// get_turf(client.eye) у вызывающего вполне может вернуть null (глаз в нуль-спейсе,
+	// клиент уходит) - без точки отсчёта координаты не посчитать
+	if(isnull(origin))
+		return null
 	var/tX = splittext(scr_loc, ",")
 	var/tY = splittext(tX[2], ":")
 	var/tZ = origin.z

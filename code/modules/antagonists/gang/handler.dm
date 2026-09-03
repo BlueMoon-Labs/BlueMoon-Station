@@ -1,4 +1,7 @@
+/// Порог населения, выше которого счётчик розыска и наряд копов считаются по HIGHPOP-таблицам.
+/// Это НЕ количество семейников: их задаёт FAMILIES_ROUNDSTART_COUNT ниже.
 #define LOWPOP_FAMILIES_COUNT 50
+#define FAMILIES_ROUNDSTART_COUNT 8 // BLUEMOON ADD - total roundstart family members, split evenly across gangs in post_setup_analogue()
 
 #define TWO_STARS_HIGHPOP 11
 #define THREE_STARS_HIGHPOP 16
@@ -114,7 +117,7 @@ GLOBAL_VAR(families_override_theme)
 		current_theme = new theme_to_use
 	else
 		current_theme = new GLOB.families_override_theme
-	var/gangsters_to_make = length(current_theme.involved_gangs) * current_theme.starting_gangsters
+	var/gangsters_to_make = FAMILIES_ROUNDSTART_COUNT // BLUEMOON CHANGE - was length(current_theme.involved_gangs) * current_theme.starting_gangsters
 	for(var/i in 1 to gangsters_to_make)
 		if (!antag_candidates.len)
 			break
@@ -178,24 +181,36 @@ GLOBAL_VAR(families_override_theme)
 		if(return_if_no_gangs)
 			return FALSE // ending early is bad if we're not in dynamic
 
-	var/list/gangs_to_use = current_theme.involved_gangs
-	var/amount_of_gangs = gangs_to_use.len
+	var/list/gangs_to_use = shuffle(current_theme.involved_gangs)
+	var/amount_of_gangs = length(gangs_to_use)
+	var/gangsters_to_assign = length(gangbangers)
 
-	for(var/_ in 1 to amount_of_gangs)
-		var/gang_to_use = pick_n_take(gangs_to_use)
-		for(var/__ in 1 to current_theme.starting_gangsters)
-			if(!gangbangers.len)
-				break
-			var/datum/mind/gangster_mind = pick_n_take(gangbangers)
-			var/datum/antagonist/gang/new_gangster = new gang_to_use()
-			new_gangster.handler = src
-			new_gangster.starter_gangster = TRUE
-			gangster_mind.add_antag_datum(new_gangster)
+	// Fill the families in rounds instead of exhausting one family before starting the next.
+	// FAMILIES_ROUNDSTART_COUNT is split evenly across competing families (e.g. 5 -> 3+2 in a two-family theme).
+	for(var/index in 1 to gangsters_to_assign)
+		var/gang_to_use = gangs_to_use[((index - 1) % amount_of_gangs) + 1]
+		var/datum/mind/gangster_mind = pick_n_take(gangbangers)
+		var/datum/antagonist/gang/new_gangster = new gang_to_use()
+		new_gangster.handler = src
+		new_gangster.starter_gangster = TRUE
+		gangster_mind.add_antag_datum(new_gangster)
 
 		// see /datum/antagonist/gang/create_team() for how the gang team datum gets instantiated and added to our gangs list
 
 	addtimer(CALLBACK(src, PROC_REF(announce_gang_locations)), 5 MINUTES)
 	return TRUE
+
+/// Разумы всех текущих членов семей. Рулсеты-владельцы наполняют этим списком свой assigned:
+/// директор считает вклад рулсета в antag_load по assigned (tally_ruleset_intensity), и без
+/// него каждый стартовый гангстер падал в untracked-источник (15/голова без затухания),
+/// раздувая нагрузку и пряча рулсет из панели.
+/datum/gang_handler/proc/collect_member_minds()
+	var/list/minds = list()
+	for(var/datum/team/gang/family as anything in gangs)
+		for(var/datum/mind/member as anything in family.members)
+			if(istype(member))
+				minds |= member
+	return minds
 
 /**
  * process() or rule_process() equivalent.

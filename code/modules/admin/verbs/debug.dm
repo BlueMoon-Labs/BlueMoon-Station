@@ -15,6 +15,19 @@
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle Debug Two") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/client/proc/toggle_ntnet_debug()
+	set category = "Debug.7) Testing"
+	set name = "Toggle NTNet Global Signal"
+	if(!check_rights(R_DEBUG))
+		return
+
+	SSnetworks.ntnet_debug_global_signal = !SSnetworks.ntnet_debug_global_signal
+	var/state = SSnetworks.ntnet_debug_global_signal ? "ON" : "OFF"
+	message_admins("[key_name(src)] toggled NTNet global debug signal [state].")
+	log_admin("[key_name(src)] toggled NTNet global debug signal [state].")
+	to_chat(src, span_notice("NTNet global debug signal: [state]."))
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle NTNet Global Signal")
+
 /client/proc/allow_browser_inspect()
 	set category = "Debug.2) Info"
 	set name = "Allow Browser Inspect"
@@ -115,7 +128,7 @@
 	choice.transfer_ckey(pai)
 	card.setPersonality(pai)
 	for(var/datum/paiCandidate/candidate in SSpai.candidates)
-		if(candidate.key == choice.key)
+		if(candidate.key == pai.key) // после transfer_ckey() ключ уже на pAI, а призрак мог быть уничтожен
 			SSpai.candidates.Remove(candidate)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Make pAI") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -183,7 +196,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Make Powernets") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/proc/cmd_admin_grantfullaccess(mob/M in GLOB.mob_list)
-	set category = "Admin"
+	set category = "Admin.Game"
 	set name = "Grant Full Access"
 
 	if(!SSticker.HasRoundStarted())
@@ -206,8 +219,8 @@
 			id.update_label()
 
 			if(worn)
-				if(istype(worn, /obj/item/pda))
-					var/obj/item/pda/PDA = worn
+				if(istype(worn, /obj/item/modular_computer/pda))
+					var/obj/item/modular_computer/pda/PDA = worn
 					PDA.id = id
 					id.forceMove(PDA)
 				else if(istype(worn, /obj/item/storage/wallet))
@@ -941,11 +954,11 @@
 /client/proc/pump_random_event()
 	set category = "Debug.5) Spawn"
 	set name = "Pump Random Event"
-	set desc = "Schedules the event subsystem to fire a new random event immediately. Some events may fire without notification."
+	set desc = "Schedules the director to run an event/ruleset beat on its next fire. Some events may fire without notification."
 	if(!holder)
 		return
 
-	SSevents.scheduled = world.time
+	SSdirector.fires_until_beat = 0
 
 	message_admins("<span class='adminnotice'>[key_name_admin(src)] pumped a random event.</span>")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Pump Random Event")

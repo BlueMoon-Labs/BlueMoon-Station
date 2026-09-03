@@ -7,7 +7,7 @@
 	icon_deny = "cart-deny"
 	//panel_type = "panel6"
 	products = list(
-		/obj/item/pda/heads = 10, // PDA
+		/obj/item/modular_computer/pda = 10,
 		// Normal staff cards
 		/obj/item/cartridge/medical = 10,
 		/obj/item/cartridge/engineering = 10,
@@ -16,12 +16,10 @@
 		/obj/item/cartridge/signal/toxins = 10,
 		/obj/item/cartridge/roboticist = 10,
 		/obj/item/cartridge/atmos = 10,
-		/obj/item/cartridge/chemistry = 10,
 		/obj/item/cartridge/detective = 10,
 		/obj/item/cartridge/lawyer = 10,
 		/obj/item/cartridge/curator = 10,
-		/obj/item/cartridge/bartender = 10,
-		// Virus cards
+		// Virus disks
 		/obj/item/cartridge/virus/clown = 3,
 		/obj/item/cartridge/virus/mime = 3,
 		// Command staff cards

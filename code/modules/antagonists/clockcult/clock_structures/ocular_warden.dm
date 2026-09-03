@@ -1,23 +1,33 @@
 //Ocular warden: Low-damage, low-range turret. Deals constant damage to whoever it makes eye contact with.
+
+/// How often (in game time) the ocular warden re-scans for nearby targets. Between scans it
+/// keeps damaging its current target and reuses the cached target list. Lives in SSfastprocess
+/// (0.2s ticks), so this is ~5 ticks between viewers() scans instead of one every tick.
+#define OCULAR_WARDEN_SCAN_INTERVAL (1 SECONDS)
+
 /obj/structure/destructible/clockwork/ocular_warden
 	name = "ocular warden"
-	desc = "A large brass eye with tendrils trailing below it and a wide red iris."
-	clockwork_desc = "A fragile turret which will automatically attack nearby unrestrained non-Servants that can see it."
+	desc = "Большой латунный глаз со свисающими под ним щупальцами и широкой красной радужкой."
+	clockwork_desc = "Хрупкая турель, которая автоматически атакует находящихся поблизости нескованных не-Слуг, которых она может видеть."
 	icon_state = "ocular_warden"
 	unanchored_icon = "ocular_warden_unwrenched"
 	max_integrity = 25
 	construction_value = 15
 	layer = WALL_OBJ_LAYER
-	break_message = "<span class='warning'>The warden's eye gives a glare of utter hate before falling dark!</span>"
+	break_message = "<span class='warning'>Глаза надзирателя вспыхивают полной ненависти, прежде чем потемнеть!</span>"
 	debris = list(/obj/item/clockwork/component/belligerent_eye/blind_eye = 1)
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	var/damage_per_tick = 3
 	var/sight_range = 3
 	var/atom/movable/target
-	var/list/idle_messages = list(" sulkily glares around.", " lazily drifts from side to side.", " looks around for something to burn.", " slowly turns in circles.")
+	/// Cached result of the last acquire_nearby_targets() call, reused on non-scan ticks.
+	var/list/cached_targets
+	COOLDOWN_DECLARE(target_scan_cooldown)
+	var/list/idle_messages = list(" угрюмо смотрит по сторонам.", " лениво переваливается с боку на бок.", " оглядывается в поисках чего-нибудь, что можно было бы сжечь.", " медленно вращается по кругу.")
 
 /obj/structure/destructible/clockwork/ocular_warden/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	START_PROCESSING(SSfastprocess, src)
 
 /obj/structure/destructible/clockwork/ocular_warden/Destroy()
@@ -26,7 +36,7 @@
 
 /obj/structure/destructible/clockwork/ocular_warden/examine(mob/user)
 	. = ..()
-	. += "<span class='brass'>[target ? "<b>It's fixated on [target]!</b>" : "Its gaze is wandering aimlessly."]</span>"
+	. += "<span class='brass'>[target ? "<b>Он зафиксирован на [target]!</b>" : "Его взгляд бесцельно блуждает."]</span>"
 
 /obj/structure/destructible/clockwork/ocular_warden/hulk_damage()
 	return 25
@@ -36,7 +46,7 @@
 		for(var/obj/structure/destructible/clockwork/ocular_warden/W in orange(OCULAR_WARDEN_EXCLUSION_RANGE, src))
 			if(W.anchored)
 				if(!silent)
-					to_chat(user, "<span class='neovgre'>You sense another ocular warden too near this location. Activating this one this close would cause them to fight.</span>")
+					to_chat(user, "<span class='neovgre'>Вы чувствуете, что другой глазной страж находится слишком близко к этому месту. Активация этого стража так близко приведет к драке.</span>")
 				return FAILED_UNFASTEN
 	return SUCCESSFUL_UNFASTEN
 
@@ -53,9 +63,15 @@
 	if(!anchored)
 		lose_target()
 		return
-	var/list/validtargets = acquire_nearby_targets()
+	var/list/validtargets = cached_targets
+	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
+		validtargets = acquire_nearby_targets()
+		cached_targets = validtargets
+		COOLDOWN_START(src, target_scan_cooldown, OCULAR_WARDEN_SCAN_INTERVAL)
+	if(!islist(validtargets))
+		validtargets = list()
 	if(target)
-		if(!(target in validtargets))
+		if(QDELETED(target) || !(target in validtargets))
 			lose_target()
 		else
 			if(isliving(target))
@@ -86,13 +102,13 @@
 		if(validtargets.len)
 			target = pick(validtargets)
 			playsound(src,'sound/machines/clockcult/ocularwarden-target.ogg',50,1)
-			visible_message("<span class='warning'>[src] swivels to face [target]!</span>")
+			visible_message("<span class='warning'>[src] поворачивается лицом к [target]!</span>")
 			if(isliving(target))
 				var/mob/living/L = target
-				to_chat(L, "<span class='neovgre'>\"I SEE YOU!\"</span>\n<span class='userdanger'>[src]'s gaze [GLOB.ratvar_awakens ? "melts you alive" : "burns you"]!</span>")
+				to_chat(L, "<span class='neovgre'>\"Я ВИЖУ ТЕБЯ!\"</span>\n<span class='userdanger'>Взгляд [src] [GLOB.ratvar_awakens ? "плавит вас заживо" : "обжигает вас"]!</span>")
 			else if(ismecha(target))
 				var/obj/vehicle/sealed/mecha/M = target
-				to_chat(M.occupants, "<span class='neovgre'>\"I SEE YOU!\"</span>" )
+				to_chat(M.occupants, "<span class='neovgre'>\"Я ВИЖУ ТЕБЯ!\"</span>" )
 		else if(prob(0.5)) //Extremely low chance because of how fast the subsystem it uses processes
 			if(prob(50))
 				visible_message("<span class='notice'>[src][pick(idle_messages)]</span>")
@@ -105,7 +121,7 @@
 		var/obj/item/storage/book/bible/B = L.bible_check()
 		if(B)
 			if(!(B.resistance_flags & ON_FIRE))
-				to_chat(L, "<span class='warning'>Your [B.name] bursts into flames!</span>")
+				to_chat(L, "<span class='warning'>Ваш [B.name] вспыхивает пламенем!</span>")
 			for(var/obj/item/storage/book/bible/BI in L.GetAllContents())
 				if(!(BI.resistance_flags & ON_FIRE))
 					BI.fire_act()
@@ -120,7 +136,7 @@
 			var/mob/living/simple_animal/hostile/H = L
 			if(("ratvar" in H.faction) || (!H.mind && ("neutral" in H.faction)) || (!H.mind && ("skeleton" in H.faction)))
 				continue
-			if(ismegafauna(H) || (!H.mind && H.AIStatus == AI_OFF))
+			if(ismegafauna(H) || (!H.mind && H.get_effective_ai_status() == AI_OFF))
 				continue
 		else if(isrevenant(L))
 			var/mob/living/simple_animal/revenant/R = L
@@ -146,7 +162,7 @@
 	if(!target)
 		return FALSE
 	target = null
-	visible_message("<span class='warning'>[src] settles and seems almost disappointed.</span>")
+	visible_message("<span class='warning'>[src] успокаивается и кажется почти разочарованным.</span>")
 	return TRUE
 
 /obj/structure/destructible/clockwork/ocular_warden/get_efficiency_mod()
@@ -164,3 +180,5 @@
 					break
 		. -= (get_dist(src, target) * 0.05)
 		. = max(., 0.1) //The lowest damage a warden can do is 10% of its normal amount (0.25 by default)
+
+#undef OCULAR_WARDEN_SCAN_INTERVAL

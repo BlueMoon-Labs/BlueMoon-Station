@@ -36,7 +36,7 @@
 	max_integrity = 100
 	integrity_failure = 0.33
 	smooth = SMOOTH_TRUE
-	canSmoothWith = list(/obj/structure/table, /obj/structure/table/reinforced, /obj/structure/table/greyscale)
+	canSmoothWith = list(/obj/structure/table, /obj/structure/table/greyscale)
 
 /obj/structure/table/Initialize(mapload)
 	. = ..()
@@ -289,8 +289,8 @@
 		if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
 			return
 		//Clamp it so that the icon never moves more than 16 pixels in either direction (thus leaving the table turf)
-		I.pixel_x = clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
-		I.pixel_y = clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
+		I.pixel_x = I.base_pixel_x + clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
+		I.pixel_y = I.base_pixel_y + clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
 		AfterPutItemOnTable(I, user)
 		return TRUE
 
@@ -485,7 +485,7 @@
 	name = "plasmaglass table"
 	desc = "Стеклянный стол, но розовый и куда более прочный. Что ещё Nanotrasen спроектирует на плазме?"
 	icon = 'icons/obj/smooth_structures/plasmaglass_table.dmi'
-	icon_state = "plasmaglass_table"
+	icon_state = "box"
 	climbable = TRUE
 	buildstack = /obj/item/stack/sheet/plasmaglass
 	canSmoothWith = null
@@ -662,12 +662,13 @@
 	name = "reinforced table"
 	desc = "Усиленная версия четырёхножного стола."
 	icon = 'icons/obj/smooth_structures/reinforced_table.dmi'
-	icon_state = "r_table"
+	icon_state = "box"
 	deconstruction_ready = 0
 	buildstack = /obj/item/stack/sheet/plasteel
 	max_integrity = 200
 	integrity_failure = 0.25
 	armor = list(MELEE = 10, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 20, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
+	canSmoothWith = list(/obj/structure/table/reinforced, /obj/structure/table/reinforced/rglass, /obj/structure/table/reinforced/plasmarglass)
 
 /obj/structure/table/reinforced/deconstruction_hints(mob/user)
 	if(deconstruction_ready)
@@ -694,38 +695,46 @@
 
 /obj/structure/table/reinforced/rglass
 	name = "reinforced glass table"
-	desc = "A reinforced version of the glass table."
+	desc = "Усиленная версия стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rglass_table.dmi'
-	icon_state = "rglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/rglass
-	canSmoothWith = null
 	max_integrity = 150
 
 /obj/structure/table/reinforced/plasmarglass
 	name = "reinforced plasma glass table"
-	desc = "A reinforced version of the plasma glass table."
+	desc = "Усиленная версия плазмо-стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rplasmaglass_table.dmi'
-	icon_state = "rplasmaglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plasmarglass
-	canSmoothWith = null
+	max_integrity = 400
 
 /obj/structure/table/reinforced/titaniumglass
 	name = "titanium glass table"
-	desc = "A titanium reinforced glass table, with a fresh coat of NT white paint."
+	desc = "Стол из армированного титаном стекла, покрытый свежим слоем краски 'NT white'."
 	icon = 'icons/obj/smooth_structures/titaniumglass_table.dmi'
-	icon_state = "titaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/titaniumglass
 	canSmoothWith = null
-	max_integrity = 250
+	max_integrity = 350
+
+/obj/structure/table/reinforced/plastitanium
+	name = "Plastitanium Table"
+	desc = "Стол из плазменного композита с титановым усилением. Прочно так же, как и звучит."
+	icon = 'icons/obj/smooth_structures/plastitanium_table.dmi'
+	icon_state = "box"
+	buildstack = /obj/item/stack/sheet/mineral/plastitanium
+	canSmoothWith = list(/obj/structure/table/reinforced/plastitanium, /obj/structure/table/reinforced/plastitaniumglass)
+	max_integrity = 500
 
 /obj/structure/table/reinforced/plastitaniumglass
 	name = "Plastitanium Glass Table"
 	desc = "Стол из силикат-плазменного композита с титановым усилением. Прочно так же, как и звучит."
 	icon = 'icons/obj/smooth_structures/plastitaniumglass_table.dmi'
-	icon_state = "plastitaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plastitaniumglass
-	canSmoothWith = null
-	max_integrity = 300
+	canSmoothWith = list(/obj/structure/table/reinforced/plastitanium, /obj/structure/table/reinforced/plastitaniumglass)
+	max_integrity = 450
 
 /obj/structure/table/reinforced/brass
 	name = "brass table"
@@ -789,14 +798,23 @@
 	smooth = SMOOTH_FALSE
 	can_buckle = 1
 	buckle_lying = 90
+	pseudo_z_axis = 0
 	var/mob/living/carbon/human/patient = null
 	var/obj/machinery/computer/operating/computer = null
 // BLUEMOON ADD START
 	var/obj/item/tank/internals/tank = null // баллон внутри
 	var/obj/item/clothing/mask/mask = null // маска внутри
 
+/obj/structure/table/optable/loaded
+	tank = /obj/item/tank/internals/anesthetic
+	mask = /obj/item/clothing/mask/breath/medical
+
 /obj/structure/table/optable/Initialize(mapload)
 	. = ..()
+	if(ispath(tank))
+		tank = new tank(src)
+	if(ispath(mask))
+		mask = new mask(src)
 	register_context()
 
 
@@ -898,6 +916,11 @@
 /obj/structure/table/optable/post_buckle_mob(mob/living/M)
 	. = ..()
 	check_patient()
+	M.pixel_y = M.get_standard_pixel_y_offset()
+
+/obj/structure/table/optable/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	check_patient()
 
 /obj/structure/table/optable/process()
 	if(mask?.loc != patient || tank?.loc != src || patient?.loc != loc)
@@ -913,6 +936,7 @@
 		visible_message(span_notice("[mask] срывается и возвращается на место по втягивающемуся шлангу."))
 		patient.transferItemToLoc(mask, src, TRUE)
 	patient.internal = null
+	SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
 	patient = null
 
 /obj/structure/table/optable/Destroy()
@@ -973,9 +997,13 @@
 	var/mob/living/carbon/human/H = locate() in loc
 	if(H)
 		if(!CHECK_MOBILITY(H, MOBILITY_STAND))
-			patient = H
+			if(patient != H)
+				patient = H
+				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
 			return TRUE
 	else
+		if(!isnull(patient))
+			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
 		patient = null
 		return FALSE
 
@@ -1082,7 +1110,8 @@
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "rack_parts"
 	flags_1 = CONDUCT_1
-	custom_materials = list(/datum/material/iron=2000)
+	custom_materials = list(/datum/material/iron=MINERAL_MATERIAL_AMOUNT*3)
+	var/buildstackamount = 3
 	var/building = FALSE
 	// MODULAR_JUICY-ADD - Делаем дефолтный путь к объекту в виде переменной, чтобы можно было передать что за тип конструкции
 	var/obj/construction_type = /obj/structure/rack
@@ -1094,12 +1123,12 @@
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "rack_parts"
 	flags_1 = CONDUCT_1
-	custom_materials = list(/datum/material/iron=2000)
+	custom_materials = list(/datum/material/iron=MINERAL_MATERIAL_AMOUNT*5)
 	var/building = FALSE
 
 /obj/item/rack_parts/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_WRENCH)
-		new /obj/item/stack/sheet/metal(user.loc)
+		new /obj/item/stack/sheet/metal(drop_location(), buildstackamount)
 		qdel(src)
 	else
 		. = ..()
@@ -1126,7 +1155,7 @@
 
 /obj/item/shelf_parts/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_WRENCH)
-		new /obj/item/stack/sheet/metal(user.loc)
+		new /obj/item/stack/sheet/metal(drop_location(), 5)
 		qdel(src)
 	else
 		. = ..()

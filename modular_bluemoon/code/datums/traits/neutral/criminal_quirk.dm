@@ -37,7 +37,7 @@ GLOBAL_LIST_EMPTY(bluemoon_criminal_characters)
 	addtimer(CALLBACK(src, PROC_REF(on_crime_creation)), time_before_creating_crimes + 10 SECONDS, TIMER_DELETE_ME) // Если вызвать qdel сразу после объявления таймера, будет рантайм
 
 /datum/quirk/bluemoon_criminal/Destroy()
-	if(!(quirk_holder.real_name in GLOB.bluemoon_criminal_characters))
+	if(quirk_holder && !(quirk_holder.real_name in GLOB.bluemoon_criminal_characters))
 		GLOB.bluemoon_criminal_characters += quirk_holder.name
 	. = ..()
 

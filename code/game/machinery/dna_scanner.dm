@@ -24,6 +24,19 @@
 	linked_console = null
 	return ..()
 
+//консоль узнаёт об окупанте только через open/close дверцы; если моба удалили
+//прямо внутри (трансформация в генетике) или он покинул сканер мимо дверцы
+//(телепорт), scanner_occupant консоли навсегда держал бы удалённого моба
+/obj/machinery/dna_scannernew/handle_atom_del(atom/A)
+	. = ..()
+	if(linked_console?.scanner_occupant == A)
+		linked_console.scanner_occupant = null
+
+/obj/machinery/dna_scannernew/Exited(atom/movable/AM, atom/newloc)
+	. = ..()
+	if(linked_console?.scanner_occupant == AM)
+		linked_console.scanner_occupant = null
+
 /obj/machinery/dna_scannernew/RefreshParts()
 	scan_level = 0
 	damage_coeff = 0

@@ -6,6 +6,7 @@
 #define HULK		/datum/mutation/human/hulk
 #define XRAY		/datum/mutation/human/thermal/x_ray
 #define SPACEMUT	/datum/mutation/human/space_adaptation
+#define NOBREATHMUT	/datum/mutation/human/no_breathing
 #define TK			/datum/mutation/human/telekinesis
 #define NERVOUS		/datum/mutation/human/nervousness
 #define EPILEPSY	/datum/mutation/human/epilepsy
@@ -20,6 +21,7 @@
 #define RACEMUT		/datum/mutation/human/race
 #define BADSIGHT	/datum/mutation/human/nearsight
 #define LASEREYES	/datum/mutation/human/laser_eyes
+#define FLASHPROTECT	/datum/mutation/human/flash_protection
 #define CHAMELEON	/datum/mutation/human/chameleon
 #define WACKY		/datum/mutation/human/wacky
 #define MUT_MUTE	/datum/mutation/human/mute

@@ -5,7 +5,8 @@
 	species_traits = list(MUTCOLORS,EYECOLOR,LIPS,HAIR,FACEHAIR,HORNCOLOR,WINGCOLOR,HAS_FLESH,HAS_BONE)
 	inherent_biotypes = MOB_ORGANIC|MOB_HUMANOID|MOB_BEAST
 	mutant_bodyparts = list("mcolor" = "FFFFFF","mcolor2" = "FFFFFF","mcolor3" = "FFFFFF", "mam_snouts" = "Husky", "mam_tail" = "Husky", "mam_ears" = "Husky", "deco_wings" = "None",
-						 "mam_body_markings" = list(), "taur" = "None", "horns" = "None", "legs" = "Plantigrade", "meat_type" = "Mammalian")
+						 "mam_body_markings" = list(), "taur" = "None", "horns" = "None", "legs" = "Plantigrade", "meat_type" = "Mammalian",
+						 "xenohead" = "None", "xenodorsal" = "None")
 	attack_verb = "claw"
 	attack_sound = 'sound/weapons/slash.ogg'
 	miss_sound = 'sound/weapons/slashmiss.ogg'
@@ -65,3 +66,18 @@
 	allowed_limb_ids = list("mammal","aquatic","avian","sergal")
 	species_category = SPECIES_CATEGORY_ROBOT
 	wings_icons = SPECIES_WINGS_ROBOT
+
+/datum/species/mammal/synthetic/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.AddSource("SPECIES")
+	. = ..()
+
+/datum/species/mammal/synthetic/on_species_loss(mob/living/carbon/human/C, datum/species/new_species, pref_load)
+	var/datum/component/neural_interface/interface = C.LoadComponent(/datum/component/neural_interface)
+	interface?.RemoveSource("SPECIES")
+	. = ..()
+
+/datum/species/mammal/synthetic/spec_updatehealth(mob/living/carbon/human/H)
+	if(H.getCloneLoss() > 0)
+		H.setCloneLoss(0, TRUE)
+

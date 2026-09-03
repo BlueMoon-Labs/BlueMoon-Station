@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": false,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ESNext", "ScriptHost"],
     "module": "ESNext",
     "moduleResolution": "Node",

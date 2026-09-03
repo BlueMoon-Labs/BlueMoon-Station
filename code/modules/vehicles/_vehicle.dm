@@ -223,7 +223,8 @@
 // BLUEMOON ADDITION AHEAD - предотвращаем множество абузов скорости, не давая сверхтяжёлым персонажам залезать на транспорт
 /obj/vehicle/pre_buckle_mob(mob/living/M)
 	if(M.mob_weight > MOB_WEIGHT_HEAVY)
-		usr.visible_message(span_warning("[usr] tried to get [M] on [src], but it doesn't move. Too much weight!."), span_warning("You tried to get [M] on [src], but it doesn't move. Too much weight!"))
+		//не usr: бакл бывает программным (usr null), да и баклер - не всегда usr
+		M.visible_message(span_warning("[M] tried to get on [src], but it doesn't move. Too much weight!"), span_warning("You tried to get on [src], but it doesn't move. Too much weight!"))
 		unbuckle_mob(M, TRUE)
 		return
 	. = ..()

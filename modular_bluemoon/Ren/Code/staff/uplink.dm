@@ -42,7 +42,7 @@
 			костюм подарит рефлексы своего прошлого владельца. Увернуться от пули ещё никогда не было так стильно."
 	item = /obj/item/storage/box/inteq_kit/hank
 	cost = 13
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/iron_tombstone
 	name = "Iron tombstone"
@@ -50,14 +50,14 @@
 			Теперь эта пятнадцати килограммовая пластина сбережёт твоё личико от недружественного огня."
 	item = /obj/item/clothing/suit/space/hardsuit/iron_tombstone
 	cost = 10
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/quet
 	name = "Quiet kid kit"
 	desc = "Тебя выгоняют из дома на самоубийственную миссию, а менять толстовку с кепкой на каску с бронежилетом не хочется? Наборы из гибких пластин помогут с этим и будут отлично сидеть под любой одеждой."
 	item = /obj/item/storage/box/inteq_kit/quetkid
 	cost = 3
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 ///Оружие
 /datum/uplink_item/inteq/angle_grinder
@@ -220,7 +220,7 @@
 			new /obj/item/suspiciousphone(src)
 			new /obj/item/camera_bug(src)
 			new /obj/item/sbeacondrop/powersink(src)
-			new /obj/item/cartridge/virus/syndicate(src)
+			new /obj/item/cartridge/virus/detomatix(src)
 			new /obj/item/storage/toolbox/syndicate(src) //To actually get to those places
 			new /obj/item/pizzabox/bomb
 
@@ -244,10 +244,10 @@
 
 		if("metaops") // 30 tc
 			new /obj/item/clothing/suit/space/hardsuit/syndi/inteq(src) // 8 tc
-			new /obj/item/gun/ballistic/automatic/shotgun/aa12(src) // 8 tc
+			new /obj/item/gun/ballistic/automatic/shotgun/bulldog(src) // 8 tc
 			new /obj/item/implanter/explosive(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/card/emag(src) // 6 tc
@@ -273,7 +273,13 @@
 			new /obj/item/lipstick/black/death(src) // 12 tc
 			new /obj/item/storage/box/syndie_kit/chemical (src) //  6
 			new /obj/item/gun/syringe/syndicate(src) //  3
-			new /obj/item/storage/fancy/cigarettes/derringer(src) //  6
+			new /obj/item/storage/fancy/cigarettes/derringer(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)//  6
 
 		if("launchman") // 29 tc worth
 			new /obj/item/storage/briefcase/launchpad(src) // 6

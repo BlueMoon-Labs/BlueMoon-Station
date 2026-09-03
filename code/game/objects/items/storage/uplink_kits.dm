@@ -113,7 +113,7 @@
 			new /obj/item/doorCharge(src)
 			new /obj/item/camera_bug(src)
 			new /obj/item/sbeacondrop/powersink(src)
-			new /obj/item/cartridge/virus/syndicate(src)
+			new /obj/item/cartridge/virus/detomatix(src)
 			new /obj/item/storage/toolbox/syndicate(src) //To actually get to those places
 			new /obj/item/pizzabox/bomb
 
@@ -355,7 +355,7 @@
 	new /obj/item/storage/backpack/chameleon(src)
 	new /obj/item/radio/headset/chameleon(src)
 	new /obj/item/stamp/chameleon(src)
-	new /obj/item/pda/chameleon(src)
+	new /obj/item/modular_computer/pda/chameleon(src)
 	new /obj/item/clothing/neck/cloak/chameleon(src) //ЭТО ПИЗДЕЦ ОНИ ЗАЧЕМ-ТО СЛОМАЛИ ХАМЕЛЕОНКУ И ОТКАЗЫВАЮТСЯ ЕЁ ЧИНИТЬ
 
 //5*(2*4) = 5*8 = 45, 45 damage if you hit one person with all 5 stars.
@@ -401,7 +401,7 @@
 	new /obj/item/radio/headset/headset_cent/empty(src)
 	new /obj/item/clothing/glasses/sunglasses(src)
 	new /obj/item/storage/backpack/satchel(src)
-	new /obj/item/pda/heads(src)
+	new /obj/item/modular_computer/pda/heads(src)
 	new /obj/item/clipboard(src)
 
 /obj/item/storage/box/syndie_kit/chameleon/broken/PopulateContents()
@@ -415,7 +415,7 @@
 	new /obj/item/storage/backpack/chameleon/broken(src)
 	new /obj/item/radio/headset/chameleon/broken(src)
 	new /obj/item/stamp/chameleon/broken(src)
-	new /obj/item/pda/chameleon/broken(src)
+	new /obj/item/modular_computer/pda/chameleon/broken(src)
 	// No chameleon laser, they can't randomise for //REASONS//
 
 /obj/item/storage/box/syndie_kit/bee_grenades
@@ -457,6 +457,15 @@
 	new /obj/item/ammo_box/a357(src)
 	new /obj/item/ammo_box/a357/ap(src)
 	new /obj/item/ammo_box/a357/dumdum(src)
+
+/obj/item/storage/box/syndie_kit/revolver/requiem
+	name = "box folder (Requiem)"
+
+/obj/item/storage/box/syndie_kit/revolver/requiem/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/requiem(src)
+	new /obj/item/disk/design_disk/adv/ammo/requiem(src)
+	new /obj/item/ammo_box/a357/requiem(src)
+	new /obj/item/ammo_box/a357/requiem(src)
 
 /obj/item/storage/box/syndie_kit/pistol
 
@@ -578,10 +587,21 @@
 
 /obj/item/storage/box/syndie_kit/scarp
 
+/obj/item/storage/box/syndie_kit/scarp/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = WEIGHT_CLASS_BULKY
+	STR.max_combined_w_class = 30
+	STR.max_items = 8
+
 /obj/item/storage/box/syndie_kit/scarp/PopulateContents()
-	new /obj/item/book/granter/martial/carp(src)
-	new /obj/item/clothing/suit/hooded/carp_costume(src)
-	new /obj/item/staff/bostaff(src)
+	new /obj/item/gun/ballistic/automatic/speargun(src)
+	new /obj/item/storage/bag/harpoon_quiver(src)
+	new /obj/item/clothing/suit/space/hardsuit/carp(src)
+	new /obj/item/clothing/mask/gas/carp(src)
+	new /obj/item/clothing/gloves/combat(src)
+	new /obj/item/grenade/spawnergrenade/spesscarp(src)
+	new /obj/item/toy/plush/carpplushie/dehy_carp(src)
 
 /obj/item/storage/box/syndie_kit/sleepytime/cardpack/PopulateContents()
 	. = ..()

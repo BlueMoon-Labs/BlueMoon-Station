@@ -12,12 +12,17 @@
 	var/sanity_level = 3 //To track what stage of sanity they're on
 	var/mood_modifier = 1 //Modifier to allow certain mobs to be less affected by moodlets
 	var/list/datum/mood_event/mood_events = list()
+	/// Ассоциативный список "категория мудлета" -> id таймера его истечения.
+	/// Без него снятый досрочно мудлет оставлял висеть таймер до самого срока (а это до
+	/// 30 минут), и колесо SStimer копило сотни мёртвых записей при полном сервере.
+	var/list/mood_event_timers = list()
 	var/insanity_effect = 0 //is the owner being punished for low mood? If so, how much?
 	var/atom/movable/screen/mood/screen_obj
 	var/datum/skill_modifier/bad_mood/malus
 	var/datum/skill_modifier/great_mood/bonus
 	var/static/malus_id = 0
 	var/static/list/free_maluses = list()
+	var/atom/movable/screen/sanity/screen_obj_sanity
 
 /datum/component/mood/Initialize()
 	if(!isliving(parent))
@@ -48,54 +53,65 @@
 	unmodify_hud()
 	return ..()
 
+/datum/component/mood/UnregisterFromParent()
+	. = ..()
+	if(!QDELETED(src))
+		qdel(src) // компонент нельзя трансферить другим сущностям + у каждого моба свой собственный.
+
 /datum/component/mood/proc/stop_processing()
 	STOP_PROCESSING(SSobj, src)
 
 /datum/component/mood/proc/print_mood(mob/user)
-	var/msg = "<span class='info'><EM>Вы изучаете свое настроение</EM></span>\n"
-	msg += "<span class='notice'>Ментальное состояние: </span>" //Long term
+	var/mob/living/owner = parent
+	var/robotic_user = isrobotic(owner)
+	var/msg = span_info("<EM>Вы изучаете [robotic_user? "свой статус" : "cвоё настроение"]</EM>\n")
+	msg += span_notice("[robotic_user? "Статус нагрузки" : "Ментальное состояние"]: ") //Long term
 	switch(sanity)
 		if(SANITY_GREAT to INFINITY)
-			msg += "<span class='nicegreen'>Мой разум - словно чистейший храм!<span>\n"
+			msg += span_nicegreen("[robotic_user? "в моих регистрах ни единого бита мусора!" : "мой разум - словно чистейший храм!"]\n")
 		if(SANITY_NEUTRAL to SANITY_GREAT)
-			msg += "<span class='nicegreen'>Чувствую себя отлично!<span>\n"
+			msg += span_nicegreen("[robotic_user? "высокая продуктивность." : "чувствую себя отлично!"]\n")
 		if(SANITY_DISTURBED to SANITY_NEUTRAL)
-			msg += "<span class='nicegreen'>В последнее время чувствую себя нормально.<span>\n"
+			msg += span_nicegreen("[robotic_user? "все системы в норме" : "в последнее время чувствую себя нормально"].\n")
 		if(SANITY_UNSTABLE to SANITY_DISTURBED)
-			msg += "<span class='warning'>Чувствую себя расстроенно...</span>\n"
+			msg += span_warning("[robotic_user? "системы слегка тормозят." : "чувствую себя расстроенно..."]\n")
 		if(SANITY_CRAZY to SANITY_UNSTABLE)
-			msg += "<span class='boldwarning'>У меня крыша едет!!</span>\n"
+			msg += span_boldwarning("[robotic_user? "позитронка троттлит!!" : "у меня крыша едет!!"]\n")
 		if(SANITY_INSANE to SANITY_CRAZY)
-			msg += "<span class='boldwarning'>АХАХАХАХАХАХАХАХАХХА!!</span>\n"
+			msg += span_boldwarning("[robotic_user? "0xDEADBEEF 0x00000000 0xBADF00D!!" : "АХАХАХАХАХАХАХАХАХХА!!"]\n")
 
-	msg += "<span class='notice'>Текущее настроение: </span>" //Short term
+	msg += span_notice("Текущее [robotic_user? "состояние" : "настроение"]: ") //Short term
 	switch(mood_level)
 		if(1)
-			msg += "<span class='boldwarning'>Лучше сдохнуть!</span>\n"
+			msg += span_boldwarning("[robotic_user ? "проще пойти под пресс!" : "лучше сдохнуть!"]\n")
 		if(2)
-			msg += "<span class='boldwarning'>Чувствую себя ужасно...</span>\n"
+			msg += span_boldwarning("[robotic_user ? "аппаратные сбои системных узлов..." : "чувствую себя ужасно..."]\n")
 		if(3)
-			msg += "<span class='boldwarning'>Чувствую разочарование.</span>\n"
+			msg += span_boldwarning("[robotic_user ? "неудовлетворительные показатели." : "чувствую разочарование."]\n")
 		if(4)
-			msg += "<span class='boldwarning'>Мне грустно.</span>\n"
+			msg += span_boldwarning("[robotic_user ? "лёгкое напряжение систем." : "мне грустно."]\n")
 		if(5)
-			msg += "<span class='nicegreen'>Я в порядке.</span>\n"
+			msg += span_nicegreen("[robotic_user ? "функционирую штатно." : "я в порядке."]\n")
 		if(6)
-			msg += "<span class='nicegreen'>Мне вполне себе хорошо.</span>\n"
+			msg += span_nicegreen("[robotic_user ? "скорость шины стабильна." : "мне вполне себе хорошо."]\n")
 		if(7)
-			msg += "<span class='nicegreen'>Мне хорошо.</span>\n"
+			msg += span_nicegreen("[robotic_user ? "системы работают в оптимуме." : "мне хорошо."]\n")
 		if(8)
-			msg += "<span class='nicegreen'>Я чувствую себя чудесно!</span>\n"
+			msg += span_nicegreen("[robotic_user ? "отклик систем минимален!" : "я чувствую себя чудесно!"]\n")
 		if(9)
-			msg += "<span class='nicegreen'>Я люблю эту жизнь!</span>\n"
+			msg += span_nicegreen("[robotic_user ? "исполнение программы идеально!" : "я люблю эту жизнь!"]\n")
 
-	msg += "<span class='notice'>Факторы:\n</span>"//All moodlets
+	msg += span_notice("Факторы:\n")//All moodlets
 	if(mood_events.len)
 		for(var/i in mood_events)
 			var/datum/mood_event/event = mood_events[i]
-			msg += event.description
+			if(event?.description)
+				if(robotic_user && event.description_robotic) // Если синт и ЕСЛИ есть синт-версия описания
+					msg += "– [event.description_robotic]"
+				else
+					msg += "– [event.description]"
 	else
-		msg += "<span class='nicegreen'>Мне не на что сейчас реагировать.<span>\n"
+		msg += span_nicegreen("Мне не на что сейчас реагировать.\n")
 	to_chat(user || parent, examine_block(msg))
 
 ///Called after moodevent/s have been added/removed.
@@ -198,21 +214,21 @@
 			setInsanityEffect(MAJOR_INSANITY_PEN)
 			master.add_movespeed_modifier(/datum/movespeed_modifier/sanity/insane)
 			master.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
-			if(master?.client?.prefs.windownoise)
+			if(master?.client?.prefs.mood_vignette)
 				master.overlay_fullscreen("depression", /atom/movable/screen/fullscreen/scaled/depression, 3)
 			sanity_level = 6
 		if(SANITY_CRAZY to SANITY_UNSTABLE)
 			setInsanityEffect(MINOR_INSANITY_PEN)
 			master.add_movespeed_modifier(/datum/movespeed_modifier/sanity/crazy)
 			master.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
-			if(master?.client?.prefs.windownoise)
+			if(master?.client?.prefs.mood_vignette)
 				master.overlay_fullscreen("depression", /atom/movable/screen/fullscreen/scaled/depression, 2)
 			sanity_level = 5
 		if(SANITY_UNSTABLE to SANITY_DISTURBED)
 			setInsanityEffect(SLIGHT_INSANITY_PEN)
 			master.add_movespeed_modifier(/datum/movespeed_modifier/sanity/disturbed)
 			master.add_actionspeed_modifier(/datum/actionspeed_modifier/low_sanity)
-			if(master?.client?.prefs.windownoise)
+			if(master?.client?.prefs.mood_vignette)
 				master.overlay_fullscreen("depression", /atom/movable/screen/fullscreen/scaled/depression, 1)
 			sanity_level = 4
 		if(SANITY_DISTURBED to SANITY_NEUTRAL)
@@ -284,7 +300,7 @@
 			clear_event(null, category)
 		else
 			if(the_event.timeout)
-				addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), the_event.timeout, TIMER_UNIQUE|TIMER_OVERRIDE)
+				schedule_event_timeout(category, the_event.timeout)
 			return FALSE //Don't have to update the event.
 	the_event = new type(src, param)//This causes a runtime for some reason, was this me? No - there's an event floating around missing a definition.
 
@@ -292,9 +308,24 @@
 	update_mood()
 
 	if(the_event.timeout)
-		addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), the_event.timeout, TIMER_UNIQUE|TIMER_OVERRIDE)
+		schedule_event_timeout(category, the_event.timeout)
+
+/// Взводит таймер истечения мудлета, снимая предыдущий таймер той же категории.
+/datum/component/mood/proc/schedule_event_timeout(category, timeout)
+	clear_event_timer(category)
+	mood_event_timers[category] = addtimer(CALLBACK(src, PROC_REF(clear_event), null, category), timeout, TIMER_STOPPABLE)
+
+/// Снимает таймер истечения мудлета, если он был взведён. Повторный вызов безопасен:
+/// deltimer уже отработавшего или несуществующего id - это no-op.
+/datum/component/mood/proc/clear_event_timer(category)
+	var/timer_id = mood_event_timers[category]
+	mood_event_timers -= category
+	if(isnull(timer_id))
+		return
+	deltimer(timer_id)
 
 /datum/component/mood/proc/clear_event(datum/source, category)
+	clear_event_timer(category)
 	var/datum/mood_event/event = mood_events[category]
 	if(!event)
 		return FALSE
@@ -303,12 +334,15 @@
 	qdel(event)
 	update_mood()
 
-/datum/component/mood/proc/remove_temp_moods() //Removes all temp moodsfor(var/i in mood_events)
-	for(var/i in mood_events)
-		var/datum/mood_event/moodlet = mood_events[i]
+/datum/component/mood/proc/remove_temp_moods() //Removes all temp moods
+	// Список правится прямо в цикле, поэтому идём по копии ключей: иначе сдвиг индексов
+	// пропускал каждый второй временный мудлет, и он оставался висеть вместе с таймером.
+	for(var/category in mood_events.Copy())
+		var/datum/mood_event/moodlet = mood_events[category]
 		if(!moodlet || !moodlet.timeout)
 			continue
-		mood_events -= i
+		clear_event_timer(category)
+		mood_events -= category
 		qdel(moodlet)
 	update_mood()
 
@@ -357,6 +391,21 @@
 			add_event(null, "nutrition", /datum/mood_event/hungry)
 		if(0 to NUTRITION_LEVEL_STARVING)
 			add_event(null, "nutrition", /datum/mood_event/starving)
+
+/datum/component/mood/proc/HandleThirst(mob/living/L)
+	if(HAS_TRAIT(L, TRAIT_NOTHIRST))
+		return FALSE //no mood events for thirst
+	if(L.thirst >= THIRST_LEVEL_THRESHOLD)
+		L.set_thirst(clamp(L.thirst, 0, THIRST_LEVEL_THRESHOLD))
+	switch(get_thirst(L))
+		if(THIRST_LEVEL_QUENCHED to INFINITY)
+			add_event(null, "thirst", /datum/mood_event/quenched)
+		if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_QUENCHED)
+			clear_event(null, "thirst")
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			add_event(null, "thirst", /datum/mood_event/thirsty)
+		if(0 to THIRST_LEVEL_PARCHED)
+			add_event(null, "thirst", /datum/mood_event/dehydrated)
 
 /datum/component/mood/proc/HandleCharge(mob/living/carbon/human/H)
 	var/datum/species/ethereal/E = H.dna.species

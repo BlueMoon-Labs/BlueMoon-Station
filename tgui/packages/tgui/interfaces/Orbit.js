@@ -1,9 +1,10 @@
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
 import { multiline } from 'common/string';
+import { useState } from 'react';
 
 import { resolveAsset } from '../assets';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Divider, Flex, Icon, Input, Section } from '../components';
 import { Window } from '../layouts';
 
@@ -35,8 +36,8 @@ const compareNumberedText = (a, b) => {
   return compareString(aName, bName);
 };
 
-const BasicSection = (props, context) => {
-  const { act } = useBackend(context);
+const BasicSection = (props) => {
+  const { act } = useBackend();
   const { searchText, source, title } = props;
   const things = source.filter(searchFor(searchText));
   things.sort(compareNumberedText);
@@ -56,8 +57,8 @@ const BasicSection = (props, context) => {
   );
 };
 
-const OrbitedButton = (props, context) => {
-  const { act } = useBackend(context);
+const OrbitedButton = (props) => {
+  const { act } = useBackend();
   const { color, thing } = props;
 
   return (
@@ -93,8 +94,8 @@ const OrbitedButton = (props, context) => {
   );
 };
 
-export const Orbit = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Orbit = (props) => {
+  const { act, data } = useBackend();
   const {
     alive,
     antagonists,
@@ -108,7 +109,7 @@ export const Orbit = (props, context) => {
     ghost_roles,
   } = data;
 
-  const [searchText, setSearchText] = useLocalState(context, "searchText", "");
+  const [searchText, setSearchText] = useState("");
 
   const collatedAntagonists = {};
   for (const antagonist of antagonists) {

@@ -20,6 +20,7 @@
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/utility
 	name = "green utility uniform"
@@ -79,7 +80,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/longdress
 	name = "maxi dress"
@@ -92,7 +92,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/skirt/nightie
 	name = "transparent nightie"
@@ -174,7 +173,6 @@
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
 	flags_inv = HIDESHOES
-	alternate_worn_layer = ABOVE_SHOES_LAYER
 
 /obj/item/clothing/under/dress/skirt/pleatedmedium
 	name = "pleated skirt"
@@ -280,10 +278,26 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
 	icon_state = "sexymaid"
 	item_state = "sexymaid"
-	body_parts_covered = NONE
+	body_parts_covered = CHEST|GROIN
 	fitted = NO_FEMALE_UNIFORM
-	can_adjust = FALSE
+	can_adjust = FALSE	// Yeah, this flag isn't exactly working properly here. I'll still use toggle_jumpsuit_adjust() override for clarity though
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/under/dress/skirt/maidsexy/toggle_jumpsuit_adjust()
+	if(!body_parts_covered)
+		to_chat(usr, "<span class='notice'>Вы поправили [src], теперь она полностью закрывает ваше тело.</span>")
+		body_parts_covered = CHEST|GROIN
+	else
+		to_chat(usr, "<span class='notice'>Вы приспустили [src], частично оголив ваши формы.</span>")
+		body_parts_covered = NONE
+	return TRUE
+
+/obj/item/clothing/under/dress/skirt/maidsexy/examine(mob/user)
+	. = ..()
+	if(!body_parts_covered)
+		. += "Alt-click для нормального стиля ношения."
+	else
+		. += "Alt-click для повседневного стиля ношения."
 
 /obj/item/clothing/under/dress/turtledress
 	name = "Turtleneck dress"
@@ -317,6 +331,13 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+
+/obj/item/clothing/under/bm/hunterhide
+	name = "Hunter's drips"
+	desc = "Дряхлые обноски"
+	icon_state = "hunterhide_uniform"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	alt_covers_chest = TRUE
 
 /obj/item/clothing/under/poly_sweater/verb/worn_layer()
 	set name = "Change worn layer"
@@ -505,6 +526,7 @@
 	icon_state = "stylish_dress"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/sergal_brown_bib
 	name = "Sergal brown bib"
@@ -539,3 +561,14 @@
 	can_adjust = FALSE
 	unique_reskin = list("Parade" = list(RESKIN_ICON_STATE = "aristocratic_uniform_parade"),
 						"Base" = list(RESKIN_ICON_STATE = "aristocratic_uniform"))
+
+/obj/item/clothing/under/bm/yun_outfit
+	name = "strange chinese clothing"
+	desc = "Prepare for the battle, prepare for the war, Prepare for the real STREET FIGHTER BLOOD WAR!"
+	icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniforms_digi.dmi'
+	icon_state = "yun"
+	item_state = "yun"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE

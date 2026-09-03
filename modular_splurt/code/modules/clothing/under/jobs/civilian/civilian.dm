@@ -14,6 +14,7 @@
 	icon_state = "hop_parade_female"
 	item_state = "hop_parade_female"
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/galaxy_blue
 	name = "\improper De Void of Soul"

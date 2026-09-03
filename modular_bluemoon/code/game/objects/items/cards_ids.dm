@@ -6,6 +6,7 @@
 	uses = 1
 
 /obj/item/card/id/syndicate/one_access_copy/loadout
+	access = list()
 	var/registred = FALSE
 
 // Используется именно такая функция, т.к. при выдаче через лодаут карта помещается в рюкзак

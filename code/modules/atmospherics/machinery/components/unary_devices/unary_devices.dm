@@ -8,6 +8,9 @@
 	var/uid
 	var/static/gl_uid = 1
 
+/obj/machinery/atmospherics/components/unary/ui_port_labels()
+	return list("Труба")
+
 /obj/machinery/atmospherics/components/unary/SetInitDirections()
 	initialize_directions = dir
 

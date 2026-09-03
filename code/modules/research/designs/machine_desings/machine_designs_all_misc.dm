@@ -57,10 +57,9 @@
 	name = "Machine Design (Vendor Board)"
 	desc = "The circuit board for a Vendor. Use a screwdriver to turn the \"brand selection\" dial."
 	id = "vendor"
-	build_type = PROTOLATHE | AUTOLATHE
+	build_type = AUTOLATHE
 	build_path = /obj/item/circuitboard/machine/vendor
-	category = list ("Cargo Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_ALL
+	category = list ("initial", "Electronics")
 
 /datum/design/board/donksofttoyvendor
 	name = "Machine Design (Donksoft Toy Vendor Board)"
@@ -77,6 +76,14 @@
 	build_path = /obj/item/circuitboard/machine/space_heater
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
+
+/datum/design/board/electrolyzer
+	name = "Machine Design (Electrolyzer Board)"
+	desc = "The circuit board for a space electrolyzer."
+	id = "electrolyzer"
+	build_path = /obj/item/circuitboard/machine/electrolyzer
+	category = list ("Engineering Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/board/reagentgrinder
 	name = "Machine Design (All-In-One Grinder)"
@@ -131,6 +138,14 @@
 	desc = "The circuit board for a paystand."
 	id = "paystand"
 	build_path = /obj/item/circuitboard/machine/paystand
+	category = list ("Misc. Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ALL
+
+/datum/design/board/vendatray
+	name = "Machine Design (Vend-A-Tray)"
+	desc = "A display case with an ID-card swiper. Use your ID to purchase the contents."
+	id = "vendatray"
+	build_path = /obj/item/circuitboard/machine/vendatray
 	category = list ("Misc. Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 

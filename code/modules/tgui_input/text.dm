@@ -35,10 +35,16 @@
 			else
 				return stripped_input(user, message, title, default, max_length)
 		else
+			// Even raw (encode=FALSE) input must drop control characters: they break
+			// the DM<->TGUI round-trip and any savefile key built from this text.
+			var/mob/prompt_mob = begin_native_prompt(user)
+			var/native_answer
 			if(multiline)
-				return input(user, message, title, default) as message|null
+				native_answer = input(user, message, title, default) as message|null
 			else
-				return input(user, message, title, default) as text|null
+				native_answer = input(user, message, title, default) as text|null
+			end_native_prompt(prompt_mob)
+			return strip_control_chars(native_answer)
 	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
 	text_input.ui_interact(user)
 	text_input.wait()
@@ -98,7 +104,8 @@
  * the window was closed by the user.
  */
 /datum/tgui_input_text/proc/wait()
-	while (!entry && !closed)
+	//См. tgui_input/list.dm: без проверки на QDELETED цикл переживает собственный датум.
+	while (!entry && !closed && !QDELETED(src))
 		stoplag(1)
 
 /datum/tgui_input_text/ui_interact(mob/user, datum/tgui/ui)
@@ -140,8 +147,12 @@
 		if("submit")
 			// BLUEMOON EDIT - исправление счета по байтам, а не по символам Юникода
 			if(length_char(params["entry"]) > max_length)
+				// Молчаливый return выглядел как "кнопка не работает": окно остаётся открытым,
+				// а почему ввод не принят - неизвестно.
+				to_chat(usr, span_warning("Слишком длинный текст: [length_char(params["entry"])] символов при лимите [max_length]."))
 				return
-			if(encode && (length_char(html_encode(params["entry"])) > max_length))
+			// Должно совпадать с кодировщиком set_entry (html_encode_readable), иначе получим ложное "clipped" на одних только кавычках
+			if(encode && (length_char(html_encode_readable(params["entry"])) > max_length))
 				to_chat(usr, span_notice("Your message was clipped due to special character usage."))
 			set_entry(params["entry"])
 			closed = TRUE
@@ -153,10 +164,13 @@
 			return TRUE
 
 /datum/tgui_input_text/proc/set_entry(entry)
-	if(!isnull(entry))
-		var/converted_entry = encode ? html_encode(entry) : entry
-		//converted_entry = readd_quotes(converted_entry)
-		src.entry = trim(converted_entry, max_length)
+	if(isnull(entry))
+		return
+	// Strip control characters in both branches: they survive html_encode but break
+	// the DM<->TGUI round-trip and any savefile key built from this text.
+	entry = strip_control_chars(entry)
+	var/converted_entry = encode ? html_encode_readable(entry) : entry
+	src.entry = trim(converted_entry, max_length)
 
 /**
  * Creates an asynchronous TGUI input text window with an associated callback.

@@ -259,32 +259,36 @@ GLOBAL_VAR(current_date_string)
 			set_temp("Account [M.account_holder] created successfully. ID: [M.account_id].", "success", TRUE)
 			current_page = AUT_ACCLST
 
-		if("finalise_transfer")
-			var/from_index = text2num(params["from_index"])
-			var/to_acc_id = params["to_account_id"]
-			var/amount = text2num(params["amount"])
-			if(!from_index || amount <= 0 || !length(to_acc_id))
-				set_temp("Invalid transfer parameters.", "danger", TRUE)
-				return
-			var/list/accounts = GLOB.all_money_accounts
-			if(from_index < 1 || from_index > length(accounts))
-				set_temp("Source account not found.", "danger", TRUE)
-				return
-			var/datum/bank_account/From = accounts[from_index]
-			var/datum/bank_account/To
-			for(var/datum/bank_account/B in accounts)
-				if(B.account_id == text2num(to_acc_id))
-					To = B
-					break
-			if(!To)
-				set_temp("Target account not found.", "danger", TRUE)
-				return
-			if(From.account_balance < amount)
-				set_temp("Insufficient funds.", "danger", TRUE)
-				return
-			From.account_balance -= amount
-			To.account_balance += amount
-			set_temp("Transferred [amount] credits from [From.account_holder] to [To.account_holder].", "success", TRUE)
+
+		//Временно вырезано из-за возможности выдавать себе бесконечно денег. Стас, ты вообще тестишь свой нейрослоп?
+		//прок set_temp тоже НЕ работает. Совсем. Ты бы хоть комментарии от нейронки убрал для приличия.
+
+		// if("finalise_transfer")
+		// 	var/from_index = text2num(params["from_index"])
+		// 	var/to_acc_id = params["to_account_id"]
+		// 	var/amount = text2num(params["amount"])
+		// 	if(!from_index || amount <= 0 || !length(to_acc_id))
+		// 		set_temp("Invalid transfer parameters.", "danger", TRUE)
+		// 		return
+		// 	var/list/accounts = GLOB.all_money_accounts
+		// 	if(from_index < 1 || from_index > length(accounts))
+		// 		set_temp("Source account not found.", "danger", TRUE)
+		// 		return
+		// 	var/datum/bank_account/From = accounts[from_index]
+		// 	var/datum/bank_account/To
+		// 	for(var/datum/bank_account/B in accounts)
+		// 		if(B.account_id == text2num(to_acc_id))
+		// 			To = B
+		// 			break
+		// 	if(!To)
+		// 		set_temp("Target account not found.", "danger", TRUE)
+		// 		return
+		// 	if(From.account_balance < amount)
+		// 		set_temp("Insufficient funds.", "danger", TRUE)
+		// 		return
+		// 	From.account_balance -= amount
+		// 	To.account_balance += amount
+		// 	set_temp("Transferred [amount] credits from [From.account_holder] to [To.account_holder].", "success", TRUE)
 
 		if("change_pay_level")
 			if(!detailed_account_view) return

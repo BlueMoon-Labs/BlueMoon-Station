@@ -1,8 +1,10 @@
 /datum/round_event_control/anomaly/anomaly_dimensional
 	name = "Anomaly: Dimensional"
 	typepath = /datum/round_event/anomaly/anomaly_dimensional
+	enabled = TRUE // база выключена, подтипы включаются явно
 	max_occurrences = 5
 	weight = 20
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "This anomaly replaces the materials of the surrounding area."
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly, /datum/event_admin_setup/listed_options/anomaly_dimensional)
 

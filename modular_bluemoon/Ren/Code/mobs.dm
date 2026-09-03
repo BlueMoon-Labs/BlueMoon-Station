@@ -105,13 +105,13 @@
 	update_inv_internal_storage()
 
 ///inteq mobs
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper
+/mob/living/simple_animal/hostile/inteq/ranged/sniper
 	name = "InteQ Mad Shooter"
 	desc = "Ему очень нравится звук выстрела его винтовки"
 	ranged = 1
 	retreat_distance = 4
 	minimum_distance = 4
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	icon_state = "infiltrator_sniper"
 	icon_living = "infiltrator_sniper"
 	casingtype = /obj/item/ammo_casing/p50
@@ -123,20 +123,27 @@
 	rapid_melee = 1
 	speak_chance = 30
 	speak = list("Я попал? Я попал, да?!", "Это там твои мозги вытекают?!", "Да куда я положил магазин, сука где он, где он?!", "Я буду убивать тебя медленно, отстреливая кусочек за кусочком~", "Нужно будет купить себе новые очки", "Да я тебя на сквозь вижу, ХАХ!", "Да я не бузумный стрелок. Я убийца!")
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/sniper_rifle = 5,
+		/obj/item/broken/sniper_rifle = 30,
+		/obj/item/ammo_box/magazine/sniper_rounds = 10,
+		/obj/item/clothing/under/inteq = 15,
+		null = 40 // ничего не выпадает
+	)
 
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper/Aggro()
+/mob/living/simple_animal/hostile/inteq/ranged/sniper/Aggro()
 	..()
 	summon_backup(25)
 	say("Может мне кто нибудь поможет? У нас тут мишень нарисовалась, работаем!")
 
-/mob/living/simple_animal/hostile/syndicate/melee/ushm
+/mob/living/simple_animal/hostile/inteq/melee/ushm
 	name = "InteQ Breacher"
 	melee_damage_lower = 10
 	melee_damage_upper = 10
 	wound_bonus = 40
 	bare_wound_bonus = 15
 	sharpness = SHARP_EDGED
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	icon_state = "infiltrator_mele"
 	icon_living = "infiltrator_mele"
 	loot = list(/obj/effect/gibspawner/human)
@@ -144,6 +151,12 @@
 	attack_verb_simple = "slash"
 	attack_sound = 'modular_bluemoon/Ren/Sound/USHM_hit.ogg'
 	status_flags = 0
+	random_loot = list(
+		/obj/item/pickaxe/drill/jackhammer/angle_grinder = 10,
+		/obj/item/broken/ushm = 35,
+		/obj/item/clothing/under/inteq = 15,
+		null = 40
+	)
 
 //Рандомные мобы
 /mob/living/simple_animal/hostile/skeleton/meatguy
@@ -154,7 +167,7 @@
 	sharpness = SHARP_EDGED
 	wound_bonus = 10
 	bare_wound_bonus = 10
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	var/number
 
 /mob/living/simple_animal/hostile/skeleton/meatguy/Initialize(mapload)
@@ -168,7 +181,7 @@
 	name = "Red alert"
 	icon_state = "komunist"
 	icon_living = "komunist"
-	icon = 'modular_bluemoon/Ren/Icons/Mob/mobs.dmi'
+	icon = 'modular_bluemoon/Ren/Icons/Mob/Mobs.dmi'
 	maxHealth = 180
 	health = 180
 	casingtype = /obj/item/ammo_casing/a9x39
@@ -185,6 +198,11 @@
 	spacewalk = TRUE
 	dodging = TRUE
 	speak = list("Сдохни, проклятый капиталист!")
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/vss = 5,
+		/obj/item/broken/vss = 35,
+		null = 60
+	)
 
 ///безумный стрелок. Ивент
 /datum/round_event_control/sniper
@@ -193,6 +211,7 @@
 	max_occurrences = 2
 	weight = 10
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE // одиночный сбежавший стрелок, не станционная угроза
 
 /datum/round_event/sniper
 	announce_when = 1
@@ -233,7 +252,7 @@
 		return MAP_ERROR
 
 	var/turf/T = get_turf(pick(spawn_locs))
-	var/mob/living/simple_animal/hostile/syndicate/ranged/sniper/S = new(T)
+	var/mob/living/simple_animal/hostile/inteq/ranged/sniper/S = new(T)
 	playsound(S, 'modular_bluemoon/Ren/Sound/rifle-loading.ogg', 150, 1, 1000)
 	message_admins("A mad shooter has been spawned at [COORD(T)][ADMIN_JMP(T)]")
 	log_game("A mad shooter has been spawned at [COORD(T)]")

@@ -26,6 +26,8 @@
 	var/vore_fullness = 0					// How "full" the belly is (controls icons)
 
 // Release belly contents before being gc'd!
+// Чистку легаси-бакетов/пулов НЕ дублируем: `..()` чейнится на базовый
+// Destroy (simple_animal.dm), который выписывает моба из всех списков сам.
 /mob/living/simple_animal/Destroy()
 	release_vore_contents(include_absorbed = TRUE, silent = TRUE)
 	prey_excludes.Cut()

@@ -12,9 +12,16 @@
 	description = "Toggle throwing the current item or not."
 	category = CATEGORY_CARBON
 
+/datum/keybinding/carbon/toggle_throw_mode/can_use(client/user)
+	return iscarbon(user.mob) || (istype(user.mob, /mob/living/simple_animal) && user.mob:dextrous)
+
 /datum/keybinding/carbon/toggle_throw_mode/down(client/user)
 	var/mob/living/carbon/C = user.mob
-	C.toggle_throw_mode()
+	if(istype(C))
+		C.toggle_throw_mode()
+	else if(istype(user.mob, /mob/living/simple_animal))
+		var/mob/living/simple_animal/S = user.mob
+		S.toggle_throw_mode()
 	return TRUE
 
 /datum/keybinding/carbon/select_help_intent
@@ -23,6 +30,9 @@
 	full_name = "Select help intent"
 	description = ""
 	category = CATEGORY_CARBON
+
+/datum/keybinding/carbon/select_help_intent/can_use(client/user)
+	return iscarbon(user.mob) || (istype(user.mob, /mob/living/simple_animal) && user.mob:dextrous)
 
 /datum/keybinding/carbon/select_help_intent/down(client/user)
 	user.mob?.a_intent_change(INTENT_HELP)
@@ -35,6 +45,9 @@
 	description = ""
 	category = CATEGORY_CARBON
 
+/datum/keybinding/carbon/select_disarm_intent/can_use(client/user)
+	return iscarbon(user.mob) || (istype(user.mob, /mob/living/simple_animal) && user.mob:dextrous)
+
 /datum/keybinding/carbon/select_disarm_intent/down(client/user)
 	user.mob?.a_intent_change(INTENT_DISARM)
 	return TRUE
@@ -46,6 +59,9 @@
 	description = ""
 	category = CATEGORY_CARBON
 
+/datum/keybinding/carbon/select_grab_intent/can_use(client/user)
+	return iscarbon(user.mob) || (istype(user.mob, /mob/living/simple_animal) && user.mob:dextrous)
+
 /datum/keybinding/carbon/select_grab_intent/down(client/user)
 	user.mob?.a_intent_change(INTENT_GRAB)
 	return TRUE
@@ -56,6 +72,9 @@
 	full_name = "Select harm intent"
 	description = ""
 	category = CATEGORY_CARBON
+
+/datum/keybinding/carbon/select_harm_intent/can_use(client/user)
+	return iscarbon(user.mob) || (istype(user.mob, /mob/living/simple_animal) && user.mob:dextrous)
 
 /datum/keybinding/carbon/select_harm_intent/down(client/user)
 	user.mob?.a_intent_change(INTENT_HARM)

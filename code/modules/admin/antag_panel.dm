@@ -19,6 +19,7 @@ GLOBAL_VAR(antag_prototypes)
 	new_antag.admin_add(src,user)
 	//If something gone wrong/admin-add assign another antagonist due to whatever clean it up
 	if(!new_antag.owner)
+		new_antag.discarded_before_gain = TRUE
 		qdel(new_antag)
 
 /proc/listtrim(list/L)

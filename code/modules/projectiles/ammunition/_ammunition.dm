@@ -7,7 +7,6 @@
 	slot_flags = ITEM_SLOT_BELT
 	throwforce = 0
 	w_class = WEIGHT_CLASS_TINY
-	custom_materials = list(/datum/material/iron = 500)
 	var/fire_sound = null						//What sound should play when this ammo is fired
 	var/caliber = list()							//Which kind of guns it can be loaded into
 	var/projectile_type = null					//The bullet type to create when New() is called
@@ -21,6 +20,37 @@
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the ammo is fired.
 	var/heavy_metal = TRUE
 	var/harmful = TRUE //pacifism check for boolet, set to FALSE if bullet is non-lethal
+	var/can_be_printed = TRUE
+	/// If it can be printed, does this casing require an advanced ammunition datadisk? Mainly for specialized ammo.
+	/// Rubbers aren't advanced. Standard ammo (or FMJ if you're particularly pedantic) isn't advanced.
+	/// Think more specialized or weird, niche ammo, like armor-piercing, incendiary, hollowpoint, or God forbid, phasic.
+	var/advanced_print_req = FALSE
+
+// whatever goblin decided to spread out bullets over like 3 files and god knows however many overrides i wish you a very stubbed toe
+
+
+/obj/item/ammo_casing/proc/get_br_level()
+	var/obj/item/projectile/P = BB
+	if(!P)
+		return -1
+
+	var/ap = P.armour_penetration
+
+	if(ap >= BULLET_BR6) return 6
+	if(ap >= BULLET_BR5) return 5
+	if(ap >= BULLET_BR4) return 4
+	if(ap >= BULLET_BR3) return 3
+	if(ap >= BULLET_BR2) return 2
+	if(ap >= BULLET_BR1) return 1
+	return 0
+
+/obj/item/ammo_casing/examine(mob/user)
+	. = ..()
+	//у стреляной гильзы BB уже нет - осмотр такой падал на armour_penetration
+	if(!BB)
+		. += span_notice("Пробитие: гильза стреляная.")
+		return
+	. += span_notice("Пробитие: BR[get_br_level()] ([BB.armour_penetration]% AP)")
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"
@@ -36,6 +66,9 @@
 	update_icon()
 
 /obj/item/ammo_casing/Destroy()
+	// Ejected casings use SpinAnimation(). Stop the native animation before the
+	// casing and its pellet-cloud component enter the garbage queue.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	if(BB)
 		QDEL_NULL(BB)
 	return ..()
@@ -84,7 +117,7 @@
 	pixel_x = rand(-12, 12)
 	pixel_y = rand(-12, 12)
 	var/turf/T = get_turf(src)
-	if(still_warm && T && T.bullet_sizzle)
+	if(still_warm && T && (T.turf_flags & TURF_BULLET_SIZZLE))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/welder.ogg', 20, 1), bounce_delay) //If the turf is made of water and the shell casing is still hot, make a sizzling sound when it's ejected.
 	else if(T && T.bullet_bounce_sound)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, T.bullet_bounce_sound, 60, 1), bounce_delay) //Soft / non-solid turfs that shouldn't make a sound when a shell casing is ejected over them.

@@ -12,6 +12,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
+/obj/item/clothing/suit/donator/bm/krieg_shinel
+	name = "Шенель Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "krieg_shinel"
+	item_state = "krieg_shinel"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/donator/bm/lightning_holocloak
 	name = "lightning holo-cloak"
 	desc = "When equipped, a strange hologram is activated, and the fabric of the cloak itself disappears, and lightning starts projecting all over the body."
@@ -208,6 +217,28 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/acrador_helmet_32x48.dmi'
 	icon_state = "rhsa12"
 	item_state = "rhsa12"
+
+/obj/item/clothing/suit/donator/bm/mark40k_armor
+	name = "Mark40k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark40k_armor"
+	item_state = "mark40k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/mark50k_armor
+	name = "Mark50k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark50k_armor"
+	item_state = "mark50k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/rank/security/officer/acradorsuit
 	name = "Underarmor suit"
@@ -443,6 +474,36 @@
 	body_parts_covered = HEAD
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
+
+// Спрайты принадлежат cnaperdodo
+/obj/item/clothing/head/donator/bm/hood_armored
+	name = "Большой капюшон"
+	desc = "Большой капюшон, используемый террористами и контробандистами для маскировки. Обеспечивает некоторую защиту головы благодаря прочным волокнам, используемым при производстве."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_hood_armored.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_hood_armored.dmi'
+	icon_state = "hood_armored"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	item_state = "empire_head"
+	body_parts_covered = HEAD
+	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 20, ACID = 0)
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+// Спрайты принадлежат cnaperdodo
+/obj/item/clothing/suit/armor/donator/bm/rebel_armor
+	name = "Кольчуга контрабандистов"
+	desc = "Кольчуга контрабандистов, изготовленная из вареной кожи и некоторых современных бронепластин. Хотя это не самый мощный вид брони и примитивный по сравнению с большинством современных брони, он обеспечивает почти идеальную мобильность, что соответствует потребностям местных колонистов. Его также быстро надевают, легко прячут и дешево изготавливают в больших мастерских."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_rebel_armor.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_rebel_armor.dmi'
+	icon_state = "rebel_armor_full"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	item_state = "officer_armor"
+	body_parts_covered = CHEST|GROIN
+	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 15, BOMB = 20, BIO = 10, RAD = 0, FIRE = 30, ACID = 20)
+	slowdown = 0
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
     name = "Expensive trenchcoat"
@@ -749,3 +810,100 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/kladmenuwu_sweater
+	name = "Worm Sweater"
+	desc = "This is a very soft and warm sweater with bows sewn on the sleeves."
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	body_parts_covered = CHEST|ARMS
+	icon_state = "kladmenuwu_sweater"
+
+/obj/item/clothing/suit/donator/bm/kladmenuwu_sweater/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFDDD5","#FFDDD5"), 2)
+
+/obj/item/clothing/suit/toggle/captains_parade/blood_shinel
+	name = "crimson aristocracy shinel"
+	desc = "Dear, resembling a military overcoat, made in burgundy colors, stitched with golden threads, complemented by the same amber buttons."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	body_parts_covered = CHEST|GROIN|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	icon_state = "blood_shinel"
+	item_state = "blood_shinel"
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/torn_veil
+	name = "Shimmering torn veil"
+	desc = "Голубая, с переливом в тёмный оттенок, вуаль. Немного порванная."
+	icon_state = "torn_veil"
+	item_state = "torn_veil"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
+    name = "Mountaineering jacket"
+    desc = "A jacket made from dense, high-quality material. The label reads: “Made in Tarkov.” A second label bears the inscription “Harr.” It brings back memories of a man known by the nickname Shturman."
+    icon_state = "mountaineering_jacket"
+    item_state = "mountaineering_jacket"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    hoodtype = /obj/item/clothing/head/hooded/winterhood/mountaineering_jacket
+
+/obj/item/clothing/head/hooded/winterhood/mountaineering_jacket
+    name = "Mountaineering hood"
+    desc = "A hood attached to a heavy mountaineering jacket."
+    icon_state = "mountaineering_hood"
+
+/obj/item/clothing/head/helmet/sec/wypmchelmet
+	name = "Arctic PMC helmet"
+	desc = "A helmet used by a private paramilitary organization, featuring an insulated design for cold climates. It includes an additional covering to provide protection against harsh acids."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "wypmc_helmet"
+	item_state = "wypmc_helmet"
+
+/obj/item/modkit/wypmchelmet
+	name = "Arctic PMC helmet Kit"
+	desc = "A modkit for making a Elite sec/inteq helmets into a Arctic PMC helmet."
+	product = /obj/item/clothing/head/helmet/sec/wypmchelmet
+	fromitem = list(/obj/item/clothing/head/helmet/blueshirt, /obj/item/clothing/head/helmet/sec, /obj/item/clothing/head/helmet/inteq)
+
+/obj/item/clothing/suit/armor/vest/wypmcjacket
+	name = "Arctic PMC armored jacket"
+	desc = "An armored jacket from a private military organization, featuring an insulated design for cold climates. It includes an additional layer of synthetic polymers for protection against harsh acids."
+	icon_state = "wypmc_jacket"
+	item_state = "wypmc_jacket"
+	dog_fashion = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+
+/obj/item/modkit/wypmcjacket
+	name = "Arctic jacket kit"
+	desc = "A modkit for making a sec/inteq armor vests into a Arctic PMC armored jacket."
+	product = /obj/item/clothing/suit/armor/vest/wypmcjacket
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt, /obj/item/clothing/suit/armor/inteq)
+
+/obj/item/clothing/head/donator/bm/wypmcberet
+	name = "Field officer arctic PMC beret"
+	desc = "This beret, designed for officers of a private military organization operating in cold climates, features not only thermal insulation but also a protective polymer lining to guard against harsh acids."
+	icon_state = "wypmc_beret"
+	item_state = "wypmc_beret"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/wypmcberet
+	name = "Field officer arctic PMC beret kit"
+	desc = "A modkit for making a sec/inteq berets into a Field officer arctic PMC beret kit."
+	product = /obj/item/clothing/head/donator/bm/wypmcberet
+	fromitem = list(/obj/item/clothing/head/beret/sec, /obj/item/clothing/head/beret/sec/peacekeeper, /obj/item/clothing/head/HoS/inteq_vanguard, /obj/item/clothing/head/HoS/inteq_honorable_vanguard)
+
+/obj/item/clothing/head/donator/bm/wypmcmedicalhat
+	name = "Medical officer arctic PMC hat"
+	desc = "An insulated hat worn by a medical worker from a private military organization. Even here, they didn't overlook acid protection... what could be the reason for such concern?"
+	icon_state = "wypmcmedical_hat"
+	item_state = "wypmcmedical_hat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'

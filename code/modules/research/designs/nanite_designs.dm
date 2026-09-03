@@ -243,6 +243,13 @@
 	program_type = /datum/nanite_program/hard_reboot
 	category = list("Medical Nanites")
 
+/datum/design/nanites/heal_wounds
+	name = "Recovery Wounds"
+	desc = "Nanites use themselves to restore the body, replacing damage and thus healing wounds."
+	id = "heal_wounds_nanites"
+	program_type = /datum/nanite_program/heal_wounds
+	category = list("Medical Nanites")
+
 
 ////////////////////AUGMENTATION NANITES//////////////////////////////////////
 

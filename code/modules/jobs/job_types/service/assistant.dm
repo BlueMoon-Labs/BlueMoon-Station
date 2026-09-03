@@ -21,7 +21,6 @@ Assistant
 	always_can_respawn_as = TRUE
 	threat = 0.2
 	alt_titles = list(
-		"Syndicate Specialist", //Синди выше, для удобства
 		"Acolyte",
 		"All-purpose Dildo",
 		"All-purpose Fleshlight",
@@ -38,6 +37,7 @@ Assistant
 		"Crewmate",
 		"Cumdump",
 		"Diplomat",
+		"Defense Attorney",
 		"Freelancer",
 		"Freeloader",
 		"Greytider",
@@ -46,6 +46,7 @@ Assistant
 		"Off-Duty Civilian",
 		"Off-Duty Crew",
 		"Off-Duty Staff",
+		"Off-Duty Specialist",
 		"Pet",
 		"Service Bottom",
 		"Service Pred",
@@ -59,7 +60,8 @@ Assistant
 		"Tourist",
 		"Trader",
 		"Visitor",
-		"Volunteer"
+		"Volunteer",
+		"USSP Tourist",
 		)
 
 	family_heirlooms = list(
@@ -101,12 +103,14 @@ Assistant
 
 	uniform = /obj/item/clothing/under/rank/civilian/util
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/assistant/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -114,7 +118,7 @@ Assistant
 	if (CONFIG_GET(flag/grey_assistants))
 		uniform = suited ? /obj/item/clothing/under/color/grey : /obj/item/clothing/under/color/jumpskirt/grey
 	else
-		if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH])
+		if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH])
 			uniform = suited ? /obj/item/clothing/under/color/rainbow : /obj/item/clothing/under/color/jumpskirt/rainbow
 		else
 			uniform = suited ? /obj/item/clothing/under/color/random : /obj/item/clothing/under/color/jumpskirt/random

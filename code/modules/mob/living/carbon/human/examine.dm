@@ -1,4 +1,4 @@
-/mob/living/carbon/human/examine(mob/user)
+/mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
 	var/t_on 	= ru_who(TRUE)
 	var/t_ego 	= ru_ego()
@@ -34,7 +34,7 @@
 		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
 	else
 		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
-	if(user?.stat == CONSCIOUS && ishuman(user))
+	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 
@@ -60,10 +60,10 @@
 			var/obj/item/clothing/under/U = w_uniform
 			// Аксессуары
 			var/accessory_msg
-			if(length(U.attached_accessories) && !(U.flags_inv & HIDEACCESSORY))
+			if(length(U.accessories_attached) && !(U.flags_inv & HIDEACCESSORY))
 				var/list/metioned_accessories_list = list()
 				// Фильтруем неспрятанные аксессуары
-				for(var/obj/item/clothing/accessory/attached_accessory in U.attached_accessories)
+				for(var/obj/item/clothing/accessory/attached_accessory in U.accessories_attached)
 					if(attached_accessory.flags_inv & HIDEACCESSORY)
 						continue
 					metioned_accessories_list += attached_accessory
@@ -109,7 +109,7 @@
 			var/obj/item/clothing/gloves/worn_thing = gloves
 			if(!CHECK_BITFIELD(worn_thing.flags_inv, HIDEACCESSORY))
 				var/list/accessory_preparation
-				for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in worn_thing.attached_accessories)
+				for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in worn_thing.accessories_attached)
 					if(CHECK_BITFIELD(attached_accessory.flags_inv, HIDEACCESSORY))
 						continue
 					LAZYADD(accessory_preparation, "[icon2html(attached_accessory, user)] [attached_accessory]")
@@ -148,6 +148,8 @@
 	if(!(ITEM_SLOT_EYES in obscured))
 		if(glasses)
 			. += "[t_on] носит [glasses.get_examine_string(user)]."
+		else if(HAS_TRAIT(src, TRAIT_UNNATURAL_RED_GLOWY_EYES))
+			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза горят неестественным красным свечением!</B></span>"
 		else if((left_eye_color == BLOODCULT_EYE || right_eye_color == BLOODCULT_EYE) && iscultist(src) && HAS_TRAIT(src, TRAIT_CULT_EYES))
 			. += "<span class='warning'><B>[ru_ego(TRUE)] глаза ярко-красные и они горят!</B></span>"
 		else if(HAS_TRAIT(src, TRAIT_HIJACKER))
@@ -180,7 +182,7 @@
 	if(LAZYLEN(internal_organs) && (user.client?.prefs.cit_toggles & GENITAL_EXAMINE))
 		for(var/obj/item/organ/genital/dicc in internal_organs)
 			if(istype(dicc) && dicc.is_exposed())
-				. += "[dicc.desc]"
+				. += dicc.get_examine_string(user)
 				if((src == user || HAS_TRAIT(user, TRAIT_GFLUID_DETECT)) && ((dicc?.genital_flags & GENITAL_FUID_PRODUCTION) || ((dicc?.linked_organ?.genital_flags & GENITAL_FUID_PRODUCTION) && !dicc?.linked_organ?.is_exposed())))
 					var/datum/reagent/cummies = find_reagent_object_from_type(dicc?.get_fluid_id())
 					. += "Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
@@ -283,10 +285,15 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			// BLUEMOON ADD END
 		missing -= BP.body_zone
 		for(var/obj/item/I in BP.embedded_objects)
+			var/datum/component/embedded/embed = get_embedded_component(src, I, BP)
 			if(I.isEmbedHarmless())
-				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>\n"
+				msg += "<B>Из [t_ego] [BP.name] торчит [icon2html(I, user)] [I]!</B>"
 			else
-				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>\n"
+				msg += "<B>У н[t_ego] застрял [icon2html(I, user)] [I] в [BP.name]!</B>"
+			// BLUEMOON ADD - любой стоящий рядом может вытащить застрявший предмет прямо из осмотра
+			if(embed?.can_be_ripped_by(user))
+				msg += " <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(BP)]' class='warning'>[I.isEmbedHarmless() ? "Вы можете снять [I]!" : "Вы можете вырвать [I]!"]</a>"
+			msg += "\n"
 		for(var/i in BP.wounds)
 			var/datum/wound/iter_wound = i
 			msg += "[iter_wound.get_examine_description(user)]\n"
@@ -525,12 +532,13 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if (HAS_TRAIT(src, TRAIT_DEAF))
 				msg += "[t_on] не реагирует на шум.\n"
 			var/datum/component/mood/mood = src.GetComponent(/datum/component/mood)
-			if(mood.sanity <= SANITY_DISTURBED)
-				msg += "[t_on] выглядит расстроено.\n"
-				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empath", /datum/mood_event/sad_empath, src)
-			if(mood.shown_mood >= 6) //So roundstart people aren't all "happy" and that antags don't show their true happiness.
-				msg += "[t_on] выглядит счастливо.\n"
-				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empathH", /datum/mood_event/happy_empath, src)
+			if(mood)
+				if(mood.sanity <= SANITY_DISTURBED)
+					msg += "[t_on] выглядит расстроено.\n"
+					SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empath", /datum/mood_event/sad_empath, src)
+				if(mood.shown_mood >= 6) //So roundstart people aren't all "happy" and that antags don't show their true happiness.
+					msg += "[t_on] выглядит счастливо.\n"
+					SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empathH", /datum/mood_event/happy_empath, src)
 
 		switch(stat)
 			if(UNCONSCIOUS)
@@ -582,7 +590,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
-						rank_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(R.fields["real_rank"])]</span></span>"
+						rank_tooltip = " [span_tooltip_fast(html_encode(R.fields["real_rank"]))]"
 					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]][rank_tooltip]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
 				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
 					var/cyberimp_detect

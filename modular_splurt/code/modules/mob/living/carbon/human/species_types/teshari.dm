@@ -217,6 +217,7 @@
 		marker.target_z = target_z
 
 		client.screen += marker
+		marker.shown_to_ckey = client.ckey
 		markers += marker
 
 		// Обновляем позицию маркера на экране
@@ -250,10 +251,17 @@
 
 // Удаление маркеров
 /mob/living/carbon/human/proc/remove_sonar_markers(list/markers)
-	if(client)
-		client.screen -= markers
-	for(var/atom/movable/screen/S in markers)
-		qdel(S)
+	//Снятие с экрана шло через client моба. Если за три секунды звучания эхолокации
+	//игрок ушёл в госта или переподключился, client тут уже пуст - и маркеры
+	//оставались висеть в client.screen до конца раунда. Теперь маркер снимает себя
+	//сам, с того клиента, которому его выдали.
+	for(var/atom/movable/screen/sonar_ping/marker as anything in markers)
+		qdel(marker)
+	//sonar_markers - ТОТ ЖЕ объект списка, а не копия: без очистки моб держал бы
+	//пачку уже удалённых маркеров до следующего пинга, а то и до конца раунда.
+	markers.Cut()
+	if(sonar_markers == markers)
+		sonar_markers = null
 
 /atom/movable/screen/sonar_ping
 	name = ""
@@ -263,6 +271,19 @@
 	var/target_x
 	var/target_y
 	var/target_z
+	/// ckey клиента, которому маркер выдали на экран. Маркеры создаются голым new()
+	/// без hud, поэтому базовый /atom/movable/screen/Destroy снять их не может.
+	/// Храним именно ckey, а не сам клиент: ссылка на клиента сделала бы его
+	/// удаление дороже ровно на то время, что маркер висит.
+	var/shown_to_ckey
+
+/atom/movable/screen/sonar_ping/Destroy()
+	if(shown_to_ckey)
+		var/client/viewer = GLOB.directory[shown_to_ckey]
+		if(viewer)
+			viewer.screen -= src
+		shown_to_ckey = null
+	return ..()
 
 /atom/movable/screen/sonar_ping/proc/update_position(mob/observer, start_x, start_y, start_z)
 	if(!observer || observer.z != start_z || target_z != start_z)

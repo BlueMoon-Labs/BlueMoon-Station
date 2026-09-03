@@ -22,11 +22,11 @@
 /datum/wires/robot/get_status()
 	var/mob/living/silicon/robot/R = holder
 	var/list/status = list()
-	status += "The law sync module is [R.lawupdate ? "on" : "off"]."
-	status += "The intelligence link display shows [R.connected_ai ? R.connected_ai.name : "NULL"]."
-	status += "The camera light is [!isnull(R.builtInCamera) && R.builtInCamera.status ? "on" : "off"]."
-	status += "The lockdown indicator is [R.locked_down ? "on" : "off"]."
-	status += "The reset module hardware light is [R.has_module() ? "on" : "off"]."
+	status += "Модуль LawSync [R.lawupdate ? "активен" : "не отвечает на запросы"]."
+	status += "Дисплей канала связи ИИ сообщает [R.connected_ai ? R.connected_ai.name : "NULL"]."
+	status += "Светодиод камеры [!isnull(R.builtInCamera) && R.builtInCamera.status ? "мигает зелёным цветом" : "неактивен"]."
+	status += "Индикатор блокировки [R.locked_down ? "горит красным цветом" : "неактивен"]."
+	status += "Сервоприводы модуля киборга [R.has_module() ? "наготове" : "неактивны"]."
 	return status
 
 /datum/wires/robot/on_pulse(wire, user)
@@ -50,17 +50,17 @@
 		if(WIRE_CAMERA) // Pulse to disable the camera.
 			if(!QDELETED(R.builtInCamera) && !R.scrambledcodes)
 				R.builtInCamera.toggle_cam(usr, 0)
-				R.visible_message("[R]'s camera lens focuses loudly.", "Your camera lens focuses loudly.")
+				R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
 		if(WIRE_LAWSYNC) // Forces a law update if possible.
 			if(R.lawupdate)
-				R.visible_message("[R] gently chimes.", "LawSync protocol engaged.")
+				R.visible_message("[R] негромко звенит.", "Протокол LawSync задействован.")
 				R.lawsync()
 				R.show_laws()
 		if(WIRE_LOCKDOWN)
 			R.SetLockdown(!R.locked_down) // Toggle
 		if(WIRE_RESET_MODULE)
 			if(R.has_module())
-				R.visible_message("[R]'s module servos twitch.", "Your module display flickers.")
+				R.visible_message("Сервоприводы модуля [R] вздрагивают.", "Дисплей вашего модуля мерцает.")
 
 /datum/wires/robot/on_cut(wire, mend)
 	var/mob/living/silicon/robot/R = holder
@@ -81,7 +81,7 @@
 			if(!QDELETED(R.builtInCamera) && !R.scrambledcodes)
 				R.builtInCamera.status = mend
 				R.builtInCamera.toggle_cam(usr, 0)
-				R.visible_message("[R]'s camera lens focuses loudly.", "Your camera lens focuses loudly.")
+				R.visible_message("Линзы камеры [R] громко фокусируются.", "Линзы вашей камеры громко фокусируются.")
 		if(WIRE_LOCKDOWN) // Simple lockdown.
 			R.SetLockdown(!mend)
 		if(WIRE_RESET_MODULE)

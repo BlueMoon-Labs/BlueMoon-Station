@@ -46,6 +46,7 @@
 	item = /obj/item/disk/surgery/brainwashing
 	restricted_roles = list("Medical Doctor", "Roboticist")
 	cost = 5
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/role_restricted/clown_bomb
 	name = "Clown Bomb"
@@ -156,6 +157,14 @@
 	item = /obj/item/storage/box/syndie_kit/mimery
 	restricted_roles = list("Mime")
 
+/datum/uplink_item/role_restricted/reticence
+	name = "Reticence Exosuit"
+	desc = "Бесшумный, быстрый и почти невидимый мимский боевой экзокостюм. Оснащается бесшумным пистолетом \
+			и РЦД для возведения стен. Улучшен до уровня лёгкого боевого экзоскелета. Только для мимов."
+	cost = 15
+	item = /obj/vehicle/sealed/mecha/combat/reticence/loaded
+	restricted_roles = list("Mime")
+
 /datum/uplink_item/role_restricted/ultrahonkpins
 	name = "Hilarious firing pin"
 	desc = "A single firing pin made for Clown agents, this firing pin makes any gun honk when fired if not a true clown! \
@@ -254,7 +263,7 @@
 	name = "Disposable Sentry Gun"
 	desc = "A disposable sentry gun deployment system cleverly disguised as a toolbox, apply wrench for functionality."
 	item = /obj/item/storage/toolbox/emergency/turret
-	cost = 11
+	cost = 5
 	restricted_roles = list("Station Engineer")
 
 /datum/uplink_item/role_restricted/combat_rcd
