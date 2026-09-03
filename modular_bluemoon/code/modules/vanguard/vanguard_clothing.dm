@@ -99,24 +99,6 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
 
-// я не знаю куда пихать наборы классов, поэтому пихну их сюда
-
-/obj/item/storage/belt/military/assault/demolition/PopulateContents()
-	new /obj/item/wrench/caravan(src)
-	new /obj/item/screwdriver/caravan(src)
-	new /obj/item/wirecutters/caravan(src)
-	new /obj/item/crowbar/red/caravan(src)
-	new /obj/item/weldingtool/hugetank(src)
-	new /obj/item/multitool(src)
-
-/obj/item/storage/belt/military/assault/surgeon/PopulateContents()
-	new /obj/item/scalpel/upgraded_t2(src)
-	new /obj/item/circular_saw/upgraded_t2(src)
-	new /obj/item/retractor/upgraded_t2(src)
-	new /obj/item/hemostat/upgraded_t2(src)
-	new /obj/item/cautery/upgraded_t2(src)
-	new /obj/item/surgical_drapes(src)
-
 /obj/item/armorkit/vanguard/vest
 	name = "Combined armor kit"
 	desc = "Стандартизированный эскадронами Авангарда набор гибких бронепластин и тюбиков нано-клея. Данная вариация предназначена для укрепления верхней одежды."
