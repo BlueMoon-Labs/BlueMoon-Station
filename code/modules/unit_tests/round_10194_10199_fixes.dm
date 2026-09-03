@@ -36,3 +36,14 @@
 	TEST_ASSERT(!(REF(first) in first_sees), "мессенджер видит сам себя")
 	TEST_ASSERT(REF(first) in second_sees, "второй мессенджер не видит первый")
 	TEST_ASSERT(!(REF(second) in second_sees), "второй мессенджер видит сам себя")
+
+/// VV не пропускает загруженную картинку не в .dmi: анимированный GIF в appearance роняет DreamDaemon.
+/datum/unit_test/vv_icon_upload_guard/Run()
+	TEST_ASSERT(vv_upload_is_dmi("icons/mob/mob.dmi"), ".dmi обязан проходить")
+	TEST_ASSERT(vv_upload_is_dmi("Pat-pat.DMI"), "регистр расширения не должен мешать")
+	TEST_ASSERT(!vv_upload_is_dmi("Ricardo32.gif"), "GIF обязан отсекаться")
+	TEST_ASSERT(!vv_upload_is_dmi("Prop.png"), "PNG обязан отсекаться")
+	TEST_ASSERT(!vv_upload_is_dmi("dmi.gif"), "суффикс, а не вхождение")
+	TEST_ASSERT(vv_upload_is_image("Ricardo32.gif"), "GIF это картинка")
+	TEST_ASSERT(vv_upload_is_image("photo.jpeg"), "JPEG это картинка")
+	TEST_ASSERT(!vv_upload_is_image("track.ogg"), "звук картинкой не считается")
