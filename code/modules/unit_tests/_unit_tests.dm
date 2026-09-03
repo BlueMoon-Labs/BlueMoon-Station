@@ -292,6 +292,7 @@
 #include "round_9752_regressions.dm"
 #include "round_10137_review_fixes.dm"
 #include "round_10137_review_fixes_b.dm"
+#include "round_10194_10199_fixes.dm"
 #include "round_10150_regressions.dm"
 #include "warnfail_context.dm"
 #include "runtime_guards.dm"
