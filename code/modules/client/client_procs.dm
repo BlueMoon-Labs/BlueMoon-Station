@@ -1909,6 +1909,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		if(lighting_pm)
 			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
 			lighting_pm.filters = null
+		// The emissive plane only exists to feed the lighting plane's alpha mask, which is disabled
+		// above. Without that mask the raw white emissive overlays would blow out the whole preview,
+		// so hide the emissive plane in the character preview too.
+		var/atom/movable/screen/plane_master/emissive_pm = char_render_holders["plane_master-[EMISSIVE_PLANE]"]
+		if(emissive_pm)
+			emissive_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			emissive_pm.filters = null
 
 	var/pos = 0
 	for(var/dir in GLOB.cardinals)

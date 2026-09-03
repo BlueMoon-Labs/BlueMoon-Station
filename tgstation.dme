@@ -649,6 +649,7 @@
 #include "code\datums\bark.dm"
 #include "code\datums\beam.dm"
 #include "code\datums\beepsky_fashion.dm"
+#include "code\datums\bodypart_overlays\bodypart_overlay.dm"
 #include "code\datums\browser.dm"
 #include "code\datums\callback.dm"
 #include "code\datums\candidate_poll.dm"
