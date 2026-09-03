@@ -15,6 +15,10 @@
 // #define MOD_CORE   mod_parts[MOD_PART_CORE]
 #define MOD_CELL mod_parts[MOD_PART_CELL]
 
+#define MOD_EMP_CHARGE_LOOSE_MODIFICATOR 8
+#define MOD_EMP_SEVERITY_MAX 100
+#define MOD_CELL_BLOOW_UP_CHANCE 5
+
 #define MOD_ACTIVE      (1<<0)
 #define MOD_ACTIVATING  (1<<1)
 #define MOD_MALFUNCTION (1<<2)

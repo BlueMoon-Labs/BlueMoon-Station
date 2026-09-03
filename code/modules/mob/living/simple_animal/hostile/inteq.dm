@@ -36,7 +36,6 @@
 	a_intent = INTENT_HARM
 	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
 	// Новая переменная для случайного лута (ассоциативный список: предмет -> вес)
-	var/list/random_loot = null
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	faction = list(ROLE_INTEQ)
@@ -47,11 +46,6 @@
 	rapid_melee = 2
 
 	footstep_type = FOOTSTEP_MOB_SHOE
-
-/mob/living/simple_animal/hostile/inteq/Initialize(mapload)
-	. = ..()
-	if(random_loot && length(random_loot))
-		AddComponent(/datum/component/random_loot, random_loot)
 
 ///////////////Melee////////////
 

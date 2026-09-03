@@ -23,8 +23,7 @@
 	automatic_burst_overlay = FALSE
 	w_class = WEIGHT_CLASS_SMALL
 	weapon_weight = WEAPON_LIGHT
-	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT)
-	burst_size = 2
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
 	actions_types = list()
 	fire_sound = 'sound/weapons/lasgun.ogg'
 	casing_ejector = FALSE

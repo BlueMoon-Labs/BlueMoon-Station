@@ -74968,7 +74968,7 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_x = 24
 	},
-/obj/machinery/bountyvend,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel/dark,
 /area/command/gateway)
 "cvL" = (

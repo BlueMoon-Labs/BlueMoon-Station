@@ -4707,7 +4707,6 @@
 	req_access_txt = "62"
 	},
 /obj/machinery/light,
-/obj/structure/closet/l3closet/scientist,
 /obj/effect/turf_decal/trimline/dark_blue/filled/corner{
 	dir = 4
 	},
@@ -4721,6 +4720,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/warning{
 	dir = 4
 	},
+/obj/structure/closet/secure_closet/exile,
 /turf/open/floor/plasteel/dark/textured/half,
 /area/command/gateway)
 "aDt" = (
@@ -29419,15 +29419,18 @@
 /turf/open/floor/plasteel/textured/large,
 /area/engineering/main)
 "cnB" = (
-/obj/machinery/door/airlock/command{
-	name = "Gateway Atrium";
-	req_access_txt = "62"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/door/airlock/command{
+	name = "Gateway Atrium";
+	req_access_txt = "62"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/gateway)
@@ -36955,6 +36958,12 @@
 /obj/effect/turf_decal/box,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/heads_quarters/hos/private)
+"dMU" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/plasteel/textured/half{
+	dir = 8
+	},
+/area/engineering/break_room)
 "dNd" = (
 /obj/structure/filingcabinet{
 	pixel_x = 5
@@ -51046,9 +51055,13 @@
 /area/security/prison/workout)
 "jue" = (
 /obj/structure/table/reinforced,
-/obj/item/assembly/flash/handheld,
+/obj/item/storage/fancy/donut_box{
+	pixel_x = -4;
+	pixel_y = -2
+	},
 /obj/item/assembly/flash/handheld{
-	pixel_x = 8
+	pixel_x = 10;
+	pixel_y = 4
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/bridge)
@@ -51289,9 +51302,30 @@
 /turf/open/floor/plasteel/textured/half,
 /area/security/checkpoint/science)
 "jAj" = (
-/obj/structure/closet/secure_closet/evidence,
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/delivery/red,
+/obj/structure/closet/secure_closet{
+	name = "Contraband Locker";
+	req_access_txt = "3"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/security/detectives_office/evidence_room)
 "jAD" = (
@@ -56274,20 +56308,20 @@
 "lCq" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = -6;
-	pixel_y = -6
-	},
-/obj/item/gun/ballistic/rocketlauncher/security,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
 /obj/structure/window/reinforced{
 	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier,
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = 3;
+	pixel_y = -3
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/ai_monitored/security/armory)
@@ -65307,14 +65341,25 @@
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/hos)
 "ppc" = (
-/obj/structure/closet/secure_closet/contraband/armory,
-/obj/effect/turf_decal/delivery,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/armory_contraband,
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 3;
-	name = "3maintenance loot spawner"
+/obj/structure/rack,
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/obj/item/gun/ballistic/rocketlauncher/security,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/ai_monitored/security/armory)
@@ -67179,10 +67224,10 @@
 /turf/open/floor/plasteel/white,
 /area/command/blueshieldoffice)
 "qex" = (
-/obj/item/kirbyplants/random,
 /obj/effect/turf_decal/siding/thinplating_new{
 	dir = 10
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/textured/large,
 /area/security/brig)
 "qeH" = (
@@ -71950,12 +71995,7 @@
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "sfq" = (
-/obj/structure/table/reinforced,
-/obj/item/storage/fancy/donut_box{
-	pixel_x = 3;
-	pixel_y = 6
-	},
-/obj/item/storage/fancy/donut_box,
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/bridge)
 "sfr" = (
@@ -78598,8 +78638,8 @@
 /turf/open/floor/plasteel/textured/half,
 /area/hallway/primary/starboard)
 "uOJ" = (
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/gateway)
 "uOO" = (
@@ -117994,7 +118034,7 @@ caA
 bVr
 bXN
 lPx
-bZE
+dMU
 jiK
 vVr
 mkQ

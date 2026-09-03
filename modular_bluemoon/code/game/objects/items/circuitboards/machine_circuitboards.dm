@@ -73,6 +73,10 @@
 		/obj/item/stock_parts/matter_bin = 3
 	)
 
+/obj/item/circuitboard/machine/bountyvend/plus
+	name = "BountyVend Expert (Machine Board)"
+	build_path = /obj/machinery/bountyvend/plus
+
 /obj/item/circuitboard/machine/big_manipulator
 	name = "Big Manipulator (Machine Board)"
 	icon_state = "engineering"

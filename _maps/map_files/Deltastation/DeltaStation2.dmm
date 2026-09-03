@@ -11112,6 +11112,7 @@
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
 "bGn" = (
@@ -21710,30 +21711,19 @@
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "cVN" = (
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/structure/closet/secure_closet{
-	name = "nonlethal ammunition";
-	req_access = "list(1)"
+/obj/structure/rack,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = -6;
+	pixel_y = -6
 	},
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/effect/turf_decal/tile/red{
-	dir = 4
+/obj/item/gun/ballistic/rocketlauncher/security,
+/obj/item/gun/ballistic/rocketlauncher/security{
+	pixel_x = 6;
+	pixel_y = 6
 	},
-/obj/effect/turf_decal/tile/red,
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
+/obj/item/storage/box/security_missiles,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "cVS" = (
@@ -39345,6 +39335,7 @@
 /obj/effect/turf_decal/tile/dark{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
 "eQZ" = (
@@ -42139,13 +42130,11 @@
 /turf/open/floor/plating,
 /area/security/warden)
 "fvM" = (
-/obj/structure/closet{
-	name = "Evidence Closet"
-	},
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -22
 	},
+/obj/structure/closet/secure_closet/evidence,
 /turf/open/floor/plasteel/dark,
 /area/security/detectives_office/evidence_room)
 "fvR" = (
@@ -46779,25 +46768,26 @@
 /turf/open/floor/plasteel,
 /area/command/teleporter)
 "gto" = (
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/clothing/suit/armor/hos/platecarrier,
+/obj/item/clothing/suit/armor/hos/platecarrier{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/window/reinforced,
 /obj/structure/window/reinforced{
 	dir = 1;
 	layer = 2.9
 	},
-/obj/structure/window/reinforced,
-/obj/structure/rack,
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = -6;
-	pixel_y = -6
-	},
-/obj/item/gun/ballistic/rocketlauncher/security,
-/obj/item/gun/ballistic/rocketlauncher/security{
-	pixel_x = 6;
-	pixel_y = 6
-	},
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
-/obj/item/storage/box/security_missiles,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "gtx" = (
@@ -73676,8 +73666,8 @@
 /area/security/brig)
 "mfM" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mfR" = (
@@ -77268,6 +77258,13 @@
 	heat_capacity = 1e+006
 	},
 /area/commons/toilet/restrooms)
+"mTu" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/evidence,
+/turf/open/floor/plasteel/dark,
+/area/security/detectives_office/evidence_room)
 "mTx" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
 /obj/effect/turf_decal/tile/neutral{
@@ -122920,6 +122917,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "wwX" = (
@@ -123131,6 +123129,31 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/storage/tech)
+"wzn" = (
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/structure/closet/secure_closet{
+	name = "Contraband Locker";
+	req_access_txt = "3"
+	},
+/obj/effect/spawner/lootdrop/maintenance{
+	lootcount = 3;
+	name = "3maintenance loot spawner"
+	},
+/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/dark,
+/area/security/detectives_office/evidence_room)
 "wzo" = (
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt,
@@ -129901,6 +129924,7 @@
 	c_tag = "Security - Office Fore";
 	dir = 4
 	},
+/obj/machinery/recharge_station,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "xYZ" = (
@@ -181598,8 +181622,8 @@ pLS
 hFt
 maN
 igw
-xLt
-vKi
+mTu
+wzn
 uIW
 jtz
 bpj

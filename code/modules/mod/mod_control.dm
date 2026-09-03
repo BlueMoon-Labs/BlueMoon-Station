@@ -209,6 +209,8 @@
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
 
 /obj/item/mod/control/Destroy()
+	if(theme)
+		theme = null
 	if(is_active())
 		STOP_PROCESSING(SSobj, src)
 	//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
@@ -225,6 +227,15 @@
 	// GC и уходили в харддел. Батарея в харддел не попадала только потому, что её
 	// чистил QDEL_NULL(MOD_CELL) - макрос разворачивается в lvalue и зануляет слот.
 	// Обход по копии: удаление ключа правит тот же alist.
+
+	for(var/obj/item/mod/module/module as anything in modules.Copy())
+		module.on_uninstall()
+		module.mod = null
+		modules -= module
+		qdel(module)
+
+	selected_module = null
+
 	for(var/index in mod_parts.Copy())
 		var/obj/item/part = mod_parts[index]
 		mod_parts -= index
@@ -235,10 +246,6 @@
 		// /obj/item/clothing/mod_part/Destroy - qdel выставляет gc_destroyed до
 		// вызова Destroy, так что для части костюм уже помечен уничтожаемым.
 		qdel(part)
-	for(var/obj/item/mod/module/module as anything in modules.Copy())
-		module.mod = null
-		modules -= module
-		qdel(module)
 	QDEL_NULL(ai)
 	QDEL_NULL(wires)
 	return ..()
@@ -465,6 +472,11 @@
 
 /obj/item/mod/control/get_cell()
 	return mod_parts[MOD_PART_CELL]
+
+/obj/item/mod/control/proc/try_find_module_by_type(type)
+	for(var/obj/item/mod/module/module as anything in modules)
+		if(istype(module, type))
+			return module
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()

@@ -84,6 +84,10 @@
 		return TRUE
 	return required_modpart.check_module_ready()
 
+/obj/item/mod/module/proc/handle_emp_act(source, severity)
+	SIGNAL_HANDLER
+	return
+
 /// Called from MODsuit's install() proc, so when the module is installed.
 /obj/item/mod/module/proc/on_install()
 	if(required_modpart_index)

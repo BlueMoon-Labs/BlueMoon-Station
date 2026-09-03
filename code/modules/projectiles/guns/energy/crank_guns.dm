@@ -47,7 +47,7 @@
 	icon_state = "infernopistol"
 	item_state = null
 	ammo_type = list(/obj/item/ammo_casing/energy/nanite)
-	cell_type = /obj/item/stock_parts/cell/high
+	cell_type = /obj/item/stock_parts/cell/thermal
 	shaded_charge = TRUE
 	ammo_x_offset = 1
 	obj_flags = UNIQUE_RENAME

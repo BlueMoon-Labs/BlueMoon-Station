@@ -847,6 +847,15 @@
 	icon_state = "syndicate_holster"
 	w_class = WEIGHT_CLASS_BULKY
 
+/obj/item/storage/belt/holster/energy/thermal/equipped(mob/user, slot)
+	. = ..()
+	if(slot in list(ITEM_SLOT_BELT, ITEM_SLOT_SUITSTORE))
+		ADD_TRAIT(user, TRAIT_GUNFLIP, THERMAL_HOLSTER_TRAIT)
+
+/obj/item/storage/belt/holster/energy/thermal/dropped(mob/user, silent = FALSE)
+	. = ..()
+	REMOVE_TRAIT(user, TRAIT_GUNFLIP, THERMAL_HOLSTER_TRAIT)
+
 /obj/item/storage/belt/holster/energy/thermal/PopulateContents()
 	generate_items_inside(list(
 		/obj/item/gun/energy/laser/thermal/inferno = 1,

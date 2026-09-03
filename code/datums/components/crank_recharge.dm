@@ -52,8 +52,8 @@
 		return
 	if(is_charging)
 		return
-	if(spin_to_win)
-		source.balloon_alert(user, "нужен повертее, чтобы крутить!")
+	if(spin_to_win && !HAS_TRAIT(user, TRAIT_GUNFLIP))
+		source.balloon_alert(user, "нужны термальные кобуры, чтобы крутить пушку!")
 		return
 
 	is_charging = TRUE
