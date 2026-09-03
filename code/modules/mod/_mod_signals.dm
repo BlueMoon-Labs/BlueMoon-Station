@@ -3,4 +3,3 @@
 #define COMSIG_MOD_PART_REMOVED   "mod_part_removed"
 #define COMSIG_MOD_MODULE_TOGGLED "mod_module_toggled"
 #define COMSIG_MOD_POWER_CHANGED  "mod_power_changed"
-#define COMSIG_MOD_EMP            "mod_emp"

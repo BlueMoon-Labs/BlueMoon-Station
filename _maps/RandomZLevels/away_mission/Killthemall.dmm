@@ -19,6 +19,10 @@
 	},
 /turf/open/indestructible/spooknecropolis,
 /area/awaymission/Killthemall/Level)
+"af" = (
+/obj/item/disk/gatereward,
+/turf/open/misc/grass,
+/area/awaymission/Killthemall/Level)
 "ai" = (
 /obj/structure/ladder/unbreakable/rune{
 	color = "#ff0000";
@@ -114,6 +118,7 @@
 /obj/item/seeds/carrot/parsnip,
 /obj/structure/closet/crate,
 /obj/item/seeds/kudzu,
+/obj/item/disk/gatereward,
 /turf/open/misc/grass,
 /area/awaymission/Killthemall/Level)
 "bK" = (
@@ -1045,6 +1050,10 @@
 	},
 /turf/open/indestructible,
 /area/awaymission/Killthemall/start)
+"rB" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel/kitchen/herringbone,
+/area/awaymission/Killthemall/start)
 "rE" = (
 /obj/machinery/computer/mech_bay_power_console{
 	dir = 8
@@ -1442,6 +1451,13 @@
 "xO" = (
 /turf/closed/indestructible/necropolis,
 /area/space)
+"xU" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/indestructible{
+	icon = 'icons/turf/floors/carpet.dmi';
+	icon_state = "carpet"
+	},
+/area/awaymission/Killthemall/Boss)
 "xY" = (
 /obj/structure/stone_tile/burnt{
 	dir = 8
@@ -1558,6 +1574,15 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"zN" = (
+/obj/structure/stone_tile/block/burnt{
+	dir = 1
+	},
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating/asteroid/basalt{
+	initial_gas_mix = "o2=19;n2=32;TEMP=293.15"
+	},
+/area/awaymission/Killthemall/Boss)
 "zU" = (
 /obj/structure/flora/tree/jungle{
 	layer = 9
@@ -1707,6 +1732,10 @@
 /obj/machinery/door/airlock/external,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"Cm" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/padded,
+/area/awaymission/Killthemall/Level)
 "Cn" = (
 /turf/open/floor/circuit/red,
 /area/awaymission/Killthemall/Boss)
@@ -1764,6 +1793,13 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/Killthemall/Level)
+"Dk" = (
+/obj/item/disk/gatereward/bigest,
+/turf/open/indestructible/cobble{
+	name = "void";
+	icon_state = "black"
+	},
+/area/awaymission/Killthemall/start)
 "Dl" = (
 /mob/living/simple_animal/hostile/skeleton/templar{
 	health = 80;
@@ -1919,6 +1955,7 @@
 	pixel_x = -5
 	},
 /obj/machinery/recharger,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/kitchen,
 /area/awaymission/Killthemall/Level)
 "Fo" = (
@@ -2103,6 +2140,7 @@
 "HU" = (
 /obj/structure/destructible/cult/talisman,
 /obj/item/book/granter/spell/random,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel/cult,
 /area/awaymission/Killthemall/Boss)
 "HW" = (
@@ -3154,6 +3192,11 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/rust,
 /area/awaymission/Killthemall/Level)
+"YU" = (
+/obj/structure/flora/tree/spookylog,
+/obj/item/disk/gatereward,
+/turf/open/misc/grass,
+/area/awaymission/Killthemall/Level)
 "Zr" = (
 /turf/open/floor/plating/asteroid/basalt{
 	initial_gas_mix = "o2=19;n2=32;TEMP=293.15"
@@ -3184,6 +3227,9 @@
 /turf/open/floor/padded,
 /area/awaymission/Killthemall/Level)
 "ZJ" = (
+/obj/item/a_gift/anything{
+	name = "Gift"
+	},
 /obj/item/a_gift/anything{
 	name = "Gift"
 	},
@@ -11628,7 +11674,7 @@ xH
 Vn
 FS
 MB
-fw
+zN
 fW
 fI
 MB
@@ -18319,7 +18365,7 @@ lj
 lj
 Tz
 cq
-lj
+Cm
 Qr
 mk
 xO
@@ -26357,7 +26403,7 @@ ab
 xO
 kH
 kH
-fv
+af
 fv
 fv
 fv
@@ -26426,7 +26472,7 @@ ab
 xO
 kH
 kH
-QY
+YU
 fv
 fv
 fv
@@ -61240,7 +61286,7 @@ mc
 mc
 Oy
 wd
-mc
+Dk
 mc
 mc
 Tc
@@ -63624,7 +63670,7 @@ wO
 wO
 uv
 is
-wO
+rB
 uK
 vM
 ab
@@ -63672,7 +63718,7 @@ ab
 ab
 xO
 kd
-AC
+xU
 wA
 AC
 kd

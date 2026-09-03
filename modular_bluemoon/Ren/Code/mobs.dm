@@ -155,7 +155,7 @@
 		/obj/item/pickaxe/drill/jackhammer/angle_grinder = 10,
 		/obj/item/broken/ushm = 35,
 		/obj/item/clothing/under/inteq = 15,
-		null = 40 // ничего не выпадает
+		null = 40
 	)
 
 //Рандомные мобы
@@ -198,6 +198,11 @@
 	spacewalk = TRUE
 	dodging = TRUE
 	speak = list("Сдохни, проклятый капиталист!")
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/vss = 5,
+		/obj/item/broken/vss = 35,
+		null = 60
+	)
 
 ///безумный стрелок. Ивент
 /datum/round_event_control/sniper

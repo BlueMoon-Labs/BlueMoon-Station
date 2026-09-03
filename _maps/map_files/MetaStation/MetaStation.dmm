@@ -23298,13 +23298,13 @@
 	icon_state = "2-8"
 	},
 /obj/effect/turf_decal/tile/purple/fourcorners,
-/obj/machinery/bountyvend,
 /obj/effect/turf_decal/tile/purple{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
 	},
+/obj/machinery/bountyvend/plus,
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "bZq" = (

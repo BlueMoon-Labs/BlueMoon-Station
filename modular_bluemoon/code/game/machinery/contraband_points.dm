@@ -131,6 +131,8 @@
 		/obj/item/gun/ballistic/automatic/pistol/deagle2 = 1500,
 		/obj/item/gun/syringe/syndicate = 1500,
 		/obj/item/gun/ballistic/automatic/pistol/hl9mm = 500,
+		/obj/item/gun/energy/alien = 10000,
+		/obj/item/gun/energy/shrink_ray = 15000,
 		//revolvers
 		/obj/item/gun/ballistic/revolver = 500,
 		/obj/item/gun/ballistic/revolver/detective = 0,
@@ -152,7 +154,7 @@
 		/obj/item/gun/ballistic/automatic/m16a4 = 2500,
 		/obj/item/gun/ballistic/automatic/ak47 = 3500,
 		/obj/item/gun/ballistic/automatic/ak47/homemade = 3000,
-		/obj/item/gun/ballistic/automatic/m1garand = 1000,
+		/obj/item/gun/ballistic/automatic/m1garand = 1500,
 		/obj/item/gun/ballistic/automatic/fal = 2500,
 		/obj/item/gun/ballistic/automatic/m46a1 = 4000,
 		/obj/item/gun/ballistic/automatic/autoaegis = 3000,
@@ -239,6 +241,8 @@
 		/obj/item/storage/box/inteq_kit/conversion_kit = 250,
 		/obj/item/storage/belt/military/inteq = 500,
 		/obj/item/clothing/head/helmet/infiltrator/inteq = 750,
+		/obj/item/clothing/suit/space/pirate = 500,
+		/obj/item/clothing/head/helmet/space/pirate = 500,
 		//Other stuff
 		/obj/item/storage/toolbox/syndicate = 100,
 		/obj/item/storage/toolbox/inteq = 200,
@@ -279,6 +283,25 @@
 		/obj/item/broken/ushm = 2500,
 		/obj/item/broken/sniper_rifle = 2500,
 		/obj/item/broken = 10000000,
+		/obj/item/broken/vss = 3000,
+		/obj/item/broken/homemadeak = 1500,
+		/obj/item/broken/m1garand = 750,
+		//alien organs
+		/obj/item/organ/eyes/night_vision/alien = 3000,
+		/obj/item/organ/alien/plasmavessel = 2500,
+		/obj/item/organ/alien/plasmavessel/large = 3500,
+		/obj/item/organ/alien/plasmavessel/large/queen = 5000,
+		/obj/item/organ/alien/plasmavessel/small = 1500,
+		/obj/item/organ/alien/plasmavessel/small/tiny = 1000,
+		/obj/item/organ/alien/hivenode = 1500,
+		/obj/item/organ/alien/resinspinner = 1500,
+		/obj/item/organ/alien/acid = 2000,
+		/obj/item/organ/alien/neurotoxin = 2500,
+		/obj/item/organ/alien/eggsac = 5000,
+		//gateway datadisks - особая награда в конце гейта/спрятаная в отдалённых местах, стоящая очки
+		/obj/item/disk/gatereward = 10000,
+		/obj/item/disk/gatereward/bigger = 15000,
+		/obj/item/disk/gatereward/bigest = 20000,
 		//Mechs
 		/obj/vehicle/sealed/mecha/combat/five_stars = 50000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,
@@ -524,6 +547,24 @@
 /obj/item/card/contraband_point_card/examine(mob/user)
 	. = ..()
 	. += "There's [points] point\s on the card."
+
+//диски награды авангарда на сдачу
+
+/obj/item/disk/gatereward
+	name = "Central Comand Lost data"
+	desc = "It must cost a fortune! Send it with terminal to get your reward"
+	icon_state = "datadisk6"
+
+/obj/item/disk/gatereward/bigger
+	name = "InteQ suply routes"
+	desc = "Those disk contains encoded suply routes of enemy PMC! Send it with terminal to get your significant reward"
+	icon_state = "shuttledisk_better"
+
+
+/obj/item/disk/gatereward/bigest
+	name = "Paralel datadisk"
+	desc = "That rare sample contains all knowledge about paralels that rangers gather around gateways. Send it with terminal to get your magnificent reward"
+	icon_state = "shuttledisk_void"
 
 #undef CONTRABAND_PAD_WARMUP_TIME
 #undef CONTRABAND_PAD_BEAM_DURATION

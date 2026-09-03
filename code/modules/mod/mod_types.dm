@@ -42,7 +42,10 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/rad_protection,
 		/obj/item/mod/module/flashlight,
-		/obj/item/mod/module/jetpack,
+		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/emp_shield,
+		/obj/item/mod/module/magboot,
+		/obj/item/mod/module/constructor,
 	)
 
 /obj/item/mod/control/pre_equipped/mining
