@@ -1,10 +1,3 @@
-/**
- * TODO
- * PORTAL SPRITE
- * CORE
- * REACTIVE ARMOR
- */
-
 /obj/effect/particle_effect/smoke/fog
 	name = "fog"
 	icon = 'modular_bluemoon/code/game/objects/effects/anomalies/96x96.dmi'
