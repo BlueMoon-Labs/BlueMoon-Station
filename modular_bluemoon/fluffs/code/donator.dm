@@ -2651,7 +2651,7 @@
 	path = /obj/item/clothing/neck/tie/sawwr_coat
 	ckeywhitelist = list("hartty", "sawwarrr")
 
-/obj/item/modkit/ice_axe_kit
+/datum/gear/donator/bm/sawwr_ice_axe_kit
 	name = "Ice Axe Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/ice_axe_kit
