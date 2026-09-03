@@ -15,7 +15,7 @@
 	C.reagents.clear_reagents()
 
 /datum/unit_test/metabolization/Destroy()
-	SSmobs.ignite()
+	fire_subsystem(SSmobs)
 	return ..()
 
 /datum/unit_test/on_mob_end_metabolize/Run()

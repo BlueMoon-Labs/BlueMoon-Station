@@ -755,27 +755,27 @@
 	var/wall_start = REALTIMEOFDAY
 	//MC_TICK_CHECK внутри fire() зовёт pause() при state != SS_RUNNING - при
 	//прямом вызове мимо MC состояние надо подложить самим (и вернуть назад)
-	var/saved_state = target_subsystem.state
+	var/saved_can_fire = detach_subsystem(target_subsystem)
 	for(var/pass in 1 to pass_count)
 		target_subsystem.state = SS_RUNNING
 		var/cpu_start = TICK_USAGE_REAL
 		target_subsystem.fire(FALSE)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	target_subsystem.state = saved_state
+	release_subsystem(target_subsystem, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Полные синхронные SSmobs-пассы с настоящим times_fired: нужны throttle cadence 4/15.
 /datum/unit_test/ai_benchmark_baseline/proc/measure_mob_life_passes(pass_count)
 	var/list/cpu_samples = list()
 	var/wall_start = REALTIMEOFDAY
-	var/saved_state = SSmobs.state
+	var/saved_can_fire = detach_subsystem(SSmobs)
 	for(var/pass in 1 to pass_count)
 		SSmobs.state = SS_RUNNING
 		SSmobs.times_fired = pass
 		var/cpu_start = TICK_USAGE_REAL
 		SSmobs.fire(FALSE)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	SSmobs.state = saved_state
+	release_subsystem(SSmobs, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Within-run 3-полосный A/B цены перцепционного скана слайма на ОДНИХ И ТЕХ ЖЕ
@@ -866,7 +866,7 @@
 /datum/unit_test/ai_benchmark_baseline/proc/measure_controller_passes(pass_count)
 	var/list/cpu_samples = list()
 	var/wall_start = REALTIMEOFDAY
-	var/saved_state = SSai_controllers.state
+	var/saved_can_fire = detach_subsystem(SSai_controllers)
 	for(var/pass in 1 to pass_count)
 		var/cpu_start = TICK_USAGE_REAL
 		SSai_controllers.state = SS_RUNNING
@@ -876,7 +876,7 @@
 			if(controller?.ai_status == AI_STATUS_ON && length(controller.current_behaviors))
 				controller.process(0.5)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	SSai_controllers.state = saved_state
+	release_subsystem(SSai_controllers, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Свести per-pass samples в стабильные распределения для сравнения прогонов.

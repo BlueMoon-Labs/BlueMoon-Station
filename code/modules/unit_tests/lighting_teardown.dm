@@ -61,14 +61,14 @@
 /// Прокручивает снос до конца (или до заявленного лимита срезов), удерживая подсистему
 /// в состоянии SS_RUNNING. Возвращает число потраченных срезов.
 /datum/unit_test/proc/drive_lighting_teardown(max_slices = 4000)
-	var/old_state = SSlighting.state
+	var/saved_can_fire = detach_subsystem(SSlighting)
 	var/slices = 0
 	while(SSlighting.teardown_zlevel && slices < max_slices)
 		SSlighting.state = SS_RUNNING
 		SSlighting.process_zlevel_lighting_teardown()
 		slices++
 		CHECK_TICK
-	SSlighting.state = old_state
+	release_subsystem(SSlighting, saved_can_fire)
 	return slices
 
 /**
@@ -438,10 +438,10 @@
 	SSlighting.begin_zlevel_lighting_teardown(test_z)
 	var/started = SSlighting.teardown_zlevel == test_z
 	level.lighting_initialized = TRUE
-	var/old_state = SSlighting.state
+	var/saved_can_fire = detach_subsystem(SSlighting)
 	SSlighting.state = SS_RUNNING
 	SSlighting.process_zlevel_lighting_teardown()
-	SSlighting.state = old_state
+	release_subsystem(SSlighting, saved_can_fire)
 	var/aborted_on_reinit = !SSlighting.teardown_zlevel
 
 	// И вторая причина бросить работу: чужой подъём держит init_in_progress.
@@ -449,10 +449,10 @@
 	SSlighting.begin_zlevel_lighting_teardown(test_z)
 	var/old_in_progress = SSlighting.init_in_progress
 	SSlighting.init_in_progress = TRUE
-	old_state = SSlighting.state
+	saved_can_fire = detach_subsystem(SSlighting)
 	SSlighting.state = SS_RUNNING
 	SSlighting.process_zlevel_lighting_teardown()
-	SSlighting.state = old_state
+	release_subsystem(SSlighting, saved_can_fire)
 	SSlighting.init_in_progress = old_in_progress
 	var/aborted_on_builder = !SSlighting.teardown_zlevel
 

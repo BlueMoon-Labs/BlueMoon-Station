@@ -55,5 +55,5 @@
 	TEST_ASSERT_EQUAL(human.health, 80, "Human health did not update after injection from syringe")
 
 /datum/unit_test/reagent_mob_expose/Destroy()
-	SSmobs.ignite()
+	fire_subsystem(SSmobs)
 	return ..()

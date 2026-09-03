@@ -464,7 +464,7 @@
 	// remains parked. We enumerate live Q3 entries as candidates below.
 	Master.current_ticklimit = INFINITY
 
-	SSgarbage.state = SS_IDLE
+	var/saved_gc_can_fire = detach_subsystem(SSgarbage)
 	sleep(20)
 	var/cycles = 0
 	while(cycles < AI_MOB_ARENA_GC_CYCLES)
@@ -507,6 +507,7 @@
 				SSgarbage.fire()
 				SSgarbage.state = SS_IDLE
 		stop_phase_profile("cleanup_gc")
+	release_subsystem(SSgarbage, saved_gc_can_fire)
 
 	var/list/type_stats = list()
 	var/total_qdels = 0
