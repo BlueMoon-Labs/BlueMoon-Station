@@ -375,6 +375,11 @@
 /// character in total darkness, even beyond normal see_in_dark / view() range.
 #define EXAMINE_GLOW_MAX_RANGE	10
 
+/// How far into darkness a character with active emissive (body-part) glow can see, so that distant
+/// glowing characters are delivered to the client and their emissive pixels render at any radius.
+/// Matches the client view radius (15x15 -> 7), plus margin so the whole on-screen glow shows.
+#define EMISSIVE_DARKSIGHT_RANGE	8
+
 #define SILENCE_RANGED_MESSAGE	(1<<0)
 
 // Body position defines.

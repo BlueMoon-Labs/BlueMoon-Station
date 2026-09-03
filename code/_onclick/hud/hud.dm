@@ -148,8 +148,6 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 			qdel(displaced)
 		instance.backdrop(mymob)
 
-	owner.overlay_fullscreen("see_through_darkness", /atom/movable/screen/fullscreen/special/see_through_darkness)
-
 	for(var/mytype in subtypesof(/atom/movable/plane_master_controller))
 		var/atom/movable/plane_master_controller/controller_instance = new mytype(null, src)
 		plane_master_controllers[controller_instance.name] = controller_instance
