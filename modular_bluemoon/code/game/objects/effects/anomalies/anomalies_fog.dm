@@ -39,7 +39,6 @@
 	. = ..()
 	if(isliving(AM))
 		alpha = 50
-		opaque = FALSE
 		set_opacity(FALSE)
 		smoke_mob(AM)
 
@@ -47,7 +46,6 @@
 	. = ..()
 	if(isliving(AM) && !(locate(/mob/living) in loc))
 		alpha = initial(alpha)
-		opaque = TRUE
 		set_opacity(TRUE)
 
 // мы НЕ хотим нагружать подсистему obj сотнями малоинтерактивных текстурок
@@ -56,7 +54,7 @@
 
 // как у родителя, но без лишних проверок и таймеров.
 /obj/effect/particle_effect/smoke/fog/smoke_mob(mob/living/L)
-	if(prob(3))
+	if(prob(1))
 		L.playsound_local(get_turf(src), pick(CREEPY_SOUNDS), 50, FALSE)
 
 /obj/effect/particle_effect/smoke/fog/spread_smoke()
@@ -65,7 +63,7 @@
 	COOLDOWN_START(src, spread_smoke_cd, 2 SECONDS)
 	if(QDELETED(anomaly_parent))
 		return
-	if(get_dist(src, anomaly_parent) > 40)
+	if(get_dist_euclidian(src, anomaly_parent) > 20)
 		anomaly_parent.fog_to_expand -= src
 		return
 	if(TICK_CHECK)
@@ -76,7 +74,7 @@
 /obj/effect/anomaly/fog
 	name = "fog anomaly"
 	icon_state = "dimensional_overlay"
-	light_range = MINIMUM_USEFUL_LIGHT_RANGE
+	light_range = 2
 	light_color = COLOR_GRAY
 	lifespan = INFINITY
 	aSignal = /obj/item/assembly/signaler/anomaly/fog
@@ -102,8 +100,12 @@
 
 /obj/effect/anomaly/fog/anomalyEffect(seconds_per_tick)
 	. = ..()
+	// если моб пробежит в тайле аномалии, то тусклый свет потухнет, и её будет очень сложно найти вновь
+	var/obj/effect/particle_effect/smoke/fog/F
+	F = locate(/obj/effect/particle_effect/smoke/fog, loc) // по какой то причине свет будет обновляться только в случае постоянно нового обнаружения объекта тумана
+	F?.set_opacity(FALSE)
 	var/list/to_be_removed = list()
-	for(var/obj/effect/particle_effect/smoke/fog/F as anything in fog_to_expand)
+	for(F as anything in fog_to_expand)
 		if(QDELETED(src))
 			break
 		if(QDELETED(F))
