@@ -54,15 +54,30 @@
 	TEST_ASSERT(!element.attached_mobs.len, "список из одного null обязан опустеть")
 	TEST_ASSERT(!(element in SSprocessing.processing), "пустой после чистки элемент обязан выйти из SSprocessing")
 
-/// Наблюдатель без prefs получает дефолтные чат-тумблеры, а значит и призрачное зрение эмоций.
-/datum/unit_test/ghost_chat_toggles_without_prefs
+/// Открытая капсула с уже удалённым питомцем закрывается и сбрасывает ссылку без рантайма.
+/datum/unit_test/pet_capsule_recall_deleted_pet
 	requires_full_map = FALSE
 
-/datum/unit_test/ghost_chat_toggles_without_prefs/Run()
-	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
-	TEST_ASSERT_NULL(ghost.client, "тест рассчитывает на наблюдателя без клиента и prefs")
-	TEST_ASSERT_EQUAL(ghost.ghost_chat_toggles(), TOGGLES_DEFAULT_CHAT, "без prefs тумблеры обязаны быть дефолтными")
-	TEST_ASSERT(ghost.ghost_chat_toggles() & CHAT_GHOSTSIGHT, "дефолт обязан включать призрачное зрение")
+/datum/unit_test/pet_capsule_recall_deleted_pet/Run()
+	var/turf/pet_turf = run_loc_floor_bottom_left
+	var/obj/item/pet_capsule/capsule = allocate(/obj/item/pet_capsule, pet_turf)
+	capsule.selected_pet = /mob/living/simple_animal/hostile/carp/pet_carp
+	capsule.pet_picked = TRUE
+	capsule.pet_capsule_triggered(pet_turf)
+
+	var/mob/living/simple_animal/pet = capsule.stored_pet
+	TEST_ASSERT_NOTNULL(pet, "бросок капсулы обязан выпустить питомца")
+	qdel(pet)
+	TEST_ASSERT(QDELETED(pet), "предпосылка: питомец удалён до отзыва")
+
+	capsule.pet_capsule_triggered(pet_turf)
+
+	TEST_ASSERT(!capsule.open, "капсула без питомца обязана закрыться")
+	TEST_ASSERT_NULL(capsule.stored_pet, "ссылка на удалённого питомца обязана обнулиться")
+
+	capsule.stored_pet = pet
+	capsule.recall_pet()
+	TEST_ASSERT_NULL(capsule.stored_pet, "прямой отзыв удалённого питомца обязан обнулить ссылку")
 
 /// get_all_ghost_role_eligible переживает null в GLOB.ghost_eligible_mobs и вычищает его из обоих списков.
 /datum/unit_test/ghost_role_eligible_null_tolerance

@@ -661,6 +661,8 @@
 	// уровней поднимает сам харнес перед каждым тестом.
 	var/list/saved_lit_since = SSlighting.zlevel_lit_since.Copy()
 	SSlighting.zlevel_lit_since = list()
+	var/saved_last_finished = SSlighting.last_teardown_finished_at
+	SSlighting.last_teardown_finished_at = world.time - LIGHTING_TEARDOWN_SPACING
 	var/list/saved_pressure = force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_HIGH + 0.05)
 	var/list/saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
 	SSlighting.zlevel_teardown_payoff = list()
@@ -740,6 +742,7 @@
 	SSlighting.teardown_zlevel = old_teardown
 	SSlighting.zlevel_empty_since = saved_empty
 	SSlighting.zlevel_lit_since = saved_lit_since
+	SSlighting.last_teardown_finished_at = saved_last_finished
 	SSlighting.zlevel_teardown_payoff = saved_ledger
 	restore_memory_pressure(saved_pressure)
 
@@ -1002,6 +1005,8 @@
 	var/list/saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
 	// Кулдаун от подъёма проверяется отдельным тестом, здесь он только мешал бы.
 	SSlighting.zlevel_lit_since = list()
+	var/saved_last_finished = SSlighting.last_teardown_finished_at
+	SSlighting.last_teardown_finished_at = world.time - LIGHTING_TEARDOWN_SPACING
 	// Давление задаётся явно: в CI VmSize может быть не замерен, и тогда снос не запускается
 	// вовсе, а ветка критического давления решала бы исход теста за нас.
 	var/list/saved_pressure = force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_HIGH + 0.05)
@@ -1107,6 +1112,7 @@
 	SSlighting.teardown_zlevel = old_teardown
 	SSlighting.zlevel_empty_since = saved_empty
 	SSlighting.zlevel_lit_since = saved_lit_since
+	SSlighting.last_teardown_finished_at = saved_last_finished
 	SSlighting.zlevel_teardown_payoff = saved_ledger
 	restore_memory_pressure(saved_pressure)
 
@@ -1303,9 +1309,17 @@
 /datum/unit_test/lighting_teardown_yields_to_background_init
 	var/saved_bg_zlevel
 	var/saved_teardown_zlevel
+	var/saved_last_finished
 	var/list/saved_empty_since
+	var/list/saved_lit_since
 	var/list/saved_ledger
 	var/list/saved_pressure
+	var/list/saved_lit
+	var/list/saved_traits
+	var/list/saved_clients
+	var/list/saved_dead
+	var/probe_z
+	var/datum/space_level/probe_level
 
 /datum/unit_test/lighting_teardown_yields_to_background_init/Run()
 	var/turf/test_turf = run_loc_floor_bottom_left
@@ -1313,10 +1327,27 @@
 	var/datum/space_level/level = SSmapping.get_level(test_z)
 	saved_bg_zlevel = SSlighting.bg_current_zlevel
 	saved_teardown_zlevel = SSlighting.teardown_zlevel
+	saved_last_finished = SSlighting.last_teardown_finished_at
 	saved_empty_since = SSlighting.zlevel_empty_since.Copy()
+	saved_lit_since = SSlighting.zlevel_lit_since.Copy()
 	saved_ledger = SSlighting.zlevel_teardown_payoff.Copy()
 	SSlighting.zlevel_teardown_payoff = list()
+	SSlighting.zlevel_lit_since = list()
+	SSlighting.last_teardown_finished_at = world.time - LIGHTING_TEARDOWN_SPACING
 	saved_pressure = force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_HIGH + 0.05)
+	// Уровень резервации сносу не подлежит, а скан обязан дойти до проверки краулера.
+	probe_level = level
+	probe_z = test_z
+	saved_traits = level.traits
+	level.traits = list(ZTRAIT_MINING = TRUE)
+	// Соседние тесты оставляют в реестрах SSmobs своих мобов, а жилец снимает уровень с кандидатов.
+	if(test_z <= length(SSmobs.clients_by_zlevel))
+		saved_clients = SSmobs.clients_by_zlevel[test_z]
+		SSmobs.clients_by_zlevel[test_z] = list()
+	if(test_z <= length(SSmobs.dead_players_by_zlevel))
+		saved_dead = SSmobs.dead_players_by_zlevel[test_z]
+		SSmobs.dead_players_by_zlevel[test_z] = list()
+	saved_lit = isolate_lit_deferred_zlevels(list(test_z))
 
 	// Снос уже идёт, краулер взялся за тот же уровень - срез сноса обязан бросить работу.
 	SSlighting.abort_zlevel_lighting_teardown()
@@ -1328,23 +1359,45 @@
 	var/slice_aborted = !SSlighting.teardown_zlevel
 	var/abort_reason = SSlighting.teardown_abort_reason
 
-	// Краулер строит уровень - скан кандидатов не должен выбирать его в снос, даже
-	// если уровень выглядит поднятым и пустым сколь угодно давно.
+	// Контроль: без краулера тот же поднятый и давно пустой уровень скан берёт в снос.
 	level.lighting_initialized = TRUE
-	SSlighting.zlevel_empty_since["[test_z]"] = 1
+	SSlighting.zlevel_empty_since = list()
+	SSlighting.zlevel_empty_since["[test_z]"] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SSlighting.bg_current_zlevel = 0
+	SSlighting.scan_teardown_candidates()
+	var/picked_without_crawler = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	// Краулер строит уровень - скан кандидатов не должен выбирать его в снос.
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since = list()
+	SSlighting.zlevel_empty_since["[test_z]"] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SSlighting.bg_current_zlevel = test_z
 	SSlighting.scan_teardown_candidates()
 	var/not_picked = !SSlighting.teardown_zlevel
 
 	TEST_ASSERT(slice_aborted, "срез сноса обязан бросить уровень, который строит фоновый краулер")
 	TEST_ASSERT_EQUAL(abort_reason, "фоновый краулер строит этот уровень", "причина отмены должна называть краулер")
+	TEST_ASSERT_EQUAL(picked_without_crawler, test_z, "предпосылка: без краулера скан обязан взять z[test_z], иначе проверка ниже ничего не значит")
 	TEST_ASSERT(not_picked, "скан кандидатов не должен начинать снос уровня под фоновой постройкой")
 
 /datum/unit_test/lighting_teardown_yields_to_background_init/Destroy()
 	SSlighting.abort_zlevel_lighting_teardown()
 	SSlighting.bg_current_zlevel = saved_bg_zlevel
 	SSlighting.teardown_zlevel = saved_teardown_zlevel
+	SSlighting.last_teardown_finished_at = saved_last_finished
+	if(probe_level)
+		probe_level.traits = saved_traits
+	if(saved_clients)
+		SSmobs.clients_by_zlevel[probe_z] = saved_clients
+	if(saved_dead)
+		SSmobs.dead_players_by_zlevel[probe_z] = saved_dead
+	if(saved_lit)
+		restore_lit_deferred_zlevels(saved_lit)
 	if(saved_empty_since)
 		SSlighting.zlevel_empty_since = saved_empty_since
+	if(saved_lit_since)
+		SSlighting.zlevel_lit_since = saved_lit_since
 	if(saved_ledger)
 		SSlighting.zlevel_teardown_payoff = saved_ledger
 	if(saved_pressure)

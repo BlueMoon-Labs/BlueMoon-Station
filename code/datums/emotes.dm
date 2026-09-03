@@ -84,7 +84,9 @@
             if(!M.client || isnewplayer(M))
                 continue
             var/T = get_turf(user)
-            if(M.stat == DEAD && (M.ghost_chat_toggles() & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+            // prefs может ещё не быть в первые тики после входа.
+            var/chat_toggles = M.client.prefs ? M.client.prefs.chat_toggles : TOGGLES_DEFAULT_CHAT
+            if(M.stat == DEAD && (chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
                 M.show_message(dchatmsg)
 
     if(emote_type == EMOTE_AUDIBLE)

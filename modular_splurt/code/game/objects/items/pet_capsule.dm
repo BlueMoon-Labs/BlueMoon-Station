@@ -114,14 +114,20 @@
 
 
 	//recall pet
-	else if (open && stored_pet != null)
+	else if (open)
 		open = FALSE
 		icon_state = closed_state
+		if(QDELETED(stored_pet))
+			stored_pet = null
+			return
 		loc.visible_message("<span class='warning'>\The [src] closes, [stored_pet.name] being recalled inside of it!</span>")
 		recall_pet()
 
 /// del() питомца забирал с собой и того, кто сидел у него в животе - в том числе моба игрока.
 /obj/item/pet_capsule/proc/recall_pet()
+	if(QDELETED(stored_pet))
+		stored_pet = null
+		return
 	var/turf/drop_turf = get_turf(stored_pet)
 	stored_pet.release_vore_contents(include_absorbed = TRUE, silent = TRUE)
 	for(var/mob/living/carried in stored_pet.contents)
