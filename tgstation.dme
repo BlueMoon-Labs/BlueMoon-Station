@@ -5256,6 +5256,7 @@
 #include "modular_bluemoon\fluffs\code\items.dm"
 #include "modular_bluemoon\fluffs\code\kitsune.dm"
 #include "modular_bluemoon\fluffs\code\mask.dm"
+#include "modular_bluemoon\fluffs\code\melatonin.dm"
 #include "modular_bluemoon\fluffs\code\melee.dm"
 #include "modular_bluemoon\fluffs\code\modsuit.dm"
 #include "modular_bluemoon\fluffs\code\neck.dm"

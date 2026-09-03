@@ -533,3 +533,14 @@
 	new /obj/item/modkit/wypmcjacket(src)
 	new /obj/item/modkit/wypmcberet(src)
 
+////////////////////////
+
+/obj/item/clothing/neck/tie/sawwr_coat
+	name = "Dark Amber"
+	desc = "A practical cloak, crafted in deep black tones with amber-gold accents, appearing austere yet somehow clumsy. The unusual combination of details creates the impression of a garment assembled for convenience rather than beauty."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	icon_state = "sawwr_coat"
+	item_state = "sawwr_coat"
+
+////////////////////////
