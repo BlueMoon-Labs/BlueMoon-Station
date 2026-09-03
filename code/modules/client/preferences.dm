@@ -6024,7 +6024,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(href_list["select_category"] || href_list["select_subcategory"])
 			// листание категорий лодаута: надетое не поменялось, манекен тот же
 			preview_unchanged = TRUE
-			save_preferences(silent = TRUE)
 		if(href_list["toggle_gear_path"])
 			// а вот это уже надевает или снимает вещь - превью обязано пересобраться
 			preview_unchanged = FALSE
