@@ -238,16 +238,18 @@
 		var/list/coords = image_cache[I]
 		var/turf/T = locate(eyeturf.x + coords[1], eyeturf.y + coords[2], eyeturf.z)
 		I.loc = T
+		var/new_state = "green"
 		switch(checkLandingTurf(T, overlappers))
 			if(SHUTTLE_DOCKER_LANDING_CLEAR)
-				I.icon_state = "green"
+				EMPTY_BLOCK_GUARD
 			if(SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT)
-				I.icon_state = "green"
 				if(. == SHUTTLE_DOCKER_LANDING_CLEAR)
 					. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
 			else
-				I.icon_state = "red"
+				new_state = "red"
 				. = SHUTTLE_DOCKER_BLOCKED
+		if(I.icon_state != new_state)
+			I.icon_state = new_state
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/proc/checkLandingTurf(turf/T, list/overlappers)
 	// Too close to the map edge is never allowed
