@@ -2632,3 +2632,9 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
 	ckeywhitelist = list("foxrtotlimda")
+
+/datum/gear/donator/bm/sawwr_coat
+	name = "Dark Amber"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/tie/sawwr_coat
+	ckeywhitelist = list("hartty", "sawwarrr")
