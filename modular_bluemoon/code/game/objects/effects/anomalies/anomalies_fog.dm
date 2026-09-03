@@ -107,10 +107,12 @@
 	var/list/to_be_removed = list()
 	for(F as anything in fog_to_expand)
 		if(QDELETED(src))
-			break
+			return
 		if(QDELETED(F))
 			to_be_removed += F
 			continue
+		if(TICK_CHECK)
+			break // сервер вот-вот крякнет, повременим с распространением тумана
 		var/adj_counter = 0
 		for(var/direction in GLOB.cardinals)
 			if(locate(/obj/effect/particle_effect/smoke/fog, get_step(F, direction)))
