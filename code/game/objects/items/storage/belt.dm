@@ -844,6 +844,8 @@
 /obj/item/storage/belt/holster/energy/thermal
 	name = "thermal shoulder holsters"
 	desc = "A rather plain pair of shoulder holsters with a bit of insulated padding inside. Meant to hold a twinned pair of thermal pistols, but can fit several kinds of energy handguns as well."
+	icon_state = "syndicate_holster"
+	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/storage/belt/holster/energy/thermal/PopulateContents()
 	generate_items_inside(list(

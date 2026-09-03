@@ -69330,6 +69330,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
+"nIV" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "nIZ" = (
 /obj/structure/sign/warning/vacuum/external{
 	pixel_y = 32
@@ -114557,7 +114563,7 @@ cqd
 crs
 cxT
 duH
-cul
+nIV
 cAU
 css
 mMV
@@ -114814,7 +114820,7 @@ cqe
 crt
 cxT
 ctr
-cul
+nIV
 cAU
 cwo
 cxe
@@ -115071,7 +115077,7 @@ cqf
 cru
 cxT
 cts
-tNq
+nIV
 gjp
 cwp
 cNm
@@ -115328,7 +115334,7 @@ cqg
 crv
 cxT
 ctt
-cul
+nIV
 cAU
 cwq
 cxg
