@@ -132,6 +132,7 @@
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
 		.["ticket_nickname"] = ticket_nickname
+		.["dementor_on_deadmin"] = !!(deadmin & DEADMIN_AUTODMENTOR)
 
 	// Mentor
 	.["has_mentor"] = !!user?.client?.is_mentor()
@@ -473,6 +474,8 @@
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
 			save_preferences()
 			return TRUE
 
