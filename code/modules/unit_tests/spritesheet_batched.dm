@@ -533,6 +533,33 @@
 	TEST_ASSERT(sheet.cache_releases > 1, "цикл шардов не дошёл до чистки кэша")
 	TEST_ASSERT_EQUAL(sheet.cache_cleared, 0, "кэш иконок вычищен из-под чужой сборки")
 
+/// Имя листа и "доезжающий" DMI свои: соседний тест оставляет свой лист
+/// зарегистрированным в транспорте, и одноимённые png разъехались бы по содержимому.
+/datum/asset/spritesheet_batched/test_batched/transient/no_partial
+	_abstract = /datum/asset/spritesheet_batched/test_batched/transient/no_partial
+	name = "test_batched_no_partial"
+
+/datum/asset/spritesheet_batched/test_batched/transient/no_partial/transient_dmi_path()
+	return "[SPRITESHEET_CACHE_DIR]test_no_partial.dmi"
+
+/**
+ * Пока хоть один DMI листа не читается, в rust не уходит ни один шард.
+ *
+ * Частичная сборка на недоехавшем дереве иконок всё равно уедет в пересборку, а её пик
+ * кэша остаётся в адресном пространстве процесса до конца раунда.
+ */
+/datum/unit_test/spritesheet_batched_no_partial_build
+	requires_full_map = FALSE
+
+/datum/unit_test/spritesheet_batched_no_partial_build/Run()
+	var/datum/asset/spritesheet_batched/test_batched/transient/no_partial/sheet = new()
+	var/transient_path = sheet.transient_dmi_path()
+	var/obj/item/binoculars/donor = /obj/item/binoculars
+	sheet.reset_state()
+	drop_spritesheet_artifacts(sheet)
+	fdel(transient_path)
+	rustg_iconforge_cleanup()
+
 	sheet.create_spritesheets()
 	sheet.realize_spritesheets(yield = TRUE)
 	// Таймер снимаем до ассертов: упавший ассерт выходит из Run(), и повтор позвал бы
