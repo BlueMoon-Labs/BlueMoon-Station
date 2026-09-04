@@ -191,6 +191,7 @@
 
 	generation_in_progress = TRUE
 	generation_error = null
+	SSasset_loading.sheets_realizing++
 	try
 		realize_spritesheets_owned(yield)
 	catch(var/exception/error)
@@ -201,8 +202,10 @@
 		job_id = null
 		cache_job_id = null
 		generation_in_progress = FALSE
+		SSasset_loading.sheets_realizing--
 		throw error
 	generation_in_progress = FALSE
+	SSasset_loading.sheets_realizing--
 
 /datum/asset/spritesheet_batched/proc/realize_spritesheets_owned(yield)
 	if(!length(entries))
@@ -257,6 +260,7 @@
 		if(length(shard_entries) < sprites_per_shard)
 			continue
 		generate_shard(shard_index++, shard_entries, generated_cache_shards, yield)
+		release_icon_cache()
 		shard_entries = list()
 		// Лист всё равно уйдёт на пересборку целиком - остальные шарды считать незачем.
 		if(needs_unread_retry(yield))
@@ -267,6 +271,7 @@
 			CHECK_TICK
 	if(length(shard_entries) && !needs_unread_retry(yield))
 		generate_shard(shard_index, shard_entries, generated_cache_shards, yield)
+		release_icon_cache()
 	if(needs_unread_retry(yield))
 		schedule_unread_retry()
 		return
@@ -368,6 +373,21 @@
 	))
 
 	unread_dmi_paths |= unread_shard_dmis(shard_entries, generated["dmi_hashes"])
+
+/**
+ * Отдаёт rust кэш разобранных DMI.
+ *
+ * Кадры в нём - мелкие аллокации, и аллокатор не возвращает их ОС: пик кэша за сборку
+ * навсегда занимает адресное пространство 32-битного процесса. Возвращает TRUE, если
+ * чистка действительно ушла в rust.
+ */
+/datum/asset/spritesheet_batched/proc/release_icon_cache()
+	// Кэш общий на процесс: пока рядом считается другой лист, чистка отняла бы
+	// разобранные DMI у него.
+	if(SSasset_loading.sheets_realizing > 1)
+		return FALSE
+	rustg_iconforge_cleanup()
+	return TRUE
 
 /**
  * DMI шарда, которые rust не смог прочитать.
