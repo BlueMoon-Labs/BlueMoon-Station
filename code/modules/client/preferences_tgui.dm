@@ -132,12 +132,12 @@
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
 		.["ticket_nickname"] = ticket_nickname
-		.["dementor_on_deadmin"] = !!(deadmin & DEADMIN_AUTODMENTOR)
 
 	// Mentor
 	.["has_mentor"] = !!user?.client?.is_mentor()
 	if(.["has_mentor"])
 		.["dementor_on_login"] = !!(mentor_toggles & DEMENTOR_ON_LOGIN)
+		.["dementor_on_deadmin"] = !!(deadmin & DEADMIN_AUTODMENTOR)
 
 	// Antag roles
 	var/list/antag_roles = list()
