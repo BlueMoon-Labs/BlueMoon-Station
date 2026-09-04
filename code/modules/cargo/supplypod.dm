@@ -481,6 +481,13 @@
 	layer = PROJECTILE_HIT_THRESHHOLD_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	alpha = 0
+	var/obj/effect/pod_landingzone/zone
+
+/obj/effect/supplypod_smoke/Destroy()
+	if(zone)
+		zone.smoke_effects -= src
+		zone = null
+	return ..()
 
 /obj/effect/engineglow //Falling pod smoke
 	name = ""
@@ -606,6 +613,12 @@
 		addtimer(CALLBACK(src, PROC_REF(playFallingSound)), soundStartTime)
 	addtimer(CALLBACK(src, PROC_REF(beginLaunch), pod.effectCircle), pod.delays[POD_TRANSIT])
 
+/obj/effect/pod_landingzone/Destroy()
+	for(var/obj/effect/supplypod_smoke/smoke_part in smoke_effects)
+		smoke_part.zone = null
+	smoke_effects = null
+	return ..()
+
 /obj/effect/pod_landingzone/proc/playFallingSound()
 	playsound(src, pod.fallingSound, pod.soundVolume, TRUE, 6)
 
@@ -638,6 +651,7 @@
 			smoke_part.layer = FLY_LAYER
 			smoke_part.icon_state = "smoke_start"
 		smoke_part.transform = matrix().Turn(rotation)
+		smoke_part.zone = src
 		smoke_effects[i] = smoke_part
 		smoke_part.pixel_x = sin(rotation)*32 * i
 		smoke_part.pixel_y = abs(cos(rotation))*32 * i
