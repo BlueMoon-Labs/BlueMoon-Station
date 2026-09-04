@@ -137,6 +137,7 @@
 			wearer.update_body()
 
 /obj/item/clothing/under/donator/bm/melatonin_bodysuit
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Form-Fitting Bodysuit"
 	desc = "Практически новый темно-серый бодисьют в безупречном состоянии, без единого следа износа. Светлые эластичные вставки по бокам и плотные шорты туго облегают тело, выгодно подчеркивая каждый изгиб фигуры — грудь, бедра и ягодицы. Длинные рукава закрывают руки вплоть до самых кистей. Со стороны костюм выглядит настолько утягивающим, будто готов пережать всё что угодно, но на удивление он ощущается невероятно удобным и совершенно не сковывает движения. На левом бедре аккуратно вышит фирменный полумесяц."
 	mutantrace_variation = STYLE_DIGITIGRADE
@@ -173,6 +174,7 @@
 		update_icon()
 
 /obj/item/storage/belt/security/webbing/ds/melatonin_belt
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Heavy Tactical Belt"
 	desc = "Массивный тактический пояс, который когда-то служил обычным утяжеленным ремнем. Со временем он оброс модификациями: к нему добавились прочная кожаная кобура, дополнительный поддерживающий ремень, подсумки для патронов и незаметные ножны для складного клинка. Вся эта конструкция выглядит исключительно надежной, хоть и неоправданно тяжелой. На крупной металлической пряжке по центру выгравирован оскал свирепого волка."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
@@ -206,6 +208,7 @@
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
 /obj/item/gun/ballistic/revolver/doublebarrel/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Nebula Workshop's 'Original Guilt'"
 	desc = "Модернизированное двуствольное ружье, собранное на заказ из прочных полимеров. Оружие оснащено компактным тактическим прицелом-точкой, облегченным спусковым механизмом, системой автоматического взведения курков и умным электронным предохранителем. Несмотря на кастомную сборку, по строгим технологическим меркам Небульского Конкорда эта модель считается сильно устаревшей. Под блоком стволов красуется аккуратная каллиграфическая гравировка: «Nobody's evil»."
 	unique_reskin = list()
@@ -216,6 +219,7 @@
 	item_state = "melatonin_db"
 
 /obj/item/gun/ballistic/revolver/doublebarrel/sawn/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Sawn-Off Nebula Workshop's 'Original Guilt'"
 	desc = "Модернизированное двуствольное ружье, собранное на заказ из прочных полимеров. Оружие оснащено компактным тактическим прицелом-точкой, облегченным спусковым механизмом, системой автоматического взведения курков и умным электронным предохранителем. Несмотря на кастомную сборку, по строгим технологическим меркам Небульского Конкорда эта модель считается сильно устаревшей. Под блоком стволов красуется аккуратная каллиграфическая гравировка: «Nobody's evil»."
 	unique_reskin = list()
@@ -241,14 +245,21 @@
 	fromitem = list(/obj/item/gun/ballistic/revolver/doublebarrel/sawn)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
-	name = "Mallorian Arms 'The Parade'"
-	desc = "Эксклюзивный пистолет, выпущенный компанией Mallorian Arms на базе единичной модели 3516 крайне ограниченным тиражом в Великобритании. Оружие переделано под облегченный калибр .45 ACP и штатно оснащено массивным утяжеленным и удлиненным стволом, а также подствольным отсеком под тактический фонарь или лазерный целеуказатель. Сложная автоматика делает его далеко не самым надежным пистолетом в галактике, но его хищный силуэт определенно заслуживает внимания. На замененной кастомной рукоятке отчетливо видны глубокие потертости и царапины, напоминающие следы от волчьих когтей."
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Malorian Arms 'The Parade'"
+	desc = "Эксклюзивный пистолет, выпущенный компанией Malorian Arms на базе единичной модели 3516 крайне ограниченным тиражом в Великобритании. Оружие переделано под облегченный калибр .45 ACP и штатно оснащено массивным утяжеленным и удлиненным стволом, а также подствольным отсеком под тактический фонарь или лазерный целеуказатель. Сложная автоматика делает его далеко не самым надежным пистолетом в галактике, но его хищный силуэт определенно заслуживает внимания. На замененной кастомной рукоятке отчетливо видны глубокие потертости и царапины, напоминающие следы от волчьих когтей."
 	unique_reskin = list()
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "melatonin_werewolf"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "melatonin_werewolf"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_firing_sound.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_in.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_in.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_out.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_out.ogg'
+	lock_back_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_rack.ogg'
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin/update_icon_state()
 	. = ..()
@@ -260,12 +271,13 @@
 		M.update_inv_hands()
 
 /obj/item/modkit/melatonin_enforcer_kit
-	name = "Mallorian Arms 'The Parade' Kit"
-	desc = "A modkit for making an Enforcer into a Mallorian Arms 'The Parade'."
+	name = "Malorian Arms 'The Parade' Kit"
+	desc = "A modkit for making an Enforcer into a Malorian Arms 'The Parade'."
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/clothing/mask/gas/sechailer/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dishonored \"Star Dust\" Combat Rebreather"
 	desc = "Измененный и переделанный боевой ребризер ранней серии «Star Dust», некогда поставлявшийся ополчению Небулы и бойцам запаса Конкорда. Конструктивное отличие этой старой модели — дыхательные пазухи, расположенные по всему внешнему ободу корпуса, а не у основания, как на современных образцах. В отличие от фабричного оригинала, предназначенного для распыления аэрозольных медикаментов, этот прибор полностью заглушен. Его корпус запечатан глухими заглушками, намертво изолируя дыхательные пути пользователя от окружающей среды и превращая медицинское устройство в сугубо защитную маску."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
@@ -329,6 +341,7 @@
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
 
 /obj/item/clothing/head/helmet/riot/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Refurbished Concord Riot Helmet"
 	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
@@ -344,6 +357,7 @@
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
 /obj/item/melee/baton/stunsword/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dunwall Folding Stun-Sword"
 	desc = "Раритетное оружие, выполненное на заказ по сложной складной схеме, неуловимо напоминающей клинок лорда-защитника Дануолла. Оно оснащено компактной деревянной рукоятью со стальным кольцом на торце для быстрого извлечения из поясных ножен. Внутрь рукояти аккуратно встроены батарея и индикатор заряда. Острое лезвие угрожающе переливается искрами бледно-синей электрической энергии, которая, вопреки хищному и смертоносному виду клинка, предназначена лишь для мгновенного оглушения цели."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -379,6 +393,7 @@
 	fromitem = list(/obj/item/melee/baton/stunsword)
 
 /obj/item/storage/box/melatonin_kit
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Melatonin weapon case"
 	desc = "Кейс с полным набором оружейных китов Melatonin. Содержит киты для модификации стандартного вооружения в кастомное."
 	icon_state = "ammobox"
