@@ -154,11 +154,14 @@
 	. = ..()
 	if(light_range && light_power && !light) // Create deferred light source if we moved to an initialized z-level
 		update_light()
-	var/datum/light_source/L
-	var/thing
-	for (thing in light_sources) // Cycle through the light sources on this atom and tell them to update.
-		L = thing
+	var/list/orphans
+	for (var/datum/light_source/L as anything in light_sources) // Cycle through the light sources on this atom and tell them to update.
+		if(!L.source_atom)
+			LAZYADD(orphans, L)
+			continue
 		L.source_atom.update_light()
+	for(var/datum/light_source/orphan as anything in orphans)
+		LAZYREMOVE(light_sources, orphan)
 
 /atom/vv_edit_var(var_name, var_value)
 	switch (var_name)
