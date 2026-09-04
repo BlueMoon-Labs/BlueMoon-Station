@@ -12,6 +12,7 @@ SUBSYSTEM_DEF(metadollars)
 	var/metadollar_leaderboard_positions_tracked = 5
 	var/list/metashop_round_limited_purchases = list()
 	var/leaderboard_refresh_running = FALSE
+	var/legacy_balances_recovered = 0
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -26,9 +27,6 @@ SUBSYSTEM_DEF(metadollars)
 
 /datum/controller/subsystem/metadollars/Initialize()
 	prep_metadollar_leaderboard()
-	var/recovered = recover_all_legacy_balances()
-	if(recovered)
-		log_world("Metadollars: restored legacy balances for [recovered] player(s) from preferences.sav backups.")
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(round_begin_reset))
 	return ..()
 
@@ -86,9 +84,10 @@ SUBSYSTEM_DEF(metadollars)
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
 	if(!prefs_path || !fexists(prefs_path))
 		return 0
-	var/savefile/S = new(prefs_path)
+	var/savefile/S = new /savefile(prefs_path)
+	S.cd = "/"
 	var/amount = 0
-	S["metadollars"] >> amount
+	READ_FILE(S["metadollars"], amount)
 	return isnum(amount) ? max(0, round(amount)) : 0
 
 /proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
@@ -126,22 +125,6 @@ SUBSYSTEM_DEF(metadollars)
 	metadollar_save(target_ckey)
 	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
 	return TRUE
-
-/datum/controller/subsystem/metadollars/proc/recover_all_legacy_balances()
-	if(!fexists("data/player_saves"))
-		return 0
-	var/recovered = 0
-	for(var/letterdir in flist("data/player_saves/"))
-		var/prefix = "data/player_saves/[letterdir]"
-		if(!fexists(prefix))
-			continue
-		for(var/sub in flist(prefix))
-			var/ck = ckey(sub)
-			if(!ck)
-				continue
-			if(reconcile_legacy_balance(ck))
-				recovered++
-	return recovered
 
 /datum/controller/subsystem/metadollars/proc/import_legacy_balance(target_ckey, amount)
 	reconcile_legacy_balance(target_ckey, amount)
@@ -211,7 +194,8 @@ SUBSYSTEM_DEF(metadollars)
 			return display_key
 	return save_dir_name || target_ckey
 
-/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey)
+/// С recover найденный в preferences.sav баланс сразу переносится в metadollars.json.
+/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey, recover = FALSE)
 	if(!target_ckey)
 		return 0
 	if(target_ckey in metadollar_amount_cache)
@@ -221,7 +205,10 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(file(json_path)))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			return max(0, round(loaded["metadollar_count"]))
-	return max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+	var/legacy = max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+	if(recover && legacy > 0 && reconcile_legacy_balance(target_ckey, legacy))
+		legacy_balances_recovered++
+	return legacy
 
 /datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
 	if(leaderboard_refresh_running)
@@ -234,11 +221,14 @@ SUBSYSTEM_DEF(metadollars)
 			var/prefix = "data/player_saves/[letterdir]"
 			if(!fexists(prefix))
 				continue
-			for(var/save_dir_name in flist(prefix))
+			for(var/save_dir_entry in flist(prefix))
+				var/save_dir_name = save_dir_entry
+				if(copytext(save_dir_name, -1) == "/")
+					save_dir_name = copytext(save_dir_name, 1, -1)
 				var/target_ckey = ckey(save_dir_name)
 				if(!target_ckey)
 					continue
-				var/amount = read_metadollar_balance_from_save(target_ckey)
+				var/amount = read_metadollar_balance_from_save(target_ckey, recover = TRUE)
 				CHECK_TICK
 				if(amount < 1)
 					continue
@@ -262,6 +252,9 @@ SUBSYSTEM_DEF(metadollars)
 	while(metadollar_leaderboard.len > metadollar_leaderboard_positions_tracked)
 		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
 	save_metadollar_leaderboard()
+	if(legacy_balances_recovered)
+		log_world("Metadollars: restored legacy balances for [legacy_balances_recovered] player(s) from preferences.sav backups.")
+		legacy_balances_recovered = 0
 	leaderboard_refresh_running = FALSE
 	return TRUE
 
