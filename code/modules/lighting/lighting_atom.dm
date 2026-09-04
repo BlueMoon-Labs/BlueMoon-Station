@@ -115,7 +115,7 @@
 					var/datum/space_level/level = SSmapping.z_list.len >= T.z ? SSmapping.z_list[T.z] : null
 					if(level && !level.lighting_initialized && zlevel_lighting_deferred(level))
 						GLOB.lighting_deferred_atoms |= src
-						GLOB.lighting_deferred_z_cache = null // множество отложенных z изменилось
+						note_deferred_lighting_z(T.z)
 						return
 			light = new/datum/light_source(src, .)
 

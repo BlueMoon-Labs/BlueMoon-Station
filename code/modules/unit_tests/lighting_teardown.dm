@@ -1517,4 +1517,75 @@
 	TEST_ASSERT(blind_ghost_free, "гост с выключенной плоскостью света удержал уровень")
 	TEST_ASSERT(living_holds, "живой клиент обязан держать уровень независимо от своей альфы")
 
+/// Парковка источников сносом дополняет кэш отложенных z, а сейфнет-скан кэшу верит.
+/datum/unit_test/lighting_teardown_extends_deferred_z_cache
+
+/datum/unit_test/lighting_teardown_extends_deferred_z_cache/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+
+	var/old_init = level.lighting_initialized
+	var/old_teardown = SSlighting.teardown_zlevel
+	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	var/saved_cache = GLOB.lighting_deferred_z_cache
+	var/list/saved_clients = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_dead = SSmobs.dead_players_by_zlevel[test_z]
+	var/list/saved_empty = SSlighting.zlevel_empty_since.Copy()
+	SSmobs.clients_by_zlevel[test_z] = list()
+	SSmobs.dead_players_by_zlevel[test_z] = list()
+
+	// Живой источник на уровне, который сейчас снесут: фаза 0 обязана его запарковать.
+	level.lighting_initialized = TRUE
+	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
+	emitter.set_light(3, 1, COLOR_WHITE)
+	var/precond_live = !isnull(emitter.light)
+
+	GLOB.lighting_deferred_z_cache = list()
+	SSlighting.abort_zlevel_lighting_teardown()
+	SSlighting.begin_zlevel_lighting_teardown(test_z)
+	// Крутим ровно фазу 0: объекты и углы уровня трогать незачем, проверяется парковка.
+	var/saved_can_fire = detach_subsystem(SSlighting)
+	var/slices = 0
+	while(SSlighting.teardown_zlevel && !SSlighting.teardown_phase && slices < 500)
+		SSlighting.state = SS_RUNNING
+		SSlighting.process_zlevel_lighting_teardown()
+		slices++
+		CHECK_TICK
+	release_subsystem(SSlighting, saved_can_fire)
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	var/parked = (emitter in GLOB.lighting_deferred_atoms)
+	var/list/parked_snapshot = GLOB.lighting_deferred_atoms.Copy()
+	var/list/cache_after = GLOB.lighting_deferred_z_cache
+	var/cache_kept = islist(cache_after)
+	var/cache_has_z = cache_kept && (test_z in cache_after)
+
+	// Скан обязан верить кэшу: полный проход пересобрал бы его и вписал туда z атома.
+	GLOB.lighting_deferred_atoms = list(emitter)
+	GLOB.lighting_deferred_z_cache = list()
+	SSlighting.stuck_scan_busy_until = 0
+	SSlighting.scan_stuck_deferred_zlevels()
+	var/list/cache_after_scan = GLOB.lighting_deferred_z_cache
+	var/scan_trusted_cache = islist(cache_after_scan) && !(test_z in cache_after_scan)
+
+	SSlighting.teardown_zlevel = old_teardown
+	SSlighting.zlevel_empty_since = saved_empty
+	SSmobs.clients_by_zlevel[test_z] = saved_clients
+	SSmobs.dead_players_by_zlevel[test_z] = saved_dead
+	// Снятые фазой 0 источники обязаны ожить обратно, иначе тест оставит уровень тёмным.
+	GLOB.lighting_deferred_atoms = parked_snapshot
+	level.lighting_initialized = FALSE
+	create_lighting_for_zlevel(test_z)
+	level.lighting_initialized = old_init
+	GLOB.lighting_deferred_atoms |= saved_deferred
+	GLOB.lighting_deferred_z_cache = saved_cache
+
+	TEST_ASSERT(precond_live, "предпосылка: источник обязан быть живым до сноса")
+	TEST_ASSERT(parked, "фаза 0 не запарковала источник, тест проверил бы не то")
+	TEST_ASSERT(cache_kept, "снос выбросил кэш отложенных z - сейфнет-скан пересоберёт его полным проходом")
+	TEST_ASSERT(cache_has_z, "снос не вписал свой z в кэш - сейфнет потеряет запаркованные им атомы")
+	TEST_ASSERT(scan_trusted_cache, "сейфнет-скан пересобрал кэш вместо того, чтобы ему поверить")
+
 #undef LIGHTING_TEST_PRESSURE_CEILING_MB

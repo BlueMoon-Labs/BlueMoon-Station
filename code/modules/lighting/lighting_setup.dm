@@ -331,6 +331,14 @@
 /proc/ghost_holds_zlevel_lighting(mob/watcher)
 	return !QDELETED(watcher) && watcher.lighting_alpha >= LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 
+/// Отметить, что на z появились запаркованные атомы. Кэш дополняется, а не выбрасывается:
+/// во время парковки множество отложенных z только растёт, а пересборка - это get_turf по
+/// всей отложке одним куском. Грязный кэш не трогаем, его пересоберёт авторитетный проход.
+/proc/note_deferred_lighting_z(z)
+	var/list/parked_z = GLOB.lighting_deferred_z_cache
+	if(z && islist(parked_z))
+		parked_z |= z
+
 /**
  * Нужен ли отложенному уровню свет всё ещё, спустя выдержку гостового дебаунса.
  *

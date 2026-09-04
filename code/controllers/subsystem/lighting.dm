@@ -181,6 +181,8 @@ SUBSYSTEM_DEF(lighting)
 	/// Снимок GLOB.all_light_sources для фазы 0 и курсор по нему.
 	var/list/teardown_sources
 	var/teardown_source_index = 0
+	/// Множество уже запаркованных атомов на время фазы 0: дедуп парковки за O(1).
+	var/list/teardown_parked_lookup
 	/// Кэш турфов уровня для фаз 1-2 и курсор по нему.
 	var/list/teardown_turfs
 	var/teardown_turf_index = 0
@@ -636,7 +638,7 @@ SUBSYSTEM_DEF(lighting)
 /// because update_z only fires on a z CHANGE and a stationary player never re-fires it. This periodic
 /// scan finds z-levels that still have parked deferred atoms AND a present occupant (living client, or a
 /// ghost with darkness on) and re-runs create_lighting_for_zlevel, letting its self-heal guard flush them.
-/// deferred z-levels are intentionally left alone (preserving the deferral optimization).
+/// Unoccupied deferred z-levels are intentionally left alone (preserving the deferral optimization).
 /datum/controller/subsystem/lighting/proc/scan_stuck_deferred_zlevels()
 	// Лиза вместо булевого латча: рантайм внутри спасательного вызова оставлял бы флаг занятости
 	// взведённым навечно, молча отключая сейфнет до конца раунда. Протухшая лиза истекает сама.
@@ -752,6 +754,7 @@ SUBSYSTEM_DEF(lighting)
 	teardown_zlevel = z
 	teardown_phase = 0
 	teardown_sources = null
+	teardown_parked_lookup = null
 	teardown_source_index = 0
 	teardown_turfs = null
 	teardown_turf_index = 0
@@ -827,9 +830,37 @@ SUBSYSTEM_DEF(lighting)
 	teardown_zlevel = 0
 	teardown_phase = 0
 	teardown_sources = null
+	teardown_parked_lookup = null
 	teardown_source_index = 0
 	teardown_turfs = null
 	teardown_turf_index = 0
+
+/// Возвращает один источник сносимого уровня в отложку. TRUE, если источник был снят.
+/datum/controller/subsystem/lighting/proc/park_teardown_source(datum/light_source/source, z)
+	if(QDELETED(source))
+		return FALSE
+	var/atom/source_atom = source.source_atom
+	if(QDELETED(source_atom))
+		return FALSE
+	var/turf/source_turf = get_turf(source_atom)
+	if(source_turf?.z != z)
+		return FALSE
+	if(isspaceturf(source_atom))
+		// Звёздный свет не паркуется: его зажигает соседний объект света через
+		// update_starlight(), поэтому при обратном подъёме он вернётся сам.
+		var/turf/open/space/space_turf = source_atom
+		GLOB.starlight -= space_turf
+		space_turf.set_light(l_range = 0)
+		return TRUE
+	if(!teardown_parked_lookup[source_atom])
+		teardown_parked_lookup[source_atom] = TRUE
+		GLOB.lighting_deferred_atoms += source_atom
+		note_deferred_lighting_z(z)
+	if(source_atom.light == source)
+		QDEL_NULL(source_atom.light)
+	else
+		qdel(source)
+	return TRUE
 
 /datum/controller/subsystem/lighting/proc/process_zlevel_lighting_teardown()
 	var/z = teardown_zlevel
@@ -860,33 +891,21 @@ SUBSYSTEM_DEF(lighting)
 		if(isnull(teardown_sources))
 			teardown_sources = GLOB.all_light_sources.Copy()
 			teardown_source_index = 1
+			// Индекс отложки строится один раз за снос. Дедуп через |= по самому списку
+			// квадратичен: уровень отдаёт десятки тысяч источников в отложку, которая к концу
+			// сноса из них же и состоит.
+			teardown_parked_lookup = list()
+			for(var/atom/parked as anything in GLOB.lighting_deferred_atoms)
+				teardown_parked_lookup[parked] = TRUE
+		// Тик-чек стоит на КАЖДОЙ итерации, а не только на снятом источнике: снимок держит
+		// источники всего мира, и уровень с малой их долей просматривался бы одним куском.
 		while(teardown_source_index <= length(teardown_sources))
-			var/datum/light_source/source = teardown_sources[teardown_source_index++]
-			if(QDELETED(source))
-				continue
-			var/atom/source_atom = source.source_atom
-			if(QDELETED(source_atom))
-				continue
-			var/turf/source_turf = get_turf(source_atom)
-			if(source_turf?.z != z)
-				continue
-			if(isspaceturf(source_atom))
-				// Звёздный свет не паркуется: его зажигает соседний объект света через
-				// update_starlight(), поэтому при обратном подъёме он вернётся сам.
-				var/turf/open/space/space_turf = source_atom
-				GLOB.starlight -= space_turf
-				space_turf.set_light(l_range = 0)
-			else
-				GLOB.lighting_deferred_atoms |= source_atom
-				GLOB.lighting_deferred_z_cache = null
-				if(source_atom.light == source)
-					QDEL_NULL(source_atom.light)
-				else
-					qdel(source)
-			teardown_parked++
+			if(park_teardown_source(teardown_sources[teardown_source_index++], z))
+				teardown_parked++
 			if(MC_TICK_CHECK)
 				return
 		teardown_sources = null
+		teardown_parked_lookup = null
 		teardown_phase = 1
 		if(MC_TICK_CHECK)
 			return
