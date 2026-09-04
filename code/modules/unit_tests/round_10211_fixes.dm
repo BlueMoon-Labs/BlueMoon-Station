@@ -88,3 +88,14 @@
 #undef METADOLLAR_PROBE_DIR
 #undef METADOLLAR_PROBE_AMOUNT
 
+/// Сброс вида госта снимает его с наблюдаемого и чистит observers цели.
+/datum/unit_test/ghost_reset_perspective_releases_observed_target/Run()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human)
+	ghost.observetarget = target
+	LAZYADD(target.observers, ghost)
+
+	ghost.reset_perspective(null)
+
+	TEST_ASSERT_NULL(ghost.observetarget, "гост остался привязан к цели")
+	TEST_ASSERT(!(ghost in target.observers), "гост остался в observers цели")
