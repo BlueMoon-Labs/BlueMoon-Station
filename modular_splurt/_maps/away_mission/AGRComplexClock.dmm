@@ -2673,6 +2673,14 @@
 	},
 /turf/open/floor/plasteel,
 /area/awaymission/complex/medical)
+"czL" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/asteroid/snow/complex{
+	slowdown = 1;
+	icon_state = "snow_dug";
+	floor_variance = 0
+	},
+/area/awaymission/complex/exterior)
 "czV" = (
 /obj/machinery/door/airlock/security/glass,
 /obj/structure/cable{
@@ -7683,6 +7691,7 @@
 /area/awaymission/complex/engineering)
 "gEk" = (
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating/rust,
 /area/awaymission/complex/cultcabin)
 "gEA" = (
@@ -9208,6 +9217,10 @@
 	},
 /turf/open/floor/wood,
 /area/awaymission/complex/woodcabin)
+"hQs" = (
+/obj/item/disk/gatereward/bigest,
+/turf/open/floor/festive/cobblestone/safe,
+/area/awaymission/complex/gravgen)
 "hQM" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 1
@@ -11838,6 +11851,7 @@
 /obj/structure/table/reinforced/brass,
 /obj/item/clockwork/slab,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/clockwork,
 /area/awaymission/complex/exterior)
 "kfe" = (
@@ -14124,6 +14138,7 @@
 "msZ" = (
 /obj/structure/table,
 /obj/machinery/light/small,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plating,
 /area/awaymission/complex/medical)
 "mtz" = (
@@ -21434,6 +21449,7 @@
 "swd" = (
 /obj/structure/table,
 /obj/item/clothing/under/syndicate/coldres,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating/asteroid/snow/complex{
 	slowdown = 1;
 	icon_state = "snow_dug";
@@ -21809,6 +21825,10 @@
 	},
 /turf/open/floor/wood,
 /area/awaymission/complex/mainfacility)
+"sNn" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/asteroid/snow/complex,
+/area/awaymission/complex/exterior)
 "sNt" = (
 /obj/structure/chair/wood/normal{
 	dir = 1
@@ -27474,6 +27494,11 @@
 /obj/structure/fluff/broken_flooring,
 /turf/open/floor/plating,
 /area/awaymission/complex/security)
+"xIC" = (
+/obj/structure/table/reinforced/brass,
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultholdout)
 "xJi" = (
 /obj/structure/table/reinforced/brass,
 /obj/effect/turf_decal/weather/snow/corner{
@@ -37518,7 +37543,7 @@ iiT
 sId
 ovO
 tqn
-gIA
+sNn
 vnC
 gIA
 gIA
@@ -51259,7 +51284,7 @@ sFr
 sFr
 wmI
 wmI
-wmI
+czL
 wmI
 wmI
 wmI
@@ -63230,7 +63255,7 @@ rbg
 sFr
 sFr
 sFr
-wmI
+czL
 rbg
 rbg
 sFr
@@ -68721,7 +68746,7 @@ xCK
 kdS
 dwA
 nts
-dwA
+hQs
 nqb
 heU
 pvr
@@ -90959,7 +90984,7 @@ vaB
 vaB
 dcJ
 hnQ
-fNe
+xIC
 rff
 sFr
 sFr
