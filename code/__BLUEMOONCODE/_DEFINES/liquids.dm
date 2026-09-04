@@ -58,6 +58,8 @@
 #define LIQUID_FIRE_STATE_HUGE		4
 #define LIQUID_FIRE_STATE_INFERNO	5
 
+#define LIQUID_FIRE_BURNRATE 5
+
 // Drain structure parameters
 #define DRAIN_STANDARD_FLAT 5
 #define DRAIN_STANDARD_PERCENT 0.1

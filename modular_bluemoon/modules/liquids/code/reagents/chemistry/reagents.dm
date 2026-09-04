@@ -17,7 +17,7 @@
 */
 /datum/reagent/consumable/ethanol
 	liquid_fire_power = 10
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE
 
 // 0 fire power
 /datum/reagent/consumable/ethanol/threemileisland
@@ -202,23 +202,23 @@
 */
 /datum/reagent/thermite
 	liquid_fire_power = 20
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE
 
 /datum/reagent/phlogiston
 	liquid_fire_power = 20
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE/2
 
 /datum/reagent/clf3
 	liquid_fire_power = 30
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE
 
 /datum/reagent/napalm
 	liquid_fire_power = 30
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE/4
 
 /*
 *	OTHER
 */
 /datum/reagent/fuel
 	liquid_fire_power = 10
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE
