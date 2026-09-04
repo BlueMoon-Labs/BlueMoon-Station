@@ -133,14 +133,8 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		else
 			registered_z = null
 
-/**
- * Заявка на отложенный подъём света под гостом (см. LIGHTING_GHOST_INIT_DEBOUNCE).
- * Возвращает, взведена ли она.
- *
- * Одна точка на оба повода - смену z и включение темноты: ключ уникальности таймера у них
- * обязан совпадать, иначе включивший темноту гост встанет в очередь вторым таймером.
- * TIMER_UNIQUE|TIMER_OVERRIDE: аргумент входит в ключ, поэтому заявка на КАЖДЫЙ z своя.
- */
+/// Заявка на отложенный подъём света под гостом (см. LIGHTING_GHOST_INIT_DEBOUNCE); общая для смены z
+/// и включения темноты, чтобы ключ уникальности таймера совпадал. Возвращает, взведена ли она.
 /mob/dead/proc/request_ghost_lighting_init(z_level)
 	if(!z_level || !ghost_holds_zlevel_lighting(src) || !should_ondemand_init_zlevel(z_level))
 		return FALSE

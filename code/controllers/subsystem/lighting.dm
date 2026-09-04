@@ -891,14 +891,11 @@ SUBSYSTEM_DEF(lighting)
 		if(isnull(teardown_sources))
 			teardown_sources = GLOB.all_light_sources.Copy()
 			teardown_source_index = 1
-			// Индекс отложки строится один раз за снос. Дедуп через |= по самому списку
-			// квадратичен: уровень отдаёт десятки тысяч источников в отложку, которая к концу
-			// сноса из них же и состоит.
+			// Дедуп через |= по самой отложке квадратичен: индекс строится один раз за снос.
 			teardown_parked_lookup = list()
 			for(var/atom/parked as anything in GLOB.lighting_deferred_atoms)
 				teardown_parked_lookup[parked] = TRUE
-		// Тик-чек стоит на КАЖДОЙ итерации, а не только на снятом источнике: снимок держит
-		// источники всего мира, и уровень с малой их долей просматривался бы одним куском.
+		// Снимок держит источники всего мира, поэтому тик-чек на каждой итерации, не только на снятом.
 		while(teardown_source_index <= length(teardown_sources))
 			if(park_teardown_source(teardown_sources[teardown_source_index++], z))
 				teardown_parked++
