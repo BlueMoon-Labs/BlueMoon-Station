@@ -722,6 +722,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
 
 	update_sight()
+	// Свет отложенного уровня держат только госты с включённой темнотой, поэтому включивший
+	// её на месте обязан заказать подъём сам - смены z, которая заказала бы его, не будет.
+	request_ghost_lighting_init(registered_z)
 
 /mob/dead/observer/update_sight(forced = TRUE)
 	if(client?.prefs)

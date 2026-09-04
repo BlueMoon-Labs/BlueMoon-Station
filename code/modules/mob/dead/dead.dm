@@ -128,22 +128,25 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 				// поднятого уровня иначе не оставляет следа между сканами сноса. См.
 				// SSlighting.note_zlevel_visit().
 				SSlighting.note_zlevel_visit(new_z)
-				// Ghosts get on-demand lighting init too: /mob/living/update_z does this for the living;
-				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
-				// living player arrives or background init crawls there.
-				//
-				// Но с ВЫДЕРЖКОЙ, а не сразу: подъём стоит десятки мегабайт, которых снос не
-				// вернёт, и триггер здесь - сам факт записи нового z, то есть любой пролёт.
-				// TIMER_UNIQUE|TIMER_OVERRIDE: аргумент входит в ключ уникальности, поэтому
-				// заявка на КАЖДЫЙ z своя, а метания туда-обратно между двумя уровнями
-				// перевзводят одну и ту же заявку вместо того, чтобы копить очередь.
-				// См. LIGHTING_GHOST_INIT_DEBOUNCE и ghost_ondemand_init_still_wanted().
-				if(should_ondemand_init_zlevel(new_z))
-					addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ondemand_init_zlevel_for_ghost), new_z), \
-						LIGHTING_GHOST_INIT_DEBOUNCE, TIMER_UNIQUE|TIMER_OVERRIDE)
+				request_ghost_lighting_init(new_z)
 			registered_z = new_z
 		else
 			registered_z = null
+
+/**
+ * Заявка на отложенный подъём света под гостом (см. LIGHTING_GHOST_INIT_DEBOUNCE).
+ * Возвращает, взведена ли она.
+ *
+ * Одна точка на оба повода - смену z и включение темноты: ключ уникальности таймера у них
+ * обязан совпадать, иначе включивший темноту гост встанет в очередь вторым таймером.
+ * TIMER_UNIQUE|TIMER_OVERRIDE: аргумент входит в ключ, поэтому заявка на КАЖДЫЙ z своя.
+ */
+/mob/dead/proc/request_ghost_lighting_init(z_level)
+	if(!z_level || !ghost_holds_zlevel_lighting(src) || !should_ondemand_init_zlevel(z_level))
+		return FALSE
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ondemand_init_zlevel_for_ghost), z_level), \
+		LIGHTING_GHOST_INIT_DEBOUNCE, TIMER_UNIQUE|TIMER_OVERRIDE)
+	return TRUE
 
 /mob/dead/Login()
 	. = ..()

@@ -325,6 +325,12 @@
 	var/datum/space_level/level = SSmapping.z_list.len >= new_z ? SSmapping.z_list[new_z] : null
 	return level && !level.lighting_initialized
 
+/// Держит ли наблюдатель свет отложенного z-уровня. Со штатной альфой
+/// LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE неподнятый уровень для госта просто яркий, разницы
+/// он не увидит, а подъём стоит десятков МБ, которых снос не возвращает.
+/proc/ghost_holds_zlevel_lighting(mob/watcher)
+	return !QDELETED(watcher) && watcher.lighting_alpha >= LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+
 /**
  * Нужен ли отложенному уровню свет всё ещё, спустя выдержку гостового дебаунса.
  *

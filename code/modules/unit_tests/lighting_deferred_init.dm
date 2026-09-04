@@ -19,6 +19,13 @@
 
 /// Хелпер: паркует свежий light_emitter как отложенный источник на (reserved, не-инициализированной) z.
 /// Возвращает запаркованный эмиттер; вызывающий обязан восстановить флаг/очереди.
+/// Наблюдатель, который для света считается жильцом уровня: свет держит только гост с
+/// включённой темнотой (см. ghost_holds_zlevel_lighting).
+/datum/unit_test/proc/occupant_ghost(turf/test_turf)
+	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, test_turf)
+	watcher.lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	return watcher
+
 /datum/unit_test/proc/park_deferred_emitter(turf/test_turf, datum/space_level/level)
 	level.lighting_initialized = FALSE
 	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
@@ -206,7 +213,7 @@
 	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
 	GLOB.lighting_deferred_atoms = list(emitter) // изолируем скан строго на тестовый z
 	level.lighting_initialized = TRUE
-	SSmobs.dead_players_by_zlevel[test_z] = list(src) // обитатель: скан смотрит только length>0
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf)) // жилец: гост с включённой темнотой
 	GLOB.lighting_update_lights.Cut()
 	GLOB.lighting_update_corners.Cut()
 	GLOB.lighting_update_objects.Cut()
@@ -410,7 +417,7 @@
 	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
 	GLOB.lighting_deferred_atoms = list(emitter)
 	level.lighting_initialized = TRUE
-	SSmobs.dead_players_by_zlevel[test_z] = list(src)
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf))
 	GLOB.lighting_update_lights.Cut()
 	GLOB.lighting_update_corners.Cut()
 	GLOB.lighting_update_objects.Cut()
@@ -470,7 +477,7 @@
 	var/still_queued = (test_z in SSlighting.bg_queued_zlevels)
 
 	// Тот же уровень с наблюдателем: краулер обязан его взять.
-	SSmobs.dead_players_by_zlevel[test_z] = list(src)
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf))
 	SSlighting.bg_queued_zlevels = list(test_z)
 	SSlighting.bg_current_zlevel = 0
 	var/picked_current = 0

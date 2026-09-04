@@ -829,8 +829,8 @@
 	SSmobs.dead_players_by_zlevel[test_z] = list(null)
 	var/stale_ref_skipped = !ghost_ondemand_init_still_wanted(test_z)
 
-	// Гост на месте - свет обязан строиться, иначе он останется в темноте.
-	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, test_turf)
+	// Гост с включённой темнотой на месте - свет обязан строиться, иначе он в темноте.
+	var/mob/dead/observer/watcher = occupant_ghost(test_turf)
 	SSmobs.dead_players_by_zlevel[test_z] = list(watcher)
 	var/occupied_level_wanted = ghost_ondemand_init_still_wanted(test_z)
 
@@ -1465,5 +1465,56 @@
 	TEST_ASSERT_NULL(empty_abort_flagged, "обрыв без снесённых объектов не должен помечать уровень частичным")
 	TEST_ASSERT_EQUAL(negative_verdict, LIGHTING_REBUILD_VERDICT_UNCHANGED, "отрицательная цена подъёма не должна ничего решать")
 	TEST_ASSERT_NULL(negative_key, "отрицательная цена подъёма легла в книгу - чужое освобождение исключило уровень")
+
+/// Гост держит и заказывает свет отложенного уровня, только если сам включил себе темноту.
+/datum/unit_test/lighting_ghost_holds_level_only_with_darkness
+
+/datum/unit_test/lighting_ghost_holds_level_only_with_darkness/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting не инициализирована")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "предпосылка: реестр мёртвых обязан покрывать тестовый z")
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_clients = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_dead = SSmobs.dead_players_by_zlevel[test_z]
+	level.lighting_initialized = FALSE
+	SSmobs.clients_by_zlevel[test_z] = list()
+
+	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, test_turf)
+	SSmobs.dead_players_by_zlevel[test_z] = list(watcher)
+
+	var/default_ghost_free = !SSlighting.zlevel_has_occupant(test_z)
+	var/default_ghost_no_build = !ghost_ondemand_init_still_wanted(test_z)
+	var/default_ghost_no_request = !watcher.request_ghost_lighting_init(test_z)
+
+	watcher.lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	var/dark_ghost_holds = SSlighting.zlevel_has_occupant(test_z)
+	var/dark_ghost_builds = ghost_ondemand_init_still_wanted(test_z)
+	// Включение темноты на неподнятом уровне обязано взводить ту же заявку, что и смена z.
+	var/dark_ghost_requests = watcher.request_ghost_lighting_init(test_z)
+
+	watcher.lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+	var/blind_ghost_free = !SSlighting.zlevel_has_occupant(test_z)
+
+	// Живой клиент держит уровень безусловно: его собственная альфа тут ни при чём.
+	var/mob/living/carbon/human/miner = allocate(/mob/living/carbon/human, test_turf)
+	miner.lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+	SSmobs.clients_by_zlevel[test_z] = list(miner)
+	var/living_holds = SSlighting.zlevel_has_occupant(test_z)
+
+	SSmobs.clients_by_zlevel[test_z] = saved_clients
+	SSmobs.dead_players_by_zlevel[test_z] = saved_dead
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(default_ghost_free, "гост со штатной альфой удержал свет целого z, хотя разницы не видит")
+	TEST_ASSERT(default_ghost_no_build, "ради госта со штатной альфой строится свет целого z")
+	TEST_ASSERT(default_ghost_no_request, "гост со штатной альфой взвёл заявку на подъём света")
+	TEST_ASSERT(dark_ghost_holds, "гост с включённой темнотой не считается жильцом - уровень снесут под ним")
+	TEST_ASSERT(dark_ghost_builds, "госту с включённой темнотой не построят свет, он останется в темноте")
+	TEST_ASSERT(dark_ghost_requests, "включение темноты на неподнятом уровне не взвело заявку на подъём")
+	TEST_ASSERT(blind_ghost_free, "гост с выключенной плоскостью света удержал уровень")
+	TEST_ASSERT(living_holds, "живой клиент обязан держать уровень независимо от своей альфы")
 
 #undef LIGHTING_TEST_PRESSURE_CEILING_MB

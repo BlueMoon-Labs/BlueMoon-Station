@@ -634,8 +634,8 @@ SUBSYSTEM_DEF(lighting)
 /// Safety net for the "lighting never loads" report: a z-level left flagged lighting_initialized with
 /// orphaned deferred atoms (interrupted on-demand init) is never re-entered by any movement trigger,
 /// because update_z only fires on a z CHANGE and a stationary player never re-fires it. This periodic
-/// scan finds z-levels that still have parked deferred atoms AND a present occupant (living client or
-/// ghost) and re-runs create_lighting_for_zlevel, letting its self-heal guard flush them. Unoccupied
+/// scan finds z-levels that still have parked deferred atoms AND a present occupant (living client, or a
+/// ghost with darkness on) and re-runs create_lighting_for_zlevel, letting its self-heal guard flush them.
 /// deferred z-levels are intentionally left alone (preserving the deferral optimization).
 /datum/controller/subsystem/lighting/proc/scan_stuck_deferred_zlevels()
 	// Лиза вместо булевого латча: рантайм внутри спасательного вызова оставлял бы флаг занятости
@@ -659,8 +659,7 @@ SUBSYSTEM_DEF(lighting)
 			if(atom_turf)
 				parked_z |= atom_turf.z
 		GLOB.lighting_deferred_z_cache = parked_z
-	// Recover only z-levels with a present occupant (living client or ghost; dead players are the
-	// dominant stuck case since they reach away/reserved z first). A parked-but-empty reserved z stays
+	// Recover only z-levels with a present occupant (see zlevel_has_occupant). A parked-but-empty reserved z stays
 	// deferred on purpose; force-initing it would defeat the deferral optimization.
 	for(var/z in parked_z)
 		if(z < 1 || z > SSmapping.z_list.len)
@@ -1053,12 +1052,14 @@ SUBSYSTEM_DEF(lighting)
 		count++
 	return count
 
+/// Есть ли на z кто-то, ради кого свет уровня строят и держат: живой клиент - всегда,
+/// наблюдатель - только с включённой темнотой (см. ghost_holds_zlevel_lighting).
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
 	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
 		if(!QDELETED(occupant))
 			return TRUE
-	for(var/mob/occupant as anything in SSmobs.dead_players_on_zlevel(z))
-		if(!QDELETED(occupant))
+	for(var/mob/watcher as anything in SSmobs.dead_players_on_zlevel(z))
+		if(ghost_holds_zlevel_lighting(watcher))
 			return TRUE
 	return FALSE
 
