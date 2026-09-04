@@ -115,7 +115,7 @@
 /obj/item/projectile/bullet/g45l/lethal
 	name = ".45 Long Lethal bullet"
 	damage = 35
-	armour_penetration = BULLET_BR1   // BLUEMOON ADD
+	armour_penetration = BULLET_BR4   // BLUEMOON ADD
 	wound_bonus = 15
 	stamina = 0
 	sharpness = SHARP_EDGED

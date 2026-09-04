@@ -20,6 +20,12 @@
 	},
 /turf/closed/indestructible/syndicate,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"ah" = (
+/obj/effect/turf_decal/tile/bar/full,
+/obj/effect/turf_decal/tile/blue/full,
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship6)
 "ai" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/external{
@@ -432,6 +438,7 @@
 /obj/item/card/id/syndicate,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "bn" = (
@@ -915,20 +922,6 @@
 "cL" = (
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship2)
-"cM" = (
-/obj/structure/deployable_barricade/metal{
-	dir = 4
-	},
-/obj/structure/deployable_barricade/metal,
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "cN" = (
 /obj/effect/turf_decal/tile/brown/full,
 /obj/machinery/light{
@@ -967,6 +960,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "cT" = (
@@ -1209,6 +1203,17 @@
 	},
 /turf/open/floor/glass/reinforced,
 /area/InteQ_ship)
+"dD" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
+	},
+/obj/effect/mine/explosive,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "dE" = (
 /obj/machinery/porta_turret/inteq/energy{
 	name = "InteQ Ship Turret";
@@ -1227,6 +1232,7 @@
 /obj/machinery/door/poddoor/shutters{
 	id = "AcademyAuto"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "dI" = (
@@ -1485,6 +1491,10 @@
 /obj/structure/deployable_barricade/metal{
 	dir = 1
 	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"er" = (
+/obj/effect/mine/explosive,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "es" = (
@@ -1815,7 +1825,7 @@
 /turf/open/floor/plasteel,
 /area/InteQ_ship/SOLVED)
 "fp" = (
-/obj/machinery/computer/communications/syndicate{
+/obj/machinery/computer/camera_advanced{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -1950,6 +1960,10 @@
 /obj/structure/rack/shelf,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
+"fK" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship4)
 "fM" = (
 /obj/structure/table/wood/bar,
 /obj/effect/decal/cleanable/dirt,
@@ -2088,6 +2102,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "ge" = (
@@ -2098,9 +2113,7 @@
 	pixel_y = 32;
 	silicon_access = 0
 	},
-/obj/machinery/vending/medical/syndicate_access/cybersun{
-	req_access = null
-	},
+/obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "gf" = (
@@ -2401,18 +2414,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/InteQ_ship/ship4)
-"he" = (
-/obj/structure/closet/wall/red{
-	name = "Uniform Closet";
-	pixel_y = 31
-	},
-/obj/item/gun_voucher/syndicate,
-/obj/item/clothing/gloves/combat,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/storage/belt/military,
-/obj/machinery/light/cold/dim/directional/north,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "hf" = (
 /turf/open/floor/plating{
 	heat_capacity = 1e+006;
@@ -2598,10 +2599,6 @@
 "hF" = (
 /turf/open/floor/plating/airless,
 /area/InteQ_ship/ship5)
-"hG" = (
-/obj/structure/lattice,
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
-/area/InteQ_ship)
 "hH" = (
 /obj/effect/turf_decal/tile/brown,
 /obj/machinery/computer/mech_bay_power_console{
@@ -3141,6 +3138,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "jl" = (
@@ -3393,6 +3391,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "jT" = (
@@ -4272,6 +4271,19 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
+"mh" = (
+/obj/structure/closet/wall/red{
+	name = "Uniform Closet";
+	pixel_y = 31
+	},
+/obj/item/gun_voucher/syndicate,
+/obj/item/clothing/gloves/combat,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/storage/belt/military,
+/obj/machinery/light/cold/dim/directional/north,
+/obj/item/storage/firstaid/tactical/ert_second,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "mi" = (
 /obj/structure/sign/flag/syndicate,
 /turf/closed/wall/mineral/plastitanium,
@@ -4814,14 +4826,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/space)
-"nH" = (
-/obj/structure/closet/crate/large,
-/obj/item/gun/ballistic/automatic/flechette,
-/obj/item/ammo_box/magazine/flechette,
-/obj/item/ammo_box/magazine/flechette,
-/obj/item/ammo_box/magazine/flechette,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "nI" = (
 /obj/effect/turf_decal/trimline/red/filled/corner,
 /obj/effect/turf_decal/trimline/red/filled/corner{
@@ -5526,6 +5530,13 @@
 /mob/living/simple_animal/hostile/inteq/ranged/sniper{
 	layer = 2
 	},
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
+"pz" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/window/reinforced/spawner,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "pA" = (
@@ -6302,6 +6313,11 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"rL" = (
+/obj/structure/flora/ausbushes/ppflowers,
+/obj/effect/mine/explosive,
+/turf/open/floor/grass/grass0,
+/area/InteQ_ship)
 "rM" = (
 /obj/structure/lattice,
 /turf/open/space,
@@ -6635,14 +6651,20 @@
 /area/InteQ_ship)
 "sM" = (
 /obj/machinery/vending/wallmed/directional/east,
-/obj/machinery/sleeper/syndie/fullupgrade,
 /obj/machinery/light/cold/dim/directional/east,
+/obj/item/gun/medbeam/syndicate,
+/obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "sN" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"sO" = (
+/obj/machinery/light/cold/dim/directional/east,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "sP" = (
 /obj/effect/decal/cleanable/glass,
 /obj/effect/decal/cleanable/blood/gibs{
@@ -6961,6 +6983,12 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
+"tQ" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plating/airless{
+	icon_state = "platingdmg1"
+	},
+/area/InteQ_ship/ship6)
 "tS" = (
 /obj/machinery/door/airlock/hatch,
 /obj/effect/mapping_helpers/airlock/locked,
@@ -7276,7 +7304,13 @@
 /area/InteQ_ship)
 "uO" = (
 /obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
+/area/InteQ_ship)
+"uP" = (
+/obj/structure/flora/ausbushes/grassybush,
+/obj/effect/mine/explosive,
+/turf/open/floor/grass/grass0,
 /area/InteQ_ship)
 "uQ" = (
 /obj/machinery/atmospherics/pipe/simple/general/hidden,
@@ -7496,20 +7530,6 @@
 /obj/machinery/light/broken/directional/east,
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/InteQ_ship/ship2)
-"vx" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal,
-/obj/structure/deployable_barricade/metal{
-	dir = 8
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "vy" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 5
@@ -8310,11 +8330,6 @@
 	icon_state = "platingdmg3"
 	},
 /area/InteQ_ship)
-"xR" = (
-/obj/structure/closet/crate/large,
-/obj/item/gun/ballistic/automatic/l6_saw,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "xS" = (
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
@@ -8404,6 +8419,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
+/obj/effect/mine/explosive,
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "yg" = (
@@ -8665,14 +8681,6 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"yO" = (
-/obj/structure/closet/crate/large,
-/obj/item/gun/ballistic/automatic/magrifle/magrrinei,
-/obj/item/ammo_box/magazine/mmag/lethal,
-/obj/item/ammo_box/magazine/mmag/lethal,
-/obj/item/ammo_box/magazine/mmag/lethal,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "yP" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/computer{
@@ -8757,6 +8765,11 @@
 /obj/effect/landmark/awaystart,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
+"zg" = (
+/obj/effect/turf_decal/tile/blue/full,
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/damturf,
+/area/InteQ_ship/ship4)
 "zh" = (
 /obj/machinery/power/terminal{
 	dir = 8
@@ -9050,6 +9063,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"zW" = (
+/obj/structure/sign/flag/inteq{
+	pixel_x = -32
+	},
+/obj/effect/mine/explosive,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "zY" = (
 /obj/machinery/vending/security/syndicate,
 /obj/machinery/button/door{
@@ -9260,14 +9280,6 @@
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
-"Aw" = (
-/obj/structure/closet/crate/large,
-/obj/item/gun/ballistic/automatic/shotgun/bulldog,
-/obj/item/ammo_box/magazine/m12g/meteor,
-/obj/item/ammo_box/magazine/m12g/meteor,
-/obj/item/ammo_box/magazine/m12g/meteor,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "Ay" = (
 /obj/structure/cable{
 	icon_state = "2-4"
@@ -9566,6 +9578,18 @@
 /obj/machinery/suit_storage_unit/inteq_spacesuit,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"Bk" = (
+/obj/structure/closet/wall/red{
+	name = "Uniform Closet";
+	pixel_y = 31
+	},
+/obj/item/gun_voucher/syndicate,
+/obj/item/clothing/gloves/combat,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "Bl" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 10
@@ -10476,20 +10500,6 @@
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
-"DA" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal,
-/obj/structure/deployable_barricade/metal{
-	dir = 4
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "DB" = (
 /obj/machinery/light,
 /obj/effect/decal/cleanable/dirt{
@@ -10498,12 +10508,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
-"DC" = (
-/obj/item/gun/ballistic/automatic/l6_saw,
-/obj/item/ammo_box/magazine/mm712x82,
-/obj/item/ammo_box/magazine/mm712x82,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "DE" = (
 /obj/structure/closet/crate/wooden,
 /obj/item/stack/sheet/rglass,
@@ -10666,6 +10670,12 @@
 /obj/effect/mapping_helpers/airlock/locked,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
+"Ee" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plating{
+	icon_state = "platingdmg3"
+	},
+/area/InteQ_ship/ship6)
 "Ef" = (
 /obj/effect/turf_decal{
 	icon_state = "warningline_white";
@@ -10696,6 +10706,10 @@
 	},
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
+"Ei" = (
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship/ship6)
 "Ej" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/item/ammo_casing/spent,
@@ -10723,6 +10737,7 @@
 /area/InteQ_ship)
 "Eo" = (
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Ep" = (
@@ -10804,23 +10819,6 @@
 "EB" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
-"EC" = (
-/obj/machinery/light/small{
-	dir = 4
-	},
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal,
-/obj/structure/deployable_barricade/metal{
-	dir = 8
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
@@ -11183,12 +11181,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
-"FG" = (
-/turf/closed/wall/mineral/plastitanium{
-	dir = 8;
-	icon_state = "diagonalWall3"
-	},
-/area/InteQ_ship/ship6)
 "FH" = (
 /turf/closed/mineral/random,
 /area/InteQ_ship/ship6)
@@ -12503,6 +12495,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Jk" = (
@@ -12578,6 +12571,11 @@
 	},
 /turf/closed/indestructible/syndicate,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+"Jt" = (
+/obj/machinery/light/cold/dim/directional/west,
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded,
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "Ju" = (
 /obj/structure/closet/crate/freezer,
 /obj/item/reagent_containers/food/condiment/flour,
@@ -12859,12 +12857,6 @@
 /obj/structure/salvage/autolathe,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
-"Kl" = (
-/mob/living/simple_animal/hostile/nanotrasen/elite/akins{
-	faction = list("neutral")
-	},
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "Km" = (
 /obj/structure/table,
 /obj/machinery/microwave,
@@ -13137,6 +13129,7 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/InteQ_ship)
 "Lb" = (
@@ -13198,6 +13191,11 @@
 /obj/structure/cable,
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
+/area/InteQ_ship)
+"Lm" = (
+/obj/structure/flora/ausbushes/brflowers,
+/obj/effect/mine/explosive,
+/turf/open/floor/grass/grass0,
 /area/InteQ_ship)
 "Ln" = (
 /obj/machinery/light{
@@ -13467,23 +13465,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"Ma" = (
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 4
-	},
-/obj/structure/deployable_barricade/metal,
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "Mb" = (
 /obj/structure/closet/emcloset/anchored,
 /turf/open/floor/plasteel/dark,
@@ -14042,6 +14023,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "NU" = (
@@ -14386,6 +14368,14 @@
 	},
 /turf/open/floor/plating/airless,
 /area/InteQ_ship)
+"OY" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
+	},
+/obj/effect/mine/explosive,
+/turf/open/floor/plasteel/cafeteria,
+/area/InteQ_ship)
 "OZ" = (
 /obj/structure/table/wood,
 /obj/structure/window/reinforced{
@@ -14505,6 +14495,7 @@
 /obj/structure/cable{
 	icon_state = "2-4"
 	},
+/obj/structure/window/reinforced/spawner,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Pp" = (
@@ -14648,10 +14639,6 @@
 /obj/machinery/dish_drive,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
-"PM" = (
-/obj/item/gun/medbeam/syndicate,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 "PO" = (
 /obj/effect/portal/permanent{
 	id = "left_siege";
@@ -14716,12 +14703,6 @@
 "Qa" = (
 /turf/open/floor/plasteel/damturf,
 /area/InteQ_ship)
-"Qb" = (
-/turf/closed/wall/mineral/plastitanium{
-	dir = 1;
-	icon_state = "diagonalWall3"
-	},
-/area/InteQ_ship/ship6)
 "Qc" = (
 /obj/structure/sign/poster/ripped{
 	pixel_x = 32
@@ -15045,8 +15026,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
 "Ra" = (
-/obj/machinery/computer/communications/syndicate{
-	name = "InteQ Communications Console";
+/obj/machinery/computer/camera_advanced{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -15150,6 +15130,7 @@
 /obj/item/clothing/gloves/combat,
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Rt" = (
@@ -15351,6 +15332,7 @@
 	},
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/storage/belt/military,
+/obj/item/storage/firstaid/tactical/ert_second,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "RS" = (
@@ -15526,6 +15508,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark/textured,
 /area/InteQ_ship)
+"Sv" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
+	},
+/obj/effect/mine/explosive,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "Sw" = (
 /obj/structure/sign/flag/nanotrasen,
 /turf/closed/wall/mineral/plastitanium,
@@ -15584,6 +15574,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
+/obj/effect/mine/explosive,
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "SF" = (
@@ -15592,6 +15583,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "SH" = (
@@ -16606,6 +16598,11 @@
 /obj/structure/rack/shelf,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
+"Vv" = (
+/obj/structure/lattice,
+/mob/living/simple_animal/hostile/nanotrasen/elite/akins,
+/turf/open/space/basic,
+/area/InteQ_ship/ship6)
 "Vw" = (
 /obj/machinery/light{
 	dir = 8
@@ -17132,6 +17129,11 @@
 	},
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship/ship2)
+"Xf" = (
+/obj/structure/flora/junglebush/c,
+/obj/effect/mine/explosive,
+/turf/open/floor/grass/grass0,
+/area/InteQ_ship)
 "Xg" = (
 /obj/effect/turf_decal{
 	icon_state = "warningline_white";
@@ -17517,20 +17519,6 @@
 /obj/effect/spawner/lootdrop/weapon_parts,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
-"Yp" = (
-/obj/structure/deployable_barricade/metal,
-/mob/living/simple_animal/hostile/inteq/ranged/smg{
-	layer = 2
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 8
-	},
-/obj/structure/deployable_barricade/metal{
-	dir = 1;
-	layer = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "Yq" = (
 /obj/effect/turf_decal{
 	icon_state = "warningline_white";
@@ -17571,6 +17559,7 @@
 	max_integrity = 99999
 	},
 /obj/structure/trap/ctf/inteq_blocker,
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/InteQ_ship/ship7)
 "Yx" = (
@@ -18138,17 +18127,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
-"ZZ" = (
-/obj/structure/closet/wall/red{
-	name = "Uniform Closet";
-	pixel_y = 31
-	},
-/obj/item/gun_voucher/syndicate,
-/obj/item/clothing/gloves/combat,
-/obj/item/gun/ballistic/automatic/pistol,
-/obj/item/storage/belt/military,
-/turf/open/floor/engine,
-/area/InteQ_ship/ship7)
 
 (1,1,1) = {"
 WO
@@ -20659,7 +20637,7 @@ AM
 gV
 gV
 gV
-ZZ
+Bk
 kW
 kW
 pp
@@ -20871,7 +20849,7 @@ AM
 AM
 AM
 gV
-ZZ
+Bk
 kW
 kW
 pp
@@ -30673,14 +30651,14 @@ vB
 io
 tu
 Hu
-qy
+zg
 qy
 hr
 mM
 av
 qy
 av
-av
+fK
 qy
 pm
 mM
@@ -31112,7 +31090,7 @@ qQ
 av
 av
 av
-av
+fK
 av
 mM
 Jh
@@ -31527,7 +31505,7 @@ av
 Cq
 av
 qy
-av
+fK
 av
 qy
 av
@@ -31747,7 +31725,7 @@ iS
 qy
 qy
 qy
-qy
+zg
 qy
 qy
 iS
@@ -31964,7 +31942,7 @@ qy
 qy
 NS
 qy
-qy
+zg
 qy
 rv
 vB
@@ -32158,13 +32136,13 @@ ZW
 av
 av
 qy
-qy
+zg
 av
 Cq
 av
 qy
 av
-av
+fK
 qy
 av
 mM
@@ -32792,7 +32770,7 @@ vB
 vB
 VW
 tu
-av
+fK
 qy
 qy
 qQ
@@ -33018,7 +32996,7 @@ pm
 mM
 re
 av
-av
+fK
 av
 av
 av
@@ -33434,7 +33412,7 @@ ts
 mM
 mM
 av
-qy
+zg
 av
 av
 us
@@ -36774,7 +36752,7 @@ AM
 AM
 gV
 bm
-tF
+Jt
 GA
 GA
 tX
@@ -36985,7 +36963,7 @@ AM
 AM
 vB
 gV
-ZZ
+Bk
 kW
 kW
 kW
@@ -37197,7 +37175,7 @@ gV
 gV
 gV
 gV
-he
+mh
 kW
 kW
 kW
@@ -37404,12 +37382,12 @@ AM
 AM
 gV
 gV
-ZZ
+Bk
 pp
 tF
 pp
 gV
-ZZ
+Bk
 hq
 kW
 kW
@@ -37616,7 +37594,7 @@ AM
 gV
 gV
 gV
-ZZ
+Bk
 pp
 kW
 pp
@@ -37828,8 +37806,8 @@ gV
 gV
 jl
 gV
-he
-PM
+mh
+kW
 kW
 FO
 gV
@@ -38001,7 +37979,7 @@ yd
 mv
 mv
 mv
-jC
+OY
 mv
 mv
 mv
@@ -38040,17 +38018,17 @@ gV
 GS
 kW
 gV
-ZZ
-DC
+Bk
+kW
 kW
 kW
 oc
-Kl
 kW
 kW
 kW
 kW
-Kl
+kW
+kW
 Rs
 gV
 gV
@@ -38212,14 +38190,14 @@ dS
 Wt
 Al
 Iq
-DA
+Al
 Al
 eF
-cM
+Al
 Iq
 Al
-Ma
-dS
+Iq
+zW
 mv
 Wt
 Al
@@ -38423,14 +38401,14 @@ mv
 FU
 Wt
 Al
-xh
+uP
 aZ
 Yf
-xh
+uP
 VH
 xh
 aZ
-GD
+Lm
 al
 mv
 mJ
@@ -38631,7 +38609,7 @@ Pp
 Am
 Xi
 Ms
-Pf
+dD
 Ms
 zq
 xC
@@ -38681,8 +38659,8 @@ kW
 kW
 kW
 Cr
-xR
-yO
+kW
+kW
 zf
 zf
 nd
@@ -38893,8 +38871,8 @@ kW
 kW
 kW
 oc
-Aw
-nH
+kW
+kW
 zf
 zf
 nd
@@ -39057,7 +39035,7 @@ LE
 Al
 mv
 NJ
-Wt
+pz
 Gf
 Al
 Al
@@ -39267,7 +39245,7 @@ Al
 Al
 Wt
 Al
-tB
+Sv
 Al
 jb
 pr
@@ -39484,12 +39462,12 @@ FU
 Wt
 Al
 GD
-aZ
-xh
+rL
+uP
 VH
-Yf
+Xf
 aZ
-GD
+Lm
 xh
 al
 mv
@@ -39524,17 +39502,17 @@ gV
 GS
 kW
 gV
-ZZ
-DC
+Bk
+kW
 kW
 kW
 Cr
-Kl
 kW
 kW
 kW
 kW
-Kl
+kW
+kW
 Ji
 gV
 gV
@@ -39696,14 +39674,14 @@ Al
 Wt
 Al
 iG
-Yp
+Al
 Al
 VM
-vx
+Al
 iG
 Al
-EC
-Al
+iG
+er
 mv
 Wt
 Al
@@ -39728,16 +39706,16 @@ Wl
 Al
 tL
 gz
-FI
-hG
+gz
+EV
 AM
 AM
 gV
 gV
 jl
 gV
-he
-PM
+mh
+kW
 kW
 zt
 gV
@@ -39909,7 +39887,7 @@ SE
 mv
 mv
 mv
-jC
+OY
 mv
 mv
 mv
@@ -39948,7 +39926,7 @@ AM
 gV
 gV
 gV
-ZZ
+Bk
 pp
 kW
 pp
@@ -40160,12 +40138,12 @@ AM
 AM
 gV
 gV
-ZZ
+Bk
 pp
 GM
 pp
 gV
-ZZ
+Bk
 hq
 kW
 kW
@@ -40377,7 +40355,7 @@ gV
 gV
 gV
 gV
-he
+mh
 kW
 kW
 kW
@@ -40589,7 +40567,7 @@ AM
 AM
 vB
 gV
-ZZ
+Bk
 kW
 kW
 kW
@@ -40802,7 +40780,7 @@ vB
 vB
 gV
 bm
-GM
+sO
 UU
 UU
 Si
@@ -54870,7 +54848,7 @@ lo
 Ea
 ic
 cx
-cx
+Ei
 yD
 aa
 lo
@@ -55075,7 +55053,7 @@ vB
 vB
 dI
 Kq
-cx
+Ei
 cx
 UC
 lo
@@ -55090,7 +55068,7 @@ gf
 cx
 Pj
 ZR
-Zr
+tQ
 Wu
 lo
 lq
@@ -55307,7 +55285,7 @@ ln
 lo
 lq
 cx
-cx
+Ei
 Pr
 lo
 lo
@@ -55505,7 +55483,7 @@ wE
 lo
 DY
 Kq
-Kq
+ah
 Kq
 Kq
 DY
@@ -55521,7 +55499,7 @@ TY
 cx
 NI
 lo
-FG
+lo
 lo
 lo
 lo
@@ -56147,11 +56125,11 @@ cx
 cx
 AA
 Kq
-Kq
+ah
 Kq
 hk
 Kq
-Kq
+ah
 AA
 Kq
 TD
@@ -56353,7 +56331,7 @@ cx
 Nw
 cx
 cx
-cx
+Ei
 yD
 cx
 cx
@@ -56581,7 +56559,7 @@ aT
 cx
 NI
 lo
-Qb
+lo
 lo
 lo
 lo
@@ -56984,7 +56962,7 @@ WO
 WO
 FH
 hk
-hk
+Vv
 YA
 lo
 Jk
@@ -57200,7 +57178,7 @@ hk
 aK
 lo
 cx
-cx
+Ei
 cx
 MG
 cx
@@ -57209,12 +57187,12 @@ hk
 uE
 ln
 cx
-cx
+Ei
 vo
 cx
 lo
 cx
-vo
+Ee
 lq
 iZ
 lo
@@ -61057,7 +61035,7 @@ WO
 WO
 WO
 gV
-ZZ
+Bk
 GA
 GA
 tJ
@@ -61269,7 +61247,7 @@ WO
 WO
 WO
 gV
-ZZ
+Bk
 kW
 kW
 pp
@@ -61481,7 +61459,7 @@ WO
 WO
 WO
 gV
-ZZ
+Bk
 kW
 kW
 pp

@@ -22,5 +22,5 @@
 /mob/living/silicon/robot/movement_delay()
 	. = ..()
 	if(!resting && !(combat_flags & COMBAT_FLAG_SPRINT_ACTIVE))
-		. += 0.5 //BLUEMOON EDIT Снижение модификатора скорости спринта со стандартных 1 до 0.5
+		. += CONFIG_GET(number/movedelay/robot_slowdown_modifier) //BLUEMOON EDIT Снижение модификатора скорости перелвижения
 	. += vtec_disabled? 0 : vtec

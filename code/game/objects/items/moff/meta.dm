@@ -5,9 +5,7 @@
     icon = 'code/game/objects/items/moff/moff.dmi'
     icon_state = "moffplush"
 
-/obj/item/toy/plush/mothplushie/Initialize(mapload)
-    . = ..()
-    icon_state = pick(list(
+    var/static/list/moth_plush_list = list(
         "moffplush",
         "moffplush_monarch",
         "moffplush_luna",
@@ -24,12 +22,17 @@
         "moffplush_ragged",
         "moffplush_snow",
         "moffplush_clockwork",
-		"moffplush_moonfly",
-		"moffplush_random",
-		"moffplush_rainbow",
-		"moffplush_witchwing",
-		"moffplush_plasmafire",
-		"moffplush_bluespace",
-		"moffplush_rosy",
-		"moffplush_brown"
-    ))
+        "moffplush_moonfly",
+        "moffplush_random",
+        "moffplush_rainbow",
+        "moffplush_witchwing",
+        "moffplush_plasmafire",
+        "moffplush_bluespace",
+        "moffplush_rosy",
+        "moffplush_brown",
+		"moth_plush_betan"
+    )
+
+/obj/item/toy/plush/mothplushie/Initialize(mapload)
+    . = ..()
+    icon_state = pick(moth_plush_list)

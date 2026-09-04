@@ -1849,10 +1849,6 @@
 /obj/machinery/vending/coffee,
 /turf/open/floor/wood,
 /area/awaymission/complex/janitorial)
-"bJq" = (
-/obj/structure/lattice/catwalk,
-/turf/open/floor/plating,
-/area/awaymission/complex/exterior)
 "bJD" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/power/terminal,
@@ -5183,7 +5179,7 @@
 	},
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "ezB" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /turf/open/floor/wood,
@@ -7643,7 +7639,7 @@
 /obj/item/gunpart/civilianlaserbarrel,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "gDr" = (
 /obj/structure/chair/sofa{
 	dir = 1
@@ -10914,7 +10910,7 @@
 /obj/item/pen,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "jsR" = (
 /obj/effect/turf_decal/delivery,
 /obj/structure/closet/crate/radiation,
@@ -11595,7 +11591,7 @@
 	},
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "jVR" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/red{
@@ -12740,7 +12736,7 @@
 /obj/item/inducer/sci,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "kSS" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/light/small{
@@ -17679,7 +17675,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "puw" = (
 /obj/machinery/power/smes,
 /obj/structure/cable{
@@ -18276,7 +18272,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "pRg" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/brigdoor{
@@ -21655,7 +21651,7 @@
 "sAB" = (
 /obj/item/stack/cable_coil,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "sBC" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -24293,7 +24289,7 @@
 /obj/machinery/rnd/production/circuit_imprinter,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "uTk" = (
 /obj/item/clothing/mask/cigarette/rollie/cannabis,
 /obj/item/shovel/spade,
@@ -87072,9 +87068,9 @@ uTg
 jVI
 pQP
 pus
-fef
-fef
-fef
+dfP
+dfP
+dfP
 sFr
 dum
 dum
@@ -87325,13 +87321,13 @@ sFr
 sFr
 sFr
 sFr
-bJq
-bJq
-bJq
-bJq
-bJq
-bJq
-fef
+aHk
+aHk
+aHk
+aHk
+aHk
+aHk
+dfP
 sFr
 mwq
 swG
@@ -87586,9 +87582,9 @@ eyY
 kSK
 gDn
 jsN
-fef
-bJq
-fef
+dfP
+aHk
+dfP
 sFr
 hBp
 etU
@@ -87843,9 +87839,9 @@ wmI
 wmI
 wmI
 nBY
-fef
-bJq
-fef
+dfP
+aHk
+dfP
 sFr
 kkl
 swG
@@ -88101,9 +88097,9 @@ wmI
 wmI
 rJV
 sAB
-bJq
-fef
-rJV
+aHk
+dfP
+plz
 nzy
 swG
 dfP

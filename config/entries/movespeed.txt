@@ -17,6 +17,10 @@
 RUN_DELAY 1.5
 WALK_DELAY 3
 
+## Замедление и ускорение передвижения киборгов
+ROBOT_SLOWDOWN_MODIFIER 0.5
+ROBOT_VTEC_BOOST 1
+
 ## The variables below affect the movement of specific mob types. THIS AFFECTS ALL SUBTYPES OF THE TYPE YOU CHOOSE!
 ## Entries completely override all subtypes. Later entries have precedence over earlier entries.
 ## This means if you put /mob 0 on the last entry, it will null out all changes, while if you put /mob as the first entry and

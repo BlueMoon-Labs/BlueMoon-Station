@@ -615,7 +615,7 @@
 //insect markings
 /datum/sprite_accessory/insect_markings // Extra markings for insects ported from tg.
 	icon = 'icons/mob/insect_markings.dmi'
-	color_src = null
+	color_src = WINGCOLOR
 	relevant_layers = list(BODY_ADJ_LAYER)
 
 /datum/sprite_accessory/insect_markings/none

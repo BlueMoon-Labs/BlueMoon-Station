@@ -835,6 +835,13 @@
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating/asteroid/snow/complex,
 /area/awaymission/complex/exterior)
+"aKJ" = (
+/obj/effect/turf_decal/weather/snow/corner{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/clockcultistmelee,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "aLr" = (
 /turf/open/floor/engine/vacuum,
 /area/awaymission/complex/facilityresearch)
@@ -3239,7 +3246,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "cZO" = (
 /obj/effect/decal/cleanable/blood/tracks,
 /turf/open/floor/plating/asteroid/snow/complex{
@@ -3684,6 +3691,11 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/complex/exterior)
+"dnB" = (
+/obj/structure/flora/grass/both,
+/obj/structure/destructible/clockwork/wall_gear,
+/turf/open/floor/plating/asteroid/snow/complex,
+/area/awaymission/complex/cultfacility)
 "dnH" = (
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
@@ -3812,7 +3824,7 @@
 /obj/item/pen,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "dtZ" = (
 /obj/effect/baseturf_helper/complex,
 /turf/closed/indestructible/rock/snow,
@@ -5490,7 +5502,7 @@
 "eLz" = (
 /obj/effect/turf_decal/weather/snow/corner,
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/destructible/clockwork/wall_gear/displaced,
+/mob/living/simple_animal/hostile/clockcultistmelee,
 /turf/open/floor/clockwork,
 /area/awaymission/complex/cultfacility)
 "eLG" = (
@@ -6584,7 +6596,7 @@
 /obj/item/gunpart/civilianlaserbarrel,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "fGD" = (
 /obj/structure/railing{
 	dir = 8
@@ -7958,6 +7970,13 @@
 	floor_variance = 0
 	},
 /area/awaymission/complex/exterior)
+"gPP" = (
+/obj/effect/turf_decal/weather/snow/corner{
+	dir = 8
+	},
+/mob/living/simple_animal/hostile/clockcultistranged,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "gPS" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/brigdoor{
@@ -8657,6 +8676,11 @@
 "htr" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/dirt/jungle,
+/area/awaymission/complex/cultfacility)
+"htx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/mob/living/simple_animal/hostile/clockcultistmelee,
+/turf/open/floor/clockwork,
 /area/awaymission/complex/cultfacility)
 "htL" = (
 /obj/item/stack/cable_coil/cut,
@@ -9952,6 +9976,10 @@
 	floor_variance = 0
 	},
 /area/awaymission/complex/cultholdout)
+"iAA" = (
+/mob/living/simple_animal/hostile/clockcultistmelee,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "iAM" = (
 /obj/structure/chair/wood/normal,
 /turf/open/floor/wood,
@@ -13707,7 +13735,7 @@
 	},
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "lTb" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 6
@@ -17166,7 +17194,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "oXP" = (
 /turf/closed/wall/clockwork,
 /area/awaymission/complex/cultfacility)
@@ -17322,7 +17350,7 @@
 	},
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "pdX" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 6
@@ -17475,6 +17503,11 @@
 	floor_variance = 0
 	},
 /area/awaymission/complex/gateway)
+"pnz" = (
+/obj/effect/turf_decal/weather/snow/corner,
+/mob/living/simple_animal/hostile/clockcultistmelee,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "pnN" = (
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass,
@@ -18118,6 +18151,10 @@
 	icon_state = "damaged3"
 	},
 /area/awaymission/complex/security)
+"pLv" = (
+/mob/living/simple_animal/hostile/clockwork/clocktank,
+/turf/open/floor/clockwork/reebe,
+/area/awaymission/complex/cultfacility)
 "pLD" = (
 /obj/machinery/door/poddoor/shutters{
 	name = "lockdown shutters";
@@ -18923,10 +18960,6 @@
 /obj/structure/railing,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/complex/miningcamp)
-"qxy" = (
-/obj/structure/lattice/catwalk,
-/turf/open/floor/plating,
-/area/awaymission/complex/exterior)
 "qxK" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/window{
@@ -19916,7 +19949,7 @@
 /obj/item/inducer/sci,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "rpU" = (
 /obj/effect/turf_decal/delivery,
 /obj/structure/closet/crate/miningcar,
@@ -21372,6 +21405,13 @@
 /obj/item/ammo_casing/shotgun/buckshot,
 /turf/open/floor/plasteel,
 /area/awaymission/complex/gatehouse)
+"ssE" = (
+/obj/effect/turf_decal/weather/snow/corner{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/clockcultistranged,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "ssH" = (
 /obj/structure/flora/bush,
 /turf/open/floor/plating/asteroid/snow/complex,
@@ -21432,6 +21472,14 @@
 	},
 /turf/open/floor/plating/snowed/smoothed/warmer,
 /area/awaymission/complex/exterior)
+"svb" = (
+/obj/effect/turf_decal/weather/snow/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/mob/living/simple_animal/hostile/clockcultistmelee,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "svv" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/stack/cable_coil,
@@ -21573,7 +21621,7 @@
 "sAB" = (
 /obj/item/stack/cable_coil,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "sBC" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -23132,7 +23180,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/complex/security)
 "tSX" = (
-/obj/structure/shield/yellow,
+/obj/structure/shield/clockward,
 /turf/open/floor/plating/asteroid/snow/complex{
 	slowdown = 1;
 	icon_state = "snow_dug";
@@ -23155,6 +23203,10 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/awaymission/complex/gatehouse)
+"tTv" = (
+/mob/living/simple_animal/hostile/clockcultistranged,
+/turf/open/floor/clockwork,
+/area/awaymission/complex/cultfacility)
 "tUw" = (
 /obj/structure/flora/ausbushes/palebush,
 /turf/open/floor/grass,
@@ -23839,7 +23891,7 @@
 /obj/machinery/rnd/production/circuit_imprinter,
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating,
-/area/awaymission/complex/exterior)
+/area/awaymission/complex/research)
 "uyo" = (
 /obj/machinery/poweredfans,
 /obj/machinery/door/airlock/maintenance,
@@ -71852,19 +71904,19 @@ icb
 prV
 uQG
 osA
-wtV
-wtV
-osA
+tTv
+tTv
+gPP
 qFD
 qFD
 fYU
 wtV
 osA
 osA
-qFD
-fYU
+svb
+htx
 eLz
-icb
+jRZ
 vER
 icb
 prV
@@ -72371,7 +72423,7 @@ xyG
 xyG
 xyG
 dIv
-xyG
+pLv
 xyG
 xyG
 xyG
@@ -72628,7 +72680,7 @@ jNX
 xyG
 xyG
 xyG
-xyG
+pLv
 xyG
 xyG
 xyG
@@ -72885,7 +72937,7 @@ xyG
 xyG
 xyG
 xyG
-xyG
+pLv
 xyG
 xyG
 xyG
@@ -73394,19 +73446,19 @@ erS
 icb
 uQG
 kzy
-wtV
-wtV
-kzy
-kzy
-kzy
-wtV
-wtV
-kzy
+tTv
+tTv
+ssE
 kzy
 kzy
 wtV
-vkR
-prV
+wtV
+kzy
+kzy
+aKJ
+iAA
+pnz
+dnB
 oXP
 icb
 icb
@@ -73663,7 +73715,7 @@ icb
 icb
 bqx
 mlw
-icb
+jRZ
 oXP
 icb
 icb
@@ -87024,9 +87076,9 @@ uyl
 pdP
 oXO
 cZN
-fef
-fef
-fef
+dfP
+dfP
+dfP
 sFr
 dum
 dum
@@ -87277,13 +87329,13 @@ sFr
 sFr
 sFr
 sFr
-qxy
-qxy
-qxy
-qxy
-qxy
-qxy
-fef
+aHk
+aHk
+aHk
+aHk
+aHk
+aHk
+dfP
 sFr
 mwq
 edA
@@ -87538,9 +87590,9 @@ lSJ
 rpI
 fGs
 dtX
-fef
-qxy
-fef
+dfP
+aHk
+dfP
 sFr
 hBp
 etU
@@ -87795,9 +87847,9 @@ wmI
 wmI
 wmI
 nBY
-fef
-qxy
-fef
+dfP
+aHk
+dfP
 sFr
 kkl
 swG
@@ -88053,9 +88105,9 @@ wmI
 wmI
 rJV
 sAB
-qxy
-fef
-rJV
+aHk
+dfP
+plz
 nzy
 swG
 dfP
