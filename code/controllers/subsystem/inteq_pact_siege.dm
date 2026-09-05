@@ -176,7 +176,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return is_on_battlefield_turf(get_turf(L))
 
 /datum/inteq_pact_siege/proc/register_defender(mob/living/carbon/human/H)
-	if(QDELETED(H) || !istype(H) || !(ROLE_INTEQ in H.faction) || !(H.mind || H.last_mind))
+	if(QDELETED(H) || !istype(H) || !(ROLE_INTEQ in H.faction))
 		return
 	if(HAS_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER))
 		return
