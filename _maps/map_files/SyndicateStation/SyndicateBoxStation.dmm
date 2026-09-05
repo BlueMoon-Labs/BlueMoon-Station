@@ -2169,11 +2169,14 @@
 /turf/open/floor/plasteel/grimy,
 /area/security/detectives_office/private_investigators_office)
 "ahZ" = (
-/obj/effect/turf_decal/siding/thinplating/light/corner{
-	color = "#B11111"
+/obj/structure/table/reinforced/plastitanium,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
 	},
+/obj/item/clothing/head/hardhat/cakehat,
 /turf/open/floor/mineral/plastitanium,
-/area/service/bar)
+/area/service/kitchen)
 "aic" = (
 /obj/structure/disposalpipe/segment{
 	dir = 10
@@ -12791,7 +12794,7 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 8
 	},
-/obj/machinery/light/small{
+/obj/machinery/light{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -14877,9 +14880,9 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_y = -32
 	},
-/obj/effect/turf_decal/siding/thinplating/light{
-	color = "#B11111";
-	dir = 6
+/obj/machinery/vending/coffee,
+/obj/effect/turf_decal/siding/thinplating/dark{
+	dir = 9
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -45744,15 +45747,6 @@
 /obj/effect/turf_decal/tile/blue/full,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/genetics)
-"eGm" = (
-/obj/structure/table/reinforced/plastitanium,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "kitchen";
-	name = "kitchen shutters"
-	},
-/obj/item/clothing/head/hardhat/cakehat,
-/turf/open/floor/mineral/plastitanium,
-/area/service/kitchen)
 "eGz" = (
 /obj/item/reagent_containers/glass/bucket{
 	pixel_x = 12;
@@ -50522,9 +50516,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "hgO" = (
-/obj/structure/chair/sofa/left{
-	dir = 1;
-	color = "#404040"
+/obj/structure/table/wood/fancy/blackred,
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = 13;
+	pixel_y = 9
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
@@ -61767,11 +61762,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/evidence_room)
 "mSc" = (
-/obj/machinery/vending/coffee,
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 9
+/obj/structure/chair/sofa/left{
+	dir = 1;
+	color = "#404040"
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "mSq" = (
 /obj/structure/disposalpipe/segment,
@@ -69706,11 +69701,13 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "qZN" = (
-/obj/effect/turf_decal/siding/thinplating/light/corner{
-	color = "#B11111";
-	dir = 8
+/obj/structure/table/wood/fancy/blackred,
+/obj/item/reagent_containers/food/condiment/peppermill{
+	dir = 1;
+	pixel_x = -13;
+	pixel_y = 9
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "qZR" = (
 /turf/open/floor/plasteel/white/corner,
@@ -118039,7 +118036,7 @@ iSi
 aXk
 shI
 wdT
-hgO
+mSc
 paK
 xqq
 dqB
@@ -120094,7 +120091,7 @@ dYs
 aMu
 aXk
 qaY
-wdT
+hgO
 rLx
 bby
 xqq
@@ -120351,8 +120348,8 @@ dYs
 aMu
 aXk
 aXl
-upl
-bai
+qZN
+rLx
 bby
 xqq
 eAP
@@ -120607,9 +120604,9 @@ oaq
 spp
 aMu
 aXk
-qZN
-ukQ
-mSc
+mGD
+upl
+bai
 aJC
 iIq
 eAP
@@ -120864,7 +120861,7 @@ rJO
 aSI
 nfk
 eCh
-ahZ
+mGD
 aYK
 aJC
 aJC
@@ -122917,7 +122914,7 @@ xwq
 grY
 qmi
 aRH
-eGm
+ahZ
 ljs
 aVH
 aXn
