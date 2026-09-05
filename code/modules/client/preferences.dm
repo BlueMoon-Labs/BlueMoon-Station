@@ -95,7 +95,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
-	var/deadmin = NONE
+	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
@@ -5615,6 +5615,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("toggle_deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
 				//
 
 				if("disable_antag")

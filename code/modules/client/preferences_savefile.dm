@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	79
+#define SAVEFILE_VERSION_MAX	80
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -166,6 +166,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				continue
 			for(var/HK in KB.hotkey_keys)
 				LAZYADD(key_bindings[HK], KB.name)
+
+	if(current_version < 80)
+		ENABLE_BITFIELD(deadmin, DEADMIN_AUTODMENTOR)
+		if(CHECK_BITFIELD(mentor_toggles, (1<<6)))
+			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
+			DISABLE_BITFIELD(mentor_toggles, (1<<6))
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)

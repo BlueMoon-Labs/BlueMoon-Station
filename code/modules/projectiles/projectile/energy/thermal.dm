@@ -10,22 +10,34 @@
 	wound_bonus = 0
 	bare_wound_bonus = 10
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
+	var/temperature = 150
 
 /obj/item/projectile/energy/inferno/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
-	if(!ishuman(target))
-		return
 
-	if(HAS_TRAIT(target, TRAIT_RESISTCOLD))
-		return
+	if(iscarbon(target))
+		var/mob/living/carbon/hit_mob = target
+		if(HAS_TRAIT(hit_mob, TRAIT_RESISTCOLD))
+			return
+		var/thermal_protection = 1 - hit_mob.get_insulation_protection(hit_mob.bodytemperature + temperature)
+		hit_mob.adjust_bodytemperature((thermal_protection * temperature) + temperature)
 
-	var/mob/living/carbon/human/cold_target = target
-	var/how_cold_is_target = cold_target.bodytemperature
-	var/danger_zone = BODYTEMP_COLD_DAMAGE_LIMIT - 150
-	if(how_cold_is_target < danger_zone)
-		explosion(cold_target, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 2, flame_range = 3) //лучше отойти подальше
-		cold_target.bodytemperature = BODYTEMP_NORMAL //избегаем повторных взрывов, можно заодно и согреться
-		playsound(cold_target, 'sound/items/weapons/sear.ogg', 30, TRUE, -1)
+		var/how_cold_is_target = hit_mob.bodytemperature
+		var/danger_zone = BODYTEMP_COLD_DAMAGE_LIMIT - 150
+		if(how_cold_is_target < danger_zone)
+			explosion(hit_mob, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 2, flame_range = 3) //лучше отойти подальше
+			hit_mob.bodytemperature = BODYTEMP_NORMAL //избегаем повторных взрывов, можно заодно и согреться
+			playsound(hit_mob, 'sound/items/weapons/sear.ogg', 30, TRUE, -1)
+
+	else if(isliving(target))
+		var/mob/living/L = target
+		L.adjust_bodytemperature((1 - blocked) * temperature)
+
+	if(isobj(target))
+		var/obj/objectification = target
+		if(objectification.reagents)
+			var/datum/reagents/reagents = objectification.reagents
+			reagents?.expose_temperature(temperature)
 
 /obj/item/projectile/energy/inferno/emagged/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()
@@ -64,7 +76,7 @@
 		playsound(hot_target, 'sound/items/weapons/sonic_jackhammer.ogg', 30, TRUE, -1)
 
 /obj/item/projectile/energy/cryo/emagged
-	var/temperature = -100
+	var/temperature = -150
 
 /obj/item/projectile/energy/cryo/emagged/on_hit(atom/target, blocked = 0, pierce_hit)
 	. = ..()

@@ -107,6 +107,8 @@
 		new /obj/item/armorkit/blueshield(src)
 		new /obj/item/armorkit/blueshield/helmet(src)
 		new /obj/item/clothing/neck/cloak/blueshield(src)
+		new /obj/item/modsuit_modkit/blacksec(src)
+		new /obj/item/modsuit_modkit/souless(src)
 
 /obj/structure/closet/secure_closet/bridgesec
 	name = "bridge officer's locker"

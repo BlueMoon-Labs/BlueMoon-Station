@@ -1955,3 +1955,45 @@
 	new /obj/item/modkit/stuncutlass_kit(src)
 	new /obj/item/modkit/trenchknife_kit(src)
 	new /obj/item/modkit/bowie_kit(src)
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+
+/obj/item/modkit/ice_axe_kit
+	name = "Ice Axe Kit"
+	desc = "A modkit for making an stunbaton into a Ice Axe."
+	product = /obj/item/melee/baton/ice_axe
+	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
+
+/obj/item/modkit/ice_axe_kit/on_item_replace(obj/item/melee/baton/old_item, obj/item/melee/baton/ice_axe/modified_item)
+	if(!istype(old_item) || !istype(modified_item))
+		return
+	if(old_item.cell)
+		modified_item.cell = old_item.cell
+		old_item.cell = null
+		modified_item.cell.forceMove(modified_item)
+	modified_item.update_appearance()
+
+/obj/item/melee/baton/ice_axe
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Stun Ice Axe"
+	desc = "An antique ice axe with a massive blade that has completely lost its cutting properties and can only inflict crushing blows due to its weight. It has been crudely modified into a stun baton. Conductive busbars are haphazardly routed along the spine and the flat of the blade, while a high-voltage converter with a compact battery slot is embedded into the massive guard cup. An engraving reading 'Harr' is faint but visible on the handle."
+	item_state = "ice_axe"
+	icon_state = "ice_axe"
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/melee/baton/ice_axe/update_icon_state()
+	. = ..()
+	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
+
+/obj/item/melee/baton/ice_axe/get_worn_belt_overlay(icon_file)
+	return mutable_appearance(icon_file, "-[initial(icon_state)]")
+
+/obj/item/melee/baton/ice_axe/get_belt_overlay()
+	if(istype(loc, /obj/item/storage/belt/sabre))
+		return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "ice_axe")
+	return ..()
+
+////////////////////////////////////////////////////////////////////////////////////////

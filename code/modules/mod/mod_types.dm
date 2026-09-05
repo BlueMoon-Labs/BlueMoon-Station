@@ -44,7 +44,7 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/emp_shield,
-		/obj/item/mod/module/magboot,
+		/obj/item/mod/module/magboot/advanced,
 		/obj/item/mod/module/constructor,
 	)
 
@@ -76,6 +76,7 @@
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/health_analyzer,
+		/obj/item/mod/module/quick_carry/advanced
 		/*/obj/item/mod/module/injector,*/ //Injector module unported as of now.
 	)
 
@@ -87,6 +88,7 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/t_ray,
+		/obj/item/mod/module/reagent_scanner/advanced,
 	)
 
 /obj/item/mod/control/pre_equipped/security
@@ -96,6 +98,7 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
 	)
@@ -177,6 +180,7 @@
 		/obj/item/mod/module/rad_protection,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/tether,
+		/obj/item/mod/module/kinesis,
 	)
 
 /obj/item/mod/control/pre_equipped/responsory
@@ -320,6 +324,7 @@
 /obj/item/mod/control/pre_equipped/lustwish
 	slot_flags = ITEM_SLOT_BELT
 	theme = /datum/mod_theme/lustwish
+	custom_price = 500
 	initial_modules = list(
 		/obj/item/mod/module/nudity_lover,
 	)
@@ -364,6 +369,17 @@
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
 	)
+
+/obj/item/modsuit_modkit/souless
+	name = "Blueshield souless MODsuit theme Kit"
+	// icon_state = "souless"
+	new_theme = /datum/mod_theme/blueshied/souless
+	from_theme = /datum/mod_theme/blueshied
+
+/obj/item/modsuit_modkit/blacksec
+	name = "Blueshield blacksec MODsuit theme Kit"
+	new_theme = /datum/mod_theme/blueshied/blacksec
+	from_theme = /datum/mod_theme/blueshied
 
 /obj/item/choice_beacon/blueshied_suit
 	name = "blueshied Suit Beacon"

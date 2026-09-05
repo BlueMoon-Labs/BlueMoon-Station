@@ -137,6 +137,7 @@
 	.["has_mentor"] = !!user?.client?.is_mentor()
 	if(.["has_mentor"])
 		.["dementor_on_login"] = !!(mentor_toggles & DEMENTOR_ON_LOGIN)
+		.["dementor_on_deadmin"] = !!(deadmin & DEADMIN_AUTODMENTOR)
 
 	// Antag roles
 	var/list/antag_roles = list()
@@ -517,6 +518,8 @@
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
 			save_pref_var(dirty_var)
 			return TRUE
 
