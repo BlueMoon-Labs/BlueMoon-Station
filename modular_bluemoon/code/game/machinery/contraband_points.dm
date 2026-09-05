@@ -314,7 +314,7 @@
 		/obj/item/broken/inteq_sledgehammer = 3000,
 		/obj/item/broken/dualsaber = 5000,
 		/obj/item/broken/energy_sword = 2500,
-		/obj/item/broken/inteq_elite = 50000,
+		/obj/item/broken/inteq_elite = 5000,
 		/obj/item/broken/makarov = 500,
 		/obj/item/broken/c20r = 1500,
 		/obj/item/broken/bulldog = 1500,
