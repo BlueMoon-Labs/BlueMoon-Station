@@ -100,7 +100,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	var/area/A = loc
 	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
-		add_overlay(/obj/effect/fullbright)
+		add_overlay(fullbright_turf_overlay(src))
 
 	if(turf_flags & TURF_REQUIRES_ACTIVATION)
 		CALCULATE_ADJACENT_TURFS(src)

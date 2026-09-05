@@ -168,11 +168,7 @@
 	if(!SSmapping.max_plane_offset)
 		return // Односложный мир: смещений нет.
 
-	var/turf/lower
-	for(var/z in 1 to world.maxz)
-		if(GET_Z_PLANE_OFFSET(z))
-			lower = locate(1, 1, z)
-			break
+	var/turf/lower = multiz_test_lower_turf()
 	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
 
 	var/obj/item/multiz_test_early_mover/mover = allocate(/obj/item/multiz_test_early_mover, null, lower)
@@ -186,11 +182,7 @@
 	if(!SSmapping.max_plane_offset)
 		return // Односложный мир: смещений нет.
 
-	var/turf/lower
-	for(var/z in 1 to world.maxz)
-		if(GET_Z_PLANE_OFFSET(z))
-			lower = locate(1, 1, z)
-			break
+	var/turf/lower = multiz_test_lower_turf()
 	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
 
 	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, lower)

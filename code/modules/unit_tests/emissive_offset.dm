@@ -3,11 +3,13 @@
 #define EMISSIVE_OFFSET_TEST_ICON 'icons/effects/summon.dmi'
 #define EMISSIVE_OFFSET_TEST_STATE "sword"
 
-/// Первый турф этажа со смещением плоскостей; null в односложном мире.
-/proc/emissive_offset_find_lower_turf()
+/// Турф самого нижнего этажа стопки для проб переезда; null в односложном мире.
+/// Берётся внутри полосы перехода и на этаже без низа: угловой турф связанного уровня уносит прибывшего за край карты, а с открытого этажа он падает.
+/proc/multiz_test_lower_turf()
 	for(var/z in 1 to world.maxz)
-		if(GET_Z_PLANE_OFFSET(z))
-			return locate(1, 1, z)
+		if(!GET_Z_PLANE_OFFSET(z) || (z <= length(SSmapping.z_level_below) && SSmapping.z_level_below[z]))
+			continue
+		return locate(TRANSITIONEDGE + 2, TRANSITIONEDGE + 2, z)
 	return null
 
 /// Эмиссив со spokesman'ом ложится на EMISSIVE_PLANE этажа носителя.
@@ -17,7 +19,7 @@
 	if(!SSmapping.max_plane_offset)
 		return // Односложный мир: смещений нет.
 
-	var/turf/lower = emissive_offset_find_lower_turf()
+	var/turf/lower = multiz_test_lower_turf()
 	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
 
 	var/mutable_appearance/glow = emissive_appearance(EMISSIVE_OFFSET_TEST_ICON, EMISSIVE_OFFSET_TEST_STATE, offset_spokesman = lower)
@@ -33,7 +35,7 @@
 	if(!SSmapping.max_plane_offset)
 		return // Односложный мир: смещений нет.
 
-	var/turf/lower = emissive_offset_find_lower_turf()
+	var/turf/lower = multiz_test_lower_turf()
 	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
 
 	var/datum/summon_weapon_host/sword/host = new(null, 1, 7)

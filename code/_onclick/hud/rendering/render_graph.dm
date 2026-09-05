@@ -96,8 +96,8 @@
 #undef RENDER_GRAPH_MAX_HOPS
 
 /// Атомы z-уровня (и их оверлеи), чья плоскость лежит не на этаже уровня: ловит записи в plane в обход SET_PLANE_*.
-/// Возвращает "тип" -> число ("тип overlay" для оверлеев), первые max_samples примеров кладёт в samples.
-/proc/audit_z_level_planes(z, list/samples, max_samples = 20)
+/// Возвращает "тип" -> число ("тип overlay" для оверлеев), до max_samples примеров на тип кладёт в samples.
+/proc/audit_z_level_planes(z, list/samples, max_samples = 5)
 	var/list/by_type = list()
 	var/offset = GET_Z_PLANE_OFFSET(z)
 	for(var/turf/spot as anything in Z_TURFS(z))
@@ -117,13 +117,13 @@
 	var/expected = plane_expected_on_floor(thing.plane, offset)
 	if(!isnull(expected) && thing.plane != expected)
 		by_type["[thing.type]"] += 1
-		if(samples && length(samples) < max_samples)
-			samples += "[thing.type] в ([thing.x],[thing.y],[thing.z]): plane=[thing.plane], ждём [expected]"
+		if(samples && by_type["[thing.type]"] <= max_samples)
+			samples += "[thing.type] в ([thing.x],[thing.y],[thing.z]): plane=[thing.plane], ждём [expected], area=[get_area(thing)], loc=[thing.loc?.type]"
 	//Элемент overlays - appearance, а не mutable_appearance; plane через такую переменную читается.
 	for(var/mutable_appearance/overlay as anything in thing.overlays)
 		expected = plane_expected_on_floor(overlay.plane, offset)
 		if(isnull(expected) || overlay.plane == expected)
 			continue
 		by_type["[thing.type] overlay"] += 1
-		if(samples && length(samples) < max_samples)
-			samples += "оверлей [overlay.icon_state || overlay.icon] на [thing.type] в ([thing.x],[thing.y],[thing.z]): plane=[overlay.plane], ждём [expected]"
+		if(samples && by_type["[thing.type] overlay"] <= max_samples)
+			samples += "оверлей [overlay.icon_state || overlay.icon] на [thing.type] в ([thing.x],[thing.y],[thing.z]): plane=[overlay.plane], ждём [expected], area=[get_area(thing)]"

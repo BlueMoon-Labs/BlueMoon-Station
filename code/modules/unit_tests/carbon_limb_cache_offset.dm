@@ -21,20 +21,14 @@
 	TEST_ASSERT_NOTEQUAL(home_key, lower_key, "Ключ кэша конечностей обязан различать смещение плоскости носителя")
 	TEST_ASSERT_NOTEQUAL(lower_key, wearer.generate_icon_render_key(home_offset + 2), "Разные нижние этажи должны давать разные ключи")
 
-	var/lower_z = 0
-	for(var/z_index in 1 to length(SSmapping.z_level_to_plane_offset))
-		if(SSmapping.z_level_to_plane_offset[z_index])
-			lower_z = z_index
-			break
-	if(!lower_z)
+	var/turf/lower_floor = multiz_test_lower_turf()
+	if(!lower_floor)
 		log_test("\tНа карте нет стопки этажей, переезд носителя не проверяется")
 		return
-
-	var/turf/lower_floor = locate(1, 1, lower_z)
-	TEST_ASSERT_NOTNULL(lower_floor, "У нижнего этажа [lower_z] нет турфа в углу карты")
 	wearer.forceMove(lower_floor)
+	TEST_ASSERT_EQUAL(wearer.loc, lower_floor, "Носитель должен был переехать на нижний этаж")
 
-	var/lower_offset = GET_Z_PLANE_OFFSET(lower_z)
+	var/lower_offset = GET_Z_PLANE_OFFSET(lower_floor.z)
 	TEST_ASSERT_EQUAL(wearer.icon_render_key, wearer.generate_icon_render_key(lower_offset), "После переезда на нижний этаж ключ моба должен нести смещение нового этажа")
 	TEST_ASSERT_NOTEQUAL(wearer.icon_render_key, home_key, "Набор с верхнего этажа нельзя переиспользовать на нижнем")
 	var/list/lower_planes = limb_emissive_planes(wearer)
