@@ -1057,7 +1057,7 @@
 
 /obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
 	name = "The stylish one's tracksuit"
-	desc = "Dear guests has arrived."
+	desc = "Dear guests have arrived."
 	icon_state = "the_stylish_one_tracksuit"
 	item_state = "the_stylish_one_tracksuit"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
