@@ -36,6 +36,7 @@
 	turret_flags = TURRET_FLAG_SHOOT_ALL | TURRET_FLAG_SHOOT_ANOMALOUS
 	mode = TURRET_LETHAL
 	speed_process = TRUE
+	var/beep_timer
 
 /obj/machinery/porta_turret/hecu/check_should_process()
 	if (datum_flags & DF_ISPROCESSING)
@@ -50,12 +51,18 @@
 
 /obj/machinery/porta_turret/hecu/Initialize()
 	. = ..()
-	addtimer(CALLBACK(src, PROC_REF(beep)), 10)
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 10)
+
+/obj/machinery/porta_turret/hecu/Destroy()
+	deltimer(beep_timer)
+	return ..()
 
 /obj/machinery/porta_turret/hecu/proc/beep()
+	if(QDELETED(src))
+		return
 	if(on && !(machine_stat & (BROKEN | NOPOWER)))
 		playsound(src, 'modular_bluemoon/sound/weapons/mesa/turretping.ogg', 70, FALSE)
-	addtimer(CALLBACK(src, PROC_REF(beep)), 10)
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 10)
 
 /obj/machinery/porta_turret/hecu/assess_perp(mob/living/carbon/human/perp)
 	if(in_faction(perp))

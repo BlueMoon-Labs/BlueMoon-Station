@@ -472,6 +472,12 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"alX" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt7"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "ama" = (
 /obj/effect/festive/street/streetlineeast,
 /obj/structure/urbanismeffect{
@@ -533,6 +539,20 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"ank" = (
+/obj/structure/guncase{
+	anchored = 1
+	},
+/obj/item/gun/ballistic/automatic/m16a4/mesa{
+	pixel_x = -9;
+	pixel_y = 0
+	},
+/obj/item/gun/ballistic/automatic/m16a4/mesa{
+	pixel_x = -5;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "anw" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -1137,6 +1157,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"aAr" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "aAx" = (
 /turf/open/floor/grass/fakebasalt{
 	color = "#4cfbfb"
@@ -1400,6 +1429,10 @@
 	icon_state = "platingdmg2"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"aFb" = (
+/obj/effect/turf_decal/siding/wideplating/corner,
+/turf/open/floor/plasteel/white,
+/area/space)
 "aFh" = (
 /turf/closed/indestructible/fakedoor,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
@@ -1419,6 +1452,12 @@
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/hecuannouce)
+"aGy" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "aGA" = (
 /obj/structure/table/reinforced,
 /obj/item/phone{
@@ -1476,6 +1515,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"aHw" = (
+/obj/structure/stairs,
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/space)
 "aHG" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/warning,
 /turf/open/floor/plating/cobblestone,
@@ -1533,6 +1578,33 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"aKk" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/ammo_box/magazine/m50{
+	pixel_x = -6;
+	pixel_y = 0
+	},
+/obj/item/ammo_box/magazine/m50{
+	pixel_x = 9;
+	pixel_y = -1
+	},
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50{
+	pixel_x = -6;
+	pixel_y = 12
+	},
+/obj/item/ammo_box/magazine/m50{
+	pixel_x = 2;
+	pixel_y = 12
+	},
+/obj/item/ammo_box/magazine/m50{
+	pixel_x = 10;
+	pixel_y = 12
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "aKA" = (
 /obj/machinery/door/airlock/mining,
 /turf/open/floor/plasteel/rivets,
@@ -1710,6 +1782,33 @@
 "aNp" = (
 /obj/structure/urbanismpile,
 /turf/open/floor/plating/cobblestone/sidewalk,
+/area/space)
+"aNC" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "p90_mag";
+	name = "some kind of weapon (useless)";
+	pixel_x = 0;
+	pixel_y = 0
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "p90_mag";
+	name = "some kind of weapon (useless)";
+	pixel_x = 0;
+	pixel_y = -9
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "p90_mag";
+	name = "some kind of weapon (useless)";
+	pixel_x = 0;
+	pixel_y = 9
+	},
+/turf/open/floor/plasteel/dark,
 /area/space)
 "aNN" = (
 /obj/effect/turf_decal/siding/wideplating_new,
@@ -2408,6 +2507,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"bex" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "beC" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -2763,6 +2868,17 @@
 "blC" = (
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"blD" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/four{
+	pixel_x = 7;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "bmu" = (
 /obj/effect/turf_decal/weather/dirt,
 /obj/structure/rockpilemesa{
@@ -2968,6 +3084,15 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"bqI" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "bqT" = (
 /obj/structure/railing{
 	dir = 4
@@ -3114,6 +3239,10 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"btY" = (
+/obj/machinery/door/airlock/security,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "bum" = (
 /obj/effect/turf_decal/misc{
 	icon_state = "steel_decals_central5";
@@ -3386,6 +3515,15 @@
 /obj/effect/festive/street/streetlineeast,
 /obj/structure/barricade/sandbags,
 /turf/open/floor/plating/cobblestone,
+/area/space)
+"bBC" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
 /area/space)
 "bBQ" = (
 /obj/machinery/door/poddoor,
@@ -3675,6 +3813,15 @@
 	color = "#94b5b5"
 	},
 /area/awaymission/ihategordon/rocks)
+"bHU" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "train"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "bIF" = (
 /obj/structure/lattice,
 /obj/machinery/door/poddoor/shutters/preopen,
@@ -3761,6 +3908,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"bJu" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "bJG" = (
 /obj/structure/urbanismcars{
 	icon_state = "truck_notwreck";
@@ -4210,6 +4363,10 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"bRX" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "bSt" = (
 /obj/structure/railing{
 	dir = 1
@@ -4472,6 +4629,16 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/dorm_rooms)
+"bXS" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt3";
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "bYB" = (
 /obj/structure/frame/machine,
 /obj/structure/urbanismeffect{
@@ -4601,6 +4768,12 @@
 	name = "concrete"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"cba" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "cbk" = (
 /obj/structure/fence/door{
 	dir = 4
@@ -4837,6 +5010,9 @@
 	icon_state = "gib2"
 	},
 /turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/rocks)
+"chT" = (
+/turf/open/openspace,
 /area/awaymission/ihategordon/rocks)
 "cic" = (
 /turf/open/floor/plasteel/white,
@@ -5414,6 +5590,9 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/space)
+"ctS" = (
+/turf/open/openspace,
+/area/awaymission/ihategordon/outsideofmesa/hecu_camp)
 "ctU" = (
 /obj/effect/festive/street/streetlinenorth,
 /turf/open/floor/plating/cobblestone,
@@ -5523,6 +5702,15 @@
 /obj/structure/closet/l3closet/scientist,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"cwf" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 5
+	},
+/obj/machinery/computer{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "cwq" = (
 /obj/structure/flora/tree/jungle/small,
 /obj/structure/flora/ausbushes/sparsegrass,
@@ -6073,6 +6261,12 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"cFA" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "cGQ" = (
 /obj/structure/window/reinforced/spawner/north,
 /obj/structure/flora/junglebush/large{
@@ -6612,6 +6806,14 @@
 	color = "#ad91b5"
 	},
 /area/awaymission/ihategordon/custom_walking)
+"cSi" = (
+/obj/structure/urbanismeffect{
+	icon_state = "red_small";
+	pixel_x = 4;
+	pixel_y = 9
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "cSm" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 5
@@ -6804,6 +7006,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"cWQ" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "cWR" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -7748,6 +7959,18 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"dps" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "l";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 21;
+	pixel_y = -34;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "dpI" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -8002,6 +8225,15 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"dwo" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "dws" = (
 /obj/structure/urbanismbigcrate{
 	pixel_x = -8;
@@ -8086,6 +8318,14 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"dxA" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt2";
+	pixel_x = -8;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "dxT" = (
 /obj/machinery/computer{
 	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
@@ -8474,6 +8714,19 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"dDW" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 1
+	},
+/obj/structure/urbanismbigcrate{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "dDY" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -8623,6 +8876,14 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"dHV" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt3";
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "dHX" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -8761,6 +9022,13 @@
 /mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"dLs" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "dLB" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -9379,10 +9647,6 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "dWn" = (
-/obj/structure/window/reinforced{
-	dir = 1;
-	layer = 2.9
-	},
 /obj/structure/closet/emcloset{
 	pixel_x = 0;
 	pixel_y = 0
@@ -9391,6 +9655,11 @@
 /obj/effect/turf_decal/tile/bar/fourcorners,
 /obj/machinery/light/red{
 	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.8;
+	resistance_flags = 115
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_offices)
@@ -9496,12 +9765,11 @@
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/big_offices)
 "dYn" = (
-/obj/structure/fence{
-	dir = 2;
-	resistance_flags = 115
+/obj/structure/guncase{
+	anchored = 1
 	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/hecu_camp_hall)
+/turf/open/floor/plasteel/dark,
+/area/space)
 "dYw" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_small";
@@ -9775,6 +10043,12 @@
 	},
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"edJ" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 10
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "edN" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/fluff/broken_flooring{
@@ -9839,6 +10113,17 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"efp" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -8;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/six{
+	pixel_x = 7;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "eft" = (
 /obj/structure/urbanismmachines{
 	icon = 'icons/obj/machines/research.dmi';
@@ -10301,6 +10586,12 @@
 /obj/effect/festive/street/streetlinewest,
 /turf/open/floor/plating/ironsand,
 /area/space)
+"epN" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "eqa" = (
 /obj/effect/decal/cleanable/supplypod_rubble,
 /obj/structure/closet/supplypod{
@@ -10631,6 +10922,14 @@
 /obj/structure/window/reinforced/spawner,
 /turf/open/floor/grass,
 /area/awaymission/ihategordon/rocks)
+"eyy" = (
+/obj/structure/chair/office/light{
+	dir = 4;
+	pixel_x = -9;
+	pixel_y = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "ezk" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -10825,6 +11124,16 @@
 /obj/structure/salvage/computer,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"eCG" = (
+/obj/effect/turf_decal/siding/wideplating/corner{
+	dir = 4
+	},
+/obj/structure/chair/office/light{
+	dir = 1;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "eCZ" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -10966,6 +11275,14 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/rocks)
+"eGO" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "train"
+	},
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 1
+	},
+/area/awaymission/ihategordon/dorm_offices)
 "eGS" = (
 /turf/closed/wall/r_wall/blackmesa,
 /area/awaymission/ihategordon/sectorhsecoffices)
@@ -11166,16 +11483,17 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "eKR" = (
-/obj/structure/window/reinforced{
-	dir = 1;
-	layer = 2.9
-	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/tile/bar/fourcorners,
 /obj/structure/closet/firecloset{
 	pixel_x = 0;
 	pixel_y = 0
 	},
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/tile/bar/fourcorners,
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.8;
+	resistance_flags = 115
+	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_offices)
 "eKT" = (
@@ -11271,6 +11589,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"eMB" = (
+/obj/effect/turf_decal/siding/wideplating/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "eMD" = (
 /obj/effect/turf_decal/trimline/dark/filled/warning{
 	pixel_x = -23;
@@ -11640,6 +11964,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"eSA" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "eSE" = (
 /obj/item/clothing/suit/space/hev_suit,
 /obj/item/clothing/head/helmet/space/hev_suit{
@@ -12142,6 +12475,11 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"fbn" = (
+/obj/machinery/door/poddoor/shutters/preopen,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "fbw" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "pipes"
@@ -12207,6 +12545,15 @@
 	color = "#94b5b5"
 	},
 /area/awaymission/ihategordon/rocks)
+"fdI" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "fdL" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 4
@@ -12340,6 +12687,12 @@
 /obj/effect/turf_decal/trimline/dark/filled/line,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"ffW" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "fgk" = (
 /obj/structure/urbanismeffect{
 	icon = 'modular_bluemoon/icons/obj/urbanism/deadhuman.dmi';
@@ -12423,6 +12776,13 @@
 /obj/structure/table/glass,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"fgX" = (
+/obj/effect/turf_decal/siding/wideplating/corner,
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "fgY" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3";
@@ -12579,6 +12939,13 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/rocks)
+"fiT" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "fjg" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -12604,6 +12971,13 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/big_offices)
+"fjs" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "fjw" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -12724,6 +13098,12 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"fly" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 9
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "fmb" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -13970,6 +14350,14 @@
 /obj/effect/turf_decal/siding/wideplating/light,
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/ihategordon/dorm_rooms)
+"fLa" = (
+/obj/structure/urbanismmachines/server{
+	icon_state = "server2";
+	pixel_x = -1;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "fLj" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor4"
@@ -14070,6 +14458,19 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"fNF" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 10
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 10
+	},
+/obj/structure/urbanismbigcrate{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "fNT" = (
 /obj/effect/baseturf_helper/black_mesa,
 /turf/closed/mineral/mesarock{
@@ -14993,6 +15394,9 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"gie" = (
+/turf/open/openspace,
+/area/space)
 "gig" = (
 /obj/structure/flora/rock/pile{
 	color = "#f79668"
@@ -15098,6 +15502,35 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"glN" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F";
+	pixel_x = 0;
+	pixel_y = 0
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "spas";
+	name = "some kind of weapon (useless)";
+	pixel_x = -4;
+	pixel_y = 0
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "spas";
+	name = "some kind of weapon (useless)";
+	pixel_x = -5;
+	pixel_y = 9
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "spas";
+	name = "some kind of weapon (useless)";
+	pixel_x = -5;
+	pixel_y = -9
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "gmi" = (
 /obj/structure/fence{
 	dir = 8;
@@ -15554,6 +15987,16 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/space)
+"guQ" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
+	icon_state = "holograph_on";
+	pixel_x = -31;
+	pixel_y = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "gva" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 1
@@ -15868,6 +16311,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"gBi" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "gBm" = (
 /obj/structure/chair/office/light{
 	pixel_x = 4;
@@ -16164,6 +16613,15 @@
 	color = "#4cfbfb"
 	},
 /area/awaymission/ihategordon/custom_walking)
+"gHH" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "gHT" = (
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/rocks)
@@ -16508,6 +16966,10 @@
 /obj/machinery/door/poddoor,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/rocks)
+"gPy" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/turf/open/floor/plasteel/white,
+/area/space)
 "gPN" = (
 /obj/effect/turf_decal/siding/wideplating/terracotta/corner{
 	dir = 1
@@ -17337,6 +17799,14 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/hecuannouce)
+"heB" = (
+/obj/structure/urbanismeffect{
+	icon_state = "red_small";
+	pixel_x = 13;
+	pixel_y = 2
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "heM" = (
 /obj/structure/fence{
 	dir = 8;
@@ -17733,6 +18203,14 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
+"hnj" = (
+/obj/machinery/door/poddoor/shutters/preopen,
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "hnA" = (
 /obj/structure/closet/crate/urbanismcrate,
 /turf/open/floor/plating/cobblestone,
@@ -18494,6 +18972,26 @@
 /obj/effect/festive/street/streetlinenorth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"hDo" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "akr12secret_e";
+	name = "some kind of weapon (useless)";
+	pixel_x = -8;
+	pixel_y = -3
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "akr12secret_e";
+	name = "some kind of weapon (useless)";
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "hDr" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /obj/effect/turf_decal/trimline/dark/filled/corner,
@@ -18879,6 +19377,10 @@
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/space)
+"hLI" = (
+/obj/machinery/door/airlock/highsecurity,
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_offices)
 "hLW" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark/corner,
 /obj/effect/decal/cleanable/blood{
@@ -19083,6 +19585,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"hQz" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "hQA" = (
 /obj/structure/fence{
 	dir = 2;
@@ -20189,6 +20700,26 @@
 /obj/structure/barricade/wooden/crude,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/big_offices)
+"isd" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "m500";
+	name = "some kind of weapon (useless)";
+	pixel_x = -8;
+	pixel_y = 2
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "m500";
+	name = "some kind of weapon (useless)";
+	pixel_x = -8;
+	pixel_y = -7
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "isn" = (
 /obj/structure/barricade/wooden,
 /turf/open/floor/plasteel/rivets,
@@ -20277,6 +20808,13 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/rocks)
+"itz" = (
+/obj/structure/urbanismmachines/server{
+	pixel_x = 0;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "itI" = (
 /obj/effect/festive/street/streetlineeast,
 /obj/structure/fence/nocut{
@@ -20656,6 +21194,19 @@
 "iAl" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/warning,
 /turf/open/floor/plating/cobblestone,
+/area/space)
+"iAm" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/turf/open/floor/plasteel/dark,
 /area/space)
 "iAn" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
@@ -21153,6 +21704,20 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/big_offices)
+"iNh" = (
+/obj/structure/guncase{
+	anchored = 1
+	},
+/obj/item/gun/ballistic/shotgun/spas{
+	pixel_x = -8;
+	pixel_y = -1
+	},
+/obj/item/gun/ballistic/shotgun/spas{
+	pixel_x = -4;
+	pixel_y = -1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "iND" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -21968,6 +22533,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"jiP" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "jiS" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -22188,6 +22759,26 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"jno" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "akr12secret_e";
+	name = "some kind of weapon (useless)";
+	pixel_x = -7;
+	pixel_y = -1
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "akr12secret_e";
+	name = "some kind of weapon (useless)";
+	pixel_x = -5;
+	pixel_y = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "jnu" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/structure/table/reinforced,
@@ -22281,6 +22872,21 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"jpJ" = (
+/obj/machinery/door/window/brigdoor{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "jpM" = (
 /obj/structure/urbanismmachines/server{
 	icon_state = "server4"
@@ -23146,6 +23752,28 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"jFP" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/ammo_box/magazine/scar{
+	pixel_x = -4;
+	pixel_y = -8
+	},
+/obj/item/ammo_box/magazine/scar{
+	pixel_x = 6;
+	pixel_y = -7
+	},
+/obj/item/ammo_box/magazine/scar{
+	pixel_x = -5;
+	pixel_y = 2
+	},
+/obj/item/ammo_box/magazine/scar{
+	pixel_x = 5;
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "jFS" = (
 /obj/effect/turf_decal/trimline/dark/filled/warning{
 	dir = 1;
@@ -23452,12 +24080,11 @@
 	},
 /area/awaymission/ihategordon/sci_medbay)
 "jNf" = (
-/obj/structure/fence{
-	dir = 4;
-	resistance_flags = 115
+/turf/closed/wall/r_wall/blackmesa{
+	pixel_x = 0;
+	pixel_y = 0
 	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/sectorhsecoffices)
+/area/space)
 "jNk" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 8
@@ -23565,6 +24192,27 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/big_offices)
+"jOQ" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "p";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -10;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "e";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 2;
+	pixel_y = -33;
+	color = "#edee6b"
+	},
+/turf/closed/indestructible/fakedoor,
+/area/space)
 "jPm" = (
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
@@ -23900,6 +24548,14 @@
 	initial_temperature = 255.37
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"jWs" = (
+/obj/machinery/door/poddoor/shutters/preopen,
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "jWt" = (
 /obj/effect/turf_decal/siding/wideplating/terracotta,
 /obj/effect/turf_decal/stripes{
@@ -23944,11 +24600,30 @@
 	},
 /turf/open/floor/grass,
 /area/awaymission/ihategordon/big_offices)
+"jXo" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "!";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 0;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "jXp" = (
 /obj/effect/turf_decal/stripes/asteroid,
 /obj/effect/festive/street/streetlinesouth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"jXv" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 9
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/turf/open/floor/plasteel/white,
+/area/space)
 "jXN" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
@@ -24222,6 +24897,12 @@
 	},
 /turf/open/floor/plating/smooth/grass/urbanism,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"kdw" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "kdx" = (
 /obj/machinery/power/floodlight/urbanismlight/mesaoutside,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -25090,9 +25771,12 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "kyx" = (
-/obj/effect/festive/street/streetlinenorth,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/sectorhsecoffices)
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 6
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/turf/open/floor/plasteel/white,
+/area/space)
 "kyC" = (
 /obj/effect/turf_decal/siding/wideplating/dark/corner{
 	dir = 8
@@ -25867,6 +26551,13 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/rocks)
+"kOa" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 5
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/turf/open/floor/plasteel/white,
+/area/space)
 "kOo" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 5
@@ -26782,12 +27473,11 @@
 /turf/open/floor/plating/cobblestone,
 /area/space)
 "lii" = (
-/obj/structure/fence{
-	dir = 2;
-	resistance_flags = 115
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
 	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/sectorhsecoffices)
+/turf/open/floor/plasteel/white,
+/area/space)
 "liE" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -27154,6 +27844,10 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"lqw" = (
+/obj/structure/falsewall/reinforced,
+/turf/open/floor/plating,
+/area/space)
 "lqB" = (
 /obj/structure/urbanismhuge,
 /obj/effect/turf_decal/tile/dark/full{
@@ -27548,6 +28242,15 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
+"lAz" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wideplating/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "lAB" = (
 /turf/open/water/jungle{
 	density = 1;
@@ -27983,6 +28686,11 @@
 /obj/machinery/power/floodlight/lamppost/one,
 /obj/structure/marker_beacon/burgundy,
 /turf/open/floor/plating/cobblestone/sidewalk,
+/area/space)
+"lKK" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/turf/open/floor/plasteel/dark,
 /area/space)
 "lKO" = (
 /obj/machinery/power/floodlight/urbanismlight/mesamisc{
@@ -29315,9 +30023,13 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
 "mor" = (
-/obj/effect/festive/street/streetlinesouth,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/sectorhsecoffices)
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt6";
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "mov" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/effect/festive/street/streetlinesouth,
@@ -29437,6 +30149,12 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/hecuannouce)
+"mrC" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxcart"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "mrE" = (
 /obj/structure/urbanismbigcrate/alt,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -30798,6 +31516,9 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"mUr" = (
+/turf/closed/indestructible/fakedoor,
+/area/awaymission/ihategordon/dorm_offices)
 "mUt" = (
 /obj/effect/festive/street/streetlineeast,
 /obj/structure/railing{
@@ -30806,6 +31527,18 @@
 /obj/structure/fence/nocut,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"mUN" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
+	icon_state = "hologram_ship";
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "mVc" = (
 /obj/structure/flora/junglebush/large{
 	pixel_x = -21;
@@ -30844,6 +31577,36 @@
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"mWo" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "r";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -9;
+	pixel_y = -32;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "i";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 0;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "n";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 9;
+	pixel_y = -32;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "mWs" = (
 /obj/effect/turf_decal/trimline/dark/filled/line{
 	dir = 4
@@ -30968,6 +31731,12 @@
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"mZJ" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "mZM" = (
 /obj/effect/turf_decal/tile/dark/half{
 	dir = 1;
@@ -31892,6 +32661,10 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
+"nrW" = (
+/obj/machinery/door/airlock/grunge,
+/turf/open/floor/plating,
+/area/space)
 "nsw" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "floor7"
@@ -32060,6 +32833,17 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"nww" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/one{
+	pixel_x = 5;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "nwJ" = (
 /mob/living/simple_animal/hostile/headcrab/mesa,
 /turf/open/floor/plating/cobblestone,
@@ -32204,6 +32988,27 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/hecu_camp_bus_stop)
+"nAi" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "h";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 0;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "o";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 12;
+	pixel_y = -32;
+	color = "#edee6b"
+	},
+/turf/closed/wall/r_wall/blackmesa,
+/area/space)
 "nAF" = (
 /obj/structure/mesaflora{
 	icon_state = "flora5"
@@ -32658,6 +33463,18 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"nHg" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "?";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -1;
+	pixel_y = -2;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "nHv" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_medium";
@@ -35178,6 +35995,18 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
+"oJG" = (
+/obj/machinery/door/window/brigdoor{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "oJR" = (
 /obj/effect/turf_decal/weather/dirt,
 /obj/structure/rockpilemesa{
@@ -35253,6 +36082,16 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"oMt" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 9
+	},
+/obj/structure/urbanismbigcrate/alt,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "oMC" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -35657,6 +36496,14 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"oUO" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8;
+	pixel_x = 18;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "oUX" = (
 /obj/effect/turf_decal/siding/wideplating/light,
 /turf/open/floor/plasteel/showroomfloor,
@@ -35970,6 +36817,10 @@
 /obj/effect/decal/cleanable/acid_ooze,
 /turf/open/floor/plating/ironsand,
 /area/space)
+"pbV" = (
+/obj/structure/rack/shelf,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "pcj" = (
 /obj/structure/mesaflora{
 	icon_state = "flora6"
@@ -36191,8 +37042,14 @@
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
 "pgt" = (
-/turf/closed/wall/r_wall/blackmesa,
-/area/awaymission/ihategordon/outsideofmesa/hecu_camp)
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "pgw" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 1
@@ -36430,6 +37287,15 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"pmj" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 10
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "pmp" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 1
@@ -36661,6 +37527,12 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"prT" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "prW" = (
 /obj/effect/turf_decal/siding/wideplating/terracotta{
 	dir = 4
@@ -36683,6 +37555,20 @@
 	icon_state = "platingdmg1"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"psv" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/three{
+	pixel_x = 5;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark{
+	pixel_x = 0;
+	pixel_y = 0
+	},
+/area/space)
 "psx" = (
 /obj/machinery/light{
 	dir = 4
@@ -36776,6 +37662,15 @@
 /obj/machinery/light/floor,
 /turf/open/floor/grass,
 /area/awaymission/ihategordon/big_offices)
+"pus" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "puF" = (
 /obj/effect/turf_decal/trimline/dark_red/filled/warning{
 	dir = 1
@@ -37303,6 +38198,13 @@
 	},
 /turf/open/floor/plating/beach/sand,
 /area/awaymission/ihategordon/rocks)
+"pFq" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/effect/turf_decal/siding/wideplating/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "pFy" = (
 /obj/structure/lattice,
 /obj/structure/fence{
@@ -37419,6 +38321,20 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/hecu_camp_bus_stop)
+"pHw" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = 6;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "pHD" = (
 /obj/structure/window/reinforced/spawner/north,
 /obj/structure/mesaflora{
@@ -37548,6 +38464,18 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"pLy" = (
+/obj/machinery/door/window/brigdoor,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "pLB" = (
 /obj/effect/awaymission/blackmesa/difficulty_trigger/trigger4,
 /obj/effect/turf_decal/siding/wideplating/dark{
@@ -38148,6 +39076,12 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"qcr" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qcv" = (
 /obj/structure/railing{
 	dir = 1
@@ -38372,6 +39306,15 @@
 /obj/item/gun/ballistic/revolver/hlrsh12,
 /turf/open/indestructible,
 /area/awaymission/ihategordon/secret_rooms)
+"qig" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 6
+	},
+/obj/machinery/computer{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "qiD" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 9
@@ -38673,6 +39616,12 @@
 /obj/structure/closet/crate/bin,
 /turf/open/floor/plasteel/white,
 /area/awaymission/ihategordon/dorm_rooms/stillalive)
+"qqW" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qrl" = (
 /obj/machinery/conveyor{
 	dir = 4
@@ -38902,6 +39851,13 @@
 	pixel_y = 2
 	},
 /turf/open/floor/plasteel/rivets,
+/area/space)
+"quA" = (
+/obj/machinery/door/poddoor/shutters,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
 /area/space)
 "qvj" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -39323,6 +40279,10 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"qEw" = (
+/obj/structure/urbanismmachines/server,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qEH" = (
 /obj/machinery/computer{
 	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
@@ -39379,6 +40339,13 @@
 /obj/effect/festive/street/streetlinesouth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"qGs" = (
+/obj/machinery/door/poddoor/shutters,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qGu" = (
 /obj/effect/decal/cleanable/blood,
 /obj/effect/decal/cleanable/blood/tracks{
@@ -39569,6 +40536,10 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"qLO" = (
+/obj/machinery/door/poddoor/shutters,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qLS" = (
 /obj/structure/rockpilemesa{
 	icon_state = "silver3_depleted"
@@ -40136,6 +41107,15 @@
 	density = 1
 	},
 /area/awaymission/ihategordon/hecuannouce)
+"qXH" = (
+/obj/machinery/door/window/brigdoor,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/effect/turf_decal/siding/wideplating_new/dark,
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qYa" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt4";
@@ -40186,6 +41166,14 @@
 /obj/effect/festive/street/streetlinewest,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"qZt" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "pipes2";
+	pixel_x = 2;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "qZz" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone2_depleted"
@@ -40353,6 +41341,13 @@
 /obj/structure/girder,
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/dorm_rooms)
+"rfH" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "rfL" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -41997,15 +42992,16 @@
 /turf/open/indestructible,
 /area/awaymission/ihategordon/secret_rooms)
 "rOB" = (
-/obj/structure/window/reinforced{
-	dir = 1;
-	layer = 2.9
-	},
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/structure/closet/radiation,
 /obj/effect/turf_decal/tile/bar/fourcorners,
 /obj/machinery/light/red{
 	dir = 8
+	},
+/obj/structure/closet/radiation,
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.8;
+	resistance_flags = 115
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_offices)
@@ -42422,6 +43418,14 @@
 	color = "#5b7878"
 	},
 /area/awaymission/ihategordon/rocks)
+"rYq" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8;
+	pixel_x = 18;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "rYx" = (
 /obj/structure/lattice,
 /obj/structure/urbanismeffect{
@@ -42591,6 +43595,14 @@
 	color = "#94b5b5"
 	},
 /area/awaymission/ihategordon/rocks)
+"scv" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "pipes";
+	pixel_x = 0;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "scw" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 5
@@ -42861,6 +43873,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"sim" = (
+/obj/item/kirbyplants/hedge{
+	anchored = 1;
+	density = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "siA" = (
 /obj/structure/urbanismeffect{
 	density = 1;
@@ -43583,6 +44602,14 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"sxL" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt6";
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "syc" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1;
@@ -43708,6 +44735,15 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"sBt" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 4
+	},
+/obj/machinery/computer{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "sBD" = (
 /obj/effect/turf_decal/siding/wideplating/dark,
 /obj/effect/turf_decal/trimline/dark/filled/line,
@@ -43795,6 +44831,16 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"sEf" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/machinery/light,
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt2";
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "sEC" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -43811,6 +44857,28 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
+"sEK" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 3;
+	pixel_y = -4
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = -8;
+	pixel_y = 4
+	},
+/obj/item/ammo_box/magazine/m16/mesa{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "sEP" = (
 /obj/structure/lattice,
 /obj/structure/rockpilemesa{
@@ -43885,6 +44953,20 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/rocks)
+"sGz" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 6
+	},
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_x = 8;
+	pixel_y = 0
+	},
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_x = -9;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "sGM" = (
 /obj/effect/turf_decal/siding/wideplating/dark/corner{
 	dir = 4
@@ -44134,6 +45216,22 @@
 /obj/structure/closet/secure_closet/personal/cabinet,
 /turf/open/floor/wood,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"sKS" = (
+/obj/machinery/door/window/brigdoor{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner,
+/obj/machinery/door/poddoor/shutters/window{
+	resistance_flags = 115
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "sKY" = (
 /obj/structure/flora/ausbushes/stalkybush{
 	desc = "It can't be smoked.";
@@ -44209,6 +45307,13 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"sMG" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/machinery/light,
+/obj/structure/table/reinforced,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "sNd" = (
 /turf/closed/indestructible/fakeglass,
 /area/space)
@@ -44631,6 +45736,63 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"sUV" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "e";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -21;
+	pixel_y = -33;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "n";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 28;
+	pixel_y = -34;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "r";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 15;
+	pixel_y = -34;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "t";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -11;
+	pixel_y = -33;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "a";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 41;
+	pixel_y = -34;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "e";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 2;
+	pixel_y = -33;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "sVm" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 1
@@ -45108,6 +46270,24 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"tgb" = (
+/obj/structure/guncase{
+	anchored = 1
+	},
+/obj/item/gun/ballistic/automatic/pistol/deagle/hl{
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/obj/item/gun/ballistic/automatic/pistol/deagle/hl{
+	pixel_x = -6;
+	pixel_y = 9
+	},
+/obj/item/gun/ballistic/automatic/pistol/deagle/hl{
+	pixel_x = -6;
+	pixel_y = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "tgg" = (
 /obj/structure/table/reinforced,
 /obj/structure/urbanismeffect{
@@ -46047,6 +47227,10 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"tyi" = (
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "tyL" = (
 /obj/structure/urbanismbigcrate/alt{
 	icon_state = "boxalt2";
@@ -46114,6 +47298,16 @@
 	pixel_y = 1
 	},
 /turf/open/floor/plasteel/rivets,
+/area/space)
+"tzT" = (
+/obj/structure/guncase{
+	anchored = 1
+	},
+/obj/item/gun/ballistic/automatic/scar{
+	pixel_x = -10;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
 /area/space)
 "tzX" = (
 /obj/effect/turf_decal/stripes/white,
@@ -46506,6 +47700,10 @@
 	name = "concrete"
 	},
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
+"tKg" = (
+/obj/effect/turf_decal/siding/wideplating,
+/turf/open/floor/plasteel/white,
+/area/space)
 "tKj" = (
 /turf/open/floor/plasteel/stairs/medium{
 	dir = 8
@@ -46851,6 +48049,24 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/rocks)
+"tSD" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 6
+	},
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 1;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 9;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "tSF" = (
 /obj/structure/railing{
 	dir = 8
@@ -47380,6 +48596,17 @@
 	dir = 1
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"udr" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/two{
+	pixel_x = 6;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "udu" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -47965,6 +49192,15 @@
 /obj/effect/festive/street/streetlinesouth,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/hecu_camp_bus_stop)
+"uoW" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "upl" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /turf/open/floor/plating/cobblestone,
@@ -48003,6 +49239,14 @@
 /obj/structure/shipping_container/kahraman,
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/outsideofmesa)
+"uqt" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt4";
+	pixel_x = 10;
+	pixel_y = -1
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "uqE" = (
 /obj/structure/reagent_dispensers/urbanismbarrel/red,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -48242,12 +49486,40 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"uwx" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "uwH" = (
 /obj/effect/festive/street/streetlinesouth,
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"uwO" = (
+/obj/structure/fence/nocut{
+	resistance_flags = 115;
+	dir = 8;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "hugefence";
+	layer = 4.8;
+	pixel_x = 0;
+	pixel_y = -3
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8;
+	pixel_x = 18;
+	pixel_y = 0
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4;
+	pixel_x = -18;
+	pixel_y = 0
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "uwP" = (
 /obj/effect/turf_decal/siding/wideplating_new{
 	color = "#454545";
@@ -48387,6 +49659,13 @@
 /obj/structure/flora/biolumi/lamp,
 /turf/open/floor/grass/fairy/blue,
 /area/awaymission/ihategordon/custom_walking)
+"uBs" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 10
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/turf/open/floor/plasteel/white,
+/area/space)
 "uBx" = (
 /obj/structure/fence/door{
 	dir = 4
@@ -48521,6 +49800,15 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"uFd" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/structure/urbanismbigcrate{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "uFJ" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 5
@@ -48810,6 +50098,18 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/rocks)
+"uLI" = (
+/obj/structure/lattice,
+/obj/structure/urbanismmachines{
+	icon = 'goon/icons/obj/160x160.dmi';
+	icon_state = "shuttlecock_syndie";
+	color = "#777777";
+	dir = 8;
+	pixel_x = -25;
+	pixel_y = 18
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "uLO" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stonealt1"
@@ -49388,6 +50688,11 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
+"uZV" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "uZX" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/effect/turf_decal/siding/wideplating_new{
@@ -49895,6 +51200,17 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
+"vmG" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/five{
+	pixel_x = 6;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "vmX" = (
 /obj/effect/turf_decal/stripes,
 /obj/structure/fence/nocut{
@@ -50063,6 +51379,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"vqV" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "vrh" = (
 /obj/structure/barricade/wooden,
 /obj/structure/barricade/wooden/crude,
@@ -50413,6 +51735,15 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/rocks)
+"vzD" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "vAi" = (
 /obj/structure/fluff/paper/stack{
 	dir = 10;
@@ -50501,6 +51832,12 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
+"vBH" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 9
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "vCb" = (
 /obj/effect/festive/street/streetlinesouth,
 /obj/structure/urbanismcars{
@@ -50587,6 +51924,27 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/sepia,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
+"vDc" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "s";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 0;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "p";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 11;
+	pixel_y = -31;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "vDm" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/plating/ice/smooth{
@@ -51222,6 +52580,13 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"vQL" = (
+/obj/effect/turf_decal/siding/wideplating{
+	dir = 5
+	},
+/obj/machinery/photocopier,
+/turf/open/floor/plasteel/white,
+/area/space)
 "vQT" = (
 /obj/machinery/door/airlock/research,
 /obj/machinery/door/firedoor/window,
@@ -51240,6 +52605,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)
+"vQX" = (
+/obj/structure/barricade/urbanism/roadblock{
+	resistance_flags = 115;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism_structure32x64.dmi';
+	icon_state = "sand";
+	layer = 5.1
+	},
+/turf/open/floor/plating/ironsand,
+/area/awaymission/ihategordon/dorm_offices)
 "vQY" = (
 /obj/structure/mesaflora{
 	icon_state = "flora4"
@@ -51305,6 +52679,20 @@
 	},
 /turf/open/floor/plating/ironsand,
 /area/space)
+"vTq" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 6
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 6
+	},
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt1";
+	pixel_x = -2;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "vTu" = (
 /obj/structure/urbanismmounted{
 	icon_state = "wallmount";
@@ -51425,6 +52813,12 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/rocks)
+"vWt" = (
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/space)
 "vWO" = (
 /obj/effect/turf_decal/siding/wideplating/dark{
 	dir = 4
@@ -51936,6 +53330,14 @@
 	icon_state = "platingdmg1"
 	},
 /area/awaymission/ihategordon/rocks)
+"whd" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "pipes";
+	pixel_x = 0;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "whQ" = (
 /obj/structure/urbanismbigcrate,
 /turf/open/floor/plating/cobblestone/sidewalk,
@@ -52128,6 +53530,17 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"wmO" = (
+/obj/effect/turf_decal/vg_decals/numbers/zero{
+	pixel_x = -7;
+	pixel_y = -33
+	},
+/obj/effect/turf_decal/vg_decals/numbers/seven{
+	pixel_x = 6;
+	pixel_y = -33
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "wmS" = (
 /turf/closed/wall/r_wall/blackmesa,
 /area/space)
@@ -52156,6 +53569,28 @@
 	icon_state = "concrete2";
 	name = "concrete"
 	},
+/area/space)
+"wmY" = (
+/obj/structure/urbanismmachines{
+	icon = 'icons/obj/machines/shuttle_manipulator.dmi';
+	icon_state = "hologram_turnon";
+	pixel_x = -32;
+	pixel_y = -6
+	},
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
+"wnf" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 8
+	},
+/obj/item/kirbyplants/hedge{
+	anchored = 1;
+	density = 1
+	},
+/turf/open/floor/plasteel/dark,
 /area/space)
 "wns" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
@@ -52186,6 +53621,11 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/space)
+"wnQ" = (
+/turf/closed/indestructible/fakeglass{
+	opacity = 1
+	},
+/area/awaymission/ihategordon/dorm_offices)
 "wnU" = (
 /obj/structure/urbanismcars{
 	icon_state = "humvee";
@@ -52328,6 +53768,15 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"wqt" = (
+/obj/structure/urbanismeffect{
+	density = 1;
+	resistance_flags = 115;
+	pixel_x = 15;
+	pixel_y = 6
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "wqz" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -52828,6 +54277,13 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/rocks)
+"wBG" = (
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/effect/turf_decal/siding/wideplating_new/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "wBO" = (
 /obj/structure/window/reinforced/spawner/east,
 /turf/open/floor/grass,
@@ -52931,6 +54387,26 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"wER" = (
+/obj/structure/rack/shelf{
+	color = "#556B2F"
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "m870";
+	name = "some kind of weapon (useless)";
+	pixel_x = -7;
+	pixel_y = -5
+	},
+/obj/structure/urbanismmachines{
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi';
+	icon_state = "m870";
+	name = "some kind of weapon (useless)";
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "wEW" = (
 /obj/structure/urbanismeffect{
 	icon_state = "water_vapor";
@@ -53071,6 +54547,16 @@
 	},
 /turf/open/water/safe/electric,
 /area/awaymission/ihategordon/dorm_rooms)
+"wGI" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "wHd" = (
 /obj/structure/rockpilemesa{
 	icon_state = "iron1"
@@ -53588,6 +55074,14 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/hecu_camp_bus_stop)
+"wQW" = (
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt3";
+	pixel_x = -3;
+	pixel_y = 1
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "wRa" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stonealt8"
@@ -53946,6 +55440,27 @@
 /mob/living/simple_animal/hostile/infected,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
+"wZW" = (
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "g";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = -9;
+	pixel_y = -32;
+	color = "#edee6b"
+	},
+/obj/structure/decorative{
+	icon = 'icons/effects/crayondecal.dmi';
+	icon_state = "s";
+	anchored = 1;
+	name = "safehouse";
+	pixel_x = 4;
+	pixel_y = -33;
+	color = "#edee6b"
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "xap" = (
 /obj/structure/table/reinforced,
 /obj/machinery/door/poddoor/shutters/window,
@@ -53995,6 +55510,14 @@
 /obj/effect/festive/street/streetlinene,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
+"xbF" = (
+/obj/structure/urbanismeffect{
+	icon_state = "red_small";
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/dorm_offices)
 "xbG" = (
 /obj/structure/cable/orange{
 	icon_state = "5-6"
@@ -54090,6 +55613,13 @@
 /obj/effect/turf_decal/siding/wideplating_new,
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"xdw" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/machinery/door/poddoor,
+/turf/open/floor/plating,
+/area/awaymission/ihategordon/dorm_offices)
 "xdz" = (
 /obj/structure/chair/office/light{
 	dir = 8
@@ -55316,6 +56846,23 @@
 /obj/structure/urbanismbigcrate,
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"xLU" = (
+/obj/effect/turf_decal/siding/wideplating/dark{
+	dir = 5
+	},
+/obj/effect/turf_decal/trimline/dark/filled/line{
+	dir = 5
+	},
+/obj/structure/urbanismmounted{
+	pixel_x = 26;
+	pixel_y = 0
+	},
+/obj/structure/urbanismbigcrate{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "xLV" = (
 /obj/structure/urbanismeffect{
 	icon_state = "red_small";
@@ -55536,6 +57083,16 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/rocks)
+"xQy" = (
+/obj/effect/turf_decal/siding/wideplating/dark,
+/obj/effect/turf_decal/trimline/dark/filled/line,
+/obj/structure/urbanismbigcrate/alt{
+	icon_state = "boxalt4";
+	pixel_x = 3;
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/ihategordon/dorm_offices)
 "xQC" = (
 /obj/structure/barricade/urbanism,
 /turf/open/floor/plating/cobblestone,
@@ -55583,6 +57140,16 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/big_offices)
+"xRr" = (
+/obj/effect/turf_decal/siding/wideplating_new/dark/corner{
+	dir = 1
+	},
+/obj/item/kirbyplants/hedge{
+	anchored = 1;
+	density = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/space)
 "xRC" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "gib3-old"
@@ -57021,10 +58588,10 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -57277,12 +58844,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+dYn
+dYn
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -57534,12 +59101,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sEK
+bqI
+aAr
+jFP
+wmS
 wlp
 wlp
 wlp
@@ -57791,12 +59358,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+ank
+cWQ
+lKK
+tzT
+wmS
 wlp
 wlp
 wlp
@@ -58048,12 +59615,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+bJu
+cWQ
+lKK
+aKk
+wmS
 wlp
 wlp
 wlp
@@ -58305,12 +59872,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+iNh
+cWQ
+lKK
+tgb
+wmS
 wlp
 wlp
 wlp
@@ -58543,6 +60110,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -58557,17 +60129,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+iAm
+bBC
+gHH
+bJu
+wmS
 wlp
 wlp
 wlp
@@ -58800,6 +60367,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -58808,29 +60380,24 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+oJG
+oJG
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -59057,6 +60624,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -59064,31 +60636,26 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+isd
+dYn
+hDo
+dYn
+aNC
+wmS
+bRX
+mNO
+mNO
+bRX
+wmS
+isd
+dYn
+hDo
+dYn
+aNC
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -59314,6 +60881,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -59321,31 +60893,26 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dYn
+bqI
+eSA
+eSA
+eSA
+aAr
+jpJ
+mNO
+mNO
+mNO
+mNO
+qXH
+bqI
+eSA
+eSA
+eSA
+aAr
+dYn
+wmS
 wlp
 wlp
 wlp
@@ -59571,6 +61138,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -59578,31 +61150,26 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dYn
+bBC
+pgt
+pgt
+pgt
+gHH
+sKS
+pgt
+pgt
+pgt
+pgt
+pLy
+bBC
+pgt
+pgt
+pgt
+gHH
+dYn
+wmS
 wlp
 wlp
 wlp
@@ -59828,6 +61395,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -59835,31 +61407,26 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+wER
+dYn
+jno
+dYn
+glN
+wmS
+mNO
+mNO
+mNO
+mNO
+wmS
+wER
+dYn
+jno
+dYn
+glN
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -60085,6 +61652,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -60093,29 +61665,24 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+mNO
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -60342,6 +61909,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -60355,19 +61927,14 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wnf
+eSA
+eSA
+eSA
+eSA
+xRr
+wmS
 wlp
 wlp
 wlp
@@ -60599,42 +62166,42 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+btY
+wmS
+wmS
+btY
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -60856,42 +62423,42 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+mNO
+qLO
+pus
+epN
+epN
+epN
+epN
+epN
+epN
+epN
+epN
+epN
+epN
+epN
+jWs
+pus
+epN
+epN
+epN
+epN
+epN
+quA
+pus
+epN
+epN
+epN
+epN
+epN
+epN
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -61113,42 +62680,42 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+mNO
+qLO
+qcr
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+fbn
+qcr
+mNO
+mNO
+mNO
+mNO
+mNO
+qLO
+qcr
+mNO
+mNO
+mNO
+mNO
+mNO
+mNO
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -61370,42 +62937,42 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+mNO
+qLO
+uoW
+prT
+prT
+prT
+prT
+prT
+prT
+prT
+prT
+prT
+prT
+prT
+hnj
+uoW
+prT
+prT
+prT
+prT
+prT
+qGs
+uoW
+prT
+prT
+prT
+prT
+prT
+prT
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -61627,42 +63194,42 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+nrW
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+btY
+wmS
+wmS
+btY
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -61884,33 +63451,33 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
 wlp
 wlp
 wlp
+wmS
+mbL
+wmS
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+sim
+fly
+uwx
+uwx
+edJ
+sim
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -62141,33 +63708,33 @@ wlp
 wlp
 wlp
 wlp
+wmS
+qLO
+qLO
+qLO
+wmS
 wlp
 wlp
 wlp
 wlp
 wlp
 wlp
+wmS
+mbL
+wmS
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sim
+fly
+pFq
+gBi
+gBi
+lAz
+pmj
+sim
+wmS
 wlp
 wlp
 wlp
@@ -62398,34 +63965,34 @@ wlp
 wlp
 wlp
 wlp
+wmS
+ffW
+ffW
+pHw
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+mbL
+wmS
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+jXv
+pFq
+jiP
+dLs
+wBG
+bex
+lAz
+uBs
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -62655,34 +64222,34 @@ wlp
 wlp
 wlp
 wlp
+aat
+mNO
+mNO
+mNO
+aat
+mbL
+mbL
+mbL
+mbL
+mbL
+mbL
+mbL
+mbL
+wmS
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+qEw
+mZJ
+gPy
+dLs
+mUN
+qqW
+wBG
+cFA
+tKg
+itz
+wmS
 wlp
 wlp
 wlp
@@ -62912,34 +64479,34 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+lqw
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+qEw
+mZJ
+gPy
+fjs
+wmY
+guQ
+fiT
+cFA
+tKg
+fLa
+wmS
 wlp
 wlp
 wlp
@@ -63169,34 +64736,34 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+mrC
+mrC
+pbV
+mNO
+pbV
+tyi
+wmS
 wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+qEw
+mZJ
+aGy
+vqV
+fjs
+fiT
+vBH
+lii
+tKg
+fLa
+wmS
 wlp
 wlp
 wlp
@@ -63426,34 +64993,34 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
+nww
+wmS
+sxL
+tyi
+pbV
+mNO
+pbV
+tyi
+wmS
 wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+vQL
+eCG
+aGy
+cba
+cba
+lii
+fgX
+sGz
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -63683,33 +65250,33 @@ wlp
 wlp
 wlp
 wlp
+aat
+mNO
+mNO
+mNO
+aat
+mNO
+mNO
+mNO
+nHg
+mNO
+alX
+wmS
 wlp
 wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+cwf
+eMB
+vWt
+eyy
+aFb
+qig
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -63940,32 +65507,32 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+sUV
+jXo
+lqw
+mNO
+mor
+pbV
+tyi
+pbV
+mrC
+wmS
 wlp
 wlp
 wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+kOa
+sBt
+sBt
+kyx
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -64197,6 +65764,18 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+dps
+mNO
+wmS
+alX
+mrC
+pbV
+qZt
+pbV
+mrC
+wmS
 wlp
 wlp
 wlp
@@ -64204,24 +65783,12 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -64454,18 +66021,18 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+udr
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -64711,18 +66278,18 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
+oPB
+oPB
+oPB
+oPB
+oPB
+oPB
+aat
 wlp
 wlp
 wlp
@@ -64968,18 +66535,18 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -65225,11 +66792,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -65482,11 +67049,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+psv
+jNf
 wlp
 wlp
 wlp
@@ -65739,11 +67306,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -65996,11 +67563,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+vDc
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -66253,11 +67820,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mWo
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -66510,11 +68077,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+wZW
+mNO
+blD
+wmS
 wlp
 wlp
 wlp
@@ -66767,11 +68334,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -67024,11 +68591,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -67281,11 +68848,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+lqw
 wlp
 wlp
 wlp
@@ -67538,11 +69105,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+vmG
+wmS
 wlp
 wlp
 wlp
@@ -67795,11 +69362,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -68052,11 +69619,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -68309,11 +69876,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -68566,11 +70133,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+nAi
+mNO
+mNO
+efp
+wmS
 wlp
 wlp
 wlp
@@ -68823,11 +70390,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+jOQ
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -69080,11 +70647,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -69337,11 +70904,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -69594,11 +71161,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+wmO
+wmS
 wlp
 wlp
 wlp
@@ -69851,11 +71418,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -70108,15 +71675,15 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -70365,15 +71932,15 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+mNO
+mNO
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -70622,15 +72189,15 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+mNO
+mNO
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -70879,15 +72446,15 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+mNO
+mNO
+qQL
+aHw
+wmS
 wlp
 wlp
 wlp
@@ -71136,15 +72703,15 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
+wmS
+wmS
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -71393,11 +72960,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+uNq
+wmS
 wlp
 wlp
 wlp
@@ -71650,11 +73217,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+uNq
+wmS
 wlp
 wlp
 wlp
@@ -71907,11 +73474,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+lqw
+aat
+wmS
+wmS
 wlp
 wlp
 wlp
@@ -72164,11 +73731,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -72421,11 +73988,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -72678,11 +74245,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -72935,11 +74502,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -73192,11 +74759,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -73449,11 +75016,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -73706,11 +75273,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -73963,11 +75530,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -74220,11 +75787,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -74477,11 +76044,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -74734,11 +76301,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -74991,11 +76558,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -75248,11 +76815,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -75505,11 +77072,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -75762,11 +77329,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -76019,11 +77586,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -76276,11 +77843,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -76533,11 +78100,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -76790,11 +78357,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -77047,11 +78614,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -77304,11 +78871,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -77561,11 +79128,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -77818,11 +79385,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -78075,11 +79642,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -78332,11 +79899,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -78589,11 +80156,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -78846,11 +80413,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -79103,11 +80670,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -79360,11 +80927,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -79617,11 +81184,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -79874,11 +81441,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -80131,11 +81698,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -80388,11 +81955,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -80645,11 +82212,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -80902,11 +82469,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -81159,11 +82726,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -81416,11 +82983,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -81673,11 +83240,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -81930,11 +83497,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -82187,11 +83754,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -82444,11 +84011,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -82701,11 +84268,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -82958,11 +84525,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -83215,11 +84782,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -83472,11 +85039,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -83729,11 +85296,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -83986,11 +85553,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -84243,11 +85810,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -84500,11 +86067,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -84757,11 +86324,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -85014,11 +86581,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -85271,11 +86838,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -85528,11 +87095,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -85785,11 +87352,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -86042,11 +87609,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -86299,11 +87866,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -86556,11 +88123,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -86813,11 +88380,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -87070,11 +88637,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -87327,11 +88894,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -87584,11 +89151,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -87841,11 +89408,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -88098,11 +89665,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -88355,11 +89922,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -88612,11 +90179,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -88869,11 +90436,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -89126,11 +90693,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -89383,11 +90950,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -89640,11 +91207,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -89897,11 +91464,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -90154,11 +91721,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -90411,11 +91978,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -90668,11 +92235,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -90925,11 +92492,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -91182,11 +92749,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -91439,11 +93006,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -91696,11 +93263,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -91953,11 +93520,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -92210,11 +93777,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -92467,11 +94034,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -92724,11 +94291,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -92981,11 +94548,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -93238,11 +94805,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -93495,11 +95062,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -93752,11 +95319,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -94009,11 +95576,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -94266,11 +95833,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -94523,11 +96090,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -94780,11 +96347,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -95037,11 +96604,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -95294,11 +96861,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -95551,11 +97118,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -95808,11 +97375,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -96065,11 +97632,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -96322,11 +97889,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -96579,11 +98146,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -96836,11 +98403,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -97093,11 +98660,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -97350,11 +98917,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -97607,11 +99174,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -97864,11 +99431,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -98121,11 +99688,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -98378,11 +99945,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -98635,11 +100202,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -98892,11 +100459,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -99149,11 +100716,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -99406,11 +100973,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -99663,11 +101230,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -99920,11 +101487,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -100177,11 +101744,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -100434,11 +102001,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -100691,11 +102258,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -100948,11 +102515,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -101205,11 +102772,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -101462,11 +103029,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -101719,11 +103286,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -101976,11 +103543,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -102233,11 +103800,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -102490,11 +104057,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -102747,11 +104314,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -103004,11 +104571,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -103261,11 +104828,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -103518,11 +105085,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -103775,11 +105342,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -104032,11 +105599,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -104289,11 +105856,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -104546,11 +106113,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -104803,11 +106370,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -105060,11 +106627,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -105317,11 +106884,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -105574,11 +107141,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -105831,11 +107398,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -106088,11 +107655,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -106345,11 +107912,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -106602,11 +108169,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -106859,11 +108426,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -107116,11 +108683,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -107373,11 +108940,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -107630,11 +109197,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -107887,11 +109454,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -108144,11 +109711,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -108401,11 +109968,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -108658,11 +110225,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -108915,11 +110482,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -109172,11 +110739,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -109429,11 +110996,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -109686,11 +111253,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -109943,11 +111510,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -110200,11 +111767,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -110457,11 +112024,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -110714,11 +112281,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -110971,11 +112538,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -111228,11 +112795,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -111485,11 +113052,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -111742,11 +113309,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -111999,11 +113566,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -112256,11 +113823,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -112513,11 +114080,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -112770,11 +114337,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -113027,11 +114594,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -113284,11 +114851,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -113541,11 +115108,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -113798,11 +115365,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -114055,11 +115622,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -114312,11 +115879,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -114569,11 +116136,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -114826,11 +116393,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -115083,11 +116650,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -115340,11 +116907,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -115597,11 +117164,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -115854,11 +117421,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -116111,11 +117678,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -116368,11 +117935,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -116625,11 +118192,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -116882,11 +118449,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+sUV
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -117139,11 +118706,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+dps
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -117396,11 +118963,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -117653,11 +119220,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -117910,11 +119477,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -118167,11 +119734,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -118424,11 +119991,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+jNf
 wlp
 wlp
 wlp
@@ -118681,11 +120248,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+aat
+mNO
+mNO
+mNO
+aat
 wlp
 wlp
 wlp
@@ -118938,11 +120505,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -119195,11 +120762,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -119452,11 +121019,11 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-wlp
-wlp
+wmS
+mNO
+mNO
+mNO
+wmS
 wlp
 wlp
 wlp
@@ -119709,11 +121276,11 @@ wlp
 wlp
 wlp
 wlp
+aat
+mNO
+mNO
 wlp
-wlp
-wlp
-wlp
-wlp
+aat
 wlp
 wlp
 wlp
@@ -119966,11 +121533,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
 wlp
-wlp
-wlp
-wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -120223,11 +121790,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
+mNO
+mNO
 wlp
-wlp
-wlp
-wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -120480,11 +122047,11 @@ wlp
 wlp
 wlp
 wlp
+wmS
 wlp
 wlp
 wlp
-wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -120741,7 +122308,7 @@ wlp
 wlp
 wlp
 wlp
-wlp
+aat
 wlp
 wlp
 wlp
@@ -120998,7 +122565,7 @@ wlp
 wlp
 wlp
 wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -121255,7 +122822,7 @@ wlp
 wlp
 wlp
 wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -121512,7 +123079,7 @@ wlp
 wlp
 wlp
 wlp
-wlp
+wmS
 wlp
 wlp
 wlp
@@ -122831,12 +124398,12 @@ drY
 drY
 drY
 drY
-drY
-drY
-drY
-drY
-drY
-drY
+nUr
+nUr
+nUr
+nUr
+nUr
+nUr
 nUr
 nUr
 nUr
@@ -123088,12 +124655,12 @@ drY
 drY
 drY
 drY
-drY
-drY
-drY
-drY
-drY
-drY
+nUr
+nUr
+nUr
+nUr
+nUr
+nUr
 nUr
 nUr
 nUr
@@ -123345,12 +124912,12 @@ dfq
 drY
 drY
 drY
-drY
-drY
-drY
-drY
-drY
-drY
+nUr
+nUr
+nUr
+nUr
+nUr
+nUr
 nUr
 nUr
 nUr
@@ -125397,8 +126964,8 @@ drY
 drY
 drY
 drY
-drY
-dfq
+chT
+ctS
 dfq
 drY
 wxf
@@ -125654,8 +127221,8 @@ dfq
 dfq
 dfq
 dfq
-dfq
-dfq
+ctS
+ctS
 dfq
 dfq
 wxf
@@ -125911,8 +127478,8 @@ dfq
 dfq
 dfq
 dfq
-dfq
-dfq
+ctS
+ctS
 dfq
 dfq
 wxf
@@ -129972,36 +131539,36 @@ dfq
 dfq
 dfq
 dfq
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 jix
 vch
 vch
 vch
-dle
-dle
-dle
-dle
-dle
-pgt
-pgt
-pgt
-pgt
-pgt
-pgt
-pgt
-pgt
+vch
+vch
+vch
+vch
+vch
+dfq
+dfq
+dfq
+dfq
+dfq
+dfq
+dfq
+dfq
+dfq
 dfq
 qxA
 qxA
 qxA
-dfq
 dfq
 dfq
 dfq
@@ -130229,19 +131796,19 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-eGS
-lii
-lii
-lii
-dYn
-dYn
-dYn
-dle
+jix
+jix
+jix
+jix
+jix
+jix
+jix
+jix
+jix
+vch
+vch
+vch
+vch
 vch
 vch
 vch
@@ -130253,12 +131820,12 @@ dfq
 dfq
 dfq
 dfq
-pgt
+dfq
+dfq
 dfq
 qxA
 qxA
 qxA
-dfq
 dfq
 dfq
 drY
@@ -130486,23 +132053,23 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 jix
 vch
 vch
 vch
-dle
 vch
 vch
 vch
 vch
+vch
 dfq
 dfq
 dfq
@@ -130510,12 +132077,12 @@ dfq
 dfq
 dfq
 dfq
-pgt
+dfq
+dfq
 dfq
 qxA
 qxA
 qxA
-dfq
 dfq
 dfq
 drY
@@ -130743,23 +132310,23 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 jix
 vch
 vch
 vch
-dle
 vch
 vch
 vch
 vch
+vch
 dfq
 dfq
 dfq
@@ -130767,12 +132334,12 @@ dfq
 dfq
 dfq
 dfq
-pgt
+dfq
+dfq
 dfq
 qxA
 qxA
 qxA
-dfq
 drY
 drY
 drY
@@ -131000,23 +132567,23 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 jix
 vch
 vch
 vch
-dle
 vch
 vch
 vch
 vch
+vch
 dfq
 dfq
 dfq
@@ -131024,12 +132591,12 @@ dfq
 dfq
 dfq
 dfq
-pgt
 dfq
-jAe
-jAe
-jAe
+dfq
 drY
+jAe
+jAe
+jAe
 drY
 drY
 drY
@@ -131257,19 +132824,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -131281,12 +132847,13 @@ vch
 vch
 vch
 vch
-dle
+vch
+vch
+vch
 vch
 fWh
 fWh
 fWh
-vch
 vch
 vch
 vch
@@ -131514,19 +133081,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -131538,12 +133104,13 @@ vch
 vch
 vch
 vch
-dle
+vch
+vch
+vch
 vch
 fWh
 fWh
 fWh
-vch
 vch
 vch
 vch
@@ -131771,19 +133338,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -131795,12 +133361,13 @@ vch
 vch
 vch
 vch
-dle
+vch
+vch
+vch
 vch
 fWh
 fWh
 fWh
-vch
 vch
 vch
 vch
@@ -132028,19 +133595,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -132052,12 +133618,13 @@ vch
 vch
 vch
 vch
-dle
+vch
+vch
+vch
 vch
 fWh
 fWh
 fWh
-vch
 vch
 vch
 vch
@@ -132285,19 +133852,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -132309,12 +133875,13 @@ vch
 vch
 vch
 vch
-dle
+vch
+vch
+vch
 vch
 fWh
 fWh
 fWh
-vch
 vch
 vch
 vch
@@ -132542,19 +134109,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -132566,12 +134132,13 @@ vch
 vch
 vch
 vch
-dle
 vch
-cxy
-cxy
-cxy
+vch
+vch
 gjb
+cxy
+cxy
+cxy
 gjb
 gjb
 gjb
@@ -132799,19 +134366,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -132823,12 +134389,13 @@ vch
 vch
 vch
 vch
-dle
 vch
-cxy
-cxy
-cxy
+vch
+vch
 gjb
+cxy
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -133056,19 +134623,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -133080,19 +134646,20 @@ vch
 vch
 vch
 vch
-dle
 vch
-cxy
-cxy
-cxy
+vch
+vch
 gjb
+cxy
+cxy
+cxy
 gjb
 fWv
 gjb
 gjb
 gjb
 gjb
-fWv
+uLI
 gjb
 cxy
 cxy
@@ -133313,19 +134880,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -133337,12 +134903,13 @@ vch
 vch
 vch
 vch
-dle
 vch
-cxy
-cxy
-cxy
+vch
+vch
 gjb
+cxy
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -133570,19 +135137,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -133594,18 +135160,19 @@ vch
 vch
 vch
 vch
-dle
 vch
-cxy
-cxy
-cxy
+vch
+vch
 gjb
+cxy
+cxy
+cxy
 gjb
 fWv
+lDK
 gjb
 gjb
-gjb
-gjb
+lDK
 fWv
 gjb
 cxy
@@ -133827,19 +135394,18 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
 vch
 vch
 vch
@@ -133851,19 +135417,20 @@ vch
 vch
 vch
 vch
-dle
 vch
+vch
+vch
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
-fWv
-gjb
-gjb
-gjb
-gjb
-fWv
+lDK
+fdI
+rYq
+oUO
+uZV
+lDK
 gjb
 cxy
 cxy
@@ -134084,43 +135651,43 @@ nUr
 nUr
 nUr
 drY
-jNf
-kyx
-gIj
-gIj
-mor
-jNf
+jix
+jix
+jix
+jix
+jix
+jix
 jix
 jix
 vch
 vch
 vch
 vch
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
-dle
 vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+vch
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
-fWv
-gjb
-gjb
-gjb
-gjb
-fWv
+wnQ
+fdI
+fMI
+fMI
+uZV
+wnQ
 gjb
 cxy
 cxy
@@ -134367,20 +135934,20 @@ rbF
 rbF
 rbF
 rbF
-cxy
-cxy
-cxy
-gjb
-gjb
-fWv
-gjb
-gjb
-gjb
-gjb
-fWv
 gjb
 cxy
 cxy
+cxy
+gjb
+wnQ
+wGI
+hQz
+hQz
+tSD
+wnQ
+vQX
+uwO
+vQX
 wAI
 wAI
 mEL
@@ -134624,15 +136191,15 @@ rbF
 rbF
 rbF
 rbF
-cxy
-cxy
-cxy
-gjb
-gjb
+vQX
+uwO
+uwO
+uwO
+vQX
 lDK
 lDK
-lDK
-lDK
+mUr
+mUr
 lDK
 lDK
 gjb
@@ -134881,16 +136448,16 @@ rbF
 rbF
 rbF
 rbF
-cxy
-cxy
-cxy
 gjb
+cxy
+cxy
+cxy
 gjb
 lDK
-pdn
-pdn
-pdn
-pdn
+oMt
+vzD
+vzD
+fNF
 lDK
 gjb
 cxy
@@ -135137,18 +136704,18 @@ rbF
 rbF
 rbF
 rbF
-rbF
+dle
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+eGO
+fdI
+fMI
+fMI
+uZV
 lDK
-pdn
-pdn
-pdn
-pdn
-vXY
 gjb
 cxy
 cxy
@@ -135394,18 +136961,18 @@ rbF
 rbF
 rbF
 rbF
-rbF
+dle
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+eGO
+fdI
+fMI
+fMI
+uZV
 lDK
-pdn
-pdn
-pdn
-pdn
-vXY
 gjb
 cxy
 cxy
@@ -135649,19 +137216,19 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
-cxy
-cxy
-cxy
+wmS
+wmS
+wmS
 gjb
+cxy
+cxy
+cxy
 gjb
 lDK
-pdn
-pdn
-pdn
-pdn
+dDW
+fMI
+fMI
+kdw
 lDK
 gjb
 cxy
@@ -135906,20 +137473,20 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
+wmS
+gie
+gie
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+xdw
+fdI
+fMI
+fMI
+sMG
 lDK
-pdn
-pdn
-pdn
-pdn
-oVH
 gjb
 cxy
 cxy
@@ -136163,20 +137730,20 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
+wmS
+gie
+gie
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+xdw
+fdI
+fMI
+fMI
+kdw
 lDK
-pdn
-pdn
-pdn
-pdn
-oVH
 gjb
 cxy
 cxy
@@ -136420,20 +137987,20 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-wlp
+wmS
+gie
+gie
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+xdw
+fdI
+fMI
+fMI
+xQy
 lDK
-pdn
-pdn
-pdn
-pdn
-oVH
 gjb
 cxy
 cxy
@@ -136677,20 +138244,20 @@ wlp
 wlp
 wlp
 wlp
-wlp
-wlp
-nUr
+wmS
+wmS
+sFP
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+xdw
+fdI
+fMI
+fMI
+sEf
 lDK
-pdn
-pdn
-pdn
-pdn
-oVH
 gjb
 cxy
 cxy
@@ -136936,17 +138503,17 @@ nUr
 nUr
 nUr
 nUr
-nUr
-cxy
-cxy
-cxy
+sFP
 gjb
+cxy
+cxy
+cxy
 gjb
 lDK
-pdn
-pdn
-pdn
-pdn
+fdI
+fMI
+fMI
+uFd
 lDK
 gjb
 cxy
@@ -137193,18 +138760,18 @@ nUr
 nUr
 nUr
 nUr
-nUr
+sFP
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+eGO
+fdI
+fMI
+fMI
+bHU
 lDK
-pdn
-pdn
-pdn
-pdn
-vXY
 gjb
 cxy
 cxy
@@ -137451,17 +139018,17 @@ nUr
 nUr
 nUr
 nUr
+gjb
 cxy
 cxy
 cxy
 gjb
-gjb
+eGO
+fdI
+fMI
+fMI
+bXS
 lDK
-pdn
-pdn
-pdn
-pdn
-vXY
 gjb
 cxy
 cxy
@@ -137707,17 +139274,17 @@ nUr
 nUr
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
-gjb
-gjb
+sFP
+vQX
+uwO
+uwO
+uwO
+vQX
 lDK
-pdn
-pdn
-pdn
-pdn
+xLU
+hQz
+hQz
+vTq
 lDK
 gjb
 cxy
@@ -137962,18 +139529,18 @@ wdE
 wdE
 sFP
 sFP
-nUr
-nUr
-nUr
-fWz
-fWz
+sFP
+sFP
+sFP
+gjb
+cxy
+cxy
 cxy
 gjb
-gjb
 lDK
 lDK
-lDK
-lDK
+hLI
+hLI
 lDK
 lDK
 gjb
@@ -138221,11 +139788,11 @@ wSX
 sFP
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
+sFP
 gjb
+cxy
+cxy
+cxy
 gjb
 aGC
 rOB
@@ -138478,11 +140045,11 @@ agG
 sFP
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
+sFP
 gjb
+cxy
+cxy
+cxy
 gjb
 aGC
 eKR
@@ -138735,11 +140302,11 @@ qYa
 sFP
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
+sFP
 gjb
+cxy
+cxy
+cxy
 gjb
 aGC
 dWn
@@ -138992,16 +140559,16 @@ jvy
 sFP
 sFP
 sFP
-nUr
-fWz
-fWz
-cxy
-gjb
-gjb
+sFP
+vQX
+uwO
+uwO
+uwO
+vQX
 lDK
 lDK
-lDK
-lDK
+hLI
+hLI
 lDK
 lDK
 gjb
@@ -139249,11 +140816,11 @@ egK
 spA
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
+spA
 gjb
+cxy
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -139506,11 +141073,11 @@ vkl
 spA
 nUr
 nUr
-nUr
-fWz
-fWz
-cxy
+spA
 gjb
+cxy
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -139762,12 +141329,12 @@ rGJ
 hGe
 sFP
 sFP
-spA
+sFP
 sFP
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -140022,9 +141589,9 @@ nUr
 gho
 rNk
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -140279,9 +141846,9 @@ kYQ
 eqR
 tTk
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -140536,9 +142103,9 @@ mxC
 uKp
 dig
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -140793,9 +142360,9 @@ dig
 sEC
 iZf
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -141050,9 +142617,9 @@ vnm
 mSw
 rGJ
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -141307,9 +142874,9 @@ nUr
 mHn
 xrr
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -141561,12 +143128,12 @@ jAe
 jZH
 rNk
 sFP
-sFP
+spA
 sFP
 lDK
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -141821,9 +143388,9 @@ sFP
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -141833,7 +143400,7 @@ pdn
 vXY
 gjb
 cxy
-cxy
+whd
 kKT
 vBq
 jhX
@@ -142078,9 +143645,9 @@ nUr
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 lDK
 pdn
@@ -142088,9 +143655,9 @@ pdn
 pdn
 pdn
 lDK
-gjb
-cxy
-cxy
+dHV
+dxA
+uqt
 oqN
 ucL
 jhX
@@ -142335,19 +143902,19 @@ nUr
 nUr
 nUr
 fWz
-fWz
-cxy
-gjb
-gjb
-lDK
-lDK
-lDK
-lDK
-lDK
-lDK
-gjb
 cxy
 cxy
+cxy
+gjb
+lDK
+lDK
+lDK
+lDK
+lDK
+lDK
+scv
+wQW
+wqt
 qCI
 bar
 ebf
@@ -142592,9 +144159,9 @@ nUr
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -142602,9 +144169,9 @@ gjb
 gjb
 gjb
 fWv
-gjb
-cxy
-cxy
+rfH
+dwo
+heB
 qCI
 qsj
 eqo
@@ -142849,9 +144416,9 @@ nUr
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -142859,8 +144426,8 @@ gjb
 gjb
 gjb
 fWv
-gjb
-cxy
+cSi
+xbF
 cxy
 qCI
 qsj
@@ -143106,9 +144673,9 @@ nUr
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -143118,7 +144685,7 @@ gjb
 fWv
 gjb
 cxy
-cxy
+dwo
 qCI
 qsj
 iwv
@@ -143363,9 +144930,9 @@ nUr
 nUr
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -143620,9 +145187,9 @@ sFP
 sFP
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -143877,9 +145444,9 @@ dny
 sFP
 sFP
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 gjb
 fWv
 gjb
@@ -144134,9 +145701,9 @@ xrr
 spA
 nUr
 fWz
-fWz
 cxy
-gjb
+cxy
+cxy
 lDK
 oVr
 izY
@@ -165333,7 +166900,7 @@ veF
 veF
 mVC
 mVC
-lrU
+mVC
 jEs
 jEs
 jEs
@@ -165588,9 +167155,9 @@ ffM
 ddG
 veF
 mVC
-lrU
-lrU
-lrU
+mVC
+mVC
+mVC
 jEs
 jEs
 jEs
@@ -165845,9 +167412,9 @@ ddG
 ddG
 veF
 mVC
-lrU
-lrU
-lrU
+mVC
+mVC
+mVC
 jEs
 jEs
 jEs
@@ -166102,7 +167669,7 @@ sCl
 ddG
 mVC
 mVC
-lrU
+mVC
 jEs
 jEs
 jEs

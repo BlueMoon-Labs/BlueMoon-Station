@@ -229,6 +229,10 @@
 	if(!user)
 		return
 
+	if(charge <= 0)
+		to_chat(user, "<span class='warning'>[src] разряжена!</span>")
+		return
+
 	if(istype(target, /obj/item/clothing/suit/space/hev_suit))
 		var/obj/item/clothing/suit/space/hev_suit/suit = target
 		if(!suit.cell)
@@ -245,10 +249,11 @@
 			to_chat(user, "<span class='warning'>[suit] имеет достаточно заряда ([round(current_percent, 1)]%). Зарядка возможна только при менее 20%!</span>")
 			return
 
-		var/charge_to_add = min(charge_needed, maxcharge)
+		var/charge_to_add = min(charge_needed, charge)
 		suit.cell.charge = min(suit.cell.charge + charge_to_add, suit.cell.maxcharge)
-		maxcharge = 0
-		icon_state = "hevbattery-empty"
+		use(charge_to_add)
+		if(charge <= 0)
+			icon_state = "hevbattery-empty"
 		if(istype(suit.loc, /mob/living/carbon))
 			var/datum/component/shielded/shield = suit.GetComponent(/datum/component/shielded)
 			if(!shield)
@@ -272,10 +277,11 @@
 			to_chat(user, "<span class='warning'>[R] уже полностью заряжен!</span>")
 			return
 
-		var/charge_to_add = min(charge_needed, maxcharge)
+		var/charge_to_add = min(charge_needed, charge)
 		R.cell.charge = min(R.cell.charge + charge_to_add, R.cell.maxcharge)
-		maxcharge = 0
-		icon_state = "hevbattery-empty"
+		use(charge_to_add)
+		if(charge <= 0)
+			icon_state = "hevbattery-empty"
 
 		to_chat(user, "<span class='green'>Вы зарядили [R]!</span>")
 		to_chat(R, "<span class='green'>[user] зарядил вас!</span>")

@@ -93,10 +93,12 @@
 	var/dynamic_sound_suppressed_volume = 10
 	var/mesa_shotgun_bonus = FALSE
 	var/mesa_melee_knockback = FALSE
-	var/mesa_damage_bonus = 1.2
+	var/mesa_damage_bonus = 1
 
 /obj/item/gun/Initialize(mapload)
 	. = ..()
+	if(mesa_damage_bonus != 1)
+		projectile_damage_multiplier *= mesa_damage_bonus
 	if(dynamic_sound_dry && !dynamic_sound_datum)
 		has_dynamic_sounds = TRUE
 		dynamic_sound_datum = new /datum/dynamic_gun_sound(
@@ -106,6 +108,10 @@
 			dynamic_sound_use_suppressed,
 			dynamic_sound_suppressed_volume
 		)
+
+/obj/item/gun/Destroy()
+	QDEL_NULL(dynamic_sound_datum)
+	return ..()
 
 /obj/item/gun/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	if(mesa_muzzle_flash && user)
@@ -138,9 +144,6 @@
 					if(ismob(movable_target))
 						var/mob/living/victim = movable_target
 						victim.Knockdown(20)
-	var/obj/item/projectile/fired_projectile = chambered?.BB
-	if(mesa_damage_bonus > 1 && fired_projectile)
-		fired_projectile.damage *= mesa_damage_bonus
 	if(has_dynamic_sounds && dynamic_sound_datum)
 		if(recoil && !zoomed && user && pbtarget)
 			directional_recoil(user, recoil*dir_recoil_amp, Get_Angle(user, pbtarget))

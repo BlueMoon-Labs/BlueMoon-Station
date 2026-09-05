@@ -323,33 +323,10 @@
 		/obj/item/gun/ballistic/automatic/pistol/hl9mm = 3
 	)
 
-/obj/structure/deadmesa/examine(mob/user)
-	. = ..()
-
-/obj/structure/deadmesa/attack_hand(mob/user)
-	if(!user)
-		return
-	if(looted)
-		to_chat(user, span_warning("Этот труп уже обыскан."))
-		return
-	. = ..()
-	if(!looted)
-		looted = TRUE
-		desc = "Horrific consequences of Resonance Cascade. Этот труп уже обыскан."
-
 /obj/structure/deadmesa/ComponentInitialize()
 	. = ..()
 	if(loot)
 		AddElement(/datum/element/scavenging, loot_amount, loot, null, scavenge_time, can_use_hands, null, null, FALSE, NO_LOOT_RESTRICTION, 1)
-
-/obj/structure/deadmesa/attackby(obj/item/I, mob/user, params)
-	if(looted)
-		to_chat(user, span_warning("Этот труп уже обыскан."))
-		return
-	. = ..()
-	if(!looted)
-		looted = TRUE
-		desc = "Horrific consequences of Resonance Cascade. Этот труп уже обыскан."
 
 /obj/structure/deadmesa/hecughost
 	name = "Призрак лидера отряда HECU"
@@ -452,8 +429,12 @@
 	icon_state = "mw"
 	density = TRUE
 	anchored = TRUE
+	var/exploded = FALSE
 
 /obj/structure/microwaveexplosive/attack_hand(mob/user)
+	if(exploded)
+		return
+	exploded = TRUE
 	. = ..()
 
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/madsci/microwaveboom.ogg', 100, FALSE)
@@ -492,11 +473,8 @@
 	to_chat(user, span_warning("This barricade is too reinforced to be disassembled with a crowbar."))
 	return TRUE
 
-/obj/structure/barricade/wooden/reinforced/ex_act(severity)
-	return
-
 /obj/structure/barricade/wooden/reinforced/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
-	if(damage_amount >= 1000)
+	if(damage_flag == BOMB || damage_amount >= 100)
 		..()
 	else
 		return 0
@@ -518,11 +496,8 @@
 	to_chat(user, span_warning("This barricade is too reinforced to be disassembled with a crowbar."))
 	return TRUE
 
-/obj/structure/barricade/wooden/crude/reinforced/ex_act(severity)
-	return
-
 /obj/structure/barricade/wooden/crude/reinforced/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
-	if(damage_amount >= 1000)
+	if(damage_flag == BOMB || damage_amount >= 100)
 		..()
 	else
 		return 0
@@ -676,7 +651,7 @@
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
 
 	if(do_after(user, activation_time, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_HELD_ITEM | IGNORE_INCAPACITATED))
-		if(QDELETED(src) || QDELETED(user))
+		if(!activating || QDELETED(src) || QDELETED(user))
 			activating = FALSE
 			return
 

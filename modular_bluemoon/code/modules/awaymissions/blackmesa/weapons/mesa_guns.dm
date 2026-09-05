@@ -147,7 +147,7 @@
 	eject_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
 	eject_empty_sound = 'modular_bluemoon/sound/weapons/mesa/mp5/magout.ogg'
 	can_suppress = FALSE
-	weapon_weight = WEAPON_HEAVY
+	weapon_weight = WEAPON_LIGHT
 	w_class = WEIGHT_CLASS_BULKY
 	spread = 9
 	burst_size = 3
@@ -575,8 +575,8 @@
 /obj/item/ammo_box/magazine/m16/mesa
 	icon = 'modular_bluemoon/phenyamomota/icon/obj/guns/ammo.dmi'
 	icon_state = "m16e"
-	ammo_type = /obj/item/ammo_casing/a556
-	caliber = "a556hl"
+	ammo_type = /obj/item/ammo_casing/a556hl
+	caliber = "a556"
 	max_ammo = 50
 
 /obj/item/ammo_box/magazine/m16/mesa/update_icon()
@@ -590,7 +590,7 @@
 	name = "5.56mm bullet casing"
 	desc = "A 5.56mm bullet casing."
 	caliber = "a556"
-	projectile_type = /obj/item/projectile/bullet/a556
+	projectile_type = /obj/item/projectile/bullet/a556hl
 
 
 /obj/item/projectile/bullet/a556hl
@@ -1421,7 +1421,7 @@
 	icon_state = "m249"
 	ammo_type = /obj/item/ammo_casing/a556
 	max_ammo = 100
-	caliber = "5.56"
+	caliber = "a556"
 
 /obj/item/ammo_box/magazine/m249/update_icon()
 	. = ..()

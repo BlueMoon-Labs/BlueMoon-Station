@@ -64,7 +64,7 @@
 		icon_state = "radiohecu_talking"
 		var/sound_to_play = pick(negotiation_sounds)
 		playsound(src, sound_to_play, 70, FALSE, 7, 3)
-		addtimer(CALLBACK(src, .proc/reset_icon), 2 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(reset_icon)), 2 SECONDS)
 		next_play_time = world.time + rand(10 SECONDS, 25 SECONDS)
 
 /obj/machinery/negotiations_radio/proc/detect_players()
@@ -94,7 +94,7 @@
 	var/phrase = pick(alert_phrases)
 	say(phrase)
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 /obj/machinery/negotiations_radio/proc/reset_icon()
 	icon_state = initial(icon_state)
@@ -145,10 +145,10 @@
 		icon_state = "radiohecu_talking"
 		say(line)
 		playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-		addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+		addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 		if(dialogue_step == dialogue_lines.len)
-			addtimer(CALLBACK(src, .proc/show_interaction_prompt, user), 4 SECONDS)
+			addtimer(CALLBACK(src, PROC_REF(show_interaction_prompt), user), 4 SECONDS)
 	else
 		end_dialogue()
 
@@ -178,7 +178,7 @@
 	say("Шлюзы открыл! Деактивируете туррели - возвращаетесь к открывшемуся проходу и продолжаете путь")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 	open_blastdoors()
 	dialogue_completed = TRUE
@@ -212,6 +212,7 @@
 
 /obj/machinery/negotiations_radio/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	current_interactor = null
 	return ..()
 
 // =============================================================================
@@ -325,11 +326,11 @@
 	say("Вижу цель. ОТОЙДИТЕ ОТ ВЗРЫВА!")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
-	addtimer(CALLBACK(src, .proc/say_bombardment_start), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(say_bombardment_start)), 3 SECONDS)
 
-	addtimer(CALLBACK(src, .proc/drop_bombs, target_turf), 6 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(drop_bombs), target_turf), 6 SECONDS)
 
 /obj/machinery/negotiations_radio/bombardment/proc/say_bombardment_start()
 	if(!src)
@@ -338,7 +339,7 @@
 	say("Прикройте головы, начинаю бомбардировку")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 /obj/machinery/negotiations_radio/bombardment/proc/drop_bombs(turf/target_turf)
 	if(!src || !target_turf)
@@ -370,7 +371,7 @@
 	say("Говорит пеликан-1. Топливо на критично низком уровне. Улетаю на базу")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 	if(linked_console)
 		linked_console.enabled = FALSE
@@ -383,7 +384,7 @@
 	say("Пеликан-1 на связи. Готов к следующему залпу, когда будете готовы")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 /obj/machinery/negotiations_radio/bombardment/confirm_action(mob/user)
 	if(!user || !src)
@@ -396,11 +397,17 @@
 	say("Координаты приняты. Консоль бомбардировки активирована.")
 	icon_state = "radiohecu_talking"
 	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
 
 	enable_console()
 	dialogue_completed = TRUE
 	end_dialogue()
+
+/obj/machinery/negotiations_radio/bombardment/Destroy()
+	if(linked_console)
+		linked_console.linked_radio = null
+		linked_console = null
+	return ..()
 
 // =============================================================================
 // BOMBARDMENT CAMERA CONSOLE
@@ -447,6 +454,12 @@
 	var/turf/myturf = get_turf(src)
 	if(myturf)
 		z_lock = list(myturf.z)
+
+/obj/machinery/computer/camera_advanced/bombardment/Destroy()
+	if(linked_radio)
+		linked_radio.linked_console = null
+		linked_radio = null
+	return ..()
 
 /obj/machinery/computer/camera_advanced/bombardment/GrantActions(mob/living/user)
 	..(user)
