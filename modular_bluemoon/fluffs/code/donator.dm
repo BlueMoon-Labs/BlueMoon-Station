@@ -2660,5 +2660,5 @@
 /datum/gear/donator/bm/the_stylish_one_tracksuit
 	name = "The stylish one's tracksuit"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/under/donator/bm/longshirt
+	/datum/gear/donator/bm/the_stylish_one_tracksuit
 	ckeywhitelist = list("hartty", "meowonty")
