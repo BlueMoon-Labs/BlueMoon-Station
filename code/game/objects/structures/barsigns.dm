@@ -134,6 +134,9 @@
 	var/datum/barsign/hiddensigns/syndibarsign/syndie_sign = new
 	barsigns += syndie_sign
 	var/datum/barsign/cindikate/cindisign = locate() in barsigns
+	if(!cindisign)
+		cindisign = new
+		barsigns += cindisign
 	set_sign(pick(syndie_sign, cindisign))
 
 //Code below is to define useless variables for datums. It errors without these
