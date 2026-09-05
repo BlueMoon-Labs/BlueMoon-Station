@@ -74254,7 +74254,8 @@
 	color = "#B11111"
 	},
 /obj/item/kirbyplants{
-	icon_state = "plant-33"
+	icon_state = "plant-33";
+	anchored = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
