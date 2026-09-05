@@ -2633,16 +2633,31 @@
 	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
 	ckeywhitelist = list("foxrtotlimda")
 
+/obj/item/clothing/suit/armor/vest/knight/military/atomas
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied councilmen that wish to flaunt their opulence towards the unwashed masses."
+	icon_state = "military"
+	dog_fashion = null
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	allowed = null
+
 /datum/gear/donator/bm/atomas_fluted_armor
 	name = "Fluted Plate Armor"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/suit/armor/vest/knight/military
+	path = /obj/item/clothing/suit/armor/vest/knight/military/atomas
 	ckeywhitelist = list("atomas")
+
+/obj/item/clothing/head/helmet/military/atomas
+	name = "Hounskull With Aventail"
+	desc = "A steel hounskull bascinet with a thick maille aventail secured to the inside. Just as a froggemund befits a knight in the tournaments, an aventailed bascinet befits a knight on the battlefield; unmatched in coverage, durability, and weight."
+	icon_state = "visaventail"
+	item_state = "visaventail"
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 
 /datum/gear/donator/bm/atomas_hounskull
 	name = "Hounskull With Aventail"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/helmet/military
+	path = /obj/item/clothing/head/helmet/military/atomas
 	ckeywhitelist = list("atomas")
 
 /datum/gear/donator/bm/melatonin_bodysuit
