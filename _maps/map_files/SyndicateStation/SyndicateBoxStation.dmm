@@ -2947,7 +2947,7 @@
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "akg" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -10168,7 +10168,7 @@
 /obj/structure/bed,
 /obj/item/bedsheet/gondola,
 /obj/effect/landmark/start/bartender,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aJn" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -10241,7 +10241,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/turf/open/floor/carpet/blue,
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "aJz" = (
 /obj/structure/bed{
@@ -10551,11 +10551,11 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aKQ" = (
 /obj/structure/disposalpipe/segment,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aKS" = (
 /obj/machinery/airalarm{
@@ -10565,7 +10565,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
 	},
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aKT" = (
 /obj/structure/disposalpipe/segment{
@@ -10798,7 +10798,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
 	},
-/turf/open/floor/carpet/blue,
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "aLV" = (
 /obj/machinery/firealarm{
@@ -10884,7 +10884,7 @@
 "aMi" = (
 /obj/structure/dresser,
 /obj/machinery/light,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aMj" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -10928,7 +10928,7 @@
 /area/security/detectives_office)
 "aMw" = (
 /obj/item/kirbyplants/random,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aMx" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -10968,7 +10968,7 @@
 /area/service/hydroponics)
 "aMC" = (
 /obj/structure/reagent_dispensers/keg/hearty_punch,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aME" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -11237,7 +11237,7 @@
 /obj/effect/turf_decal/siding/dark_red/corner{
 	dir = 8
 	},
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "aNv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -48464,7 +48464,11 @@
 /turf/open/floor/wood,
 /area/service/sauna)
 "fWi" = (
-/turf/open/floor/wood,
+/obj/structure/chair/sofa/left{
+	dir = 1;
+	color = "#404040"
+	},
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "fWM" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -49425,7 +49429,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
-/turf/open/floor/carpet/blue,
+/turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
 "gAu" = (
 /obj/machinery/atmospherics/pipe/simple/cyan/visible{
@@ -56470,7 +56474,7 @@
 /area/security/prison/cells)
 "kks" = (
 /obj/machinery/vending/wardrobe/bar_wardrobe,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "kly" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -59365,10 +59369,10 @@
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
 "lHC" = (
-/obj/structure/table/wood,
+/obj/structure/table/reinforced/plastitanium,
 /obj/item/gun/ballistic/revolver/doublebarrel,
 /obj/item/gun/ballistic/revolver/doublebarrel,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "lHO" = (
 /obj/structure/table/reinforced/plastitaniumglass,
@@ -60405,7 +60409,7 @@
 /obj/item/clothing/under/suit/waiter,
 /obj/item/stack/sheet/metal/fifty,
 /obj/item/stack/sheet/glass/fifty,
-/turf/open/floor/wood,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "mjz" = (
 /obj/machinery/computer/cryopod{
@@ -61761,13 +61765,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/evidence_room)
-"mSc" = (
-/obj/structure/chair/sofa/left{
-	dir = 1;
-	color = "#404040"
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/service/bar)
 "mSq" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -67635,8 +67632,8 @@
 /turf/open/floor/wood/wood_large,
 /area/service/sauna)
 "pUa" = (
-/obj/structure/table/wood,
-/turf/open/floor/wood,
+/obj/structure/table/reinforced/plastitanium,
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "pUm" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -118036,7 +118033,7 @@ iSi
 aXk
 shI
 wdT
-mSc
+fWi
 paK
 xqq
 dqB
@@ -119825,7 +119822,7 @@ aGJ
 aJC
 kks
 gAb
-fWi
+aXk
 gMR
 iuq
 fBI
