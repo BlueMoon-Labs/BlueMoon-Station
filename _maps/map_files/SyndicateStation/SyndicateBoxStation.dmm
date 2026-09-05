@@ -66012,6 +66012,13 @@
 /obj/machinery/gear_painter,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/dorms)
+"oZm" = (
+/obj/effect/spawner/structure/window/plastitanium{
+	electrochromatic_id = "BarPrivate";
+	electrochromatic = 1
+	},
+/turf/open/floor/plating,
+/area/service/bar)
 "oZn" = (
 /obj/structure/flora/grass/jungle/b{
 	icon_state = "grassa5"
@@ -118045,7 +118052,7 @@ aAh
 aAh
 aJC
 lUh
-unA
+oZm
 ikB
 aJC
 wOn
