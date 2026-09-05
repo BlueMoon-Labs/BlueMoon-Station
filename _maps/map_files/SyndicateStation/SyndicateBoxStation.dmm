@@ -12322,10 +12322,10 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -16009,7 +16009,7 @@
 	pixel_x = 32;
 	pixel_y = 36
 	},
-/obj/effect/turf_decal/trimline/brown/filled/corner{
+/obj/effect/turf_decal/trimline/dark_red/filled/corner{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -16027,10 +16027,10 @@
 /obj/item/radio/intercom{
 	pixel_y = 25
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/shrink_ccw{
+/obj/effect/turf_decal/trimline/dark_red/filled/shrink_ccw{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -44293,7 +44293,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "dPM" = (
-/obj/effect/turf_decal/trimline/brown/filled/corner{
+/obj/effect/turf_decal/trimline/dark_red/filled/corner{
 	dir = 1
 	},
 /obj/effect/turf_decal/trimline/white/filled/corner{
@@ -44549,10 +44549,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "dVV" = (
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/shrink_ccw{
+/obj/effect/turf_decal/trimline/dark_red/filled/shrink_ccw{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -53430,10 +53430,10 @@
 /obj/machinery/firealarm{
 	pixel_y = 24
 	},
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -55357,7 +55357,7 @@
 "jKo" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/effect/turf_decal/trimline/brown/warning{
+/obj/effect/turf_decal/trimline/dark_red/warning{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -56867,10 +56867,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "kwN" = (
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/shrink_cw{
+/obj/effect/turf_decal/trimline/dark_red/filled/shrink_cw{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -57930,10 +57930,10 @@
 	pixel_x = 27;
 	pixel_y = 30
 	},
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -63238,20 +63238,20 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/processing)
 "nIy" = (
-/obj/effect/turf_decal/trimline/brown/line{
+/obj/effect/turf_decal/trimline/dark_red/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/starboard)
 "nIF" = (
 /obj/machinery/door/firedoor,
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -63346,10 +63346,10 @@
 /area/science/xenobiology)
 "nLk" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -65256,10 +65256,10 @@
 /area/hallway/primary/starboard)
 "oHp" = (
 /obj/machinery/door/firedoor,
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -65729,7 +65729,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "oWr" = (
-/obj/effect/turf_decal/trimline/brown/warning{
+/obj/effect/turf_decal/trimline/dark_red/warning{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -68268,7 +68268,7 @@
 /area/commons/fitness)
 "qqn" = (
 /obj/structure/disposalpipe/segment,
-/obj/effect/turf_decal/trimline/brown/warning{
+/obj/effect/turf_decal/trimline/dark_red/warning{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -69389,10 +69389,10 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Central Access"
 	},
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium/red,
@@ -73015,10 +73015,10 @@
 	layer = 4;
 	pixel_y = 32
 	},
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -76340,10 +76340,10 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/hallway/primary/port)
 "uHQ" = (
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/shrink_cw{
+/obj/effect/turf_decal/trimline/dark_red/filled/shrink_cw{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -76365,10 +76365,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/construction)
 "uIB" = (
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 4
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -81433,10 +81433,10 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "xqq" = (
-/obj/effect/turf_decal/trimline/brown/filled/line{
+/obj/effect/turf_decal/trimline/dark_red/filled/line{
 	dir = 1
 	},
-/obj/effect/turf_decal/trimline/brown/filled/mid_joiner{
+/obj/effect/turf_decal/trimline/dark_red/filled/mid_joiner{
 	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
