@@ -105,7 +105,7 @@
 			L.DefaultCombatKnockdown(100)
 			L.adjustBruteLoss(30)
 		if(isobj(AM))
-			AM.onZImpact(T)
+			AM.onZImpact(T, 1, ZIMPACT_NO_MESSAGE)
 		falling_atoms -= AM
 
 	else

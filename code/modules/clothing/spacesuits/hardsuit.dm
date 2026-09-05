@@ -1131,7 +1131,7 @@
 	. = ..()
 	if(!isinhands)
 		var/mutable_appearance/energy_overlay = mutable_appearance(icon_file, "knight_cydonia_overlay", EMISSIVE_LAYER)
-		energy_overlay.plane = EMISSIVE_PLANE
+		SET_PLANE_EXPLICIT(energy_overlay, EMISSIVE_PLANE, src)
 		energy_overlay.color = energy_color
 		. += energy_overlay
 
@@ -1163,7 +1163,7 @@
 	. = ..()
 	if(!isinhands)
 		var/mutable_appearance/energy_overlay = mutable_appearance(icon_file, "knight_cydonia_overlay", EMISSIVE_LAYER)
-		energy_overlay.plane = EMISSIVE_PLANE
+		SET_PLANE_EXPLICIT(energy_overlay, EMISSIVE_PLANE, src)
 		energy_overlay.color = energy_color
 		. += energy_overlay
 

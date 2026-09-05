@@ -309,7 +309,9 @@
 
 //produces a key based on the mob's limbs
 
-/mob/living/carbon/proc/generate_icon_render_key()
+/mob/living/carbon/proc/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
+	if(plane_offset)
+		. += "-floor[plane_offset]"
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
 		. += "-[BP.body_zone]"
@@ -359,3 +361,11 @@
 	update_damage_overlays()
 	update_wound_overlays()
 	update_bandage_overlays()
+
+//Ключ кэша частей тела несёт смещение этажа носителя: на новом этаже набор конечностей другой.
+/mob/living/carbon/update_plane_offset(old_z, new_z)
+	var/new_offset = new_z ? GET_Z_PLANE_OFFSET(new_z) : 0
+	if((old_z ? GET_Z_PLANE_OFFSET(old_z) : 0) == new_offset)
+		return ..()
+	. = ..()
+	update_body()

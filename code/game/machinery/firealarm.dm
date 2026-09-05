@@ -153,20 +153,20 @@
 	if(is_station_level(z))
 		. += "fire_[GLOB.security_level]"
 		. += mutable_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
-		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
+		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]", offset_spokesman = src)
 	else
 		. += "overlay_[NUM2SECLEVEL(SEC_LEVEL_GREEN)]"
 		. += mutable_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
-		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
+		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]", offset_spokesman = src)
 
 	if(obj_flags & EMAGGED)
 		. += "overlay_emagged"
 		. += mutable_appearance(icon, "overlay_emagged")
-		. += emissive_appearance(icon, "overlay_emagged")
+		. += emissive_appearance(icon, "overlay_emagged", offset_spokesman = src)
 	else
 		. += "fire_on"
 		. += mutable_appearance(icon, "fire_on")
-		. += emissive_appearance(icon, "fire_on")
+		. += emissive_appearance(icon, "fire_on", offset_spokesman = src)
 
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()

@@ -30,10 +30,12 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 		features["allow_emissives"] = TRUE
 	return (part in parts)
 
-/proc/emissive_copy(mutable_appearance/source, layer = FLOAT_LAYER)
+/proc/emissive_copy(mutable_appearance/source, layer = FLOAT_LAYER, atom/offset_spokesman)
 	var/mutable_appearance/emissive = new /mutable_appearance(source)
 	emissive.layer = layer
 	emissive.plane = EMISSIVE_PLANE
+	if(offset_spokesman)
+		SET_PLANE_EXPLICIT(emissive, EMISSIVE_PLANE, offset_spokesman)
 	emissive.color = GLOB.emissive_color
 	emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE
 	return emissive
