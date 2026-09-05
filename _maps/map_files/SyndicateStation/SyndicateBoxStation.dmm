@@ -2169,14 +2169,16 @@
 /turf/open/floor/plasteel/grimy,
 /area/security/detectives_office/private_investigators_office)
 "ahZ" = (
-/obj/structure/table/reinforced/plastitanium,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "kitchen";
-	name = "kitchen shutters"
+/obj/effect/turf_decal/siding/thinplating/light{
+	color = "#B11111";
+	dir = 4
 	},
-/obj/item/clothing/head/hardhat/cakehat,
+/obj/effect/turf_decal/siding/thinplating/light{
+	color = "#B11111";
+	dir = 8
+	},
 /turf/open/floor/mineral/plastitanium,
-/area/service/kitchen)
+/area/service/bar)
 "aic" = (
 /obj/structure/disposalpipe/segment{
 	dir = 10
@@ -48464,9 +48466,10 @@
 /turf/open/floor/wood,
 /area/service/sauna)
 "fWi" = (
-/obj/structure/chair/sofa/left{
-	dir = 1;
-	color = "#404040"
+/obj/structure/table/wood/fancy/blackred,
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = 13;
+	pixel_y = 9
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/service/bar)
@@ -50520,13 +50523,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "hgO" = (
-/obj/structure/table/wood/fancy/blackred,
-/obj/item/reagent_containers/food/condiment/saltshaker{
-	pixel_x = 13;
-	pixel_y = 9
+/obj/structure/table/reinforced/plastitanium,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "kitchen";
+	name = "kitchen shutters"
 	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/service/bar)
+/obj/item/clothing/head/hardhat/cakehat,
+/turf/open/floor/mineral/plastitanium,
+/area/service/kitchen)
 "hgZ" = (
 /obj/item/radio/intercom{
 	pixel_y = 25
@@ -52034,7 +52038,6 @@
 /turf/open/floor/plating,
 /area/security/office)
 "hQh" = (
-/obj/item/kirbyplants/random,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 6
 	},
@@ -61765,6 +61768,13 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/detectives_office/evidence_room)
+"mSc" = (
+/obj/structure/chair/sofa/left{
+	dir = 1;
+	color = "#404040"
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/service/bar)
 "mSq" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -74240,7 +74250,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/rec)
 "twg" = (
-/turf/open/floor/mineral/plastitanium/red,
+/obj/effect/turf_decal/siding/thinplating/light/end{
+	color = "#B11111"
+	},
+/obj/item/kirbyplants{
+	icon_state = "plant-33"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "twE" = (
 /obj/item/radio/intercom{
@@ -80209,8 +80225,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 5
 	},
-/obj/effect/turf_decal/siding/thinplating/light{
+/obj/effect/turf_decal/siding/thinplating/light/corner{
 	color = "#B11111"
+	},
+/obj/effect/turf_decal/siding/thinplating/light/corner{
+	color = "#B11111";
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
@@ -117775,7 +117795,7 @@ jGU
 aQa
 elh
 wxT
-twg
+ahZ
 twg
 paK
 xqq
@@ -118033,7 +118053,7 @@ iSi
 aXk
 shI
 wdT
-fWi
+mSc
 paK
 xqq
 dqB
@@ -120088,7 +120108,7 @@ dYs
 aMu
 aXk
 qaY
-hgO
+fWi
 rLx
 bby
 xqq
@@ -122911,7 +122931,7 @@ xwq
 grY
 qmi
 aRH
-ahZ
+hgO
 ljs
 aVH
 aXn
