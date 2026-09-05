@@ -2640,6 +2640,11 @@
 	dog_fashion = null
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 	allowed = null
+	cold_protection = NONE
+	heat_protection = NONE
+	clothing_flags = NONE
+	max_heat_protection_temperature = null
+	min_cold_protection_temperature = null
 
 /datum/gear/donator/bm/atomas_fluted_armor
 	name = "Fluted Plate Armor"
@@ -2653,6 +2658,17 @@
 	icon_state = "visaventail"
 	item_state = "visaventail"
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	flash_protect = 0
+	tint = 0
+	cold_protection = NONE
+	heat_protection = NONE
+	clothing_flags = NONE
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	max_heat_protection_temperature = null
+	min_cold_protection_temperature = null
+
+/obj/item/clothing/head/helmet/military/atomas/ComponentInitialize()
+	return
 
 /datum/gear/donator/bm/atomas_hounskull
 	name = "Hounskull With Aventail"
