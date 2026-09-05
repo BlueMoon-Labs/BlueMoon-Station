@@ -77,14 +77,16 @@
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
 
 		// ============ ELITE EQUIPMENT =========
-		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Advanced ion jetpack",			/obj/item/mod/module/jetpack/advanced,							5000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Nanotrasen & Syndicate Uplink",	/obj/item/syndicate_uplink/station,								75000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,								20000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Advanced ion jetpack",			/obj/item/mod/module/jetpack/advanced,							5000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											30000,	"Elite Equipment"),
 	)
 
 /datum/data/bounty_equipment
@@ -319,7 +321,7 @@
 	desc += "\nIt seems a few selections have been added."
 	prize_list += list(
 		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									25000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									50000, 	"Miscellaneous"),
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
 		)
 	build_inventory()
