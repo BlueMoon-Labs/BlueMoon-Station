@@ -88,6 +88,7 @@
 		cell = new cell_type(src)
 
 /obj/item/clothing/suit/space/hev_suit/Destroy()
+	STOP_PROCESSING(SSobj, src)
 	if(cell)
 		QDEL_NULL(cell)
 	current_user = null

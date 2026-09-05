@@ -34,10 +34,6 @@
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
 
-/obj/item/gun/ballistic/automatic/pistol/hl9mm/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	..()
-	playsound(user, fire_sound, 80, 0, 0)
-
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
 	if(!istype(AM, /obj/item/ammo_box/magazine/pistolm9mm) && !istype(AM, /obj/item/ammo_box/magazine/pistolm9mm/mesa))
 		return
@@ -640,10 +636,6 @@
 	else
 		icon_state = "mp7nomag"
 
-/obj/item/gun/ballistic/automatic/mp7/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	..()
-	playsound(user, fire_sound, 80, 0, 0)
-
 
 // тоже пули
 
@@ -1032,6 +1024,7 @@
 	icon_state = "policeshield"
 	item_state = "policeshield"
 	w_class = WEIGHT_CLASS_HUGE
+	w_class = WEIGHT_CLASS_GIGANTIC
 	armor = list(MELEE = 60, BULLET = 70, LASER = 50, ENERGY = 0, BOMB = 40, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
 	slot_flags = ITEM_SLOT_BACK
 	block_chance = 80

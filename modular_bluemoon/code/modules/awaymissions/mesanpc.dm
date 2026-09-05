@@ -550,7 +550,7 @@
 		// Schedule radio announcement when cooldown ends
 		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_ready)), target_console.mark_cooldown)
 
-	if(target_console.charges_remaining <= 0)
+	if(target_console.charges_remaining <= 0 && target_console.linked_radio)
 		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_out_of_fuel)), 15 SECONDS)
 
 // =============================================================================

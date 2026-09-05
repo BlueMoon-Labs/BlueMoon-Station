@@ -431,7 +431,7 @@
 	if(user == R)
 		to_chat(R, "<span class='green'>Вы успешно использовали [src] на себе!</span>")
 	else
-		user.visible_message("<span class='green'>[user] успешно использовал [src] на [R]!</span>", "<span class='green'>Вы успешно использовал [src] на [R]!</span>")
+		user.visible_message("<span class='green'>[user] успешно использовал [src] на [R]!</span>", "<span class='green'>Вы успешно использовали [src] на [R]!</span>")
 		to_chat(R, "<span class='green'>[user] использовал [src] на вас!</span>")
 	// Don't disable the syringe after use - it stays usable
 	// if(!iscyborg(user))
