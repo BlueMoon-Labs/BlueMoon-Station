@@ -154,6 +154,7 @@
 	var/datum/player_details/player_details //these persist between logins/logouts during the same round.
 
 	var/list/char_render_holders			//Should only be a key-value list of north/south/east/west = atom/movable/screen.
+	var/datum/plane_master_group/popup/char_preview_planes
 
 	/// Last time they used fix macros
 	var/last_macro_fix = 0

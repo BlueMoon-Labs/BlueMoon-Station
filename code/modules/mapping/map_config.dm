@@ -34,6 +34,8 @@
 	/// зависимости от карты. Карта может переопределить ключом space_ruin_levels в своём JSON.
 	var/space_ruin_levels = 5
 	var/space_empty_levels = 1
+	/// Имя набора объявленных секторов космоса (sector_set у /datum/space_sector). null - космос целиком случайный.
+	var/space_sector_set = null
 	// BLUEMOON EDIT START: Invalid Space Turfs
 	/// Boolean that tells us if this is a planetary station. (like IceBoxStation)
 	var/planetary = FALSE
@@ -175,6 +177,13 @@
 		log_world("map_config space_empty_levels is not a number!")
 		return
 
+	temp = json["space_sectors"]
+	if (istext(temp))
+		space_sector_set = temp
+	else if (!isnull(temp))
+		log_world("map_config space_sectors is not a text!")
+		return
+
 	if("station_ruin_budget" in json)
 		station_ruin_budget = json["station_ruin_budget"]
 
@@ -290,6 +299,7 @@
 	jsonlist["shuttles"] = shuttles
 	jsonlist["traits"] = traits
 	jsonlist["space_ruin_levels"] = space_ruin_levels
+	jsonlist["space_sectors"] = space_sector_set
 	jsonlist["year_offset"] = year_offset
 	jsonlist["minetype"] = minetype
 	jsonlist["maptype"] = maptype

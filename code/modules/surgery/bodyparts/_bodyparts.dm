@@ -914,7 +914,7 @@
 					mark.color = marking_list[3]
 				. += mark
 				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-					var/image/mark_emissive = emissive_copy(mark)
+					var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 					mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 					. += mark_emissive
 
@@ -988,7 +988,7 @@
 						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-						var/image/mark_emissive = emissive_copy(mark)
+						var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
@@ -1012,7 +1012,7 @@
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image, offset_spokesman = owner || src)
 							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
@@ -1063,7 +1063,7 @@
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image, offset_spokesman = owner || src)
 							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
@@ -1095,7 +1095,7 @@
 						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-						var/image/mark_emissive = emissive_copy(mark)
+						var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y

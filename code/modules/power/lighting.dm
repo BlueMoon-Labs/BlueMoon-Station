@@ -532,6 +532,7 @@
 		M.dir = dir
 		. += M
 		var/mutable_appearance/emissive_overlay = mutable_appearance(overlayicon, base_state, FLOAT_LAYER, EMISSIVE_PLANE)
+		SET_PLANE_EXPLICIT(emissive_overlay, EMISSIVE_PLANE, src)
 		emissive_overlay.alpha = overlay_alpha
 		emissive_overlay.color = M.color
 		emissive_overlay.dir = dir

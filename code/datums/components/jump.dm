@@ -104,6 +104,9 @@
 	SEND_SIGNAL(jumper, COMSIG_ELEMENT_JUMP_ENDED, TRUE, 1.5, 2)
 	SEND_SIGNAL(jumper.loc, COMSIG_TURF_JUMP_ENDED_HERE, jumper)
 	UnregisterSignal(parent, COMSIG_MOB_THROW)
+	//В полёте can_z_move() падение отбивает по TRAIT_JUMPING, так что дыру под ногами проверяем заново.
+	var/turf/landing = get_turf(jumper)
+	landing?.zfall_if_on_turf(jumper)
 
 	if(!HAS_TRAIT(jumper, TRAIT_FREERUNNING) && jumper.stat == CONSCIOUS && jumper.body_position == STANDING_UP)
 		if(prob(rand(5, 10)))

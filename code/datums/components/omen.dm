@@ -79,15 +79,12 @@
 
 		var/turf/the_turf = t
 
-		//
-		// нет проверки can_z_move
-		//
-		/*if(the_turf.zPassOut(living_guy, DOWN) && living_guy.can_z_move(DOWN, the_turf, z_move_flags = ZMOVE_FALL_FLAGS))
-			to_chat(living_guy, span_warning("A malevolent force guides you towards the edge..."))
+		if(living_guy.can_z_move(DOWN, the_turf, null, ZMOVE_FALL_FLAGS))
+			to_chat(living_guy, "<span class='warning'>Злая воля влечёт вас к краю...</span>")
 			living_guy.throw_at(the_turf, 1, 10, force = MOVE_FORCE_EXTREMELY_STRONG)
 			if(!permanent)
 				qdel(src)
-			return*/
+			return
 
 		for(var/obj/machinery/vending/darth_vendor in the_turf)
 			if(darth_vendor.tiltable)

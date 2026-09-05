@@ -32,10 +32,11 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 
 /datum/weather/ash_storm/telegraph()
 	var/list/eligible_areas = list()
-	for (var/z in impacted_z_levels)
-		eligible_areas += SSmapping.areas_in_z["[z]"]
-	for(var/i in 1 to eligible_areas.len)
-		var/area/place = eligible_areas[i]
+	for(var/z in impacted_z_levels)
+		var/list/on_z = SSmapping.areas_in_z["[z]"]
+		if(on_z)
+			eligible_areas |= on_z
+	for(var/area/place as anything in eligible_areas)
 		if(place.outdoors)
 			weak_sounds[place] = /datum/looping_sound/weak_outside_ashstorm
 			strong_sounds[place] = /datum/looping_sound/active_outside_ashstorm

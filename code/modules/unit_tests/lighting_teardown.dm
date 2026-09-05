@@ -802,6 +802,55 @@
  * Проверяется чистая половина решения. Живой путь (living_movement.dm) выдержки не имеет
  * намеренно и здесь не участвует.
  */
+/// Жилец верхнего этажа связки держит свет нижнего (видит его сквозь дыры), но не наоборот.
+/datum/unit_test/lighting_stack_occupant_keeps_levels_below
+
+/datum/unit_test/lighting_stack_occupant_keeps_levels_below/Run()
+	if(!SSmapping.max_plane_offset)
+		return // Односложный мир: связок нет.
+
+	var/upper_z
+	var/lower_z
+	for(var/z in 1 to world.maxz)
+		var/turf/probe = locate(1, 1, z)
+		var/turf/below = GET_TURF_BELOW(probe)
+		if(!below)
+			continue
+		upper_z = z
+		lower_z = below.z
+		break
+	TEST_ASSERT(upper_z && lower_z, "В мире со стопкой не нашлось пары этажей")
+	TEST_ASSERT(lower_z <= length(SSmobs.dead_players_by_zlevel) && upper_z <= length(SSmobs.dead_players_by_zlevel), "предпосылка: реестр гостов обязан покрывать оба этажа")
+	TEST_ASSERT(lower_z <= length(SSmobs.clients_by_zlevel) && upper_z <= length(SSmobs.clients_by_zlevel), "предпосылка: реестр клиентов обязан покрывать оба этажа")
+
+	TEST_ASSERT(lower_z in SSmapping.get_levels_visible_from(upper_z), "Нижний этаж обязан быть виден с верхнего")
+	TEST_ASSERT(!(upper_z in SSmapping.get_levels_visible_from(lower_z)), "Верхний этаж с нижнего не виден")
+	TEST_ASSERT(upper_z in SSmapping.get_levels_viewing(lower_z), "Верхний этаж обязан числиться смотрящим на нижний")
+
+	var/list/saved = list()
+	for(var/z in list(upper_z, lower_z))
+		saved["c[z]"] = SSmobs.clients_by_zlevel[z]
+		saved["d[z]"] = SSmobs.dead_players_by_zlevel[z]
+		SSmobs.clients_by_zlevel[z] = list()
+		SSmobs.dead_players_by_zlevel[z] = list()
+
+	var/empty_lower = SSlighting.zlevel_has_occupant(lower_z)
+	var/mob/dead/observer/watcher = occupant_ghost(run_loc_floor_bottom_left)
+	SSmobs.dead_players_by_zlevel[upper_z] = list(watcher)
+	var/lower_held_from_above = SSlighting.zlevel_has_occupant(lower_z)
+	SSmobs.dead_players_by_zlevel[upper_z] = list()
+	SSmobs.dead_players_by_zlevel[lower_z] = list(watcher)
+	var/upper_held_from_below = SSlighting.zlevel_has_occupant(upper_z)
+
+	for(var/z in list(upper_z, lower_z))
+		SSmobs.clients_by_zlevel[z] = saved["c[z]"]
+		SSmobs.dead_players_by_zlevel[z] = saved["d[z]"]
+
+	TEST_ASSERT(!empty_lower, "Пустая связка жильцов иметь не должна")
+	TEST_ASSERT(lower_held_from_above, "Гост на верхнем этаже обязан держать свет нижнего: он видит его сквозь дыры")
+	TEST_ASSERT(!upper_held_from_below, "Гост на нижнем этаже верхний не видит и держать его не должен")
+
+/// Отложенная постройка света по заявке госта отменяется, если гост улетел или ссылка протухла.
 /datum/unit_test/lighting_ghost_init_debounce_needs_occupant
 
 /datum/unit_test/lighting_ghost_init_debounce_needs_occupant/Run()

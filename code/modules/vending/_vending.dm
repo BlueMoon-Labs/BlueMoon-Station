@@ -273,7 +273,7 @@
 	if(!light_mask)
 		return
 	if(!(machine_stat & BROKEN) && powered())
-		. += emissive_appearance(icon, light_mask)
+		. += emissive_appearance(icon, light_mask, offset_spokesman = src)
 
 /obj/machinery/vending/obj_break(damage_flag)
 	. = ..()

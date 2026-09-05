@@ -59,8 +59,6 @@
 		// держат удалённого моба (утечка обсерверов при наблюдении друг за другом).
 		for(var/mob/dead/observer/observe as anything in observers.Copy())
 			observe.reset_perspective(null)
-			// У бесклиентных наблюдателей reset_perspective не чистит observetarget.
-			observe.observetarget = null
 		observers = null
 	dispose_rendering()
 	qdel(hud_used)
@@ -339,28 +337,28 @@
 			//Set the the thing unless it's us
 			if(A != src)
 				client.perspective = EYE_PERSPECTIVE
-				client.eye = A
+				client.set_eye(A)
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else if(isturf(A))
 			//Set to the turf unless it's our current turf
 			if(A != loc)
 				client.perspective = EYE_PERSPECTIVE
-				client.eye = A
+				client.set_eye(A)
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else
 			//Do nothing
 	else
 		//Reset to common defaults: mob if on turf, otherwise current loc
 		if(isturf(loc))
-			client.eye = client.mob
+			client.set_eye(client.mob)
 			client.perspective = MOB_PERSPECTIVE
 		else
 			client.perspective = EYE_PERSPECTIVE
-			client.eye = loc
+			client.set_eye(loc)
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
 	return TRUE
 
@@ -1029,16 +1027,14 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	sync_lighting_plane_alpha()
 
 /mob/proc/sync_lighting_plane_alpha()
-	if(hud_used)
-		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
-		if(L)
-			L.alpha = lighting_alpha
-			L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
-		// Плоскость оверлейного света обязана гаснуть синхронно с тьмой: при прозрачной
-		// lighting plane (мезоны/НВ) цветной множитель света без тьмы под ним - визуальный мусор
-		var/atom/movable/screen/plane_master/o_light_visual/O = hud_used.plane_masters["[O_LIGHTING_VISUAL_PLANE]"]
-		if(O)
-			O.alpha = lighting_alpha
+	if(!hud_used)
+		return
+	for(var/atom/movable/screen/plane_master/lighting/L as anything in hud_used.get_true_plane_masters(LIGHTING_PLANE))
+		L.set_alpha(lighting_alpha)
+		L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
+	// Оверлейный свет гаснет синхронно с тьмой: при прозрачной lighting plane цветной множитель без тьмы под ним - мусор.
+	for(var/atom/movable/screen/plane_master/o_light_visual/O as anything in hud_used.get_true_plane_masters(O_LIGHTING_VISUAL_PLANE))
+		O.set_alpha(lighting_alpha)
 
 /mob/proc/update_mouse_pointer()
 	if (!client)

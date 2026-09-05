@@ -340,7 +340,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		if(!jukebox_loc)
 			return
 
-		var/list/audible_zlevels = get_multiz_accessible_levels(jukebox_loc.z) //TODO - for multiz refresh, this should use the cached zlevel connections var in SSMapping. For now this is fine!
+		var/list/audible_zlevels = SSmapping.get_connected_levels(jukebox_loc.z) //кэш связки, только на чтение
 
 		var/personal = jukeinfo[JUKE_PERSONAL]
 		var/sound/song_played = jukeinfo[JUKE_SOUND]

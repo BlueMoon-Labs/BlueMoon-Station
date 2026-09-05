@@ -244,9 +244,8 @@ SUBSYSTEM_DEF(throwing)
 	if (callback)
 		callback.Invoke()
 
-	if(!thrownthing.zfalling) // I don't think you can zfall while thrown but hey, just in case.
+	if(!thrownthing.currently_z_moving) // I don't think you can zfall while thrown but hey, just in case.
 		var/turf/T = get_turf(thrownthing)
-		if(T && thrownthing.has_gravity(T))
-			T.zFall(thrownthing)
+		T?.zFall(thrownthing) //гравитацию и throwing проверяет can_z_move()
 
 	qdel(src)

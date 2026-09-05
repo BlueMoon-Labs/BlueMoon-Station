@@ -304,12 +304,9 @@
 /obj/effect/abstract/liquid_turf/proc/make_liquid_overlay(overlay_state, overlay_layer, overlay_plane)
 	PRIVATE_PROC(TRUE)
 
-	return mutable_appearance(
-		'modular_bluemoon/modules/liquids/icons/obj/effects/liquid_overlays.dmi',
-		overlay_state,
-		overlay_layer,
-		overlay_plane,
-	)
+	var/mutable_appearance/overlay = mutable_appearance('modular_bluemoon/modules/liquids/icons/obj/effects/liquid_overlays.dmi', overlay_state, overlay_layer, overlay_plane)
+	SET_PLANE_W_SCALAR(overlay, overlay_plane, GET_TURF_PLANE_OFFSET(src))
+	return overlay
 
 /**
  * Returns a list of over and underlays for different liquid states.
@@ -420,8 +417,10 @@
 		if(LIQUID_FIRE_STATE_INFERNO)
 			fire_icon_state = "fire_big"
 
-	. += mutable_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, GAME_PLANE, appearance_flags = RESET_COLOR|RESET_ALPHA)
-	. += emissive_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, alpha = src.alpha)
+	var/mutable_appearance/fire_overlay = mutable_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, GAME_PLANE, appearance_flags = RESET_COLOR|RESET_ALPHA)
+	SET_PLANE_W_SCALAR(fire_overlay, GAME_PLANE, GET_TURF_PLANE_OFFSET(src))
+	. += fire_overlay
+	. += emissive_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, alpha = src.alpha, offset_spokesman = src)
 
 //LIQUIDS ADD - standalone smoothing (the /tg SMOOTH_BITMASK system the water icons were made for is not present in this codebase)
 /**

@@ -19,6 +19,9 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 	var/list/names = list()
 	var/list/visibility = list()
 	var/list/overlays = list()
+	/// Лестницы облаков по этажам стопки: [смещение + 1] -> gas_id -> лестница.
+	/// Объект облака один на мир и лежит в vis_contents турфов, поэтому свой комплект нужен на каждое смещение плоскостей.
+	var/list/overlays_by_offset = list()
 	var/list/flags = list()
 	var/list/ids = list()
 	var/list/typepaths = list()
@@ -203,6 +206,34 @@ GLOBAL_DATUM_INIT(gas_data, /datum/auxgm, new)
 	layer = FLY_LAYER
 	appearance_flags = TILE_BOUND
 	vis_flags = NONE
+
+/// Комплект облаков под этаж стопки. Строится лениво: на односложных картах не создаётся вообще.
+/datum/auxgm/proc/get_overlays_for_offset(offset)
+	if(!offset)
+		return overlays
+	while(length(overlays_by_offset) < offset)
+		overlays_by_offset += list(null)
+	var/list/cached = overlays_by_offset[offset]
+	if(cached)
+		return cached
+
+	cached = list()
+	for(var/gas_id in overlays)
+		var/list/ladder = overlays[gas_id]
+		if(!islist(ladder))
+			cached[gas_id] = ladder
+			continue
+		var/list/offset_ladder = new /list(length(ladder))
+		for(var/i in 1 to length(ladder))
+			var/obj/effect/overlay/gas/source = ladder[i]
+			var/obj/effect/overlay/gas/copy = new(source.icon_state)
+			copy.color = source.color
+			copy.alpha = source.alpha
+			SET_PLANE_W_SCALAR(copy, initial(copy.plane), offset)
+			offset_ladder[i] = copy
+		cached[gas_id] = offset_ladder
+	overlays_by_offset[offset] = cached
+	return cached
 
 /obj/effect/overlay/gas/New(state)
 	. = ..()

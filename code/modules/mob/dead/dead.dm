@@ -14,6 +14,9 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	flags_1 |= INITIALIZED_1
 	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
+	//Родитель пропущен, а гост, созданный на нижнем этаже, обязан встать на его плоскости, как любое движимое.
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
 
 	//дальний слух мёртвых ведёт dead-chat путь say() с префами, но потребители
 	//get_hearers_in_view (LOOC, его рунчат) находят слушателей только через грид,
@@ -46,10 +49,11 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 /mob/dead/forceMove(atom/destination)
 	var/turf/old_turf = get_turf(src)
 	var/turf/new_turf = get_turf(destination)
-	if (old_turf?.z != new_turf?.z)
-		onTransitZ(old_turf?.z, new_turf?.z)
 	var/oldloc = loc
 	loc = destination
+	//onTransitZ после присвоения loc, как в doMove(): обработчики читают get_turf(src).
+	if (old_turf?.z != new_turf?.z)
+		onTransitZ(old_turf?.z, new_turf?.z)
 	Moved(oldloc, NONE, TRUE)
 
 /mob/dead/get_status_tab_items()
@@ -127,8 +131,9 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 				// Счётчик простоя обнуляется ВСЕГДА, а не только при подъёме: посещение уже
 				// поднятого уровня иначе не оставляет следа между сканами сноса. См.
 				// SSlighting.note_zlevel_visit().
-				SSlighting.note_zlevel_visit(new_z)
-				request_ghost_lighting_init(new_z)
+				for(var/visible_z in SSmapping.get_levels_visible_from(new_z))
+					SSlighting.note_zlevel_visit(visible_z)
+					request_ghost_lighting_init(visible_z)
 			registered_z = new_z
 		else
 			registered_z = null

@@ -520,14 +520,14 @@
 					continue
 				var/image/copy = image(overlay_appearance)
 				copy.layer = target_layer
-				copy.plane = GAME_PLANE
+				SET_PLANE_EXPLICIT(copy, GAME_PLANE, src)
 				if(apply_mask)
 					copy.filters += filter(type = "alpha", icon = icon('modular_bluemoon/icons/obj/structures/lewd_portals.dmi', "mask"))
 				relayed_overlays += copy
 	else if(isimage(overlay) || isappearance(overlay))
 		var/image/copy = image(overlay)
 		copy.layer = target_layer
-		copy.plane = GAME_PLANE
+		SET_PLANE_EXPLICIT(copy, GAME_PLANE, src)
 		if(apply_mask)
 			copy.filters += filter(type = "alpha", icon = icon('modular_bluemoon/icons/obj/structures/lewd_portals.dmi', "mask"))
 		relayed_overlays += copy
@@ -553,6 +553,7 @@
 						penis_image.color = "#[owner.dna.features["cock_color"]]"
 			if(S.center)
 				penis_image = center_image(penis_image, S.dimension_x, S.dimension_y)
+			SET_PLANE_EXPLICIT(penis_image, GAME_PLANE, src)
 			add_overlay(penis_image)
 
 	var/obj/item/organ/genital/testicles/balls_reference = owner.getorganslot(ORGAN_SLOT_TESTICLES)
@@ -570,6 +571,7 @@
 						balls_image.color = "#[owner.dna.features["balls_color"]]"
 			if(balls_S.center)
 				balls_image = center_image(balls_image, balls_S.dimension_x, balls_S.dimension_y)
+			SET_PLANE_EXPLICIT(balls_image, GAME_PLANE, src)
 			add_overlay(balls_image)
 
 /obj/lewd_portal_relay/proc/lower_body_only()

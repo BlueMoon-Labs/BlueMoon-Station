@@ -60,6 +60,10 @@
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 
+	// У космоса свой Initialize без вызова родителя, смещение плоскостей приходится повторять здесь.
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
+
 	// if (length(smoothing_groups))
 	// 	sortTim(smoothing_groups) //In case it's not properly ordered, let's avoid duplicate entries with the same values.
 	// 	SET_BITFLAG_LIST(smoothing_groups)
@@ -71,7 +75,7 @@
 
 	var/area/A = loc
 	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
-		add_overlay(/obj/effect/fullbright)
+		add_overlay(fullbright_turf_overlay(src))
 
 	if (light_power && light_range)
 		update_light()
@@ -86,9 +90,38 @@
 	if(T)
 		T.multiz_turf_new(src, UP)
 
+	//На загрузке карты связки ещё не построены, и весь уровень разом получит прозрачность от SSmapping.apply_transparent_space().
+	if(SSmapping.level_trait(z, ZTRAIT_TRANSPARENT_SPACE))
+		make_space_transparent()
+
 	ComponentInitialize()
 
 	return INITIALIZE_HINT_NORMAL
+
+/turf/open/space/shows_level_below()
+	if(..())
+		return TRUE
+	return !!SSmapping.level_trait(z, ZTRAIT_TRANSPARENT_SPACE)
+
+/// Вешает прозрачность на космос через /datum/element/turf_z_transparency. TRUE, если она встала этим вызовом.
+/turf/open/space/proc/make_space_transparent()
+	var/turf/our_turf = src
+	if(HAS_TRAIT(our_turf, TURF_Z_TRANSPARENT_TRAIT))
+		return FALSE
+	if(!GET_TURF_BELOW(src))
+		return FALSE
+	//Стейта "transparent" в space.dmi нет: несуществующий стейт BYOND не рисует, а звёзды уезжают в подложку.
+	icon_state = "transparent"
+	add_starfield_underlay()
+	AddElement(/datum/element/turf_z_transparency, FALSE)
+	return TRUE
+
+/// Звёзды на PLANE_SPACE под картинкой этажа снизу: закрывают черноту там, куда сжатый нижний этаж не достаёт.
+/turf/open/space/proc/add_starfield_underlay()
+	var/mutable_appearance/starfield = mutable_appearance(icon, SPACE_ICON_STATE, layer = TURF_LAYER - 0.02)
+	SET_PLANE_EXPLICIT(starfield, PLANE_SPACE, src)
+	starfield.appearance_flags = RESET_ALPHA | RESET_COLOR
+	underlays += starfield
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
 /turf/open/space/attack_ghost(mob/dead/observer/user)
@@ -265,6 +298,32 @@
 	if(destination_x || destination_y || destination_z)
 		return TRUE
 
+/// В невесомости вертикаль открыта в обе стороны: односторонние правила /turf/open запирали бы её наглухо.
+/turf/open/space/zPassIn(atom/movable/movable, direction, turf/source)
+	if(direction != UP && direction != DOWN)
+		return FALSE
+	if(has_gravity(src))
+		return ..()
+
+	var/blocker_flag = (direction == DOWN) ? BLOCK_Z_IN_DOWN : BLOCK_Z_IN_UP
+	for(var/obj/blocker in contents)
+		if(blocker.obj_flags & blocker_flag)
+			return FALSE
+	return TRUE
+
+/turf/open/space/zPassOut(atom/movable/movable, direction, turf/destination)
+	if(direction != UP && direction != DOWN)
+		return FALSE
+	if(has_gravity(src))
+		return ..()
+	if(movable?.anchored)
+		return FALSE
+
+	var/blocker_flag = (direction == DOWN) ? BLOCK_Z_OUT_DOWN : BLOCK_Z_OUT_UP
+	for(var/obj/blocker in contents)
+		if(blocker.obj_flags & blocker_flag)
+			return FALSE
+	return TRUE
 
 /turf/open/space/acid_act(acidpwr, acid_volume)
 	return FALSE
@@ -311,50 +370,22 @@
 
 /turf/open/space/transparent
 	baseturfs = /turf/open/space/transparent/openspace
+	/// Показывать ли базовый турф z-уровня подложкой, когда снизу нет уровня.
+	var/show_bottom_level = TRUE
 
 /turf/open/space/transparent/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	..()
-	plane = OPENSPACE_PLANE
-	layer = OPENSPACE_LAYER
 	icon_state = "transparent"
 
 	return INITIALIZE_HINT_LATELOAD
 
 /turf/open/space/transparent/LateInitialize()
-	update_multiz(TRUE, TRUE)
-
-/turf/open/space/transparent/Destroy()
-	vis_contents.len = 0
-	return ..()
-
-/turf/open/space/transparent/update_multiz(prune_on_fail = FALSE, init = FALSE)
 	. = ..()
-	var/turf/T = below()
-	if(!T)
-		vis_contents.len = 0
-		if(!show_bottom_level() && prune_on_fail) //If we cant show whats below, and we prune on fail, change the turf to space as a fallback
-			ChangeTurf(/turf/open/space)
-		return FALSE
-	if(init)
-		vis_contents += T
-	return TRUE
+	AddElement(/datum/element/turf_z_transparency, show_bottom_level)
 
-/turf/open/space/transparent/multiz_turf_del(turf/T, dir)
-	if(dir != DOWN)
-		return
-	update_multiz()
-
-/turf/open/space/transparent/multiz_turf_new(turf/T, dir)
-	if(dir != DOWN)
-		return
-	update_multiz()
-
-///Called when there is no real turf below this turf
-/turf/open/space/transparent/proc/show_bottom_level()
-	var/turf/path = get_z_base_turf()
-	var/mutable_appearance/underlay_appearance = mutable_appearance(initial(path.icon), initial(path.icon_state), layer = TURF_LAYER, plane = PLANE_SPACE)
-	underlays += underlay_appearance
-	return TRUE
+//Элемент уже висит с LateInitialize, второй Attach задвоил бы vis_contents и подложки.
+/turf/open/space/transparent/make_space_transparent()
+	return FALSE
 
 /turf/open/space/transparent/openspace
 	name = "open space"
@@ -362,18 +393,40 @@
 	icon_state = "transparent"
 	baseturfs = /turf/open/space/transparent/openspace
 	CanAtmosPassVertical = ATMOS_PASS_YES
+	show_bottom_level = FALSE //No bottom level for openspace.
 	//mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-
-///No bottom level for openspace.
-/turf/open/space/transparent/openspace/show_bottom_level()
-	return FALSE
 
 /turf/open/space/transparent/openspace/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	. = ..()
 
+	ADD_TRAIT(src, TURF_Z_OPENSPACE_TRAIT, TURF_TRAIT)
 	icon_state = "transparent"
 
-	vis_contents += GLOB.openspace_backdrop_one_for_all //Special grey square for projecting backdrop darkness filter on it.
+/turf/open/space/transparent/openspace/LateInitialize()
+	. = ..()
+	//AddElement мог откатить турф в пол, а ссылка на турф адресует координату: src здесь уже может быть полом.
+	if(istype(src, /turf/open/space/transparent/openspace))
+		RegisterSignal(src, COMSIG_ATOM_CREATED, PROC_REF(on_atom_created))
+
+// Общего предка с /turf/open/openspace нет, поэтому хуки падения повторяются здесь.
+/turf/open/space/transparent/openspace/Enter(atom/movable/mover, atom/oldloc, no_side_effects = FALSE)
+	. = ..()
+	if(. && !no_side_effects && oldloc == mover.loc)
+		mover.set_currently_z_moving(CURRENTLY_Z_FALLING_FROM_MOVE)
+
+/turf/open/space/transparent/openspace/Entered(atom/movable/AM)
+	. = ..()
+	//Родительский Entered() умеет спать на переносе через край z: движимого на турфе может уже не быть.
+	if(QDELETED(AM) || AM.loc != src)
+		return
+	if(AM.set_currently_z_moving(CURRENTLY_Z_FALLING))
+		zFall(AM, falling_from_move = TRUE)
+
+/turf/open/space/transparent/openspace/proc/on_atom_created(datum/source, atom/created_atom)
+	SIGNAL_HANDLER
+	if((!isobj(created_atom) && !isliving(created_atom)) || SSatoms.initialized != INITIALIZATION_INNEW_REGULAR)
+		return
+	addtimer(CALLBACK(src, PROC_REF(zfall_if_on_turf), created_atom), 0)
 
 /turf/open/space/transparent/openspace/zAirIn()
 	return TRUE
