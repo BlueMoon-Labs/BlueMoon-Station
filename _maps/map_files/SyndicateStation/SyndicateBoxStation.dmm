@@ -68949,7 +68949,7 @@
 /area/hallway/primary/central)
 "qDn" = (
 /obj/machinery/disposal/bin,
-/obj/structure/sign/barsign{
+/obj/structure/sign/barsign/syndicate{
 	pixel_x = -32;
 	pixel_y = 32
 	},
