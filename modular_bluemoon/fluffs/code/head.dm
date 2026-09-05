@@ -654,3 +654,10 @@
 		"red" = list("icon_state" = "commando_beret_red", "item_state" = "commando_beret_red")
 	)
 
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail
+	name = "Hounskull With Aventail"
+	desc = "A steel hounskull bascinet with a thick maille aventail secured to the inside. Just as a froggemund befits a knight in the tournaments, an aventailed bascinet befits a knight on the battlefield; unmatched in coverage, durability, and weight."
+	icon = 'icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
+	icon_state = "visaventail"
+	item_state = "visaventail"

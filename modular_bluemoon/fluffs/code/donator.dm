@@ -2633,47 +2633,16 @@
 	path = /obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
 	ckeywhitelist = list("foxrtotlimda")
 
-/obj/item/clothing/suit/armor/vest/knight/military/atomas
-	name = "Fluted Plate Armor"
-	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied councilmen that wish to flaunt their opulence towards the unwashed masses."
-	icon_state = "military"
-	dog_fashion = null
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
-	allowed = null
-	cold_protection = NONE
-	heat_protection = NONE
-	clothing_flags = NONE
-	max_heat_protection_temperature = null
-	min_cold_protection_temperature = null
-
 /datum/gear/donator/bm/atomas_fluted_armor
 	name = "Fluted Plate Armor"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/suit/armor/vest/knight/military/atomas
+	path = /obj/item/clothing/under/donator/bm/fulted_plate_armor
 	ckeywhitelist = list("atomas")
-
-/obj/item/clothing/head/helmet/military/atomas
-	name = "Hounskull With Aventail"
-	desc = "A steel hounskull bascinet with a thick maille aventail secured to the inside. Just as a froggemund befits a knight in the tournaments, an aventailed bascinet befits a knight on the battlefield; unmatched in coverage, durability, and weight."
-	icon_state = "visaventail"
-	item_state = "visaventail"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
-	flash_protect = 0
-	tint = 0
-	cold_protection = NONE
-	heat_protection = NONE
-	clothing_flags = NONE
-	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
-	max_heat_protection_temperature = null
-	min_cold_protection_temperature = null
-
-/obj/item/clothing/head/helmet/military/atomas/ComponentInitialize()
-	return
 
 /datum/gear/donator/bm/atomas_hounskull
 	name = "Hounskull With Aventail"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/helmet/military/atomas
+	path = /obj/item/clothing/head/donator/bm/hounskull_with_aventail
 	ckeywhitelist = list("atomas")
 
 /datum/gear/donator/bm/melatonin_bodysuit

@@ -993,3 +993,13 @@
 	body_parts_covered = NONE
 	can_adjust = TRUE
 	alternate_worn_layer = GLOVES_LAYER
+
+/obj/item/clothing/under/donator/bm/fulted_plate_armor
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied councilmen that wish to flaunt their opulence towards the unwashed masses."
+	icon = 'icons/obj/clothing/suits.dmi'
+	icon_state = "military"
+	item_state = "military"
+	mob_overlay_icon = 'icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit.dmi'
+
