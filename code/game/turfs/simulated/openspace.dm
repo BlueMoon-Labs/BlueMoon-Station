@@ -1,49 +1,49 @@
-GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdrop, new)
-
-/atom/movable/openspace_backdrop
-	name = "openspace_backdrop"
-
-	anchored = TRUE
-
-	icon            = 'icons/turf/floors.dmi'
-	icon_state      = "grey"
-	plane           = OPENSPACE_BACKDROP_PLANE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	layer           = SPLASHSCREEN_LAYER
-	//I don't know why the others are aligned but I shall do the same.
-	vis_flags = VIS_INHERIT_ID
-
 /turf/open/openspace
 	name = "open space"
 	desc = "Watch your step!"
 	icon_state = "invisible"
 	baseturfs = /turf/open/openspace
 	CanAtmosPassVertical = ATMOS_PASS_YES
-	baseturfs = /turf/open/openspace
 	turf_flags = TURF_FLAGS_DEFAULT & ~TURF_INTACT
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/can_cover_up = TRUE
 	var/can_build_on = TRUE
+	var/show_bottom_level = FALSE
 
 /turf/open/openspace/airless
 	initial_gas_mix = AIRLESS_ATMOS
 
-// /turf/open/transparent/openspace/debug/update_multiz()
-// 	..()
-// 	return TRUE
-
-// ///No bottom level for openspace.
-// /turf/open/transparent/openspace/show_bottom_level()
-// 	return FALSE
-
 /turf/open/openspace/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	. = ..()
-	overlays += GLOB.openspace_backdrop_one_for_all //Special grey square for projecting backdrop darkness filter on it.
+	ADD_TRAIT(src, TURF_Z_OPENSPACE_TRAIT, TURF_TRAIT)
 	return INITIALIZE_HINT_LATELOAD
 
 /turf/open/openspace/LateInitialize()
 	. = ..()
-	AddElement(/datum/element/turf_z_transparency, FALSE)
+	AddElement(/datum/element/turf_z_transparency, show_bottom_level)
+	//AddElement мог откатить турф в пол, а ссылка на турф адресует координату: src здесь уже может быть полом.
+	if(istype(src, /turf/open/openspace))
+		RegisterSignal(src, COMSIG_ATOM_CREATED, PROC_REF(on_atom_created))
+
+/// Взводит флаг падения, если шаг удастся. Именно Enter(): forceMove() его не зовёт, а oldloc == mover.loc отсекает примерочные вызовы.
+/turf/open/openspace/Enter(atom/movable/mover, atom/oldloc, no_side_effects = FALSE)
+	. = ..()
+	if(. && !no_side_effects && oldloc == mover.loc)
+		mover.set_currently_z_moving(CURRENTLY_Z_FALLING_FROM_MOVE)
+
+/turf/open/openspace/Entered(atom/movable/AM)
+	. = ..()
+	if(QDELETED(AM) || AM.loc != src)
+		return
+	if(AM.set_currently_z_moving(CURRENTLY_Z_FALLING))
+		zFall(AM, falling_from_move = TRUE)
+
+/// Роняет заспавненное над дырой. Сигнал приходит в начале Initialize() атома, двигать его оттуда нельзя - отсюда таймер.
+/turf/open/openspace/proc/on_atom_created(datum/source, atom/created_atom)
+	SIGNAL_HANDLER
+	if((!isobj(created_atom) && !isliving(created_atom)) || SSatoms.initialized != INITIALIZATION_INNEW_REGULAR)
+		return
+	addtimer(CALLBACK(src, PROC_REF(zfall_if_on_turf), created_atom), 0)
 
 /turf/open/openspace/can_have_cabling()
 	if(locate(/obj/structure/lattice/catwalk, src))
@@ -127,10 +127,11 @@ GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdr
 		if(L)
 			var/obj/item/stack/tile/plasteel/S = C
 			if(S.use(1))
-				qdel(L)
 				playsound(src, 'sound/weapons/genhit.ogg', 50, TRUE)
 				to_chat(user, "<span class='notice'>You build a floor.</span>")
+				//Пол сначала, решётку потом: снос опоры над дырой роняет всё, что на ней стоит.
 				PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
+				qdel(L)
 			else
 				to_chat(user, "<span class='warning'>You need one floor tile to build a floor!</span>")
 		else
@@ -170,7 +171,7 @@ GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdr
 
 /turf/open/openspace/icemoon/Initialize(mapload)
 	. = ..()
-	var/turf/T = below()
+	var/turf/T = GET_TURF_BELOW(src)
 	if(!T)
 		return
 	if(T.flags_1 & NO_RUINS_1 && protect_ruin)

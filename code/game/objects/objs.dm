@@ -5,7 +5,8 @@
 	var/can_astar_pass = CANASTARPASS_DENSITY
 	animate_movement = 2
 	speech_span = SPAN_ROBOT
-	vis_flags = VIS_INHERIT_PLANE //when this be added to vis_contents of something it inherit something.plane, important for visualisation of obj in openspace.
+	// Без VIS_INHERIT_PLANE: он схлопывал содержимое нижнего этажа на плоскость контейнера, ломая порядок слоёв и свет.
+	vis_flags = NONE
 	var/obj_flags = CAN_BE_HIT
 	var/set_obj_flags // ONLY FOR MAPPING: Sets flags from a string list, handled in Initialize. Usage: set_obj_flags = "EMAGGED;!CAN_BE_HIT" to set EMAGGED and clear CAN_BE_HIT.
 
@@ -352,6 +353,19 @@
 		if(AM.pass_flags & pass_flags_self)
 			return TRUE
 	. = !density
+
+/// Упавший предмет бьёт по тому, на что приземлился; живым урон считает /mob/living/ZImpactDamage().
+/obj/onZImpact(turf/impacted_turf, levels, impact_flags = NONE)
+	. = ..()
+	var/atom/highest = impacted_turf
+	for(var/atom/thing as anything in impacted_turf.contents)
+		if(!thing.density)
+			continue
+		if(thing == src)
+			continue
+		if((isobj(thing) || ismob(thing)) && thing.layer > highest.layer)
+			highest = thing
+	throw_impact(highest)
 
 /obj/proc/check_uplink_validity()
 	return TRUE

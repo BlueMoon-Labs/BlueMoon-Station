@@ -8,6 +8,7 @@
 
 /obj/structure/stairs
 	name = "stairs"
+	desc = "Ступеньки на этаж выше. Шевроны показывают, в какую сторону подниматься."
 	icon = 'icons/obj/stairs.dmi'
 	icon_state = "stairs"
 	anchored = TRUE
@@ -59,7 +60,10 @@
 	if(!newloc || !AM)
 		return ..()
 	if(!isobserver(AM) && isTerminator() && (get_dir(src, newloc) == dir))
+		//Приоритет выше CURRENTLY_Z_FALLING, иначе поднимающегося перехватит openspace на целевом турфе.
+		AM.set_currently_z_moving(CURRENTLY_Z_ASCENDING)
 		stair_ascend(AM)
+		AM.set_currently_z_moving(FALSE, TRUE)
 		return FALSE
 	return ..()
 
@@ -74,23 +78,49 @@
 	else
 		icon_state = "stairs"
 
-/obj/structure/stairs/proc/stair_ascend(atom/movable/AM)
-	var/turf/checking = get_step_multiz(get_turf(src), UP)
+/obj/structure/stairs/update_overlays()
+	. = ..()
+	//Без своих слоя и плоскости: оверлей наследует их у ступенек, а голая константа увела бы шевроны на этаж выше.
+	var/mutable_appearance/ascent_arrows = mutable_appearance('icons/turf/decals.dmi', "arrows")
+	ascent_arrows.dir = dir
+	. += ascent_arrows
+
+/// Шевроны нарисованы под dir, поэтому поворот ступенек обязан их перерисовать.
+/obj/structure/stairs/setDir(newdir, ismousemovement = FALSE)
+	if(dir == newdir)
+		return ..()
+	. = ..()
+	update_icon(UPDATE_OVERLAYS)
+
+/obj/structure/stairs/examine(mob/user)
+	. = ..()
+	. += span_notice("Подниматься на [dir2text_ru(dir) || "непонятно куда"].")
+
+	var/turf/source = get_turf(src)
+	var/turf/landing = source ? get_step_multiz(source, (dir|UP)) : null
+	if(!landing)
+		. += span_warning("Наверху ничего нет: подняться отсюда не выйдет.")
+		return
+	if(!isTerminator())
+		. += span_notice("Это середина марша - подъём случится на верхней ступеньке.")
+		return
+	. += span_notice("Наверху: [get_area_name(landing) || "неизвестно что"].")
+
+/obj/structure/stairs/proc/stair_ascend(atom/movable/climber)
+	var/turf/source = get_turf(src)
+	var/turf/checking = GET_TURF_ABOVE(source)
 	if(!istype(checking))
 		return
-	if(!checking.zPassIn(AM, UP, get_turf(src)))
+	// Интересует только то, что проход не перекрыт: долетит климбер или нет, решит zMove.
+	if(!climber.can_z_move(UP, source, checking, ZMOVE_ALLOW_BUCKLED))
 		return
-	var/turf/target = get_step_multiz(get_turf(src), (dir|UP))
-	if(istype(target) && !target.can_zFall(AM, null, get_step_multiz(target, DOWN)))			//Don't throw them into a tile that will just dump them back down.
-		if(isliving(AM))
-			var/mob/living/L = AM
-			var/pulling = L.pulling
-			if(pulling)
-				L.pulling.forceMove(target)
-			L.forceMove(target)
-			L.start_pulling(pulling)
-		else
-			AM.forceMove(target)
+	var/turf/target = get_step_multiz(source, (dir|UP))
+	if(!istype(target))
+		return
+	//Don't throw them into a tile that will just dump them back down.
+	if(climber.can_z_move(DOWN, target, null, ZMOVE_FALL_FLAGS))
+		return
+	climber.zMove(null, target, ZMOVE_STAIRS_FLAGS|ZMOVE_INCLUDE_PULLED)
 
 /obj/structure/stairs/vv_edit_var(var_name, var_value)
 	. = ..()
@@ -127,10 +157,10 @@
 		if(T && !istype(T))
 			T.ChangeTurf(/turf/open/openspace, flags = CHANGETURF_INHERIT_AIR)
 
-/obj/structure/stairs/intercept_zImpact(atom/movable/AM, levels = 1)
+/obj/structure/stairs/intercept_zImpact(list/falling_movables, levels = 1)
 	. = ..()
 	if(isTerminator())
-		. |= FALL_INTERCEPTED | FALL_NO_MESSAGE
+		. |= FALL_INTERCEPTED | FALL_NO_MESSAGE | FALL_RETAIN_PULL
 
 /obj/structure/stairs/proc/isTerminator()			//If this is the last stair in a chain and should move mobs up
 	if(terminator_mode != STAIR_TERMINATOR_AUTOMATIC)

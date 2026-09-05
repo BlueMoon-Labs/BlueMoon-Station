@@ -84,20 +84,26 @@
 	QDEL_LIST(diseases)
 	return ..()
 
-/mob/living/onZImpact(turf/T, levels)
-	if(!isgroundlessturf(T))
-		ZImpactDamage(T, levels)
+/mob/living/onZImpact(turf/impacted_turf, levels, impact_flags = NONE)
+	if(!isgroundlessturf(impacted_turf))
+		impact_flags |= ZImpactDamage(impacted_turf, levels)
 	return ..()
 
-/mob/living/proc/ZImpactDamage(turf/T, levels)
+/// Урон от падения. Возвращает флаги ZIMPACT_*: ими onZImpact() решает, показывать ли сообщение и крутить ли моба.
+/mob/living/proc/ZImpactDamage(turf/impacted_turf, levels)
+	SHOULD_CALL_PARENT(TRUE)
+	. = SEND_SIGNAL(src, COMSIG_LIVING_Z_IMPACT, levels, impacted_turf)
+	if(. & ZIMPACT_CANCEL_DAMAGE)
+		return .
 	//LIQUIDS ADD - landing in liquids softens the fall
-	if(T.liquids && T.liquids.liquid_state >= LIQUID_STATE_WAIST)
+	if(impacted_turf.liquids && impacted_turf.liquids.liquid_state >= LIQUID_STATE_WAIST)
 		Knockdown(2 SECONDS)
-		return
-	visible_message("<span class='danger'>[src] crashes into [T] with a sickening noise!</span>", \
-					"<span class='userdanger'>You crash into [T] with a sickening noise!</span>")
+		return . | ZIMPACT_NO_MESSAGE | ZIMPACT_NO_SPIN
+	visible_message("<span class='danger'>[src] врезается в [impacted_turf] с тошнотворным звуком!</span>", \
+					"<span class='userdanger'>Вы врезаетесь в [impacted_turf] с тошнотворным звуком!</span>")
 	adjustBruteLoss((levels * 5) ** 1.5)
 	DefaultCombatKnockdown(levels * 50)
+	return . | ZIMPACT_NO_MESSAGE
 
 
 /mob/living/proc/OpenCraftingMenu()
