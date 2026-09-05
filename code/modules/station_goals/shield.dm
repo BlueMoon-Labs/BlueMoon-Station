@@ -64,7 +64,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 			if(counted[covered])
 				continue
 			counted[covered] = TRUE
-			if(isspaceturf(covered) || istransparentturf(covered)) // openspace - for multi-z stations
+			if(isspaceturf(covered) || isopenspaceturf(covered))
 				counter++
 
 	GLOB.shield_coverage_cache = counter

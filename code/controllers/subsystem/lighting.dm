@@ -470,7 +470,12 @@ SUBSYSTEM_DEF(lighting)
 		var/_cbz_len = length(clients_by_z)
 		z_has_clients = new /list(_cbz_len)
 		for(var/_zz in 1 to _cbz_len)
-			z_has_clients[_zz] = !!length(clients_by_z[_zz])
+			if(!length(clients_by_z[_zz]))
+				continue
+			//Этажи под клиентом видны сквозь дыры: их объекты света обновляются как видимые.
+			for(var/visible_z in SSmapping.get_levels_visible_from(_zz))
+				if(visible_z <= _cbz_len)
+					z_has_clients[visible_z] = TRUE
 	if(!init_tick_checks)
 		objects_cap = clamp(max(LIGHTING_OBJECTS_MIN_CAP, corners_done * LIGHTING_OBJECTS_CAP_MULT), LIGHTING_OBJECTS_MIN_CAP, LIGHTING_OBJECTS_HARD_CEILING)
 		// Proactive budget check: reduce cap if previous phases consumed most of the tick
@@ -1068,9 +1073,16 @@ SUBSYSTEM_DEF(lighting)
 		count++
 	return count
 
-/// Есть ли на z кто-то, ради кого свет уровня строят и держат: живой клиент - всегда,
-/// наблюдатель - только с включённой темнотой (см. ghost_holds_zlevel_lighting).
+/// Жилец этажа выше видит z сквозь дыры, поэтому держит его свет так же, как свой.
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
+	for(var/viewing_z in SSmapping.get_levels_viewing(z))
+		if(zlevel_has_own_occupant(viewing_z))
+			return TRUE
+	return FALSE
+
+/// Есть ли на самом z кто-то, ради кого свет уровня строят и держат: живой клиент - всегда,
+/// наблюдатель - только с включённой темнотой (см. ghost_holds_zlevel_lighting).
+/datum/controller/subsystem/lighting/proc/zlevel_has_own_occupant(z)
 	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
 		if(!QDELETED(occupant))
 			return TRUE

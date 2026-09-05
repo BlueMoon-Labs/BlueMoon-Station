@@ -61,7 +61,13 @@
 	/// Since it's above everything else, this is the layer used by default. TURF_LAYER is below mobs and walls if you need to use that.
 	var/overlay_layer = AREA_LAYER
 	/// Plane for the overlay
-	var/overlay_plane = BLACKNESS_PLANE
+	var/overlay_plane = AREA_PLANE
+	/// Оверлеи прошлого обновления: снимаются с областей перед следующим.
+	var/list/overlay_cache
+	/// Области, на которых лежит overlay_cache. impacted_areas переписывают снаружи, снимать надо по этому списку.
+	var/list/overlaid_areas
+	/// Смещения плоскостей этажей, где у области есть турфы. Обход contents дорогой, считается раз на бурю.
+	var/list/area_plane_offsets
 	/// If the weather has no purpose but aesthetics.
 	var/aesthetic = FALSE
 	/// Used by mobs (or movables containing mobs, such as enviro bags) to prevent them from being affected by the weather.
@@ -105,20 +111,7 @@
 	if(stage == STARTUP_STAGE)
 		return
 	stage = STARTUP_STAGE
-	var/list/affectareas = list()
-	for(var/V in get_areas(area_type))
-		var/area/A = V
-		affectareas |= A
-		if(A.sub_areas)
-			affectareas |= A.sub_areas
-	for(var/V in protected_areas)
-		affectareas -= get_areas(V)
-	for(var/V in affectareas)
-		var/area/A = V
-		if(protect_indoors && !A.outdoors)
-			continue
-		if(A.z in impacted_z_levels)
-			impacted_areas |= A
+	impacted_areas |= collect_impacted_areas()
 	weather_duration = rand(weather_duration_lower, weather_duration_upper)
 	START_PROCESSING(SSweather, src)			//The reason this doesn't start and stop at main stage is because processing list is also used to see active running weathers (for example, you wouldn't want two ash storms starting at once.)
 	update_areas()
@@ -130,6 +123,33 @@
 			if(telegraph_sound)
 				SEND_SOUND(M, sound(telegraph_sound))
 	addtimer(CALLBACK(src, PROC_REF(start)), telegraph_duration)
+
+/// Области типа area_type, у которых есть турфы на затронутых z.
+/datum/weather/proc/collect_impacted_areas()
+	var/list/affectareas = list()
+	for(var/area/candidate as anything in get_areas(area_type))
+		affectareas |= candidate
+		if(candidate.sub_areas)
+			affectareas |= candidate.sub_areas
+	for(var/protected_type in protected_areas)
+		affectareas -= get_areas(protected_type)
+	var/list/found = list()
+	for(var/area/candidate as anything in affectareas)
+		if(protect_indoors && !candidate.outdoors)
+			continue
+		if(area_on_impacted_z(candidate))
+			found |= candidate
+	return found
+
+/// area.z - z нижнего турфа, у многоэтажной области верхние этажи видны только через z_levels.
+/// z_levels при перелёте шаттла не пересчитывается, поэтому живой area.z проверяется отдельно.
+/datum/weather/proc/area_on_impacted_z(area/checked)
+	if(checked.z in impacted_z_levels)
+		return TRUE
+	for(var/floor_z in checked.z_levels)
+		if(floor_z in impacted_z_levels)
+			return TRUE
+	return FALSE
 
 /**
   * Starts the actual weather and effects from it
@@ -266,22 +286,74 @@
   *
   */
 /datum/weather/proc/update_areas()
-	for(var/V in impacted_areas)
-		var/area/N = V
-		N.layer = overlay_layer
-		N.icon = 'icons/effects/weather_effects.dmi'
-		N.color = weather_color
+	var/list/overlays_by_offset = generate_overlay_cache()
+	var/list/new_overlay_cache = list()
+	for(var/offset_key in overlays_by_offset)
+		new_overlay_cache += overlays_by_offset[offset_key]
+
+	for(var/area/previous as anything in overlaid_areas)
+		if(length(overlay_cache))
+			previous.cut_overlay(overlay_cache)
+		if(stage == END_STAGE)
+			previous.set_opacity(FALSE)
+
+	var/list/offset_key_by_z
+	if(length(overlays_by_offset) > 1)
+		offset_key_by_z = new /list(world.maxz)
+		for(var/z in impacted_z_levels)
+			offset_key_by_z[z] = "[GET_Z_PLANE_OFFSET(z)]"
+
+	for(var/area/impacted as anything in impacted_areas)
+		for(var/offset_key in get_area_offset_keys(impacted, overlays_by_offset, offset_key_by_z))
+			impacted.add_overlay(overlays_by_offset[offset_key])
 		switch(stage)
-			if(STARTUP_STAGE)
-				N.icon_state = telegraph_overlay
 			if(MAIN_STAGE)
-				N.icon_state = weather_overlay
-				weather_act_turf(N)
-			if(WIND_DOWN_STAGE)
-				N.icon_state = end_overlay
+				weather_act_turf(impacted)
 			if(END_STAGE)
-				N.color = null
-				N.icon_state = ""
-				N.icon = 'icons/turf/areas.dmi'
-				N.layer = AREA_LAYER //Just default back to normal area stuff since I assume setting a var is faster than initial
-				N.set_opacity(FALSE)
+				impacted.set_opacity(FALSE)
+	overlay_cache = new_overlay_cache
+	overlaid_areas = (length(new_overlay_cache) && length(impacted_areas)) ? impacted_areas.Copy() : null
+
+/// Оверлей на каждое смещение плоскости среди затронутых z, ключ - смещение строкой.
+/datum/weather/proc/generate_overlay_cache()
+	var/weather_state
+	switch(stage)
+		if(STARTUP_STAGE)
+			weather_state = telegraph_overlay
+		if(MAIN_STAGE)
+			weather_state = weather_overlay
+		if(WIND_DOWN_STAGE)
+			weather_state = end_overlay
+	if(!weather_state)
+		return list()
+
+	var/list/overlays_by_offset = list()
+	for(var/z in impacted_z_levels)
+		var/offset = SSmapping.max_plane_offset ? GET_Z_PLANE_OFFSET(z) : 0
+		var/offset_key = "[offset]"
+		if(overlays_by_offset[offset_key])
+			continue
+		var/mutable_appearance/weather_layer = mutable_appearance('icons/effects/weather_effects.dmi', weather_state, overlay_layer, overlay_plane)
+		weather_layer.color = weather_color
+		SET_PLANE_W_SCALAR(weather_layer, overlay_plane, offset)
+		overlays_by_offset[offset_key] = weather_layer
+	return overlays_by_offset
+
+/// Ключи смещений, на этажах которых у области есть турфы. Область тянется через стопку, а оверлей области ложится на все её турфы разом.
+/datum/weather/proc/get_area_offset_keys(area/impacted, list/overlays_by_offset, list/offset_key_by_z)
+	if(length(overlays_by_offset) <= 1)
+		return overlays_by_offset
+	var/list/cached = area_plane_offsets?[impacted]
+	if(cached)
+		return cached
+
+	var/list/found = list()
+	for(var/turf/area_turf in impacted)
+		var/offset_key = offset_key_by_z[area_turf.z]
+		if(!offset_key || (offset_key in found))
+			continue
+		found += offset_key
+		if(length(found) == length(overlays_by_offset))
+			break
+	LAZYSET(area_plane_offsets, impacted, found)
+	return found

@@ -24,7 +24,7 @@
 	. = ..()
 	var/turf/T = get_turf_pixel(src)
 	if(iswallturf(T))
-		plane = GAME_PLANE
+		SET_PLANE_IMPLICIT(src, GAME_PLANE)
 
 	if(built)
 		setDir(ndir)

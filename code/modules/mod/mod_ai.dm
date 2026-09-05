@@ -149,7 +149,7 @@
 		var/obj/item/paicard/card = pai.card
 		card.forceMove(drop_off)
 		pai.forceMove(card)
-		pai.client.eye = card
+		pai.client.set_eye(card)
 
 	for(var/datum/action/action as anything in actions)
 		if(action.owner == pai)

@@ -44,26 +44,20 @@
 			survivors += "[leftover.type]"
 	TEST_ASSERT(!length(survivors), "Удаление моба оставило живыми экранные объекты HUD: [survivors.Join(", ")]")
 
-/// WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE объявлены одним и тем же числом, а
-/// `plane_masters` ключуется номером плоскости - значит из трёх плейн-мастеров в
-/// списке остаётся один. Двух вытесненных обязан удалять сам конструктор: в
-/// списке их нет, а `hud/Destroy` чистит именно список.
+/// Вытесненного по ключу плейн-мастера обязан удалять сам конструктор: `hud/Destroy` чистит только список.
 /datum/unit_test/hud_plane_master_key_collision_leaves_no_orphans
 
 /datum/unit_test/hud_plane_master_key_collision_leaves_no_orphans/Run()
-	var/list/planes_seen = list()
-	for(var/atom/movable/screen/plane_master/prototype as anything in subtypesof(/atom/movable/screen/plane_master))
-		var/plane_key = "[initial(prototype.plane)]"
-		planes_seen[plane_key] = TRUE
-	// Коллизий может и не быть (мульти-Z разводит плоскости по разным номерам) - тогда
-	// проверка ниже вырождается в "на каждую плоскость ровно один мастер и ни одного
-	// сироты", что само по себе инвариант и без коллизий.
-
 	var/mob/living/carbon/human/owner = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/hud/hud = new(owner)
 	owner.set_hud_used(hud)
 
-	TEST_ASSERT_EQUAL(length(hud.plane_masters), length(planes_seen), "В plane_masters оказалось не по одному плейн-мастеру на плоскость")
+	var/datum/plane_master_group/main_group = hud.master_groups[PLANE_GROUP_MAIN]
+	TEST_ASSERT_NOTNULL(main_group, "У худа нет основной группы плейн-мастеров")
+	var/expected = 0
+	for(var/atom/movable/screen/plane_master/master_type as anything in main_group.get_plane_types())
+		expected += (initial(master_type.offsetting_flags) & BLOCKS_PLANE_OFFSETTING) ? 1 : (main_group.built_depth + 1)
+	TEST_ASSERT_EQUAL(length(hud.plane_masters), expected, "В plane_masters оказалось не по одному плейн-мастеру на плоскость и этаж")
 
 	var/list/orphans = list()
 	for(var/atom/movable/screen/plane_master/live_master in screens_bound_to_hud(hud))
