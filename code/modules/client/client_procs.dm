@@ -1892,26 +1892,21 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 /client/proc/show_character_previews(mutable_appearance/source)
 	LAZYINITLIST(char_render_holders)
-	if(!LAZYLEN(char_render_holders))
-		for(var/plane_master_path as anything in subtypesof(/atom/movable/screen/plane_master))
-			var/atom/movable/screen/plane_master/plane_master = new plane_master_path()
-			var/holder_key = "plane_master-[plane_master.plane]"
-			//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE - одно и то же число (-3),
-			//поэтому ключа по плоскости на всех не хватает: два плейн-мастера из
-			//трёх затирались в списке, но оставались в client.screen. Найти их
-			//clear_character_previews() уже не мог, и каждая пересборка превью
-			//оставляла по два бессмертных экранных объекта.
-			if(char_render_holders[holder_key])
-				holder_key = "plane_master-[plane_master.type]"
-			char_render_holders[holder_key] = plane_master
+	if(!char_preview_planes)
+		//Через попап-группу: мастера без худа плодят реле на основной карте и заявляют те же имена render_target, что и худ игрока.
+		char_preview_planes = new(PLANE_GROUP_POPUP_WINDOW("character_preview"), "character_preview_map")
+		for(var/plane_key in char_preview_planes.plane_masters)
+			var/atom/movable/screen/plane_master/plane_master = char_preview_planes.plane_masters[plane_key]
 			plane_master.backdrop(mob)
-			screen |= plane_master
 			plane_master.screen_loc = "character_preview_map:0,CENTER"
+		char_preview_planes.register_to_client(src)
 		// Disable lighting on the preview — no lighting objects exist there,
 		// and the blur edge-fix filter would force the empty plane opaque black
-		var/atom/movable/screen/plane_master/lighting_pm = char_render_holders["plane_master-[LIGHTING_PLANE]"]
-		if(lighting_pm)
-			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+		for(var/plane_key in char_preview_planes.plane_masters)
+			var/atom/movable/screen/plane_master/lighting/lighting_pm = char_preview_planes.plane_masters[plane_key]
+			if(!istype(lighting_pm))
+				continue
+			lighting_pm.set_alpha(LIGHTING_PLANE_ALPHA_INVISIBLE)
 			lighting_pm.filters = null
 
 	var/pos = 0
@@ -1927,6 +1922,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		preview.screen_loc = "character_preview_map:0,[pos]"
 
 /client/proc/clear_character_previews()
+	char_preview_planes?.unregister_from_client(src)
+	QDEL_NULL(char_preview_planes)
 	if(!LAZYLEN(char_render_holders))
 		char_render_holders = null
 		return
@@ -2040,6 +2037,14 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	var/mob/dead/observer/observer = mob
 	observer.ManualFollow(target)
+
+/// Единственный путь смены client.eye: худ узнаёт о новом глазе по сигналу.
+/client/proc/set_eye(atom/new_eye)
+	if(new_eye == eye)
+		return
+	var/atom/old_eye = eye
+	eye = new_eye
+	SEND_SIGNAL(src, COMSIG_CLIENT_SET_EYE, old_eye, new_eye)
 
 /// Clears the client's screen, aside from ones that opt out
 /client/proc/clear_screen()
