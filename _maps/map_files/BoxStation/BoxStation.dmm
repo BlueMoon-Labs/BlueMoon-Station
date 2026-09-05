@@ -73879,10 +73879,6 @@
 	dir = 8
 	},
 /area/hallway/primary/central)
-"sUx" = (
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/space/basic,
-/area/maintenance/port/aft)
 "sVt" = (
 /obj/machinery/power/apc/auto_name/north,
 /obj/structure/cable{
@@ -111848,11 +111844,11 @@ bLv
 bLv
 bCq
 bLv
-sUx
-sUx
-sUx
-sUx
-sUx
+bLv
+bLv
+bLv
+bLv
+bLv
 bCq
 bCq
 bUz

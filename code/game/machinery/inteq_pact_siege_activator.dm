@@ -7,6 +7,7 @@
 	light_color = LIGHT_COLOR_ORANGE
 	circuit = /obj/item/circuitboard/computer/inteq_pact_siege
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	flags_1 = NODECONSTRUCT_1
 
 /obj/item/circuitboard/computer/inteq_pact_siege
 	name = "InteQ Bluespace Evac Console (Computer Board)"
@@ -14,6 +15,40 @@
 
 /obj/machinery/computer/inteq_pact_siege/ui_interact(mob/user, datum/tgui/ui)
 	return
+
+/obj/machinery/computer/inteq_pact_siege/AltClick(mob/user)
+	. = ..()
+	if(.)
+		return
+	if(!isliving(user))
+		return TRUE
+	var/mob/living/L = user
+	var/datum/inteq_pact_siege/siege = GLOB.inteq_pact_siege
+	if(!siege?.active)
+		to_chat(L, span_warning("Протокол осады не активен."))
+		return TRUE
+	if(siege.role_check_inteq(L))
+		to_chat(L, span_warning("Консоль не принимает команды от персонала InteQ на этой операции."))
+		return TRUE
+	if(!HAS_TRAIT(L, TRAIT_PACT_SIEGE_ATTACKER))
+		to_chat(L, span_warning("Только силы ПАКТ могут захватывать консоль."))
+		return TRUE
+	// var/alive_defenders = siege.living_defenders_count()
+	// if(alive_defenders > 0)
+	// 	to_chat(L, span_warning("Нельзя засчитать победу, пока жив обороняющийся персонал InteQ ([alive_defenders])."))
+	// 	return TRUE
+	L.visible_message(
+		span_warning("[L] начинает блокировать InteQ Bluespace Evac Console и взламывает протокол запуска..."),
+		span_warning("Вы начинаете фиксировать победу ПАКТ на консоли БС-двигателя... 30 секунд."),
+	)
+	if(!do_after(L, 30 SECONDS, target = src))
+		return TRUE
+	if(QDELETED(src) || QDELETED(L) || !siege.active || siege.living_defenders_count() > 0)
+		return TRUE
+	siege.conclude(PACT_SIEGE_SIDE_PACT, "силы ПАКТ захватили консоль БС-двигателей на объекте InteQ.", TRUE)
+	playsound(src, 'sound/machines/gateway/gateway_open.ogg', 65, TRUE)
+	balloon_alert(L, "победа ПАКТ засчитана")
+	return TRUE
 
 /obj/machinery/computer/inteq_pact_siege/Initialize(mapload)
 	. = ..()
