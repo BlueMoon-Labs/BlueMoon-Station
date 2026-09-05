@@ -835,9 +835,7 @@
 		shake_camera(src, 2, 3)
 		if(!is_dragging)
 			start_dragging(L)
-		return
-	if(hit_atom.density && !hit_atom.CanPass(src))
-	if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
+	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
 		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/hunter/punch2.ogg', 70, FALSE)
 		Stun(miss_stun_duration * 10)
