@@ -7,6 +7,22 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "melatonin-carrier-coat-0"
 	unique_reskin = null
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	clothing_flags = NONE
+	strip_delay = 40
+	equip_delay_other = 20
+	slowdown = 0
+	body_parts_covered = CHEST|GROIN|ARMS
+	cold_protection = CHEST|GROIN|ARMS
+	heat_protection = CHEST|GROIN|ARMS
+	allowed = null
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/ComponentInitialize()
+	return
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/Initialize(mapload)
+	. = ..()
+	allowed = null
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin/equipped(mob/user, slot)
 	. = ..()
