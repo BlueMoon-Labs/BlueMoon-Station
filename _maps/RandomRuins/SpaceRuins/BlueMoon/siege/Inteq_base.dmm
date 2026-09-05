@@ -627,6 +627,15 @@
 /obj/structure/frame,
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/SOLVED)
+"bN" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "bO" = (
 /obj/machinery/door/firedoor,
 /obj/effect/decal/cleanable/dirt,
@@ -44738,7 +44747,7 @@ pR
 pR
 Sh
 vJ
-gM
+bN
 gM
 BK
 dv
