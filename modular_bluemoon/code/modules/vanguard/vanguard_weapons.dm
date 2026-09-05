@@ -117,7 +117,7 @@
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 1
-	block_chance = 60
+	block_chance = 40
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
@@ -141,7 +141,7 @@
 	reqs = list(/obj/item/pointman_broken = 1,
 				/obj/item/stack/sheet/plasteel = 3,
 				/obj/item/stack/sheet/rglass = 3)
-	time = 40
+	time = 120
 	category = CAT_WEAPONRY
 	subcategory = CAT_MELEE
 	tools = list(TOOL_WELDER)
