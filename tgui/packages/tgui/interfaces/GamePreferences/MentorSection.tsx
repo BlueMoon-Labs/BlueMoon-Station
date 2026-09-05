@@ -6,6 +6,7 @@ type MentorData = {
   sound_mentorhelp: boolean;
   sound_volume_mentorhelp: number;
   dementor_on_login: boolean;
+  dementor_on_deadmin: boolean;
 };
 
 const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => {
@@ -24,7 +25,7 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
 
 export const MentorSection = (props) => {
   const { act, data } = useBackend<MentorData>();
-  const { has_mentor, sound_mentorhelp, sound_volume_mentorhelp, dementor_on_login } = data;
+  const { has_mentor, sound_mentorhelp, sound_volume_mentorhelp, dementor_on_login, dementor_on_deadmin } = data;
 
   if (!has_mentor) {
     return null;
@@ -80,7 +81,7 @@ export const MentorSection = (props) => {
       <Stack.Item>
         <Stack align="center" fill>
           <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Deadmin при логине</div>
+            <div className="GamePreferences__label">Dementor при логине</div>
             <div className="GamePreferences__hint">Автоматически снимать ментор-флаги при входе в игру</div>
           </Stack.Item>
           <Stack.Item>
@@ -89,6 +90,22 @@ export const MentorSection = (props) => {
               options={['Оставить ментора', 'Dementor']}
               selected={dementor_on_login ? 'Dementor' : 'Оставить ментора'}
               onSelected={() => act('toggle_mentor', { flag: 'dementor_on_login' })}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+       <Stack.Item>
+        <Stack align="center" fill>
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">Dementor при Deadmin</div>
+            <div className="GamePreferences__hint">Автоматически снимать ментор-флаги при Deadmin</div>
+          </Stack.Item>
+          <Stack.Item>
+            <Dropdown
+              width="150px"
+              options={['Оставить ментора', 'Dementor']}
+              selected={dementor_on_deadmin ? 'Dementor' : 'Оставить ментора'}
+              onSelected={() => act('toggle_admin', { flag: 'deadmin_autodementor' })}
             />
           </Stack.Item>
         </Stack>

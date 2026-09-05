@@ -69,16 +69,17 @@
 	allowed_mob = allowedmob
 	. = ..()
 
-/obj/structure/spider/stickyweb/genetic/CanPass(atom/movable/mover, turf/target, mob/living/carbon/human/H)
+/obj/structure/spider/stickyweb/genetic/CanPass(atom/movable/mover, turf/target)
 	. = ..() //this is the normal spider web return aka a spider would make this TRUE
 	if(mover == allowed_mob)
 		return TRUE
 	else if(isliving(mover)) //we change the spider to not be able to go through here
-		if(mover.pulledby == allowed_mob)
+		var/mob/living/living_mover = mover
+		if(living_mover.pulledby == allowed_mob)
 			return TRUE
 		if(prob(50))
-			to_chat(mover, "<span class='danger'>You get stuck in \the [src] for a moment.</span>")
-			H.AdjustConfused(10 SECONDS)
+			to_chat(living_mover, "<span class='danger'>You get stuck in \the [src] for a moment.</span>")
+			living_mover.AdjustConfused(10 SECONDS)
 			return FALSE
 		return TRUE
 	else if(istype(mover, /obj/item/projectile))

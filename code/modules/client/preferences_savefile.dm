@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	79
+#define SAVEFILE_VERSION_MAX	80
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -166,6 +166,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				continue
 			for(var/HK in KB.hotkey_keys)
 				LAZYADD(key_bindings[HK], KB.name)
+
+	if(current_version < 80)
+		ENABLE_BITFIELD(deadmin, DEADMIN_AUTODMENTOR)
+		if(CHECK_BITFIELD(mentor_toggles, (1<<6)))
+			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
+			DISABLE_BITFIELD(mentor_toggles, (1<<6))
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -930,7 +936,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 
 /**
- * Чистое решение: что делать с очередной отложенной записью савфайла.
+ * Чистое решение: что делать с очередной отложенной записью savefile.
  *
  * Общее для полной записи (pref_queue) и для сброса буфера одиночных записей
  * (single_pref_queue): пачку правок склеиваем в одну запись, но переносить её
@@ -954,7 +960,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  *
  * Ключ - "[имя действия]_[id]", значение - screen_loc или один из SCRN_OBJ_*. Всё это
  * пишет клиент, перетаскивая кнопки по экрану, поэтому и длину строк, и число записей
- * режем: кнопок у моба бывает под сотню, но набивать савфайл мусором произвольного
+ * режем: кнопок у моба бывает под сотню, но набивать savefile мусором произвольного
  * размера нельзя. Возвращает НОВЫЙ список, исходный не трогает.
  */
 /proc/sanitize_action_button_positions(list/raw_positions)
@@ -1000,7 +1006,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// WRITE_FILE по такому списку) скомпилировалась бы в опкод вывода и испортила список.
 	pending[key] = value
 
-/// Записывает в савфайл ОДИН ключ, не переписывая весь блок префов.
+/// Записывает в savefile ОДИН ключ, не переписывая весь блок префов.
 ///
 /// Полный save_preferences() это ~124 WRITE_FILE подряд, и каждый - синхронный поход
 /// на диск, морозящий весь процесс. За раунд 10137 таких заморозок набралось 6230 на
@@ -1018,7 +1024,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 /// схлопываются в одно открытие вместо десятков.
 ///
 /// Существование файла проверяет сброс буфера (flush_single_prefs), а не каждый вызов:
-/// у нового игрока запись одного ключа создала бы савфайл без "version", поэтому сброс
+/// у нового игрока запись одного ключа создала бы savefile без "version", поэтому сброс
 /// в такой файл уходит полной записью. Здесь походов на диск нет вовсе - швабра зовёт
 /// это на каждую отмытую плитку.
 ///
@@ -1044,7 +1050,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	LAZYINITLIST(pending_single_prefs)
 	pref_pending_absorb(pending_single_prefs, key, value)
 	// Полная запись уже стоит в очереди: она откроет тот же файл и допишет буфер сама
-	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие савфайла
+	// (см. хвост save_preferences). Свой таймер тут значил бы ВТОРОЕ открытие savefile
 	// на того же игрока - ровно то, от чего мы и уходим.
 	if(pref_queue)
 		return TRUE
@@ -1060,8 +1066,19 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 	return TRUE
 
+/// Кладёт в буфер склейки один корневой ключ префов, беря значение из одноимённой переменной
+/// датума: звать после присваивания, только для скаляров и ключей без преобразований.
+/datum/preferences/proc/save_pref_var(var_name, key)
+	if(!path)
+		return FALSE
+	if(var_name)
+		if(var_name in vars)
+			return buffer_single_pref(key || var_name, vars[var_name])
+		stack_trace("save_pref_var: у префов нет переменной [var_name]")
+	return save_preferences(silent = TRUE) ? TRUE : FALSE
+
 /**
- * Дописывает буфер склейки в УЖЕ открытый савфайл и опустошает его.
+ * Дописывает буфер склейки в УЖЕ открытый savefile и опустошает его.
  *
  * Вызывающий обязан держать target.cd на корне: одиночные ключи живут там же, где их
  * пишет save_preferences. Возвращает число записанных ключей.
@@ -1080,11 +1097,18 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		written++
 	return written
 
+/proc/flush_pending_single_prefs()
+	for(var/ckey in GLOB.preferences_datums)
+		var/datum/preferences/prefs = GLOB.preferences_datums[ckey]
+		if(!istype(prefs) || !length(prefs.pending_single_prefs))
+			continue
+		prefs.flush_single_prefs()
+
 /**
- * Сбрасывает буфер склейки на диск ОДНИМ открытием савфайла.
+ * Сбрасывает буфер склейки на диск ОДНИМ открытием savefile.
  *
- * Дёргается таймером из buffer_single_pref, разлогином клиента и Destroy датума.
- * Пустой буфер до диска не доходит вовсе.
+ * Дёргается таймером из buffer_single_pref, разлогином клиента, Destroy датума и
+ * ребутом мира (flush_pending_single_prefs). Пустой буфер до диска не доходит вовсе.
  */
 /datum/preferences/proc/flush_single_prefs()
 	if(single_pref_queue)
@@ -1099,7 +1123,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		pending_single_prefs = null
 		return FALSE
 	if(!fexists(path))
-		// Одиночная запись создала бы савфайл без "version", поэтому уходим полной
+		// Одиночная запись создала бы savefile без "version", поэтому уходим полной
 		// записью. Буфер при этом НЕ обнуляем заранее: полная запись дописывает его
 		// сама (write_pending_single_prefs), а если файл не откроется - буфер
 		// переживёт провал и уйдёт со следующим сбросом.
@@ -1107,7 +1131,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/keys_written = length(pending_single_prefs)
 	// Три разных kind вместо одного общего "savefile (запись)": детектор спайков ведёт
 	// разбивку по kind и печатает её в итоге раунда, а имя вызова (desc) он запоминает
-	// только тем, кто перешагнул slow_work_threshold_ms - ни одна запись савфайла до
+	// только тем, кто перешагнул slow_work_threshold_ms - ни одна запись savefile до
 	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
 	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
 	var/blocking_started_ms = blocking_call_start()
@@ -1116,6 +1140,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 		return FALSE
 	single_file.cd = "/"
+	// Файл ниже текущей версии дописывать по ключу нельзя - миграция уходит полной записью.
+	var/file_version
+	READ_FILE(single_file["version"], file_version)
+	if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
+		single_file = null
+		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
+		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	write_pending_single_prefs(single_file)
 	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 	return TRUE
@@ -1150,6 +1181,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			single_pref_queue = addtimer(CALLBACK(src, PROC_REF(flush_single_prefs)), PREF_SINGLE_SAVE_DEBOUNCE, TIMER_STOPPABLE)
 		return FALSE
 	S.cd = "/"
+	if(single_pref_queue)
+		deltimer(single_pref_queue)
+	single_pref_queue = null
+	single_pref_queue_deadline = 0
+	write_pending_single_prefs(S)
 
 	WRITE_FILE(S["version"] , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
 
@@ -1183,7 +1219,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["windownoise"], windownoise)
 	WRITE_FILE(S["mood_vignette"], mood_vignette)
 	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
-	WRITE_FILE(S["action_buttons_screen_locs"], action_buttons_screen_locs)
+	// Одиночный путь кладёт в буфер уже санитизированный список - пишем тем же видом.
+	WRITE_FILE(S["action_buttons_screen_locs"], sanitize_action_button_positions(action_buttons_screen_locs))
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
@@ -1290,14 +1327,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
 
 	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
-
-	// Файл уже открыт - дописать в него буфер склейки бесплатно, а отдельный сброс
-	// открыл бы тот же савфайл второй раз.
-	if(single_pref_queue)
-		deltimer(single_pref_queue)
-	single_pref_queue = null
-	single_pref_queue_deadline = 0
-	write_pending_single_prefs(S)
 
 	if(parent)
 		if(ishuman(parent?.mob))

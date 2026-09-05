@@ -334,12 +334,17 @@
 	set waitfor = FALSE
 
 	var/direction = pick(directions)
+	var/turf/birth_turf = loc
 	for(var/i in 0 to pick(0, 20;1)) //small chance of going farther than 1 tile
 		sleep(2) //smooths movement
-		if(i > 0)
-			new /obj/effect/decal/cleanable/confetti(loc)
+		// Конфетти сыплется на покинутый турф, иначе кап вытесняет саму декаль в полёте.
+		var/turf/left_turf = loc
 		if(!step_to(src, get_step(src, direction), 0))
 			break
+		if(i > 0)
+			new /obj/effect/decal/cleanable/confetti(left_turf)
+	if(!QDELETED(src) && isturf(loc) && loc != birth_turf)
+		enforce_turf_decal_cap()
 
 /obj/effect/decal/cleanable/wrapping
 	name = "wrapping shreds"

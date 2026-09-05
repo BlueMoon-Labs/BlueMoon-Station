@@ -118,6 +118,14 @@
 /obj/item/mod/module/proc/on_unequip()
 	return
 
+//Сюда нужно прописывать новые варианты, если появятся МОДы, которые вешаются в другой слот.
+/obj/item/mod/module/proc/update_modsuit_slot()
+	switch(mod.slot_flags)
+		if(ITEM_SLOT_BACK)
+			mod.wearer.update_inv_back()
+		if(ITEM_SLOT_BELT)
+			mod.wearer.update_inv_belt()
+
 /// Called when the module is selected from the TGUI
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer

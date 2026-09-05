@@ -321,7 +321,8 @@
 	actions_types = list(
 		/datum/action/item_action/degree_distortion_effect,
 		/datum/action/item_action/toggle_echo_effect_dress,
-		/datum/action/item_action/toggle_particle_effect_dress
+		/datum/action/item_action/toggle_particle_effect_dress,
+		/datum/action/item_action/dress_summon_pod
 	)
 	can_adjust = TRUE
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
@@ -345,6 +346,14 @@
 	var/skin = "default"
 	var/datum/component/ntnet_interface/net
 	var/datum/component/neural_interface/neural_interface
+	var/list/summon_pod_items = list(
+		"AA-MOD plate" = /obj/item/mod/construction/armor/anomalous_archeotech,
+		// "AA-MOD PROTOTYPE MODULE" = /obj/item/mod/module/kinesis,
+		// "CELL :01" = /obj/item/stock_parts/cell/hyper,
+		// "TOOLBELT" = /obj/item/storage/belt,
+		// "COOLING UNIT" = /obj/item/device/cooler
+	)
+	var/processing_summon_pod = FALSE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/New()
 	. = ..()
@@ -607,6 +616,58 @@
 	position = generator("circle", 0, 10)
 	velocity = generator("circle", 0.3, 1)
 	fade = 1
+
+/datum/action/item_action/dress_summon_pod
+	name = "Summon Pod"
+
+/datum/action/item_action/dress_summon_pod/Trigger(trigger_flags)
+	if(!..())
+		return FALSE
+
+	var/list/items = list()
+	var/obj/item/clothing/under/donator/bm/inlaid_data_dress/T = target
+
+	if(T.processing_summon_pod)
+		return
+	T.processing_summon_pod = TRUE
+
+	for(var/name in T.summon_pod_items)
+		items += name
+
+	SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: INITIATED", "INFO")
+	var/list/selected_items = list()
+	var/index_selected
+	do
+		index_selected = tgui_input_list(owner, "Запрашиваю поставку...","SELECT...", items)
+		if(index_selected)
+			selected_items += index_selected
+			items -= index_selected
+	while(index_selected)
+
+	if(QDELETED(T))
+		return FALSE
+
+	if(LAZYLEN(selected_items) < 1)
+		SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: REJECTED", "INFO")
+		T.processing_summon_pod = FALSE
+		return
+
+	var/area/pod_storage_area = locate(/area/centcom/supplypod/podStorage) in GLOB.sortedAreas
+	var/obj/structure/closet/supplypod/bluespacepod/pod = new(pick(get_area_turfs(pod_storage_area)))
+
+	for(var/item_name in selected_items)
+		var/type = T.summon_pod_items[item_name]
+		var/obj/item = new type()
+		item.forceMove(pod)
+
+	for(var/remove in selected_items)
+		T.summon_pod_items -= remove
+
+	SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: PROCESSING", "INFO")
+
+	T.processing_summon_pod = FALSE
+	return new /obj/effect/pod_landingzone(get_turf(T), pod)
+
 
 ///////////////////////////////////////////////
 

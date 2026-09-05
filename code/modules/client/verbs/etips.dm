@@ -4,7 +4,7 @@
 	set category = "Preferences.Game"
 
 	prefs.enable_tips = !prefs.enable_tips
-	prefs.save_preferences()
+	prefs.save_pref_var("enable_tips")
 	to_chat(usr, "<span class='danger'>Examine tooltips [prefs.enable_tips ? "en" : "dis"]abled.</span>")
 
 /client/verb/change_tip_delay()
@@ -16,7 +16,7 @@
 	indelay = text2num(indelay)
 	if(usr)//is this what you mean?
 		prefs.tip_delay = max(indelay, 0.01)
-		prefs.save_preferences()
+		prefs.save_pref_var("tip_delay")
 		to_chat(usr, "<span class='danger'>Tooltip delay set to [indelay] milliseconds.</span>")
 
 /client/verb/toggle_hover_outline()
@@ -25,5 +25,5 @@
 	set category = "Preferences.Game"
 
 	prefs.outline_enabled = !prefs.outline_enabled
-	prefs.save_preferences()
+	prefs.save_pref_var("outline_enabled")
 	to_chat(usr, "<span class='danger'>Item outline [prefs.outline_enabled ? "en" : "dis"]abled.</span>")

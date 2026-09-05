@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+/// Сколько панель ждёт ответа клиента на winget dpi, прежде чем принять масштаб по умолчанию.
+#define TGUI_PANEL_DPI_WAIT (3 SECONDS)
+
 /**
  * tgui_panel datum
  * Hosts tgchat and other nice features.
@@ -68,6 +71,11 @@
  */
 /datum/tgui_panel/proc/on_message(type, payload, href_list)
 	if(type == "ready")
+		// Масштаб окна панель получает один раз, здесь, а dpi едет отдельным winget - ждём его ответа.
+		var/dpi_deadline = world.time + TGUI_PANEL_DPI_WAIT
+		UNTIL(!client || client.window_scaling_resolved || world.time > dpi_deadline)
+		if(QDELETED(src) || !client)
+			return FALSE
 		broken = FALSE
 		// Switch to new UI now that the panel is actually loaded.
 		// Respects the user's explicit choice to use legacy chat.
@@ -139,3 +147,5 @@
  */
 /datum/tgui_panel/proc/send_roundrestart()
 	window.send_message("roundrestart")
+
+#undef TGUI_PANEL_DPI_WAIT

@@ -1,6 +1,5 @@
-///Фаеров подряд, которые бакет держит моба на z-уровне без клиентов, прежде чем
-///перепроверить обстановку. Такой моб не делает ничего, кроме handle_fire, а
-///горящий из бакета исключён явно.
+///Фаеров подряд, которые бакет держит моба на z-уровне без клиентов или вне мира.
+///Горящий моб из бакета исключён явно.
 #define LIFE_EMPTY_Z_SKIP_FIRES 4
 ///Каденс Life живого моба вдали от игроков, в фаерах SSmobs (4 фаера = 8 секунд).
 #define LIFE_FAR_ALIVE_CADENCE 4
@@ -42,53 +41,59 @@
 	// каждый N-й фаер (залп давал p95 ~50мс при медиане ~4мс).
 	if(!client)
 		var/turf/our_turf = get_turf(src)
-		if(our_turf)
-			var/list/clients_on_z = SSmobs.clients_by_zlevel
-			if(islist(clients_on_z) && our_turf.z <= length(clients_on_z))
-				if(!length(clients_on_z[our_turf.z]))
-					// No players on this Z-level: skip everything except fire
-					if(on_fire)
-						handle_fire()
-					else
-						life_next_fire = times_fired + LIFE_EMPTY_Z_SKIP_FIRES
+		if(!our_turf)
+			// Вне мира (loc == null) наблюдаемого Life нет, и огонь тут не трогаем:
+			// handle_fire() читает loc.return_air(), а loc пуст.
+			if(registered_z && !audiovisual_redirect)
+				update_z(null)
+			life_next_fire = times_fired + LIFE_EMPTY_Z_SKIP_FIRES
+			return
+		var/list/clients_on_z = SSmobs.clients_by_zlevel
+		if(islist(clients_on_z) && our_turf.z <= length(clients_on_z))
+			if(!length(clients_on_z[our_turf.z]))
+				// No players on this Z-level: skip everything except fire
+				if(on_fire)
+					handle_fire()
+				else
+					life_next_fire = times_fired + LIFE_EMPTY_Z_SKIP_FIRES
+				return
+			// Lever 4: memoize proximity (TTL 2 fires); the throttle only acts on
+			// the result every 4th/15th fire, so hitting the grid every fire for
+			// hundreds of clientless mobs was pure overhead.
+			var/nearby_player = has_nearby_player_cached(times_fired)
+			// Players on Z-level but none nearby: stagger processing
+			if(!nearby_player && !should_bypass_life_throttle())
+				if(stat == DEAD)
+					// Dead far from players: process once per 30 sec
+					if((times_fired + life_stagger_phase) % LIFE_FAR_DEAD_CADENCE != 0)
+						life_time_debt += skipped_seconds
+						life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_FAR_DEAD_CADENCE)
+						return
+					if(fires_elapsed > 1) //фаеры, съеденные бакетом, тоже игровое время
+						life_time_debt += seconds * (fires_elapsed - 1)
+					var/dead_seconds = seconds + life_time_debt
+					life_time_debt = 0
+					life_next_fire = times_fired + LIFE_FAR_DEAD_CADENCE
+					BiologicalLife(dead_seconds, times_fired)
 					return
-				// Lever 4: memoize proximity (TTL 2 fires); the throttle only acts on
-				// the result every 4th/15th fire, so hitting the grid every fire for
-				// hundreds of clientless mobs was pure overhead.
-				var/nearby_player = has_nearby_player_cached(times_fired)
-				// Players on Z-level but none nearby: stagger processing
-				if(!nearby_player && !should_bypass_life_throttle())
-					if(stat == DEAD)
-						// Dead far from players: process once per 30 sec
-						if((times_fired + life_stagger_phase) % LIFE_FAR_DEAD_CADENCE != 0)
-							life_time_debt += skipped_seconds
-							life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_FAR_DEAD_CADENCE)
-							return
-						if(fires_elapsed > 1) //фаеры, съеденные бакетом, тоже игровое время
-							life_time_debt += seconds * (fires_elapsed - 1)
-						var/dead_seconds = seconds + life_time_debt
-						life_time_debt = 0
-						life_next_fire = times_fired + LIFE_FAR_DEAD_CADENCE
-						BiologicalLife(dead_seconds, times_fired)
-						return
-					// Alive far from players: process once per 8 sec
-					if((times_fired + life_stagger_phase) % LIFE_FAR_ALIVE_CADENCE != 0)
-						life_time_debt += skipped_seconds
-						life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_FAR_ALIVE_CADENCE)
-						return
-					// Фаер настал - бронируем следующий сразу. Иначе SSmobs звал бы
-					// Life() и на промежуточных фаерах, только чтобы тот ушёл в
-					// бакет: 2 вызова из 4 вместо одного.
-					life_next_fire = times_fired + LIFE_FAR_ALIVE_CADENCE
-				// Lever 1: a corpse NEAR a player - slow decay cadence (organs/rot/
-				// disease are slow; defib and the zombie organ run via SSobj, not
-				// Life). Exempt corpses carrying a dead-process reagent (revival).
-				else if(nearby_player && stat == DEAD && !should_bypass_life_throttle() && !dead_life_is_time_sensitive())
-					if((times_fired + life_stagger_phase) % LIFE_NEAR_DEAD_CADENCE != 0)
-						life_time_debt += skipped_seconds
-						life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_NEAR_DEAD_CADENCE)
-						return
-					life_next_fire = times_fired + LIFE_NEAR_DEAD_CADENCE
+				// Alive far from players: process once per 8 sec
+				if((times_fired + life_stagger_phase) % LIFE_FAR_ALIVE_CADENCE != 0)
+					life_time_debt += skipped_seconds
+					life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_FAR_ALIVE_CADENCE)
+					return
+				// Фаер настал - бронируем следующий сразу. Иначе SSmobs звал бы
+				// Life() и на промежуточных фаерах, только чтобы тот ушёл в
+				// бакет: 2 вызова из 4 вместо одного.
+				life_next_fire = times_fired + LIFE_FAR_ALIVE_CADENCE
+			// Lever 1: a corpse NEAR a player - slow decay cadence (organs/rot/
+			// disease are slow; defib and the zombie organ run via SSobj, not
+			// Life). Exempt corpses carrying a dead-process reagent (revival).
+			else if(nearby_player && stat == DEAD && !should_bypass_life_throttle() && !dead_life_is_time_sensitive())
+				if((times_fired + life_stagger_phase) % LIFE_NEAR_DEAD_CADENCE != 0)
+					life_time_debt += skipped_seconds
+					life_next_fire = LIFE_NEXT_DUE_FIRE(times_fired, life_stagger_phase, LIFE_NEAR_DEAD_CADENCE)
+					return
+				life_next_fire = times_fired + LIFE_NEAR_DEAD_CADENCE
 	// END BLUEMOON OPTIMIZATION
 
 	// Фаеры, которые бакет пропустил мимо Life() до этого прохода, тоже игровое

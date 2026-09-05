@@ -1562,17 +1562,17 @@
 	path = /obj/item/clothing/suit/hooded/bm/donator/cybercoat
 	ckeywhitelist = list("cnaperdodo")
 
-/datum/gear/donator/bm/hood_armored
-	name = "Большой капюшон"
-	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/donator/bm/hood_armored
-	ckeywhitelist = list("cnaperdodo")
+// /datum/gear/donator/bm/hood_armored
+// 	name = "Большой капюшон"
+// 	slot = ITEM_SLOT_HEAD
+// 	path = /obj/item/clothing/head/donator/bm/hood_armored
+// 	ckeywhitelist = list("cnaperdodo")
 
-/datum/gear/donator/bm/rebel_armor
-	name = "Кольчуга контрабандистов"
-	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/armor/donator/bm/rebel_armor
-	ckeywhitelist = list("cnaperdodo")
+// /datum/gear/donator/bm/rebel_armor
+// 	name = "Кольчуга контрабандистов"
+// 	slot = ITEM_SLOT_OCLOTHING
+// 	path = /obj/item/clothing/suit/armor/donator/bm/rebel_armor
+// 	ckeywhitelist = list("cnaperdodo")
 
 /datum/gear/donator/bm/clf_uniform
 	name = "Перекрашенный комплект ЧВК"
@@ -2668,3 +2668,9 @@
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/tie/sawwr_coat
 	ckeywhitelist = list("hartty", "sawwarrr")
+
+/datum/gear/donator/bm/sawwr_ice_axe_kit
+	name = "Ice Axe Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/ice_axe_kit
+	ckeywhitelist = list("hartty")

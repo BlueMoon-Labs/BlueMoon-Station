@@ -17,17 +17,17 @@
 /obj/item/mod/module/armor/Initialize(mapload)
 	. = ..()
 	material_to_armor_list = list(
-		new /obj/item/stack/sheet/durathread 			= MELEE,
-		new /obj/item/stack/sheet/plasteel 				= BULLET,
-		new /obj/item/stack/sheet/mineral/titanium 		= LASER,
-		new /obj/item/stack/sheet/mineral/diamond		= ENERGY,
-		new /obj/item/stack/sheet/mineral/gold			= BOMB,
-		new /obj/item/stack/sheet/mineral/silver		= BIO,
-		new /obj/item/stack/sheet/mineral/plastitanium 	= RAD,
-		new /obj/item/stack/sheet/plastitaniumglass		= FIRE,
-		new /obj/item/stack/sheet/rglass				= ACID,
-		new /obj/item/stack/sheet/mineral/adamantine	= MAGIC,
-		new /obj/item/stack/sheet/mineral/abductor		= WOUND,
+		/obj/item/stack/sheet/durathread::name 			 = MELEE,
+		/obj/item/stack/sheet/plasteel::name 			 = BULLET,
+		/obj/item/stack/sheet/mineral/titanium::name 	 = LASER,
+		/obj/item/stack/sheet/mineral/diamond::name		 = ENERGY,
+		/obj/item/stack/sheet/mineral/gold::name		 = BOMB,
+		/obj/item/stack/sheet/mineral/silver::name		 = BIO,
+		/obj/item/stack/sheet/mineral/plastitanium::name = RAD,
+		/obj/item/stack/sheet/plastitaniumglass::name	 = FIRE,
+		/obj/item/stack/sheet/rglass::name				 = ACID,
+		/obj/item/stack/sheet/mineral/adamantine::name	 = MAGIC,
+		/obj/item/stack/sheet/mineral/abductor::name	 = WOUND,
 	)
 
 /obj/item/mod/module/armor/Destroy()
@@ -40,8 +40,8 @@
 	if(armor_type)
 		return
 	. += span_boldnotice("Сейчас доступны варианты:")
-	for(var/obj/item/stack/sheet/material in material_to_armor_list)
-		. += (span_alert("Материал --[(material.name)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
+	for(var/material in material_to_armor_list)
+		. += (span_alert("Материал --[(material)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
 
 /obj/item/mod/module/armor/proc/add_armor_bonus()
 	for(var/index in mod.mod_parts)
@@ -50,8 +50,8 @@
 		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
 		var/datum/armor/part_armor = part.get_armor()
 		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_type]" = armor_bonus)))
-	mod.slowdown_active += slowdown_bonus	//в модулях опасно обращаться напрямую к wearer, потому что его может не быть
-	mod.slowdown_inactive += slowdown_bonus //лучше просто моду самому поменять слоудаун.
+	mod.slowdown_active += slowdown_bonus
+	mod.slowdown_inactive += slowdown_bonus
 
 /obj/item/mod/module/armor/proc/remove_armor_bonus()
 	for(var/index in mod.mod_parts)
@@ -64,9 +64,9 @@
 	mod.slowdown_inactive -= slowdown_bonus
 
 /obj/item/mod/module/armor/proc/get_armor_by_material(obj/item/stack/sheet/material)
-	for(var/obj/item/stack/sheet/material_in_list in material_to_armor_list)
-		if(istype(material, material_in_list))
-			return material_to_armor_list[material_in_list]
+	for(var/material_name in material_to_armor_list)
+		if(material_name == material.name)
+			return material_to_armor_list[material_name]
 
 /obj/item/mod/module/armor/on_install()
 	. = ..()

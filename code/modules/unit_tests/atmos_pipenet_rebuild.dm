@@ -64,12 +64,12 @@
 	// МК, и слепая запись ломает его бухгалтерию до конца прогона (см.
 	// measure_passes в ai_benchmark.dm).
 	var/saved_ticklimit = Master.current_ticklimit
-	var/saved_state = SSair.state
+	var/saved_can_fire = detach_subsystem(SSair)
 	Master.current_ticklimit = INFINITY
 	SSair.state = SS_RUNNING
 	SSair.process_rebuild_queue()
 	Master.current_ticklimit = saved_ticklimit
-	SSair.state = saved_state
+	release_subsystem(SSair, saved_can_fire)
 
 	TEST_ASSERT_EQUAL(length(SSair.expansion_queue), 0, "the expansion queue was not drained")
 	TEST_ASSERT(!left.rebuild_queued && !right.rebuild_queued, "rebuild flags were not cleared by the rebuild phase")
@@ -96,7 +96,7 @@
 
 	// См. комментарий в тесте deferred_rebuild: состояние вернуть КАК БЫЛО.
 	var/saved_ticklimit = Master.current_ticklimit
-	var/saved_state = SSair.state
+	var/saved_can_fire = detach_subsystem(SSair)
 	// Нулевой бюджет: первый же MC_TICK_CHECK внутри обхода пасует фазу.
 	Master.current_ticklimit = 0
 	SSair.state = SS_RUNNING
@@ -109,7 +109,7 @@
 	SSair.state = SS_RUNNING
 	SSair.process_rebuild_queue()
 	Master.current_ticklimit = saved_ticklimit
-	SSair.state = saved_state
+	release_subsystem(SSair, saved_can_fire)
 
 	TEST_ASSERT(!net.building, "the resumed expansion never finished")
 	TEST_ASSERT_EQUAL(length(SSair.expansion_queue), 0, "the resumed expansion left its packet behind")

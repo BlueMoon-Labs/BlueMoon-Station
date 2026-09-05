@@ -1429,7 +1429,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship5)
 "ei" = (
-/obj/item/toy/plush/borgplushie/meddrake,
+/obj/item/toy/plush/borgplushie/meddrake{
+	pixel_y = -10;
+	pixel_x = 8
+	},
+/obj/item/toy/plush/mothplushie{
+	pixel_y = 15;
+	pixel_x = -13
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "ej" = (
@@ -3915,7 +3922,9 @@
 "le" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
-/obj/item/toy/plush/bm/millie,
+/obj/item/toy/plush/bm/millie{
+	pixel_y = 4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "lf" = (
@@ -4421,7 +4430,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "mA" = (
-/obj/item/toy/plush/bm/zetta,
+/obj/item/toy/plush/bm/zetta{
+	pixel_x = -10
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "mB" = (
@@ -6161,9 +6172,14 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "rn" = (
-/obj/item/toy/plush/bm/araminta,
-/obj/item/toy/plush/bm/araminta,
-/obj/item/toy/plush/bm/lissara,
+/obj/item/toy/plush/bm/araminta{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/obj/item/toy/plush/bm/lissara{
+	pixel_y = -6;
+	pixel_x = 8
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "ro" = (
@@ -6606,7 +6622,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "sF" = (
-/obj/item/toy/plush/borgplushie/scrubpuppy,
+/obj/item/toy/plush/borgplushie/scrubpuppy{
+	pixel_x = -8;
+	pixel_y = 5
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "sG" = (
@@ -8373,7 +8392,10 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/obj/item/toy/plush/bm/expie,
+/obj/item/toy/plush/bm/expie{
+	pixel_x = 6;
+	pixel_y = -6
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "xY" = (
@@ -8622,7 +8644,10 @@
 	pixel_x = 4;
 	layer = 2.9
 	},
-/obj/item/toy/plush/bm/belinsky,
+/obj/item/toy/plush/bm/belinsky{
+	pixel_x = -6;
+	pixel_y = -4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "yF" = (
@@ -10515,7 +10540,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "DF" = (
-/obj/item/toy/plush/mal0,
+/obj/item/toy/plush/mal0{
+	pixel_x = 3;
+	pixel_y = 6
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "DG" = (
@@ -10720,7 +10748,9 @@
 /turf/open/floor/plasteel/white,
 /area/InteQ_ship)
 "El" = (
-/obj/item/toy/plush/bm/koteykomya,
+/obj/item/toy/plush/bm/koteykomya{
+	pixel_x = -10
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "Em" = (
@@ -16009,6 +16039,15 @@
 /obj/structure/urinal,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/InteQ_ship)
+"TM" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "TN" = (
 /obj/machinery/porta_turret/syndicate/pod/toolbox{
 	faction = list("InteQ")
@@ -44738,7 +44777,7 @@ pR
 pR
 Sh
 vJ
-gM
+TM
 gM
 BK
 dv

@@ -9,6 +9,8 @@
 		if(!ispath(reagent_type, /datum/reagent))
 			continue
 		vol_temp = reagent_list[reagent_type]
+		if(!(vol_temp > 0))
+			continue
 		vol_counter += vol_temp
 		raw_reagent = reagent_type // Not initialized
 		cached_color = initial(raw_reagent.color)

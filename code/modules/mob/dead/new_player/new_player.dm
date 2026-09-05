@@ -560,6 +560,8 @@
 	//sandstorm change
 	if(humanc)
 		SSlanguage.AssignLanguage(humanc, humanc.client, TRUE, FALSE, job, FALSE)
+		// Снапшот в манифест снят до квирков и post_copy_to - догоняем его здесь.
+		GLOB.data_core.refresh_manifest_photo_source(humanc)
 
 	log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)
 

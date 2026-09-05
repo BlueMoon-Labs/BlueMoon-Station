@@ -142,6 +142,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
  *
  * Двойка, а не единица: штатная картина смены - шахтёры на обоих Лаваландах, и выбивать
  * один из них ради второго значило бы качать свет туда-сюда весь раунд.
+ *
+ * Ниже LIGHTING_TEARDOWN_PRESSURE_HIGH квота не режет ничего: скан там жертву не выбирает.
  */
 #define LIGHTING_MAX_LIT_DEFERRED_Z 2
 
@@ -206,10 +208,18 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
  * две группы одинаково, так что точность здесь не важна - важно, что решение принимается
  * по факту, а не по прогнозу.
  *
- * Проверка снимается под критическим давлением наравне с кулдауном: там вспышка дешевле
- * смерти процесса, и отдать уровень стоит даже без надежды на возврат.
+ * Под критическим давлением проверка НЕ снимается: прод сидит выше порога почти весь
+ * раунд, и 71 снос раундов 10177-10188 вернул суммарно -184 МБ при ~1000 тяжёлых
+ * фаеров на каждый обратный подъём.
  */
 #define LIGHTING_TEARDOWN_MIN_PAYOFF_MB 32
+
+/// Исходы note_zlevel_lighting_rebuild(): допуск уровня к сносам не изменился.
+#define LIGHTING_REBUILD_VERDICT_UNCHANGED 0
+/// Подъём взял у ОС свежую память: улика прошлого сноса снята, уровень снова кандидат.
+#define LIGHTING_REBUILD_VERDICT_REOPENED 1
+/// Подъём переиспользовал арену: потолок отдачи записан, уровень исключён без цикла сноса.
+#define LIGHTING_REBUILD_VERDICT_EXCLUDED 2
 
 /**
  * Сколько уровень обязан прогореть после подъёма, прежде чем стать кандидатом на снос.
@@ -237,9 +247,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
  * Уровень затем снесли, вернув ноль. Вся работа была сделана ради одного пролёта.
  *
  * Живой путь (living_movement.dm) отсрочки не получает намеренно: там задержка означала бы
- * шахтёра, стоящего в темноте. Гост же по умолчанию смотрит через плоскость света с альфой
- * LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE, на которой, по признанию соседнего комментария,
- * "трудно понять, что темно, а что светло".
+ * шахтёра, стоящего в темноте. Гост заказывает подъём только с включённой темнотой
+ * (ghost_holds_zlevel_lighting) и всё равно ждёт выдержку: включить её он может и на лету.
  */
 #define LIGHTING_GHOST_INIT_DEBOUNCE (10 SECONDS)
 
@@ -251,7 +260,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_INIT_REASON_SAFETY_NET "сейфнет запаркованных атомов"
 #define LIGHTING_INIT_REASON_UNKNOWN "не назван"
 
-/// Доля потолка адресного пространства, с которой срок простоя сокращается втрое.
+/// Доля потолка адресного пространства: ниже неё снос не запускается вовсе, с неё срок простоя режется втрое.
+/// Ноль (давление не замерено) гейт не пропускает.
 #define LIGHTING_TEARDOWN_PRESSURE_HIGH 0.8
 /// Срок простоя под высоким давлением.
 #define LIGHTING_TEARDOWN_IDLE_TIME_HIGH (3 MINUTES)
@@ -267,6 +277,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_TEARDOWN_PRESSURE_CRITICAL 0.88
 /// Срок простоя под критическим давлением.
 #define LIGHTING_TEARDOWN_IDLE_TIME_CRITICAL (1 MINUTES)
+/// Минимальная пауза между двумя сносами (от финала одного до старта следующего).
+#define LIGHTING_TEARDOWN_SPACING (2 MINUTES)
 #define LIGHTING_DILATION_HIGH 40          // Time dilation threshold for minimum cap
 #define LIGHTING_DILATION_MEDIUM 20        // Time dilation threshold for reduced cap
 

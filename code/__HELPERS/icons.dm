@@ -1164,14 +1164,16 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 /// дирекцией. У живого моба dir произвольный, а getFlatIcon предпочитает
 /// собственную дирекцию цели запрошенной: без копии фас и профиль вышли бы двумя
 /// одинаковыми кадрами. Манекену это не нужно - он всегда смотрит на юг.
-/proc/build_flat_multidir_icon(atom/subject, list/show_dirs = GLOB.cardinals, no_anim = FALSE, force_dir = FALSE)
-	if(QDELETED(subject))
+///
+/// snapshot_appearance - снятая заранее внешность вместо живого атома: /appearance неизменяем и рефкаунтится.
+/proc/build_flat_multidir_icon(atom/subject, list/show_dirs = GLOB.cardinals, no_anim = FALSE, force_dir = FALSE, snapshot_appearance = null)
+	if(isnull(snapshot_appearance) && QDELETED(subject))
 		return icon('icons/effects/effects.dmi', "nothing")
 
 	// Внешность снимается один раз до цикла: между дирекциями прок уступает тик, и
 	// живой моб успел бы повернуться, переодеться или лечь - кадры разъехались бы.
-	var/frozen_appearance
-	if(force_dir)
+	var/frozen_appearance = snapshot_appearance
+	if(isnull(frozen_appearance) && force_dir)
 		frozen_appearance = subject.appearance
 
 	var/icon/out_icon
@@ -1201,7 +1203,7 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 			// Не continue прямо отсюда: выход управлением из catch наружу в цикл в кодовой
 			// базе нигде не встречается, а проверка ниже и так отбрасывает пустой кадр.
 			partial = null
-			note_icon_alloc_failure("многодирекционный кадр [subject?.type], дирекция [photo_dir]", icon_error)
+			note_icon_alloc_failure("многодирекционный кадр [subject ? "[subject.type]" : "снапшот внешности"], дирекция [photo_dir]", icon_error)
 		if(!istype(partial, /icon) || !partial.Width() || !partial.Height())
 			continue
 		good_partials += partial

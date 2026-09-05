@@ -722,6 +722,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
 
 	update_sight()
+	// Смены z здесь не будет, подъём под включённую темноту заказывается вручную.
+	request_ghost_lighting_init(registered_z)
 
 /mob/dead/observer/update_sight(forced = TRUE)
 	if(client?.prefs)
@@ -959,14 +961,15 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	// на турф, на самого госта или обнулиться - тогда прежняя цель навсегда оставалась с
 	// записью о нас в observers. observetarget - единственная авторитетная запись о связи,
 	// и снимать её надо независимо от наличия клиента.
-	if(observetarget)
-		var/mob/previous_target = observetarget
+	var/mob/previous_target = observetarget
+	if(previous_target)
 		observetarget = null
 		if(previous_target.observers)
 			previous_target.observers -= src
 			UNSETEMPTY(previous_target.observers)
 	if(..())
-		if(hud_used)
+		// Экран подменяет только do_observe; орбита и смена глаза HUD не трогают.
+		if(previous_target && hud_used)
 			client.clear_screen()
 			hud_used.show_hud(hud_used.hud_version)
 
