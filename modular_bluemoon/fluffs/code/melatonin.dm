@@ -1,4 +1,4 @@
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin
+/obj/item/clothing/suit/donator/bm/melatonin_coat
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Reinforced Coat"
 	desc = "Тяжелая кожаная куртка со следами долгого износа. Ткань на груди и спине заметно уплотнена — изнутри она прошита защитным слоем кевлара. По швам и воротнику куртки идут массивные клёпки из серебристого металла, а на рукавах затянуты грубые ремни. Шов между рукавом и правым плечом небрежно порван, обнажая подкладку, а чуть ниже пришита нашивка в форме полумесяца. Из-под потертой кожаной кобуры на плече отчетливо несет стойким запахом сигаретного дыма и перегара."
@@ -6,29 +6,19 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "melatonin-carrier-coat-0"
-	unique_reskin = null
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
-	clothing_flags = NONE
-	strip_delay = 40
-	equip_delay_other = 20
-	slowdown = 0
-	body_parts_covered = CHEST|GROIN|ARMS
-	cold_protection = CHEST|GROIN|ARMS
-	heat_protection = CHEST|GROIN|ARMS
-	allowed = null
 
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/ComponentInitialize()
+/obj/item/clothing/suit/donator/bm/melatonin_coat/ComponentInitialize()
 	return
 
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/Initialize(mapload)
+/obj/item/clothing/suit/donator/bm/melatonin_coat/Initialize(mapload)
 	. = ..()
 	allowed = null
 
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/equipped(mob/user, slot)
+/obj/item/clothing/suit/donator/bm/melatonin_coat/equipped(mob/user, slot)
 	. = ..()
 	update_icon()
 
-/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/update_icon_state()
+/obj/item/clothing/suit/donator/bm/melatonin_coat/update_icon_state()
 	. = ..()
 	var/base_state = "melatonin-carrier-coat"
 	icon_state = base_state
@@ -42,115 +32,6 @@
 	if(wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING) == src)
 		wearer.update_inv_wear_suit()
 		wearer.update_body()
-
-/obj/item/clothing/suit/armor/hos/platecarrier
-	var/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/attached_coat
-	var/initial_plate_name
-	var/initial_plate_desc
-	var/initial_plate_icon
-	var/initial_plate_icon_state
-	var/initial_plate_mob_overlay_icon
-	var/initial_plate_anthro_mob_worn_overlay
-	var/list/initial_plate_unique_reskin
-
-/obj/item/clothing/suit/armor/hos/platecarrier/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/clothing/suit/armor/hos/platecarrier/melatonin))
-		if(attached_coat)
-			to_chat(user, span_warning("[src] уже имеет надетую куртку! Снимите её Alt+кликом."))
-			return TRUE
-		if(istype(src, /obj/item/clothing/suit/armor/hos/platecarrier/melatonin))
-			return ..()
-		var/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/coat = I
-		initial_plate_name = name
-		initial_plate_desc = desc
-		initial_plate_icon = icon
-		initial_plate_icon_state = icon_state
-		initial_plate_mob_overlay_icon = mob_overlay_icon
-		initial_plate_anthro_mob_worn_overlay = anthro_mob_worn_overlay
-		initial_plate_unique_reskin = unique_reskin
-		if(ismob(coat.loc))
-			var/mob/M = coat.loc
-			M.temporarilyRemoveItemFromInventory(coat)
-		coat.forceMove(src)
-		attached_coat = coat
-		name = coat.name
-		desc = coat.desc
-		icon = coat.icon
-		icon_state = coat.icon_state
-		mob_overlay_icon = coat.mob_overlay_icon
-		anthro_mob_worn_overlay = coat.anthro_mob_worn_overlay
-		unique_reskin = null
-		to_chat(user, span_notice("Вы надеваете [coat] на [src]. Плитка сохраняет защиту плитника, но выглядит как куртка. Alt+клик по плитнику — снять."))
-		update_icon()
-		if(iscarbon(user))
-			var/mob/living/carbon/C = user
-			C.update_inv_wear_suit()
-		return TRUE
-	return ..()
-
-/obj/item/clothing/suit/armor/hos/platecarrier/AltClick(mob/user)
-	if(attached_coat && user.canUseTopic(src, BE_CLOSE))
-		var/obj/item/clothing/suit/armor/hos/platecarrier/melatonin/coat = attached_coat
-		name = initial_plate_name
-		desc = initial_plate_desc
-		icon = initial_plate_icon
-		icon_state = initial_plate_icon_state
-		mob_overlay_icon = initial_plate_mob_overlay_icon
-		anthro_mob_worn_overlay = initial_plate_anthro_mob_worn_overlay
-		unique_reskin = initial_plate_unique_reskin
-		if(islist(unique_reskin) && length(unique_reskin))
-			AddElement(/datum/element/object_reskinning)
-		initial_plate_name = null
-		initial_plate_desc = null
-		initial_plate_icon = null
-		initial_plate_icon_state = null
-		initial_plate_mob_overlay_icon = null
-		initial_plate_anthro_mob_worn_overlay = null
-		initial_plate_unique_reskin = null
-		attached_coat = null
-		coat.forceMove(get_turf(src))
-		if(user.put_in_hands(coat))
-			to_chat(user, span_notice("Вы снимаете [coat] с [src], возвращая куртке её характеристики."))
-		else
-			to_chat(user, span_notice("Вы снимаете [coat] с [src]."))
-		update_icon()
-		if(iscarbon(user))
-			var/mob/living/carbon/C = user
-			C.update_inv_wear_suit()
-		return TRUE
-	return ..()
-
-/obj/item/clothing/suit/armor/hos/platecarrier/examine(mob/user)
-	. = ..()
-	if(attached_coat)
-		. += span_notice("На плитнике надета куртка [attached_coat]. Alt+клик чтобы снять.")
-
-/obj/item/clothing/suit/armor/hos/platecarrier/Destroy()
-	if(attached_coat)
-		attached_coat.forceMove(get_turf(src))
-		attached_coat = null
-	return ..()
-
-/obj/item/clothing/suit/armor/hos/platecarrier/equipped(mob/user, slot)
-	. = ..()
-	if(attached_coat)
-		update_icon()
-
-/obj/item/clothing/suit/armor/hos/platecarrier/update_icon_state()
-	. = ..()
-	if(attached_coat)
-		var/base_state = "melatonin-carrier-coat"
-		icon_state = base_state
-		if(!istype(loc, /mob/living/carbon/human))
-			icon_state = "melatonin-carrier-coat-0"
-			return
-		var/mob/living/carbon/human/wearer = loc
-		var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-		var/breast_size = clamp(round(breast?.size || 0)-1, 0, 8)
-		icon_state = "[base_state]-[breast_size]"
-		if(wearer.get_item_by_slot(ITEM_SLOT_OCLOTHING) == src)
-			wearer.update_inv_wear_suit()
-			wearer.update_body()
 
 /obj/item/clothing/under/donator/bm/melatonin_bodysuit
 	DONATE_ITEM_TOOLTIP_PARENT
@@ -356,20 +237,46 @@
 	product = /obj/item/clothing/mask/gas/sechailer/melatonin
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
 
-/obj/item/clothing/head/helmet/riot/melatonin
+/obj/item/clothing/head/donator/bm/melatonin_helmet
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Refurbished Concord Riot Helmet"
 	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "melatonin_helmet"
+	item_state = "melatonin_helmet"
 	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags = NONE
 	visor_flags_inv = HIDEFACE|HIDESNOUT
+	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	can_toggle = TRUE
+	toggle_message = "You pull the visor down on"
+	alt_toggle_message = "You push the visor up on"
+	actions_types = list(/datum/action/item_action/toggle)
+	active_sound = 'sound/machines/closet_open.ogg'
+
+/obj/item/clothing/head/donator/bm/melatonin_helmet/attack_self(mob/user)
+	if(can_toggle && !user.incapacitated())
+		if(world.time > cooldown + toggle_cooldown)
+			cooldown = world.time
+			up = !up
+			flags_inv ^= visor_flags_inv
+			flags_cover ^= visor_flags_cover
+			icon_state = "[initial(icon_state)][up ? "_up" : ""]"
+			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
+			update_icon()
+			user.update_inv_head()
+			if(iscarbon(user))
+				var/mob/living/carbon/C = user
+				C.head_update(src, forced = 1)
+			if(active_sound && up)
+				playsound(src.loc, active_sound, 100, 0, 4)
 
 /obj/item/modkit/melatonin_riot_kit
 	name = "Refurbished Concord Riot Helmet Kit"
 	desc = "A modkit for making a riot helmet into a Refurbished Concord Riot Helmet."
-	product = /obj/item/clothing/head/helmet/riot/melatonin
+	product = /obj/item/clothing/head/donator/bm/melatonin_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
 /obj/item/melee/baton/stunsword/melatonin

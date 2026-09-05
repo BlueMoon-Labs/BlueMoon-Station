@@ -2654,7 +2654,7 @@
 /datum/gear/donator/bm/melatonin_coat
 	name = "Lycanthrope's Reinforced Coat"
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin
+	path = /obj/item/clothing/suit/donator/bm/melatonin_coat
 	ckeywhitelist = list("melatonin1")
 
 /datum/gear/donator/bm/melatonin_kit
