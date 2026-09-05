@@ -444,6 +444,7 @@
 #define CORRUPTED_SYSTEM "corrupted-system"
 ///Turf trait for when a turf is transparent
 #define TURF_Z_TRANSPARENT_TRAIT "turf_z_transparent"
+#define TURF_Z_OPENSPACE_TRAIT "turf_z_openspace" //дыра в полу: сквозь неё падают и по ней не ходят, в отличие от просто прозрачной
 /// This trait is added by the active directional block system.
 #define ACTIVE_BLOCK_TRAIT				"active_block"
 /// This trait is added by the parry system.

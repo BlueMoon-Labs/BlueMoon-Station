@@ -510,39 +510,21 @@ do { \
 	}; \
 } while (FALSE)
 
-//Defines for atom layers and planes
-//KEEP THESE IN A NICE ACSCENDING ORDER, PLEASE
+#define LOWEST_EVER_PLANE PLANE_VOID
 
-//NEVER HAVE ANYTHING BELOW THIS PLANE ADJUST IF YOU NEED MORE SPACE
-#define LOWEST_EVER_PLANE -100
+#define GAME_PLANE_UPPER GAME_PLANE
 
-#define RENDER_PLANE_TRANSPARENT -9 //Transparent plane that shows openspace underneath the floor
-
-#define GAME_PLANE_FOV_HIDDEN -7
-#define GAME_PLANE_UPPER -6
-#define WALL_PLANE_UPPER -5
-#define GAME_PLANE_UPPER_FOV_HIDDEN -4
-
-#define SEETHROUGH_PLANE -3
-#define ABOVE_GAME_PLANE -2
-
-#define AREA_PLANE 2
-#define MASSIVE_OBJ_PLANE 3
-#define GHOST_PLANE 4
 #define POINT_PLANE 5
 
 ///---------------- MISC -----------------------
 
-///Pipecrawling images
-#define PIPECRAWL_IMAGES_PLANE 20
-
 ///Anything that wants to be part of the game plane, but also wants to draw above literally everything else
-#define HIGH_GAME_PLANE 22
+#define HIGH_GAME_PLANE VOLUMETRIC_STORAGE_BOX_PLANE
 
 ///--------------- FULLSCREEN RUNECHAT BUBBLES ------------
 
 ///Popup Chat Messages
-#define RUNECHAT_PLANE 30
+#define RUNECHAT_PLANE ABOVE_HUD_PLANE
 
 //-------------------- HUD ---------------------
 //HUD layer defines
@@ -564,7 +546,6 @@ do { \
 
 #define CORGI_ASS_PIN_LAYER 3.41
 
-// GAME_PLANE_FOV_HIDDEN layers
 #define LOW_MOB_LAYER 3.75
 #define VEHICLE_LAYER 3.9
 #define MOB_BELOW_PIGGYBACK_LAYER 3.94
@@ -572,8 +553,6 @@ do { \
 #define MOB_SHIELD_LAYER 4.01
 #define MOB_ABOVE_PIGGYBACK_LAYER 4.06
 #define HITSCAN_PROJECTILE_LAYER 4.09 //above all mob but still hidden by FoV
-
-#define RAD_TEXT_PLANE 90
 
 //---------- LIGHTING -------------
 
@@ -600,7 +579,3 @@ do { \
 
 #define PLANE_CRITICAL_FUCKO_PARALLAX (PLANE_CRITICAL_DISPLAY|PLANE_CRITICAL_NO_EMPTY_RELAY)
 
-/// We expect at most 11 layers of multiz
-/// Increment this define if you make a huge map. We unit test for it too just to make it easy for you
-/// If you modify this, you'll need to modify the tsx file too
-#define MAX_EXPECTED_Z_DEPTH 11

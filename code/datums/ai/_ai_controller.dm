@@ -158,7 +158,7 @@ multiple modular subtrees with behaviors
 	var/mob/mob_pawn = pawn
 	if(islava(candidate))
 		return istype(mob_pawn) && ((mob_pawn.movement_type & (FLYING | FLOATING)) || HAS_TRAIT(mob_pawn, TRAIT_LAVA_IMMUNE))
-	if(istype(candidate, /turf/open/chasm) || istype(candidate, /turf/open/openspace))
+	if(istype(candidate, /turf/open/chasm) || isopenspaceturf(candidate))
 		return istype(mob_pawn) && (mob_pawn.movement_type & (FLYING | FLOATING))
 	return isspaceturf(candidate) && can_path_through_space()
 

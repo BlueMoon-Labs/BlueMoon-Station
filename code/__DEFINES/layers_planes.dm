@@ -9,7 +9,7 @@
 #define PLANE_SPACE_RENDER_TARGET "PLANE_SPACE"
 
 #define PLANE_SPACE_PARALLAX -95
-#define PLANE_SPACE_PARALLAX_RENDER_TARGET "PLANE_SPACE_PARALLAX"
+#define PLANE_SPACE_PARALLAX_RENDER_TARGET "*PLANE_SPACE_PARALLAX"
 
 #define OPENSPACE_LAYER 17 //Openspace layer over all
 
@@ -26,16 +26,18 @@
 #define GRAVITY_PULSE_PLANE -12
 #define GRAVITY_PULSE_RENDER_TARGET "*GRAVPULSE_RENDER_TARGET"
 
+#define RENDER_PLANE_TRANSPARENT -11
+
 #define OPENSPACE_PLANE -10 //Openspace plane below all turfs
-#define OPENSPACE_BACKDROP_PLANE -9 //Black square just over openspace plane to guaranteed cover all in openspace turf
 
 #define FLOOR_PLANE -8
 #define FLOOR_PLANE_RENDER_TARGET "FLOOR_PLANE"
 
-#define WALL_PLANE -3
+// Порядок снизу вверх: пол -> стена -> настенное -> мир. Настенное ниже мира, иначе труба рисуется поверх стоящего на ней моба.
+#define WALL_PLANE -7
 #define WALL_PLANE_RENDER_TARGET "WALL_PLANE"
 
-#define ABOVE_WALL_PLANE -3
+#define ABOVE_WALL_PLANE -6
 #define ABOVE_WALL_PLANE_RENDER_TARGET "ABOVE_WALL_PLANE"
 
 #define FIELD_OF_VISION_BLOCKER_PLANE -5
@@ -58,6 +60,8 @@
 
 #define BLACKNESS_PLANE 0 //To keep from conflicts with SEE_BLACKNESS internals
 #define BLACKNESS_PLANE_RENDER_TARGET "BLACKNESS_PLANE"
+
+#define AREA_PLANE 3
 
 ///Layers most often used by atoms of plane lower than GAME_PLANE
 #define SPACE_LAYER 1.8
@@ -145,9 +149,9 @@
 #define EMISSIVE_PLANE 13
 #define EMISSIVE_LAYER 13
 
-#define EMISSIVE_UNBLOCKABLE_PLANE 4 //Пробуем починить Леерсы.
-#define EMISSIVE_UNBLOCKABLE_LAYER 4
-#define EMISSIVE_LAYER_UNBLOCKABLE 4
+#define EMISSIVE_UNBLOCKABLE_PLANE EMISSIVE_PLANE
+#define EMISSIVE_UNBLOCKABLE_LAYER 9999
+#define EMISSIVE_LAYER_UNBLOCKABLE 9999
 #define EMISSIVE_UNBLOCKABLE_RENDER_TARGET "*EMISSIVE_UNBLOCKABLE_PLANE"
 #define EMISSIVE_RENDER_TARGET "*EMISSIVE_PLANE"
 
@@ -155,13 +159,14 @@
 #define LIGHTING_LAYER 4
 #define LIGHTING_RENDER_TARGET "LIGHT_PLANE"
 
-#define O_LIGHTING_VISUAL_PLANE 110
+#define O_LIGHTING_VISUAL_PLANE 9
+/// Без звёздочки: плоскость рисуется на месте и служит подложкой самой себе, иначе остаётся чёрный круг под фонариком.
 #define O_LIGHTING_VISUAL_RENDER_TARGET "O_LIGHT_VISUAL_PLANE"
 
 #define RAD_TEXT_LAYER 15.1
 
-#define ABOVE_LIGHTING_PLANE 4
-#define ABOVE_LIGHTING_LAYER 4 //Пробуем починить Леерсы.
+#define ABOVE_LIGHTING_PLANE 14
+#define ABOVE_LIGHTING_LAYER 14
 #define ABOVE_LIGHTING_RENDER_TARGET "ABOVE_LIGHTING_PLANE"
 
 #define BYOND_LIGHTING_PLANE 18
@@ -174,7 +179,7 @@
 
 /// Plane for balloon text (text that fades up)
 /// It's over lighting and every other crap because this is nearly as important as hud content and only visible to the user.
-#define BALLOON_CHAT_PLANE 20
+#define BALLOON_CHAT_PLANE FULLSCREEN_PLANE
 
 // === Unified FOV / sound-visual plane ===
 // Visuals that must be visible above fullscreen/blind overlays (FOV indicators, sound pings, etc).
@@ -226,6 +231,10 @@
 #define SPLASHSCREEN_RENDER_TARGET "SPLASHSCREEN_PLANE"
 
 //-------------------- Rendering ---------------------
+#define RENDER_PLANE_GAME_WORLD 6
+#define RENDER_PLANE_MASTER 7
+#define RENDER_PLANE_SCREEN 8
+
 #define RENDER_PLANE_GAME 100
 #define RENDER_PLANE_NON_GAME 101
 
@@ -237,14 +246,19 @@
 #define ESCAPE_MENU_DIMMER_LAYER 105.1
 #define ESCAPE_MENU_DEFAULT_LAYER 105.2
 
-#define RENDER_PLANE_MASTER 110
-
 // Lummox I swear to god I will find you
 // NOTE! You can only ever have planes greater then -10000, if you add too many with large offsets you will brick multiz
 // Same can be said for large multiz maps. Tread carefully mappers
-#define HIGHEST_EVER_PLANE RENDER_PLANE_MASTER
+#define HIGHEST_EVER_PLANE 120
 /// The range unique planes can be in
 #define PLANE_RANGE (HIGHEST_EVER_PLANE - PLANE_VOID)
+
+#define MAX_EXPECTED_Z_DEPTH 3
+/// Глубже этой отметки слой реле уходит в минус, и BYOND считает его float-слоем относительно родителя.
+#define MAX_SUPPORTED_Z_DEPTH 8
+#define MULTIZ_PERFORMANCE_DISABLE -1
+
+#define BLOCKS_PLANE_OFFSETTING (1<<0)
 
 #define SINGULARITY_LAYER 1
 #define ABOVE_SINGULARITY_LAYER 2
@@ -258,12 +272,12 @@
 /// It also implies that the critical plane has a *'d render target, making it mask itself
 #define PLANE_CRITICAL_NO_EMPTY_RELAY (1<<1)
 
-#define RENDER_PLANE_GAME_WORLD -1
-
 #define RENDER_PLANE_LIGHTING 15
 
 // Admin popup layer
 #define ADMIN_POPUP_LAYER 1
+
+#define MULTIZ_SCALE_PER_LEVEL 0.965
 
 ///Plane master controller keys
 #define PLANE_MASTERS_GAME "plane_masters_game"

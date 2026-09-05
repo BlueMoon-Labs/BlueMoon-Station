@@ -25,6 +25,8 @@ type GraphicsData = {
   hud_toggle_color: string;
   view_pixelshift: boolean;
   lighting_blur: number;
+  multiz_parallax: boolean;
+  multiz_performance: number;
   UI_style: string;
   mood_vignette: boolean;
 };
@@ -36,6 +38,13 @@ const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) =
   clearTimeout(colorCommitTimers.get(input));
   colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
 };
+
+const MULTIZ_DEPTH_OPTIONS = [
+  { value: -1, label: 'Все этажи' },
+  { value: 0, label: 'Только свой' },
+  { value: 1, label: '1 этаж вниз' },
+  { value: 2, label: '2 этажа вниз' },
+];
 
 const PARALLAX_OPTIONS = [
   { value: 0, label: 'Выкл.' },
@@ -72,6 +81,7 @@ const UI_STYLE_OPTIONS = ['Midnight', 'Retro', 'Plasmafire', 'Slimecore', 'Opera
 
 const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [
   { key: 'ambient_occlusion', label: 'Объёмное затенение (AO)', flag: 'ambient_occlusion', tooltip: 'Эффект затенения в углах и стыках объектов для более реалистичной картинки. Влияет на производительность' },
+  { key: 'multiz_parallax', label: 'Глубина нижних этажей', flag: 'multiz_parallax', tooltip: 'Сжимать этажи, которые видно в дыру в полу. Это и даёт ощущение высоты; выключите, если укачивает' },
   { key: 'widescreen', label: 'Широкоэкранный режим', flag: 'widescreen' },
   { key: 'fullscreen', label: 'Полноэкранный режим', flag: 'fullscreen' },
   { key: 'fit_viewport', label: 'Подгонка экрана', flag: 'fit_viewport', tooltip: 'Автоматически подгонять размер игрового окна под разрешение монитора' },
@@ -97,6 +107,7 @@ export const GraphicsSection = (props) => {
   const fpsValue = Number(data.clientfps ?? 120);
   const selectedFps = FPS_OPTIONS.find(o => o.value === fpsValue)?.label || '120';
   const selectedBlur = LIGHTING_BLUR_OPTIONS.find(o => o.value === Number(data.lighting_blur ?? 4));
+  const selectedDepth = MULTIZ_DEPTH_OPTIONS.find(o => o.value === Number(data.multiz_performance ?? -1));
   const selectedRunechatAnim = RUNECHAT_ANIM_OPTIONS.find(
     o => o.value === Number(data.runechat_anim ?? 1),
   )?.label || RUNECHAT_ANIM_OPTIONS[1].label;
@@ -242,6 +253,25 @@ export const GraphicsSection = (props) => {
               onSelected={value => {
                 const opt = RUNECHAT_ANIM_OPTIONS.find(o => o.label === value);
                 if (opt) act('set_runechat_anim', { value: opt.value });
+              }}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+      <Stack.Item>
+        <Stack fill align="center">
+          <Stack.Item grow>
+            <div className="GamePreferences__label">Глубина мульти-Z</div>
+            <div className="GamePreferences__hint">Сколько этажей вниз рисовать честно</div>
+          </Stack.Item>
+          <Stack.Item>
+            <Dropdown
+              width="160px"
+              options={MULTIZ_DEPTH_OPTIONS.map(o => o.label)}
+              selected={selectedDepth?.label || 'Все этажи'}
+              onSelected={value => {
+                const opt = MULTIZ_DEPTH_OPTIONS.find(o => o.label === value);
+                if (opt) act('set_gfx_val', { flag: 'multiz_performance', value: opt.value });
               }}
             />
           </Stack.Item>
