@@ -74,3 +74,18 @@
 	icon_state = "ski_hecu"
 	item_state = "ski_hecu"
 	alternate_worn_layer = ABOVE_HEAD_LAYER
+
+/obj/item/clothing/head/helmet/balaclava
+	name = "Powered Combat balaclava"
+	desc = "do some war crimes"
+	icon = 'icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hecu/hecumob.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/hecu/hecumob_muzzled.dmi'
+	icon_state = "rus_balaclava"
+	item_state = "hecu_mask"
+	mutantrace_variation = STYLE_MUZZLE
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEFACIALHAIR|HIDESNOUT
+
+/obj/item/clothing/head/helmet/balaclava/build_worn_icon(default_layer = 0, default_icon_file = null, isinhands = FALSE, femaleuniform = NO_FEMALE_UNIFORM, override_state, style_flags = NONE, use_mob_overlay_icon = TRUE, alpha_mask)
+	override_state = item_state
+	return ..()

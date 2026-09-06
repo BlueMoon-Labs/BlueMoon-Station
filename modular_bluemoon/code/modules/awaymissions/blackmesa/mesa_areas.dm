@@ -1,7 +1,8 @@
 /area/awaymission/ihategordon
 	name = "Main sector H complex"
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaxenlab.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesainsideambience.ogg' , 'modular_bluemoon/sound/ambience/mesa/mesaamb1.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas1.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas2.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas3.ogg' )
+	shipambience ='modular_bluemoon/sound/ambience/mesa/ambinside.ogg'
+	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/metal1.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal2.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal3.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal5.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal6.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal7.ogg' )
+	area_flags = NOTELEPORT
 
 /area/awaymission/ihategordon/entrance
 	name = "Facility entrance"
@@ -82,6 +83,8 @@
 /area/awaymission/ihategordon/rocks
 	name = "Facility rocks"
 	icon_state = "awaycontent20"
+	outdoors = TRUE
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/dining_room
 	name = "main dining room"
@@ -94,6 +97,12 @@
 /area/awaymission/ihategordon/dorm_rooms
 	name = "restrooms"
 	icon_state = "awaycontent6"
+
+/area/awaymission/ihategordon/dorm_rooms/stillalive
+	name = "Still Alive Room"
+	icon_state = "awaycontent6"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/stillalive.ogg'
+	ambientsounds = list()
 
 /area/awaymission/ihategordon/secret_rooms
 	name = "secret"
@@ -126,9 +135,60 @@
 /area/awaymission/ihategordon/outsideofmesa
 	name = "Outside of facility"
 	icon_state = "awaycontent6"
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg','modular_bluemoon/sound/ambience/mesa/outsideofcomplex.ogg')
+	outdoors = TRUE
+	shipambience ='modular_bluemoon/sound/ambience/mesa/outside.ogg'
+	ambientsounds = list( 'modular_bluemoon/sound/ambience/mesa/battle1.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle2.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle3.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle4.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle5.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle6.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle7.ogg' )
+	var/initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp
 	name = "Facility hecu main camp"
 	icon_state = "awaycontent15"
+	outdoors = TRUE
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone
+	name = "Facility restricted zone"
+	icon_state = "awaycontent25"
+	outdoors = TRUE
+
+/area/awaymission/ihategordon/outsideofmesa/bombardment
+	name = "Bombardment Zone"
+	icon_state = "awaycontent26"
+	outdoors = TRUE
+
+
+/area/awaymission/ihategordon/hecuannouce
+	name = "hecu warning announcement area"
+	icon_state = "3"
+
+// =============================================================================
+// IHATEGORDON CUSTOM ZONES
+// Специальные зоны для кастомного космоса и ивентов
+// =============================================================================
+
+/area/awaymission/ihategordon/custom_space
+	name = "Ihategordon Void"
+	icon_state = "space"
+	always_unpowered = TRUE
+	power_environ = FALSE
+	power_light = FALSE
+	power_equip = FALSE
+	requires_power = FALSE
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = FALSE
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_walking
+	name = "Ihategordon Walking Zone"
+	icon_state = "awaycontent1"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = TRUE
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_event
+	name = "Ihategordon Event Zone"
+	icon_state = "awaycontent2"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = TRUE

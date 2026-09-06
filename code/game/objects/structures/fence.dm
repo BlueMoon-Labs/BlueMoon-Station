@@ -15,6 +15,7 @@
 	desc = "A chain link fence. Not as effective as a wall, but generally it keeps people out."
 	density = TRUE
 	anchored = TRUE
+	pass_flags_self = PASSFENCE // Allow mobs with PASSFENCE to pass through
 
 	icon = 'icons/obj/fence.dmi'
 	icon_state = "straight"
@@ -143,7 +144,7 @@
 	if(!user.Adjacent(src))
 		return
 	return attack_hand(user)
-	
+
 /obj/structure/fence/door/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(can_open(user))
 		toggle(user)
