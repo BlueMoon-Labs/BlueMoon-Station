@@ -41805,10 +41805,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/brig)
 "cKH" = (
-/obj/structure/chair/sofa/middle/maroon{
-	dir = 8
-	},
 /obj/machinery/airalarm/directional/north,
+/obj/structure/chair/sofa/middle/maroon,
 /turf/open/floor/carpet/red,
 /area/security/prison/rec)
 "cKO" = (
@@ -42165,7 +42163,7 @@
 /area/medical/virology)
 "cPd" = (
 /obj/structure/chair/sofa/left/maroon{
-	dir = 1
+	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood/thin,
 /obj/structure/cable{
@@ -47685,9 +47683,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/obj/structure/chair/sofa/right{
-	dir = 4
-	},
+/obj/structure/chair/sofa/right,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "fFj" = (
@@ -72172,8 +72168,10 @@
 	name = "botany shutters"
 	},
 /obj/machinery/biogenerator,
-/obj/structure/window/reinforced{
-	dir = 1
+/obj/machinery/door/window/westright{
+	dir = 1;
+	name = "Hydroponics Desk";
+	req_access_txt = "35"
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/service/hydroponics)
@@ -79353,9 +79351,7 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/obj/structure/chair/sofa/right{
-	dir = 4
-	},
+/obj/structure/chair/sofa/right,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "vZR" = (
