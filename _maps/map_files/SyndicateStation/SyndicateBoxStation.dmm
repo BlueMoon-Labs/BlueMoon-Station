@@ -14977,10 +14977,6 @@
 	dir = 10
 	},
 /obj/effect/turf_decal/siding/thinplating/light/corner{
-	color = "#B11111";
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating/light/corner{
 	color = "#B11111"
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -78147,9 +78143,6 @@
 /obj/effect/turf_decal/siding/thinplating/light/corner{
 	color = "#B11111";
 	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating/light/corner{
-	color = "#B11111"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
