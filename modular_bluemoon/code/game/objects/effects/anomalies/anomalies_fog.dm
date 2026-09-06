@@ -8,7 +8,7 @@
 	name = "fog"
 	icon = 'modular_bluemoon/code/game/objects/effects/anomalies/96x96.dmi'
 	icon_state = "smoke"
-	alpha = 170
+	alpha = 0
 	lifetime = INFINITY
 	amount = INFINITY
 	opaque = FALSE
@@ -33,6 +33,7 @@
 	QDEL_NULL(reagents) // незачем занимать память для неиспользуемых механик
 	anomaly_parent.fog_to_expand += src
 	RegisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING, PROC_REF(clear_fog))
+	animate(src, 3 SECONDS, alpha = 170)
 	for(var/direction in GLOB.cardinals)
 		var/obj/machinery/door/d = locate(/obj/machinery/door, get_step(src, direction))
 		if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/window)) \
