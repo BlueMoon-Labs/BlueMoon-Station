@@ -76,7 +76,7 @@
 	else if(isliving(target))
 		var/mob/living/L = target
 		// Direct damage without causing nausea
-		L.updatehealth()
+		L.adjustFireLoss(damage_per_tick)
 		if(L.client)
 			to_chat(L, span_warning("The acid ooze burns you!"))
 
@@ -179,7 +179,6 @@
 	// Allow zombies to climb tables and pass through fences
 	pass_flags = PASSTABLE | PASSFENCE
 	pass_flags_self = NONE
-	sight = 20 // High sight range to detect players from far away
 	sight = SEE_MOBS | SEE_TURFS // Битовая маска: видит мобов и турфы (дальность задаётся vision_range/aggro_vision_range)
 	move_on_shuttle = TRUE // Allow movement during shuttle transit (helps with pathfinding)
 	stop_automated_movement = 0 // Don't stop automated movement
@@ -259,7 +258,6 @@
 	speed = 0
 	melee_damage_lower = 8
 	melee_damage_upper = 12
-	sight = 20
 	sight = SEE_MOBS | SEE_TURFS
 	robust_searching = 1
 	is_runner = TRUE
@@ -281,7 +279,6 @@
 	turns_per_move = 0 // Faster reaction
 	melee_damage_lower = 15
 	melee_damage_upper = 25
-	sight = 20 // High sight range to detect players from far away
 	sight = SEE_MOBS | SEE_TURFS // Битовая маска: видит мобов и турфы (дальность задаётся vision_range/aggro_vision_range)
 	robust_searching = 1
 	environment_smash = ENVIRONMENT_SMASH_NONE // Disable structure smashing to prevent attacking fences
@@ -335,7 +332,6 @@
 	turns_per_move = 0
 	melee_damage_lower = 15
 	melee_damage_upper = 25
-	sight = 20
 	sight = SEE_MOBS | SEE_TURFS
 	robust_searching = 1
 	environment_smash = ENVIRONMENT_SMASH_NONE
@@ -424,7 +420,6 @@
 	turns_per_move = 0
 	melee_damage_lower = 10
 	melee_damage_upper = 15
-	sight = 20
 	sight = SEE_MOBS | SEE_TURFS
 	robust_searching = 1
 	environment_smash = ENVIRONMENT_SMASH_NONE
@@ -495,7 +490,6 @@
 		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
 		L.throw_at(throwtarget, 5)
 
-	else if(hit_atom.density && !hit_atom.CanPass(src))
 	else if(hit_atom.density && !hit_atom.CanPass(src, get_turf(hit_atom)))
 		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
 		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/charger/attacksound.ogg', 100, TRUE)
@@ -598,7 +592,6 @@
 	aggro_vision_range = 40
 	pass_flags = PASSTABLE | PASSFENCE
 	pass_flags_self = NONE
-	sight = 20
 	sight = SEE_MOBS | SEE_TURFS
 	move_on_shuttle = TRUE
 	stop_automated_movement = 0
