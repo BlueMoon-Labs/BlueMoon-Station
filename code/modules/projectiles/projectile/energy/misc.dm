@@ -5,6 +5,11 @@
 	damage_type = CLONE
 	irradiate = 250
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
+	light_range = 2
+	light_power = 0.8
+	light_color = LIGHT_COLOR_GREEN
+	glow_icon = 'icons/obj/projectiles.dmi'
+	glow_icon_state = "declone"
 
 /obj/item/projectile/energy/dart //ninja throwing dart
 	name = "dart"

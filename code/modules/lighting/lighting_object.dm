@@ -183,7 +183,8 @@
 	blend_is_local = TRUE
 
 /atom/movable/lighting_object/proc/update(animate_time = LIGHTING_ANIMATE_TIME, use_animate = TRUE)
-
+	if(GLOB.nightshift_animate_override && world.time < GLOB.nightshift_animate_until)
+		animate_time = GLOB.nightshift_animate_override
 	// To the future coder who sees this and thinks
 	// "Why didn't he just use a loop?"
 	// Well my man, it's because the loop performed like shit.
@@ -191,7 +192,6 @@
 	// without a loop you can make the list all at once which is the fastest you're gonna get.
 	// Oh it's also shorter line wise.
 	// Including with these comments.
-
 	var/static/datum/lighting_corner/dummy/dummy_lighting_corner = new
 
 	var/datum/lighting_corner/red_corner = affected_turf.lc_bottomleft || dummy_lighting_corner

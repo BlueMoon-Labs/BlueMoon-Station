@@ -178,6 +178,7 @@
 	plane = GAME_PLANE
 	appearance_flags = PLANE_MASTER //should use client color
 	blend_mode = BLEND_OVERLAY
+	render_target = GAME_PLANE_RENDER_TARGET
 
 /atom/movable/screen/plane_master/game_world/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
@@ -261,6 +262,22 @@
 	else
 		remove_filter("lighting_blur")
 		remove_filter("lighting_blur_edge_fix")
+	// User brightness slider: 0-100, 50 = default (no change), <50 darker, >50 lighter
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	remove_filter("user_brightness")
+	if(ratio != 0)
+		// Additive color matrix brightens/darkens the multiply plane
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			ratio, ratio, ratio, 0
+		)))
 
 /*!
  * This system works by exploiting BYONDs color matrix filter to use layers to handle emissive blockers.
@@ -346,6 +363,193 @@
 		add_filter("emissive_bloom", 2, bloom_filter(threshold = COLOR_BLACK, size = blur_level, offset = 1))
 	else
 		remove_filter("emissive_bloom")
+
+/atom/movable/screen/plane_master/lamps
+	name = "lamps plane master"
+	plane = LIGHTING_LAMPS_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	render_target = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	remove_filter("user_brightness")
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
+
+/atom/movable/screen/plane_master/lamps/floor
+	name = "floor lamps plane master"
+	plane = FLOOR_LIGHTING_LAMPS_PLANE
+	render_target = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
+/atom/movable/screen/plane_master/exposure
+	name = "exposure plane master"
+	plane = LIGHTING_EXPOSURE_PLANE
+	appearance_flags = PLANE_MASTER|PIXEL_SCALE
+	blend_mode = BLEND_ADD
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/atom/movable/screen/plane_master/exposure/backdrop(mob/mymob)
+	remove_filter("blur_exposure")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
+	alpha = 0
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/enabled = TRUE
+	if(has_paradise_pref)
+		enabled = (mymob.client.prefs.light & LIGHT_EXPOSURE)
+	else
+		enabled = (mymob.client.prefs.lighting_blur >= 1)
+	if(enabled)
+		alpha = 255
+		add_filter("blur_exposure", 1, gauss_blur_filter(size = 20))
+
+/atom/movable/screen/plane_master/lamps_selfglow
+	name = "lamps selfglow plane master"
+	plane = LIGHTING_LAMPS_SELFGLOW
+	appearance_flags = PLANE_MASTER
+	blend_mode = BLEND_ADD
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/floor
+	name = "floor lamps selfglow plane master"
+	plane = FLOOR_LIGHTING_LAMPS_SELFGLOW
+	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_selfglow_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
+/atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
+	remove_filter("add_lamps_to_selfglow")
+	remove_filter("lamps_selfglow_bloom")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/has_glowlevel = ("glowlevel" in mymob.client.prefs.vars)
+	var/level
+	if(has_paradise_pref && has_glowlevel)
+		if(!(mymob.client.prefs.light & LIGHT_NEW_LIGHTING))
+			return
+		level = mymob.client.prefs.glowlevel
+	else
+		var/blur = mymob.client.prefs.lighting_blur || 0
+		if(blur <= 0)
+			return
+		else if(blur == 1)
+			level = GLOW_LOW
+		else if(blur == 2)
+			level = GLOW_MED
+		else
+			level = GLOW_HIGH
+	if(isnull(level))
+		return
+	var/bloomsize = 0
+	var/bloomoffset = 0
+	switch(level)
+		if(GLOW_LOW)
+			bloomsize = 2
+			bloomoffset = 1
+		if(GLOW_MED)
+			bloomsize = 3
+			bloomoffset = 2
+		if(GLOW_HIGH)
+			bloomsize = 5
+			bloomoffset = 3
+		else
+			return
+	add_filter("add_lamps_to_selfglow", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_OVERLAY))
+	add_filter("lamps_selfglow_bloom", 1, bloom_filter(threshold = "#777777", size = bloomsize, offset = bloomoffset, alpha = 80))
+
+/atom/movable/screen/plane_master/lamps_glare
+	name = "lamps glare plane master"
+	plane = LIGHTING_LAMPS_GLARE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/floor
+	name = "floor lamps glare plane master"
+	plane = FLOOR_LIGHTING_LAMPS_GLARE
+	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_glare_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
+/atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
+	remove_filter("add_lamps_to_glare")
+	remove_filter("lamps_glare")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
+	if(!istype(mymob) || !mymob.client)
+		return
+	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/enabled = TRUE
+	if(has_paradise_pref)
+		enabled = (mymob.client.prefs.light & LIGHT_GLARE)
+	else
+		enabled = (mymob.client.prefs.lighting_blur >= 2)
+	if(enabled)
+		add_filter("add_lamps_to_glare", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_ADD))
+		add_filter("lamps_glare", 1, radial_blur_filter(size = 0.035))
 
 ///Contains space parallax
 /atom/movable/screen/plane_master/parallax

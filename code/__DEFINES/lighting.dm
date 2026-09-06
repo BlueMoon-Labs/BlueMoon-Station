@@ -86,12 +86,17 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_ANIMATE_TIME 3       // Default animate() duration in deciseconds (0.3s) for smooth lighting transitions
 #define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) — 0.1s
 #define LIGHTING_ANIMATE_TIME_SMOOTH 5 // Gradual events (sunrise, slow power-up) — 0.5s
+#define LIGHTING_ANIMATE_TIME_NIGHTSHIFT 15
 
 #define LIGHTING_BLUR_MIN 0
 #define LIGHTING_BLUR_MAX 4
 #define LIGHTING_BLUR_DEFAULT 3
 #define LIGHTING_BLUR_BASE 0 // Minimum blur (px) always applied to smooth tile boundaries — GPU-cheap on composited plane master
 #define LIGHTING_BLUR_MULTIPLIER 2 // Edge softening: level * this = blur px (2/4/6/8)
+
+#define LIGHTING_BRIGHTNESS_MIN 0
+#define LIGHTING_BRIGHTNESS_MAX 100
+#define LIGHTING_BRIGHTNESS_DEFAULT 50
 
 #define LIGHTING_CONE_PENUMBRA 30 // Penumbra width (degrees) on each side of the cone edge — softens cone light edges
 #define LIGHTING_CONE_INNER_RADIUS 1.5 // Within this distance (tiles), light is omnidirectional — prevents dark source tile
@@ -391,6 +396,45 @@ GLOBAL_LIST_INIT(lighting_ambient_matrices, list())
 //Important note on colors. Colors can end up significantly different from the basic html picture, especially when saturated
 #define LIGHT_COLOR_WHITE		"#FFFFFF"
 #define LIGHT_COLOR_RED        "#FA8282" //Warm but extremely diluted red. rgb(250, 130, 130)
+
+#ifndef LIGHT_COLOR_PURE_CYAN
+#define LIGHT_COLOR_PURE_CYAN	"#00FFFF"
+#endif
+#ifndef LIGHT_COLOR_DARKRED
+#define LIGHT_COLOR_DARKRED		"#A91515"
+#endif
+#ifndef LIGHT_COLOR_PURE_RED
+#define LIGHT_COLOR_PURE_RED	"#FF0000"
+#endif
+#ifndef LIGHT_COLOR_DARKGREEN
+#define LIGHT_COLOR_DARKGREEN	"#50AB00"
+#endif
+#ifndef LIGHT_COLOR_PURE_GREEN
+#define LIGHT_COLOR_PURE_GREEN	"#00FF00"
+#endif
+#ifndef LIGHT_COLOR_LIGHTBLUE
+#define LIGHT_COLOR_LIGHTBLUE	"#0099FF"
+#endif
+#ifndef LIGHT_COLOR_PURE_BLUE
+#define LIGHT_COLOR_PURE_BLUE	"#0000FF"
+#endif
+#ifndef LIGHT_COLOR_FADEDPURPLE
+#define LIGHT_COLOR_FADEDPURPLE	"#A97FAA"
+#endif
+#define LIGHT_COLOR_STATION_HALL		 "#fafaeb"
+#define LIGHT_COLOR_STATION_HALL_NIGHT	 "#f7e9b8"
+#define LIGHT_COLOR_STATION_WORK		 "#fae5c9"
+#define LIGHT_COLOR_STATION_WORK_NIGHT	 "#f5d5a0"
+#define LIGHT_COLOR_STATION_OFFICE		 "#fac192"
+#define LIGHT_COLOR_STATION_OFFICE_NIGHT "#e6a85e"
+#define LIGHT_NEW_LIGHTING	(1<<0)
+#define LIGHT_EXPOSURE		(1<<1)
+#define LIGHT_GLARE			(1<<2)
+#define LIGHT_DEFAULT		(LIGHT_NEW_LIGHTING|LIGHT_EXPOSURE|LIGHT_GLARE)
+#define GLOW_HIGH    0
+#define GLOW_MED     1
+#define GLOW_LOW     2
+#define GLOW_DISABLE 3
 
 #define COLOR_STARLIGHT "#8589fa" //Periwinkle/lavender blue, used for space starlight
 

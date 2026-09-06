@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Dropdown, Input, Stack } from '../../../components';
+import { Box, Dropdown, Input, Slider, Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
 type GraphicsData = {
@@ -25,6 +25,7 @@ type GraphicsData = {
   hud_toggle_color: string;
   view_pixelshift: boolean;
   lighting_blur: number;
+  lighting_brightness: number;
   UI_style: string;
   mood_vignette: boolean;
 };
@@ -224,6 +225,29 @@ export const GraphicsSection = (props) => {
                 const opt = LIGHTING_BLUR_OPTIONS.find(o => o.label === value);
                 if (opt) act('set_gfx_val', { flag: 'lighting_blur', value: opt.value });
               }}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+      <Stack.Item>
+        <Stack align="center" fill className="GamePreferences__row">
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">Яркость освещения</div>
+            <div className="GamePreferences__hint">Ползунок яркости: влево — темнее, вправо — светлее (50 = по умолчанию)</div>
+          </Stack.Item>
+          <Stack.Item basis="160px">
+            <Slider
+              minValue={0}
+              maxValue={100}
+              step={1}
+              stepPixelSize={2}
+              value={Number(data.lighting_brightness ?? 50)}
+              ranges={{
+                good: [45, 55],
+                yellow: [30, 70],
+                orange: [15, 85],
+              }}
+              onChange={(_, value) => act('set_gfx_val', { flag: 'lighting_brightness', value })}
             />
           </Stack.Item>
         </Stack>

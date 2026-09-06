@@ -198,10 +198,12 @@
 	/// Область, которой сейчас записан static_power_used. Снимать вклад обязательно с неё:
 	/// get_area(src) в момент снятия может быть уже другой (перелёт шаттла, смена области турфа).
 	var/area/static_power_area
-	var/brightness = 8			// luminosity when on, also used in power calculation
-	var/bulb_power = 0.79			// basically the alpha of the emitted light source
-	var/bulb_colour = "#cae2fa"	// befault colour of the light.
+	var/brightness = 6			// luminosity when on, also used in power calculation
+	var/bulb_power = 1
+	var/bulb_colour = LIGHT_COLOR_STATION_HALL
 	var/cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE // Directional cone: light shines away from the wall
+	glow_icon_state = "tube"
+	exposure_icon_state = "cone"
 	var/status = LIGHT_OK		// LIGHT_OK, _EMPTY, _BURNED or _BROKEN
 	var/flickering = FALSE
 	var/light_type = /obj/item/light/tube		// the type of light item
@@ -218,8 +220,8 @@
 	var/nightshift_allowed = TRUE	//Set to FALSE to never let this light get switched to night mode.
 	var/nightshift_level = 0
 	var/nightshift_brightness = 8
-	var/nightshift_light_power = 0.47
-	var/nightshift_light_color = "#A9BFFF" // More saturated than the daytime bulb tone so late-night interpolation reads visibly blue.
+	var/nightshift_light_power = 0.35
+	var/nightshift_light_color = LIGHT_COLOR_STATION_HALL_NIGHT
 	var/nightshift_update_queued = FALSE
 	var/last_overlay_alpha_bucket = -1
 	var/last_overlay_color
@@ -287,9 +289,12 @@
 	icon_state = "bulb"
 	base_state = "bulb"
 	fitting = "bulb"
-	brightness = 5
+	brightness = 4
 	nightshift_brightness = 4
-	bulb_colour = "#dcdeff"
+	bulb_colour = LIGHT_COLOR_STATION_OFFICE
+	nightshift_light_color = LIGHT_COLOR_STATION_OFFICE_NIGHT
+	glow_icon_state = "bulb"
+	exposure_icon_state = "circle"
 	desc = "A small lighting fixture."
 	light_type = /obj/item/light/bulb
 	cone_angle = LIGHTING_WALL_BULB_CONE_ANGLE
@@ -350,6 +355,10 @@
 	set_layer_by_dir() // BLUEMOON ADD START
 	mark_apc_light_cache_dirty()
 	var/area/current_area = get_base_area(src)
+	if(current_area?.area_light_color)
+		bulb_colour = current_area.area_light_color
+	if(current_area?.area_nightlight_color)
+		nightshift_light_color = current_area.area_nightlight_color
 	sync_nightshift_from_current_apc(current_area)
 	spawn(2)
 		switch(fitting)
@@ -485,6 +494,10 @@
 		update_appearance(UPDATE_OVERLAYS)
 
 /obj/machinery/light/proc/interpolate_light_value(start_value, end_value, t)
+	if(t <= 0)
+		return start_value
+	if(t >= 1)
+		return end_value
 	return round(start_value + (end_value - start_value) * t, 0.01)
 
 /obj/machinery/light/proc/blend_light_color(from_color, to_color, t)
@@ -1406,9 +1419,14 @@ GLOBAL_VAR(parked_flicker_watchdog_id)
 	icon = 'icons/obj/lighting.dmi'
 	base_state = "floor"		// base description and icon_state
 	icon_state = "floor"
-	brightness = 5
-	nightshift_brightness = 4
+	brightness = 6
+	nightshift_brightness = 6
+	bulb_colour = LIGHT_COLOR_STATION_HALL
+	nightshift_light_color = LIGHT_COLOR_STATION_HALL_NIGHT
+	glow_icon_state = "floor"
+	exposure_icon_state = "floor_circle"
 	layer = 2.5
+	plane = FLOOR_PLANE
 	light_type = /obj/item/light/bulb
 	fitting = "floor" //making deconstruction give out the right type.
 	cone_angle = 0 // Floor lights emit omnidirectional light

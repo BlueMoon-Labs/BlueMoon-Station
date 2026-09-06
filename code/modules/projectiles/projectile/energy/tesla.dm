@@ -2,6 +2,11 @@
 	name = "tesla bolt"
 	icon_state = "tesla_projectile"
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/blue_laser
+	light_range = 2
+	light_power = 0.9
+	light_color = LIGHT_COLOR_LIGHTBLUE
+	glow_icon = 'icons/obj/projectiles.dmi'
+	glow_icon_state = "tesla_projectile"
 	var/zap_flags = ZAP_MOB_DAMAGE | ZAP_OBJ_DAMAGE
 	var/zap_range = 3
 	var/power = 10000

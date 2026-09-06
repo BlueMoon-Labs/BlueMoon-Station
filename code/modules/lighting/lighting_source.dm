@@ -88,7 +88,8 @@
 	GLOB.all_light_sources -= src
 	if (applied || effect_str)
 		remove_lum()
-	if (source_atom)
+	if (source_atom && !QDELETED(source_atom))
+		source_atom.delete_lights()
 		// Clear the atom's light reference if we are its active source.
 		// Without this, the atom's `light` var becomes a zombie reference
 		// after qdel — update_light() sees `if(light)` as TRUE and calls
@@ -517,6 +518,8 @@
 	if (update)
 		needs_update = LIGHTING_CHECK_UPDATE
 		applied = TRUE
+		if(source_atom)
+			source_atom.update_bloom()
 	else if (needs_update == LIGHTING_CHECK_UPDATE)
 		return //nothing's changed
 

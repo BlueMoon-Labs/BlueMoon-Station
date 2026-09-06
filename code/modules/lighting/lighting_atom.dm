@@ -18,6 +18,15 @@
 	var/tmp/datum/light_source/light // Our light source. Don't fuck with this directly unless you have a good reason!
 	var/tmp/list/light_sources       // Any light sources that are "inside" of us, for example, if src here was a mob that's carrying a flashlight, that flashlight's light source would be part of this list.
 
+	var/glow_icon = 'icons/obj/lamps.dmi'
+	var/exposure_icon = 'icons/effects/exposures.dmi'
+	var/glow_icon_state
+	var/glow_colored = TRUE
+	var/exposure_icon_state
+	var/exposure_colored = TRUE
+	var/image/glow_overlay
+	var/image/exposure_overlay
+
 /atom/movable
 	var/light_cone_angle = 0 // Full cone width in degrees. 0 = omnidirectional.
 	var/light_cone_dir = 0   // BYOND dir for the cone. 0 = follow top_atom.dir (rotates with holder). Non-zero = FIXED direction (ignores holder rotation).
@@ -96,6 +105,7 @@
 
 	if (!light_power || !light_range || !light_on) // We won't emit light anyways, destroy the light source.
 		QDEL_NULL(light)
+		delete_lights()
 	else
 		if (!ismovable(loc)) // We choose what atom should be the top atom of the light here.
 			. = src
@@ -104,6 +114,7 @@
 
 		if (light) // Update the light or create it if it does not exist.
 			light.update(.)
+			update_bloom()
 		else
 			// Defer source creation for z-levels whose lighting objects don't exist yet
 			// (see zlevel_lighting_deferred() — one predicate shared with create_all_lighting_objects).
@@ -118,6 +129,7 @@
 						note_deferred_lighting_z(T.z)
 						return
 			light = new/datum/light_source(src, .)
+			update_bloom()
 
 // If we have opacity, make sure to tell (potentially) affected light sources.
 /atom/movable/Destroy()
@@ -298,3 +310,57 @@
 	. = light_flags
 	light_flags = new_value
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_FLAGS, .)
+
+/atom/proc/update_bloom()
+	cut_overlay(glow_overlay)
+	cut_overlay(exposure_overlay)
+	// LightUp: уменьшаем контраст для покрашенных ламп (баллончик)
+	var/is_painted_lamp = FALSE
+	if(istype(src, /obj/machinery/light))
+		var/obj/machinery/light/L = src
+		if(L.color)
+			is_painted_lamp = TRUE
+	var/paint_contrast_mult = is_painted_lamp ? 0.82 : 1
+	var/paint_exposure_mult = is_painted_lamp ? 0.88 : 1
+	if(glow_icon && glow_icon_state)
+		glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = -2)
+		if(layer <= LOW_OBJ_LAYER)
+			glow_overlay.plane = FLOOR_LIGHTING_LAMPS_PLANE
+		else
+			glow_overlay.plane = LIGHTING_LAMPS_PLANE
+		glow_overlay.blend_mode = BLEND_ADD
+		if(glow_colored)
+			var/datum/color_matrix/mat = new(
+				light_color,
+				(CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * paint_contrast_mult,
+				CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power)
+			glow_overlay.color = mat.get()
+		add_overlay(glow_overlay)
+	if(exposure_icon && exposure_icon_state)
+		exposure_overlay = image(icon = exposure_icon, icon_state = exposure_icon_state, dir = dir, layer = -1)
+		exposure_overlay.plane = LIGHTING_EXPOSURE_PLANE
+		exposure_overlay.blend_mode = BLEND_ADD
+		exposure_overlay.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART
+		var/datum/color_matrix/mat = new(
+			1,
+			(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
+			CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
+		if(exposure_colored)
+			mat.set_color(
+				light_color,
+				(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
+				CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
+		exposure_overlay.color = mat.get()
+		var/icon/EX = icon(icon = exposure_icon, icon_state = exposure_icon_state)
+		exposure_overlay.pixel_x = 16 - EX.Width() / 2
+		exposure_overlay.pixel_y = 16 - EX.Height() / 2
+		add_overlay(exposure_overlay)
+
+/atom/proc/delete_lights()
+	cut_overlay(glow_overlay)
+	cut_overlay(exposure_overlay)
+	QDEL_NULL(glow_overlay)
+	QDEL_NULL(exposure_overlay)
+
+/atom/proc/extinguish_light(force = FALSE)
+	return
