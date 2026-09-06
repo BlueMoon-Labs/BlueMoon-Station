@@ -261,124 +261,296 @@
 	icon_state = "snagbackplate"
 	upgrade_to = list()
 
-//moth wings
+//moth wings - NovaSector transfer (ordinary + greyscale) for nian
+// ==================== ORDINARY (WINGCOLOR, moth_wings.dmi) ====================
 
 /datum/sprite_accessory/deco_wings/atlas
-	name = "Atlas"
+	name = "Moth (Atlas)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "atlas"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/brown
-	name = "Brown"
+	name = "Moth (Brown)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "brown"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/deathhead
-	name = "Deathshead"
+	name = "Moth (Deathshead)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "deathhead"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/featherymoth
-	name = "Feathery Moth Wings"
-	icon_state = "featherymoth"
+	name = "Moth (Feathery)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "feathery"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/firewatch
-	name = "Firewatch"
+	name = "Moth (Firewatch)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "firewatch"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/gothic
-	name = "Gothic"
+	name = "Moth (Gothic)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "gothic"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/jungle
-	name = "Jungle"
+	name = "Moth (Jungle)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "jungle"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/lovers
-	name = "Lovers"
+	name = "Moth (Lovers)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "lovers"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/luna
-	name = "Luna"
+	name = "Moth (Luna)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "luna"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/monarch
-	name = "Monarch"
+	name = "Moth (Monarch)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "monarch"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/moonfly
-	name = "Moon Fly"
+	name = "Moth (Moon Fly)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "moonfly"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/oakworm
-	name = "Oak Worm"
+	name = "Moth (Oak Worm)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "oakworm"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/plain
-	name = "Plain"
+	name = "Moth (Plain)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "plain"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/plasmafire
-	name = "Plasma Fire"
+	name = "Moth (Plasmafire)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "plasmafire"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/poison
-	name = "Poison"
+	name = "Moth (Poison)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "poison"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/punished
 	name = "Burnt Off"
-	icon_state = "punished"
-	upgrade_to = SPECIES_WINGS_MOTH //through TG code moth wings aren't meant to get upgraded if they're burnt off but...
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "burnt_off"
+	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/ragged
-	name = "Ragged"
+	name = "Moth (Ragged)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "ragged"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/reddish
-	name = "Reddish"
+	name = "Moth (Reddish)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "redish"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/rosy
-	name = "Rosy"
+	name = "Moth (Rosy)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "rosy"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/royal
-	name = "Royal"
+	name = "Moth (Royal)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "royal"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/snow
-	name = "Snow"
+	name = "Moth (Snow)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "snow"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/whitefly
-	name = "White Fly"
+	name = "Moth (White Fly)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "whitefly"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/deco_wings/witchwing
-	name = "Witch Wing"
+	name = "Moth (Witch Wing)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "witchwing"
 	upgrade_to = SPECIES_WINGS_MOTH
 
-//INSECT WINGS
+/datum/sprite_accessory/deco_wings/moffra
+	name = "Moth (Moffra)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "moffra"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/lightbearer
+	name = "Moth (Lightbearer)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "lightbearer"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/bluespace
+	name = "Moth (Bluespace)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "bluespace"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/strawberry
+	name = "Moth (Strawberry)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "strawberry"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/clockwork
+	name = "Moth (Clockwork)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "clockwork"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/citheronia
+	name = "Moth (Citheronia)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "citheroniagrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/whiteflygrey
+	name = "Moth (Whitefly Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "whiteflygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/browngrey
+	name = "Moth (Brown Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "browngrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/deathheadgrey
+	name = "Moth (Deathshead Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "deathheadgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/atlasgrey
+	name = "Moth (Atlas Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "atlasgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/poisongrey
+	name = "Moth (Poison Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "poisongrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/raggedgrey
+	name = "Moth (Ragged Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "raggedgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/featherygrey
+	name = "Moth (Feathery Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "featherygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/firewatchgrey
+	name = "Moth (Firewatch Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "firewatchgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/loversgrey
+	name = "Moth (Lovers Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "loversgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/junglegrey
+	name = "Moth (Jungle Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "junglegrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/rosygrey
+	name = "Moth (Rosy Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "rosygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/moffragrey
+	name = "Moth (Moffra Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "moffragrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/oakwormgrey
+	name = "Moth (Oakworm Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "oakwormgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/plasmafiregrey
+	name = "Moth (Plasmafire Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "plasmafiregrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/monarchgrey
+	name = "Moth (Monarch Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "monarchgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/royalgrey
+	name = "Moth (Royal Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "royalgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/plaingrey
+	name = "Moth (Plain Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "plaingrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/lunagrey
+	name = "Moth (Luna Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "lunagrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/deco_wings/witchwinggrey
+	name = "Moth (Witchwing Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "witchwinggrey"
+	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings
 	icon = 'icons/mob/wings.dmi'
@@ -498,121 +670,295 @@
 	upgrade_to = list()
 
 /datum/sprite_accessory/insect_wings/atlas
-	name = "Atlas"
+	name = "Moth (Atlas)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "atlas"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/brown
-	name = "Brown"
+	name = "Moth (Brown)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "brown"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/deathhead
-	name = "Deathshead"
+	name = "Moth (Deathshead)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "deathhead"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/featherymoth
-	name = "Feathery Moth Wings"
-	icon_state = "featherymoth"
+	name = "Moth (Feathery)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "feathery"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/firewatch
-	name = "Firewatch"
+	name = "Moth (Firewatch)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "firewatch"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/gothic
-	name = "Gothic"
+	name = "Moth (Gothic)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "gothic"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/jungle
-	name = "Jungle"
+	name = "Moth (Jungle)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "jungle"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/lovers
-	name = "Lovers"
+	name = "Moth (Lovers)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "lovers"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/luna
-	name = "Luna"
+	name = "Moth (Luna)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "luna"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/monarch
-	name = "Monarch"
+	name = "Moth (Monarch)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "monarch"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/moonfly
-	name = "Moon Fly"
+	name = "Moth (Moon Fly)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "moonfly"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/oakworm
-	name = "Oak Worm"
+	name = "Moth (Oak Worm)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "oakworm"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/plain
-	name = "Plain"
+	name = "Moth (Plain)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "plain"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/plasmafire
-	name = "Plasma Fire"
+	name = "Moth (Plasmafire)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "plasmafire"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/poison
-	name = "Poison"
+	name = "Moth (Poison)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "poison"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/punished
 	name = "Burnt Off"
-	icon_state = "punished"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "burnt_off"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/ragged
-	name = "Ragged"
+	name = "Moth (Ragged)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "ragged"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/reddish
-	name = "Reddish"
+	name = "Moth (Reddish)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "redish"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/rosy
-	name = "Rosy"
+	name = "Moth (Rosy)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "rosy"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/royal
-	name = "Royal"
+	name = "Moth (Royal)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "royal"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/snow
-	name = "Snow"
+	name = "Moth (Snow)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "snow"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/whitefly
-	name = "White Fly"
+	name = "Moth (White Fly)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "whitefly"
 	upgrade_to = SPECIES_WINGS_MOTH
 
 /datum/sprite_accessory/insect_wings/witchwing
-	name = "Witch Wing"
+	name = "Moth (Witch Wing)"
+	icon = 'icons/mob/moth_wings.dmi'
 	icon_state = "witchwing"
 	upgrade_to = SPECIES_WINGS_MOTH
 
-//insect markings
+/datum/sprite_accessory/insect_wings/moffra
+	name = "Moth (Moffra)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "moffra"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/lightbearer
+	name = "Moth (Lightbearer)"
+	icon = 'icons/mob/moth_wings.dmi'
+	icon_state = "lightbearer"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/bluespace
+	name = "Moth (Bluespace)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "bluespace"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/strawberry
+	name = "Moth (Strawberry)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "strawberry"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/clockwork
+	name = "Moth (Clockwork)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "clockwork"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+// GREYSCALE
+
+/datum/sprite_accessory/insect_wings/citheronia
+	name = "Moth (Citheronia)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "citheroniagrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/whiteflygrey
+	name = "Moth (Whitefly Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "whiteflygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/browngrey
+	name = "Moth (Brown Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "browngrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/deathheadgrey
+	name = "Moth (Deathshead Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "deathheadgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/atlasgrey
+	name = "Moth (Atlas Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "atlasgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/poisongrey
+	name = "Moth (Poison Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "poisongrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/raggedgrey
+	name = "Moth (Ragged Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "raggedgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/featherygrey
+	name = "Moth (Feathery Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "featherygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/firewatchgrey
+	name = "Moth (Firewatch Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "firewatchgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/loversgrey
+	name = "Moth (Lovers Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "loversgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/junglegrey
+	name = "Moth (Jungle Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "junglegrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/rosygrey
+	name = "Moth (Rosy Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "rosygrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/moffragrey
+	name = "Moth (Moffra Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "moffragrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/oakwormgrey
+	name = "Moth (Oakworm Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "oakwormgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/plasmafiregrey
+	name = "Moth (Plasmafire Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "plasmafiregrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/monarchgrey
+	name = "Moth (Monarch Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "monarchgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/royalgrey
+	name = "Moth (Royal Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "royalgrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/plaingrey
+	name = "Moth (Plain Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "plaingrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/lunagrey
+	name = "Moth (Luna Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "lunagrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
+/datum/sprite_accessory/insect_wings/witchwinggrey
+	name = "Moth (Witchwing Greyscale)"
+	icon = 'icons/mob/moth_wings_greyscale.dmi'
+	icon_state = "witchwinggrey"
+	upgrade_to = SPECIES_WINGS_MOTH
+
 /datum/sprite_accessory/insect_markings // Extra markings for insects ported from tg.
 	icon = 'icons/mob/insect_markings.dmi'
 	color_src = WINGCOLOR

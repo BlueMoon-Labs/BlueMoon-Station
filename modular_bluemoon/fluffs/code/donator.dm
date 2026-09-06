@@ -2636,14 +2636,32 @@
 /datum/gear/donator/bm/atomas_fluted_armor
 	name = "Fluted Plate Armor"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/suit/armor/vest/knight/military
+	path = /obj/item/clothing/under/donator/bm/fulted_plate_armor
 	ckeywhitelist = list("atomas")
 
 /datum/gear/donator/bm/atomas_hounskull
 	name = "Hounskull With Aventail"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/helmet/military
+	path = /obj/item/clothing/head/donator/bm/hounskull_with_aventail
 	ckeywhitelist = list("atomas")
+
+/datum/gear/donator/bm/melatonin_bodysuit
+	name = "Lycanthrope's Form-Fitting Bodysuit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/melatonin_bodysuit
+	ckeywhitelist = list("melatonin1")
+
+/datum/gear/donator/bm/melatonin_coat
+	name = "Lycanthrope's Reinforced Coat"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/melatonin_coat
+	ckeywhitelist = list("melatonin1")
+
+/datum/gear/donator/bm/melatonin_kit
+	name = "Melatonin Kit Box"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/melatonin_kit
+	ckeywhitelist = list("melatonin1")
 
 /datum/gear/donator/bm/sawwr_coat
 	name = "Dark Amber"

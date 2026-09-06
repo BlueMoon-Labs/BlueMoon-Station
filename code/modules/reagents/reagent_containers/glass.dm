@@ -137,7 +137,10 @@
 				if(target_turf.can_liquid_spill_on_hit())
 					var/datum/reagents/spill_copy = new(reagents.maximum_volume)
 					reagents.trans_to(spill_copy, reagents.total_volume, log = "reagentcontainer-glass pour spill")
-					addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
+					if(isclosedturf(target_turf) && spill_copy.has_reagent(/datum/reagent/thermite))
+						qdel(spill_copy)
+					else
+						addtimer(CALLBACK(target_turf, TYPE_PROC_REF(/atom, add_liquid_from_reagents), spill_copy), 1 SECONDS)
 			reagents.clear_reagents()
 
 /obj/item/reagent_containers/glass/attackby(obj/item/I, mob/user, params)
