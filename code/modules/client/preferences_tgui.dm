@@ -516,15 +516,16 @@
 					lighting_blur = clamp(text2num(value), LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX)
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE))
+						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
 							PM?.backdrop(user)
 				if("lighting_brightness")
 					lighting_brightness = clamp(text2num(value), LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						var/atom/movable/screen/plane_master/lighting/PM = H.plane_masters["[LIGHTING_PLANE]"]
-						PM?.backdrop(user)
+						for(var/plane in list(LIGHTING_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE, EMISSIVE_PLANE))
+							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
+							PM?.backdrop(user)
 				if("preferred_chaos_level")
 					preferred_chaos_level = clamp(text2num(value), 0, 3)
 			save_preferences()

@@ -370,6 +370,23 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	render_target = LIGHTING_LAMPS_RENDER_TARGET
 
+/atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	remove_filter("user_brightness")
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
+
 /atom/movable/screen/plane_master/lamps/floor
 	name = "floor lamps plane master"
 	plane = FLOOR_LIGHTING_LAMPS_PLANE
@@ -388,6 +405,21 @@
 
 /atom/movable/screen/plane_master/exposure/backdrop(mob/mymob)
 	remove_filter("blur_exposure")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
 	alpha = 0
 	if(!istype(mymob) || !mymob.client)
 		return
@@ -421,6 +453,21 @@
 /atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_selfglow")
 	remove_filter("lamps_selfglow_bloom")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
 	if(!istype(mymob) || !mymob.client)
 		return
 	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
@@ -477,6 +524,21 @@
 /atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_glare")
 	remove_filter("lamps_glare")
+	remove_filter("user_brightness")
+	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
+	var/lamp_ratio = ratio + 0.07
+	if(lamp_ratio != 0)
+		add_filter("user_brightness", 5, color_matrix_filter(list(
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,0,1,
+			lamp_ratio, lamp_ratio, lamp_ratio, 0
+		)))
 	if(!istype(mymob) || !mymob.client)
 		return
 	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
