@@ -4,7 +4,7 @@
 	min_players = 30
 	max_occurrences = 2
 	weight = 20
-	description = "Аномалия ползучего тумана."
+	description = "Аномалия лёгкого ползучего тумана."
 
 /datum/round_event/anomaly/anomaly_fog
 	start_when = ANOMALY_START_MEDIUM_TIME
@@ -32,4 +32,15 @@
 		department_name = "Command or Restricted areas"
 	else if(is_type_in_list(impact_area, list(/area/commons, /area/service/cafeteria, /area/service/coffeehouse, /area/service/observatory, /area/service/park, /area/service/sauna, /area/service/shop)))
 		department_name = "Dorms or Recreation areas"
-	priority_announce("Аномалия ползучего тумана об*ару**#а н- [department_name] \\|||#@#$#@%#@%@$^^#%!%@#@# T̵̨̟͈͍̈̓H̶̢̧̳͇̰͍̦͕̣͓̖̼͋̓̒̏̒̈́̊́͒̍̓̈́̑̚͜͝ͅẼ̴̪͘͝ ̶̧̨̳̠̯̦̻̬̫͇̺̘̲̋̾̑̀̍͋̀̀F̶͙͙̙̼̗͙̖̹̤̥̟͚̀͆͌ͅO̴̳̻͓͕̰͉̼̔̈͋̌̆͊̈́̑̂̒͂́̕ͅĜ̸̢͓̖̓̀̄̉̈́͌ ̶̢̛̼̲͕͙̀̑I̵̧̢͚̜̤̝̦͈͔̝͆́̉͂̅̕Ş̵̡̨̛̣̭̳̜͕̠̘͇̹̾̅̆̄͗̿̅̿̽͋͒̎͘͜ ̶̡̯̱̙̖̫͇̩̠̜͎̀̓͛̽͗̈̀ͅC̵̼̼͊̓̍̄̈́͊͘͠Ơ̴̡̺̪͖̞̜̮͚̩̜̈́͛̀̇M̶͕͕̤̩̹̠̫̗̼̫̟̻̈̌̈́́̓́̈͜͝Ȉ̸̱̹̓̿̋̕N̶̛̲͈̪̆͒̋̒̄̃̀̍̂G̵͚̠͍͉̽͌̔͛ @#$%@^^@#$||\\\\.", "ВНИМАНИЕ: АНОМАЛИЯ", 'modular_bluemoon/code/modules/events/anomaly/anomaly_fog.ogg')
+	if(istype(src, /datum/round_event/anomaly/anomaly_fog/dark))
+		priority_announce("[control.description] об*ару**#а н- [department_name] \\|||#@#$#@%#@%@$^^#%!%@#@# T̵̨̟͈͍̈̓H̶̢̧̳͇̰͍̦͕̣͓̖̼͋̓̒̏̒̈́̊́͒̍̓̈́̑̚͜͝ͅẼ̴̪͘͝ ̶̧̨̳̠̯̦̻̬̫͇̺̘̲̋̾̑̀̍͋̀̀F̶͙͙̙̼̗͙̖̹̤̥̟͚̀͆͌ͅO̴̳̻͓͕̰͉̼̔̈͋̌̆͊̈́̑̂̒͂́̕ͅĜ̸̢͓̖̓̀̄̉̈́͌ ̶̢̛̼̲͕͙̀̑I̵̧̢͚̜̤̝̦͈͔̝͆́̉͂̅̕Ş̵̡̨̛̣̭̳̜͕̠̘͇̹̾̅̆̄͗̿̅̿̽͋͒̎͘͜ ̶̡̯̱̙̖̫͇̩̠̜͎̀̓͛̽͗̈̀ͅC̵̼̼͊̓̍̄̈́͊͘͠Ơ̴̡̺̪͖̞̜̮͚̩̜̈́͛̀̇M̶͕͕̤̩̹̠̫̗̼̫̟̻̈̌̈́́̓́̈͜͝Ȉ̸̱̹̓̿̋̕N̶̛̲͈̪̆͒̋̒̄̃̀̍̂G̵͚̠͍͉̽͌̔͛ @#$%@^^@#$||\\\\.", "ВНИМАНИЕ: АНОМАЛИЯ", 'modular_bluemoon/code/modules/events/anomaly/anomaly_fog.ogg')
+	else
+		priority_announce("[control.description] обнаружена приблизительно в области [department_name]", "ВНИМАНИЕ: АНОМАЛИЯ")
+
+/datum/round_event_control/anomaly/anomaly_fog/dark
+	name = "Anomaly: Dark Fog"
+	typepath = /datum/round_event/anomaly/anomaly_fog/dark
+	description = "Аномалия тёмного ползучего тумана."
+
+/datum/round_event/anomaly/anomaly_fog/dark
+	anomaly_path = /obj/effect/anomaly/fog/dark
