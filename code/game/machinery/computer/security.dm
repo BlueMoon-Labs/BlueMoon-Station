@@ -90,12 +90,7 @@
 				data["records"] = records
 				for(var/datum/data/record/G in GLOB.data_core.general)
 					var/datum/data/record/S = sec_records_assoc["[G.fields["name"]]|[G.fields["id"]]"]
-					var/thumb = null
-					if(istype(G.fields["photo_front"], /obj/item/photo))
-						var/obj/item/photo/P = G.fields["photo_front"]
-						thumb = P.picture?.get_base64()
-					else if(isicon(G.fields["photo_front"]))
-						thumb = icon2base64(G.fields["photo_front"])
+					var/thumb = G.get_record_photo_base64("photo_front")
 					var/list/record_line = list(
 						"ref" = "\ref[G]",
 						"id" = G.fields["id"],
@@ -136,16 +131,9 @@
 					general["m_stat"] = active1.fields["m_stat"]
 					var/list/photos = list()
 					general["photos"] = photos
-					if(istype(active1.fields["photo_front"], /obj/item/photo))
-						var/obj/item/photo/P = active1.fields["photo_front"]
-						photos["front"] = P.picture?.get_base64()
-					else if(isicon(active1.fields["photo_front"]))
-						photos["front"] = icon2base64(active1.fields["photo_front"])
-					if(istype(active1.fields["photo_side"], /obj/item/photo))
-						var/obj/item/photo/P = active1.fields["photo_side"]
-						photos["side"] = P.picture?.get_base64()
-					else if(isicon(active1.fields["photo_side"]))
-						photos["side"] = icon2base64(active1.fields["photo_side"])
+					// ui_data гоняет SStgui и спать не может: кадр снимает ui_act("view").
+					photos["front"] = active1.get_record_photo_base64("photo_front")
+					photos["side"] = active1.get_record_photo_base64("photo_side")
 				else
 					general["empty"] = TRUE
 
@@ -241,6 +229,8 @@
 					active2 = E
 					break
 			screen = SEC_DATA_RECORD
+			// Съёмка уступает тик, поэтому стоит после выставления экрана.
+			G.get_record_photo("photo_front")
 		if("back")
 			if(!logged_in)
 				return
@@ -749,8 +739,12 @@
 		printing = FALSE
 		SStgui.update_uis(src)
 		return
-	var/obj/item/photo/photo = active1.fields["photo_front"]
-	if(istype(photo))
+	var/datum/data/record/target_record = active1
+	var/obj/item/photo/photo = target_record.get_record_photo("photo_front")
+	// Съёмка спит: за это окно консоль и запись могут исчезнуть.
+	if(QDELETED(src))
+		return
+	if(!QDELETED(target_record) && istype(photo) && photo.picture?.picture_image)
 		new /obj/item/poster/wanted(loc, photo.picture.picture_image, wanted_name, info)
 	printing = FALSE
 	SStgui.update_uis(src)

@@ -478,7 +478,7 @@
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "ammopouch"
 	slot_flags = ITEM_SLOT_POCKETS
-	w_class = WEIGHT_CLASS_BULKY
+	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE
 
 /obj/item/storage/bag/ammo/ComponentInitialize()

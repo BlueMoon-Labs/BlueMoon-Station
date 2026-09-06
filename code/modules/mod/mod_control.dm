@@ -39,10 +39,8 @@
 	var/status_flags
 	var/datum/mod_theme/theme = /datum/mod_theme
 
-	/// Looks of the MOD.		//]
-	var/skin = "standard"		//]
-	/// Theme of the MOD TGUI	//] <-- перенести в mod_theme
-	var/ui_theme = "ntos"		//]
+	var/skin = "standard"
+	var/ui_theme = "ntos"
 
 	var/seconds_electrified = MACHINE_NOT_ELECTRIFIED
 	var/interface_break = FALSE
@@ -131,6 +129,9 @@
 /obj/item/mod/control/proc/get_boots()
 	return mod_parts[MOD_PART_FEET]
 
+/obj/item/mod/control/get_cell()
+	return mod_parts[MOD_PART_CELL]
+
 //Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
 /obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
 	var/obj/item/clothing/mod_part/part = get_mod_part_by_index(mod_index)
@@ -209,8 +210,6 @@
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
 
 /obj/item/mod/control/Destroy()
-	if(theme)
-		theme = null
 	if(is_active())
 		STOP_PROCESSING(SSobj, src)
 	//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
@@ -227,15 +226,6 @@
 	// GC и уходили в харддел. Батарея в харддел не попадала только потому, что её
 	// чистил QDEL_NULL(MOD_CELL) - макрос разворачивается в lvalue и зануляет слот.
 	// Обход по копии: удаление ключа правит тот же alist.
-
-	for(var/obj/item/mod/module/module as anything in modules.Copy())
-		module.on_uninstall()
-		module.mod = null
-		modules -= module
-		qdel(module)
-
-	selected_module = null
-
 	for(var/index in mod_parts.Copy())
 		var/obj/item/part = mod_parts[index]
 		mod_parts -= index
@@ -246,6 +236,10 @@
 		// /obj/item/clothing/mod_part/Destroy - qdel выставляет gc_destroyed до
 		// вызова Destroy, так что для части костюм уже помечен уничтожаемым.
 		qdel(part)
+	for(var/obj/item/mod/module/module as anything in modules.Copy())
+		module.mod = null
+		modules -= module
+		qdel(module)
 	QDEL_NULL(ai)
 	QDEL_NULL(wires)
 	return ..()
@@ -422,6 +416,7 @@
 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
+//TODO: Вынести каждый кейс в отдельный proc. Эта функция становится трудночитаемой.
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
@@ -438,6 +433,11 @@
 		if(can_install_pai)
 			insert_pai(user, attacking_item)
 			return TRUE
+	if(istype(attacking_item, /obj/item/slimepotion))
+		var/obj/item/slimepotion/potion = attacking_item
+		for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
+			potion.afterattack(piece, user)
+		return TRUE
 	if(istype(attacking_item, /obj/item/mod/module))
 		if(!is_open())
 			balloon_alert(user, "сначала откройте панель!")
@@ -469,14 +469,6 @@
 		update_access(user, attacking_item)
 		return TRUE
 	return ..()
-
-/obj/item/mod/control/get_cell()
-	return mod_parts[MOD_PART_CELL]
-
-/obj/item/mod/control/proc/try_find_module_by_type(type)
-	for(var/obj/item/mod/module/module as anything in modules)
-		if(istype(module, type))
-			return module
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
@@ -729,6 +721,8 @@
 		return
 	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
 	for(var/obj/item/clothing/mod_part/part as anything in parts)
+		if(obj_flags & SPEED_POTION_EFFECT && !part.slowdown)
+			return FALSE //уже применялось, обновлять скорость не требуется. Иначе сбросится модификатор
 		part.slowdown = part_slowdown
 	wearer?.update_equipment_speed_mods()
 

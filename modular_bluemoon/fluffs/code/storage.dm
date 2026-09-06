@@ -282,6 +282,7 @@
 	new /obj/item/modkit/katana_kit(src) // стан-катана
 	new /obj/item/modkit/pulsar_knife_kit(src) // ножик-режик
 	new /obj/item/modkit/lapkee_arm_shield_kit(src) // имплант щита
+	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag

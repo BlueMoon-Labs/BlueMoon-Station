@@ -4,7 +4,7 @@
 			Раньше они не имели наследования и друг от друга, а брали родителя от типа \
 			своего слота, т.е шлемов, ботинок и т.д. Вы не представляете, как же много макаронного кода \
 			это порождало."
-
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
 	var/list/seal_message = list(
@@ -15,15 +15,12 @@
 		)
 	var/list/overslot_blacklist = list(
 		/obj/item/clothing/suit/space,
-		/obj/item/clothing/head/helmet,
+		/obj/item/clothing/head/helmet/space,
 		/obj/item/clothing/mod_part,
 		//Сюда вписываем то, поверх чего должно быть невозможно развернуть элемент МОДа!
 	)
 	var/list/linked_modules = list()
 	var/theme_category
-
-/obj/item/clothing/mod_part/obj_break(damage_flag)
-	return FALSE
 
 /obj/item/clothing/mod_part/equipped(mob/user, slot)
 	. = ..()
@@ -58,13 +55,21 @@
 	if(state == MODPART_CONSEALED)
 		for(var/obj/item/mod/module/module in linked_modules)
 			module.saved_state = module.active
+			if(module.module_type == MODULE_PASSIVE)
+				module.on_suit_deactivation()
+				continue
 			if(module.active)
 				module.on_deactivation()
 		return TRUE
 	else
 		for(var/obj/item/mod/module/module in linked_modules)
+			if(module.module_type == MODULE_PASSIVE)
+				module.on_suit_activation()
+				continue
+
 			if(!module.saved_state)
 				continue
+
 			module.on_activation()
 
 /obj/item/clothing/mod_part/proc/check_module_ready()

@@ -108,8 +108,8 @@
 	wanted_objects = list()
 	search_objects = 0
 	if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_defense_mode) && !mecha.defense_mode)
-		var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
-		action.Trigger(TRUE)
+		var/datum/action/vehicle/sealed/mecha/mech_defense_mode/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
+		action.Trigger(silent = TRUE)
 	if(ai_controller)
 		ai_controller.update_grid()
 		ai_controller.reset_ai_status()
@@ -296,17 +296,17 @@
 	if(mecha.obj_integrity < mecha.max_integrity*0.25)
 		if(prob(defense_mode_chance))
 			if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_defense_mode) && !mecha.defense_mode)
-				var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
-				action.Trigger(TRUE)
-				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_defense_mode, Trigger), FALSE), 100) //10 seconds of defense, then toggle off
+				//типизированный локал: через базовый /datum/action именованный аргумент не проверяется на компиляции
+				var/datum/action/vehicle/sealed/mecha/mech_defense_mode/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
+				action.Trigger(silent = TRUE)
+				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_defense_mode, Trigger), NONE, FALSE), 10 SECONDS) //10 seconds of defense, then toggle off
 
 		else if(prob(retreat_chance))
 			//Speed boost if possible
 			if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_overload_mode) && !mecha.leg_overload_mode)
-				var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_overload_mode]
-				mecha.leg_overload_mode = FALSE
-				action.Trigger(TRUE)
-				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_overload_mode, Trigger), FALSE), 100) //10 seconds of speeeeed, then toggle off
+				var/datum/action/vehicle/sealed/mecha/mech_overload_mode/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_overload_mode]
+				action.Trigger(forced_state = TRUE)
+				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_overload_mode, Trigger), NONE, FALSE), 10 SECONDS) //10 seconds of speeeeed, then toggle off
 
 			retreat_distance = 50
 			addtimer(VARSET_CALLBACK(src, retreat_distance, 0), 10 SECONDS)

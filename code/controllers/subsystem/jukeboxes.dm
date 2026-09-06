@@ -27,10 +27,8 @@
 
 /// Радиус, за пределами которого джукбокс слышно только внутри его собственной зоны
 #define JUKEBOX_HEARING_RANGE 7
-/// Доля громкости, ниже которой трек считаем неслышимым и ресурс слушателю не шлём.
-/// За пределами falloff BYOND гасит звук обратно расстоянию: громкость = falloff / d, где d в
-/// единицах звука (тайл = SOUND_DEFAULT_DISTANCE_MULTIPLIER). При 5% штатная громкость 70
-/// (falloff 2) даёт радиус 16 тайлов, максимум 100 - 23, взломанная колонка на 1000 - весь сектор.
+/// Доля громкости прямого звука, ниже которой личной шкатулке незачем слать файл: BYOND гасит
+/// звук как falloff / d в единицах звука, при громкости 70 (falloff 2) это 16 тайлов.
 #define JUKEBOX_AUDIBLE_GAIN 0.05
 
 // Координаты звука относительно слушателя - те же, что кладутся в /sound. Одна формула на
@@ -104,11 +102,8 @@ SUBSYSTEM_DEF(jukeboxes)
 	activejukeboxes.len++
 	activejukeboxes[activejukeboxes.len] = youvegotafreejukebox
 
-	// ЦЕНА: SEND_SOUND тянет клиенту весь файл трека. У персональных шкатулок это загруженный
-	// игроком ogg на мегабайты, и раньше он уходил КАЖДОМУ клиенту сервера независимо от того,
-	// где стоит источник. Стартовую рассылку ограничиваем теми, кому трек слышен: та же зона,
-	// радиус hearers либо позиционное затухание ещё не задавило громкость (JUKEBOX_AUDIBLE_GAIN).
-	// Подошедшим позже ресурс досылает fire() по факту входа в радиус.
+	// SEND_SOUND тянет клиенту весь файл трека: стартовая рассылка только тем, кому он слышен,
+	// остальным fire() дошлёт по факту входа в радиус.
 	var/turf/juke_turf = get_turf(jukebox)
 	var/list/audible_zlevels = juke_turf ? get_multiz_accessible_levels(juke_turf.z) : list()
 	var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
@@ -121,34 +116,29 @@ SUBSYSTEM_DEF(jukeboxes)
 			continue
 		if(!jukebox_area_allows(M, jukebox, one_area_play))
 			continue
-		if(get_area(M) != juke_area && !(M in hearerscache) && !jukebox_within_earshot(juke_turf, get_turf(M), jukefalloff, audible_zlevels))
+		if(get_area(M) != juke_area && !(M in hearerscache) && !jukebox_within_earshot(juke_turf, get_turf(M), jukefalloff, audible_zlevels, personal))
 			continue
 		SEND_SOUND(M, song_to_init)
 		sent_to[M.ckey] = TRUE
 	return activejukeboxes.len
 
-/**
- * Слышен ли трек с такой громкостью на таком удалении. Чистая функция от координат звука
- * (единицы BYOND, как в /sound.x/y/z) - радиус досылки ресурса считается по ней же.
- *
- * До этой проверки ресурс досылался только тем, кто стоит в зоне джукбокса или в hearers(7).
- * Позиционное затухание несёт звук куда дальше: слушатель в соседней комнате слышал предыдущий
- * трек приглушённым, а следующий не получал вовсе - файл до него не доходил, пока он не
- * подойдёт. Взломанные колонки, чей смысл в громкости на весь сектор, не работали совсем.
- */
+/// Слышен ли прямой звук трека с такой громкостью на таком удалении (координаты - единицы BYOND,
+/// как в /sound.x/y/z).
 /proc/jukebox_audible_at(falloff, sound_x, sound_y, sound_z)
 	if(!(falloff > 0))
 		return FALSE
 	var/distance = sqrt(sound_x * sound_x + sound_y * sound_y + sound_z * sound_z)
 	return distance * JUKEBOX_AUDIBLE_GAIN <= falloff
 
-/// Попадает ли слушатель на этом турфе в радиус, где трек ещё слышен: достижимый z и громкость
-/// после позиционного затухания не ниже JUKEBOX_AUDIBLE_GAIN.
-/datum/controller/subsystem/jukeboxes/proc/jukebox_within_earshot(turf/source, turf/listener, falloff, list/audible_zlevels)
+/// Нужен ли слушателю файл трека. Вне зоны слышна только реверберация, а она идёт по всему уровню,
+/// поэтому стационарному джукбоксу хватает достижимого z; личной шкатулке (мегабайты) - порог прямого звука.
+/datum/controller/subsystem/jukeboxes/proc/jukebox_within_earshot(turf/source, turf/listener, falloff, list/audible_zlevels, personal = FALSE)
 	if(!source || !listener)
 		return FALSE
 	if(!(listener.z in audible_zlevels))
 		return FALSE
+	if(!personal)
+		return TRUE
 	return jukebox_audible_at(falloff, JUKEBOX_SOUND_X(source, listener), JUKEBOX_SOUND_Y(source, listener), JUKEBOX_SOUND_Z(source, listener))
 
 /**
@@ -420,7 +410,7 @@ SUBSYSTEM_DEF(jukeboxes)
 					song_played.x = JUKEBOX_SOUND_X(currentturf, hearerturf)
 					song_played.z = JUKEBOX_SOUND_Z(currentturf, hearerturf)
 					song_played.y = JUKEBOX_SOUND_Y(currentturf, hearerturf)
-					audible = jukebox_audible_at(targetfalloff, song_played.x, song_played.y, song_played.z)
+					audible = personal ? jukebox_audible_at(targetfalloff, song_played.x, song_played.y, song_played.z) : TRUE
 
 					if(pressure_factor < ONE_ATMOSPHERE)
 						song_played.volume = (min((targetfalloff * 50), 100) * max((pressure_factor - SOUND_MINIMUM_PRESSURE)/(ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 1))
@@ -430,9 +420,7 @@ SUBSYSTEM_DEF(jukeboxes)
 					song_played.status = SOUND_UPDATE
 			var/first_send = FALSE
 			if(!sent_to[M.ckey])
-				// Ресурса у клиента ещё нет, а SOUND_UPDATE пустой канал не поднимет. Пока трек
-				// игроку не слышен - не шлём ему ничего, иначе мы снова раздаём мегабайты всему
-				// серверу. Слышен - значит в зоне, в hearers либо затухание ещё не задавило громкость.
+				// Ресурса у клиента ещё нет, а SOUND_UPDATE пустой канал не поднимет
 				if((!inrange && !audible) || !jukebox_area_allows(M, jukebox, area_limit))
 					continue
 				first_send = TRUE

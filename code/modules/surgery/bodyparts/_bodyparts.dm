@@ -72,6 +72,9 @@
 	var/dmg_overlay_type //the type of damage overlay (if any) to use when this bodypart is bruised/burned.
 	/// If we're bleeding, which icon are we displaying on this part
 	var/bleed_overlay_icon
+	/// A list of /datum/bodypart_overlay datums attached to this limb (e.g. augment implants).
+	/// Rendered by get_limb_icon() after all other bodypart images are assembled.
+	var/list/bodypart_overlays
 
 	//Damage messages used by help_shake_act()
 	var/light_brute_msg = "немного повреждена"
@@ -915,7 +918,6 @@
 				. += mark
 				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 					var/image/mark_emissive = emissive_copy(mark)
-					mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 					. += mark_emissive
 
 	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
@@ -989,7 +991,6 @@
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 						var/image/mark_emissive = emissive_copy(mark)
-						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
 						marking_emissives += mark_emissive
@@ -1013,7 +1014,6 @@
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
-							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
 							marking_emissives += aux_marking_emissive
@@ -1064,7 +1064,6 @@
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
-							aux_marking_emissive.icon = make_marking_emissive_icon(aux_marking_image.icon, aux_marking_image.icon_state)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
 							marking_emissives += aux_marking_emissive
@@ -1096,11 +1095,11 @@
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 						var/image/mark_emissive = emissive_copy(mark)
-						mark_emissive.icon = make_marking_emissive_icon(mark.icon, mark.icon_state)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
 						marking_emissives += mark_emissive
 		. += marking_emissives
+		. += get_bodypart_overlay_images()
 		return
 
 	if(color_src) //TODO - add color matrix support for base species limbs (or dont because color matrixes suck)
@@ -1128,9 +1127,38 @@
 		second_limb.icon_state = "[original_state]_behind"
 		second_limb.color = limb.color
 
+	. += get_bodypart_overlay_images()
+
 /obj/item/bodypart/deconstruct(disassembled = TRUE)
 	drop_organs()
 	qdel(src)
+
+/// Adds a /datum/bodypart_overlay to this limb. The overlay is drawn by get_limb_icon().
+/obj/item/bodypart/proc/add_bodypart_overlay(datum/bodypart_overlay/overlay)
+	if(!istype(overlay))
+		return
+	if(!bodypart_overlays)
+		bodypart_overlays = list()
+	bodypart_overlays |= overlay
+
+/// Removes a /datum/bodypart_overlay from this limb.
+/obj/item/bodypart/proc/remove_bodypart_overlay(datum/bodypart_overlay/overlay)
+	if(!bodypart_overlays || !(overlay in bodypart_overlays))
+		return
+	bodypart_overlays -= overlay
+	if(!length(bodypart_overlays))
+		bodypart_overlays = null
+
+/// Returns a combined list of all images produced by every bodypart_overlay attached to this limb.
+/// Intended to be called from get_limb_icon() after body_markings are processed.
+/obj/item/bodypart/proc/get_bodypart_overlay_images()
+	if(!bodypart_overlays)
+		return null
+	. = list()
+	for(var/datum/bodypart_overlay/overlay as anything in bodypart_overlays)
+		if(!overlay.can_draw_on_bodypart(src, owner))
+			continue
+		. += overlay.get_all_overlays(src)
 
 /// Get whatever wound of the given type is currently attached to this limb, if any
 /obj/item/bodypart/proc/get_wound_type(checking_type)

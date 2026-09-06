@@ -139,23 +139,11 @@
 /datum/computer_file/program/messenger/proc/get_messengers()
 	var/list/dictionary = list()
 	var/list/unsorted = list()
-
-	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
-		if(pda_device == computer)
+	var/own_ref = REF(src)
+	for(var/list/entry as anything in get_messenger_directory())
+		if(entry["ref"] == own_ref)
 			continue
-		if(pda_device.toff || pda_device.hidden)
-			continue
-		if(!pda_device.saved_identification && !pda_device.saved_job)
-			continue
-		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
-		if(!istype(messenger) || messenger.invisible)
-			continue
-
-		var/list/data = list()
-		data["name"] = pda_device.saved_identification || "Unknown"
-		data["job"] = pda_device.saved_job || "Unknown"
-		data["ref"] = REF(messenger)
-		unsorted += list(data)
+		unsorted += list(entry)
 
 	if(sort_by_job)
 		sortTim(unsorted, /proc/cmp_list_data_job)
@@ -166,6 +154,32 @@
 		dictionary[entry["ref"]] = entry
 
 	return dictionary
+
+GLOBAL_LIST_EMPTY(pda_messenger_directory)
+GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
+
+/// Список видимых мессенджеров общий для всех открытых окон: SStgui опрашивает каждое
+/// раз в секунду, и обход всех ПДА с get_all_files() на каждое окно не нужен.
+/proc/get_messenger_directory()
+	if(GLOB.pda_messenger_directory_time == world.time)
+		return GLOB.pda_messenger_directory
+	var/list/directory = list()
+	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
+		if(pda_device.toff || pda_device.hidden)
+			continue
+		if(!pda_device.saved_identification && !pda_device.saved_job)
+			continue
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
+		if(!istype(messenger) || messenger.invisible)
+			continue
+		var/list/data = list()
+		data["name"] = pda_device.saved_identification || "Unknown"
+		data["job"] = pda_device.saved_job || "Unknown"
+		data["ref"] = REF(messenger)
+		directory += list(data)
+	GLOB.pda_messenger_directory = directory
+	GLOB.pda_messenger_directory_time = world.time
+	return directory
 
 /// Checks if the person can send an everyone message
 /datum/computer_file/program/messenger/proc/can_send_everyone_message()
@@ -393,6 +407,9 @@
 	static_data["is_silicon"] = issilicon(user)
 	static_data["remote_silicon"] = FALSE
 	static_data["alert_able"] = alert_able
+	static_data["ringtone_list"] = GLOB.pda_ringtone_list
+	static_data["emoji_list"] = get_emoji_list()
+	static_data["emoji_base64"] = get_emoji_base64()
 	return static_data
 
 /datum/computer_file/program/messenger/ui_data(mob/user)
@@ -421,10 +438,7 @@
 	data["stored_photos"] = list()
 	data["selected_photo_path"] = null
 	data["on_spam_cooldown"] = !can_send_everyone_message()
-	data["ringtone_list"] = GLOB.pda_ringtone_list
 	data["current_ringtone"] = ringtone
-	data["emoji_list"] = get_emoji_list()
-	data["emoji_base64"] = get_emoji_base64()
 
 	var/obj/item/modular_computer/pda/pda_device = computer
 	if(istype(pda_device) && pda_device.picture)

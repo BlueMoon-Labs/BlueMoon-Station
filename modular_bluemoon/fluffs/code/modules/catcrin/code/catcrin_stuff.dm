@@ -700,8 +700,8 @@
 	new /obj/item/modkit/magrrinei_kit(src)
 	new /obj/item/modkit/ffshield(src)
 	new /obj/item/modkit/hopesh_kit(src)
+	new /obj/item/modsuit_modkit/catcrin(src)
 	new /obj/item/modkit/mark46_kit(src)
-	new /obj/item/modkit/mark45_kit(src)
 	new /obj/item/sign/flag/catcrin(src)
 	new /obj/item/banner/catcrin(src)
 

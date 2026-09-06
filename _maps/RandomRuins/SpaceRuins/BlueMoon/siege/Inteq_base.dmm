@@ -1203,17 +1203,6 @@
 	},
 /turf/open/floor/glass/reinforced,
 /area/InteQ_ship)
-"dD" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/door/airlock/grunge{
-	name = "Recreation";
-	req_one_access_txt = "152"
-	},
-/obj/effect/mine/explosive,
-/turf/open/floor/plasteel/dark,
-/area/InteQ_ship)
 "dE" = (
 /obj/machinery/porta_turret/inteq/energy{
 	name = "InteQ Ship Turret";
@@ -1429,7 +1418,14 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship5)
 "ei" = (
-/obj/item/toy/plush/borgplushie/meddrake,
+/obj/item/toy/plush/borgplushie/meddrake{
+	pixel_y = -10;
+	pixel_x = 8
+	},
+/obj/item/toy/plush/mothplushie{
+	pixel_y = 15;
+	pixel_x = -13
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "ej" = (
@@ -3915,7 +3911,9 @@
 "le" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
-/obj/item/toy/plush/bm/millie,
+/obj/item/toy/plush/bm/millie{
+	pixel_y = 4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "lf" = (
@@ -4421,7 +4419,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "mA" = (
-/obj/item/toy/plush/bm/zetta,
+/obj/item/toy/plush/bm/zetta{
+	pixel_x = -10
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "mB" = (
@@ -6161,9 +6161,14 @@
 /turf/open/floor/plasteel/freezer,
 /area/InteQ_ship)
 "rn" = (
-/obj/item/toy/plush/bm/araminta,
-/obj/item/toy/plush/bm/araminta,
-/obj/item/toy/plush/bm/lissara,
+/obj/item/toy/plush/bm/araminta{
+	pixel_x = -8;
+	pixel_y = 6
+	},
+/obj/item/toy/plush/bm/lissara{
+	pixel_y = -6;
+	pixel_x = 8
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "ro" = (
@@ -6313,11 +6318,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
-"rL" = (
-/obj/structure/flora/ausbushes/ppflowers,
-/obj/effect/mine/explosive,
-/turf/open/floor/grass/grass0,
-/area/InteQ_ship)
 "rM" = (
 /obj/structure/lattice,
 /turf/open/space,
@@ -6606,7 +6606,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship)
 "sF" = (
-/obj/item/toy/plush/borgplushie/scrubpuppy,
+/obj/item/toy/plush/borgplushie/scrubpuppy{
+	pixel_x = -8;
+	pixel_y = 5
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "sG" = (
@@ -8373,7 +8376,10 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/obj/item/toy/plush/bm/expie,
+/obj/item/toy/plush/bm/expie{
+	pixel_x = 6;
+	pixel_y = -6
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "xY" = (
@@ -8419,7 +8425,6 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/effect/mine/explosive,
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "yg" = (
@@ -8622,7 +8627,10 @@
 	pixel_x = 4;
 	layer = 2.9
 	},
-/obj/item/toy/plush/bm/belinsky,
+/obj/item/toy/plush/bm/belinsky{
+	pixel_x = -6;
+	pixel_y = -4
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "yF" = (
@@ -10515,7 +10523,10 @@
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "DF" = (
-/obj/item/toy/plush/mal0,
+/obj/item/toy/plush/mal0{
+	pixel_x = 3;
+	pixel_y = 6
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "DG" = (
@@ -10720,7 +10731,9 @@
 /turf/open/floor/plasteel/white,
 /area/InteQ_ship)
 "El" = (
-/obj/item/toy/plush/bm/koteykomya,
+/obj/item/toy/plush/bm/koteykomya{
+	pixel_x = -10
+	},
 /turf/open/floor/wood/wood_parquet,
 /area/InteQ_ship)
 "Em" = (
@@ -12840,14 +12853,6 @@
 	},
 /turf/open/floor/plating,
 /area/InteQ_ship/ship2)
-"Kj" = (
-/obj/structure/lattice,
-/obj/machinery/porta_turret/inteq/energy{
-	name = "InteQ Ship Turret";
-	dir = 1
-	},
-/turf/open/space,
-/area/space)
 "Kk" = (
 /obj/machinery/button/door{
 	id = "AcademyAuto";
@@ -14814,6 +14819,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
+/obj/effect/mine/explosive,
 /turf/open/floor/carpet,
 /area/InteQ_ship)
 "Qt" = (
@@ -15492,7 +15498,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/lattice,
 /turf/open/floor/plating{
 	heat_capacity = 1e+006;
 	icon_state = "platingdmg2"
@@ -15507,14 +15512,6 @@
 /mob/living/simple_animal/hostile/nanotrasen/elite/akins,
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark/textured,
-/area/InteQ_ship)
-"Sv" = (
-/obj/machinery/door/airlock/grunge{
-	name = "Recreation";
-	req_one_access_txt = "152"
-	},
-/obj/effect/mine/explosive,
-/turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Sw" = (
 /obj/structure/sign/flag/nanotrasen,
@@ -15574,7 +15571,6 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/obj/effect/mine/explosive,
 /turf/open/floor/plasteel,
 /area/InteQ_ship)
 "SF" = (
@@ -16009,6 +16005,15 @@
 /obj/structure/urinal,
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/InteQ_ship)
+"TM" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 4
+	},
+/obj/structure/bodycontainer/morgue{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "TN" = (
 /obj/machinery/porta_turret/syndicate/pod/toolbox{
 	faction = list("InteQ")
@@ -18118,6 +18123,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
+/obj/effect/mine/explosive,
 /turf/open/floor/carpet,
 /area/InteQ_ship)
 "ZY" = (
@@ -36287,7 +36293,7 @@ vB
 vB
 vB
 vB
-Kj
+rM
 vB
 rM
 rM
@@ -36502,7 +36508,7 @@ gz
 gz
 gz
 gz
-gz
+II
 AM
 AM
 vB
@@ -38401,12 +38407,12 @@ mv
 FU
 Wt
 Al
-uP
+xh
 aZ
 Yf
 uP
 VH
-xh
+uP
 aZ
 Lm
 al
@@ -38609,7 +38615,7 @@ Pp
 Am
 Xi
 Ms
-dD
+Pf
 Ms
 zq
 xC
@@ -39245,7 +39251,7 @@ Al
 Al
 Wt
 Al
-Sv
+tB
 Al
 jb
 pr
@@ -39462,7 +39468,7 @@ FU
 Wt
 Al
 GD
-rL
+aZ
 uP
 VH
 Xf
@@ -41378,7 +41384,7 @@ gz
 gz
 gz
 gz
-gz
+II
 vB
 vB
 vB
@@ -41587,7 +41593,7 @@ vB
 vB
 vB
 vB
-Kj
+rM
 vB
 rM
 rM
@@ -44738,7 +44744,7 @@ pR
 pR
 Sh
 vJ
-gM
+TM
 gM
 BK
 dv

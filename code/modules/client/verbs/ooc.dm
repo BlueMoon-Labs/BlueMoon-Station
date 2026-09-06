@@ -168,7 +168,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		return
 	new_ooccolor = sanitize_ooccolor(new_ooccolor)
 	prefs.ooccolor = new_ooccolor
-	prefs.save_preferences()
+	prefs.save_pref_var("ooccolor")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set OOC Color") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /client/verb/resetcolorooc()
@@ -181,7 +181,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 			return
 
 		prefs.ooccolor = initial(prefs.ooccolor)
-		prefs.save_preferences()
+		prefs.save_pref_var("ooccolor")
 
 //Checks admin notice
 /client/verb/admin_notice()

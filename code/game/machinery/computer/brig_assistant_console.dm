@@ -44,7 +44,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 
 	for(var/datum/data/record/S in GLOB.data_core.security)
 		var/status = S.fields["criminal"]
-		if(!(status in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
+		if(!is_wanted_status(status))
 			continue
 
 		var/datum/data/record/G = GLOB.data_core.general_by_name[S.fields["name"]]
@@ -89,7 +89,8 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 			else
 				can_take = TRUE
 
-		var/has_photo = (G.fields["photo_front"] || G.fields["photo_side"]) ? TRUE : FALSE
+		// Фото ленивое: спрашиваем источник, а не снятый кадр - снимать на весь список нельзя.
+		var/has_photo = (G.photo_source || G.fields["photo_front"] || G.fields["photo_side"]) ? TRUE : FALSE
 
 		wanted_list += list(list(
 			"id" = criminal_id,
@@ -126,6 +127,9 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 	data["remove"] = remove_list
 	return data
 
+/obj/machinery/computer/brig_assistant_console/proc/is_wanted_status(status)
+	return status in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)
+
 /obj/machinery/computer/brig_assistant_console/ui_act(action, params)
 	. = ..()
 	if(.)
@@ -140,7 +144,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				return
 
 			var/datum/data/record/S = GLOB.data_core.security_by_id[criminal_id]
-			if(!S || !(S.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_EXECUTE)))
+			if(!S || !is_wanted_status(S.fields["criminal"]))
 				to_chat(user, span_warning("Запись не найдена или преступник больше не в розыске."))
 				return
 
@@ -178,8 +182,16 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 					to_chat(user, span_warning("Подождите ещё [round((last_take + WANTED_POSTER_COOLDOWN - world.time) / 10)] секунд."))
 					return
 
+			// Засчитываем задание до съёмки: съёмка спит, а второй клик в это окно сверяет лимит по этому же списку.
+			var/take_stamp = world.time
+			criminal_takes += take_stamp
+
 			// Create poster
-			var/obj/item/photo/photo = G.fields["photo_front"] || G.fields["photo_side"]
+			var/obj/item/photo/photo = G.get_record_photo("photo_front") || G.get_record_photo("photo_side")
+			// Съёмка спит: за это окно кликер, консоль и записи могут исчезнуть.
+			if(QDELETED(src) || QDELETED(user) || QDELETED(S) || QDELETED(G) || !is_wanted_status(S.fields["criminal"]))
+				criminal_takes -= take_stamp
+				return
 			var/icon/person_icon
 			if(photo && photo.picture && photo.picture.picture_image)
 				person_icon = photo.picture.picture_image
@@ -208,7 +220,6 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				P.poster_structure.poster_id = criminal_id
 			user.put_in_hands(P)
 
-			criminal_takes += world.time
 			to_chat(user, span_notice("Вы взяли задание: развесить плакат по [wanted_name]. Не более [WANTED_POSTER_MAX_PER_AREA] плакатов в одной зоне."))
 			return TRUE
 
