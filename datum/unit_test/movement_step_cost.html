@@ -1,0 +1,7 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/movement_step_cost - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>movement_step_cost <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/movement_step_cost.html">movement_step_cost</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/movement_glide_math.dm#L200"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/movement_glide_math.dm 200"></a></h1><p>Цена шага обязана считаться от одного источника и там, где шаг оплачивают, и
+там, где его пересчитывают на ходу.</p>
+<p>Пересчёт брал cached_multiplicative_slowdown напрямую, а платил шаг по
+movement_delay(). Для /mob это одно и то же, а для подтипа с более широким
+movement_delay() новая цена всегда выходила ниже уплаченной: условие
+&quot;подешевело&quot; срабатывало на каждом вызове, и расписание подтягивалось на тик
+вперёд без всякой смены скорости.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

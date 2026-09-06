@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/unit_test.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/modules/unit_tests/unit_test.html#define">Define Details</a></header><main><h1>code/modules/unit_tests/unit_test.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/unit_test.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/unit_test.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/modules/unit_tests/unit_test.html#define/UNIT_TEST_WAIT_GRACE_TICKS">UNIT_TEST_WAIT_GRACE_TICKS</a></th><td>Запас в тиках колеса бакетов сверх срока ожидания. Курсор, доехавший ровно до
+срока, гарантирует только то, что бакет вскрыт: колбек выдаётся через
+InvokeAsync и свою работу может доделывать уже следующим тиком.</td></tr><tr><th><a href="code/modules/unit_tests/unit_test.html#define/UNIT_TEST_WAIT_HARD_LIMIT">UNIT_TEST_WAIT_HARD_LIMIT</a></th><td>Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
+от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
+потолок никогда не подрезал само окно на медленном мировом времени. Потолок
+щедрый сознательно: на перегруженном CI-раннере SStimer может не получать
+тактов дольше 10 реальных секунд (наблюдалось на layeniastation), и жадный
+потолок валит тест раньше, чем колесо доедет до срока. Платим этим временем
+только в двух случаях - мёртвый SStimer или задушенный раннер, и в обоих
+спешить некуда.</td></tr><tr><th>/proc/<a href="global.html#proc/unit_test_find_gas_reaction">unit_test_find_gas_reaction</a></th><td>Реакция из SSair.gas_reactions по её id, или null. Атмос-тесты дёргают реакции
+напрямую (мимо индексатора кандидатов), и один и тот же поиск был скопирован по
+файлам пять раз.</td></tr><tr><th>/proc/<a href="global.html#proc/RunUnitTestsWhenReady">RunUnitTestsWhenReady</a></th><td>Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
+asynchronous. Poll those explicit readiness conditions instead of sleeping
+an arbitrary ten seconds before every test run.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/UNIT_TEST_WAIT_GRACE_TICKS"><aside class="declaration">#define </aside>UNIT_TEST_WAIT_GRACE_TICKS <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/unit_test.dm#L160"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/unit_test.dm 160"></a></h3><p>Запас в тиках колеса бакетов сверх срока ожидания. Курсор, доехавший ровно до
+срока, гарантирует только то, что бакет вскрыт: колбек выдаётся через
+InvokeAsync и свою работу может доделывать уже следующим тиком.</p><h3 id="define/UNIT_TEST_WAIT_HARD_LIMIT"><aside class="declaration">#define </aside>UNIT_TEST_WAIT_HARD_LIMIT <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/unit_test.dm#L169"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/unit_test.dm 169"></a></h3><p>Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
+от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
+потолок никогда не подрезал само окно на медленном мировом времени. Потолок
+щедрый сознательно: на перегруженном CI-раннере SStimer может не получать
+тактов дольше 10 реальных секунд (наблюдалось на layeniastation), и жадный
+потолок валит тест раньше, чем колесо доедет до срока. Платим этим временем
+только в двух случаях - мёртвый SStimer или задушенный раннер, и в обоих
+спешить некуда.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

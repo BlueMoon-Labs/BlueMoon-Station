@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/excited_group - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/excited_group.html#var">Var Details</a> - <a href="datum/excited_group.html#proc">Proc Details</a></header><main><h1>excited_group <aside>/<a href="datum.html">datum</a>/<a href="datum/excited_group.html">excited_group</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1522"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1522"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr><tr><th><a href="datum/excited_group.html#var/awake_members">awake_members</a></th><td>Members currently excited. Maintained incrementally on every excited-flag
+transition and recounted exactly by self_breakdown, so the dismantle
+decision does not scan the whole turf_list every group-stage tick.</td></tr><tr><th><a href="datum/excited_group.html#var/breakdown_stage">breakdown_stage</a></th><td>Persistent resumable breakdown state. No turf air is written until the
+collection and average phases have completed for the membership snapshot.</td></tr><tr><th><a href="datum/excited_group.html#var/turf_reactions">turf_reactions</a></th><td>Reaction flags OR-ed in by members during process_cell this air pass;
+consumed and reset by tick_lifecycle (tg turf_reactions port).</td></tr><tr><th><a href="datum/excited_group.html#var/vented_to_space">vented_to_space</a></th><td>Группа стравливалась в космос (хотя бы один член прошёл вент-ветку
+process_cell). Ниже порога видимости compare() (MINIMUM_MOLES_DELTA_TO_MOVE)
+пара больше не обменивается ничем, поэтому тёплые огрызки газа во
+внутренних турфах разгерметизированной комнаты сами остыть уже не могут, а
+брейкдаун, усредняя моль-взвешенно, размазал бы их тепло по всей зоне.
+Для таких групп snap_vented_wisp() приводит подпороговые остатки к TCMB -
+комната, открытая в космос, оседает холодной, как и до оптимизаций.
+Флаг не снимается до смерти датума: заваренная обратно комната либо
+пересобирает группу заново (флаг чистый), либо быстро выводит члены за
+порог молей, где snap не трогает ничего.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/excited_group.html#proc/cancel_breakdown">cancel_breakdown</a></th><td>Drops an in-flight accumulator without changing lifecycle cooldowns. External
+gas writes use this to make the next slice restart from current air instead
+of overwriting the write with a stale average.</td></tr><tr><th><a href="datum/excited_group.html#proc/evict_settled_members">evict_settled_members</a></th><td>Волатильный потолок: контроль роста turf_list без усреднения газа.
+Вечное горение (горелка ТЭГ, плазменный пожар в коридоре) держит группу
+живой бесконечно, а единственный штатный выход осевших членов из turf_list -
+self_breakdown, который размазал бы топливо и жар по группе. Здесь осевшие
+просто выселяются с их текущим газом: любой реальный будущий дельта-обмен
+вернёт их через обычные share-пути. Заодно точный пересчёт awake_members
+(самолечение дрейфа инкрементального счётчика, как в self_breakdown).</td></tr><tr><th><a href="datum/excited_group.html#proc/snap_vented_wisp">snap_vented_wisp</a></th><td>Подпороговый тёплый остаток в стравленной в космос зоне приводится к TCMB.</td></tr><tr><th><a href="datum/excited_group.html#proc/tick_lifecycle">tick_lifecycle</a></th><td>One SSair group-stage step: advance both cooldowns and run whichever
+lifecycle event is due. Kept as a proc so tests can drive the exact
+stage behavior.</td></tr></table><h2 id="var">Var Details</h2><h3 id="var/awake_members"><aside class="declaration">var </aside>awake_members <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1532"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1532"></a></h3><p>Members currently excited. Maintained incrementally on every excited-flag
+transition and recounted exactly by self_breakdown, so the dismantle
+decision does not scan the whole turf_list every group-stage tick.</p><h3 id="var/breakdown_stage"><aside class="declaration">var </aside>breakdown_stage <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1546"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1546"></a></h3><p>Persistent resumable breakdown state. No turf air is written until the
+collection and average phases have completed for the membership snapshot.</p><h3 id="var/turf_reactions"><aside class="declaration">var </aside>turf_reactions <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1528"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1528"></a></h3><p>Reaction flags OR-ed in by members during process_cell this air pass;
+consumed and reset by tick_lifecycle (tg turf_reactions port).</p><h3 id="var/vented_to_space"><aside class="declaration">var </aside>vented_to_space <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1543"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1543"></a></h3><p>Группа стравливалась в космос (хотя бы один член прошёл вент-ветку
+process_cell). Ниже порога видимости compare() (MINIMUM_MOLES_DELTA_TO_MOVE)
+пара больше не обменивается ничем, поэтому тёплые огрызки газа во
+внутренних турфах разгерметизированной комнаты сами остыть уже не могут, а
+брейкдаун, усредняя моль-взвешенно, размазал бы их тепло по всей зоне.
+Для таких групп snap_vented_wisp() приводит подпороговые остатки к TCMB -
+комната, открытая в космос, оседает холодной, как и до оптимизаций.
+Флаг не снимается до смерти датума: заваренная обратно комната либо
+пересобирает группу заново (флаг чистый), либо быстро выводит члены за
+порог молей, где snap не трогает ничего.</p><h2 id="proc">Proc Details</h2><h3 id="proc/cancel_breakdown"><aside class="declaration">proc </aside>cancel_breakdown<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1639"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1639"></a></aside></h3><p>Drops an in-flight accumulator without changing lifecycle cooldowns. External
+gas writes use this to make the next slice restart from current air instead
+of overwriting the write with a stale average.</p><h3 id="proc/evict_settled_members"><aside class="declaration">proc </aside>evict_settled_members<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1774"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1774"></a></aside></h3><p>Волатильный потолок: контроль роста turf_list без усреднения газа.
+Вечное горение (горелка ТЭГ, плазменный пожар в коридоре) держит группу
+живой бесконечно, а единственный штатный выход осевших членов из turf_list -
+self_breakdown, который размазал бы топливо и жар по группе. Здесь осевшие
+просто выселяются с их текущим газом: любой реальный будущий дельта-обмен
+вернёт их через обычные share-пути. Заодно точный пересчёт awake_members
+(самолечение дрейфа инкрементального счётчика, как в self_breakdown).</p><h3 id="proc/snap_vented_wisp"><aside class="declaration">proc </aside>snap_vented_wisp<aside>(/<a href="turf.html">turf</a>/<a href="turf/open.html">open</a>/member)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1802"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1802"></a></aside></h3><p>Подпороговый тёплый остаток в стравленной в космос зоне приводится к TCMB.</p>
+<p>Ниже MINIMUM_MOLES_DELTA_TO_MOVE compare() перестаёт видеть пару вовсе, то
+есть у такого огрызка нет НИ ОДНОГО пути остыть: обычные share его не берут,
+вент-ветка достаёт только турфы, граничащие с космосом напрямую. До
+оптимизаций зону сходил в холод вечный черн (комната у пробоины не засыпала
+никогда) - теперь его нет, и тепло надо снимать в точках оседания зоны.
+Зовётся из обоих брейкдаунов ДО слияния в ведро (иначе моль-взвешенное
+усреднение размажет тепло огрызка по пустым турфам всей комнаты) и из
+dismantle() (группа может расформироваться и без финального брейкдауна).
+Планетарные члены не трогаются: их держит шаблон неба, а не космос.</p><h3 id="proc/tick_lifecycle"><aside class="declaration">proc </aside>tick_lifecycle<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/environmental/LINDA_turf_tile.dm#L1718"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/environmental/LINDA_turf_tile.dm 1718"></a></aside></h3><p>One SSair group-stage step: advance both cooldowns and run whichever
+lifecycle event is due. Kept as a proc so tests can drive the exact
+stage behavior.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

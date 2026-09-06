@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/asset/json/chem_dispenser_recipes - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/asset/json/chem_dispenser_recipes.html#var">Var Details</a></header><main><h1>chem_dispenser_recipes <aside>/<a href="datum.html">datum</a>/<a href="datum/asset.html">asset</a>/<a href="datum/asset/json.html">json</a>/<a href="datum/asset/json/chem_dispenser_recipes.html">chem_dispenser_recipes</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/asset_cache/assets/chem_dispenser_recipes.dm#L16"><img src="git.png" width="16" height="16" title="code/modules/asset_cache/assets/chem_dispenser_recipes.dm 16"></a></h1><p>Книга рецептов диспенсера как JSON-ассет.</p>
+<p>Тело книги весит от полумегабайта до 1.17 МБ на набор реагентов, и раньше оно
+ездило внутри сообщения tgui: url_encode(json_encode(...)) просит у 32-битного
+DreamDaemon непрерывный кусок памяти в разы больше самой книги - на таких
+аллокациях процесс и умирал (раунды 9941/9948; раунд 9954 поймал 1.17 МБ уже
+предупреждением). Ассет кодируется один раз на набор реагентов, уезжает клиенту
+файлом через транспорт ассетов и кэшируется на его стороне, а в нагрузке
+интерфейса остаётся только имя файла.</p>
+<p>Экземпляр на каждый набор реагентов создаёт ensure_recipes_asset() диспенсера;
+абстрактным типом ассет объявлен ровно поэтому - SSassets не должен поднимать
+его сам, без набора он пуст.</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr><tr><th><a href="datum/asset/json/chem_dispenser_recipes.html#var/payload">payload</a></th><td>Книга рецептов, которую отдаст generate(). Отпускается сразу после
+регистрации: файл уже записан, а сам список и так живёт в
+shared_dispenser_recipe_caches у диспенсеров.</td></tr></table><h2 id="var">Var Details</h2><h3 id="var/payload"><aside class="declaration">var </aside>payload <aside>– /list</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/asset_cache/assets/chem_dispenser_recipes.dm#L21"><img src="git.png" width="16" height="16" title="code/modules/asset_cache/assets/chem_dispenser_recipes.dm 21"></a></h3><p>Книга рецептов, которую отдаст generate(). Отпускается сразу после
+регистрации: файл уже записан, а сам список и так живёт в
+shared_dispenser_recipe_caches у диспенсеров.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

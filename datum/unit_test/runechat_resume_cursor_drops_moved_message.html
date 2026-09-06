@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/runechat_resume_cursor_drops_moved_message - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>runechat_resume_cursor_drops_moved_message <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/runechat_resume_cursor_drops_moved_message.html">runechat_resume_cursor_drops_moved_message</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/runechat_sanity.dm#L185"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/runechat_sanity.dm 185"></a></h1><p>Курсор возобновления не переживает переезд сообщения в другой бакет.</p>
+<p>fire() прерывается по бюджету тика посреди бакета и запоминает сообщение, с которого
+продолжит. До следующего прохода сообщение может из этого бакета уехать: generate_image()
+переназначает срок соседям по тайлу, а enter_subsystem() с новым сроком делистит сообщение
+и кладёт его в другой слот. Курсор, переживший переезд, уводит проход в ЧУЖОЙ бакет -
+тот гасится досрочно, а остаток текущего выбрасывается вместе со слотом: сообщениям не
+вызовут end_of_life(), и они остаются в client.images до конца сессии.</p>
+<p>leave_subsystem() этот курсор снимает с рождения, enter_subsystem() - второй и последний
+путь, которым сообщение покидает бакет.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

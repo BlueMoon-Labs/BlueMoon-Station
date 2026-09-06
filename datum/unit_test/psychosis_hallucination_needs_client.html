@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/psychosis_hallucination_needs_client - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>psychosis_hallucination_needs_client <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/psychosis_hallucination_needs_client.html">psychosis_hallucination_needs_client</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/round_10137_review_fixes_b.dm#L38"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/round_10137_review_fixes_b.dm 38"></a></h1><p>Ни один подтип психоза не должен переживать отмену от родителя.</p>
+<p>/datum/hallucination/New() помечает датум на удаление, когда у цели нет клиента: показывать
+галлюцинацию некому. Оборвать конструктор подтипа из родителя в DM нечем, поэтому КАЖДЫЙ
+подтип обязан сам свериться с QDELETED(src) сразу после ..(). Подтип без этой сверки
+продолжает работать с target == null: null.overlay_fullscreen, view(3, null) с падением на
+usr, stack_trace в /obj/effect/hallucination/simple/Initialize и второй qdel поверх первого.
+В раунде 10137 SSD-игрок с психозом ловил такой цикл каждый тик статус-эффекта.</p>
+<p>Перебором подтипов, а не списком: пул психоза пополняется десятками типов за правку, и
+тест на фиксированном перечне пропустил бы ровно тот, который добавят завтра.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

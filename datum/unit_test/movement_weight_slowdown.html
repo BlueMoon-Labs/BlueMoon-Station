@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/movement_weight_slowdown - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>movement_weight_slowdown <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/movement_weight_slowdown.html">movement_weight_slowdown</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/movement_weight_slowdown.dm#L12"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/movement_weight_slowdown.dm 12"></a></h1><p>Замедление за вес тела, размеченное по тикам.</p>
+<p>Цена шага выравнивается по тику, поэтому замедление, не дотягивающее до
+четверти тика, пропадает целиком, а всё что больше превращается в целый
+тик. Раньше лестница задавалась в долях децисекунды (0.2 и 0.7 от
+конфиг-множителя) и после выравнивания превращалась в случайную ступеньку.
+Теперь она задаётся сразу в тиках и ступеньки предсказуемы.</p>
+<p>Точки обнуления штрафа сохранены: тяжёлому персонажу вес перестаёт мешать
+при росте 120%, сверхтяжёлому при 170% - как и было задумано.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

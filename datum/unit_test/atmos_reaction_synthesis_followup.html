@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/atmos_reaction_synthesis_followup - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/atmos_reaction_synthesis_followup.html#proc">Proc Details</a></header><main><h1>atmos_reaction_synthesis_followup <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/atmos_reaction_synthesis_followup.html">atmos_reaction_synthesis_followup</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L1930"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 1930"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/atmos_reaction_synthesis_followup.html#proc/Run">Run</a></th><td>Сбор кандидатов идёт ПО КЛЮЧАМ газ-листа смеси, поэтому бакет газа, которого в
+смеси нет вовсе, не заводится ни при каком поле требований. Реакция, чьё топливо
+рождает другая реакция ТОГО ЖЕ вызова, из-за этого молча откладывалась на фаер
+SSair: снятый пол спасал только случай &quot;газ есть, но его мало&quot;. Инвариант
+чинится меткой synthesis_followup_gas на производителе - тест закрепляет и
+саму метку, и её следствие.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/Run">Run<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L1930"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 1930"></a></aside></h3><p>Сбор кандидатов идёт ПО КЛЮЧАМ газ-листа смеси, поэтому бакет газа, которого в
+смеси нет вовсе, не заводится ни при каком поле требований. Реакция, чьё топливо
+рождает другая реакция ТОГО ЖЕ вызова, из-за этого молча откладывалась на фаер
+SSair: снятый пол спасал только случай &quot;газ есть, но его мало&quot;. Инвариант
+чинится меткой synthesis_followup_gas на производителе - тест закрепляет и
+саму метку, и её следствие.</p>
+<p>Следствие проверяется на паре zauker_formation (приоритет 35) / zauker_decomp
+(23), а не на фреоне: у фреона окна температур производителя и потребителя не
+пересекаются (синтез от 473 К, горение до 273 К), поэтому пронаблюдать там
+нечего - freonfire доезжает до цикла реакций и честно выходит с NO_REACTION.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

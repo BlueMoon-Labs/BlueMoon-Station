@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/datums/ai/hostile_adapter/MIGRATION_EXCEPTIONS.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Постоянные исключения hostile AI <aside>code/datums/ai/hostile_adapter/MIGRATION_EXCEPTIONS.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/hostile_adapter/MIGRATION_EXCEPTIONS.md"><img src="git.png" width="16" height="16" title="code/datums/ai/hostile_adapter/MIGRATION_EXCEPTIONS.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>Каждый <code>/mob/living/simple_animal/hostile</code> получает адаптер-контроллер через
+базовый профиль или явное назначение из <code>profile_assignments.dm</code>. Значение
+<code>ai_profile_type = null</code> допустимо только для <code>AI_OFF</code>-оболочек без собственного
+NPC-AI; полный список таких типов находится в <code>permanent_exceptions.dm</code>.</p>
+<table><thead><tr><th>Тип</th><th>Почему контроллер не нужен</th><th>Проверка</th></tr></thead><tbody>
+<tr><td>Player swarmer</td><td>Гост-роль с <code>AIStatus = AI_OFF</code>; NPC-подтипы <code>/swarmer/ai</code> используют специализированные профили</td><td><code>ai_swarmer_forage_cycle</code>, <code>ai_swarmer_combat_subtypes</code> проверяют NPC-ветку</td></tr>
+<tr><td>Eldritch demons</td><td>Гост-вессели с <code>AIStatus = AI_OFF</code>; сегменты armsy двигаются сигналами головы</td><td><code>ai_eldritch_stays_player_vessel</code></td></tr>
+<tr><td>Guardians</td><td>Игровые духи с <code>AIStatus = AI_OFF</code>, создаваемые для владельца</td><td><code>ai_guardian_stays_player_shell</code></td></tr>
+<tr><td>Herald mirror</td><td>Марионетка хозяина с <code>AIStatus = AI_OFF</code>; атаки вызываются боссовыми обёртками хозяина</td><td><code>ai_herald_mirror_stays_marionette</code></td></tr>
+</tbody></table>
+<p>Новое исключение должно одновременно получить <code>ai_profile_type = null</code>,
+обоснование здесь и регрессионную проверку. Обычные и специализированные
+hostile-мобы в этот список добавляться не должны.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

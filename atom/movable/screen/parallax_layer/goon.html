@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/atom/movable/screen/parallax_layer/goon - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>goon <aside>/<a href="atom.html">atom</a>/<a href="atom/movable.html">movable</a>/<a href="atom/movable/screen.html">screen</a>/<a href="atom/movable/screen/parallax_layer.html">parallax_layer</a>/<a href="atom/movable/screen/parallax_layer/goon.html">goon</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/_rendering/parallax/layers/weather.dm#L204"><img src="git.png" width="16" height="16" title="code/_rendering/parallax/layers/weather.dm 204"></a></h1><p>Часть погодных текстур goonstation полностью НЕПРОЗРАЧНА: это серый шум, у
+которого прозрачность вычисляется из яркости цветовой матрицей. Приём (не код -
+код у них под CC BY-NC-SA) даёт две вещи, которых иначе не получить:</p>
+<ul>
+<li>силу явления одним числом: метель гуще или реже - это коэффициент матрицы,
+а не другая картинка;</li>
+<li>возможность вообще взять этот арт: положенный на BLEND_ADD как есть, он
+залил бы экран.</li>
+</ul>
+<p>ВЕШАТЬ МАТРИЦУ ОГУЛОМ НЕЛЬЗЯ. Замер каждого стейта показал, что половина из них
+(<code>*_sparse</code>, <code>meteors</code>, <code>asteroids_*</code>, <code>clouds_*</code>) - обычные спрайты со своей
+альфой 1-59%. Матрица на них не добавляет прозрачности, а домножает её на
+яркость и почти гасит: <code>snow_sparse</code> уходит с альфы 4.3 на 2.7. Поэтому
+коэффициент стоит только там, где исходник непрозрачен, и подобран под
+измеренную яркость: чем темнее шум, тем больше нужен коэффициент.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

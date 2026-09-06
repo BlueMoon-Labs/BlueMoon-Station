@@ -1,0 +1,10 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/quick_step_walks_at_run_speed - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>quick_step_walks_at_run_speed <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/quick_step_walks_at_run_speed.html">quick_step_walks_at_run_speed</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/movement_glide_math.dm#L221"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/movement_glide_math.dm 221"></a></h1><p>Квирк &quot;Быстрый Шаг&quot; обязан давать при ходьбе ровно скорость бега.</p>
+<p>Раньше он вычитал константу 1.25, не кратную ступени тика. На проде (ходьба 3, бег 1.5,
+тик 0.5) итог 1.75 садился ровно на половину ступени: у голого персонажа уходил вниз до
+беговых 1.5, и проблемы не было видно. Любое дробное замедление сверху перекидывало сумму
+через границу - ходьба платила лишний тик, бег нет, и квирк давал 25-33% медленнее бега.
+Теперь вычитается разница ходьба-минус-бег: она кратна ступени, поэтому базы совпадают,
+и дальше общее замедление квантуется для ходьбы и бега одинаково.
+Проверяется сама скидка, а не мобы: задержки ходьбы и бега приходят из конфига, а он в
+CI не загружается (у walk_delay/run_delay нет дефолтов, и там обе величины совпадают) -
+мобный тест был бы вакуумным на одной машине и падал на другой.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

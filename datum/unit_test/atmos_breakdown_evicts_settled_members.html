@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/atmos_breakdown_evicts_settled_members - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/atmos_breakdown_evicts_settled_members.html#proc">Proc Details</a></header><main><h1>atmos_breakdown_evicts_settled_members <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/atmos_breakdown_evicts_settled_members.html">atmos_breakdown_evicts_settled_members</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L769"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 769"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/atmos_breakdown_evicts_settled_members.html#proc/Run">Run</a></th><td>Perpetual groups (planetary surfaces around a leak, space-edge drains) never
+dismantle, and a turf has no individual way out of turf_list - over hours a
+group accumulates every turf that was ever excited near it (32k members on a
+live lavaland) and every EXCITED_GROUP_BREAKDOWN_CYCLES fires re-averages all
+of them in one atomic unyieldable pass. Breakdown must evict resting members
+it did not change: they sit exactly at the bucket average, contribute nothing
+and receive nothing, and any real future delta re-adds them through the
+normal share paths.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/Run">Run<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L769"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 769"></a></aside></h3><p>Perpetual groups (planetary surfaces around a leak, space-edge drains) never
+dismantle, and a turf has no individual way out of turf_list - over hours a
+group accumulates every turf that was ever excited near it (32k members on a
+live lavaland) and every EXCITED_GROUP_BREAKDOWN_CYCLES fires re-averages all
+of them in one atomic unyieldable pass. Breakdown must evict resting members
+it did not change: they sit exactly at the bucket average, contribute nothing
+and receive nothing, and any real future delta re-adds them through the
+normal share paths.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

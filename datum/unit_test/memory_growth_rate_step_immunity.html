@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/memory_growth_rate_step_immunity - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>memory_growth_rate_step_immunity <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/memory_growth_rate_step_immunity.html">memory_growth_rate_step_immunity</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/process_memory.dm#L225"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/process_memory.dm 225"></a></h1><p>Ступенька в окне не должна поднимать ложную тревогу.</p>
+<p>Регрессия с именем и датой: раунд 10023 от 19.08.2026. В 15:17 гейтвей создал z19, это
++72 тысячи объектов и ~140 МБ за один сэмпл. Пятиминутное окно дало под тридцать МБ/мин,
+прогноз пообещал десять минут до потолка, админы увели раунд на рестарт на двадцать второй
+минуте. Настоящий дрейф той сборки - около 6 МБ/мин (раунд 10022: +1375 МБ за три с
+половиной часа).</p>
+<p>Лечится это длиной окна, а не робастной статистикой. Усечённое среднее пошаговых скоростей,
+стоявшее здесь один день, прятало ступеньку вместе с ответом: в раунде 10028 рост шёл
+ступеньками ВЕСЬ раунд, двенадцать шагов из полутора тысяч несли 79% роста, и усечение
+выдавало ноль при истинных 1.36 МБ/мин.</p>
+<p>Поэтому проверяется тут не &quot;ступеньки не видно&quot;, а &quot;ступенька не поднимает тревогу&quot;:
+цифра остаётся честной, память и правда потрачена, а от ложного срабатывания спасает то,
+что потраченное поделено на полчаса.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/signal_teardown.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/modules/unit_tests/signal_teardown.html#define">Define Details</a></header><main><h1>code/modules/unit_tests/signal_teardown.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/signal_teardown.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/signal_teardown.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/modules/unit_tests/signal_teardown.html#define/SIGNAL_TEARDOWN_TEST_COUNT">SIGNAL_TEARDOWN_TEST_COUNT</a></th><td>Инвариант разбора подписок: после Destroy ни одна сторона не держит другую.
+Уцелевшая регистрация - это жёсткая ссылка в обе стороны (ключ в signal_procs
+слушателя и запись в comp_lookup цели), то есть прямой путь в hard delete.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/SIGNAL_TEARDOWN_TEST_COUNT"><aside class="declaration">#define </aside>SIGNAL_TEARDOWN_TEST_COUNT <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/signal_teardown.dm#L13"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/signal_teardown.dm 13"></a></h3><p>Инвариант разбора подписок: после Destroy ни одна сторона не держит другую.
+Уцелевшая регистрация - это жёсткая ссылка в обе стороны (ключ в signal_procs
+слушателя и запись в comp_lookup цели), то есть прямой путь в hard delete.</p>
+<p>Тесты появились из подозрения, что оба цикла в /datum/Destroy пропускают
+каждый второй элемент: они идут прямым <code>for(var/x in list)</code> по спискам,
+которые UnregisterSignal правит по ходу (<code>lookup -= sig</code> и
+<code>signal_procs -= target</code> в _component.dm). Подозрение ПРОВЕРЕНО И СНЯТО:
+на трёх подписках (с двумя пропуск мог бы не проявиться) оба направления
+разбираются полностью на неизменённом коде. Обход ассоциативного списка по
+ключам в DM переживает вырезание текущего ключа. Тесты оставлены, чтобы это
+свойство не пришлось выяснять заново.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

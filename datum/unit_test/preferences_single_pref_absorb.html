@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/preferences_single_pref_absorb - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>preferences_single_pref_absorb <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/preferences_single_pref_absorb.html">preferences_single_pref_absorb</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/preferences_single_pref_coalescing.dm#L24"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/preferences_single_pref_coalescing.dm 24"></a></h1><p>Склейка одиночных записей в savefile префов.</p>
+<p>Запись savefile синхронная: она морозит весь процесс, а не только вызывающего.
+Раунд 10137 дал 6230 таких заморозок на 32.8 секунды - 30-34% всего дрифта спайков;
+после того как панель tgui и прогресс лоадаута перевели с полного save_preferences
+(~124 WRITE_FILE) на запись одного ключа, раунд 10146 дал 3712 на 21.1 секунды, то
+есть 23% дрифта. Записей стало вдвое меньше, а средняя цена ОДНОЙ выросла с 5.3 до
+5.7 мс: значит платим не за WRITE_FILE, а за ОТКРЫТИЕ файла, и резать надо число
+открытий. Отсюда буфер склейки - поток правок копится в памяти и уходит на диск
+одним открытием.</p>
+<p>Тесты гоняют чистые функции решения и ту половину save_single_pref, которая на диск
+не ходит вовсе: буфер и таймер. Живой мир и savefile им не нужны.</p>
+<p>Буфер обязан схлопывать повтор ключа и копить разные ключи.</p>
+<p>Швабра (mop.dm) дёргает прогресс лоадаута на КАЖДУЮ отмытую плитку, панель tgui шлёт
+состояние чата раз в три секунды. Оба потока - это один и тот же ключ снова и снова:
+на диск обязана уходить только последняя версия.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

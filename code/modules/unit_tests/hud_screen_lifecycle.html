@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/hud_screen_lifecycle.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/hud_screen_lifecycle.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/hud_screen_lifecycle.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/hud_screen_lifecycle.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/hud_destroy_frees_bound_screens</th><td>HUD обязан уносить с собой ВСЕ экранные объекты, которые завёл, а не только
+те, что доехали до его списков. Раунды 10050/10054 показали обратное: перепись
+прода набирала по +315 /atom/movable/screen/plane_master/wall и столько же
+above_wall за 25 минут при живом населении в 110 человек.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/hud_plane_master_key_collision_leaves_no_orphans</th><td>WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE объявлены одним и тем же числом, а
+<code>plane_masters</code> ключуется номером плоскости - значит из трёх плейн-мастеров в
+списке остаётся один. Двух вытесненных обязан удалять сам конструктор: в
+списке их нет, а <code>hud/Destroy</code> чистит именно список.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/hud_hand_rebuild_frees_old_slots</th><td><code>build_hand_slots()</code> выбрасывает старые слоты рук из <code>static_inventory</code> - и это
+единственный список, который обходит QDEL_LIST в <code>hud/Destroy</code>. Без удаления на
+месте каждая пересборка рук (смена их числа, смена стиля интерфейса) оставляла
+экраны жить до конца раунда.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/storage_numerical_display_reuses_pool</th><td>Числовой режим витрины хранилища заводил свой item_holder мимо пула на каждый
+тип предмета при КАЖДОЙ перерисовке, а <code>_recycle_ui_objects</code> складывал
+показанные экраны в <code>GLOB.storage_item_holder_pool</code>, откуда числовой режим их никогда не
+доставал. Пул рос до конца раунда: перепись прода давала +219 и +170
+/atom/movable/screen/storage/item_holder за интервал.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/neural_interface_drains_screens_without_client</th><td>Мониторы нейроинтерфейса крутятся на SSfastprocess сами по себе, а гостинг
+владельца только рвёт ссылку на клиента. Уборку вытесненных записей делает
+только UpdateVision, до которого <code>compile_display</code> при отсутствии клиента не
+доходил - и каждая секунда без клиента оставляла бессмертный
+/atom/movable/screen/text (раунд 10054: +2140 за интервал).</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

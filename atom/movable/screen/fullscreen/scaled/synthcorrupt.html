@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/atom/movable/screen/fullscreen/scaled/synthcorrupt - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="atom/movable/screen/fullscreen/scaled/synthcorrupt.html#proc">Proc Details</a></header><main><h1>synthcorrupt <aside>/<a href="atom.html">atom</a>/<a href="atom/movable.html">movable</a>/<a href="atom/movable/screen.html">screen</a>/<a href="atom/movable/screen/fullscreen.html">fullscreen</a>/<a href="atom/movable/screen/fullscreen/scaled.html">scaled</a>/<a href="atom/movable/screen/fullscreen/scaled/synthcorrupt.html">synthcorrupt</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/_rendering/fullscreen/fullscreen.dm#L191"><img src="git.png" width="16" height="16" title="code/_rendering/fullscreen/fullscreen.dm 191"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="atom/movable/screen/fullscreen/scaled/synthcorrupt.html#proc/SetSeverity">SetSeverity</a></th><td>ОДИН эмиттер на оверлей, а не по эмиттеру на вызов.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/SetSeverity">SetSeverity<aside>(severity)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/_rendering/fullscreen/fullscreen.dm#L224"><img src="git.png" width="16" height="16" title="code/_rendering/fullscreen/fullscreen.dm 224"></a></aside></h3><p>ОДИН эмиттер на оверлей, а не по эмиттеру на вызов.</p>
+<p>overlay_fullscreen() ПЕРЕИСПОЛЬЗУЕТ уже созданный экранный объект (пересоздаёт его
+только при смене типа) и зовёт SetSeverity() КАЖДЫЙ раз. А зовут его из
+update_damage_hud() при любом ненулевом токсинном уроне, то есть на каждом обновлении
+здоровья - раз в тик Life() у отравленного моба.</p>
+<p>Прежняя версия на каждый такой вызов делала new() и LAZYADD в vis_contents, затирая
+ссылку holder и не убирая предыдущий холдер ниоткуда: ни из vis_contents, ни из
+contents (loc холдера - сам экранный объект). Destroy() чистил только ПОСЛЕДНИЙ.
+Каждый осиротевший холдер при этом остаётся живым эмиттером /particles на 960x960
+с count до 300 - и рисует его клиент.</p>
+<p>Раунд 10129 (27.08.2026): 32-битный Dream Seeker набирал 2.4 ГБ за восемь минут и
+падал около 3400 МБ, а перед падением рисовал чужие спрайты вместо штатных и
+чёрно-белые квадраты вместо тайлов - это исчерпание адресного пространства клиента.
+В чате раунда: &quot;персонажи заменяются на любой рандомный спрайт чего-то&quot;.</p>
+<p>Гейт isrobotic() стоит в ShouldShow(), а тот вызывается ПОСЛЕ SetSeverity(), поэтому
+холдеры копил любой отравленный карбон, а не только синтетик.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

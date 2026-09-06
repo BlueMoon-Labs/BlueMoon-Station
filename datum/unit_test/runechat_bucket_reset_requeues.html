@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/runechat_bucket_reset_requeues - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>runechat_bucket_reset_requeues <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/runechat_bucket_reset_requeues.html">runechat_bucket_reset_requeues</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/runechat_sanity.dm#L37"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/runechat_sanity.dm 37"></a></h1><p>Пересборка колеса рунчата раскладывает сообщения заново, а не бросает их в старых слотах.</p>
+<p>SSrunechat - вторая копия колеса SStimer, и пересборка была единственным местом, где копии
+расходились: reset_buckets() менял систему координат колеса (длину, head_offset,
+bucket_resolution), а сами сообщения оставались лежать где лежали. После такой пересборки
+слот сообщения не имел отношения к его сроку, а при укорачивании списка сообщения из
+отрезанных слотов пропадали вместе со слотами - без end_of_life(), то есть навсегда
+оставаясь на экране.</p>
+<p>Проверяется то, что отличает пересборку от простой смены координат: курсор колеса вернулся
+в начало, а позиция сообщения пересчитана под НОВЫЙ head_offset. Простое &quot;сообщение всё ещё
+лежит в своём слоте&quot; здесь не годится: при неизменной длине колеса оно остаётся истинным и
+без всякой перекладки.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

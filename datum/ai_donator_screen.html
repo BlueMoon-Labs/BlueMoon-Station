@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/ai_donator_screen - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>AI Donator Screens <aside>/<a href="datum.html">datum</a>/<a href="datum/ai_donator_screen.html">ai_donator_screen</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/mob/living/silicon/ai/ai_donator.dm#L30"><img src="git.png" width="16" height="16" title="code/modules/mob/living/silicon/ai/ai_donator.dm 30"></a></h1><p>Этот файл содержит донаторские экраны для ИИ.</p>
+<p>Как добавить новый донаторский экран:</p>
+<ol>
+<li>
+<p>Добавьте спрайты в <code>icons/mob/AI_donator.dmi</code>:</p>
+<ul>
+<li><code>ai-&lt;name&gt;</code>      — живой стейт</li>
+<li><code>ai-&lt;name&gt;_dead</code> — мёртвый стейт</li>
+</ul>
+</li>
+<li>
+<p>Создайте новый подтип датума:</p>
+<p>/datum/ai_donator_screen/<name>
+name = &quot;DisplayName&quot;          // Название в радиальном меню
+icon_state = &quot;ai-<name>&quot;      // Стейт живого ИИ
+icon_state_dead = &quot;ai-<name>_dead&quot; // Стейт мёртвого ИИ
+ckey_whitelist = list(&quot;ckey&quot;) // Список ckey игроков с доступом</p>
+</li>
+<li>
+<p>Добавьте new /datum/ai_donator_screen/<name> в GLOBAL_LIST_INIT_TYPED ниже.</p>
+</li>
+</ol>
+<p>Примечания:</p>
+<ul>
+<li>ckey всегда в нижнем регистре (как в базе данных)</li>
+<li>icon_state_dead можно не указывать, тогда при смерти ИИ
+будет использоваться стандартный мёртвый стейт из AI.dmi</li>
+<li>Один экран может быть доступен нескольким игрокам:
+ckey_whitelist = list(&quot;ckey1&quot;, &quot;ckey2&quot;)</li>
+</ul></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

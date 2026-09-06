@@ -1,0 +1,173 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/datums/ai/README_HOSTILE.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Hostile AI: событийные контроллеры <aside>code/datums/ai/README_HOSTILE.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/README_HOSTILE.md"><img src="git.png" width="16" height="16" title="code/datums/ai/README_HOSTILE.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>Оверхол AI hostile-мобов: событийный сон/пробуждение вместо поллинга,
+поиск целей через спатиал-грид вместо hearers(), скоринг вместо случайного
+выбора, гибридное direct/JPS движение, профили поведения из
+переиспользуемых сабтри. Донор архитектуры - tgstation@14140a6355d1
+(атрибуция в шапках портированных файлов), вент-механика частично
+Paradise@6323ddd65be9.</p>
+<h2 id="карта-системы">Карта системы</h2><h3 id="восприятие-и-пробуждение">Восприятие и пробуждение</h3>
+<ul>
+<li><strong>Канал AI_TARGETS</strong> (<code>code/controllers/subsystem/spatial_grid.dm</code>,
+<code>code/modules/mob/living/ai_targetable.dm</code>): живые мобы числятся в ячейках
+грида; смерть/оживление двигают членство через <code>set_stat</code>.</li>
+<li><strong>Окно интересности</strong> (<code>/datum/cell_tracker</code>): контроллер подписан на
+вход/выход клиентов из ячеек вокруг пауна радиусом
+<code>max(vision_range, aggro_vision_range)</code>. Клиент вошёл - контроллер
+проснулся синхронно; ушёл - уснул. Спящий (<code>AI_STATUS_IDLE</code>) контроллер
+не состоит ни в одной очереди обработки.</li>
+<li><strong>Другие пути пробуждения</strong>: урон (<code>note_attacker</code>, <code>adjustHealth</code>),
+новая обида (<code>add_enemy</code>), доклад союзника о контакте
+(<code>report_contact_to_allies</code> -&gt; <code>receive_combat_contact</code>: передаётся точка
+и приметы, не сам атом), шум (<code>ai_broadcast_noise</code>), приход клиентов на
+z-уровень (<code>update_z</code>).</li>
+</ul>
+<h3 id="решения">Решения</h3>
+<ul>
+<li><strong>Поиск целей</strong> (<code>behaviors/find_potential_targets.dm</code>): грубый пул из
+ячеек грида + реестр <code>GLOB.hostile_machines</code> -&gt; точная дистанция -&gt;
+стратегия -&gt; LOS последним. Никаких hearers()/view().</li>
+<li><strong>Стратегии</strong> (<code>targeting/_targeting_strategy.dm</code>): <code>hostile_legacy</code>
+делегирует <code>mob.CanAttack()</code> (все сабтиповые переопределения работают);
+варианты: <code>ignore_sight</code> (смэшеры), <code>retaliate</code> (только обидчики),
+<code>ignore_sight/megafauna</code> (peaceful/enemies-гейт: без обидчиков босс
+замечает цели только в живом vision_range и с LOS, с обидчиками -
+строго их, на полном радиусе и сквозь стены). Стратегия может
+переопределить радиус (<code>get_aggro_range</code>) и требование зрения
+(<code>ignores_sight</code>) по состоянию конкретного моба.</li>
+<li><strong>Скорер</strong> (<code>targeting/target_scorer.dm</code>): одно ранжирование за проход
+(<code>rank()</code>), липкая текущая цель (детерминированный гистерезис), бонусы
+непротухшей обиде и разыскиваемому контакту, штраф дистанции и фрустрации;
+случайность только среди почти равных. После нескольких подряд столкновений
+с союзной очередью target finder разово предпочитает близкого противника,
+которого уже можно атаковать или свободно начать преследовать; одиночный
+bump и отсутствие альтернатив цель не меняют.</li>
+<li><strong>Combat contact</strong> (<code>hostile_memory.dm</code>): живая цель и сведения о ней
+разделены. Потеря LOS немедленно разжалует цель в контакт: weak-идентичность,
+последняя ПОДТВЕРЖДЁННАЯ точка, время и источник (personal/ally/noise);
+движение дальше идёт только к точке-улике, а атом снова становится целью
+исключительно через собственный LOS в find_potential_targets.</li>
+<li><strong>FSM</strong> (<code>subtrees/hostile_fsm.dm</code>): IDLE -&gt; ALERT (читаемая пауза
+обнаружения на холодном контакте) -&gt; ENGAGE -&gt; SEARCH (дальники сначала
+держат прикрывающую позицию, потом 2-3 точки осмотра вокруг улики) -&gt;
+RETREAT (порог здоровья с гистерезисом и разворотом при зажиме) -&gt; GUARD
+(leash к дому). Мирный патруль возвращается к якорю штатным мувером;
+якорь переезжает только при явном телепорте/смене z.</li>
+<li><strong>Осада</strong> (<code>plan_siege</code>): исчерпанный маршрут при видимой цели ближе
+<code>AI_SIEGE_HOLD_RANGE</code> НЕ разжалует её в контакт - мили-моб стоит лицом к
+цели, бьёт преграду на прямой (attack_obstructions) и перепрокладывает
+путь по протуханию <code>BB_AI_SIEGE_UNTIL</code>; под огнём без укрытия делает шаг
+за полноценное укрытие. Далёкая/скрытая цель разжалуется как раньше.</li>
+<li><strong>Грейс потери LOS</strong> (<code>find_potential_targets</code>): мигнувшая за углом цель
+держится <code>AI_LOS_DEMOTE_GRACE</code> до разжалования - пик из-за угла больше не
+обнуляет ENGAGE бесплатно; стрельба всё равно гейтится собственным can_see.</li>
+<li><strong>Отход от брошенной цели</strong> (<code>plan_abandon_avoid</code>): бросив цель по
+непробиваемости/терпению, моб отходит от неё на <code>AI_ABANDON_AVOID_RANGE</code>,
+а не стоит вплотную в idle; свежепомеченная непробиваемой цель на время
+пометки исключена из выбора финдера (боссы - нет).</li>
+</ul>
+<h3 id="движение">Движение</h3>
+<ul>
+<li><strong>Гибрид</strong> (<code>movement/ai_movement_hybrid.dm</code>): прямой шаг в открытом
+пространстве; дистанция сама по себе не запускает JPS. После 2 настоящих
+неудач подряд или перед статической преградой включается JPS с кэшем пути
+и кулдауном перепрокладки <code>controller.repath_delay</code> (1.5с). Временная
+пробка из мобов остаётся на дешёвом direct-loop; JPS бюджетируется
+lease-семафором SSpathfinder.</li>
+<li><strong>Препятствия</strong> (<code>obstacle_policy.dm</code>, <code>subtrees/attack_obstacle_in_path.dm</code>):
+политика открыть/форсить/поддеть/сломать/сдаться; атакуется реальный
+следующий турф кэшированного JPS-пути, а не догадка по направлению.
+Общий gate учитывает access, атмосферу, вакуум, лаву, пропасти и способности
+конкретного моба; исчерпанный маршрут освобождает цель с коротким backoff.</li>
+</ul>
+<h3 id="дальний-бой">Дальний бой</h3>
+<ul>
+<li><strong>Трасса выстрела</strong> (<code>subtrees/ranged_skirmish.dm</code>, <code>hostile.dm</code>):
+controller-стрелки проверяют позицию и каждый снаряд по фактическому
+pixel-step маршруту projectile, включая обе кардинальные половины
+диагонального <code>Move()</code>. Стена или союзник вызывают боковое перестроение;
+projectile pass/phasing/piercing-флаги и кастомные <code>OpenFire()</code> без снаряда сохраняются.</li>
+<li><strong>Фланговый манёвр - коммит</strong> (<code>BB_AI_FLANK_TILE</code>/<code>BB_AI_FLANK_UNTIL</code>):
+выбранный фланг ведётся до достижения/протухания/открытия линии - каждый
+план пере-queue'ит движение, а не отменяет его ради удержания позиции.
+Тайлы, закоммиченные союзниками в <code>AI_FLANK_CLAIM_ALLY_RANGE</code>, заняты
+(разнос группы); недостижимый фланг снимает манёвр, не цель.</li>
+<li><strong>Эскалация зажатого кайта</strong> (<code>BB_AI_KITE_PINNED_STREAK</code>): после
+<code>AI_KITE_LATERAL_STREAK</code> подряд провалов отхода разрешается боковой шаг
+равной дистанции (скольжение вдоль стены, без разворота), после
+<code>AI_KITE_BREAK_AWAY_STREAK</code> - прорыв на дальний тайл (<code>ranged_break_away</code>).
+В тупике сближения под огнём без укрытия стрелок сначала делает шаг за
+полноценное укрытие от того, кто по нему работает (тип снаряда учтён).</li>
+</ul>
+<h3 id="профили">Профили (<code>hostile_adapter/profiles.dm</code>)</h3>
+<p>melee_chaser, brute_charger, ranged_skirmisher, ranged_chaser, pack_hunter,
+ambusher, adaptive_hunter, coward_scavenger, guard_defender, support,
+vent_hunter, boss, terror_spider, а также сценарные: curseblob,
+floor_cluwne, insane_clown, swarmer, bee, minebot, leaper, decoy_escape
+(escape-иллюзия), mecha_pilot (FSM пилотирования сабтри-делегатом).
+Автоназначение по легаси-флагам в <code>select_ai_profile()</code>
+(charger/ranged/retreat_distance); специализированные назначения собраны в
+<code>hostile_adapter/profile_assignments.dm</code>.</p>
+<h3 id="адаптер">Адаптер (<code>hostile_adapter/hostile_adapter.dm</code>)</h3>
+<p>Поддерживает легаси-состояние моба (<code>pawn.target</code>, Aggro/LoseAggro,
+in_melee) и делегирует исполнение ударов мобу (MeleeAction/OpenFire/
+enter_charge/sidestep) - сабтиповые переопределения атак работают без
+изменений.</p>
+<h3 id="боссы">Боссы (<code>boss/boss_attack.dm</code>, <code>boss/boss_attack_tables.dm</code>)</h3>
+<p>Таблицы атак с весами/дальностями/фазами по здоровью/кулдаунами вместо
+rand()-цепочек; записи оборачивают легаси-проки атак. <code>ai_ability_prelude()</code>
+сохраняет прелюдии OpenFire (anger, фазовые бафы, blood_warp). Без таблицы
+босс стреляет по-старому. Путь игрока (client/chosen_attack) не тронут.</p>
+<h2 id="как-назначить-специализированный-профиль">Как назначить специализированный профиль</h2>
+<ol>
+<li>Добавить <code>ai_profile_type</code> в <code>hostile_adapter/profile_assignments.dm</code>
+либо непосредственно на сабтипе.</li>
+<li>Если у моба кастомный CanAttack/AttackingTarget/OpenFire - они
+продолжают работать через делегацию; особый выбор целей делается
+стратегией/скорером (см. terror_controller.dm как образец
+декомпозиции).</li>
+<li>Спец-idle-механики - в сабтри с гейтом &quot;нет цели&quot; (образец: терроры).</li>
+<li>Прогнать <code>hostile_ai_baseline</code> и профильные тесты.</li>
+</ol>
+<h2 id="легаси-пулы">Легаси-пулы</h2>
+<p>Легаси-планировщика hostile больше нет: цепочка
+handle_automated_action -&gt; ListTargets/FindTarget/PickTarget -&gt;
+MoveToTarget/Goto удалена вместе с SSchunks. SSnpcpool/SSidlenpcpool
+обслуживают только мирных simple animals и ботов. Каждый hostile-тип либо
+на адаптер-контроллере, либо задокументирован как AI_OFF-исключение без
+собственного NPC-AI (<code>hostile_adapter/MIGRATION_EXCEPTIONS.md</code>).
+Мобы с контроллером жёстко AI_OFF для легаси-пулов (гвард в toggle_ai).</p>
+<h2 id="диагностика">Диагностика</h2>
+<ul>
+<li><strong>Трассировка решений (<code>AI_TRACE</code>)</strong> - в TESTING-сборках пишет
+<code>data/logs/&lt;дата&gt;/&lt;раунд&gt;/ai_trace.log</code>: смены FSM-состояний, взятие/потерю/
+разжалование целей с причиной, брошенные погони (поводок/терпение/
+непробиваемость), исчерпанные маршруты (с виновником-преградой), зажатый
+кайт, очереди стрелков и фланги, настороженность от урона, экстраполяцию
+побега. Отдельно детектор <strong>STALL</strong> с двумя триггерами: цель есть и план
+пуст, ЛИБО план есть, но <code>AI_STALL_NO_PROGRESS_TIME</code> ни шага, ни обмена
+уроном (вечно проваливающийся план) - раз в 5 секунд полный снимок
+(состояние, дистанция, мув-луп, band, фрустрация, вердикт линии огня,
+кулдауны) - любая &quot;стойка&quot; с плейтеста диагностируется по одной строке.
+Формат строки: <code>категория | тип пауна (x,y,z) [ref] | сообщение</code>.
+Логируются только смены состояний и вердикты, не каждый тик - лог обязан
+оставаться читаемым; повторяющиеся каждый план строки (зажатый кайт,
+очередь в затылок, настороженность) идут через <code>AI_TRACE_THROTTLED</code>
+(не чаще <code>AI_TRACE_THROTTLE_TIME</code> на контроллер).</li>
+<li><code>GLOB.ai_metrics</code> - счётчики (planning_cycles, candidates_examined,
+targets_acquired, los_checks, jps_requests/repaths, failed_moves,
+successful_moves, hearers_calls).</li>
+<li>Бенчмарк - <code>/datum/unit_test/ai_benchmark_baseline</code>
+(<code>data/mob_benchmark_v3.json</code>): SSmobs Life, idle-пулы мирных NPC,
+controller AI, spatial targeting, obstacle/JPS routing и boss selector.
+Live arena - <code>/datum/unit_test/ai_mob_arena_benchmark</code>: все типы
+<code>/mob/living/simple_animal/hostile</code> в герметичной арене, реальный бой через
+Master Controller, отдельные профили spawn/combat/cleanup и per-type GC/harddel-кандидаты.
+Headless-запуск всего набора: <code>tools\mob_bench\run_headless.ps1 -Tag candidate -Runs 3</code>;
+только арены: <code>tools\mob_bench\run_headless.ps1 -Mode Arena -Tag candidate</code>.
+Стресс-профили из раундов: <code>-Mode ArenaRound16</code> и <code>-Mode ArenaRound20</code>;
+per-type SSmachines-профиль подключается флагом <code>-ProfileMachines</code>.
+Для настоящего harddel-прохода (130 секунд на освобождение спящих DM-фреймов,
+затем принудительный и профилируемый Q3) используется отдельный режим
+<code>tools\mob_bench\run_headless.ps1 -Mode ArenaHarddel -Tag harddel</code>; для
+раундовых составов доступны <code>ArenaRound16Harddel</code> и <code>ArenaRound20Harddel</code>.</li>
+<li>Статусы контроллеров - stat entry SSai_controllers (ON/IDLE/OFF).</li>
+</ul></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

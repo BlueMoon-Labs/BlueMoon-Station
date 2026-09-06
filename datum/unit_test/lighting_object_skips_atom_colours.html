@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/lighting_object_skips_atom_colours - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>lighting_object_skips_atom_colours <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/lighting_object_skips_atom_colours.html">lighting_object_skips_atom_colours</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/shared_list_diet.dm#L22"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/shared_list_diet.dm 22"></a></h1><p>Списки, которые обязаны быть ОБЩИМИ, а не личными.</p>
+<p>BYOND платит за каждый непустой список инстанса: сотня байт заголовка плюс элементы.
+На типах с многотысячной популяцией (объекты освещения, минеральные турфы) личный
+список там, где хватило бы общего, стоит десятки мегабайт адресного пространства -
+а его у тридцатидвухбитного DreamDaemon всего четыре гигабайта, и раунд стартует,
+заняв больше половины.</p>
+<p>Ошибки этого класса тихие: код работает, просто мир весит на сотню мегабайт больше.
+Поэтому каждая правка закреплена здесь проверкой на ТОЖДЕСТВО ССЫЛКИ, а не на
+содержимое: список с правильным содержимым, но свой у каждого инстанса, - это ровно
+то, что чинилось.
+Объект освещения не должен заводить atom_colours.</p>
+<p>Типовой дефолт color проходит через /atom/Initialize -&gt; <code>if(color) add_atom_colour()</code>,
+а тот заводит каждому инстансу личный список на четыре слота с личной копией
+двадцатиэлементной цветовой матрицы внутри. Читать его у объекта освещения некому:
+update() пишет color напрямую. При четверти миллиона объектов на мир - 80 МиБ впустую.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

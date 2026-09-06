@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/harddel_round_9824.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/harddel_round_9824.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/harddel_round_9824.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/harddel_round_9824.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="datum/unit_test/harddel_9824_base.html">/datum/unit_test/harddel_9824_base</a></th><td>Регрессии по прод-раундам 9823/9824 (2026-07-29): hard delete'ы из qdel.log
+и рантаймы, которые ломали цепочку Destroy.</td></tr><tr><th><a href="datum/unit_test/self_actualization_keeps_traumas_alive.html">/datum/unit_test/self_actualization_keeps_traumas_alive</a></th><td>Устройство самоактуализации складывало траумы старого мозга в список, менял вид
+(copy_to -&gt; regenerate_organs), а старый мозг в Destroy делает QDEL_LIST(traumas).
+Дальше этот же список qdel-нутых траум клался в НОВЫЙ мозг: owner у них null,
+поэтому handle_brain_damage вызывал on_life на мёртвом датуме каждые 2 секунды
+(раунд 9824: 104 рантайма &quot;Cannot read null.status_traits&quot; с 08:34:09 до конца
+раунда), а brain.traumas оставался единственным держателем - hard delete
+/datum/brain_trauma/mild/phobia (2 шт.) и /datum/brain_trauma/severe/pacifism.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/trauma_quirk_removal_releases_trauma</th><td>cure_trauma_type ждёт ТИП; квирки фобии и немоты отдавали ему экземпляр, поэтому
+istype(BT, экземпляр) всегда был FALSE - траума переживала снятие квирка, а поле
+квирка оставалось её единственным держателем.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/window_hitsplatter_skips_merged_decal</th><td>Кровяная клякса на окне: /obj/effect/decal/Initialize отвечает INITIALIZE_HINT_QDEL
+на турфе без пола (NeverShouldHaveComeHere), то есть new() возвращает уже удалённый
+атом. Прежний код звал ему forceMove (рантайм &quot;doMove qdel-нутого ... в the
+reinforced window&quot;) и клал в vis_contents окна - мёртвая декаль висела там до конца
+раунда. Раунд 9824: /obj/effect/decal/cleanable/blood/splatter/over_window,
+1 внешняя ссылка, единственный warnfail с уликой &quot;в vis_contents у
+/obj/structure/window/reinforced/fulltile (1 держателей)&quot;.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/swarming_teardown_releases_every_member</th><td>/datum/component/swarming/Destroy правил swarm_members прямо во время обхода
+этого же списка: индекс сдвигался и каждый второй сосед оставался со ссылкой
+на удалённый компонент. Легион-бруды (swarming = TRUE) стакаются пачками, так
+что стая из трёх и больше - штатный случай, а не край.</td></tr><tr><th>/proc/<a href="global.html#proc/purge_storage_ui_pools">purge_storage_ui_pools</a></th><td>Опустошает общие пулы экранов хранилища.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/storage_pool_releases_recycled_item</th><td>Экраны объёмного хранилища переиспользуются через ОБЩИЙ пул (GLOB.storage_volumetric_box_pool).
+_recycle_ui_objects сбрасывал предмет у коробки, но не у вложенного holder'а,
+поэтому уехавшая в пул коробка держала последний показанный предмет до конца
+раунда. Ровно этот класс и виден в раундах 9823/9824: осколки (14), прутья (6),
+кабель (6), швы, конденсаторы, платы, еда - каждый с одной внешней ссылкой
+и без единой улики (loc пуст, таймеров нет, из vis_contents Destroy вычистил).</td></tr><tr><th><a href="datum/unit_test/legion_brood_death_releases_mob.html">/datum/unit_test/legion_brood_death_releases_mob</a></th><td>ДИАГНОСТИКА + регрессия: легион-бруд - топ-1 по времени hard delete в раундах
+9823/9824 (82 харддела, 17.7 секунды, 768 qdel'ов). У 73 из 91 warnfail ровно
+одна внешняя ссылка и ни одной улики: не в loc, без живых таймеров, без
+неснятых подписок, не в vis_contents, не бакнут.
+scan_holders пишет полный скан держателей в data/logs/&lt;раунд&gt;/harddels.log.</td></tr><tr><th><a href="datum/unit_test/storage_pool_releases_component.html">/datum/unit_test/storage_pool_releases_component</a></th><td>Пул экранов хранилища общий на весь мир и переживает любой отдельный компонент,
+поэтому уехавший в пул объект обязан отпустить master: ссылка на компонент из
+отложенного холдера - это hard delete компонента до конца раунда. Пока пул был свой
+у каждого компонента, ссылка была безобидной и её никто не снимал.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

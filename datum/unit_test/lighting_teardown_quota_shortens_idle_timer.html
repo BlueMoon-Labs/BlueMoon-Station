@@ -1,0 +1,10 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/lighting_teardown_quota_shortens_idle_timer - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>lighting_teardown_quota_shortens_idle_timer <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/lighting_teardown_quota_shortens_idle_timer.html">lighting_teardown_quota_shortens_idle_timer</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_teardown.dm#L647"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_teardown.dm 647"></a></h1><p>Квота РЕЖЕТ срок простоя пустующего уровня, а в пределах кванта таймер работает как был.</p>
+<p>Раньше сверх кванта срок был ноль, и уровень забирался первым же сканом после ухода
+последнего госта. Раунд 10126 отработал этим 42 подъёма и 41 снос, не сэкономив ни байта:
+квота своё берёт на ПИКЕ, а снос и подъём внутри достигнутого пика бесплатны по памяти и
+стоят только тика и вспышки белого. Теперь сверх кванта срок - LIGHTING_TEARDOWN_IDLE_TIME_QUOTA.</p>
+<p>Это единственный кусок механизма, который нельзя проверить чистым проком: цифру
+&quot;сколько отложенных уровней горит&quot; собирает сам scan_teardown_candidates(), и ошибка в
+ней (посчитать только пустые, посчитать неотложенные) прошла бы мимо всех остальных
+тестов. В раунде 10125 три уровня горели 65 минут подряд именно потому, что считать эту
+цифру было некому.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

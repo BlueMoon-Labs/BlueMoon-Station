@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/atom/movable/screen/parallax_layer/eris - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>eris <aside>/<a href="atom.html">atom</a>/<a href="atom/movable.html">movable</a>/<a href="atom/movable/screen.html">screen</a>/<a href="atom/movable/screen/parallax_layer.html">parallax_layer</a>/<a href="atom/movable/screen/parallax_layer/eris.html">eris</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/_rendering/parallax/layers/weather.dm#L30"><img src="git.png" width="16" height="16" title="code/_rendering/parallax/layers/weather.dm 30"></a></h1><p>Космическая погода.</p>
+<p>Два донора с разной геометрией: CEV-Eris рисует 736x736, goonstation - 672x672.
+Общего множителя с нашим историческим тайлом 480 у них нет, поэтому период
+заворота хранится у слоя, а не в константе.</p>
+<p>Тайлящийся слой обязан смыкаться сам с собой, а донорский арт этого не обещал.
+Слои, чей шов оказался резче самых резких переходов внутри их же картинки,
+разошлись по двум путям: у кого разрыв шёл по всей кромке (<code>*_background</code>,
+<code>bluespace_storm_far</code>, <code>graveyard_far</code>) - переведены в скайбокс, он не
+замощается; у кого разрыв был чинимым (<code>ion_blizzard_far</code>,
+<code>bluespace_storm_close</code>, <code>graveyard_close</code>, <code>dust_dense</code>, <code>embers_dense</code>) -
+пересобран сам DMI. Замеры и метод - в icons/effects/parallax/ATTRIBUTION.md.</p>
+<p>У Eris параллакса как такового нет: у них один экранный объект с одним
+icon_state, событие подменяет строку - и всё. Разложенные художником ярусы
+<code>_background</code> / <code>_far</code> / <code>_close</code> в их коде не используются ни разу.</p>
+<p>Мы берём именно ярусы: расставленные по скорости, они дают ту глубину, ради
+которой параллакс и существует. Заодно это в 1.8 МБ дешевле, чем их же
+&quot;сплющенные&quot; одиночные картинки.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

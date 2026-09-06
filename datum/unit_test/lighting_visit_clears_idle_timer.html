@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/lighting_visit_clears_idle_timer - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>lighting_visit_clears_idle_timer <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/lighting_visit_clears_idle_timer.html">lighting_visit_clears_idle_timer</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_teardown.dm#L768"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_teardown.dm 768"></a></h1><p>Посещение уже поднятого уровня обнуляет его счётчик простоя.</p>
+<p>Тест на конкретную дыру в сэмплировании. zlevel_empty_since писался и стирался только
+сканом кандидатов на снос (раз в 15-30 секунд) и подъёмом уровня. Посетитель УЖЕ
+поднятого уровня, уместившийся между двумя сканами, не оставлял следа нигде, и таймер
+простоя тикал так, будто на уровне не было никого.</p>
+<p>Раунд 10134 (28.08.2026): z15 признали пустым, снесли 63 002 объекта за 60 секунд, и
+через четыре минуты подняли обратно по поводу &quot;живой сменил z&quot;. Прибор напечатал, что
+подъём стоил 0 МБ VmSize: серверу цикл не вернул ничего, а видевшим уровень стоил
+четырёх полноэкранных вспышек.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

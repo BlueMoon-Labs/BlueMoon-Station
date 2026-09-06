@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/obj/machinery/atmospherics/components/trinary/nuclear_reactor - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="obj/machinery/atmospherics/components/trinary/nuclear_reactor.html#proc">Proc Details</a></header><main><h1>nuclear_reactor <aside>/<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/atmospherics.html">atmospherics</a>/<a href="obj/machinery/atmospherics/components.html">components</a>/<a href="obj/machinery/atmospherics/components/trinary/nuclear_reactor.html">trinary/nuclear_reactor</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/power/reactor/rbmk.dm#L64"><img src="git.png" width="16" height="16" title="code/modules/power/reactor/rbmk.dm 64"></a></h1><p>What is this?
+Moderators list (Not gonna keep this accurate forever):
+Fuel Type:
+Oxygen: Power production multiplier. Allows you to run a low plasma, high oxy mix, and still get a lot of power.
+Plasma: Power production gas. More plasma -&gt; more power, but it enriches your fuel and makes the reactor much, much harder to control.
+Tritium: Extremely efficient power production gas. Will cause chernobyl if used improperly.
+Moderation Type:
+N2: Helps you regain control of the reaction by increasing control rod effectiveness, will massively boost the rad production of the reactor.
+CO2: Super effective shutdown gas for runaway reactions. MASSIVE RADIATION PENALTY!
+Pluoxium: Same as N2, but no cancer-rads!
+Permeability Type:
+BZ: Increases your reactor's ability to transfer its heat to the coolant, thus letting you cool it down faster (but your output will get hotter)
+N2O: Inefficient permeability gas.
+Water Vapour: More efficient permeability modifier
+Hyper Noblium: Extremely efficient permeability increase. (10x as efficient as bz)
+Depletion type:
+Nitryl: When you need weapons grade plutonium yesterday. Causes your fuel to deplete much, much faster. Not a huge amount of use outside of sabotage.
+Sabotage:
+Meltdown:
+Flood reactor moderator with plasma, they won't be able to mitigate the reaction with control rods.
+Shut off coolant entirely. Raise control rods.
+Swap all fuel out with spent fuel, as it's way stronger.
+Blowout:
+Shut off exit valve for quick overpressure.
+Cause a pipefire in the coolant line (LETHAL).
+Tack heater onto coolant line (can also cause straight meltdown)
+Tips:
+Be careful to not exhaust your plasma supply. I recommend you DON'T max out the moderator input when youre running plasma + o2, or you're at a tangible risk of running out of those gasses from atmos.
+The reactor CHEWS through moderator. It does not do this slowly. Be very careful with that!</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="obj/machinery/atmospherics/components/trinary/nuclear_reactor.html#proc/stalker_play_sound">stalker_play_sound</a></th><td>Воспроизводит звук и сразу планирует следующий.</td></tr><tr><th><a href="obj/machinery/atmospherics/components/trinary/nuclear_reactor.html#proc/stalker_schedule_sound">stalker_schedule_sound</a></th><td>Планирует следующее воспроизведение атмосферного звука через случайный промежуток 15–30 минут.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/stalker_play_sound"><aside class="declaration">proc </aside>stalker_play_sound<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/modular_bluemoon/code/modules/power/reactor/rbmk.dm#L25"><img src="git.png" width="16" height="16" title="modular_bluemoon/code/modules/power/reactor/rbmk.dm 25"></a></aside></h3><p>Воспроизводит звук и сразу планирует следующий.</p><h3 id="proc/stalker_schedule_sound"><aside class="declaration">proc </aside>stalker_schedule_sound<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/modular_bluemoon/code/modules/power/reactor/rbmk.dm#L20"><img src="git.png" width="16" height="16" title="modular_bluemoon/code/modules/power/reactor/rbmk.dm 20"></a></aside></h3><p>Планирует следующее воспроизведение атмосферного звука через случайный промежуток 15–30 минут.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

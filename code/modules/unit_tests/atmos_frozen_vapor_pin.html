@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/atmos_frozen_vapor_pin.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/modules/unit_tests/atmos_frozen_vapor_pin.html#define">Define Details</a></header><main><h1>code/modules/unit_tests/atmos_frozen_vapor_pin.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_frozen_vapor_pin.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_frozen_vapor_pin.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/modules/unit_tests/atmos_frozen_vapor_pin.html#define/FROZEN_VAPOR_MAX_PASSES">FROZEN_VAPOR_MAX_PASSES</a></th><td>Замёрзший водяной пар не должен держать турф в активной симуляции вечно.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/FROZEN_VAPOR_MAX_PASSES"><aside class="declaration">#define </aside>FROZEN_VAPOR_MAX_PASSES <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_frozen_vapor_pin.dm#L20"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_frozen_vapor_pin.dm 20"></a></h3><p>Замёрзший водяной пар не должен держать турф в активной симуляции вечно.</p>
+<p>Морозная ветка <code>/datum/gas_reaction/water_vapor/react()</code> (температура ниже
+WATER_VAPOR_FREEZE) возвращала REACTING, но пар при этом НЕ расходовала - в
+отличие от тёплой ветки строкой ниже, которая снимает MOLES_GAS_VISIBLE за
+проход. Порог <code>GAS_H2O = MOLES_GAS_VISIBLE</code> из init_reqs() поэтому выполнялся
+бесконечно, а конец process_cell() при REACTING не снимает турф с актива и не
+даёт ему уснуть в одиночку:</p>
+<pre><code>if(!active_hotspot &amp;&amp; !(reaction_result &amp; (REACTING | STOP_REACTIONS)))
+</code></pre>
+<p>Итог: любой турф на мороженом покрытии (FROZEN_ATMOS 180K и TCOMMS_ATMOS 80K -
+обе ниже порога 200K), куда попал пар от огнетушителя, лопнувшей трубы или
+погоды, оставался активным до конца раунда и платил полную стоимость турф-фазы
+каждый цикл. Активных турфов в проде медиана 177-1113, а p99 - 5300-8500;
+такой прибитый турф входит в хвост навсегда.</p>
+<p>Реакция дёргается напрямую, а не через <code>gas_mixture.react()</code>: проверяем ветку,
+а не индексатор кандидатов, у которого своя отдельная пачка тестов.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

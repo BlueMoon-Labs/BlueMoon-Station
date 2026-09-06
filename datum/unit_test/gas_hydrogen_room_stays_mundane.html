@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/gas_hydrogen_room_stays_mundane - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>gas_hydrogen_room_stays_mundane <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/gas_hydrogen_room_stays_mundane.html">gas_hydrogen_room_stays_mundane</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_gas_balance.dm#L734"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_gas_balance.dm 734"></a></h1><p>Сценарий из жалобы игрока: банная печь льёт пар, электролизёр разбирает его на
+водород с кислородом, и комнатка три на три «магическим образом» отдаёт тритий
+и прочую экзотику.</p>
+<p>Реакции «пар в тритий» в игре нет ни одной: тритий делают ровно два места -
+пересыщенный кислородом плазменный пожар и облучение водорода. Ни плазмы, ни
+источника радиации в такой комнате нет, и появлялся тритий кружным путём -
+через разгон обобщённого горения. Смесь грелась сама (двойное списание
+окислителя плюс потерянная стехиометрия продуктов), доходила до порога
+Хагедорна, распад превращал её в QCD, а обратная конденсация высыпала обратно
+СЛУЧАЙНЫЕ газы - в том числе плазму, которая в оставшемся кислороде тут же
+давала тритий.</p>
+<p>Поэтому тест гоняет весь react() целиком, как это делает SSair, а не одну
+реакцию: предмет проверки - что цепочка не приводит к экзотике, каким бы
+звеном её ни занесло.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

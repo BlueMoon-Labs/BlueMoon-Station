@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/harddel_round_9813.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/harddel_round_9813.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/harddel_round_9813.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/harddel_round_9813.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="datum/unit_test/harddel_9813_base.html">/datum/unit_test/harddel_9813_base</a></th><td>Регрессии по hard delete из прод-раунда 9813 (2026-07-27).
+Все проверяемые здесь типы реально уходили в warnfail с известным числом
+внешних держателей; в комментариях к тестам указан замер из runtime.log.
+Общая база: даёт мягкий GC-прогон и, при провале, полный скан ссылок в harddels.log.</td></tr><tr><th><a href="datum/unit_test/split_personality_teardown_releases_body.html">/datum/unit_test/split_personality_teardown_releases_body</a></th><td>Раздвоение личности: травма, два бэксит-моба и два экшена держат друг друга
+по кругу. Бэксит хранит <code>body</code> - живого человека со всем графом органов и
+экипировки, поэтому утёкший бэксит тянет за собой и тело.
+Раунд 9813: /datum/brain_trauma/severe/split_personality (5 ссылок),
+/mob/living/split_personality (1), /mob/living/carbon/human (32 штуки).</td></tr><tr><th><a href="datum/unit_test/stomach_contents_releases_qdeleted_content.html">/datum/unit_test/stomach_contents_releases_qdeleted_content</a></th><td>Партийная граната создаёт 20 декалей конфетти в собственном loc. Если граната
+сработала в руках, loc - это карбон, а /obj/effect/decal/Initialize отвечает
+INITIALIZE_HINT_QDEL на любой не-турф: конструктор возвращает уже удалённую
+декаль, и <code>stomach_contents += gib</code> клал в вечный список труп.
+stomach_contents вычищался только для /mob/living (handle_stomach), так что
+эти 20 декалей гарантированно уходили в hard delete - ровно то, что видно в
+раунде 9813: 20 /obj/effect/decal/cleanable/confetti одним тиком, по 1 ссылке.</td></tr><tr><th><a href="datum/unit_test/action_remove_kills_every_button.html">/datum/unit_test/action_remove_kills_every_button</a></th><td>Экшен-кнопка держит linked_action. Remove() удаляет кнопки, итерируясь по
+<code>viewers</code>, а action_button/Destroy правит этот же список - индекс сдвигается
+и следующий hud пропускается. Его кнопка переживает экшен и держит его до
+конца раунда: раунд 9813 - antag_info (5 штук), sizecode_smallsprite,
+item_action/toggle_firemode, все ровно с 1 внешней ссылкой.</td></tr><tr><th><a href="datum/unit_test/gc_cryo_despawn_releases_occupant.html">/datum/unit_test/gc_cryo_despawn_releases_occupant</a></th><td>Экипированный человек, ушедший через cryoMob(), обязан собираться.
+Раунд 9813: девять таких мобов ушли в hard delete с 17-70 внешними ссылками,
+каждый - ровно через delete_queue SSauto_cryo после входа в крио-под.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/observer_destroy_releases_mind</th><td>/mob/dead/observer/Destroy() обнулял <code>mind</code> до вызова родителя, а /mob/Destroy
+чистит mind.current только по проверке <code>if(mind?.current == src)</code> - она видела
+уже пустое поле. Разум живёт в SSticker.minds весь раунд, поэтому mind.current
+оставался вечной единственной ссылкой на удалённого госта.
+Раунд 9813: 10 хардделов /mob/dead/observer, у девяти ровно 1 внешняя ссылка.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/augury_drops_qdeleted_observers</th><td>SSaugury держит гостов ключами в двух ассоциациях и не чистил их по qdel;
+вдобавок ветка сброса снимала ключи прямо во время обхода того же списка.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

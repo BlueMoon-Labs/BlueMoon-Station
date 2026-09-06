@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/atmos_reaction_floor_gate - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/atmos_reaction_floor_gate.html#proc">Proc Details</a></header><main><h1>atmos_reaction_floor_gate <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/atmos_reaction_floor_gate.html">atmos_reaction_floor_gate</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L1814"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 1814"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/atmos_reaction_floor_gate.html#proc/Run">Run</a></th><td>Пол требований по бакету выносит сравнение с min_requirements из цикла реакций
+в сбор кандидатов - до копии списка кандидатов, total_moles(), Cut() и
+сортировки. Отсечение обязано быть ТОЧНЫМ, а не приближённым: пол это минимум
+по бакету, реакция лежит ровно в одном бакете, поэтому газ ниже пола не
+удовлетворяет ни одну реакцию бакета и цикл реакций отверг бы их все до
+единой. Тест закрепляет этот инвариант и проверяет его следствие напрямую -
+вердикт react() с гейтом и без него обязан совпадать.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/Run">Run<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_native.dm#L1814"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_native.dm 1814"></a></aside></h3><p>Пол требований по бакету выносит сравнение с min_requirements из цикла реакций
+в сбор кандидатов - до копии списка кандидатов, total_moles(), Cut() и
+сортировки. Отсечение обязано быть ТОЧНЫМ, а не приближённым: пол это минимум
+по бакету, реакция лежит ровно в одном бакете, поэтому газ ниже пола не
+удовлетворяет ни одну реакцию бакета и цикл реакций отверг бы их все до
+единой. Тест закрепляет этот инвариант и проверяет его следствие напрямую -
+вердикт react() с гейтом и без него обязан совпадать.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

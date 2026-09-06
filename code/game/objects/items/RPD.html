@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/game/objects/items/RPD.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/game/objects/items/RPD.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/game/objects/items/RPD.dm"><img src="git.png" width="16" height="16" title="code/game/objects/items/RPD.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/proc/<a href="global.html#proc/build_atmos_pipe_recipes">build_atmos_pipe_recipes</a></th><td>Каталог рецептов атмос-раздатчика. Обычный RPD и блюспейс-раздатчик обязаны
+раздавать одну и ту же машинерию, поэтому список собирается здесь один раз,
+а не переписывается руками в каждом раздатчике: иначе новый компонент
+попадает в один каталог и молча теряется в другом.
+<code>extra_pipes</code> - рецепты труб, доступные только конкретному раздатчику.</td></tr><tr><th>/proc/<a href="global.html#proc/is_paintable_pipe_type">is_paintable_pipe_type</a></th><td>The atmos side of the dispenser is instant, so both the wind-up line and the
+zero-length do_after (which would still spawn and drop a progress bar) are
+skipped. Disposals, transit tubes and plumbing keep their own pacing.
+Layer adaptors and colour adaptors join every colour by design, so painting
+them is meaningless in both the dispenser and the painter.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

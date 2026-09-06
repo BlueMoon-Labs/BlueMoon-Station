@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/ai_behavior/ranged_skirmish - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/ai_behavior/ranged_skirmish.html#proc">Proc Details</a></header><main><h1>ranged_skirmish <aside>/<a href="datum.html">datum</a>/<a href="datum/ai_behavior.html">ai_behavior</a>/<a href="datum/ai_behavior/ranged_skirmish.html">ranged_skirmish</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/subtrees/ranged_skirmish.dm#L115"><img src="git.png" width="16" height="16" title="code/datums/ai/subtrees/ranged_skirmish.dm 115"></a></h1><p>How often will we try to perform our ranged attack?</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/ai_behavior/ranged_skirmish.html#proc/can_fire_without_sight">can_fire_without_sight</a></th><td>Право стрелять вслепую - НЕ то же самое, что право преследовать вслепую.
+Легаси-MoveToTarget держал их раздельно: ветка environment_smash вела цель
+сквозь стену через Goto + FindHidden, а OpenFire в ней звался только под
+гейтом ranged_ignores_vision. Стратегия таргетирования отвечает за первое
+(ignore_sight выдаётся и смэшерам стен), поэтому гейт выстрела спрашивает
+самого моба. Иначе голиаф - SMASH_WALLS без ranged_ignores_vision - кладёт
+щупальца сквозь стену, а геометрический гейт линии огня его не ловит:
+способности без projectiletype он пропускает как CLEAR.
+Не-hostile пауны (порты basic-мобов) своего флага не имеют - им остаётся
+стратегия.</td></tr><tr><th><a href="datum/ai_behavior/ranged_skirmish.html#proc/fire_at">fire_at</a></th><td>Собственно выстрел; hostile-пауны сохраняют всю свою OpenFire-логику.
+Легаси-переопределения OpenFire свободно спят в телеграфах (иерофант:
+blink/cross-спам) - синхронный вызов подвешивал весь тикер поведений.
+NPC-пул всегда звал их через INVOKE_ASYNC; сохраняем тот же контракт.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/can_fire_without_sight"><aside class="declaration">proc </aside>can_fire_without_sight<aside>(/<a href="datum.html">datum</a>/<a href="datum/ai_controller.html">ai_controller</a>/controller, /<a href="datum.html">datum</a>/<a href="datum/targeting_strategy.html">targeting_strategy</a>/targeting_strategy)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/subtrees/ranged_skirmish.dm#L173"><img src="git.png" width="16" height="16" title="code/datums/ai/subtrees/ranged_skirmish.dm 173"></a></aside></h3><p>Право стрелять вслепую - НЕ то же самое, что право преследовать вслепую.
+Легаси-MoveToTarget держал их раздельно: ветка environment_smash вела цель
+сквозь стену через Goto + FindHidden, а OpenFire в ней звался только под
+гейтом ranged_ignores_vision. Стратегия таргетирования отвечает за первое
+(ignore_sight выдаётся и смэшерам стен), поэтому гейт выстрела спрашивает
+самого моба. Иначе голиаф - SMASH_WALLS без ranged_ignores_vision - кладёт
+щупальца сквозь стену, а геометрический гейт линии огня его не ловит:
+способности без projectiletype он пропускает как CLEAR.
+Не-hostile пауны (порты basic-мобов) своего флага не имеют - им остаётся
+стратегия.</p><h3 id="proc/fire_at"><aside class="declaration">proc </aside>fire_at<aside>(/<a href="datum.html">datum</a>/<a href="datum/ai_controller.html">ai_controller</a>/controller, /<a href="atom.html">atom</a>/target)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/subtrees/ranged_skirmish.dm#L183"><img src="git.png" width="16" height="16" title="code/datums/ai/subtrees/ranged_skirmish.dm 183"></a></aside></h3><p>Собственно выстрел; hostile-пауны сохраняют всю свою OpenFire-логику.
+Легаси-переопределения OpenFire свободно спят в телеграфах (иерофант:
+blink/cross-спам) - синхронный вызов подвешивал весь тикер поведений.
+NPC-пул всегда звал их через INVOKE_ASYNC; сохраняем тот же контракт.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

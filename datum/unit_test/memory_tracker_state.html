@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/memory_tracker_state - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>memory_tracker_state <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/memory_tracker_state.html">memory_tracker_state</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/process_memory.dm#L379"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/process_memory.dm 379"></a></h1><p>Общий снимок состояния SStime_track для тестов памяти.</p>
+<p>Тесты ниже правят БОЕВУЮ подсистему: своего экземпляра у неё нет, а проверять пороги
+иначе нечем. Снимок возвращается в Destroy(), а не хвостом Run(), потому что в DM нет
+finally: TEST_ASSERT разворачивается в <code>return Fail(...)</code>, то есть первая же упавшая
+проверка выходит из Run() и до восстановления не доходит - ровно в том случае, ради
+которого восстановление и написано. RunUnitTest() зовёт qdel(test) в любом исходе.</p>
+<p>Само оно не залечится: memory_baseline_due() второй раз базовый уровень не возьмёт,
+и оставленный порог доживёт до конца прогона, пачкая лог мира и соседние тесты.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

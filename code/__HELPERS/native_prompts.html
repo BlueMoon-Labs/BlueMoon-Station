@@ -1,0 +1,7 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>code/__HELPERS/native_prompts.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/__HELPERS/native_prompts.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/__HELPERS/native_prompts.dm"><img src="git.png" width="16" height="16" title="code/__HELPERS/native_prompts.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/proc/<a href="global.html#proc/begin_native_prompt">begin_native_prompt</a></th><td>Учёт висящих нативных промптов (input()/alert()).
+BYOND хранит промпт - и спящий фрейм прока вместе с ним - до ответа игрока,
+ДАЖЕ если игрок отключился (переподключившимся диалоги показываются заново).
+Такой фрейм пинит usr/src/локали невидимо для любых ref-сканов: это главный
+подозреваемый в &quot;внешних ссылок: 1, найдено 0&quot; по обсерверам/new_player на проде.
+Обёртки инкрементят счётчик на мобе; GC-отчёты (warnfail-лог, панель, итог
+ref-скана) выводят его, опознавая класс держателя без гаданий.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

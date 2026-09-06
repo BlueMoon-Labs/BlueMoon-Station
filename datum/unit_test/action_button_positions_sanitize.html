@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/action_button_positions_sanitize - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>action_button_positions_sanitize <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/action_button_positions_sanitize.html">action_button_positions_sanitize</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/action_button_positions.dm#L16"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/action_button_positions.dm 16"></a></h1><p>Позиции кнопок действий: персист и цена записи.</p>
+<p>Раунд 10150 (5.5 часа, 30 онлайн) отдал 3817 ПОЛНЫХ записей префов на 20.2 секунды
+синхронной заморозки процесса - львиную долю всех блокирующих вызовов раунда. Гнали
+их save_position() и dump_save() кнопок действий: каждая перестановка кнопки звала
+queue_save_pref, то есть ~124 WRITE_FILE подряд. Причём сохранять было нечего -
+action_buttons_screen_locs в savefile не писалась и оттуда не читалась вовсе, это была
+чисто оперативная переменная. Теперь ключ реально лежит на диске и уходит туда через
+буфер склейки одним открытием файла.</p>
+<p>Санитайзер обязан пропускать живые позиции и резать мусор с диска.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

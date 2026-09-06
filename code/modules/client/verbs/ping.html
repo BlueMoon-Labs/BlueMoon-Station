@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/client/verbs/ping.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/modules/client/verbs/ping.html#define">Define Details</a></header><main><h1>code/modules/client/verbs/ping.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/client/verbs/ping.dm"><img src="git.png" width="16" height="16" title="code/modules/client/verbs/ping.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/modules/client/verbs/ping.html#define/PING_WIRE_PRECISION">PING_WIRE_PRECISION</a></th><td>Renders a timestamp for the <code>.update_ping</code> / <code>.display_ping</code> command line.
+Both stamps leave as text and come back as numbers, so whatever this drops is lost
+for good and lands in the measured round trip as pure error. Plain interpolation
+keeps six significant digits, and REALTIMEOFDAY needs all six for its integer part
+alone from 02:47 GMT until midnight - that rounded every send stamp to a whole
+decisecond and put up to 50ms of noise into every sample. world.time hits the same
+wall three hours into a round. Twelve digits round-trip a 32-bit float exactly.</td></tr><tr><th>/proc/<a href="global.html#proc/ping_server_component">ping_server_component</a></th><td>Server-side share of a round trip, in ms: the wall clock always covers at least as
+much ground as the game clock, and the gap is time the server spent stalled rather
+than time the sample spent in transit.</td></tr><tr><th>/proc/<a href="global.html#proc/rtt_window_push">rtt_window_push</a></th><td>Pushes a sample into a FIFO window while incrementally maintaining its sorted mirror.
+Returns the median of the window. Replaces a full copy+TimSort per sample.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/PING_WIRE_PRECISION"><aside class="declaration">#define </aside>PING_WIRE_PRECISION <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/client/verbs/ping.dm#L10"><img src="git.png" width="16" height="16" title="code/modules/client/verbs/ping.dm 10"></a></h3><p>Renders a timestamp for the <code>.update_ping</code> / <code>.display_ping</code> command line.
+Both stamps leave as text and come back as numbers, so whatever this drops is lost
+for good and lands in the measured round trip as pure error. Plain interpolation
+keeps six significant digits, and REALTIMEOFDAY needs all six for its integer part
+alone from 02:47 GMT until midnight - that rounded every send stamp to a whole
+decisecond and put up to 50ms of noise into every sample. world.time hits the same
+wall three hours into a round. Twelve digits round-trip a 32-bit float exactly.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

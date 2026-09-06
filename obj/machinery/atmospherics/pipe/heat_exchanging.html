@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/obj/machinery/atmospherics/pipe/heat_exchanging - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="obj/machinery/atmospherics/pipe/heat_exchanging.html#proc">Proc Details</a></header><main><h1>heat_exchanging <aside>/<a href="obj.html">obj</a>/<a href="obj/machinery.html">machinery</a>/<a href="obj/machinery/atmospherics.html">atmospherics</a>/<a href="obj/machinery/atmospherics/pipe.html">pipe</a>/<a href="obj/machinery/atmospherics/pipe/heat_exchanging.html">heat_exchanging</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm#L1"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm 1"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="obj/machinery/atmospherics/pipe/heat_exchanging.html#proc/apply_layer_offset">apply_layer_offset</a></th><td>Полосу слоя задаёт пиксельный сдвиг, а не отдельный кадр на каждый слой.</td></tr><tr><th><a href="obj/machinery/atmospherics/pipe/heat_exchanging.html#proc/process_atmos">process_atmos</a></th><td>Unlike every other pipe, a heat exchanger does real work each fire, so it
+cannot PROCESS_KILL itself out of the machinery list. It can still be idle:
+a pipe sitting at the same temperature as its surroundings conducts nothing.
+Without this gate SSair paid for every heat exchanging pipe on the map every
+single fire forever - measured at 69% of the whole machinery phase with 200
+of them installed, all of it spent discovering that nothing had changed.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/apply_layer_offset"><aside class="declaration">proc </aside>apply_layer_offset<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm#L36"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm 36"></a></aside></h3><p>Полосу слоя задаёт пиксельный сдвиг, а не отдельный кадр на каждый слой.</p>
+<p>Полоса теплообменной трубы - 15 пикселей, и пять полос с шагом 5 требуют
+15 + 4*5 = 35 пикселей на 32-пиксельном тайле. Запечённый в лист сдвиг на
+крайних слоях вылезал за границу кадра, где его срезало: у прямой трубы
+отъедало крайнее ребро, у джанкшена - зубец. Сдвиг в рантайме не режет
+ничего: BYOND просто рисует иконку со смещением, ровно как APC со своим
+pixel_x -25. На слоях 2-4 результат совпадает с прежними запечёнными
+кадрами пиксель в пиксель, включая диагонали - у них сдвиг по обеим осям,
+и PIPING_LAYER_SHIFT на диагональном dir даёт ровно его.</p>
+<p>Манифолдам это не подходит: их корпус сдвигается по обеим осям сразу, а
+патрубки при этом обязаны дотягиваться до края тайла, то есть меняют длину,
+а не только положение. Поэтому у них остался PIPING_INNER_LAYERS_ONLY.</p><h3 id="proc/process_atmos">process_atmos<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm#L54"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/machinery/pipes/heat_exchange/he_pipes.dm 54"></a></aside></h3><p>Unlike every other pipe, a heat exchanger does real work each fire, so it
+cannot PROCESS_KILL itself out of the machinery list. It can still be idle:
+a pipe sitting at the same temperature as its surroundings conducts nothing.
+Without this gate SSair paid for every heat exchanging pipe on the map every
+single fire forever - measured at 69% of the whole machinery phase with 200
+of them installed, all of it spent discovering that nothing had changed.</p>
+<p>Waking is covered from both sides: the turf registration (register_turf_wake,
+armed by atmos_consider_idle) catches the room changing, the pipeline's
+wake_heat_exchangers() catches heat arriving through the loop, and the idle
+heartbeat backstops anything that slips through both.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

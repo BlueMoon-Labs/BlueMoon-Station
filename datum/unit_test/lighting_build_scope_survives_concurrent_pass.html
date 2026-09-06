@@ -1,0 +1,23 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/lighting_build_scope_survives_concurrent_pass - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/lighting_build_scope_survives_concurrent_pass.html#proc">Proc Details</a></header><main><h1>lighting_build_scope_survives_concurrent_pass <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/lighting_build_scope_survives_concurrent_pass.html">lighting_build_scope_survives_concurrent_pass</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_build_scope.dm#L28"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_build_scope.dm 28"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/lighting_build_scope_survives_concurrent_pass.html#proc/Run">Run</a></th><td>Один и тот же z-уровень поднимается дважды, и это ломало две вещи.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/Run">Run<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_build_scope.dm#L28"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_build_scope.dm 28"></a></aside></h3><p>Один и тот же z-уровень поднимается дважды, и это ломало две вещи.</p>
+<p>Два моба, шагнувшие на неосвещённый z в одном тике, оба проходят
+should_ondemand_init_zlevel() и ставят по INVOKE_ASYNC. Первый выставляет
+lighting_initialized, второй упирается в self-heal гард zlevel_has_deferred_lighting(),
+который не отличает &quot;прошлый заход оборвался&quot; от &quot;прямо сейчас идёт&quot;, - и проходит следом.
+В логах прода это пары строк &quot;On-demand init for z-level 7&quot; подряд (раунды 10119, 10121).</p>
+<p>Сам повторный проход не создаёт НИ ОДНОГО объекта (фаза 0 пропускает турфы с
+T.lighting_object) и памяти не стоит: в 10121 повторный подъём z6 честно показал 0 МБ.
+Гнаться за его тактами лизой занятости оказалось дороже, чем они стоят: единственные
+вызовы, которым нужен синхронный результат, - резервация в /datum/unit_test/New()
+(unit_test.dm:91) и стыковка шаттла, и мгновенный выход по занятой лизе оставлял бы их
+без света. Осталось починить то, что реально вредило:</p>
+<ol>
+<li>init_in_progress был булевым на весь мир. Проход, закончивший первым, гасил состояние
+тому, кто ещё крутил свои 65 тыс. турфов, - а на этот флаг смотрят снос света
+(lighting.dm, abort_reason &quot;другой проход строит свет&quot;) и батчинг старлайта в
+lighting_object/New(). Теперь это счётчик проходов.</li>
+<li>Прибор цены света отчитывался и за пустой проход. Его окно замера перекрывается с
+окном соседнего живого прохода, поэтому одна и та же работа записывалась дважды:
+в 10121 на z7 вышли +83.9 и +109 МБ за один подъём, и обе цифры уехали в счётчик,
+из которого прибор подключения вычитает фон.
+Счётчик держится, пока не закрылся ПОСЛЕДНИЙ проход.</li>
+</ol></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

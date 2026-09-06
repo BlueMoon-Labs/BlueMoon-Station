@@ -1,0 +1,27 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/gas - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/gas.html#var">Var Details</a></header><main><h1>gas <aside>/<a href="datum.html">datum</a>/<a href="datum/gas.html">gas</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/gasmixtures/auxgm.dm#L46"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/gasmixtures/auxgm.dm 46"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr><tr><th><a href="datum/gas.html#var/description">description</a></th><td>Текст для внутриигрового справочника. Пишется по единой схеме: что это,
+как получить, зачем нужен, чем опасен - иначе тексты разъезжаются по
+объёму и полезности, и половина газов остаётся без ответа на &quot;а зачем&quot;.</td></tr><tr><th><a href="datum/gas.html#var/enthalpy">enthalpy</a></th><td>Энергия горения в джоулях на моль СГОРЕВШЕГО газа - именно так это поле
+читает genericfire (energy_released += amt * enthalpy, продукты в баланс не
+входят). Значение обязано быть положительным у всего, что задаёт
+fire_temperature или oxidation_temperature: минус означает пожар, который
+охлаждает воздух. Исключение одно и намеренное - плюоксий, ему минус выдан
+как штраф окислителя.
+У чистых продуктов (CO2, вода, бром) поле не читается никем и хранит
+историческую энтальпию ОБРАЗОВАНИЯ; по ней же считаются теплоты сгорания
+топлив в gas_types.dm. Оксид азота и нитрил - единственные, чью энтальпию
+образования читает ещё и разложение закиси (reactions.dm), их менять нельзя.</td></tr><tr><th><a href="datum/gas.html#var/tier">tier</a></th><td>Уровень сложности синтеза, GAS_TIER_*. Объявляется явно у каждого газа,
+потому что по нему калибруются цена продажи и разовая награда науки за
+первый синтез, а вывести его из цепочки реакций глазами нельзя.</td></tr></table><h2 id="var">Var Details</h2><h3 id="var/description"><aside class="declaration">var </aside>description <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/gasmixtures/auxgm.dm#L53"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/gasmixtures/auxgm.dm 53"></a></h3><p>Текст для внутриигрового справочника. Пишется по единой схеме: что это,
+как получить, зачем нужен, чем опасен - иначе тексты разъезжаются по
+объёму и полезности, и половина газов остаётся без ответа на &quot;а зачем&quot;.</p><h3 id="var/enthalpy"><aside class="declaration">var </aside>enthalpy <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/gasmixtures/auxgm.dm#L85"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/gasmixtures/auxgm.dm 85"></a></h3><p>Энергия горения в джоулях на моль СГОРЕВШЕГО газа - именно так это поле
+читает genericfire (energy_released += amt * enthalpy, продукты в баланс не
+входят). Значение обязано быть положительным у всего, что задаёт
+fire_temperature или oxidation_temperature: минус означает пожар, который
+охлаждает воздух. Исключение одно и намеренное - плюоксий, ему минус выдан
+как штраф окислителя.
+У чистых продуктов (CO2, вода, бром) поле не читается никем и хранит
+историческую энтальпию ОБРАЗОВАНИЯ; по ней же считаются теплоты сгорания
+топлив в gas_types.dm. Оксид азота и нитрил - единственные, чью энтальпию
+образования читает ещё и разложение закиси (reactions.dm), их менять нельзя.</p><h3 id="var/tier"><aside class="declaration">var </aside>tier <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/atmospherics/gasmixtures/auxgm.dm#L57"><img src="git.png" width="16" height="16" title="code/modules/atmospherics/gasmixtures/auxgm.dm 57"></a></h3><p>Уровень сложности синтеза, GAS_TIER_*. Объявляется явно у каждого газа,
+потому что по нему калибруются цена продажи и разовая награда науки за
+первый синтез, а вывести его из цепочки реакций глазами нельзя.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

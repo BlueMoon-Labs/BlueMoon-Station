@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>/mob/living/carbon/human/screen_funnel_probe - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>screen_funnel_probe <aside>/<a href="mob.html">mob</a>/<a href="mob/living.html">living</a>/<a href="mob/living/carbon.html">carbon</a>/<a href="mob/living/carbon/human.html">human</a>/<a href="mob/living/carbon/human/screen_funnel_probe.html">screen_funnel_probe</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/harddel_round_9832.dm#L15"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/harddel_round_9832.dm 15"></a></h1><p>Регрессии по прод-раунду 9832 (2026-07-30).</p>
+<p>В том раунде 14 из 31 GC-warnfail'а пришлись на предметы, побывавшие в руках
+(десять писем, поджжённых в 03:45, две монеты, кусачки, маяк капеллана) - все ровно
+с одной внешней ссылкой. Держатель - запись в client.screen орбитящего госта: её
+добавляет update_inv_hands()/update_observer_view(), а снимали её только на части
+путей выхода предмета из руки.</p>
+<p>Проверить сам client.screen в CI нельзя - у тестовых мобов нет клиента. Поэтому
+тесты держат контракт на воронку: каждый путь, уносящий предмет из руки, обязан
+пройти через remove_from_hud_screens(). Если кто-то снова впишет &quot;client.screen -= I&quot;
+напрямую, мимо наблюдателей, эти тесты упадут.
+Моб-зонд: запоминает, какие предметы прошли через воронку снятия с экранов.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/atmos_fire_gate - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/atmos_fire_gate.html#proc">Proc Details</a></header><main><h1>atmos_fire_gate <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/atmos_fire_gate.html">atmos_fire_gate</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_fire_gate.dm#L13"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_fire_gate.dm 13"></a></h1><p>react() skips assembling the fire reactions as candidates when the mixture
+holds no gas that has reached its own ignition temperature. That is only safe
+while the gate is a strict over-approximation of what get_fuel_amount() would
+find: it may say &quot;maybe&quot; where the real answer is zero, but it must never say
+&quot;no&quot; where the reaction would have had fuel to work with.</p>
+<p>This matters because the gate sits one degree away from ordinary room air.
+genericfire has no gas requirement, so its TEMP requirement sets the floor for
+every temperature-gated reaction, and that requirement resolves to the lowest
+fire_temperature in the game - phlogiston's T20C+1 = 294.15 K, against station
+air at 293.15 K. Everything warmer than 21 C used to fall through into the
+full candidate assembly plus two whole-gas-list scans, to conclude nothing.</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/atmos_fire_gate.html#proc/assert_gate_covers">assert_gate_covers</a></th><td>Returns TRUE when this sample actually exercised the property under test, i.e.
+get_fuel_amount() found something for the gate to be wrong about. The caller
+counts those: a sweep where the branch is never taken proves nothing, and
+without the count it would still report green.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/assert_gate_covers"><aside class="declaration">proc </aside>assert_gate_covers<aside>(/<a href="datum.html">datum</a>/<a href="datum/gas_mixture.html">gas_mixture</a>/mix, temperature, description)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_fire_gate.dm#L19"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_fire_gate.dm 19"></a></aside></h3><p>Returns TRUE when this sample actually exercised the property under test, i.e.
+get_fuel_amount() found something for the gate to be wrong about. The caller
+counts those: a sweep where the branch is never taken proves nothing, and
+without the count it would still report green.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

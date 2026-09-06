@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/runechat_bucket_reset_handles_overdue - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>runechat_bucket_reset_handles_overdue <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/runechat_bucket_reset_handles_overdue.html">runechat_bucket_reset_handles_overdue</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/runechat_sanity.dm#L138"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/runechat_sanity.dm 138"></a></h1><p>Пересборка колеса переживает ПРОСРОЧЕННОЕ сообщение.</p>
+<p>Одна строка reset_buckets() - откат head_offset к самому раннему сроку - держит на себе
+всю раскладку: BUCKET_POS считает тик от head_offset, у просроченного сообщения этот тик
+отрицателен, остаток от деления в DM берёт знак делимого, а <code>|| BUCKET_LEN</code> отрицательное
+не перехватывает, потому что оно истинно. Без отката раскладка обратилась бы к bucket_list
+по отрицательному индексу, то есть рантаймом посреди пересборки колеса. Клампа <code>max(1, ...)</code>
+здесь, в отличие от fire(), нет и быть не должно: он бы спрятал ошибку, а не починил её.</p>
+<p>Сценарий не выдуманный: пересборка случается по смене tick_lag, а просроченные сообщения
+в колесе лежат всегда - между наступлением срока и проходом колеса, который их снимет.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/canister_sprites_are_unique - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>canister_sprites_are_unique <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/canister_sprites_are_unique.html">canister_sprites_are_unique</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_gas_balance.dm#L555"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_gas_balance.dm 555"></a></h1><p>Канистры игрок различает по цвету, и только по нему: подпись видна лишь при
+осмотре. Две канистры с одним спрайтом и разным содержимым - это ошибка,
+которую замечают уже после того, как открыли не ту.</p>
+<p>Делить спрайт разрешено только родителю с его же подтипом: прототипная
+канистра и её кислородный вариант - физически одна и та же вещь. Два
+независимых газа с одной картинкой - ошибка.</p>
+<p>Проверка появилась, когда выяснилось, что девять пар ЗАКАЗЫВАЕМЫХ канистр
+делили спрайт: азот и хилий, углекислота и заукер, токсины и нитрий, BZ и
+галон, воздух и гелий, тритий и водород, нитрил и прото-нитрат, стимулум и
+антинобель, фреон и плуоксий. Заодно вскрылось, что у darkblue вообще не
+было полупустого состояния (канистра исчезала, как только её начинали
+расходовать), а состояния proto не существовало ни в одном .dmi - то есть
+прототипная канистра была невидима.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

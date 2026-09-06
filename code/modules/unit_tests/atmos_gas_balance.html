@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/atmos_gas_balance.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/atmos_gas_balance.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_gas_balance.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_gas_balance.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_recipe_pressure_gate</th><td>Верхние рецепты кристаллизатора стоят за порогом высокого давления. Это
+несущая часть баланса: дешёвый газ перестаёт давать ценный материал даром.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_recipe_depth_matches_cost</th><td>Цена в молях обязана расти вместе с глубиной цепочки. Ровно здесь баланс и
+разъехался в прошлый раз: заукерит из шести газов вглубь стоил 33 моля, а
+гипернобель из двух шагов - 1085.</td></tr><tr><th><a href="datum/unit_test/gas_handbook_descriptions.html">/datum/unit_test/gas_handbook_descriptions</a></th><td>У каждого газа обязано быть описание для внутриигрового справочника.</td></tr><tr><th><a href="datum/unit_test/gas_price_matches_tier.html">/datum/unit_test/gas_price_matches_tier</a></th><td>Цена продажи обязана расти вместе со сложностью синтеза.</td></tr><tr><th><a href="datum/unit_test/gas_synthesis_research_award.html">/datum/unit_test/gas_synthesis_research_award</a></th><td>Очки науки платятся за первый за раунд синтез каждого газа, и ровно один раз.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_synthesis_sources_cover_tiers</th><td>У каждого синтезируемого газа обязан быть источник, который сообщает о первом
+синтезе. Без этой проверки следующий добавленный газ молча не даст очков: путь
+&quot;газ - наука&quot; держится на поле synthesis_gas, и забыть его ничего не стоит.</td></tr><tr><th><a href="datum/unit_test/gas_high_pressure_synthesis.html">/datum/unit_test/gas_high_pressure_synthesis</a></th><td>Синтез пиронита и флюксина обязан быть закрыт давлением, которого обычная
+разводка не держит. Это единственное, ради чего оба газа существуют: без
+работающих ворот они просто ещё две строки в списке из тридцати.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/fluxin_catalysis</th><td>Флюксин обязан делать ровно то, ради чего он есть: раздвигать верхнюю
+границу окна и снижать расход сырья на единицу продукта. Иначе он просто
+дорогой газ без применения, а весь цикл &quot;глубина делает глубину дешевле&quot;
+остаётся текстом в описании.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/high_pressure_gas_catalogue</th><td>Новый газ - это не только /datum/gas. Тест держит остальное: облако, цену на
+своём месте лестницы, участие в реакциях и вход в верхний рецепт.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_recipe_permanent_rewards</th><td>Второй уровень обязан давать предмет, который живёт всю смену, а не ещё одну
+гранату - и обязан продолжать давать гранату тоже: известный дешёвый путь у
+игрока не отбирается, ему добавляется выбор.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/crystallizer_permanent_rewards_have_roles</th><td>Постоянная награда обязана отличаться механикой, а не только названием и
+спрайтом. Иначе дорогой рецепт второго уровня проигрывает обычному источнику
+того же предмета и существует лишь как ловушка для незнающего игрока.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/crystallizer_fuel_pellets_store_energy</th><td>Пеллеты приехали из кода exploration drone без самой подсистемы и были
+пустыми экспортными предметами. В BlueMoon их роль - конечный переносной
+запас энергии, причём глубина газовой цепочки должна увеличивать импульс.</td></tr><tr><th><a href="datum/unit_test/crystallizer_rewards_look_distinct.html">/datum/unit_test/crystallizer_rewards_look_distinct</a></th><td>Награда обязана выглядеть как своя вещь, а не как чужая.</td></tr><tr><th><a href="datum/unit_test/canister_sprites_are_unique.html">/datum/unit_test/canister_sprites_are_unique</a></th><td>Канистры игрок различает по цвету, и только по нему: подпись видна лишь при
+осмотре. Две канистры с одним спрайтом и разным содержимым - это ошибка,
+которую замечают уже после того, как открыли не ту.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_generic_fire_no_runaway</th><td>Горящий воздух не имеет права греть сам себя. Обобщённое горение считает
+продукты по числам из gas_data (моль азота = ДВЕ моли нитрика), и пока
+коэффициент терялся, каждый цикл списывал теплоёмкость при неизменной
+тепловой энергии: температура удваивалась сама по себе, без единого джоуля
+извне. Раунд 9965 - смесь дошла до 2e12 K, где включается конденсация
+Хагедорна, и та высыпала на станцию кварковую материю с антинобелием;
+последний шаг выгорал в ноль молей и ронял react() делением на ноль (204
+рантайма).</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_generic_fire_hydrogen_heats</th><td>Водород — игровое топливо genericfire. Энтальпия обязана быть положительной:
+при нуле T + Q/C оставляет смесь холодной, и пожар H2→H2O не греет вообще.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_generic_fire_fuels_never_cool</th><td>Ни одно топливо genericfire не имеет права ОХЛАЖДАТЬ смесь. Метан, аммиак и
+метилбромид держали в поле enthalpy энтальпию ОБРАЗОВАНИЯ (-74600, -45900,
+-35400), а реакция читает его как &quot;выделяется на моль сгоревшего&quot; - и пожар
+работал холодильником на 35-75 кДж/моль.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/gas_generic_fire_empty_mix_gate</th><td>Гейт по теплоёмкости. Почти пустая смесь не имеет права разгоняться от
+деления на околоноль - и роняла react() рантаймом, когда выгорала в чистый
+ноль (204 падения за раунд 9965).</td></tr><tr><th><a href="datum/unit_test/gas_hydrogen_room_stays_mundane.html">/datum/unit_test/gas_hydrogen_room_stays_mundane</a></th><td>Сценарий из жалобы игрока: банная печь льёт пар, электролизёр разбирает его на
+водород с кислородом, и комнатка три на три «магическим образом» отдаёт тритий
+и прочую экзотику.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

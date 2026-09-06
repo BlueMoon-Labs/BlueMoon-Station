@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/admin/view_variables/client_ref_probe.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/admin/view_variables/client_ref_probe.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/view_variables/client_ref_probe.dm"><img src="git.png" width="16" height="16" title="code/modules/admin/view_variables/client_ref_probe.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/proc/<a href="global.html#proc/collect_client_ref_hits">collect_client_ref_hits</a></th><td>Поиск держателей датума в клиентских структурах, невидимых обычному скану:
+/image не датум (for(var/datum) его не перечисляет), а client.images/screen/eye
+живут на стороне клиента. Классический кейс - обсервер, которого держит
+image с loc=обсервер в чьём-то client.images (орбит-поинтеры, HUD-иконки).
+НЕ итерирует client.vars (краш живого сервера) - только явные чтения, поэтому
+список переменных ниже надо расширять руками при появлении новых держателей.
+target нетипизирован: целью может быть и /image.
+Собирает описания держателей target из уже прочитанных структур одного клиента.
+Вынесено отдельным проком: /client не датум и в CI не существует, поэтому
+покрытие переменных проверяется только через эту чистую часть.
+direct_vars: имя переменной -&gt; значение. container_vars: имя -&gt; список (в т.ч. ассоц).</td></tr><tr><th>/proc/<a href="global.html#proc/find_client_references">find_client_references</a></th><td>Держатели target в клиентских структурах.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

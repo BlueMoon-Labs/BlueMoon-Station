@@ -1,0 +1,15 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/lighting_matrix_stays_on_grid - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/unit_test/lighting_matrix_stays_on_grid.html#proc">Proc Details</a></header><main><h1>lighting_matrix_stays_on_grid <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/lighting_matrix_stays_on_grid.html">lighting_matrix_stays_on_grid</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_matrix_grid.dm#L21"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_matrix_grid.dm 21"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/unit_test/lighting_matrix_stays_on_grid.html#proc/Run">Run</a></th><td>Итоговая матрица цвета объекта освещения обязана лежать на сетке.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/Run">Run<aside>()  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/lighting_matrix_grid.dm#L21"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/lighting_matrix_grid.dm 21"></a></aside></h3><p>Итоговая матрица цвета объекта освещения обязана лежать на сетке.</p>
+<p>ЗАЧЕМ ТЕСТ. BYOND интернирует appearance по значению и держит их у клиента до конца
+сессии. Значения углов приходят в update() округлёнными к LIGHTING_ROUND_VALUE именно
+ради этого: сетка ограничивает число различных состояний, и повтор схлопывается в уже
+существующий appearance. Но дальше по проку значения домножаются на непрерывные
+множители - контактную тень, контраст и температуру зоны, подкраску теней, - и без
+обратного округления каждое движение любого источника света рождает у каждого видящего
+клиента новый уникальный appearance навсегда.</p>
+<p>Цена промаха измерена на проде 27.08.2026 (раунд 10127, 87-105 игроков): 32-битный
+Dream Seeker брал 732 МБ сразу после входа, добирал 2.4 ГБ за восемь минут и падал
+около 3400 МБ, а перед падением рисовал чужие спрайты вместо штатных и чёрно-белые
+квадраты вместо тайлов.</p>
+<p>Сломать инвариант молча очень просто: достаточно добавить в update() ещё один
+множитель ПОСЛЕ округления. Ни компилятор, ни глаз на скриншоте этого не поймают -
+картинка остаётся правильной, платит только память клиента. Поэтому проверка тут.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

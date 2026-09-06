@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/memory_census_shared_lists - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>memory_census_shared_lists <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/memory_census_shared_lists.html">memory_census_shared_lists</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/process_memory.dm#L692"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/process_memory.dm 692"></a></h1><p>Общий на тип список не должен приписываться каждому инстансу.</p>
+<p>Ради чего проверка. В прод-переписи 23.08 топ строки &quot;элементы списков&quot; состоял почти
+целиком из статиков: /atom/movable/lighting_object отдавал 69 элементов на штуку при
+235 тысячах инстансов, скрытые трубы - 177 и &quot;росли&quot; до 194 (рос общий pipeimages),
+а человек и обезьяна показывали 5071 и 4656 - почти одно число, потому что обе цифры
+были общим кэшем limb_icon_cache. Умноженный на популяцию статик выдумывает миллионы
+элементов там, где лежит один список, и топ отвечает не на тот вопрос, ради которого
+написан.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/movespeed_modifier/config_walk_run/walk - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/movespeed_modifier/config_walk_run/walk.html#proc">Proc Details</a></header><main><h1>walk <aside>/<a href="datum.html">datum</a>/<a href="datum/movespeed_modifier.html">movespeed_modifier</a>/<a href="datum/movespeed_modifier/config_walk_run/walk.html">config_walk_run/walk</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/movespeed/modifiers/mobs.dm#L62"><img src="git.png" width="16" height="16" title="code/modules/movespeed/modifiers/mobs.dm 62"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/movespeed_modifier/config_walk_run/walk.html#proc/apply_multiplicative">apply_multiplicative</a></th><td>&quot;Быстрый шаг&quot; задуман как ходьба со скоростью бега, поэтому вычитаем ровно разницу между
+ходьбой и бегом, а не константу. Прежние 1.25 не кратны ступени тика: на проде (ходьба 3,
+бег 1.5, тик 0.5) итог 1.75 садился ровно на половину ступени и у голого персонажа уходил
+вниз до беговых 1.5 - потому часть игроков и не видела проблемы. Но любое дробное замедление
+сверху (шлем 0.2, урон от сорока, стамина, протаскивание тела 0.6, хардсьют 0.55) перекидывало
+сумму через границу: ходьба платила лишний тик, бег оставался на своём, и квирк давал
+стабильные 25-33% медленнее бега вместо равенства. Разница из конфига кратна ступени, так что
+база совпадает с беговой при любом замедлении и любом тике.
+Прочие замедления (турф, груз, пуллинг) сохраняются - режем только базу ходьбы.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/apply_multiplicative"><aside class="parent"><a title="/datum/movespeed_modifier" href="datum/movespeed_modifier.html#proc/apply_multiplicative">↑</a></aside>apply_multiplicative<aside>(existing, /<a href="mob.html">mob</a>/target)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/movespeed/modifiers/mobs.dm#L75"><img src="git.png" width="16" height="16" title="code/modules/movespeed/modifiers/mobs.dm 75"></a></aside></h3><p>&quot;Быстрый шаг&quot; задуман как ходьба со скоростью бега, поэтому вычитаем ровно разницу между
+ходьбой и бегом, а не константу. Прежние 1.25 не кратны ступени тика: на проде (ходьба 3,
+бег 1.5, тик 0.5) итог 1.75 садился ровно на половину ступени и у голого персонажа уходил
+вниз до беговых 1.5 - потому часть игроков и не видела проблемы. Но любое дробное замедление
+сверху (шлем 0.2, урон от сорока, стамина, протаскивание тела 0.6, хардсьют 0.55) перекидывало
+сумму через границу: ходьба платила лишний тик, бег оставался на своём, и квирк давал
+стабильные 25-33% медленнее бега вместо равенства. Разница из конфига кратна ступени, так что
+база совпадает с беговой при любом замедлении и любом тике.
+Прочие замедления (турф, груз, пуллинг) сохраняются - режем только базу ходьбы.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/obj/item/analyzer - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="obj/item/analyzer.html#var">Var Details</a> - <a href="obj/item/analyzer.html#proc">Proc Details</a></header><main><h1>analyzer <aside>/<a href="obj.html">obj</a>/<a href="obj/item.html">item</a>/<a href="obj/item/analyzer.html">analyzer</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/game/objects/items/devices/scanners.dm#L752"><img src="git.png" width="16" height="16" title="code/game/objects/items/devices/scanners.dm 752"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr><tr><th><a href="obj/item/analyzer.html#var/last_fusion_data">last_fusion_data</a></th><td>REF смеси -&gt; нестабильность недавнего синтеза. Лежит РЯДОМ со смесью, а не
+внутри неё: контракт gas_mixture_parser общий для всех окон и поля под это не имеет.</td></tr><tr><th><a href="obj/item/analyzer.html#var/last_gasmix_data">last_gasmix_data</a></th><td>Разобранные смеси последнего скана. Окно показывает снимок, а не живые данные:
+анализатор уносят от того, что просканировали, и смесь под ним меняется.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="obj/item/analyzer.html#proc/on_analyze">on_analyze</a></th><td></td></tr></table><h2 id="var">Var Details</h2><h3 id="var/last_fusion_data"><aside class="declaration">var </aside>last_fusion_data <aside>– /list</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/game/objects/items/devices/scanners.dm#L778"><img src="git.png" width="16" height="16" title="code/game/objects/items/devices/scanners.dm 778"></a></h3><p>REF смеси -&gt; нестабильность недавнего синтеза. Лежит РЯДОМ со смесью, а не
+внутри неё: контракт gas_mixture_parser общий для всех окон и поля под это не имеет.</p><h3 id="var/last_gasmix_data"><aside class="declaration">var </aside>last_gasmix_data <aside>– /list</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/game/objects/items/devices/scanners.dm#L775"><img src="git.png" width="16" height="16" title="code/game/objects/items/devices/scanners.dm 775"></a></h3><p>Разобранные смеси последнего скана. Окно показывает снимок, а не живые данные:
+анализатор уносят от того, что просканировали, и смесь под ним меняется.</p><h2 id="proc">Proc Details</h2><h3 id="proc/on_analyze"><aside class="declaration">proc </aside>on_analyze<aside>(/<a href="atom.html">atom</a>/target)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/game/objects/items/devices/scanners.dm#L825"><img src="git.png" width="16" height="16" title="code/game/objects/items/devices/scanners.dm 825"></a></aside></h3><ul>
+<li>
+<p>Снимает смеси цели в <code>last_gasmix_data</code> для окна.</p>
+</li>
+<li>
+<p>Аргументы:</p>
+</li>
+<li>
+<ul>
+<li>target: атом, у которого спрашивается воздух через <code>return_analyzable_air()</code>.</li>
+</ul>
+</li>
+<li>
+<p>Возвращает TRUE, если у цели нашлось что анализировать. На FALSE прошлый снимок</p>
+</li>
+<li>
+<p>остаётся нетронутым: показать вместо стены старую смесь честнее, чем пустое окно</p>
+</li>
+<li>
+<p>без объяснений, а вызывающий код в этом случае уходит в чат-вывод.</p>
+</li>
+</ul></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

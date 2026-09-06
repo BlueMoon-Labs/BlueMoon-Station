@@ -1,0 +1,13 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/effect_system_chem_smoke_self_cleanup - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>effect_system_chem_smoke_self_cleanup <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/effect_system_chem_smoke_self_cleanup.html">effect_system_chem_smoke_self_cleanup</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/effect_system_cleanup.dm#L15"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/effect_system_cleanup.dm 15"></a></h1><p>Химдым и пена держат химию в <code>chemholder</code> - голом <code>/obj</code>, у которого
+<code>reagents.my_atom</code> смотрит обратно на него же. Это ссылочный цикл, а рефкаунт BYOND
+циклы не разбирает никогда: разорвать его может только <code>Destroy()</code>, то есть <code>qdel</code>
+самой системы. Вызывающий код <code>qdel</code> не звал ни в одном из ~48 мест создания -
+систему заводили локальной переменной, дёргали <code>set_up()</code>/<code>start()</code> и бросали, -
+поэтому каждый пуск дыма или пены оставлял в мире навсегда голый <code>/obj</code> плюс
+<code>/datum/reagents</code> с содержимым. В переписи прода (раунды 10050/10052/10054, 100-130
+игроков) число голых <code>/obj</code> росло на +122..+644 за каждый 25-минутный интервал и не
+убыло ни разу.</p>
+<p>Лечение - <code>autocleanup</code> у этих двух типов: система убирает себя сама, как только
+отдала реагенты рождённому эффекту. Тесты ниже держат обе половины контракта:
+одноразовые системы уходят вместе со своим носителем, а переиспользуемые (те, что
+живут в переменной объекта и получают <code>start()</code> многократно) - остаются жить.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

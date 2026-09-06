@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/harddel_round_9827.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/harddel_round_9827.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/harddel_round_9827.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/harddel_round_9827.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="datum/unit_test/harddel_9827_base.html">/datum/unit_test/harddel_9827_base</a></th><td>Регрессии по прод-раунду 9827 (2026-07-29): hard delete'ы из harddels.log/runtime.log
+и рантаймы &quot;doMove qdel-нутого ...&quot;, которые оставляли в мире удалённые атомы.</td></tr><tr><th><a href="datum/unit_test/modkit_replace_drops_dead_parts.html">/datum/unit_test/modkit_replace_drops_dead_parts</a></th><td>Модкит переносит детали донора в новый ствол макросом TRANSFER_ATOM_VAR.
+Макрос делал qdel(TARGET.VAR) и НЕ обнулял поле, поэтому при доноре без
+магазина (enforcer/nomag) новый ствол оставался со ссылкой на удалённый
+магазин: attack_self делал ему forceMove и клал мертвеца игроку в руки.
+Раунд 9827: три рантайма doMove подряд и hard delete
+/obj/item/ammo_box/magazine/e45 (1 внешняя ссылка).</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/computer_deconstruct_hands_over_circuit</th><td>Разбор компьютера клал плату в новый фрейм, но вычёркивал её из
+component_parts ПОСЛЕ обнуления circuit, то есть вычитал null. Плата
+оставалась в component_parts и уезжала в qdel вместе с машиной - фрейм
+держал удалённую плату, а ломик рантаймил &quot;doMove qdel-нутого
+/obj/item/circuitboard/computer/rdconsole/production&quot; (раунд 9827).</td></tr><tr><th><a href="datum/unit_test/cult_horror_spell_releases_proc_holder.html">/datum/unit_test/cult_horror_spell_releases_proc_holder</a></th><td>Заклинание Hallucinations и его proc_holder ссылались друг на друга и
+разрывали связь QDEL_NULL'ом по локальной копии - поля PH/attached_action
+оставались забиты удалённым партнёром. Раунд 9827: в warnfail ушли обе
+пары /obj/effect/proc_holder/horror + /datum/action/innate/cult/blood_spell/horror,
+по одной внешней ссылке; REF SEARCH назвал вар PH.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/brig_report_does_not_retain_paper</th><td>Печать брига складывала распечатки в GLOB.cell_logs, который никто никогда
+не читал: список молча держал до 500 бумаг, и любая уничтоженная распечатка
+уходила в hard delete. Раунд 9827: 20 warnfail /obj/item/paper &quot;PermaBrig log&quot;
+подряд, по одной внешней ссылке.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/syntech_normalizer_does_not_pin_owner</th><td>Лоадаутные нормалайзеры писали владельца жёсткой ссылкой и держали тело до
+конца раунда: предмет живёт дольше носителя (шкафчик, чужой рюкзак, пол).
+Раунд 9827: REF SEARCH нашёл /mob/living/carbon/human в
+/obj/item/clothing/neck/syntech/collar, вар owner - hard delete тела.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/discarded_antag_datum_stays_quiet</th><td>clockcult/admin_add заводит собственный датум через add_servant_of_ratvar, а
+заготовку из add_antag_wrapper бросает без владельца. Уборка этой заготовки
+штатная, но Destroy ругался stack_trace'ом &quot;Destroy()ing antagonist datum
+when it has no owner.&quot; - раунд 9827 поймал его трижды за смену.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/severed_head_releases_brain_chain</th><td>Отрезанная голова хранит мозг, мозгомоба и глаза жёсткими ссылками, а своего
+Destroy у /obj/item/bodypart/head не было вовсе: qdel уводил содержимое головы
+в qdel штатным contents-циклом /atom/movable/Destroy, но три поля оставались
+забиты покойниками. Раунд 9827: одна голова тянула цепочку из трёх хардделов.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/holodeck_spawner_releases_derezzed_pet</th><td>Консоль голодека дерезит убежавшего питомца сама и спавнеру об этом не
+сообщает, а спавнер живёт до смены программы. Раунд 9827: REF SEARCH назвал
+держателя прямо - /obj/effect/holodeck_effect/mobspawner/pet, вар mob (6 хардделов).</td></tr><tr><th><a href="datum/unit_test/antag_info_button_two_way_release.html">/datum/unit_test/antag_info_button_two_way_release</a></th><td>Кнопка антаг-инфо висит на теле и по clear_ref сносит себя сама, но
+антаг-датуму об этом не сообщала, а его Destroy кнопку не трогал (обнуление
+было только в on_removal). Раунд 9827: 3 харддела /datum/action/antag_info.</td></tr><tr><th><a href="datum/unit_test/cryo_path_releases_wearer.html">/datum/unit_test/cryo_path_releases_wearer</a></th><td>Крио-путь: /obj/item/doMove зовёт dropped() только когда предмет был В РУКАХ,
+а cryoMob уносит НАДЕТЫЕ вещи forceMove'ом в под, потом в коробку, а коробка
+живёт в control_computer.stored_packages до конца смены. Значит любая вещь,
+которая пишет носителя в equipped() и отпускает только в dropped(), держит
+тело весь раунд. Раунд 9827: все 18 несобранных /mob/living/carbon/human
+прошли через cryoMob(), ни одного гиба.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/customizable_food_releases_ingredients</th><td>Кастомизируемая еда удаляла ингредиенты циклом, но сам список не чистила:
+ingredients оставался единственным держателем уже удалённых кусков.</td></tr><tr><th><a href="datum/unit_test/sstgui_unregisters_closed_interface.html">/datum/unit_test/sstgui_unregisters_closed_interface</a></th><td>SStgui.on_close считал ключ как &quot;[REF(ui.src_object)]&quot; и при промахе выходил
+return FALSE ДО чистки, а close() сразу делал qdel(src). Оставались три
+висячие ссылки, две из них во вложенных списках - поэтому реф-сканер молчал.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

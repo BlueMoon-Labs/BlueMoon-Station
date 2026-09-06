@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/unit_test/runechat_bucket_placement - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>runechat_bucket_placement <aside>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/<a href="datum/unit_test/runechat_bucket_placement.html">runechat_bucket_placement</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/runechat_sanity.dm#L88"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/runechat_sanity.dm 88"></a></h1><p>Раскладка по бакетам: что влезает в окно колеса, а что уходит во вторичную очередь.</p>
+<p>Ветка переписала у рунчата обе формулы размещения - BUCKET_POS перешёл с round() на
+ROUND_UP, а граница окна с сырого world.time на округлённый тик (BUCKET_FITS). Чинили
+ими один и тот же отказ: сообщение признавалось влезающим, а раскладка сажала его в слот
+ПОЗАДИ курсора - и тот же проход колеса его тут же и сметал, то есть рунчат гас, не
+показавшись, либо ждал полного оборота и висел лишние тридцать секунд.</p>
+<p>У точно такой же правки в SStimer есть два прицельных теста (long_timers_do_not_fire_early
+и timer_boundary_probe), у рунчата не было ни одного: оба его теста проверяли пересборку.</p>
+<p>Инвариант тут один и он точный: тик сообщения не может оказаться позади курсора. Курсор
+стоит на practical_offset и обслуживает тик practical_offset - 1 от head_offset, значит
+всё, что легло раньше, снимется раньше срока. Для честно завернувшегося за оборот
+сообщения тик заведомо больше длины колеса, так что проверка ему не мешает.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

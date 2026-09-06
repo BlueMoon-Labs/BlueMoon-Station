@@ -1,0 +1,8 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/atmos_vector_reductions.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/atmos_vector_reductions.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/atmos_vector_reductions.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/atmos_vector_reductions.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="datum/unit_test/atmos_vector_reductions.html">/datum/unit_test/atmos_vector_reductions</a></th><td>BYOND 516 ships native list reductions (values_sum, values_dot) that collapse
+a whole DM loop over the gas list into one engine call. The hot atmos procs
+use them, so their contract has to be pinned rather than assumed - especially
+the two edge cases the old DM loops handled explicitly with <code>|| 0</code>:
+an empty gas list, and a gas id present in the mixture but absent from the
+coefficient list. If a future BYOND changes either behaviour, this test is
+what says so, instead of every mixture in the game quietly getting the wrong
+heat capacity.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

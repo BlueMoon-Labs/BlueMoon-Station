@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/client/client_connect_probe.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/modules/client/client_connect_probe.html#define">Define Details</a></header><main><h1>code/modules/client/client_connect_probe.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/client/client_connect_probe.dm"><img src="git.png" width="16" height="16" title="code/modules/client/client_connect_probe.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/modules/client/client_connect_probe.html#define/CONNECT_PROBE_FOLLOWUP_DELAY">CONNECT_PROBE_FOLLOWUP_DELAY</a></th><td>Цена подключения клиента: сколько адресного пространства и стенного времени стоит
+один client/New(), по этапам.</td></tr><tr><th>/proc/<a href="global.html#proc/attribute_memory_elsewhere_mb">attribute_memory_elsewhere_mb</a></th><td>Записать МБ VmSize на счёт фоновой работы. Единственная точка записи в счётчик:
+монотонность - его контракт, а не деталь вызывающего (см.
+/datum/unit_test/lighting_cost_counter_is_monotonic). Отрицательная дельта между
+отметками законна и означает &quot;за окно ничего не сделано&quot;, а не &quot;верните мегабайты&quot;.</td></tr><tr><th>/proc/<a href="global.html#proc/probe_stage_line">probe_stage_line</a></th><td>Готовая строка одного этапа. Вынесена из mark() отдельным проком: это единственное
+место, где живёт арифметика вычета фона, и без живого клиента её иначе не проверить.
+Вычтенный фон НАЗЫВАЕТСЯ в строке - молчаливый вычет прячет от читателя, что окно
+было не его.</td></tr><tr><th>/proc/<a href="global.html#proc/probe_stage_own_mb">probe_stage_own_mb</a></th><td>Сколько из окна принадлежит самому этапу. Прибор раздачи тел (ticker_handoff_probe.dm)
+берёт ту же цифру, чтобы записать её на счёт фона - арифметика вычета обязана жить в
+одном месте, иначе две копии разъедутся молча.</td></tr><tr><th>/proc/<a href="global.html#proc/probe_stage_background_mb">probe_stage_background_mb</a></th><td>Счётчик фона монотонный, но отрицательная разница между отметками смысла не имеет и
+прибавлять этапу мегабайт не должна.</td></tr><tr><th>/proc/<a href="global.html#proc/probe_started_during_world_init">probe_started_during_world_init</a></th><td>Шёл ли мир ещё инициализацией, когда открылось это окно замера.</td></tr><tr><th>/proc/<a href="global.html#proc/probe_init_window_note">probe_init_window_note</a></th><td>Приписка к строке входа, открывшегося до конца инициализации мира.</td></tr><tr><th>/proc/<a href="global.html#proc/format_mb_delta">format_mb_delta</a></th><td>&quot;+84.3 МБ&quot; / &quot;-0.5 МБ&quot; / &quot;0 МБ&quot;: знак нужен, потому что отрицательная дельта здесь
+законна (ушёл другой клиент) и без знака читалась бы как рост.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/CONNECT_PROBE_FOLLOWUP_DELAY"><aside class="declaration">#define </aside>CONNECT_PROBE_FOLLOWUP_DELAY <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/client/client_connect_probe.dm#L27"><img src="git.png" width="16" height="16" title="code/modules/client/client_connect_probe.dm 27"></a></h3><p>Цена подключения клиента: сколько адресного пространства и стенного времени стоит
+один client/New(), по этапам.</p>
+<p>Раунд 10083 (Delta, 107 игроков): 300 из 444 МБ роста VmSize за час пришли тринадцатью
+ступеньками по 12-84 МБ, и в каждом таком окне число инстансов не двигалось. Детектор
+спайков в те же секунды показывал winget &lt;окно&gt;.dpi / winexists browseroutput на
+1.3-2.9 с - то есть client/New() ждал ответа клиента, - а строка ACCESS: Login у тех же
+ckey появлялась на 20-100 секунд позже. Это клиенты с холодным кэшем, которым сервер
+стримит ресурсы; с числом входов в окне корреляции нет (r = -0.27): платят не все входы,
+а только такие. Ни перепись инстансов, ни перепись датумов этих мегабайт не видят - они
+не в объектах DM.</p>
+<p>Прибор снимает VmSize/RSS на входе в client/New() и после каждого этапа, который может
+ждать клиента или грузить данные (prefs, встроенный Login, панели, хвост),
+и через CONNECT_PROBE_FOLLOWUP_DELAY после входа делает контрольный замер: стриминг
+ресурсов продолжается и после New(). Контрольный замер честен только пока между ним и
+входом никто больше не подключался - поэтому в строке стоит число других подключений за
+это время: при нуле дельта принадлежит этому клиенту, при большем числе это сумма.</p>
+<p>На Windows /proc нет: тогда в строке остаются только времена этапов, и это тоже ответ на
+вопрос &quot;сколько секунд сервер провёл в ожидании этого клиента&quot;.
+Через сколько после конца client/New() снять контрольный замер: стриминг ресурсов
+клиенту продолжается после входа, и ступенька может прийти уже после Login.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

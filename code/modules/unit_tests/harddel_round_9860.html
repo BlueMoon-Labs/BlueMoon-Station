@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/unit_tests/harddel_round_9860.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>code/modules/unit_tests/harddel_round_9860.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/harddel_round_9860.dm"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/harddel_round_9860.dm"></a></h1><table class="summary" cellspacing="0"><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/harddel_9860_base</th><td>Регрессии по hard delete из прод-раундов 9859/9860 (2026-08-02).
+В комментариях к тестам - замер из runtime.log: строка
+&quot;## GC: ... не собрался (warnfail, ~120с, внешних ссылок: N)&quot;.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/spiderling_vent_travel_releases_on_qdel</th><td>Паучок лез по вентиляции через spawn() с вложенными sleep. Цепочка держала его
+жёсткой ссылкой и последним шагом возвращала forceMove'ом в contents живого
+вентиля уже ПОСЛЕ qdel. Раунд 9860: восемь рантаймов &quot;doMove qdel-нутого
+/obj/structure/spider/spiderling/nurse&quot; и 13 хардделов паучков - больше, чем
+у любого другого типа, кроме решёток и окон.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/spiderling_blocked_vent_returns_to_floor</th><td>Заваренный вентиль на выходе: прежний код делал forceMove обратно ВНУТРЬ вентиля
+входа и обнулял entry_vent. travelling_in_vent сбрасывался только по isturf(loc),
+то есть паучок оставался в contents машины навсегда.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/chasm_drop_releases_qdeleted_faller</th><td>falling_atoms у /datum/component/chasm - static, то есть один список на всю карту
+и на весь раунд. Ветка &quot;в забвение&quot; спит секунду и выходила по QDELETED мимо
+снятия ключа: удалённый в полёте моб оставался в этом списке навсегда. Трупы
+тендрилов падают именно туда - обвал тендрила делает вокруг себя лавовые
+пропасти без нижнего z-уровня. Раунды 9859/9860: goliath/beast/tendril (318.6мс)
+и basilisk/watcher/tendril (114мс), у обоих ровно одна внешняя ссылка.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/cleanbot_teardown_survives_deputized_weapon</th><td>cleanbot/Destroy отдавал живой нож в drop_part, который ждёт ТИППАТ и делает по
+нему new(). Раунд 9859: &quot;new() called with an object of type /obj/item/kitchen/knife
+instead of the type path itself&quot; прямо в Destroy(0) - и весь остаток разбора бота
+(janitor_devices, bots_list, bot_core, Radio, родительский Destroy) не выполнялся.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/bot_core_releases_owner</th><td>Бот в своём Destroy делает QDEL_NULL(bot_core), но обратной ссылки ядро не рвало.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/antag_datum_leaves_remind_list</th><td>GLOB.antagonists_to_remind снимал датум только когда счётчик напоминаний догорит
+до нуля - это 2 x 12 минут. Снятый раньше антаг оставался в глобальном списке
+навсегда, а напоминалка с пустым owner проваливалась в холостую ветку и до
+строчки снятия не доходила никогда. Раунд 9859: /datum/antagonist/bloodsucker,
+одна внешняя ссылка.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/fantasy_unmodify_clears_applied_components</th><td>unmodify() удалял применённые компоненты, но список не чистил, а InheritComponent
+зовёт unmodify() и следом modify(), который дописывает туда НОВЫЕ. Мёртвые
+компоненты копились на предмете до конца раунда. Раунд 9859:
+/datum/component/mirv, одна внешняя ссылка.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/sonar_markers_release_after_ping</th><td>Маркеры эхолокации тешари снимались с экрана через client МОБА, а список
+sonar_markers не чистился вовсе - это тот же объект списка, что раздают
+таймерам. Раунд 9859: /atom/movable/screen/sonar_ping, 114.2мс, одна ссылка.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/tgui_close_closes_every_child</th><td>close() правил children прямо во время обхода этого же списка (child.close()
+снимает себя из него), поэтому каждый второй ребёнок оставался открытым - с
+живыми user и src_object в списках подсистемы.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/tgui_unregister_drops_from_current_run</th><td>Закрытый посреди прохода подсистемы интерфейс оставался в current_run - копии
+open_uis на текущий проход - со всем своим user и src_object.</td></tr><tr><th>/<a href="datum.html">datum</a>/<a href="datum/unit_test.html">unit_test</a>/hotspot_expose_ignores_dead_hotspot</th><td>Конструктор хотспота через perform_exposure() зовёт fire_act() по содержимому
+турфа; детонация оттуда сносит сам турф, а /turf/open/Destroy делает
+QDEL_NULL(active_hotspot). Присваивание результата <code>new</code> возвращало удалённый
+хотспот обратно в поле турфа: ссылка держала его до харддела (два по 540мс за
+раунд 9860), а сам турф после этого не загорался уже никогда - обе проверки в
+hotspot_expose видели в поле &quot;живой&quot; огонь.</td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

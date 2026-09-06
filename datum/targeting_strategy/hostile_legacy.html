@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/targeting_strategy/hostile_legacy - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/targeting_strategy/hostile_legacy.html#proc">Proc Details</a></header><main><h1>hostile_legacy <aside>/<a href="datum.html">datum</a>/<a href="datum/targeting_strategy.html">targeting_strategy</a>/<a href="datum/targeting_strategy/hostile_legacy.html">hostile_legacy</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/targeting/_targeting_strategy.dm#L41"><img src="git.png" width="16" height="16" title="code/datums/ai/targeting/_targeting_strategy.dm 41"></a></h1><p>Легаси-мост: делегирует mob.CanAttack() - все 28 сабтиповых переопределений
+CanAttack (конструкты, статуя, крысиный король и т.д.) работают бесплатно.
+Семантика зафиксирована тестами hostile_ai_baseline + ai_targeting.</p><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/targeting_strategy/hostile_legacy.html#proc/get_aggro_range">get_aggro_range</a></th><td>Легаси-паритет двухуровневого восприятия: холодное приобретение идёт по
+ЖИВОМУ vision_range моба, а не по раздутому max(vision, aggro_vision).
+Aggro()/LoseAggro() поднимают vision_range до aggro_vision_range только пока
+моб в бою (легаси ListTargets звал hearers(vision_range)). Профильный радиус -
+это ПОТОЛОК: мимик/маскировка нарочно занижают его, и min() это сохраняет.
+Регресс без этого: вотчер (vision 2, aggro 9) агрился через полэкрана.</td></tr></table><h2 id="proc">Proc Details</h2><h3 id="proc/get_aggro_range"><aside class="parent"><a title="/datum/targeting_strategy" href="datum/targeting_strategy.html#proc/get_aggro_range">↑</a></aside>get_aggro_range<aside>(/<a href="mob.html">mob</a>/<a href="mob/living.html">living</a>/hunter, profile_range)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/datums/ai/targeting/_targeting_strategy.dm#L61"><img src="git.png" width="16" height="16" title="code/datums/ai/targeting/_targeting_strategy.dm 61"></a></aside></h3><p>Легаси-паритет двухуровневого восприятия: холодное приобретение идёт по
+ЖИВОМУ vision_range моба, а не по раздутому max(vision, aggro_vision).
+Aggro()/LoseAggro() поднимают vision_range до aggro_vision_range только пока
+моб в бою (легаси ListTargets звал hearers(vision_range)). Профильный радиус -
+это ПОТОЛОК: мимик/маскировка нарочно занижают его, и min() это сохраняет.
+Регресс без этого: вотчер (vision 2, aggro 9) агрился через полэкрана.</p>
+<p>Свежий боевой контакт - НЕ холодное приобретение: разжалование цели уже
+уронило живой vision_range через LoseTarget-&gt;LoseAggro, но искать только что
+скрывшуюся жертву моб обязан настороженным aggro_vision_range, иначе шамблер
+(vision 3, aggro 7) слепнул за углом и бросал погоню, глядя жертве в лицо.
+LOS-гейт и профильный потолок сохраняются.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

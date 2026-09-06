@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>tools/Sprite_Grayscale_Converter/readme.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Это не код, а блядская шутка <aside>tools/Sprite_Grayscale_Converter/readme.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/tools/Sprite_Grayscale_Converter/readme.md"><img src="git.png" width="16" height="16" title="tools/Sprite_Grayscale_Converter/readme.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2 id="а-если-серьёзно-это-конвертер-специально-для-превращения-grayscale-спрайтов-в-rgb-спрайты-и-наоборот">А если серьёзно, это конвертер специально для превращения grayscale спрайтов в rgb спрайты и наоборот</h2>
+<p>Если очень просто как этим пользоваться</p>
+<ol>
+<li>Компилим SS13IconsConverter.dme</li>
+<li>Открываем SS13IconsConverter.dmb</li>
+<li>Выбираем режим (изначально стоит RGB to Greayscale)</li>
+<li>Выбираем .dmi файл</li>
+<li>получаем готовый .dmi</li>
+</ol>
+<h2 id="известные-проблемы">Известные проблемы</h2>
+<ol>
+<li>Часть dmi файлов не читается вовсе (помолитесь богу-машине я хз)</li>
+<li>При превращении из RGB в Grayscale генерируется всегда 3 слоя независимо от наличия оных</li>
+<li>При превращении из RGB d Grayscale любые спрайты с переходными цветами (те, у которых RGB не чёткая и имеет значения других цветов) приводит к тому, что цвет остаётся у двух слоёв</li>
+<li>Чисто чёрный (0,0,0) удаляется при превращении из RGB d Grayscale</li>
+</ol></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

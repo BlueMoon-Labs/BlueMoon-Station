@@ -1,0 +1,22 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/controllers/subsystem/ticker_handoff_probe.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/controllers/subsystem/ticker_handoff_probe.html#define">Define Details</a></header><main><h1>code/controllers/subsystem/ticker_handoff_probe.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/ticker_handoff_probe.dm"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/ticker_handoff_probe.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/controllers/subsystem/ticker_handoff_probe.html#define/HANDOFF_PROBE_FOLLOWUP_DELAY">HANDOFF_PROBE_FOLLOWUP_DELAY</a></th><td>Цена раздачи тел на старте раунда, по стадиям.</td></tr><tr><th>/proc/<a href="global.html#proc/handoff_stage_line">handoff_stage_line</a></th><td>Дописать к строке стадии число игроков, цену на игрока и дельту объектов.</td></tr><tr><th>/proc/<a href="global.html#proc/handoff_per_player_text">handoff_per_player_text</a></th><td>&quot;1.4 МБ на игрока&quot; либо честное &quot;игроков нет&quot; вместо деления на ноль.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/HANDOFF_PROBE_FOLLOWUP_DELAY"><aside class="declaration">#define </aside>HANDOFF_PROBE_FOLLOWUP_DELAY <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/ticker_handoff_probe.dm#L31"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/ticker_handoff_probe.dm 31"></a></h3><p>Цена раздачи тел на старте раунда, по стадиям.</p>
+<p>ЗАЧЕМ. Раунд 10121 (Syndicate Station, 105 игроков): VmSize вырос на 666 МБ за ОДНО
+десятисекундное окно перф-CSV на старте раунда - 48% всего роста раунда и 16% потолка
+адресного пространства 32-битного DreamDaemon. Число инстансов за это окно
+УМЕНЬШИЛОСЬ на 941 (софтделов 39 554 - чистка лобби-лендмарков), то есть ни перепись
+инстансов, ни перепись датумов этих мегабайт не видят: они лежат не в объектах DM.</p>
+<p>Прибор подключения (client_connect_probe.dm) сюда не достаёт: он меряет client/New(),
+то есть ЛОББИ. В лобби у клиента нет карты, только заставка, и поклиентская машинерия
+карты BYOND аллоцируется позже - на переносе ключа в тело. Ста пяти игрокам разом, в
+одну стадию, за секунды.</p>
+<p>ЧТО ДЕЛАЕТ. Режет старт раунда на стадии SSticker (create/collect/equip/manifest/
+transfer/splash) и говорит про каждую: сколько секунд, сколько МБ VmSize, сколько это на
+игрока и на сколько сдвинулся world.contents.len. Последнее и есть разделитель: стадия,
+которая платит датумами, двигает счётчик объектов вместе с памятью, а стадия, которая
+платит поклиентской машинерией BYOND, - нет.</p>
+<p>Свою цену прибор записывает на счёт фоновой работы. Без этого стартовый шторм попадал
+в окна тех, кто в эти же секунды подключался: сумма &quot;хвостов&quot; по 116 входам раунда
+10121 дала 1919 МБ при реальном росте раунда 1395 МБ.</p>
+<p>На Windows /proc нет: тогда в строке остаются только времена стадий, и это тоже ответ
+на вопрос, сколько секунд занимала каждая.
+Через сколько после конца раздачи тел снять контрольный замер. Клиент дорисовывает
+свой первый кадр мира уже после transfer_characters(), и ступенька приходит позже.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

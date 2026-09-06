@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>/datum/select_equipment - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="datum/select_equipment.html#var">Var Details</a> - <a href="datum/select_equipment.html#proc">Proc Details</a></header><main><h1>select_equipment <aside>/<a href="datum.html">datum</a>/<a href="datum/select_equipment.html">select_equipment</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/verbs/selectequipment.dm#L25"><img src="git.png" width="16" height="16" title="code/modules/admin/verbs/selectequipment.dm 25"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h2>Vars</h2></td></tr><tr><th><a href="datum/select_equipment.html#var/appearance_key">appearance_key</a></th><td>Отпечаток внешности манекена, считается один раз в init_dummy().
+null означает &quot;кэшировать нельзя&quot;.</td></tr><tr><th><a href="datum/select_equipment.html#var/preview_cache">preview_cache</a></th><td>Готовые base64-превью, общие для всех инстансов датума.
+Повторный показ того же аутфита на том же теле рендерить незачем: полный проход
+getFlatIcon по четырём направлениям плюс icon2base64_scaled стоил около
+полусекунды серверного времени на каждый клик по списку - это два самых дорогих
+Topic'а прод-раунда. Инстансный кэш тут не работал: ui_close удаляет датум,
+поэтому каждое переоткрытие панели платило полную цену заново.
+Ключ - &quot;отпечаток внешности манекена|аутфит&quot;, см. build_appearance_key():
+без внешности в ключе один админ увидел бы превью чужого моба.
+Кастомные аутфиты правятся на ходу, их не кэшируем.</td></tr><tr><td colspan="2"><h2>Procs</h2></td></tr><tr><th><a href="datum/select_equipment.html#proc/build_appearance_key">build_appearance_key</a></th><td>Отпечаток внешности манекена - всё, что влияет на картинку, кроме самого аутфита.</td></tr><tr><th><a href="datum/select_equipment.html#proc/outfit_entry">outfit_entry</a></th><td>Packs up data about an outfit as an assoc list to send to the UI as an outfit entry.</td></tr></table><h2 id="var">Var Details</h2><h3 id="var/appearance_key"><aside class="declaration">var </aside>appearance_key <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/verbs/selectequipment.dm#L53"><img src="git.png" width="16" height="16" title="code/modules/admin/verbs/selectequipment.dm 53"></a></h3><p>Отпечаток внешности манекена, считается один раз в init_dummy().
+null означает &quot;кэшировать нельзя&quot;.</p><h3 id="var/preview_cache"><aside class="declaration">var </aside>preview_cache <aside>– /static/list</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/verbs/selectequipment.dm#L49"><img src="git.png" width="16" height="16" title="code/modules/admin/verbs/selectequipment.dm 49"></a></h3><p>Готовые base64-превью, общие для всех инстансов датума.
+Повторный показ того же аутфита на том же теле рендерить незачем: полный проход
+getFlatIcon по четырём направлениям плюс icon2base64_scaled стоил около
+полусекунды серверного времени на каждый клик по списку - это два самых дорогих
+Topic'а прод-раунда. Инстансный кэш тут не работал: ui_close удаляет датум,
+поэтому каждое переоткрытие панели платило полную цену заново.
+Ключ - &quot;отпечаток внешности манекена|аутфит&quot;, см. build_appearance_key():
+без внешности в ключе один админ увидел бы превью чужого моба.
+Кастомные аутфиты правятся на ходу, их не кэшируем.</p><h2 id="proc">Proc Details</h2><h3 id="proc/build_appearance_key"><aside class="declaration">proc </aside>build_appearance_key<aside>(/<a href="mob.html">mob</a>/<a href="mob/living.html">living</a>/<a href="mob/living/carbon.html">carbon</a>/<a href="mob/living/carbon/human.html">human</a>/preview_dummy)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/verbs/selectequipment.dm#L96"><img src="git.png" width="16" height="16" title="code/modules/admin/verbs/selectequipment.dm 96"></a></aside></h3><p>Отпечаток внешности манекена - всё, что влияет на картинку, кроме самого аутфита.</p>
+<p>Манекен собирается из ДНК и префов цели, поэтому отпечаток заодно ловит смену расы,
+причёски или белья между открытиями панели: ключ меняется, превью пересчитывается.
+Возвращает null, если манекена нет - тогда результат просто не кэшируется.</p><h3 id="proc/outfit_entry"><aside class="declaration">proc </aside>outfit_entry<aside>(category, identifier, name, priority, custom_entry)  <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/admin/verbs/selectequipment.dm#L139"><img src="git.png" width="16" height="16" title="code/modules/admin/verbs/selectequipment.dm 139"></a></aside></h3><p>Packs up data about an outfit as an assoc list to send to the UI as an outfit entry.</p>
+<p>Args:</p>
+<ul>
+<li>
+<p>category (string) - The tab it will be under</p>
+</li>
+<li>
+<p>identifier (typepath or ref) - This will sent this back to ui_act to preview or spawn in an outfit.</p>
+</li>
+<li>
+<p>Must be unique between all entries.</p>
+</li>
+<li>
+<p>name (string) - Will be the text on the button</p>
+</li>
+<li>
+<p>priority (bool)(optional) - If True, the UI will sort the entry to the top, right below favorites.</p>
+</li>
+<li>
+<p>custom_entry (bool)(optional) - Send the identifier with a &quot;ref&quot; keyword instead of &quot;path&quot;,</p>
+</li>
+<li>
+<p>for the UI to tell apart custom outfits from normal ones.</p>
+</li>
+</ul>
+<p>Returns (list) An outfit entry</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

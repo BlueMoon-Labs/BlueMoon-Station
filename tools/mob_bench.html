@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>tools/mob_bench/README.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Mob headless benchmark <aside>tools/mob_bench/README.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/tools/mob_bench/README.md"><img src="git.png" width="16" height="16" title="tools/mob_bench/README.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>The benchmark boots Runtime Station without clients. Synthetic workloads use
+an isolated 24x24 arena and 100 samples; live combat modes use a sealed 48x48
+arena. Together they cover SSmobs Life processing, legacy NPC/idle pools,
+controller planning and target acquisition, ranged AI, machine targets,
+obstacle/JPS routing, boss selection, and dense spatial-grid acquisition.</p>
+<p>Run it from PowerShell:</p>
+<pre><code class="language-powershell">tools\mob_bench\run_headless.ps1 -Tag candidate -Runs 3
+</code></pre>
+<p><code>-Mode Arena</code> runs the 30-second live all-hostile fight with a fast diagnostic
+GC settle. <code>-Mode ArenaRound16</code> reproduces the expensive round-16 cohort: 59
+InteQ shotgun commandos fight 10 demonic frost miners while a harmless active
+weather datum scans the combat population. <code>-Mode ArenaHarddel</code> waits 130
+seconds after teardown before forcing the surviving Q3 entries through <code>del()</code>,
+separating real harddel candidates from temporary references held by sleeping
+DM frames. <code>-Mode ArenaRound16Harddel</code> combines the exact combat cohort with
+that long GC and reference-scan phase. After one diagnostic scan has identified
+the owner, add <code>-SkipReferenceScan</code> to repeated harddel A/B runs so the same
+multi-minute full-world scan does not contaminate their cleanup profiles.</p>
+<p>Each run produces <code>median_ms</code>, <code>p95_ms</code>, <code>p99_ms</code>, raw samples, semantic AI
+counters, and a native BYOND proc profile. Results are archived under
+<code>data/mob_bench_results/&lt;timestamp&gt;_&lt;tag&gt;/</code>; the <code>data</code> directory is ignored by
+git. The final table averages each percentile over all requested runs. Compare
+only runs made with the same BYOND build, map, defines, scenario version, and
+profiler mode.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

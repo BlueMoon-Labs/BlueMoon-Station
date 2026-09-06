@@ -1,0 +1,51 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/controllers/subsystem/memory_pressure_evac.dm - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a> — <a href="code/controllers/subsystem/memory_pressure_evac.html#define">Define Details</a></header><main><h1>code/controllers/subsystem/memory_pressure_evac.dm <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm"></a></h1><table class="summary" cellspacing="0"><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_ENDGAME_NONE">MEMORY_ENDGAME_NONE</a></th><td>Конец раунда по давлению памяти.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_ENDGAME_EVAC">MEMORY_ENDGAME_EVAC</a></th><td>Пора вызывать шаттл.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_ENDGAME_FORCE_END">MEMORY_ENDGAME_FORCE_END</a></th><td>Пора завершать раунд принудительно.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_EVAC_CEILING_FRACTION">MEMORY_EVAC_CEILING_FRACTION</a></th><td>Доля потолка адресного пространства, ниже которой автоэвакуация не рассматривается вовсе.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_EVAC_MIN_ROUND_TIME">MEMORY_EVAC_MIN_ROUND_TIME</a></th><td>Раньше этого времени раунда автоэвакуации не будет ни при каких цифрах. Роундстарт сам
+по себе даёт скачок в полгигабайта, и окно оценки в эти минуты меряет именно его.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_EVAC_CALL_COEFFICIENT">MEMORY_EVAC_CALL_COEFFICIENT</a></th><td>Множитель к таймеру шаттла на автовызове. Штатный вызов на зелёном коде - двадцать минут;
+столько ждать нельзя, ради этого вся ступень и заводилась.</td></tr><tr><th><a href="code/controllers/subsystem/memory_pressure_evac.html#define/MEMORY_FORCE_END_HEADROOM_MB">MEMORY_FORCE_END_HEADROOM_MB</a></th><td>Остаток до потолка в МБ, на котором раунд завершается принудительно.</td></tr><tr><th>/proc/<a href="global.html#proc/memory_endgame_step">memory_endgame_step</a></th><td>Чистое решение: какая ступень нужна при этих цифрах. Отдельным глобальным проком, потому
+что это единственная часть механизма, которую можно проверить юнит-тестом - вызвать шаттл
+и завершить раунд в тесте нельзя, а ошибиться порогом здесь стоит целого раунда.</td></tr></table><h2 id="define">Define Details</h2><h3 id="define/MEMORY_ENDGAME_EVAC"><aside class="declaration">#define </aside>MEMORY_ENDGAME_EVAC <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L38"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 38"></a></h3><p>Пора вызывать шаттл.</p><h3 id="define/MEMORY_ENDGAME_FORCE_END"><aside class="declaration">#define </aside>MEMORY_ENDGAME_FORCE_END <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L40"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 40"></a></h3><p>Пора завершать раунд принудительно.</p><h3 id="define/MEMORY_ENDGAME_NONE"><aside class="declaration">#define </aside>MEMORY_ENDGAME_NONE <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L36"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 36"></a></h3><p>Конец раунда по давлению памяти.</p>
+<p>DreamDaemon 32-битный, потолок адресного пространства меряется в рантайме и на проде
+равен 4093 МБ. Раунд стартует уже с 2.2-2.6 ГБ и растёт на 5-13 МБ/мин, поэтому длинный
+многолюдный раунд упирается в потолок гарантированно: 10105 (24.08.2026, Delta, 130
+игроков, 210 минут) закончился ровно на 4094.1 из 4094, 10102 - на 3966 из 4093. Смерть
+там молчаливая: процесса просто не становится, раунд в базе остаётся незакрытым, игроки
+получают разрыв соединения вместо экрана итогов, а следом идёт волна реконнекта, которая
+добивает уже следующий раунд.</p>
+<p>Предупреждение админам (см. check_memory_admin_warning в time_track.dm) эту смерть не
+ловит: оно уходит в чат, и если админа у пульта нет, раунд едет в потолок как ехал.
+Поэтому здесь действие, а не сообщение.</p>
+<p>Две ступени:</p>
+<ol>
+<li>
+<p><strong>Эвакуация.</strong> Вызывается шаттл, отзыв запрещён, в эфир идёт отчёт командования.
+Раунд заканчивается штатно: итоги, блэкбокс, запись в базу, чистый рестарт процесса.
+Условия И: занято не меньше MEMORY_EVAC_CEILING_FRACTION потолка И по скорости роста
+до потолка осталось не больше memory_pressure_evac_lead_minutes из конфига. Одно только &quot;занято много&quot;
+порогом быть не может - раунд СТАРТУЕТ с 55-64% потолка, а по одной только скорости
+сорвалась бы любая ступенька на старте.</p>
+</li>
+<li>
+<p><strong>Бэкстоп.</strong> Если после вызова шаттла память всё равно дошла до
+MEMORY_FORCE_END_HEADROOM_MB от потолка (крейсер сбили, шаттл заминировали, раунд
+завис на подсчёте) - раунд завершается принудительно. Порог намеренно тугой: в 10105
+последние 120 МБ заняли двадцать минут, то есть бэкстоп не отнимает у раунда времени,
+пока эвакуация справляется сама.</p>
+</li>
+</ol>
+<p>Обе ступени срабатывают не больше одного раза за раунд и пишут строку в лог мира: разбор
+постфактум обязан отличать &quot;раунд закончился по памяти&quot; от &quot;экипаж улетел сам&quot;.
+Ступень не нужна: запаса хватает.</p><h3 id="define/MEMORY_EVAC_CALL_COEFFICIENT"><aside class="declaration">#define </aside>MEMORY_EVAC_CALL_COEFFICIENT <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L58"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 58"></a></h3><p>Множитель к таймеру шаттла на автовызове. Штатный вызов на зелёном коде - двадцать минут;
+столько ждать нельзя, ради этого вся ступень и заводилась.</p><h3 id="define/MEMORY_EVAC_CEILING_FRACTION"><aside class="declaration">#define </aside>MEMORY_EVAC_CEILING_FRACTION <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L50"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 50"></a></h3><p>Доля потолка адресного пространства, ниже которой автоэвакуация не рассматривается вовсе.</p>
+<p>Планка проверена прогоном по настоящим раундам 24.08.2026 (потолок 4093-4094):
+0.85 и 0.90 срывались на 10105 на 104-й минуте, потому что получасовое окно роста в тот
+момент показывало 9.7 МБ/мин против 5.7 средних - раунд обрезался бы на 92 минуты зря.
+0.93 срабатывает там же на 170-й при 96% потолка и обрезает раунд на 25 минут вместо
+падения на 211-й. На 10103 (кончился на 3292) и 10108 (3653) не срабатывает вовсе - и
+это правильно, тем раундам эвакуация была не нужна.</p><h3 id="define/MEMORY_EVAC_MIN_ROUND_TIME"><aside class="declaration">#define </aside>MEMORY_EVAC_MIN_ROUND_TIME <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L54"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 54"></a></h3><p>Раньше этого времени раунда автоэвакуации не будет ни при каких цифрах. Роундстарт сам
+по себе даёт скачок в полгигабайта, и окно оценки в эти минуты меряет именно его.</p><h3 id="define/MEMORY_FORCE_END_HEADROOM_MB"><aside class="declaration">#define </aside>MEMORY_FORCE_END_HEADROOM_MB <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/controllers/subsystem/memory_pressure_evac.dm#L70"><img src="git.png" width="16" height="16" title="code/controllers/subsystem/memory_pressure_evac.dm 70"></a></h3><p>Остаток до потолка в МБ, на котором раунд завершается принудительно.</p>
+<p>Планка тугая намеренно: между вызовом шаттла (170-я минута 10105) и этим порогом (186-я)
+должно поместиться всё отлетание - таймер 5 минут при MEMORY_EVAC_CALL_COEFFICIENT,
+стыковка, окно эвакуации, перелёт и подсчёт итогов. Если бэкстоп поставить раньше, он
+будет добивать раунды, которые эвакуация и так уже спасала.</p>
+<p>Сотня мегабайт - это меньше, чем p95 невидимого сэмплеру всплеска (74 МБ по замеру за
+24.08), то есть запас тут почти нулевой. Так и задумано: это последняя ступень перед
+молчаливой смертью, а не комфортный порог.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

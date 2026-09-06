@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>/obj/item/exit_probe - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>exit_probe <aside>/<a href="obj.html">obj</a>/<a href="obj/item.html">item</a>/<a href="obj/item/exit_probe.html">exit_probe</a></aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1b225c96af7305610e440833e1c2a5799df2d454/code/modules/unit_tests/turf_exit_checks.dm#L16"><img src="git.png" width="16" height="16" title="code/modules/unit_tests/turf_exit_checks.dm 16"></a></h1><p>Tests for who gets consulted when a movable leaves a turf.</p>
+<p>Leaving a turf used to walk its <code>contents</code> twice: BYOND's own Exit() calls
+Uncross() natively on everything standing there, and /turf/Exit() then did
+the same walk again in DM to add its Bump-on-border and PHASING handling.
+In round 9800 that came to 553k Uncross() calls in 78 seconds — roughly 55
+per step — and essentially none of them could refuse the exit.</p>
+<p>Upstream removed the native pass for the same reason (their doc comment on
+Uncross() cites a round where it collapsed the master controller outright).
+Only the DM walk remains, and it only visits atoms that declare
+blocks_exit_checks.
+The probes tell the two passes apart by their arity: /turf/Exit() passes a
+destination, BYOND's native pass does not.</p></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1b225c96af7305610e440833e1c2a5799df2d454">1b225c9</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>
