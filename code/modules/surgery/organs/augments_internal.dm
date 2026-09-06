@@ -9,8 +9,35 @@
 	var/implant_overlay
 	///Makes the implant invisible to health analyzers and medical HUDs.
 	var/syndicate_implant = FALSE
+	/// Icon of the bodypart overlay we're going to be applying to our owner (on their body)
+	var/aug_icon = 'icons/mob/human/species/misc/bodypart_overlay_augmentations.dmi'
+	/// Icon state of the bodypart overlay we're going to be applying to our owner (on their body)
+	var/aug_overlay = null
+	/// Does the implant also have an emissive (glowing) overlay rendered on the body? Uses the "[aug_overlay]_e" icon state.
+	var/emissive_overlay = FALSE
+	/// Bodypart overlay datum we apply to the limb we're implanted into. Managed by on_bodypart_insert/remove.
+	var/datum/bodypart_overlay/augment/bodypart_aug = null
+
+/obj/item/organ/cyberimp/Initialize(mapload)
+	. = ..()
+	create_bodypart_aug()
+
+/// Lazily (re)creates the bodypart_overlay if the implant needs one. Safe to call multiple times.
+/obj/item/organ/cyberimp/proc/create_bodypart_aug()
+	if(!aug_overlay)
+		return
+	if(QDELETED(bodypart_aug))
+		if(!isnull(bodypart_aug))
+			QDEL_NULL(bodypart_aug)
+		bodypart_aug = new(src)
+
+/obj/item/organ/cyberimp/Destroy()
+	. = ..()
+	QDEL_NULL(bodypart_aug) // Do this after Remove() has done its thing, otherwise on_bodypart_remove() will not properly remove the overlay
 
 /obj/item/organ/cyberimp/New(var/mob/M = null)
+	// bodypart may need to exist before the New-based Insert() runs, so create it up-front
+	create_bodypart_aug()
 	if(iscarbon(M))
 		src.Insert(M)
 	if(implant_overlay)
@@ -18,6 +45,48 @@
 		overlay.color = implant_color
 		add_overlay(overlay)
 	return ..()
+
+/// Returns the icon_state used for this implant's bodypart overlay (on the body).
+/obj/item/organ/cyberimp/proc/get_overlay_state()
+	return aug_overlay
+
+/// Builds the list of images to draw for this implant on the owner's body.
+/// Delegates to the bodypart_overlay/augment datum via get_overlay().
+/obj/item/organ/cyberimp/proc/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = list()
+	. += image(icon = aug_icon, icon_state = get_overlay_state(), layer = image_layer)
+	if (emissive_overlay)
+		. += emissive_appearance(aug_icon, "[get_overlay_state()]_e", limb.owner || limb, image_layer)
+
+/// Called when this implant is inserted into a specific bodypart. Applies the augment overlay to the body.
+/obj/item/organ/cyberimp/proc/on_bodypart_insert(obj/item/bodypart/limb)
+	if (bodypart_aug)
+		limb.add_bodypart_overlay(bodypart_aug)
+
+/// Called when this implant is removed from a specific bodypart. Removes the augment overlay from the body.
+/obj/item/organ/cyberimp/proc/on_bodypart_remove(obj/item/bodypart/limb)
+	if (bodypart_aug)
+		limb.remove_bodypart_overlay(bodypart_aug)
+
+/// Forces the owner's body part overlays to rebuild (e.g. when a dynamic overlay state changes).
+/obj/item/organ/cyberimp/proc/refresh_bodypart_overlays(mob/living/carbon/target = owner)
+	if (target && ishuman(target))
+		var/mob/living/carbon/human/H = target
+		H.update_body_parts(TRUE, FALSE)
+
+/obj/item/organ/cyberimp/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
+	. = ..()
+	if(. && owner)
+		var/obj/item/bodypart/limb = owner.get_bodypart(check_zone(zone))
+		on_bodypart_insert(limb)
+		refresh_bodypart_overlays()
+
+/obj/item/organ/cyberimp/Remove(special = FALSE)
+	var/mob/living/carbon/prev_owner = owner
+	var/obj/item/bodypart/limb = prev_owner ? prev_owner.get_bodypart(check_zone(zone)) : null
+	. = ..()
+	on_bodypart_remove(limb)
+	refresh_bodypart_overlays(prev_owner)
 
 // В отличие от органов, имланты будут работать, только пока их можно активировать
 /obj/item/organ/cyberimp/on_life(seconds, times_fired)
@@ -176,6 +245,7 @@
 	name = "breathing tube implant"
 	desc = "This simple implant adds an internals connector to your back, allowing you to use internals without a mask and protecting you from being choked."
 	icon_state = "implant_mask"
+	aug_overlay = "breathing_tube"
 	slot = ORGAN_SLOT_BREATHING_TUBE
 	w_class = WEIGHT_CLASS_TINY
 

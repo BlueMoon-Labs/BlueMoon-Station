@@ -10,7 +10,9 @@
 	amount = 1
 	max_amount = 12
 	w_class = WEIGHT_CLASS_NORMAL
-
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	item_state = "super_surgery"
 	self_delay = 60
 	other_delay = 30
 	repeating = TRUE
@@ -135,6 +137,7 @@
 	other_delay = 60
 	jitter_amount = 25      // Сильная тряска
 	confusion_amount = 20   // Сильная контузия
+	item_state = "surgeon"
 
 /obj/item/stack/medical/fracture_kit/surv12
 	name = "Surv12 kit"
@@ -147,3 +150,4 @@
 	other_delay = 12
 	jitter_amount = 10      // Лёгкая тряска
 	confusion_amount = 0    // Без контузии
+	item_state = "super_surgery"

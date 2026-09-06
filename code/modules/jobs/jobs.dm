@@ -35,7 +35,7 @@ GLOBAL_LIST_INIT(science_positions, list(
 	"Research Director",
 	"Scientist",
 	"Roboticist",
-	"Vanguard operative")) //BlueMoon edit
+	"Vanguard Operative")) //BlueMoon edit
 
 GLOBAL_LIST_INIT(supply_positions, list(
 	"Quartermaster",

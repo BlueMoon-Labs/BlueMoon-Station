@@ -117,10 +117,34 @@
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 1
-	block_chance = 60
+	block_chance = 40
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
+	repair_material = /obj/item/stack/sheet/plasteel
+
+/obj/item/shield/riot/pointman/shatter(mob/living/carbon/human/owner)
+	playsound(owner, 'sound/effects/glassbr3.ogg', 100)
+	new /obj/item/pointman_broken((get_turf(src)))
+
+/obj/item/pointman_broken
+	name = "broken pointman shield"
+	desc = "Might be able to be repaired with plasteel and a welder."
+	icon_state = "riot_broken"
+	icon = 'modular_bluemoon/icons/mob/vanguard/riot.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+
+//broken shield fixing
+/datum/crafting_recipe/pointman
+	name = "Broken Riot Repair"
+	result = /obj/item/shield/riot/pointman
+	reqs = list(/obj/item/pointman_broken = 1,
+				/obj/item/stack/sheet/plasteel = 3,
+				/obj/item/stack/sheet/rglass = 3)
+	time = 120
+	category = CAT_WEAPONRY
+	subcategory = CAT_MELEE
+	tools = list(TOOL_WELDER)
 
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"
@@ -326,59 +350,16 @@
 		deductcharge(return_cost, FALSE)
 		throw_at(thrown_by, throw_range + 2, throw_speed, null, TRUE)
 
-// тут же оставлю брифы с оружием и инструментами экспы
+//ножи марксмана - перейдут к штурмовику
 
-/obj/item/storage/secure/briefcase/vanguard/lasgun
-	name = "\improper Energy gun kit"
-	desc = "A storage case for a Vanguard energy Handgun. Lasers flying everywhere !"
+/obj/item/kitchen/knife/combat/marksman
+	name = "throwing knife"
+	desc = "Very well weighted for throwing, feels awkward to use for anything else."
+	icon_state = "throwing"
+	force = 10
+	throwforce = 35
+	embedding = list("pain_mult" = 4, "embed_chance" = 75, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 
-/obj/item/storage/secure/briefcase/vanguard/lasgun/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/laser/vanguard(src)
-	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
-	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
-	new /obj/item/ammo_box/magazine/recharge/vanguard(src)
-
-/obj/item/storage/secure/briefcase/vanguard/p320
-	name = "\improper P320 gun kit"
-	desc = "A storage case for a Vanguard P320 sevice pistol. One bullet per bastard !"
-
-/obj/item/storage/secure/briefcase/vanguard/p320/PopulateContents()
-	new /obj/item/gun/ballistic/automatic/pistol/sigsauer(src)
-	new /obj/item/ammo_box/magazine/sig(src)
-	new /obj/item/ammo_box/magazine/sig(src)
-	new /obj/item/ammo_box/magazine/sig(src)
-
-/obj/item/storage/box/red/demolition
-	name = "Breaching & Reinforcment"
-
-/obj/item/storage/box/red/demolition/PopulateContents()
-	new /obj/item/reagent_containers/glass/bottle/thermite(src)
-	new /obj/item/reagent_containers/glass/bottle/thermite(src)
-	new /obj/item/reagent_containers/glass/bottle/thermite(src)
-	new /obj/item/stack/sheet/metal/twenty(src)
-	new /obj/item/stack/sheet/glass/twenty(src)
-
-/obj/item/storage/box/blue/surgeon
-	name = "Field surgery suply"
-
-/obj/item/storage/box/blue/surgeon/PopulateContents()
-	new /obj/item/reagent_containers/glass/bottle/morphine(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
-	new /obj/item/bonesetter(src)
-	new /obj/item/stack/medical/bone_gel(src)
-	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
-	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
-
-/obj/item/storage/box/orange/combatant
-	name = "Stay alive kit"
-
-/obj/item/storage/box/orange/combatant/PopulateContents()
-	new /obj/item/reagent_containers/hypospray/medipen/survival(src)
-	new /obj/item/reagent_containers/hypospray/medipen/salacid(src)
-	new /obj/item/reagent_containers/hypospray/medipen/salacid(src)
-	new /obj/item/reagent_containers/hypospray/medipen/oxandrolone(src)
-	new /obj/item/reagent_containers/hypospray/medipen/oxandrolone(src)
-	new /obj/item/reagent_containers/hypospray/medipen/blood_loss(src)
 
 #undef MAGNETIC_TOMAHAWK_CHARGE_LENIENCY
 #undef MAGNETIC_TOMAHAWK_DEPLETION_RATE

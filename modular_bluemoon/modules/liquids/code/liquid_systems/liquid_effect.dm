@@ -421,7 +421,7 @@
 			fire_icon_state = "fire_big"
 
 	. += mutable_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, GAME_PLANE, appearance_flags = RESET_COLOR|RESET_ALPHA)
-	. += emissive_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, alpha = src.alpha)
+	. += emissive_appearance(icon, fire_icon_state, layer = BELOW_MOB_LAYER, alpha = src.alpha)
 
 //LIQUIDS ADD - standalone smoothing (the /tg SMOOTH_BITMASK system the water icons were made for is not present in this codebase)
 /**

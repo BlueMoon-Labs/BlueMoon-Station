@@ -1001,6 +1001,10 @@
 				patient = H
 				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
 			return TRUE
+		else if(patient == H)
+			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
+			patient = null
+			return FALSE
 	else
 		if(!isnull(patient))
 			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
