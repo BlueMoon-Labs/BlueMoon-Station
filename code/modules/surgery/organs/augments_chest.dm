@@ -10,6 +10,7 @@
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are starving."
 	icon_state = "chest_implant"
 	implant_color = "#00AA00"
+	aug_overlay = "nutripump"
 	var/hunger_threshold = NUTRITION_LEVEL_STARVING
 	var/synthesizing = 0
 	var/poison_amount = 5
@@ -45,6 +46,7 @@
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are hungry."
 	icon_state = "chest_implant"
 	implant_color = "#006607"
+	aug_overlay = "nutripump_adv"
 	hunger_threshold = NUTRITION_LEVEL_HUNGRY
 	poison_amount = 10
 
@@ -56,6 +58,8 @@
 	desc = "This implant will attempt to revive and heal you if you lose consciousness. For the faint of heart!"
 	icon_state = "chest_implant"
 	implant_color = "#AD0000"
+	aug_overlay = "reviver"
+	emissive_overlay = TRUE
 	slot = ORGAN_SLOT_HEART_AID
 	var/revive_cost = 0
 	var/reviving = FALSE
@@ -147,6 +151,8 @@
 	icon_state = "imp_jetpack"
 	implant_overlay = null
 	implant_color = null
+	aug_overlay = "imp_jetpack"
+	emissive_overlay = TRUE
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	w_class = WEIGHT_CLASS_NORMAL
 	var/on = FALSE
@@ -161,6 +167,15 @@
 	if(!ion_trail)
 		ion_trail = new
 	ion_trail.set_up(M)
+
+/// The bodypart overlay shows a different sprite while the thrusters are active.
+/obj/item/organ/cyberimp/chest/thrusters/get_overlay_state(image_layer, obj/item/bodypart/limb)
+	return "[aug_overlay][on ? "_on" : ""]"
+
+/obj/item/organ/cyberimp/chest/thrusters/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = ..()
+	for (var/image/overlay as anything in .)
+		overlay.layer = -BODY_ADJ_UPPER_LAYER // renders on top of jumpsuits; looks cool
 
 /obj/item/organ/cyberimp/chest/thrusters/deactivate(removing)
 	. = ..()
@@ -198,6 +213,7 @@
 				to_chat(owner, "<span class='notice'>You turn your thrusters set off.</span>")
 		on = FALSE
 	update_icon()
+	refresh_bodypart_overlays()
 
 /obj/item/organ/cyberimp/chest/thrusters/update_icon_state()
 	if(on)

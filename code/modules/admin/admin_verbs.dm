@@ -5,7 +5,6 @@ GLOBAL_PROTECT(admin_verbs_default)
 /world/proc/AVerbsDefault()
 	return list(
 	/client/proc/deadmin,				/*destroys our own admin datum so we can play as a regular player*/
-	/client/proc/toggle_deadmin_autodementor,	/*toggle auto-mentor on deadmin*/
 	/client/proc/cmd_admin_say,			/*admin-only ooc chat*/
 	/client/proc/cmd_loud_admin_say,	/*admin-only ooc chat with sound + flash*/
 	/client/proc/hide_verbs,			/*hides all our adminverbs*/
@@ -861,44 +860,10 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	holder.deactivate()
 
-	if(!mentor_datum)
-		new /datum/mentors(ckey)
-	dementored = FALSE
-	add_mentor_verbs()
-	GLOB.mentors |= src
-	remove_verb(src, /client/proc/cmd_mentor_rementor)
-
-	if(prefs?.deadmin & DEADMIN_AUTODMENTOR)
-		to_chat(src, "<span class='interface'>You are now a normal player.</span>")
-	else
-		if(!mentor_datum)
-			new /datum/mentors(ckey)
-		dementored = FALSE
-		add_mentor_verbs()
-		GLOB.mentors |= src
-		remove_verb(src, /client/proc/cmd_mentor_rementor)
-		to_chat(src, "<span class='interface'>You are now a normal player.</span>")
-		to_chat(src, "<span class='mentornotice'>Вы стали ментором. Менторские уведомления включены.</span>", confidential = TRUE)
-
+	to_chat(src, "<span class='interface'>You are now a normal player.</span>")
 	log_admin("[src] deadminned themselves.")
 	message_admins("[src] deadminned themselves.")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Deadmin")
-
-/client/proc/toggle_deadmin_autodementor()
-	set name = "Toggle Deadmin Autodementor"
-	set category = "Admin"
-	set desc = "Toggle auto-mentor on deadmin. When ON, deadmin does not make you a mentor."
-
-	if(!holder)
-		return
-
-	prefs?.deadmin ^= DEADMIN_AUTODMENTOR
-	prefs?.save_preferences()
-
-	if(prefs?.deadmin & DEADMIN_AUTODMENTOR)
-		to_chat(src, "<span class='notice'>Deadmin Autodementor: ON — при деадмине вы НЕ станете активным ментором.</span>")
-	else
-		to_chat(src, "<span class='notice'>Deadmin Autodementor: OFF — при деадмине вы автоматически станете ментором.</span>")
 
 /client/proc/readmin()
 	set name = "Readmin"
@@ -919,12 +884,6 @@ GLOBAL_PROTECT(admin_verbs_hideable)
 
 	if (!holder)
 		return //This can happen if an admin attempts to vv themself into somebody elses's deadmin datum by getting ref via brute force
-
-	GLOB.mentors -= src
-	remove_verb(src, /client/proc/cmd_mentor_rementor)
-
-	GLOB.mentors -= src
-	remove_verb(src, /client/proc/cmd_mentor_rementor)
 
 	to_chat(src, "<span class='interface'>You are now an admin.</span>", confidential = TRUE)
 	message_admins("[src] re-adminned themselves.")

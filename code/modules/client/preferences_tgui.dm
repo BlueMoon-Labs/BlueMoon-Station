@@ -137,6 +137,7 @@
 	.["has_mentor"] = !!user?.client?.is_mentor()
 	if(.["has_mentor"])
 		.["dementor_on_login"] = !!(mentor_toggles & DEMENTOR_ON_LOGIN)
+		.["dementor_on_deadmin"] = !!(deadmin & DEADMIN_AUTODMENTOR)
 
 	// Antag roles
 	var/list/antag_roles = list()
@@ -255,6 +256,9 @@
 		// Sound toggles
 		if("toggle_sound")
 			var/flag = params["flag"]
+			// Имя переменной, которую тронула ветка: в savefile уходит только этот ключ. Ветки на
+			// переменных, отличных от toggles, переставляют имя сами.
+			var/dirty_var = "toggles"
 			switch(flag)
 				if("sound_lobby")
 					toggles ^= SOUND_LOBBY
@@ -296,9 +300,10 @@
 					toggles ^= SOUND_ADMINHELP
 				if("sound_mentorhelp")
 					mentor_toggles ^= SOUND_MENTORHELP
+					dirty_var = "mentor_toggles"
 				if("sound_fax")
 					toggles ^= SOUND_FAX
-			save_preferences()
+			save_pref_var(dirty_var)
 			tgui_or_html_refresh(user)
 			return TRUE
 
@@ -308,16 +313,19 @@
 			var/value = clamp(text2num(params["value"]), 0, 100)
 			if(copytext(flag, 1, 14) == "sound_volume_" && (flag in vars))
 				vars[flag] = value
-				save_preferences()
+				// Проверка выше гарантирует, что flag - переменная громкости; в savefile тот же ключ.
+				save_pref_var(flag)
 			tgui_or_html_refresh(user)
 			return TRUE
 
 		// Graphics toggles
 		if("toggle_gfx")
 			var/flag = params["flag"]
+			var/dirty_var
 			switch(flag)
 				if("ambient_occlusion")
 					ambientocclusion = !ambientocclusion
+					dirty_var = "ambientocclusion"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
 						for(var/plane in list(GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, LIGHTING_PLANE, CHAT_PLANE))
@@ -325,56 +333,74 @@
 							PM?.backdrop(user)
 				if("widescreen")
 					widescreenpref = !widescreenpref
+					dirty_var = "widescreenpref"
 					user.client?.view_size.setDefault(getScreenSize(widescreenpref))
 				if("fullscreen")
 					fullscreen = !fullscreen
+					dirty_var = "fullscreen"
 					user.client?.ToggleFullscreen()
 				if("fit_viewport")
 					auto_fit_viewport = !auto_fit_viewport
+					dirty_var = "auto_fit_viewport"
 					user.client?.fit_viewport()
 				if("outline_enabled")
 					outline_enabled = !outline_enabled
+					dirty_var = "outline_enabled"
 				if("screentip_pref")
 					screentip_pref = (screentip_pref == SCREENTIP_PREFERENCE_ENABLED) ? SCREENTIP_PREFERENCE_DISABLED : SCREENTIP_PREFERENCE_ENABLED
+					dirty_var = "screentip_pref"
 				if("screentip_images")
 					screentip_images = !screentip_images
+					dirty_var = "screentip_images"
 				if("tgui_fancy")
 					tgui_fancy = !tgui_fancy
+					dirty_var = "tgui_fancy"
 				if("tgui_lock")
 					tgui_lock = !tgui_lock
+					dirty_var = "tgui_lock"
 				if("chat_on_map")
 					chat_on_map = !chat_on_map
+					dirty_var = "chat_on_map"
 				if("chat_on_map_looc")
 					chat_on_map_looc = !chat_on_map_looc
+					dirty_var = "chat_on_map_looc"
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
+					dirty_var = "see_chat_non_mob"
 				if("see_chat_emotes")
 					see_chat_emotes = !see_chat_emotes
+					dirty_var = "see_chat_emotes"
 				if("hud_button_flashes")
 					hud_toggle_flash = !hud_toggle_flash
+					dirty_var = "hud_toggle_flash"
 				if("mood_vignette")
 					mood_vignette = !mood_vignette
+					dirty_var = "mood_vignette"
 				if("view_pixelshift")
 					view_pixelshift = !view_pixelshift
-			save_preferences()
+					dirty_var = "view_pixelshift"
+			save_pref_var(dirty_var)
 			tgui_or_html_refresh(user)
 
 		if("set_parallax")
 			parallax = clamp(text2num(params["value"]), PARALLAX_DISABLE, PARALLAX_INSANE)
 			parent?.parallax_holder?.Reset()
-			save_preferences()
+			save_pref_var("parallax")
 
 		if("set_clientfps")
 			clientfps = sanitize_clientfps(text2num(params["value"]))
-			save_preferences()
+			save_pref_var("clientfps")
 
 		if("set_runechat_anim")
 			runechat_anim = sanitize_integer(text2num(params["value"]), RUNECHAT_ANIM_NONE, RUNECHAT_ANIM_TYPEWRITER, initial(runechat_anim))
-			save_preferences()
+			save_pref_var("runechat_anim")
 
 		// Chat toggles
 		if("toggle_chat")
 			var/flag = params["flag"]
+			// dirty_key нужен там, где имя ключа в savefile разошлось с именем переменной.
+			var/dirty_var = "chat_toggles"
+			var/dirty_key
 			switch(flag)
 				if("chat_ooc")
 					chat_toggles ^= CHAT_OOC
@@ -402,16 +428,22 @@
 					chat_toggles ^= CHAT_BANKCARD
 				if("windowflashing")
 					windowflashing = !windowflashing
+					dirty_var = "windowflashing"
+					// Единственный ключ префов, чьё имя разошлось с именем переменной.
+					dirty_key = "windowflash"
 				if("windownoise")
 					windownoise = !windownoise
+					dirty_var = "windownoise"
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
-			save_preferences()
+					dirty_var = "auto_capitalize_enabled"
+			save_pref_var(dirty_var, dirty_key)
 			return TRUE
 
 		// Gameplay toggles
 		if("toggle_gameplay")
 			var/flag = params["flag"]
+			var/dirty_var
 			switch(flag)
 				if("no_antag")
 					toggles ^= NO_ANTAG
@@ -419,25 +451,35 @@
 						toggles &= ~MIDROUND_ANTAG
 					else
 						toggles |= MIDROUND_ANTAG
+					dirty_var = "toggles"
 				if("midround_antag")
 					toggles ^= MIDROUND_ANTAG
+					dirty_var = "toggles"
 				if("deathrattle")
 					toggles ^= DISABLE_DEATHRATTLE
+					dirty_var = "toggles"
 				if("arrivalrattle")
 					toggles ^= DISABLE_ARRIVALRATTLE
+					dirty_var = "toggles"
 				if("intent_style")
 					toggles ^= INTENT_STYLE
+					dirty_var = "toggles"
 				if("action_buttons_hide")
 					action_buttons_hide_on_spawn = !action_buttons_hide_on_spawn
+					dirty_var = "action_buttons_hide_on_spawn"
 				if("autostand")
 					autostand = !autostand
+					dirty_var = "autostand"
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
+					dirty_var = "long_strip_menu"
 				if("disable_combat_cursor")
 					disable_combat_cursor = !disable_combat_cursor
+					dirty_var = "disable_combat_cursor"
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
-			save_preferences()
+					dirty_var = "disable_combat_mouse_lock"
+			save_pref_var(dirty_var)
 			return TRUE
 
 		// Antag role toggles
@@ -451,16 +493,19 @@
 			var/nickname = params["nickname"]
 			if(istext(nickname))
 				ticket_nickname = copytext_char(nickname, 1, 32)
-			save_preferences()
+			save_pref_var("ticket_nickname")
 			return TRUE
 
 		if("toggle_admin")
 			var/flag = params["flag"]
+			var/dirty_var = "deadmin"
 			switch(flag)
 				if("sound_adminhelp")
 					toggles ^= SOUND_ADMINHELP
+					dirty_var = "toggles"
 				if("adminhelp_windowflash")
 					adminhelp_windowflash = !adminhelp_windowflash
+					dirty_var = "adminhelp_windowflash"
 				if("deadmin_play_login")
 					deadmin ^= DEADMIN_ONLOGIN
 				if("deadmin_play_spawn")
@@ -473,7 +518,9 @@
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
-			save_preferences()
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
+			save_pref_var(dirty_var)
 			return TRUE
 
 		if("toggle_mentor")
@@ -483,36 +530,46 @@
 			switch(flag)
 				if("dementor_on_login")
 					mentor_toggles ^= DEMENTOR_ON_LOGIN
-			save_preferences()
+			save_pref_var("mentor_toggles")
 			return TRUE
 
 		if("set_screenshake")
 			var/flag = params["flag"]
 			var/value = text2num(params["value"])
+			var/dirty_var
 			switch(flag)
 				if("screenshake")
 					screenshake = clamp(value, 0, 100)
+					dirty_var = "screenshake"
 				if("damage_screenshake")
 					damagescreenshake = clamp(value, 0, 2)
+					dirty_var = "damagescreenshake"
 				if("recoil_push")
 					recoil_screenshake = clamp(value, 0, 100)
-			save_preferences()
+					dirty_var = "recoil_screenshake"
+			save_pref_var(dirty_var)
 
 	// Graphics value setter
 		if("set_gfx_val")
 			var/flag = params["flag"]
 			var/value = params["value"]
+			var/dirty_var
 			switch(flag)
 				if("outline_color")
 					outline_color = value
+					dirty_var = "outline_color"
 				if("screentip_color")
 					screentip_color = value
+					dirty_var = "screentip_color"
 				if("hud_toggle_color")
 					hud_toggle_color = value
+					dirty_var = "hud_toggle_color"
 				if("max_chat_length")
 					max_chat_length = clamp(text2num(value), 0, 512)
+					dirty_var = "max_chat_length"
 				if("lighting_blur")
 					lighting_blur = clamp(text2num(value), LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX)
+					dirty_var = "lighting_blur"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
 						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE))
@@ -520,27 +577,32 @@
 							PM?.backdrop(user)
 				if("preferred_chaos_level")
 					preferred_chaos_level = clamp(text2num(value), 0, 3)
-			save_preferences()
+					dirty_var = "preferred_chaos_level"
+			save_pref_var(dirty_var)
 
 		if("toggle_gfx_val")
 			var/flag = params["flag"]
 			switch(flag)
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
-			save_preferences()
+			save_pref_var("auto_capitalize_enabled")
 
 		if("set_ui_pref")
 			var/flag = params["flag"]
 			var/value = params["value"]
+			var/dirty_var
 			switch(flag)
 				if("tgui_input_mode")
 					tgui_input_mode = (value == "TGUI" ? TRUE : FALSE)
+					dirty_var = "tgui_input_mode"
 					user.client.ensure_keys_set(src)
 				if("tgui_input_verbs")
 					tgui_input_verbs = (value == "TGUI" ? TRUE : FALSE)
+					dirty_var = "tgui_input_verbs"
 					user.client.ensure_keys_set(src)
 				if("UI_style")
 					UI_style = value
+					dirty_var = "UI_style"
 					if(user?.hud_used)
 						QDEL_NULL(user.hud_used)
 						user.create_mob_hud()
@@ -548,48 +610,63 @@
 							user.hud_used.show_hud(1, user)
 				if("ghost_form")
 					ghost_form = value
+					dirty_var = "ghost_form"
 				if("ghost_orbit")
 					ghost_orbit = value
+					dirty_var = "ghost_orbit"
 				if("ghost_accs")
 					ghost_accs = value
+					dirty_var = "ghost_accs"
 				if("ghost_others")
 					ghost_others = value
-			save_preferences()
+					dirty_var = "ghost_others"
+			save_pref_var(dirty_var)
 
 		if("set_ooc_pref")
 			var/flag = params["flag"]
 			var/value = params["value"]
+			var/dirty_var
 			switch(flag)
 				if("ooccolor")
 					ooccolor = value
+					dirty_var = "ooccolor"
 				if("aooccolor")
 					aooccolor = value
+					dirty_var = "aooccolor"
 				if("custom_colors")
 					if(value)
 						custom_colors |= CUSTOM_OOC
 					else
 						custom_colors &= ~CUSTOM_OOC
+					dirty_var = "custom_colors"
 				if("custom_aooc")
 					if(value)
 						custom_colors |= CUSTOM_AOOC
 					else
 						custom_colors &= ~CUSTOM_AOOC
-			save_preferences()
+					dirty_var = "custom_colors"
+			save_pref_var(dirty_var)
 
 	// Content toggles
 		if("pref")
 			var/pref = params["pref"]
+			var/dirty_var = "cit_toggles"
 			switch(pref)
 				if("verb_consent")
 					toggles ^= VERB_CONSENT
+					dirty_var = "toggles"
 				if("ranged_verb_pref")
 					toggles ^= RANGED_VERBS_CONSENT
+					dirty_var = "toggles"
 				if("lewd_verb_sounds")
 					toggles ^= LEWD_VERB_SOUNDS
+					dirty_var = "toggles"
 				if("arousable")
 					arousable = !arousable
+					dirty_var = "arousable"
 				if("sexknotting")
 					sexknotting = !sexknotting
+					dirty_var = "sexknotting"
 				if("genital_examine")
 					cit_toggles ^= GENITAL_EXAMINE
 				if("vore_examine")
@@ -640,13 +717,15 @@
 					cit_toggles ^= NO_DISCO_DANCE
 				if("member_public")
 					toggles ^= MEMBER_PUBLIC
-			save_preferences()
+					dirty_var = "toggles"
+			save_pref_var(dirty_var)
 
 		// Keybinding actions
 		if("toggle_hotkeys")
 			hotkeys = !hotkeys
+			// ensure_keys_set перестраивает макросы клиента и key_bindings не трогает.
 			user.client.ensure_keys_set(src)
-			save_preferences()
+			save_pref_var("hotkeys")
 
 		if("keybinding_capture")
 			var/datum/keybinding/kb = GLOB.keybindings_by_name[params["keybinding"]]

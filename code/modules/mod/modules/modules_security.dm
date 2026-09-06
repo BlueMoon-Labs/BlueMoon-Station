@@ -148,9 +148,6 @@
 		if(!holding)
 			mod.balloon_alert(mod.wearer, "nothing to holster!")
 			return
-		if(!istype(holding) || holding.w_class > WEIGHT_CLASS_BULKY)
-			mod.balloon_alert(mod.wearer, "it doesn't fit!")
-			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
 			holstered = holding
 			mod.balloon_alert(mod.wearer, "weapon holstered")

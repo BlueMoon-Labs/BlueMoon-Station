@@ -172,8 +172,10 @@
 	name = "Toggle an energy shield that blocks all attacks from the faced direction at a heavy power cost."
 	button_icon_state = "mech_defense_mode_off"
 
-/datum/action/vehicle/sealed/mecha/mech_defense_mode/Trigger(forced_state = FALSE)
-	SEND_SIGNAL(chassis, COMSIG_MECHA_ACTION_TRIGGER, owner, args) //Signal sent to the mech, to be handed to the shield. See durand.dm for more details
+///Кнопка зовёт Trigger(trigger_flags) позиционно, поэтому silent - только именованный флаг.
+///Щит переключается всегда: вызывающий, которому нужно включить, проверяет defense_mode сам.
+/datum/action/vehicle/sealed/mecha/mech_defense_mode/Trigger(trigger_flags, silent = FALSE)
+	SEND_SIGNAL(chassis, COMSIG_MECHA_ACTION_TRIGGER, owner, list(silent)) //Signal sent to the mech, to be handed to the shield. See durand.dm for more details
 
 /datum/action/vehicle/sealed/mecha/mech_overload_mode
 	name = "Toggle leg actuators overload"
@@ -184,7 +186,9 @@
 	button_icon_state = "mech_overload_[chassis?.leg_overload_mode ? "on" : "off"]"
 	return ..()
 
-/datum/action/vehicle/sealed/mecha/mech_overload_mode/Trigger(forced_state = null)
+///Кнопка зовёт Trigger(trigger_flags) позиционно, поэтому целевое состояние - только
+///именованный forced_state: null - переключить, иначе выставить.
+/datum/action/vehicle/sealed/mecha/mech_overload_mode/Trigger(trigger_flags, forced_state = null)
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
 	var/wanted_state = isnull(forced_state) ? !chassis.leg_overload_mode : forced_state

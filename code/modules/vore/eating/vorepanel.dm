@@ -187,8 +187,8 @@
 		"feeding" = (host.vore_flags & FEEDING),
 		"absorbable" = (host.vore_flags & ABSORBABLE),
 		"allowmobvore" = (host.vore_flags & MOBVORE),
-		"vore_sounds" = (host.client.prefs.cit_toggles & EATING_NOISES),
-		"digestion_sounds" = (host.client.prefs.cit_toggles & DIGESTION_NOISES),
+		"vore_sounds" = (host.client?.prefs?.cit_toggles & EATING_NOISES),
+		"digestion_sounds" = (host.client?.prefs?.cit_toggles & DIGESTION_NOISES),
 		"lickable" = (host.vore_flags & LICKABLE),
 		"smellable" = (host.vore_flags & SMELLABLE),
 	)

@@ -1,10 +1,9 @@
-/// Пауза между двумя фотографиями манифеста.
-///
-/// Величина выбрана из числа членов экипажа: сотня фотографий на роундстарте
-/// раскладывается примерно на три минуты. Меньше - и пик иконочных аллокаций снова
-/// попадает в окно массового входа, ради ухода из которого ритм и заведён; больше -
-/// и записи персонала слишком долго стоят с плейсхолдером.
-#define MANIFEST_PHOTO_QUEUE_INTERVAL (2 SECONDS)
+/// Потолок ожидания чужого кадра и слота съёмки.
+#define RECORD_PHOTO_INFLIGHT_TIMEOUT (10 SECONDS)
+#define RECORD_PHOTO_MAX_IN_FLIGHT 2
+
+/// Источники, чьи кадры строятся прямо сейчас: источник -> время старта съёмки.
+GLOBAL_LIST_EMPTY(record_photos_in_flight)
 
 //TODO: someone please get rid of this shit
 /datum/datacore
@@ -25,105 +24,100 @@
 	var/list/security_by_id = list()
 	var/list/general_by_id = list()
 	var/list/locked_by_id = list()
-	/// Очередь отложенной генерации фото манифеста: list(weakref моба, prefs, роль, general-запись, locked-запись).
-	/// Фото - второй полный билд персонажа + два getFlatIcon, ему не место в синхронном тике латеджойна.
-	var/list/pending_photo_jobs = list()
-	/// TRUE, пока дренаж очереди фото уже заряжен таймером (один воркер, одна работа за срабатывание)
-	var/photo_queue_running = FALSE
 
-/// Ставит генерацию фото манифеста в очередь и будит воркера. Сама генерация - это
-/// второй полный билд персонажа (copy_to + экипировка джоба на манекене + два
-/// getFlatIcon), ей не место в синхронном тике латеджойна.
-/datum/datacore/proc/enqueue_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
-	pending_photo_jobs += list(list(WEAKREF(H), prefs, assigned_role, general_record, locked_record))
-	if(photo_queue_running)
-		return
-	photo_queue_running = TRUE
-	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
+/// Ленивый источник фотографии записи: в манифесте лежит только снапшот внешности,
+/// кадр строится при первом обращении и кэшируется. Один на general- и locked-запись.
+/datum/record_photo_source
+	/// Снапшот внешности; сам моб тут держать нельзя, запись живёт весь раунд.
+	var/frozen_appearance
+	/// Роль для запасного пути через манекен, если снапшота нет.
+	var/assigned_role
+	var/datum/weakref/prefs_ref
+	var/icon/cached_icon
+	/// Взводится перед съёмкой: неудачный кадр кэшируется наравне с удачным.
+	var/generated = FALSE
+	/// TRUE, пока съёмка идёт. Отдельный флаг от generated нужен потому, что съёмка спит
+	/// гарантированно, и читатель в этом окне иначе прочёл бы пустой кэш как готовый.
+	var/generating = FALSE
+	/// Потолок ожидания чужого кадра и слота съёмки; переменная, чтобы тест мог её укоротить.
+	var/inflight_timeout = RECORD_PHOTO_INFLIGHT_TIMEOUT
 
-/**
- * Дренаж очереди фото: РОВНО ОДНА работа за срабатывание, следующая - через интервал.
- *
- * Раньше дренаж был циклом с CHECK_TICK, и это не то же самое. CHECK_TICK отдаёт тик,
- * когда переполнен бюджет ТИКА, но памяти он не отдаёт ничего: сотня фотографий всё
- * равно строилась подряд за считанные секунды. А строятся они ровно в шторме логинов,
- * когда роундстарт разом заводит весь экипаж, - и это буквально стек падения раунда
- * 10088 (23.08): `process_manifest_photo_queue` -> `generate_manifest_photo` ->
- * `build_flat_multidir_icon` -> `getFlatIcon` -> рантайм в `/icon/New()`, после которого
- * мир не написал больше ни строки. Умер он при 2923 МБ - в полутора гигабайтах от
- * потолка адресного пространства, то есть не от исчерпания памяти, а от того, что
- * крупная НЕПРЕРЫВНАЯ иконочная аллокация не нашла места в разодранной куче.
- *
- * Отсюда ритм: сотня фотографий растягивается на пару-тройку минут вместо секунд, пик
- * иконочных аллокаций расходится по времени и уезжает из окна массового входа. Цена -
- * запись персонала первые минуты стоит с плейсхолдером, чего никто не видит.
- */
-/datum/datacore/proc/process_manifest_photo_queue()
-	// Флаг держится взведённым на всё время работы, а не снимается на входе: генерация
-	// фото уступает тик внутри себя, и на этом сне латеджойн успевает встать в очередь.
-	// Со снятым флагом он завёл бы ВТОРОГО воркера на ту же очередь.
-	photo_queue_running = TRUE
-	while(length(pending_photo_jobs))
-		var/list/job = pending_photo_jobs[1]
-		pending_photo_jobs.Cut(1, 2)
-		var/datum/weakref/mob_ref = job[1]
-		var/mob/living/carbon/human/H = mob_ref?.resolve()
-		// Работа по удалённому мобу не стоит ничего и интервала не заслуживает: снявшийся
-		// с роли игрок иначе держал бы очередь на секунду за каждую пустую запись.
-		if(QDELETED(H))
+/datum/record_photo_source/New(mob/living/carbon/human/subject, assigned_role, datum/preferences/prefs)
+	. = ..()
+	src.assigned_role = assigned_role
+	if(prefs)
+		prefs_ref = WEAKREF(prefs)
+	snapshot_appearance(subject)
+
+/// Снимает снапшот внешности, пока кадр ещё не строился; латеджойн зовёт повторно.
+/datum/record_photo_source/proc/snapshot_appearance(mob/living/carbon/human/subject)
+	if(generated || QDELETED(subject))
+		return FALSE
+	if(subject.body_position != STANDING_UP || subject.alpha < 255)
+		return FALSE
+	frozen_appearance = subject.appearance
+	return TRUE
+
+/// Первый вызов снимает кадр, последующие отдают кэш. Проверка generating идёт перед
+/// generated: флаги взводятся вместе, и читатель в окне съёмки иначе уходит с null.
+/datum/record_photo_source/proc/get_photo_icon()
+	if(generating)
+		var/wait_deadline = world.time + inflight_timeout
+		UNTIL(!generating || world.time > wait_deadline)
+		if(generating)
+			generating = FALSE
+			log_world("## DATACORE: съёмка кадра записи не завершилась за [inflight_timeout / (1 SECONDS)] с, флаг снят принудительно")
+		return cached_icon
+	if(generated)
+		return cached_icon
+	generated = TRUE
+	generating = TRUE
+	var/slot_deadline = world.time + inflight_timeout
+	UNTIL(length(GLOB.record_photos_in_flight) < RECORD_PHOTO_MAX_IN_FLIGHT || world.time > slot_deadline)
+	if(length(GLOB.record_photos_in_flight) >= RECORD_PHOTO_MAX_IN_FLIGHT)
+		evict_stuck_photo_builds()
+	GLOB.record_photos_in_flight[src] = world.time
+	try
+		cached_icon = build_photo_icon()
+	catch(var/exception/photo_error)
+		cached_icon = null
+		stack_trace("record_photo_source: съёмка кадра сорвалась ([photo_error])")
+	// Снятие по ключу: уже вычищенная как зависшая съёмка не трогает чужие слоты.
+	GLOB.record_photos_in_flight -= src
+	frozen_appearance = null
+	generating = FALSE
+	return cached_icon
+
+/// Выбрасывает из слотов съёмки только те, что идут дольше таймаута: живые снимут себя сами.
+/datum/record_photo_source/proc/evict_stuck_photo_builds()
+	for(var/datum/record_photo_source/other as anything in GLOB.record_photos_in_flight)
+		if(world.time - GLOB.record_photos_in_flight[other] < inflight_timeout)
 			continue
-		generate_manifest_photo(H, job[2], job[3], job[4], job[5])
-		break
-	if(!length(pending_photo_jobs))
-		photo_queue_running = FALSE
-		return
-	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), MANIFEST_PHOTO_QUEUE_INTERVAL)
+		GLOB.record_photos_in_flight -= other
+		log_world("## DATACORE: съёмка кадра записи идёт дольше [inflight_timeout / (1 SECONDS)] с, слот освобождён")
 
-/// Снимает кадр для записей персонала. К моменту вызова настоящий моб уже полностью
-/// экипирован: и на роундстарте (equip_characters отрабатывает до manifest()), и на
-/// латеджойне (SSjob.EquipRank стоит до manifest_inject). Поэтому кадр снимается
-/// прямо с моба, а не с манекена: постройка манекена - это второй полный билд
-/// персонажа (copy_to с пересборкой конечностей и органов плюс экипировка аутфита
-/// джоба), в проде это 120-220 мс синхронно на каждое фото.
-///
-/// Манекен остаётся запасным путём: если моб лежит или невидим, снимать с него
-/// нечего, и лучше показать канонический аутфит должности, чем пустой кадр.
-/datum/datacore/proc/capture_record_photo(mob/living/carbon/human/H, assigned_role, datum/preferences/prefs, list/show_directions)
+/// Собственно съёмка; вынесена отдельным проком, чтобы тест считал реальные генерации.
+/datum/record_photo_source/proc/build_photo_icon()
+	var/static/list/show_directions = list(SOUTH, WEST)
 	// no_anim: фотография в записи статична, а без флага getFlatIcon тянет все кадры
 	// анимации каждого оверлея - это самая дорогая часть съёмки.
-	if(!QDELETED(H) && H.body_position == STANDING_UP && H.alpha >= 255)
-		return build_flat_multidir_icon(H, show_directions, no_anim = TRUE, force_dir = TRUE)
+	if(frozen_appearance)
+		return build_flat_multidir_icon(null, show_directions, no_anim = TRUE, snapshot_appearance = frozen_appearance)
+	var/datum/preferences/prefs = prefs_ref?.resolve()
+	if(!assigned_role && !prefs)
+		return icon('icons/effects/effects.dmi', "nothing")
 	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
 	return get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions, no_anim = TRUE)
 
-/// Собственно генерация фото: съёмка кадра с подменой плейсхолдеров в записях
-/// (general: два /obj/item/photo, locked: сырая иконка).
-/datum/datacore/proc/generate_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
-	var/static/list/show_directions = list(SOUTH, WEST)
-	var/icon/photo_icon = capture_record_photo(H, assigned_role, prefs, show_directions)
-	if(!photo_icon)
-		return
-	if(!QDELETED(general_record))
-		var/datum/picture/picture_front = new
-		picture_front.picture_name = "[H]"
-		picture_front.picture_desc = "This is [H]."
-		picture_front.picture_image = icon(photo_icon, dir = SOUTH)
-		var/datum/picture/picture_side = new
-		picture_side.picture_name = "[H]"
-		picture_side.picture_desc = "This is [H]."
-		picture_side.picture_image = icon(photo_icon, dir = WEST)
-		var/obj/item/photo/photo_front = general_record.fields["photo_front"]
-		if(istype(photo_front))
-			photo_front.set_picture(picture_front, TRUE, TRUE)
-		else
-			general_record.fields["photo_front"] = new /obj/item/photo(null, picture_front)
-		var/obj/item/photo/photo_side = general_record.fields["photo_side"]
-		if(istype(photo_side))
-			photo_side.set_picture(picture_side, TRUE, TRUE)
-		else
-			general_record.fields["photo_side"] = new /obj/item/photo(null, picture_side)
-	if(!QDELETED(locked_record))
-		locked_record.fields["image"] = photo_icon
+/// Обновляет снапшот внешности в записи после того, как моба дообули на латеджойне.
+/datum/datacore/proc/refresh_manifest_photo_source(mob/living/carbon/human/subject)
+	if(QDELETED(subject))
+		return FALSE
+	var/datum/data/record/general_record = general_by_name[subject.real_name]
+	var/datum/record_photo_source/source = general_record?.photo_source
+	if(!source)
+		return FALSE
+	return source.snapshot_appearance(subject)
 
 /// Registers a record in the appropriate index lists. Call after adding to medical/security/general lists.
 /datum/datacore/proc/register_record(datum/data/record/R, record_type)
@@ -208,6 +202,83 @@
 /datum/data/record
 	name = "record"
 	var/list/fields = list()
+	/// Ленивый источник фотографии, общий у general- и locked-записи; пуст у записей с консоли.
+	var/datum/record_photo_source/photo_source
+
+/// Единственная дверь к полям photo_front/photo_side: первое обращение снимает кадр и
+/// раскладывает по обоим полям. generate = FALSE - только заглянуть, для списков в ui_data.
+/datum/data/record/proc/get_record_photo(photo_field = "photo_front", generate = TRUE)
+	var/obj/item/photo/existing = fields[photo_field]
+	if(istype(existing))
+		return existing
+	// В поле бывает сырая /icon (запись с консоли, последствия ЭМИ) - её вызывающий читает сам.
+	if(!generate || !photo_source || isicon(fields[photo_field]))
+		return null
+	var/icon/photo_icon = photo_source.get_photo_icon()
+	if(!photo_icon)
+		return null
+	// Съёмка спит: за это окно запись могли стереть с консоли.
+	if(QDELETED(src))
+		return null
+	// На том же сне поле мог заполнить другой читатель этой записи.
+	existing = fields[photo_field]
+	if(istype(existing))
+		return existing
+	try
+		apply_record_photo_icon(photo_icon)
+	catch(var/exception/photo_apply_error)
+		stack_trace("get_record_photo: раскладка кадра по записи сорвалась ([photo_apply_error])")
+		return null
+	existing = fields[photo_field]
+	return istype(existing) ? existing : null
+
+/// base64 фотографии записи для ui_data консолей: только чтение готового. Съёмки здесь
+/// нет намеренно - ui_data гоняет SStgui, усыплять его нельзя.
+/datum/data/record/proc/get_record_photo_base64(photo_field = "photo_front")
+	var/obj/item/photo/photo = get_record_photo(photo_field, generate = FALSE)
+	if(photo)
+		return photo.picture?.get_base64()
+	var/existing = fields[photo_field]
+	if(isicon(existing))
+		return icon2base64(existing)
+	return null
+
+/// Раскладывает снятый кадр по полям general-записи: анфас - юг, профиль - запад.
+/datum/data/record/proc/apply_record_photo_icon(icon/photo_icon)
+	var/record_name = fields["name"] || "Unknown"
+	var/datum/picture/picture_front = new
+	picture_front.picture_name = record_name
+	picture_front.picture_desc = "This is [record_name]."
+	picture_front.picture_image = icon(photo_icon, dir = SOUTH)
+	var/datum/picture/picture_side = new
+	picture_side.picture_name = record_name
+	picture_side.picture_desc = "This is [record_name]."
+	picture_side.picture_image = icon(photo_icon, dir = WEST)
+	// Чужое значение не перетираем: его мог положить upd_photo за время сна съёмки.
+	if(isnull(fields["photo_front"]))
+		fields["photo_front"] = new /obj/item/photo(null, picture_front)
+	if(isnull(fields["photo_side"]))
+		fields["photo_side"] = new /obj/item/photo(null, picture_side)
+
+/// То же самое для locked-записи, где фото лежит сырой иконкой (голограмма ИИ).
+/datum/data/record/proc/get_record_image(generate = TRUE)
+	var/icon/existing = fields["image"]
+	if(isicon(existing))
+		return existing
+	if(!generate || !photo_source || !isnull(existing))
+		return null
+	var/icon/photo_icon = photo_source.get_photo_icon()
+	if(!photo_icon)
+		return null
+	if(QDELETED(src))
+		return null
+	existing = fields["image"]
+	if(isicon(existing))
+		return existing
+	// Копия, а не общий cached_icon: правка на месте (Blend, Scale) видна всем читателям.
+	photo_icon = icon(photo_icon)
+	fields["image"] = photo_icon
+	return photo_icon
 
 /datum/data/record/Destroy()
 	// Консоли кэшируют выбранную запись в active1/active2 и обнуляют их только в
@@ -253,6 +324,8 @@
 	GLOB.data_core.security -= src
 	GLOB.data_core.general -= src
 	GLOB.data_core.locked -= src
+	// Источник общий с парной записью: обнуляем только свою ссылку.
+	photo_source = null
 	. = ..()
 
 /datum/data/crime
@@ -569,21 +642,7 @@
 		var/id = num2hex(record_id_num++,6)
 		if(!C)
 			C = H.client
-		// Фото - самая дорогая часть латеджойна (второй полный билд персонажа + два
-		// getFlatIcon, 100-200мс синхронно): записи создаются сразу с плейсхолдером,
-		// настоящие фото доклеит отложенная очередь (enqueue в конце прока).
-		var/icon/placeholder_icon = icon('icons/effects/effects.dmi', "nothing")
-		var/image = placeholder_icon
-		var/datum/picture/pf = new
-		var/datum/picture/ps = new
-		pf.picture_name = "[H]"
-		ps.picture_name = "[H]"
-		pf.picture_desc = "This is [H]."
-		ps.picture_desc = "This is [H]."
-		pf.picture_image = icon(placeholder_icon, dir = SOUTH)
-		ps.picture_image = icon(placeholder_icon, dir = WEST)
-		var/obj/item/photo/photo_front = new(null, pf)
-		var/obj/item/photo/photo_side = new(null, ps)
+		var/datum/record_photo_source/photo_source = new(H, H.mind.assigned_role, C?.prefs || prefs)
 
 		//These records should ~really~ be merged or something
 		//General Record
@@ -603,8 +662,7 @@
 			G.fields["gender"]  = "Female"
 		else
 			G.fields["gender"]  = "Other"
-		G.fields["photo_front"]	= photo_front
-		G.fields["photo_side"]	= photo_side
+		G.photo_source			= photo_source
 		general += G
 		general_by_name[H.real_name] = G
 		general_by_id[id] = G
@@ -675,18 +733,8 @@
 		L.fields["identity"]	= H.dna.uni_identity
 		L.fields["species"]		= H.dna.species.type
 		L.fields["features"]	= H.dna.features
-		L.fields["image"]		= image
 		L.fields["mindref"]		= H.mind
+		L.photo_source			= photo_source
 		locked += L
 		locked_by_id[L.fields["id"]] = L
-		enqueue_manifest_photo(H, C?.prefs || prefs, H.mind.assigned_role, G, L)
 	return
-
-/datum/datacore/proc/get_id_photo(mob/living/carbon/human/H, client/C, show_directions = list(SOUTH))
-	if(!istype(H) || QDELETED(H) || !H.mind)
-		return icon('icons/effects/effects.dmi', "nothing")
-	if(!C)
-		C = H.client
-	return capture_record_photo(H, H.mind.assigned_role, C?.prefs, show_directions)
-
-#undef MANIFEST_PHOTO_QUEUE_INTERVAL

@@ -115,7 +115,7 @@
 					var/datum/space_level/level = SSmapping.z_list.len >= T.z ? SSmapping.z_list[T.z] : null
 					if(level && !level.lighting_initialized && zlevel_lighting_deferred(level))
 						GLOB.lighting_deferred_atoms |= src
-						GLOB.lighting_deferred_z_cache = null // множество отложенных z изменилось
+						note_deferred_lighting_z(T.z)
 						return
 			light = new/datum/light_source(src, .)
 
@@ -154,11 +154,14 @@
 	. = ..()
 	if(light_range && light_power && !light) // Create deferred light source if we moved to an initialized z-level
 		update_light()
-	var/datum/light_source/L
-	var/thing
-	for (thing in light_sources) // Cycle through the light sources on this atom and tell them to update.
-		L = thing
+	var/list/orphans
+	for (var/datum/light_source/L as anything in light_sources) // Cycle through the light sources on this atom and tell them to update.
+		if(!L.source_atom)
+			LAZYADD(orphans, L)
+			continue
 		L.source_atom.update_light()
+	for(var/datum/light_source/orphan as anything in orphans)
+		LAZYREMOVE(light_sources, orphan)
 
 /atom/vv_edit_var(var_name, var_value)
 	switch (var_name)

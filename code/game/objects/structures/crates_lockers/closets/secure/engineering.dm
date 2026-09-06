@@ -27,6 +27,7 @@
 	new /obj/item/storage/garment_case/engineering_chief(src)
 	new /obj/item/choice_beacon/box/desk(src)
 	new /obj/item/circuitboard/machine/rodstopper(src)
+	new /obj/item/storage/belt/utility/chief/full(src)
 
 /obj/structure/closet/secure_closet/engineering_electrical
 	name = "electrical supplies locker"

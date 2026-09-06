@@ -26,6 +26,10 @@
 	var/slow_processing = FALSE
 	/// FALSE = пене нужен быстрый тик всю жизнь (пожарная пена жрёт хотспоты на 5 Гц).
 	var/allow_slow_processing = TRUE
+	/// TRUE = химия турфу и предметам копится тиками и выдаётся одной дозой (см. process()).
+	var/batch_reagent_doses = FALSE
+	/// Тиков накоплено с прошлой реакции; -1 = пена ещё не тикала, первый тик реагирует сразу.
+	var/react_ticks = -1
 	var/static/list/blacklisted_turfs = typecacheof(list(
 	/turf/open/space/transit,
 	/turf/open/chasm,
@@ -110,6 +114,9 @@
 
 /obj/effect/particle_effect/foam/short_life
 	lifetime = 1 SECONDS
+	// Батчится любая химия, налитая в пену. Пороговые по объёму reaction_turf/reaction_obj
+	// с укрупнённой дозы могут сработать там, где дольки не срабатывали: размен принят.
+	batch_reagent_doses = TRUE
 
 /obj/effect/particle_effect/foam/long_life
 	lifetime = 30 SECONDS
@@ -130,9 +137,20 @@
 	return ..()
 
 
+/// Выдаёт недоданный остаток батча химии турфу и предметам; звать повторно безопасно.
+/obj/effect/particle_effect/foam/proc/flush_batched_reagent_dose()
+	if(!batch_reagent_doses || react_ticks <= 0)
+		return
+	var/spent_ticks = min(react_ticks, max(reagent_divisor, 1))
+	react_ticks = 0
+	if(!reagents?.total_volume)
+		return
+	apply_reagent_dose(spent_ticks / max(reagent_divisor, 1), get_turf(src))
+
 /obj/effect/particle_effect/foam/proc/kill_foam()
 	STOP_PROCESSING(SSfastprocess, src)
 	STOP_PROCESSING(SSprocessing, src)
+	flush_batched_reagent_dose()
 	switch(metal)
 		if(ALUMINUM_FOAM)
 			new /obj/structure/foamedmetal(get_turf(src))
@@ -146,6 +164,7 @@
 /obj/effect/particle_effect/foam/smart/kill_foam() //Smart foam adheres to area borders for walls
 	STOP_PROCESSING(SSfastprocess, src)
 	STOP_PROCESSING(SSprocessing, src)
+	flush_batched_reagent_dose()
 	if(metal)
 		var/turf/T = get_turf(src)
 		if(isspaceturf(T)) //Block up any exposed space
@@ -162,36 +181,40 @@
 	// В медленной фазе тик приходит в FOAM_SLOW_TICK_MULTIPLIER раз реже -
 	// расход жизни и доза химии масштабируются, суммарный эффект прежний.
 	var/tick_multiplier = slow_processing ? FOAM_SLOW_TICK_MULTIPLIER : 1
+	var/divisor = max(reagent_divisor, 1)
 	lifetime -= tick_multiplier
 	if(lifetime < 1)
 		kill_foam()
 		return
 
-	var/fraction = tick_multiplier/initial(reagent_divisor)
 	// range(0, src) строил список из турфа и его содержимого ДВАЖДЫ за тик на каждую
 	// пену: при пожаротушении это 5427 пен в одном проходе SSfastprocess (раунд 9859),
 	// то есть десять тысяч лишних списков. Турф и так известен.
 	var/turf/foam_turf = get_turf(src)
-	// Условие на reagent_divisor от объекта не зависит - его считали внутри цикла на
-	// каждый предмет турфа. Каждый reagent_divisor-й тик весь цикл вообще холостой.
-	var/should_react = lifetime % reagent_divisor
-	if(should_react && foam_turf)
-		for(var/obj/O in foam_turf)
-			if(O.type == src.type)
-				continue
-			if(isturf(O.loc))
-				var/turf/T = O.loc
-				if((T.turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
-					continue
-			reagents.reaction(O, TOUCH, fraction)
+
+	// Обычная пена дозирует долю каждый рабочий тик, короткоживущая (batch_reagent_doses)
+	// копит тики и выдаёт их одной дозой, а остаток отдаёт на смерти: сумма за жизнь та же.
+	var/react_fraction = 0
+	var/working_tick = lifetime % divisor
+	if(batch_reagent_doses)
+		var/first_react = react_ticks < 0 // первый тик реагирует сразу
+		react_ticks = max(react_ticks, 0) + (working_tick ? tick_multiplier : 0)
+		if((first_react && react_ticks) || react_ticks >= divisor)
+			var/spent_ticks = min(react_ticks, divisor)
+			react_fraction = spent_ticks / divisor
+			react_ticks -= spent_ticks
+	else if(working_tick)
+		react_fraction = tick_multiplier / divisor
+
+	// У пожарной и металлической пены холдер пуст: обходить содержимое турфа незачем.
+	if(react_fraction && reagents?.total_volume)
+		apply_reagent_dose(react_fraction, foam_turf)
 	var/hit = 0
 	if(foam_turf)
 		for(var/mob/living/L in foam_turf)
 			hit += foam_mob(L, tick_multiplier)
 	if(hit)
 		lifetime += tick_multiplier //this is so the decrease from mobs hit and the natural decrease don't cumulate.
-	if(lifetime % reagent_divisor)
-		reagents.reaction(foam_turf, TOUCH, fraction)
 
 	if(--amount < 0)
 		// Разлив закончен: пена больше не спредится, дотикивать жизнь и травить
@@ -205,14 +228,28 @@
 		return
 	spread_foam()
 
+/// Одна доза химии турфу и его содержимому: общая для рабочего тика и для остатка батча.
+/obj/effect/particle_effect/foam/proc/apply_reagent_dose(react_fraction, turf/foam_turf)
+	if(!react_fraction || !foam_turf)
+		return
+	for(var/obj/O in foam_turf)
+		if(O.type == src.type)
+			continue
+		if(isturf(O.loc))
+			var/turf/T = O.loc
+			if((T.turf_flags & TURF_INTACT) && O.level == 1) //hidden under the floor
+				continue
+		reagents.reaction(O, TOUCH, react_fraction)
+	reagents.reaction(foam_turf, TOUCH, react_fraction)
+
 /obj/effect/particle_effect/foam/proc/foam_mob(mob/living/L, tick_multiplier = 1)
 	if(lifetime<1)
 		return FALSE
 	if(!istype(L))
 		return FALSE
-	var/fraction = tick_multiplier/initial(reagent_divisor)
-	if(lifetime % reagent_divisor)
-		reagents.reaction(L, TOUCH, fraction)
+	var/divisor = max(reagent_divisor, 1)
+	if(lifetime % divisor)
+		reagents.reaction(L, TOUCH, tick_multiplier / divisor)
 	lifetime -= tick_multiplier
 	return TRUE
 

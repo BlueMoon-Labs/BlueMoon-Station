@@ -63,6 +63,7 @@
 	icon_state = "hair_module_mask"
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/mask/hair_module/on_mob_death(mob/living/L, gibbed)
 	. = ..()

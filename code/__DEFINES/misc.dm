@@ -178,6 +178,10 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define BLOOD_STATE_NOT_BLOODY		"no blood whatsoever"
 #define BLOOD_AMOUNT_PER_DECAL		20
 
+/// Сколько /obj/effect/decal/cleanable может лежать на одном турфе. Шесть выбрано по картам:
+/// самый забитый замапленный турф несёт 5 декалей, кап режет только рантаймовый нарост.
+#define CLEANABLE_DECAL_TURF_CAP	6
+
 //suit sensors: sensor_mode defines
 
 #define SENSOR_OFF 0
@@ -606,7 +610,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 /// та же, что и у полной записи - PREF_SAVE_MAX_DEFER.
 #define PREF_SINGLE_SAVE_DEBOUNCE 5 SECONDS
 
-// Решения pref_defer_decision() - что делать с очередной отложенной записью савфайла.
+// Решения pref_defer_decision() - что делать с очередной отложенной записью savefile.
 /// Очереди не было: завести крайний срок и зарядить таймер.
 #define PREF_DEFER_ARM 1
 /// Очередь есть, крайний срок не наступил: перевзвести таймер, срок не трогать.

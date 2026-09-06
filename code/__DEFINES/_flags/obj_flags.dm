@@ -23,7 +23,7 @@
 #define BLOCKS_CONSTRUCTION 				(1<<20) 				//! Does this object prevent things from being built on it?
 #define BLOCKS_CONSTRUCTION_DIR 			(1<<21)					//! Does this object prevent same-direction things from being built on it?
 #define NOT_VISIBLE_IN_STORAGE				(1<<22) 				// Предмет не отображается в контейнерах, вместилищах объектов (/datum/component/storage) при осмотре игроком.
-
+#define SPEED_POTION_EFFECT 				(1<<23)
 
 /// Integrity defines for clothing (not flags but close enough)
 #define CLOTHING_PRISTINE	0 // We have no damage on the clothing

@@ -816,11 +816,13 @@
 			var/list/personnel_list = list()
 
 			for(var/datum/data/record/t in GLOB.data_core.locked)//Look in data core locked.
-				personnel_list["[t.fields["name"]]: [t.fields["rank"]]"] = t.fields["image"]//Pull names, rank, and image.
+				personnel_list["[t.fields["name"]]: [t.fields["rank"]]"] = t//Pull names and rank; сама запись, не картинка.
 
 			if(personnel_list.len)
 				input = input("Select a crew member:") as null|anything in personnel_list
-				var/icon/character_icon = personnel_list[input]
+				// В список кладутся записи, а кадр строится только для выбранной.
+				var/datum/data/record/chosen_record = personnel_list[input]
+				var/icon/character_icon = chosen_record?.get_record_image()
 				if(character_icon)
 					qdel(holo_icon)//Clear old icon so we're not storing it in memory.
 					holo_icon = getHologramIcon(icon(character_icon), FALSE, hologram_color)

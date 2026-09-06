@@ -30,20 +30,13 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 		features["allow_emissives"] = TRUE
 	return (part in parts)
 
+/// Builds a white emissive copy of a source appearance on the [EMISSIVE_PLANE], using BlueMoon's
+/// single-channel white emissive convention (KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE). This is the
+/// mechanism that the rest of this codebase uses to render body-part glow against the lighting mask.
 /proc/emissive_copy(mutable_appearance/source, layer = FLOAT_LAYER)
 	var/mutable_appearance/emissive = new /mutable_appearance(source)
 	emissive.layer = layer
 	emissive.plane = EMISSIVE_PLANE
 	emissive.color = GLOB.emissive_color
-	emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE
+	emissive.appearance_flags = (emissive.appearance_flags & ~KEEP_APART) | KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE
 	return emissive
-
-GLOBAL_LIST_EMPTY(marking_emissive_icon_cache)
-
-/proc/make_marking_emissive_icon(icon/source_icon, source_state)
-	var/cache_key = "[source_icon]-[source_state]"
-	if(GLOB.marking_emissive_icon_cache[cache_key])
-		return GLOB.marking_emissive_icon_cache[cache_key]
-	var/icon/result = new(source_icon, source_state)
-	GLOB.marking_emissive_icon_cache[cache_key] = result
-	return result
