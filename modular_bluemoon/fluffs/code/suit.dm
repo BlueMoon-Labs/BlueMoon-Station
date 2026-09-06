@@ -907,3 +907,36 @@
 	item_state = "wypmcmedical_hat"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/light_plate_carrier
+	name = "Light plate carrier Armor Kit"
+	desc = "A modkit for making an armor vest into a Light plate carrier Armor."
+	product = /obj/item/clothing/suit/armor/vest/light_plate_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt)
+
+/obj/item/clothing/suit/armor/vest/light_plate_carrier
+    name = "Light plate carrier"
+    desc = "An ergonomic plate carrier, manufactured by Hephaestus Industries. Basically the same plate carrier you beg for in the armory, but with no pouches attached and with a set of lighter plates inserted."
+    icon_state = "light_plate_carrier"
+    item_state = "light_plate_carrier"
+    dog_fashion = null
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    unique_reskin = list(
+        "Black" = list(
+            "icon_state" = "light_plate_carrier",
+            "item_state" = "light_plate_carrier"
+        ),
+        "Tan" = list(
+            "icon_state" = "light_plate_carrier_tan",
+            "item_state" = "light_plate_carrier_tan"
+        ),
+        "Navy" = list(
+            "icon_state" = "light_plate_carrier_navy",
+            "item_state" = "light_plate_carrier_navy"
+        ),
+        "Green" = list(
+            "icon_state" = "light_plate_carrier_green",
+            "item_state" = "light_plate_carrier_green"
+        )
+    )

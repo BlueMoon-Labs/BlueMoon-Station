@@ -2662,3 +2662,9 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
 	ckeywhitelist = list("hartty", "meowonty")
+
+/datum/gear/donator/bm/light_plate_carrier
+	name = "Light plate carrier"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/light_plate_carrier
+	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed")
