@@ -178,6 +178,7 @@
 	plane = GAME_PLANE
 	appearance_flags = PLANE_MASTER //should use client color
 	blend_mode = BLEND_OVERLAY
+	render_target = GAME_PLANE_RENDER_TARGET
 
 /atom/movable/screen/plane_master/game_world/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
@@ -374,6 +375,10 @@
 	plane = FLOOR_LIGHTING_LAMPS_PLANE
 	render_target = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
 
+/atom/movable/screen/plane_master/lamps/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
 /atom/movable/screen/plane_master/exposure
 	name = "exposure plane master"
 	plane = LIGHTING_EXPOSURE_PLANE
@@ -408,6 +413,10 @@
 	name = "floor lamps selfglow plane master"
 	plane = FLOOR_LIGHTING_LAMPS_SELFGLOW
 	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_selfglow_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_selfglow")
@@ -460,6 +469,10 @@
 	name = "floor lamps glare plane master"
 	plane = FLOOR_LIGHTING_LAMPS_GLARE
 	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/floor/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("floor_glare_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_glare")

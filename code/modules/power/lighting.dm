@@ -1425,6 +1425,7 @@ GLOBAL_VAR(parked_flicker_watchdog_id)
 	glow_icon_state = "floor"
 	exposure_icon_state = "floor_circle"
 	layer = 2.5
+	plane = FLOOR_PLANE
 	light_type = /obj/item/light/bulb
 	fitting = "floor" //making deconstruction give out the right type.
 	cone_angle = 0 // Floor lights emit omnidirectional light
