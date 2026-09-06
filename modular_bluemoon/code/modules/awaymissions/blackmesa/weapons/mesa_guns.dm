@@ -1341,12 +1341,13 @@
 	. = ..(user, pointblank, pbtarget, message, stam_cost)
 
 /obj/item/gun/ballistic/automatic/m249/proc/process_heat_cooldown()
-	if(overheated && world.time >= overheat_cooldown_end)
-		overheated = FALSE
-		heat_accumulated = 0
-		if(loc && ismob(loc))
-			var/mob/living/user = loc
-			user.balloon_alert(user, "Пулемёт остыл!")
+	if(overheated)
+		if(world.time >= overheat_cooldown_end)
+			overheated = FALSE
+			heat_accumulated = 0
+			if(loc && ismob(loc))
+				var/mob/living/user = loc
+				user.balloon_alert(user, "Пулемёт остыл!")
 		return
 	if(heat_accumulated <= 0)
 		return

@@ -237,6 +237,27 @@
 	density = TRUE
 	armor = list(MELEE = 30, BULLET =50, LASER = 30, ENERGY = 20, BOMB = 70, BIO = 15, RAD = 10, FIRE = 40, ACID = 30)
 
+/obj/structure/urbanismmachines/hecucamp
+
+	name = "abandoned camp"
+	desc = "abandoned camp of hecu"
+	icon = 'modular_bluemoon/icons/obj/urbanism/camps.dmi'
+	icon_state = "camp"
+	anchored = TRUE
+	density = TRUE
+	armor = list(MELEE = 30, BULLET =50, LASER = 30, ENERGY = 20, BOMB = 70, BIO = 15, RAD = 10, FIRE = 40, ACID = 30)
+
+/obj/structure/urbanismmachines/osprey
+
+	name = "crushed osprey"
+	desc = "something terryfying happened here..."
+	icon = 'modular_bluemoon/icons/obj/urbanism/crushedosprey.dmi'
+	icon_state = "crushedosprey"
+	anchored = TRUE
+	density = TRUE
+	armor = list(MELEE = 30, BULLET =50, LASER = 30, ENERGY = 20, BOMB = 70, BIO = 15, RAD = 10, FIRE = 40, ACID = 30)
+
+
 /obj/structure/urbanismmachines/server
 
 	name = "old server"
