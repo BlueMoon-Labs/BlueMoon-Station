@@ -8,7 +8,7 @@
 	name = "fog"
 	icon = 'modular_bluemoon/code/game/objects/effects/anomalies/96x96.dmi'
 	icon_state = "smoke"
-	alpha = 0
+	alpha = 170
 	lifetime = INFINITY
 	amount = INFINITY
 	opaque = FALSE
@@ -16,6 +16,7 @@
 	COOLDOWN_DECLARE(spread_smoke_cd)
 
 /obj/effect/particle_effect/smoke/fog/Initialize(mapload, obj/effect/anomaly/fog/fog_anomaly)
+	alpha = 0
 	anomaly_parent = fog_anomaly
 	. = ..()
 	STOP_PROCESSING(SSobj, src)
@@ -33,7 +34,7 @@
 	QDEL_NULL(reagents) // незачем занимать память для неиспользуемых механик
 	anomaly_parent.fog_to_expand += src
 	RegisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING, PROC_REF(clear_fog))
-	animate(src, 3 SECONDS, alpha = 170)
+	animate(src, 3 SECONDS, alpha = initial(alpha))
 	for(var/direction in GLOB.cardinals)
 		var/obj/machinery/door/d = locate(/obj/machinery/door, get_step(src, direction))
 		if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/window)) \
@@ -110,12 +111,12 @@
 		anomaly_image.override = TRUE
 		anomaly_image.alpha = 50
 	for(var/turf/T in range(1, src))
-		var/F = new fog_type(T, src)
+		var/obj/effect/particle_effect/smoke/fog/F = new fog_type(T, src)
 		if(initial(invisibility))
 			RegisterSignal(F, COMSIG_MOVABLE_CROSSED, PROC_REF(mob_is_nearby))
 			RegisterSignal(F, COMSIG_MOVABLE_UNCROSSED, PROC_REF(mob_is_not_nearby))
-			for(var/mob/living/L in T)
-				mob_is_nearby(F, L)
+		for(var/mob/living/L in T)
+			F.Crossed(L)
 
 /obj/effect/anomaly/fog/Destroy()
 	fog_to_expand = null
@@ -174,6 +175,7 @@
 /obj/effect/particle_effect/smoke/fog/dark/Crossed(atom/movable/AM, oldloc)
 	. = ..()
 	if(isliving(AM))
+		animate(src, null)
 		alpha = 50
 		set_opacity(FALSE)
 		smoke_mob(AM)
@@ -181,6 +183,7 @@
 /obj/effect/particle_effect/smoke/fog/dark/Uncrossed(atom/movable/AM)
 	. = ..()
 	if(isliving(AM) && !(locate(/mob/living) in loc))
+		animate(src, null)
 		alpha = initial(alpha)
 		set_opacity(TRUE)
 
