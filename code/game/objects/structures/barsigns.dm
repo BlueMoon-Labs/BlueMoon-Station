@@ -131,8 +131,10 @@
 
 /obj/structure/sign/barsign/syndicate/Initialize(mapload)
 	. = ..()
-	var/datum/barsign/hiddensigns/syndibarsign/syndie_sign = new
-	barsigns += syndie_sign
+	var/datum/barsign/hiddensigns/syndibarsign/syndie_sign = locate() in barsigns
+	if(!syndie_sign)
+		syndie_sign = new
+		barsigns += syndie_sign
 	var/datum/barsign/cindikate/cindisign = locate() in barsigns
 	if(!cindisign)
 		cindisign = new
