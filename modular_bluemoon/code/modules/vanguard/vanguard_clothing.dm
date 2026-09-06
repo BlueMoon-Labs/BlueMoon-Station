@@ -37,6 +37,7 @@
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
 	brightness_on = 12
 	hardsuit_type = "exploration"
+	obj_flags = NOT_VISIBLE_IN_STORAGE
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
@@ -56,7 +57,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/exploration/ComponentInitialize()
 	. = ..()
-	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete)
+	var/datum/component/storage/concrete/storage = AddComponent(/datum/component/storage/concrete/ranger_hardsuit)
 	storage.max_items = 5
 
 /obj/item/clothing/suit/armor/vanguard
@@ -112,3 +113,34 @@
 	parent_armor_type = /obj/item/clothing/head/helmet/vanguard
 	kit_slot_flag = ITEM_SLOT_HEAD
 	kit_prefix = "combined"
+
+// Хранилище Ranger hardsuit. Шлем и установленный джетпак физически лежат внутри костюма
+// (заложено механикой hardsuit), поэтому их нужно исключать из подсчёта слотов storage,
+// чтобы в костюм можно было класть до max_items мелких предметов, не теряя слоты на шлем/джетпак.
+/datum/component/storage/concrete/ranger_hardsuit/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
+	var/obj/item/clothing/suit/space/hardsuit/H = parent
+	if(I == H.helmet || I == H.jetpack)
+		return FALSE
+	var/list/external = list()
+	if(H.helmet)
+		external += H.helmet
+	if(H.jetpack)
+		external += H.jetpack
+	var/atom/real = real_location()
+	var/list/remove_list = external & real.contents
+	for(var/atom/movable/A in remove_list)
+		A.moveToNullspace()
+	. = ..()
+	for(var/atom/movable/A in remove_list)
+		A.forceMove(real)
+	return .
+
+/obj/item/clothing/suit/space/hardsuit/exploration/Initialize(mapload)
+	. = ..()
+	if(jetpack)
+		jetpack.obj_flags |= NOT_VISIBLE_IN_STORAGE
+
+/obj/item/clothing/suit/space/hardsuit/exploration/attackby(obj/item/I, mob/user, params)
+	. = ..()
+	if(jetpack)
+		jetpack.obj_flags |= NOT_VISIBLE_IN_STORAGE

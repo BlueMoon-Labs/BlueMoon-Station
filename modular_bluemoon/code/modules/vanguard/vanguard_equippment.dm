@@ -32,8 +32,13 @@
 	new /obj/item/reagent_containers/glass/bottle/thermite(src)
 	new /obj/item/reagent_containers/glass/bottle/thermite(src)
 	new /obj/item/reagent_containers/glass/bottle/thermite(src)
-	new /obj/item/stack/sheet/metal/twenty(src)
-	new /obj/item/stack/sheet/glass/twenty(src)
+	new /obj/item/reagent_containers/glass/bottle/thermite(src)
+	new /obj/item/reagent_containers/glass/beaker(src)
+	new /obj/item/paper/thermite_istruction(src)
+
+/obj/item/paper/thermite_istruction
+	name = "Как оказатся в любом месте за 30 секунд!"
+	default_raw_text = "<b>*ПРОСТО ДОБАВЬТЕ 20 ИЛИ БОЛЕЕ ЮНИТОВ ТЕРМИТА НА ЛЮБУЮ СТЕНУ, И ИГРАЙТЕСЬ С ОГНЁМ!*</b>"
 
 /obj/item/storage/firstaid/vanguard
 	name = "Frontier surgion kit "
