@@ -78,6 +78,9 @@
 /obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
 	if(is_welded() && !force)
 		return balloon_alert(user, "Заварено!")
+	if(!theme?.can_activate_without_deploy_all_parts && is_active())
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return balloon_alert(user, "Отключите костюм!")
 	var/obj/item/clothing/mod_part/piece = part
 	wearer.transferItemToLoc(piece, null, TRUE)
 	piece.equip_item_from_overslot()
@@ -92,6 +95,10 @@
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
 	var/obj/item/stock_parts/cell/cell = get_cell()
+	if(!can_activate() && !is_active())
+		balloon_alert(wearer, "Разверните костюм!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
@@ -174,7 +181,15 @@
 	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 	return FALSE
 
+/obj/item/mod/control/proc/toggle_storage(on)
+	var/datum/component/storage/mod_storage = GetComponent(/datum/component/storage)
+	if(!mod_storage)
+		return
+	mod_storage.set_locked(src, !on)
+
 /obj/item/mod/control/proc/finish_activation(on)
+	if(theme?.need_block_storage_when_not_active)
+		toggle_storage(on)
 	if(on == TRUE)
 		ENABLE_BITFIELD(status_flags, MOD_ACTIVE)
 	else

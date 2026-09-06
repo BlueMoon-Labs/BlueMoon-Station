@@ -72,19 +72,24 @@
 	)
 
 //////////////////////////////////////////////////////////
-//Описание изменено по запросу владельца донатерки.
+//Описание темы изменено по запросу владельца донатерки.
+/obj/item/modsuit_modkit/syndicate_sec
+	name = "Syndicate MODsuit theme Kit"
+	new_theme = /datum/mod_theme/security/syndicate
+	from_theme = /datum/mod_theme/security
+
 /obj/item/mod/control/pre_equipped/security/syndicate
-	name = "Syndicate Vanguard Security"
-	desc = "Экспериментальный модульный скафандр службы безопасности Syndicate, построенный на легализованном базисе \
-	  технологий NanoTrasen и модификаций компании Cybersun Industries. Комплект совмещает бронирование СБ с технологиями\
-	  автономности для контроля бунтов, задержания опасных целей и долгой работы в разгерметизированных отсеках. \
-	  В основе конструкции лежит стандартный костюм Охраны перехваченный, переработанный и оптимизированный Syndicate"
 	theme = /datum/mod_theme/security/syndicate
 
 /obj/item/mod/construction/armor/security/syndicate
 	theme = /datum/mod_theme/security/syndicate
 
 /datum/mod_theme/security/syndicate
+	name = "Syndicate Vanguard Security"
+	desc = "Экспериментальный модульный скафандр службы безопасности Syndicate, построенный на легализованном базисе \
+	  технологий NanoTrasen и модификаций компании Cybersun Industries. Комплект совмещает бронирование СБ с технологиями\
+	  автономности для контроля бунтов, задержания опасных целей и долгой работы в разгерметизированных отсеках. \
+	  В основе конструкции лежит стандартный костюм Охраны перехваченный, переработанный и оптимизированный Syndicate"
 	ui_theme = "syndicate"
 	default_skin = "syndicate"
 	skins = list(

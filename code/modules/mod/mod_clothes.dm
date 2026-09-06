@@ -86,7 +86,7 @@
 	flags_cover = category[UNSEALED_COVER] || NONE
 	visor_flags_cover = category[SEALED_COVER] || NONE
 
-/obj/item/clothing/mod_part/proc/conseal_to_overslot()//Не давать скрывать space suit
+/obj/item/clothing/mod_part/proc/conseal_to_overslot()
 	if(!mod?.wearer)
 		return FALSE
 	var/obj/item/clothing/item = mod.wearer.get_item_by_slot(slot_flags)
@@ -249,6 +249,8 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	theme_category = GAUNTLETS_FLAGS
 	slot_flags = ITEM_SLOT_GLOVES
+
+	var/datum/component/tackler/gloves_tackle
 	var/transfer_blood = FALSE
 	var/transfer_prints = FALSE
 
@@ -287,8 +289,3 @@
 
 /obj/item/clothing/mod_part/shoes/negates_gravity()
 	return clothing_flags & NOSLIP
-
-
-//Для инфильтратора
-//blockTracking = 1
-//SEND_SIGNAL(C, COMSIG_CARBON_REMOVE_LIMB, src, dismembered)
