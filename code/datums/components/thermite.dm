@@ -1,6 +1,7 @@
 /datum/component/thermite
 	dupe_mode = COMPONENT_DUPE_UNIQUE_PASSARGS
 	var/amount
+	var/thermite_volume
 	var/overlay
 
 	var/static/list/blacklist = typecacheof(list(
@@ -23,6 +24,7 @@
 /datum/component/thermite/Initialize(_amount)
 	if(!istype(parent, /turf) || blacklist[parent.type])
 		return COMPONENT_INCOMPATIBLE
+	thermite_volume = _amount
 	if(immunelist[parent.type])
 		_amount*=0 //Yeah the overlay can still go on it and be cleaned but you arent burning down a diamond wall
 	if(resistlist[parent.type])
@@ -48,8 +50,10 @@
 		return
 	if(newC)
 		amount += newC.amount
+		thermite_volume += newC.thermite_volume
 	else
 		amount += _amount
+		thermite_volume += _amount
 
 /datum/component/thermite/proc/thermite_melt(mob/user)
 	var/turf/master = parent
@@ -58,15 +62,40 @@
 
 	playsound(master, 'sound/items/welder.ogg', 100, 1)
 
+	var/consume_thermite = proc_consume_thermite(master)
+
 	if(amount >= 50)
 		var/burning_time = max(100, 100-amount)
 		master = master.Melt()
 		master.burn_tile()
 		if(user)
 			master.add_hiddenprint(user)
+		if(consume_thermite && master.liquids)
+			consume_thermite = proc_consume_thermite(master, consume_thermite)
 		QDEL_IN(fakefire, burning_time)
 	else
 		QDEL_IN(fakefire, 50)
+	qdel(src)
+
+/datum/component/thermite/proc/proc_consume_thermite(turf/T, override_amount)
+	var/amt = override_amount ? override_amount : thermite_volume
+	if(!amt || !T.liquids || !T.liquids.reagent_list[/datum/reagent/thermite])
+		return amt
+	var/list/L = T.liquids.reagent_list
+	var/cur = L[/datum/reagent/thermite]
+	var/to_del = min(amt, cur)
+	L[/datum/reagent/thermite] -= to_del
+	T.liquids.total_reagents -= to_del
+	amt -= to_del
+	if(L[/datum/reagent/thermite] <= 0)
+		L -= /datum/reagent/thermite
+	if(T.liquids.total_reagents <= 0)
+		qdel(T.liquids, TRUE)
+	else
+		T.liquids.calculate_height()
+		T.liquids.has_cached_share = FALSE
+		T.liquids.set_reagent_color_for_liquid()
+	return amt
 
 /datum/component/thermite/proc/clean_react(datum/source, strength)
 	//Thermite is just some loose powder, you could probably clean it with your hands. << todo?

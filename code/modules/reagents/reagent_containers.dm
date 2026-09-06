@@ -170,7 +170,8 @@
 			//LIQUIDS ADD - liquid spills on non-mobs
 			var/turf/target_turf = target
 			if(target_turf.can_liquid_spill_on_hit())
-				target_turf.add_liquid_from_reagents(reagents, thrown_from = src, thrown_to = target)
+				if(!(isclosedturf(target_turf) && reagents.has_reagent(/datum/reagent/thermite)))
+					target_turf.add_liquid_from_reagents(reagents, thrown_from = src, thrown_to = target)
 			log_combat(thrown_by, target, "splashed (thrown) [english_list(reagents.reagent_list)]", "in [AREACOORD(target)]")
 			log_game("[key_name(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [AREACOORD(target)].")
 			message_admins("[ADMIN_LOOKUPFLW(thrown_by)] splashed (thrown) [english_list(reagents.reagent_list)] on [target] in [ADMIN_VERBOSEJMP(target)].")
