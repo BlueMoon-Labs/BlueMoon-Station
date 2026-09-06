@@ -35,13 +35,13 @@
 	RegisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING, PROC_REF(clear_fog))
 	for(var/direction in GLOB.cardinals)
 		var/obj/machinery/door/d = locate(/obj/machinery/door, get_step(src, direction))
-		if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/firedoor, /obj/machinery/door/window)) \
+		if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/window)) \
 		&& d.density && !d.critical_machine)
 			if(istype(d, /obj/machinery/door/airlock))
 				var/obj/machinery/door/airlock/a = d
-				if(a.id_tag) //какая то особая дверь
+				if(a.id_tag || a.charge) //какая то особая дверь
 					continue
-			INVOKE_ASYNC(d, TYPE_PROC_REF(/obj/machinery/door, open))
+			INVOKE_ASYNC(d, TYPE_PROC_REF(/obj/machinery/door, open), 1)
 
 /obj/effect/particle_effect/smoke/fog/Destroy()
 	UnregisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING)
@@ -113,6 +113,8 @@
 		if(initial(invisibility))
 			RegisterSignal(F, COMSIG_MOVABLE_CROSSED, PROC_REF(mob_is_nearby))
 			RegisterSignal(F, COMSIG_MOVABLE_UNCROSSED, PROC_REF(mob_is_not_nearby))
+			for(var/mob/living/L in T)
+				mob_is_nearby(F, L)
 
 /obj/effect/anomaly/fog/Destroy()
 	fog_to_expand = null
