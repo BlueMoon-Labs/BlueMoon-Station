@@ -915,8 +915,8 @@
 	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt)
 
 /obj/item/clothing/suit/armor/vest/light_plate_carrier
-    name = "Light plate carrier"
-    desc = "An ergonomic plate carrier, manufactured by Hephaestus Industries. Basically the same plate carrier you beg for in the armory, but with no pouches attached and with a set of lighter plates inserted."
+	name = "Light plate carrier"
+	desc = "An ergonomic plate carrier, manufactured by Hephaestus Industries. Basically the same plate carrier you beg for in the armory, but with no pouches attached and with a set of lighter plates inserted."
     icon_state = "light_plate_carrier"
     item_state = "light_plate_carrier"
     dog_fashion = null
