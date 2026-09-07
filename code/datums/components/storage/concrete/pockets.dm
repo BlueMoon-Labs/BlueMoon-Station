@@ -66,7 +66,7 @@
 		/obj/item/implanter, /obj/item/screwdriver, /obj/item/weldingtool/mini,
 		/obj/item/firing_pin, /obj/item/gun/ballistic/automatic/pistol, /obj/item/gun/ballistic/automatic/magrifle/pistol,
 		/obj/item/toy/plush/snakeplushie, /obj/item/gun/energy/e_gun/mini, /obj/item/gun/ballistic/derringer,
-		/obj/item/toy/crayon/ritualdagger
+		/obj/item/toy/crayon/ritualdagger, /obj/item/gun/ballistic/automatic/laser/vanguard
 		))
 	cant_hold = shoes_cant_hold
 	can_hold = shoes_can_hold

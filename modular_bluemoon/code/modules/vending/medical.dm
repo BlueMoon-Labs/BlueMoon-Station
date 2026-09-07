@@ -38,6 +38,7 @@
 		/obj/item/stack/medical/mesh = 5,
 		/obj/item/stack/medical/bone_gel = 4,
 		/obj/item/stack/medical/nanogel = 4,
+		/obj/item/storage/bag/medpen = 5,
 	)
 	contraband = list(
 		/obj/item/reagent_containers/pill/tox = 3,

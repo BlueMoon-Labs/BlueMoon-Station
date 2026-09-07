@@ -47,7 +47,7 @@
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
 //	suit = /obj/item/clothing/suit/armor/vest/exp
 //	head = /obj/item/clothing/head/helmet/exp
-	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
+	gloves = /obj/item/clothing/gloves/combat // раундстартовые горилки ВСЁ
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
@@ -65,7 +65,7 @@
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
 //	suit = /obj/item/clothing/suit/armor/vest/exp
 //	head = /obj/item/clothing/head/helmet/exp
-	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
+	gloves = /obj/item/clothing/gloves/combat
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/combat
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor

@@ -841,6 +841,11 @@
 		sight |= SEE_TURFS|SEE_MOBS|SEE_OBJS
 		see_in_dark = max(see_in_dark, 8)
 
+	// A character with active emissive (body-part) glow can see farther into darkness so that distant
+	// glowing atoms get delivered to the client and their emissive pixels render at any radius.
+	if(has_active_emissive())
+		see_in_dark = max(see_in_dark, EMISSIVE_DARKSIGHT_RANGE)
+
 	lighting_color_cutoffs = color_cutoffs_accumulator
 
 	if(see_override)
