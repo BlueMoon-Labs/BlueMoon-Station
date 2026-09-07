@@ -51,10 +51,11 @@
 
 /obj/machinery/porta_turret/hecu/Initialize()
 	. = ..()
-	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 10)
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 1 SECONDS, TIMER_STOPPABLE)
 
 /obj/machinery/porta_turret/hecu/Destroy()
-	deltimer(beep_timer)
+	if(beep_timer)
+		deltimer(beep_timer)
 	return ..()
 
 /obj/machinery/porta_turret/hecu/proc/beep()
@@ -62,7 +63,7 @@
 		return
 	if(on && !(machine_stat & (BROKEN | NOPOWER)))
 		playsound(src, 'modular_bluemoon/sound/weapons/mesa/turretping.ogg', 70, FALSE)
-	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 10)
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep)), 1 SECONDS, TIMER_STOPPABLE)
 
 /obj/machinery/porta_turret/hecu/assess_perp(mob/living/carbon/human/perp)
 	if(in_faction(perp))

@@ -1043,8 +1043,8 @@
 		if(owner)
 			owner.visible_message("<span class='warning'>[src] breaks apart!</span>")
 			playsound(owner, 'sound/effects/bang.ogg', 50, 1)
-		qdel(src)
-		return TRUE
+		QDEL_IN(src, 0)
+		return ..()
 
 	var/static/list/shield_sounds = list(
 		'modular_bluemoon/sound/weapons/shield/ric1.ogg',
@@ -1068,8 +1068,8 @@
 	fire_delay = 4
 
 /obj/item/gun/ballistic/revolver/hlrsh12/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
-	var/result = ..(user, pointblank, pbtarget, message, 35)
-	if(isliving(user))
+	var/result = ..(user, pointblank, pbtarget, message, stam_cost)
+	if(iscarbon(user))
 		user.apply_damage(4, BURN, BODY_ZONE_PRECISE_L_HAND)
 		user.apply_damage(4, BURN, BODY_ZONE_PRECISE_R_HAND)
 		user.adjustStaminaLoss(20)
