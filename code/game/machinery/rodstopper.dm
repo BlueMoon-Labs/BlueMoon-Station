@@ -1,5 +1,5 @@
 /obj/item/circuitboard/machine/rodstopper
-	name = "Rodstopper (плата машины)"
+	name = "Rodstopper (Machine Board)"
 	desc = "Плата одноразового уловителя стержня Rodstopper. Машину нужно строить прямо на пути стержня: после сборки её нельзя передвинуть или разобрать инструментами. Через пять секунд после поимки происходит опасный локальный коллапс — немедленно отойдите подальше!"
 	icon_state = "generic"
 	build_path = /obj/machinery/rodstopper

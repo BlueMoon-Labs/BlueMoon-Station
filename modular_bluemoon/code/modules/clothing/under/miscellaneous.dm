@@ -38,7 +38,7 @@
 	icon_state = "utiltan"
 
 /obj/item/clothing/under/bm/chronos
-	name = "униформа New Mecca"
+	name = "new mecca uniform"
 	desc = "In this suit, your grandfather fucked cromag."
 	icon_state = "torch_uniform"
 	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON

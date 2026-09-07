@@ -1,5 +1,5 @@
 /datum/gear/uniform/chronos
-	name = "Униформа New Mecca"
+	name = "New Mecca Uniform"
 	path = /obj/item/clothing/under/bm/chronos
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_SUITS
 
