@@ -463,10 +463,11 @@
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
 	if(vial)
-		. += "В [vial] осталось [vial.reagents.total_volume]u."
+		. += vial.get_reagent_examine(user)
 	else
 		. += "Внутри нет ампулы."
 	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
+	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 /obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
 	if(vial)
@@ -608,10 +609,6 @@
 				mode = HYPO_SPRAY
 				to_chat(user, "[src] теперь будет спреить участок тела пациента.")
 		return TRUE
-
-/obj/item/hypospray/mkii/examine(mob/user)
-	. = ..()
-	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 #undef HYPO_SPRAY
 #undef HYPO_INJECT
