@@ -916,33 +916,33 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/suit/donator/bm/kumiko_ncr_recon
-	name = "NCR recon duster"
-	desc = "NCR recon Duster with no armor plating for more mobility"
-	icon_state = "duster_recon_t"
-	item_state = "duster_recon_t"	
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/suit/donator/bm/kumiko_ncr_combat_duster
-	name = "NCR riot armor"
-	desc = "Standard-issue high-grade combat armor worn by military and riot control forces of NCR"
-	icon_state = "combatduster"
-	item_state = "combatduster"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/suit/donator/bm/kumiko_ncr_desert
-	name = "NCR desert duster"
-	desc = "Worn by members of the US Marine Corps during the Yangtze Campaign, this armor found its way into the hands of the Desert Rangers. This one has no armor plating."
-	icon_state = "desert_ranger"
-	item_state = "desert_ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Recon" = list(
+			"icon_state" = "duster_recon_t",
+			"item_state" = "duster_recon_t",
+			"name" = "NCR recon duster"
+		),
+		"Combat" = list(
+			"icon_state" = "combatduster",
+			"item_state" = "combatduster",
+			"name" = "NCR combat duster"
+		),
+		"Desert" = list(
+			"icon_state" = "desert_ranger",
+			"item_state" = "desert_ranger",
+			"name" = "NCR desert duster"
+		),
+		"Veteran" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger duster"
+		),
+		"Price" = list(
+			"icon_state" = "price_ranger",
+			"item_state" = "price_ranger",
+			"name" = "NCR price duster"
+		)
+	)
 
 /obj/item/modkit/kumiko_ncr_riot
 	name = "NCR ranger riot kit"
@@ -974,15 +974,6 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/donator/bm/kumiko_ncr_price
-	name = "NCR price ranger duster"
-	desc = "Old NCR Ranger Coat."
-	icon_state = "price_ranger"
-	item_state = "price_ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
 /obj/item/modkit/kumiko_ncr_plate_carrier
 	name = "NCR plate carrier kit"
 	desc = "A modkit for making a plate carrier into a ncr duster."
@@ -1005,14 +996,18 @@
 	item_state = "ranger"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-
-/obj/item/clothing/head/donator/bm/kumiko_ncr_desert_helmet
-	name = "NCR desert ranger helmet"
-	desc = "Matching helmet for the NCR desert Ranger duster."
-	icon_state = "oldranger"
-	item_state = "oldranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	unique_reskin = list(
+		"Ranger" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR recon duster"
+		),
+		"Desert" = list(
+			"icon_state" = "oldranger",
+			"item_state" = "oldranger",
+			"name" = "NCR combat duster"
+		)
+	)
 
 /obj/item/modkit/kumiko_ncr_riot_helmet
 	name = "NCR riot helmet kit"
