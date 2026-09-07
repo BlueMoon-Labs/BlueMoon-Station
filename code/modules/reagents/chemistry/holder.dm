@@ -414,7 +414,7 @@
 					reagent.overdosed = TRUE
 					need_mob_update += reagent.overdose_start(owner)
 					log_game("[key_name(owner)] has started overdosing on [reagent.name] at [rounded_volume] units.")
-				else if(reagent.overdosed)
+				else if(reagent.overdosed && rounded_volume <= reagent.overdose_threshold)
 					reagent.overdosed = FALSE
 
 			// for(var/addiction in reagent.addiction_types)
