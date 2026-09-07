@@ -381,6 +381,9 @@
 /obj/item/hypospray/mkii/tricord
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/small/tricord
 
+/obj/item/hypospray/mkii/multi_heal
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/small/multi_heal
+
 /obj/item/hypospray/mkii/enlarge
 	start_vial = null
 
@@ -391,7 +394,7 @@
 	reagent_overlay_state = "big-r_overlay"
 	desc = "Deluxe-модель гипроспрея, способная принимать ампулы большого размера. Помимо этого, работает быстре и доставляет больше препаратов за раз."
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
-	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/CMO
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/multi_heal
 	inject_wait = DELUXE_WAIT_INJECT
 	spray_wait = DELUXE_WAIT_SPRAY
 	spray_self = DELUXE_SELF_SPRAY
@@ -422,7 +425,7 @@
 /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller
 	name = "Combat Hypospray with Painkiller"
 	icon_state = "combat2"
-	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/mine_salve
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/mine_salve
 
 /obj/item/hypospray/mkii/Initialize(mapload)
 	. = ..()

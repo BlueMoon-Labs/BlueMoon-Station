@@ -549,9 +549,17 @@
 /obj/item/storage/hypospraykit/regular/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/tricord(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/bicaridine = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/kelotane = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/antitoxin = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/dexalin = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/tricord = 2,
+	) // 12 max
+
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/brute
 	name = "trauma hypospray kit"
@@ -631,12 +639,21 @@
 /obj/item/storage/hypospraykit/cmo/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/CMO(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/charcoal(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/salglu(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/dexalin(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/CMO = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/bicaridine = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/kelotane = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/antitoxin = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/dexalin = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/tricord = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/CMO = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/charcoal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/salglu = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/synthflesh = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/mine_salve = 1
+	) // 12 max
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/enlarge/PopulateContents()
 	if(empty)
