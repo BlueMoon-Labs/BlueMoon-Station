@@ -522,6 +522,11 @@
 /obj/item/hypospray/mkii/proc/load_hypo_attempt(obj/item/reagent_containers/glass/bottle/vial/V, mob/user, vial_loc_transfer)
 	if(!istype(V))
 		return FALSE
+	if(!is_type_in_list(V, allowed_containers))
+		to_chat(user, span_notice("[src] не принимает этот тип ампул."))
+		return FALSE
+	if(!user.transferItemToLoc(V,src))
+		return FALSE
 	var/obj/item/unloaded_vial
 	if(vial != null)
 		if(!quickload)
@@ -529,12 +534,6 @@
 			return FALSE
 		unloaded_vial = vial
 		unload_hypo()
-
-	if(!is_type_in_list(V, allowed_containers))
-		to_chat(user, span_notice("[src] не принимает этот тип ампул."))
-		return FALSE
-	if(!user.transferItemToLoc(V,src))
-		return FALSE
 	vial = V
 	reagents = vial.reagents
 	if(unloaded_vial)
