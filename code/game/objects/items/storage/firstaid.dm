@@ -534,6 +534,10 @@
 	custom_price = PRICE_ABOVE_NORMAL
 	custom_premium_price = PRICE_EXPENSIVE
 
+/obj/item/storage/hypospraykit/examine(mob/user)
+	. = ..()
+	. += span_info("Вы можете заряжать ампулы в гипоспрей прямо из этого набора, поднеся гипоспрей к нужной ампуле.")
+
 /obj/item/storage/hypospraykit/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)

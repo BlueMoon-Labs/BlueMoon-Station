@@ -457,6 +457,9 @@
 	if(iscarbon(target))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, mode ? "Инъекция" : "Спрей")
 		return CONTEXTUAL_SCREENTIP_SET
+	if(check_quik_kit_load(target))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Заменить гипоампулу")
+		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/hypospray/mkii/ComponentInitialize()
 	. = ..()
@@ -476,46 +479,11 @@
 	. = ..()
 	. += span_info("Внутри [vial ? "<b>[vial].</b>" : "нет гипоампулы."]")
 	. += span_info("Установлен режим <b>[mode ? "инъекции" : "спрея"].</b>")
+	. += span_info("Вы можете заряжать ампулы прямо из набора с гипоампулами, не беря их в руку.")
 	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
-/obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
-	if(vial)
-		vial.forceMove(drop_location())
-		if(user)
-			user.put_in_hands(vial)
-			to_chat(user, span_notice("Вы извлекли [vial] из [src]."))
-		vial = null
-		reagents = null
-		update_icon()
-		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
-	else
-		to_chat(user, span_notice("Этот гипоспрей не заряжен!"))
-
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
-	if(istype(I, /obj/item/reagent_containers/glass/bottle/vial))
-		var/obj/item/unloaded_vial
-		if(vial != null)
-			if(!quickload)
-				to_chat(user, span_warning("[src] не может держать больше одной ампулы!"))
-				return FALSE
-			unloaded_vial = vial
-			unload_hypo()
-
-		var/obj/item/reagent_containers/glass/bottle/vial/V = I
-		if(!is_type_in_list(V, allowed_containers))
-			to_chat(user, span_notice("[src] не принимает этот тип ампул."))
-			return FALSE
-		if(!user.transferItemToLoc(V,src))
-			return FALSE
-		vial = V
-		reagents = vial.reagents
-		if(unloaded_vial)
-			user.put_in_hands(unloaded_vial)
-		user.visible_message(span_notice("[user] зарядил ампулу в [src]."),span_notice("Вы зарядили [vial] в [src]."))
-		update_icon()
-		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
-		return TRUE
-	return FALSE
+	return load_hypo_attempt(I, user)
 
 /obj/item/hypospray/mkii/AltClick(mob/user)
 	. = ..()
@@ -545,16 +513,65 @@
 /obj/item/hypospray/mkii/attack(obj/item/I, mob/user, params)
 	return
 
+/obj/item/hypospray/mkii/proc/check_quik_kit_load(obj/item/reagent_containers/glass/bottle/vial/V)
+	. = FALSE
+	if(!(quickload || !vial) || !istype(V) || !istype(V.loc, /obj/item/storage/hypospraykit))
+		return
+	return TRUE
+
+/obj/item/hypospray/mkii/proc/load_hypo_attempt(obj/item/reagent_containers/glass/bottle/vial/V, mob/user, vial_loc_transfer)
+	if(!istype(V))
+		return FALSE
+	var/obj/item/unloaded_vial
+	if(vial != null)
+		if(!quickload)
+			to_chat(user, span_warning("[src] не может держать больше одной ампулы!"))
+			return FALSE
+		unloaded_vial = vial
+		unload_hypo()
+
+	if(!is_type_in_list(V, allowed_containers))
+		to_chat(user, span_notice("[src] не принимает этот тип ампул."))
+		return FALSE
+	if(!user.transferItemToLoc(V,src))
+		return FALSE
+	vial = V
+	reagents = vial.reagents
+	if(unloaded_vial)
+		if(vial_loc_transfer)
+			unloaded_vial.forceMove(vial_loc_transfer)
+		else
+			user.put_in_hands(unloaded_vial)
+	user.visible_message(span_notice("[user] зарядил ампулу в [src]."),span_notice("Вы зарядили [vial] в [src]."))
+	update_icon()
+	playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
+	return TRUE
+
+/obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
+	if(vial)
+		vial.forceMove(drop_location())
+		if(user)
+			user.put_in_hands(vial)
+			to_chat(user, span_notice("Вы извлекли [vial] из [src]."))
+		vial = null
+		reagents = null
+		update_icon()
+		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
+
 /obj/item/hypospray/mkii/afterattack(atom/target, mob/user, proximity)
 	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(attempt_inject), target, user, proximity)
+	if(!proximity)
+		return
+	if(isliving(target))
+		attempt_inject(target, user)
+	else if(check_quik_kit_load(target))
+		load_hypo_attempt(target, user, target.loc)
 
-/obj/item/hypospray/mkii/proc/attempt_inject(atom/target, mob/user, proximity)
-	if(!proximity || !isliving(target))
+/obj/item/hypospray/mkii/proc/attempt_inject(mob/living/L, mob/user)
+	if(!istype(L))
 		return
 	if(!vial?.reagents)
 		return
-	var/mob/living/L = target
 
 	if(!L.reagents || !L.can_inject(user, TRUE, user.zone_selected, penetrates))
 		return
@@ -595,7 +612,7 @@
 
 	var/fraction = min(vial.amount_per_transfer_from_this/vial.reagents.total_volume, 1)
 	vial.reagents.reaction(L, method, fraction, affected_bodypart = affecting)
-	vial.reagents.trans_to(target, vial.amount_per_transfer_from_this, log = "hypospray fill")
+	vial.reagents.trans_to(L, vial.amount_per_transfer_from_this, log = "hypospray fill")
 	var/long_sound = vial.amount_per_transfer_from_this >= 15
 	playsound(loc, long_sound ? 'sound/items/medi/hypospray_long.ogg' : pick('sound/items/medi/hypospray.ogg','sound/items/medi/hypospray2.ogg'), 50, 1, -1)
 	to_chat(user, span_notice("Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u."))
