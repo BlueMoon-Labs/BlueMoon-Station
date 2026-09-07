@@ -373,11 +373,11 @@
 				I.moveToNullspace()
 			else
 				I.forceMove(newloc)
+				if(isturf(newloc))
+					I.randomize_pixel_position(dropped_by = src)
 		on_item_dropped(I)
 		if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
 			return FALSE
-		else if(isturf(I.loc))
-			I.randomize_pixel_position(dropped_by = src)
 	SEND_SIGNAL(src, COMSIG_MOB_UNEQUIPPED_ITEM, I, force, newloc, no_move, invdrop, silent)
 	return TRUE
 
