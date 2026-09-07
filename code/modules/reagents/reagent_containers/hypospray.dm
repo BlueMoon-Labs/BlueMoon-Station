@@ -474,9 +474,8 @@
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
-	if(!vial)
-		. += "Внутри нет ампулы."
-	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
+	. += span_info("Внутри [vial ? "<b>[vial].</b>" : "нет гипоампулы."]")
+	. += span_info("Установлен режим <b>[mode ? "инъекции" : "спрея"].</b>")
 	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 /obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
