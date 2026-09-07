@@ -83,17 +83,20 @@
 
 //BLUEMOON ADD - подключение сервера к другой сети исследований через мультитул
 /obj/machinery/rnd/server/multitool_act(mob/living/user, obj/item/multitool/tool)
+	if(!allowed(user))	//BLUEMOON ADD: доступ к смене сети исследований
+		to_chat(user, span_danger("Доступ запрещён."))
+		return TRUE
 	. = ..()
 	if(istype(tool.buffer, /datum/techweb))
 		var/datum/techweb/new_web = tool.buffer
 		if(new_web == stored_research)
-			to_chat(user, span_notice("The server is already linked to [new_web.organization]."))
+			to_chat(user, span_notice("Сервер уже подключён к [new_web.organization]."))
 			return TRUE
 		stored_research = new_web
-		to_chat(user, span_notice("You link the server to [new_web.organization]."))
+		to_chat(user, span_notice("Вы подключаете сервер к [new_web.organization]."))
 	else if(!tool.buffer && stored_research)
 		tool.buffer = stored_research
-		to_chat(user, span_notice("You save the [stored_research.organization] research database to the multitool's buffer."))
+		to_chat(user, span_notice("Вы сохраняете базу данных исследований [stored_research.organization] в буфер мультитула."))
 	else
 		return NONE
 	return TRUE

@@ -65,14 +65,21 @@
 	if(istype(tool.buffer, /datum/techweb))
 		var/datum/techweb/new_web = tool.buffer
 		if(new_web == host_research)
-			to_chat(user, span_notice("[src] is already linked to [new_web.organization]."))
+			to_chat(user, span_notice("[src] уже подключён к [new_web.organization]."))
 			return TRUE
 		host_research = new_web
+		//BLUEMOON ADD: новая сеть — свежее локальное состояние и сброс кэшей, чтобы update_designs_incremental/update_designs_ui не тащили дизайны старой сети
+		stored_research = new
+		cached_designs.Cut()
+		_ui_cached_designs.Cut()
+		designs_cache_built = FALSE
+		last_design_count = 0
+		//BLUEMOON ADD END
 		INVOKE_ASYNC(src, PROC_REF(update_research))
-		to_chat(user, span_notice("You link [src] to [new_web.organization]."))
+		to_chat(user, span_notice("Вы подключаете [src] к [new_web.organization]."))
 	else if(!tool.buffer && host_research)
 		tool.buffer = host_research
-		to_chat(user, span_notice("You save the [host_research.organization] research database to the multitool's buffer."))
+		to_chat(user, span_notice("Вы сохраняете базу данных исследований [host_research.organization] в буфер мультитула."))
 	else
 		return NONE
 	return TRUE

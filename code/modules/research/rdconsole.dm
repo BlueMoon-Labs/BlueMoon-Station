@@ -114,6 +114,11 @@ Nothing else in the console has ID requirements.
 /obj/machinery/computer/rdconsole/Destroy()
 	if(stored_research)
 		stored_research.consoles_accessing -= src
+	//BLUEMOON ADD: снимаем обратную ссылку у экспериментаторов, привязанных к консоли; очистку linked_console при Destroy самих устройств сохраняет /obj/machinery/rnd/Destroy()
+	for(var/obj/machinery/rnd/experimentor/experimentor in GLOB.machines)
+		if(experimentor.linked_console == src)
+			experimentor.linked_console = null
+	//BLUEMOON ADD END
 	if(linked_destroy)
 		linked_destroy.linked_console = null
 		linked_destroy = null
@@ -159,7 +164,7 @@ Nothing else in the console has ID requirements.
 
 /obj/machinery/computer/rdconsole/proc/research_node(id, mob/user)
 	if(!stored_research)	//BLUEMOON ADD: консоль без подключённой сети
-		say("No research database connected!")
+		say("База данных исследований не подключена!")
 		return FALSE
 	if(!stored_research.available_nodes[id] || stored_research.researched_nodes[id])
 		say("Node unlock failed: Either already researched or not available!")
@@ -229,13 +234,13 @@ Nothing else in the console has ID requirements.
 	if(istype(I.buffer, /datum/techweb))
 		var/datum/techweb/new_web = I.buffer
 		if(new_web == stored_research)
-			to_chat(user, span_notice("The console is already linked to [new_web.organization]."))
+			to_chat(user, span_notice("Консоль уже подключена к [new_web.organization]."))
 			return TRUE
 		if(stored_research)
 			stored_research.consoles_accessing -= src
 		stored_research = new_web
 		stored_research.consoles_accessing[src] = TRUE
-		to_chat(user, span_notice("You link the console to [new_web.organization]."))
+		to_chat(user, span_notice("Вы подключаете консоль к [new_web.organization]."))
 		return TRUE
 	var/lathe = linked_lathe && linked_lathe.multitool_act(user, I)
 	var/print = linked_imprinter && linked_imprinter.multitool_act(user, I)
@@ -273,13 +278,12 @@ Nothing else in the console has ID requirements.
 		"analyzeritem" = null,
 		"compact" = compact
 	)
-	if(!stored_research)	//BLUEMOON ADD: консоль без подключённой сети исследований
-		return
-
-	.["researched_designs"] = stored_research.researched_designs
-	.["points"] = stored_research.research_points
-	.["points_last_tick"] = stored_research.last_bitcoins
-	.["web_org"] = stored_research.organization
+	//BLUEMOON CHANGE: вместо раннего возврата — сериализация без сети идёт с полями по умолчанию
+	if(stored_research)	//консоль без подключённой сети исследований
+		.["researched_designs"] = stored_research.researched_designs
+		.["points"] = stored_research.research_points
+		.["points_last_tick"] = stored_research.last_bitcoins
+		.["web_org"] = stored_research.organization
 
 	if (t_disk)
 		.["t_disk"] = list (
@@ -330,21 +334,24 @@ Nothing else in the console has ID requirements.
 
 
 	// Serialize all nodes to display
-	for(var/v in stored_research.tiers)
-		var/datum/techweb_node/n = SSresearch.techweb_node_by_id(v)
+	//BLUEMOON CHANGE: узлы показываются только при подключённой базе исследований
+	if(stored_research)
+		for(var/v in stored_research.tiers)
+			var/datum/techweb_node/n = SSresearch.techweb_node_by_id(v)
 
-		// Ensure node is supposed to be visible
-		if (stored_research.hidden_nodes[v])
-			continue
+			// Ensure node is supposed to be visible
+			if (stored_research.hidden_nodes[v])
+				continue
 
-		var/costs = n.get_price(stored_research)
+			var/costs = n.get_price(stored_research)
 
-		.["nodes"] += list(list(
-			"id" = n.id,
-			"can_unlock" = stored_research.can_afford(costs),
-			"costs" = costs,
-			"tier" = stored_research.tiers[n.id]
-		))
+			.["nodes"] += list(list(
+				"id" = n.id,
+				"can_unlock" = stored_research.can_afford(costs),
+				"costs" = costs,
+				"tier" = stored_research.tiers[n.id]
+			))
+	//BLUEMOON CHANGE END
 
 /obj/machinery/computer/rdconsole/proc/compress_id(id)
 	if (!id_cache[id])
@@ -421,7 +428,7 @@ Nothing else in the console has ID requirements.
 
 	//BLUEMOON ADD: действия, требующие подключённой базы исследований
 	if(!stored_research && (action in list("researchNode", "uploadDesignSlot", "uploadDisk", "loadTech")))
-		say("No research database connected!")
+		say("База данных исследований не подключена!")
 		return TRUE
 
 	switch (action)
