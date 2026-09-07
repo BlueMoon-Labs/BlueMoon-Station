@@ -576,6 +576,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 	message = sanitize_pda_message(message, sender)
 	if(!message && !photo_path)
+		if(mime_mode && sender)
+			to_chat(sender, span_notice("PDA мима отправляет только эмодзи и фотографии. Выберите эмодзи кнопкой в чате или прикрепите фото; обычный текст удаляется."))
 		return FALSE
 
 	// Filter targets

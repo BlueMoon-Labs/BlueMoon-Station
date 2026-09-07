@@ -12,8 +12,8 @@
 
 /obj/item/reagent_containers/food/snacks/grown/peanut
 	seed = /obj/item/seeds/peanutseed
-	name = "peanut"
-	desc = "Peanuts for the peanut gallery!" //get me a better description, boys.
+	name = "арахис"
+	desc = "Арахис для любителей похрустеть. Сначала обжарьте или высушите его, затем измельчите в арахисовую пасту."
 	icon_state = "peanut"
 	filling_color = "#C4AE7A"
 	bitesize = 100
@@ -24,9 +24,10 @@
 	AddElement(/datum/element/dryable, /obj/item/reagent_containers/food/snacks/roasted_peanuts)
 
 /obj/item/reagent_containers/food/snacks/roasted_peanuts
-	name = "roasted peanuts"
-	desc = "A handful of roasted peanuts, with or without salt."
+	name = "жареный арахис"
+	desc = "Горсть жареного арахиса, с солью или без. Его можно измельчить в арахисовую пасту."
 	icon_state = "roasted_peanuts"
 	foodtype = VEGETABLES
 	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/nutriment/vitamin = 1)
 	juice_results = list(/datum/reagent/consumable/peanut_butter = 3)
+	grind_results = list(/datum/reagent/consumable/peanut_butter = 3)
