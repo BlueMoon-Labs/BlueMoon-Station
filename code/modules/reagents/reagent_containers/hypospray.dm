@@ -630,10 +630,10 @@
 		switch(mode)
 			if(HYPO_SPRAY)
 				mode = HYPO_INJECT
-				to_chat(user, "[src] теперь будет производить инъекции пациенту.")
+				user.balloon_alert(user, "Режим инъекции")
 			if(HYPO_INJECT)
 				mode = HYPO_SPRAY
-				to_chat(user, "[src] теперь будет спреить участок тела пациента.")
+				user.balloon_alert(user, "Режим спрея")
 		return TRUE
 
 #undef HYPO_SPRAY
