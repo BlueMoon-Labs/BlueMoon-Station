@@ -60,6 +60,8 @@
 
 /datum/color_matrix/proc/hex2value(hex)
 	var/const/radix = 16
+	if(isnull(hex) || length(hex) < 2)
+		CRASH("Invalid hex value: [hex] (null or too short)")
 	var/num1 = text2num(hex[1], radix)
 	var/num2 = text2num(hex[2], radix)
 	if(!isnum(num1) || !isnum(num2))
@@ -67,6 +69,9 @@
 	return num1 * radix + num2
 
 /datum/color_matrix/proc/set_color(color_hex, contrast = 1, brightness = null)
+	if(isnull(color_hex) || length(color_hex) < 7 || copytext(color_hex, 1, 2) != "#")
+		stack_trace("set_color called with invalid color_hex '[color_hex]', falling back to [LIGHT_COLOR_WHITE]")
+		color_hex = LIGHT_COLOR_WHITE
 	var/rr = hex2value(copytext(color_hex, 2, 4)) / 255
 	var/gg = hex2value(copytext(color_hex, 4, 6)) / 255
 	var/bb = hex2value(copytext(color_hex, 6, 8)) / 255

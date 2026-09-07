@@ -311,7 +311,17 @@
 /atom/proc/update_bloom()
 	cut_overlay(glow_overlay)
 	cut_overlay(exposure_overlay)
-	// LightUp: уменьшаем контраст для покрашенных ламп (баллончик)
+	if(!light_range || !light_power || !light_on)
+		QDEL_NULL(glow_overlay)
+		QDEL_NULL(exposure_overlay)
+		return
+	var/safe_color = light_color
+	if(isnull(safe_color) || length(safe_color) < 7 || copytext(safe_color, 1, 2) != "#")
+		if(istype(src, /obj/machinery/light))
+			var/obj/machinery/light/L = src
+			safe_color = L.bulb_colour || LIGHT_COLOR_WHITE
+		else
+			safe_color = LIGHT_COLOR_WHITE
 	var/is_painted_lamp = FALSE
 	if(istype(src, /obj/machinery/light))
 		var/obj/machinery/light/L = src
@@ -319,6 +329,7 @@
 			is_painted_lamp = TRUE
 	var/paint_contrast_mult = is_painted_lamp ? 0.82 : 1
 	var/paint_exposure_mult = is_painted_lamp ? 0.88 : 1
+	var/static/list/exposure_icon_size_cache = list()
 	if(glow_icon && glow_icon_state)
 		glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = -2)
 		if(layer <= LOW_OBJ_LAYER)
@@ -328,7 +339,7 @@
 		glow_overlay.blend_mode = BLEND_ADD
 		if(glow_colored)
 			var/datum/color_matrix/mat = new(
-				light_color,
+				safe_color,
 				(CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * paint_contrast_mult,
 				CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power)
 			glow_overlay.color = mat.get()
@@ -344,13 +355,18 @@
 			CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
 		if(exposure_colored)
 			mat.set_color(
-				light_color,
+				safe_color,
 				(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
 				CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
 		exposure_overlay.color = mat.get()
-		var/icon/EX = icon(icon = exposure_icon, icon_state = exposure_icon_state)
-		exposure_overlay.pixel_x = 16 - EX.Width() / 2
-		exposure_overlay.pixel_y = 16 - EX.Height() / 2
+		var/cache_key = "[exposure_icon]-[exposure_icon_state]"
+		var/list/cached_size = exposure_icon_size_cache[cache_key]
+		if(isnull(cached_size))
+			var/icon/EX = icon(icon = exposure_icon, icon_state = exposure_icon_state)
+			cached_size = list(EX.Width(), EX.Height())
+			exposure_icon_size_cache[cache_key] = cached_size
+		exposure_overlay.pixel_x = 16 - cached_size[1] / 2
+		exposure_overlay.pixel_y = 16 - cached_size[2] / 2
 		add_overlay(exposure_overlay)
 
 /atom/proc/delete_lights()
