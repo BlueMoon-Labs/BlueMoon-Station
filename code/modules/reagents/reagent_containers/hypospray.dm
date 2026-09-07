@@ -347,19 +347,23 @@
 /obj/item/hypospray/mkii
 	name = "hypospray mk.II"
 	icon_state = "hypo2"
+	item_state = "hypo"
 	icon = 'icons/obj/syringe.dmi'
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает гипоампулы по 30u и поддерживает функцию быстрой перезарядки."
 	w_class = WEIGHT_CLASS_TINY
 	var/list/allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small)
+	var/reagent_overlay_state = "small-r_overlay"
+	var/reagent_overlay_max_stages = 6
 	var/mode = HYPO_INJECT
 	var/obj/item/reagent_containers/glass/bottle/vial/vial
 	var/start_vial = /obj/item/reagent_containers/glass/bottle/vial/small
-	var/spawnwithvial = TRUE
 	var/inject_wait = WAIT_INJECT
 	var/spray_wait = WAIT_SPRAY
 	var/spray_self = SELF_SPRAY
 	var/inject_self = SELF_INJECT
-	var/quickload = FALSE
+	var/quickload = TRUE
 	var/penetrates = FALSE
 
 /obj/item/hypospray/mkii/brute
@@ -378,12 +382,13 @@
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/small/tricord
 
 /obj/item/hypospray/mkii/enlarge
-	spawnwithvial = FALSE
+	start_vial = null
 
 /obj/item/hypospray/mkii/CMO
 	name = "hypospray mk.II deluxe"
 	allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small, /obj/item/reagent_containers/glass/bottle/vial/large)
 	icon_state = "cmo2"
+	reagent_overlay_state = "big-r_overlay"
 	desc = "Deluxe-модель гипроспрея, способная принимать ампулы большого размера. Помимо этого, работает быстре и доставляет больше препаратов за раз."
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/CMO
@@ -407,11 +412,11 @@
 /obj/item/hypospray/mkii/CMO/combat/synthflesh
 	name = "Combat Hypospray with Neosynth"
 	icon = 'icons/obj/syringe.dmi'
-	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	mode = HYPO_SPRAY
+	reagent_overlay_state = "combat-r_overlay"
+	reagent_overlay_max_stages = 5
+	icon_state = "holy_hypo_mk2"
 	item_state = "holy_hypo"
-	icon_state = "holy_hypo"
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/neo
 
 /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller
@@ -419,13 +424,8 @@
 	icon_state = "combat2"
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/mine_salve
 
-/datum/reagent/medicine/mine_salve
-
 /obj/item/hypospray/mkii/Initialize(mapload)
 	. = ..()
-	if(!spawnwithvial)
-		update_icon()
-		return
 	if(start_vial)
 		vial = new start_vial(src)
 	update_icon()
@@ -453,6 +453,12 @@
 
 /obj/item/hypospray/mkii/update_icon_state()
 	icon_state = "[initial(icon_state)][vial ? "" : "-e"]"
+
+/obj/item/hypospray/mkii/update_overlays()
+	. = ..()
+	if(reagent_overlay_state && vial?.reagents.total_volume)
+		var/overlay_stage = clamp(ceil((vial.reagents.total_volume / vial.reagents.maximum_volume) * reagent_overlay_max_stages), 1, reagent_overlay_max_stages)
+		. += mutable_appearance(icon, "[reagent_overlay_state][overlay_stage]", color = mix_color_from_reagents(vial.reagents.reagent_list))
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
