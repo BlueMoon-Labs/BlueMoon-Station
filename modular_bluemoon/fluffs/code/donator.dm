@@ -1,4 +1,4 @@
-//Файл для выдачи предметов донатерам по сикею
+k//Файл для выдачи предметов донатерам по сикею
 // Сикеи необходимо указывать, аналогично их файлу сохрания лодаута, пример "AA-BB-ab..." нужно записывать как "aabbab"
 
 
@@ -2729,3 +2729,8 @@
 	path = /obj/item/modkit/kumiko_ncr_bulletproof_helmet
 	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
+/datum/gear/donator/bm/kumiko_ncr_case
+	name = "NCR ranger clothes case"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/kumiko_ncr_case
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")

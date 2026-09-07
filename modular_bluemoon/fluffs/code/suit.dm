@@ -1016,7 +1016,7 @@
 
 /obj/item/modkit/kumiko_ncr_riot_helmet
 	name = "NCR riot helmet kit"
-	desc = "A modkit for making a plate carrier into a ncr duster."
+	desc = "A modkit for making a riot helmet into ncr riot helmet."
 	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
@@ -1030,7 +1030,7 @@
 
 /obj/item/modkit/kumiko_ncr_bulletproof_helmet
 	name = "NCR plate bulletproof helmet kit"
-	desc = "A modkit for making a plate carrier into a ncr duster."
+	desc = "A modkit for making a bulletproof helmet into ncr bulletproof helmet."
 	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/alt)
 
