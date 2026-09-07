@@ -18,6 +18,8 @@
 
 	idle_power_usage = 500
 	var/datum/techweb/stored_research
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — автономная изолированная сеть (дефолт)
+	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети (фракционные подтипы)
 	//Code for point mining here.
 	var/working = TRUE			//temperature should break it.
 	var/server_id = 0
@@ -35,7 +37,7 @@
 	. = ..()
 	GLOB.rndservers_list += src
 	SSresearch.servers |= src
-	stored_research = SSresearch.science_tech
+	stored_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)	//BLUEMOON CHANGE: сеть через реестр
 	alarmloop = new(src, !working)
 
 	server_id = "[copytext(md5("[world.timeofday][rand()][src]"), 1, 5)]" // Генерируем серверу уникальный айди
@@ -79,6 +81,24 @@
 	if(obj_flags & EMAGGED) // Если емагнуто, то будет отрицательное
 		income_gen *= -1
 
+//BLUEMOON ADD - подключение сервера к другой сети исследований через мультитул
+/obj/machinery/rnd/server/multitool_act(mob/living/user, obj/item/multitool/tool)
+	. = ..()
+	if(istype(tool.buffer, /datum/techweb))
+		var/datum/techweb/new_web = tool.buffer
+		if(new_web == stored_research)
+			to_chat(user, span_notice("The server is already linked to [new_web.organization]."))
+			return TRUE
+		stored_research = new_web
+		to_chat(user, span_notice("You link the server to [new_web.organization]."))
+	else if(!tool.buffer && stored_research)
+		tool.buffer = stored_research
+		to_chat(user, span_notice("You save the [stored_research.organization] research database to the multitool's buffer."))
+	else
+		return NONE
+	return TRUE
+//BLUEMOON ADD END
+
 /obj/machinery/rnd/server/power_change()
 	. = ..()
 	if(machine_stat & NOPOWER)
@@ -114,6 +134,16 @@
 /obj/machinery/rnd/server/proc/unemp()
 	set_machine_stat(machine_stat & ~EMPED)
 	refresh_working()
+
+/obj/machinery/rnd/server/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+	heating_power = 0
+
+/obj/machinery/rnd/server/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq
+	heating_power = 0
 
 /obj/machinery/rnd/server/proc/mine()
 	. = base_mining_income.Copy()

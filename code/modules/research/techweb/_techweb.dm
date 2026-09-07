@@ -76,6 +76,28 @@
 
 //BLUEMOON ADD END
 
+/datum/techweb/isolated
+	id = "ISOLATED"
+	organization = "Isolated"
+
+/datum/techweb/syndicate_isolated
+	id = "SYNDICATE_NET"
+	organization = "Syndicate"
+
+/datum/techweb/syndicate_isolated/New()
+	. = ..()
+	var/datum/techweb_node/syndicate_basic/Node = new()
+	research_node(Node, TRUE)
+
+/datum/techweb/inteq
+	id = "INTEQ_NET"
+	organization = "InteQ"
+
+/datum/techweb/inteq/New()
+	. = ..()
+	var/datum/techweb_node/syndicate_basic/Node = new()
+	research_node(Node, TRUE)
+
 /datum/techweb/science	//Global science techweb for RND consoles.
 	id = "SCIENCE"
 	organization = "Nanotrasen"

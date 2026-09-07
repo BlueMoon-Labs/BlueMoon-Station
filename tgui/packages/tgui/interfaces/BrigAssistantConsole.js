@@ -210,7 +210,7 @@ const FineRow = (props) => {
               <Input
                 width="80px"
                 value={amount}
-                onInput={(e, v) => setAmount(Math.max(1, Math.min(fine.fine, parseInt(v) || 1)))}
+                onInput={(e, v) => setAmount(Math.max(1, Math.min(fine.fine, parseInt(v, 10) || 1)))}
                 type="number"
               />
               <Box as="span" color="label" fontSize="0.75em"> кр.</Box>

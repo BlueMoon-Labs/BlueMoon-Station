@@ -23,7 +23,10 @@ Nothing else in the console has ID requirements.
 	icon_screen = "rdcomp"
 	icon_keyboard = "rd_key"
 	circuit = /obj/item/circuitboard/computer/rdconsole
-	var/datum/techweb/stored_research					//Reference to global science techweb.
+	var/datum/techweb/stored_research					//Reference to the research database.
+	//BLUEMOON ADD: сеть исследований консоли
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иная — стартует без сети (подключается мультитулом к серверам)
+	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети (фракционные подтипы)
 	var/obj/item/disk/tech_disk/t_disk	//Stores the technology disk.
 	var/obj/item/disk/design_disk/d_disk	//Stores the design disk.
 
@@ -99,8 +102,13 @@ Nothing else in the console has ID requirements.
 
 /obj/machinery/computer/rdconsole/Initialize()
 	. = ..()
-	stored_research = SSresearch.science_tech
-	stored_research.consoles_accessing[src] = TRUE
+	if(network_id == RND_NETWORK_AUTO)	//BLUEMOON CHANGE: станция — в глобальную сеть науки, иное — без сети (подключается мультитулом к серверам)
+		if(is_station_level(z))
+			stored_research = SSresearch.science_tech
+			stored_research.consoles_accessing[src] = TRUE
+	else if(network_id)	//BLUEMOON CHANGE: консоль подключается к своей сети через реестр; без ID — изолированная
+		stored_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)
+		stored_research.consoles_accessing[src] = TRUE
 	SyncRDevices()
 
 /obj/machinery/computer/rdconsole/Destroy()
@@ -150,6 +158,9 @@ Nothing else in the console has ID requirements.
 		. = ..()
 
 /obj/machinery/computer/rdconsole/proc/research_node(id, mob/user)
+	if(!stored_research)	//BLUEMOON ADD: консоль без подключённой сети
+		say("No research database connected!")
+		return FALSE
 	if(!stored_research.available_nodes[id] || stored_research.researched_nodes[id])
 		say("Node unlock failed: Either already researched or not available!")
 		return FALSE
@@ -213,7 +224,19 @@ Nothing else in the console has ID requirements.
 	locked = FALSE
 	return TRUE
 
-/obj/machinery/computer/rdconsole/multitool_act(mob/user, obj/item/multitool/I)
+/obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/I)
+	//BLUEMOON ADD - подключение консоли к сети исследований через мультитул
+	if(istype(I.buffer, /datum/techweb))
+		var/datum/techweb/new_web = I.buffer
+		if(new_web == stored_research)
+			to_chat(user, span_notice("The console is already linked to [new_web.organization]."))
+			return TRUE
+		if(stored_research)
+			stored_research.consoles_accessing -= src
+		stored_research = new_web
+		stored_research.consoles_accessing[src] = TRUE
+		to_chat(user, span_notice("You link the console to [new_web.organization]."))
+		return TRUE
 	var/lathe = linked_lathe && linked_lathe.multitool_act(user, I)
 	var/print = linked_imprinter && linked_imprinter.multitool_act(user, I)
 	return lathe || print
@@ -235,10 +258,10 @@ Nothing else in the console has ID requirements.
 	. = list(
 		"nodes" = list(),
 		"experiments" = list(),
-		"researched_designs" = stored_research.researched_designs,
-		"points" = stored_research.research_points,
-		"points_last_tick" = stored_research.last_bitcoins,
-		"web_org" = stored_research.organization,
+		"researched_designs" = list(),
+		"points" = list(),
+		"points_last_tick" = list(),
+		"web_org" = "—",
 		"sec_protocols" = !(obj_flags & EMAGGED),
 		"t_disk" = null,
 		"d_disk" = null,
@@ -250,6 +273,13 @@ Nothing else in the console has ID requirements.
 		"analyzeritem" = null,
 		"compact" = compact
 	)
+	if(!stored_research)	//BLUEMOON ADD: консоль без подключённой сети исследований
+		return
+
+	.["researched_designs"] = stored_research.researched_designs
+	.["points"] = stored_research.research_points
+	.["points_last_tick"] = stored_research.last_bitcoins
+	.["web_org"] = stored_research.organization
 
 	if (t_disk)
 		.["t_disk"] = list (
@@ -389,6 +419,11 @@ Nothing else in the console has ID requirements.
 		say("Console is locked, cannot perform further actions.")
 		return TRUE
 
+	//BLUEMOON ADD: действия, требующие подключённой базы исследований
+	if(!stored_research && (action in list("researchNode", "uploadDesignSlot", "uploadDisk", "loadTech")))
+		say("No research database connected!")
+		return TRUE
+
 	switch (action)
 		if ("toggleLock")
 			if(obj_flags & EMAGGED)
@@ -409,7 +444,7 @@ Nothing else in the console has ID requirements.
 		if ("researchNode")
 			if(!research_control)
 				return TRUE
-			if(!SSresearch.science_tech.available_nodes[params["node_id"]])
+			if(!stored_research.available_nodes[params["node_id"]])
 				return TRUE
 			research_node(params["node_id"], usr)
 			return TRUE
@@ -557,6 +592,14 @@ Nothing else in the console has ID requirements.
 
 /obj/machinery/computer/rdconsole/experiment
 	name = "E.X.P.E.R.I-MENTOR R&D Console"
+
+/obj/machinery/computer/rdconsole/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/computer/rdconsole/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq
 
 #undef RND_TECH_DISK
 #undef RND_DESIGN_DISK

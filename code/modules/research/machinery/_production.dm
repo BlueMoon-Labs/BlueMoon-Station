@@ -17,6 +17,8 @@
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — персональная изолированная сеть
+	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети
 	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
 
 	var/lathe_prod_time = 0.5
@@ -39,7 +41,7 @@
 	create_reagents(0, OPENCONTAINER | NO_REACT)
 	gen_access()
 	stored_research = new
-	host_research = SSresearch.science_tech
+	host_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)	//BLUEMOON CHANGE: подключение к сети через реестр
 	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
@@ -56,6 +58,25 @@
 	QDEL_NULL(stored_research)
 	host_research = null
 	return ..()
+
+//BLUEMOON ADD - переподключение производственной машины к другой сети исследований через мультитул
+/obj/machinery/rnd/production/multitool_act(mob/living/user, obj/item/multitool/tool)
+	. = ..()
+	if(istype(tool.buffer, /datum/techweb))
+		var/datum/techweb/new_web = tool.buffer
+		if(new_web == host_research)
+			to_chat(user, span_notice("[src] is already linked to [new_web.organization]."))
+			return TRUE
+		host_research = new_web
+		INVOKE_ASYNC(src, PROC_REF(update_research))
+		to_chat(user, span_notice("You link [src] to [new_web.organization]."))
+	else if(!tool.buffer && host_research)
+		tool.buffer = host_research
+		to_chat(user, span_notice("You save the [host_research.organization] research database to the multitool's buffer."))
+	else
+		return NONE
+	return TRUE
+//BLUEMOON ADD END
 
 /obj/machinery/rnd/production/examine(mob/user)
 	. = ..()
@@ -373,7 +394,7 @@
 			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 			say("Warning: Printing failed: The request is too big!")
 		return FALSE
-	var/datum/design/D = (linked_console || requires_console)? (linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)
+	var/datum/design/D = (linked_console || requires_console)? (linked_console && linked_console.stored_research && linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)	//BLUEMOON ADD: проверка на подключённую сеть консоли
 	if(!istype(D))
 		return FALSE
 	if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
@@ -494,3 +515,19 @@
 		return
 	sleep(rand(0, 2 SECONDS)) // Рандомный дилей перед уведомлением о получении дизайнов, уменьшает звуковую нагрузку (надеюсь)
 	say("Синхронизация с базой изучений. Количество новых чертежей: [added]")
+
+/obj/machinery/rnd/production/protolathe/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/rnd/production/protolathe/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq
+
+/obj/machinery/rnd/production/circuit_imprinter/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/rnd/production/circuit_imprinter/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq
