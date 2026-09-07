@@ -351,7 +351,7 @@
 	icon = 'icons/obj/syringe.dmi'
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает гипоампулы по 30u и поддерживает функцию быстрой перезарядки."
+	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает маленькие гипоампулы и поддерживает функцию быстрой перезарядки."
 	w_class = WEIGHT_CLASS_TINY
 	var/list/allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small)
 	var/reagent_overlay_state = "small-r_overlay"
