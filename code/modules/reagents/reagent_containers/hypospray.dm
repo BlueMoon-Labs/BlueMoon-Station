@@ -479,7 +479,7 @@
 	. = ..()
 	. += span_info("Внутри [vial ? "<b>[vial].</b>" : "нет гипоампулы."]")
 	. += span_info("Установлен режим <b>[mode ? "инъекции" : "спрея"].</b>")
-	. += span_info("Вы можете заряжать ампулы прямо из набора с гипоампулами, не беря их в руку.")
+	. += span_info("Вы можете заряжать ампулы прямо из набора с гипоампулами или медицинского пояса, не беря их в руку.")
 	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
@@ -515,7 +515,7 @@
 
 /obj/item/hypospray/mkii/proc/check_quik_kit_load(obj/item/reagent_containers/glass/bottle/vial/V)
 	. = FALSE
-	if(!(quickload || !vial) || !istype(V) || !istype(V.loc, /obj/item/storage/hypospraykit))
+	if(!(quickload || !vial) || !istype(V) || !(istype(V.loc, /obj/item/storage/hypospraykit) || istype(V.loc, /obj/item/storage/belt/medical)))
 		return
 	return TRUE
 
