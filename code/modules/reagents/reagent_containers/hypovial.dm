@@ -30,6 +30,9 @@
 
 /obj/item/reagent_containers/glass/bottle/vial/on_reagent_change()
 	update_icon()
+	if(istype(loc, /obj/item/hypospray/mkii))
+		var/obj/item/hypospray/mkii/hypo = loc
+		hypo.update_icon()
 
 /obj/item/reagent_containers/glass/bottle/vial/tiny
 	name = "small hypovial"
