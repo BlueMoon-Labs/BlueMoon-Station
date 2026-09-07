@@ -428,6 +428,7 @@
 	. = ..()
 	if(start_vial)
 		vial = new start_vial(src)
+		reagents = vial.reagents
 	update_icon()
 	register_context()
 	register_item_context()
@@ -462,9 +463,7 @@
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
-	if(vial)
-		. += vial.get_reagent_examine(user)
-	else
+	if(!vial)
 		. += "Внутри нет ампулы."
 	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
 	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
@@ -476,6 +475,7 @@
 			user.put_in_hands(vial)
 			to_chat(user, span_notice("Вы извлекли [vial] из [src]."))
 		vial = null
+		reagents = null
 		update_icon()
 		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
 	else
@@ -498,15 +498,14 @@
 		if(!user.transferItemToLoc(V,src))
 			return FALSE
 		vial = V
+		reagents = vial.reagents
 		if(unloaded_vial)
 			user.put_in_hands(unloaded_vial)
 		user.visible_message(span_notice("[user] зарядил ампулу в [src]."),span_notice("Вы зарядили [vial] в [src]."))
 		update_icon()
 		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
 		return TRUE
-	else
-		to_chat(user, span_notice("Это не поместится в [src]."))
-		return FALSE
+	return FALSE
 
 /obj/item/hypospray/mkii/AltClick(mob/user)
 	. = ..()
