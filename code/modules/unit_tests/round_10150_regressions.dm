@@ -61,7 +61,9 @@
 	dummy.dust_spill_everything()
 
 	TEST_ASSERT_EQUAL(LAZYLEN(dummy.implants), 0, "имплант обязан быть снят со списка")
-	TEST_ASSERT_EQUAL(implant.loc, get_turf(dummy), "имплант обязан выпасть на пол")
+	TEST_ASSERT_EQUAL(implant.loc.type, /obj/item/implantcase)
+	TEST_ASSERT(istype(implant.loc, /obj/item/implantcase), "имплант обязан быть в кейсе")
+	TEST_ASSERT_EQUAL(implant.loc?.loc, get_turf(dummy), "имплант обязан выпасть на пол")
 
 /// "destroy proc was called multiple times" у сборного модуля брони МОДа:
 /// его on_uninstall() звал qdel(src), а Destroy() снова заходил в uninstall().
