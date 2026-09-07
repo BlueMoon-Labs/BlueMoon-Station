@@ -468,26 +468,28 @@
 		. += "Внутри нет ампулы."
 	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
 
-/obj/item/hypospray/mkii/proc/unload_hypo(obj/item/I, mob/user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
-		var/obj/item/reagent_containers/glass/bottle/vial/V = I
-		V.forceMove(user.loc)
-		user.put_in_hands(V)
-		to_chat(user, "<span class='notice'>Вы извлекли [vial] из [src].</span>")
+/obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
+	if(vial)
+		vial.forceMove(drop_location())
+		if(user)
+			user.put_in_hands(vial)
+			to_chat(user, "<span class='notice'>Вы извлекли [vial] из [src].</span>")
 		vial = null
 		update_icon()
 		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
 	else
 		to_chat(user, "<span class='notice'>Этот гипоспрей не заряжен!</span>")
-		return
 
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial) && vial != null))
-		if(!quickload)
-			to_chat(user, "<span class='warning'>[src] не может держать больше одной ампулы!</span>")
-			return FALSE
-		unload_hypo(vial, user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
+	if(istype(I, /obj/item/reagent_containers/glass/bottle/vial))
+		var/obj/item/unloaded_vial
+		if(vial != null)
+			if(!quickload)
+				to_chat(user, "<span class='warning'>[src] не может держать больше одной ампулы!</span>")
+				return FALSE
+			unloaded_vial = vial
+			unload_hypo()
+
 		var/obj/item/reagent_containers/glass/bottle/vial/V = I
 		if(!is_type_in_list(V, allowed_containers))
 			to_chat(user, "<span class='notice'>[src] не принимает этот тип ампул.</span>")
@@ -495,6 +497,8 @@
 		if(!user.transferItemToLoc(V,src))
 			return FALSE
 		vial = V
+		if(unloaded_vial)
+			user.put_in_hands(unloaded_vial)
 		user.visible_message("<span class='notice'>[user] зарядил ампулу в [src].</span>","<span class='notice'>Вы зарядили [vial] в [src].</span>")
 		update_icon()
 		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
@@ -590,11 +594,8 @@
 	if(user)
 		if(user.incapacitated())
 			return
-		else if(!vial)
-			to_chat(user, "Гипоспрей сначала должен быть заряжен!")
-			return
-		else
-			unload_hypo(vial,user)
+		else if(vial)
+			unload_hypo(user)
 
 /obj/item/hypospray/mkii/CtrlClick(mob/living/user)
 	. = ..()
