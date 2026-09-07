@@ -140,9 +140,9 @@
 		A.power_environ = FALSE
 		A.lightswitch = FALSE
 		A.power_change()
-		addtimer(CALLBACK(src, .proc/restore_power, A), 600)
+		addtimer(CALLBACK(src, PROC_REF(restore_power), A), 600)
 
-	addtimer(CALLBACK(src, .proc/announce_restoration), 600)
+	addtimer(CALLBACK(src, PROC_REF(announce_restoration)), 600)
 
 /datum/round_event/blackmesa/power_outage/proc/announce_restoration()
 	SSblackmesa_events.mesa_announce("Внимание! Энергоснабжение Сектора H восстановлено. Все системы функционируют в штатном режиме.", "Power Restored", 'modular_bluemoon/sound/ambience/mesa/BMAS1.ogg')
