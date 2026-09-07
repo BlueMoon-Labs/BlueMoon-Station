@@ -43,13 +43,13 @@
 /obj/item/reagent_containers/glass/bottle/vial/small
 	name = "hypovial"
 	volume = 60
-	possible_transfer_amounts = list(1,2,5,10,20)
+	possible_transfer_amounts = list(1,2,5,10,20,30,60)
 
 /obj/item/reagent_containers/glass/bottle/vial/small/bluespace
-	volume = 120
-	possible_transfer_amounts = list(1,2,5,10,20)
-	name = "bluespace hypovial"
+	name = "small bluespace hypovial"
 	icon_state = "hypovialbs"
+	volume = 120
+	possible_transfer_amounts = list(1,2,5,10,20,30,60,120)
 	unique_reskin = null
 
 /obj/item/reagent_containers/glass/bottle/vial/large
@@ -58,7 +58,7 @@
 	icon_state = "hypoviallarge"
 	volume = 120
 	amount_per_transfer_from_this = 10
-	possible_transfer_amounts = list(1,2,5,10,20)
+	possible_transfer_amounts = list(1,2,5,10,20,30,60,120)
 	unique_reskin = list(
 		"large hypovial" = list("icon_state" = "hypoviallarge"),
 		"large red hypovial" = list("icon_state" = "hypoviallarge-b"),
@@ -71,12 +71,11 @@
 	cached_icon = "hypoviallarge"
 
 /obj/item/reagent_containers/glass/bottle/vial/large/bluespace
-	possible_transfer_amounts = list(1,2,5,10,20)
-	name = "bluespace large hypovial"
-	volume = 240
+	name = "large bluespace hypovial"
 	icon_state = "hypoviallargebs"
+	possible_transfer_amounts = list(1,2,5,10,20,30,60,120,240)
+	volume = 240
 	unique_reskin = null
-
 
 /obj/item/reagent_containers/glass/bottle/vial/small/bicaridine
 	name = "red hypovial (bicaridine)"

@@ -437,7 +437,14 @@
 	. = ..()
 	// Did you know that clicking something while you're holding it is the same as attack_self()?
 	if(vial && (held_item == src))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Убрать [vial]")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Убрать гипоампулу")
+	else if(istype(held_item, /obj/item/reagent_containers/glass/bottle/vial))
+		if(vial)
+			if(quickload)
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Заменить гипоампулу")
+		else
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить гипоампулу")
+
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Режим: [mode ? "спрей" : "инъекция"]")
 	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Задать объем передачи")
 	return CONTEXTUAL_SCREENTIP_SET
@@ -453,7 +460,8 @@
 	AddElement(/datum/element/update_icon_updates_onmob)
 
 /obj/item/hypospray/mkii/update_icon_state()
-	icon_state = "[initial(icon_state)][vial ? "" : "-e"]"
+	var/bs_vial = vial && (istype(vial, /obj/item/reagent_containers/glass/bottle/vial/small/bluespace) || istype(vial, /obj/item/reagent_containers/glass/bottle/vial/large/bluespace))
+	icon_state = "[initial(icon_state)][vial ? (bs_vial ? "-bs" : null) : "-e"]"
 
 /obj/item/hypospray/mkii/update_overlays()
 	. = ..()
