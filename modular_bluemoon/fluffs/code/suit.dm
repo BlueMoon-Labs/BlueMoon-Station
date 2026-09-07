@@ -910,7 +910,7 @@
 
 /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster
 	name = "NCR ranger duster"
-	desc = "Highly advanced armor used by the NCR Veteran Rangers. This one has no ermor plating."
+	desc = "Highly advanced armor used by the NCR Veteran Rangers. This one has no armor plating."
 	icon_state = "ranger"
 	item_state = "ranger"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
@@ -986,7 +986,7 @@
 /obj/item/modkit/kumiko_ncr_plate_carrier
 	name = "NCR plate carrier kit"
 	desc = "A modkit for making a plate carrier into a ncr duster."
-	product = /obj/item/clothing/suit/armor/hos/platecarrier/ncr_ranger
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 
 /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
@@ -997,3 +997,47 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet"
+	desc = "Matching helmet for the NCR Ranger duster."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_desert_helmet
+	name = "oldranger"
+	desc = "Matching helmet for the NCR desert Ranger duster."
+	icon_state = "oldranger"
+	item_state = "oldranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/kumiko_ncr_riot_helmet
+	name = "NCR riot helmet kit"
+	desc = "A modkit for making a plate carrier into a ncr duster."
+	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	name = "NCR elite desert ranger helmet"
+	desc = "NCR ranger riot helmet"
+	icon_state = "desert_ranger"
+	item_state = "desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/kumiko_ncr_bulletproof_helmet
+	name = "NCR plate bulletproof helmet kit"
+	desc = "A modkit for making a plate carrier into a ncr duster."
+	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/alt)
+
+/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	name = "Custom NCR ranger helmet"
+	desc = "NCR ranger bulletproof helmet"
+	icon_state = "rangercustom"
+	item_state = "rangercustom"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'

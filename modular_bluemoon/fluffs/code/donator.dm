@@ -2667,47 +2667,65 @@
 	name = "NCR ranger duster"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
 /datum/gear/donator/bm/kumiko_ncr_recon
 	name = "NCR recon duster"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/suit/armor/vest/knight/military
-	ckeywhitelist = list("kumikoshouko")
+	path = /obj/item/clothing/suit/donator/bm/kumiko_ncr_recon
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
 /datum/gear/donator/bm/kumiko_ncr_combat_duster
 	name = "NCR riot armor"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/suit/donator/bm/kumiko_ncr_combat_duster
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
 /datum/gear/donator/bm/kumiko_ncr_desert
 	name = "NCR desert duster"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/suit/donator/bm/kumiko_ncr_desert
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
-/obj/item/modkit/kumiko_ncr_riot
+/datum/gear/donator/bm/kumiko_ncr_riot
 	name = "NCR ranger riot kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/kumiko_ncr_riot
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
 /datum/gear/donator/bm/kumiko_ncr_bulletproof
 	name = "NCR ranger bulletproof kit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/modkit/kumiko_ncr_bulletproof
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
 /datum/gear/donator/bm/kumiko_ncr_plate_carrier
 	name = "NCR plate carrier kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/kumiko_ncr_plate_carrier
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
-/datum/gear/donator/bm/kumiko_ncr_reclaimed
-	name = "Highly advanced armor used by the NCR Veteran Rangers."
-	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/suit/donator/bm/kumiko_ncr_reclaimed
-	ckeywhitelist = list("kumikoshouko")
+/datum/gear/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet."
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
+
+/datum/gear/donator/bm/kumiko_ncr_desert_helmet
+	name = "NCR desert ranger helmet"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/kumiko_ncr_desert_helmet
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
+
+/datum/gear/donator/bm/kumiko_ncr_riot_helmet_kit
+	name = "NCR riot helmet kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/kumiko_ncr_riot_helmet
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
+
+/datum/gear/donator/bm/kumiko_ncr_bulletproof_helmet_kit
+	name = "NCR bulletproof helmet kit."
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/kumiko_ncr_bulletproof_helmet
+	ckeywhitelist = list("kumikoshouko", "1HollowKnight1")
 
