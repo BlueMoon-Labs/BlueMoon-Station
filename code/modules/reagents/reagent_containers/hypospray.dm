@@ -473,38 +473,38 @@
 		vial.forceMove(drop_location())
 		if(user)
 			user.put_in_hands(vial)
-			to_chat(user, "<span class='notice'>Вы извлекли [vial] из [src].</span>")
+			to_chat(user, span_notice("Вы извлекли [vial] из [src]."))
 		vial = null
 		update_icon()
 		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
 	else
-		to_chat(user, "<span class='notice'>Этот гипоспрей не заряжен!</span>")
+		to_chat(user, span_notice("Этот гипоспрей не заряжен!"))
 
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
 	if(istype(I, /obj/item/reagent_containers/glass/bottle/vial))
 		var/obj/item/unloaded_vial
 		if(vial != null)
 			if(!quickload)
-				to_chat(user, "<span class='warning'>[src] не может держать больше одной ампулы!</span>")
+				to_chat(user, span_warning("[src] не может держать больше одной ампулы!"))
 				return FALSE
 			unloaded_vial = vial
 			unload_hypo()
 
 		var/obj/item/reagent_containers/glass/bottle/vial/V = I
 		if(!is_type_in_list(V, allowed_containers))
-			to_chat(user, "<span class='notice'>[src] не принимает этот тип ампул.</span>")
+			to_chat(user, span_notice("[src] не принимает этот тип ампул."))
 			return FALSE
 		if(!user.transferItemToLoc(V,src))
 			return FALSE
 		vial = V
 		if(unloaded_vial)
 			user.put_in_hands(unloaded_vial)
-		user.visible_message("<span class='notice'>[user] зарядил ампулу в [src].</span>","<span class='notice'>Вы зарядили [vial] в [src].</span>")
+		user.visible_message(span_notice("[user] зарядил ампулу в [src]."),span_notice("Вы зарядили [vial] в [src]."))
 		update_icon()
 		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
 		return TRUE
 	else
-		to_chat(user, "<span class='notice'>Это не поместится в [src].</span>")
+		to_chat(user, span_notice("Это не поместится в [src]."))
 		return FALSE
 
 /obj/item/hypospray/mkii/AltClick(mob/user)
@@ -552,43 +552,43 @@
 	var/obj/item/bodypart/affecting = L.get_bodypart(check_zone(user.zone_selected))
 	if(iscarbon(L))
 		if(!affecting)
-			to_chat(user, "<span class='warning'>Конечность отсутствует!</span>")
+			to_chat(user, span_warning("Конечность отсутствует!"))
 			return
 		if(!affecting.is_organic_limb())
-			to_chat(user, "<span class='notice'>Препараты не работают на роботических конечностях!</span>")
+			to_chat(user, span_notice("Препараты не работают на роботических конечностях!"))
 			return
 		else if(!affecting.is_organic_limb(FALSE) && mode != HYPO_INJECT)
-			to_chat(user, "<span class='notice'>Биомеханические конечности могут быть обслужены только через их интегрированный порт для инъекций, не спреем!</span>")
+			to_chat(user, span_notice("Биомеханические конечности могут быть обслужены только через их интегрированный порт для инъекций, не спреем!"))
 			return
 	//Always log attemped injections for admins
 	var/contained = vial.reagents.log_list()
 	log_combat(user, L, "attemped to inject", src, addition="which had [contained]")
 
 	if(!vial.reagents.total_volume)
-		to_chat(user, "<span class='notice'>Ампула внутри [src] пуста!</span>")
+		to_chat(user, span_notice("Ампула внутри [src] пуста!"))
 		return
 
 	var/fp_verb = mode == HYPO_SPRAY ? "нанести спрей" : "сделать инъекцию"
 	var/method = mode == HYPO_SPRAY ? PATCH : INJECT	//Medsprays use patch when spraying, feels like an inconsistancy here.
 
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] пытается [fp_verb] [L] при помощи [src]!</span>", \
-						"<span class='userdanger'>[user] пытается [fp_verb] вам при помощи [src]!</span>")
+		L.visible_message(span_danger("[user] пытается [fp_verb] [L] при помощи [src]!"), \
+						span_userdanger("[user] пытается [fp_verb] вам при помощи [src]!"))
 	if(!do_mob(user, L, inject_wait, extra_checks = CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, FALSE, user.zone_selected, penetrates)))
 		return
 	if(!vial?.reagents?.total_volume)
 		return
 	log_attack("<font color='red'>[user.name] ([user.ckey]) applied [src] to [L.name] ([L.ckey]), which had [contained] (INTENT: [uppertext(user.a_intent)]) (MODE: [mode])</font>")
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] использует [src] на [L]!</span>", \
-						"<span class='userdanger'>[user] использует [src] на вас!</span>")
+		L.visible_message(span_danger("[user] использует [src] на [L]!"), \
+						span_userdanger("[user] использует [src] на вас!"))
 
 	var/fraction = min(vial.amount_per_transfer_from_this/vial.reagents.total_volume, 1)
 	vial.reagents.reaction(L, method, fraction, affected_bodypart = affecting)
 	vial.reagents.trans_to(target, vial.amount_per_transfer_from_this, log = "hypospray fill")
 	var/long_sound = vial.amount_per_transfer_from_this >= 15
 	playsound(loc, long_sound ? 'sound/items/medi/hypospray_long.ogg' : pick('sound/items/medi/hypospray.ogg','sound/items/medi/hypospray2.ogg'), 50, 1, -1)
-	to_chat(user, "<span class='notice'>Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u.</span>")
+	to_chat(user, span_notice("Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u."))
 
 /obj/item/hypospray/mkii/attack_self(mob/living/user)
 	if(user)
@@ -611,7 +611,7 @@
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'><b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.</span>"
+	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 #undef HYPO_SPRAY
 #undef HYPO_INJECT
