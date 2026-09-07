@@ -376,6 +376,7 @@
 	layer_mode = PARALLAX_MODE_STATIC
 	center_x = 3872 // 121 * 32
 	center_y = 6848 // 214 * 32
+	environment_flags = PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_SHUTTLE
 
 /atom/movable/screen/parallax_layer/ihategordon/random/space_gas
 	icon_state = "space_gas"
