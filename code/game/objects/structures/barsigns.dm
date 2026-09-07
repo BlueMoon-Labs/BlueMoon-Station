@@ -126,6 +126,21 @@
 		return
 	set_sign(picked_name)
 
+/obj/structure/sign/barsign/syndicate
+	desc = "A bar sign. Made in Syndicate."
+
+/obj/structure/sign/barsign/syndicate/Initialize(mapload)
+	. = ..()
+	var/datum/barsign/hiddensigns/syndibarsign/syndie_sign = locate() in barsigns
+	if(!syndie_sign)
+		syndie_sign = new
+		barsigns += syndie_sign
+	var/datum/barsign/cindikate/cindisign = locate() in barsigns
+	if(!cindisign)
+		cindisign = new
+		barsigns += cindisign
+	set_sign(pick(syndie_sign, cindisign))
+
 //Code below is to define useless variables for datums. It errors without these
 
 

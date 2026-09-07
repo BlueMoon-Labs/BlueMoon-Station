@@ -35,6 +35,20 @@
 	difficulty = 8
 	excludefromjob = list("Captain")
 
+// Эти предметы для кражи могут появляться только в стартовой экипировке определённой профессии.
+// Проверяем при выдаче цели, чтобы учитывать предметы прибывших позже персонажей.
+/datum/objective_item/steal/traitor/ExtraCheck()
+	for(var/obj/item/candidate in world)
+		if(!istype(candidate, targetitem) || QDELETED(candidate))
+			continue
+		var/turf/item_turf = get_turf(candidate)
+		// На ЦК и в руинах есть запасы снаряжения, которое ещё не попало на станцию.
+		if(!item_turf || !is_station_level(item_turf.z))
+			continue
+		if(check_special_completion(candidate))
+			return TRUE
+	return FALSE
+
 /datum/objective_item/steal/traitor/fireaxe
 	name = "пожарный топор."
 	targetitem = /obj/item/fireaxe

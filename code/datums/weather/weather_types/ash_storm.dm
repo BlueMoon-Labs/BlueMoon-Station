@@ -4,11 +4,23 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 #define MAXIMUM_WEATHER_SEVERITY 100
 #define INVERSE_LERP(a, b, value) (((value) - (a)) / ((b) - (a)))
 
+// Particles are rendered by attaching a particle system to a world atom that is
+// carried on the client's screen through vis_contents (the same proven pattern
+// as /obj/effect/synthcorrupt_particles_holder).  BYOND does not reliably render
+// particle systems on bare screen atoms.
 /atom/movable/screen/weather_holder
 	icon = null
-	appearance_flags = TILE_BOUND | PIXEL_SCALE
+	appearance_flags = PIXEL_SCALE | RESET_TRANSFORM
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	screen_loc = "CENTER,CENTER"
+	plane = FULLSCREEN_PLANE
+	layer = FULLSCREEN_LAYER
+
+/obj/effect/abstract/weather_holder
+	icon = null
+	appearance_flags = TILE_BOUND | PIXEL_SCALE
+	blocks_emissive = EMISSIVE_BLOCK_NONE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	plane = FULLSCREEN_PLANE
 	layer = FULLSCREEN_LAYER
 
@@ -80,11 +92,12 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 	if(!wind_sign)
 		wind_sign = pick(-1, 1)
 	severity = clamp(new_severity, 0, max_severity)
+	var/normalized_severity = severity / max_severity
 	for(var/viewer as anything in particle_viewers)
-		for(var/atom/movable/screen/weather_holder/holder as anything in particle_viewers[viewer])
+		for(var/atom/movable/holder as anything in particle_viewers[viewer])
 			var/particles/weather/particle_effect = holder.particles
 			if(!isnull(particle_effect))
-				particle_effect.animate_severity(severity / max_severity, wind_sign)
+				particle_effect.animate_severity(normalized_severity, wind_sign)
 
 // ---- viewer management ----------------------------------------------------
 
@@ -102,7 +115,7 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 		var/turf/possible_turf = get_turf(possible_viewer)
 		if(isnull(possible_turf))
 			continue
-		if(possible_turf.z in impacted_z_levels && (possible_turf.loc in impacted_areas))
+		if((possible_turf.z in impacted_z_levels) && (possible_turf.loc in impacted_areas))
 			wanted_viewers += possible_viewer
 	// Remove stale viewers
 	for(var/mob/old_viewer as anything in particle_viewers)
@@ -116,31 +129,39 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 /datum/weather/particle/proc/add_particle_viewer(mob/viewer)
 	if(isnull(viewer?.client))
 		return
-	var/list/new_holders = list()
+	// viewer_objects[1] is always the screen anchor; the following entries are
+	// the world particle holders attached to it through vis_contents.
+	var/list/viewer_objects = list()
+	var/atom/movable/screen/weather_holder/anchor = new()
+	viewer_objects += anchor
 	if(particle_type)
-		var/atom/movable/screen/weather_holder/holder = new()
+		var/obj/effect/abstract/weather_holder/holder = new(anchor)
 		holder.particles = new particle_type()
-		new_holders += holder
+		anchor.vis_contents += holder
+		viewer_objects += holder
 	if(emissive_type)
-		var/atom/movable/screen/weather_holder/holder = new()
+		var/obj/effect/abstract/weather_holder/holder = new(anchor)
 		holder.particles = new emissive_type()
 		holder.layer = FULLSCREEN_LAYER + 0.1
-		new_holders += holder
-	for(var/atom/movable/screen/weather_holder/holder as anything in new_holders)
-		viewer.client.screen += holder
-	particle_viewers[viewer] = new_holders
+		anchor.vis_contents += holder
+		viewer_objects += holder
+	viewer.client.screen += anchor
+	particle_viewers[viewer] = viewer_objects
 
 /datum/weather/particle/proc/remove_particle_viewer(mob/viewer)
-	var/list/holders = particle_viewers[viewer]
-	if(isnull(holders))
+	var/list/viewer_objects = particle_viewers[viewer]
+	if(isnull(viewer_objects))
 		return
-	if(viewer?.client)
-		for(var/atom/movable/screen/weather_holder/holder as anything in holders)
-			viewer.client.screen -= holder
-			qdel(holder)
-	else
-		for(var/atom/movable/screen/weather_holder/holder as anything in holders)
-			qdel(holder)
+	var/atom/movable/screen/weather_holder/anchor = viewer_objects[1]
+	for(var/index in 2 to viewer_objects.len)
+		var/obj/effect/abstract/weather_holder/holder = viewer_objects[index]
+		if(anchor)
+			anchor.vis_contents -= holder
+		qdel(holder)
+	if(viewer?.client && anchor)
+		viewer.client.screen -= anchor
+	if(anchor)
+		qdel(anchor)
 	particle_viewers -= viewer
 
 /datum/weather/particle/proc/remove_all_particle_viewers()
@@ -240,6 +261,10 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 	particle_type = /particles/weather/ash_storm
 	emissive_type = /particles/weather/ash_storm/embers
 
+	min_severity = 60
+	optimal_severity = 80
+	wind_sign = -1 // Always blows left to sync with the animated overlays
+
 	telegraph_message = "<span class='boldwarning'>Жуткий Вой поднялся по округе. Облака горящего пепла застилают горизонт. Ищите Убежище!</span>"
 	telegraph_duration = 300
 	telegraph_overlay = "light_ash"
@@ -268,19 +293,34 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 	var/list/weak_sounds = list()
 	var/list/strong_sounds = list()
 
-	/// Chance per particle_tick (≈ 1 s) to strike a random turf with lightning.
-	var/thunder_chance = 0.005
+	/// Chance per particle_tick (≈ 1 s) to strike with lightning during MAIN_STAGE.
+	/// NovaSector scales strikes by impacted turf count; over a 60-120 s storm this
+	/// yields a visible strike roughly every few seconds.
+	var/thunder_chance = 0.2
 	/// Color applied to the thunderbolt visual
 	var/thunder_color = "#7a0000"
 
 // ---- sound management (unit-test contract) ---------------------------------
 
 /datum/weather/ash_storm/telegraph()
-	var/list/eligible_areas = list()
+	// Base telegraph() resolves an area to a single z via area.z (weather.dm),
+	// which is unreliable for areas covering several z-levels at once - e.g.
+	// /area/lavaland/surface/outdoors spans both lavaland zs, so base would drop
+	// it from impacted_areas on the storm's own z. Rebuild the set from the actual
+	// turfs on the impacted z-levels; base telegraph() then only merges duplicates.
+	var/list/protected_typecache = LAZYLEN(protected_areas) ? typecacheof(protected_areas) : null
 	for(var/z in impacted_z_levels)
-		eligible_areas += SSmapping.areas_in_z["[z]"]
-	for(var/i in 1 to eligible_areas.len)
-		var/area/place = eligible_areas[i]
+		for(var/turf/environment as anything in block(locate(1, 1, z), locate(world.maxx, world.maxy, z)))
+			var/area/environment_area = environment.loc
+			if(isnull(environment_area))
+				continue
+			if(protect_indoors && !environment_area.outdoors)
+				continue
+			if(protected_typecache && is_type_in_typecache(environment_area, protected_typecache))
+				continue
+			impacted_areas[environment_area] = TRUE
+	// Sound spots follow the same robust set so every affected area is audible.
+	for(var/area/place as anything in impacted_areas)
 		if(place.outdoors)
 			weak_sounds[place] = /datum/looping_sound/weak_outside_ashstorm
 			strong_sounds[place] = /datum/looping_sound/active_outside_ashstorm

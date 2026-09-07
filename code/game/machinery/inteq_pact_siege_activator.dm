@@ -43,7 +43,7 @@
 	)
 	if(!do_after(L, 30 SECONDS, target = src))
 		return TRUE
-	if(QDELETED(src) || QDELETED(L) || !siege.active || siege.living_defenders_count() > 0)
+	if(QDELETED(src) || QDELETED(L) || !siege.active)
 		return TRUE
 	siege.conclude(PACT_SIEGE_SIDE_PACT, "силы ПАКТ захватили консоль БС-двигателей на объекте InteQ.", TRUE)
 	playsound(src, 'sound/machines/gateway/gateway_open.ogg', 65, TRUE)
