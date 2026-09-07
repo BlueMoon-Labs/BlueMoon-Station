@@ -69,6 +69,10 @@
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		TOGGLE_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK)
 	linked_action.Trigger(trigger_flags)
+	SEND_SOUND(usr, get_sfx(SFX_TERMINAL_TYPE))
+	transform = turn(matrix() * 0.9, pick(-8, 8))
+	alpha = 200
+	animate(src, transform = matrix(), time = 0.4 SECONDS, alpha = 255)
 	return TRUE
 
 /atom/movable/screen/movable/action_button/proc/begin_creating_bind(mob/user)
