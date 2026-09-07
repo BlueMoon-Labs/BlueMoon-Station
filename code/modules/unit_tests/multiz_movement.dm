@@ -300,6 +300,7 @@
 /datum/unit_test/multiz_transparency_keeps_lighting_object/Run()
 	var/turf/hole = run_loc_floor_bottom_left
 	var/turf/shown_below = run_loc_floor_top_right
+	ensure_lighting_object(hole)
 
 	TEST_ASSERT_NOTNULL(hole.lighting_object, "Тесту нужен турф со световым объектом")
 	TEST_ASSERT(hole.lighting_object in hole.vis_contents, "Наш световой объект живёт в vis_contents своего турфа — на этом держится весь тест")

@@ -86,5 +86,27 @@
 	TEST_ASSERT_EQUAL(by_type["[probe.type] overlay"], 1, "Аудит не заметил оверлей с плоскости чужого этажа")
 	TEST_ASSERT_EQUAL(length(by_type), 1, "Аудит пожаловался на что-то кроме подсаженного оверлея:\n[samples.Join("\n")]")
 
+/// Imported augment overlays must use the owner's floor even while the attached limb is in nullspace.
+/datum/unit_test/emissive_offset_augment_follows_owner
+
+/datum/unit_test/emissive_offset_augment_follows_owner/Run()
+	var/turf/test_floor = multiz_test_lower_turf() || run_loc_floor_bottom_left
+	var/mob/living/carbon/human/owner = allocate(/mob/living/carbon/human, test_floor)
+	var/obj/item/bodypart/limb = owner.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(limb, "The augment needs an attached chest")
+	TEST_ASSERT(isnull(limb.loc), "Attached limbs must exercise the nullspace owner fallback")
+	var/obj/item/organ/cyberimp/chest/reviver/implant = allocate(/obj/item/organ/cyberimp/chest/reviver)
+	var/list/augment_images = implant.bodypart_aug.get_overlay(limb, "ADJ", -BODY_ADJ_LAYER)
+	var/expected_plane = GET_NEW_PLANE(EMISSIVE_PLANE, GET_Z_PLANE_OFFSET(owner.z))
+	var/emissive_count = 0
+	for(var/image/overlay as anything in augment_images)
+		TEST_ASSERT_EQUAL(overlay.layer, -BODY_ADJ_LAYER, "Augment layers must survive the emissive helper call")
+		TEST_ASSERT_EQUAL(overlay.alpha, 255, "Augment opacity must survive the emissive helper call")
+		if(PLANE_TO_TRUE(overlay.plane) != EMISSIVE_PLANE)
+			continue
+		emissive_count++
+		TEST_ASSERT_EQUAL(overlay.plane, expected_plane, "Augment glow and blockers must follow the owner's floor")
+	TEST_ASSERT_EQUAL(emissive_count, 3, "Expected the augment glow and both emissive blockers")
+
 #undef EMISSIVE_OFFSET_TEST_ICON
 #undef EMISSIVE_OFFSET_TEST_STATE

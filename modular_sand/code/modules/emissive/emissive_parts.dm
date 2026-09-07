@@ -37,15 +37,5 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 	if(offset_spokesman)
 		SET_PLANE_EXPLICIT(emissive, EMISSIVE_PLANE, offset_spokesman)
 	emissive.color = GLOB.emissive_color
-	emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE
+	emissive.appearance_flags = (emissive.appearance_flags & ~KEEP_APART) | KEEP_TOGETHER | TILE_BOUND | PIXEL_SCALE
 	return emissive
-
-GLOBAL_LIST_EMPTY(marking_emissive_icon_cache)
-
-/proc/make_marking_emissive_icon(icon/source_icon, source_state)
-	var/cache_key = "[source_icon]-[source_state]"
-	if(GLOB.marking_emissive_icon_cache[cache_key])
-		return GLOB.marking_emissive_icon_cache[cache_key]
-	var/icon/result = new(source_icon, source_state)
-	GLOB.marking_emissive_icon_cache[cache_key] = result
-	return result

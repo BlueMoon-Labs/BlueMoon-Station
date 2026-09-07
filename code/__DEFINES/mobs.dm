@@ -371,6 +371,15 @@
 // / If you examine the same atom twice in this timeframe, we call examine_more() instead of examine()
 #define EXAMINE_MORE_TIME	1 SECONDS
 
+/// Maximum range a player can use the deregulated glow-examine verb to inspect a glowing (emissive)
+/// character in total darkness, even beyond normal see_in_dark / view() range.
+#define EXAMINE_GLOW_MAX_RANGE	10
+
+/// How far into darkness a character with active emissive (body-part) glow can see, so that distant
+/// glowing characters are delivered to the client and their emissive pixels render at any radius.
+/// Matches the client view radius (15x15 -> 7), plus margin so the whole on-screen glow shows.
+#define EMISSIVE_DARKSIGHT_RANGE	8
+
 #define SILENCE_RANGED_MESSAGE	(1<<0)
 
 // Body position defines.

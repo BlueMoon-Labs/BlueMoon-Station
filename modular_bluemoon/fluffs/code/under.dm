@@ -1054,3 +1054,12 @@
 	body_parts_covered = NONE
 	can_adjust = TRUE
 	alternate_worn_layer = GLOVES_LAYER
+
+/obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
+	name = "The stylish one's tracksuit"
+	desc = "Dear guests have arrived."
+	icon_state = "the_stylish_one_tracksuit"
+	item_state = "the_stylish_one_tracksuit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE

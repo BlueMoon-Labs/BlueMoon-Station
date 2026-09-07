@@ -112,7 +112,7 @@
 	resonance_damage = initial(resonance_damage)
 	if(!lavaland_equipment_pressure_check(proj_turf))
 		name = initial(name)
-		var/pressure_mult = get_pressure_damage_multiplier(proj_turf, LAVALAND_EQUIPMENT_EFFECT_PRESSURE, 0.3334)
+		var/pressure_mult = get_pressure_damage_multiplier(proj_turf, LAVALAND_EQUIPMENT_EFFECT_PRESSURE, 0.1)
 		resonance_damage = round(resonance_damage * pressure_mult, 0.5) // Округляем к ближайшему целому 0.5
 	else
 		name = "strong [initial(name)]"

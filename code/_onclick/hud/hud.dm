@@ -151,8 +151,6 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(owner.client)
 		RegisterSignal(owner.client, COMSIG_CLIENT_SET_EYE, PROC_REF(on_client_set_eye))
 
-	owner.overlay_fullscreen("see_through_darkness", /atom/movable/screen/fullscreen/special/see_through_darkness)
-
 	for(var/mytype in subtypesof(/atom/movable/plane_master_controller))
 		var/atom/movable/plane_master_controller/controller_instance = new mytype(null, src)
 		plane_master_controllers[controller_instance.name] = controller_instance
