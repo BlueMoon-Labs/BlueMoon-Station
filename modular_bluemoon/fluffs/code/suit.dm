@@ -1000,12 +1000,12 @@
 		"Ranger" = list(
 			"icon_state" = "ranger",
 			"item_state" = "ranger",
-			"name" = "NCR recon duster"
+			"name" = "NCR ranger helmet"
 		),
 		"Desert" = list(
 			"icon_state" = "oldranger",
 			"item_state" = "oldranger",
-			"name" = "NCR combat duster"
+			"name" = "NCR desert ranger helmet"
 		)
 	)
 
