@@ -57,7 +57,7 @@
 	fire_hazard = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/swarmer
-	damage = 30
+	damage = 20
 	hit_prone_targets = TRUE
 
 /obj/item/projectile/beam/laser/hellfire/Initialize(mapload)

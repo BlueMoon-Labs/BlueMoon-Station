@@ -1708,9 +1708,9 @@
 	ckeywhitelist = list("kladmenuwu")
 
 /datum/gear/donator/bm/modsuit_syndicate
-	name = "Syndicate Modsuit Plate"
+	name = "Syndicate Modsuit modkit"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/mod/construction/armor/security/syndicate
+	path = /obj/item/modsuit_modkit/syndicate_sec
 	ckeywhitelist = list("domilion")
 	restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
 	restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
