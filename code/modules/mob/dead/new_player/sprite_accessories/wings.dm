@@ -437,6 +437,8 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "citheroniagrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
+	extra2 = TRUE
 
 /datum/sprite_accessory/deco_wings/whiteflygrey
 	name = "Moth (Whitefly Greyscale)"
@@ -449,12 +451,14 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "browngrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/deathheadgrey
 	name = "Moth (Deathshead Greyscale)"
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "deathheadgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/atlasgrey
 	name = "Moth (Atlas Greyscale)"
@@ -485,6 +489,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "firewatchgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/loversgrey
 	name = "Moth (Lovers Greyscale)"
@@ -503,12 +508,14 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "rosygrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/moffragrey
 	name = "Moth (Moffra Greyscale)"
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "moffragrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/oakwormgrey
 	name = "Moth (Oakworm Greyscale)"
@@ -521,6 +528,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "plasmafiregrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/monarchgrey
 	name = "Moth (Monarch Greyscale)"
@@ -533,6 +541,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "royalgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/deco_wings/plaingrey
 	name = "Moth (Plain Greyscale)"
@@ -844,6 +853,8 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "citheroniagrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
+	extra2 = TRUE
 
 /datum/sprite_accessory/insect_wings/whiteflygrey
 	name = "Moth (Whitefly Greyscale)"
@@ -856,12 +867,14 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "browngrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/deathheadgrey
 	name = "Moth (Deathshead Greyscale)"
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "deathheadgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/atlasgrey
 	name = "Moth (Atlas Greyscale)"
@@ -892,6 +905,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "firewatchgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/loversgrey
 	name = "Moth (Lovers Greyscale)"
@@ -910,12 +924,14 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "rosygrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/moffragrey
 	name = "Moth (Moffra Greyscale)"
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "moffragrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/oakwormgrey
 	name = "Moth (Oakworm Greyscale)"
@@ -928,6 +944,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "plasmafiregrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/monarchgrey
 	name = "Moth (Monarch Greyscale)"
@@ -940,6 +957,7 @@
 	icon = 'icons/mob/moth_wings_greyscale.dmi'
 	icon_state = "royalgrey"
 	upgrade_to = SPECIES_WINGS_MOTH
+	extra = TRUE
 
 /datum/sprite_accessory/insect_wings/plaingrey
 	name = "Moth (Plain Greyscale)"
