@@ -1007,7 +1007,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
 /obj/item/clothing/head/donator/bm/kumiko_ncr_desert_helmet
-	name = "oldranger"
+	name = "NCR desert ranger helmet"
 	desc = "Matching helmet for the NCR desert Ranger duster."
 	icon_state = "oldranger"
 	item_state = "oldranger"
