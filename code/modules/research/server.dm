@@ -99,6 +99,47 @@
 	return TRUE
 //BLUEMOON ADD END
 
+/// BLUEMOON ADD: сеть ближайшего РНД-сервера в радиусе max_dist от источника, либо null.
+/proc/find_nearest_rnd_techweb(atom/source, max_dist = RND_SERVER_LINK_RANGE)
+	var/turf/source_turf = get_turf(source)
+	if(!source_turf)
+		return null
+	var/obj/machinery/rnd/server/nearest
+	var/best_dist = max_dist
+	for(var/obj/machinery/rnd/server/S in orange(max_dist, source_turf))
+		var/dist = get_dist(source_turf, get_turf(S))
+		if(dist <= best_dist)
+			best_dist = dist
+			nearest = S
+	return nearest?.stored_research
+
+/// BLUEMOON ADD: авто-подключение устройства к сети: ближайший сервер в радиусе,
+/// иначе на станции — глобальная научная сеть (как раньше), вне станции — null (подключается вручную).
+/proc/find_rnd_network_for_object(atom/source, max_dist = RND_SERVER_LINK_RANGE)
+	var/datum/techweb/nearest = find_nearest_rnd_techweb(source, max_dist)
+	if(nearest)
+		return nearest
+	var/turf/source_turf = get_turf(source)
+	if(source_turf && is_station_level(source_turf.z))
+		return SSresearch.science_tech
+	return null
+//BLUEMOON ADD END
+
+/obj/machinery/rnd/server/attackby(obj/item/W, mob/user, params)
+	. = ..()
+	if(. || !istype(W))
+		return
+	//BLUEMOON ADD: клик предметом с исследовательской сетью перепривязывает его к сети сервера
+	if(istype(W, /obj/item/computermath) || istype(W, /obj/item/strangerock))
+		var/datum/techweb/current_web = W.vars["linked_techweb"]
+		if(current_web == stored_research)
+			to_chat(user, span_notice("[W] уже подключён к [stored_research.organization]."))
+		else
+			W.vars["linked_techweb"] = stored_research
+			to_chat(user, span_notice("Вы подключаете [W] к сети сервера [stored_research.organization]."))
+		return TRUE
+	return .
+
 /obj/machinery/rnd/server/power_change()
 	. = ..()
 	if(machine_stat & NOPOWER)

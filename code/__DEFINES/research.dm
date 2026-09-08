@@ -30,6 +30,9 @@
 #define RND_NETWORK_SYNDICATE "syndicate"	//Сеть исследований Синдиката
 #define RND_NETWORK_INTEQ "inteq"			//Сеть исследований InteQ
 
+//BLUEMOON ADD: радиус авто-подключения устройств (computermath, research_table, strangerock, tesla_coil/research) к ближайшему РНД-серверу
+#define RND_SERVER_LINK_RANGE 10
+
 #define LARGEST_BOMB				"bomb"
 
 #define BOMB_TARGET_POINTS			50000 //Adjust as needed. Actual hard cap is double this, but will never be reached due to hyperbolic curve.
