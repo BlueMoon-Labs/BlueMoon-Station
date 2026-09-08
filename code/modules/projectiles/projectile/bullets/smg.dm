@@ -70,7 +70,7 @@
 
 /obj/item/projectile/bullet/c46x30mm
 	name = "4.6x30mm bullet"
-	damage = 19
+	damage = 18
 	armour_penetration = BULLET_BR4
 	wound_bonus = 15
 	bare_wound_bonus = 10

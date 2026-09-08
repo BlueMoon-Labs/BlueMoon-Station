@@ -118,6 +118,36 @@
 			brc_factor = 1 - min(brc_roll * 0.01, 0.9)
 
 		totaldamage = totaldamage * armor_factor * brc_factor
+
+		// BLUEMOON ADD START - Проверка пробития BR/BRC.
+		// Пуля пробивает навылет, только если снимает И BR-бакет (остаточная броня armor уже = 0),
+		// И BRC-бакет (AP >= brc_mitigation).
+		// Если формально не пробила — конвертация урона 55/45: 55% урона уходит в стамину,
+		// 45% так и остаётся HP-уроном. При провале AP-чека срабатывает
+		// прок полного пробития по разнице уровней BR пули и BRC брони (см. ниже).
+		var/penetrated = TRUE
+		if(P.flag == BULLET)
+			penetrated = (armor <= 0) && (P.armour_penetration >= brc_mitigation)
+
+			// BLUEMOON ADD START - прок полного пробития по уровню BR пули
+			// Шанс пробить навылет несмотря на формальный провал AP-чека. Гарантия при разнице
+			// не более 2 уровней (BR_8 vs BRC 50 = 100%), дальше −10% за каждый уровень разницы:
+			// BR_8 vs BRC 70 (6 ур.) = 60%, BR_8 vs BRC 90 (10 ур.) = 20%.
+			if(!penetrated)
+				var/bullet_br = clamp(round(P.armour_penetration / 5), 0, 20)
+				var/brc_level = clamp(round(brc_mitigation / 5), 0, 20)
+				var/pierce_chance = clamp(120 - (brc_level - bullet_br) * 10, 0, 100)
+				if(prob(pierce_chance))
+					penetrated = TRUE
+			// BLUEMOON ADD END
+
+		if(!penetrated && P.flag == BULLET && totaldamage >= 1.0)
+			var/kinetic_stam = totaldamage * 0.55
+			totaldamage = totaldamage * 0.45
+			if(kinetic_stam >= 1.0)
+				apply_damage(kinetic_stam, STAMINA, def_zone, 0)
+		// BLUEMOON ADD END
+
 		var/absorbed_damage = P.damage - totaldamage
 
 		// BLUEMOON ADD START - получаем bodypart для оценки текущего состояния зоны (заброневая травма масштабируется от него)
@@ -130,12 +160,8 @@
 				zone_damage_fraction = clamp(hit_bodypart.get_damage() / hit_bodypart.max_damage, 0, 1)
 		// BLUEMOON ADD END
 
-		// Частичное пробитие — остаточная кинетика от поглощённой части
+		// Частичное пробитие — остаточная травма от поглощённой части (стамина уже учтена выше, здесь только раны/пeрелом)
 		if(P.flag == BULLET && absorbed_damage >= 1.0)
-			var/kinetic_stam = absorbed_damage * 0.40
-			if(kinetic_stam >= 1.0)
-				apply_damage(kinetic_stam, STAMINA, def_zone, 0)
-
 			// BLUEMOON ADD START - заброневая травма при частичном пробитии.
 			// Шанс растёт линейно с долей уже накопленного урона зоны — побитая конечность легче травмируется снова
 			var/partial_wound_chance = 5 + (zone_damage_fraction * 35)

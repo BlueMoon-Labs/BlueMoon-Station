@@ -4,6 +4,13 @@
 	armour_penetration = BULLET_BR7
 	sharpness = SHARP_POINTY
 	wound_bonus = 6
+	spread = 1.5 // BLUEMOON ADD: отклонение слага при вылете из ствола, применяется в fire() один раз на старте
+	var/tile_dropoff = 1.5 // BLUEMOON ADD: потеря урона за каждый пройденный тайл
+
+/obj/item/projectile/bullet/shotgun_slug/Range()
+	..()
+	if(damage > 20)
+		damage = max(20, damage - tile_dropoff)
 
 /obj/item/projectile/bullet/shotgun_slug/executioner
 	name = "executioner slug" // admin only, can dismember limbs
@@ -109,8 +116,8 @@
 	name = "buckshot pellet"
 	icon_state = "pellet"
 	damage = 12.5
-	armour_penetration = BULLET_BR4
-	tile_dropoff_ap = 4
+	armour_penetration = BULLET_BR2
+	tile_dropoff_ap = 6
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5  // low damage + additional dropoff will already curb wounding potential anything past point blank
