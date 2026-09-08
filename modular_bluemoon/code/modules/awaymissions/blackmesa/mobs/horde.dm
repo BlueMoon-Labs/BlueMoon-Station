@@ -25,6 +25,8 @@
 
 /obj/effect/decal/cleanable/acid_ooze/Initialize(mapload)
 	. = ..()
+	// Start processing immediately and check for mobs already on the turf
+	start_processing()
 	QDEL_IN(src, duration)
 
 /obj/effect/decal/cleanable/acid_ooze/Entered(atom/movable/AM)
@@ -40,9 +42,7 @@
 		START_PROCESSING(SSobj, src)
 
 /obj/effect/decal/cleanable/acid_ooze/process()
-	if(!burn_stuff())
-		STOP_PROCESSING(SSobj, src)
-		processing = FALSE
+	burn_stuff()
 
 /obj/effect/decal/cleanable/acid_ooze/proc/can_burn(atom/movable/target)
 	if(!target)
@@ -400,7 +400,6 @@
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/find_hostile_targets,
 		/datum/ai_planning_subtree/hostile_fsm,
-		/datum/ai_planning_subtree/maintain_distance,
 		/datum/ai_planning_subtree/hostile_charge,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/hostile_break_away,
@@ -433,8 +432,8 @@
 	charge_distance = 25 // Long charge distance
 	charge_frequency = 4 SECONDS // 4 seconds cooldown
 	knockdown_time = 2 SECONDS // 2 seconds knockdown on hit
-	minimum_distance = 12 // Keep space for the charge; retreat when closer
-	retreat_distance = 10
+	minimum_distance = 3 // Allow getting closer before charging
+	retreat_distance = 5
 	ai_profile_type = /datum/ai_controller/hostile_adapter/blackmesa_charger
 	var/charge_damage = 40
 	var/charge_stamina_damage = 60
