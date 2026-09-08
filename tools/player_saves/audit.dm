@@ -1,3 +1,10 @@
+#define PLAYER_SAVE_AUDIT_ERROR_LIMIT 5
+#define PLAYER_SAVE_AUDIT_PROGRESS_INTERVAL 100
+#define PLAYER_SAVE_AUDIT_COMPARE_DEPTH 64
+#define PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS 20
+#define PLAYER_SAVE_AUDIT_FULL_READ_ITERATIONS 5
+#define PLAYER_SAVE_AUDIT_SLOT_LIMIT 128
+
 // Подключается только отдельной утилитой проверки, без запуска игрового мира.
 /world/New()
 	var/list/parameters = params
@@ -55,7 +62,7 @@
 			report["passed"]++
 		catch(var/exception/failure)
 			report["failed"]++
-			if(report["failed"] <= 5)
+			if(report["failed"] <= PLAYER_SAVE_AUDIT_ERROR_LIMIT)
 				world.log << "Save audit failure [index]: [failure.name]"
 			var/list/failures = report["failures"]
 			// Никаких имён персонажей, ckey или значений полей в отчёте.
@@ -69,12 +76,12 @@
 		fdel("[scratch].json")
 		fdel("[scratch].json.recovery")
 		fdel("[scratch].json.d/")
-		if(!(index % 100))
+		if(!(index % PLAYER_SAVE_AUDIT_PROGRESS_INTERVAL))
 			world.log << "Save audit: [index]/[files.len], failed=[report["failed"]]"
 			var/progress_path = "[work_directory]/progress.json"
 			fdel(progress_path)
 			text2file(json_encode(report), progress_path)
-			sleep(1)
+			sleep(0.1 SECONDS)
 	report["seconds"] = (REALTIMEOFDAY - started) / 10
 	if(manifest["benchmark"])
 		report["benchmarks"] = benchmarks
@@ -106,8 +113,8 @@
 			var/list/failures = report["failures"]
 			failures += list(list("index" = index, "error" = failure.name))
 			fdel(outputs[index])
-		if(!(index % 100))
-			sleep(1)
+		if(!(index % PLAYER_SAVE_AUDIT_PROGRESS_INTERVAL))
+			sleep(0.1 SECONDS)
 	var/report_path = "[manifest["work_directory"]]/report.json"
 	fdel(report_path)
 	text2file(json_encode(report), report_path)
@@ -115,7 +122,7 @@
 
 // Независимое сравнение значений BYOND, без повторного использования JSON-кодека.
 /proc/player_save_audit_equal_value(left, right, depth = 0)
-	if(depth > 64)
+	if(depth > PLAYER_SAVE_AUDIT_COMPARE_DEPTH)
 		return FALSE
 	if(!islist(left) || !islist(right))
 		if(isnull(left) || istext(left) || isnum(left) || ispath(left))
@@ -161,7 +168,7 @@
 	return TRUE
 
 
-/// Оригинал не изменяется; среднее по 20 повторам, в миллисекундах, без запуска станции.
+/// Оригинал не изменяется; среднее по нескольким повторам, в миллисекундах, без запуска станции.
 /proc/player_save_benchmark(savefile/source, scratch)
 	fdel(scratch)
 	fdel("[scratch].json")
@@ -175,34 +182,34 @@
 		throw EXCEPTION("Не создан JSON для замера")
 	var/list/result = list()
 	var/started = REALTIMEOFDAY
-	for(var/i in 1 to 20)
+	for(var/i in 1 to PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS)
 		data = storage.open("/")
 		data["benchmark_setting"] << i
 		if(!storage.commit(data, "/"))
 			throw EXCEPTION("Ошибка записи при замере")
-	result["json_root_write_ms"] = (REALTIMEOFDAY - started) * 100 / 20
+	result["json_root_write_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
 	started = REALTIMEOFDAY
-	for(var/i in 1 to 20)
+	for(var/i in 1 to PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS)
 		var/savefile/binary = new(scratch)
 		binary["benchmark_setting"] << i
 		binary.Flush()
 		binary = null
-	result["legacy_root_write_ms"] = (REALTIMEOFDAY - started) * 100 / 20
+	result["legacy_root_write_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
 	started = REALTIMEOFDAY
-	for(var/i in 1 to 20)
+	for(var/i in 1 to PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS)
 		data = storage.open("/")
 		if(!storage.commit(data, "/"))
 			throw EXCEPTION("Ошибка повторного сохранения при замере")
-	result["json_unchanged_root_ms"] = (REALTIMEOFDAY - started) * 100 / 20
+	result["json_unchanged_root_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
 	started = REALTIMEOFDAY
-	var/list/names = storage.character_names(128)
+	var/list/names = storage.character_names(PLAYER_SAVE_AUDIT_SLOT_LIMIT)
 	result["json_menu_cold_ms"] = (REALTIMEOFDAY - started) * 100
 	if(!islist(names))
 		throw EXCEPTION("Не прочитаны имена при замере")
 	started = REALTIMEOFDAY
-	for(var/i in 1 to 20)
-		storage.character_names(128)
-	result["json_menu_warm_ms"] = (REALTIMEOFDAY - started) * 100 / 20
+	for(var/i in 1 to PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS)
+		storage.character_names(PLAYER_SAVE_AUDIT_SLOT_LIMIT)
+	result["json_menu_warm_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
 	var/first_slot
 	for(var/key in names)
 		if(names[key])
@@ -210,19 +217,26 @@
 			break
 	if(first_slot)
 		started = REALTIMEOFDAY
-		for(var/i in 1 to 20)
+		for(var/i in 1 to PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS)
 			data = storage.open("/[first_slot]")
 			if(!data)
 				throw EXCEPTION("Не прочитан слот при замере")
-		result["json_one_slot_read_ms"] = (REALTIMEOFDAY - started) * 100 / 20
+		result["json_one_slot_read_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
 	started = REALTIMEOFDAY
-	for(var/i in 1 to 5)
+	for(var/i in 1 to PLAYER_SAVE_AUDIT_FULL_READ_ITERATIONS)
 		data = storage.open()
 		if(!data)
 			throw EXCEPTION("Не прочитан полный аккаунт при замере")
-	result["json_all_slots_read_ms"] = (REALTIMEOFDAY - started) * 100 / 5
+	result["json_all_slots_read_ms"] = (REALTIMEOFDAY - started) * 100 / PLAYER_SAVE_AUDIT_FULL_READ_ITERATIONS
 	fdel(scratch)
 	fdel("[scratch].json")
 	fdel("[scratch].json.recovery")
 	fdel("[scratch].json.d/")
 	return result
+
+#undef PLAYER_SAVE_AUDIT_ERROR_LIMIT
+#undef PLAYER_SAVE_AUDIT_PROGRESS_INTERVAL
+#undef PLAYER_SAVE_AUDIT_COMPARE_DEPTH
+#undef PLAYER_SAVE_AUDIT_BENCHMARK_ITERATIONS
+#undef PLAYER_SAVE_AUDIT_FULL_READ_ITERATIONS
+#undef PLAYER_SAVE_AUDIT_SLOT_LIMIT

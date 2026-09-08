@@ -5901,6 +5901,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(world.time >= player_transfer_cooldown)
 						player_transfer_cooldown = world.time + 10 SECONDS
 						download_character_json(user)
+					else
+						to_chat(user, span_warning("Подождите перед повторным экспортом персонажа."))
 
 				if("import_slot")
 					upload_character_json(user)
@@ -5952,7 +5954,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!import_character_json(offer_datum.character_json))
 						tgui_alert_async(usr, "Не удалось импортировать персонажа. Сообщите об ошибке разработчикам.")
 						to_chat(the_owner, span_boldwarning("Передача персонажа не завершилась из-за ошибки импорта. Сообщите об этом разработчикам."))
-						qdel(offer_datum)
 						return
 					to_chat(the_owner, span_notice("[usr.key] получил переданного персонажа."))
 					tgui_alert_async(usr, "Персонаж получен и сохранён в слот [receiving_slot].")

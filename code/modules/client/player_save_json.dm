@@ -2,6 +2,7 @@
 // Это сохраняет порядок миграций, модульные поля и совместимость экспорта персонажей.
 #define PLAYER_SAVE_JSON_VERSION 1
 #define PLAYER_SAVE_JSON_DEPTH 64
+#define PLAYER_SAVE_VALID_NODE_NAME(key) (istext(key) && length(key) && key != "." && key != ".." && !findtext(key, "/") && !findtext(key, "\\"))
 
 /// Согласует небольшие кэши корня между несколькими датумами префов одного аккаунта.
 /proc/player_save_revision(path, advance = FALSE)
@@ -92,10 +93,9 @@
 			throw EXCEPTION("Некорректная матрица JSON сохранения")
 		return matrix(numbers[1], numbers[2], numbers[3], numbers[4], numbers[5], numbers[6])
 	if(node["type"] == "path")
-		var/resolved = text2path(node["value"])
-		if(!resolved)
-			throw EXCEPTION("Неизвестный путь типа в JSON сохранения")
-		return resolved
+		if(!istext(node["value"]))
+			throw EXCEPTION("Некорректный путь типа в JSON сохранения")
+		return text2path(node["value"])
 	var/list/items = node["items"]
 	var/list/associations = node["associations"]
 	if(node["type"] != "list" || !islist(items) || !islist(associations) || items.len != associations.len)
@@ -116,7 +116,7 @@
 		result[key] = associated
 	return result
 
-/// Копирует уже декодированные данные в памяти, без повторной сериализации каждого значения.
+/// Читает значения исходного savefile через >>, пишет в целевой через << и рекурсивно копирует каталоги.
 /proc/player_save_copy_tree(savefile/source, savefile/target, depth = 0)
 	if(depth > PLAYER_SAVE_JSON_DEPTH)
 		throw EXCEPTION("Слишком глубокое дерево сохранения")
@@ -154,7 +154,7 @@
 		throw EXCEPTION("Некорректное дерево JSON сохранения")
 	var/original_directory = target.cd
 	for(var/key in tree)
-		if(!istext(key) || !length(key) || key == "." || key == ".." || findtext(key, "/") || findtext(key, "\\"))
+		if(!PLAYER_SAVE_VALID_NODE_NAME(key))
 			throw EXCEPTION("Некорректное имя узла JSON сохранения")
 		var/list/node = tree[key]
 		if(!islist(node) || !("value" in node) || !("children" in node))
@@ -174,7 +174,7 @@
 	if(!islist(tree) || depth > PLAYER_SAVE_JSON_DEPTH)
 		throw EXCEPTION("Некорректное дерево JSON сохранения")
 	for(var/key in tree)
-		if(!istext(key) || !length(key) || key == "." || key == ".." || findtext(key, "/") || findtext(key, "\\"))
+		if(!PLAYER_SAVE_VALID_NODE_NAME(key))
 			throw EXCEPTION("Некорректное имя узла JSON сохранения")
 		var/list/node = tree[key]
 		if(!islist(node) || !("value" in node) || !("children" in node))
@@ -210,7 +210,7 @@
 	return node ? player_save_decode_value(node["value"]) : null
 
 /datum/player_save_document/proc/write(key, value)
-	if(!istext(key) || !length(key) || key == "." || key == ".." || findtext(key, "/") || findtext(key, "\\"))
+	if(!PLAYER_SAVE_VALID_NODE_NAME(key))
 		throw EXCEPTION("Некорректное имя поля сохранения")
 	var/encoded = player_save_encode_value(value)
 	var/list/previous = tree[key]
@@ -222,10 +222,7 @@
 	var/encoded_node = "[encoded_key]:[json_encode(node)]"
 	if(previous && encoded_node == (node_json[key] || "[encoded_key]:[json_encode(previous)]"))
 		return FALSE
-	if(!dirty)
-		tree = tree.Copy()
-		node_json = node_json.Copy()
-		dirty = TRUE
+	mark_dirty()
 	tree[key] = node
 	node_json[key] = encoded_node
 	return TRUE
@@ -233,14 +230,19 @@
 /datum/player_save_document/proc/commit()
 	return storage.commit_snapshot(src)
 
+/// Перед первой правкой отделяет дерево и кэш JSON от опубликованного снимка.
+/datum/player_save_document/proc/mark_dirty()
+	if(dirty)
+		return
+	tree = tree.Copy()
+	node_json = node_json.Copy()
+	dirty = TRUE
+
 /// Удаляет узел только из снимка; файлы раздела остаются доступны предыдущему поколению.
 /datum/player_save_document/proc/remove(key)
 	if(!(key in tree))
 		return FALSE
-	if(!dirty)
-		tree = tree.Copy()
-		node_json = node_json.Copy()
-		dirty = TRUE
+	mark_dirty()
 	tree -= key
 	node_json -= key
 	if(islist(directories) && (key in directories))
@@ -268,13 +270,11 @@
 /datum/player_save_document/proc/merge(savefile/source)
 	var/list/merged = player_save_merge_tree(tree, player_save_encode_tree(source))
 	if(merged != tree)
-		if(!dirty)
-			node_json = node_json.Copy()
+		mark_dirty()
 		for(var/key in merged)
 			if(merged[key] != tree[key])
 				node_json -= key
 		tree = merged
-		dirty = TRUE
 
 /// Корень публикуется после раздела, как и в старой транзакции через savefile.
 /datum/player_save_character_transaction
@@ -469,19 +469,27 @@
 			var/import_id = md5("[world.realtime]-[world.timeofday]-[++import_sequence]")
 			var/import_prefix = "[json_path].[import_id].import"
 			var/import_path = "[import_prefix].sav"
-			if(!fcopy(legacy_path, import_path))
-				throw EXCEPTION("Не удалось скопировать старое сохранение")
-			var/before_open = rustg_hash_file(RUSTG_HASH_MD5, import_path)
-			var/savefile/legacy = new(import_path)
-			legacy.Flush()
-			if(rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
-				throw EXCEPTION("BYOND исправил повреждённый старый файл; требуется проверка резервной копии")
-			tree = player_save_encode_tree(legacy)
-			legacy.Flush()
-			if(fexists("[import_prefix]_bad_000.sav") || rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
-				throw EXCEPTION("BYOND обнаружил повреждение старого файла; требуется проверка резервной копии")
+			var/savefile/legacy
+			try
+				if(!fcopy(legacy_path, import_path))
+					throw EXCEPTION("Не удалось скопировать старое сохранение")
+				var/before_open = rustg_hash_file(RUSTG_HASH_MD5, import_path)
+				legacy = new(import_path)
+				legacy.Flush()
+				if(rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
+					throw EXCEPTION("BYOND исправил повреждённый старый файл; требуется проверка резервной копии")
+				tree = player_save_encode_tree(legacy)
+				legacy.Flush()
+				if(fexists("[import_prefix]_bad_000.sav") || rustg_hash_file(RUSTG_HASH_MD5, import_path) != before_open)
+					throw EXCEPTION("BYOND обнаружил повреждение старого файла; требуется проверка резервной копии")
+			catch(var/exception/failure)
+				legacy = null
+				fdel(import_path)
+				fdel("[import_prefix]_bad_000.sav")
+				throw failure
 			legacy = null
 			fdel(import_path)
+			fdel("[import_prefix]_bad_000.sav")
 		if(!tree)
 			tree = list()
 		if(validate && !best)
@@ -536,8 +544,10 @@
 
 /datum/player_save_json/proc/write_document(destination, encoded)
 	if(fexists(destination) && !fdel(destination))
-		return FALSE
-	return text2file(encoded, destination)
+		throw EXCEPTION("Не удалось удалить предыдущее содержимое файла JSON")
+	if(!text2file(encoded, destination))
+		throw EXCEPTION("Не удалось записать содержимое файла JSON")
+	return TRUE
 
 /datum/player_save_json/proc/commit(savefile/source, scope)
 	if(error || !source)
@@ -605,3 +615,4 @@
 
 #undef PLAYER_SAVE_JSON_VERSION
 #undef PLAYER_SAVE_JSON_DEPTH
+#undef PLAYER_SAVE_VALID_NODE_NAME

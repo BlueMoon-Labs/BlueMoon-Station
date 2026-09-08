@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
+import shutil
 import subprocess
 import tempfile
 
@@ -12,6 +13,18 @@ import tempfile
 def digest(path):
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def archive_tar(archive):
+    if archive.suffix.lower() != ".7z":
+        return "tar"
+    for name in ("bsdtar", "tar"):
+        executable = shutil.which(name)
+        if executable:
+            version = subprocess.check_output([executable, "--version"], text=True)
+            if "bsdtar" in version.lower():
+                return executable
+    raise RuntimeError("Для архивов .7z нужен bsdtar (libarchive) с поддержкой 7z в PATH; GNU tar не подходит")
 
 
 def run():
@@ -33,14 +46,15 @@ def run():
     if args.archive:
         archive = args.archive.resolve(strict=True)
         archive_hash = digest(archive)
-        names = subprocess.check_output(["tar", "-tf", str(archive)], text=True).splitlines()
+        tar = archive_tar(archive)
+        names = subprocess.check_output([tar, "-tf", str(archive)], text=True).splitlines()
         for name in names:
             member = PurePosixPath(name.replace("\\", "/"))
             if member.is_absolute() or ".." in member.parts or ":" in name:
                 raise ValueError("Архив содержит путь вне каталога распаковки")
         source = work / "archive"
         source.mkdir(exist_ok=True)
-        subprocess.run(["tar", "-xf", str(archive), "-C", str(source)], check=True)
+        subprocess.run([tar, "-xf", str(archive), "-C", str(source)], check=True)
     else:
         source = args.source_dir.resolve(strict=True)
     if args.export_legacy:

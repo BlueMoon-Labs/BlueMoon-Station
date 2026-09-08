@@ -1015,7 +1015,7 @@ var/list/en_strings = list(
 	"retrieve_offered" = "Retrieve offered character",
 	"redemption_code" = "Redemption code",
 	"empty_label" = "Empty",
-	"offer_auto_cancel" = "The offer will automatically be cancelled if there is an error, or if someone takes it",
+	"offer_auto_cancel" = "The code remains valid until the character is received, the transfer is canceled, or the sender leaves the game.",
 
 	// General tab
 	"occupation_choices" = "Occupation Choices",

@@ -1,3 +1,5 @@
+#define PLAYER_SAVE_BRANCH_CACHE_LIMIT 2
+
 /// Корень и слоты записываются отдельно: одиночная настройка не переписывает все анкеты.
 /// Корень хранит точные поколения разделов и публикуется последним при каждой транзакции.
 /datum/player_save_json/account
@@ -97,8 +99,8 @@
 		return null
 	if(!root.directories[key])
 		// Удалённый слот может оставить файлы: новая анкета не наследует их поля.
+		character.mark_dirty()
 		character.tree = list()
-		character.dirty = TRUE
 	var/datum/player_save_character_transaction/result = new
 	result.root = root
 	result.character = character
@@ -113,8 +115,8 @@
 		branches -= key
 	branches[key] = result
 	// Держим два последних раздела, чтобы переключение слотов не раздувало кэш аккаунта.
-	if(length(branches) > 2)
-		branches.Cut(1, 2)
+	if(length(branches) > PLAYER_SAVE_BRANCH_CACHE_LIMIT)
+		branches.Cut(1, length(branches) - PLAYER_SAVE_BRANCH_CACHE_LIMIT + 1)
 	return result
 
 /datum/player_save_json/account/open(scope, required_generation, savefile/target, use_cache = FALSE)
@@ -140,6 +142,7 @@
 				throw EXCEPTION("Не удалось прочитать раздел сохранения: [child.error]")
 			result.cd = "/"
 	catch(var/exception/failure)
+		var/recovery_error
 		// Предыдущий корень ссылается на предыдущие исправные поколения разделов.
 		if(!required_generation && root_generation > 1)
 			result = open(scope, root_generation - 1)
@@ -147,7 +150,8 @@
 				recovered = TRUE
 				recovery_reason = failure.name
 				return result
-		error = failure.name
+			recovery_error = error
+		error = recovery_error ? "[failure.name]; ошибка восстановления: [recovery_error]" : failure.name
 		cached_root = null
 		return null
 	return result
@@ -215,3 +219,5 @@
 	cached_root = next_root
 	cached_revision = player_save_revision(json_path)
 	return TRUE
+
+#undef PLAYER_SAVE_BRANCH_CACHE_LIMIT

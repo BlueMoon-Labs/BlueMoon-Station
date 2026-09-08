@@ -153,6 +153,39 @@
 	restored["real_name"] >> name
 	TEST_ASSERT_EQUAL(name, "Legacy Character", "миграция потеряла слот вне текущего лимита")
 
+/datum/unit_test/player_save_json/legacy_import_failure_cleanup/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	for(var/depth in 1 to 66)
+		legacy.cd = "nested"
+	legacy["value"] << 1
+	legacy.Flush()
+	legacy = null
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	TEST_ASSERT_NULL(storage.open(), "слишком глубокий старый сейв принят")
+	TEST_ASSERT(findtext(storage.error, "Слишком глубокое дерево"), "исходная причина ошибки потеряна")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "неудачный импорт изменил оригинал")
+	var/prefix = "[md5("[type]")].sav.json."
+	for(var/name in flist("data/player_save_tests/"))
+		TEST_ASSERT(!findtext(name, prefix) || !findtext(name, ".import"), "после ошибки осталась временная копия: [name]")
+
+/datum/unit_test/player_save_json/removed_type_path/Run()
+	prepare()
+	var/list/removed = list("type" = "path", "value" = "/datum/removed_player_save_type")
+	TEST_ASSERT_NULL(player_save_decode_value(removed), "удалённый тип не превратился в null")
+	var/list/tree = list("removed" = list("value" = removed, "children" = list()))
+	TEST_ASSERT(storage.commit_tree(tree), "не записана фикстура удалённого типа")
+	var/datum/player_save_document/document = storage.snapshot(null, FALSE)
+	TEST_ASSERT_NOTNULL(document, "сейв с удалённым типом не прошёл проверку")
+	TEST_ASSERT_NULL(document.read("removed"), "удалённый тип не прочитан как null")
+	for(var/invalid in list(null, 1, list()))
+		var/rejected = FALSE
+		try
+			player_save_decode_value(list("type" = "path", "value" = invalid))
+		catch(var/exception/failure)
+			rejected = !!failure
+		TEST_ASSERT(rejected, "нестроковое значение пути принято")
+
 /datum/unit_test/player_save_json/recovery/Run()
 	var/savefile/source = prepare()
 	source["version"] << 80
@@ -925,6 +958,56 @@
 	transaction = reopened.character_transaction("character1")
 	TEST_ASSERT_NULL(transaction.character.read("old_private"), "удалённое поле вернулось с диска")
 	TEST_ASSERT_EQUAL(transaction.character.read("real_name"), "New", "новое имя не записано")
+
+/// Незавершённая правка нового слота не должна менять кэш оставшегося старого раздела.
+/datum/unit_test/player_save_json/deleted_slot_snapshot_isolation/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Old"
+	TEST_ASSERT(account.commit(source), "не создан старый слот")
+	var/datum/player_save_json/child = account.branch("character1")
+	var/datum/player_save_document/previous = child.snapshot()
+	var/old_json = previous.node_json["real_name"]
+	var/datum/player_save_document/root = account.snapshot()
+	root.remove("character1")
+	TEST_ASSERT(root.commit(), "не удалён слот")
+	var/datum/player_save_character_transaction/transaction = account.character_transaction("character1")
+	transaction.character.write("real_name", "Unpublished")
+	TEST_ASSERT_EQUAL(previous.read("real_name"), "Old", "правка затронула старое дерево")
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "правка затронула старый кэш JSON")
+	transaction.character.remove("real_name")
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "удаление затронуло старый кэш JSON")
+	var/savefile/patch = new
+	patch["real_name"] << "Merged"
+	transaction.character.merge(patch)
+	TEST_ASSERT_EQUAL(previous.node_json["real_name"], old_json, "слияние затронуло старый кэш JSON")
+	TEST_ASSERT_EQUAL(child.node_json["real_name"], old_json, "незавершённая транзакция изменила хранилище")
+
+/datum/unit_test/player_save_json/account_recovery_error_details/Run()
+	prepare()
+	var/datum/player_save_json/account/account = new(test_path)
+	var/savefile/source = account.open()
+	source.cd = "/character1"
+	source["real_name"] << "Published"
+	TEST_ASSERT(account.commit(source), "не создан первый корень")
+	var/previous_path = account.active_path
+	var/datum/player_save_document/root = account.snapshot()
+	root.write("marker", 2)
+	TEST_ASSERT(root.commit(), "не создан второй корень")
+	var/list/corrupted = json_decode(file2text(account.active_path))
+	var/list/tree = corrupted["tree"]
+	tree -= "character1"
+	corrupted["checksum"] = md5(json_encode(list(corrupted["generation"], tree, corrupted["directories"])))
+	fdel(account.active_path)
+	text2file(json_encode(corrupted), account.active_path)
+	fdel(previous_path)
+	text2file("{", previous_path)
+	var/datum/player_save_json/account/reopened = new(test_path)
+	TEST_ASSERT_NULL(reopened.open(), "восстановление повреждённых поколений завершилось успешно")
+	TEST_ASSERT(findtext(reopened.error, "Раздел отсутствует в корне"), "потеряна исходная причина ошибки")
+	TEST_ASSERT(findtext(reopened.error, "Оба поколения JSON сохранения повреждены"), "потеряна причина отказа восстановления")
 
 /datum/unit_test/player_save_json/branch_cache_revision_and_limit/Run()
 	prepare()
