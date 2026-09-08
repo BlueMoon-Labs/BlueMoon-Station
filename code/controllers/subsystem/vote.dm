@@ -486,7 +486,7 @@ SUBSYSTEM_DEF(vote)
 					message_admins("Смена карты была отменена игроками.")
 					log_admin("Смена карты была отменена игроками.")
 					if(SSticker.mapvote_restarter_in_progress)
-						to_chat(world, "<span class='boldannounce'>Смена карты была отменена игроками.</span>")
+						to_chat(world, span_boldannounce("Смена карты была отменена игроками."))
 						SSticker.mapvote_restarter_in_progress = FALSE
 						SSpersistence.RecordGracefulEnding()
 						SSticker.start_immediately = FALSE
@@ -496,10 +496,24 @@ SUBSYSTEM_DEF(vote)
 				var/datum/map_config/VM = config.maplist[.]
 				message_admins("The map has been voted for and will change to: [VM.map_name]")
 				log_admin("The map has been voted for and will change to: [VM.map_name]")
-				if(SSmapping.changemap(config.maplist[.]))
-					to_chat(world, "<span class='boldannounce'>The map vote has chosen [VM.map_name] for next round!</span>")
-				if(SSticker.mapvote_restarter_in_progress)
-					SSticker.Reboot("Map rotation was requested due to ungraceful ending of the last round.", null, 10)
+				var/map_changed = SSmapping.changemap(config.maplist[.])
+				if(map_changed)
+					to_chat(world, span_boldannounce("Голосование за карту избрало [SSmapping.next_map_config.map_name] на следующий раунд!"))
+					if(SSticker.mapvote_restarter_in_progress)
+						SSticker.Reboot("Была запрошена ротация карт ввиду неблагополучного окончания предыдущего раунда.", null, 10)
+				else
+					// Если changemap выдаст null/FALSE, при этом не перекинув нас на default карту, то продолжаем текущий раунд после раундэнда.
+					// Зачем? Чтобы не уйти в цикл повторов попыток загрузки некорректной карты + попытки загрузки некорректной default мапы.
+					// Вместо этого дадим игрокам голосование за новую карту. Это гарантирует, что без админов они не застрянут в лимбо.
+					message_admins("Map change failed; automatic restart canceled.")
+					log_admin("Map change failed; automatic restart canceled.")
+					if(SSticker.mapvote_restarter_in_progress)
+						SSticker.mapvote_restarter_in_progress = FALSE
+						SSpersistence.RecordGracefulEnding()
+						SSticker.start_immediately = FALSE
+						SSticker.SetTimeLeft(240 SECONDS)
+						// Вообще, по-хорошему, исключать бы из воута карту, которая дала нам FALSE в чейнджмап, но это слишком утяжелит код. Этого будет достаточно
+						SSvote.initiate_vote("map", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = APPROVAL_VOTING, forced = TRUE)
 				// BLUEMOON ADD END
 			if("transfer") // austation begin -- Crew autotransfer vote
 				if(. == VOTE_TRANSFER)
@@ -512,7 +526,7 @@ SUBSYSTEM_DEF(vote)
 		message_admins("Голосование за карту провалилось из-за отсутствия голосов.")
 		log_admin("Голосование за карту провалилось из-за отсутствия голосов.")
 		if(SSticker.mapvote_restarter_in_progress)
-			to_chat(world, "<span class='boldannounce'>Перезагрузка отменена в связи с отсутствием голосов. Очередное поражение демократии...</span>")
+			to_chat(world, span_boldannounce("Перезагрузка отменена в связи с отсутствием голосов. Очередное поражение демократии..."))
 			SSticker.mapvote_restarter_in_progress = FALSE
 			SSpersistence.RecordGracefulEnding()
 			SSticker.start_immediately = FALSE
@@ -539,7 +553,7 @@ SUBSYSTEM_DEF(vote)
 		if(!active_admins)
 			SSticker.Reboot("Restart vote successful.", "restart vote")
 		else
-			to_chat(world, "<span style='boldannounce'>Notice:Restart vote will not restart the server automatically because there are active admins on.</span>")
+			to_chat(world, span_boldannounce("Notice: голосование за рестарт не перезапустит сервер автоматически ввиду активных администраторов на сервере."))
 			message_admins("A restart vote has passed, but there are active admins on with +server, so it has been canceled. If you wish, you may restart the server.")
 
 	return .

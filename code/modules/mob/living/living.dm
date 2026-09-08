@@ -379,9 +379,10 @@
 /mob/living/start_pulling(atom/movable/AM, state, force = pull_force, supress_message = FALSE)
 	if(!AM || !src)
 		return FALSE
+	// ASSERT(ismovable(AM), "[src] attempted to pull [AM ? "[AM], a nonmovable atom" : "a null object"]")
 	if(!(AM.can_be_pulled(src, state, force)))
 		return FALSE
-	if(throwing || incapacitated())
+	if(throwing || !(mobility_flags & MOBILITY_PULL))
 		return FALSE
 
 	AM.add_fingerprint(src)
@@ -390,10 +391,10 @@
 	if(pulling)
 		// Are we trying to pull something we are already pulling? Then just stop here, no need to continue.
 		if(AM == pulling)
-			return
+			return FALSE
 		stop_pulling()
 
-	DelayNextAction(CLICK_CD_GRABBING)
+	changeNext_move(CLICK_CD_GRABBING)
 
 	if(AM.pulledby)
 		if(!supress_message)
@@ -461,27 +462,30 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	var/target_dir = get_dir(M, src)
-	M.setDir(target_dir)
-	var/target_x
-	var/target_y
-	if(target_dir & NORTH)
-		target_y += offset
-	if(target_dir & SOUTH)
-		target_y -= offset
-	if(target_dir & EAST)
-		target_x += offset
-	if(target_dir & WEST)
-		target_x -= offset
+	M.setDir(get_dir(M, src))
+	var/dir_filter = M.dir
+	if(ISDIAGONALDIR(dir_filter))
+		dir_filter = EWCOMPONENT(dir_filter)
+	var/target_x = 0
+	var/target_y = 0
+	switch(dir_filter)
+		if(NORTH)
+			target_y += offset
+		if(SOUTH)
+			target_y -= offset
+		if(EAST)
+			if(offset && M.lying == 270)
+				M.lying = 90
+				M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
+				M.lying_prev = M.lying
+			target_x += offset
+		if(WEST)
+			if(offset && M.lying == 90)
+				M.lying = 270
+				M.update_transform(FALSE)
+				M.lying_prev = M.lying
+			target_x -= offset
 	if(target_x || target_y)
-		if(0 < target_x && M.lying == 270)
-			M.lying = 90
-			M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
-			M.lying_prev = M.lying
-		if(0 > target_x && M.lying == 90)
-			M.lying = 270
-			M.update_transform(FALSE)
-			M.lying_prev = M.lying
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)

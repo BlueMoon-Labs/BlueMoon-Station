@@ -18,6 +18,8 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 #endif
 #define BRIG_ASSISTANT_REMOVE_POSTER_STATUSES list(SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DISCHARGED, SEC_RECORD_STATUS_DEMOTE)
 #define BRIG_FINE_SCAN_TIME (3 SECONDS)
+#define BRIG_FINE_PAY_COOLDOWN (30 SECONDS)
+#define BRIG_FINE_MIN_PAY 50
 
 /obj/machinery/computer/brig_assistant_console
 	name = "Консоль заданий брига"
@@ -30,6 +32,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 
 	/// ckey -> criminal_id -> list of take timestamps (hang poster tasks)
 	var/static/list/assistant_task_takes = list()
+	var/static/list/brig_fine_pay_cooldowns = list() // ckey -> last pay time
 	var/obj/item/card/id/inserted_id = null
 	var/scanning = FALSE
 	var/scan_end_time = 0
@@ -181,6 +184,13 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 	data["fines_total"] = fines_total
 	data["fines_paid"] = fines_paid
 	data["fines_count"] = fines_list.len
+	var/pay_cd = 0
+	if(user?.ckey)
+		var/last = brig_fine_pay_cooldowns[user.ckey]
+		if(last)
+			pay_cd = max(0, last + BRIG_FINE_PAY_COOLDOWN - world.time)
+	data["pay_cd"] = pay_cd
+	data["pay_cd_seconds"] = round(pay_cd / 10)
 
 	var/list/wanted_list = list()
 	for(var/datum/data/record/S in GLOB.data_core.security)
@@ -216,7 +226,7 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				var/last_take = criminal_takes[criminal_takes.len]
 				var/time_left = (last_take + WANTED_POSTER_COOLDOWN) - world.time
 				if(time_left > 0)
-					reason = "КД: [round(time_left / 10)] сек"
+					reason = "Задержка: [round(time_left / 10)] сек"
 				else
 					can_take = TRUE
 			else
@@ -313,6 +323,18 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				return
 			if(amount > fine.fine)
 				amount = fine.fine
+			if(amount < BRIG_FINE_MIN_PAY && amount != fine.fine)
+				to_chat(user, span_warning("Минимальная сумма оплаты - [BRIG_FINE_MIN_PAY] кр. (или полный остаток)."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			var/ckey = user.ckey
+			if(ckey)
+				var/last = brig_fine_pay_cooldowns[ckey]
+				if(last && world.time - last < BRIG_FINE_PAY_COOLDOWN)
+					var/time_left = round((last + BRIG_FINE_PAY_COOLDOWN - world.time)/10)
+					to_chat(user, span_warning("Задержка оплаты: подождите [time_left] сек. перед следующей оплатой."))
+					playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+					return
 			if(!account.has_money(amount))
 				to_chat(user, span_warning("Недостаточно средств на счете. Баланс: [account.account_balance] кр."))
 				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
@@ -343,6 +365,8 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				print_fine_receipt(sec, fine, amount, holder)
 				var/msg_part = "Ваш штраф №[fine.dataId] (\"[fine.crimeName]\") частично оплачен на [amount] кр. Уплачено [fine.paid]/[fine.paid + fine.fine] кр. Остаток [fine.fine] кр. Осталось [DisplayTimeText(max(0, fine.fine_deadline - world.time))]. Оплатите полностью до истечения срока во избежание ст. 303."
 				fine.alert_fine_owner(user, src, holder, msg_part)
+			if(ckey)
+				brig_fine_pay_cooldowns[ckey] = world.time
 			SStgui.update_uis(src)
 			return TRUE
 		if("pay_fine_full")
@@ -350,6 +374,14 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				return
 			if(scanning)
 				return
+			var/ckey2 = user.ckey
+			if(ckey2)
+				var/last2 = brig_fine_pay_cooldowns[ckey2]
+				if(last2 && world.time - last2 < BRIG_FINE_PAY_COOLDOWN)
+					var/time_left2 = round((last2 + BRIG_FINE_PAY_COOLDOWN - world.time)/10)
+					to_chat(user, span_warning("Задержка оплаты: подождите [time_left2] сек."))
+					playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+					return
 			var/cdataid = params["cdataid"]
 			var/holder = inserted_id.registered_name || inserted_id.registered_account?.account_holder
 			var/datum/data/record/sec = GLOB.data_core.security_by_name[holder]
@@ -379,6 +411,8 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 				security_radio.talk_into(src, "Сотрудник [holder] полностью оплатил штраф \"[fine.crimeName]\".")
 			var/msg_full2 = "Ваш штраф №[fine.dataId] (\"[fine.crimeName]\") полностью оплачен на [amount] кр. Всего уплачено [fine.paid] кр. Спасибо! Квитанция распечатана в консоли брига."
 			fine.alert_fine_owner(user, src, holder, msg_full2)
+			if(ckey2)
+				brig_fine_pay_cooldowns[ckey2] = world.time
 			SStgui.update_uis(src)
 			return TRUE
 		if("take_task")
@@ -521,3 +555,5 @@ GLOBAL_LIST_EMPTY(brig_assistant_remove_tasks) // ckey -> list of criminal_ids (
 
 #undef BRIG_ASSISTANT_REMOVE_POSTER_STATUSES
 #undef BRIG_FINE_SCAN_TIME
+#undef BRIG_FINE_PAY_COOLDOWN
+#undef BRIG_FINE_MIN_PAY
