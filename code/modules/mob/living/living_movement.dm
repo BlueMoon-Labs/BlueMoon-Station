@@ -78,6 +78,12 @@
 	if(pulling && isliving(pulling))
 		var/mob/living/L = pulling
 
+		if(L.stat != DEAD && !L.lying)
+			remove_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown)
+			remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
+			remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
+			return
+
 		if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER) // Сверхтяжёлых персонажей очень сложно тянуть
 			if(src.mob_weight < MOB_WEIGHT_HEAVY)
 				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
