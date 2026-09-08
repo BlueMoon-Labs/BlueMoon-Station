@@ -1,6 +1,6 @@
 /obj/item/projectile/bullet/pellet/shotgun_flechette
 	name = "flechette pellet"
-	damage = 12.5 // в общей сумме с 4 выстрелами будет 50 урона
+	damage = 10 // в общей сумме с 4 выстрелами будет 40 урона
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	armour_penetration = BULLET_BR8
@@ -18,6 +18,6 @@
 
 /obj/item/projectile/bullet/frangible_slug/on_hit(atom/target, blocked, pierce_hit)
 	if(is_type_in_list(target, list(/obj/structure/window, /obj/machinery/door, /obj/structure/grille, /obj/structure/door_assembly)))
-		damage = 400 // airlock integrity is about 300, but on airlock destruction its assembly is spawned
+		damage = 200 // airlock integrity is about 300, but on airlock destruction its assembly is spawned //слишком сильно для масс юза
 		armour_penetration = 100
 	. = ..()
