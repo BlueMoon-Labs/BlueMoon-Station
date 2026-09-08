@@ -448,6 +448,8 @@
 	id = "flechette_shell"
 	materials = list(/datum/material/iron = 2000, /datum/material/titanium = 1000)
 	build_path = /obj/item/ammo_casing/shotgun/flechette
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/frangible
 	name = "frangible slug"
@@ -455,6 +457,8 @@
 	id = "frangible_slug"
 	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000)
 	build_path = /obj/item/ammo_casing/shotgun/frangible
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
 
 ///Дорожный знак
 /obj/item/spear/stop
