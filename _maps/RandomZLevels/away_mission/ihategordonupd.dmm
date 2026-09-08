@@ -31806,6 +31806,10 @@
 	pixel_x = 8;
 	pixel_y = 3
 	},
+/obj/item/reagent_containers/hypospray/medipen/mesa_healing{
+	pixel_x = -5;
+	pixel_y = -4
+	},
 /turf/open/floor/plasteel/rivets/large,
 /area/awaymission/ihategordon/big_offices)
 "mBM" = (
@@ -56592,6 +56596,10 @@
 /obj/item/ammo_box/magazine/pistolm9mm/mesa{
 	pixel_x = 5;
 	pixel_y = -2
+	},
+/obj/item/reagent_containers/hypospray/medipen/mesa_healing{
+	pixel_x = -2;
+	pixel_y = -4
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/ihategordon/dorm_rooms)

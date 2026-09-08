@@ -155,6 +155,11 @@
 	A.power_environ = TRUE
 	A.lightswitch = TRUE
 	A.power_change()
+	// Recharge all light fixtures in the area to 100%
+	for(var/turf/T in get_area_turfs(A))
+		for(var/obj/machinery/light/L in T.contents)
+			if(L.cell && L.cell.maxcharge)
+				L.cell.charge = L.cell.maxcharge
 
 // Event 2: Sandstorm (Cosmetic)
 /datum/round_event_control/blackmesa/sandstorm

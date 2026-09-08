@@ -35,7 +35,7 @@
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
 
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/insert_mag(obj/item/ammo_box/magazine/AM, mob/user)
-	if(!istype(AM, /obj/item/ammo_box/magazine/pistolm9mm) && !istype(AM, /obj/item/ammo_box/magazine/pistolm9mm/mesa))
+	if(!istype(AM, /obj/item/ammo_box/magazine/pistolm9mm))
 		return
 	return ..()
 

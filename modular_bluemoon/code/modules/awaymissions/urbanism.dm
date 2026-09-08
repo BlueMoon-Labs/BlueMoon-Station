@@ -607,7 +607,7 @@
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	layer = 2.1
 	smooth_icon = 'modular_bluemoon/icons/turf/_smooth.dmi'
-	canSmoothWith = list(/turf/open/floor/plating/smooth/grass/urbanism, /turf/closed/indestructible)
+	canSmoothWith = list(/turf/open/floor/plating/smooth/grass/urbanism, /turf/open/floor/plating/smooth/grass, /turf/closed/indestructible)
 	smooth_offset = 8
 
 /obj/structure/urbanism_generator/Initialize(mapload)
@@ -953,6 +953,7 @@
 	)
 	mob_spawn_interval = 10 SECONDS
 	max_mobs_per_wave = 3
+	damage_threshold = 600
 
 /obj/structure/urbanism_generator/button/alt
 	name = "secondary door generator"
