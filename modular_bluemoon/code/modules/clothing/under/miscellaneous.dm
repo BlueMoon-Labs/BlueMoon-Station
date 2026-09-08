@@ -41,6 +41,8 @@
 	name = "new mecca uniform"
 	desc = "In this suit, your grandfather fucked cromag."
 	icon_state = "torch_uniform"
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
 	flags_inv = HIDEGLOVES|HIDESHOES
 	alt_covers_chest = FALSE

@@ -50,6 +50,8 @@
 	var/hardlight_color = MOD_STANDART_COLOR
 	var/datum/overlay_effect/hardlight_effect = /datum/overlay_effect/mod_effect
 	var/max_armor_module_count = 2
+	var/can_activate_without_deploy_all_parts = TRUE
+	var/need_block_storage_when_not_active = FALSE
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = list(
@@ -1329,6 +1331,8 @@
 		и, конечно же, латексными вставками, которые создают особые ощущения при ношении."
 	default_skin = "lustwish"
 	hardlight_color = "#FF66CC"
+	can_activate_without_deploy_all_parts = FALSE
+	need_block_storage_when_not_active = TRUE
 	skins = list(
 		"lustwish" = list(
 			HELMET_LAYER = NECK_LAYER,

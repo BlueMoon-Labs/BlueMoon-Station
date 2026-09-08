@@ -1637,12 +1637,10 @@
 	pixel_x = -25
 	},
 /obj/item/reagent_containers/food/drinks/bottle/blank{
-	reagents = /datum/reagent/consumable/applejuice;
 	list_reagents = list(/datum/reagent/consumable/applejuice = 120);
 	pixel_x = 5
 	},
 /obj/item/reagent_containers/food/drinks/bottle/blank{
-	reagents = /datum/reagent/consumable/applejuice;
 	reagent_value = 2;
 	list_reagents = list(/datum/reagent/consumable/applejuice = 120)
 	},

@@ -320,6 +320,12 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			GLOB.data_core.general_by_id -= record_id
 		if(GLOB.data_core.locked_by_id[record_id] == src)
 			GLOB.data_core.locked_by_id -= record_id
+	var/list/fines = fields["fines"]
+	if(islist(fines))
+		for(var/datum/data/crime/f as anything in fines)
+			if(f.fine_timer_id)
+				deltimer(f.fine_timer_id)
+				f.fine_timer_id = null
 	GLOB.data_core.medical -= src
 	GLOB.data_core.security -= src
 	GLOB.data_core.general -= src
@@ -339,6 +345,67 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	var/centcom_enforced = FALSE // Создана ли данная запись сотрудниками ЦК
 	var/penalties_incurred = FALSE // Понёс ли субъект наказание за свои преступления
 	// BLUEMOON ADD END
+	var/fine = 0
+	var/paid = 0
+	var/fine_deadline = 0
+	var/fine_duration = 0
+	var/fine_timer_id = null
+	var/fine_issued_by = ""
+
+/datum/data/crime/proc/alert_fine_owner(mob/sender, atom/source, target_name, message)
+	message = replacetext(message, "—", "-")
+	var/list/datum/computer_file/program/messenger/target_messengers = list()
+	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
+		if(pda_device.hidden || pda_device.toff)
+			continue
+		if(lowertext(trim(pda_device.saved_identification)) != lowertext(trim(target_name)))
+			continue
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
+		if(!messenger || messenger.invisible)
+			continue
+		target_messengers += messenger
+	if(!length(target_messengers))
+		for(var/datum/computer_file/program/messenger/messenger as anything in GLOB.pda_messengers_by_name)
+			if(lowertext(trim(messenger.computer?.saved_identification)) != lowertext(trim(target_name)))
+				continue
+			if(messenger.invisible)
+				continue
+			target_messengers += messenger
+			break
+	if(!length(target_messengers))
+		for(var/messenger_ref in GLOB.pda_messengers)
+			var/datum/computer_file/program/messenger/messenger = GLOB.pda_messengers[messenger_ref]
+			if(messenger.invisible)
+				continue
+			if(lowertext(trim(messenger.computer?.saved_identification)) != lowertext(trim(target_name)))
+				continue
+			target_messengers += messenger
+			break
+	if(!length(target_messengers))
+		if(sender)
+			to_chat(sender, span_warning("ПДА адресата [target_name] не найден - сообщение не доставлено."))
+		return FALSE
+	var/msg_text = message
+	var/datum/signal/subspace/messaging/tablet_message/signal = new(source, list(
+		"ref" = null,
+		"message" = msg_text,
+		"targets" = target_messengers,
+		"rigged" = FALSE,
+		"everyone" = FALSE,
+		"photo" = null,
+		"automated" = TRUE,
+		"fakename" = "Служба Безопасности",
+		"fakejob" = "Штрафной Сервер",
+	))
+	signal.data["done"] = FALSE
+	signal.data["reject"] = FALSE
+	signal.send_to_receivers()
+	if(!signal.data["done"])
+		signal.broadcast()
+		signal.mark_done()
+	if(sender)
+		sender.log_message("(PDA: Штрафной Сервер) sent \"[message]\" to [signal.format_target()]", LOG_PDA)
+	return TRUE
 
 /datum/datacore/proc/createCrimeEntry(cname = "", cdetails = "", author = "", time = "", centcom_enforced = FALSE) // BLUEMOON EDIT - авторизация ЦК
 	var/datum/data/crime/c = new /datum/data/crime
@@ -385,6 +452,119 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["ma_crim"]
 			crimes |= crime
 			return
+
+#define FINE_MAX_AMOUNT 10000
+#define FINE_PRESET_15 (15 MINUTES)
+#define FINE_PRESET_20 (20 MINUTES)
+#define FINE_PRESET_25 (25 MINUTES)
+#define FINE_PRESET_30 (30 MINUTES)
+#define FINE_PRESETS list(FINE_PRESET_15, FINE_PRESET_20, FINE_PRESET_25, FINE_PRESET_30)
+
+/datum/datacore/proc/createFineEntry(cname = "", cdetails = "", author = "", time = "", fine_amount = 0, duration = FINE_PRESET_15)
+	var/datum/data/crime/c = new /datum/data/crime
+	c.crimeName = cname
+	c.crimeDetails = cdetails
+	c.author = author
+	c.time = time
+	c.dataId = ++securityCrimeCounter
+	c.fine = fine_amount
+	c.paid = 0
+	c.fine_duration = duration
+	c.fine_deadline = world.time + duration
+	c.fine_issued_by = author
+	return c
+
+/datum/datacore/proc/addFine(id = "", datum/data/crime/fine_datum)
+	for(var/datum/data/record/R in security)
+		if(R.fields["id"] == id)
+			var/list/fines = R.fields["fines"]
+			if(!islist(fines))
+				fines = list()
+				R.fields["fines"] = fines
+			fines |= fine_datum
+			var/dur = fine_datum.fine_duration
+			if(dur > 0)
+				fine_datum.fine_timer_id = addtimer(CALLBACK(src, PROC_REF(on_fine_expire), id, fine_datum.dataId), dur, TIMER_STOPPABLE)
+			return TRUE
+	return FALSE
+
+/datum/datacore/proc/removeFine(id, cDataId)
+	for(var/datum/data/record/R in security)
+		if(R.fields["id"] == id)
+			var/list/fines = R.fields["fines"]
+			if(!islist(fines))
+				return FALSE
+			for(var/datum/data/crime/crime in fines)
+				if(crime.dataId == text2num("[cDataId]"))
+					if(crime.fine_timer_id)
+						deltimer(crime.fine_timer_id)
+						crime.fine_timer_id = null
+					fines -= crime
+					qdel(crime)
+					return TRUE
+	return FALSE
+
+/datum/datacore/proc/payFine(id, cDataId, amount)
+	for(var/datum/data/record/R in security)
+		if(R.fields["id"] == id)
+			var/list/fines = R.fields["fines"]
+			if(!islist(fines))
+				return FALSE
+			for(var/datum/data/crime/crime in fines)
+				if(crime.dataId == text2num("[cDataId]"))
+					if(crime.fine <= 0)
+						return FALSE
+					amount = clamp(amount, 1, crime.fine)
+					crime.paid += amount
+					crime.fine -= amount
+					if(crime.fine < 0)
+						crime.fine = 0
+					if(crime.fine == 0)
+						// полностью оплачен - снимаем таймер
+						if(crime.fine_timer_id)
+							deltimer(crime.fine_timer_id)
+							crime.fine_timer_id = null
+						crime.fine_deadline = 0
+					return amount
+	return FALSE
+
+/datum/datacore/proc/getFine(id, cDataId)
+	for(var/datum/data/record/R in security)
+		if(R.fields["id"] == id)
+			var/list/fines = R.fields["fines"]
+			if(!islist(fines))
+				return null
+			for(var/datum/data/crime/crime in fines)
+				if(crime.dataId == text2num("[cDataId]"))
+					return crime
+	return null
+
+/datum/datacore/proc/on_fine_expire(id, cDataId)
+	var/datum/data/crime/fine = getFine(id, cDataId)
+	if(!fine)
+		return
+	if(fine.fine <= 0)
+		return
+	var/datum/data/record/R = null
+	for(var/datum/data/record/S in security)
+		if(S.fields["id"] == id)
+			R = S
+			break
+	if(!R)
+		return
+	fine.fine_timer_id = null
+	var/datum/data/crime/c303 = createCrimeEntry("303 - Неуплата установленного штрафа в срок", "Субъект не уплатил штраф \"[fine.crimeName]\" ([fine.paid]/[fine.paid + fine.fine] кр. уплачено) в установленный срок. Первоначальная статья: [fine.crimeName] - [fine.crimeDetails]. Выдавший штраф: [fine.fine_issued_by].", "Система", STATION_TIME_TIMESTAMP("hh:mm:ss", world.time))
+	GLOB.data_core.addMajorCrime(id, c303)
+	var/cur = R.fields["criminal"]
+	if(cur != SEC_RECORD_STATUS_ARREST && cur != SEC_RECORD_STATUS_EXECUTE)
+		R.fields["criminal"] = SEC_RECORD_STATUS_ARREST
+		update_all_mob_security_hud()
+	GLOB.data_core.append_sec_logs(id, "%%GEN_AUTH%% автоматически выдал статью 303 (неуплата штрафа \"[fine.crimeName]\" от [fine.fine_issued_by]) и установил статус *Арестовать* (просрочка [DisplayTimeText(fine.fine_duration)] )", "Система", "Автоматика штрафов")
+	log_game("Fine [fine.crimeName] ([fine.dataId]) for ID [id] expired unpaid. Added 303 and set ARREST.")
+	for(var/datum/mind/M as anything in SSticker.minds)
+		if(M.name == R.fields["name"])
+			SSdirector.bump_antag_activity(M, DIRECTOR_ACTIVITY_WANTED)
+			break
 
 // BLUEMOON ADD START - возможность пометить правонарушение как обработанное | Логи
 /datum/datacore/proc/switch_incur(id, cDataId)
@@ -700,6 +880,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		S.fields["mi_crim_d"]	= list()
 		S.fields["ma_crim"]		= list()
 		S.fields["ma_crim_d"]	= "No major crime convictions."
+		S.fields["fines"] = list() // CATCRINGE ADD - штрафы
 		S.fields["notes"]		= prefs.security_records || "No notes."
 		// BLUEMOON ADD START - логи
 		S.fields["actions_logs"] = list(

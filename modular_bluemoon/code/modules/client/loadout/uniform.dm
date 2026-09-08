@@ -1,3 +1,8 @@
+/datum/gear/uniform/chronos
+	name = "New Mecca Uniform"
+	path = /obj/item/clothing/under/bm/chronos
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_SUITS
+
 /datum/gear/uniform/latexbodysuit
 	name = "latex bodysuit"
 	path = /obj/item/clothing/under/latex_bodysuit

@@ -132,6 +132,11 @@
 /obj/item/mod/control/get_cell()
 	return mod_parts[MOD_PART_CELL]
 
+/obj/item/mod/control/proc/can_activate()
+	if(theme?.can_activate_without_deploy_all_parts)
+		return TRUE
+	return all_parts_deployed() //результат прока.
+
 //Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
 /obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
 	var/obj/item/clothing/mod_part/part = get_mod_part_by_index(mod_index)

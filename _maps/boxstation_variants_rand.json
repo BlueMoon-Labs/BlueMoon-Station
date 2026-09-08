@@ -1,0 +1,9 @@
+{
+    "map_name": "Box Station (Random)",
+    "map_path": "map_files/BoxStations",
+    "map_file": "BoxStation.dmm",
+    "map_variants": [
+        "_maps/boxstation.json",
+        "_maps/syndicatestation.json"
+    ]
+}
