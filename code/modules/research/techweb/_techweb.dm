@@ -48,8 +48,10 @@
 	if(problem_computer_charges < problem_computer_max_charges)
 		var/elapsed = world.time - problem_computer_last_charge_time
 		if(elapsed >= problem_computer_charge_time)
-			problem_computer_charges = min(problem_computer_max_charges, problem_computer_charges + round(elapsed / problem_computer_charge_time))
-	problem_computer_last_charge_time = world.time
+			var/gained = round(elapsed / problem_computer_charge_time)
+			problem_computer_charges = min(problem_computer_max_charges, problem_computer_charges + gained)
+			// Засчитываем только целые периоды: остаток времени не теряем.
+			problem_computer_last_charge_time += gained * problem_computer_charge_time
 	return problem_computer_charges
 
 /datum/techweb/proc/get_problem_computer_max_charges()
