@@ -44,6 +44,20 @@
 		log_game("Сохранение игрока [parent?.ckey || "без клиента"] прочитано из исправного поколения JSON после ошибки другого поколения.")
 	return result
 
+/// Корневые поля читаются без сборки savefile; миграции остаются у старого загрузчика.
+/datum/preferences/proc/open_player_document()
+	var/datum/player_save_json/storage = get_player_save_storage()
+	if(!storage || player_save_blocked)
+		return null
+	var/datum/player_save_document/result = storage.snapshot()
+	if(!result)
+		player_save_error(storage.error)
+		return null
+	if(length(result.tree) && player_save_version_status(result.read("version")) == -2)
+		player_save_error("Неподдерживаемая версия старого сохранения")
+		return null
+	return result
+
 /datum/preferences/proc/commit_player_save(savefile/source, scope)
 	var/datum/player_save_json/storage = get_player_save_storage()
 	if(!storage || player_save_blocked)
@@ -57,11 +71,31 @@
 /datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	var/blocking_started_ms = blocking_call_start()
 	var/list/pending_before_write = pending_single_prefs?.Copy()
-	var/savefile/result = write_preferences(bypass_cooldown, silent)
+	var/list/patch_context = list()
+	var/savefile/result
+	try
+		result = write_preferences(bypass_cooldown, silent, patch_context)
+	catch(var/exception/preparation_failure)
+		pending_single_prefs = pending_before_write
+		player_save_error(preparation_failure.name)
+		blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "ошибка подготовки")
+		return FALSE
 	if(!istype(result))
 		blocking_call_finish(blocking_started_ms, "JSON (запись)", "запись отложена или отменена")
 		return FALSE
-	if(!commit_player_save(result, "/"))
+	var/datum/player_save_document/document = patch_context["document"]
+	var/saved = FALSE
+	if(document)
+		try
+			document.merge(result)
+			saved = document.commit()
+			if(!saved)
+				player_save_error(document.storage.error)
+		catch(var/exception/failure)
+			player_save_error(failure.name)
+	else
+		saved = commit_player_save(result, "/")
+	if(!saved)
 		pending_single_prefs = pending_before_write
 		blocking_call_finish(blocking_started_ms, "JSON (полные префы)", "ошибка записи")
 		return FALSE
@@ -72,13 +106,27 @@
 
 /datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/result = write_character(bypass_cooldown, silent, export)
+	var/list/patch_context = export ? null : list()
+	var/savefile/result
+	try
+		result = write_character(bypass_cooldown, silent, export, patch_context)
+	catch(var/exception/failure)
+		if(export)
+			throw failure
+		player_save_error(failure.name)
+		blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка подготовки")
+		return FALSE
 	if(!istype(result))
 		blocking_call_finish(blocking_started_ms, "JSON (запись)", "запись отложена или отменена")
 		return FALSE
-	if(!export && !commit_player_save(result, "/character[default_slot]"))
-		blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка записи")
-		return FALSE
+	if(!export)
+		var/datum/player_save_character_transaction/transaction = patch_context["transaction"]
+		var/saved = transaction ? transaction.commit(result) : commit_player_save(result, "/character[default_slot]")
+		if(!saved)
+			if(transaction)
+				player_save_error(transaction.root.storage.error)
+			blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка записи")
+			return FALSE
 	blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "слот [default_slot]")
 	if(parent && !silent && !export)
 		to_chat(parent, span_notice("Слот персонажа сохранён!"))
@@ -86,7 +134,10 @@
 
 /// Записываем миграции только после загрузки всех модульных настроек.
 /datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
-	var/savefile/S = read_preferences(bypass_cooldown)
+	var/result = read_preferences(bypass_cooldown)
+	if(istype(result, /datum/player_save_document))
+		return result
+	var/savefile/S = result
 	if(!istype(S))
 		return FALSE
 	if(savefile_needs_update(S) >= 0)

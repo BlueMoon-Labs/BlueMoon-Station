@@ -124,3 +124,6 @@
 
 /// Ограничивает перебор старых слотов при миграции, включая слоты вне текущего лимита игрока.
 #define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT 128
+/// Чтение текущего JSON без промежуточного savefile; старые версии и импорт используют адаптер.
+#define PLAYER_SAVE_VALUE(source, document, key) (document ? document.read(key) : source[key])
+#define READ_PLAYER_SAVE(source, document, key, target) if(document) { target = document.read(key); } else { source[key] >> target; }

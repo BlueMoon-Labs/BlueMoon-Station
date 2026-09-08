@@ -332,7 +332,7 @@
 		"sound_volume_jukeboxes", "sound_volume_personal_jukeboxes", "sound_volume_emote",
 		"sound_volume_mentorhelp", "sound_volume_fax",
 		"modern_button_shape", "modern_ui_language", "ui_decoration_level", "collapse_empty_character_slots",
-		"enable_tips", "tip_delay", "lastchangelog",
+		"enable_tips", "tip_delay", "lastchangelog", "menuoptions", "inquisitive_ghost",
 		"chem_dispenser_classic_view", "chem_dispenser_use_reagent_color", "chem_dispenser_show_icons",
 		"chem_dispenser_alphabetical_sort",
 		"tgui_panel_state", "tgui_panel_theme",

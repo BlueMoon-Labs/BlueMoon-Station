@@ -3311,13 +3311,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				// Подсчитываем количество непустых слотов
 				var/occupied_count = 0
 				if(path)
-					var/savefile/S = open_player_save()
-					if(S)
-						for(var/i in 1 to max_save_slots)
-							S.cd = "/character[i]"
-							var/check_name
-							S["real_name"] >> check_name
-							if(check_name)
+					var/list/names = player_character_names()
+					if(names)
+						for(var/key in names)
+							if(names[key])
 								occupied_count++
 				if(occupied_count <= 1)
 					tgui_alert_async(user, "Нельзя удалить единственного сохранённого персонажа.")

@@ -33,7 +33,7 @@
 
 	. = ..()
 
-/datum/preferences/write_preferences(bypass_cooldown, silent)
+/datum/preferences/write_preferences(bypass_cooldown, silent, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -59,14 +59,16 @@
 
 /datum/preferences/read_preferences(bypass_cooldown)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	.["favorite_interactions"] >>	favorite_interactions
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	READ_PLAYER_SAVE(S, document, "favorite_interactions", favorite_interactions)
 
-	.["use_arousal_multiplier"] >>	use_arousal_multiplier
-	.["arousal_multiplier"] >>		arousal_multiplier
-	.["use_moaning_multiplier"] >>	use_moaning_multiplier
-	.["moaning_multiplier"] >>		moaning_multiplier
+	READ_PLAYER_SAVE(S, document, "use_arousal_multiplier", use_arousal_multiplier)
+	READ_PLAYER_SAVE(S, document, "arousal_multiplier", arousal_multiplier)
+	READ_PLAYER_SAVE(S, document, "use_moaning_multiplier", use_moaning_multiplier)
+	READ_PLAYER_SAVE(S, document, "moaning_multiplier", moaning_multiplier)
 
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
@@ -81,37 +83,37 @@
 			LAZYREMOVE(favorite_interactions, interaction)
 			continue
 
-	.["custom_verb_consent"] >> custom_verb_consent
+	READ_PLAYER_SAVE(S, document, "custom_verb_consent", custom_verb_consent)
 	custom_verb_consent = sanitize_integer(custom_verb_consent, 0, 1, TRUE)
 
-	.["show_heart_over_self"] >> show_heart_over_self
+	READ_PLAYER_SAVE(S, document, "show_heart_over_self", show_heart_over_self)
 	show_heart_over_self = sanitize_integer(show_heart_over_self, 0, 1, initial(show_heart_over_self))
 
-	.["interaction_effect"] >> interaction_effect
+	READ_PLAYER_SAVE(S, document, "interaction_effect", interaction_effect)
 	if(!(interaction_effect in GLOB.interaction_effects_list))
 		interaction_effect = initial(interaction_effect)
-	.["block_partner_pixel_shift"] >> block_partner_pixel_shift
+	READ_PLAYER_SAVE(S, document, "block_partner_pixel_shift", block_partner_pixel_shift)
 	block_partner_pixel_shift = sanitize_integer(block_partner_pixel_shift, 0, 1, initial(block_partner_pixel_shift))
 
 	use_arousal_multiplier = sanitize_integer(use_arousal_multiplier, 0, 1, initial(use_arousal_multiplier))
 	arousal_multiplier = sanitize_integer(arousal_multiplier, 0, 300, initial(arousal_multiplier))
 	use_moaning_multiplier = sanitize_integer(use_moaning_multiplier, 0, 1, initial(use_moaning_multiplier))
 	moaning_multiplier = sanitize_integer(moaning_multiplier, 0, 100, initial(moaning_multiplier))
-	.["favorite_tracks"] >> favorite_tracks
+	READ_PLAYER_SAVE(S, document, "favorite_tracks", favorite_tracks)
 	favorite_tracks = sanitize_jukebox_track_list(favorite_tracks)
-	.["favorite_paintings_md5"] >> favorite_paintings_md5
+	READ_PLAYER_SAVE(S, document, "favorite_paintings_md5", favorite_paintings_md5)
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
-	.["playlists"] >> playlists
+	READ_PLAYER_SAVE(S, document, "playlists", playlists)
 	playlists = sanitize_jukebox_playlists(playlists)
-	.["metadollar_minute_pool"] >> metadollar_minute_pool
+	READ_PLAYER_SAVE(S, document, "metadollar_minute_pool", metadollar_minute_pool)
 	metadollar_minute_pool = isnum(metadollar_minute_pool) ? clamp(round(metadollar_minute_pool), 0, 500) : 0
-	.["metadollar_pending_items"] >> metadollar_pending_items
+	READ_PLAYER_SAVE(S, document, "metadollar_pending_items", metadollar_pending_items)
 	metadollar_pending_items = SANITIZE_LIST(metadollar_pending_items)
 	return .
 
-/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE)
-	S["custom_interactions"] >> custom_interactions
-	if(isnull(custom_interactions))
+/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE, datum/player_save_document/document)
+	READ_PLAYER_SAVE(S, document, "custom_interactions", custom_interactions)
+	if(!document && isnull(custom_interactions))
 		// Legacy-данные лежали в корне сейвфайла — переносим их в текущий слот персонажа.
 		// Миграция выполняется один раз: маркер в корне запрещает копировать список в новые слоты.
 		var/current_dir = S.cd

@@ -435,6 +435,7 @@ TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 
 #ifdef PLAYER_SAVE_TESTS
 TEST_FOCUS(/datum/unit_test/preferences_save_deferral)
+TEST_FOCUS(/datum/unit_test/species_prefs_load_reuses_matching_datum)
 TEST_FOCUS(/datum/unit_test/player_save_json)
 TEST_FOCUS(/datum/unit_test/preferences_single_pref_absorb)
 TEST_FOCUS(/datum/unit_test/preferences_single_pref_defer_decision)

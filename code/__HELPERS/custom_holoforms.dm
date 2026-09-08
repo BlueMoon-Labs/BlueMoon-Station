@@ -78,13 +78,11 @@
 	var/datum/preferences/target_prefs = C.prefs
 	if(target_prefs.path)
 		var/list/characters = list()
-		var/savefile/S = target_prefs.open_player_save()
-		if(S)
-			var/name
+		var/list/names = target_prefs.player_character_names()
+		if(names)
 			var/max_save_slots = C.prefs.max_save_slots
 			for(var/i=1, i<=max_save_slots, i++)
-				S.cd = "/character[i]"
-				S["real_name"] >> name
+				var/name = names["character[i]"]
 				if(name)
 					characters[name] = i
 			var/chosen_name = input(C, "Which character do you wish to use as your appearance.") as anything in characters
