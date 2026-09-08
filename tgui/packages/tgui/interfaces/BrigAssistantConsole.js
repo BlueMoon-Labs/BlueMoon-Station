@@ -4,7 +4,7 @@ import { Window } from '../layouts';
 
 export const BrigAssistantConsole = (props) => {
   const { act, data } = useBackend();
-  const { has_id, id_name, id_balance, scanning, scan_progress, scan_time_left, fines = [], fines_total, fines_paid, fines_count, wanted = [], remove = [] } = data;
+  const { has_id, id_name, id_balance, scanning, scan_progress, scan_time_left, fines = [], fines_total, fines_paid, fines_count, wanted = [], remove = [], pay_cd, pay_cd_seconds } = data;
   const [tab, setTab] = useLocalState('brigTab', 0); // 0 = fines, 1 = wanted
 
   return (
@@ -76,6 +76,15 @@ export const BrigAssistantConsole = (props) => {
                       <Box mb={1} color="average">
                         Найдено штрафов: <b>{fines.length}</b> | Общая сумма: <b>{fines_total} кр.</b> | Уплачено: <b>{fines_paid} кр.</b> | К доплате: <b style={{ color: '#ff5555' }}>{fines_total - fines_paid} кр.</b>
                       </Box>
+                      {!!pay_cd && pay_cd > 0 ? (
+                        <NoticeBox danger mb={1}>
+                          Задержка оплаты: подождите {pay_cd_seconds} сек. перед следующей оплатой. Минимальная сумма - 50 кр.
+                        </NoticeBox>
+                      ) : (
+                        <NoticeBox info mb={1} fontSize="0.85em">
+                          Минимальная сумма оплаты - 50 кр. (или полный остаток если меньше 50). Задержка между платежами - 30 сек.
+                        </NoticeBox>
+                      )}
                       <Table>
                         <Table.Row header>
                           <Table.Cell>Статья</Table.Cell>
@@ -173,11 +182,14 @@ export const BrigAssistantConsole = (props) => {
 };
 
 const FineRow = (props) => {
-  const { act } = useBackend();
+  const { act, data } = useBackend();
   const { fine, balance } = props;
-  const [amount, setAmount] = useLocalState(`fine_amt_${fine.dataId}`, Math.min(100, fine.fine) || 1);
+  const minPay = Math.min(50, fine.fine);
+  const [amount, setAmount] = useLocalState(`fine_amt_${fine.dataId}`, fine.fine < 50 ? fine.fine : Math.min(100, fine.fine));
   const timeColor = fine.overdue ? 'bad' : fine.time_left < 3000 ? 'average' : 'good';
-  const canPay = fine.fine > 0 && balance !== null && balance >= 1;
+  const payCd = data.pay_cd || 0;
+  const onCooldown = payCd > 0;
+  const canPay = fine.fine > 0 && balance !== null && balance >= minPay && !onCooldown;
   const displayLeft = fine.fine === 0 ? 'ОПЛАЧЕН' : fine.overdue ? 'ПРОСРОЧЕНО!' : fine.display_time_left;
   return (
     <Table.Row className={fine.overdue ? 'candystripe' : ''}>
@@ -210,18 +222,22 @@ const FineRow = (props) => {
               <Input
                 width="80px"
                 value={amount}
-                onInput={(e, v) => setAmount(Math.max(1, Math.min(fine.fine, parseInt(v, 10) || 1)))}
+                onInput={(e, v) => {
+                  const parsed = parseInt(v) || minPay;
+                  const clamped = Math.max(minPay, Math.min(fine.fine, parsed));
+                  setAmount(clamped);
+                }}
                 type="number"
               />
-              <Box as="span" color="label" fontSize="0.75em"> кр.</Box>
+              <Box as="span" color="label" fontSize="0.75em"> кр. (мин {minPay})</Box>
             </Flex.Item>
             <Flex.Item mt={0.25}>
               <Button
                 icon="coins"
                 content="Оплатить"
                 color="good"
-                disabled={!canPay}
-                tooltip={balance !== null && balance < amount ? `Недостаточно средств (${balance} кр.)` : `Списать ${amount} кр.`}
+                disabled={!canPay || (amount < 50 && amount !== fine.fine)}
+                tooltip={onCooldown ? `Задержка ${Math.ceil(payCd/10)}с` : balance !== null && balance < amount ? `Недостаточно средств (${balance} кр.)` : amount < 50 && amount !== fine.fine ? 'Минимум 50 кр.' : `Списать ${amount} кр.`}
                 onClick={() => act('pay_fine', { cdataid: fine.dataId, amount: amount })}
               />
             </Flex.Item>
@@ -230,7 +246,8 @@ const FineRow = (props) => {
                 icon="money-bill-wave"
                 content={`Полностью (${fine.fine} кр.)`}
                 color="yellow"
-                disabled={!canPay || balance < fine.fine}
+                disabled={!canPay || balance < fine.fine || onCooldown}
+                tooltip={onCooldown ? `Задержка ${Math.ceil(payCd/10)}с` : undefined}
                 onClick={() => act('pay_fine_full', { cdataid: fine.dataId })}
               />
             </Flex.Item>
