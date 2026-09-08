@@ -211,6 +211,12 @@
 		return BULLET_ACT_HIT
 	if(!isturf(A.loc)) //NO MOTHERFLIPPIN MECHS!
 		return BULLET_ACT_HIT
+	var/obj/item/active_hand = A.get_active_held_item()
+	var/obj/item/inactive_hand = A.get_inactive_held_item()
+	if(active_hand && inactive_hand)
+		return BULLET_ACT_HIT
+	if((active_hand || inactive_hand) && !prob(50))
+		return BULLET_ACT_HIT
 	A.visible_message("<span class='danger'>[A] dodges the projectile cleanly, they're immune to ranged weapons!</span>", "<span class='userdanger'>You dodge out of the way of the projectile!</span>")
 	playsound(get_turf(A), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
 	return BULLET_ACT_FORCE_PIERCE
