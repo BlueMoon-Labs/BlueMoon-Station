@@ -5269,6 +5269,8 @@
 #include "modular_bluemoon\fluffs\code\wrists.dm"
 #include "modular_bluemoon\fluffs\code\modules\catcrin\code\catcrin_healthscan_suit.dm"
 #include "modular_bluemoon\fluffs\code\modules\catcrin\code\catcrin_stuff.dm"
+#include "modular_bluemoon\fluffs\code\modules\suns\code\suns.dm"
+#include "modular_bluemoon\fluffs\code\modules\suns\code\suns_loadout.dm"
 #include "modular_bluemoon\kovac_shitcode\code\body_markings.dm"
 #include "modular_bluemoon\kovac_shitcode\code\rus.dm"
 #include "modular_bluemoon\kovac_shitcode\code\solfed.dm"
