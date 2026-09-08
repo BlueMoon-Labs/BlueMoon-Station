@@ -345,11 +345,6 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	if(radio_return & NOPASS)
 		return TRUE
 
-	// Обработка искажения речи от масок
-	var/muzzle_strength = src.get_muzzle_strength()
-	if(muzzle_strength > 0 && !is_visual_language && !src.is_muzzled())
-		message = muffledspeech(message, muzzle_strength)
-
 	//No screams in space, unless you're next to someone.
 	var/turf/T = get_turf(src)
 	var/datum/gas_mixture/environment = T.return_air()
@@ -679,6 +674,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			message = machine_slur(message, replace_characters, slurring * 1.5)
 		else
 			message = slur(message,slurring)
+
+	// Обработка искажения речи от масок
+	var/muzzle_strength = get_muzzle_strength()
+	if(muzzle_strength > 0 && !src.is_muzzled())
+		message = muffledspeech(message, muzzle_strength)
+
 	// BLUEMOON EDIT END
 
 	if(cultslurring)
