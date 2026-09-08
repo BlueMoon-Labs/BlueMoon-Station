@@ -83,9 +83,6 @@
 
 //BLUEMOON ADD - подключение сервера к другой сети исследований через мультитул
 /obj/machinery/rnd/server/multitool_act(mob/living/user, obj/item/multitool/tool)
-	if(!allowed(user))	//BLUEMOON ADD: доступ к смене сети исследований
-		to_chat(user, span_danger("Доступ запрещён."))
-		return TRUE
 	. = ..()
 	if(istype(tool.buffer, /datum/techweb))
 		var/datum/techweb/new_web = tool.buffer
@@ -222,7 +219,7 @@
 	add_fingerprint(usr)
 	usr.set_machine(src)
 	if(!src.allowed(usr) && !(obj_flags & EMAGGED))
-		to_chat(usr, "<span class='danger'>You do not have the required access level.</span>")
+		to_chat(usr, "<span class='danger'>Доступ запрещён.</span>")
 		return
 
 	if(href_list["main"])
