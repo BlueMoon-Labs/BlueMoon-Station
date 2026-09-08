@@ -12,9 +12,9 @@
 	name = ".45 bullet"
 	damage = 25
 	stamina = 0
-	armour_penetration = BULLET_BR1
+	armour_penetration = BULLET_BR3
 	wound_bonus = 15
-	bare_wound_bonus = 20 // Пуля тяжелая, должна делать бо-бо
+	bare_wound_bonus = 20
 	wound_falloff_tile = -10
 
 
@@ -22,7 +22,7 @@
 	name = ".45 Hydra-shock bullet"
 	damage = 30
 	stamina = 0
-	armour_penetration = BULLET_BR0 - 20  // -20 (HP экспансивный)
+	armour_penetration = BULLET_BR0 - 20
 	sharpness = SHARP_EDGED
 	wound_bonus = 30
 	bare_wound_bonus = 30
@@ -62,7 +62,7 @@
 /obj/item/projectile/bullet/c45/hotshot
 	name = ".45 Hot Shot bullet"
 	damage = 20
-	armour_penetration = BULLET_BR1   // зажигательный как базовый летальный
+	armour_penetration = BULLET_BR4
 	stamina = 0
 	sharpness = SHARP_EDGED
 
@@ -72,11 +72,6 @@
 		var/mob/living/carbon/M = target
 		M.adjust_fire_stacks(6)
 		M.IgniteMob()
-
-// .45 старый (не bluemoon) — BR1
-/obj/item/projectile/bullet/c45_cleaning
-	armour_penetration = BULLET_BR1
-	sharpness = SHARP_EDGED
 
 /obj/item/projectile/energy/electrode/c45
 	tase_duration = 40

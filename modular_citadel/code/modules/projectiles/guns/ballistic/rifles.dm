@@ -60,6 +60,7 @@
 	damage = 2.5
 	stamina = 30
 	wound_bonus = 3
+	armour_penetration = BULLET_BR0 //стас не проверил сплюртовские файлы и у ВТ резины было пробитие как у обычного патрона
 
 ///toy memes///
 
@@ -92,7 +93,7 @@
 /obj/item/projectile/bullet/cflechetteap	//shreds armor but no wounds
 	name = "flechette (armor piercing)"
 	damage = 15
-	armour_penetration = BULLET_BR5
+	armour_penetration = BULLET_BR13
 	wound_bonus = 10
 
 /obj/item/projectile/bullet/cflechettes		//causes wounds fast but is heavily countered by armor
@@ -100,7 +101,7 @@
 	damage = 15
 	dismemberment = 10
 	wound_bonus = 15
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR3 //почему у нюкерской пушки БР ноль???
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 
@@ -175,7 +176,7 @@
 	damage = 10
 	dismemberment = 15
 	wound_bonus = 20
-	armour_penetration = BULLET_BR6
+	armour_penetration = BULLET_BR20
 	sharpness = SHARP_EDGED
 	wound_falloff_tile = 0
 
