@@ -60,6 +60,10 @@
 		//Плоскости без мастера смещать некуда: смещённый номер уходит под экранную плиту.
 		for(var/masterless_plane in list(EMISSIVE_BLOCKER_PLANE, BYOND_LIGHTING_PLANE, HIGH_GAME_PLANE))
 			plane_offset_blacklist["[masterless_plane]"] = TRUE
+		// У экранных плоскостей тоже нет мастеров. Без исключения предметы инвентаря
+		// при переходе между этажами уходят под HUD и не возвращаются обратно.
+		for(var/screen_plane in list(FULLSCREEN_PLANE, HUD_PLANE, VOLUMETRIC_STORAGE_BOX_PLANE, VOLUMETRIC_STORAGE_ITEM_PLANE, VOLUMETRIC_STORAGE_ACTIVE_ITEM_PLANE, ABOVE_HUD_PLANE, SPLASHSCREEN_PLANE, ESCAPE_MENU_PLANE))
+			plane_offset_blacklist["[screen_plane]"] = TRUE
 		create_plane_offsets(0, 0)
 
 	for(var/z in 1 to level_count)

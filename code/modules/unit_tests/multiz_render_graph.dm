@@ -189,4 +189,47 @@
 	TEST_ASSERT_EQUAL(ghost.loc, lower, "Гост должен был появиться на нижнем этаже")
 	TEST_ASSERT_EQUAL(ghost.plane, GET_NEW_PLANE(PLANE_TO_TRUE(initial(ghost.plane)), GET_Z_PLANE_OFFSET(lower.z)), "Гост на нижнем этаже обязан лежать на плоскости своего этажа, иначе его реле сняты вместе с этажом глаза")
 
+/// Экранные плоскости не принадлежат этажам и должны оставаться над мировой плитой.
+/datum/unit_test/multiz_hud_planes_stay_on_screen/Run()
+	var/list/screen_planes = list(FULLSCREEN_PLANE, HUD_PLANE, VOLUMETRIC_STORAGE_BOX_PLANE, VOLUMETRIC_STORAGE_ITEM_PLANE, VOLUMETRIC_STORAGE_ACTIVE_ITEM_PLANE, ABOVE_HUD_PLANE, SPLASHSCREEN_PLANE, ESCAPE_MENU_PLANE)
+	for(var/screen_plane in screen_planes)
+		for(var/offset in 0 to MAX_SUPPORTED_Z_DEPTH)
+			TEST_ASSERT_EQUAL(GET_NEW_PLANE(screen_plane, offset), screen_plane, "Экранная плоскость [screen_plane] не должна смещаться на этаже [offset]")
+
+/// Переезд носителя сохраняет плоскость предметов в руках, слотах одежды и открытом рюкзаке.
+/datum/unit_test/multiz_inventory_stays_on_hud/Run()
+	var/turf/lower = multiz_test_lower_turf()
+	if(!lower)
+		log_test("\tНа карте нет стопки этажей, переезд инвентаря не проверяется")
+		return
+
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/card/id/card = allocate(/obj/item/card/id, run_loc_floor_bottom_left)
+	var/obj/item/storage/backpack/backpack = allocate(/obj/item/storage/backpack, run_loc_floor_bottom_left)
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey, run_loc_floor_bottom_left)
+	var/obj/item/held = allocate(/obj/item, run_loc_floor_bottom_left)
+	wearer.equip_to_slot(uniform, ITEM_SLOT_ICLOTHING)
+	wearer.equip_to_slot(card, ITEM_SLOT_ID)
+	wearer.equip_to_slot(backpack, ITEM_SLOT_BACK)
+	TEST_ASSERT(wearer.put_in_active_hand(held), "Не удалось положить предмет в руку")
+	TEST_ASSERT_EQUAL(wearer.w_uniform, uniform, "Форма должна быть надета")
+	TEST_ASSERT_EQUAL(wearer.wear_id, card, "Карта должна быть в слоте ID")
+	TEST_ASSERT_EQUAL(wearer.back, backpack, "Рюкзак должен быть надет")
+
+	var/obj/item/stored = allocate(/obj/item, backpack)
+	// Открытое хранилище выставляет эту плоскость своим предметам в orient2hud_legacy().
+	stored.plane = ABOVE_HUD_PLANE
+	var/list/hud_items = list(card, backpack, uniform, held, stored)
+	for(var/obj/item/item as anything in hud_items)
+		TEST_ASSERT_EQUAL(item.plane, ABOVE_HUD_PLANE, "До перехода [item.type] должен находиться на плоскости HUD")
+
+	// Повторный спуск ловит накопление смещения, возврат — потерю исходной плоскости.
+	for(var/trip in 1 to 2)
+		for(var/turf/destination as anything in list(lower, run_loc_floor_bottom_left))
+			wearer.forceMove(destination)
+			TEST_ASSERT_EQUAL(wearer.loc, destination, "Носитель должен перейти на нужный этаж")
+			TEST_ASSERT_EQUAL(wearer.plane, GET_NEW_PLANE(GAME_PLANE, GET_Z_PLANE_OFFSET(destination.z)), "Плоскость самого моба должна следовать за этажом")
+			for(var/obj/item/item as anything in hud_items)
+				TEST_ASSERT_EQUAL(item.plane, ABOVE_HUD_PLANE, "После перехода на z=[destination.z] предмет [item.type] должен оставаться на плоскости HUD")
+
 #undef RENDER_GRAPH_TEST_KEY
