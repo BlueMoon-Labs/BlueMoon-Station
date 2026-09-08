@@ -129,12 +129,6 @@
 	if(!isturf(A.loc)) //NO MOTHERFLIPPIN MECHS!
 		return BULLET_ACT_HIT
 	if(A.throw_mode)
-		var/obj/item/active_hand = A.get_active_held_item()
-		var/obj/item/inactive_hand = A.get_inactive_held_item()
-		if(active_hand && inactive_hand)
-			return BULLET_ACT_HIT
-		if((active_hand || inactive_hand) && !prob(50))
-			return BULLET_ACT_HIT
 		A.visible_message("<span class='danger'>[A] effortlessly swats the projectile aside! They can deflect projectile with their bare hands!</span>", "<span class='userdanger'>You deflect the projectile!</span>")
 		playsound(get_turf(A), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
 		P.firer = A
