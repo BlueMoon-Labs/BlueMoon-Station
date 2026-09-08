@@ -589,3 +589,106 @@
 	. = ..()
 	dialogue_lines = truck_dialogue_lines
 	alert_phrases = truck_alert_phrases
+
+// =============================================================================
+// HECU SQUAD RADIO
+// Radio for HECU squad with tactical briefing and door control
+// =============================================================================
+
+/obj/machinery/negotiations_radio/hecusquad
+	name = "HECU squad radio"
+	desc = "A military radio for HECU squad communications."
+	icon_state = "radiohecu"
+	var/list/hecusquad_alert_phrases = list(
+		"Отряд браво! Вы на связи?",
+		"Разбившиеся на оспри, откликнитесь!",
+		"Выжившие после крушения, ответьте!"
+	)
+	var/list/hecusquad_dialogue_lines = list(
+		"Прекрасно. нам поступила информация о возможных выживших внутри комплекса!",
+		"Прошу. ПОЛНОСТЬЮ дослушайте меня. Важной информации будет много. В частности у меня есть планировка горячей точки ниже",
+		"Я НЕ КОМАНДИР. Нашего убили.",
+		"Так что распоряжайтесь с гражданскими по ситуации. Помните о вторженцах",
+		"Насчёт вашей эвакуации. Все выходы перекрыты. Вертушку на эвакуацию отправить НЕ ВЫЙДЕТ",
+		"Действуйте по ситуации. Обратитесь к лидеру и сделайте объявление в консоль коммуникации",
+		"ТОЛЬКО У ВАС есть возможность объявить высшему командованию и всему комплексу о вашем решении",
+		"... Насчёт плана. Настоятельно рекомендую распределить бойцов по следующим флангам",
+		"Слева идут офисы охраны с красными шлюзами. Остерегайтесь узких пространств",
+		"По середине идёт прямая дорога. Если решите пойти в лоб на захватчиков.",
+		"Справа тоже идут здания, предназначенные для исследований. Остерегайтесь взрывоопасных конструкций",
+		"Все фланги пересекаются ПО СЕРЕДИНЕ. Там образовывается некий перекрёсток. Советуется добраться туда и обустроить оборону",
+		"Не забывайте про планы отступления и срезы. не чурайтесь разбирать некоторые окна и использовать туннели",
+		"Удачи вам, парни. Надеюсь, мы сможем вас достать"
+	)
+
+/obj/machinery/negotiations_radio/hecusquad/Initialize()
+	. = ..()
+	dialogue_lines = hecusquad_dialogue_lines
+	alert_phrases = hecusquad_alert_phrases
+
+/obj/machinery/negotiations_radio/hecusquad/confirm_action(mob/user)
+	if(!user || !src)
+		return
+
+	if(!dialogue_active || current_interactor != user)
+		return
+
+	next_interaction_time = world.time + 2 SECONDS
+	say("Всем удачи. Мы на связи.")
+	icon_state = "radiohecu_talking"
+	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
+
+	open_blastdoors()
+	dialogue_completed = TRUE
+	end_dialogue()
+
+// =============================================================================
+// SCIENCE SQUAD RADIO
+// Radio for science squad (placeholder for future dialogue)
+// =============================================================================
+
+/obj/machinery/negotiations_radio/scisquad
+	name = "science squad radio"
+	desc = "A radio for science squad communications."
+	icon_state = "radiohecu"
+	var/list/scisquad_alert_phrases = list(
+		"Приём? Меня слышит кто нибудь?...",
+		"Пааарни! Я не могу больше сидеть в этой будке!"
+	)
+	var/list/scisquad_dialogue_lines = list(
+		"Вот вы где! Я Коллин Грэй",
+		"Это же... Без разницы. Мы ещё встретимся",
+		"...Вы же ведь в оружейной всё ещё сидите, да? Собирайте пушки и выдвигайтесь на поверхность.",
+		"По моим свидетельствам крупные конвои военных частично успели эвакуироваться. Но недавно над моей головой яростно пролетел горящий оспри",
+		"..Понимаете, о чём я? Что бы там не случилось - вас встретят или орды пришельцев или израненные в усмерть военные",
+		"...А может и нет. Кто его знает? Тем не менее. Я ОБЯЗАН рассказать вам планировку комплекса через который вы пройдёте",
+		"Слева идут офисы охраны с красными шлюзами. Остерегайтесь узких пространств",
+		"По середине идёт прямая дорога. Если решите пойти в лоб на захватчиков.",
+		"Справа тоже идут здания, предназначенные для исследований. Остерегайтесь взрывоопасных конструкций",
+		"Все фланги пересекаются ПО СЕРЕДИНЕ. Там образовывается некий перекрёсток. Советуется добраться туда и обустроить оборону",
+		"Не забывайте про планы отступления и срезы. не чурайтесь разбирать некоторые окна и использовать туннели",
+		"Если у вас выйдет пробится ко мне или договорится с теми кто там есть - буду ждать вас у моста. А вот какой мост... Поймёте сами"
+	)
+
+/obj/machinery/negotiations_radio/scisquad/Initialize()
+	. = ..()
+	dialogue_lines = scisquad_dialogue_lines
+	alert_phrases = scisquad_alert_phrases
+
+/obj/machinery/negotiations_radio/scisquad/confirm_action(mob/user)
+	if(!user || !src)
+		return
+
+	if(!dialogue_active || current_interactor != user)
+		return
+
+	next_interaction_time = world.time + 2 SECONDS
+	say("Собирайтесь и выдвигайтесь. Жду вас у моста.")
+	icon_state = "radiohecu_talking"
+	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
+
+	open_blastdoors()
+	dialogue_completed = TRUE
+	end_dialogue()
