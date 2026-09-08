@@ -296,6 +296,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(length(message) && message[1] != "!")
 		message = treat_message(message, language) // unfortunately we still need this
+
 	var/sigreturn = SEND_SIGNAL(src, COMSIG_MOB_SAY, args)
 	if (sigreturn & COMPONENT_UPPERCASE_SPEECH)
 		message = uppertext(message)
@@ -343,6 +344,11 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message_range = 1
 	if(radio_return & NOPASS)
 		return TRUE
+
+	// Обработка искажения речи от масок
+	var/muzzle_strength = src.get_muzzle_strength()
+	if(muzzle_strength > 0 && !is_visual_language && !src.is_muzzled())
+		message = muffledspeech(message, muzzle_strength)
 
 	//No screams in space, unless you're next to someone.
 	var/turf/T = get_turf(src)
@@ -731,6 +737,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			. = "stammers"
 		else if(derpspeech)
 			. = "gibbers"
+		else if(get_muzzle_strength() > 0 && get_muzzle_strength() != MUFFLE_MUTE)
+			. = "mumbles"
 		// Skyrat edits
 		else if(message_mode == MODE_SING)
 			. = verb_sing

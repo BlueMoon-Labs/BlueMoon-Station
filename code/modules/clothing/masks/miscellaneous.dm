@@ -9,6 +9,7 @@
 	equip_delay_other = 20
 	equip_delay_self = 20
 	mutantrace_variation = STYLE_MUZZLE
+	var/mute = MUFFLE_MUTE
 
 /obj/item/clothing/mask/muzzle/Initialize()
 	. = ..()
