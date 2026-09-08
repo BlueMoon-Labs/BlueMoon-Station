@@ -259,7 +259,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return get_step(GLOB.the_gateway.portal, GLOB.the_gateway.dir)
 
 /datum/inteq_pact_siege/proc/station_siege_gateway_linked()
-	return GLOB.the_gateway?.target == battle_dest
+	return GLOB.the_gateway && battle_dest && GLOB.the_gateway.target == battle_dest
 
 /datum/inteq_pact_siege/proc/find_return_gateway_turf()
 	var/z = resolve_siege_z()
@@ -304,7 +304,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return_gateway = new /obj/machinery/gateway/away/pact_siege(spawn_turf)
 
 /datum/inteq_pact_siege/proc/on_station_siege_gateway_closed()
-	if(return_gateway?.target == station_return_dest)
+	if(return_gateway && !QDELETED(return_gateway) && station_return_dest && return_gateway.target == station_return_dest)
 		return_gateway.deactivate()
 	if(GLOB.the_gateway && !GLOB.the_gateway.target && active)
 		GLOB.the_gateway.teleportion_possible = FALSE

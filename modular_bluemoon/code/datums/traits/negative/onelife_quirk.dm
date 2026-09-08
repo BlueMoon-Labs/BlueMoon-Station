@@ -207,7 +207,7 @@ GLOBAL_LIST_INIT(onelife_death_forms, init_onelife_death_forms())
 		return
 	H.dust(TRUE, TRUE)
 
-/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	if(HAS_TRAIT(src, TRAIT_ONELIFE))
 		onelife_crumble(src)
 		return

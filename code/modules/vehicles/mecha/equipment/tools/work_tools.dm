@@ -399,6 +399,7 @@
 		E.detach(M)
 		E.attach(N)
 	N.dna_lock = M.dna_lock
+	N.dna_lock_name = M.dna_lock_name
 	N.mecha_flags = M.mecha_flags
 	N.strafe = M.strafe
 	N.stabilizers = M.stabilizers

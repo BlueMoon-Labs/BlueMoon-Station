@@ -22,26 +22,26 @@
  * Metal
  */
 GLOBAL_LIST_INIT(metal_recipes, list ( \
-	new/datum/stack_recipe("stool", /obj/structure/chair/stool, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("bar stool", /obj/structure/chair/stool/bar, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("stool", /obj/structure/chair/stool, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("bar stool", /obj/structure/chair/stool/bar, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	//SPLURT CHANGE: Add beds list and pod beds
 	new/datum/stack_recipe_list("beds", list( \
-		new/datum/stack_recipe("bed", /obj/structure/bed, 2, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("double bed", /obj/structure/bed/double, 4, one_per_turf = TRUE, on_floor = TRUE), \
+		new/datum/stack_recipe("bed", /obj/structure/bed, 2, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("double bed", /obj/structure/bed/double, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 		// BLUEMOON ADD START
-		new/datum/stack_recipe("bdsm bed", /obj/structure/bed/bdsm_bed, 4, one_per_turf = TRUE, on_floor = TRUE), \
+		new/datum/stack_recipe("bdsm bed", /obj/structure/bed/bdsm_bed, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 		// BLUEMOON ADD END
-		new/datum/stack_recipe("pod bed", /obj/structure/bed/pod, 2, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("double pod bed", /obj/structure/bed/double/pod, 4, one_per_turf = TRUE, on_floor = TRUE), \
+		new/datum/stack_recipe("pod bed", /obj/structure/bed/pod, 2, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("double pod bed", /obj/structure/bed/double/pod, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	)), \
 		//SPLURT CHANGE END
 	//BLUEMOON ADD гигансткие кровати для гигантских персон
 	new/datum/stack_recipe_list("giant beds", list( \
-		new/datum/stack_recipe("giant bed (corner)", /obj/structure/bed/giant, 4, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("giant bed (side)", /obj/structure/bed/giant/side, 4, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("giant bed (pillow corner)", /obj/structure/bed/giant/pillow, 4, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("giant bed (pillow side)", /obj/structure/bed/giant/pillow/side, 4, one_per_turf = TRUE, on_floor = TRUE), \
-		new/datum/stack_recipe("giant bed (middle)", /obj/structure/bed/giant/middle, 4, one_per_turf = TRUE, on_floor = TRUE), \
+		new/datum/stack_recipe("giant bed (corner)", /obj/structure/bed/giant, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("giant bed (side)", /obj/structure/bed/giant/side, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("giant bed (pillow corner)", /obj/structure/bed/giant/pillow, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("giant bed (pillow side)", /obj/structure/bed/giant/pillow/side, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("giant bed (middle)", /obj/structure/bed/giant/middle, 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	)), \
 	//BLUEMOON END
 	//CIT CHANGE - adds sofas to metal recipe list
@@ -78,7 +78,7 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("crate shelf parts", /obj/item/rack_parts/shelf, 10), \
 	// BLUEMOON ADD END (ну не хочет оно не такими кривыми комментами работать, увы)
 	new/datum/stack_recipe("shelf parts", /obj/item/shelf_parts, 5), \
-	new/datum/stack_recipe("closet", /obj/structure/closet, 2, time = 15, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("closet", /obj/structure/closet, 2, time = 15, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	null, \
 	new/datum/stack_recipe("canister", /obj/machinery/portable_atmospherics/canister, 10, time = 15, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("trash bin", /obj/structure/closet/crate/bin, 10, time = 15, one_per_turf = TRUE, on_floor = TRUE),\
@@ -87,36 +87,36 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("metal rod", /obj/item/stack/rods, 1, 2, 60), \
 
 	null, \
-	new/datum/stack_recipe("wall girders", /obj/structure/girder, 2, time = 40, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = 0.75), \
+	new/datum/stack_recipe("wall girders", /obj/structure/girder, 2, time = 40, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	null, \
-	new/datum/stack_recipe("computer frame", /obj/structure/frame/computer, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("modular console", /obj/machinery/modular_computer/console/buildable, 10, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("machine frame", /obj/structure/frame/machine, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("computer frame", /obj/structure/frame/computer, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("modular console", /obj/machinery/modular_computer/console/buildable, 10, time = 25, one_per_turf = TRUE, on_floor = TRUE), trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED, \
+	new/datum/stack_recipe("machine frame", /obj/structure/frame/machine, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	null, \
 	new /datum/stack_recipe_list("airlock assemblies", list( \
-		new /datum/stack_recipe("standard airlock assembly", /obj/structure/door_assembly, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("public airlock assembly", /obj/structure/door_assembly/door_assembly_public, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("command airlock assembly", /obj/structure/door_assembly/door_assembly_com, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("security airlock assembly", /obj/structure/door_assembly/door_assembly_sec, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("engineering airlock assembly", /obj/structure/door_assembly/door_assembly_eng, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("mining airlock assembly", /obj/structure/door_assembly/door_assembly_min, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("atmospherics airlock assembly", /obj/structure/door_assembly/door_assembly_atmo, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("research airlock assembly", /obj/structure/door_assembly/door_assembly_research, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("freezer airlock assembly", /obj/structure/door_assembly/door_assembly_fre, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("science airlock assembly", /obj/structure/door_assembly/door_assembly_science, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("medical airlock assembly", /obj/structure/door_assembly/door_assembly_med, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("virology airlock assembly", /obj/structure/door_assembly/door_assembly_viro, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("maintenance airlock assembly", /obj/structure/door_assembly/door_assembly_mai, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("external airlock assembly", /obj/structure/door_assembly/door_assembly_ext, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("external maintenance airlock assembly", /obj/structure/door_assembly/door_assembly_extmai, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("airtight hatch assembly", /obj/structure/door_assembly/door_assembly_hatch, 4, time = 50, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("maintenance hatch assembly", /obj/structure/door_assembly/door_assembly_mhatch, 4, time = 50, one_per_turf = 1, on_floor = 1), \
+		new /datum/stack_recipe("standard airlock assembly", /obj/structure/door_assembly, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("public airlock assembly", /obj/structure/door_assembly/door_assembly_public, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("command airlock assembly", /obj/structure/door_assembly/door_assembly_com, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("security airlock assembly", /obj/structure/door_assembly/door_assembly_sec, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("engineering airlock assembly", /obj/structure/door_assembly/door_assembly_eng, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("mining airlock assembly", /obj/structure/door_assembly/door_assembly_min, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("atmospherics airlock assembly", /obj/structure/door_assembly/door_assembly_atmo, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("research airlock assembly", /obj/structure/door_assembly/door_assembly_research, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("freezer airlock assembly", /obj/structure/door_assembly/door_assembly_fre, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("science airlock assembly", /obj/structure/door_assembly/door_assembly_science, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("medical airlock assembly", /obj/structure/door_assembly/door_assembly_med, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("virology airlock assembly", /obj/structure/door_assembly/door_assembly_viro, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("maintenance airlock assembly", /obj/structure/door_assembly/door_assembly_mai, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("external airlock assembly", /obj/structure/door_assembly/door_assembly_ext, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("external maintenance airlock assembly", /obj/structure/door_assembly/door_assembly_extmai, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("airtight hatch assembly", /obj/structure/door_assembly/door_assembly_hatch, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("maintenance hatch assembly", /obj/structure/door_assembly/door_assembly_mhatch, 4, time = 50, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	)), \
 	null, \
-	new/datum/stack_recipe("firelock frame", /obj/structure/firelock_frame, 3, time = 50, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("turret frame", /obj/machinery/porta_turret_construct, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("meatspike frame", /obj/structure/kitchenspike_frame, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("reflector frame", /obj/structure/reflector, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("firelock frame", /obj/structure/firelock_frame, 3, time = 50, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("turret frame", /obj/machinery/porta_turret_construct, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("meatspike frame", /obj/structure/kitchenspike_frame, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("reflector frame", /obj/structure/reflector, 5, time = 25, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	null, \
 	new/datum/stack_recipe("grenade casing", /obj/item/grenade/chem_grenade), \
 	new/datum/stack_recipe("urn", /obj/item/reagent_containers/glass/mortar/urn, 3), \
@@ -132,31 +132,31 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	new/datum/stack_recipe("button frame", /obj/item/wallframe/button, 1), \
 	null, \
 	new /datum/stack_recipe_list("chess pieces", list( \
-		new /datum/stack_recipe("White Pawn", /obj/structure/chess/whitepawn, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("White Rook", /obj/structure/chess/whiterook, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("White Knight", /obj/structure/chess/whiteknight, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("White Bishop", /obj/structure/chess/whitebishop, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("White Queen", /obj/structure/chess/whitequeen, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("White King", /obj/structure/chess/whiteking, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black Pawn", /obj/structure/chess/blackpawn, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black Rook", /obj/structure/chess/blackrook, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black Knight", /obj/structure/chess/blackknight, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black Bishop", /obj/structure/chess/blackbishop, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black Queen", /obj/structure/chess/blackqueen, 2, time = 10, one_per_turf = 1, on_floor = 1), \
-		new /datum/stack_recipe("Black King", /obj/structure/chess/blackking, 2, time = 10, one_per_turf = 1, on_floor = 1), \
+		new /datum/stack_recipe("White Pawn", /obj/structure/chess/whitepawn, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("White Rook", /obj/structure/chess/whiterook, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("White Knight", /obj/structure/chess/whiteknight, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("White Bishop", /obj/structure/chess/whitebishop, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("White Queen", /obj/structure/chess/whitequeen, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("White King", /obj/structure/chess/whiteking, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black Pawn", /obj/structure/chess/blackpawn, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black Rook", /obj/structure/chess/blackrook, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black Knight", /obj/structure/chess/blackknight, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black Bishop", /obj/structure/chess/blackbishop, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black Queen", /obj/structure/chess/blackqueen, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new /datum/stack_recipe("Black King", /obj/structure/chess/blackking, 2, time = 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	)), \
 	null, \
-	new/datum/stack_recipe("iron door", /obj/structure/mineral_door/iron, 20, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("pestle", /obj/item/pestle, 1, time = 50), \
-	new/datum/stack_recipe("floodlight frame", /obj/structure/floodlight_frame, 5, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("iron ingot", /obj/item/ingot/iron, 6, time = 100), \
+	new/datum/stack_recipe("iron door", /obj/structure/mineral_door/iron, 20, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("pestle", /obj/item/pestle, 1, time = 50, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("floodlight frame", /obj/structure/floodlight_frame, 5, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("iron ingot", /obj/item/ingot/iron, 6, time = 100, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	null, \
-	new/datum/stack_recipe("tiny fan", /obj/structure/fans/tiny, 10, time = 4, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("Metal Barricade", /obj/structure/deployable_barricade/metal, 2, time = 1 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("desk bell", /obj/structure/desk_bell, 2, time = 50, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tiny fan", /obj/structure/fans/tiny, 10, time = 4, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("Metal Barricade", /obj/structure/deployable_barricade/metal, 2, time = 1 SECONDS, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("desk bell", /obj/structure/desk_bell, 2, time = 50, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	new/datum/stack_recipe("light switch frame", /obj/item/wallframe/light_switch, 1), \
-	new/datum/stack_recipe("washing machine", /obj/machinery/washing_machine, 5, time = 2.5 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
-	new/datum/stack_recipe("pool ladder", /obj/item/pool_ladder, 10, time = 20), \
+	new/datum/stack_recipe("washing machine", /obj/machinery/washing_machine, 5, time = 2.5 SECONDS, one_per_turf = TRUE, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("pool ladder", /obj/item/pool_ladder, 10, time = 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 ))
 
 /obj/item/stack/sheet/metal

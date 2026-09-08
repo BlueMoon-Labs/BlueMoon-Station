@@ -1779,6 +1779,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
+								// Show extra/extra2 colors for wings and other colored parts if they have them
+								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
+								var/find_part_list_extra = GLOB.mutant_reference_list[mutant_part]
+								if(find_part_extra && find_part_extra != "None" && find_part_list_extra)
+									var/datum/sprite_accessory/accessory_extra = find_part_list_extra[find_part_extra]
+									if(accessory_extra && accessory_extra.extra)
+										if(accessory_extra.extra_color_src == MUTCOLORS || accessory_extra.extra_color_src == MUTCOLORS2 || accessory_extra.extra_color_src == MUTCOLORS3)
+											if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
+												var/mutant_string_extra = accessory_extra.mutant_part_string
+												var/secondary_feature_extra = "[mutant_string_extra]_secondary"
+												var/tertiary_feature_extra = "[mutant_string_extra]_tertiary"
+												if(!features[secondary_feature_extra])
+													features[secondary_feature_extra] = features["mcolor2"]
+												if(!features[tertiary_feature_extra])
+													features[tertiary_feature_extra] = features["mcolor3"]
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features[secondary_feature_extra]];'><font color='[color_hex2num(features[secondary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[secondary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[secondary_feature_extra];task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features[tertiary_feature_extra]];'><font color='[color_hex2num(features[tertiary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[tertiary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[tertiary_feature_extra];task=input'>Change</a><BR>"
+											else
+												if(!features["mcolor2"])
+													features["mcolor2"] = "FFFFFF"
+												if(!features["mcolor3"])
+													features["mcolor3"] = "FFFFFF"
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor2"]];'><font color='[color_hex2num(features["mcolor2"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor2"]]</font></span> <a href='?_src_=prefs;preference=mutant_color2;task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor3"]];'><font color='[color_hex2num(features["mcolor3"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor3"]]</font></span> <a href='?_src_=prefs;preference=mutant_color3;task=input'>Change</a><BR>"
 							else
 								if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING) //advanced individual part colouring system
 									//is it matrixed or does it have extra parts to be coloured?
@@ -4471,7 +4501,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						features["xenodorsal"] = new_dors
 
 				//every single primary/secondary/tertiary colouring done at once
-				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary")
+				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary", "insect_wings_primary", "insect_wings_secondary", "insect_wings_tertiary")
 					var/the_feature = features[href_list["preference"]]
 					if(!the_feature)
 						features[href_list["preference"]] = "FFFFFF"

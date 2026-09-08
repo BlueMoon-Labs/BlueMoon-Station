@@ -4736,6 +4736,24 @@
 	},
 /turf/open/floor/pod/dark,
 /area/InteQ_ship/ship2)
+"nr" = (
+/obj/structure/table/reinforced/plastitanium,
+/obj/item/sensor_device_siege{
+	pixel_x = 12
+	},
+/obj/item/sensor_device_siege{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/sensor_device_siege{
+	pixel_y = 12
+	},
+/obj/item/sensor_device_siege{
+	pixel_x = -6;
+	pixel_y = 16
+	},
+/turf/open/floor/engine,
+/area/InteQ_ship/ship7)
 "ns" = (
 /obj/structure/closet/crate/bin,
 /obj/effect/turf_decal/tile/brown/full,
@@ -8475,7 +8493,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "yo" = (
-/obj/machinery/rnd/production/protolathe/bioaegis,
+/obj/machinery/rnd/production/protolathe/bioaegis/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "yp" = (
@@ -39308,7 +39326,7 @@ zf
 kW
 kW
 kW
-gb
+nr
 gV
 gV
 gV
