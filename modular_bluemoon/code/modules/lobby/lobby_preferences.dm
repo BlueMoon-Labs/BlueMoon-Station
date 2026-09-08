@@ -13,7 +13,7 @@
 	if(SStitle_bm && player.bm_lobby_ready)
 		SStitle_bm.update_character_name(player, real_name)
 
-/datum/preferences/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+/datum/preferences/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
 	. = ..()
 	if(!istype(., /savefile))
 		return
@@ -27,7 +27,7 @@
 		return
 	_bm_push_name_to_lobby()
 
-/datum/preferences/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -36,7 +36,7 @@
 	WRITE_FILE(.["bm_disclaimer_accepted"], bm_disclaimer_accepted)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE

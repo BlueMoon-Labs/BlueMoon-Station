@@ -324,6 +324,7 @@
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
+#include "player_save_json.dm"
 #include "preferences_save_deferral.dm"
 #include "preferences_single_pref_coalescing.dm"
 #include "image_leak_audit.dm"
@@ -430,6 +431,20 @@ TEST_FOCUS(/datum/unit_test/cleanbot_small_candidate_filter_preserves_view_los)
 TEST_FOCUS(/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority)
 TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
 TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
+#endif
+
+#ifdef PLAYER_SAVE_TESTS
+TEST_FOCUS(/datum/unit_test/preferences_save_deferral)
+TEST_FOCUS(/datum/unit_test/player_save_json)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_absorb)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_defer_decision)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_deferral)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_reuses_full_save_queue)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_matches_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush_migrates_stale_file)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_reads_variable)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_keys_match_full_save)
 #endif
 
 #undef TEST_ASSERT

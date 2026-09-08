@@ -121,3 +121,6 @@
 // Кол-во хедшотов, не ставить меньше 1
 #define MAX_HEADSHOTS 6
 #define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS
+
+/// Ограничивает перебор старых слотов при миграции, включая слоты вне текущего лимита игрока.
+#define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT 128

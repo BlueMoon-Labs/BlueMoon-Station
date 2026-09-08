@@ -1051,81 +1051,56 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	switch(current_tab)
 		if(SETTINGS_TAB) // Character Settings#
 			if(path)
-				var/savefile/S = new /savefile(path)
-				if(S)
-					dat += "<center>"
-					var/name
-					var/toggle_title = collapse_empty_character_slots ? "Показать пустые слоты" : "Скрыть пустые слоты"
-					var/toggle_symbol = collapse_empty_character_slots ? "▼" : "▲"
-					var/toggle_class = is_modern_theme ? "class='theme-collapse-hint'" : ""
-					if(max_save_slots > 4)
-						dat += "<a href='?_src_=prefs;preference=character_slots;action=toggle_empty' [toggle_class] title='[toggle_title]' aria-label='[toggle_title]'>[toggle_symbol]</a> "
-					var/unspaced_slots = 0
-					var/empty_slot_label = src.use_modern_translations ? get_modern_text("empty_slot_label", src) : "Character"
-					for(var/i=1, i<=max_save_slots, i++)
-						name = null
-						S.cd = "/character[i]"
-						S["real_name"] >> name
-						var/is_empty_slot = !name
-						if(collapse_empty_character_slots && is_empty_slot && i != default_slot)
+				var/list/character_names = player_character_names()
+				var/list/slot_text = (use_modern_translations && modern_ui_language == 1) ? ru_strings : en_strings
+				dat += "<div class='csetup-slots'>"
+				if(islist(character_names))
+					var/empty_slots = 0
+					for(var/i in 1 to max_save_slots)
+						if(!character_names["character[i]"])
+							empty_slots++
+					dat += "<div class='csetup-slots-header'><b>[slot_text["slots_title"]]</b>"
+					dat += "<span class='csetup-slots-count'>[max_save_slots - empty_slots] / [max_save_slots]</span>"
+					if(max_save_slots > 4 && empty_slots)
+						var/toggle_title = slot_text[collapse_empty_character_slots ? "slots_show_empty" : "slots_hide_empty"]
+						var/expanded = collapse_empty_character_slots ? "false" : "true"
+						dat += "<a class='csetup-slots-toggle' href='?_src_=prefs;preference=character_slots;action=toggle_empty' aria-expanded='[expanded]' aria-controls='csetup-slot-list'>[toggle_title] ([empty_slots])</a>"
+					dat += "</div><div class='csetup-slot-list' id='csetup-slot-list' role='group' aria-label='[slot_text["slots_title"]]'>"
+					for(var/i in 1 to max_save_slots)
+						var/slot_name = character_names["character[i]"]
+						var/is_empty_slot = !slot_name
+						var/is_current_slot = i == default_slot
+						if(collapse_empty_character_slots && is_empty_slot && !is_current_slot)
 							continue
-						unspaced_slots++
-						if(unspaced_slots > 4)
-							dat += "<br>"
-							unspaced_slots = 1
-						if(!name)
-							name = "[empty_slot_label][i]"
-						var/slot_class = ""
-						if(i == default_slot)
-							slot_class = "class='linkOn'"
-						dat += "<a style='white-space:nowrap;' href='?_src_=prefs;preference=changeslot;num=[i];' [slot_class]>[name]</a> "
-					dat += "</center>"
-					// Кнопка удаления текущего слота
-					var/delete_slot_label = src.use_modern_translations ? get_modern_text("delete_slot_label", src) : "Delete current slot"
-					dat += "<center><a href='?_src_=prefs;preference=character_slots;action=delete_slot;slot=[default_slot]' style='white-space:nowrap;background:#eb2e2e;font-size:0.85em;'>[delete_slot_label]</a></center>"
+						var/slot_label = html_encode(slot_name ? slot_name : slot_text["empty_label"])
+						var/slot_class = "csetup-slot[is_empty_slot ? " csetup-slot-empty" : ""][is_current_slot ? " linkOn" : ""]"
+						var/current_attr = is_current_slot ? " aria-current='true'" : ""
+						dat += "<a class='[slot_class]' href='?_src_=prefs;preference=changeslot;num=[i];' title='[i]. [slot_label]'[current_attr]>"
+						dat += "<span class='csetup-slot-number'>[i]</span><span class='csetup-slot-name'>[slot_label]</span>"
+						if(is_current_slot)
+							dat += "<span class='csetup-slot-selected' aria-hidden='true'>&#10003;</span>"
+						dat += "</a>"
+					dat += "</div>"
 
-				dat += "<center>"
-				var/local_storage_label = src.use_modern_translations ? get_modern_text("local_storage", src) : "Local storage"
-				var/empty_label = src.use_modern_translations ? get_modern_text("empty_label", src) : "Empty"
-				var/export_slot_label = src.use_modern_translations ? get_modern_text("export_slot", src) : "Export current slot"
-				var/import_slot_label = src.use_modern_translations ? get_modern_text("import_slot", src) : "Import into current slot"
-				var/delete_local_label = src.use_modern_translations ? get_modern_text("delete_local", src) : "Delete locally saved character"
-				var/offer_slot_label = src.use_modern_translations ? get_modern_text("offer_slot", src) : "Offer slot"
-				var/cancel_offer_label = src.use_modern_translations ? get_modern_text("cancel_offer", src) : "Cancel offer"
-				var/retrieve_offered_label = src.use_modern_translations ? get_modern_text("retrieve_offered", src) : "Retrieve offered character"
-				var/redemption_code_label = src.use_modern_translations ? get_modern_text("redemption_code", src) : "Redemption code"
-				var/offer_auto_cancel_label = src.use_modern_translations ? get_modern_text("offer_auto_cancel", src) : "The offer will automatically be cancelled if there is an error, or if someone takes it"
-				var/file = user.client.Import()
-				var/savefile/client_file
-				var/savefile_name
-				if(file)
-					client_file = new(file)
-					if(istype(client_file, /savefile))
-						if(!client_file["deleted"] || savefile_needs_update(client_file) != -2)
-							client_file["real_name"] >> savefile_name
-				dat += "[local_storage_label]: " + (savefile_name ? savefile_name : empty_label)
-				dat += "<br />"
-				dat += "<a href='?_src_=prefs;preference=export_slot'>[export_slot_label]</a>"
-				var/import_attr = "class='linkOff'"
-				if(savefile_name)
-					import_attr = "href='?_src_=prefs;preference=import_slot' style='white-space:normal;'"
-				var/offer_style = ""
-				var/offer_text = offer_slot_label
+				var/current_name = islist(character_names) ? character_names["character[default_slot]"] : null
+				var/current_label = html_encode(current_name ? current_name : slot_text["empty_label"])
+				dat += "<div class='csetup-slot-current'><span>[slot_text["slots_current"]] [default_slot]</span><b>[current_label]</b>"
+				if(islist(character_names))
+					dat += "<a class='csetup-slot-delete' href='?_src_=prefs;preference=character_slots;action=delete_slot;slot=[default_slot]' title='[slot_text["delete_slot_label"]]'>[slot_text["slots_delete"]]</a>"
+				dat += "</div>"
+				dat += "<div class='csetup-slot-actions'>"
+				dat += "<div class='csetup-slot-action-group'><span class='csetup-slot-action-label'>[slot_text["slots_file"]]</span>"
+				dat += "<a href='?_src_=prefs;preference=export_slot' title='[slot_text["slots_download_hint"]]'>[slot_text["slots_download"]]</a>"
+				dat += "<a href='?_src_=prefs;preference=import_slot' title='[slot_text["slots_import_hint"]]'>[slot_text["slots_upload"]]</a></div>"
+				dat += "<div class='csetup-slot-action-group'><span class='csetup-slot-action-label'>[slot_text["slots_exchange"]]</span>"
+				var/offer_text = slot_text[offer ? "cancel_offer" : "slots_share"]
+				var/offer_class = offer ? " class='csetup-slot-cancel'" : ""
+				dat += "<a href='?_src_=prefs;preference=give_slot' title='[slot_text[offer ? "slots_cancel_hint" : "slots_share_hint"]]'[offer_class]>[offer_text]</a>"
+				dat += "<a href='?_src_=prefs;preference=retrieve_slot' title='[slot_text["slots_import_hint"]]'>[slot_text["slots_retrieve"]]</a></div></div>"
 				if(offer)
-					offer_style = "style='white-space:normal;background:#eb2e2e;'"
-					offer_text = cancel_offer_label
-				dat += "<a [import_attr]>[import_slot_label]</a>"
-				dat += "<a href='?_src_=prefs;preference=delete_local_copy' style='white-space:normal;background:#eb2e2e;'>[delete_local_label]</a>"
-				dat += "<br />"
-				dat += "<a href='?_src_=prefs;preference=give_slot' [offer_style]>[offer_text]</a>"
-				dat += "<a href='?_src_=prefs;preference=retrieve_slot'>[retrieve_offered_label]</a>"
-				if(offer)
-					dat += "<br />"
-					dat += "[redemption_code_label]: <b>[offer.redemption_code]</b>"
-					dat += "<br />"
-					dat += offer_auto_cancel_label
-
-				dat += "</center>"
+					dat += "<div class='csetup-slot-offer'><span>[slot_text["redemption_code"]]: <strong>[offer.redemption_code]</strong></span>"
+					dat += "<span class='csetup-slot-hint'>[slot_text["offer_auto_cancel"]]</span></div>"
+				dat += "<p class='csetup-slot-hint'>[slot_text["slots_transfer_hint"]]</p></div>"
 
 			dat += "<HR>"
 
@@ -2593,6 +2568,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		popup.add_stylesheet("preferences_modern", 'html/browser/preferences_modern.css')
 	if(new_character_creator && findtext(charcreation_theme, "modern"))
 		popup.add_script("prefs_state", 'html/browser/prefs_state.js')
+	popup.add_stylesheet("preferences_slots", 'html/browser/preferences_slots.css')
+	popup.add_script("preferences_slots", 'html/browser/preferences_slots.js')
 	popup.set_content(dat.Join())
 	popup.open(FALSE)
 	onclose(user, "preferences_window", src)
@@ -3334,7 +3311,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				// Подсчитываем количество непустых слотов
 				var/occupied_count = 0
 				if(path)
-					var/savefile/S = new /savefile(path)
+					var/savefile/S = open_player_save()
 					if(S)
 						for(var/i in 1 to max_save_slots)
 							S.cd = "/character[i]"
@@ -3343,18 +3320,18 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(check_name)
 								occupied_count++
 				if(occupied_count <= 1)
-					tgui_alert_async(user, "Нельзя удалить единственного персонажа! / Cannot delete the only character!")
+					tgui_alert_async(user, "Нельзя удалить единственного сохранённого персонажа.")
 					ShowChoices(user)
 					return TRUE
 				// Запрашиваем подтверждение
-				var/confirm = tgui_alert(user, "Вы уверены, что хотите удалить этого персонажа? Это действие необратимо! / Are you sure you want to delete this character? This cannot be undone!", "Delete Character", list("Yes", "No"))
-				if(confirm != "Yes")
+				var/confirm = tgui_alert(user, "Удалить персонажа из слота [slot]? Отменить удаление будет нельзя.", "Удаление персонажа", list("Удалить", "Отмена"))
+				if(confirm != "Удалить")
 					ShowChoices(user)
 					return TRUE
 				if(delete_character(slot))
-					tgui_alert_async(user, "Персонаж удалён. / Character deleted.")
+					tgui_alert_async(user, "Персонаж удалён.")
 				else
-					tgui_alert_async(user, "Не удалось удалить персонажа. / Failed to delete character.")
+					tgui_alert_async(user, "Не удалось удалить персонажа.")
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -5924,30 +5901,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					cit_toggles ^= CUM_ONTO
 				//
 				if("export_slot")
-					var/savefile/S = save_character(export = TRUE)
-					if(istype(S, /savefile))
-						user.client.Export(S)
-						tgui_alert_async(user, "Successfully saved character slot")
-					else
-						tgui_alert_async(user, "Failed saving character slot")
-						return
+					if(world.time >= player_transfer_cooldown)
+						player_transfer_cooldown = world.time + 10 SECONDS
+						download_character_json(user)
 
 				if("import_slot")
-					var/savefile/S = new(user.client.Import())
-					if(istype(S, /savefile))
-						if(load_character(provided = S))
-							tgui_alert_async(user, "Successfully loaded character slot.")
-							save_character(TRUE)
-						else
-							tgui_alert_async(user, "Failed loading character slot")
-							return
-					else
-						tgui_alert_async(user, "Failed loading character slot")
-						return
-
-				if("delete_local_copy")
-					user.client.clear_export()
-					tgui_alert_async(user, "Local save data erased.")
+					upload_character_json(user)
 
 				if("give_slot")
 					if(!QDELETED(offer))
@@ -5956,57 +5915,50 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							return
 						qdel(offer_datum)
 					else
-						var/savefile/S = save_character(export = TRUE)
-						if(istype(S, /savefile))
-							var/datum/character_offer_instance/offer_datum = new(usr.ckey, S)
+						var/character_json = export_character_json()
+						if(character_json)
+							var/datum/character_offer_instance/offer_datum = new(usr.ckey, character_json)
 							if(QDELETED(offer_datum))
-								tgui_alert_async(usr, "Could not set up offer, try again later")
+								tgui_alert_async(usr, "Не удалось создать предложение. Попробуйте позже.")
 								return
 							offer_datum.RegisterSignal(usr, COMSIG_MOB_CLIENT_LOGOUT, TYPE_PROC_REF(/datum/character_offer_instance, on_quit))
 							offer = offer_datum
-							tgui_alert_async(usr, "The redemption code is [offer_datum.redemption_code], give it to the receiver")
+							tgui_alert_async(usr, "Код передачи: [offer_datum.redemption_code]. Сообщите его игроку, которому хотите передать персонажа.")
 
 				if("retrieve_slot")
 					if(!LAZYLEN(GLOB.character_offers))
-						tgui_alert_async(usr, "There are no active offers")
+						tgui_alert_async(usr, "Сейчас нет персонажей, предложенных для передачи.")
 						return
-					var/retrieve_code = input(usr, "Input the 5 digit redemption code") as text|null
+					var/retrieve_code = input(usr, "Введите код передачи из пяти цифр", "Получение персонажа") as text|null
 					if(!retrieve_code)
 						return
 					if(!text2num(retrieve_code))
-						tgui_alert_async(usr, "Only numbers allowed")
+						tgui_alert_async(usr, "Код должен состоять только из цифр.")
 						return
 					if(length(retrieve_code) != 5)
-						tgui_alert_async(usr, "Exactly 5 digits, no less, no more, try again")
+						tgui_alert_async(usr, "В коде должно быть ровно пять цифр. Проверьте его и попробуйте снова.")
 						return
 					var/datum/character_offer_instance/offer_datum = LAZYACCESS(GLOB.character_offers, retrieve_code)
 					if(!offer_datum)
-						tgui_alert_async(usr, "This is an invalid code!")
+						tgui_alert_async(usr, "Предложение с таким кодом не найдено. Проверьте код: возможно, персонажа уже забрали.")
 						return
 					if(offer == offer_datum)
-						tgui_alert_async(usr, "You cannot accept your own offer")
+						tgui_alert_async(usr, "Нельзя получить собственное предложение.")
 						return
-					var/savefile/savefile = offer_datum.character_savefile
 					var/mob/living/the_owner = get_mob_by_ckey(offer_datum.owner_ckey)
-					if(savefile_needs_update(savefile) == -2)
-						tgui_alert_async(usr, "Something's wrong, this savefile is corrupted.")
-						to_chat(the_owner, span_boldwarning("Something went wrong with the trade, it's been canceled."))
+					var/receiving_slot = default_slot
+					if(tgui_alert(user, "Импортировать переданного персонажа в слот [receiving_slot]? Закрытые данные и коллекции останутся прежними.", "Получение персонажа", list("Импортировать", "Отмена")) != "Импортировать")
+						return
+					if(QDELETED(offer_datum) || user.client?.prefs != src || default_slot != receiving_slot)
+						tgui_alert_async(usr, "Предложение больше недоступно или выбранный слот изменился. Начните получение заново.")
+						return
+					if(!import_character_json(offer_datum.character_json))
+						tgui_alert_async(usr, "Не удалось импортировать персонажа. Сообщите об ошибке разработчикам.")
+						to_chat(the_owner, span_boldwarning("Передача персонажа не завершилась из-за ошибки импорта. Сообщите об этом разработчикам."))
 						qdel(offer_datum)
 						return
-					var/character_name = savefile["real_name"]
-					if(alert(usr, "You are overwriting the currently selected slot with the character [character_name]", "Are you sure?", "Yes, load this character deleting the currently selected slot", "No") == "No")
-						return
-					if(QDELETED(offer_datum))
-						tgui_alert_async(usr, "This character is no longer available, such a shame!")
-						return
-					to_chat(the_owner, span_boldwarning("[usr.key] has retrieved your character, [character_name]!"))
-					if(!load_character(provided = savefile))
-						tgui_alert_async(usr, "Something went wrong loading the savefile, even though it has already been checked, please report this issue!")
-						to_chat(the_owner, span_boldwarning("Something went wrong at the final step of the trade, report this."))
-						qdel(offer_datum)
-						return
-					tgui_alert_async(usr, "Successfully received [character_name]!")
-					save_character(TRUE)
+					to_chat(the_owner, span_notice("[usr.key] получил переданного персонажа."))
+					tgui_alert_async(usr, "Персонаж получен и сохранён в слот [receiving_slot].")
 					qdel(offer_datum)
 
 	if(href_list["preference"] == "gear")

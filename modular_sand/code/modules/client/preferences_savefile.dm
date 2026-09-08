@@ -33,7 +33,7 @@
 
 	. = ..()
 
-/datum/preferences/save_preferences(bypass_cooldown, silent)
+/datum/preferences/write_preferences(bypass_cooldown, silent)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -57,7 +57,7 @@
 	WRITE_FILE(.["metadollar_pending_items"], metadollar_pending_items)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown)
+/datum/preferences/read_preferences(bypass_cooldown)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -109,7 +109,7 @@
 	metadollar_pending_items = SANITIZE_LIST(metadollar_pending_items)
 	return .
 
-/datum/preferences/proc/sand_character_pref_load(savefile/S)
+/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE)
 	S["custom_interactions"] >> custom_interactions
 	if(isnull(custom_interactions))
 		// Legacy-данные лежали в корне сейвфайла — переносим их в текущий слот персонажа.
@@ -126,6 +126,10 @@
 			WRITE_FILE(S["custom_interactions"], custom_interactions)
 			S.cd = "/"
 			WRITE_FILE(S["custom_interactions_migrated"], TRUE)
+			// Список и маркер фиксируются вместе, иначе следующий слот снова скопирует корень.
+			if(persist_migration && !commit_player_save(S))
+				S.cd = current_dir
+				return FALSE
 		S.cd = current_dir
 	custom_interactions = SANITIZE_LIST(custom_interactions)
 	for(var/i in length(custom_interactions) to 1 step -1)
@@ -140,6 +144,7 @@
 	var/max_customs = get_custom_interaction_limit()
 	if(length(custom_interactions) > max_customs)
 		custom_interactions.Cut(max_customs + 1)
+	return TRUE
 
 /datum/preferences/proc/sand_character_pref_save(savefile/S)
 	WRITE_FILE(S["custom_interactions"], custom_interactions)

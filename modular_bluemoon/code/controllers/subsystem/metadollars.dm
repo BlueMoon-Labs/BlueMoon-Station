@@ -82,9 +82,14 @@ SUBSYSTEM_DEF(metadollars)
 	fdel(backup_file)
 
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
-	if(!prefs_path || !fexists(prefs_path))
+	if(!prefs_path)
 		return 0
-	var/savefile/S = new /savefile(prefs_path)
+	var/datum/player_save_json/storage = new /datum/player_save_json/account(prefs_path)
+	if(!storage.exists())
+		return 0
+	var/savefile/S = storage.open("/")
+	if(!S)
+		return 0
 	S.cd = "/"
 	var/amount = 0
 	READ_FILE(S["metadollars"], amount)

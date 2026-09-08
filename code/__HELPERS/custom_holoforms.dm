@@ -78,7 +78,7 @@
 	var/datum/preferences/target_prefs = C.prefs
 	if(target_prefs.path)
 		var/list/characters = list()
-		var/savefile/S = new /savefile(target_prefs.path)
+		var/savefile/S = target_prefs.open_player_save()
 		if(S)
 			var/name
 			var/max_save_slots = C.prefs.max_save_slots

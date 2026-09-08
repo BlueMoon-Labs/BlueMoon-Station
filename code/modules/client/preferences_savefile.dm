@@ -1,4 +1,4 @@
-//This is the lowest supported version, anything below this is completely obsolete and the entire savefile will be wiped.
+// Самая старая поддерживаемая версия данных. Более старые файлы требуют ручной проверки.
 #define SAVEFILE_VERSION_MIN	18
 
 //This is the current version, anything below this will attempt to update (if it's not obsolete)
@@ -7,44 +7,20 @@
 //	where you would want the updater procs below to run
 #define SAVEFILE_VERSION_MAX	80
 
-/// Upper bound for character slot indices during savefile migration (loop over S.dir).
-/// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
-/// and running thousands of load_character/save_character pairs (OOM / DD hangs).
-#define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT	128
-
 /*
-SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
-	This proc checks if the current directory of the savefile S needs updating
-	It is to be used by the load_character and load_preferences procs.
-	(S.cd=="/" is preferences, S.cd=="/character[integer]" is a character slot, etc)
-
-	if the current directory's version is below SAVEFILE_VERSION_MIN it will simply wipe everything in that directory
-	(if we're at root "/" then it'll just wipe the entire savefile, for instance.)
-
-	if its version is below SAVEFILE_VERSION_MAX but above the minimum, it will load data but later call the
-	respective update_preferences() or update_character() proc.
-	Those procs allow coders to specify format changes so users do not lose their setups and have to redo them again.
-
-	Failing all that, the standard sanity checks are performed. They simply check the data is suitable, reverting to
-	initial() values if necessary.
+Версия относится к содержимому корня или слота и не зависит от версии JSON-контейнера.
+Поддерживаемые старые версии проходят прежние update_preferences/update_character.
+Неизвестные, слишком старые и будущие версии не удаляются и не перезаписываются.
 */
 /datum/preferences/proc/savefile_needs_update(savefile/S)
 	var/savefile_version
 	S["version"] >> savefile_version
 
-	if(savefile_version < SAVEFILE_VERSION_MIN)
-		S.dir.Cut()
+	if(!isnum(savefile_version) || savefile_version < SAVEFILE_VERSION_MIN || savefile_version > SAVEFILE_VERSION_MAX)
 		return -2
 	if(savefile_version < SAVEFILE_VERSION_MAX)
 		return savefile_version
 	return -1
-
-//should these procs get fairly long
-//just increase SAVEFILE_VERSION_MIN so it's not as far behind
-//SAVEFILE_VERSION_MAX and then delete any obsolete if clauses
-//from these procs.
-//This only really meant to avoid annoying frequent players
-//if your savefile is 3 months out of date, then 'tough shit'.
 
 /datum/preferences/proc/update_preferences(current_version, savefile/S)
 	if(current_version < 30)
@@ -534,7 +510,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
-/datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/proc/read_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -543,7 +519,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				to_chat(parent, "<span class='warning'>You're attempting to load your preferences a little too fast. Wait half a second, then try again.</span>")
 			return FALSE
 		COOLDOWN_START(src, loadprefcooldown, PREF_LOAD_COOLDOWN)
-	if(!fexists(path))
+	if(!player_save_exists())
 		return FALSE
 
 	// Буфер склейки держит правки, которых на диске ещё нет. Читать поверх них - значит
@@ -551,17 +527,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
 	flush_single_prefs()
 
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_player_save("/")
 	if(!S)
 		return FALSE
 	S.cd = "/"
 
 	var/needs_update = savefile_needs_update(S)
 	if(needs_update == -2)		//fatal, can't load any data
-		var/bacpath = "[path].updatebac" //todo: if the savefile version is higher then the server, check the backup, and give the player a prompt to load the backup
-		if (fexists(bacpath))
-			fdel(bacpath) //only keep 1 version of backup
-		fcopy(S, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		return FALSE
 
 	. = TRUE
@@ -714,10 +686,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
-		var/bacpath = "[path].updatebac" //todo: if the savefile version is higher then the server, check the backup, and give the player a prompt to load the backup
-		if (fexists(bacpath))
-			fdel(bacpath) //only keep 1 version of backup
-		fcopy(S, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		update_preferences(needs_update, S)		//needs_update = savefile_version if we need an update (positive integer)
 
 	//Sanitize
@@ -857,25 +825,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		unlockable_loadout_data = list()
 
-	if(needs_update >= 0) //save the updated version
-		var/old_default_slot = default_slot
-		var/old_max_save_slots = max_save_slots
-
-		for (var/slot in S.dir) //but first, update all current character slots.
-			if (copytext(slot, 1, 10) != "character")
-				continue
-			var/slotnum = text2num(copytext(slot, 10))
-			if (!slotnum)
-				continue
-			if (slotnum > SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT)
-				continue
-			max_save_slots = max(max_save_slots, slotnum) //so we can still update byond member slots after they lose memeber status
-			default_slot = slotnum
-			if (load_character(null, TRUE)) // this updtates char slots
-				save_character(TRUE)
-		default_slot = old_default_slot
-		max_save_slots = old_max_save_slots
-		save_preferences(TRUE)
 
 	return S
 
@@ -1122,7 +1071,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		pending_single_prefs = null
 		return FALSE
-	if(!fexists(path))
+	if(!player_save_exists())
 		// Одиночная запись создала бы savefile без "version", поэтому уходим полной
 		// записью. Буфер при этом НЕ обнуляем заранее: полная запись дописывает его
 		// сама (write_pending_single_prefs), а если файл не откроется - буфер
@@ -1135,9 +1084,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
 	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/single_file = new /savefile(path)
+	var/savefile/single_file = open_player_save("/")
 	if(!single_file)
-		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 		return FALSE
 	single_file.cd = "/"
 	// Файл ниже текущей версии дописывать по ключу нельзя - миграция уходит полной записью.
@@ -1145,13 +1094,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	READ_FILE(single_file["version"], file_version)
 	if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
 		single_file = null
-		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+	var/list/pending_before_write = pending_single_prefs?.Copy()
 	write_pending_single_prefs(single_file)
-	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+	if(!commit_player_save(single_file, "/"))
+		pending_single_prefs = pending_before_write
+		return FALSE
+	blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 	return TRUE
 
-/datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/proc/write_preferences(bypass_cooldown = FALSE, silent = FALSE)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -1169,10 +1122,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
 	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
 	// безымянный "внешний столл", поэтому замеряем
-	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_player_save("/")
 	if(!S)
-		blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "не открылся [parent?.ckey || "?"]")
 		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
 		// заводил, полагаясь на неё (buffer_single_pref): без перезарядки он долежал бы
 		// до логаута. Возвращаем ему собственный сброс.
@@ -1333,10 +1284,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			var/mob/living/carbon/human/H = parent.mob
 			H.set_antag_target_indicator() // Update consent HUD
 
-		if(!silent)
-			to_chat(parent, span_notice("Saved preferences!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
@@ -1362,13 +1310,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				to_chat(parent, "<span class='warning'>You're attempting to load your character a little too fast. Wait half a second, then try again.</span>")
 			return "SLOW THE FUCK DOWN" //the reason this isn't null is to make sure that people don't have their character slots overridden by random chars if they accidentally double-click a slot
 		COOLDOWN_START(src, loadcharcooldown, PREF_LOAD_COOLDOWN)
-	if(!fexists(path))
+	if(!provided && !player_save_exists())
 		return FALSE
 	var/savefile/S
 	if(provided)
 		S = provided
 	else
-		S = new /savefile(path)
+		S = open_player_save("/character[sanitize_integer(slot || default_slot, 1, max_save_slots, initial(default_slot))]")
 	if(!S)
 		return FALSE
 
@@ -1378,7 +1326,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))
 	if(slot != default_slot)
 		default_slot = slot
-		WRITE_FILE(S["default_slot"] , slot)
+		if(!provided)
+			buffer_single_pref("default_slot", slot)
 
 	if(!provided)
 		S.cd = "/character[slot]"
@@ -1784,11 +1733,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(S["features_butt_min_size"])
 		S["features_butt_min_size"] >> features["butt_min_size"]
 
-	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
-	if(fexists(char_vr_path))
-		var/list/json_from_file = json_decode(file2text(char_vr_path))
-		if(json_from_file)
-			belly_prefs = json_from_file["belly_prefs"]
+	if("belly_prefs" in S.dir)
+		S["belly_prefs"] >> belly_prefs
+	else if(!provided)
+		// Старый отдельный JSON читается один раз; последующие записи входят в снимок слота.
+		var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
+		if(fexists(char_vr_path))
+			try
+				var/list/json_from_file = json_decode(file2text(char_vr_path))
+				if(!islist(json_from_file) || !("belly_prefs" in json_from_file))
+					throw EXCEPTION("Неполный отдельный JSON персонажа")
+				belly_prefs = json_from_file["belly_prefs"]
+			catch(var/exception/failure)
+				player_save_error("Не удалось прочитать отдельный JSON персонажа: [failure.name]")
+				return FALSE
 
 	S["alt_titles_preferences"] 		>> alt_titles_preferences
 	//gear loadout
@@ -2180,7 +2138,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_load(S)
 
-	sand_character_pref_load(S)
+	if(!sand_character_pref_load(S, !provided))
+		return FALSE
 
 	splurt_character_pref_load(S)
 
@@ -2196,7 +2155,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		return FALSE
 	slot = sanitize_integer(slot, 1, max_save_slots, 1)
-	var/savefile/S = new /savefile(path)
+	var/savefile/S = open_player_save()
 	if(!S)
 		return FALSE
 
@@ -2210,6 +2169,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Удаляем директорию персонажа из сейвфайла
 	S.cd = "/"
 	S.dir.Remove("character[slot]")
+	if(!commit_player_save(S))
+		return FALSE
 
 	// Если удалили текущий слот — нужно переключиться на другой
 	if(slot == default_slot)
@@ -2233,25 +2194,28 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
-/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
-	if(!path)
+/datum/preferences/proc/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+	if(!path && !export)
 		return FALSE
-	if(!bypass_cooldown)
+	if(!export && !bypass_cooldown)
 		if(world.time < savecharcooldown)
 			if(istype(parent))
 				queue_save_char(PREF_SAVE_COOLDOWN, silent)
 			return FALSE
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
-	if(char_queue)
-		deltimer(char_queue)
-	char_queue = null
-	char_queue_deadline = 0
-	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(export ? null : path)
+	if(!export)
+		if(char_queue)
+			deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
+	var/savefile/S = export ? new /savefile : open_player_save("/character[default_slot]")
 	if(!S)
 		return FALSE
 	if(!export)
 		S.cd = "/character[default_slot]"
+		if(length(S.dir) && savefile_needs_update(S) == -2)
+			player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
+			return FALSE
 
 	WRITE_FILE(S["version"]			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
 
@@ -2470,11 +2434,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["vore_flags"]			, vore_flags)
 	WRITE_FILE(S["vore_taste"]			, vore_taste)
 	WRITE_FILE(S["vore_smell"]			, vore_smell)
-	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
-	var/belly_prefs_json = safe_json_encode(list("belly_prefs" = belly_prefs))
-	if(fexists(char_vr_path))
-		fdel(char_vr_path)
-	text2file(belly_prefs_json,char_vr_path)
+	WRITE_FILE(S["belly_prefs"], belly_prefs)
 
 	WRITE_FILE(S["persistent_scars"]			, persistent_scars)
 	WRITE_FILE(S["scars1"]						, scars_list["1"])
@@ -2536,10 +2496,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			var/mob/living/carbon/human/H = parent.mob
 			H.set_antag_target_indicator() // Update consent HUD
 
-		if(!silent)
-			to_chat(parent, span_notice("Saved character slot!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
