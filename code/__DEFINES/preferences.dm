@@ -1,3 +1,5 @@
+/// Максимальная глубина вложенности JSON-сейва игрока.
+#define PLAYER_SAVE_JSON_DEPTH 64
 
 //Preference toggles
 #define SOUND_ADMINHELP			(1<<0)

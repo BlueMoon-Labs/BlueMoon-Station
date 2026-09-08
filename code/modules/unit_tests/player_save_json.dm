@@ -3,6 +3,7 @@
 	var/datum/player_save_json/storage
 	var/datum/preferences/owned_preferences
 	var/list/saved_roundstart_race_names
+	var/transfer_species_prepared = FALSE
 
 /datum/unit_test/player_save_json/Run()
 	var/savefile/empty = prepare()
@@ -19,7 +20,7 @@
 	return storage.open()
 
 /datum/unit_test/player_save_json/Destroy()
-	if(!isnull(saved_roundstart_race_names))
+	if(transfer_species_prepared)
 		GLOB.roundstart_race_names = saved_roundstart_race_names
 	if(owned_preferences)
 		owned_preferences.path = null
@@ -38,6 +39,7 @@
 /// Минимальный конфиг CI не задаёт доступные виды для редактора персонажа.
 /datum/unit_test/player_save_json/proc/prepare_transfer_species()
 	saved_roundstart_race_names = GLOB.roundstart_race_names
+	transfer_species_prepared = TRUE
 	GLOB.roundstart_race_names = list("Human" = SPECIES_HUMAN)
 
 /// Сравниваем содержимое узлов, не завися от порядка полей JSON-объекта.
@@ -156,7 +158,7 @@
 /datum/unit_test/player_save_json/legacy_import_failure_cleanup/Run()
 	prepare()
 	var/savefile/legacy = new(test_path)
-	for(var/depth in 1 to 66)
+	for(var/depth in 1 to PLAYER_SAVE_JSON_DEPTH + 1)
 		legacy.cd = "nested"
 	legacy["value"] << 1
 	legacy.Flush()
@@ -166,7 +168,7 @@
 	TEST_ASSERT(findtext(storage.error, "Слишком глубокое дерево"), "исходная причина ошибки потеряна")
 	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), before, "неудачный импорт изменил оригинал")
 	var/prefix = "[md5("[type]")].sav.json."
-	for(var/name in flist("data/player_save_tests/"))
+	for(var/name as anything in flist("data/player_save_tests/"))
 		TEST_ASSERT(!findtext(name, prefix) || !findtext(name, ".import"), "после ошибки осталась временная копия: [name]")
 
 /datum/unit_test/player_save_json/removed_type_path/Run()

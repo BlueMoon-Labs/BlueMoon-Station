@@ -1,7 +1,6 @@
 // Формат диска отделён от старых загрузчиков: savefile используется только в памяти.
 // Это сохраняет порядок миграций, модульные поля и совместимость экспорта персонажей.
 #define PLAYER_SAVE_JSON_VERSION 1
-#define PLAYER_SAVE_JSON_DEPTH 64
 #define PLAYER_SAVE_VALID_NODE_NAME(key) (istext(key) && length(key) && key != "." && key != ".." && !findtext(key, "/") && !findtext(key, "\\"))
 
 /// Согласует небольшие кэши корня между несколькими датумами префов одного аккаунта.
@@ -614,5 +613,4 @@
 	return TRUE
 
 #undef PLAYER_SAVE_JSON_VERSION
-#undef PLAYER_SAVE_JSON_DEPTH
 #undef PLAYER_SAVE_VALID_NODE_NAME

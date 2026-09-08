@@ -44,6 +44,10 @@ def run():
     work.mkdir(parents=True, exist_ok=True)
     archive_hash = None
     if args.archive:
+        source = work / "archive"
+        source.mkdir(exist_ok=True)
+        if any(source.iterdir()):
+            parser.error("Каталог распаковки не пуст; укажите другой --work-dir")
         archive = args.archive.resolve(strict=True)
         archive_hash = digest(archive)
         tar = archive_tar(archive)
@@ -52,8 +56,6 @@ def run():
             member = PurePosixPath(name.replace("\\", "/"))
             if member.is_absolute() or ".." in member.parts or ":" in name:
                 raise ValueError("Архив содержит путь вне каталога распаковки")
-        source = work / "archive"
-        source.mkdir(exist_ok=True)
         subprocess.run([tar, "-xf", str(archive), "-C", str(source)], check=True)
     else:
         source = args.source_dir.resolve(strict=True)
