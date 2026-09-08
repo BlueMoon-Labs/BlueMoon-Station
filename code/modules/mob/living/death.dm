@@ -1,10 +1,14 @@
-/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	var/prev_lying = lying
 	if((stat != DEAD) || istype(src, /mob/living/silicon/robot))	// Robot's death() proc is called even if he's dead on gib()
 		death(1)
 
 	if(!prev_lying)
 		gib_animation()
+
+	if(drop_items)
+		unequip_everything()
+		dust_spill_everything()
 
 	spill_organs(no_brain, no_organs, no_bodyparts, was_explosion)
 
@@ -74,6 +78,7 @@
 			LB.embedded_objects -= I
 			I.unembedded()
 			I.forceMove(T)
+			I.randomize_pixel_position(src)
 		LB.embedded_objects.Cut()
 
 	if(!C.has_embedded_objects())
@@ -86,13 +91,19 @@
 	for(var/obj/item/implant/IM as anything in implants_copy)
 		for(var/obj/item/IT in IM.contents)
 			IT.forceMove(T)
-		C.implants -= IM
-		IM.forceMove(T)
+		IM.removed(C)
+		var/obj/item/implantcase/case = new(T)
+		IM.forceMove(case)
+		case.imp = IM
+		case.name = "[case.name] ([IM.name])"
+		case.update_appearance()
+		case.randomize_pixel_position(src)
 
 	//Проглоченное (содержимое органов, например желудка)
 	for(var/obj/item/organ/O as anything in C.internal_organs)
 		for(var/obj/item/IT in O.contents)
 			IT.forceMove(T)
+			IT.randomize_pixel_position(src)
 /// BLUEMOON ADD END
 
 /mob/living/proc/dust_animation()

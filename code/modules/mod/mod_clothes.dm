@@ -22,12 +22,16 @@
 	var/list/linked_modules = list()
 	var/theme_category
 
+/obj/item/clothing/mod_part/proc/restore_normal_features()
+	return mod.wearer.get_item_by_slot(slot_flags)
+
 /obj/item/clothing/mod_part/equipped(mob/user, slot)
 	. = ..()
 	if(!mod?.wearer)
 		return
 	// override: повторный equipped на том же носителе (смена слота, повторное
 	// развёртывание) иначе ловит stack_trace "already registered".
+	use_clothing_features_through_overslot()
 	RegisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM, PROC_REF(on_dropped), override = TRUE)
 
 /obj/item/clothing/mod_part/proc/on_dropped(mob/source, obj/item, force, new_location)
@@ -86,7 +90,7 @@
 	flags_cover = category[UNSEALED_COVER] || NONE
 	visor_flags_cover = category[SEALED_COVER] || NONE
 
-/obj/item/clothing/mod_part/proc/conseal_to_overslot()//Не давать скрывать space suit
+/obj/item/clothing/mod_part/proc/conseal_to_overslot()
 	if(!mod?.wearer)
 		return FALSE
 	var/obj/item/clothing/item = mod.wearer.get_item_by_slot(slot_flags)
@@ -97,8 +101,10 @@
 	for(var/type in overslot_blacklist)
 		if(istype(item, type))
 			return FALSE
-
 	return mod.wearer.transferItemToLoc(overslot, item, force = TRUE)
+
+/obj/item/clothing/mod_part/proc/use_clothing_features_through_overslot()
+	return
 
 /obj/item/clothing/mod_part/proc/seal_part(seal)
 	if(seal)
@@ -249,8 +255,41 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	theme_category = GAUNTLETS_FLAGS
 	slot_flags = ITEM_SLOT_GLOVES
+	var/datum/component/tackler/gloves_tackler
 	var/transfer_blood = FALSE
 	var/transfer_prints = FALSE
+
+	var/saved_siemens_coefficient
+
+/obj/item/clothing/mod_part/gloves/Destroy()
+	clear_mod_tackler_component()
+	. = ..()
+
+/obj/item/clothing/mod_part/gloves/proc/clear_mod_tackler_component()
+	qdel(gloves_tackler)
+	gloves_tackler = null
+
+/obj/item/clothing/mod_part/gloves/use_clothing_features_through_overslot()
+	. = ..()
+	var/obj/item/clothing/gloves/gloves_in_overslot = overslot
+
+	if(!istype(gloves_in_overslot, /obj/item/clothing/gloves))
+		return
+	saved_siemens_coefficient = siemens_coefficient
+	siemens_coefficient = gloves_in_overslot.siemens_coefficient //изоли
+
+	if(!istype(gloves_in_overslot, /obj/item/clothing/gloves/tackler))
+		return
+
+	var/obj/item/clothing/gloves/tackler/G = gloves_in_overslot
+	gloves_tackler = mod.wearer.AddComponent(/datum/component/tackler, stamina_cost=G.tackle_stam_cost, base_knockdown = G.base_knockdown, range = G.tackle_range, speed = G.tackle_speed, skill_mod = G.skill_mod, min_distance = G.min_distance)
+
+/obj/item/clothing/mod_part/gloves/restore_normal_features()
+	var/obj/item/clothing/gloves/gloves_on_human = istype(..(), /obj/item/clothing/gloves) ? ..() : null//результат родителя
+	if(!gloves_on_human)
+		return
+	siemens_coefficient = saved_siemens_coefficient
+	clear_mod_tackler_component()
 
 /obj/item/clothing/mod_part/gloves/seal_part(seal)
 	. = ..()
@@ -287,8 +326,3 @@
 
 /obj/item/clothing/mod_part/shoes/negates_gravity()
 	return clothing_flags & NOSLIP
-
-
-//Для инфильтратора
-//blockTracking = 1
-//SEND_SIGNAL(C, COMSIG_CARBON_REMOVE_LIMB, src, dismembered)

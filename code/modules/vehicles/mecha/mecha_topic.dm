@@ -439,17 +439,16 @@ function stop_updates() {
 			return
 		if(dna_lock)
 			to_chat(user, "[icon2html(src, occupants)]<span class='notice'>Эта техника уже заблокирована ДНК-замком.</span>")
+			return
 		dna_lock = user.dna.unique_enzymes
-		var/dna_lock_examine = " Этот мех заблокирован ДНК - [user.name]."
-		if(dna_lock)
-			desc += dna_lock_examine
+		dna_lock_name = user.name
 		to_chat(user, "[icon2html(src, occupants)]<span class='notice'>Вы чувствуете колкое ощущение, когда игла внутри меха берет ваш образец ДНК...</span>")
 		return
 
 	//Resets the DNA lock
 	if(href_list["reset_dna"])
-		desc = desc
 		dna_lock = null
+		dna_lock_name = null
 		return
 
 	//Repairs internal damage

@@ -66,4 +66,6 @@
 		return
 	already_holding = FALSE
 	using_device.forceMove(storage_module)
+	if(storage_module.active)
+		storage_module.on_deactivation()
 	playsound(get_turf(my_modsuit), sound, 30, 1)

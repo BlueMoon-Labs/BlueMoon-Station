@@ -399,6 +399,7 @@
 		return
 	. = SEND_SIGNAL(O, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 	. = O.clean_blood()
+	O.clear_fingerprints()
 	O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 	var/datum/component/acid/acid = O.GetComponent(/datum/component/acid)
 	if(acid)
@@ -410,6 +411,7 @@
 		var/turf/tile = loc
 		tile.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 		tile.clean_blood()
+		tile.clear_fingerprints()
 		SEND_SIGNAL(tile, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 		for(var/obj/effect/E in tile)
 			if(is_cleanable(E))
@@ -417,6 +419,7 @@
 
 /obj/machinery/shower/proc/wash_mob(mob/living/L)
 	SEND_SIGNAL(L, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
+	L.clear_fingerprints()
 	L.wash_cream()
 	L.ExtinguishMob()
 	L.adjust_fire_stacks(-20) //Douse ourselves with water to avoid fire more easily

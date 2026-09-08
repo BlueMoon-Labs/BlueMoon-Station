@@ -19,7 +19,6 @@
 		/obj/item/restraints/legcuffs/bola/energy = 12,
 		/obj/item/evidencebag = 20,
 		/obj/item/secbat = 5,
-		/obj/item/fee_terminal = 10,
 		/obj/item/ammo_box/magazine/e45/taser = 10,
 		/obj/item/device/hailer = 10,
 		/obj/item/clothing/suit/armor/vest/peacekeeper = 5,

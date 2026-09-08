@@ -40,7 +40,7 @@
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
 /obj/item/mod/module/t_ray/on_active_process(delta_time)
-	t_ray_scan(mod.wearer, 0.8 SECONDS, range)
+	t_ray_scan(mod.wearer, cooldown_time, range)
 
 ///Magnetic Stability - Gives the user a slowdown but makes them negate gravity and be immune to slips.
 /obj/item/mod/module/magboot
@@ -102,6 +102,7 @@
 	cooldown_time = 1.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	// device = /obj/item/gun/tether_firer
 
 /obj/item/mod/module/tether/on_use()
 	if(mod.wearer.has_gravity(get_turf(src)))
@@ -120,6 +121,23 @@
 	playsound(src, 'sound/weapons/batonextend.ogg', 25, TRUE)
 	INVOKE_ASYNC(tether, TYPE_PROC_REF(/obj/item/projectile, fire))
 	drain_power(use_power_cost)
+
+// /obj/item/gun/ballistic/tether_firer
+// 	name = "Tether gun"
+// 	desc = "Устройство для запуска спасательного гарпуна."
+// 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
+// 	icon_state = "tether"
+// 	mag_type = /obj/item/ammo_box/magazine/m10mm
+// 	no_pin_required = TRUE
+
+// /obj/item/ammo_box/magazine/internal/tether
+// 	name = "Tether cartridge"
+// 	ammo_type = /obj/item/ammo_casing/caseless/tether
+// 	max_ammo = 1
+
+// /obj/item/ammo_casing/caseless/tether
+// 	caliber = "tether"
+// 	projectile_type = /obj/item/projectile/tether
 
 /obj/item/projectile/tether
 	name = "tether"
@@ -208,29 +226,28 @@
 	module_type = MODULE_ACTIVE
 	complexity = 2
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.3
-	device = /obj/item/reagent_containers/spray/mister
 	incompatible_modules = list(/obj/item/mod/module/mister)
 	cooldown_time = 0.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
-	/// Volume of our reagent holder.
+	mod_module_flags = MOD_MODULE_ENGINEERING
 	var/volume = 500
-	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	var/watertank_type = /obj/item/watertank
+	var/obj/item/watertank/tank
 
 /obj/item/mod/module/mister/Initialize(mapload)
-	create_reagents(volume, OPENCONTAINER)
+	tank = new watertank_type(src)
+	tank.volume = volume
+	tank.in_modsuit = TRUE
+	device = tank.noz
 	return ..()
 
 ///Resin Mister - Sprays resin over an area.
 /obj/item/mod/module/mister/atmos
 	name = "MOD resin mister module"
 	desc = "Атмосферный опрыскиватель смолой, способный быстро ремонтировать территории."
-	device = /obj/item/extinguisher/mini/nozzle/mod
 	volume = 250
+	watertank_type = /obj/item/watertank/atmos
 
 /obj/item/mod/module/mister/atmos/Initialize(mapload)
 	. = ..()
-	reagents.add_reagent(/datum/reagent/water, volume)
 
-/obj/item/extinguisher/mini/nozzle/mod
-	name = "MOD atmospheric mister"
-	desc = "Атмосферный опрыскиватель смолой с тремя режимами, установленный как модуль."

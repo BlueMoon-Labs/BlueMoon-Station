@@ -37,3 +37,6 @@
 #define MOD_CARGO_COLOR rgb(255, 118, 26, 255)
 #define MOD_SEC_COLOR rgb(255, 26, 26, 255)
 #define MOD_RESEARCH_COLOR rgb(133, 26, 255, 255)
+
+//для трейта QUICK_BUILD, который даётся специальными перчатками, а так же модулем.
+#define QUIICK_BUILD_SPEED 0.5 //там время умножается на это число. Чем меньше - тем меньше. Но лучше ниже 0.5 не делать.

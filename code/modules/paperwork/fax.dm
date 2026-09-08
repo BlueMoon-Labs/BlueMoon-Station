@@ -437,6 +437,8 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 		if(staff.prefs?.adminhelp_windowflash)
 			window_flash(staff, ignorepref = TRUE)
 
+	notify_heads_on_fax(sender_name)
+
 	addtimer(CALLBACK(src, PROC_REF(vend_item), loaded), 1.9 SECONDS)
 
 /**
@@ -475,6 +477,81 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 		return
 	var/sender_label = sender_id ? "[sender_name]/[sender_id]" : sender_name
 	Radio?.talk_into(src, "Внимание. Получен факс от [sender_label].", RADIO_CHANNEL_COMMAND)
+
+/obj/machinery/fax/proc/get_fax_department_jobs()
+	if(!fax_name)
+		return list()
+	var/lower = lowertext(fax_name)
+	var/list/jobs = list()
+	if(findtext(lower, "captain"))
+		jobs |= "Captain"
+	if(findtext(lower, "bridge"))
+		jobs |= "Captain"
+		jobs |= "Head of Personnel"
+	if(findtext(lower, "head of personnel") || findtext(lower, "head of personal"))
+		jobs |= "Head of Personnel"
+	if(findtext(lower, "head of security"))
+		jobs |= "Head of Security"
+	else if(findtext(lower, "security"))
+		jobs |= "Head of Security"
+	if(findtext(lower, "chief engineer"))
+		jobs |= "Chief Engineer"
+	else if(findtext(lower, "engineer"))
+		jobs |= "Chief Engineer"
+	if(findtext(lower, "chief medical"))
+		jobs |= "Chief Medical Officer"
+	else if(findtext(lower, "medical"))
+		jobs |= "Chief Medical Officer"
+	if(findtext(lower, "research director") || findtext(lower, "director of research"))
+		jobs |= "Research Director"
+	else if(findtext(lower, "research"))
+		jobs |= "Research Director"
+	if(findtext(lower, "quartermaster") || findtext(lower, "cargo"))
+		jobs |= "Quartermaster"
+	if(findtext(lower, "lawyer") || findtext(lower, "nanotrasen representative") || findtext(lower, "ntr"))
+		jobs |= "NanoTrasen Representative"
+	if(findtext(lower, "blueshield"))
+		jobs |= "Blueshield"
+	return jobs
+
+/obj/machinery/fax/proc/notify_heads_on_fax(sender_name)
+	if(!can_announce())
+		return
+	var/list/target_jobs = get_fax_department_jobs()
+	if(!length(target_jobs))
+		return
+	var/list/datum/computer_file/program/messenger/target_messengers = list()
+	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
+		if(pda_device.hidden || pda_device.toff)
+			continue
+		if(!pda_device.saved_job || !(pda_device.saved_job in target_jobs))
+			continue
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
+		if(!messenger || messenger.invisible)
+			continue
+		target_messengers += messenger
+	if(!length(target_messengers))
+		return
+	var/msg_text = "Входящий факс на \"[fax_name]\" от \"[sender_name]\". Проверьте факс-аппарат."
+	var/fake_name = "Факс: [fax_name]"
+	var/fake_job = "Fax Notification"
+	var/datum/signal/subspace/messaging/tablet_message/signal = new(src, list(
+		"ref" = null,
+		"message" = msg_text,
+		"targets" = target_messengers,
+		"rigged" = FALSE,
+		"everyone" = FALSE,
+		"photo" = null,
+		"automated" = TRUE,
+		"fakename" = fake_name,
+		"fakejob" = fake_job,
+	))
+	signal.data["done"] = FALSE
+	signal.data["reject"] = FALSE
+	signal.send_to_receivers()
+	if(!signal.data["done"])
+		signal.broadcast()
+		signal.mark_done()
 
 /**
  * Procedure for animating an object entering or leaving the fax machine.

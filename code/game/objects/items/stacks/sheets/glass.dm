@@ -13,20 +13,20 @@
  * Glass sheets
  */
 GLOBAL_LIST_INIT(glass_recipes, list ( \
-	new/datum/stack_recipe("directional window", /obj/structure/window/unanchored, time = 10, on_floor = TRUE, window_checks = TRUE), \
-	new/datum/stack_recipe("fulltile window", /obj/structure/window/fulltile/unanchored, 2, time = 20, on_floor = TRUE, window_checks = TRUE), \
-	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/glass, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS), \
+	new/datum/stack_recipe("directional window", /obj/structure/window/unanchored, time = 10, on_floor = TRUE, window_checks = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("fulltile window", /obj/structure/window/fulltile/unanchored, 2, time = 20, on_floor = TRUE, window_checks = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new /datum/stack_recipe("curtain", /obj/structure/curtain_static/glass, 1, one_per_turf = TRUE, on_floor = TRUE, time = 1 SECONDS, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	new/datum/stack_recipe("shard", /obj/item/shard, 1), \
 	null, \
 	new/datum/stack_recipe_list("glass working bases", list( \
-		new/datum/stack_recipe("chem dish", /obj/item/glasswork/glass_base/dish, 10), \
-		new/datum/stack_recipe("lens", /obj/item/glasswork/glass_base/glass_lens, 15), \
-		new/datum/stack_recipe("spout flask", /obj/item/glasswork/glass_base/spouty, 20), \
-		new/datum/stack_recipe("small bulb flask", /obj/item/glasswork/glass_base/flask_small, 5), \
-		new/datum/stack_recipe("large bottle flask", /obj/item/glasswork/glass_base/flask_large, 15), \
-		new/datum/stack_recipe("tea cup", /obj/item/glasswork/glass_base/tea_cup, 5), \
-		new/datum/stack_recipe("ashtray", /obj/item/ashtray/glass, 1), \
-		new/datum/stack_recipe("tea plate", /obj/item/glasswork/glass_base/tea_plate, 5), \
+		new/datum/stack_recipe("chem dish", /obj/item/glasswork/glass_base/dish, 10, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("lens", /obj/item/glasswork/glass_base/glass_lens, 15, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("spout flask", /obj/item/glasswork/glass_base/spouty, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("small bulb flask", /obj/item/glasswork/glass_base/flask_small, 5, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("large bottle flask", /obj/item/glasswork/glass_base/flask_large, 15, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("tea cup", /obj/item/glasswork/glass_base/tea_cup, 5, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("ashtray", /obj/item/ashtray/glass, 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+		new/datum/stack_recipe("tea plate", /obj/item/glasswork/glass_base/tea_plate, 5, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	)), \
 ))
 

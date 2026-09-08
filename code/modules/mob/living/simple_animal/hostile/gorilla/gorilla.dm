@@ -88,7 +88,7 @@
 	return iswallturf(T)
 
 
-/mob/living/simple_animal/hostile/gorilla/gib(no_brain)
+/mob/living/simple_animal/hostile/gorilla/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	if(!no_brain)
 		var/mob/living/brain/B = new(drop_location())
 		B.name = real_name

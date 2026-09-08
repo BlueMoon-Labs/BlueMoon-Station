@@ -131,7 +131,8 @@
 		if(creator)
 			log_combat(creator, L, "used a resonator field on", "resonator")
 		to_chat(L, span_userdanger("[src] разрывается с вами внутри!"))
-		L.apply_damage(resonance_damage, BRUTE)
+		var/def_check = L.getarmor(type = BOMB)
+		L.apply_damage(resonance_damage, BRUTE, blocked = def_check)
 	for(var/obj/effect/temp_visual/resonance/field in orange(1, src))
 		if(field.rupturing)
 			continue

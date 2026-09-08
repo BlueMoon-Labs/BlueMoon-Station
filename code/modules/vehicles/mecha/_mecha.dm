@@ -60,6 +60,8 @@
 	var/mecha_flags = ADDING_ACCESS_POSSIBLE | CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	///Stores the DNA enzymes of a carbon so tht only they can access the mech
 	var/dna_lock
+	/// Имя владельца на момент установки ДНК-замка; в desc не добавляется.
+	var/dna_lock_name
 	///Spark effects are handled by this datum
 	var/datum/effect_system/spark_spread/spark_system = new
 	///How powerful our lights are
@@ -390,6 +392,8 @@
 
 /obj/vehicle/sealed/mecha/examine(mob/user)
 	. = ..()
+	if(dna_lock)
+		. += span_notice("Этот мех заблокирован ДНК[dna_lock_name ? " - [dna_lock_name]" : ""].")
 	var/integrity = obj_integrity*100/max_integrity
 	switch(integrity)
 		if(85 to 100)
@@ -1081,7 +1085,7 @@
 	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
 	if(dna_lock)
 		dna_lock = null
-		desc = initial(desc)
+		dna_lock_name = null
 	max_equip++
 	user.visible_message(
 		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
