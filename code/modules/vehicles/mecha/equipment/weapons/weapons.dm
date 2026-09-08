@@ -478,7 +478,7 @@
 	harmful = TRUE
 	diags_first = TRUE
 	/// Damage done by the glove on contact. Also used to determine throw distance (damage / 5)
-	var/punch_damage = 35
+	var/punch_damage = 20
 	/// TRUE - Can toggle between lethal and non-lethal || FALSE - Cannot toggle
 	var/can_toggle_lethal = TRUE
 	mech_flags = EXOSUIT_MODULE_HONK
@@ -529,10 +529,14 @@
 	desc = "ВХОДЯЩИЕ ХОНКИ"
 	throwforce = 35
 	icon_state = "punching_glove"
+	item_flags = ABSTRACT
 
 /obj/item/punching_glove/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(!..())
 		if(ismovable(hit_atom))
 			var/atom/movable/AM = hit_atom
+			if(AM.anchored) //мех не должен сдвигать несдвигаемое.
+				qdel(src)
+				return
 			AM.safe_throw_at(get_edge_target_turf(AM,get_dir(src, AM)), clamp(round(throwforce/5), 2, 20), 2) //Throws them equal to damage/5, with a min range of 2 and max range of 20
 		qdel(src)

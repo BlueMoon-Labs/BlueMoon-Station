@@ -9,19 +9,23 @@
 			её относительно корпуса пользователя для минимизации нагрузки на точки опоры."
 	icon_state = "harness"
 	complexity = 5
+	var/list/allowed_items = list(
+		/obj/item/storage/backpack,
+		/obj/item/gun,
+	)
 
 /obj/item/mod/module/backpack_harness/on_install()
 	. = ..()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
-	chestplate.allowed += /obj/item/storage/backpack
+	chestplate.allowed += allowed_items
 
 /obj/item/mod/module/backpack_harness/on_uninstall()
 	. = ..()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	var/mob/living/carbon/human/wearer = mod.wearer
 	var/obj/item/item_to_drop
-	if(/obj/item/storage/backpack in chestplate.allowed)
-		chestplate.allowed -= /obj/item/storage/backpack
+	if(/obj/item/storage/backpack in chestplate.allowed) //тут надо будет заменить backpack на проверку по list/allowed_items, я просто не знаю как правильнее.
+		chestplate.allowed -= allowed_items
 		item_to_drop = wearer.s_store
 		wearer.dropItemToGround(item_to_drop)
 
@@ -32,7 +36,6 @@
 	icon_state = "storage"
 	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/storage)
-	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON
@@ -40,6 +43,7 @@
 	var/max_volume = STORAGE_VOLUME_MOD_DEFAULT
 	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 	var/component_type = /datum/component/storage/concrete
+	var/datum/component/storage/mod_storage
 
 /obj/item/mod/module/storage/extended
 	name = "Extended MOD storage module"
@@ -78,13 +82,16 @@
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
-	if(component_type)
-		mod.AddComponent(component_type)
+	if(!component_type)
+		return
 
-		var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
-		Storage.storage_flags = storage_flags
-		Storage.max_volume = max_volume
-		Storage.max_w_class = max_w_class
+	mod_storage = mod.AddComponent(component_type)
+	if(mod.theme.need_block_storage_when_not_active && !mod.is_active())
+		mod.toggle_storage(mod.is_active())
+	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+	Storage.storage_flags = storage_flags
+	Storage.max_volume = max_volume
+	Storage.max_w_class = max_w_class
 
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
@@ -96,6 +103,7 @@
 	if(mod.contents)
 		Storage.do_quick_empty(mod.drop_location())
 	Storage.RemoveComponent()
+	mod_storage = null
 	qdel(Storage)
 
 //PAI модуль

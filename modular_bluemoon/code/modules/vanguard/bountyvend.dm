@@ -34,13 +34,13 @@
 
 	var/list/prize_list = list(
 		// ============ WEAPONRY ============
-		new /datum/data/bounty_equipment("Premium KA",					/obj/item/gun/energy/kinetic_accelerator/premiumka,				1250,	"Weaponry"),
-		new /datum/data/bounty_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        		100,	"Weaponry"),
-		new /datum/data/bounty_equipment("Electronic Firing Pin",		/obj/item/firing_pin,											500,	"Weaponry"),
-		new /datum/data/bounty_equipment("Supressor",               	/obj/item/suppressor,                                   		500, 	"Weaponry"),
-		new /datum/data/bounty_equipment("Munitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     	1000, 	"Weaponry"),
-		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,								2000,	"Weaponry"),
-		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,						500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Premium KA",					/obj/item/gun/energy/kinetic_accelerator/premiumka,					1250,	"Weaponry"),
+		new /datum/data/bounty_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Weaponry"),
+		new /datum/data/bounty_equipment("Electronic Firing Pin",		/obj/item/firing_pin,												500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Supressor",               	/obj/item/suppressor,                                   			500, 	"Weaponry"),
+		new /datum/data/bounty_equipment("Munitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
+		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									2000,	"Weaponry"),
+		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,							500,	"Weaponry"),
 
 		// ============ ARMOR ============
 		new /datum/data/bounty_equipment("Vanguard armor",					/obj/item/vanguard_voucher_suit,								1500,	"Armor"),
@@ -51,6 +51,7 @@
 		new /datum/data/bounty_equipment("Jetpack upgrade",					/obj/item/tank/jetpack/suit,									1000,	"Armor"),
 		new /datum/data/bounty_equipment("Vanguard modsuit",				/obj/item/mod/control/pre_equipped/expeditor,					5000,	"Armor"),
 		new /datum/data/bounty_equipment("Jump boots",						/obj/item/clothing/shoes/bhop,									1250,	"Armor"),
+		new /datum/data/bounty_equipment("Guerrilla Gloves",				/obj/item/clothing/gloves/tackler/combat/insulated,				3000,	"Armor"),
 
 		// ============ MEDICAL ============
 		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								25,		"Medical"),
@@ -76,15 +77,22 @@
 		new /datum/data/bounty_equipment("High quality Soap",				/obj/item/soap/syndie,											150,	"Recreational"),
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
 
+		// ============ MOD DESIGNS ============
+		new /datum/data/bounty_equipment("Extended MOD storage module",				/obj/item/mod/module/storage/extended,					2000,		"MOD Designs"),
+		new /datum/data/bounty_equipment("MOD advanced ion jetpack module",			/obj/item/mod/module/jetpack/advanced,					5000,		"MOD Designs"),
+		new /datum/data/bounty_equipment("MOD DNA lock module",						/obj/item/mod/module/dna_lock,							7500,		"MOD Designs"),
+		new /datum/data/bounty_equipment("MOD Storage Upgrader",					/obj/item/mod/module/storage_upgrader,					15000,		"MOD Designs"),
+
 		// ============ ELITE EQUIPMENT =========
-		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Advanced ion jetpack",			/obj/item/mod/module/jetpack/advanced,							5000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Nanotrasen & Syndicate Uplink",	/obj/item/syndicate_uplink/station,								75000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,								20000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite Equipment"),
+		new /datum/data/bounty_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											30000,		"Elite Equipment"),
 	)
 
 /datum/data/bounty_equipment
@@ -162,7 +170,7 @@
 		)
 		records += list(product_data)
 	.["product_records"] = records
-	.["categories"] = list("Weaponry", "Armor", "Medical", "Tools", "Recreational", "Miscellaneous", "Elite Equipment")
+	.["categories"] = list("Weaponry", "Armor", "Medical", "Tools", "Recreational", "Miscellaneous", "Elite Equipment", "MOD Designs")
 	.["discount"] = get_discount()
 
 /obj/machinery/bountyvend/ui_data(mob/user)
@@ -235,17 +243,19 @@
 			new /obj/item/storage/secure/briefcase/vanguard/lasgun(drop_location)
 			new /obj/item/storage/belt/military/assault/demolition(drop_location)
 			new /obj/item/extinguisher/mini(drop_location)
-			new /obj/item/storage/box/red/demolition(drop_location)
+			new /obj/item/storage/box/demolition(drop_location)
 		if("Field Surgeon")
 			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
-			new /obj/item/storage/belt/military/assault/surgeon(drop_location)
+			new /obj/item/storage/firstaid/frontier(drop_location)
 			new /obj/item/melee/tomahawk(drop_location)
-			new /obj/item/storage/box/blue/surgeon(drop_location)
+			new /obj/item/storage/firstaid/vanguard(drop_location)
 			new /obj/item/shield/riot/pointman(drop_location)
+			new /obj/item/defibrillator/compact/loaded(drop_location)
 		if("Combatant")
 			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
 			new /obj/item/storage/belt/military/assault(drop_location)
-			new /obj/item/storage/box/orange/combatant(drop_location)
+			new /obj/item/storage/bag/medpen/combatant(drop_location)
+			new /obj/item/storage/bag/marksman(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "vanguard_voucher_redeemed", 1, selection)
 	qdel(voucher)
@@ -277,7 +287,7 @@
 
 /obj/item/card/vanguard_access_card
 	name = "mining access card"
-	desc = "A small card, that when used on any ID, will add Vanguard operative access."
+	desc = "A small card, that when used on any ID, will add Vanguard Operative access."
 	icon_state = "data_1"
 
 /obj/item/card/vanguard_access_card/afterattack(atom/movable/AM, mob/user, proximity)
@@ -287,7 +297,7 @@
 		I.access |=	ACCESS_RESEARCH
 		I.access |= ACCESS_GATEWAY
 		I.access |= ACCESS_PRODUCTION_SCIENCE
-		to_chat(user, "You upgrade [I] with Vanguard operative access.")
+		to_chat(user, "You upgrade [I] with Vanguard Operative access.")
 		qdel(src)
 
 /obj/item/storage/backpack/duffelbag/vanguard/conscript
@@ -317,7 +327,7 @@
 	desc += "\nIt seems a few selections have been added."
 	prize_list += list(
 		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									25000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									50000, 	"Miscellaneous"),
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
 		)
 	build_inventory()

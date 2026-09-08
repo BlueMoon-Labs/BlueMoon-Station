@@ -186,6 +186,7 @@
 // #include "pills.dm"
 // #include "plantgrowth_tests.dm"
 #include "perf_log_columns.dm"
+#include "player_report_regressions.dm"
 #include "process_memory.dm"
 #include "projectiles.dm"
 #include "weather.dm"

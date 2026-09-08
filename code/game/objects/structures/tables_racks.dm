@@ -920,6 +920,9 @@
 
 /obj/structure/table/optable/post_unbuckle_mob(mob/living/M)
 	. = ..()
+	if(patient == M)
+		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
+		patient = null
 	check_patient()
 
 /obj/structure/table/optable/process()

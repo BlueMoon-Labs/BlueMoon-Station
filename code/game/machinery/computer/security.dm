@@ -170,6 +170,24 @@
 						)
 					security["ma_crim"] = major_crimes
 
+					var/list/fines = list()
+					for(var/datum/data/crime/c in active2.fields["fines"])
+						var/time_left = c.fine_deadline ? max(0, c.fine_deadline - world.time) : 0
+						fines[++fines.len] = list(
+							"name" = c.crimeName,
+							"details" = c.crimeDetails,
+							"author" = c.author,
+							"time" = c.time,
+							"dataId" = c.dataId,
+							"fine" = c.fine,
+							"paid" = c.paid,
+							"total" = c.fine + c.paid,
+							"deadline" = c.fine_deadline,
+							"time_left" = time_left,
+							"duration" = c.fine_duration,
+						)
+					security["fines"] = fines
+
 					var/list/logs = active2.fields["actions_logs"]
 					security["logs"] = logs || list()
 
@@ -263,6 +281,7 @@
 			R.fields["criminal"] = SEC_RECORD_STATUS_NONE
 			R.fields["mi_crim"] = list()
 			R.fields["ma_crim"] = list()
+			R.fields["fines"] = list()
 			R.fields["notes"] = "No notes."
 			R.fields["actions_logs"] = list(
 				"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] ЗАПИСЬ НАЧАТА. СУБЪЕКТ - [active1.fields["name"]] | N/A | [active1.fields["id"]] -- ИНИЦИАТОР: [login_state.name] ([login_state.rank]);</u><br>"
@@ -300,6 +319,7 @@
 			R.fields["criminal"] = SEC_RECORD_STATUS_NONE
 			R.fields["mi_crim"] = list()
 			R.fields["ma_crim"] = list()
+			R.fields["fines"] = list()
 			R.fields["notes"] = "No notes."
 			R.fields["actions_logs"] = list(
 				"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] ЗАПИСЬ НАЧАТА. СУБЪЕКТ - [active1.fields["name"]] | N/A | [active1.fields["id"]] -- ИНИЦИАТОР: [login_state.name] ([login_state.rank]);</u><br>"
@@ -494,6 +514,85 @@
 				return
 			GLOB.data_core.switch_incur(active1.fields["id"], cdataid)
 			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% изменил пометку \"НАКАЗАНИЕ ПОНЕСЕНО\" у преступления №[cdataid]", login_state.name, login_state.rank)
+		if("fine_add")
+			if(!logged_in || !active1 || !active2)
+				return
+			if(!(ACCESS_SECURITY in login_state.access))
+				set_temp("Недостаточно полномочий: требуется доступ СБ.", "danger")
+				return
+			var/cname = stripped_input(usr, "Название правонарушения (статья) для штрафа:", "Выписать штраф", "")
+			if(!length(cname) || !can_use_console(usr))
+				return
+			var/cdetails = stripped_input(usr, "Подробности правонарушения:", "Выписать штраф", "")
+			if(!can_use_console(usr))
+				return
+			var/fine_amount = tgui_input_number(usr, "Сумма штрафа (1 - [FINE_MAX_AMOUNT] кр.)", "Выписать штраф", 500, FINE_MAX_AMOUNT, 1)
+			if(isnull(fine_amount) || !can_use_console(usr))
+				return
+			fine_amount = clamp(round(fine_amount), 1, FINE_MAX_AMOUNT)
+			var/dur_choice = tgui_input_list(usr, "Срок оплаты штрафа:", "Выписать штраф", list("15 минут", "20 минут", "25 минут", "30 минут"))
+			if(!dur_choice || !can_use_console(usr))
+				return
+			var/dur = FINE_PRESET_15
+			switch(dur_choice)
+				if("15 минут")
+					dur = FINE_PRESET_15
+				if("20 минут")
+					dur = FINE_PRESET_20
+				if("25 минут")
+					dur = FINE_PRESET_25
+				if("30 минут")
+					dur = FINE_PRESET_30
+			var/datum/data/crime/fine = GLOB.data_core.createFineEntry(cname, cdetails, login_state.name, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), fine_amount, dur)
+			GLOB.data_core.addFine(active1.fields["id"], fine)
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% выписал штраф: <b>[cname]</b> ([fine_amount] кр., срок [dur_choice]) - [cdetails]", login_state.name, login_state.rank)
+			investigate_log("New Fine: <strong>[cname]</strong>: [cdetails] ([fine_amount] кр., [dur_choice]) | Added to [active1.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
+			var/pda_msg = "Вам выписан штраф №[fine.dataId]: Статья \"[cname]\". Подробности: [cdetails]. Сумма: [fine_amount] кр. Срок оплаты: [dur_choice] (до [STATION_TIME_TIMESTAMP("hh:mm:ss", fine.fine_deadline)]). Выписал: [login_state.name] ([login_state.rank]) в [fine.time]. Оплата через консоль заданий брига (вставьте ID-карту). При неуплате - автоматический розыск по ст. 303."
+			fine.alert_fine_owner(usr, src, active1.fields["name"], pda_msg)
+			set_temp("Штраф [fine_amount] кр. выписан. Срок оплаты: [dur_choice].", "success")
+		if("fine_remove")
+			if(!logged_in || !active1 || !active2)
+				return
+			// Требуется HOS / WARDEN (BRIG+ARMORY) / CAPTAIN
+			var/has_priv = FALSE
+			if((ACCESS_HOS in login_state.access) || (ACCESS_CAPTAIN in login_state.access))
+				has_priv = TRUE
+			else if((ACCESS_BRIG in login_state.access) && (ACCESS_ARMORY in login_state.access))
+				has_priv = TRUE // Warden approx
+			if(!has_priv)
+				set_temp("Недостаточно полномочий: требуется доступ ГСБ, Смотрителя или Капитана.", "danger")
+				return
+			var/cdataid = params["cdataid"]
+			if(!cdataid)
+				return
+			var/datum/data/crime/f = GLOB.data_core.getFine(active1.fields["id"], cdataid)
+			if(!f)
+				set_temp("Штраф не найден.", "danger")
+				return
+			var/reason = stripped_input(usr, "Причина снятия штрафа:", "Снять штраф", "")
+			if(!length(reason) || !can_use_console(usr))
+				return
+			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% снял штраф №[cdataid] \"[f.crimeName]\" ([f.fine + f.paid] кр.). Причина: [reason]", login_state.name, login_state.rank)
+			investigate_log("Fine removed: [f.crimeName] ([f.dataId]) from [active1.fields["name"]] by [key_name(usr)] reason: [reason]", INVESTIGATE_RECORDS)
+			var/pda_msg_remove = "Ваш штраф №[f.dataId] (\"[f.crimeName]\", [f.fine + f.paid] кр.) снят. Причина: [reason]. Снял: [login_state.name] ([login_state.rank])."
+			f.alert_fine_owner(usr, src, active1.fields["name"], pda_msg_remove)
+			GLOB.data_core.removeFine(active1.fields["id"], cdataid)
+			set_temp("Штраф снят.", "success")
+		if("fine_print_receipt")
+			if(!logged_in || printing || !active1 || !active2)
+				return
+			var/cdataid = params["cdataid"]
+			if(!cdataid)
+				return
+			var/datum/data/crime/f = GLOB.data_core.getFine(active1.fields["id"], cdataid)
+			if(!f)
+				set_temp("Штраф не найден.", "danger")
+				return
+			if(!can_use_console(usr))
+				return
+			printing = TRUE
+			playsound(loc, 'sound/items/poster_being_created.ogg', 100, TRUE)
+			addtimer(CALLBACK(src, PROC_REF(print_fine_receipt_finish), f.dataId), 3 SECONDS)
 		if("add_comment")
 			if(!logged_in || !active2)
 				return
@@ -746,6 +845,50 @@
 		return
 	if(!QDELETED(target_record) && istype(photo) && photo.picture?.picture_image)
 		new /obj/item/poster/wanted(loc, photo.picture.picture_image, wanted_name, info)
+	printing = FALSE
+	SStgui.update_uis(src)
+
+/obj/machinery/computer/secure_data/proc/print_fine_receipt_finish(cdataid)
+	if(!active1 || !active2)
+		printing = FALSE
+		SStgui.update_uis(src)
+		return
+	var/datum/data/crime/f = GLOB.data_core.getFine(active1.fields["id"], cdataid)
+	if(!f)
+		printing = FALSE
+		SStgui.update_uis(src)
+		return
+	var/datum/ui_login/login_state = ui_login_get()
+	GLOB.data_core.securityPrintCount++
+	var/obj/item/paper/P = new /obj/item/paper(loc)
+	var/time_left = f.fine_deadline ? max(0, f.fine_deadline - world.time) : 0
+	var/status_text = f.fine > 0 ? "НЕ ОПЛАЧЕН - осталось [DisplayTimeText(time_left)]" : "ОПЛАЧЕН ПОЛНОСТЬЮ"
+	var/report_text = {"
+		<h1><div align="center">КВИТАНЦИЯ О ШТРАФЕ №[GLOB.data_core.securityPrintCount]</div></h1>
+		<p><strong>Нарушитель:</strong> [active1.fields["name"]] ([active1.fields["id"]])</p>
+		<p><strong>Статья:</strong> [f.crimeName]</p>
+		<p><strong>Подробности:</strong> [f.crimeDetails]</p>
+		<p><strong>Выписал:</strong> [f.author] ([f.time])</p>
+		<p><strong>Сумма штрафа:</strong> [f.paid + f.fine] кр.</p>
+		<p><strong>Уплачено:</strong> [f.paid] кр.</p>
+		<p><strong>Остаток:</strong> [f.fine] кр.</p>
+		<p><strong>Статус:</strong> [status_text]</p>
+		<p><strong>Срок оплаты:</strong> [DisplayTimeText(f.fine_duration)] (до [STATION_TIME_TIMESTAMP("hh:mm:ss", f.fine_deadline)])</p>
+		<p><strong>Место нарушения:</strong> [GLOB.station_name]</p>
+		<hr>
+		<p><strong><div align="center">Подписи и печати</div></strong></p>
+		<p><strong>Составитель:</strong> [login_state.name] ([login_state.rank])</p>
+		<p><strong>Дата:</strong> [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] [time2text(world.realtime, "MMM DD")] [GLOB.year_integer]</p>
+		<p><strong>Место для печатей</strong></p>
+		<hr/><br><br><br><hr/>
+		<font color="grey"><div align="justify">Документ сгенерирован автоматически консолью записей СБ. При неуплате в срок - автоматический розыск по ст. 303.</div></font>"}
+	P.add_raw_text(report_text)
+	P.name = "Квитанция о штрафе - [active1.fields["name"]] - [f.crimeName]"
+	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/simple/paper)
+	P.add_stamp(sheet.icon_class_name("stamp-security"), 400, 50, 1, "stamp-security")
+	P.add_stamp(sheet.icon_class_name("stamp-machine"), 400, 120, 1, "stamp-machine")
+	P.update_appearance()
+	P.update_icon()
 	printing = FALSE
 	SStgui.update_uis(src)
 
