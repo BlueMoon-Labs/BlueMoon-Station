@@ -28,7 +28,7 @@
 /obj/item/projectile/bullet/a58/he
 	name = "5.8mm high-explosive bullet"
 	damage = 25
-	armour_penetration = BULLET_B0
+	armour_penetration = BULLET_BR0
 	wound_bonus = 15
 	embedding = list(embed_chance = 60, fall_chance = 4, jostle_chance = 3, pain_stam_pct = 0.6)
 	knockdown = 5
@@ -79,7 +79,7 @@
 /obj/item/projectile/bullet/a762x39_hp
 	name = "7.62x39 hollow-point bullet"
 	damage = 25
-	armour_penetration = BR3
+	armour_penetration = BULLET_BR3
 	wound_bonus = 15
 
 /obj/item/projectile/bullet/a762x39_rubber
