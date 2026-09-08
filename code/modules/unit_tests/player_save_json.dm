@@ -43,6 +43,48 @@
 		if(nested)
 			return "[key]/[nested]"
 	return null
+/// Диагностика должна читать даже повреждённые файлы и не затрагивать оригиналы.
+/datum/unit_test/player_save_json/debug_inspection
+	var/debug_directory
+
+/datum/unit_test/player_save_json/debug_inspection/Destroy()
+	if(debug_directory)
+		fdel(debug_directory)
+	return ..()
+
+/datum/unit_test/player_save_json/debug_inspection/Run()
+	prepare()
+	debug_directory = "[test_path].debug/"
+	TEST_ASSERT_NULL(player_save_debug_directory("../"), "пустой ckey превратился в путь")
+	TEST_ASSERT_EQUAL(player_save_debug_directory("Some_Player"), "data/player_saves/s/someplayer/", "ckey не нормализован")
+	TEST_ASSERT_EQUAL(player_save_debug_directory("../../Other"), "data/player_saves/o/other/", "ckey позволил выйти из каталога игрока")
+	var/list/expected = list("preferences.sav", "preferences.sav.updatebac", "preferences.sav.json", "preferences.sav.json.recovery", "preferences.sav.json.d/orphan.sav.json", "preferences.sav.json.d/orphan.sav.json.recovery", "vore/character_1_v2.json")
+	for(var/relative_path in expected)
+		text2file("{broken JSON <script>alert(1)</script>", "[debug_directory][relative_path]")
+	text2file("не сейв", "[debug_directory]unrelated.txt")
+	var/list/found = player_save_debug_files(debug_directory)
+	TEST_ASSERT_EQUAL(found.len, expected.len, "список файлов потерял сейв или включил посторонний файл")
+	for(var/relative_path in expected)
+		TEST_ASSERT(relative_path in found, "не найден [relative_path]")
+	var/json_path = "[debug_directory]preferences.sav.json"
+	var/before = rustg_hash_file(RUSTG_HASH_MD5, json_path)
+	TEST_ASSERT_EQUAL(player_save_debug_text(json_path), file2text(json_path), "повреждённый JSON нельзя прочитать дословно")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, json_path), before, "просмотр изменил JSON")
+	var/legacy_path = "[debug_directory]preferences.sav"
+	fdel(legacy_path)
+	var/savefile/legacy = new(legacy_path)
+	legacy["version"] << 79
+	legacy.cd = "/character1"
+	legacy["real_name"] << "Debug Character"
+	legacy.Flush()
+	legacy = null
+	before = rustg_hash_file(RUSTG_HASH_MD5, legacy_path)
+	var/preview = player_save_debug_text(legacy_path)
+	TEST_ASSERT(findtext(preview, "Debug Character"), "в просмотре старого сейва нет персонажа")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, legacy_path), before, "просмотр изменил исходный SAV")
+	found = player_save_debug_files(debug_directory)
+	TEST_ASSERT_EQUAL(found.len, expected.len, "просмотр создал лишние файлы рядом с сейвом")
+
 /datum/unit_test/player_save_json/roundtrip/Run()
 	var/savefile/source = prepare()
 	var/list/mixed = list("повтор", "ключ" = 0, "повтор", null, 0, 1.23456789, /obj/item)
