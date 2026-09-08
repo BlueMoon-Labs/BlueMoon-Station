@@ -78,10 +78,14 @@
 	if(pulling && isliving(pulling))
 		var/mob/living/L = pulling
 
-		if(L.stat != DEAD && !L.lying)
-			remove_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown)
-			remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
-			remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
+		// Цепь из 3+ игроков: если тянем того, кто сам кого-то тащит — замедляем
+		if(L.pulling && isliving(L.pulling))
+			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
+			if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
+				if(src.mob_weight < MOB_WEIGHT_HEAVY)
+					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
+				else
+					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
 			return
 
 		if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER) // Сверхтяжёлых персонажей очень сложно тянуть

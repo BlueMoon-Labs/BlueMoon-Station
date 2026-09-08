@@ -211,12 +211,6 @@
 		return BULLET_ACT_HIT
 	if(!isturf(A.loc)) //NO MOTHERFLIPPIN MECHS!
 		return BULLET_ACT_HIT
-	var/obj/item/active_hand = A.get_active_held_item()
-	var/obj/item/inactive_hand = A.get_inactive_held_item()
-	if(active_hand && inactive_hand)
-		return BULLET_ACT_HIT
-	if((active_hand || inactive_hand) && !prob(50))
-		return BULLET_ACT_HIT
 	A.visible_message("<span class='danger'>[A] dodges the projectile cleanly, they're immune to ranged weapons!</span>", "<span class='userdanger'>You dodge out of the way of the projectile!</span>")
 	playsound(get_turf(A), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
 	return BULLET_ACT_FORCE_PIERCE
@@ -242,6 +236,8 @@
 	sidekick.Grant(H)
 	ADD_TRAIT(H, TRAIT_NOGUNS, RISING_BASS_TRAIT)
 	ADD_TRAIT(H, TRAIT_AUTO_CATCH_ITEM, RISING_BASS_TRAIT)
+	H.physiology.brute_mod *= 1.25
+	H.physiology.burn_mod *= 1.25
 
 /datum/martial_art/the_rising_bass/on_remove(mob/living/carbon/human/H)
 	. = ..()
@@ -249,3 +245,5 @@
 	sidekick.Remove(H)
 	REMOVE_TRAIT(H, TRAIT_NOGUNS, RISING_BASS_TRAIT)
 	REMOVE_TRAIT(H, TRAIT_AUTO_CATCH_ITEM, RISING_BASS_TRAIT)
+	H.physiology.brute_mod = initial(H.physiology.brute_mod)
+	H.physiology.burn_mod = initial(H.physiology.burn_mod)
