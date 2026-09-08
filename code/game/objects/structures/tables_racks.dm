@@ -921,9 +921,19 @@
 /obj/structure/table/optable/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	if(patient == M)
-		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
-		patient = null
-	check_patient()
+		eject_patient()
+
+/obj/structure/table/optable/proc/eject_patient()
+	if(isnull(patient))
+		return
+	SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
+	UnregisterSignal(patient, COMSIG_MOVABLE_MOVED)
+	patient = null
+
+/obj/structure/table/optable/proc/patient_moved(...)
+	SIGNAL_HANDLER
+	if(patient?.loc != loc)
+		eject_patient()
 
 /obj/structure/table/optable/process()
 	if(mask?.loc != patient || tank?.loc != src || patient?.loc != loc)
@@ -939,8 +949,7 @@
 		visible_message(span_notice("[mask] срывается и возвращается на место по втягивающемуся шлангу."))
 		patient.transferItemToLoc(mask, src, TRUE)
 	patient.internal = null
-	SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
-	patient = null
+	eject_patient()
 
 /obj/structure/table/optable/Destroy()
 	if(tank)
@@ -952,6 +961,7 @@
 	if(patient)
 		if(patient.internal == tank)
 			patient.internal = null
+		UnregisterSignal(patient, COMSIG_MOVABLE_MOVED)
 		patient = null
 	if(computer)
 		computer.table = null
@@ -1002,16 +1012,15 @@
 		if(!CHECK_MOBILITY(H, MOBILITY_STAND))
 			if(patient != H)
 				patient = H
+				RegisterSignal(patient, COMSIG_MOVABLE_MOVED, PROC_REF(patient_moved))
 				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
 			return TRUE
 		else if(patient == H)
-			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
-			patient = null
+			eject_patient()
 			return FALSE
 	else
 		if(!isnull(patient))
-			SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
-		patient = null
+			eject_patient()
 		return FALSE
 
 /*

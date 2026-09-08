@@ -409,3 +409,23 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
 	force = 11
+
+/obj/item/storage/box/kumiko_ncr_case
+	name = "NCR ranger case"
+	desc = "Old NCR ranger case issued to a single ranger. The engraving on the lid reads: 'Patrolling the Mojave almost makes you wish for a nuclear winter.'"
+	icon_state = "ammobox"
+
+/obj/item/storage/box/kumiko_ncr_case/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_combined_w_class = 21
+
+/obj/item/storage/box/kumiko_ncr_case/PopulateContents()
+	new /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster(src)
+	new	/obj/item/modkit/kumiko_ncr_riot(src)
+	new	/obj/item/modkit/kumiko_ncr_bulletproof(src)
+	new	/obj/item/modkit/kumiko_ncr_plate_carrier(src)
+	new	/obj/item/modkit/kumiko_ncr_plate_carrier(src)
+	new	/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet(src)
+	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
+	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)

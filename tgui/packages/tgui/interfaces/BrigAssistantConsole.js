@@ -223,7 +223,7 @@ const FineRow = (props) => {
                 width="80px"
                 value={amount}
                 onInput={(e, v) => {
-                  const parsed = parseInt(v) || minPay;
+                  const parsed = parseInt(v, 10) || minPay;
                   const clamped = Math.max(minPay, Math.min(fine.fine, parsed));
                   setAmount(clamped);
                 }}
