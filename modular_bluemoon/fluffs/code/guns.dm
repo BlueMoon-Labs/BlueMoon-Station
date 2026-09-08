@@ -1942,6 +1942,7 @@
 	. = ..()
 	if(.)
 		icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+		icon_state = "DB-SO"
 		name = "Sawn-Off Nebula Workshop's 'Original Guilt'"
 		update_icon()
 

@@ -135,6 +135,7 @@
 	desc = "Измененный и переделанный боевой ребризер ранней серии «Star Dust», некогда поставлявшийся ополчению Небулы и бойцам запаса Конкорда. Конструктивное отличие этой старой модели — дыхательные пазухи, расположенные по всему внешнему ободу корпуса, а не у основания, как на современных образцах. В отличие от фабричного оригинала, предназначенного для распыления аэрозольных медикаментов, этот прибор полностью заглушен. Его корпус запечатан глухими заглушками, намертво изолируя дыхательные пути пользователя от окружающей среды и превращая медицинское устройство в сугубо защитную маску."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "melatonin_gasmask"
 	alternate_worn_layer = BACK_LAYER
 	flags_inv = HIDEFACE|HIDESNOUT

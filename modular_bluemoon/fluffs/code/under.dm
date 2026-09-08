@@ -1095,7 +1095,7 @@
 		return
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 6) // просьба, дабы не конфликтовала с плитой/курткой
 	icon_state = "melatonin-uniform-[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()

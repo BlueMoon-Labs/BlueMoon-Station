@@ -963,6 +963,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "melatonin-carrier-coat-0"
+	body_parts_covered = CHEST|GROIN|ARMS
 	unique_reskin = list()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/equipped(mob/user, slot)
