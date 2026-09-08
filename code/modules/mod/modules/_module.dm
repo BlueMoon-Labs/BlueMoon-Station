@@ -61,9 +61,6 @@
 		return
 	if(ispath(device))
 		device = new device(src)
-		ADD_TRAIT(device, TRAIT_NODROP, MOD_TRAIT)
-		RegisterSignal(device, COMSIG_PARENT_PREQDELETED, PROC_REF(on_device_deletion))
-		RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 
 /obj/item/mod/module/Destroy()
 	mod?.uninstall(src, deleting = TRUE)
@@ -90,6 +87,10 @@
 
 /// Called from MODsuit's install() proc, so when the module is installed.
 /obj/item/mod/module/proc/on_install()
+	if(module_type == MODULE_ACTIVE)
+		if(!my_retract_component && device)
+			my_retract_component = AddComponent(/datum/component/mod_retractable, device = device, modsuit = mod, retract_sound = my_retract_sound)
+
 	if(required_modpart_index)
 		required_modpart = mod.get_mod_part_by_index(required_modpart_index)
 		required_modpart?.link_modpart_with_module(src)
@@ -97,6 +98,9 @@
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
 /obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
+	if(my_retract_component)
+		my_retract_component.RemoveComponent()
+		qdel(my_retract_component)
 	if(required_modpart)
 		required_modpart.linked_modules -= src
 		required_modpart = null
@@ -165,14 +169,9 @@
 		if(mod.selected_module && !mod.selected_module.on_deactivation())
 			return
 		mod.selected_module = src
-		if(device)
-			if(mod.wearer.put_in_hands(device))
-				mod.balloon_alert(mod.wearer, "[device] выдвинут")
-				RegisterSignal(mod.wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
-			else
-				mod.balloon_alert(mod.wearer, "невозможно выдвинуть [device]!")
-				return
-		else
+		if(my_retract_component)
+			SEND_SIGNAL(my_retract_component, COMSIG_MODULE_ON_USE, src, mod.wearer)
+		if(!device)
 			update_signal()
 			mod.balloon_alert(mod.wearer, "[src] активирован. Нажмите Alt+click по цели, чтобы использовать")
 	active = TRUE
@@ -184,19 +183,17 @@
 	active = FALSE
 	if(module_type == MODULE_ACTIVE)
 		mod.selected_module = null
+		mod.balloon_alert(mod.wearer, "[src] деактивирован")
+		used_signal = null
 		if(device)
-			mod.wearer.transferItemToLoc(device, src, TRUE)
-			mod.balloon_alert(mod.wearer, "[device] выдвинут")
-			UnregisterSignal(mod.wearer, COMSIG_ATOM_EXITED)
-		else
-			mod.balloon_alert(mod.wearer, "[src] деактивирован")
-			UnregisterSignal(mod.wearer, used_signal)
-			used_signal = null
+			my_retract_component.snap_back()
 	mod.wearer.update_inv_back()
 	return TRUE
 
 /// Called when the module is used
 /obj/item/mod/module/proc/on_use()
+	if(!mod.wearer)
+		return
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		return FALSE
 	if(!check_power(use_power_cost))
@@ -269,19 +266,6 @@
 /// Receives configure edits from the TGUI and edits the vars
 /obj/item/mod/module/proc/configure_edit(key, value)
 	return
-
-/// Called when the device moves to a different place on active modules
-/obj/item/mod/module/proc/on_exit(datum/source, atom/movable/part, direction)
-	SIGNAL_HANDLER
-
-	if(!active)
-		return
-	if(part.loc == src)
-		return
-	if(part.loc == mod.wearer)
-		return
-	if(part == device)
-		on_deactivation()
 
 /// Called when the device gets deleted on active modules
 /obj/item/mod/module/proc/on_device_deletion(datum/source)
