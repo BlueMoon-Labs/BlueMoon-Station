@@ -49,6 +49,7 @@
 	desc = "An advanced suit that will protect you from space and other threats."
 	slowdown = 0
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 50, FIRE = 75, ACID = 65, WOUND = 35)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/exploration
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
@@ -70,6 +71,7 @@
 	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 35, BOMB = 25, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 

@@ -131,6 +131,14 @@
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 45
+	ricochet_auto_aim_range = 8
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1 //рикошеты для каждого!
+
 
 /obj/item/projectile/bullet/pellet/Range()
 	..()

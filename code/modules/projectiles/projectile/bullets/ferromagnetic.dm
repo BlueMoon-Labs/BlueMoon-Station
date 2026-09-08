@@ -1,6 +1,6 @@
 /obj/item/projectile/bullet/magnetic
 	icon_state = "magjectile"
-	damage = 25
+	damage = 20
 	armour_penetration = BULLET_BR9
 	fired_light_range = 3
 	pixels_per_second = TILES_TO_PIXELS(16.667)
@@ -15,7 +15,7 @@
 	fired_light_color = LIGHT_COLOR_BLUE
 
 /obj/item/projectile/bullet/magnetic/weak
-	damage = 18
+	damage = 17.5
 	armour_penetration = BULLET_BR7
 	fired_light_range = 2
 	range = 25

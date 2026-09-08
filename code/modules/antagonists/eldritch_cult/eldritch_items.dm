@@ -232,8 +232,19 @@
 	hoodtype = /obj/item/clothing/head/hooded/cult_hoodie/eldritch
 	// slightly better than normal cult robes
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50,ENERGY = 50, BOMB = 35, BIO = 20, RAD = 0, FIRE = 20, ACID = 20)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD - балахон теперь реально превосходит бронежилет
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_screams = BLOOD_SCREAMS
+
+/obj/item/clothing/suit/hooded/cultrobes/eldritch/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/hooded/cultrobes/eldritch/dropped(mob/user)
+	. = ..()
+	if(brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 
 /obj/item/reagent_containers/glass/beaker/eldritch
 	name = "Фляжка с древней эссенцией"

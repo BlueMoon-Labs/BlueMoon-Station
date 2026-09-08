@@ -122,8 +122,8 @@
 		// BLUEMOON ADD START - Проверка пробития BR/BRC.
 		// Пуля пробивает навылет, только если снимает И BR-бакет (остаточная броня armor уже = 0),
 		// И BRC-бакет (AP >= brc_mitigation).
-		// Если формально не пробила — конвертация урона 55/45: 55% урона уходит в стамину,
-		// 45% так и остаётся HP-уроном. При провале AP-чека срабатывает
+		// Если формально не пробила — конвертация урона 70/30: 70% урона уходит в стамину,
+		// 30% так и остаётся HP-уроном. При провале AP-чека срабатывает
 		// прок полного пробития по разнице уровней BR пули и BRC брони (см. ниже).
 		var/penetrated = TRUE
 		if(P.flag == BULLET)
@@ -142,8 +142,8 @@
 			// BLUEMOON ADD END
 
 		if(!penetrated && P.flag == BULLET && totaldamage >= 1.0)
-			var/kinetic_stam = totaldamage * 0.55
-			totaldamage = totaldamage * 0.45
+			var/kinetic_stam = totaldamage * 0.70
+			totaldamage = totaldamage * 0.30
 			if(kinetic_stam >= 1.0)
 				apply_damage(kinetic_stam, STAMINA, def_zone, 0)
 		// BLUEMOON ADD END

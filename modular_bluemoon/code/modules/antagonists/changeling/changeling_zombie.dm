@@ -263,6 +263,7 @@
 
 /obj/item/clothing/suit/armor/changeling/weak
 	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/changeling/weak
 	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
