@@ -45,6 +45,31 @@
 	name = "Xenomorph Tail"
 	icon_state = "xeno"
 
+/datum/sprite_accessory/xeno_tail/boiler
+	name = "Xenomorph Boiler Tail"
+	icon_state = "boiler_tail"
+
+/datum/sprite_accessory/xeno_tail/predalien
+	name = "Xenomorph Predalien Tail"
+	icon_state = "predalien_tail"
+
+/datum/sprite_accessory/xeno_tail/pretor
+	name = "Xenomorph Pretor Tail"
+	icon_state = "pretor_tail"
+
+/datum/sprite_accessory/xeno_tail/prowler
+	name = "Xenomorph Prowler Tail"
+	icon_state = "prowler_tail"
+
+/datum/sprite_accessory/xeno_tail/queen
+	name = "Xenomorph Queen Tail"
+	icon_state = "queen_tail"
+
+/datum/sprite_accessory/xeno_tail/runner
+	name = "Xenomorph Runner Tail"
+	icon_state = "runner_tail"
+
+
 /datum/sprite_accessory/tails/mam_tails/xeno
 	name = "Xenomorph Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
