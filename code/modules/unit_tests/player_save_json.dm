@@ -2,6 +2,7 @@
 	var/test_path
 	var/datum/player_save_json/storage
 	var/datum/preferences/owned_preferences
+	var/list/saved_roundstart_race_names
 
 /datum/unit_test/player_save_json/Run()
 	var/savefile/empty = prepare()
@@ -18,6 +19,8 @@
 	return storage.open()
 
 /datum/unit_test/player_save_json/Destroy()
+	if(!isnull(saved_roundstart_race_names))
+		GLOB.roundstart_race_names = saved_roundstart_race_names
 	if(owned_preferences)
 		owned_preferences.path = null
 	for(var/suffix in list("", ".json", ".json.recovery", ".json.import"))
@@ -31,6 +34,11 @@
 	allocated += owned_preferences
 	owned_preferences.path = test_path
 	return owned_preferences
+
+/// Минимальный конфиг CI не задаёт доступные виды для редактора персонажа.
+/datum/unit_test/player_save_json/proc/prepare_transfer_species()
+	saved_roundstart_race_names = GLOB.roundstart_race_names
+	GLOB.roundstart_race_names = list("Human" = SPECIES_HUMAN)
 
 /// Сравниваем содержимое узлов, не завися от порядка полей JSON-объекта.
 /datum/unit_test/player_save_json/proc/patch_difference(list/expected, list/actual)
@@ -419,6 +427,7 @@
 
 /datum/unit_test/player_save_json/public_transfer/Run()
 	prepare()
+	prepare_transfer_species()
 	var/datum/preferences/prefs = new
 	allocated += prefs
 	prefs.path = test_path
@@ -593,13 +602,18 @@
 
 /datum/unit_test/player_save_json/public_transfer_access/Run()
 	prepare()
+	prepare_transfer_species()
 	var/datum/preferences/prefs = new
 	allocated += prefs
 	prefs.path = test_path
 	prefs.real_name = "Protected Character"
 	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
 	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
-	var/rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("all_quirks" = player_save_encode_value(list("Nonexistent Quirk")))))
+	var/rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("species" = SPECIES_LIZARD)))
+	TEST_ASSERT(!prefs.import_character_json(rejected), "импорт открыл недоступный в редакторе вид")
+	TEST_ASSERT_EQUAL(prefs.player_transfer_error, "Этот вид недоступен в редакторе персонажа", "импорт отклонён не из-за ограничения вида")
+	TEST_ASSERT_EQUAL(prefs.pref_species.id, SPECIES_HUMAN, "отказ изменил вид персонажа")
+	rejected = json_encode(list("format" = "bluemoon-character", "version" = 1, "fields" = list("all_quirks" = player_save_encode_value(list("Nonexistent Quirk")))))
 	TEST_ASSERT(!prefs.import_character_json(rejected), "принят несуществующий квирк")
 	var/datum/gear/locked
 	for(var/category in GLOB.loadout_items)
@@ -645,6 +659,7 @@
 
 /datum/unit_test/player_save_json/public_transfer_account_limit/Run()
 	prepare()
+	prepare_transfer_species()
 	var/datum/preferences/transfer_staging/prefs = new
 	allocated += prefs
 	var/base_limit = prefs.get_custom_interaction_limit()
