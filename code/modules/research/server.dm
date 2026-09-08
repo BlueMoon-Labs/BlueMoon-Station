@@ -91,11 +91,14 @@
 			return TRUE
 		stored_research = new_web
 		to_chat(user, span_notice("Вы подключаете сервер к [new_web.organization]."))
-	else if(!tool.buffer && stored_research)
-		tool.buffer = stored_research
-		to_chat(user, span_notice("Вы сохраняете базу данных исследований [stored_research.organization] в буфер мультитула."))
+	else if(!tool.buffer)
+		if(stored_research)
+			tool.buffer = stored_research
+			to_chat(user, span_notice("Вы сохраняете базу данных исследований [stored_research.organization] в буфер мультитула."))
+		else
+			to_chat(user, span_notice("Сервер не подключён ни к одной исследовательской сети."))
 	else
-		return NONE
+		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
 	return TRUE
 //BLUEMOON ADD END
 
@@ -296,9 +299,11 @@
 				var/i = 1
 				for(var/obj/machinery/rnd/server/S in GLOB.machines)
 					var/turf/T = get_turf(S) // Ищем координаты
+					var/web_info = S.stored_research ? S.stored_research.organization : "НЕ ПОДКЛЮЧЕН"
 					dat += "[i]. Server: [uppertext(S.server_id)]<br>"
 					dat += "___Path: C:\\RND\\SERVER_[i]<br>"
 					dat += "___Income stream: <b>[S.income_gen]</b> RP/tick<br>"
+					dat += "___Research network: <b>[web_info]</b><br>"
 					dat += "___Server location: ([T.x], [T.y], [T.z])<br><br>"
 					i++
 				dat += "Total servers detected: <b>[total_servers]</b><br>"

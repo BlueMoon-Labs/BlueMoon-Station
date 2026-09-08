@@ -244,7 +244,13 @@ Nothing else in the console has ID requirements.
 		return TRUE
 	var/lathe = linked_lathe && linked_lathe.multitool_act(user, I)
 	var/print = linked_imprinter && linked_imprinter.multitool_act(user, I)
-	return lathe || print
+	if(lathe || print)
+		return TRUE
+	if(I.buffer)
+		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
+	else if(!stored_research)
+		to_chat(user, span_notice("Консоль не подключена ни к одной исследовательской сети."))
+	return TRUE
 
 /obj/machinery/computer/rdconsole/ui_interact(mob/user, datum/tgui/ui = null)
 	ui = SStgui.try_update_ui(user, src, ui)

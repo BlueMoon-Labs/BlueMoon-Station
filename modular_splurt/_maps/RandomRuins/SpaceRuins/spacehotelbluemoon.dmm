@@ -2875,7 +2875,7 @@
 	},
 /obj/machinery/computer/rdconsole/production{
 	dir = 2;
-	network_id = science
+	network_id = "science"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
@@ -5434,7 +5434,7 @@
 	dir = 1
 	},
 /obj/machinery/rnd/production/protolathe/department/service{
-	network_id = science
+	network_id = "science"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
@@ -6614,7 +6614,7 @@
 	dir = 1
 	},
 /obj/machinery/rnd/production/circuit_imprinter/department/science{
-	network_id = science
+	network_id = "science"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)

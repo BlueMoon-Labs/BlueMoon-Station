@@ -81,7 +81,7 @@
 		tool.buffer = host_research
 		to_chat(user, span_notice("Вы сохраняете базу данных исследований [host_research.organization] в буфер мультитула."))
 	else
-		return NONE
+		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
 	return TRUE
 //BLUEMOON ADD END
 
