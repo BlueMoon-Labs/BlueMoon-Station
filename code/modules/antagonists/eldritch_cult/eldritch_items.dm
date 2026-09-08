@@ -291,7 +291,7 @@
 	else
 		to_chat(carbon_user,"<span class='danger'>Не могу натянуть капюшон на голову!</span>")
 
-/obj/item/clothing/mask/void_mask
+/obj/item/clothing/mask/gas/void_mask
 	name = "Маска бездны"
 	desc = "Маска, созданная из всевозможных страданий живых существ, вы можете посмотреть в ее глаза и заметить, что что-то смотрит в ответ."
 	icon_state = "mad_mask"
@@ -303,7 +303,7 @@
 	///Who is wearing this
 	var/mob/living/carbon/human/local_user
 
-/obj/item/clothing/mask/void_mask/equipped(mob/user, slot)
+/obj/item/clothing/mask/gas/void_mask/equipped(mob/user, slot)
 	. = ..()
 	if(ishuman(user) && user.mind && slot == ITEM_SLOT_MASK)
 		local_user = user
@@ -313,13 +313,13 @@
 			return
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
-/obj/item/clothing/mask/void_mask/dropped(mob/M)
+/obj/item/clothing/mask/gas/void_mask/dropped(mob/M)
 	local_user = null
 	STOP_PROCESSING(SSobj, src)
 	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 	return ..()
 
-/obj/item/clothing/mask/void_mask/process(delta_time)
+/obj/item/clothing/mask/gas/void_mask/process(delta_time)
 	if(!local_user)
 		return PROCESS_KILL
 
