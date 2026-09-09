@@ -1,4 +1,4 @@
-//#define LOWMEMORYMODE //uncomment this to load centcom and runtime station and thats it.
+#define LOWMEMORYMODE //uncomment this to load centcom and runtime station and thats it.
 
 //#define ABSOLUTE_MINIMUM_MODE //uncomment this to skip as many resource intensive ops as possible to load in for testing the fastest while preserving most gameplay features.
 

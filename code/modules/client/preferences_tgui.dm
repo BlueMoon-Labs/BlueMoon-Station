@@ -121,6 +121,7 @@
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
 	.["disable_combat_mouse_lock"] = disable_combat_mouse_lock
+	.["smartlink"] = smartlink
 
 	// Screenshake
 	.["screenshake"] = screenshake
@@ -478,8 +479,14 @@
 					dirty_var = "disable_combat_cursor"
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
+<<<<<<< Updated upstream
 					dirty_var = "disable_combat_mouse_lock"
 			save_pref_var(dirty_var)
+=======
+				if("smartlink")
+					smartlink = !smartlink
+			save_preferences()
+>>>>>>> Stashed changes
 			return TRUE
 
 		// Antag role toggles
