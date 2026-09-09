@@ -15,7 +15,7 @@
 	description = "Using bluespace to make things faster and better."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SUPPLY, RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("bluespace_basic", "engineering")
-	design_ids = list("bs_rped","biobag_holding","minerbag_holding", "bluespacebeaker", "bluespacesyringe", "phasic_scanning", "bluespacesmartdart", "bluespace_tray", "m_warp_beacon") // BLUEMOON REMOIVAL of "light_replacer_blue" to /datum/techweb_node/janitor/bspspray
+	design_ids = list("bs_rped", "biobag_holding", "minerbag_holding", "bluespacebeaker", "hypovial_bs", "large_hypovial_bs", "bluespacesyringe", "phasic_scanning", "bluespacesmartdart", "bluespace_tray", "m_warp_beacon") // BLUEMOON REMOIVAL of "light_replacer_blue" to /datum/techweb_node/janitor/bspspray
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/adv_bluespace

@@ -301,6 +301,7 @@
 	id = /datum/reagent/medicine/tricordrazine
 	results = list(/datum/reagent/medicine/tricordrazine = 3)
 	required_reagents = list(/datum/reagent/medicine/bicaridine = 1, /datum/reagent/medicine/kelotane = 1, /datum/reagent/medicine/antitoxin = 1)
+	required_temp = 480
 
 /datum/chemical_reaction/regen_jelly
 	name = "Regenerative Jelly"

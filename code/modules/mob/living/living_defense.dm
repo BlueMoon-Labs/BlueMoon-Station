@@ -102,6 +102,9 @@
 			totaldamage *= 0.75
 	// BLUEMOON ADD END
 
+	if(P.damage_type == STAMINA && HAS_TRAIT(src, TRAIT_DISABLER_RESISTANCE))
+		totaldamage = -totaldamage
+
 	if(!P.nodamage)
 		// BLUEMOON ADD START - GAMMA two-bucket damage formula with randomization
 		// Bucket 1: BR% — стандартная броня с рандомом ±30%

@@ -324,6 +324,8 @@
 
 /obj/machinery/hydroponics/proc/update_icon_plant()
 	var/mutable_appearance/plant_overlay = mutable_appearance(myseed.growing_icon, layer = OBJ_LAYER + 0.01)
+	if(myseed.growing_icon_offset_y)
+		plant_overlay.pixel_y = myseed.growing_icon_offset_y
 	if(dead)
 		plant_overlay.icon_state = myseed.icon_dead
 	else if(harvest)
