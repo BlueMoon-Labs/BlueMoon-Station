@@ -1,3 +1,6 @@
+#define FUGITIVE_MIN_GROUP_SIZE 4
+#define FUGITIVE_WALDO_CHANCE 30
+
 /datum/round_event_control/fugitives
 	name = "Spawn Fugitives"
 	typepath = /datum/round_event/ghost_role/fugitives
@@ -69,11 +72,11 @@
 	var/list/backstories = list()
 	if(candidate_count <= 0)
 		return backstories
-	if(candidate_count < 4)
+	if(candidate_count < FUGITIVE_MIN_GROUP_SIZE)
 		backstories += "waldo"
 		return backstories
 	backstories += list("prisoner", "cultist", "synth")
-	if(prob(30))
+	if(prob(FUGITIVE_WALDO_CHANCE))
 		backstories += "waldo"
 	return backstories
 
@@ -131,3 +134,6 @@
 	if(!ship.load(T))
 		CRASH("Loading [backstory] ship failed!")
 	priority_announce("Неизвестный корабль обнаружен недалеко от станции.")
+
+#undef FUGITIVE_MIN_GROUP_SIZE
+#undef FUGITIVE_WALDO_CHANCE
