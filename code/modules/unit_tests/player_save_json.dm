@@ -236,6 +236,31 @@
 	TEST_ASSERT_NULL(storage.open(), "будущий формат заменён предыдущим поколением")
 	TEST_ASSERT(!storage.commit(source), "будущий формат разрешено перезаписать")
 
+/datum/unit_test/player_save_json/sound_toggles_roundtrip/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["sound_toggles"] << SOUND_BUTTONS
+	legacy.Flush()
+	legacy = null
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки SAV")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, SOUND_BUTTONS, "из SAV не загружен звук кнопок")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "настройки не перенесены в JSON")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил исходный SAV")
+	prefs.player_save_storage = null
+	prefs.sound_toggles = NONE
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, SOUND_BUTTONS, "полная запись JSON потеряла звук кнопок")
+	prefs.sound_toggles = NONE
+	prefs.save_pref_var("sound_toggles")
+	TEST_ASSERT(prefs.flush_single_prefs(), "не записано отключение звука кнопок")
+	prefs.player_save_storage = null
+	prefs.sound_toggles = SOUND_BUTTONS
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитан JSON после одиночной записи")
+	TEST_ASSERT_EQUAL(prefs.sound_toggles, NONE, "одиночная запись не сохранила отключение звука кнопок")
+
 /datum/unit_test/player_save_json/preferences_modules_and_delete/Run()
 	prepare()
 	var/datum/preferences/prefs = new

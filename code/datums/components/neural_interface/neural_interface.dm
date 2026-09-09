@@ -239,7 +239,7 @@ proc/string_repeat(string, count)
 
 /datum/component/neural_interface/proc/on_relay_data(datum/source, signal, force, radius = 15, ...)
 	var/list/arguments = args.Copy()
-	arguments.Remove(2, 3, 4)
+	arguments.Cut(2, 5)
 	if(!force && isatom(source) && get_dist(get_turf(source), get_turf(host_mob)) > radius)
 		return FALSE
 	return src._SendSignal(signal, arguments)
