@@ -1741,6 +1741,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	// BLUEMOON ADD START отстегавание с опер стола.
 	if(target.buckled && (istype(target.buckled, /obj/structure/table/optable) || istype(target.buckled, /obj/machinery/stasis)))
 		target.buckled.user_unbuckle_mob(target, user)
+	// BLUEMOON ADD START - щит/стойка блокирует любые попытки схватить
+	if(target.can_block_grab_attempt(user))
+		log_combat(user, target, "attempted to grab")
+		return FALSE
 	// BLUEMOON ADD END
 	if(target.check_martial_melee_block())
 		target.visible_message("<span class='warning'>[target] blocks [user]'s grab attempt!</span>", target = user, \
