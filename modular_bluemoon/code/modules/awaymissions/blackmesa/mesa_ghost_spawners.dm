@@ -7,17 +7,78 @@
 	density = TRUE
 	roundstart = FALSE
 	death = FALSE
+	uses = 1
+	permanent = FALSE
+	can_load_appearance = TRUE
 	outfit = /datum/outfit/science_team
 	short_desc = "Ты являешься одним из немногих выживших после инцидента в чёрной мезе"
 	flavour_text = "Ты старший научный научный сотрудник сектора H. Недавно тебя повысили в должности, перенаправив в этот сектор, но что-то пошло не так. Исходя из оповещений BMAS, По всему сектору начались портальные штормы. По этому вы, засев в одном из кабинетов, ждёте помощи."
-	important_info = "(ПРИ ИСПОЛЬЗОВАНИИ АКТУАЛИЗАТОРА СТРОГО ЗАПРЕЩЕНО ВЫБИРАТЬ ЛЮБУЮ ДРУГУЮ РАСУ КРОМЕ ЧЕЛОВЕКА. ПРИ НАРУШЕНИЯХ ИЛИ ОШИБКАХ ПРОСЬБА ОБРАТИТСЯ К АДМИНИСТРАЦИИ) Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
+	important_info = "Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
 	category = "offstation"
 	faction = list(FACTION_BLACKMESA)
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	color = "#9a74ac"
+	var/restricted_species = "human" // Ограничение расы для этого спавнера. Если null - без ограничений
+	var/skip_species_check = FALSE // Флаг для пропуска проверки расы при спавне случайного персонажа
+
+/obj/effect/mob_spawn/human/black_mesa/allow_spawn(mob/user, silent = FALSE)
+	. = ..()
+	if(!. || !restricted_species)
+		return .
+	if(skip_species_check)
+		return TRUE
+	if(!user.client || !user.client.prefs)
+		return .
+	var/datum/species/user_species = user.client.prefs.pref_species
+	if(!user_species)
+		return .
+	if(initial(user_species.id) != restricted_species)
+		if(!silent)
+			to_chat(user, span_warning("Этот гост-роль разрешает только расу: [restricted_species]. Ваша текущая раса: [initial(user_species.name)]."))
+		return FALSE
+	return TRUE
+
+/obj/effect/mob_spawn/human/black_mesa/attack_ghost(mob/user, latejoinercalling)
+	if(!user || !user.client || !user.client.prefs || !restricted_species)
+		return ..()
+	var/datum/species/user_species = user.client.prefs.pref_species
+	if(!user_species)
+		return ..()
+	if(initial(user_species.id) != restricted_species)
+		var/warning = tgui_alert(user, "Этот гост-роль разрешает только расу: [restricted_species]. Ваша текущая раса: [initial(user_species.name)].\n\nВы хотите зайти за случайно сгенерированного персонажа расы [restricted_species]?", "Ограничение расы", list("Да", "Нет"))
+		if(warning != "Да")
+			return
+		// Skip species check and force random character generation by directly calling create
+		skip_species_check = TRUE
+		var/original_can_load = can_load_appearance
+		can_load_appearance = FALSE
+		// Directly call create to avoid double dialog
+		if(!uses)
+			to_chat(user, "<span class='warning'>This spawner is out of charges!</span>")
+			skip_species_check = FALSE
+			can_load_appearance = original_can_load
+			return
+		if(QDELETED(src) || QDELETED(user))
+			skip_species_check = FALSE
+			can_load_appearance = original_can_load
+			return
+		if(latejoinercalling)
+			var/mob/dead/new_player/NP = user
+			if(istype(NP))
+				NP.close_spawn_windows()
+				NP.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+		log_game("[key_name(user)] становится [name]!")
+		create(ckey = user.ckey, load_character = FALSE)
+		can_load_appearance = original_can_load
+		skip_species_check = FALSE
+		return
+	// Если раса совпадает - просто вызываем родительский метод без изменений (позволяет загрузить своего персонажа)
+	return ..()
 
 /obj/effect/mob_spawn/human/black_mesa/special(mob/living/carbon/human/spawned_human)
 	. = ..()
+	if(!spawned_human)
+		return
 	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
 	spawned_human.remove_language(/datum/language/common)
 
@@ -44,11 +105,9 @@
 	short_desc = "Ты являешься выжившим охранником чёрной мезы"
 	flavour_text = "Ты один из охранников Чёрной Мезы, а конкретно Сектора H. Твоя работа была размеренной и спокойной, но что-то пошло не так. Теперь ты, оставшись со своим напарником, лежишь без сознания в чудом уцелевшем КПП охраны"
 	color = "#656c8f"
-
-/obj/effect/mob_spawn/human/black_mesa/special(mob/living/carbon/human/spawned_human)
-	. = ..()
-	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
-	spawned_human.remove_language(/datum/language/common)
+	uses = 1
+	permanent = FALSE
+	restricted_species = "human"
 
 /datum/outfit/security_guard
 	name = "Black mesa guard"
@@ -101,18 +160,16 @@
 	density = TRUE
 	roundstart = FALSE
 	death = FALSE
+	uses = 1
+	permanent = FALSE
 	outfit = /datum/outfit/sectorhdirector
 	short_desc = "Вы являетесь главным директором Сектора H"
 	flavour_text = "Ты стоял на одной из высших должностей в Чёрной Мезе, пока в одном из секторов не случился каскадный резонанс с последующим портальным штормом. Ты инициировал эвакуацию большей части персонала. Но в последний момент, когда вы собирались покинуть свой кабинет, один из порталов отправил вас прямо в сердце сектора. Теперь же вам ничего не остаётся, кроме как ожидать помощи и попытаться привести в чувства оставшийся персонал"
-	important_info = "(ПРИ ИСПОЛЬЗОВАНИИ АКТУАЛИЗАТОРА СТРОГО ЗАПРЕЩЕНО ВЫБИРАТЬ ЛЮБУЮ ДРУГУЮ РАСУ КРОМЕ ЧЕЛОВЕКА. ПРИ НАРУШЕНИЯХ ИЛИ ОШИБКАХ ПРОСЬБА ОБРАТИТСЯ К АДМИНИСТРАЦИИ)Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
+	important_info = "Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу."
 	category = "offstation"
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
 	color = "#a2fcff"
-
-/obj/effect/mob_spawn/human/black_mesa/special(mob/living/carbon/human/spawned_human)
-	. = ..()
-	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
-	spawned_human.remove_language(/datum/language/common)
+	restricted_species = "human"
 
 /datum/outfit/sectorhdirector
 	name = "Sector H director"
@@ -139,15 +196,20 @@
 	outfit = /datum/outfit/hecu
 	short_desc = "Ты являешься, скорее всего, одним из немногих обычных пехотинцев, оставшихся в секторе H без какой либо поддержки со стороны правительства."
 	flavour_text = "Ваш отряд был направлен в Чёрную Мезу для оказания медицинской, инженерной и боевой помощи основным отрядам HECU. Но, к сожалению, с каждым часом ситуация становилась всё хуже. Ведь правительство, поняв, что посланные пехотинцы не справляются, решили их всех предательски убить. Всё, что вы смутно знаете о миссии, так это только то, что основная задача отрядов, которым вы помогали - устранять всех свидетелей? Но имеет ли это вес, когда вас бросили? Теперь ваша задача сейчас - окопаться в этом клятом лагере и или ждать помощи, или попытаться следовать приказу основных отрядов."
-	important_info = "(ПРИ ИСПОЛЬЗОВАНИИ АКТУАЛИЗАТОРА СТРОГО ЗАПРЕЩЕНО ВЫБИРАТЬ ЛЮБУЮ ДРУГУЮ РАСУ КРОМЕ ЧЕЛОВЕКА. ПРИ НАРУШЕНИЯХ ИЛИ ОШИБКАХ ПРОСЬБА ОБРАТИТСЯ К АДМИНИСТРАЦИИ) Не пытайтесь исследовать карту далее основного атриума, ангара с автобусами и вашего палаточного медицинского отдела ( не ломайте стены в комнаты, закрытые ключ картами). Вы можете покинуть гейт/исследовать его ТОЛЬКО В ТОМ СЛУЧАЕ, когда договоритесь с исследовательской командой. Если вы решили враждовать с исследователями, то вам после этого запрещено покидать гейт и как либо пытатся продвигатся далее по локации."
+	important_info = "Не пытайтесь исследовать карту далее основного атриума, ангара с автобусами и вашего палаточного медицинского отдела ( не ломайте стены в комнаты, закрытые ключ картами). Вы можете покинуть гейт/исследовать его ТОЛЬКО В ТОМ СЛУЧАЕ, когда договоритесь с исследовательской командой. Если вы решили враждовать с исследователями, то вам после этого запрещено покидать гейт и как либо пытатся продвигатся далее по локации."
 	roundstart = FALSE
 	death = FALSE
 	density = TRUE
+	uses = 1
+	permanent = FALSE
 	category = "offstation"
 	antagonist_type = /datum/antagonist/ghost_role/hecu
+	restricted_species = "human"
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/special(mob/living/carbon/human/spawned_human)
 	. = ..()
+	if(!spawned_human)
+		return
 	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/signlanguage, source = LANGUAGE_MIND)
@@ -167,9 +229,6 @@
 	outfit = /datum/outfit/hecu_engineer
 	short_desc = "Ты являешься профессиональным инженером небольшого отряда поддержки HECU."
 
-/obj/effect/mob_spawn/human/black_mesa/hecu/special(mob/living/carbon/human/spawned_human)
-	. = ..()
-	spawned_human.remove_language(/datum/language/common)
 
 /datum/outfit/hecu
 	name = "HECU grunt"
@@ -218,9 +277,7 @@
 /datum/outfit/hecu_breacher
 	name = "HECU breacher"
 	uniform = /obj/item/clothing/under/rank/security/officer/urban_camo
-	mask = /obj/item/clothing/mask/balaclava
-	head = /obj/item/clothing/head/helmet/hecu
-	glasses = /obj/item/clothing/glasses/hud/security/hecu_ski
+	head = /obj/item/clothing/head/helmet/balaclava
 	suit = /obj/item/clothing/suit/armor/hecu
 	gloves = /obj/item/clothing/gloves/combat
 	belt = /obj/item/storage/belt/bandolier
@@ -271,7 +328,7 @@
 	shoes = /obj/item/clothing/shoes/combat
 	l_pocket = /obj/item/grenade/smokebomb
 	r_pocket = /obj/item/binoculars
-	r_hand = /obj/item/gun/ballistic/automatic/mp5
+	r_hand = /obj/item/gun/ballistic/automatic/m16a4/mesa
 	back = /obj/item/storage/backpack/rucksack/green
 	backpack_contents = list(
 		/obj/item/storage/box/survival/radio,
@@ -280,6 +337,8 @@
 		/obj/item/book/granter/martial/cqc,
 		/obj/item/gun/ballistic/automatic/pistol/deagle,
 		/obj/item/ammo_box/magazine/m50,
+		/obj/item/ammo_box/magazine/m16/mesa,
+		/obj/item/ammo_box/magazine/m16/mesa,
 	)
 
 
@@ -292,19 +351,24 @@
 	new /obj/item/extinguisher/mini(src)
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/lost
-	name = "HECU lost grunt"
+	name = "HECU deserter"
 	outfit = /datum/outfit/losthecu
-	short_desc = "Ты являешься, скорее всего, одним из немногих обычных пехотинцев, оставшихся в секторе H без какой либо поддержки со стороны правительства."
-	flavour_text = "Ты был отправлен в Чёрную Мезу для выполнения особо важной миссии, но во время начала инструктажа на ваш конвой напали. Ты и немногие выжившие бежали, пока, в конце концов, все, кроме тебя, были убиты местной фауной и чёрными оперативниками. Оставшись один в полуразрушенном туннеле с минимумом боеприпасов и провианта, ты увидел яркий свет. Кажется, это твой шанс покинуть это место... Или нет?."
-	important_info = "(ПРИ ИСПОЛЬЗОВАНИИ АКТУАЛИЗАТОРА СТРОГО ЗАПРЕЩЕНО ВЫБИРАТЬ ЛЮБУЮ ДРУГУЮ РАСУ КРОМЕ ЧЕЛОВЕКА. ПРИ НАРУШЕНИЯХ ИЛИ ОШИБКАХ ПРОСЬБА ОБРАТИТСЯ К АДМИНИСТРАЦИИ) Вы можете начать исследовать свою локацию только по прошествию десяти минут (Начиная с начала смены). Но заходить дальше Гейтвея до того, как вы встретили исследователей, запрещено. Конфликтовать нежелательно, но если вы решили напасть на исследователей, то вам будет запрещено покинуть гейт и исследовать его дальше. Персонаж НИЧЕГО не знает о приказе на устранение свидетелей."
+	short_desc = "Ты являешься дезертиром который отбился от своей группы в ходе выполнения миссии в Чёрной Мезе и отказался исполнять преступный приказ"
+	flavour_text = "Вы являетесь обычным бойцом одного из многочисленных отрядов HECU, которые были направлены в мезу для зачисти свидетелей. Вместо исполнения приказа вы выждали подходящий момент и сбежали от своих напарников, которые были скоропостижно уничтожены инопланетными силами. Теперь вы находитесь в одной лодке с персоналом черной мезы, который также выжил после инцидента."
+	important_info = "Вы НЕ можете убивать учёных и другой персонал черной мезы без веской причины (В первую очередь вы являетесь их СОЮЗНИКОМ). Не пытайся исследовать комплекс до прибытия экспедиционной группы. В случае, когда прошло 20 минут от начала раунда, а исследователи так и не пришли, ты можешь постепенно продвигаться по комплексу. "
 	roundstart = FALSE
 	death = FALSE
 	density = TRUE
+	uses = 1
+	permanent = FALSE
 	category = "offstation"
 	antagonist_type = /datum/antagonist/ghost_role/losthecu
+	restricted_species = "human"
 
 /obj/effect/mob_spawn/human/black_mesa/hecu/lost/special(mob/living/carbon/human/spawned_human)
 	. = ..()
+	if(!spawned_human)
+		return
 	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/signlanguage, source = LANGUAGE_MIND)
@@ -320,15 +384,15 @@
 	shoes = /obj/item/clothing/shoes/combat
 	l_pocket = /obj/item/reagent_containers/food/drinks/flask
 	r_pocket = /obj/item/flashlight/flare
-	r_hand = /obj/item/gun/ballistic/automatic/m16a4/mesa
+	r_hand = /obj/item/gun/ballistic/revolver/hltaurus
 	back = /obj/item/storage/backpack/hecu
 	backpack_contents = list(
 		/obj/item/storage/box/survival/radio,
 		/obj/item/storage/ifak,
 		/obj/item/kitchen/knife/combat,
-		/obj/item/ammo_box/magazine/m16,
-		/obj/item/ammo_box/magazine/m16,
-		/obj/item/ammo_box/magazine/m16,
+		/obj/item/ammo_box/a357,
+		/obj/item/ammo_box/a357,
+		/obj/item/ammo_box/a357,
 	)
 
 //трупы
@@ -371,16 +435,21 @@
 	density = TRUE
 	roundstart = FALSE
 	death = FALSE
+	uses = 1
+	permanent = FALSE
 	faction = list(FACTION_BLACKOPS)
 	outfit = /datum/outfit/blackops
 	short_desc = "Ты являешься чудом попавшим в сектор H чёрным оперативником"
 	flavour_text = "Ваш отряд был отправлен для зачистки оставшихся отрядов HECU, но в один момент почти все ваши напарники были устранены. Теперь вас только двое, и вы буквально виживаете среди всего того происходящего хаоса, что окружает этот клятый сектор. Вам в любом случае плевать на весь этот низший персонал, если они только не будут угрожать вашей жизни."
-	important_info = "(ПРИ ИСПОЛЬЗОВАНИИ АКТУАЛИЗАТОРА СТРОГО ЗАПРЕЩЕНО ВЫБИРАТЬ ЛЮБУЮ ДРУГУЮ РАСУ КРОМЕ ЧЕЛОВЕКА. ПРИ НАРУШЕНИЯХ ИЛИ ОШИБКАХ ПРОСЬБА ОБРАТИТСЯ К АДМИНИСТРАЦИИ) Не пытайтесь исследовать карту далее основного атриума, комнат с туррелями ( не ломайте стены в комнаты, закрытые ключ картами/заболтироваными дверьми ). Вы можете покинуть гейт/исследовать его ТОЛЬКО В ТОМ СЛУЧАЕ, когда договоритесь с исследовательской командой. Если вы решили враждовать с исследователями, то вам после этого запрещено покидать гейт и как либо пытатся продвигатся далее по локации"
+	important_info = "Не пытайтесь исследовать карту далее основного атриума, комнат с туррелями ( не ломайте стены в комнаты, закрытые ключ картами/заболтироваными дверьми ). Вы можете покинуть гейт/исследовать его ТОЛЬКО В ТОМ СЛУЧАЕ, когда договоритесь с исследовательской командой. Если вы решили враждовать с исследователями, то вам после этого запрещено покидать гейт и как либо пытатся продвигатся далее по локации"
 	category = "offstation"
 	antagonist_type = /datum/antagonist/ghost_role/black_mesa
+	restricted_species = "human"
 
-/obj/effect/mob_spawn/human/black_mesa/hecu/special(mob/living/carbon/human/spawned_human)
+/obj/effect/mob_spawn/human/black_mesa/hecu/blackops/special(mob/living/carbon/human/spawned_human)
 	. = ..()
+	if(!spawned_human)
+		return
 	spawned_human.grant_language(/datum/language/modular_sand/solcommon, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 	spawned_human.grant_language(/datum/language/signlanguage, source = LANGUAGE_MIND)
@@ -401,9 +470,9 @@
 	r_hand = /obj/item/book/granter/martial/cqc
 
 /obj/item/storage/belt/military/assault/hecu/black/blackops/PopulateContents()
-	new /obj/item/ammo_box/magazine/m16(src)
-	new /obj/item/ammo_box/magazine/m16(src)
-	new /obj/item/ammo_box/magazine/m16(src)
+	new /obj/item/ammo_box/magazine/m16/mesa(src)
+	new /obj/item/ammo_box/magazine/m16/mesa(src)
+	new /obj/item/ammo_box/magazine/m16/mesa(src)
 	new /obj/item/reagent_containers/hypospray/combat/omnizine(src)
 	new /obj/item/storage/box/survival/radio(src,30,pick("red","yellow","orange"))
 	new /obj/item/kitchen/knife/combat(src)
