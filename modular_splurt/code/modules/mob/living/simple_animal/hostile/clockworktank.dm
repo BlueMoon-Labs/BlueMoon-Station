@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "tankclock"
 	icon_living = "tankclock"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 2

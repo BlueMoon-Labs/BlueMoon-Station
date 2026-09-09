@@ -95,7 +95,7 @@
 		gas_power += (fusion_powers[gas_id] * moderator_internal.get_moles(gas_id) * HFR_MODERATOR_GAS_POWER_FRAC)
 
 	instability = MODULUS((gas_power * INSTABILITY_GAS_POWER_FACTOR)**2, toroidal_size) + (current_damper * HFR_INSTABILITY_DAMPER_FACTOR) - iron_content * HFR_INSTABILITY_IRON_PENALTY
-	// Знак нестабильности: ниже порога эндотермичность (1), иначе экзотермичность (-1). Влияет на знак heat_output.
+	// Знак нестабильности: ниже порога реактор греет (+1), на пороге и выше - охлаждает (-1). Влияет на знак heat_output.
 	var/internal_instability = 0
 	if(instability * 0.5 < FUSION_INSTABILITY_ENDOTHERMALITY)
 		internal_instability = 1
@@ -195,6 +195,10 @@
 
 	var/common_production_amount = production_amount * selected_fuel.gas_production_multiplier
 	moderator_common_process(seconds_per_tick, common_production_amount, hfr_internal_output, hfr_moderator_list, dirty_production_rate, heat_output, radiation_modifier)
+	// hfr_internal_output очищается выше, в начале того же прохода, поэтому здесь
+	// лежит только свежий выхлоп: транзитный газ открытием не засчитается. Для
+	// заукера и антинобеля HFR - единственный источник помимо разряда супермтерии.
+	register_gas_synthesis_from_mixture(hfr_internal_output)
 
 /// Топливо: вычитаем из fusion по requirements, добавляем primary_products. В модератор по уровням (tier) добавляем вторичные продукты. Коэффициенты по уровням захардкожены.
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/moderator_fuel_process(seconds_per_tick, production_amount, consumption_amount, datum/gas_mixture/internal_output, moderator_list, datum/hfr_fuel/fuel, fuel_list)
@@ -404,10 +408,10 @@
 		last_overmole_damage = world.time
 
 	// Железо: на уровне >4 с вероятностью растёт; на уровне <=4 с вероятностью падает. Потом clamp в [0, max].
-	if(power_level > 4 && prob(IRON_CHANCE_PER_FUSION_LEVEL * power_level))
+	if(power_level > HFR_IRON_GROWTH_POWER_LEVEL && prob(IRON_CHANCE_PER_FUSION_LEVEL * power_level))
 		iron_content += IRON_ACCUMULATED_PER_SECOND * seconds_per_tick
 		warning_damage_flags |= HYPERTORUS_FLAG_IRON_CONTENT_INCREASE
-	if(iron_content > 0 && power_level <= 4 && prob(HFR_IRON_HEAL_CHANCE_DIVISOR / (power_level + 1)))
+	if(iron_content > 0 && power_level <= HFR_IRON_GROWTH_POWER_LEVEL && prob(HFR_IRON_HEAL_CHANCE_DIVISOR / (power_level + 1)))
 		iron_content = max(iron_content - HFR_IRON_DECAY_RATE * seconds_per_tick, 0)
 	iron_content = clamp(iron_content, 0, HFR_IRON_CONTENT_MAX)
 

@@ -54,6 +54,15 @@ would spawn and follow the beaker, even if it is carried or thrown.
 		if(total_effects > 20)
 			return
 		INVOKE_ASYNC(src, PROC_REF(generate_effect))
+	// Дыра в autocleanup: если не родился НИ ОДИН эффект (нет location - do_sparks() от
+	// источника вне турфа; или на турфе больше 200 объектов), то total_effects никто не
+	// увеличил и таймер на decrement_total_effect() никто не завёл - значит уборка не
+	// сработает никогда, и система, обещавшая убрать себя, останется висеть.
+	// Проверять можно прямо здесь: INVOKE_ASYNC крутит колбек синхронно до его первого
+	// сна, а total_effects++ в generate_effect() стоит ДО sleep(5), поэтому после цикла
+	// значение уже окончательное.
+	if(autocleanup && total_effects <= 0)
+		qdel(src)
 
 /datum/effect_system/proc/generate_effect()
 	if(holder)

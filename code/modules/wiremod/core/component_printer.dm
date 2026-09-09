@@ -34,7 +34,7 @@
 
 /obj/machinery/component_printer/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/component_printer/ui_act(action, list/params)
@@ -178,7 +178,7 @@
 
 /obj/machinery/debug_component_printer/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/debug_component_printer/ui_act(action, list/params)
@@ -246,7 +246,7 @@
 
 /obj/machinery/module_duplicator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/module_duplicator/ui_act(action, list/params)

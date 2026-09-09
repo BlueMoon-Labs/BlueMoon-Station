@@ -9,6 +9,9 @@
 	. = ..()
 	if(!client)
 		return
+	if(!client.disclaimer_shown && !client.prefs?.bm_disclaimer_accepted)
+		client.disclaimer_shown = TRUE
+		addtimer(CALLBACK(client, TYPE_PROC_REF(/client, show_disclaimer), TRUE), 2 SECONDS)
 	AddComponent(/datum/component/interaction_menu_granter)
 
 /mob/Logout()

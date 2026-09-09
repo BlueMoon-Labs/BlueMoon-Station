@@ -1,3 +1,11 @@
+/// Имя волнового фильтра лабебиума на плейн-мастере. Снимается по имени: обнуление
+/// filters у плейн-мастера сносит и его собственные фильтры - маску освещения, конус
+/// обзора, линзы сингулярности, ambient occlusion, - а восстановить их некому.
+#define LABEBIUM_WAVE_FILTER "labebium_wave"
+/// Приоритет выше нуля, чтобы волна ложилась поверх ambient occlusion, но ниже
+/// конуса обзора (vision_cone у плейн-мастера идёт со сотней).
+#define LABEBIUM_WAVE_FILTER_PRIORITY 50
+
 /datum/reagent/drug/zvezdochka
 	name = "Zvezdochka"
 	description = "Реверс-инжениринг версия старого советского психотропного вещества. По крайней мере попытка."
@@ -213,7 +221,15 @@
 		var/list/screens = list(C.hud_used.plane_masters["[FLOOR_PLANE]"], C.hud_used.plane_masters["[GAME_PLANE]"], C.hud_used.plane_masters["[LIGHTING_PLANE]"])
 		for(var/atom/movable/screen/plane_master/whole_screen in screens)
 			animate(whole_screen, transform = matrix(), pixel_x = 0, pixel_y = 0, color = "#ffffff", time = 200, easing = ELASTIC_EASING)
-			addtimer(VARSET_CALLBACK(whole_screen, filters, list()), 200) //reset filters
+			// remove_filter по ИМЕНИ, а не filters = list(). Плейн-мастер несёт свои
+			// собственные именованные фильтры - маску освещения, конус обзора,
+			// линзы сингулярности, ambient occlusion (см. plane_master.dm), - и
+			// обнуление списка сносило их все. Восстановить их некому: update_filters()
+			// у плейн-мастера сам по себе больше не зовётся.
+			// TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT: снятие по окончании метаболизма
+			// обязано ЗАМЕНИТЬ отложенное снятие, поставленное последней волной, а не встать
+			// рядом с ним. Хэш без wait - иначе таймеры с разной задержкой не схлопываются.
+			addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 20 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT)
 		to_chat(C, "<b><big>Неужели отпустило...</big></b>")
 
 //		if(C.client && current_cycle > 100)
@@ -320,10 +336,15 @@
 								animate(transform = turn(matrix(), -rotation), time = 100, easing = BACK_EASING)
 							if(prob(13))
 								H.Jitter(100)
-								whole_screen.filters += filter(type="wave", x=20*rand() - 20, y=20*rand() - 20, size=rand()*0.1, offset=rand()*0.5, flags = WAVE_BOUNDED)
+								// Параметры округляются: каждая уникальная матрица фильтра - это
+								// отдельный appearance, который клиент держит до конца сессии.
+								whole_screen.add_filter(LABEBIUM_WAVE_FILTER, LABEBIUM_WAVE_FILTER_PRIORITY, list(type="wave", x=round(20*rand() - 20, 1), y=round(20*rand() - 20, 1), size=round(rand()*0.1, 0.01), offset=round(rand()*0.5, 0.05), flags = WAVE_BOUNDED))
 								animate(whole_screen, transform = matrix()*2, time = 40, easing = BOUNCE_EASING)
-								addtimer(VARSET_CALLBACK(whole_screen, filters, list()), 1200)
-							addtimer(VARSET_CALLBACK(whole_screen, filters, list()), 600)
+								// Снятие ставится ТОЛЬКО сразу за add_filter и только поверх самого себя.
+								// Раньше рядом стоял ещё и безусловный таймер на 60 секунд - три штуки
+								// на каждый тик метаболизма, по одной на плейн-мастер, - и любой из них
+								// снимал фильтр, поставленный волной ПОЗЖЕ него.
+								addtimer(CALLBACK(whole_screen, TYPE_PROC_REF(/atom, remove_filter), LABEBIUM_WAVE_FILTER), 120 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT)
 					high_message = "ГОСПОДИ, НЕТ!!!"
 					create_flood(H)
 					create_ovosh(H)
@@ -470,3 +491,6 @@
 /obj/item/storage/pill_bottle/labebium/PopulateContents()
 	for(var/i in 1 to 7)
 		new /obj/item/reagent_containers/pill/labebium(src)
+
+#undef LABEBIUM_WAVE_FILTER
+#undef LABEBIUM_WAVE_FILTER_PRIORITY

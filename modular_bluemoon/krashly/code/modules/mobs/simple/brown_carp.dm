@@ -3,6 +3,7 @@
 	desc = "A ferocious, fang-bearing creature that resembles a fish."
 	icon = 'modular_bluemoon/krashly/icons/mob/simple_mob/brown_carp.dmi'
 	faction = list("carp", "InteQ")
+	playable_by_ghost = TRUE
 
 /mob/living/simple_animal/hostile/carp/brown/beret
 	name = "brown space carp with beret"

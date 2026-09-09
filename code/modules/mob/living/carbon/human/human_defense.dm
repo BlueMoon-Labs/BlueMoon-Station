@@ -126,9 +126,9 @@
 			hulk_verb_continous = "pummels"
 			hulk_verb_simple = "pummel"
 		playsound(loc, user.dna.species.attack_sound, 25, 1, -1)
-		visible_message("<span class='danger'>[user] [hulk_verb_continous] [src]!</span>", \
-						"<span class='userdanger'>[user] [hulk_verb_continous] you!</span>", null, COMBAT_MESSAGE_RANGE, null, user,
-						"<span class='danger'>You [hulk_verb_simple] [src]!</span>")
+		visible_message(span_danger("[user] [hulk_verb_continous] [src]!"), \
+						span_userdanger("[user] [hulk_verb_continous] you!"), null, COMBAT_MESSAGE_RANGE, null, user,
+						span_danger("You [hulk_verb_simple] [src]!"))
 		apply_damage(15, BRUTE, wound_bonus=10)
 		return TRUE
 
@@ -155,16 +155,16 @@
 		var/obj/item/I = get_active_held_item()
 		if(I && dropItemToGround(I))
 			playsound(loc, 'sound/weapons/slash.ogg', 25, 1, -1)
-			visible_message("<span class='danger'>[M] разоружает [src]!</span>", \
-					"<span class='userdanger'>[M] разоружил вас!</span>", null, COMBAT_MESSAGE_RANGE, null, M,
-					"<span class='danger'>Вы разоружили [src]!</span>")
+			visible_message(span_danger("[M] разоружает [src]!"), \
+					span_userdanger("[M] разоружил вас!"), null, COMBAT_MESSAGE_RANGE, null, M,
+					span_danger("Вы разоружили [src]!"))
 		else if(!M.client || prob(5)) // only natural monkeys get to stun reliably, (they only do it occasionaly)
 			playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
 			DefaultCombatKnockdown(100)
 			log_combat(M, src, "tackled")
-			visible_message("<span class='danger'>[M] повалил [src]!</span>", \
-				"<span class='userdanger'>[M] повалил вас!</span>", null, COMBAT_MESSAGE_RANGE, null, M,
-				"<span class='danger'>Вы повалили [src]!</span>")
+			visible_message(span_danger("[M] повалил [src]!"), \
+				span_userdanger("[M] повалил вас!"), null, COMBAT_MESSAGE_RANGE, null, M,
+				span_danger("Вы повалили [src]!"))
 
 	if(M.limb_destroyer)
 		dismembering_strike(M, affecting.body_zone)
@@ -185,9 +185,9 @@
 		var/damage = prob(90) ? M.meleeSlashHumanPower : 0
 		if(!damage)
 			playsound(loc, 'sound/weapons/slashmiss.ogg', 50, 1, -1)
-			visible_message("<span class='danger'>[M] has lunged at [src]!</span>", \
-				"<span class='userdanger'>[M] has lunged at you!</span>", target = M, \
-				target_message = "<span class='danger'>You have lunged at [src]!</span>")
+			visible_message(span_danger("[M] has lunged at [src]!"), \
+				span_userdanger("[M] has lunged at you!"), target = M, \
+				target_message = span_danger("You have lunged at [src]!"))
 			return FALSE
 		var/obj/item/bodypart/affecting = get_bodypart(ran_zone(M.zone_selected))
 		if(!affecting)
@@ -195,9 +195,9 @@
 		var/armor_block = run_armor_check(affecting, MELEE, null, null,10)
 
 		playsound(loc, 'sound/weapons/slice.ogg', 25, 1, -1)
-		visible_message("<span class='danger'>[M] has slashed at [src]!</span>", \
-			"<span class='userdanger'>[M] has slashed at you!</span>", target = M, \
-			target_message = "<span class='danger'>You have slashed at [src]!</span>")
+		visible_message(span_danger("[M] has slashed at [src]!"), \
+			span_userdanger("[M] has slashed at you!"), target = M, \
+			target_message = span_danger("You have slashed at [src]!"))
 		log_combat(M, src, "attacked")
 		if(!dismembering_strike(M, M.zone_selected)) //Dismemberment successful
 			return TRUE
@@ -207,16 +207,16 @@
 		var/obj/item/I = get_active_held_item()
 		if(I && dropItemToGround(I))
 			playsound(loc, 'sound/weapons/slash.ogg', 25, 1, -1)
-			visible_message("<span class='danger'>[M] has disarmed [src]!</span>", \
-					"<span class='userdanger'>[M] has disarmed you!</span>", target = M, \
-					target_message = "<span class='danger'>You have disarmed [src]!</span>")
+			visible_message(span_danger("[M] has disarmed [src]!"), \
+					span_userdanger("[M] has disarmed you!"), target = M, \
+					target_message = span_danger("You have disarmed [src]!"))
 		else
 			playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
 			DefaultCombatKnockdown(M.meleeKnockdownPower)
 			log_combat(M, src, "tackled")
-			visible_message("<span class='danger'>[M] has tackled down [src]!</span>", \
-				"<span class='userdanger'>[M] has tackled you down!</span>", target = M, \
-				target_message = "<span class='danger'>You have tackled down [src]!</span>")
+			visible_message(span_danger("[M] has tackled down [src]!"), \
+				span_userdanger("[M] has tackled you down!"), target = M, \
+				target_message = span_danger("You have tackled down [src]!"))
 
 /mob/living/carbon/human/attack_larva(mob/living/carbon/alien/larva/L)
 	. = ..()
@@ -628,7 +628,7 @@
 					var/msg
 					switch(W.severity)
 						if(WOUND_SEVERITY_TRIVIAL)
-							msg = "<span class='danger'>Она страдает от [lowertext(W.ru_name_r)].</span>\n"
+							msg = span_danger("Она страдает от [lowertext(W.ru_name_r)].\n")
 						if(WOUND_SEVERITY_MODERATE)
 							msg = "<span class='warning'>Она страдает от [lowertext(W.ru_name_r)]!</span>\n"
 						if(WOUND_SEVERITY_SEVERE)
@@ -657,7 +657,7 @@
 						bleeding_limbs += BP
 
 				var/num_bleeds = LAZYLEN(bleeding_limbs)
-				var/bleed_text = "<span class='danger'>У вас кровотечение в"
+				var/bleed_text = "У вас кровотечение в"
 				switch(num_bleeds)
 					if(1 to 2)
 						bleed_text += " [bleeding_limbs[1].ru_name_v][num_bleeds == 2 ? " and [bleeding_limbs[2].ru_name_v]" : ""]"
@@ -666,56 +666,87 @@
 							var/obj/item/bodypart/BP = bleeding_limbs[i]
 							bleed_text += " [BP.ru_name_v],"
 						bleed_text += " и [bleeding_limbs[num_bleeds].ru_name_v]"
-				bleed_text += "!</span>"
-				to_send += "\n[bleed_text]\n"
+				to_send += span_danger("\n[bleed_text]!\n")
+
+			var/robotic_user = isrobotic(src)
+
 			if(getStaminaLoss())
 				if(getStaminaLoss() > 30)
-					to_send += "<span class='info'>Вы полностью измотаны.</span>\n"
+					if(robotic_user)
+						to_send += span_info("Ресурс ваших сервоприводов исчерпан.\n")
+					else
+						to_send += span_info("Вы полностью измотаны.\n")
 				else
-					to_send += "<span class='info'>Вы чувствуете усталость.</span>\n"
+					if(robotic_user)
+						to_send += span_info("Вы чувствуете истощённость сервоприводных конденсаторов.\n")
+					else
+						to_send += span_info("Вы чувствуете усталость.\n")
 			if(HAS_TRAIT(src, TRAIT_SELF_AWARE))
-				if(toxloss)
-					if(toxloss > 10)
-						to_send += "<span class='danger'>Вам нехорошо.</span>\n"
-					else if(toxloss > 20)
-						to_send += "<span class='danger'>Вам становится очень плохо.</span>\n"
-					else if(toxloss > 40)
-						to_send += "<span class='danger'>Вы ощущаете тошноту!</span>\n"
-				if(oxyloss)
-					if(oxyloss > 10)
-						to_send += "<span class='danger'>У вас кружится голова.</span>\n"
-					else if(oxyloss > 20)
-						to_send += "<span class='danger'>У вас темнеет в глазах.</span>\n"
-					else if(oxyloss > 30)
-						to_send += "<span class='danger'>Вы задыхаетесь!</span>\n"
+				if(!robotic_user)
+					switch(toxloss)
+						if(10 to 19.99)
+							to_send += span_danger("Вы ощущаете тошноту.\n")
+						if(20 to 39.99)
+							to_send += span_danger("Вам становится очень плохо.\n")
+						if(40 to INFINITY)
+							to_send += span_danger("Вас складывает пополам и выворачивает наружу!\n")
+					switch(oxyloss)
+						if(10 to 19.99)
+							to_send += span_danger("У вас кружится голова.\n")
+						if(20 to 29.99)
+							to_send += span_danger("У вас темнеет в глазах.\n")
+						if(30 to INFINITY)
+							to_send += span_danger("Вы задыхаетесь!\n")
+				else
+					switch(toxloss)
+						if(10 to 19.99)
+							to_send += span_danger("Обнаружена коррозия контактов.\n")
+						if(20 to 39.99)
+							to_send += span_danger("Коррозия затронула глубины корпуса!\n")
+						if(40 to INFINITY)
+							to_send += span_danger("ВНИМАНИЕ: коррозия поразила позитронный мозг!\n")
 
-			switch(nutrition)
-				if(NUTRITION_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы объелись!</span>\n"
-				if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
-					to_send += "<span class='info'>Вы сыты!</span>\n"
-				if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
-					to_send += "<span class='info'>Вы не голодны.</span>\n"
-				if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
-					to_send += "<span class='info'>Вам бы перекусить.</span>\n"
-				if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
-					to_send += "<span class='info'>У вас ощутимый голод.</span>\n"
-				if(0 to NUTRITION_LEVEL_STARVING)
-					to_send += "<span class='danger'>Вы голодаете!</span>\n"
-
-			switch(thirst)
-				if(THIRST_LEVEL_FULL to INFINITY)
-					to_send += "<span class='info'>Вы переполнены водой!</span>\n"
-				if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
-					to_send += "<span class='info'>Вы напились.</span>\n"
-				if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
-					to_send += "<span class='info'>Вы не испытываете жажду.</span>\n"
-				if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
-					to_send += "<span class='info'>Вам не помешало бы промочить горло.</span>\n"
-				if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
-					to_send += "<span class='danger'>Вы ощущаете жажду!</span>\n"
-				if(0 to THIRST_LEVEL_PARCHED)
-					to_send += "<span class='danger'>У вас обезвоживание!</span>\n"
+			if(!robotic_user)
+				switch(nutrition)
+					if(NUTRITION_LEVEL_FULL to INFINITY)
+						to_send += span_info("Вы объелись!\n")
+					if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+						to_send += span_info("Вы сыты!\n")
+					if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
+						to_send += span_info("Вы не голодны.\n")
+					if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
+						to_send += span_info("Вам бы перекусить.\n")
+					if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+						to_send += span_info("У вас ощутимый голод.\n")
+					if(0 to NUTRITION_LEVEL_STARVING)
+						to_send += span_danger("Вы голодаете!\n")
+				switch(thirst)
+					if(THIRST_LEVEL_FULL to INFINITY)
+						to_send += span_info("Вы переполнены водой!\n")
+					if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+						to_send += span_info("Вы напились.\n")
+					if(THIRST_LEVEL_BIT_THIRSTY to THIRST_LEVEL_QUENCHED)
+						to_send += span_info("Вы не испытываете жажду.\n")
+					if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_BIT_THIRSTY)
+						to_send += span_info("Вам не помешало бы промочить горло.\n")
+					if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+						to_send += span_danger("Вы ощущаете жажду!\n")
+					if(0 to THIRST_LEVEL_PARCHED)
+						to_send += span_danger("У вас обезвоживание!\n")
+			else
+				switch(nutrition)
+					if(NUTRITION_LEVEL_FULL to INFINITY)
+						to_send += span_info("Батарея переполнена энергией!\n")
+					if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+						to_send += span_info("Батарея полностью заряжена!\n")
+					if(NUTRITION_LEVEL_FED to NUTRITION_LEVEL_WELL_FED)
+						to_send += span_info("Статус заряда: средний.\n")
+					if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_FED)
+						to_send += span_info("Рекомендуется зарядить батарею.\n")
+					if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+						to_send += span_info("Статус заряда: низкий.\n")
+					if(0 to NUTRITION_LEVEL_STARVING)
+						to_send += span_danger("ВНИМАНИЕ: критически мало заряда!\n")
 
 			//TODO: Convert these messages into vague messages, thereby encouraging actual dignosis.
 			//Compiles then shows the list of damaged organs and broken organs
@@ -759,10 +790,10 @@
 						//damaged_plural = TRUE
 				for(var/D in damaged)
 					damaged_message += D
-				to_send += "\n<span class='info'>Ваш орган - [damaged_message] - повреждён.</span>"
+				to_send += span_info("<div style='margin-top:6px'>Ваш орган - [damaged_message] - повреждён.</div>")
 
 			if(roundstart_quirks.len)
-				to_send += "\n<span class='notice'>У вас есть следующие особенности: [get_trait_string()].</span>"
+				to_send += span_notice("<div style='margin-top:6px'>У вас есть следующие особенности: [get_trait_string()].</div>")
 			//SPLURT edit
 			for(var/obj/item/organ/genital/G in internal_organs)
 				if(CHECK_BITFIELD(G.genital_flags, GENITAL_IMPOTENT))
@@ -872,7 +903,7 @@
 			var/msg
 			switch(W.severity)
 				if(WOUND_SEVERITY_TRIVIAL)
-					msg = "\t <span class='danger'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].</span>"
+					msg = span_danger("\t Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)].")
 				if(WOUND_SEVERITY_MODERATE)
 					msg = "\t <span class='warning'>Ваша [LB.ru_name] страдает от [lowertext(W.ru_name_r)]!</span>"
 				if(WOUND_SEVERITY_SEVERE)

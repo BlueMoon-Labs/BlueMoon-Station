@@ -10,6 +10,7 @@
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are starving."
 	icon_state = "chest_implant"
 	implant_color = "#00AA00"
+	aug_overlay = "nutripump"
 	var/hunger_threshold = NUTRITION_LEVEL_STARVING
 	var/synthesizing = 0
 	var/poison_amount = 5
@@ -45,6 +46,7 @@
 	desc = "This implant will synthesize and pump into your bloodstream a small amount of nutriment when you are hungry."
 	icon_state = "chest_implant"
 	implant_color = "#006607"
+	aug_overlay = "nutripump_adv"
 	hunger_threshold = NUTRITION_LEVEL_HUNGRY
 	poison_amount = 10
 
@@ -56,6 +58,8 @@
 	desc = "This implant will attempt to revive and heal you if you lose consciousness. For the faint of heart!"
 	icon_state = "chest_implant"
 	implant_color = "#AD0000"
+	aug_overlay = "reviver"
+	emissive_overlay = TRUE
 	slot = ORGAN_SLOT_HEART_AID
 	var/revive_cost = 0
 	var/reviving = FALSE
@@ -147,16 +151,31 @@
 	icon_state = "imp_jetpack"
 	implant_overlay = null
 	implant_color = null
+	aug_overlay = "imp_jetpack"
+	emissive_overlay = TRUE
 	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	w_class = WEIGHT_CLASS_NORMAL
 	var/on = FALSE
 	var/datum/effect_system/trail_follow/ion/ion_trail
+	/// Не больше одного списания за тик, см. одноимённое поле у баллонного джетпака.
+	var/last_thrust_time = -1
+	/// Скорость полёта берётся из конфига: TRUE → RUN_DELAY, FALSE → WALK_DELAY.
+	var/full_speed = TRUE
 
 /obj/item/organ/cyberimp/chest/thrusters/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
 	if(!ion_trail)
 		ion_trail = new
 	ion_trail.set_up(M)
+
+/// The bodypart overlay shows a different sprite while the thrusters are active.
+/obj/item/organ/cyberimp/chest/thrusters/get_overlay_state(image_layer, obj/item/bodypart/limb)
+	return "[aug_overlay][on ? "_on" : ""]"
+
+/obj/item/organ/cyberimp/chest/thrusters/get_overlay(image_layer, obj/item/bodypart/limb)
+	. = ..()
+	for (var/image/overlay as anything in .)
+		overlay.layer = -BODY_ADJ_UPPER_LAYER // renders on top of jumpsuits; looks cool
 
 /obj/item/organ/cyberimp/chest/thrusters/deactivate(removing)
 	. = ..()
@@ -173,21 +192,28 @@
 				to_chat(owner, "<span class='warning'>Your thrusters set seems to be broken!</span>")
 			return FALSE
 		on = TRUE
-		if(allow_thrust(0.01))
+		// Вопрос "потянем ли" задаётся уже поднятому флагу - иначе allow_thrust() отвечает "нет"
+		// просто потому, что двигатели выключены. Не потянули - откатываем флаг здесь; раньше это
+		// делал рекурсивный вызов toggle() из самой allow_thrust(), и по дороге он снимал подписки
+		// и модификаторы, которых ещё не успели навесить.
+		if(!allow_thrust(0.01, consume = FALSE))
+			on = FALSE
+		else
 			ion_trail.start()
-			RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
-			owner.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
+			RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death), override = TRUE)
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set on.</span>")
 	else
 		ion_trail.stop()
 		if(!QDELETED(owner))
-			UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
-			owner.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/cybernetic)
+			UnregisterSignal(owner, COMSIG_LIVING_DEATH)
+			owner.update_movespeed()
 			if(!silent)
 				to_chat(owner, "<span class='notice'>You turn your thrusters set off.</span>")
 		on = FALSE
 	update_icon()
+	refresh_bodypart_overlays()
 
 /obj/item/organ/cyberimp/chest/thrusters/update_icon_state()
 	if(on)
@@ -195,11 +221,22 @@
 	else
 		icon_state = "imp_jetpack"
 
-/obj/item/organ/cyberimp/chest/thrusters/proc/move_react()
-	allow_thrust(0.01)
+/// Мёртвый не тянет рычаги. Дрейф остаётся - тело летит по инерции.
+/obj/item/organ/cyberimp/chest/thrusters/proc/on_owner_death(mob/living/source)
+	SIGNAL_HANDLER
+	if(on)
+		toggle(silent = TRUE)
 
-/obj/item/organ/cyberimp/chest/thrusters/proc/allow_thrust(num)
+/**
+ * Спрашивает у трастеров, есть ли рабочее тело, и по желанию списывает за него.
+ *
+ * `consume = FALSE` отвечает на вопрос "потянем ли", ничего не тратя: накат по курсу на
+ * крейсерской скорости двигателю ничего не стоит, но шагать он всё равно разрешает.
+ */
+/obj/item/organ/cyberimp/chest/thrusters/proc/allow_thrust(num, consume = TRUE)
 	if(!on || !owner)
+		return FALSE
+	if(owner.stat != CONSCIOUS)
 		return FALSE
 
 	var/turf/T = get_turf(owner)
@@ -211,19 +248,29 @@
 	if(environment && environment.return_pressure() > 30)
 		return TRUE
 
+	var/spend = consume && last_thrust_time != world.time
+
 	// Priority 2: use plasma from internal plasma storage.
 	// (just in case someone would ever use this implant system to make cyber-alien ops with jetpacks and taser arms)
 	if(owner.getPlasma() >= num*100)
-		owner.adjustPlasma(-num*100)
+		if(spend)
+			owner.adjustPlasma(-num*100)
+			last_thrust_time = world.time
 		return TRUE
 
 	// Priority 3: use internals tank.
 	var/obj/item/tank/I = owner.internal
 	if(I && I.air_contents && I.air_contents.total_moles() >= num)
-		T.assume_air_moles(I.air_contents, num)
+		if(spend)
+			T.assume_air_moles(I.air_contents, num)
+			last_thrust_time = world.time
 		return TRUE
 
-	toggle(silent = TRUE)
+	// Гасим двигатели только тогда, когда за шаг реально надо было платить. Проверка без списания
+	// приходит и с наката по курсу, и с самого включения - выключаться по ней значило бы душить
+	// двигатели за то, что их спросили.
+	if(consume)
+		toggle(silent = TRUE)
 
 	return FALSE
 

@@ -43,6 +43,38 @@
 			return
 		. += "<span class='notice'>Those could work as a [verb] throwing weapon.</span>"
 
+/// Уровень объекта, лежащего под полом. Значение то же, что у PIPE_HIDDEN_LEVEL,
+/// но своё: тот дефайн живёт в atmosmachinery.dm, а этот файл попадает в сборку
+/// раньше (tgstation.dme: 1623 против 2303), и к препроцессингу имени ещё нет.
+#define UNDERFLOOR_OBJECT_LEVEL 1
+
+/// Трубы, венты, скрубберы и мусоропровод лежат в полу и ловят клик раньше турфа.
+/// В зелёном интенте это только мешает: игрок целится в пол, а бьёт трубу.
+/// Отдаём клик турфу, как это делает решётка (lattice.dm:47).
+/obj/item/stack/tile/pre_attack(atom/A, mob/living/user, params, attackchain_flags, damage_multiplier)
+	. = ..()
+	if(. & STOP_ATTACK_PROC_CHAIN)
+		return
+	if(user.a_intent != INTENT_HELP)
+		return
+	if(!isobj(A) || A.density || A.level != UNDERFLOOR_OBJECT_LEVEL)
+		return
+	var/static/list/underfloor_types
+	if(!underfloor_types)
+		underfloor_types = typecacheof(list(
+			/obj/machinery/atmospherics,
+			/obj/structure/disposalpipe,
+			/obj/structure/disposalconstruct,
+		))
+	if(!is_type_in_typecache(A, underfloor_types))
+		return
+	var/turf/target_turf = get_turf(A)
+	if(isnull(target_turf))
+		return
+	return target_turf.attackby(src, user, params) | STOP_ATTACK_PROC_CHAIN
+
+#undef UNDERFLOOR_OBJECT_LEVEL
+
 /obj/item/stack/tile/attackby(obj/item/W, mob/user, params)
 
 	if(W.tool_behaviour == TOOL_WELDER)

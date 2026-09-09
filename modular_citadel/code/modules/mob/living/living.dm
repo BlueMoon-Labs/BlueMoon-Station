@@ -1,7 +1,12 @@
-/atom
+/// Псевдовысота стоит на движимом, а не на /atom: её задают столы, подушки и шесты, а слот
+/// на каждом из 1.2 млн турфов мира стоит мегабайты. У неподвижного высота всегда нулевая.
+/atom/movable
 	var/pseudo_z_axis
 
 /atom/proc/get_fake_z()
+	return 0
+
+/atom/movable/get_fake_z()
 	return pseudo_z_axis
 
 /obj/structure/table
@@ -15,7 +20,7 @@
 			return structurestocheck.pseudo_z_axis
 		if(objschecked >= 25)
 			break
-	return pseudo_z_axis
+	return 0
 
 /mob/living/Move(atom/newloc, direct)
 	. = ..()

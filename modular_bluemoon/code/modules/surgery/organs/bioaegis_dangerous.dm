@@ -18,7 +18,7 @@
 	owner.adjustBruteLoss(-15, FALSE)
 	owner.adjustFireLoss(-15, FALSE)
 	owner.adjustStaminaLoss(1.5, FALSE) //It overloads body.
-	owner.adjustToxLoss(4, FALSE)
+	owner.adjustToxLoss(4, FALSE, TRUE)
 	owner.adjustOxyLoss(5, FALSE)
 
 /obj/item/organ/neuralderanger

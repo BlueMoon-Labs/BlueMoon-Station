@@ -12,6 +12,10 @@
 	var/obj_icon_state
 	var/obj_alpha
 	var/obj_color
+	/// Запасной источник спрайта: носимая иконка вещи, если нарисованной для питомца нет.
+	var/fallback_icon_file
+	/// На сколько опустить запасной оверлей - голова питомца ниже человеческой.
+	var/fallback_pixel_y = 0
 
 /datum/dog_fashion/New(mob/M)
 	name = replacetext(name, "REAL_NAME", M.real_name)
@@ -31,15 +35,64 @@
 	if(speak_emote)
 		D.speak_emote = speak_emote
 
-/datum/dog_fashion/proc/get_overlay(var/dir)
-	if(icon_file && obj_icon_state)
-		var/image/corgI = image(icon_file, obj_icon_state, dir = dir)
-		corgI.alpha = obj_alpha
-		corgI.color = obj_color
-		return corgI
+/// Кеш пригодных имён стейтов по файлу иконки: icon_states() строит новый список на каждый
+/// вызов, а разбирать 660-стейтный head.dmi на каждое надевание шапки незачем.
+GLOBAL_LIST_EMPTY(dog_fashion_icon_states)
+
+/// Имена стейтов файла, если он вообще годится питомцу. Файл разбирается один раз за раунд.
+/proc/dog_fashion_icon_states(icon_path)
+	if(!icon_path)
+		return list()
+	var/file_key = "[icon_path]"
+	var/list/known_states = GLOB.dog_fashion_icon_states[file_key]
+	if(!isnull(known_states))
+		return known_states
+	known_states = list()
+	var/icon/probe = icon(icon_path)
+	// Спрайты крупнее тайла (64x64 шлемы из large-worn-icons) на корги смотрятся мусором:
+	// такой файл целиком считаем непригодным и оставляем вещь без оверлея, как раньше.
+	if(probe.Width() <= world.icon_size && probe.Height() <= world.icon_size)
+		for(var/state in icon_states(icon_path))
+			known_states[state] = TRUE
+	GLOB.dog_fashion_icon_states[file_key] = known_states
+	return known_states
+
+/**
+ * Оверлей вещи на питомце.
+ *
+ * Нарисованных для корги стейтов всего 37 (corgi_head.dmi), а head-слот принимает по
+ * dog_fashion почти две сотни вещей: у остальных image() строился на несуществующем
+ * стейте и BYOND молча рисовал ПУСТОТУ. Отсюда и жалоба - в шапку на Иане можно спрятать
+ * ядерный диск, и шапки на нём не видно. Если своего спрайта нет, берём носимый спрайт
+ * вещи и опускаем его на голову питомца.
+ */
+/datum/dog_fashion/proc/get_overlay(dir, obj/item/worn_item)
+	var/image/pet_overlay
+	if(dog_fashion_icon_states(icon_file)[obj_icon_state])
+		pet_overlay = image(icon_file, obj_icon_state, dir = dir)
+	else if(worn_item && fallback_icon_file)
+		var/fallback_state = worn_item.icon_state
+		var/fallback_file = worn_item.mob_overlay_icon //донатные респрайты живут здесь
+		if(!dog_fashion_icon_states(fallback_file)[fallback_state])
+			fallback_file = fallback_icon_file
+		if(dog_fashion_icon_states(fallback_file)[fallback_state])
+			pet_overlay = image(fallback_file, fallback_state, dir = dir)
+			pet_overlay.pixel_y = fallback_pixel_y
+	if(!pet_overlay)
+		return
+	pet_overlay.alpha = obj_alpha
+	pet_overlay.color = obj_color
+	return pet_overlay
+
+/// Голова питомца ниже человеческой ровно на восемь пикселей.
+#define PET_FALLBACK_HEAD_OFFSET -8
 
 /datum/dog_fashion/head
 	icon_file = 'icons/mob/corgi_head.dmi'
+	fallback_icon_file = 'icons/mob/clothing/head.dmi'
+	fallback_pixel_y = PET_FALLBACK_HEAD_OFFSET
+
+#undef PET_FALLBACK_HEAD_OFFSET
 
 /datum/dog_fashion/back
 	icon_file = 'icons/mob/corgi_back.dmi'

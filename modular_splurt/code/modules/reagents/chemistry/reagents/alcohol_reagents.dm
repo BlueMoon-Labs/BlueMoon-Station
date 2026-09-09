@@ -82,6 +82,13 @@
 	description = "The name is probably exactly what it is."
 	glass_desc = "The name is probably exactly what it is."
 
+/datum/reagent/consumable/ethanol/cum_in_a_hot_tub/semen/reaction_mob(mob/living/carbon/M, affected_bodypart)
+	. = ..()
+	if(!.)
+		return
+	if(HAS_TRAIT(M, TRAIT_GFLUID_DETECT) || HAS_TRAIT(M,TRAIT_DUMB_CUM))
+		to_chat(M, span_love("Вы чувствуете явную нотку свежей спермы в напитке~"))
+
 /datum/reagent/consumable/ethanol/mech_rider
 	name = "Mech Rider"
 	description = "Who would even drink this? "

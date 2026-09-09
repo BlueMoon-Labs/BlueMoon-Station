@@ -55,6 +55,14 @@ Buildable meters
 	register_context()
 	return ..()
 
+/obj/item/pipe/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Ляжет на слой прокладки <b>[piping_layer]</b> из [PIPING_LAYER_MAX].</span>"
+	if(IS_OMNI_PIPE_COLOR(color))
+		. += "<span class='notice'>Окраска серая - состыкуется с трубами любого цвета.</span>"
+	else
+		. += "<span class='notice'>Окраска <b>[pipe_paint_color_name(color)]</b> - состыкуется только с такими же и с серыми.</span>"
+
 /obj/item/pipe/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(held_item?.tool_behaviour == TOOL_WRENCH)
@@ -82,7 +90,9 @@ Buildable meters
 
 	if(initial(fakeA.pipe_flags) & PIPING_ALL_LAYER)
 		new_layer = PIPING_LAYER_DEFAULT
-	piping_layer = new_layer
+	// Заготовка обязана лечь на тот же слой, на который встанет собранная труба,
+	// иначе призрак под курсором обещает одно, а гаечный ключ ставит другое.
+	piping_layer = clamp_piping_layer(initial(fakeA.pipe_flags), new_layer)
 
 	PIPING_LAYER_SHIFT(src, piping_layer)
 	layer = initial(layer) + ((piping_layer - PIPING_LAYER_DEFAULT) * PIPING_LAYER_LCHANGE)
@@ -107,6 +117,16 @@ Buildable meters
 
 /obj/item/pipe/proc/do_a_flip()
 	setDir(turn(dir, -180))
+
+/// Whether this binary fitting and an existing binary pipe cross at 90 degrees.
+/obj/item/pipe/proc/check_ninety_degree_dir(obj/machinery/atmospherics/machine)
+	if(ISDIAGONALDIR(machine.dir) || ISDIAGONALDIR(dir))
+		return FALSE
+	if((machine.dir & (EAST|WEST)) && (dir & (EAST|WEST)))
+		return FALSE
+	if((machine.dir & (NORTH|SOUTH)) && (dir & (NORTH|SOUTH)))
+		return FALSE
+	return TRUE
 
 /obj/item/pipe/trinary/flippable/do_a_flip()
 	setDir(turn(dir, flipped ? 45 : -45))
@@ -152,6 +172,10 @@ Buildable meters
 			return TRUE
 		if((M.piping_layer != piping_layer) && !((M.pipe_flags | flags) & PIPING_ALL_LAYER)) //don't continue if either pipe goes across all layers
 			continue
+		// A bridge deliberately crosses one perpendicular ordinary pipe. It
+		// still conflicts with parallel pipes and with another bridge.
+		if((flags & PIPING_BRIDGE) && istype(M, /obj/machinery/atmospherics/pipe) && !(M.pipe_flags & PIPING_BRIDGE) && check_ninety_degree_dir(M))
+			continue
 		if(M.GetInitDirections() & SSair.get_init_dirs(pipe_type, fixed_dir()))	// matches at least one direction on either type of pipe
 			to_chat(user, "<span class='warning'>There is already a pipe at that location!</span>")
 			return TRUE
@@ -160,6 +184,7 @@ Buildable meters
 	var/obj/machinery/atmospherics/A = new pipe_type(loc)
 	build_pipe(A)
 	A.on_construction(color, piping_layer)
+	A.warn_if_isolated_by_paint(user)
 	transfer_fingerprints_to(A)
 
 	W.play_tool_sound(src)

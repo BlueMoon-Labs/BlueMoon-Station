@@ -860,6 +860,16 @@
 	icon_state = "fox"
 	matrixed_sections = MATRIX_RED_GREEN
 
+/datum/sprite_accessory/tails/mam_tails/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/fox/alt_three
+	name = "Fox (Alt 3)"
+	icon_state = "foxann"
+	matrixed_sections = MATRIX_RED_GREEN
+
 /datum/sprite_accessory/tails/mam_tails/hawk
 	name = "Hawk"
 	icon_state = "hawk"

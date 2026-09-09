@@ -118,6 +118,9 @@
 		ui = new(user, src, "AtmosMixer", name)
 		ui.open()
 
+/obj/machinery/atmospherics/components/trinary/mixer/ui_port_labels()
+	return list("Узел 1", "Узел 2", "Выход")
+
 /obj/machinery/atmospherics/components/trinary/mixer/ui_data()
 	var/data = list()
 	data["on"] = on
@@ -125,6 +128,7 @@
 	data["max_pressure"] = round(MAX_OUTPUT_PRESSURE)
 	data["node1_concentration"] = round(node1_concentration*100, 1)
 	data["node2_concentration"] = round(node2_concentration*100, 1)
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/trinary/mixer/ui_act(action, params)
@@ -177,9 +181,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/layer1
 	piping_layer = 1
 	icon_state = "mixer_off_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/layer3
-	piping_layer = 3
-	icon_state = "mixer_off_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/layer2
+	piping_layer = 2
+	icon_state = "mixer_off_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/layer4
+	piping_layer = 4
+	icon_state = "mixer_off_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/layer5
+	piping_layer = 5
+	icon_state = "mixer_off_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/on
 	on = TRUE
@@ -188,9 +200,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/on/layer1
 	piping_layer = 1
 	icon_state = "mixer_on_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/on/layer3
-	piping_layer = 3
-	icon_state = "mixer_on_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer2
+	piping_layer = 2
+	icon_state = "mixer_on_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer4
+	piping_layer = 4
+	icon_state = "mixer_on_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/on/layer5
+	piping_layer = 5
+	icon_state = "mixer_on_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/flipped
 	icon_state = "mixer_off_f"
@@ -199,9 +219,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/layer1
 	piping_layer = 1
 	icon_state = "mixer_off_f_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer3
-	piping_layer = 3
-	icon_state = "mixer_off_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer2
+	piping_layer = 2
+	icon_state = "mixer_off_f_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer4
+	piping_layer = 4
+	icon_state = "mixer_off_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/layer5
+	piping_layer = 5
+	icon_state = "mixer_off_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/on
 	on = TRUE
@@ -210,9 +238,17 @@
 /obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer1
 	piping_layer = 1
 	icon_state = "mixer_on_f_map-1"
-/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer3
-	piping_layer = 3
-	icon_state = "mixer_on_f_map-3"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer2
+	piping_layer = 2
+	icon_state = "mixer_on_f_map-2"
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer4
+	piping_layer = 4
+	icon_state = "mixer_on_f_map-4"
+
+/obj/machinery/atmospherics/components/trinary/mixer/flipped/on/layer5
+	piping_layer = 5
+	icon_state = "mixer_on_f_map-5"
 
 /obj/machinery/atmospherics/components/trinary/mixer/airmix //For standard airmix to distro
 	name = "air mixer"

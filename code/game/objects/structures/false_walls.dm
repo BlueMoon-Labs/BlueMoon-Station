@@ -252,9 +252,19 @@
 	new /obj/structure/girder/displaced(loc)
 	qdel(src)
 
+/obj/structure/falsewall/plasma/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/structure/falsewall/plasma/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		burnbabyburn()
+
+/obj/structure/falsewall/plasma/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/falsewall/plasma/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	burnbabyburn()
 
 /obj/structure/falsewall/bananium
 	name = "bananium wall"

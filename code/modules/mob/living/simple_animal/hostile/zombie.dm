@@ -24,6 +24,11 @@
 	var/zombiejob = "Medical Doctor"
 	var/infection_chance = 0
 	var/obj/effect/mob_spawn/human/corpse/delayed/corpse
+	///Собирать ли внешность из аутфита профессии. Подтипу со своим спрайтом это
+	///только мешает: get_flat_human_icon затирает объявленную им иконку.
+	var/generate_appearance = TRUE
+	///Оставлять ли после себя труп человека. Подтип со своим loot обходится без него.
+	var/no_corpse = FALSE
 
 /mob/living/simple_animal/hostile/zombie/Initialize(mapload)
 	. = ..()
@@ -36,6 +41,8 @@
 
 /mob/living/simple_animal/hostile/zombie/proc/setup_visuals()
 	set waitfor = FALSE
+	if(!generate_appearance && no_corpse)
+		return //ни рисовать, ни хоронить нечего - подтип обходится своими силами
 	var/datum/preferences/dummy_prefs = new
 	dummy_prefs.pref_species = new /datum/species/zombie
 	dummy_prefs.be_random_body = TRUE
@@ -47,8 +54,10 @@
 		O.r_hand = null
 		O.l_hand = null
 
-	var/icon/P = get_flat_human_icon("zombie_[zombiejob]", J , dummy_prefs, "zombie", outfit_override = O)
-	icon = P
+	if(generate_appearance)
+		icon = get_flat_human_icon("zombie_[zombiejob]", J , dummy_prefs, "zombie", outfit_override = O)
+	if(no_corpse)
+		return
 	corpse = new(src)
 	corpse.outfit = O
 	corpse.mob_species = /datum/species/zombie
@@ -61,6 +70,8 @@
 
 /mob/living/simple_animal/hostile/zombie/drop_loot()
 	. = ..()
+	if(QDELETED(corpse))
+		return
 	corpse.forceMove(drop_location())
 	corpse.create()
 	corpse = null

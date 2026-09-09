@@ -83,7 +83,7 @@
 	AddComponent(/datum/component/uplink/syndicate/pact, owner, FALSE, TRUE, uplink_flag, tc_amount, syndicate)
 
 /datum/component/uplink/syndicate/pact
-	name = "Pact Uplink"
+	name = "PACT Uplink"
 
 /datum/component/uplink/syndicate/pact/ui_data(mob/user)
 	. = ..()

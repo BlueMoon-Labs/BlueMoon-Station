@@ -614,6 +614,40 @@
 
 	TEST_ASSERT_EQUAL(booked, 7, "A mob on a clientless z-level must book 4 fires ahead, got [booked]")
 
+///Моб вне мира (loc == null) обрабатывается как пустой z-уровень: полного Life нет.
+/datum/unit_test/life_bucket_books_nullspace/Run()
+	var/mob/living/carbon/human/ssmobs_delta_spy/subject = allocate(/mob/living/carbon/human/ssmobs_delta_spy)
+	subject.moveToNullspace()
+	TEST_ASSERT_NULL(get_turf(subject), "Subject must be out of the world for this test")
+
+	subject.last_delta = 0
+	subject.Life(2, 3)
+
+	TEST_ASSERT_EQUAL(subject.last_delta, 0, "A mob out of the world must not reach BiologicalLife, got delta [subject.last_delta]")
+	TEST_ASSERT_EQUAL(subject.life_next_fire, 7, "A mob out of the world must book 4 fires ahead, got [subject.life_next_fire]")
+
+///Горящий моб вне мира: огонь не обрабатывается, бронь ставится, z-регистрация снимается.
+/datum/unit_test/life_nullspace_skips_fire/Run()
+	var/mob/living/carbon/human/ssmobs_delta_spy/subject = allocate(/mob/living/carbon/human/ssmobs_delta_spy)
+	var/turf/subject_turf = get_turf(subject)
+	TEST_ASSERT_NOTNULL(subject_turf, "Subject has no turf")
+	if(!islist(SSmobs.clients_by_zlevel) || subject_turf.z > SSmobs.clients_by_zlevel.len)
+		SSmobs.MaxZChanged()
+	subject.registered_z = subject_turf.z
+	subject.moveToNullspace()
+	TEST_ASSERT_NULL(get_turf(subject), "Subject must be out of the world for this test")
+	subject.on_fire = TRUE
+	subject.fire_stacks = 5
+
+	subject.last_delta = 0
+	subject.Life(2, 3)
+
+	TEST_ASSERT(subject.on_fire, "Огонь моба вне мира не должен ни гаснуть, ни обрабатываться - воздуха, в котором он горит, там нет")
+	TEST_ASSERT_EQUAL(subject.fire_stacks, 5, "Огонь моба вне мира не должен расходоваться")
+	TEST_ASSERT_EQUAL(subject.last_delta, 0, "Горящий моб вне мира не должен доходить до BiologicalLife")
+	TEST_ASSERT_EQUAL(subject.life_next_fire, 7, "Горящий моб вне мира обязан бронировать фаер как любой моб вне мира, получено [subject.life_next_fire]")
+	TEST_ASSERT_NULL(subject.registered_z, "Моб вне мира обязан сниматься с реестра z-уровней")
+
 ///Моб рядом с игроком брони не получает - ему положен каждый фаер.
 /datum/unit_test/life_bucket_clear_near_player/Run()
 	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
@@ -799,27 +833,13 @@
 	qdel(arena)
 	TEST_ASSERT(targeted_prey, "Rabid slime must target an adjacent monkey in the open")
 
-///Рычаг 3 (осознанный компромисс): grid-канал без LOS, поэтому слайм ТЕПЕРЬ чует
-///добычу за стеной. Тест фиксирует это поведение как намеренное (бенч показал:
-///can_see по каждому кандидату в 2.2х дороже, чем экономит view; см. slime/life.dm).
-/datum/unit_test/slime_prey_scan_grid_ignores_walls/Run()
-	var/datum/turf_reservation/arena = ssmobs_slime_scan_arena(8, 3)
-	TEST_ASSERT_NOTNULL(arena, "Failed to reserve slime scan arena")
-	//полная стена-колонна dx=2 по всей высоте: view бы её не пробил, grid - да
-	for(var/wall_dy in 0 to 2)
-		var/turf/wall_turf = ssmobs_arena_turf(arena, 2, wall_dy)
-		wall_turf.ChangeTurf(/turf/closed/wall)
-	var/mob/living/simple_animal/slime/hunter = new(ssmobs_arena_turf(arena, 0, 1))
-	var/mob/living/carbon/monkey/prey = new(ssmobs_arena_turf(arena, 4, 1))
-	hunter.rabid = 1
-	hunter.Target = null
-	hunter.next_hunt_scan = 0
-	hunter.handle_targets()
-	var/targeted_through_wall = (hunter.Target == prey)
-	qdel(hunter)
-	qdel(prey)
-	qdel(arena)
-	TEST_ASSERT(targeted_through_wall, "Grid scan (no can_see) must sense prey through a wall - the deliberate lever-3 tradeoff")
+//Здесь стоял slime_prey_scan_grid_ignores_walls, фиксировавший "видит сквозь стены"
+//как намеренный компромисс рычага 3 (бенч: can_see по каждому кандидату в 2.2х дороже,
+//чем экономит view). Компромисс пересмотрен: погоня всё равно отбраковывает цель вне
+//view(), поэтому слайм в ксенобио брал целью добычу за стеклом соседнего загона, тут же
+//её бросал и перевыбирал заново - до своей добычи очередь не доходила. Луч вернули, но
+//ПОСЛЕ дешёвых отсевов, где кандидатов уже единицы, а не весь грид-пул. Поведение теперь
+//закрыто тестом slime_ai_ignores_prey_behind_wall (с контрольной проверкой без стены).
 
 ///Рычаг 3: слайм НЕ таргетит добычу дальше радиуса скана (get_dist фильтр после
 ///грубого грид-пула, который отдаёт содержимое ячеек шире 7).

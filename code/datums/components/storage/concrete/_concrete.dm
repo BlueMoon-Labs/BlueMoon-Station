@@ -178,6 +178,8 @@
 			return FALSE
 		else
 			moved = TRUE //At this point if the proc fails we need to manually move the object back to the turf/mob/whatever.
+	if(QDELETED(I))
+		return FALSE
 	if(I.pulledby)
 		I.pulledby.stop_pulling()
 	if(silent)

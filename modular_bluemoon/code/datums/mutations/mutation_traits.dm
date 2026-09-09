@@ -406,12 +406,31 @@
 	mob_trait = TRAIT_PARA
 	text_gain_indication = null // Handled by trauma.
 	text_lose_indication = null
+	/// Травму навесила именно мутация - значит она же её и снимет. Чужой паралич (квирк) не трогаем.
+	var/trauma_from_mutation = FALSE
 
 /datum/mutation/human/bm/paraplegic/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-	var/datum/brain_trauma/severe/paralysis/paraplegic/T = new()
+	if(..()) // мутация не легла - травму вешать нельзя, снять её потом будет нечем
+		return
+	// has_trauma_type() сравнивает стойкость как "<= указанной", поэтому с TRAUMA_RESILIENCE_ABSOLUTE
+	// он ловит ЛЮБОЙ паралич, включая излечимый: ген тогда молча не вешал свой, а после лечения
+	// чужого носитель вставал на ноги с активной мутацией. Чужим считаем только паралич своей,
+	// неснимаемой стойкости - его ставит квирк /datum/quirk/paraplegic.
+	var/datum/brain_trauma/existing_paralysis = owner.has_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
+	if(existing_paralysis && existing_paralysis.resilience >= TRAUMA_RESILIENCE_ABSOLUTE)
+		return
+	// Флаг ставим по факту выдачи: gain_trauma() отказывает мёртвому носителю и дубликату,
+	// а on_losing() при взведённом флаге вылечил бы чужой паралич за компанию.
+	// Передаём путь, а не готовый экземпляр: при отказе тот остался бы висеть ничьим.
+	trauma_from_mutation = !isnull(owner.gain_trauma(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE))
 
-	owner.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
+/datum/mutation/human/bm/paraplegic/on_losing(mob/living/carbon/human/owner)
+	if(..())
+		return
+	if(!trauma_from_mutation)
+		return
+	trauma_from_mutation = FALSE
+	owner.cure_trauma_type(/datum/brain_trauma/severe/paralysis/paraplegic, TRAUMA_RESILIENCE_ABSOLUTE)
 
 // /datum/mutation/human/bm/poor_aim
 // 	name = "Ужасный стрелок"
@@ -1748,16 +1767,18 @@
 	if(!QDELETED(owner))
 		UnregisterSignal(owner, list(COMSIG_MOB_DEATH, COMSIG_MOB_EMOTE))
 
-/datum/mutation/human/bm/onelife/proc/get_rid_of_them(mob/user, datum/emote/emote)
+/datum/mutation/human/bm/onelife/proc/get_rid_of_them(mob/user, gibbed)
+	if(gibbed) // при dust()/gib() рассыпанием управляет сам dust()
+		return
 	if(owner.stat == DEAD)
 		remove_signals()
-		owner.dust(TRUE, TRUE)
+		onelife_crumble(owner)
 
 /datum/mutation/human/bm/onelife/proc/get_rid_of_them_emote(mob/user, datum/emote/emote)
 	var/key = emote.key
 	if(key == "deathgasp")
 		remove_signals()
-		owner.dust(TRUE, TRUE)
+		onelife_crumble(owner)
 
 /datum/mutation/human/bm/waddle
 	name = "Неуклюжесть"
@@ -1769,11 +1790,15 @@
 	text_lose_indication = span_notice("Теперь ты передвигаешься нормально.")
 
 /datum/mutation/human/bm/waddle/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
+	if(..())
+		return
+	ADD_TRAIT(owner, TRAIT_WADDLING, GENETIC_MUTATION)
 	owner.LoadComponent(/datum/component/waddling)
 
 /datum/mutation/human/bm/waddle/on_losing(mob/living/carbon/human/owner)
-	. = ..()
+	if(..())
+		return
+	REMOVE_TRAIT(owner, TRAIT_WADDLING, GENETIC_MUTATION)
 	if(!HAS_TRAIT(owner, TRAIT_WADDLING))
-		var/datum/component/waddling = GetComponent(/datum/component/waddling)
-		waddling?.RemoveComponent()
+		var/datum/component/waddling/waddle_component = owner.GetComponent(/datum/component/waddling)
+		waddle_component?.RemoveComponent()

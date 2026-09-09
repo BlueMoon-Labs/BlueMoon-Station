@@ -238,6 +238,27 @@
 	suit_requirement = /obj/item/clothing/suit/bluetag
 	tagcolor = "blue"
 
+/obj/item/firing_pin/access
+	name = "access lock firing pin"
+	fail_message = span_warning("ACCESS CHECK FAILED!")
+	// Для определения доступов используйте req_one_access
+
+/obj/item/firing_pin/access/examine(mob/user)
+	. = ..()
+	if(LAZYLEN(req_one_access))
+		var/list/temp = list()
+		for(var/access_to_show in req_one_access)
+			temp += get_access_desc(access_to_show)
+		. += span_notice("Accesses are required for activation: [english_list(temp, and_text = ", ")].")
+
+/obj/item/firing_pin/access/pin_auth(mob/living/user)
+	return !gun.chambered || allowed(user)
+	
+/obj/item/firing_pin/access/med
+	name = "medical emergency firing pin"
+	req_one_access = list(ACCESS_MEDICAL)
+	fail_message = span_warning("ONLY FOR MEDICAL STAFF!")
+
 /obj/item/firing_pin/security_level
 	name = "security level firing pin"
 	desc = "A sophisticated firing pin that authorizes operation based on its settings and current security level."

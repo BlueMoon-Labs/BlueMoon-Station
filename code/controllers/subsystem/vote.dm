@@ -49,6 +49,19 @@ SUBSYSTEM_DEF(vote)
 	)
 	// BLUEMOON ADD END
 
+	// BLUEMOON ADD START - палитра цветов для столбиков результатов
+	var/static/list/vote_bar_colors = list(
+		list(255, 95, 95),
+		list(95, 196, 255),
+		list(95, 255, 138),
+		list(255, 196, 95),
+		list(196, 95, 255),
+		list(95, 255, 240),
+		list(255, 95, 196),
+		list(232, 255, 95)
+	)
+	// BLUEMOON ADD END
+
 /datum/controller/subsystem/vote/fire()	//called by master_controller
 	if(mode)
 //BLUEMOON ADD START
@@ -333,8 +346,6 @@ SUBSYSTEM_DEF(vote)
 				text += "\nThis is the highest median score plus the tiebreaker!"
 		// BLUEMOON EDIT START - отрисовка результатов голосования
 		var/total_votes = 0
-		var/votes_left = "<div class='left-column'>"
-		var/votes_right = "<div class='right-column' id='results-container'>"
 		for(var/i = 1, i <= choices.len, i++)
 			var/votes_amount = get_effective_votes(choices[i])
 			if(!votes_amount)
@@ -342,21 +353,25 @@ SUBSYSTEM_DEF(vote)
 			if(was_roundtype_vote)
 				stored_gamemode_votes[choices[i]] = votes_amount
 			total_votes += votes_amount
-			votes_left += "<div class='vote_variant'>[choices[i]]: <b>[display_votes & SHOW_RESULTS ? votes_amount : "???"]</b></div>"
+		if(display_votes & SHOW_RESULTS)
+			text += "<div class='vote-results-header'><span class='vote-results-title'>Итоги голосования</span><span class='vote-total'>всего: <b>[total_votes]</b></span></div>"
 		for(var/i = 1, i <= choices.len, i++)
-			if (display_votes & SHOW_RESULTS)
-				if (length(choices) == 1)
-					votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc(100% + 2px);'><span>1984%</span></div></div>";
-				else
-					var/votes_amount = get_effective_votes(choices[i])
-					var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
-					if (percent > 0)
-						votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc([percent]% + 2px);'><span>[percent]%</span></div></div>"
-					else
-						votes_right += "<div class='votewrap'><div class='voteresult' style='background-color: rgba(0, 0, 0, 0);'><span>[percent]%</span></div></div>";
-		votes_left += "</div>"
-		votes_right += "</div>"
-		text += "<div class='voteresults'>[votes_left][votes_right]</div>"
+			var/is_winner = winners.Find(choices[i]) > 0
+			text += "<div class='vote-row[is_winner ? " is-winner" : ""]'>"
+			if(display_votes & SHOW_RESULTS)
+				var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
+				var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
+				var/votes_amount = choices[choices[i]]
+				var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
+				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>"
+				text += "<span class='vote-name'>[choices[i]]</span>"
+				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 8px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.55);'></div></div>"
+				text += "<span class='vote-percent'>[percent]%</span>"
+				text += "<span class='vote-count'>[votes_amount]</span>"
+			else
+				text += "<span class='vote-name'>[choices[i]]</span>"
+				text += "<span class='vote-count'>???</span>"
+			text += "</div>"
 		// BLUEMOON EDIT END
 		if(mode != "custom")
 			if(winners.len > 1 && display_votes & SHOW_WINNER) //CIT CHANGE - adds obfuscated votes
@@ -471,7 +486,7 @@ SUBSYSTEM_DEF(vote)
 					message_admins("Смена карты была отменена игроками.")
 					log_admin("Смена карты была отменена игроками.")
 					if(SSticker.mapvote_restarter_in_progress)
-						to_chat(world, "<span class='boldannounce'>Смена карты была отменена игроками.</span>")
+						to_chat(world, span_boldannounce("Смена карты была отменена игроками."))
 						SSticker.mapvote_restarter_in_progress = FALSE
 						SSpersistence.RecordGracefulEnding()
 						SSticker.start_immediately = FALSE
@@ -481,10 +496,24 @@ SUBSYSTEM_DEF(vote)
 				var/datum/map_config/VM = config.maplist[.]
 				message_admins("The map has been voted for and will change to: [VM.map_name]")
 				log_admin("The map has been voted for and will change to: [VM.map_name]")
-				if(SSmapping.changemap(config.maplist[.]))
-					to_chat(world, "<span class='boldannounce'>The map vote has chosen [VM.map_name] for next round!</span>")
-				if(SSticker.mapvote_restarter_in_progress)
-					SSticker.Reboot("Map rotation was requested due to ungraceful ending of the last round.", null, 10)
+				var/map_changed = SSmapping.changemap(config.maplist[.])
+				if(map_changed)
+					to_chat(world, span_boldannounce("Голосование за карту избрало [SSmapping.next_map_config.map_name] на следующий раунд!"))
+					if(SSticker.mapvote_restarter_in_progress)
+						SSticker.Reboot("Была запрошена ротация карт ввиду неблагополучного окончания предыдущего раунда.", null, 10)
+				else
+					// Если changemap выдаст null/FALSE, при этом не перекинув нас на default карту, то продолжаем текущий раунд после раундэнда.
+					// Зачем? Чтобы не уйти в цикл повторов попыток загрузки некорректной карты + попытки загрузки некорректной default мапы.
+					// Вместо этого дадим игрокам голосование за новую карту. Это гарантирует, что без админов они не застрянут в лимбо.
+					message_admins("Map change failed; automatic restart canceled.")
+					log_admin("Map change failed; automatic restart canceled.")
+					if(SSticker.mapvote_restarter_in_progress)
+						SSticker.mapvote_restarter_in_progress = FALSE
+						SSpersistence.RecordGracefulEnding()
+						SSticker.start_immediately = FALSE
+						SSticker.SetTimeLeft(240 SECONDS)
+						// Вообще, по-хорошему, исключать бы из воута карту, которая дала нам FALSE в чейнджмап, но это слишком утяжелит код. Этого будет достаточно
+						SSvote.initiate_vote("map", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = APPROVAL_VOTING, forced = TRUE)
 				// BLUEMOON ADD END
 			if("transfer") // austation begin -- Crew autotransfer vote
 				if(. == VOTE_TRANSFER)
@@ -497,7 +526,7 @@ SUBSYSTEM_DEF(vote)
 		message_admins("Голосование за карту провалилось из-за отсутствия голосов.")
 		log_admin("Голосование за карту провалилось из-за отсутствия голосов.")
 		if(SSticker.mapvote_restarter_in_progress)
-			to_chat(world, "<span class='boldannounce'>Перезагрузка отменена в связи с отсутствием голосов. Очередное поражение демократии...</span>")
+			to_chat(world, span_boldannounce("Перезагрузка отменена в связи с отсутствием голосов. Очередное поражение демократии..."))
 			SSticker.mapvote_restarter_in_progress = FALSE
 			SSpersistence.RecordGracefulEnding()
 			SSticker.start_immediately = FALSE
@@ -524,7 +553,7 @@ SUBSYSTEM_DEF(vote)
 		if(!active_admins)
 			SSticker.Reboot("Restart vote successful.", "restart vote")
 		else
-			to_chat(world, "<span style='boldannounce'>Notice:Restart vote will not restart the server automatically because there are active admins on.</span>")
+			to_chat(world, span_boldannounce("Notice: голосование за рестарт не перезапустит сервер автоматически ввиду активных администраторов на сервере."))
 			message_admins("A restart vote has passed, but there are active admins on with +server, so it has been canceled. If you wish, you may restart the server.")
 
 	return .
@@ -668,17 +697,21 @@ SUBSYSTEM_DEF(vote)
 		initiator = initiator_key ? initiator_key : "the Server" // austation -- Crew autotransfer vote
 		started_time = world.time
 		// BLUEMOON EDIT START - реструктурирование
-		var/text = ""
-
-		text += capitalize("[mode == "custom" ? "кастомное " : ""]голосование [mode != "custom" ? "[ru_votemodes[mode]] " : ""]начато [initiator == "server" ? "автоматически" : initiator].\n")
-		if(mode == "custom")
-			text += "\n<b>[question]</b>\n"
-		log_vote(text)
 		var/vp = vote_time
 		if(vp == -1)
 			vp = CONFIG_GET(number/vote_period)
-		text += "\nНажмите <b>'Vote'</b> во вкладке OOC или нажмите <a href='?src=[REF(src)]'>сюда</a> чтобы проголосовать."
-		text += "\nДо окончания голосования – [DisplayTimeText(vp)]."
+		var/mode_text = mode == "custom" ? "кастомное голосование" : "голосование [ru_votemodes[mode]]"
+		var/text = ""
+		text += "<div class='vote-results-header'><span class='vote-results-title'>Голосование начато</span><span class='vote-total'>время: [DisplayTimeText(vp)]</span></div>"
+		text += "<div class='vote-meta'>[capitalize(mode_text)] · инициатор: <b>[initiator == "server" ? "автоматически" : initiator]</b></div>"
+		if(mode == "custom")
+			text += "<div class='vote-question'>[question]</div>"
+		for(var/i = 1, i <= choices.len, i++)
+			var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
+			var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
+			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>[choices[i]]</div>"
+		text += "<div class='vote-hint'>Нажмите <a href='?src=[REF(src)]'>сюда</a> чтобы проголосовать</div>"
+		log_vote(text)
 		to_chat(world, vote_block(text))
 		// BLUEMOON EDIT END
 		end_time = started_time+vp
@@ -689,7 +722,7 @@ SUBSYSTEM_DEF(vote)
 			choice_statclicks[choice] = "[i]"
 		//
 		for(var/c in GLOB.clients)
-			SEND_SOUND(c, sound('sound/misc/votestart.ogg'))
+			SEND_SOUND(c, sound('sound/misc/bloop.ogg'))
 			var/client/C = c
 			if(!C || !C.player_details)
 				continue
@@ -1117,12 +1150,12 @@ SUBSYSTEM_DEF(vote)
 		else
 			dynamic_type = pick(available_medium)
 	else
-		dynamic_type = ROUNDTYPE_DYNAMIC_LIGHT
+		dynamic_type = ROUNDTYPE_EXTENDED
 
 	// Логируем детали выбора
-	message_admins("Выбранный Динамик: [dynamic_type]. Количество игроков - [players.len]. \
+	message_admins("Выбранный режим: [dynamic_type]. Количество игроков - [players.len]. \
 	Уровень хаоса от игроков - [total_chaos]. [CONFIG_GET(number/chaos_for_a_hard_dynamic)] было нужно для Хард-Динамика.")
-	log_admin("Выбранный Динамик: [dynamic_type]. Количество игроков - [players.len]. \
+	log_admin("Выбранный режим: [dynamic_type]. Количество игроков - [players.len]. \
 	Уровень хаоса от игроков - [total_chaos]. [CONFIG_GET(number/chaos_for_a_hard_dynamic)] было нужно для Хард-Динамика.")
 
 	return dynamic_type

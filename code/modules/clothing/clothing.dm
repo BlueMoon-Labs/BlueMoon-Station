@@ -38,6 +38,9 @@
 	var/list/user_vars_remembered //Auto built by the above + dropped() + equipped()
 
 	var/pocket_storage_component_path
+	/// Adsorbed plasma. Only worn clothing is checked, so contaminated items do
+	/// not need their own processing loop.
+	var/plasma_contamination = 0
 
 	//These allow head/mask items to dynamically alter the user's hair
 	// and facial hair, checking hair_extensions.dmi and facialhair_extensions.dmi
@@ -67,6 +70,10 @@
 	var/reinforced = FALSE
 	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
 	var/obj/item/clothing/reinforcement_path
+	// Наборы брони присваивают защитные переменные с прототипа, а не сливают их.
+	// Для одежды, чья защита собирается снаружи (части МОДа), это стирает
+	// герметичность и холодозащиту без шанса восстановить - такие вещи отписываются.
+	var/can_be_reinforced = TRUE
 	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
 	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
 	var/keep_genitals_below = TRUE
@@ -269,6 +276,10 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	..()
 	if (!istype(user))
 		return
+	// Wearing pre-contaminated gear must re-arm the wearer's cheap Life gate.
+	if(plasma_contamination >= 1 && ishuman(user))
+		var/mob/living/carbon/human/wearer = user
+		wearer.plasma_gear_dirty = TRUE
 	if(slot_flags & slot) //Was equipped to a valid slot for this item?
 		if(iscarbon(user) && LAZYLEN(zones_disabled))
 			RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(bristle), TRUE)
@@ -280,6 +291,8 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/examine(mob/user)
 	. = ..()
+	if(plasma_contamination >= 1)
+		. += "<span class='warning'>Резко пахнет плазмой. Стиральная машина может обеззаразить.</span>"
 	if(damaged_clothes == CLOTHING_SHREDDED)
 		. += "<span class='warning'><b>Эта вещь больше походит на лохмотья и требует ремонта!</b></span>"
 		return
@@ -330,6 +343,14 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 	if(LAZYLEN(armor_list) || LAZYLEN(durability_list))
 		. += "<span class='notice'>Видно <a href='?src=[REF(src)];list_armor=1'>бирку</a> со списком классов защиты.</span>"
+
+/// Adds contamination in proportion to fabric permeability. Properly sealed
+/// gear remains useful protection and never becomes a hidden poison source.
+/obj/item/clothing/proc/absorb_plasma(partial_pressure)
+	if(partial_pressure < PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE || permeability_coefficient <= PLASMA_CLOTHING_SEALED_PERMEABILITY)
+		return
+	var/exposure = (partial_pressure - PLASMA_CLOTHING_MIN_PARTIAL_PRESSURE) * 0.01 * clamp(permeability_coefficient, 0, 1)
+	plasma_contamination = min(PLASMA_CLOTHING_MAX_CONTAMINATION, plasma_contamination + exposure)
 
 /obj/item/clothing/Topic(href, href_list)
 	. = ..()
@@ -492,17 +513,25 @@ BLIND     // can't see anything
 */
 
 /proc/generate_alpha_masked_clothing(index,state,icon,female,alpha_masks)
-	var/icon/I = icon(icon, state)
-	if(female)
-		var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
-		I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
-	if(alpha_masks)
-		if(istext(alpha_masks))
-			alpha_masks = list(alpha_masks)
-		for(var/alpha_state in alpha_masks)
-			var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
-			I.Blend(alpha, ICON_MULTIPLY, -15, -15)
-	. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	// Каждая надетая шмотка с маской строит иконку через icon()+Blend, и на этом умер
+	// раунд 10086 (23.08): рантайм в /icon/New() посреди экипировки аутфита, после
+	// которого мир не написал больше ни строки. См. code/__HELPERS/icon_alloc_guard.dm.
+	// Пустышка в кэш не пишется: отказ аллокации - состояние минуты, а запомненная
+	// пустая иконка оставила бы всех в этой одежде голыми до конца раунда.
+	try
+		var/icon/I = icon(icon, state)
+		if(female)
+			var/icon/female_s = icon('icons/mob/clothing/alpha_masks.dmi', "[(female == FEMALE_UNIFORM_FULL) ? "female_full" : "female_top"]")
+			I.Blend(female_s, ICON_MULTIPLY, -15, -15) //it's a 64x64 icon.
+		if(alpha_masks)
+			if(istext(alpha_masks))
+				alpha_masks = list(alpha_masks)
+			for(var/alpha_state in alpha_masks)
+				var/icon/alpha = icon('icons/mob/clothing/alpha_masks.dmi', alpha_state)
+				I.Blend(alpha, ICON_MULTIPLY, -15, -15)
+		. = GLOB.alpha_masked_worn_icons[index] = fcopy_rsc(I)
+	catch(var/exception/icon_error)
+		return note_icon_alloc_failure("одежда с альфа-маской [index]", icon_error)
 
 /obj/item/clothing/proc/weldingvisortoggle(mob/user) //proc to toggle welding visors on helmets, masks, goggles, etc.
 	if(!can_use(user))

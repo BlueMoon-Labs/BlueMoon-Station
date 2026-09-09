@@ -16,7 +16,11 @@
 
 /obj/item/clothing/glasses/hypno/equipped(mob/user, slot)//Adding hypnosis on equip
 	. = ..()
+	if(victim && victim != user)
+		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
 	victim = user
+	if(victim)
+		RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(on_victim_deleted), override = TRUE)
 	if(slot != ITEM_SLOT_EYES)
 		return
 	if(iscarbon(victim) && victim.client?.prefs.cit_toggles & HYPNO)
@@ -30,12 +34,22 @@
 	. = ..()
 	if(victim?.glasses == src)
 		victim.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_BASIC)
+	if(victim)
+		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+		victim = null
+
+/// Крио уносит надетые очки forceMove'ом, минуя dropped(): без подписки на смерть
+/// носителя очки держали тело до конца смены.
+/obj/item/clothing/glasses/hypno/proc/on_victim_deleted(datum/source)
+	SIGNAL_HANDLER
 	victim = null
 
 /obj/item/clothing/glasses/hypno/Destroy()
 	if(victim)
 		if(victim.glasses == src)
 			victim.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_BASIC)
+		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+		victim = null
 	. = ..()
 
 /obj/item/clothing/glasses/hypno/attack_self(mob/user) //Setting up hypnotizing phrase

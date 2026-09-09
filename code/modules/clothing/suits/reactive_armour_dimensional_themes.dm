@@ -63,7 +63,7 @@
 		if (isindestructiblewall(check_turf))
 			target_area -= check_turf
 			continue
-		if (check_turf.holodeck_compatible)
+		if (check_turf.turf_flags & TURF_HOLODECK_COMPATIBLE)
 			target_area -= check_turf
 			continue
 

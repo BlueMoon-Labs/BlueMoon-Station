@@ -15,7 +15,7 @@
 	description = "Our weapons are breaking the rules of reality by now."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_engi", "weaponry")
-	design_ids = list("pin_loyalty", "laser_shield", "bullet_shield", "sec_shellclip")
+	design_ids = list("pin_loyalty", "laser_shield", "bullet_shield", "ammoworkbench_disk_lethal", "sec_shellclip")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 9500)
 
 /datum/techweb_node/electric_weapons

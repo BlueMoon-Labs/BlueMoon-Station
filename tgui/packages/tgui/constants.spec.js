@@ -51,11 +51,13 @@ describe('getGasLabel', () => {
     expect(getGasLabel('')).toBe('');
   });
 
-  test('все 18 газов доступны по id', () => {
+  test('все 30 газов доступны по id', () => {
     const gasIds = [
       'o2', 'n2', 'co2', 'plasma', 'water_vapor', 'nob', 'n2o', 'no',
       'no2', 'tritium', 'bz', 'stim', 'pluox', 'miasma', 'hydrogen',
-      'methane', 'methyl_bromide', 'qcd',
+      'methane', 'methyl_bromide', 'qcd', 'bromine', 'ammonia', 'helium',
+      'freon', 'halon', 'antinoblium', 'proto_nitrate', 'zauker', 'healium',
+      'nitrium', 'pyronite', 'fluxin',
     ];
     for (const id of gasIds) {
       const label = getGasLabel(id);
@@ -93,7 +95,9 @@ describe('getGasColor', () => {
     const gasIds = [
       'o2', 'n2', 'co2', 'plasma', 'water_vapor', 'nob', 'n2o', 'no',
       'no2', 'tritium', 'bz', 'stim', 'pluox', 'miasma', 'hydrogen',
-      'methane', 'methyl_bromide', 'qcd',
+      'methane', 'methyl_bromide', 'qcd', 'bromine', 'ammonia', 'helium',
+      'freon', 'halon', 'antinoblium', 'proto_nitrate', 'zauker', 'healium',
+      'nitrium', 'pyronite', 'fluxin',
     ];
     for (const id of gasIds) {
       const color = getGasColor(id);

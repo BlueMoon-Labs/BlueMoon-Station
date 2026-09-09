@@ -219,7 +219,7 @@
 ///TRUE = кабель перегрызен.
 /mob/living/simple_animal/hostile/rat/proc/try_chew_cables(shock_roll = null)
 	var/turf/open/floor/floor = get_turf(src)
-	if(!istype(floor) || floor.intact)
+	if(!istype(floor) || (floor.turf_flags & TURF_INTACT))
 		return FALSE
 	var/obj/structure/cable/wire = locate() in floor
 	//обесточенный кабель не грызём вовсе: обе легаси-ветки требуют avail()

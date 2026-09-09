@@ -1,6 +1,3 @@
-#define MAX_ION_DRIFT_SPEED 8	// Отвечает за максимальную скорость полёта интегралки без стабилизаторов. 6 примерно соответствует максимальной скорости платы locomotion.
-#define ION_ACCEL_PER_PULSE 0.8	// Отвечает за силу импульса, прибавляемого во время пульсации трастера при выключенном стабилизаторе
-
 /obj/item/integrated_circuit/manipulation/ion_thruster
 
 	name = "ion propulsion module"
@@ -22,11 +19,12 @@
 	power_draw_per_use = 500	// Расход энергии в несколько раз выше обычного локомоушена
 	limit_per_assembly = 1
 
-/obj/item/integrated_circuit/manipulation/ion_thruster/ext_moved(oldLoc, dir)	// electronic_assembly/moved() вызывает drift_handler, после чего вызывает данную процедуру в схеме. Мы используем её для гашения инерции.
-	if(!assembly || has_gravity(assembly) || !assembly.drift_handler || !get_pin_data(IC_INPUT, 1))	// В иных случаях процедура не имеет смысла
+/obj/item/integrated_circuit/manipulation/ion_thruster/ext_moved(oldLoc, dir)	// electronic_assembly/moved() вызывает данную процедуру в схеме. Мы используем её для гашения инерции.
+	if(!assembly || has_gravity(assembly) || !get_pin_data(IC_INPUT, 1))	// В иных случаях процедура не имеет смысла
 		return
+	// Стабилизатор гасит инерцию, набежавшую от шага конструкции
 	assembly.inertia_dir = 0
-	QDEL_NULL(assembly.drift_handler)	// Гасим drift_handler, вызванный родительским moved()
+	SSspacedrift.processing -= assembly
 	return
 
 /obj/item/integrated_circuit/manipulation/ion_thruster/proc/emit_thrust_sparks(turf/T)
@@ -44,12 +42,10 @@
 	if(assembly.loc == T)
 		var/datum/integrated_io/wanted_dir = inputs[2]
 		if(isnum(wanted_dir.data))
-			if(!get_pin_data(IC_INPUT, 1))	// При выключенных стабилизаторах используем Ньютоновские импульсы
-				var/angle = dir2angle(wanted_dir.data)
-				if(!assembly.drift_handler)	// Первичный импульс
-					new /datum/drift_handler(assembly, angle, TRUE, 0, ION_ACCEL_PER_PULSE)
-				else
-					assembly.drift_handler.newtonian_impulse(angle, 0, ION_ACCEL_PER_PULSE, MAX_ION_DRIFT_SPEED)
+			if(!get_pin_data(IC_INPUT, 1))	// При выключенных стабилизаторах конструкция уходит в дрейф
+				if(!assembly.newtonian_move(wanted_dir.data))
+					activate_pin(3)
+					return FALSE
 				emit_thrust_sparks(T)
 				activate_pin(2)
 				return TRUE
@@ -64,6 +60,3 @@
 				activate_pin(3)
 				return FALSE
 	return FALSE
-
-#undef MAX_ION_DRIFT_SPEED
-#undef ION_ACCEL_PER_PULSE

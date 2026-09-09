@@ -557,7 +557,7 @@
 /area/shuttle/escape)
 "rP" = (
 /obj/machinery/vending/dinnerware,
-/obj/machinery/atmospherics/components/unary/passive_vent/layer3,
+/obj/machinery/atmospherics/components/unary/passive_vent/layer4,
 /turf/open/floor/plasteel/freezer,
 /area/shuttle/escape)
 "rX" = (
@@ -1001,7 +1001,7 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "Hg" = (
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer2{
 	dir = 5
 	},
 /obj/item/crowbar,
@@ -1197,7 +1197,7 @@
 /obj/item/reagent_containers/food/snacks/meat/rawbacon,
 /obj/item/reagent_containers/food/snacks/meat/rawbacon,
 /obj/item/reagent_containers/food/snacks/meat/rawbacon,
-/obj/machinery/atmospherics/components/unary/passive_vent/layer1,
+/obj/machinery/atmospherics/components/unary/passive_vent/layer2,
 /turf/open/floor/plasteel/freezer,
 /area/shuttle/escape)
 "OM" = (
@@ -1261,10 +1261,10 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "Rd" = (
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer3{
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer4{
 	dir = 5
 	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer2{
 	dir = 4
 	},
 /turf/open/floor/plasteel/freezer,
@@ -1425,7 +1425,7 @@
 /turf/open/floor/carpet,
 /area/shuttle/escape)
 "Wc" = (
-/obj/machinery/atmospherics/pipe/simple/general/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/hidden/layer2{
 	dir = 4
 	},
 /obj/machinery/light/small,

@@ -105,7 +105,7 @@
 	owner.current.forceMove(GLOB.syndiop_start[((team_number - 1) % GLOB.syndiop_start.len) + 1])
 
 /datum/antagonist/syndicate_op/leader/move_to_spawnpoint()
-	owner.current.forceMove(pick(GLOB.nukeop_leader_start))
+	owner.current.forceMove(pick(GLOB.syndiop_leader_start))
 
 /datum/antagonist/syndicate_op/create_team(datum/team/nuclear/new_team)
 	if(!new_team)
@@ -339,7 +339,7 @@
 	text += "<br>"
 	text += "(Syndicate used [TC_uses] CR) [purchases]"
 	if(TC_uses == 0 && SSticker.mode.station_was_nuked && !operatives_dead())
-		text += "<BIG>[icon2html('icons/badass.dmi', world, "badass")]</BIG>"
+		text += "<BIG>[icon2html('icons/BadAss.dmi', world, "badass")]</BIG>"
 
 	parts += text
 

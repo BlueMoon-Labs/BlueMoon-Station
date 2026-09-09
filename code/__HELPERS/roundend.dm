@@ -388,6 +388,8 @@
 	//Ambitions
 	parts += ambitions_report()
 
+	parts += GLOB.inteq_pact_siege?.common_roundend_html() || ""
+
 	listclearnulls(parts)
 
 	return parts.Join()
@@ -528,6 +530,7 @@
 	parts += GLOB.survivor_report
 	parts += "</div>"
 	parts += SSmetadollars?.personal_roundend_html(C) || ""
+	parts += GLOB.inteq_pact_siege?.personal_roundend_html(C) || ""
 
 	return parts.Join()
 

@@ -46,10 +46,15 @@
 #define DEFAULT_UNDERLAY_ICON_STATE 	"plating"
 
 /atom/var/smooth = SMOOTH_FALSE
-/atom/var/top_left_corner
-/atom/var/top_right_corner
-/atom/var/bottom_left_corner
-/atom/var/bottom_right_corner
+/// Наложенные углы диагонального сглаживания: [nw, ne, sw, se], по индексам SMOOTH_CORNER_*.
+/// Один ленивый список вместо четырёх переменных - четыре слота стояли на каждом из 1.2 млн
+/// турфов мира, а список заводится только тем, кто реально сглаживается по диагонали.
+/atom/var/list/smooth_corners
+
+#define SMOOTH_CORNER_NW 1
+#define SMOOTH_CORNER_NE 2
+#define SMOOTH_CORNER_SW 3
+#define SMOOTH_CORNER_SE 4
 /atom/var/list/canSmoothWith = null // TYPE PATHS I CAN SMOOTH WITH~~~~~ If this is null and atom is smooth, it smooths only with itself
 /atom/movable/var/can_be_unanchored = FALSE
 /turf/var/list/fixed_underlay = null
@@ -242,25 +247,29 @@
 			se = "4-e"
 
 	var/list/New
+	var/list/corners = A.smooth_corners
+	if(!corners)
+		corners = list(null, null, null, null)
+		A.smooth_corners = corners
 
-	if(A.top_left_corner != nw)
-		A.cut_overlay(A.top_left_corner)
-		A.top_left_corner = nw
+	if(corners[SMOOTH_CORNER_NW] != nw)
+		A.cut_overlay(corners[SMOOTH_CORNER_NW])
+		corners[SMOOTH_CORNER_NW] = nw
 		LAZYADD(New, nw)
 
-	if(A.top_right_corner != ne)
-		A.cut_overlay(A.top_right_corner)
-		A.top_right_corner = ne
+	if(corners[SMOOTH_CORNER_NE] != ne)
+		A.cut_overlay(corners[SMOOTH_CORNER_NE])
+		corners[SMOOTH_CORNER_NE] = ne
 		LAZYADD(New, ne)
 
-	if(A.bottom_right_corner != sw)
-		A.cut_overlay(A.bottom_right_corner)
-		A.bottom_right_corner = sw
+	if(corners[SMOOTH_CORNER_SW] != sw)
+		A.cut_overlay(corners[SMOOTH_CORNER_SW])
+		corners[SMOOTH_CORNER_SW] = sw
 		LAZYADD(New, sw)
 
-	if(A.bottom_left_corner != se)
-		A.cut_overlay(A.bottom_left_corner)
-		A.bottom_left_corner = se
+	if(corners[SMOOTH_CORNER_SE] != se)
+		A.cut_overlay(corners[SMOOTH_CORNER_SE])
+		corners[SMOOTH_CORNER_SE] = se
 		LAZYADD(New, se)
 
 	if(New)
@@ -321,27 +330,24 @@
 					queue_smooth(A)
 
 /atom/proc/clear_smooth_overlays()
-	cut_overlay(top_left_corner)
-	top_left_corner = null
-	cut_overlay(top_right_corner)
-	top_right_corner = null
-	cut_overlay(bottom_right_corner)
-	bottom_right_corner = null
-	cut_overlay(bottom_left_corner)
-	bottom_left_corner = null
+	var/list/corners = smooth_corners
+	if(!corners)
+		return
+	for(var/index in 1 to length(corners))
+		cut_overlay(corners[index])
+	smooth_corners = null
 
 /atom/proc/replace_smooth_overlays(nw, ne, sw, se)
 	clear_smooth_overlays()
-	var/list/O = list()
-	top_left_corner = nw
-	O += nw
-	top_right_corner = ne
-	O += ne
-	bottom_left_corner = sw
-	O += sw
-	bottom_right_corner = se
-	O += se
-	add_overlay(O)
+	smooth_corners = list(nw, ne, sw, se)
+	// Именно через += : list(...) с нулями внутри отдал бы в add_overlay пустые записи,
+	// а `список += null` в DM молча ничего не добавляет - на этом и держался прежний код.
+	var/list/applied = list()
+	applied += nw
+	applied += ne
+	applied += sw
+	applied += se
+	add_overlay(applied)
 
 /proc/reverse_ndir(ndir)
 	switch(ndir)

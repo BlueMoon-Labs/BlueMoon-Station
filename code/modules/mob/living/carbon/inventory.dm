@@ -58,13 +58,7 @@
 		I.pulledby.stop_pulling()
 
 	I.screen_loc = null
-	if(client)
-		client.screen -= I
-	if(observers && observers.len)
-		for(var/M in observers)
-			var/mob/dead/observe = M
-			if(observe.client)
-				observe.client.screen -= I
+	remove_from_hud_screens(I)
 	I.forceMove(src)
 	I.layer = ABOVE_HUD_LAYER
 	I.plane = ABOVE_HUD_PLANE

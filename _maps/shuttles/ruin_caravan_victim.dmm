@@ -189,7 +189,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/airless,
 /area/shuttle/ruin/caravan/freighter1)
 "jg" = (
@@ -432,7 +432,7 @@
 /turf/open/floor/plasteel/dark/airless,
 /area/shuttle/ruin/caravan/freighter1)
 "uS" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -637,7 +637,7 @@
 /area/shuttle/ruin/caravan/freighter1)
 "EI" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space/stormtrooper,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -657,7 +657,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},

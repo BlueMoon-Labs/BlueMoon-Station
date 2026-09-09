@@ -653,7 +653,10 @@
 			if (STATE_MESSAGES)
 				data["messages"] = list()
 				data["messagesTrimmed"] = messages_trimmed
-				data["printerCooldown"] = report_print_cooldown
+				// именно булево: COOLDOWN_* хранит абсолютный дедлайн world.time, а
+				// UI кладёт это поле прямо в disabled - сырое число навсегда
+				// запирало кнопку печати после первой же распечатки
+				data["printerCooldown"] = !COOLDOWN_FINISHED(src, report_print_cooldown)
 
 				if (messages)
 					for (var/_message in messages)
@@ -876,7 +879,7 @@
 
 		if (teamSpawned)
 			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем поздразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
 
 		//Open the Armory doors
 		if(ertemplate.opendoors)

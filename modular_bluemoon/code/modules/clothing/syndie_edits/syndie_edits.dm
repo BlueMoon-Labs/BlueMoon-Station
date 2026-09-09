@@ -204,7 +204,19 @@
 
 /obj/item/clothing/suit/hooded/wintercoat/syndicate/Initialize(mapload)
 	. = ..()
-	allowed += GLOB.security_wintercoat_allowed
+	// Один общий список на весь тип вместо личной копии каждому экземпляру. Прежнее
+	// `allowed += GLOB.security_wintercoat_allowed` строило каждому синдикатскому коуту
+	// собственный список на 1609 путей: + с ассоциативным списком раскладывает его в
+	// плоский, так что копия ещё и теряла свойства типкэша. Соседние винтеркоуты
+	// (miscellaneous.dm:749/765/793/812/1149) просто присваивают глобалку, но им нечего
+	// терять - у них нет своих разрешённых предметов. Здесь есть, поэтому склеиваем один
+	// раз в статик, сохраняя и базовые шесть, и полторы тысячи из глобалки.
+	var/static/list/syndicate_wintercoat_allowed
+	if(!syndicate_wintercoat_allowed)
+		syndicate_wintercoat_allowed = GLOB.security_wintercoat_allowed.Copy()
+		for(var/base_path in initial(allowed))
+			syndicate_wintercoat_allowed[base_path] = TRUE
+	allowed = syndicate_wintercoat_allowed
 
 /obj/item/clothing/head/hooded/winterhood/syndicate
 	desc = "A sinister black hood with armor padding."

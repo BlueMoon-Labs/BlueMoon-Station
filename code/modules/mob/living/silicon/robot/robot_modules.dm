@@ -189,6 +189,9 @@
 				EG.update_icon()
 			else
 				EG.charge_tick = 0
+		else if(istype(I, /obj/item/gun/ballistic/revolver/grenadelauncher/cyborg))
+			var/obj/item/gun/ballistic/revolver/grenadelauncher/cyborg/GL = I
+			GL.recharge_from_station(coeff)
 
 	R.toner = R.tonermax
 
@@ -971,7 +974,7 @@
 			dogborg = TRUE
 		if("Kittyborg")
 			cyborg_base_icon = "engi"
-			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/kittyborg_engi.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_engi.dmi'
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
 		if("Dullahan (Taur)")
@@ -1246,7 +1249,9 @@
 		if("Feline") // SPLURT Addon (ChompS Port)
 			cyborg_base_icon = "vixsec"
 			sleeper_overlay = "vixsec-sleeper"
-			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
+			// vixsec* лежат в splurt-файле, как и у остальных Feline-модулей; в citadel-файле
+			// их нет вовсе - борг был невидим, а меню поз отдыха выдавало "нет ни одной позы".
+			cyborg_icon_override = 'modular_splurt/icons/mob/widerobot.dmi'
 			dogborg = TRUE
 		if("Raptor V-4") // SPLURT Addon (ChompS Port)
 			cyborg_base_icon = "secraptor"
@@ -1276,7 +1281,7 @@
 			dogborg = TRUE
 		if("Kittyborg")
 			cyborg_base_icon = "sec"
-			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/kittyborg_sec.dmi'
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/kittycatborgs/kittyborg/Kittyborg_sec.dmi'
 			moduleselect_alternate_icon = 'modular_citadel/icons/ui/screen_cyborg.dmi'
 			dogborg = TRUE
 		if("Dragon") // WhiteMoon Port (Dragonborg)
@@ -2405,7 +2410,7 @@
 		/obj/item/card/emag,
 		/obj/item/pinpointer/syndicate_cyborg,
 		/obj/item/stack/medical/gauze/cyborg,
-		/obj/item/gun/medbeam,
+		/obj/item/gun/medbeam/syndicate,
 		/obj/item/organ_storage)
 	ratvar_modules = list(
 		/obj/item/clockwork/slab/cyborg/medical,

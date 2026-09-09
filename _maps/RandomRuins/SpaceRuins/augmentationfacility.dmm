@@ -24,7 +24,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/powered)
 "ep" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /turf/closed/wall/r_wall/rust,
@@ -95,7 +95,7 @@
 /area/ruin/powered)
 "pv" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
 /turf/open/floor/plasteel,
@@ -108,7 +108,7 @@
 /area/ruin/powered)
 "qk" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -158,7 +158,7 @@
 "uF" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 1
 	},
 /turf/open/floor/plasteel,
@@ -171,7 +171,7 @@
 "xn" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
 /turf/open/floor/plasteel,
 /area/ruin/powered)
 "yf" = (
@@ -203,7 +203,7 @@
 /area/ruin/powered)
 "CZ" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/reagent_dispensers/watertank,
@@ -227,7 +227,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/powered)
 "Fp" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /turf/closed/mineral/random/high_chance,
@@ -330,7 +330,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/powered)
 "RE" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer1{
+/obj/machinery/atmospherics/components/unary/outlet_injector/on/layer2{
 	dir = 4
 	},
 /turf/open/floor/plating/asteroid/airless,

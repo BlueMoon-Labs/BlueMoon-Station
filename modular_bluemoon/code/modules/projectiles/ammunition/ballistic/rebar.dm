@@ -5,7 +5,6 @@
 	icon = 'modular_bluemoon/icons/obj/guns/crossbowbolts.dmi'
 	icon_state = "Sharpenedironrod"
 	projectile_type = /obj/item/projectile/bullet/rebar
-	newtonian_force = 1.5
 	heavy_metal = FALSE
 	custom_materials = list(/datum/material/iron = 1000)
 
@@ -53,7 +52,7 @@
 
 /obj/item/ammo_casing/rebar/nitrium
 	name = "nitrium crystal bolt"
-	desc = "A rod tipped with nitrium crystal. Delivers a sharp stimulant payload on hit."
+	desc = "Болт с наконечником из кристалла Nitrium. При попадании вводит стимулятор, но также наносит колотую рану и может застрять в теле, причиняя боль."
 	icon_state = "Nitrium crystal bolt"
 	projectile_type = /obj/item/projectile/bullet/rebar/nitrium
 	custom_materials = null
@@ -76,5 +75,4 @@
 	desc = "Doink!"
 	icon_state = "paperball"
 	projectile_type = /obj/item/projectile/bullet/paperball
-	newtonian_force = 0.5
 	custom_materials = list(/datum/material/paper = 250)

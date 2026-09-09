@@ -93,6 +93,9 @@
 
 /datum/mutation/human/laser_eyes/on_ranged_attack(atom/target, mouseparams)
 	if(owner.a_intent == INTENT_HARM)
+		if(HAS_TRAIT(owner, TRAIT_PACIFISM))
+			to_chat(owner, span_notice("Это может обжечь других! Вы не хотите рисковать навредить кому-либо..."))
+			return
 		owner.LaserEyes(target, mouseparams)
 
 /// Flash Protection — immune to handheld flashes and flashbangs (not welding arcs).

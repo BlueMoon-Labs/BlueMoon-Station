@@ -1,10 +1,10 @@
 import { Button, Section, Stack } from '../../components';
 import { AdminSection } from './AdminSection';
+import { MentorSection } from './MentorSection';
 import { ChatSection } from './sections/ChatSection';
 import { ContentSection } from './sections/ContentSection';
 import { GameplaySection } from './sections/GameplaySection';
 import { GraphicsSection } from './sections/GraphicsSection';
-import { MentorSection } from './MentorSection';
 import { SoundsSection } from './sections/SoundsSection';
 
 const BASE_CATEGORIES = [

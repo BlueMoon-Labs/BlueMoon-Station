@@ -1,4 +1,14 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaD" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/maintenance/department/crew_quarters/dorms)
 "aaa" = (
 /turf/open/space/basic,
 /area/space)
@@ -345,7 +355,7 @@
 	},
 /area/commons/fitness/pool)
 "aaO" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "aaP" = (
 /turf/open/floor/plasteel/yellowsiding{
@@ -510,7 +520,6 @@
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "abj" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel/yellowsiding,
 /area/commons/fitness/pool)
 "abk" = (
@@ -543,17 +552,14 @@
 	},
 /area/commons/fitness/pool)
 "abn" = (
-/obj/machinery/pool/filter{
-	pixel_y = 24
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abo" = (
 /obj/structure/pool/ladder{
 	dir = 2;
 	pixel_y = 24
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abp" = (
 /obj/effect/turf_decal/tile/blue{
@@ -572,12 +578,11 @@
 	},
 /area/commons/fitness/pool)
 "abr" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abs" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abt" = (
 /obj/structure/pool/Rboard,
@@ -6062,13 +6067,14 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/commons/dorms)
 "aqY" = (
-/obj/docking_port/stationary{
+/obj/docking_port/stationary/escape_pod{
 	dwidth = 2;
 	height = 6;
 	name = "Station";
 	roundstart_template = /datum/map_template/shuttle/escape_pod/large;
 	shuttle_id = "monastery_shuttle_station";
-	width = 5
+	width = 5;
+	enforce_specific_pod = TRUE
 	},
 /turf/open/space/basic,
 /area/space)
@@ -20449,7 +20455,7 @@
 	},
 /area/hallway/secondary/entry)
 "aZE" = (
-/obj/machinery/atmospherics/pipe/simple/cyan/hidden{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -28880,7 +28886,7 @@
 /obj/machinery/door/airlock/maintenance{
 	req_access_txt = "12"
 	},
-/obj/machinery/atmospherics/pipe/simple/cyan/hidden{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
 /turf/open/floor/plating,
@@ -42693,7 +42699,7 @@
 /obj/machinery/atmospherics/pipe/simple/green/hidden{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /turf/closed/wall,
 /area/maintenance/disposal/incinerator)
 "bYu" = (
@@ -50377,7 +50383,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/siphon/on/layer2{
 	dir = 8
 	},
 /turf/open/floor/engine,
@@ -50773,7 +50779,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 5
 	},
 /turf/open/floor/plasteel/dark,
@@ -51225,7 +51231,7 @@
 /obj/effect/turf_decal/tile/green{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer1,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible/layer2,
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
 "eex" = (
@@ -52098,7 +52104,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/plating,
@@ -53340,7 +53346,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -55548,7 +55554,7 @@
 	name = "MiniSat Maintenance";
 	req_access_txt = "65"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
@@ -55588,7 +55594,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit/departure_lounge)
 "klI" = (
-/obj/machinery/atmospherics/components/binary/pump/layer1{
+/obj/machinery/atmospherics/components/binary/pump/layer2{
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -59212,7 +59218,6 @@
 	name = "Representative Office"
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -60262,7 +60267,7 @@
 	icon_state = "2-8"
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -62971,7 +62976,7 @@
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
 "ujI" = (
@@ -63990,7 +63995,6 @@
 /obj/machinery/door/airlock/maintenance{
 	req_access_txt = "12"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/maintenance/department/crew_quarters/dorms)
 "vwY" = (
@@ -111163,7 +111167,7 @@ cQq
 pbC
 stw
 pbC
-wqP
+aaD
 vwX
 awD
 axA

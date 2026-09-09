@@ -9,6 +9,7 @@
 /// Single ghost-possessed hitchhiker in EVA.
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker
 	name = "Автостопом по гиперпространству"
+	admin_forceable = TRUE
 	spawning_list = list(/mob/living/carbon/human = 1)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE
 	event_probability = 50

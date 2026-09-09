@@ -4,7 +4,7 @@
 	description = "A better sprayer for your job!"
 	informing_radio_channels = list(RADIO_CHANNEL_SERVICE)
 	prereq_ids = list("practical_bluespace", "janitor") // BLUEMOON ADD practical_bluespace
-	design_ids = list("bluespacespray", "light_replacer_blue", "omni_janicart", "adv_mop_cleaner", "adv_mop_reach") // BLUEMOON ADD light_replacer_blue + "omni_janicart"
+	design_ids = list("bluespacespray", "light_replacer_blue", "omni_janicart", "adv_mop_cleaner", "adv_mop_reach", "spraycan_bluespace") // BLUEMOON ADD light_replacer_blue + "omni_janicart"
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 750)
 
 /datum/techweb_node/syndicate_basic/cool

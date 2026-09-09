@@ -7,8 +7,12 @@
 	appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	anchored = TRUE
 	rad_flags = RAD_NO_CONTAMINATE
-	// Initial color is the fully-lit white matrix so the first animate() interpolates correctly
-	color = LIGHTING_BASE_MATRIX
+	// color ставится в New() ПОСЛЕ ..(), а не типовым дефолтом. Типовой дефолт цвета
+	// проходит через /atom/Initialize -> `if(color) add_atom_colour(...)`, а тот заводит
+	// каждому инстансу личный atom_colours на четыре слота с личной копией этой самой
+	// двадцатиэлементной матрицы внутри. Читать atom_colours у объекта освещения некому:
+	// update() пишет color напрямую, мимо системы приоритетов. При четверти миллиона
+	// объектов на мир это 344 Б на штуку впустую. У tg по той же причине color = null.
 
 	///whether we are already in the SSlighting.objects_queue list
 	var/needs_update = FALSE
@@ -16,11 +20,16 @@
 	///the turf that our light is applied to
 	var/turf/affected_turf
 
-	// Cached previous corner values — skip animate() when unchanged
-	var/prev_rr = 1; var/prev_rg = 1; var/prev_rb = 1
-	var/prev_gr = 1; var/prev_gg = 1; var/prev_gb = 1
-	var/prev_br = 1; var/prev_bg = 1; var/prev_bb = 1
-	var/prev_ar = 1; var/prev_ag = 1; var/prev_ab = 1
+	// Двенадцати поканальных prev_* здесь больше нет. Они держали предыдущее значение
+	// каждого канала ради гейта "ничего визуально не изменилось", но гейт сравнивал СУММУ
+	// двенадцати abs-дельт с LIGHTING_ROUND_VALUE = 1/32, а углы округляются к той же 1/32
+	// (lighting_corner.dm:140-148): один шаг сетки на одном канале уже даёт ровно порог, а
+	// смена яркости угла двигает все три его канала разом. Контраст зоны только УВЕЛИЧИВАЕТ
+	// значения (1 / 1.1 / 1.15), так что пройти под порог мог разве что одноканальный свет
+	// на углу с тремя непрозрачными соседями - и то на разницу, которой не видно. За это
+	// платилось три ступени блока переменных (16.2 Б * 12) на 256 761 объект прода, около
+	// 50 МБ из 4094 потолка, плюс 34 арифметические операции в самом горячем проке света
+	// на КАЖДЫЙ апдейт. См. lighting_object_var_diet.dm.
 
 	/// Shared static color matrix buffer — reused across all lighting objects to avoid per-instance allocation.
 	/// Safe because update() runs sequentially in SSlighting fire() and BYOND copies the list on color assignment.
@@ -29,7 +38,15 @@
 	// Fast skip for turfs that stay dark — avoids ALL corner reads, shadow, profile, and matrix work
 	var/prev_was_dark = FALSE
 
-	// Cached blended area profile (averaged with cardinal neighbors for soft transitions)
+	/// TRUE только у объекта на ГРАНИЦЕ зон - у него профиль усреднён с соседями и лежит в
+	/// blended_* ниже. У всех остальных профиль равен профилю собственной зоны и на объекте
+	/// не хранится: четыре записи на 256 761 объект прода это ступень блока переменных,
+	/// то есть 16.6 МБ, а разыменование affected_turf.loc в апдейте не стоит ничего.
+	/// Ставится и снимается ТОЛЬКО под условием - безусловная запись FALSE поверх FALSE в
+	/// BYOND всё равно занимает слот (см. reference_byond_instance_var_block_model).
+	var/blend_is_local = FALSE
+
+	// Cached blended area profile — заполняется ТОЛЬКО при blend_is_local, см. выше
 	var/blended_temperature = 0
 	var/blended_contrast = 1
 	var/blended_contact_shadow = 1
@@ -44,6 +61,10 @@
 	// Обходы contents от служебного атома огорожены точечно: onShuttleMove() no-op,
 	// скип в фотозахвате, блэклист радиации. Каноническое создание - new(turf).
 	..()
+	// Начальная матрица - полностью освещённая белая, чтобы первый animate() интерполировал
+	// от неё, а не от пустого цвета. Ставится здесь, а не типовым дефолтом: см. комментарий
+	// у объявления типа.
+	color = LIGHTING_BASE_MATRIX
 	if(!isturf(source))
 		qdel(src, force=TRUE)
 		stack_trace("a lighting object was assigned to [source], a non turf! ")
@@ -114,10 +135,11 @@
 	// Fast path: all cardinal neighbors belong to the same area — skip averaging
 	if((!n_turf || n_turf.loc == center_area) && (!s_turf || s_turf.loc == center_area) && \
 	   (!e_turf || e_turf.loc == center_area) && (!w_turf || w_turf.loc == center_area))
-		blended_temperature = center_area.light_temperature
-		blended_contrast = center_area.light_contrast
-		blended_contact_shadow = center_area.contact_shadow_multiplier
-		blended_ambient = center_area.ambient_light
+		// Профиль равен профилю собственной зоны - копировать его на объект незачем,
+		// update() прочитает его через affected_turf.loc. Снимаем флаг только если он был:
+		// объект, ни разу не побывавший на границе, не должен платить за эту переменную.
+		if(blend_is_local)
+			blend_is_local = FALSE
 		return
 	// Slow path: area boundary — average with neighbors for soft transitions
 	var/total_temp = center_area.light_temperature
@@ -158,6 +180,7 @@
 	blended_contrast = total_contrast / count
 	blended_contact_shadow = total_contact / count
 	blended_ambient = total_ambient / count
+	blend_is_local = TRUE
 
 /atom/movable/lighting_object/proc/update(animate_time = LIGHTING_ANIMATE_TIME, use_animate = TRUE)
 
@@ -203,10 +226,19 @@
 	var/ag = alpha_corner.cache_g
 	var/ab = alpha_corner.cache_b
 
+	// Профиль зоны. У объекта на границе он усреднён и лежит на нём самом; у всех
+	// остальных - это профиль собственной зоны, и читается он отсюда, а не с объекта:
+	// хранить его на четверти миллиона объектов дороже, чем один раз разыменовать loc.
+	var/area/profile_area = blend_is_local ? null : affected_turf.loc
+	var/profile_contact_shadow = profile_area ? profile_area.contact_shadow_multiplier : blended_contact_shadow
+	var/profile_contrast = profile_area ? profile_area.light_contrast : blended_contrast
+	var/profile_temperature = profile_area ? profile_area.light_temperature : blended_temperature
+	var/profile_ambient = profile_area ? profile_area.ambient_light : blended_ambient
+
 	// Contact shadows: dim corners based on nearby opaque/heavy atoms, scaled by area multiplier
 	// Uses pre-computed shadow_sqrt_cache on corners (set during recalc_opaque_neighbors)
 	// Supports float weights for semi-transparent shadows from tables, lockers, etc.
-	var/contact_str = CONTACT_SHADOW_STRENGTH * blended_contact_shadow
+	var/contact_str = CONTACT_SHADOW_STRENGTH * profile_contact_shadow
 	var/_rsc = red_corner.shadow_sqrt_cache
 	var/_gsc = green_corner.shadow_sqrt_cache
 	var/_bsc = blue_corner.shadow_sqrt_cache
@@ -227,23 +259,23 @@
 			ar *= shadow_mul; ag *= shadow_mul; ab *= shadow_mul
 
 	// Area lighting profile: temperature (warm/cool) and contrast — uses blended values for soft transitions
-	if(blended_contrast != 1)
-		var/contrast = blended_contrast
+	if(profile_contrast != 1)
+		var/contrast = profile_contrast
 		rr *= contrast; rg *= contrast; rb *= contrast
 		gr *= contrast; gg *= contrast; gb *= contrast
 		br *= contrast; bg *= contrast; bb *= contrast
 		ar *= contrast; ag *= contrast; ab *= contrast
-	if(blended_temperature)
+	if(profile_temperature)
 		// Multiplicative temperature: brighter areas shift more, dark areas stay neutral
 		// Warm (temp > 0): ↑red ↓blue; Cool (temp < 0): ↓red ↑blue
-		var/warm_mul = 1 + blended_temperature
-		var/cool_mul = max(0, 1 - blended_temperature)
+		var/warm_mul = 1 + profile_temperature
+		var/cool_mul = max(0, 1 - profile_temperature)
 		rr *= warm_mul; gr *= warm_mul; br *= warm_mul; ar *= warm_mul
 		rb *= cool_mul; gb *= cool_mul; bb *= cool_mul; ab *= cool_mul
 
 		// Complementary shadow tinting: shadows shift to the opposite hue of the area temperature
 		// Warm light → cool (blue) shadows, cool light → warm (red) shadows
-		var/shadow_shift = -blended_temperature * SHADOW_TINT_FACTOR
+		var/shadow_shift = -profile_temperature * SHADOW_TINT_FACTOR
 		var/threshold_3x = SHADOW_TINT_THRESHOLD * 3
 		var/inv_threshold = 1 / SHADOW_TINT_THRESHOLD
 		var/corner_sum
@@ -285,22 +317,6 @@
 	affected_turf.luminosity = set_luminosity
 	prev_was_dark = !set_luminosity
 
-	// Skip matrix construction + animate() if nothing visually changed
-	// Short-circuit: compute first 6 abs() values, skip remaining 6 if already above threshold
-	// Post-spike objects typically have large changes, so first half exceeds threshold quickly
-	var/_eps_diff = abs(rr - prev_rr) + abs(rg - prev_rg) + abs(rb - prev_rb) + \
-	   abs(gr - prev_gr) + abs(gg - prev_gg) + abs(gb - prev_gb)
-	if(_eps_diff < LIGHTING_ROUND_VALUE)
-		_eps_diff += abs(br - prev_br) + abs(bg - prev_bg) + abs(bb - prev_bb) + \
-		   abs(ar - prev_ar) + abs(ag - prev_ag) + abs(ab - prev_ab)
-		if(_eps_diff < LIGHTING_ROUND_VALUE)
-			return
-
-	prev_rr = rr; prev_rg = rg; prev_rb = rb
-	prev_gr = gr; prev_gg = gg; prev_gb = gb
-	prev_br = br; prev_bg = bg; prev_bb = bb
-	prev_ar = ar; prev_ag = ag; prev_ab = ab
-
 	affected_turf.cached_lumcount = null
 
 	var/list/new_color
@@ -309,10 +325,10 @@
 		// Fully lit — white matrix (invisible on BLEND_MULTIPLY)
 		new_color = LIGHTING_BASE_MATRIX
 	else if(!set_luminosity)
-		if(blended_ambient > 0)
+		if(profile_ambient > 0)
 			// Ambient floor: barely-visible base light instead of pure black (textures remain faintly visible)
 			// luminosity stays FALSE — turf is still "dark" for vision mechanics
-			var/amb = blended_ambient
+			var/amb = profile_ambient
 			var/amb_key = "[round(amb, 0.005)]"
 			var/list/cached = GLOB.lighting_ambient_matrices[amb_key]
 			if(!cached)
@@ -324,10 +340,25 @@
 			new_color = LIGHTING_DARK_MATRIX
 	else
 		// Normal lit — reuse shared static buffer (BYOND copies on color assignment/animate)
-		shared_color_buffer[1]  = rr; shared_color_buffer[2]  = rg; shared_color_buffer[3]  = rb
-		shared_color_buffer[5]  = gr; shared_color_buffer[6]  = gg; shared_color_buffer[7]  = gb
-		shared_color_buffer[9]  = br; shared_color_buffer[10] = bg; shared_color_buffer[11] = bb
-		shared_color_buffer[13] = ar; shared_color_buffer[14] = ag; shared_color_buffer[15] = ab
+		//
+		// ОКРУГЛЕНИЕ ОБЯЗАТЕЛЬНОЕ, а не косметическое. Углы пришли сюда на сетке
+		// LIGHTING_ROUND_VALUE, но всё, что выше в этом проке, домножает их на непрерывные
+		// дробные множители (контактная тень, контраст и температура зоны, подкраска
+		// теней) и сбивает с сетки. Без возврата на сетку каждый апдейт тайла даёт
+		// УНИКАЛЬНУЮ матрицу, то есть новый appearance, а их BYOND держит у клиента
+		// до конца сессии и не освобождает. См. LIGHTING_MATRIX_ROUND_VALUE.
+		shared_color_buffer[1]  = round(rr, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[2]  = round(rg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[3]  = round(rb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[5]  = round(gr, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[6]  = round(gg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[7]  = round(gb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[9]  = round(br, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[10] = round(bg, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[11] = round(bb, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[13] = round(ar, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[14] = round(ag, LIGHTING_MATRIX_ROUND_VALUE)
+		shared_color_buffer[15] = round(ab, LIGHTING_MATRIX_ROUND_VALUE)
 		new_color = shared_color_buffer
 
 	if(!use_animate || animate_time <= LIGHTING_ANIMATE_TIME_FAST)

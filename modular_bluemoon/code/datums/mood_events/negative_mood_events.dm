@@ -21,3 +21,8 @@
 	description = span_danger("ИИ выразил крайнее недовольство моей эффективностью... Мне стоит работать лучше.\n")
 	mood_change = -6
 	timeout = 5 MINUTES
+
+/datum/mood_event/ion_storm
+	description = span_warning("Ионный шторм прошёл сквозь мои схемы. Сенсоры шумят, настроение испорчено.\n")
+	mood_change = -5
+	timeout = 4 MINUTES

@@ -486,7 +486,7 @@
 /turf/open/floor/plating/airless,
 /area/shuttle/ruin/caravan/freighter3)
 "gT" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/airless,
 /area/shuttle/ruin/caravan/freighter3)
@@ -636,7 +636,7 @@
 /obj/effect/turf_decal/box/white/corners{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plasteel/airless/dark,
 /area/shuttle/ruin/caravan/freighter3)
 "hz" = (
@@ -917,7 +917,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/airless,
 /area/shuttle/ruin/caravan/freighter3)

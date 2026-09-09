@@ -342,7 +342,11 @@ SUBSYSTEM_DEF(job)
 		CheckHeadPositions(level)
 
 		// Loop through all unassigned players
-		for(var/mob/dead/new_player/player in unassigned)
+		//обходим копию: AssignRole/RejectPlayer правят unassigned прямо в теле цикла,
+		//а на живом списке индекс сдвигался и каждый второй игрок пропускался
+		for(var/mob/dead/new_player/player in unassigned.Copy())
+			if(QDELETED(player) || !(player in unassigned))
+				continue
 			if(PopcapReached())
 				RejectPlayer(player)
 
@@ -392,12 +396,16 @@ SUBSYSTEM_DEF(job)
 	JobDebug("DO, Handling unassigned.")
 	// Hand out random jobs to the people who didn't get any in the last check
 	// Also makes sure that they got their preference correct
-	for(var/mob/dead/new_player/player in unassigned)
+	for(var/mob/dead/new_player/player in unassigned.Copy())
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 		HandleUnassigned(player)
 
 	JobDebug("DO, Handling unrejectable unassigned")
 	//Mop up people who can't leave.
-	for(var/mob/dead/new_player/player in unassigned) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+	for(var/mob/dead/new_player/player in unassigned.Copy()) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 /* BLUEMOON REMOVAL START - убираем вариант получения рандомной роли при получении антажки, оставляя только ассистента
 		if(player.client.prefs.joblessrole == BERANDOMJOB) //Gives the player a random role if their preferences are set to it
 			if(!GiveRandomJob(player))
@@ -857,17 +865,18 @@ SUBSYSTEM_DEF(job)
 				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back || astype(I)
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
 					if(RB)
 						// Если это сумка, пробуем положить ее в руки
-						if(istype(existing, /obj/item/storage/backpack) && !M.put_in_hands(existing, FALSE))
-							// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
-							for(var/obj/item/item_in_hand in M.held_items)
-								LAZYADD(bag_contents, item_in_hand)
-							M.drop_all_held_items()
-							// Пробуем еще раз, но уже с принудительным флагом
-							if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
-								qdel(existing)
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								for(var/obj/item/item_in_hand in M.held_items)
+									LAZYADD(bag_contents, item_in_hand)
+								M.drop_all_held_items()
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
 						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
 							qdel(existing)
 					else if(!can_drop)
@@ -1013,18 +1022,19 @@ SUBSYSTEM_DEF(job)
 				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back || astype(I)
+					var/obj/item/storage/backpack/RB = astype(RC.back) || astype(I)
 					if(RB)
 						// Если это сумка, пробуем положить ее в руки
-						if(istype(existing, /obj/item/storage/backpack) && !M.put_in_hands(existing, FALSE))
-							// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
-							var/list/temp_items = LAZYCOPY(M.held_items)
-							for(var/obj/item/item_in_hand in temp_items)
-								if(M.temporarilyRemoveItemFromInventory(item_in_hand))
-									SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
-							// Пробуем еще раз, но уже с принудительным флагом
-							if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
-								qdel(existing)
+						if(istype(existing, /obj/item/storage/backpack))
+							if(!M.put_in_hands(existing, FALSE))
+								// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+								var/list/temp_items = LAZYCOPY(M.held_items)
+								for(var/obj/item/item_in_hand in temp_items)
+									if(M.temporarilyRemoveItemFromInventory(item_in_hand))
+										SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+								// Пробуем еще раз, но уже с принудительным флагом
+								if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+									qdel(existing)
 						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
 							qdel(existing)
 					else if(!can_drop)

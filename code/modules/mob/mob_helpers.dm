@@ -585,11 +585,32 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	)
 
 	logging[smessage_type] += list(entry)
+	trim_individual_log(logging[smessage_type])
 
 	if(client)
 		client.player_details.logging[smessage_type] += list(entry)
+		trim_individual_log(client.player_details.logging[smessage_type])
 
 	..(message, message_type, color, log_globally)
+
+/**
+ * Держит индивидуальный лог в границах: старые записи вытесняются пачкой.
+ *
+ * Лог рос без всякого предела до конца раунда, и запись тут не строка, а ассоциативный
+ * список из тринадцати полей (у /tg/ на этом месте одна строка - тринадцать полей завёл
+ * наш лог-вьювер). Держится он ДВАЖДЫ: у моба и у player_details, причём второй живёт весь
+ * раунд по ckey и переживает смену тела. При сотне игроков это накопитель, растущий строго
+ * пропорционально активности станции, а перепись памяти его не видит: прироста ИНСТАНСОВ
+ * от него нет ни одного, растут только длины списков на уже живых объектах.
+ *
+ * Вытесняется четверть, а не одна запись: Cut(1, 2) на каждом сообщении означал бы сдвиг
+ * всего списка на каждую реплику. Полная история никуда не девается - она в файлах раунда,
+ * а этот лог нужен админу для недавнего, и его же он в лог-вьювере и открывает.
+ */
+/mob/proc/trim_individual_log(list/entries)
+	if(length(entries) <= MOB_INDIVIDUAL_LOG_MAX)
+		return
+	entries.Cut(1, round(MOB_INDIVIDUAL_LOG_MAX / 4) + 1)
 
 /mob/proc/can_hear()
 	. = TRUE

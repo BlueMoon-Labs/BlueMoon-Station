@@ -20,6 +20,8 @@
 	var/can_private_buy = TRUE //Can it be purchased privately by each crewmember?
 	/// If this pack comes shipped in a specific pod when launched from the express console
 	var/special_pod
+	/// BLUEMOON ADD - если задан, пак виден ТОЛЬКО консолям этих типов (list of /obj/machinery/computer/cargo/express typepaths), и не виден больше нигде
+	var/list/exclusive_consoles
 
 /datum/supply_pack/proc/generate(atom/A, datum/bank_account/paying_account)
 	var/obj/structure/closet/crate/C

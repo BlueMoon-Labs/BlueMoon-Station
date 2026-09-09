@@ -23,9 +23,20 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
 
+/datum/gear/head/campaignhat
+	name = "Sheriff Department's Campaign Hat"
+	path = /obj/item/clothing/head/warden/campaignhat
+	subcategory = LOADOUT_SUBCATEGORY_HEAD_JOBS
+	restricted_desc = "Security"
+	restricted_roles = list("Head of Security", "Warden", "Security Officer")
+
 /datum/gear/head/beret
 	name = "Black beret"
 	path = /obj/item/clothing/head/beret/black
+
+/datum/gear/head/beret/paramedic
+	name = "Paramedic beret"
+	path = /obj/item/clothing/head/beret/medical/paramedic
 
 /datum/gear/head/redberet
 	name = "Red beret"

@@ -651,3 +651,69 @@
 #undef AI_SCENE_FLOOR
 
 #endif
+
+///Усталость погони. До неё у преследования не было условия окончания вовсе:
+///пока держится LOS, цель не теряется, а на открытой лаве LOS не рвётся никогда.
+///Прод 9887: watcher вёл ползущего в крите игрока 118 секунд на 26 тайлов.
+/datum/unit_test/ai_pursuit_fatigue_ends_endless_chase/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	TEST_ASSERT_NOTNULL(fsm, "Санити: синглтон FSM-сабтри не найден")
+
+	//свежая погоня от текущей точки бросаться не имеет права
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Свежая погоня не имеет права прерываться")
+
+	//ушли за поводок от точки взятия цели - случай watcher: попадания идут,
+	//то есть по обмену уроном погоня "продуктивна", но моб уводится через полкарты
+	var/leash_gap = AI_PURSUIT_LEASH + 4
+	var/far_x = (pawn_turf.x > leash_gap) ? (pawn_turf.x - leash_gap) : (pawn_turf.x + leash_gap)
+	var/turf/far_origin = locate(far_x, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(far_origin, "Санити: точка за поводком обязана существовать на карте")
+	TEST_ASSERT(get_dist(pawn_turf, far_origin) > AI_PURSUIT_LEASH, "Санити: точка обязана быть именно за поводком")
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = far_origin
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Уход за поводок от точки взятия цели обязан прерывать погоню")
+
+	//обратный случай: моб рядом с домом, но цель не может достать вообще
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time - (AI_PURSUIT_PATIENCE * 2)
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Погоня без единого обмена уроном обязана выдохнуться")
+
+	//босс и сценарные преследователи отписаны: их погоня и есть содержание боя
+	controller.pursuit_leashed = FALSE
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Отписанный от поводка контроллер погоню не бросает")
+
+	qdel(controller)
+
+///Экстраполяция побега: SEARCH продлевает точку потери LOS вдоль последнего
+///наблюдаемого направления движения цели и упирается в геометрию - за угол
+///преследователь заворачивает, а не топчется на месте потери.
+/datum/unit_test/ai_search_projects_escape_vector/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	var/turf/corner = locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z)
+	controller.set_blackboard_key(BB_AI_LAST_KNOWN_POS, corner)
+	controller.blackboard[BB_AI_LAST_KNOWN_DIR] = NORTH
+	fsm.enter_search(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SEARCH_POINT], locate(corner.x, corner.y + AI_SEARCH_PURSUIT_PROJECTION, corner.z), "SEARCH обязан продлять улику вдоль направления побега")
+
+	//геометрия режет проекцию: стена в двух тайлах останавливает на первом
+	var/turf/wall_turf = locate(corner.x, corner.y + 2, corner.z)
+	var/saved_turf_type = wall_turf.type
+	wall_turf.ChangeTurf(/turf/closed/wall)
+	fsm.enter_search(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SEARCH_POINT], locate(corner.x, corner.y + 1, corner.z), "Проекция обязана упираться в геометрию, а не проходить сквозь стену")
+	wall_turf.ChangeTurf(saved_turf_type)
+
+	//без наблюдаемого направления проекции нет - розыск стартует с точки потери
+	controller.blackboard[BB_AI_LAST_KNOWN_DIR] = null
+	fsm.enter_search(controller)
+	TEST_ASSERT_NULL(controller.blackboard[BB_AI_SEARCH_POINT], "Без наблюдаемого направления SEARCH стартует с точки потери")
+
+	qdel(controller)

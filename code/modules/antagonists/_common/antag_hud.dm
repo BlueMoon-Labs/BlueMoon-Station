@@ -49,5 +49,11 @@
 
 /datum/mind/proc/leave_all_antag_huds()
 	for(var/datum/atom_hud/antag/hud in GLOB.all_huds)
-		if(hud.hudusers[current])
+		// Моб состоит в антаг-худе в двух ролях: носитель значка (hudatoms, через
+		// add_to_hud) и зритель (hudusers, через add_hud_to). join_hud даёт вторую роль
+		// только при self_visible, а девять из десяти антаг-худов - hidden: предатель,
+		// ниндзя, генокрад, абдуктор, sintouched, soulless, брат, еретик, гангстер.
+		// Проверка одного лишь hudusers их не находила, и при переносе разума значок
+		// оставался висеть на прежнем теле до конца смены
+		if(hud.hudusers[current] || (current in hud.hudatoms))
 			hud.leave_hud(current)

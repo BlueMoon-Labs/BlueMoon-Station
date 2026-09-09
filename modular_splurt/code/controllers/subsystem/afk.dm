@@ -46,6 +46,14 @@ SUBSYSTEM_DEF(auto_cryo)
 		if(SUBSYSTEM_CRYO_CHECK_GHOSTS && !length(currentrun_ghosts))
 			currentrun_ghosts = GLOB.dead_mob_list.Copy()
 
+	// Stage 1.5: снапшоты держат мобов жёстко, а живёт снапшот до пяти минут.
+	// Удалённая запись из середины списка дождалась бы своей очереди только к хвосту,
+	// и всё это время подсистема оставалась её последним держателем - hard delete.
+	if(length(currentrun_cryo))
+		prune_dead_entries(currentrun_cryo)
+	if(length(currentrun_ghosts))
+		prune_dead_entries(currentrun_ghosts)
+
 	// Stage 2: send expired SSD mobs to cryo. cryoMob() itself is cheap now - the heavy
 	// deletions land in delete_queue and are paid off next fire, a few per tick.
 	if(SUBSYSTEM_CRYO_CAN_RUN && length(currentrun_cryo))
@@ -86,6 +94,14 @@ SUBSYSTEM_DEF(auto_cryo)
 			log_game("[ghost_mob] was deleted after being SSD for [afk_time] ticks.")
 			qdel(ghost_mob)
 	//BLUEMOON REWORKED END
+
+/// Вычёркивает из снапшота уже удалённые записи. Идём с конца: Cut сдвигает хвост,
+/// и обход с начала пропускал бы каждую вторую запись.
+/datum/controller/subsystem/auto_cryo/proc/prune_dead_entries(list/snapshot)
+	for(var/index in length(snapshot) to 1 step -1)
+		var/datum/entry = snapshot[index]
+		if(QDELETED(entry))
+			snapshot.Cut(index, index + 1)
 
 /// Queues an atom for staggered deletion in fire(). Callers must have already detached it
 /// from gameplay (nullspace/containers) - it may live for a few more seconds.

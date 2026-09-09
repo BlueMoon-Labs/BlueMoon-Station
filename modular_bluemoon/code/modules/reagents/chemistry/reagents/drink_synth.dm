@@ -217,12 +217,12 @@
 
 /datum/reagent/consumable/synthdrink/synthanol/uplink
 	name = "Uplink"
-	description = "Pact with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
+	description = "PACT with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
 	color = "#d9ff00"
 	glass_icon_state = "uplink"
 	synthetic_taste = "проведения EMAGом по позитронному мозгу..."
 	glass_name = "glass of Uplink"
-	glass_desc = "Pact with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
+	glass_desc = "PACT with the Syndicate granted us this fantastic drink, smelling of sweet telecrystals..."
 	boozepwr = 90
 	value = REAGENT_VALUE_RARE
 	quality = DRINK_VERYGOOD

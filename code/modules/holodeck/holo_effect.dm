@@ -28,31 +28,36 @@
 /obj/effect/holodeck_effect/cards
 	icon = 'icons/obj/toys/toy.dmi'
 	icon_state = "deck_nanotrasen_full"
-	var/obj/item/toy/cards/deck/D
+	/// Колода нужна эффекту только для перенастройки безопасности, а дерезит её
+	/// консоль сама и спавнеру об этом не сообщает - держим слабой ссылкой.
+	var/datum/weakref/deck_ref
 
-/obj/effect/holodeck_effect/cards/activate(var/obj/machinery/computer/holodeck/HC)
-	D = new(loc)
+/obj/effect/holodeck_effect/cards/activate(obj/machinery/computer/holodeck/HC)
+	var/obj/item/toy/cards/deck/deck = new(loc)
+	deck_ref = WEAKREF(deck)
 	safety(!(HC.obj_flags & EMAGGED))
-	D.holo = HC
-	return D
+	deck.holo = HC
+	return deck
 
 /obj/effect/holodeck_effect/cards/safety(active)
-	if(!D)
+	var/obj/item/toy/cards/deck/deck = deck_ref?.resolve()
+	if(!deck)
+		deck_ref = null
 		return
 	if(active)
-		D.card_hitsound = null
-		D.card_force = 0
-		D.card_throwforce = 0
-		D.card_throw_speed = 3
-		D.card_throw_range = 7
-		D.card_attack_verb = list("attacked")
+		deck.card_hitsound = null
+		deck.card_force = 0
+		deck.card_throwforce = 0
+		deck.card_throw_speed = 3
+		deck.card_throw_range = 7
+		deck.card_attack_verb = list("attacked")
 	else
-		D.card_hitsound = 'sound/weapons/bladeslice.ogg'
-		D.card_force = 5
-		D.card_throwforce = 10
-		D.card_throw_speed = 3
-		D.card_throw_range = 7
-		D.card_attack_verb = list("attacked", "sliced", "diced", "slashed", "cut")
+		deck.card_hitsound = 'sound/weapons/bladeslice.ogg'
+		deck.card_force = 5
+		deck.card_throwforce = 10
+		deck.card_throw_speed = 3
+		deck.card_throw_range = 7
+		deck.card_attack_verb = list("attacked", "sliced", "diced", "slashed", "cut")
 
 
 /obj/effect/holodeck_effect/sparks/activate(var/obj/machinery/computer/holodeck/HC)
@@ -68,25 +73,31 @@
 
 /obj/effect/holodeck_effect/mobspawner
 	var/mobtype = /mob/living/simple_animal/hostile/carp/holocarp
-	var/mob/mob = null
+	/// Моб нужен спавнеру ровно один раз - в deactivate. Консоль дерезит убежавшего
+	/// питомца в своём process и спавнеру об этом не сообщает, а спавнер живёт до
+	/// смены программы, поэтому жёсткая ссылка держала удалённого моба до конца.
+	var/datum/weakref/mob_ref
 
-/obj/effect/holodeck_effect/mobspawner/activate(var/obj/machinery/computer/holodeck/HC)
+/obj/effect/holodeck_effect/mobspawner/activate(obj/machinery/computer/holodeck/HC)
 	if(islist(mobtype))
 		mobtype = pick(mobtype)
-	mob = new mobtype(loc)
+	var/mob/spawned_mob = new mobtype(loc)
+	mob_ref = WEAKREF(spawned_mob)
 
 	// these vars are not really standardized but all would theoretically create stuff on death
-	for(var/v in list("butcher_results","corpse","weapon1","weapon2","blood_volume") & mob.vars)
-		mob.vars[v] = null
-	mob.flags_1 |= HOLOGRAM_1
-	if(isliving(mob))
-		var/mob/living/L = mob
+	for(var/v in list("butcher_results","corpse","weapon1","weapon2","blood_volume") & spawned_mob.vars)
+		spawned_mob.vars[v] = null
+	spawned_mob.flags_1 |= HOLOGRAM_1
+	if(isliving(spawned_mob))
+		var/mob/living/L = spawned_mob
 		L.vore_flags = 0
-	return mob
+	return spawned_mob
 
-/obj/effect/holodeck_effect/mobspawner/deactivate(var/obj/machinery/computer/holodeck/HC)
-	if(mob)
-		HC.derez(mob)
+/obj/effect/holodeck_effect/mobspawner/deactivate(obj/machinery/computer/holodeck/HC)
+	var/mob/spawned_mob = mob_ref?.resolve()
+	mob_ref = null
+	if(spawned_mob && HC)
+		HC.derez(spawned_mob)
 	qdel(src)
 
 /obj/effect/holodeck_effect/mobspawner/pet

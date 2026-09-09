@@ -53,7 +53,8 @@
 	flags_1 = ON_BORDER_1
 	obj_flags = CAN_BE_HIT | BLOCKS_CONSTRUCTION_DIR | IGNORE_DENSITY
 	max_integrity = 100
-	pass_flags_self = PASSSTRUCTURE | PASSTABLE | LETPASSTHROW
+	// PASSJUMP lets vaulting clear the face; PASSTABLE/LETPASSTHROW would also clear bullets/spears.
+	pass_flags_self = PASSSTRUCTURE | PASSJUMP
 	///The type of stack the barricade dropped when disassembled if any.
 	var/stack_type
 	///The amount of stack dropped when disassembled at full health
@@ -105,13 +106,12 @@
 	if(!(leaving.dir & dir))
 		return
 
-	if (!density)
+	if (!density || closed)
 		return
 
-	if (leaving.throwing)
-		return
-
-	if (leaving.movement_type & (PHASING | FLYING | FLOATING))
+	// Projectiles are FLYING: allow shooting out over the face from cover.
+	// Thrown items must still bump the facing edge.
+	if ((leaving.movement_type & (PHASING | FLYING | FLOATING)) && !leaving.throwing)
 		return
 
 	if (leaving.pass_flags & pass_flags_self)
@@ -184,24 +184,31 @@
 	return TRUE
 
 /obj/structure/deployable_barricade/CanPass(atom/movable/mover, turf/target)
-	. = ..()
+	if(closed || !density)
+		return TRUE
+
+	// Cross() passes the mover's old loc as target: only the facing edge blocks.
+	if(!(get_dir(loc, target) & dir))
+		return TRUE
 
 	if(istype(mover, /obj/item/projectile))
 		if(!anchored)
 			return TRUE
-		if(closed)
-			return TRUE
 		var/obj/item/projectile/proj = mover
+		// Point-blank over the lip of the cade, same as /obj/structure/barricade.
 		if(proj.firer && Adjacent(proj.firer))
 			return TRUE
 		if(prob(25))
 			return TRUE
 		return FALSE
 
-	if(get_dir(loc, target) & dir)
-		var/checking = FLYING | FLOATING
-		return . || mover.throwing || mover.movement_type & checking
-	return TRUE
+	. = ..()
+	if(.)
+		return TRUE
+	// Flyers can clear the lip; thrown weapons cannot (no LETPASSTHROW on the face).
+	if((mover.movement_type & (FLYING | FLOATING)) && !mover.throwing)
+		return TRUE
+	return FALSE
 
 /obj/structure/deployable_barricade/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/stack/cable_coil) && can_wire)
@@ -372,7 +379,7 @@
 	stack_type = /obj/item/stack/rods
 	destroyed_stack_amount = 2
 	barricade_type = "railing"
-	pass_flags_self = PASSSTRUCTURE | PASSTABLE
+	pass_flags_self = PASSSTRUCTURE | PASSJUMP
 	can_wire = FALSE
 
 /obj/structure/deployable_barricade/guardrail/update_icon()

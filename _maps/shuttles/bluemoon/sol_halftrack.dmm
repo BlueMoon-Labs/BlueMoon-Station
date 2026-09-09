@@ -759,7 +759,7 @@
 /area/shuttle/solfed/corvette)
 "Gs" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
-	piping_layer = 2
+	piping_layer = 3
 	},
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)

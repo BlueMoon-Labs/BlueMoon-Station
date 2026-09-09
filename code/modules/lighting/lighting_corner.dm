@@ -68,13 +68,13 @@
 	update_active()
 	// Initialize contact shadow state from adjacent turfs (float weights for semi-transparent shadows)
 	if(northeast)
-		opaque_neighbors += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+		opaque_neighbors += (northeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northeast.shadow_weight_sum
 	if(northwest)
-		opaque_neighbors += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+		opaque_neighbors += (northwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northwest.shadow_weight_sum
 	if(southeast)
-		opaque_neighbors += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+		opaque_neighbors += (southeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southeast.shadow_weight_sum
 	if(southwest)
-		opaque_neighbors += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+		opaque_neighbors += (southwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southwest.shadow_weight_sum
 	if(opaque_neighbors > 0.005)
 		shadow_sqrt_cache = sqrt(min(opaque_neighbors, CONTACT_SHADOW_MAX_NEIGHBORS))
 
@@ -103,13 +103,13 @@
 /datum/lighting_corner/proc/recalc_opaque_neighbors()
 	var/weight = 0
 	if(northeast)
-		weight += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+		weight += (northeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northeast.shadow_weight_sum
 	if(northwest)
-		weight += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+		weight += (northwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : northwest.shadow_weight_sum
 	if(southeast)
-		weight += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+		weight += (southeast.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southeast.shadow_weight_sum
 	if(southwest)
-		weight += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+		weight += (southwest.lighting_flags & TURF_HAS_OPAQUE_ATOM) ? 1 : southwest.shadow_weight_sum
 	if(abs(weight - opaque_neighbors) > 0.005)
 		opaque_neighbors = weight
 		shadow_sqrt_cache = weight > 0.005 ? sqrt(min(weight, CONTACT_SHADOW_MAX_NEIGHBORS)) : 0
@@ -149,6 +149,7 @@
 
 	// Early return: if rounded cache values are identical, skip queuing adjacent objects
 	if(new_r == cache_r && new_g == cache_g && new_b == cache_b && new_mx == cache_mx)
+		self_destruct_if_idle()
 		return
 
 	cache_r = new_r
@@ -163,6 +164,50 @@
 	QUEUE(southwest)
 	#undef QUEUE
 
+	// Сноса углы дожидаются ЗДЕСЬ, после постановки соседей в очередь: объект освещения,
+	// оставшийся без своего угла, читает заглушку и красит плитку в тьму - и это правильный
+	// ответ для угла, до которого не достаёт ни один источник. Но перерисовать плитку он
+	// должен, и заявка на перерисовку обязана быть подана ДО того, как угол исчезнет.
+	self_destruct_if_idle()
+
+/**
+ * Угол, до которого больше не достаёт ни один источник, сносится.
+ *
+ * Углы заводятся лениво - там, куда дотянулся свет, - и до этой правки не сносились НИКОГДА:
+ * Destroy() на любой qdel выдавал stack_trace и оставлял датум жить. Прод-замер: +364 угла в
+ * минуту, то есть 10.2 МБ в час невозвратного роста, потому что игроки открывают двери,
+ * носят фонари и строят, а свет от этого достаёт до всё новых турфов. В апстриме tg сноса
+ * есть (`self_destruct_if_idle`), к нам он не доехал.
+ *
+ * Пересоздание дёшево и уже предусмотрено кодом: generate_missing_corners() досоздаёт
+ * недостающие углы, обнуляя протухшие ссылки, а lighting_source.dm чинит турф с дырой прямо
+ * в проходе по источнику. Контактные тени пересозданию не мешают - New() сам пересчитывает
+ * opaque_neighbors и shadow_sqrt_cache по соседям.
+ */
+/**
+ * Поставить осиротевший угол в очередь, даже если светимость не изменилась.
+ *
+ * Без этого сборка пропускала как раз самый частый случай: источник, отдававший углу РОВНО
+ * ноль (угол за пределами конуса или на границе радиуса), держал его в affecting, а при
+ * отписке дельта светимости была нулевой - update_lumcount() выходил сразу, угол в очередь
+ * не попадал и update_objects() на нём не звался НИКОГДА. То есть именно те углы, которые
+ * копятся, и оставались бы жить.
+ */
+/datum/lighting_corner/proc/queue_idle_check()
+	if(needs_update || LAZYLEN(affecting))
+		return
+	needs_update = TRUE
+	GLOB.lighting_update_corners += src
+
+/datum/lighting_corner/proc/self_destruct_if_idle()
+	if(LAZYLEN(affecting))
+		return
+	// Остаточная светимость без единого источника означает, что дельты не сошлись в ноль.
+	// Такой угол сносить нельзя: плитка почернеет заметно, а причина будет не здесь.
+	if(cache_mx > LIGHTING_SOFT_THRESHOLD)
+		return
+	qdel(src, force = TRUE)
+
 /datum/lighting_corner/dummy/New()
 	return
 
@@ -171,6 +216,40 @@
 	if (!force)
 		return QDEL_HINT_LETMELIVE
 
-	stack_trace("Ok, Look, /tg/, I need you to find whatever fucker decided to call qdel on a fucking lighting corner, then tell him very nicely and politely that he is 100% stupid and needs his head checked. Thanks. Send them my regards by the way.")
+	// Отписка от источников: без неё источник продолжит держать угол ключом в effect_str и
+	// звать на нём recalc_corner().
+	for(var/datum/light_source/light_source as anything in affecting)
+		LAZYREMOVE(light_source.effect_str, src)
+	affecting = null
 
+	// Соответствие обратных ссылок задано SET_DIAGONAL в New(): турф, лежащий к северо-востоку
+	// от угла, держит этот угол в своём lc_bottomleft, и так по кругу. Флаг "все четыре угла
+	// на месте" снимается только там, где слот действительно опустел: иначе укомплектованный
+	// турф гонял бы generate_missing_corners() впустую. Следующий проход досоздаст недостающий.
+	if(northeast)
+		if(northeast.lc_bottomleft == src)
+			northeast.lc_bottomleft = null
+			northeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+		northeast = null
+	if(northwest)
+		if(northwest.lc_bottomright == src)
+			northwest.lc_bottomright = null
+			northwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+		northwest = null
+	if(southwest)
+		if(southwest.lc_topright == src)
+			southwest.lc_topright = null
+			southwest.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+		southwest = null
+	if(southeast)
+		if(southeast.lc_topleft == src)
+			southeast.lc_topleft = null
+			southeast.lighting_flags &= ~TURF_LIGHTING_CORNERS_INITIALISED
+		southeast = null
+
+	// Из GLOB.lighting_update_corners себя НЕ вынимаем намеренно. Очередь углов
+	// вычерпывается индексным проходом с закрывающим Cut(1, i+1) (см. SSlighting.fire,
+	// фаза 2): удаление элемента из-под курсора сдвинет список, и Cut выбросит углы,
+	// которых никто не обработал. Потребители вместо этого пропускают QDELETED - стоит
+	// это одну лишнюю итерацию до ближайшего Cut.
 	return ..()

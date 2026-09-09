@@ -257,8 +257,8 @@
 		if(M.getBruteLoss() && prob(20))
 			M.heal_bodypart_damage(1,0, 0)
 			. = 1
-	if(holder.has_reagent(/datum/reagent/consumable/capsaicin))
-		holder.remove_reagent(/datum/reagent/consumable/capsaicin, 2)
+	holder.remove_reagent(/datum/reagent/consumable/capsaicin, 2)
+	holder.remove_reagent(/datum/reagent/consumable/capsaicin/reaper, 2)
 	if(iscatperson(M)) //cats go purr
 		if(prob(3))
 			to_chat(M, "<span class = 'notice'>[pick("Mmmm~ milk~","Ahh~ fresh milk~","Milk is so tasty!")]</span>")
@@ -783,6 +783,8 @@
 
 /datum/reagent/consumable/ice/on_mob_life(mob/living/carbon/M)
 	M.adjust_bodytemperature(-5 * TEMPERATURE_DAMAGE_COEFFICIENT, BODYTEMP_NORMAL)
+	holder.remove_reagent(/datum/reagent/consumable/capsaicin, 1)
+	holder.remove_reagent(/datum/reagent/consumable/capsaicin/reaper, 1)
 	..()
 
 /datum/reagent/consumable/soy_latte

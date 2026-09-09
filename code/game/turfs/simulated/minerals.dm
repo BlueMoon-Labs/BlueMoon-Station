@@ -1,5 +1,21 @@
 #define MINING_MESSAGE_COOLDOWN 20
 
+/// Цели сглаживания минеральных турфов, ОДИН список на весь мир.
+///
+/// Именно глобалка, а не типовой дефолт и не сборка в Initialize. Типовой дефолт вида
+/// `canSmoothWith = list(...)` в DM НЕ общий: инициализатор-выражение вычисляется на каждом
+/// инстансе заново, и семьдесят тысяч минеральных турфов карты получали семьдесят тысяч
+/// двухэлементных списков (проверено юнит-тестом mineral_smoothing_list_is_shared: два
+/// турфа держали разные объекты). Штатный дедуп через typelist() сюда тоже не достаёт -
+/// /turf/Initialize объявлен SHOULD_CALL_PARENT(FALSE) и до строки
+/// `canSmoothWith = typelist(...)` в /atom/Initialize не доходит вовсе.
+///
+/// Списки только читаются (is_type_in_list в can_area_smooth/smooth_icon), поэтому общий
+/// объект безопасен. Тип, которому нужен свой набор, присваивает его как раньше.
+GLOBAL_LIST_INIT(mineral_smooth_targets, list(/turf/closed/mineral, /turf/closed/indestructible))
+/// То же для подтипов, которые сглаживаются со всем закрытым (снежные горы, эшплэнет).
+GLOBAL_LIST_INIT(closed_turf_smooth_targets, list(/turf/closed))
+
 /**********************Mineral deposits*************************/
 
 /turf/closed/mineral //wall piece
@@ -15,6 +31,7 @@
 	blocks_air = TRUE
 	layer = EDGED_TURF_LAYER
 	initial_temperature = 293.15
+	temperature = 293.15
 	// base_icon_state = "smoothrocks"
 	var/smooth_icon = 'icons/turf/smoothrocks.dmi'
 	var/turf/open/floor/plating/turf_type = /turf/open/floor/plating/asteroid/airless
@@ -27,8 +44,8 @@
 	var/weak_turf = FALSE
 
 /turf/closed/mineral/Initialize(mapload)
-	if (!canSmoothWith)
-		canSmoothWith = list(/turf/closed/mineral, /turf/closed/indestructible)
+	if(!canSmoothWith)
+		canSmoothWith = GLOB.mineral_smooth_targets
 	. = ..()
 	var/matrix/M = new
 	M.Translate(-4, -4)
@@ -269,7 +286,9 @@
 	smooth_icon = 'icons/turf/walls/mountain_wall.dmi'
 	icon_state = "mountainrock"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	defer_change = TRUE
 	turf_type = /turf/open/floor/plating/asteroid/snow/icemoon
 	baseturfs = /turf/open/floor/plating/asteroid/snow/icemoon
@@ -330,7 +349,9 @@
 	icon_state = "mountainrock"
 	// base_icon_state = "mountain_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	defer_change = TRUE
 	turf_type = /turf/open/floor/plating/asteroid/snow/icemoon
 	baseturfs = /turf/open/floor/plating/asteroid/snow/icemoon
@@ -452,7 +473,9 @@
 	icon_state = "rock2"
 	// base_icon_state = "rock_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/ashplanet/wateryrock
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	turf_type = /turf/open/floor/plating/ashplanet/rocky
@@ -465,7 +488,9 @@
 	icon_state = "mountainrock"
 	// base_icon_state = "mountain_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/asteroid/snow
 	initial_gas_mix = FROZEN_ATMOS
 	turf_type = /turf/open/floor/plating/asteroid/snow
@@ -483,7 +508,9 @@
 	icon_state = "icerock"
 	// base_icon_state = "icerock_wall"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
-	canSmoothWith = list (/turf/closed)
+	// Общий на весь мир список: типовой дефолт `list(...)` в DM строится на КАЖДОМ инстансе,
+	// см. GLOB.closed_turf_smooth_targets у начала файла.
+	canSmoothWith = null
 	baseturfs = /turf/open/floor/plating/asteroid/snow/ice
 	turf_type = /turf/open/floor/plating/asteroid/snow/ice
 
@@ -651,5 +678,26 @@
 
 /turf/closed/mineral/strong/ex_act(severity, target, origin)
 	return
+
+// Общий на весь мир набор целей сглаживания для подтипов, которые сглаживаются со всем
+// закрытым. Присваивание идёт ДО ..(), потому что /turf/closed/mineral/Initialize подставляет
+// свой набор всем, у кого canSmoothWith пуст. Отдельными проками, а не типовыми дефолтами:
+// типовой дефолт `list(...)` в DM строится заново на каждом инстансе, см. комментарий у
+// GLOB.mineral_smooth_targets в начале файла.
+/turf/closed/mineral/random/snow/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/random/labormineral/ice/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/ash_rock/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
+
+/turf/closed/mineral/snowmountain/Initialize(mapload)
+	canSmoothWith = GLOB.closed_turf_smooth_targets
+	return ..()
 
 #undef MINING_MESSAGE_COOLDOWN

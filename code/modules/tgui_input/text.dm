@@ -104,7 +104,8 @@
  * the window was closed by the user.
  */
 /datum/tgui_input_text/proc/wait()
-	while (!entry && !closed)
+	//См. tgui_input/list.dm: без проверки на QDELETED цикл переживает собственный датум.
+	while (!entry && !closed && !QDELETED(src))
 		stoplag(1)
 
 /datum/tgui_input_text/ui_interact(mob/user, datum/tgui/ui)
@@ -146,6 +147,9 @@
 		if("submit")
 			// BLUEMOON EDIT - исправление счета по байтам, а не по символам Юникода
 			if(length_char(params["entry"]) > max_length)
+				// Молчаливый return выглядел как "кнопка не работает": окно остаётся открытым,
+				// а почему ввод не принят - неизвестно.
+				to_chat(usr, span_warning("Слишком длинный текст: [length_char(params["entry"])] символов при лимите [max_length]."))
 				return
 			// Должно совпадать с кодировщиком set_entry (html_encode_readable), иначе получим ложное "clipped" на одних только кавычках
 			if(encode && (length_char(html_encode_readable(params["entry"])) > max_length))

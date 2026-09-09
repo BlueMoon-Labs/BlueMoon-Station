@@ -11,7 +11,7 @@
 		var/obj/effect/decal/cleanable/confetti/gib = new spawner_type(loc)
 		if(iscarbon(loc))
 			var/mob/living/carbon/digester = loc
-			digester.stomach_contents += gib
+			digester.add_to_stomach(gib)
 		else
 			gib.streak(list(NORTH,SOUTH,EAST,WEST))
 

@@ -41,7 +41,7 @@
 	///How much energy we drain each time we mechpunch someone
 	var/melee_energy_drain = 15
 	///The minimum amount of energy charge consumed by leg overload
-	var/overload_step_energy_drain_min = 100
+	var/overload_step_energy_drain_min = 10
 	///chance to deflect the incoming projectiles, hits, or lesser the effect of ex_act.
 	var/deflect_chance = 10
 	///Modifiers for directional armor
@@ -60,6 +60,8 @@
 	var/mecha_flags = ADDING_ACCESS_POSSIBLE | CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	///Stores the DNA enzymes of a carbon so tht only they can access the mech
 	var/dna_lock
+	/// Имя владельца на момент установки ДНК-замка; в desc не добавляется.
+	var/dna_lock_name
 	///Spark effects are handled by this datum
 	var/datum/effect_system/spark_spread/spark_system = new
 	///How powerful our lights are
@@ -140,8 +142,8 @@
 
 	///Bool for leg overload on/off
 	var/leg_overload_mode = FALSE
-	///Energy use modifier for leg overload
-	var/leg_overload_coeff = 100
+	///Во сколько раз шаг под форсажем ножных приводов дороже штатного
+	var/leg_overload_coeff = 10
 
 	//Bool for zoom on/off
 	var/zoom_mode = FALSE
@@ -163,12 +165,6 @@
 
 	///Whether thruster stabilizers are engaged (cancels space drift to hold position, like a jetpack's). Needs functional, powered thrusters.
 	var/stabilizers = FALSE
-
-	// Space-drift mass model: a multi-ton exosuit should resist being nudged and should not reach human EVA drift speeds.
-	/// Higher = harder for impulses (steps, recoil, push-off) to build drift.
-	inertia_force_weight = 8
-	/// Multiplies the drift move delay, capping the mech's top drift speed well below a human's.
-	inertia_move_multiplier = 3
 
 	///Cooldown length between bumpsmashes
 	var/smashcooldown = 3
@@ -200,6 +196,9 @@
 	add_cell()
 	add_scanmod()
 	add_capacitor()
+	//сборка с карты ставит детали мимо CheckParts(): без этого мех с карты
+	//платит за шаг типовые 10 вместо своей штатной цены
+	update_step_energy_drain()
 	START_PROCESSING(SSobj, src)
 	GLOB.poi_list |= src
 	AddComponent(/datum/component/hostile_machine_registry)
@@ -279,7 +278,10 @@
 		if(internal_tank)
 			WR.crowbar_salvage += internal_tank
 			internal_tank.forceMove(WR)
-			cell = null
+			// Копипаста из блока про cell выше обнуляла cell повторно, а internal_tank
+			// оставался ссылкой на уехавшую в обломки канистру - разобранная меха держала её
+			// до конца раунда.
+			internal_tank = null
 	return ..()
 
 /obj/vehicle/sealed/mecha/update_icon()
@@ -322,10 +324,9 @@
 /obj/vehicle/sealed/mecha/proc/update_part_values() ///Updates the values given by scanning module and capacitor tier, called when a part is removed or inserted.
 	if(scanmod)
 		normal_step_energy_drain = initial(normal_step_energy_drain) * (1.5 / (scanmod.rating - 0.5)) //movement power cost is 3x of default at T1, 1x at T2, 0.6x at T3 and 0.4x at T4
-		step_energy_drain = normal_step_energy_drain
 	else
 		normal_step_energy_drain = 500
-		step_energy_drain = normal_step_energy_drain
+	update_step_energy_drain()
 	if(capacitor)
 		armor = armor.modifyRating(energy = (capacitor.rating * 5)) //Each level of capacitor protects the mech against emp by 5%
 	else //because we can still be hit without a cap, even if we can't move
@@ -391,6 +392,8 @@
 
 /obj/vehicle/sealed/mecha/examine(mob/user)
 	. = ..()
+	if(dna_lock)
+		. += span_notice("Этот мех заблокирован ДНК[dna_lock_name ? " - [dna_lock_name]" : ""].")
 	var/integrity = obj_integrity*100/max_integrity
 	switch(integrity)
 		if(85 to 100)
@@ -640,8 +643,8 @@
 ///Plays the mech step sound effect. Split from movement procs so that other mechs (HONK) can override this one specific part.
 /obj/vehicle/sealed/mecha/proc/play_stepsound()
 	SIGNAL_HANDLER
-	// step_silent is set for thrust / push-off; inertia_moving is set while the drift loop is carrying us.
-	// Neither is a footstep, so don't play the walk sound (it was firing on every space-drift tick).
+	// step_silent is set for thrust / push-off; inertia_moving is set while space drift carries us.
+	// Neither is a footstep, so don't play the walk sound.
 	if(step_silent)
 		step_silent = FALSE
 		return
@@ -656,50 +659,73 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
 		log_message("Lost connection to gas port.", LOG_MECHA)
 
+///Цена шага из штатной цены и состояния форсажа. Считается от штатной, а не от
+///текущей: повторное включение форсажа раньше умножало уже умноженное.
+/obj/vehicle/sealed/mecha/proc/update_step_energy_drain()
+	if(leg_overload_mode)
+		step_energy_drain = max(overload_step_energy_drain_min, normal_step_energy_drain * leg_overload_coeff)
+	else
+		step_energy_drain = normal_step_energy_drain
+
+///Неприкосновенный остаток ячейки под форсаж: ниже него форсаж не включается и сам гаснет,
+///чтобы мех всегда мог уйти к зарядке своим ходом. От реле Теслы резерва нет.
+/obj/vehicle/sealed/mecha/proc/leg_overload_reserve()
+	return cell ? cell.maxcharge * MECHA_OVERLOAD_POWER_RESERVE : 0
+
+///Включает или выключает форсаж ножных приводов: задержка шага, цена шага, таран,
+///кнопки всех пассажиров. Возвращает TRUE, если состояние сменилось; включение
+///на резерве заряда отклоняется. Сообщения пилоту пишет вызывающий.
+/obj/vehicle/sealed/mecha/proc/set_leg_overload(new_state)
+	new_state = !!new_state
+	if(leg_overload_mode == new_state)
+		return FALSE
+	if(new_state && get_charge() < leg_overload_reserve())
+		return FALSE
+	leg_overload_mode = new_state
+	log_message("Toggled leg actuators overload: [leg_overload_mode ? "on" : "off"].", LOG_MECHA)
+	if(leg_overload_mode)
+		bumpsmash = TRUE
+		movedelay = movement_quantize_delay(initial(movedelay) * MECHA_OVERLOAD_MOVEDELAY_MULT, world.tick_lag)
+	else
+		bumpsmash = initial(bumpsmash)
+		movedelay = initial(movedelay)
+	update_step_energy_drain()
+	for(var/mob/occupant as anything in occupants)
+		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/mech_overload_mode)
+		if(!action)
+			continue
+		action.button_icon_state = "mech_overload_[leg_overload_mode ? "on" : "off"]"
+		action.UpdateButtons()
+	return TRUE
+
 /obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
 	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
 
-/obj/vehicle/sealed/mecha/proc/can_cancel_space_drift()
-	return stabilizers && has_functional_thrusters()
-
-/obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
-	. = ..(movement_dir, continuous_move)
+/obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0)
+	. = ..()
 	if(.)
 		return TRUE
 
-	// Jetpack-style thrusters: stabilizers = cell-by-cell movement with no drift; thrust handles voluntary moves.
-	if(has_functional_thrusters())
-		var/thruster_assist = continuous_move ? stabilizers : (movement_dir || stabilizers)
-		if(thruster_assist)
-			if(continuous_move)
-				return TRUE
-			if(active_thrusters.thrust(movement_dir))
-				step_silent = TRUE
-				return TRUE
-		if(continuous_move)
-			return FALSE
-		return FALSE
-
-	if(continuous_move)
-		return FALSE
-
-	// Mechs without a thruster package can still push off nearby objects.
-	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
+	var/atom/movable/backup = get_spacemove_backup()
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
-			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
+			if(backup.newtonian_move(turn(movement_dir, 180)))
 				step_silent = TRUE
 				if(return_drivers())
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
 		return TRUE
 
-	return FALSE
-
-/obj/vehicle/sealed/mecha/Moved(atom/OldLoc, Dir, Forced = FALSE)
-	if(can_cancel_space_drift())
-		SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
+	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
+		step_silent = TRUE
 		return TRUE
-	return ..()
+
+	// Stabilized thrusters hold the mech in place: answering TRUE here also makes
+	// newtonian_move()/SSspacedrift cancel any inertia, so no drift is built up.
+	// Kept after the thrust branch so voluntary steps still pay their charge.
+	if(stabilizers && has_functional_thrusters())
+		return TRUE
+
+	return FALSE
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
@@ -755,7 +781,14 @@
 
 	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
 		return FALSE
-	COOLDOWN_START(src, cooldown_vehicle_move, movedelay)
+	//форсаж гаснет на резерве ДО расчёта цены шага: этот же шаг идёт по штатной цене
+	if(leg_overload_mode && get_charge() < leg_overload_reserve() && set_leg_overload(FALSE))
+		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Leg actuators overload disabled: power reserve reached.</span>")
+	// Шаг меха живёт на собственном кулдауне, мимо /client/Move(), поэтому цену
+	// выравнивать по тику приходится здесь же. Дробный movedelay набегает от
+	// сканмодулей и капаситоров, а кулдаун всё равно проверяется только на тике.
+	var/step_cost = movement_quantize_delay(movedelay, world.tick_lag)
+	COOLDOWN_START(src, cooldown_vehicle_move, step_cost)
 	if(internal_tank?.connected_port)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
 			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while connected to the air system port!</span>")
@@ -789,7 +822,7 @@
 
 	var/olddir = dir
 
-	set_glide_size(DELAY_TO_GLIDE_SIZE(movedelay))
+	set_glide_size(DELAY_TO_GLIDE_SIZE(step_cost))
 	use_power(step_energy_drain)
 
 	var/turf/current_loc = get_turf(src)
@@ -1043,6 +1076,28 @@
 		. = t_air.return_temperature()
 	return
 
+/obj/vehicle/sealed/mecha/emag_act(mob/user, obj/item/card/emag/E)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	obj_flags |= EMAGGED
+	log_message("Emagged - DNA lock removed, one extra equipment slot installed.", LOG_MECHA)
+	log_combat(user, src, "emagged", E)
+	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
+	if(dna_lock)
+		dna_lock = null
+		dna_lock_name = null
+	max_equip++
+	user.visible_message(
+		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
+		"<span class='notice'>Свободных слотов снаряжения теперь: [max_equip].</span>"
+	)
+	do_sparks(5, TRUE, src)
+	playsound(src, 'sound/effects/sparks1.ogg', 50)
+	return TRUE
+
+/obj/vehicle/sealed/mecha/proc/is_emagged()
+	return !!(obj_flags & EMAGGED)
+
 /obj/vehicle/sealed/mecha/mob_try_enter(mob/M)
 	if(!ishuman(M)) // no silicons or drones in mechas.
 		return
@@ -1078,8 +1133,12 @@
 		else if(M.has_buckled_mobs())
 			to_chat(M, "<span class='warning'>You can't enter the exosuit with other creatures attached to you!</span>")
 		else
-			moved_inside(M)
-			return ..()
+			// Только moved_inside(): он сам делает forceMove и add_occupant. Прежний
+			// "return ..()" сразу после него уводил в /obj/vehicle/sealed/mob_try_enter,
+			// то есть во ВТОРОЙ do_after и второй mob_enter -> add_occupant по тому же
+			// мобу. На одноместных это гасил гард по max_occupants, а на двухместной
+			// Savannah-Ivanov проходило и дублировало подписки на моба.
+			return moved_inside(M)
 	else
 		to_chat(M, "<span class='warning'>You stop entering the exosuit!</span>")
 
@@ -1253,11 +1312,19 @@
 		checking = checking.loc
 
 /obj/vehicle/sealed/mecha/add_occupant(mob/M, control_flags)
+	// Сначала родитель, и только по его успеху - подписки. Родитель отказывает по
+	// is_occupant(M) (/obj/vehicle/sealed/add_occupant), а прежний порядок вешал четыре
+	// сигнала ДО отказа: на повторном заходе они перевешивались вторым слоем и в лог летели
+	// четыре "&lt;signal&gt; overridden". Снимает их remove_occupant ровно один раз, поэтому
+	// лишний слой держал меху у моба и после высадки. Видно это было только на
+	// двухместной Savannah-Ivanov: одноместные отсекает гард по max_occupants.
+	. = ..()
+	if(!.)
+		return
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
 	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
-	return ..()
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
 	. = ..()

@@ -154,6 +154,12 @@ SUBSYSTEM_DEF(director)
 	eligible_ghosts_cache_at = world.time
 	return eligible_ghosts_cache
 
+/// Кэш жив один тик, но список гостов в нём - жёсткие ссылки, и до следующего вызова
+/// (а его может не быть до конца раунда) он держит всех, кто в него попал. Снимаем в fire().
+/datum/controller/subsystem/director/proc/drop_eligible_ghosts_cache()
+	eligible_ghosts_cache = null
+	eligible_ghosts_cache_at = -1
+
 /datum/controller/subsystem/director/Initialize(start_timeofday)
 	register_event_actions()
 	last_any_fired_at = now()
@@ -220,6 +226,8 @@ SUBSYSTEM_DEF(director)
 				fires_until_beat = DIRECTOR_BEAT_EVERY
 				var/datum/director_signals/signals = collect_signals()
 				run_beat(signals)
+		// Бит уже отработал, потребителей кэша до следующего не будет - не держим гостов.
+		drop_eligible_ghosts_cache()
 		currentrun = running.Copy()
 		// Бит (fires_until_beat == 0) сам мог съесть тик - раннер событий получает свежий слайс,
 		// иначе спайк бита и тяжёлый tick() события складываются в один и тот же игровой тик.

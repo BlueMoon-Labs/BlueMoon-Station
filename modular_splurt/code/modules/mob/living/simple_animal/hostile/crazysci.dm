@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "crazedsci"
 	icon_living = "crazedsci"
-	icon_dead = "idle"
 	gender = FEMALE
 	speak_chance = 90
 	turns_per_move = 1

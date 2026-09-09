@@ -327,7 +327,11 @@
 		step_towards(src,S)
 
 /obj/get_dumping_location(datum/component/storage/source,mob/user)
-	return get_turf(src)
+	//хранилище приезжает не только типом /obj/item/storage, но и компонентом (МОД
+	//с модулем отсеков). storage_contents_dump_act() ниже по стеку уже смотрит на
+	//компонент, а не на тип, так что без этой проверки высыпаемая сумка уезжала
+	//на пол мимо вполне себе годного контейнера.
+	return GetComponent(/datum/component/storage) ? src : get_turf(src)
 
 /**
  * This proc is used for telling whether something can pass by this object in a given direction, for use by the pathfinding system.

@@ -132,7 +132,6 @@
 	player_minimum = 25
 	cost = 16
 	purchasable_from = UPLINK_SYNDICATE
-	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/dangerous/doublesword/get_discount()
 	return pick(4;0.8,2;0.65,1;0.5)
@@ -309,7 +308,7 @@
 	name = "Kiss of Death"
 	desc = "Невероятно ядовитый тюбик помады, сделанный из яда ужасной Жёлтой Пятнистой Космической Ящерицы — смертельно и стильно. Постарайтесь не размазать!"
 	item = /obj/item/lipstick/black/death
-	cost = 12
+	cost = 4
 	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/dangerous/sniper
@@ -358,7 +357,7 @@
 			Позволяет рубить на расстоянии!"
 	item = /obj/item/gun/magic/staff/motivation
 	cost = 10
-	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS
 
 /datum/uplink_item/dangerous/kudzu_seeds
 	name = "Pack of Kudzu Seeds"

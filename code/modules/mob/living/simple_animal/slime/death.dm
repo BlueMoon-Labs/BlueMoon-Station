@@ -27,8 +27,8 @@
 
 	// Мёртвый слайм больше не обрабатывает AI - без очистки его Target/Leader
 	// держали бы удалённых мобов до самой переработки тушки
-	Target = null
-	Leader = null
+	set_slime_target(null)
+	set_slime_leader(null)
 
 	update_mobility()
 

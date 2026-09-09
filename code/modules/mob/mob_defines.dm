@@ -31,6 +31,7 @@
 	var/list/datum/action/actions = list()
 	var/list/datum/action/chameleon_item_actions
 	var/static/next_mob_id = 0
+	var/brc_mitigation = 0 // BLUEMOON ADD - GAMMA BRC: мультипликативная защита от пуль/лазеров (0-90)
 
 	var/stat = CONSCIOUS //Whether a mob is alive or dead. TODO: Move this to living - Nodrak
 

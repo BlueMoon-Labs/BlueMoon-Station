@@ -8,6 +8,9 @@ SUBSYSTEM_DEF(icon_smooth)
 	var/list/smooth_queue = list()
 	var/list/deferred = list()
 
+/datum/controller/subsystem/icon_smooth/last_task()
+	return "в очереди сглаживания [length(smooth_queue)], отложено [length(deferred)]"
+
 /datum/controller/subsystem/icon_smooth/fire()
 	var/list/cached = smooth_queue
 	while(cached.len)

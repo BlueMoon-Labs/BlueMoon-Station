@@ -71,7 +71,7 @@
 				gib = new gibType(loc, diseases, blood_data_to_add)
 				if(iscarbon(loc))
 					var/mob/living/carbon/digester = loc
-					digester.stomach_contents += gib
+					digester.add_to_stomach(gib)
 
 				if(dna_to_add && dna_to_add.len && istype(gib))
 					gib.add_blood_DNA(dna_to_add)

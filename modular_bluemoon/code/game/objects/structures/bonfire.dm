@@ -90,7 +90,15 @@
 					stamina_heal = healing_power, \
 					blood_heal = healing_power, \
 					rad_heal = healing_power, \
-					organ_healing = list(ORGAN_SLOT_BRAIN = healing_power), \
+					organ_healing = list(ORGAN_SLOT_BRAIN = healing_power,
+										ORGAN_SLOT_APPENDIX = healing_power,
+										ORGAN_SLOT_STOMACH = healing_power,
+										ORGAN_SLOT_EARS = healing_power,
+										ORGAN_SLOT_EYES = healing_power,
+										ORGAN_SLOT_LUNGS = healing_power,
+										ORGAN_SLOT_HEART = healing_power,
+										ORGAN_SLOT_LIVER = healing_power,
+										ORGAN_SLOT_TONGUE = healing_power), \
 					simple_heal = healing_power, \
 					healing_color = COLOR_ORANGE, \
 					stackable = FALSE, \

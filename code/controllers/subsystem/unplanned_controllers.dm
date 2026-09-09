@@ -24,7 +24,21 @@ SUBSYSTEM_DEF(unplanned_controllers)
 	while(length(currentrun))
 		var/datum/ai_controller/unplanned = currentrun[currentrun.len]
 		currentrun.len--
-		if(!QDELETED(unplanned) && unplanned.idle_behavior)
-			unplanned.idle_behavior.perform_idle_behavior(wait * 0.1, unplanned)
+		run_unplanned_controller(unplanned)
 		if(MC_TICK_CHECK)
 			return
+
+///Одна запись пула. TRUE - контроллер отработал; FALSE - запись невалидна и
+///вычищена. Невалидна и та, у которой паун ушёл хардделом: в DM ссылка
+///на удалённый объект молча становится null, сам контроллер при этом жив, под
+///QDELETED не подпадает и без этой проверки остаётся в пуле навсегда, фейлясь
+///каждый фаер (прод: 357 рантаймов idle_random_walk за 16 раундов).
+/datum/controller/subsystem/unplanned_controllers/proc/run_unplanned_controller(datum/ai_controller/unplanned)
+	if(QDELETED(unplanned) || isnull(unplanned.pawn))
+		GLOB.unplanned_controllers -= unplanned
+		return FALSE
+	if(!unplanned.idle_behavior)
+		GLOB.unplanned_controllers -= unplanned
+		return FALSE
+	unplanned.idle_behavior.perform_idle_behavior(wait * 0.1, unplanned)
+	return TRUE

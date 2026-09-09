@@ -3,17 +3,26 @@
 
 /**
  * Returns an area which is safe to place an anomaly inside.
+ *
+ * Arguments
+ * * fail_silently - вернуть null вместо CRASH(), если подходящей зоны нет. Нужен
+ * объявлениям: ложная тревога печатает зону "по возможности" и не имеет права
+ * ронять событие рантаймом. Спавну аномалии зона обязана, он остаётся строгим.
  */
-/datum/anomaly_placer/proc/findValidArea()
+/datum/anomaly_placer/proc/findValidArea(fail_silently = FALSE)
 	if(!allowed_areas)
 		generateAllowedAreas()
 	var/list/possible_areas = typecache_filter_list(GLOB.sortedAreas, allowed_areas)
 	if (!length(possible_areas))
+		if(fail_silently)
+			return null
 		CRASH("No valid areas for anomaly found.")
 
 	var/area/landing_area = pick(possible_areas)
 	var/list/turf_test = get_area_turfs(landing_area)
 	if(!turf_test.len)
+		if(fail_silently)
+			return null
 		CRASH("Anomaly : No valid turfs found for [landing_area] - [landing_area.type]")
 
 	return landing_area

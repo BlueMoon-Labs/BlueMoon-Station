@@ -203,7 +203,7 @@
 
 ///Result of springlocks failure, gives award, flashes red screen, plays a sound and launches snap_death_process proc
 /obj/item/mod/module/springlock/proc/snap_shut(silenced = FALSE)
-	if(!mod.wearer || !mod.active)
+	if(!mod.wearer || !mod.is_active())
 		return
 	var/mob/living/carbon/human/springtrapped = mod.wearer
 	if(!istype(springtrapped) || springtrapped.stat == DEAD)
@@ -231,7 +231,7 @@
 	var/deathcycle = 0
 
 	// Цикл ежесекундных процессов, постепенно убивающих жертву. Останавливается при смерти, отключении МОДа или после ~15 секунд
-	while(!QDELETED(springtrapped) && istype(springtrapped) && mod.active && springtrapped.stat != DEAD)
+	while(!QDELETED(springtrapped) && istype(springtrapped) && mod.is_active() && springtrapped.stat != DEAD)
 		deathcycle++
 		// Оглушаем, трясём, заглушаем
 		springtrapped.Stun(20)
@@ -287,14 +287,14 @@
 		sleep(1.5 SECONDS)
 
 	// Какой-то добрый самаритянин снял модсьют с несчастного до того, как последний скончался
-	if(!QDELETED(springtrapped) && springtrapped.stat != DEAD && istype(springtrapped) && !mod.active)
+	if(!QDELETED(springtrapped) && springtrapped.stat != DEAD && istype(springtrapped) && !mod.is_active())
 		to_chat(springtrapped, "<span class='nicegreen'>Кто-то... кто-то снял это с меня... я... я буду жить?... </span>")
 		visible_message("<span class='boldnotice'>С омерзительным хлюпающим звуком [mod] сползает с [springtrapped], со штырей костюма капает влага...</span>")
 		playsound(springtrapped, 'sound/effects/splat.ogg', 30, TRUE, frequency = 0.5)
 	// Наш несчастный оказался антагом, так что man behind the slaughter always come back... наверное
 	if(!QDELETED(springtrapped) && springtrapped.mind?.has_antag_datum(/datum/antagonist, TRUE) && springtrapped.stat == DEAD)
 		to_chat(springtrapped, "<span class='boldwarning'>У меня... остались незаконченные дела... я... ещё... вернусь... </span>")
-		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 30 MINUTES) // 30 YEARS SINCE ALL THIS HAPPENED, 30 YEARS IT TOOK TO RISE
+		addtimer(CALLBACK(src, PROC_REF(comeback), springtrapped), 5 MINUTES) // 30 Минут реально дохерище. Будет 5.
 	failure = FALSE
 
 // Будем честны, такая штука будет случаться раз в десять лет, так что это максимум будет маленькой пасхалкой
@@ -304,7 +304,7 @@
 	if(!src || QDELETED(src) || !istype(src) || loc != mod)
 		return
 	// В порядке ли модсьют?
-	if(!mod || QDELETED(mod) || !istype(mod) || !mod.active)
+	if(!mod || QDELETED(mod) || !istype(mod) || !mod.is_active())
 		return
 	// Находится ли попавший в модсьют ещё в нём?
 	if(!springtrap || QDELETED(springtrap) || !istype(springtrap) || mod.wearer != springtrap)
@@ -313,7 +313,7 @@
 	if(isrobotic(springtrap) || springtrap.stat != DEAD || !springtrap.mind)
 		return
 	// Всё подошло
-
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
 	// Изменяем модсьют - теперь он не снимается, а пружины неломаемы
 	mod.item_flags |= DROPDEL
 	mod.desc += "\n\nВ этом потёртом и заметно повреждённом костюме находился специальный экзоскелет, который схлопнулся и навсегда запер носителя внутри. Как ни странно, он выглядит очень прочным..."
@@ -321,10 +321,12 @@
 	update_desc()
 	failure = FALSE
 	stuck = TRUE
-	mod.helmet.flags_cover &= ~HEADCOVERSMOUTH
-	mod.helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
-	var/list/all_parts = mod.mod_parts.Copy() + mod
-	for(var/obj/item/part in all_parts)
+	helmet.flags_cover &= ~HEADCOVERSMOUTH
+	helmet.visor_flags_cover &= ~HEADCOVERSMOUTH
+	// Прежде тут перебирался alist, а он отдаёт КЛЮЧИ - фильтр по типу отбрасывал
+	// их все, и неудаляемым/несбрасываемым становился только сам контроль.
+	var/list/all_parts = mod.get_mod_parts() + mod
+	for(var/obj/item/part as anything in all_parts)
 		ADD_TRAIT(part, TRAIT_NODROP, CURSED_ITEM_TRAIT)
 		part.resistance_flags |= (INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF)
 
@@ -372,6 +374,16 @@
 	speed_move_bonus = 2
 	vulnerability_flags = SPRINGLOCK_VULN_REAGENTS | SPRINGLOCK_VULN_PUNCH | SPRINGLOCK_VULN_MOVEMENT // Больше уязвимостей, но имеет запас прочности
 
+/obj/item/mod/module/springlock/advanced/antagonist
+	name = "Reinforged MOD exoskeleton module"
+	desc = "Усиленная версия спиринг-механизма, крайне дорогая в сборке и установке, \
+	которую невозможно снять после монтажа. Не имеет тех же уязвимостей, что и младший собрат,\
+	однако, имеет повышенное потребление электроэнергии."
+	icon_state = "springlock_antag"
+	springlock_integrity = SPRINGLOCK_INTEGRITY_INDESTRUCTIBLE
+	vulnerability_flags = null
+	idle_power_cost = DEFAULT_CHARGE_DRAIN * 1.1
+	removable = FALSE //невозможно снять и использовать на других костюмах
 
 /**
  * Особый эмоут для антуража (кекв)
@@ -437,7 +449,7 @@
 	var/obj/item/mod/control/modsuit = user.get_item_by_slot(ITEM_SLOT_BACK)
 	if(!modsuit || !istype(modsuit))
 		return FALSE
-	if(!modsuit.active)
+	if(!modsuit.is_active())
 		return FALSE
 	var/obj/item/mod/module/springlock/spring = locate() in modsuit.modules
 	if(spring)

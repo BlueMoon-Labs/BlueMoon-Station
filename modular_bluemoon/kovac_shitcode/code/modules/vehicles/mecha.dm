@@ -45,6 +45,7 @@
 
 /obj/vehicle/sealed/mecha/combat/savannah_ivanov/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.detachable = FALSE
 	max_equip++

@@ -10,6 +10,7 @@ GLOBAL_LIST(gang_tags)
 	persistent = TRUE
 	persistence_allow_stacking = TRUE
 	mergeable_decal = FALSE
+	cap_exempt = TRUE // рисунок игрока, а не грязь: кап турфа его не вытесняет (см. cap_exempt)
 	var/do_icon_rotate = TRUE
 	var/rotation = 0
 	var/paint_colour = "#FFFFFF"

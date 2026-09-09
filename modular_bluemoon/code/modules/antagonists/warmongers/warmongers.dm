@@ -1,5 +1,5 @@
 /datum/antagonist/warmonger
-	name = "medieval warmongers"
+	name = "Medieval Warmongers"
 	job_rank = ROLE_TRAITOR
 	roundend_category = "space pirates"
 	antagpanel_category = "Warmongers"
@@ -8,7 +8,7 @@
 	var/datum/team/warmonger/crew
 
 /datum/antagonist/warmonger/greet()
-	SEND_SOUND(owner.current, sound('sound/ambience/antag/pirate.ogg'))
+	SEND_SOUND(owner.current, sound('sound/ambience/antag/pirate_medieval.ogg'))
 	to_chat(owner, "<span class='boldannounce'>Вы - средневековый боец в космосе!</span>")
 	to_chat(owner, "<B>Станция отказалась платить вам дань. Атакуйте станцию, украдите её ресурсы и средства из хранилища. Покажите слабым кто тут прав! Держите свой корабль в сохранности.</B>")
 	owner.announce_objectives()

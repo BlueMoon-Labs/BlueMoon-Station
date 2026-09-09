@@ -1,0 +1,3104 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/template_noop,
+/area/template_noop)
+"ab" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/cable,
+/turf/template_noop,
+/area/ruin/space)
+"ac" = (
+/obj/machinery/porta_turret/syndicate/energy{
+	dir = 4;
+	name = "Syndicate Ship Turret";
+	on = 0;
+	shot_delay = 10
+	},
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ad" = (
+/obj/machinery/computer/operating,
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ae" = (
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"af" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aj" = (
+/obj/structure/table/optable,
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ak" = (
+/obj/item/storage/backpack/duffelbag/syndie/surgery,
+/obj/structure/table/reinforced,
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"am" = (
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"an" = (
+/obj/structure/sign/warning/vacuum/external,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ao" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ap" = (
+/obj/machinery/atmospherics/components/unary/shuttle/heater{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aq" = (
+/obj/structure/sign/poster/contraband/syndicate_recruitment,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ar" = (
+/obj/machinery/camera/xray{
+	c_tag = "Medbay";
+	dir = 6;
+	network = list("fsci");
+	screen_loc = ""
+	},
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"as" = (
+/turf/open/floor/engine,
+/area/space)
+"at" = (
+/obj/structure/chair/comfy/shuttle,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"au" = (
+/obj/machinery/door/poddoor{
+	id = "fslockdown";
+	name = "Ship Blast Door";
+	state_open = 1
+	},
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aw" = (
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"az" = (
+/obj/machinery/power/port_gen/pacman/super{
+	anchored = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aB" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aD" = (
+/obj/machinery/portable_atmospherics/scrubber{
+	anchored = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aL" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aO" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aQ" = (
+/mob/living/simple_animal/hostile/looter/ranged/space,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aR" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/item/paper/fluff/ruins/forgottenship/powerissues,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aT" = (
+/obj/machinery/computer/camera_advanced/syndie{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aU" = (
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aV" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aW" = (
+/obj/structure/table/reinforced,
+/obj/item/toy/plush/nukeplushie,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"aY" = (
+/turf/template_noop,
+/area/ruin/space)
+"aZ" = (
+/turf/closed/indestructible/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"ba" = (
+/turf/closed/mineral/random,
+/area/ruin/space)
+"bd" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/sheet/plasteel/twenty,
+/obj/item/stack/sheet/mineral/plastitanium{
+	amount = 50
+	},
+/obj/item/stack/sheet/glass/fifty,
+/obj/item/stack/rods/fifty,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"be" = (
+/obj/structure/cable,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bf" = (
+/obj/structure/cable,
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/sheet/glass{
+	amount = 10
+	},
+/obj/item/stack/cable_coil,
+/obj/item/circuitboard/computer/rdconsole,
+/obj/item/storage/box/stockparts/deluxe,
+/obj/item/storage/box/stockparts/deluxe,
+/obj/item/storage/box/beakers,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bg" = (
+/obj/structure/sign/poster/contraband/syndicate_pistol,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bh" = (
+/obj/structure/shuttle/engine/huge{
+	dir = 8
+	},
+/turf/template_noop,
+/area/template_noop)
+"bk" = (
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "fslockdown";
+	name = "Window shutters";
+	req_access = list("syndicate")
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bm" = (
+/obj/machinery/mineral/ore_redemption{
+	name = "Syndicate ore redemption machine";
+	ore_multiplier = 4;
+	req_access = list("syndicate")
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bn" = (
+/obj/structure/table/reinforced,
+/obj/item/paper,
+/obj/item/pen,
+/obj/machinery/light/directional/south,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bp" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/mining_scanner,
+/obj/item/pickaxe/drill,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe/drill,
+/obj/item/mining_scanner,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bq" = (
+/turf/closed/mineral/random/high_chance,
+/area/ruin/space)
+"br" = (
+/obj/machinery/light/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bs" = (
+/turf/closed/mineral,
+/area/ruin/space)
+"bt" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bu" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/toy/nuke,
+/obj/item/clothing/under/chameleon,
+/obj/item/modular_computer/pda/chameleon,
+/obj/item/clothing/mask/chameleon,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bw" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bx" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Captain's Room"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/machinery/door/poddoor{
+	id = "fscaproom";
+	name = "Captain's Blast Door";
+	state_open = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"by" = (
+/mob/living/simple_animal/hostile/looter/ranged/space/laser,
+/turf/template_noop,
+/area/template_noop)
+"bz" = (
+/obj/structure/table/reinforced,
+/obj/item/assembly/prox_sensor,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bA" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/clothing/head/helmet/space/syndicate/black/engie,
+/obj/item/clothing/suit/space/syndicate/black/engie,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bC" = (
+/obj/structure/closet/crate/medical,
+/obj/item/stack/medical/bruise_pack{
+	amount = 12
+	},
+/obj/item/stack/medical/ointment{
+	amount = 12
+	},
+/obj/item/healthanalyzer/advanced,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bD" = (
+/obj/structure/chair/comfy{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bF" = (
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/structure/cable,
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/grunge{
+	desc = "Vault airlock preventing air from going out.";
+	name = "Syndicate Vault Airlock"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bG" = (
+/obj/structure/sink/directional/south,
+/obj/structure/mirror/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bH" = (
+/obj/structure/sink/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bI" = (
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bJ" = (
+/obj/machinery/suit_storage_unit/syndicate{
+	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/black;
+	suit_type = /obj/item/clothing/suit/space/syndicate/black
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bL" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bM" = (
+/obj/structure/cable,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bN" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/cable,
+/turf/template_noop,
+/area/space/nearstation)
+"bO" = (
+/obj/structure/bodycontainer/crematorium{
+	id = "fscremate"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bQ" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/structure/cable,
+/mob/living/simple_animal/hostile/looter/crusher,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bR" = (
+/obj/structure/sign/poster/contraband/tools,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bS" = (
+/obj/machinery/button/crematorium{
+	id = "fscremate";
+	pixel_x = -32
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"bX" = (
+/obj/structure/sign/poster/contraband/c20r,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"bY" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ca" = (
+/obj/machinery/computer/crew/syndie{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cb" = (
+/obj/machinery/computer/atmos_alert{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cc" = (
+/obj/structure/chair/comfy,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cd" = (
+/obj/machinery/light/directional/south,
+/mob/living/simple_animal/hostile/looter,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ce" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/ammo_box/c9mm,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cf" = (
+/obj/structure/displaycase{
+	req_access = list("syndicate");
+	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cg" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ch" = (
+/mob/living/simple_animal/hostile/looter/ranged,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cj" = (
+/obj/machinery/stasis,
+/turf/open/floor/padded,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"ck" = (
+/obj/structure/sign/departments/cargo,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"cm" = (
+/obj/structure/cable,
+/mob/living/simple_animal/hostile/looter/ranged,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cn" = (
+/obj/machinery/recharge_station,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"co" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cq" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Bridge"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cr" = (
+/obj/machinery/vending/cigarette/syndicate,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cs" = (
+/mob/living/simple_animal/hostile/looter/ranged/space/laser,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cu" = (
+/obj/machinery/computer/security{
+	desc = "Used to access interrogation room camera.";
+	dir = 8;
+	name = "Ship cameras console";
+	network = list("fsc","fsci");
+	screen_loc = ""
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cv" = (
+/obj/machinery/atmospherics/components/unary/vent_pump,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cw" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/sybian_kit,
+/obj/item/syndicate_uplink/station,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"cz" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 40
+	},
+/obj/item/stack/sheet/mineral/uranium{
+	amount = 15
+	},
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"cA" = (
+/obj/structure/table/reinforced,
+/obj/machinery/atmospherics/components/unary/vent_pump,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cC" = (
+/obj/machinery/atmospherics/components/unary/vent_pump{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cD" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cG" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cN" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cO" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cQ" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/mob/living/simple_animal/hostile/looter/big,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cW" = (
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"cY" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"cZ" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"da" = (
+/obj/structure/table/reinforced,
+/obj/item/ammo_box/c9mm,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"db" = (
+/obj/structure/toilet{
+	dir = 1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dc" = (
+/obj/machinery/shower/directional/north,
+/obj/machinery/light/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dd" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"de" = (
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"df" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/clothing/under/syndicate/combat,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/under/syndicate/skirt,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dg" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/clothing/mask/gas/syndicate,
+/obj/item/clothing/under/syndicate,
+/obj/item/clothing/under/syndicate/skirt,
+/obj/item/clothing/gloves/combat,
+/obj/item/clothing/shoes/combat,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dh" = (
+/obj/machinery/camera/xray{
+	c_tag = "Cargo pod";
+	dir = 9;
+	network = list("fsci");
+	screen_loc = ""
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"di" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/disk/surgery/forgottenship,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"dj" = (
+/turf/closed/mineral/random/high_chance,
+/area/space/nearstation)
+"dl" = (
+/obj/machinery/door/password/voice/sfc{
+	password = null
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/grunge{
+	desc = "Vault airlock preventing air from going out.";
+	name = "Syndicate Vault Airlock"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/syndicate/general,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"dm" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dn" = (
+/mob/living/simple_animal/hostile/looter,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"do" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/sheet/mineral/gold{
+	amount = 30
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 30
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"dp" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/stack/ore/plasma{
+	amount = 19
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dr" = (
+/obj/structure/table/reinforced,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dt" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"dy" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"gz" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"jZ" = (
+/obj/structure/closet/crate/solarpanel_small,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"km" = (
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"lQ" = (
+/obj/machinery/ore_silo,
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"ml" = (
+/obj/machinery/suit_storage_unit/syndicate{
+	helmet_type = /obj/item/clothing/head/helmet/space/syndicate/black;
+	suit_type = /obj/item/clothing/suit/space/syndicate/black
+	},
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"mm" = (
+/obj/structure/cable,
+/obj/machinery/light/floor,
+/mob/living/simple_animal/hostile/looter,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"mp" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"mZ" = (
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"qK" = (
+/obj/machinery/turretid{
+	control_area = "/area/ruin/space/has_grav/syndicate_forgotten_ship";
+	enabled = 0;
+	lethal = 1;
+	name = "Ship turret control panel";
+	pixel_y = 32;
+	req_access = list("syndicate");
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"rz" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"sL" = (
+/obj/machinery/light/directional/west,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"tv" = (
+/obj/item/wrench,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"tO" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"vB" = (
+/obj/item/stack/sheet/mineral/uranium{
+	amount = 15
+	},
+/obj/structure/cable,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"vR" = (
+/obj/structure/table/reinforced,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"wz" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/cable,
+/mob/living/simple_animal/hostile/looter/ranged/space,
+/turf/template_noop,
+/area/space/nearstation)
+"yv" = (
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/storage/toolbox/electrical,
+/obj/item/clothing/glasses/welding,
+/obj/item/clothing/glasses/welding,
+/obj/item/clothing/glasses/welding,
+/obj/structure/closet/crate/secure/engineering{
+	req_access = list("syndicate")
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"yT" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/looter/crusher,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Cy" = (
+/obj/machinery/light/small/directional/north,
+/mob/living/simple_animal/hostile/looter/ranged/space,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Dx" = (
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"GK" = (
+/mob/living/simple_animal/hostile/looter/ranged,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Hi" = (
+/obj/machinery/camera/xray/directional/east{
+	c_tag = "Conference room";
+	network = list("fsc");
+	screen_loc = ""
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"HM" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/item/toy/sword,
+/obj/item/toy/balloon/syndicate,
+/obj/machinery/light/directional/east,
+/obj/item/switchblade,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"Il" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/obj/machinery/light/directional/north,
+/turf/open/floor/pod/dark,
+/area/ruin/space/has_grav/Luter_Ship/Ship)
+"IP" = (
+/obj/structure/cable,
+/obj/machinery/light/directional/west,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Ji" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Kd" = (
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Lj" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_access = list("syndicate");
+	secure = 1
+	},
+/obj/item/coin/antagtoken,
+/obj/item/encryptionkey/syndicate,
+/obj/item/encryptionkey/syndicate,
+/obj/item/encryptionkey/syndicate,
+/obj/item/dnainjector/thermal,
+/obj/item/storage/box/firingpins/syndicate,
+/obj/item/storage/box/firingpins/syndicate,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/mineral/plastitanium/red,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Mj" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Syndicate Ship Airlock"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Ob" = (
+/mob/living/simple_animal/hostile/looter/ranged,
+/turf/open/floor/carpet/royalblack,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"Qd" = (
+/mob/living/simple_animal/hostile/looter/ranged/space,
+/turf/template_noop,
+/area/template_noop)
+"VF" = (
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "fscaproom";
+	name = "Room shutters control";
+	req_access = list("syndicate")
+	},
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+"WR" = (
+/obj/structure/closet/crate/secure/gear{
+	req_access = list("syndicate")
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/Luter_Ship/Large_Ship)
+
+(1,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(2,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(3,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(4,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(5,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(6,1,1) = {"
+aa
+aa
+aa
+aa
+Qd
+aa
+aa
+aa
+aa
+aa
+bh
+aa
+aa
+aa
+aa
+bh
+aa
+aa
+aa
+aa
+bh
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(7,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+as
+as
+as
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(8,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+as
+as
+as
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(9,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+ap
+ap
+ap
+ap
+af
+af
+ap
+ap
+ap
+af
+af
+ap
+ap
+ap
+ap
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+aa
+aa
+"}
+(10,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+aa
+"}
+(11,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+af
+WR
+dt
+Dx
+Dx
+dm
+dt
+Dx
+dp
+WR
+Dx
+Dx
+dt
+WR
+af
+ac
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(12,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+Dx
+Dx
+Dx
+ch
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+Dx
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(13,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+af
+af
+af
+af
+af
+cZ
+af
+af
+af
+cZ
+af
+af
+af
+af
+aa
+by
+aa
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+aY
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(14,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+vR
+af
+sL
+bw
+af
+mZ
+aR
+az
+af
+bz
+bD
+Dx
+bY
+Dx
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+aY
+ba
+bq
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(15,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+tO
+km
+af
+Kd
+aO
+af
+vB
+cC
+km
+af
+bY
+Dx
+Dx
+Dx
+cY
+af
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+ba
+ba
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(16,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+cf
+km
+bx
+Kd
+Kd
+bx
+cD
+cm
+km
+cZ
+Dx
+Dx
+dn
+cc
+dr
+af
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+aZ
+aZ
+aZ
+aZ
+ba
+ba
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(17,1,1) = {"
+aa
+aa
+aa
+aa
+by
+aa
+af
+Lj
+km
+af
+Ob
+Kd
+bx
+km
+cD
+km
+cZ
+Dx
+Dx
+Dx
+cc
+da
+af
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+aZ
+aZ
+bA
+bA
+aZ
+aZ
+ba
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(18,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+vR
+km
+af
+aB
+bn
+af
+tv
+cD
+km
+af
+bY
+Dx
+Dx
+Dx
+cY
+af
+aa
+aa
+aa
+aY
+ba
+ba
+ba
+aZ
+bd
+de
+de
+cz
+aZ
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(19,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+af
+co
+af
+VF
+cO
+bg
+aD
+cD
+Ji
+af
+cO
+bD
+Dx
+bY
+af
+ac
+aa
+aa
+aa
+aY
+ba
+bq
+ba
+aZ
+Il
+de
+de
+do
+aZ
+ba
+bq
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(20,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+af
+af
+af
+af
+cG
+af
+af
+af
+af
+af
+af
+af
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+aZ
+dd
+de
+de
+di
+aZ
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+"}
+(21,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+ad
+am
+am
+am
+af
+Dx
+ao
+Dx
+af
+bG
+Dx
+cZ
+db
+af
+aa
+aa
+aa
+aa
+aY
+ba
+ba
+ba
+aZ
+aZ
+dl
+aZ
+aZ
+aZ
+ba
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+"}
+(22,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+aj
+am
+am
+cj
+af
+Dx
+mm
+Dx
+af
+bH
+cd
+af
+af
+af
+aa
+aa
+aa
+aa
+aY
+ba
+ba
+bq
+aw
+aw
+bI
+lQ
+aw
+aw
+ba
+ba
+ba
+ba
+aY
+aa
+aa
+aa
+aa
+"}
+(23,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+ak
+ar
+am
+am
+cZ
+cv
+ao
+Dx
+cZ
+Dx
+Dx
+cZ
+dc
+af
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+bX
+bI
+bI
+bI
+bI
+aw
+ba
+ba
+aY
+aY
+aY
+aa
+aa
+aa
+aa
+"}
+(24,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+af
+af
+af
+af
+af
+af
+af
+cG
+af
+af
+af
+af
+af
+af
+af
+ac
+aa
+aa
+aa
+aa
+aY
+ba
+ba
+aw
+dh
+bI
+bm
+bI
+aw
+ba
+aY
+aY
+aY
+aY
+aa
+aa
+aa
+aa
+"}
+(25,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+bO
+bS
+af
+ao
+ao
+ao
+IP
+ao
+ao
+ao
+ao
+Dx
+af
+Dx
+bJ
+af
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+aw
+bf
+cW
+bI
+bI
+aw
+bs
+ba
+ba
+ba
+aY
+aa
+aa
+aa
+aa
+"}
+(26,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+Cy
+Dx
+af
+rz
+Dx
+cN
+cN
+yT
+cN
+cN
+ao
+Dx
+af
+cs
+ml
+af
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+bR
+bp
+cW
+bI
+bC
+aw
+bq
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+"}
+(27,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ae
+Dx
+Dx
+aU
+Dx
+at
+cO
+cO
+cO
+cO
+cO
+bQ
+ao
+be
+ao
+ao
+bM
+bN
+bN
+wz
+bN
+bN
+ab
+ab
+bF
+cW
+cW
+bI
+bu
+aw
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+"}
+(28,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+Dx
+Dx
+an
+Dx
+at
+cO
+cA
+cO
+cO
+cO
+aL
+Dx
+an
+aQ
+bJ
+af
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+ck
+yv
+bI
+bI
+jZ
+aw
+ba
+ba
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(29,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+cn
+Dx
+af
+Dx
+Dx
+Dx
+cO
+cQ
+cO
+Dx
+Dx
+Dx
+af
+Dx
+bL
+af
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+aw
+aw
+HM
+cw
+aw
+aw
+ba
+ba
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(30,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+af
+dy
+af
+cr
+Dx
+Dx
+Dx
+Dx
+Hi
+Dx
+Dx
+Dx
+af
+dy
+af
+ac
+aa
+aa
+aa
+aa
+aY
+ba
+ba
+ba
+aw
+aw
+aw
+aw
+ba
+ba
+bq
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(31,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+af
+af
+af
+af
+cq
+af
+af
+af
+af
+af
+af
+af
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+ba
+ba
+ba
+ba
+bq
+ba
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(32,1,1) = {"
+aa
+aa
+aa
+aa
+Qd
+aa
+aa
+aa
+aa
+aq
+cg
+ce
+km
+km
+km
+km
+km
+cg
+ce
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+bq
+ba
+ba
+ba
+ba
+ba
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(33,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+af
+km
+km
+km
+km
+km
+km
+km
+km
+km
+af
+af
+af
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aY
+aY
+aY
+aY
+aY
+aY
+aY
+aY
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(34,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+qK
+km
+af
+br
+km
+GK
+cB
+km
+km
+km
+km
+bt
+af
+df
+df
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(35,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+af
+mp
+km
+Mj
+km
+aV
+km
+aV
+km
+aV
+km
+aV
+km
+Mj
+km
+gz
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(36,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+af
+km
+af
+km
+cu
+km
+aT
+km
+ca
+km
+cb
+km
+af
+dg
+af
+ac
+aa
+aa
+aa
+by
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(37,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+af
+km
+km
+km
+km
+km
+km
+km
+km
+km
+af
+af
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(38,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+af
+af
+vR
+vR
+aW
+vR
+bk
+vR
+vR
+vR
+vR
+af
+af
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(39,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+ac
+au
+au
+au
+au
+au
+au
+au
+au
+au
+ac
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(40,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(41,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(42,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+Qd
+aa
+aa
+aa
+dj
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(43,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+by
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+dj
+dj
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(44,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+dj
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(45,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}
+(46,1,1) = {"
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+aa
+"}

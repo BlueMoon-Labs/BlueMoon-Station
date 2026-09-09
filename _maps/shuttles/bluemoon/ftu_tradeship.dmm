@@ -615,7 +615,7 @@
 /turf/open/floor/plasteel/smooth/large,
 /area/shuttle/ftu_trade)
 "Sw" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /obj/structure/grille,
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor{
@@ -671,7 +671,7 @@
 /turf/open/floor/mineral/titanium,
 /area/shuttle/ftu_trade)
 "Vp" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /obj/structure/grille,
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "nee";

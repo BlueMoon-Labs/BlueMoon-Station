@@ -510,6 +510,16 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 */
+/datum/design/holosignatmos_sustained
+	name = "Sustained Holofan Projector"
+	desc = "Проектор холофанов с эмиттером на замкнутом контуре: одна проекция держится сколько угодно, остальные тратят запас."
+	id = "holosignatmos_sustained"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 3000, /datum/material/silver = 3000, /datum/material/gold = 3000, /datum/material/titanium = 2000, /datum/material/plasma = 1500)
+	build_path = /obj/item/holosign_creator/atmos/sustained
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/holosigncombifan
 	name = "ATMOS Holo-Combifan Projector"
 	desc = "A holographic projector that creates holographic barriers that prevent changes in atmospheric and temperature conditions."

@@ -16,6 +16,8 @@
 	icon_screen = "civ_bounty"
 	icon_keyboard = "id_key"
 	circuit = /obj/item/circuitboard/computer/bountypad
+	//Родитель неразрушаем ради антагонистов, а станционный пульт наград ломается как обычная машина.
+	resistance_flags = NONE
 	var/obj/item/card/id/inserted_scan_id
 
 /obj/machinery/computer/piratepad_control/civilian/Initialize()

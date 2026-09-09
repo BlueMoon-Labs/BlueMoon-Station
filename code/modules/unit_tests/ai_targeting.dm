@@ -248,9 +248,10 @@
 	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_LAST_KNOWN_POS], get_turf(prey), "The confirmed position must stay fresh on the cheap path")
 	qdel(controller)
 
-///Losing LOS demotes the live target to a contact THE SAME PASS: no GPS
-///pursuit of the real atom behind the wall. The evidence turf stays where the
-///target was last actually seen, and only the mob's own sight re-acquires it.
+///Losing LOS demotes the live target to a contact after the short peek grace:
+///no GPS pursuit of the real atom behind the wall. The evidence turf stays
+///where the target was last actually seen, and only the mob's own sight
+///re-acquires it.
 ///Вся геометрия строго внутри 5x5 комнаты теста: восточнее x+4 лежат ЧУЖИЕ
 ///резервации (шаттловый транзит с непрозрачными бортами появляется там в
 ///зависимости от порядка тестов).
@@ -271,9 +272,14 @@
 
 	wall_turf.ChangeTurf(/turf/closed/wall)
 	prey.forceMove(hidden_turf)
+	//первый скрытый цикл - грейс (пик из-за угла не обнуляет ENGAGE), демоушен
+	//наступает после его истечения
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], prey, "The first hidden pass must grace the target, not demote it")
+	controller.blackboard[BB_AI_LOS_LOST_AT] = world.time - AI_LOS_DEMOTE_GRACE - 1
 	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
 
-	TEST_ASSERT_NULL(controller.blackboard[BB_AI_CURRENT_TARGET], "Lost LOS must demote the live target to a contact immediately")
+	TEST_ASSERT_NULL(controller.blackboard[BB_AI_CURRENT_TARGET], "Lost LOS must demote the live target once the grace expires")
 	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CONTACT_TARGET], prey, "The demoted target must be remembered as the hunted contact")
 	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_LAST_KNOWN_POS], visible_turf, "The evidence turf must not update through the wall")
 	TEST_ASSERT(controller.blackboard[BB_AI_TARGET_REFRESH_AT] <= world.time + AI_TARGET_LOST_REFRESH_COOLDOWN, "A fresh contact must use the short reacquisition cadence")
@@ -329,6 +335,33 @@
 
 	qdel(controller)
 
+///Настороженность от полученного урона: моб с коротким пассивным зрением после
+///удара ищет на боевом aggro_vision_range, даже если цели и контакта нет, а
+///точка обидчика становится уликой розыска. Розыскной КОНТАКТ при этом не
+///создаётся - бонус скоринга контакта не должен дублировать обиду (плейтест
+///22.06: shambling miner с vision 3 стоял столбом под выстрелами с 4+ тайлов).
+/datum/unit_test/ai_combat_alert_survives_target_loss/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	victim.vision_range = 3
+	victim.aggro_vision_range = 7
+	var/turf/shooter_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/shooter = allocate(/mob/living/carbon/human, shooter_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(victim)
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/hostile_legacy)
+
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 3, "Санити: холодное зрение обязано быть пассивным")
+	controller.note_attacker(shooter)
+	TEST_ASSERT(controller.is_combat_alert(), "Полученный удар обязан взводить настороженность")
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 7, "Настороженный моб обязан искать на боевом aggro_vision_range")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_LAST_KNOWN_POS], shooter_turf, "Точка обидчика обязана стать уликой розыска")
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CONTACT_TARGET), "Удар не имеет права создавать розыскной контакт")
+
+	//окно протухло - восприятие остывает
+	controller.blackboard[BB_AI_COMBAT_ALERT_UNTIL] = world.time - 1
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 3, "Протухшая настороженность обязана остужать зрение")
+
+	qdel(controller)
+
 ///Фрустрация проходит через живой finder и действительно меняет цель.
 /datum/unit_test/ai_targeting_live_retarget/Run()
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
@@ -366,3 +399,160 @@
 	qdel(turret)
 	TEST_ASSERT(!(turret in GLOB.hostile_machines), "A destroyed turret must leave GLOB.hostile_machines")
 	TEST_ASSERT(!(turret in GLOB.hostile_machines_by_zlevel[z_level]), "A destroyed turret must leave its hostile-machine z bucket")
+
+///Мех с пилотом - легитимная цель, и целью обязан становиться САМ мех: его моб
+///может бить (attack_animal), а пилот в потрохах для милишки недосягаем (Adjacent
+///через не-турф loc всегда FALSE - моб застывал бы столбом). Репорт плейтеста:
+///"мобы не агрятся на игроков в мехе".
+/datum/unit_test/ai_targets_occupied_mecha/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	var/turf/mech_turf = locate(start_turf.x + 3, start_turf.y, start_turf.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, mech_turf)
+	//низкоуровневая посадка: moved_inside() требует клиента, которого у тестовых мобов нет
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	TEST_ASSERT_EQUAL(pilot.loc, mech, "Санити: пилот обязан сидеть внутри меха")
+	TEST_ASSERT(pawn.CanAttack(mech), "Санити: мех с пилотом обязан быть атакуемым")
+
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	var/verdict = finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(verdict & AI_BEHAVIOR_SUCCEEDED, "The finder must acquire a target from an occupied mech scene")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], mech, "The acquired target must be the mech itself, not the pilot inside it")
+
+	//пилот, севший в мех ПОСЛЕ приобретения, обязан разжаловаться на ревалидации
+	//(иначе моб вечно держит недосягаемую цель и стоит столбом у брони)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, pilot)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_NOTEQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], pilot, "A target that boarded a sealed vehicle must not survive revalidation")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], mech, "The rescan must swap the boarded pilot for the mech")
+
+	qdel(controller)
+
+///Пустой мех целью не является: CanAttack без атакуемых окупантов - FALSE
+/datum/unit_test/ai_ignores_empty_mecha/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start_turf)
+	var/turf/mech_turf = locate(start_turf.x + 3, start_turf.y, start_turf.z)
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, mech_turf)
+	TEST_ASSERT(!pawn.CanAttack(mech), "An empty mech must not be attackable")
+
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "An empty mech must not be acquired as a target")
+	qdel(controller)
+
+///Майнбот не поворачивается против владельца. Прод, раунд 9875: шахтёр ткнул
+///своего бота сумкой с рудой (урон ноль, NEWHP не изменился) - бот ответил
+///через 258 мс и до конца раунда стрелял в него из кинетика. Причина: обида
+///писалась независимо от урона, а foes[цель] в CanAttack бьёт проверку фракции.
+/datum/unit_test/minebot_does_not_turn_on_its_faction/Run()
+	var/mob/living/simple_animal/hostile/mining_drone/bot = allocate(/mob/living/simple_animal/hostile/mining_drone, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/owner = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(bot.ai_controller) //чистая бухгалтерия обид без контроллера
+
+	TEST_ASSERT(bot.faction_check_mob(owner), "Санити: майнбот и человек обязаны быть в общей фракции neutral")
+	TEST_ASSERT(!bot.CanAttack(owner), "Санити: до всякой обиды владелец не цель")
+
+	TEST_ASSERT(!bot.consider_retaliation(owner, 0), "Тычок с нулевым уроном не имеет права создать обиду")
+	TEST_ASSERT(!bot.CanAttack(owner), "После тычка с нулевым уроном владелец обязан остаться не-целью")
+
+	//даже настоящий урон не разворачивает бота против своей фракции
+	TEST_ASSERT(!bot.consider_retaliation(owner, bot.maxHealth), "Бот не имеет права заводить обиду на свою фракцию ни при каком уроне")
+	TEST_ASSERT(!bot.CanAttack(owner), "Владелец обязан остаться не-целью и после настоящего урона")
+
+///Обычная фауна сокомандника терпит, но не бесконечно: порог по накопленному
+///урону за окно, а не по числу ударов - три щекотки не равны трём ударам кувалдой.
+/datum/unit_test/hostile_tolerates_light_friendly_fire/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/ally = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(victim.ai_controller)
+
+	var/threshold = victim.maxHealth * AI_FRIENDLY_FIRE_TOLERANCE
+	TEST_ASSERT(threshold > 2, "Санити: порог обязан быть больше одного тестового удара")
+
+	TEST_ASSERT(!victim.consider_retaliation(ally, 0), "Нулевой урон от своего не копится")
+	TEST_ASSERT(!victim.consider_retaliation(ally, 1), "Одиночная царапина от своего не переводит в враги")
+	TEST_ASSERT(!victim.CanAttack(ally), "Сокомандник ниже порога обязан остаться не-целью")
+
+	TEST_ASSERT(victim.consider_retaliation(ally, threshold), "Накопленный урон выше порога обязан создать обиду")
+	TEST_ASSERT(victim.CanAttack(ally), "После превышения порога сокомандник становится валидной целью")
+
+///Чужак остаётся врагом с первого касания: толерантность - только к своим.
+/datum/unit_test/hostile_retaliates_against_outsider_at_once/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/outsider = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(victim.ai_controller)
+	outsider.faction = list("ai_unit_test_outsiders")
+
+	TEST_ASSERT(victim.consider_retaliation(outsider, 0), "Обида на чужую фракцию не гейтится уроном")
+	TEST_ASSERT(outsider in victim.enemies, "Чужак обязан попасть в enemies")
+
+///Грейс потери LOS: мигнувшая за углом цель не разжалуется мгновенно - пик
+///из-за угла на полсекунды не должен обнулять ENGAGE (плейтест round-23.35.57)
+/datum/unit_test/ai_finder_los_grace_before_demote/Run()
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/turf/prey_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/turf/blocker_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	allocate(/obj/effect/ai_unit_test_opaque_blocker, blocker_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	TEST_ASSERT(!can_see(hunter, prey, 14), "Санити: преграда обязана скрывать цель")
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+
+	//первый цикл со скрытой целью: грейс, а не мгновенный демоушен
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "Мигнувший LOS не имеет права мгновенно разжаловать цель")
+	TEST_ASSERT((controller.blackboard[BB_AI_LOS_LOST_AT] || 0) > 0, "Первый скрытый цикл обязан ставить отметку потери LOS")
+
+	//цель показалась обратно: отметка снимается, цель держится
+	var/turf/visible_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	prey.forceMove(visible_turf)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "Показавшаяся цель обязана удерживаться")
+	TEST_ASSERT(isnull(controller.blackboard[BB_AI_LOS_LOST_AT]), "Возвращённый LOS обязан снимать отметку потери")
+
+	//грейс истёк, цель всё ещё скрыта: честный демоушен в контакт
+	prey.forceMove(prey_turf)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	controller.blackboard[BB_AI_LOS_LOST_AT] = world.time - AI_LOS_DEMOTE_GRACE - 1
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "Истёкший грейс обязан разжаловать скрытую цель")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CONTACT_TARGET], prey, "Разжалованная цель обязана стать розыскным контактом")
+
+	qdel(controller)
+
+///Свежепомеченная непробиваемой цель не реаквайрится финдером: иначе моб мерцает
+///"взял-бросил" каждые полсекунды, стоя вплотную к врагу, которого нечем пробить
+/datum/unit_test/ai_finder_skips_impervious_target/Run()
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] = WEAKREF(armored)
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = world.time + AI_IMPERVIOUS_MEMORY
+
+	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "Свежая непробиваемая пометка обязана исключать цель из выбора")
+
+	//босс (pursuit_leashed = FALSE) пометку игнорирует: его погоня - содержание боя
+	controller.pursuit_leashed = FALSE
+	controller.blackboard[BB_AI_TARGET_REFRESH_AT] = 0
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], armored, "Отписанный от поводка контроллер не фильтрует непробиваемых")
+
+	//пометка протухла: обычный контроллер снова берёт цель
+	controller.pursuit_leashed = TRUE
+	controller.clear_blackboard_key(BB_AI_CURRENT_TARGET)
+	controller.blackboard[BB_AI_ROUTE_RETRY_AT] = null
+	controller.blackboard[BB_AI_TARGET_REFRESH_AT] = 0
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = 0
+	finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], armored, "Протухшая пометка обязана возвращать цель в выбор")
+
+	qdel(controller)

@@ -25,3 +25,6 @@
 
 ///from /obj/machinery/set_occupant(atom/movable/O): (new_occupant)
 #define COMSIG_MACHINERY_SET_OCCUPANT "machinery_set_occupant"
+
+///from /obj/effect/mob_spawn/create(), глобальный (SEND_GLOBAL_SIGNAL): (mob/living/new_spawn) - вызывается только когда роль занял живой игрок
+#define COMSIG_GHOST_ROLE_CLAIMED "ghost_role_claimed"

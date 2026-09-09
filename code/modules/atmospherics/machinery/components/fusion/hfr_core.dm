@@ -29,7 +29,6 @@
 	var/datum/gas_mixture/moderator_internal
 	var/list/moderator_scrubbing = list(GAS_HELIUM)
 	var/moderator_filtering_rate = 20
-	var/fusion_filtering_rate = 20 /// Legacy; no longer used for waste removal
 	var/datum/hfr_fuel/selected_fuel
 
 	var/energy = 0

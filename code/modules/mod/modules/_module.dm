@@ -50,6 +50,10 @@
 	var/my_retract_sound = 'sound/mecha/mechmove03.ogg'
 	///Быстрая ссылка на компонент втягиваемости
 	var/datum/component/mod_retractable/my_retract_component
+	var/obj/item/clothing/mod_part/required_modpart
+	var/required_modpart_index
+	var/startup_with_suit = FALSE
+	var/saved_state
 
 /obj/item/mod/module/Initialize(mapload)
 	. = ..()
@@ -57,12 +61,9 @@
 		return
 	if(ispath(device))
 		device = new device(src)
-		ADD_TRAIT(device, TRAIT_NODROP, MOD_TRAIT)
-		RegisterSignal(device, COMSIG_PARENT_PREQDELETED, PROC_REF(on_device_deletion))
-		RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 
 /obj/item/mod/module/Destroy()
-	mod?.uninstall(src)
+	mod?.uninstall(src, deleting = TRUE)
 	if(device)
 		UnregisterSignal(device, COMSIG_PARENT_PREQDELETED)
 		QDEL_NULL(device)
@@ -73,17 +74,41 @@
 	if(user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
 		. += span_notice("Использовано места: [complexity]")
 
-/// Called from MODsuit's install() proc, so when the module is installed.
-/obj/item/mod/module/proc/on_install()
+/obj/item/mod/module/proc/check_required_modpart()
+	if(!mod || !mod?.wearer)
+		return FALSE
+	if(!required_modpart)
+		return TRUE
+	return required_modpart.check_module_ready()
+
+/obj/item/mod/module/proc/handle_emp_act(source, severity)
+	SIGNAL_HANDLER
 	return
 
+/// Called from MODsuit's install() proc, so when the module is installed.
+/obj/item/mod/module/proc/on_install()
+	if(module_type == MODULE_ACTIVE)
+		if(!my_retract_component && device)
+			my_retract_component = AddComponent(/datum/component/mod_retractable, device = device, modsuit = mod, retract_sound = my_retract_sound)
+
+	if(required_modpart_index)
+		required_modpart = mod.get_mod_part_by_index(required_modpart_index)
+		required_modpart?.link_modpart_with_module(src)
+		return
+
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
-/obj/item/mod/module/proc/on_uninstall()
+/obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
+	if(my_retract_component)
+		my_retract_component.RemoveComponent()
+		qdel(my_retract_component)
+	if(required_modpart)
+		required_modpart.linked_modules -= src
+		required_modpart = null
 	return
 
 /// Called when the MODsuit is activated
 /obj/item/mod/module/proc/on_suit_activation()
-	return
+	return startup_with_suit ? on_activation() : FALSE
 
 /// Called when the MODsuit is deactivated
 /obj/item/mod/module/proc/on_suit_deactivation()
@@ -97,12 +122,23 @@
 /obj/item/mod/module/proc/on_unequip()
 	return
 
+//Сюда нужно прописывать новые варианты, если появятся МОДы, которые вешаются в другой слот.
+/obj/item/mod/module/proc/update_modsuit_slot()
+	switch(mod.slot_flags)
+		if(ITEM_SLOT_BACK)
+			mod.wearer.update_inv_back()
+		if(ITEM_SLOT_BELT)
+			mod.wearer.update_inv_belt()
+
 /// Called when the module is selected from the TGUI
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
-	if(((!mod.active || mod.activating) && !allowed_inactive))
+	if(((!mod.is_active() || mod.is_activating()) && !allowed_inactive))
 		mod.balloon_alert(mod.wearer, "Сначала активируйте костюм!")
+		return
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
 		return
 	if(module_type != MODULE_USABLE)
 		if(active)
@@ -115,28 +151,27 @@
 
 /// Called when the module is activated
 /obj/item/mod/module/proc/on_activation()
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE
-	if(!mod.active || mod.activating || !mod.cell?.charge)
+	if(!mod.is_active() || !cell?.charge)
 		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
 		//specifically a to_chat because the user is phased out.
 		to_chat(mod.wearer, span_warning("Вы не можете активировать это сейчас!"))
 		return FALSE
+	if(!check_required_modpart())
+		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
+		return
 	if(module_type == MODULE_ACTIVE)
 		if(mod.selected_module && !mod.selected_module.on_deactivation())
 			return
 		mod.selected_module = src
-		if(device)
-			if(mod.wearer.put_in_hands(device))
-				mod.balloon_alert(mod.wearer, "[device] выдвинут")
-				RegisterSignal(mod.wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
-			else
-				mod.balloon_alert(mod.wearer, "невозможно выдвинуть [device]!")
-				return
-		else
+		if(my_retract_component)
+			SEND_SIGNAL(my_retract_component, COMSIG_MODULE_ON_USE, src, mod.wearer)
+		if(!device)
 			update_signal()
 			mod.balloon_alert(mod.wearer, "[src] активирован. Нажмите Alt+click по цели, чтобы использовать")
 	active = TRUE
@@ -148,19 +183,17 @@
 	active = FALSE
 	if(module_type == MODULE_ACTIVE)
 		mod.selected_module = null
+		mod.balloon_alert(mod.wearer, "[src] деактивирован")
+		used_signal = null
 		if(device)
-			mod.wearer.transferItemToLoc(device, src, TRUE)
-			mod.balloon_alert(mod.wearer, "[device] выдвинут")
-			UnregisterSignal(mod.wearer, COMSIG_ATOM_EXITED)
-		else
-			mod.balloon_alert(mod.wearer, "[src] деактивирован")
-			UnregisterSignal(mod.wearer, used_signal)
-			used_signal = null
+			my_retract_component.snap_back()
 	mod.wearer.update_inv_back()
 	return TRUE
 
 /// Called when the module is used
 /obj/item/mod/module/proc/on_use()
+	if(!mod.wearer)
+		return
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
 		return FALSE
 	if(!check_power(use_power_cost))
@@ -206,13 +239,15 @@
 
 /// Drains power from the suit cell
 /obj/item/mod/module/proc/drain_power(amount)
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!check_power(amount))
 		return FALSE
-	mod.cell.charge = max(0, mod.cell.charge - amount)
+	cell.charge = max(0, cell.charge - amount)
 	return TRUE
 
 /obj/item/mod/module/proc/check_power(amount)
-	if(!mod.cell || (mod.cell.charge < amount))
+	var/obj/item/stock_parts/cell/cell = mod.get_cell()
+	if(!cell || (cell.charge < amount))
 		return FALSE
 	return TRUE
 
@@ -232,19 +267,6 @@
 /obj/item/mod/module/proc/configure_edit(key, value)
 	return
 
-/// Called when the device moves to a different place on active modules
-/obj/item/mod/module/proc/on_exit(datum/source, atom/movable/part, direction)
-	SIGNAL_HANDLER
-
-	if(!active)
-		return
-	if(part.loc == src)
-		return
-	if(part.loc == mod.wearer)
-		return
-	if(part == device)
-		on_deactivation()
-
 /// Called when the device gets deleted on active modules
 /obj/item/mod/module/proc/on_device_deletion(datum/source)
 	SIGNAL_HANDLER
@@ -256,7 +278,7 @@
 /// Generates an icon to be used for the suit's worn overlays
 /obj/item/mod/module/proc/generate_worn_overlay()
 	. = list()
-	if(!mod.active)
+	if(!mod.is_active())
 		return
 	var/used_overlay
 	if(overlay_state_use && !COOLDOWN_FINISHED(src, cooldown_timer))

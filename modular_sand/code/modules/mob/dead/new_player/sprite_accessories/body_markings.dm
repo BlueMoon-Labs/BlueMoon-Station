@@ -106,3 +106,14 @@
 	icon_state = "sixpacktwo"
 	covered_limbs = list("Chest" = MATRIX_RED)
 
+/datum/sprite_accessory/mam_body_markings/sixpack_lighter
+	name = "Six-pack (lighter)"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "sixpackl"
+	covered_limbs = list("Chest" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/sixpack_lighter_two
+	name = "Six-pack (lighter) TWO"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "sixpackl2"
+	covered_limbs = list("Chest" = MATRIX_RED)

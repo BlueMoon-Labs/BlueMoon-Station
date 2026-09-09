@@ -7,8 +7,11 @@
 	var/category = CATEGORY_MISC
 	var/weight = WEIGHT_LOWEST
 	var/keybind_signal
-	/// Is this a clientside verb trigger? If so, this should be set to the name of the verb.
+	/// Если это вызов верба на стороне клиента, то укажите имя верба из set name
 	var/clientside
+	/// clientside но при отключенном преференсе tgui_input_verbs, для вызова вербов с параметрами, например /mob/verb/say_verb_byond(message as text)
+	/// В отличие от обычного input в коде, вербы с параметрами могут открывать несколько инпутов одновременно
+	var/clientside_byond
 	/// Special - Needs to update special keys on update. clientside implis special.
 	var/special = FALSE
 

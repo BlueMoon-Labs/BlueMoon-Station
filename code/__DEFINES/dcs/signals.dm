@@ -222,6 +222,9 @@
 
 // /turf signals
 
+///from active turf atmos processing: (datum/gas_mixture/air, exposed_temperature)
+#define COMSIG_TURF_EXPOSE "turf_expose"
+
 ///from base of turf/ChangeTurf(): (path, list/new_baseturfs, flags, list/transferring_comps)
 #define COMSIG_TURF_CHANGE "turf_change"
 ///from base of atom/has_gravity(): (atom/asker, list/forced_gravities)
@@ -270,6 +273,11 @@
 #define COMSIG_MOVABLE_DISPOSING "movable_disposing"			//called when the movable is added to a disposal holder object for disposal movement: (obj/structure/disposalholder/holder, obj/machinery/disposal/source)
 #define COMSIG_MOVABLE_TELEPORTED "movable_teleported"			//from base of do_teleport(): (channel, turf/origin, turf/destination)
 #define COMSIG_MOVABLE_CHASM_DROP "movable_chasm_drop"			//from base of /datum/component/chasm/drop() (/datum/component/chasm)
+
+// Merger-group lifecycle signals.
+#define COMSIG_MERGER_ADDING "comsig_merger_adding"
+#define COMSIG_MERGER_REMOVING "comsig_merger_removing"
+#define COMSIG_MERGER_REFRESH_COMPLETE "comsig_merger_refresh_complete"
 
 // /mind signals
 #define  COMSIG_PRE_MIND_TRANSFER "pre_mind_transfer"			//from base of mind/transfer_to() before it's done: (new_character, old_character)
@@ -374,7 +382,7 @@
 
 // /client signals
 #define COMSIG_MOB_CLIENT_LOGOUT "mob_client_logout"				//sent when a mob/logout() starts: (client)
-#define COMSIG_MOB_CLIENT_MOVE "mob_client_move"					//sent when client/Move() finishes with no early returns: (client, direction, n, oldloc)
+#define COMSIG_MOB_CLIENT_MOVE "mob_client_move"					//sent when client/Move() finishes with no early returns: (client, direction, n, oldloc, add_delay, base_delay)
 #define COMSIG_MOB_CLIENT_CHANGE_VIEW "mob_client_change_view"		//from base of /client/change_view(): (client, old_view, view)
 #define COMSIG_MOB_CLIENT_MOUSEMOVE "mob_client_mousemove"			//from base of /client/MouseMove(): (object, location, control, params)
 #define COMSIG_MOB_CLIENT_JOINED_FROM_LOBBY "mob_client_joined_from_lobby" //sent when a player joins/latejoins the game: (new_character, client, late_transfer)
@@ -401,6 +409,10 @@
 #define COMSIG_LIVING_SHOCK_PREVENTED "living_shock_prevented"  //sent when items with siemen coeff. of 0 block a shock: (power_source, source, siemens_coeff, dist_check)
 #define COMSIG_LIVING_MINOR_SHOCK "living_minor_shock"			//sent by stuff like stunbatons and tasers: ()
 #define COMSIG_LIVING_REVIVE "living_revive"					//from base of mob/living/revive() (full_heal, admin_revive)
+
+//Используется для отправки сигнала о ЕМП в обход проверок
+//нужно для использовании энергии в adv emp модуле.
+#define COMSIG_LIVING_FORCE_EMP "living_force_emp"
 
 #define COMSIG_MOB_RESET_PERSPECTIVE "mob_reset_perspective"		//from base of /mob/reset_perspective(): (atom/target)
 #define COMSIG_LIVING_GUN_PROCESS_FIRE "living_gun_process_fire"	//from base of /obj/item/gun/proc/process_fire(): (atom/target, params, zone_override)
@@ -491,7 +503,7 @@
 #define COMSIG_SUPERMATTER_DELAM_ALARM "sm_delam_alarm"
 
 // /obj/item signals
-#define COMSIG_ITEM_ATTACK "item_attack"						//from base of obj/item/attack(): (/mob/living/target, /mob/living/user)
+#define COMSIG_ITEM_ATTACK "item_attack"						//from base of obj/item/attack(): (/mob/living/target, /mob/living/user, damage_multiplier)
 #define COMSIG_ITEM_ATTACK_SELF "item_attack_self"				//from base of obj/item/attack_self(): (/mob)
 	#define COMPONENT_NO_INTERACT 1
 #define COMSIG_ITEM_ATTACK_OBJ "item_attack_obj"				//from base of obj/item/attack_obj(): (/obj, /mob)
@@ -501,6 +513,8 @@
 #define COMSIG_ITEM_AFTERATTACK "item_afterattack"				//from base of obj/item/afterattack(): (atom/target, mob/user, params)
 #define COMSIG_ITEM_ALT_AFTERATTACK "item_alt_afterattack"		//from base of obj/item/altafterattack(): (atom/target, mob/user, proximity, params)
 #define COMSIG_ITEM_EQUIPPED "item_equip"						//from base of obj/item/equipped(): (/mob/equipper, slot)
+/// A mob has just equipped an item. Called on [/mob] from base of [/obj/item/equipped()]: (/obj/item/equipped_item, slot)
+#define COMSIG_MOB_EQUIPPED_ITEM "mob_equipped_item"
 /// A mob has just unequipped an item.
 #define COMSIG_MOB_UNEQUIPPED_ITEM "mob_unequipped_item"
 	// Do not grant actions on equip.
@@ -718,6 +732,10 @@
 #define COMSIG_TRY_STORAGE_QUICK_EMPTY "storage_quick_empty"		//(loc) - returns bool - if loc is null it will dump at parent location.
 #define COMSIG_TRY_STORAGE_RETURN_INVENTORY "storage_return_inventory"	//(list/list_to_inject_results_into, recursively_search_inside_storages = TRUE)
 #define COMSIG_TRY_STORAGE_CAN_INSERT "storage_can_equip"			//(obj/item/insertion_candidate, mob/user, silent) - returns bool
+///sent to the CLICKED item before a bag scoops it up: (obj/item/storage_item, mob/user)
+///let a target that wants the bag itself (feeding a reproductive extract from a bio bag) run its own attackby
+#define COMSIG_ATOM_PRE_STORAGE_GATHER "atom_pre_storage_gather"
+	#define COMPONENT_CANCEL_STORAGE_GATHER 1
 
 // /datum/component/two_handed signals
 #define COMSIG_TWOHANDED_WIELD "twohanded_wield"						//from base of datum/component/two_handed/proc/wield(mob/living/carbon/user): (/mob/user)
@@ -879,3 +897,4 @@
 #define COMSIG_NEURAL_INTERFACE_WRITE_LOG "neural_interface_write_log" // write_log(text, key="LOG", color="#4ad1fa86", size=12, speed=0)
 #define COMSIG_NEURAL_INTERFACE_WRITE_DATA "neural_interface_write_data" // write_data(key, value, decay_duration=3 SECONDS, priority=0)
 #define COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA "neural_interface_write_image_data" // write_image_data(key, image/overlay, atom/target, text, decay_duration=30 SECONDS, pixel_x_text = 0, pixel_y_text = 0, text_size=12)
+#define COMSIG_GLOB_NEURAL_INTERFACE_RELAY "!global_neural_interface_relay"

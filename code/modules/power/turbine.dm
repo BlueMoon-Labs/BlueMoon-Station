@@ -41,8 +41,22 @@
 	var/comp_id = 0
 	var/efficiency
 
+// Компрессор и турбина стоят в стене камеры сгорания - это единственный проём
+// между печью и машинным залом. Газ через них не идёт (ATMOS_PASS_DENSITY), но
+// суперпроводимость видела эту пару турфов как "окно" и тащила температуру
+// печи наружу коэффициентом 0.1: зал грелся до срабатывания пожарки, хотя
+// камера физически закрыта. У tg те же ступени турбины блокируют кондукцию
+// (block_superconductivity), у нас порт этого куска потерялся.
+/obj/machinery/power/compressor/BlockThermalConductivity()
+	return density
+
 /obj/machinery/power/compressor/Destroy()
 	QDEL_NULL(gas_contained)
+	// Соседство считается по содержимому турфа, поэтому снятая ступень обязана
+	// сама попросить пересчёт - иначе печать "здесь газ и тепло не проходят"
+	// переживёт саму машину.
+	density = FALSE
+	air_update_turf(TRUE)
 	if(turbine && turbine.compressor == src)
 		turbine.compressor = null
 	turbine = null
@@ -63,10 +77,15 @@
 	var/lastgen
 	var/productivity = 1
 
+/obj/machinery/power/turbine/BlockThermalConductivity()
+	return density
+
 /obj/machinery/power/turbine/Destroy()
 	if(compressor && compressor.turbine == src)
 		compressor.turbine = null
 	compressor = null
+	density = FALSE
+	air_update_turf(TRUE)
 	return ..()
 
 // the inlet stage of the gas turbine electricity generator
@@ -79,6 +98,10 @@
 	locate_machinery()
 	if(!turbine)
 		obj_break()
+	// До SSair.Initialize это no-op (карта считает соседство сама), а собранной
+	// на месте ступени пересчёт нужен: без него турф не узнает, что проём
+	// закрылся, ни по газу, ни по теплу.
+	air_update_turf(TRUE)
 
 #define COMPFRICTION 5e5
 
@@ -172,6 +195,7 @@
 	if(!compressor)
 		obj_break()
 	connect_to_network()
+	air_update_turf(TRUE)
 
 /obj/machinery/power/turbine/RefreshParts()
 	var/P = 0

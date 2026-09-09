@@ -563,6 +563,12 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	LAZYCLEARLIST(remote_vibrations)
 	GLOB.portalpanties -= src
 	GLOB.public_portal_panties -= src
+	// Публичные трусики раздаются по available_panties всем фонарикам (_portal_toys.dm), а
+	// снимались оттуда только при штатном отключении публичности. Один удалённый экземпляр
+	// оставался жить в списке каждого фонарика - и это был самый дорогой del() раунда среди
+	// предметов. Проходим по всем владельцам списка сами.
+	for(var/obj/item/portallight/light as anything in GLOB.fleshlight_portallight)
+		light.available_panties -= src
 	return ..()
 
 // Переименование трусиков

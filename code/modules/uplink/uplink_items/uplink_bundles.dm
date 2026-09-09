@@ -53,9 +53,10 @@
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/bundles_tc/scarp_bundle
-	name = "Sleeping Carp Bundle"
-	desc = "Станьте едины со своим внутренним карпом! Древние рыбные мастера завещают вам своё учение, священную форму и посох. \
-	Учтите: вы не сможете использовать бесчестное дальнее оружие."
+	name = "Space Carp Bundle"
+	desc = "WHITE WHALE, HOLY GRAIL: космический карповый скафандр без штрафа скорости, кинетический гарпун с колчаном \
+			магнитных копий, маска карпа, граната с карпами и дегидрированный плюшевый карп. \
+			Наденьте шлем — и космические карпы сочтут вас своим."
 	item = /obj/item/storage/box/syndie_kit/scarp
 	cost = 20
 	player_minimum = 20
@@ -91,7 +92,7 @@
 	desc = "Тяжёлый кейс с модульным пистолетом (10мм), глушителем и запасными боеприпасами, \
 		включая снотворные патроны. В комплекте пиджак с бронеподкладкой."
 	item = /obj/item/storage/briefcase/modularbundle
-	cost = 12
+	cost = 4 // was 12; same gun as Makarov (3 TC) + suppressor/sopo/jacket, not a premium sidearm
 	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/bundles_tc/shredderbundle

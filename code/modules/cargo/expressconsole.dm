@@ -15,7 +15,7 @@
 	icon_screen = "supply_express"
 	circuit = /obj/item/circuitboard/computer/cargo/express
 	blockade_warning = "Bluespace instability detected. Delivery impossible."
-	req_access = list(ACCESS_CARGO)
+	req_access = list(ACCESS_QM)
 	is_express = TRUE
 	icon_screen = "supply_express"
 
@@ -28,9 +28,17 @@
 	var/cooldown = 0 //cooldown to prevent printing supplypod beacon spam
 	var/locked = TRUE //is the console locked? unlock with ID
 	var/usingBeacon = FALSE //is the console in beacon mode? exists to let beacon know when a pod may come in
+	var/department_account = ACCOUNT_CAR // BLUEMOON ADD - какой ведомственный счёт использует консоль
+	var/exclusive_pack_pool = FALSE // BLUEMOON ADD - если TRUE, консоль видит ТОЛЬКО паки, в чьём exclusive_consoles есть её тип
+	var/access_hint = "a Quartermaster ID card" // BLUEMOON ADD
+	var/show_landing_location = TRUE
+	var/beacon_only = FALSE // если TRUE, консоль не может доставлять в станционный Cargo Bay, только через маячок
+	var/station_only = TRUE // BLUEMOON ADD - если TRUE, консоль работает только на Z-уровне станции (ZTRAIT_STATION)
 
 /obj/machinery/computer/cargo/express/Initialize(mapload)
 	. = ..()
+	if(beacon_only)
+		usingBeacon = TRUE
 	packin_up()
 
 /obj/machinery/computer/cargo/express/on_construction(mob/user)
@@ -95,12 +103,18 @@ i'd be right happy to */
 /obj/machinery/computer/cargo/express/proc/packin_up(forced = FALSE)
 	meme_pack_data = list()
 	// BLUEMOON ADD TG UPSTREAM PULL
-	if(!forced && !SSshuttle.initialized) // Map spawned express need get they manifest later
+	if(!forced && !SSshuttle.initialized)
 		SSshuttle.express_consoles += src
 		return
 	// BLUEMOON ADD END
 	for(var/pack in SSshuttle.supply_packs)
 		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
+
+		// BLUEMOON ADD - эксклюзивные паки видны только своим консолям, остальным консолям недоступны
+		if(P.exclusive_consoles && !is_type_in_list(src, P.exclusive_consoles))
+			continue
+		// BLUEMOON ADD END
+
 		if(!meme_pack_data[P.group])
 			meme_pack_data[P.group] = list(
 				"name" = P.group,
@@ -114,32 +128,38 @@ i'd be right happy to */
 			"name" = P.name,
 			"cost" = P.get_cost(),
 			"id" = pack,
-			"desc" = P.desc || P.name // If there is a description, use it. Otherwise use the pack's name.
+			"desc" = P.desc || P.name
 		))
 
 /obj/machinery/computer/cargo/express/ui_interact(mob/user, datum/tgui/ui)
+	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
+		to_chat(user, span_warning("[src] shows no connection to the supply network: you are outside the station's orbit."))
+		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "CargoExpress", name)
 		ui.open()
 
 /obj/machinery/computer/cargo/express/ui_data(mob/user)
-	var/canBeacon = beacon && (isturf(beacon.loc) || ismob(beacon.loc))//is the beacon in a valid location?
+	var/canBeacon = beacon && (isturf(beacon.loc) || ismob(beacon.loc))
 	var/list/data = list()
-	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	var/datum/bank_account/D = SSeconomy.get_dep_account(department_account)
 	if(D)
 		data["points"] = D.account_balance
 	data["self_paid"] = self_paid
-	data["locked"] = locked//swipe an ID to unlock
+	data["locked"] = locked
 	data["siliconUser"] = hasSiliconAccessInArea(user)
-	data["beaconzone"] = beacon ? get_area(beacon) : ""//where is the beacon located? outputs in the tgui
-	data["usingBeacon"] = usingBeacon //is the mode set to deliver to the beacon or the cargobay?
-	data["canBeacon"] = !usingBeacon || canBeacon //is the mode set to beacon delivery, and is the beacon in a valid location?
+	data["beaconzone"] = beacon ? get_area(beacon) : ""
+	data["usingBeacon"] = usingBeacon
+	data["canBeacon"] = !usingBeacon || canBeacon
 	data["canBuyBeacon"] = cooldown <= 0 && D.account_balance >= BEACON_COST
-	data["beaconError"] = usingBeacon && !canBeacon ? "(BEACON ERROR)" : ""//changes button text to include an error alert if necessary
-	data["hasBeacon"] = beacon != null//is there a linked beacon?
+	data["beaconError"] = usingBeacon && !canBeacon ? "(BEACON ERROR)" : ""
+	data["hasBeacon"] = beacon != null
 	data["beaconName"] = beacon ? beacon.name : "No Beacon Found"
-	data["printMsg"] = cooldown > 0 ? "Print Beacon for [BEACON_COST] credits ([cooldown])" : "Print Beacon for [BEACON_COST] credits"//buttontext for printing beacons
+	data["printMsg"] = cooldown > 0 ? "Print Beacon for [BEACON_COST] credits ([cooldown])" : "Print Beacon for [BEACON_COST] credits"
+	data["department_account"] = department_account // BLUEMOON ADD
+	data["access_hint"] = access_hint // BLUEMOON ADD
+	data["beacon_only"] = beacon_only
 	data["supplies"] = list()
 	message = "Sales are near-instantaneous - please choose carefully."
 	if(SSshuttle.supplyBlocked)
@@ -160,6 +180,8 @@ i'd be right happy to */
 	return data
 
 /obj/machinery/computer/cargo/express/ui_act(action, params, datum/tgui/ui)
+	if(station_only && !is_station_level(z)) // BLUEMOON ADD - работает только на Z-уровне станции
+		return
 	. = ..()
 	if(.)
 		return
@@ -174,15 +196,17 @@ i'd be right happy to */
 			. = TRUE
 		// BLUEMOON ADD END
 		if("LZCargo")
+			if(beacon_only) // BLUEMOON ADD - нельзя вернуться в станционный Cargo Bay
+				return
 			usingBeacon = FALSE
 			if (beacon)
-				beacon.update_status(SP_UNREADY) //ready light on beacon will turn off
+				beacon.update_status(SP_UNREADY)
 		if("LZBeacon")
 			usingBeacon = TRUE
 			if (beacon)
 				beacon.update_status(SP_READY) //turns on the beacon's ready light
 		if("printBeacon")
-			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+			var/datum/bank_account/D = SSeconomy.get_dep_account(department_account) // BLUEMOON EDIT (был ACCOUNT_CAR)
 			if(D)
 				if(D.adjust_money(-BEACON_COST))
 					cooldown = 10//a ~ten second cooldown for printing beacons to prevent spam
@@ -244,7 +268,7 @@ i'd be right happy to */
 			var/list/empty_turfs
 			var/datum/supply_order/SO = new(pack, name, rank, ckey, reason, account)
 			var/points_to_check
-			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
+			var/datum/bank_account/D = SSeconomy.get_dep_account(department_account) // BLUEMOON EDIT (был ACCOUNT_CAR)
 			// BLUEMOON EDIT - Use personal account balance when self_paid
 			if(self_paid && account)
 				points_to_check = account.account_balance
@@ -328,3 +352,32 @@ i'd be right happy to */
 						say("Insufficient funds in cargo budget. Required: [total_cost] cr.")
 				// BLUEMOON ADD END
 
+// BLUEMOON ADD START - консоли для сторонних бюджетов, размещаются только через маппинг
+
+/obj/machinery/computer/cargo/express/tar
+	name = "express supply console (Тарков Индастриз)"
+	desc = "This console allows the user to purchase a package \
+		with 1/40th of the delivery time, billed directly to the Тарков Индастриз account. \
+		All sales are near instantaneous - please choose carefully"
+	department_account = ACCOUNT_TAR
+	req_access = list(ACCESS_TARKOFF)
+	icon_screen = "idce"
+	exclusive_pack_pool = TRUE // BLUEMOON ADD
+	access_hint = "a Tarkov Industries-issued ID card"
+	beacon_only = TRUE // BLUEMOON ADD
+	station_only = FALSE // BLUEMOON ADD - размещается в космических руинах, вне станции
+
+/obj/machinery/computer/cargo/express/ds
+	name = "express supply console (Deep Space)"
+	desc = "This console allows the user to purchase a package \
+		with 1/40th of the delivery time, billed directly to the Deep Space account. \
+		All sales are near instantaneous - please choose carefully"
+	department_account = ACCOUNT_DS
+	req_access = list(ACCESS_SYNDICATE_LEADER)
+	icon_screen = "commsyndie"
+	exclusive_pack_pool = TRUE // BLUEMOON ADD
+	access_hint = "a Deep Space-issued ID card"
+	beacon_only = TRUE // BLUEMOON ADD
+	station_only = FALSE // BLUEMOON ADD - размещается в космических руинах, вне станции
+
+// BLUEMOON ADD END

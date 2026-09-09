@@ -72,3 +72,7 @@
 
 	// Send signal
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_GENITALS)
+
+/mob/living/carbon/human/proc/is_genital_forced_visible(key)
+	return key && layers_for_apply_effect && (key in layers_for_apply_effect)
+

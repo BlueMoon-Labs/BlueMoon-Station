@@ -10,7 +10,7 @@
 
 /datum/integrated_io/string/write_data_to_pin(var/new_data)
 	if(isnull(new_data) || istext(new_data))
-		data = new_data
+		data = strip_html_tags(new_data) // No fun allowed
 		holder.on_data_written()
 
 // This makes the text go "from this" to "#G&*!HD$%L"

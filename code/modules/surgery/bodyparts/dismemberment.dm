@@ -365,9 +365,12 @@
 		S.victim = C
 		LAZYADD(C.all_scars, thing)
 
-	for(var/i in wounds)
-		var/datum/wound/W = i
-		W.apply_wound(src, TRUE)
+	// drop_limb() снимает раны из all_wounds жертвы, но оставляет их в wounds конечности. Из-за
+	// этого apply_wound() сравнивал рану САМУ С СОБОЙ в проверке дублей и делал ей qdel: пришитая
+	// обратно конечность возвращалась без своих ран. Восстанавливаем связь напрямую, по снапшоту -
+	// apply_wound здесь не годится, он считает рану новой и дублирует записи с подпиской.
+	for(var/datum/wound/W as anything in wounds?.Copy())
+		W.reattach_to_victim(C)
 
 	update_bodypart_damage_state()
 	update_disabled()

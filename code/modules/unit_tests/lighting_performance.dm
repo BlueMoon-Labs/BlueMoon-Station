@@ -191,7 +191,7 @@
 			if(!T.lighting_object)
 				new /atom/movable/lighting_object(T)
 			test_objects += T.lighting_object
-			if(!T.lighting_corners_initialised)
+			if(!(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
 				T.generate_missing_corners()
 			// Queue corners
 			if(T.lc_topright && !T.lc_topright.needs_update)

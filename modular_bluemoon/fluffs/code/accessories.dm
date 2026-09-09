@@ -496,3 +496,51 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_right.dmi'
 
 ////////////////////////
+
+/obj/item/clothing/glasses/cover/infovisor
+	name = "infovisor"
+	desc = "A standard old-generation visor that allows you to quickly survey the area."
+	can_switch_eye = FALSE
+	icon_state = "visor"
+	item_state = "visor"
+	base_icon_state = "visor"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+
+/obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	name = "Pilots Federation Badge"
+	desc = "Золотой жетон выполненный в форме эмблемы Федерации Пилотов и обозначающий принадлежность к ней."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	icon_state = "pilot_badge"
+	item_state = "pilot_badge"
+	above_suit = TRUE
+
+/obj/item/clothing/accessory/medal/vulpix_pilot_badge/attack_self(mob/user)
+	if(Adjacent(user))
+		user.visible_message("<span class='notice'>[user] shows you: [icon2html(src, viewers(user))] [src.name].</span>", \
+					"<span class='notice'>You show \the [src.name].</span>")
+		add_fingerprint(user)
+	user.point_bubble(src)
+
+/obj/item/storage/box/wypmcbox
+	name = "Arctic PMC kit"
+	desc = "Military box that contains a full kit of Arctic PMC."
+	icon_state = "ammobox"
+
+/obj/item/storage/box/wypmcbox/PopulateContents()
+	new /obj/item/modkit/wypmchelmet(src)
+	new /obj/item/modkit/wypmcjacket(src)
+	new /obj/item/modkit/wypmcberet(src)
+
+////////////////////////
+
+/obj/item/clothing/neck/tie/sawwr_coat
+	name = "Dark Amber"
+	desc = "A practical cloak, crafted in deep black tones with amber-gold accents, appearing austere yet somehow clumsy. The unusual combination of details creates the impression of a garment assembled for convenience rather than beauty."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+	icon_state = "sawwr_coat"
+	item_state = "sawwr_coat"
+
+////////////////////////

@@ -76,8 +76,17 @@
 				var/turf/T = get_turf(src)
 				if(istype(S))
 					if(S.bloody_shoes && S.bloody_shoes[S.blood_state])
-						var/obj/effect/decal/cleanable/blood/footprints/oldFP = locate(/obj/effect/decal/cleanable/blood/footprints) in T
-						if(oldFP && (oldFP.blood_state == S.blood_state && oldFP.color == S.last_blood_color))
+						// След нужен со своим состоянием и цветом: чужой не дополняется, а копится сверху.
+						var/obj/effect/decal/cleanable/blood/footprints/old_footprints
+						for(var/obj/effect/decal/cleanable/blood/footprints/existing in T)
+							if(existing.blood_state != S.blood_state || existing.color != S.last_blood_color)
+								continue
+							old_footprints = existing
+							break
+						if(old_footprints)
+							if(!(old_footprints.entered_dirs & dir))
+								old_footprints.entered_dirs |= dir
+								old_footprints.update_icon()
 							return
 						S.bloody_shoes[S.blood_state] = max(0, S.bloody_shoes[S.blood_state] - BLOOD_LOSS_PER_STEP)
 						var/obj/effect/decal/cleanable/blood/footprints/FP = new /obj/effect/decal/cleanable/blood/footprints(T)
@@ -101,16 +110,16 @@
 	if(movement_type & GROUND && dirtyness_maker)
 		dirt_buildup()
 
-/mob/living/carbon/human/Process_Spacemove(movement_dir = 0, continuous_move = FALSE) //Temporary laziness thing. Will change to handles by species reee.
+/mob/living/carbon/human/Process_Spacemove(movement_dir = 0) //Temporary laziness thing. Will change to handles by species reee.
 	if(dna?.species?.space_move(src))
 		return TRUE
-	return ..(movement_dir, continuous_move)
+	return ..()
 
 /mob/living/carbon/human/proc/dirt_buildup(strength = 1)
 	if(!shoes || !(shoes.body_parts_covered & FEET))
 		return	// barefoot advantage
 	var/turf/open/T = loc
-	if(!istype(T) || !T.dirt_buildup_allowed)
+	if(!istype(T) || !(T.turf_flags & TURF_DIRT_BUILDUP_ALLOWED))
 		return
 	var/area/A = T.loc
 	if(!A.dirt_buildup_allowed)
@@ -122,7 +131,11 @@
 		D.dirty(strength)
 	else
 		T.dirtyness += strength
-		if(T.dirtyness >= (isnull(T.dirt_spawn_threshold)? CONFIG_GET(number/turf_dirt_threshold) : T.dirt_spawn_threshold))
+		if(T.dirtyness >= CONFIG_GET(number/turf_dirt_threshold))
 			D = new /obj/effect/decal/cleanable/dirt(T)
-			D.dirty(T.dirt_spawn_threshold - T.dirtyness)
+			// dirt_spawn_threshold была объявлена на /turf/open, но её никто никогда не выставлял,
+			// поэтому здесь всегда считалось null - dirtyness, то есть отрицательная величина.
+			// Поведение сохранено как было; по смыслу свежий декаль должен получать накопленную
+			// грязь, а не терять альфу - это отдельный баг, чинить его надо отдельным коммитом.
+			D.dirty(-T.dirtyness)
 			T.dirtyness = 0		// reset.

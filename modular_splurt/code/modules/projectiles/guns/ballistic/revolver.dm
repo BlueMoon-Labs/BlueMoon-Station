@@ -1,5 +1,5 @@
 /obj/item/gun/ballistic/revolver/doublebarrel
-	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'
+	icon = 'icons/obj/guns/projectile.dmi'
 
 /obj/item/gun/ballistic/revolver/detective
 	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'

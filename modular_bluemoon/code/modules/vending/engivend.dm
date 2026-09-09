@@ -13,6 +13,7 @@
 		/obj/item/geiger_counter = 5,
 		/obj/item/stock_parts/cell/high = 10,
 		/obj/item/electronics/airlock = 10,
+		/obj/item/airbag_module = 8,
 		/obj/item/electronics/apc = 10,
 		/obj/item/electronics/airalarm = 10,
 		/obj/item/electronics/firealarm = 10,

@@ -263,7 +263,7 @@
 /mob/living/simple_animal/drone/handle_temperature_damage()
 	return
 
-/mob/living/simple_animal/drone/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0)
+/mob/living/simple_animal/drone/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash/static, override_protection = 0, duration = 25)
 	if(affect_silicon)
 		return ..()
 

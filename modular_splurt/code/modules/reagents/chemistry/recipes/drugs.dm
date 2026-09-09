@@ -20,10 +20,12 @@
 
 /datum/chemical_reaction/anal_allure
 	results = list(/datum/reagent/drug/genital_stimulator/anal_allure = 2)
+	required_container = /obj/item/reagent_containers/glass
 	required_reagents = list(/datum/reagent/drug/aphrodisiacplus = 1, /datum/reagent/fermi/butt_enlarger = 1)
 
 /datum/chemical_reaction/breast_buzzer
 	results = list(/datum/reagent/drug/genital_stimulator/breast_buzzer = 2)
+	required_container = /obj/item/reagent_containers/glass
 	required_reagents = list(/datum/reagent/drug/aphrodisiacplus = 1, /datum/reagent/fermi/breast_enlarger = 1)
 
 /datum/chemical_reaction/peen_pop

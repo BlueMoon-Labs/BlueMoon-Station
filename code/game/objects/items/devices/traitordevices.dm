@@ -306,7 +306,12 @@ effective or pretty fucking useless.
             "<span class='danger'>Вы бьёте [src] усилием [I]!</span>", null, COMBAT_MESSAGE_RANGE)
         playsound(src, pick('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg'), 80, TRUE, -1)
         var/obj/machinery/porta_turret/syndicate/pod/toolbox/turret = new(get_turf(loc))
+        // Турель дружит с деплойщиком и его боевыми союзниками, но не с фракцией
+        // станции: предатель (фракция "Station") должен стрелять по экипажу.
         turret.faction = list("[REF(user)]")
+        for(var/placer_faction in user.faction)
+            if(placer_faction != "Station" && placer_faction != "[REF(user)]")
+                turret.faction |= placer_faction
         qdel(src)
         return
 

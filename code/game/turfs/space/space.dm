@@ -2,10 +2,17 @@
 	icon = 'icons/turf/space.dmi'
 	icon_state = "0"
 	name = "\proper space"
-	intact = 0
-	dirt_buildup_allowed = FALSE
+	turf_flags = NONE
 
 	initial_temperature = TCMB
+	// Собственная температура турфа тоже обязана быть космической. Обычным турфам
+	// её выставляет /turf/Initialize() из initial_temperature, но у космоса свой
+	// Initialize без вызова родителя - значение по умолчанию (T20C) оставалось
+	// навсегда. Пока /turf/return_temperature() был пустой заглушкой эпохи
+	// auxmos, этого никто не видел; с живым проком тёплый вар начали читать
+	// get_temperature() мобов (isspaceturf-ветка) и теплообмен - "космос тёплый",
+	// слаймы и фауна перестали замерзать в открытом космосе.
+	temperature = TCMB
 	thermal_conductivity = 0
 	heat_capacity = 700000
 	wave_explosion_multiply = EXPLOSION_DAMPEN_SPACE
@@ -21,7 +28,6 @@
 	light_power = STARLIGHT_POWER_NIGHT
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
-	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	bullet_bounce_sound = null
 
 	vis_flags = VIS_INHERIT_ID	//when this be added to vis_contents of something it be associated with something on clicking, important for visualisation of turf in openspace and interraction with openspace that show you turf.
@@ -64,14 +70,14 @@
 	// 	SET_BITFLAG_LIST(canSmoothWith)
 
 	var/area/A = loc
-	if(!IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
+	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
 		add_overlay(/obj/effect/fullbright)
 
 	if (light_power && light_range)
 		update_light()
 
 	if (opacity)
-		has_opaque_atom = TRUE
+		lighting_flags |= TURF_HAS_OPAQUE_ATOM
 
 	var/turf/T = SSmapping.get_turf_above(src)
 	if(T)
@@ -101,6 +107,9 @@
 /turf/open/space/AfterChange()
 	..()
 	atmos_overlay_types = null
+	// Оверлей снят в обход update_visuals(), значит и его ключ мемо больше не
+	// описывает состояние турфа - иначе гейт вернёт "уже посчитано" на пустоте.
+	atmos_visual_rev = -1
 
 /turf/open/space/Assimilate_Air()
 	return
@@ -154,6 +163,9 @@
 			else
 				to_chat(user, "<span class='warning'>You need two rods to build a catwalk!</span>")
 			return
+		if(!HasAdjacentSupport())
+			user.balloon_alert(user, "Не за что крепить! Нужна опора!")
+			return
 		if(R.use(1))
 			to_chat(user, "<span class='notice'>You construct a lattice.</span>")
 			playsound(src, 'sound/weapons/genhit.ogg', 50, TRUE)
@@ -201,7 +213,16 @@
 
 		var/atom/movable/pulling = A.pulling
 		var/atom/movable/puller = A
+		// Перенос через край - продолжение того же полёта, а не новый шаг. Без флага вложенный
+		// forceMove приходит в Moved() с нулевым направлением, а нулевое направление в
+		// newtonian_move означает "остановись" - обработчик дрейфа глох на каждой смене уровня.
+		// Флаг обязательно возвращаем на место: раньше он оставался взведённым навсегда, Moved()
+		// после этого больше никогда не звал newtonian_move, и полёт выглядел так, будто
+		// стабилизация включена намертво (баг-репорт 29.07.2026).
+		var/was_inertia_moving = A.inertia_moving
+		A.inertia_moving = TRUE
 		A.forceMove(DT)
+		A.inertia_moving = was_inertia_moving
 
 		while (pulling != null)
 			var/next_pulling = pulling.pulling
@@ -220,7 +241,6 @@
 		//now we're on the new z_level, proceed the space drifting
 		stoplag()//Let a diagonal move finish, if necessary
 		A.newtonian_move(A.inertia_dir)
-		A.inertia_moving = TRUE
 
 
 /turf/open/space/Exited(atom/movable/AM, atom/OldLoc)
@@ -291,7 +311,6 @@
 
 /turf/open/space/transparent
 	baseturfs = /turf/open/space/transparent/openspace
-	intact = FALSE //this means wires go on top
 
 /turf/open/space/transparent/Initialize(mapload) // handle plane and layer here so that they don't cover other obs/turfs in Dream Maker
 	..()

@@ -1,6 +1,7 @@
 /datum/preferences
 	var/bm_lobby_show_nsfw = FALSE
 	var/bm_lobby_show_admin_bg = TRUE
+	var/bm_disclaimer_accepted = FALSE
 
 /datum/preferences/proc/_bm_push_name_to_lobby()
 	var/client/C = parent
@@ -32,6 +33,7 @@
 		return FALSE
 	WRITE_FILE(.["bm_lobby_show_nsfw"], bm_lobby_show_nsfw)
 	WRITE_FILE(.["bm_lobby_show_admin_bg"], bm_lobby_show_admin_bg)
+	WRITE_FILE(.["bm_disclaimer_accepted"], bm_disclaimer_accepted)
 	return .
 
 /datum/preferences/load_preferences(bypass_cooldown = FALSE)
@@ -46,4 +48,8 @@
 	if(isnull(bm_lobby_show_admin_bg))
 		bm_lobby_show_admin_bg = TRUE
 	bm_lobby_show_admin_bg = !!bm_lobby_show_admin_bg
+	.["bm_disclaimer_accepted"] >> bm_disclaimer_accepted
+	if(isnull(bm_disclaimer_accepted))
+		bm_disclaimer_accepted = FALSE
+	bm_disclaimer_accepted = !!bm_disclaimer_accepted
 	return .

@@ -13,17 +13,21 @@
 ///         return FALSE
 ///
 /// so standing still kept move_delay pinned just ahead of world.time. Skipping the
-/// call for an idle client left move_delay wherever the last real step put it —
+/// call for an idle client left move_delay wherever the last real step put it -
 /// in the past. /client/Move()'s catch-up buffer then reused that stale value as
 /// its baseline:
 ///
-///     if(old_move_delay + (add_delay*MOVEMENT_DELAY_BUFFER_DELTA) + MOVEMENT_DELAY_BUFFER > world.time)
+///     if(old_move_delay + world.tick_lag > world.time)
 ///         move_delay = old_move_delay
 ///
-/// With add_delay around 2ds the buffer window is ~3.25ds, so stopping and
-/// pressing again within about half a second left move_delay + add_delay already
-/// in the past — and the next tick of the same keypress took a second step for
-/// free. One press, two tiles.
+/// The window used to be add_delay * 1.25 + 0.75, which at a 2ds delay stretched
+/// over three deciseconds. Stopping and pressing again within about half a second
+/// left move_delay + add_delay already in the past, and the next tick of the same
+/// keypress took a second step for free. One press, two tiles.
+///
+/// The window is one tick now, matching upstream, so a stale baseline is far
+/// less forgiving - but it still has to be kept current, which is what the proc
+/// below is for.
 ///
 /// The idle path now keeps the baseline current without walking the Move() chain.
 
@@ -38,7 +42,7 @@
 	TEST_ASSERT(refreshed > now, "An idle tick must not leave move_delay in the past (got [refreshed] against now=[now])")
 	TEST_ASSERT_EQUAL(refreshed, now + tick_lag, "An idle tick must re-pin move_delay one tick ahead, exactly as /client/Move() did")
 
-	// A cooldown that is still running belongs to a real move and must be left be —
+	// A cooldown that is still running belongs to a real move and must be left be -
 	// /client/Move() returns before touching move_delay in that case.
 	TEST_ASSERT_EQUAL(keybindings_idle_move_delay(now + 3, now, tick_lag), now + 3, "An idle tick must not shorten a cooldown that is still running")
 

@@ -658,7 +658,7 @@
 	welded = 1;
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/ruin/space/has_grav/powered/infestedship)
 "kT" = (
@@ -1651,7 +1651,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/powered/infestedship)
 "yZ" = (
-/obj/structure/window/shuttle/survival_pod/spawner,
+/obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/powered/infestedship)
 "zf" = (

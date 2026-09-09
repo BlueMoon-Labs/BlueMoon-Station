@@ -211,9 +211,9 @@ GLOBAL_LIST_EMPTY(lifts)
 
 	var/list/tool_list = list()
 	if(lift_master_datum.Check_lift_move(UP))
-		tool_list["Up"] = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH)
+		tool_list["Up"] = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH)
 	if(lift_master_datum.Check_lift_move(DOWN))
-		tool_list["Down"] = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH)
+		tool_list["Down"] = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH)
 	if(!length(tool_list))
 		to_chat(user, span_warning("[src] doesn't seem to able to move anywhere!"))
 		add_fingerprint(user)
@@ -289,14 +289,14 @@ GLOBAL_LIST_EMPTY(lifts)
 		return
 //NORTH, SOUTH, EAST, WEST, NORTHEAST, NORTHWEST, SOUTHEAST, SOUTHWEST
 	var/static/list/tool_list = list(
-		"NORTH" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH),
-		"NORTHEAST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH),
-		"EAST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = EAST),
-		"SOUTHEAST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = EAST),
-		"SOUTH" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH),
-		"SOUTHWEST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH),
-		"WEST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = WEST),
-		"NORTHWEST" = image(icon = 'icons/testing/turf_analysis.dmi', icon_state = "red_arrow", dir = WEST)
+		"NORTH" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH),
+		"NORTHEAST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH),
+		"EAST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = EAST),
+		"SOUTHEAST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = EAST),
+		"SOUTH" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH),
+		"SOUTHWEST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH),
+		"WEST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = WEST),
+		"NORTHWEST" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = WEST)
 		)
 
 	var/result = show_radial_menu(user, src, tool_list, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = FALSE)

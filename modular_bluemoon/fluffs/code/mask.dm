@@ -63,6 +63,7 @@
 	icon_state = "hair_module_mask"
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/mask/hair_module/on_mob_death(mob/living/L, gibbed)
 	. = ..()
@@ -98,10 +99,12 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "star_dust"
+	alternate_worn_layer = BACK_LAYER
 
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
 	desc = "A modkit for making a Security Gas Mask into a \"Star dust\" rebriser mask."
+	icon_state = "gas-mask_kit"
 	product = /obj/item/clothing/mask/gas/sechailer/star_dust
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
 
@@ -112,3 +115,16 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "krieg_mask"
 	item_state = "krieg_mask"
+
+/obj/item/clothing/mask/gas/half_mask_skull
+    name = "Skull Gaiter"
+    desc = "Gaiter made from high-quality materials. On the inside, there is a label: Harr."
+    actions_types = list(/datum/action/item_action/adjust)
+    icon_state = "half_mask_skull"
+    item_state = "half_mask_skull"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+    flags_inv = HIDEFACE|HIDEFACIALHAIR
+
+/obj/item/clothing/mask/gas/half_mask_skull/attack_self(mob/user)
+    adjustmask(user)

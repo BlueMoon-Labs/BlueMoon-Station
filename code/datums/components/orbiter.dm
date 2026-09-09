@@ -9,12 +9,15 @@
 //rotation_segments: the resolution of the orbit circle, less = a more block circle, this can be used to produce hexagons (6 segments) triangles (3 segments), and so on, 36 is the best default.
 //pre_rotation: Chooses to rotate src 90 degress towards the orbit dir (clockwise/anticlockwise), useful for things to go "head first" like ghosts
 /datum/component/orbiter/Initialize(atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
-	if(!istype(orbiter) || !isatom(parent) || isarea(parent))
+	// Родитель обязан быть движимым, а не любым атомом: orbiters переехала с /atom на
+	// /atom/movable, и `master.orbiters = src` ниже на турфе или зоне даёт рантайм вместо
+	// честного отказа. ismovable() заодно покрывает прежнее isarea().
+	if(!istype(orbiter) || !ismovable(parent))
 		return COMPONENT_INCOMPATIBLE
 
 	orbiters = list()
 
-	var/atom/master = parent
+	var/atom/movable/master = parent
 	master.orbiters = src
 
 	begin_orbit(orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
@@ -34,7 +37,7 @@
 		target = target.loc
 
 /datum/component/orbiter/Destroy()
-	var/atom/master = parent
+	var/atom/movable/master = parent
 	master.orbiters = null
 	for(var/i in orbiters)
 		end_orbit(i)
@@ -142,7 +145,9 @@
 
 /////////////////////
 
-/atom/movable/proc/orbit(atom/A, radius = 10, clockwise = FALSE, rotation_speed = 20, rotation_segments = 36, pre_rotation = TRUE)
+/atom/movable/proc/orbit(atom/movable/A, radius = 10, clockwise = FALSE, rotation_speed = 20, rotation_segments = 36, pre_rotation = TRUE)
+	// atom/movable, а не atom: orbiters и orbit_target живут на движимом, и турф в этом
+	// проке кончился бы рантаймом внутри компонента. istype() ниже теперь проверяет именно это.
 	if(!istype(A) || !get_turf(A) || A == src)
 		return
 
@@ -153,7 +158,7 @@
 	orbit_target = null
 	return // We're just a simple hook
 
-/atom/proc/transfer_observers_to(atom/target)
+/atom/movable/proc/transfer_observers_to(atom/movable/target)
 	if(!orbiters || !istype(target) || !get_turf(target) || target == src)
 		return
 	target.TakeComponent(orbiters)

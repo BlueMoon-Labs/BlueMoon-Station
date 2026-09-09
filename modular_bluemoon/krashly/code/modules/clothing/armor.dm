@@ -249,7 +249,7 @@ obj/item/clothing/suit/donator/bm/cerberus_suit/armored/inkvd
 	item_state = "hardsuit-alliance"
 	tail_state = "hardsuit-winter"
 	hardsuit_type = "alliance"
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/elite/alliance
 
 //////////

@@ -62,7 +62,7 @@
 ///Anti-Gravity - Makes the user weightless.
 /obj/item/mod/module/anomaly_locked/antigrav
 	name = "MOD anti-gravity module"
-	desc = "Модуль, использующий гравитационное ядро для полного обнуления веса пользователя."
+	desc = "Модуль, использующий гравитационное ядро для полного обнуления веса пользователя. К сожалению, не способен работать когда пользователь лежит."
 	icon_state = "antigrav"
 	module_type = MODULE_TOGGLE
 	complexity = 3
@@ -72,10 +72,22 @@
 	accepted_anomalies = list(/obj/item/assembly/signaler/anomaly/grav)
 	mod_module_flags = MOD_MODULE_SCIENCE // BLUEMOON ADD
 
+/obj/item/mod/module/proc/check_lying_down()
+	if(mod.wearer.body_position == LYING_DOWN)
+		on_deactivation()
+
+/obj/item/mod/module/antigrav/on_select(atom/target)
+	if(mod.wearer.body_position == LYING_DOWN)
+		balloon_alert(mod.wearer, "Модуль сбоит!")
+		to_chat(mod.wearer, span_boldwarning("Антиграв нельзя использовать лёжа!"))
+		return FALSE
+	. = ..()
+
 /obj/item/mod/module/anomaly_locked/antigrav/on_activation()
 	. = ..()
 	if(!.)
 		return
+	RegisterSignal(mod.wearer, COMSIG_LIVING_SET_BODY_POSITION, PROC_REF(check_lying_down))
 	if(mod.wearer.has_gravity())
 		new /obj/effect/temp_visual/mook_dust(get_turf(mod))
 	mod.wearer.AddElement(/datum/element/forced_gravity, 0)
@@ -86,6 +98,7 @@
 	. = ..()
 	if(!.)
 		return
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_SET_BODY_POSITION)
 	mod.wearer.RemoveElement(/datum/element/forced_gravity, 0)
 	mod.wearer.refresh_gravity()
 	if(deleting)

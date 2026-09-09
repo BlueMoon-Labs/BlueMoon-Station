@@ -18,7 +18,6 @@
 	layer = SPACEVINE_MOB_LAYER
 	opacity = FALSE
 	canSmoothWith = null
-	smoothing_flags = NONE
 	/// The amount of time it takes to create a venus human trap.
 	var/growth_time = 120 SECONDS
 	var/growth_icon = 0

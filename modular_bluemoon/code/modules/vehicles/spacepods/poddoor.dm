@@ -2,53 +2,60 @@
 	name = "огромный шлюз"
 	layer = CLOSED_DOOR_LAYER
 	closingLayer = CLOSED_DOOR_LAYER
+	rad_insulation = RAD_NEAR_FULL_INSULATION
 
 /obj/machinery/door/poddoor/multi_tile/Initialize(mapload)
 	. = ..()
 	apply_opacity_to_my_turfs(opacity)
 
 /obj/machinery/door/poddoor/multi_tile/open()
-	if(..())
+	. = ..()
+	if(.)
+		rad_insulation = RAD_NO_INSULATION
 		apply_opacity_to_my_turfs(opacity)
 
-
 /obj/machinery/door/poddoor/multi_tile/close()
-	if(..())
+	. = ..()
+	if(.)
+		rad_insulation = RAD_NEAR_FULL_INSULATION
 		apply_opacity_to_my_turfs(opacity)
 
 /obj/machinery/door/poddoor/multi_tile/Destroy()
 	apply_opacity_to_my_turfs(0)
 	return ..()
 
-//Multi-tile poddoors don't turn invisible automatically, so we change the opacity of the turfs below instead one by one.
-/obj/machinery/door/poddoor/multi_tile/proc/apply_opacity_to_my_turfs(var/new_opacity)
+// Multi-tile poddoors don't turn invisible automatically, so we change the opacity of the turfs below instead one by one.
+/obj/machinery/door/poddoor/multi_tile/proc/apply_opacity_to_my_turfs(new_opacity)
 	for(var/turf/T in locs)
 		T.opacity = new_opacity
+		// Кэш непрозрачности живёт в бите lighting_flags, а не в отдельном варе турфа: пересчёт
+		// заодно перебирает содержимое, так что закрывшийся сосед не потеряет свою тень.
+		T.recalc_atom_opacity()
 		T.reconsider_lights()
 		T.air_update_turf(TRUE)
 	update_freelook_sight()
 
-/obj/machinery/door/poddoor/multi_tile/four_tile_ver/
+/obj/machinery/door/poddoor/multi_tile/four_tile_ver
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x4blast_vert.dmi'
 	bound_height = 128
 	dir = NORTH
 
-/obj/machinery/door/poddoor/multi_tile/three_tile_ver/
+/obj/machinery/door/poddoor/multi_tile/three_tile_ver
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x3blast_vert.dmi'
 	bound_height = 96
 	dir = NORTH
 
-/obj/machinery/door/poddoor/multi_tile/two_tile_ver/
+/obj/machinery/door/poddoor/multi_tile/two_tile_ver
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x2blast_vert.dmi'
 	bound_height = 64
 	dir = NORTH
 
-/obj/machinery/door/poddoor/multi_tile/four_tile_hor/
+/obj/machinery/door/poddoor/multi_tile/four_tile_hor
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x4blast_hor.dmi'
 	bound_width = 128
 	dir = EAST
 
-/obj/machinery/door/poddoor/multi_tile/three_tile_hor/
+/obj/machinery/door/poddoor/multi_tile/three_tile_hor
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x3blast_hor.dmi'
 	bound_width = 96
 	dir = EAST
@@ -58,7 +65,7 @@
 	density = FALSE
 	opacity = FALSE
 
-/obj/machinery/door/poddoor/multi_tile/two_tile_hor/
+/obj/machinery/door/poddoor/multi_tile/two_tile_hor
 	icon = 'modular_bluemoon/icons/obj/vehicles/spacepods/doors/1x2blast_hor.dmi'
 	bound_width = 64
 	dir = EAST

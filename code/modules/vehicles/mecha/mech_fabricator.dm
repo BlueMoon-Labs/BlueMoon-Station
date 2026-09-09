@@ -601,7 +601,7 @@
 
 /obj/machinery/mecha_part_fabricator/ui_assets(mob/user)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/sheetmaterials)
+		get_asset_datum(/datum/asset/spritesheet_batched/sheetmaterials)
 	)
 
 /obj/machinery/mecha_part_fabricator/ui_interact(mob/user, datum/tgui/ui)

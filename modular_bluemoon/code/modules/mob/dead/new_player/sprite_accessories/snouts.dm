@@ -94,3 +94,5 @@
 	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
 	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_ALL
+
+

@@ -52,10 +52,10 @@
 		to_chat(user, "<span class='warning'>[src] is empty!</span>")
 		return
 
-	if(!spray(A))
+	if(!spray(A, user))
 		return
 
-	playsound(src.loc, 'sound/effects/spray2.ogg', 50, 1, -6)
+	//звук уже отыгран внутри spray() - иначе на каждый пшик он шёл бы дважды
 	user.last_action = world.time
 	user.newtonian_move(get_dir(A, user))
 	var/turf/T = get_turf(src)
@@ -69,20 +69,33 @@
 		message_admins("[ADMIN_LOOKUPFLW(user)] fired Space lube from \a [src] at [ADMIN_VERBOSEJMP(T)].")
 		log_game("[key_name(user)] fired Space lube from \a [src] at [AREACOORD(T)].")
 
-/obj/item/reagent_containers/spray/proc/spray(atom/A)
+///Пшикнуть в A. Возвращает TRUE, если облако ушло - на этом висят звук, отдача и админ-логи в afterattack().
+/obj/item/reagent_containers/spray/proc/spray(atom/A, mob/user)
 	if((last_spray + spray_cooldown) > world.time)
-		return
+		return FALSE
+	//источник действия резолвим один раз: usr внутри асинхронного полёта облака
+	//уже ничего не значит, а у цепочки chemsprayer'а он и вовсе чужой
+	var/mob/actor = user || usr
 	var/range = clamp(get_dist(src, A), 1, current_range)
 	var/wait_step = CEILING(spray_delay * INVERSE(range), world.tick_lag)
 	var/obj/effect/decal/chempuff/D = new /obj/effect/decal/chempuff(get_turf(src), stream_mode, wait_step, range, stream_mode? 1 : range, amount_per_transfer_from_this)
+	//Пшик из nullspace или в турф, на котором /obj/effect/decal/Initialize отвечает
+	//INITIALIZE_HINT_QDEL: new() вернул уже удалённое облако без reagents, и следом
+	//падал log_list() (раунд 9824 - 6 рантаймов "Cannot execute null.log list()").
+	if(QDELETED(D))
+		return FALSE
+	D.sprayer = actor //облако само отчитается в лог о том, в кого попало
 	var/turf/T = get_turf(src)
 	if(!T)
-		return
-	log_reagent("SPRAY: [key_name(usr)] fired [src] ([REF(src)]) [COORD(T)] at [A] ([REF(A)]) [COORD(A)] (chempuff: [D.reagents.log_list()])")
+		return FALSE
 	if(stream_mode)
 		reagents.trans_to(D, amount_per_transfer_from_this)
 	else
 		reagents.trans_to(D, amount_per_transfer_from_this, 1/range)
+	// Лог после переливания: раньше он шёл до trans_to, и облако в нём всегда было пустым -
+	// в прод-раундах все 231 и 132 записи подряд ушли с "(chempuff: no reagents)", то есть
+	// пшики кислотой или лубрикантом были неатрибутируемы.
+	log_reagent("SPRAY: [key_name(actor)] fired [src] ([REF(src)]) [COORD(T)] at [A] ([REF(A)]) [COORD(A)] (chempuff: [D.reagents.log_list()])")
 	D.add_atom_colour(mix_color_from_reagents(D.reagents.reagent_list), TEMPORARY_COLOUR_PRIORITY)
 	playsound(src.loc, 'sound/effects/spray2.ogg', 50, 1, -6)
 	if(iscarbon(A) && (get_dist(src, A) <= range))
@@ -93,6 +106,9 @@
 			target.face_atom(loc)
 	last_spray = world.time
 	INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/effect/decal/chempuff, run_puff), A)
+	//без явного TRUE проверка `if(!spray(...))` в afterattack() рубила хвост
+	//прока: отдачу и админ-логи по кислоте, флюакиду и лубриканту
+	return TRUE
 
 /obj/item/reagent_containers/spray/attack_self(mob/user)
 	stream_mode = !stream_mode
@@ -138,7 +154,7 @@
 	if(do_mob(user,user,30))
 		if(reagents.total_volume >= amount_per_transfer_from_this)//if not empty
 			user.visible_message("<span class='suicide'>[user] pulls the trigger!</span>")
-			src.spray(user)
+			src.spray(user, user)
 			return BRUTELOSS
 		else
 			user.visible_message("<span class='suicide'>[user] pulls the trigger...but \the [src] is empty!</span>")
@@ -282,7 +298,7 @@
 		return
 	. = ..()
 
-/obj/item/reagent_containers/spray/chemsprayer/spray(atom/A)
+/obj/item/reagent_containers/spray/chemsprayer/spray(atom/A, mob/user)
 	var/direction = get_dir(src, A)
 	var/turf/T = get_turf(A)
 	var/turf/T1 = get_step(T,turn(direction, 90))
@@ -291,8 +307,12 @@
 
 	for(var/i=1, i<=3, i++) // intialize sprays
 		if(reagents.total_volume < 1)
-			return
-		..(the_targets[i])
+			return .
+		//user обязателен: иначе каждое из трёх облаков не знает, кто стрелял.
+		//Успех копим: хвост afterattack() (отдача, админ-логи по кислоте и ко)
+		//должен отработать, даже если следующие облака упрутся в кулдаун
+		if(..(the_targets[i], user))
+			. = TRUE
 
 /obj/item/reagent_containers/spray/chemsprayer/bioterror
 	list_reagents = list(/datum/reagent/toxin/sodium_thiopental = 100, /datum/reagent/toxin/coniine = 100, /datum/reagent/toxin/venom = 100, /datum/reagent/consumable/condensedcapsaicin = 100, /datum/reagent/toxin/initropidril = 100, /datum/reagent/toxin/polonium = 100)

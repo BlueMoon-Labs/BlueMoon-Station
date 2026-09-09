@@ -132,28 +132,48 @@
 // Suicide acts, by request
 
 /obj/item/dildo/proc/manual_suicide(mob/living/user)
-	user.visible_message("<span class='suicide'>[user] finally finishes deepthroating the '[src]', and their life.</span>")
-	user.adjustOxyLoss(300)
-	user.death(0)
+	is_knotted = (src.dildo_shape == "knotted")
+	if(HAS_TRAIT(user, TRAIT_NOBREATH) || HAS_TRAIT(user, TRAIT_DUMB_CUM))
+		user.visible_message(span_suicide("[user] заглатывает '[src]' целиком, с выпирающим в горле бугром[is_knotted ? " и раздутыми от узла щеками" : ""]."))
+		user.emote(user.gender == FEMALE ? "girlymoan" : "moan")
+		return FALSE
+	else
+		if(is_knotted)
+			user.visible_message(span_suicide("[user] не справляется с узлом на '[src]' и давится им насмерть."))
+		else
+			user.visible_message(span_suicide("[user], наконец, покончил[user.ru_a()] с заглотом '[src]' и своей жизнью."))
+		user.adjustOxyLoss(300)
+		user.death(0)
+		layer = user.layer + 0.1
+		return TRUE
 
 /obj/item/dildo/suicide_act(mob/living/user)
-//	is_knotted = ((src.dildo_shape == "knotted")?"They swallowed the knot":"Their face is turning blue")
-	if(do_after(user,17,target=src))
-		user.visible_message("<span class='suicide'>[user] tears-up and gags as they shove '[src]' down their throat! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+	if(do_after(user, 25, target = src))
+		user.visible_message(span_suicide("[user] давится со слезами, пытаясь пропихнуть '[src]' в свою глотку! Похоже, что [user.ru_who()] пытается покончить с собой!"))
 		playsound(loc, 'sound/weapons/gagging.ogg', 50, 1, -1)
-		user.Stun(150)
-		user.adjustOxyLoss(300)
+		user.Daze(30)
+		user.adjustOxyLoss(30)
 		user.adjust_blurriness(8)
 		var/obj/item/organ/eyes/eyes = user.getorganslot(ORGAN_SLOT_EYES)
 		eyes?.applyOrganDamage(10)
-	return MANUAL_SUICIDE
+		if(do_after(user, 35, target = src))
+			if(manual_suicide(user))
+				return MANUAL_SUICIDE
+			else
+				user.suiciding = FALSE
+				return FALSE
 
 /obj/item/dildo/flared/huge/suicide_act(mob/living/user)
-	if(do_after(user,35,target=src))
-		user.visible_message("<span class='suicide'>[user] tears-up and gags as they try to deepthroat the [src]! WHY WOULD THEY DO THAT? It looks like [user.p_theyre()] trying to commit suicide!!</span>")
+	if(do_after(user, 35, target = src))
+		user.visible_message(span_suicide("[user] давится со слезами, пытаясь пропихнуть [src] в свою глотку! ПОЧЕМУ [user.ru_who()] ВООБЩЕ ПЫТАЕТСЯ? [user.ru_who()] пытается покончить с собой, не иначе!"))
 		playsound(loc, 'sound/weapons/gagging.ogg', 50, 2, -1)
-		user.Stun(300)
-		user.adjustOxyLoss(300)
+		user.Daze(50)
+		user.adjustOxyLoss(50)
 		user.adjust_blurriness(8)
-	return MANUAL_SUICIDE
+		if(do_after(user, 35, target = src))
+			if(manual_suicide(user))
+				return MANUAL_SUICIDE
+			else
+				user.suiciding = FALSE
+				return FALSE
 

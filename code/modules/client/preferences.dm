@@ -74,6 +74,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
 	var/see_chat_non_mob = TRUE
+	var/runechat_anim = RUNECHAT_ANIM_RISE
 	/// Custom Keybindings
 	var/list/key_bindings = list()
 	/// List with a key string associated to a list of keybindings. Unlike key_bindings, this one operates on raw key, allowing for binding a key that triggers regardless of if a modifier is depressed as long as the raw key is sent.
@@ -94,7 +95,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
-	var/deadmin = NONE
+	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
@@ -213,13 +214,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
 "mam_body_markings" = list(),
-"emissive_eyes" = FALSE,
+"allow_emissives" = FALSE,
+"emissive_parts" = list(),
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
 "mam_tail_animated" = "None",
-"xenodorsal" = "Standard",
-"xenohead" = "Standard",
+"xenodorsal" = "None",
+"xenohead" = "None",
 "xenotail" = "Xenomorph Tail",
 "taur" = "None",
 "hardsuit_with_tail" = FALSE,
@@ -487,6 +489,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/pref_queue
 	var/char_queue
+	/// world.time, позже которого отложенную запись префов больше не переносят.
+	/// Каждый вызов внутри кулдауна перевзводил таймер, и игрок, который щёлкает
+	/// тумблеры чаще кулдауна, не сохранялся вообще - до самого логаута.
+	var/pref_queue_deadline = 0
+	/// То же самое для записи персонажа.
+	var/char_queue_deadline = 0
+	/// Буфер склейки одиночных записей в savefile: ключ -> значение.
+	/// Открытие savefile стоит столько же, сколько сама запись, поэтому поток правок
+	/// одного ключа копится тут и уходит на диск одним открытием. См. save_single_pref().
+	var/list/pending_single_prefs
+	/// id таймера, который сбросит буфер одиночных записей на диск.
+	var/single_pref_queue
+	/// world.time, позже которого сброс буфера одиночных записей больше не переносят.
+	var/single_pref_queue_deadline = 0
 
 	var/silicon_lawset
 
@@ -571,6 +587,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	save_character()		//let's save this new random character so it doesn't keep generating new ones.
 	menuoptions = list()
 	return
+
+/**
+ * Датум префов обычно живёт в GLOB.preferences_datums до конца раунда, но не всегда:
+ * передача персонажа и юнит-тесты его удаляют. Отложенные записи savefile висят на
+ * таймерах, которые держат ссылку на нас, - если датум уходит, дописать их больше
+ * некому, и правки последних секунд пропадают.
+ */
+/datum/preferences/Destroy(force)
+	// Буфер одиночных записей дописываем: это одно открытие файла и только если
+	// в буфере что-то есть. Полную запись (pref_queue/char_queue) НЕ форсируем -
+	// она стоит сотню WRITE_FILE, а её данные и так лежат в переменных датума.
+	flush_single_prefs()
+	if(pref_queue)
+		deltimer(pref_queue)
+		pref_queue = null
+	if(char_queue)
+		deltimer(char_queue)
+		char_queue = null
+	// Оффер персонажа лежит в GLOB.character_offers и нас не переживёт по смыслу: без qdel
+	// в глобале остаётся висячая запись с сейвфайлом. Хендлер цвета лодаута держит обратную
+	// ссылку на префы - живой хендлер превращает наш снос в харддел.
+	QDEL_NULL(offer)
+	QDEL_NULL(loadout_color_handler)
+	// GLOB.preferences_datums держит датум по ckey: удалённый, но не вычеркнутый оттуда
+	// датум ушёл бы в харддел, а следующий вход этого ckey получил бы труп.
+	for(var/registered_ckey in GLOB.preferences_datums)
+		if(GLOB.preferences_datums[registered_ckey] != src)
+			continue
+		GLOB.preferences_datums -= registered_ckey
+		break
+	// Датум вида принадлежит только префам (все присвоения pref_species - new, мобу уходит
+	// тип, а не экземпляр), ссылок со стороны нет - хватает отпустить, рефкаунт освободит.
+	pref_species = null
+	return ..()
 
 #define SETUP_START_NODE(L)  		  	 		 	 		"<div class='csetup_character_node'><div class='csetup_character_label'>[L]</div><div class='csetup_character_input'>"
 
@@ -753,11 +803,24 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return TRUE
 	return FALSE
 
-/datum/preferences/proc/ShowChoices(mob/user)
+/**
+ * Перерисовывает окно настройки персонажа.
+ *
+ * rebuild_preview=FALSE пропускает пересборку манекена. Она стоит дорого:
+ * занять единственный на весь сервер слот куклы (спин-ожидание на in_use, то есть
+ * при полном лобби все превью выстраиваются в очередь на одной кукле), copy_to с
+ * set_species и полной пересборкой конечностей и органов, при PREVIEW_PREF_LOADOUT
+ * ещё и спавн всего лодаута, и в конце regenerate_icons. В проде это 30-110 мс на
+ * клик, а на занятой кукле - до полутысячи. Клики, которые только листают вкладки
+ * и категории, внешность персонажа не трогают, и платить за неё им незачем.
+ * По умолчанию TRUE: пропускаем только там, где точно знаем, что ничего не поехало.
+ */
+/datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
 	current_tab = SETTINGS_TAB
-	update_preview_icon(SETTINGS_TAB)
+	if(rebuild_preview)
+		update_preview_icon(SETTINGS_TAB)
 	var/is_modern_theme = TRUE
 	var/list/dat
 	if(new_character_creator)
@@ -1111,6 +1174,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			// Declare common labels used across multiple tabs to avoid duplicate variable errors
 			var/enabled_label = src.use_modern_translations ? get_modern_text("enabled", src) : "Enabled"
 			var/disabled_label = src.use_modern_translations ? get_modern_text("disabled", src) : "Disabled"
+			var/glow_label = src.use_modern_translations ? get_modern_text("allow_emissives", src) : "Glow"
 			var/change_label = src.use_modern_translations ? get_modern_text("change", src) : "Change"
 			var/yes_label = src.use_modern_translations ? get_modern_text("yes", src) : "Yes"
 			var/no_label = src.use_modern_translations ? get_modern_text("no", src) : "No"
@@ -1314,7 +1378,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ai_core_icon_state = "ai-random"
 						else
 							ai_core_icon_state = resolve_ai_icon(preferred_ai_core_display, TRUE)
-						var/icon/ai_core_preview_icon = icon('icons/mob/ai.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
+						var/icon/ai_core_preview_icon = icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
 						var/ai_core_preview_html = icon2base64html(ai_core_preview_icon)
 						if(!ai_core_preview_html)
 							ai_core_preview_html = ""
@@ -1593,6 +1657,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[custom_species_name_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=custom_species;task=input'>[custom_species ? custom_species : none_label]</a><BR>"
 					dat += "<b>[random_body_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=all;task=random'>[randomize_label]</A><BR>"
 					dat += "<b>[always_random_body_label]:</b><a href='?_src_=prefs;preference=all'>[be_random_body ? yes_label : no_label]</A><BR>"
+					dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_master;task=input'>[features["allow_emissives"] ? enabled_label : disabled_label]</a><BR>"
 					dat += "<br><b>[cycle_background_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=cycle_bg;task=input'>[bgstate]</a><BR>"
 
 					dat += "</td>"
@@ -1633,6 +1698,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!(NOEYES in pref_species.species_traits))
 						dat += "<h3>[eye_type_label]</h3>"
 						dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=eye_type;task=input'>[eye_type]</a>"
+						var/glow_eyes_label = src.use_modern_translations ? get_modern_text("emissive_eyes", src) : "Glowing Eyes"
+						dat += "<b>[glow_eyes_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=eyes;task=input'>[emissive_part_enabled(features, "eyes") ? enabled_label : disabled_label]</a><BR>"
 						if((EYECOLOR in pref_species.species_traits))
 							if(!use_skintones && !mutant_colors)
 								dat += APPEARANCE_CATEGORY_COLUMN
@@ -1646,10 +1713,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<h3 title='[heterochromia_hint]'>[heterochromia_label]</h3>"
 							// UI tweak end
 							dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_split_eyes;task=input'>[split_eye_colors ? enabled_label : disabled_label]</a>"
-							var/emissive_eyes_on = features["emissive_eyes"]
-							var/glowing_eyes_label = src.use_modern_translations ? get_modern_text("glowing_eyes", src) : "Glowing Eyes"
-							dat += "<h3>[glowing_eyes_label]</h3>"
-							dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_emissive_eyes;task=input'>[emissive_eyes_on ? enabled_label : disabled_label]</a>"
 							if(!split_eye_colors)
 								dat += "<h3>[eye_color_label]</h3>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[left_eye_color];'><font color='[color_hex2num(left_eye_color) < 200 ? "FFFFFF" : "000000"]'>#[left_eye_color]</font></span> <a href='?_src_=prefs;preference=eyes;task=input'>[change_label]</a>"
@@ -1692,7 +1755,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					for(var/mutant_part in GLOB.all_mutant_parts)
 						if(mutant_part == "mam_body_markings")
 							continue
-						if(parent?.can_have_part(mutant_part))
+						var/show_mutant_part = parent?.can_have_part(mutant_part)
+						if(mutant_part in GLOB.mismatched_toggle_parts)
+							show_mutant_part = show_mutant_part && pref_species.id == SPECIES_XENOHYBRID
+						if(show_mutant_part || (show_mismatched_markings && (mutant_part in GLOB.mismatched_toggle_parts)))
 							if(!mutant_category)
 								dat += APPEARANCE_CATEGORY_COLUMN
 							var/mutant_part_label = src.use_modern_translations ? get_modern_text(mutant_part, src) : GLOB.all_mutant_parts[mutant_part]
@@ -1701,9 +1767,48 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							// BLUEMOON ADD START - <_AND_>_FOR_CHARACTER_REDACTOR
 							dat += "<a href='?_src_=prefs;preference=previous_[mutant_part]_style;task=input'>&lt;</a> <a href='?_src_=prefs;preference=next_[mutant_part]_style;task=input'>&gt;</a><BR>"
 							// BLUEMOON ADD END
+							var/emissive_part_key = mutant_part
+							if(mutant_part == "mam_tail" || mutant_part == "tail_lizard" || mutant_part == "tail_human")
+								emissive_part_key = "tail"
+							if(mutant_part == "mam_ears")
+								emissive_part_key = "ears"
+							if(mutant_part == "mam_snouts")
+								emissive_part_key = "snout"
+							if(emissive_part_key in GLOB.emissive_parts_list)
+								dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=[emissive_part_key];task=input'>[emissive_part_enabled(features, emissive_part_key) ? enabled_label : disabled_label]</a><BR>"
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
+								// Show extra/extra2 colors for wings and other colored parts if they have them
+								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
+								var/find_part_list_extra = GLOB.mutant_reference_list[mutant_part]
+								if(find_part_extra && find_part_extra != "None" && find_part_list_extra)
+									var/datum/sprite_accessory/accessory_extra = find_part_list_extra[find_part_extra]
+									if(accessory_extra && accessory_extra.extra)
+										if(accessory_extra.extra_color_src == MUTCOLORS || accessory_extra.extra_color_src == MUTCOLORS2 || accessory_extra.extra_color_src == MUTCOLORS3)
+											if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
+												var/mutant_string_extra = accessory_extra.mutant_part_string
+												var/secondary_feature_extra = "[mutant_string_extra]_secondary"
+												var/tertiary_feature_extra = "[mutant_string_extra]_tertiary"
+												if(!features[secondary_feature_extra])
+													features[secondary_feature_extra] = features["mcolor2"]
+												if(!features[tertiary_feature_extra])
+													features[tertiary_feature_extra] = features["mcolor3"]
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features[secondary_feature_extra]];'><font color='[color_hex2num(features[secondary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[secondary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[secondary_feature_extra];task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features[tertiary_feature_extra]];'><font color='[color_hex2num(features[tertiary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[tertiary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[tertiary_feature_extra];task=input'>Change</a><BR>"
+											else
+												if(!features["mcolor2"])
+													features["mcolor2"] = "FFFFFF"
+												if(!features["mcolor3"])
+													features["mcolor3"] = "FFFFFF"
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor2"]];'><font color='[color_hex2num(features["mcolor2"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor2"]]</font></span> <a href='?_src_=prefs;preference=mutant_color2;task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor3"]];'><font color='[color_hex2num(features["mcolor3"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor3"]]</font></span> <a href='?_src_=prefs;preference=mutant_color3;task=input'>Change</a><BR>"
 							else
 								if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING) //advanced individual part colouring system
 									//is it matrixed or does it have extra parts to be coloured?
@@ -1906,6 +2011,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(pref_species.use_skintones)
 								dat += "<b>[genitals_use_skintone_label]:</b><a href='?_src_=prefs;preference=genital_colour'>[features["genitals_use_skintone"] == TRUE ? "Yes" : "No"]</a>"
 						dat += "<h3>[penis_header]</h3>"
+						var/glow_penis_on = emissive_part_enabled(features, "penis")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=penis;task=input'>[glow_penis_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_penis_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_cock'>[features["has_cock"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_cock"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -1931,6 +2038,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>[penis_stuffing_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=cock_stuffing'>[features["cock_stuffing"] == TRUE ? "Yes" : "No"]</a>" //SPLURT Edit
 
 						dat += "<h3>Testicles</h3>"
+						var/glow_testicles_on = emissive_part_enabled(features, "testicles")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=testicles;task=input'>[glow_testicles_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_testicles_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_balls'>[features["has_balls"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_balls"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -1959,6 +2068,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[vagina_header]</h3>"
+						var/glow_vagina_on = emissive_part_enabled(features, "vagina")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=vagina;task=input'>[glow_vagina_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_vagina_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_vag'>[features["has_vag"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_vag"])
 							dat += "<b>[vagina_type_label]:</b> <a style='display:block;width:100px' href='?_src_=prefs;preference=vag_shape;task=input'>[features["vag_shape"]]</a>"
@@ -1984,6 +2095,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[breasts_header]</h3>"
+						var/glow_breasts_on = emissive_part_enabled(features, "breasts")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=breasts;task=input'>[glow_breasts_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_breasts_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_breasts'>[features["has_breasts"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_breasts"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2011,6 +2124,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[butt_header]</h3>"
+						var/glow_butt_on = emissive_part_enabled(features, "butt")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=butt;task=input'>[glow_butt_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_butt_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_butt'>[features["has_butt"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_butt"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2027,6 +2142,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>Max Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_max_size;task=input'>[features["butt_max_size"] ? features["butt_max_size"] : "Disabled"]</a>"
 							dat += "<b>Min Size:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=butt_min_size;task=input'>[features["butt_min_size"] ? features["butt_min_size"] : "Disabled"]</a>"
 							dat += "<b>[has_anus_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_anus'>[features["has_anus"] == TRUE ? "Yes" : "No"]</a>"
+							var/glow_anus_on = emissive_part_enabled(features, "anus")
+							dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=anus;task=input'>[glow_anus_on ? enabled_label : disabled_label]</a><BR>"
 							if(features["has_anus"])
 								dat += "<b>[anus_color_label]:</b></a><BR>"
 								if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2041,6 +2158,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "</td>"
 						dat += APPEARANCE_CATEGORY_COLUMN
 						dat += "<h3>[belly_header]</h3>"
+						var/glow_belly_on = emissive_part_enabled(features, "belly")
+						dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=belly;task=input'>[glow_belly_on ? enabled_label : disabled_label]</a><BR>"
 						dat += "<b>[has_belly_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=has_belly'>[features["has_belly"] == TRUE ? "Yes" : "No"]</a>"
 						if(features["has_belly"])
 							if(pref_species.use_skintones && features["genitals_use_skintone"] == TRUE)
@@ -2136,7 +2255,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "</div>"
 								dat += "</div>"
 								dat += "<table class='csetup-marking-table'>"
-								dat += "<thead class='csetup-marking-table-head'><tr><th class='csetup-col-index'>#</th><th class='csetup-col-move'>[move_label]</th><th>[name_column_label]</th><th class='csetup-col-colors'>[colors_label]</th><th class='csetup-col-del'></th></tr></thead>"
+								dat += "<thead class='csetup-marking-table-head'><tr><th class='csetup-col-index'>#</th><th class='csetup-col-move'>[move_label]</th><th>[name_column_label]</th><th class='csetup-col-colors'>[colors_label]</th><th class='csetup-col-glow'>[glow_label]</th><th class='csetup-col-del'></th></tr></thead>"
 								dat += "<tbody>"
 								var/has_any = FALSE
 								if(length(features[marking_type]))
@@ -2155,9 +2274,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										var/color_marking_dat = ""
 										var/number_colors = 1
 										var/datum/sprite_accessory/mam_body_markings/S = GLOB.mam_body_markings_list[marking_list[2]]
-										var/matrixed_sections = S.covered_limbs[actual_name]
+										var/matrixed_sections = S?.covered_limbs[actual_name]
 										if(S && matrixed_sections)
-											if(length(marking_list) == 2)
+											if(length(marking_list) < 3 || !islist(marking_list[3]))
 												var/first = "#FFFFFF"
 												var/second = "#FFFFFF"
 												var/third = "#FFFFFF"
@@ -2196,12 +2315,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										dat += "<a title='[down_label]' href='?_src_=prefs;preference=marking_down;task=input;marking_index=[marking_index];marking_type=[marking_type];'>&#708;</a>"
 										dat += "<a title='[bottom_label]' href='?_src_=prefs;preference=marking_bottom;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#8681;</a>"
 										dat += "</span></td>"
-										dat += "<td>[marking_list[2]]</td>"
+										dat += "<td><span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=prev;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9664;</a></span> [marking_list[2]] <span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=next;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9654;</a></span></td>"
 										dat += "<td class='csetup-col-colors'>[color_marking_dat]</td>"
+										var/marking_glow_on = length(marking_list) >= 4 ? marking_list[4] : FALSE
+										dat += "<td class='csetup-col-glow'><a class='csetup-mini-action [marking_glow_on ? "csetup-glow-on" : "csetup-glow-off"]' href='?_src_=prefs;preference=toggle_marking_emissive;task=input;marking_index=[marking_index];marking_type=[marking_type]'>[marking_glow_on ? enabled_label : disabled_label]</a></td>"
 										dat += "<td class='csetup-col-del'><a class='csetup-marking-del' href='?_src_=prefs;preference=marking_remove;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&times;</a></td>"
 										dat += "</tr>"
 								if(!has_any)
-									dat += "<tr class='csetup-marking-row csetup-marking-row-empty'><td class='csetup-marking-empty' colspan='5'>Нет маркингов на этой части тела.</td></tr>"
+									dat += "<tr class='csetup-marking-row csetup-marking-row-empty'><td class='csetup-marking-empty' colspan='6'>Нет маркингов на этой части тела.</td></tr>"
 								dat += "</tbody></table>"
 								dat += "</section>"
 							dat += "</div>"
@@ -2531,6 +2652,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/has_buttons = FALSE
 			for(var/key in key_bindings)
 				var/list/temp = key_bindings[key]
+				if(!islist(temp))
+					continue
 				if(temp.Find(kb_name))
 					has_buttons = TRUE
 					break
@@ -2569,6 +2692,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
+		//Из savefile прилетает 0 вместо пустого списка: "type mismatch: 0 |= /list".
+		//Апстрим закрывает это через LAZYOR, но тот проверяет только !L и пропустил
+		//бы ненулевой мусор в записи - здесь нужен именно islist().
+		if(!islist(key_bindings[full_key]))
+			key_bindings[full_key] = list()
 		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
@@ -2817,6 +2945,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого[summon_nickname ? ": ": ""][summon_nickname]</a>"
 		var/phobia_text = phobia_type ? phobia_type : "Случайная"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип фобии: [phobia_text]</a><br>"
+		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_onelife_option'>([/datum/quirk/onelife::name]) Во что рассыпаешься: [onelife_death_type]</a><br>"
 		dat += "<hr>"
 		// BLUEMOON ADD END
 		dat += "<div align='center'>Left-click to add or remove quirks. You need negative quirks to have positive ones.<br>\
@@ -2894,6 +3023,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип: <b>[phobia_type ? phobia_type : "Случайная"]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_onelife_option'>([/datum/quirk/onelife::name]) Во что рассыпаешься: <b>[onelife_death_type]</b></a>"
 	dat += "</div>"
 
 	dat += "<h3>Текущие квирки</h3>"
@@ -3029,6 +3159,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			C.clear_character_previews()
 
 /datum/preferences/proc/process_link(mob/user, list/href_list)
+	// Взводится только теми ветками, про которые точно известно, что внешность
+	// персонажа они не меняют - листание вкладок и категорий. Хвост проца зовёт
+	// ShowChoices безусловно, а тот безусловно пересобирал манекен, и навигационный
+	// клик стоил столько же, сколько смена расы. По умолчанию FALSE: неизвестная
+	// ветка ведёт себя как раньше и превью пересобирает
+	var/preview_unchanged = FALSE
 	if(href_list["jobbancheck"])
 		var/job = href_list["jobbancheck"]
 		var/datum/db_query/query_get_jobban = SSdbcore.NewQuery({"
@@ -3147,7 +3283,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("toggle")
 				modern_theme_picker_collapsed = !modern_theme_picker_collapsed
 				modern_theme_picker_animate = FALSE
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				// Обе переменные - var/tmp, в savefile их не пишет ни один ключ: сохранять нечего.
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3162,7 +3298,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("set_button_shape")
 				var/shape = href_list["shape"]
 				modern_button_shape = sanitize_inlist(shape, list("rect", "soft", "round"), initial(modern_button_shape))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_button_shape")
 				ShowChoices(user)
 				return TRUE
 			if("set_language")
@@ -3171,13 +3307,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					modern_ui_language = 1
 				else if(lang == "en")
 					modern_ui_language = 0
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_ui_language")
 				ShowChoices(user)
 				return TRUE
 			if("set_decoration_level")
 				var/level = href_list["level"]
 				ui_decoration_level = sanitize_inlist(level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("ui_decoration_level")
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3187,7 +3323,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		switch(href_list["action"])
 			if("toggle_empty")
 				collapse_empty_character_slots = !collapse_empty_character_slots
-				save_preferences(silent = TRUE)
+				save_pref_var("collapse_empty_character_slots")
 				ShowChoices(user)
 				return TRUE
 			if("delete_slot")
@@ -3384,15 +3520,28 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					ShowChoices(user)
 				else
 					SetQuirks(user)
+			if("change_onelife_option") // BLUEMOON ADD - форма рассыпания для Одной Жизни
+				var/client/C = usr.client
+				if(C)
+					var/new_form = input(user, "Выберите, во что ваш персонаж рассыплется после смерти.", "Настройка Одной Жизни") as null|anything in GLOB.onelife_death_forms
+					if(new_form)
+						onelife_death_type = new_form
+					if(is_inline_quirks)
+						ShowChoices(user)
+					else
+						SetQuirks(user)
 // BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
+		// фильтр списка причуд - навигация. Ветка не выходит из проца, поэтому
+		// ShowChoices зовётся ещё раз в хвосте: без флага манекен собирался дважды
+		preview_unchanged = TRUE
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
 		var/temp_quirk_category = href_list["quirk_category"]
 		if(temp_quirk_category == QUIRK_POSITIVE || temp_quirk_category == QUIRK_NEUTRAL || temp_quirk_category == QUIRK_NEGATIVE)
 			quirk_category = temp_quirk_category
 			if(is_inline_quirks)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = FALSE)
 			else
 				SetQuirks(user)
 
@@ -3935,8 +4084,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					split_eye_colors = !split_eye_colors
 					right_eye_color = left_eye_color
 
-				if("toggle_emissive_eyes")
-					features["emissive_eyes"] = !features["emissive_eyes"]
+				if("toggle_emissive_master")
+					features["allow_emissives"] = !features["allow_emissives"]
+
+				if("toggle_emissive_part")
+					var/part = href_list["part"]
+					if(part)
+						toggle_emissive_part(features, part)
 
 				if("species")
 					var/result = tgui_input_list(user, "Select a species", "Species Selection", GLOB.roundstart_race_names)
@@ -3955,6 +4109,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						if(pref_species.id == "felinid")
 							features["mam_tail"] = "Cat"
 							features["mam_ears"] = "Cat"
+
+						if(pref_species.id == SPECIES_XENOHYBRID)
+							features["xenohead"] = "Standard"
+							features["xenodorsal"] = "Standard"
+						else
+							features["xenohead"] = "None"
+							features["xenodorsal"] = "None"
 
 						//Now that we changed our species, we must verify that the mutant colour is still allowed.
 						var/temp_hsv = RGBtoHSV(features["mcolor"])
@@ -4340,7 +4501,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						features["xenodorsal"] = new_dors
 
 				//every single primary/secondary/tertiary colouring done at once
-				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary")
+				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary", "insect_wings_primary", "insect_wings_secondary", "insect_wings_tertiary")
 					var/the_feature = features[href_list["preference"]]
 					if(!the_feature)
 						features[href_list["preference"]] = "FFFFFF"
@@ -4976,6 +5137,39 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								for(var/i = index; i < length(markings); i++)
 									markings.Swap(i, i + 1)
 
+				if("marking_cycle")
+					var/index = text2num(href_list["marking_index"])
+					var/marking_type = href_list["marking_type"]
+					var/direction = href_list["direction"]
+					if(index && marking_type && features[marking_type] && (direction == "prev" || direction == "next"))
+						var/list/markings = features[marking_type]
+						if(index >= 1 && index <= length(markings))
+							var/list/entry = markings[index]
+							if(istype(entry, /list) && length(entry) >= 2)
+								var/actual_name = GLOB.bodypart_names[num2text(entry[1])]
+								var/list/available = list()
+								for(var/name in GLOB.mam_body_markings_list)
+									var/datum/sprite_accessory/S = GLOB.mam_body_markings_list[name]
+									if(!istype(S, /datum/sprite_accessory/mam_body_markings))
+										continue
+									var/datum/sprite_accessory/mam_body_markings/marking = S
+									if(!(actual_name in marking.covered_limbs))
+										continue
+									if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+										available += name
+								if(length(available))
+									var/current_pos = available.Find(entry[2])
+									if(!current_pos)
+										current_pos = 0
+									var/new_pos = current_pos + (direction == "next" ? 1 : -1)
+									if(new_pos < 1)
+										new_pos = length(available)
+									else if(new_pos > length(available))
+										new_pos = 1
+									entry[2] = available[new_pos]
+									if(length(entry) >= 3 && entry[3])
+										entry[3] = list("#FFFFFF", "#FFFFFF", "#FFFFFF")
+
 				if("marking_remove")
 					// move the specified marking up
 					var/index = text2num(href_list["marking_index"])
@@ -4985,6 +5179,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/list/L = features[marking_type]
 						if(index <= length(L))
 							L.Cut(index, index + 1)
+
+				if("toggle_marking_emissive")
+					var/index = text2num(href_list["marking_index"])
+					var/marking_type = href_list["marking_type"]
+					if(index && marking_type && features[marking_type])
+						var/list/L = features[marking_type]
+						if(index >= 1 && index <= length(L) && islist(L[index]))
+							var/list/entry = L[index]
+							if(length(entry) >= 4)
+								entry[4] = !entry[4]
+							else
+								entry += TRUE
+							if(entry[4])
+								features["allow_emissives"] = TRUE
 
 				if("marking_add")
 					// add a marking
@@ -5010,12 +5218,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(selected_marking)
 								if(selected_limb != "All")
 									var/limb_value = text2num(GLOB.bodypart_values[selected_limb])
-									features[marking_type] += list(list(limb_value, selected_marking))
+									features[marking_type] += list(list(limb_value, selected_marking, list("#FFFFFF", "#FFFFFF", "#FFFFFF")))
 								else
 									var/datum/sprite_accessory/mam_body_markings/S = marking_list[selected_marking]
 									for(var/limb in S.covered_limbs)
 										var/limb_value = text2num(GLOB.bodypart_values[limb])
-										features[marking_type] += list(list(limb_value, selected_marking))
+										features[marking_type] += list(list(limb_value, selected_marking, list("#FFFFFF", "#FFFFFF", "#FFFFFF")))
 
 				if("markings_clear_limb")
 					var/marking_type = href_list["marking_type"]
@@ -5367,6 +5575,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					chat_on_map_looc = !chat_on_map_looc
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
+				if("runechat_anim")
+					runechat_anim = (runechat_anim + 1) % (RUNECHAT_ANIM_TYPEWRITER + 1)
 				//Sandstorm changes begin
 				if("see_chat_emotes")
 					see_chat_emotes = !see_chat_emotes
@@ -5435,6 +5645,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("toggle_deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
 				//
 
 				if("disable_antag")
@@ -5689,6 +5901,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					preview_pref = href_list["tab"]
 
 				if("character_tab")
+					// чистая навигация: меняется только то, какие поля рисуются
+					preview_unchanged = TRUE
 					if(href_list["tab"])
 						var/new_tab = text2num(href_list["tab"])
 						if(new_tab == QUIRKS_CHAR_TAB && !(findtext(charcreation_theme, "modern") && CONFIG_GET(flag/roundstart_traits)))
@@ -5696,6 +5910,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						character_settings_tab = new_tab
 
 				if("preferences_tab")
+					preview_unchanged = TRUE
 					if(href_list["tab"])
 						preferences_tab = text2num(href_list["tab"])
 
@@ -5839,8 +6054,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			gear_subcategory = url_decode(href_list["select_subcategory"])
 		sanitize_loadout_navigation(src)
 		if(href_list["select_category"] || href_list["select_subcategory"])
-			save_preferences(silent = TRUE)
+			// листание категорий лодаута: надетое не поменялось, манекен тот же
+			preview_unchanged = TRUE
 		if(href_list["toggle_gear_path"])
+			// а вот это уже надевает или снимает вещь - превью обязано пересобраться
+			preview_unchanged = FALSE
 			var/name = url_decode(href_list["toggle_gear_path"])
 			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
 			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
@@ -6066,7 +6284,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					user_gear -= "loadout_examtooltip"
 
 	save_preferences(silent = TRUE)
-	ShowChoices(user)
+	ShowChoices(user, !preview_unchanged)
 	return TRUE
 
 /datum/preferences/proc/get_sound_volume(sound_id)

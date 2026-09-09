@@ -23,6 +23,9 @@
 	if(istype(C, /obj/item/clothing/suit/space) || istype(C, /obj/item/clothing/suit/armor) || istype(C, /obj/item/clothing/suit/toggle/captains_parade))
 		to_chat(user, span_danger("Вы не можете укрепить [C], так как он уже обладает бронепластинами, или является узконаправленным элементом экипировки."))
 		return
+	if(!C.can_be_reinforced)
+		to_chat(user, span_danger("Вы не можете укрепить [C], его защита собирается не из бронепластин."))
+		return
 
 	// Following checks are specific to jumpsuits, jumpskirts and other stuff with that clothing slot.
 	// If and when someone decides to add more such specific checks for other types, i recommend changing it to switch(kit_slot_flag)

@@ -110,21 +110,21 @@
 					melee_damage_lower = 5
 					melee_damage_upper = 10
 
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/guardian/Stat()
-	..()
-	// Provides a status panel indicator, showing purples how long they can be away from their queen before their hivemind link breaks, and they die.
-	// Uses <font color='#X'> because the status panel does NOT accept <span class='X'>.
-	if(statpanel("Status") && ckey && stat == CONSCIOUS)
-		if(spider_myqueen)
-			var/area/A = get_area(spider_myqueen)
-			if(degenerate)
-				stat(null, "Link: <font color='#eb4034'>BROKEN</font>") // color=red
-			else if(queen_visible)
-				stat(null, "Link: <font color='#32a852'>[spider_myqueen] is near</font>") // color=green
-			else if(cycles_noqueen >= 18)
-				stat(null, "Link: <font color='#eb4034'>Critical - return to [spider_myqueen] in [A]</font>") // color=red
-			else
-				stat(null, "Link: <font color='#fcba03'>Warning - return to [spider_myqueen] in [A]</font>") // color=orange
+/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/guardian/get_status_tab_items()
+	. = ..()
+	// Ссылку на матку чистит purple_distance_check(), а он ходит раз в пять Life и
+	// только у невырождающихся - до его прихода ссылка переживает удаление матки.
+	if(stat != CONSCIOUS || QDELETED(spider_myqueen))
+		return
+	var/area/queen_area = get_area(spider_myqueen)
+	if(degenerate)
+		. += "Связь: ОБОРВАНА"
+	else if(queen_visible)
+		. += "Связь: [spider_myqueen] рядом"
+	else if(cycles_noqueen >= 18)
+		. += "Связь: критическая - вернись к [spider_myqueen] в [queen_area]"
+	else
+		. += "Связь: слабеет - вернись к [spider_myqueen] в [queen_area]"
 
 /obj/structure/spider/terrorweb/purple
 	name = "thick web"

@@ -5,7 +5,8 @@
 /datum/mood_event/fat/add_effects(param)
 	. = ..()
 	var/mob/living/carbon/human/owner_mob = owner_mob()
-	description = "<span class='warning'><B>Я так[owner_mob.ru_aya_oy()] толст[owner_mob.ru_aya()]...</B></span>\n" //muh fatshaming
+	description = span_warning("<B>Я так[owner_mob.ru_aya_oy()] толст[owner_mob.ru_aya()]...</B>\n") //muh fatshaming
+	description_robotic = span_warning("<B>Я перезаряже[owner_mob.ru_a()] энергией...</B>\n")
 
 /datum/mood_event/wellfed
 	mood_change = 6
@@ -13,18 +14,22 @@
 /datum/mood_event/wellfed/add_effects(param)
 	. = ..()
 	var/mob/living/carbon/human/owner_mob = owner_mob()
-	description = "<span class='nicegreen'>Я нае[owner_mob.ru_sya()]!</span>\n"
+	description = span_nicegreen("Я нае[owner_mob.ru_sya()]!\n")
+	description_robotic = span_nicegreen("Я полностью заряжен[owner_mob.ru_a()].\n")
 
 /datum/mood_event/fed
-	description = "<span class='nicegreen'>У меня недавно был перекус.</span>\n"
+	description = span_nicegreen("У меня недавно был перекус.\n")
+	description_robotic = span_nicegreen("Моя батарея заряжена.\n")
 	mood_change = 3
 
 /datum/mood_event/hungry
-	description = "<span class='warning'>Я начинаю немного голодать.</span>\n"
+	description = span_warning("Я начинаю немного голодать.\n")
+	description_robotic = span_warning("Я начинаю терять заряд.\n")
 	mood_change = -8
 
 /datum/mood_event/starving
-	description = "<span class='boldwarning'>Я голодаю!</span>\n"
+	description = span_boldwarning("Я голодаю!\n")
+	description_robotic = span_boldwarning("Малый заряд энергии, включён энергосберегающий режим!\n")
 	mood_change = -15
 
 //charge

@@ -2,7 +2,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(!open) //mod must be open
+	if(!is_open()) //mod must be open
 		balloon_alert(user, "suit must be open to transfer!")
 		return
 	switch(interaction)
@@ -120,7 +120,7 @@
 			balloon_alert(user, "onboard AI cannot fit in this card!")
 		return
 	if(!forced)
-		if(!open)
+		if(!is_open())
 			if(user && feedback)
 				balloon_alert(user, "open the suit panel!")
 			return FALSE
@@ -169,7 +169,8 @@
 #define AI_FALL_TIME (1 SECONDS)
 
 /obj/item/mod/control/relaymove(mob/user, direction)
-	if((!active && wearer) || !cell || cell.charge < CELL_PER_STEP  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
+	var/obj/item/stock_parts/cell/cell = get_cell()
+	if((!is_active() && wearer) || !cell || cell.charge < CELL_PER_STEP  || user != ai || !COOLDOWN_FINISHED(src, cooldown_mod_move) || (wearer?.pulledby?.grab_state > GRAB_PASSIVE))
 		return FALSE
 	var/timemodifier = MOVE_DELAY * (ISDIAGONALDIR(direction) ? SQRT_2 : 1) * (wearer ? WEARER_DELAY : LONE_DELAY)
 	if(wearer && !wearer.Process_Spacemove(direction))

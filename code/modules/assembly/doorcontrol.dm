@@ -10,6 +10,8 @@
 	/// Show ID?
 	var/show_id = TRUE
 	var/cooldown = FALSE //Door cooldowns
+	/// Should we toggle open/close of doors based on their current state
+	var/sync_doors = TRUE
 
 /obj/item/assembly/control/Initialize(mapload)
 	if(mapload && id)
@@ -41,7 +43,7 @@
 	var/openclose
 	for(var/obj/machinery/door/poddoor/M in GLOB.machines)
 		if(M.id == src.id)
-			if(openclose == null)
+			if(openclose == null || !sync_doors)
 				openclose = M.density
 			INVOKE_ASYNC(M, openclose ? TYPE_PROC_REF(/obj/machinery/door/poddoor, open) : TYPE_PROC_REF(/obj/machinery/door/poddoor, close))
 	addtimer(VARSET_CALLBACK(src, cooldown, FALSE), 10)

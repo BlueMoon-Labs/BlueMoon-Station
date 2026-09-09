@@ -29,3 +29,8 @@
 #define MECHA_SECURE_BOLTS 1
 #define MECHA_LOOSE_BOLTS 2
 #define MECHA_OPEN_HATCH 3
+
+///Множитель задержки шага под форсажем ножных приводов
+#define MECHA_OVERLOAD_MOVEDELAY_MULT 0.5
+///Доля ёмкости ячейки, ниже которой форсаж ножных приводов не включается и сам отключается: мех обязан уйти своим ходом
+#define MECHA_OVERLOAD_POWER_RESERVE 0.1

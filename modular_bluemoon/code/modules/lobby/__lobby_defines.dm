@@ -13,6 +13,12 @@
 
 #define BM_LOBBY_LOADING_GIF "config/title_screens/cyberpunk_cityscape.gif"
 
+/// Потолок веса картинки лобби. Фон уходит `browse()`-ом по игровому соединению отдельной
+/// копией каждому клиенту, поэтому 25-мегабайтный `cyberpunk_cityscape.gif`, который лежал
+/// в пуле на проде, - это около 3 ГБ исходящего за первую минуту раунда на сотню входов,
+/// и столько же буферов вывода в 32-битном процессе. Отсечённое называется в логе поимённо.
+#define BM_LOBBY_IMAGE_MAX_BYTES (4 * 1024 * 1024)
+
 #define BM_DEFAULT_LOBBY_HTML_PREAMBLE {"<!DOCTYPE html>
 <html lang='ru'>
 <head>

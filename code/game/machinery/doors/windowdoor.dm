@@ -29,6 +29,7 @@
 
 /obj/machinery/door/window/Initialize(mapload, set_dir)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	if(set_dir)
 		setDir(set_dir)
 	if(src.req_access && src.req_access.len)
@@ -301,6 +302,12 @@
 		take_damage(round(exposed_volume / 200), BURN, 0, 0)
 	..()
 
+/obj/machinery/door/window/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > (T0C + (reinf ? 1600 : 800))
+
+/obj/machinery/door/window/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(round(exposed_air.return_volume() / 200), BURN, 0, 0)
+
 /obj/machinery/door/window/emag_act(mob/user)
 	. = ..()
 	if(operating || !density || obj_flags & EMAGGED)
@@ -326,7 +333,7 @@
 		return
 
 	add_fingerprint(user)
-	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent == INTENT_HELP)
+	if(istype(I, /obj/item/electronics/electrochromatic_kit) && user.a_intent != INTENT_HARM)
 		var/obj/item/electronics/electrochromatic_kit/K = I
 		if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 			to_chat(user, span_warning("[src] is already electrochromatic!"))

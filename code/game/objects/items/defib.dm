@@ -263,6 +263,17 @@
 	nocell_state = "defibcompact-nocell"
 	emagged_state = "defibcompact-emagged"
 
+/// Награда кристаллизатора за хилиум. Встроенное лечебное улучшение помогает
+/// стабилизировать пациента после реанимации, но прочие ограничения обычного
+/// компактного дефибриллятора сохраняются.
+/obj/item/defibrillator/compact/loaded/crystallizer
+	name = "healium defibrillator"
+	desc = "Компактный дефибриллятор, выращенный в кристаллизаторе. Хилиумная решётка смягчает повреждения при успешной реанимации."
+	icon_state = "defibcompact_healium"
+	item_state = "defibcompact_healium"
+	paddle_state = "defibcompact_healium-paddles"
+	healdisk = TRUE
+
 /obj/item/defibrillator/compact/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == user.getBeltSlot())
 		return TRUE
@@ -657,8 +668,9 @@
 					user.visible_message(failed)
 					playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)
 				else
+					var/breathless = HAS_TRAIT(H, TRAIT_NOBREATH)
 					//If the body has been fixed so that they would not be in crit when defibbed, give them oxyloss to put them back into crit
-					if (H.health > HALFWAYCRITDEATH)
+					if(!breathless && H.health > HALFWAYCRITDEATH)
 						H.adjustOxyLoss(H.health - HALFWAYCRITDEATH, 0)
 					else
 						var/overall_damage = total_brute + total_burn + H.getToxLoss() + H.getOxyLoss()
@@ -668,16 +680,28 @@
 							H.adjustToxLoss((mobhealth - HALFWAYCRITDEATH) * (H.getToxLoss() / overall_damage), 0)
 							H.adjustFireLoss((mobhealth - HALFWAYCRITDEATH) * (total_burn / overall_damage), 0)
 							H.adjustBruteLoss((mobhealth - HALFWAYCRITDEATH) * (total_brute / overall_damage), 0)
-					H.updatehealth() // Previous "adjust" procs don't update health, so we do it manually.
+					H.updatehealth() // Previous "adjust" procs don't update health, so we do it manually. Старокодеры сделали это, чтобы вызов выше не происходил 4 раза подряд
 					user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] пищит: Реанимация прошла успешно.</span>")
 					playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 					H.set_heartattack(FALSE)
-					H.revive()
-					H.emote("gasp")
+					H.revive(post_revive_effects = TRUE)
+					if(breathless)
+						H.emote("twitch")
+						if(H.health > HALFWAYCRITDEATH)
+							H.adjustStaminaLoss(max(STAMINA_CRIT - H.getStaminaLoss(), 0), 0) // Только после ревайва и только живой моб адекватно получит эту замену софткрита от окcи урона
+						H.AdjustConfused(rand(10, 15) SECONDS, 0, 15 SECONDS)
+					else
+						H.emote("gasp")
 					H.Jitter(100)
 					SEND_SIGNAL(H, COMSIG_LIVING_MINOR_SHOCK)
 					if(tplus > tloss)
-						H.adjustOrganLoss(ORGAN_SLOT_BRAIN,  max(0, min(99, ((tlimit - tplus) / tlimit * 100))), 150)
+						// setOrganLoss, а не adjustOrganLoss: tlimit растянут до четырёх часов
+						// ради окна реанимации, поэтому выражение почти всегда даёт ровно 99,
+						// и каждый следующий разряд добивал мозг до тяжёлой травмы. Потолок на
+						// единицу ниже BRAIN_DAMAGE_SEVERE - ровно до неё, но не в неё.
+						// revive() без full_heal органы не трогает, поэтому голая запись ещё и ЛЕЧИЛА
+						// уже накопленный урон мозга: берём максимум с текущим.
+						H.setOrganLoss(ORGAN_SLOT_BRAIN, max(H.getOrganLoss(ORGAN_SLOT_BRAIN), max(0, min(BRAIN_DAMAGE_SEVERE - 1, ((tlimit - tplus) / tlimit * 100)))))
 					log_combat(user, H, "revived", defib)
 					if(req_defib)
 						if(defib.healdisk)
@@ -697,7 +721,9 @@
 				user.visible_message("<span class='warning'>[req_defib ? "[defib]" : "[src]"] buzzes: Patient's heart is missing. Operation aborted.</span>")
 				playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)
 			else if(H.undergoing_cardiac_arrest())
-				H.set_heartattack(FALSE)
+				//Безусловного перезапуска здесь быть не должно: он заводил помпу и на
+				//повреждённом сердце, после чего дефиб печатал "heart damage detected",
+				//а ближайший on_life() снова её останавливал.
 				if(!(heart.organ_flags & ORGAN_FAILING))
 					H.set_heartattack(FALSE)
 					user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] pings: Patient's heart is now beating again.</span>")

@@ -11,6 +11,8 @@
 			msg += "\"01000001 01001001\"."
 		if(TRACK_INFILTRATOR)
 			msg += "\"vasvygengbefuvc\"."
+		if(TRACK_SYNDICATE_OPERATIVE)
+			msg += "\"operative\"."
 		else
 			msg = "Its tracking indicator is blank."
 	. += msg
@@ -47,7 +49,17 @@
 					target = A
 		if(TRACK_INFILTRATOR)
 			target = SSshuttle.getShuttle("syndicate")
+		if(TRACK_SYNDICATE_OPERATIVE)
+			target = find_closest_syndicate_operative(src)
 	..()
+
+/proc/find_closest_syndicate_operative(atom/source)
+	var/list/possible_targets = list()
+	var/turf/here = get_turf(source)
+	for(var/datum/mind/M in get_antag_minds(/datum/antagonist/nukeop))
+		if(ishuman(M.current) && M.current.stat != DEAD)
+			possible_targets |= M.current
+	return get_closest_atom(/mob/living/carbon/human, possible_targets, here)
 
 /obj/item/pinpointer/nuke/proc/switch_mode_to(new_mode)
 	if(isliving(loc))
@@ -63,33 +75,49 @@
 	icon_state = "pinpointer_syndicate"
 	item_state = "pinpointer_black"
 
-/obj/item/pinpointer/syndicate_cyborg // Cyborg pinpointers just look for a random operative.
+/obj/item/pinpointer/syndicate_cyborg
 	name = "cyborg syndicate pinpointer"
-	desc = "An integrated tracking device, jury-rigged to search for living Syndicate operatives."
+	desc = "Встроенный трекер, настроенный на Диск Ядерной Аутентификации. ALT-ЛКМ переключает режим на поиск союзных оперативников."
 	flags_1 = NONE
+	var/mode = TRACK_NUKE_DISK
 
 /obj/item/pinpointer/spider_cyborg // Cyborg pinpointers just look for a random space ninja.
 	name = "cyborg spider clan pinpointer"
 	desc = "An integrated tracking device, jury-rigged to search for living Spider Clan members."
 	flags_1 = NONE
 
-
 /obj/item/pinpointer/syndicate_cyborg/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, CYBORG_ITEM_TRAIT)
 
+/obj/item/pinpointer/syndicate_cyborg/examine(mob/user)
+	. = ..()
+	var/mode_name = (mode == TRACK_NUKE_DISK) ? "Диск Ядерной Аутентификации" : "союзных оперативников"
+	. += "Сейчас отслеживается: [mode_name]. ALT-ЛКМ переключает режим."
+
 /obj/item/pinpointer/syndicate_cyborg/scan_for_target()
 	target = null
-	var/list/possible_targets = list()
-	var/turf/here = get_turf(src)
-	for(var/V in get_antag_minds(/datum/antagonist/nukeop))
-		var/datum/mind/M = V
-		if(ishuman(M.current) && M.current.stat != DEAD)
-			possible_targets |= M.current
-	var/mob/living/closest_operative = get_closest_atom(/mob/living/carbon/human, possible_targets, here)
-	if(closest_operative)
-		target = closest_operative
+	switch(mode)
+		if(TRACK_NUKE_DISK)
+			var/obj/item/disk/nuclear/N = locate() in GLOB.poi_list
+			target = N
+		if(TRACK_SYNDICATE_OPERATIVE)
+			target = find_closest_syndicate_operative(src)
 	..()
+
+/obj/item/pinpointer/syndicate_cyborg/AltClick(mob/living/user)
+	switch_tracking_mode(user)
+
+/obj/item/pinpointer/syndicate_cyborg/proc/switch_tracking_mode(mob/living/user)
+	if(!user || !user.canUseTopic(src, BE_CLOSE, FALSE))
+		return
+	mode = (mode == TRACK_NUKE_DISK) ? TRACK_SYNDICATE_OPERATIVE : TRACK_NUKE_DISK
+	if(isliving(loc))
+		playsound(loc, 'sound/machines/triple_beep.ogg', 50, TRUE)
+	scan_for_target()
+	update_icon()
+	var/mode_name = (mode == TRACK_NUKE_DISK) ? "Диск Ядерной Аутентификации" : "союзных оперативников"
+	to_chat(user, "<span class='notice'>Пинпоинтер переключён на отслеживание: [mode_name].</span>")
 
 /obj/item/pinpointer/spider_cyborg/Initialize(mapload)
 	. = ..()

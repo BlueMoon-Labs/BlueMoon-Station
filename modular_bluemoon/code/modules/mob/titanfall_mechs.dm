@@ -1,5 +1,6 @@
 /obj/vehicle/sealed/mecha/combat/durand/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -12,6 +13,7 @@
 
 /obj/vehicle/sealed/mecha/combat/gygax/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -24,6 +26,7 @@
 
 /obj/vehicle/sealed/mecha/medical/odysseus/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -35,6 +38,7 @@
 
 /obj/vehicle/sealed/mecha/medical/medigax/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -46,6 +50,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
@@ -63,6 +68,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill/diamonddrill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp(src)
@@ -80,6 +86,7 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded/Initialize(mapload)
 	. = ..()
+	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/drill/diamonddrill(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)

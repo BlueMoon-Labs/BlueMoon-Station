@@ -164,6 +164,11 @@
 		return
 
 	var/obj/effect/decal/cleanable/blood/splatter/over_window/final_splatter = new(prev_loc, null)
+	//Такая же декаль на этом турфе схлопывает новую в INITIALIZE_HINT_QDEL,
+	//и new() возвращает уже удалённый атом - трогать его нельзя.
+	if(QDELETED(final_splatter))
+		expire()
+		return
 	final_splatter.blood_DNA = blood_DNA.Copy()
 	final_splatter.update_icon()
 	final_splatter.pixel_x = (dir == EAST ? 32 : (dir == WEST ? -32 : 0))
@@ -177,6 +182,12 @@
 	if(!the_window.fulltile)
 		return FALSE
 	var/obj/effect/decal/cleanable/blood/splatter/over_window/final_splatter = new(prev_loc, null)
+	//Слияние с уже лежащей на турфе такой же декалью возвращает qdel-нутый атом.
+	//Его forceMove ловил гард "doMove qdel-нутого", а vis_contents окна держали
+	//мёртвую декаль до конца раунда - готовый hard delete с одной внешней ссылкой.
+	if(QDELETED(final_splatter))
+		expire()
+		return TRUE
 	final_splatter.blood_DNA = blood_DNA.Copy()
 	final_splatter.update_icon()
 	final_splatter.forceMove(the_window)

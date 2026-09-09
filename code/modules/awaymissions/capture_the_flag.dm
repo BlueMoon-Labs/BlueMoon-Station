@@ -584,7 +584,7 @@
 
 
 /obj/structure/trap/ctf
-	name = "Spawn protection"
+	name = "Very Cool Energy Shield"
 	desc = "Stay outta the enemy spawn!"
 	icon_state = "trap"
 	resistance_flags = INDESTRUCTIBLE
@@ -610,6 +610,17 @@
 /obj/structure/trap/ctf/blue
 	team = BLUE_TEAM
 	icon_state = "trap-frost"
+
+/obj/structure/trap/ctf/inteq_blocker
+	name = "InteQ Restricted Zone"
+	desc = "Территория закрыта для персонала InteQ."
+	icon_state = "trap-fire"
+	time_between_triggers = 1
+
+/obj/structure/trap/ctf/inteq_blocker/trap_effect(mob/living/L)
+	if((ROLE_INTEQ in L.faction) || (L.mind?.assigned_role == ROLE_GHOSTROLE_INTEQ))
+		to_chat(L, span_userdanger("ПРОТОКОЛ БЛОКИРОВКИ. Вы не можете покинуть зону осады."))
+		L.death()
 
 /obj/structure/barricade/security/ctf
 	name = "barrier"

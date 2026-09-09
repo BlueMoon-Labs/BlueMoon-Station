@@ -13,7 +13,7 @@
 	barefootstep = FOOTSTEP_SAND
 	clawfootstep = FOOTSTEP_SAND
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_FLOOR & ~(TURF_INTACT | TURF_TILED_DIRT)
 
 /turf/open/floor/plating/dirt/dark
 	icon_state = "greenerdirt"

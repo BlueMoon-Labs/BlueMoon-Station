@@ -75,21 +75,35 @@
 /obj/machinery/proc/remove_eye_control(mob/living/user)
 	CRASH("[type] does not implement ai eye handling")
 
+/**
+ * Отдаёт консоль обратно и отпускает оператора.
+ *
+ * Гейт `if(isnull(user?.client)) return` стоял на ВСЁМ проке, а `/mob/Logout()`
+ * зовёт `unset_machine()` уже ПОСЛЕ отвязки клиента - то есть штатный выход
+ * игрока из тела за консолью проходил мимо всей уборки. `unset_machine()` при
+ * этом обнуляет `mob.machine`, второго шанса убраться не будет, и
+ * `current_user` держал тело до конца раунда (плюс консоль навсегда оставалась
+ * "уже используется", а `QDEL_LAZYLIST(actions)` удаляемого тела уносил ОБЩИЕ
+ * экшены консоли). Клиента теперь требуют только те шаги, которым он нужен.
+ */
 /obj/machinery/computer/camera_advanced/remove_eye_control(mob/living/user)
-	if(isnull(user?.client))
+	if(isnull(user))
 		return
 
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
-	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj.visibleCameraChunks)
+	for(var/datum/camerachunk/camerachunks_gone as anything in eyeobj?.visibleCameraChunks)
 		camerachunks_gone.remove(eyeobj)
 
 	user.reset_perspective(null)
-	if(eyeobj.visible_icon)
-		user.client.images -= eyeobj.user_image
-	user.client.view_size.unsupress()
+	var/client/user_client = user.client
+	if(user_client)
+		if(eyeobj?.visible_icon)
+			user_client.images -= eyeobj.user_image
+		user_client.view_size.unsupress()
 
-	eyeobj.eye_user = null
+	if(eyeobj)
+		eyeobj.eye_user = null
 	user.remote_control = null
 	current_user = null
 	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)

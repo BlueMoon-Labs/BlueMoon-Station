@@ -36,50 +36,61 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 
 //Human Overlays Indexes/////////
 //LOTS OF CIT CHANGES HERE. BE CAREFUL WHEN UPSTREAM ADDS MORE LAYERS
-#define MUTATIONS_LAYER			43		//mutations. Tk headglows, cold resistance glow, etc
-#define GENITALS_BEHIND_LAYER	42		//Some genitalia needs to be behind everything, such as with taurs (Taurs use body_behind_layer)
-#define BODY_BEHIND_LAYER		41		//certain mutantrace features (tail when looking south) that must appear behind the body parts
-#define BODYPARTS_LAYER			40		//Initially "AUGMENTS", this was repurposed to be a catch-all bodyparts flag
-#define MARKING_LAYER			39		//Matrixed body markings because clashing with snouts?
-#define BODY_ADJ_LAYER			38		//certain mutantrace features (snout, body markings) that must appear above the body parts
-#define GENITALS_FRONT_LAYER	37		//Draws some genitalia above clothes and the TAUR body if need be.
-#define BODY_LAYER				36		//Eyes, lips(makeup)
-#define BODY_ADJ_UPPER_LAYER	35
-#define FRONT_MUTATIONS_LAYER	34		//mutations that should appear above body, body_adj and bodyparts layer (e.g. laser eyes)
-#define UNDERWEAR_LAYER			33
-#define SOCKS_LAYER				32
-#define SHIRT_LAYER				31
-#define UNIFORM_LAYER			30
-#define SHOES_LAYER				29
-#define DRESS_LAYER				28		//Any uniform that should be drawn on top of shoes, including jumpskirts
-#define ID_LAYER				27
-#define GENITALS_EXPOSED_LAYER	26
-#define HANDS_PART_LAYER		25
-#define DAMAGE_LAYER			24		//damage indicators (cuts and burns)
-#define WOUND_LAYER				23		//bleeding wound icons
-#define LOWER_MEDICINE_LAYER	22		//Medicine, like gauze and tourniquets
-#define MEDICINE_LAYER			21		//Medicine, like gauze and tourniquets
-#define GLOVES_LAYER			20
-#define WRISTS_LAYER			19
-#define EAR_RIGHT_LAYER			18
-#define EAR_LEFT_LAYER			17
-#define SUIT_LAYER				16
-#define GLASSES_LAYER			15
-#define BELT_LAYER				14		//Possible make this an overlay of somethign required to wear a belt?
-#define SUIT_STORE_LAYER		13
-#define NECK_LAYER				12
-#define BACK_LAYER				11
-#define HAIR_LAYER				10		//TODO: make part of head layer?
-#define HORNS_LAYER				9
-#define FACEMASK_LAYER			8
-#define HEAD_LAYER				7
-#define HANDCUFF_LAYER			6
-#define LEGCUFF_LAYER			5
-#define HANDS_LAYER				4
-#define BODY_FRONT_LAYER		3
-#define ANTAG_LAYER				2		//stuff for things like cultism indicators (clock cult glow, cultist red halos, whatever else new that comes up)
-#define FIRE_LAYER				1		//If you're on fire
-#define TOTAL_LAYERS			43		//KEEP THIS UP-TO-DATE OR SHIT WILL BREAK ;_;
+
+#define MUTATIONS_LAYER           45 // mutations. Tk headglows, cold resistance glow, etc
+#define GENITALS_BEHIND_LAYER     44 // Some genitalia needs to be behind everything, such as with taurs
+#define BODY_BEHIND_LAYER         43 // certain mutantrace features, such as tail when looking south
+#define BODYPARTS_LAYER           42 // catch-all bodyparts flag
+#define MARKING_LAYER             41 // Matrixed body markings
+#define BODY_ADJ_LAYER            40 // snout, body markings, etc.
+#define GENITALS_FRONT_LAYER      39 // genitalia above clothes and taur body
+#define BODY_LAYER                38 // Eyes, lips, makeup
+#define BODY_ADJ_UPPER_LAYER      37
+#define FRONT_MUTATIONS_LAYER     36 // mutations above body and bodyparts
+#define UNDERWEAR_LAYER           35
+#define SOCKS_LAYER               34
+#define SHIRT_LAYER               33
+#define UNIFORM_LAYER             32
+#define SHOES_LAYER               31
+#define DRESS_LAYER               30 // uniforms drawn on top of shoes
+#define ID_LAYER                  29
+#define GENITALS_EXPOSED_LAYER    28
+#define HANDS_PART_LAYER          27
+#define DAMAGE_LAYER              26 // damage indicators
+#define WOUND_LAYER               25 // bleeding wound icons
+#define LOWER_MEDICINE_LAYER      24
+#define MEDICINE_LAYER            23
+#define GLOVES_LAYER              22
+#define WRISTS_LAYER              21
+#define EAR_RIGHT_LAYER           20
+#define EAR_LEFT_LAYER            19
+#define SUIT_LAYER                18
+#define GLASSES_LAYER             17
+#define BELT_LAYER                16
+#define SUIT_STORE_LAYER          15
+#define NECK_LAYER                14
+#define BACK_LAYER                13
+#define HAIR_LAYER                12
+#define HORNS_LAYER               11
+#define FACEMASK_LAYER            10
+#define HEAD_LAYER                 9
+#define HANDCUFF_LAYER             8
+#define LEGCUFF_LAYER              7
+#define HANDS_LAYER                6
+#define GENITAL_EFFECT_LAYER       5
+#define BODY_FRONT_LAYER           4
+#define BODYPART_EFFECT_LAYER      3
+#define ANTAG_LAYER                2
+#define FIRE_LAYER                 1
+
+#define TOTAL_LAYERS              45
+
+/// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
+/// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого
+/// сочетания вида, цвета, маркингов и состояния конечностей, но одновременно ЖИВЫХ
+/// сочетаний у ста игроков сотни, а не тысячи. Всё сверх - это осевшие рендеры превью
+/// из редактора персонажа и тела давно ушедших игроков.
+#define LIMB_ICON_CACHE_MAX 2000
 
 //Human Overlay Index Shortcuts for alternate_worn_layer, layers
 //Because I *KNOW* somebody will think layer+1 means "above"
@@ -167,6 +178,10 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define BLOOD_STATE_NOT_BLOODY		"no blood whatsoever"
 #define BLOOD_AMOUNT_PER_DECAL		20
 
+/// Сколько /obj/effect/decal/cleanable может лежать на одном турфе. Шесть выбрано по картам:
+/// самый забитый замапленный турф несёт 5 декалей, кап режет только рантаймовый нарост.
+#define CLEANABLE_DECAL_TURF_CAP	6
+
 //suit sensors: sensor_mode defines
 
 #define SENSOR_OFF 0
@@ -181,6 +196,11 @@ GLOBAL_LIST_EMPTY(bloody_footprints_cache)
 #define DAMAGED_SENSORS_LIVING 1
 #define DAMAGED_SENSORS_VITALS 2
 #define HAS_SENSORS 3
+
+/// Шкала жестокости целей предателя (bm_traitor_violence_tier).
+#define BM_TRAITOR_VIOLENCE_NONE 0
+#define BM_TRAITOR_VIOLENCE_SOFT 1
+#define BM_TRAITOR_VIOLENCE_FULL 2
 
 //suit sensor flags: sensor_flag defines
 #define SENSOR_RANDOM (1<<0)
@@ -578,6 +598,26 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 #define PREF_LOAD_COOLDOWN 5
 #define PREF_SAVE_COOLDOWN 2 SECONDS
+/// Насколько далеко отложенную запись savefile разрешено переносить от первой
+/// правки в пачке. Запись синхронная - она морозит весь процесс, поэтому пачку
+/// правок склеиваем в одну; но переносить бесконечно нельзя, иначе игрок,
+/// который щёлкает настройки чаще кулдауна, не сохраняется до самого логаута.
+#define PREF_SAVE_MAX_DEFER 15 SECONDS
+
+/// Окно склейки одиночных записей префов (save_single_pref) в одну.
+/// Шире клиентского дебаунса панели tgui (3 с): иначе две соседние отправки состояния
+/// чата приходят уже разнесёнными и склеивать их не с чем. Верхняя граница переноса
+/// та же, что и у полной записи - PREF_SAVE_MAX_DEFER.
+#define PREF_SINGLE_SAVE_DEBOUNCE 5 SECONDS
+
+// Решения pref_defer_decision() - что делать с очередной отложенной записью savefile.
+/// Очереди не было: завести крайний срок и зарядить таймер.
+#define PREF_DEFER_ARM 1
+/// Очередь есть, крайний срок не наступил: перевзвести таймер, срок не трогать.
+#define PREF_DEFER_RESCHEDULE 2
+/// Крайний срок наступил: оставить заряженный таймер как есть, иначе поток правок
+/// переносит запись бесконечно и игрок не сохраняется до самого логаута.
+#define PREF_DEFER_KEEP 3
 
 #define VOMIT_TOXIC 1
 #define VOMIT_PURPLE 2

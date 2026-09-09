@@ -31,13 +31,19 @@
 		return
 	var/mob/living/simple_animal/drone/D = mymob
 
+	//Хад переживает разрыв клиента: дрон без игрока продолжает обновлять инвентарь,
+	//а ветка hud_shown писала прямо в D.client.screen. screen_loc проставляем всегда -
+	//он понадобится при следующем логине.
 	if(hud_shown)
+		var/client/viewer = D.client
 		if(D.internal_storage)
 			D.internal_storage.screen_loc = ui_drone_storage
-			D.client.screen += D.internal_storage
+			if(viewer)
+				viewer.screen += D.internal_storage
 		if(D.head)
 			D.head.screen_loc = ui_drone_head
-			D.client.screen += D.head
+			if(viewer)
+				viewer.screen += D.head
 	else
 		if(D.internal_storage)
 			D.internal_storage.screen_loc = null

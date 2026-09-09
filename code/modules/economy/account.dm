@@ -1,4 +1,8 @@
 #define DUMPTIME 3000
+/// Сколько записей истории операций держит счёт. Дальше вытесняются самые старые, см.
+/// trim_transaction_history(). Двадцать - прежний (нерабочий) порог, приложение НТ и
+/// распечатка листают ровно столько.
+#define BANK_TRANSACTION_HISTORY_MAX 20
 #define STATION_START_CASH 75000
 #define STATION_CREATION_DATE "1 April, 2555"
 #define STATION_CREATION_TIME "11:22:33"
@@ -64,6 +68,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	T.date = GLOB.current_date_string
 	T.time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	transaction_history += T
+	trim_transaction_history()
 
 /datum/bank_account/proc/add_transaction(purpose, amount, target_name = "System", source_terminal = "ID Card")
 	if(!transaction_history)
@@ -78,6 +83,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	T.source_terminal = source_terminal
 
 	transaction_history += T
+	trim_transaction_history()
 
 /datum/bank_account/New(newname, job)
 	if(add_to_accounts)
@@ -315,12 +321,6 @@ GLOBAL_VAR_INIT(next_account_number, 0)
  * * reason - The reason of interact with balance, for example, "Bought chips" or "Payday".
  */
 /datum/bank_account/proc/add_log_to_history(adjusted_money, reason)
-	if(transaction_history.len >= 20)
-		var/old_entry = transaction_history[1]
-		if(istype(old_entry, /datum/transaction))
-			qdel(old_entry)
-		transaction_history.Cut(1,2)
-
 	transaction_history += list(list(
 		"adjusted_money" = adjusted_money,
 		"reason" = reason,
@@ -335,6 +335,27 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	T.amount = adjusted_money          // уже со знаком
 	T.source_terminal = "Account System"
 	transaction_history += T
+	trim_transaction_history()
+
+/**
+ * Обрезать историю операций до BANK_TRANSACTION_HISTORY_MAX.
+ *
+ * Обрезка ПОСЛЕ добавления, а не до, и циклом, а не одним Cut. Прежний порядок снимал
+ * ровно ОДНУ запись при длине >= 20 и тут же добавлял ДВЕ - ассоциативную строку для UI и
+ * датум /datum/transaction для распечатки, - то есть история росла на +1 за вызов и
+ * никогда не сходилась. На сотне счетов при двенадцати пейдеях в час плюс каждая покупка
+ * в автомате это неограниченный рост за раунд.
+ *
+ * Остальные четыре места добавления (детектор подозрительных переводов, add_transaction,
+ * makeTransactionLog, создание счёта) зовут этот же прок: иначе каждое из них уводило бы
+ * историю выше капа своим путём.
+ */
+/datum/bank_account/proc/trim_transaction_history()
+	while(length(transaction_history) > BANK_TRANSACTION_HISTORY_MAX)
+		var/old_entry = transaction_history[1]
+		if(istype(old_entry, /datum/transaction))
+			qdel(old_entry)
+		transaction_history.Cut(1, 2)
 
  // Charge is for transferring money from an account to another. The destination account can possibly not exist (Magical money sink)
 // Charge is for transferring money from an account to another...
@@ -373,6 +394,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	T.date = date
 	T.time = (time == "") ? STATION_TIME_TIMESTAMP("hh:mm:ss", world.time) : time
 	transaction_history += T
+	trim_transaction_history()
 
 //the current ingame time (hh:mm:ss) can be obtained by calling:
 //STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)("hh:mm:ss")
@@ -453,6 +475,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 
 	// Добавляем аккаунт в систему
 	M.transaction_history.Add(T)
+	M.trim_transaction_history()
 	return M
 
 /proc/create_station_account()
@@ -480,3 +503,4 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	var/source_terminal = ""
 
 #undef DUMPTIME
+#undef BANK_TRANSACTION_HISTORY_MAX

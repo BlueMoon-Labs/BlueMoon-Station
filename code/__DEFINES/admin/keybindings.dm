@@ -9,6 +9,8 @@
 #define MAX_KEYPRESS_AUTOKICK 100
 /// Max keys that can be held down at once by a client
 #define MAX_HELD_KEYS 15
+/// How long movement may remain held without a +REP keepalive before it is treated as a lost KeyUp.
+#define MOVEMENT_KEY_REPEAT_TIMEOUT (0.5 SECONDS)
 
 /// Macroset name of hotkeys/keybind only/modern mode
 #define SKIN_MACROSET_HOTKEYS "hotkeys"

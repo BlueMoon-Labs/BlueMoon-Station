@@ -30,6 +30,30 @@ INITIALIZE_IMMEDIATE(/mob/living/carbon/human/dummy)
 	delete_equipment()
 	icon_render_key = null
 	cut_overlays(TRUE)
+	// Манекен из GLOB.human_dummy_list переиспользуется всем сервером, а размер считается
+	// МУЛЬТИПЛИКАТИВНО: update_transform() домножает уже стоящую матрицу на resize, где
+	// resize - это отношение features["body_size"] к предыдущему размеру. Инвариант тут
+	// один: масштаб transform обязан совпадать с features["body_size"]. Стоит его нарушить,
+	// и каждый следующий рендер умножает матрицу заново - кукла в редакторе персонажа растёт
+	// с каждым кликом в геометрической прогрессии, пока не превращается в пятно.
+	//
+	// Нарушить инвариант просто: delete_equipment() зовёт qdel надетых вещей напрямую, а
+	// dropped() у надетого не срабатывает, поэтому нормализатор размера остаётся висеть на
+	// манекене и вклинивает свой update_size() между сбросом и применением префа. Снимаем
+	// такие компоненты первыми - их UnregisterFromParent() сам двигает размер.
+	for(var/datum/component/size_normalized/leftover as anything in GetComponents(/datum/component/size_normalized))
+		qdel(leftover)
+	transform = matrix()
+	pixel_y = 0
+	resize = RESIZE_DEFAULT_SIZE
+	size_multiplier = RESIZE_NORMAL
+	maptext_height = 32
+	if(dna?.features)
+		dna.features["body_size"] = RESIZE_DEFAULT_SIZE
+	// cut_overlays() чистит сами оверлеи, но не послойный кэш, из которого apply_overlay()
+	// раскладывает их обратно - иначе слои предыдущего персонажа доезжают до следующего.
+	for(var/index in 1 to length(overlays_standing))
+		overlays_standing[index] = null
 
 /mob/living/carbon/human/dummy/setup_human_dna()
 	create_dna(src)

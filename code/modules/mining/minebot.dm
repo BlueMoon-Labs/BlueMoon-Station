@@ -23,6 +23,10 @@
 	obj_damage = 10
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	check_friendly_fire = TRUE
+	//Бот куплен шахтёром и живёт с ним в одной фракции. Штатное переключение
+	//режима - голая рука на HELP; любой предмет в руках идёт в attacked_by, и
+	//без этого запрета случайный тычок делал владельца врагом до конца раунда.
+	retaliates_against_faction = FALSE
 	stop_automated_movement_when_pulled = TRUE
 	attack_verb_continuous = "drills"
 	attack_verb_simple = "drill"

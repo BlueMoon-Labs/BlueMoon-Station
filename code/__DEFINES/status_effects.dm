@@ -170,3 +170,6 @@
 #define STATUS_EFFECT_TERROR_REGEN /datum/status_effect/terror/regeneration   //over time healing, 125 HP within 25~ seconds
 
 #define STATUS_EFFECT_TERROR_FOOD_REGEN /datum/status_effect/terror/food_regen   //over time healing for mobs to gain full HP within 25~ seconds
+
+#define STATUS_EFFECT_GOOSE_VOMIT /datum/status_effect/goose_vomit
+#define STATUS_EFFECT_GOOSE_CHOKING /datum/status_effect/goose_choking

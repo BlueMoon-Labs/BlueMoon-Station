@@ -2,6 +2,7 @@
 	name = "reverse bear trap"
 	desc = "A horrifying set of shut metal jaws, rigged to a kitchen timer and secured by padlock to a head-mounted clamp. To apply, hit someone with it."
 	icon = 'icons/obj/device.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
 	icon_state = "reverse_bear_trap"
 	slot_flags = ITEM_SLOT_HEAD
 	flags_1 = CONDUCT_1
@@ -110,8 +111,12 @@
 		jill.emote("realagony")
 		playsound(src, 'sound/effects/snap.ogg', 75, TRUE, frequency = 0.5)
 		playsound(src, 'sound/effects/splat.ogg', 50, TRUE, frequency = 0.5)
-		jill.apply_damage(9999, BRUTE, BODY_ZONE_HEAD)
-		jill.death() //just in case, for some reason, they're still alive
+		var/obj/item/bodypart/head/O = jill.get_bodypart(BODY_ZONE_HEAD)
+		if(O)
+			jill.visible_message(span_danger("[O] взрывается фонтаном мозгов и крови под [src]!"), \
+				span_userdanger("Ёб тв-"))
+			new /obj/effect/gibspawner/human/bodypartless(get_turf(jill))
+			O.dismember()
 		flash_color(jill, flash_color = "#FF0000", flash_time = 100)
 
 /obj/item/reverse_bear_trap/proc/reset()

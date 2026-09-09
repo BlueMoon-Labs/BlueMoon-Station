@@ -84,7 +84,9 @@
             if(!M.client || isnewplayer(M))
                 continue
             var/T = get_turf(user)
-            if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+            // prefs может ещё не быть в первые тики после входа.
+            var/chat_toggles = M.client.prefs ? M.client.prefs.chat_toggles : TOGGLES_DEFAULT_CHAT
+            if(M.stat == DEAD && (chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
                 M.show_message(dchatmsg)
 
     if(emote_type == EMOTE_AUDIBLE)
@@ -215,11 +217,12 @@
 
 /datum/emote/sound/can_run_emote(mob/living/user, status_check, intentional = FALSE)
 	. = ..()
-
 	// Check parent return
 	if(!.)
 		return FALSE
 
+	if(!emote_cooldown)
+		user?.nextsoundemote = initial(user?.nextsoundemote)
 	// Check cooldown
 	if(user?.nextsoundemote >= world.time)
 		return FALSE

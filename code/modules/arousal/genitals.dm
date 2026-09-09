@@ -87,27 +87,33 @@
 		genital_flags &= ~(GENITAL_THROUGH_CLOTHES|GENITAL_HIDDEN|GENITAL_UNDIES_HIDDEN)
 	if(owner)
 		owner.exposed_genitals -= src
+	// update = FALSE ставят исключительно вызовы из get_features(), то есть переприменение
+	// уже сохранённых в ДНК настроек, а не действие игрока. Раньше и они писали в LOG_EMOTE:
+	// в прод-раунде это дало 4217 строк из 14284 (29.5% game.log), причём все с "*no key*",
+	// потому что писались они в основном на превью-манекенах.
+	var/log_action = update && owner
 	switch(visibility)
 		if(GEN_VISIBLE_ALWAYS)
 			genital_flags |= GENITAL_THROUGH_CLOTHES
 			if(owner)
-				owner.log_message("Exposed their [src]",LOG_EMOTE)
+				if(log_action)
+					owner.log_message("Exposed their [name]",LOG_EMOTE)
 				owner.exposed_genitals += src
 		if(GEN_VISIBLE_NO_CLOTHES)
-			if(owner)
-				owner.log_message("Hid their [src] under clothes only",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] under clothes only",LOG_EMOTE)
 		if(GEN_VISIBLE_NO_UNDIES)
 			genital_flags |= GENITAL_UNDIES_HIDDEN
-			if(owner)
-				owner.log_message("Hid their [src] under underwear",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] under underwear",LOG_EMOTE)
 		if(GEN_VISIBLE_NEVER)
 			genital_flags |= GENITAL_HIDDEN
-			if(owner)
-				owner.log_message("Hid their [src] completely",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] completely",LOG_EMOTE)
 		if(GEN_ALLOW_EGG_STUFFING)
 			TOGGLE_BITFIELD(genital_flags, GENITAL_CAN_STUFF)
-			if(owner)
-				owner.log_message("Allowed toys and egg stuffing in their [src]",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Allowed toys and egg stuffing in their [name]",LOG_EMOTE)
 
 	if(update && owner && ishuman(owner)) //recast to use update genitals proc
 		var/mob/living/carbon/human/H = owner
@@ -379,6 +385,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 	for(var/L in relevant_layers) //Less hardcode
 		remove_overlay(layers_num[L])
 	remove_overlay(GENITALS_EXPOSED_LAYER)
+	remove_overlay(GENITAL_EFFECT_LAYER)
 	if(!LAZYLEN(internal_organs) || ((NOGENITALS in dna.species.species_traits) && !genital_override) || HAS_TRAIT(src, TRAIT_HUSK))
 		return
 
@@ -391,8 +398,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 		//SPLURT edit
 		if(CHECK_BITFIELD(G.genital_flags, GENITAL_CHASTENED)) //Checks if the genital's chastened
 			continue
-		//
-		if(G.is_exposed()) //Checks appropriate clothing slot and if it's through_clothes
+		if(G.is_exposed() || is_genital_forced_visible(G.slot))
 			LAZYADD(gen_index[G.layer_index], G)
 	if(has_strapon() == HAS_EXPOSED_GENITAL)
 		LAZYADD(gen_index[PENIS_LAYER_INDEX], get_strapon())
@@ -401,6 +407,8 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			LAZYADD(genitals_to_add, L)
 	if(!genitals_to_add)
 		return
+	var/mutant_string
+	var/forced_by_hardlight
 	//Now we added all genitals that aren't internal and should be rendered
 	//start applying overlays
 	for(var/layer in relevant_layers)
@@ -411,6 +419,8 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				var/obj/item/clothing/underwear/briefs/strapon/strapon = A
 				//BLUEMOON EDIT START
 				var/datum/sprite_accessory/S = GLOB.cock_shapes_list[GLOB.dildo_shape_to_cock_shape[strapon.attached_dildo.dildo_shape]]
+				mutant_string = S.mutant_part_string
+				forced_by_hardlight = is_genital_forced_visible(mutant_string)
 				var/mutable_appearance/genital_overlay = mutable_appearance(S.icon, layer = -layer)
 				genital_overlay.color = strapon.attached_dildo.color
 				genital_overlay.icon_state = "[ORGAN_SLOT_PENIS]_[S.icon_state]_[strapon.attached_dildo.dildo_size]_[1]_[layertext]"
@@ -419,9 +429,11 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				// dirty fix to render the dildo above the strap
 				if(strapon.is_exposed())
 					genital_overlay.layer = -GENITALS_EXPOSED_LAYER
+					dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 					LAZYADD(fully_exposed, genital_overlay)
 				else
 					genital_overlay.layer = -layers_num[layer]
+
 					standing += genital_overlay
 				continue
 
@@ -446,6 +458,8 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 
 			if(!S || S.icon_state == "none")
 				continue
+			mutant_string = S.mutant_part_string
+			forced_by_hardlight = is_genital_forced_visible(mutant_string)
 			var/aroused_state = G.aroused_state && S.alt_aroused
 			var/accessory_icon = S.icon
 			var/do_center = S.center
@@ -485,7 +499,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 
 			// Check if the flag is on, or the genitals are exposed with no uniform on (except for gear harness)
-			var/should_promote = (G.genital_flags & GENITAL_THROUGH_CLOTHES) || (G.is_exposed() && !(w_uniform && !istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))
+			var/should_promote = (G.genital_flags & GENITAL_THROUGH_CLOTHES) || forced_by_hardlight || (G.is_exposed() && !(w_uniform && !istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))
 			// Keep the genital rendered but hidden if player is wearing underwear that got a keep_genitals_below flag on a specific genital
 			if(G.is_exposed() && !(G.genital_flags & GENITAL_THROUGH_CLOTHES))
 				var/obj/item/clothing/under_check
@@ -509,10 +523,15 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			// While still keeping the option to render them underneath the clothing when needed
 			if(layers_num[layer] == GENITALS_FRONT_LAYER && should_promote)
 				genital_overlay.layer = -GENITALS_EXPOSED_LAYER
+				dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 				LAZYADD(fully_exposed, genital_overlay)
+				if(has_emissive_part(dna.features, G.slot))
+					LAZYADD(fully_exposed, emissive_copy(genital_overlay))
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
+				if(has_emissive_part(dna.features, G.slot))
+					standing += emissive_copy(genital_overlay)
 
 		if(LAZYLEN(standing))
 			overlays_standing[layers_num[layer]] = standing
@@ -520,10 +539,10 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 	if(LAZYLEN(fully_exposed))
 		overlays_standing[GENITALS_EXPOSED_LAYER] = fully_exposed
 		apply_overlay(GENITALS_EXPOSED_LAYER)
+		apply_overlay(GENITAL_EFFECT_LAYER)
 
 	for(var/L in relevant_layers)
 		apply_overlay(layers_num[L])
-
 
 //Checks to see if organs are new on the mob, and changes their colours so that they don't get crazy colours.
 /mob/living/carbon/human/proc/emergent_genital_call()

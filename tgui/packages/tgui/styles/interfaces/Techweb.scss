@@ -9,8 +9,31 @@
 }
 
 .Techweb__DesignIcon {
-  margin-left: 0.001rem;
-  margin-right: 0.001rem;
+  // Плитка - это голый спрайт, без фона и рамки кнопки: сетка синих коробок
+  // вокруг каждой иконки игрокам не нравится. Отступы задаёт сетка контейнера.
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+.Techweb__NodeUnlockedDesigns {
+  // Строгая сетка в один тайл: плитка крупного спрайта занимает несколько ячеек
+  // (span считается в Techweb.js), поэтому ряды не разъезжаются по вертикали.
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 32px);
+  grid-auto-rows: 32px;
+  grid-auto-flow: row dense;
+  gap: 2px;
+  justify-content: start;
+  // Крупная плитка прижата к своей ячейке, а не отцентрована по занятым:
+  // центрирование смещало её на пиксель и ряд снова читался кривым.
+  justify-items: start;
+  align-items: start;
+}
+
+.Techweb__NodeUnlockedDesigns .Techweb__DesignIcon:hover {
+  // Единственная подсветка - под курсором, чтобы было видно, к чему всплывает тултип.
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .Techweb__HeaderSection {

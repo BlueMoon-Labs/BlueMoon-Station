@@ -36,5 +36,5 @@
 
 
 /datum/unit_test/stomach/Destroy()
-	SSmobs.ignite()
+	fire_subsystem(SSmobs)
 	return ..()

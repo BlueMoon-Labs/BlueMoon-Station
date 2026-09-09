@@ -26,6 +26,43 @@ What are the archived variables for?
 	var/list/gas_archive
 	/// Native DM atmos registration guard.
 	var/dm_registered_to_ssair = FALSE
+	/// Счётчик мутаций содержимого (газы или температура) для sleeping edges:
+	/// каждый мутатор обязан его бампнуть, чтение - LINDA_turf_tile.dm. Объём
+	/// не считается: compare() его не смотрит. Переполнение float (16.7M) на
+	/// турф-миксах недостижимо за раунд.
+	var/tmp/mutation_rev = 0
+	// Мемо обходов газ-листа. Ключ - mutation_rev: его бампает каждый мутатор
+	// смеси, поэтому обычный путь правки газов кэш инвалидирует.
+	//
+	// Но "невозможно по построению" это НЕ значит, и полагаться на такую формулу
+	// нельзя. Известные обходы API: VV пишет прямо в vars[] (закрыто оверрайдом
+	// vv_edit_var ниже) и share() снимает квантово-нулевые ключи после гейта
+	// бампа - последнее сегодня безобидно, потому что удаляется меньше
+	// MOLAR_ACCURACY моля, но это свойство порога, а не конструкции. Любой новый
+	// путь записи в gases обязан либо идти через мутатор, либо бампать ревизию сам.
+	//
+	// Чисто температурные бампы дают лишние пересчёты, но ни теплоёмкость, ни
+	// сумма молей от температуры не зависят - это потеря части выигрыша, а не
+	// корректности.
+	//
+	// Зачем: осевший турф за цикл обходит собственный газ-лист около десяти раз
+	// (архив, сумма молей на пороги, compare по каждой паре, реакции, визуал), и
+	// три из них - проки, всё тело которых и есть обход. Остальные инлайнят свой
+	// обход и мимо этого мемо проходят; их закрывают нативные редукции в
+	// native_atmos_bindings.dm.
+	var/tmp/total_moles_cache = 0
+	var/tmp/total_moles_rev = -1
+	var/tmp/heat_capacity_cache = 0
+	var/tmp/heat_capacity_rev = -1
+	/// Поколение архива: растёт только когда gas_archive реально переснят.
+	/// archived_heat_capacity() зависит от архива, а не от живой смеси, и
+	/// temperature_share() зовёт её по обоим концам на каждом шере.
+	var/tmp/archive_gen = 0
+	var/tmp/archived_heat_capacity_cache = 0
+	var/tmp/archived_heat_capacity_gen = -1
+	/// mutation_rev на момент последнего снимка архива: равенство означает, что
+	/// Copy() дал бы тот же список, и аллокацию можно не делать.
+	var/tmp/archive_mutation_rev = -1
 
 /datum/gas_mixture/New(volume)
 	if (!isnull(volume))
@@ -41,7 +78,21 @@ What are the archived variables for?
 		return FALSE // please no. segfaults bad.
 	if(var_name == NAMEOF(src, gas_list_view_only))
 		return FALSE
-	return ..()
+	. = ..()
+	// VV writes straight into vars[], so an admin editing gases (or the list
+	// object wholesale, which is how the list editor applies changes) bypasses
+	// every mutator and therefore every revision bump. The memo caches below key
+	// off mutation_rev, so without this the mixture keeps serving the sum, heat
+	// capacity and overlay it had BEFORE the edit - for the rest of the round,
+	// while the VV panel cheerfully displays the new list. Invalidate everything
+	// unconditionally: a VV edit happens once and is never hot, and enumerating
+	// which vars matter is exactly the kind of list that rots.
+	if(.)
+		mutation_rev++
+		total_moles_rev = -1
+		heat_capacity_rev = -1
+		archived_heat_capacity_gen = -1
+		archive_mutation_rev = -1
 
 /datum/gas_mixture/vv_get_var(var_name)
 	. = ..()
@@ -113,6 +164,19 @@ What are the archived variables for?
 		message_admins("[key_name(usr)] modified gas mixture [REF(src)]: Changed volume to [volume].")
 		set_volume(volume)
 
+
+/// Destroy() only ever runs for a mixture somebody bothered to qdel, and most of
+/// them are never qdel-ed: remove(), copy(), the scratch mixture /turf/return_air
+/// builds for a closed tile - all of those just go out of scope and BYOND
+/// reclaims them by refcount, which runs Del() and not Destroy(). Without this
+/// hook the live count only ever went up: one round drifted from 307k to 389k
+/// registered mixtures with nothing actually leaking, so the SSair stat line and
+/// the headless benchmark were both reading a number that meant nothing.
+/// __gasmixture_unregister() is idempotent, so a qdel-ed mixture passing through
+/// Destroy() and then Del() is counted once.
+/datum/gas_mixture/Del()
+	__gasmixture_unregister()
+	return ..()
 
 /datum/gas_mixture/Destroy()
 	__gasmixture_unregister()
@@ -305,6 +369,56 @@ What are the archived variables for?
 	var/abs_temperature_delta = abs(temperature_delta)
 	var/consider_heat = abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER
 
+	// Exact hot path for cool station air. Requiring both the live and archived
+	// lists to contain only O2/N2 preserves the generic path for trace gases that
+	// were consumed or introduced after the cycle archive.
+	if(!consider_heat && length(cached_gases) == 2 && length(sharer_gases) == 2 && length(self_archive) == 2 && length(sharer_archive) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && sharer_gases[GAS_O2] && sharer_gases[GAS_N2] && self_archive[GAS_O2] && self_archive[GAS_N2] && sharer_archive[GAS_O2] && sharer_archive[GAS_N2])
+		var/our_o2 = cached_gases[GAS_O2]
+		var/their_o2 = sharer_gases[GAS_O2]
+		var/o2_delta = QUANTIZE(self_archive[GAS_O2] - sharer_archive[GAS_O2])
+		if(o2_delta > 0)
+			o2_delta *= our_coeff
+		else
+			o2_delta *= sharer_coeff
+		our_o2 -= o2_delta
+		their_o2 += o2_delta
+		cached_gases[GAS_O2] = our_o2
+		sharer_gases[GAS_O2] = their_o2
+
+		var/our_n2 = cached_gases[GAS_N2]
+		var/their_n2 = sharer_gases[GAS_N2]
+		var/n2_delta = QUANTIZE(self_archive[GAS_N2] - sharer_archive[GAS_N2])
+		if(n2_delta > 0)
+			n2_delta *= our_coeff
+		else
+			n2_delta *= sharer_coeff
+		our_n2 -= n2_delta
+		their_n2 += n2_delta
+		cached_gases[GAS_N2] = our_n2
+		sharer_gases[GAS_N2] = their_n2
+
+		var/moved_moles = o2_delta + n2_delta
+		last_share = abs(o2_delta) + abs(n2_delta)
+		if(o2_delta || n2_delta)
+			mutation_rev++
+			sharer.mutation_rev++
+		// A later neighbor in the same cycle still shares from the cycle archive,
+		// so its delta can exhaust a live component already reduced by an earlier
+		// neighbor. Match the generic path's zero/negative key cleanup exactly.
+		if(QUANTIZE(our_o2) <= 0)
+			cached_gases.Remove(GAS_O2)
+		if(QUANTIZE(our_n2) <= 0)
+			cached_gases.Remove(GAS_N2)
+		if(QUANTIZE(their_o2) <= 0)
+			sharer_gases.Remove(GAS_O2)
+		if(QUANTIZE(their_n2) <= 0)
+			sharer_gases.Remove(GAS_N2)
+		if(abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
+			var/our_moles = our_o2 + our_n2
+			var/their_moles = their_o2 + their_n2
+			return (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
+		return 0
+
 	var/old_self_heat_capacity = 0
 	var/old_sharer_heat_capacity = 0
 	if(consider_heat)
@@ -316,8 +430,6 @@ What are the archived variables for?
 
 	var/moved_moles = 0
 	var/abs_moved_moles = 0
-	var/our_moles = 0
-	var/their_moles = 0
 	var/list/zero_ours
 	var/list/zero_theirs
 
@@ -326,8 +438,7 @@ What are the archived variables for?
 	// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
 	// final mole recount into the same pass, and collect emptied ids instead of
 	// sweeping full .Copy() snapshots afterwards.
-	for(var/id in cached_gases)
-		var/ours = cached_gases[id]
+	for(var/id, ours in cached_gases)
 		var/theirs = sharer_gases[id]
 		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
 		if(delta)
@@ -347,18 +458,19 @@ What are the archived variables for?
 			sharer_gases[id] = theirs
 			moved_moles += delta
 			abs_moved_moles += abs(delta)
-		our_moles += ours
 		if(QUANTIZE(ours) <= 0)
 			LAZYADD(zero_ours, id)
-		if(!isnull(theirs))
-			their_moles += theirs
-			if(QUANTIZE(theirs) <= 0)
-				LAZYADD(zero_theirs, id)
+		if(!isnull(theirs) && QUANTIZE(theirs) <= 0)
+			LAZYADD(zero_theirs, id)
 
-	for(var/id in sharer_gases)
-		if(id in cached_gases)
+	for(var/id, theirs in sharer_gases)
+		// Key-presence test, not a value test: a gas present at exactly zero must
+		// still count as already handled by the loop above. isnull() distinguishes
+		// "missing key" from "key holding 0", which `in` also does - but as an
+		// O(1) lookup instead of a linear scan per sharer gas, in the hottest
+		// loop of the most expensive SSair phase.
+		if(!isnull(cached_gases[id]))
 			continue
-		var/theirs = sharer_gases[id]
 		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
 		if(delta)
 			if(delta > 0)
@@ -377,14 +489,15 @@ What are the archived variables for?
 			sharer_gases[id] = theirs
 			moved_moles += delta
 			abs_moved_moles += abs(delta)
-			our_moles += ours
 			if(QUANTIZE(ours) <= 0)
 				LAZYADD(zero_ours, id)
-		their_moles += theirs
 		if(QUANTIZE(theirs) <= 0)
 			LAZYADD(zero_theirs, id)
 
 	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
+		sharer.mutation_rev++
 
 	if(consider_heat)
 		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
@@ -392,21 +505,42 @@ What are the archived variables for?
 
 		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
 
 		if(new_sharer_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			sharer.temperature = (old_sharer_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / new_sharer_heat_capacity
+			sharer.mutation_rev++
 			if(abs(old_sharer_heat_capacity) > MINIMUM_HEAT_CAPACITY)
 				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
 					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
 
+	// Суммы молей обеих сторон нужны ровно для возвращаемого перепада давления, и
+	// только когда он кому-то нужен. Раньше они копились прямо в цикле по газам -
+	// два сложения и лишняя ветка на КАЖДЫЙ ключ, включая те, по которым ничего не
+	// двигалось, - хотя чаще всего результат тут же выбрасывался. Нативная свёртка
+	// снимает ту же сумму за 0.09 us против 0.64 у DM-цикла, поэтому дешевле
+	// спросить её один раз в конце, чем накапливать по дороге.
+	//
+	// Считается ДО чистки нулевых ключей: удаляются значения с QUANTIZE(x) <= 0,
+	// и снять сумму после Remove значило бы вернуть чуть другое число.
+	. = 0
+	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
+		var/our_moles = values_sum(cached_gases)
+		var/their_moles = values_sum(sharer_gases)
+		. = (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
+
+	// Ревизию бампает сама чистка, а не гейт по abs_moved_moles выше: проход, на
+	// котором ни одного моля не сдвинулось, всё равно может выкинуть ключ, и тогда
+	// мемо total_moles/heat_capacity/archive продолжало бы отдавать сумму с уже
+	// удалённым газом до следующей настоящей мутации. Инвариант простой: список
+	// изменился - ревизия изменилась.
 	if(zero_ours)
 		cached_gases.Remove(zero_ours)
+		mutation_rev++
 	if(zero_theirs)
 		sharer_gases.Remove(zero_theirs)
-
-	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
-		return (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
-	return 0
+		sharer.mutation_rev++
+	return .
 
 /// One-sided share() against an immutable template mixture (planetary atmosphere):
 /// src moves toward the template exactly as share(fresh_template_copy, coeff, coeff)
@@ -440,8 +574,7 @@ What are the archived variables for?
 	var/list/zero_ours
 
 	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	for(var/id in cached_gases)
-		var/ours = cached_gases[id]
+	for(var/id, ours in cached_gases)
 		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
 		if(delta)
 			delta *= coeff
@@ -457,10 +590,11 @@ What are the archived variables for?
 		if(QUANTIZE(ours) <= 0)
 			LAZYADD(zero_ours, id)
 
-	for(var/id in template_gases)
-		if(id in cached_gases)
+	for(var/id, template_moles in template_gases)
+		// Key presence, O(1): see the isnull() note in share() above.
+		if(!isnull(cached_gases[id]))
 			continue
-		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_moles || 0))
 		if(!delta)
 			continue
 		delta *= coeff
@@ -477,11 +611,14 @@ What are the archived variables for?
 			LAZYADD(zero_ours, id)
 
 	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
 
 	if(consider_heat)
 		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
 		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * template.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
 		// share() follows up with conductive equalization when the sharer heat
 		// capacity barely changed; replicate that against the template values
 		// through the null-sharer temperature_share path (no writes to template).

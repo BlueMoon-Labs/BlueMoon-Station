@@ -7,6 +7,7 @@
 	caliber = "shotgun"
 	projectile_type = /obj/item/projectile/bullet/shotgun_slug
 	custom_materials = list(/datum/material/iron=4000)
+	can_be_printed = FALSE
 
 /obj/item/ammo_casing/shotgun/executioner
 	name = "executioner slug"

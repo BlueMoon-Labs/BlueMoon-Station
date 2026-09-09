@@ -132,7 +132,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	// BLUEMOON EDIT START - правка видимости текстов персонажа и привязка их к ДНК
 	if (iscarbon(M))
 		var/mob/living/carbon/C = M
-		unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEEYES) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEEYES) && !isobserver(user))
+		unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEFACE) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEFACE) && !isobserver(user))
 		data["flavortext"] = (!unknown) ? (C.dna?.flavor_text || "") : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"

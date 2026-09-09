@@ -1,4 +1,8 @@
 {
+	"ollama.timeout": 180,
+	"ollama.maxTokens": 4096,
+	"ollama.contextSize": 8192,
+	"ollama.tools": false,
 	"eslint.nodePath": "./tgui/.yarn/sdks",
 	"eslint.workingDirectories": [
 		"./tgui"

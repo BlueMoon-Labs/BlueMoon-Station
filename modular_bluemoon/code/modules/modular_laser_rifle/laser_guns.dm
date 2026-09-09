@@ -94,7 +94,6 @@
 /obj/item/gun/energy/modular_laser_rifle/Initialize(mapload)
 	. = ..()
 	chat_color = DEFAULT_RUNECHAT_GUN_COLOR
-	chat_color_darkened = DEFAULT_RUNECHAT_GUN_COLOR
 	last_charge = cell.charge
 	create_weapon_mode_stuff()
 

@@ -246,7 +246,7 @@ FLOOR SAFES
 	. = ..()
 	if(mapload)
 		var/turf/T = loc
-		hide(T.intact)
+		hide(T.turf_flags & TURF_INTACT)
 
 #undef SOUND_CHANCE
 #undef BROKEN_THRESHOLD

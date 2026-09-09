@@ -408,6 +408,9 @@
 	else if(istype(target, /obj/machinery/ore_silo))
 		to_chat(src, "<span class='warning'>You cannot damage the ore silo!</span>")
 		return
+	else if(istype(target, /obj/machinery/computer/communications))
+		to_chat(src, "<span class='warning'>You cannot damage the communications console!</span>")
+		return
 	return ..()
 
 //Spawn Event

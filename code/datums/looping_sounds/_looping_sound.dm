@@ -75,6 +75,11 @@
 	sound_loop()
 	timerid = addtimer(CALLBACK(src, PROC_REF(sound_loop), world.time), mid_length, TIMER_CLIENT_TIME | TIMER_STOPPABLE | TIMER_LOOP | TIMER_DELETE_ME)
 
+// Соблазн пропускать такт, когда на нашем z нет клиентов (SSmobs.clients_by_zlevel),
+// не реализован сознательно: playsound() отдаёт звук ещё и слушателям этажом выше
+// или ниже через прозрачные турфы, а мёртвых берёт из dead_players_by_zlevel -
+// обе категории мимо этого списка, и тихий цикл стал бы слышимой регрессией.
+// Отсечка по слушателям живёт внутри playsound(), где видны все её источники сразу.
 /datum/looping_sound/proc/sound_loop(starttime)
 	if(max_loops && world.time >= starttime + mid_length * max_loops)
 		stop()
@@ -85,13 +90,19 @@
 /datum/looping_sound/proc/play(soundfile, volume_override)
 	if(!parent)
 		return
-	var/sound/S = sound(soundfile)
 	if(direct)
+		var/sound/S = sound(soundfile)
 		S.channel = SSsounds.random_available_channel()
 		S.volume = volume_override || volume //Use volume as fallback if theres no override
 		SEND_SOUND(parent, S)
-	else
-		playsound(parent, S, volume, vary, extra_range, falloff_exponent = falloff_exponent, falloff_distance = falloff_distance)
+		return
+	// Файл уходит в playsound() как есть: тот и так строит свой /sound через
+	// get_sfx(), а прежняя обёртка sound() здесь удваивала счёт датумов на
+	// каждый такт КАЖДОГО цикла в мире. Перепись раунда 10060 (Delta, 3.5 часа
+	// без игроков) насчитала 1.6 млн /sound, половина из них рождалась тут и
+	// не доезжала ни до одного клиента. Громкость, vary и extra_range и раньше
+	// приезжали отдельными аргументами playsound(), обёртка их не несла.
+	playsound(parent, soundfile, volume, vary, extra_range, falloff_exponent = falloff_exponent, falloff_distance = falloff_distance)
 
 /datum/looping_sound/proc/get_sound(starttime, _mid_sounds)
 	. = _mid_sounds || mid_sounds

@@ -54,6 +54,10 @@ if grep -P '\W\/turf\s*[,\){]' _maps/**/*.dmm; then
     echo "ERROR: base /turf path use detected in maps, please replace with proper paths."
     st=1
 fi;
+if grep -P '^/obj/effect/spawner/structure/window/\S*electrochromatic,$' _maps/**/*.dmm; then
+    echo "ERROR: electrochromatic window spawner without electrochromatic_id detected in maps, it runtimes on every round start. Set the id or use the plain tinted spawner."
+    st=1
+fi;
 if grep -P '^/*var/' code/**/*.dm; then
     echo "ERROR: Unmanaged global var use detected in code, please use the helpers."
     st=1
@@ -127,6 +131,37 @@ done
 if grep -rP --include='*.dm' --exclude='__byond_version_compat.dm' '\.proc/' code/ modular_citadel/code/ modular_sand/code/ modular_splurt/code/ modular_bluemoon/code/; then
     echo
     echo -e "${RED}ERROR: Outdated proc reference use detected in code, please use proc reference helpers.${NC}"
+    st=1
+fi;
+
+# Спрайтшиты интерфейсов собирает rust-g, а он открывает .dmi файлом по буквальному пути
+# из кода. Компилятор BYOND к регистру нетребователен и вдобавок умеет находить файл не
+# по тому пути, что написан, поэтому такая ссылка собирается без единого предупреждения -
+# а на боевой машине с чувствительной к регистру ФС rust её молча не открывает: спрайты
+# пропадают, а кросс-раундовый кэш листа не сходится каждый раунд. CI живёт на Linux,
+# так что достаточно проверить, что файл существует ровно по написанному пути.
+#
+# Ругаемся только на расхождение регистра: путь, которого на диске нет вовсе, - это
+# либо пример из комментария, либо отключённый код, и до рантайма он не доживает.
+declare -A icon_index
+while IFS= read -r real_icon; do
+    icon_index["${real_icon,,}"]="$real_icon"
+done < <(find . -name '*.dmi' -not -path './.git/*' | sed 's|^\./||')
+
+# Модульные деревья берём целиком: код лежит не только в их code/ (см. modular_bluemoon/Ren/Code).
+# Пустой дефолт обязателен: скрипт идёт под set -u, и обращение к отсутствующему ключу
+# ассоциативного массива без него роняет весь линт.
+miscased_icons=$(grep -rhoP --include='*.dm' "'[^']+\.dmi'" code/ modular_citadel/ modular_sand/ modular_splurt/ modular_bluemoon/ 2>/dev/null \
+    | tr -d "'" | sort -u | while read -r icon_path; do
+        real_icon="${icon_index[${icon_path,,}]:-}"
+        if [ ! -f "$icon_path" ] && [ -n "$real_icon" ]; then
+            echo "  $icon_path -> $real_icon"
+        fi
+    done || true)
+if [ -n "$miscased_icons" ]; then
+    echo
+    echo -e "${RED}ERROR: These .dmi references differ from the file on disk only by case:${NC}"
+    echo "$miscased_icons"
     st=1
 fi;
 

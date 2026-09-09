@@ -64,7 +64,3 @@
 /datum/gear/donator/suit/spacehoodie
 	name = "Space Hoodie"
 	path = /obj/item/clothing/suit/spacehoodie
-
-/datum/gear/donator/suit/hospitaller
-	name = "Crusader costume"
-	path = /obj/item/clothing/suit/armor/riot/chaplain/hospitaller/loadout

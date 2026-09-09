@@ -47,6 +47,17 @@
 	wound_resistance = 10
 	scars_covered_by_clothes = FALSE
 
+/// Отрезанная голова хранит мозг, мозгомоба и глаза жёсткими ссылками. Своего
+/// Destroy у неё не было, поэтому qdel головы уводил содержимое в qdel штатным
+/// contents-циклом /atom/movable/Destroy, но три поля оставались забиты
+/// покойниками - одна голова тянула за собой три hard delete.
+/obj/item/bodypart/head/Destroy()
+	// Сначала родитель: он и уносит содержимое головы в qdel.
+	. = ..()
+	brainmob = null
+	brain = null
+	eyes = null
+
 /obj/item/bodypart/head/can_dismembered()
 	if(owner && !((owner.stat == DEAD) || owner.InFullCritical()))
 		return FALSE
@@ -72,6 +83,10 @@
 			if(istype(I, /obj/item/reagent_containers/pill))
 				for(var/datum/action/item_action/hands_free/activate_pill/AP in I.actions)
 					qdel(AP)
+			// Глаза уезжают из головы наравне с остальным содержимым, но поле eyes
+			// оставалось на них ссылкой: голова жила дальше и держала орган.
+			if(I == eyes)
+				eyes = null
 			I.forceMove(T)
 
 /obj/item/bodypart/head/update_limb(dropping_limb, mob/living/carbon/source)

@@ -1,8 +1,14 @@
+#define SPACE_COLORS_TOKEN "space_colors"
+
 /// Молекулярное облако (порт идеи goonstation "Pretty Space"): станция несколько минут
 /// дрейфует сквозь разреженное облако межзвёздной пыли, и космос за иллюминаторами
 /// плавно переливается необычными оттенками. Тихий младший брат авроры и кометного
-/// пояса: без музыки, пацифизма и хореографии - только мягкая тонировка параллакса
-/// тем же приёмом, что glow кометного пояса (фуллскрин-оверлей на PLANE_SPACE_PARALLAX).
+/// пояса: без музыки, пацифизма и хореографии - только мягкая тонировка параллакса.
+///
+/// Тонировка идёт слоем профиля через стек модификаторов SSparallax. Раньше событие
+/// само вело список клиентов, каждый тик искало опоздавших и держало отдельный
+/// список сирот от отключившихся - всё это теперь делает держатель параллакса,
+/// потому что слой лежит в сцене z-уровня, а не навешен на клиента вручную.
 /datum/round_event_control/space_colors
 	name = "Molecular Cloud"
 	typepath = /datum/round_event/space_colors
@@ -19,10 +25,8 @@
 	start_when = 5
 	end_when = 150
 	fakeable = FALSE
-	/// client -> оверлей тонировки
-	var/list/tint_overlays = list()
-	/// Все созданные оверлеи, включая сирот от отключившихся клиентов
-	var/list/all_overlay_objects = list()
+	/// z-уровни, на которые положен модификатор
+	var/list/tinted_z_levels = list()
 	/// Выбранная на раунд палитра и позиция в ней
 	var/list/palette
 	var/palette_index = 1
@@ -43,61 +47,47 @@
 		sender_override = "Отдел Астрономии NanoTrasen")
 
 /datum/round_event/space_colors/start()
-	for(var/client/C in GLOB.clients)
-		if(!C.mob || !is_station_level(C.mob.z))
-			continue
-		add_tint(C)
+	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		SSparallax.add_modifier(
+			station_z,
+			SPACE_COLORS_TOKEN,
+			extra_layers = list(/atom/movable/screen/parallax_layer/tint/molecular_cloud),
+			tint = palette[palette_index],
+			priority = PARALLAX_PRIORITY_EVENT,
+		)
+		tinted_z_levels += station_z
 
 /datum/round_event/space_colors/tick()
-	// Подключаем тех, кто прилетел на станцию или залогинился после старта
-	for(var/client/C in GLOB.clients)
-		if(tint_overlays[C])
-			continue
-		if(!C.mob || !is_station_level(C.mob.z))
-			continue
-		add_tint(C)
-	// Смена оттенка примерно каждые 40 секунд. Альфу тянем вместе с цветом:
-	// animate() перезаписывает очередь анимаций, и без alpha смена оттенка
-	// замораживала бы недоигранный fade-in на полпути.
-	if(activeFor % 20 == 0)
-		palette_index = (palette_index % length(palette)) + 1
-		var/next_color = palette[palette_index]
-		for(var/client/C in tint_overlays)
-			var/atom/movable/screen/space_colors_tint/tint = tint_overlays[C]
-			if(tint)
-				animate(tint, color = next_color, alpha = 45, time = 30 SECONDS)
+	// Смена оттенка примерно каждые 40 секунд. Тянем цвет прямо на живых слоях:
+	// пересборка сцены оборвала бы переход у всех разом.
+	if(activeFor % 20)
+		return
+	palette_index = (palette_index % length(palette)) + 1
+	var/next_color = palette[palette_index]
+	for(var/station_z in tinted_z_levels)
+		SSparallax.animate_tint(station_z, SPACE_COLORS_TOKEN, next_color, 30 SECONDS)
 
 /datum/round_event/space_colors/end()
-	for(var/client/C in tint_overlays)
-		var/atom/movable/screen/space_colors_tint/tint = tint_overlays[C]
-		if(tint)
-			animate(tint, alpha = 0, time = 8 SECONDS)
-	// Очистка после того, как fade-out отыграл
-	addtimer(CALLBACK(src, PROC_REF(final_cleanup)), 10 SECONDS)
+	for(var/station_z in tinted_z_levels)
+		SSparallax.fade_out_modifier(station_z, SPACE_COLORS_TOKEN, 8 SECONDS)
+	tinted_z_levels.Cut()
 
-/datum/round_event/space_colors/proc/add_tint(client/C)
-	var/atom/movable/screen/space_colors_tint/tint = new
-	tint.color = palette[palette_index]
-	tint_overlays[C] = tint
-	all_overlay_objects += tint
-	C.screen += tint
-	animate(tint, alpha = 45, time = 10 SECONDS)
-
-/datum/round_event/space_colors/proc/final_cleanup()
-	for(var/client/C in tint_overlays)
-		C.screen -= tint_overlays[C]
-	for(var/atom/movable/tint as anything in all_overlay_objects)
-		qdel(tint)
-	all_overlay_objects.Cut()
-	tint_overlays.Cut()
-
-/// Тонировка космоса: аддитивный фуллскрин-оверлей, красящий только план параллакса
-/atom/movable/screen/space_colors_tint
+/// Тонировка космоса: аддитивный фуллскрин-фильтр на плане параллакса.
+/// Красится палитрой профиля, поэтому palette_tinted; своей позиции не имеет,
+/// поэтому OVERLAY.
+/atom/movable/screen/parallax_layer/tint
 	icon = 'icons/mob/screen_gen.dmi'
 	icon_state = "flash"
-	alpha = 0
+	alpha = 45
 	screen_loc = "WEST,SOUTH to EAST,NORTH"
-	plane = PLANE_SPACE_PARALLAX
-	layer = 4 // ниже glow кометного пояса: при наложении событий кометы главнее
 	blend_mode = BLEND_ADD
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer_mode = PARALLAX_MODE_OVERLAY
+	palette_tinted = TRUE
+	parallax_intensity = PARALLAX_LOW
+	fade_in_time = 10 SECONDS
+
+/// Ниже glow кометного пояса: при наложении событий кометы главнее.
+/atom/movable/screen/parallax_layer/tint/molecular_cloud
+	layer = 4
+
+#undef SPACE_COLORS_TOKEN

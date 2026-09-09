@@ -9,6 +9,7 @@
 	var/owned = 0	//Boolean, no owner to begin with
 	var/mobtype = /mob/living/simple_animal/hostile/carp //So admins can change what mob spawns via var fuckery
 	can_random_spawn = FALSE
+	force = 30
 
 //Attack self
 /obj/item/toy/plush/carpplushie/dehy_carp/attack_self(mob/user)
@@ -36,6 +37,10 @@
 		return
 	//Make space carp
 	var/mob/living/M = new mobtype(get_turf(src))
+	if(istype(M, /mob/living/simple_animal))
+		var/mob/living/simple_animal/animal = M
+		animal.melee_damage_lower = 30
+		animal.melee_damage_upper = 30
 	//Make carp non-hostile to user, and their allies
 	if(owner)
 		var/list/factions = owner.faction.Copy()

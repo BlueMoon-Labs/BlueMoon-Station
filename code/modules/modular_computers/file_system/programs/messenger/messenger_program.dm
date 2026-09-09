@@ -8,7 +8,7 @@
 	if(!length(GLOB.cached_emoji_list))
 		GLOB.cached_emoji_list = list()
 		GLOB.cached_emoji_base64 = list()
-		var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 		for(var/sprite_name in sheet.sprites)
 			if(findtextEx(sprite_name, "emoji-") == 1)
 				var/emoji_name = copytext(sprite_name, 7)
@@ -139,23 +139,11 @@
 /datum/computer_file/program/messenger/proc/get_messengers()
 	var/list/dictionary = list()
 	var/list/unsorted = list()
-
-	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
-		if(pda_device == computer)
+	var/own_ref = REF(src)
+	for(var/list/entry as anything in get_messenger_directory())
+		if(entry["ref"] == own_ref)
 			continue
-		if(pda_device.toff || pda_device.hidden)
-			continue
-		if(!pda_device.saved_identification && !pda_device.saved_job)
-			continue
-		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
-		if(!istype(messenger) || messenger.invisible)
-			continue
-
-		var/list/data = list()
-		data["name"] = pda_device.saved_identification || "Unknown"
-		data["job"] = pda_device.saved_job || "Unknown"
-		data["ref"] = REF(messenger)
-		unsorted += list(data)
+		unsorted += list(entry)
 
 	if(sort_by_job)
 		sortTim(unsorted, /proc/cmp_list_data_job)
@@ -166,6 +154,32 @@
 		dictionary[entry["ref"]] = entry
 
 	return dictionary
+
+GLOBAL_LIST_EMPTY(pda_messenger_directory)
+GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
+
+/// Список видимых мессенджеров общий для всех открытых окон: SStgui опрашивает каждое
+/// раз в секунду, и обход всех ПДА с get_all_files() на каждое окно не нужен.
+/proc/get_messenger_directory()
+	if(GLOB.pda_messenger_directory_time == world.time)
+		return GLOB.pda_messenger_directory
+	var/list/directory = list()
+	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
+		if(pda_device.toff || pda_device.hidden)
+			continue
+		if(!pda_device.saved_identification && !pda_device.saved_job)
+			continue
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
+		if(!istype(messenger) || messenger.invisible)
+			continue
+		var/list/data = list()
+		data["name"] = pda_device.saved_identification || "Unknown"
+		data["job"] = pda_device.saved_job || "Unknown"
+		data["ref"] = REF(messenger)
+		directory += list(data)
+	GLOB.pda_messenger_directory = directory
+	GLOB.pda_messenger_directory_time = world.time
+	return directory
 
 /// Checks if the person can send an everyone message
 /datum/computer_file/program/messenger/proc/can_send_everyone_message()
@@ -393,6 +407,9 @@
 	static_data["is_silicon"] = issilicon(user)
 	static_data["remote_silicon"] = FALSE
 	static_data["alert_able"] = alert_able
+	static_data["ringtone_list"] = GLOB.pda_ringtone_list
+	static_data["emoji_list"] = get_emoji_list()
+	static_data["emoji_base64"] = get_emoji_base64()
 	return static_data
 
 /datum/computer_file/program/messenger/ui_data(mob/user)
@@ -421,22 +438,15 @@
 	data["stored_photos"] = list()
 	data["selected_photo_path"] = null
 	data["on_spam_cooldown"] = !can_send_everyone_message()
-	data["ringtone_list"] = GLOB.pda_ringtone_list
 	data["current_ringtone"] = ringtone
-	data["emoji_list"] = get_emoji_list()
-	data["emoji_base64"] = get_emoji_base64()
 
 	var/obj/item/modular_computer/pda/pda_device = computer
 	if(istype(pda_device) && pda_device.picture)
 		data["has_scanned_photo"] = TRUE
 		var/datum/picture/pic = pda_device.picture
-		if(pic && pic.picture_image)
-			var/icon/img = pic.picture_image
-			var/base64 = icon2base64(img)
-			if(base64)
-				data["selected_photo_path"] = "data:image/png;base64,[base64]"
-			else
-				data["selected_photo_path"] = null
+		var/base64 = pic?.get_base64()
+		if(base64)
+			data["selected_photo_path"] = "data:image/png;base64,[base64]"
 		else
 			data["selected_photo_path"] = null
 	else
@@ -553,12 +563,10 @@
 	var/obj/item/modular_computer/pda/pda_device = computer
 	if(istype(pda_device) && pda_device.picture)
 		var/datum/picture/pic = pda_device.picture
-		if(pic && pic.picture_image)
-			var/icon/img = pic.picture_image
-			var/base64 = icon2base64(img)
-			if(base64)
-				photo_path = "data:image/png;base64,[base64]"
-				photo_asset = photo_path
+		var/base64 = pic?.get_base64()
+		if(base64)
+			photo_path = "data:image/png;base64,[base64]"
+			photo_asset = photo_path
 			pda_device.picture = null
 
 	if(admin_photo_url)
@@ -568,6 +576,8 @@
 
 	message = sanitize_pda_message(message, sender)
 	if(!message && !photo_path)
+		if(mime_mode && sender)
+			to_chat(sender, span_notice("PDA мима отправляет только эмодзи и фотографии. Выберите эмодзи кнопкой в чате или прикрепите фото; обычный текст удаляется."))
 		return FALSE
 
 	// Filter targets

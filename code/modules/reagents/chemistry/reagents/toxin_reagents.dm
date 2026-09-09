@@ -93,7 +93,7 @@
 /datum/reagent/toxin/plasma/reaction_turf(turf/open/T, reac_volume)
 	if(istype(T))
 		var/temp = holder ? holder.chem_temp : T20C
-		T.atmos_spawn_air("plasma=[reac_volume];TEMP=[temp]")
+		T.atmos_spawn_air("plasma=[reac_volume/2];TEMP=[temp]")
 	return
 
 /datum/reagent/toxin/plasma/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)//Splashing people with plasma is stronger than fuel!
@@ -536,7 +536,7 @@
 	color = "#64916E"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
-	overdose_threshold = 5
+	overdose_threshold = 6
 	var/static/list/overdose_phrases = list(
 		"Я не могу дышать",
 		"Они убьют меня. Они убьют меня",

@@ -1,11 +1,9 @@
-/datum/asset/spritesheet/sheetmaterials
+/datum/asset/spritesheet_batched/sheetmaterials
 	name = "sheetmaterials"
 
-/datum/asset/spritesheet/sheetmaterials/register()
-	// Insert polycrystal from telescience first so it won't be duplicated when stacking from stack_objects.dmi
-	Insert("polycrystal", 'icons/obj/telescience.dmi', "polycrystal")
-	for (var/icon_state_name in icon_states('icons/obj/stack_objects.dmi'))
-		if (icon_state_name == "polycrystal")
-			continue
-		Insert(icon_state_name, 'icons/obj/stack_objects.dmi', icon_state_name)
-	..()
+/datum/asset/spritesheet_batched/sheetmaterials/create_spritesheets()
+	insert_all_icons("", 'icons/obj/stack_objects.dmi')
+	// polycrystal живёт в телесайенсе, а не в stack_objects.dmi. Вставляем его после
+	// общего прохода: если одноимённый стейт когда-нибудь появится в stack_objects.dmi,
+	// приоритет останется за телесайенсом - ровно как на старом DM-пути.
+	insert_icon("polycrystal", uni_icon('icons/obj/telescience.dmi', "polycrystal"))

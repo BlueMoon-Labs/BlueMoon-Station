@@ -14,7 +14,7 @@
 	var/static/list/acceptable_spawns = list("xeno_spawn", "generic event spawn", "blobstart", "Assistant")
 
 /datum/round_event/gremlin/announce()
-	priority_announce("Bioscans indicate that some gremlins entered through the vents. Deal with them!", "Gremlin Alert", 'sound/announcer/classic/attention.ogg')
+	priority_announce("Биосканирование показывает, что через вентиляцию проникли гремлины. Разберись с ними!", "ГРЕМЛИНЫ, СУКА, ГРЕМЛИНЫ", 'sound/announcer/classic/attention.ogg')
 
 /datum/round_event/gremlin/start()
 

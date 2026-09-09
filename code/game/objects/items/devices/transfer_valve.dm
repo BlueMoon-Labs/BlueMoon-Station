@@ -239,9 +239,12 @@
 	it explodes properly when it gets a signal (and it does).
 */
 /obj/item/transfer_valve/proc/toggle_valve()
+	var/turf/bombturf = get_turf(src)
+	if (bombturf && is_pact_siege_level(bombturf.z))
+		balloon_alert(src.loc, "You cannot detonate this bomb in SIEGE territory!")
+		return
 	if(!valve_open && tank_one && tank_two)
 		valve_open = TRUE
-		var/turf/bombturf = get_turf(src)
 
 		var/attachment
 		if(attached_device)

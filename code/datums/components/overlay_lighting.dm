@@ -504,7 +504,7 @@
 	var/turf/scanning = get_turf(current_holder)
 	for(var/i in 1 to final_distance)
 		var/turf/next_turf = get_step(scanning, current_direction)
-		if(isnull(next_turf) || next_turf.opacity || next_turf.has_opaque_atom)
+		if(isnull(next_turf) || next_turf.opacity || (next_turf.lighting_flags & TURF_HAS_OPAQUE_ATOM))
 			final_distance = i
 			break
 		scanning = next_turf

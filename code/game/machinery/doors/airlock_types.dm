@@ -234,9 +234,22 @@
 	icon = 'icons/obj/doors/airlocks/station/plasma.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_plasma
 
+/obj/machinery/door/airlock/plasma/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
+
 /obj/machinery/door/airlock/plasma/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		PlasmaBurn(exposed_temperature)
+
+// Contact with a flame keeps the old 300 K trigger; hot air alone needs a room
+// that could burn on its own, or lavaland ambient would light every plasma door
+// on the planetoid.
+/obj/machinery/door/airlock/plasma/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/machinery/door/airlock/plasma/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	PlasmaBurn(exposed_temperature)
 
 /obj/machinery/door/airlock/plasma/proc/ignite(exposed_temperature)
 	if(exposed_temperature > 300)

@@ -112,8 +112,11 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 /mob/living/simple_animal/hostile/megafauna/legion/proc/create_legion_skull()
 	var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/legion/A = new(loc)
 	A.GiveTarget(target)
-	A.friends = friends
-	A.faction = faction
+	// Копиями, а не ссылками: иначе каждый череп и сам легион делят ОДИН список, и удалённый
+	// череп остаётся в нём записанным - живая ссылка на моба до конца раунда. Хайвлорд,
+	// с которого этот код списан, копию делает (mining_mobs/hivelord.dm).
+	A.friends = friends?.Copy()
+	A.faction = faction?.Copy()
 
 //CHARGE
 

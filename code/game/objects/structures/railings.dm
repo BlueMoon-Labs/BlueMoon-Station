@@ -109,7 +109,7 @@
 	. = ..()
 	if(get_dir(loc, target) & dir)
 		var/checking = FLYING | FLOATING
-		return . || mover.throwing || mover.movement_type & checking
+		return . || mover.throwing || mover.movement_type & checking || (mover.pass_flags & PASSJUMP)
 	return TRUE
 
 /obj/structure/railing/corner/CanPass()
@@ -120,7 +120,7 @@
 	..()
 	if(get_dir(loc, target) & dir)
 		var/checking = PHASING | FLYING | FLOATING
-		return !density || mover.throwing || mover.movement_type & checking || mover.move_force >= MOVE_FORCE_EXTREMELY_STRONG
+		return !density || mover.throwing || mover.movement_type & checking || mover.move_force >= MOVE_FORCE_EXTREMELY_STRONG || (mover.pass_flags & PASSJUMP)
 	return TRUE
 
 /obj/structure/railing/corner/CheckExit()

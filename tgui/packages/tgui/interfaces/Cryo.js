@@ -67,7 +67,7 @@ const CryoContent = (props) => {
               </LabeledList.Item>
               {(damageTypes.map(damageType => (
                 <LabeledList.Item
-                  key={damageType.id}
+                  key={damageType.type}
                   label={damageType.label}>
                   <ProgressBar
                     value={data.occupant[damageType.type]/100}>

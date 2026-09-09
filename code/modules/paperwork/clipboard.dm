@@ -88,12 +88,18 @@
 		. += "clipboard_pen"
 	. += "clipboard_over"
 
-/obj/item/clipboard/attack_hand(mob/user, act_intent)
-	if(act_intent != INTENT_HELP)
-		var/obj/item/paper/toppaper = toppaper_ref?.resolve()
-		remove_paper(toppaper, user)
-		return TRUE
-	. = ..()
+/**
+ * Правый клик снимает верхнюю бумагу - ровно так, как обещает examine().
+ *
+ * Возвращаем FALSE, когда бумаги нет: тогда клик проваливается в обычный attack_hand,
+ * и планшет просто берётся в руку (в том числе из рюкзака или сумки).
+ */
+/obj/item/clipboard/alt_attack_hand(mob/user)
+	var/obj/item/paper/toppaper = toppaper_ref?.resolve()
+	if(!toppaper)
+		return FALSE
+	remove_paper(toppaper, user)
+	return TRUE
 
 /obj/item/clipboard/attackby(obj/item/weapon, mob/user, params)
 	var/obj/item/paper/toppaper = toppaper_ref?.resolve()

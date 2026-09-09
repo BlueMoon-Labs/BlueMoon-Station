@@ -78,4 +78,6 @@
 	armor = list(MELEE = 25, BULLET = 25, LASER = 50, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
 
 /obj/structure/blob/shield/reflective/check_projectile_ricochet(obj/item/projectile/P)
-	return PROJECTILE_RICOCHET_FORCE
+	if(istype(P, /obj/item/projectile/beam/xray) || (P.flag in list(LASER, ENERGY) && is_energy_reflectable_projectile(P)))
+		return PROJECTILE_RICOCHET_FORCE
+	return ..()

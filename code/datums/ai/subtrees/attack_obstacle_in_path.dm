@@ -52,8 +52,39 @@
 			return blocker
 	return null
 
-///TRUE если на этом шаге стоит живой моб, которого паун может атаковать (враг-body-block).
-///Мовер по этому флагу НЕ обходит блокера, а держит позицию под удар attack_obstacle.
+///Плотное пристёгнутое тело без сознания (труп на стуле) на этом турфе, либо null.
+///Такой блокер не цель (CanAttack режет мёртвых) и не "толпа, которая разойдётся":
+///пристёгнутое бессознательное тело не освободит тайл никогда. Игрок снимает его
+///одним кликом - пауну нужен тот же глагол, иначе это неразрушимая стена от NPC.
+/proc/ai_seated_body_blocker(mob/living/pawn, turf/step)
+	if(!step)
+		return null
+	for(var/mob/living/blocker in step)
+		if(blocker == pawn || !blocker.density || !blocker.buckled)
+			continue
+		if(blocker.stat < UNCONSCIOUS)
+			continue
+		if(pawn.see_invisible < blocker.invisibility)
+			continue
+		return blocker
+	return null
+
+///Тело-баррикада на следующем шаге пути к цели, либо null. Саму цель не считаем
+///баррикадой - до неё паун "доходит" атакой, а не отстёгиванием.
+/proc/ai_body_barricade_mob(mob/living/pawn, atom/target)
+	if(QDELETED(target))
+		return null
+	var/turf/next_step = ai_next_path_step(pawn, target)
+	if(!next_step || !next_step.Adjacent(pawn))
+		return null
+	var/mob/living/blocker = ai_seated_body_blocker(pawn, next_step)
+	if(blocker == target)
+		return null
+	return blocker
+
+///TRUE если на этом шаге стоит живой моб, которого паун может атаковать
+///(враг-body-block), либо пристёгнутое тело-баррикада, которое он умеет отстегнуть.
+///Мовер по этому флагу НЕ обходит блокера, а держит позицию под расчистку.
 /proc/ai_step_blocker_attackable(mob/living/pawn, turf/step)
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(!istype(hostile_pawn) || !step)
@@ -63,7 +94,7 @@
 			continue
 		if(hostile_pawn.CanAttack(blocker))
 			return TRUE
-	return FALSE
+	return !!ai_seated_body_blocker(pawn, step)
 
 /// If there's something between us and our target then we need to queue a behaviour to make it not be there
 /datum/ai_planning_subtree/attack_obstacle_in_path
@@ -80,8 +111,25 @@
 
 	//живой атакуемый блокер (враг, перегородивший телом путь) важнее стены: моб
 	//пробивает его, а не обходит - иначе body-block против мобов не работает.
+	//Проверяется ДО предметного гейта ниже: враг, вставший на пути к добыче, -
+	//законная цель удара независимо от того, что моб шёл за предметом.
 	if(ai_path_blocker_mob(controller.pawn, target))
 		controller.queue_behavior(/datum/ai_behavior/attack_path_blocker, target_key)
+		return
+
+	//Труп на стуле - не цель и не толпа: пристёгнутое тело не освободит тайл
+	//само (репорт: "трупики на стул садят и защищаются от ботов"). Отстёгивание
+	//ничего не ломает, поэтому предметный гейт ниже его не касается.
+	if(ai_body_barricade_mob(controller.pawn, target))
+		controller.queue_behavior(/datum/ai_behavior/clear_body_barricade, target_key)
+		return
+
+	//Ломать окружение можно ради добычи, но не ради ХЛАМА. Мобы с
+	//search_objects/wanted_objects (гусь за мусором, watcher за алмазом,
+	//голдграб за рудой, майнбот в режиме сбора) целью делают предмет, и без
+	//этого гейта они вскрывали шлюзы, чтобы подобрать его. Живые цели, мехи и
+	//машинерия остаются законным поводом пробиваться.
+	if(isitem(target))
 		return
 
 	if(!ai_get_blocked_path_turf(controller.pawn, target))
@@ -160,3 +208,33 @@
 	living_pawn.setDir(get_dir(living_pawn, blocker))
 	INVOKE_ASYNC(blocker, TYPE_PROC_REF(/atom, attack_animal), living_pawn)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+///Расчистить тело-баррикаду: отстегнуть пристёгнутый труп с пути тем же глаголом,
+///каким пользуется игрок (user_unbuckle_mob). Кулдаун совпадает с AI_UNBUCKLE_COOLDOWN:
+///часть оверрайдов отстёгивания спит в do_after, чаще дёргать бессмысленно.
+/datum/ai_behavior/clear_body_barricade
+	action_cooldown = AI_UNBUCKLE_COOLDOWN
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/clear_body_barricade/perform(delta_time, datum/ai_controller/controller, target_key)
+	var/mob/living/living_pawn = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(!isliving(living_pawn) || QDELETED(target))
+		controller.blackboard[BB_AI_BARRICADE_TUGS] = 0
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/mob/living/blocker = ai_body_barricade_mob(living_pawn, target)
+	if(QDELETED(blocker) || !blocker.buckled)
+		controller.blackboard[BB_AI_BARRICADE_TUGS] = 0
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED //тайл свободен - дальше обычный шаг
+	var/tugs = controller.blackboard[BB_AI_BARRICADE_TUGS] || 0
+	if(tugs >= AI_BARRICADE_UNBUCKLE_ATTEMPTS)
+		//крепление не поддаётся - копим фрустрацию, пусть скорер/поиск целей решают
+		controller.blackboard[BB_AI_BARRICADE_TUGS] = 0
+		controller.note_move_failure()
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	controller.blackboard[BB_AI_BARRICADE_TUGS] = tugs + 1
+	living_pawn.setDir(get_dir(living_pawn, blocker))
+	log_combat(living_pawn, blocker, "unbuckled as a path obstacle")
+	//user_unbuckle_mob местами спит в do_after - из поведения зовём только асинхронно
+	INVOKE_ASYNC(blocker.buckled, TYPE_PROC_REF(/atom/movable, user_unbuckle_mob), blocker, living_pawn)
+	return AI_BEHAVIOR_DELAY

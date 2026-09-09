@@ -96,9 +96,9 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 
 /mob/living/carbon/alien/humanoid/alien_evolve(mob/living/carbon/alien/humanoid/new_xeno)
 	drop_all_held_items()
-	for(var/atom/movable/A in stomach_contents)
-		stomach_contents.Remove(A)
-		new_xeno.stomach_contents.Add(A)
+	for(var/atom/movable/A in stomach_contents.Copy())
+		remove_from_stomach(A)
+		new_xeno.add_to_stomach(A)
 		A.forceMove(new_xeno)
 	..()
 

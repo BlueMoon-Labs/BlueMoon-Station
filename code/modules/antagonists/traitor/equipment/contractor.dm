@@ -253,9 +253,18 @@
 	desc = "A handheld tracking device that locks onto certain signals. Ignores suit sensors, but is much less accurate."
 	icon_state = "pinpointer_hunter"
 	item_state = "pinpointer_black"
-	minimum_range = 10
+	var/imprecise_range = 10
 	has_owner = TRUE
 	ignore_suit_sensor_level = TRUE
+
+/obj/item/pinpointer/crew/contractor/Initialize(mapload)
+	. = ..()
+	minimum_range = imprecise_range
+
+/obj/item/pinpointer/crew/contractor/scan_for_target()
+	if(ishuman(target))
+		update_person_tracking_precision(target, imprecise_range)
+	return ..()
 
 /obj/item/storage/box/contractor/fulton_extraction
 	name = "Fulton Extraction Kit"

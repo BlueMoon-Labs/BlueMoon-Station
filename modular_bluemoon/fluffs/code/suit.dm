@@ -475,6 +475,36 @@
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
 
+// Спрайты принадлежат cnaperdodo
+// /obj/item/clothing/head/donator/bm/hood_armored
+// 	name = "Большой капюшон"
+// 	desc = "Большой капюшон, используемый террористами и контробандистами для маскировки. Обеспечивает некоторую защиту головы благодаря прочным волокнам, используемым при производстве."
+// 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_hood_armored.dmi'
+// 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_hood_armored.dmi'
+// 	icon_state = "hood_armored"
+// 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+// 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+// 	item_state = "empire_head"
+// 	body_parts_covered = HEAD
+// 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+// 	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 20, ACID = 0)
+// 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+// Спрайты принадлежат cnaperdodo
+// /obj/item/clothing/suit/armor/donator/bm/rebel_armor
+// 	name = "Кольчуга контрабандистов"
+// 	desc = "Кольчуга контрабандистов, изготовленная из вареной кожи и некоторых современных бронепластин. Хотя это не самый мощный вид брони и примитивный по сравнению с большинством современных брони, он обеспечивает почти идеальную мобильность, что соответствует потребностям местных колонистов. Его также быстро надевают, легко прячут и дешево изготавливают в больших мастерских."
+// 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_rebel_armor.dmi'
+// 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_rebel_armor.dmi'
+// 	icon_state = "rebel_armor_full"
+// 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+// 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+// 	item_state = "officer_armor"
+// 	body_parts_covered = CHEST|GROIN
+// 	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 15, BOMB = 20, BIO = 10, RAD = 0, FIRE = 30, ACID = 20)
+// 	slowdown = 0
+// 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
     name = "Expensive trenchcoat"
     desc = "A coat designed for exploring hostile planets. Explore new worlds in style!"
@@ -812,3 +842,218 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/hooded/wintercoat/mountaineering_jacket
+    name = "Mountaineering jacket"
+    desc = "A jacket made from dense, high-quality material. The label reads: “Made in Tarkov.” A second label bears the inscription “Harr.” It brings back memories of a man known by the nickname Shturman."
+    icon_state = "mountaineering_jacket"
+    item_state = "mountaineering_jacket"
+    icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+    mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+    hoodtype = /obj/item/clothing/head/hooded/winterhood/mountaineering_jacket
+
+/obj/item/clothing/head/hooded/winterhood/mountaineering_jacket
+    name = "Mountaineering hood"
+    desc = "A hood attached to a heavy mountaineering jacket."
+    icon_state = "mountaineering_hood"
+
+/obj/item/clothing/head/helmet/sec/wypmchelmet
+	name = "Arctic PMC helmet"
+	desc = "A helmet used by a private paramilitary organization, featuring an insulated design for cold climates. It includes an additional covering to provide protection against harsh acids."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "wypmc_helmet"
+	item_state = "wypmc_helmet"
+
+/obj/item/modkit/wypmchelmet
+	name = "Arctic PMC helmet Kit"
+	desc = "A modkit for making a Elite sec/inteq helmets into a Arctic PMC helmet."
+	product = /obj/item/clothing/head/helmet/sec/wypmchelmet
+	fromitem = list(/obj/item/clothing/head/helmet/blueshirt, /obj/item/clothing/head/helmet/sec, /obj/item/clothing/head/helmet/inteq)
+
+/obj/item/clothing/suit/armor/vest/wypmcjacket
+	name = "Arctic PMC armored jacket"
+	desc = "An armored jacket from a private military organization, featuring an insulated design for cold climates. It includes an additional layer of synthetic polymers for protection against harsh acids."
+	icon_state = "wypmc_jacket"
+	item_state = "wypmc_jacket"
+	dog_fashion = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+
+/obj/item/modkit/wypmcjacket
+	name = "Arctic jacket kit"
+	desc = "A modkit for making a sec/inteq armor vests into a Arctic PMC armored jacket."
+	product = /obj/item/clothing/suit/armor/vest/wypmcjacket
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt, /obj/item/clothing/suit/armor/inteq)
+
+/obj/item/clothing/head/donator/bm/wypmcberet
+	name = "Field officer arctic PMC beret"
+	desc = "This beret, designed for officers of a private military organization operating in cold climates, features not only thermal insulation but also a protective polymer lining to guard against harsh acids."
+	icon_state = "wypmc_beret"
+	item_state = "wypmc_beret"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/wypmcberet
+	name = "Field officer arctic PMC beret kit"
+	desc = "A modkit for making a sec/inteq berets into a Field officer arctic PMC beret kit."
+	product = /obj/item/clothing/head/donator/bm/wypmcberet
+	fromitem = list(/obj/item/clothing/head/beret/sec, /obj/item/clothing/head/beret/sec/peacekeeper, /obj/item/clothing/head/HoS/inteq_vanguard, /obj/item/clothing/head/HoS/inteq_honorable_vanguard)
+
+/obj/item/clothing/head/donator/bm/wypmcmedicalhat
+	name = "Medical officer arctic PMC hat"
+	desc = "An insulated hat worn by a medical worker from a private military organization. Even here, they didn't overlook acid protection... what could be the reason for such concern?"
+	icon_state = "wypmcmedical_hat"
+	item_state = "wypmcmedical_hat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/clothing/suit/donator/bm/kumiko_ncr_duster
+	name = "NCR ranger duster"
+	desc = "Highly advanced armor used by the NCR Veteran Rangers. This one has no armor plating."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Recon" = list(
+			"icon_state" = "duster_recon_t",
+			"item_state" = "duster_recon_t",
+			"name" = "NCR recon duster"
+		),
+		"Combat" = list(
+			"icon_state" = "combatduster",
+			"item_state" = "combatduster",
+			"name" = "NCR combat duster"
+		),
+		"Desert" = list(
+			"icon_state" = "desert_ranger",
+			"item_state" = "desert_ranger",
+			"name" = "NCR desert duster"
+		),
+		"Veteran" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger duster"
+		),
+		"Price" = list(
+			"icon_state" = "price_ranger",
+			"item_state" = "price_ranger",
+			"name" = "NCR price duster"
+		)
+	)
+
+/obj/item/modkit/kumiko_ncr_riot
+	name = "NCR ranger riot kit"
+	desc = "A modkit for making a riot armor into a ncr ranger duster."
+	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
+	fromitem = list(/obj/item/clothing/suit/armor/riot)
+
+/obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
+	name = "NCR ranger elite desert duster"
+	desc = "An upgraded version of the standard riot gear, featuring reinforced plating against melee."
+	icon_state = "elite_riot"
+	item_state = "elite_riot"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/modkit/kumiko_ncr_bulletproof
+	name = "NCR ranger bulletproof kit"
+	desc = "A modkit for making a bulletproof armor into a ncr ranger duster."
+	product = /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
+	fromitem = list(/obj/item/clothing/suit/armor/bulletproof)
+
+/obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
+	name = "NCR custom duster"
+	desc = "Worn by members of the US Marine Corps during the Yangtze Campaign, this armor found its way into the hands of the Desert Rangers."
+	icon_state = "rigscustom_suit"
+	item_state = "rigscustom_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/modkit/kumiko_ncr_plate_carrier
+	name = "NCR plate carrier kit"
+	desc = "A modkit for making a plate carrier into a ncr duster."
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+	name = "NCR ranger duster"
+	desc = "Highly advanced armor used by the NCR Veteran Rangers."
+	icon_state = "reclaimed_desert_ranger"
+	item_state = "reclaimed_desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet"
+	desc = "Matching helmet for the NCR Ranger duster."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	unique_reskin = list(
+		"Ranger" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger helmet"
+		),
+		"Desert" = list(
+			"icon_state" = "oldranger",
+			"item_state" = "oldranger",
+			"name" = "NCR desert ranger helmet"
+		)
+	)
+
+/obj/item/modkit/kumiko_ncr_riot_helmet
+	name = "NCR riot helmet kit"
+	desc = "A modkit for making a riot helmet into ncr riot helmet."
+	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	name = "NCR elite desert ranger helmet"
+	desc = "NCR ranger riot helmet"
+	icon_state = "desert_ranger"
+	item_state = "desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/kumiko_ncr_bulletproof_helmet
+	name = "NCR plate bulletproof helmet kit"
+	desc = "A modkit for making a bulletproof helmet into ncr bulletproof helmet."
+	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/alt)
+
+/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	name = "Custom NCR ranger helmet"
+	desc = "NCR ranger bulletproof helmet"
+	icon_state = "rangercustom"
+	item_state = "rangercustom"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/light_plate_carrier
+	name = "Light plate carrier Armor Kit"
+	desc = "A modkit for making an armor vest into a Light plate carrier Armor."
+	product = /obj/item/clothing/suit/armor/vest/light_plate_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt)
+
+/obj/item/clothing/suit/armor/vest/light_plate_carrier
+	name = "Light plate carrier"
+	desc = "An ergonomic plate carrier, manufactured by Hephaestus Industries. Basically the same plate carrier you beg for in the armory, but with no pouches attached and with a set of lighter plates inserted."
+	icon_state = "light_plate_carrier"
+	item_state = "light_plate_carrier"
+	dog_fashion = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	unique_reskin = list(
+		"Black" = list("icon_state" = "light_plate_carrier", "item_state" = "light_plate_carrier"),
+		"Tan" = list("icon_state" = "light_plate_carrier_tan", "item_state" = "light_plate_carrier_tan"),
+		"Navy" = list("icon_state" = "light_plate_carrier_navy", "item_state" = "light_plate_carrier_navy"),
+		"Green" = list("icon_state" = "light_plate_carrier_green", "item_state" = "light_plate_carrier_green")
+	)

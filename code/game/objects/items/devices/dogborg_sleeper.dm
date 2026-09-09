@@ -380,10 +380,13 @@
 		if(!(I in contents))
 			items_preserved -= I
 	var/list/touchable_items = contents - items_preserved
-	var/sound/prey_digest = sound(get_sfx("digest_prey"))
-	var/sound/prey_death = sound(get_sfx("death_prey"))
-	var/sound/pred_digest = sound(get_sfx("digest_pred"))
-	var/sound/pred_death = sound(get_sfx("death_pred"))
+	// Строятся лениво, по месту использования: прок процессится постоянно, а звуки
+	// нужны только когда кто-то в животе действительно умер или когда прошла
+	// пятидесятипроцентная монетка на шум переваривания.
+	var/sound/prey_digest
+	var/sound/prey_death
+	var/sound/pred_digest
+	var/sound/pred_death
 	if(cleaning_cycles)
 		cleaning_cycles--
 		for(var/mob/living/carbon/C in (touchable_items))
@@ -409,6 +412,9 @@
 								continue
 							LAZYADD(hearing_mobs, H)
 						last_hearcheck = world.time
+						if(length(hearing_mobs))
+							prey_death = sound(get_sfx("death_prey"))
+							pred_death = sound(get_sfx("death_pred"))
 						for(var/mob/H in hearing_mobs)
 							if(!istype(H.loc, /obj/item/dogborg/sleeper))
 								H.playsound_local(source, null, 45, S = pred_death)
@@ -459,6 +465,9 @@
 					continue
 				LAZYADD(hearing_mobs, H)
 			last_hearcheck = world.time
+			if(length(hearing_mobs))
+				prey_digest = sound(get_sfx("digest_prey"))
+				pred_digest = sound(get_sfx("digest_pred"))
 			for(var/mob/H in hearing_mobs)
 				if(!istype(H.loc, /obj/item/dogborg/sleeper))
 					H.playsound_local(source, null, 45, S = pred_digest)

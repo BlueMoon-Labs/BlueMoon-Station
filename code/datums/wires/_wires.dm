@@ -11,7 +11,7 @@
 		if(A.attachable)
 			return TRUE
 
-/atom/proc/attempt_wire_interaction(mob/user)
+/atom/movable/proc/attempt_wire_interaction(mob/user)
 	if(!wires)
 		return WIRE_INTERACTION_FAIL
 	if(!user.CanReach(src))

@@ -41,6 +41,8 @@
 	name = "new mecca uniform"
 	desc = "In this suit, your grandfather fucked cromag."
 	icon_state = "torch_uniform"
+	mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK|STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
 	flags_inv = HIDEGLOVES|HIDESHOES
 	alt_covers_chest = FALSE
@@ -561,3 +563,14 @@
 	can_adjust = FALSE
 	unique_reskin = list("Parade" = list(RESKIN_ICON_STATE = "aristocratic_uniform_parade"),
 						"Base" = list(RESKIN_ICON_STATE = "aristocratic_uniform"))
+
+/obj/item/clothing/under/bm/yun_outfit
+	name = "strange chinese clothing"
+	desc = "Prepare for the battle, prepare for the war, Prepare for the real STREET FIGHTER BLOOD WAR!"
+	icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniforms_digi.dmi'
+	icon_state = "yun"
+	item_state = "yun"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	can_adjust = FALSE

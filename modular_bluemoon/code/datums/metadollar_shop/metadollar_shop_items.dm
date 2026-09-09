@@ -199,6 +199,13 @@
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/choice_beacon/box/desk
 
+/datum/metadollar_shop_item/item/medbeam
+	name = "Гражданская Медицинская Пушка"
+	desc = "Ого, лечебные наниты. Круто!"
+	cost = 25
+	catalog = METADOLLAR_CATALOG_LEGIT
+	spawn_type = /obj/item/gun/medbeam/weak
+
 /datum/metadollar_shop_item/item/pet_beacon
 	name = "Маяк питомца"
 	desc = "Позволяет призвать компаньона-питомца."
@@ -314,14 +321,14 @@
 /datum/metadollar_shop_item/item/smokespell_lesser
 	name = "Книга с заклинанием призыва дыма"
 	desc = "Книжка, что при изучении даёт вам возможность использовать заклинание маленького дыма."
-	cost = 80
-	catalog = METADOLLAR_CATALOG_SMUGGLE
+	cost = 25
+	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/book/granter/spell/smoke/lesser
 
 /datum/metadollar_shop_item/item/smokespell_crocin
 	name = "Книга с заклинанием призыва кроцинового дыма"
 	desc = "Книжка, что при изучении даёт вам возможность использовать заклинание кроцинового дыма."
-	cost = 100
+	cost = 50
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/book/granter/spell/smoke/crocin
 

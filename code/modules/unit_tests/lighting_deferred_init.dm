@@ -19,6 +19,13 @@
 
 /// Хелпер: паркует свежий light_emitter как отложенный источник на (reserved, не-инициализированной) z.
 /// Возвращает запаркованный эмиттер; вызывающий обязан восстановить флаг/очереди.
+/// Наблюдатель, который для света считается жильцом уровня: свет держит только гост с
+/// включённой темнотой (см. ghost_holds_zlevel_lighting).
+/datum/unit_test/proc/occupant_ghost(turf/test_turf)
+	var/mob/dead/observer/watcher = allocate(/mob/dead/observer, test_turf)
+	watcher.lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	return watcher
+
 /datum/unit_test/proc/park_deferred_emitter(turf/test_turf, datum/space_level/level)
 	level.lighting_initialized = FALSE
 	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
@@ -206,7 +213,7 @@
 	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
 	GLOB.lighting_deferred_atoms = list(emitter) // изолируем скан строго на тестовый z
 	level.lighting_initialized = TRUE
-	SSmobs.dead_players_by_zlevel[test_z] = list(src) // обитатель: скан смотрит только length>0
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf)) // жилец: гост с включённой темнотой
 	GLOB.lighting_update_lights.Cut()
 	GLOB.lighting_update_corners.Cut()
 	GLOB.lighting_update_objects.Cut()
@@ -410,7 +417,7 @@
 	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
 	GLOB.lighting_deferred_atoms = list(emitter)
 	level.lighting_initialized = TRUE
-	SSmobs.dead_players_by_zlevel[test_z] = list(src)
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf))
 	GLOB.lighting_update_lights.Cut()
 	GLOB.lighting_update_corners.Cut()
 	GLOB.lighting_update_objects.Cut()
@@ -434,3 +441,57 @@
 	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
 	TEST_ASSERT(flushed, "a stale busy marker left by a crashed scan must not block future rescues (lease must expire, not latch)")
 	TEST_ASSERT(has_source, "the rescued deferred source must be created despite the stale busy marker")
+
+/**
+ * Фоновая сборка света не трогает отложенный z-уровень, на котором никого нет.
+ *
+ * До этого теста краулер разбирал bg_queued_zlevels безусловно и через 30-70 секунд после
+ * инициализации отменял всю отсрочку: оба лаваландских уровня получали по 66 тысяч объектов
+ * освещения при нуле игроков на них. Замер по шести раундам - 167-253 МБ на уровень, около
+ * 400 МБ на два, то есть 10% потолка адресного пространства за свет, который никто не видит.
+ */
+/datum/unit_test/light_bg_init_skips_zlevel_without_occupant/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	TEST_ASSERT(test_z <= length(SSmobs.clients_by_zlevel), "test premise: clients_by_zlevel slot must exist for reservation z")
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "test premise: dead_players_by_zlevel slot must exist for reservation z")
+
+	var/list/saved_queue = SSlighting.bg_queued_zlevels
+	var/saved_current = SSlighting.bg_current_zlevel
+	var/list/saved_clientslot = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_deadslot = SSmobs.dead_players_by_zlevel[test_z]
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+	var/saved_init = level.lighting_initialized
+
+	// Пустой уровень: краулер обязан оставить его в очереди и не начать сборку.
+	SSmobs.clients_by_zlevel[test_z] = list()
+	SSmobs.dead_players_by_zlevel[test_z] = list()
+	SSlighting.bg_queued_zlevels = list(test_z)
+	SSlighting.bg_current_zlevel = 0
+	level.lighting_initialized = FALSE
+
+	SSlighting.process_bg_zlevel_init()
+
+	var/skipped_current = SSlighting.bg_current_zlevel
+	var/still_queued = (test_z in SSlighting.bg_queued_zlevels)
+
+	// Тот же уровень с наблюдателем: краулер обязан его взять.
+	SSmobs.dead_players_by_zlevel[test_z] = list(occupant_ghost(test_turf))
+	SSlighting.bg_queued_zlevels = list(test_z)
+	SSlighting.bg_current_zlevel = 0
+	var/picked_current = 0
+	SSlighting.process_bg_zlevel_init()
+	picked_current = SSlighting.bg_current_zlevel
+
+	// Состояние возвращаем ДО ассертов: провал не должен оставить мир с чужой очередью.
+	SSlighting.bg_current_zlevel = saved_current
+	SSlighting.bg_queued_zlevels = saved_queue
+	SSmobs.clients_by_zlevel[test_z] = saved_clientslot
+	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
+	level.lighting_initialized = saved_init
+
+	TEST_ASSERT_EQUAL(skipped_current, 0, "фоновая сборка взялась за z-уровень, на котором никого нет")
+	TEST_ASSERT(still_queued, "пустой z-уровень выброшен из очереди - он больше никогда не соберётся фоном")
+	TEST_ASSERT_EQUAL(picked_current, test_z, "фоновая сборка не взялась за z-уровень с обитателем")
+

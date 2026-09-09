@@ -58,25 +58,23 @@
 						<script language='javascript' type='text/javascript'>
 						[js_byjax]
 						[js_dropdowns]
-						function SSticker() {
-						    setInterval(function(){
-						        window.location='byond://?src=[REF(src)]&update_content=1';
-						        document.body.style.color = get_rand_color_string();
-						      document.body.style.background = get_rand_color_string();
-						    }, 1000);
-						}
+						[js_mecha_stats_ticker]
 
 						function get_rand_color_string() {
 						    var color = new Array;
 						    for(var i=0;i<3;i++){
 						        color.push(Math.floor(Math.random()*255));
 						    }
-						    return "rgb("+color.toString()+")";
+						    return 'rgb('+color.toString()+')';
 						}
 
 						window.onload = function() {
 							dropdowns();
-							SSticker();
+							window.on_mecha_update = function() {
+								document.body.style.color = get_rand_color_string();
+								document.body.style.background = get_rand_color_string();
+							};
+							schedule_update();
 						}
 						</script>
 						</head>
@@ -142,6 +140,10 @@
 
 /obj/vehicle/sealed/mecha/combat/honker/Topic(href, href_list)
 	..()
+	//Такая же дыра, как была в родительском Topic: гудки дёргались без всякой проверки,
+	//то есть по ссылке из панели их мог запустить кто угодно снаружи меха
+	if(!(usr in occupants))
+		return
 	if (href_list["play_sound"])
 		switch(href_list["play_sound"])
 			if("sadtrombone")

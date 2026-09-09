@@ -150,11 +150,11 @@
 		return
 	switch(severity)
 		if(1 to 50)
-			owner.nutrition = max(owner.nutrition - 50, 0)
-			to_chat(owner, "<span class='warning'>Alert: Detected severe battery discharge!</span>")
+			owner.adjust_nutrition(-50)
+			to_chat(owner, span_warning("Тревога: обнаружена малая утечка энергии!"))
 		if(50 to INFINITY)
-			owner.nutrition = max(owner.nutrition - 100, 0)
-			to_chat(owner, "<span class='warning'>Alert: Minor battery discharge!</span>")
+			owner.adjust_nutrition(-100)
+			to_chat(owner, span_warning("Тревога: обнаружена серьёзная утечка энергии!"))
 
 /obj/item/organ/stomach/ethereal
 	name = "biological battery"

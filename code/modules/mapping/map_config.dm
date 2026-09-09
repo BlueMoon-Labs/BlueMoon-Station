@@ -16,13 +16,23 @@
 
 	// Config actually from the JSON - should default to Box
 	var/map_name = "Box Station"
-	var/map_path = "map_files/BoxStation"
+	var/map_path = "map_files/BoxStations"
 	var/map_file = "BoxStation.dmm"
 	/// Persistence key: Defaults to ckey(map_name). If set to "NO_PERSIST", this map will have NO persistence.
 	var/persistence_key
 
 	var/traits = null
-	var/space_ruin_levels = 7
+	/// Сколько z-уровней отводится под космические руины. Сам по себе пустой уровень 255x255
+	/// стоит недорого - замерено 9-13 МБ адресного пространства, а не 68, как считалось раньше:
+	/// нетронутый космический турф весит единицы байт, потому что BYOND платит только за
+	/// ЗАПИСАННЫЕ переменные инстанса, а /turf/open/space/basic вообще пропускает Initialize.
+	/// Деньги лежат не в уровнях, а в их СОДЕРЖИМОМ: 50 руин при SPACE_BUDGET = 50 стоят
+	/// около 280 МБ (5.6 МБ за руину). При этом снижение самого space_ruin_levels бюджет руин
+	/// НЕ уменьшает - в отличие от tg, seedRuins берёт SPACE_BUDGET как есть, и руины просто
+	/// плотнее укладываются на оставшиеся уровни. Рабочий рычаг здесь ровно один - SPACE_BUDGET.
+	/// У 32-битного DreamDaemon потолок около 4090 МБ, раунд стартует с 65-86% от него в
+	/// зависимости от карты. Карта может переопределить ключом space_ruin_levels в своём JSON.
+	var/space_ruin_levels = 5
 	var/space_empty_levels = 1
 	// BLUEMOON EDIT START: Invalid Space Turfs
 	/// Boolean that tells us if this is a planetary station. (like IceBoxStation)
@@ -43,6 +53,9 @@
 		"emergency" = "emergency_box")
 
 	var/year_offset = 540 //The offset of ingame year from the actual IRL year. You know you want to make a map that takes place in the 90's. Don't lie.
+
+	/// Лист для вариаций карты, если у нас есть несколько вариантов, BoxStation/SyndicateBoxStation как пример, для чтения по JSON
+	var/list/map_variants
 
 	// "fun things"
 	/// Orientation to load in by default.
@@ -104,6 +117,18 @@
 	map_path = json["map_path"]
 
 	map_file = json["map_file"]
+
+	if("map_variants" in json)
+		if(!islist(json["map_variants"])) // очень важно, чтобы варианты были списком из нескольких вариантов, иначе смысла в этой переменной нет
+			log_world("map_variants is not a list!") // в т.ч. нам не нужно, чтобы карта хранила саму себя в списке вариантов, если она одна
+			return
+
+		map_variants = list()
+		for(var/variant_path in json["map_variants"])
+			if(!istext(variant_path) || !fexists(variant_path))
+				log_world("Map variant does not exist: [variant_path]")
+				return
+			map_variants += variant_path
 
 	persistence_key = ckey(map_name)
 

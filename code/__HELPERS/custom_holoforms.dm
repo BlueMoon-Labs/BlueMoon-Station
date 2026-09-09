@@ -22,13 +22,40 @@
 			mannequin.equip_to_slot_if_possible(I, ITEM_SLOT_HANDS, TRUE, TRUE, TRUE, TRUE)
 
 
+	// Прод-раунд 10151: на второй стороне Insert() падал "bad icon operation", и рантайм
+	// обрывал прок ДО unset_busy_human_dummy - манекен голоформа оставался занятым, и
+	// каждый следующий выбор облика ждал его вечно. Точный триггер отказа воспроизвести
+	// не удалось (разные размеры сторон, разное число кадров, иконки из разных файлов
+	// Insert принимает - проверено юнит-тестом), поэтому защита двойная: каждая сторона
+	// снимается и вставляется под try/catch, а стороны предварительно добиваются до
+	// общего размера. Провал одной стороны стоит одной стороны, а не всего облика.
+	var/list/captures = list()
+	var/capture_width = world.icon_size
+	var/capture_height = world.icon_size
+	for(var/direction in GLOB.cardinals)
+		mannequin.setDir(direction)
+		CHECK_TICK
+		var/icon/capture
+		try
+			capture = getFlatIcon(mannequin)
+		catch(var/exception/capture_error)
+			stack_trace("custom holoform: съёмка стороны [direction] не удалась: [capture_error]")
+		CHECK_TICK
+		if(!capture)
+			continue
+		captures["[direction]"] = capture
+		capture_width = max(capture_width, capture.Width())
+		capture_height = max(capture_height, capture.Height())
+
 	var/icon/combined = new
-	for(var/d in GLOB.cardinals)
-		mannequin.setDir(d)
-		CHECK_TICK
-		var/icon/capture = getFlatIcon(mannequin)
-		CHECK_TICK
-		combined.Insert(capture, dir = d)
+	for(var/direction_key in captures)
+		var/icon/capture = captures[direction_key]
+		try
+			if(capture.Width() != capture_width || capture.Height() != capture_height)
+				capture.Crop(1, 1, capture_width, capture_height)
+			combined.Insert(capture, dir = text2num(direction_key))
+		catch(var/exception/insert_error)
+			stack_trace("custom holoform: вставка стороны [direction_key] не удалась: [insert_error]")
 		CHECK_TICK
 
 	unset_busy_human_dummy(DUMMY_HUMAN_SLOT_HOLOFORM)

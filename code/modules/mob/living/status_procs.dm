@@ -400,7 +400,7 @@
 	if(AmountImmobilized() > amount)
 		SetImmobilized(amount, FALSE, ignore_canstun)
 	if(AmountDazed() > amount)
-		SetImmobilized(amount, FALSE, ignore_canstun)
+		SetDazed(amount, FALSE, ignore_canstun)
 	if(AmountStaggered() > amount)
 		SetStaggered(amount, FALSE, ignore_canstun)
 	if(updating)

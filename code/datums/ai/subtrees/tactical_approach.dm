@@ -29,11 +29,18 @@
 	if(!isliving(pawn) || QDELETED(target))
 		clear_approach_tile(controller)
 		return
+	//Опознание стрелка идёт памятью, а не проверкой рук: запись в модели угрозы
+	//появляется от факта попадания снаряда и переживает и убранный ствол, и КА,
+	//и мех, и турель.
+	var/known_shooter = ai_target_is_ranged(target) || controller.knows_target_shoots(target)
 	var/target_distance = get_dist(pawn, target)
-	if(target_distance <= 1 || target_distance > AI_WEAVE_MAX_DIST)
+	//Против опознанного стрелка уклончивый подход действует на всей дистанции
+	//обстрела, а не только внутри экрана.
+	var/weave_range = known_shooter ? AI_SHOOTER_WEAVE_MAX_DIST : AI_WEAVE_MAX_DIST
+	if(target_distance <= 1 || target_distance > weave_range)
 		clear_approach_tile(controller)
 		return
-	var/weaving = ai_target_is_ranged(target) || (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time)
+	var/weaving = known_shooter || (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time)
 	var/queued_behind_ally = controller.is_mob_only_blocked_step(get_step_towards(pawn, target))
 	if(!weaving && !queued_behind_ally)
 		clear_approach_tile(controller)
@@ -41,11 +48,46 @@
 	if(world.time < (controller.blackboard[BB_AI_APPROACH_TILE_AT] || 0))
 		return
 	controller.blackboard[BB_AI_APPROACH_TILE_AT] = world.time + AI_APPROACH_REPICK_COOLDOWN
-	var/turf/chosen = pick_approach_tile(controller, pawn, target, weaving)
+	//Перебежка под прикрытием важнее выбора финальной клетки: пока моб далеко,
+	//вопрос не "с какой стороны подойти", а "как дойти живым".
+	var/turf/chosen = known_shooter ? pick_covered_bound(controller, pawn, target) : null
+	if(!chosen)
+		chosen = pick_approach_tile(controller, pawn, target, weaving)
 	if(chosen)
 		controller.set_blackboard_key(BB_AI_APPROACH_TILE, chosen)
 	else
 		clear_approach_tile(controller)
+
+///Шаг перебежки: сосед, прикрытый от стрелка и СТРОГО ближе к цели.
+///
+///Это намеренно не полноценный слой стоимости простреливаемости на маршруте:
+///пересчёт прикрытости для каждого узла пути стоил бы дороже всего остального
+///планирования вместе взятого. Локальная перебежка от укрытия к укрытию даёт то
+///же наблюдаемое поведение - моб не бежит по прямой в створ, - и стоит восьми
+///проверок раз в AI_APPROACH_REPICK_COOLDOWN. Если прикрытого шага вперёд нет,
+///возвращается null, и подход планируется обычной логикой: моб не окапывается.
+/datum/ai_planning_subtree/tactical_approach/proc/pick_covered_bound(datum/ai_controller/controller, mob/living/pawn, atom/target)
+	var/turf/pawn_turf = get_turf(pawn)
+	var/turf/target_turf = get_turf(target)
+	if(!pawn_turf || !target_turf)
+		return null
+	var/atom/shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+	if(QDELETED(shooter))
+		shooter = target
+	var/turf/best
+	var/best_distance = get_dist(pawn_turf, target_turf)
+	for(var/direction in GLOB.alldirs)
+		var/turf/candidate = get_step(pawn_turf, direction)
+		if(!candidate || !controller.can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
+			continue
+		var/candidate_distance = get_dist(candidate, target_turf)
+		if(candidate_distance >= best_distance)
+			continue
+		if(controller.cover_quality(candidate, shooter) != AI_COVER_FULL)
+			continue
+		best = candidate
+		best_distance = candidate_distance
+	return best
 
 /datum/ai_planning_subtree/tactical_approach/proc/clear_approach_tile(datum/ai_controller/controller)
 	if(!isnull(controller.blackboard[BB_AI_APPROACH_TILE]))

@@ -94,8 +94,7 @@
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
-		if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-			new /obj/effect/temp_visual/heart(target.loc)
+		target.try_play_interaction_effect()
 
 /obj/item/reagent_containers/food/drinks/bottle/attack(mob/living/target, mob/living/user)
 
@@ -489,7 +488,7 @@
 	foodtype = FRUIT| BREAKFAST
 
 /obj/item/reagent_containers/food/drinks/bottle/bio_carton
-	name = "Small Carton Box"
+	name = "small carton box"
 	desc = "A small biodegradable carton box made from plant biomatter."
 	icon_state = "eco_box"
 	item_state = "carton"
@@ -497,6 +496,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/kitchen_righthand.dmi'
 	volume = 50
 	isGlass = FALSE
+	obj_flags = UNIQUE_RENAME
 
 /obj/item/reagent_containers/food/drinks/bottle/cream
 	name = "Milk Cream"

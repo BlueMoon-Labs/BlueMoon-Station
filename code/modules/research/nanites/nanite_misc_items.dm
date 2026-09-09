@@ -46,7 +46,10 @@
 	STOP_PROCESSING(SSobj, src)
 	var/volume = SEND_SIGNAL(source, COMSIG_NANITE_GET_VOLUME)
 	SEND_SIGNAL(source, COMSIG_NANITE_DELETE)
-	if(source.AddComponent(/datum/component/nanites, volume) != COMPONENT_INCOMPATIBLE)
+	// Помпа растворяется на несовместимом носителе, и возвращать ему наниты после
+	// извлечения нельзя - AddComponent пишет "Incompatible ... assigned to a ..."
+	// (раунд 9881). Те же условия совместимости, что и у check_nanites().
+	if(can_be_implanted_in(source) && source.AddComponent(/datum/component/nanites, volume) != COMPONENT_INCOMPATIBLE)
 		SEND_SIGNAL(source, COMSIG_NANITE_SYNC, pump_nanites)
 		SEND_SIGNAL(source, COMSIG_NANITE_SET_REGEN, -50)
 
@@ -104,9 +107,17 @@
 	SEND_SIGNAL(imp_in, COMSIG_NANITE_SYNC, pump_nanites)
 
 /obj/item/implant/nanite_pump/proc/check_nanites()
-    if(SEND_SIGNAL(imp_in, COMSIG_HAS_NANITES))
-        return TRUE
-    return imp_in.AddComponent(/datum/component/nanites/nanite_pump, 1) != COMPONENT_INCOMPATIBLE
+	if(!imp_in)
+		return FALSE
+	if(SEND_SIGNAL(imp_in, COMSIG_HAS_NANITES))
+		return TRUE
+	//Носителю без совместимости компонент не встанет, а AddComponent на нём
+	//пишет stack_trace "Incompatible ... assigned to a ..." каждые 15 секунд:
+	//раунд 9827 - 25 рантаймов подряд. Спрашиваем совместимость заранее,
+	//помпа тогда просто растворяется, как и задумано в process().
+	if(!can_be_implanted_in(imp_in))
+		return FALSE
+	return imp_in.AddComponent(/datum/component/nanites/nanite_pump, 1) != COMPONENT_INCOMPATIBLE
 
 /obj/item/implant/nanite_pump/proc/set_programs_pump(cloud_id, mob/user, force = FALSE)
 	if(cloud_id)

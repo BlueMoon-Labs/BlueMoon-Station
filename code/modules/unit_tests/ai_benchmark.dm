@@ -94,6 +94,8 @@
 	scenario_mobs_life_near_dead()
 	scenario_slime_hunt()
 	scenario_cleanbot_idle_scan()
+	scenario_cleanbot_dense_target_scan()
+	scenario_floorbot_unreachable_targets()
 	scenario_controllers_planning_only()
 	scenario_controllers_dense_acquisition()
 	scenario_ai_noise_storm()
@@ -133,6 +135,10 @@
 	TEST_ASSERT_EQUAL(ctrl_boss["selections"], 10 * AI_BENCH_PASSES, "Every boss must produce one table selection per pass")
 	var/list/ctrl_machines = report["controllers_machine_acquisition"]
 	TEST_ASSERT(ctrl_machines["targets_acquired"] >= 45, "Nearly all machine hunters must acquire the indexed turret")
+	var/list/cleanbot_dense = report["cleanbot_dense_target_scan"]
+	TEST_ASSERT_EQUAL(cleanbot_dense["targets_found"], AI_BENCH_PASSES, "Dense cleanbot scan must preserve one visible target per pass")
+	var/list/floorbot_unreachable = report["floorbot_unreachable_targets"]
+	TEST_ASSERT_EQUAL(floorbot_unreachable["metrics"]["jps_requests"], 1, "Failed floorbot paths must stay on cooldown during synchronous benchmark passes")
 
 //////////// Сценарии ////////////
 
@@ -499,6 +505,48 @@
 	))
 	teardown_scenario()
 
+///One cleanbot searches a dense visible scene containing a single valid target.
+///This covers the live outlier that the empty-grid scenario deliberately skips:
+///once the spatial grid returns a candidate, LOS still has to inspect view().
+/datum/unit_test/ai_benchmark_baseline/proc/scenario_cleanbot_dense_target_scan()
+	rand_seed(AI_BENCH_SEED)
+	var/mob/living/simple_animal/bot/cleanbot/subject = new(arena_turf(12, 12))
+	scenario_bots += subject
+	for(var/turf/tile as anything in block(arena_turf(5, 5), arena_turf(19, 19)))
+		for(var/index in 1 to 5)
+			scenario_objects += new /obj/item/paper(tile)
+	var/obj/effect/decal/cleanable/dirt/target = new(arena_turf(18, 12))
+	scenario_objects += target
+
+	begin_measurement("cleanbot_dense_target_scan")
+	var/list/results = measure_cleanbot_target_scan_passes(AI_BENCH_PASSES)
+	end_measurement("cleanbot_dense_target_scan", results["costs"], list(
+		"bot_count" = length(scenario_bots),
+		"visible_noise_atoms" = length(scenario_objects) - 1,
+		"targets_found" = results["targets_found"],
+	))
+	teardown_scenario()
+
+///A floorbot can see repair targets but is sealed behind transparent full-tile
+///windows. It reproduces the repeated failed JPS searches from the live round.
+/datum/unit_test/ai_benchmark_baseline/proc/scenario_floorbot_unreachable_targets()
+	rand_seed(AI_BENCH_SEED)
+	var/mob/living/simple_animal/bot/floorbot/subject = new(arena_turf(12, 12))
+	subject.emagged = 2
+	subject.auto_patrol = FALSE
+	scenario_bots += subject
+	for(var/direction in GLOB.alldirs)
+		scenario_objects += new /obj/structure/window/reinforced/fulltile(get_step(subject, direction))
+	subject.target = arena_turf(14, 12)
+
+	begin_measurement("floorbot_unreachable_targets")
+	var/list/costs = measure_floorbot_path_failures(AI_BENCH_PASSES)
+	end_measurement("floorbot_unreachable_targets", costs, list(
+		"bot_count" = length(scenario_bots),
+		"actions" = length(scenario_bots) * AI_BENCH_PASSES,
+	))
+	teardown_scenario()
+
 ///50 активных контроллеров: только SSai_controllers.SelectBehaviors, без execution.
 /datum/unit_test/ai_benchmark_baseline/proc/scenario_controllers_planning_only()
 	rand_seed(AI_BENCH_SEED)
@@ -707,27 +755,27 @@
 	var/wall_start = REALTIMEOFDAY
 	//MC_TICK_CHECK внутри fire() зовёт pause() при state != SS_RUNNING - при
 	//прямом вызове мимо MC состояние надо подложить самим (и вернуть назад)
-	var/saved_state = target_subsystem.state
+	var/saved_can_fire = detach_subsystem(target_subsystem)
 	for(var/pass in 1 to pass_count)
 		target_subsystem.state = SS_RUNNING
 		var/cpu_start = TICK_USAGE_REAL
 		target_subsystem.fire(FALSE)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	target_subsystem.state = saved_state
+	release_subsystem(target_subsystem, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Полные синхронные SSmobs-пассы с настоящим times_fired: нужны throttle cadence 4/15.
 /datum/unit_test/ai_benchmark_baseline/proc/measure_mob_life_passes(pass_count)
 	var/list/cpu_samples = list()
 	var/wall_start = REALTIMEOFDAY
-	var/saved_state = SSmobs.state
+	var/saved_can_fire = detach_subsystem(SSmobs)
 	for(var/pass in 1 to pass_count)
 		SSmobs.state = SS_RUNNING
 		SSmobs.times_fired = pass
 		var/cpu_start = TICK_USAGE_REAL
 		SSmobs.fire(FALSE)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	SSmobs.state = saved_state
+	release_subsystem(SSmobs, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Within-run 3-полосный A/B цены перцепционного скана слайма на ОДНИХ И ТЕХ ЖЕ
@@ -787,11 +835,38 @@
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
+///Measure the candidate-positive scan path without movement/pathfinding noise.
+/datum/unit_test/ai_benchmark_baseline/proc/measure_cleanbot_target_scan_passes(pass_count)
+	var/list/cpu_samples = list()
+	var/targets_found = 0
+	var/wall_start = REALTIMEOFDAY
+	for(var/pass in 1 to pass_count)
+		var/cpu_start = TICK_USAGE_REAL
+		for(var/mob/living/simple_animal/bot/cleanbot/subject as anything in scenario_bots)
+			if(subject.scan_for_target())
+				targets_found++
+		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
+	return list(
+		"costs" = summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start),
+		"targets_found" = targets_found,
+	)
+
+///Drive automatic target acquisition through an unreachable transparent cage.
+/datum/unit_test/ai_benchmark_baseline/proc/measure_floorbot_path_failures(pass_count)
+	var/list/cpu_samples = list()
+	var/wall_start = REALTIMEOFDAY
+	for(var/pass in 1 to pass_count)
+		var/cpu_start = TICK_USAGE_REAL
+		for(var/mob/living/simple_animal/bot/floorbot/subject as anything in scenario_bots)
+			subject.handle_automated_action()
+		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
+	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
+
 ///Полный controller-pass: планировщик + одно исполнение каждого активного плана.
 /datum/unit_test/ai_benchmark_baseline/proc/measure_controller_passes(pass_count)
 	var/list/cpu_samples = list()
 	var/wall_start = REALTIMEOFDAY
-	var/saved_state = SSai_controllers.state
+	var/saved_can_fire = detach_subsystem(SSai_controllers)
 	for(var/pass in 1 to pass_count)
 		var/cpu_start = TICK_USAGE_REAL
 		SSai_controllers.state = SS_RUNNING
@@ -801,7 +876,7 @@
 			if(controller?.ai_status == AI_STATUS_ON && length(controller.current_behaviors))
 				controller.process(0.5)
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
-	SSai_controllers.state = saved_state
+	release_subsystem(SSai_controllers, saved_can_fire)
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
 
 ///Свести per-pass samples в стабильные распределения для сравнения прогонов.

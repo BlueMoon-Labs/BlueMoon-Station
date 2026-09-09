@@ -16,4 +16,7 @@
 	qdel(src)
 	user.put_in_active_hand(s_drill)
 
+/obj/item/screwdriver/power/science/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "drill_sci")
+
 //////////////////////////////////////////////

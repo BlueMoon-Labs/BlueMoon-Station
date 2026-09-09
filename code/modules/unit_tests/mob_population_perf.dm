@@ -63,7 +63,7 @@
 	follower.Leader = boss
 	follower.holding_still = 0
 	// Friends are never eaten, so the leader cannot become a hunting target.
-	follower.Friends[boss] = 1
+	follower.add_friend(boss)
 	follower.next_hunt_scan = world.time + 10 MINUTES
 	follower.note_wander()
 	TEST_ASSERT(!follower.can_wander_now(), "Sanity: the cooldown should be running")

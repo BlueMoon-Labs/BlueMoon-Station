@@ -3,13 +3,50 @@ import { flow } from 'common/fp';
 import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, Divider, Dropdown, Flex, Input, Modal, ProgressBar, Section, Tabs } from '../components';
+import { Box, Button, Divider, Dropdown, Flex, Input, Modal, ProgressBar, Section, Tabs, Tooltip } from '../components';
 import { NtosWindow, Window } from '../layouts';
 
 // Data reshaping / ingestion (thanks stylemistake for the help, very cool!)
 // This is primarily necessary due to measures that are taken to reduce the size
 // of the sent static JSON payload to as minimal of a size as possible
 // as larger sizes cause a delay for the user when opening the UI.
+
+// Ячейка сетки плиток дизайнов - один тайл BYOND.
+const DESIGN_CELL_SIZE = 32;
+const DESIGN_SIZE_REGEX = /design(\d+)x(\d+)/;
+// Класс размера идёт первым словом и только в паре с числами: id вроде
+// design_disk на "design" тоже начинается, а размер ему всё равно нужен.
+const DESIGN_SIZE_CLASS_REGEX = /^design\d+x\d+\s/;
+
+/**
+ * Дописывает дефолтный класс размера дизайнам, которым DM его не прислал:
+ * без него у плитки нет ни ширины, ни высоты, и иконка не рисуется вовсе.
+ */
+export const withDesignSizeClass = classes => (
+  DESIGN_SIZE_CLASS_REGEX.test(classes)
+    ? classes
+    : `design${DESIGN_CELL_SIZE}x${DESIGN_CELL_SIZE} ${classes}`
+);
+
+/**
+ * Спрайт шире или выше тайла занимает столько ячеек сетки, сколько реально
+ * закрывает: иначе он распирает свой ряд и уводит соседние плитки вкось.
+ */
+export const designGridSpan = classes => {
+  const match = DESIGN_SIZE_REGEX.exec(classes || '');
+  if (!match) {
+    return undefined;
+  }
+  const columns = Math.ceil(parseInt(match[1], 10) / DESIGN_CELL_SIZE);
+  const rows = Math.ceil(parseInt(match[2], 10) / DESIGN_CELL_SIZE);
+  if (columns <= 1 && rows <= 1) {
+    return undefined;
+  }
+  return {
+    gridColumn: `span ${columns}`,
+    gridRow: `span ${rows}`,
+  };
+};
 
 const remappingIdCache = {};
 const remapId = id => remappingIdCache[id];
@@ -45,7 +82,7 @@ const selectRemappedStaticData = data => {
     design_cache[remapId(id)] = {
       name,
       hacked_only,
-      class: classes.startsWith("design") ? classes : `design32x32 ${classes}`,
+      class: withDesignSizeClass(classes),
     };
   }
 
@@ -840,12 +877,15 @@ const TechNode = (props) => {
               return design && (!design.hacked_only || !sec_protocols);
             })
             .map(k => (
-              <Button
+              <Tooltip
                 key={k}
-                className={`${design_cache[k].class} Techweb__DesignIcon`}
-                tooltip={design_cache[k].name}
-                tooltipPosition="bottom"
-              />
+                content={design_cache[k].name}
+                position="bottom">
+                <div
+                  className={`${design_cache[k].class} Techweb__DesignIcon`}
+                  style={designGridSpan(design_cache[k].class)}
+                />
+              </Tooltip>
             ))}
         </Box>
       )}

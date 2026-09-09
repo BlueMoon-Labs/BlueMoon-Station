@@ -21,6 +21,39 @@ export const isWindowSizeApplied = (targetSize, currentSize, pixelRatio) => {
 };
 
 /**
+ * Normalizes whatever `Byond.winget(id, 'size')` hands back into [width, height].
+ *
+ * BYOND returns coordinate properties as an object ({x, y}), the same shape `pos` arrives in.
+ * The original code ran the value through String() and split on /[x,]/, which turns an object
+ * into "[object Object]" — no 'x', no comma, so the length check never passed and the winget
+ * channel was dead code. That channel is the only one that can work at all while the window is
+ * still hidden, which is exactly when the reveal gate needs it.
+ *
+ * Returns null when the value cannot be read as a pair of finite numbers.
+ *
+ * @param {unknown} size Raw winget response
+ * @returns {[number, number] | null}
+ */
+export const parseWingetSize = size => {
+  if (!size) {
+    return null;
+  }
+  let pair;
+  if (typeof size === 'object') {
+    pair = Array.isArray(size)
+      ? [Number(size[0]), Number(size[1])]
+      : [Number(size.x), Number(size.y)];
+  }
+  else {
+    pair = String(size).split(/[x,]/).map(Number);
+  }
+  if (pair.length !== 2 || !Number.isFinite(pair[0]) || !Number.isFinite(pair[1])) {
+    return null;
+  }
+  return pair;
+};
+
+/**
  * Moves an item to the top of the recents array, and keeps its length
  * limited to the number in `limit` argument.
  *

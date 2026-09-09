@@ -63,7 +63,7 @@
 	if(!istype(hostile_hunter))
 		return profile_range
 	var/live_vision = max(1, hostile_hunter.vision_range)
-	if(hostile_hunter.ai_controller?.has_fresh_contact())
+	if(hostile_hunter.ai_controller?.is_combat_alert())
 		live_vision = max(live_vision, hostile_hunter.aggro_vision_range)
 	return min(profile_range, live_vision)
 

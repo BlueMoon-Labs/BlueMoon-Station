@@ -3,6 +3,31 @@
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_GENERAL
 	slot = ITEM_SLOT_OCLOTHING
 
+/datum/gear/suit/cmo_tailcoat
+	name = "Chief medical officer's tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/cmo/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Chief Medical Officer"
+	restricted_roles = list("Chief Medical Officer")
+
+/datum/gear/suit/doctor_tailcoat
+	name = "Medical tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Medical Doctor"
+	restricted_roles = list("Medical Doctor")
+
+/datum/gear/suit/chemist_tailcoat
+	name = "Chemist's tailcoat"
+	path = /obj/item/clothing/suit/toggle/labcoat/chemist/doctor_tailcoat
+	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
+	restricted_desc = "Chemist"
+	restricted_roles = list("Chemist")
+
+/datum/gear/suit/edgelord_trenchcoat
+	name = "Edgelord trenchcoat"
+	path = /obj/item/clothing/suit/jacket/leather_trenchcoat
+
 /datum/gear/suit/poncho
 	name = "Poncho"
 	path = /obj/item/clothing/suit/poncho
@@ -375,15 +400,15 @@
 	name = "Expensive trenchcoat"
 	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
-	restricted_desc = "Security and Expeditor"
-	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+	restricted_desc = "Security and Vanguard Operative"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Vanguard Operative")
 
 /datum/gear/suit/wy_expensive_fur_trenchcoat_alt
 	name = "Expensive trenchcoat Alt"
 	path = /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat_alt
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS
-	restricted_desc = "Security and Expeditor"
-	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Expeditor")
+	restricted_desc = "Security and Vanguard Operative"
+	restricted_roles = list("Detective", "Security Officer", "Warden", "Head of Security", "Vanguard Operative")
 
 /datum/gear/suit/officer_armor
 	name = "Officer’s Armor"

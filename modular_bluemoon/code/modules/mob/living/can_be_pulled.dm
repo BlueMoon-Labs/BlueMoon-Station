@@ -26,7 +26,7 @@
 				can_pull = TRUE
 			if(user_mob.mob_weight > MOB_WEIGHT_NORMAL) // другие сверхтяжёлые или тяжёлые персонажи могут тащить
 				can_pull = TRUE
-			if(user_mob.mind.martial_art?.id) // обладатели некоторых боевых искусств могут хватать и тащить сверхтяжелых персонажей
+			if(user_mob.mind?.martial_art?.id) // обладатели некоторых боевых искусств могут хватать и тащить сверхтяжелых персонажей
 				#define ALLOWED_MARTIAL_ARTS list(MARTIALART_SLEEPINGCARP, MARTIALART_CQC, MARTIALART_PLASMAFIST, MARTIALART_BOUNCER, MARTIALART_RISINGBASS)
 				var/datum/martial_art/puller_martial_art = user_mob.mind.martial_art
 				if(puller_martial_art.id in ALLOWED_MARTIAL_ARTS)
@@ -42,7 +42,7 @@
 					can_pull = TRUE
 				if(istype(human_pulling.back, /obj/item/mod/control)) // обычные персонажи с активированными клешнями из МОДа на спине могут тащить
 					var/obj/item/mod/control/MOD = human_pulling.back
-					if(MOD.active && istype(MOD.selected_module, /obj/item/mod/module/clamp))
+					if(MOD.is_active() && istype(MOD.selected_module, /obj/item/mod/module/clamp))
 						can_pull = TRUE
 				/* на будущее, если понадобятся проверки на предмет в руке
 				var/item_in_hand = human_pulling.get_active_held_item()

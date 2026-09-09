@@ -12,7 +12,9 @@ Stabilized extracts:
 	effect = "stabilized"
 	icon_state = "stabilized"
 	var/datum/status_effect/linked_effect
-	var/mob/living/owner
+	/// Слабая ссылка на того, кому экстракт выдал эффект. Жёсткая держала тело до
+	/// конца раунда: у поля нет ни Destroy, ни dropped, ни единого чтения.
+	var/datum/weakref/owner_ref
 
 /obj/item/slimecross/stabilized/Initialize(mapload)
 	. = ..()
@@ -20,7 +22,9 @@ Stabilized extracts:
 
 /obj/item/slimecross/stabilized/Destroy()
 	STOP_PROCESSING(SSobj,src)
-	qdel(linked_effect)
+	owner_ref = null
+	//qdel без обнуления оставлял в поле удалённый эффект
+	QDEL_NULL(linked_effect)
 	return ..()
 
 /obj/item/slimecross/stabilized/process()
@@ -41,7 +45,7 @@ Stabilized extracts:
 			break
 	if(!H.has_status_effect(effectpath))
 		var/datum/status_effect/stabilized/S = H.apply_status_effect(effectpath)
-		owner = H
+		owner_ref = WEAKREF(H)
 		S.linked_extract = src
 		STOP_PROCESSING(SSobj,src)
 

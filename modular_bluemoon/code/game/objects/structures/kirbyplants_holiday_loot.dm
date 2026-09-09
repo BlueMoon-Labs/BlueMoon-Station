@@ -13,6 +13,7 @@ GLOBAL_LIST_INIT(plant_loot_common, list(
 	/obj/item/restraints/legcuffs/bola/energy = WEIGHT_SECRET,
 	/obj/item/sign/flag/rus = WEIGHT_SECRET, // пасхалко
 	/obj/item/toy/figure/inteq = WEIGHT_SECRET,
+	/obj/item/toy/cards/deck/tarot/haunted = WEIGHT_SECRET,
 	// WEIGHT_UNCOMMON
 	/obj/item/trash/syndi_cakes = WEIGHT_UNCOMMON,
 	/obj/item/trash/can = WEIGHT_UNCOMMON,

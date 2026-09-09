@@ -262,6 +262,11 @@
 	icon_state = "pede"
 	matrixed_sections = MATRIX_RED_GREEN
 
+/datum/sprite_accessory/snouts/mam_snouts/protogen_with_bolt
+	name = "Protogen - With Bolt"
+	icon_state = "protogen_withbolt"
+	matrixed_sections = MATRIX_ALL
+
 /datum/sprite_accessory/snouts/mam_snouts/sergal
 	name = "Sergal"
 	icon_state = "sergal"

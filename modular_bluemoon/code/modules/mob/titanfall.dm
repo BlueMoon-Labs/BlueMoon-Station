@@ -123,21 +123,21 @@
 	)
 
 /obj/item/choice_beacon/vehicle/pact/mech/medical
-	name = "Medical Pact Mech Beacon"
+	name = "Medical PACT Mech Beacon"
 	vehicle_list = list(
 		"Vey-Med Odysseus" = /obj/vehicle/sealed/mecha/medical/odysseus/loaded,
 		"Vey-Med Gygax" = /obj/vehicle/sealed/mecha/medical/medigax/loaded
 	)
 
 /obj/item/choice_beacon/vehicle/pact/mech/cargo
-	name = "Cargo Pact Mech Beacon"
+	name = "Cargo PACT Mech Beacon"
 	vehicle_list = list(
 		"Autonomous Power Loader Unit MK-I" = /obj/vehicle/sealed/mecha/working/ripley/loaded,
 		"Autonomous Power Loader Unit MK-II" = /obj/vehicle/sealed/mecha/working/ripley/mkii/loaded
 	)
 
 /obj/item/choice_beacon/vehicle/pact/mech/engineer
-	name = "Engineer Pact Mech Beacon"
+	name = "Engineer PACT Mech Beacon"
 	vehicle_list = list(
 		"Autonomous Power Loader Unit MK-II-F" = /obj/vehicle/sealed/mecha/working/ripley/firefighter/loaded
 	)

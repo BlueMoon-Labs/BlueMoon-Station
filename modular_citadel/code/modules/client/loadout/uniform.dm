@@ -3,6 +3,11 @@
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_GENERAL
 	slot = ITEM_SLOT_ICLOTHING
 
+/datum/gear/uniform/tactical_pants
+	name = "Tactical pants"
+	path = /obj/item/clothing/under/pants/tactical
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_PANTS
+
 /datum/gear/uniform/suit
 	name = "Black suit"
 	path = /obj/item/clothing/under/suit/black
@@ -362,6 +367,27 @@
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
 	restricted_desc = "Head Of Security"
 	restricted_roles = list("Head Of Security")
+
+/datum/gear/uniform/sheriff
+	name = "Sheriff's Uniform"
+	path = /obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/sheriff
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	restricted_desc = "Head of Security"
+	restricted_roles = list("Head of Security")
+
+/datum/gear/uniform/undersheriff
+	name = "Undersheriff's Uniform"
+	path = /obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/undersheriff
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	restricted_desc = "Warden"
+	restricted_desc = list("Warden")
+
+/datum/gear/uniform/deputysheriff
+	name = "Deputy Sheriff's Uniform"
+	path = /obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/deputysheriff
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	restricted_desc = "Security Officer"
+	restricted_roles = list("Security Officer")
 
 /datum/gear/uniform/detcorp
 	name = "Corporate Detective's Uniform"

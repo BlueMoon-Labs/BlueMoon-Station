@@ -70,7 +70,7 @@
 	var/saved_gc_harddel_overflow_budget_max_ms
 	var/saved_gc_harddel_overflow_max_per_fire
 	var/saved_master_ticklimit
-	var/saved_state
+	var/saved_can_fire
 	var/saved_flags
 	var/list/saved_reference_find_on_fail
 	#ifdef UNIT_TESTS
@@ -144,7 +144,7 @@
 	saved_gc_harddel_overflow_budget_max_ms = CONFIG_GET(number/gc_harddel_overflow_budget_max_ms)
 	saved_gc_harddel_overflow_max_per_fire = CONFIG_GET(number/gc_harddel_overflow_max_per_fire)
 	saved_master_ticklimit = Master.current_ticklimit
-	saved_state = SSgarbage.state
+	saved_can_fire = detach_subsystem(SSgarbage)
 	saved_flags = SSgarbage.flags
 	saved_reference_find_on_fail = SSgarbage.reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
@@ -209,7 +209,6 @@
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
-		SSgarbage.state = SS_IDLE // Prevent MC from racing the test barrier
 		wait_for_pending_refcount_deletes()
 	for (var/i in 1 to cycles)
 		SSgarbage.state = SS_RUNNING
@@ -320,7 +319,7 @@
 	SSgarbage.harddel_yield_history = copy_gc_rewrite_test_list(saved_harddel_yield_history)
 	SSgarbage.harddel_yield_total = saved_harddel_yield_total
 	Master.current_ticklimit = saved_master_ticklimit
-	SSgarbage.state = saved_state
+	release_subsystem(SSgarbage, saved_can_fire)
 	SSgarbage.flags = saved_flags
 	GLOB.gc_failure_cache.failures = saved_gc_cache_failures
 	GLOB.gc_failure_cache.failure_sources = saved_gc_cache_sources

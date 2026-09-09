@@ -11,6 +11,7 @@ export const MESSAGE_PRUNE_INTERVAL = 60000;
 export const COMBINE_MAX_MESSAGES = 5;
 export const COMBINE_MAX_TIME_WINDOW = 5000;
 export const IMAGE_RETRY_DELAY = 250;
+export const IMAGE_RETRY_MAX_DELAY = 4000;
 export const IMAGE_RETRY_LIMIT = 10;
 export const IMAGE_RETRY_MESSAGE_AGE = 60000;
 

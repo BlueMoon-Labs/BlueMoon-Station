@@ -27,6 +27,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/jitter = 0
 	var/dizzy = 0
 	var/stuttering = 0
+	/// Кэш иконки кровавого пятна: собирается один раз на предмет из его initial(icon_state)
+	/// и лежит здесь, чтобы cut_overlay() снимал ровно тот оверлей, который добавили.
+	/// Раньше стоял на /atom, то есть в каждом турфе мира, при трёх читателях - и все три тут.
+	var/icon/blood_splatter_icon
 	///icon state name for inhand overlays
 	var/item_state = null
 	//Название хвоста-картинки из tail_digi.dmi
@@ -75,6 +79,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/pickup_sound
 	///Sound uses when dropping the item, or when its thrown.
 	var/drop_sound
+	///Sound uses when the item lands after being thrown. Overrides drop_sound.
+	var/throw_drop_sound
 	///Whether or not we use stealthy audio levels for this item's attack sounds
 	var/stealthy_audio = FALSE
 
@@ -233,8 +239,11 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
-	for(var/X in actions)
-		qdel(X)
+	// QDEL_LIST, а не ручной цикл: /datum/action/Destroy() вычёркивает себя из actions, и
+	// обход живого списка пропускал каждое второе действие. Плюс сам список обязан
+	// обнулиться - иначе предмет держит ссылки на уже удалённые датумы действий.
+	QDEL_LIST(actions)
+	actions = null
 	return ..()
 
 /obj/item/ComponentInitialize()
@@ -607,6 +616,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/proc/equipped(mob/user, slot, initial = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	var/signal_flags = SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
+	SEND_SIGNAL(user, COMSIG_MOB_EQUIPPED_ITEM, src, slot)
 	current_equipped_slot = slot
 	if(!(signal_flags & COMPONENT_NO_GRANT_ACTIONS))
 		for(var/X in actions)
@@ -799,8 +809,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			else
 				SSthrowing.playsound_capped(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
 
-		else if (drop_sound)
-			SSthrowing.playsound_capped(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
+		else if (throw_drop_sound || drop_sound)
+			SSthrowing.playsound_capped(src, throw_drop_sound || drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
 		return hit_atom.hitby(src, 0, itempush, throwingdatum=throwingdatum)
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, messy_throw = TRUE, quickstart = TRUE)
@@ -820,11 +830,11 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		pixel_x = rand(-8, 8)
 		pixel_y = rand(-8, 8)
 
-/obj/item/proc/randomize_pixel_position()
+/obj/item/proc/randomize_pixel_position(atom/movable/dropped_by)
 	if(item_flags & NO_PIXEL_RANDOM_DROP)
 		return
-	pixel_x = base_pixel_x + rand(-6, 6)
-	pixel_y = base_pixel_y + rand(-6, 6)
+	pixel_x = clamp((base_pixel_x + dropped_by?.pixel_x + rand(-6, 6)), -16, 16)
+	pixel_y = clamp((base_pixel_y + dropped_by?.pixel_y + rand(-6, 6)), -16, 16)
 
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)
@@ -951,7 +961,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 /obj/item/proc/on_mob_death(mob/living/L, gibbed)
 
-/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R) //Used to check for extra requirements for grinding an object
+/obj/item/proc/grind_requirements(obj/machinery/reagentgrinder/R, silent = FALSE) //Used to check for extra requirements for grinding an object
 	return TRUE
 
  //Called BEFORE the object is ground up - use this to change grind results based on conditions
@@ -1147,8 +1157,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if(hand_index)
 			M.held_items[hand_index] = null
 			M.update_inv_hands()
-			if(M.client)
-				M.client.screen -= src
+			M.remove_from_hud_screens(src)
 			layer = initial(layer)
 			plane = initial(plane)
 			appearance_flags &= ~NO_CLIENT_COLOR

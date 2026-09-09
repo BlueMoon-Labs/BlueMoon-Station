@@ -1,5 +1,26 @@
 //Colored pipes, use these for mapping
 
+// Five piping layers, of which the middle one is the default and therefore needs
+// no subtype of its own. Everything else gets an explicit /layerN with the map
+// sprite that shows the mapper where the pipe will actually sit.
+#define HELPER_PIPING_LAYER(Fulltype, Iconbase) \
+	##Fulltype/layer1 {					\
+		piping_layer = 1;				\
+		icon_state = Iconbase + "-1";	\
+	}									\
+	##Fulltype/layer2 {					\
+		piping_layer = 2;				\
+		icon_state = Iconbase + "-2";	\
+	}									\
+	##Fulltype/layer4 {					\
+		piping_layer = 4;				\
+		icon_state = Iconbase + "-4";	\
+	}									\
+	##Fulltype/layer5 {					\
+		piping_layer = 5;				\
+		icon_state = Iconbase + "-5";	\
+	}
+
 #define HELPER_PARTIAL(Fulltype, Iconbase, Color) \
 	##Fulltype {						\
 		pipe_color = Color;				\
@@ -9,25 +30,11 @@
 		level = PIPE_VISIBLE_LEVEL;		\
 		layer = GAS_PIPE_VISIBLE_LAYER;	\
 	}									\
-	##Fulltype/visible/layer1 {			\
-		piping_layer = 1;				\
-		icon_state = Iconbase + "-1";	\
-	}									\
-	##Fulltype/visible/layer3 {			\
-		piping_layer = 3;				\
-		icon_state = Iconbase + "-3";	\
-	}									\
+	HELPER_PIPING_LAYER(Fulltype/visible, Iconbase)	\
 	##Fulltype/hidden {					\
 		level = PIPE_HIDDEN_LEVEL;		\
 	}									\
-	##Fulltype/hidden/layer1 {			\
-		piping_layer = 1;				\
-		icon_state = Iconbase + "-1";	\
-	}									\
-	##Fulltype/hidden/layer3 {			\
-		piping_layer = 3;				\
-		icon_state = Iconbase + "-3";	\
-	}
+	HELPER_PIPING_LAYER(Fulltype/hidden, Iconbase)
 
 #define HELPER_PARTIAL_NAMED(Fulltype, Iconbase, Name, Color) \
 	HELPER_PARTIAL(Fulltype, Iconbase, Color)	\
@@ -71,3 +78,4 @@ HELPER_NAMED(supplymain, "main air supply pipe", rgb(130, 43, 255))
 #undef HELPER
 #undef HELPER_PARTIAL_NAMED
 #undef HELPER_PARTIAL
+#undef HELPER_PIPING_LAYER

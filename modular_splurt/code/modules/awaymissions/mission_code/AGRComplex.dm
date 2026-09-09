@@ -1384,13 +1384,6 @@
 /obj/machinery/porta_turret/syndicate/pod/russian
 	faction = list("russian")
 
-/obj/item/clothing/suit/armor/hos/platecarrier/makeshift
-	name = "makeshift combat rig"
-	desc = "A hand-sown combat rig made from armor vests and security belts. Trades some protection for utility."
-	body_parts_covered = CHEST|GROIN|ARMS
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
-	strip_delay = 60
-
 /obj/item/card/id/away/mountain
 	name = "A&GR S-08 General Access ID"
 	desc = "A standard-issue ID card for most of the complex's staff."
@@ -1457,7 +1450,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/clockremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/clockcult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 
@@ -1494,7 +1487,7 @@
 	return ..()
 
 /obj/effect/mob_spawn/human/bloodremnant/special(mob/living/new_spawn)
-	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/cult/neutered/ghost_role)
 	var/obj/item/implant/exile/E = new
 	E.implant(new_spawn)
 

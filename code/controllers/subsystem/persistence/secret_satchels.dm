@@ -1,10 +1,32 @@
 /**
  * Secret satchel persistence - allows storing of items in underfloor satchels that's loaded later.
  */
+
+/// Сколько записей пула тайных сатчелов переживают закрытие раунда.
+/// За раунд из пула забирается РОВНО ОДНА запись (LoadSatchels), а дописывается по одной
+/// на каждый спрятанный игроками сатчел - без капа файл растёт вечно. На проде (раунд
+/// 10119) в нём лежало 17 752 записи: ~4 МБ живых assoc-списков плюс json_encode одной
+/// непрерывной строкой на каждом закрытии раунда, а такая аллокация на 32-битном
+/// DreamDaemon и есть тот способ умереть, при котором до потолка ещё гигабайт.
+/// Пул - лотерея чужого лута, глубина истории важна только на порядок: 500 записей это
+/// примерно полсотни раундов.
+#define SECRET_SATCHEL_POOL_CAP 500
+
 /datum/controller/subsystem/persistence
 	var/list/satchel_blacklist 		= list() //this is a typecache
 	var/list/new_secret_satchels 	= list() //these are objects
 	var/list/old_secret_satchels 	= list()
+
+/// Оставляет в пуле только самые свежие cap записей. Старьё уходит первым: свежие сатчелы
+/// спрятаны в этом раунде, древние лежат в файле десятками раундов.
+/proc/trim_satchel_pool(list/pool, cap = SECRET_SATCHEL_POOL_CAP)
+	// islist явно: у строки в DM есть и length(), и Copy(), поэтому битый json без этой
+	// проверки молча проехал бы дальше куском текста вместо пула
+	if(!islist(pool) || !length(pool))
+		return list()
+	if(length(pool) <= cap)
+		return pool
+	return pool.Copy(length(pool) - cap + 1)
 
 /datum/controller/subsystem/persistence/LoadGamePersistence()
 	. = ..()
@@ -23,7 +45,9 @@
 	if(fexists(json_file))
 		json = json_decode(file2text(json_file))
 
-	old_secret_satchels = json["data"]
+	// Кап на входе, а не только на выходе: без него уже накопленный файл целиком висит в
+	// памяти весь раунд, и выигрыш пришёл бы только со следующего.
+	old_secret_satchels = trim_satchel_pool(json["data"])
 	var/obj/item/storage/backpack/satchel/flat/F
 	if(old_secret_satchels && old_secret_satchels.len >= 10) //guards against low drop pools assuring that one player cannot reliably find his own gear.
 		var/pos = rand(1, old_secret_satchels.len)
@@ -79,5 +103,5 @@
 	var/json_file = file("data/npc_saves/SecretSatchels[SSmapping.config.map_name].json")
 	var/list/file_data = list()
 	fdel(json_file)
-	file_data["data"] = old_secret_satchels + satchels_to_add
+	file_data["data"] = trim_satchel_pool(old_secret_satchels + satchels_to_add)
 	WRITE_FILE(json_file, json_encode(file_data))

@@ -44,6 +44,8 @@
 	/// This is the icon state for the icon that appears on the button
 	var/button_icon_state = "default"
 	var/button_overlay_state
+	/// При наведении на кнопу, блокирует открытие контестного меню ПКМ
+	var/button_block_right_click_context_menu = FALSE
 
 /datum/action/New(Target)
 	link_to(Target)
@@ -58,6 +60,12 @@
 /datum/action/Destroy()
 	if(owner)
 		Remove(owner)
+	// Обнулить свой target было мало: сам предмет продолжал держать нас в actions, а его
+	// собственный Destroy() до нас мог и не дойти (действие переживало предмет, если
+	// удалялось отдельно). Вычёркиваемся сами.
+	if(isitem(target))
+		var/obj/item/item_target = target
+		LAZYREMOVE(item_target.actions, src)
 	target = null
 	QDEL_LIST_ASSOC_VAL(viewers) // Qdel the buttons in the viewers list **NOT THE HUDS**
 	return ..()
@@ -80,9 +88,13 @@
 	if(grant_to == owner)
 		return // We already have it
 	var/mob/previous_owner = owner
-	owner = grant_to
+	// Сначала снимаем всё с прежнего владельца и только потом перезаписываем owner:
+	// Remove() отписывает сигналы по owner, и при обратном порядке она отписывала
+	// уже нового владельца, а подписки старого утекали - следующий Grant на того же
+	// моба ловил "mob_statchange overridden. Use override = TRUE..." (маска в руки).
 	if(!isnull(previous_owner))
 		Remove(previous_owner)
+	owner = grant_to
 	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(clear_ref), override = TRUE)
 
 	// Register some signals based on our check_flags
@@ -96,11 +108,17 @@
 /datum/action/proc/Remove(mob/remove_from)
 	SHOULD_CALL_PARENT(TRUE)
 
-	for(var/datum/hud/hud in viewers)
+	// Снимок обязателен: qdel кнопки внутри цикла зовёт action_button/Destroy, а тот
+	// делает `linked_action.viewers -= our_hud`. Правка списка прямо во время
+	// `for(... in viewers)` сдвигает индекс и пропускает следующий hud - его кнопка
+	// остаётся жить с linked_action на нас и держит экшен до конца раунда.
+	for(var/datum/hud/hud in viewers.Copy())
 		var/atom/movable/screen/movable/action_button/button = viewers[hud]
 		if(hud.mymob)
 			HideFrom(hud.mymob)
-		else if(button)
+		// HideFrom ищет кнопку по mymob.hud_used; если HUD мобу успели заменить,
+		// поиск промахнётся и кнопка переживёт экшен. Добиваем по снимку.
+		if(!QDELETED(button))
 			qdel(button) // Mob destroyed; remove orphaned button to prevent GC failure
 	LAZYREMOVE(remove_from?.actions, src) // We aren't always properly inserted into the viewers list, gotta make sure that action's cleared
 	viewers = list()
@@ -122,7 +140,7 @@
 
 /// Actually triggers the effects of the action.
 /// Called when the on-screen button is clicked, for example.
-/datum/action/proc/Trigger()
+/datum/action/proc/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
 	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target, owner) & COMPONENT_ACTION_BLOCK_TRIGGER)
@@ -272,6 +290,8 @@
 	button.actiontooltipstyle = buttontooltipstyle
 	if(desc)
 		button.desc = desc
+	if(button_block_right_click_context_menu)
+		TOGGLE_BITFIELD(button.flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1)
 	return button
 
 /datum/action/proc/SetId(atom/movable/screen/movable/action_button/our_button, mob/owner)
@@ -336,13 +356,28 @@
 	else if((target && current_button.appearance_cache != item_target.appearance) || force) //replace with /ref comparison if this is not valid.
 		var/old_layer = item_target.layer
 		var/old_plane = item_target.plane
+		var/old_pixel_x = item_target.pixel_x
+		var/old_pixel_y = item_target.pixel_y
+		var/old_pixel_z = item_target.pixel_z
+		var/old_pixel_w = item_target.pixel_w
+
 		item_target.layer = FLOAT_LAYER //AAAH
 		item_target.plane = FLOAT_PLANE //^ what that guy said
+		item_target.pixel_x = 0
+		item_target.pixel_y = 0
+		item_target.pixel_z = 0
+		item_target.pixel_w = 0
+
 		current_button.filters = null
 		current_button.cut_overlays()
 		current_button.add_overlay(item_target)
+
 		item_target.layer = old_layer
 		item_target.plane = old_plane
+		item_target.pixel_x = old_pixel_x
+		item_target.pixel_y = old_pixel_y
+		item_target.pixel_z = old_pixel_z
+		item_target.pixel_w = old_pixel_w
 		current_button.appearance_cache = item_target.appearance
 
 /datum/action/item_action/toggle_light
@@ -417,6 +452,10 @@
 
 /datum/action/item_action/toggle_welding_screen
 	name = "Toggle Welding Screen"
+	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUN|AB_CHECK_CONSCIOUS
+	required_mobility_flags = NONE
+	icon_icon = 'icons/obj/clothing/hats.dmi'
+	button_icon_state = "weldvisor" 			// for easier indication
 
 /datum/action/item_action/toggle_welding_screen/Trigger()
 	var/obj/item/clothing/head/hardhat/weldhat/H = target
@@ -587,18 +626,10 @@
 /datum/action/item_action/change
 	name = "Change"
 
+// Само действие обрабатывает /obj/item/picket_sign/ui_action_click - собственный Trigger()
+// здесь только уводил бы нас мимо IsAvailable() и держал вторую ссылку на плакат.
 /datum/action/item_action/nano_picket_sign
 	name = "Retext Nano Picket Sign"
-	var/obj/item/picket_sign/S
-
-/datum/action/item_action/nano_picket_sign/New(Target)
-	..()
-	if(istype(Target, /obj/item/picket_sign))
-		S = Target
-
-/datum/action/item_action/nano_picket_sign/Trigger()
-	if(istype(S))
-		S.retext(owner)
 
 /datum/action/item_action/adjust // Требует чтобы в .dmi было в конце нужной вам модельки окончание _up (Пример sechailer_up)
 

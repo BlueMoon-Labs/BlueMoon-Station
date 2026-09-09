@@ -54,7 +54,7 @@
 		if(!O.anchored)
 			if(isturf(O.loc))
 				var/turf/T = O.loc
-				if(T.intact && level == 1)
+				if((T.turf_flags & TURF_INTACT) && level == 1)
 					continue
 			var/mob/living/target = locate() in view(4,src)
 			if(target && !target.stat)

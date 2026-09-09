@@ -36,7 +36,15 @@
 				break
 	return hits
 
-/proc/find_client_references(target, quiet = FALSE)
+/**
+ * Держатели target в клиентских структурах.
+ *
+ * quiet - не писать отчёт в лог рефтрекера, только вернуть список.
+ * yield - разрешить CHECK_TICK между клиентами. Из SSgarbage звать ТОЛЬКО с
+ * yield = FALSE: там проб работает внутри обхода очереди сборки, и сон посреди
+ * него оставил бы полуобработанную очередь. Клиентов десятки, обход дешёвый.
+ */
+/proc/find_client_references(target, quiet = FALSE, yield = TRUE)
 	var/list/results = list()
 	if(isnull(target))
 		return results
@@ -83,7 +91,8 @@
 			results += "client [game_client.ckey]: images x[direct_hits] (сам объект в images)"
 		if(attached_hits)
 			results += "client [game_client.ckey]: images x[attached_hits] с loc=цель (прикреплённые image держат объект)"
-		CHECK_TICK
+		if(yield)
+			CHECK_TICK
 	if(!quiet)
 		for(var/line in results)
 			log_reftracker("CLIENT PROBE: [line]")

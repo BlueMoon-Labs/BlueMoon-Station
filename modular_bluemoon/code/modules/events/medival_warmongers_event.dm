@@ -66,6 +66,7 @@
 		if(D && D.adjust_money(-payoff))
 			priority_announce("ЭТОГО БУДЕТ ДОСТАТОЧНО, ПОМНИ, КОМУ ТЫ ПРИНАДЛЕЖИШЬ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
 			return
 		priority_announce("ТЫ СЧИТАЕШЬ МЕНЯ ШУТОМ? ТЕБЕ КОНЕЦ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
@@ -81,6 +82,12 @@
 	if(length(space_zlevels))
 		return pick(space_zlevels)
 	return SSmapping.station_start
+
+/datum/round_event/medieval_warmongers/proc/resolve_threat_peacefully()
+	warmongers_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 /// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
 /// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
@@ -283,6 +290,23 @@
 	belt = /obj/item/storage/belt/gold_tasset
 	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
+
+#define MEDIEVAL_NODROP_TRAIT "medieval_nodrop"
+
+/datum/outfit/medieval/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	..()
+	if(visualsOnly)
+		return
+	var/static/list/nodrop_slots = list(
+		ITEM_SLOT_HEAD,
+		ITEM_SLOT_OCLOTHING,
+		ITEM_SLOT_FEET,
+		ITEM_SLOT_GLOVES,
+	)
+	for(var/slot in nodrop_slots)
+		var/obj/item/I = H.get_item_by_slot(slot)
+		if(I)
+			ADD_TRAIT(I, TRAIT_NODROP, MEDIEVAL_NODROP_TRAIT)
 
 // Medieval Belts
 

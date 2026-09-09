@@ -20,7 +20,9 @@
 	. = ..()
 	for(var/obj/machinery/porta_turret/turret in GLOB.machines)
 		apply_aperture_turret_skin(turret)
-	for(var/obj/structure/ai_core/core as anything in world)
+	// Раньше здесь был обход world - сотни тысяч атомов на старте раунда, из-за чего
+	// BYOND демотировал прок в фон. Дальше ядра красит сам update_icon_state().
+	for(var/obj/structure/ai_core/core in GLOB.ai_cores)
 		apply_glados_ai_core_skin(core)
 	for(var/mob/living/silicon/ai/AI in GLOB.ai_list)
 		apply_glados_theme(AI)

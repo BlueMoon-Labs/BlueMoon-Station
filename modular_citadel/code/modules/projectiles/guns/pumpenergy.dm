@@ -134,6 +134,9 @@
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/pump, /obj/item/ammo_casing/energy/laser/pump)
 	ammo_x_offset = 2
 	modifystate = 1
+	can_flashlight = 1
+	flight_x_offset = 15
+	flight_y_offset = 10
 
 //AMMO CASINGS (fire modes)
 

@@ -1,7 +1,9 @@
-//Порт tgstation@14140a6355d, адаптация: слушаем COMSIG_MOB_ATTACK_HAND с интентом
-//(нет combat_mode/modifiers), эмоция свободным текстом через "me"-эмоут в стиле wuv
-//(у мобов BlueMoon нет ключевых эмоций донора), без prob(33) - паритет с прежним
-//wuv-поведением питомцев, мудлет через COMSIG_ADD_MOOD_EVENT (Citadel-мудлеты).
+//Порт tgstation@14140a6355d, адаптация: слушаем COMSIG_ATOM_ATTACK_HAND и читаем
+//интент с user.a_intent (нет combat_mode/modifiers), эмоция свободным текстом через
+//"me"-эмоут в стиле wuv (у мобов BlueMoon нет ключевых эмоций донора), без prob(33) -
+//паритет с прежним wuv-поведением питомцев, мудлет через COMSIG_ADD_MOOD_EVENT
+//(Citadel-мудлеты). COMSIG_MOB_ATTACK_HAND не годится: on_attack_hand уходит в
+//INVOKE_ASYNC и в unit-тестах/нагрузке колбэк может не успеть до проверки.
 /**
  * ## Элемент pet_bonus
  *
@@ -25,18 +27,22 @@
 	src.emote_message = emote_message
 	src.emote_type = emote_type
 	src.moodlet = moodlet
-	RegisterSignal(target, COMSIG_MOB_ATTACK_HAND, PROC_REF(on_attack_hand), override = TRUE)
+	RegisterSignal(target, COMSIG_ATOM_ATTACK_HAND, PROC_REF(on_attack_hand), override = TRUE)
 
 /datum/element/pet_bonus/Detach(datum/source, ...)
 	. = ..()
-	UnregisterSignal(source, COMSIG_MOB_ATTACK_HAND)
+	UnregisterSignal(source, COMSIG_ATOM_ATTACK_HAND)
 
-/datum/element/pet_bonus/proc/on_attack_hand(mob/living/pet, mob/living/petter, act_intent)
+/datum/element/pet_bonus/proc/on_attack_hand(atom/pet, mob/user)
 	SIGNAL_HANDLER
-	if(act_intent != INTENT_HELP || pet.stat != CONSCIOUS)
+	if(!isliving(pet) || !isliving(user))
+		return
+	var/mob/living/pet_mob = pet
+	var/mob/living/petter = user
+	if(petter.a_intent != INTENT_HELP || pet_mob.stat != CONSCIOUS)
 		return
 	// Отложка на тик: эффекты должны выйти после сообщения "гладит"
-	addtimer(CALLBACK(src, PROC_REF(pet_the_pet), pet, petter), 1)
+	addtimer(CALLBACK(src, PROC_REF(pet_the_pet), pet_mob, petter), 1)
 
 /// Собственно радость питомца: сердечко, эмоция, мудлет гладящему
 /datum/element/pet_bonus/proc/pet_the_pet(mob/living/pet, mob/living/petter)

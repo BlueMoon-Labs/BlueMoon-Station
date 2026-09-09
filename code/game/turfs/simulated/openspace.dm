@@ -20,7 +20,7 @@ GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdr
 	baseturfs = /turf/open/openspace
 	CanAtmosPassVertical = ATMOS_PASS_YES
 	baseturfs = /turf/open/openspace
-	intact = FALSE //this means wires go on top
+	turf_flags = TURF_FLAGS_DEFAULT & ~TURF_INTACT
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/can_cover_up = TRUE
 	var/can_build_on = TRUE
@@ -109,6 +109,9 @@ GLOBAL_DATUM_INIT(openspace_backdrop_one_for_all, /atom/movable/openspace_backdr
 				new/obj/structure/lattice/catwalk(src)
 			else
 				to_chat(user, "<span class='warning'>You need two rods to build a catwalk!</span>")
+			return
+		if(!HasAdjacentSupport())
+			user.balloon_alert(user, "Не за что крепить! Нужна опора!")
 			return
 		if(R.use(1))
 			to_chat(user, "<span class='notice'>You construct a lattice.</span>")

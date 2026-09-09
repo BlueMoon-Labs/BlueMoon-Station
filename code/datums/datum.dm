@@ -102,6 +102,17 @@
  */
 /datum/proc/Destroy(force=FALSE, ...)
 	SHOULD_CALL_PARENT(TRUE)
+	#ifdef DATUM_CENSUS
+	// Атомы сюда доходят наравне со всеми (Destroy() у них общий), и отсеивать их здесь
+	// нечем - istype на каждом из полутора миллионов qdel стоил бы дороже самого счётчика.
+	// Отсев делает отчёт: он перебирает ключи datum_census_created, куда атом не попадает
+	// вовсе, см. code/datums/datum_census.dm.
+	var/list/census_destroyed = datum_census_destroyed
+	if(!census_destroyed)
+		census_destroyed = list()
+		datum_census_destroyed = census_destroyed
+	census_destroyed[type] += 1
+	#endif
 	tag = null
 	datum_flags &= ~DF_USE_TAG //In case something tries to REF us
 	weak_reference = null	//ensure prompt GCing of weakref.

@@ -106,6 +106,30 @@
 	icon_state = "hoscorp"
 	item_state = "hoscorp"
 
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/deputysheriff
+	name = "deputy sheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth."
+	icon_state = "deputysheriff"
+	item_state = "deputysheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/undersheriff
+	name = "undersheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth. This one has a single golden star on each side of the collar, indicating the wearer as the sheriff's second-in-command."
+	icon_state = "undersheriff"
+	item_state = "undersheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
+/obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/sheriff
+	name = "sheriff's uniform"
+	desc = "A pair of black slacks and a dark-beige button-down shirt with a black tie; a standard uniform for sheriff deputies and their superiors, specific to more urbanized colonies, resembling a uniform worn by more traditional policing forces on Earth. This one has two golden stars on each side of the collar, indicating the wearer as the true and only sheriff on the station."
+	icon_state = "sheriff"
+	item_state = "sheriff"
+	can_adjust = TRUE
+	unique_reskin = null
+
 /obj/item/clothing/under/rank/security/officer/blueshirt/seccorp/detcorp
 	name = "corporate detective's uniform"
 	icon_state = "detcorp"

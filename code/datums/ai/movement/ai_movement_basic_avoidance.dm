@@ -15,6 +15,9 @@
 	var/min_dist = controller.blackboard[BB_CURRENT_MIN_MOVE_DISTANCE]
 	var/delay = get_step_delay(controller)
 	var/datum/move_loop/loop = SSmove_manager.move_to(moving, current_movement_target, min_dist, delay, flags = move_flags, subsystem = SSai_movement, extra_info = controller)
+	if(!loop)
+		return
+	controller.track_move_loop(loop)
 	RegisterSignal(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move))
 	RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move))
 
@@ -22,6 +25,11 @@
 	SIGNAL_HANDLER
 	var/atom/movable/pawn = source.moving
 	var/datum/ai_controller/controller = source.extra_info
+	//Осиротевший луп (харддел пауна/контроллера) обязан умереть здесь, а не
+	//рантаймить каждый шаг до ребута - см. shared_pre_move_checks гибрида
+	if(QDELETED(pawn) || QDELETED(controller))
+		qdel(source)
+		return MOVELOOP_SKIP_STEP
 	source.delay = get_step_delay(controller)
 	source.distance = controller.blackboard[BB_CURRENT_MIN_MOVE_DISTANCE]
 
@@ -53,6 +61,8 @@
 	if(succeeded)
 		return
 	var/datum/ai_controller/controller = source.extra_info
+	if(QDELETED(controller)) //Move() мог удалить контроллер вместе с пауном
+		return
 	increment_pathing_failures(controller)
 
 ///Одиночный шаг (кайт/бекстеп): мгновенный старт, без смены направления взгляда.

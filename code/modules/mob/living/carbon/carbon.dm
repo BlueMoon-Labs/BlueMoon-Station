@@ -100,9 +100,9 @@
 				playsound(user.loc, 'sound/effects/attackblob.ogg', 50, 1)
 
 				if(prob(src.getBruteLoss() - 50))
-					for(var/atom/movable/A in stomach_contents)
+					for(var/atom/movable/A in stomach_contents.Copy())
 						A.forceMove(drop_location())
-						stomach_contents.Remove(A)
+						remove_from_stomach(A)
 					src.gib()
 
 
@@ -343,6 +343,8 @@
 	. = FALSE
 	if(!buckled)
 		return
+	if(istype(buckled, /obj/structure/bed/nest))
+		return buckled.user_unbuckle_mob(src, src)
 	if(restrained())
 		// too soon.
 		var/buckle_cd = 600
@@ -402,7 +404,7 @@
 	if(!cuff_break)
 		visible_message("<span class='warning'>[src] пытается сбросить [I]!</span>")
 		to_chat(src, "<span class='notice'>Ты пытаешься сбросить [I]... (Это займёт около [DisplayTimeText(breakouttime)]. Тебе не стоит делать лишних движений.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сбросить [I]!</span>")
@@ -411,7 +413,7 @@
 		breakouttime = 50
 		visible_message("<span class='warning'>[src] is trying to break [I]!</span>")
 		to_chat(src, "<span class='notice'>You attempt to break [I]... (This will take around 5 seconds and you need to stand still.)</span>")
-		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check))))
+		if(do_after(src, breakouttime, target = src, timed_action_flags = allow_breakout_movement, extra_checks = CALLBACK(src, PROC_REF(cuff_resist_check)), show_cog = FALSE))
 			clear_cuffs(I, cuff_break)
 		else
 			to_chat(src, "<span class='warning'>Тебе не удалось сломать [I]!</span>")
@@ -431,8 +433,7 @@
 		if (buckled && buckled.buckle_requires_restraints)
 			buckled.unbuckle_mob(src)
 		update_handcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -444,8 +445,7 @@
 		var/obj/item/W = legcuffed
 		legcuffed = null
 		update_inv_legcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -542,6 +542,98 @@
 	if(!has_hand_for_held_index(active_hand_index))
 		return FALSE
 	return ..()
+
+///////////////////////////////////////////////////////////////////////////
+// РАССЧЁТ ИЗМЕНЕНИЯ ГОЛОДА И ЖАЖДЫ, И ИЗМЕНЕНИЯ HUD ИЗ-ЗА ЭТОГО
+// Цепочка проков сначала сравнивает старое значение
+
+// Голод
+/mob/living/carbon/adjust_nutrition(change, max = INFINITY)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/set_nutrition(change)
+	var/old_nutrition = get_nutrition_hud_level(nutrition)
+	. = ..()
+	var/new_nutrition = get_nutrition_hud_level(nutrition)
+	if(new_nutrition != old_nutrition)
+		update_hunger_and_thirst_hud(update_hunger = TRUE, nutrition_level = new_nutrition)
+
+/mob/living/carbon/proc/get_nutrition_hud_level(value)
+	if(!hud_used)
+		return
+	switch(value)
+		if(NUTRITION_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(NUTRITION_LEVEL_WELL_FED to NUTRITION_LEVEL_FULL)
+			return 1
+		if(NUTRITION_LEVEL_HUNGRY to NUTRITION_LEVEL_WELL_FED)
+			return 2
+		if(NUTRITION_LEVEL_STARVING to NUTRITION_LEVEL_HUNGRY)
+			return 3
+		if(-INFINITY to NUTRITION_LEVEL_STARVING)
+			return 4
+
+// Жажда
+/mob/living/carbon/adjust_thirst(change, max = INFINITY)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/set_thirst(change)
+	var/old_thirst = get_thirst_hud_level(thirst)
+	. = ..()
+	var/new_thirst = get_thirst_hud_level(thirst)
+	if(new_thirst != old_thirst)
+		update_hunger_and_thirst_hud(update_thirst = TRUE, thirst_level = new_thirst)
+
+/mob/living/carbon/proc/get_thirst_hud_level(value)
+	if(!hud_used)
+		return
+	if(HAS_TRAIT(src, TRAIT_NOTHIRST)) // Персонажи, которые не имеют жажды, вечно полные
+		return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+	switch(value)
+		if(THIRST_LEVEL_FULL to INFINITY)
+			return 0 // Следует прогонять через isnull(), если нам нужно "0", а не "null"
+		if(THIRST_LEVEL_QUENCHED to THIRST_LEVEL_FULL)
+			return 1
+		if(THIRST_LEVEL_THIRSTY to THIRST_LEVEL_QUENCHED)
+			return 2
+		if(THIRST_LEVEL_PARCHED to THIRST_LEVEL_THIRSTY)
+			return 3
+		if(0 to THIRST_LEVEL_PARCHED)
+			return 4
+
+/// Уже переписанный Sandstorm прок обновления HUD, отвечающих за индикацию голода
+/mob/living/carbon/proc/update_hunger_and_thirst_hud(update_hunger, update_thirst, nutrition_level, thirst_level)
+	if(!client || !hud_used)
+		return
+
+	var/robotic_user = isrobotic(src)
+	if(update_hunger && (hud_used.hunger || hud_used.charge))
+		var/nutrition_prefix = robotic_user ? "charge" : "nutrition" // Тип стейта
+		var/nutrition_status = isnull(nutrition_level) ? get_nutrition_hud_level(nutrition) : nutrition_level
+		var/nutrition_state = "[nutrition_prefix][nutrition_status]"
+
+		if(robotic_user)
+			if(hud_used.charge.icon_state != nutrition_state)
+				hud_used.charge.icon_state = nutrition_state
+		else
+			if(hud_used.hunger.icon_state != nutrition_state)
+				hud_used.hunger.icon_state = nutrition_state
+
+	if(!robotic_user && update_thirst && hud_used.thirst)
+		var/thirst_status = isnull(thirst_level) ? get_thirst_hud_level(thirst) : thirst_level
+		var/thirst_state = "hydration[thirst_status]"
+		if(hud_used.thirst.icon_state != thirst_state)
+			hud_used.thirst.icon_state = thirst_state
+
+///////////////////////////////////////////////////////////////////////////
 
 /mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = FALSE, purge_ratio = 0.1)
 	if(HAS_TRAIT(src, TRAIT_NOHUNGER) && !force)
@@ -648,12 +740,12 @@
 			set_resting(TRUE, FALSE, FALSE)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
 			combat_flags |= COMBAT_FLAG_HARD_STAMCRIT
-			filters += CIT_FILTER_STAMINACRIT
+			add_filter("staminacrit", 1, CIT_FILTER_STAMINACRIT)
 			update_mobility()
 	if((combat_flags & COMBAT_FLAG_HARD_STAMCRIT) && total_health <= STAMINA_CRIT_REMOVAL_THRESHOLD)
 		to_chat(src, "<span class='notice'>Вы больше не чувствуете себя так измотанно.</span>")
 		combat_flags &= ~(COMBAT_FLAG_HARD_STAMCRIT)
-		filters -= CIT_FILTER_STAMINACRIT
+		remove_filter("staminacrit")
 		update_mobility()
 	UpdateStaminaBuffer()
 	update_health_hud()
@@ -709,7 +801,7 @@
 			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
 		if(length(G.color_cutoffs))
 			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
-	if(head && istype(head, /obj/item/clothing/head))
+	if(head && istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
 		see_in_dark = max(H.darkness_view, see_in_dark)
@@ -749,10 +841,19 @@
 		sight |= SEE_TURFS|SEE_MOBS|SEE_OBJS
 		see_in_dark = max(see_in_dark, 8)
 
+	// A character with active emissive (body-part) glow can see farther into darkness so that distant
+	// glowing atoms get delivered to the client and their emissive pixels render at any radius.
+	if(has_active_emissive())
+		see_in_dark = max(see_in_dark, EMISSIVE_DARKSIGHT_RANGE)
+
 	lighting_color_cutoffs = color_cutoffs_accumulator
 
 	if(see_override)
 		see_invisible = see_override
+	var/turf/mob_turf = get_turf(src)
+	if(mob_turf && is_hilbert_hotel_zlevel(mob_turf.z))
+		sight = initial(sight)
+
 	. = ..()
 
 
@@ -772,7 +873,7 @@
 
 /mob/living/carbon/proc/get_total_tint()
 	. = 0
-	if(istype(head, /obj/item/clothing/head))
+	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part))
 		var/obj/item/clothing/head/HT = head
 		. += HT.tint
 	if(istype(wear_mask, /obj/item/clothing))
@@ -893,6 +994,36 @@
 	else
 		clear_fullscreen("brute")
 
+	var/toxdamage = getToxLoss()
+	if(toxdamage)
+		var/severity = 0
+		switch(toxdamage)
+			if(5 to 15)
+				severity = 1
+			if(15 to 30)
+				severity = 2
+			if(30 to 45)
+				severity = 3
+			if(45 to 70)
+				severity = 4
+			if(70 to 85)
+				severity = 5
+			if(85 to INFINITY)
+				severity = 6
+		overlay_fullscreen("synthcorrupt", /atom/movable/screen/fullscreen/scaled/synthcorrupt, severity)
+	else
+		clear_fullscreen("synthcorrupt")
+
+	var/blood_effect_volume = blood_volume + integrating_blood
+	var/blood_threshold_high = BLOOD_VOLUME_OKAY * blood_ratio
+	var/blood_threshold_low = BLOOD_VOLUME_SURVIVE * blood_ratio
+	if(blood_effect_volume < blood_threshold_high)
+		var/blood_range = blood_threshold_high - blood_threshold_low
+		var/severity = clamp(round(10 * (1 - (blood_effect_volume - blood_threshold_low) / blood_range)), 1, 10)
+		overlay_fullscreen("bloodloss", /atom/movable/screen/fullscreen/scaled/bloodloss, severity)
+	else
+		clear_fullscreen("bloodloss")
+
 /mob/living/carbon/update_health_hud(shown_health_amount)
 	if(!client || !hud_used)
 		return
@@ -950,7 +1081,6 @@
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
-	update_hunger_and_thirst_hud()
 	med_hud_set_status()
 	..()
 
@@ -1080,8 +1210,40 @@
 		C.visible_message("<span class='danger'>[src] devours [C]!</span>", \
 						"<span class='userdanger'>[src] devours you!</span>")
 		C.forceMove(src)
-		stomach_contents.Add(C)
+		add_to_stomach(C)
 		log_combat(src, C, "devoured")
+
+/**
+ * Кладёт объект в stomach_contents.
+ *
+ * Главная задача - не пускать в список уже мёртвых: /obj/effect/decal/Initialize
+ * отвечает INITIALIZE_HINT_QDEL на любой не-турф, поэтому декаль, созданная
+ * внутри моба (партийная граната сработала в руках, гибспаунер внутри карбона),
+ * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
+ * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
+ * одним тиком, каждое с одной внешней ссылкой.
+ *
+ * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
+ * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
+ * чужой обработчик у только что осмотренного и съеденного моба.
+ */
+/mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
+	if(QDELETED(swallowed) || (swallowed in stomach_contents))
+		return
+	stomach_contents += swallowed
+
+/// Снимает объект с желудка вручную (вытащили, срыгнули, передали другому мобу).
+/mob/living/carbon/proc/remove_from_stomach(atom/movable/swallowed)
+	if(!swallowed)
+		return
+	stomach_contents -= swallowed
+
+/// Догоняет содержимое, удалённое кем-то со стороны. Зовётся из handle_stomach(),
+/// то есть только для мобов, у которых в желудке реально что-то лежит.
+/mob/living/carbon/proc/prune_stomach_contents()
+	for(var/atom/movable/content as anything in stomach_contents.Copy())
+		if(QDELETED(content))
+			stomach_contents -= content
 
 /mob/living/carbon/proc/create_bodyparts()
 	var/l_arm_index_next = -1

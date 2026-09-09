@@ -18,6 +18,10 @@
 	. = ..()
 	register_context()
 
+/obj/item/reagent_containers/food/snacks/customizable/pet_bowl/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/liquids_interaction) // LIQUIDS ADD - allow scooping liquids from turfs
+
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(iscarbon(user) && isnull(held_item))
@@ -164,7 +168,6 @@
 		empty_bowl()
 	else
 		if(!reagents?.has_reagent(/datum/reagent/consumable/nutriment))
-			cut_overlays()
 			var/datum/reagent/r = reagents.get_master_reagent()
 			name = "[initial(name)] of [replacetext(r.glass_name, "glass of ", "")]"
 	update_icon()

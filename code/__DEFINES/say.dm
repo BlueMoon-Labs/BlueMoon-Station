@@ -92,9 +92,9 @@
 #define EAVESDROP_EXTRA_RANGE 1 //how much past the specified message_range does the message get starred, whispering only
 
 // A link given to ghost alice to follow bob
-#define FOLLOW_LINK(alice, bob) "<a href=?src=[REF(alice)];follow=[REF(bob)]>(F)</a>"
+#define FOLLOW_LINK(alice, bob) "<a href=?src=[REF(alice)];[follow_href_params(bob)]>(F)</a>"
 #define TURF_LINK(alice, turfy) "<a href=?src=[REF(alice)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(T)</a>"
-#define FOLLOW_OR_TURF_LINK(alice, bob, turfy) "<a href=?src=[REF(alice)];follow=[REF(bob)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(F)</a>"
+#define FOLLOW_OR_TURF_LINK(alice, bob, turfy) "<a href=?src=[REF(alice)];[follow_href_params(bob)];x=[turfy.x];y=[turfy.y];z=[turfy.z]>(F)</a>"
 
 #define LINGHIVE_NONE 0
 #define LINGHIVE_OUTSIDER 1
@@ -118,7 +118,7 @@
 //ambition start
 #define MAX_AMBITION_LEN		1024
 //ambition end
-#define MAX_MESSAGE_LEN			4096
+#define MAX_MESSAGE_LEN			8192
 #define MAX_FLAVOR_LEN			4096
 #define MAX_FLAVOR_PREVIEW_LEN	40
 #define MAX_TASTE_LEN			400 //lick... vore... ew... //BLUEMOON EDIT

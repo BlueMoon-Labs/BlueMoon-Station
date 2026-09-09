@@ -1,10 +1,14 @@
-/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+/mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	var/prev_lying = lying
 	if((stat != DEAD) || istype(src, /mob/living/silicon/robot))	// Robot's death() proc is called even if he's dead on gib()
 		death(1)
 
 	if(!prev_lying)
 		gib_animation()
+
+	if(drop_items)
+		unequip_everything()
+		dust_spill_everything()
 
 	spill_organs(no_brain, no_organs, no_bodyparts, was_explosion)
 
@@ -39,13 +43,68 @@
 
 	if(drop_items)
 		unequip_everything()
+		dust_spill_everything() // BLUEMOON ADD - drop_items теперь означает "выбросить вообще всё"
 
 	if(buckled)
 		buckled.unbuckle_mob(src, force = TRUE)
 
 	dust_animation()
-	spawn_dust(just_ash)
+	var/datum/onelife_death/form = onelife_get_death_form(src) // BLUEMOON ADD - «Одна Жизнь»
+	if(form) // BLUEMOON ADD - рассыпаемся в выбранную форму вместо пепла
+		form.crumble(src)
+	else
+		spawn_dust(just_ash)
 	QDEL_IN(src,5) // since this is sometimes called in the middle of movement, allow half a second for movement to finish, ghosting to happen and animation to play. Looks much nicer and doesn't cause multiple runtimes.
+
+/// BLUEMOON ADD START
+/// Выбрасывает всё то, что при обычном dust() оставалось внутри тела и исчезало
+/// вместе с ним через 5 тиков: застрявшие в конечностях предметы, сами импланты,
+/// их содержимое (например, имплант-хранилище) и проглоченные предметы.
+/mob/living/proc/dust_spill_everything()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+
+	if(!iscarbon(src))
+		return
+
+	var/mob/living/carbon/C = src
+
+	//Застрявшие в конечностях предметы
+	for(var/obj/item/bodypart/LB as anything in C.bodyparts)
+		if(!LB.embedded_objects.len)
+			continue
+		for(var/obj/item/I as anything in LB.embedded_objects)
+			LB.embedded_objects -= I
+			I.unembedded()
+			I.forceMove(T)
+			I.randomize_pixel_position(src)
+		LB.embedded_objects.Cut()
+
+	if(!C.has_embedded_objects())
+		C.clear_alert("embeddedobject")
+		SEND_SIGNAL(C, COMSIG_CLEAR_MOOD_EVENT, "embedded")
+
+	//Импланты: сначала выпускаем их содержимое, потом выбрасываем сам имплант.
+	//implants объявлен null и наполняется лениво - у мобов без имплантов списка нет вовсе.
+	var/list/implants_copy = LAZYCOPY(C.implants)
+	for(var/obj/item/implant/IM as anything in implants_copy)
+		for(var/obj/item/IT in IM.contents)
+			IT.forceMove(T)
+		IM.removed(C)
+		var/obj/item/implantcase/case = new(T)
+		IM.forceMove(case)
+		case.imp = IM
+		case.name = "[case.name] ([IM.name])"
+		case.update_appearance()
+		case.randomize_pixel_position(src)
+
+	//Проглоченное (содержимое органов, например желудка)
+	for(var/obj/item/organ/O as anything in C.internal_organs)
+		for(var/obj/item/IT in O.contents)
+			IT.forceMove(T)
+			IT.randomize_pixel_position(src)
+/// BLUEMOON ADD END
 
 /mob/living/proc/dust_animation()
 	return

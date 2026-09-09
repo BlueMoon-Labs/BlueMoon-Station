@@ -293,10 +293,18 @@ Turf and target are separate in case you want to teleport some distance from a t
 			pois[avoid_assoc_duplicate_keys(A.name, namecounts)] = A
 
 	return pois
-//Orders mobs by type then by name
-/proc/sortmobs()
+/**
+ * Orders mobs by type then by name.
+ *
+ * source - какой список раскладывать. По умолчанию все мобы мира, но вызывающему
+ * почти всегда нужно подмножество (например только мобы с ckey). Отфильтровать ДО
+ * вызова дешевле на порядок: sortNames() это Copy() плюс timsort с DM-компаратором,
+ * то есть O(n log n) вызовов прока по всему GLOB.mob_list, а дальше ещё полтора
+ * десятка полных проходов с istype. Фильтрация порядок не меняет.
+ */
+/proc/sortmobs(list/source = GLOB.mob_list)
 	var/list/moblist = list()
-	var/list/sortmob = sortNames(GLOB.mob_list)
+	var/list/sortmob = sortNames(source)
 	for(var/mob/living/silicon/ai/M in sortmob)
 		moblist.Add(M)
 	for(var/mob/camera/M in sortmob)
@@ -580,6 +588,10 @@ Turf and target are separate in case you want to teleport some distance from a t
 	return TRUE
 
 /proc/is_blocked_turf(turf/T, exclude_mobs)
+	// get_step() за краем карты возвращает null; для проходимости это стена
+	// (vomit в раунде 9875 ронял Life-цикл именно здесь).
+	if(!T)
+		return TRUE
 	if(T.density)
 		return TRUE
 	for(var/i in T)

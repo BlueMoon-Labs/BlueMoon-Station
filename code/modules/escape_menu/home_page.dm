@@ -191,8 +191,11 @@
 		RegisterSignal(escape_menu.client, COMSIG_CLIENT_MOB_LOGIN, PROC_REF(on_client_mob_login))
 
 /atom/movable/screen/escape_menu/home_button/leave_body/Destroy()
-	if(escape_menu?.client)
-		UnregisterSignal(escape_menu.client, COMSIG_CLIENT_MOB_LOGIN)
+	// Снимаем по владельцу, выданному держателем: escape_menu.client к этому моменту мог
+	// обнулиться, и тогда подписка молча оставалась в client.comp_lookup и держала кнопку.
+	var/client/subscribed_to = owner_client || escape_menu?.client
+	if(subscribed_to)
+		UnregisterSignal(subscribed_to, COMSIG_CLIENT_MOB_LOGIN)
 	return ..()
 
 /atom/movable/screen/escape_menu/home_button/leave_body/enabled()

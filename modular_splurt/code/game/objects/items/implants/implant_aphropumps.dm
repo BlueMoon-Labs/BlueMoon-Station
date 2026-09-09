@@ -23,7 +23,10 @@
 
 /obj/item/implant/aphrodisiac_pump/implant()
 	. = ..()
-	START_PROCESSING(SSobj, src)
+	//Родитель мог отказать (COMPONENT_STOP_IMPLANTING, несовместимая цель):
+	//насос без носителя иначе качает в никуда из имплантера каждые 2 секунды
+	if(.)
+		START_PROCESSING(SSobj, src)
 
 /obj/item/implant/aphrodisiac_pump/removed(source, silent = FALSE, special = 0)
 	. = ..()
@@ -34,6 +37,8 @@
 		imp_in.reagents.add_reagent(reagent, amt)
 
 /obj/item/implant/aphrodisiac_pump/process()
+	if(!imp_in?.reagents)
+		return PROCESS_KILL
 	if(imp_in.reagents.get_reagent_amount(reagent) < amount)
 		pump(amount - imp_in.reagents.get_reagent_amount(reagent))
 

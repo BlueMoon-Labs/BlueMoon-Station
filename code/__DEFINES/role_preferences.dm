@@ -48,6 +48,7 @@
 #define ROLE_SLAVER					"Slaver"
 #define ROLE_SLAVER_LEADER			"Slave Master"
 #define ROLE_TERROR_SPIDER			"Terror Spider"
+#define ROLE_MASS_SHOOTER			"Mass Shooter"
 //#define ROLE_MONSTERHUNTER			"monster hunter" Disabled for now
 #define ROLE_GHOSTCAFE				"ghostcafe"
 #define ROLE_GHOSTROLE				"ghostrole"
@@ -88,9 +89,17 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_FAMILIES = /datum/game_mode/gang,
 	ROLE_SPACE_DRAGON,
 	ROLE_TERROR_SPIDER,
-	ROLE_SYNDICATE
+	ROLE_SYNDICATE,
+	ROLE_MASS_SHOOTER
 	//ROLE_MONSTERHUNTER Disabled for now
 ))
+
+// Приоритеты ролей антагониста в prefs.be_special. Выключенной роли в списке
+// просто нет, поэтому ANTAG_PRIORITY_DISABLED - это чисто транспортное значение
+// между UI и set_antag_preference(), в сам be_special оно никогда не попадает.
+#define ANTAG_PRIORITY_DISABLED	-1
+#define ANTAG_PRIORITY_HIGH		0
+#define ANTAG_PRIORITY_LOW		1
 
 //Job defines for what happens when you fail to qualify for any job during job selection
 #define BEOVERFLOW 	1

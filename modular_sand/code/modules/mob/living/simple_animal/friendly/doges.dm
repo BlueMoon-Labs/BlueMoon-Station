@@ -54,7 +54,7 @@
 /obj/singularity/cheemgularity
 	name = "cheemgularity"
 	desc = "Praise cheem."
-	icon = 'modular_sand/icons/obj/singularity.dmi'
+	icon = 'icons/obj/singularity.dmi'
 	icon_state = "cheemgulo_s1"
 
 /obj/singularity/cheemgularity/expand(force_size)
@@ -64,18 +64,18 @@
 			icon = initial(icon)
 			icon_state = "cheemgulo_s1"
 		if(STAGE_TWO to STAGE_THREE)
-			icon = 'modular_sand/icons/effects/96x96.dmi'
+			icon = 'icons/effects/96x96.dmi'
 			icon_state = "cheemgulo_s3"
 		if(STAGE_THREE to STAGE_FOUR)
-			icon = 'modular_sand/icons/effects/160x160.dmi'
+			icon = 'icons/effects/160x160.dmi'
 			icon_state = "cheemgulo_s5"
 		if(STAGE_FOUR to STAGE_FIVE)
-			icon = 'modular_sand/icons/effects/224x224.dmi'
+			icon = 'icons/effects/224x224.dmi'
 			icon_state = "cheemgulo_s7"
 		if(STAGE_FIVE to STAGE_SIX)
-			icon = 'modular_sand/icons/effects/288x288.dmi'
+			icon = 'icons/effects/288x288.dmi'
 			icon_state = "cheemgulo_s9"
 		if(STAGE_SIX)
-			icon = 'modular_sand/icons/effects/352x352.dmi'
+			icon = 'icons/effects/352x352.dmi'
 			icon_state = "cheemgulo_s11"
 */

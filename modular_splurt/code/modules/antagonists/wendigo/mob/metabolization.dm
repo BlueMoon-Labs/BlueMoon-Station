@@ -4,11 +4,13 @@
 		return
 
 	if(connected_link)
-		if(connected_link.souls.len > 3)
-			nutrition = min(800, nutrition + (HUNGER_FACTOR*connected_link.souls.len))
-		nutrition = max(0, nutrition - (HUNGER_FACTOR / (physiology.hunger_mod / (connected_link.souls.len + 1))))
-	else
-		nutrition = max(0, nutrition - (HUNGER_FACTOR / physiology.hunger_mod))
+		var/souls_count = connected_link.souls.len
+		var/nutrition_change = -(HUNGER_FACTOR / (physiology.hunger_mod / (souls_count + 1)))
+		if(souls_count > 3)
+			nutrition_change += HUNGER_FACTOR * souls_count
+			adjust_nutrition(nutrition_change, max = 800)
+		else
+			adjust_nutrition(-(HUNGER_FACTOR / physiology.hunger_mod))
 /*
 	switch(nutrition)
 		if(NUTRITION_LEVEL_FULL to INFINITY)

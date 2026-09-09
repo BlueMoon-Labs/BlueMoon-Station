@@ -126,11 +126,15 @@
 ///You can override this if you need to have special behavior after setting certain settings.
 /datum/nanite_program/proc/set_extra_setting(setting, value)
 	var/datum/nanite_extra_setting/ES = extra_settings[setting]
+	if(!ES)
+		return
 	return ES.set_value(value)
 
 ///You probably shouldn't be overriding this one, but I'm not a cop.
 /datum/nanite_program/proc/get_extra_setting_value(setting)
 	var/datum/nanite_extra_setting/ES = extra_settings[setting]
+	if(!ES)
+		return
 	return ES.get_value()
 
 ///Used for getting information about the extra settings to the frontend

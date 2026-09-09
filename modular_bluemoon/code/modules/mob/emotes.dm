@@ -5,7 +5,7 @@
 	message = "рычит!"
 	message_mime = "безмолвно рычит."
 	sound = 'sound/voice/growl.ogg'
-	emote_cooldown = 4 SECONDS
+	emote_cooldown = 2 SECONDS
 
 /datum/emote/sound/human/trills
 	key = "trills"
@@ -13,7 +13,7 @@
 	message = "издаёт трель!"
 	message_mime = "изображает трель."
 	sound = 'sound/voice/trills.ogg'
-	emote_cooldown = 4 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/woof
 	key = "woof"
@@ -29,7 +29,7 @@
 	message = "агрессивно приближается."
 	message_mime = null
 	sound = 'sound/voice/cloaker1.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cloaker2
 	name = "Не бей себя!"
@@ -38,7 +38,7 @@
 	message = "даёт прямое требование перестать себя бить."
 	message_mime = null
 	sound = 'sound/voice/cloaker2.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cloaker3
 	name = "Причина Ареста"
@@ -47,7 +47,7 @@
 	message = "объясняет причину задержания."
 	message_mime = null
 	sound = 'sound/voice/cloaker3.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cloaker4
 	name = "Безопасное Слово"
@@ -56,7 +56,7 @@
 	message = "одобряет Стоп Слово."
 	message_mime = null
 	sound = 'sound/voice/cloaker4.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cluwne
 	name = "Мерзко смеяться"
@@ -65,7 +65,7 @@
 	message = "клоуничает; ужасно плохо смеётся..."
 	message_mime = null
 	sound = 'sound/voice/cluwnelaugh1.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cluwne/run_emote(mob/user, params)
 	// Set random emote sound
@@ -81,7 +81,7 @@
 	message = "выглядит очень злым."
 	message_mime = null
 	sound = 'sound/voice/human/bear_fight.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/suka1/replace_pronoun(mob/user, message)
 	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
@@ -97,7 +97,7 @@
 	message = "выглядит <b>очень</b> злым."
 	message_mime = null
 	sound = 'sound/voice/bear_fight2.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/suka2/replace_pronoun(mob/user, message)
 	if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
@@ -113,7 +113,7 @@
 	message = "говорит: <b>'Ты знаешь что сейчас за время?'</b>"
 	message_mime = null
 	sound = 'sound/voice/jacket1.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/jacket2
 	name = "Нужна Помощь?"
@@ -122,7 +122,7 @@
 	message = "говорит: <b>'Помощь в пути!'</b>"
 	message_mime = null
 	sound = 'sound/voice/jacket2.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/bulldozer1
 	name = "Ты перед Стеной!"
@@ -131,7 +131,7 @@
 	message = "кричит: <b>'Ты напротив стены и Я - эта ёбанная стена!'</b>"
 	message_mime = null
 	sound = 'sound/voice/bulldozer1.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/bulldozer2
 	name = "Оставайся Жив!"
@@ -140,7 +140,7 @@
 	message = "кричит: <b>'Пожалуйста, оставайтесь живыми подольше, чтобы я прикончил вас собственноручно!!'</b>"
 	message_mime = null
 	sound = 'sound/voice/bulldozer2.ogg'
-	emote_cooldown = 10 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/cheekybreeky
 	key = "cheekybreeky"
@@ -148,7 +148,7 @@
 	message = "кричит: <b>'А НУ-У, ЧИКИ-БРИКИ И В ДАМКИ!'</b>"
 	message_mime = null
 	sound = 'sound/voice/human/cheekibreeki.ogg'
-	emote_cooldown = 5 SECONDS
+	emote_cooldown = 2 SECONDS
 
 /datum/emote/sound/human/anyo
 	key = "anyo"
@@ -156,7 +156,7 @@
 	message = "издаёт <b>аньо!</b>"
 	message_mime = null
 	sound = 'sound/voice/anyo.ogg'
-	emote_cooldown = 3 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/ura1
 	name = "Ура!"
@@ -165,7 +165,7 @@
 	message = "кричит '<b>ура!</b>'"
 	message_mime = null
 	sound = 'sound/voice/ura1.ogg'
-	emote_cooldown = 5 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/ura2
 	name = "Громкое Ура!"
@@ -183,7 +183,7 @@
 	message = "издаёт <b>мега-ультра-УРАААААААА!</b>"
 	message_mime = null
 	sound = 'sound/voice/ura3.ogg'
-	emote_cooldown = 15 SECONDS
+	emote_cooldown = 10 SECONDS
 
 /datum/emote/sound/human/uwu
 	name = "Увукнуть"
@@ -192,7 +192,7 @@
 	message = "издаёт звук - <b>~UwU~</b>"
 	message_mime = null
 	sound = 'sound/voice/uwu1.ogg'
-	emote_cooldown = 3 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/uwu/run_emote(mob/user, params)
 	sound = pick('sound/voice/uwu1.ogg','sound/voice/uwu2.ogg')
@@ -203,7 +203,7 @@
 	key_third_person = "realagony"
 	message = "кричит в агонии!"
 	emote_type = EMOTE_AUDIBLE
-	emote_cooldown = 5 SECONDS
+	emote_cooldown = 2 SECONDS
 
 /datum/emote/sound/human/real_agony/run_emote(mob/living/user, params) //I can't not port this shit, come on.
 	if(user.stat != CONSCIOUS)
@@ -278,7 +278,7 @@
 	message = "издаёт звук - <b>LIGHT WEIGHT BABY!</b>"
 	message_mime = "строит грозную мину!"
 	sound = 'sound/voice/light_weight_baby.ogg'
-	emote_cooldown = 15 SECONDS
+	emote_cooldown = 10 SECONDS
 
 /datum/emote/sound/human/affirmative
 	name = "Утвердительный сигнал"
@@ -312,7 +312,7 @@
 	message = "хватает воздух ртом."
 	message_mime = null
 	sound = 'modular_bluemoon/sound/emotes/catgaph.ogg'
-	emote_cooldown = 4 SECONDS
+	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/cp_laugh
 	key = "cplaugh"
@@ -361,7 +361,7 @@
 	message_mime = "безмолвно стонет."
 	sound = 'modular_bluemoon/sound/emotes/softmoan6.ogg'
 	emote_type = EMOTE_AUDIBLE
-	emote_cooldown = 0.8 SECONDS
+	emote_cooldown = 1 SECONDS
 	emote_pitch_variance = FALSE
 
 /datum/emote/sound/human/girlymoan/run_emote(mob/user, params)
@@ -480,7 +480,7 @@
 	message = "суёт пальцы в рот и блюёт."
 	message_mime = "суёт пальцы в рот и блюёт."
 	sound = 'sound/effects/splat.ogg'
-	emote_cooldown = 30 SECONDS
+	emote_cooldown = 10 SECONDS
 
 /datum/emote/sound/human/bruv
 	key = "bruv"
@@ -488,7 +488,7 @@
 	message = "испытывает неловкость."
 	message_mime = "испытывает неловкость."
 	sound = 'modular_bluemoon/sound/emotes/bruv.ogg'
-	emote_cooldown = 30 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/bonecrack
 	key = "bonecrack"
@@ -504,7 +504,7 @@
 	message = "испытывает приятное удивление."
 	message_mime = "испытывает приятное удивление."
 	sound = 'modular_bluemoon/sound/emotes/ohyes.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/mudak
 	key = "mudak"
@@ -512,7 +512,7 @@
 	message = "высказывает крайнюю степень недовольства."
 	message_mime = "испытывает крайнюю степень недовольства."
 	sound = 'modular_bluemoon/sound/emotes/mudak.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/worm
 	key = "worm"
@@ -520,7 +520,7 @@
 	message = "высказывает неприятное удивление."
 	message_mime = "испытывает неприятное удивление."
 	sound = 'modular_bluemoon/sound/emotes/worm.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/malf
 	key = "malf"
@@ -528,7 +528,7 @@
 	message = "втыкает."
 	message_mime = "молча втыкает."
 	sound = 'modular_bluemoon/sound/emotes/malf.ogg'
-	emote_cooldown = 15 SECONDS
+	emote_cooldown = 10 SECONDS
 
 /datum/emote/sound/human/tsss
 	key = "tsss"
@@ -536,7 +536,7 @@
 	message = "прижимает палец к своему рту, издавая 'ТССС'."
 	message_mime = "прижимает палец к своему рту, издавая 'ТССС'."
 	sound = 'modular_bluemoon/sound/emotes/tsss.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/hellothere
 	key = "hellothere"
@@ -544,7 +544,7 @@
 	message = "приветствует вас."
 	message_mime = "молча приветствует вас."
 	sound = 'modular_bluemoon/sound/emotes/hi.ogg'
-	emote_cooldown = 11.6 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/hecu
 	key = "heavyass"
@@ -552,7 +552,7 @@
 	message = "БУКВАЛЬНО ГОВОРИТ, <b>\"MY ASS IS HEAVY\"</b>"
 	emote_type = EMOTE_BOTH
 	sound = 'modular_bluemoon/sound/emotes/myassisheavy.ogg'
-	emote_cooldown = 3.2 SECONDS
+	emote_cooldown = 5 SECONDS
 
 /datum/emote/sound/human/blackops
 	key = "blackopsalert"
@@ -738,7 +738,7 @@
 	message = "агрессивно рычит!"
 	message_mime = null
 	sound = 'sound/alien/Voice/growl3.ogg'
-	emote_cooldown = 6 SECONDS
+	emote_cooldown = 5 SECONDS
 	emote_type = EMOTE_AUDIBLE
 
 /datum/emote/sound/human/alien_growl_3/run_emote(mob/user, params)

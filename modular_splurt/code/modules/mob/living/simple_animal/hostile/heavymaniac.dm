@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "flaksoldner"
 	icon_living = "flaksoldner"
-	icon_dead = "idle"
 	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
 	gender = FEMALE
 	speak_chance = 10

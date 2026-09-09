@@ -330,6 +330,11 @@
 	//итерируем снапшот - обработчики дописывают слушателей в выходной список
 	var/list/found_hearers = .
 	for(var/atom/movable/hearer as anything in found_hearers.Copy())
+		//харддел слушателя внутри контейнера оставляет null в
+		//important_recursive_contents - не рантаймим и не отдаём его дальше
+		if(isnull(hearer))
+			found_hearers -= null
+			continue
 		SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
 
 ///старый BFS-обход view(); нужен только до инициализации спатиал-грида

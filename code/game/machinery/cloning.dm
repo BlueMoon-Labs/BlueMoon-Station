@@ -275,15 +275,23 @@
 				SPEAK("Цикл клонирования завершён.")
 
 			// If the cloner is upgraded to debugging high levels, sometimes
-			// organs and limbs can be missing.
-			for(var/i in unattached_flesh)
-				if(isorgan(i))
-					var/obj/item/organ/O = i
+			// organs and limbs can be missing. Идём по снимку списка: если один
+			// вид-специфичный орган (например, у тешари) не встаёт, он
+			// снимается один - остальные конечности/органы всё равно
+			// пришиваются, и клон выходит целым.
+			var/list/leftover_flesh = unattached_flesh.Copy()
+			for(var/obj/item/I in leftover_flesh)
+				unattached_flesh -= I
+				if(isorgan(I))
+					var/obj/item/organ/O = I
 					O.organ_flags &= ~ORGAN_FROZEN
-					O.Insert(mob_occupant)
-				else if(isbodypart(i))
-					var/obj/item/bodypart/BP = i
+					if(!O.Insert(mob_occupant))
+						qdel(I)
+				else if(isbodypart(I))
+					var/obj/item/bodypart/BP = I
 					BP.attach_limb(mob_occupant)
+				else
+					qdel(I)
 
 			go_out()
 			mob_occupant.copy_from_prefs_vr()

@@ -31,7 +31,7 @@
 	path = /obj/item/book/granter/spell/summon_pie
 	cost = 6
 
-/datum/gear/donator/t2/summon_pie
+/datum/gear/donator/t2/syndicate_duffel
 	name = "Syndicate Duffel Bag"
 	slot = ITEM_SLOT_BACK
 	path = /obj/item/storage/backpack/duffelbag/syndie

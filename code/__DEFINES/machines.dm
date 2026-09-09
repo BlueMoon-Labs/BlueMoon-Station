@@ -192,3 +192,10 @@
 #define LOGIN_TYPE_AI 2
 #define LOGIN_TYPE_ROBOT 3
 #define LOGIN_TYPE_ADMIN 4
+
+// Конвейеры. Позиция свитча и состояние ленты - один и тот же набор значений: свитч кладёт
+// свою позицию в last_command ленты, а лента разворачивает её в movedir. Числа завязаны на
+// иконки ("conveyor[operating * verted]"), менять их нельзя.
+#define CONVEYOR_BACKWARDS -1
+#define CONVEYOR_OFF 0
+#define CONVEYOR_FORWARD 1

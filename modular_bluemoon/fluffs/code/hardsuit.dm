@@ -43,7 +43,7 @@
 
 /obj/item/clothing/suit/space/hardsuit/security/t51power/reskin_obj(mob/user)
 	if(current_skin == "T-60")
-		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
+		mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 		tail_state = "hos"
 		if(helmet)
 			var/obj/item/clothing/head/helmet/space/hardsuit/Helm = helmet

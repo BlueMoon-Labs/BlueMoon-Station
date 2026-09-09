@@ -244,10 +244,10 @@
 
 		if("metaops") // 30 tc
 			new /obj/item/clothing/suit/space/hardsuit/syndi/inteq(src) // 8 tc
-			new /obj/item/gun/ballistic/automatic/shotgun/aa12(src) // 8 tc
+			new /obj/item/gun/ballistic/automatic/shotgun/bulldog(src) // 8 tc
 			new /obj/item/implanter/explosive(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
+			new /obj/item/ammo_box/magazine/m12g(src) // 2 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/card/emag(src) // 6 tc
@@ -273,7 +273,13 @@
 			new /obj/item/lipstick/black/death(src) // 12 tc
 			new /obj/item/storage/box/syndie_kit/chemical (src) //  6
 			new /obj/item/gun/syringe/syndicate(src) //  3
-			new /obj/item/storage/fancy/cigarettes/derringer(src) //  6
+			new /obj/item/storage/fancy/cigarettes/derringer(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)//  6
 
 		if("launchman") // 29 tc worth
 			new /obj/item/storage/briefcase/launchpad(src) // 6

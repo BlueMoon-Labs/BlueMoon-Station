@@ -19,8 +19,15 @@
 		STOP_PROCESSING(SSprocessing,src)
 
 /datum/element/dusts_on_catatonia/process()
-	for(var/m in attached_mobs)
-		var/mob/M = m
-		if(!M.key && !M.get_ghost())
-			M.dust(TRUE, FALSE, TRUE)
-			Detach(M)
+	var/found_null = FALSE
+	for(var/mob/attached_mob as anything in attached_mobs)
+		if(isnull(attached_mob))
+			found_null = TRUE
+			continue
+		if(!attached_mob.key && !attached_mob.get_ghost())
+			attached_mob.dust(TRUE, FALSE, TRUE)
+			Detach(attached_mob)
+	if(found_null)
+		listclearnulls(attached_mobs)
+		if(!attached_mobs.len)
+			STOP_PROCESSING(SSprocessing, src)

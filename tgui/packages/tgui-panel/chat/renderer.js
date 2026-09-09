@@ -11,7 +11,7 @@ import { createLogger } from 'tgui/logging';
 
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
-import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
+import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
 
@@ -183,20 +183,54 @@ const createTimeDividerNode = (timestamp) => {
   return node;
 };
 
+// Ресурсы BYOND едут по тому же каналу, что и всё остальное, и на забитом канале
+// приезжают позже; внешние ссылки (админ вставил в ЛС картинку с чужого хоста)
+// не приедут никогда, и каждая попытка - это лишний HTTP-запрос и строка в логе.
+// Сверяем именно origin разрешённого адреса, а не наличие схемы в атрибуте:
+// после первого же ретрая мы сами переписываем src абсолютным адресом, и
+// проверка "есть схема - значит чужой" отсекала бы собственные картинки.
+const isRetriableImage = node => {
+  const attribute = node.getAttribute('src');
+  if (!attribute) {
+    return false;
+  }
+  if (attribute.startsWith('data:')) {
+    return true;
+  }
+  const resolved = node.src;
+  if (!resolved) {
+    return true;
+  }
+  // Сверяем origin разбором URL, а не префиксом: "https://host" - префикс и для
+  // "https://host.evil", то есть чужой хост проходил фильтр и собирал свои ретраи.
+  try {
+    return new URL(resolved).origin === window.location.origin;
+  }
+  catch {
+    return false;
+  }
+};
+
 const handleImageError = e => {
+  /** @type {HTMLImageElement} */
+  const node = e.target;
+  if (!isRetriableImage(node)) {
+    return;
+  }
+  const attempts = parseInt(node.getAttribute('data-reload-n'), 10) || 0;
+  if (attempts >= IMAGE_RETRY_LIMIT) {
+    logger.error(`failed to load an image after ${attempts} attempts`);
+    return;
+  }
+  // Экспоненциальная выдержка: прежний бюджет 10 x 250 мс = 2.5 с был короче
+  // одного худшего round-trip, замеренного на проде.
+  const delay = Math.min(IMAGE_RETRY_DELAY * 2 ** attempts, IMAGE_RETRY_MAX_DELAY);
   setTimeout(() => {
-    /** @type {HTMLImageElement} */
-    const node = e.target;
-    const attempts = parseInt(node.getAttribute('data-reload-n'), 10) || 0;
-    if (attempts >= IMAGE_RETRY_LIMIT) {
-      logger.error(`failed to load an image after ${attempts} attempts`);
-      return;
-    }
     const src = node.src.split('#')[0];
     node.removeAttribute('src');
     node.src = src + '#' + attempts;
     node.setAttribute('data-reload-n', attempts + 1);
-  }, IMAGE_RETRY_DELAY);
+  }, delay);
 };
 
 /**

@@ -109,12 +109,14 @@
 
 /mob/living/simple_animal/hostile/alien/queen/Initialize(mapload)
 	. = ..()
-	if(prob(1))
+	//рыжая раскраска лежит в листе королевы, а подтипы вроде кинга ездят на своей
+	//иконке: подмена стейта без проверки оставляла их невидимыми в одном спавне из ста
+	if(prob(1) && ("Queen rouny Walking" in icon_states(icon)))
 		icon_state = "Queen rouny Walking"
 		icon_living = "Queen rouny Walking"
 		icon_dead = "Queen rouny Dead"
-		if(istype(src, /mob/living/simple_animal/hostile/alien/queen/large))
-			health_doll_icon = "Queen rouny Walking"
+		// if(istype(src, /mob/living/simple_animal/hostile/alien/queen/large))
+		// 	health_doll_icon = "Queen rouny Walking"
 
 
 /mob/living/simple_animal/hostile/alien/proc/SpreadPlants()

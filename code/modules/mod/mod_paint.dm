@@ -37,7 +37,7 @@
 	if(!istype(attacked_atom, /obj/item/mod/control))
 		return ..()
 	var/obj/item/mod/control/mod = attacked_atom
-	if(mod.active || mod.activating)
+	if(mod.is_active() || mod.is_activating())
 		balloon_alert(user, "suit is active!")
 		return STOP_ATTACK_PROC_CHAIN
 	switch(mode)
@@ -164,7 +164,7 @@
 	mod.set_mod_skin(pick)
 
 /obj/item/mod/paint/proc/check_menu(obj/item/mod/control/mod, mob/user)
-	if(user.incapacitated() || !user.is_holding(src) || !mod || mod.active || mod.activating)
+	if(user.incapacitated() || !user.is_holding(src) || !mod || mod.is_active() || mod.is_activating())
 		return FALSE
 	return TRUE
 
@@ -193,7 +193,7 @@
 	if(!istype(attacked_atom, /obj/item/mod/control))
 		return ..()
 	var/obj/item/mod/control/mod = attacked_atom
-	if(mod.active || mod.activating)
+	if(mod.is_active() || mod.is_activating())
 		balloon_alert(user, "suit is active!")
 		return TRUE
 	if(!istype(mod.theme, compatible_theme))

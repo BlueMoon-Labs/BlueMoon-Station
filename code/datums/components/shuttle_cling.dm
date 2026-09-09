@@ -127,7 +127,7 @@
 /datum/component/shuttle_cling/proc/launch_very_hard(atom/movable/byebye)
 	var/turf/target = get_edge_target_turf(byebye, direction)
 	if(target)
-		byebye.safe_throw_at(target, 200, 1, null, TRUE, FALSE, null, MOVE_FORCE_EXTREMELY_STRONG)
+		byebye.safe_throw_at(target, 200, 8, null, TRUE, TRUE, null, MOVE_FORCE_EXTREMELY_STRONG)
 
 /datum/component/shuttle_cling/proc/update_drift_direction(atom/movable/clinger)
 	if(!hyperloop)

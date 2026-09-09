@@ -14,6 +14,10 @@
 	name = "Standard"
 	icon_state = "standard"
 
+/datum/sprite_accessory/xeno_dorsal/none
+	name = "None"
+	relevant_layers = null
+
 /datum/sprite_accessory/xeno_dorsal/down
 	name = "Dorsal Down"
 	icon_state = "down"
@@ -41,6 +45,71 @@
 	name = "Xenomorph Tail"
 	icon_state = "xeno"
 
+/datum/sprite_accessory/xeno_tail/boiler
+	name = "Xenomorph Boiler Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "boiler_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/xeno_tail/predalien
+	name = "Xenomorph Predalien Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "predalien_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/xeno_tail/pretor
+	name = "Xenomorph Pretor Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "pretor_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/xeno_tail/prowler
+	name = "Xenomorph Prowler Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "prowler_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/xeno_tail/queen
+	name = "Xenomorph Queen Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "queen_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/xeno_tail/runner
+	name = "Xenomorph Runner Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "runner_tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/tails/mam_tails/xeno
+	name = "Xenomorph Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "xeno"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/xeno
+	name = "Xenomorph Tail"
+	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
+	icon_state = "xeno"
+	mutant_part_string = "tail"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
+	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+
 /******************************************
 ************* Xeno Heads ******************
 *******************************************/
@@ -59,6 +128,10 @@
 /datum/sprite_accessory/xeno_head/standard
 	name = "Standard"
 	icon_state = "standard"
+
+/datum/sprite_accessory/xeno_head/none
+	name = "None"
+	relevant_layers = null
 
 /datum/sprite_accessory/xeno_head/hollywood
 	name = "hollywood"

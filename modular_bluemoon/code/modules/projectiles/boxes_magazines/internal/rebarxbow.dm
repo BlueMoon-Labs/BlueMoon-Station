@@ -13,7 +13,7 @@
 	multiload = 0
 
 /obj/item/ammo_box/magazine/internal/boltaction/rebarxbow/syndie
-	max_ammo = 3
+	max_ammo = 6
 	caliber = "rebar"
 	ammo_type = /obj/item/ammo_casing/rebar/syndie
 	multiload = 0

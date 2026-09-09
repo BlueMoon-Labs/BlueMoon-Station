@@ -74,7 +74,7 @@
 	var/brutedamageemp = 20
 	var/rebootdelay
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/powerarmor
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
 /obj/item/clothing/suit/space/hardsuit/powerarmor/Initialize(mapload)
 	. = ..()

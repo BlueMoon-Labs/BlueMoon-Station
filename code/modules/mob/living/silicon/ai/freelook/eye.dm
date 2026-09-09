@@ -19,6 +19,13 @@
 	var/ai_detector_visible = TRUE
 	var/ai_detector_color = COLOR_RED
 	var/list/obj/machinery/camera/active_cameras = list() // BLUEMOON ADD (Pe4henika)
+	/// Клиент, которому сейчас выданы образы камерной статики видимых чанков.
+	/// Нужен, чтобы поймать смену смотрящего (реконнект ИИ, новый пользователь
+	/// камерной консоли): чанки при этом остаются в visibleCameraChunks, а
+	/// images нового клиента пусты - без переброски статика бы просто исчезла,
+	/// и смотрящий увидел бы станцию насквозь. BYOND сам обнуляет эту ссылку,
+	/// когда клиент отваливается.
+	var/client/static_client
 
 /mob/camera/aiEye/Initialize(mapload)
 	. = ..()
@@ -143,18 +150,64 @@
 		return ai.client
 	return null
 
+/// Выдать клиенту образы камерной статики этого чанка.
+/mob/camera/aiEye/proc/give_camera_static(datum/camerachunk/chunk)
+	if(use_static == USE_STATIC_NONE)
+		return
+	var/client/viewer = GetViewerClient()
+	if(!viewer)
+		return
+	var/list/static_images = chunk.static_images_for(use_static)
+	if(!length(static_images))
+		return
+	viewer.images += static_images
+
+/// Забрать у клиента образы камерной статики этого чанка.
+/mob/camera/aiEye/proc/take_camera_static(datum/camerachunk/chunk)
+	if(use_static == USE_STATIC_NONE)
+		return
+	var/client/viewer = GetViewerClient()
+	if(!viewer)
+		return
+	var/list/static_images = chunk.static_images_for(use_static, build_missing = FALSE)
+	if(!length(static_images))
+		return
+	viewer.images -= static_images
+
+/// Поймать смену смотрящего клиента: у старого образы надо снять (иначе он до
+/// конца сессии таскает куски чужой статики), новому - выдать заново по всем
+/// уже видимым чанкам, потому что его images пусты.
+/mob/camera/aiEye/proc/sync_camera_static()
+	var/client/viewer = GetViewerClient()
+	if(viewer == static_client)
+		return
+	if(static_client)
+		for(var/datum/camerachunk/chunk as anything in visibleCameraChunks)
+			var/list/static_images = chunk.static_images_for(use_static, build_missing = FALSE)
+			if(length(static_images))
+				static_client.images -= static_images
+	static_client = viewer
+	if(!viewer || use_static == USE_STATIC_NONE)
+		return
+	for(var/datum/camerachunk/chunk as anything in visibleCameraChunks)
+		var/list/static_images = chunk.static_images_for(use_static)
+		if(length(static_images))
+			viewer.images += static_images
+
 // (EDIT) Pe4henika bluemoon -- start
 /mob/camera/aiEye/Destroy()
     for(var/obj/machinery/camera/C in active_cameras)
         C.in_use_lights--
         C.update_icon()
     active_cameras.Cut()
+    //чанки снимаем ДО обнуления ai: клиент смотрящего ищется через него, и без
+    //него образы статики остались бы висеть в client.images до конца сессии
+    for(var/datum/camerachunk/chunk as anything in visibleCameraChunks.Copy())
+        chunk.remove(src)
+    static_client = null
     if(ai)
         ai.all_eyes -= src
         ai = null
-    for(var/V in visibleCameraChunks)
-        var/datum/camerachunk/c = V
-        c.remove(src)
     GLOB.aiEyes -= src
     if(ai_detector_visible)
         var/datum/atom_hud/ai_detector/hud = GLOB.huds[DATA_HUD_AI_DETECT]

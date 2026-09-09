@@ -303,6 +303,14 @@
 /obj/item/stock_parts/cell/high/empty
 	start_charged = FALSE
 
+/obj/item/stock_parts/cell/thermal
+	name = "thermal power cell"
+	icon_state = "hcell"
+	charging_icon = "hcell_in"
+	maxcharge = 7500 // 6 thermal nanite shots (6 x 1250)
+	custom_materials = list(/datum/material/glass=60)
+	chargerate = 1500
+
 /obj/item/stock_parts/cell/super
 	name = "super-capacity power cell"
 	icon_state = "scell"
@@ -385,6 +393,7 @@
 	custom_materials = null
 	rating = 5 //self-recharge makes these desirable
 	self_recharge = 1 // Infused slime cores self-recharge, over time
+	chargerate = 500
 
 /obj/item/stock_parts/cell/emproof
 	name = "\improper EMP-proof cell"

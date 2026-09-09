@@ -119,15 +119,27 @@
 /obj/effect/mob_spawn/proc/equip(mob/M, load_character)
 	return
 
-/obj/effect/mob_spawn/proc/create(ckey, name, load_character)
-	var/mob/living/M = new mob_type(get_turf(src)) //living mobs only
+/**
+ * Создаёт моба спавнера.
+ *
+ * spawn_type - явный тип вместо общего mob_type. Нужен там, где выбор делает игрок в
+ * спящем диалоге (радиальное меню свармера): пока один гост выбирает, второй успевает
+ * переписать общий вар спавнера, и первый спавнил "объект типа null".
+ */
+/obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type)
+	var/mob_path = spawn_type || mob_type
+	var/mob/living/M = new mob_path(get_turf(src)) //living mobs only
 	if(!random)
 		M.real_name = mob_name ? mob_name : M.name
 		if(!mob_gender)
 			mob_gender = pick(MALE, FEMALE)
 		M.gender = mob_gender
 	if(faction)
-		M.faction = list(faction)
+		//Варэдит на карте может задать и строку, и готовый список. Голое list(faction) во втором
+		//случае давало список внутри списка: такая фракция не совпадала ни с одной чужой, и моб
+		//становился врагом вообще всем, включая своих.
+		var/list/spawn_faction = islist(faction) ? faction : list(faction)
+		M.faction = spawn_faction.Copy()
 	if(disease)
 		M.ForceContractDisease(new disease)
 	if(death)
@@ -154,7 +166,11 @@
 				output_message += "<p>[flavour_text]</p>"
 			if(important_info != "")
 				output_message += "<span class='warning'>[important_info]</span>"
-			if(addition_warning)
+			// Напоминание о правилах посещения станции адресовано оффстанционным гост-ролям.
+			// Спавнер, стоящий на самой станции (свармер у гейтвея и прочие мидраундовые роли),
+			// запрещал бы игроку находиться ровно там, где он появился.
+			var/turf/spawner_turf = get_turf(src)
+			if(addition_warning && (!spawner_turf || !is_station_level(spawner_turf.z)))
 				output_message += "\n\n[addition_warning]"
 			to_chat(M, examine_block(output_message))
 		// BLUEMOON EDIT END
@@ -196,6 +212,9 @@
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
 		special(M, name)
+		// BLUEMOON ADD START - глобальный сигнал для модульных реакций на занятие гост-роли игроком
+		SEND_GLOBAL_SIGNAL(COMSIG_GHOST_ROLE_CLAIMED, M)
+		// BLUEMOON ADD END
 		if(director_source_action)
 			SSdirector.track_ghost_role_spawn(
 				director_source_action,

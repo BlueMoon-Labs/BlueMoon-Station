@@ -64,6 +64,7 @@
 		if(D && D.adjust_money(-payoff))
 			priority_announce("Удачного дня, рабы пакта.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
 			return
 		priority_announce("Здесь не хватает кредитов, козлы. Молитесь.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
@@ -79,6 +80,12 @@
 	if(length(space_zlevels))
 		return pick(space_zlevels)
 	return SSmapping.station_start
+
+/datum/round_event/raiders/proc/resolve_threat_peacefully()
+	raiders_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 /// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
 /// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз

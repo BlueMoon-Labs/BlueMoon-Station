@@ -139,6 +139,7 @@
 	SSticker.minds -= src
 	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
+	QDEL_LIST(ambition_objectives)
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()
 	set_assigned_heirloom(null)
@@ -262,9 +263,12 @@
 	//Choose snowflake variation if antagonist handles it
 	var/datum/antagonist/S = A.specialization(src)
 	if(S && S != A)
+		//заготовку, которую подменила специализация, тоже сносим штатно
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		A = S
 	if(!A.can_be_owned(src))
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		return
 	A.owner = src
@@ -302,7 +306,10 @@
 	LAZYREMOVE(antag_datums, instanced_datum)
 	if(. && !LAZYLEN(antag_datums))
 		ambitions = null
-		remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
+		//разум без тела (тело удалено, дисконнект): remove_verb по null роняет CRASH,
+		//парный do_add_antag_datum гардит current точно так же
+		if(current)
+			remove_verb(current, /mob/proc/edit_objectives_and_ambitions)
 //ambition end
 
 /datum/mind/proc/remove_all_antag_datums() //For the Lazy amongst us.
@@ -540,15 +547,15 @@
 		all_objectives |= A.objectives
 
 	if(all_objectives.len)
-		output += "<B>Objectives:</B>"
+		output += "<B>Текущие цели:</B>"
 		var/obj_count = 1
 		for(var/datum/objective/objective in all_objectives)
-			output += "<br><B>Objective #[obj_count++]</B>: [objective.explanation_text]"
+			output += "<br><B>Цель #[obj_count++]</B>: [objective.explanation_text]"
 			var/list/datum/mind/other_owners = objective.get_owners() - src
 			if(other_owners.len)
 				output += "<ul>"
 				for(var/datum/mind/M in other_owners)
-					output += "<li>Conspirator: [M.name]</li>"
+					output += "<li>Сообщники: [M.name]</li>"
 				output += "</ul>"
 
 // Кнопки для амбиций и их отображение
@@ -589,6 +596,9 @@
 		if(is_admin)
 			output += " <a href='?src=[REF(antag_datum.owner)];obj_add=[REF(antag_datum)];ambition_panel=1'>Add Objective</a>"
 		output += "<ul>"
+		//дыры в списке целей вычищаем прямо тут: панель на них падала
+		//("Cannot read null.explanation_text", раунд 9827)
+		listclearnulls(antag_datum.objectives)
 		if(!length(antag_datum.objectives))
 			output += "<li><i><b>NONE</b></i>"
 		else
@@ -651,7 +661,8 @@
 				output += "<a href='?src=[REF(src)];req_obj_ping=1'>Ping the admins</a><br>"
 			if(is_admin)
 				output += "<a href='?src=[REF(src)];req_obj_ping_cd_clear=1'>Clear ping cooldown</a><br>"
-	output += "<br><b>[current.real_name]'s Ambitions:</b>"
+	//у отвязанного разума (тело съел клон/госта ещё не вселили) current == null
+	output += "<br><b>[current ? current.real_name : name]'s Ambitions:</b>"
 	if(LAZYLEN(ambitions) < CONFIG_GET(number/max_ambitions))
 		output += " <a href='?src=[REF(src)];add_ambition=1'>Add Ambition</a>"
 	output += "<ul>"
@@ -1741,10 +1752,10 @@ GLOBAL_LIST(objective_choices)
 
 /datum/mind/proc/announce_objectives()
 	var/obj_count = 1
-	to_chat(current, "<span class='notice'>Your current objectives:</span>")
+	to_chat(current, span_notice("Ваши текущие цели:"))
 	for(var/objective in get_all_objectives())
 		var/datum/objective/O = objective
-		to_chat(current, "<B>Objective #[obj_count]</B>: [O.explanation_text]")
+		to_chat(current, "<B>Цель #[obj_count]</B>: [O.explanation_text]")
 		obj_count++
 
 /datum/mind/proc/find_syndicate_uplink()
@@ -1913,17 +1924,24 @@ GLOBAL_LIST(objective_choices)
 
 //Initialisation procs
 /mob/proc/mind_initialize()
+	var/fresh_mind = FALSE
 	if(mind)
 		mind.key = key
 
 	else
 		mind = new /datum/mind(key)
 		SSticker.minds += mind
-		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
+		fresh_mind = TRUE
 	if(!mind.name)
 		mind.name = real_name
 	mind.set_current(src)
 	mind.hide_ckey = client?.prefs?.hide_ckey
+	// Сигнал шлём только после set_current: подписчики (те же body-bound
+	// скилл-модификаторы) сразу лезут в mind.current, а на разуме без тела
+	// add_skill_modifier роняет CRASH "Body-bound skill modifier ... was tried
+	// to be added to a mob-less mind" - раунд 9827, перетаскивание гхоста в тело.
+	if(fresh_mind)
+		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
 
 /mob/living/carbon/mind_initialize()
 	..()

@@ -187,6 +187,13 @@
 	target.cut_overlay(GLOB.welding_sparks)
 	cell.use(50)
 
+/obj/item/gun/energy/plasmacutter/med
+	name = "emergency plasma cutter"
+	desc = "Аварийный плазменный резак входит в состав аварийно-спасательного оборудования шахтерских аванпостов. Для предотвращения нецелевого использования требует доступа медицинского персонала для активации."
+	icon_state = "med_plasmacutter"
+	item_state = "med_plasmacutter"
+	pin = /obj/item/firing_pin/access/med
+
 /obj/item/gun/energy/plasmacutter/adv
 	name = "advanced plasma cutter"
 	icon_state = "adv_plasmacutter"

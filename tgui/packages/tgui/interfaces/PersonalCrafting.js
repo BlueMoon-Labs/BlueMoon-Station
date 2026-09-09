@@ -15,6 +15,38 @@ import {
 } from '../components';
 import { Window } from '../layouts';
 
+// Иконки предметов приезжают спрайтшитом (ассет crafting), а в нагрузке лежит только
+// имя css-класса. Раньше здесь были base64-картинки - на них payload меню весил 3 МБ.
+function SpriteIcon(props) {
+  const { icon, size = 32 } = props;
+  if (!icon) {
+    return null;
+  }
+  if (size === 32) {
+    return <span className={icon} style={{ imageRendering: 'pixelated' }} />;
+  }
+  // Спрайт в листе всегда своего натурального размера, поэтому мелкие места
+  // ужимаем трансформом, сохраняя прежнюю геометрию строки.
+  return (
+    <Box
+      style={{
+        width: size + 'px',
+        height: size + 'px',
+        overflow: 'hidden',
+      }}
+    >
+      <span
+        className={icon}
+        style={{
+          imageRendering: 'pixelated',
+          transform: 'scale(' + size / 32 + ')',
+          transformOrigin: 'top left',
+        }}
+      />
+    </Box>
+  );
+}
+
 const FOOD_CATEGORIES = new Set([
   'Еда', 'Хлеб', 'Бургеры', 'Торты', 'Пончики',
   'Из яиц', 'Заморозка', 'Мясо', 'Мексиканское',
@@ -512,17 +544,10 @@ function FullRecipe(props) {
   return (
     <Section>
       <Stack>
-        {!!recipe.icon_data && (
+        {!!recipe.icon && (
           <Stack.Item>
             <Box mr={1}>
-              <img
-                src={"data:image/png;base64," + recipe.icon_data}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  imageRendering: 'pixelated',
-                }}
-              />
+              <SpriteIcon icon={recipe.icon} />
             </Box>
           </Stack.Item>
         )}
@@ -542,18 +567,9 @@ function FullRecipe(props) {
                   <GroupTitle title="Материалы" />
                   {recipe.reqs_detail.map((req, i) => (
                     <Stack key={i} align="center" my={0.25}>
-                      {!!req.icon_data && (
+                      {!!req.icon && (
                         <Stack.Item mr={0.5}>
-                          <img
-                            src={"data:image/png;base64," + req.icon_data}
-                            loading="lazy"
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              verticalAlign: 'middle',
-                              imageRendering: 'pixelated',
-                            }}
-                          />
+                          <SpriteIcon icon={req.icon} size={24} />
                         </Stack.Item>
                       )}
                       <Stack.Item>
@@ -571,18 +587,9 @@ function FullRecipe(props) {
                   <GroupTitle title="Катализаторы" />
                   {recipe.catalysts_detail.map((cat, i) => (
                     <Stack key={i} align="center" my={0.25}>
-                      {!!cat.icon_data && (
+                      {!!cat.icon && (
                         <Stack.Item mr={0.5}>
-                          <img
-                            src={"data:image/png;base64," + cat.icon_data}
-                            loading="lazy"
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              verticalAlign: 'middle',
-                              imageRendering: 'pixelated',
-                            }}
-                          />
+                          <SpriteIcon icon={cat.icon} size={24} />
                         </Stack.Item>
                       )}
                       <Stack.Item>
@@ -600,18 +607,9 @@ function FullRecipe(props) {
                   <GroupTitle title="Инструменты" />
                   {recipe.tools_detail.map((tool, i) => (
                     <Stack key={i} align="center" my={0.25}>
-                      {!!tool.icon_data && (
+                      {!!tool.icon && (
                         <Stack.Item mr={0.5}>
-                          <img
-                            src={"data:image/png;base64," + tool.icon_data}
-                            loading="lazy"
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              verticalAlign: 'middle',
-                              imageRendering: 'pixelated',
-                            }}
-                          />
+                          <SpriteIcon icon={tool.icon} size={24} />
                         </Stack.Item>
                       )}
                       <Stack.Item>{tool.name}</Stack.Item>
@@ -711,17 +709,9 @@ function CompactRecipe(props) {
       className="candystripe"
       label={
         <Stack align="center" inline>
-          {!!recipe.icon_data && (
+          {!!recipe.icon && (
             <Stack.Item mr={1}>
-              <img
-                src={"data:image/png;base64," + recipe.icon_data}
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  verticalAlign: 'middle',
-                  imageRendering: 'pixelated',
-                }}
-              />
+              <SpriteIcon icon={recipe.icon} />
             </Stack.Item>
           )}
           <Stack.Item>

@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "clockboss"
 	icon_living = "clockboss"
-	icon_dead = "idle"
 	boss_abilities = list(/datum/action/boss/clockie_summon_minions)
 	point_regen_amount = 3
 	gender = NEUTER

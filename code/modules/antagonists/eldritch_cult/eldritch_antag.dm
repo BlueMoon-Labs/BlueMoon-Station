@@ -288,13 +288,3 @@
 		return FALSE
 	return cultie.total_sacrifices >= target_amount
 
-/datum/objective/sacrifice_ecult/get_crewmember_minds()
-	. = ..()
-	if(!LAZYLEN(.))
-		return
-	var/list/result = list()
-	for(var/datum/mind/M in .)
-		if(ishuman(M.current) && HAS_TRAIT(M.current, TRAIT_ONELIFE))
-			continue
-		result += M
-	return result

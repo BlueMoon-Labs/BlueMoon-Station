@@ -9,18 +9,25 @@
 
 /datum/round_event/atmos_flux
 	announce_when = 1
-	end_when = 600
-	var/original_speed
+	/// Тик события - это проход SSdirector, то есть DIRECTOR_WAIT = 2 секунды
+	/// (см. комментарий к activeFor в _event.dm). 600 тиков - это двадцать минут
+	/// учетверённого SSair, а не заявленная в description минута: в раунде 9872
+	/// событие подняло стоимость фазы турфов с 55.7 до 205.6 мс и держало её до
+	/// конца смены, потому что раунд кончился раньше события.
+	end_when = 30
+	/// Speed the operator configured, handed back when the flux passes.
+	var/original_speed = 1
+	/// Decided in start(), so the station-wide announcement cannot describe a
+	/// direction the subsystem did not take.
+	var/speeding_up = TRUE
 
 /datum/round_event/atmos_flux/announce(fake)
-	priority_announce("Обнаружен аномальный атмосферный поток в вашем секторе. Датчики показывают, что воздух может перемещаться [(SSair.share_max_steps_target > original_speed) ? "быстрее" : "медленней"], чем обычно.", "Атмосферная Тревога")
+	priority_announce("Обнаружен аномальный атмосферный поток в вашем секторе. Датчики показывают, что воздух может перемещаться [speeding_up ? "быстрее" : "медленней"], чем обычно.", "Атмосферная Тревога")
 
 /datum/round_event/atmos_flux/start()
-	original_speed = SSair.share_max_steps_target
-	if(prob(20))
-		SSair.share_max_steps_target = max(1, original_speed - rand(1,original_speed-1))
-	else
-		SSair.share_max_steps_target += rand(2,10)
+	original_speed = SSair.atmos_speed
+	speeding_up = !prob(20)
+	SSair.set_atmos_speed(speeding_up ? (original_speed * rand(2, 4)) : (original_speed * 0.5))
 
 /datum/round_event/atmos_flux/end()
-	SSair.share_max_steps_target = original_speed
+	SSair.set_atmos_speed(original_speed)

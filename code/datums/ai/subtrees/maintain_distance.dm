@@ -32,6 +32,13 @@
 	var/maximum_distance = controller.blackboard[BB_AI_MAX_DISTANCE] || 6
 
 	if(range < minimum_distance)
+		//длинная серия зажатых планов: очередной невозможный шаг не планируем -
+		//прорываемся на дальний достижимый тайл (зажатый у стены стрелок стоял
+		//столбом минутами, спамя "отход зажат" каждые полсекунды)
+		if((controller.blackboard[BB_AI_KITE_PINNED_STREAK] || 0) >= AI_KITE_BREAK_AWAY_STREAK)
+			controller.blackboard[BB_AI_KITE_PINNED_STREAK] = 0
+			controller.queue_behavior(/datum/ai_behavior/ranged_break_away, target_key)
+			return
 		controller.queue_behavior(run_away_behavior, target_key, minimum_distance)
 		return
 	if(range > maximum_distance)
@@ -69,9 +76,15 @@
 		//обязан провалиться, чтобы hostile_break_away дрался в упор. Фоллбэк
 		//get_step_away здесь запрещён - он ОБХОДИТ препятствия и у стены
 		//возвращает равноудалённый боковой тайл, воскрешая пляску на месте.
-		next_step = controller.best_retreat_tile(threats)
+		//Серия провалов подряд - другое дело: явная эскалация разрешает
+		//боковое скольжение вдоль стены (без разворота), см. best_retreat_tile.
+		var/pinned_streak = controller.blackboard[BB_AI_KITE_PINNED_STREAK] || 0
+		next_step = controller.best_retreat_tile(threats, pinned_streak >= AI_KITE_LATERAL_STREAK)
 		if(isnull(next_step))
+			controller.blackboard[BB_AI_KITE_PINNED_STREAK] = pinned_streak + 1
+			AI_TRACE_THROTTLED(controller, "kite", "отход зажат: некуда шагнуть от [length(threats)] угроз")
 			return FALSE
+		controller.blackboard[BB_AI_KITE_PINNED_STREAK] = 0
 	else
 		//не-living цель (враждебная машина) не попадает в список угроз -
 		//простой шаг прочь с проверкой проходимости

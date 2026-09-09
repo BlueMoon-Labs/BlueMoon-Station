@@ -266,6 +266,15 @@
 
 	TEST_ASSERT_EQUAL(test_light.switchcount, 7, "Silent nightshift interpolation should not increment bulb aging.")
 
+/// Отмечает завершение отложенного update(0) из Initialize, сохраняя обычную инициализацию лампы.
+/obj/machinery/light/nightshift_relight_test
+	var/startup_update_complete = FALSE
+
+/obj/machinery/light/nightshift_relight_test/update(trigger = TRUE, silent = FALSE)
+	. = ..()
+	if(!trigger && !silent)
+		startup_update_complete = TRUE
+
 /datum/unit_test/nightshift_relight_resync
 	var/list/original_station_areas
 	var/list/original_apcs_list
@@ -285,7 +294,7 @@
 	SSnightshift.can_fire = FALSE
 	sleep(world.tick_lag)
 	SSnightshift.nightshift_refresh_running = FALSE
-	SSnightshift.nightshift_refresh_generation++ // Invalidate any running async refresh
+	SSnightshift.nightshift_refresh_generation++ // Отменяем незавершённое асинхронное обновление.
 	test_area = get_area(run_loc_floor_bottom_left)
 	light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	original_station_areas = GLOB.the_station_areas.Copy()
@@ -308,13 +317,10 @@
 	test_apc.update()
 	test_area.power_light = TRUE
 	test_area.lightswitch = TRUE
-	test_light = allocate(/obj/machinery/light, light_turf)
-	// Initialize светильника отложен через spawn(2) { prob(2) break_light_tube; spawn(1) { update(0) } }.
-	// Чинит лампу код ниже, поэтому разбитие внутри этого окна безвредно - но 4 деци
-	// оставляли планировщику ровно один тик запаса: на загруженном раннере отложенная
-	// цепочка приезжала уже ПОСЛЕ ремонта, и фикстура уходила в тест разбитой, без
-	// источника света (падение "Setup should have a live light source").
-	sleep(1 SECONDS)
+	test_light = allocate(/obj/machinery/light/nightshift_relight_test, light_turf)
+	// Фиксированный sleep не гарантирует завершение вложенных spawn на загруженном CI.
+	// Ждём последний update из Initialize, чтобы случайное разбитие не произошло после ремонта.
+	TEST_ASSERT(wait_for_var(test_light, "startup_update_complete", TRUE, 5 SECONDS), "Лампа не завершила отложенную инициализацию.")
 	test_light.status = LIGHT_OK
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
@@ -338,6 +344,8 @@
 
 /datum/unit_test/nightshift_relight_resync/proc/prime_deep_night_fixture()
 	test_light.status = LIGHT_OK
+	// update APC вызывает power_change лампы: исключаем случайное перегорание при подготовке.
+	test_light.switchcount = -1
 	test_apc.update()
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
@@ -381,6 +389,7 @@
 	test_light.on = FALSE
 	test_light.set_light(0, l_cone_angle = 0)
 	drain_nightshift_lighting_work()
+	test_light.switchcount = -1
 	test_light.fix()
 	assert_deep_night_emission("Fixture repair")
 
@@ -703,6 +712,14 @@
 	test_light.switchcount = 0
 	test_light.update(FALSE, TRUE)
 
+	// Прогрев кэша ламп АПЦ - последний шаг подготовки, и он обязателен.
+	// Создание лампы помечает кэш грязным, а перестройка в ensure_light_cache()
+	// содержит CHECK_TICK. То есть "немедленный" админский рефреш на холодном
+	// кэше засыпает прямо посреди раздачи флагов лампам, и успела лампа принять
+	// флаг до ассерта или нет - решает загрузка тика. Это и был остаточный флак
+	// теста: ассерт видел 0, а через несколько тиков поле уже 1.
+	test_apc.get_cached_area_lights()
+
 	SSnightshift.nightshift_active = FALSE
 	SSnightshift.high_security_mode = FALSE
 	SSnightshift.last_indoor_nightshift_level = 0
@@ -757,17 +774,50 @@
 		return test_light.bulb_power
 	return test_light.interpolate_light_value(test_light.bulb_power, test_light.nightshift_light_power, level)
 
+/// Снимок состояния связки АПЦ-лампа для сообщений об ошибке. Строится ТОЛЬКО при падении:
+/// TEST_ASSERT_* подставляют message внутрь ветки Fail, так что на зелёном прогоне это ноль.
+/// Нужен, чтобы отличать три известные подписи флака этого теста друг от друга - см.
+/// историю в project_flaky_dm_tests: расхождение флагов АПЦ и лампы это очередь,
+/// застывший bulb_colour с мёртвым световым датумом это потеря питания.
+/datum/unit_test/nightshift_admin_controls/proc/fixture_diagnostics()
+	var/list/parts = list()
+	parts += "APC: lights=[test_apc.nightshift_lights] level=[test_apc.nightshift_level] queued=[test_apc.nightshift_refresh_queued]"
+	parts += "light: enabled=[test_light.nightshift_enabled] level=[test_light.nightshift_level] allowed=[test_light.nightshift_allowed] queued=[test_light.nightshift_update_queued]"
+	// ЧИТАТЬ КЭШ НАПРЯМУЮ. get_cached_area_lights() перестраивает его через
+	// ensure_light_cache(), а там CHECK_TICK - то есть диагностика засыпала и
+	// сама доводила состояние до правильного прямо перед тем, как его напечатать.
+	// Три сессии разбора смотрели на почищенную ею картину и потому не сходились.
+	parts += "light in APC cache: [(test_light in test_apc.cached_area_lights) ? "yes" : "NO"] (cache size [length(test_apc.cached_area_lights)], dirty=[test_apc.light_cache_dirty])"
+	// Питание области и состояние лампы: подпись "цвет застыл + световой датум мёртв"
+	// означает, что лампу погасили мимо ночной смены, и без этих полей неизвестно,
+	// кто именно - канал области, статус плафона или последовательность гашения.
+	parts += "area: requires_power=[test_area.requires_power] lightswitch=[test_area.lightswitch] power_light=[test_area.power_light]"
+	parts += "lamp: on=[test_light.on] status=[test_light.status] loss_stage=[test_light.power_loss_stage] emergency=[test_light.emergency_mode] switchcount=[test_light.switchcount] datum=[test_light.light ? "жив" : "МЁРТВ"]"
+	parts += "APC power: operating=[test_apc.operating] lighting=[test_apc.lighting] shorted=[test_apc.shorted] failure_timer=[test_apc.failure_timer]"
+	parts += "queues: apc=[length(GLOB.nightshift_apc_queue)] light=[length(GLOB.nightshift_light_queue)]"
+	parts += "light queued globally: [(test_light in GLOB.nightshift_light_queue) ? "yes" : "no"]"
+	parts += "SSnightshift: active=[SSnightshift.nightshift_active] can_fire=[SSnightshift.can_fire] refresh_running=[SSnightshift.nightshift_refresh_running]"
+	return parts.Join(" | ")
+
 /datum/unit_test/nightshift_admin_controls/proc/assert_fixture_state(message_prefix, expected_enabled, expected_level)
 	var/expected_color_value = expected_color(expected_level)
 	var/expected_power_value = expected_power(expected_level)
-	TEST_ASSERT_EQUAL(test_apc.nightshift_lights, expected_enabled, "[message_prefix] APC nightshift state should match the expected mode.")
-	TEST_ASSERT_EQUAL(test_light.nightshift_enabled, expected_enabled, "[message_prefix] fixture nightshift flag should match the expected mode.")
-	TEST_ASSERT_EQUAL(test_light.nightshift_level, expected_level, "[message_prefix] fixture nightshift level should update immediately.")
-	TEST_ASSERT_EQUAL(lowertext(test_light.light_color), expected_color_value, "[message_prefix] fixture light color should update immediately.")
-	TEST_ASSERT_EQUAL(test_light.light_power, expected_power_value, "[message_prefix] fixture light power should update immediately.")
-	TEST_ASSERT(test_light.light, "[message_prefix] fixture should keep a live light datum.")
-	TEST_ASSERT_EQUAL(lowertext(test_light.light.light_color), expected_color_value, "[message_prefix] live emitted light color should update immediately.")
-	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power_value, "[message_prefix] live emitted light power should update immediately.")
+	TEST_ASSERT_EQUAL(test_apc.nightshift_lights, expected_enabled, "[message_prefix] APC nightshift state should match the expected mode. [fixture_diagnostics()]")
+	// Снимок ровно того значения, которое сравнивал ассерт. Прошлое падение
+	// Захваченное значение печатается рядом с перечитанным: именно это
+	// расхождение (0 при сравнении, 1 при отчёте) и вывело на то, что диагностика
+	// сама спала в CHECK_TICK и успевала починить лампу до печати.
+	var/light_flag_at_check = test_light.nightshift_enabled
+	TEST_ASSERT_EQUAL(light_flag_at_check, expected_enabled, "[message_prefix] fixture nightshift flag should match the expected mode. Захвачено при сравнении: [light_flag_at_check], перечитано при отчёте: [test_light.nightshift_enabled], лампа [REF(test_light)]. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.nightshift_level, expected_level, "[message_prefix] fixture nightshift level should update immediately. [fixture_diagnostics()]")
+	// Диагностика и здесь: в CI (layenia, 2026-08-13) падали именно эти строки -
+	// цвет застыл на прошлом значении, световой датум мёртв, а флаги выше прошли.
+	// Без снимка питания такое падение неотличимо от застрявшей очереди.
+	TEST_ASSERT_EQUAL(lowertext(test_light.light_color), expected_color_value, "[message_prefix] fixture light color should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.light_power, expected_power_value, "[message_prefix] fixture light power should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT(test_light.light, "[message_prefix] fixture should keep a live light datum. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(lowertext(test_light.light.light_color), expected_color_value, "[message_prefix] live emitted light color should update immediately. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.light.light_power, expected_power_value, "[message_prefix] live emitted light power should update immediately. [fixture_diagnostics()]")
 	var/list/current_overlays = test_light.update_overlays()
 	TEST_ASSERT(length(current_overlays) >= 2, "[message_prefix] lit fixtures should expose visible and emissive overlays.")
 	for(var/mutable_appearance/O as anything in current_overlays)

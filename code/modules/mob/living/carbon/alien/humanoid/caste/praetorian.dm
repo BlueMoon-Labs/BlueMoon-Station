@@ -35,7 +35,11 @@
 		to_chat(user, "<span class='danger'>You are still too burdened with guilt to evolve into a queen.</span>")
 		return FALSE
 	if(!get_alien_type(/mob/living/carbon/alien/humanoid/royal/queen))
-		var/mob/living/carbon/alien/humanoid/royal/queen/new_xeno = new (user.loc)
+		var/mob/living/carbon/alien/humanoid/royal/queen/new_xeno
+		if(IS_XENO_MAID_ROUND)
+			new_xeno = new /mob/living/carbon/alien/humanoid/royal/queen/maid(user.loc)
+		else
+			new_xeno = new /mob/living/carbon/alien/humanoid/royal/queen(user.loc)
 		user.alien_evolve(new_xeno)
 		return TRUE
 	else

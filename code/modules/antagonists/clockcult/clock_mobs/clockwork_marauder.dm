@@ -94,7 +94,7 @@
 	"<span class='userdanger'>Помятая и поцарапанная, твоя броня спадает, и без её защиты твоя хрупкая фигура распадается на части.</span>")
 	. = ..()
 
-/mob/living/simple_animal/hostile/clockwork/marauder/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/mob/living/simple_animal/hostile/clockwork/marauder/Process_Spacemove(movement_dir = 0)
 	return TRUE
 
 /mob/living/simple_animal/hostile/clockwork/marauder/adjustHealth(amount, updating_health = TRUE, forced = FALSE)

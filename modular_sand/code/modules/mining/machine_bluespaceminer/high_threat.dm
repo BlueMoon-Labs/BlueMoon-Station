@@ -50,15 +50,26 @@
 	loot.forceMove(drop)
 	machine.visible_message(span_bolddanger("Реальность рвётся — из-под [machine] вылетает [loot]!"))
 
-/proc/bsm_spawn_meteor_at_miner(obj/machinery/mineral/bluespace_miner/machine)
+/proc/bsm_spawn_meteor_at_miner(obj/machinery/mineral/bluespace_miner/machine, startSide = null)
 	if(QDELETED(machine))
 		return
-	var/turf/target = get_turf(machine)
+	bsm_spawn_cataclysm(machine, startSide)
+
+/// Запускает tunguska-класс блюспейс-метеор, летящий со стороны `startSide` (null = случайно)
+/// в заданную цель `target_atom` с объявлением по станции.
+/// Варианты объявления по цели:
+///  - майнер: сенсоры связывают объект с нестабильностью БС-майнеров;
+///  - живой моб (метеор гонится за ним): объект преследует конкретную цель;
+///  - прочий турф/объект: просто крупный метеорит.
+/proc/bsm_spawn_cataclysm(atom/target_atom, startSide = null)
+	if(QDELETED(target_atom))
+		return
+	var/turf/target = get_turf(target_atom)
 	if(!target)
 		return
-	var/z = target.z
-	var/startSide = pick(GLOB.cardinals)
-	var/turf/pickedstart = spaceDebrisStartLoc(startSide, z)
+	if(startSide == null)
+		startSide = pick(GLOB.cardinals)
+	var/turf/pickedstart = spaceDebrisStartLoc(startSide, target.z)
 	if(!pickedstart)
 		return
 	var/directionstring = "из неизвестного направления"
@@ -73,13 +84,30 @@
 			directionstring = "с западной стороны"
 	var/area/impact_area = get_area(target)
 	var/area_name = impact_area?.name || "неизвестный сектор"
-	priority_announce(
-		"Крупный метеорит зафиксирован на курсе столкновения с [station_name()] — подход [directionstring]. Сенсоры связывают объект с нестабильностью блюспейс-майнеров; ожидаемая зона поражения: [area_name]. Инженерному отделу: подготовить ремонтные бригады.",
-		"ВНИМАНИЕ: МЕТЕОРЫ",
-		"meteors",
-		has_important_message = TRUE,
-	)
-	new /obj/effect/meteor/tunguska/bsm_cataclysm(pickedstart, machine)
+	var/is_miner = istype(target_atom, /obj/machinery/mineral/bluespace_miner)
+	if(is_miner)
+		priority_announce(
+			"Крупный блюспейсжидкостный-метеорит зафиксирован на курсе столкновения с [station_name()] — подход [directionstring]. Сенсоры связывают объект с нестабильностью блюспейс-майнеров; ожидаемая зона поражения: [area_name]. Инженерному отделу: подготовить ремонтные бригады.",
+			"ВНИМАНИЕ: МЕТЕОРЫ",
+			"meteors",
+			has_important_message = TRUE,
+		)
+	else if(isliving(target_atom))
+		var/mob/living/chased = target_atom
+		priority_announce(
+			"Крупный блюспейсжидкостный-метеорит зафиксирован на курсе столкновения с [station_name()] — подход [directionstring]. Объект ведёт активное преследование цели ([chased]); ожидаемая зона поражения: [area_name]. Инженерному отделу и медицинскому отделу: принять меры.",
+			"ВНИМАНИЕ: МЕТЕОРЫ",
+			"meteors",
+			has_important_message = TRUE,
+		)
+	else
+		priority_announce(
+			"Крупный блюспейсжидкостный-метеорит зафиксирован на курсе столкновения с [station_name()] — подход [directionstring]. Ожидаемая зона поражения: [area_name]. Инженерному отделу: подготовить ремонтные бригады.",
+			"ВНИМАНИЕ: МЕТЕОРЫ",
+			"meteors",
+			has_important_message = TRUE,
+		)
+	new /obj/effect/meteor/tunguska/bsm_cataclysm(pickedstart, target_atom)
 
 /proc/bsm_catastrophic_miner_explosion(obj/machinery/mineral/bluespace_miner/machine)
 	if(QDELETED(machine))

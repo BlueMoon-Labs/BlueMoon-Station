@@ -43,7 +43,9 @@
 #define LAZYADDASSOC(L, K, V) if(!L) { L = list(); } L[K] += list(V);
 #define LAZYREMOVEASSOC(L, K, V) if(L) { if(L[K]) { L[K] -= V; if(!length(L[K])) L -= K; } if(!length(L)) L = null; }
 #define LAZYACCESSASSOC(L, I, K) L ? L[I] ? L[I][K] ? L[I][K] : null : null : null
-#define QDEL_LAZYLIST(L) for(var/I in L) qdel(I); L = null;
+/// По снапшоту, как и QDEL_LIST: Destroy элемента часто снимает его из этого же списка, а
+/// удаление текущего элемента в обходе сдвигает индексы - каждый второй оставался живым.
+#define QDEL_LAZYLIST(L) if(L) { for(var/qdel_lazylist_item in (L).Copy()) qdel(qdel_lazylist_item); } L = null;
 //These methods don't null the list
 #define LAZYCOPY(L) (L ? L.Copy() : list() ) //Use LAZYLISTDUPLICATE instead if you want it to null with no entries
 #define LAZYCLEARLIST(L) if(L) L.Cut() // Consider LAZYNULL instead
@@ -895,9 +897,17 @@
 
 //json decode that will return null on parse error instead of runtiming.
 /proc/safe_json_decode(string, default = list())
+	//пустой вход - это отсутствующая запись сейвфайла (новый персонаж, поле ещё не
+	//мигрировало), а не битый JSON. Логировать такое незачем: за раунд набегало
+	//под две сотни трейсов на ровном месте
+	if(isnull(string) || !length("[string]"))
+		return null
 	try
 		return json_decode(string)
-	catch
+	catch(var/exception/error)
+		//молчаливый null прятал источник битого JSON - оставляем след со стеком
+		//вызова и началом входной строки, но по-прежнему не роняем вызывающего
+		stack_trace("safe_json_decode() failed: [error] | input ([length("[string]")]): [copytext_char("[string]", 1, 200)]")
 		return null
 
 /**

@@ -215,4 +215,7 @@ GLOBAL_LIST_EMPTY(potential_mods_per_skill)
 
 /datum/skill_modifier/proc/on_mob_new_mind(mob/source)
 	source.mind.add_skill_modifier(identifier)
-	RegisterSignal(source.mind, COMSIG_MIND_TRANSFER, TYPE_PROC_REF(/datum/skill_modifier, on_mind_transfer))
+	//add_skill_modifier сам регистрируется на COMSIG_MIND_TRANSFER, но выходит раньше,
+	//если модификатор уже висит на этом разуме. Страховка нужна, а вот предупреждение
+	//о перерегистрации - нет: обмен разумами сыпал его каждым кастом
+	RegisterSignal(source.mind, COMSIG_MIND_TRANSFER, TYPE_PROC_REF(/datum/skill_modifier, on_mind_transfer), override = TRUE)

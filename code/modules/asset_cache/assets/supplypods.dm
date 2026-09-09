@@ -1,28 +1,27 @@
-/datum/asset/spritesheet/supplypods
+/datum/asset/spritesheet_batched/supplypods
 	name = "supplypods"
 
-/datum/asset/spritesheet/supplypods/register()
-	for (var/style in 1 to length(GLOB.podstyles))
-		if (style == STYLE_SEETHROUGH)
-			Insert("pod_asset[style]", icon('icons/obj/supplypods.dmi' , "seethrough-icon"))
+/datum/asset/spritesheet_batched/supplypods/create_spritesheets()
+	for(var/style in 1 to length(GLOB.podstyles))
+		if(style == STYLE_SEETHROUGH)
+			insert_icon("pod_asset[style]", uni_icon('icons/obj/supplypods.dmi', "seethrough-icon", SOUTH))
 			continue
 		var/base = GLOB.podstyles[style][POD_BASE]
-		if (!base)
-			Insert("pod_asset[style]", icon('icons/obj/supplypods.dmi', "invisible-icon"))
+		if(!base)
+			insert_icon("pod_asset[style]", uni_icon('icons/obj/supplypods.dmi', "invisible-icon", SOUTH))
 			continue
-		var/icon/podIcon = icon('icons/obj/supplypods.dmi', base)
+		var/datum/universal_icon/pod_icon = uni_icon('icons/obj/supplypods.dmi', base, SOUTH)
 		var/door = GLOB.podstyles[style][POD_DOOR]
-		if (door)
+		if(door)
 			door = "[base]_door"
-			podIcon.Blend(icon('icons/obj/supplypods.dmi', door), ICON_OVERLAY)
+			pod_icon.blend_icon(uni_icon('icons/obj/supplypods.dmi', door, SOUTH), ICON_OVERLAY)
 		var/shape = GLOB.podstyles[style][POD_SHAPE]
-		if (shape == POD_SHAPE_NORML)
+		if(shape == POD_SHAPE_NORML)
 			var/decal = GLOB.podstyles[style][POD_DECAL]
-			if (decal)
-				podIcon.Blend(icon('icons/obj/supplypods.dmi', decal), ICON_OVERLAY)
+			if(decal)
+				pod_icon.blend_icon(uni_icon('icons/obj/supplypods.dmi', decal, SOUTH), ICON_OVERLAY)
 			var/glow = GLOB.podstyles[style][POD_GLOW]
-			if (glow)
+			if(glow)
 				glow = "pod_glow_[glow]"
-				podIcon.Blend(icon('icons/obj/supplypods.dmi', glow), ICON_OVERLAY)
-		Insert("pod_asset[style]", podIcon)
-	return ..()
+				pod_icon.blend_icon(uni_icon('icons/obj/supplypods.dmi', glow, SOUTH), ICON_OVERLAY)
+		insert_icon("pod_asset[style]", pod_icon)

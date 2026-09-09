@@ -123,13 +123,8 @@
 			if(moving_diagonally == SECOND_DIAG_STEP)
 				if(!.)
 					setDir(first_step_dir)
-					// Half-finished diagonal: one cardinal step succeeded — match old inertia (Moved skipped newtonian during split).
-					if(!inertia_moving && first_step_dir)
-						inertia_next_move = world.time + inertia_move_delay
-						newtonian_move(first_step_dir)
 				else if (!inertia_moving)
 					inertia_next_move = world.time + inertia_move_delay
-					// Single combined impulse — do not stack with per-cardinal Moved() calls during this diagonal.
 					newtonian_move(direct)
 			moving_diagonally = 0
 			return
@@ -192,8 +187,8 @@
 			SSspatial_grid.exit_cell(src, old_turf)
 		else if(new_turf && !old_turf)
 			SSspatial_grid.enter_cell(src, new_turf)
-	// Diagonal intents are split into two cardinals inside Move(); defer newtonian to one call at split end (see above).
-	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED) && !moving_diagonally)
+	// Diagonal intents are split into two cardinals inside Move(); the second half lands here.
+	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED))
 		inertia_next_move = world.time + inertia_move_delay
 		newtonian_move(Dir)
 	return TRUE
@@ -352,15 +347,14 @@
  * Called whenever an object moves and by mobs when they attempt to move themselves through space
  * And when an object or action applies a force on src, see [newtonian_move][/atom/movable/proc/newtonian_move]
  *
- * return FALSE to have src start/keep drifting in a no-grav area and 1 to stop/not start drifting
- *
- * Mobs should return TRUE if they should be able to move of their own volition, see [/client/proc/Move]
- *
- * Arguments:
- * * movement_dir - 0 when stopping or any dir when trying to move
- * * continuous_move - TRUE when checking from the newtonian drift loop (not client step intent)
- */
-/atom/movable/proc/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+  * return FALSE to have src start/keep drifting in a no-grav area and 1 to stop/not start drifting
+  *
+  * Mobs should return TRUE if they should be able to move of their own volition, see [/client/proc/Move]
+  *
+  * Arguments:
+  * * movement_dir - 0 when stopping or any dir when trying to move
+  */
+/atom/movable/proc/Process_Spacemove(movement_dir = 0)
 	if(has_gravity(src))
 		return TRUE
 
@@ -383,54 +377,25 @@
 
 	return FALSE
 
-/// Subtype hook (e.g. lattice); [Process_Spacemove] already handles lattice on /atom/movable — mobs override and use backups
-/atom/movable/proc/handle_spacemove_grabbing()
-	return FALSE
-
-/// Only moves the object if it's under no gravity. Uses smooth drift when possible. [inertia_dir] is a BYOND dir flag.
-/atom/movable/proc/newtonian_move(
-	inertia_dir,
-	instant = FALSE,
-	start_delay = 0,
-	drift_force = 1,
-	controlled_cap = null,
-	force_loop = TRUE,
-)
-	if(!isturf(loc))
-		src.inertia_dir = 0
-		if(drift_handler)
-			QDEL_IN(drift_handler, 0)
+/// Only moves the object if it's under no gravity
+/atom/movable/proc/newtonian_move(direction)
+	if(!isturf(loc) || Process_Spacemove(0))
+		inertia_dir = 0
 		return FALSE
 
-	if(!inertia_dir)
-		src.inertia_dir = 0
-		if(drift_handler)
-			QDEL_IN(drift_handler, 0)
+	inertia_dir = direction
+	if(!direction)
 		return TRUE
-
-	if(Process_Spacemove(inertia_dir, TRUE))
-		src.inertia_dir = 0
-		if(drift_handler)
-			QDEL_IN(drift_handler, 0)
-		return FALSE
-
-	SSspacedrift.processing -= src
-	src.inertia_dir = inertia_dir
-	var/inertia_angle = dir2angle(inertia_dir)
-	var/capped = isnull(controlled_cap) ? drift_force : min(drift_force, controlled_cap)
-
-	if(!isnull(drift_handler) && !QDELETED(drift_handler))
-		if(drift_handler.newtonian_impulse(inertia_angle, start_delay, capped, controlled_cap, force_loop))
-			return TRUE
-		if(QDELETED(src))
-			return FALSE
-
-	// Defer: Destroy() must not clear a replacement drift_handler (see /datum/drift_handler/Destroy)
-	if(drift_handler)
-		var/datum/drift_handler/old_drift = drift_handler
-		QDEL_IN(old_drift, 0)
-	new /datum/drift_handler(src, inertia_angle, instant, start_delay, capped)
-	if(QDELETED(drift_handler))
-		src.inertia_dir = 0
-		return FALSE
+	// Дрейф наследует текущую цену шага носителя: выбегание в космос на бегу
+	// не должно сбрасывать темп до дефолтных 5 дс на тайл. Пока есть опора,
+	// сюда не доходим вовсе (ранний bail выше), так что ходьба по полу не трогает var.
+	if(ismob(src))
+		var/mob/drift_mob = src
+		inertia_move_delay = max(drift_mob.movement_step_cost(FALSE), world.tick_lag)
+	// Свежий дрейф не ждёт полный шаговый интервал: Moved() уже положил нам
+	// кулдаун +inertia_move_delay, и без сброса вход в полёт подвисал бы.
+	if(!(src in SSspacedrift.processing))
+		inertia_next_move = world.time
+	inertia_last_loc = loc
+	SSspacedrift.processing[src] = src
 	return TRUE

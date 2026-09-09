@@ -75,3 +75,11 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/shoes_digi.dmi'
 	icon_state = "sandals_fancy"
+
+/obj/item/clothing/shoes/yun_sneakers
+	name = "Strange Sneakers"
+	desc = "average sneakers. Or not"
+	icon = 'modular_bluemoon/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/shoes.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/shoes_digi.dmi'
+	icon_state = "yun"

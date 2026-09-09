@@ -2,7 +2,7 @@
 
 /obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w
 	icon = 'icons/obj/atmospherics/pipes/he-manifold.dmi'
-	icon_state = "manifold4w-2"
+	icon_state = "manifold4w-3"
 
 	name = "4-way pipe manifold"
 	desc = "A manifold composed of heat-exchanging pipes."
@@ -13,6 +13,11 @@
 
 	construction_type = /obj/item/pipe/quaternary
 	pipe_state = "he_manifold4w"
+	// Корпус манифолда сдвигается по обеим осям сразу, а патрубки при этом
+	// обязаны дотягиваться до края тайла - то есть меняют длину, а не только
+	// положение. Рантайм-сдвиг это не воспроизводит, и лист нарисован ровно
+	// под средние слои. См. apply_layer_offset() у прямой трубы.
+	pipe_flags = PIPING_INNER_LAYERS_ONLY
 
 	var/mutable_appearance/center
 
@@ -39,10 +44,10 @@
 	update_alpha()
 
 
-/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer1
-	piping_layer = 1
-	icon_state = "manifold4w-1"
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer2
+	piping_layer = 2
+	icon_state = "manifold4w-2"
 
-/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer3
-	piping_layer = 3
-	icon_state = "manifold4w-3"
+/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w/layer4
+	piping_layer = 4
+	icon_state = "manifold4w-4"

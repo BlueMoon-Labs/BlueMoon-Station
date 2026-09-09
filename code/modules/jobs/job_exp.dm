@@ -1,6 +1,20 @@
 GLOBAL_LIST_EMPTY(exp_to_update)
 GLOBAL_PROTECT(exp_to_update)
 
+/// Ассоциативное множество "командование плюс ИИ". Раньше это выражение собиралось
+/// как GLOB.command_positions | list("AI") в четырёх местах, и каждое из них
+/// аллоцировало новый список - а зовут их из цикла по всем работам в LateChoices.
+/// Строится лениво: GLOB.command_positions на момент инициализации глобалок может
+/// быть ещё не заполнен, а к первому обращению отсюда - уже гарантированно да
+/proc/get_command_or_ai_positions()
+	var/static/list/command_or_ai
+	if(!command_or_ai)
+		command_or_ai = list()
+		for(var/position in GLOB.command_positions)
+			command_or_ai[position] = TRUE
+		command_or_ai["AI"] = TRUE
+	return command_or_ai
+
 // Procs
 /datum/job/proc/required_playtime_remaining(client/C)
 	if(!C)
@@ -26,34 +40,38 @@ GLOBAL_PROTECT(exp_to_update)
 		return (job_requirement - my_exp)
 
 /datum/job/proc/get_exp_req_amount()
-	if(title in (GLOB.command_positions | list("AI")))
+	if(get_command_or_ai_positions()[title])
 		var/uerhh = CONFIG_GET(number/use_exp_restrictions_heads_hours)
 		if(uerhh)
 			return uerhh * 60
 	return exp_requirements
 
 /datum/job/proc/get_exp_req_type()
-	if(title in (GLOB.command_positions | list("AI")))
+	if(get_command_or_ai_positions()[title])
 		if(CONFIG_GET(flag/use_exp_restrictions_heads_department) && exp_type_department)
 			return exp_type_department
 	return exp_type
 
 /proc/job_is_xp_locked(jobtitle)
-	if(!CONFIG_GET(flag/use_exp_restrictions_heads) && (jobtitle in (GLOB.command_positions | list("AI"))))
+	var/is_command = get_command_or_ai_positions()[jobtitle]
+	if(!CONFIG_GET(flag/use_exp_restrictions_heads) && is_command)
 		return FALSE
-	if(!CONFIG_GET(flag/use_exp_restrictions_other) && !(jobtitle in (GLOB.command_positions | list("AI"))))
+	if(!CONFIG_GET(flag/use_exp_restrictions_other) && !is_command)
 		return FALSE
 	return TRUE
 
 /client/proc/calc_exp_type(exptype)
-	var/list/explist = prefs.exp.Copy()
+	//список только читается - копия была чистой аллокацией на каждый вызов,
+	//а вызывают это по разу на каждую работу при открытии окна выбора
+	var/list/explist = prefs.exp
 	var/amount = 0
 	var/list/typelist = GLOB.exp_jobsmap[exptype]
 	if(!typelist)
 		return -1
 	for(var/job in typelist["titles"])
-		if(job in explist)
-			amount += explist[job]
+		var/record = explist[job]
+		if(record)
+			amount += record
 	return amount
 
 // todo: port tgui exp

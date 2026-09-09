@@ -234,13 +234,23 @@
 /mob/living/simple_animal/hostile/retaliate/clown/insane/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	return power
 
+///Смех и растворение над трупом закреплённой жертвы. Отдельный прок, потому что
+///к моменту отложенного вызова src.target мог быть сброшен LoseTarget() при
+///очистке BB_AI_CURRENT_TARGET (труп не проходит retaliate CanAttack).
+/mob/living/simple_animal/hostile/retaliate/clown/insane/proc/dissolve_over_dead_victim(mob/living/victim)
+	if(QDELETED(victim) || victim.stat != DEAD)
+		return
+	target = victim
+	playsound(victim.loc, 'sound/spookoween/insane_low_laugh.ogg', 500, 1)
+	qdel(src)
+
 /mob/living/simple_animal/hostile/retaliate/clown/insane/proc/stalk()
 	var/mob/living/M = target
 	if(!M)
 		return
 	if(M.stat == DEAD)
-		playsound(M.loc, 'sound/spookoween/insane_low_laugh.ogg', 500, 1)
-		qdel(src)
+		dissolve_over_dead_victim(M)
+		return
 	if(timer == 0)
 		timer = rand(5,15)
 		playsound(M.loc, pick('sound/spookoween/scary_horn.ogg','sound/spookoween/scary_horn2.ogg', 'sound/spookoween/scary_horn3.ogg'), 500, 1)
@@ -332,8 +342,9 @@
 	stalker.timer-- //легаси-каденс: декремент жил в FindTarget
 	if(victim.stat == DEAD)
 		//смех и растворение легаси-проком, но отложенно: qdel пауна из
-		//perform небезопасен (curseblob-паттерн)
-		addtimer(CALLBACK(stalker, TYPE_PROC_REF(/mob/living/simple_animal/hostile/retaliate/clown/insane, stalk)), 0)
+		//perform небезопасен (curseblob-паттерн). Жертву передаём явно: target
+		//к этому моменту мог быть сброшен при очистке BB_AI_CURRENT_TARGET.
+		addtimer(CALLBACK(stalker, TYPE_PROC_REF(/mob/living/simple_animal/hostile/retaliate/clown/insane, dissolve_over_dead_victim), victim), 0)
 		return AI_BEHAVIOR_DELAY
 	stalker.stalk()
 	return AI_BEHAVIOR_DELAY

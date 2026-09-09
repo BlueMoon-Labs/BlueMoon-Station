@@ -199,6 +199,22 @@
 				else
 					message_admins("[key_name_admin(usr)] tried to create a revenant. Unfortunately, there were no candidates available.")
 					log_admin("[key_name(usr)] failed to create a revenant.")
+			if("massshooter")
+				var/mob/mob_for_role
+				if(alert(usr, "Вы уверены, что собираетесь создать мажорного антагониста \"Массшутер\"?", , "Да.", "Ой, я случайно...") != "Да.")
+					return
+				if(alert(usr, "Запустить голосование среди призраков или выбрать конкретного?", , "Голосование", "Конкретный") == "Конкретный")
+					var/list/cand = get_all_ghost_role_eligible(TRUE, TRUE)
+					mob_for_role = tgui_input_list(usr, "Кто?", , cand, null)
+					if(QDELETED(mob_for_role) || !isobserver(mob_for_role) || !mob_for_role.client || jobban_isbanned(mob_for_role, "pacifist"))
+						to_chat(usr, span_warning("Этот кандидат недоступен для данной роли."))
+						return
+				if(src.makeMassShooter(mob_for_role))
+					message_admins("[key_name(usr)] created a Mass Shooter.[mob_for_role ? " Admin granted role to player <b>[mob_for_role.ckey]</b>" : ""]")
+					log_admin("[key_name(usr)] created a Mass Shooter.[mob_for_role ? " Admin granted role to player <b>[mob_for_role.ckey]</b>" : ""]")
+				else
+					message_admins("[key_name_admin(usr)] tried to create a Mass Shooter. Unfortunately, there were no candidates available.")
+					log_admin("[key_name(usr)] failed to create a Mass Shooter.")
 
 //			if("qareen")	Temporary removed. - Gardelin0
 //				if(src.makeQareen())

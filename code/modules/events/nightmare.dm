@@ -23,34 +23,40 @@
 	fakeable = FALSE
 
 /datum/round_event/ghost_role/nightmare/spawn_role()
+	// Точку ищем ДО гост-опроса: раньше пул кандидатов собирался полминуты и только потом
+	// выяснялось, что выпускать кошмара некуда.
+	var/turf/spawn_turf = find_nightmare_spawn()
+	if(!spawn_turf)
+		message_admins("Кошмар не создан: на станции нет ни одного тёмного турфа (проверено [length(GLOB.xeno_spawn)] точек xeno_spawn и все техтоннели).")
+		log_game("Nightmare event aborted: no dark turf found on the station.")
+		return MAP_ERROR
+
 	var/list/candidates = get_candidates(ROLE_ALIEN, null, ROLE_ALIEN)
 	if(!candidates.len)
 		return NOT_ENOUGH_PLAYERS
+
+	// Пока шёл опрос, свет мог включиться или точку могли занять - перевыбираем.
+	if(!is_valid_nightmare_spawn(spawn_turf))
+		spawn_turf = find_nightmare_spawn()
+	if(!spawn_turf)
+		message_admins("Кошмар не создан: пока шёл гост-опрос, темнота на станции пропала.")
+		log_game("Nightmare event aborted: the station lit up while polling ghosts.")
+		return MAP_ERROR
 
 	var/mob/dead/selected = pick(candidates)
 
 	var/datum/mind/player_mind = new /datum/mind(selected.key)
 	player_mind.active = TRUE
 
-	var/list/spawn_locs = list()
-	for(var/X in GLOB.xeno_spawn)
-		var/turf/T = X
-		var/light_amount = T.get_lumcount()
-		if(light_amount < SHADOW_SPECIES_LIGHT_THRESHOLD)
-			spawn_locs += T
-
-	if(!spawn_locs.len)
-		message_admins("No valid spawn locations found, aborting...")
-		return MAP_ERROR
-
-	var/mob/living/carbon/human/S = new ((pick(spawn_locs)))
-	player_mind.transfer_to(S)
+	log_nightmare_spawn(spawn_turf)
+	var/mob/living/carbon/human/nightmare = new (spawn_turf)
+	player_mind.transfer_to(nightmare)
 	player_mind.assigned_role = "Nightmare"
 	player_mind.special_role = "Nightmare"
 	player_mind.add_antag_datum(/datum/antagonist/nightmare)
-	S.set_species(/datum/species/shadow/nightmare)
-	playsound(S, 'sound/magic/ethereal_exit.ogg', 50, 1, -1)
-	message_admins("[ADMIN_LOOKUPFLW(S)] has been made into a Nightmare by an event.")
-	log_game("[key_name(S)] was spawned as a Nightmare by an event.")
-	spawned_mobs += S
+	nightmare.set_species(/datum/species/shadow/nightmare)
+	playsound(nightmare, 'sound/magic/ethereal_exit.ogg', 50, 1, -1)
+	message_admins("[ADMIN_LOOKUPFLW(nightmare)] has been made into a Nightmare by an event.")
+	log_game("[key_name(nightmare)] was spawned as a Nightmare by an event.")
+	spawned_mobs += nightmare
 	return SUCCESSFUL_SPAWN

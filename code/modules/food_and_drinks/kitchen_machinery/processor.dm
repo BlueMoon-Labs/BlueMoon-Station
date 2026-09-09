@@ -125,7 +125,10 @@
 	addtimer(CALLBACK(src, PROC_REF(complete_processing)), duration)
 
 /obj/machinery/processor/proc/complete_processing()
-	for(var/atom/movable/O in src.contents)
+	// process_food() гибает или удаляет объект, то есть выносит его из contents прямо
+	// в обходе по contents - индекс проматывается, и каждый второй загруженный предмет
+	// молча не обрабатывался и оставался в машине
+	for(var/atom/movable/O in src.contents.Copy())
 		var/datum/food_processor_process/P = select_recipe(O)
 		if (!P)
 			log_admin("DEBUG: [O] in processor doesn't have a suitable recipe. How do you put it in?")

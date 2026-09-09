@@ -24,7 +24,11 @@
 	var/item_spawn_delay = null
 
 /obj/effect/spawner/lootdrop/Initialize(mapload)
-	..()
+	// . = ..(), а не голый ..(): возврат родителя выбрасывался, и ветка отложенного спавна
+	// проваливалась за конец прока с null - SSatoms писал в initialize.log "Didn't return an
+	// Initialize hint" (в раунде 9831 на /obj/effect/spawner/lootdrop/syndicate_present,
+	// который с вероятностью 75% как раз остаётся отложенным).
+	. = ..()
 	if(!src.x || !src.y || !src.z)
 		return INITIALIZE_HINT_QDEL // Failcheck на случай ублюдочного маппинга "Внутри коробки, которая внутри шкафчика"
 	if(delayed_spawn && should_spawn_on_init())

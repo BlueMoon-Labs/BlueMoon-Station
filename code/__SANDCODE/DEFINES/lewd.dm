@@ -57,6 +57,13 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_EXTREME 2
 #define INTERACTION_UNHOLY_HARD 4
 
+
+#define INTERACTION_EFFECT_HEART "heart"
+
+GLOBAL_LIST_INIT(interaction_effects_list, list(
+	INTERACTION_EFFECT_HEART = "Сердечко",
+))
+
 #define CUM_TARGET_MOUTH "mouth"
 #define CUM_TARGET_THROAT "throat"
 #define CUM_TARGET_VAGINA "vagina"

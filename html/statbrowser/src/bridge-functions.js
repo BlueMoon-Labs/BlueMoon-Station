@@ -133,6 +133,20 @@ function remove_mc() {
 	if (State.currentTab === "MC") tab_change("Status");
 }
 
+function update_readyplayers(encoded) {
+	var parsed = safeParse(encoded);
+	if (!Array.isArray(parsed)) return;
+	State.readyPlayers = parsed;
+	State.readyPlayersVisible = true;
+	if (!_settingsActive && State.currentTab === "Status") draw_status();
+}
+
+function remove_readyplayers() {
+	State.readyPlayers = [];
+	State.readyPlayersVisible = false;
+	if (!_settingsActive && State.currentTab === "Status") draw_status();
+}
+
 function update_spells(t, s) {
 	var oldTabs = State.spellTabs || [];
 	var parsed = safeParse(t, []);

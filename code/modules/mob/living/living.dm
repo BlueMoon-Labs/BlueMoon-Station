@@ -47,8 +47,12 @@
 	end_parry_sequence()
 	stop_active_blocking()
 	if(LAZYLEN(status_effects))
-		for(var/s in status_effects)
-			var/datum/status_effect/S = s
+		// Снимок обязателен: и qdel(S), и be_replaced() делают
+		// LAZYREMOVE(owner.status_effects, src), то есть правят список прямо в обходе
+		// по нему - индекс проматывается и каждый второй эффект пропускается.
+		// Пропущенный остаётся с owner на этом мобе, а моб остаётся с ним в
+		// status_effects: цикл ссылок, который BYOND не соберёт никогда
+		for(var/datum/status_effect/S as anything in status_effects.Copy())
 			if(S.on_remove_on_mob_delete) //the status effect calls on_remove when its mob is deleted
 				qdel(S)
 			else
@@ -60,6 +64,14 @@
 	QDEL_LIST_ASSOC_VAL(ability_actions)
 	QDEL_LIST(abilities)
 	QDEL_LIST(implants)
+	// Квирки держат владельца жёстко: quirk_holder плюс запись в SSquirks.quirk_objects.
+	// Снимались они только при явном снятии квирка и при переносе на другого моба, поэтому
+	// удаление тела (админская пересадка, госткафе, возврат в лобби) оставляло висеть и
+	// квирк, и моба - это был самый массовый класс харддела прод-раунда.
+	QDEL_LIST(roundstart_quirks)
+	// Тот же случай: /datum/surgery держит и target, и operated_bodypart, а снимался
+	// только при отрыве конечности. Один незакрытый датум операции = труп плюс его грудь.
+	QDEL_LIST(surgeries)
 	remove_from_all_data_huds()
 	cleanse_trait_datums()
 	QDEL_NULL(ai_controller)
@@ -78,6 +90,10 @@
 	return ..()
 
 /mob/living/proc/ZImpactDamage(turf/T, levels)
+	//LIQUIDS ADD - landing in liquids softens the fall
+	if(T.liquids && T.liquids.liquid_state >= LIQUID_STATE_WAIST)
+		Knockdown(2 SECONDS)
+		return
 	visible_message("<span class='danger'>[src] crashes into [T] with a sickening noise!</span>", \
 					"<span class='userdanger'>You crash into [T] with a sickening noise!</span>")
 	adjustBruteLoss((levels * 5) ** 1.5)
@@ -363,9 +379,10 @@
 /mob/living/start_pulling(atom/movable/AM, state, force = pull_force, supress_message = FALSE)
 	if(!AM || !src)
 		return FALSE
+	// ASSERT(ismovable(AM), "[src] attempted to pull [AM ? "[AM], a nonmovable atom" : "a null object"]")
 	if(!(AM.can_be_pulled(src, state, force)))
 		return FALSE
-	if(throwing || incapacitated())
+	if(throwing || !(mobility_flags & MOBILITY_PULL))
 		return FALSE
 
 	AM.add_fingerprint(src)
@@ -374,10 +391,10 @@
 	if(pulling)
 		// Are we trying to pull something we are already pulling? Then just stop here, no need to continue.
 		if(AM == pulling)
-			return
+			return FALSE
 		stop_pulling()
 
-	DelayNextAction(CLICK_CD_GRABBING)
+	changeNext_move(CLICK_CD_GRABBING)
 
 	if(AM.pulledby)
 		if(!supress_message)
@@ -445,27 +462,30 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	var/target_dir = get_dir(M, src)
-	M.setDir(target_dir)
-	var/target_x
-	var/target_y
-	if(target_dir & NORTH)
-		target_y += offset
-	if(target_dir & SOUTH)
-		target_y -= offset
-	if(target_dir & EAST)
-		target_x += offset
-	if(target_dir & WEST)
-		target_x -= offset
+	M.setDir(get_dir(M, src))
+	var/dir_filter = M.dir
+	if(ISDIAGONALDIR(dir_filter))
+		dir_filter = EWCOMPONENT(dir_filter)
+	var/target_x = 0
+	var/target_y = 0
+	switch(dir_filter)
+		if(NORTH)
+			target_y += offset
+		if(SOUTH)
+			target_y -= offset
+		if(EAST)
+			if(offset && M.lying == 270)
+				M.lying = 90
+				M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
+				M.lying_prev = M.lying
+			target_x += offset
+		if(WEST)
+			if(offset && M.lying == 90)
+				M.lying = 270
+				M.update_transform(FALSE)
+				M.lying_prev = M.lying
+			target_x -= offset
 	if(target_x || target_y)
-		if(0 < target_x && M.lying == 270)
-			M.lying = 90
-			M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
-			M.lying_prev = M.lying
-		if(0 > target_x && M.lying == 90)
-			M.lying = 270
-			M.update_transform(FALSE)
-			M.lying_prev = M.lying
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
@@ -691,7 +711,7 @@
 		clear_fullscreen("brute")
 
 //Proc used to resuscitate a mob, for full_heal see fully_heal()
-/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE)
 	SEND_SIGNAL(src, COMSIG_LIVING_REVIVE, full_heal, admin_revive)
 	if(excess_healing)
 		adjustOxyLoss(-excess_healing, updating_health = FALSE)
@@ -712,6 +732,10 @@
 		update_sight()
 		clear_alert("not_enough_oxy")
 		reload_fullscreen()
+		if(post_revive_effects) // Эффект вспышки, спутанности и помутнённого зрения после возвращения с того света
+			adjust_blurriness(20)
+			Dizzy(20)
+			flash_act(override_blindness_check = 1, override_protection = 1, visual = 1, duration = rand(12, 15))
 		. = TRUE
 		if(excess_healing)
 			INVOKE_ASYNC(src, PROC_REF(emote), "gasp")
@@ -754,7 +778,7 @@
 	cure_blind()
 	cure_husk()
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -1119,9 +1143,12 @@
 
 /// Helper proc that causes the mob to do a jittering animation by jitter_amount.
 /mob/living/proc/do_jitter_animation(jitter_amount = 100)
-	var/amplitude = min(4, (jitter_amount / 100) + 1)
+	// Целая амплитуда: rand() с дробными границами возвращает дробь, а каждое новое
+	// значение pixel_w/pixel_z - это новая запись в таблице аппирансов у каждого, кто
+	// видит моба, и живёт она у клиента до конца сессии. Целые дают девять пар на всех.
+	var/amplitude = round(min(4, (jitter_amount / 100) + 1))
 	var/pixel_w_diff = rand(-amplitude, amplitude)
-	var/pixel_z_diff = rand(-amplitude / 3, amplitude / 3)
+	var/pixel_z_diff = rand(-round(amplitude / 3), round(amplitude / 3))
 	animate(src, pixel_w = pixel_w_diff, pixel_z = pixel_z_diff , time = 0.2 SECONDS, loop = 6, flags = ANIMATION_RELATIVE|ANIMATION_PARALLEL)
 	animate(pixel_w = -pixel_w_diff , pixel_z = -pixel_z_diff , time = 0.2 SECONDS, flags = ANIMATION_RELATIVE)
 
@@ -1185,7 +1212,7 @@
 		if(!silent)
 			to_chat(src, "<span class='warning'>Вы слишком далеко!</span>")
 		return FALSE
-	if(!no_dextery)
+	if(!no_dextery && !IsAdvancedToolUser()) // BLUEMOON EDIT - раньше проверка была инвертирована и отсекала вообще всех без флага NO_DEXTERY
 		if(!silent)
 			to_chat(src, "<span class='warning'>У тебя не хватит ловкости, чтобы сделать это!</span>")
 		return FALSE
@@ -1585,6 +1612,12 @@
 	return PAIN_NO
 
 /mob/living/has_pain(obj/item/bodypart/limb)
+	// Труп боли не чувствует. Гейт стоит именно здесь, потому что через has_pain()
+	// проходят все реакции тела на лечение (костный гель, вправление вывиха, наложение
+	// раны): без него мёртвому телу капал стамина-урон и уходили болевые эмоуты с
+	// сообщениями "вы чувствуете боль" - в чат уже отыгравшему смерть игроку.
+	if(stat == DEAD)
+		return PAIN_NO
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))
 		return PAIN_NO
 	else if(HAS_TRAIT(src, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD))

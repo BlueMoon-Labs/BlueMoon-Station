@@ -148,11 +148,13 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		.["client_ckey"] = targetClient.ckey
 		.["client_muted"] = targetClient.prefs.muted
 		.["client_rank"] = targetClient.holder ? targetClient.holder.rank : "Player"
+		.["client_hearted"] = client_has_active_heart(targetClient)
 	else
 		targetClient = null
 		.["client_ckey"] = resolved_ckey
 		.["client_muted"] = null
 		.["client_rank"] = null
+		.["client_hearted"] = FALSE
 
 	if(resolved_ckey)
 		if (!roleStatus)
@@ -328,6 +330,18 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 
 		if ("set_name")
 			targetMob.vv_auto_rename(params["name"])
+
+		if("commend")
+			if(!targetMob.client?.ckey)
+				to_chat(admin, span_warning("У этого моба нет клиента."))
+				return
+			switch(tgui_alert(admin.mob, "Применить сердечко сейчас или в конце раунда? Немедленное применение сразу видно в OOC.", "<3?", list("Сейчас", "Конец раунда", "Отмена")))
+				if("Сейчас")
+					targetMob.receive_heart(admin.mob, instant = TRUE)
+				if("Конец раунда")
+					targetMob.receive_heart(admin.mob)
+			ui_interact(admin.mob)
+			return TRUE
 
 		if ("heal")
 			admin.cmd_admin_rejuvenate(targetMob)

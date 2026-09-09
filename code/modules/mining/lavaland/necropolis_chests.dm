@@ -992,7 +992,12 @@
 
 	force = clamp((ghost_counter * 4), 0, 75)
 
-/obj/item/melee/ghost_sword/proc/recursive_orbit_collect(atom/A, list/L)
+/obj/item/melee/ghost_sword/proc/recursive_orbit_collect(atom/movable/A, list/L)
+	// Гард на тип обязателен: ghost_check() зовёт этот прок от loc, а лежащий на полу меч
+	// имеет loc'ом турф. Переменная orbiters живёт на движимом, и обращение к ней через
+	// турф - рантайм на каждом process() лежащего меча.
+	if(!istype(A))
+		return
 	for(var/i in A.orbiters?.orbiters)
 		if(!isobserver(i) || (i in L))
 			continue

@@ -2011,7 +2011,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/neutral,
-/mob/living/simple_animal/hostile/syndicate/real_syndicate,
+/mob/living/simple_animal/hostile/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "QB" = (

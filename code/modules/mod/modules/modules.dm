@@ -18,7 +18,7 @@
 	REMOVE_TRAIT(mod.wearer, TRAIT_ANTIMAGIC, MOD_TRAIT)
 	REMOVE_TRAIT(mod.wearer, TRAIT_HOLY, MOD_TRAIT)
 
-/obj/item/mod/module/kinesis //TODO POST-MERGE MAKE NOT SUCK ASS, MAKE BALLER AS FUCK
+/obj/item/mod/module/kinesis
 	name = "MOD kinesis module"
 	desc = "Модульное дополнение к предплечью, этот модуль считался утерянным многие годы, \
 		nесмотря на то, что костюмы, на которые он раньше устанавливался, всё ещё встречаются. \
@@ -26,12 +26,9 @@
 		позволяя ему перемещать объекты — от титанового стержня до промышленного оборудования. \
 		Странно, но он, кажется, не работает на живых существах."
 	icon_state = "kinesis"
-//	module_type = MODULE_ACTIVE
 	module_type = MODULE_TOGGLE
-//	complexity = 3
-	complexity = 0
-	active_power_cost = DEFAULT_CHARGE_DRAIN*0.75
-//	use_power_cost = DEFAULT_CHARGE_DRAIN*3
+	complexity = 3
+	active_power_cost = DEFAULT_CHARGE_DRAIN*2
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/kinesis)
 	cooldown_time = 0.5 SECONDS

@@ -292,7 +292,7 @@
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/beach)
 "be" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/powered/beach)
 "bg" = (
 /obj/structure/sign/barsign,
@@ -502,7 +502,6 @@
 /turf/open/floor/plating,
 /area/ruin/lavaland/powered/beach)
 "gg" = (
-/obj/machinery/pool/controller,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/beach)
 "gt" = (
@@ -794,8 +793,7 @@
 	},
 /area/ruin/lavaland/powered/beach)
 "Jn" = (
-/obj/machinery/pool/drain,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/powered/beach)
 "Kv" = (
 /turf/open/floor/plasteel,
@@ -871,7 +869,7 @@
 /area/ruin/lavaland/powered/beach)
 "Rg" = (
 /obj/structure/pool/Lboard,
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/powered/beach)
 "St" = (
 /turf/open/floor/plasteel/yellowsiding/corner{
@@ -914,10 +912,7 @@
 /turf/open/floor/pod/dark,
 /area/ruin/lavaland/powered/beach)
 "XH" = (
-/obj/machinery/pool/filter{
-	pixel_y = 16
-	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/powered/beach)
 "Yn" = (
 /obj/structure/flora/ausbushes/sunnybush,
@@ -928,7 +923,7 @@
 	dir = 8;
 	pixel_x = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/ruin/lavaland/powered/beach)
 "Zs" = (
 /obj/effect/overlay/palmtree_r,

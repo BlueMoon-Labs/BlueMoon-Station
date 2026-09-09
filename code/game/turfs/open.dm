@@ -11,12 +11,8 @@
 
 	/// Dirtyness system, cit specific.
 
-	/// Does dirt buildup happen on us?
-	var/dirt_buildup_allowed = FALSE
 	/// Dirt level.
 	var/dirtyness = 0
-	/// Dirt level to spawn dirt. Null to use config.
-	var/dirt_spawn_threshold
 
 	/// How much fuel this open turf provides to turf fires
 	var/flammability = 0.2
@@ -55,6 +51,33 @@
 
 /turf/open/MouseDrop_T(atom/dropping, mob/user)
 	. = ..()
+	if(check_pool_drag_out(dropping, user))
+		return
+	if(isliving(dropping) && isliving(user))
+		var/mob/living/dropped_mob = dropping
+		if(!dropped_mob.has_gravity())
+			return
+		var/turf/mob_turf = get_turf(dropped_mob)
+		if(!mob_turf)
+			return
+		if(mob_turf.turf_height - turf_height <= -TURF_HEIGHT_BLOCK_THRESHOLD)
+			//Climb up
+			if(user == dropped_mob)
+				user.balloon_alert_to_viewers("climbing...")
+			else
+				dropped_mob.balloon_alert_to_viewers("being pulled up...")
+			if(do_after(user, 2 SECONDS, dropped_mob))
+				dropped_mob.forceMove(src)
+			return
+		if(turf_height - mob_turf.turf_height <= -TURF_HEIGHT_BLOCK_THRESHOLD)
+			//Climb down
+			if(user == dropped_mob)
+				user.balloon_alert_to_viewers("climbing down...")
+			else
+				dropped_mob.balloon_alert_to_viewers("being lowered...")
+			if(do_after(user, 2 SECONDS, dropped_mob))
+				dropped_mob.forceMove(src)
+			return
 	if(dropping == user && isliving(user))
 		var/mob/living/L = user
 		if(L.resting && do_after(L, max(10, L.getStaminaLoss()*0.5), src, IGNORE_HELD_ITEM))
@@ -70,7 +93,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_TILED_DIRT
 
 /turf/open/indestructible/Melt()
 	to_be_destroyed = FALSE
@@ -111,7 +134,7 @@
 	barefootstep = FOOTSTEP_HARD_BAREFOOT
 	clawfootstep = FOOTSTEP_HARD_CLAW
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis
 	name = "necropolis floor"
@@ -124,7 +147,7 @@
 	barefootstep = FOOTSTEP_LAVA
 	clawfootstep = FOOTSTEP_LAVA
 	heavyfootstep = FOOTSTEP_LAVA
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/necropolis/Initialize(mapload)
 	. = ..()
@@ -152,7 +175,7 @@
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
 	baseturfs = /turf/open/indestructible/hierophant
 	smooth = SMOOTH_TRUE
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/hierophant/two
 
@@ -167,7 +190,7 @@
 	barefootstep = null
 	clawfootstep = null
 	heavyfootstep = null
-	tiled_dirt = FALSE
+	turf_flags = TURF_FLAGS_DEFAULT
 
 /turf/open/indestructible/binary
 	name = "tear in the fabric of reality"
@@ -309,10 +332,35 @@
 		lube |= SLIDE_ICE
 
 	if(lube&SLIDE)
-		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 4), 1, FALSE, CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1))
+		// BLUEMOON CHANGE - цепное качение: слайд идёт через всю смазанную дорожку плюс инерция,
+		// одиночная смазанная клетка - прежний разлёт на 4. Суперлубрикант (SLIDE_INTO_SPACE)
+		// при покидании гравитации передаёт тело ньютоновскому дрейфу: полёт без лимита,
+		// траекторию игрок меняет сам (бросок предмета, джетпак).
+		var/slide_run = lube_slide_run(olddir)
+		var/slide_range = slide_run ? slide_run + 1 + rand(2, 3) : ((lube & SLIDE_INTO_SPACE) ? SLIDE_INTO_SPACE_RANGE : 4)
+		var/datum/callback/on_step = CALLBACK(C, TYPE_PROC_REF(/mob/living/carbon, spin), 1, 1)
+		if(lube & SLIDE_INTO_SPACE)
+			on_step = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(slide_into_space_step), C, olddir)
+		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, slide_range), 1, FALSE, on_step)
 	else if(lube&SLIDE_ICE)
 		new /datum/forced_movement(C, get_ranged_target_turf(C, olddir, 1), 1, FALSE)	//spinning would be bad for ice, fucks up the next dir
 	return TRUE
+
+/// Сколько турфов подряд по направлению dir_to_scan покрыты смазкой (SLIDE-флаг).
+/// Используется для цепного качения: катимся, пока под нами луб, и останавливаемся,
+/// когда дорожка кончается. Лимита длины нет - катимся до конца дорожки.
+/// Стены не проверяем - forced_movement сам затормозит.
+/turf/open/proc/lube_slide_run(dir_to_scan)
+	. = 0
+	var/turf/open/checking = get_step(src, dir_to_scan)
+	while(istype(checking))
+		if(!checking.has_gravity())
+			break
+		var/datum/component/slippery/S = checking.GetComponent(/datum/component/slippery)
+		if(!(S?.lube_flags & SLIDE))
+			break
+		.++
+		checking = get_step(checking, dir_to_scan)
 
 /turf/open/proc/MakeSlippery(wet_setting = TURF_WET_WATER, min_wet_time = 0, wet_time_to_add = 0, max_wet_time = MAXIMUM_WET_TIME, permanent)
 	AddComponent(/datum/component/wet_floor, wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)

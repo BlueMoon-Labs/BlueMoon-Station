@@ -3,7 +3,7 @@
 */
 /obj/effect/mapping_helpers/network_builder/atmos_pipe
 	name = "atmos pipe autobuilder"
-	icon_state = "manifold4w-2"
+	icon_state = "manifold4w-3"
 	layer = GAS_PIPE_HIDDEN_LAYER
 	color = null
 	level = 1
@@ -102,12 +102,12 @@
 	var/obj/machinery/atmospherics/pipe/built
 	switch(length(network_directions))
 		if(1)
-			pipe_type = "[pipe_type]/simple/[pipe_color_new]/[visible_or_hidden][piping_layer != 2 ? "/[piping_layer]" : "" ]"
+			pipe_type = "[pipe_type]/simple/[pipe_color_new]/[visible_or_hidden][piping_layer != PIPING_LAYER_DEFAULT ? "/[piping_layer]" : "" ]"
 			pipe_type = text2path(pipe_type)
 			built = ispath(pipe_type) ? new pipe_type(loc) : new /obj/machinery/atmospherics/pipe/simple(loc)
 			built.setDir(network_directions[1])
 		if(2)		//straight pipe
-			pipe_type = "[pipe_type]/simple/[pipe_color_new]/[visible_or_hidden][piping_layer != 2 ? "/[piping_layer]" : "" ]"
+			pipe_type = "[pipe_type]/simple/[pipe_color_new]/[visible_or_hidden][piping_layer != PIPING_LAYER_DEFAULT ? "/[piping_layer]" : "" ]"
 			pipe_type = text2path(pipe_type)
 			built = ispath(pipe_type) ? new pipe_type(loc) : new /obj/machinery/atmospherics/pipe/simple(loc)
 			var/d1 = network_directions[1]
@@ -120,12 +120,12 @@
 		if(3)		//manifold
 			var/list/missing = network_directions ^ GLOB.cardinals
 			missing = missing[1]
-			pipe_type = "[pipe_type]/manifold/[pipe_color_new]/[visible_or_hidden][piping_layer != 2 ? "/[piping_layer]" : "" ]"
+			pipe_type = "[pipe_type]/manifold/[pipe_color_new]/[visible_or_hidden][piping_layer != PIPING_LAYER_DEFAULT ? "/[piping_layer]" : "" ]"
 			pipe_type = text2path(pipe_type)
 			built = ispath(pipe_type) ? new pipe_type(loc) : new /obj/machinery/atmospherics/pipe/manifold(loc)
 			built.setDir(missing)
 		if(4)		//4 way manifold
-			pipe_type = "[pipe_type]/manifold4w/[pipe_color_new]/[visible_or_hidden][piping_layer != 2 ? "/[piping_layer]" : "" ]"
+			pipe_type = "[pipe_type]/manifold4w/[pipe_color_new]/[visible_or_hidden][piping_layer != PIPING_LAYER_DEFAULT ? "/[piping_layer]" : "" ]"
 			pipe_type = text2path(pipe_type)
 			built = ispath(pipe_type) ? new pipe_type(loc) : new /obj/machinery/atmospherics/pipe/manifold4w(loc)
 	built.SetInitDirections()

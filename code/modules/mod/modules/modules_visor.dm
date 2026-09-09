@@ -17,6 +17,7 @@
 	var/datum/component/neural_interface/interface
 	var/list/monitors = list()
 	var/interface_source
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/visor/on_activation()
 	. = ..()
@@ -36,7 +37,6 @@
 	for(var/trait in visor_traits)
 		ADD_TRAIT(mod.wearer, trait, MOD_TRAIT)
 	mod.wearer.update_sight()
-
 
 /obj/item/mod/module/visor/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()

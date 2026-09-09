@@ -2,7 +2,7 @@
 #define SCRUBBING	1
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber
-	icon_state = "scrub_map-2"
+	icon_state = "scrub_map-3"
 	name = "air scrubber"
 	desc = "Has a valve and pump attached to it."
 	use_power = IDLE_POWER_USE
@@ -135,15 +135,24 @@
 		"sigtype" = "status"
 	))
 
-	var/area/A = get_base_area(src)
-	if(!A.air_scrub_names[id_tag])
-		name = "\improper [A.name] air scrubber #[A.air_scrub_names.len + 1]"
-		A.air_scrub_names[id_tag] = name
-
-	A.air_scrub_info[id_tag] = signal.data
+	var/area/A = register_in_area()
+	if(A)
+		A.air_scrub_info[id_tag] = signal.data
 	radio_connection.post_signal(src, signal, radio_filter_out)
 
 	return TRUE
+
+/// См. vent_pump: реестр имён базовой области обновляется и без радиоканала.
+/obj/machinery/atmospherics/components/unary/vent_scrubber/proc/register_in_area()
+	var/area/base_area = get_base_area(src)
+	if(!base_area)
+		return null
+	if(!base_area.air_scrub_names[id_tag])
+		if(name == initial(name)) // своё имя с карты не затираем
+			base_area.air_scrub_serial++
+			name = "\improper [base_area.name] air scrubber #[base_area.air_scrub_serial]"
+		base_area.air_scrub_names[id_tag] = name
+	return base_area
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/atmosinit()
 	radio_filter_in = frequency==initial(frequency)?(RADIO_FROM_AIRALARM):null
@@ -156,11 +165,29 @@
 	atmos_wake()
 	..()
 
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on_area_swap(area/old_area, area/new_area)
+	. = ..()
+	// См. комментарий в vent_pump: регистрация живёт в базовой области.
+	var/area/old_base = get_base_area(old_area)
+	if(old_base)
+		// Сбрасываем только автоимя, замапленное вручную оставляем - см. vent_pump.
+		if(name == old_base.air_scrub_names[id_tag])
+			name = initial(name)
+		old_base.air_scrub_names -= id_tag
+		old_base.air_scrub_info -= id_tag
+	// Без радиоканала broadcast_status() выходит сразу, поэтому регистрируем отдельно.
+	register_in_area()
+	broadcast_status()
+
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
 	if(atmos_idle_until > world.time)
 		return FALSE
 	if(welded || !is_operational)
 		// Woken by welder_act()/attack_alien()/power_change().
+		atmos_consider_idle()
+		return FALSE
+	if(!nodes[1] && !atmos_initialized)
+		// См. комментарий в vent_pump: до atmosinit() нод нет, гасить нельзя.
 		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] || !on)
@@ -345,21 +372,37 @@
 	piping_layer = 1
 	icon_state = "scrub_map-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/layer3
-	piping_layer = 3
-	icon_state = "scrub_map-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer2
+	piping_layer = 2
+	icon_state = "scrub_map-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4
+	piping_layer = 4
+	icon_state = "scrub_map-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer5
+	piping_layer = 5
+	icon_state = "scrub_map-5"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on
 	on = TRUE
-	icon_state = "scrub_map_on-2"
+	icon_state = "scrub_map_on-3"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1
 	piping_layer = 1
 	icon_state = "scrub_map_on-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3
-	piping_layer = 3
-	icon_state = "scrub_map_on-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2
+	piping_layer = 2
+	icon_state = "scrub_map_on-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4
+	piping_layer = 4
+	icon_state = "scrub_map_on-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer5
+	piping_layer = 5
+	icon_state = "scrub_map_on-5"
 
 #undef SIPHONING
 #undef SCRUBBING

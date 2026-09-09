@@ -79,20 +79,25 @@ GLOBAL_REAL(Failsafe, /datum/controller/failsafe)
 						to_chat(GLOB.admins, span_boldannounce("ERROR: DEFCON [defcon_pretty()]. Could not restart MC, runtime encountered. I will silently keep retrying."))
 				// Check if processing is done yet.
 				if(Master.iteration == master_iteration)
+					// МК стоит, а вместе с ним стоит и его собственная запись чёрного ящика.
+					// Снимок отсюда - единственный, в котором last_type_processed указывает на
+					// подвисшую подсистему, а не на ту, что отработала перед ней.
+					Master.write_state_snapshot(force = TRUE)
+					var/stuck_note = Master.stuck_subsystem_note()
 					switch(defcon)
 						if(4,5)
 							--defcon
 
 						if(3)
-							message_admins(span_adminnotice("Notice: DEFCON [defcon_pretty()]. The Master Controller has not fired in the last [(5-defcon) * processing_interval] ticks."))
+							message_admins(span_adminnotice("Notice: DEFCON [defcon_pretty()]. The Master Controller has not fired in the last [(5-defcon) * processing_interval] ticks. [stuck_note]"))
 							--defcon
 
 						if(2)
-							to_chat(GLOB.admins, span_boldannounce("Warning: DEFCON [defcon_pretty()]. The Master Controller has not fired in the last [(5-defcon) * processing_interval] ticks. Automatic restart in [processing_interval] ticks."))
+							to_chat(GLOB.admins, span_boldannounce("Warning: DEFCON [defcon_pretty()]. The Master Controller has not fired in the last [(5-defcon) * processing_interval] ticks. [stuck_note] Automatic restart in [processing_interval] ticks."))
 							--defcon
 
 						if(1)
-							to_chat(GLOB.admins, span_boldannounce("Warning: DEFCON [defcon_pretty()]. The Master Controller has still not fired within the last [(5-defcon) * processing_interval] ticks. Killing and restarting..."))
+							to_chat(GLOB.admins, span_boldannounce("Warning: DEFCON [defcon_pretty()]. The Master Controller has still not fired within the last [(5-defcon) * processing_interval] ticks. [stuck_note] Killing and restarting..."))
 							--defcon
 							var/rtn = Recreate_MC()
 							if(rtn > 0)

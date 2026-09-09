@@ -178,129 +178,244 @@ export const RADIO_CHANNELS = [
   },
 ];
 
+// Все статические газы игры (/datum/gas в code/modules/atmospherics/auxgm).
+// Идентификаторы совпадают с #define GAS_* из code/__DEFINES/atmospherics.dm.
+// `color` — имя класса из CSS_COLORS, произвольный CSS сюда класть нельзя.
 const GASES = [
   {
     'id': 'o2',
     'name': 'Oxygen',
     'label': 'O₂',
+    'label_ru': 'Кислород',
     'color': 'blue',
   },
   {
     'id': 'n2',
     'name': 'Nitrogen',
     'label': 'N₂',
+    'label_ru': 'Азот',
     'color': 'red',
   },
   {
     'id': 'co2',
     'name': 'Carbon Dioxide',
     'label': 'CO₂',
+    'label_ru': 'Углекислота',
     'color': 'grey',
   },
   {
     'id': 'plasma',
     'name': 'Plasma',
     'label': 'Plasma',
+    'label_ru': 'Плазма',
     'color': 'pink',
   },
   {
     'id': 'water_vapor',
     'name': 'Water Vapor',
     'label': 'H₂O',
+    'label_ru': 'Водяной пар',
     'color': 'grey',
   },
   {
     'id': 'nob',
     'name': 'Hyper-noblium',
     'label': 'Hyper-nob',
+    'label_ru': 'Гипер-ноблий',
     'color': 'teal',
   },
   {
     'id': 'n2o',
     'name': 'Nitrous Oxide',
     'label': 'N₂O',
+    'label_ru': 'Веселящий газ',
     'color': 'red',
   },
   {
     'id': 'no',
     'name': 'Nitric Oxide',
     'label': 'NO',
-    'color': 'red',
+    'label_ru': 'Оксид азота',
+    'color': 'orange',
   },
   {
     'id': 'no2',
     'name': 'Nitryl',
     'label': 'NO₂',
+    'label_ru': 'Нитрил',
     'color': 'brown',
   },
   {
     'id': 'tritium',
     'name': 'Tritium',
     'label': 'Tritium',
+    'label_ru': 'Тритий',
     'color': 'green',
   },
   {
     'id': 'bz',
     'name': 'BZ',
     'label': 'BZ',
+    'label_ru': 'БЗ',
     'color': 'purple',
   },
   {
     'id': 'stim',
     'name': 'Stimulum',
     'label': 'Stimulum',
-    'color': 'purple',
+    'label_ru': 'Стимулум',
+    'color': 'average',
   },
   {
     'id': 'pluox',
     'name': 'Pluoxium',
     'label': 'Pluoxium',
-    'color': 'blue',
+    'label_ru': 'Плюоксий',
+    'color': 'label',
   },
   {
     'id': 'miasma',
     'name': 'Miasma',
     'label': 'Miasma',
+    'label_ru': 'Миазма',
     'color': 'olive',
   },
   {
     'id': 'hydrogen',
     'name': 'Hydrogen',
     'label': 'H₂',
+    'label_ru': 'Водород',
     'color': 'white',
   },
   {
     'id': 'methane',
     'name': 'Methane',
     'label': 'CH₄',
+    'label_ru': 'Метан',
     'color': 'grey',
   },
   {
     'id': 'methyl_bromide',
     'name': 'Methyl Bromide',
     'label': 'CH₃Br',
+    'label_ru': 'Бромистый метил',
     'color': 'brown',
   },
   {
     'id': 'qcd',
     'name': 'Quark Matter',
     'label': 'QGP',
+    'label_ru': 'Кварковая материя',
+    'color': 'violet',
+  },
+  {
+    'id': 'bromine',
+    'name': 'Bromine',
+    'label': 'Br₂',
+    'label_ru': 'Бром',
+    'color': 'brown',
+  },
+  {
+    'id': 'ammonia',
+    'name': 'Ammonia',
+    'label': 'NH₃',
+    'label_ru': 'Аммиак',
+    'color': 'yellow',
+  },
+  {
+    'id': 'helium',
+    'name': 'Helium',
+    'label': 'He',
+    'label_ru': 'Гелий',
+    'color': 'label',
+  },
+  {
+    'id': 'freon',
+    'name': 'Freon',
+    'label': 'Freon',
+    'label_ru': 'Фреон',
+    'color': 'teal',
+  },
+  {
+    'id': 'halon',
+    'name': 'Halon',
+    'label': 'Halon',
+    'label_ru': 'Галон',
+    'color': 'green',
+  },
+  {
+    'id': 'antinoblium',
+    'name': 'Antinoblium',
+    'label': 'Anti-nob',
+    'label_ru': 'Антиноблий',
+    'color': 'violet',
+  },
+  {
+    'id': 'proto_nitrate',
+    'name': 'Proto Nitrate',
+    'label': 'Proto-nitrate',
+    'label_ru': 'Прото-нитрат',
+    'color': 'orange',
+  },
+  {
+    'id': 'zauker',
+    'name': 'Zauker',
+    'label': 'Zauker',
+    'label_ru': 'Заукер',
+    'color': 'good',
+  },
+  {
+    'id': 'healium',
+    'name': 'Healium',
+    'label': 'Healium',
+    'label_ru': 'Хилий',
     'color': 'pink',
+  },
+  {
+    'id': 'nitrium',
+    'name': 'Nitrium',
+    'label': 'Nitrium',
+    'label_ru': 'Нитрий',
+    'color': 'purple',
+  },
+  {
+    'id': 'pyronite',
+    'name': 'Pyronite',
+    'label': 'Pyronite',
+    'label_ru': 'Пиронит',
+    'color': 'bad',
+  },
+  {
+    'id': 'fluxin',
+    'name': 'Fluxin',
+    'label': 'Fluxin',
+    'label_ru': 'Флюксин',
+    'color': 'teal',
   },
 ];
 
-export const getGasLabel = (gasId, fallbackValue) => {
+export const getGasFromId = gasId => {
   const gasSearchString = String(gasId).toLowerCase();
-  const gas = GASES.find(gas => gas.id === gasSearchString
+  return GASES.find(gas => gas.id === gasSearchString
     || gas.name.toLowerCase() === gasSearchString);
+};
+
+export const getGasLabel = (gasId, fallbackValue) => {
+  const gas = getGasFromId(gasId);
   return gas && gas.label
     || fallbackValue
     || gasId;
 };
 
+/** Словесное название газа на языке интерфейса. */
+export const getGasName = (gasId, fallbackValue) => {
+  const gas = getGasFromId(gasId);
+  return gas && gas.label_ru
+    || fallbackValue
+    || gasId;
+};
+
 export const getGasColor = gasId => {
-  const gasSearchString = String(gasId).toLowerCase();
-  const gas = GASES.find(gas => gas.id === gasSearchString
-    || gas.name.toLowerCase() === gasSearchString);
+  const gas = getGasFromId(gasId);
   return gas && gas.color;
 };

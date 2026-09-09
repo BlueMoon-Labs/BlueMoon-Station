@@ -49,17 +49,13 @@
 	GLOB.celltimers_list += src
 	return ..()
 
-/obj/machinery/door_timer/Destroy()
-	GLOB.celltimers_list -= src
-	prisoner = null
-	return ..()
-
 /obj/machinery/door_timer/proc/print_report()
 	if(criminal == CELL_NONE || crimes == CELL_NONE)
 		return FALSE
 
 	time = timetoset
-	officer = usr.name
+	//timer_start() дёргается и без клика (перезапуск таймера), а usr там пуст
+	officer = usr ? usr.name : "unknown"
 
 	for(var/obj/machinery/computer/prisoner/management/C in GLOB.prisoncomputer_list)
 		var/obj/item/paper/P = new /obj/item/paper(C.loc)
@@ -71,7 +67,7 @@
 						<b>Detainee:</b>		[criminal]<br>
 						<b>Duration:</b>		[seconds_to_time(timetoset / 10)]<br>
 						<b>Charge(s):</b>	[crimes]<br>
-						<b>Arresting Officer:</b>		[usr.name]<br><hr><br>
+						<b>Arresting Officer:</b>		[officer]<br><hr><br>
 						<small>This log file was generated automatically upon activation of a cell timer.</small>"}
 
 		P.add_raw_text(report_text)
@@ -80,9 +76,6 @@
 		P.update_appearance()
 
 		playsound(C.loc, "sound/goonstation/machines/printer_dotmatrix.ogg", 50, 1)
-		GLOB.cell_logs += P
-		if(length(GLOB.cell_logs) > 500)
-			GLOB.cell_logs.Cut(1, length(GLOB.cell_logs) - 300)
 
 	var/datum/data/record/G = GLOB.data_core.general_by_name[criminal]
 	var/prisoner_drank = "unknown"
@@ -94,7 +87,7 @@
 
 	var/timetext = seconds_to_time(timetoset / 10)
 	var/announcetext = "Detainee [criminal] ([prisoner_drank]) has been incarcerated for [timetext] for the crime of: '[crimes]'. \
-	Arresting Officer: [usr.name].[R ? "" : " Detainee record not found, manual record update required."]"
+	Arresting Officer: [officer].[R ? "" : " Detainee record not found, manual record update required."]"
 	Radio.talk_into(src, announcetext, RADIO_CHANNEL_SECURITY)
 
 	// Notify the actual criminal being brigged. This is a QOL thing to ensure they always know the charges against them.
@@ -112,7 +105,7 @@
 				rank = I.get_assignment_name()
 		if(!R.fields["actions_logs"] || !islist(R.fields["actions_logs"])) //copied from security computer code because apparently these need to be initialized
 			R.fields["actions_logs"] = list()
-		R.fields["actions_logs"] += "<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Sentenced to [timetoset/10] seconds for the charges of \"[crimes]\" by [rank] [usr.name];</u>"
+		R.fields["actions_logs"] += "<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Sentenced to [timetoset/10] seconds for the charges of \"[crimes]\" by [rank] [officer];</u>"
 		update_all_mob_security_hud()
 	return TRUE
 
@@ -154,7 +147,11 @@
 			set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 
+// Раньше в этом файле лежало два Destroy на один тип: dreamchecker ругался
+// redefined_proc, а вычёркивание из GLOB.celltimers_list зависело от того,
+// какое из определений переживёт компиляцию. Свели в одно.
 /obj/machinery/door_timer/Destroy()
+	GLOB.celltimers_list -= src
 	QDEL_NULL(Radio)
 	targets.Cut()
 	prisoner = null
@@ -382,7 +379,7 @@
 					return FALSE
 				timetoset = timetoset + prisoner_time_add
 				releasetime = releasetime + prisoner_time_add
-				var/addtext = isobserver(usr) ? "for: [add_reason]." : "by [usr.name] for: [add_reason]"
+				var/addtext = isobserver(usr) ? "for: [add_reason]." : "by [officer] for: [add_reason]"
 				Radio.talk_into(src, "Prisoner [criminal] had their timer increased by [prisoner_time_add / 600] minutes [addtext]", RADIO_CHANNEL_SECURITY, list(z))
 				notify_prisoner("Your brig timer has been increased by [prisoner_time_add / 600] minutes for: '[add_reason]'.")
 				var/datum/data/record/R = GLOB.data_core.security_by_name[criminal]
@@ -398,7 +395,7 @@
 					to_chat(usr, span_warning("Cancelled reset: reason field is required."))
 					return FALSE
 				releasetime = world.timeofday + timetoset
-				var/resettext = isobserver(usr) ? "for: [reset_reason]." : "by [usr.name] for: [reset_reason]."
+				var/resettext = isobserver(usr) ? "for: [reset_reason]." : "by [officer] for: [reset_reason]."
 				Radio.talk_into(src, "Prisoner [criminal] had their timer reset [resettext]", RADIO_CHANNEL_SECURITY, list(z))
 				notify_prisoner("Your brig timer has been reset for: '[reset_reason]'.")
 				var/datum/data/record/R = GLOB.data_core.security_by_name[criminal]
@@ -409,7 +406,7 @@
 		if("stop")
 			if(timing)
 				timer_end()
-				var/stoptext = isobserver(usr) ? "удалённо при помощи специализированной консоли." : "со стороны [usr.name]."
+				var/stoptext = isobserver(usr) ? "удалённо при помощи специализированной консоли." : "со стороны [officer]."
 				Radio.talk_into(src, "Таймер был остановлен [stoptext]", RADIO_CHANNEL_SECURITY, list(z))
 			else
 				. = FALSE

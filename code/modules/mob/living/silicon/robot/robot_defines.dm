@@ -69,9 +69,13 @@
 	var/vtec = 0 // VTEC speed boost.
 	/// vtec shorted out
 	var/vtec_disabled = FALSE
+	/// расход заряда за тик жизни, пока активен разгон VTEC
+	var/vtec_drain = 0
 	var/magpulse = FALSE // Magboot-like effect.
 	var/ionpulse = FALSE // Jetpack-like effect.
 	var/ionpulse_on = FALSE // Jetpack-like effect.
+	/// Не больше одного импульса за тик: Process_Spacemove за шаг зовут дважды, с ручного пути и с ньютоновского
+	var/last_ionpulse_time = -1
 	var/datum/effect_system/trail_follow/ion/ion_trail // Ionpulse effect.
 
 	var/low_power_mode = 0 //whether the robot has no charge left.

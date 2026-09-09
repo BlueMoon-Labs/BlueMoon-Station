@@ -156,6 +156,13 @@
 	materials = list(/datum/material/iron = 15000, /datum/material/glass = 500, /datum/material/silver = 1000, /datum/material/diamond = 100)
 	build_path = /obj/item/mod/module/storage/extended
 
+/datum/design/module/mod_armor
+	name = "MOD Armor module"
+	id = "mod_armor"
+	construction_time = 5 SECONDS
+	materials = list(/datum/material/iron = 15000, /datum/material/glass = 500, /datum/material/titanium = 1000, /datum/material/diamond = 100)
+	build_path = /obj/item/mod/module/armor
+
 /datum/design/module/pai_module
 	name = "PAI module connector"
 	id = "pai_module"
@@ -231,6 +238,13 @@
 	id = "mod_jetpack"
 	materials = list(/datum/material/iron = 1500, /datum/material/plasma = 1000)
 	build_path = /obj/item/mod/module/jetpack
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/module/advanced_mod_jetpack
+	name = "Advanced Ion Jetpack Module"
+	id = "adv_mod_jet"
+	materials = list(/datum/material/iron = 5000, /datum/material/plasma = 3500, /datum/material/plastic = 1000)
+	build_path = /obj/item/mod/module/jetpack/advanced
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/module/mod_magboot

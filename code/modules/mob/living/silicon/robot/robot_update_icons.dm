@@ -24,10 +24,12 @@
 	if(stat == DEAD && module.has_snowflake_deadsprite)
 		icon_state = "[module.cyborg_base_icon]-wreck"
 
-	if(module.cyborg_pixel_offset)
-		var/matrix/M = transform
-		M.c = module.cyborg_pixel_offset
-		transform = M
+	// Смещение пишем всегда, включая нулевое: иначе шасси без сдвига, снявшее маскировку
+	// под сдвинутое (borg_chameleon и borg_shapeshifter возвращают модулю нулевой
+	// cyborg_pixel_offset), навсегда оставалось съехавшим - сбрасывать transform было некому.
+	var/matrix/offset_matrix = transform
+	offset_matrix.c = module.cyborg_pixel_offset || 0
+	transform = offset_matrix
 
 	if(module.cyborg_base_icon == "robot")
 		icon = 'icons/mob/robots.dmi'

@@ -18,6 +18,39 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 ///////////
 //MATCHES//
 ///////////
+
+// Automatic flavor emotes shown while a character is smoking a lit smokable worn as a mask.
+GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
+	list("sing" = "делает глубокую затяжку", "plur" = "делаете глубокую затяжку"),
+	list("sing" = "медленно выдыхает дым", "plur" = "медленно выдыхаете дым"),
+	list("sing" = "встряхивает пепел с сигареты", "plur" = "встряхиваете пепел с сигареты"),
+	list("sing" = "поправляет сигарету в зубах", "plur" = "поправляете сигарету в зубах"),
+	list("sing" = "затягивается, задерживая дыхание", "plur" = "затягиваетесь, задерживая дыхание"),
+	list("sing" = "выпускает колечко дыма", "plur" = "выпускаете колечко дыма"),
+	list("sing" = "прикрывает глаза, наслаждаясь вкусом", "plur" = "прикрываете глаза, наслаждаясь вкусом"),
+	list("sing" = "задумчиво смотрит на тлеющий кончик", "plur" = "задумчиво смотрите на тлеющий кончик"),
+	list("sing" = "выдыхает дым через нос", "plur" = "выдыхаете дым через нос"),
+	list("sing" = "слегка стряхивает пепел", "plur" = "слегка стряхиваете пепел"),
+	list("sing" = "мечтательно выпускает струйку дыма", "plur" = "мечтательно выпускаете струйку дыма"),
+	list("sing" = "бросает короткий взгляд на тлеющую сигарету", "plur" = "бросаете короткий взгляд на тлеющую сигарету")
+	) )
+
+/obj/item/clothing/mask/var/next_smoke_flavor = 0
+
+/obj/item/clothing/mask/proc/try_smoke_flavor_emote()
+	var/mob/living/carbon/M = loc
+	if(!istype(M))
+		return
+	if(M.stat == DEAD)
+		return
+	if(M.wear_mask != src)
+		return
+	if(world.time < next_smoke_flavor)
+		return
+	next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
+	var/list/emote = pick(GLOB.smoke_flavor_emotes)
+	M.emote("me", EMOTE_VISIBLE, "[emote["sing"]].")
+
 /obj/item/match
 	name = "match"
 	desc = "A simple match stick, used for lighting fine smokables."
@@ -205,6 +238,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 		var/turf/T = get_turf(src)
 		T.visible_message(flavor_text)
 	START_PROCESSING(SSobj, src)
+	next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
 
 	//can't think of any other way to update the overlays :<
 	if(ismob(loc))
@@ -248,6 +282,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	open_flame()
 	if(reagents && reagents.total_volume)
 		handle_reagents()
+	try_smoke_flavor_emote()
 
 /obj/item/clothing/mask/cigarette/attack_self(mob/user)
 	if(lit)
@@ -480,6 +515,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 	open_flame()
 	if(reagents && reagents.total_volume)	//	check if it has any reagents at all
 		handle_reagents()
+	try_smoke_flavor_emote()
 
 
 /obj/item/clothing/mask/cigarette/pipe/attackby(obj/item/O, mob/user, params)
@@ -994,6 +1030,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 			to_chat(user, "<span class='notice'>You start puffing on the vape.</span>")
 			reagents.reagents_holder_flags &= ~(NO_REACT)
 			START_PROCESSING(SSobj, src)
+			next_smoke_flavor = world.time + rand(7 MINUTES, 15 MINUTES)
 		else //it will not start if the vape is opened.
 			to_chat(user, "<span class='warning'>You need to close the cap first!</span>")
 
@@ -1066,6 +1103,7 @@ CIGARETTE PACKETS ARE IN FANCY.DM
 
 	if(reagents && reagents.total_volume)
 		hand_reagents()
+	try_smoke_flavor_emote()
 
 ///////////////
 /////BONGS/////

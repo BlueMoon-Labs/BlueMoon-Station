@@ -133,6 +133,9 @@
 	if(!contained_id) //incase the ID was removed after the transfer timer was set.
 		say("Warning: Unable to transfer prisoner without a valid Prisoner ID inserted!")
 		return
+	if(!prisoner)
+		say("Warning: No prisoner detected in the teleporter!")
+		return
 	var/id_goal_not_set
 	if(!contained_id.goal)
 		id_goal_not_set = TRUE

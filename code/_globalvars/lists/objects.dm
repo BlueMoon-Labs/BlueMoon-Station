@@ -75,7 +75,6 @@ GLOBAL_LIST_EMPTY(singularities)				    //list of all singularities on the stati
 GLOBAL_LIST_EMPTY(grounding_rods)					//list of all grounding rods on the station
 
 GLOBAL_LIST_INIT(celltimers_list, list()) // list of all cell timers
-GLOBAL_LIST_INIT(cell_logs, list())
 GLOBAL_LIST_INIT(prisoncomputer_list, list())
 
 GLOBAL_LIST(chemical_reactions_list)				//list of all /datum/chemical_reaction datums. Used during chemical reactions

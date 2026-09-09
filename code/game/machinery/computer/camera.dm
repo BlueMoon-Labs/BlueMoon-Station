@@ -65,6 +65,23 @@
 		network -= i
 		network += "[idnum][i]"
 
+/// Сеть консоли живёт только в её типе, поэтому сборка из фрейма всегда давала
+/// заводской набор. Читаем настройку с платы - её задают мультитулом и она же
+/// запоминается при разборке.
+/obj/machinery/computer/security/on_construction()
+	. = ..()
+	var/obj/item/circuitboard/computer/security/board = circuit
+	if(istype(board))
+		board.configure_machine(src)
+
+/// Разбор обязан оставить в плате ту сеть, на которой консоль работала, иначе
+/// собранный обратно монитор смотрит в пустоту.
+/obj/machinery/computer/security/on_deconstruction()
+	. = ..()
+	var/obj/item/circuitboard/computer/security/board = circuit
+	if(istype(board))
+		board.network = network?.Copy()
+
 /obj/machinery/computer/security/ui_interact(mob/user, datum/tgui/ui)
 	// Update UI
 	ui = SStgui.try_update_ui(user, src, ui)

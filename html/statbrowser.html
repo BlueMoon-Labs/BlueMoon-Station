@@ -338,6 +338,41 @@ img { image-rendering: pixelated; }
 }
 .data-value { font-family: var(--font-mono); }
 
+/* ===== Ready Players (lobby) ===== */
+.readyplayers-summary {
+	font-weight: normal;
+	font-size: 11px;
+	color: var(--text-secondary);
+	margin-left: 6px;
+}
+.readyplayers-table th {
+	text-align: left;
+	padding: 3px 8px;
+	font-size: 11px;
+	font-weight: bold;
+	color: var(--text-secondary);
+	border-bottom: 1px solid var(--border);
+}
+.readyplayers-table td {
+	font-size: 12px;
+	padding: 4px 8px;
+	vertical-align: middle;
+}
+.readyplayers-col-num {
+	width: 28px;
+	text-align: right;
+	color: var(--text-secondary);
+}
+.readyplayers-name {
+	font-weight: bold;
+	color: var(--text-primary);
+}
+.readyplayers-empty {
+	padding: 12px 8px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
 /* ===== Vote Section ===== */
 .vote-section {
 	padding: 4px 8px;
@@ -1110,7 +1145,7 @@ var MC_KEY_SUBSYSTEMS = ["Atmospherics", "Garbage", "Machines", "Lighting", "Cli
 var SEARCH_ICON_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6.5" cy="6.5" r="5"/><line x1="10" y1="10" x2="15" y2="15"/></svg>';
 // Bridge protocol: must match STATBROWSER_PROTOCOL_VERSION in code/controllers/subsystem/statpanel.dm.
 // Bumped when the DM->JS payload shape changes incompatibly. Mismatch logs a warning and asks DM to reload.
-var EXPECTED_PROTOCOL_VERSION = 2;
+var EXPECTED_PROTOCOL_VERSION = 3;
 
 ;
 // === src/bridge.js ===
@@ -1208,6 +1243,9 @@ var State = {
 	interviewManager: { status: "", interviews: [] },
 	// SDQL2
 	sdql2: [],
+	// Ready players (lobby)
+	readyPlayers: [],
+	readyPlayersVisible: false,
 	// Turf
 	turfName: "",
 	turfContents: [],
@@ -2172,7 +2210,7 @@ function buildSparkline(data, minVal, maxVal, colorClass) {
 
 ;
 // === src/renderers/status.js ===
-var st_sections = { round: true, time: true, character: true };
+var st_sections = { round: true, time: true, character: true, readyplayers: true };
 var st_skeleton = null;
 var st_els = {};
 var st_fixSent = false;
@@ -2242,6 +2280,7 @@ function st_ensureSkeleton() {
 	st_skeleton.appendChild(st_els.voteSection);
 
 	statcontent.appendChild(st_skeleton);
+	rp_ensureSkeleton();
 }
 
 function st_parseMobItem(str) {
@@ -2387,9 +2426,70 @@ function draw_status() {
 		st_els.voteSection.style.display = "none";
 	}
 
+	draw_readyplayers();
+
 	if (!st_fixSent && (State.verbTabs.length === 0 || State.verbs.length === 0)) {
 		st_fixSent = true;
 		send_byond_command("Fix-Stat-Panel");
+	}
+}
+
+;
+// === src/renderers/readyplayers.js ===
+var rp_els = {};
+
+function rp_ensureSkeleton() {
+	if (rp_els.table && rp_els.table.parentNode) return;
+
+	rp_els.header = makeSectionHeader("readyplayers", "Готовые игроки", st_sections);
+	rp_els.summary = el("div", "readyplayers-summary");
+	rp_els.header.appendChild(rp_els.summary);
+	rp_els.header._toggle = function() {
+		rp_els.wrap.style.display = st_sections.readyplayers ? "" : "none";
+	};
+	st_skeleton.appendChild(rp_els.header);
+
+	rp_els.wrap = el("div");
+	rp_els.table = el("table", "data-table readyplayers-table");
+	var thead = el("thead");
+	var headRow = el("tr");
+	headRow.appendChild(el("th", "readyplayers-col-num", "#"));
+	headRow.appendChild(el("th", null, "Персонаж"));
+	thead.appendChild(headRow);
+	rp_els.table.appendChild(thead);
+	rp_els.tbody = el("tbody");
+	rp_els.table.appendChild(rp_els.tbody);
+	rp_els.wrap.appendChild(rp_els.table);
+
+	rp_els.empty = el("div", "readyplayers-empty", "Никто ещё не готов.");
+	rp_els.empty.style.display = "none";
+	rp_els.wrap.appendChild(rp_els.empty);
+
+	st_skeleton.appendChild(rp_els.wrap);
+}
+
+function draw_readyplayers() {
+	rp_ensureSkeleton();
+
+	var visible = State.readyPlayersVisible;
+	rp_els.header.style.display = visible ? "" : "none";
+	rp_els.wrap.style.display = visible && st_sections.readyplayers ? "" : "none";
+
+	var players = State.readyPlayers || [];
+	setText(rp_els.summary, players.length > 0 ? " (" + players.length + ")" : "");
+	rp_els.empty.style.display = players.length > 0 ? "none" : "";
+	rp_els.table.style.display = players.length > 0 ? "" : "none";
+
+	var hash = JSON.stringify(players);
+	if (rp_els.tbody._lastHash === hash) return;
+	rp_els.tbody._lastHash = hash;
+	rp_els.tbody.textContent = "";
+
+	for (var i = 0; i < players.length; i++) {
+		var tr = el("tr");
+		tr.appendChild(el("td", "readyplayers-col-num", "" + (i + 1)));
+		tr.appendChild(el("td", "readyplayers-name", players[i]));
+		rp_els.tbody.appendChild(tr);
 	}
 }
 
@@ -3681,6 +3781,20 @@ function update_mc(server_data_encoded, ss_data_encoded, coords_entry, iteration
 function remove_mc() {
 	removePermanentTab("MC");
 	if (State.currentTab === "MC") tab_change("Status");
+}
+
+function update_readyplayers(encoded) {
+	var parsed = safeParse(encoded);
+	if (!Array.isArray(parsed)) return;
+	State.readyPlayers = parsed;
+	State.readyPlayersVisible = true;
+	if (!_settingsActive && State.currentTab === "Status") draw_status();
+}
+
+function remove_readyplayers() {
+	State.readyPlayers = [];
+	State.readyPlayersVisible = false;
+	if (!_settingsActive && State.currentTab === "Status") draw_status();
 }
 
 function update_spells(t, s) {

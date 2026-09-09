@@ -126,6 +126,39 @@ $fg-map: colors.$fg-map !default;
   }
 }
 
+.Tab--custom {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0.25em;
+    right: 0.25em;
+    bottom: 0;
+    height: base.em(2px);
+    border-radius: 0.15em;
+    background: linear-gradient(
+      90deg,
+      rgba(251, 214, 8, 0.1),
+      rgba(251, 214, 8, 0.9),
+      rgba(251, 214, 8, 0.1)
+    );
+    background-size: 200% 100%;
+    animation: tab-custom-shimmer 3s linear infinite;
+  }
+}
+
+@keyframes tab-custom-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
 @each $color-name, $color-value in $fg-map {
   .Tab--selected.Tab--color--#{$color-name} {
     color: color.scale($color-value, $lightness: 25%);

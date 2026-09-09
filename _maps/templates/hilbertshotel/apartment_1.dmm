@@ -270,7 +270,7 @@
 /obj/machinery/light/small{
 	dir = 4
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "cb" = (
 /obj/structure/chair/stool/bar,
@@ -356,13 +356,13 @@
 /turf/open/indestructible/hoteltile,
 /area/hilbertshotel)
 "cu" = (
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "cv" = (
 /obj/machinery/shower{
 	dir = 8
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "cw" = (
 /obj/structure/table/reinforced,
@@ -527,7 +527,7 @@
 	pixel_y = -22;
 	pixel_x = 0
 	},
-/turf/open/pool,
+/turf/open/pool/water,
 /area/hilbertshotel)
 "Fk" = (
 /turf/open/floor/wood/wood_tiled,

@@ -1,3 +1,7 @@
+/// Потолок общего кэша превью. Каждая запись - base64 иконки на четыре направления,
+/// то есть десятки килобайт текста, так что список держим коротким.
+#define SELECT_EQUIPMENT_PREVIEW_CACHE_MAX 64
+
 /client/proc/cmd_select_equipment(mob/target in GLOB.mob_list)
 	set category = "Admin.Events"
 	set name = "Select equipment"
@@ -33,6 +37,21 @@
 	//serializable string for the UI to keep track of which outfit is selected
 	var/selected_identifier = "/datum/outfit"
 
+	/// Готовые base64-превью, общие для всех инстансов датума.
+	/// Повторный показ того же аутфита на том же теле рендерить незачем: полный проход
+	/// getFlatIcon по четырём направлениям плюс icon2base64_scaled стоил около
+	/// полусекунды серверного времени на каждый клик по списку - это два самых дорогих
+	/// Topic'а прод-раунда. Инстансный кэш тут не работал: ui_close удаляет датум,
+	/// поэтому каждое переоткрытие панели платило полную цену заново.
+	/// Ключ - "отпечаток внешности манекена|аутфит", см. build_appearance_key():
+	/// без внешности в ключе один админ увидел бы превью чужого моба.
+	/// Кастомные аутфиты правятся на ходу, их не кэшируем.
+	var/static/list/preview_cache = list()
+
+	/// Отпечаток внешности манекена, считается один раз в init_dummy().
+	/// null означает "кэшировать нельзя".
+	var/appearance_key
+
 /datum/select_equipment/New(_user, mob/target)
 	user = CLIENT_FROM_VAR(_user)
 
@@ -62,9 +81,41 @@
 
 /datum/select_equipment/proc/init_dummy()
 	dummy_key = "selectequipmentUI_[target_mob]"
-	generate_dummy_lookalike(dummy_key, target_mob)
+	var/mob/living/carbon/human/preview_dummy = generate_dummy_lookalike(dummy_key, target_mob)
+	appearance_key = build_appearance_key(preview_dummy)
 	unset_busy_human_dummy(dummy_key)
 	return
+
+/**
+ * Отпечаток внешности манекена - всё, что влияет на картинку, кроме самого аутфита.
+ *
+ * Манекен собирается из ДНК и префов цели, поэтому отпечаток заодно ловит смену расы,
+ * причёски или белья между открытиями панели: ключ меняется, превью пересчитывается.
+ * Возвращает null, если манекена нет - тогда результат просто не кэшируется.
+ */
+/datum/select_equipment/proc/build_appearance_key(mob/living/carbon/human/preview_dummy)
+	if(!ishuman(preview_dummy))
+		return null
+	var/datum/dna/preview_dna = preview_dummy.dna
+	if(!preview_dna)
+		return null
+	var/datum/species/preview_species = preview_dna.species
+	var/list/parts = list(
+		"[preview_dummy.type]",
+		"[preview_species ? preview_species.type : "нет расы"]",
+		"[preview_dna.unique_enzymes]",
+		"[preview_dna.uni_identity]",
+		list2params(preview_dna.features),
+		"[preview_dummy.skin_tone]",
+		"[preview_dummy.hair_style]/[preview_dummy.hair_color]",
+		"[preview_dummy.facial_hair_style]/[preview_dummy.facial_hair_color]",
+		"[preview_dummy.grad_style]/[preview_dummy.grad_color]",
+		"[preview_dummy.left_eye_color]/[preview_dummy.right_eye_color]",
+		"[preview_dummy.underwear]/[preview_dummy.undie_color]",
+		"[preview_dummy.undershirt]/[preview_dummy.shirt_color]",
+		"[preview_dummy.socks]/[preview_dummy.socks_color]"
+	)
+	return parts.Join("|")
 
 /**
  * Packs up data about an outfit as an assoc list to send to the UI as an outfit entry.
@@ -109,11 +160,21 @@
 	if(!dummy_key)
 		init_dummy()
 
-	var/icon/dummysprite = get_flat_human_icon(null,
-		dummy_key = dummy_key,
-		outfit_override = selected_outfit,
-		no_anim = TRUE)
-	data["icon64"] = icon2base64_scaled(dummysprite, 2)
+	// Кэшируем только штатные аутфиты (кастомные правятся на ходу) и только когда есть
+	// отпечаток внешности - иначе разные тела схлопнулись бы в один ключ.
+	var/preview_key = (ispath(selected_outfit) && appearance_key) ? "[appearance_key]|[selected_identifier]" : null
+	var/preview = preview_key ? preview_cache[preview_key] : null
+	if(!preview)
+		var/icon/dummysprite = get_flat_human_icon(null,
+			dummy_key = dummy_key,
+			outfit_override = selected_outfit,
+			no_anim = TRUE)
+		preview = icon2base64_scaled(dummysprite, 2)
+		if(preview_key)
+			preview_cache[preview_key] = preview
+			if(length(preview_cache) > SELECT_EQUIPMENT_PREVIEW_CACHE_MAX)
+				preview_cache.Cut(1, (SELECT_EQUIPMENT_PREVIEW_CACHE_MAX / 4) + 1) // вытесняем четверть самых старых
+	data["icon64"] = preview
 	data["name"] = target_mob
 
 	var/datum/preferences/prefs = user?.client?.prefs
@@ -262,3 +323,5 @@
 	message_admins(span_adminnotice("[key_name_admin(usr)] changed the equipment of [ADMIN_LOOKUPFLW(human_target)] to [dresscode][was_observer ? ", spawning them" : ""]."))
 
 	return dresscode
+
+#undef SELECT_EQUIPMENT_PREVIEW_CACHE_MAX

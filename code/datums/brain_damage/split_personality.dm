@@ -65,6 +65,15 @@
 	UnregisterSignal(owner, COMSIG_MOB_DEATH)
 	..()
 
+/datum/brain_trauma/severe/split_personality/Destroy()
+	. = ..()
+	// Базовый Destroy зовёт on_lose() только при живом owner. Если тело успело
+	// отвалиться раньше травмы, бэкситы и экшены оставались висеть - каждый из них
+	// держит ссылку и на травму, и (через body) на само тело.
+	cleanup_personality_actions()
+	QDEL_NULL(stranger_backseat)
+	QDEL_NULL(owner_backseat)
+
 /datum/brain_trauma/severe/split_personality/proc/revert_to_normal()
 	qdel(src)
 
@@ -139,14 +148,22 @@
 		trauma = _trauma
 	return ..()
 
+/mob/living/split_personality/Destroy()
+	// Без этого утёкший бэксит пиннит и травму, и целое тело: body - это живой
+	// /mob/living/carbon/human со всем его графом органов и экипировки.
+	body = null
+	trauma = null
+	return ..()
+
 /mob/living/split_personality/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
 		return
 	if(QDELETED(body))
 		qdel(src) //in case trauma deletion doesn't already do it
+		return
 
 	//if one of the two ghosts, the other one stays permanently
-	if(!body.client && trauma.initialized)
+	if(!body.client && trauma?.initialized)
 		trauma.switch_personalities()
 		qdel(trauma)
 

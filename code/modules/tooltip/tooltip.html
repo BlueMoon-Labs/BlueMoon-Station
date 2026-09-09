@@ -117,7 +117,6 @@
 	<div id="wrap" class="wrap">
 		<div id="content" class="content"></div>
 	</div>
-	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript">
 		function byond_bridge_call(path, params) {
 			var query = "";
@@ -299,21 +298,26 @@
 
 				//alert(mapWidth+' | '+mapHeight+' | '+tilesShown+' | '+realIconSize+' | '+leftOffset+' | '+topOffset+' | '+left+' | '+top+' | '+posX+' | '+posY); //DEBUG
 
-				$('body').attr('class', tooltip.theme);
+				document.body.className = tooltip.theme;
 
-				var $content = $('#content'),
-					$wrap 	 = $('#wrap');
-				$wrap.attr('style', '');
-				$content.off('mouseover');
-				$content.html(tooltip.text);
+				var content = document.getElementById('content'),
+					wrap 	 = document.getElementById('wrap');
+				wrap.setAttribute('style', '');
+				content.onmouseover = null;
+				content.innerHTML = tooltip.text;
 
-				$wrap.width($wrap.width() + 2); //Dumb hack to fix a bizarre sizing bug
+				// .wrap без padding и с box-sizing по умолчанию, поэтому clientWidth - это ровно
+				// content-box, который возвращал jQuery .width(), а offsetWidth/offsetHeight -
+				// ровно то, что возвращали .outerWidth()/.outerHeight(). jQuery уехал целиком:
+				// это был единственный legacy-ассет, уезжавший по игровому соединению мимо CDN,
+				// и межсессионный кэш его пропустить не может (клиентский список выбрасывает .js).
+				wrap.style.width = (wrap.clientWidth + 2) + 'px'; //Dumb hack to fix a bizarre sizing bug
 
 				// DPI fix: jQuery returns CSS pixels but byond_winset expects physical (BYOND) pixels.
 				// At high DPI (e.g. 150%), CSS pixels are smaller than physical pixels by devicePixelRatio.
 				var dpr = window.devicePixelRatio || 1;
-				var docWidth	= Math.ceil($wrap.outerWidth() * dpr),
-					docHeight	= Math.ceil($wrap.outerHeight() * dpr);
+				var docWidth	= Math.ceil(wrap.offsetWidth * dpr),
+					docHeight	= Math.ceil(wrap.offsetHeight * dpr);
 
 				if (posY + docHeight > map.size.y) { //Is the bottom edge below the window? Snap it up if so
 					posY = (posY - docHeight) - realIconSizeY - tooltip.padding;
@@ -335,13 +339,13 @@
 					"is-visible": "true"
 				});
 
-				$content.on('mouseover', function() {
+				content.onmouseover = function() {
 					tooltip.hide();
-				});
+				};
 			},
 			update: function(params, client_vw , clien_vh , text, theme, special) {
 				//Assign our global object
-				tooltip.params = $.parseJSON(params);
+				tooltip.params = JSON.parse(params);
 				tooltip.client_view_w = parseInt(client_vw);
 				tooltip.client_view_h = parseInt(clien_vh);
 				tooltip.text = text;

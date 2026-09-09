@@ -94,7 +94,7 @@
 	var/atom/A = target
 	if(!proximity && prox_check || !(isobj(A) || issilicon(A) || isbot(A) || isdrone(A)))
 		return
-	if(istype(A, /obj/item/storage) && !(istype(A, /obj/item/storage/lockbox) || istype(A, /obj/item/storage/pod)))
+	if(istype(A, /obj/item/storage) && !(istype(A, /obj/item/storage/lockbox) || istype(A, /obj/item/storage/pod) || istype(A, /obj/item/storage/pod_luxury)))
 		return
 	if(!uses)
 		user.visible_message("<span class='warning'>[src] вспыхивает с небольшой искрой. Карта сожжена!</span>")
@@ -117,6 +117,8 @@
 	. = ..()
 	if(mining_points)
 		. += "У карты в наличии [mining_points] ед. очков шахтёрского оборудования."
+	if(contraband_points)
+		. += "У карты в наличии [contraband_points] ед. очков Авангарда"
 	if(registered_account)
 		. += "Привязанный к ID-карте аккаунт записан на имя \"[registered_account.account_holder]\" и сообщает о балансе [registered_account.account_balance] кр."
 		if(registered_account.account_job)
@@ -191,6 +193,7 @@
 	var/id_type_name = "Identification Card"
 	var/mining_points = 0 //For redeeming at mining equipment vendors
 	var/mining_points_total = 0 //Для отслеживания рабты шахтёров
+	var/contraband_points = 0 //BLUEMOON ADD - for BountyVend
 	var/list/access = list()
 	var/registered_name = null // The name registered_name on the card
 	var/assignment = null
@@ -439,6 +442,8 @@
 	. = ..()
 	if(mining_points)
 		. += "У этой карты [mining_points] рудокопных очков карго; всего было заработано [mining_points_total] очков."
+	if(contraband_points)
+		. += "<span class='info'>У этой карты [contraband_points] очков Авангарда.</span>"
 	if(!bank_support || (bank_support == ID_LOCKED_BANK_ACCOUNT && !registered_account))
 		. += "<span class='info'>Эта ID-карта не имеет банковского счёта. Должно быть, устаревшая модель...</span>"
 	else if(registered_account)
@@ -485,7 +490,15 @@
 
 /obj/item/card/id/proc/get_cached_flat_icon()
 	if(!cached_flat_icon)
-		cached_flat_icon = getFlatIcon(src)
+		// Examine ID-карты - обычное действие обычного игрока, и именно на нём умер раунд
+		// 10087 (23.08): getFlatIcon отсюда упал рантаймом в /icon/New(), и мир не написал
+		// больше ни строки. См. code/__HELPERS/icon_alloc_guard.dm.
+		try
+			cached_flat_icon = getFlatIcon(src)
+		catch(var/exception/icon_error)
+			// Результат намеренно НЕ кэшируется: отказ аллокации - состояние минуты, а не
+			// свойство карты, и запомненная пустышка осталась бы в чате до конца раунда.
+			return note_icon_alloc_failure("плоская иконка ID-карты [type]", icon_error)
 	return cached_flat_icon
 
 
@@ -1023,6 +1036,16 @@
 /obj/item/card/id/departmental_budget/sec
 	department_ID = ACCOUNT_SEC
 	department_name = ACCOUNT_SEC_NAME
+
+/obj/item/card/id/departmental_budget/tar
+	department_ID = ACCOUNT_TAR
+	department_name = ACCOUNT_TAR_NAME
+	withdraw_allowed = TRUE // BLUEMOON ADD - снятие разрешено любому держателю карты
+
+/obj/item/card/id/departmental_budget/ds
+	department_ID = ACCOUNT_DS
+	department_name = ACCOUNT_DS_NAME
+	withdraw_allowed = TRUE // BLUEMOON ADD - снятие разрешено любому держателю карты
 
 //Polychromatic Knight Badge
 

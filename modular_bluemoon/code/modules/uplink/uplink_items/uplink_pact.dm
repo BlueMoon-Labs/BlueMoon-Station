@@ -6,7 +6,7 @@
 	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/pact/pact_ninja_case
-	name = "Pact Ninja Case"
+	name = "PACT Ninja Case"
 	desc = "Хранит в себе специализированный боевой костюм с оружием ближнего боя"
 	item = /obj/item/storage/toolbox/infiltrator/pact_ninja
 	cost = 5

@@ -446,13 +446,4 @@
 	if(loc == beehome && ai_controller && ai_controller.ai_status == AI_STATUS_IDLE)
 		ai_controller.set_ai_status(ai_controller.get_expected_ai_status())
 
-///Легаси fight-or-flight: удар по пчеле временно выключает поиск растений
-///(search_objects = 0 на search_objects_regain_time). Контроллерный путь
-///adjustHealth минует легаси-ветку hostile.dm, поэтому повторяем её здесь;
-///цель на обидчика наводит штатный RetaliateAgainst.
-/mob/living/simple_animal/hostile/poison/bees/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
-	. = ..()
-	if(ai_controller && . > 0 && !ckey && !stat && search_objects)
-		LoseSearchObjects()
-
 #undef BEE_WORK_SCORE_BONUS

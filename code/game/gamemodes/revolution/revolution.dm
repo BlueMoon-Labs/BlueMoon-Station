@@ -118,6 +118,8 @@
 
 /datum/game_mode/revolution/process()
 	check_counter++
+	if(revolution)
+		revolution.process_shuttle_delay_reinforcement()
 	if(check_counter >= 5)
 		if(!finished && world.time >= completioncheckstart)
 			SSticker.mode.check_win()

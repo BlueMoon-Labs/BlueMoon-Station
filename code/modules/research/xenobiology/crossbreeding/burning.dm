@@ -33,7 +33,7 @@ Burning extracts:
 /obj/item/slimecross/burning/grey/do_effect(mob/user)
 	var/mob/living/simple_animal/slime/S = new(get_turf(user),"grey")
 	S.visible_message("<span class='danger'>A baby slime emerges from [src], and it nuzzles [user] before burbling hungrily!</span>")
-	S.Friends[user] = 20 //Gas, gas, gas
+	S.add_friend(user, 20) //Gas, gas, gas
 	S.bodytemperature = T0C + 400 //We gonna step on the gas.
 	S.set_nutrition(S.get_hunger_nutrition()) //Tonight, we fight!
 	..()
@@ -49,6 +49,7 @@ Burning extracts:
 	var/datum/effect_system/smoke_spread/chem/smoke = new
 	smoke.set_up(R, 7, get_turf(user))
 	smoke.start()
+	qdel(R)
 	..()
 
 /obj/item/slimecross/burning/purple
@@ -118,6 +119,7 @@ Burning extracts:
 	var/datum/effect_system/smoke_spread/chem/smoke = new
 	smoke.set_up(R, 7, get_turf(user))
 	smoke.start()
+	qdel(R)
 	..()
 
 /obj/item/slimecross/burning/silver
@@ -186,10 +188,10 @@ Burning extracts:
 	for(var/mob/living/simple_animal/slime/S in view(7, get_turf(user)))
 		if(user in S.Friends)
 			var/friendliness = S.Friends[user]
-			S.Friends = list()
-			S.Friends[user] = friendliness
+			S.drop_all_friends()
+			S.add_friend(user, friendliness)
 		else
-			S.Friends = list()
+			S.drop_all_friends()
 		S.rabid = 1
 		S.visible_message("<span class='danger'>The [S] is driven into a dangerous frenzy!</span>")
 	..()
@@ -409,6 +411,37 @@ Burning extracts:
 	. = ..()
 	if(prob(20))
 		user.emote("scream")
+
+//Клинок ченджлинга отращивают заново, а этот - собственная кость руки. DROPDEL базового
+//армблейда стирал его вместе с оторванной конечностью, и владелец оставался ни с чем.
+//Отделили от тела - клинок падает на пол обычным предметом.
+/obj/item/melee/arm_blade/slime/dropped(mob/user)
+	var/turf/blade_turf = get_turf(src)
+	. = ..() //DROPDEL уводит src в qdel, поэтому турф снимаем заранее
+	//Владельца чистят вместе с содержимым - на такой уборке новых предметов не плодим.
+	if(blade_turf && !QDELETED(user))
+		new /obj/item/melee/severed_boneblade(blade_turf)
+
+/obj/item/melee/severed_boneblade
+	name = "severed boneblade"
+	desc = "Заострённая кость чьей-то руки. Слизь давно высохла, но резать эта штука не разучилась."
+	icon = 'icons/obj/items_and_weapons.dmi'
+	icon_state = "arm_blade"
+	item_state = "arm_blade"
+	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+	force = 15
+	throwforce = 10
+	armour_penetration = 15
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	sharpness = SHARP_EDGED
+	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+
+/obj/item/melee/severed_boneblade/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/butchering, 6 SECONDS, 80) //кость - инструмент грубый
 
 /obj/item/kitchen/knife/rainbowknife
 	name = "Rainbow Knife"

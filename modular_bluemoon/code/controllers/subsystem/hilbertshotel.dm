@@ -26,15 +26,14 @@ SUBSYSTEM_DEF(hilbertshotel)
 	var/hhMysteryroom_number
 
 /datum/controller/subsystem/hilbertshotel/Initialize()
-	. = ..()
 	if(!CONFIG_GET(flag/hilbertshotel_enabled))
-		return SS_INIT_NO_NEED
+		return ..()
 	//RegisterSignal(src, COMSIG_HILBERT_ROOM_UPDATED, PROC_REF(on_room_updated))
 	hhMysteryroom_number = hhMysteryroom_number || rand(1, 999999)
 	prepare_rooms()
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(roundtype_check))
 
-	return SS_INIT_SUCCESS
+	return ..()
 
 /// Прок для проверки режима игры и действий со сферой при условии того или иного режима
 /datum/controller/subsystem/hilbertshotel/proc/roundtype_check()

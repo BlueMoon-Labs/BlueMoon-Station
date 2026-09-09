@@ -886,6 +886,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 /obj/effect/mob_spawn/human/pirate/special(mob/living/new_spawn)
 	new_spawn.fully_replace_character_name(new_spawn.real_name,generate_pirate_name())
 	new_spawn.mind.add_antag_datum(/datum/antagonist/pirate)
+	for(var/obj/item/I in new_spawn.get_equipped_items(include_pockets = TRUE))
+		ADD_TRAIT(I, TRAIT_NODROP, "pirate_antag")
 
 /obj/effect/mob_spawn/human/pirate/proc/generate_pirate_name()
 	var/beggings = strings(PIRATE_NAMES_FILE, "beginnings")
@@ -1060,7 +1062,14 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 			uniform = suited ? /obj/item/clothing/under/color/random : /obj/item/clothing/under/color/jumpskirt/random
 
 /datum/outfit/ghostcafe/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
-	H.internal = H.get_item_for_held_index(1)
+	//баллон в руку кладёт только плазмаменская ветка pre_equip - всем остальным сюда
+	//приезжал случайный предмет, и дыхание каждый тик падало на remove_air_volume()
+	H.internal = null
+	var/obj/item/tank/held_tank = H.get_item_for_held_index(1)
+	if(istype(held_tank))
+		H.internal = held_tank
+	//кнопка внутренних баллонов рисует состояние по H.internal - см. /datum/outfit/equipOutfit
+	H.update_action_buttons_icon()
 
 /obj/item/storage/box/syndie_kit/chameleon/ghostcafe
 	name = "ghost cafe costuming kit"
@@ -1842,3 +1851,15 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	radio = /obj/item/radio/headset/tarkoff
 	announcement_channel = RADIO_CHANNEL_TARKOFF
 	req_one_access = list(ACCESS_TARKOFF)
+
+/obj/effect/mob_spawn/human/inteqspace/captain/PACTDaivers
+	name = "InteQ 1 arm Captain"
+	short_desc = "Вы -Глава Первой наступательной армии,что разворачивает авангард на одной из производственных плане."
+	flavour_text = "Большая часть сил Пакта на планете уже были подавлены,но вы видели летящие в небе шатлы."
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."
+
+/obj/effect/mob_spawn/human/inteqspace/PACTDaivers
+	name = "InteQ 1 arm Crew Member"
+	short_desc = "Вы - Оперативник  InteQ в составе первой наступательной армии."
+	flavour_text = "Вы член первой экспедеционной армии Интекью. Вы уже подавили большую часть местных войс и развенули часть своих баз,но в небе зияют двигатели челноков.Нужно быть на готове"
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."

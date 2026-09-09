@@ -14,7 +14,8 @@
 	smoke.set_up(2, loc)
 	smoke.start()
 	visible_message("<span class='boldannounce'>[src] warps in!</span>")
-	playsound(src.loc, 'sound/effects/empulse.ogg', 25, 1)
+	if(SSticker.HasRoundStarted())
+		playsound(src.loc, 'sound/effects/empulse.ogg', 25, 1)
 	addtimer(CALLBACK(src, PROC_REF(warpbots)), rand(10, 600))
 
 /obj/structure/hivebot_beacon/proc/warpbots()

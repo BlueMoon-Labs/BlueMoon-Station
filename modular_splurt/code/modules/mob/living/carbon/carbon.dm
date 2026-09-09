@@ -30,7 +30,7 @@
 
 	// BLUEMOON ADD START - нельзя сбросить включенный модсьют
 	var/obj/item/mod/control/modsuit = get_item_by_slot(ITEM_SLOT_BACK)
-	if(modsuit && istype(modsuit) && modsuit.active)
+	if(modsuit && istype(modsuit) && modsuit.is_active())
 		to_chat(src, "<span class='warning'>Включенный модсьют не даёт сбросить одежду!</span>")
 		return
 	// BLUEMOON ADD END

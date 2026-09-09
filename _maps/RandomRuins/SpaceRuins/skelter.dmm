@@ -1374,7 +1374,7 @@
 	dir = 1;
 	icon_state = "trimline_fill"
 	},
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space{
+/mob/living/simple_animal/hostile/inteq/melee/sword/space{
 	name = "Impostrous Commando"
 	},
 /turf/open/floor/plasteel,
@@ -4107,7 +4107,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/melee/space{
+/mob/living/simple_animal/hostile/inteq/melee/space{
 	name = "Impostrous Commando"
 	},
 /turf/open/floor/plasteel/showroomfloor,
@@ -4223,7 +4223,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/skelter/storage)
 "vv" = (
-/mob/living/simple_animal/hostile/syndicate/melee/space{
+/mob/living/simple_animal/hostile/inteq/melee/space{
 	name = "Impostrous Commando"
 	},
 /turf/open/floor/plasteel/showroomfloor,
@@ -4246,7 +4246,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/space/has_grav/skelter/shields)
 "AR" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space{
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space{
 	name = "Impostrous Commando"
 	},
 /turf/open/floor/plasteel/dark,

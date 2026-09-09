@@ -7,7 +7,7 @@
 	var/datum/component/riding/D = LoadComponent(/datum/component/riding)
 	D.override_allow_spacemove = TRUE
 
-/obj/vehicle/ridden/space/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
+/obj/vehicle/ridden/space/Process_Spacemove(movement_dir = 0)
 	. = ..()
 	if(.)
 		return TRUE

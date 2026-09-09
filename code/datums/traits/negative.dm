@@ -109,10 +109,17 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/family_heirloom/post_add()
 	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
+	//post_add() приезжает отложенным таймером, а реликвию за это время могли уничтожить -
+	//on_heirloom_deleted() обнуляет вар, и обе ветки ниже падали на heirloom.name
+	if(QDELETED(heirloom))
+		return
 	if(!loadout_heirloom)
 		if(where == "В рюкзаке")
-			var/mob/living/carbon/human/H = quirk_holder
-			SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_SHOW, H)
+			//where посчитан ещё в add(), а post_add() приезжает отложенным таймером:
+			//к этому моменту рюкзака на носителе может уже не быть
+			var/mob/living/carbon/human/human_holder = quirk_holder
+			if(istype(human_holder) && human_holder.back)
+				SEND_SIGNAL(human_holder.back, COMSIG_TRY_STORAGE_SHOW, human_holder)
 
 		to_chat(quirk_holder, "<span class='boldnotice'>[where] находится [heirloom.name], передающаяся из поколения в поколение. Береги её!</span>")
 		var/list/family_name = splittext(quirk_holder.real_name, " ")
@@ -391,15 +398,21 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/phobia/post_add()
 	var/mob/living/carbon/human/H = quirk_holder
-	var/selected_phobia
 
 	// BLUEMOON EDIT START - получение выбранной фобии из настроек персонажа
-	if(quirk_holder.client?.prefs)
-		selected_phobia = quirk_holder.client.prefs.phobia_type
+	// На старте раунда квирки выдаются в equip_characters(), а ключ переезжает в тело
+	// только в transfer_characters() - между ними целая стадия с уступками тика, так что
+	// отложенный на 3 секунды post_add почти всегда видит тело без клиента. Настройка
+	// молча терялась и подменялась случайной; mind переезжает раньше, по его ключу
+	// клиент находится и до переноса.
+	var/client/holder_client = quirk_holder.client
+	if(!holder_client)
+		var/holder_key = quirk_holder.mind?.key
+		if(holder_key)
+			holder_client = GLOB.directory[ckey(holder_key)]
 
 	// Если фобия не выбрана или невалидна — берём случайную из доступных в подсистеме
-	if(!selected_phobia || !(selected_phobia in SStraumas.phobia_types))
-		selected_phobia = pick(SStraumas.phobia_types)
+	var/selected_phobia = SStraumas.pick_phobia_type(holder_client?.prefs?.phobia_type)
 	// BLUEMOON EDIT END
 
 	// Создаем травму с выбранным типом фобии
@@ -410,9 +423,11 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	medical_record_text = "Пациент имеет иррациональный страх перед [selected_phobia]."
 	// BLUEMOON EDIT END
 
+/// cure_trauma_type ждёт ТИП, а не экземпляр: istype(BT, экземпляр) всегда FALSE,
+/// поэтому фобия переживала снятие квирка, а ссылка `phobia` на снятой квирке
+/// оставалась единственным держателем травмы и утаскивала её в hard delete.
 /datum/quirk/phobia/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(phobia)
 
 /datum/quirk/mute
 	name = "Немота"
@@ -430,9 +445,9 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mute = new
 	H.gain_trauma(mute, TRAUMA_RESILIENCE_ABSOLUTE)
 
+/// Тот же случай, что и у фобии: в cure_trauma_type уходил экземпляр вместо типа.
 /datum/quirk/mute/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(mute, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(mute)
 
 /datum/quirk/unstable
 	name = "Нестабильный"

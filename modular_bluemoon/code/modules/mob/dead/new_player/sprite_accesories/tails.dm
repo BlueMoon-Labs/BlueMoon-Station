@@ -225,6 +225,27 @@
 	icon_state = "kathari"
 	matrixed_sections = MATRIX_RED_GREEN
 
+//Kathari s
+/datum/sprite_accessory/tails/human/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari_s
+	name = "Kathari s"
+	icon_state = "kathari_s"
+	matrixed_sections = MATRIX_ALL
+
 //Kathari alt
 /datum/sprite_accessory/tails/human/bm_tails/kathari_alt
 	name = "Kathari alt"
@@ -246,6 +267,26 @@
 	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_RED_GREEN
 
+//Kathari alt s
+/datum/sprite_accessory/tails/human/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari_alt_s
+	name = "Kathari alt s"
+	icon_state = "kathari_alt_s"
+	matrixed_sections = MATRIX_ALL
+
 
 // vulp straitgh
 
@@ -258,3 +299,110 @@
 	name = "Australian shepherd"
 	icon_state = "australianshepherd"
 	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/human/bm_tails/largecatplain
+	name = "Large Cat (Plain)"
+	icon_state = "largecatplain"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/largecatplain
+	name = "Large Cat (Plain)"
+	icon_state = "largecatplain"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/largecatplain
+	name = "Large Cat (Plain)"
+	icon_state = "largecatplain"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/largecatplain
+	name = "Large Cat (Plain)"
+	icon_state = "largecatplain"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/human/bm_tails/largecattip
+	name = "Large Cat (Painted Tip)"
+	icon_state = "largecattip"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/largecattip
+	name = "Large Cat (Painted Tip)"
+	icon_state = "largecattip"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/largecattip
+	name = "Large Cat (Painted Tip)"
+	icon_state = "largecattip"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/largecattip
+	name = "Large Cat (Painted Tip)"
+	icon_state = "largecattip"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/human/bm_tails/largecatstriped
+	name = "Large Cat (Striped)"
+	icon_state = "largecatstriped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/largecatstriped
+	name = "Large Cat (Striped)"
+	icon_state = "largecatstriped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/largecatstriped
+	name = "Large Cat (Striped)"
+	icon_state = "largecatstriped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/largecatstriped
+	name = "Large Cat (Striped)"
+	icon_state = "largecatstriped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/human/bm_tails/largecatcircle
+	name = "Large Cat (Circles)"
+	icon_state = "largecatcircle"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/largecatcircle
+	name = "Large Cat (Circles)"
+	icon_state = "largecatcircle"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/largecatcircle
+	name = "Large Cat (Circles)"
+	icon_state = "largecatcircle"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/largecatcircle
+	name = "Large Cat (Circles)"
+	icon_state = "largecatcircle"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/human/bm_tails/largecatcovered
+	name = "Large Cat (Covered)"
+	icon_state = "largecatcovered"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/largecatcovered
+	name = "Large Cat (Covered)"
+	icon_state = "largecatcovered"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/largecatcovered
+	name = "Large Cat (Covered)"
+	icon_state = "largecatcovered"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/largecatcovered
+	name = "Large Cat (Covered)"
+	icon_state = "largecatcovered"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/

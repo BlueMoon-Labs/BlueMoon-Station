@@ -40,7 +40,7 @@
 		return FALSE
 	if(hud_used)
 		hud_used.show_hud(hud_used.hud_version)
-		hud_used.update_ui_style(ui_style2icon(client.prefs.UI_style))
+		hud_used.update_ui_style(ui_style2icon(client.prefs?.UI_style)) // клиент может быть в разборке: ui_style2icon(null) отдаёт стиль по умолчанию
 
 	. = ..()
 

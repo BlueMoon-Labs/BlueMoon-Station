@@ -4,7 +4,6 @@
 	icon = 'modular_splurt/icons/mobs/vharmob.dmi'
 	icon_state = "clockworknight"
 	icon_living = "clockworknight"
-	icon_dead = "idle"
 	gender = NEUTER
 	speak_chance = 0
 	turns_per_move = 2

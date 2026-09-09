@@ -345,6 +345,11 @@
 	icon_state = "fox"
 	matrixed_sections = MATRIX_RED_GREEN
 
+/datum/sprite_accessory/ears/mam_ears/protogen
+	name = "Protogen"
+	icon_state = "protogen"
+	matrixed_sections = MATRIX_RED_GREEN
+
 /datum/sprite_accessory/ears/mam_ears/husky
 	name = "Husky"
 	icon_state = "wolf"

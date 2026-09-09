@@ -9,21 +9,29 @@
 	name = "\improper SCIENCE"
 	desc = "A sign labelling an area where research and science is performed."
 	icon_state = "science1"
+	is_editable = TRUE
+	sign_change_name = "Science"
 
 /obj/structure/sign/departments/chemistry
 	name = "\improper CHEMISTRY"
 	desc = "A sign labelling an area containing chemical equipment."
 	icon_state = "chemistry1"
+	is_editable = TRUE
+	sign_change_name = "Chemistry"
 
 /obj/structure/sign/departments/botany
 	name = "\improper HYDROPONICS"
 	desc = "A sign labelling an area as a place where plants are grown."
 	icon_state = "hydro1"
+	is_editable = TRUE
+	sign_change_name = "Hydroponics"
 
 /obj/structure/sign/departments/xenobio
 	name = "\improper XENOBIOLOGY"
 	desc = "A sign labelling an area as a place where xenobiological entities are researched."
 	icon_state = "xenobio"
+	is_editable = TRUE
+	sign_change_name = "Xenobiology"
 
 /obj/structure/sign/departments/evac
 	name = "\improper EVACUATION"
@@ -72,3 +80,5 @@
 
 /obj/structure/sign/departments/medbay/alt
 	icon_state = "bluecross2"
+	is_editable = TRUE
+	sign_change_name = "Medbay"

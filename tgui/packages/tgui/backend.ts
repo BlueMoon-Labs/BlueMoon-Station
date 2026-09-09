@@ -281,12 +281,16 @@ export const backendMiddleware = store => {
       if (allow) {
         store.dispatch(nextPayloadChunk(payload));
       } else {
+        // Отказ раньше проходил совсем молча, и со стороны это выглядело как зависшее окно.
+        // Сервер сам сообщает игроку причину, а здесь оставляем след для отладки.
+        logger.error('server refused an oversized payload', payload);
         store.dispatch(backendRemovePayloadQueue(payload));
       }
     }
 
     if (type === 'payloadDropped') {
       // Server timed out or rejected this payload — discard queue, stop sending
+      logger.error('server dropped an oversized payload mid-transfer', payload);
       store.dispatch(backendRemovePayloadQueue(payload));
     }
 
@@ -353,20 +357,32 @@ const encodedLengthBinarySearch = (charSeq: string[], length: number) => {
   return mid;
 };
 
+/**
+ * Бюджет одного чанка в url-кодированных символах.
+ *
+ * Чанк едет внутри JSON, который затем кодируется в URL второй раз, поэтому 512 таких
+ * символов давали реальный URL всего около 840 при лимите 2048 - больше половины бюджета
+ * простаивало, а число раундтрипов было вдвое избыточным. Каждый чанк ждёт подтверждения
+ * сервера, так что на длинном тексте это прямо превращается в те самые задержки, из-за
+ * которых JSON интегральной сборки "не доезжал". 900 даёт URL около 1480 - запас к лимиту
+ * остаётся, а чанков почти вдвое меньше.
+ */
+const CHUNK_BUDGET = 900;
+
 const splitIntoChunks = (str: string): string[] => {
   const charSeq = Array.from(str);
   const length = charSeq.length;
   const chunks: string[] = [];
   let startIndex = 0;
-  let endIndex = 512;
+  let endIndex = CHUNK_BUDGET;
   while (startIndex < length) {
     const cut = charSeq.slice(
       startIndex,
       endIndex < length ? endIndex : undefined,
     );
     const cutString = cut.join('');
-    if (encodeURIComponent(cutString).length > 512) {
-      const splitIndex = startIndex + encodedLengthBinarySearch(cut, 512);
+    if (encodeURIComponent(cutString).length > CHUNK_BUDGET) {
+      const splitIndex = startIndex + encodedLengthBinarySearch(cut, CHUNK_BUDGET);
       chunks.push(
         charSeq
           .slice(startIndex, splitIndex < length ? splitIndex : undefined)
@@ -377,7 +393,7 @@ const splitIntoChunks = (str: string): string[] => {
       chunks.push(cutString);
       startIndex = endIndex;
     }
-    endIndex = startIndex + 512;
+    endIndex = startIndex + CHUNK_BUDGET;
   }
   return chunks;
 };
@@ -412,9 +428,13 @@ export const sendAct = (action: string, payload: object = {}) => {
   lastActTime = now;
   lastActKey = actKey;
   const seq = ++actSequence;
+  // seq обязателен в расчёте: sendMessage добавляет его к тому же URL, и без него в окне
+  // шириной в восемь байт чанкование не включалось, хотя фактический URL уже переполнял
+  // лимит 2048 - сообщение молча уходило в XHR-фолбэк.
   const urlSize = Object.entries({
     type: 'act/' + action,
     payload: stringifiedPayload,
+    seq,
     tgui: 1,
     window_id: window.__windowId__,
   }).reduce(

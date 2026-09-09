@@ -11,7 +11,7 @@
 //     but overall network volume is also increased as this increases...
 
 /obj/machinery/atmospherics/components/binary/pump
-	icon_state = "pump_map-2"
+	icon_state = "pump_map-3"
 	name = "gas pump"
 	desc = "A pump that moves gas by pressure."
 
@@ -139,6 +139,7 @@
 	data["on"] = on
 	data["pressure"] = round(target_pressure)
 	data["max_pressure"] = round(MAX_OUTPUT_PRESSURE)
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/pump/ui_act(action, params)
@@ -222,18 +223,34 @@
 	piping_layer = 1
 	icon_state= "pump_map-1"
 
-/obj/machinery/atmospherics/components/binary/pump/layer3
-	piping_layer = 3
+/obj/machinery/atmospherics/components/binary/pump/layer2
+	piping_layer = 2
+	icon_state= "pump_map-1"
+
+/obj/machinery/atmospherics/components/binary/pump/layer4
+	piping_layer = 4
+	icon_state= "pump_map-3"
+
+/obj/machinery/atmospherics/components/binary/pump/layer5
+	piping_layer = 5
 	icon_state= "pump_map-3"
 
 /obj/machinery/atmospherics/components/binary/pump/on
 	on = TRUE
-	icon_state = "pump_on_map-2"
+	icon_state = "pump_on_map-3"
 
 /obj/machinery/atmospherics/components/binary/pump/on/layer1
 	piping_layer = 1
 	icon_state= "pump_on_map-1"
 
-/obj/machinery/atmospherics/components/binary/pump/on/layer3
-	piping_layer = 3
+/obj/machinery/atmospherics/components/binary/pump/on/layer2
+	piping_layer = 2
+	icon_state= "pump_on_map-1"
+
+/obj/machinery/atmospherics/components/binary/pump/on/layer4
+	piping_layer = 4
+	icon_state= "pump_on_map-3"
+
+/obj/machinery/atmospherics/components/binary/pump/on/layer5
+	piping_layer = 5
 	icon_state= "pump_on_map-3"

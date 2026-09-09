@@ -52,7 +52,7 @@
 			to_chat(c, "<span class='warning'>Configure or select the area you want to paint first!</span>")
 			return
 		var/turf/T = get_turf(object)
-		if(get_area(T) != storedarea)
+		if(istype(storedarea, /area) && islist(storedarea.contents) && get_area(T) != storedarea)
 			log_admin("Build Mode: [key_name(c)] added [AREACOORD(T)] to [storedarea]")
 			storedarea.contents.Add(T)
 	else if(right_click)

@@ -339,7 +339,7 @@ DEFINE_BITFIELD(turret_flags, list(
 		//This code handles moving the turret around. After all, it's a portable turret!
 		if(!anchored && !isinspace())
 			setAnchored(TRUE)
-			invisibility = INVISIBILITY_MAXIMUM
+			invisibility = has_cover ? INVISIBILITY_MAXIMUM : 0
 			update_icon()
 			to_chat(user, "<span class='notice'>You secure the exterior bolts on the turret.</span>")
 			if(has_cover)
@@ -350,7 +350,7 @@ DEFINE_BITFIELD(turret_flags, list(
 			to_chat(user, "<span class='notice'>You unsecure the exterior bolts on the turret.</span>")
 			power_change()
 			invisibility = 0
-			qdel(cover) //deletes the cover, and the turret instance itself becomes its own cover.
+			QDEL_NULL(cover) // У незакреплённой турели кожух отображается спрайтом самой турели.
 
 	else if(I.GetID())
 		//Behavior lock/unlock mangement
@@ -489,6 +489,12 @@ DEFINE_BITFIELD(turret_flags, list(
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
 			continue
 
+		// Линию до цели проверяем так же, как ветка про мехи ниже. view() отбирает по
+		// прозрачности, но не по проходимости для снаряда, поэтому турель бралась за цели,
+		// в которые физически не может попасть, и долбила по ним весь раунд.
+		if(!can_see(base, A, scan_range))
+			continue
+
 		if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)//if it's set to check for simple animals
 			if(isanimal(A))
 				var/mob/living/simple_animal/SA = A
@@ -539,9 +545,14 @@ DEFINE_BITFIELD(turret_flags, list(
 			var/obj/vehicle/sealed/mecha/mech = A
 			for(var/O in mech.occupants)
 				var/mob/living/occupant = O
-				if(!in_faction(occupant)) //If there is a user and they're not in our faction
+				if(in_faction(occupant))
+					continue
+				// assess_perp is human-only (get_id_name / records); non-humans use anomalous rules
+				if(ishuman(occupant))
 					if(assess_perp(occupant) >= 4)
 						targets += mech
+				else if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)
+					targets += mech
 
 	if((turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS) && GLOB.blobs.len && (mode == TURRET_LETHAL))
 		for(var/obj/structure/blob/B in view(scan_range, base))
@@ -593,7 +604,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	if(cover)
 		cover.icon_state = "turretCover"
 	raised = 0
-	invisibility = 2
+	invisibility = has_cover ? INVISIBILITY_OBSERVER : 0
 	update_icon()
 
 /obj/machinery/porta_turret/proc/assess_perp(mob/living/carbon/human/perp)
@@ -677,6 +688,20 @@ DEFINE_BITFIELD(turret_flags, list(
 				if(istype(closer) && !is_blocked_turf(closer) && T.Adjacent(closer))
 					T = closer
 					break
+		// Свободного соседнего турфа не нашлось - стрелять неоткуда. Прежний код всё равно
+		// рождал снаряд внутри стены, тот немедленно упирался в неё, и турель повторяла это
+		// каждый цикл: в прод-раунде 9830 один такой цикл дал 554 выстрела по одной цели с
+		// неизменившимся HP, а всего выстрелы турелей заняли 30.7% attack.log. Каждый ещё и
+		// платил playsound и записью в лог.
+		if(T.density)
+			return
+		// Свободный турф мог найтись с ДРУГОЙ стороны стены. Отбор цели проверяет видимость из
+		// самой турели (сквозь стекло/решётку она есть), а снаряд рождается на выбранном турфе -
+		// и если тот снаружи, снаряд до цели не доходит никогда. Прод-раунд 9832: турель
+		// хранилища away-базы 53 минуты стреляла из космоса по мобу внутри Vault - 800 выстрелов
+		// подряд с неизменным HP, 12% всего attack.log.
+		if(T != get_turf(src) && !can_see(T, target, scan_range))
+			return
 
 	update_icon()
 	var/obj/item/projectile/A

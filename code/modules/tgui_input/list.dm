@@ -106,7 +106,10 @@
  * the window was closed by the user.
  */
 /datum/tgui_list_input/proc/wait()
-	while (!choice && !closed)
+	//QDELETED обязателен: если open() отвалился до того, как SStgui выставил DF_HAS_OPEN_UI,
+	//то close_uis() выйдет сразу, ui_close() не отработает, closed останется FALSE - и цикл
+	//будет крутиться на уже удалённом датуме вечно. У alert/number/checkboxes гард есть.
+	while (!choice && !closed && !QDELETED(src))
 		stoplag(1)
 
 /datum/tgui_list_input/ui_interact(mob/user, datum/tgui/ui)

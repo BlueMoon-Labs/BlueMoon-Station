@@ -19,7 +19,7 @@
 // Mime
 
 /obj/item/projectile/bullet/mime
-	damage = 25
+	damage = 50
 
 /obj/item/projectile/bullet/mime/on_hit(atom/target, blocked = FALSE)
 	. = ..()

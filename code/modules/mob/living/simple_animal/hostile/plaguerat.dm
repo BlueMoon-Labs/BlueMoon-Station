@@ -74,7 +74,7 @@ GLOBAL_LIST_EMPTY(plague_rats)
 		scavenge.Trigger()
 	if(prob(50))
 		var/turf/open/floor/F = get_turf(src)
-		if(istype(F) && !F.intact)
+		if(istype(F) && !(F.turf_flags & TURF_INTACT))
 			var/obj/structure/cable/C = locate() in F
 			if(C && C.avail())
 				visible_message("<span class='warning'>[src] chews through the [C]. It looks unharmed!</span>")

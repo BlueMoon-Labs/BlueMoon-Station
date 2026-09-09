@@ -3,6 +3,23 @@
 
 //#define DATUMVAR_DEBUGGING_MODE //Enables the ability to cache datum vars and retrieve later for debugging which vars changed.
 
+//#define ATOM_STATISTICS_LOGGING //Collect atoms load time statisctics from Atoms Subsystem to "atom_loading_stats.log"
+
+// Перепись НЕ-атомных датумов по типам (code/datums/datum_census.dm): компоненты, элементы,
+// газовые смеси, углы освещения, таймеры, коллбеки - всё, чего нет в world.contents и чего
+// поэтому не видит перепись инстансов. Пишется в лог мира вместе с ней.
+//
+// Стоит 0.21 мкс на создание датума - замер стенда на двух миллионах созданий, четыре
+// чередующихся прогона (422.7 мс без хука против 838.3 мс с ним). Локальный прогон
+// MetaStation создаёт около 380 не-атомных датумов в секунду, то есть счётчик съедает
+// восемь сотых миллисекунды на секунду мира.
+//
+// Память под сами счётчики: четыре ассоциативных списка на 8.5-12 тысяч ключей каждый,
+// по 47 Б на ключ - около двух мегабайт на раунд. Это плата за ответ на вопрос, который
+// иначе решается перебором гипотез: рост раунда 10048 на 466 МБ перепись инстансов не
+// объясняет вовсе, потому что не-атомных датумов она не видит по построению.
+#define DATUM_CENSUS
+
 // Comment this out if you are debugging problems that might be obscured by custom error handling in world/Error
 #ifdef DEBUG
 #define USE_CUSTOM_ERROR_HANDLER
@@ -60,6 +77,9 @@
 #if defined(UNIT_TESTS)
 // Хуки записи found_refs/should_save_refs для тестов рефтрекера (find_reference_sanity и др.).
 #define REFERENCE_TRACKING_DEBUG
+// Ассеты собираются на инициализации, а не в лобби: прогон тестов до RUNLEVEL_LOBBY
+// не доходит, и отложенные листы никто бы не собрал.
+#define DO_NOT_DEFER_ASSETS
 #endif
 
 #ifdef TGS

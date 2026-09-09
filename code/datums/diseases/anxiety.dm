@@ -13,6 +13,8 @@
 
 /datum/disease/anxiety/stage_act()
 	..()
+	if(!affected_mob)
+		return
 	switch(stage)
 		if(2) //also changes say, see say.dm
 			if(prob(5))

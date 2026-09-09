@@ -184,7 +184,7 @@
 	var/list/saved_new_queue = SSprojectiles.projectile_new_queue
 	var/saved_epoch_active = SSprojectiles.projectile_epoch_active
 	var/saved_epoch_count = SSprojectiles.projectiles_processed_this_epoch
-	var/saved_state = SSprojectiles.state
+	var/saved_can_fire = detach_subsystem(SSprojectiles)
 	var/saved_ticklimit = Master.current_ticklimit
 	var/saved_profile_strikes = SSprojectiles.profile_strikes
 	var/saved_profile_armed = SSprojectiles.profile_armed
@@ -251,7 +251,7 @@
 	SSprojectiles.projectile_new_queue = saved_new_queue
 	SSprojectiles.projectile_epoch_active = saved_epoch_active
 	SSprojectiles.projectiles_processed_this_epoch = saved_epoch_count
-	SSprojectiles.state = saved_state
+	release_subsystem(SSprojectiles, saved_can_fire)
 	SSprojectiles.profile_strikes = saved_profile_strikes
 	SSprojectiles.profile_armed = saved_profile_armed
 	SSprojectiles.profile_cooldown_until = saved_profile_cooldown_until

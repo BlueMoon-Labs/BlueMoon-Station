@@ -1,5 +1,6 @@
 //Radiation storms occur when the station passes through an irradiated area, and irradiate anyone not standing in protected areas (maintenance, emergency storage, etc.)
 /datum/weather/rad_storm
+	parallax_profile = "ion_blizzard"
 	name = "radiation storm"
 	desc = "A cloud of intense radiation passes through the area dealing rad damage to those who are unprotected."
 

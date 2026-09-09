@@ -723,6 +723,9 @@ GLOBAL_LIST_EMPTY(readrgb_cache)
 /// Memoised cache of `icon_states(icon_file, mode)` results, keyed by "[icon file]|[mode]".
 /// DMI files do not change at runtime, so this never needs invalidation. In practice it is
 /// bounded by the number of distinct compile-time DMIs, but it is soft-capped anyway.
+/// В переписи памяти этот список виден ГЛУБОКИМИ слотами: ~31 стейт на файл, так что
+/// 77 тыс. слотов в конце раунда - это ~2,4 тыс. ключей при капе 4096 (потолок ~130 тыс.
+/// слотов, около мегабайта). Рост за раунд - прогрев кэша, не утечка.
 /// IMPORTANT: callers MUST NOT mutate the returned list — treat it as read-only.
 GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 /// Soft cap on cached_icon_states_by_file entries (each value is a list of state names).
@@ -876,6 +879,13 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 				var/current_layer = current.layer
 				if(current_layer < 0)
 					if(current_layer <= -1000)
+						// Второй выход мимо хвостового учёта: оверлей ниже -1000 отдаёт
+						// собранную заготовку прямо отсюда. Считаем здесь по тем же
+						// правилам, что и в хвосте (только внешний вызов), иначе книга
+						// молча недосчитывает целые иконки - а молчаливый недосчёт
+						// неотличим от честного нуля, ради чего книга и заводилась.
+						if(start)
+							note_flat_icon_built(flat)
 						return flat
 					current_layer = process_set + A.layer + current_layer / 1000
 
@@ -980,6 +990,29 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 
 	#undef BLANK
 	#undef SET_SELF
+
+	// Книга недатумных аллокаций: сборка плоской иконки - крупнейший известный аллокатор,
+	// который не создаёт ни одного датума и потому невидим переписи. Считается ТОЛЬКО
+	// внешний вызов (start): рекурсия по вложенным оверлеям - это та же одна иконка.
+	if(start)
+		note_flat_icon_built(.)
+
+/**
+ * Записать собранную плоскую иконку в книгу недатумных аллокаций.
+ *
+ * Размер спрашивается у самой иконки: одна иконка манекена во весь рост стоит сотни
+ * маленьких, и число вызовов без пикселей врёт.
+ *
+ * Учёт стоит в хвосте getFlatIcon, а выходы посреди прока зовут этот прок сами (выход по
+ * оверлею ниже -1000). Мимо учёта проходит ровно один путь - ранний выход на невидимом
+ * атоме (alpha <= 0), отдающий пустую заготовку 32x32. Недосчёт назван здесь намеренно:
+ * молчаливый он был бы неотличим от честного нуля.
+ */
+/proc/note_flat_icon_built(icon/built)
+	note_nondatum_alloc(NONDATUM_LEDGER_ICONS)
+	if(!isicon(built))
+		return
+	note_nondatum_alloc(NONDATUM_LEDGER_ICON_PIXELS, built.Width() * built.Height())
 
 /proc/getIconMask(atom/A)//By yours truly. Creates a dynamic mask for a mob/whatever. /N
 	var/icon/alpha_mask = new(A.icon,A.icon_state)//So we want the default icon and icon state of A.
@@ -1122,6 +1155,83 @@ GLOBAL_LIST_EMPTY(friendly_animal_types)
 		return J
 	return FALSE
 
+/// Собирает многодирекционную плоскую иконку по уже существующему атому: по кадру
+/// на каждую дирекцию из show_dirs, с выравниванием кадров по общему размеру.
+/// Вынесено из get_flat_human_icon, чтобы фото манифеста можно было снимать прямо
+/// с настоящего моба, минуя постройку и экипировку манекена.
+///
+/// force_dir - снимать не с самого атома, а с копии его внешности с принудительной
+/// дирекцией. У живого моба dir произвольный, а getFlatIcon предпочитает
+/// собственную дирекцию цели запрошенной: без копии фас и профиль вышли бы двумя
+/// одинаковыми кадрами. Манекену это не нужно - он всегда смотрит на юг.
+///
+/// snapshot_appearance - снятая заранее внешность вместо живого атома: /appearance неизменяем и рефкаунтится.
+/proc/build_flat_multidir_icon(atom/subject, list/show_dirs = GLOB.cardinals, no_anim = FALSE, force_dir = FALSE, snapshot_appearance = null)
+	if(isnull(snapshot_appearance) && QDELETED(subject))
+		return icon('icons/effects/effects.dmi', "nothing")
+
+	// Внешность снимается один раз до цикла: между дирекциями прок уступает тик, и
+	// живой моб успел бы повернуться, переодеться или лечь - кадры разъехались бы.
+	var/frozen_appearance = snapshot_appearance
+	if(isnull(frozen_appearance) && force_dir)
+		frozen_appearance = subject.appearance
+
+	var/icon/out_icon
+	var/list/good_partials = list()
+	var/list/good_dirs = list()
+	var/max_w = 0
+	var/max_h = 0
+	for(var/photo_dir in show_dirs)
+		// Один getFlatIcon гуманоида со всеми оверлеями стоит десятки миллисекунд, а
+		// дирекций тут до четырёх - без выхода наружу вся генерация уходила одним
+		// неразрывным куском. В прод-раунде очередь фото манифеста давала блоки по
+		// 130-450 мс, то есть рвала тик в три-девять раз.
+		CHECK_TICK
+		var/icon/partial
+		// try/catch, а не проверка результата: отказ крупной непрерывной аллокации внутри
+		// getFlatIcon приходит рантаймом в /icon/New() и без перехвата рвёт весь стек до
+		// самого МК. Именно так умер раунд 10088 (23.08) - см. code/__HELPERS/icon_alloc_guard.dm.
+		try
+			if(isnull(frozen_appearance))
+				partial = getFlatIcon(subject, defdir = photo_dir, no_anim = no_anim)
+			else
+				var/image/dir_snapshot = new
+				dir_snapshot.appearance = frozen_appearance
+				dir_snapshot.dir = photo_dir
+				partial = getFlatIcon(dir_snapshot, defdir = photo_dir, no_anim = no_anim)
+		catch(var/exception/icon_error)
+			// Не continue прямо отсюда: выход управлением из catch наружу в цикл в кодовой
+			// базе нигде не встречается, а проверка ниже и так отбрасывает пустой кадр.
+			partial = null
+			note_icon_alloc_failure("многодирекционный кадр [subject ? "[subject.type]" : "снапшот внешности"], дирекция [photo_dir]", icon_error)
+		if(!istype(partial, /icon) || !partial.Width() || !partial.Height())
+			continue
+		good_partials += partial
+		good_dirs += photo_dir
+		var/partial_width = partial.Width()
+		var/partial_height = partial.Height()
+		if(partial_width > max_w)
+			max_w = partial_width
+		if(partial_height > max_h)
+			max_h = partial_height
+
+	if(length(good_dirs))
+		out_icon = new /icon()
+		for(var/i = 1 to length(good_dirs))
+			var/photo_dir = good_dirs[i]
+			var/icon/slot = good_partials[i]
+			if(slot.Width() != max_w || slot.Height() != max_h)
+				var/icon/padded = new /icon(slot)
+				padded.Crop(1, 1, max_w, max_h)
+				slot = padded
+			try
+				out_icon.Insert(slot, dir = photo_dir, frame = 1, delay = 0)
+			catch(var/exception/e)
+				stack_trace("build_flat_multidir_icon: Insert failed for dir=[photo_dir] ([e])")
+	if(!out_icon || !out_icon.Width())
+		out_icon = icon('icons/effects/effects.dmi', "nothing")
+	return out_icon
+
 /// Bounded cache for /proc/get_flat_human_icon — was unbounded var/static, leaked
 /// for the whole round when many distinct outfits/keys were rendered. Trim 25%
 /// (oldest entries) when over the cap.
@@ -1133,57 +1243,44 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
 	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
-		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key)
+		// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
+		// перерисовывается перед getFlatIcon, так что штатный regenerate_icons()
+		// на входе - выброшенная работа на каждом вызове.
+		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
 
+		// Всё до цикла по дирекциям шло одним неразрывным куском: copy_to тянет за собой
+		// set_species с полной пересборкой конечностей и органов, equip спавнит весь
+		// комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
+		// блок мерился в 120-190 мс при потолке тика в 12 - то есть уступать было пора
+		// давно, а первый CHECK_TICK стоял только ниже. Прок и так умеет спать, манекен
+		// на это время остаётся занятым, но остальные вызывающие ждут его на in_use
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
+			CHECK_TICK
 		if(J)
 			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
+			CHECK_TICK
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
+			CHECK_TICK
 
 		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
 		body.update_body(update_genitals = TRUE)
 		body.update_hair()
 		body.update_mutations_overlay()
+		CHECK_TICK
 
-		var/icon/out_icon
-		var/list/good_partials = list()
-		var/list/good_dirs = list()
-		var/max_w = 0
-		var/max_h = 0
-		for(var/D in showDirs)
-			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
-			if(istype(partial, /icon) && partial.Width() && partial.Height())
-				good_partials += partial
-				good_dirs += D
-				var/pw = partial.Width()
-				var/ph = partial.Height()
-				if(pw > max_w)
-					max_w = pw
-				if(ph > max_h)
-					max_h = ph
+		// Манекен на время съёмки остаётся занятым, но остальные вызывающие и так
+		// ждут его на in_use. Дирекцию не форсируем: манекен всегда смотрит на юг,
+		// и getFlatIcon возьмёт запрошенную.
+		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim)
 
-		if(length(good_dirs))
-			// Чиню за собой партиклы моба, на некоторых персах с специфическими данными превью ломалось.
-			out_icon = new /icon()
-			for(var/i = 1 to length(good_dirs))
-				var/D = good_dirs[i]
-				var/icon/slot = good_partials[i]
-				if(slot.Width() != max_w || slot.Height() != max_h)
-					var/icon/padded = new /icon(slot)
-					padded.Crop(1, 1, max_w, max_h)
-					slot = padded
-				try
-					out_icon.Insert(slot, dir = D, frame = 1, delay = 0)
-				catch(var/exception/e)
-					stack_trace("get_flat_human_icon: Insert failed for dir=[D] ([e])")
-		if(!out_icon || !out_icon.Width())
-			out_icon = icon('icons/effects/effects.dmi', "nothing")
-
-		GLOB.humanoid_icon_cache[icon_id] = out_icon
-		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
-			GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
+		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
+		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
+		if(icon_id)
+			GLOB.humanoid_icon_cache[icon_id] = out_icon
+			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
+				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
 		return out_icon
 	else
@@ -1470,7 +1567,10 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 		icon2collapse = A.icon
 		if (isnull(icon_state))
 			icon_state = A.icon_state
-			if (!(icon_state in icon_states(icon2collapse, 1)))
+			// Через мемоизированный список: сырой icon_states() заново разбирает весь
+			// лист, а у крупных (борговский widerobot.dmi - мегабайт на 364 стейта)
+			// это и есть основная цена холодного промаха кэша icon2html.
+			if (!(icon_state in cached_icon_states(icon2collapse, 1)))
 				icon_state = initial(A.icon_state)
 				if (isnull(dir))
 					dir = initial(A.dir)
@@ -1494,6 +1594,9 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 			icon_state = ""
 
 	icon2collapse = icon(icon2collapse, icon_state, dir, frame, moving)
+	// Книга недатумных аллокаций: сюда доезжает только ХОЛОДНЫЙ промах кэша - попадание
+	// вернулось выше, ещё до всей этой цепочки. Именно промахи и стоят памяти.
+	note_flat_icon_built(icon2collapse)
 
 	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
 	// md5 pass. A non-null dmi_file_path selects the cheap md5(rsc_ref) path.
@@ -1538,19 +1641,32 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
 	var/atom/A = thing
-	var/key = "[istype(A.icon, /icon) ? "[REF(A.icon)]" : A.icon]:[A.icon_state]"
+	var/atom_icon = A.icon
+	// Рантайм-иконка стрингифицируется в "/icon" одинаково для любой динамической, поэтому
+	// ключ обходил это через REF(). Но REF() - индекс в таблице BYOND, и он переиспользуется
+	// после сборки мусора: собранная иконка отдаёт слот следующей, ключ совпадает, и панель
+	// показывает картинку совсем другой вещи. Кэш глобальный и живёт весь раунд, промах не
+	// самоисправляется. Файловые иконки стрингифицируются в свой dmi-путь и стабильны -
+	// кэшируются как раньше; динамические собираются заново, их единицы.
+	var/cacheable = atom_icon && !istype(atom_icon, /icon)
+	var/key = cacheable ? "[atom_icon]:[A.icon_state]" : null
+	var/icon_base64 = cacheable ? GLOB.bicon_cache[key] : null
 
-	if (!GLOB.bicon_cache[key]) // Doesn't exist, make it.
+	if (!icon_base64) // Doesn't exist, make it.
 		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
 			I.Insert(temp, dir = SOUTH)
-		GLOB.bicon_cache[key] = icon2base64(I)
-		if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
-			GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
+		icon_base64 = icon2base64(I)
+		if(!icon_base64)
+			return
+		if(cacheable)
+			GLOB.bicon_cache[key] = icon_base64
+			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
+				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[GLOB.bicon_cache[key]]'>"
+	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)
@@ -1567,9 +1683,17 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	var/appearance_key = "\ref[A.appearance]"
 
 	// Full result cache: skip getFlatIcon + icon() + md5 pipeline on repeat calls.
-	// Caches list(asset_key, html, url) keyed on appearance ref.
+	// Caches list(asset_key, html, url, appearance) keyed on appearance ref.
+	//
+	// Четвёртый элемент - сам аппиранс, и он там не для чтения. Таблица аппирансов
+	// рефкаунтится: как только последняя ссылка ушла, слот достаётся следующему аппирансу,
+	// а ключ у нас - строка "\ref[...]", которая этого не замечает. Живая ссылка в записи
+	// держит слот занятым ровно столько, сколько живёт запись, поэтому под ключом не может
+	// оказаться чужая картинка. Вытеснение отпускает ссылку вместе с записью.
 	var/static/list/costly_result_cache = list()
 	var/list/cached = costly_result_cache[appearance_key]
+	if(cached && length(cached) < 4) // запись из билда до пиннинга - доверять ей нельзя
+		cached = null
 
 	if(!cached)
 		var/icon/I = getFlatIcon(thing)
@@ -1582,7 +1706,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			SSassets.transport.register_asset(asset_key, rsc_ref, file_hash, null)
 		var/url = SSassets.transport.get_asset_url(asset_key)
 		var/html = "<img class='icon icon-' src='[url]'>"
-		cached = list(asset_key, html, url)
+		cached = list(asset_key, html, url, A.appearance)
 		costly_result_cache[appearance_key] = cached
 		if(length(costly_result_cache) > 512)
 			costly_result_cache.Cut(1, 129) // Evict oldest 25%

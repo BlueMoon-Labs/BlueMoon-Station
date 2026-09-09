@@ -71,6 +71,10 @@
 	icon_state = "gps-e"
 	gpstag = "ENG0"
 
+/obj/item/gps/medical
+	icon_state = "gps-med"
+	gpstag = "MED0"
+
 /obj/item/gps/mining
 	icon_state = "gps-m"
 	gpstag = "MINE0"

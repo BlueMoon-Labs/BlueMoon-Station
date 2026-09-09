@@ -87,13 +87,13 @@
 
 	contraband = list(
 		/obj/item/reagent_containers/food/drinks/mug/tea = 12,
-		/obj/item/reagent_containers/food/drinks/bottle/fernet = 5,
 	)
 	premium = list(
 		/obj/item/reagent_containers/glass/bottle/ethanol = 4,
 		/obj/item/reagent_containers/food/drinks/bottle/champagne = 5,
 		/obj/item/reagent_containers/food/drinks/bottle/trappist = 5,
 		/obj/item/reagent_containers/food/drinks/bottle/bitters = 5,
+		/obj/item/reagent_containers/food/drinks/bottle/fernet = 1,
 	)
 
 	product_slogans = "Надеюсь, никто не попросит у меня чертову чашку чая...;Алкоголь - друг человечества. Вы не откажетесь от друга?;С удовольствием обслужим вас!;Никто не хочет пить на этой станции?;Пейте!;Выпивка полезна для вас!;Алкоголь - лучший друг человечества.;С удовольствием обслужим вас!;Не хотите ли хорошего, холодного пива? ;Ничто так не лечит, как выпивка!;Сделайте глоток!;Выпейте глоток!;Выпейте пива!;Пиво полезно для вас!;Только лучший алкоголь!;Самый качественный алкоголь с 2053 года!;Лучшее вино у нас!;Максимум алкоголя!;Человек любит пиво.;Тост за прогресс!"

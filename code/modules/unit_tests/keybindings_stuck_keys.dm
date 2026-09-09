@@ -58,6 +58,35 @@
 	stuck_key -= "W"
 	TEST_ASSERT_EQUAL(keybindings_calculate_movement_dir(stuck_key, wasd), NONE, "removing W should stop movement")
 
+	// Lost KeyUp recovery is lease based: a live repeat protects every held
+	// movement direction (including the non-repeating half of a diagonal), then
+	// expiry selects only movement and leaves modifiers/actions alone.
+	var/list/leased_keys = list("W" = 80, "D" = 90, "Shift" = 70)
+	TEST_ASSERT(keybindings_has_held_movement_key(leased_keys, wasd), "W+D must be recognized as held movement")
+	TEST_ASSERT(!length(keybindings_expired_movement_keys(leased_keys, wasd, 90, 90 + MOVEMENT_KEY_REPEAT_TIMEOUT - 1)), "movement lease must remain live before its timeout")
+	var/list/expired = keybindings_expired_movement_keys(leased_keys, wasd, 90, 90 + MOVEMENT_KEY_REPEAT_TIMEOUT)
+	TEST_ASSERT_EQUAL(length(expired), 2, "expired lease must select both held movement keys")
+	TEST_ASSERT("W" in expired, "expired lease must release W")
+	TEST_ASSERT("D" in expired, "expired lease must release D")
+	TEST_ASSERT(!("Shift" in expired), "expired lease must not release non-movement keys")
+	TEST_ASSERT(!length(keybindings_expired_movement_keys(leased_keys, wasd, null, 1000)), "missing lease must not expire unrelated legacy state")
+
+	// Native macro repeat renews the same lease. Explicit commands retain
+	// precedence, and classic input gets repeat only for keys already accepted
+	// while the chat box is focused.
+	var/list/hotkey_macros = list("Any" = "any", "Tab" = "toggle-input")
+	keybindings_add_movement_repeat_macros(hotkey_macros, list("W" = NORTH, "Tab" = EAST), TRUE)
+	TEST_ASSERT_EQUAL(hotkey_macros["W+REP"], "\"KeyRepeat W\"", "hotkey movement must receive a repeat keepalive")
+	TEST_ASSERT_EQUAL(hotkey_macros["W+UP"], "\"KeyUp W\"", "hotkey movement must receive an explicit release")
+	TEST_ASSERT(!hotkey_macros["Tab+REP"], "movement repeat must not override an explicit macro")
+	TEST_ASSERT(!hotkey_macros["Tab+UP"], "movement release must not override an explicit macro")
+	var/list/classic_input_macros = list("North" = "\"KeyDown North\"")
+	keybindings_add_movement_repeat_macros(classic_input_macros, list("W" = NORTH, "North" = NORTH), FALSE)
+	TEST_ASSERT_EQUAL(classic_input_macros["North+REP"], "\"KeyRepeat North\"", "classic arrow movement must receive a repeat keepalive")
+	TEST_ASSERT_EQUAL(classic_input_macros["North+UP"], "\"KeyUp North\"", "classic arrow movement must receive an explicit release")
+	TEST_ASSERT(!classic_input_macros["W+REP"], "classic input must leave typed letters alone")
+	TEST_ASSERT(!classic_input_macros["W+UP"], "classic input must not capture typed-letter releases")
+
 /// SSinput drives keyLoop for every client on every tick — 425k calls in six
 /// minutes of round 9800, of which only 15k produced an actual mob move. The
 /// loop now skips the whole Move() chain when there is nothing to act on, which

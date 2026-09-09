@@ -3,6 +3,7 @@
 	color_src = HORNCOLOR
 	relevant_layers = list(HORNS_LAYER)
 	mutable_category = "HEAD"
+	mutant_part_string = "horns"
 
 /datum/sprite_accessory/horns/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
 	var/obj/item/bodypart/head/HD = H.get_bodypart(BODY_ZONE_HEAD)

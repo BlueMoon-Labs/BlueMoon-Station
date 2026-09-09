@@ -21,20 +21,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with an experimental welder module.</span>")
 			return FALSE
 
-	var/oldtool_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старой сварки
-		oldtool = R.module.modules[i]
-		if(istype(oldtool, /obj/item/weldingtool/largetank/cyborg))
-			oldtool_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/oldtool_index = find_module_index(R, /obj/item/weldingtool/largetank/cyborg)
+	oldtool = oldtool_index ? R.module.modules[oldtool_index] : null
 
 	exptool = new(R.module)
 	R.module.basic_modules += exptool
 	R.module.add_module(exptool, FALSE, TRUE)
 	var/newtool_index = R.module.modules.Find(exptool)
-	for(exptool in R.module) // Можно оформить и для старой сварки, здесь сделано для новой, без разницы.
-		R.module.modules.Swap(oldtool_index, newtool_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(oldtool_index, newtool_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, oldtool_index, newtool_index)
 	R.module.remove_module(oldtool, TRUE) // Замена произошла - избавляемся от старой сварки
 
 /obj/item/borg/upgrade/xwelding/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -42,20 +36,19 @@
 	if (!.)
 		return
 
-	var/newtool_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления
-		exptool = R.module.modules[i]
-		if(istype(exptool, /obj/item/weldingtool/experimental/cyborg))
-			newtool_index = i
-			break
+	var/newtool_index = find_module_index(R, /obj/item/weldingtool/experimental/cyborg)
+	if(!newtool_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		exptool = null
+		return
+	exptool = R.module.modules[newtool_index]
 
 	oldtool = new(R.module)
 	R.module.basic_modules += oldtool
 	R.module.add_module(oldtool, FALSE, TRUE)
 	var/oldtool_index = R.module.modules.Find(oldtool)
-	for(oldtool in R.module)
-		R.module.modules.Swap(newtool_index, oldtool_index)
-		R.module.basic_modules.Swap(newtool_index, oldtool_index)
+	swap_module_entries(R, newtool_index, oldtool_index)
+	if(exptool)
 		R.module.remove_module(exptool, TRUE)
 
 /* Shit doesnt work, work on it later
@@ -112,20 +105,14 @@
 			to_chat(user, "<span class='warning'>This unit is already equipped with a BSRPD module.</span>")
 			return FALSE
 
-	var/RPD_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Начинаем искать индекс старого инструмента
-		RPD = R.module.modules[i]
-		if(istype(RPD, /obj/item/pipe_dispenser/cyborg))
-			RPD_index = i
-			break // Находим - прекращаем, не обрабатываем for'ом весь список.
+	var/RPD_index = find_module_index(R, /obj/item/pipe_dispenser/cyborg)
+	RPD = RPD_index ? R.module.modules[RPD_index] : null
 
 	BRPD = new(R.module)
 	R.module.basic_modules += BRPD
 	R.module.add_module(BRPD, FALSE, TRUE)
 	var/BRPD_index = R.module.modules.Find(BRPD)
-	for(BRPD in R.module) // Можно оформить и для старого инструмента, здесь сделано для нового, без разницы.
-		R.module.modules.Swap(RPD_index, BRPD_index) // Swap в обоих листах важно настолько же
-		R.module.basic_modules.Swap(RPD_index, BRPD_index) // как и `basic_modules +=` и `add.module` выше
+	swap_module_entries(R, RPD_index, BRPD_index)
 	R.module.remove_module(RPD, TRUE) // Замена произошла - избавляемся от старого инструмента
 
 /obj/item/borg/upgrade/bsrpd/deactivate(mob/living/silicon/robot/R, user = usr)
@@ -133,20 +120,19 @@
 	if(!.)
 		return
 
-	var/BRPD_index = 0
-	for(var/i = 1, i <= R.module.modules.len, i++) // Этот алгоритм зеркален тому, что для добавления.
-		BRPD = R.module.modules[i]
-		if(istype(BRPD, /obj/item/pipe_dispenser/bluespace/cyborg))
-			BRPD_index = i
-			break
+	var/BRPD_index = find_module_index(R, /obj/item/pipe_dispenser/bluespace/cyborg)
+	if(!BRPD_index)
+		// Модуль уже сброшен (ResetModule) или инструмент вынули - менять нечего.
+		BRPD = null
+		return
+	BRPD = R.module.modules[BRPD_index]
 
 	RPD = new(R.module)
 	R.module.basic_modules += RPD
 	R.module.add_module(RPD, FALSE, TRUE)
 	var/RPD_index = R.module.modules.Find(RPD)
-	for(RPD in R.module)
-		R.module.modules.Swap(BRPD_index, RPD_index)
-		R.module.basic_modules.Swap(BRPD_index, RPD_index)
+	swap_module_entries(R, BRPD_index, RPD_index)
+	if(BRPD)
 		R.module.remove_module(BRPD, TRUE)
 
 /obj/item/borg/upgrade/expand/action(mob/living/silicon/robot/R, user = usr)

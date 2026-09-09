@@ -61,13 +61,12 @@ GLOBAL_LIST_INIT(bitflags, list(
 /// Early returns mob.face_atom()
 #define BLOCK_FACE_ATOM_1			(1<<13)
 
-#define HTML_USE_INITAL_ICON_1 (1<<20)
-/// Can players recolor this in-game via vendors (and maybe more if support is added)?
-#define IS_PLAYER_COLORABLE_1 (1<<21)
-#define KEEP_ON_ARENA_1 (1<<22)
+/// This atom is enrolled in SSair.atom_process via /datum/element/atmos_sensitive.
+/// Any-atom flag; do not move into the turf-only block below.
+#define ATMOS_IS_PROCESSING_1 (1<<21)
 
-/// Whether or not this atom is storing contents for a disassociated storage object
-#define HAS_DISASSOCIATED_STORAGE_1 (1<<24)
+/// Disables the right click context menu in MouseEntered()
+#define PREVENT_RIGHT_CLICK_CONTEXT_MENU_1 (1<<22)
 
 
 //turf-only flags
@@ -132,6 +131,8 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define	PASSMACHINE		(1<<7)
 #define PASSSTRUCTURE	(1<<8)
 #define PASSCRAWL		(1<<9) //SPLURT edit
+/// Granted while jumping; put on pass_flags_self of jumpable dense objects that must still stop projectiles (no PASSTABLE).
+#define PASSJUMP		(1<<10)
 
 //Movement Types
 #define GROUND				(1<<0)

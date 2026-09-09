@@ -437,6 +437,23 @@
 	boss_mob.peaceful = FALSE
 	TEST_ASSERT(strategy.can_attack(boss_mob, prey), "A provoked boss must return to normal aggression")
 
+///Богиня финальной комнаты гейта Killthemall неприкосновенна, пока её не тронут:
+///карточный AIStatus = AI_Z_OFF контроллерный моб не читает, гейт живёт на типе
+/datum/unit_test/ai_gate_goddess_starts_peaceful/Run()
+	var/mob/living/simple_animal/hostile/megafauna/sand/goddess = allocate(/mob/living/simple_animal/hostile/megafauna/sand, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/looter = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+
+	TEST_ASSERT(goddess.peaceful, "The gate goddess must spawn peaceful")
+
+	var/datum/ai_controller/hostile_adapter/boss/controller = goddess.ai_controller
+	TEST_ASSERT(istype(controller), "The gate goddess must possess the boss profile controller")
+
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_AI_TARGETING_STRATEGY])
+	TEST_ASSERT(!strategy.can_attack(goddess, looter), "The gate goddess must ignore anyone who has not touched her")
+
+	goddess.add_enemy(looter)
+	TEST_ASSERT(strategy.can_attack(goddess, looter), "The gate goddess must strike back at whoever touched her")
+
 ///Чардж-свинг гладиатора по уже потерянной цели не должен звать Bump(null)
 /datum/unit_test/ai_gladiator_charge_swing_lost_target/Run()
 	var/mob/living/simple_animal/hostile/megafauna/gladiator/gladiator = allocate(/mob/living/simple_animal/hostile/megafauna/gladiator, run_loc_floor_bottom_left)
@@ -563,11 +580,58 @@
 	TEST_ASSERT_EQUAL(boss.open_fire_calls, 1, "The legacy ranged behavior must call the boss OpenFire exactly once")
 
 ///Карпы - стайники: профиль pack_hunter с call_reinforcements
+///
+///И, главное, с милишным хвостом. Профиль был копией дальнобойного набора: цель движения
+///мили-пауну ставит только hostile_melee, поэтому карпы агрились, звали стаю и стояли на месте.
+///Прод-раунд 9832: ~38 карпов дали 7 атак за смену, мегакарп 54 минуты эмоутил "gnashes at" с
+///одной клетки. Проверяем не список сабтри, а факт: планировщик обязан выдать мили-атаку и цель
+///движения по цели в трёх клетках.
 /datum/unit_test/ai_carp_pack_profile/Run()
-	var/mob/living/simple_animal/hostile/carp/fish = allocate(/mob/living/simple_animal/hostile/carp)
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/carp/fish = allocate(/mob/living/simple_animal/hostile/carp, floor)
 	var/datum/ai_controller/hostile_adapter/pack_hunter/controller = fish.ai_controller
 	TEST_ASSERT(istype(controller), "Carp must school on the pack_hunter profile")
 	TEST_ASSERT(GLOB.ai_subtrees[/datum/ai_planning_subtree/call_reinforcements] in controller.planning_subtrees, "The pack profile must include reinforcements")
+
+	var/turf/prey_turf = locate(floor.x + 3, floor.y, floor.z)
+	TEST_ASSERT_NOTNULL(prey_turf, "Нет турфа для жертвы - тест ничего не проверяет")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+
+	controller.blackboard[BB_AI_CURRENT_TARGET] = prey
+	// Холодное обнаружение обязано отыграть паузу ALERT, бой начинается только со второго
+	// прохода планировщика - иначе тест проверял бы состояние, в котором мили не планируется
+	// никогда, ни до правки, ни после.
+	drive_ai_planning(controller)
+	controller.blackboard[BB_AI_STATE_ENTERED_AT] = world.time - AI_ALERT_REACTION_TIME - 1
+	drive_ai_planning(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_STATE], AI_STATE_ENGAGE, "FSM обязан войти в бой - тест ничего не проверяет")
+
+	var/datum/ai_behavior/melee = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
+	TEST_ASSERT(controller.planned_behaviors[melee], "Стайный мили-моб обязан планировать милишную атаку по цели в трёх клетках, иначе он только агрится и стоит")
+	TEST_ASSERT_NOTNULL(controller.current_movement_target, "Мили-атака обязана задать цель движения - без неё карп не подходит к жертве")
+
+///Дальнобойный сородич в том же стайном профиле обязан остаться кайтером: мили-хвост
+///pack_hunter гейтится melee_only, иначе магикарп после выстрела полез бы в упор.
+/datum/unit_test/ai_pack_ranged_stays_ranged/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/carp/ranged/magicarp = allocate(/mob/living/simple_animal/hostile/carp/ranged, floor)
+	var/datum/ai_controller/hostile_adapter/controller = magicarp.ai_controller
+	TEST_ASSERT(istype(controller), "У магикарпа нет контроллера - тест ничего не проверяет")
+	TEST_ASSERT(magicarp.ranged, "Магикарп обязан быть дальнобойным - тест ничего не проверяет")
+
+	var/turf/prey_turf = locate(floor.x + 3, floor.y, floor.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+
+	controller.blackboard[BB_AI_CURRENT_TARGET] = prey
+	// Тот же прогон через ALERT в бой, что и у мили-сородича: иначе ассерт "мили не планируется"
+	// прошёл бы вакуумно, просто потому что до боя дело не дошло.
+	drive_ai_planning(controller)
+	controller.blackboard[BB_AI_STATE_ENTERED_AT] = world.time - AI_ALERT_REACTION_TIME - 1
+	drive_ai_planning(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_STATE], AI_STATE_ENGAGE, "FSM обязан войти в бой - тест ничего не проверяет")
+
+	var/datum/ai_behavior/melee = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
+	TEST_ASSERT(!controller.planned_behaviors[melee], "Дальнобойный паун не имеет права планировать милишную атаку из стайного профиля")
 
 ///Семейные профили не должны затирать ranged-флаг сабтипов.
 /datum/unit_test/ai_mixed_family_ranged_subtypes/Run()
@@ -989,3 +1053,133 @@
 	var/mob/living/simple_animal/hostile/gorilla/familiar/pet = allocate(/mob/living/simple_animal/hostile/gorilla/familiar)
 	TEST_ASSERT_NULL(pet.ai_controller, "An AI_OFF familiar gorilla must not receive a controller")
 	TEST_ASSERT_EQUAL(pet.AIStatus, AI_OFF, "A familiar gorilla must remain AI_OFF")
+
+///Характер особи: пресеты состоятельны, и два разных характера действительно
+///дают разное решение при одинаковом состоянии. Вся вариативность поведения до
+///этого была на уровне ТИПА - каждый экземпляр вёл себя одинаково.
+/datum/unit_test/ai_temperament_presets_shift_decisions/Run()
+	for(var/temperament_type in GLOB.ai_temperament_weights)
+		var/datum/ai_temperament/preset = get_ai_temperament(temperament_type)
+		TEST_ASSERT_NOTNULL(preset, "Каждый пресет характера обязан инстанцироваться: [temperament_type]")
+		TEST_ASSERT(preset.retreat_threshold_mult > 0, "[preset.name]: множитель порога отступления обязан быть положительным")
+		TEST_ASSERT(preset.alert_pause_mult > 0, "[preset.name]: множитель паузы обнаружения обязан быть положительным")
+		TEST_ASSERT(preset.pursuit_mult > 0, "[preset.name]: множитель погони обязан быть положительным")
+		TEST_ASSERT(preset.dodge_mult > 0, "[preset.name]: множитель уворота обязан быть положительным")
+		TEST_ASSERT_EQUAL(get_ai_temperament(temperament_type), preset, "Характеры обязаны быть синглтонами")
+
+	//сам ролл обязан давать тип из пула (в тестах get_temperament намеренно
+	//возвращает нейтральный характер, поэтому ролл проверяется отдельно)
+	for(var/attempt in 1 to 20)
+		TEST_ASSERT(pickweight(GLOB.ai_temperament_weights) in GLOB.ai_temperament_weights, "Ролл характера обязан давать тип из пула")
+
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	//точка взятия цели на дистанции между поводками робкого и упрямого
+	var/leash_gap = round(AI_PURSUIT_LEASH * 0.75)
+	var/far_x = (pawn_turf.x > leash_gap) ? (pawn_turf.x - leash_gap) : (pawn_turf.x + leash_gap)
+	var/turf/origin = locate(far_x, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(origin, "Санити: точка отсчёта погони обязана существовать")
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = origin
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+
+	controller.temperament = get_ai_temperament(/datum/ai_temperament/skittish)
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Робкая особь на этой дистанции обязана бросить погоню")
+
+	controller.temperament = get_ai_temperament(/datum/ai_temperament/stubborn)
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Упрямая особь на той же дистанции обязана гнаться дальше")
+
+	qdel(controller)
+
+///Фоновая рутина выбирается по тому, что это за моб, а не одна на всех.
+/datum/unit_test/ai_idle_routine_matches_mob_kind/Run()
+	var/mob/living/simple_animal/hostile/subject = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+
+	subject.mob_biotypes = MOB_ORGANIC|MOB_BUG
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/flocking, "Рой обязан держаться стаи")
+
+	subject.mob_biotypes = MOB_ORGANIC|MOB_BEAST
+	subject.mob_size = MOB_SIZE_SMALL
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/skittish, "Мелочь обязана суетиться рывками")
+
+	subject.mob_size = MOB_SIZE_LARGE
+	subject.melee_damage_upper = AI_GRAZER_MELEE_DAMAGE
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/grazing, "Безобидное крупное животное обязано пастись")
+
+	subject.melee_damage_upper = 20
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/denning, "Хищник обязан держаться логова")
+
+///Стайный idle реально тянется к сородичу за комфортным радиусом. Радиус поиска
+///обязан быть шире комфортного: дефолтный спейсинг-радиус (2) меньше комфортных
+///(3), и с ним любой найденный сородич уже был "в стае" - ветка притяжения не
+///срабатывала никогда, рутина молча вырождалась в случайный шаг.
+/datum/unit_test/ai_flocking_pulls_toward_distant_ally/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/bug = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/turf/mate_turf = locate(pawn_turf.x + AI_FLOCK_COMFORT_RADIUS + 1, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(mate_turf, "Санити: тестовой карте не хватило места для сородича за комфортным радиусом")
+	var/mob/living/simple_animal/hostile/flockmate = allocate(/mob/living/simple_animal/hostile, mate_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(bug)
+	var/datum/ai_controller/unit_test_hunter/mate_controller = new(flockmate)
+
+	var/datum/idle_behavior/idle_random_walk/hostile_ambience/flocking/routine = new
+	TEST_ASSERT_EQUAL(routine.pick_idle_direction(bug, controller), EAST, "Сородич за комфортным радиусом обязан притягивать стайного моба")
+
+	qdel(routine)
+	qdel(mate_controller)
+	qdel(controller)
+
+///Боевая адаптация: серия ударов, не снявшая с цели ничего, помечает её
+///непробиваемой, и погоня по такой цели прекращается. Броня, которую моб
+///физически не пробивает, - причина, по которой фауна часами грызла скафандр.
+/datum/unit_test/ai_marks_impervious_target_after_futile_hits/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/biter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, get_step(pawn_turf, EAST))
+	var/datum/ai_controller/unit_test_hunter/controller = new(biter)
+
+	//удары идут, здоровье цели не меняется
+	for(var/attempt in 1 to AI_FUTILE_HITS_THRESHOLD + 1)
+		controller.note_melee_attempt(armored)
+	TEST_ASSERT(controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] > world.time, "Серия бесполезных ударов обязана пометить цель непробиваемой")
+
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, armored)
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Непробиваемая цель обязана прекращать погоню, даже если моб рядом с домом")
+
+	//пометка адресная: второй противник без брони не наследует чужую непробиваемость
+	var/mob/living/carbon/human/second_attacker = allocate(/mob/living/carbon/human, get_step(pawn_turf, NORTH))
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, second_attacker)
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Непробиваемость доказана про конкретную цель и не должна усмирять моба против новой")
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, armored)
+
+	//настоящее попадание обнуляет счёт: цель снова стоит усилий
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = 0
+	controller.note_melee_attempt(armored)
+	armored.adjustBruteLoss(10)
+	controller.note_melee_attempt(armored)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_FUTILE_HITS], 0, "Успешный удар обязан обнулять счёт бесполезных")
+
+	qdel(controller)
+
+///Быстрая потеря здоровья за короткое окно поднимает порог отступления на
+///стычку: моб перестаёт одинаково лезть под кулаки и под дробовик.
+/datum/unit_test/ai_danger_signal_raises_retreat_threshold/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_hunter/controller = new(victim)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	//первый проход только снимает эталон
+	fsm.update_combat_signals(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SELF_HEALTH], victim.health, "Первый проход обязан снять эталон здоровья")
+	TEST_ASSERT(!(controller.blackboard[BB_AI_DANGER_UNTIL] > world.time), "Без потери здоровья вывода об опасности быть не может")
+
+	victim.adjustBruteLoss(victim.maxHealth * (AI_DANGER_HEALTH_FRAC + 0.1))
+	fsm.update_combat_signals(controller)
+	TEST_ASSERT(controller.blackboard[BB_AI_DANGER_UNTIL] > world.time, "Быстрая просадка здоровья обязана включать вывод об опасности")
+
+	qdel(controller)

@@ -546,6 +546,23 @@ body {
 	text-align: right;
 }
 
+.csetup-root.csetup-theme-modern .csetup-markings .csetup-col-glow {
+	width: 52px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-mini-action.csetup-glow-on {
+	background-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.22);
+	border-color: var(--csetup-accent);
+	color: var(--csetup-accent);
+	font-weight: 700;
+}
+
+.csetup-root.csetup-theme-modern .csetup-markings a.csetup-mini-action.csetup-glow-off {
+	opacity: 0.6;
+}
+
 .csetup-root.csetup-theme-modern .csetup-markings .csetup-marking-move {
 	white-space: nowrap;
 }

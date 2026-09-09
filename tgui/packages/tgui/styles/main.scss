@@ -73,6 +73,7 @@
 @include meta.load-css('./interfaces/DirectorPanel.scss');
 @include meta.load-css('./interfaces/PersonalCrafting');
 @include meta.load-css('./interfaces/AdminLogViewer.scss');
+@include meta.load-css('./interfaces/Hypertorus.scss');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');

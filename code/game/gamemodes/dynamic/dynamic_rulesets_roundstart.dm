@@ -11,7 +11,7 @@
 	antag_flag = ROLE_TRAITOR
 	antag_datum = /datum/antagonist/traitor
 	minimum_required_age = 0
-	protected_roles = list("Expeditor", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain") //BLUEMOON CHANGES
 	required_candidates = 1
 	weight = 13 //BLUEMOON CHANGES
@@ -52,7 +52,7 @@
 	name = "Blood Brothers"
 	antag_flag = ROLE_BROTHER
 	antag_datum = /datum/antagonist/brother
-	protected_roles = list("Expeditor", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI")
 	required_candidates = 2
 	weight = 6 //BLUEMOON CHANGES
@@ -105,7 +105,7 @@
 	name = "Changelings"
 	antag_flag = ROLE_CHANGELING
 	antag_datum = /datum/antagonist/changeling
-	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	required_candidates = 1
 	weight = 8 //BLUEMOON CHANGES
@@ -155,7 +155,7 @@
 	name = "Heretics"
 	antag_flag = ROLE_HERETIC
 	antag_datum = /datum/antagonist/heretic
-	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	required_candidates = 1
 	weight = 8 //BLUEMOON CHANGES
@@ -254,11 +254,11 @@
 	antag_flag = ROLE_CULTIST
 	antag_datum = /datum/antagonist/cult
 	minimum_required_age = 0 // BLUEMOON EDIT
-	protected_roles = list("Expeditor", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 2
-	weight = 3  //BLUEMOON CHANGES
-	cost = 20
+	weight = 5  //BLUEMOON CHANGES
+	cost = 15
 	intensity = 45
 	//requirements = list(100,90,80,60,40,30,10,10,10,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
@@ -560,7 +560,7 @@
 	force_antag_preference = TRUE
 	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
-	required_candidates = 3 //BLUEMOON CHANGES
+	required_candidates = 8 //BLUEMOON CHANGES - matches FAMILIES_ROUNDSTART_COUNT
 	weight = 48
 	cost = 10
 	intensity = 45
@@ -634,22 +634,24 @@ BLUEMOON REMOVAL END*/
 
 /datum/dynamic_ruleset/roundstart/nuclear/clown_ops
 	name = "Clown Ops"
-	antag_flag = "clown ops"
+	antag_flag = ROLE_OPERATIVE
 	antag_datum = /datum/antagonist/nukeop/clownop
 	antag_leader_datum = /datum/antagonist/nukeop/leader/clownop
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
 
 /datum/dynamic_ruleset/roundstart/nuclear/clown_ops/pre_execute()
 	. = ..()
-	if(.)
-		for(var/obj/machinery/nuclearbomb/syndicate/S in GLOB.nuke_list)
-			var/turf/T = get_turf(S)
-			if(T)
-				qdel(S)
-				new /obj/machinery/nuclearbomb/syndicate/bananium(T)
-		for(var/datum/mind/V in assigned)
-			V.assigned_role = "Clown Operative"
-			V.special_role = "Clown Operative"
+	if(!.)
+		return FALSE
+	for(var/obj/machinery/nuclearbomb/syndicate/S in GLOB.nuke_list)
+		var/turf/T = get_turf(S)
+		if(T)
+			qdel(S)
+			new /obj/machinery/nuclearbomb/syndicate/bananium(T)
+	for(var/datum/mind/V in assigned)
+		V.assigned_role = "Clown Operative"
+		V.special_role = "Clown Operative"
+	return TRUE
 
 
 //////////////////////////////////////////////
@@ -770,7 +772,7 @@ BLUEMOON REMOVAL END*/
 	antag_flag = "shiftstart bloodsucker"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker
-	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
 	required_candidates = 1
@@ -924,13 +926,13 @@ BLUEMOON REMOVAL END*/
 	antag_flag = "Abductor"
 	antag_flag_override = ROLE_ABDUCTOR
 	minimum_required_age = 0
-	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	required_candidates = 2
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	min_players = 30
-	weight = 4
-	cost = 15
+	weight = 6
+	cost = 12
 	scaling_cost = 0
 	intensity = 15
 	flags = LONE_RULESET
@@ -1009,10 +1011,10 @@ BLUEMOON REMOVAL END*/
 	minimum_required_age = 0
 	required_candidates = 1
 	exclusive_roles = list("AI")
-	weight = 3
-	cost = 20
+	weight = 5
+	cost = 15
 	intensity = 45
-	requirements = list(101,101,101,101,101,101,60,40,30,10)
+	requirements = list(101,101,101,101,101,60,40,30,20,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
 

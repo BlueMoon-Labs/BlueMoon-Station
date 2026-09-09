@@ -73,3 +73,8 @@
 	HAT_REST_OFFSET = alist("north" = list(1, 1), "south" = list(1, 1), "east" = list(7, 1), "west" = list(-7, 1)), \
 	HAT_SIT_OFFSET = alist("north" = list(-1, -2), "south" = list(-1, -2), "east" = list(-1, -2), "west" = list(-1, -2)), \
 	HAT_BELLYUP_OFFSET = alist("north" = list(1, 1), "south" = list(1, 1), "east" = list(7, 1), "west" = list(-7, 1)))
+
+/// Расход заряда за тик жизни (2 сек) в режиме круиза модуля VTEC
+#define VTEC_CRUISE_DRAIN 200
+/// Модификатор-множитель порога отключения VTEC для батареи
+#define VTEC_LOWCHARGE_DISABLE 0.1

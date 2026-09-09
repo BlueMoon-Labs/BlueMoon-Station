@@ -99,8 +99,13 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 ///helper proc that will center the screen if the icon is changed to a generic width, to make admins have to fudge around with pixel_x less. returns null
 /turf/closed/indestructible/splashscreen/proc/handle_generic_titlescreen_sizes() //BlueMoon reload
-	var/icon/size_check = icon(SStitle.icon, icon_state)
-	var/width = size_check.Width()
+	// Width() спрашивается у самой SStitle.icon, а не у копии через icon(): копия - это
+	// ещё один /icon/New(), то есть полная распаковка заставки в память ради одного числа.
+	// На 25-мегабайтном GIF это было 500 МБ непрерывного блока на каждый вызов.
+	var/icon/title_icon = SStitle.icon
+	if(!title_icon)
+		return
+	var/width = title_icon.Width()
 	pixel_x = (672 - width) * 0.5 //The title screen is mapped with the expectation that it's 672x480. Should probably turn the title screen size into a define some time!
 
 
@@ -109,7 +114,11 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	if(.)
 		switch(var_name)
 			if(NAMEOF(src, icon))
-				SStitle.icon = icon
+				// Через сеттер, а не присваиванием: он же пересобирает .rsc-ссылку, из
+				// которой заставку берёт сплеш-экран (см. title_splash_icon).
+				SStitle.set_title_icon(icon)
+				// Сеттер подгоняет размер КАНОНИЧЕСКОМУ турфу заставки (SStitle.splash_turf),
+				// а вареэдитят иногда не его: свой размер турф подгоняет себе сам.
 				handle_generic_titlescreen_sizes()
 
 /turf/closed/indestructible/start_area
@@ -178,7 +187,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	desc = "An extremely densely-packed rock, sheeted over with centuries worth of ice and snow."
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "snowrock"
-	bullet_sizzle = TRUE
+	turf_flags = TURF_FLAGS_DEFAULT | TURF_BULLET_SIZZLE
 	bullet_bounce_sound = null
 
 /turf/closed/indestructible/rock/snow/ice

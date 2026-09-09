@@ -62,3 +62,14 @@
 	qdel(catastrophe)
 	SSshuttle.shuttle_insurance = old_insurance
 	SSshuttle.shuttle_purchased = old_purchased
+
+/// False Alarm invokes announce(TRUE) directly, before an anomaly's start()
+/// chooses its real spawn turf. The fake announcement still needs an area and
+/// must not runtime on impact_area.name.
+/datum/unit_test/false_alarm_anomaly_resolves_impact_area/Run()
+	var/datum/round_event/anomaly/fake_anomaly = new(FALSE)
+	TEST_ASSERT_NULL(fake_anomaly.impact_area, "premise broken: a fresh anomaly unexpectedly chose an impact area before start()")
+	fake_anomaly.announce(TRUE)
+	TEST_ASSERT_NOTNULL(fake_anomaly.impact_area, "a fake anomaly announcement did not resolve an impact area")
+	fake_anomaly.kill()
+	qdel(fake_anomaly)
