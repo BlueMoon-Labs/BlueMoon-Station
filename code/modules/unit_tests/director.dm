@@ -2332,6 +2332,41 @@
 	rule.mode = null
 	TEST_ASSERT_EQUAL(rule.get_weight(), 10, "Каталог без игрового режима должен возвращать базовый вес")
 
+/// Даже гарантированный бит не должен присылать боевых NPC экипажу из нескольких человек.
+/datum/unit_test/director_lowpop_hostile_events
+	var/list/saved
+
+/datum/unit_test/director_lowpop_hostile_events/Destroy()
+	if(saved)
+		SSdirector.restore_simulation_state(saved)
+	return ..()
+
+/datum/unit_test/director_lowpop_hostile_events/Run()
+	saved = SSdirector.capture_simulation_state()
+	SSdirector.profile = allocate(/datum/director_profile/extended)
+	SSdirector.actions = list(
+		allocate(/datum/round_event_control/gigachad_inteq),
+		allocate(/datum/round_event_control/space_mosquito),
+		allocate(/datum/round_event_control/headcrabs),
+		allocate(/datum/round_event_control/deathclaw_in_maints),
+		allocate(/datum/round_event_control/sniper),
+		allocate(/datum/round_event_control/mannequinrise),
+	)
+	SSdirector.reset_budgets(100)
+	SSdirector.last_fired_at = list()
+	SSdirector.family_last_fired_at = list()
+	SSdirector.time_override = world.time + 2 HOURS
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		action.earliest_start = 0
+	CONFIG_SET(flag/allow_random_events, TRUE)
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4)
+	for(var/crew in list(3, 11))
+		signals.effective_crew = crew
+		TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 0, "Гарантия не должна обходить минимум экипажа для боевых NPC")
+	signals.effective_crew = 20
+	TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 6, "При достаточном экипаже все шесть событий должны остаться в пуле")
+
 /// Согласие на беглеца не должно пропадать из-за отдельного ролла размера команды.
 /datum/unit_test/director_fugitive_small_group/Run()
 	var/datum/round_event/ghost_role/fugitives/event = allocate(/datum/round_event/ghost_role/fugitives, FALSE)
