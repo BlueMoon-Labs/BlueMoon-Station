@@ -20,6 +20,7 @@
 	var/list/temp = null
 	/// Whether the console is currently printing
 	var/printing = FALSE
+	var/obj/item/radio/security_radio
 
 	light_color = LIGHT_COLOR_RED
 
@@ -35,9 +36,16 @@
 	clockwork = TRUE
 	pass_flags = PASSTABLE
 
+/obj/machinery/computer/secure_data/Initialize(mapload)
+	. = ..()
+	security_radio = new /obj/item/radio(src)
+	security_radio.listening = 0
+	security_radio.set_frequency(FREQ_SECURITY)
+
 /obj/machinery/computer/secure_data/Destroy()
 	active1 = null
 	active2 = null
+	QDEL_NULL(security_radio)
 	return ..()
 
 /obj/machinery/computer/secure_data/attackby(obj/item/O, mob/user, params)
@@ -549,6 +557,8 @@
 			investigate_log("New Fine: <strong>[cname]</strong>: [cdetails] ([fine_amount] кр., [dur_choice]) | Added to [active1.fields["name"]] by [key_name(usr)]", INVESTIGATE_RECORDS)
 			var/pda_msg = "Вам выписан штраф №[fine.dataId]: Статья \"[cname]\". Подробности: [cdetails]. Сумма: [fine_amount] кр. Срок оплаты: [dur_choice] (до [STATION_TIME_TIMESTAMP("hh:mm:ss", fine.fine_deadline)]). Выписал: [login_state.name] ([login_state.rank]) в [fine.time]. Оплата через консоль заданий брига (вставьте ID-карту). При неуплате - автоматический розыск по ст. 303."
 			fine.alert_fine_owner(usr, src, active1.fields["name"], pda_msg)
+			if(security_radio)
+				security_radio.talk_into(src, "Выдан штраф в размере [fine_amount] кр. сотруднику [active1.fields["name"]] по статье \"[cname]\" (срок [dur_choice]). Выписал: [login_state.name].")
 			set_temp("Штраф [fine_amount] кр. выписан. Срок оплаты: [dur_choice].", "success")
 		if("fine_remove")
 			if(!logged_in || !active1 || !active2)
