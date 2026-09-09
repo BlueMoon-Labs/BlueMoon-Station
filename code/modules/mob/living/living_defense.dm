@@ -133,7 +133,7 @@
 			// Шанс пробить навылет несмотря на формальный провал AP-чека. Гарантия при разнице
 			// не более 2 уровней (BR_8 vs BRC 50 = 100%), дальше −10% за каждый уровень разницы:
 			// BR_8 vs BRC 70 (6 ур.) = 60%, BR_8 vs BRC 90 (10 ур.) = 20%.
-			if(!penetrated)
+			if(!penetrated && armor <= 0)
 				var/bullet_br = clamp(round(P.armour_penetration / 5), 0, 20)
 				var/brc_level = clamp(round(brc_mitigation / 5), 0, 20)
 				var/pierce_chance = clamp(120 - (brc_level - bullet_br) * 10, 0, 100)
@@ -161,6 +161,7 @@
 		// BLUEMOON ADD END
 
 		// Частичное пробитие — остаточная травма от поглощённой части (стамина уже учтена выше, здесь только раны/пeрелом)
+		var/final_wound_bonus = P.wound_bonus
 		if(P.flag == BULLET && absorbed_damage >= 1.0)
 			// BLUEMOON ADD START - заброневая травма при частичном пробитии.
 			// Шанс растёт линейно с долей уже накопленного урона зоны — побитая конечность легче травмируется снова
@@ -168,7 +169,7 @@
 			if(prob(partial_wound_chance))
 				var/partial_wound_bonus = round(absorbed_damage * 0.08)
 				if(partial_wound_bonus > 0)
-					P.wound_bonus += partial_wound_bonus
+					final_wound_bonus += partial_wound_bonus
 			// BLUEMOON ADD END
 
 			// BLUEMOON ADD START - дополнительный НЕЗАВИСИМЫЙ шанс на перелом (WOUND_BLUNT) при частичном пробитии.
@@ -188,7 +189,7 @@
 			var/applied_sharpness = P.sharpness
 			if(P.flag == BULLET && applied_sharpness == SHARP_NONE)
 				applied_sharpness = SHARP_POINTY
-			apply_damage(totaldamage, P.damage_type, def_zone, 0, wound_bonus = P.wound_bonus, bare_wound_bonus = P.bare_wound_bonus, sharpness = applied_sharpness)
+			apply_damage(totaldamage, P.damage_type, def_zone, 0, wound_bonus = final_wound_bonus, bare_wound_bonus = P.bare_wound_bonus, sharpness = applied_sharpness)
 			// BLUEMOON ADD END
 			if(P.dismemberment)
 				var/original_damage = P.damage

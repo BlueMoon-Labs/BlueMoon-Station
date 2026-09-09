@@ -34,11 +34,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/storage/trek/ds9/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/storage/trek/ds9/admiral // Only for adminuz
 	name = "Admiral Overcoat"
@@ -86,11 +88,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/storage/fluff/fedcoat/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/storage/fluff/fedcoat/verb/toggle()
 	set name = "Toggle coat buttons"
@@ -165,11 +169,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/storage/fluff/modernfedcoat/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 //Variants
 /obj/item/clothing/suit/storage/fluff/modernfedcoat/medsci

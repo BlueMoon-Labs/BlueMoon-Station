@@ -730,11 +730,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/hooded/wintercoat/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/head/hooded/winterhood
 	name = "winter hood"
@@ -1099,8 +1101,6 @@
 	..()
 	if (slot != ITEM_SLOT_OCLOTHING || !real)
 		return
-	if(brc_mitigation_bonus > 0)  // BLUEMOON ADD
-		user.brc_mitigation += brc_mitigation_bonus
 	if (is_servant_of_ratvar(user))
 		return
 	else
@@ -1124,8 +1124,6 @@
 	..()
 	if (slot != ITEM_SLOT_OCLOTHING || !real)
 		return
-	if(brc_mitigation_bonus > 0)  // BLUEMOON ADD
-		user.brc_mitigation += brc_mitigation_bonus
 	if (iscultist(user))
 		return
 	else
@@ -1145,6 +1143,7 @@
 	item_state = "coatratvar"
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	real = FALSE
 
 /obj/item/clothing/suit/hooded/wintercoat/narsie/fake
@@ -1154,6 +1153,7 @@
 	item_state = "coatnarsie"
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	real = FALSE
 
 /obj/item/clothing/suit/hooded/wintercoat/durathread

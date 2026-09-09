@@ -110,6 +110,7 @@
 	..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 	if(slot == ITEM_SLOT_OCLOTHING)
 		if(!IS_INTEQ(user))
 			to_chat(user, "<span class='danger'><B>Запуск проверки генетического кода</B><br> Обнаружены неавторизованные сигнатуры. <B>ПРОИЗВОДИТСЯ ОЧИСТКА</B></span>")
@@ -118,8 +119,9 @@
 
 /obj/item/clothing/suit/space/syndicate/darktemplar/dropped(mob/user)  // BLUEMOON ADD
 	..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/space/syndicate/darktemplar/proc/explode()
 	do_sparks(3, 1, src)

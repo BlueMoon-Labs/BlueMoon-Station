@@ -69,11 +69,13 @@ Contains:
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/space/swat/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 //Commander
 /obj/item/clothing/suit/space/swat/command
@@ -157,11 +159,13 @@ Contains:
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/space/officer/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 	//NASA Voidsuit
 /obj/item/clothing/head/helmet/space/nasavoid
@@ -253,11 +257,13 @@ Contains:
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/space/pirate/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 	tail_state = ""
 
 	//Emergency Response Team suits
@@ -499,11 +505,13 @@ Contains:
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/space/freedom/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 //Carpsuit, bestsuit, lovesuit
 /obj/item/clothing/head/helmet/space/hardsuit/carp
@@ -725,8 +733,10 @@ Contains:
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/space/hunter/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE

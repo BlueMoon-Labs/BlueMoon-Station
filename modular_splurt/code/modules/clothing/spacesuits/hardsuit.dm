@@ -82,6 +82,7 @@
 	max_heat_protection_temperature = null
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector, /obj/item/hand_tele, /obj/item/aicard)
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 100, "rad" = 0, "fire" = 0, "acid" = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/cosmetic
 	actions_types = list(/datum/action/item_action/toggle_helmet, /datum/action/item_action/toggle_cool_music)
 	firstpickup = list('modular_splurt/sound/halflife/hevsuit_pickup.ogg')

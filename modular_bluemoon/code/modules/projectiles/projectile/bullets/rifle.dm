@@ -21,7 +21,7 @@
 /obj/item/projectile/bullet/a58/hp
 	name = "5.8mm hollow-point bullet"
 	damage = 32
-	armour_penetration = 5
+	armour_penetration = BULLET_BR0
 	wound_bonus = 35
 	embedding = list(embed_chance = 60, fall_chance = 4, jostle_chance = 3, pain_stam_pct = 0.6)
 
