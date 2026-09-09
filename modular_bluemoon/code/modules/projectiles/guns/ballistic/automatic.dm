@@ -54,7 +54,7 @@
 
 /obj/item/gun/ballistic/automatic/acrm/update_icon_state()
 	..()
-	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 25) /5, 1)*5]" : ""]"
+	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
 	item_state = "acr5[magazine ? "" : "e"]"
 
 
