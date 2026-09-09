@@ -758,6 +758,7 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 	desc = "An adorable stuffed toy that resembles some kind of insect."
 	icon = 'icons/obj/pludhes_moff.dmi'
 	icon_state = "moff"
+	item_state = "moff"
 	squeak_override = list('modular_citadel/sound/voice/mothsqueak.ogg' = 1)
 	can_random_spawn = FALSE
 
