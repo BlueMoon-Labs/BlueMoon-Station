@@ -56,7 +56,7 @@
 	burnmod = 4 // ГАЙД КАК СДОХНУТЬ ЗА 4 СЕКУНДЫ ОТ ОГНЯ.
 	brutemod = 2
 
-	species_traits = list(NOGENITALS,LIPS,NOBLOOD,NOAROUSAL,HAIR) // НЕТ СИСИК, НЕТ ПИСИК, НЕТ КРОВИ (МЫ ВСЁ ТАКИ ФЭМЭЛИ ФРЕНДЛИ СЕРВЕР), А ТАК ЖЕ НИКАКИХ ПОШЛОСТЕЙ.
+	species_traits = list(LIPS,NOBLOOD,HAIR) // Nucleation horny update
 	inherent_traits = list(TRAIT_NOBREATH,TRAIT_RADIMMUNE,TRAIT_VIRUSIMMUNE,TRAIT_NOBLEED) // ДЫШАТЬ ДЛЯ НУБОВ. РАДЕЙКА НАС НЕ ЕБАШИТ, КАК И ВИРУСЫ.
 
 //

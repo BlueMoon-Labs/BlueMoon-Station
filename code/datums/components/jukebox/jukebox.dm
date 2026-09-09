@@ -445,7 +445,7 @@
 	if(box.obj_flags & EMAGGED) // Без проверки для взломанных колонок
 		return
 	var/area/juke_area = get_area(box)
-	if(juke_area.jukebox_privatized_by && juke_area.jukebox_privatized_by != box)
+	if(juke_area?.jukebox_privatized_by && juke_area.jukebox_privatized_by != box)
 		if(!silent && COOLDOWN_FINISHED(src, error_message_cooldown))
 			box.say("Ошибка датчика вибрации. Необходимо сократить количество музыкальных автоматов в этом районе.")
 			COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
