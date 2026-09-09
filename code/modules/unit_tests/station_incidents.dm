@@ -256,7 +256,7 @@
 	crate.on_attack_hand(reader)
 	TEST_ASSERT(crate.opened, "После ознакомления ящик можно открыть обычным взаимодействием")
 
-/// Проверяем составные спрайты во всех состояниях: дверь клетки не должна перекрывать индикатор.
+/// Проверяем закрытый и открытый вид, короткую анимацию и индикаторы затвора.
 /datum/unit_test/station_incidents/proc/check_shipment_visuals()
 	var/obj/structure/closet/crate/holding = allocate(/obj/structure/closet/crate)
 	for(var/crate_path in subtypesof(/obj/structure/closet/crate/incident_shipment))
@@ -264,13 +264,12 @@
 		allocated += crate.GetAllContents()
 		var/list/states = icon_states(crate.icon)
 		TEST_ASSERT(crate.icon_state in states, "Закрытый груз [crate_path] должен иметь существующий спрайт")
+		TEST_ASSERT("[initial(crate.icon_state)]_rattle" in states, "Груз [crate_path] должен иметь анимацию реакции на встряску")
 		var/list/closed_overlays = crate.closet_update_overlays(list())
 		for(var/overlay_state in closed_overlays)
 			TEST_ASSERT(overlay_state in states, "Слой [overlay_state] должен существовать в иконке ящика")
 		if(crate.seal_fault)
 			TEST_ASSERT("securecrater" in closed_overlays, "Неисправный затвор должен показывать красный индикатор")
-			if(istype(crate, /obj/structure/closet/crate/incident_shipment/poultry))
-				TEST_ASSERT(closed_overlays.Find("crittercrate_door") < closed_overlays.Find("securecrater"), "Индикатор должен находиться поверх двери клетки")
 #ifdef STATION_INCIDENT_VISUAL_PREVIEWS
 		fcopy(getFlatIcon(crate, no_anim = TRUE), "[GLOB.log_directory]/incident_[crate.icon_state]_closed.png")
 #endif

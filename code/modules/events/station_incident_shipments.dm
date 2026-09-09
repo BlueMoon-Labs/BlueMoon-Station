@@ -1,6 +1,8 @@
 /// Грузы событий остаются настоящими контейнерами: их можно перевезти, осмотреть и вскрыть.
 /obj/structure/closet/crate/incident_shipment
 	name = "transit crate"
+	icon = 'icons/obj/station_incident_crates.dmi'
+	icon_state = "repair"
 	desc = "Транспортный ящик с пломбами перевалочного склада. На крышке закреплена накладная."
 	can_weld_shut = TRUE
 	var/dispatch_manifest = ""
@@ -9,6 +11,11 @@
 	var/warning_timer
 	var/countdown_started = FALSE
 	var/restless_cargo = FALSE
+
+/// Проигрываем короткую реакцию содержимого; закрытый ящик затем возвращается к обычному виду.
+/obj/structure/closet/crate/incident_shipment/proc/rattle()
+	if(!opened)
+		flick("[initial(icon_state)]_rattle", src)
 
 /// Индикатор отражает состояние затвора и пропадает с открытой крышки.
 /obj/structure/closet/crate/incident_shipment/closet_update_overlays(list/new_overlays)
@@ -43,6 +50,7 @@
 	UnregisterSignal(src, COMSIG_MOVABLE_MOVED)
 	visible_message(span_warning("На [src] горит красный индикатор затвора. Крышка дребезжит на ослабших креплениях."))
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 40, TRUE)
+	rattle()
 	Shake(1, 0, 0.6 SECONDS, 1)
 	release_timer = addtimer(CALLBACK(src, PROC_REF(release_cargo)), 1 MINUTES, TIMER_STOPPABLE)
 	warning_timer = addtimer(CALLBACK(src, PROC_REF(warn_seal_failure)), 45 SECONDS, TIMER_STOPPABLE)
@@ -51,6 +59,7 @@
 	warning_timer = null
 	if(!seal_fault || opened || welded || locked)
 		return
+	rattle()
 	Shake(2, 1, 1 SECONDS, 1)
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 50, TRUE)
 	visible_message(span_warning("Крышка [src] ходит ходуном: затвор вот-вот сорвётся!"))
@@ -85,6 +94,7 @@
 /obj/structure/closet/crate/incident_shipment/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(manifest && !opened)
 		if(restless_cargo)
+			rattle()
 			Shake(1, 0, 0.4 SECONDS, 1)
 		tear_manifest(user)
 		return TRUE
@@ -116,9 +126,9 @@
 
 /obj/structure/closet/crate/incident_shipment/poultry
 	name = "poultry transport crate"
-	icon_state = "crittercrate"
+	icon_state = "poultry"
 	restless_cargo = TRUE
-	desc = "Вентилируемый ящик с маркировкой сельскохозяйственного питомника. Изнутри доносится недовольное кудахтанье."
+	desc = "Зелёная транспортная клетка с латунными петлями и эмблемой пера. За прутьями видна соломенная подстилка; при переноске наружу выбиваются отдельные пушинки."
 	seal_fault = TRUE
 	dispatch_manifest = "СЕЛЬСКОХОЗЯЙСТВЕННЫЙ ПИТОМНИК NANOTRASEN<br>Получатель: станционная ферма, через грузовой отдел.<br>Содержимое: три несушки для пополнения поголовья.<br>Отметка перевозчика: затвор повреждён при перегрузке. Подтянуть крепление гаечным ключом до вскрытия.<br>Передать птиц ботаникам. Корм и размещение обеспечивает принимающая сторона."
 
@@ -126,20 +136,11 @@
 	for(var/i in 1 to 3)
 		new /mob/living/simple_animal/chicken(src)
 
-/// У клетки отдельная дверь поверх соломы, а не пара спрайтов «ящик/открытый ящик».
-/obj/structure/closet/crate/incident_shipment/poultry/update_icon_state()
-	icon_state = "crittercrate"
-
-/obj/structure/closet/crate/incident_shipment/poultry/closet_update_overlays(list/new_overlays)
-	. = ..()
-	var/list/result = .
-	result.Insert(1, opened ? "crittercrate_door_open" : "crittercrate_door")
-
 /obj/structure/closet/crate/incident_shipment/slimes
 	name = "xenobiology specimen carrier"
-	icon_state = "scicrate"
+	icon_state = "slimes"
 	restless_cargo = TRUE
-	desc = "Белый лабораторный контейнер с фиолетовой маркировкой научного отдела. Под крышкой что-то влажно перекатывается. На накладной крупно написано: «ВСКРЫВАТЬ В КАМЕРЕ СОДЕРЖАНИЯ»."
+	desc = "Белый лабораторный контейнер с фиолетовыми амортизаторами и двумя запотевшими смотровыми окнами. Сбоку закреплён водяной баллон системы перевозки. На накладной крупно написано: «ВСКРЫВАТЬ В КАМЕРЕ СОДЕРЖАНИЯ»."
 	seal_fault = TRUE
 	dispatch_manifest = "ЛАБОРАТОРИЯ СНАБЖЕНИЯ КСЕНОБИОЛОГИИ<br>Получатель: научный отдел, через грузовой склад.<br>Содержимое: два молодых серых слизня; водяной распылитель из комплекта перевозки.<br>Основание: замена партии, задержанной карантинной службой.<br>ВНИМАНИЕ: телеметрия указывает на ослабление затвора. После выгрузки подтянуть его гаечным ключом. Не открывать до помещения контейнера в камеру содержания.<br>При побеге избегать контакта, использовать воду. Образцы остаются пригодными для исследований."
 
@@ -152,8 +153,8 @@
 
 /obj/structure/closet/crate/incident_shipment/repair_cache
 	name = "delayed maintenance crate"
-	icon_state = "engi_e_crate"
-	desc = "Ремонтный ящик, покрытый наклейками транзитных складов. Самая свежая гласит: «НАЙДЕНО. ДОСЛАТЬ ПОЛУЧАТЕЛЮ»."
+	icon_state = "repair"
+	desc = "Оранжевый ремонтный кейс с синими стяжками и мигающим маячком складского учёта. Поверх старых наклеек прилеплена новая: «НАЙДЕНО. ДОСЛАТЬ ПОЛУЧАТЕЛЮ»."
 	dispatch_manifest = "ТРАНЗИТНЫЙ СКЛАД NANOTRASEN<br>Получатель: инженерная служба станции.<br>Заказ предыдущей смены: набор инструментов, 10 листов металла, 5 листов стекла, 15 отрезков кабеля.<br>Причина задержки: сканер прочитал складскую отметку как адрес получателя. Груз совершил три внутренних пересылки.<br>Заказ оплачен ранее. С повторным счётом просьба обращаться в отдел претензий, а не оплачивать его."
 
 /obj/structure/closet/crate/incident_shipment/repair_cache/PopulateContents()
@@ -164,9 +165,9 @@
 
 /obj/structure/closet/crate/incident_shipment/ore_stowaway
 	name = "quarantined ore samples"
-	icon_state = "exocrate"
+	icon_state = "ore"
 	restless_cargo = TRUE
-	desc = "Ящик с рудными пробами. На пломбе стоит свежая отметка карантина; время от времени внутри что-то скребёт по металлу."
+	desc = "Тяжёлый ящик с латунными уголками, жёлтыми полосами карантина и эмблемой кристалла. Через узкую решётку поблёскивает золотистая пыль."
 	dispatch_manifest = "РУДНЫЙ ТЕРМИНАЛ. ПРОБЫ ДЛЯ ПЕРЕПЛАВКИ<br>Получатель: шахтёрский отдел.<br>Заявлено: три образца золотоносной руды.<br>Дополнение карантинной службы: повторный снимок выявил золотожора среди проб. Уведомление отправлено после ухода груза.<br>Осматривать в закрытом помещении, свободную руду предварительно убрать. Особь не нападает, но поедает минералы и старается убежать. После разделки можно вернуть проглоченное."
 
 /obj/structure/closet/crate/incident_shipment/ore_stowaway/PopulateContents()
@@ -177,9 +178,9 @@
 
 /obj/structure/closet/crate/incident_shipment/mimic
 	name = "sealed salvage transit case"
-	icon_state = "wooden"
+	icon_state = "salvage"
 	restless_cargo = TRUE
-	desc = "Транспортный футляр службы утилизации. Через щель в амортизирующей прокладке виден ещё один, совершенно обычный на вид ящик."
+	desc = "Потёртый бирюзовый футляр службы утилизации, стянутый медными ремнями. На заплатанных панелях сохранились выцветшие предупредительные полосы. Оранжевая пломба цела, но крышка сидит неровно."
 	dispatch_manifest = "СЛУЖБА УТИЛИЗАЦИИ ЗАБРОШЕННЫХ СУДОВ<br>Получатель: грузовой отдел, для оценки и передачи специалистам.<br>Находка: немаркированный ящик из грузового трюма покинутого судна.<br>Упаковка: отдельный транспортный футляр, пломба склада цела.<br>Примечания бригады: масса менялась между замерами. Один грузчик сообщил о звуке дыхания; второй отказался подписывать акт.<br>Вскрывать в изолированном помещении в присутствии охраны."
 
 /obj/structure/closet/crate/incident_shipment/mimic/PopulateContents()
