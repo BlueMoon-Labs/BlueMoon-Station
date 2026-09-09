@@ -4,6 +4,8 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400)
 
 /obj/item/projectile/bullet/a308
 	name = ".308 bullet"
@@ -16,6 +18,7 @@
 	name = ".308 bullet casing (Soporific)"
 	desc = "A .308 bullet soporific casing."
 	projectile_type = /obj/item/projectile/bullet/a308/sleepy
+	can_be_printed = FALSE
 
 /obj/item/projectile/bullet/a308/sleepy
 	name =".308 Soporific bullet"
@@ -36,6 +39,8 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308/rubber //bluemoon change
+	advanced_print_req = FALSE
+	custom_materials = list(/datum/material/glass = 400)
 
 /obj/item/projectile/bullet/a308/rubber
 	name = ".308 Rubber bullet"

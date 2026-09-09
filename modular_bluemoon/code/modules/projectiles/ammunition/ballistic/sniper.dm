@@ -12,3 +12,4 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = ".50_lewd"
 	harmful = FALSE
+	can_be_printed = FALSE

@@ -6,6 +6,8 @@
 	caliber = ".50"
 	projectile_type = /obj/item/projectile/bullet/p50
 	icon_state = ".50"
+	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 100)
+	advanced_print_req = TRUE
 
 /obj/item/ammo_casing/p50/soporific
 	name = ".50 soporific bullet casing"
@@ -14,8 +16,10 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi' // BLUEMOON CHANGE custom states
 	icon_state = ".50_sleeper" // BLUEMOON ADD custom state
 	harmful = FALSE
+	can_be_printed = FALSE
 
 /obj/item/ammo_casing/p50/penetrator
 	name = ".50 penetrator round bullet casing"
 	desc = "Гильза патрона калибром .50 \"пенетратор\", предназначенная для пробивания брони."
 	projectile_type = /obj/item/projectile/bullet/p50/penetrator
+	custom_materials = list(/datum/material/iron = 1200, /datum/material/titanium = 300)
