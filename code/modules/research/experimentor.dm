@@ -200,7 +200,7 @@
 			if(dotype != FAIL)
 				var/list/nodes = techweb_item_boost_check(process)
 				var/picked = length(nodes) ? pickweight(nodes) : null
-				if(picked && linked_console)
+				if(picked && linked_console && !QDELETED(linked_console) && linked_console.stored_research)	//BLUEMOON ADD: !QDELETED — консоль могла быть уничтожена; && stored_research — консоль без подключённой сети
 					var/datum/techweb_node/boost_node = SSresearch.techweb_node_by_id(picked)
 					if(boost_node)
 						linked_console.stored_research.boost_with_path(boost_node, process.type)

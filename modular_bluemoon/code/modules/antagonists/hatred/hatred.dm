@@ -322,9 +322,17 @@
 	var/list/possible_spawns = list()
 	var/list/best_possible_spawns = list() // no players around
 	// Method 1: find the most optimal maint turf
-	for(var/i = 1; i <= 100; i++)
-		var/turf/T = get_safe_random_station_turf(typesof(/area/maintenance) & GLOB.the_station_areas)
-		if(istype(T))
+	// var/turf/T = get_safe_random_station_turf(typesof(/area/maintenance) & GLOB.the_station_areas)
+	var/list/maint_areas = typesof(/area/maintenance) & GLOB.the_station_areas
+	if(isemptylist(maint_areas))
+		return
+	for(var/maint_area in shuffle_inplace(maint_areas))
+		var/list/maint_turfs = get_area_turfs(maint_area)
+		if(isemptylist(maint_turfs))
+			continue
+		for(var/turf/T in shuffle_inplace(maint_turfs))
+			if(!is_safe_turf(T))
+				continue
 			if(length(possible_spawns) < 6)
 				possible_spawns += T
 			var/players_nearby = FALSE
@@ -336,15 +344,25 @@
 				best_possible_spawns += T
 				if(length(best_possible_spawns) >= 6) // enough
 					break
-	// Method 2 (if 1 failed): find the most optimal xeno maint spawn. Atmos problems are possible.
-	for(var/turf/X in GLOB.xeno_spawn) //Some xeno spawns are in some spots that will instantly kill human, like atmos
+		if(length(best_possible_spawns) >= 6)
+			break
+	// Method 2 (if 1 failed): find the most optimal xeno maint spawn.
+	for(var/turf/X in GLOB.xeno_spawn)
 		if(length(possible_spawns) >= 6)
 			break
-		if(istype(X.loc, /area/maintenance))
-			possible_spawns += X
+		if(!is_safe_turf(X))
+			continue
+		possible_spawns += X
+		var/players_nearby = FALSE
+		for(var/mob/living/L in range(10, X))
+			if(L.client && L.stat != DEAD)
+				players_nearby = TRUE
+				break
+		if(!players_nearby)
+			best_possible_spawns += X
 	// Method 3 (if 1 and 2 failed): find ANY safe station turf
 	if(isemptylist(possible_spawns))
-		possible_spawns += find_safe_turf(extended_safety_checks = TRUE, dense_atoms = FALSE) // in case of some huge map problems
+		possible_spawns += find_safe_turf(extended_safety_checks = TRUE, dense_atoms = FALSE) // in case of some huge staion problems
 	possible_spawns += get_safe_random_station_turf(typesof(/area/command/gateway)) // 1/7 is ~15%
 	listclearnulls(possible_spawns)
 	var/turf/chosen_turf = !isemptylist(best_possible_spawns) ? pick(best_possible_spawns) : pick(possible_spawns)
