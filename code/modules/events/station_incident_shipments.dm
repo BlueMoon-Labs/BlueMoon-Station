@@ -11,11 +11,19 @@
 	var/warning_timer
 	var/countdown_started = FALSE
 	var/restless_cargo = FALSE
+	var/rattle_until = 0
 
-/// Проигрываем короткую реакцию содержимого; закрытый ящик затем возвращается к обычному виду.
-/obj/structure/closet/crate/incident_shipment/proc/rattle()
-	if(!opened)
-		flick("[initial(icon_state)]_rattle", src)
+/// Шестнадцать кадров содержимого сопровождаются мягким покачиванием корпуса.
+/obj/structure/closet/crate/incident_shipment/proc/rattle(strong = FALSE)
+	if(opened || world.time < rattle_until)
+		return
+	rattle_until = world.time + 1.2 SECONDS
+	flick("[initial(icon_state)]_rattle", src)
+	var/rest_x = pixel_x
+	var/amplitude = strong ? 2 : 1
+	animate(src, pixel_x = rest_x + amplitude, time = 2, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	animate(pixel_x = rest_x - amplitude, time = 4, easing = SINE_EASING)
+	animate(pixel_x = rest_x, time = 6, easing = SINE_EASING)
 
 /// Индикатор отражает состояние затвора и пропадает с открытой крышки.
 /obj/structure/closet/crate/incident_shipment/closet_update_overlays(list/new_overlays)
@@ -51,7 +59,6 @@
 	visible_message(span_warning("На [src] горит красный индикатор затвора. Крышка дребезжит на ослабших креплениях."))
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 40, TRUE)
 	rattle()
-	Shake(1, 0, 0.6 SECONDS, 1)
 	release_timer = addtimer(CALLBACK(src, PROC_REF(release_cargo)), 1 MINUTES, TIMER_STOPPABLE)
 	warning_timer = addtimer(CALLBACK(src, PROC_REF(warn_seal_failure)), 45 SECONDS, TIMER_STOPPABLE)
 
@@ -59,8 +66,7 @@
 	warning_timer = null
 	if(!seal_fault || opened || welded || locked)
 		return
-	rattle()
-	Shake(2, 1, 1 SECONDS, 1)
+	rattle(strong = TRUE)
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 50, TRUE)
 	visible_message(span_warning("Крышка [src] ходит ходуном: затвор вот-вот сорвётся!"))
 
@@ -95,7 +101,6 @@
 	if(manifest && !opened)
 		if(restless_cargo)
 			rattle()
-			Shake(1, 0, 0.4 SECONDS, 1)
 		tear_manifest(user)
 		return TRUE
 	return ..()
