@@ -2733,4 +2733,4 @@
 	name = "Light plate carrier"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/light_plate_carrier
-	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed")
+	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed", "hateredsoul")
