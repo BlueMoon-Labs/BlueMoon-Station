@@ -74,42 +74,36 @@
 
 /mob/living/proc/update_pull_movespeed()
 	// BLUEMOON ADD START
-	var/modified = FALSE
 	if(pulling && isliving(pulling))
 		var/mob/living/L = pulling
 
-		// Цепь из 3+ игроков: если тянем того, кто сам кого-то тащит — замедляем
+		// Замедление работает только если в цепи 3+ игроков (тянем того, кто сам кого-то тащит)
 		if(L.pulling && isliving(L.pulling))
 			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
-			if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
+
+			if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
+				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
+			else if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
 				if(src.mob_weight < MOB_WEIGHT_HEAVY)
 					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
 				else
 					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
-			return
-
-		if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER) // Сверхтяжёлых персонажей очень сложно тянуть
-			if(src.mob_weight < MOB_WEIGHT_HEAVY)
-				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
-			else
+			else if(L.mob_weight > MOB_WEIGHT_NORMAL && src.mob_weight < MOB_WEIGHT_HEAVY)
 				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
-			modified = TRUE
 
-		if(L.mob_weight > MOB_WEIGHT_NORMAL && src.mob_weight < MOB_WEIGHT_HEAVY) // Тяжёлых персонажей сложнее тянуть, но не для тяжёлых или свертяжёлых
-			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
-			modified = TRUE
-
-		if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
-			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
 			return
 
-		// PULL_SLOWDOWN
-		else if(drag_slowdown && !modified)
-			add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
-			modified = TRUE
+	// Таскание лежачего или мёртвого — замедление есть, даже без цепи
+	if(pulling && isliving(pulling))
+		var/mob/living/L = pulling
+		if(L.stat == DEAD || L.lying)
+			if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
+				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
+			else if(L.stat == DEAD)
+				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown, multiplicative_slowdown = PULL_SLOWDOWN)
+			return
 
-	if(modified)
-		return
+	// Вне цепи 3+ и не лежачий/мёртвый — убираем все замедления от пета
 	remove_movespeed_modifier(/datum/movespeed_modifier/pull_slowdown)
 	remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
 	remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
