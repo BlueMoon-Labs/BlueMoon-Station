@@ -16,7 +16,7 @@
 
 	// Config actually from the JSON - should default to Box
 	var/map_name = "Box Station"
-	var/map_path = "map_files/BoxStation"
+	var/map_path = "map_files/BoxStations"
 	var/map_file = "BoxStation.dmm"
 	/// Persistence key: Defaults to ckey(map_name). If set to "NO_PERSIST", this map will have NO persistence.
 	var/persistence_key
@@ -53,6 +53,9 @@
 		"emergency" = "emergency_box")
 
 	var/year_offset = 540 //The offset of ingame year from the actual IRL year. You know you want to make a map that takes place in the 90's. Don't lie.
+
+	/// Лист для вариаций карты, если у нас есть несколько вариантов, BoxStation/SyndicateBoxStation как пример, для чтения по JSON
+	var/list/map_variants
 
 	// "fun things"
 	/// Orientation to load in by default.
@@ -114,6 +117,18 @@
 	map_path = json["map_path"]
 
 	map_file = json["map_file"]
+
+	if("map_variants" in json)
+		if(!islist(json["map_variants"])) // очень важно, чтобы варианты были списком из нескольких вариантов, иначе смысла в этой переменной нет
+			log_world("map_variants is not a list!") // в т.ч. нам не нужно, чтобы карта хранила саму себя в списке вариантов, если она одна
+			return
+
+		map_variants = list()
+		for(var/variant_path in json["map_variants"])
+			if(!istext(variant_path) || !fexists(variant_path))
+				log_world("Map variant does not exist: [variant_path]")
+				return
+			map_variants += variant_path
 
 	persistence_key = ckey(map_name)
 

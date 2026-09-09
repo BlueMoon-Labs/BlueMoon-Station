@@ -1,6 +1,6 @@
 {
     "map_name": "Syndicate Station",
-    "map_path": "map_files/SyndicateStation",
+    "map_path": "map_files/BoxStations",
     "map_file": "SyndicateBoxStation.dmm",
     "shuttles": {
 	    "cargo": "cargo_box",
