@@ -1711,7 +1711,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/warder_r9_shoot.ogg'
 	base_pixel_x = -10
 	unique_reskin = list(
-		"Default" = list(),
+		RESKIN_EMPTY,
 		"Alt" = list(
 			RESKIN_ICON_STATE = "warder_9r-alt"
 		)

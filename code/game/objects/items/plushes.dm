@@ -11,6 +11,7 @@
 	obj_flags = UNIQUE_RENAME
 	lefthand_file = 'icons/mob/inhands/misc/plushes_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/plushes_righthand.dmi'
+	COOLDOWN_DECLARE(petting_heart_cooldown)
 	var/list/squeak_override //Weighted list; If you want your plush to have different squeak sounds use this
 	var/stuffed = TRUE //If the plushie has stuffing in it
 	var/unstuffable = FALSE //for plushies that can't be stuffed
@@ -1032,3 +1033,13 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 		playsound(user, 'sound/items/squeaktoy.ogg', 20, 1)
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "plushpet", /datum/mood_event/plushpet)
 		cooldown = world.time
+
+/// cube guy thing. beware, very silly
+/obj/item/toy/plush/cube
+	name = "Cubical plushie"
+	desc = "That's one weird looking plushie."
+	icon = 'modular_sand/icons/obj/plushes.dmi'
+	icon_state = "cube"
+	lefthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_lefthand.dmi'
+	righthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_righthand.dmi'
+	squeak_override = list('sound/effects/footstep/rustystep1.ogg' = 1)
