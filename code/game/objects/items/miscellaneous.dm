@@ -286,7 +286,7 @@
 
 /obj/item/choice_beacon/box/plushie/examine(mob/user)
 	. = ..()
-	. += span_notice("Alt-click to show radial menu.")
+	. += span_notice("Alt-click in active hand to show radial menu.")
 // BLUEMOON ADD END
 
 /// Don't allow these special ones (you can still get narplush/hugbox)
@@ -310,6 +310,7 @@
 	)
 
 	bad_plushies += typesof(/obj/item/toy/plush/bm/shark) - /obj/item/toy/plush/bm/shark/box_reskinnable
+	bad_plushies += typesof(/obj/item/toy/plush/mothplushie) - /obj/item/toy/plush/mothplushie/box_reskinnable
 
 	return bad_plushies
 

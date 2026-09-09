@@ -15,12 +15,12 @@
 	icon_state = "blahaj"
 	attack_verb = list("gnawed", "gnashed", "chewed")
 	squeak_override = list('modular_bluemoon/sound/voice/rawr.ogg' = 1)
-
-#define SHARK_PLUSH_RESKIN(reskin_name, reskin_state) list(reskin_name = list(RESKIN_ICON_STATE = reskin_state))
+	can_random_spawn = FALSE
 
 /obj/item/toy/plush/bm/shark/box_reskinnable
 	name = "Reskinnable Shark Plushie"
 	icon_state = "blahaj-uni"
+	can_random_spawn = TRUE
 	unique_reskin = list(
 		RESKIN_EMPTY
 	)
