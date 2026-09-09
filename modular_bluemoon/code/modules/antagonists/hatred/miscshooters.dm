@@ -6,9 +6,18 @@
 	antagpanel_category = "Jackal"
 	roundend_category = "Jackal"
 	job_rank = ROLE_MASS_SHOOTER
-	ui_name = "AntagInfoHatred"
+	ui_name = "AntagInfoJackal"
 
 /datum/antagonist/jackal/greet()
+	var/greet_text = "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
+	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
+	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
+	greet_text += "Твои особые сигареты лечат тебя. Если в крови не останется алкоголя, Omnizine или стимуляторов, тело начнет постепенно разрушаться.<br>"
+	greet_text += "В холстере лежат два stimpack medipen, три эпипена и один боевой нож. Эпипены почти не лечат, зато останавливают кровотечение.<br>"
+	greet_text += "Казнь выполняется выстрелом из револьвера по критованной цели. После пяти казней на револьвер накладывается особая маска, уменьшая отдачу и увеличивая темп стрельбы.<br>"
+	greet_text += span_red(span_bold("Докуривай сигарету — и погнали"))
+	to_chat(owner.current, greet_text)
+	antag_memory = greet_text
 	owner.announce_objectives()
 
 /datum/antagonist/jackal/on_gain()
@@ -18,6 +27,30 @@
 		return
 	H.remove_quirk(/datum/quirk/monochromatic)
 	H.update_body()
+	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_dependency))
+
+/datum/antagonist/jackal/on_removal()
+	var/mob/living/carbon/human/H = owner?.current
+	if(istype(H))
+		UnregisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE)
+	. = ..()
+
+/datum/antagonist/jackal/proc/handle_dependency(mob/living/carbon/human/H, delta_time, times_fired)
+	SIGNAL_HANDLER
+	if(!istype(H) || H.stat == DEAD || dependency_satisfied(H))
+		return
+	H.adjustBruteLoss(max(0.1, delta_time * 0.4), TRUE)
+	H.adjustFireLoss(max(0.1, delta_time * 0.2), TRUE)
+	if(prob(10))
+		to_chat(H, span_userdanger("Тело ломается без сигарет, алкоголя или стимуляторов. Найди дозу."))
+
+/datum/antagonist/jackal/proc/dependency_satisfied(mob/living/carbon/human/H)
+	if(!H.reagents)
+		return FALSE
+	for(var/datum/reagent/R as anything in H.reagents.reagent_list)
+		if(istype(R, /datum/reagent/consumable/ethanol) || istype(R, /datum/reagent/medicine/omnizine) || istype(R, /datum/reagent/medicine/stimulants))
+			return TRUE
+	return FALSE
 
 /datum/antagonist/jackal/make_authentic_body()
 	var/mob/living/carbon/human/H = owner.current
@@ -118,21 +151,6 @@
 /obj/item/gun/ballistic/revolver/jackal357/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, JACKAL_ANTAG)
-	RegisterSignal(src, COMSIG_PROJECTILE_ON_HIT, PROC_REF(on_jackal_projectile_hit))
-
-/obj/item/gun/ballistic/revolver/jackal357/proc/on_jackal_projectile_hit(obj/item/gun/source, mob/living/firer, atom/target, angle)
-	SIGNAL_HANDLER
-	if(!ishuman(target) || !ishuman(firer) || !firer.mind?.has_antag_datum(/datum/antagonist/jackal))
-		return
-	var/mob/living/carbon/human/target_human = target
-	if(target_human.stat in list(SOFT_CRIT, UNCONSCIOUS))
-		addtimer(CALLBACK(src, PROC_REF(execute_critical_target), target_human, firer), 1, TIMER_STOPPABLE|TIMER_DELETE_ME)
-
-/obj/item/gun/ballistic/revolver/jackal357/proc/execute_critical_target(mob/living/carbon/human/target, mob/living/carbon/human/firer)
-	if(QDELETED(src) || QDELETED(target) || QDELETED(firer) || target.stat == DEAD || target.stat == CONSCIOUS)
-		return
-	target.death(0)
-	check_glory_kill(firer, target)
 
 /obj/item/gun/ballistic/revolver/jackal357/equipped(mob/user, slot, initial)
 	. = ..()
@@ -168,7 +186,7 @@
 	STR.max_items = 20
 	STR.max_combined_w_class = INFINITY
 	STR.max_w_class = WEIGHT_CLASS_BULKY
-	STR.can_hold = typecacheof(list(/obj/item/gun/ballistic/revolver/jackal357, /obj/item/ammo_box/a357, /obj/item/kitchen/knife/combat, /obj/item/storage/fancy/cigarettes/jackal, /obj/item/lighter, /obj/item/reagent_containers/hypospray/medipen/stimpack, /obj/item/reagent_containers/hypospray/medipen))
+	STR.can_hold = typecacheof(list(/obj/item/gun/ballistic/revolver/jackal357, /obj/item/ammo_box/a357, /obj/item/kitchen/knife/combat, /obj/item/storage/fancy/cigarettes/jackal, /obj/item/lighter, /obj/item/reagent_containers/hypospray/medipen/stimulants, /obj/item/reagent_containers/hypospray/medipen))
 	STR.quickdraw = TRUE
 
 /obj/item/storage/belt/holster/jackal/PopulateContents()
@@ -177,39 +195,18 @@
 	new /obj/item/ammo_box/a357(src)
 	new /obj/item/ammo_box/a357(src)
 	new /obj/item/kitchen/knife/combat(src)
-	new /obj/item/kitchen/knife/combat(src)
-	new /obj/item/kitchen/knife/combat(src)
-	new /obj/item/storage/fancy/cigarettes/jackal(src)
 	new /obj/item/storage/fancy/cigarettes/jackal(src)
 	new /obj/item/lighter(src)
-	new /obj/item/reagent_containers/hypospray/medipen/stimpack(src)
-	new /obj/item/reagent_containers/hypospray/medipen/stimpack(src)
-	new /obj/item/reagent_containers/hypospray/medipen/stimpack(src)
+	new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
+	new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
+	new /obj/item/reagent_containers/hypospray/medipen(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 
 /obj/item/storage/belt/holster/jackal/Exited(atom/movable/gone, atom/newLoc)
 	. = ..()
-	if(istype(gone, /obj/item/ammo_box/a357))
-		addtimer(CALLBACK(src, PROC_REF(replace_speedloaders)), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
-
-/obj/item/storage/belt/holster/jackal/proc/replace_speedloaders()
-	if(QDELETED(src))
-		return
-	var/loaded_speedloaders = 0
-	for(var/obj/item/ammo_box/a357/loader in contents)
-		if(length(loader.stored_ammo))
-			loaded_speedloaders++
-	while(loaded_speedloaders < 3)
+	if(istype(gone, /obj/item/ammo_box/a357) && !QDELETED(src))
 		new /obj/item/ammo_box/a357(src)
-		loaded_speedloaders++
-
-/obj/item/gun/ballistic/revolver/jackal357/attackby(obj/item/A, mob/user, params)
-	. = ..()
-	if(istype(A, /obj/item/ammo_box/a357))
-		var/obj/item/storage/belt/holster/jackal/H = user?.get_item_by_slot(ITEM_SLOT_BELT)
-		if(H)
-			addtimer(CALLBACK(H, TYPE_PROC_REF(/obj/item/storage/belt/holster/jackal, replace_speedloaders)), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /obj/item/clothing/mask/cigarette/jackal
 	name = "Jackal cigarette"

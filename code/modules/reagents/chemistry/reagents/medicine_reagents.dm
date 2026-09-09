@@ -730,10 +730,11 @@
 	var/healing = 0.5
 
 /datum/reagent/medicine/omnizine/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(-healing*REM, 0)
-	M.adjustOxyLoss(-healing*REM, 0)
-	M.adjustBruteLoss(-healing*REM, 0)
-	M.adjustFireLoss(-healing*REM, 0)
+	var/jackal_exception = M.mind?.has_antag_datum(/datum/antagonist/jackal)
+	M.adjustToxLoss(-healing*REM, 0, jackal_exception)
+	M.adjustOxyLoss(-healing*REM, 0, jackal_exception)
+	M.adjustBruteLoss(-healing*REM, 0, jackal_exception)
+	M.adjustFireLoss(-healing*REM, 0, jackal_exception)
 	..()
 	. = 1
 
