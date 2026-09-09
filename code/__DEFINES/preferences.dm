@@ -19,11 +19,14 @@
 #define NO_ANTAG				(1<<16)
 #define VERB_CONSENT			(1<<17) // Sandstorm - ERP Mechanic Addition
 #define LEWD_VERB_SOUNDS		(1<<18) // Sandstorm - ERP Mechanic Addition
+#define SOUND_FAX					(1<<19)	// toggles
 #define SOUND_JUKEBOXES			(1<<20)
 #define RANGED_VERBS_CONSENT	(1<<21) // BLUEMOON ADD интеракты с расстояния
 #define SOUND_PERSONAL_JUKEBOXES	(1<<22)
-#define SOUND_EMOTE					(1<<23)
-#define SOUND_FAX					(1<<19)	// toggles
+#define SOUND_EMOTE					(1<<23) // maximum
+
+// sound_toggles
+#define SOUND_BUTTONS               (1<<0)
 
 // mentor_toggles
 #define SOUND_MENTORHELP			(1<<0)
