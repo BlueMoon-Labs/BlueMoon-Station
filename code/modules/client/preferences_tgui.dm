@@ -479,14 +479,11 @@
 					dirty_var = "disable_combat_cursor"
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
-<<<<<<< Updated upstream
 					dirty_var = "disable_combat_mouse_lock"
-			save_pref_var(dirty_var)
-=======
-				if("smartlink")
+				if("smartlink") //BLUEMOON ADD
 					smartlink = !smartlink
-			save_preferences()
->>>>>>> Stashed changes
+					dirty_var = "smartlink"
+			save_pref_var(dirty_var)
 			return TRUE
 
 		// Antag role toggles
