@@ -2332,6 +2332,19 @@
 	rule.mode = null
 	TEST_ASSERT_EQUAL(rule.get_weight(), 10, "Каталог без игрового режима должен возвращать базовый вес")
 
+/// Согласие на беглеца не должно пропадать из-за отдельного ролла размера команды.
+/datum/unit_test/director_fugitive_small_group/Run()
+	var/datum/round_event/ghost_role/fugitives/event = allocate(/datum/round_event/ghost_role/fugitives, FALSE)
+	event.kill()
+	TEST_ASSERT_EQUAL(length(event.get_backstories(0)), 0, "Без желающих спаун невозможен")
+	for(var/candidates in list(1, 2, 3))
+		var/list/backstories = event.get_backstories(candidates)
+		TEST_ASSERT_EQUAL(length(backstories), 1, "Малой группе нужен только одиночный сценарий")
+		TEST_ASSERT("waldo" in backstories, "Один желающий должен получить одиночного беглеца")
+	var/list/group_backstories = event.get_backstories(4)
+	for(var/backstory in list("prisoner", "cultist", "synth"))
+		TEST_ASSERT(backstory in group_backstories, "Для четырёх желающих должны сохраниться командные сценарии")
+
 /// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
 /// смерти. Живая группа должна дать вклад при жизни и исчезнуть сразу после смерти моба.
 /// Свежая тихая роль на станции весит intensity * DIRECTOR_ACTIVITY_MULT_MIN: гост-команды

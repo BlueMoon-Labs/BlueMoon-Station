@@ -29,15 +29,8 @@
 		message_admins("No valid spawn locations found, aborting...")
 		return MAP_ERROR
 	var/turf/landing_turf = pick(possible_spawns)
-	var/list/possible_backstories = list()
 	var/list/candidates = get_candidates(ROLE_TRAITOR, null, ROLE_TRAITOR)
-	if(candidates.len >= 1) //solo refugees
-		if(prob(30))
-			possible_backstories.Add("waldo") //less common as it comes with magicks and is kind of immershun shattering
-		else //For accurate deadchat feedback
-			minimum_required = 4
-	if(candidates.len >= 4)//group refugees
-		possible_backstories.Add("prisoner", "cultist", "synth")
+	var/list/possible_backstories = get_backstories(candidates.len)
 	if(!possible_backstories.len)
 		return NOT_ENOUGH_PLAYERS
 
@@ -69,6 +62,20 @@
 	addtimer(CALLBACK(src, PROC_REF(spawn_hunters)), 10 MINUTES)
 	role_name = "fugitive hunter"
 	return SUCCESSFUL_SPAWN
+
+/// При 1-3 согласившихся нужен одиночный сценарий: прежний ролл отменял 70% таких
+/// опросов уже после согласия игроков. При полном составе Waldo остаётся редким.
+/datum/round_event/ghost_role/fugitives/proc/get_backstories(candidate_count)
+	var/list/backstories = list()
+	if(candidate_count <= 0)
+		return backstories
+	if(candidate_count < 4)
+		backstories += "waldo"
+		return backstories
+	backstories += list("prisoner", "cultist", "synth")
+	if(prob(30))
+		backstories += "waldo"
+	return backstories
 
 /datum/round_event/ghost_role/fugitives/proc/gear_fugitive(mob/dead/selected, turf/landing_turf, backstory) //spawns normal fugitive
 	var/datum/mind/player_mind = new /datum/mind(selected.key)
