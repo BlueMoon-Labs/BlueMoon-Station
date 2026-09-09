@@ -312,12 +312,15 @@
 /obj/item/melee/baton/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "lapkee_baton")
-
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "melatonin_baton")
 	return ..()
 
 /obj/item/melee/baton/stunsword/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
 
 	return ..()
 
@@ -325,7 +328,11 @@
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
 
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
+
 	return ..()
+
 
 //////////////////////////////////////////////////
 // Принадлежит shizalrp
@@ -362,26 +369,11 @@
 	icon_state = "melatonin_belt"
 	item_state = "melatonin_belt"
 
-/obj/item/melee/baton/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "melatonin_baton")
-
-	return ..()
-
-/obj/item/melee/baton/stunsword/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
-
-	return ..()
-
-/obj/item/melee/baton/stunsword/stunkatana/get_belt_overlay()
-	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
-		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
-
-	return ..()
 /obj/item/melee/baton/stunsword/melatonin/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"melatonin_stunsword")
+
+	return ..()
 
 /obj/item/modkit/melatonin_belt_kit
 	name = "Lycanthrope's Heavy Tactical Belt Kit"

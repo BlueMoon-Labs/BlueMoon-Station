@@ -1938,6 +1938,17 @@
 	obj_flags = NONE
 	sawn_item_state = "DB-SO"
 
+/obj/item/gun/ballistic/revolver/doublebarrel/melatonin/sawoff(mob/user)
+	. = ..()
+	if(.)
+		name = "Sawn-Off Nebula Workshop's 'Original Guilt'"
+
+/obj/item/gun/ballistic/revolver/doublebarrel/melatonin/update_icon_state()
+	if(sawn_off)
+		icon_state = "DB-SO"
+	else
+		icon_state = "DB"
+
 /obj/item/modkit/melatonin_shotgun_kit
 	name = "Nebula Workshop's 'Original Guilt' Kit"
 	desc = "A modkit for making a double-barreled shotgun into a Nebula Workshop's 'Original Guilt'."

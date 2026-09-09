@@ -967,6 +967,7 @@
 	unique_reskin = list()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/equipped(mob/user, slot)
+	. = ..()
 	update_icon()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/update_icon_state()
