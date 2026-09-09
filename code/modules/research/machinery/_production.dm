@@ -74,15 +74,19 @@
 		_ui_cached_designs.Cut()
 		designs_cache_built = FALSE
 		last_design_count = 0
-		//BLUEMOON ADD END
 		INVOKE_ASYNC(src, PROC_REF(update_research))
 		to_chat(user, span_notice("Вы подключаете [src] к [new_web.organization]."))
+		return TRUE
+	else if(istype(tool.buffer, /obj/machinery/ore_silo) && GetComponent(/datum/component/remote_materials))
+		//BLUEMOON ADD: не перехватываем линковку с ресурсным сило — её обработает remote_materials.OnAttackBy (COMSIG_PARENT_ATTACKBY)
+		return NONE
 	else if(!tool.buffer && host_research)
 		tool.buffer = host_research
 		to_chat(user, span_notice("Вы сохраняете базу данных исследований [host_research.organization] в буфер мультитула."))
+		return TRUE
 	else
 		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
-	return TRUE
+		return TRUE
 //BLUEMOON ADD END
 
 /obj/machinery/rnd/production/examine(mob/user)
