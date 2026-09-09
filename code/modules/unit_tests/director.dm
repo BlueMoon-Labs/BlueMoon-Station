@@ -2314,6 +2314,24 @@
 	SSdirector.note_failed_action(failed, retry_replacement = TRUE)
 	TEST_ASSERT_EQUAL(SSdirector.action_failure_cooldowns[failed] - SSdirector.now(), 10 MINUTES, "Отложенный провал должен учитывать ту же серию отказов")
 
+/// Повторный просмотр веса не должен усиливать штраф за один и тот же запуск.
+/datum/unit_test/director_ruleset_weight_is_read_only/Run()
+	var/datum/game_mode/dynamic/mode = allocate(/datum/game_mode/dynamic)
+	var/datum/dynamic_ruleset/midround/autotraitor/rule = allocate(/datum/dynamic_ruleset/midround/autotraitor)
+	rule.mode = mode
+	rule.weight = 6
+	rule.repeatable_weight_decrease = 2
+	mode.executed_rules = list(rule)
+	for(var/check in 1 to 100)
+		TEST_ASSERT_EQUAL(rule.get_weight(), 4, "Сто проверок одного запуска должны давать один и тот же вес")
+	TEST_ASSERT_EQUAL(rule.weight, 6, "Проверка не должна перезаписывать настроенный базовый вес")
+	mode.executed_rules += rule
+	TEST_ASSERT_EQUAL(rule.get_weight(), 2, "Второе исполнение должно добавить ровно один штраф")
+	rule.weight = 10
+	TEST_ASSERT_EQUAL(rule.get_weight(), 6, "Новый базовый вес должен учитывать прежние исполнения без накопленной порчи")
+	rule.mode = null
+	TEST_ASSERT_EQUAL(rule.get_weight(), 10, "Каталог без игрового режима должен возвращать базовый вес")
+
 /// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
 /// смерти. Живая группа должна дать вклад при жизни и исчезнуть сразу после смерти моба.
 /// Свежая тихая роль на станции весит intensity * DIRECTOR_ACTIVITY_MULT_MIN: гост-команды
