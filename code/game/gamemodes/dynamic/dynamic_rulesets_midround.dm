@@ -643,9 +643,9 @@
 	required_candidates = 5
 	weight = 2
 	// Тяжёлый раунд-дефайнер не открывает смену: earliest_start уводит его из первого получаса
-	// (как и мага). Дальше и так гейтится 5 гостами + cost 30.
+	// (как и мага). Дальше нужны минимум три желающих и бюджет на тяжёлый отряд.
 	earliest_start = 35 MINUTES
-	cost = 30 //BLUEMOON CHANGES
+	cost = 25
 	antag_heavy = TRUE
 	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
