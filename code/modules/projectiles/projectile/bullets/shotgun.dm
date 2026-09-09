@@ -5,7 +5,7 @@
 	sharpness = SHARP_POINTY
 	wound_bonus = 6
 	spread = 1.5 // BLUEMOON ADD: отклонение слага при вылете из ствола, применяется в fire() один раз на старте
-	var/tile_dropoff = 1.5 // BLUEMOON ADD: потеря урона за каждый пройденный тайл
+	var/tile_dropoff = 2.5 // BLUEMOON ADD: потеря урона за каждый пройденный тайл
 
 /obj/item/projectile/bullet/shotgun_slug/Range()
 	..()

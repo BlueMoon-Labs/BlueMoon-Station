@@ -122,28 +122,29 @@
 		// BLUEMOON ADD START - Проверка пробития BR/BRC.
 		// Пуля пробивает навылет, только если снимает И BR-бакет (остаточная броня armor уже = 0),
 		// И BRC-бакет (AP >= brc_mitigation).
-		// Если формально не пробила — конвертация урона 70/30: 70% урона уходит в стамину,
-		// 30% так и остаётся HP-уроном. При провале AP-чека срабатывает
+		// Если формально не пробила — конвертация урона 60/40: 60% урона уходит в стамину,
+		// 40% так и остаётся HP-уроном. При провале AP-чека срабатывает
 		// прок полного пробития по разнице уровней BR пули и BRC брони (см. ниже).
 		var/penetrated = TRUE
 		if(P.flag == BULLET)
 			penetrated = (armor <= 0) && (P.armour_penetration >= brc_mitigation)
 
 			// BLUEMOON ADD START - прок полного пробития по уровню BR пули
-			// Шанс пробить навылет несмотря на формальный провал AP-чека. Гарантия при разнице
-			// не более 2 уровней (BR_8 vs BRC 50 = 100%), дальше −10% за каждый уровень разницы:
-			// BR_8 vs BRC 70 (6 ур.) = 60%, BR_8 vs BRC 90 (10 ур.) = 20%.
-			if(!penetrated && armor <= 0)
+			// Шанс пробить навылет несмотря на формальный провал AP-чека. Суммарная защита в классах =
+			// остаточная BR-броня (armor_level) + BRC (brc_level). Гарантия при BR пули >= суммарной защите − 2 класса,
+			// дальше −10% за каждый класс разницы: BR_8 vs BRC 50 (10 ур.) = 100%, BR_1 vs броня 40 + BRC 10 (9 ур.) = 40%.
+			if(!penetrated)
 				var/bullet_br = clamp(round(P.armour_penetration / 5), 0, 20)
 				var/brc_level = clamp(round(brc_mitigation / 5), 0, 20)
-				var/pierce_chance = clamp(120 - (brc_level - bullet_br) * 10, 0, 100)
+				var/armor_level = clamp(round(armor / 5), 0, 20)
+				var/pierce_chance = clamp(120 - (brc_level + armor_level - bullet_br) * 10, 0, 100)
 				if(prob(pierce_chance))
 					penetrated = TRUE
 			// BLUEMOON ADD END
 
 		if(!penetrated && P.flag == BULLET && totaldamage >= 1.0)
-			var/kinetic_stam = totaldamage * 0.70
-			totaldamage = totaldamage * 0.30
+			var/kinetic_stam = totaldamage * 0.60
+			totaldamage = totaldamage * 0.40
 			if(kinetic_stam >= 1.0)
 				apply_damage(kinetic_stam, STAMINA, def_zone, 0)
 		// BLUEMOON ADD END
