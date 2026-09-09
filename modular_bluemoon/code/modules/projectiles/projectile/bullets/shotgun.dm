@@ -1,10 +1,8 @@
 /obj/item/projectile/bullet/pellet/shotgun_flechette
 	name = "flechette pellet"
-	damage = 10 // в общей сумме с 4 выстрелами будет 40 урона
-	wound_bonus = 5
-	bare_wound_bonus = 5
+	wound_bonus = 15
+	bare_wound_bonus = 15
 	armour_penetration = BULLET_BR8
-	tile_dropoff_ap = 2
 	wound_falloff_tile = -2.5
 	tile_dropoff = 0.4
 

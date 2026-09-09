@@ -382,10 +382,10 @@
 	// ASSERT(ismovable(AM), "[src] attempted to pull [AM ? "[AM], a nonmovable atom" : "a null object"]")
 	if(!(AM.can_be_pulled(src, state, force)))
 		return FALSE
-var/mob/living/prospective_target = AM // BLUEMOON ADD - щит/стойка блокирует перетаскивание
-	if(isliving(prospective_target) && prospective_target.can_block_grab_attempt(src))
-		return FALSE
 	if(throwing || !(mobility_flags & MOBILITY_PULL))
+		return FALSE
+	var/mob/living/prospective_target = AM // BLUEMOON ADD - щит/стойка блокирует перетаскивание
+	if(isliving(prospective_target) && prospective_target.can_block_grab_attempt(src))
 		return FALSE
 
 	AM.add_fingerprint(src)
