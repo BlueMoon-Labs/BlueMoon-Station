@@ -21,7 +21,7 @@
 	if(istype(user, /mob/living/carbon/human))
 		var/mob/living/carbon/human/H = user
 		if(H.is_holding(parent))
-			if(H.client?.prefs && !H.client.prefs.smartlink) //BLUEMOON ADD: квирк "Несовместимость со смартлинком" выключает боевой HUD
+			if(!is_smartlink_enabled(H)) //BLUEMOON ADD: преф "Смартлинк" и квирк "Несовместимость со смартлинком" управляют показом боевого HUD
 				turn_off()
 				return
 			if(H.hud_used)
@@ -34,6 +34,29 @@
 				// SPLURT EDIT END - FIX AMMO COUNTER HUD
 		else
 			turn_off()
+
+// BLUEMOON ADD START
+/// Может ли юзер видеть боевой HUD: преф "Смартлинк" включён и нет квирка "Несовместимость со смартлинком"
+/datum/component/ammo_hud/proc/is_smartlink_enabled(mob/living/carbon/human/H)
+	if(H.has_quirk(/datum/quirk/smartlink_incompatible))
+		return FALSE
+	if(H.client?.prefs && !H.client.prefs.smartlink)
+		return FALSE
+	return TRUE
+
+/// Пересчёт состояния HUD для удерживаемого предмета, переиспользует eligibility из wake_up()
+/datum/component/ammo_hud/proc/recalculate_ammo_hud(mob/living/carbon/human/user)
+	wake_up(parent, user, null)
+
+/// Пересчёт боевого HUD для всех предметов, удерживаемых юзером в руках
+/mob/living/proc/refresh_ammo_hud()
+	if(!ishuman(src))
+		return
+	var/mob/living/carbon/human/H = src
+	for(var/obj/item/held in list(H.get_active_held_item(), H.get_inactive_held_item()))
+		var/datum/component/ammo_hud/ammo_component = held?.GetComponent(/datum/component/ammo_hud)
+		ammo_component?.recalculate_ammo_hud(H)
+// BLUEMOON ADD END
 
 /datum/component/ammo_hud/proc/turn_on()
 	SIGNAL_HANDLER

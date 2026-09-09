@@ -5311,6 +5311,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 				if("smartlink") //BLUEMOON ADD
 					smartlink = !smartlink
+					if(isliving(user))
+						user.refresh_ammo_hud()
 				//CITADEL PREFERENCES EDIT - I can't figure out how to modularize these, so they have to go here. :c -Pooj
 				if("genital_colour")
 					features["genitals_use_skintone"] = !features["genitals_use_skintone"]

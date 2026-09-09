@@ -487,6 +487,8 @@
 				if("smartlink") //BLUEMOON ADD
 					smartlink = !smartlink
 					dirty_var = "smartlink"
+					if(isliving(user))
+						user.refresh_ammo_hud()
 			save_pref_var(dirty_var)
 			return TRUE
 

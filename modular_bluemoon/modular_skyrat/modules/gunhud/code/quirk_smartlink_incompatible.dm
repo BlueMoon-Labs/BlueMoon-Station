@@ -9,10 +9,8 @@
 
 /datum/quirk/smartlink_incompatible/add()
 	. = ..()
-	if(quirk_holder.client?.prefs)
-		quirk_holder.client.prefs.smartlink = FALSE
+	quirk_holder?.refresh_ammo_hud()
 
 /datum/quirk/smartlink_incompatible/remove()
 	. = ..()
-	if(quirk_holder.client?.prefs)
-		quirk_holder.client.prefs.smartlink = TRUE
+	quirk_holder?.refresh_ammo_hud()
