@@ -41,7 +41,7 @@ Contains:
 	tail_state = "deathsquad"
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat)
 	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
-	brc_mitigation_bonus = 25  // BLUEMOON ADD
+	brc_mitigation_bonus = BRC_MITIGATION_25  // BLUEMOON ADD
 	strip_delay = 130
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/deathsquad
 	dog_fashion = /datum/dog_fashion/back/deathsquad

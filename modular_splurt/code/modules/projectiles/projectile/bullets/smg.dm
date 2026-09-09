@@ -22,7 +22,7 @@
 	name = ".45 Hydra-shock bullet"
 	damage = 30
 	stamina = 0
-	armour_penetration = BULLET_BR0 - 20
+	armour_penetration = BULLET_BR0
 	sharpness = SHARP_EDGED
 	wound_bonus = 30
 	bare_wound_bonus = 30

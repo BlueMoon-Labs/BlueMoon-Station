@@ -11,7 +11,7 @@
 	tail_state = "none"
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	brc_mitigation_bonus = 10  // BLUEMOON ADD - BRC бонус брони
+	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD - BRC бонус брони
 
 /obj/item/clothing/suit/armor/equipped(mob/user, slot)
 	. = ..()

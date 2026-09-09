@@ -345,11 +345,13 @@
 	. = ..()
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 
 /obj/item/clothing/suit/cultrobes/dropped(mob/user)  // BLUEMOON ADD
 	. = ..()
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/head/culthood/alt
 	name = "cultist hood"

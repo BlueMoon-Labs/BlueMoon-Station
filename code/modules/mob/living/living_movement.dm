@@ -83,13 +83,18 @@
 
 			if(drag_slowdown && L.lying && !L.buckled && grab_state < GRAB_AGGRESSIVE)
 				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/bulky_drag, multiplicative_slowdown = PULL_PRONE_SLOWDOWN)
-			else if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
+			else
+				remove_movespeed_modifier(/datum/movespeed_modifier/bulky_drag)
+
+			if(L.mob_weight > MOB_WEIGHT_HEAVY && src.mob_weight < MOB_WEIGHT_HEAVY_SUPER)
 				if(src.mob_weight < MOB_WEIGHT_HEAVY)
 					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SUPER_SLOWDOWN)
 				else
 					add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
 			else if(L.mob_weight > MOB_WEIGHT_NORMAL && src.mob_weight < MOB_WEIGHT_HEAVY)
 				add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag, multiplicative_slowdown = PULL_HEAVY_SLOWDOWN)
+			else
+				remove_movespeed_modifier(/datum/movespeed_modifier/heavy_mob_drag)
 
 			return
 

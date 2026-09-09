@@ -753,7 +753,7 @@
 	icon_state = "coatcentcom"
 	item_state = "coatcentcom"
 	armor = list(MELEE = 40, BULLET = 45, LASER = 45, ENERGY = 35, BOMB = 40, BIO = 25, RAD = 25, FIRE = 35, ACID = 50)
-	brc_mitigation_bonus = 15  // BLUEMOON ADD
+	brc_mitigation_bonus = BRC_MITIGATION_15  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/centcom
 
 /obj/item/clothing/suit/hooded/wintercoat/centcom/Initialize(mapload)

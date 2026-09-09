@@ -10,6 +10,7 @@
 	slot_flags = ITEM_SLOT_OCLOTHING
 	body_parts_covered = CHEST
 	var/brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони
+	var/brc_worn = FALSE  // BLUEMOON ADD - был ли бонус фактически применён при надевании
 	var/blood_overlay_type = "suit"
 	var/togglename = null
 	var/suittoggled = FALSE

@@ -30,7 +30,7 @@
 
 /datum/uplink_item/inteq/speedloader_designdisk
 	name = ".357 speedloader Design Disk"
-	desc = "Этот диск содержит чертежи что бы гордой ковбой никогда не заботился о патронах!"
+	desc = "Этот диск содержит чертежи что-бы гордый ковбой никогда не заботился о патронах!"
 	item = /obj/item/disk/design_disk/adv/ammo/revolver
 	cost = 6
 	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)

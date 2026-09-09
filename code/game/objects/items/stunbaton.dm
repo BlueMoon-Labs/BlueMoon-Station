@@ -426,8 +426,8 @@
 	set waitfor = FALSE
 	sleep(1)
 	var/mob/thrown_by = thrownby?.resolve()
-	if(!QDELETED(src))
-		throw_at(thrown_by, throw_range+2, throw_speed, null, TRUE)
+	if(!QDELETED(src) && thrown_by && !QDELETED(thrown_by))
+		throw_at(thrown_by, throw_range+2, throw_speed, thrown_by, TRUE)
 
 /obj/item/melee/baton/boomerang/update_icon()
 	. = ..()

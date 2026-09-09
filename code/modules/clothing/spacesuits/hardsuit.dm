@@ -166,6 +166,7 @@
 	// BLUEMOON ADD START
 	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
 		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 	// BLUEMOON ADD END
 	if(jetpack)
 		if(slot == ITEM_SLOT_OCLOTHING)
@@ -176,8 +177,9 @@
 /obj/item/clothing/suit/space/hardsuit/dropped(mob/user)
 	..()
 	// BLUEMOON ADD START
-	if(brc_mitigation_bonus > 0 && isliving(user))
+	if(brc_worn && isliving(user))
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 	// BLUEMOON ADD END
 	if(jetpack)
 		for(var/X in jetpack.actions)

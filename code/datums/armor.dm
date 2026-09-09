@@ -40,6 +40,13 @@
 #define BULLET_BR19  95
 #define BULLET_BR20  100
 
+// BRC бонус костюмов (brc_mitigation_bonus) — общая шкала уровней // BLUEMOON ADD
+#define BRC_MITIGATION_5	5
+#define BRC_MITIGATION_10	10
+#define BRC_MITIGATION_15	15
+#define BRC_MITIGATION_20	20
+#define BRC_MITIGATION_25	25
+
 /proc/getArmor(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
 	. = locate(ARMORID)
 	if (!.)

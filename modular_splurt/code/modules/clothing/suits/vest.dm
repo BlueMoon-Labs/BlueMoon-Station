@@ -7,7 +7,7 @@
 	item_state = "brigphysicianvest"
 	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 10, "bomb" = 0, "bio" = 40, "rad" = 0, "fire" = 50, "acid" = 40)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	brc_mitigation_bonus = 10  // BLUEMOON ADD
+	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
 
 /obj/item/clothing/suit/brigdoc/equipped(mob/user, slot)
 	. = ..()

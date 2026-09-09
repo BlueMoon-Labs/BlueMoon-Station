@@ -115,6 +115,8 @@
 	icon_state = "mag-aa-small"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
+	caliber = "shotgun"
 	max_ammo = 8
 
 /obj/item/ammo_box/magazine/aa12/update_icon()
@@ -163,15 +165,24 @@
 		else
 			icon_state = "minotaur-mag-e"
 	else
-		if(magazine.ammo_count(0))
-			icon_state = "minotaur-nomag-e"
-		else
-			icon_state = "minotaur-nomag"
+		icon_state = "minotaur-e"
 
 /obj/item/gun/ballistic/automatic/shotgun/aa12/afterattack()
 	. = ..()
 	empty_alarm()
 	return
+
+/obj/item/ammo_box/magazine/aa12/slug
+	name = "AA12 magazine (12g slugs)"
+	ammo_type = /obj/item/ammo_casing/shotgun
+
+/obj/item/ammo_box/magazine/aa12/flechette
+	name = "AA12 magazine (12g flechette)"
+	ammo_type = /obj/item/ammo_casing/shotgun/flechette
+
+/obj/item/ammo_box/magazine/aa12/frangible
+	name = "AA12 magazine (12g frangible slug)"
+	ammo_type = /obj/item/ammo_casing/shotgun/frangible
 
 //Огнемёт крутой
 /obj/item/ammo_casing/energy/laser/m2a100
@@ -563,7 +574,7 @@
 
 /obj/item/disk/design_disk/adv/ammo/revolver
 	name = ".357 Ammo Design Disk"
-	desc = "Вставь в автолат, чтобы печатать магазины 10мм для пистолета Макарова."
+	desc = "Вставь в автолат, чтобы печатать спидлоудеры для пистолета своего револьвера."
 
 /obj/item/disk/design_disk/adv/ammo/revolver/Initialize(mapload)
 	. = ..()

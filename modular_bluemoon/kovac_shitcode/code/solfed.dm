@@ -73,7 +73,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
-	brc_mitigation_bonus = 20  // BLUEMOON ADD
+	brc_mitigation_bonus = BRC_MITIGATION_20  // BLUEMOON ADD
 
 // Cloaks
 /obj/item/clothing/neck/cloak/cape
