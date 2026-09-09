@@ -91,20 +91,17 @@
 
 /datum/antagonist/hatred/greet()
 	var/greet_text
-	greet_text += "Ты - [span_red(span_bold("Безымянный Массшутер"))]. Твое имя совершенно неважно. Твое прошлое даже если и было, оно было незавидным.<br>"
-	greet_text += "Ты испытываешь непреодолимую ненависть, отвращение и презрение ко всем окружающим.<br>"
-	greet_text += "У тебя лишь две цели: <u>убивать</u> и <u>умереть славной смертью</u>.<br>"
-	greet_text += "<br>[span_red(span_bold("Не торопись и познакомься со своими инструментами геноцида. В бою у тебя не будет такой \
-					возможности. Соберись с мыслями и отправляйся на станцию когда будешь готов."))]<br><br>"
-	greet_text += "Твое проклятое снаряжение неразлучно с тобою и подстегивает тебя продолжать соврешать геноцид беззащитных гражданских.<br>"
-	greet_text += "Твоё [span_red("Оружие Ненависти")] и неутолимая жажда убивать вознаграждают тебя, ибо завершающий выстрел в упор в голову (рот) исцеляет твои раны и дает прилив сил, нож добивает быстрее и надежнее.<br>"
-	greet_text += span_red("Обычная медицина не лечит раны и ожоги!<br>")
+	greet_text += "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
+	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
+	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
+	greet_text += "Твои особые сигареты лечат тебя, пока ты докуриваешь их в перерывах между выстрелами.<br>"
+	greet_text += "В холстере лежат три стимпака и два эпипена. Стимпаки разгоняют тело, а эпипены почти не лечат, зато останавливают кровотечение.<br>"
 	if(chosen_gun == "Pistols")
 		greet_text += "[span_red("Стрелять с двух рук - HARM INTENT")].<br>"
 	if(chosen_gun == "Combat Shotgun")
 		greet_text += "Акимбо: Ты можешь стрелять из оружия одной рукой, даже если вторая занята, но забудь про автоматическую стрельбу. С твоим дробовиком это только бонус.<br>"
 		greet_text += "На твоем поясе висит [span_red("запасная двустволка")] для быстрой стрельбы другим типом боеприпасов. Заряжена выбивающими двери и окна патронами..<br>"
-	greet_text += "[span_red(span_bold("Время убивать. Время умирать."))] И пусть ни одна мразь не доживёт до завтра. Ибо никто сегодня не защищен от твоей Ненависти.<br>"
+	greet_text += "[span_red(span_bold("Докуривай сигарету — и погнали"))].<br>"
 	to_chat(owner.current, greet_text)
 	antag_memory = greet_text
 	owner.announce_objectives()
@@ -128,7 +125,7 @@
 	RegisterSignal(H, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(prevent_spawnloc_movement))
 	RegisterSignal(H, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(check_equipped_item)) // any knife we pick might be our deadliest weapon. also sets nodrop trait onto some weapons
 	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(recover_from_softcrit))
-	H.equipOutfit(/datum/outfit/hatred)
+	H.equipOutfit(istype(src, /datum/antagonist/jackal) ? /datum/outfit/jackal : /datum/outfit/hatred)
 	if(QDELETED(H)) // админы сказали "нет"
 		return
 	. = ..()
@@ -197,11 +194,17 @@
 	var/mob/living/carbon/human/H = owner
 	var/datum/antagonist/hatred/Ha = H.mind?.has_antag_datum(/datum/antagonist/hatred)
 	if(!Ha)
+		Ha = H.mind?.has_antag_datum(/datum/antagonist/jackal)
+	if(!Ha)
 		return FALSE
 	// WE ARE READY.
 	H.fully_heal(TRUE) // in case of some accidents in spawn room during preparation
 	Ha.UnregisterSignal(H, COMSIG_MOVABLE_PRE_MOVE)
 	Ha.appear_on_station()
+	if(istype(Ha, /datum/antagonist/jackal))
+		addtimer(CALLBACK(Ha, TYPE_PROC_REF(/datum/antagonist/hatred, alarm_station)), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+		INVOKE_ASYNC(src, PROC_REF(Remove), H)
+		return
 	var/picked_sound = pick('modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_1.ogg', \
 							'modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_2.ogg', \
 							'modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_3.ogg')
@@ -450,6 +453,8 @@
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
 	var/datum/antagonist/hatred/Ha = user.mind?.has_antag_datum(/datum/antagonist/hatred)
+	if(!Ha)
+		Ha = user.mind?.has_antag_datum(/datum/antagonist/jackal)
 	if(!Ha || !ishuman(target))
 		return ..()
 	if(!target.get_bodypart(BODY_ZONE_HEAD))
@@ -462,7 +467,7 @@
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
 		playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	var/new_ttk = Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS
+	var/new_ttk = istype(Ha, /datum/antagonist/jackal) ? 3 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return
@@ -1084,11 +1089,33 @@
 	body.mind.make_MassShooter()
 	return TRUE
 
+/datum/admins/proc/makeJackal(mob/dead/observer/applicant)
+	var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/code/modules/antagonists/hatred/hatred_icon.dmi', "jackal")
+	if(!istype(applicant))
+		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for the position of a Jackal?", "pacifist", null, ROLE_MASS_SHOOTER, 30 SECONDS, poll_alert_pic = alert_overlay)
+		applicant = pick_n_take(candidates)
+	if(!istype(applicant) || !applicant.client)
+		return FALSE
+	var/mob/living/carbon/human/body = new(get_turf(GET_ERROR_ROOM))
+	body.dna.remove_all_mutations()
+	var/datum/mind/player_mind = new /datum/mind(applicant.key)
+	player_mind.active = TRUE
+	player_mind.transfer_to(body)
+	notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
+	body.mind.make_Jackal()
+	return TRUE
+
 /datum/mind/proc/make_MassShooter()
 	if(!has_antag_datum(/datum/antagonist/hatred))
 		special_role = "Mass Shooter"
 		assigned_role = "Mass Shooter"
 		add_antag_datum(/datum/antagonist/hatred)
+
+/datum/mind/proc/make_Jackal()
+	if(!has_antag_datum(/datum/antagonist/jackal))
+		special_role = "Jackal"
+		assigned_role = "Jackal"
+		add_antag_datum(/datum/antagonist/jackal)
 
 
 #undef HATRED_ANTAG
