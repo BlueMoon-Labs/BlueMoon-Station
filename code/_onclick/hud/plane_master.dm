@@ -251,26 +251,34 @@
 		return
 	mymob.overlay_fullscreen("lighting_backdrop_lit", /atom/movable/screen/fullscreen/special/lighting_backdrop/lit)
 	mymob.overlay_fullscreen("lighting_backdrop_unlit", /atom/movable/screen/fullscreen/special/lighting_backdrop/unlit)
-	var/blur_level = mymob?.client?.prefs?.lighting_blur || 0
-	var/effective_blur = LIGHTING_BLUR_BASE + blur_level * LIGHTING_BLUR_MULTIPLIER
-	if(effective_blur > 0)
-		add_filter("lighting_blur", 0, list("type" = "blur", "size" = effective_blur))
-		// Force alpha=1 after blur to prevent edge bleeding — blur samples transparent pixels
-		// outside the render target boundary, creating semi-transparent edges that weaken
-		// BLEND_MULTIPLY darkening and produce false light strips at screen edges
-		add_filter("lighting_blur_edge_fix", 1, color_matrix_filter(list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,1)))
-	else
+	var/is_fast = (mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
+	if(is_fast)
 		remove_filter("lighting_blur")
 		remove_filter("lighting_blur_edge_fix")
-	// User brightness slider: 0-100, 50 = default (no change), <50 darker, >50 lighter
+	else
+		var/blur_level = mymob?.client?.prefs?.lighting_blur || 0
+		var/effective_blur = LIGHTING_BLUR_BASE + blur_level * LIGHTING_BLUR_MULTIPLIER
+		if(effective_blur > 0)
+			add_filter("lighting_blur", 0, list("type" = "blur", "size" = effective_blur))
+			// Force alpha=1 after blur to prevent edge bleeding - blur samples transparent pixels
+			// outside the render target boundary, creating semi-transparent edges that weaken
+			// BLEND_MULTIPLY darkening and produce false light strips at screen edges
+			add_filter("lighting_blur_edge_fix", 1, color_matrix_filter(list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0, 0,0,0,1)))
+		else
+			remove_filter("lighting_blur")
+			remove_filter("lighting_blur_edge_fix")
+	remove_filter("user_brightness")
+	if(is_fast)
+		// В режиме Быстро - стандартное освещение до LightUp, без пользовательской яркости
+		return
 	var/brightness = mymob?.client?.prefs?.lighting_brightness
 	if(isnull(brightness))
 		brightness = LIGHTING_BRIGHTNESS_DEFAULT
 	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
-	remove_filter("user_brightness")
+	// Диапазон 0-60 растянут на 0-100: 0 = старая 0, 100 = старая 60
+	var/mapped = brightness * 0.6
+	var/ratio = (mapped - LIGHTING_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		// Additive color matrix brightens/darkens the multiply plane
 		add_filter("user_brightness", 5, color_matrix_filter(list(
 			1,0,0,0,
 			0,1,0,0,
@@ -357,10 +365,21 @@
 	// emissive_bloom added conditionally in backdrop() based on blur quality setting
 
 /atom/movable/screen/plane_master/emissive/backdrop(mob/mymob)
+	if(mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
+		remove_filter("emissive_bloom")
+		return
 	var/blur_level = mymob?.client?.prefs?.lighting_blur || 0
+	var/bloom_intensity = mymob?.client?.prefs?.lighting_bloom_intensity
+	if(isnull(bloom_intensity))
+		bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+	if(bloom_intensity <= 0)
+		remove_filter("emissive_bloom")
+		return
 	if(blur_level >= 2)
-		// Bloom on emissive at medium+ quality — screens and indicators glow subtly
-		add_filter("emissive_bloom", 2, bloom_filter(threshold = COLOR_BLACK, size = blur_level, offset = 1))
+		// Bloom on emissive - intensity 0-200, 100 = старый максимум (текущие 100 -> 50)
+		var/bloom_alpha = clamp(30 + bloom_intensity * 0.32, 20, 85)
+		var/bloom_size = max(1, round(blur_level * (0.6 + bloom_intensity / 100 * 0.6)))
+		add_filter("emissive_bloom", 2, bloom_filter(threshold = COLOR_BLACK, size = bloom_size, offset = 1, alpha = bloom_alpha))
 	else
 		remove_filter("emissive_bloom")
 
@@ -371,20 +390,23 @@
 	render_target = LIGHTING_LAMPS_RENDER_TARGET
 
 /atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
-	var/brightness = mymob?.client?.prefs?.lighting_brightness
-	if(isnull(brightness))
-		brightness = LIGHTING_BRIGHTNESS_DEFAULT
-	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
-	var/lamp_ratio = ratio + 0.07
 	remove_filter("user_brightness")
-	if(lamp_ratio != 0)
+	if(mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
+		return
+	var/brightness = mymob?.client?.prefs?.lighting_lamp_brightness
+	if(isnull(brightness))
+		brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+	// Диапазон ламп 60-100 растянут на 0-100, нормализовано: макс +0.25
+	var/mapped = 60 + brightness * 0.4
+	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
+	if(ratio != 0)
 		add_filter("user_brightness", 5, color_matrix_filter(list(
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
 			0,0,0,1,
-			lamp_ratio, lamp_ratio, lamp_ratio, 0
+			ratio, ratio, ratio, 0
 		)))
 
 /atom/movable/screen/plane_master/lamps/floor
@@ -406,32 +428,39 @@
 /atom/movable/screen/plane_master/exposure/backdrop(mob/mymob)
 	remove_filter("blur_exposure")
 	remove_filter("user_brightness")
-	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	alpha = 0
+	if(!istype(mymob) || !mymob.client)
+		return
+	if(mymob.client.prefs.lighting_quality == LIGHTING_QUALITY_FAST)
+		return
+	var/brightness = mymob?.client?.prefs?.lighting_lamp_brightness
 	if(isnull(brightness))
-		brightness = LIGHTING_BRIGHTNESS_DEFAULT
-	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
-	var/lamp_ratio = ratio + 0.07
-	if(lamp_ratio != 0)
+		brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+	var/mapped = 60 + brightness * 0.4
+	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
+	if(ratio != 0)
 		add_filter("user_brightness", 5, color_matrix_filter(list(
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
 			0,0,0,1,
-			lamp_ratio, lamp_ratio, lamp_ratio, 0
+			ratio, ratio, ratio, 0
 		)))
-	alpha = 0
-	if(!istype(mymob) || !mymob.client)
-		return
-	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/has_legacy_light_pref = ("light" in mymob.client.prefs.vars)
 	var/enabled = TRUE
-	if(has_paradise_pref)
+	if(has_legacy_light_pref)
 		enabled = (mymob.client.prefs.light & LIGHT_EXPOSURE)
 	else
 		enabled = (mymob.client.prefs.lighting_blur >= 1)
 	if(enabled)
 		alpha = 255
-		add_filter("blur_exposure", 1, gauss_blur_filter(size = 20))
+		var/bloom_intensity = mymob.client.prefs.lighting_bloom_intensity
+		if(isnull(bloom_intensity))
+			bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+		// Экспозиция масштабируется интенсивностью 0-200
+		var/blur_size = clamp(12 + bloom_intensity * 0.12, 8, 28)
+		add_filter("blur_exposure", 1, gauss_blur_filter(size = blur_size))
 
 /atom/movable/screen/plane_master/lamps_selfglow
 	name = "lamps selfglow plane master"
@@ -454,26 +483,28 @@
 	remove_filter("add_lamps_to_selfglow")
 	remove_filter("lamps_selfglow_bloom")
 	remove_filter("user_brightness")
-	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(!istype(mymob) || !mymob.client)
+		return
+	if(mymob.client.prefs.lighting_quality == LIGHTING_QUALITY_FAST)
+		return
+	var/brightness = mymob?.client?.prefs?.lighting_lamp_brightness
 	if(isnull(brightness))
-		brightness = LIGHTING_BRIGHTNESS_DEFAULT
-	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
-	var/lamp_ratio = ratio + 0.07
-	if(lamp_ratio != 0)
+		brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+	var/mapped = 60 + brightness * 0.4
+	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
+	if(ratio != 0)
 		add_filter("user_brightness", 5, color_matrix_filter(list(
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
 			0,0,0,1,
-			lamp_ratio, lamp_ratio, lamp_ratio, 0
+			ratio, ratio, ratio, 0
 		)))
-	if(!istype(mymob) || !mymob.client)
-		return
-	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/has_legacy_light_pref = ("light" in mymob.client.prefs.vars)
 	var/has_glowlevel = ("glowlevel" in mymob.client.prefs.vars)
 	var/level
-	if(has_paradise_pref && has_glowlevel)
+	if(has_legacy_light_pref && has_glowlevel)
 		if(!(mymob.client.prefs.light & LIGHT_NEW_LIGHTING))
 			return
 		level = mymob.client.prefs.glowlevel
@@ -499,12 +530,22 @@
 			bloomsize = 3
 			bloomoffset = 2
 		if(GLOW_HIGH)
-			bloomsize = 5
-			bloomoffset = 3
+			bloomsize = 4
+			bloomoffset = 2
 		else
 			return
+	var/bloom_intensity = mymob.client.prefs.lighting_bloom_intensity
+	if(isnull(bloom_intensity))
+		bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+	if(bloom_intensity <= 0)
+		return
+	// Блум 0-200, где 100 = старый максимум (текущие 100 -> 50)
+	var/bloom_alpha = clamp(25 + bloom_intensity * 0.28, 15, 85)
+	var/bloom_scale = 0.5 + bloom_intensity / 200 * 0.9
+	bloomsize = max(1, round(bloomsize * bloom_scale))
+	bloomoffset = max(1, round(bloomoffset * bloom_scale))
 	add_filter("add_lamps_to_selfglow", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_OVERLAY))
-	add_filter("lamps_selfglow_bloom", 1, bloom_filter(threshold = "#777777", size = bloomsize, offset = bloomoffset, alpha = 80))
+	add_filter("lamps_selfglow_bloom", 1, bloom_filter(threshold = LIGHT_COLOR_BLOOM_THRESHOLD, size = bloomsize, offset = bloomoffset, alpha = bloom_alpha))
 
 /atom/movable/screen/plane_master/lamps_glare
 	name = "lamps glare plane master"
@@ -525,31 +566,34 @@
 	remove_filter("add_lamps_to_glare")
 	remove_filter("lamps_glare")
 	remove_filter("user_brightness")
-	var/brightness = mymob?.client?.prefs?.lighting_brightness
+	if(!istype(mymob) || !mymob.client)
+		return
+	if(mymob.client.prefs.lighting_quality == LIGHTING_QUALITY_FAST)
+		return
+	var/brightness = mymob?.client?.prefs?.lighting_lamp_brightness
 	if(isnull(brightness))
-		brightness = LIGHTING_BRIGHTNESS_DEFAULT
-	brightness = clamp(brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
-	var/ratio = (brightness - LIGHTING_BRIGHTNESS_DEFAULT) / 100
-	var/lamp_ratio = ratio + 0.07
-	if(lamp_ratio != 0)
+		brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	brightness = clamp(brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+	var/mapped = 60 + brightness * 0.4
+	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
+	if(ratio != 0)
 		add_filter("user_brightness", 5, color_matrix_filter(list(
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
 			0,0,0,1,
-			lamp_ratio, lamp_ratio, lamp_ratio, 0
+			ratio, ratio, ratio, 0
 		)))
-	if(!istype(mymob) || !mymob.client)
-		return
-	var/has_paradise_pref = ("light" in mymob.client.prefs.vars)
+	var/has_legacy_light_pref = ("light" in mymob.client.prefs.vars)
 	var/enabled = TRUE
-	if(has_paradise_pref)
+	if(has_legacy_light_pref)
 		enabled = (mymob.client.prefs.light & LIGHT_GLARE)
 	else
 		enabled = (mymob.client.prefs.lighting_blur >= 2)
 	if(enabled)
 		add_filter("add_lamps_to_glare", 1, layering_filter(render_source = target_rendering, blend_mode = BLEND_ADD))
-		add_filter("lamps_glare", 1, radial_blur_filter(size = 0.035))
+		// Комфортнее: чуть слабее radial blur
+		add_filter("lamps_glare", 1, radial_blur_filter(size = 0.025))
 
 ///Contains space parallax
 /atom/movable/screen/plane_master/parallax

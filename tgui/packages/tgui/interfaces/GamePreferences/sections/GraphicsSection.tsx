@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Dropdown, Input, Slider, Stack } from '../../../components';
+import { Box, Dropdown, Input, Section, Slider, Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
 type GraphicsData = {
@@ -26,6 +26,9 @@ type GraphicsData = {
   view_pixelshift: boolean;
   lighting_blur: number;
   lighting_brightness: number;
+  lighting_lamp_brightness: number;
+  lighting_bloom_intensity: number;
+  lighting_quality: number;
   UI_style: string;
   mood_vignette: boolean;
 };
@@ -63,6 +66,11 @@ const LIGHTING_BLUR_OPTIONS = [
   { value: 4, label: '4' },
 ];
 
+const LIGHTING_QUALITY_OPTIONS = [
+  { value: 1, label: 'Качественно' },
+  { value: 0, label: 'Быстро' },
+];
+
 const RUNECHAT_ANIM_OPTIONS = [
   { value: 0, label: 'Без анимации' },
   { value: 1, label: 'Снизу вверх' },
@@ -97,7 +105,9 @@ export const GraphicsSection = (props) => {
     || PARALLAX_OPTIONS[4].label;
   const fpsValue = Number(data.clientfps ?? 120);
   const selectedFps = FPS_OPTIONS.find(o => o.value === fpsValue)?.label || '120';
-  const selectedBlur = LIGHTING_BLUR_OPTIONS.find(o => o.value === Number(data.lighting_blur ?? 4));
+  const selectedBlur = LIGHTING_BLUR_OPTIONS.find(o => o.value === Number(data.lighting_blur ?? 3));
+  const selectedQuality = LIGHTING_QUALITY_OPTIONS.find(o => o.value === Number(data.lighting_quality ?? 1))?.label || 'Качественно';
+  const isFastMode = Number(data.lighting_quality ?? 1) === 0;
   const selectedRunechatAnim = RUNECHAT_ANIM_OPTIONS.find(
     o => o.value === Number(data.runechat_anim ?? 1),
   )?.label || RUNECHAT_ANIM_OPTIONS[1].label;
@@ -211,46 +221,156 @@ export const GraphicsSection = (props) => {
         </Stack>
       </Stack.Item>
       <Stack.Item>
-        <Stack align="center" fill className="GamePreferences__row">
-          <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Размытие освещения</div>
-            <div className="GamePreferences__hint">Может снизить производительность</div>
-          </Stack.Item>
-          <Stack.Item>
-            <Dropdown
-              width="160px"
-              options={LIGHTING_BLUR_OPTIONS.map(o => o.label)}
-              selected={selectedBlur?.label || '4'}
-              onSelected={value => {
-                const opt = LIGHTING_BLUR_OPTIONS.find(o => o.label === value);
-                if (opt) act('set_gfx_val', { flag: 'lighting_blur', value: opt.value });
+        <Box
+          style={{
+            border: '1px solid rgba(150, 150, 150, 0.18)',
+            borderRadius: '6px',
+            padding: '10px 14px 8px 14px',
+            background: 'rgba(255, 255, 255, 0.015)',
+          }}
+        >
+          <Box
+            mb={1.2}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              paddingBottom: '6px',
+              borderBottom: '1px solid rgba(150, 150, 150, 0.12)',
+            }}
+          >
+            <Box
+              style={{
+                width: '3px',
+                height: '14px',
+                background: '#6da6ff',
+                borderRadius: '2px',
+                opacity: 0.85,
               }}
             />
-          </Stack.Item>
-        </Stack>
-      </Stack.Item>
-      <Stack.Item>
-        <Stack align="center" fill className="GamePreferences__row">
-          <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Яркость освещения</div>
-            <div className="GamePreferences__hint">Ползунок яркости: влево — темнее, вправо — светлее (50 = по умолчанию)</div>
-          </Stack.Item>
-          <Stack.Item basis="160px">
-            <Slider
-              minValue={0}
-              maxValue={100}
-              step={1}
-              stepPixelSize={2}
-              value={Number(data.lighting_brightness ?? 50)}
-              ranges={{
-                good: [45, 55],
-                yellow: [30, 70],
-                orange: [15, 85],
+            <Box
+              style={{
+                fontWeight: '600',
+                fontSize: '11px',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                color: '#6da6ff',
               }}
-              onChange={(_, value) => act('set_gfx_val', { flag: 'lighting_brightness', value })}
-            />
-          </Stack.Item>
-        </Stack>
+            >
+              Освещение
+            </Box>
+          </Box>
+          <Stack vertical>
+            <Stack.Item>
+              <Stack align="center" fill className="GamePreferences__row">
+                <Stack.Item grow basis={0}>
+                  <div className="GamePreferences__label">Качество освещения</div>
+                  <div className="GamePreferences__hint">Быстро - просто, Качественно - красиво</div>
+                </Stack.Item>
+                <Stack.Item>
+                  <Dropdown
+                    width="160px"
+                    options={LIGHTING_QUALITY_OPTIONS.map(o => o.label)}
+                    selected={selectedQuality}
+                    onSelected={value => {
+                      const opt = LIGHTING_QUALITY_OPTIONS.find(o => o.label === value);
+                      if (opt) act('set_gfx_val', { flag: 'lighting_quality', value: opt.value });
+                    }}
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+            <Stack.Item>
+              <Stack align="center" fill className="GamePreferences__row">
+                <Stack.Item grow basis={0}>
+                  <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Размытие</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Мягкость света</div>
+                </Stack.Item>
+                <Stack.Item style={{ opacity: isFastMode ? 0.45 : 1 }}>
+                  <Dropdown
+                    width="160px"
+                    options={LIGHTING_BLUR_OPTIONS.map(o => o.label)}
+                    selected={selectedBlur?.label || '3'}
+                    onSelected={value => {
+                      if (isFastMode) return;
+                      const opt = LIGHTING_BLUR_OPTIONS.find(o => o.label === value);
+                      if (opt) act('set_gfx_val', { flag: 'lighting_blur', value: opt.value });
+                    }}
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+            <Stack.Item>
+              <Stack align="center" fill className="GamePreferences__row">
+                <Stack.Item grow basis={0}>
+                  <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Яркость</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Общая яркость</div>
+                </Stack.Item>
+                <Stack.Item basis="160px" style={{ opacity: isFastMode ? 0.45 : 1 }}>
+                  <Slider
+                    minValue={0}
+                    maxValue={100}
+                    step={1}
+                    stepPixelSize={2}
+                    value={Number(data.lighting_brightness ?? 50)}
+                    ranges={{
+                      good: [40, 60],
+                      yellow: [25, 75],
+                      orange: [10, 90],
+                    }}
+                    onChange={(_, value) => { if (!isFastMode) act('set_gfx_val', { flag: 'lighting_brightness', value }); }}
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+            <Stack.Item>
+              <Stack align="center" fill className="GamePreferences__row">
+                <Stack.Item grow basis={0}>
+                  <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Яркость ламп</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Свет ламп</div>
+                </Stack.Item>
+                <Stack.Item basis="160px" style={{ opacity: isFastMode ? 0.45 : 1 }}>
+                  <Slider
+                    minValue={0}
+                    maxValue={100}
+                    step={1}
+                    stepPixelSize={2}
+                    value={Number(data.lighting_lamp_brightness ?? 50)}
+                    ranges={{
+                      good: [40, 60],
+                      yellow: [25, 75],
+                      orange: [10, 90],
+                    }}
+                    onChange={(_, value) => { if (!isFastMode) act('set_gfx_val', { flag: 'lighting_lamp_brightness', value }); }}
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+            <Stack.Item>
+              <Stack align="center" fill className="GamePreferences__row">
+                <Stack.Item grow basis={0}>
+                  <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Блум</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Свечение ламп</div>
+                </Stack.Item>
+                <Stack.Item basis="160px" style={{ opacity: isFastMode ? 0.45 : 1 }}>
+                  <Slider
+                    minValue={0}
+                    maxValue={200}
+                    step={1}
+                    stepPixelSize={1}
+                    value={Number(data.lighting_bloom_intensity ?? 70)}
+                    ranges={{
+                      good: [50, 90],
+                      yellow: [20, 130],
+                      orange: [0, 170],
+                    }}
+                    onChange={(_, value) => { if (!isFastMode) act('set_gfx_val', { flag: 'lighting_bloom_intensity', value }); }}
+                  />
+                </Stack.Item>
+              </Stack>
+            </Stack.Item>
+          </Stack>
+        </Box>
       </Stack.Item>
       <Stack.Item>
         <Stack align="center" fill className="GamePreferences__row">

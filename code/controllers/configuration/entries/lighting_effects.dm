@@ -1,10 +1,10 @@
 
 /datum/config_entry/number/glow_brightness_base
-	default = 0
+	default = -0.08
 	integer = FALSE
 
 /datum/config_entry/number/glow_brightness_power
-	default = -0.25
+	default = -0.18
 	integer = FALSE
 
 /datum/config_entry/number/glow_contrast_base
@@ -12,11 +12,11 @@
 	integer = FALSE
 
 /datum/config_entry/number/glow_contrast_power
-	default = 0.5
+	default = 0.32
 	integer = FALSE
 
 /datum/config_entry/number/exposure_brightness_base
-	default = 0.01
+	default = -0.04
 	integer = FALSE
 
 /datum/config_entry/number/exposure_brightness_power
@@ -24,7 +24,7 @@
 	integer = FALSE
 
 /datum/config_entry/number/exposure_contrast_base
-	default = 9.5
+	default = 5.5
 	integer = FALSE
 
 /datum/config_entry/number/exposure_contrast_power

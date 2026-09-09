@@ -3084,7 +3084,7 @@
 #include "code\modules\lighting\lighting_setup.dm"
 #include "code\modules\lighting\lighting_source.dm"
 #include "code\modules\lighting\lighting_turf.dm"
-#include "code\modules\lighting\paradise_area_colors.dm"
+#include "code\modules\lighting\station_area_colors.dm"
 #include "code\modules\mafia\_defines.dm"
 #include "code\modules\mafia\controller.dm"
 #include "code\modules\mafia\map_pieces.dm"

@@ -375,6 +375,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
 	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
 	var/light = LIGHT_DEFAULT
 	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
@@ -828,7 +831,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/dat
 	if(new_character_creator)
 		// Compact inline CSS: конкретные значения цветов для BYOND-браузера.
-		// Enhanced decoration — CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
+		// Enhanced decoration - CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
 		var/modern_palette_css = ""
 		if(is_modern_theme)
 			var/list/theme = get_character_setup_palette_modern()
@@ -932,7 +935,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				"modern_neutral" = "#bfc2c7"
 			)
 
-			// Theme hub — icon buttons that never move
+			// Theme hub - icon buttons that never move
 			dat += "<div class='theme-container'>"
 			dat += "<div class='theme-hub'>"
 			var/picker_active_cls = !modern_theme_picker_collapsed ? " active" : ""
@@ -2991,7 +2994,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	// BLUEMOON: per-quirk settings (kept inline)
 	dat += "<h3>Настройки квирков</h3>"
-	var/display_summon_nickname = summon_nickname ? summon_nickname : "—"
+	var/display_summon_nickname = summon_nickname ? summon_nickname : "-"
 	dat += "<div class='csetup-quirk-settings'>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
@@ -3483,7 +3486,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/list/phobia_choices = list("Случайная")
 				if(SStraumas && SStraumas.phobia_types)
 					phobia_choices += SStraumas.phobia_types
-				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете — будет случайная.", "Настройка фобии") as null|anything in phobia_choices
+				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете - будет случайная.", "Настройка фобии") as null|anything in phobia_choices
 				if(new_choice)
 					if(new_choice == "Случайная")
 						phobia_type = null

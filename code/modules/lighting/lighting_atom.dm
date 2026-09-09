@@ -319,9 +319,9 @@
 	if(isnull(safe_color) || length(safe_color) < 7 || copytext(safe_color, 1, 2) != "#")
 		if(istype(src, /obj/machinery/light))
 			var/obj/machinery/light/L = src
-			safe_color = L.bulb_colour || LIGHT_COLOR_WHITE
+			safe_color = L.bulb_colour || LIGHT_COLOR_WARM_BLOOM
 		else
-			safe_color = LIGHT_COLOR_WHITE
+			safe_color = LIGHT_COLOR_WARM_BLOOM
 	var/is_painted_lamp = FALSE
 	if(istype(src, /obj/machinery/light))
 		var/obj/machinery/light/L = src
