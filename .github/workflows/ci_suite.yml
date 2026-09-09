@@ -46,10 +46,16 @@ jobs:
           tools/bootstrap/python -m mapmerge2.dmm_test
           ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1
       - name: Annotate Lints
-        uses: yogstation13/DreamAnnotate@v2
         if: always()
-        with:
-          outputFile: output-annotations.txt
+        run: |
+          if [ ! -s output-annotations.txt ]; then
+            exit 0
+          fi
+          while IFS= read -r line; do
+            if [[ "$line" =~ (.*), line ([0-9]+), column ([0-9]+):[[:space:]]{1,2}(error|warning): (.*) ]]; then
+              echo "::${BASH_REMATCH[4]} file=${BASH_REMATCH[1]},line=${BASH_REMATCH[2]},col=${BASH_REMATCH[3]}::${BASH_REMATCH[5]}"
+            fi
+          done < output-annotations.txt
 
   compile_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
