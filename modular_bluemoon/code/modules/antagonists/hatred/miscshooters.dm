@@ -70,10 +70,6 @@
 	H.update_body()
 	H.update_hair()
 
-/datum/antagonist/jackal/alarm_station()
-	if(istype(src) && owner?.current && owner.current.stat != DEAD)
-		priority_announce("Дипломатический Корпус Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасным ликвидатором. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)
-
 /datum/outfit/jackal
 	parent_type = /datum/outfit/hatred
 	name = "Jackal"

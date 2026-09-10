@@ -213,7 +213,7 @@
 	Ha.UnregisterSignal(H, COMSIG_MOVABLE_PRE_MOVE)
 	Ha.appear_on_station()
 	if(istype(Ha, /datum/antagonist/jackal))
-		addtimer(CALLBACK(Ha, TYPE_PROC_REF(/datum/antagonist/jackal, alarm_station)), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_jackal_alarm_station), Ha), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 		INVOKE_ASYNC(src, PROC_REF(Remove), H)
 		return
 	var/picked_sound = pick('modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_1.ogg', \
@@ -1127,6 +1127,11 @@
 		special_role = "Jackal"
 		assigned_role = "Jackal"
 		add_antag_datum(/datum/antagonist/jackal)
+
+
+/proc/_jackal_alarm_station(datum/antagonist/jackal/J)
+	if(istype(J) && J?.owner?.current && J.owner.current.stat != DEAD)
+		priority_announce("Дипломатический Корпус Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасным ликвидатором. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)
 
 
 #undef HATRED_ANTAG
