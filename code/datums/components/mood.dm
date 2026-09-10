@@ -235,28 +235,28 @@
 			if(master?.client?.prefs.mood_vignette)
 				master.overlay_fullscreen("depression", /atom/movable/screen/fullscreen/scaled/depression, 1)
 			sanity_level = 4
-if(SANITY_DISTURBED to SANITY_NEUTRAL)
-		setInsanityEffect(0)
-		master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-		master.remove_actionspeed_modifier(ACTIONSPEED_ID_SANITY)
-		master.clear_fullscreen("depression")
-		sanity_level = 3
-		deltimer(void_mask_drain_timerid)
-		void_mask_drain_start = 0
-	if(SANITY_NEUTRAL+1 to SANITY_GREAT+1) //shitty hack but +1 to prevent it from responding to super small differences
-		setInsanityEffect(0)
-		master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-		master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
-		sanity_level = 2
-		deltimer(void_mask_drain_timerid)
-		void_mask_drain_start = 0
-	if(SANITY_GREAT+1 to INFINITY)
-		setInsanityEffect(ECSTATIC_SANITY_PEN) //It's not a penalty but w/e
-		master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
-		master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
-		sanity_level = 1
-		deltimer(void_mask_drain_timerid)
-		void_mask_drain_start = 0
+		if(SANITY_DISTURBED to SANITY_NEUTRAL)
+			setInsanityEffect(0)
+			master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
+			master.remove_actionspeed_modifier(ACTIONSPEED_ID_SANITY)
+			master.clear_fullscreen("depression")
+			sanity_level = 3
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
+		if(SANITY_NEUTRAL+1 to SANITY_GREAT+1) //shitty hack but +1 to prevent it from responding to super small differences
+			setInsanityEffect(0)
+			master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
+			master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
+			sanity_level = 2
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
+		if(SANITY_GREAT+1 to INFINITY)
+			setInsanityEffect(ECSTATIC_SANITY_PEN) //It's not a penalty but w/e
+			master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
+			master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
+			sanity_level = 1
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
 
 	// Crazy or insane = add some uncommon hallucinations
 	if(sanity_level >= SANITY_CRAZY)
