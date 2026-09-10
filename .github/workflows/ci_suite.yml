@@ -48,6 +48,8 @@ jobs:
       - name: Annotate Lints
         uses: yogstation13/DreamAnnotate@v2
         if: always()
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
           outputFile: output-annotations.txt
 
