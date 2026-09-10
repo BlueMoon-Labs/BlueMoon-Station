@@ -372,7 +372,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					item_names += I.name
 		if(!isemptylist(item_names))
 			var/tooltip_content = "[ru_name_capital] имеет: [item_names.Join(", ")]"
-			. += " [span_tooltip(tooltip_content, "\[+\]", "", "userlove", "")]"
+			. += " [span_tooltip(tooltip_content, "\[+\]", "", "bold", "color:#ff42a6")]"
 
 /mob/living/carbon/human/proc/update_genitals()
 	if(QDELETED(src))

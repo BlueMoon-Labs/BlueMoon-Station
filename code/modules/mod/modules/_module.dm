@@ -297,7 +297,7 @@
 /// Updates the signal used by active modules to be activated
 /obj/item/mod/module/proc/update_signal()
 	mod.selected_module.used_signal = COMSIG_MOB_ALTCLICKON
-	RegisterSignal(mod.wearer, mod.selected_module.used_signal, TYPE_PROC_REF(/obj/item/mod/module, on_special_click))
+	RegisterSignal(mod.wearer, mod.selected_module.used_signal, TYPE_PROC_REF(/obj/item/mod/module, on_special_click), override = TRUE)
 
 /obj/item/mod/module/anomaly_locked
 	name = "MOD anomaly locked module"

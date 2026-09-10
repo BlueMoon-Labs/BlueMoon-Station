@@ -10799,6 +10799,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship1)
+"Es" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/rnd/server/inteq,
+/turf/open/floor/plasteel/dark,
+/area/InteQ_ship)
 "Et" = (
 /obj/machinery/door/poddoor{
 	id = "fslockdown";
@@ -13899,7 +13906,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Nt" = (
-/obj/machinery/computer/rdconsole/core,
+/obj/machinery/computer/rdconsole/inteq,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship)
 "Nu" = (
@@ -41356,7 +41363,7 @@ gz
 om
 sh
 gz
-cA
+Es
 cA
 cA
 Zs

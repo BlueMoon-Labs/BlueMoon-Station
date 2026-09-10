@@ -27,6 +27,38 @@
 	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
 	item_state = "acr5[magazine ? "" : "e"]"
 
+//ACR modification for 7.62
+/obj/item/gun/ballistic/automatic/acrm
+	name = "ACR-M"
+	desc = "Famous syndicate assault carabine for boarding parties. Reffited for usage of more common 7.62x39 caliber for active duty in the frontier."
+	icon_state = "acr5"
+	item_state = "acr5"
+	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/acrm
+	pin = /obj/item/firing_pin/implant/pindicate
+	can_suppress = FALSE
+	slot_flags = ITEM_SLOT_BACK
+	weapon_weight = WEAPON_HEAVY
+	w_class = WEIGHT_CLASS_BULKY
+	burst_size = 2
+	burst_shot_delay = 1
+	fire_delay = 2
+	fire_sound = "modular_bluemoon/phenyamomota/sound/guns/m16_fire.ogg"
+
+
+/obj/item/gun/ballistic/automatic/acrm/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/update_icon_updates_onmob)
+
+/obj/item/gun/ballistic/automatic/acrm/update_icon_state()
+	..()
+	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
+	item_state = "acr5[magazine ? "" : "e"]"
+
+
+
 ////////////////////////////////////////////////////////////////////
 // M16A4 and variations
 /obj/item/gun/ballistic/automatic/m16a4

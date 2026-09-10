@@ -25,7 +25,14 @@
 		"antag_target" = signals ? round(antag_target(signals.effective_crew), 0.1) : 0,
 		"wallet_antag" = round(budgets[DIRECTOR_SEVERITY_ANTAG], 0.1),
 		"wallet_ghost" = round(budgets[DIRECTOR_SEVERITY_GHOST], 0.1),
+		"wallet_minor" = round(budgets[DIRECTOR_SEVERITY_MINOR], 0.1),
+		"wallet_moderate" = round(budgets[DIRECTOR_SEVERITY_MODERATE], 0.1),
+		"wallet_major" = round(budgets[DIRECTOR_SEVERITY_MAJOR], 0.1),
 	)
+	var/datum/director_action/antag_plan = pool_saving[DIRECTOR_SEVERITY_ANTAG]
+	var/datum/director_action/ghost_plan = pool_saving[DIRECTOR_SEVERITY_GHOST]
+	entry["saving_antag"] = antag_plan?.action_name()
+	entry["saving_ghost"] = ghost_plan?.action_name()
 	if(length(rejected))
 		entry["rejected"] = rejected
 	if(detail)
@@ -37,6 +44,7 @@
 	var/list/out = list(
 		"round_type" = GLOB.round_type,
 		"profile" = profile ? "[profile.type]" : null,
+		"profile_settings" = profile?.panel_snapshot(),
 		"beats" = beat_log,
 	)
 	rustg_file_write(json_encode(out), "[GLOB.log_directory]/director.json")
