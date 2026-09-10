@@ -94,7 +94,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
-	var/sound_toggles = NONE
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP

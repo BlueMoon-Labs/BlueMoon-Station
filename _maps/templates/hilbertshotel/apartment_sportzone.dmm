@@ -74,9 +74,13 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 9
 	},
-/obj/machinery/jukebox{
-	req_one_access = null;
-	set_obj_flags = "EMAGGED"
+/obj/machinery/vending/snack/orange{
+	shut_up = 1;
+	custom_premium_price = 0;
+	custom_price = 0;
+	default_price = 0;
+	extra_price = 0;
+	fair_market_price = 0
 	},
 /turf/open/floor/carpet/black,
 /area/hilbertshotel)
@@ -96,8 +100,7 @@
 /turf/open/floor/plasteel/white/smooth/small,
 /area/hilbertshotel)
 "gP" = (
-/obj/effect/turf_decal/siding/dark,
-/obj/structure/chair/stool,
+/obj/structure/weightmachine/stacklifter,
 /turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "gV" = (
@@ -183,10 +186,13 @@
 /turf/open/floor/plasteel/white/smooth/small,
 /area/hilbertshotel)
 "kY" = (
+/obj/structure/chair/stool{
+	dir = 4;
+	pixel_x = 9
+	},
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
-/obj/structure/weightmachine/weightlifter,
 /turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "lc" = (
@@ -298,10 +304,10 @@
 /turf/open/floor/plasteel,
 /area/hilbertshotel)
 "oZ" = (
+/obj/structure/closet/athletic_mixed,
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/structure/reagent_dispensers/water_cooler,
 /turf/open/floor/plasteel/dark,
 /area/hilbertshotel)
 "pE" = (
@@ -520,7 +526,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
 	},
-/obj/structure/table/glass,
+/obj/machinery/jukebox{
+	req_one_access = null;
+	set_obj_flags = "EMAGGED"
+	},
 /turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "xX" = (
@@ -532,13 +541,6 @@
 "ya" = (
 /obj/structure/pool/Lboard,
 /turf/open/pool/water,
-/area/hilbertshotel)
-"yl" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 1
-	},
-/obj/structure/weightmachine/stacklifter,
-/turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "yE" = (
 /obj/effect/turf_decal/tile/bar{
@@ -572,8 +574,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 6
 	},
-/obj/structure/table/glass,
-/obj/structure/bedsheetbin/towel,
 /turf/open/floor/wood,
 /area/hilbertshotel)
 "Bu" = (
@@ -599,6 +599,8 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 10
 	},
+/obj/structure/table/glass,
+/obj/structure/bedsheetbin/towel,
 /turf/open/floor/wood,
 /area/hilbertshotel)
 "CU" = (
@@ -709,15 +711,8 @@
 /turf/open/floor/carpet/royalblack,
 /area/hilbertshotel)
 "Gm" = (
-/obj/machinery/vending/snack/orange{
-	shut_up = 1;
-	custom_premium_price = 0;
-	custom_price = 0;
-	default_price = 0;
-	extra_price = 0;
-	fair_market_price = 0
-	},
-/turf/open/floor/plasteel/dark,
+/obj/structure/weightmachine/weightlifter,
+/turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "Gw" = (
 /obj/effect/turf_decal/siding{
@@ -961,11 +956,14 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
+/obj/item/toy/beach_ball/holoball{
+	pixel_y = 9;
+	pixel_x = 9
+	},
 /obj/machinery/light{
 	dir = 1;
 	light_color = "#cee5d2"
 	},
-/obj/structure/weightmachine/stacklifter,
 /turf/open/floor/carpet/black,
 /area/hilbertshotel)
 "QI" = (
@@ -1036,10 +1034,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hilbertshotel)
-"Wa" = (
-/obj/structure/closet/secure_closet/personal,
-/turf/open/floor/plasteel/dark,
-/area/hilbertshotel)
 "Wj" = (
 /obj/structure/chair/pew{
 	dir = 8
@@ -1104,13 +1098,8 @@
 /turf/open/space/bluespace,
 /area/hilbertshotel)
 "YA" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 8
-	},
-/obj/structure/chair/pedalgen{
-	dir = 8
-	},
-/turf/open/floor/carpet/black,
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel/dark,
 /area/hilbertshotel)
 "YK" = (
 /obj/structure/chair/sofa/left/brown,
@@ -1319,10 +1308,10 @@ XJ
 (9,1,1) = {"
 XJ
 aN
-zw
+YA
 OW
 oZ
-Gm
+zw
 aN
 fH
 xU
@@ -1346,9 +1335,9 @@ OW
 cT
 Zm
 ut
-YA
-YA
-YA
+fo
+fo
+fo
 fo
 fo
 fo
@@ -1359,18 +1348,18 @@ XJ
 (11,1,1) = {"
 XJ
 aN
-Wa
-Wa
+zw
+zw
 Hu
 sK
 aN
-yl
-zJ
-zJ
-zJ
-zJ
-zJ
+Zm
 wy
+zJ
+Gm
+zJ
+gP
+zJ
 zJ
 aP
 aN
@@ -1386,9 +1375,9 @@ aN
 aN
 Qr
 QS
-kY
 JW
 kY
+JW
 JW
 FW
 JW
@@ -1425,7 +1414,7 @@ ly
 KG
 KG
 XH
-gP
+aP
 Iq
 Tn
 Tn
@@ -1445,7 +1434,7 @@ KG
 KG
 KG
 HN
-gP
+aP
 jn
 Tn
 Tn

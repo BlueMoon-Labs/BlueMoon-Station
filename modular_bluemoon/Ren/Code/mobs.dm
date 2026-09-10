@@ -208,7 +208,6 @@
 /datum/round_event_control/sniper
 	name = "Mad shooter"
 	typepath = /datum/round_event/sniper
-	min_players = 20
 	max_occurrences = 2
 	weight = 10
 	category = EVENT_CATEGORY_ENTITIES

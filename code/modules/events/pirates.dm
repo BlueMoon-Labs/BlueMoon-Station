@@ -1,7 +1,7 @@
 /datum/round_event_control/pirates
 	name = "Space Pirates"
 	typepath = /datum/round_event/pirates
-	weight = 8
+	weight = 6
 	max_occurrences = 1
 	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
 	// Было 45 мин: к этому времени кошелёк уже 2-3 раза выжжен ранней волной, и за день

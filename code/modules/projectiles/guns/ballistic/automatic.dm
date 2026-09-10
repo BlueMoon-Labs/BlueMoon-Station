@@ -380,7 +380,6 @@
 	fire_sound = 'sound/weapons/gunshot.ogg'
 	can_suppress = FALSE
 	zoomable = FALSE
-	casing_ejector = FALSE
 	mag_type = /obj/item/ammo_box/magazine/toy/sniper_rounds
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/syndicate

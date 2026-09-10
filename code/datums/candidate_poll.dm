@@ -61,7 +61,7 @@
 		return FALSE
 
 	signed_up += candidate
-	log_game("Ghost poll: [candidate.key] signed up for [role] ([question]). id [REF(src)]")
+	log_game("Ghost poll: [candidate.key] signed up for [role] ([question]).")
 
 	if(!silent)
 		to_chat(candidate, span_notice(response_messages[POLL_RESPONSE_SIGNUP]))
@@ -86,7 +86,7 @@
 		return FALSE
 
 	signed_up -= candidate
-	log_game("Ghost poll: [candidate.key] removed from [role]. id [REF(src)]")
+	log_game("Ghost poll: [candidate.key] removed from [role].")
 
 	if(!silent)
 		to_chat(candidate, span_danger(response_messages[POLL_RESPONSE_UNREGISTERED]))
