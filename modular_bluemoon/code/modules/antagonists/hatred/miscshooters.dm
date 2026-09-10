@@ -197,6 +197,27 @@
 	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /obj/item/gun/ballistic/revolver/jackal357/attackby(obj/item/A, mob/user, params)
+	// INTERCEPT: if it's a jackal speedloader, handle it OURSELVES before parent messes things up
+	// Parent's default revolver attackby would load only 1 round and deplete the speedloader
+	if(!magazine)
+		return ..()
+	if(istype(A, /obj/item/ammo_box/a357/jackal) && istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder/jackal))
+		var/obj/item/ammo_box/a357/jackal/speedloader = A
+		var/obj/item/ammo_box/magazine/internal/cylinder/jackal/JC = magazine
+		if(!JC.can_load(user))
+			return
+		var/num_loaded = JC.ammo_box_reload(speedloader, user, params, 0, 1)
+		if(num_loaded)
+			to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src].</span>")
+			playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
+			speedloader.update_icon()
+			update_icon()
+			chamber_round(0)
+			return TRUE
+		else
+			to_chat(user, span_warning("The speedloader has no ammo left!"))
+			return
+	// Not a jackal speedloader? Fallback to normal parent logic
 	. = ..()
 	if(.)
 		return
@@ -205,13 +226,10 @@
 	var/num_loaded = 0
 	if(istype(A, /obj/item/ammo_box))
 		var/obj/item/ammo_box/AM = A
-		// For Jackal, always use ammo_box_reload regardless of speedloader flag
-		// (jackal cylinder has custom ammo_box_reload that handles full speedloader dumps)
 		if(istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder/jackal))
 			var/obj/item/ammo_box/magazine/internal/cylinder/jackal/JC = magazine
 			num_loaded = JC.ammo_box_reload(AM, user, params, 0, 1)
 		else
-			// Fallback to parent logic
 			if(!AM.speedloader)
 				if(!istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder))
 					return to_chat(user, span_userdanger("У вас не получается зарядить револьвер при помощи [A]!"))
@@ -257,11 +275,51 @@
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 
+// Helper proc: create a FRESH jackal speedloader with correct ammo type
+/obj/item/storage/belt/holster/jackal/proc/create_refilled_speedloader(target_loc)
+	// Check if the revolver has been upgraded to use enhanced ammo
+	var/obj/item/gun/ballistic/revolver/jackal357/revolver
+	for(var/obj/item/I in src)
+		if(istype(I, /obj/item/gun/ballistic/revolver/jackal357))
+			revolver = I
+			break
+	var/enhanced_ammo = FALSE
+	if(revolver && revolver.glory_kills >= 5)
+		enhanced_ammo = TRUE
+
+	// Create the fresh speedloader instance
+	var/obj/item/ammo_box/a357/jackal/fresh = new /obj/item/ammo_box/a357/jackal(target_loc)
+	// Override ammo in it with the correct type
+	for(var/obj/item/ammo_casing/old as anything in fresh.stored_ammo)
+		if(old && !QDELETED(old))
+			qdel(old)
+	fresh.stored_ammo.Cut()
+	while(fresh.stored_ammo.len < fresh.max_ammo)
+		var/obj/item/ammo_casing/new_casing
+		if(enhanced_ammo)
+			new_casing = new /obj/item/ammo_casing/a357/jackal/enhanced(fresh)
+		else
+			new_casing = new /obj/item/ammo_casing/a357/jackal(fresh)
+		fresh.stored_ammo += new_casing
+	fresh.update_icon()
+	return fresh
+
+// AUTO-REFILL on Enter (like Hatred ammo pouch):
+// Put the EMPTY/USED jackal speedloader back into the holster — it turns into a NEW FULL one instantly
+// You don't need to take it out and put it back — just place it inside
+/obj/item/storage/belt/holster/jackal/Entered(atom/movable/AM, atom/oldLoc)
+	. = ..()
+	if(istype(AM, /obj/item/ammo_box/a357/jackal) && !QDELETED(src))
+		// Same logic as Hatred pouch: destroy the used one, spawn a new full one in its place
+		var/old_type = AM.type
+		qdel(AM)
+		create_refilled_speedloader(src)
+
+// BACKWARDS COMPATIBILITY: when you REMOVE the speedloader it gets refilled (old behavior preserved)
 /obj/item/storage/belt/holster/jackal/Exited(atom/movable/gone, atom/newLoc)
 	. = ..()
 	if(istype(gone, /obj/item/ammo_box/a357/jackal) && !QDELETED(src))
 		var/obj/item/ammo_box/a357/jackal/speedloader = gone
-		// Refill the speedloader instead of creating a new one
 		// Check if the revolver has been upgraded to use enhanced ammo
 		var/obj/item/gun/ballistic/revolver/jackal357/revolver
 		for(var/obj/item/I in src)

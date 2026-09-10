@@ -64,16 +64,19 @@
 		return
 	if(istype(A, /obj/item/ammo_box/a357/jackal))
 		// Speedloader for Jackal: replace ALL rounds in one go
+		// Take a SNAPSHOT of the speedloader's ammo first (before mutating lists)
+		var/list/speedloader_snapshot = A.stored_ammo.Copy()
 		var/list/old_ammo = stored_ammo.Copy()
 		stored_ammo.Cut()
 		// Ensure we have enough slots
 		while(stored_ammo.len < max_ammo)
 			stored_ammo += null
 
-		var/ammo_to_load = min(A.stored_ammo.len, max_ammo)
-		for(var/i = 1 to ammo_to_load)
-			var/obj/item/ammo_casing/AC = A.stored_ammo[i]
-			if(!AC)
+		var/slot_idx = 1
+		for(var/obj/item/ammo_casing/AC as anything in speedloader_snapshot)
+			if(!AC || slot_idx > max_ammo)
+				continue
+			if(!istype(AC, /obj/item/ammo_casing/a357/jackal))
 				continue
 			// Upgrade if needed
 			if(enhanced && istype(AC, /obj/item/ammo_casing/a357/jackal) && !istype(AC, /obj/item/ammo_casing/a357/jackal/enhanced))
@@ -82,19 +85,19 @@
 				AC.BB = new /obj/item/projectile/bullet/a357/jackal/enhanced(AC)
 				AC.projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
 				AC.update_icon()
-			stored_ammo[i] = AC
+			stored_ammo[slot_idx] = AC
 			AC.forceMove(src)
 			num_loaded++
+			slot_idx++
 
-		// Remove loaded ammo from speedloader
-		for(var/x = 1 to num_loaded)
-			if(A.stored_ammo.len)
-				var/obj/item/ammo_casing/loaded = A.stored_ammo[1]
+		// Clear the speedloader (all live ammo moved to cylinder)
+		for(var/obj/item/ammo_casing/loaded as anything in speedloader_snapshot)
+			if(loaded && !QDELETED(loaded) && loaded in A.stored_ammo)
 				A.stored_ammo -= loaded
 
 		// Drop old unspent casings
 		for(var/obj/item/ammo_casing/old_casing as anything in old_ammo)
-			if(old_casing && old_casing.BB)
+			if(old_casing && !QDELETED(old_casing) && old_casing.BB)
 				old_casing.forceMove(drop_location())
 	else
 		// Fallback for non-jackal boxes: load one by one
