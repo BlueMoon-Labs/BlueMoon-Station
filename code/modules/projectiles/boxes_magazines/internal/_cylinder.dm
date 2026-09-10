@@ -92,7 +92,7 @@
 
 		// Clear the speedloader (all live ammo moved to cylinder)
 		for(var/obj/item/ammo_casing/loaded as anything in speedloader_snapshot)
-			if(loaded && !QDELETED(loaded) && loaded in A.stored_ammo)
+			if(loaded && !QDELETED(loaded) && (loaded in A.stored_ammo))
 				A.stored_ammo -= loaded
 
 		// Drop old unspent casings

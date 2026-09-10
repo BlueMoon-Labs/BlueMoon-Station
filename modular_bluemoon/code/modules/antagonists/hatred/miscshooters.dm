@@ -182,19 +182,27 @@
 	if(istype(jackal_cylinder))
 		jackal_cylinder.upgrade()
 
-/obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
+/obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 5 SECONDS)
 	var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
 	if(!J || !ishuman(target) || !target.get_bodypart(BODY_ZONE_HEAD))
-		return ..()
+		// Not a Jackal or invalid target: delegate to global hatred/handle_suicide override (hatred.dm:480)
+		var/obj/item/gun/G = src
+		return G../handle_suicide(user, target, params, bypass_timer, time_to_kill)
 	var/is_glory = TRUE
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(J, killing_speech_cd))
 		var/quip = pick(J.jackal_execution_quips)
-		user.visible_message("<span class='bolddanger'>[user] произносит [quip]</span>", \
-							"<span class='userdanger'>[user] произносит [quip]</span>")
+		// visible_message with 3 params: public, private (viewer), ambient
+		// Use same format as other hatred executions
+		visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
+						"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
+						"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
 		COOLDOWN_START(J, killing_speech_cd, 10 SECONDS)
-	. = ..(user, target, params, bypass_timer, time_to_kill = 5 SECONDS)
+	// Go straight to BASE GUN handle_suicide (gun.dm:828) so the global hatred.dm override doesn't
+	// interfere or check the same things twice. We handle cooldowns/quips above.
+	var/obj/item/gun/base_gun = src
+	. = base_gun../handle_suicide(user, target, params, bypass_timer, time_to_kill)
 	if(!. || user == target || !is_glory)
 		return
 	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
@@ -314,7 +322,6 @@
 	. = ..()
 	if(istype(AM, /obj/item/ammo_box/a357/jackal) && !QDELETED(src))
 		// Same logic as Hatred pouch: destroy the used one, spawn a new full one in its place
-		var/old_type = AM.type
 		qdel(AM)
 		create_refilled_speedloader(src)
 

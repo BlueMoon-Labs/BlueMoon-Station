@@ -458,8 +458,9 @@
 		if(istype(src, /datum/antagonist/jackal))
 			var/datum/antagonist/jackal/J = src
 			var/quip = pick(J.jackal_execution_quips)
-			killer.visible_message("<span class='bolddanger'>[killer] произносит [quip]</span>", \
-									"<span class='userdanger'>[killer] произносит [quip]</span>")
+			visible_message("<span class='bolddanger'>[killer] произносит \"[quip]\"</span>", \
+							"<span class='userdanger'>[killer] смотрит вам в глаза и произносит: [quip]</span>", \
+							"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
 		else
 			playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(src, killing_speech_cd, 10 SECONDS)
@@ -479,31 +480,36 @@
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
 	var/datum/antagonist/hatred/Ha = user.mind?.has_antag_datum(/datum/antagonist/hatred)
+	var/is_jackal = FALSE
 	if(!Ha)
 		Ha = user.mind?.has_antag_datum(/datum/antagonist/jackal)
+		is_jackal = istype(Ha)
 	if(!Ha || !ishuman(target))
 		return ..()
 	if(!target.get_bodypart(BODY_ZONE_HEAD))
 		return
 	var/is_glory = TRUE
-	// already dead bodies or npcs don't count
-	// if((!target.client && ((world.time - target.lastclienttime) > 10 SECONDS)) || (target.stat == DEAD && ((world.time - target.timeofdeath) > 3 SECONDS)))
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
-		if(istype(Ha, /datum/antagonist/jackal))
+		// Jackal revolver has its OWN handle_suicide override that shows quips — skip this global check to avoid double speech
+		if(istype(src, /obj/item/gun/ballistic/revolver/jackal357))
+			goto skip_speech
+		if(is_jackal)
 			var/datum/antagonist/jackal/J = Ha
 			var/quip = pick(J.jackal_execution_quips)
-			user.visible_message("<span class='bolddanger'>[user] произносит [quip]</span>", \
-								"<span class='userdanger'>[user] произносит [quip]</span>")
+			visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
+							"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
+							"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
 		else
 			playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	var/new_ttk = istype(Ha, /datum/antagonist/jackal) ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
+	skip_speech
+	var/new_ttk = is_jackal ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return
-	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME) // wait for boolet to do its job
+	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 
 /obj/item/proc/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	if((QDELETED(target) || target?.stat == DEAD) && !QDELETED(user) && user?.stat != DEAD)
