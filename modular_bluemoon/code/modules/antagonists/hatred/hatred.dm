@@ -29,6 +29,13 @@
 	antagpanel_category = "Jackal"
 	roundend_category = "Jackal"
 	job_rank = ROLE_MASS_SHOOTER
+	var/list/jackal_execution_quips = list(
+		"...Мой компаньон будет рад",
+		"Просто бизнес.",
+		"...Сопутствующий ущерб",
+		"Слышишь этот щелчок? Ты слышишь? Это звук твоей судьбы.",
+		"Прости, мне платят за результат, а не за церемонии."
+	)
 	ui_name = "AntagInfoJackal"
 
 
@@ -448,9 +455,15 @@
 	if(!target.client || target.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(src, killing_speech_cd))
-		playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
+		if(istype(src, /datum/antagonist/jackal))
+			var/datum/antagonist/jackal/J = src
+			var/quip = pick(J.jackal_execution_quips)
+			killer.visible_message("<span class='bolddanger'>[killer] произносит [quip]</span>", \
+									"<span class='userdanger'>[killer] произносит [quip]</span>")
+		else
+			playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(src, killing_speech_cd, 10 SECONDS)
-	var/time_to_kill = chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS
+	var/time_to_kill = istype(src, /datum/antagonist/jackal) ? 5 SECONDS : (chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS)
 	if(do_after(killer, time_to_kill, target))
 		target.visible_message(span_bolddanger("[killer] перерезает горло [target]!"), span_userdanger("[killer] перерезает твое горло!"))
 		knife.melee_attack_chain(killer, target, damage_multiplier = 100)
@@ -478,9 +491,15 @@
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
-		playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
+		if(istype(Ha, /datum/antagonist/jackal))
+			var/datum/antagonist/jackal/J = Ha
+			var/quip = pick(J.jackal_execution_quips)
+			user.visible_message("<span class='bolddanger'>[user] произносит [quip]</span>", \
+								"<span class='userdanger'>[user] произносит [quip]</span>")
+		else
+			playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	var/new_ttk = istype(Ha, /datum/antagonist/jackal) ? 3 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
+	var/new_ttk = istype(Ha, /datum/antagonist/jackal) ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return

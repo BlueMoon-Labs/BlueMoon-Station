@@ -179,6 +179,23 @@
 	if(istype(jackal_cylinder))
 		jackal_cylinder.upgrade()
 
+/obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
+	var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
+	if(!J || !ishuman(target) || !target.get_bodypart(BODY_ZONE_HEAD))
+		return ..()
+	var/is_glory = TRUE
+	if(!target.client || target?.stat == DEAD)
+		is_glory = FALSE
+	else if(COOLDOWN_FINISHED(J, killing_speech_cd))
+		var/quip = pick(J.jackal_execution_quips)
+		user.visible_message("<span class='bolddanger'>[user] произносит [quip]</span>", \
+							"<span class='userdanger'>[user] произносит [quip]</span>")
+		COOLDOWN_START(J, killing_speech_cd, 10 SECONDS)
+	. = ..(user, target, params, bypass_timer, time_to_kill = 5 SECONDS)
+	if(!. || user == target || !is_glory)
+		return
+	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+
 /obj/item/gun/ballistic/revolver/jackal357/attackby(obj/item/A, mob/user, params)
 	. = ..()
 	if(.)
