@@ -41,6 +41,7 @@
 
 /datum/antagonist/jackal/proc/handle_dependency(mob/living/carbon/human/H, delta_time, times_fired)
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE) // Required: parent Hatred has recover_from_softcrit() on the same COMSIG_LIVING_BIOLOGICAL_LIFE signal
 	if(!istype(H) || H.stat == DEAD || dependency_satisfied(H))
 		return
 	H.adjustBruteLoss(max(JACKAL_DEPENDENCY_BASE_DAMAGE, delta_time * JACKAL_DEPENDENCY_BRUTE_MULTIPLIER), TRUE)
