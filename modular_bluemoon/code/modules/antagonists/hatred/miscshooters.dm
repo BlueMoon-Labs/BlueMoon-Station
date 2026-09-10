@@ -1,13 +1,5 @@
 #define JACKAL_ANTAG "jackal"
 
-/datum/antagonist/jackal
-	parent_type = /datum/antagonist/hatred
-	name = "Jackal"
-	antagpanel_category = "Jackal"
-	roundend_category = "Jackal"
-	job_rank = ROLE_MASS_SHOOTER
-	ui_name = "AntagInfoJackal"
-
 /datum/antagonist/jackal/greet()
 	var/greet_text = "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
 	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
@@ -95,7 +87,7 @@
 	backpack_contents = null
 
 /datum/outfit/jackal/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
-	return
+	return // Prevent parent hatred pre_equip from running (weapon selection dialog)
 
 /datum/outfit/jackal/post_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	if(!istype(H) || QDELETED(H))

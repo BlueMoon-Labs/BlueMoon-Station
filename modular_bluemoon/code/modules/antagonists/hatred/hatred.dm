@@ -23,6 +23,14 @@
 
 #define HATRED_ANTAG "hatred"
 
+/datum/antagonist/jackal
+	parent_type = /datum/antagonist/hatred
+	name = "Jackal"
+	antagpanel_category = "Jackal"
+	roundend_category = "Jackal"
+	job_rank = ROLE_MASS_SHOOTER
+	ui_name = "AntagInfoJackal"
+
 
 /datum/antagonist/hatred
 	name = "Mass Shooter"
@@ -90,20 +98,21 @@
 		. += "<br><b>[objective.glory_kills]</b> ничтожных существ(а) было брутально и безжалостно добито массшутером."
 
 /datum/antagonist/hatred/greet()
-	if(istype(src, /datum/antagonist/jackal))
-		return
 	var/greet_text
-	greet_text += "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
-	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
-	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
-	greet_text += "Твои особые сигареты лечат тебя, пока ты докуриваешь их в перерывах между выстрелами.<br>"
-	greet_text += "В холстере лежат три стимпака и два эпипена. Стимпаки разгоняют тело, а эпипены почти не лечат, зато останавливают кровотечение.<br>"
+	greet_text += "Ты - [span_red(span_bold("Безымянный Массшутер"))]. Твое имя совершенно неважно. Твое прошлое даже если и было, оно было незавидным.<br>"
+	greet_text += "Ты испытываешь непреодолимую ненависть, отвращение и презрение ко всем окружающим.<br>"
+	greet_text += "У тебя лишь две цели: <u>убивать</u> и <u>умереть славной смертью</u>.<br>"
+	greet_text += "<br>[span_red(span_bold("Не торопись и познакомься со своими инструментами геноцида. В бою у тебя не будет такой \
+					возможности. Соберись с мыслями и отправляйся на станцию когда будешь готов."))]<br><br>"
+	greet_text += "Твое проклятое снаряжение неразлучно с тобою и подстегивает тебя продолжать соврешать геноцид беззащитных гражданских.<br>"
+	greet_text += "Твоё [span_red("Оружие Ненависти")] и неутолимая жажда убивать вознаграждают тебя, ибо завершающий выстрел в упор в голову (рот) исцеляет твои раны и дает прилив сил, нож добивает быстрее и надежнее.<br>"
+	greet_text += span_red("Обычная медицина не лечит раны и ожоги!<br>")
 	if(chosen_gun == "Pistols")
 		greet_text += "[span_red("Стрелять с двух рук - HARM INTENT")].<br>"
 	if(chosen_gun == "Combat Shotgun")
 		greet_text += "Акимбо: Ты можешь стрелять из оружия одной рукой, даже если вторая занята, но забудь про автоматическую стрельбу. С твоим дробовиком это только бонус.<br>"
 		greet_text += "На твоем поясе висит [span_red("запасная двустволка")] для быстрой стрельбы другим типом боеприпасов. Заряжена выбивающими двери и окна патронами..<br>"
-	greet_text += "[span_red(span_bold("Докуривай сигарету — и погнали"))].<br>"
+	greet_text += "[span_red(span_bold("Время убивать. Время умирать."))] И пусть ни одна мразь не доживёт до завтра. Ибо никто сегодня не защищен от твоей Ненависти.<br>"
 	to_chat(owner.current, greet_text)
 	antag_memory = greet_text
 	owner.announce_objectives()
@@ -204,7 +213,7 @@
 	Ha.UnregisterSignal(H, COMSIG_MOVABLE_PRE_MOVE)
 	Ha.appear_on_station()
 	if(istype(Ha, /datum/antagonist/jackal))
-		addtimer(CALLBACK(Ha, TYPE_PROC_REF(/datum/antagonist/hatred, alarm_station)), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+		addtimer(CALLBACK(Ha, TYPE_PROC_REF(/datum/antagonist/jackal, alarm_station)), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 		INVOKE_ASYNC(src, PROC_REF(Remove), H)
 		return
 	var/picked_sound = pick('modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_1.ogg', \
@@ -925,8 +934,8 @@
 
 /datum/outfit/hatred/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	var/datum/antagonist/hatred/Ha = H.mind?.has_antag_datum(/datum/antagonist/hatred)
-	if(!Ha)
-		return
+	if(!Ha || istype(Ha, /datum/antagonist/jackal))
+		return // Exclude Jackal which has its own outfit
 	// Ha.gear_level = tgui_input_list(H, "ЭТО ОКОШКО ДЛЯ ОБМАНА ПОДСЧЕТА ОФИЦЕРОВ В РАУНДЕ И НУЖНО ТОЛЬКО ДЛЯ ДЕБАГА, В ИГРЕ ЕГО НЕ БУДЕТ", "gear level?", list(1, 2), 1)
 	var/available_sets = Ha.classic_guns
 	SEND_SOUND(H, 'sound/misc/notice2.ogg')
