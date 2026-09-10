@@ -237,6 +237,7 @@
 	name = "flechette shell"
 	desc = "A shotgun casing filled with small metal darts. Pokes many tiny holes into meat and kevlar alike. Useful for turning someones insides into outsides."
 	id = "flechette_shell"
+	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 2000, /datum/material/titanium = 1000)
 	build_path = /obj/item/ammo_casing/shotgun/flechette
 	category = list("Ammo")
@@ -247,6 +248,7 @@
 	name = "frangible slug"
 	desc = "A weak anti materiel shell intended for dislodging airlock, breaking down barricades and structures. Not effective against people"
 	id = "frangible_slug"
+	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000)
 	build_path = /obj/item/ammo_casing/shotgun/frangible
 	category = list("Ammo")
