@@ -133,6 +133,8 @@
 	icon = 'modular_bluemoon/code/modules/antagonists/hatred/miscweapons.dmi'
 	icon_state = "jackal357"
 	item_state = "jackal357"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder
 	fire_sound = 'modular_bluemoon/sound/weapons/jackal357.ogg'
 	recoil = 0.5
