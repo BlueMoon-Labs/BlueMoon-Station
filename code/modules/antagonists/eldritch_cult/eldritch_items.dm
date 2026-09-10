@@ -302,6 +302,8 @@
 	flags_inv = HIDEFACE|HIDEFACIALHAIR
 	///Who is wearing this
 	var/mob/living/carbon/human/local_user
+	///Список целей с активным кулдауном
+	var/list/mob/living/carbon/human/cooldown_targets = list()
 
 /obj/item/clothing/mask/gas/void_mask/equipped(mob/user, slot)
 	. = ..()
@@ -317,6 +319,9 @@
 	local_user = null
 	STOP_PROCESSING(SSobj, src)
 	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+	for(var/mob/living/carbon/human/target in cooldown_targets)
+		REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+	cooldown_targets.Cut()
 	return ..()
 
 /obj/item/clothing/mask/gas/void_mask/process(delta_time)
@@ -328,6 +333,9 @@
 
 	for(var/mob/living/carbon/human/human_in_range in viewers(9,local_user))
 		if(IS_HERETIC(human_in_range) || IS_HERETIC_MONSTER(human_in_range))
+			continue
+
+		if(HAS_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE))
 			continue
 
 		SEND_SIGNAL(human_in_range,COMSIG_VOID_MASK_ACT,rand(-2,-20)*delta_time)
@@ -344,6 +352,16 @@
 
 		if(DT_PROB(25,delta_time))
 			human_in_range.Dizzy(5)
+
+		ADD_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+		cooldown_targets |= human_in_range
+		addtimer(CALLBACK(src, PROC_REF(remove_immunity), human_in_range), 10 SECONDS, TIMER_STOPPABLE)
+
+/obj/item/clothing/mask/gas/void_mask/proc/remove_immunity(mob/living/carbon/human/target)
+	if(!target)
+		return
+	REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+	cooldown_targets -= target
 
 /obj/item/melee/rune_knife
 	name = "Нож для резьбы"

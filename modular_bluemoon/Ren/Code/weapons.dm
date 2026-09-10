@@ -451,26 +451,6 @@
 	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
 	build_path = /obj/item/ammo_box/magazine/pistolm9mm/inc
 
-	// два новых патрона в печать
-
-/datum/design/flechette
-	name = "flechette shell"
-	desc = "A shotgun casing filled with small metal darts. Pokes many tiny holes into meat and kevlar alike. Useful for turning someones insides into outsides."
-	id = "flechette_shell"
-	materials = list(/datum/material/iron = 2000, /datum/material/titanium = 1000)
-	build_path = /obj/item/ammo_casing/shotgun/flechette
-	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
-
-/datum/design/frangible
-	name = "frangible slug"
-	desc = "A weak anti materiel shell intended for dislodging airlock, breaking down barricades and structures. Not effective against people"
-	id = "frangible_slug"
-	materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000)
-	build_path = /obj/item/ammo_casing/shotgun/frangible
-	category = list("Ammo")
-	departmental_flags = DEPARTMENTAL_FLAG_SECURITY | DEPARTMENTAL_FLAG_SCIENCE
-
 ///Дорожный знак
 /obj/item/spear/stop
 	name = "Stop sign"

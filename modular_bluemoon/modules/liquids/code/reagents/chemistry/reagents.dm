@@ -1,7 +1,7 @@
 // Liquid-related reagent properties. LIQUIDS ADD - moved from modular_liquids, applied to base reagents.
 /datum/reagent
 	///Whether it will evaporate if left untouched on a liquids simulated puddle
-	var/evaporates = FALSE
+	var/evaporates = TRUE
 
 	///How much fire power does the liquid have, for burning on simulated liquids. Not enough fire power/unit of entire mixture may result in no fire
 	var/liquid_fire_power = 0
