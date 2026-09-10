@@ -136,3 +136,11 @@ jobs:
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build --ci -DCIBUILDING
           bash tools/ci/run_server.sh ${{ matrix.map }}
+      - name: Upload CI logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: ci-logs
+          path: ci_test/data/logs/ci/*.log
+          if-no-files-found: ignore
+          overwrite: true
