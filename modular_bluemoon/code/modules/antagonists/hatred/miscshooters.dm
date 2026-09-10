@@ -28,8 +28,8 @@
 	H.update_body()
 	// Jackal relies on stimpacks and cigarettes; hatred blocks all reagent speed boosts
 	// Remove immunity not just for stimulants but for ALL reagent speed modifiers
-	for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
-		if(initial(ms:multiplicative_slowdown) < 0)
+	for(var/datum/movespeed_modifier/reagent/ms as anything in typesof(/datum/movespeed_modifier/reagent))
+		if(initial(ms.multiplicative_slowdown) < 0)
 			H.remove_movespeed_mod_immunities(HATRED_ANTAG, ms)
 	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_dependency), override = TRUE)
 
@@ -57,7 +57,9 @@
 	return FALSE
 
 /datum/antagonist/jackal/make_authentic_body()
-	var/mob/living/carbon/human/H = owner.current
+	var/mob/living/carbon/human/H = owner?.current
+	if(!istype(H))
+		return
 	H.real_name = "Jackal"
 	H.name = H.real_name
 	H.dna.real_name = H.real_name

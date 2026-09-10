@@ -97,8 +97,12 @@
 
 		// Drop old unspent casings
 		for(var/obj/item/ammo_casing/old_casing as anything in old_ammo)
-			if(old_casing && !QDELETED(old_casing) && old_casing.BB)
+			if(!old_casing || QDELETED(old_casing))
+				continue
+			if(old_casing.BB)
 				old_casing.forceMove(drop_location())
+			else
+				old_casing.forceMove(drop_location()) // отстрелянные гильзы тоже обязаны покинуть цилиндр
 	else
 		// Fallback for non-jackal boxes: load one by one
 		. = ..(A, user, params, silent, replace_spent)
