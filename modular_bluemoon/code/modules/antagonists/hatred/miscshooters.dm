@@ -4,13 +4,14 @@
 #define JACKAL_DEPENDENCY_FIRE_MULTIPLIER 0.2
 #define JACKAL_DEPENDENCY_WARNING_CHANCE 10
 
+
 /datum/antagonist/jackal/greet()
 	var/greet_text = "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
 	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
 	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
 	greet_text += "Твои особые сигареты лечат тебя. Если в крови не останется алкоголя, Omnizine или стимуляторов, тело начнет постепенно разрушаться.<br>"
 	greet_text += "В холстере лежат два stimpack medipen, три эпипена и один боевой нож. Эпипены почти не лечат, зато останавливают кровотечение.<br>"
-	greet_text += "Казнь выполняется выстрелом из револьвера по критованной цели. После пяти казней на револьвер накладывается особая маска, уменьшая отдачу и увеличивая темп стрельбы.<br>"
+	greet_text += "Казнь выполняется выстрелом из револьвера по критованной цели. После пяти казней револьвер станет ещё сильнее, уменьшая отдачу и увеличивая темп стрельбы.<br>"
 	greet_text += span_red(span_bold("Докуривай сигарету — и погнали"))
 	to_chat(owner.current, greet_text)
 	antag_memory = greet_text
@@ -22,8 +23,15 @@
 	if(!istype(H))
 		return
 	H.remove_quirk(/datum/quirk/monochromatic)
+	// Jackal needs natural healing for omnizine and stimpacks to work
+	REMOVE_TRAIT(H, TRAIT_NONATURALHEAL, HATRED_ANTAG)
 	H.update_body()
-	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_dependency))
+	// Jackal relies on stimpacks and cigarettes; hatred blocks all reagent speed boosts
+	// Remove immunity not just for stimulants but for ALL reagent speed modifiers
+	for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
+		if(initial(ms:multiplicative_slowdown) < 0)
+			H.remove_movespeed_mod_immunities(HATRED_ANTAG, ms)
+	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_dependency), override = TRUE)
 
 /datum/antagonist/jackal/on_removal()
 	var/mob/living/carbon/human/H = owner?.current
@@ -135,21 +143,16 @@
 	item_state = "jackal357"
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
-	mag_type = /obj/item/ammo_box/magazine/internal/cylinder
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/jackal
 	fire_sound = 'modular_bluemoon/sound/weapons/jackal357.ogg'
 	recoil = 0.5
+	spread = 4
 	fire_delay = 1
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS | ITEM_SLOT_SUITSTORE
 	var/glory_kills = 0
 
-/obj/item/gun/ballistic/revolver/jackal357/Initialize(mapload)
-	. = ..()
-	ADD_TRAIT(src, TRAIT_NODROP, JACKAL_ANTAG)
-
 /obj/item/gun/ballistic/revolver/jackal357/equipped(mob/user, slot, initial)
 	. = ..()
-	if(ismob(user) && user.mind?.has_antag_datum(/datum/antagonist/jackal))
-		ADD_TRAIT(src, TRAIT_NODROP, JACKAL_ANTAG)
 
 /obj/item/gun/ballistic/revolver/jackal357/update_overlays()
 	. = ..()
@@ -162,9 +165,49 @@
 		glory_kills++
 		if(glory_kills == 5)
 			recoil = 0.2
+			spread = 0
 			fire_delay = 0
+			upgrade_ammo()
 			to_chat(user, span_userdanger("Кровавая маска проступает на [src]. Револьвер становится легче и быстрее в руке."))
 		update_icon()
+
+/obj/item/gun/ballistic/revolver/jackal357/proc/upgrade_ammo()
+	if(!magazine)
+		return
+	// Use the cylinder's upgrade proc
+	var/obj/item/ammo_box/magazine/internal/cylinder/jackal/jackal_cylinder = magazine
+	if(istype(jackal_cylinder))
+		jackal_cylinder.upgrade()
+
+/obj/item/gun/ballistic/revolver/jackal357/attackby(obj/item/A, mob/user, params)
+	. = ..()
+	if(.)
+		return
+	if(!magazine)
+		return
+	var/num_loaded = 0
+	if(istype(A, /obj/item/ammo_box))
+		var/obj/item/ammo_box/AM = A
+		// For Jackal, always use ammo_box_reload regardless of speedloader flag
+		// (jackal cylinder has custom ammo_box_reload that handles full speedloader dumps)
+		if(istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder/jackal))
+			var/obj/item/ammo_box/magazine/internal/cylinder/jackal/JC = magazine
+			num_loaded = JC.ammo_box_reload(AM, user, params, 0, 1)
+		else
+			// Fallback to parent logic
+			if(!AM.speedloader)
+				if(!istype(magazine, /obj/item/ammo_box/magazine/internal/cylinder))
+					return to_chat(user, span_userdanger("У вас не получается зарядить револьвер при помощи [A]!"))
+				var/obj/item/ammo_box/magazine/internal/cylinder/C = magazine
+				num_loaded = C.ammo_box_reload(AM, user, params, 1)
+			else
+				num_loaded = magazine.attackby(A, user, params, 1)
+	if(num_loaded)
+		to_chat(user, "<span class='notice'>You load [num_loaded] shell\s into \the [src].</span>")
+		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
+		A.update_icon()
+		update_icon()
+		chamber_round(0)
 
 /obj/item/storage/belt/holster/jackal
 	name = "Jackal assault holster"
@@ -180,14 +223,14 @@
 	STR.max_items = 20
 	STR.max_combined_w_class = INFINITY
 	STR.max_w_class = WEIGHT_CLASS_BULKY
-	STR.can_hold = typecacheof(list(/obj/item/gun/ballistic/revolver/jackal357, /obj/item/ammo_box/a357, /obj/item/kitchen/knife/combat, /obj/item/storage/fancy/cigarettes/jackal, /obj/item/lighter, /obj/item/reagent_containers/hypospray/medipen/stimulants, /obj/item/reagent_containers/hypospray/medipen))
+	STR.can_hold = typecacheof(list(/obj/item/gun/ballistic/revolver/jackal357, /obj/item/ammo_box/a357/jackal, /obj/item/kitchen/knife/combat, /obj/item/storage/fancy/cigarettes/jackal, /obj/item/lighter, /obj/item/reagent_containers/hypospray/medipen/stimulants, /obj/item/reagent_containers/hypospray/medipen))
 	STR.quickdraw = TRUE
 
 /obj/item/storage/belt/holster/jackal/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/jackal357(src)
-	new /obj/item/ammo_box/a357(src)
-	new /obj/item/ammo_box/a357(src)
-	new /obj/item/ammo_box/a357(src)
+	new /obj/item/ammo_box/a357/jackal(src)
+	new /obj/item/ammo_box/a357/jackal(src)
+	new /obj/item/ammo_box/a357/jackal(src)
 	new /obj/item/kitchen/knife/combat(src)
 	new /obj/item/storage/fancy/cigarettes/jackal(src)
 	new /obj/item/lighter(src)
@@ -199,8 +242,32 @@
 
 /obj/item/storage/belt/holster/jackal/Exited(atom/movable/gone, atom/newLoc)
 	. = ..()
-	if(istype(gone, /obj/item/ammo_box/a357) && !QDELETED(src))
-		new /obj/item/ammo_box/a357(src)
+	if(istype(gone, /obj/item/ammo_box/a357/jackal) && !QDELETED(src))
+		var/obj/item/ammo_box/a357/jackal/speedloader = gone
+		// Refill the speedloader instead of creating a new one
+		// Check if the revolver has been upgraded to use enhanced ammo
+		var/obj/item/gun/ballistic/revolver/jackal357/revolver
+		for(var/obj/item/I in src)
+			if(istype(I, /obj/item/gun/ballistic/revolver/jackal357))
+				revolver = I
+				break
+		var/enhanced_ammo = FALSE
+		if(revolver && revolver.glory_kills >= 5)
+			enhanced_ammo = TRUE
+
+		// Clear existing ammo and refill
+		for(var/obj/item/ammo_casing/old_casing as anything in speedloader.stored_ammo)
+			if(old_casing && !QDELETED(old_casing))
+				qdel(old_casing)
+		speedloader.stored_ammo.Cut()
+		while(speedloader.stored_ammo.len < speedloader.max_ammo)
+			var/obj/item/ammo_casing/new_casing
+			if(enhanced_ammo)
+				new_casing = new /obj/item/ammo_casing/a357/jackal/enhanced(speedloader)
+			else
+				new_casing = new /obj/item/ammo_casing/a357/jackal(speedloader)
+			speedloader.stored_ammo += new_casing
+		speedloader.update_icon()
 
 /obj/item/clothing/mask/cigarette/jackal
 	name = "Jackal cigarette"

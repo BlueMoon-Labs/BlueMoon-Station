@@ -177,6 +177,23 @@
 	bare_wound_bonus = 80
 	wound_falloff_tile = -0.5
 
+// Jackal specific ammo - weaker initially (4 shots to kill), stronger after glory kills (2 shots to kill)
+/obj/item/projectile/bullet/a357/jackal
+	name = ".357 Jackal bullet"
+	damage = 30  // Weaker than standard a357 (65) - 4 shots = 120 damage (~4 shots to kill with armor)
+	armour_penetration = BULLET_BR3  // Same penetration as standard a357
+	wound_bonus = 12
+	ricochets_max = 2
+	ricochet_chance = 100
+
+/obj/item/projectile/bullet/a357/jackal/enhanced
+	name = ".357 Jackal enhanced bullet"
+	damage = 60  // Powerful enough for 2 shots = 120 damage (~2 shots to kill with armor)
+	armour_penetration = BULLET_BR4  // Slightly better penetration when enhanced
+	wound_bonus = 25
+	ricochets_max = 2
+	ricochet_chance = 100
+
 //.45-70 GOVT (Gunslinger's Derringer)
 //0bserver here. For all that is holy, do me a flavor, and do NOT allow people easy access to this ammo. This is meant for extremely lucky traitors, and nuclear operatives.
 

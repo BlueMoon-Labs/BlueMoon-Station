@@ -150,9 +150,11 @@
 	var/datum/component/mood/mood = H.GetComponent(/datum/component/mood)
 	mood?.RemoveComponent()
 	// сверхскорость и неуловимость страшнее сверхброни и бесконечных патронов
-	for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
-		if(initial(ms:multiplicative_slowdown) < 0)
-			H.add_movespeed_mod_immunities(HATRED_ANTAG, ms)
+	// Jackal needs stimpack medipens for speed and dependency — do not block those
+	if(!istype(src, /datum/antagonist/jackal))
+		for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
+			if(initial(ms:multiplicative_slowdown) < 0)
+				H.add_movespeed_mod_immunities(HATRED_ANTAG, ms)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, /datum/movespeed_modifier/grab_slowdown/aggressive)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, MOVESPEED_ID_MOB_GRAB_STATE)
 	H.drag_slowdown = FALSE
@@ -1131,7 +1133,4 @@
 
 /proc/_jackal_alarm_station(datum/antagonist/jackal/J)
 	if(istype(J) && J?.owner?.current && J.owner.current.stat != DEAD)
-		priority_announce("Дипломатический Корпус Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасным ликвидатором. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)
-
-
-#undef HATRED_ANTAG
+		priority_announce("Дипломатический Корпус Солнечной Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасной личностью. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)

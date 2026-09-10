@@ -41,6 +41,22 @@
 	projectile_type = /obj/item/projectile/bullet/a357/requiem
 	can_be_printed = FALSE
 
+// Jackal specific ammo - weaker initially, stronger after glory kills
+/obj/item/ammo_casing/a357/jackal
+	name = ".357 Jackal bullet casing"
+	desc = "A .357 bullet casing specifically designed for the Jackal's revolver."
+	caliber = "357"
+	projectile_type = /obj/item/projectile/bullet/a357/jackal
+	can_be_printed = FALSE
+
+/obj/item/ammo_casing/a357/jackal/enhanced
+	name = ".357 Jackal enhanced bullet casing"
+	desc = "A .357 bullet casing enhanced by the Jackal's blood mask."
+	caliber = "357"
+	projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
+	can_be_printed = FALSE
+	// This is just a copy of jackal casing with enhanced projectile - used for internal cylinder after 5 kills
+
 // 7.62x38mmR (Nagant Revolver)
 
 /obj/item/ammo_casing/n762
