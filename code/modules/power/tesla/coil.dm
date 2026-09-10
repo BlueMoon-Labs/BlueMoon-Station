@@ -119,6 +119,10 @@
 	circuit = /obj/item/circuitboard/machine/tesla_coil/research
 	power_loss = 20 // something something, high voltage + resistance
 
+/obj/machinery/power/tesla_coil/research/Initialize(mapload)
+	. = ..()
+	linked_techweb = find_rnd_network_for_object(src) //BLUEMOON ADD: привязка к ближайшей серверной сети вместо жёсткой science_tech
+
 /obj/machinery/power/tesla_coil/research/zap_act(power, zap_flags, shocked_targets)
 	if(anchored && !panel_open)
 		obj_flags |= BEING_SHOCKED

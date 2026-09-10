@@ -38,6 +38,7 @@
 	var/weed_rate = 1 //If the chance below passes, then this many weeds sprout during growth
 	var/weed_chance = 5 //Percentage chance per tray update to grow weeds
 	var/seed_flags = MUTATE_EARLY //Determines if a plant is allowed to mutate early at 30+ instability
+	var/growing_icon_offset_y = 0 //Pixel offset for the plant overlay in hydroponics tray
 
 /obj/item/seeds/Initialize(mapload, nogenes = 0)
 	. = ..()
