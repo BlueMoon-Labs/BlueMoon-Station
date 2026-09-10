@@ -2,7 +2,7 @@
 /datum/round_event_control/sentient_disease
 	name = "Spawn Sentient Disease"
 	typepath = /datum/round_event/ghost_role/sentient_disease
-	weight = 5 // первый гост-пик обоих хард-раундов дня 9766-9772: низкие гейты (5 попа, 20 мин) и так дают фору
+	weight = 4 // низкие пороги по экипажу и времени уже дают фору перед другими гост-ролями
 	max_occurrences = 1
 	// Лёгкая фоновая гост-угроза для раннего разнообразия: чтобы первые полчаса гост-пул не сводился
 	// к одному Devil (единственный лёгкий гост-рулсет без earliest_start), пара дешёвых гост-событий

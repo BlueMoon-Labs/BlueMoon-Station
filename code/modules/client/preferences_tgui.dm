@@ -55,6 +55,7 @@
 	.["sound_adminhelp"] = !!(toggles & SOUND_ADMINHELP)
 	.["sound_mentorhelp"] = !!(mentor_toggles & SOUND_MENTORHELP)
 	.["sound_fax"] = !!(toggles & SOUND_FAX)
+	.["sound_actions_button"] = !!(sound_toggles & SOUND_BUTTONS)
 
 	// Sound volumes
 	.["sound_volume_midi"] = sound_volume_midi
@@ -267,6 +268,9 @@
 							user.client.playtitlemusic()
 					else
 						user.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+				if("sound_actions_button")
+					sound_toggles ^= SOUND_BUTTONS
+					dirty_var = "sound_toggles"
 				if("sound_midi")
 					toggles ^= SOUND_MIDI
 					if(!(toggles & SOUND_MIDI))

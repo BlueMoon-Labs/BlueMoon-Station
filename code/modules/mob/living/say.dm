@@ -296,6 +296,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(length(message) && message[1] != "!")
 		message = treat_message(message, language) // unfortunately we still need this
+
 	var/sigreturn = SEND_SIGNAL(src, COMSIG_MOB_SAY, args)
 	if (sigreturn & COMPONENT_UPPERCASE_SPEECH)
 		message = uppertext(message)
@@ -673,6 +674,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			message = machine_slur(message, replace_characters, slurring * 1.5)
 		else
 			message = slur(message,slurring)
+
+	// Обработка искажения речи от масок
+	var/muzzle_strength = get_muzzle_strength()
+	if(muzzle_strength > 0 && !src.is_muzzled())
+		message = muffledspeech(message, muzzle_strength)
+
 	// BLUEMOON EDIT END
 
 	if(cultslurring)
@@ -731,6 +738,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			. = "stammers"
 		else if(derpspeech)
 			. = "gibbers"
+		else if(get_muzzle_strength() > 0 && get_muzzle_strength() != MUFFLE_MUTE)
+			. = "mumbles"
 		// Skyrat edits
 		else if(message_mode == MODE_SING)
 			. = verb_sing
