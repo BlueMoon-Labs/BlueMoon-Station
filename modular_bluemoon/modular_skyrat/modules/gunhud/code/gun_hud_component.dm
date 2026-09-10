@@ -49,7 +49,7 @@
 	wake_up(parent, user, null)
 
 /// Пересчёт боевого HUD для всех предметов, удерживаемых юзером в руках
-/mob/living/proc/refresh_ammo_hud()
+/mob/proc/refresh_ammo_hud()
 	if(!ishuman(src))
 		return
 	var/mob/living/carbon/human/H = src
