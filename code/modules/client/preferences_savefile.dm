@@ -606,6 +606,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["default_slot"] >> default_slot
 	S["chat_toggles"] >> chat_toggles
 	S["toggles"] >> toggles
+	S["sound_toggles"] >> sound_toggles
 	S["custom_colors"] >> custom_colors
 	S["deadmin"] >> deadmin
 	S["ticket_nickname"] >> ticket_nickname
@@ -770,6 +771,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
+	sound_toggles = sanitize_integer(sound_toggles, 0, 16777215, initial(sound_toggles))
 	custom_colors = sanitize_integer(custom_colors, 0, 16777215, initial(custom_colors))
 	deadmin = sanitize_integer(deadmin, 0, 16777215, initial(deadmin))
 	clientfps = sanitize_clientfps(clientfps)
@@ -1224,6 +1226,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
+	WRITE_FILE(S["sound_toggles"], sound_toggles)
 	WRITE_FILE(S["custom_colors"], custom_colors)
 	WRITE_FILE(S["deadmin"], deadmin)
 	WRITE_FILE(S["chat_toggles"], chat_toggles)

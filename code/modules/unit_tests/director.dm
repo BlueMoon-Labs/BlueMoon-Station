@@ -2260,6 +2260,126 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Серия отказов удлиняет паузу только провалившегося действия, сохраняя бюджет для замены.
+/datum/unit_test/director_failure_backoff
+	var/list/saved
+
+/datum/unit_test/director_failure_backoff/Destroy()
+	if(saved)
+		SSdirector.restore_simulation_state(saved)
+	return ..()
+
+/datum/unit_test/director_failure_backoff/Run()
+	saved = SSdirector.capture_simulation_state()
+	SSdirector.profile = allocate(/datum/director_profile/medium)
+	SSdirector.reset_budgets(10)
+	SSdirector.action_failure_cooldowns = list()
+	SSdirector.action_failure_delays = list()
+	SSdirector.action_attempt_rollbacks = list()
+	SSdirector.time_override = round(world.time, 1) + 1
+	SSdirector.dry_run = FALSE
+	var/datum/director_action/test_stub/fails/failed = allocate(/datum/director_action/test_stub/fails)
+	failed.severity = DIRECTOR_SEVERITY_GHOST
+	failed.cost = 2
+	var/datum/director_action/test_stub/replacement = allocate(/datum/director_action/test_stub)
+	replacement.severity = DIRECTOR_SEVERITY_GHOST
+	SSdirector.actions = list(failed, replacement)
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.effective_crew = 40
+	for(var/pause_minutes in list(5, 10, 20, 30, 30))
+		TEST_ASSERT(!SSdirector.spend_and_execute(failed), "Отказ execute_action должен вернуть FALSE")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[failed.severity], 10, "Отказы не должны расходовать бюджет замены")
+		TEST_ASSERT_EQUAL(failed.occurrences, 0, "Отказы не должны расходовать лимит успешных запусков")
+		var/deadline = SSdirector.action_failure_cooldowns[failed]
+		TEST_ASSERT_EQUAL(deadline - SSdirector.now(), pause_minutes MINUTES, "Пауза должна расти до получаса")
+		var/list/options = SSdirector.collect_pool_options(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT(!(failed in options), "Неудачная роль должна выйти из выбора и копилки на время паузы")
+		TEST_ASSERT(replacement in options, "Другая роль должна оставаться доступной")
+		SSdirector.time_override = deadline - 1
+		TEST_ASSERT(SSdirector.action_recently_failed(failed), "До конца паузы повтор недоступен")
+		SSdirector.time_override = deadline
+		TEST_ASSERT(!SSdirector.action_recently_failed(failed), "На границе паузы повтор снова доступен")
+	SSdirector.confirm_action_success(failed)
+	SSdirector.spend_and_execute(failed)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_cooldowns[failed] - SSdirector.now(), 5 MINUTES, "После успеха серия отказов начинается заново")
+	SSdirector.time_override = SSdirector.action_failure_cooldowns[failed]
+	SSdirector.record_action_failure(replacement)
+	TEST_ASSERT(SSdirector.spend_and_execute(replacement), "Синхронное действие должно успешно запуститься")
+	TEST_ASSERT(isnull(SSdirector.action_failure_delays[replacement]), "Синхронный успех тоже должен сбрасывать серию отказов")
+	var/datum/round_event_control/fugitives/deferred = allocate(/datum/round_event_control/fugitives)
+	SSdirector.record_action_failure(deferred)
+	SSdirector.note_fired(deferred)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_delays[deferred], 5 MINUTES, "Начало опроса не должно сбрасывать серию до подтверждения спауна")
+	SSdirector.dry_run = TRUE // не создаём таймер замены в тестовом мире
+	SSdirector.note_failed_action(failed, retry_replacement = TRUE)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_cooldowns[failed] - SSdirector.now(), 10 MINUTES, "Отложенный провал должен учитывать ту же серию отказов")
+
+/// Повторный просмотр веса не должен усиливать штраф за один и тот же запуск.
+/datum/unit_test/director_ruleset_weight_is_read_only/Run()
+	var/datum/game_mode/dynamic/mode = allocate(/datum/game_mode/dynamic)
+	var/datum/dynamic_ruleset/midround/autotraitor/rule = allocate(/datum/dynamic_ruleset/midround/autotraitor)
+	rule.mode = mode
+	rule.weight = 6
+	rule.repeatable_weight_decrease = 2
+	mode.executed_rules = list(rule)
+	for(var/check in 1 to 100)
+		TEST_ASSERT_EQUAL(rule.get_weight(), 4, "Сто проверок одного запуска должны давать один и тот же вес")
+	TEST_ASSERT_EQUAL(rule.weight, 6, "Проверка не должна перезаписывать настроенный базовый вес")
+	mode.executed_rules += rule
+	TEST_ASSERT_EQUAL(rule.get_weight(), 2, "Второе исполнение должно добавить ровно один штраф")
+	rule.weight = 10
+	TEST_ASSERT_EQUAL(rule.get_weight(), 6, "Новый базовый вес должен учитывать прежние исполнения без накопленной порчи")
+	rule.mode = null
+	TEST_ASSERT_EQUAL(rule.get_weight(), 10, "Каталог без игрового режима должен возвращать базовый вес")
+
+/// Даже гарантированный бит не должен присылать боевых NPC экипажу из нескольких человек.
+/datum/unit_test/director_lowpop_hostile_events
+	var/list/saved
+
+/datum/unit_test/director_lowpop_hostile_events/Destroy()
+	if(saved)
+		SSdirector.restore_simulation_state(saved)
+	return ..()
+
+/datum/unit_test/director_lowpop_hostile_events/Run()
+	saved = SSdirector.capture_simulation_state()
+	SSdirector.profile = allocate(/datum/director_profile/extended)
+	SSdirector.actions = list(
+		allocate(/datum/round_event_control/gigachad_inteq),
+		allocate(/datum/round_event_control/space_mosquito),
+		allocate(/datum/round_event_control/headcrabs),
+		allocate(/datum/round_event_control/deathclaw_in_maints),
+		allocate(/datum/round_event_control/sniper),
+		allocate(/datum/round_event_control/mannequinrise),
+	)
+	SSdirector.reset_budgets(100)
+	SSdirector.last_fired_at = list()
+	SSdirector.family_last_fired_at = list()
+	SSdirector.time_override = world.time + 2 HOURS
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		action.earliest_start = 0
+	CONFIG_SET(flag/allow_random_events, TRUE)
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4)
+	for(var/crew in list(3, 11))
+		signals.effective_crew = crew
+		TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 0, "Гарантия не должна обходить минимум экипажа для боевых NPC")
+	signals.effective_crew = 20
+	TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 6, "При достаточном экипаже все шесть событий должны остаться в пуле")
+
+/// Согласие на беглеца не должно пропадать из-за отдельного ролла размера команды.
+/datum/unit_test/director_fugitive_small_group/Run()
+	var/datum/round_event/ghost_role/fugitives/event = allocate(/datum/round_event/ghost_role/fugitives, FALSE)
+	event.kill()
+	TEST_ASSERT_EQUAL(length(event.get_backstories(0)), 0, "Без желающих спаун невозможен")
+	for(var/candidates in list(1, 2, 3))
+		var/list/backstories = event.get_backstories(candidates)
+		TEST_ASSERT_EQUAL(length(backstories), 1, "Малой группе нужен только одиночный сценарий")
+		TEST_ASSERT("waldo" in backstories, "Один желающий должен получить одиночного беглеца")
+	var/list/group_backstories = event.get_backstories(4)
+	for(var/backstory in list("prisoner", "cultist", "synth"))
+		TEST_ASSERT(backstory in group_backstories, "Для четырёх желающих должны сохраниться командные сценарии")
+
 /// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
 /// смерти. Живая группа должна дать вклад при жизни и исчезнуть сразу после смерти моба.
 /// Свежая тихая роль на станции весит intensity * DIRECTOR_ACTIVITY_MULT_MIN: гост-команды

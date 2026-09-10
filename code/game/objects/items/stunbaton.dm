@@ -209,6 +209,10 @@
 	return shoving || (user.a_intent != INTENT_HARM)
 
 /obj/item/melee/baton/proc/baton_stun(mob/living/L, mob/living/user, shoving = FALSE)
+	if(HAS_TRAIT(L, TRAIT_BATON_RESISTANCE))
+		L.visible_message(span_warning("[L] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
+		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
+		return FALSE
 	var/list/return_list = list()
 	if(L.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, return_list) & BLOCK_SUCCESS) //No message; check_shields() handles that
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)

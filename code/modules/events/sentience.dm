@@ -1,7 +1,7 @@
 /datum/round_event_control/sentience
 	name = "Random Human-level Intelligence"
 	typepath = /datum/round_event/ghost_role/sentience
-	weight = 50
+	weight = 15
 	max_occurrences = 2
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "Один ценный бот (Beepsky, ED-209 и т.п.) обретает разум. Обычных питомцев госты могут занять в любой момент."
