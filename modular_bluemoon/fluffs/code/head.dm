@@ -677,5 +677,7 @@
 /obj/item/modkit/melatonin_riot_kit
 	name = "Refurbished Concord Riot Helmet Kit"
 	desc = "A modkit for making a riot helmet into a Refurbished Concord Riot Helmet."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/clothing/head/helmet/riot/melatonin_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)

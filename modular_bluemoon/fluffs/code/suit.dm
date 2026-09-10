@@ -1114,6 +1114,8 @@
 /obj/item/modkit/melatonin_carrier_kit
 	name = "Lycanthrope's Reinforced Coat Kit"
 	desc = "A modkit for making a plate carrier into a Lycanthrope's Reinforced Coat."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
 

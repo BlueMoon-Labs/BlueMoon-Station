@@ -385,6 +385,8 @@
 /obj/item/modkit/melatonin_stunsword_kit
 	name = "Dunwall Folding Stun-Sword Kit"
 	desc = "A modkit for making a stunsword into a Dunwall Folding Stun-Sword."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/melee/baton/stunsword/melatonin
 	fromitem = list(/obj/item/melee/baton/stunsword)
 

@@ -398,13 +398,16 @@
 /obj/item/modkit/melatonin_belt_kit
 	name = "Lycanthrope's Heavy Tactical Belt Kit"
 	desc = "A modkit for making a brig officer webbing into a Lycanthrope's Heavy Tactical Belt."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/storage/belt/security/webbing/ds/melatonin_belt
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
 /obj/item/storage/box/melatonin_kit
 	name = "Melatonin weapon case"
 	desc = "Кейс с полным набором оружейных китов Melatonin. Содержит киты для модификации стандартного вооружения в кастомное."
-	icon_state = "ammobox"
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_box"
 
 /obj/item/storage/box/melatonin_kit/PopulateContents()
 	new /obj/item/modkit/melatonin_belt_kit(src)

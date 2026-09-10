@@ -144,5 +144,7 @@
 /obj/item/modkit/melatonin_gasmask_kit
 	name = "Dishonored \"Star Dust\" Combat Rebreather Kit"
 	desc = "A modkit for making a Security Gas Mask into a Dishonored \"Star Dust\" Combat Rebreather."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/clothing/mask/gas/sechailer/melatonin
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)

@@ -1952,6 +1952,8 @@
 /obj/item/modkit/melatonin_shotgun_kit
 	name = "Nebula Workshop's 'Original Guilt' Kit"
 	desc = "A modkit for making a double-barreled shotgun into a Nebula Workshop's 'Original Guilt'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/gun/ballistic/revolver/doublebarrel/melatonin
 	fromitem = list(/obj/item/gun/ballistic/revolver/doublebarrel)
 
@@ -1979,5 +1981,35 @@
 /obj/item/modkit/melatonin_enforcer_kit
 	name = "Malorian Arms 'The Parade' Kit"
 	desc = "A modkit for making an Enforcer into a Malorian Arms 'The Parade'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/shotgun/shorty/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "'Hair of the Dog' Lever-Action Shotgun"
+	desc = "Классическое, но модифицированное ружье на базе Winchester Model 1894. Его рычажный механизм был полностью переработан под калибр 12 Gauge. Из-за кастомного патронника трубчатый магазин сильно потерял в емкости, а отдача стала настолько сильной, что лишь Сильвер знает как с ним обращаться. Ствол увенчан тяжелым перфорированным дульным тормозом, а поверх матового ресивера установлена современная тактическая планка для прицелов. Деревянное цевье и приклад покрыты рваными царапинами от когтей ее владелицы."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "hair_of_the_dog_loaded"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "hair_of_the_dog_loaded"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-firing.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-loading.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-loading.ogg'
+	pumpsound = "modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-lever-action.ogg"
+
+/obj/item/gun/ballistic/shotgun/shorty/melatonin/update_icon_state()
+	if(chambered && chambered.BB)
+		icon_state = "hair_of_the_dog_loaded"
+	else
+		icon_state = "hair_of_the_dog_not_loaded"
+
+/obj/item/modkit/melatonin_enforcer_kit
+	name = "'Hair of the Dog' Lever-Action Shotgun Kit"
+	desc = "A modkit for making an super shorty shotgun into a 'Hair of the Dog' Lever-Action Shotgun'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/gun/ballistic/shotgun/shorty/melatonin
+	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
