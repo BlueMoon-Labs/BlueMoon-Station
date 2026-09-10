@@ -1,4 +1,8 @@
 #define JACKAL_ANTAG "jackal"
+#define JACKAL_DEPENDENCY_BASE_DAMAGE 0.1
+#define JACKAL_DEPENDENCY_BRUTE_MULTIPLIER 0.4
+#define JACKAL_DEPENDENCY_FIRE_MULTIPLIER 0.2
+#define JACKAL_DEPENDENCY_WARNING_CHANCE 10
 
 /datum/antagonist/jackal/greet()
 	var/greet_text = "Ты — [span_red(span_bold("Безымянный Ликвидатор"))]. Твое имя стерто из баз данных Солнечной Федерации, а твое прошлое давно сгорело в пепле грязных контрактов.<br>"
@@ -31,9 +35,9 @@
 	SIGNAL_HANDLER
 	if(!istype(H) || H.stat == DEAD || dependency_satisfied(H))
 		return
-	H.adjustBruteLoss(max(0.1, delta_time * 0.4), TRUE)
-	H.adjustFireLoss(max(0.1, delta_time * 0.2), TRUE)
-	if(prob(10))
+	H.adjustBruteLoss(max(JACKAL_DEPENDENCY_BASE_DAMAGE, delta_time * JACKAL_DEPENDENCY_BRUTE_MULTIPLIER), TRUE)
+	H.adjustFireLoss(max(JACKAL_DEPENDENCY_BASE_DAMAGE, delta_time * JACKAL_DEPENDENCY_FIRE_MULTIPLIER), TRUE)
+	if(prob(JACKAL_DEPENDENCY_WARNING_CHANCE))
 		to_chat(H, span_userdanger("Тело ломается без сигарет, алкоголя или стимуляторов. Найди дозу."))
 
 /datum/antagonist/jackal/proc/dependency_satisfied(mob/living/carbon/human/H)
