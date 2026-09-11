@@ -21,8 +21,9 @@
 	// Upgrade existing ammo
 	for(var/obj/item/ammo_casing/casing in stored_ammo)
 		if(istype(casing, /obj/item/ammo_casing/a357/jackal))
-			if(casing.BB)
-				qdel(casing.BB)
+			if(!casing.BB)
+				continue
+			qdel(casing.BB)
 			casing.BB = new /obj/item/projectile/bullet/a357/jackal/enhanced(casing)
 			casing.projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
 			casing.update_icon()

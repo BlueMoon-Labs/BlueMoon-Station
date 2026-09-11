@@ -1,8 +1,24 @@
 #define JACKAL_ANTAG "jackal"
+#define JACKAL_OMNIZINE_IMMUNITY "jackal_omnizine_immunity"
 #define JACKAL_DEPENDENCY_BASE_DAMAGE 0.1
 #define JACKAL_DEPENDENCY_BRUTE_MULTIPLIER 0.4
 #define JACKAL_DEPENDENCY_FIRE_MULTIPLIER 0.2
 #define JACKAL_DEPENDENCY_WARNING_CHANCE 10
+
+/datum/antagonist/jackal
+	parent_type = /datum/antagonist/hatred
+	name = "Jackal"
+	antagpanel_category = "Jackal"
+	roundend_category = "Jackal"
+	job_rank = ROLE_MASS_SHOOTER
+	var/list/jackal_execution_quips = list(
+		"...Мой компаньон будет рад",
+		"Просто бизнес.",
+		"...Сопутствующий ущерб",
+		"Слышишь этот щелчок? Ты слышишь? Это звук твоей судьбы.",
+		"Прости, мне платят за результат, а не за церемонии."
+	)
+	ui_name = "AntagInfoJackal"
 
 
 /datum/antagonist/jackal/greet()
@@ -24,20 +40,50 @@
 		return
 	H.remove_quirk(/datum/quirk/monochromatic)
 	// Jackal needs natural healing for omnizine and stimpacks to work
-	REMOVE_TRAIT(H, TRAIT_NONATURALHEAL, HATRED_ANTAG)
+	REMOVE_TRAIT(H, TRAIT_NONATURALHEAL, JACKAL_ANTAG)
+	// Jackal is immune to omnizine overdose and healing restrictions
+	ADD_TRAIT(H, JACKAL_OMNIZINE_IMMUNITY, JACKAL_ANTAG)
 	H.update_body()
 	// Jackal relies on stimpacks and cigarettes; hatred blocks all reagent speed boosts
 	// Remove immunity not just for stimulants but for ALL reagent speed modifiers
 	for(var/datum/movespeed_modifier/reagent/ms as anything in typesof(/datum/movespeed_modifier/reagent))
 		if(initial(ms.multiplicative_slowdown) < 0)
-			H.remove_movespeed_mod_immunities(HATRED_ANTAG, ms)
-	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_dependency), override = TRUE)
+			H.remove_movespeed_mod_immunities(JACKAL_ANTAG, ms)
+	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(jackal_biological_life), override = TRUE)
+
+/datum/antagonist/jackal/proc/jackal_biological_life(mob/living/carbon/human/H, delta_time, times_fired)
+	SIGNAL_HANDLER
+	recover_from_softcrit(H, delta_time, times_fired)
+	handle_dependency(H, delta_time, times_fired)
 
 /datum/antagonist/jackal/on_removal()
 	var/mob/living/carbon/human/H = owner?.current
 	if(istype(H))
 		UnregisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE)
+		REMOVE_TRAIT(H, JACKAL_OMNIZINE_IMMUNITY, JACKAL_ANTAG)
 	. = ..()
+
+// Jackal omnizine override - handles healing and overdose immunity
+/datum/reagent/medicine/omnizine/on_mob_life(mob/living/carbon/M)
+	var/healing = 0.5
+	var/jackal_immune = HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY)
+	var/should_heal = (jackal_immune ? TRUE : FALSE)
+	M.adjustToxLoss(-healing*REM, 0, should_heal)
+	M.adjustOxyLoss(-healing*REM, 0, should_heal)
+	M.adjustBruteLoss(-healing*REM, 0, should_heal)
+	M.adjustFireLoss(-healing*REM, 0, should_heal)
+	..()
+	. = 1
+
+/datum/reagent/medicine/omnizine/overdose_process(mob/living/M)
+	if(HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY))
+		return
+	M.adjustToxLoss(1.5*REM, 0)
+	M.adjustOxyLoss(1.5*REM, 0)
+	M.adjustBruteLoss(1.5*REM, 0)
+	M.adjustFireLoss(1.5*REM, 0)
+	..()
+	. = 1
 
 /datum/antagonist/jackal/proc/handle_dependency(mob/living/carbon/human/H, delta_time, times_fired)
 	SIGNAL_HANDLER
@@ -57,6 +103,31 @@
 			return TRUE
 	return FALSE
 
+/datum/admins/proc/makeJackal(mob/dead/observer/applicant)
+	var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/code/modules/antagonists/hatred/hatred_icon.dmi', "jackal")
+	if(!istype(applicant))
+		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for the position of a Jackal?", "pacifist", null, ROLE_MASS_SHOOTER, 30 SECONDS, poll_alert_pic = alert_overlay)
+		applicant = pick_n_take(candidates)
+	if(!istype(applicant) || !applicant.client)
+		return FALSE
+	var/mob/living/carbon/human/body = new(get_turf(GET_ERROR_ROOM))
+	body.dna.remove_all_mutations()
+	var/datum/mind/player_mind = new /datum/mind(applicant.key)
+	player_mind.active = TRUE
+	player_mind.transfer_to(body)
+	notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
+	body.mind.make_Jackal()
+	return TRUE
+
+/datum/mind/proc/make_Jackal()
+	if(!has_antag_datum(/datum/antagonist/jackal))
+		special_role = "Jackal"
+		assigned_role = "Jackal"
+		add_antag_datum(/datum/antagonist/jackal)
+
+/proc/_jackal_alarm_station(datum/antagonist/jackal/J)
+	if(istype(J) && J?.owner?.current && J.owner.current.stat != DEAD)
+		priority_announce("Дипломатический Корпус Солнечной Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасной личностью. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)
 /datum/antagonist/jackal/make_authentic_body()
 	var/mob/living/carbon/human/H = owner?.current
 	if(!istype(H))
@@ -82,6 +153,7 @@
 	H.dna.update_ui_block(DNA_FACIAL_HAIR_COLOR_BLOCK)
 	H.dna.features["legs"] = "Plantigrade"
 	H.dna.species.mutant_bodyparts["legs"] = "Plantigrade"
+	H.Digitigrade_Leg_Swap(TRUE)
 	H.update_body()
 	H.update_hair()
 
@@ -121,7 +193,6 @@
 	name = "Jackal combat uniform"
 	desc = "A fitted combat uniform reinforced against gunfire, blasts, and heat. It is tailored for a single ruthless operator."
 	icon = 'modular_bluemoon/code/modules/antagonists/hatred/misccloth.dmi'
-	mob_overlay_icon = 'modular_bluemoon/code/modules/antagonists/hatred/misccloth.dmi'
 	item_state = "jackalsuit"
 	icon_state = "jackalsuit"
 	body_parts_covered = CHEST|GROIN|ARMS
@@ -163,7 +234,6 @@
 		. += mutable_appearance(icon, "bloodmask")
 
 /obj/item/gun/ballistic/revolver/jackal357/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
-	. = ..()
 	if(!QDELETED(user) && user.mind?.has_antag_datum(/datum/antagonist/jackal) && (QDELETED(target) || target?.stat == DEAD))
 		glory_kills++
 		if(glory_kills == 5)
@@ -181,6 +251,7 @@
 	var/obj/item/ammo_box/magazine/internal/cylinder/jackal/jackal_cylinder = magazine
 	if(istype(jackal_cylinder))
 		jackal_cylinder.upgrade()
+		chamber_round()
 
 /obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 5 SECONDS)
 	var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
@@ -364,3 +435,49 @@
 	desc = "A battered packet of field cigarettes prepared for a violent, prolonged hunt."
 	icon_state = "syndie"
 	spawn_type = /obj/item/clothing/mask/cigarette/jackal
+
+// Jackal specific ammo casings - moved here from revolver.dm
+/obj/item/ammo_casing/a357/jackal
+	name = ".357 Jackal bullet casing"
+	desc = "A .357 bullet casing specifically designed for the Jackal's revolver."
+	caliber = "357"
+	projectile_type = /obj/item/projectile/bullet/a357/jackal
+	can_be_printed = FALSE
+
+/obj/item/ammo_casing/a357/jackal/enhanced
+	name = ".357 Jackal enhanced bullet casing"
+	desc = "A .357 bullet casing enhanced by the Jackal's blood mask."
+	caliber = "357"
+	projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
+	can_be_printed = FALSE
+	// This is just a copy of jackal casing with enhanced projectile - used for internal cylinder after 5 kills
+
+// Jackal specific speedloader
+/obj/item/ammo_box/a357/jackal
+	name = "speed loader (.357 Jackal)"
+	desc = "A speed loader with .357 rounds specifically designed for the Jackal's revolver."
+	icon_state = "357"
+	ammo_type = /obj/item/ammo_casing/a357/jackal
+	caliber = "357"
+	max_ammo = 7
+	multiload = TRUE
+	w_class = WEIGHT_CLASS_TINY
+	custom_materials = list(/datum/material/iron = 40000)
+	speedloader = TRUE
+
+// Jackal specific projectiles - moved here from projectile/revolver.dm
+/obj/item/projectile/bullet/a357/jackal
+	name = ".357 Jackal bullet"
+	damage = 30  // Weaker than standard a357 (65) - 4 shots = 120 damage (~4 shots to kill with armor)
+	armour_penetration = BULLET_BR3  // Same penetration as standard a357
+	wound_bonus = 12
+	ricochets_max = 2
+	ricochet_chance = 100
+
+/obj/item/projectile/bullet/a357/jackal/enhanced
+	name = ".357 Jackal enhanced bullet"
+	damage = 60  // Powerful enough for 2 shots = 120 damage (~2 shots to kill with armor)
+	armour_penetration = BULLET_BR4  // Slightly better penetration when enhanced
+	wound_bonus = 25
+	ricochets_max = 2
+	ricochet_chance = 100

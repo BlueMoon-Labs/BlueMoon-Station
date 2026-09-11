@@ -36,17 +36,6 @@
 	w_class = WEIGHT_CLASS_TINY
 	custom_materials = list(/datum/material/iron = 40000)
 
-/obj/item/ammo_box/a357/jackal
-	name = "speed loader (.357 Jackal)"
-	desc = "A speed loader with .357 rounds specifically designed for the Jackal's revolver."
-	icon_state = "357"
-	ammo_type = /obj/item/ammo_casing/a357/jackal
-	caliber = "357"
-	max_ammo = 7
-	multiple_sprites = 1
-	speedloader = TRUE
-	w_class = WEIGHT_CLASS_TINY
-
 /obj/item/ammo_box/c38
 	name = "speed loader (.38 rubber)"
 	desc = "Designed to quickly reload revolvers."

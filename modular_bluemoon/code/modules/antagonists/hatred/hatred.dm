@@ -23,21 +23,6 @@
 
 #define HATRED_ANTAG "hatred"
 
-/datum/antagonist/jackal
-	parent_type = /datum/antagonist/hatred
-	name = "Jackal"
-	antagpanel_category = "Jackal"
-	roundend_category = "Jackal"
-	job_rank = ROLE_MASS_SHOOTER
-	var/list/jackal_execution_quips = list(
-		"...Мой компаньон будет рад",
-		"Просто бизнес.",
-		"...Сопутствующий ущерб",
-		"Слышишь этот щелчок? Ты слышишь? Это звук твоей судьбы.",
-		"Прости, мне платят за результат, а не за церемонии."
-	)
-	ui_name = "AntagInfoJackal"
-
 
 /datum/antagonist/hatred
 	name = "Mass Shooter"
@@ -159,8 +144,8 @@
 	// сверхскорость и неуловимость страшнее сверхброни и бесконечных патронов
 	// Jackal needs stimpack medipens for speed and dependency — do not block those
 	if(!istype(src, /datum/antagonist/jackal))
-		for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
-			if(initial(ms:multiplicative_slowdown) < 0)
+		for(var/datum/movespeed_modifier/reagent/ms as anything in typesof(/datum/movespeed_modifier/reagent))
+			if(initial(ms.multiplicative_slowdown) < 0)
 				H.add_movespeed_mod_immunities(HATRED_ANTAG, ms)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, /datum/movespeed_modifier/grab_slowdown/aggressive)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, MOVESPEED_ID_MOB_GRAB_STATE)
@@ -458,7 +443,7 @@
 		if(istype(src, /datum/antagonist/jackal))
 			var/datum/antagonist/jackal/J = src
 			var/quip = pick(J.jackal_execution_quips)
-			visible_message("<span class='bolddanger'>[killer] произносит \"[quip]\"</span>", \
+			killer.visible_message("<span class='bolddanger'>[killer] произносит \"[quip]\"</span>", \
 							"<span class='userdanger'>[killer] смотрит вам в глаза и произносит: [quip]</span>", \
 							"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
 		else
@@ -476,7 +461,7 @@
 		if(is_glory)
 			addtimer(CALLBACK(knife, TYPE_PROC_REF(/obj/item/kitchen/knife, check_glory_kill), killer, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	else
-		killer.visible_message(span_notice("[killer] остановил свой нож."))
+		killer.visible_message(span_notice("[killer] остановил свой нож."), span_notice("Ты остановил свой нож."))
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
 	var/datum/antagonist/hatred/Ha = user.mind?.has_antag_datum(/datum/antagonist/hatred)
@@ -489,27 +474,27 @@
 	if(!target.get_bodypart(BODY_ZONE_HEAD))
 		return
 	var/is_glory = TRUE
+	// already dead bodies or npcs don't count
+	// if((!target.client && ((world.time - target.lastclienttime) > 10 SECONDS)) || (target.stat == DEAD && ((world.time - target.timeofdeath) > 3 SECONDS)))
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
 		// Jackal revolver has its OWN handle_suicide override that shows quips — skip this global check to avoid double speech
-		if(istype(src, /obj/item/gun/ballistic/revolver/jackal357))
-			goto skip_speech
-		if(is_jackal)
-			var/datum/antagonist/jackal/J = Ha
-			var/quip = pick(J.jackal_execution_quips)
-			visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
-							"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
-							"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
-		else
-			playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
-		COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	skip_speech
+		if(!istype(src, /obj/item/gun/ballistic/revolver/jackal357))
+			if(is_jackal)
+				var/datum/antagonist/jackal/J = Ha
+				var/quip = pick(J.jackal_execution_quips)
+				visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
+								"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
+								"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
+			else
+				playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
+			COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
 	var/new_ttk = is_jackal ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return
-	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME) // wait for boolet to do its job
 
 /obj/item/proc/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	if((QDELETED(target) || target?.stat == DEAD) && !QDELETED(user) && user?.stat != DEAD)
@@ -1127,21 +1112,7 @@
 	body.mind.make_MassShooter()
 	return TRUE
 
-/datum/admins/proc/makeJackal(mob/dead/observer/applicant)
-	var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/code/modules/antagonists/hatred/hatred_icon.dmi', "jackal")
-	if(!istype(applicant))
-		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for the position of a Jackal?", "pacifist", null, ROLE_MASS_SHOOTER, 30 SECONDS, poll_alert_pic = alert_overlay)
-		applicant = pick_n_take(candidates)
-	if(!istype(applicant) || !applicant.client)
-		return FALSE
-	var/mob/living/carbon/human/body = new(get_turf(GET_ERROR_ROOM))
-	body.dna.remove_all_mutations()
-	var/datum/mind/player_mind = new /datum/mind(applicant.key)
-	player_mind.active = TRUE
-	player_mind.transfer_to(body)
-	notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
-	body.mind.make_Jackal()
-	return TRUE
+#undef HATRED_ANTAG
 
 /datum/mind/proc/make_MassShooter()
 	if(!has_antag_datum(/datum/antagonist/hatred))
@@ -1149,13 +1120,5 @@
 		assigned_role = "Mass Shooter"
 		add_antag_datum(/datum/antagonist/hatred)
 
-/datum/mind/proc/make_Jackal()
-	if(!has_antag_datum(/datum/antagonist/jackal))
-		special_role = "Jackal"
-		assigned_role = "Jackal"
-		add_antag_datum(/datum/antagonist/jackal)
 
-
-/proc/_jackal_alarm_station(datum/antagonist/jackal/J)
-	if(istype(J) && J?.owner?.current && J.owner.current.stat != DEAD)
-		priority_announce("Дипломатический Корпус Солнечной Федерации предупреждает: в вашем секторе зафиксирован взлом частоты особо опасной личностью. Он находится в состоянии глубокого психоза из-за боевой химии, тяжёлых наркотиков и алкоголя. Цель вооружена крупнокалиберным револьвером и ликвидирует всех на своем пути. Всем сотрудникам: разрешено открытие огня на поражение без предупреждения\n\n...Просто диллер мудак. Вот и всё...", "DIPLOMATIC CORPS ALERT", 'modular_bluemoon/code/modules/antagonists/hatred/jackal_spawned.ogg', has_important_message = TRUE)
+#undef HATRED_ANTAG
