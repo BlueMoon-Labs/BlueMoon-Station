@@ -130,6 +130,7 @@
     &--Tide { --oath-color: #2d6968; }
     &--Glass { --oath-color: #7e5c85; }
     &--Blood { --oath-color: #973a4b; }
+    &--Echo { --oath-color: #80612b; }
   }
   &__ribbonMark { display: grid; place-items: center; width: 27px; height: 31px; flex-shrink: 0; font-size: 12px; background: var(--oath-color, var(--ribbon)); color: #eee2c9; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%); }
   &__signed { margin-left: auto; font-size: 15px; }
@@ -323,6 +324,31 @@
   .HereticBook__clasp { background: linear-gradient(90deg, #5b2635, #b08158 40%, #cf917b 55%, #632b39); }
 }
 
+.HereticBook--Echo {
+  --paper: #ded4b9; --paper-edge: #a68a5b; --ink: #30271d; --faded: #5f4d36; --accent: #80612b; --cover: #241d17; --cover-light: #b39a61; --ribbon: #64503b; --rule: #aa9368;
+  --grain: repeating-linear-gradient(0deg, transparent 0 29px, #8165370a 29px 30px);
+  .HereticBook__binding { border-radius: 5px; border-color: #b39a61; }
+  .HereticBook__titleRule { border-color: #a38750; }
+  .HereticBook__bookTitle { font-size: 31px; }
+  .HereticBook__echoWaves { animation: heretic-echo-tone 7s ease-in-out infinite; }
+  .HereticBook__illumination .HereticLyre__string { animation: heretic-lyre-string 2.8s ease-in-out infinite; }
+  .HereticBook__illumination .HereticLyre__string--1 { animation-duration: 3.2s; animation-delay: -.85s; }
+  .HereticBook__illumination .HereticLyre__string--2 { animation-duration: 3.7s; animation-delay: -1.9s; }
+  .HereticBook__clasp { background: linear-gradient(90deg, #4d3d28, #d9bb73 46%, #8b7144 59%, #4d3d28); }
+}
+
+@keyframes heretic-echo-tone { 0%, 75%, 100% { opacity: .35; } 15%, 35% { opacity: 1; } 25%, 45% { opacity: .6; } }
+@keyframes heretic-lyre-string { 0%, 100% { d: path("M0 0Q0 20 0 40"); } 30% { d: path("M0 0Q1.6 20 0 40"); } 70% { d: path("M0 0Q-1.6 20 0 40"); } }
+@keyframes heretic-lyre-pluck {
+  0%, 100% { d: path("M0 0Q0 20 0 40"); }
+  8% { d: path("M0 0Q4.8 20 0 40"); }
+  19% { d: path("M0 0Q-4 20 0 40"); }
+  31% { d: path("M0 0Q3.2 20 0 40"); }
+  44% { d: path("M0 0Q-2.3 20 0 40"); }
+  59% { d: path("M0 0Q1.5 20 0 40"); }
+  76% { d: path("M0 0Q-.7 20 0 40"); }
+}
+@keyframes heretic-lyre-pendant { 0%, 100% { transform: rotate(0); } 22% { transform: rotate(7deg); } 48% { transform: rotate(-4deg); } 75% { transform: rotate(1.5deg); } }
 @keyframes heretic-glass-light { 0%, 100% { opacity: .5; } 28% { opacity: .75; } 45% { opacity: 1; } 66% { opacity: .6; } }
 @keyframes heretic-optical-ray { 0% { stroke-dashoffset: 14; opacity: 0; } 20%, 62% { opacity: .9; } 88%, 100% { stroke-dashoffset: -100; opacity: 0; } }
 @keyframes heretic-tithe-drop { 0%, 100% { transform: translateY(-3px) scale(1, .94); opacity: .75; } 45% { transform: translateY(3px) scale(.98, 1.03); opacity: 1; } 66% { transform: translateY(8px) scale(1.05, .9); opacity: .8; } }

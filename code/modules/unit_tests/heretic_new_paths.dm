@@ -1,6 +1,6 @@
 /// Новые пути проходят все ступени за награды обычной охоты и сохраняют запрет второго пути.
 /datum/unit_test/heretic_new_paths_progression/Run()
-	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD))
+	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_ECHO))
 		var/datum/antagonist/heretic/heretic = allocate_heretic()
 		var/mob/living/user = heretic.owner.current
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
@@ -28,7 +28,7 @@
 
 /// Клинок и реликвия каждого нового пути создаются настоящей руной с расходом компонентов.
 /datum/unit_test/heretic_new_paths_recipes/Run()
-	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD))
+	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_ECHO))
 		var/datum/antagonist/heretic/heretic = allocate_heretic()
 		var/mob/living/user = heretic.owner.current
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
@@ -61,7 +61,7 @@
 
 /// Вознесение новых путей требует трёх тел, переносит силы и полностью снимается вместе с ролью.
 /datum/unit_test/heretic_new_paths_ascension/Run()
-	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD))
+	for(var/path_id in list(PATH_LOCK, PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_ECHO))
 		var/datum/antagonist/heretic/heretic = allocate_heretic()
 		var/mob/living/carbon/human/old_body = heretic.owner.current
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]

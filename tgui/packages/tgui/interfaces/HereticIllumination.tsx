@@ -1,3 +1,26 @@
+export const MourningLyre = ({ colored = false }: { colored?: boolean }) => (
+  <g className="HereticLyre" fill="none" stroke={colored ? '#d9bb73' : 'currentColor'} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round">
+    <g className="HereticLyre__frame">
+      <path d="M13 13C6 24 5 39 7 49q1 11 10 16l3-5q-8-4-8-14-2-15 5-30Z" fill={colored ? '#b9a67b' : 'none'} />
+      <path d="M30 17q10-4 11 7 1 17-6 32l-7 9-3-4q11-11 11-32 0-5-7-5Z" fill={colored ? '#7b6139' : 'none'} />
+      <path d="m12 13 22 5 5 7-26-6Z" fill={colored ? '#b58c4b' : 'none'} />
+      <path d="m11 11 1-5 6-2 3 4-5 3 1 5m13 3 1-7 5 1 2 6M9 27l5 1m-7 6 5 1m-5 6 5 1m24-10 4 1m-5 10 4 1" stroke={colored ? '#eee0b9' : 'currentColor'} />
+    </g>
+    <g className="HereticLyre__strings" stroke={colored ? '#f1dfad' : 'currentColor'}>
+      {[[15, 19, 1.1], [22, 21, 1.05], [29, 23, 1]].map(([x, y, scale], index) => (
+        <g key={x} transform={`translate(${x} ${y}) scale(1 ${scale})`}>
+          <path className={`HereticLyre__string HereticLyre__string--${index}`} d="M0 0Q0 20 0 40" />
+        </g>
+      ))}
+    </g>
+    <path className="HereticLyre__soundboard" d="M10 61h25l-4 8-9 5-9-6Zm5 5h16m-12 4h9" fill={colored ? '#593637' : 'none'} />
+    <path d="M11 61h24m-21 3h18" stroke={colored ? '#eee0b9' : 'currentColor'} strokeWidth="1.8" />
+    <g className="HereticLyre__pendant">
+      <path d="M23 74v5m0 0 3 4-3 4-3-4Z" fill={colored ? '#d9bb73' : 'none'} />
+    </g>
+  </g>
+);
+
 /** Рисунки путей выполнены чернилами, как и остальные записи в книге. */
 export const HereticIllumination = ({ path }: { path: string }) => (
   <svg
@@ -108,6 +131,16 @@ export const HereticIllumination = ({ path }: { path: string }) => (
         <path d="m55 33 13 6 41 100-6 4L57 48Zm199 0-13 6-41 100 6 4 46-95ZM90 115l22-8m96 0 22 8M40 169l34-13m172 0 34 13" />
         <path d="M42 26v40m-6-28h12M278 26v40m-6-28h12M69 184l-9 14m191-14 9 14" />
       </>
+    ) : path === 'Echo' ? (
+      <>
+        <circle cx="160" cy="108" r="88" /><circle cx="160" cy="108" r="80" strokeDasharray="2 7" />
+        <g transform="translate(109 7) scale(2.3)"><MourningLyre /></g>
+        <g className="HereticBook__echoWaves">
+          <path d="M112 67q-13 29 0 58m-12-70q-21 41 0 82M213 71q13 27 0 54m12-67q21 40 0 80" />
+        </g>
+        <path d="M52 150h43m130 0h43M48 158h56m112 0h56M58 166h54m96 0h54M79 175h36m90 0h36" />
+        <path d="m160 13 4 9-4 9-4-9ZM57 68l8 4-8 4-8-4Zm206 0 8 4-8 4-8-4Z" />
+      </>
     ) : path === 'Cosmic' ? (
       <>
         <g className="HereticBook__orbit">
@@ -191,6 +224,13 @@ export const HereticPageOrnament = ({ path }: { path: string }) => (
         <path d="M13 38V13h294v25M13 562v25h294v-25M20 53v494m280-494v494" />
         <path d="M31 13v24h24V13m210 0v24h24V13M31 587v-24h24v24m210 0v-24h24v24" />
         {[92, 217, 342, 467].map((y) => <g key={y}><path d={`M13 ${y}c-2 7-6 11-6 16a6 6 0 0 0 12 0c0-5-4-9-6-16Zm294 0c-2 7-6 11-6 16a6 6 0 0 0 12 0c0-5-4-9-6-16Z`} /><path d={`M13 ${y+35}v61m294-61v61`} strokeDasharray="1 5" /></g>)}
+      </>
+    ) : path === 'Echo' ? (
+      <>
+        <path d="M12 92V14h78m140 0h78v78M12 508v78h78m140 0h78v-78M12 114v372m296-372v372" />
+        <path d="M19 104v392m282-392v392M38 15q0 23-23 23m36-23q0 36-36 36m49-36q0 49-49 49M282 585q0-23 23-23m-36 23q0-36 36-36m-49 36q0-49 49-49" />
+        <path d="M148 14h24m-24 4h24M148 586h24m-24-4h24" />
+        {[143, 281, 419].map((y) => <g key={y}><g transform={`translate(5 ${y}) scale(.36 .48)`}><MourningLyre /></g><g transform={`translate(298 ${y}) scale(.36 .48)`}><MourningLyre /></g></g>)}
       </>
     ) : path === 'Cosmic' ? (
       <>

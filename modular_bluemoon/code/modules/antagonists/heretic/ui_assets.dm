@@ -11,6 +11,7 @@
 		"heretic-tide.webp" = 'tgui/packages/tgui/assets/heretic-tide.webp',
 		"heretic-glass.webp" = 'tgui/packages/tgui/assets/heretic-glass.webp',
 		"heretic-blood.webp" = 'tgui/packages/tgui/assets/heretic-blood.webp',
+		"heretic-echo.webp" = 'tgui/packages/tgui/assets/heretic-echo.webp',
 	)
 
 /proc/heretic_ritual_ingredient_name(atom/ingredient_type)

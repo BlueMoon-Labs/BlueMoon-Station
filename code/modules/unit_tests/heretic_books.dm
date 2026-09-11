@@ -106,7 +106,7 @@
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/catalog_path = GLOB.heretic_paths[path_id]
 		expected_knowledge += length(catalog_path.knowledge)
-	TEST_ASSERT_EQUAL(length(catalog_knowledge), expected_knowledge, "Каталог содержит все ступени девяти путей, начальные и побочные знания.")
+	TEST_ASSERT_EQUAL(length(catalog_knowledge), expected_knowledge, "Каталог содержит все ступени путей, начальные и побочные знания.")
 	var/list/knowledge_by_id = list()
 	for(var/list/entry as anything in catalog_knowledge)
 		TEST_ASSERT_NULL(knowledge_by_id[entry["id"]], "Знание не должно повторяться в каталоге.")

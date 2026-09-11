@@ -32,6 +32,7 @@
 #define ANTAG_SCENE_HERETIC_TIDE "heretic_tide"
 #define ANTAG_SCENE_HERETIC_GLASS "heretic_glass"
 #define ANTAG_SCENE_HERETIC_BLOOD "heretic_blood"
+#define ANTAG_SCENE_HERETIC_ECHO "heretic_echo"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
@@ -96,6 +97,10 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_HERETIC_BLOOD = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_blood,
 		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
+	),
+	ANTAG_SCENE_HERETIC_ECHO = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_echo,
+		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
 	),
 ))
 
@@ -199,3 +204,7 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/heretic_blood
 	color = "#990e27"
 	alpha = 80
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_echo
+	color = "#9e7943"
+	alpha = 60

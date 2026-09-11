@@ -2,7 +2,7 @@
 	var/book_type = /obj/item/forbidden_book
 	var/book_name = "Кодекс Рубцов"
 	var/book_title = "Кодекс Рубцов"
-	var/book_subtitle = "Одиннадцать дорог за одну завесу"
+	var/book_subtitle = "Двенадцать дорог за одну завесу"
 	var/book_desc = "Строки проступают между старыми шрамами на страницах."
 	var/book_cover = "codex"
 	var/book_ink = "#b2ac7d"
@@ -164,6 +164,22 @@
 
 /obj/item/forbidden_book/glass
 	book_path = PATH_GLASS
+
+/datum/heretic_path/echo
+	book_type = /obj/item/forbidden_book/echo
+	book_name = "Партитура последнего голоса"
+	book_title = "Партитура последнего голоса"
+	book_subtitle = "Голос смолк. Дождись ответа"
+	book_desc = "Партитура в переплёте из тёмной кожи с костяными накладками. Глаз под латунной скобой следит за пальцами читателя. Струны вдоль корешка отзываются на прикосновение; последняя нота звучит уже после того, как книга закрыта."
+	book_cover = "echo"
+	book_ink = "#d9bb73"
+	book_tint = "#ffffff"
+	book_rune = "sigil_echo"
+	book_open_sound = 'modular_bluemoon/sound/heretic/echo_cast.ogg'
+	book_page_sound = 'modular_bluemoon/sound/heretic/echo_grasp.ogg'
+
+/obj/item/forbidden_book/echo
+	book_path = PATH_ECHO
 
 /obj/item/forbidden_book/blood
 	book_path = PATH_BLOOD
@@ -329,6 +345,13 @@
 			opening.Scale(1.06, 1.03)
 			animate(src, transform = opening, time = 0.4 SECONDS, easing = SINE_EASING)
 			animate(transform = book_rest_transform, time = 0.9 SECONDS, easing = SINE_EASING)
+		if(PATH_ECHO)
+			opening.Turn(2)
+			var/matrix/settling = matrix(book_rest_transform)
+			settling.Turn(-1)
+			animate(src, transform = opening, time = 0.15 SECONDS, easing = SINE_EASING)
+			animate(transform = settling, time = 0.2 SECONDS, easing = SINE_EASING)
+			animate(transform = book_rest_transform, time = 0.15 SECONDS, easing = SINE_EASING)
 
 /obj/item/forbidden_book/proc/close_book(mob/user, audible = TRUE)
 	if(!book_open)

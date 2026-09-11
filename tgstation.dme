@@ -2191,6 +2191,7 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\tide.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\glass.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\blood.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\echo.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\presentation.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\equipment_visuals.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\ability_visuals.dm"

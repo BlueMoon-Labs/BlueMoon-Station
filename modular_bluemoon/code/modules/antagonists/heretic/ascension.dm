@@ -123,6 +123,18 @@
 	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
+/datum/heretic_path/echo
+	ascension_title = "Регент Последнего Хора"
+	ascension_message = "Оборванные голоса возвращаются погребальным хором. Тот, кто задал им тон, поднимает руку для последнего такта."
+	ascension_omen = "Ваш последний шаг звучит снова. Из стен отвечает многоголосый шёпот, и на мгновение вы узнаёте в нём собственный голос."
+	ascension_sound = 'modular_bluemoon/sound/heretic/echo_ascend.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_echo_effects.dmi'
+	ascension_aura_state = "echo_ascend"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
+
 /// Объявление появляется только после подбора и резервирования настоящих компонентов.
 /datum/eldritch_knowledge/final_eldritch/proc/begin_ascension_ritual(mob/living/user, obj/effect/eldritch/rune)
 	var/datum/heretic_path/path = GLOB.heretic_paths[route]

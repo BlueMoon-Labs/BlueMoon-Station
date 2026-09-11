@@ -95,6 +95,10 @@
     --reading-wash: #e2cec1d9;
     .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #986143; }
   }
+  &.HereticBook--Echo {
+    --reading-wash: #ded4b9cc;
+    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b39a61; }
+  }
 }
 
 .HereticBook[data-book-view='muted'] {

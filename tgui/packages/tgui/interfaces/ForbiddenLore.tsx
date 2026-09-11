@@ -111,13 +111,14 @@ const useLoreBackend = () => {
 
 const chapters = ['Путь', 'Знания', 'Ритуалы', 'Охота', 'Помощь'] as const;
 type Chapter = typeof chapters[number];
-const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI'];
+const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 const bookTitles: Record<string, string> = {
   Unbound: 'Кодекс Рубцов', Ash: 'Псалтирь последнего огня', Rust: 'Железный завет',
   Flesh: 'Анатомия голода', Void: 'Палимпсест зимы', Blade: 'Трактат о последнем ударе',
   Moon: 'Зерцало без лица', Cosmic: 'Атлас внутреннего неба',
   Lock: 'Каталог невозможных дверей', Tide: 'Лоция бездонного моря',
   Glass: 'Евангелие разбитого света', Blood: 'Служебник алой десятины',
+  Echo: 'Партитура последнего голоса',
 };
 
 const countNoun = (amount: number, forms: [string, string, string]) => {

@@ -72,6 +72,22 @@
   &--Tide { --atmosphere-glow: #8addcd; }
   &--Glass { --atmosphere-glow: #edd1ee; }
   &--Blood { --atmosphere-glow: #ef7a98; }
+  &--Echo { --atmosphere-glow: #d9bb73; }
+  &--Echo &__toy { width: 39px; right: -15px; transition: filter 300ms ease; }
+  &__echoStrings { opacity: .4; transition: opacity 450ms ease; }
+  &__echoWaves { opacity: 0; transition: opacity 300ms ease; }
+  &__lyreToy .HereticLyre__string { transition: stroke 400ms ease; }
+  &__lyreToy .HereticLyre__pendant { transform-box: fill-box; transform-origin: 50% 0; }
+  &--reacting &__echoWaves { opacity: .9; }
+  &--reacting &__echoStrings { opacity: .85; }
+  &--reacting &__lyreToy .HereticLyre__string { stroke: #fff5ce; }
+  &--living &__lyreToy .HereticLyre__string { animation: heretic-lyre-string 2.8s ease-in-out infinite; }
+  &--living &__lyreToy .HereticLyre__string--1 { animation-duration: 3.2s; animation-delay: -.85s; }
+  &--living &__lyreToy .HereticLyre__string--2 { animation-duration: 3.7s; animation-delay: -1.9s; }
+  &--living#{&}--reacting &__lyreToy .HereticLyre__string { animation: heretic-lyre-pluck 2.3s ease-out both; }
+  &--living#{&}--reacting &__lyreToy .HereticLyre__string--1 { animation-delay: .12s; }
+  &--living#{&}--reacting &__lyreToy .HereticLyre__string--2 { animation-delay: .24s; }
+  &--living#{&}--reacting &__lyreToy .HereticLyre__pendant { animation: heretic-lyre-pendant 2.6s ease-in-out both; }
   &__refraction { opacity: .25; transition: opacity 300ms ease; }
   &__prismToy { transform-origin: 22px 44px; transition: transform 1100ms cubic-bezier(.22, .61, .36, 1); }
   &__ampouleToy { transform-origin: 22px 44px; transition: transform 1400ms cubic-bezier(.45, 0, .2, 1); }

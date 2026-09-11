@@ -95,6 +95,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define PATH_TIDE "Tide"
 #define PATH_GLASS "Glass"
 #define PATH_BLOOD "Blood"
+#define PATH_ECHO "Echo"
 
 #define HERETIC_ASCENSION_SACRIFICES 5
 #define HERETIC_ASCENSION_BODIES 3

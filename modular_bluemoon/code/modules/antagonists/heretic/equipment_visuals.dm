@@ -78,6 +78,15 @@
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_blood_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_blood_worn.dmi'
 
+/datum/heretic_path/echo
+	robe_state = "echo_armor"
+	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_echo_worn.dmi'
+	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_echo_worn.dmi'
+
+/obj/item/melee/sickly_blade/echo
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_echo_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_echo_righthand.dmi'
+
 /obj/item/melee/sickly_blade/glass
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_glass_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_glass_righthand.dmi'

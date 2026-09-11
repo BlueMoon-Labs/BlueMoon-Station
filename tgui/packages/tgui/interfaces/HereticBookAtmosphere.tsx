@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
+import { MourningLyre } from './HereticIllumination';
+
 export type BookPresentation = 'living' | 'muted' | 'plain';
 
 type AtmosphereProps = {
@@ -20,6 +22,7 @@ const interactions: Record<string, string> = {
   Tide: 'Раскачать затонувший колокол',
   Glass: 'Преломить свет в застёжке',
   Blood: 'Перевернуть алую ампулу',
+  Echo: 'Коснуться струн погребальной лиры',
 };
 
 // Частицы закреплены за переплётом: нажатия не создают новых элементов.
@@ -180,6 +183,19 @@ const Artwork = ({ path, full, prefix }: { path: string; full: boolean; prefix: 
       </g>
     )}
 
+    {path === 'Echo' && (
+      <g fill="none" stroke="#d9bb73">
+        <path d="M8 20v960m5-960v960m974-960v960m5-960v960M498 20v960m4-960v960" strokeWidth="1.1" />
+        <g className="HereticBookAtmosphere__echoStrings" strokeWidth={full ? 1.5 : .8}>
+          <path d="M11 130q8 110 0 220t0 220 0 220M989 130q-8 110 0 220t0 220 0 220M500 110q-7 105 0 210t0 210 0 210" />
+        </g>
+        {(full ? [70, 320, 660, 920] : [70, 920]).map((y) => <g key={y} color="#e5d7b2"><g transform={`translate(2 ${y}) scale(.45 .6)`}><MourningLyre /></g><g transform={`translate(980 ${y}) scale(.45 .6)`}><MourningLyre /></g></g>)}
+        <g className="HereticBookAtmosphere__echoWaves" strokeWidth="1.1">
+          <path d="M976 380q-18 60 0 120m7-137q-25 77 0 154m8-172q-32 95 0 190" />
+        </g>
+      </g>
+    )}
+
     {path === 'Moon' && (
       <g fill="none">
         <path className="HereticBookAtmosphere__mercury" d="M11 15q-8 225 0 470t0 500M989 15q8 225 0 470t0 500M500 12q-5 230 0 478t0 498" stroke={`url(#${prefix}-mercury)`} strokeWidth={full ? 7 : 3} />
@@ -240,6 +256,11 @@ const Toy = ({ path, prefix }: { path: string; prefix: string }) => (
         <path d="M16 9h12v12l9 12v36q-15 19-30 0V33l9-12Z" fill="#382330" /><path className="HereticBookAtmosphere__ampoulePool" d="M13 44h18v24q-9 10-18 0Z" fill="#a92846" />
         <path d="M17 26 11 35v30M16 10h12m-14 5h16m-14 5h12" fill="none" stroke="#e4c2ab" /><path className="HereticBookAtmosphere__ampouleDrop" d="M22 33c-1 5-4 7-4 11a4 4 0 0 0 8 0c0-4-3-6-4-11Z" fill="#f27d92" stroke="none" />
         <path d="M15 80h14m-13 4h12" strokeWidth="3" />
+      </g>
+    ) : path === 'Echo' ? (
+      <g stroke="#d9bb73" strokeWidth="1.5">
+        <g className="HereticBookAtmosphere__lyreToy"><MourningLyre colored /></g>
+        <g className="HereticBookAtmosphere__echoWaves" fill="none"><path d="M2 24q-5 14 0 28m40-28q5 14 0 28" /><path d="M-3 19q-8 19 0 38m50-38q8 19 0 38" /></g>
       </g>
     ) : path === 'Blade' ? (
       <><path d="m22 3 9 19-5 40h-8l-5-40Z" fill={`url(#${prefix}-metal)`} stroke="#8c929f" /><path d="M8 63h28m-14 0v18m-5 0h10" stroke="#d2c5a3" strokeWidth="4" /><path d="M22 5v52" stroke="#f5f2de" /><g className="HereticBookAtmosphere__counterBlade"><path d="m2 63 32-45 8-3-2 10L8 68Z" fill={`url(#${prefix}-metal)`} stroke="#e8e5d2" /><path d="m3 58 12 12" stroke="#d9b975" strokeWidth="3" /></g><path className="HereticBookAtmosphere__steelSparks" d="m22 42-7-7m9 5 7-9m-5 13 9 2m-15 1-4 8" stroke="#fff4b4" strokeWidth="2" /></>

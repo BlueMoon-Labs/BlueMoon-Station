@@ -216,7 +216,7 @@
 		"book" = list(
 			"name" = book_style?.book_name || "Кодекс Рубцов",
 			"title" = book_style?.book_title || "Кодекс Рубцов",
-			"subtitle" = book_style?.book_subtitle || "Одиннадцать дорог за одну завесу",
+			"subtitle" = book_style?.book_subtitle || "Двенадцать дорог за одну завесу",
 			"path" = book_style?.id,
 			"cover_state" = book_style?.book_cover || "codex",
 		),

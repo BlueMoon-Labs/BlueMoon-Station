@@ -21,6 +21,7 @@ describe('Живой переплёт гримуара', () => {
     ['Tide', 'Раскачать затонувший колокол'],
     ['Glass', 'Преломить свет в застёжке'],
     ['Blood', 'Перевернуть алую ампулу'],
+    ['Echo', 'Коснуться струн погребальной лиры'],
   ])('%s: отдельная доступная игрушка откликается и возвращается в покой', (path, label) => {
     render(<HereticBookAtmosphere path={path} presentation="living" reducedMotion={false} />);
     const toy = screen.getByRole('button', { name: label });
