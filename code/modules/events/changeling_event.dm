@@ -19,7 +19,7 @@
 	earliest_start = 20 MINUTES
 	min_players = 20
 	category = EVENT_CATEGORY_ENTITIES
-	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	severity = DIRECTOR_SEVERITY_MAJOR // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
 	intensity = 15
 	family = "changeling"

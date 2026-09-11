@@ -30,6 +30,13 @@
 	wound_falloff_tile = -5
 	embed_falloff_tile = -15
 
+/obj/item/projectile/bullet/c45/ap
+	name = ".45 ACP"
+	damage = 22
+	stamina = 0
+	armour_penetration = BULLET_BR5 //чуть выше стандартной НЕ ап втшки
+	sharpness = SHARP_EDGED
+
 /obj/item/projectile/bullet/c45/trac
 	name = ".45 TRAC bullet"
 	damage = 15
