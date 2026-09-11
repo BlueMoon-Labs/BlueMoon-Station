@@ -35,3 +35,4 @@
 	new /obj/item/storage/bag/plants(src)
 	new /obj/item/storage/bag/ore(src)
 	new /obj/item/stack/sheet/mineral/sandbags(src, 5)
+	new /obj/item/flashlight/seclite

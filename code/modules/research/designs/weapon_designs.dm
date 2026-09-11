@@ -605,6 +605,26 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
 
+/datum/design/katyusha_mag
+	name = "Katyusha Drum Magazine"
+	desc = "A drum magazine of shotgun shells, suitable for the Katyusha combat shotgun."
+	id = "blueshield_mag"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 6000)
+	build_path = /obj/item/ammo_box/magazine/katyusha/empty
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/jaeger_mag
+	name = "Jager magazine"
+	desc = "A pretty hefty 12g mag containing 4 shots."
+	id = "jaeger_mag"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 4000)
+	build_path = /obj/item/ammo_box/magazine/jager/empty
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/lasercarbine/immolator
 	name = "Immolator Laser"
 	desc = "Millitary oriented laser gun with new systems what make laser more deadlier."

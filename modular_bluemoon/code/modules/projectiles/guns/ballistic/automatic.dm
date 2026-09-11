@@ -27,6 +27,9 @@
 	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
 	item_state = "acr5[magazine ? "" : "e"]"
 
+/obj/item/gun/ballistic/automatic/acr5m30/pinstation
+	pin = /obj/item/firing_pin
+
 ////////////////////////////////////////////////////////////////////
 // M16A4 and variations
 /obj/item/gun/ballistic/automatic/m16a4

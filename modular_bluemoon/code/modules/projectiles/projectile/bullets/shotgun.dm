@@ -1,9 +1,10 @@
 /obj/item/projectile/bullet/pellet/shotgun_flechette
 	name = "flechette pellet"
-	wound_bonus = 10
-	bare_wound_bonus = 10
+	damage = 10
+	wound_bonus = 5
+	bare_wound_bonus = 5
 	armour_penetration = BULLET_BR8
-	wound_falloff_tile = -2.5
+	wound_falloff_tile = 2.5
 	tile_dropoff = 0.4
 
 /obj/item/projectile/bullet/frangible_slug
