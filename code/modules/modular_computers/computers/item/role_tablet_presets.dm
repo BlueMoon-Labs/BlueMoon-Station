@@ -16,6 +16,7 @@
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/robocontrol,
 		/datum/computer_file/program/budgetorders,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/heads/Initialize(mapload)
@@ -49,6 +50,7 @@
 	icon_state = "pda-hop"
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/heads/hos
@@ -57,6 +59,7 @@
 	inserted_item = /obj/item/pen/red
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/heads/ce
@@ -66,6 +69,7 @@
 		/datum/computer_file/program/atmosscan,
 		/datum/computer_file/program/alarm_monitor,
 		/datum/computer_file/program/supermatter_monitor,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/heads/cmo
@@ -105,6 +109,7 @@
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/robocontrol,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/detective
@@ -114,6 +119,7 @@
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/robocontrol,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/warden
@@ -123,6 +129,7 @@
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/robocontrol,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/security/brigdoc
@@ -134,6 +141,7 @@
 		/datum/computer_file/program/robocontrol,
 		/datum/computer_file/program/secureye,
 		/datum/computer_file/program/radar/lifeline,
+		/datum/computer_file/program/wiki,
 	)
 
 // =====================
@@ -252,6 +260,7 @@
 	inserted_item = /obj/item/pen/fountain
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
+		/datum/computer_file/program/wiki,
 	)
 
 /obj/item/modular_computer/pda/lawyer/Initialize(mapload)
