@@ -75,6 +75,40 @@ const renderBook = async () => {
 };
 
 describe('Гримуар еретика', () => {
+  test('сохраняет автоматически открытую запись после изучения', async () => {
+    const data = makeData({ selected_path: 'Ash', path_stage: 1 });
+    data.knowledge[0].known = true;
+    data.knowledge[1].available = true;
+    const { store, topic } = setupStore(data);
+    const view = await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Знания' }));
+    expect(screen.getByRole('heading', { name: 'Искусство: Пепел' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Изучить · 2 очк. знаний' }));
+    expect(readActions(topic)).toEqual([{ type: 'act/research', payload: { id: data.knowledge[1].id } }]);
+    act(() => store.dispatch(backendUpdate({ data: {
+      knowledge: data.knowledge.map((entry) => entry.id === data.knowledge[1].id ? { ...entry, known: true, available: false } : entry),
+    } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(screen.getByRole('heading', { name: 'Искусство: Пепел' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Искусство: Пепел, изучено/ }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  test('сохраняет открытый ритуал при добавлении записей и запоминает результат поиска', async () => {
+    const data = makeData();
+    const { store } = setupStore(data);
+    const view = await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    const added = { ...data.rituals[0], id: 'new', name: 'Новый ритуал' };
+    act(() => store.dispatch(backendUpdate({ data: { rituals: [added, ...data.rituals] } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(screen.getByRole('heading', { name: 'Пепельный клинок' })).toBeTruthy();
+    const search = screen.getByRole('textbox', { name: 'Найти запись или ингредиент' });
+    fireEvent.change(search, { target: { value: 'Человеческий труп' } });
+    expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
+    fireEvent.change(search, { target: { value: '' } });
+    expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
+  });
+
   test('улучшает изученную пассивку за побочные очки и обновляет уровень без смены страницы', async () => {
     const data = makeData({ selected_path: 'Ash', path_stage: 2, points: 0, side_points: 1 });
     const knowledge = data.knowledge[1];

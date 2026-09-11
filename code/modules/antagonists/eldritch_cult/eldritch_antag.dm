@@ -239,6 +239,8 @@
 			var/datum/objective/objective = o
 			if(objective.check_completion())
 				parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Выполнена!</span>"
+			else if(istype(objective, /datum/objective/ascend_ecult))
+				parts += "<b>Цель #[count]</b>: [objective.explanation_text] Не выполнена."
 			else
 				parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='redtext'>Провалена.</span>"
 				cultiewin = FALSE
@@ -344,7 +346,7 @@
 
 /datum/objective/ascend_ecult/update_explanation_text()
 	. = ..()
-	explanation_text = "Вознеситесь: принесите [HERETIC_ASCENSION_SACRIFICES] назначенных душ, изучите финал своего пути и завершите обряд с [HERETIC_ASCENSION_BODIES] человеческими трупами."
+	explanation_text = "Дополнительная цель: вознеситесь. Принесите [HERETIC_ASCENSION_SACRIFICES] назначенных душ, изучите финал своего пути и завершите обряд с [HERETIC_ASCENSION_BODIES] человеческими трупами. Для успеха достаточно выполнить основные цели."
 
 /datum/objective/ascend_ecult/check_completion()
 	var/datum/antagonist/heretic/heretic = owner?.has_antag_datum(/datum/antagonist/heretic)

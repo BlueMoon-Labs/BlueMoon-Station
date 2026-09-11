@@ -357,6 +357,9 @@ const KnowledgeChapter = ({ turn }: { turn: () => void }) => {
   const visible = [...main, ...side, ...starting];
   const selected = visible.find((entry) => entry.id === selectedId)
     || main.find((entry) => !entry.known) || visible.find((entry) => entry.available) || visible[0];
+  useEffect(() => {
+    if (selected) setSelectedId(selected.id);
+  }, [selected?.id]);
   const groups = [{ name: 'Ступени пути', entries: main }, { name: 'Побочные знания', entries: side }, { name: 'Начальные знания', entries: starting }];
   return (
     <>
@@ -416,6 +419,9 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
   const rituals = data.rituals.filter((ritual) => `${ritual.name} ${ritual.desc} ${ritual.ingredients.map((item) => item.name).join(' ')}`
     .toLowerCase().includes(search.trim().toLowerCase()));
   const selected = rituals.find((ritual) => ritual.id === selectedId) || rituals[0];
+  useEffect(() => {
+    if (selected) setSelectedId(selected.id);
+  }, [selected?.id]);
   return (
     <>
       <Page side="left" chapter="Ритуалы">

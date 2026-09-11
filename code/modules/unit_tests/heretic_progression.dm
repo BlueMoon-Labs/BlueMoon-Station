@@ -28,10 +28,13 @@
 	var/datum/objective/ascend_ecult/ascension = locate() in heretic.objectives
 	TEST_ASSERT(ascension, "Вознесение явно присутствует среди целей роли.")
 	TEST_ASSERT(!ascension.check_completion(), "Начальная цель вознесения не выполнена.")
+	TEST_ASSERT(findtext(heretic.roundend_report(), "Еретик потерпел неудачу."), "Невыполненные жертвоприношения означают поражение.")
 	heretic.total_sacrifices = HERETIC_ASCENSION_SACRIFICES
 	TEST_ASSERT(!ascension.check_completion(), "Количество душ не заменяет финальный обряд.")
+	TEST_ASSERT(findtext(heretic.roundend_report(), "Еретик успешен!"), "Основная цель даёт успех без дополнительного вознесения.")
 	heretic.ascended = TRUE
 	TEST_ASSERT(ascension.check_completion(), "Завершённый финал выполняет цель.")
+	TEST_ASSERT(findtext(heretic.roundend_report(), "ЕРЕТИК СОВЕРШИЛ ВОЗНЕСЕНИЕ!"), "Вознесение отмечается отдельно от обычного успеха.")
 
 /// Щелчок выбирает только свою звезду и не тратит заряд при заблокированном выходе.
 /datum/unit_test/heretic_starwalk_targeting/Run()

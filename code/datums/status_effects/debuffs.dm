@@ -631,7 +631,7 @@
 
 /datum/status_effect/eldritch/on_apply()
 	. = ..()
-	if(IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || owner.stat == DEAD)
+	if(IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || owner.stat == DEAD || owner.mob_size < MOB_SIZE_HUMAN)
 		return FALSE
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_owner_underlay))
 	owner.update_icon()
@@ -710,7 +710,7 @@
 		carbon_owner.adjustFireLoss(3 * repetitions)
 		if(repetitions > 1)
 			for(var/mob/living/carbon/victim in shuffle(view(1, carbon_owner)))
-				if(!heretic_can_affect(carbon_owner, victim) || victim.has_status_effect(type))
+				if(victim.mob_size < MOB_SIZE_HUMAN || victim.has_status_effect(type) || !heretic_can_affect(carbon_owner, victim, chargecost = 0))
 					continue
 				victim.apply_status_effect(type, repetitions - 1)
 				break

@@ -159,7 +159,9 @@
   &--living &__spark--1 { animation-delay: -1.2s; }
   &--living &__spark--2 { animation-delay: -2.4s; }
   &--living &__corona { animation: book-starlight 7s ease-in-out infinite; }
-  &--living &__stars { animation: book-star-breathe 4.8s ease-in-out infinite; }
+  &--living &__star { animation: book-star-breathe 4.8s ease-in-out infinite; }
+  &--living &__star--1 { animation-delay: -1.6s; }
+  &--living &__star--2 { animation-delay: -3.2s; }
   &--living &__smallOrbit { animation: book-edge-orbit 27s linear infinite; }
   &--living &__oxidation { animation: book-patina-sheen 11s ease-in-out infinite; }
   &--living &__ice { animation: book-ice-lustre 8s ease-in-out infinite; }

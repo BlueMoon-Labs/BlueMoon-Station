@@ -662,7 +662,7 @@
 	split = !split
 	icon_state = split ? "glass_prism_split" : "glass_prism"
 
-/obj/structure/heretic_glass_prism/attack_hand(mob/living/user)
+/obj/structure/heretic_glass_prism/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
 	if(glass?.can_use(user) && user.Adjacent(src))
 		face_user(user)
@@ -731,7 +731,7 @@
 		qdel(src)
 		return PROCESS_KILL
 
-/obj/structure/heretic_glass_barrier/attack_hand(mob/living/user)
+/obj/structure/heretic_glass_barrier/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	var/datum/eldritch_knowledge/base_glass/glass = glass_ref?.resolve()
 	if(glass?.can_use(user) && user.Adjacent(src))
 		playsound(src, 'modular_bluemoon/sound/heretic/glass_release.ogg', 40, TRUE)

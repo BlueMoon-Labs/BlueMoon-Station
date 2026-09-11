@@ -334,7 +334,8 @@
 	transform = matrix() * HERETIC_RUNE_SCALE
 
 /obj/effect/eldritch/huge
-	parent_type = /obj/effect/eldritch/big
+	icon = 'icons/obj/rune.dmi'
+	icon_state = "eld"
 
 #define HERETIC_NETWORK_INFLUENCE_LIMIT 12
 

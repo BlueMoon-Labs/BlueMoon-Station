@@ -19,7 +19,7 @@
 	var/list/overlays = list()
 	SEND_SIGNAL(victim, COMSIG_ATOM_UPDATE_OVERLAYS, overlays)
 	TEST_ASSERT(seal.seal_overlay in overlays, "Обновление внешности сохраняет знак связи.")
-	sleep(3 SECONDS)
+	TEST_ASSERT(wait_for_var(spell, "charge_counter", spell.charge_max, 10 SECONDS), "Перезарядка завершается обработкой заклинаний.")
 	TEST_ASSERT(!QDELETED(seal) && !seal.collecting, "Связь сама не начинает взыскание.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Ожидание не наносит урон должнику.")
 	TEST_ASSERT(spell.cast_check(FALSE, user), "Перезарядка успевает закончиться до срока связи.")

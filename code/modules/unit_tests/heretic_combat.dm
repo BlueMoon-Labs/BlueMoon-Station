@@ -63,8 +63,8 @@
 	TEST_ASSERT(victim.on_fire, "Цель должна гореть перед попыткой вытянуть жар.")
 	rebirth.charge_counter = 0
 	rebirth.cast(list(user), user)
-	TEST_ASSERT_EQUAL(protection.charges, 4, "Горящая защищённая цель тратит один заряд.")
-	TEST_ASSERT_EQUAL(rebirth.charge_counter, 0, "Заблокированная антимагией атака не возвращает перезарядку.")
+	TEST_ASSERT_EQUAL(protection.charges, 5, "Поиск доступного жара не расходует защиту.")
+	TEST_ASSERT_EQUAL(rebirth.charge_counter, rebirth.charge_max, "Без доступного жара способность возвращает перезарядку.")
 	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "Защита блокирует ожоги возрождения.")
 	qdel(protection)
 	user.adjustBruteLoss(20)

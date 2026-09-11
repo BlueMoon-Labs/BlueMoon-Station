@@ -121,11 +121,12 @@
 	knowledge.finished = TRUE
 	knowledge.on_body_gain(user)
 	knowledge.on_body_gain(user)
-	TEST_ASSERT_EQUAL(user.physiology.brute_mod, brute_before * knowledge.damage_modifier, "Повторная выдача не умножает защиту второй раз.")
+	TEST_ASSERT_EQUAL(user.physiology.heretic_ascension_mod, knowledge.damage_modifier, "Повторная выдача не умножает защиту второй раз.")
 	knowledge.on_body_lose(user)
 	knowledge.on_body_lose(user)
 	TEST_ASSERT_EQUAL(user.physiology.brute_mod, brute_before, "Снятие возвращает исходную защиту от травм.")
 	TEST_ASSERT_EQUAL(user.physiology.burn_mod, burn_before, "Снятие возвращает исходную защиту от ожогов.")
+	TEST_ASSERT_EQUAL(user.physiology.heretic_ascension_mod, 1, "Снятие убирает отдельную защиту вознесения.")
 	TEST_ASSERT(HAS_TRAIT(user, TRAIT_NOBREATH), "Чужой источник отсутствия дыхания сохраняется.")
 	REMOVE_TRAIT(user, TRAIT_NOBREATH, "other_source")
 	TEST_ASSERT(!HAS_TRAIT(user, TRAIT_NOBREATH), "После снятия чужого источника эффект вознесения не остаётся.")

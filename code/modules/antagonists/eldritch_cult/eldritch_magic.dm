@@ -668,18 +668,16 @@
 	var/was_on_fire = living_user.on_fire
 	living_user.ExtinguishMob()
 	var/victims_drained = 0
-	var/attempted_drain = FALSE
 	for(var/mob/living/victim in view(4, user))
 		if(!victim.on_fire || victim.stat == DEAD || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 			continue
-		attempted_drain = TRUE
-		if(!heretic_can_affect(user, victim))
+		if(!heretic_can_affect(user, victim, chargecost = 0))
 			continue
 		victim.adjustFireLoss(15)
 		victims_drained++
 		if(victims_drained >= 4)
 			break
-	if(!was_on_fire && !attempted_drain)
+	if(!was_on_fire && !victims_drained)
 		to_chat(user, span_warning("Рядом нет доступного пламени, из которого можно вытянуть жар."))
 		revert_cast(user)
 		return

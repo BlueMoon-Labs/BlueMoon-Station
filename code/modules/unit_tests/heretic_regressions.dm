@@ -23,7 +23,7 @@
 	heretic.clear_heretic()
 	TEST_ASSERT(heretic.role_removed && QDELETED(new_grasp), "Снятие бестелесной роли завершает очистку знаний.")
 
-/// Прежняя проверка сохраняет расход зарядов, явная проверка еретика различает пробу и атаку.
+/// Проверки защиты не расходуют зарядов, а атаки учитывают обычную и психическую антимагию.
 /datum/unit_test/heretic_legacy_antimagic/Run()
 	var/mob/living/victim = allocate(/mob/living/carbon/human)
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
@@ -33,6 +33,15 @@
 	TEST_ASSERT_EQUAL(protection.charges, 5, "Проба не расходует заряды.")
 	TEST_ASSERT(!heretic_can_affect(null, victim), "Атака еретика блокируется.")
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Атака еретика расходует один заряд.")
+	qdel(protection)
+	var/obj/item/clothing/head/foilhat/hat = allocate(/obj/item/clothing/head/foilhat)
+	var/mob/living/carbon/human/human = victim
+	TEST_ASSERT(human.equip_to_slot_if_possible(hat, ITEM_SLOT_HEAD), "Шапочка надета на голову.")
+	TEST_ASSERT(!heretic_can_affect(null, victim, chargecost = 0), "Шапочка блокирует психическую магию еретика.")
+	var/datum/component/anti_magic/psychic = hat.GetComponent(/datum/component/anti_magic)
+	TEST_ASSERT_EQUAL(psychic.charges, 6, "Проверка не расходует заряд шапочки.")
+	TEST_ASSERT(!heretic_can_affect(null, victim), "Атака также блокируется шапочкой.")
+	TEST_ASSERT_EQUAL(psychic.charges, 5, "Настоящая атака расходует один заряд шапочки.")
 
 /// Промах клинка, недоступный сдвиг и повторное касание нити не расходуют защиту.
 /datum/unit_test/heretic_combat_probe_charges/Run()
@@ -129,12 +138,12 @@
 	TEST_ASSERT(knowledge.open_lock(closet, user, TRUE), "После удаления препятствия шкаф открывается.")
 	TEST_ASSERT(!closet.locked && closet.opened, "Успешное открытие снимает замок.")
 
-/// Проклятие объединяет отпечатки, резервирует якоря и расходует только рецепт.
+/// Проклятие резервирует предметы с отпечатками на руне, но не соседние вещи.
 /datum/unit_test/heretic_curse_fingerprint_anchors/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/carbon/human/user = heretic.owner.current
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human)
-	var/obj/item/melee/sickly_blade/blade = allocate(/obj/item/melee/sickly_blade)
+	var/obj/item/melee/sickly_blade/blade = allocate(/obj/item/melee/sickly_blade, get_step(user, WEST))
 	var/obj/item/radio/headset/headset = allocate(/obj/item/radio/headset)
 	var/obj/item/pen/ingredient = allocate(/obj/item/pen)
 	blade.fingerprints = list()
@@ -151,6 +160,9 @@
 	TEST_ASSERT(rune.reserve_atoms(selected), "Якоря резервируются вместе с компонентом.")
 	rune.ritual_user = user
 	TEST_ASSERT(rune.ritual_valid(user, curse), "Повторная проверка сохраняет якоря и отпечатки.")
+	TEST_ASSERT(!(blade in selected), "Соседний клинок не стал якорем проклятия.")
+	blade.forceMove(user)
+	TEST_ASSERT(rune.ritual_valid(user, curse), "Поднятие соседней вещи не прерывает обряд.")
 	headset.forceMove(get_step(get_turf(headset), EAST))
 	TEST_ASSERT(!rune.ritual_valid(user, curse), "Перенос якоря прерывает обряд.")
 	rune.release_atoms()
@@ -197,3 +209,109 @@
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), knowledge.reflection_limit(), "Замена на пределе сохраняет число копий.")
 	TEST_ASSERT(QDELETED(original_reflections[1]), "После создания новой копии удаляется самая старая.")
 	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Успешное затмение даёт саван.")
+
+/// Мелкие животные не получают метку и не дают ресурс после удара клинком.
+/datum/unit_test/heretic_small_animal_marks/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_ash)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/ash_mark)
+	var/datum/eldritch_knowledge/base_ash/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_ash)
+	var/datum/eldritch_knowledge/mark = heretic.get_knowledge(/datum/eldritch_knowledge/ash_mark)
+	var/mob/living/simple_animal/mouse/mouse = allocate(/mob/living/simple_animal/mouse)
+	var/obj/item/melee/sickly_blade/ash/blade = allocate(/obj/item/melee/sickly_blade/ash)
+	path.combat_resource = 0
+	mark.on_mansus_grasp(mouse, user, TRUE)
+	TEST_ASSERT(!mouse.has_status_effect(/datum/status_effect/eldritch/ash), "Хватка не ставит метку на мышь.")
+	user.a_intent = INTENT_HARM
+	blade.attack(mouse, user)
+	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Удар по мыши не даёт уголёк.")
+
+/// Сброс боевого искусства не снимает вознесение и не оставляет уязвимость после его удаления.
+/datum/unit_test/heretic_ascension_martial_reset/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/final_eldritch/knowledge = allocate(/datum/eldritch_knowledge/final_eldritch)
+	knowledge.finished = TRUE
+	knowledge.on_body_gain(user)
+	var/datum/martial_art/the_sleeping_carp/carp = allocate(/datum/martial_art/the_sleeping_carp)
+	TEST_ASSERT(carp.teach(user), "Боевой стиль изучен после вознесения.")
+	carp.remove(user)
+	user.apply_damage(20, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	user.apply_damage(20, BURN, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(abs(user.getBruteLoss() - 20 * knowledge.damage_modifier) < 0.01, "Снятие стиля сохраняет защиту от ушибов.")
+	TEST_ASSERT(abs(user.getFireLoss() - 20 * knowledge.damage_modifier) < 0.01, "Снятие стиля сохраняет защиту от ожогов.")
+	knowledge.on_body_lose(user)
+	var/brute_before = user.getBruteLoss()
+	var/burn_before = user.getFireLoss()
+	user.apply_damage(20, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	user.apply_damage(20, BURN, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	TEST_ASSERT(abs(user.getBruteLoss() - brute_before - 20) < 0.01, "Снятие вознесения не оставляет множитель 1 / 0.75.")
+	TEST_ASSERT(abs(user.getFireLoss() - burn_before - 20) < 0.01, "Ожоги также возвращаются к обычному урону.")
+
+/// Внешнее изменение максимума здоровья не мешает снять ограничение слуги.
+/datum/unit_test/heretic_servant_health_cap_change/Run()
+	var/datum/antagonist/heretic/fixture = allocate_heretic()
+	var/mob/living/body = fixture.owner.current
+	var/datum/antagonist/heretic_monster/servant = allocate(/datum/antagonist/heretic_monster)
+	servant.owner = fixture.owner
+	fixture.owner.antag_datums += servant
+	servant.health_cap = 50
+	body.setMaxHealth(100)
+	servant.apply_health_cap(body)
+	body.setMaxHealth(60)
+	servant.restore_health_cap(body)
+	TEST_ASSERT_EQUAL(body.maxHealth, 100, "Частичное внешнее повышение не оставляет тело с урезанным максимумом.")
+	servant.apply_health_cap(body)
+	body.setMaxHealth(150)
+	servant.restore_health_cap(body)
+	TEST_ASSERT_EQUAL(body.maxHealth, 150, "Повышение сверх исходного максимума сохраняется.")
+	TEST_ASSERT_EQUAL(servant.pre_conversion_max_health, 0, "Запас старого тела очищен для переноса роли.")
+
+/// Мёртвое тело не получает расширенный предел лунных отражений.
+/datum/unit_test/heretic_moon_dead_ascension/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/datum/eldritch_knowledge/base_moon/moon = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/final_knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	final_knowledge.finished = TRUE
+	var/mob/living/user = heretic.owner.current
+	user.stat = DEAD
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT_NULL(final_knowledge.applied_body, "Общий эффект не применился к мёртвому телу.")
+	TEST_ASSERT(!moon.ascension_active, "Лунный предел тоже не применился.")
+
+/// Картовая руна остаётся размером с тайл, ритуальная сохраняет увеличенный масштаб.
+/datum/unit_test/heretic_map_rune_scale/Run()
+	var/obj/effect/eldritch/huge/map_rune = allocate(/obj/effect/eldritch/huge)
+	var/obj/effect/eldritch/big/ritual_rune = allocate(/obj/effect/eldritch/big)
+	var/matrix/map_transform = map_rune.transform
+	var/matrix/ritual_transform = ritual_rune.transform
+	TEST_ASSERT_EQUAL(map_transform.a, 1, "Картовая руна не растягивается по горизонтали.")
+	TEST_ASSERT_EQUAL(map_transform.e, 1, "Картовая руна не растягивается по вертикали.")
+	TEST_ASSERT_EQUAL(ritual_transform.a, HERETIC_RUNE_SCALE, "Ритуальная руна сохраняет свой масштаб.")
+
+/// Очаг возвращается к открывшимся клеткам и лечит владельца с нулевым жезлом.
+/datum/unit_test/heretic_rust_reopened_field/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/effect/heretic_combat_zone/rust/zone = allocate(/obj/effect/heretic_combat_zone/rust, get_turf(user), heretic.owner)
+	STOP_PROCESSING(SSprocessing, zone)
+	var/turf/first = get_turf(user)
+	var/turf/hidden = get_step(user, EAST)
+	var/turf/newly_visible = get_step(user, NORTH)
+	zone.refresh_boundary(list(first, hidden))
+	zone.refresh_boundary(list(first))
+	zone.tick_zone(user, list(user))
+	TEST_ASSERT(istype(first, /turf/open/floor/plating/rust), "Видимый пол покрывается ржавчиной.")
+	TEST_ASSERT(!istype(hidden, /turf/open/floor/plating/rust), "Закрытый пол не затронут.")
+	zone.refresh_boundary(list(first, hidden, newly_visible))
+	zone.tick_zone(user, list(user))
+	TEST_ASSERT(istype(hidden, /turf/open/floor/plating/rust), "Повторно открывшийся пол не потерян.")
+	TEST_ASSERT(istype(newly_visible, /turf/open/floor/plating/rust), "Пол, закрытый при создании очага, тоже обрабатывается.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	user.put_in_hands(rod)
+	TEST_ASSERT(user.check_magic_resistance(chargecost = 0), "Владелец действительно защищён нулевым жезлом.")
+	user.adjustBruteLoss(10)
+	zone.tick_zone(user, list(user))
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 7, "Жезл не отключает лечение самого владельца.")

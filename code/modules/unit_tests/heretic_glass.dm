@@ -246,9 +246,6 @@
 	var/datum/heretic_glass_attack/third = glass.attacks[1]
 	user.forceMove(get_step(user, NORTH))
 	TEST_ASSERT(QDELETED(third), "Первая подготовка сети отменяется реальным движением.")
-	eastern.setDir(SOUTH)
-	var/list/cells = glass.trace_ray(get_turf(eastern), EAST, eastern)
-	TEST_ASSERT(length(cells) <= 12, "Один источник не превышает общий бюджет трассировки.")
 
 /// Смерть и переселение убирают призмы, чужие статусы, предупреждения и прежнюю способность.
 /datum/unit_test/heretic_glass_cleanup/Run()
@@ -407,3 +404,59 @@
 	prism.take_damage(100, BRUTE, MELEE)
 	TEST_ASSERT(QDELETED(prism), "Обычный урон разбирает оптическую установку.")
 	TEST_ASSERT_EQUAL(length(glass.prisms), 1, "Разрушение освобождает место для нового узла.")
+
+/// Разветвлённая трасса достигает общего бюджета до и после вознесения.
+/datum/unit_test/heretic_glass_ray_budget/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/turf_reservation/arena = SSmapping.RequestBlockReservation(19, 19, turf_type_override = /turf/open/floor/plating, border_type_override = /turf/closed/wall)
+	TEST_ASSERT_NOTNULL(arena, "Выделена площадка для длинной разветвлённой трассы.")
+	allocated += arena
+	var/turf/start = locate(arena.bottom_left_coords[1] + 8, arena.bottom_left_coords[2] + 5, arena.bottom_left_coords[3])
+	var/turf/bend = locate(start.x + 3, start.y + 3, start.z)
+	var/obj/structure/heretic_glass_prism/root = allocate(/obj/structure/heretic_glass_prism, start, glass)
+	var/obj/structure/heretic_glass_prism/branch = allocate(/obj/structure/heretic_glass_prism, bend, glass)
+	root.setDir(NORTH)
+	root.toggle_split()
+	branch.setDir(NORTH)
+	branch.toggle_split()
+	var/list/cells = glass.trace_ray(start, NORTH, root)
+	TEST_ASSERT_EQUAL(length(cells), 11, "Бюджет 12 включает одну клетку преломляющей призмы.")
+	glass.ascension_active = TRUE
+	cells = glass.trace_ray(start, NORTH, root)
+	TEST_ASSERT_EQUAL(length(cells), 17, "Вознесённый бюджет 18 продолжает ту же трассу ещё на шесть клеток.")
+	qdel(root)
+	qdel(branch)
+
+/datum/unit_test/heretic_glass_hand_interaction/proc/block_hand(datum/source)
+	SIGNAL_HANDLER
+	return COMPONENT_NO_ATTACK_HAND
+
+/// Ручное управление стеклянными конструкциями соблюдает общий запрет взаимодействия.
+/datum/unit_test/heretic_glass_hand_interaction/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/heretic_glass_prism/prism = allocate(/obj/structure/heretic_glass_prism, get_step(user, EAST), glass)
+	prism.setDir(EAST)
+	user.setDir(NORTH)
+	RegisterSignal(prism, COMSIG_ATOM_ATTACK_HAND, PROC_REF(block_hand))
+	prism.attack_hand(user)
+	TEST_ASSERT_EQUAL(prism.dir, EAST, "Запрет общего обработчика не позволяет повернуть призму.")
+	UnregisterSignal(prism, COMSIG_ATOM_ATTACK_HAND)
+	prism.attack_hand(user)
+	TEST_ASSERT_EQUAL(prism.dir, NORTH, "Без запрета владелец поворачивает призму рукой.")
+	var/obj/structure/heretic_glass_barrier/barrier = allocate(/obj/structure/heretic_glass_barrier, get_step(user, NORTH), glass)
+	RegisterSignal(barrier, COMSIG_ATOM_ATTACK_HAND, PROC_REF(block_hand))
+	barrier.attack_hand(user)
+	TEST_ASSERT(!QDELETED(barrier), "Запрет общего обработчика сохраняет барьер.")
+	UnregisterSignal(barrier, COMSIG_ATOM_ATTACK_HAND)
+	barrier.attack_hand(user)
+	TEST_ASSERT(QDELETED(barrier), "Без запрета владелец убирает барьер рукой.")

@@ -81,7 +81,7 @@
 	if(!isliving(target) || target == user || QDELETED(target))
 		return FALSE
 	var/mob/living/victim = target
-	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(chargecost = chargecost)
+	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = TRUE, chargecost = chargecost)
 
 /datum/eldritch_knowledge/base_ash
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
@@ -235,7 +235,7 @@
 	new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(user))
 	for(var/mob/living/servant in view(5, user))
 		var/datum/antagonist/heretic_monster/monster = servant.mind?.has_antag_datum(/datum/antagonist/heretic_monster)
-		if(!monster || monster.master?.owner != user.mind || servant.stat == DEAD || servant.check_magic_resistance())
+		if(!monster || monster.master?.owner != user.mind || servant.stat == DEAD || servant.check_magic_resistance(chargecost = 0))
 			continue
 		servant.adjustBruteLoss(-25)
 		servant.adjustFireLoss(-25)
@@ -391,28 +391,25 @@
 	boundary_color = "#e7ad64"
 	icon_state = "sigil_rust"
 	duration = 30 SECONDS
-	var/list/unclaimed
-
-/obj/effect/heretic_combat_zone/rust/Initialize(mapload, datum/mind/master)
-	. = ..()
-	unclaimed = list()
-	for(var/turf/floor as anything in field_turfs)
-		unclaimed += floor
+	var/list/claimed = list()
 
 /obj/effect/heretic_combat_zone/rust/tick_zone(mob/living/user, list/visible)
-	for(var/i in 1 to min(3, length(unclaimed)))
-		var/turf/floor = unclaimed[1]
-		unclaimed.Cut(1, 2)
-		if(isfloorturf(floor) && (floor in field_turfs))
-			floor.rust_heretic_act()
-			new /obj/effect/temp_visual/heretic_oldpath/rust(floor)
+	var/remaining = 3
+	for(var/turf/open/floor/floor as anything in field_turfs - claimed)
+		claimed += floor
+		floor.rust_heretic_act()
+		new /obj/effect/temp_visual/heretic_oldpath/rust(floor)
+		if(!--remaining)
+			break
 	if(!visible)
 		visible = view(radius, src)
 	for(var/mob/living/ally in visible)
-		if(ally.stat == DEAD || !(ally.loc in field_turfs) || !istype(get_turf(ally), /turf/open/floor/plating/rust) || ally.check_magic_resistance(chargecost = 0))
+		if(ally.stat == DEAD || !(ally.loc in field_turfs) || !istype(get_turf(ally), /turf/open/floor/plating/rust))
 			continue
 		var/datum/antagonist/heretic_monster/monster = ally.mind?.has_antag_datum(/datum/antagonist/heretic_monster)
 		if(ally != user && monster?.master?.owner != user.mind)
+			continue
+		if(ally != user && ally.check_magic_resistance(chargecost = 0))
 			continue
 		ally.adjustBruteLoss(-3)
 		ally.adjustFireLoss(-3)

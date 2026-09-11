@@ -229,23 +229,23 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLADE
 	var/mob/living/carbon/human/body = heretic.owner.current
-	var/original_brute_mod = body.physiology.brute_mod
+	var/original_ascension_mod = body.physiology.heretic_ascension_mod
 	var/datum/eldritch_knowledge/final_eldritch/blade_final/knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/blade_final)
 	heretic.researched_knowledge[knowledge.type] = knowledge
 	knowledge.finished = TRUE
 	knowledge.on_body_gain(body)
 	var/obj/effect/heretic_ascension_aura/aura = knowledge.ascension_aura
-	TEST_ASSERT(body.physiology.brute_mod < original_brute_mod, "Живое тело получает защиту вознесения.")
+	TEST_ASSERT(body.physiology.heretic_ascension_mod < original_ascension_mod, "Живое тело получает защиту вознесения.")
 	body.death()
 	heretic.handle_death(body)
 	TEST_ASSERT_NULL(knowledge.applied_body, "Смерть освобождает ссылку знания на тело.")
 	TEST_ASSERT(QDELETED(aura), "Смерть удаляет нимб.")
-	TEST_ASSERT_EQUAL(body.physiology.brute_mod, original_brute_mod, "Смерть снимает множитель защиты.")
+	TEST_ASSERT_EQUAL(body.physiology.heretic_ascension_mod, original_ascension_mod, "Смерть снимает множитель защиты.")
 	body.revive(full_heal = TRUE)
 	knowledge.on_life(body)
 	knowledge.on_life(body)
 	TEST_ASSERT_EQUAL(knowledge.applied_body, body, "Оживлённое тело снова получает эффект.")
-	TEST_ASSERT_EQUAL(body.physiology.brute_mod, original_brute_mod * knowledge.damage_modifier, "Повторная обработка жизни не умножает защиту ещё раз.")
+	TEST_ASSERT_EQUAL(body.physiology.heretic_ascension_mod, knowledge.damage_modifier, "Повторная обработка жизни не умножает защиту ещё раз.")
 
 /// Истечение знамения очищает только его собственный слой, в том числе без клиента.
 /datum/unit_test/heretic_ascension_omen_cleanup/Run()

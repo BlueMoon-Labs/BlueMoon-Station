@@ -94,7 +94,7 @@
 /datum/eldritch_knowledge/curse/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	fingerprints.Cut()
 	for(var/obj/item/anchor in atoms)
-		if(!length(anchor.fingerprints) || is_type_in_list(anchor, required_atoms))
+		if(anchor.loc != loc || !length(anchor.fingerprints) || is_type_in_list(anchor, required_atoms))
 			continue
 		fingerprints |= anchor.fingerprints
 		selected_atoms |= anchor
@@ -241,8 +241,7 @@
 		ADD_TRAIT(user, trait, REF(src))
 	if(ishuman(user))
 		var/mob/living/carbon/human/human = user
-		human.physiology.brute_mod *= damage_modifier
-		human.physiology.burn_mod *= damage_modifier
+		human.physiology.heretic_ascension_mod = damage_modifier
 	for(var/spell_type in ascension_spells)
 		var/obj/effect/proc_holder/spell/spell = new spell_type
 		ascension_spell_instances += spell
@@ -256,8 +255,7 @@
 		REMOVE_TRAIT(applied_body, trait, REF(src))
 	if(ishuman(applied_body))
 		var/mob/living/carbon/human/human = applied_body
-		human.physiology.brute_mod /= damage_modifier
-		human.physiology.burn_mod /= damage_modifier
+		human.physiology.heretic_ascension_mod = 1
 	applied_body = null
 	QDEL_LIST(ascension_spell_instances)
 

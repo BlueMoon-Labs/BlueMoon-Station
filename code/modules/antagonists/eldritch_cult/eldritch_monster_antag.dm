@@ -176,8 +176,7 @@
 /datum/antagonist/heretic_monster/proc/restore_health_cap(mob/living/affected)
 	if(!pre_conversion_max_health)
 		return
-	if(affected.maxHealth <= health_cap)
-		affected.setMaxHealth(pre_conversion_max_health)
+	affected.setMaxHealth(max(affected.maxHealth, pre_conversion_max_health))
 	pre_conversion_max_health = 0
 	affected.updatehealth()
 

@@ -595,7 +595,7 @@
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_body_gain(mob/living/user)
 	. = ..()
-	if(!finished)
+	if(!finished || applied_body != user)
 		return
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(knowledge)
