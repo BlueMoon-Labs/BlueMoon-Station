@@ -85,10 +85,12 @@
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
 	victim.adjustBruteLoss(10)
+	var/damage_before = victim.getBruteLoss()
+	TEST_ASSERT(damage_before > 0, "Перед внешним спасением жертва ранена.")
 	victim.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT(wait_for_qdeleted(visit), "Внешнее перемещение закрывает посещение после обработки сигнала.")
 	TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_bottom_left, "Мансус не отменяет внешнее спасение тела.")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 10, "Внешнее спасение не даёт дополнительное удалённое лечение.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), damage_before, "Внешнее спасение не даёт дополнительное удалённое лечение.")
 
 /datum/unit_test/heretic_mansus_mind_transfer/Run()
 	var/list/fixture = make_mansus_fixture()

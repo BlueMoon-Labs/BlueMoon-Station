@@ -142,6 +142,8 @@
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		var/removed_credit = min(seal.refundable_debt, healed)
 		seal.refundable_debt -= removed_credit
+		if(seal.refundable_debt < DAMAGE_PRECISION)
+			seal.refundable_debt = 0
 		healed -= removed_credit
 		credit_changed ||= removed_credit > 0
 		if(!healed)

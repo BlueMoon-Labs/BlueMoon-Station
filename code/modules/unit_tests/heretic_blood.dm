@@ -222,6 +222,26 @@
 	other.owner.current.put_in_hands(chalice)
 	TEST_ASSERT(!chalice.drink(other.owner.current, other_debtor), "Другой кровник не использует чужую чашу даже со своим долгом и ранами.")
 
+/// Учёт лечения сохраняет дробный кредит и убирает остаток меньше точности урона.
+/datum/unit_test/heretic_blood_refund_roundoff/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	TEST_ASSERT(blood.release(user, victim), "Связь создаёт оплаченный долг.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	var/original_debt = seal.debt
+	seal.refundable_debt = 4
+	blood.last_brute_loss = user.getBruteLoss() + 3.5
+	blood.sync_refundable_debt()
+	TEST_ASSERT_EQUAL(seal.refundable_debt, 0.5, "Непогашенный дробный кредит сохраняется.")
+	blood.last_brute_loss = user.getBruteLoss() + seal.refundable_debt - DAMAGE_PRECISION / 100
+	blood.sync_refundable_debt()
+	TEST_ASSERT_EQUAL(seal.refundable_debt, 0, "Погрешность подсчёта урона не оставляет возвратный кредит.")
+	TEST_ASSERT_EQUAL(seal.debt, original_debt, "Погашение кредита не меняет долг для взыскания.")
+
 /// Массовое взыскание выбирает связи, а усиление меняет только коэффициент их долга.
 /datum/unit_test/heretic_blood_reckoning_and_upgrade/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
