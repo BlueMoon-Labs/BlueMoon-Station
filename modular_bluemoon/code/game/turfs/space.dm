@@ -21,7 +21,7 @@
 /datum/map_template/ruin/space/listeningstation
 	name = "Listening Station"
 	id = "listeningstation"
-	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/listening"
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/listening/"
 	description = "Listening stations form the backbone of the syndicate's information gathering operations. \
 	Assignment to these stations is dreaded by most agents, as it entails long and lonely shifts listening to nearby stations chatter incessently about the most meaningless things."
 	allow_duplicates = FALSE
