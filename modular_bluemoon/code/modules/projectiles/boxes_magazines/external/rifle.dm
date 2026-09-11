@@ -44,10 +44,6 @@
 	caliber = "a762x39"
 	max_ammo = 25
 
-/obj/item/ammo_box/magazine/acrm/update_icon_state()
-	..()
-	icon_state = "[initial(icon_state)]-[ammo_count() ? "30" : "0"]"
-
 /obj/item/ammo_box/magazine/acrm/empty
 	start_empty = TRUE
 
