@@ -54,7 +54,7 @@
 	verb_say = "states"
 	density = FALSE
 	unique_reskin = list(
-		"Default" = list(),
+		RESKIN_EMPTY,
 		"Black" = list(
 			RESKIN_ICON_STATE = "raiqbawks_black",
 			RESKIN_ITEM_STATE = "raiqbawks_black"

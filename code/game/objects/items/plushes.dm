@@ -11,6 +11,7 @@
 	obj_flags = UNIQUE_RENAME
 	lefthand_file = 'icons/mob/inhands/misc/plushes_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/plushes_righthand.dmi'
+	COOLDOWN_DECLARE(petting_heart_cooldown)
 	var/list/squeak_override //Weighted list; If you want your plush to have different squeak sounds use this
 	var/stuffed = TRUE //If the plushie has stuffing in it
 	var/unstuffable = FALSE //for plushies that can't be stuffed
@@ -748,12 +749,133 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 	gender = FEMALE
 	squeak_override = list('modular_citadel/sound/voice/scream_moth.ogg' = 1)
 
+////////////////////////////////// MOTHS //////////////////////////////////
+
+//спрайты молек (кроме оригинального) были спи...одолженны от сюда https://github.com/BeeStation/BeeStation-Hornet
+
 /obj/item/toy/plush/mothplushie
 	name = "moth plushie"
 	desc = "An adorable stuffed toy that resembles some kind of insect."
+	icon = 'icons/obj/plushes_moff.dmi'
 	icon_state = "moff"
+	item_state = "moff"
 	squeak_override = list('modular_citadel/sound/voice/mothsqueak.ogg' = 1)
 	can_random_spawn = FALSE
+
+/obj/item/toy/plush/mothplushie/box_reskinnable
+	name = "Reskinnable moth plushie"
+	icon_state = "moff-uni"
+	can_random_spawn = TRUE
+	unique_reskin = list(
+		RESKIN_EMPTY
+	)
+
+/obj/item/toy/plush/mothplushie/box_reskinnable/Initialize(mapload, set_snowflake_id)
+	// Возвращаем вид изначальной игрушки
+	name = /obj/item/toy/plush/mothplushie::name
+	icon_state = /obj/item/toy/plush/mothplushie::icon_state
+	// Записываем все подтипы в рескины
+	for(var/sub_type in subtypesof(/obj/item/toy/plush/mothplushie/reskin))
+		unique_reskin[sub_type:name] = list("name" = sub_type:name, RESKIN_ICON_STATE = sub_type:icon_state)
+	
+	return ..()
+
+/obj/item/toy/plush/mothplushie/reskin
+	can_random_spawn = FALSE
+
+/obj/item/toy/plush/mothplushie/reskin/monarch
+	name = "monarch moth plushie"
+	icon_state = "monarch"
+
+/obj/item/toy/plush/mothplushie/reskin/luna
+	name = "luna moth plushie"
+	icon_state = "luna"
+
+/obj/item/toy/plush/mothplushie/reskin/atlas
+	name = "atlas moth plushie"
+	icon_state = "atlas"
+
+/obj/item/toy/plush/mothplushie/reskin/redish
+	name = "redish moth plushie"
+	icon_state = "redish"
+
+/obj/item/toy/plush/mothplushie/reskin/royal
+	name = "royal moth plushie"
+	icon_state = "royal"
+
+/obj/item/toy/plush/mothplushie/reskin/gothic
+	name = "gothic moth plushie"
+	icon_state = "gothic"
+
+/obj/item/toy/plush/mothplushie/reskin/lovers
+	name = "lovers moth plushie"
+	icon_state = "lovers"
+
+/obj/item/toy/plush/mothplushie/reskin/whitefly
+	name = "whitefly moth plushie"
+	icon_state = "whitefly"
+
+/obj/item/toy/plush/mothplushie/reskin/punished
+	name = "punished moth plushie"
+	icon_state = "punished"
+
+/obj/item/toy/plush/mothplushie/reskin/firewatch
+	name = "firewatch moth plushie"
+	icon_state = "firewatch"
+
+/obj/item/toy/plush/mothplushie/reskin/deadhead
+	name = "deadhead moth plushie"
+	icon_state = "deadhead"
+
+/obj/item/toy/plush/mothplushie/reskin/poison
+	name = "poison moth plushie"
+	icon_state = "poison"
+
+/obj/item/toy/plush/mothplushie/reskin/ragged
+	name = "ragged moth plushie"
+	icon_state = "ragged"
+
+/obj/item/toy/plush/mothplushie/reskin/snow
+	name = "snow moth plushie"
+	icon_state = "snow"
+
+/obj/item/toy/plush/mothplushie/reskin/clockwork
+	name = "clockwork moth plushie"
+	icon_state = "clockwork"
+
+/obj/item/toy/plush/mothplushie/reskin/moonfly
+	name = "moonfly moth plushie"
+	icon_state = "moonfly"
+
+/obj/item/toy/plush/mothplushie/reskin/rainbow
+	name = "rainbow moth plushie"
+	icon_state = "rainbow"
+
+/obj/item/toy/plush/mothplushie/reskin/witchwing
+	name = "witchwing moth plushie"
+	icon_state = "witchwing"
+
+/obj/item/toy/plush/mothplushie/reskin/plasmafire
+	name = "plasmafire moth plushie"
+	icon_state = "plasmafire"
+
+/obj/item/toy/plush/mothplushie/reskin/bluespace
+	name = "bluespace moth plushie"
+	icon_state = "bluespace"
+
+/obj/item/toy/plush/mothplushie/reskin/rosy
+	name = "rosy moth plushie"
+	icon_state = "rosy"
+
+/obj/item/toy/plush/mothplushie/reskin/brown
+	name = "brown moth plushie"
+	icon_state = "brown"
+
+/obj/item/toy/plush/mothplushie/reskin/betan
+	name = "betan moth plushie"
+	icon_state = "betan"
+
+///////////////////////////////////////////////////////////////////////////
 
 /obj/item/toy/plush/lampplushie
 	name = "lamp plushie"
@@ -1032,3 +1154,13 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 		playsound(user, 'sound/items/squeaktoy.ogg', 20, 1)
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "plushpet", /datum/mood_event/plushpet)
 		cooldown = world.time
+
+/// cube guy thing. beware, very silly
+/obj/item/toy/plush/cube
+	name = "Cubical plushie"
+	desc = "That's one weird looking plushie."
+	icon = 'modular_sand/icons/obj/plushes.dmi'
+	icon_state = "cube"
+	lefthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_lefthand.dmi'
+	righthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_righthand.dmi'
+	squeak_override = list('sound/effects/footstep/rustystep1.ogg' = 1)

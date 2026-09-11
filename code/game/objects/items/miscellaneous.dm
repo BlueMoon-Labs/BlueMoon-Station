@@ -263,7 +263,10 @@
 	if(!length(plushie_list))
 		//plushie set 1: just subtypes of /obj/item/toy/plush
 		var/list/plushies_set_one = subtypesof(/obj/item/toy/plush)
-		plushies_set_one = remove_bad_plushies(plushies_set_one)
+		var/static/list/bad_plushies
+		if(!bad_plushies)
+			bad_plushies = get_bad_plushies()
+		plushies_set_one -= bad_plushies
 		for(var/V in plushies_set_one)
 			var/atom/A = V
 			plushie_list[initial(A.name)] = A
@@ -283,19 +286,33 @@
 
 /obj/item/choice_beacon/box/plushie/examine(mob/user)
 	. = ..()
-	. += span_notice("Alt-click to show radial menu.")
+	. += span_notice("Alt-click in active hand to show radial menu.")
 // BLUEMOON ADD END
 
 /// Don't allow these special ones (you can still get narplush/hugbox)
-/obj/item/choice_beacon/box/plushie/proc/remove_bad_plushies(list/plushies)
-	plushies -= list(
+/obj/item/choice_beacon/box/plushie/proc/get_bad_plushies()
+	var/list/bad_plushies = list(
 		/obj/item/toy/plush/narplush,
 		/obj/item/toy/plush/awakenedplushie,
 		/obj/item/toy/plush/random_snowflake,
 		/obj/item/toy/plush/plushling,
-		/obj/item/toy/plush/random
-		)
-	return plushies
+		/obj/item/toy/plush/random,
+		/obj/item/toy/plush/goatplushie,
+		/obj/item/toy/plush/goatplushie/angry,
+		/obj/item/toy/plush/goatplushie/angry/realgoat,
+		/obj/item/toy/plush/realgoat,
+		/obj/item/toy/plush/goatplushie/angry/kinggoat,
+		/obj/item/toy/plush/goatplushie/angry/kinggoat/ascendedkinggoat,
+		/obj/item/toy/plush/goatplushie/angry/guardgoat,
+		/obj/item/toy/plush/goatplushie/angry/guardgoat/masterguardgoat,
+		/obj/item/toy/plush/lizardplushie/saliith,
+		/obj/item/toy/plush/carpplushie/dehy_carp,
+	)
+
+	bad_plushies += typesof(/obj/item/toy/plush/bm/shark) - /obj/item/toy/plush/bm/shark/box_reskinnable
+	bad_plushies += typesof(/obj/item/toy/plush/mothplushie) - /obj/item/toy/plush/mothplushie/box_reskinnable
+
+	return bad_plushies
 
 /obj/item/skub
 	desc = "It's skub."

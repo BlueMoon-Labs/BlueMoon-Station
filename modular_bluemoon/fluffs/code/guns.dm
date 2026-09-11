@@ -1005,80 +1005,6 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate/get_worn_belt_overlay(icon_file)
 	return null
 
-/obj/item/modkit/katana_kit
-	name = "Stun-Katana Kit"
-	desc = "A modkit for making a stunsword into a Stun-Katana."
-	icon_state = "stun-katana_kit"
-	product = /obj/item/melee/baton/stunsword/stunkatana
-	fromitem = list(/obj/item/melee/baton/stunsword)
-
-#define STUNKATANA_BASE_STATE "stunkatana"
-
-/obj/item/melee/baton/stunsword/stunkatana
-	DONATE_ITEM_TOOLTIP_PARENT
-	name = "\improper Stun-Katana"
-	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
-	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
-	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon_state = STUNKATANA_BASE_STATE
-	item_state = STUNKATANA_BASE_STATE
-	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
-
-/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
-	var/old_status = turned_on
-	. = ..()
-	if(turned_on != old_status)
-		switch_light()
-
-/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
-	. = ..()
-	// После удара — обновляем иконку и свет по текущему заряду.
-	update_icon_state()
-	switch_light()
-
-/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
-	if(!cell)
-		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
-		item_state = STUNKATANA_BASE_STATE
-		return
-
-	if(cell.charge <= 0)
-		icon_state = "[STUNKATANA_BASE_STATE]-nocharge"
-		item_state = STUNKATANA_BASE_STATE
-		return
-
-	var/charge_percent = cell.charge / cell.maxcharge
-	if(turned_on)
-		if(charge_percent > 0.5)
-			icon_state = "[STUNKATANA_BASE_STATE]-on"
-			item_state = "[STUNKATANA_BASE_STATE]_active"
-		else
-			icon_state = "[STUNKATANA_BASE_STATE]-on-half"
-			item_state = "[STUNKATANA_BASE_STATE]_half"
-	else
-		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
-		item_state = STUNKATANA_BASE_STATE
-
-/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
-	if(!cell)
-		set_light(0)
-		return
-
-	if(turned_on)
-		if(cell.charge <= 0)
-			set_light(3, 0.9, "#ff0000")
-		else
-			var/charge_percent = cell.charge / cell.maxcharge
-			if(charge_percent > 0.5)
-				set_light(3, 0.9, "#B6EEE9")
-			else
-				set_light(3, 0.9, "#D9CD8E")
-	else
-		set_light(0)
-
-#undef STUNKATANA_BASE_STATE
-
 /obj/item/modkit/nebular_t_kit
 	name = "Nebular-T Kit"
 	desc = "A modkit for making a hybrid taser into a Nebular-T."
@@ -1711,7 +1637,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/warder_r9_shoot.ogg'
 	base_pixel_x = -10
 	unique_reskin = list(
-		"Default" = list(),
+		RESKIN_EMPTY,
 		"Alt" = list(
 			RESKIN_ICON_STATE = "warder_9r-alt"
 		)
@@ -1997,3 +1923,93 @@
 	return ..()
 
 ////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/gun/ballistic/revolver/doublebarrel/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Nebula Workshop's 'Original Guilt'"
+	desc = "Модернизированное двуствольное ружье, собранное на заказ из прочных полимеров. Оружие оснащено компактным тактическим прицелом-точкой, облегченным спусковым механизмом, системой автоматического взведения курков и умным электронным предохранителем. Несмотря на кастомную сборку, по строгим технологическим меркам Небульского Конкорда эта модель считается сильно устаревшей. Под блоком стволов красуется аккуратная каллиграфическая гравировка: «Nobody's evil»."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "DB"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	sawn_desc = "Модернизированное двуствольное ружье, собранное на заказ из прочных полимеров. Оружие оснащено компактным тактическим прицелом-точкой, облегченным спусковым механизмом, системой автоматического взведения курков и умным электронным предохранителем. Несмотря на кастомную сборку, по строгим технологическим меркам Небульского Конкорда эта модель считается сильно устаревшей. Под блоком стволов красуется аккуратная каллиграфическая гравировка: «Nobody's evil»."
+	item_state = "DB"
+	obj_flags = NONE
+	sawn_item_state = "DB-SO"
+
+/obj/item/gun/ballistic/revolver/doublebarrel/melatonin/sawoff(mob/user)
+	. = ..()
+	if(.)
+		name = "Sawn-Off Nebula Workshop's 'Original Guilt'"
+
+/obj/item/gun/ballistic/revolver/doublebarrel/melatonin/update_icon_state()
+	if(sawn_off)
+		icon_state = "DB-SO"
+	else
+		icon_state = "DB"
+
+/obj/item/modkit/melatonin_shotgun_kit
+	name = "Nebula Workshop's 'Original Guilt' Kit"
+	desc = "A modkit for making a double-barreled shotgun into a Nebula Workshop's 'Original Guilt'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/gun/ballistic/revolver/doublebarrel/melatonin
+	fromitem = list(/obj/item/gun/ballistic/revolver/doublebarrel)
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Malorian Arms 'The Parade'"
+	desc = "Эксклюзивный пистолет, выпущенный компанией Malorian Arms на базе единичной модели 3516 крайне ограниченным тиражом в Великобритании. Оружие переделано под облегченный калибр .45 ACP и штатно оснащено массивным утяжеленным и удлиненным стволом, а также подствольным отсеком под тактический фонарь или лазерный целеуказатель. Сложная автоматика делает его далеко не самым надежным пистолетом в галактике, но его хищный силуэт определенно заслуживает внимания. На замененной кастомной рукоятке отчетливо видны глубокие потертости и царапины, напоминающие следы от волчьих когтей."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "melatonin_werewolf"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "melatonin_werewolf"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_firing_sound.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_in.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_in.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_out.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_mag_out.ogg'
+	lock_back_sound = 'modular_bluemoon/fluffs/sound/weapon/parade/the_parade_rack.ogg'
+
+/obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin/update_icon_state()
+	. = ..()
+	icon_state = "[initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_extended) ? "-expended" : ""][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
+
+/obj/item/modkit/melatonin_enforcer_kit
+	name = "Malorian Arms 'The Parade' Kit"
+	desc = "A modkit for making an Enforcer into a Malorian Arms 'The Parade'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/melatonin
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+
+/obj/item/gun/ballistic/shotgun/shorty/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "'Hair of the Dog' Lever-Action Shotgun"
+	desc = "Классическое, но модифицированное ружье на базе Winchester Model 1894. Его рычажный механизм был полностью переработан под калибр 12 Gauge. Из-за кастомного патронника трубчатый магазин сильно потерял в емкости, а отдача стала настолько сильной, что лишь Сильвер знает как с ним обращаться. Ствол увенчан тяжелым перфорированным дульным тормозом, а поверх матового ресивера установлена современная тактическая планка для прицелов. Деревянное цевье и приклад покрыты рваными царапинами от когтей ее владелицы."
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "hair_of_the_dog_loaded"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "hair_of_the_dog_loaded"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-firing.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-loading.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-loading.ogg'
+	pumpsound = "modular_bluemoon/fluffs/sound/weapon/Hair-of-the-dog-lever-action.ogg"
+
+/obj/item/gun/ballistic/shotgun/shorty/melatonin/update_icon_state()
+	if(chambered && chambered.BB)
+		icon_state = "hair_of_the_dog_loaded"
+	else
+		icon_state = "hair_of_the_dog_not_loaded"
+
+/obj/item/modkit/melatonin_enforcer_kit
+	name = "'Hair of the Dog' Lever-Action Shotgun Kit"
+	desc = "A modkit for making an super shorty shotgun into a 'Hair of the Dog' Lever-Action Shotgun'."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/gun/ballistic/shotgun/shorty/melatonin
+	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)

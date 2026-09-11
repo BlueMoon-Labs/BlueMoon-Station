@@ -717,6 +717,9 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/is_muzzled()
 	return FALSE
 
+/mob/proc/get_muzzle_strength()
+	return MUFFLE_NONE
+
 /// Adds this list to the output to the stat browser
 /mob/proc/get_status_tab_items()
 	. = list()
