@@ -26,23 +26,23 @@
 	var/datum/antagonist/heretic/heretic = fixture["heretic"]
 	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
 	knowledge.combat_resource = initial(knowledge.combat_resource)
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Путь начинается с Темпом для первого сближения.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Путь начинается с Темпом для первого сближения.")
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blade_lunge)
 	var/obj/effect/proc_holder/spell/pointed/heretic_lunge/lunge = allocate(/obj/effect/proc_holder/spell/pointed/heretic_lunge)
 	attacker.forceMove(get_step(get_step(get_step(user, EAST), EAST), EAST))
 	lunge.cast(list(attacker), user)
 	TEST_ASSERT(user.Adjacent(attacker), "Первый выпад работает до парирования и изучения метки.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Сближение расходует начальный Темп.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Сближение расходует один Темп.")
 	var/datum/eldritch_knowledge/blade_grasp/grasp = allocate(/datum/eldritch_knowledge/blade_grasp)
 	TEST_ASSERT(grasp.on_mansus_grasp(attacker, user, TRUE), "Хватка попадает по противнику после выпада.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Хватка возвращает пустому запасу один Темп.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Хватка возвращает один Темп независимо от остатка.")
 	grasp.on_mansus_grasp(attacker, user, TRUE)
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Хватка не накапливает Темп поверх непустого запаса.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 3, "Хватка пополняет запас до предела.")
 	knowledge.combat_resource = 0
 	TEST_ASSERT(!grasp.on_mansus_grasp(user, user, TRUE), "Нельзя получать Темп от хватки на себе.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Недопустимая цель не пополняет запас.")
 
-/// Проверяется настоящий путь block-сигнала: пули проходят, ближний удар расходует стойку.
+/// Стойка блокирует снаряды и ближние удары с конечным запасом блоков.
 /datum/unit_test/heretic_blade_parry/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/user = fixture["user"]
@@ -52,10 +52,12 @@
 	TEST_ASSERT(knowledge.begin_parry(user), "Клинок в руке позволяет начать стойку.")
 	TEST_ASSERT(!(user.do_run_block(FALSE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Предварительная проверка не должна парировать воображаемый удар.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Проверка без атаки не даёт Темп.")
-	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Выстрел проходит сквозь стойку.")
-	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Первый ближний удар должен быть парирован.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Успешное парирование даёт один Темп.")
-	TEST_ASSERT_NULL(knowledge.active_parry, "Обычная стойка заканчивается после одного удара.")
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS, "Выстрел блокируется стойкой.")
+	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "быстрый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Быстрая серия обходит внутреннюю задержку парирования.")
+	knowledge.active_parry.next_block = world.time - 1
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Второй удар должен быть парирован после задержки.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Каждое парирование даёт один Темп.")
+	TEST_ASSERT_NULL(knowledge.active_parry, "Обычная стойка заканчивается после двух ударов.")
 	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "второй удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Вторая атака не получает бесплатного блока.")
 
 /datum/unit_test/heretic_blade_riposte_target/Run()
@@ -67,11 +69,11 @@
 	knowledge.record_parry(user, attacker)
 	knowledge.on_eldritch_blade(stranger, user, TRUE)
 	TEST_ASSERT_EQUAL(stranger.getBruteLoss(), 0, "Ответный удар нельзя перенести на другого врага.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Попадание по другой цели не расходует Темп ответа.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Обычный удар пополняет Темп, не расходуя ответ.")
 	knowledge.on_eldritch_blade(attacker, user, TRUE)
 	var/riposte_damage = attacker.getBruteLoss()
-	TEST_ASSERT(abs(riposte_damage - 8) < 0.001, "Ответный удар наносит восемь дополнительного урона нападавшему с учётом округления урона частей тела.")
-	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Ответный удар расходует один Темп.")
+	TEST_ASSERT(abs(riposte_damage - 18) < 0.001, "Ответный удар наносит 18 дополнительных ушибов.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Ответный удар не расходует Темп.")
 	knowledge.on_eldritch_blade(attacker, user, TRUE)
 	TEST_ASSERT_EQUAL(attacker.getBruteLoss(), riposte_damage, "Открытие для ответного удара используется один раз.")
 
@@ -102,14 +104,18 @@
 	knowledge.duel_target = WEAKREF(attacker)
 	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, NORTH))
 	TEST_ASSERT(knowledge.begin_parry(user, TRUE), "Вознесённый мастер может начать финальную стойку против цели поединка.")
-	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "удар сбоку", ATTACK_TYPE_MELEE, 0, stranger) & BLOCK_SUCCESS), "Другой враг обходит финальную стойку.")
-	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 3, "Чужая атака не расходует лимит поединка.")
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар сбоку", ATTACK_TYPE_MELEE, 0, stranger) & BLOCK_SUCCESS, "Финальная стойка защищает от любого противника.")
+	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 5, "Каждая атака расходует общий запас стойки.")
+	knowledge.active_parry.next_block = world.time - 1
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Атака выбранного противника блокируется.")
 	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "быстрый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Быстрый второй удар обходит внутреннюю перезарядку.")
 	knowledge.active_parry.next_block = world.time - 1
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "После задержки можно блокировать второй удар.")
 	knowledge.active_parry.next_block = world.time - 1
-	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Третий удар завершает стойку.")
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Четвёртый удар блокируется.")
+	for(var/remaining in 1 to 2)
+		knowledge.active_parry.next_block = world.time - 1
+		TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Последние блоки расходуют остаток стойки.")
 	TEST_ASSERT_NULL(knowledge.active_parry, "Финальная стойка имеет конечное число блоков.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 3, "Темп ограничен тремя единицами.")
 
@@ -170,7 +176,9 @@
 	fork.relic_cooldown = 0
 	TEST_ASSERT(!fork.tune(user), "Камертон не наполняет запас поверх уже имеющегося Темпа.")
 	knowledge.combat_resource = 0
+	user.dropItemToGround(fork)
 	TEST_ASSERT(knowledge.begin_parry(user), "Для проверки взаимоисключения должна включиться стойка.")
+	user.put_in_hands(fork)
 	TEST_ASSERT(!fork.tune(user), "Нельзя настраивать камертон под защитой стойки.")
 	knowledge.on_body_lose(user)
 	user.dropItemToGround(fork)
@@ -226,8 +234,62 @@
 	heretic.researched_knowledge[finale.type] = finale
 	heretic.ascended = TRUE
 	var/obj/effect/proc_holder/spell/self/heretic_blade/master/master = allocate(/obj/effect/proc_holder/spell/self/heretic_blade/master)
-	TEST_ASSERT(!master.can_cast(user, TRUE, TRUE), "Стойка мастера требует выбранного противника.")
+	var/obj/item/offhand = allocate(/obj/item, get_turf(user))
+	user.put_in_hands(offhand)
+	TEST_ASSERT(!master.can_cast(user, TRUE, TRUE), "Занятая вторая рука не позволяет включить стойку мастера.")
 	master.charge_counter = 0
 	master.cast(list(user), user)
-	TEST_ASSERT_EQUAL(master.charge_counter, master.charge_max, "Без противника стойка мастера не расходует перезарядку.")
+	TEST_ASSERT_EQUAL(master.charge_counter, master.charge_max, "Занятая рука не расходует перезарядку стойки.")
 	TEST_ASSERT_NULL(knowledge.active_parry, "Неудачное заклинание не создаёт стойку.")
+
+/// Парирование останавливает настоящий снаряд и требует свободной второй руки.
+/datum/unit_test/heretic_blade_projectile_guard/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	attacker.forceMove(get_step(get_step(get_step(user, EAST), EAST), EAST))
+	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, get_turf(attacker))
+	bullet.damage = 20
+	bullet.firer = attacker
+	bullet.starting = get_turf(attacker)
+	attacker.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(knowledge.begin_parry(user), "Свой клинок позволяет встретить выстрел стойкой.")
+	TEST_ASSERT_EQUAL(user.bullet_act(bullet, BODY_ZONE_CHEST), BULLET_ACT_BLOCK, "Настоящий снаряд блокируется даже от стрелка с антимагией.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Заблокированный снаряд не наносит рану.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Перехват снаряда пополняет Темп.")
+	var/obj/item/offhand = allocate(/obj/item, get_turf(user))
+	user.put_in_hands(offhand)
+	knowledge.active_parry.next_block = world.time - 1
+	TEST_ASSERT(!(user.do_run_block(TRUE, bullet, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Предмет во второй руке отключает уже поднятую защиту.")
+	user.dropItemToGround(offhand)
+	TEST_ASSERT(user.do_run_block(TRUE, bullet, 20, "снаряд турели", ATTACK_TYPE_PROJECTILE, 0, null) & BLOCK_SUCCESS, "Защита не требует живого стрелка.")
+	TEST_ASSERT_NULL(knowledge.active_parry, "Два перехвата полностью расходуют обычную стойку.")
+
+/// Обычный удар поддерживает Темп без меток и парирований, но серия не даёт бесконечный запас.
+/datum/unit_test/heretic_blade_strike_tempo/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Обычный удар даёт Темп при пустом запасе.")
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Быстрые удары соблюдают общий интервал пополнения.")
+	knowledge.next_strike_tempo = world.time - 1
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "После задержки удар снова пополняет Темп.")
+
+/// Обычный кулак проходит через проверку блока с нулевым предварительным уроном.
+/datum/unit_test/heretic_blade_unarmed_guard/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	TEST_ASSERT(knowledge.begin_parry(user), "Перед ударом кулака должна включиться стойка.")
+	user.attack_hand(attacker, INTENT_HELP)
+	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 2, "Дружеское касание не расходует стойку.")
+	attacker.UnarmedAttack(user, TRUE, INTENT_HARM)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Настоящий удар кулаком вызывает успешное парирование.")
+	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 1, "Один кулак расходует один блок.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Парированный кулак не причиняет рану.")

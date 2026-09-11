@@ -11,15 +11,15 @@
 
 /datum/eldritch_knowledge/base_blade
 	name = "Принцип поединка"
-	desc = "Открывает Путь Клинка. Нож и лист стали создают тёмный клинок; одновременно можно иметь два. Способность «Выжидание» на 1,5 секунды парирует один ближний удар. Успех даёт Темп и открывает ответный удар по тому же врагу на 5 секунд. Пули и метаемые предметы стойка не останавливает."
+	desc = "Открывает Путь Клинка: отбивайте атаки, сближайтесь и отвечайте усиленным ударом. Для парирования держите свой клинок, оставив вторую руку свободной. Обычные попадания, парирования и хватка пополняют Темп для выпада и танца. Нож и лист стали создают тёмный клинок; можно иметь два."
 	gain_text = "Между взмахом и раной есть мгновение. Отныне оно принадлежит мне."
 	route = PATH_BLADE
 	cost = 0
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/metal)
 	result_atoms = list(/obj/item/melee/sickly_blade/duelist)
 	combat_resource_name = "Темп"
-	combat_resource_desc = "Начальный запас — 1 Темп. Парируйте ближние удары и активируйте метки; изученный «Вызов» восстанавливает 1 Темп при пустом запасе. Темп расходуется на выпад, танец и ответный удар по противнику, чью атаку вы только что отбили."
-	combat_resource = 1
+	combat_resource_desc = "Начальный запас — 2 Темпа. Удар тёмным клинком даёт 1 Темп раз в 4 секунды; парирование, изученная хватка и активация метки также дают Темп. Выпад стоит 1 Темп, танец — 2. Ответ после парирования бесплатен."
+	combat_resource = 2
 	combat_resource_max = 3
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_blade/parry
 	var/list/created_blades = list()
@@ -28,6 +28,7 @@
 	var/riposte_until = 0
 	var/datum/status_effect/heretic_parry/active_parry
 	var/datum/status_effect/heretic_blade_opening/opening_effect
+	var/next_strike_tempo = 0
 
 /datum/eldritch_knowledge/base_blade/on_body_gain(mob/living/user)
 	grant_combat_power(user)
@@ -48,6 +49,23 @@
 	duel_target = null
 	riposte_target = null
 	return ..()
+
+/datum/eldritch_knowledge/base_blade/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag || !isitem(target) || !isturf(target.loc))
+		return FALSE
+	var/obj/item/steel = target
+	if(steel.sharpness == SHARP_NONE || steel.anchored || istype(steel, /obj/item/melee/sickly_blade))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic)
+		return FALSE
+	var/turf/steel_turf = get_turf(steel)
+	playsound(steel_turf, 'sound/items/screwdriver.ogg', 40, TRUE)
+	new /obj/effect/temp_visual/heretic_grasp/blade(steel_turf)
+	user.visible_message(span_warning("[steel] рассыпается стальной стружкой в ладони [user]."))
+	heretic.advance_deed("[steel.type]", steel_turf)
+	qdel(steel)
+	return TRUE
 
 /datum/eldritch_knowledge/base_blade/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	for(var/datum/weakref/blade_ref in created_blades.Copy())
@@ -78,30 +96,32 @@
 	return null
 
 /datum/eldritch_knowledge/base_blade/proc/begin_parry(mob/living/user, master = FALSE)
-	if(!held_blade(user) || !QDELETED(active_parry))
+	if(!held_blade(user) || !length(user.get_empty_held_indexes()) || !QDELETED(active_parry))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	var/window = heretic.get_knowledge(/datum/eldritch_knowledge/blade_guard) ? 2 SECONDS : 1.5 SECONDS
+	var/window = heretic.get_knowledge(/datum/eldritch_knowledge/blade_guard) ? 3 SECONDS : 2 SECONDS
 	if(master)
-		if(!heretic.ascended || !heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/blade_final) || !heretic_can_affect(user, duel_target?.resolve(), chargecost = 0))
+		if(!heretic.ascended || !heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/blade_final))
 			return FALSE
-		window = 12 SECONDS
-	active_parry = user.apply_status_effect(/datum/status_effect/heretic_parry, src, window, master ? 3 : 1)
+		window = 6 SECONDS
+	active_parry = user.apply_status_effect(/datum/status_effect/heretic_parry, src, window, master ? 6 : 2, master)
 	user.visible_message(span_warning("[user] поднимает тёмный клинок, выжидая чужой удар."))
 	return !!active_parry
 
 /datum/eldritch_knowledge/base_blade/proc/record_parry(mob/living/user, mob/living/attacker)
+	gain_combat_resource()
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	var/datum/eldritch_knowledge/blade_guard/guard = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_guard)
+	if(guard)
+		user.adjustStaminaLoss(-guard.passive_values[guard.passive_level])
+	if(!heretic_can_affect(user, attacker, chargecost = 0))
+		return
 	duel_target = WEAKREF(attacker)
 	riposte_target = WEAKREF(attacker)
 	riposte_until = world.time + 5 SECONDS
 	QDEL_NULL(opening_effect)
 	opening_effect = attacker.apply_status_effect(/datum/status_effect/heretic_blade_opening, src)
 	new /obj/effect/temp_visual/heretic_path_feedback(get_turf(user), "eye_flash", "#b4ceff", 6, get_dir(user, attacker))
-	gain_combat_resource()
-	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	var/datum/eldritch_knowledge/blade_guard/guard = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_guard)
-	if(guard)
-		user.adjustStaminaLoss(-guard.passive_values[guard.passive_level])
 	to_chat(user, span_notice("Удар отбит! Следующее попадание по [attacker] в течение пяти секунд станет ответным ударом."))
 
 /datum/eldritch_knowledge/base_blade/on_mark_detonated(mob/living/user, mob/living/target)
@@ -111,18 +131,21 @@
 /datum/eldritch_knowledge/base_blade/on_eldritch_blade(atom/target, mob/living/user, proximity_flag, click_parameters)
 	if(!proximity_flag || !held_blade(user) || !heretic_can_affect(user, target, chargecost = 0))
 		return
-	if(world.time >= riposte_until || riposte_target?.resolve() != target || !spend_combat_resource())
+	if(world.time >= next_strike_tempo)
+		gain_combat_resource()
+		next_strike_tempo = world.time + 4 SECONDS
+	if(world.time >= riposte_until || riposte_target?.resolve() != target)
 		return
 	riposte_target = null
 	riposte_until = 0
 	QDEL_NULL(opening_effect)
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	var/mob/living/victim = target
-	var/bonus = 8
+	var/bonus = 18
 	if(heretic.get_knowledge(/datum/eldritch_knowledge/blade_upgrade))
-		bonus += 4
+		bonus += 10
 	if(heretic.ascended)
-		bonus += 8
+		bonus += 12
 	victim.adjustBruteLoss(bonus)
 	victim.adjustStaminaLoss(15)
 	if(heretic.get_knowledge(/datum/eldritch_knowledge/blade_riposte))
@@ -136,7 +159,7 @@
 
 /datum/status_effect/heretic_parry
 	id = "heretic_parry"
-	duration = 1.5 SECONDS
+	duration = 2 SECONDS
 	tick_interval = -1
 	alert_type = null
 	status_type = STATUS_EFFECT_REPLACE
@@ -148,12 +171,12 @@
 	var/next_block = 0
 	var/mutable_appearance/stance_overlay
 
-/datum/status_effect/heretic_parry/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blade/knowledge, window, blocks)
+/datum/status_effect/heretic_parry/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blade/knowledge, window, blocks, master = FALSE)
 	knowledge_ref = WEAKREF(knowledge)
 	duration = window
 	expires_at = world.time + window
 	blocks_left = blocks
-	master_stance = blocks > 1
+	master_stance = master
 	return ..()
 
 /datum/status_effect/heretic_parry/on_apply()
@@ -228,17 +251,19 @@
 
 /datum/status_effect/heretic_parry/proc/parry_attack(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
-	if(!real_attack || damage <= 0 || world.time >= expires_at || world.time < next_block || blocks_left <= 0)
+	if(!real_attack || (damage <= 0 && !(attack_type & ATTACK_TYPE_UNARMED)) || world.time >= expires_at || world.time < next_block || blocks_left <= 0)
 		return BLOCK_NONE
-	if((attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN | ATTACK_TYPE_PARRY_COUNTERATTACK)) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED)) || !source.Adjacent(attacker))
+	if((attack_type & ATTACK_TYPE_PARRY_COUNTERATTACK) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
 		return BLOCK_NONE
 	var/datum/eldritch_knowledge/base_blade/knowledge = knowledge_ref?.resolve()
-	if(!knowledge?.held_blade(source) || !heretic_can_affect(source, attacker, chargecost = 0))
+	if(!knowledge?.held_blade(source) || !length(source.get_empty_held_indexes()))
 		return BLOCK_NONE
-	if(master_stance && knowledge.duel_target?.resolve() != attacker)
+	if(ismob(attacker) && (attacker == source || IS_HERETIC(attacker) || IS_HERETIC_MONSTER(attacker)))
+		return BLOCK_NONE
+	if(!(attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)) && !source.Adjacent(attacker))
 		return BLOCK_NONE
 	blocks_left--
-	next_block = world.time + 1.5 SECONDS
+	next_block = world.time + 0.3 SECONDS
 	knowledge.record_parry(source, attacker)
 	playsound(source, 'modular_bluemoon/sound/heretic/parry.ogg', 60, TRUE)
 	if(!blocks_left)
@@ -247,7 +272,7 @@
 
 /datum/eldritch_knowledge/blade_grasp
 	name = "Вызов"
-	desc = "Хватка Мансуса назначает противника целью поединка, наносит 10 дополнительного урона выносливости и восстанавливает 1 Темп, если запас пуст. Цель используется финальной стойкой."
+	desc = "Хватка Мансуса наносит ещё 10 урона выносливости и восстанавливает 1 Темп. Запас Темпа также пополняется обычными ударами тёмного клинка."
 	gain_text = "Я различаю в толпе лишь одно движение."
 	route = PATH_BLADE
 	cost = 1
@@ -260,15 +285,14 @@
 	if(!knowledge)
 		return FALSE
 	knowledge.duel_target = WEAKREF(target)
-	if(!knowledge.combat_resource)
-		knowledge.gain_combat_resource()
+	knowledge.gain_combat_resource()
 	var/mob/living/victim = target
 	victim.adjustStaminaLoss(10)
 	return TRUE
 
 /datum/eldritch_knowledge/spell/blade_lunge
 	name = "Шаг между ударами"
-	desc = "Открывает выпад: за 1 Темп вы сближаетесь с видимой целью на расстоянии до трёх клеток и наносите 20 урона выносливости. Стены и закрытые двери преграждают путь."
+	desc = "Открывает выпад: за 1 Темп сблизьтесь с видимой целью на расстоянии до пяти клеток и нанесите 20 ушибов и 20 урона выносливости. Стены и закрытые двери преграждают путь. Перезарядка 10 секунд."
 	route = PATH_BLADE
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lunge
@@ -300,7 +324,7 @@
 
 /datum/eldritch_knowledge/blade_guard
 	name = "Неподвижная грань"
-	desc = "Окно «Выжидания» увеличивается с 1,5 до 2 секунд. Успешное парирование восстанавливает 10 выносливости. Вилка и два стальных прута создают камертон дуэлянта: при пустом Темпе две секунды настройки обменивают 8 ушибов на 1 Темп; нужен клинок во второй руке. Можно иметь один камертон."
+	desc = "Окно «Выжидания» увеличивается до 3 секунд; лимит остаётся равным двум блокам. Парирование восстанавливает 10 выносливости. Вилка и два стальных прута создают камертон: при пустом Темпе две секунды настройки обменивают 8 ушибов на 1 Темп; нужен клинок во второй руке. Можно иметь один камертон."
 	route = PATH_BLADE
 	cost = 1
 	required_atoms = list(/obj/item/kitchen/fork, /obj/item/stack/rods, /obj/item/stack/rods)
@@ -308,7 +332,7 @@
 
 /datum/eldritch_knowledge/blade_upgrade
 	name = "Точная линия"
-	desc = "Ответный удар после парирования наносит 12 дополнительного урона вместо 8. Он по-прежнему требует 1 Темп и действует только против нападавшего."
+	desc = "Ответный удар после парирования наносит 28 дополнительных ушибов вместо 18. Темп не расходуется; ответ действует против последнего нападавшего в течение пяти секунд."
 	route = PATH_BLADE
 	cost = 2
 
@@ -327,16 +351,16 @@
 
 /datum/eldritch_knowledge/spell/blade_dance
 	name = "Ритм поединка"
-	desc = "Открывает «Танец граней»: за 2 Темпа на 10 секунд вы двигаетесь быстрее. Ответные удары в это время лечат 5 ушибов и возвращают потраченный Темп."
+	desc = "За 2 Темпа на 10 секунд вы двигаетесь быстрее. Ответные удары в это время лечат 5 ушибов и дают дополнительный Темп."
 	route = PATH_BLADE
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_blade/dance
 
 /datum/eldritch_knowledge/final_eldritch/blade_final
 	parallax_scene = ANTAG_SCENE_HERETIC_BLADE
 	name = "Последний поединок"
-	desc = "После пяти подношений проведите обряд над тремя трупами. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Ответный удар получает ещё 8 урона. «Тысяча граней» на 12 секунд отражает до трёх ближних атак выбранного противника, не чаще раза в 1,5 секунды. Другие враги и стрелковое оружие проходят сквозь стойку."
+	desc = "После трёх подношений проведите обряд над тремя трупами. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. Ответный удар получает ещё 12 урона. «Тысяча граней» на 6 секунд блокирует до шести ударов или снарядов, не чаще раза в 0,3 секунды. Нужен свой клинок и свободная вторая рука."
 	gain_text = "Острие остановилось у самого сердца мира. Я ещё решаю, наносить ли удар."
 	route = PATH_BLADE
 	cost = 3
@@ -369,7 +393,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/parry
 	name = "Выжидание"
-	desc = "Поднимите свой клинок и отбейте один ближний удар в течение 1,5 секунды. Успех открывает ответный удар по тому же врагу. Не защищает от пуль и метания."
+	desc = "За 2 секунды отбейте два удара или снаряда своим клинком; улучшенная стойка длится 3 секунды. Между блоками 0,3 секунды, вторая рука должна быть свободна. Парирование даёт бесплатный ответный удар по нападавшему."
 	charge_max = 8 SECONDS
 	action_icon_state = "furious_steel"
 
@@ -384,7 +408,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return QDELETED(knowledge.active_parry)
+	return QDELETED(knowledge.active_parry) && length(user.get_empty_held_indexes())
 
 /obj/effect/proc_holder/spell/self/heretic_blade/recall
 	name = "Зов клинка"
@@ -413,7 +437,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/dance
 	name = "Танец граней"
-	desc = "Потратьте 2 Темпа: десять секунд ускоренного движения, ответные удары лечат ушибы и возвращают Темп. Потеря клинка прерывает танец."
+	desc = "Потратьте 2 Темпа: десять секунд ускоренного движения, ответные удары лечат 5 ушибов и дают Темп. Потеря клинка прерывает танец."
 	required_knowledge = /datum/eldritch_knowledge/spell/blade_dance
 	charge_max = 30 SECONDS
 	action_icon_state = "cursed_steel"
@@ -457,7 +481,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/master
 	name = "Тысяча граней"
-	desc = "На 12 секунд отразите до трёх ближних ударов цели поединка, не чаще раза в 1,5 секунды. Выберите противника хваткой, меткой или выпадом."
+	desc = "На 6 секунд отразите до шести ударов или снарядов, не чаще раза в 0,3 секунды. Требуются собственный тёмный клинок и свободная вторая рука."
 	required_knowledge = /datum/eldritch_knowledge/final_eldritch/blade_final
 	charge_max = 45 SECONDS
 	action_icon_state = "blade_master"
@@ -473,14 +497,14 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic.ascended && QDELETED(knowledge.active_parry) && heretic_can_affect(user, knowledge.duel_target?.resolve(), chargecost = 0)
+	return heretic.ascended && QDELETED(knowledge.active_parry) && length(user.get_empty_held_indexes())
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"
-	desc = "За 1 Темп сблизьтесь с противником до трёх клеток по свободному пути и выбейте 20 выносливости. Требуется собственный тёмный клинок в руке."
+	desc = "За 1 Темп сблизьтесь с противником до пяти клеток по свободному пути: 20 ушибов и 20 урона выносливости. Требуется собственный тёмный клинок в руке."
 	clothes_req = FALSE
-	charge_max = 12 SECONDS
-	range = 3
+	charge_max = 10 SECONDS
+	range = 5
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "cleave"
 	action_background_icon_state = "bg_ecult"
@@ -528,6 +552,7 @@
 		to_chat(user, span_warning("Путь для выпада перекрыт."))
 		return
 	knowledge.duel_target = WEAKREF(victim)
+	victim.adjustBruteLoss(20)
 	victim.adjustStaminaLoss(20)
 	new /obj/effect/temp_visual/dir_setting/heretic_slash(get_turf(user), get_dir(user, victim))
 	playsound(victim, 'sound/weapons/rapierhit.ogg', 50, TRUE)

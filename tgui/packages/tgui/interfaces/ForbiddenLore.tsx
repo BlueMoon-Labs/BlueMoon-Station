@@ -74,6 +74,7 @@ export type ForbiddenLoreData = {
     page_sound?: string;
   };
   combat_resource: { name: string; value: number; max: number; description: string } | null;
+  deed: { name: string; desc: string; hint: string; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
   hunt: {
     target_name: string | null;
     target_role: string | null;
@@ -81,6 +82,7 @@ export type ForbiddenLoreData = {
     can_retarget: BooleanLike;
     retarget_seconds: number;
     sacrifices_required: number;
+    deed_tiers?: number;
     ascension_bodies?: number;
     influences_harvested: number;
     influence_limit: number;
@@ -215,6 +217,8 @@ const PassiveResearch = ({ knowledge }: { knowledge: Knowledge }) => {
 const Ledger = () => {
   const { data } = useLoreBackend();
   const resource = data.combat_resource;
+  const deed = data.deed;
+  const deedDone = !!deed && deed.tier >= deed.max_tier;
   return (
     <aside className="HereticBook__ledger" aria-label="Ваши знания и сила">
       <dl className="HereticBook__balances">
@@ -229,6 +233,12 @@ const Ledger = () => {
             <p>{resource.description}</p>
           </details>
           <meter min={0} max={Math.max(1, resource.max)} value={resource.value} aria-label={resource.name} />
+        </div>
+      )}
+      {deed && (
+        <div className="HereticBook__resource HereticBook__deedLine">
+          <p><span>{deed.name}</span><strong>{numerals[Math.min(deed.tier, deed.max_tier - 1)] || deed.max_tier} / {numerals[deed.max_tier - 1] || deed.max_tier}{deedDone ? ' · Завершено' : ` · ${deed.progress} / ${deed.goal}`}</strong></p>
+          <meter min={0} max={Math.max(1, deed.goal)} value={deedDone ? Math.max(1, deed.goal) : deed.progress} aria-label={`${deed.name}, ступень ${deed.tier} из ${deed.max_tier}`} />
         </div>
       )}
     </aside>
@@ -316,7 +326,7 @@ const PathChapter = ({ turn, openKnowledge }: { turn: () => void; openKnowledge:
         </nav>
         <p className="HereticBook__annotation">{data.selected_path
           ? 'Ваш путь выбран. Остальные доступны для просмотра.'
-          : 'Выберите путь, чтобы прочитать о его способностях. Первое знание бесплатно. Сменить путь после подтверждения нельзя.'}
+          : 'Выберите путь, чтобы прочитать о его способностях. Первое знание бесплатно. Сменить путь после подтверждения нельзя. После выбора Кодекс покажет дело пути.'}
         </p>
       </Page>
       <Page side="right" chapter="Путь" entryId={path?.id}>
@@ -456,6 +466,24 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
   );
 };
 
+const DeedSection = () => {
+  const { data } = useLoreBackend();
+  const deed = data.deed;
+  if (!deed) return <p>Дело появится после выбора пути.</p>;
+  const done = deed.tier >= deed.max_tier;
+  return (
+    <section aria-label="Дело пути">
+      <h3>{deed.name}</h3>
+      <LoreText text={deed.desc} />
+      {deed.hint && <p className="HereticBook__annotation">{deed.hint}</p>}
+      <p>{done ? 'Завершено.' : <>Ступень <strong>{deed.tier + 1}</strong> из <strong>{deed.max_tier}</strong> · <strong>{deed.progress}</strong> из <strong>{deed.goal}</strong></>}</p>
+      <div className="HereticBook__soulMarks" aria-label={`Ступеней дела: ${deed.tier} из ${deed.max_tier}`}>
+        {Array.from({ length: deed.max_tier }, (_, index) => <span key={index} className={index < deed.tier ? 'HereticBook__soulMarks--filled' : ''}>◇</span>)}
+      </div>
+    </section>
+  );
+};
+
 const HuntChapter = ({ retargetDeadline }: { retargetDeadline: number }) => {
   const { data, act } = useLoreBackend();
   const hunt = data.hunt;
@@ -486,6 +514,8 @@ const HuntChapter = ({ retargetDeadline }: { retargetDeadline: number }) => {
         </button>
         {!canRetarget && <p className="HereticBook__annotation">Смена цели через {remaining} сек.</p>}
         <p className="HereticBook__annotation">Активируйте живое сердце в руке, чтобы узнать направление к цели. Alt-ЛКМ по сердцу позволяет сменить цель.</p>
+        <h2>Дело пути</h2>
+        <DeedSection />
       </Page>
       <Page side="right" chapter="Охота">
         <h2>Жертвоприношение</h2>
@@ -508,6 +538,7 @@ const HuntChapter = ({ retargetDeadline }: { retargetDeadline: number }) => {
 
 const HelpChapter = () => {
   const { data } = useLoreBackend();
+  const deedTiers = data.hunt.deed_tiers ?? 3;
   return (
     <>
       <Page side="left" chapter="Помощь">
@@ -535,6 +566,9 @@ const HelpChapter = () => {
         <h3>Вознесение</h3>
         <p>Совершите {data.hunt.sacrifices_required} жертвоприношений и изучите последнее знание пути. Для вознесения принесите на руну человеческие трупы: {data.hunt.ascension_bodies ?? 3}. Финальный обряд длится 30 секунд; его подношения не возвращаются. Каждая попытка объявляется станции, между началами попыток должно пройти три минуты. Выбранные тела подсвечиваются для вас зелёным.</p>
         <p>Станция заранее получает предупреждение об оккультной угрозе. Вознесение доступно не раньше чем через три минуты после этого предупреждения.</p>
+        <h3>Дело пути</h3>
+        <p>У каждого пути есть дело, не связанное с боем; оно описано в главе «Охота» после выбора пути. Дело состоит из {deedTiers} {countNoun(deedTiers, ['ступени', 'ступеней', 'ступеней'])}: каждая завершённая ступень даёт 1 очко знаний, вторая и третья — ещё по 1 побочному очку.</p>
+        <p>Каждое засчитанное действие восполняет запас силы пути на единицу и оставляет на полу заметный след, который может найти экипаж.</p>
       </Page>
     </>
   );

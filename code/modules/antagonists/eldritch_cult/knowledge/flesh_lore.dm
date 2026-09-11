@@ -266,17 +266,17 @@
 	desc = "Навяжите врагу видение Мансуса: страх, короткая дезориентация и психическая травма отвлекут его от вашей свиты."
 	gain_text = "Мой голод смотрит на них изнутри."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/touch/mad_touch
 	route = PATH_FLESH
 
 /datum/eldritch_knowledge/final_eldritch/flesh_final
 	name = "Последний гимн жреца"
-	desc = "После пяти жертв принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение позволяет принять форму Повелителя Ночи. Предел гулей и Безмолвных мертвецов увеличивается до четырёх каждого вида; общий предел всей свиты — восемь слуг."
+	desc = "После трёх подношений принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение позволяет принять форму Повелителя Ночи. Предел гулей и Безмолвных мертвецов увеличивается до четырёх каждого вида; общий предел всей свиты — восемь слуг."
 	gain_text = "Маршал уступил мне место во главе процессии."
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	cost = 3
-	sacs_needed = 5
+	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	route = PATH_FLESH
 	parallax_scene = ANTAG_SCENE_HERETIC_FLESH
 	ascension_spells = list(/obj/effect/proc_holder/spell/targeted/shed_human_form)

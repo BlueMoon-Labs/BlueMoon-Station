@@ -45,6 +45,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
       },
     ],
     combat_resource: null,
+    deed: null,
     hunt: {
       target_name: null, target_role: null, target_status: 'Цели ещё нет.',
       can_retarget: true, retarget_seconds: 0, sacrifices_required: 5,
@@ -387,6 +388,34 @@ describe('Гримуар еретика', () => {
     expect(screen.getByText(/изучить 8 разломов/)).toBeTruthy();
     expect(screen.getByText(/В начале раунда — 2 разлома. Затем каждые 5 мин/)).toBeTruthy();
     expect(screen.getByText(/Совершите 6 жертвоприношений/)).toBeTruthy();
+  });
+
+  test('дело пути показывается в ведомости, охоте и помощи, а без пути остаётся подсказка', async () => {
+    const data = makeData({ selected_path: 'Ash', path_stage: 1, deed: {
+      name: 'Сожжённые письма', desc: 'Сжигайте бумаги станции.', hint: 'Пепел остаётся на полу.',
+      tier: 1, max_tier: 3, progress: 2, goal: 5, counted: 7,
+    } });
+    data.hunt.deed_tiers = 3;
+    const { store } = setupStore(data);
+    const view = await renderBook();
+    expect(screen.getAllByText('Сожжённые письма')).toHaveLength(1);
+    expect(screen.getByText('II / III · 2 / 5')).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
+    const deed = screen.getByRole('region', { name: 'Дело пути' });
+    expect(within(deed).getByText('Сжигайте бумаги станции.')).toBeTruthy();
+    expect(within(deed).getByText('Пепел остаётся на полу.')).toBeTruthy();
+    expect(within(deed).getByText((_, element) => element?.tagName === 'P' && element.textContent === 'Ступень 2 из 3 · 2 из 5')).toBeTruthy();
+    expect(within(deed).getByLabelText('Ступеней дела: 1 из 3').querySelectorAll('.HereticBook__soulMarks--filled')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    expect(screen.getByText(/Дело состоит из 3 ступеней/)).toBeTruthy();
+    store.dispatch(backendUpdate({ data: { deed: { ...data.deed, tier: 3, progress: 0, goal: 5 } } }));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(screen.getByText('III / III · Завершено')).toBeTruthy();
+    store.dispatch(backendUpdate({ data: { deed: null } }));
+    view.rerender(<ForbiddenLoreContent />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
+    expect(screen.getByText('Дело появится после выбора пути.')).toBeTruthy();
+    expect(screen.queryByText(/Завершено/)).toBeNull();
   });
 
   test.each([[1, 'разлом'], [2, 'разлома'], [5, 'разломов'], [11, 'разломов'], [14, 'разломов'], [21, 'разлом'], [22, 'разлома'], [25, 'разломов']])('пределы разломов согласованы с числом %s', async (count, noun) => {

@@ -12,8 +12,8 @@
 	spell.perform(list(victim), user = user)
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	TEST_ASSERT_NOTNULL(seal, "Заклинание создаёт длительную связь.")
-	TEST_ASSERT(abs(seal.debt - 4) < 0.01, "Привязка вкладывает четыре оплаченных ушиба.")
-	TEST_ASSERT(abs(user.getBruteLoss() - seal.debt) < 0.01, "Начальный долг равен настоящей плате.")
+	TEST_ASSERT_EQUAL(seal.debt, 10, "Привязка создаёт десять долга.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Начальная связь не ранит владельца.")
 	TEST_ASSERT_NOTNULL(seal.link_beam, "Связь имеет видимую жилу между участниками.")
 	victim.update_icon()
 	var/list/overlays = list()
@@ -27,7 +27,7 @@
 	TEST_ASSERT(seal.collecting, "Повторное применение осознанно начинает взыскание.")
 	TEST_ASSERT(!seal.detonate(), "Прямой вызов не обходит секунду предупреждения.")
 	TEST_ASSERT(wait_for_qdeleted(seal), "Настоящий таймер завершает взыскание.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 6) < 0.01, "Четыре долга взыскиваются шестью ушибами.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 20) < 0.01, "Начальный долг взыскивается двадцатью ушибами.")
 	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Взысканная связь больше не числится в долге.")
 	TEST_ASSERT(blood.release(user, victim), "Перед смертельным взысканием создаётся новая связь.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
@@ -38,7 +38,7 @@
 	TEST_ASSERT(seal.detonate(), "Смерть должника во время урона не обрывает завершение взыскания.")
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "Взыскание действительно стало смертельным.")
 
-/// Ранящий клинок вкладывает собственные ушибы, а метка продлевает существующую связь без бонусного урона.
+/// Клинок и метка накапливают долг без саморанения, а промах не даёт ресурса.
 /datum/unit_test/heretic_blood_blade_and_mark/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -62,21 +62,22 @@
 	TEST_ASSERT_EQUAL(seal.debt, debt_before, "Afterattack без ранения не создаёт долга.")
 	user.a_intent = INTENT_HARM
 	blade.attack(victim, user)
-	TEST_ASSERT(abs(seal.debt - 7) < 0.01, "Настоящий удар добавляет три оплаченных ушиба.")
-	TEST_ASSERT(abs(user.getBruteLoss() - 7) < 0.01, "Каждая единица долга оплачена владельцем.")
+	TEST_ASSERT_EQUAL(seal.debt, 20, "Клинок и метка заполняют долг до предела.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Попадание и метка не ранят владельца.")
 	TEST_ASSERT_EQUAL(seal.expires_at, previous_expiry + 5 SECONDS, "Метка продлевает свою связь на пять секунд.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force) < 0.01, "Метка не добавляет универсального урона клинку.")
 	blade.attack(victim, user)
-	TEST_ASSERT(abs(seal.debt - 7) < 0.01, "Повторное попадание не обходит задержку платы.")
+	TEST_ASSERT_EQUAL(seal.debt, 20, "Повторное попадание не обходит предел долга.")
+	seal.debt = 10
 	var/datum/eldritch_knowledge/blood_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/blood_grasp)
-	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE, null), "Изученная хватка вкладывает плату в существующую связь.")
-	TEST_ASSERT(abs(seal.debt - 11) < 0.01, "Хватка добавляет четыре ушиба, а не бесплатные заряды.")
+	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE, null), "Изученная хватка усиливает существующую связь.")
+	TEST_ASSERT_EQUAL(seal.debt, 16, "Хватка добавляет шесть долга.")
 	blood.gain_combat_resource(500)
 	blood.on_mark_detonated(user, victim)
-	TEST_ASSERT(abs(blood.combat_resource - 11) < 0.01, "Общие пополнения ресурса не создают необеспеченного долга.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 16, "Общие пополнения ресурса не создают долг.")
 	TEST_ASSERT(!blood.spend_combat_resource(), "Долг нельзя расходовать как обычные заряды.")
 	user.adjustBruteLoss(5)
-	TEST_ASSERT(abs(blood.combat_resource - 11) < 0.01, "Внешний урон не увеличивает долг.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 16, "Внешний урон не увеличивает долг.")
 
 /// Договор распределяет одну реальную плату между связями и не размножает её на каждую жертву.
 /datum/unit_test/heretic_blood_shared_payment/Run()
@@ -94,7 +95,7 @@
 	TEST_ASSERT(blood.release(user, second), "Пассивка разрешает вторую связь.")
 	var/datum/status_effect/heretic_blood_seal/first_seal = first.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/status_effect/heretic_blood_seal/second_seal = second.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	TEST_ASSERT(blood.invest(user, list(first_seal), 12), "Первую связь можно подготовить у предела вместимости.")
+	TEST_ASSERT(blood.invest(user, list(first_seal), 6), "Первую связь можно подготовить у предела вместимости.")
 	var/previous_debt = blood.combat_resource
 	var/damage_before = user.getBruteLoss()
 	TEST_ASSERT(blood.pact(user), "Договор распределяет плату по двум связям.")
@@ -102,8 +103,7 @@
 	TEST_ASSERT(abs(paid - 10) < 0.01, "Договор ранит владельца на десять.")
 	TEST_ASSERT(abs(blood.combat_resource - previous_debt - paid) < 0.01, "Сумма долгов растёт ровно на одну плату.")
 	TEST_ASSERT(abs(first_seal.debt - 20) < 0.01, "Старшая связь заполняется до предела.")
-	TEST_ASSERT(abs(second_seal.debt - 10) < 0.01, "Младшая получает только оставшиеся шесть единиц.")
-	TEST_ASSERT(abs(first_seal.refundable_debt + second_seal.refundable_debt - blood.combat_resource) < 0.01, "Возвратные кредиты также не размножаются.")
+	TEST_ASSERT(abs(second_seal.debt - 16) < 0.01, "Младшая получает только оставшиеся шесть единиц.")
 	TEST_ASSERT_EQUAL(first.getBruteLoss() + second.getBruteLoss(), 0, "Вложения не атакуют ни одного должника.")
 
 /// Антимагия, стены, дистанция и истечение срока уничтожают долг без автоматического удара.
@@ -153,7 +153,7 @@
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Все способы разорвать связь защищают от урона.")
 	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Разорванные долги не сохраняются в HUD.")
 
-/// Натяжение работает только по своей связи и уважает закрепление и преграды.
+/// Натяжение атакует без подготовки, создаёт долг и уважает закрепление и преграды.
 /datum/unit_test/heretic_blood_link_manipulation/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -163,25 +163,24 @@
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/turf/destination = get_step(get_step(get_step(user, EAST), EAST), EAST)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, destination)
-	TEST_ASSERT(!blood.lance(user, victim), "Натяжение не стало универсальным снарядом по несвязанным врагам.")
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Нет связи — нет платы.")
-	TEST_ASSERT(blood.release(user, victim), "Должник связан перед натяжением.")
 	victim.anchored = TRUE
-	TEST_ASSERT(blood.lance(user, victim), "Закреплённому должнику можно увеличить долг.")
+	TEST_ASSERT(blood.lance(user, victim), "Натяжение поражает несвязанного врага.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Натяжение не требует саморанения.")
 	TEST_ASSERT_EQUAL(get_turf(victim), destination, "Закрепление предотвращает перемещение.")
 	victim.anchored = FALSE
 	TEST_ASSERT(blood.lance(user, victim), "Свободного должника можно подтянуть.")
-	TEST_ASSERT_EQUAL(get_dist(user, victim), 2, "Натяжение сдвигает ровно на клетку.")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Натяжение не наносит прямого урона.")
+	TEST_ASSERT_EQUAL(get_dist(user, victim), 1, "Натяжение притягивает на две клетки.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 36) < 0.01, "Два натяжения нанесли по восемнадцать ушибов.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	TEST_ASSERT(abs(seal.debt - 16) < 0.01, "Два натяжения добавляют двенадцать реально оплаченных ушибов.")
+	TEST_ASSERT_EQUAL(seal.debt, 20, "Повторное натяжение заполняет долг до предела.")
+	victim.forceMove(destination)
 	var/obj/blocker = allocate(/obj, get_step(user, EAST))
 	blocker.density = TRUE
 	var/previous_damage = user.getBruteLoss()
 	TEST_ASSERT(!blood.lance(user, victim), "За стеной натяжение недоступно.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), previous_damage, "Отказ не ранит владельца.")
 
-/// Чаша возвращает только собственную ещё не залеченную плату, сжигая соответствующий долг.
+/// Чаша расходует боевой долг на реальный урон и лечение, сохраняя принадлежность владельцу.
 /datum/unit_test/heretic_blood_refund_ledger/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -194,54 +193,64 @@
 	TEST_ASSERT(recipe.on_finished_recipe(user, list(), get_turf(user)), "Обряд создаёт личную чашу.")
 	var/obj/item/heretic_path_relic/blood_relic/chalice = recipe.new_path_relic_ref.resolve()
 	allocated += chalice
-	user.adjustBruteLoss(10)
-	TEST_ASSERT(blood.release(user, victim), "Связь получает четыре оплаченных ушиба поверх внешней раны.")
+	TEST_ASSERT(blood.release(user, victim), "Бесплатная связь даёт боевой долг.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	user.adjustBruteLoss(10)
 	TEST_ASSERT(!chalice.drink(user, victim), "Чаша на полу недоступна.")
 	user.put_in_hands(chalice)
-	TEST_ASSERT(chalice.drink(user, victim), "Чаша возвращает оплаченную часть.")
-	TEST_ASSERT(abs(user.getBruteLoss() - 10) < 0.01, "Внешняя рана остаётся; вернулись только четыре собственных ушиба.")
-	TEST_ASSERT_EQUAL(seal.debt, 0, "Возвращённую плату нельзя ещё и взыскать.")
-	TEST_ASSERT_EQUAL(seal.refundable_debt, 0, "Возвратный кредит израсходован.")
-	TEST_ASSERT(!blood.release(user, victim), "Пустой долг не запускает взыскание.")
-	TEST_ASSERT(blood.invest(user, list(seal), 6), "В пустую связь можно вложить новую плату.")
-	user.adjustBruteLoss(-6, forced = TRUE, only_organic = FALSE)
-	TEST_ASSERT_EQUAL(seal.refundable_debt, 0, "Внешнее лечение погашает возвратный кредит.")
-	user.adjustBruteLoss(12)
+	TEST_ASSERT(chalice.drink(user, victim), "Чаша лечит владельца за счёт врага.")
+	TEST_ASSERT(abs(user.getBruteLoss() - 2) < 0.01, "Чаша лечит восемь ушибов.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 8) < 0.01, "Лечение сопровождается настоящим уроном врагу.")
+	TEST_ASSERT_EQUAL(seal.debt, 2, "Лечение расходует восемь долга.")
+	TEST_ASSERT(!chalice.drink(user, victim), "Повторное питьё ограничено перезарядкой.")
 	COOLDOWN_RESET(chalice, relic_cooldown)
-	TEST_ASSERT(!chalice.drink(user, victim), "Новая чужая рана не восстанавливает уже залеченный кредит.")
-	TEST_ASSERT(abs(seal.debt - 6) < 0.01, "Лечение не уничтожает право взыскания исторически оплаченного долга.")
+	TEST_ASSERT(chalice.drink(user, victim), "Остаток долга можно потратить после перезарядки.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Остаток долга залечивает последние ушибы.")
+	TEST_ASSERT_EQUAL(seal.debt, 0, "Долг нельзя потратить дважды.")
+	TEST_ASSERT(!blood.release(user, victim), "Пустой долг не запускает взыскание.")
+	TEST_ASSERT(blood.invest(user, list(seal), 6), "Договор может усилить опустошённую связь.")
+	user.adjustBruteLoss(-6, forced = TRUE, only_organic = FALSE)
+	COOLDOWN_RESET(chalice, relic_cooldown)
+	TEST_ASSERT(!chalice.drink(user, victim), "Здоровый владелец не расходует долг на питьё.")
 	var/datum/antagonist/heretic/other = allocate_heretic(get_step(user, NORTH))
 	other.selected_path = PATH_BLOOD
 	other.gain_knowledge(/datum/eldritch_knowledge/base_blood)
 	other.gain_knowledge(/datum/eldritch_knowledge/blood_relic)
 	var/datum/eldritch_knowledge/base_blood/other_blood = other.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/mob/living/other_debtor = allocate(/mob/living/carbon/human, get_step(other.owner.current, NORTH))
-	TEST_ASSERT(other_blood.release(other.owner.current, other_debtor), "Другой кровник подготовил собственный оплаченный долг.")
+	TEST_ASSERT(other_blood.release(other.owner.current, other_debtor), "Другой кровник подготовил собственный долг.")
+	other.owner.current.adjustBruteLoss(10)
 	user.dropItemToGround(chalice, TRUE)
 	other.owner.current.put_in_hands(chalice)
-	TEST_ASSERT(!chalice.drink(other.owner.current, other_debtor), "Другой кровник не использует чужую чашу даже со своим долгом и ранами.")
-
-/// Учёт лечения сохраняет дробный кредит и убирает остаток меньше точности урона.
+	TEST_ASSERT(!chalice.drink(other.owner.current, other_debtor), "Чужая чаша недоступна даже с собственным долгом и ранами.")
+/// Неуязвимая цель не даёт лечения, а антимагия разрывает связь до питья.
 /datum/unit_test/heretic_blood_refund_roundoff/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_relic)
 	var/mob/living/user = heretic.owner.current
-	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	TEST_ASSERT(blood.release(user, victim), "Связь создаёт оплаченный долг.")
-	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	var/original_debt = seal.debt
-	seal.refundable_debt = 4
-	blood.last_brute_loss = user.getBruteLoss() + 3.5
-	blood.sync_refundable_debt()
-	TEST_ASSERT_EQUAL(seal.refundable_debt, 0.5, "Непогашенный дробный кредит сохраняется.")
-	blood.last_brute_loss = user.getBruteLoss() + seal.refundable_debt - DAMAGE_PRECISION / 100
-	blood.sync_refundable_debt()
-	TEST_ASSERT_EQUAL(seal.refundable_debt, 0, "Погрешность подсчёта урона не оставляет возвратный кредит.")
-	TEST_ASSERT_EQUAL(seal.debt, original_debt, "Погашение кредита не меняет долг для взыскания.")
-
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(blood.release(user, victim), "Создаётся связь с боевым долгом.")
+	user.adjustBruteLoss(2)
+	var/initial_wounds = user.getBruteLoss()
+	victim.status_flags |= GODMODE
+	TEST_ASSERT(blood.refund(user, victim), "Попытка питья расходует часть долга.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Неуязвимость предотвращает урон.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), initial_wounds, "Без реального урона лечение невозможно.")
+	victim.status_flags &= ~GODMODE
+	TEST_ASSERT(blood.refund(user, victim), "Уязвимая цель даёт лечение.")
+	TEST_ASSERT(user.getBruteLoss() < DAMAGE_PRECISION, "Питьё залечивает небольшую рану.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - initial_wounds) < DAMAGE_PRECISION, "Небольшая рана требует столько же урона цели.")
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	user.adjustBruteLoss(2)
+	var/user_damage_before = user.getBruteLoss()
+	var/victim_damage_before = victim.getBruteLoss()
+	TEST_ASSERT(!blood.refund(user, victim), "Антимагия прекращает питьё.")
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Разрыв связи расходует ровно один заряд антимагии.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), user_damage_before, "Антимагия не допускает лечения.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), victim_damage_before, "Антимагия не допускает нового урона.")
 /// Массовое взыскание выбирает связи, а усиление меняет только коэффициент их долга.
 /datum/unit_test/heretic_blood_reckoning_and_upgrade/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -267,12 +276,12 @@
 	second_seal.collection_ready_at = world.time
 	TEST_ASSERT(first_seal.detonate(), "Первая связь взыскивается.")
 	TEST_ASSERT(second_seal.detonate(), "Вторая связь взыскивается.")
-	TEST_ASSERT(abs(first.getBruteLoss() - 7) < 0.01, "Усиление взыскивает четыре долга с коэффициентом1,75.")
-	TEST_ASSERT(abs(second.getBruteLoss() - 7) < 0.01, "Каждый получает урон только своего долга.")
+	TEST_ASSERT(abs(first.getBruteLoss() - 22.5) < 0.01, "Усиление взыскивает десять долга с коэффициентом 2,25.")
+	TEST_ASSERT(abs(second.getBruteLoss() - 22.5) < 0.01, "Каждый получает урон только своего долга.")
 	TEST_ASSERT_EQUAL(bystander.getBruteLoss(), 0, "Стоящий между должниками посторонний не затронут.")
 	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Взыскание очищает общий долг.")
 
-/// Вознесение переносит долги и возвратные кредиты между связями без копирования и сохраняет предел выбранной жертвы.
+/// Вознесение переносит долг без копирования и сохраняет предел выбранной жертвы.
 /datum/unit_test/heretic_blood_ascension_transfer/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -294,14 +303,12 @@
 	TEST_ASSERT(blood.release(user, second), "Второй должник связан.")
 	var/datum/status_effect/heretic_blood_seal/chosen = first.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/status_effect/heretic_blood_seal/donor = second.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	TEST_ASSERT(blood.invest(user, list(chosen), 24), "Выбранный долг подготовлен у предела.")
+	TEST_ASSERT(blood.invest(user, list(chosen), 18), "Выбранный долг подготовлен у предела.")
 	TEST_ASSERT(blood.invest(user, list(donor), 6), "Вторая связь содержит отдельный долг.")
 	var/original_debt = blood.combat_resource
-	var/original_credit = chosen.refundable_debt + donor.refundable_debt
 	TEST_ASSERT(blood.coronation(user, first), "Приговор переносит часть второго долга в выбранную связь.")
 	TEST_ASSERT(abs(chosen.debt - 30) < 0.01, "Выбранный долг ограничен тридцатью.")
 	TEST_ASSERT(abs(blood.combat_resource - original_debt) < 0.01, "Перенос сохраняет общую сумму долга.")
-	TEST_ASSERT(abs(chosen.refundable_debt + donor.refundable_debt - original_credit) < 0.01, "Возвратный кредит не копируется.")
 	TEST_ASSERT(donor.debt > 0, "Не вместившийся остаток сохраняется у прежнего должника.")
 	TEST_ASSERT(chosen.collecting && !donor.collecting, "Взыскивается только выбранная связь.")
 	var/obj/effect/proc_holder/spell/crown = final_knowledge.ascension_spell_instances[1]
@@ -311,7 +318,7 @@
 	TEST_ASSERT(!blood.can_use_ascension(user), "Отозванное вознесение не оставляет полномочий.")
 	TEST_ASSERT_EQUAL(blood.link_limit, 2, "После отзыва остаётся вместимость обычной пассивки.")
 
-/// Пассивка меняет число связей и предел долга; её отзыв уничтожает лишние связи вместе с кредитами.
+/// Отзыв пассивки уничтожает лишние связи вместе с их долгами.
 /datum/unit_test/heretic_blood_capacity/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -336,10 +343,10 @@
 	qdel(vigor)
 	TEST_ASSERT_EQUAL(blood.link_limit, 1, "Отзыв пассивки возвращает одну связь.")
 	TEST_ASSERT(QDELETED(removed), "Лишняя связь удаляется.")
-	TEST_ASSERT_EQUAL(removed.debt + removed.refundable_debt, 0, "Удалённая связь не оставляет долга или возвратного кредита.")
-	TEST_ASSERT(abs(blood.combat_resource - 4) < 0.01, "В HUD остаётся только долг первой связи.")
+	TEST_ASSERT_EQUAL(removed.debt, 0, "Удалённая связь не оставляет долга.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 10, "В HUD остаётся только долг первой связи.")
 
-/// Смерть, перенос разума и удаление знания отменяют связи, лучи, предупреждения и платёжные кредиты.
+/// Смерть, перенос разума и удаление знания отменяют связи, лучи и предупреждения.
 /datum/unit_test/heretic_blood_lifecycle/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
@@ -398,6 +405,7 @@
 	TEST_ASSERT(blood.can_use(user), "Низкое здоровье само по себе ещё не лишает кредитора способности действовать.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	TEST_ASSERT_NOTNULL(seal, "Перед отказом существует действующая связь.")
+	seal.debt = 14
 	TEST_ASSERT(seal.debt < blood.debt_cap && seal.validate_link(), "Связь допускает новую плату по геометрии и вместимости.")
 	var/debt_before = seal.debt
 	TEST_ASSERT(!blood.pact(user), "Опасная плата усиленными ранами запрещена.")
@@ -427,3 +435,73 @@
 	victim.death()
 	TEST_ASSERT(QDELETED(seal), "Смерть должника немедленно снимает его связь.")
 	TEST_ASSERT_EQUAL(second_blood.combat_resource, 0, "Умерший должник не оставляет пригодного долга.")
+
+/// Первый удар клинком создаёт связь без предварительного заклинания и соблюдает задержку добычи.
+/datum/unit_test/heretic_blood_blade_opening/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/obj/item/melee/sickly_blade/blood/blade = allocate(/obj/item/melee/sickly_blade/blood)
+	blade.wound_bonus = CANT_WOUND
+	blade.bare_wound_bonus = CANT_WOUND
+	user.a_intent = INTENT_HARM
+	blade.attack(victim, user)
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT_NOTNULL(seal, "Первое попадание само создаёт связь.")
+	TEST_ASSERT_EQUAL(seal.debt, 16, "Первое попадание даёт начальный долг и шесть за клинок.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Базовый боевой цикл не требует собственного здоровья.")
+	blade.attack(victim, user)
+	TEST_ASSERT_EQUAL(seal.debt, 16, "Серия быстрых ударов не обходит задержку добычи.")
+	COOLDOWN_RESET(blood, resource_harvest)
+	blade.attack(victim, user)
+	TEST_ASSERT_EQUAL(seal.debt, 20, "После задержки долг растёт до предела.")
+
+/// Антимагия блокирует самостоятельное Натяжение одним зарядом и не создаёт связь.
+/datum/unit_test/heretic_blood_lance_protection/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blood_lance)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/turf/destination = get_step(get_step(user, EAST), EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, destination)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(blood.lance(user, victim), "Защищённая цель принимает заблокированный каст.")
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Каст расходует ровно один заряд защиты.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Антимагия блокирует урон.")
+	TEST_ASSERT_EQUAL(victim.loc, destination, "Антимагия блокирует притяжение.")
+	TEST_ASSERT_EQUAL(length(blood.seals), 0, "Заблокированный каст не создаёт долг.")
+	qdel(protection)
+	TEST_ASSERT(blood.release(user, victim), "До новой антимагии создана связь.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 1)
+	TEST_ASSERT(blood.lance(user, victim), "Последний заряд блокирует натяжение готовой связи.")
+	TEST_ASSERT_EQUAL(protection.charges, 0, "Защита расходует свой последний заряд.")
+	TEST_ASSERT(QDELETED(seal), "Даже последний заряд антимагии немедленно разрывает связь.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Последний заряд полностью предотвращает урон.")
+
+/// Последний заряд антимагии рвёт связь до удара клинком и блокирует её повторное создание.
+/datum/unit_test/heretic_blood_blade_last_charge/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(blood.release(user, victim), "До антимагии существует кровная связь.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 1)
+	var/obj/item/melee/sickly_blade/blood/blade = allocate(/obj/item/melee/sickly_blade/blood)
+	blade.wound_bonus = CANT_WOUND
+	blade.bare_wound_bonus = CANT_WOUND
+	user.a_intent = INTENT_HARM
+	blade.attack(victim, user)
+	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force) < 0.01, "Антимагия не отменяет обычный физический удар.")
+	TEST_ASSERT_EQUAL(protection.charges, 0, "Удар расходует единственный заряд защиты.")
+	TEST_ASSERT(QDELETED(seal), "Последний заряд немедленно обрывает старую связь.")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_blood_seal), "Заблокированный удар не создаёт новую связь после расхода заряда.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Уничтоженная связь не оставляет доступного долга.")

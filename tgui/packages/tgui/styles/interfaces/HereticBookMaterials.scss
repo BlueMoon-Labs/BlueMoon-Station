@@ -87,6 +87,12 @@
     .HereticBook__spine { background: linear-gradient(90deg, transparent, #020f1dcc 40%, #84d6e947 49%, #020f1dcc 59%, transparent); }
     .HereticBook__bookTitle { text-shadow: 0 0 12px #79b9d760; }
   }
+  &.HereticBook--Lock {
+    --faded: #453528;
+  }
+  &.HereticBook--Tide {
+    --reading-wash: #1a353bcc;
+  }
   &.HereticBook--Glass {
     --reading-wash: #ded2d9d9;
     .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #bea7bd; }

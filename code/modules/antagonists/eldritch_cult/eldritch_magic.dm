@@ -406,7 +406,7 @@
 
 /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
 	name = "Хватка распада"
-	desc = "Коснитесь врага, чтобы его тело гнило изнутри в течение двадцати секунд."
+	desc = "Коснитесь врага: 2 секунды на земле и 20 секунд распада, повреждающего тело и органы. Перезарядка 2 минуты."
 	hand_path = /obj/item/melee/touch_attack/grasp_of_decay
 	school = "evocation"
 	charge_max = 1200
@@ -424,21 +424,20 @@
 	catchphrase = "SKILI'EDUONIS"
 
 /obj/item/melee/touch_attack/grasp_of_decay/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
-
 	if(!proximity_flag || target == user)
 		return
-	if(ishuman(target))
-		var/mob/living/carbon/human/tar = target
-		if(tar.check_magic_resistance())
-			tar.visible_message(span_danger("Заклинание отскакивает от [target]!"), span_danger("Заклинание отскакивает от вас!"))
-			return ..()
-
-	if(iscarbon(target))
-		playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
-		var/mob/living/carbon/C = target
-		C.DefaultCombatKnockdown(60, override_stamdmg = 0)
-		C.apply_status_effect(/datum/status_effect/corrosion_curse/lesser)
+	if(!iscarbon(target))
+		return
+	var/mob/living/carbon/victim = target
+	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		return
+	if(!heretic_can_affect(user, target))
 		return ..()
+	playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
+	victim.Knockdown(2 SECONDS)
+	victim.apply_status_effect(/datum/status_effect/corrosion_curse/lesser)
+	log_combat(user, victim, "коснулся хваткой распада")
+	return ..()
 
 /obj/effect/proc_holder/spell/pointed/nightwatchers_rite
 	name = "Обряд ночного дозора"
@@ -852,9 +851,7 @@
 		return
 	victim.apply_status_effect(STATUS_EFFECT_AMOK)
 	victim.apply_status_effect(STATUS_EFFECT_CLOUDSTRUCK, (level*10))
-	if(iscarbon(victim))
-		var/mob/living/carbon/carbon_victim = victim
-		carbon_victim.reagents.add_reagent(/datum/reagent/eldritch, max(1, cone_levels + 1 - level))
+	victim.adjustToxLoss(2 * max(1, cone_levels + 1 - level))
 
 /obj/effect/proc_holder/spell/cone/staggered/entropic_plume/calculate_cone_shape(current_level)
 	if(current_level == cone_levels)

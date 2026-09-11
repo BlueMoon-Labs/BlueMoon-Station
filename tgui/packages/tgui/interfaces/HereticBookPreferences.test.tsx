@@ -196,6 +196,7 @@ const renderStoredBook = async () => {
       { id: 'heart', name: 'Сердце', desc: 'Живое сердце.', ingredients: [{ name: 'Мак', amount: 1 }], ascension: false },
     ],
     combat_resource: null,
+    deed: null,
     hunt: {
       target_name: null, target_role: null, target_status: 'Цели ещё нет.', can_retarget: true,
       retarget_seconds: 0, sacrifices_required: 5, influences_harvested: 2, influence_limit: 6,

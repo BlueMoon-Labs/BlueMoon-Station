@@ -105,7 +105,7 @@
 	gain_text = "Когда сияние Фонаря сожжёт их кожу, уже ничто не защитит их от пепла."
 	desc = "Выпустите из своей руки пять огненных потоков, каждый из которых поджигает поражённые цели и опаляет их при попадании."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/nightwatchers_rite
 	route = PATH_ASH
 
@@ -169,13 +169,13 @@
 
 /datum/eldritch_knowledge/final_eldritch/ash_final
 	name = "Ритуал Пепельного Лорда"
-	desc = "После пяти жертв принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение даёт защиту от огня, холода и давления, Каскад Огня и Клятву Пламени. Поджигайте врагов и поддерживайте себя Возрождением Ночного Стража."
+	desc = "После трёх подношений принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение даёт защиту от огня, холода и давления, Каскад Огня и Клятву Пламени. Поджигайте врагов и поддерживайте себя Возрождением Ночного Стража."
 	gain_text = "Его фонарь обратился в пепел, Ночной Страж сгорел вместе с ним. Но его пламя разгорится вновь, \
 		во имя Ночного стража я завершу этот ритуал! Он продолжает наблюдать, и теперь я един с пламенем, \
 		УЗРИТЕ ЖЕ МОЁ ВОЗНЕСЕНИЕ, ПЕПЕЛЬНЫЙ ФОНАРЬ ЗАЖЖЕТСЯ ВНОВЬ!"
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	cost = 3
-	sacs_needed = 5
+	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	route = PATH_ASH
 	parallax_scene = ANTAG_SCENE_HERETIC_ASH
 	ascension_traits = list(TRAIT_NOBREATH, TRAIT_RESISTCOLD, TRAIT_RESISTHIGHPRESSURE, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHEAT, TRAIT_NOFIRE)

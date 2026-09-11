@@ -34,7 +34,7 @@
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)
 	to_chat(owner, span_eldritch_big("Вы — еретик!"))
 	to_chat(owner, span_eldritch("Призовите кодекс и выберите свой путь. Выбор необратим. В кодексе есть описание всех способностей, рецепты и руководство."))
-	to_chat(owner, span_notice("Начальное число разломов на станции: [HERETIC_INFLUENCE_INITIAL_COUNT]. Затем появляется ещё один каждые [DisplayTimeText(HERETIC_INFLUENCE_INTERVAL)]. Лимит исследований за раунд: [HERETIC_INFLUENCE_LIMIT]. Чередуйте поиск с охотой: живое сердце назначает и отслеживает цель. Доставьте её живой к руне: свяжите наручниками, оглушите или сбейте с ног. Положите рядом своё сердце и начните Обряд возвращения. Руна удержит жертву на время 8-секундного канала; после Мансуса она вернётся живой, а вы получите два очка знаний и одно побочное. Труп назначенной цели тоже засчитывается, но даёт только одно очко знаний и остаётся на месте. Каждая душа принимается только один раз."))
+	to_chat(owner, span_notice("Начальное число разломов на станции: [HERETIC_INFLUENCE_INITIAL_COUNT]. Затем появляется ещё один каждые [DisplayTimeText(HERETIC_INFLUENCE_INTERVAL)]. Лимит исследований за раунд: [HERETIC_INFLUENCE_LIMIT]. Чередуйте поиск с охотой: живое сердце назначает и отслеживает цель. Доставьте её живой к руне: свяжите наручниками, оглушите или сбейте с ног. Положите рядом своё сердце и начните Обряд возвращения. Руна удержит жертву на время 8-секундного канала; после Мансуса она вернётся живой, а вы получите два очка знаний и одно побочное. Труп назначенной цели тоже засчитывается, но даёт только одно очко знаний и остаётся на месте. Каждая душа принимается только один раз. У каждого пути есть своё дело вне боя: оно описано в кодексе, даёт очки знаний и пополняет запас силы."))
 	owner.announce_objectives()
 
 /datum/antagonist/heretic/on_gain()
@@ -61,6 +61,7 @@
 	for(var/knowledge_type in researched_knowledge)
 		qdel(researched_knowledge[knowledge_type])
 	researched_knowledge.Cut()
+	QDEL_NULL(deed)
 	return ..()
 
 /datum/antagonist/heretic/proc/clear_heretic()
@@ -232,6 +233,8 @@
 	parts += "<b>Душ принято:</b> [total_sacrifices]"
 	var/datum/heretic_path/path = GLOB.heretic_paths[selected_path]
 	parts += "<b>Путь:</b> [path ? path.name : "не выбран"]. <b>Очков знаний осталось:</b> [knowledge_points], побочных: [side_knowledge_points]"
+	if(deed)
+		parts += "<b>Дело пути:</b> [deed.name], ступень [deed.tier] из [length(deed.tier_goals)]"
 
 	if(length(objectives))
 		var/count = 1

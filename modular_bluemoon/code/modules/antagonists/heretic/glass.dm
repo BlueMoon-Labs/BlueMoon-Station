@@ -1,13 +1,18 @@
 #define HERETIC_GLASS_RANGE 5
 #define HERETIC_GLASS_BARRIER_LIFETIME (12 SECONDS)
-#define HERETIC_GLASS_PRISM_LIFETIME (60 SECONDS)
+#define HERETIC_GLASS_PRISM_LIFETIME (120 SECONDS)
 #define HERETIC_GLASS_ATTACK_LIMIT 3
+#define HERETIC_GLASS_DEED_DAMAGE 10
+#define HERETIC_GLASS_BEAM_DAMAGE 30
+#define HERETIC_GLASS_SPLIT_DAMAGE 24
+#define HERETIC_GLASS_REFRACTION_BONUS 6
 
 /datum/heretic_path/glass
 	id = PATH_GLASS
+	deed_type = /datum/heretic_deed/glass
 	name = "Стекло"
-	desc = "Стройте оптическую сеть: поворачивайте и расщепляйте лучи расставленными призмами."
-	strengths = "Удары из-за угла, пересекающиеся линии огня, подготовленная защита проходов."
+	desc = "Прожигайте линию стеклянным светом. Призмы усиливают луч и позволяют стрелять из-за угла."
+	strengths = "Дальний удар без подготовки, расходящиеся лучи, преломление за углы и защитные преграды."
 	weaknesses = "Призмы можно разбить. Лучи заранее отмечают клетки, а стены и перестройка сети прерывают трассу."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_glass,
@@ -24,14 +29,14 @@
 
 /datum/eldritch_knowledge/base_glass
 	name = "Первая трещина"
-	desc = "Открывает Путь Стекла. Нож и лист стекла создают стеклянный клинок. «Преломлённый луч» бесплатно отмечает прямую на 0,8 секунды, затем наносит 16 ушибов. Каждый прямой участок имеет длину до пяти клеток; ваши призмы поворачивают луч. Запас граней нужен только для строительства: начальный запас 2 из 4, одна восстанавливается каждые 8 секунд. Удары не дают граней."
+	desc = "Укажите цель и поразите её стеклянным лучом; выстрел не требует построек или ресурса. Призмы усиливают свет и поворачивают его за углы. Грани нужны только для строительства и восстанавливаются сами. Нож и лист стекла создают стеклянный клинок."
 	gain_text = "Я смотрел сквозь стекло, пока не заметил трещину на той стороне неба."
 	route = PATH_GLASS
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/glass)
 	result_atoms = list(/obj/item/melee/sickly_blade/glass)
 	combat_resource = 2
 	combat_resource_name = "Грани"
-	combat_resource_desc = "Строительный запас: призма или защитная преграда стоят одну грань. Восстановление — одна каждые 8 секунд, после вознесения каждые 4. Лучи бесплатны и ограничены перезарядкой. Смерть и смена тела рассыпают запас, призмы и подготовленные лучи."
+	combat_resource_desc = "Начальный запас 2 из 4. Призма или защитная преграда стоят одну грань. Восстановление — одна каждые 8 секунд, после вознесения каждые 4. Лучи бесплатны и ограничены перезарядкой. Смерть и смена тела рассыпают запас, призмы и подготовленные лучи."
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	grasp_visual = /obj/effect/temp_visual/heretic_glass/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/glass_grasp.ogg'
@@ -165,7 +170,7 @@
 	return list("ref" = WEAKREF(prism), "dir" = prism.dir, "split" = prism.split, "turf" = get_turf(prism))
 
 /// Каждая отмеченная клетка хранит весь путь луча и положения его призм.
-/datum/eldritch_knowledge/base_glass/proc/trace_ray(turf/start, direction, obj/structure/heretic_glass_prism/source_prism)
+/datum/eldritch_knowledge/base_glass/proc/trace_ray(turf/start, direction, obj/structure/heretic_glass_prism/source_prism, turf/aimed_turf)
 	var/list/result = list()
 	var/list/queue = list()
 	var/list/first_nodes = list()
@@ -175,7 +180,9 @@
 		for(var/output_dir in source_prism.output_directions())
 			queue += list(list("place" = start, "dir" = output_dir, "path" = first_path.Copy(), "nodes" = first_nodes.Copy(), "split" = source_prism.split))
 	else
-		queue += list(list("place" = start, "dir" = direction, "path" = first_path, "nodes" = first_nodes, "split" = FALSE))
+		var/aim_delta_x = aimed_turf ? aimed_turf.x - start.x : 0
+		var/aim_delta_y = aimed_turf ? aimed_turf.y - start.y : 0
+		queue += list(list("place" = start, "dir" = direction, "path" = first_path, "nodes" = first_nodes, "split" = FALSE, "aim_delta_x" = aim_delta_x, "aim_delta_y" = aim_delta_y))
 	var/cell_budget = ascension_active ? 18 : 12
 	var/refraction_limit = ascension_active ? 5 : 3
 	while(length(queue) && cell_budget > 0)
@@ -184,10 +191,18 @@
 		var/turf/tile = branch["place"]
 		var/list/path = branch["path"]
 		var/list/nodes = branch["nodes"]
+		var/aim_delta_x = branch["aim_delta_x"] || 0
+		var/aim_delta_y = branch["aim_delta_y"] || 0
+		var/aim_steps = max(abs(aim_delta_x), abs(aim_delta_y))
 		for(var/step_index in 1 to HERETIC_GLASS_RANGE)
 			if(cell_budget-- <= 0)
 				break
-			tile = get_step(tile, branch["dir"])
+			if(aim_steps)
+				var/offset_x = SIGN(aim_delta_x) * round(abs(aim_delta_x) * step_index / aim_steps + 0.5)
+				var/offset_y = SIGN(aim_delta_y) * round(abs(aim_delta_y) * step_index / aim_steps + 0.5)
+				tile = locate(start.x + offset_x, start.y + offset_y, start.z)
+			else
+				tile = get_step(tile, branch["dir"])
 			if(!tile || !ray_tile_open(tile))
 				break
 			path += tile
@@ -230,10 +245,10 @@
 	var/turf/destination = get_turf(target)
 	if(!can_use(user) || !destination || destination == get_turf(user) || destination.z != user.z || get_dist(user, target) > HERETIC_GLASS_RANGE || length(attacks) >= HERETIC_GLASS_ATTACK_LIMIT)
 		return FALSE
-	var/list/cells = trace_ray(get_turf(user), get_dir(user, target))
+	var/list/cells = trace_ray(get_turf(user), get_dir(user, target), aimed_turf = destination)
 	if(!length(cells))
 		return FALSE
-	new /datum/heretic_glass_attack(src, cells, 0.8 SECONDS, src)
+	new /datum/heretic_glass_attack(src, cells, 0.6 SECONDS, src)
 	return TRUE
 
 /datum/eldritch_knowledge/base_glass/proc/valid_prism_turf(mob/living/user, turf/place)
@@ -287,16 +302,24 @@
 			cells += trace_ray(get_turf(prism), prism.dir, prism)
 	return cells
 
+/datum/eldritch_knowledge/base_glass/proc/radial_cells(mob/living/user)
+	var/list/cells = list()
+	if(!can_use(user))
+		return cells
+	for(var/direction in GLOB.alldirs)
+		cells += trace_ray(get_turf(user), direction)
+	return cells
+
 /datum/eldritch_knowledge/base_glass/proc/storm(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/glass_storm)
 	if(!can_use(user) || QDELETED(required) || length(attacks) >= HERETIC_GLASS_ATTACK_LIMIT)
 		return FALSE
-	var/list/cells = network_cells(user)
+	var/list/cells = radial_cells(user) + network_cells(user)
 	if(!length(cells))
 		return FALSE
-	new /datum/heretic_glass_attack(src, cells, 2 SECONDS, required, TRUE)
-	user.visible_message(span_danger("[user] соединяет пальцы. Между стеклянными призмами загораются тонкие линии!"))
+	new /datum/heretic_glass_attack(src, cells, 1 SECONDS, required, bonus_damage = 10)
+	user.visible_message(span_danger("[user] соединяет пальцы. Вокруг вспыхивают расходящиеся лучи!"))
 	return TRUE
 
 /datum/eldritch_knowledge/base_glass/proc/crown(mob/living/user)
@@ -304,7 +327,7 @@
 	var/datum/eldritch_knowledge/final_eldritch/glass_final/required = heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
 	if(!can_use(user) || !ascension_active || !required?.finished || required.applied_body != user || active_network || length(attacks) >= HERETIC_GLASS_ATTACK_LIMIT)
 		return FALSE
-	if(!length(network_cells(user)))
+	if(!length(radial_cells(user)) && !length(network_cells(user)))
 		return FALSE
 	active_network = new(src, required)
 	return TRUE
@@ -322,8 +345,9 @@
 	var/release_timer
 	var/stationary
 	var/resolved = FALSE
+	var/damage_bonus = 0
 
-/datum/heretic_glass_attack/New(datum/eldritch_knowledge/base_glass/glass, list/beam_cells, delay, datum/eldritch_knowledge/required, must_stay = FALSE, datum/heretic_glass_network/network)
+/datum/heretic_glass_attack/New(datum/eldritch_knowledge/base_glass/glass, list/beam_cells, delay, datum/eldritch_knowledge/required, must_stay = FALSE, datum/heretic_glass_network/network, bonus_damage = 0)
 	. = ..()
 	glass_ref = WEAKREF(glass)
 	knowledge_ref = WEAKREF(required)
@@ -332,6 +356,7 @@
 	cells = beam_cells
 	generation = glass.glass_generation
 	stationary = must_stay
+	damage_bonus = bonus_damage
 	if(network)
 		network_ref = WEAKREF(network)
 		network_id = REF(network)
@@ -375,6 +400,8 @@
 		if(!glass.route_valid(cell))
 			continue
 		var/list/nodes = cell["nodes"]
+		if(network_ref && !length(nodes) && !glass.line_clear(user, origin, allow_prisms = TRUE))
+			continue
 		if(network_ref && length(nodes))
 			var/list/source_snapshot = nodes[1]
 			var/datum/weakref/source_ref = source_snapshot["ref"]
@@ -386,10 +413,12 @@
 			var/obj/effect/temp_visual/heretic_glass/shard/visual = new(tile, glass)
 			visual.setDir(cell["dir"])
 		for(var/mob/living/victim in tile)
-			var/damage = cell["split"] ? 12 : 16
+			var/damage = (cell["split"] ? HERETIC_GLASS_SPLIT_DAMAGE : HERETIC_GLASS_BEAM_DAMAGE) + damage_bonus
+			if(length(nodes))
+				damage += HERETIC_GLASS_REFRACTION_BONUS
 			var/datum/status_effect/heretic_glass_fracture/fracture = victim.has_status_effect(/datum/status_effect/heretic_glass_fracture)
-			if(length(nodes) && fracture?.glass_ref?.resolve() == glass)
-				damage += !QDELETED(upgrade) ? 10 : 6
+			if(fracture?.glass_ref?.resolve() == glass)
+				damage += !QDELETED(upgrade) ? 14 : 8
 			hit_damage[victim] = max(hit_damage[victim], damage)
 	for(var/mob/living/victim as anything in hit_damage)
 		if(!heretic_can_affect(user, victim))
@@ -462,7 +491,7 @@
 	if(!glass?.can_use(user) || !glass.ascension_active || glass.glass_generation != generation || !required)
 		qdel(src)
 		return FALSE
-	var/list/cells = list()
+	var/list/cells = glass.radial_cells(user)
 	for(var/datum/weakref/prism_ref as anything in node_refs)
 		var/obj/structure/heretic_glass_prism/prism = prism_ref.resolve()
 		if(prism && glass.line_clear(user, prism, allow_prisms = TRUE))
@@ -475,7 +504,7 @@
 		for(var/list/snapshot as anything in nodes)
 			var/datum/weakref/prism_ref = snapshot["ref"]
 			watch_node(prism_ref.resolve())
-	new /datum/heretic_glass_attack(glass, cells, 2 SECONDS, required, !pulses, src)
+	new /datum/heretic_glass_attack(glass, cells, 1 SECONDS, required, FALSE, src, 14)
 	for(var/prism_id in watched_nodes)
 		var/datum/weakref/prism_ref = watched_nodes[prism_id]
 		var/obj/structure/heretic_glass_prism/prism = prism_ref.resolve()
@@ -565,7 +594,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_glass_fracture
 	name = "Стеклянные трещины"
-	desc = "Преломлённый собственной призмой луч заклинателя нанесёт вам ещё 6 ушибов, с усилением — 10. Прямой луч не получает бонуса. Трещины исчезают через 12 секунд после последней хватки или взрыва метки."
+	desc = "Любой луч заклинателя нанесёт вам ещё 8 ушибов, с усилением — 14. Трещины исчезают через 12 секунд после последней хватки или взрыва метки."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_glass"
 
@@ -767,7 +796,7 @@
 
 /obj/item/heretic_path_relic/glass
 	name = "widow's prism"
-	desc = "Ручная линза в потемневшей оправе. Меняет ближайшую вашу призму в пяти клетках: один выход по стрелке или два под углом 45° к ней. Раздвоенные лучи наносят 12 ушибов вместо 16. Перезарядка переключения 5 секунд."
+	desc = "Ручная линза в потемневшей оправе. Меняет ближайшую вашу призму в пяти клетках: один выход по стрелке или два под углом 45° к ней. Раздвоенный свет наносит 30 ушибов вместо 36. Перезарядка переключения 5 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_glass.dmi'
 	icon_state = "glass_relic"
 
@@ -834,9 +863,24 @@
 	icon_state = "glass_storm"
 	duration = 1.5 SECONDS
 
+/datum/eldritch_knowledge/base_glass/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || !proximity_flag || !isturf(target.loc))
+		return FALSE
+	var/obj/structure/pane = target
+	if(istype(pane, /obj/structure/mirror))
+		if(pane.broken)
+			return FALSE
+	else if(!istype(pane, /obj/structure/window) || pane.obj_integrity <= 0)
+		return FALSE
+	pane.take_damage(HERETIC_GLASS_DEED_DAMAGE, BRUTE, MELEE, FALSE)
+	playsound(pane, 'sound/effects/Glasshit.ogg', 40, TRUE)
+	heretic.advance_deed(heretic.deed_key_for(pane), get_turf(user))
+	return TRUE
+
 /datum/eldritch_knowledge/glass_grasp
 	name = "Стеклянная ладонь"
-	desc = "Хватка Мансуса оставляет стеклянные трещины на 12 секунд. Ваш луч, прошедший через собственную призму, наносит такой цели ещё 6 ушибов. Прямой луч не получает бонуса; хватка не создаёт строительных граней."
+	desc = "Хватка Мансуса оставляет стеклянные трещины на 12 секунд. Любой ваш луч наносит такой цели ещё 8 ушибов: хватка и прямой выстрел работают без установки призм."
 	gain_text = "На ладони проступили линии. Каждая разделяла мир на две неравные части."
 	cost = 1
 	route = PATH_GLASS
@@ -851,7 +895,7 @@
 
 /datum/eldritch_knowledge/spell/glass_shards
 	name = "Оправа для света"
-	desc = "За одну грань поставьте на свободном полу в пяти клетках физическую призму с 45 прочности на 60 секунд. Луч, попавший в вашу призму, поворачивает по её стрелке. Можно иметь три призмы. Повторный выбор своей призмы бесплатно поворачивает её туда, куда вы смотрите; рядом это можно сделать рукой. Перезарядка 4 секунды. Призмы можно разбить, чужие призмы и стены останавливают луч."
+	desc = "За одну грань поставьте на свободном полу в пяти клетках призму с 45 прочности на 2 минуты. Она поворачивает ваш луч по стрелке и добавляет ему 6 ушибов один раз за выстрел. Можно иметь три призмы. Повторный выбор поворачивает её туда, куда вы смотрите; рядом можно повернуть рукой. Перезарядка 4 секунды. Призмы разрушаются ударами и нулевым жезлом."
 	gain_text = "Я поднял осколок. Разрез на пальце появился раньше, чем я коснулся края."
 	cost = 1
 	route = PATH_GLASS
@@ -887,7 +931,7 @@
 
 /datum/eldritch_knowledge/glass_relic
 	name = "Призма вдовы"
-	desc = "Лист стекла и лист серебра создают ручную линзу. В руке создателя она переключает ближайшую свою установленную призму в пяти клетках: поворот по стрелке или расщепление на два луча под углом 45° к ней. Расщеплённые лучи наносят 12 ушибов вместо 16. Каждый противник получает урон лишь раз за залп. Перезарядка 5 секунд; можно иметь одну линзу."
+	desc = "Лист стекла и лист серебра создают ручную линзу. В руке она переключает ближайшую вашу призму в пяти клетках: один луч по стрелке или два под углом 45°. Раздвоенный свет наносит 30 ушибов вместо 36; каждая цель получает урон один раз за залп. Перезарядка 5 секунд, можно иметь одну линзу."
 	gain_text = "Вдова держала призму перед свечой. На стене горели три огня, и ни один не грел."
 	cost = 1
 	route = PATH_GLASS
@@ -925,7 +969,7 @@
 
 /datum/eldritch_knowledge/glass_upgrade
 	name = "Резонанс трещины"
-	desc = "Бонус преломлённого луча по цели с вашими стеклянными трещинами возрастает с 6 до 10 ушибов. Нужен хотя бы один собственный узел на пути луча; усиление не действует на прямой выстрел и чужие трещины."
+	desc = "Бонус любого вашего луча по цели со стеклянными трещинами возрастает с 8 до 14 ушибов. Прямой выстрел наносит такой цели 44 ушиба; преломлённый своей призмой — 50."
 	gain_text = "Стекольщик провёл черту, и целая плоскость послушно разделилась надвое."
 	cost = 2
 	route = PATH_GLASS
@@ -979,10 +1023,10 @@
 
 /datum/eldritch_knowledge/spell/glass_storm
 	name = "Перекрёстный свет"
-	desc = "После двух секунд неподвижной подготовки каждая ваша призма в пяти клетках выпускает луч по своим выходам. Линии видны заранее. Урон как у обычного луча: 16, после расщепления 12; трещины усиливают преломлённый свет. Цель получает урон лишь раз за всю сеть. Разрушение или поворот узла отменяет зависимые участки. Не требует граней; перезарядка 35 секунд."
+	desc = "Выпустите восемь лучей вокруг себя и лучи из своих призм в пяти клетках. Предупреждение длится секунду, вы можете двигаться. Прямой луч наносит 40 ушибов, преломлённый — 46, раздвоенный — 40; трещины добавляют свой бонус. Пересечения бьют один раз. Работает без призм и граней, перезарядка 35 секунд."
 	gain_text = "Венец лежал на пустом троне. Кровь на его краях была ещё тёплой."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_GLASS
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_glass/storm
 
@@ -995,7 +1039,7 @@
 /datum/eldritch_knowledge/final_eldritch/glass_final
 	parallax_scene = ANTAG_SCENE_HERETIC_GLASS
 	name = "Расколоть небосвод"
-	desc = "После пяти назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение позволяет иметь пять призм, восстанавливает строительную грань каждые 4 секунды и вмещает восемь. Луч допускает до пяти преломлений и 18 клеток вместо трёх и 12. Вы не нуждаетесь в дыхании и получаете на четверть меньше ушибов и ожогов. «Вечный витраж» трижды выпускает свет из сети с интервалом четыре секунды; каждая волна предупреждает о себе за две секунды. Неподвижность нужна только для первой подготовки. Разрушение участвующей призмы отменяет весь витраж. Перезарядка 45 секунд."
+	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение даёт пять призм, запас граней 8 и восстановление за 4 секунды. Луч допускает пять преломлений и 18 клеток вместо трёх и 12. Вы не нуждаетесь в дыхании, получаете на четверть меньше ушибов и ожогов. Вечный витраж трижды выпускает восемь лучей вокруг вас и свет из сети с интервалом 4 секунды. Каждая волна предупреждает за секунду; можно двигаться. Урон 44, через призму 50, после раздвоения 44; трещины усиливают свет. Разрушение участвующей призмы отменяет витраж. Перезарядка 45 секунд."
 	gain_text = "Небо раскололось без звука. Осколки остановились передо мной, ожидая, какую форму я придам пустоте."
 	route = PATH_GLASS
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -1050,7 +1094,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	name = "Преломлённый луч"
-	desc = "Направьте бесплатный луч: через 0,8 секунды он наносит 16 ушибов по отмеченным клеткам. Призмы поворачивают и расщепляют свет. Каждый участок длиной до пяти клеток; всего до трёх преломлений. Общий предел 12 клеток делится между ответвлениями, поэтому дальнее раздвоение может дать лучи разной длины."
+	desc = "Выберите цель или клетку: через 0,6 секунды луч нанесёт 30 ушибов по отмеченной линии. Призмы не требуются; своя призма добавляет 6 ушибов и поворачивает свет. Каждый участок до пяти клеток, всего до трёх преломлений и 12 клеток. Трещины усиливают и прямой выстрел."
 	action_icon_state = "glass_release"
 	charge_max = 12 SECONDS
 
@@ -1068,7 +1112,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards
 	name = "Поставить призму"
-	desc = "За одну строительную грань поставьте призму на свободный пол в пяти клетках. Повторный выбор своей призмы бесплатно поворачивает её в сторону вашего взгляда. Максимум три призмы, 45 прочности, срок 60 секунд."
+	desc = "За грань поставьте призму на свободный пол в пяти клетках. Она поворачивает луч по стрелке и добавляет 6 ушибов. Повторный выбор поворачивает её в сторону вашего взгляда. Максимум три призмы, 45 прочности, срок 2 минуты."
 	action_icon_state = "glass_shards"
 	charge_max = 4 SECONDS
 
@@ -1113,7 +1157,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_glass/storm
 	name = "Перекрёстный свет"
-	desc = "После двух секунд неподвижности выпустите лучи из своих призм в пяти клетках. Предупреждённые трассы сохраняют геометрию: сломанный или повёрнутый узел отменяет зависимые участки. Урон не складывается на пересечениях."
+	desc = "За секунду отметьте восемь лучей вокруг себя и лучи из своих призм. Урон: 40 напрямую, 46 через призму, 40 после раздвоения. Можно двигаться; призмы и грани не требуются. Пересечения не умножают урон."
 	action_icon_state = "glass_storm"
 	charge_max = 35 SECONDS
 
@@ -1125,7 +1169,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_glass/crown
 	name = "Вечный витраж"
-	desc = "Три волны света из своих призм с интервалом четыре секунды. Каждая отмечает трассу за две секунды. Неподвижность нужна только для первой подготовки; затем можно двигаться, удерживая призмы в пяти клетках. Разрушение участвующего узла отменяет весь витраж."
+	desc = "Три волны света с интервалом четыре секунды: восемь лучей вокруг вас и свет из призм. Каждая предупреждает за секунду. Можно двигаться; урон 44 напрямую, 50 через призму, 44 после раздвоения. Разрушение участвующего узла отменяет весь витраж."
 	action_icon_state = "glass_ascend"
 	charge_max = 45 SECONDS
 
@@ -1144,3 +1188,7 @@
 #undef HERETIC_GLASS_BARRIER_LIFETIME
 #undef HERETIC_GLASS_PRISM_LIFETIME
 #undef HERETIC_GLASS_ATTACK_LIMIT
+#undef HERETIC_GLASS_DEED_DAMAGE
+#undef HERETIC_GLASS_BEAM_DAMAGE
+#undef HERETIC_GLASS_SPLIT_DAMAGE
+#undef HERETIC_GLASS_REFRACTION_BONUS

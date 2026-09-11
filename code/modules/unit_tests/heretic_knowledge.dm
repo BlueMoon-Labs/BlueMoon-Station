@@ -32,7 +32,7 @@
 		var/datum/eldritch_knowledge/starting_knowledge = path.knowledge[1]
 		TEST_ASSERT_EQUAL(initial(starting_knowledge.cost), 0, "Первый выбор пути бесплатный.")
 		TEST_ASSERT(ispath(path.knowledge[length(path.knowledge)], /datum/eldritch_knowledge/final_eldritch), "Путь завершается вознесением.")
-		TEST_ASSERT(total_cost <= HERETIC_STARTING_KNOWLEDGE + HERETIC_INFLUENCE_LIMIT + 2 * HERETIC_ASCENSION_SACRIFICES, "Бюджета шести разломов и пяти душ должно хватать на весь основной путь.")
+		TEST_ASSERT(total_cost <= HERETIC_STARTING_KNOWLEDGE + HERETIC_INFLUENCE_LIMIT + HERETIC_DEED_TIERS * HERETIC_DEED_KNOWLEDGE + HERETIC_LIVE_SACRIFICE_KNOWLEDGE * HERETIC_ASCENSION_SACRIFICES, "Бюджета разломов, дела пути и живых душ должно хватать на весь основной путь.")
 		registered |= unique_nodes
 	var/list/abstract_types = list(/datum/eldritch_knowledge/spell, /datum/eldritch_knowledge/spell/summon, /datum/eldritch_knowledge/curse, /datum/eldritch_knowledge/summon, /datum/eldritch_knowledge/final_eldritch)
 	for(var/datum/eldritch_knowledge/knowledge_type as anything in subtypesof(/datum/eldritch_knowledge) - abstract_types)
@@ -64,7 +64,7 @@
 	heretic.path_stage = 9
 	heretic.knowledge_points = 100
 	heretic.total_sacrifices = HERETIC_ASCENSION_SACRIFICES - 1
-	TEST_ASSERT(!heretic.research_knowledge(/datum/eldritch_knowledge/final_eldritch/cosmic_final, user), "Финальное знание требует пять душ независимо от баланса.")
+	TEST_ASSERT(!heretic.research_knowledge(/datum/eldritch_knowledge/final_eldritch/cosmic_final, user), "Финальное знание требует все назначенные души независимо от баланса.")
 	heretic.total_sacrifices++
 	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/final_eldritch/cosmic_final, user), "Пять душ открывают финальное знание.")
 	TEST_ASSERT(!heretic.ascended, "Исследование рецепта само по себе не возносит еретика.")

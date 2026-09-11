@@ -229,6 +229,7 @@
 		"knowledge_state" = knowledge_state(heretic),
 		"passive_upgrades" = heretic.passive_upgrade_data(),
 		"combat_resource" = null,
+		"deed" = heretic.deed_data(),
 	)
 	if(book_style)
 		var/datum/eldritch_knowledge/base_knowledge = heretic.get_knowledge(book_style.knowledge[1])
@@ -250,6 +251,7 @@
 		"can_retarget" = !available_target || COOLDOWN_FINISHED(heretic, hunt_refresh_cooldown),
 		"retarget_seconds" = available_target ? max(0, CEILING(COOLDOWN_TIMELEFT(heretic, hunt_refresh_cooldown) / (1 SECONDS), 1)) : 0,
 		"sacrifices_required" = HERETIC_ASCENSION_SACRIFICES,
+		"deed_tiers" = HERETIC_DEED_TIERS,
 		"ascension_bodies" = HERETIC_ASCENSION_BODIES,
 		"influences_harvested" = heretic.influences_harvested,
 		"influence_limit" = HERETIC_INFLUENCE_LIMIT,

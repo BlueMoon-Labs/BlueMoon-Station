@@ -9,7 +9,7 @@
 	var/mob/living/staying = allocate(/mob/living/carbon/human, get_step(center, EAST))
 	var/mob/living/dodging = allocate(/mob/living/carbon/human, get_step(center, NORTH))
 	TEST_ASSERT(echo.release(user), "Начального резонанса хватает на первую волну.")
-	TEST_ASSERT_EQUAL(echo.combat_resource, 0, "Волна расходует единицу резонанса.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, initial(echo.combat_resource) - 1, "Волна расходует единицу резонанса.")
 	TEST_ASSERT_EQUAL(staying.getBruteLoss(), 0, "Предупреждение само по себе не ранит.")
 	TEST_ASSERT_EQUAL(length(echo.attacks), 1, "Волна хранится как одна отложенная атака.")
 	var/datum/heretic_echo_attack/attack = echo.attacks[1]
@@ -100,7 +100,7 @@
 	TEST_ASSERT(!echo.create_resonator(user, target), "Нельзя создать неизученный резонатор напрямую.")
 	TEST_ASSERT(!echo.crescendo(user, target), "Нельзя вызвать неизученное Крещендо напрямую.")
 	TEST_ASSERT(!echo.final_chorus(user), "Финал недоступен до вознесения.")
-	TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Отказы сохраняют начальный запас.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, initial(echo.combat_resource), "Отказы сохраняют начальный запас.")
 	echo.combat_resource = 0
 	TEST_ASSERT(!echo.release(user), "Волна требует доступного резонанса.")
 	TEST_ASSERT_EQUAL(length(echo.attacks), 0, "Отказы не оставляют запланированных атак.")
@@ -149,7 +149,7 @@
 	attack.resolve()
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Три перекрывающиеся зоны расходуют один заряд защиты.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Все составляющие залпа заблокированы одной проверкой защиты.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 14) < 0.001, "Попадания одного залпа выбирают сильнейший урон вместо сложения.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 24) < 0.001, "Попадания одного залпа выбирают сильнейший урон вместо сложения.")
 
 /// Смена тела удаляет старые волны и конструкции, сохраняя прогресс знания.
 /datum/unit_test/heretic_echo_body_transfer_cleanup/Run()
@@ -367,7 +367,7 @@
 	var/mob/living/staying = allocate(/mob/living/carbon/human, get_step(center, EAST))
 	user.forceMove(get_step(center, SOUTHWEST))
 	attack.resolve()
-	TEST_ASSERT(abs(staying.getBruteLoss() - 14) < 0.001, "Оставшаяся на кресте цель получает рассчитанный урон первого такта.")
+	TEST_ASSERT(abs(staying.getBruteLoss() - 26) < 0.001, "Оставшаяся на кресте цель получает рассчитанный урон первого такта.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "На первом такте безопасна диагональ.")
 	TEST_ASSERT_EQUAL(attack.pulse_index, 2, "После креста начинается предупреждение диагоналей.")
 	for(var/obj/effect/warning as anything in warnings)
@@ -395,7 +395,7 @@
 		var/datum/eldritch_knowledge/echo_sustain/sustain = heretic.get_knowledge(/datum/eldritch_knowledge/echo_sustain)
 		sustain.passive_level = 3
 		sustain.on_passive_upgrade(old_body)
-		TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Расширение вместимости не начисляет резонанс.")
+		TEST_ASSERT_EQUAL(echo.combat_resource, initial(echo.combat_resource), "Расширение вместимости не начисляет резонанс.")
 		if(ascended)
 			heretic.ascended = TRUE
 			heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/echo_final)
@@ -451,3 +451,69 @@
 		knowledge.on_lose(null)
 		qdel(knowledge)
 		TEST_ASSERT(QDELETED(knowledge), "Знание [knowledge_type] удаляется без владельца и незавершённых эффектов.")
+
+/// Припев наносит первый удар сразу, а от отмеченного повтора можно уйти.
+/datum/unit_test/heretic_echo_refrain_opening/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/turf/center = get_step(user, EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, center)
+	var/mob/living/nearby = allocate(/mob/living/carbon/human, get_step(center, EAST))
+	echo.combat_resource = 0
+	TEST_ASSERT(echo.refrain(user, center), "Припев работает без резонанса и предварительной метки.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 18) < 0.01, "Цель получает первый удар сразу.")
+	TEST_ASSERT_EQUAL(nearby.getBruteLoss(), 0, "Соседняя клетка получает только предупреждение.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Первый удар возвращает резонанс для базовой волны.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	TEST_ASSERT_EQUAL(attack.pulse_index, 2, "После первого удара остаётся отдельный повтор.")
+	TEST_ASSERT(length(attack.warnings), "Повтор отмечен на полу.")
+	victim.forceMove(get_step(center, NORTHEAST))
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 18) < 0.01, "Выход на диагональ позволяет избежать повтора.")
+	TEST_ASSERT(abs(nearby.getBruteLoss() - 22) < 0.01, "Оставшийся в кресте противник получает полный повтор.")
+	TEST_ASSERT(QDELETED(attack), "Два такта полностью освобождают атаку.")
+
+/// Первый удар и повтор отдельно проверяют антимагию и исключают союзников.
+/datum/unit_test/heretic_echo_refrain_protection/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/turf/center = get_step(user, EAST)
+	var/mob/living/protected = allocate(/mob/living/carbon/human, center)
+	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	var/datum/antagonist/heretic/ally = allocate_heretic(center)
+	TEST_ASSERT(echo.refrain(user, center), "Припев запускается по клетке с защищёнными целями.")
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Первый удар расходует один заряд защиты.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT_EQUAL(protection.charges, 3, "Повтор расходует ещё один заряд за удар.")
+	TEST_ASSERT_EQUAL(protected.getBruteLoss() + protected.getStaminaLoss(), 0, "Оба удара заблокированы антимагией.")
+	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Оба удара пропускают союзника.")
+
+/// Пустой запас восстанавливает базовую атаку, но не накапливает бесплатный полный залп.
+/datum/unit_test/heretic_echo_empty_recovery/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	TEST_ASSERT_EQUAL(echo.combat_resource, 2, "Начальный запас даёт две попытки базовой атаки.")
+	echo.combat_resource = 0
+	COOLDOWN_RESET(echo, ascended_resonance)
+	echo.on_life(user)
+	TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Пустой запас получает одну единицу.")
+	COOLDOWN_RESET(echo, ascended_resonance)
+	echo.on_life(user)
+	TEST_ASSERT_EQUAL(echo.combat_resource, 1, "Обычное восстановление не заполняет весь запас.")
+	echo.combat_resource = 0
+	user.stat = UNCONSCIOUS
+	COOLDOWN_RESET(echo, ascended_resonance)
+	echo.on_life(user)
+	TEST_ASSERT_EQUAL(echo.combat_resource, 0, "Недееспособный владелец не восстанавливает боевой запас.")

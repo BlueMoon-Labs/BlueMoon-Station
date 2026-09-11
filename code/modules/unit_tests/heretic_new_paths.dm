@@ -6,14 +6,14 @@
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 		heretic.ascension_notice_sent = TRUE
 		heretic.total_sacrifices = HERETIC_THREAT_SACRIFICES
-		heretic.knowledge_points = HERETIC_STARTING_KNOWLEDGE + HERETIC_INFLUENCE_LIMIT + 2 * HERETIC_ASCENSION_SACRIFICES
+		heretic.knowledge_points = HERETIC_STARTING_KNOWLEDGE + HERETIC_INFLUENCE_LIMIT + HERETIC_DEED_TIERS * HERETIC_DEED_KNOWLEDGE + HERETIC_LIVE_SACRIFICE_KNOWLEDGE * HERETIC_ASCENSION_SACRIFICES
 		TEST_ASSERT(!heretic.research_knowledge(path.knowledge[2], user), "Нельзя начать [path_id] со второй ступени.")
 		for(var/stage in 1 to length(path.knowledge))
 			var/knowledge_type = path.knowledge[stage]
 			if(stage == length(path.knowledge))
 				heretic.total_sacrifices = HERETIC_ASCENSION_SACRIFICES - 1
 				var/balance = heretic.knowledge_points
-				TEST_ASSERT(!heretic.research_knowledge(knowledge_type, user), "Четырёх душ недостаточно для финала [path_id].")
+				TEST_ASSERT(!heretic.research_knowledge(knowledge_type, user), "Без нужного числа подношений финал [path_id] недоступен.")
 				TEST_ASSERT_EQUAL(heretic.knowledge_points, balance, "Отказ финального знания сохраняет очки.")
 				heretic.total_sacrifices++
 			TEST_ASSERT(heretic.research_knowledge(knowledge_type, user), "Ступень [stage] пути [path_id] доступна после предыдущей.")

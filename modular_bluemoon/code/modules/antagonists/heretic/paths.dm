@@ -41,6 +41,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/ash
 	id = PATH_ASH
+	deed_type = /datum/heretic_deed/ash
 	name = "Пепел"
 	desc = "Сжигайте метки, копите угольки и разрывайте дистанцию огненным сбросом."
 	strengths = "Мобильность, цепные поджоги, восстановление в бою."
@@ -60,6 +61,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/rust
 	id = PATH_RUST
+	deed_type = /datum/heretic_deed/rust
 	name = "Ржавчина"
 	desc = "Выращивайте наросты и превращайте выбранное помещение в свою территорию."
 	strengths = "Подготовленные позиции, разрушение укреплений и лечение на ржавчине."
@@ -79,6 +81,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/flesh
 	id = PATH_FLESH
+	deed_type = /datum/heretic_deed/flesh
 	name = "Плоть"
 	desc = "Собирайте биомассу и сшивайте раны своей свиты прямо в сражении."
 	strengths = "Слуги, разведка, истощение противника и лечение группы."
@@ -98,6 +101,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/void
 	id = PATH_VOID
+	deed_type = /datum/heretic_deed/void
 	name = "Пустота"
 	desc = "Расставляйте очаги зимы, лишайте врагов голоса и выбирайте место схватки."
 	strengths = "Контроль пространства, замедление, молчание и перемещение."
@@ -117,10 +121,11 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/blade
 	id = PATH_BLADE
+	deed_type = /datum/heretic_deed/blade
 	name = "Клинок"
-	desc = "Вызовите противника на дуэль и поймайте его атаку парированием."
-	strengths = "Защита в ближнем бою, ответные удары и давление на одну цель."
-	weaknesses = "Парирование требует точного момента; группа и огнестрельное оружие опасны."
+	desc = "Сближайтесь выпадом, отбивайте клинком удары и снаряды, отвечайте тяжёлой контратакой."
+	strengths = "Короткая защита от огнестрела, сильный ответ и пополнение Темпа обычными ударами."
+	weaknesses = "Для парирования нужна пустая вторая рука; очередь пробивает защиту между блоками."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_blade,
 		/datum/eldritch_knowledge/blade_grasp,
@@ -136,9 +141,10 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/moon
 	id = PATH_MOON
+	deed_type = /datum/heretic_deed/moon
 	name = "Луна"
-	desc = "Создавайте подвижных двойников, изматывайте ими врагов и меняйтесь с копиями местами."
-	strengths = "Обман, ложные атаки, смена позиции и отход под прикрытием двойников."
+	desc = "Изматывайте врагов двойниками, прикрывайтесь ими от выстрелов и меняйтесь с ними местами."
+	strengths = "Давление на выносливость, перехват снарядов и быстрый обмен местами."
 	weaknesses = "Двойники хрупки; их атаки не наносят ранений, а обмен требует видимости и свободного пола."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_moon,
@@ -155,9 +161,10 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /datum/heretic_path/cosmic
 	id = PATH_COSMIC
+	deed_type = /datum/heretic_deed/cosmic
 	name = "Космос"
-	desc = "Соединяйте звёзды в созвездие: его линии становятся ловушками и дорогами."
-	strengths = "Подготовка поля боя, перемещение между звёздами и контроль проходов."
+	desc = "Ставьте пару звёзд прямо в бою, пересекайте созвездие и схлопывайте его на врагах."
+	strengths = "Быстрая расстановка ловушек, перемещение между звёздами и взрыв по площади."
 	weaknesses = "Звёзды видны и разрушаются; на неподготовленной позиции мало возможностей."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_cosmic,
@@ -237,6 +244,8 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 			if(path.knowledge[1] == knowledge_type)
 				selected_path = path.id
 				break
+		create_deed()
+		announce_path_start(user)
 	if(!(knowledge_type in GLOB.heretic_side_knowledge))
 		path_stage++
 		var/datum/heretic_path/current_path = GLOB.heretic_paths[selected_path]
@@ -263,3 +272,14 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		if(!researched_knowledge[knowledge_type] && path_stage >= GLOB.heretic_side_knowledge[knowledge_type])
 			researchable += knowledge_type
 	return researchable
+
+/datum/antagonist/heretic/proc/announce_path_start(mob/living/user)
+	var/datum/heretic_path/path = GLOB.heretic_paths[selected_path]
+	if(!user || !path)
+		return
+	var/datum/eldritch_knowledge/base_knowledge = path.knowledge[1]
+	var/resource_desc = initial(base_knowledge.combat_resource_desc)
+	if(resource_desc)
+		to_chat(user, span_notice("[initial(base_knowledge.combat_resource_name)]: [resource_desc]"))
+	if(deed)
+		to_chat(user, span_notice("Дело пути «[deed.name]»: [deed.desc] Каждая ступень даёт очко знаний, каждое действие пополняет запас силы."))

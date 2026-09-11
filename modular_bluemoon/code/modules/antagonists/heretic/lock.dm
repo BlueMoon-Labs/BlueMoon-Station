@@ -1,11 +1,12 @@
 #define HERETIC_LOCK_RANGE 5
-#define HERETIC_LOCK_SEAL_LIFETIME (20 SECONDS)
+#define HERETIC_LOCK_SEAL_LIFETIME (30 SECONDS)
 #define HERETIC_LOCK_BASE_LIMIT 4
 #define HERETIC_LOCK_UPGRADED_LIMIT 10
 #define HERETIC_LOCK_ASCENDED_LIMIT 16
 
 /datum/heretic_path/lock
 	id = PATH_LOCK
+	deed_type = /datum/heretic_deed/lock
 	name = "Замок"
 	desc = "Отпирайте чужие двери, собирайте ключи и запирайте проходы разрушаемыми печатями."
 	strengths = "Проникновение, разделение противников и подготовленные ловушки."
@@ -25,7 +26,7 @@
 
 /datum/eldritch_knowledge/base_lock
 	name = "Тайна привратника"
-	desc = "Открывает Путь Замка. Нож и лом создают клинок-ключ, которым можно работать как ломом. «Запечатать проход» за 1 ключ создаёт в пяти клетках печать на 20 секунд с прочностью 60. До четырёх печатей; перезарядка 8 секунд. Еретики, их слуги и защищённые от магии проходят сквозь печати. Начальный запас — 2 ключа, предел — 4."
+	desc = "Открывает Путь Замка: отрезайте противникам путь разрушаемыми печатями, через которые сами проходите свободно. «Запечатать проход» создаёт преграду на 30 секунд за один ключ; снятие рукой на намерении помощи возвращает ключ. Вы начинаете с двумя ключами, а нож и лом создают клинок-ключ, работающий как лом."
 	gain_text = "Любая стена однажды была дверью. Любая дверь помнит свой ключ."
 	route = PATH_LOCK
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/crowbar)
@@ -33,7 +34,7 @@
 	combat_resource = 2
 	combat_resource_max = 4
 	combat_resource_name = "Ключи"
-	combat_resource_desc = "Активация метки клинком даёт ключ. Изученная Открытая ладонь добывает ключ при открытии закрытого шлюза или запертого шкафа, не чаще раза в 20 секунд. Печать стоит один ключ; Замкнутый двор — два. Собственную печать можно убрать пустой рукой."
+	combat_resource_desc = "Метка даёт ключ при ударе клинком. Открытая ладонь добывает ключ из закрытого шлюза или запертого шкафа раз в 20 секунд. Одиночная печать стоит 1 ключ: снимите её рукой на намерении помощи, чтобы вернуть его. Бесплатные печати ключей не дают. Замкнутый двор стоит 2 ключа."
 	grasp_visual = /obj/effect/temp_visual/heretic_lock
 	grasp_sound = 'modular_bluemoon/sound/heretic/lock_knock.ogg'
 	var/mob/living/lock_body
@@ -114,6 +115,7 @@
 	if(key_cost && !spend_combat_resource(key_cost))
 		return null
 	var/obj/structure/heretic_lock_seal/seal = new(place, src, lifetime)
+	seal.reclaimable_key = key_cost > 0
 	seals += seal
 	return seal
 
@@ -153,9 +155,13 @@
 		return FALSE
 	if(QDELETED(src) || !valid_user(user) || generation != court_generation)
 		return TRUE
-	if(harvest && COOLDOWN_FINISHED(src, resource_harvest))
-		gain_combat_resource()
-		COOLDOWN_START(src, resource_harvest, 20 SECONDS)
+	if(harvest)
+		if(COOLDOWN_FINISHED(src, resource_harvest))
+			gain_combat_resource()
+			COOLDOWN_START(src, resource_harvest, 20 SECONDS)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		if(heretic)
+			heretic.advance_deed(heretic.deed_key_for(target), get_turf(target), silent = TRUE)
 	new /obj/effect/temp_visual/heretic_lock(get_turf(target))
 	playsound(target, 'modular_bluemoon/sound/heretic/lock_knock.ogg', 45, TRUE)
 	log_game("[key_name(user)] отпирает [target] силой Замка в [AREACOORD(target)].")
@@ -182,7 +188,7 @@
 	for(var/mob/living/victim as anything in victims)
 		if(!heretic_can_affect(user, victim))
 			continue
-		victim.adjustBruteLoss(ascension_active ? 30 : 20)
+		victim.adjustBruteLoss(ascension_active ? 45 : 30)
 		log_combat(user, victim, "разомкнул печати вокруг")
 	playsound(user, 'modular_bluemoon/sound/heretic/lock_release.ogg', 55, TRUE)
 	return TRUE
@@ -216,6 +222,7 @@
 	return TRUE
 
 /obj/structure/heretic_lock_seal
+	var/reclaimable_key = FALSE
 	name = "labyrinth seal"
 	desc = "Золотые зубья перекрывают проход. Печать можно разбить кулаками, оружием или снарядами; нуль-жезл снимает её сразу. Еретики, их слуги и защищённые от магии проходят свободно. Газ и свет проходят сквозь печать."
 	icon = 'modular_bluemoon/icons/obj/heretic_lock_gate.dmi'
@@ -267,6 +274,9 @@
 		return
 	var/datum/eldritch_knowledge/base_lock/knowledge = knowledge_ref?.resolve()
 	if(user == knowledge?.lock_body && act_intent == INTENT_HELP)
+		if(reclaimable_key)
+			reclaimable_key = FALSE
+			knowledge.gain_combat_resource()
 		qdel(src)
 		return
 	user.do_attack_animation(src, ATTACK_EFFECT_PUNCH)
@@ -320,7 +330,7 @@
 /datum/eldritch_knowledge/spell/lock_bolt
 	name = "Открывающий удар"
 	gain_text = "Я спросил, где кончается дверь. «Там, где кончается твоя рука», — ответил он и протянул её через зал."
-	desc = "Направленный удар в пяти клетках наносит 15 ожогов и 15 урона выносливости или открывает шлюз либо запертый шкаф. Стены и плотные предметы перекрывают удар; сварка и неразрушимые двери сохраняются. Не требует ключей и не даёт их. Перезарядка 18 секунд."
+	desc = "Направленный удар в пяти клетках наносит 25 ожогов и 20 урона выносливости или открывает шлюз либо запертый шкаф. Стены и плотные предметы перекрывают удар; сварка и неразрушимые двери сохраняются. Не требует ключей и не даёт их. Перезарядка 18 секунд."
 	cost = 1
 	route = PATH_LOCK
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
@@ -447,7 +457,7 @@
 /datum/eldritch_knowledge/spell/lock_release
 	name = "Размыкание"
 	gain_text = "Однажды все засовы отодвинулись разом. Только тогда я услышал, сколько людей стояло у дверей."
-	desc = "Разрушает все ваши видимые печати в пяти клетках. Противники рядом с ними получают 20 ушибов, однократно за применение. Стены закрывают от взрыва; союзники и антимагия защищены. Перезарядка 25 секунд."
+	desc = "Разрушает все ваши видимые печати в пяти клетках. Противники рядом с ними получают 30 ушибов, однократно за применение. Стены закрывают от взрыва; союзники и антимагия защищены. Перезарядка 25 секунд."
 	cost = 1
 	route = PATH_LOCK
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_lock/release
@@ -477,7 +487,7 @@
 	gain_text = "Я вышел во двор. Восемь дверей закрылись за мной, хотя вошёл я только через одну."
 	desc = "За 2 ключа воздвигает восемь печатей по краю квадрата 3×3 вокруг видимой точки в пяти клетках. Подготовка длится 2 секунды и отмечает будущие преграды. Занятые клетки пропускаются; нужны хотя бы три свободных места и запас общего лимита. Перезарядка 40 секунд."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_LOCK
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lock/court
 
@@ -485,7 +495,7 @@
 	parallax_scene = ANTAG_SCENE_HERETIC_LOCK
 	name = "Отпереть Лабиринт"
 	gain_text = "Привратник поклонился и исчез. На его месте осталась связка ключей. Теперь Дом ждал моего решения."
-	desc = "После пяти назначенных душ принесите три человеческих трупа. Обряд раскроет своё место станции и даст 30 секунд на вмешательство. Вознесение увеличивает предел до 16 печатей и 6 ключей, а урон Размыкания — до 30. «Дом без стен» за 2 секунды окружает вас печатями по краю квадрата 5×5 и восполняет ключи; перезарядка 60 секунд."
+	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскроет своё место станции и даст 30 секунд на вмешательство. Вознесение увеличивает предел до 16 печатей и 6 ключей, а урон Размыкания — до 45. «Дом без стен» за 2 секунды окружает вас печатями по краю квадрата 5×5 и восполняет ключи; перезарядка 60 секунд."
 	route = PATH_LOCK
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	ascension_traits = list(TRAIT_NOBREATH)
@@ -536,7 +546,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal
 	name = "Запечатать проход"
-	desc = "За 1 ключ создайте на видимом свободном полу в пяти клетках разрушаемую печать на 20 секунд. Перезарядка 8 секунд."
+	desc = "За 1 ключ создайте печать на свободном полу в пяти клетках: 60 прочности, 30 секунд жизни, до четырёх одновременно. Еретики, слуги и антимагия проходят свободно. Снятие рукой на намерении помощи возвращает ключ. Перезарядка 8 секунд."
 	active_msg = "Укажите свободный пол для печати."
 	deactive_msg = "Ключ возвращается в ладонь."
 	charge_max = 8 SECONDS
@@ -555,7 +565,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
 	action_icon_state = "lock_bolt"
 	name = "Открывающий удар"
-	desc = "Наносит 15 ожогов и 15 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Перезарядка 18 секунд."
+	desc = "Наносит 25 ожогов и 20 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Перезарядка 18 секунд."
 	active_msg = "Выберите противника или замок."
 	deactive_msg = "Вы отпускаете невидимый ключ."
 	charge_max = 18 SECONDS
@@ -593,8 +603,8 @@
 		if(!heretic_can_affect(user, target))
 			return
 		var/mob/living/victim = target
-		victim.adjustFireLoss(15)
-		victim.adjustStaminaLoss(15)
+		victim.adjustFireLoss(25)
+		victim.adjustStaminaLoss(20)
 		log_combat(user, victim, "поразил Открывающим ударом")
 	else if(!knowledge.open_lock(target, user))
 		revert_cast(user)
@@ -655,7 +665,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_lock/release
 	name = "Размыкание"
-	desc = "Разрушьте собственные видимые печати в пяти клетках. Враги рядом с ними получают 20 ушибов, один раз за применение. Перезарядка 25 секунд."
+	desc = "Разрушьте собственные видимые печати в пяти клетках. Враги рядом с ними получают 30 ушибов, один раз за применение. Перезарядка 25 секунд."
 	charge_max = 25 SECONDS
 
 /obj/effect/proc_holder/spell/self/heretic_lock/release/cast(list/targets, mob/living/user)

@@ -2183,6 +2183,7 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\ui_assets.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\hunt.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\combat_resources.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\deeds.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\blade.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\moon.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\cosmic.dm"

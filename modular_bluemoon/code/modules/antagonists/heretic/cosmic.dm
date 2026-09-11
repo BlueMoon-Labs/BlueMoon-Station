@@ -6,7 +6,7 @@
 
 /datum/eldritch_knowledge/base_cosmic
 	name = "Карта без неба"
-	desc = "Открывает Путь Космоса. «Зажечь звезду» оставляет под вами разрушаемую звезду на три минуты. Две звезды не дальше семи клеток соединяются видимой нитью: пересечение наносит врагу 15 урона выносливости и замедляет на 3 секунды. Пока действует замедление, другие нити не срабатывают повторно. Нож и лист стекла превращаются в космический клинок."
+	desc = "Открывает Путь Космоса: одним применением поставьте пару звёзд и перекройте проход опасной нитью. Нити обжигают, сбивают и замедляют врагов; звёзды можно разбить. Новые звёзды заменяют старые при полном лимите, поэтому созвездие легко перенести вслед за боем. Нож и лист стекла создают космический клинок."
 	gain_text = "Между двумя точками лежит не пустота. Между ними лежит закон."
 	route = PATH_COSMIC
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/glass)
@@ -41,7 +41,7 @@
 	return heretic?.get_knowledge(/datum/eldritch_knowledge/cosmic_expansion) ? HERETIC_STAR_EXPANDED_LIMIT : HERETIC_STAR_BASE_LIMIT
 
 /datum/eldritch_knowledge/base_cosmic/get_combat_resource_data()
-	return list("name" = "Звёзды", "value" = length(stars), "max" = star_limit(), "description" = "Зажгите звёзды рядом друг с другом. Нити между ними изматывают врагов. Повторное зажигание на своей звезде гасит её. Астролябия поворачивает подготовленное созвездие вокруг первой звезды.")
+	return list("name" = "Звёзды", "value" = length(stars), "max" = star_limit(), "description" = "Первая пара создаётся одним применением; звёзды живут три минуты. Нити наносят 10 ожогов и 25 урона выносливости, сбивают на 0,7 секунды и замедляют на 3 секунды. До окончания замедления нити повторно не ранят. Звёзды можно разбить; новая заменяет старейшую при полном лимите.")
 
 /datum/eldritch_knowledge/base_cosmic/proc/clear_stars()
 	clearing_stars = TRUE
@@ -77,7 +77,26 @@
 		created.obj_integrity = created.max_integrity
 	rebuild_threads()
 	playsound(place, 'modular_bluemoon/sound/heretic/cosmic_energy.ogg', 35, TRUE)
+	heretic.advance_deed(heretic.deed_key_for(place), place, silent = TRUE)
 	return TRUE
+
+/datum/eldritch_knowledge/base_cosmic/proc/manifest(turf/place, mob/living/user)
+	if(user?.mind != astronomer || !IS_HERETIC(user) || !isturf(user.loc) || user.incapacitated() || !safe_star_turf(place) || !star_line_clear(user, place) || !(place in view(HERETIC_STAR_RANGE, user)))
+		return FALSE
+	for(var/obj/structure/heretic_star/star as anything in stars)
+		if(star.loc == place)
+			qdel(star)
+			return TRUE
+	if(length(stars))
+		var/obj/structure/heretic_star/last_star = stars[length(stars)]
+		if(!star_line_clear(last_star, place))
+			clear_stars()
+	if(length(stars) >= star_limit())
+		qdel(stars[1])
+	if(!length(stars) && place != get_turf(user))
+		if(!add_star(get_turf(user), user))
+			return FALSE
+	return add_star(place, user)
 
 /datum/eldritch_knowledge/base_cosmic/proc/safe_star_turf(turf/place)
 	return isopenturf(place) && !isspaceturf(place) && !istype(place, /turf/open/lava) && !place.is_blocked_turf(exclude_mobs = TRUE)
@@ -230,7 +249,9 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(astronomer.current)
 	victim.apply_status_effect(/datum/status_effect/cosmic_tether)
-	victim.adjustStaminaLoss(15)
+	victim.adjustStaminaLoss(25)
+	victim.adjustFireLoss(10)
+	victim.Knockdown(0.7 SECONDS)
 	new /obj/effect/temp_visual/heretic_path_feedback(get_turf(victim), "cosmic_ring", "#96d7ed", 6)
 	playsound(victim, 'modular_bluemoon/sound/heretic/cosmic_energy.ogg', 25, TRUE)
 	if(heretic.get_knowledge(/datum/eldritch_knowledge/cosmic_mark))
@@ -276,11 +297,13 @@
 		if(!star || !can_affect(victim, chargecost = 1))
 			continue
 		if(collapse)
-			victim.adjustFireLoss(35)
-			victim.Knockdown(1 SECONDS)
+			victim.adjustFireLoss(45)
+			victim.Knockdown(1.5 SECONDS)
 		else
-			victim.adjustStaminaLoss(20)
+			victim.adjustFireLoss(20)
+			victim.adjustStaminaLoss(25)
 			victim.apply_status_effect(/datum/status_effect/cosmic_tether)
+			step_towards(victim, star)
 			step_towards(victim, star)
 			victim.apply_status_effect(/datum/status_effect/eldritch/cosmic)
 		if(user)
@@ -336,7 +359,7 @@
 
 /obj/effect/heretic_star_thread
 	name = "нить созвездия"
-	desc = "Тонкая видимая нить соединяет две звезды. Её хозяин проходит свободно; врагов притяжение изматывает и замедляет на три секунды."
+	desc = "Видимая нить соединяет две звезды. Враги получают ожоги, падают и замедляются. Разбейте звезду, чтобы разорвать нить."
 	icon = null
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -419,14 +442,35 @@
 	return . && heretic?.selected_path == PATH_COSMIC && !user.incapacitated()
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest
+	parent_type = /obj/effect/proc_holder/spell/pointed
 	name = "Зажечь звезду"
-	desc = "Зажигает звезду под вами. Звёзды соединяются через открытое пространство на расстоянии до семи клеток. Повторное применение на своей звезде гасит её."
-	charge_max = 8 SECONDS
+	desc = "Укажите видимый пол до семи клеток. Первое применение сразу создаёт пару звёзд: под вами и в выбранном месте. При полном лимите новая звезда заменяет старейшую; если старое созвездие слишком далеко или за стеной, создаётся новая пара. Нажатие на свою звезду гасит её."
+	clothes_req = FALSE
+	range = HERETIC_STAR_RANGE
+	selection_type = "view"
+	aim_assist = FALSE
+	self_castable = TRUE
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "star_touch"
+	action_background_icon_state = "bg_ecult"
+	active_msg = "Укажите свободный пол для новой звезды."
+	deactive_msg = "Вы отпускаете звёздную нить."
+	charge_max = 6 SECONDS
+
+/obj/effect/proc_holder/spell/self/cosmic/manifest/can_cast(mob/user, skipcharge, silent)
+	. = ..()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return . && heretic?.selected_path == PATH_COSMIC && !user.incapacitated()
+
+/obj/effect/proc_holder/spell/self/cosmic/manifest/can_target(atom/target, mob/user, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	return isturf(target) && knowledge?.safe_star_turf(target) && knowledge.star_line_clear(user, target)
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	if(!knowledge?.add_star(get_turf(user), user))
+	if(!length(targets) || !knowledge?.manifest(targets[1], user))
 		revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/cosmic/step
@@ -467,8 +511,8 @@
 
 /obj/effect/proc_holder/spell/self/cosmic/pulse
 	name = "Гравитационный пульс"
-	desc = "Все ваши звёзды в семи клетках изматывают и притягивают противников в радиусе двух клеток, замедляя на 3 секунды и накладывая метку Космоса."
-	charge_max = 30 SECONDS
+	desc = "Ваши звёзды в семи клетках наносят врагам рядом 20 ожогов и 25 урона выносливости, подтягивают на две клетки и замедляют на 3 секунды. Радиус каждой звезды — две клетки. Накладывает метку Космоса."
+	charge_max = 22 SECONDS
 	action_icon_state = "cosmic_domain"
 
 /obj/effect/proc_holder/spell/self/cosmic/pulse/cast(list/targets, mob/living/user)
@@ -479,14 +523,15 @@
 
 /obj/effect/proc_holder/spell/self/cosmic/collapse
 	name = "Схлопнуть созвездие"
-	desc = "После двух секунд неподвижной подготовки звёзды в семи клетках обжигают врагов вокруг себя. Всё созвездие исчезает; из зоны вспышки можно выйти."
+	desc = "Через 1,5 секунды звёзды в семи клетках наносят врагам рядом 45 ожогов и сбивают на 1,5 секунды. Можно двигаться во время предупреждения. Всё созвездие расходуется; враги могут покинуть подсвеченную область или разбить звезду."
 	charge_max = 35 SECONDS
 	action_icon_state = "star_blast"
+	var/collapse_pending = FALSE
 
 /obj/effect/proc_holder/spell/self/cosmic/collapse/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	if(!length(knowledge?.stars))
+	if(collapse_pending || !length(knowledge?.stars))
 		revert_cast(user)
 		return
 	var/list/star_snapshot = list()
@@ -496,9 +541,17 @@
 	playsound(user, 'modular_bluemoon/sound/heretic/cosmic_charge.ogg', 40, FALSE)
 	var/list/telegraphed_turfs = knowledge.collapse_turfs(user)
 	for(var/turf/tile as anything in telegraphed_turfs)
-		new /obj/effect/temp_visual/heretic_path_feedback(tile, "cosmic_carpet", "#efb780", 2 SECONDS)
-	if(!do_after(user, 2 SECONDS, target = user) || QDELETED(src) || QDELETED(knowledge) || !knowledge.stars_unchanged(star_snapshot) || !knowledge.pulse(user, collapse = TRUE, telegraphed_turfs = telegraphed_turfs))
-		revert_cast(user)
+		new /obj/effect/temp_visual/heretic_path_feedback(tile, "cosmic_carpet", "#efb780", 1.5 SECONDS)
+	collapse_pending = TRUE
+	addtimer(CALLBACK(src, PROC_REF(finish_collapse), WEAKREF(user), WEAKREF(knowledge), star_snapshot, telegraphed_turfs), 1.5 SECONDS)
+
+/obj/effect/proc_holder/spell/self/cosmic/collapse/proc/finish_collapse(datum/weakref/user_ref, datum/weakref/knowledge_ref, list/star_snapshot, list/telegraphed_turfs)
+	collapse_pending = FALSE
+	var/mob/living/user = user_ref.resolve()
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = knowledge_ref.resolve()
+	if(!user || !knowledge || !knowledge.stars_unchanged(star_snapshot))
+		return FALSE
+	return knowledge.pulse(user, collapse = TRUE, telegraphed_turfs = telegraphed_turfs)
 
 /obj/effect/proc_holder/spell/self/cosmic/alignment
 	name = "Великое соединение"
@@ -519,19 +572,22 @@
 
 /datum/eldritch_knowledge/cosmic_grasp
 	name = "Притяжение"
-	desc = "Хватка Мансуса подтягивает противника на одну клетку к ближайшей вашей звезде в четырёх клетках. Стены и закрытые двери останавливают притяжение."
+	desc = "Хватка Мансуса наносит ещё 15 ожогов и замедляет на 3 секунды. Если рядом есть ваша звезда, противника также подтягивает на одну клетку к ней. Преграды останавливают притяжение."
 	cost = 1
 	route = PATH_COSMIC
 
 /datum/eldritch_knowledge/cosmic_grasp/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	if(!isliving(target) || !knowledge?.can_affect(target))
+	if(!proximity_flag || !isliving(target) || !knowledge?.can_affect(target))
 		return FALSE
+	var/mob/living/victim = target
+	victim.adjustFireLoss(15)
+	victim.apply_status_effect(/datum/status_effect/cosmic_tether)
 	var/obj/structure/heretic_star/star = knowledge.nearest_star(target, 4)
 	if(star)
 		step_towards(target, star)
-	return !!star
+	return TRUE
 
 /datum/eldritch_knowledge/spell/cosmic_step
 	name = "Звёздная дорога"
@@ -563,7 +619,7 @@
 
 /datum/eldritch_knowledge/cosmic_upgrade
 	name = "Орбитальный серп"
-	desc = "Удары космическим клинком в двух клетках от вашей звезды дополнительно наносят 5 ожогов."
+	desc = "Удары космическим клинком в двух клетках от вашей звезды дополнительно наносят 10 ожогов."
 	cost = 2
 	route = PATH_COSMIC
 
@@ -574,11 +630,11 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(knowledge?.can_affect(victim) && knowledge.nearest_star(victim, 2))
-		victim.adjustFireLoss(5)
+		victim.adjustFireLoss(10)
 
 /datum/eldritch_knowledge/spell/cosmic_pulse
 	name = "Гравитационный пульс"
-	desc = "Притягивает врагов в двух клетках от ваших звёзд, наносит 20 урона выносливости, замедляет на 3 секунды и накладывает метку Космоса. Одна цель получает эффект один раз за применение; притяжение не вызывает дополнительный удар нитей."
+	desc = "Звёзды наносят врагам в двух клетках 20 ожогов и 25 урона выносливости, подтягивают на две клетки, замедляют на 3 секунды и накладывают метку Космоса. Одна цель получает эффект один раз за применение, без дополнительного удара нитей. Перезарядка 22 секунды."
 	cost = 1
 	route = PATH_COSMIC
 	spell_to_add = /obj/effect/proc_holder/spell/self/cosmic/pulse
@@ -601,16 +657,16 @@
 
 /datum/eldritch_knowledge/spell/cosmic_collapse
 	name = "Схлопывание"
-	desc = "После двухсекундного предупреждения звёзды в семи клетках обжигают противников в радиусе двух клеток на 35 урона. Всё созвездие расходуется. Для нового обстрела его придётся выстроить заново."
+	desc = "Через 1,5 секунды после предупреждения звёзды в семи клетках наносят врагам в радиусе двух клеток 45 ожогов и сбивают на 1,5 секунды. Во время предупреждения можно двигаться. Всё созвездие расходуется; новое можно поставить одним применением."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_COSMIC
 	spell_to_add = /obj/effect/proc_holder/spell/self/cosmic/collapse
 
 /datum/eldritch_knowledge/final_eldritch/cosmic_final
 	parallax_scene = ANTAG_SCENE_HERETIC_COSMIC
 	name = "Небо внутри"
-	desc = "После пяти назначенных душ принесите на руну три человеческих трупа. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение расширяет созвездие до пяти звёзд, добавляет ожоги от нитей и позволяет мгновенно выстраивать созвездие вокруг себя."
+	desc = "После трёх назначенных душ принесите на руну три человеческих трупа. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение расширяет созвездие до пяти звёзд, добавляет ожоги от нитей и позволяет мгновенно выстраивать созвездие вокруг себя."
 	route = PATH_COSMIC
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	ascension_traits = list(TRAIT_NOBREATH)

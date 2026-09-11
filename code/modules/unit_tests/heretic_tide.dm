@@ -51,9 +51,10 @@
 	tide.combat_resource = 4
 	TEST_ASSERT(tide.release(user), "Подготовленная волна должна сработать.")
 	TEST_ASSERT_EQUAL(tide.combat_resource, 2, "Сброс тратит ровно две единицы.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 5) < 0.001, "Волна наносит пять ушибов.")
-	TEST_ASSERT(abs(victim.getStaminaLoss() - 12) < 0.001, "Волна наносит двенадцать урона выносливости.")
-	TEST_ASSERT_EQUAL(get_dist(user, victim), 2, "Отлив сдвигает соседнего врага на клетку наружу.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 18) < 0.001, "Волна наносит восемнадцать ушибов.")
+	TEST_ASSERT(abs(victim.getStaminaLoss() - 24) < 0.001, "Волна наносит двадцать четыре урона выносливости.")
+	TEST_ASSERT_EQUAL(get_dist(user, victim), 3, "Волна смывает соседнего врага на две клетки.")
+	TEST_ASSERT(victim.IsKnockdown(), "Волна сбивает противника с ног.")
 	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Волна не ранит другого еретика.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Волна не ранит создателя.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия блокирует весь урон волны.")
@@ -79,10 +80,11 @@
 	victim.anchored = TRUE
 	TEST_ASSERT(tide.undertow(user, victim), "Закрепление не блокирует саму магическую волну.")
 	TEST_ASSERT_EQUAL(get_turf(victim), destination, "Закреплённый противник остаётся на месте.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 15) < 0.001, "Отлив наносит урон даже неподвижной цели.")
 	victim.anchored = FALSE
 	TEST_ASSERT(tide.undertow(user, victim), "Свободную цель можно подтянуть.")
 	TEST_ASSERT_EQUAL(get_dist(user, victim), 1, "Отлив переносит цель на две клетки ближе.")
-	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Отлив не создаёт и не расходует давление.")
+	TEST_ASSERT_EQUAL(tide.combat_resource, initial(tide.combat_resource), "Отлив не создаёт и не расходует давление.")
 	var/datum/eldritch_knowledge/spell/tide_undertow/spell_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/tide_undertow)
 	var/obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/spell = spell_knowledge.granted_spell
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
@@ -106,19 +108,24 @@
 	tide.combat_resource = 4
 	TEST_ASSERT(tide.create_well(user, center), "На свободном полу создаётся водоворот.")
 	var/obj/structure/heretic_tide_well/first = tide.active_well
-	TEST_ASSERT_EQUAL(first.obj_integrity, 35, "У водоворота конечная прочность.")
+	TEST_ASSERT_EQUAL(first.obj_integrity, 60, "У водоворота конечная прочность.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 12) < 0.001, "Создание воронки сразу наносит урон.")
+	TEST_ASSERT(abs(victim.getStaminaLoss() - 18) < 0.001, "Первое течение изматывает противника.")
+	TEST_ASSERT_EQUAL(get_dist(first, victim), 1, "Создание воронки сразу притягивает цель.")
 	TEST_ASSERT(first.pulse(), "Водоворот действует в присутствии владельца.")
-	TEST_ASSERT(abs(victim.getStaminaLoss() - 6) < 0.001, "Один пульс наносит шесть урона выносливости.")
-	TEST_ASSERT_EQUAL(get_dist(first, victim), 1, "Пульс подтягивает на одну клетку.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 24) < 0.001, "Ядро воронки наносит ещё двенадцать ушибов.")
+	TEST_ASSERT(abs(victim.getStaminaLoss() - 30) < 0.001, "Ядро воронки дополнительно изматывает цель.")
+	TEST_ASSERT_EQUAL(get_dist(first, victim), 0, "Пульс затягивает цель в саму воронку.")
 	TEST_ASSERT(tide.create_well(user, center), "Новый водоворот заменяет старый.")
 	TEST_ASSERT(QDELETED(first), "Старая воронка удаляется при создании новой.")
 	var/obj/structure/heretic_tide_well/second = tide.active_well
 	TEST_ASSERT(!tide.create_well(user, center), "Без давления нельзя заменить воронку.")
 	TEST_ASSERT_EQUAL(tide.active_well, second, "Неудачное создание сохраняет действующую воронку.")
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	var/stamina_before = victim.getStaminaLoss()
 	second.pulse()
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Пульс расходует один заряд антимагии.")
-	TEST_ASSERT(abs(victim.getStaminaLoss() - 6) < 0.001, "Защищённый противник не получает урон пульса.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina_before, "Защищённый противник не получает урон пульса.")
 	var/turf/original_turf = get_turf(user)
 	user.forceMove(locate(original_turf.x + 10, original_turf.y, original_turf.z))
 	TEST_ASSERT(!second.pulse(), "Водоворот не действует вдали от своего владельца.")
@@ -153,8 +160,9 @@
 	TEST_ASSERT(!tide.deluge(user, center, list(), tide.tide_generation), "Без предупреждённых клеток обрушения нет.")
 	TEST_ASSERT_EQUAL(tide.combat_resource, 4, "Отказ сохраняет давление.")
 	TEST_ASSERT(tide.deluge(user, center, warned, tide.tide_generation), "Подготовленное обрушение должно завершиться.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 24) < 0.001, "Четыре единицы дают двадцать четыре ушиба.")
-	TEST_ASSERT(abs(victim.getStaminaLoss() - 22) < 0.001, "Четыре единицы дают двадцать два урона выносливости.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 44) < 0.001, "Четыре единицы дают сорок четыре ушиба.")
+	TEST_ASSERT(abs(victim.getStaminaLoss() - 32) < 0.001, "Четыре единицы дают тридцать два урона выносливости.")
+	TEST_ASSERT(victim.IsKnockdown(), "Обрушение сбивает противника.")
 	TEST_ASSERT_EQUAL(unwarned.getBruteLoss(), 0, "Открытие прохода не добавляет непредупреждённую цель.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия защищает от обрушения.")
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Обрушение расходует один заряд защиты.")
@@ -241,14 +249,15 @@
 	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	var/datum/eldritch_knowledge/tide_depth/depth = heretic.get_knowledge(/datum/eldritch_knowledge/tide_depth)
 	TEST_ASSERT_EQUAL(tide.combat_resource_max, 5, "Первая ступень пассивки расширяет вместимость до пяти.")
-	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Изучение не заполняет дополнительную вместимость.")
+	TEST_ASSERT_EQUAL(tide.combat_resource, initial(tide.combat_resource), "Изучение не заполняет дополнительную вместимость.")
 	depth.passive_level = 3
 	depth.on_passive_upgrade(user)
 	TEST_ASSERT_EQUAL(tide.combat_resource_max, 7, "Третья ступень пассивки расширяет вместимость до семи.")
-	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Улучшение также не создаёт давление.")
+	TEST_ASSERT_EQUAL(tide.combat_resource, initial(tide.combat_resource), "Улучшение также не создаёт давление.")
 	heretic.ascended = TRUE
 	tide.update_capacity()
 	TEST_ASSERT_EQUAL(tide.combat_resource_max, 8, "После вознесения вмещаются восемь единиц.")
+	tide.combat_resource = 1
 	TEST_ASSERT(!tide.release(user), "Даже вознесённый обычный сброс требует две единицы.")
 	tide.combat_resource = 4
 	TEST_ASSERT(tide.create_well(user, get_turf(user)), "Перед смертью существует воронка.")
@@ -267,3 +276,66 @@
 	tide.on_body_lose(user)
 	TEST_ASSERT(QDELETED(power), "Отвязка тела удаляет исходную способность.")
 	TEST_ASSERT_NULL(tide.tide_body, "Отвязка освобождает ссылку на старое тело.")
+
+/// Снос в преграду наносит один удар и не проталкивает противника сквозь неё.
+/datum/unit_test/heretic_tide_wave_collision/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/turf/victim_place = get_step(user, EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, victim_place)
+	var/obj/blocker = allocate(/obj, get_step(victim, EAST))
+	blocker.density = TRUE
+	TEST_ASSERT(tide.release(user), "Начального давления хватает на волну без подготовительных ударов.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 26) < 0.001, "Волна и одно столкновение дают 26 ушибов.")
+	TEST_ASSERT_EQUAL(get_turf(victim), victim_place, "Преграда останавливает снос.")
+	TEST_ASSERT(victim.IsKnockdown(), "Столкновение сбивает противника.")
+	TEST_ASSERT_NOTNULL(center.GetComponent(/datum/component/wet_floor), "Волна действительно оставляет скользкий пол.")
+
+/// Давление восстанавливается без противника, а защита от воды переходит вместе с ролью.
+/datum/unit_test/heretic_tide_regeneration_and_water/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	TEST_ASSERT(HAS_TRAIT(user, TRAIT_NOSLIPWATER), "Путь сразу защищает от мокрого пола.")
+	tide.combat_resource = 0
+	COOLDOWN_RESET(tide, ascended_pressure)
+	tide.on_life(user)
+	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Без противника восстанавливается единица давления.")
+	tide.on_life(user)
+	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Повторный life соблюдает задержку восстановления.")
+	ADD_TRAIT(user, TRAIT_NOSLIPWATER, "unit_test")
+	var/mob/living/new_body = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	heretic.owner.transfer_to(new_body)
+	TEST_ASSERT(HAS_TRAIT(new_body, TRAIT_NOSLIPWATER), "Новое тело получает защиту от воды.")
+	TEST_ASSERT(HAS_TRAIT(user, TRAIT_NOSLIPWATER), "Независимый источник защиты старого тела сохраняется.")
+	REMOVE_TRAIT(user, TRAIT_NOSLIPWATER, "unit_test")
+	TEST_ASSERT(!HAS_TRAIT(user, TRAIT_NOSLIPWATER), "Источник роли снят со старого тела.")
+	qdel(tide)
+	TEST_ASSERT(!HAS_TRAIT(new_body, TRAIT_NOSLIPWATER), "Удаление знания снимает его защиту.")
+
+/// Волны обновляют короткую лужу без накопления срока и без сокращения уже разлитой воды.
+/datum/unit_test/heretic_tide_puddle_duration/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/turf/open/place = get_turf(heretic.owner.current)
+	place.ClearWet()
+	tide.wet_floor(place)
+	var/datum/component/wet_floor/water = place.GetComponent(/datum/component/wet_floor)
+	TEST_ASSERT_NOTNULL(water, "Магия оставляет компонент мокрого пола.")
+	for(var/pulse_index in 1 to 6)
+		tide.wet_floor(place)
+	TEST_ASSERT_EQUAL(water.max_time_left(), 15 SECONDS, "Повторные волны не складывают время одной лужи.")
+	water.time_left_list["[TURF_WET_WATER]"] = 3 SECONDS
+	tide.wet_floor(place)
+	TEST_ASSERT_EQUAL(water.max_time_left(), 15 SECONDS, "Подсыхающая лужа обновляется до пятнадцати секунд.")
+	place.MakeSlippery(TURF_WET_WATER, min_wet_time = 1 MINUTES)
+	tide.wet_floor(place)
+	TEST_ASSERT_EQUAL(water.max_time_left(), 1 MINUTES, "Чужая вода с большим сроком не высыхает от волны раньше.")

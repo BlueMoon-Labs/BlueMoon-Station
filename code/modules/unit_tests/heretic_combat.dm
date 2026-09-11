@@ -87,19 +87,84 @@
 	var/mob/living/carbon/human/distant = allocate(/mob/living/carbon/human)
 	plume.do_mob_cone_effect(nearby, 1)
 	plume.do_mob_cone_effect(distant, plume.cone_levels)
-	TEST_ASSERT_EQUAL(nearby.reagents.get_reagent_amount(/datum/reagent/eldritch), 5, "У основания облако вводит пять единиц яда.")
-	TEST_ASSERT_EQUAL(distant.reagents.get_reagent_amount(/datum/reagent/eldritch), 1, "На краю конуса остаётся одна единица яда.")
+	TEST_ASSERT_EQUAL(nearby.getToxLoss(), 10, "У основания облако наносит десять отравления.")
+	TEST_ASSERT_EQUAL(distant.getToxLoss(), 2, "На краю конуса остаётся две единицы отравления.")
+	TEST_ASSERT_EQUAL(nearby.reagents.get_reagent_amount(/datum/reagent/eldritch), 0, "Шлейф не добавляет скрытый урон эссенции поверх контроля.")
 	var/datum/antagonist/heretic/ally = allocate_heretic()
 	var/mob/living/ally_body = ally.owner.current
 	var/datum/component/anti_magic/ally_protection = ally_body.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
 	plume.do_mob_cone_effect(ally_body, 1)
 	TEST_ASSERT_EQUAL(ally_protection.charges, 5, "Союзник не расходует защиту на безвредное для него облако.")
-	TEST_ASSERT_EQUAL(ally_body.reagents.get_reagent_amount(/datum/reagent/eldritch), 0, "Союзник не получает яд.")
+	TEST_ASSERT_EQUAL(ally_body.getToxLoss(), 0, "Союзник не получает отравление.")
 	var/mob/living/carbon/human/protected = allocate(/mob/living/carbon/human)
 	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
 	plume.do_mob_cone_effect(protected, 1)
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Враг расходует один заряд защиты.")
-	TEST_ASSERT_EQUAL(protected.reagents.get_reagent_amount(/datum/reagent/eldritch), 0, "Антимагия блокирует яд.")
+	TEST_ASSERT_EQUAL(protected.getToxLoss(), 0, "Антимагия блокирует отравление.")
+
+/// Яд клинка и метки имеет явный урон без эссенции и принудительной тошноты.
+/datum/unit_test/heretic_rust_damage_budget/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/eldritch_knowledge/rust_blade_upgrade/upgrade = allocate(/datum/eldritch_knowledge/rust_blade_upgrade)
+	for(var/strike in 1 to 3)
+		upgrade.on_eldritch_blade(victim, user, TRUE)
+	TEST_ASSERT_EQUAL(victim.getToxLoss(), 15, "Три попадания добавляют ровно 15 отравления.")
+	TEST_ASSERT_EQUAL(victim.reagents.get_reagent_amount(/datum/reagent/eldritch), 0, "Клинок не оставляет эссенцию, повреждающую все типы здоровья.")
+	victim.setToxLoss(0)
+	var/disgust_before = victim.disgust
+	var/datum/status_effect/eldritch/rust/mark = victim.apply_status_effect(/datum/status_effect/eldritch/rust)
+	mark.on_effect()
+	TEST_ASSERT_EQUAL(victim.getToxLoss(), 15, "Метка добавляет 15 отравления.")
+	TEST_ASSERT_EQUAL(victim.disgust, disgust_before, "Метка не добавляет отдельную волну тошноты.")
+
+/// Распад оставляет короткое окно падения и учитывает союзников и антимагию.
+/datum/unit_test/heretic_decay_control/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/antagonist/heretic/ally = allocate_heretic(get_step(user, NORTH))
+	var/obj/item/melee/touch_attack/grasp_of_decay/hand = allocate(/obj/item/melee/touch_attack/grasp_of_decay)
+	hand.afterattack(ally.owner.current, user, TRUE)
+	TEST_ASSERT(!QDELETED(hand), "Касание союзника сохраняет хватку.")
+	TEST_ASSERT(!ally.owner.current.has_status_effect(/datum/status_effect/corrosion_curse/lesser), "Союзник не получает распад.")
+	var/mob/living/carbon/human/protected = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	hand.afterattack(protected, user, TRUE)
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Защита расходует один заряд.")
+	TEST_ASSERT(!protected.IsKnockdown() && !protected.has_status_effect(/datum/status_effect/corrosion_curse/lesser), "Защита блокирует и падение, и проклятие.")
+	qdel(protection)
+	hand = allocate(/obj/item/melee/touch_attack/grasp_of_decay)
+	hand.afterattack(protected, user, TRUE)
+	TEST_ASSERT(protected.AmountKnockdown() > 0 && protected.AmountKnockdown() <= 2 SECONDS, "Успешное касание сбивает не дольше двух секунд.")
+	TEST_ASSERT(protected.has_status_effect(/datum/status_effect/corrosion_curse/lesser), "После падения остаётся распад.")
+
+/mob/living/carbon/human/heretic_decay_probe
+	var/decay_effects = 0
+	var/vomit_effects = 0
+
+/mob/living/carbon/human/heretic_decay_probe/adjustBruteLoss(amount, updating_health = TRUE, forced = FALSE, only_robotic = FALSE, only_organic = TRUE)
+	decay_effects++
+
+/mob/living/carbon/human/heretic_decay_probe/adjustOrganLoss(slot, amount, maximum)
+	decay_effects++
+
+/mob/living/carbon/human/heretic_decay_probe/Dizzy(amount)
+	decay_effects++
+
+/mob/living/carbon/human/heretic_decay_probe/vomit(lost_nutrition = 10, blood = FALSE, stun = TRUE, distance = 1, message = TRUE, vomit_type = VOMIT_TOXIC, harm = TRUE, force = FALSE, purge_ratio = 0.1)
+	decay_effects++
+	vomit_effects++
+
+/// Тик распада не запускает второе, полное проклятие с рвотой.
+/datum/unit_test/heretic_decay_single_effect/Run()
+	var/mob/living/carbon/human/heretic_decay_probe/victim = allocate(/mob/living/carbon/human/heretic_decay_probe, run_loc_floor_bottom_left)
+	var/datum/status_effect/corrosion_curse/lesser/curse = victim.apply_status_effect(/datum/status_effect/corrosion_curse/lesser)
+	victim.decay_effects = 0
+	victim.vomit_effects = 0
+	curse.tick()
+	TEST_ASSERT_EQUAL(victim.decay_effects, 1, "Один тик выбирает ровно один эффект независимо от результата броска.")
+	TEST_ASSERT_EQUAL(victim.vomit_effects, 0, "Слабый распад не вызывает рвоту полного проклятия.")
 
 /// Повторное наложение не оставляет старый обработчик отрисовки или несколько меток одного пути.
 /datum/unit_test/heretic_mark_replacement_cleanup/Run()
@@ -305,13 +370,13 @@
 	servant.silent = TRUE
 	servant.set_master(master)
 	TEST_ASSERT(!needle.mend_servant(user, target), "Целому слуге не требуется реконструкция.")
-	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Неудачные попытки не расходуют биомассу.")
+	TEST_ASSERT_EQUAL(path.combat_resource, initial(path.combat_resource), "Неудачные попытки не расходуют биомассу.")
 	var/obj/item/bodypart/arm = target.get_bodypart(BODY_ZONE_L_ARM)
 	arm.drop_limb()
 	qdel(arm)
 	TEST_ASSERT(needle.mend_servant(user, target), "Игла восстанавливает утраченную конечность своего слуги.")
 	TEST_ASSERT(target.get_bodypart(BODY_ZONE_L_ARM), "Восстановленная рука действительно прикреплена к телу.")
-	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Реконструкция расходует одну биомассу.")
+	TEST_ASSERT_EQUAL(path.combat_resource, initial(path.combat_resource) - 1, "Реконструкция расходует одну биомассу.")
 
 /// Фонарь следует за рукой, а выпадение гасит поле и не позволяет обойти задержку другим предметом.
 /datum/unit_test/heretic_lantern_held_lifecycle/Run()

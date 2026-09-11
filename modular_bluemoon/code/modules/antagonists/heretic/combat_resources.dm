@@ -1,6 +1,6 @@
 /// Запас силы принадлежит знанию и переживает смену тела.
 /datum/eldritch_knowledge
-	var/combat_resource = 1
+	var/combat_resource = 2
 	var/combat_resource_max = 4
 	var/combat_resource_name = ""
 	var/combat_resource_desc = ""
@@ -148,13 +148,74 @@
 	remove_combat_power()
 
 /datum/eldritch_knowledge/base_flesh/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!istype(target, /obj/item/organ) || !isturf(target.loc) || combat_resource >= combat_resource_max)
+	if(!istype(target, /obj/item/organ) || !isturf(target.loc))
 		return FALSE
+	var/turf/target_turf = get_turf(target)
 	gain_combat_resource()
-	new /obj/effect/temp_visual/heretic_oldpath/flesh(get_turf(target))
+	new /obj/effect/temp_visual/heretic_oldpath/flesh(target_turf)
 	playsound(target, 'sound/effects/wounds/blood1.ogg', 50, TRUE)
 	user.visible_message(span_warning("[user] растворяет [target] в багровой дымке."))
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	heretic?.advance_deed("[target.type]", target_turf, silent = TRUE)
 	qdel(target)
+	return TRUE
+
+/datum/eldritch_knowledge/base_ash/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || !proximity_flag || !isturf(target.loc))
+		return FALSE
+	var/turf/target_turf = get_turf(target)
+	if(!extinguish_flame(target))
+		return FALSE
+	heretic.advance_deed(heretic.deed_key_for(target_turf), target_turf)
+	return TRUE
+
+/datum/eldritch_knowledge/base_ash/proc/extinguish_flame(atom/target)
+	if(istype(target, /obj/effect/hotspot))
+		qdel(target)
+		return TRUE
+	if(istype(target, /obj/item/weldingtool))
+		var/obj/item/weldingtool/welder = target
+		if(!welder.welding)
+			return FALSE
+		welder.switched_off()
+		return TRUE
+	if(istype(target, /obj/item/lighter))
+		var/obj/item/lighter/lighter = target
+		if(!lighter.lit)
+			return FALSE
+		lighter.set_lit(FALSE)
+		return TRUE
+	if(istype(target, /obj/item/candle))
+		var/obj/item/candle/candle = target
+		return candle.put_out_candle()
+	if(istype(target, /obj/item/flashlight/flare))
+		var/obj/item/flashlight/flare/flare = target
+		if(!flare.on)
+			return FALSE
+		flare.turn_off()
+		return TRUE
+	if(istype(target, /obj/item/match))
+		var/obj/item/match/match = target
+		if(!match.lit)
+			return FALSE
+		match.matchburnout()
+		return TRUE
+	return FALSE
+
+/datum/eldritch_knowledge/base_void/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	if(!proximity_flag || !istype(target, /obj/machinery/light))
+		return FALSE
+	var/obj/machinery/light/lamp = target
+	if(lamp.status != initial(lamp.status) || !lamp.on)
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic)
+		return FALSE
+	lamp.flicker()
+	lamp.burn_out()
+	user.visible_message(span_warning("[lamp] мигает и гаснет, стекло покрывается инеем."))
+	heretic.advance_deed(heretic.deed_key_for(lamp), get_turf(user))
 	return TRUE
 
 /datum/eldritch_knowledge/base_void/on_life(mob/user)

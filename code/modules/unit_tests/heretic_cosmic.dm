@@ -82,7 +82,7 @@
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina_after, "Короткая защита от повторного срабатывания сохраняет выносливость.")
 	var/burn_before = victim.getFireLoss()
 	TEST_ASSERT(knowledge.pulse(user, collapse = TRUE), "Подготовленное созвездие можно обрушить.")
-	TEST_ASSERT_EQUAL(victim.getFireLoss(), burn_before + 35, "Даже возле двух звёзд цель получает один удар схлопывания.")
+	TEST_ASSERT(abs(victim.getFireLoss() - burn_before - 45) < DAMAGE_PRECISION, "Даже возле двух звёзд цель получает один удар схлопывания.")
 	TEST_ASSERT_EQUAL(length(knowledge.stars), 0, "Схлопывание расходует все звёзды.")
 	TEST_ASSERT_EQUAL(length(knowledge.threads), 0, "Схлопывание убирает ловушки.")
 
@@ -102,7 +102,7 @@
 	TEST_ASSERT(knowledge.pulse(user), "Пульс созвездия должен сработать.")
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/cosmic_tether), "Притяжение оставляет действующее замедление.")
 	TEST_ASSERT(victim.cached_multiplicative_slowdown > original_slowdown, "Притяжение действительно увеличивает задержку движения.")
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 20, "Перемещение пульсом через нить не складывает два удара.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 25, "Перемещение пульсом через нить не складывает два удара.")
 	var/datum/status_effect/cosmic_tether/tether = victim.has_status_effect(/datum/status_effect/cosmic_tether)
 	tether.duration = world.time + 1 SECONDS
 	knowledge.pulse(user)
@@ -204,3 +204,50 @@
 	TEST_ASSERT(!knowledge.stars_unchanged(snapshot), "Перемещение звезды запрещает удар за пределами старого предупреждения.")
 	qdel(star)
 	TEST_ASSERT(!knowledge.stars_unchanged(snapshot), "Разрушение звезды прерывает подготовленное схлопывание.")
+
+/// Начальное действие создаёт рабочую пару и переносит её без ручной очистки лимита.
+/datum/unit_test/heretic_cosmic_manifest_pair/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/destination = get_step(get_step(get_step(user, EAST), EAST), EAST)
+	TEST_ASSERT(knowledge.manifest(destination, user), "Звёзды можно поставить дистанционно одним действием.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Первое применение сразу создаёт две звезды.")
+	TEST_ASSERT(length(knowledge.threads), "Пара сразу соединена действующей нитью.")
+	var/obj/structure/heretic_star/oldest = knowledge.stars[1]
+	var/obj/structure/heretic_star/remaining = knowledge.stars[2]
+	TEST_ASSERT_EQUAL(get_turf(oldest), get_turf(user), "Первая звезда возникает под владельцем.")
+	TEST_ASSERT_EQUAL(get_turf(remaining), destination, "Вторая звезда возникает в выбранном месте.")
+	TEST_ASSERT(knowledge.manifest(get_step(destination, NORTH), user), "Полный лимит не запрещает новую постановку.")
+	TEST_ASSERT(QDELETED(oldest), "Новая звезда заменяет старейшую.")
+	TEST_ASSERT(remaining in knowledge.stars, "Более новая звезда сохраняется.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Замена соблюдает предел созвездия.")
+	var/turf/blocked = get_step(user, NORTH)
+	var/obj/barrier = allocate(/obj, blocked)
+	barrier.density = TRUE
+	TEST_ASSERT(!knowledge.manifest(blocked, user), "Плотное препятствие нельзя выбрать для новой звезды.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Неудачная постановка не уничтожает прежние звёзды.")
+
+/// Во время предупреждения схлопывания можно двигаться, сохраняя проверенную область удара.
+/datum/unit_test/heretic_cosmic_mobile_collapse/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/destination = get_step(get_step(get_step(user, EAST), EAST), EAST)
+	TEST_ASSERT(knowledge.manifest(destination, user), "Пара должна создаться до схлопывания.")
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(destination, NORTH))
+	var/obj/effect/proc_holder/spell/self/cosmic/collapse/spell = allocate(/obj/effect/proc_holder/spell/self/cosmic/collapse)
+	spell.cast(list(user), user)
+	TEST_ASSERT(spell.collapse_pending, "Заклинание оставляет отложенный удар после предупреждения.")
+	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "Предупреждение не наносит мгновенный урон.")
+	user.forceMove(get_step(user, NORTH))
+	var/list/budget = new_wait_budget(3 SECONDS, "схлопывание должно завершиться после предупреждения")
+	while(spell.collapse_pending)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT(abs(victim.getFireLoss() - 45) < 0.001, "Перемещение владельца не отменяет схлопывание предупреждённой области.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 0, "Завершённое схлопывание расходует созвездие.")

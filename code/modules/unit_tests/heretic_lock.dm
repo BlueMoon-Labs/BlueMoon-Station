@@ -100,8 +100,8 @@
 	TEST_ASSERT_EQUAL(victim.getFireLoss(), 0, "Антимагия блокирует ожоги.")
 	qdel(protection)
 	spell.cast(list(victim), user)
-	TEST_ASSERT(abs(victim.getFireLoss() - 15) < 0.001, "Незащищённая цель получает 15 ожогов.")
-	TEST_ASSERT(abs(victim.getStaminaLoss() - 15) < 0.001, "Незащищённая цель получает 15 урона выносливости.")
+	TEST_ASSERT(abs(victim.getFireLoss() - 25) < 0.001, "Незащищённая цель получает 25 ожогов.")
+	TEST_ASSERT(abs(victim.getStaminaLoss() - 20) < 0.001, "Незащищённая цель получает 20 урона выносливости.")
 
 /// Клинок активирует свою метку, добывает ключ и закрывает свободный проход позади противника.
 /datum/unit_test/heretic_lock_mark/Run()
@@ -146,13 +146,35 @@
 	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
 	var/datum/antagonist/heretic/ally = allocate_heretic(target_turf)
 	TEST_ASSERT(knowledge.release_seals(user), "Подготовленные печати размыкаются.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - 20) < 0.001, "Две соседние печати наносят 20 ушибов один раз.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 30) < 0.001, "Две соседние печати наносят 30 ушибов один раз.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия блокирует размыкание.")
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Защита расходуется один раз за всё применение.")
 	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Другой еретик защищён от размыкания.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Владелец не получает урон своих печатей.")
 	TEST_ASSERT_EQUAL(length(knowledge.seals), 0, "Размыкание расходует все выбранные печати.")
 	TEST_ASSERT(!knowledge.release_seals(user), "Без печатей заклинание не срабатывает.")
+
+/// Снятие оплаченной печати возвращает ключ, но бесплатные печати не создают ресурс.
+/datum/unit_test/heretic_lock_reclaim/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/obj/structure/heretic_lock_seal/paid = knowledge.create_seal(get_step(user, EAST), user)
+	TEST_ASSERT_NOTNULL(paid, "Оплаченная печать создана.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Печать расходует ключ.")
+	paid.on_attack_hand(user, INTENT_HELP)
+	TEST_ASSERT(QDELETED(paid), "Ручное снятие убирает преграду.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Потраченный ключ возвращается.")
+	var/obj/structure/heretic_lock_seal/free = knowledge.create_seal(get_step(user, NORTH), user, key_cost = 0)
+	TEST_ASSERT_NOTNULL(free, "Бесплатная печать создана.")
+	free.on_attack_hand(user, INTENT_HELP)
+	TEST_ASSERT(QDELETED(free), "Бесплатную печать тоже можно снять.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Бесплатная печать не даёт лишний ключ.")
+	var/obj/structure/heretic_lock_seal/broken = knowledge.create_seal(get_step(user, SOUTH), user)
+	TEST_ASSERT_NOTNULL(broken, "Ещё одна печать создана.")
+	broken.take_damage(100, BRUTE, MELEE)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Уничтожение противником не возвращает ресурс.")
 
 /// Усиление сохраняет повреждения и срок жизни уже созданных печатей.
 /datum/unit_test/heretic_lock_hinges/Run()

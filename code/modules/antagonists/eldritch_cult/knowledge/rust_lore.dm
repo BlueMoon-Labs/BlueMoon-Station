@@ -24,11 +24,13 @@
 	var/surface_z = surface.z
 	surface.rust_heretic_act()
 	var/turf/changed = locate(surface_x, surface_y, surface_z)
-	if(!was_rust && is_heretic_rust_turf(changed) && COOLDOWN_FINISHED(src, resource_harvest))
-		var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
-		var/datum/eldritch_knowledge/base_rust/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_rust)
-		path?.gain_combat_resource()
-		COOLDOWN_START(src, resource_harvest, 15 SECONDS)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!was_rust && is_heretic_rust_turf(changed) && heretic)
+		heretic.advance_deed(heretic.deed_key_for(changed), changed, silent = TRUE)
+		if(COOLDOWN_FINISHED(src, resource_harvest))
+			var/datum/eldritch_knowledge/base_rust/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_rust)
+			path?.gain_combat_resource()
+			COOLDOWN_START(src, resource_harvest, 15 SECONDS)
 	return was_rust || is_heretic_rust_turf(changed)
 
 /datum/eldritch_knowledge/rust_regen
@@ -50,7 +52,7 @@
 
 /datum/eldritch_knowledge/rust_mark
 	name = "Метка Ржавчины"
-	desc = "Хватка накладывает Метку Ржавчины. Удар ржавым клинком активирует её: жертва получает 15 отравления и сильную тошноту, ржавчина повреждает предметы в руках и верхнюю одежду, а вы получаете нарост для Укоренения. Метка сама не уничтожает снаряжение."
+	desc = "Хватка накладывает Метку Ржавчины. Удар ржавым клинком активирует её: 15 отравления, повреждение предметов в руках и верхней одежды, один нарост для Укоренения. Метка сама не уничтожает снаряжение."
 	gain_text = "Плоть, как и металл, можно научить распаду."
 	cost = 2
 	route = PATH_RUST
@@ -82,19 +84,19 @@
 
 /datum/eldritch_knowledge/rust_blade_upgrade
 	name = "Токсичный клинок"
-	desc = "Ранения ржавым клинком вводят в кровь врага 3 единицы древней эссенции."
+	desc = "Каждое ранение ржавым клинком дополнительно наносит 5 отравления."
 	gain_text = "На острие моего клинка созревает ещё одна жизнь."
 	cost = 2
 	route = PATH_RUST
 
 /datum/eldritch_knowledge/rust_blade_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
-	if(iscarbon(target))
-		var/mob/living/carbon/victim = target
-		victim.reagents?.add_reagent(/datum/reagent/eldritch, 3)
+	if(isliving(target))
+		var/mob/living/victim = target
+		victim.adjustToxLoss(5)
 
 /datum/eldritch_knowledge/spell/entropic_plume
 	name = "Энтропийный шлейф"
-	desc = "Волна ржавчины отравляет, ослепляет и дезориентирует врагов, заставляя их нападать на окружающих. Поверхности на её пути покрываются ржавчиной."
+	desc = "Волна ржавчины ослепляет и дезориентирует врагов, заставляя их нападать на окружающих. Наносит от 10 отравления вблизи до 2 на краю. Поверхности на её пути покрываются ржавчиной."
 	gain_text = "Нет края между моим садом и тем, что ещё не успело стать им."
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/cone/staggered/entropic_plume
@@ -118,7 +120,7 @@
 
 /datum/eldritch_knowledge/rust_fist_upgrade
 	name = "Мерзкая хватка"
-	desc = "Хватка вызывает тошноту и покрывает ржавчиной пол под противником: даже вдали от очага можно создать небольшой плацдарм."
+	desc = "Хватка покрывает ржавчиной пол под противником: даже вдали от очага можно создать небольшой плацдарм для лечения."
 	gain_text = "Под чужими ногами уже пускает корни мой сад."
 	cost = 2
 	route = PATH_RUST
@@ -127,7 +129,6 @@
 	if(!heretic_can_affect(user, target))
 		return FALSE
 	var/mob/living/victim = target
-	victim.adjust_disgust(25)
 	var/turf/floor = get_turf(victim)
 	if(isfloorturf(floor))
 		floor.rust_heretic_act()
@@ -135,19 +136,19 @@
 
 /datum/eldritch_knowledge/spell/grasp_of_decay
 	name = "Хватка распада"
-	desc = "Накладывает на врага распад на 20 секунд: отравление и повреждения органов вынуждают его отступить за медицинской помощью."
+	desc = "Сбивает врага с ног на 2 секунды и накладывает распад на 20 секунд: ушибы, головокружение и повреждения органов. Перезарядка 2 минуты."
 	gain_text = "Ржавчина перестала отличать железо от крови."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
 	route = PATH_RUST
 
 /datum/eldritch_knowledge/final_eldritch/rust_final
 	name = "Клятва Посланника Ржавчины"
-	desc = "После пяти жертв принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение запускает волну ржавчины и даёт устойчивость к среде. На ржавом полу ваше восстановление резко ускоряется; вне его вы уязвимы."
+	desc = "После трёх подношений принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение запускает волну ржавчины и даёт устойчивость к среде. На ржавом полу ваше восстановление резко ускоряется; вне его вы уязвимы."
 	gain_text = "Кузнец оставил свой молот. Сад принимает нового хозяина."
 	cost = 3
-	sacs_needed = 5
+	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	route = PATH_RUST
 	parallax_scene = ANTAG_SCENE_HERETIC_RUST

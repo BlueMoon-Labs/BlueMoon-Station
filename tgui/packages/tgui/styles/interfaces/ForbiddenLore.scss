@@ -169,6 +169,7 @@
     meter::-webkit-meter-bar { background: #6b5b4425; border: 0; border-radius: 0; height: 4px; }
     meter::-webkit-meter-optimum-value { background: var(--accent); border-radius: 0; }
   }
+  &__deedLine p { display: flex; justify-content: space-between; gap: 8px; margin: 0; color: var(--ink); strong { font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; } }
   &__contents h3 { font-size: 14px; text-align: left; margin-top: 22px; margin-bottom: 13px; }
   &__contentsLine { display: flex; width: 100%; align-items: baseline; gap: 7px; border: 0; background: none; padding: 7px 0; font-size: 14px !important; line-height: 1.4; text-align: left; &[aria-pressed='true'] .HereticBook__indexName { text-decoration: underline; text-underline-offset: 3px; } &:hover { color: var(--accent); } }
   &__contentsLine--known { font-style: italic; }

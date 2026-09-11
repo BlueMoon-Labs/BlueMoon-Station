@@ -210,17 +210,17 @@
 	TEST_ASSERT_EQUAL(first.ai_controller.blackboard[BB_AI_CURRENT_TARGET], victim, "Команда должна передавать цель контроллеру.")
 	TEST_ASSERT(first.AttackingTarget(), "Соседняя цель должна принимать ложный удар.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Ложный удар не должен наносить ранения.")
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 8, "Начальное отражение наносит 8 урона выносливости.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 18, "Начальное отражение наносит 18 урона выносливости.")
 	second.AttackingTarget()
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 8, "Вторая копия не должна обходить общий интервал.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 18, "Вторая копия не должна обходить общий интервал.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.upgraded = TRUE
 	second.AttackingTarget()
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 20, "Улучшение увеличивает ложный удар до 12.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 42, "Улучшение увеличивает ложный удар до 24.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.ascension_active = TRUE
 	first.AttackingTarget()
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 40, "Вознесение увеличивает ложный удар до 20.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 72, "Вознесение увеличивает ложный удар до 30.")
 	TEST_ASSERT(!first.CanAttack(user), "Двойник не должен атаковать владельца.")
 	TEST_ASSERT(!first.CanAttack(second), "Двойники не должны атаковать друг друга.")
 	var/mob/living/ally = make_moon_heretic(get_step(victim, NORTH))
@@ -256,14 +256,15 @@
 	knowledge.refracting = TRUE
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = knowledge.create_reflection(user, get_step(user, EAST))
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, NORTHEAST))
+	victim.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
 	reflection.adjustBruteLoss(20)
 	TEST_ASSERT(QDELETED(reflection), "Урон должен разбивать копию.")
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 15, "Разбитая копия должна изматывать ближайшего врага.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 25, "Разбитая копия должна изматывать ближайшего врага.")
 	TEST_ASSERT_EQUAL(user.getStaminaLoss(), 0, "Вспышка не должна изматывать владельца.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.create_reflection(user, get_step(user, EAST))
 	knowledge.clear_reflections()
-	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 15, "Очистка не должна наносить урон вспышкой.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 25, "Очистка не должна наносить урон вспышкой.")
 
 /// Затмение действует вокруг двойников и оставляет видимую копию под покровом владельца.
 /datum/unit_test/heretic_moon_eclipse/Run()
@@ -315,3 +316,42 @@
 		unregister_fake_player(caster)
 	caster = null
 	return ..()
+
+/// Соседняя копия принимает снаряд и расходуется; серия обходит задержку защиты.
+/datum/unit_test/heretic_moon_projectile_interception/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/first = knowledge.create_reflection(user, get_step(user, EAST))
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/second = knowledge.create_reflection(user, get_step(user, NORTH))
+	var/mob/living/attacker = allocate(/mob/living/carbon/human, get_step(get_step(get_step(user, EAST), EAST), EAST))
+	attacker.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, get_turf(attacker))
+	bullet.damage = 20
+	bullet.firer = attacker
+	bullet.starting = get_turf(attacker)
+	TEST_ASSERT(!(user.do_run_block(FALSE, bullet, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Предварительная проверка не жертвует копией.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Проверка оставляет обе копии на месте.")
+	TEST_ASSERT_EQUAL(user.bullet_act(bullet, BODY_ZONE_CHEST), BULLET_ACT_BLOCK, "Копия принимает настоящий снаряд от стрелка с антимагией.")
+	TEST_ASSERT(QDELETED(first), "Перехват уничтожает одну соседнюю копию.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Перехваченный снаряд не ранит владельца.")
+	TEST_ASSERT(!QDELETED(second), "Один снаряд не расходует обе копии.")
+	TEST_ASSERT(!(user.do_run_block(TRUE, bullet, 20, "очередь", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Следующий снаряд проходит до восстановления защиты.")
+	knowledge.next_interception = world.time - 1
+	TEST_ASSERT(user.do_run_block(TRUE, bullet, 20, "снаряд турели", ATTACK_TYPE_PROJECTILE, 0, null) & BLOCK_SUCCESS, "Перехват работает без живого стрелка.")
+	TEST_ASSERT(QDELETED(second), "Повторный перехват расходует оставшуюся копию.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 0, "Израсходованные копии освобождают лимит.")
+	knowledge.on_body_lose(user)
+	TEST_ASSERT(!(user.do_run_block(TRUE, bullet, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Смена тела удаляет обработчик перехвата.")
+
+/// Создание быстро даёт пару копий и позволяет заменить старейшую при полном лимите.
+/datum/unit_test/heretic_moon_create_pair/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/obj/effect/proc_holder/spell/pointed/heretic_moon/create/spell = knowledge.reflection_spell
+	spell.cast(list(get_step(user, EAST)), user)
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Одно применение создаёт атакующую и защитную копии.")
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/oldest = knowledge.reflections[1]
+	TEST_ASSERT(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in get_turf(user), "Защитная копия появляется на месте владельца.")
+	spell.cast(list(get_step(user, NORTH)), user)
+	TEST_ASSERT(QDELETED(oldest), "Новая копия заменяет старейшую без ручного удаления.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Замена сохраняет предел копий.")

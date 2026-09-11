@@ -727,7 +727,6 @@
 
 /datum/status_effect/eldritch/rust/on_effect()
 	owner.adjustToxLoss(15)
-	owner.adjust_disgust(50)
 	var/list/equipment = owner.held_items.Copy()
 	if(ishuman(owner))
 		var/mob/living/carbon/human/victim = owner
@@ -819,7 +818,6 @@
 	duration = 20 SECONDS
 
 /datum/status_effect/corrosion_curse/lesser/tick()
-	. = ..()
 	if(!ishuman(owner))
 		return
 	var/mob/living/carbon/human/H = owner

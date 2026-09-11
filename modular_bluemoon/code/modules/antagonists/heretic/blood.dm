@@ -4,13 +4,18 @@
 #define HERETIC_BLOOD_LINK_LIFETIME (15 SECONDS)
 #define HERETIC_BLOOD_COLLECTION_DELAY (1 SECONDS)
 #define HERETIC_BLOOD_REFUND_LIMIT 8
+#define HERETIC_BLOOD_INITIAL_DEBT 10
+#define HERETIC_BLOOD_STRIKE_DEBT 6
+#define HERETIC_BLOOD_LANCE_DAMAGE 18
+#define HERETIC_BLOOD_LANCE_PULL 2
 
 /datum/heretic_path/blood
 	id = PATH_BLOOD
+	deed_type = /datum/heretic_deed/blood
 	name = "Кровь"
-	desc = "Связывайте врагов кровным долгом. Платите собственными ранами, затем выбирайте между взысканием и возвращением утраченного."
-	strengths = "Выбор должника, перенос накопленной платы, сильное взыскание по удержанной связи."
-	weaknesses = "Каждый долг оплачен здоровьем. Стены, дистанция, антимагия и недееспособность разрывают связь вместе с вложенной силой."
+	desc = "Свяжите противника кровью, притяните к клинку и взыщите долг. Чаша обращает его раны в ваше лечение."
+	strengths = "Бесплатная связь, притяжение с уроном, накопление долга в ближнем бою и лечение за счёт врага."
+	weaknesses = "Стены, дистанция, антимагия и недееспособность разрывают связь. Взыскание предупреждает жертву за секунду."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_blood,
 		/datum/eldritch_knowledge/blood_grasp,
@@ -26,7 +31,7 @@
 
 /datum/eldritch_knowledge/base_blood
 	name = "Первая подпись"
-	desc = "Открывает Путь Крови. Нож и стеклянный осколок создают багровый ланцет. «Кровное обязательство» ценой 4 собственных ушибов связывает врага в пяти клетках на 15 секунд. Повторное применение взыскивает долг: после секунды предупреждения враг получает в полтора раза больше ушибов, чем вложено в связь. Клинок по связанному врагу раз в 6 секунд стоит 3 собственных ушиба и добавляет их в долг. Одна связь, до 20 долга; сама она никогда не атакует."
+	desc = "Нож и стеклянный осколок создают багровый ланцет. Свяжите врага Кровным обязательством или ударом клинка, затем повторно примените Обязательство, чтобы нанести накопленный урон. Попадания клинком увеличивают долг без саморанения. Держитесь рядом: за стеной или дальше пяти клеток связь рвётся."
 	gain_text = "На белом листе появилась капля. Подпись уже была моей."
 	route = PATH_BLOOD
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/shard)
@@ -34,7 +39,7 @@
 	combat_resource = 0
 	combat_resource_max = 20
 	combat_resource_name = "Кровный долг"
-	combat_resource_desc = "Сумма долгов действующих связей. Долг создают только ваши собственные оплаченные ушибы; внешний урон и кровь в организме не учитываются. Связь живёт 15 секунд и рвётся за стенами, дальше пяти клеток, от антимагии или вашей недееспособности. Повторное Обязательство взыскивает выбранный долг после секунды предупреждения. Смерть и смена тела уничтожают все долги."
+	combat_resource_desc = "Связь создаёт 10 долга; клинок, хватка и Натяжение добавляют по 6. Договор добровольно усиливает связи вашими ранами. Повторное Обязательство взыскивает долг после секунды предупреждения. Чаша расходует долг на кражу здоровья. За стеной, дальше пяти клеток, при антимагии или вашей недееспособности связь рвётся."
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	grasp_visual = /obj/effect/temp_visual/heretic_blood/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/blood_grasp.ogg'
@@ -45,8 +50,6 @@
 	var/blood_generation = 0
 	var/link_limit = 1
 	var/debt_cap = 20
-	var/last_brute_loss = 0
-	var/refunding = FALSE
 
 /datum/eldritch_knowledge/base_blood/on_body_gain(mob/living/user)
 	if(!user?.mind || blood_body == user)
@@ -54,7 +57,6 @@
 	if(blood_body)
 		on_body_lose(blood_body)
 	blood_body = user
-	last_brute_loss = user.getBruteLoss()
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_body_deleted))
 	RegisterSignal(user, COMSIG_CARBON_UPDATEHEALTH, PROC_REF(on_health_changed))
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_body_moved))
@@ -74,7 +76,6 @@
 
 /datum/eldritch_knowledge/base_blood/proc/on_health_changed(datum/source)
 	SIGNAL_HANDLER
-	sync_refundable_debt()
 	validate_links()
 
 /datum/eldritch_knowledge/base_blood/proc/on_body_moved(datum/source)
@@ -82,7 +83,6 @@
 	validate_links()
 
 /datum/eldritch_knowledge/base_blood/on_life(mob/user)
-	sync_refundable_debt()
 	validate_links()
 
 /datum/eldritch_knowledge/base_blood/on_death(mob/user)
@@ -98,7 +98,6 @@
 	QDEL_LIST(marks)
 	QDEL_LIST(visuals)
 	combat_resource = 0
-	last_brute_loss = blood_body?.getBruteLoss() || 0
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_blood/proc/can_use(mob/living/user)
@@ -130,27 +129,6 @@
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals.Copy())
 		seal.validate_link()
 
-/datum/eldritch_knowledge/base_blood/proc/sync_refundable_debt()
-	if(QDELETED(blood_body))
-		return
-	var/current_damage = blood_body.getBruteLoss()
-	var/healed = max(0, last_brute_loss - current_damage)
-	last_brute_loss = current_damage
-	if(refunding || !healed)
-		return
-	var/credit_changed = FALSE
-	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
-		var/removed_credit = min(seal.refundable_debt, healed)
-		seal.refundable_debt -= removed_credit
-		if(seal.refundable_debt < DAMAGE_PRECISION)
-			seal.refundable_debt = 0
-		healed -= removed_credit
-		credit_changed ||= removed_credit > 0
-		if(!healed)
-			break
-	if(credit_changed)
-		notify_resource_changed()
-
 /datum/eldritch_knowledge/base_blood/proc/pay_health(mob/living/user, amount)
 	if(!can_use(user) || amount <= 0)
 		return 0
@@ -164,14 +142,12 @@
 		damage_multiplier = (damage_multiplier * wound_multiplier) ** 2
 	if(user.health <= HERETIC_BLOOD_HEALTH_RESERVE + amount * damage_multiplier)
 		return 0
-	sync_refundable_debt()
 	var/damage_before = user.getBruteLoss()
 	var/expected_generation = blood_generation
 	user.adjustBruteLoss(amount, forced = TRUE, only_organic = FALSE)
 	if(QDELETED(src) || QDELETED(user) || blood_generation != expected_generation || !can_use(user))
 		return 0
-	last_brute_loss = user.getBruteLoss()
-	return max(0, last_brute_loss - damage_before)
+	return max(0, user.getBruteLoss() - damage_before)
 
 /datum/eldritch_knowledge/base_blood/proc/update_capacity(ignore_vigor = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(blood_body)
@@ -187,7 +163,6 @@
 		qdel(seals[length(seals)])
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
 		seal.debt = min(seal.debt, debt_cap)
-		seal.refundable_debt = min(seal.refundable_debt, seal.debt)
 	update_debt()
 
 /datum/eldritch_knowledge/base_blood/proc/update_debt()
@@ -202,7 +177,7 @@
 	data["value"] = round(combat_resource, 0.1)
 	data["description"] = "[combat_resource_desc] Связей: [length(seals)]/[link_limit], предел долга каждой — [debt_cap]."
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
-		data["description"] += " [html_encode(seal.owner.name)] — долг [round(seal.debt, 0.1)], возврат [round(seal.refundable_debt, 0.1)][seal.collecting ? " (взыскание)" : ""]."
+		data["description"] += " [html_encode(seal.owner.name)] — долг [round(seal.debt, 0.1)][seal.collecting ? " (взыскание)" : ""]."
 	return data
 
 /datum/eldritch_knowledge/base_blood/on_mark_detonated(mob/living/user, mob/living/target)
@@ -235,7 +210,6 @@
 			continue
 		var/portion = min(remaining, debt_cap - seal.debt)
 		seal.debt += portion
-		seal.refundable_debt += portion
 		remaining -= portion
 		if(renew)
 			seal.expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
@@ -255,14 +229,10 @@
 		return FALSE
 	if(!heretic_can_affect(user, victim))
 		return TRUE
-	var/payment = pay_health(user, 4)
-	if(!payment || !valid_victim(user, victim))
-		return FALSE
 	var/datum/status_effect/heretic_blood_seal/seal = victim.apply_status_effect(/datum/status_effect/heretic_blood_seal, src)
 	if(QDELETED(seal))
 		return FALSE
-	seal.debt = min(payment, debt_cap)
-	seal.refundable_debt = seal.debt
+	seal.debt = min(HERETIC_BLOOD_INITIAL_DEBT, debt_cap)
 	update_debt()
 	playsound(victim, 'modular_bluemoon/sound/heretic/blood_release.ogg', 45, TRUE)
 	return TRUE
@@ -272,8 +242,19 @@
 		return
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal?.blood_ref?.resolve() == src && invest(user, list(seal), 3))
+	if(!seal && release(user, victim))
+		seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	if(add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT))
 		COOLDOWN_START(src, resource_harvest, HERETIC_BLOOD_HARVEST_TIME)
+
+/datum/eldritch_knowledge/base_blood/proc/add_debt(datum/status_effect/heretic_blood_seal/seal, amount, renew = FALSE)
+	if(QDELETED(seal) || seal.blood_ref?.resolve() != src || seal.collecting || !seal.validate_link())
+		return FALSE
+	seal.debt = min(debt_cap, seal.debt + amount)
+	if(renew)
+		seal.expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
+	update_debt()
+	return TRUE
 
 /datum/eldritch_knowledge/base_blood/proc/lance(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -281,9 +262,20 @@
 	if(QDELETED(required) || !valid_victim(user, victim))
 		return FALSE
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	if(seal?.blood_ref?.resolve() != src || !invest(user, list(seal), 6))
+	if(seal && (seal.blood_ref?.resolve() != src || seal.collecting))
 		return FALSE
-	if(!victim.anchored && !victim.buckled && get_dist(user, victim) > 1)
+	if(!heretic_can_affect(user, victim))
+		qdel(seal)
+		return TRUE
+	if(!seal && release(user, victim))
+		seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE)
+	victim.adjustBruteLoss(HERETIC_BLOOD_LANCE_DAMAGE)
+	if(!can_use(user) || QDELETED(victim) || victim.stat == DEAD)
+		return TRUE
+	for(var/pull_step in 1 to HERETIC_BLOOD_LANCE_PULL)
+		if(victim.anchored || victim.buckled || get_dist(user, victim) <= 1 || !valid_victim(user, victim))
+			break
 		step_towards(victim, user)
 	var/obj/effect/temp_visual/heretic_blood/lance/visual = new(get_turf(victim), src)
 	visual.setDir(get_dir(victim, user))
@@ -321,11 +313,8 @@
 		if(donor == chosen || donor.collecting || !donor.validate_link())
 			continue
 		var/transferred = min(donor.debt, debt_cap - chosen.debt)
-		var/credit = min(donor.refundable_debt, transferred)
 		chosen.debt += transferred
-		chosen.refundable_debt += credit
 		donor.debt -= transferred
-		donor.refundable_debt -= credit
 		if(donor.debt <= 0)
 			qdel(donor)
 	chosen.expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
@@ -341,16 +330,17 @@
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	if(seal?.blood_ref?.resolve() != src || seal.collecting || !seal.validate_link())
 		return FALSE
-	sync_refundable_debt()
-	var/payment = min(HERETIC_BLOOD_REFUND_LIMIT, seal.debt, seal.refundable_debt, user.getBruteLoss())
+	var/payment = min(HERETIC_BLOOD_REFUND_LIMIT, seal.debt, user.getBruteLoss())
 	if(payment <= 0)
 		return FALSE
 	seal.debt -= payment
-	seal.refundable_debt -= payment
-	refunding = TRUE
+	var/expected_generation = blood_generation
+	var/damage_before = victim.getBruteLoss()
+	victim.adjustBruteLoss(payment)
+	if(QDELETED(src) || !can_use(user) || blood_generation != expected_generation || QDELETED(victim))
+		return TRUE
+	payment = min(payment, max(0, victim.getBruteLoss() - damage_before))
 	user.adjustBruteLoss(-payment, forced = TRUE, only_organic = FALSE)
-	sync_refundable_debt()
-	refunding = FALSE
 	update_debt()
 	new /obj/effect/temp_visual/heretic_blood/pact(get_turf(user), src)
 	return TRUE
@@ -367,7 +357,6 @@
 	var/datum/beam/link_beam
 	var/mutable_appearance/seal_overlay
 	var/debt = 0
-	var/refundable_debt = 0
 	var/expires_at
 	var/collecting = FALSE
 	var/collection_ready_at
@@ -396,7 +385,7 @@
 	owner.update_icon()
 	link_beam = new(blood.blood_body, owner, 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi', "blood_link", INFINITY, HERETIC_BLOOD_RANGE + 1, /obj/effect/ebeam, null)
 	link_beam.Draw()
-	to_chat(owner, span_userdanger("От вас к [blood.blood_body] тянется кровяная жила. Пока еретик ранит себя, ваш долг растёт! Связь порвётся за преградой или дальше пяти клеток; сама по себе она не ударит."))
+	to_chat(owner, span_userdanger("От вас к [blood.blood_body] тянется кровяная жила. Его клинок и хватка увеличивают ваш долг! Скройтесь за преградой или отойдите дальше пяти клеток, чтобы разорвать связь."))
 	return TRUE
 
 /datum/status_effect/heretic_blood_seal/proc/update_seal_overlay(atom/source, list/overlays)
@@ -461,11 +450,10 @@
 		qdel(src)
 		return FALSE
 	var/datum/eldritch_knowledge/upgrade = heretic.get_knowledge(/datum/eldritch_knowledge/blood_upgrade)
-	var/damage = debt * (QDELETED(upgrade) ? 1.5 : 1.75)
+	var/damage = debt * (QDELETED(upgrade) ? 2 : 2.25)
 	var/mob/living/victim = owner
 	var/mob/living/user = blood.blood_body
 	debt = 0
-	refundable_debt = 0
 	victim.adjustBruteLoss(damage)
 	if(!QDELETED(victim))
 		new /obj/effect/temp_visual/heretic_blood/burst(get_turf(victim), blood)
@@ -491,7 +479,6 @@
 		UnregisterSignal(owner, list(COMSIG_LIVING_DEATH, COMSIG_MOVABLE_MOVED, COMSIG_ATOM_UPDATE_OVERLAYS))
 		owner.update_icon()
 	debt = 0
-	refundable_debt = 0
 	return ..()
 
 /datum/status_effect/heretic_blood_seal/Destroy()
@@ -503,7 +490,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_blood_seal
 	name = "Кровное обязательство"
-	desc = "Еретик вкладывает в связь собственные раны. У него есть 15 секунд, чтобы начать взыскание, затем вы получите секунду предупреждения. Стены, дистанция больше пяти клеток, антимагия и недееспособность еретика рвут связь без урона."
+	desc = "Попадания еретика накапливают ваш долг. Взыскание предупреждает за секунду. Стены, дистанция больше пяти клеток, антимагия и недееспособность еретика рвут связь; без взыскания она исчезнет через 15 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi'
 	icon_state = "blood_mark"
 
@@ -539,21 +526,30 @@
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
 	var/datum/status_effect/heretic_blood_seal/seal = owner.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	if(blood?.valid_victim(blood.blood_body, owner) && seal?.blood_ref?.resolve() == blood && !seal.collecting && seal.validate_link())
+		blood.add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT)
 		seal.expires_at = min(seal.expires_at + 5 SECONDS, world.time + 20 SECONDS)
 	return ..()
 
 /obj/item/melee/sickly_blade/blood
 	name = "crimson lancet"
-	desc = "Багровое лезвие с раздвоенным остриём. Внутри рукояти натянута тонкая жила; каждый удар по должнику открывает рану в ладони владельца."
+	desc = "Багровое лезвие с раздвоенным остриём. Тонкая жила внутри рукояти пульсирует в такт чужому сердцу."
 	icon = 'modular_bluemoon/icons/obj/heretic_blood.dmi'
 	icon_state = "blood_blade"
 	item_state = "blood_blade"
 	route = PATH_BLOOD
 	mark_type = /datum/status_effect/eldritch/blood
 
+/obj/item/melee/sickly_blade/blood/attack(mob/living/target, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/status_effect/heretic_blood_seal/seal = target.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	if(blood && seal?.blood_ref?.resolve() == blood && !heretic_can_affect(user, target, chargecost = 0))
+		qdel(seal)
+	return ..()
+
 /obj/item/heretic_path_relic/blood_relic
 	name = "clotted chalice"
-	desc = "Чаша с неподвижной каплей над краем. Держа её в руке, укажите своего связанного должника: до 8 долга сгорит, возвращая только ещё не залеченные ушибы, которыми была оплачена связь. Взыскание и возвращение одной платы несовместимы."
+	desc = "Чаша с неподвижной каплей над краем. Укажите своего должника: до 8 долга превратится в ушибы врага и столько же лечения ваших ушибов. Требует раненого владельца; перезарядка — 20 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_blood.dmi'
 	icon_state = "blood_relic"
 
@@ -632,7 +628,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	name = "Кровное обязательство"
-	desc = "Первое применение платит 4 собственных ушиба и связывает врага на 15 секунд. Повторное взыскивает выбранный долг после секунды предупреждения: 1,5 ушиба за единицу долга. Стены, дистанция больше пяти клеток, антимагия и ваша недееспособность рвут связь без урона."
+	desc = "Бесплатно свяжите врага на 15 секунд и создайте 10 долга. Повторное применение через секунду наносит по 2 ушиба за единицу долга. Клинок добавляет 6 долга раз в 6 секунд. Преграды, дистанция больше пяти клеток и антимагия рвут связь."
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release/can_target(atom/target, mob/user, silent)
 	if(!..())
@@ -650,7 +646,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance
 	name = "Натянуть жилу"
-	desc = "Только по своей действующей связи: вложите 6 собственных ушибов в долг и подтяните должника на клетку. Закрепление и пристёгивание мешают перемещению. Не наносит урона цели и не запускает взыскание."
+	desc = "Нанесите врагу 18 ушибов и притяните на две клетки. Создаёт кровную связь и добавляет 6 долга. Не требует собственного здоровья. Преграды, антимагия, закрепление и пристёгивание защищают от притяжения."
 	action_icon_state = "blood_lance"
 	charge_max = 15 SECONDS
 
@@ -660,7 +656,7 @@
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return seal?.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood) && !seal.collecting
+	return !seal || (seal.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood) && !seal.collecting)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -724,9 +720,33 @@
 	if(!blood?.reckoning(user))
 		revert_cast(user)
 
+/datum/eldritch_knowledge/base_blood/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || !proximity_flag || !istype(target, /obj/effect/decal/cleanable/blood) || !isturf(target.loc))
+		return FALSE
+	var/obj/effect/decal/cleanable/blood/stain = target
+	var/own_dna
+	if(iscarbon(user))
+		var/mob/living/carbon/carbon_user = user
+		own_dna = carbon_user.dna?.unique_enzymes
+	var/list/signatures = list()
+	for(var/dna_key in stain.blood_DNA)
+		if(dna_key == "color" || dna_key == "blendmode" || dna_key == own_dna)
+			continue
+		signatures += dna_key
+	if(!length(signatures))
+		return FALSE
+	for(var/index in 1 to length(signatures))
+		if(!heretic.advance_deed(signatures[index], null, silent = index < length(signatures)))
+			continue
+		stain.name = heretic.deed.trace_name
+		stain.desc = heretic.deed.trace_desc
+		return TRUE
+	return FALSE
+
 /datum/eldritch_knowledge/blood_grasp
 	name = "Красная ладонь"
-	desc = "Хватка Мансуса создаёт кровную связь ценой 4 собственных ушибов, если у вас есть свободное место. По уже связанному должнику вкладывает ещё 4 и продлевает связь до 15 секунд. Полная или уже взыскиваемая связь не требует новой платы."
+	desc = "Хватка Мансуса бесплатно создаёт кровную связь. По уже связанному врагу добавляет 6 долга и обновляет срок связи до 15 секунд."
 	gain_text = "В моей ладони забился пульс, которого прежде не было."
 	cost = 1
 	route = PATH_BLOOD
@@ -738,11 +758,11 @@
 		return FALSE
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
-	return seal ? blood.invest(user, list(seal), 4, renew = TRUE) : blood.release(user, victim)
+	return seal ? blood.add_debt(seal, HERETIC_BLOOD_STRIKE_DEBT, renew = TRUE) : blood.release(user, victim)
 
 /datum/eldritch_knowledge/spell/blood_lance
 	name = "Натянуть жилу"
-	desc = "Открывает Натянуть жилу: вложите 6 собственных ушибов в действующую связь и подтяните её должника на клетку. На несвязанную цель не действует; не наносит мгновенного урона. Закрепление и пристёгивание мешают перемещению. Перезарядка — 15 секунд."
+	desc = "Натянуть жилу наносит врагу в пяти клетках 18 ушибов и притягивает на две клетки. Создаёт кровную связь и добавляет 6 долга. Работает без подготовки и саморанения; стены и антимагия защищают цель. Перезарядка — 15 секунд."
 	gain_text = "Я потянул за нить, и на другом конце сбился чужой шаг."
 	cost = 1
 	route = PATH_BLOOD
@@ -750,7 +770,7 @@
 
 /datum/eldritch_knowledge/blood_mark
 	name = "Метка отсрочки"
-	desc = "Хватка оставляет метку на 15 секунд. Ранящий удар багровым ланцетом разбивает её и продлевает вашу действующую связь с этой целью на 5 секунд, максимум до 20 секунд от текущего момента. Не создаёт долга и не добавляет урона."
+	desc = "Хватка оставляет метку на 15 секунд. Удар багровым ланцетом разбивает её, добавляет 6 долга и продлевает связь на 5 секунд, максимум до 20 секунд от текущего момента."
 	gain_text = "Подпись побледнела. Я обвёл её ещё раз."
 	cost = 2
 	route = PATH_BLOOD
@@ -776,7 +796,7 @@
 
 /datum/eldritch_knowledge/blood_relic
 	name = "Чаша возвращённого"
-	desc = "Стеклянный стакан и лист серебра создают чашу. Укажите ею своего должника в пяти клетках: до 8 его долга сгорит, возвращая собственные ещё не залеченные ушибы, которыми была оплачена связь. Чужой урон не даёт права на возврат; начатое взыскание исключает его. Одна чаша, перезарядка 20 секунд."
+	desc = "Стеклянный стакан и лист серебра создают чашу. Держа её в руке, укажите связанного врага: потратьте до 8 долга, чтобы нанести столько же ушибов и вылечить свои. Лечение зависит от реального урона; здоровый владелец не может пить. Одна чаша, перезарядка — 20 секунд."
 	gain_text = "На дне осталась одна капля. Я узнал её вкус."
 	cost = 1
 	route = PATH_BLOOD
@@ -791,7 +811,7 @@
 
 /datum/eldritch_knowledge/blood_upgrade
 	name = "Право взыскателя"
-	desc = "Взыскание наносит 1,75 ушиба за каждую единицу действительно оплаченного долга вместо 1,5. Сам клинок не получает дополнительного урона; сила остаётся в связи до вашего решения."
+	desc = "Взыскание наносит по 2,25 ушиба за единицу долга вместо 2. Полная начальная связь нанесёт 45 ушибов."
 	gain_text = "Внизу страницы обнаружилась строка, которой прежде не было."
 	cost = 2
 	route = PATH_BLOOD
@@ -837,7 +857,7 @@
 	desc = "Открывает Взыскать долги: начните взыскание всех действующих связей одновременно. Каждая жертва получает секунду предупреждения и может порвать собственную связь. Посторонние не затрагиваются. Перезарядка — 30 секунд."
 	gain_text = "Книга закрылась. Долги остались снаружи."
 	cost = 2
-	sacs_needed = 3
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_BLOOD
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_blood/reckoning
 
@@ -853,7 +873,7 @@
 /datum/eldritch_knowledge/final_eldritch/blood_final
 	parallax_scene = ANTAG_SCENE_HERETIC_BLOOD
 	name = "Венценосец Багровой Чаши"
-	desc = "После пяти назначенных душ принесите на руну три человеческих трупа. Станция узнает место обряда и получит 30 секунд, чтобы помешать. Вознесение позволяет держать три связи по 30 долга и снижает получаемые ушибы и ожоги на четверть. «Кровный приговор» раз в 30 секунд переносит долги других связей в выбранную до предела 30, затем начинает её взыскание. Перенос сохраняет общий долг, а жертва получает секунду предупреждения."
+	desc = "После трёх назначенных душ принесите на руну три человеческих трупа. Станция узнает место обряда и получит 30 секунд, чтобы помешать. Вознесение позволяет держать три связи по 30 долга и снижает получаемые ушибы и ожоги на четверть. «Кровный приговор» раз в 30 секунд переносит долги других связей в выбранную до предела 30, затем начинает её взыскание. Перенос сохраняет общий долг, а жертва получает секунду предупреждения."
 	gain_text = "Из чаши поднялся венец. Все подписи на его ободе были моими."
 	route = PATH_BLOOD
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -888,3 +908,7 @@
 #undef HERETIC_BLOOD_LINK_LIFETIME
 #undef HERETIC_BLOOD_COLLECTION_DELAY
 #undef HERETIC_BLOOD_REFUND_LIMIT
+#undef HERETIC_BLOOD_INITIAL_DEBT
+#undef HERETIC_BLOOD_STRIKE_DEBT
+#undef HERETIC_BLOOD_LANCE_DAMAGE
+#undef HERETIC_BLOOD_LANCE_PULL
