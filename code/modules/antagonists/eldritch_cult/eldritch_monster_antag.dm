@@ -6,6 +6,8 @@
 /proc/heretic_conversion_block_reason(mob/living/carbon/human/target)
 	if(!ishuman(target))
 		return "Мансус не находит в этом теле плоти, за которую можно ухватиться."
+	if(HAS_TRAIT(target, TRAIT_HUSK) || target.heretic_flesh_raised)
+		return "Плоть этого тела уже истощена. Мансус не поднимет его вновь."
 	if(IS_HERETIC_MONSTER(target))
 		return "Это тело уже поднято чужой волей."
 	if(IS_HERETIC(target))

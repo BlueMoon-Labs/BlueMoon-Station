@@ -60,7 +60,7 @@
 		var/mob/living/victim = target
 		if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 			return
-		if(victim.anti_magic_check())
+		if(victim.check_magic_resistance())
 			to_chat(user, span_warning("Защита от магии отталкивает хватку."))
 			return ..()
 	var/use_charge = FALSE
@@ -236,8 +236,10 @@
 	range = 6
 
 /obj/effect/proc_holder/spell/pointed/blood_siphon/cast(list/targets, mob/user)
-	if(!length(targets) || !heretic_can_affect(user, targets[1]))
+	if(!length(targets) || !can_target(targets[1], user, TRUE))
 		revert_cast(user)
+		return
+	if(!heretic_can_affect(user, targets[1]))
 		return
 	var/mob/living/victim = targets[1]
 	playsound(user, 'sound/effects/wounds/blood3.ogg', 65, TRUE)
@@ -334,9 +336,12 @@
 	if(!length(targets) || !can_target(targets[1], user))
 		revert_cast(user)
 		return FALSE
-	var/hit_target = FALSE
+	var/attempted_hit = FALSE
 	for(var/mob/living/carbon/human/victim in view(1, targets[1]))
-		if(!heretic_can_affect(user, victim) || !length(victim.bodyparts))
+		if(!length(victim.bodyparts) || victim.stat == DEAD || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+			continue
+		attempted_hit = TRUE
+		if(!heretic_can_affect(user, victim))
 			continue
 		var/obj/item/bodypart/limb = pick(victim.bodyparts)
 		var/datum/wound/slash/moderate/wound = new
@@ -344,8 +349,7 @@
 		limb.generic_bleedstacks += 3
 		victim.adjustBruteLoss(20)
 		new /obj/effect/temp_visual/cleave(victim.drop_location())
-		hit_target = TRUE
-	if(!hit_target)
+	if(!attempted_hit)
 		revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/cleave/can_target(atom/target, mob/user, silent)
@@ -386,7 +390,7 @@
 		return
 	if(ishuman(target))
 		var/mob/living/carbon/human/tar = target
-		if(tar.anti_magic_check())
+		if(tar.check_magic_resistance())
 			tar.visible_message(span_danger("Заклинание отскакивает от [target]!"), span_danger("Заклинание отскакивает от вас!"))
 			return ..()
 
@@ -425,7 +429,7 @@
 		return
 	if(ishuman(target))
 		var/mob/living/carbon/human/tar = target
-		if(tar.anti_magic_check())
+		if(tar.check_magic_resistance())
 			tar.visible_message(span_danger("Заклинание отскакивает от [target]!"), span_danger("Заклинание отскакивает от вас!"))
 			return ..()
 
@@ -451,18 +455,19 @@
 
 /obj/effect/proc_holder/spell/pointed/nightwatchers_rite/cast(list/targets, mob/user)
 	playsound(user, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 80, TRUE)
+	var/list/magic_checks = list()
 	for(var/X in targets)
 		var/T
 		T = line_target(-25, range, X, user)
-		INVOKE_ASYNC(src, PROC_REF(fire_line), user,T)
+		INVOKE_ASYNC(src, PROC_REF(fire_line), user, T, magic_checks)
 		T = line_target(10, range, X, user)
-		INVOKE_ASYNC(src, PROC_REF(fire_line), user,T)
+		INVOKE_ASYNC(src, PROC_REF(fire_line), user, T, magic_checks)
 		T = line_target(0, range, X, user)
-		INVOKE_ASYNC(src, PROC_REF(fire_line), user,T)
+		INVOKE_ASYNC(src, PROC_REF(fire_line), user, T, magic_checks)
 		T = line_target(-10, range, X, user)
-		INVOKE_ASYNC(src, PROC_REF(fire_line), user,T)
+		INVOKE_ASYNC(src, PROC_REF(fire_line), user, T, magic_checks)
 		T = line_target(25, range, X, user)
-		INVOKE_ASYNC(src, PROC_REF(fire_line), user,T)
+		INVOKE_ASYNC(src, PROC_REF(fire_line), user, T, magic_checks)
 	return ..()
 
 /obj/effect/proc_holder/spell/pointed/nightwatchers_rite/proc/line_target(offset, range, atom/at , atom/user)
@@ -477,16 +482,20 @@
 		T = check
 	return (getline(user, T) - get_turf(user))
 
-/obj/effect/proc_holder/spell/pointed/nightwatchers_rite/proc/fire_line(atom/source, list/turfs)
+/obj/effect/proc_holder/spell/pointed/nightwatchers_rite/proc/fire_line(atom/source, list/turfs, list/magic_checks = list())
 	var/list/hit_list = list()
 	for(var/turf/T in turfs)
 		if(QDELETED(src) || QDELETED(source) || istype(T, /turf/closed))
 			break
 
 		for(var/mob/living/L in T.contents)
-			if(L in hit_list || !heretic_can_affect(source, L))
+			if(L in hit_list)
 				continue
 			hit_list += L
+			if(!(L in magic_checks))
+				magic_checks[L] = heretic_can_affect(source, L)
+			if(!magic_checks[L])
+				continue
 			L.adjustFireLoss(8)
 			L.adjust_fire_stacks(1)
 			L.IgniteMob()
@@ -841,7 +850,7 @@
 
 /obj/effect/proc_holder/spell/cone/staggered/entropic_plume/do_mob_cone_effect(mob/living/victim, level)
 	. = ..()
-	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim) || victim.anti_magic_check())
+	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim) || victim.check_magic_resistance())
 		return
 	victim.apply_status_effect(STATUS_EFFECT_AMOK)
 	victim.apply_status_effect(STATUS_EFFECT_CLOUDSTRUCK, (level*10))
@@ -976,7 +985,7 @@
 	playsound(user, 'sound/magic/voidpull.ogg', 75, TRUE)
 	new /obj/effect/temp_visual/voidin(user.drop_location())
 	for(var/mob/living/victim in view(3, user))
-		if(!heretic_can_affect(user, victim) || !isturf(victim.loc) || victim.anchored || victim.buckled)
+		if(!isturf(victim.loc) || victim.anchored || victim.buckled || !heretic_can_affect(user, victim))
 			continue
 		if(get_turf(victim) != get_turf(user))
 			var/turf/departure = get_turf(victim)
@@ -1027,7 +1036,7 @@
 	if(!..() || !isliving(target) || !isturf(target.loc) || !isturf(user.loc))
 		return FALSE
 	var/mob/living/victim = target
-	return victim != user && victim.stat != DEAD && !victim.anchored && !victim.buckled && !victim.anti_magic_check(chargecost = 0) && !is_blocked_turf(get_turf(victim), TRUE) && !is_blocked_turf(get_turf(user), TRUE)
+	return victim != user && victim.stat != DEAD && !victim.anchored && !victim.buckled && !victim.check_magic_resistance(chargecost = 0) && !is_blocked_turf(get_turf(victim), TRUE) && !is_blocked_turf(get_turf(user), TRUE)
 
 /obj/effect/proc_holder/spell/aoe_turf/domain_expansion
 	name = "Бесконечная пустота"

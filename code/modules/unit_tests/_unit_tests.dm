@@ -146,6 +146,7 @@
 #include "heretic_knowledge.dm"
 #include "heretic_passives.dm"
 #include "heretic_rituals.dm"
+#include "heretic_regressions.dm"
 #include "heretic_combat.dm"
 #include "heretic_blade.dm"
 #include "heretic_moon.dm"

@@ -122,10 +122,9 @@
 		else
 			user.adjustBruteLoss(rand(force/2,force))
 		return
-	var/can_trigger = heretic_can_affect(user, target)
 	var/damage_before = target.getBruteLoss() + target.getFireLoss()
 	. = ..()
-	if(!can_trigger || QDELETED(target) || QDELETED(src) || target.getBruteLoss() + target.getFireLoss() <= damage_before)
+	if(QDELETED(target) || QDELETED(src) || target.getBruteLoss() + target.getFireLoss() <= damage_before || !heretic_can_affect(user, target))
 		return
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	if(!heretic)

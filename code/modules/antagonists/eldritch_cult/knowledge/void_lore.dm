@@ -34,10 +34,14 @@
 	route = PATH_VOID
 
 /datum/eldritch_knowledge/cold_snap/on_body_gain(mob/living/user)
+	if(!user)
+		return
 	ADD_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
 	ADD_TRAIT(user, TRAIT_NOBREATH, REF(src))
 
 /datum/eldritch_knowledge/cold_snap/on_body_lose(mob/living/user)
+	if(!user)
+		return
 	REMOVE_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
 	REMOVE_TRAIT(user, TRAIT_NOBREATH, REF(src))
 
@@ -98,7 +102,7 @@
 	COOLDOWN_DECLARE(blink_cooldown)
 
 /datum/eldritch_knowledge/void_blade_upgrade/on_ranged_attack_eldritch_blade(atom/target, mob/user, click_parameters)
-	if(!isliving(user) || !heretic_can_affect(user, target) || !COOLDOWN_FINISHED(src, blink_cooldown))
+	if(!isliving(user) || !COOLDOWN_FINISHED(src, blink_cooldown) || !heretic_can_affect(user, target, chargecost = 0))
 		return
 	var/mob/living/victim = target
 	var/mob/living/living_user = user

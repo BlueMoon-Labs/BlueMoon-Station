@@ -8,8 +8,8 @@
 	item_flags = NOBLUDGEON
 	var/knowledge_type
 
-/obj/item/heretic_relic/proc/get_path(mob/living/user, chargecost = 1)
-	if(!isliving(user) || user.incapacitated() || !user.is_holding(src) || user.anti_magic_check(chargecost = chargecost))
+/obj/item/heretic_relic/proc/get_path(mob/living/user, chargecost = 0)
+	if(!isliving(user) || user.incapacitated() || !user.is_holding(src) || user.check_magic_resistance(chargecost = chargecost))
 		return null
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	return heretic?.get_knowledge(knowledge_type)
@@ -32,7 +32,7 @@
 		capture_fire(user, target)
 
 /obj/item/heretic_relic/censer/proc/capture_fire(mob/living/user, mob/living/target)
-	if(!get_path(user) || !user.Adjacent(target) || !target.on_fire || target.anti_magic_check() || stored_fire >= max_fire)
+	if(!get_path(user) || stored_fire >= max_fire || !user.Adjacent(target) || !target.on_fire || target.check_magic_resistance())
 		return FALSE
 	target.ExtinguishMob()
 	stored_fire++
@@ -153,7 +153,7 @@
 	knowledge_type = /datum/eldritch_knowledge/base_flesh
 
 /obj/item/heretic_relic/suture_needle/proc/can_mend(mob/living/user, mob/living/carbon/target)
-	if(!get_path(user) || !iscarbon(target) || !user.Adjacent(target) || target.stat == DEAD || target.anti_magic_check())
+	if(!get_path(user) || !iscarbon(target) || !user.Adjacent(target) || target.stat == DEAD || target.check_magic_resistance(chargecost = 0))
 		return FALSE
 	var/datum/antagonist/heretic_monster/servant = target.mind?.has_antag_datum(/datum/antagonist/heretic_monster)
 	return servant?.master?.owner == user.mind

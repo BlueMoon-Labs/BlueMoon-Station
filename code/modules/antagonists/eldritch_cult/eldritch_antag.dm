@@ -33,7 +33,7 @@
 /datum/antagonist/heretic/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)
 	to_chat(owner, span_eldritch_big("Вы — еретик!"))
-	to_chat(owner, span_eldritch("Призовите кодекс и выберите один из семи путей. Выбор необратим. В кодексе есть описание всех способностей, рецепты и руководство."))
+	to_chat(owner, span_eldritch("Призовите кодекс и выберите свой путь. Выбор необратим. В кодексе есть описание всех способностей, рецепты и руководство."))
 	to_chat(owner, span_notice("Начальное число разломов на станции: [HERETIC_INFLUENCE_INITIAL_COUNT]. Затем появляется ещё один каждые [DisplayTimeText(HERETIC_INFLUENCE_INTERVAL)]. Лимит исследований за раунд: [HERETIC_INFLUENCE_LIMIT]. Чередуйте поиск с охотой: живое сердце назначает и отслеживает цель. Доставьте её живой и без сознания на руну: на время канала она погрузится в стазис, после Мансуса вернётся живой, а вы получите два очка знаний и одно очко побочных знаний. Каждая душа принимается только один раз."))
 	owner.announce_objectives()
 
@@ -264,7 +264,10 @@
 	if(!sac_targetted.len)
 		parts += "Отсутствуют."
 	else
-		parts += sac_targetted.Join(",")
+		var/list/target_names = list()
+		for(var/target_ref in sac_targetted)
+			target_names += sac_targetted[target_ref]
+		parts += target_names.Join(", ")
 	parts += "<b>Совершённые жертвоприношения:</b>"
 	if(!actually_sacced.len)
 		parts += "<span class='redtext'>Отсутствуют!</span>"
@@ -304,10 +307,10 @@
 	var/list/parts = list()
 	parts += ..()
 	parts += "<b>Текущие цели живого сердца:</b>"
-	if(!sac_targetted.len)
+	if(!hunt_target)
 		parts += "Отсутствует."
 	else
-		parts += sac_targetted.Join(",")
+		parts += hunt_target.current?.real_name || hunt_target.name
 	parts += "<b>Принесённые в жертву цели:</b>"
 	if(!actually_sacced.len)
 		parts += "Отсутствует."

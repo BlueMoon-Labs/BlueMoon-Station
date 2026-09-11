@@ -3,6 +3,9 @@
 #define HERETIC_SERVANT_LIMIT 4
 #define HERETIC_ASCENDED_FLESH_SERVANT_LIMIT 8
 
+/mob/living/carbon/human
+	var/heretic_flesh_raised = FALSE
+
 /datum/antagonist/heretic/proc/can_add_servant()
 	var/servant_limit = ascended && selected_path == PATH_FLESH ? HERETIC_ASCENDED_FLESH_SERVANT_LIMIT : HERETIC_SERVANT_LIMIT
 	var/list/servants = list()
@@ -41,7 +44,7 @@
 
 /datum/eldritch_knowledge/flesh_grasp
 	name = "Хватка Плоти"
-	desc = "Хватка поднимает мёртвого человека с присутствующей душой в гуля за 1 биомассу. Гуль имеет 50 здоровья, выглядит иссохшим и подчиняется вам. Одновременно можно удерживать двух гулей. Защита разума, синтетики и скелеты не поддаются обращению."
+	desc = "Хватка поднимает мёртвого человека с присутствующей душой в гуля за 1 биомассу. Гуль имеет 50 здоровья, выглядит иссохшим и подчиняется вам. Одновременно можно удерживать двух гулей. Защита разума, синтетики и скелеты не поддаются обращению. Истощённые и уже поднятые тела не подходят."
 	gain_text = "Одна рука не соберёт тело. Значит, нужны новые руки."
 	cost = 1
 	route = PATH_FLESH
@@ -83,7 +86,7 @@
 
 /datum/eldritch_knowledge/flesh_ghoul
 	name = "Незавершённый ритуал"
-	desc = "Мёртвый человек, мак и 2 биомассы создают Безмолвного мертвеца: слугу с 90 здоровья, лишённого голоса. Одновременно можно удерживать двух. Если душа тела не возвращается, роль предлагается призракам."
+	desc = "Мёртвый человек, мак и 2 биомассы создают Безмолвного мертвеца: слугу с 90 здоровья, лишённого голоса. Одновременно можно удерживать двух. Если душа тела не возвращается, роль предлагается призракам. Истощённые и уже поднятые тела не подходят."
 	gain_text = "Плоть услышала меня. Голос ей больше не понадобится."
 	cost = 1
 	required_atoms = list(/mob/living/carbon/human, /obj/item/reagent_containers/food/snacks/grown/poppy)
@@ -135,6 +138,7 @@
 		return
 	if(ishuman(body))
 		var/mob/living/carbon/human/human_body = body
+		human_body.heretic_flesh_raised = TRUE
 		human_body.become_husk(REF(src))
 
 /datum/antagonist/heretic_monster/ghoul/remove_innate_effects(mob/living/mob_override)
@@ -153,6 +157,7 @@
 	ADD_TRAIT(body, TRAIT_MUTE, REF(src))
 	if(ishuman(body))
 		var/mob/living/carbon/human/human_body = body
+		human_body.heretic_flesh_raised = TRUE
 		human_body.become_husk(REF(src))
 
 /datum/antagonist/heretic_monster/voiceless_dead/remove_innate_effects(mob/living/mob_override)

@@ -9,7 +9,7 @@
 
 /// Завеса сначала предупреждает; повторное прикосновение в течение полуминуты ранит.
 /obj/effect/broken_illusion/proc/touch_mansus(mob/living/user, telekinetic = FALSE)
-	if(QDELETED(user) || IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || user.anti_magic_check())
+	if(QDELETED(user) || IS_HERETIC(user) || IS_HERETIC_MONSTER(user) || user.check_magic_resistance())
 		return FALSE
 	if(user.has_status_effect(/datum/status_effect/heretic_rift_exposure))
 		user.adjustBruteLoss(20)

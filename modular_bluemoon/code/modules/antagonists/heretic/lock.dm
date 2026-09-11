@@ -135,13 +135,20 @@
 	var/opened = FALSE
 	if(istype(target, /obj/machinery/door/airlock))
 		var/obj/machinery/door/airlock/door = target
+		var/was_locked = door.locked
 		door.unbolt()
 		opened = door.open(2)
+		if(!opened && was_locked && !QDELETED(door))
+			door.bolt()
 	else
 		var/obj/structure/closet/closet = target
+		var/was_locked = closet.locked
 		closet.locked = FALSE
 		opened = closet.open(user)
-		closet.update_icon()
+		if(!QDELETED(closet))
+			if(!opened)
+				closet.locked = was_locked
+			closet.update_icon()
 	if(!opened)
 		return FALSE
 	if(QDELETED(src) || !valid_user(user) || generation != court_generation)
@@ -475,6 +482,7 @@
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lock/court
 
 /datum/eldritch_knowledge/final_eldritch/lock_final
+	parallax_scene = ANTAG_SCENE_HERETIC_LOCK
 	name = "Отпереть Лабиринт"
 	gain_text = "Привратник поклонился и исчез. На его месте осталась связка ключей. Теперь Дом ждал моего решения."
 	desc = "После пяти назначенных душ принесите три человеческих трупа. Обряд раскроет своё место станции и даст 30 секунд на вмешательство. Вознесение увеличивает предел до 16 печатей и 6 ключей, а урон Размыкания — до 30. «Дом без стен» за 2 секунды окружает вас печатями по краю квадрата 5×5 и восполняет ключи; перезарядка 60 секунд."

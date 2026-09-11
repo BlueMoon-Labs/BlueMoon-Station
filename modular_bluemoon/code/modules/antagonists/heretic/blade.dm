@@ -109,7 +109,7 @@
 	duel_target = WEAKREF(target)
 
 /datum/eldritch_knowledge/base_blade/on_eldritch_blade(atom/target, mob/living/user, proximity_flag, click_parameters)
-	if(!proximity_flag || !held_blade(user) || !heretic_can_affect(user, target))
+	if(!proximity_flag || !held_blade(user) || !heretic_can_affect(user, target, chargecost = 0))
 		return
 	if(world.time >= riposte_until || riposte_target?.resolve() != target || !spend_combat_resource())
 		return
@@ -233,7 +233,7 @@
 	if((attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN | ATTACK_TYPE_PARRY_COUNTERATTACK)) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED)) || !source.Adjacent(attacker))
 		return BLOCK_NONE
 	var/datum/eldritch_knowledge/base_blade/knowledge = knowledge_ref?.resolve()
-	if(!knowledge?.held_blade(source) || !heretic_can_affect(source, attacker))
+	if(!knowledge?.held_blade(source) || !heretic_can_affect(source, attacker, chargecost = 0))
 		return BLOCK_NONE
 	if(master_stance && knowledge.duel_target?.resolve() != attacker)
 		return BLOCK_NONE

@@ -89,10 +89,14 @@
 	var/list/trait_list = list(TRAIT_RESISTHEAT,TRAIT_NOFIRE)
 
 /datum/eldritch_knowledge/flame_immunity/on_body_gain(mob/living/user)
+	if(!user)
+		return
 	for(var/X in trait_list)
 		ADD_TRAIT(user, X, REF(src))
 
 /datum/eldritch_knowledge/flame_immunity/on_body_lose(mob/living/user)
+	if(!user)
+		return
 	for(var/trait in trait_list)
 		REMOVE_TRAIT(user, trait, REF(src))
 

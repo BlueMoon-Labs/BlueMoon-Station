@@ -81,7 +81,7 @@
 	if(!isliving(target) || target == user || QDELETED(target))
 		return FALSE
 	var/mob/living/victim = target
-	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.anti_magic_check(chargecost = chargecost)
+	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(chargecost = chargecost)
 
 /datum/eldritch_knowledge/base_ash
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
@@ -235,7 +235,7 @@
 	new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(user))
 	for(var/mob/living/servant in view(5, user))
 		var/datum/antagonist/heretic_monster/monster = servant.mind?.has_antag_datum(/datum/antagonist/heretic_monster)
-		if(!monster || monster.master?.owner != user.mind || servant.stat == DEAD || servant.anti_magic_check())
+		if(!monster || monster.master?.owner != user.mind || servant.stat == DEAD || servant.check_magic_resistance())
 			continue
 		servant.adjustBruteLoss(-25)
 		servant.adjustFireLoss(-25)
@@ -409,7 +409,7 @@
 	if(!visible)
 		visible = view(radius, src)
 	for(var/mob/living/ally in visible)
-		if(ally.stat == DEAD || !(ally.loc in field_turfs) || !istype(get_turf(ally), /turf/open/floor/plating/rust) || ally.anti_magic_check(chargecost = 0))
+		if(ally.stat == DEAD || !(ally.loc in field_turfs) || !istype(get_turf(ally), /turf/open/floor/plating/rust) || ally.check_magic_resistance(chargecost = 0))
 			continue
 		var/datum/antagonist/heretic_monster/monster = ally.mind?.has_antag_datum(/datum/antagonist/heretic_monster)
 		if(ally != user && monster?.master?.owner != user.mind)

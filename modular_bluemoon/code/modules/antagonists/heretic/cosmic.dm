@@ -222,8 +222,8 @@
 			nearest = star
 	return nearest
 
-/datum/eldritch_knowledge/base_cosmic/proc/can_affect(mob/living/victim)
-	return isliving(victim) && victim.stat != DEAD && astronomer?.current?.stat != DEAD && IS_HERETIC(astronomer?.current) && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.anti_magic_check()
+/datum/eldritch_knowledge/base_cosmic/proc/can_affect(mob/living/victim, chargecost = 0)
+	return isliving(victim) && victim.stat != DEAD && astronomer?.current?.stat != DEAD && IS_HERETIC(astronomer?.current) && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(chargecost = chargecost)
 
 /datum/eldritch_knowledge/base_cosmic/proc/cross_thread(mob/living/victim)
 	if(!isliving(victim) || victim.has_status_effect(/datum/status_effect/cosmic_tether) || !can_affect(victim))
@@ -272,10 +272,8 @@
 				victims |= victim
 	playsound(user, 'modular_bluemoon/sound/heretic/cosmic_expansion.ogg', collapse ? 50 : 35, TRUE)
 	for(var/mob/living/victim as anything in victims)
-		if(!can_affect(victim))
-			continue
 		var/obj/structure/heretic_star/star = nearest_star(victim, 2)
-		if(!star)
+		if(!star || !can_affect(victim, chargecost = 1))
 			continue
 		if(collapse)
 			victim.adjustFireLoss(35)
@@ -552,7 +550,7 @@
 	if(!isliving(target))
 		return FALSE
 	var/mob/living/victim = target
-	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim) || victim.anti_magic_check())
+	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim) || victim.check_magic_resistance())
 		return FALSE
 	victim.apply_status_effect(/datum/status_effect/eldritch/cosmic)
 	return TRUE

@@ -28,6 +28,10 @@
 #define ANTAG_SCENE_HERETIC_BLADE "heretic_blade"
 #define ANTAG_SCENE_HERETIC_MOON "heretic_moon"
 #define ANTAG_SCENE_HERETIC_COSMIC "heretic_cosmic"
+#define ANTAG_SCENE_HERETIC_LOCK "heretic_lock"
+#define ANTAG_SCENE_HERETIC_TIDE "heretic_tide"
+#define ANTAG_SCENE_HERETIC_GLASS "heretic_glass"
+#define ANTAG_SCENE_HERETIC_BLOOD "heretic_blood"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
@@ -76,6 +80,22 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_HERETIC_COSMIC = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic,
 		/atom/movable/screen/parallax_layer/donor/tauceti_3,
+	),
+	ANTAG_SCENE_HERETIC_LOCK = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_lock,
+		/atom/movable/screen/parallax_layer/goon/dust_sparse,
+	),
+	ANTAG_SCENE_HERETIC_TIDE = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_tide,
+		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
+	),
+	ANTAG_SCENE_HERETIC_GLASS = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_glass,
+		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
+	),
+	ANTAG_SCENE_HERETIC_BLOOD = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_blood,
+		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
 	),
 ))
 
@@ -163,3 +183,19 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic
 	color = "#237d91"
 	alpha = 70
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_lock
+	color = "#b99335"
+	alpha = 65
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_tide
+	color = "#166c80"
+	alpha = 75
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_glass
+	color = "#70a6a2"
+	alpha = 60
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_blood
+	color = "#990e27"
+	alpha = 80

@@ -115,7 +115,7 @@
 	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/cosmic_tether), "После снятия притяжения его замедление исчезает.")
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_moon_opening), "Чужое замедление сохраняется.")
 	TEST_ASSERT(!knowledge.cross_thread(victim), "Антимагия защищает от следующего пересечения.")
-	TEST_ASSERT_EQUAL(protection.charges, 4, "Действующая нить расходует один заряд защиты.")
+	TEST_ASSERT_EQUAL(protection.charges, 5, "Пересечение постоянной нити не расходует заряды защиты.")
 	qdel(protection)
 	TEST_ASSERT(knowledge.cross_thread(victim), "После снятия защиты нить снова срабатывает.")
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/cosmic_tether), "Само пересечение тоже замедляет цель.")

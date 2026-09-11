@@ -90,8 +90,8 @@
 		return FALSE
 	return TRUE
 
-/datum/eldritch_knowledge/base_moon/proc/create_reflection(mob/living/user, turf/target, list/visible)
-	if(length(reflections) >= reflection_limit() || !valid_reflection_turf(target, user, visible))
+/datum/eldritch_knowledge/base_moon/proc/create_reflection(mob/living/user, turf/target, list/visible, replace_oldest = FALSE)
+	if((!replace_oldest && length(reflections) >= reflection_limit()) || !valid_reflection_turf(target, user, visible))
 		return null
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/existing as anything in reflections)
 		if(get_turf(existing) == target)
@@ -100,7 +100,10 @@
 	var/datum/eldritch_knowledge/moon_shroud/shroud = heretic?.get_knowledge(/datum/eldritch_knowledge/moon_shroud)
 	var/lifetime = shrouded && shroud ? shroud.passive_values[shroud.passive_level] : 45 SECONDS
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = new(target, src, user, lifetime)
+	if(QDELETED(reflection))
+		return null
 	reflections += reflection
+	trim_reflections()
 	notify_resource_changed()
 	new /obj/effect/temp_visual/heretic_path_feedback(target, "cosmic_ring", "#d6e2ff", 9)
 	playsound(target, 'modular_bluemoon/sound/heretic/moon_reflection.ogg', 30, TRUE)
@@ -380,19 +383,20 @@
 /obj/effect/proc_holder/spell/self/heretic_moon/eclipse/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!knowledge)
+		revert_cast(user)
 		return
 	var/list/visible = view(2, user)
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in knowledge.reflections)
 		if(reflection.z == user.z && get_dist(user, reflection) <= HERETIC_MOON_RANGE)
 			visible |= view(2, reflection)
+	if(!knowledge.create_reflection(user, get_turf(user), replace_oldest = TRUE))
+		revert_cast(user)
+		return
 	for(var/mob/living/victim in visible)
 		if(!heretic_can_affect(user, victim))
 			continue
 		victim.blur_eyes(6)
 		victim.confused = max(victim.confused, 3)
-	if(length(knowledge.reflections) >= knowledge.reflection_limit())
-		qdel(knowledge.reflections[1])
-	knowledge.create_reflection(user, get_turf(user))
 	user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 4 SECONDS)
 	for(var/turf/tile in visible)
 		new /obj/effect/temp_visual/heretic_path_feedback(tile, "cosmic_carpet", "#b0c1e5", 6)

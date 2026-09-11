@@ -155,12 +155,15 @@
 	heretic.silent = TRUE
 	user_mind.antag_datums = list(heretic)
 	heretic.test_return_turf = run_loc_floor_top_right
+	var/datum/antagonist/heretic/other_heretic = allocate_heretic()
+	heretic.set_hunt_target(other_heretic.owner)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/mind/victim_mind = new
 	allocated += victim_mind
 	victim_mind.current = victim
 	victim.mind = victim_mind
 	heretic.set_hunt_target(victim_mind)
+	other_heretic.set_hunt_target(victim_mind)
 	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, run_loc_floor_bottom_left)
 	TEST_ASSERT(heart.bind(user_mind), "Сердце должно привязаться к еретику.")
 	TEST_ASSERT(!heart.bind(victim_mind), "Похищение сердца не передаёт чужую охоту.")
@@ -182,6 +185,10 @@
 	TEST_ASSERT(heretic.complete_hunt_ritual(user, selected, run_loc_floor_bottom_left), "Ритуал должен принять назначенную душу.")
 	TEST_ASSERT_EQUAL(heretic.knowledge_points, points_before + 2, "Жертва даёт два знания без наличия кодекса.")
 	TEST_ASSERT_EQUAL(heretic.total_sacrifices, 1, "Счётчик жертв увеличивается один раз.")
+	TEST_ASSERT_NULL(heretic.sac_targetted[REF(victim_mind)], "Принесённая душа удалена из невыполненных назначений.")
+	TEST_ASSERT_EQUAL(length(heretic.sac_targetted), 1, "Предыдущая непринесённая цель остаётся в истории.")
+	TEST_ASSERT_NULL(other_heretic.hunt_target, "Общая душа освобождает охоту другого еретика.")
+	TEST_ASSERT(other_heretic.sac_targetted[REF(victim_mind)], "Чужое жертвоприношение не стирает собственное невыполненное назначение.")
 	var/datum/heretic_mansus_visit/visit = GLOB.heretic_mansus_visits[victim_mind]
 	TEST_ASSERT_NOTNULL(visit, "Обряд отправляет жертву в отдельное посещение Мансуса.")
 	allocated += visit
@@ -254,12 +261,12 @@
 	var/timers_before = length(protection.active_timers)
 	TEST_ASSERT(timers_before > 0, "У защиты должен быть настоящий таймер истечения заряда.")
 	for(var/check_index in 1 to 3)
-		TEST_ASSERT(victim.anti_magic_check(chargecost = 0), "Проверка видит действующую защиту.")
+		TEST_ASSERT(victim.check_magic_resistance(chargecost = 0), "Проверка видит действующую защиту.")
 	TEST_ASSERT_EQUAL(protection.charges, 5, "Проверка не расходует заряд.")
 	TEST_ASSERT_EQUAL(reactions, 0, "Проверка не вызывает реакцию предмета.")
 	TEST_ASSERT_EQUAL(charge_updates, 0, "Проверка не объявляет изменение зарядов.")
 	TEST_ASSERT_EQUAL(length(protection.active_timers), timers_before, "Проверка не добавляет таймер истечения.")
-	TEST_ASSERT(victim.anti_magic_check(), "Настоящая атака тоже блокируется.")
+	TEST_ASSERT(victim.check_magic_resistance(), "Настоящая атака тоже блокируется.")
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Настоящая атака расходует один заряд.")
 	TEST_ASSERT_EQUAL(reactions, 1, "Настоящая атака вызывает реакцию.")
 	TEST_ASSERT_EQUAL(charge_updates, 1, "Изменение заряда сообщается один раз.")

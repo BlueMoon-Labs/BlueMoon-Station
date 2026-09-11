@@ -34,10 +34,9 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 
 /datum/antagonist/heretic/proc/set_hunt_target(datum/mind/new_target)
 	hunt_target = new_target
-	sac_targetted.Cut()
 	if(new_target?.current)
 		GLOB.reality_smash_track.track_history_mind(new_target)
-		sac_targetted += new_target.current.real_name
+		sac_targetted[REF(new_target)] = new_target.current.real_name
 	refresh_book_ui()
 
 /datum/antagonist/heretic/proc/ensure_hunt_target(mob/living/user, force_replace = FALSE)
@@ -139,6 +138,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return FALSE
 	GLOB.heretic_sacrificed_minds |= soul
 	sacrificed_minds |= soul
+	sac_targetted -= REF(soul)
 	actually_sacced += victim.real_name
 	total_sacrifices++
 	if(total_sacrifices >= HERETIC_THREAT_SACRIFICES)
@@ -149,6 +149,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	for(var/datum/antagonist/heretic/other_heretic in GLOB.antagonists)
 		if(other_heretic.hunt_target == soul)
 			other_heretic.set_hunt_target(null)
+			to_chat(other_heretic.owner, span_warning("Назначенная вам душа уже принята Мансусом. Живое сердце готово выбрать новую цель."))
 	user.log_message("принёс [key_name(victim)] в жертву Мансусу", LOG_ATTACK)
 	to_chat(user, span_notice("Мансус принял подношение. Жертва пройдёт через Дом и вернётся на станцию меньше чем через минуту. Вы получили 2 очка знаний и 1 очко побочных знаний. Сердце готово выбрать следующую цель."))
 	return TRUE

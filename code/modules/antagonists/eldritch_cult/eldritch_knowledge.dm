@@ -96,10 +96,15 @@
 	for(var/obj/item/anchor in atoms)
 		if(!length(anchor.fingerprints) || is_type_in_list(anchor, required_atoms))
 			continue
-		fingerprints = anchor.fingerprints.Copy()
+		fingerprints |= anchor.fingerprints
 		selected_atoms |= anchor
-		return TRUE
-	return FALSE
+	return length(fingerprints) > 0
+
+/datum/eldritch_knowledge/curse/cleanup_atoms(list/atoms)
+	for(var/obj/item/anchor in atoms.Copy())
+		if(!is_type_in_list(anchor, required_atoms))
+			atoms -= anchor
+	return ..()
 
 /datum/eldritch_knowledge/curse/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/list/choices = list()
@@ -113,7 +118,7 @@
 		return FALSE
 	var/choice = tgui_input_list(user, "Выберите цель проклятия", "Проклятие", choices)
 	var/mob/living/victim = choices[choice]
-	if(!choice || QDELETED(victim) || !ritual_still_valid(user, atoms, get_turf(loc)) || victim.anti_magic_check())
+	if(!choice || QDELETED(victim) || !ritual_still_valid(user, atoms, get_turf(loc)) || victim.check_magic_resistance())
 		return FALSE
 	end_curse(victim)
 	curse(victim)

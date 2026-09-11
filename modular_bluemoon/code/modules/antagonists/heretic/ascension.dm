@@ -6,23 +6,36 @@
 	var/ascension_message
 	var/ascension_omen
 	var/ascension_sound
+	var/ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
 	var/ascension_aura_state
+	var/ascension_aura_color
 	var/ascension_aura_height = 12
+	var/ascension_aura_scale = 1
+	var/ascension_aura_background = FALSE
 
 /datum/heretic_path/ash
 	ascension_title = "Пепельный Лорд"
 	ascension_message = "Пепел поднимается к потолку. Последний фонарь вновь зажжён."
 	ascension_omen = "Свет на мгновение кажется пламенем. Запах пепла проникает даже под герметичный шлем."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_ash.ogg'
-	ascension_aura_state = "smoke"
+	ascension_aura_icon = 'icons/effects/turf_fire.dmi'
+	ascension_aura_state = "red_big"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 4
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/rust
 	ascension_title = "Посланник Ржавчины"
 	ascension_message = "Сталь отзывается протяжным стоном. Ржавые холмы приняли нового хозяина."
 	ascension_omen = "На языке появляется привкус железа. Кажется, за каждой стеной скребутся корни."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_rust.ogg'
-	ascension_aura_state = "realitycrack"
+	ascension_aura_icon = 'icons/effects/eldritch.dmi'
+	ascension_aura_state = "cloud_swirl"
+	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/flesh
 	ascension_title = "Повелитель Ночи"
@@ -46,7 +59,8 @@
 	ascension_omen = "На краю зрения смыкаются лезвия. Слышен звон удара, который ещё никто не нанёс."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blade.ogg'
 	ascension_aura_state = "ring_leader_effect"
-	ascension_aura_height = 18
+	ascension_aura_height = 0
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/moon
 	ascension_title = "Владыка Обратной Луны"
@@ -61,16 +75,22 @@
 	ascension_message = "Звёздные карты утратили смысл. Новое небо раскрылось внутри станции."
 	ascension_omen = "Между знакомыми предметами проступают незнакомые звёзды. Расстояние до потолка кажется бесконечным."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_cosmic.ogg'
-	ascension_aura_state = "cosmic_ring"
-	ascension_aura_height = 24
+	ascension_aura_state = "cosmic_presence"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/lock
 	ascension_title = "Хранитель Последнего Порога"
 	ascension_message = "Все замки отвечают одним щелчком. За знакомыми дверями проступает дом без выхода."
 	ascension_omen = "Вы на мгновение забываете, с какой стороны двери стоите. Из замочной скважины доносится чужой вдох."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_lock.ogg'
-	ascension_aura_state = "lock_aura"
-	ascension_aura_height = 18
+	ascension_aura_state = "lock_presence"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/tide
 	ascension_title = "Владыка Бездонного Прилива"
@@ -98,7 +118,10 @@
 	ascension_omen = "На языке остаётся вкус железа. На мгновение кажется, что под кожей начертаны незнакомые письмена."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blood.ogg'
 	ascension_aura_state = "blood_aura"
-	ascension_aura_height = 15
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /// Объявление появляется только после подбора и резервирования настоящих компонентов.
 /datum/eldritch_knowledge/final_eldritch/proc/begin_ascension_ritual(mob/living/user, obj/effect/eldritch/rune)
@@ -177,9 +200,16 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 	if(!path)
 		return INITIALIZE_HINT_QDEL
+	icon = path.ascension_aura_icon
 	icon_state = path.ascension_aura_state
-	color = path.book_tint
+	color = path.ascension_aura_color || path.book_tint
 	pixel_y = path.ascension_aura_height
+	transform = matrix() * path.ascension_aura_scale
+	if(path.ascension_aura_background)
+		plane = GAME_PLANE
+		layer = FLOAT_LAYER
+		vis_flags |= VIS_INHERIT_PLANE | VIS_UNDERLAY
+		appearance_flags |= KEEP_APART | PIXEL_SCALE
 	if(path_id == PATH_BLADE)
 		for(var/blade_index in 1 to 8)
 			var/blade_angle = blade_index * 45
@@ -188,7 +218,7 @@
 			blade.pixel_x = round(sin(blade_angle) * 18)
 			blade.pixel_y = round(cos(blade_angle) * 18)
 			add_overlay(blade)
-	animate(src, pixel_y = pixel_y + 3, alpha = 220, time = 2 SECONDS, loop = -1, easing = SINE_EASING)
+	animate(src, pixel_y = pixel_y + (path.ascension_aura_background ? 0 : 3), alpha = 220, time = 2 SECONDS, loop = -1, easing = SINE_EASING)
 	animate(pixel_y = path.ascension_aura_height, alpha = 175, time = 2 SECONDS, easing = SINE_EASING)
 
 /obj/effect/temp_visual/heretic_ascension_echo
@@ -203,8 +233,9 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 	if(!path)
 		return INITIALIZE_HINT_QDEL
+	icon = path.ascension_aura_icon
 	icon_state = path.ascension_aura_state
-	color = path.book_tint
+	color = path.ascension_aura_color || path.book_tint
 	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = 12, time = duration)
 
 /// Короткое знамение не меняет зрение, здоровье, управление или постоянный цвет клиента.
@@ -242,9 +273,9 @@
 	clear_echo()
 	if(owner.client && owner.stat != DEAD)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
-		personal_echo = image('modular_bluemoon/icons/obj/heretic_feedback.dmi', owner, path.ascension_aura_state, ABOVE_LIGHTING_LAYER)
+		personal_echo = image(path.ascension_aura_icon, owner, path.ascension_aura_state, ABOVE_LIGHTING_LAYER)
 		personal_echo.plane = ABOVE_LIGHTING_PLANE
-		personal_echo.color = path.book_tint
+		personal_echo.color = path.ascension_aura_color || path.book_tint
 		personal_echo.alpha = 180
 		echo_viewer_ref = REF(owner.client)
 		owner.client.images += personal_echo
