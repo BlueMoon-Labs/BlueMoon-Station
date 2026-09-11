@@ -1127,7 +1127,7 @@
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
-	icon_state = "melatonin_disco_[adjusted ? "d_":""][breast_size]"
+	icon_state = "melatonin_disco_[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()
 
