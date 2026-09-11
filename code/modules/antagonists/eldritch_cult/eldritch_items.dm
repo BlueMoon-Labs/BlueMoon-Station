@@ -39,7 +39,7 @@
 		return
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	if(heretic.hunt_target?.current)
-		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Подношение принимается без сознания; убивать цель не требуется.")
+		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Живую цель достаточно связать, оглушить или сбить с ног: награда — 2 очка знаний и 1 побочное. Труп назначенной цели даёт только 1 очко знаний.")
 	else
 		. += span_notice("Сожмите сердце, чтобы выбрать цель. Для жертвоприношения положите сердце рядом с целью на руну трансмутации.")
 
@@ -75,8 +75,10 @@
 	var/direction = get_dir(user_turf, target_turf)
 	balloon_alert(user, distance ? "[distance] кл., [dir2text_ru(direction)]" : "прямо здесь")
 	to_chat(user, span_notice("[target.real_name]: [distance <= 15 ? "совсем рядом" : distance <= 31 ? "поблизости" : "далеко"], [dir2text_ru(direction)]."))
-	if(target.stat >= UNCONSCIOUS)
-		to_chat(user, span_notice("Цель без сознания. Перенесите её и живое сердце к руне трансмутации."))
+	if(target.stat == DEAD)
+		to_chat(user, span_notice("Цель погибла. Её труп принимается за 1 очко знаний без побочного; тело останется на месте. Принесите его и своё живое сердце к руне."))
+	else if(heretic.hunt_target_ready(target))
+		to_chat(user, span_notice("Цель готова к обряду. Перенесите её и живое сердце к руне трансмутации, сохранив живой."))
 	var/datum/hud/user_hud = user.hud_used
 	if(!user_hud || !islist(user_hud.infodisplay))
 		return
@@ -144,12 +146,16 @@
 			entry.on_eldritch_blade(target, user, TRUE, null)
 
 /obj/item/melee/sickly_blade/attack_self(mob/user)
-	var/turf/safe_turf = find_safe_turf(zlevels = z, extended_safety_checks = TRUE)
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		if(do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
+		var/turf/origin = get_turf(user)
+		if(!origin)
+			return
+		var/turf/safe_turf = is_station_level(origin.z) ? find_heretic_station_turf() : find_safe_turf(zlevels = list(origin.z), extended_safety_checks = TRUE, dense_atoms = FALSE)
+		if(safe_turf && do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
 			to_chat(user,"<span class='warning'>Вы разбиваете [src], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
 		else
-			to_chat(user,"<span class='warning'>Вы разбиваете [src], но на зов никто не отвечает.</span>")
+			to_chat(user, span_warning("Безопасный путь не найден. Клинок остаётся целым."))
+			return
 	else
 		to_chat(user,"<span class='warning'>Вы разбиваете [src].</span>")
 	playsound(src, "shatter", 70, TRUE) //copied from the code for smashing a glass sheet onto the ground to turn it into a shard

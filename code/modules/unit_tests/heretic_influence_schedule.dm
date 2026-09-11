@@ -14,6 +14,23 @@
 		tracker.spawn_locations += floor
 	return tracker
 
+/// Сеть переживает потерю тела одного еретика и продолжает обслуживать остальных.
+/datum/unit_test/heretic_influence_bodyless_mind/Run()
+	var/datum/reality_smash_tracker/tracker = allocate_influence_tracker()
+	var/datum/antagonist/heretic/first = allocate_heretic()
+	tracker.AddMind(first.owner)
+	var/mob/living/old_body = first.owner.current
+	first.owner.current = null
+	old_body.mind = null
+	var/datum/antagonist/heretic/second = allocate_heretic()
+	tracker.AddMind(second.owner)
+	TEST_ASSERT_EQUAL(length(tracker.smashes), HERETIC_INFLUENCE_INITIAL_COUNT, "Потеря тела не мешает обновлению сети.")
+	for(var/obj/effect/reality_smash/influence as anything in tracker.smashes)
+		TEST_ASSERT(second.owner in influence.minds, "Второй еретик добавлен ко всем разломам.")
+		TEST_ASSERT_NULL(influence.visible_clients[first.owner], "Бестелесный разум не удерживает старый клиент.")
+	first.owner.transfer_to(old_body, TRUE)
+	TEST_ASSERT_EQUAL(tracker.tracked_bodies[first.owner], old_body, "Возвращение тела восстанавливает наблюдение сети.")
+
 /// Поздний участник не ускоряет сеть; в один наступивший срок появляется ровно один разлом.
 /datum/unit_test/heretic_influence_schedule_start/Run()
 	var/datum/reality_smash_tracker/influence_schedule_fixture/tracker = allocate_influence_tracker()

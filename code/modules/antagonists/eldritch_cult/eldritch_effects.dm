@@ -16,6 +16,7 @@
 	var/client/ascension_preview_client
 	var/datum/mind/ascension_preview_mind
 	var/mob/living/carbon/human/stasis_target
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/stasis_restraint
 
 /obj/effect/eldritch/Initialize(mapload)
 	. = ..()
@@ -154,12 +155,16 @@
 		return
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/mob/living/carbon/human/target = heretic?.hunt_target?.current
-	if(QDELETED(target) || target.stat == DEAD || !(target in reserved_atoms))
+	if(!heretic?.hunt_target_ready(target) || target.stat == DEAD || !(target in reserved_atoms))
 		return
 	stasis_target = target
+	// Отдельный экземпляр не продлевает и не снимает чужой паралич.
+	stasis_restraint = new(list(target, -1, TRUE))
 	target.apply_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+	target.visible_message(span_warning("Знаки руны обвивают [target] и удерживают на месте."), span_userdanger("Руна удерживает вас! Обряд прекратится, если вас утащат из круга или помешают еретику."))
 
 /obj/effect/eldritch/proc/clear_hunt_stasis()
+	QDEL_NULL(stasis_restraint)
 	if(!QDELETED(stasis_target))
 		stasis_target.remove_status_effect(/datum/status_effect/grouped/stasis, REF(src))
 	stasis_target = null
@@ -319,7 +324,7 @@
 	if(length(missing))
 		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны."
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
-		return "Нужны ваше живое сердце и назначенная живая цель без сознания."
+		return "Нужны ваше живое сердце и назначенная цель: живая в наручниках, лёжа, оглушённая или без сознания, либо её труп за меньшую награду."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
 		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] человеческих тела. Тела еретиков и их слуг не подходят."
 	return "Особые условия обряда не выполнены. Проверьте требования выбранного ритуала в кодексе."

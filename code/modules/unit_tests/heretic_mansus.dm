@@ -218,3 +218,24 @@
 	TEST_ASSERT(!visit.start(), "Смерть после подготовки отменяет вход.")
 	TEST_ASSERT_EQUAL(victim.stat, DEAD, "Отклонённый вход не воскрешает тело.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[soul], "Отклонённый вход не регистрирует душу.")
+
+/// Общая область переиспользуется, а комнаты и выходы одновременных посещений остаются отдельными.
+/datum/unit_test/heretic_mansus_shared_area/Run()
+	var/list/first_fixture = make_mansus_fixture()
+	var/list/second_fixture = make_mansus_fixture()
+	var/datum/heretic_mansus_visit/first = first_fixture["visit"]
+	var/datum/heretic_mansus_visit/second = second_fixture["visit"]
+	var/area/shared_area = first.room
+	var/mob/living/second_victim = second.victim
+	TEST_ASSERT_EQUAL(second.room, shared_area, "Посещения используют одну область.")
+	TEST_ASSERT_NOTEQUAL(first.reservation, second.reservation, "Комнаты резервируются отдельно.")
+	TEST_ASSERT(!first.contains(second.victim) && !second.contains(first.victim), "Жертвы находятся в разных комнатах.")
+	first.finish()
+	TEST_ASSERT(!QDELETED(shared_area), "Завершение посещения не удаляет общую область.")
+	TEST_ASSERT(second.contains(second_victim), "Завершение первого посещения не выталкивает вторую жертву.")
+	var/list/third_fixture = make_mansus_fixture()
+	var/datum/heretic_mansus_visit/third = third_fixture["visit"]
+	TEST_ASSERT_EQUAL(third.room, shared_area, "Новое посещение переиспользует область.")
+	second.finish()
+	third.finish()
+	TEST_ASSERT_EQUAL(length(shared_area.contents), 0, "Завершённые посещения освобождают все турфы области.")

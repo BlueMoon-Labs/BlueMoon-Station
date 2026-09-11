@@ -11,7 +11,7 @@ GLOBAL_LIST_EMPTY(heretic_mansus_visits)
 	requires_power = FALSE
 	has_gravity = STANDARD_GRAVITY
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
-	area_flags = NOTELEPORT
+	area_flags = UNIQUE_AREA | NOTELEPORT
 
 /turf/open/indestructible/heretic_mansus
 	name = "забытая дорога"
@@ -69,7 +69,8 @@ GLOBAL_LIST_EMPTY(heretic_mansus_visits)
 		qdel(new_reservation)
 		return FALSE
 	reservation = new_reservation
-	room = new
+	// BYOND не собирает области автоматически; отдельные посещения разделены резервированиями.
+	room = GLOB.areas_by_type[/area/heretic_mansus] || new /area/heretic_mansus
 	var/left = reservation.bottom_left_coords[1]
 	var/bottom = reservation.bottom_left_coords[2]
 	var/level = reservation.bottom_left_coords[3]
@@ -223,11 +224,9 @@ GLOBAL_LIST_EMPTY(heretic_mansus_visits)
 		for(var/turf/nearby in range(7, return_turf))
 			if(is_safe_turf(nearby))
 				return nearby
-	var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
-	if(length(station_levels))
-		var/turf/safe = find_safe_turf(zlevels = station_levels, extended_safety_checks = TRUE, dense_atoms = FALSE)
-		if(safe)
-			return safe
+	var/turf/safe = find_heretic_station_turf()
+	if(safe)
+		return safe
 	if(fallback_turf && is_safe_turf(fallback_turf))
 		return fallback_turf
 	// При уничтожении станции всё равно покидаем резервную комнату.
@@ -281,7 +280,7 @@ GLOBAL_LIST_EMPTY(heretic_mansus_visits)
 		if(!QDELETED(reservation))
 			qdel(reservation)
 	reservation = null
-	QDEL_NULL(room)
+	room = null
 	memories.Cut()
 	gate = null
 	victim = null

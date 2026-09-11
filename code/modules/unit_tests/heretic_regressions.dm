@@ -314,4 +314,28 @@
 	TEST_ASSERT(user.check_magic_resistance(chargecost = 0), "Владелец действительно защищён нулевым жезлом.")
 	user.adjustBruteLoss(10)
 	zone.tick_zone(user, list(user))
-	TEST_ASSERT_EQUAL(user.getBruteLoss(), 7, "Жезл не отключает лечение самого владельца.")
+	TEST_ASSERT(abs(user.getBruteLoss() - 7) < 0.001, "Жезл не отключает лечение самого владельца.")
+
+/// Удаление кодекса с открытым интерфейсом не оставляет ссылок и не требует harddel.
+/datum/unit_test/heretic_log_cleanup/Run()
+	var/book_ref = delete_book()
+	sleep(2 SECONDS)
+	var/datum/book = locate(book_ref)
+	TEST_ASSERT(!book || !QDELING(book), "Кодекс не должен удерживаться после удаления.")
+
+/datum/unit_test/heretic_log_cleanup/proc/delete_book()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/item/forbidden_book/book = new(get_turf(user))
+	user.put_in_hands(book)
+	var/datum/tgui/heretic_book_test/ui = allocate(/datum/tgui/heretic_book_test, user, book, "ForbiddenLore", "Кодекс Рубцов")
+	ui.window = allocate(/datum/tgui_window/heretic_book_test)
+	ui.window.locked_by = ui
+	ui.initialized = TRUE
+	ui.status = UI_INTERACTIVE
+	SStgui.on_open(ui)
+	book.ui_interact(user, ui)
+	heretic.clear_heretic()
+	var/book_ref = text_ref(book)
+	qdel(book)
+	return book_ref

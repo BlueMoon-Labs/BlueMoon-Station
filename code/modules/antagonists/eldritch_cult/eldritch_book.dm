@@ -235,10 +235,18 @@
 		data["combat_resource"] = base_knowledge?.get_combat_resource_data()
 	var/mob/living/target = heretic.hunt_target?.current
 	var/available_target = heretic.hunt_target_available(heretic.hunt_target)
+	var/target_status = "Цель недоступна: призовите новое имя."
+	if(available_target)
+		if(target.stat == DEAD)
+			target_status = "Цель погибла. Труп принимается за 1 очко знаний без побочного; тело останется на месте."
+		else if(target.stat >= UNCONSCIOUS)
+			target_status = "Цель можно принести на руну живой: 2 очка знаний и 1 побочное."
+		else
+			target_status = "Цель жива. Для обряда подойдут наручники, оглушение или положение лёжа."
 	data["hunt"] = list(
 		"target_name" = target?.real_name,
 		"target_role" = heretic.hunt_target?.assigned_role,
-		"target_status" = !available_target ? "Цель недоступна: призовите новое имя." : (target.stat < UNCONSCIOUS ? "Цель в сознании." : "Цель можно принести на руну."),
+		"target_status" = target_status,
 		"can_retarget" = !available_target || COOLDOWN_FINISHED(heretic, hunt_refresh_cooldown),
 		"retarget_seconds" = available_target ? max(0, CEILING(COOLDOWN_TIMELEFT(heretic, hunt_refresh_cooldown) / (1 SECONDS), 1)) : 0,
 		"sacrifices_required" = HERETIC_ASCENSION_SACRIFICES,

@@ -87,7 +87,7 @@
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
 	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'
 	combat_resource_name = "Угольки"
-	combat_resource_desc = "Активируйте метки клинком или схватите горящего противника. Угасание расходует уголёк: тушит вас, лечит ожоги и оставляет горящий след для отступления."
+	combat_resource_desc = "После изучения Власти Пепла примените Хватку Мансуса к горящему врагу: +1 уголёк не чаще раза в 15 секунд. После изучения Метки Пепла наложите её хваткой и ударьте пепельным клинком: +1 уголёк. Обычный уголь не нужен. Угасание расходует уголёк: тушит вас, лечит ожоги и оставляет горящий след для отступления."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/ash
 
 /datum/eldritch_knowledge/base_rust
