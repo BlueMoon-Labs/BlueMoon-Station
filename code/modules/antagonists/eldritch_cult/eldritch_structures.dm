@@ -1,6 +1,6 @@
 /obj/structure/eldritch_crucible
-	name = "Растерзанный тигель"
-	desc = "Увековеченный чугун, стальные зубья удерживающие его на месте, этот мерзкий экстракт в нем обладает способностью возрождать вещи, переделывая саму их суть."
+	name = "зловещий тигель"
+	desc = "Чугунный тигель на стальных зубчатых ножках. Вязкая жидкость внутри поглощает плоть и превращает её в колдовские напитки."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "crucible"
 	anchored = FALSE
@@ -17,15 +17,15 @@
 	if(!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user))
 		return
 	if(current_mass < max_mass)
-		. += "Тигель требует [max_mass - current_mass] больше органов или частей тела!"
+		. += "Для заполнения тигля нужно ещё [max_mass - current_mass] органов или частей тела."
 	else
 		. += "Тигель готов к использованию!"
 
-	. += "Могу открутить и закрепить его повторно с помощью Кодекса Рубцов!"
-	. += "Сейчас он [anchored == FALSE ? "незакреплен" : "закреплен"]"
-	. += "Позволяет вам сварить 'Напиток Крепкой Души' - Позволяет проходить сквозь стены в течение 15 секунд, по истечении этого времени вы телепортируетесь в свое первоначальное местоположение"
-	. += "Позволяет вам сварить 'Напиток Заката и Рассвета' - Позволяет вам четко видеть сквозь стены и предметы в течение 60 секунд"
-	. += "Позволяет вам сварить 'Напиток Раненного солдата' - В течение следующих 60 секунд каждая рана будет заживать на вас, незначительные раны заживают на 1 единицу урона в секунду, средние - на 3, а критические - на 6. Вы также становитесь невосприимчивы к замедленнию от урона."
+	. += "Кодекс позволяет закрепить или освободить тигель."
+	. += "Сейчас он [anchored ? "закреплён" : "не закреплён"]."
+	. += "Напиток крепкой души позволяет проходить сквозь стены в течение 15 секунд, затем возвращает туда, где его выпили."
+	. += "Напиток заката и рассвета позволяет видеть сквозь стены и предметы в течение 60 секунд."
+	. += "Напиток раненого солдата в течение 60 секунд лечит каждую рану и защищает от замедления из-за урона. Незначительные раны восстанавливаются на 1 единицу урона в секунду, средние — на 3, критические — на 6."
 
 /obj/structure/eldritch_crucible/attacked_by(obj/item/I, mob/living/user)
 	if(istype(I,/obj/item/nullrod))
@@ -40,14 +40,18 @@
 	if(istype(I,/obj/item/forbidden_book))
 		playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
 		anchored = !anchored
-		to_chat(user,"<span class='notice'>Ты [anchored == FALSE ? "откручиваешь" : "закрепляешь"] тигель</span>")
+		to_chat(user,"<span class='notice'>Вы [anchored == FALSE ? "освобождаете" : "закрепляете"] тигель.</span>")
 		return
 
 	if(istype(I,/obj/item/bodypart) || istype(I,/obj/item/organ))
-		//Both organs and bodyparts hold information if they are organic or robotic in the exact same way.
-		var/obj/item/bodypart/forced = I
-		if(forced.status != BODYPART_ORGANIC)
-			return
+		if(istype(I, /obj/item/bodypart))
+			var/obj/item/bodypart/part = I
+			if(part.status != BODYPART_ORGANIC)
+				return
+		else
+			var/obj/item/organ/organ = I
+			if(organ.status != ORGAN_ORGANIC)
+				return
 
 		if(current_mass >= max_mass)
 			to_chat(user,"<span class='notice'> Тигель полон!</span>")
@@ -67,8 +71,10 @@
 			devour(user)
 		return
 
+	if(user.incapacitated() || !Adjacent(user))
+		return
 	if(in_use)
-		to_chat(user,"<span class='notice'>Тигель готов к использованию!</span>")
+		to_chat(user, span_notice("Тигель уже занят приготовлением."))
 		return
 
 	if(current_mass < max_mass)
@@ -80,7 +86,11 @@
 	for(var/X in subtypesof(/obj/item/eldritch_potion))
 		var/obj/item/eldritch_potion/potion = X
 		lst[initial(potion.name)] = potion
-	var/type = lst[input(user,"Выберите своё варево","Напиток") in lst]
+	var/choice = tgui_input_list(user, "Выберите варево", "Тигель", lst)
+	in_use = FALSE
+	if(QDELETED(src) || QDELETED(user) || !choice || !lst[choice] || user.incapacitated() || !Adjacent(user) || current_mass < max_mass || (!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user)))
+		return
+	var/type = lst[choice]
 	playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
 	new type(drop_location())
 	current_mass = 0
@@ -91,10 +101,11 @@
 /obj/structure/eldritch_crucible/proc/devour(mob/living/carbon/user)
 	if(HAS_TRAIT(user,TRAIT_NODISMEMBER))
 		return
-	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
-	to_chat(user,"<span class='danger'>Тигель хватает твою руку и пожирает её целиком!</span>")
 	var/obj/item/bodypart/arm = user.get_active_hand()
-	arm.dismember()
+	if(!arm || !arm.dismember())
+		return
+	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
+	to_chat(user, span_danger("Тигель хватает вашу руку и пожирает её целиком!"))
 	qdel(arm)
 	current_mass += current_mass < max_mass ? 1 : 0
 	update_icon_state()
@@ -107,8 +118,8 @@
 		icon_state = "crucible_empty"
 
 /obj/structure/trap/eldritch
-	name = "Резьба старших"
-	desc = "Коллекция неизвестных символов, они напоминают вам о давно минувших днях..."
+	name = "запретная руна"
+	desc = "Неизвестные символы, от которых веет смутно знакомым прошлым."
 	icon = 'icons/obj/eldritch.dmi'
 	charges = 1
 	///Owner of the trap
@@ -132,7 +143,7 @@
 	owner = _owner
 
 /obj/structure/trap/eldritch/alert
-	name = "Резьба предосторожности"
+	name = "предупреждающая руна"
 	icon_state = "alert_rune"
 	alpha = 10
 
@@ -146,7 +157,7 @@
 	return
 
 /obj/structure/trap/eldritch/tentacle
-	name = "Резьба захвата"
+	name = "хватающая руна"
 	icon_state = "tentacle_rune"
 
 /obj/structure/trap/eldritch/tentacle/trap_effect(mob/living/L)
@@ -161,7 +172,7 @@
 	return ..()
 
 /obj/structure/trap/eldritch/mad
-	name = "Резьба безумия"
+	name = "руна безумия"
 	icon_state = "madness_rune"
 
 /obj/structure/trap/eldritch/mad/trap_effect(mob/living/L)

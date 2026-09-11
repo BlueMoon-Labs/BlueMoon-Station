@@ -88,6 +88,23 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define PATH_RUST "Rust"
 #define PATH_FLESH "Flesh"
 #define PATH_VOID "Void"
+#define PATH_BLADE "Blade"
+#define PATH_MOON "Moon"
+#define PATH_COSMIC "Cosmic"
+#define PATH_LOCK "Lock"
+#define PATH_TIDE "Tide"
+#define PATH_GLASS "Glass"
+#define PATH_BLOOD "Blood"
+
+#define HERETIC_ASCENSION_SACRIFICES 5
+#define HERETIC_ASCENSION_BODIES 3
+#define HERETIC_THREAT_SACRIFICES 3
+#define HERETIC_THREAT_WARNING_TIME (3 MINUTES)
+#define HERETIC_RUNE_SCALE 3
+#define HERETIC_INFLUENCE_LIMIT 6
+#define HERETIC_INFLUENCE_INITIAL_COUNT 3
+#define HERETIC_INFLUENCE_INTERVAL (8 MINUTES)
+#define HERETIC_STARTING_KNOWLEDGE 1
 
 //Overthrow time to update heads obj
 #define OBJECTIVE_UPDATING_TIME 300

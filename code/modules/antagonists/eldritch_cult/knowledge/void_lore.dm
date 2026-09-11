@@ -1,246 +1,234 @@
 /datum/eldritch_knowledge/base_void
 	name = "Мерцание зимы"
-	desc = "Открывает перед вами путь Пустоты. \
-		Позволяет трансмутировать нож при минусовой температуре в Клинок Пустоты."
-	gain_text = "Я чувствую мерцание вокруг, воздух вокруг меня становится холоднее. \
-		Я начинаю осознавать пустоту существования. Что-то наблюдает за мной."
-	banned_knowledge = list(/datum/eldritch_knowledge/base_ash,/datum/eldritch_knowledge/base_flesh,/datum/eldritch_knowledge/final_eldritch/ash_final,/datum/eldritch_knowledge/final_eldritch/flesh_final,/datum/eldritch_knowledge/base_rust,/datum/eldritch_knowledge/final_eldritch/rust_final)
-	next_knowledge = list(/datum/eldritch_knowledge/void_grasp)
+	desc = "Открывает Путь Пустоты: собирайте осколки зимы, оставляйте холодные зоны и выбирайте дистанцию боя. Кухонный нож на руне при минусовой температуре превращается в клинок Пустоты. Зимний предел создаёт область холода и молчания."
+	gain_text = "В тишине между ударами сердца я услышал снег."
 	required_atoms = list(/obj/item/kitchen/knife)
 	result_atoms = list(/obj/item/melee/sickly_blade/void)
 	cost = 0
 	route = PATH_VOID
 
-/datum/eldritch_knowledge/base_void/recipe_snowflake_check(list/atoms, loc)
-	. = ..()
-	var/turf/open/turfie = loc
-	if(turfie.GetTemperature() > T0C)
-		return FALSE
+/datum/eldritch_knowledge/base_void/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	var/turf/open/floor/floor = get_turf(loc)
+	return istype(floor) && floor.GetTemperature() <= T0C
 
 /datum/eldritch_knowledge/void_grasp
 	name = "Хватка Пустоты"
-	desc = "Временно лишает жертву дара речи, а также снижает температуру ее тела."
-	gain_text = "Я чувствую незримого наблюдателя, который смотрит за мной. Холод растет во мне. \
-		Это лишь первый шаг в познании тайны."
+	desc = "Хватка ненадолго лишает врага голоса и снижает температуру его тела. Подготовьте Зимний предел, чтобы удержать противника в холоде."
+	gain_text = "Я протянул руку и на мгновение услышал чужую тишину."
 	cost = 1
 	route = PATH_VOID
-	next_knowledge = list(/datum/eldritch_knowledge/cold_snap)
 
 /datum/eldritch_knowledge/void_grasp/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	. = ..()
-	if(!iscarbon(target))
-		return
-	var/mob/living/carbon/carbon_target = target
-	var/turf/open/turfie = get_turf(carbon_target)
-	turfie.TakeTemperature(-20)
-	carbon_target.adjust_bodytemperature(-40)
-	carbon_target.silent = clamp(carbon_target.silent + 4, 0, 20)
+	if(!iscarbon(target) || !heretic_can_affect(user, target))
+		return FALSE
+	var/mob/living/carbon/victim = target
+	victim.adjust_bodytemperature(-passive_values[passive_level])
+	victim.silent = max(victim.silent, 3)
 	return TRUE
-
-/datum/eldritch_knowledge/void_grasp/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
-	. = ..()
-	if(!ishuman(target))
-		return
-	var/mob/living/carbon/human/H = target
-	var/datum/status_effect/eldritch/E = H.has_status_effect(/datum/status_effect/eldritch/rust) || H.has_status_effect(/datum/status_effect/eldritch/ash) || H.has_status_effect(/datum/status_effect/eldritch/flesh)  || H.has_status_effect(/datum/status_effect/eldritch/void)
-	if(!E)
-		return
-	E.on_effect()
-	H.silent = clamp(H.silent + 3, 0, 20)
 
 /datum/eldritch_knowledge/cold_snap
 	name = "Путь Аристократа"
-	desc = "Делает вас невосприимчивым к низким температурам, и убирает потребность в дыхании. \
-		Однако вы все еще можете получить урон от недостатка давления."
-	gain_text = "Я нашел нить ледяного дыхания. Она привела меня в странное святилище, сплошь состоящее из кристаллов. \
-		Полупрозачное, белоснежное изображение благородного человека стояло передо мной."
+	desc = "Вы перестаёте дышать и получаете защиту от низких температур. Вакуум всё ещё опасен из-за недостатка давления."
+	gain_text = "Аристократ стоял среди снега, не оставляя в воздухе ни облачка пара."
 	cost = 1
 	route = PATH_VOID
-	next_knowledge = list(/datum/eldritch_knowledge/void_cloak,/datum/eldritch_knowledge/void_mark,/datum/eldritch_knowledge/armor)
 
-/datum/eldritch_knowledge/cold_snap/on_gain(mob/user)
-	. = ..()
-	ADD_TRAIT(user,TRAIT_RESISTCOLD,MAGIC_TRAIT)
-	ADD_TRAIT(user, TRAIT_NOBREATH, MAGIC_TRAIT)
+/datum/eldritch_knowledge/cold_snap/on_body_gain(mob/living/user)
+	ADD_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
+	ADD_TRAIT(user, TRAIT_NOBREATH, REF(src))
 
-/datum/eldritch_knowledge/cold_snap/on_lose(mob/user)
-	. = ..()
-	REMOVE_TRAIT(user,TRAIT_RESISTCOLD,MAGIC_TRAIT)
-	ADD_TRAIT(user, TRAIT_NOBREATH, MAGIC_TRAIT)
+/datum/eldritch_knowledge/cold_snap/on_body_lose(mob/living/user)
+	REMOVE_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
+	REMOVE_TRAIT(user, TRAIT_NOBREATH, REF(src))
 
 /datum/eldritch_knowledge/void_cloak
 	name = "Плащ пустоты"
-	desc = "Плащ, который по желанию может становиться невидимым, скрывая предметы, которые вы храните в нем. Чтобы создать его, преобразуйте стеклянный осколок, любой предмет одежды, который можно надеть поверх униформы, и любую простыню."
-	gain_text = "Сова - хранительница вещей, которых совсем нет на практике, но которые теоретически существуют."
+	desc = "Соедините осколок стекла, верхнюю одежду и простыню, чтобы создать плащ Пустоты. Поднятый капюшон скрывает плащ и содержимое его карманов."
+	gain_text = "Сова хранит то, что существует только в чужой памяти."
 	cost = 1
-	next_knowledge = list(/datum/eldritch_knowledge/flesh_ghoul,/datum/eldritch_knowledge/cold_snap)
 	result_atoms = list(/obj/item/clothing/suit/hooded/cultrobes/void)
-	required_atoms = list(/obj/item/shard,/obj/item/clothing/suit,/obj/item/bedsheet)
+	required_atoms = list(/obj/item/shard, /obj/item/clothing/suit, /obj/item/bedsheet)
 
 /datum/eldritch_knowledge/void_mark
-	name = "Знак Пустоты"
-	desc = "Ваша Хватка Мансуса теперь накладывает Метку Пустоты. Чтобы активировать метку, ударьте жертву Клинком Пустоты. \
-		При срабатывании он заставляет жертву замолчать и значительно понижает температуру ее тела."
-	gain_text = "Порыв ветра? Может быть, мерцание в воздухе. Его присутствие подавляет, \
-		все мои чувства предали меня, мой разум - мой враг."
+	name = "Метка Пустоты"
+	desc = "Хватка накладывает Метку Пустоты. Удар клинком Пустоты активирует её: охлаждает врага, лишает его голоса на несколько секунд и даёт осколок зимы."
+	gain_text = "Я научился отмечать людей, которым суждено услышать снег."
 	cost = 2
-	next_knowledge = list(/datum/eldritch_knowledge/spell/void_phase)
-	banned_knowledge = list(/datum/eldritch_knowledge/rust_mark,/datum/eldritch_knowledge/ash_mark,/datum/eldritch_knowledge/flesh_mark)
 	route = PATH_VOID
 
 /datum/eldritch_knowledge/void_mark/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	. = ..()
-	if(!isliving(target))
-		return
-	. = TRUE
-	var/mob/living/living_target = target
-	living_target.apply_status_effect(/datum/status_effect/eldritch/void)
+	if(!heretic_can_affect(user, target))
+		return FALSE
+	var/mob/living/victim = target
+	victim.apply_status_effect(/datum/status_effect/eldritch/void)
+	return TRUE
 
 /datum/eldritch_knowledge/spell/void_phase
 	name = "Пустотный сдвиг"
-	desc = "Вы получаете рывок, позволяющий вам  \
-		мгновенно телепортироваться в нужное место, нанося урон вокруг вас и выбранного вами места."
-	gain_text = "Существо назвало себя Аристократом. Он легко проходят по воздуху, как \
-		сквозь пустоту, оставляя за собой резкий холодный ветер. Он исчез, оставляв меня в снегу."
+	desc = "Телепортируйтесь на открытую клетку в пределах 3–7 клеток; враги рядом с выходом и входом получают по 20 ушибов. Соедините шахтёрский фонарь, осколок стекла и лист бумаги, чтобы создать фонарь тишины. За осколок зимы он несёт вокруг вас поле холода и тишины, пока вы держите его в руке."
+	required_atoms = list(/obj/item/flashlight/lantern, /obj/item/shard, /obj/item/paper)
+	result_atoms = list(/obj/item/heretic_relic/hush_lantern)
+	gain_text = "Аристократ сделал шаг и оставил за собой пустое место."
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/void_blink
-	next_knowledge = list(/datum/eldritch_knowledge/rune_carver,/datum/eldritch_knowledge/crucible,/datum/eldritch_knowledge/void_blade_upgrade)
 	route = PATH_VOID
 
 /datum/eldritch_knowledge/rune_carver
 	name = "Нож резьбы"
-	gain_text = "Запечатленные, высеченные на камне... вечные. Я могу вырезать монолит и пробудить его силу!"
-	desc = "Вы можете создать нож для резьбы, который позволяет создавать на полу до 3 рисунков, оказывающих различное воздействие на неверующих, которые по ним ходят. Из них получается довольно удобное метательное оружие. Чтобы создать нож для резьбы, соедините нож с осколком стекла и листом бумаги."
+	desc = "Соедините кухонный нож, осколок стекла и лист бумаги, чтобы создать резной нож. Им можно вырезать до трёх ловушек на полу."
+	gain_text = "Каждый надрез напоминает реальности о её границах."
 	cost = 1
-	next_knowledge = list(/datum/eldritch_knowledge/spell/void_phase,/datum/eldritch_knowledge/summon/raw_prophet)
-	required_atoms = list(/obj/item/kitchen/knife,/obj/item/shard,/obj/item/paper)
+	required_atoms = list(/obj/item/kitchen/knife, /obj/item/shard, /obj/item/paper)
 	result_atoms = list(/obj/item/melee/rune_knife)
 
 /datum/eldritch_knowledge/crucible
 	name = "Разинутый тигель"
-	gain_text = "Это сущая агония, я не смог вызвать отверженного императора, но я наткнулся на другой рецепт..."
-	desc = "Позволяет вам создать разинутый тигель, сверхъестественную структуру, которая позволяет вам создавать зелья с различными эффектами, для этого преобразуйте стол в резервуар для воды."
+	desc = "Соедините бак с водой и стол, чтобы создать разинутый тигель. Он перерабатывает предметы в зелья запретной алхимии."
+	gain_text = "Отверженный император не ответил, но его голод остался со мной."
 	cost = 1
-	next_knowledge = list(/datum/eldritch_knowledge/spell/void_phase,/datum/eldritch_knowledge/spell/area_conversion)
-	required_atoms = list(/obj/structure/reagent_dispensers/watertank,/obj/structure/table)
+	required_atoms = list(/obj/structure/reagent_dispensers/watertank, /obj/structure/table)
 	result_atoms = list(/obj/structure/eldritch_crucible)
 
 /datum/eldritch_knowledge/void_blade_upgrade
-	name = "Ищущий Клинок"
-	desc = "Теперь вы можете использовать свой клинок на удаленной отмеченной цели, чтобы переместиться к ней и атаковать."
-	gain_text = "Мимолетные воспоминания путь имеющий начало, но не имеющий конца. Я отмечаю свой путь кровью на снегу. Я не помню кто я и куда я иду"
+	name = "Ищущий клинок"
+	desc = "Щёлкните клинком Пустоты по отмеченному врагу в поле зрения на расстоянии до 5 клеток, чтобы переместиться рядом с ним и ударить. Способность восстанавливается 8 секунд и требует свободной клетки возле цели."
+	gain_text = "Метки в снегу связывают места, которые никогда не были рядом."
 	cost = 2
-	next_knowledge = list(/datum/eldritch_knowledge/spell/voidpull)
-	banned_knowledge = list(/datum/eldritch_knowledge/ash_blade_upgrade,/datum/eldritch_knowledge/flesh_blade_upgrade,/datum/eldritch_knowledge/rust_blade_upgrade)
 	route = PATH_VOID
+	COOLDOWN_DECLARE(blink_cooldown)
 
 /datum/eldritch_knowledge/void_blade_upgrade/on_ranged_attack_eldritch_blade(atom/target, mob/user, click_parameters)
-	. = ..()
-	var/mob/living/carbon/carbon_human = user
-	var/mob/living/carbon/human/human_target = target
-	var/datum/status_effect/eldritch/effect = human_target.has_status_effect(/datum/status_effect/eldritch/rust) || human_target.has_status_effect(/datum/status_effect/eldritch/ash) || human_target.has_status_effect(/datum/status_effect/eldritch/flesh) || human_target.has_status_effect(/datum/status_effect/eldritch/void)
-	if(!effect)
+	if(!isliving(user) || !heretic_can_affect(user, target) || !COOLDOWN_FINISHED(src, blink_cooldown))
 		return
-	var/dir = angle2dir(dir2angle(get_dir(user,human_target))+180)
-	carbon_human.forceMove(get_step(human_target,dir))
-	var/obj/item/melee/sickly_blade/blade = carbon_human.get_active_held_item()
-	blade.melee_attack_chain(carbon_human,human_target,attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
+	var/mob/living/victim = target
+	var/mob/living/living_user = user
+	if(user.z != victim.z || get_dist(user, victim) > 5 || !(victim in view(5, user)) || !victim.has_status_effect(/datum/status_effect/eldritch/void))
+		return
+	if(!CHECK_MOBILITY(living_user, MOBILITY_USE) || living_user.incapacitated())
+		return
+	var/obj/item/melee/sickly_blade/void/blade = user.get_active_held_item()
+	if(!istype(blade))
+		return
+	var/turf/destination
+	for(var/direction in GLOB.cardinals)
+		var/turf/candidate = get_step(victim, direction)
+		if(isopenturf(candidate) && !is_blocked_turf(candidate, TRUE))
+			destination = candidate
+			break
+	if(!destination || !do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
+		return
+	COOLDOWN_START(src, blink_cooldown, 8 SECONDS)
+	blade.melee_attack_chain(user, victim, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 
 /datum/eldritch_knowledge/spell/voidpull
 	name = "Притяжение пустоты"
-	desc = "Вы получаете способность, которая позволяет вам притягивать к себе окружающих вас людей и ненадолго оглушать их."
-	gain_text = "Все мимолетно, но что еще остается? Я близок к завершению начатого. \
-		Я снова видел Аристократа. Он сказал мне, что я опаздываю. Его тяга огромна, я не могу повернуть назад."
+	desc = "Притягивает видимых врагов с расстояния до 3 клеток. Ближайшие получают 20 ушибов и короткое оглушение. Препятствия останавливают притяжение."
+	gain_text = "Аристократ пригласил меня ближе. Отказаться я уже не мог."
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/void_pull
-	next_knowledge = list(/datum/eldritch_knowledge/spell/boogiewoogie,/datum/eldritch_knowledge/spell/blood_siphon,/datum/eldritch_knowledge/summon/rusty)
 	route = PATH_VOID
 
 /datum/eldritch_knowledge/spell/boogiewoogie
 	name = "Аплодисменты пустоты"
-	gain_text = "Занавес опускается, и я уверен, что Аристократ гордится мной."
-	desc = "Хлопнув в ладоши, вы можете поменяться местами с кем-то, кто находится в пределах вашего поля зрения."
+	desc = "Поменяйтесь местами с живым существом на открытом полу в поле зрения. Защита от магии останавливает подмену."
+	gain_text = "Мы с Аристократом поменялись местами, и никто этого не заметил."
 	cost = 2
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/boogie_woogie
-	next_knowledge = list(/datum/eldritch_knowledge/spell/domain_expansion)
 	route = PATH_VOID
 
 /datum/eldritch_knowledge/spell/domain_expansion
 	name = "Бесконечная пустота"
-	gain_text = "Этот мир станет моей сценой, и ничто не будет для меня недоступно."
-	desc = "После небольшой задержки вы получаете возможность помечать область размером 7х7 как свой домен. Существа в вашем домене замедляются и помечаются знаком пустоты, что позволяет вам быстро телепортироваться к ним и наносить им удары, что еще больше ограничивает их способность передвигаться."
+	desc = "После трёх секунд сосредоточения создайте домен 7×7 на 20 секунд. Враги в нём замедляются и получают метки Пустоты. Выход из домена сразу снимает замедление."
+	gain_text = "Мне больше не нужен снег, чтобы слышать шаги гостя."
 	cost = 2
 	sacs_needed = 3
 	spell_to_add = /obj/effect/proc_holder/spell/aoe_turf/domain_expansion
-	next_knowledge = list(/datum/eldritch_knowledge/final_eldritch/void_final)
 	route = PATH_VOID
-
-/datum/eldritch_knowledge/spell/domain_expansion/on_gain(mob/user)
-	. = ..()
-	priority_announce("Внимание, [station_name()]. [user.real_name] излучает пространственную нестабильность, в связи с которой эхо утерянных в космосе душ разносится по округе... вы можете ощутить зловещее присутствие! ", sound = 'sound/misc/notice1.ogg')
 
 /datum/eldritch_knowledge/final_eldritch/void_final
-	name = "Вальс Конца Времен"
-	desc = "Ритуал вознесения Пути Пустоты. \
-		Принесите 3 трупа на руну начертанную при минусовой температуре, чтобы выполнить ритуал. \
-		После завершения вызывает пустотную бурю \
-		что окутывает станцию, замораживает и ранит язычников. Те, кто находится поблизости, замерзают ещё быстрее, а также теряют возможность говорить. \
-		Кроме того, вы приобретете иммунитет к воздействию космоса."
-	gain_text = "Мир погружается во тьму. Я стою на пороге пустоты, вокруг, мерцая острыми гранями, бушует ледяной шторм. \
-		Передо мной стоит Аристократ, жестом приглашая меня станцевать. Мы сыграем вальс под шепот умирающей реальности, \
-		пока мир разрушается на наших глазах. Пустота обратит все в ничто, СТАНЬТЕ СВИДЕТЕЛЕМ МОЕГО ВОЗНЕСЕНИЯ!"
-	cost = 5
+	name = "Вальс конца времён"
+	desc = "После пяти жертв принесите три мёртвых тела на руну. Начало обряда раскроет его место всей станции и даст экипажу 30 секунд, чтобы помешать. Вознесение окружает вас зимней бурей и даёт защиту от среды. Последний такт оттесняет видимых врагов на две клетки, охлаждает и отмечает их, оставляя зимний круг радиусом три клетки на 12 секунд. Ближайшие враги теряют тепло; голос подавляют только активные зимние поля."
+	gain_text = "Аристократ подал мне руку. Этот танец переживёт станцию."
+	cost = 3
 	sacs_needed = 5
-	required_atoms = list(/mob/living/carbon/human)
+	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	route = PATH_VOID
 	parallax_scene = ANTAG_SCENE_HERETIC_VOID
-	///soundloop for the void theme
+	ascension_traits = list(TRAIT_NOBREATH, TRAIT_RESISTCOLD, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE)
+	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_last_waltz)
 	var/datum/looping_sound/void_loop/sound_loop
-	///Reference to the ongoing voidstorm that surrounds the heretic
-	var/datum/weather/void_storm/storm
+	var/datum/weather/void_storm/heretic/storm
 
 /datum/eldritch_knowledge/final_eldritch/void_final/on_finished_recipe(mob/living/user, list/atoms, loc)
-	var/mob/living/carbon/human/waltzing = user
-	waltzing.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse/eldritch)
-	waltzing.physiology.brute_mod *= 0.5
-	waltzing.physiology.burn_mod *= 0.5
-	ADD_TRAIT(waltzing, TRAIT_RESISTLOWPRESSURE, MAGIC_TRAIT)
-	waltzing.client?.give_award(/datum/award/achievement/misc/void_ascension, waltzing)
-	priority_announce("$^@&#*$^@(#&$(@&#^$&#^@# Дворянин пустоты, [waltzing.real_name], прибыл к вам, кружась в вальсе кончины миров! $^@&#*$^@(#&$(@&#^$&#^@#","#$^@&#*$^@(#&$(@&#^$&#^@#", 'modular_bluemoon/kovac_shitcode/sound/eldritch/void_lore.ogg')
-	sound_loop = new(user, TRUE, TRUE)
+	if(!..())
+		return FALSE
+	on_body_gain(user)
+	user.client?.give_award(/datum/award/achievement/misc/void_ascension, user)
+	return TRUE
+
+/datum/eldritch_knowledge/final_eldritch/void_final/on_body_gain(mob/living/user)
+	. = ..()
+	if(finished && !sound_loop && user.stat != DEAD)
+		sound_loop = new(user, TRUE, TRUE)
+
+/datum/eldritch_knowledge/final_eldritch/void_final/on_body_lose(mob/living/user)
+	stop_storm()
 	return ..()
 
-/datum/eldritch_knowledge/final_eldritch/void_final/on_death()
-	if(sound_loop)
-		sound_loop.stop()
+/datum/eldritch_knowledge/final_eldritch/void_final/on_death(mob/user)
+	stop_storm()
+	return ..()
+
+/datum/eldritch_knowledge/final_eldritch/void_final/proc/stop_storm()
+	QDEL_NULL(sound_loop)
 	if(storm)
 		storm.end()
 		QDEL_NULL(storm)
 
 /datum/eldritch_knowledge/final_eldritch/void_final/on_life(mob/user)
 	. = ..()
-	if(!finished)
+	if(!finished || !isliving(user) || user.stat == DEAD)
 		return
-
-	for(var/mob/living/carbon/livies in spiral_range(7,user)-user)
-		if(IS_HERETIC_MONSTER(livies) || IS_HERETIC(livies))
-			return
-		livies.silent = clamp(livies.silent + 1, 0, 5)
-		livies.adjust_bodytemperature(-20)
-
-	var/turf/turfie = get_turf(user)
-	if(!isopenturf(turfie))
+	for(var/mob/living/carbon/victim in view(5, user))
+		if(!heretic_can_affect(user, victim, chargecost = 0))
+			continue
+		victim.adjust_bodytemperature(-15)
+	var/turf/open/floor/floor = get_turf(user)
+	if(!istype(floor))
 		return
-	var/turf/open/open_turfie = turfie
-	open_turfie.TakeTemperature(-20)
-
+	floor.TakeTemperature(-15)
 	var/area/user_area = get_area(user)
-	var/turf/user_turf = get_turf(user)
-
+	if(!sound_loop)
+		sound_loop = new(user, TRUE, TRUE)
+	if(storm && !(floor.z in storm.impacted_z_levels))
+		stop_storm()
 	if(!storm)
-		storm = new /datum/weather/void_storm(list(user_turf.z))
+		storm = new(list(floor.z), user_area)
 		storm.telegraph()
+	else if(storm.followed_area != user_area)
+		storm.move_to_area(user_area)
 
-	storm.area_type = user_area.type
-	storm.impacted_areas = list(user_area)
-	storm.update_areas()
+/datum/weather/void_storm/heretic
+	var/area/followed_area
+
+/datum/weather/void_storm/heretic/New(list/z_levels, area/initial_area)
+	followed_area = initial_area
+	if(initial_area)
+		area_type = initial_area.type
+	return ..(z_levels)
+
+/datum/weather/void_storm/heretic/update_areas()
+	if(followed_area)
+		impacted_areas = list(followed_area)
+	return ..()
+
+/datum/weather/void_storm/heretic/proc/move_to_area(area/new_area)
+	if(!new_area || followed_area == new_area)
+		return
+	var/previous_stage = stage
+	stage = END_STAGE
+	update_areas()
+	stage = previous_stage
+	followed_area = new_area
+	area_type = new_area.type
+	update_areas()

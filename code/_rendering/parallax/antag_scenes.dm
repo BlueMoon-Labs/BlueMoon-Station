@@ -25,11 +25,15 @@
 #define ANTAG_SCENE_HERETIC_RUST "heretic_rust"
 #define ANTAG_SCENE_HERETIC_VOID "heretic_void"
 #define ANTAG_SCENE_HERETIC_FLESH "heretic_flesh"
+#define ANTAG_SCENE_HERETIC_BLADE "heretic_blade"
+#define ANTAG_SCENE_HERETIC_MOON "heretic_moon"
+#define ANTAG_SCENE_HERETIC_COSMIC "heretic_cosmic"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
 #define ANTAG_PARALLAX_TOKEN_CULT "antag_cult"
-/// Токен вознесения еретика. Двое вознёсшихся - вторая сцена перекрывает первую.
+/// Префикс токена вознесения: финальное знание добавляет REF(src), поэтому снятие
+/// роли одного еретика сохраняет сцены остальных вознёсшихся.
 #define ANTAG_PARALLAX_TOKEN_HERETIC "antag_heretic"
 
 /// Ключ сцены -> слои поверх текущей сцены уровня.
@@ -60,6 +64,18 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_HERETIC_FLESH = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_flesh,
 		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
+	),
+	ANTAG_SCENE_HERETIC_BLADE = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_blade,
+		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
+	),
+	ANTAG_SCENE_HERETIC_MOON = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_moon,
+		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
+	),
+	ANTAG_SCENE_HERETIC_COSMIC = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic,
+		/atom/movable/screen/parallax_layer/donor/tauceti_3,
 	),
 ))
 
@@ -132,3 +148,18 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/heretic_flesh
 	color = "#7a1030"
 	alpha = 75
+
+/// Мастер Клинка: холодный блеск стали среди острых осколков.
+/atom/movable/screen/parallax_layer/tint/antag/heretic_blade
+	color = "#718494"
+	alpha = 55
+
+/// Обратная сторона Луны: серебристая дымка с лиловым отсветом.
+/atom/movable/screen/parallax_layer/tint/antag/heretic_moon
+	color = "#776d9e"
+	alpha = 65
+
+/// Небо внутри: бирюзовое сияние и чужие звёзды поверх знакомого сектора.
+/atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic
+	color = "#237d91"
+	alpha = 70

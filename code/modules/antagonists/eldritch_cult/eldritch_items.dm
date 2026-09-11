@@ -1,124 +1,119 @@
 /obj/item/living_heart
-	name = "Живое сердце"
-	desc = "Связь с другим миром... смажь меня кровью, если хочешь возобновить биение сердца. Нажмите АЛЬТ-ЛКМ, чтобы сбросить жертву."
+	name = "живое сердце"
+	desc = "Сердце, которое бьётся в такт чужой душе. Еретик может сжать его для поиска цели; Alt-ЛКМ позволяет выбрать другую цель."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "living_heart"
 	w_class = WEIGHT_CLASS_SMALL
-	///Target
-	var/mob/living/carbon/human/target
-	var/datum/antagonist/heretic/sac_targetter	//The heretic who used this to acquire the current target - gets cleared when target gets sacrificed.
-	COOLDOWN_DECLARE(cooldown)
+	var/datum/mind/owner_mind
 	COOLDOWN_DECLARE(track_cooldown)
 
 /obj/item/living_heart/Initialize(mapload)
 	. = ..()
-	GLOB.living_heart_cache.Add(src)	//Add is better than +=.
+	GLOB.living_heart_cache |= src
 
 /obj/item/living_heart/Destroy()
-	GLOB.living_heart_cache.Remove(src)
-	if(sac_targetter && target)
-		sac_targetter.sac_targetted.Remove(target.real_name)
+	GLOB.living_heart_cache -= src
+	owner_mind = null
 	return ..()
+
+/obj/item/living_heart/proc/bind(datum/mind/new_owner)
+	if(!new_owner?.has_antag_datum(/datum/antagonist/heretic))
+		return FALSE
+	if(owner_mind && owner_mind != new_owner)
+		return FALSE
+	owner_mind = new_owner
+	return TRUE
 
 /obj/item/living_heart/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	if(COOLDOWN_FINISHED(src, cooldown))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Restart")
+	if(IS_HERETIC(user) && (!owner_mind || user.mind == owner_mind))
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить цель")
 	return CONTEXTUAL_SCREENTIP_SET
 
-/obj/item/living_heart/AltClick(mob/user)
-	. = ..()
-	if(COOLDOWN_FINISHED(src, cooldown))
-		COOLDOWN_START(src, cooldown, 180 SECONDS)
-		playsound(src, 'sound/misc/bloop.ogg', 50, FALSE)
-		GLOB.living_heart_cache.Remove(src)
-		if(sac_targetter)
-			sac_targetter.sac_targetted.Remove(target.real_name)
-		target = null
-		user.balloon_alert(user,"<span class='warning'>Состояние Живого Сердца сброшено.</span>")
-		to_chat(user,"<span class='warning'>Состояние Живого Сердца сброшено!</span>")
-	else
-		to_chat(user, "<span class='warning'>Состояние Живого Сердца пока что не может быть сброшено.</span>")
-
-/obj/item/living_heart/attack_self(mob/user)
+/obj/item/living_heart/examine(mob/user)
 	. = ..()
 	if(!IS_HERETIC(user))
 		return
-	if(!target)
-		to_chat(user,"<span class='warning'>Не найдено ни одной цели. Нужно поместить живое сердце на руну чтобы найти новую цель.</span>")
+	if(owner_mind && owner_mind != user.mind)
+		. += span_warning("Это сердце связано с другим еретиком.")
+		return
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	if(heretic.hunt_target?.current)
+		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Подношение принимается без сознания; убивать цель не требуется.")
+	else
+		. += span_notice("Сожмите сердце, чтобы выбрать цель. Для жертвоприношения положите сердце рядом с целью на руну трансмутации.")
+
+/obj/item/living_heart/AltClick(mob/user)
+	. = ..()
+	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK) || !bind(user.mind))
+		return
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	heretic.ensure_hunt_target(user, force_replace = TRUE)
+
+/obj/item/living_heart/attack_self(mob/living/user)
+	. = ..()
+	if(!bind(user.mind))
+		balloon_alert(user, "сердце молчит")
+		to_chat(user, span_warning("Сердце не отзывается на ваш зов."))
+		return
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	if(!heretic.hunt_target_available(heretic.hunt_target))
+		heretic.ensure_hunt_target(user)
 		return
 	if(!COOLDOWN_FINISHED(src, track_cooldown))
 		return
 	COOLDOWN_START(src, track_cooldown, 4 SECONDS)
-
-	var/dist = get_dist(user, target)
-	var/dir = get_dir(user, target)
-	var/arrow_color
-
-	if(user.z != target.z)
-		user.balloon_alert(user, "[target.real_name] находится на другом плане существования!")
-		to_chat(user,"<span class='warning'>[target.real_name] находится на другом плане существования!</span>")
+	var/mob/living/carbon/human/target = heretic.hunt_target.current
+	var/turf/target_turf = get_turf(target)
+	var/turf/user_turf = get_turf(user)
+	playsound(src, 'modular_bluemoon/sound/heretic/heart_track.ogg', 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	if(!target_turf || !user_turf || target_turf.z != user_turf.z)
+		balloon_alert(user, "на другом уровне")
+		to_chat(user, span_notice("[target.real_name] находится на другом уровне станции."))
 		return
-
-	switch(dist)
-		if(0 to 15)
-			user.balloon_alert(user, "[target.real_name] рядом со мной. [dir2text_ru(dir)]")
-			to_chat(user,"<span class='warning'>[target.real_name] рядом со мной. [dir2text_ru(dir)]</span>")
-			arrow_color = COLOR_GREEN
-		if(16 to 31)
-			user.balloon_alert(user, "[target.real_name] поблизости. [dir2text_ru(dir)]")
-			to_chat(user,"<span class='warning'>[target.real_name] поблизости. [dir2text_ru(dir)]</span>")
-			arrow_color = COLOR_YELLOW
-		if(32 to 127)
-			user.balloon_alert(user, "[target.real_name] далеко. [dir2text_ru(dir)]")
-			to_chat(user,"<span class='warning'>[target.real_name] далеко. [dir2text_ru(dir)]</span>")
-			arrow_color = COLOR_ORANGE
-		else
-			user.balloon_alert(user, "[target.real_name] за пределами досягаемости.")
-			to_chat(user,"<span class='warning'>[target.real_name] за пределами досягаемости.</span>")
-			arrow_color = COLOR_RED
-
-	if(target.stat == DEAD)
-		user.balloon_alert(user, "[target.real_name] мертва. Нужно перенести её на руну трансмутации!")
-		to_chat(user,"<span class='warning'>[target.real_name] мертва. Нужно перенести её на руну трансмутации!</span>")
-
+	var/distance = get_dist(user_turf, target_turf)
+	var/direction = get_dir(user_turf, target_turf)
+	balloon_alert(user, distance ? "[distance] кл., [dir2text_ru(direction)]" : "прямо здесь")
+	to_chat(user, span_notice("[target.real_name]: [distance <= 15 ? "совсем рядом" : distance <= 31 ? "поблизости" : "далеко"], [dir2text_ru(direction)]."))
+	if(target.stat >= UNCONSCIOUS)
+		to_chat(user, span_notice("Цель без сознания. Перенесите её и живое сердце к руне трансмутации."))
 	var/datum/hud/user_hud = user.hud_used
-	if(!user_hud || !istype(user_hud, /datum/hud) || !islist(user_hud.infodisplay))
+	if(!user_hud || !islist(user_hud.infodisplay))
 		return
-
 	var/atom/movable/screen/navigate_arrow/arrow = new(null, user_hud)
-	arrow.color = arrow_color
+	arrow.color = distance <= 15 ? COLOR_GREEN : distance <= 31 ? COLOR_YELLOW : COLOR_ORANGE
 	arrow.screen_loc = around_player
-	arrow.transform = matrix(dir2angle(dir), MATRIX_ROTATE)
-
+	arrow.transform = matrix(dir2angle(direction), MATRIX_ROTATE)
 	user_hud.infodisplay += arrow
 	user_hud.show_hud(user_hud.hud_version)
-
 	QDEL_IN(arrow, 1.6 SECONDS)
 
 /obj/item/melee/sickly_blade
-	name = "Болезненный клинок"
-	desc = "Клинок похожий на серп болезненно зелёного цвета, украшенный арнаментом из глаза. Вам кажется что из него за вами кто-то наблюдает..."
+	name = "зловещий клинок"
+	desc = "Серповидный клинок болезненно-зелёного цвета с узором в виде глаза. Кажется, из него за вами наблюдают."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "eldritch_blade"
 	item_state = "eldritch_blade"
-	lefthand_file = 'icons/mob/inhands/64x64_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/64x64_righthand.dmi'
-	inhand_x_dimension = 64
-	inhand_y_dimension = 64
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_righthand.dmi'
+	inhand_x_dimension = 48
+	inhand_y_dimension = 36
 	flags_1 = CONDUCT_1
 	sharpness = SHARP_EDGED
 	w_class = WEIGHT_CLASS_NORMAL
-	force = 28
+	force = 22
 	throwforce = 15
 	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "tore", "lacerated", "ripped", "diced", "rended")
-	wound_bonus = 30
-	bare_wound_bonus = 35
+	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
+	wound_bonus = 5
+	bare_wound_bonus = 10
+	/// Только соответствующий клинок активирует метку своего пути.
+	var/mark_type = /datum/status_effect/eldritch
+	var/route = PATH_SIDE
 
-/obj/item/melee/sickly_blade/attack(mob/living/target, mob/living/user)
+/obj/item/melee/sickly_blade/attack(mob/living/target, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(!(IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
-		to_chat(user,"<span class='danger'>Чувствую как импульс чужеродного интеллекта пронзает мой разум!</span>")
+		to_chat(user,"<span class='danger'>Чужая воля пронзает ваш разум!</span>")
 		user.DefaultCombatKnockdown(100)
 		user.dropItemToGround(src, TRUE)
 		if(ishuman(user))
@@ -127,70 +122,101 @@
 		else
 			user.adjustBruteLoss(rand(force/2,force))
 		return
-	return ..()
+	var/can_trigger = heretic_can_affect(user, target)
+	var/damage_before = target.getBruteLoss() + target.getFireLoss()
+	. = ..()
+	if(!can_trigger || QDELETED(target) || QDELETED(src) || target.getBruteLoss() + target.getFireLoss() <= damage_before)
+		return
+	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
+	if(!heretic)
+		return
+	var/list/knowledge = heretic.get_all_knowledge()
+	var/datum/status_effect/eldritch/mark = target.has_status_effect(mark_type)
+	if(mark)
+		mark.on_effect()
+		for(var/knowledge_type in knowledge)
+			var/datum/eldritch_knowledge/entry = knowledge[knowledge_type]
+			if(entry.route == route)
+				entry.on_mark_detonated(user, target)
+	for(var/knowledge_type in knowledge)
+		var/datum/eldritch_knowledge/entry = knowledge[knowledge_type]
+		if(entry.route == route || entry.route == PATH_SIDE)
+			entry.on_eldritch_blade(target, user, TRUE, null)
 
 /obj/item/melee/sickly_blade/attack_self(mob/user)
 	var/turf/safe_turf = find_safe_turf(zlevels = z, extended_safety_checks = TRUE)
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
 		if(do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
-			to_chat(user,"<span class='warning'>Когда я разбиваю [src], начинаю чувствовать присутствие неведомой энергии пронзающей моё тело. Ржавые холмы услышали мой зов...</span>")
+			to_chat(user,"<span class='warning'>Вы разбиваете [src], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
 		else
-			to_chat(user,"<span class='warning'>Я разбиваю [src], но моя мольба остаётся не услышанной.</span>")
+			to_chat(user,"<span class='warning'>Вы разбиваете [src], но на зов никто не отвечает.</span>")
 	else
-		to_chat(user,"<span class='warning'>Я разбиваю [src].</span>")
+		to_chat(user,"<span class='warning'>Вы разбиваете [src].</span>")
 	playsound(src, "shatter", 70, TRUE) //copied from the code for smashing a glass sheet onto the ground to turn it into a shard
 	qdel(src)
 
 /obj/item/melee/sickly_blade/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
-	var/datum/antagonist/heretic/cultie = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	if(proximity_flag)
+		return
+	var/datum/antagonist/heretic/cultie = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	if(!cultie)
 		return
 	var/list/knowledge = cultie.get_all_knowledge()
 	for(var/X in knowledge)
 		var/datum/eldritch_knowledge/eldritch_knowledge_datum = knowledge[X]
-		if(proximity_flag)
-			eldritch_knowledge_datum.on_eldritch_blade(target,user,proximity_flag,click_parameters)
-		else
+		if(eldritch_knowledge_datum.route == route || eldritch_knowledge_datum.route == PATH_SIDE)
 			eldritch_knowledge_datum.on_ranged_attack_eldritch_blade(target,user,click_parameters)
 
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		. += "<span class='notice'><B>Еретик (или его слуга) может разбить клинок чтобы телепортироваться в случайное место, чаще всего безопасное, после активации его в руке.</B></span>"
+		. += span_notice("Еретик или его слуга может активировать клинок в руке и разбить его, чтобы переместиться в случайное место, обычно безопасное.")
 
 /obj/item/melee/sickly_blade/rust
-	name = "Ржавый клинок"
-	desc = "Этот серповидный клинок довольно ветх и ржавеет. Но он продолжается кусаться и разрывать плоть и кости своими ржавыми зубцами."
+	name = "ржавый клинок"
+	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
+	mark_type = /datum/status_effect/eldritch/rust
+	route = PATH_RUST
+	desc = "Ветхий серповидный клинок с ржавыми зубцами, которые всё ещё легко рвут плоть."
 	icon_state = "rust_blade"
 	item_state = "rust_blade"
-	embedding = list("pain_mult" = 4, "embed_chance" = 75, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
+	embedding = list("pain_mult" = 2, "embed_chance" = 25, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 
 /obj/item/melee/sickly_blade/ash
-	name = "Пепельный клинок"
-	desc = "Расплавленный и необработанный кусок металла осыпающийся пеплом и шлаком. Он стремиться быть чем-то большим разрезая наполенные пеплом раны."
+	name = "пепельный клинок"
+	icon = 'modular_bluemoon/icons/obj/heretic_ash.dmi'
+	mark_type = /datum/status_effect/eldritch/ash
+	route = PATH_ASH
+	desc = "Оплавленный кусок металла, с которого сыплются пепел и шлак. Жар проникает в каждую оставленную им рану."
 	icon_state = "ash_blade"
 	item_state = "ash_blade"
-	force = 35
+	force = 25
 
 /obj/item/melee/sickly_blade/flesh
-	name = "Мясной клинок"
-	desc = "Серповидный клинок, созданный из искажённой плоти существа. Понимая это, он стремится распространить на других страдания, которые он перенес в ходе этого превращения."
+	name = "клинок плоти"
+	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
+	mark_type = /datum/status_effect/eldritch/flesh
+	route = PATH_FLESH
+	desc = "Серповидный клинок из искривлённой живой плоти. Под кожей лезвия что-то судорожно сокращается."
 	icon_state = "flesh_blade"
 	item_state = "flesh_blade"
 
 /obj/item/melee/sickly_blade/void
-	name = "Пустотный клинок"
-	desc = "Лишенный каких-либо излишеств, этот клинок отражает ничто. Он представляет собой настоящее изображение чистоты и хаоса, который наступаю после конца всего."
+	name = "клинок Пустоты"
+	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
+	mark_type = /datum/status_effect/eldritch/void
+	route = PATH_VOID
+	desc = "Гладкий клинок без украшений. В его поверхности не отражается ничего, даже свет."
 	icon_state = "void_blade"
 	item_state = "void_blade"
-	throwforce = 35
+	throwforce = 20
 
 /obj/item/clothing/neck/eldritch_amulet
-	name = "Тёплый древний медальен"
-	desc = "Странный медальен. Глядя сквозь кристаллическую линзу, мир вокруг тает. Вы видите свое биение сердца и пульс тысячи других."
-	icon = 'icons/obj/eldritch.dmi'
-	icon_state = "eye_medalion"
+	name = "зловещий медальон"
+	desc = "Медальон с живым глазом в оправе. На шее еретика или его слуги глаз приоткрывается и различает тепло живых тел. В чужих руках он спит."
+	icon = 'modular_bluemoon/icons/obj/heretic_medallion.dmi'
+	icon_state = "watching_eye_closed"
 	w_class = WEIGHT_CLASS_SMALL
 	///What trait do we want to add upon equipiing
 	var/trait = TRAIT_THERMAL_VISION
@@ -198,31 +224,33 @@
 /obj/item/clothing/neck/eldritch_amulet/equipped(mob/user, slot)
 	. = ..()
 	if(ishuman(user) && user.mind && slot == ITEM_SLOT_NECK && (IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
-		ADD_TRAIT(user, trait, CLOTHING_TRAIT)
+		ADD_TRAIT(user, trait, REF(src))
 		user.update_sight()
+	update_icon()
 
 /obj/item/clothing/neck/eldritch_amulet/dropped(mob/user)
 	. = ..()
-	REMOVE_TRAIT(user, trait, CLOTHING_TRAIT)
+	REMOVE_TRAIT(user, trait, REF(src))
 	user.update_sight()
+	update_icon()
 
 /obj/item/clothing/neck/eldritch_amulet/piercing
-	name = "Пронзённый древний медальон"
-	desc = "Странный медальон. Если заглянуть сквозь кристаллическую линзу, свет преломится и искажается открывая новые оттенки цветов. Вы видите себя, отраженного в каскаде зеркал, принявшего невероятную форму."
+	name = "всевидящий медальон"
+	desc = "Медальон с широко раскрывающимся глазом. На шее еретика или его слуги он видит сквозь стены; снятый медальон закрывает веко."
 	trait = TRAIT_XRAY_VISION
 
 /obj/item/clothing/head/hooded/cult_hoodie/eldritch
-	name = "Зловещий капюшон"
+	name = "капюшон еретика"
 	icon_state = "eldritch"
-	desc = "Порванный, запыленный капюшон. Странные глаза смотрят на вас изнутри."
+	desc = "Пыльный рваный капюшон. Из складок на вас смотрят чужие глаза."
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	flash_protect = 2
 	alternate_screams = BLOOD_SCREAMS
 
 /obj/item/clothing/suit/hooded/cultrobes/eldritch
-	name = "Зловещий балахон"
-	desc = "Рваная, пыльная роба. Странные глаза смотрят на вас изнутри.."
+	name = "мантия еретика"
+	desc = "Рваное пыльное облачение. В складках ткани шевелятся чужие глаза."
 	icon_state = "eldritch_armor"
 	item_state = "eldritch_armor"
 	flags_inv = HIDESHOES|HIDEJUMPSUIT
@@ -235,24 +263,24 @@
 	alternate_screams = BLOOD_SCREAMS
 
 /obj/item/reagent_containers/glass/beaker/eldritch
-	name = "Фляжка с древней эссенцией"
-	desc = "Токсично для неведующих умов, но освежает тех, кто знает секреты завесы."
+	name = "потусторонняя эссенция"
+	desc = "Яд для непосвящённых и целительный напиток для тех, кто знает тайны завесы."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "eldrich_flask"
 	list_reagents = list(/datum/reagent/eldritch = 50)
 
 /obj/item/clothing/head/hooded/cult_hoodie/void
-	name = "Пустотный капюшон"
+	name = "капюшон Пустоты"
 	icon_state = "void_cloak"
 	flags_inv = NONE
 	flags_cover = NONE
-	desc = "Черный, как смола и не отражающий свет капюшон. Рунические символы украшают его внешнюю поверхность, с каждой их вспышкой вы теряете понимание того, что видите."
+	desc = "Чёрный капюшон, который словно поглощает свет. Руны на ткани вспыхивают и ускользают из памяти."
 	armor = list(MELEE = 30, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 15, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	obj_flags = NONE | EXAMINE_SKIP
 
 /obj/item/clothing/suit/hooded/cultrobes/void
-	name = "Пустотный плащ"
-	desc = "Черный, как смола и не отражающий свет плащ. Рунические символы украшают его внешнюю поверхность, с каждой их вспышкой вы теряете понимание того, что видите."
+	name = "плащ Пустоты"
+	desc = "Чёрный плащ, который словно поглощает свет. Руны на ткани вспыхивают и ускользают из памяти."
 	icon_state = "void_cloak"
 	item_state = "void_cloak"
 	allowed = list(/obj/item/melee/sickly_blade, /obj/item/forbidden_book, /obj/item/living_heart)
@@ -271,17 +299,17 @@
 		. = ..()
 		//We need to account for the hood shenanigans, and that way we can make sure items always fit, even if one of the slots is used by the fucking hood.
 		if(suittoggled)
-			to_chat(carbon_user,"<span class='notice'>Пустота обволакивает меня, делая плащ невидимым!</span>")
+			to_chat(carbon_user,"<span class='notice'>Пустота обволакивает вас, скрывая плащ!</span>")
 			obj_flags |= EXAMINE_SKIP
 		else if(obj_flags & EXAMINE_SKIP) // ensures that it won't toggle visibility if raising the hood failed
 			to_chat(carbon_user,"<span class='notice'>Калейдоскоп цветов рушится вокруг вас, когда плащ становится вновь видимым!</span>")
 			obj_flags ^= EXAMINE_SKIP
 	else
-		to_chat(carbon_user,"<span class='danger'>Не могу натянуть капюшон на голову!</span>")
+		to_chat(carbon_user,"<span class='danger'>Не удаётся надеть капюшон!</span>")
 
 /obj/item/clothing/mask/void_mask
-	name = "Маска бездны"
-	desc = "Маска, созданная из всевозможных страданий живых существ, вы можете посмотреть в ее глаза и заметить, что что-то смотрит в ответ."
+	name = "маска безумия"
+	desc = "Лицо, застывшее в мучительной гримасе. Если заглянуть в его глаза, что-то посмотрит в ответ."
 	icon_state = "mad_mask"
 	item_state = "mad_mask"
 	w_class = WEIGHT_CLASS_SMALL
@@ -307,8 +335,14 @@
 	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 	return ..()
 
+/obj/item/clothing/mask/void_mask/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	local_user = null
+	return ..()
+
 /obj/item/clothing/mask/void_mask/process(delta_time)
-	if(!local_user)
+	if(QDELETED(local_user) || loc != local_user || local_user.wear_mask != src)
+		local_user = null
 		return PROCESS_KILL
 
 	if((IS_HERETIC(local_user) || IS_HERETIC_MONSTER(local_user)) && HAS_TRAIT(src,TRAIT_NODROP))
@@ -334,8 +368,8 @@
 			human_in_range.Dizzy(5)
 
 /obj/item/melee/rune_knife
-	name = "Нож для резьбы"
-	desc = "Холодная сталь, чистая, совершенная, этот нож может резать пол разными способами, но лишь немногие смогут пробудить опасности что представляет реальность скрывающаяся в этих рисунках."
+	name = "нож для вырезания рун"
+	desc = "Холодное стальное лезвие для вырезания рун. Посвящённый может пробудить силу оставленных им знаков."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "rune_carver"
 	flags_1 = CONDUCT_1
@@ -346,7 +380,7 @@
 	throwforce = 30
 	embedding = list(embed_chance=75, jostle_chance=2, ignore_throwspeed_threshold=TRUE, pain_stam_pct=0.4, pain_mult=3, jostle_pain_mult=5, rip_time=15)
 	hitsound = 'sound/weapons/bladeslice.ogg'
-	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "tore", "lacerated", "ripped", "diced", "rended")
+	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
 	///turfs that you cannot draw carvings on
 	var/static/list/blacklisted_turfs = typecacheof(list(/turf/closed,/turf/open/space,/turf/open/lava))
 	///A check to see if you are in process of drawing a rune
@@ -360,9 +394,9 @@
 
 /obj/item/melee/rune_knife/examine(mob/user)
 	. = ..()
-	. += "Им можно вырезать 'Резьбу предосторожности' - почти невидимую руну, которая, если на нее наступить, дает вам подсказку о том, где кто-то стоял на ней и кто это был, и не разрушается, если на нее наступить."
-	. += "Им можно вырезать 'Резьбу захвата' - если наступить на ее, она нанесет тяжелый урон ногам и оглушит на 5 секунд."
-	. += "Им можно вырезать 'Резьбу безумия' - если на её наступить, это вызовет головокружение, головную боль, временную слепоту, спутанность сознания, заикание и невнятность."
+	. += "Предупреждающая руна почти невидима. Она сообщает, кто и где на неё наступил, и сохраняется после срабатывания."
+	. += "Хватающая руна ранит обе ноги, сбивает с ног на 5 секунд и заставляет выронить предметы из рук."
+	. += "Руна безумия вызывает слабость, головокружение, дрожь, временную слепоту, спутанность сознания и потерю голоса."
 
 /obj/item/melee/rune_knife/Initialize(mapload)
 	. = ..()
@@ -389,7 +423,7 @@
 /obj/item/melee/rune_knife/proc/carve_rune(atom/target, mob/user, proximity_flag, click_parameters)
 	var/obj/structure/trap/eldritch/elder = locate() in range(1,target)
 	if(elder)
-		to_chat(user,"<span class='notice'>Не могу рисовать руны так близко друг к другу!</span>")
+		to_chat(user,"<span class='notice'>Нельзя вырезать руны так близко друг к другу!</span>")
 		return
 
 	for(var/X in current_runes)
@@ -408,13 +442,13 @@
 
 	drawing = TRUE
 
-	var/type = pick_list[input(user,"Choose the rune","Rune") as null|anything in pick_list ]
+	var/type = pick_list[input(user, "Выберите руну", "Вырезание руны") as null|anything in pick_list]
 	if(!type)
 		drawing = FALSE
 		return
 
 
-	to_chat(user,"<span class='notice'>Начинаю чертить руну...</span>")
+	to_chat(user,"<span class='notice'>Вы начинаете вырезать руну...</span>")
 	if(!do_after(user,5 SECONDS,target = target))
 		drawing = FALSE
 		return
@@ -426,7 +460,7 @@
 
 /datum/action/innate/rune_shatter
 	name = "Разрушение рун"
-	desc = "Устраняет все руны привязанные к этому клинку."
+	desc = "Уничтожает все руны, привязанные к этому клинку."
 	background_icon_state = "bg_ecult"
 	button_icon_state = "rune_break"
 	icon_icon = 'icons/mob/actions/actions_ecult.dmi'
@@ -445,7 +479,7 @@
 			qdel(eldritch)
 
 /obj/item/eldritch_potion
-	name = "Напиток Дня и Ночи"
+	name = "напиток дня и ночи"
 	desc = "Я никогда не должен был видеть этого."
 	icon = 'icons/obj/eldritch.dmi'
 	///Typepath to the status effect this is supposed to hold
@@ -453,7 +487,7 @@
 
 /obj/item/eldritch_potion/attack_self(mob/user)
 	. = ..()
-	to_chat(user,"<span class='notice'>Я выпиваю зелье, и вместе с вязкой жидкостью стакан дематериализуется.</span>")
+	to_chat(user,"<span class='notice'>Вы выпиваете вязкое зелье. Пустой сосуд растворяется в воздухе.</span>")
 	effect(user)
 	qdel(src)
 
@@ -465,27 +499,27 @@
 	carbie.apply_status_effect(status_effect)
 
 /obj/item/eldritch_potion/crucible_soul
-	name = "Напиток Крепкой Души"
-	desc = "Позволяет проходить сквозь стены в течение 15 секунд, по истечении этого времени вы телепортируетесь в свое первоначальное местоположение."
+	name = "напиток крепкой души"
+	desc = "Позволяет проходить сквозь стены в течение 15 секунд. Затем вы возвращаетесь туда, где выпили зелье."
 	icon_state = "crucible_soul"
 	status_effect = /datum/status_effect/crucible_soul
 
 /obj/item/eldritch_potion/duskndawn
-	name = "Напиток Заката и Рассвета"
-	desc = "Позволяет вам четко видеть сквозь стены и предметы в течение 60 секунд."
+	name = "напиток заката и рассвета"
+	desc = "Позволяет видеть сквозь стены и предметы в течение 60 секунд."
 	icon_state = "clarity"
 	status_effect = /datum/status_effect/duskndawn
 
 /obj/item/eldritch_potion/wounded
-	name = "Напиток Раненного солдата"
-	desc = "В течение следующих 60 секунд каждая рана будет заживать на вас, незначительные раны заживают на 1 единицу урона в секунду, средние - на 3, а критические - на 6. Вы также становитесь невосприимчивы к замедленнию от урона."
+	name = "напиток раненого солдата"
+	desc = "В течение 60 секунд лечит каждую рану и защищает от замедления из-за урона. Незначительные раны восстанавливаются на 1 единицу урона в секунду, средние — на 3, критические — на 6."
 	icon_state = "marshal"
 	status_effect = /datum/status_effect/marshal
 
 /atom/movable/screen/navigate_arrow
 	icon = 'icons/effects/multitool_arrows.dmi'
 	icon_state = "navigate_arrow_appear"
-	name = "navigate arrow"
+	name = "указатель направления"
 	pixel_x = -32
 	pixel_y = -32
 
