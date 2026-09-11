@@ -7,7 +7,7 @@
 	name = "23 shotgun slug"
 	damage = 70
 	stamina = 70
-	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 50 → BR4(50), без изменений
+	armour_penetration = BULLET_BR14
 	sharpness = SHARP_POINTY
 	wound_bonus = 5
 
@@ -21,7 +21,6 @@
 			C.gib_head()
 	return .
 
-// КС-23 резина — BR0
 /obj/item/projectile/bullet/slug_rubber23
 	name = "23 rubber slug"
 	damage = 20
@@ -51,10 +50,10 @@
 	icon_state = "pellet"
 	damage = 12
 	stamina = 8
-	armour_penetration = 35    // BLUEMOON EDIT: было BR1(10) → 35 (BR3 в упор, падает быстро)
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5
+	armour_penetration = BULLET_BR8 // у этого вообще было не правильно выставленно АП
 
 /obj/item/ammo_box/magazine/internal/shot/KS23
 	name = "KS-23 shotgun internal magazine"

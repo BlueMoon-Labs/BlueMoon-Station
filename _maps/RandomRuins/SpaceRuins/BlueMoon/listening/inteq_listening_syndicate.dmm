@@ -1274,8 +1274,6 @@
 /obj/machinery/telecomms/relay/preset/ruskie{
 	use_power = 0
 	},
-/obj/item/radio/headset/inteq/alt,
-/obj/item/radio/headset/inteq/alt,
 /obj/item/radio/intercom{
 	freerange = 1;
 	listening = 0;

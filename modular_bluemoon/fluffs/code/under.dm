@@ -1099,3 +1099,43 @@
 	icon_state = "melatonin-uniform-[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco
+	name = "Lycanthrope Disco Shirt"
+	desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "melatonin_disco_0"
+	item_state = "melatonin_disco_0"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+	alt_covers_chest = FALSE
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "melatonin_disco_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		if(adjusted)
+			desc = "Модная диско-майка и обтягивающие рваные шорты. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		else
+			desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		update_icon()

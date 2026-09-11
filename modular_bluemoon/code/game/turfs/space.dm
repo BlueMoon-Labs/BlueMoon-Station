@@ -30,9 +30,9 @@
 /datum/map_template/ruin/space/listeningstation/New()
 	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
 		if(prob(50))
-			suffix = "syndicate_listening_default.dmm"
+			suffix = "syndie_listening_default.dmm"
 		else
-			suffix = "syndicate_listening_siege.dmm"
+			suffix = "syndie_listening_siege.dmm"
 	else
 		var/num = rand(0, 2)
 		switch(num)

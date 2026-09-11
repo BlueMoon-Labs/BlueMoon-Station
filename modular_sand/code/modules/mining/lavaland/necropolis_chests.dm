@@ -350,6 +350,7 @@
 	name = "Praetor Suit"
 	desc = "And those that tasted the bite of his sword named him... The Doom Slayer."
 	armor = list(MELEE = 70, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 50, WOUND = 40)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	strip_delay = 130
 	slowdown = 0
 	icon = 'modular_sand/icons/obj/clothing/suits.dmi'
@@ -711,6 +712,7 @@
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/damaged
 	clothing_flags = THICKMATERIAL // no space protection
 	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/damaged
 	name = "damaged inquisitor's hardsuit helmet"
@@ -723,6 +725,7 @@
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/damaged
 	clothing_flags = THICKMATERIAL // no space protection
 	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/damaged
 	name = "damaged berserker's hardsuit helmet"

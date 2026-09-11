@@ -158,12 +158,26 @@
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT //"Hide shoes" but digi shoes don't get hidden, too bad!
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	mutantrace_variation = NONE //There is no need for a digi variant, it's a costume
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
+
+/obj/item/clothing/suit/hooded/corpus/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/hooded/corpus/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/hooded/corpus/s //sec
 	name = "Enforcer Voidsuit"
 	desc = "Deluxe issue armored voidsuit. Let the middle class bask in your grofit!"
 	icon_state = "corpuss"
 	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 20, BOMB = 20, BIO = 20, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/corpus/s //Enjoy this nice red outfit Nanotrasen! There is NO NEED for a pink one! xoxo -VivI Fanteriso
 
 /obj/item/clothing/suit/hooded/corpus/s/Initialize(mapload)
@@ -285,6 +299,7 @@
 	desc = "An odd Voidsuit that looks strangely familiar. Has the name 'John' stenciled on it. The shielding module is also intact!"
 	icon_state = "corpus_jp"
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 0, RAD = 50, FIRE = 50, ACID = 50, WOUND = 50)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/corpus/jp
 
 /obj/item/clothing/head/hooded/corpus/jp //sec

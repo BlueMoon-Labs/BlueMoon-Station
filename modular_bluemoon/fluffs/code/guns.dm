@@ -2006,7 +2006,7 @@
 	else
 		icon_state = "hair_of_the_dog_not_loaded"
 
-/obj/item/modkit/melatonin_enforcer_kit
+/obj/item/modkit/melatonin_shotgun_hair_of_dog_kit
 	name = "'Hair of the Dog' Lever-Action Shotgun Kit"
 	desc = "A modkit for making an super shorty shotgun into a 'Hair of the Dog' Lever-Action Shotgun'."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'

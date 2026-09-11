@@ -1,164 +1,3 @@
-/// Global proc that sets up all MOD themes as singletons in a list and returns it.
-/proc/setup_mod_themes()
-	. = list()
-	for(var/path in typesof(/datum/mod_theme))
-		var/datum/mod_theme/new_theme = new path()
-		.[path] = new_theme
-
-/// MODsuit theme, instanced once and then used by MODsuits to grab various statistics.
-/datum/mod_theme
-	/// Theme name for the MOD.
-	var/name = "standard"
-	/// Description added to the MOD.
-	var/desc = "Гражданский костюм от Nakamura Engineering, не предлагает многого, кроме немного более быстрого передвижения."
-	/// Extended description on examine_more
-	var/extended_desc = "Модульный костюм третьего поколения от Nakamura Engineering, \
-		этот костюм является основным выбором по всей галактике для гражданских применений. Эти костюмы обеспечивают кислород, \
-		пригодны для космоса, устойчивы к огню и химическим угрозам, и иммунизированы против всего — \
-		от чихания до биологического оружия. Однако их боевые применения крайне минимальны, так как по умолчанию \
-		не установлена бронепластина, а их приводы лишь немного увеличивают скорость по сравнению с обычной."
-	/// Default skin of the MOD.
-	var/default_skin = "standard"
-	/// Armor shared across the MOD pieces.
-	var/armor = list(MELEE = 10, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 5, RAD = 0)
-	/// Resistance flags shared across the MOD pieces.
-	var/resistance_flags = NONE
-	/// Max heat protection shared across the MOD pieces.
-	var/max_heat_protection_temperature = SPACE_SUIT_MAX_TEMP_PROTECT
-	/// Max cold protection shared across the MOD pieces.
-	var/min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
-	/// Permeability shared across the MOD pieces.
-	var/permeability_coefficient = 0.01
-	/// Siemens shared across the MOD pieces.
-	var/siemens_coefficient = 0.5
-	/// How much modules can the MOD carry without malfunctioning.
-	var/complexity_max = DEFAULT_MAX_COMPLEXITY
-	/// How much battery power the MOD uses by just being on
-	var/cell_drain = DEFAULT_CHARGE_DRAIN
-	/// Slowdown of the MOD when not active.
-	var/slowdown_inactive = 0
-	/// Slowdown of the MOD when active.
-	var/slowdown_active = 0
-	/// Theme used by the MOD TGUI.
-	var/ui_theme = "ntos"
-	/// Allowed items in the chestplate's suit storage.
-	var/list/allowed = list(/obj/item/flashlight, /obj/item/tank/internals)
-	/// List of inbuilt modules. These are different from the pre-equipped suits, you should mainly use these for unremovable modules with 0 complexity.
-	var/list/inbuilt_modules = list()
-	/// Modules blacklisted from the MOD.
-	var/list/module_blacklist = list()
-	var/hardlight_color = MOD_STANDART_COLOR
-	var/datum/overlay_effect/hardlight_effect = /datum/overlay_effect/mod_effect
-	var/max_armor_module_count = 2
-	var/can_activate_without_deploy_all_parts = TRUE
-	var/need_block_storage_when_not_active = FALSE
-	/// List of skins with their appropriate clothing flags.
-	var/list/skins = list(
-		"standard" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"civilian" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"lustwish" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
-/datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin)
-	modsuit.extended_desc = extended_desc
-	modsuit.slowdown_inactive = slowdown_inactive
-	modsuit.slowdown_active = slowdown_active
-	modsuit.complexity_max = complexity_max
-	modsuit.skin = new_skin || default_skin
-	modsuit.ui_theme = ui_theme
-	modsuit.cell_drain = cell_drain
-	modsuit.initial_modules += inbuilt_modules
-	modsuit.hardlight_effect = new hardlight_effect
-	modsuit.max_armor_module_count = max_armor_module_count
-	var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
-	mod_effect.apply_color(hardlight_color)
-	for(var/index in (modsuit.mod_parts + list(modsuit)))
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/piece
-
-		if(index != modsuit)
-			piece = modsuit.mod_parts[index]
-		else
-			piece = modsuit
-		piece.name = "[name] [piece.name]"
-		piece.desc = "[piece.desc] [desc]"
-		piece.armor = getArmor(arglist(armor))
-		piece.resistance_flags = resistance_flags
-		piece.heat_protection = NONE
-		piece.cold_protection = NONE
-		piece.max_heat_protection_temperature = max_heat_protection_temperature
-		piece.min_cold_protection_temperature = min_cold_protection_temperature
-		piece.permeability_coefficient = permeability_coefficient
-		piece.siemens_coefficient = siemens_coefficient
-		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
-		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
-	return TRUE
-
 /datum/mod_theme/engineering
 	name = "engineering"
 	desc = "Инженерный костюм с термо- и электрозащитой. Классика Nakamura Engineering."
@@ -173,30 +12,8 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
 	skins = list(
-		"engineering" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
+		"engineering" = MOD_PRESET_DEFAULT,
+		)
 
 /datum/mod_theme/atmospheric
 	name = "atmospheric"
@@ -212,31 +29,8 @@
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
 	skins = list(
-		"atmospheric" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH,
-				SEALED_COVER = HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
+		"atmospheric" = MOD_PRESET_DEFAULT,
+		)
 
 /datum/mod_theme/advanced
 	name = "advanced"
@@ -250,34 +44,12 @@
 	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 15, BOMB = 70, BIO = 100, FIRE = 100, ACID = 100, WOUND = 10, RAD = 100)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	complexity_max = DEFAULT_MAX_COMPLEXITY + 5
+	complexity_max = COMMAND_MAX_COMPLEXITY
 	siemens_coefficient = 0
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
-		"advanced" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-	)
+		"advanced" = MOD_PRESET_DEFAULT,
+		)
 
 /datum/mod_theme/mining
 	name = "mining"
@@ -293,33 +65,12 @@
 	armor = list(MELEE = 20, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 50, BIO = 100, FIRE = 100, ACID = 75, WOUND = 25, RAD = 50)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	cell_drain = DEFAULT_CHARGE_DRAIN * 2
-	complexity_max = DEFAULT_MAX_COMPLEXITY + 5
-	hardlight_color = MOD_CARGO_COLOR
+	cell_drain = VERY_HIGHT_CHARGE_DRAIN
+	complexity_max = COMMAND_MAX_COMPLEXITY
+	hardlight_color = MOD_CARGO_BLUE
 	skins = list(
-		"mining" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"mining" = MOD_PRESET_DEFAULT,
+		"asteroid" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/medical
@@ -332,79 +83,12 @@
 		он невероятно кислотостойкий. Энергопотребление немного выше, чем у гражданских моделей, \
 		и он слаб против постукиваний пальцами по стеклу."
 	default_skin = "medical"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 100, FIRE = 60, ACID = 75, WOUND = 5, RAD = 0)
-	cell_drain = DEFAULT_CHARGE_DRAIN * 0.9 //медбей это про скорость и долговечность, но околонулевая защита.
+	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_MEDBAY_COLOR
 	skins = list(
-		"medical" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"corpsman" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"dyne-guardian" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"medical" = MOD_PRESET_DEFAULT,
+		"corpsman" = MOD_PRESET_DEFAULT,
+		"dyne-guardian" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/rescue
@@ -420,32 +104,9 @@
 	armor = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 10, BIO = 100, FIRE = 100, ACID = 100, WOUND = 5, RAD = 0)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	cell_drain = DEFAULT_CHARGE_DRAIN
 	hardlight_color = MOD_MEDBAY_COLOR
 	skins = list(
-		"rescue" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"rescue" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/research
@@ -465,28 +126,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_RESEARCH_COLOR
 	skins = list(
-		"research" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"research" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/security
@@ -503,150 +143,42 @@
 	default_skin = "security"
 	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 45, BOMB = 25, BIO = 100, FIRE = 75, ACID = 75, WOUND = 30, RAD = 50)
 	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
+	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = MOD_SEC_COLOR
 	skins = list(
-		"security" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH,
-				SEALED_COVER = HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"security" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/security/expeditor
 	name = "Vanguard"
 	desc = "Армированный МОД, в котором не страшно ступить даже в самые опасные заброшенные станции и обломки кораблей."
 	default_skin = "vanguard"
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
+	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = "#800080"
 	skins = list(
-		"vanguard" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"vanguard" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/blueshied
 	name = "Blueshied"
 	desc = "Прототип костюма класса Magnate, выданный для использования станционными синими щитами"
 	extended_desc = "Прототип костюма класса Magnate, выданный для использования станционными синими щитами, \
-        он может похвастаться исключительной защитой своего преемника, жертвуя частью вместимости модулей.\
-        Вся защита Magnate — и никакого комфорта! В визоре используется синий свет, скрывающий \
-        лицо владельца и придающий его облику внушительность. В отличие от изящного и роскошного дизайна, \
-        появившегося позднее, этот костюм ничуть не скрывает своего предназначения: усиленные пластины, наложенные \
-        поверх утеплённой внутренней брони, обеспечивают защиту от агрессивных жидкостей, взрывов, \
-        огня, электрических разрядов и презрения со стороны остального экипажа."
+		он может похвастаться исключительной защитой своего преемника, жертвуя частью вместимости модулей.\
+		Вся защита Magnate — и никакого комфорта! В визоре используется синий свет, скрывающий \
+		лицо владельца и придающий его облику внушительность. В отличие от изящного и роскошного дизайна, \
+		появившегося позднее, этот костюм ничуть не скрывает своего предназначения: усиленные пластины, наложенные \
+		поверх утеплённой внутренней брони, обеспечивают защиту от агрессивных жидкостей, взрывов, \
+		огня, электрических разрядов и презрения со стороны остального экипажа."
 	default_skin = "praetorian"
 	armor = list(MELEE = 40, BULLET = 20, LASER = 20, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
-		"praetorian" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"blacksec" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"souless" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"praetorian" = MOD_PRESET_DEFAULT,
+		"blacksec" = MOD_PRESET_DEFAULT,
+		"souless" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/blueshied/souless
@@ -669,31 +201,10 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY - 5
+	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
-		"safeguard" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"safeguard" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/magnate
@@ -713,32 +224,10 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY + 5
+	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
-		"magnate" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"magnate" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/cosmohonk
@@ -751,33 +240,11 @@
 		Всё, что вам известно, — этот костюм загадочно энергоэффективен и слишком пёстрый, чтобы Мим мог его украсть."
 	default_skin = "cosmohonk"
 	armor = list(MELEE = 5, BULLET = 5, LASER = 20, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 60, ACID = 30, WOUND = 5, RAD = 0)
-	cell_drain = DEFAULT_CHARGE_DRAIN * 0.25
+	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_SYNDICATE_COLOR
 	/*inbuilt_modules = list(/obj/item/mod/module/waddle)*/ // Waddling element not ported, commented for now as it is a prerequisite.
 	skins = list(
-		"cosmohonk" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEEARS,
-				SEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"cosmohonk" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/syndicate
@@ -798,52 +265,8 @@
 	inbuilt_modules = list()
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
-		"syndicate" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"cybersun" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"syndicate" = MOD_PRESET_DEFAULT,
+		"cybersun" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/elite
@@ -864,75 +287,9 @@
 	inbuilt_modules = list()
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
-		"elite" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"admiral" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"admiral-cybersun" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"elite"            = MOD_PRESET_DEFAULT,
+		"admiral"          = MOD_PRESET_DEFAULT,
+		"admiral-cybersun" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/prototype
@@ -950,32 +307,10 @@
 	default_skin = "prototype"
 	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 20, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 35)
 	resistance_flags = FIRE_PROOF
-	cell_drain = DEFAULT_CHARGE_DRAIN * 2
-	slowdown_active = 1.2
+	cell_drain = VERY_HIGHT_CHARGE_DRAIN
 	ui_theme = "hackerman"
 	skins = list(
-		"prototype" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"prototype" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/responsory
@@ -993,75 +328,9 @@
 	siemens_coefficient = 0
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
-		"responsory" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"inquisitory" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
-		"marine" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"responsory"  = MOD_PRESET_DEFAULT,
+		"inquisitory" = MOD_PRESET_DEFAULT,
+		"marine"      = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/apocryphal
@@ -1078,32 +347,10 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	complexity_max = DEFAULT_MAX_COMPLEXITY + 10
+	complexity_max = CENTCOMM_MAX_COMPLEXITY
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
-		"apocryphal" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEEARS,
-				SEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEMASK|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"apocryphal" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/corporate
@@ -1121,29 +368,7 @@
 	siemens_coefficient = 0
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
-		"corporate" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"corporate" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/debug
@@ -1156,32 +381,9 @@
 	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 100, RAD = 35)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	complexity_max = 50
+	complexity_max = DEBUG_COMPLEXITY
 	skins = list(
-		"debug" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH,
-				SEALED_COVER = HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"debug" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/administrative
@@ -1195,28 +397,10 @@
 	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 100, RAD = 100)
 	resistance_flags = INDESTRUCTIBLE|LAVA_PROOF|FIRE_PROOF|UNACIDABLE|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	complexity_max = 100
-	cell_drain = DEFAULT_CHARGE_DRAIN * 0
+	complexity_max = DEBUG_COMPLEXITY
+	cell_drain = DEBUG_LOW_CHARGE_DRAIN
 	skins = list(
-		"debug" = list(
-			HELMET_LAYER = null,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR|HIDEEARS,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				UNSEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE,
-			),
-		),
+		"debug" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/inteq
@@ -1231,29 +415,7 @@
 	inbuilt_modules = list()
 	hardlight_color = MOD_INTEQ_COLOR
 	skins = list(
-		"InteQ" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"InteQ" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/inteq/traitor
@@ -1264,29 +426,7 @@
 	default_skin = "inteqe"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 15, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, RAD = 100, WOUND = 25)
 	skins = list(
-		"inteqe" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-			),
-		),
+		"inteqe" = MOD_PRESET_DEFAULT,
 	)
 
 /datum/mod_theme/inteq/infiltrator
@@ -1296,32 +436,12 @@
 	default_skin = "infiltrator"
 	armor = list(MELEE = 45, BULLET = 50, LASER = 45, ENERGY = 55, BOMB = 75, BIO = 100, RAD = 70, FIRE = 100, ACID = 100, WOUND = 55)
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
-	complexity_max = DEFAULT_MAX_COMPLEXITY
 	siemens_coefficient = 0
 	ui_theme = "inteq"
 	inbuilt_modules = list()
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
 	skins = list(
-		"infiltrator" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-			),
-		),
+		"infiltrator" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT,
 	)
 
 /datum/mod_theme/lustwish
@@ -1330,31 +450,67 @@
 	extended_desc = "Классика от Nakamura Engineering, изменённая дизайнерами компании LustWish™, с её брендовыми цветами \
 		и, конечно же, латексными вставками, которые создают особые ощущения при ношении."
 	default_skin = "lustwish"
-	hardlight_color = "#FF66CC"
+	hardlight_color = MOD_LUSTWISH_COLOR
 	can_activate_without_deploy_all_parts = FALSE
 	need_block_storage_when_not_active = TRUE
 	skins = list(
-		"lustwish" = list(
-			HELMET_LAYER = NECK_LAYER,
-			HELMET_FLAGS = list(
-				UNSEALED_CLOTHING = NONE,
-				SEALED_CLOTHING = THICKMATERIAL|ALLOWINTERNALS,
-				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
-				SEALED_INVISIBILITY = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR,
-				SEALED_COVER = HEADCOVERSMOUTH|HEADCOVERSEYES,
-			),
-			CHESTPLATE_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = THICKMATERIAL,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
-			),
-			GAUNTLETS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = THICKMATERIAL,
-			),
-			BOOTS_FLAGS = list(
-				UNSEALED_CLOTHING = THICKMATERIAL,
-				SEALED_CLOTHING = THICKMATERIAL,
-			),
-		),
+		"lustwish" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT,
+	)
+
+/datum/mod_theme/spider_clan
+	name = "Ninja"
+	desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука."
+	extended_desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука"
+	default_skin = "ninja"
+	armor = list(MELEE = 40, BULLET = 30, LASER = 20, ENERGY = 30, BOMB = 50, BIO = 100, RAD = 30, FIRE = 100, ACID = 100)
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	complexity_max = ANTAG_MAX_COMPLEXITY
+	siemens_coefficient = 0
+	ui_theme = "ninja"
+	inbuilt_modules = list()
+	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
+	hardlight_color = MOD_NINJA_COLOR
+	skins = list(
+		"ninja" = MOD_PRESET_DEFAULT,
+	)
+
+/datum/mod_theme/mage
+	name = "Enchanted"
+	desc = "Странный, инкрустированный самоцветами модулярный костюм, излучающий магическую энергию."
+	extended_desc = "Экспериментальный модулярный костюм, созданный Федерацией магов.\
+		Внешне напоминающий церемониальное одеяние древних магов, костюм покрыт множеством синтетических кристаллов \
+		и резонансных пластин, способных накапливать, фокусировать и перенаправлять различные формы энергии. \
+		Встроенные системы стабилизации поля позволяют владельцу выдерживать экстремальные температуры, \
+		биологические и радиационные угрозы, а также частично гасить кинетические и энергетические воздействия. \
+		Несмотря на внешнюю «магическую» эстетику, вся работа обеспечивается передовыми технологиями: \
+		кристаллы служат высокоёмкими конденсаторами, а светящиеся узоры — проекциями хардлайт-полей."
+	default_skin = "enchanted"
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 35, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	complexity_max = ANTAG_MAX_COMPLEXITY
+	siemens_coefficient = 0
+	ui_theme = "enchanted"
+	inbuilt_modules = list()
+	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
+	hardlight_color = MOD_MAGE_FEDERATION_COLOR
+	skins = list(
+		"enchanted" = MOD_PRESET_DEFAULT,
+	)
+
+/datum/mod_theme/cargo
+	name = "Cargo"
+	desc = "Усиленный костюм-погрузчик Nanotrasen, оптимизированный для работы с тяжёлыми грузами и модульным оборудованием."
+	extended_desc = "Усиленный рабочий костюм, разработанный Nanotrasen совместно с Nakamura Engineering \
+		для нужд логистических и снабженческих операций. \
+		Изначально созданный для погрузки и разгрузки транспортных контейнеров, \
+		костюм оснащён гидравлическими усилителями конечностей и усиленной рамой, \
+		способной выдерживать экстремальные нагрузки при перемещении ящиков, паллет и оборудования."
+	default_skin = "loader"
+	armor = list(MELEE = 20, BULLET = 20, LASER = 10, ENERGY = 5, BOMB = 50, BIO = 100, FIRE = 70, ACID = 75, WOUND = 35, RAD = 50)
+	cell_drain = DEFAULT_CHARGE_DRAIN
+	complexity_max = COMMAND_MAX_COMPLEXITY
+	hardlight_color = MOD_CARGO_BLUE
+	skins = list(
+		//НЕ защищает от космоса. Он НЕ герметичный. Это просто рама для тягания тяжестей.
+		"loader" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT_NO_JUMSUIT_HIDE,
 	)

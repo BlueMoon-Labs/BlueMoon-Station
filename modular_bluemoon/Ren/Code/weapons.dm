@@ -115,6 +115,8 @@
 	icon_state = "mag-aa-small"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/Guns.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
+	caliber = "shotgun"
 	max_ammo = 8
 
 /obj/item/ammo_box/magazine/aa12/update_icon()
@@ -163,15 +165,24 @@
 		else
 			icon_state = "minotaur-mag-e"
 	else
-		if(magazine.ammo_count(0))
-			icon_state = "minotaur-nomag-e"
-		else
-			icon_state = "minotaur-nomag"
+		icon_state = "minotaur-e"
 
 /obj/item/gun/ballistic/automatic/shotgun/aa12/afterattack()
 	. = ..()
 	empty_alarm()
 	return
+
+/obj/item/ammo_box/magazine/aa12/slug
+	name = "AA12 magazine (12g slugs)"
+	ammo_type = /obj/item/ammo_casing/shotgun
+
+/obj/item/ammo_box/magazine/aa12/flechette
+	name = "AA12 magazine (12g flechette)"
+	ammo_type = /obj/item/ammo_casing/shotgun/flechette
+
+/obj/item/ammo_box/magazine/aa12/frangible
+	name = "AA12 magazine (12g frangible slug)"
+	ammo_type = /obj/item/ammo_casing/shotgun/frangible
 
 //Огнемёт крутой
 /obj/item/ammo_casing/energy/laser/m2a100
@@ -540,3 +551,48 @@
 	desc = "A metal bat. Very robust"
 	force = 26
 	throwforce = 30
+
+/obj/item/disk/design_disk/adv/ammo/revolver
+	name = ".357 Ammo Design Disk"
+	desc = "Вставь в автолат, чтобы печатать спидлоудеры для пистолета своего револьвера."
+
+/obj/item/disk/design_disk/adv/ammo/revolver/Initialize(mapload)
+	. = ..()
+	var/datum/design/speedloader/S = new
+	var/datum/design/speedloader/ap/E = new
+	var/datum/design/speedloader/dumdum/K = new
+	var/datum/design/speedloader/match/C = new
+	blueprints[1] = S
+	blueprints[2] = E
+	blueprints[3] = K
+	blueprints[4] = C
+
+/datum/design/speedloader
+	name = "speed loader (.357)"
+	desc = "Designed to quickly reload revolvers."
+	id = "speedloader"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 9200) // в старом крафте было 6 патрон на револьвер + 1 метал с инструментами, добовляю цену 1 метала как сборку под спидлоудер
+	build_path = /obj/item/ammo_box/a357
+	category = list("Imported")
+
+/datum/design/speedloader/ap
+	name = "speed loader (.357 AP)"
+	desc = "Designed to quickly reload revolvers. These rounds are comes with hard tip, making it penetrate armour rather easy."
+	id = "speedloader_ap"
+	materials = list(/datum/material/iron = 9200, /datum/material/titanium = 3600)
+	build_path = /obj/item/ammo_box/a357/ap
+
+/datum/design/speedloader/dumdum
+	name = "speed loader (.357 DumDum)"
+	desc = "A gun magazine. Loaded with hollow-point rounds, extremely effective against unarmored targets, but nearly useless against protective clothing."
+	id = "speedloader_dumdum"
+	materials = list(/datum/material/iron = 16400)
+	build_path = /obj/item/ammo_box/a357/dumdum
+
+/datum/design/speedloader/match
+	name = "speed loader (.357 Match)"
+	desc = "Designed to quickly reload revolvers. These rounds are manufactured within extremely tight tolerances, making them easy to show off trickshots with."
+	id = "speedloader_match"
+	materials = list(/datum/material/plastic = 3600, /datum/material/iron = 9200)
+	build_path = /obj/item/ammo_box/a357/match

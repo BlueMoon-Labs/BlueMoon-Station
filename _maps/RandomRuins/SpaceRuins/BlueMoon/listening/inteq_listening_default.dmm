@@ -1064,8 +1064,6 @@
 /obj/machinery/telecomms/relay/preset/ruskie{
 	use_power = 0
 	},
-/obj/item/radio/headset/inteq/alt,
-/obj/item/radio/headset/inteq/alt,
 /obj/item/radio/intercom{
 	freerange = 1;
 	listening = 0;
@@ -3228,13 +3226,7 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 4
 	},
-/obj/item/door_remote/research_director,
-/obj/item/door_remote/quartermaster,
-/obj/item/door_remote/head_of_security,
-/obj/item/door_remote/head_of_personnel,
-/obj/item/door_remote/chief_medical_officer,
-/obj/item/door_remote/chief_engineer,
-/obj/item/door_remote/captain,
+/obj/item/door_remote/omni,
 /turf/open/floor/plasteel/dark/textured/half{
 	dir = 8
 	},

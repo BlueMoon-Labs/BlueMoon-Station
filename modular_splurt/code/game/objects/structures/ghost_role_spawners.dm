@@ -405,14 +405,14 @@
 
 	head = /obj/item/clothing/head/HoS/pmc_leader_beret
 	mask = /obj/item/clothing/mask/gas/inteq
-	ears = /obj/item/radio/headset/ghost_inteq/leader
+	ears = /obj/item/radio/headset/inteq/alt/leader
 	belt = /obj/item/storage/belt/military/assault/inteq_captain
 
 	l_pocket = /obj/item/extinguisher/mini
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 
 	id = /obj/item/card/id/inteq/captain_id
-	backpack_contents = list(/obj/item/documents/syndicate/red, /obj/item/paper/fluff/ruins/forgottenship/password)
+	backpack_contents = list(/obj/item/documents/syndicate/red)
 	implants = list(/obj/item/implant/deathrattle/inteqcrew, /obj/item/implant/weapons_auth)
 
 // Ghost Cafe Spawner (VR Version)

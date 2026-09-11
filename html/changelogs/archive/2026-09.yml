@@ -280,3 +280,6 @@
       по альт клику
   RG-TRK:
   - rscadd: Added new variant for ACR-5 rifle. Chambered in 7.62x39.
+2026-09-11:
+  RG-TRK:
+  - bugfix: ACRM mag sprite now visible again.

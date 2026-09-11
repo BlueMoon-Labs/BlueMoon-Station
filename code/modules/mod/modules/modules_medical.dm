@@ -101,34 +101,38 @@
 	icon_state = "defibrillator"
 	module_type = MODULE_ACTIVE
 	complexity = 2
-	use_power_cost = DEFAULT_CHARGE_DRAIN * 25
-	device = /obj/item/shockpaddles/mod
+	use_power_cost = DEFAULT_CHARGE_DRAIN
 	overlay_state_inactive = "module_defibrillator"
 	overlay_state_active = "module_defibrillator_active"
 	incompatible_modules = list(/obj/item/mod/module/defibrillator)
 	cooldown_time = 0.5 SECONDS
-	var/defib_cooldown = 5 SECONDS
 	mod_module_flags = MOD_MODULE_MEDICAL // BLUEMOON ADD
+	var/obj/item/defibrillator/internal_defib
+	var/defib_type = /obj/item/defibrillator
+
+/obj/item/mod/module/defibrillator/proc/setup_internal_defib()
+	internal_defib = new defib_type(src)
+	device = internal_defib.paddles
+	internal_defib.paddles.req_defib = FALSE
+
+/obj/item/mod/module/defibrillator/on_install()
+	. = ..()
+	if(internal_defib)
+		internal_defib.cell = mod.get_cell()
+
+/obj/item/mod/module/defibrillator/attackby(obj/item/I, mob/living/user, params)
+	. = ..()
+	if(!internal_defib)
+		setup_internal_defib()
+	internal_defib.attackby(I, user, params) //перенаправление attackby. Позволит улучшить дисками.
 
 /obj/item/mod/module/defibrillator/Initialize(mapload)
 	. = ..()
-	RegisterSignal(device, COMSIG_DEFIBRILLATOR_SUCCESS, PROC_REF(on_defib_success))
+	setup_internal_defib()
 
 /obj/item/mod/module/defibrillator/Destroy()
-	UnregisterSignal(device, COMSIG_DEFIBRILLATOR_SUCCESS)
+	QDEL_NULL(internal_defib)
 	. = ..()
-
-/obj/item/mod/module/defibrillator/proc/on_defib_success(obj/item/shockpaddles/source)
-	drain_power(use_power_cost)
-	source.recharge(defib_cooldown)
-	return COMPONENT_DEFIB_STOP
-
-/obj/item/shockpaddles/mod
-	name = "MOD defibrillator gauntlets"
-	req_defib = FALSE
-	icon_state = "defibgauntlets0"
-	item_state = "defibgauntlets0"
-	base_icon_state = "defibgauntlets"
 
 /obj/item/mod/module/defibrillator/combat
 	name = "MOD combat defibrillator module"
@@ -142,18 +146,11 @@
 		встроенные системы безопасности. Оперативники в поле могут воспользоваться тем, что они называют 'Оглушающие Перчатки', способные подавать импульсы \
 		прямо в сердце жертвы для обездвиживания, или даже полностью остановить сердце при достаточной мощности."
 	complexity = 1
+	icon_state = "defibrillator_adv"
 	module_type = MODULE_ACTIVE
 	overlay_state_inactive = "module_defibrillator_combat"
 	overlay_state_active = "module_defibrillator_combat_active"
-	device = /obj/item/shockpaddles/syndicate/mod
-	defib_cooldown = 2.5 SECONDS
-
-/obj/item/shockpaddles/syndicate/mod
-	name = "MOD combat defibrillator gauntlets"
-	req_defib = FALSE
-	icon_state = "syndiegauntlets0"
-	item_state = "syndiegauntlets0"
-	base_icon_state = "syndiegauntlets"
+	defib_type = /obj/item/defibrillator/compact/combat
 
 ///Thread Ripper
 

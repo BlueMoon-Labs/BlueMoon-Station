@@ -417,3 +417,4 @@
 	new /obj/item/modkit/melatonin_riot_kit(src)
 	new /obj/item/modkit/melatonin_stunsword_kit(src)
 	new /obj/item/modkit/melatonin_carrier_kit(src)
+	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)

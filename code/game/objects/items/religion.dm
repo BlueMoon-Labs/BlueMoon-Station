@@ -189,6 +189,7 @@
 	slowdown = 2.0 //gotta pretend we're balanced.
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 40, BOMB = 60, BIO = 0, RAD = 0, FIRE = 60, ACID = 60)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/plate/crusader/red

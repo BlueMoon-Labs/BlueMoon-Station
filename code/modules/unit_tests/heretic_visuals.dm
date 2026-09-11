@@ -162,9 +162,19 @@
 /datum/unit_test/heretic_mask_stale_wearer/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/carbon/human/wearer = heretic.owner.current
-	var/obj/item/clothing/mask/void_mask/mask = allocate(/obj/item/clothing/mask/void_mask)
+	var/obj/item/clothing/mask/gas/void_mask/mask = allocate(/obj/item/clothing/mask/gas/void_mask)
 	TEST_ASSERT(wearer.equip_to_slot_if_possible(mask, ITEM_SLOT_MASK), "Маска надевается и запоминает носителя.")
 	TEST_ASSERT_EQUAL(mask.local_user, wearer, "Носитель записывается при надевании.")
 	wearer.wear_mask = null
 	TEST_ASSERT_EQUAL(mask.process(1), PROCESS_KILL, "Маска вне слота больше не действует от имени прежнего носителя.")
 	TEST_ASSERT_NULL(mask.local_user, "Старая ссылка на носителя очищается.")
+
+/// Удаление маски снимает выданный ею иммунитет до отмены таймеров.
+/datum/unit_test/heretic_mask_destroy_clears_immunity/Run()
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/clothing/mask/gas/void_mask/mask = allocate(/obj/item/clothing/mask/gas/void_mask)
+	ADD_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+	mask.cooldown_targets += target
+	addtimer(CALLBACK(mask, TYPE_PROC_REF(/obj/item/clothing/mask/gas/void_mask, remove_immunity), target), 10 SECONDS, TIMER_STOPPABLE)
+	qdel(mask)
+	TEST_ASSERT(!HAS_TRAIT(target, TRAIT_VOID_MASK_IMMUNE), "Удалённая маска не оставляет постоянный иммунитет.")

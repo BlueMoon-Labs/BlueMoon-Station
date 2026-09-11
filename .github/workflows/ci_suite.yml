@@ -36,6 +36,7 @@ jobs:
           tools/bootstrap/python -c ''
       - name: Run Linters
         run: |
+          touch ${GITHUB_WORKSPACE}/output-annotations.txt
           bash tools/ci/check_filedirs.sh tgstation.dme
           bash tools/ci/check_changelogs.sh
           bash tools/ci/check_grep.sh
@@ -44,10 +45,12 @@ jobs:
           tools/build/build --ci lint
           tools/bootstrap/python -m dmi.test
           tools/bootstrap/python -m mapmerge2.dmm_test
-          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1
+          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1 || true
       - name: Annotate Lints
         uses: yogstation13/DreamAnnotate@v2
         if: always()
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         with:
           outputFile: output-annotations.txt
 

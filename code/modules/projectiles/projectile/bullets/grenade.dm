@@ -5,7 +5,7 @@
 	desc = "USE A WEEL GUN"
 	icon_state= "bolter"
 	damage = 60
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD
+	armour_penetration = BULLET_BR6   // BLUEMOON ADD
 
 /obj/item/projectile/bullet/a40mm/on_hit(atom/target, blocked = FALSE)
 	..()
