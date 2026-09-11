@@ -57,7 +57,7 @@
 	brutemod = 2
 
 	species_traits = list(NOGENITALS,LIPS,NOBLOOD,NOAROUSAL,HAIR) // НЕТ СИСИК, НЕТ ПИСИК, НЕТ КРОВИ (МЫ ВСЁ ТАКИ ФЭМЭЛИ ФРЕНДЛИ СЕРВЕР), А ТАК ЖЕ НИКАКИХ ПОШЛОСТЕЙ.
-	inherent_traits = list(TRAIT_NOBREATH,TRAIT_RADIMMUNE,TRAIT_VIRUSIMMUNE,TRAIT_NOBLEED) // ДЫШАТЬ ДЛЯ НУБОВ. РАДЕЙКА НАС НЕ ЕБАШИТ, КАК И ВИРУСЫ.
+	inherent_traits = list(TRAIT_NOBREATH,TRAIT_VIRUSIMMUNE,TRAIT_NOBLEED) // Тот кто это делал, явный дурачок. Поправляем Нюклей, теперь они и правда лечатся от радиации.
 
 //
 /mob/living/carbon/human/species/nucleation
@@ -86,11 +86,70 @@
 //			return FALSE
 //	return ..()
 
-/datum/reagent/radium/on_mob_life(mob/living/carbon/human/species/nucleation/M) // ПЬЁМ РАДИУМ БАЙКАЛЬСКИЙ
+/datum/reagent/radium/on_mob_life(mob/living/carbon/M) // ПЬЁМ РАДИУМ БАЙКАЛЬСКИЙ — фикс сигнатуры + сохраняем облучение
 	if(isnucleation(M))
 		M.adjustBruteLoss(-3*REM, 0) // ДА ЗАЖИВЛЯЕМСЯ.
 		M.adjustFireLoss(-3*REM, 0)
+		M.adjustToxLoss(-3*REM, 0)
+		M.adjustCloneLoss(-1*REM, 0)
+	M.apply_effect(2*REM/M.metabolism_efficiency, EFFECT_IRRADIATE, 0)
 	return ..()
+
+/datum/reagent/uranium/on_mob_life(mob/living/carbon/M) // Уран тоже лечит нуклеаций, но слабее радия
+	if(isnucleation(M))
+		M.adjustBruteLoss(-1.5*REM, 0)
+		M.adjustFireLoss(-1.5*REM, 0)
+		M.adjustToxLoss(-1*REM, 0)
+	M.apply_effect(1/M.metabolism_efficiency, EFFECT_IRRADIATE, 0)
+	return ..()
+
+/datum/reagent/toxin/polonium/on_mob_life(mob/living/carbon/M) // Полоний аналогично
+	if(isnucleation(M))
+		M.adjustBruteLoss(-2*REM, 0)
+		M.adjustFireLoss(-2*REM, 0)
+		M.adjustToxLoss(-1*REM, 0)
+	M.radiation += 4
+	return ..()
+
+// Внешняя радиация (волны, аномалии) - для нуклеаций конвертируется в лечение, без ожогов
+/mob/living/carbon/human/species/nucleation/rad_act(amount)
+	if(!amount || amount < RAD_MOB_SKIN_PROTECTION)
+		return
+	amount -= RAD_BACKGROUND_RADIATION
+	var/blocked = getarmor(null, RAD)
+	if(blocked >= 100)
+		return
+	// Не получаем burn-урон от радиации
+	var/rad_to_add = (amount*RAD_MOB_COEFFICIENT)/max(1, (radiation**2)*RAD_OVERDOSE_REDUCTION)
+	rad_to_add = rad_to_add * (100 - blocked)/100
+	if(rad_to_add > 0)
+		radiation += rad_to_add
+		// моментальный хил от внешней дозы
+		adjustBruteLoss(-min(rad_to_add * 0.7, 2), 0)
+		adjustFireLoss(-min(rad_to_add * 0.7, 2), 0)
+		adjustToxLoss(-min(rad_to_add * 0.5, 1.5), 0)
+	return
+
+// Пассивное лечение от накопленной радиации + иммунитет к негативу
+/datum/species/nucleation/handle_mutations_and_radiation(mob/living/carbon/human/H)
+	// Блокируем мутации/выпадение волос/рвоту/нокдаун из базового handle_mutations_and_radiation, но конвертим радиацию в хил
+	if(H.radiation > 0)
+		// Хил скалируется от дозы, но не менее 1
+		var/heal = 1.5
+		if(H.radiation > 50)
+			heal = 2
+		if(H.radiation > 150)
+			heal = 2.5
+		H.adjustBruteLoss(-heal, 0)
+		H.adjustFireLoss(-heal, 0)
+		H.adjustToxLoss(-heal * 0.7, 0)
+		H.adjustCloneLoss(-0.5, 0)
+		// Радиация расходуется на лечение (быстрее естественного распада)
+		H.radiation = max(H.radiation - RAD_LOSS_PER_TICK - 1.2, 0)
+		return TRUE
+	// даже без радиации — гасим естественный распад и блокируем негатив
+	H.radiation = max(H.radiation - RAD_LOSS_PER_TICK, 0)
+	return TRUE
 
 /datum/action/innate/ability/shahid // НУ ТИПА ТАКОЙ ЖЕ ВЗРЫВ КАК И ПРИ СМЕРТИ - ТОЛЬКО НАМЕРЕННЫЙ И В ДВА РАЗА СИЛЬНЕЕ.
 	name = "Blow yourself up"
