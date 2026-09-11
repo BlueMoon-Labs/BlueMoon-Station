@@ -1,0 +1,224 @@
+.HereticBookAtmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: inherit;
+  isolation: isolate;
+
+  &__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  &__toy {
+    position: absolute;
+    right: -12px;
+    top: 44%;
+    width: 32px;
+    height: 78px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    pointer-events: auto;
+    cursor: pointer;
+    filter: drop-shadow(1px 3px 3px #0009);
+    border-radius: 45%;
+
+    &:hover { filter: drop-shadow(0 0 4px var(--atmosphere-glow, #d6c8a8)) brightness(1.15); }
+    &:focus-visible { outline: 2px solid #fff4c7; outline-offset: 3px; filter: drop-shadow(0 0 5px var(--atmosphere-glow, #d6c8a8)); }
+  }
+
+  &__toyArt { display: block; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  &__tendons { filter: drop-shadow(2px 0 2px #270912b0); }
+  &__wet { opacity: .7; }
+  &__stitches { filter: drop-shadow(0 2px 1px #350e21); }
+  &__eyeOpen { transform: scaleY(.16); transform-origin: 22px 44px; }
+  &__eyelid { opacity: 1; }
+  &__flame { transform-box: fill-box; transform-origin: 50% 100%; filter: drop-shadow(0 0 4px #ff862bc0); }
+  &__emberSeam { opacity: .45; filter: drop-shadow(0 0 4px #ff7423); }
+  &__spark { opacity: .65; }
+  &__coalCracks { filter: drop-shadow(0 0 2px #ff8522); }
+  &__corona { opacity: .4; filter: blur(3px); }
+  &__stars { filter: drop-shadow(0 0 3px #74fff0); }
+  &__smallOrbit { transform-box: fill-box; transform-origin: center; }
+  &__comet { opacity: 0; filter: drop-shadow(0 0 5px #a1ffe7); }
+  &__oxidation { filter: drop-shadow(1px 2px 1px #172d1d99); }
+  &__rustGrowth { opacity: .28; filter: drop-shadow(0 1px 1px #394826); }
+  &__rustFlakes { opacity: 0; }
+  &__gearToy { transform-origin: 22px 44px; }
+  &__ice { filter: drop-shadow(0 0 3px #cbf8ffaa); }
+  &__growingIce { transform-box: fill-box; transform-origin: 50% 100%; }
+  &__bladeGleam { opacity: .18; filter: drop-shadow(0 0 2px #effaff); }
+  &__steelSparks { opacity: 0; filter: drop-shadow(0 0 3px #ffd56e); }
+  &__counterBlade { opacity: 0; transform-origin: 22px 44px; }
+  &__mercury { filter: drop-shadow(0 0 3px #ccadef66); }
+  &__mirrorWaves { opacity: 0; filter: drop-shadow(0 0 3px #eee0ff); }
+  &__silverDrops { filter: drop-shadow(1px 2px 2px #2e1d4b80); }
+
+  &--Flesh { --atmosphere-glow: #e78a9b; }
+  &--Ash { --atmosphere-glow: #ffa855; }
+  &--Cosmic { --atmosphere-glow: #92ffe8; }
+  &--Rust { --atmosphere-glow: #a2b76b; }
+  &--Void { --atmosphere-glow: #d1faff; }
+  &--Blade { --atmosphere-glow: #ece7d2; }
+  &--Moon { --atmosphere-glow: #e4cafa; }
+  &--Lock { --atmosphere-glow: #e0bb79; }
+  &--Tide { --atmosphere-glow: #8addcd; }
+  &--Glass { --atmosphere-glow: #edd1ee; }
+  &--Blood { --atmosphere-glow: #ef7a98; }
+  &__refraction { opacity: .25; transition: opacity 300ms ease; }
+  &__prismToy { transform-origin: 22px 44px; transition: transform 1100ms cubic-bezier(.22, .61, .36, 1); }
+  &__ampouleToy { transform-origin: 22px 44px; transition: transform 1400ms cubic-bezier(.45, 0, .2, 1); }
+  &__ampoulePool { transform-origin: 22px 73px; }
+  &__facet { opacity: .7; }
+  &__lightRoute { opacity: 0; stroke-dasharray: 8 92; }
+  &__bloodChannels { transition: stroke 900ms ease; }
+  &--reacting &__refraction { opacity: 1; }
+  &--reacting &__prismToy { transform: rotate(12deg); }
+  &--reacting &__ampouleToy { transform: rotate(180deg); }
+  &--reacting &__bloodChannels { stroke: #f28aa0; }
+  &--living &__facet { animation: book-glass-facets 8s ease-in-out infinite; }
+  &--living &__facetEdge { stroke-dasharray: 12 88; animation: book-facet-glint 8s linear infinite; }
+  &--living &__facet--1, &--living &__facet--1 &__facetEdge { animation-delay: -2.6s; }
+  &--living &__facet--2, &--living &__facet--2 &__facetEdge { animation-delay: -5.3s; }
+  &--living &__titheDrop { animation: book-tithe-flow 7.2s cubic-bezier(.45, 0, .55, 1) infinite; }
+  &--living &__titheDrop--1 { animation-delay: -2.4s; }
+  &--living &__titheDrop--2 { animation-delay: -4.8s; }
+  &--living &__bloodChannels { animation: book-blood-current 9s linear infinite; }
+  &--living#{&}--reacting &__lightRoute { animation: book-prism-route 2.5s ease-in-out both; }
+  &--living#{&}--reacting &__ampouleDrop { animation: book-ampoule-drop 2.7s cubic-bezier(.45, 0, .55, 1) both; }
+  &--living#{&}--reacting &__ampoulePool { animation: book-ampoule-pool 2.7s ease-in-out both; }
+  &__keyholeGlow { opacity: .18; transition: opacity 300ms ease; }
+  &__seaweed { opacity: .7; }
+  &__bubble { opacity: .55; }
+  &__keyToy { transform-origin: 22px 23px; transition: transform 400ms ease; }
+  &__bellToy { transform-origin: 22px 12px; transition: transform 400ms ease; }
+  &--reacting &__keyholeGlow { opacity: .8; }
+  &--reacting &__keyToy { transform: rotate(-28deg); }
+  &--reacting &__bellToy { transform: rotate(12deg); }
+  &--reacting &__tideBubbles { filter: drop-shadow(0 0 3px #9af3e2); }
+  &--living &__bubble { animation: book-tide-bubble 7s ease-in-out infinite; }
+  &--living &__bubble--1 { animation-delay: -2.4s; }
+  &--living &__bubble--2 { animation-delay: -4.7s; }
+  &--living#{&}--reacting &__bellToy { animation: book-drowned-bell 2.8s ease-out both; }
+
+
+  &--Cosmic &__toy { filter: drop-shadow(0 0 9px #62e9d9aa); }
+  &--Void &__toy { filter: drop-shadow(0 0 5px #d2fbff99); }
+  &--Moon &__toy { filter: drop-shadow(0 0 5px #d7bdf99c); }
+
+  /* Приглушённый режим оставляет материал и небольшой отклик застёжки. */
+  &--muted &__art { opacity: .52; }
+  &--muted &__flame { filter: none; opacity: .65; }
+  &--muted &__corona { opacity: .23; filter: blur(2px); }
+  &--muted &__toy { filter: drop-shadow(1px 2px 2px #0007); }
+
+  /* Отклики ограничены текущим нажатием. Никаких новых частиц в DOM. */
+  &--reacting &__eyeOpen { transform: scaleY(1); }
+  &--reacting &__eyelid { opacity: 0; }
+  &--reacting &__wet { opacity: 1; }
+  &--reacting &__coalCracks { stroke: #fff3bc; stroke-width: 2.4; }
+  &--reacting &__emberSeam { opacity: .8; }
+  &--reacting &__toy { filter: drop-shadow(0 0 7px var(--atmosphere-glow)); }
+  &--reacting &__corona { opacity: .7; }
+  &--reacting &__rustGrowth { opacity: .85; }
+  &--reacting &__ice { filter: drop-shadow(0 0 5px #e4ffff); }
+  &--reacting &__bladeGleam { opacity: .8; }
+  &--reacting &__mirrorWaves { opacity: .75; }
+
+  &--living &__mainVein { animation: book-tissue-pulse 3.2s ease-in-out infinite; }
+  &--living &__wet { animation: book-wet-sheen 5.8s ease-in-out infinite; }
+  &--living &__eyeOpen { transition: transform 380ms ease-in-out; }
+  &--living &__eyelid { transition: opacity 250ms ease; }
+  &--living &__flame { animation: book-flame-lick 1.35s ease-in-out infinite alternate; }
+  &--living &__flame--1 { animation-duration: 1.8s; animation-delay: -.7s; }
+  &--living &__flame--2 { animation-duration: 1.6s; animation-delay: -.4s; }
+  &--living &__spark { animation: book-ember-lift 3.6s linear infinite; }
+  &--living &__spark--1 { animation-delay: -1.2s; }
+  &--living &__spark--2 { animation-delay: -2.4s; }
+  &--living &__corona { animation: book-starlight 7s ease-in-out infinite; }
+  &--living &__stars { animation: book-star-breathe 4.8s ease-in-out infinite; }
+  &--living &__smallOrbit { animation: book-edge-orbit 27s linear infinite; }
+  &--living &__oxidation { animation: book-patina-sheen 11s ease-in-out infinite; }
+  &--living &__ice { animation: book-ice-lustre 8s ease-in-out infinite; }
+  &--living &__bladeGleam { animation: book-steel-watch 12s ease-in-out infinite; }
+  &--living &__mercury { animation: book-silver-flow 8s ease-in-out infinite; }
+  &--living &__silverDrops { animation: book-silver-drops 6s ease-in-out infinite; }
+
+  &--living#{&}--reacting &__stitches { animation: book-seam-tighten 2.8s ease-in-out both; transform-origin: center; }
+  &--living#{&}--reacting &__flame { animation-name: book-flame-fed; animation-duration: .75s; }
+  &--living#{&}--reacting &__spark { animation: book-ember-burst 1.2s ease-out both; }
+  &--living#{&}--reacting &__comet { animation: book-comet-pass 2.6s ease-in both; }
+  &--living#{&}--reacting &__gearToy { animation: book-gear-release 1.1s ease-in-out both; }
+  &--living#{&}--reacting &__rustFlakes { animation: book-scale-fall 2s ease-in both; }
+  &--living#{&}--reacting &__growingIce { animation: book-frost-grow 2.8s ease-in-out both; }
+  &--living#{&}--reacting &__bladeGleam { animation: book-steel-draw 1.9s ease-out both; }
+  &--living#{&}--reacting &__steelSparks { animation: book-steel-strike 850ms ease-out both; }
+  &--living#{&}--reacting &__counterBlade { animation: book-counterblade 950ms ease-in-out both; }
+  &--living#{&}--reacting &__mirrorWaves { animation: book-mirror-wave 2.8s ease-out both; }
+
+  /* В приглушённом режиме нажатие меняет только статичный рисунок. */
+  &--muted#{&}--reacting &__art { opacity: .65; }
+  &--muted#{&}--reacting &__counterBlade { opacity: .7; }
+  &--muted#{&}--reacting &__steelSparks { opacity: .5; }
+
+  /* Проп имеет тот же приоритет, что и системная настройка движения. */
+  &--still *, &--still *::before, &--still *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  &--still &__comet, &--still &__rustFlakes { display: none; }
+  &--still#{&}--reacting &__counterBlade { opacity: .7; }
+  &--still#{&}--reacting &__steelSparks { opacity: .5; }
+}
+
+@keyframes book-tissue-pulse { 0%, 31%, 100% { opacity: .8; } 38%, 52% { opacity: 1; } 45% { opacity: .85; } }
+@keyframes book-glass-facets { 0%, 100% { opacity: .55; } 24% { opacity: .75; } 42% { opacity: 1; } 62% { opacity: .65; } }
+@keyframes book-facet-glint { 0% { stroke-dashoffset: 12; } 100% { stroke-dashoffset: -88; } }
+@keyframes book-prism-route { 0% { opacity: 0; stroke-dashoffset: 8; } 18%, 72% { opacity: 1; } 100% { opacity: 0; stroke-dashoffset: -100; } }
+@keyframes book-tithe-flow { 0%, 100% { transform: translateY(-4px); opacity: 0; } 16% { opacity: .8; } 58% { opacity: 1; } 84%, 96% { transform: translateY(43px); opacity: 0; } }
+@keyframes book-blood-current { to { stroke-dashoffset: -115; } }
+@keyframes book-ampoule-drop { 0%, 100% { transform: translateY(0); opacity: 1; } 28% { transform: translateY(13px); opacity: .8; } 48%, 55% { transform: translateY(19px); opacity: 0; } 60% { transform: translateY(-7px); opacity: 0; } 85% { transform: translateY(-2px); opacity: 1; } }
+@keyframes book-ampoule-pool { 0%, 100% { transform: scaleY(1); } 42% { transform: scaleY(.72); } 74% { transform: scaleY(1.08); } }
+@keyframes book-wet-sheen { 0%, 100% { opacity: .45; } 56% { opacity: .94; } }
+@keyframes book-seam-tighten { 0%, 100% { transform: scaleX(1); } 24%, 65% { transform: scaleX(.55); } }
+@keyframes book-flame-lick { from { transform: scale(.88, .9) skewX(-7deg); opacity: .83; } to { transform: scale(1.06, 1.15) skewX(5deg); opacity: 1; } }
+@keyframes book-flame-fed { from { transform: scale(.96, 1.08) skewX(-4deg); } to { transform: scale(1.15, 1.42) skewX(7deg); } }
+@keyframes book-ember-lift { 0% { transform: translate(0, 4px); opacity: 0; } 22% { opacity: .85; } 100% { transform: translate(4px, -48px); opacity: 0; } }
+@keyframes book-ember-burst { 0% { transform: translate(0, 0); opacity: 1; } 100% { transform: translate(6px, -72px); opacity: 0; } }
+@keyframes book-starlight { 0%, 100% { opacity: .3; } 50% { opacity: .6; } }
+@keyframes book-star-breathe { 0%, 100% { opacity: .45; } 48% { opacity: 1; } }
+@keyframes book-edge-orbit { to { transform: rotate(360deg); } }
+@keyframes book-comet-pass { 0% { opacity: 0; transform: translate(946px, 14px); } 9% { opacity: 1; } 83% { opacity: .9; } 100% { opacity: 0; transform: translate(45px, 14px); } }
+@keyframes book-patina-sheen { 0%, 100% { opacity: .78; } 50% { opacity: 1; } }
+@keyframes book-gear-release { 0% { transform: rotate(0); } 35% { transform: rotate(7deg); } 60% { transform: rotate(38deg); } 100% { transform: rotate(60deg); } }
+@keyframes book-scale-fall { 0% { opacity: 0; transform: translateY(-5px) rotate(0); } 16% { opacity: 1; } 100% { opacity: 0; transform: translateY(110px) rotate(2deg); } }
+@keyframes book-ice-lustre { 0%, 100% { opacity: .68; } 56% { opacity: 1; } }
+@keyframes book-frost-grow { 0%, 100% { transform: scale(1); } 38%, 70% { transform: scale(1.28, 1.18); } }
+@keyframes book-steel-watch { 0%, 74%, 100% { opacity: .05; transform: translateY(0); } 83% { opacity: .75; } 92% { opacity: .1; transform: translateY(130px); } }
+@keyframes book-steel-draw { 0% { opacity: 0; transform: translateY(-90px); } 18% { opacity: .95; } 100% { opacity: 0; transform: translateY(380px); } }
+@keyframes book-steel-strike { 0% { opacity: 0; } 18%, 38% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes book-counterblade { 0% { opacity: 0; transform: rotate(28deg); } 20%, 55% { opacity: 1; transform: rotate(0); } 100% { opacity: 0; transform: rotate(-8deg); } }
+@keyframes book-silver-flow { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@keyframes book-silver-drops { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+@keyframes book-mirror-wave { 0% { opacity: 0; transform: translateY(-8px); } 30% { opacity: .9; } 100% { opacity: 0; transform: translateY(12px); } }
+
+@media (max-width: 720px) {
+  .HereticBookAtmosphere__toy { width: 28px; height: 72px; right: -10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .HereticBookAtmosphere *, .HereticBookAtmosphere *::before, .HereticBookAtmosphere *::after { animation: none !important; transition: none !important; }
+  .HereticBookAtmosphere__comet, .HereticBookAtmosphere__rustFlakes { display: none; }
+  .HereticBookAtmosphere--reacting .HereticBookAtmosphere__counterBlade { opacity: .7; }
+  .HereticBookAtmosphere--reacting .HereticBookAtmosphere__steelSparks { opacity: .5; }
+}
+
+@keyframes book-tide-bubble { 0%, 100% { transform: translateY(4px); opacity: .15; } 40% { opacity: .8; } 90% { transform: translateY(-16px); opacity: .1; } }
+@keyframes book-drowned-bell { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-15deg); } 35% { transform: rotate(12deg); } 55% { transform: rotate(-8deg); } 75% { transform: rotate(4deg); } }
