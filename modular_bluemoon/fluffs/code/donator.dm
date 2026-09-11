@@ -2663,6 +2663,12 @@
 	path = /obj/item/storage/box/melatonin_kit
 	ckeywhitelist = list("melatonin1")
 
+/datum/gear/donator/bm/melatonin_disco_shirt
+	name = "Lycanthrope Disco Shirt"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/melatonin_disco
+	ckeywhitelist = list("melatonin1")
+
 /datum/gear/donator/bm/sawwr_coat
 	name = "Dark Amber"
 	slot = ITEM_SLOT_NECK
