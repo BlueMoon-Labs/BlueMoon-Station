@@ -26,7 +26,10 @@
 	// Штраф кратен тику. Цена шага всё равно выравнивается по тику, поэтому
 	// дробная добавка либо пропала бы целиком, либо наугад превратилась бы в
 	// целый тик - лестница в тиках делает ступени предсказуемыми.
-	var/slowdown = movement_weight_slowdown(anchor_ticks, cancel_deviation, current_size, CONFIG_GET(number/body_size_slowdown_multiplier), world.tick_lag)
+	var/t_lag = world.tick_lag
+	var/slowdown = movement_weight_slowdown(anchor_ticks, cancel_deviation, current_size, CONFIG_GET(number/body_size_slowdown_multiplier), t_lag)
+	if(slowdown > 0 && HAS_TRAIT(src, TRAIT_BLUEMOON_DEVOURER))
+		movement_quantize_slowdown(slowdown*0.2, t_lag) // убираем 80% от замедления
 
 	if(slowdown > 0)
 		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heavy_weight_slowdown, TRUE, slowdown)
