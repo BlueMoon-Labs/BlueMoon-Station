@@ -2652,7 +2652,7 @@
 	ckeywhitelist = list("melatonin1")
 
 /datum/gear/donator/bm/melatonin_coat
-	name = "Lycanthrope's Reinforced Coat"
+	name = "Lycanthrope's Worn Coat"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/melatonin_coat
 	ckeywhitelist = list("melatonin1")
@@ -2733,4 +2733,4 @@
 	name = "Light plate carrier"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/light_plate_carrier
-	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed")
+	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed", "hateredsoul")

@@ -68,6 +68,8 @@
 	SIGNAL_HANDLER
 
 	var/atom/movable/AM = parent
+	if(isnull(AM) || QDELETED(AM)) // пассажир может удалить средство, пока компонент ещё жив
+		return
 	if(isnull(dir))
 		dir = AM.dir
 	var/sprite_dir = move_dir_for_riding_sprite(dir)
@@ -371,6 +373,8 @@
 	true_belly_riding_interaction = null
 	true_belly_riding_cooldown = 0
 	var/mob/living/carbon/human/H = parent
+	if(isnull(H))
+		return
 	var/datum/action/cooldown/true_belly_riding/belly_riding_action = locate() in H.actions
 	if(belly_riding_action)
 		belly_riding_action.UpdateButtons()

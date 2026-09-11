@@ -56,7 +56,7 @@
 	burnmod = 4 // ГАЙД КАК СДОХНУТЬ ЗА 4 СЕКУНДЫ ОТ ОГНЯ.
 	brutemod = 2
 
-	species_traits = list(NOGENITALS,LIPS,NOBLOOD,NOAROUSAL,HAIR) // НЕТ СИСИК, НЕТ ПИСИК, НЕТ КРОВИ (МЫ ВСЁ ТАКИ ФЭМЭЛИ ФРЕНДЛИ СЕРВЕР), А ТАК ЖЕ НИКАКИХ ПОШЛОСТЕЙ.
+	species_traits = list(LIPS,NOBLOOD,HAIR) // НЕТ СИСИК, НЕТ ПИСИК, НЕТ КРОВИ (МЫ ВСЁ ТАКИ ФЭМЭЛИ ФРЕНДЛИ СЕРВЕР), А ТАК ЖЕ НИКАКИХ ПОШЛОСТЕЙ.
 	inherent_traits = list(TRAIT_NOBREATH,TRAIT_VIRUSIMMUNE,TRAIT_NOBLEED) // Тот кто это делал, явный дурачок. Поправляем Нюклей, теперь они и правда лечатся от радиации.
 
 //

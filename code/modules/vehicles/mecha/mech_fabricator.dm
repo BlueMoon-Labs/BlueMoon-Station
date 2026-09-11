@@ -528,11 +528,12 @@
 		COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 
 	for(var/obj/machinery/computer/rdconsole/RDC in orange(7,src))
-		RDC.stored_research.copy_research_to(stored_research)
-		update_static_data_for_all_viewers()
-		if(!is_silent)
-			say("Successfully synchronized with R&D server.")
-		return
+		if(istype(RDC.stored_research)) // Консоль без подключённой базы (вне станции/не связана) имеет null
+			RDC.stored_research.copy_research_to(stored_research)
+			update_static_data_for_all_viewers()
+			if(!is_silent)
+				say("Successfully synchronized with R&D server.")
+			return
 
 	if(!is_silent)
 		say("Unable to connect to local R&D server.")

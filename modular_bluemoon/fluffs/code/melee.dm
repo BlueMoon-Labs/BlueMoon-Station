@@ -358,3 +358,108 @@
 	desc = "Культовый тяжелый тесак, который спустя шесть веков полностью сохранил свою брутальную функциональность. Характерный хищный скос обуха и массивная стальная гарда не расшатались от времени."
 	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
 	icon_state = "buckknife"
+
+/obj/item/melee/baton/stunsword/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Dunwall Folding Stun-Sword"
+	desc = "Раритетное оружие, выполненное на заказ по сложной складной схеме, неуловимо напоминающей клинок лорда-защитника Дануолла. Оно оснащено компактной деревянной рукоятью со стальным кольцом на торце для быстрого извлечения из поясных ножен. Внутрь рукояти аккуратно встроены батарея и индикатор заряда. Острое лезвие угрожающе переливается искрами бледно-синей электрической энергии, которая, вопреки хищному и смертоносному виду клинка, предназначена лишь для мгновенного оглушения цели."
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	icon_state = "melatonin_stunsword"
+	item_state = "melatonin_stunsword"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+
+/obj/item/melee/baton/stunsword/melatonin/update_icon_state()
+	. = ..()
+	if(turned_on)
+		icon_state = "melatonin_stunsword_on"
+		item_state = "melatonin_stunsword_on"
+	else if(!cell)
+		icon_state = "melatonin_stunsword_no_cell"
+		item_state = "melatonin_stunsword_no_cell"
+	else
+		icon_state = "melatonin_stunsword"
+		item_state = "melatonin_stunsword"
+
+/obj/item/modkit/melatonin_stunsword_kit
+	name = "Dunwall Folding Stun-Sword Kit"
+	desc = "A modkit for making a stunsword into a Dunwall Folding Stun-Sword."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/melee/baton/stunsword/melatonin
+	fromitem = list(/obj/item/melee/baton/stunsword)
+
+/obj/item/modkit/katana_kit
+	name = "Stun-Katana Kit"
+	desc = "A modkit for making a stunsword into a Stun-Katana."
+	icon_state = "stun-katana_kit"
+	product = /obj/item/melee/baton/stunsword/stunkatana
+	fromitem = list(/obj/item/melee/baton/stunsword)
+
+#define STUNKATANA_BASE_STATE "stunkatana"
+
+/obj/item/melee/baton/stunsword/stunkatana
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Stun-Katana"
+	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = STUNKATANA_BASE_STATE
+	item_state = STUNKATANA_BASE_STATE
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+
+/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
+	var/old_status = turned_on
+	. = ..()
+	if(turned_on != old_status)
+		switch_light()
+
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+	. = ..()
+	// После удара — обновляем иконку и свет по текущему заряду.
+	update_icon_state()
+	switch_light()
+
+/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+	if(!cell)
+		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
+		item_state = STUNKATANA_BASE_STATE
+		return
+
+	if(cell.charge <= 0)
+		icon_state = "[STUNKATANA_BASE_STATE]-nocharge"
+		item_state = STUNKATANA_BASE_STATE
+		return
+
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(turned_on)
+		if(charge_percent > 0.5)
+			icon_state = "[STUNKATANA_BASE_STATE]-on"
+			item_state = "[STUNKATANA_BASE_STATE]_active"
+		else
+			icon_state = "[STUNKATANA_BASE_STATE]-on-half"
+			item_state = "[STUNKATANA_BASE_STATE]_half"
+	else
+		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
+		item_state = STUNKATANA_BASE_STATE
+
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+	if(!cell)
+		set_light(0)
+		return
+
+	if(turned_on)
+		if(cell.charge <= 0)
+			set_light(3, 0.9, "#ff0000")
+		else
+			var/charge_percent = cell.charge / cell.maxcharge
+			if(charge_percent > 0.5)
+				set_light(3, 0.9, "#B6EEE9")
+			else
+				set_light(3, 0.9, "#D9CD8E")
+	else
+		set_light(0)
+
+#undef STUNKATANA_BASE_STATE
