@@ -23,6 +23,7 @@
 	armor = list(MELEE = 60, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 90, RAD = 90, FIRE = 100, ACID = 1000, WOUND = 80)
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	var/list/chronosafe_items = list(/obj/item/chrono_eraser, /obj/item/gun/energy/chrono_gun)
 	var/obj/item/clothing/head/helmet/space/chronos/helmet
 	var/obj/effect/chronos_cam/camera
@@ -52,9 +53,20 @@
 		else
 			deactivate()
 
+/obj/item/clothing/suit/space/chronos/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
 /obj/item/clothing/suit/space/chronos/dropped(mob/user)
 	if(activated)
 		deactivate()
+	// BLUEMOON ADD START
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
+	// BLUEMOON ADD END
 	return ..()
 
 /obj/item/clothing/suit/space/chronos/emp_act(severity)

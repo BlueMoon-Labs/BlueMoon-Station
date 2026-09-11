@@ -27,6 +27,7 @@
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_screams = RUSSIAN_SCREAMS
 	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
+	brc_mitigation_bonus = BRC_MITIGATION_20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/nri_vest
 	name = "NRI Officer Vest"
@@ -35,10 +36,12 @@
 	item_state = "warden_jacket_newtg"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/nri_coat/armorless
 	desc = "A greatcoat without armored fibers for cosplay purposes."
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 
 // Cloaks
 /obj/item/clothing/neck/cloak/nri_cape

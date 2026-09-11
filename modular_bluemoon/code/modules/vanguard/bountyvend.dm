@@ -38,7 +38,7 @@
 		new /datum/data/bounty_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Weaponry"),
 		new /datum/data/bounty_equipment("Electronic Firing Pin",		/obj/item/firing_pin,												500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Supressor",               	/obj/item/suppressor,                                   			500, 	"Weaponry"),
-		new /datum/data/bounty_equipment("Munitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
+		new /datum/data/bounty_equipment("Amunitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
 		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									2000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,							500,	"Weaponry"),
 
@@ -70,6 +70,7 @@
 		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard points transfer card",	/obj/item/card/contraband_point_card,							100,	"Tools"),
+		new /datum/data/bounty_equipment("Weapon blueprints",				/obj/item/disk/weapon_blueprint,								7500,	"Tools"),
 
 		// ============ RECREATIONAL ============
 		new /datum/data/bounty_equipment("Whiskey",							/obj/item/reagent_containers/food/drinks/bottle/whiskey,		50,		"Recreational"),
@@ -84,7 +85,7 @@
 		new /datum/data/bounty_equipment("MOD Storage Upgrader",					/obj/item/mod/module/storage_upgrader,					15000,		"MOD Designs"),
 
 		// ============ ELITE EQUIPMENT =========
-		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30,						20000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30/pinstation,						20000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine,				25000,		"Elite Equipment"),

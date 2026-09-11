@@ -17,6 +17,10 @@
 	/// 30 минут), и колесо SStimer копило сотни мёртвых записей при полном сервере.
 	var/list/mood_event_timers = list()
 	var/insanity_effect = 0 //is the owner being punished for low mood? If so, how much?
+	/// Время (world.time) начала дрэйна рассудка от Маски безумия. Если 0 — дрэйн не активен.
+	var/void_mask_drain_start = 0
+	/// ИД таймера, который по истечении минуты поднимает sanity выше порога замедления.
+	var/void_mask_drain_timerid
 	var/atom/movable/screen/mood/screen_obj
 	var/datum/skill_modifier/bad_mood/malus
 	var/datum/skill_modifier/great_mood/bonus
@@ -237,16 +241,22 @@
 			master.remove_actionspeed_modifier(ACTIONSPEED_ID_SANITY)
 			master.clear_fullscreen("depression")
 			sanity_level = 3
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
 		if(SANITY_NEUTRAL+1 to SANITY_GREAT+1) //shitty hack but +1 to prevent it from responding to super small differences
 			setInsanityEffect(0)
 			master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
 			master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
 			sanity_level = 2
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
 		if(SANITY_GREAT+1 to INFINITY)
 			setInsanityEffect(ECSTATIC_SANITY_PEN) //It's not a penalty but w/e
 			master.remove_movespeed_modifier(MOVESPEED_ID_SANITY)
 			master.add_actionspeed_modifier(/datum/actionspeed_modifier/high_sanity)
 			sanity_level = 1
+			deltimer(void_mask_drain_timerid)
+			void_mask_drain_start = 0
 
 	// Crazy or insane = add some uncommon hallucinations
 	if(sanity_level >= SANITY_CRAZY)
@@ -455,7 +465,15 @@
 
 ///Causes direct drain of someone's sanity, call it with a numerical value corresponding how badly you want to hurt their sanity
 /datum/component/mood/proc/direct_sanity_drain(datum/source, amount)
+	if(!void_mask_drain_start)
+		void_mask_drain_start = world.time
+		void_mask_drain_timerid = addtimer(CALLBACK(src, PROC_REF(release_void_mask_drain)), 60 SECONDS, TIMER_STOPPABLE)
 	setSanity(sanity + amount)
+
+///Запускается через минуту после начала дрэйна от маски: поднимает sanity выше порога, из-за чего снимается замедление.
+/datum/component/mood/proc/release_void_mask_drain()
+	void_mask_drain_start = 0
+	setSanity(max(sanity, SANITY_DISTURBED + 1))
 
 #undef ECSTATIC_SANITY_PEN
 #undef SLIGHT_INSANITY_PEN

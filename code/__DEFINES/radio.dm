@@ -113,12 +113,12 @@
 #define RADIO_CHANNEL_DS1 "DS-1"
 #define RADIO_KEY_DS1 "q"
 #define RADIO_TOKEN_DS1 ":q"
-#define FREQ_DS1 1210
+#define FREQ_DS1 1209
 
 #define RADIO_CHANNEL_DS2 "DS-2"
 #define RADIO_KEY_DS2 "w"
 #define RADIO_TOKEN_DS2 ":w"
-#define FREQ_DS2 1209
+#define FREQ_DS2 1210
 
 #define RADIO_CHANNEL_PIRATE "Illegal"
 #define RADIO_KEY_PIRATE "z"

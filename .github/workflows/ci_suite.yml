@@ -36,6 +36,7 @@ jobs:
           tools/bootstrap/python -c ''
       - name: Run Linters
         run: |
+          touch ${GITHUB_WORKSPACE}/output-annotations.txt
           bash tools/ci/check_filedirs.sh tgstation.dme
           bash tools/ci/check_changelogs.sh
           bash tools/ci/check_grep.sh
@@ -44,14 +45,13 @@ jobs:
           tools/build/build --ci lint
           tools/bootstrap/python -m dmi.test
           tools/bootstrap/python -m mapmerge2.dmm_test
-          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1
+          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1 || true
       - name: Annotate Lints
         if: always()
-        run: |
-          if [ ! -s output-annotations.txt ]; then
-            exit 0
-          fi
-          sed -nE 's/(.*), line ([0-9]+), column ([0-9]+):[[:space:]][[:space:]]?(error|warning): (.*)/::\4 file=\1,line=\2,col=\3::\5/p' output-annotations.txt
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        with:
+          outputFile: output-annotations.txt
 
   compile_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )

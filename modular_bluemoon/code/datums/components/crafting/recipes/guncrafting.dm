@@ -33,3 +33,7 @@
 /obj/item/weaponcrafting/gunkit/vector
 	name = "Vector SMG conversion kit"
 	desc = "A set of spare parts for upgrading the MK60 pistol to the Vector SMG. Can be used only on empty gun"
+
+/obj/item/weaponcrafting/gunkit/jager
+	name = "\improper jager Shotgun conversion kit"
+	desc = "A set of spare parts for converting a combat shotgun into the jager mag-fed shotgun. Can be used only on empty gun"

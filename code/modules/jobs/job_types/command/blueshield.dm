@@ -6,8 +6,8 @@
 	faction = "Station"
 	head_announce = list(RADIO_CHANNEL_COMMAND)
 	supervisors = "Центрального Командования"
-	total_positions = 2
-	spawn_positions = 2
+	total_positions = 1
+	spawn_positions = 1
 	selection_color = "#aac1ee"
 	minimal_player_age = 7
 	exp_requirements = 1500

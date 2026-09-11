@@ -1057,3 +1057,141 @@
 		"Navy" = list("icon_state" = "light_plate_carrier_navy", "item_state" = "light_plate_carrier_navy"),
 		"Green" = list("icon_state" = "light_plate_carrier_green", "item_state" = "light_plate_carrier_green")
 	)
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat
+	name = "Lycanthrope's Worn Coat"
+	desc = "Потрепанная временем кожаная куртка с ремнями на рукавах, серебристыми клёпками и порванным швом у правого плеча. Украшена нашивкой-полумесяцем и оснащена наплечной кобурой. От неё за версту разит табачным дымом и перегаром."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "melatonin-carrier-coat-0"
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_OCLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-carrier-coat-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	icon_state = "melatonin-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Lycanthrope's Reinforced Coat"
+	desc = "Тяжелая кожаная куртка со следами долгого износа. Ткань на груди и спине заметно уплотнена — изнутри она прошита защитным слоем кевлара. По швам и воротнику куртки идут массивные клёпки из серебристого металла, а на рукавах затянуты грубые ремни. Шов между рукавом и правым плечом небрежно порван, обнажая подкладку, а чуть ниже пришита нашивка в форме полумесяца. Из-под потертой кожаной кобуры на плече отчетливо несет стойким запахом сигаретного дыма и перегара."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "melatonin-carrier-coat-0"
+	body_parts_covered = CHEST|GROIN|ARMS
+	unique_reskin = list()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/equipped(mob/user, slot)
+	. = ..()
+	update_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-carrier-coat-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	icon_state = "melatonin-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()
+
+/obj/item/modkit/melatonin_carrier_kit
+	name = "Lycanthrope's Reinforced Coat Kit"
+	desc = "A modkit for making a plate carrier into a Lycanthrope's Reinforced Coat."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/modkit/melatonin_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
+
+/obj/item/modkit/lapkee_carrier_kit
+	name = "Concord armored top Kit"
+	desc = "A modkit for making a plate carrier into a Concord armored top."
+	icon_state = "plate-carrier_kit"
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Concord armored top"
+	desc = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "lapkee-carrier-top"
+	unique_reskin = list(
+		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
+		"Coat" = list("icon_state" = "lapkee-carrier-coat", "desc" = " Альтернативный стильный вариант переработанных бронежилетов, оформленный на манер бронехалата. Обычно - используется научными и медицинскими бригадами, служа цели защиты конечностей от биологических, бактериологических, радиационных угроз. В меньшей степени от вражеского огня, но как повезло, что это именно вариант с повышенной защитой, да? В комплекте два смешных подсумка для мелочёвки.", "name" = "Concord armored coat")
+	)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	update_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/update_icon_state()
+	. = ..()
+	var/base_state = current_skin == "Coat" ? "lapkee-carrier-coat" : "lapkee-carrier-top"
+	icon_state = base_state
+	if(base_state != "lapkee-carrier-coat" || !istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	icon_state = "lapkee-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()

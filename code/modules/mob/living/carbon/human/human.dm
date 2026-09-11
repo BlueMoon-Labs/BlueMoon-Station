@@ -424,6 +424,12 @@
 		target_zone = user.zone_selected
 	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE) && !bypass_immunity)
 		. = 0
+		// BLUEMOON ADD START - твёрдая кожа не мешает зашиванию нитью и перевязке бинтом
+		if(user)
+			var/obj/item/active_item = user.get_active_held_item()
+			if(istype(active_item, /obj/item/stack/medical/suture) || istype(active_item, /obj/item/stack/medical/gauze))
+				. = 1
+		// BLUEMOON ADD END
 	// If targeting the head, see if the head item is thin enough.
 	// If targeting anything else, see if the wear suit is thin enough.
 	if(!penetrate_thick)

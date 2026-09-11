@@ -39,3 +39,11 @@
 	name = "shotgun magazine (12g scatter laser shot slugs)"
 	icon_state = "m12gb"
 	ammo_type = /obj/item/ammo_casing/shotgun/laserslug
+
+/obj/item/ammo_box/magazine/m12g/flechette
+	name = "shotgun magazine (12g flechette)"
+	ammo_type = /obj/item/ammo_casing/shotgun/flechette
+
+/obj/item/ammo_box/magazine/m12g/frangible
+	name = "shotgun magazine (12g frangible slug)"
+	ammo_type = /obj/item/ammo_casing/shotgun/frangible
