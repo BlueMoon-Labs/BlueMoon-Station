@@ -239,7 +239,7 @@
  * станция обязана сохранить свой ориентир, пока небо багровеет.
  */
 /datum/unit_test/parallax_antag_scenes/Run()
-	TEST_ASSERT(length(GLOB.antag_parallax_scenes) >= 7, "Сцен антагонистов всего [length(GLOB.antag_parallax_scenes)] - культ и четыре пути еретика не покрыты")
+	TEST_ASSERT(length(GLOB.antag_parallax_scenes) >= 3 + length(GLOB.heretic_paths), "Каталог сцен должен покрывать три стадии культа и все пути еретика")
 	for(var/scene_key in GLOB.antag_parallax_scenes)
 		var/list/scene_layers = GLOB.antag_parallax_scenes[scene_key]
 		TEST_ASSERT(length(scene_layers) > 0, "Сцена '[scene_key]' пуста")
@@ -275,16 +275,45 @@
 	TEST_ASSERT(SSparallax.remove_modifier(test_z, ANTAG_PARALLAX_TOKEN_CULT), "Сцена культа не снялась")
 	TEST_ASSERT_NULL(SSparallax.find_modifier(test_z, ANTAG_PARALLAX_TOKEN_CULT), "После снятия модификатор культа остался в стеке")
 
-/// Каждый путь вознесения еретика обязан объявить свою сцену, иначе три из четырёх
-/// вознесений молча не меняют ничего, и заметить это можно только в игре.
+	// Отдельные вознесения используют общий префикс, но снимаются независимо.
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/first_final = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	var/datum/eldritch_knowledge/final_eldritch/blade_final/second_final = allocate(/datum/eldritch_knowledge/final_eldritch/blade_final)
+	var/first_token = "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(first_final)]"
+	var/second_token = "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(second_final)]"
+	SSparallax.add_layers(test_z, first_token, GLOB.antag_parallax_scenes[first_final.parallax_scene], PARALLAX_PRIORITY_ANTAG)
+	SSparallax.add_layers(test_z, second_token, GLOB.antag_parallax_scenes[second_final.parallax_scene], PARALLAX_PRIORITY_ANTAG)
+	var/datum/parallax_modifier/second_modifier = SSparallax.find_modifier(test_z, second_token)
+	var/both_registered = SSparallax.find_modifier(test_z, first_token) && second_modifier
+	var/first_removed = clear_antag_parallax_scene(first_token, 0)
+	var/first_absent = isnull(SSparallax.find_modifier(test_z, first_token))
+	var/second_preserved = second_modifier && SSparallax.find_modifier(test_z, second_token) == second_modifier
+	var/second_removed = clear_antag_parallax_scene(second_token, 0)
+	TEST_ASSERT(both_registered, "Два вознесения должны создавать отдельные модификаторы")
+	TEST_ASSERT(first_removed && first_absent, "Снятие первого вознесения должно удалять его модификатор")
+	TEST_ASSERT(second_preserved, "Снятие одного вознесения не должно убирать сцену другого еретика")
+	TEST_ASSERT(second_removed, "Сцена второго вознесения должна сниматься собственным токеном")
+
+/// Каждый зарегистрированный путь завершается вознесением с отдельной сценой.
 /datum/unit_test/parallax_heretic_ascension_scenes/Run()
+	var/list/registered_finals = list()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT(length(path.knowledge), "Путь [path_id] не содержит знаний")
+		var/final_type = path.knowledge[length(path.knowledge)]
+		TEST_ASSERT(ispath(final_type, /datum/eldritch_knowledge/final_eldritch), "Путь [path_id] не завершается вознесением")
+		TEST_ASSERT(!registered_finals[final_type], "Вознесение [final_type] зарегистрировано сразу в нескольких путях")
+		registered_finals[final_type] = path_id
+	var/list/seen_scenes = list()
 	var/checked = 0
 	for(var/datum/eldritch_knowledge/final_eldritch/final_type as anything in subtypesof(/datum/eldritch_knowledge/final_eldritch))
 		var/scene_key = initial(final_type.parallax_scene)
 		checked++
+		TEST_ASSERT(registered_finals[final_type], "Вознесение [final_type] не зарегистрировано в каталоге путей")
 		TEST_ASSERT_NOTNULL(scene_key, "Вознесение [final_type] не объявляет сцену параллакса")
 		TEST_ASSERT(length(GLOB.antag_parallax_scenes[scene_key]) > 0, "Вознесение [final_type] ссылается на несуществующую сцену '[scene_key]'")
-	TEST_ASSERT_EQUAL(checked, 4, "Путей вознесения нашлось [checked] вместо четырёх - тест смотрит не туда")
+		TEST_ASSERT(!seen_scenes[scene_key], "Вознесения [final_type] и [seen_scenes[scene_key]] используют одну сцену")
+		seen_scenes[scene_key] = final_type
+	TEST_ASSERT_EQUAL(checked, length(GLOB.heretic_paths), "Количество вознесений не совпадает с каталогом путей")
 
 /// Выбор профиля обязан быть единым на z, стабильным весь раунд и независимым между z.
 /datum/unit_test/parallax_profile_selection/Run()
@@ -529,4 +558,3 @@
 		weather_checked++
 		TEST_ASSERT_NOTNULL(SSparallax.profiles_by_id[weather_profile], "Погода [weather_type] ссылается на несуществующий профиль '[weather_profile]'")
 	TEST_ASSERT(weather_checked >= 3, "Погод с профилем параллакса нашлось всего [weather_checked]")
-

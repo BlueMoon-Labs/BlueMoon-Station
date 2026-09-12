@@ -1,242 +1,572 @@
-#define RIFT_AFTERUSE_NAMES list("Исследовано","Высосано","Проанализировано","Осушено","Высвобождено")
-
 /obj/effect/eldritch
-	name = "Руна"
-	desc = "На полу выгравирован плавный круг фигур и рун, наполненный густой черной смолистой жидкостью."
+	name = "руна трансмутации"
+	desc = "Круг неизвестных знаков, заполненный густой чёрной смолой."
 	anchored = TRUE
 	icon_state = ""
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	layer = SIGIL_LAYER
-	///Used mainly for summoning ritual to prevent spamming the rune to create millions of monsters.
 	var/is_in_use = FALSE
+	var/ritual_interrupted = FALSE
+	var/mob/living/ritual_user
+	var/obj/effect/temp_visual/heretic_ritual/ritual_visual
+	var/list/reserved_atoms = list()
+	var/list/reserved_locations = list()
+	var/list/reserved_stack_amounts = list()
+	var/list/ascension_body_images = list()
+	var/client/ascension_preview_client
+	var/datum/mind/ascension_preview_mind
+	var/mob/living/carbon/human/stasis_target
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/stasis_restraint
 
 /obj/effect/eldritch/Initialize(mapload)
 	. = ..()
-	var/image/I = image(icon = 'icons/effects/eldritch.dmi', icon_state = null, loc = src)
-	I.override = TRUE
-	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "heretic_rune", I)
+	var/image/silicon_image = image(icon = 'icons/effects/eldritch.dmi', icon_state = null, loc = src)
+	silicon_image.override = TRUE
+	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "heretic_rune", silicon_image)
+
+/obj/effect/eldritch/Destroy()
+	if(!ritual_visual && isturf(loc))
+		new /obj/effect/temp_visual/heretic_ritual/erase(loc, rune_path)
+	release_atoms()
+	return ..()
+
+/obj/effect/eldritch/examine(mob/user)
+	. = ..()
+	if(IS_HERETIC(user))
+		. += span_notice("Положите компоненты на руну или рядом с ней и коснитесь круга, чтобы выбрать изученный ритуал. Перемещение компонентов прервёт обряд.")
 
 /obj/effect/eldritch/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
-	if(.)
-		return
-	try_activate(user)
+	if(!.)
+		try_activate(user)
 
 /obj/effect/eldritch/proc/try_activate(mob/living/user)
-	if(!IS_HERETIC(user))
+	if(!IS_HERETIC(user) || user.incapacitated() || !Adjacent(user) || is_in_use)
 		return
-	if(!is_in_use)
-		INVOKE_ASYNC(src, PROC_REF(activate) , user)
+	is_in_use = TRUE
+	INVOKE_ASYNC(src, PROC_REF(activate), user)
 
-/obj/effect/eldritch/attackby(obj/item/I, mob/living/user)
+/obj/effect/eldritch/attackby(obj/item/item, mob/living/user)
 	. = ..()
-	if(istype(I, /obj/item/storage/book/bible) || istype(I, /obj/item/nullrod))
-		user.say("BEGONE FOUL MAGICKS!!", forced = "bible")
-		to_chat(user, "<span class='danger'>You disrupt the magic of [src] with [I].</span>")
+	if(istype(item, /obj/item/storage/book/bible) || istype(item, /obj/item/nullrod))
+		to_chat(user, span_notice("Вы разрушаете ритуальный круг с помощью [item]."))
+		log_game("[key_name(user)] разрушает руну трансмутации с помощью [item] в [AREACOORD(src)].")
 		qdel(src)
 
 /obj/effect/eldritch/proc/activate(mob/living/user)
-	is_in_use = TRUE
-	// Have fun trying to read this proc.
-	var/datum/antagonist/heretic/cultie = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	var/list/knowledge = cultie.get_all_knowledge()
-	var/list/atoms_in_range = list()
-
-	for(var/A in range(1, src))
-		var/atom/atom_in_range = A
-		if(istype(atom_in_range,/area))
-			continue
-		if(istype(atom_in_range,/turf)) // we dont want turfs
-			continue
-		if(istype(atom_in_range,/mob/living))
-			var/mob/living/living_in_range = atom_in_range
-			if(living_in_range.stat != DEAD || living_in_range == user) // we only accept corpses, no living beings allowed.
-				continue
-		atoms_in_range += atom_in_range
-	for(var/X in knowledge)
-		var/datum/eldritch_knowledge/current_eldritch_knowledge = knowledge[X]
-
-		//has to be done so that we can freely edit the local_required_atoms without fucking up the eldritch knowledge
-		var/list/local_required_atoms = list()
-
-		if(!current_eldritch_knowledge.required_atoms || current_eldritch_knowledge.required_atoms.len == 0)
-			continue
-
-		local_required_atoms += current_eldritch_knowledge.required_atoms
-
-		var/list/selected_atoms = list()
-
-		if(!current_eldritch_knowledge.recipe_snowflake_check(atoms_in_range,drop_location(),selected_atoms))
-			continue
-
-		for(var/LR in local_required_atoms)
-			var/list/local_required_atom_list = LR
-
-			for(var/LAIR in atoms_in_range)
-				var/atom/local_atom_in_range = LAIR
-				if(is_type_in_list(local_atom_in_range,local_required_atom_list))
-					selected_atoms |= local_atom_in_range
-					local_required_atoms -= list(local_required_atom_list)
-					break
-
-		if(length(local_required_atoms) > 0)
-			continue
-
-		flick("[icon_state]_active",src)
-		playsound(user, 'sound/magic/castsummon.ogg', 75, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10)
-		//we are doing this since some on_finished_recipe subtract the atoms from selected_atoms making them invisible permanently.
-		var/list/atoms_to_disappear = selected_atoms.Copy()
-		for(var/to_disappear in atoms_to_disappear)
-			var/atom/atom_to_disappear = to_disappear
-			//temporary so we dont have to deal with the bs of someone picking those up when they may be deleted
-			atom_to_disappear.invisibility = INVISIBILITY_ABSTRACT
-		if(current_eldritch_knowledge.on_finished_recipe(user,selected_atoms,loc))
-			current_eldritch_knowledge.cleanup_atoms(selected_atoms)
-
-		for(var/to_appear in atoms_to_disappear)
-			var/atom/atom_to_appear = to_appear
-			//we need to reappear the item just in case the ritual didnt consume everything... or something.
-			atom_to_appear.invisibility = initial(atom_to_appear.invisibility)
-
+	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
+	if(!heretic)
 		is_in_use = FALSE
 		return
-	is_in_use = FALSE
-	to_chat(user,"<span class='warning'>Ритуал провалился! Либо использованы неправильные компоненты, либо я упустил что-то важное!</span>")
+	var/list/rituals = list()
+	for(var/knowledge_type in heretic.researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
+		if(length(knowledge.required_atoms))
+			rituals[knowledge.name] = knowledge
+	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
+	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё.", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
+	if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
+		var/datum/eldritch_knowledge/ritual = rituals[choice]
+		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
+			reject_ritual(user, ritual, "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты.")
+			heretic.ensure_hunt_target(user)
+		else
+			do_ritual(user, ritual)
+	if(!QDELETED(src))
+		release_atoms()
+		is_in_use = FALSE
 
-// BlueMoon edit. Transforming 3x3 runes into the regular dull variants
+/obj/effect/eldritch/proc/collect_ritual_atoms(mob/living/user)
+	. = list()
+	for(var/atom/movable/nearby in range(1, src))
+		if(nearby == src || nearby == user || !isturf(nearby.loc) || nearby.invisibility || GLOB.heretic_ritual_reservations[nearby])
+			continue
+		if(isitem(nearby))
+			var/obj/item/item = nearby
+			if(item.item_flags & ABSTRACT)
+				continue
+		. += nearby
+
+/// Подбор с возвратом: нож не должен занимать общее требование «предмет», если он нужен отдельному требованию.
+/obj/effect/eldritch/proc/match_recipe_requirements(list/requirements, index, list/candidates, list/usage)
+	if(index > length(requirements))
+		return TRUE
+	var/required_type = requirements[index]
+	for(var/atom/movable/candidate in candidates)
+		if(!istype(candidate, required_type))
+			continue
+		var/available = 1
+		if(isstack(candidate))
+			var/obj/item/stack/stack = candidate
+			if(stack.is_cyborg)
+				continue
+			available = stack.amount
+		var/used = usage[candidate] || 0
+		if(used >= available)
+			continue
+		usage[candidate] = used + 1
+		if(match_recipe_requirements(requirements, index + 1, candidates, usage))
+			return TRUE
+		if(used)
+			usage[candidate] = used
+		else
+			usage -= candidate
+	return FALSE
+
+/obj/effect/eldritch/proc/select_recipe_atoms(datum/eldritch_knowledge/ritual, list/atoms, list/selected_atoms, list/stack_usage, mob/living/user)
+	if(!ritual.recipe_snowflake_check(atoms, get_turf(src), selected_atoms, user))
+		return FALSE
+	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
+		for(var/mob/living/carbon/human/body in atoms.Copy())
+			if(!(body in selected_atoms))
+				atoms -= body
+	for(var/mob/living/living_ingredient in atoms.Copy())
+		if(living_ingredient.stat != DEAD && !(ritual.type == /datum/eldritch_knowledge/spell/basic && (living_ingredient in selected_atoms)))
+			atoms -= living_ingredient
+	var/list/usage = list()
+	if(!match_recipe_requirements(ritual.required_atoms, 1, atoms, usage))
+		return FALSE
+	for(var/atom/movable/ingredient in usage)
+		selected_atoms |= ingredient
+		if(isstack(ingredient))
+			stack_usage[ingredient] = usage[ingredient]
+	return TRUE
+
+/obj/effect/eldritch/proc/reserve_atoms(list/selected_atoms)
+	for(var/atom/movable/ingredient in selected_atoms)
+		if(QDELETED(ingredient) || GLOB.heretic_ritual_reservations[ingredient])
+			return FALSE
+	ritual_interrupted = FALSE
+	for(var/atom/movable/ingredient in selected_atoms)
+		reserved_atoms |= ingredient
+		reserved_locations[ingredient] = ingredient.loc
+		GLOB.heretic_ritual_reservations[ingredient] = src
+		if(isstack(ingredient))
+			var/obj/item/stack/stack = ingredient
+			reserved_stack_amounts[stack] = stack.amount
+		RegisterSignal(ingredient, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
+	return TRUE
+
+/obj/effect/eldritch/proc/on_ingredient_changed()
+	SIGNAL_HANDLER
+	ritual_interrupted = TRUE
+	clear_hunt_stasis()
+	clear_ascension_body_preview()
+
+/obj/effect/eldritch/proc/apply_hunt_stasis(datum/eldritch_knowledge/ritual, mob/living/user)
+	if(ritual.type != /datum/eldritch_knowledge/spell/basic)
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/mob/living/carbon/human/target = heretic?.hunt_target?.current
+	if(!heretic?.hunt_target_ready(target) || target.stat == DEAD || !(target in reserved_atoms))
+		return
+	stasis_target = target
+	// Отдельный экземпляр не продлевает и не снимает чужой паралич.
+	stasis_restraint = new(list(target, -1, TRUE))
+	target.apply_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+	target.visible_message(span_warning("Знаки руны обвивают [target] и удерживают на месте."), span_userdanger("Руна удерживает вас! Обряд прекратится, если вас утащат из круга или помешают еретику."))
+
+/obj/effect/eldritch/proc/clear_hunt_stasis()
+	QDEL_NULL(stasis_restraint)
+	if(!QDELETED(stasis_target))
+		stasis_target.remove_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+	stasis_target = null
+
+/// Подсвечивается только зарезервированная тройка. Appearance тел остаётся нетронутым для остальных игроков.
+/obj/effect/eldritch/proc/show_ascension_body_preview(mob/living/user)
+	clear_ascension_body_preview()
+	if(user != ritual_user || !IS_HERETIC(user))
+		return FALSE
+	for(var/mob/living/carbon/human/body in reserved_atoms)
+		if(body.stat != DEAD || IS_HERETIC(body) || IS_HERETIC_MONSTER(body))
+			continue
+		var/image/body_image = image(loc = body)
+		body_image.appearance = body.appearance
+		body_image.appearance_flags |= KEEP_TOGETHER
+		body_image.filters += filter(arglist(outline_filter(1, "#54ff73")))
+		ascension_body_images += body_image
+	if(length(ascension_body_images) != HERETIC_ASCENSION_BODIES)
+		clear_ascension_body_preview()
+		return FALSE
+	ascension_preview_client = user.client
+	if(ascension_preview_client)
+		ascension_preview_client.images |= ascension_body_images
+	ascension_preview_mind = user.mind
+	RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_ingredient_changed))
+	RegisterSignal(ascension_preview_mind, list(COMSIG_MIND_TRANSFER, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
+	return TRUE
+
+/obj/effect/eldritch/proc/clear_ascension_body_preview()
+	if(ascension_preview_client)
+		ascension_preview_client.images -= ascension_body_images
+	ascension_preview_client = null
+	if(!QDELETED(ritual_user))
+		UnregisterSignal(ritual_user, COMSIG_MOB_CLIENT_LOGOUT)
+	if(!QDELETED(ascension_preview_mind))
+		UnregisterSignal(ascension_preview_mind, list(COMSIG_MIND_TRANSFER, COMSIG_PARENT_QDELETING))
+	ascension_preview_mind = null
+	for(var/image/body_image as anything in ascension_body_images)
+		body_image.loc = null
+	QDEL_LIST(ascension_body_images)
+
+/obj/effect/eldritch/proc/release_atoms()
+	clear_hunt_stasis()
+	QDEL_NULL(ritual_visual)
+	clear_ascension_body_preview()
+	if(!QDELETED(ritual_user))
+		UnregisterSignal(ritual_user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+	for(var/atom/movable/ingredient in reserved_atoms)
+		if(GLOB.heretic_ritual_reservations[ingredient] == src)
+			GLOB.heretic_ritual_reservations -= ingredient
+		if(!QDELETED(ingredient))
+			UnregisterSignal(ingredient, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+	reserved_atoms.Cut()
+	reserved_locations.Cut()
+	reserved_stack_amounts.Cut()
+	ritual_user = null
+
+/obj/effect/eldritch/proc/ritual_valid(mob/living/user, datum/eldritch_knowledge/ritual)
+	if(QDELETED(src) || QDELETED(user) || ritual_interrupted || user.incapacitated() || !Adjacent(user))
+		return FALSE
+	if(ritual_user && ritual_user != user)
+		return FALSE
+	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
+	if(!heretic || heretic.get_knowledge(ritual.type) != ritual)
+		return FALSE
+	for(var/atom/movable/ingredient in reserved_atoms)
+		if(QDELETED(ingredient) || ingredient.loc != reserved_locations[ingredient] || !isturf(ingredient.loc) || get_dist(ingredient, src) > 1)
+			return FALSE
+		if(GLOB.heretic_ritual_reservations[ingredient] != src)
+			return FALSE
+		if(isstack(ingredient))
+			var/obj/item/stack/stack = ingredient
+			if(stack.amount != reserved_stack_amounts[stack])
+				return FALSE
+	var/list/recheck_atoms = reserved_atoms.Copy()
+	var/list/recheck_selected = list()
+	return ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user)
+
+/obj/effect/eldritch/proc/reject_ritual(mob/living/user, datum/eldritch_knowledge/ritual, reason)
+	to_chat(user, span_warning("Ритуал «[ritual.name]» не готов. [reason]"))
+	log_game("[key_name(user)] не начинает ритуал «[ritual.name]» ([ritual.type]) в [AREACOORD(src)]: [reason]")
+	return FALSE
+
+/obj/effect/eldritch/proc/do_ritual(mob/living/user, datum/eldritch_knowledge/ritual)
+	var/list/atoms = collect_ritual_atoms(user)
+	var/list/selected_atoms = list()
+	var/list/stack_usage = list()
+	if(!select_recipe_atoms(ritual, atoms, selected_atoms, stack_usage, user))
+		return reject_ritual(user, ritual, recipe_failure_reason(ritual, user))
+	if(!reserve_atoms(selected_atoms))
+		return reject_ritual(user, ritual, "Компоненты уже заняты другим обрядом или исчезли. Дождитесь его окончания либо принесите другие.")
+	ritual_user = user
+	apply_hunt_stasis(ritual, user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/final_eldritch/ascension_ritual = ritual
+	var/area/ascension_area = get_area(src)
+	var/ascension_announced = istype(ascension_ritual) && ascension_ritual.begin_ascension_ritual(user, src)
+	if(istype(ascension_ritual) && !ascension_announced)
+		release_atoms()
+		if(world.time < heretic.ascension_ready_at)
+			return reject_ritual(user, ritual, "Завеса ещё укреплена после предупреждения станции. До начала вознесения: [DisplayTimeText(heretic.ascension_ready_at - world.time)].")
+		else
+			return reject_ritual(user, ritual, "Завеса ещё не успокоилась. Между попытками начать вознесение должно пройти три минуты.")
+	var/ascension_started_at = world.time
+	if(ascension_announced)
+		show_ascension_body_preview(user)
+	inscribe_path(heretic.selected_path)
+	ritual_visual = new(get_turf(src), heretic.selected_path, ritual.ritual_time + 1 SECONDS)
+	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
+	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Сохраняйте неподвижность и не трогайте компоненты."))
+	log_game("[key_name(user)] начинает ритуал «[ritual.name]» в [AREACOORD(src)].")
+	flick("[icon_state]_active", src)
+	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
+	if(!do_after(user, ritual.ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
+		if(ascension_announced && !QDELETED(ascension_ritual))
+			ascension_ritual.abort_ascension_ritual(ascension_area, world.time - ascension_started_at)
+		release_atoms()
+		to_chat(user, span_warning("Ритуал прерван. Компоненты не израсходованы."))
+		log_game("[key_name(user)] прерывает ритуал «[ritual.name]» в [AREACOORD(src)].")
+		return FALSE
+	// Стопки расходуются поштучно только после успешного завершения обряда.
+	var/succeeded = ritual.on_finished_recipe(user, selected_atoms, get_turf(src))
+	if(succeeded)
+		if(istype(ascension_ritual))
+			heretic.update_combat_resource_alert()
+		new /obj/effect/temp_visual/heretic_script(get_turf(src), heretic.selected_path)
+		for(var/obj/item/stack/stack in stack_usage)
+			if(stack in selected_atoms)
+				selected_atoms -= stack
+				if(!QDELETED(stack))
+					stack.use(stack_usage[stack])
+		ritual.cleanup_atoms(selected_atoms)
+		to_chat(user, span_notice("Ритуал «[ritual.name]» завершён."))
+	log_game("[key_name(user)] [succeeded ? "завершает" : "не завершает"] ритуал «[ritual.name]» в [AREACOORD(src)].")
+	release_atoms()
+	return succeeded
+
+/obj/effect/eldritch/proc/recipe_failure_reason(datum/eldritch_knowledge/ritual, mob/living/user)
+	var/list/available_atoms = collect_ritual_atoms(user)
+	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		if(!heretic || !heretic.hunt_target_available(heretic.hunt_target))
+			return "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты."
+		var/mob/living/carbon/human/victim = heretic.hunt_target.current
+		if(!(victim in available_atoms))
+			return "Назначенная цель [victim.real_name] должна лежать на руне или рядом с ней, вне шкафов и других контейнеров."
+		if(!heretic.hunt_target_ready(victim))
+			return "Цель [victim.real_name] ещё сопротивляется: свяжите её наручниками, оглушите или сбейте с ног."
+		var/has_own_heart = FALSE
+		for(var/obj/item/living_heart/heart in available_atoms)
+			if(!heart.owner_mind || heart.owner_mind == user.mind)
+				has_own_heart = TRUE
+				break
+		if(!has_own_heart)
+			return "Рядом с назначенной целью нужно выложить ваше живое сердце. Чужое сердце не подходит."
+	var/list/missing = list()
+	var/list/requirements = list()
+	for(var/required_type in ritual.required_atoms)
+		requirements[required_type]++
+	for(var/required_type in requirements)
+		var/available = 0
+		for(var/atom/movable/candidate in available_atoms)
+			if(!istype(candidate, required_type))
+				continue
+			if(isliving(candidate))
+				var/mob/living/body = candidate
+				if(body.stat != DEAD && ritual.type != /datum/eldritch_knowledge/spell/basic)
+					continue
+			if(isstack(candidate))
+				var/obj/item/stack/stack = candidate
+				if(!stack.is_cyborg)
+					available += stack.amount
+			else
+				available++
+		var/shortfall = requirements[required_type] - available
+		if(shortfall > 0)
+			missing += "[heretic_ritual_ingredient_name(required_type)] ×[shortfall]"
+	if(length(missing))
+		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны."
+	if(ritual.type == /datum/eldritch_knowledge/base_void)
+		var/turf/open/floor/floor = get_turf(src)
+		if(!istype(floor))
+			return "Руна должна находиться на открытом полу."
+		return "Температура воздуха на руне: [round(floor.GetTemperature() - T0C, 0.1)] °C; нужно не выше 0 °C либо ваше поле Зимнего предела до конца обряда."
+	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
+		return "Нужны ваше живое сердце и назначенная цель: живая в наручниках, лёжа, оглушённая или без сознания, либо её труп за меньшую награду."
+	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
+		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] человеческих тела. Тела еретиков и их слуг не подходят."
+	return "Особые условия обряда не выполнены. Проверьте требования выбранного ритуала в кодексе."
+
 /obj/effect/eldritch/big
-	name = "Руна трансмутации"
 	icon = 'icons/obj/rune.dmi'
 	icon_state = "eld"
-	//pixel_x = -32 // BlueMoon edit
-	//pixel_y = -32
+	appearance_flags = PIXEL_SCALE
 
-/// A 3x3 heretic rune. The kind heretics actually draw in game.
+/obj/effect/eldritch/big/Initialize(mapload)
+	. = ..()
+	transform = matrix() * HERETIC_RUNE_SCALE
+
 /obj/effect/eldritch/huge
 	icon = 'icons/obj/rune.dmi'
 	icon_state = "eld"
-	//pixel_x = -33 // BlueMoon edit
-	//pixel_y = -32
 
-/**
- * #Reality smash tracker
- *
- * Stupid fucking list holder, DONT create new ones, it will break the game, this is automnatically created whenever eldritch cultists are created.
- *
- * Tracks relevant data, generates relevant data, useful tool
- */
+#define HERETIC_NETWORK_INFLUENCE_LIMIT 12
+
+/// Смена тела или повторная выдача роли не сбрасывает личную историю разломов за раунд.
 /datum/reality_smash_tracker
-	///list of tracked reality smashes
 	var/list/smashes = list()
-	///List of mobs with ability to see the smashes
 	var/list/targets = list()
+	var/list/tracked_bodies = list()
+	var/list/harvest_counts = list()
+	var/list/history_minds = list()
+	var/initial_influences_seeded = FALSE
+	var/next_influence_at = 0
+	var/influence_timer
 
 /datum/reality_smash_tracker/Destroy(force, ...)
-	if(GLOB.reality_smash_track == src)
-		stack_trace("/datum/reality_smash_tracker was deleted. Heretics may no longer access any influences. Fix it or call coder support")
+	cancel_influence_timer()
+	for(var/datum/mind/mind in targets.Copy())
+		RemoveMind(mind)
+	for(var/datum/mind/mind in history_minds)
+		UnregisterSignal(mind, COMSIG_PARENT_QDELETING)
+	history_minds.Cut()
+	harvest_counts.Cut()
 	QDEL_LIST(smashes)
-	targets.Cut()
 	return ..()
-/**
- * Automatically fixes the target and smash network
- *
- * Fixes any bugs that are caused by late Generate() or exchanging clients
- */
+
 /datum/reality_smash_tracker/proc/ReworkNetwork()
-	listclearnulls(smashes)
-	for(var/mind in targets)
-		if(isnull(mind))
-			stack_trace("A null somehow landed in a list of minds")
+	SIGNAL_HANDLER
+	for(var/datum/mind/mind in targets.Copy())
+		if(QDELETED(mind))
+			RemoveMind(mind)
 			continue
-		for(var/X in smashes)
-			var/obj/effect/reality_smash/reality_smash = X
-			reality_smash.AddMind(mind)
+		var/mob/old_body = tracked_bodies[mind]
+		if(old_body != mind.current)
+			if(!QDELETED(old_body))
+				UnregisterSignal(old_body, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+			tracked_bodies[mind] = mind.current
+			if(mind.current)
+				RegisterSignal(mind.current, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(ReworkNetwork))
+				RegisterSignal(mind.current, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(on_body_logout))
+		for(var/obj/effect/reality_smash/influence in smashes)
+			influence.AddMind(mind)
 
-/**
- * Generates a set amount of reality smashes based on the N value
- *
- * Automatically creates more reality smashes
- */
+/datum/reality_smash_tracker/proc/on_body_logout(mob/source)
+	SIGNAL_HANDLER
+	for(var/datum/mind/mind in targets)
+		if(tracked_bodies[mind] != source)
+			continue
+		for(var/obj/effect/reality_smash/influence in smashes)
+			influence.RemoveMind(mind)
+
 /datum/reality_smash_tracker/proc/Generate(mob/caller, fake_count = 0)
-	var/number = 0
 	if(fake_count)
-		number = fake_count
-	else
-		if(istype(caller))
-			targets += caller
-		var/targ_len = length(targets)
-		var/smash_len = length(smashes)
-		number = max(targ_len * (6-(targ_len-1)) - smash_len,1)
+		for(var/index in 1 to min(fake_count, HERETIC_NETWORK_INFLUENCE_LIMIT))
+			var/turf/location = find_spawn_turf()
+			if(location)
+				var/obj/effect/broken_illusion/trace = new(location)
+				trace.fake = TRUE
+		return
+	if(!length(targets))
+		return
+	if(!initial_influences_seeded)
+		if(length(smashes) < HERETIC_INFLUENCE_INITIAL_COUNT)
+			for(var/index in length(smashes) + 1 to HERETIC_INFLUENCE_INITIAL_COUNT)
+				if(!RandomSpawnSmash(TRUE))
+					break
+		// Если станция ещё не готова, первый успешный запуск сохранит стартовый запас.
+		initial_influences_seeded = !!length(smashes)
+		ReworkNetwork()
+	if(!next_influence_at)
+		next_influence_at = world.time + HERETIC_INFLUENCE_INTERVAL
+	schedule_next_influence()
 
-	for(var/i=0,i<number,i++)
-		var/turf/chosen_location = get_safe_random_station_turf()
+/datum/reality_smash_tracker/proc/network_influence_limit()
+	return min(6 + 2 * length(targets), HERETIC_NETWORK_INFLUENCE_LIMIT)
 
-		//we also dont want them close to each other, at least 1 tile of seperation
-		var/obj/effect/reality_smash/what_if_i_have_one = locate() in range(1, chosen_location)
-		var/obj/effect/broken_illusion/what_if_i_had_one_but_got_used = locate() in range(1, chosen_location)
-		if(what_if_i_have_one || what_if_i_had_one_but_got_used) //we dont want to spawn
+/datum/reality_smash_tracker/proc/cancel_influence_timer()
+	if(influence_timer)
+		deltimer(influence_timer)
+		influence_timer = null
+
+/// Поздний еретик не получает новую стартовую пачку и не отодвигает существующий срок.
+/datum/reality_smash_tracker/proc/schedule_next_influence()
+	if(QDELETED(src) || !length(targets) || length(smashes) >= network_influence_limit())
+		cancel_influence_timer()
+		return
+	if(influence_timer)
+		return
+	influence_timer = addtimer(CALLBACK(src, PROC_REF(spawn_scheduled_influence)), max(1, next_influence_at - world.time), TIMER_STOPPABLE)
+
+/datum/reality_smash_tracker/proc/spawn_scheduled_influence()
+	cancel_influence_timer()
+	if(QDELETED(src) || !length(targets) || length(smashes) >= network_influence_limit())
+		return FALSE
+	if(world.time < next_influence_at)
+		schedule_next_influence()
+		return FALSE
+	if(!initial_influences_seeded)
+		// Generate мог прийти до готовности карты; первый запас всё ещё ограничен тремя.
+		next_influence_at = world.time + HERETIC_INFLUENCE_INTERVAL
+		Generate()
+		return FALSE
+	var/spawned = RandomSpawnSmash(TRUE)
+	// После простоя появляется максимум один разлом, пропущенные интервалы не копятся.
+	next_influence_at = world.time + HERETIC_INFLUENCE_INTERVAL
+	if(spawned)
+		ReworkNetwork()
+		for(var/datum/mind/mind in targets)
+			var/datum/antagonist/heretic/heretic = mind.has_antag_datum(/datum/antagonist/heretic)
+			if(!heretic || heretic.role_removed || heretic.influences_harvested >= HERETIC_INFLUENCE_LIMIT || !mind.current || mind.current.stat == DEAD)
+				continue
+			to_chat(mind.current, span_eldritch("На станции приоткрылся новый разлом. За завесой снова шепчут."))
+	schedule_next_influence()
+	return spawned
+
+/datum/reality_smash_tracker/proc/find_spawn_turf()
+	if(!length(GLOB.the_station_areas))
+		return null
+	for(var/attempt in 1 to 30)
+		var/turf/location = get_safe_random_station_turf()
+		if(!location || !is_station_level(location.z))
 			continue
-		if(fake_count)
-			var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(chosen_location)
-			illusion.fake = TRUE
-			RandomRiftName(illusion, use_afteruse = TRUE)
-		else
-			new /obj/effect/reality_smash(chosen_location)
-	ReworkNetwork()
+		var/list/nearby = range(1, location)
+		if(locate(/obj/effect/reality_smash) in nearby)
+			continue
+		if(locate(/obj/effect/broken_illusion) in nearby)
+			continue
+		return location
+	return null
 
-/**
-*CIT CHANGE
-*
-*Creates a singular reality smash
-*Credit to slimelust
-*/
-
-/datum/reality_smash_tracker/proc/RandomSpawnSmash(var/deferred = FALSE)
-	var/turf/chosen_location = get_safe_random_station_turf()
-	//we also dont want them close to each other, at least 1 tile of separation
-	var/obj/effect/reality_smash/what_if_i_have_one = locate() in range(1, chosen_location)
-	var/obj/effect/broken_illusion/what_if_i_had_one_but_got_used = locate() in range(1, chosen_location)
-	var/tries = 10
-	while((what_if_i_have_one || what_if_i_had_one_but_got_used) && tries-- > 0)
-		chosen_location = get_safe_random_station_turf()
-	new /obj/effect/reality_smash(chosen_location)
+/datum/reality_smash_tracker/proc/RandomSpawnSmash(deferred = FALSE)
+	if(length(smashes) >= HERETIC_NETWORK_INFLUENCE_LIMIT)
+		return FALSE
+	var/turf/location = find_spawn_turf()
+	if(!location)
+		return FALSE
+	new /obj/effect/reality_smash(location, src)
 	if(!deferred)
 		ReworkNetwork()
+	return TRUE
 
-/**
- * Adds a mind to the list of people that can see the reality smashes
- *
- * Use this whenever you want to add someone to the list
- */
-/datum/reality_smash_tracker/proc/AddMind(datum/mind/e_cultists)
-	RegisterSignal(e_cultists.current,COMSIG_MOB_CLIENT_LOGIN, PROC_REF(ReworkNetwork))
-	targets |= e_cultists
+/datum/reality_smash_tracker/proc/AddMind(datum/mind/heretic)
+	if(QDELETED(heretic))
+		return
+	var/datum/antagonist/heretic/heretic_datum = heretic.has_antag_datum(/datum/antagonist/heretic)
+	if(heretic_datum)
+		heretic_datum.influences_harvested = max(heretic_datum.influences_harvested, harvest_counts[heretic] || 0)
+	track_history_mind(heretic)
+	if(!(heretic in targets))
+		targets |= heretic
+		RegisterSignal(heretic, COMSIG_MIND_TRANSFER, PROC_REF(ReworkNetwork))
 	Generate()
-	for(var/obj/effect/reality_smash/reality_smash in smashes)
-		reality_smash.AddMind(e_cultists)
+	ReworkNetwork()
 
+/datum/reality_smash_tracker/proc/on_mind_deleted(datum/mind/source)
+	SIGNAL_HANDLER
+	RemoveMind(source)
+	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	history_minds -= source
+	harvest_counts -= source
+	GLOB.heretic_sacrificed_minds -= source
+	for(var/obj/effect/reality_smash/influence in smashes)
+		influence.harvested_minds -= source
+		influence.harvesting_minds -= source
+	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists)
+		heretic.sacrificed_minds -= source
+		if(heretic.hunt_target == source)
+			heretic.set_hunt_target(null)
 
-/**
- * Removes a mind from the list of people that can see the reality smashes
- *
- * Use this whenever you want to remove someone from the list
- */
-/datum/reality_smash_tracker/proc/RemoveMind(datum/mind/e_cultists)
-	UnregisterSignal(e_cultists.current,COMSIG_MOB_CLIENT_LOGIN)
-	targets -= e_cultists
-	for(var/obj/effect/reality_smash/reality_smash in smashes)
-		reality_smash.RemoveMind(e_cultists)
+/// История живёт до удаления разума, даже если роль уже снята.
+/datum/reality_smash_tracker/proc/track_history_mind(datum/mind/mind)
+	if(QDELETED(mind) || (mind in history_minds))
+		return
+	history_minds |= mind
+	RegisterSignal(mind, COMSIG_PARENT_QDELETING, PROC_REF(on_mind_deleted))
 
-///Generates random name
+/datum/reality_smash_tracker/proc/RemoveMind(datum/mind/heretic)
+	if(!heretic)
+		return
+	UnregisterSignal(heretic, COMSIG_MIND_TRANSFER)
+	var/mob/old_body = tracked_bodies[heretic]
+	if(!QDELETED(old_body))
+		UnregisterSignal(old_body, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+	tracked_bodies -= heretic
+	targets -= heretic
+	for(var/obj/effect/reality_smash/influence in smashes)
+		influence.RemoveMind(heretic)
+	schedule_next_influence()
+
 /datum/reality_smash_tracker/proc/RandomRiftName(obj/rift, set_name = "", use_afteruse = FALSE)
-	var/static/list/prefix = list("Всевидящий","Громовой","Просветляющий","Навязчивый","Отвратительный","Распыленный","Тонкий","Восходящий","Низший","Мимолетный","Пернатый","Возвышающийся","Чашуйчатый","Блаженный","Высокомерный","Угрожающий","Пушистый","Миролюбивый","Агрессивный")
-	var/static/list/postfix = list("Недостаток","Присутствие","Трещина","Тепло","Холод","Память","Напоминание","Ветерок","Хватка","Взгляд","Шепот","Поток","Прикосновение","Вуаль","Мысль","Несовершенство","Пятно","Румянец")
-
-	var/base = set_name || "[pick(prefix)] [pick(postfix)]"
-	rift.name = use_afteruse ? "\improper[pick(RIFT_AFTERUSE_NAMES)] [base]" : "\improper[base]"
+	var/static/list/prefixes = list("тревожное", "мимолётное", "шепчущее", "сокрытое", "забытое", "далёкое")
+	var/static/list/suffixes = list("присутствие", "воспоминание", "видение", "мерцание", "эхо", "наваждение")
+	var/base = set_name || "[pick(prefixes)] [pick(suffixes)]"
+	rift.name = use_afteruse ? "отголосок: [base]" : base
 
 /obj/effect/broken_illusion
-	name = "Разлом в реальности"
+	name = "пронзённая реальность"
+	desc = "В воздухе дрожит тёмный след. При взгляде на него трудно вспомнить, о чём вы только что думали."
 	icon = 'icons/effects/eldritch.dmi'
 	icon_state = "pierced_illusion"
 	anchored = TRUE
@@ -246,116 +576,125 @@
 
 /obj/effect/broken_illusion/Initialize(mapload)
 	. = ..()
-	addtimer(CALLBACK(src,PROC_REF(show_presence)),15 SECONDS)
-	addtimer(CALLBACK(src,PROC_REF(remove_presence)),195 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(show_presence)), 5 SECONDS)
+	QDEL_IN(src, 3 MINUTES)
+	var/image/silicon_image = image('icons/effects/eldritch.dmi', src, null, OBJ_LAYER)
+	silicon_image.override = TRUE
+	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", silicon_image)
 
-	var/image/I = image('icons/effects/eldritch.dmi',src,null,OBJ_LAYER)
-	I.override = TRUE
-	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", I)
-
-/obj/effect/broken_illusion/Destroy()
-	if(!fake)
-		GLOB.reality_smash_track.RandomSpawnSmash()
-	return ..()
-
-///Makes this obj appear out of nothing
 /obj/effect/broken_illusion/proc/show_presence()
-	animate(src,alpha = 255,time = 15 SECONDS)
+	animate(src, alpha = 220, time = 5 SECONDS)
 
 /obj/effect/broken_illusion/proc/remove_presence()
 	qdel(src)
 
 /obj/effect/broken_illusion/attack_hand(mob/living/user, list/modifiers)
-	if(!ishuman(user))
-		return ..()
-	var/mob/living/carbon/human/human_user = user
-	if(IS_HERETIC(human_user))
-		to_chat(human_user,"<span class='boldwarning'>Я знаю, что лучше не тревожить силы, вышедшие из-под моего контроля!</span>")
-	else
-		var/obj/item/bodypart/arm = human_user.get_active_hand()
-		if(prob(25))
-			to_chat(human_user,"<span class='userdanger'>Потусторонние силы разрывают и распыляют мою руку, когда я пытаюсь прикоснуться к разлому в самой ткани реальности!</span>")
-			arm.dismember()
-			qdel(arm)
-		else
-			to_chat(human_user,"<span class='danger'>Я отдергиваю руку от разлома, когда начинаю ощущать жуткую энергию что пыталась ухватиться за неё!</span>")
-
+	. = ..()
+	if(. || !ishuman(user) || IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
+		return
+	touch_mansus(user)
 
 /obj/effect/broken_illusion/attack_tk(mob/user)
-	if(!ishuman(user))
-		return
-	var/mob/living/carbon/human/human_user = user
-	if(IS_HERETIC(human_user))
-		to_chat(human_user,"<span class='boldwarning'>Я знаю, что лучше не тревожить силы, вышедшие из-под моего контроля!</span>")
-		return
-	//a very elaborate way to suicide
-	to_chat(human_user,"<span class='userdanger'>Жуткая энергия пронзает пространство, увеча мой хрупкий разум и разрывая его на клочки!</span>")
-	human_user.ghostize()
-	var/obj/item/bodypart/head/head = locate() in human_user.bodyparts
-	if(head)
-		head.dismember()
-		qdel(head)
-	else
-		human_user.gib()
-
-	var/datum/effect_system/reagents_explosion/explosion = new()
-	explosion.set_up(1, get_turf(human_user), TRUE, 0)
-	explosion.start()
-
+	if(isliving(user) && !IS_HERETIC(user) && !IS_HERETIC_MONSTER(user))
+		touch_mansus(user, telekinetic = TRUE)
 
 /obj/effect/broken_illusion/examine(mob/user)
 	. = ..()
-	if(!IS_HERETIC(user) && ishuman(user))
-		var/mob/living/carbon/human/human_user = user
-		to_chat(human_user,"<span class='warning'>Мой разум горит когда я смотрю на разлом!</span>")
-		human_user.adjustOrganLoss(ORGAN_SLOT_BRAIN,10,190)
-		SEND_SIGNAL(human_user, COMSIG_ADD_MOOD_EVENT, "gates_of_mansus", /datum/mood_event/gates_of_mansus)
+	if(!IS_HERETIC(user))
+		. += span_warning("Кто-то недавно потревожил завесу в этом месте. Не касайтесь разрыва: он запоминает прикосновение и ранит тех, кто тянется к нему снова.")
 
 /obj/effect/reality_smash
-	name = "Разлом в реальности"
+	name = "разрыв реальности"
 	icon = 'icons/effects/eldritch.dmi'
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	invisibility = INVISIBILITY_OBSERVER
-	///We cannot use icon_state since this is invisible, functions the same way but with custom behaviour.
 	var/image_state = "reality_smash"
-	///Who can see us?
 	var/list/minds = list()
-	///Tracked image
+	var/list/harvested_minds = list()
+	var/list/harvesting_minds = list()
+	var/list/visible_clients = list()
 	var/image/img
+	var/datum/weakref/trace_ref
+	var/datum/weakref/network_ref
 
-/obj/effect/reality_smash/Initialize(mapload)
+/obj/effect/reality_smash/Initialize(mapload, datum/reality_smash_tracker/network)
 	. = ..()
-	GLOB.reality_smash_track.smashes += src
+	network ||= GLOB.reality_smash_track
+	network_ref = WEAKREF(network)
+	network.smashes |= src
 	img = image(icon, src, image_state, OBJ_LAYER)
-	GLOB.reality_smash_track.RandomRiftName(src)
+	network.RandomRiftName(src)
 
 /obj/effect/reality_smash/Destroy()
-	GLOB.reality_smash_track.smashes -= src
+	var/datum/reality_smash_tracker/network = network_ref?.resolve()
+	if(!QDELETED(network))
+		network.smashes -= src
+		network.schedule_next_influence()
+	network_ref = null
 	on_destroy()
 	return ..()
 
 /obj/effect/reality_smash/proc/on_destroy()
-	for(var/e_cultists in minds)
-		var/datum/mind/e_cultie = e_cultists
-		if(e_cultie.current?.client)
-			e_cultie.current.client.images -= img
-		//clear the list
-		minds -= e_cultie
+	for(var/datum/mind/mind in minds.Copy())
+		RemoveMind(mind)
+	harvested_minds.Cut()
+	harvesting_minds.Cut()
 	img = null
-	var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(drop_location())
-	GLOB.reality_smash_track.RandomRiftName(illusion, name, use_afteruse = TRUE)
 
-///Makes the mind able to see this effect
-/obj/effect/reality_smash/proc/AddMind(datum/mind/e_cultie)
-	minds |= e_cultie
-	if(e_cultie.current.client)
-		e_cultie.current.client.images |= img
+/obj/effect/reality_smash/proc/AddMind(datum/mind/heretic)
+	var/client/old_client = visible_clients[heretic]
+	if(old_client)
+		old_client.images -= img
+	visible_clients -= heretic
+	minds |= heretic
+	var/datum/antagonist/heretic/heretic_datum = heretic?.has_antag_datum(/datum/antagonist/heretic)
+	if(!heretic_datum || heretic_datum.influences_harvested >= HERETIC_INFLUENCE_LIMIT || (heretic in harvested_minds))
+		return
+	var/client/current_client = heretic.current?.client
+	if(current_client)
+		current_client.images |= img
+		visible_clients[heretic] = current_client
 
-///Makes the mind not able to see this effect
-/obj/effect/reality_smash/proc/RemoveMind(datum/mind/e_cultie)
-	minds -= e_cultie
-	if(e_cultie.current.client)
-		e_cultie.current.client.images -= img
+/obj/effect/reality_smash/proc/RemoveMind(datum/mind/heretic)
+	var/client/old_client = visible_clients[heretic]
+	if(old_client)
+		old_client.images -= img
+	visible_clients -= heretic
+	minds -= heretic
 
-#undef RIFT_AFTERUSE_NAMES
+/obj/effect/reality_smash/proc/can_harvest(mob/living/user, obj/item/forbidden_book/book)
+	if(QDELETED(src) || QDELETED(user) || QDELETED(book) || user.incapacitated() || !Adjacent(user) || !(book in user.GetAllContents()))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
+	return heretic && heretic.influences_harvested < HERETIC_INFLUENCE_LIMIT && !(user.mind in harvested_minds)
+
+/obj/effect/reality_smash/proc/harvest(mob/living/user, obj/item/forbidden_book/book)
+	if(!can_harvest(user, book) || (user.mind in harvesting_minds))
+		return FALSE
+	var/datum/mind/researcher = user.mind
+	var/datum/antagonist/heretic/original_heretic = IS_HERETIC(user)
+	harvesting_minds |= researcher
+	to_chat(user, span_notice("Вы вслушиваетесь в шёпот разлома..."))
+	var/completed = do_after(user, 10 SECONDS, src, extra_checks = CALLBACK(src, PROC_REF(can_harvest), user, book))
+	harvesting_minds -= researcher
+	if(QDELETED(src) || !completed || user.mind != researcher || IS_HERETIC(user) != original_heretic || !can_harvest(user, book))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = researcher.has_antag_datum(/datum/antagonist/heretic)
+	harvested_minds |= researcher
+	heretic.influences_harvested++
+	var/datum/reality_smash_tracker/network = network_ref?.resolve()
+	if(!QDELETED(network))
+		network.harvest_counts[researcher] = heretic.influences_harvested
+	heretic.knowledge_points++
+	heretic.refresh_book_ui()
+	if(!trace_ref?.resolve())
+		var/obj/effect/broken_illusion/trace = new(get_turf(src))
+		trace_ref = WEAKREF(trace)
+	if(!QDELETED(network))
+		network.ReworkNetwork()
+	to_chat(user, span_notice("Вы получили 1 очко знаний. Исследовано разломов: [heretic.influences_harvested]/[HERETIC_INFLUENCE_LIMIT]. Дальнейший путь требует подношений."))
+	log_game("[key_name(user)] исследует разлом в [AREACOORD(src)] ([heretic.influences_harvested]/[HERETIC_INFLUENCE_LIMIT]).")
+	return TRUE
+
+#undef HERETIC_NETWORK_INFLUENCE_LIMIT

@@ -1,181 +1,155 @@
-
-/**
-  * #Eldritch Knowledge
-  *
-  * Datum that makes eldritch cultist interesting.
-  *
-  * Eldritch knowledge aren't instantiated anywhere roundstart, and are initalized and destroyed as the round goes on.
-  */
 /datum/eldritch_knowledge
-	///Name of the knowledge
-	var/name = "Basic knowledge"
-	///Description of the knowledge
-	var/desc = "Basic knowledge of forbidden arts."
-	///What shows up
+	var/name = "Основы запретного знания"
+	var/desc = "Запретное знание."
 	var/gain_text = ""
-	///Cost of knowledge in souls
 	var/cost = 0
-	///Required sacrifices to unlock
 	var/sacs_needed = 0
-	///Next knowledge in the research tree
-	var/list/next_knowledge = list()
-	///What knowledge is incompatible with this. This will simply make it impossible to research knowledges that are in banned_knowledge once this gets researched.
-	var/list/banned_knowledge = list()
-	///Used with rituals, how many items this needs
 	var/list/required_atoms = list()
-	///What do we get out of this
 	var/list/result_atoms = list()
-	///What path is this on defaults to "Side"
 	var/route = PATH_SIDE
+	var/ritual_time = 5 SECONDS
+	var/ritual_hint = ""
 
-/datum/eldritch_knowledge/New()
-	. = ..()
-	var/list/temp_list
-	for(var/X in required_atoms)
-		var/atom/A = X
-		temp_list += list(typesof(A))
-	required_atoms = temp_list
-
-/**
-  * What happens when this is assigned to an antag datum
-  *
-  * This proc is called whenever a new eldritch knowledge is added to an antag datum
-  */
 /datum/eldritch_knowledge/proc/on_gain(mob/user)
-	to_chat(user, "<span class='warning'>[gain_text]</span>")
-	return
-/**
-  * What happens when you loose this
-  *
-  * This proc is called whenever antagonist looses his antag datum, put cleanup code in here
-  */
+	if(user && gain_text)
+		to_chat(user, span_eldritch(gain_text))
+	on_body_gain(user)
+
 /datum/eldritch_knowledge/proc/on_lose(mob/user)
+	on_body_lose(user)
+
+/datum/eldritch_knowledge/proc/on_body_gain(mob/living/user)
 	return
-/**
-  * What happens every tick
-  *
-  * This proc is called on SSprocess in eldritch cultist antag datum. SSprocess happens roughly every second
-  */
+
+/datum/eldritch_knowledge/proc/on_body_lose(mob/living/user)
+	return
+
 /datum/eldritch_knowledge/proc/on_life(mob/user)
 	return
 
-/**
-  * Special check for recipes
-  *
-  * If you are adding a more complex summoning or something that requires a special check that parses through all the atoms in an area override this.
-  */
-/datum/eldritch_knowledge/proc/recipe_snowflake_check(list/atoms,loc)
-	return TRUE
-
-/**
-  * A proc that handles the code when the mob dies
-  *
-  * This proc is primarily used to end any soundloops when the heretic dies
-  */
 /datum/eldritch_knowledge/proc/on_death(mob/user)
 	return
 
-/**
-  * What happens once the recipe is succesfully finished
-  *
-  * By default this proc creates atoms from result_atoms list. Override this is you want something else to happen.
-  */
-/datum/eldritch_knowledge/proc/on_finished_recipe(mob/living/user,list/atoms,loc)
-	if(result_atoms.len == 0)
-		return FALSE
-
-	for(var/A in result_atoms)
-		new A(loc)
-
+/datum/eldritch_knowledge/proc/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return TRUE
 
-/**
-  * Used atom cleanup
-  *
-  * Overide this proc if you dont want ALL ATOMS to be destroyed. useful in many situations.
-  */
-/datum/eldritch_knowledge/proc/cleanup_atoms(list/atoms)
-	for(var/X in atoms)
-		var/atom/A = X
-		if(!isliving(A))
-			atoms -= A
-			qdel(A)
-	return
+/datum/eldritch_knowledge/proc/ritual_still_valid(mob/living/user, list/atoms, turf/ritual_turf)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(QDELETED(src) || !heretic || heretic.get_knowledge(type) != src || user.incapacitated() || !user.Adjacent(ritual_turf))
+		return FALSE
+	if(!length(atoms))
+		return FALSE
+	var/obj/effect/eldritch/rune = GLOB.heretic_ritual_reservations[atoms[1]]
+	if(QDELETED(rune) || !rune.ritual_valid(user, src))
+		return FALSE
+	for(var/atom/ingredient as anything in atoms)
+		if(GLOB.heretic_ritual_reservations[ingredient] != rune || QDELETED(ingredient) || !isturf(ingredient.loc) || get_dist(ingredient, ritual_turf) > 1 || ingredient.z != ritual_turf.z)
+			return FALSE
+	return TRUE
 
-/**
-  * Mansus grasp act
-  *
-  * Gives addtional effects to mansus grasp spell
-  */
+/datum/eldritch_knowledge/proc/on_finished_recipe(mob/living/user, list/atoms, loc)
+	if(!length(result_atoms))
+		return FALSE
+	for(var/result_type in result_atoms)
+		new result_type(loc)
+	return TRUE
+
+/datum/eldritch_knowledge/proc/cleanup_atoms(list/atoms)
+	for(var/atom/ingredient as anything in atoms.Copy())
+		if(!isliving(ingredient) && !QDELETED(ingredient))
+			atoms -= ingredient
+			qdel(ingredient)
+
 /datum/eldritch_knowledge/proc/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	return FALSE
 
-/**
-  * Sickly blade act
-  *
-  * Gives addtional effects to sickly blade weapon
-  */
-/datum/eldritch_knowledge/proc/on_eldritch_blade(target,user,proximity_flag,click_parameters)
+/datum/eldritch_knowledge/proc/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
 	return
 
-/**
-  * Sickly blade distant act
-  *
-  * Same as [/datum/eldritch_knowledge/proc/on_eldritch_blade] but works on targets that are not in proximity to you.
-  */
-/datum/eldritch_knowledge/proc/on_ranged_attack_eldritch_blade(atom/target,mob/user,click_parameters)
+/datum/eldritch_knowledge/proc/on_ranged_attack_eldritch_blade(atom/target, mob/user, click_parameters)
 	return
-
-//////////////
-///Subtypes///
-//////////////
 
 /datum/eldritch_knowledge/spell
 	var/obj/effect/proc_holder/spell/spell_to_add
+	var/obj/effect/proc_holder/spell/granted_spell
 
-/datum/eldritch_knowledge/spell/on_gain(mob/user)
-	var/obj/effect/proc_holder/S = new spell_to_add
-	user.mind.AddSpell(S)
-	return ..()
+/datum/eldritch_knowledge/spell/on_body_gain(mob/living/user)
+	if(!user?.mind || !spell_to_add || !QDELETED(granted_spell))
+		return
+	granted_spell = new spell_to_add
+	user.mind.AddSpell(granted_spell)
 
-/datum/eldritch_knowledge/spell/on_lose(mob/user)
-	user.mind.RemoveSpell(spell_to_add)
+/datum/eldritch_knowledge/spell/on_body_lose(mob/living/user)
+	// Mind сам убирает удалённый экземпляр из spell_list по сигналу.
+	QDEL_NULL(granted_spell)
+
+/datum/eldritch_knowledge/spell/Destroy()
+	QDEL_NULL(granted_spell)
 	return ..()
 
 /datum/eldritch_knowledge/curse
+	ritual_hint = "Дополнительно положите предмет с отпечатками цели строго на центральную клетку руны. Он не должен заменять другой ингредиент рецепта. После обряда этот предмет сохранится; остальные компоненты будут израсходованы."
 	var/timer = 5 MINUTES
 	var/list/fingerprints = list()
+	var/list/active_curses = list()
 
-/datum/eldritch_knowledge/curse/recipe_snowflake_check(list/atoms, loc)
-	fingerprints = list()
-	for(var/X in atoms)
-		var/atom/A = X
-		fingerprints |= A.fingerprints
-	listclearnulls(fingerprints)
-	if(fingerprints.len == 0)
+/datum/eldritch_knowledge/curse/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	fingerprints.Cut()
+	for(var/obj/item/anchor in atoms)
+		if(anchor.loc != loc || !length(anchor.fingerprints) || is_type_in_list(anchor, required_atoms))
+			continue
+		fingerprints |= anchor.fingerprints
+		selected_atoms |= anchor
+	return length(fingerprints) > 0
+
+/datum/eldritch_knowledge/curse/cleanup_atoms(list/atoms)
+	for(var/obj/item/anchor in atoms.Copy())
+		if(!is_type_in_list(anchor, required_atoms))
+			atoms -= anchor
+	return ..()
+
+/datum/eldritch_knowledge/curse/on_finished_recipe(mob/living/user, list/atoms, loc)
+	var/list/choices = list()
+	for(var/mob/living/carbon/human/victim as anything in GLOB.human_list)
+		if(QDELETED(victim) || !victim.dna || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+			continue
+		if(fingerprints[md5(victim.dna.uni_identity)])
+			choices["[length(choices) + 1]. [victim.real_name]"] = victim
+	if(!length(choices))
+		to_chat(user, span_warning("Отпечатки на подношении не принадлежат доступной цели."))
 		return FALSE
+	var/choice = tgui_input_list(user, "Выберите цель проклятия", "Проклятие", choices)
+	var/mob/living/victim = choices[choice]
+	if(!choice || QDELETED(victim) || !ritual_still_valid(user, atoms, get_turf(loc)) || victim.check_magic_resistance())
+		return FALSE
+	end_curse(victim)
+	curse(victim)
+	active_curses[victim] = addtimer(CALLBACK(src, PROC_REF(end_curse), victim), timer, TIMER_STOPPABLE)
+	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(on_cursed_deleted))
+	log_combat(user, victim, "наложил [name] на")
 	return TRUE
 
-/datum/eldritch_knowledge/curse/on_finished_recipe(mob/living/user,list/atoms,loc)
+/datum/eldritch_knowledge/curse/proc/end_curse(mob/living/victim)
+	if(!(victim in active_curses))
+		return
+	deltimer(active_curses[victim])
+	active_curses -= victim
+	UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+	if(!QDELETED(victim))
+		uncurse(victim)
 
-	var/list/compiled_list = list()
+/datum/eldritch_knowledge/curse/proc/on_cursed_deleted(mob/living/source)
+	SIGNAL_HANDLER
+	end_curse(source)
 
-	for(var/H in GLOB.human_list)
-		var/mob/living/carbon/human/human_to_check = H
-		if(fingerprints[md5(human_to_check.dna.uni_identity)])
-			compiled_list |= human_to_check.real_name
-			compiled_list[human_to_check.real_name] = human_to_check
+/datum/eldritch_knowledge/curse/on_lose(mob/user)
+	for(var/mob/living/victim as anything in active_curses.Copy())
+		end_curse(victim)
+	return ..()
 
-	if(compiled_list.len == 0)
-		to_chat(user, "<span class='warning'>На этих предметах нет необходимых отпечатков пальцев или ДНК цели.</span>")
-		return FALSE
-
-	var/chosen_mob = input("Выберите цель вашего проклятия","Ваша цель") as null|anything in sort_list(compiled_list, GLOBAL_PROC_REF(cmp_mob_realname_dsc))
-	if(!chosen_mob)
-		return FALSE
-	curse(compiled_list[chosen_mob])
-	addtimer(CALLBACK(src, PROC_REF(uncurse), compiled_list[chosen_mob]),timer)
-	return TRUE
+/datum/eldritch_knowledge/curse/Destroy()
+	on_lose(null)
+	return ..()
 
 /datum/eldritch_knowledge/curse/proc/curse(mob/living/chosen_mob)
 	return
@@ -184,155 +158,155 @@
 	return
 
 /datum/eldritch_knowledge/summon
-	//Mob to summon
+	ritual_hint = "После обряда нужен игрок-призрак, согласный стать вашим слугой. Если никто не откликнется, компоненты сохранятся. Учитываются предел этого призыва и общий предел свиты."
 	var/mob/living/mob_to_summon
+	var/summon_limit = 2
+	var/summoning = FALSE
 
-
-/datum/eldritch_knowledge/summon/on_finished_recipe(mob/living/user,list/atoms,loc)
-	//we need to spawn the mob first so that we can use it in pollCandidatesForMob, we will move it from nullspace down the code
+/datum/eldritch_knowledge/summon/on_finished_recipe(mob/living/user, list/atoms, loc)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(summoning || !mob_to_summon || length(flesh_servants) >= summon_limit || !heretic?.can_add_servant())
+		to_chat(user, span_warning("Этот призыв уже занят или достиг предела в [summon_limit] слуг."))
+		return FALSE
+	summoning = TRUE
 	var/mob/living/summoned = new mob_to_summon(loc)
-	message_admins("[summoned.name] был призван [user.real_name] в <b>[loc]</b>")
-	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хочешь сыграть за [summoned.name]", ROLE_HERETIC, null, FALSE, 100, summoned)
-	if(!LAZYLEN(candidates))
-		to_chat(user,"<span class='warning'>Никого из призраков найти не удалось...</span>")
+	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать [summoned.name], слугой [user.real_name]?", ROLE_HERETIC, null, FALSE, 10 SECONDS, summoned)
+	summoning = FALSE
+	if(!length(candidates) || QDELETED(summoned) || summoned.stat == DEAD || !ritual_still_valid(user, atoms, get_turf(loc)) || length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
 		qdel(summoned)
 		return FALSE
-	var/mob/dead/observer/C = pick(candidates)
-	log_game("[key_name_admin(C)] принимает контроль над ([key_name_admin(summoned)]), его хозяин [user.real_name]")
-	summoned.ghostize(FALSE)
-	summoned.key = C.key
-	//Хозяин проставляется до выдачи роли: приветствие уходит игроку внутри add_antag_datum().
-	var/datum/antagonist/heretic_monster/heretic_monster = new
-	heretic_monster.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
-	summoned.mind.add_antag_datum(heretic_monster)
+	var/mob/dead/observer/chosen = pick(candidates)
+	if(QDELETED(chosen) || !chosen.client)
+		qdel(summoned)
+		return FALSE
+	summoned.forceMove(get_turf(loc))
+	summoned.key = chosen.key
+	var/datum/antagonist/heretic_monster/servant = new
+	servant.set_master(IS_HERETIC(user))
+	summoned.mind.add_antag_datum(servant)
+	track_flesh_servant(servant)
+	message_admins("[key_name_admin(user)] призвал [key_name_admin(summoned)] в [ADMIN_VERBOSEJMP(summoned)].")
+	log_game("[key_name(user)] призвал [key_name(summoned)] в [AREACOORD(summoned)].")
 	return TRUE
 
-//Ascension knowledge
-/datum/eldritch_knowledge/final_eldritch
-	var/finished = FALSE
-	/// Ключ сцены параллакса, которую вознесение вешает за иллюминатор. См.
-	/// _rendering/parallax/antag_scenes.dm. Объявляется путём, ставится здесь -
-	/// все четыре пути зовут этот прок родителя, и дублировать вызов незачем.
-	var/parallax_scene
+/datum/eldritch_knowledge/summon/on_lose(mob/user)
+	release_flesh_servants()
+	return ..()
 
-/datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc,selected_atoms)
-	if(finished)
+/datum/eldritch_knowledge/final_eldritch
+	cost = 3
+	sacs_needed = HERETIC_ASCENSION_SACRIFICES
+	ritual_time = 30 SECONDS
+	var/finished = FALSE
+	var/parallax_scene
+	var/list/ascension_traits = list()
+	var/list/ascension_spells = list()
+	var/damage_modifier = 0.75
+	var/mob/living/applied_body
+	var/list/ascension_spell_instances = list()
+
+/datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(finished || !heretic || heretic.ascended || heretic.total_sacrifices < HERETIC_ASCENSION_SACRIFICES)
 		return FALSE
-	var/counter = 0
-	for(var/mob/living/carbon/human/H in atoms)
-		selected_atoms |= H
-		counter++
-		if(counter == 3)
+	var/list/bodies = list()
+	for(var/mob/living/carbon/human/victim in atoms)
+		if(victim == user || victim.stat != DEAD || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+			continue
+		bodies |= victim
+		if(length(bodies) == HERETIC_ASCENSION_BODIES)
+			selected_atoms |= bodies
 			return TRUE
 	return FALSE
 
-/datum/eldritch_knowledge/final_eldritch/on_finished_recipe(	mob/living/user, list/atoms, loc)
+/datum/eldritch_knowledge/final_eldritch/on_finished_recipe(mob/living/user, list/atoms, loc)
+	var/list/validated = list()
+	if(!recipe_snowflake_check(atoms, loc, validated, user))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	finished = TRUE
+	heretic.ascended = TRUE
+	heretic.refresh_book_ui()
 	if(parallax_scene)
-		set_antag_parallax_scene(parallax_scene, ANTAG_PARALLAX_TOKEN_HERETIC)
+		set_antag_parallax_scene(parallax_scene, "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
+	log_game("[key_name(user)] завершает вознесение [name] в [AREACOORD(user)].")
+	announce_ascension(user)
 	return TRUE
+
+/datum/eldritch_knowledge/final_eldritch/on_body_gain(mob/living/user)
+	if(!finished || !user?.mind || user.stat == DEAD || applied_body == user)
+		return
+	if(applied_body)
+		on_body_lose(applied_body)
+	applied_body = user
+	apply_ascension_presence(user)
+	for(var/trait in ascension_traits)
+		ADD_TRAIT(user, trait, REF(src))
+	if(ishuman(user))
+		var/mob/living/carbon/human/human = user
+		human.physiology.heretic_ascension_mod = damage_modifier
+	for(var/spell_type in ascension_spells)
+		var/obj/effect/proc_holder/spell/spell = new spell_type
+		ascension_spell_instances += spell
+		user.mind.AddSpell(spell)
+
+/datum/eldritch_knowledge/final_eldritch/on_body_lose(mob/living/user)
+	if(!applied_body)
+		return
+	remove_ascension_presence()
+	for(var/trait in ascension_traits)
+		REMOVE_TRAIT(applied_body, trait, REF(src))
+	if(ishuman(applied_body))
+		var/mob/living/carbon/human/human = applied_body
+		human.physiology.heretic_ascension_mod = 1
+	applied_body = null
+	QDEL_LIST(ascension_spell_instances)
+
+/datum/eldritch_knowledge/final_eldritch/on_lose(mob/user)
+	. = ..()
+	if(finished && parallax_scene)
+		clear_antag_parallax_scene("[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
+
+/datum/eldritch_knowledge/final_eldritch/on_death(mob/user)
+	if(applied_body == user)
+		on_body_lose(user)
+
+/datum/eldritch_knowledge/final_eldritch/on_life(mob/living/user)
+	if(!applied_body && user?.stat != DEAD)
+		on_body_gain(user)
+
+/datum/eldritch_knowledge/final_eldritch/Destroy()
+	on_lose(applied_body)
+	return ..()
 
 /datum/eldritch_knowledge/final_eldritch/cleanup_atoms(list/atoms)
 	. = ..()
-	for(var/mob/living/carbon/human/H in atoms)
-		atoms -= H
-		H.gib()
-
-///////////////
-///Base lore///
-///////////////
+	for(var/mob/living/carbon/human/victim in atoms.Copy())
+		atoms -= victim
+		victim.gib()
 
 /datum/eldritch_knowledge/spell/basic
-	name = "Рассвет"
-	desc = "Начните свое путешествие в Мансусе. Позволяет выбрать цель, используя живое сердце на руне трансмутации."
-	gain_text = "Еще один день на бессмысленной работе. Я ощущаю мерцание вокруг себя, когда осознаю, что в моем рюкзаке есть что-то странное. Я смотрю на это, неосознанно открывая новую главу в своей жизни."
-	next_knowledge = list(/datum/eldritch_knowledge/base_rust,/datum/eldritch_knowledge/base_ash,/datum/eldritch_knowledge/base_flesh,/datum/eldritch_knowledge/base_void)
-	cost = 0
+	ritual_hint = "Нужна назначенная в главе «Охота» цель. Живой человек должен быть связан наручниками, лежать, быть оглушён или без сознания. Ваше живое сердце сохраняется после обряда; труп назначенной цели тоже остаётся на месте."
+	name = "Обряд возвращения"
+	desc = "Положите своё живое сердце и назначенную цель на руну или рядом. Живую цель достаточно связать наручниками, оглушить или сбить с ног. За 8 секунд руна примет подношение; живую жертву она удерживает и защищает от кровотечения. Перемещение жертвы или прерывание еретика срывает обряд. Живая цель даёт 2 очка знаний и 1 побочное, проходит через Мансус и возвращается живой не позднее чем через 45 секунд. Труп назначенной цели даёт только 1 очко знаний без побочного: тело остаётся на месте, его можно реанимировать. Оба варианта засчитываются для вознесения. Одну душу можно принести лишь однажды за раунд, даже после реанимации."
+	gain_text = "За гранью сна мне назвали первое имя."
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp
 	required_atoms = list(/obj/item/living_heart)
 	route = "Start"
+	ritual_time = 8 SECONDS
 
-/datum/eldritch_knowledge/spell/basic/recipe_snowflake_check(list/atoms, loc)
-	. = ..()
-	for(var/obj/item/living_heart/LH in atoms)
-		if(!LH.target)
-			return TRUE
-		if(LH.target in atoms)
-			return TRUE
-	return FALSE
+/datum/eldritch_knowledge/spell/basic/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic?.select_hunt_atoms(user, atoms, selected_atoms)
 
 /datum/eldritch_knowledge/spell/basic/on_finished_recipe(mob/living/user, list/atoms, loc)
-	. = TRUE
-	var/mob/living/carbon/carbon_user = user
-	for(var/obj/item/living_heart/LH in atoms)
-
-		if(LH.target && LH.target.stat == DEAD)
-			to_chat(carbon_user,"<span class='danger'>Мои покровители принимают это предложение...</span>")
-			var/mob/living/carbon/human/H = LH.target
-			H.become_husk("burn") //Husks the target with removable husking, but causes a bunch of additional burn damage to prevent it from being 'too easy' to do
-			H.adjustFireLoss(200)
-			LH.target = null
-			var/datum/antagonist/heretic/EC = carbon_user.mind.has_antag_datum(/datum/antagonist/heretic)
-
-			EC.actually_sacced.Add(H.real_name)
-			if(LH.sac_targetter)
-				LH.sac_targetter.sac_targetted.Remove(H.real_name)
-			LH.sac_targetter = null
-			EC.total_sacrifices++
-			var/obj/item/forbidden_book/FB = EC.get_forbidden_book()
-			if(FB)
-				FB.charge += 2
-
-		if(!LH.target)
-			var/datum/objective/sacrifice_ecult/A = new
-			A.owner = user.mind
-			var/list/targets = list()
-			var/list/target_blacklist = list()
-			for(var/obj/item/living_heart/CLH in GLOB.living_heart_cache)
-				if(!CLH || !CLH.target || !CLH.target.mind)
-					continue
-				target_blacklist.Add(CLH.target.mind)
-
-			for(var/i in 0 to 3)
-				var/datum/mind/targeted =  A.find_target(blacklist = target_blacklist)//easy way, i dont feel like copy pasting that entire block of code
-				if(!targeted)
-					break
-				targets["[targeted.current.real_name] the [targeted.assigned_role]"] = targeted.current
-			LH.target = targets[input(user,"Выберите следующую цель","Цель") in targets]
-
-			if(!LH.target && targets.len)
-				LH.target = pick(targets)	//Tsk tsk, you can and will get another target if you want it or not.
-
-			if(LH.target)
-				target_blacklist = list()
-				for(var/obj/item/living_heart/CLH in (GLOB.living_heart_cache - LH))	//Recreate blacklist, excluding ourselves.
-					if(!CLH || !CLH.target || !CLH.target.mind)
-						continue
-					target_blacklist.Add(CLH.target.mind)
-				if(LH.target.mind in target_blacklist)	//Someone was faster, or you tried to cheese the system.
-					to_chat(user, "<span class='warning'>Кажется, я был слишком медлительным, и моя цель уже была выбрана другим живым сердцем!</span>")
-					LH.target = null
-
-			qdel(A)
-			if(LH.target)
-				to_chat(user,"<span class='warning'>Моя цель выбрана, время принести в жертву [LH.target.real_name]!</span>")
-				var/datum/antagonist/heretic/EC = carbon_user.mind.has_antag_datum(/datum/antagonist/heretic)
-				LH.sac_targetter = EC
-				EC.sac_targetted.Add(LH.target.real_name)
-				// BLUEMOON ADD START - потусторонние покровители не признают "Одну Жизнь":
-				// цель должна быть способна умереть окончательно, иначе жертва невозможна.
-				if(ishuman(LH.target))
-					remove_onelife_source(LH.target, "<span class='userdanger'><i>Нечто потустороннее смотрит на вас...</i> Вы чувствуете, что мучительная смерть снова стала для вас реальной угрозой.</span>")
-
-				// BLUEMOON ADD END
-			else
-				to_chat(user,"<span class='warning'>не удалось найти цель для живого сердца.</span>")
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic?.complete_hunt_ritual(user, atoms, get_turf(loc))
 
 /datum/eldritch_knowledge/spell/basic/cleanup_atoms(list/atoms)
 	return
 
 /datum/eldritch_knowledge/spell/summon
-	next_knowledge = list()
 	cost = 0
 	required_atoms = list()
 	route = "Start"
@@ -340,7 +314,7 @@
 /datum/eldritch_knowledge/spell/summon/heart
 	name = "Зов к сердцу"
 	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
-	gain_text = "Что-то живое и теплое откликается на мой зов."
+	gain_text = "Что-то живое и тёплое откликается на мой зов."
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_summon/heart
 
 /datum/eldritch_knowledge/spell/summon/book
@@ -351,18 +325,17 @@
 
 /datum/eldritch_knowledge/living_heart
 	name = "Живое сердце"
-	desc = "Позволяет создавать дополнительные живые сердца, используя обычное сердце, лужицу крови и мак. Живые сердца, используемые на руне трансмутации, выбирают вам человека, на которого можно охотиться и приносить в жертву с помощью этой руны. Каждая жертва дает вам дополнительный знания в книге."
-	gain_text = "Врата Мансуса открылись твоему разуму."
+	desc = "Обычное сердце, лужица крови и мак превращаются в живое сердце. Сожмите его, чтобы найти назначенную цель; Alt-ЛКМ вызывает новое имя. Все ваши сердца отслеживают одну цель. Для Обряда возвращения положите сердце рядом с целью на руну."
+	gain_text = "Врата Мансуса открылись моему разуму."
 	cost = 0
 	required_atoms = list(/obj/item/organ/heart,/obj/effect/decal/cleanable/blood,/obj/item/reagent_containers/food/snacks/grown/poppy)
-	next_knowledge = list(/datum/eldritch_knowledge/spell/silence)
 	result_atoms = list(/obj/item/living_heart)
 	route = "Start"
 
 /datum/eldritch_knowledge/codex_cicatrix
-	name = "Кодекс Резцов"
-	desc = "Позволяет вам создать запасной Кодекс Резцов, если вы его потеряли, используя библию, человеческую кожу, ручку и пару глаз."
-	gain_text = "Их руки на твоем горле, но ты их не видишь."
+	name = "Кодекс Рубцов"
+	desc = "Позволяет вам создать запасной Кодекс Рубцов, если вы его потеряли, используя библию, человеческую кожу, ручку и пару глаз."
+	gain_text = "Их руки на моём горле, но я их не вижу."
 	cost = 0
 	required_atoms = list(/obj/item/organ/eyes,/obj/item/stack/sheet/animalhide/human,/obj/item/storage/book/bible,/obj/item/pen)
 	result_atoms = list(/obj/item/forbidden_book)
@@ -370,7 +343,7 @@
 
 /datum/eldritch_knowledge/spell/silence
 	name = "Молчание"
-	desc = "Позволяет вам использовать силу Мансуса, чтобы заставить человека замолчать на срок до двадцати секунд. Однако он быстро заметит это."
+	desc = "Сила Мансуса лишает цель голоса на тридцать секунд. Жертва сразу заметит воздействие."
 	gain_text = "Они должны держать язык за зубами, потому что ничего не понимают."
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/trigger/mute/eldritch

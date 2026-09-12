@@ -176,6 +176,9 @@
 	icon_state = "yellow"
 	sub_areas = list(/area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 
+/area/ruin/space/has_grav/bluemoon/listeningstation/siege_shuttle
+	name = "InteQ Siege Shuttle"
+
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "shower"

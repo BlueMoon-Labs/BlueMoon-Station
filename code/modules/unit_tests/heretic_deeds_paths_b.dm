@@ -1,0 +1,66 @@
+/// Хватка Пустоты гасит работающую лампу, повторный светильник в том же отделе не засчитывается.
+/datum/unit_test/heretic_deed_void_lights/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_VOID)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_void/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	var/obj/machinery/light/first_lamp = allocate(/obj/machinery/light, get_step(user, EAST))
+	first_lamp.status = LIGHT_OK
+	first_lamp.on = TRUE
+	TEST_ASSERT(knowledge.on_mansus_grasp(first_lamp, user, TRUE, null), "Хватка гасит работающую лампу.")
+	TEST_ASSERT_EQUAL(first_lamp.status, LIGHT_BURNED, "Лампа перегорает.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Погашенная лампа засчитывается.")
+	TEST_ASSERT(!knowledge.on_mansus_grasp(first_lamp, user, TRUE, null), "Перегоревшая лампа не принимает хватку.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/machinery/light/second_lamp = allocate(/obj/machinery/light, get_step(user, WEST))
+	second_lamp.status = LIGHT_OK
+	second_lamp.on = TRUE
+	TEST_ASSERT(knowledge.on_mansus_grasp(second_lamp, user, TRUE, null), "Вторая лампа тоже гаснет.")
+	TEST_ASSERT_EQUAL(second_lamp.status, LIGHT_BURNED, "Вторая лампа перегорает.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Тот же отдел не засчитывается второй раз.")
+
+/// Хватка Клинка поглощает острые предметы с пола по одному виду, клинки еретиков не принимает.
+/datum/unit_test/heretic_deed_blade_steel/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_BLADE)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	var/turf/place = get_step(user, EAST)
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, place)
+	TEST_ASSERT(knowledge.on_mansus_grasp(knife, user, TRUE, null), "Нож с пола поглощается.")
+	TEST_ASSERT(QDELETED(knife), "Поглощённый нож исчезает.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Нож засчитывается.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/shard/shard = allocate(/obj/item/shard, place)
+	TEST_ASSERT(knowledge.on_mansus_grasp(shard, user, TRUE, null), "Осколок с пола поглощается.")
+	TEST_ASSERT_EQUAL(heretic.deed.tier, 1, "Два вида стали закрывают первую ступень.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Прогресс обнуляется на новой ступени.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/kitchen/knife/second_knife = allocate(/obj/item/kitchen/knife, place)
+	TEST_ASSERT(knowledge.on_mansus_grasp(second_knife, user, TRUE, null), "Повторный нож всё равно поглощается.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Повторный вид предмета не засчитывается.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/melee/sickly_blade/duelist/blade = allocate(/obj/item/melee/sickly_blade/duelist, place)
+	TEST_ASSERT(!knowledge.on_mansus_grasp(blade, user, TRUE, null), "Клинок еретика не принимается.")
+	TEST_ASSERT(!QDELETED(blade), "Клинок еретика остаётся на полу.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Клинок еретика не засчитывается.")
+
+/// Отражение Луны засчитывает свидетеля после трёх секунд наблюдения, каждого один раз.
+/datum/unit_test/heretic_deed_moon_witnesses/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_MOON)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_moon/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = knowledge.create_reflection(user, get_step(user, EAST))
+	TEST_ASSERT_NOTNULL(reflection, "Отражение создаётся рядом с еретиком.")
+	allocated += reflection
+	var/mob/living/carbon/human/first_witness = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	first_witness.mind_initialize()
+	reflection.count_witness(first_witness, 2)
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Две секунды наблюдения не засчитываются.")
+	reflection.count_witness(first_witness, 2)
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Три секунды наблюдения засчитывают свидетеля.")
+	reflection.count_witness(first_witness, 5)
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Тот же свидетель не засчитывается второй раз.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/mob/living/carbon/human/second_witness = allocate(/mob/living/carbon/human, get_step(user, SOUTH))
+	second_witness.mind_initialize()
+	reflection.count_witness(second_witness, 3)
+	TEST_ASSERT_EQUAL(heretic.deed.tier, 1, "Второй свидетель закрывает первую ступень.")

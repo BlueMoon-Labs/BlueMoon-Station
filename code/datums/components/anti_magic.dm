@@ -49,6 +49,8 @@
 /datum/component/anti_magic/proc/protect(datum/source, mob/user, _magic, _holy, _psychic, chargecost = 1, self, list/protection_sources)
 	if(((_magic && magic) || (_holy && holy) || (_psychic && psychic)) && (!self || blocks_self))
 		protection_sources += parent
+		if(!chargecost)
+			return COMPONENT_BLOCK_MAGIC
 		reaction?.Invoke(user, chargecost)
 		adjustCharges(-chargecost)
 		return COMPONENT_BLOCK_MAGIC

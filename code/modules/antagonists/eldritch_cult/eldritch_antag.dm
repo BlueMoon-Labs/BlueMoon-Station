@@ -1,5 +1,5 @@
 /datum/antagonist/heretic
-	name = "Heretic"
+	name = "Еретик"
 	roundend_category = "Heretics"
 	antagpanel_category = "Heretic"
 	antag_moodlet = /datum/mood_event/heretics
@@ -13,7 +13,13 @@
 	var/list/sac_targetted = list()		//Which targets did living hearts give them, but they did not sac?
 	var/list/actually_sacced = list()	//Which targets did they actually sac?
 	var/ascended = FALSE
-	var/datum/mind/yandere
+	var/knowledge_points = HERETIC_STARTING_KNOWLEDGE
+	/// Награда за охоту для побочных знаний и улучшений пассивок.
+	var/side_knowledge_points = 0
+	var/selected_path
+	var/path_stage = 0
+	var/role_removed = FALSE
+	var/mob/living/innate_body
 	var/list/summon_items = list()
 
 	reminded_times_left = 2 // BLUEMOON ADD
@@ -25,14 +31,11 @@
 	log_admin("[key_name(admin)] has heresized [key_name(new_owner)].")
 
 /datum/antagonist/heretic/greet()
-	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)//subject to change
-	to_chat(owner, "<span class='eldritch_big'>Ты Еретик!</span><br>\
-	<B>Забытые боги дали вам следующие задания:</B>")
+	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)
+	to_chat(owner, span_eldritch_big("Вы — еретик!"))
+	to_chat(owner, span_eldritch("Призовите кодекс и выберите свой путь. Выбор необратим. В кодексе есть описание всех способностей, рецепты и руководство."))
+	to_chat(owner, span_notice("Начальное число разломов на станции: [HERETIC_INFLUENCE_INITIAL_COUNT]. Затем появляется ещё один каждые [DisplayTimeText(HERETIC_INFLUENCE_INTERVAL)]. Лимит исследований за раунд: [HERETIC_INFLUENCE_LIMIT]. Чередуйте поиск с охотой: живое сердце назначает и отслеживает цель. Доставьте её живой к руне: свяжите наручниками, оглушите или сбейте с ног. Положите рядом своё сердце и начните Обряд возвращения. Руна удержит жертву на время 8-секундного канала; после Мансуса она вернётся живой, а вы получите два очка знаний и одно побочное. Труп назначенной цели тоже засчитывается, но даёт только одно очко знаний и остаётся на месте. Каждая душа принимается только один раз. У каждого пути есть своё дело вне боя: оно описано в кодексе, даёт очки знаний и пополняет запас силы."))
 	owner.announce_objectives()
-	to_chat(owner, "<span class='eldritch'>Книга шепчет мне, её запретные знания вновь появились в этом мире!<br>\
-	Книга позволит мне исследовать новые способности. Нужно читать очень внимательно, ибо то что сделано уже не вернуть!<br>\
-	Я получу нужные мне знания собирая их из разломов или принося в жертву цели которое укажет мне живое сердце.<br> \
-	Основное руководство : https://tgstation13.org/wiki/Heresy_101 </span>")
 
 /datum/antagonist/heretic/on_gain()
 	var/mob/living/current = owner.current
@@ -40,11 +43,8 @@
 	owner.special_role = ROLE_HERETIC
 	if(ishuman(current))
 		forge_primary_objectives()
-		gain_knowledge(/datum/eldritch_knowledge/spell/basic)
-		gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
-		gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
-		gain_knowledge(/datum/eldritch_knowledge/living_heart)
-		gain_knowledge(/datum/eldritch_knowledge/codex_cicatrix)
+		for(var/knowledge_type in GLOB.heretic_start_knowledge)
+			gain_knowledge(knowledge_type)
 	current.log_message("has been converted to the cult of the forgotten ones!", LOG_ATTACK, color="#960000")
 	GLOB.reality_smash_track.AddMind(owner)
 	START_PROCESSING(SSprocessing,src)
@@ -53,20 +53,46 @@
 	return ..()
 
 /datum/antagonist/heretic/on_removal()
-	for(var/X in researched_knowledge)
-		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
-		EK.on_lose(owner.current)
-	for(var/obj/item/I in summon_items)
-		qdel(I)
-	owner.special_role = null
-	if(!silent)
-		to_chat(owner.current, "<span class='userdanger'>Your mind begins to flare as the otherwordly knowledge escapes your grasp!</span>")
-		owner.current.log_message("has renounced the cult of the old ones!", LOG_ATTACK, color="#960000")
-	GLOB.reality_smash_track.RemoveMind(owner)
-	STOP_PROCESSING(SSprocessing,src)
-	on_death()
-
+	clear_heretic()
 	return ..()
+
+/datum/antagonist/heretic/Destroy()
+	clear_heretic()
+	for(var/knowledge_type in researched_knowledge)
+		qdel(researched_knowledge[knowledge_type])
+	researched_knowledge.Cut()
+	QDEL_NULL(deed)
+	return ..()
+
+/datum/antagonist/heretic/proc/clear_heretic()
+	if(role_removed)
+		return
+	role_removed = TRUE
+	clear_combat_resource_alert()
+	if(innate_body)
+		remove_innate_effects(innate_body)
+	STOP_PROCESSING(SSprocessing, src)
+	if(owner)
+		GLOB.reality_smash_track.RemoveMind(owner)
+		if(owner.special_role == ROLE_HERETIC)
+			owner.special_role = null
+	for(var/knowledge_type in researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
+		knowledge.on_lose(owner?.current)
+	QDEL_LIST(summon_items)
+	clear_hunt()
+	if(!silent && owner?.current)
+		to_chat(owner.current, span_userdanger("Запретные знания покидают ваш разум."))
+
+/datum/antagonist/heretic/on_body_transfer(mob/living/old_body, mob/living/new_body)
+	for(var/knowledge_type in researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
+		knowledge.on_body_lose(old_body)
+	. = ..()
+	for(var/knowledge_type in researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
+		knowledge.on_body_gain(new_body)
+	update_combat_resource_alert(FALSE, new_body)
 
 /datum/antagonist/heretic/proc/equip_cultist()
 	var/mob/living/carbon/H = owner.current
@@ -80,44 +106,56 @@
 
 	// Да, спавн в null, ничего не перепутано
 	for(var/path in sm_items)
-		var/atom/movable/AM = new path(null)
-		summon_items += AM
+		if(locate(path) in summon_items)
+			continue
+		if(length(H.GetAllContents(path)))
+			continue
+		var/obj/item/item = new path(null)
+		if(istype(item, /obj/item/living_heart))
+			var/obj/item/living_heart/heart = item
+			heart.bind(owner)
+		summon_items += item
 
 /datum/antagonist/heretic/proc/ecult_give_item(obj/item/item_path, mob/living/carbon/human/H)
 	var/static/list/slots = list(
-		"backpack" = ITEM_SLOT_BACKPACK,
-		"left pocket" = ITEM_SLOT_LPOCKET,
-		"right pocket" = ITEM_SLOT_RPOCKET
+		"рюкзак" = ITEM_SLOT_BACKPACK,
+		"левый карман" = ITEM_SLOT_LPOCKET,
+		"правый карман" = ITEM_SLOT_RPOCKET
 	)
 
 	var/T = new item_path(H)
 	var/item_name = initial(item_path.name)
 	var/where = H.equip_in_one_of_slots(T, slots, qdel_on_fail = TRUE, critical = TRUE)
 	if(!where)
-		to_chat(H, "<span class='userdanger'>К сожалению, тебе не удалось получить [item_name]. Это очень плохо и тебе нужно срочно попросить помощи у администратора (press F1).</span>")
+		to_chat(H, "<span class='userdanger'>Не удалось выдать [item_name]. Обратитесь к администратору через F1.</span>")
 		return null
 	else
-		to_chat(H, "<span class='danger'>Я получил [item_name] в мой [where].</span>")
-		if(where == "backpack")
+		to_chat(H, "<span class='danger'>Вы получаете [item_name]. Место: [where].</span>")
+		if(where == "рюкзак")
 			SEND_SIGNAL(H.back, COMSIG_TRY_STORAGE_SHOW, H)
 		return T
 
 /datum/antagonist/heretic/process()
-	if(!owner?.current || owner.current.stat == DEAD)
+	if(role_removed || !owner?.current || owner.current.stat == DEAD)
 		return
 
 	for(var/X in researched_knowledge)
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
 		EK.on_life(owner.current)
 
-///What happens to the heretic once he dies, used to remove any custom perks
-/datum/antagonist/heretic/proc/on_death()
-	if(!owner?.current)
-		return
+/datum/antagonist/heretic/proc/on_death(mob/living/dying_body)
+	SIGNAL_HANDLER
+	INVOKE_ASYNC(src, PROC_REF(handle_death), dying_body)
 
-	for(var/X in researched_knowledge)
-		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
-		EK.on_death(owner.current)
+/datum/antagonist/heretic/proc/handle_death(mob/living/dying_body)
+	if(QDELETED(src) || QDELETED(dying_body))
+		return
+	for(var/knowledge_type in researched_knowledge.Copy())
+		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
+		if(QDELETED(src) || QDELETED(dying_body))
+			return
+		if(!QDELETED(knowledge))
+			knowledge.on_death(dying_body)
 
 /// Returns the heretic's codex whether it is carried or hidden via Summon Codex.
 /datum/antagonist/heretic/proc/get_forbidden_book()
@@ -145,24 +183,44 @@
 	SE.owner = owner
 	SE.update_explanation_text()
 	objectives += SE
+	var/datum/objective/ascend_ecult/ascension = new
+	ascension.owner = owner
+	ascension.update_explanation_text()
+	objectives += ascension
 
 /datum/antagonist/heretic/apply_innate_effects(mob/living/mob_override)
 	. = ..()
-	var/mob/living/current = owner.current
-	if(mob_override)
-		current = mob_override
+	var/mob/living/current = mob_override || owner?.current
+	if(!current || innate_body == current)
+		return
+	if(innate_body)
+		remove_innate_effects(innate_body)
+	innate_body = current
 	add_antag_hud(antag_hud_type, antag_hud_name, current)
-	handle_clown_mutation(current, mob_override ? null : "Древние знания из моей книги позволяют преодолеть клоунскую природу и использовать эффективно даже сложные предметы.")
+	handle_clown_mutation(current, "Знания Мансуса помогают преодолеть клоунскую неуклюжесть.")
 	current.faction |= "heretics"
+	RegisterSignal(current, COMSIG_MOB_DEATH, PROC_REF(on_death))
+	RegisterSignal(current, COMSIG_PARENT_QDELETING, PROC_REF(on_innate_body_deleted))
+	update_combat_resource_alert(FALSE, current)
+	update_codex_alert(current)
 
 /datum/antagonist/heretic/remove_innate_effects(mob/living/mob_override)
 	. = ..()
-	var/mob/living/current = owner.current
-	if(mob_override)
-		current = mob_override
+	var/mob/living/current = mob_override || innate_body
+	if(!current || current != innate_body)
+		return
+	innate_body = null
+	clear_combat_resource_alert(current)
+	clear_codex_alert(current)
 	remove_antag_hud(antag_hud_type, current)
-	handle_clown_mutation(current, removing = FALSE)
+	if(owner)
+		handle_clown_mutation(current, removing = FALSE)
 	current.faction -= "heretics"
+	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING))
+
+/datum/antagonist/heretic/proc/on_innate_body_deleted(mob/living/source)
+	SIGNAL_HANDLER
+	remove_innate_effects(source)
 
 /datum/antagonist/heretic/get_admin_commands()
 	. = ..()
@@ -174,14 +232,20 @@
 	var/cultiewin = TRUE
 
 	parts += printplayer(owner)
-	parts += "<b>Жертв принесено:</b> [total_sacrifices]"
+	parts += "<b>Душ принято:</b> [total_sacrifices]"
+	var/datum/heretic_path/path = GLOB.heretic_paths[selected_path]
+	parts += "<b>Путь:</b> [path ? path.name : "не выбран"]. <b>Очков знаний осталось:</b> [knowledge_points], побочных: [side_knowledge_points]"
+	if(deed)
+		parts += "<b>Дело пути:</b> [deed.name], ступень [deed.tier] из [length(deed.tier_goals)]"
 
 	if(length(objectives))
 		var/count = 1
 		for(var/o in objectives)
 			var/datum/objective/objective = o
 			if(objective.check_completion())
-				parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Выполнена!</b></span>"
+				parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='greentext'>Выполнена!</span>"
+			else if(istype(objective, /datum/objective/ascend_ecult))
+				parts += "<b>Цель #[count]</b>: [objective.explanation_text] Не выполнена."
 			else
 				parts += "<b>Цель #[count]</b>: [objective.explanation_text] <span class='redtext'>Провалена.</span>"
 				cultiewin = FALSE
@@ -203,11 +267,14 @@
 		knowledge_message += "[EK.name]"
 	parts += knowledge_message.Join(", ")
 
-	parts += "<b>Цели поставленные живым сердцем но не принесённые в жертву:</b>"
+	parts += "<b>Цели, назначенные живым сердцем, но не принесённые в жертву:</b>"
 	if(!sac_targetted.len)
 		parts += "Отсутствуют."
 	else
-		parts += sac_targetted.Join(",")
+		var/list/target_names = list()
+		for(var/target_ref in sac_targetted)
+			target_names += sac_targetted[target_ref]
+		parts += target_names.Join(", ")
 	parts += "<b>Совершённые жертвоприношения:</b>"
 	if(!actually_sacced.len)
 		parts += "<span class='redtext'>Отсутствуют!</span>"
@@ -220,23 +287,14 @@
 ////////////////
 
 /datum/antagonist/heretic/proc/gain_knowledge(datum/eldritch_knowledge/EK)
-	if(get_knowledge(EK))
+	if(!ispath(EK, /datum/eldritch_knowledge) || get_knowledge(EK))
 		return FALSE
 	var/datum/eldritch_knowledge/initialized_knowledge = new EK
 	researched_knowledge[initialized_knowledge.type] = initialized_knowledge
-	initialized_knowledge.on_gain(owner.current)
+	initialized_knowledge.combat_resource_owner = WEAKREF(src)
+	initialized_knowledge.on_gain(owner?.current)
+	update_combat_resource_alert()
 	return TRUE
-
-/datum/antagonist/heretic/proc/get_researchable_knowledge()
-	var/list/researchable_knowledge = list()
-	var/list/banned_knowledge = list()
-	for(var/X in researched_knowledge)
-		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
-		researchable_knowledge |= EK.next_knowledge
-		banned_knowledge |= EK.banned_knowledge
-		banned_knowledge |= EK.type
-	researchable_knowledge -= banned_knowledge
-	return researchable_knowledge
 
 /datum/antagonist/heretic/proc/get_knowledge(wanted)
 	return researched_knowledge[wanted]
@@ -255,12 +313,12 @@
 /datum/antagonist/heretic/antag_panel()
 	var/list/parts = list()
 	parts += ..()
-	parts += "<b>Цели которые в данный момент обозначило живое сердце (Результат может быть ложным если вы украли чужое сердце):</b>"
-	if(!sac_targetted.len)
+	parts += "<b>Текущие цели живого сердца:</b>"
+	if(!hunt_target)
 		parts += "Отсутствует."
 	else
-		parts += sac_targetted.Join(",")
-	parts += "<b>Принесенные в жертву цели:</b>"
+		parts += hunt_target.current?.real_name || hunt_target.name
+	parts += "<b>Принесённые в жертву цели:</b>"
 	if(!actually_sacced.len)
 		parts += "Отсутствует."
 	else
@@ -273,12 +331,12 @@
 ////////////////
 
 /datum/objective/sacrifice_ecult
-	name = "sacrifice"
+	name = "Жертвоприношения"
+	target_amount = HERETIC_ASCENSION_SACRIFICES
 
 /datum/objective/sacrifice_ecult/update_explanation_text()
 	. = ..()
-	target_amount = rand(2,3)
-	explanation_text = "Принеси в жертву как минимум [target_amount] живых существ."
+	explanation_text = "Принесите [target_amount] разных назначенных душ на руне трансмутации. Живая цель в наручниках, лёжа, оглушённая или без сознания даёт 2 очка знаний и 1 побочное, а затем возвращается из Мансуса. Труп назначенной цели тоже засчитывается, но даёт только 1 очко знаний и остаётся на месте."
 
 /datum/objective/sacrifice_ecult/check_completion()
 	if(!owner)
@@ -288,3 +346,13 @@
 		return FALSE
 	return cultie.total_sacrifices >= target_amount
 
+/datum/objective/ascend_ecult
+	name = "Вознесение"
+
+/datum/objective/ascend_ecult/update_explanation_text()
+	. = ..()
+	explanation_text = "Дополнительная цель: вознеситесь. Принесите [HERETIC_ASCENSION_SACRIFICES] назначенных душ, изучите финал своего пути и завершите обряд с [HERETIC_ASCENSION_BODIES] человеческими трупами. Для успеха достаточно выполнить основные цели."
+
+/datum/objective/ascend_ecult/check_completion()
+	var/datum/antagonist/heretic/heretic = owner?.has_antag_datum(/datum/antagonist/heretic)
+	return heretic?.ascended || completed

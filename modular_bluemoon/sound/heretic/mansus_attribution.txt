@@ -1,0 +1,1 @@
+mansus_memory.ogg: heretic_sacrifice.ogg by sadboysusss. License: CC-by-SA, as specified in tgstation sound/music/antag/heretic/attribution.txt. Source: https://github.com/tgstation/tgstation/tree/master/sound/music/antag/heretic

@@ -74,6 +74,9 @@
 @include meta.load-css('./interfaces/PersonalCrafting');
 @include meta.load-css('./interfaces/AdminLogViewer.scss');
 @include meta.load-css('./interfaces/Hypertorus.scss');
+@include meta.load-css('./interfaces/ForbiddenLore.scss');
+@include meta.load-css('./interfaces/HereticBookAtmosphere.scss');
+@include meta.load-css('./interfaces/HereticBookMaterials.scss');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');
