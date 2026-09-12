@@ -49,8 +49,7 @@ const JOB_FA_MAP = {
 const getJobFa = (jobIcon) => JOB_FA_MAP[jobIcon] || 'user';
 
 export const NtosWiki = (props) => {
-  const { act, data } = useBackend();
-  const { have_printer, can_print } = data;
+  useBackend();
 
   const [activeCategoryId, setActiveCategoryId] = useState(WIKI_CATEGORIES[0].id);
   const [expandedSections, setExpandedSections] = useState({});
@@ -65,23 +64,43 @@ export const NtosWiki = (props) => {
   const containerRef = useRef(null);
   const [isPda, setIsPda] = useState(false);
 
-  // Detect PDA / small window — for adaptive layout
+  const hasAutoCollapsed = useRef(false);
   useEffect(() => {
+    let raf = null;
     const check = () => {
-      // PDA viewport is typically narrow; also check parent container width
       const w = containerRef.current ? containerRef.current.clientWidth : window.innerWidth;
-      setIsPda(w < 700);
-      if (w < 700 && sidebarWidth > 260) setSidebarWidth(220);
+      const nextIsPda = w < 700 && w !== 0;
+      setIsPda((prev) => (prev !== nextIsPda ? nextIsPda : prev));
+      if (nextIsPda) {
+        setSidebarWidth((prev) => (prev > 260 ? 220 : prev));
+        if (!hasAutoCollapsed.current) {
+          hasAutoCollapsed.current = true;
+          setSidebarCollapsed(true);
+        }
+      } else {
+        hasAutoCollapsed.current = false;
+        setSidebarCollapsed(false);
+      }
+    };
+    const debouncedCheck = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(check);
     };
     check();
-    window.addEventListener('resize', check);
-    // delay check after mount (containerRef)
-    const t = setTimeout(check, 300);
+    let ro = null;
+    if (window.ResizeObserver && containerRef.current) {
+      ro = new ResizeObserver(debouncedCheck);
+      ro.observe(containerRef.current);
+    }
+    window.addEventListener('resize', debouncedCheck);
+    const t = setTimeout(check, 150);
     return () => {
-      window.removeEventListener('resize', check);
+      window.removeEventListener('resize', debouncedCheck);
+      if (ro) ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
       clearTimeout(t);
     };
-  }, [sidebarWidth]);
+  }, []);
 
   const activeCategory = useMemo(
     () => WIKI_CATEGORIES.find((c) => c.id === activeCategoryId) || WIKI_CATEGORIES[0],
@@ -123,9 +142,7 @@ export const NtosWiki = (props) => {
     setSelectedArticleId(articleId);
     setActiveCategoryId(art.categoryId);
     setExpandedSections((prev) => ({ ...prev, [art.sectionId]: true }));
-    // auto scroll content to top
     if (contentRef.current) contentRef.current.scrollTop = 0;
-    // on PDA close sidebar drawer after navigation
     if (isPda) setSidebarCollapsed(true);
   };
 
@@ -168,7 +185,6 @@ export const NtosWiki = (props) => {
     [isResizing],
   );
 
-  // touch resize support for PDA
   const resizeTouch = useCallback(
     (e) => {
       if (isResizing && containerRef.current && e.touches[0]) {
@@ -215,13 +231,12 @@ export const NtosWiki = (props) => {
 
   const displayedArticle = selectedArticle || defaultArticle;
 
-  // Scroll content to top when article changes
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTop = 0;
   }, [displayedArticle?.id]);
 
   const wikiStyles = `
-    .wiki-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; display: table; }
+    .wiki-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12px; display: table; box-sizing: border-box; }
     .wiki-table th { background: rgba(255,255,255,0.08); padding: 6px 8px; text-align: left; border: 1px solid rgba(255,255,255,0.12); white-space: nowrap; }
     .wiki-table td { padding: 5px 8px; border: 1px solid rgba(255,255,255,0.08); word-break: break-word; }
     .wiki-table.compact td, .wiki-table.compact th { padding: 4px 6px; font-size: 11px; }
@@ -251,10 +266,11 @@ export const NtosWiki = (props) => {
     .wiki-content ul, .wiki-content ol { margin: 6px 0 6px 18px; font-size: 12.5px; line-height: 1.5; }
     .wiki-content a.wiki-link { color: #3498db; text-decoration: underline; cursor: pointer; }
     .wiki-content a.wiki-link:hover { color: #5dade2; }
-    .wiki-content { overflow-wrap: break-word; word-break: break-word; }
-    .wiki-content table { max-width: 100%; }
-    .wiki-table-wrapper { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; max-width: 100%; border-radius: 4px; }
+    .wiki-content { overflow-wrap: anywhere; word-break: break-word; isolation: isolate; }
+    .wiki-content table { max-width: 100%; box-sizing: border-box; }
+    .wiki-table-wrapper { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; max-width: 100%; border-radius: 4px; display: block; }
     .wiki-table-wrapper .wiki-table { min-width: 480px; }
+    @media (max-width: 700px) { .wiki-table-wrapper .wiki-table { min-width: 520px; } }
     .wiki-sidebar-item { padding: 4px 8px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; }
     .wiki-sidebar-item:hover { background: rgba(255,255,255,0.06); }
     .wiki-sidebar-item.selected { background: rgba(52,152,219,0.15); color: #5dade2; border-left: 3px solid #3498db; }
@@ -293,17 +309,10 @@ export const NtosWiki = (props) => {
     }
   `;
 
-  const handlePrint = () => {
-    if (!displayedArticle) return;
-    // wiki.dm expects title + content (html)
-    act('print_article', { title: displayedArticle.title, content: displayedArticle.content });
-  };
-
   return (
-    <NtosWindow width={isPda ? 600 : 920} height={isPda ? 540 : 640} theme="ntos">
+    <NtosWindow width={920} height={640} theme="ntos">
       <style>{wikiStyles}</style>
       <NtosWindow.Content>
-        {/* Root flex column that fills NtosWindowContent (absolute with margin-top 2em) */}
         <Box
           ref={containerRef}
           style={{
@@ -314,7 +323,6 @@ export const NtosWiki = (props) => {
             overflow: 'hidden',
           }}
         >
-          {/* Top bar */}
           <Box
             style={{
               padding: '8px 10px',
@@ -371,18 +379,9 @@ export const NtosWiki = (props) => {
                   {isPda ? '' : 'Назад'}
                 </Button>
               )}
-              <Button
-                icon="print"
-                tooltip={can_print ? 'Распечатать статью' : 'Нет бумаги/принтера'}
-                disabled={!can_print}
-                onClick={handlePrint}
-                color="transparent"
-                style={{ border: '1px solid rgba(255,255,255,0.08)' }}
-              />
             </Box>
           </Box>
 
-          {/* Category pills - horizontally scrollable */}
           <Box
             className="wiki-category-bar"
             style={{
@@ -423,7 +422,6 @@ export const NtosWiki = (props) => {
             ))}
           </Box>
 
-          {/* Main split — flex row, minHeight 0 is critical for scroll */}
           <Box
             style={{
               display: 'flex',
@@ -433,7 +431,6 @@ export const NtosWiki = (props) => {
               position: 'relative',
             }}
           >
-            {/* Sidebar - independent scroll */}
             {(!isPda || !sidebarCollapsed) && (
               <Box
                 ref={sidebarRef}
@@ -442,11 +439,11 @@ export const NtosWiki = (props) => {
                   width: isPda ? '100%' : sidebarWidth + 'px',
                   minWidth: isPda ? '0' : '200px',
                   maxWidth: isPda ? '100%' : '420px',
-                  background: 'rgba(0,0,0,0.15)',
+                  background: isPda ? '#1e1e24' : 'rgba(0,0,0,0.15)',
                   overflowY: 'auto',
                   overflowX: 'hidden',
                   flexShrink: 0,
-                  borderRight: isPda ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                  borderRight: isPda ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.06)',
                   position: isPda ? 'absolute' : 'relative',
                   left: 0,
                   top: 0,
@@ -577,7 +574,6 @@ export const NtosWiki = (props) => {
               </Box>
             )}
 
-            {/* Draggable resizer — hidden on PDA */}
             {!isPda && (
               <Box
                 className={`wiki-resizer ${isResizing ? 'dragging' : ''}`}
@@ -587,7 +583,6 @@ export const NtosWiki = (props) => {
               />
             )}
 
-            {/* Content - independent scroll */}
             <Box
               ref={contentRef}
               className="wiki-content-scroll"
@@ -603,7 +598,6 @@ export const NtosWiki = (props) => {
             >
               {displayedArticle ? (
                 <Box style={{ padding: isPda ? '12px 14px' : '16px 20px', maxWidth: '100%' }}>
-                  {/* Breadcrumbs */}
                   <Box
                     style={{
                       fontSize: '11px',
@@ -673,9 +667,11 @@ export const NtosWiki = (props) => {
                       onClick={handleContentClick}
                     >
                       <Box
-                        style={{ maxWidth: '100%', overflowX: 'auto' }}
+                        style={{ maxWidth: '100%', overflowX: 'hidden' }}
                         dangerouslySetInnerHTML={{
-                          __html: `<div class="wiki-table-wrapper">${displayedArticle.content.replace(/<table/g, '</div><div class="wiki-table-wrapper"><table').replace(/<\/table>/g, '</table></div><div class="wiki-table-wrapper">')}</div>`.replace(/<div class="wiki-table-wrapper"><\/div>/g, ''),
+                          __html: displayedArticle.content
+                            .replace(/<table/g, '<div class="wiki-table-wrapper"><table')
+                            .replace(/<\/table>/g, '</table></div>'),
                         }}
                       />
                     </Box>
@@ -721,23 +717,19 @@ export const NtosWiki = (props) => {
               )}
             </Box>
 
-            {/* PDA overlay backdrop */}
             {isPda && !sidebarCollapsed && (
               <Box
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'rgba(0,0,0,0.45)',
+                  background: 'rgba(0,0,0,0.55)',
                   zIndex: 4,
-                  left: '100%',
-                  width: '0',
                 }}
                 onClick={() => setSidebarCollapsed(true)}
               />
             )}
           </Box>
 
-          {/* Footer hints */}
           <Box
             style={{
               padding: '6px 10px',
