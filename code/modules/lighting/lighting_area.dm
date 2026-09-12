@@ -9,6 +9,8 @@
 	var/contact_shadow_multiplier = 1
 	/// Ambient light floor: minimum brightness in fully dark areas. 0 = pure black, 0.02 = barely visible textures. Range: 0 to 0.05
 	var/ambient_light = AMBIENT_LIGHT_DEFAULT
+	var/area_light_color = null
+	var/area_nightlight_color = null
 
 /area/proc/set_dynamic_lighting(var/new_dynamic_lighting = DYNAMIC_LIGHTING_ENABLED)
 	if (new_dynamic_lighting == dynamic_lighting)
@@ -43,4 +45,7 @@
 			for(var/turf/T in src)
 				T.recalc_area_blend_region()
 			return
+		if(NAMEOF(src, area_light_color), NAMEOF(src, area_nightlight_color))
+			. = ..()
+			return TRUE
 	return ..()

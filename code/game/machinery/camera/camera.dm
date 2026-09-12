@@ -41,6 +41,11 @@
 	var/upgrades = 0
 
 	var/internal_light = TRUE //Whether it can light up when an AI views it
+	// LightUp: свечение камеры
+	glow_icon = 'icons/obj/machines/camera.dmi'
+	glow_icon_state = null
+	exposure_icon = 'icons/effects/exposures.dmi'
+	exposure_icon_state = null
 	///Represents a signel source of camera alarms about movement or camera tampering
 	var/datum/alarm_handler/alarm_manager
 
@@ -314,6 +319,11 @@
 	else
 		icon_state = "[initial(icon_state)][in_use_lights > 0 ? "_in_use" : ""]"
 
+/obj/machinery/camera/update_overlays()
+	. = ..()
+	if(status && in_use_lights > 0)
+		. += emissive_appearance(icon, "[initial(icon_state)]_in_use", src, alpha = src.alpha)
+
 /obj/machinery/camera/proc/toggle_cam(mob/user, displaymessage = 1)
 	status = !status
 	if(can_use())
@@ -444,9 +454,18 @@
 			if(cam == src)
 				return
 	if(on)
-		set_light(AI_CAMERA_LUMINOSITY, 0.8)
+		// LightUp: свечение камеры при подсветке ИИ — используем ламповую плоскость
+		glow_icon_state = initial(icon_state)
+		exposure_icon_state = "circle"
+		glow_icon = 'icons/obj/machines/camera.dmi'
+		exposure_icon = 'icons/effects/exposures.dmi'
+		glow_colored = FALSE
+		set_light(AI_CAMERA_LUMINOSITY, 0.8, light_color)
 	else
 		set_light(0)
+		glow_icon_state = null
+		exposure_icon_state = null
+		delete_lights()
 
 /obj/machinery/camera/get_remote_view_fullscreens(mob/user)
 	if(view_range == short_range) //unfocused

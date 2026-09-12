@@ -13,11 +13,11 @@
 #define LIGHTING_SHEETS_MAX_ENTRIES 256 // soft cap for cached falloff lookup tables
 // Falloff mode: how light intensity decreases with distance
 #define LIGHTING_FALLOFF_LINEAR 0         // Classic: 1 - dist/range (SS13 standard)
-#define LIGHTING_FALLOFF_INVERSE_SQUARE 1 // Realistic: 1 / (1 + k * dist²) — brighter center, softer edges
+#define LIGHTING_FALLOFF_INVERSE_SQUARE 1 // Realistic: 1 / (1 + k * dist²) - brighter center, softer edges
 #define LIGHTING_FALLOFF_MODE LIGHTING_FALLOFF_INVERSE_SQUARE // Compile-time default (runtime override via GLOB.lighting_falloff_mode)
 #define LIGHTING_INVERSE_SQUARE_K 2.5     // Steepness for inverse-square (higher = faster falloff)
-GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff mode — togglable by admins
-#define LIGHTING_SOFT_EDGE 0.8            // Normalized distance where soft falloff begins (linear mode) — smooths visible "ring" at light boundary
+GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff mode - togglable by admins
+#define LIGHTING_SOFT_EDGE 0.8            // Normalized distance where soft falloff begins (linear mode) - smooths visible "ring" at light boundary
 #define LIGHTING_FALLOFF_CULL_THRESHOLD 0.005 // Skip storing corners with falloff below this (invisible, saves memory on large-range lights)
 #define LIGHTING_ROUND_VALUE    (1 / 32) //Value used to round lumcounts, values smaller than 1/129 don't matter (if they do, thanks sinking points), greater values will make lighting less precise, but in turn increase performance, VERY SLIGHTLY.
 /**
@@ -84,17 +84,34 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 	((atom_thing.light_flags & LIGHT_NO_RANGE_CAP) ? LIGHTING_MAX_RANGE_STATIC : LIGHTING_MAX_RANGE))
 
 #define LIGHTING_ANIMATE_TIME 3       // Default animate() duration in deciseconds (0.3s) for smooth lighting transitions
-#define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) — 0.1s
-#define LIGHTING_ANIMATE_TIME_SMOOTH 5 // Gradual events (sunrise, slow power-up) — 0.5s
+#define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) - 0.1s
+#define LIGHTING_ANIMATE_TIME_SMOOTH 5 // Gradual events (sunrise, slow power-up) - 0.5s
+#define LIGHTING_ANIMATE_TIME_NIGHTSHIFT 15
 
 #define LIGHTING_BLUR_MIN 0
 #define LIGHTING_BLUR_MAX 4
 #define LIGHTING_BLUR_DEFAULT 3
-#define LIGHTING_BLUR_BASE 0 // Minimum blur (px) always applied to smooth tile boundaries — GPU-cheap on composited plane master
+#define LIGHTING_BLUR_BASE 0 // Minimum blur (px) always applied to smooth tile boundaries - GPU-cheap on composited plane master
 #define LIGHTING_BLUR_MULTIPLIER 2 // Edge softening: level * this = blur px (2/4/6/8)
 
-#define LIGHTING_CONE_PENUMBRA 30 // Penumbra width (degrees) on each side of the cone edge — softens cone light edges
-#define LIGHTING_CONE_INNER_RADIUS 1.5 // Within this distance (tiles), light is omnidirectional — prevents dark source tile
+#define LIGHTING_BRIGHTNESS_MIN 0
+#define LIGHTING_BRIGHTNESS_MAX 100
+#define LIGHTING_BRIGHTNESS_DEFAULT 50
+
+#define LIGHTING_LAMP_BRIGHTNESS_MIN 0
+#define LIGHTING_LAMP_BRIGHTNESS_MAX 100
+#define LIGHTING_LAMP_BRIGHTNESS_DEFAULT 50
+
+#define LIGHTING_BLOOM_INTENSITY_MIN 0
+#define LIGHTING_BLOOM_INTENSITY_MAX 200
+#define LIGHTING_BLOOM_INTENSITY_DEFAULT 70
+
+#define LIGHTING_QUALITY_FAST 0
+#define LIGHTING_QUALITY_HIGH 1
+#define LIGHTING_QUALITY_DEFAULT LIGHTING_QUALITY_HIGH
+
+#define LIGHTING_CONE_PENUMBRA 30 // Penumbra width (degrees) on each side of the cone edge - softens cone light edges
+#define LIGHTING_CONE_INNER_RADIUS 1.5 // Within this distance (tiles), light is omnidirectional - prevents dark source tile
 #define LIGHTING_FLASHLIGHT_CONE_ANGLE 90 // Standard flashlight: 90° full cone width
 #define LIGHTING_SECLITE_CONE_ANGLE 100 // Seclite: slightly wider
 #define LIGHTING_PENLIGHT_CONE_ANGLE 60 // Penlight: narrow beam
@@ -291,14 +308,14 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_OBJECTS_CAP_MULT 6        // Max objects = corners_processed * this
 #define LIGHTING_OBJECTS_HARD_CEILING 2000  // Absolute max objects per fire
 
-// Area lighting profile presets — pick from these instead of raw floats
+// Area lighting profile presets - pick from these instead of raw floats
 // Temperature: positive = warm (↑R ↓B), negative = cool (↓R ↑B)
 #define LIGHT_TEMP_WARM         0.06  // Cozy, inviting (bar, lounge)
 #define LIGHT_TEMP_DRAMATIC     0.05  // Warm with intent (chapel, candlelit)
 #define LIGHT_TEMP_INDUSTRIAL   0.08  // Hot machinery glow (engineering)
 #define LIGHT_TEMP_FURNACE      0.1   // Extreme heat (atmospherics, smelter)
-#define LIGHT_TEMP_SUBTLE_WARM  0.02  // Barely warm — lived-in feel (dorms, cargo)
-#define LIGHT_TEMP_SUBTLE_COOL -0.02  // Barely cool — neutral-professional
+#define LIGHT_TEMP_SUBTLE_WARM  0.02  // Barely warm - lived-in feel (dorms, cargo)
+#define LIGHT_TEMP_SUBTLE_COOL -0.02  // Barely cool - neutral-professional
 #define LIGHT_TEMP_COOL        -0.03  // Slightly cold (science, bridge, prison)
 #define LIGHT_TEMP_CLINICAL    -0.04  // Sterile blue-white (medical, surgery)
 // Contrast: >1 = deeper shadows, 1 = normal
@@ -307,8 +324,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHT_CONTRAST_DEEP     1.15  // Heavy shadow (maintenance, tunnels)
 
 // Contact shadows
-#define CONTACT_SHADOW_STRENGTH 0.07       // Base dimming per adjacent opaque turf — actual effect uses diminishing returns
-#define CONTACT_SHADOW_MAX_NEIGHBORS 3     // Cap opaque neighbors considered — 4th neighbor (fully enclosed) is ignored
+#define CONTACT_SHADOW_STRENGTH 0.07       // Base dimming per adjacent opaque turf - actual effect uses diminishing returns
+#define CONTACT_SHADOW_MAX_NEIGHBORS 3     // Cap opaque neighbors considered - 4th neighbor (fully enclosed) is ignored
 // Area-level contact shadow multiplier presets
 #define CONTACT_SHADOW_FLAT     0.3  // Nearly flat shadows (operating rooms, clean environments)
 #define CONTACT_SHADOW_REDUCED  0.5  // Softer than default (medical, AI satellite)
@@ -391,6 +408,61 @@ GLOBAL_LIST_INIT(lighting_ambient_matrices, list())
 //Important note on colors. Colors can end up significantly different from the basic html picture, especially when saturated
 #define LIGHT_COLOR_WHITE		"#FFFFFF"
 #define LIGHT_COLOR_RED        "#FA8282" //Warm but extremely diluted red. rgb(250, 130, 130)
+
+#ifndef LIGHT_COLOR_PURE_CYAN
+#define LIGHT_COLOR_PURE_CYAN	"#00FFFF"
+#endif
+#ifndef LIGHT_COLOR_DARKRED
+#define LIGHT_COLOR_DARKRED		"#A91515"
+#endif
+#ifndef LIGHT_COLOR_PURE_RED
+#define LIGHT_COLOR_PURE_RED	"#FF0000"
+#endif
+#ifndef LIGHT_COLOR_DARKGREEN
+#define LIGHT_COLOR_DARKGREEN	"#50AB00"
+#endif
+#ifndef LIGHT_COLOR_PURE_GREEN
+#define LIGHT_COLOR_PURE_GREEN	"#00FF00"
+#endif
+#ifndef LIGHT_COLOR_LIGHTBLUE
+#define LIGHT_COLOR_LIGHTBLUE	"#0099FF"
+#endif
+#ifndef LIGHT_COLOR_PURE_BLUE
+#define LIGHT_COLOR_PURE_BLUE	"#0000FF"
+#endif
+#ifndef LIGHT_COLOR_FADEDPURPLE
+#define LIGHT_COLOR_FADEDPURPLE	"#A97FAA"
+#endif
+#define LIGHT_COLOR_STATION_HALL		 "#f5f0e0"
+#define LIGHT_COLOR_STATION_HALL_NIGHT	 "#f0e8cc"
+#define LIGHT_COLOR_STATION_WORK		 "#f0e0c8"
+#define LIGHT_COLOR_STATION_WORK_NIGHT	 "#e8d8b8"
+#define LIGHT_COLOR_STATION_OFFICE		 "#f2d0a8"
+#define LIGHT_COLOR_STATION_OFFICE_NIGHT "#e2c0a0"
+#define LIGHT_COLOR_STATION_MEDICAL		 "#e8f0f8"
+#define LIGHT_COLOR_STATION_MEDICAL_NIGHT "#d6e8f0"
+#define LIGHT_COLOR_STATION_SCIENCE		 "#e6e8f2"
+#define LIGHT_COLOR_STATION_SCIENCE_NIGHT "#d0d4e8"
+#define LIGHT_COLOR_STATION_ENGINEERING	 "#fdf0d0"
+#define LIGHT_COLOR_STATION_ENGINEERING_NIGHT "#f0e0b8"
+#define LIGHT_COLOR_STATION_SECURITY	 "#fde8e0"
+#define LIGHT_COLOR_STATION_SECURITY_NIGHT "#e8d0b8"
+#define LIGHT_COLOR_STATION_CARGO		 "#f5ecd0"
+#define LIGHT_COLOR_STATION_CARGO_NIGHT	 "#e8dcc0"
+#define LIGHT_COLOR_STATION_SERVICE		 "#fdf5e6"
+#define LIGHT_COLOR_STATION_SERVICE_NIGHT "#f0e8d8"
+#define LIGHT_COLOR_STATION_MAINT		 "#ece8e0"
+#define LIGHT_COLOR_STATION_MAINT_NIGHT	 "#dcd4c0"
+#define LIGHT_COLOR_WARM_BLOOM			 "#ffe4b8"
+#define LIGHT_COLOR_BLOOM_THRESHOLD		 "#8c7a60"
+#define LIGHT_NEW_LIGHTING	(1<<0)
+#define LIGHT_EXPOSURE		(1<<1)
+#define LIGHT_GLARE			(1<<2)
+#define LIGHT_DEFAULT		(LIGHT_NEW_LIGHTING|LIGHT_EXPOSURE|LIGHT_GLARE)
+#define GLOW_HIGH    0
+#define GLOW_MED     1
+#define GLOW_LOW     2
+#define GLOW_DISABLE 3
 
 #define COLOR_STARLIGHT "#8589fa" //Periwinkle/lavender blue, used for space starlight
 
