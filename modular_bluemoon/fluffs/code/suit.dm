@@ -1079,7 +1079,7 @@
 		return
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "melatonin-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
@@ -1106,7 +1106,7 @@
 		return
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "melatonin-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
