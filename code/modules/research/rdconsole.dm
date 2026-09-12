@@ -610,6 +610,10 @@ Nothing else in the console has ID requirements.
 	network_id = RND_NETWORK_SYNDICATE
 	techweb_type = /datum/techweb/syndicate_isolated
 
+/obj/machinery/computer/rdconsole/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
+
 /obj/machinery/computer/rdconsole/inteq
 	network_id = RND_NETWORK_INTEQ
 	techweb_type = /datum/techweb/inteq
