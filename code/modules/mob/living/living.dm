@@ -19,6 +19,68 @@
 	GLOB.mob_living_list += src
 	if(stat != DEAD)
 		become_ai_targetable()
+	init_unconscious_appearance()
+
+/mob/living/proc/init_unconscious_appearance()
+	return
+
+/mob/living/proc/add_generic_humanoid_static_appearance()
+	var/image/static_image = image('icons/effects/effects.dmi', src, "static")
+	static_image.override = TRUE
+	static_image.name = "unknown humanoid"
+	var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA = add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity, "[REF(src)]_unconscious", static_image, NONE)
+	if(AA)
+		for(var/mob/living/viewer in GLOB.mob_living_list)
+			if(viewer.stat == UNCONSCIOUS && viewer != src)
+				AA.add_hud_to(viewer)
+
+/mob/living/proc/update_unconscious_visibility(old_stat, new_stat)
+	if(new_stat == UNCONSCIOUS && old_stat != UNCONSCIOUS)
+		ADD_TRAIT(src, TRAIT_BLOCK_SECHUD, "unconscious_obscurity")
+		ADD_TRAIT(src, TRAIT_BLOCK_MEDHUD, "unconscious_obscurity")
+		ADD_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
+		for(var/datum/atom_hud/H in GLOB.all_huds)
+			if(istype(H, /datum/atom_hud/data/human/security) || istype(H, /datum/atom_hud/data/human/medical) || istype(H, /datum/atom_hud/data/diagnostic))
+				for(var/atom/movable/A in H.hudatoms)
+					H.remove_from_single_hud(src, A)
+		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
+			if(AA.target == src)
+				continue
+			AA.add_hud_to(src)
+	else if(old_stat == UNCONSCIOUS && new_stat != UNCONSCIOUS)
+		REMOVE_TRAIT(src, TRAIT_BLOCK_SECHUD, "unconscious_obscurity")
+		REMOVE_TRAIT(src, TRAIT_BLOCK_MEDHUD, "unconscious_obscurity")
+		REMOVE_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
+		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
+			AA.remove_hud_from(src, TRUE)
+		if(client)
+			for(var/datum/atom_hud/H in GLOB.all_huds)
+				if(H.hudusers[src])
+					continue
+				var/needs_hud = FALSE
+				if(istype(H, /datum/atom_hud/data/human/security))
+					if(HAS_TRAIT(src, TRAIT_SECURITY_HUD))
+						needs_hud = TRUE
+					else if(ishuman(src))
+						var/mob/living/carbon/human/HU = src
+						if(istype(HU.glasses, /obj/item/clothing/glasses/hud/security))
+							needs_hud = TRUE
+				else if(istype(H, /datum/atom_hud/data/human/medical))
+					if(HAS_TRAIT(src, TRAIT_MEDICAL_HUD))
+						needs_hud = TRUE
+					else if(ishuman(src))
+						var/mob/living/carbon/human/HU2 = src
+						if(istype(HU2.glasses, /obj/item/clothing/glasses/hud/health))
+							needs_hud = TRUE
+				else if(istype(H, /datum/atom_hud/data/diagnostic))
+					if(HAS_TRAIT(src, TRAIT_DIAGNOSTIC_HUD))
+						needs_hud = TRUE
+					else if(ishuman(src))
+						var/mob/living/carbon/human/HU3 = src
+						if(istype(HU3.glasses, /obj/item/clothing/glasses/hud/diagnostic))
+							needs_hud = TRUE
+				if(needs_hud)
+					H.add_hud_to(src)
 
 /mob/living/prepare_huds()
 	..()

@@ -486,6 +486,8 @@
 Remember to update _globalvars/traits.dm if you're adding/removing/renaming traits.
 */
 
+#define TRAIT_BLOCK_SECHUD "block_sechud"
+#define TRAIT_BLOCK_MEDHUD "block_medhud"
 //mob traits
 /// Forces the user to stay unconscious.
 #define TRAIT_KNOCKEDOUT "knockedout"
