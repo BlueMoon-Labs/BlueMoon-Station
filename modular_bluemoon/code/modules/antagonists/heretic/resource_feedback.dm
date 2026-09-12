@@ -61,3 +61,42 @@
 		owner.playsound_local(get_turf(owner), difference > 0 ? 'modular_bluemoon/sound/heretic/resource_gain.ogg' : 'modular_bluemoon/sound/heretic/resource_spend.ogg', 14, FALSE, pressure_affected = FALSE)
 
 #undef HERETIC_RESOURCE_ALERT
+
+#define HERETIC_CODEX_ALERT "heretic_codex"
+
+/datum/antagonist/heretic
+	var/codex_summoned = FALSE
+
+/datum/antagonist/heretic/proc/update_codex_alert(mob/living/body)
+	body ||= innate_body || owner?.current
+	if(QDELETED(body))
+		return
+	if(role_removed || codex_summoned || !(locate(/obj/item/forbidden_book) in summon_items))
+		body.clear_alert(HERETIC_CODEX_ALERT)
+		return
+	body.throw_alert(HERETIC_CODEX_ALERT, /atom/movable/screen/alert/heretic_codex, no_anim = TRUE)
+
+/datum/antagonist/heretic/proc/clear_codex_alert(mob/living/body)
+	body?.clear_alert(HERETIC_CODEX_ALERT)
+
+/datum/antagonist/heretic/proc/on_codex_summoned()
+	codex_summoned = TRUE
+	update_codex_alert()
+
+/atom/movable/screen/alert/heretic_codex
+	name = "Кодекс ждёт"
+	desc = "Кодекс ещё не призван. Нажмите сюда или на способность «Призвать кодекс», чтобы получить книгу и выбрать путь."
+	icon = 'icons/obj/eldritch.dmi'
+	icon_state = "codex"
+
+/atom/movable/screen/alert/heretic_codex/Click(location, control, params)
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/user = usr
+	if(!istype(user) || user != owner)
+		return
+	var/obj/effect/proc_holder/spell/self/heretic_summon/book/spell = locate() in user.mind?.spell_list
+	spell?.choose_targets(user)
+
+#undef HERETIC_CODEX_ALERT

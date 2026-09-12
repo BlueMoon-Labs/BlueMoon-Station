@@ -79,6 +79,7 @@
 	heretic = IS_HERETIC(user)
 	rune.inscribe_path(heretic.selected_path)
 	new /obj/effect/temp_visual/heretic_script(center, heretic.selected_path)
+	log_game("[key_name(user)] чертит руну трансмутации в [AREACOORD(center)].")
 	return TRUE
 
 /obj/item/forbidden_book/proc/remove_rune(obj/effect/eldritch/rune, mob/living/user)
@@ -87,6 +88,7 @@
 		return FALSE
 	if(!do_after(user, 2 SECONDS, target = rune) || QDELETED(rune) || rune.is_in_use || !IS_HERETIC(user) || !user.is_holding(src))
 		return FALSE
+	log_game("[key_name(user)] стирает руну трансмутации в [AREACOORD(rune)].")
 	qdel(rune)
 	return TRUE
 

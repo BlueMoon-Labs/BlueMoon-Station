@@ -355,7 +355,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human)
-	var/datum/mind/soul = allocate(/datum/mind)
+	var/datum/mind/soul = allocate_mind()
 	soul.current = victim
 	victim.mind = soul
 	heretic.set_hunt_target(soul)
@@ -486,7 +486,7 @@
 	test_level.traits = previous_traits.Copy()
 	test_level.traits[ZTRAIT_STATION] = TRUE
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
-	var/datum/mind/user_mind = allocate(/datum/mind)
+	var/datum/mind/user_mind = allocate_mind()
 	user_mind.current = user
 	user.mind = user_mind
 	var/datum/antagonist/heretic/hunt_selection_fixture/heretic = allocate(/datum/antagonist/heretic/hunt_selection_fixture)
@@ -496,7 +496,7 @@
 	for(var/index in 1 to 6)
 		var/mob/living/carbon/human/candidate_body = allocate(/mob/living/carbon/human)
 		candidate_body.real_name = "Тестовая цель [index]"
-		var/datum/mind/candidate = allocate(/datum/mind)
+		var/datum/mind/candidate = allocate_mind()
 		candidate.current = candidate_body
 		candidate.assigned_role = "Assistant"
 		candidate_body.mind = candidate

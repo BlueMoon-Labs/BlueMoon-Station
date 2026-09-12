@@ -202,6 +202,7 @@
 	RegisterSignal(current, COMSIG_MOB_DEATH, PROC_REF(on_death))
 	RegisterSignal(current, COMSIG_PARENT_QDELETING, PROC_REF(on_innate_body_deleted))
 	update_combat_resource_alert(FALSE, current)
+	update_codex_alert(current)
 
 /datum/antagonist/heretic/remove_innate_effects(mob/living/mob_override)
 	. = ..()
@@ -210,6 +211,7 @@
 		return
 	innate_body = null
 	clear_combat_resource_alert(current)
+	clear_codex_alert(current)
 	remove_antag_hud(antag_hud_type, current)
 	if(owner)
 		handle_clown_mutation(current, removing = FALSE)

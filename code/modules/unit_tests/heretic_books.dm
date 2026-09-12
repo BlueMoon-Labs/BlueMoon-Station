@@ -207,7 +207,7 @@
 	var/list/resource = ui.last_data["combat_resource"]
 	TEST_ASSERT_EQUAL(resource["value"], knowledge.combat_resource, "Изменение боевого запаса сразу отражается в книге.")
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
-	var/datum/mind/target_mind = allocate(/datum/mind)
+	var/datum/mind/target_mind = allocate_mind()
 	target_mind.current = target
 	target.mind = target_mind
 	heretic.set_hunt_target(target_mind)

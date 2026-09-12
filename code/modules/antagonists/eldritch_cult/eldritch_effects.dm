@@ -50,6 +50,7 @@
 	. = ..()
 	if(istype(item, /obj/item/storage/book/bible) || istype(item, /obj/item/nullrod))
 		to_chat(user, span_notice("Вы разрушаете ритуальный круг с помощью [item]."))
+		log_game("[key_name(user)] разрушает руну трансмутации с помощью [item] в [AREACOORD(src)].")
 		qdel(src)
 
 /obj/effect/eldritch/proc/activate(mob/living/user)
@@ -62,7 +63,8 @@
 		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
 		if(length(knowledge.required_atoms))
 			rituals[knowledge.name] = knowledge
-	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё.", "Трансмутация", rituals)
+	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
+	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё.", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
 	if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
 		var/datum/eldritch_knowledge/ritual = rituals[choice]
 		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
@@ -273,6 +275,7 @@
 	ritual_visual = new(get_turf(src), heretic.selected_path, ritual.ritual_time + 1 SECONDS)
 	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
 	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Сохраняйте неподвижность и не трогайте компоненты."))
+	log_game("[key_name(user)] начинает ритуал «[ritual.name]» в [AREACOORD(src)].")
 	flick("[icon_state]_active", src)
 	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
 	if(!do_after(user, ritual.ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
@@ -280,6 +283,7 @@
 			ascension_ritual.abort_ascension_ritual(ascension_area, world.time - ascension_started_at)
 		release_atoms()
 		to_chat(user, span_warning("Ритуал прерван. Компоненты не израсходованы."))
+		log_game("[key_name(user)] прерывает ритуал «[ritual.name]» в [AREACOORD(src)].")
 		return FALSE
 	// Стопки расходуются поштучно только после успешного завершения обряда.
 	var/succeeded = ritual.on_finished_recipe(user, selected_atoms, get_turf(src))
@@ -294,6 +298,7 @@
 					stack.use(stack_usage[stack])
 		ritual.cleanup_atoms(selected_atoms)
 		to_chat(user, span_notice("Ритуал «[ritual.name]» завершён."))
+	log_game("[key_name(user)] [succeeded ? "завершает" : "не завершает"] ритуал «[ritual.name]» в [AREACOORD(src)].")
 	release_atoms()
 	return succeeded
 
@@ -665,6 +670,7 @@
 	if(!QDELETED(network))
 		network.ReworkNetwork()
 	to_chat(user, span_notice("Вы получили 1 очко знаний. Исследовано разломов: [heretic.influences_harvested]/[HERETIC_INFLUENCE_LIMIT]. Дальнейший путь требует подношений."))
+	log_game("[key_name(user)] исследует разлом в [AREACOORD(src)] ([heretic.influences_harvested]/[HERETIC_INFLUENCE_LIMIT]).")
 	return TRUE
 
 #undef HERETIC_NETWORK_INFLUENCE_LIMIT

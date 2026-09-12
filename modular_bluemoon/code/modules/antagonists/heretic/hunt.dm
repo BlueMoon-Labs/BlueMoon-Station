@@ -47,6 +47,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(new_target?.current)
 		GLOB.reality_smash_track.track_history_mind(new_target)
 		sac_targetted[REF(new_target)] = new_target.current.real_name
+		log_game("[key_name(owner)] получает цель охоты: [key_name(new_target)].")
 	refresh_book_ui()
 
 /datum/antagonist/heretic/proc/hunt_target_ready(mob/living/carbon/human/victim)
@@ -176,6 +177,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	sac_targetted -= REF(soul)
 	actually_sacced += victim.real_name
 	total_sacrifices++
+	log_game("[key_name(owner)] приносит в жертву [key_name(victim)] ([corpse_sacrifice ? "труп" : "живьём"], всего [total_sacrifices]) в [AREACOORD(ritual_turf)].")
 	if(total_sacrifices >= HERETIC_THREAT_SACRIFICES)
 		announce_threat()
 	knowledge_points += corpse_sacrifice ? HERETIC_DEAD_SACRIFICE_KNOWLEDGE : HERETIC_LIVE_SACRIFICE_KNOWLEDGE

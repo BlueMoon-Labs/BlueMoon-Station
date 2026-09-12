@@ -132,6 +132,8 @@
 	if(I)
 		if(summon_item(I, user))
 			heretic.summon_items -= I
+			if(istype(I, /obj/item/forbidden_book))
+				heretic.on_codex_summoned()
 		else
 			to_chat(user, span_warning("Не удалось призвать предмет!"))
 			revert_cast(user)

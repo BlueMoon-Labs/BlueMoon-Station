@@ -1,7 +1,12 @@
-/datum/unit_test/proc/allocate_heretic(turf/location)
-	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, location || run_loc_floor_bottom_left)
+/// allocate() подставляет турф первым аргументом, а для mind это ключ.
+/datum/unit_test/proc/allocate_mind()
 	var/datum/mind/mind = new
 	allocated += mind
+	return mind
+
+/datum/unit_test/proc/allocate_heretic(turf/location)
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, location || run_loc_floor_bottom_left)
+	var/datum/mind/mind = allocate_mind()
 	mind.current = body
 	body.mind = mind
 	var/datum/antagonist/heretic/heretic = allocate(/datum/antagonist/heretic)

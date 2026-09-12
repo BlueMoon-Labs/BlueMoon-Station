@@ -109,6 +109,8 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_INFLUENCE_INITIAL_COUNT 3
 #define HERETIC_INFLUENCE_INTERVAL (8 MINUTES)
 #define HERETIC_STARTING_KNOWLEDGE 1
+/// Сколько держится открытым список выбора обряда на руне.
+#define HERETIC_RITUAL_CHOICE_TIMEOUT (1 MINUTES)
 #define HERETIC_DEED_TIERS 3
 #define HERETIC_DEED_KNOWLEDGE 1
 #define HERETIC_DEED_SIDE_KNOWLEDGE 1

@@ -154,3 +154,32 @@
 	TEST_ASSERT(QDELETED(replacement), "Обычная очистка удаляет заменённый объект.")
 	TEST_ASSERT_EQUAL(body.alerts["older"], older, "Очистка сохраняет первое независимое предупреждение.")
 	TEST_ASSERT_EQUAL(body.alerts["newer"], newer, "Очистка сохраняет второе независимое предупреждение.")
+
+/// Пока кодекс ни разу не призван, на экране висит подсказка; первый призыв её убирает насовсем.
+/datum/unit_test/heretic_codex_alert/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/body = heretic.owner.current
+	heretic.equip_cultist()
+	heretic.apply_innate_effects(body)
+	var/atom/movable/screen/alert/indicator = body.alerts["heretic_codex"]
+	TEST_ASSERT(indicator, "До первого призыва кодекса еретик видит подсказку.")
+	TEST_ASSERT(indicator.icon_state in icon_states(indicator.icon), "У подсказки должно быть существующее изображение.")
+	var/obj/effect/proc_holder/spell/self/heretic_summon/book/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_summon/book)
+	spell.cast(list(body), body)
+	TEST_ASSERT(locate(/obj/item/forbidden_book) in body.held_items, "Призыв кладёт кодекс в руку.")
+	TEST_ASSERT_NULL(body.alerts["heretic_codex"], "После призыва подсказка исчезает.")
+	spell.cast(list(body), body)
+	TEST_ASSERT_NULL(locate(/obj/item/forbidden_book) in body.held_items, "Повторный призыв прячет кодекс.")
+	heretic.remove_innate_effects(body)
+	heretic.apply_innate_effects(body)
+	TEST_ASSERT_NULL(body.alerts["heretic_codex"], "Спрятанный после призыва кодекс подсказку не возвращает.")
+
+/// Снятие роли убирает подсказку о кодексе вместе с остальными индикаторами.
+/datum/unit_test/heretic_codex_alert_removal/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/body = heretic.owner.current
+	heretic.equip_cultist()
+	heretic.apply_innate_effects(body)
+	TEST_ASSERT(body.alerts["heretic_codex"], "Подсказка появляется вместе с ролью.")
+	qdel(heretic)
+	TEST_ASSERT_NULL(body.alerts["heretic_codex"], "Удалённая роль не оставляет подсказку.")
