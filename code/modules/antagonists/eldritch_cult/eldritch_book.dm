@@ -354,3 +354,23 @@
 
 /obj/item/forbidden_book/debug
 	name = "Отладочный Кодекс Рубцов"
+	var/debug_knowledge_points = 100
+
+/obj/item/forbidden_book/debug/examine(mob/user)
+	. = ..()
+	. += "Тестовый кодекс: при открытии еретиком передаёт ему оставшиеся [debug_knowledge_points] очков знаний. Запас расходуется один раз на книгу."
+
+/obj/item/forbidden_book/debug/attack_self(mob/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || heretic.role_removed)
+		to_chat(user, span_warning("Сначала выдайте персонажу роль еретика через Show Traitor Panel."))
+		return
+	if(!user.is_holding(src) || user.incapacitated())
+		return
+	if(debug_knowledge_points > 0)
+		heretic.knowledge_points += debug_knowledge_points
+		to_chat(user, span_notice("Тестовый кодекс передал вам [debug_knowledge_points] очков знаний. Цель выбирается в главе «Охота»."))
+		log_admin("[key_name(user)] получает [debug_knowledge_points] очков знаний из отладочного кодекса.")
+		debug_knowledge_points = 0
+		heretic.refresh_book_ui()
+	return ..()

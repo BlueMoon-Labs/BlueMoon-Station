@@ -189,6 +189,51 @@
 	update_count++
 	last_data = src_object.ui_data(user)
 
+/// Тестовый кодекс однократно передаёт знания читателю и сохраняет их после потери книги.
+/datum/unit_test/heretic_debug_book/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/reader = heretic.owner.current
+	var/obj/item/forbidden_book/debug/book = allocate(/obj/item/forbidden_book/debug)
+	var/starting_points = heretic.knowledge_points
+	var/book_points = book.debug_knowledge_points
+	TEST_ASSERT(book_points > 0, "Тестовая книга должна содержать очки знаний.")
+	var/mob/living/carbon/human/outsider = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	TEST_ASSERT(outsider.put_in_hands(book), "Персонаж без роли может взять тестовую книгу.")
+	book.attack_self(outsider)
+	TEST_ASSERT_EQUAL(book.debug_knowledge_points, book_points, "Персонаж без роли не расходует запас книги.")
+	outsider.dropItemToGround(book)
+	book.attack_self(reader)
+	TEST_ASSERT_EQUAL(heretic.knowledge_points, starting_points, "Книга на полу не выдаёт знания.")
+	TEST_ASSERT(reader.put_in_hands(book), "Читатель должен взять тестовую книгу.")
+	reader.Paralyze(10 SECONDS)
+	book.attack_self(reader)
+	TEST_ASSERT_EQUAL(book.debug_knowledge_points, book_points, "Недееспособный читатель не расходует запас.")
+	reader.SetParalyzed(0)
+	TEST_ASSERT(reader.put_in_hands(book), "После паралича читатель должен снова взять выпавшую книгу.")
+	var/datum/tgui/heretic_book_test/ui = allocate(/datum/tgui/heretic_book_test, reader, book, "ForbiddenLore", "Кодекс Рубцов")
+	ui.window = allocate(/datum/tgui_window/heretic_book_test)
+	ui.window.locked_by = ui
+	ui.initialized = TRUE
+	ui.status = UI_INTERACTIVE
+	SStgui.on_open(ui)
+	book.attack_self(reader)
+	TEST_ASSERT_EQUAL(heretic.knowledge_points, starting_points + book_points, "Запас книги должен перейти еретику.")
+	TEST_ASSERT_EQUAL(ui.last_data["points"], heretic.knowledge_points, "Открытая книга сразу показывает выданные очки.")
+	TEST_ASSERT_EQUAL(book.debug_knowledge_points, 0, "Выданный запас должен исчерпаться.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_ash, reader), "Тестовая книга позволяет выбрать путь.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/ashen_grasp, reader), "Выданные очки оплачивают исследование.")
+	var/remaining_points = heretic.knowledge_points
+	book.attack_self(reader)
+	TEST_ASSERT_EQUAL(heretic.knowledge_points, remaining_points, "Повторное открытие не восполняет потраченные очки.")
+	reader.dropItemToGround(book)
+	var/datum/antagonist/heretic/other = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	var/other_points = other.knowledge_points
+	TEST_ASSERT(other.owner.current.put_in_hands(book), "Другой еретик может взять использованную книгу.")
+	var/list/data = book.ui_data(other.owner.current)
+	TEST_ASSERT_EQUAL(data["points"], other_points, "Передача книги не передаёт знания первого читателя.")
+	qdel(book)
+	TEST_ASSERT_EQUAL(heretic.knowledge_points, remaining_points, "Удаление книги не отнимает знания.")
+
 /// Открытая книга обновляется по событиям прогресса и цели, а обычный тик TGUI не собирает данные.
 /datum/unit_test/heretic_book_event_updates/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
