@@ -1,4 +1,4 @@
-//This is the lowest supported version, anything below this is completely obsolete and the entire savefile will be wiped.
+// Самая старая поддерживаемая версия данных. Более старые файлы требуют ручной проверки.
 #define SAVEFILE_VERSION_MIN	18
 
 //This is the current version, anything below this will attempt to update (if it's not obsolete)
@@ -7,44 +7,25 @@
 //	where you would want the updater procs below to run
 #define SAVEFILE_VERSION_MAX	80
 
-/// Upper bound for character slot indices during savefile migration (loop over S.dir).
-/// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
-/// and running thousands of load_character/save_character pairs (OOM / DD hangs).
-#define SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT	128
+/// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
+#define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
 
 /*
-SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
-	This proc checks if the current directory of the savefile S needs updating
-	It is to be used by the load_character and load_preferences procs.
-	(S.cd=="/" is preferences, S.cd=="/character[integer]" is a character slot, etc)
-
-	if the current directory's version is below SAVEFILE_VERSION_MIN it will simply wipe everything in that directory
-	(if we're at root "/" then it'll just wipe the entire savefile, for instance.)
-
-	if its version is below SAVEFILE_VERSION_MAX but above the minimum, it will load data but later call the
-	respective update_preferences() or update_character() proc.
-	Those procs allow coders to specify format changes so users do not lose their setups and have to redo them again.
-
-	Failing all that, the standard sanity checks are performed. They simply check the data is suitable, reverting to
-	initial() values if necessary.
+Версия относится к содержимому корня или слота и не зависит от версии JSON-контейнера.
+Поддерживаемые старые версии проходят прежние update_preferences/update_character.
+Неизвестные, слишком старые и будущие версии не удаляются и не перезаписываются.
 */
 /datum/preferences/proc/savefile_needs_update(savefile/S)
 	var/savefile_version
 	S["version"] >> savefile_version
+	return player_save_version_status(savefile_version)
 
-	if(savefile_version < SAVEFILE_VERSION_MIN)
-		S.dir.Cut()
+/proc/player_save_version_status(savefile_version)
+	if(!isnum(savefile_version) || savefile_version < SAVEFILE_VERSION_MIN || savefile_version > SAVEFILE_VERSION_MAX)
 		return -2
 	if(savefile_version < SAVEFILE_VERSION_MAX)
 		return savefile_version
 	return -1
-
-//should these procs get fairly long
-//just increase SAVEFILE_VERSION_MIN so it's not as far behind
-//SAVEFILE_VERSION_MAX and then delete any obsolete if clauses
-//from these procs.
-//This only really meant to avoid annoying frequent players
-//if your savefile is 3 months out of date, then 'tough shit'.
 
 /datum/preferences/proc/update_preferences(current_version, savefile/S)
 	if(current_version < 30)
@@ -534,7 +515,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	path = "data/player_saves/[ckey[1]]/[ckey]/[filename]"
 	vr_path = "data/player_saves/[ckey[1]]/[ckey]/vore"
 
-/datum/preferences/proc/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/proc/read_preferences(bypass_cooldown = FALSE)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -543,7 +524,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				to_chat(parent, "<span class='warning'>You're attempting to load your preferences a little too fast. Wait half a second, then try again.</span>")
 			return FALSE
 		COOLDOWN_START(src, loadprefcooldown, PREF_LOAD_COOLDOWN)
-	if(!fexists(path))
+	if(!player_save_exists())
 		return FALSE
 
 	// Буфер склейки держит правки, которых на диске ещё нет. Читать поверх них - значит
@@ -551,160 +532,161 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// на диск при сбросе буфера. Дописываем до чтения, чтобы диск был авторитетом.
 	flush_single_prefs()
 
-	var/savefile/S = new /savefile(path)
-	if(!S)
+	var/datum/player_save_document/document = open_player_document()
+	if(!document)
 		return FALSE
-	S.cd = "/"
-
-	var/needs_update = savefile_needs_update(S)
+	var/needs_update = player_save_version_status(document.read("version"))
+	var/savefile/S
+	if(needs_update >= 0)
+		S = open_player_save("/")
+		if(!S)
+			return FALSE
+		document = null
+		needs_update = savefile_needs_update(S)
 	if(needs_update == -2)		//fatal, can't load any data
-		var/bacpath = "[path].updatebac" //todo: if the savefile version is higher then the server, check the backup, and give the player a prompt to load the backup
-		if (fexists(bacpath))
-			fdel(bacpath) //only keep 1 version of backup
-		fcopy(S, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		return FALSE
 
 	. = TRUE
 
 	//general preferences
-	S["ooccolor"] 				>> ooccolor
-	S["aooccolor"] 				>> aooccolor
-	S["lastchangelog"] 			>> lastchangelog
-	S["UI_style"] 				>> UI_style
-	S["outline_color"] 			>> outline_color
-	S["outline_enabled"] 		>> outline_enabled
-	S["screentip_pref"] 		>> screentip_pref
-	S["screentip_color"] 		>> screentip_color
-	S["screentip_images"] 		>> screentip_images
-	S["hotkeys"] 				>> hotkeys
-	S["chat_on_map"] 			>> chat_on_map
-	S["chat_on_map_looc"] 		>> chat_on_map_looc
-	S["max_chat_length"] 		>> max_chat_length
-	S["see_chat_non_mob"] 		>> see_chat_non_mob
-	S["runechat_anim"]			>> runechat_anim
-	S["tgui_fancy"] 			>> tgui_fancy
-	S["tgui_lock"] 				>> tgui_lock
-	S["tgui_input_mode"]		>> tgui_input_mode
-	S["tgui_input_verbs"]		>> tgui_input_verbs
-	S["tgui_large_buttons"]		>> tgui_large_buttons
-	S["tgui_swapped_buttons"]	>> tgui_swapped_buttons
-	S["tgui_panel_theme"]		>> tgui_panel_theme
-	S["tgui_panel_state"]		>> tgui_panel_state
-	S["ui_zoom_preferences"]	>> ui_zoom_preferences
-	S["windowflash"] 			>> windowflashing
-	S["adminhelp_windowflash"]	>> adminhelp_windowflash
-	S["windownoise"] 			>> windownoise
-	S["mood_vignette"] 			>> mood_vignette
-	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
-	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
-	S["be_special"] 			>> be_special
+	READ_PLAYER_SAVE(S, document, "ooccolor", ooccolor)
+	READ_PLAYER_SAVE(S, document, "aooccolor", aooccolor)
+	READ_PLAYER_SAVE(S, document, "lastchangelog", lastchangelog)
+	READ_PLAYER_SAVE(S, document, "UI_style", UI_style)
+	READ_PLAYER_SAVE(S, document, "outline_color", outline_color)
+	READ_PLAYER_SAVE(S, document, "outline_enabled", outline_enabled)
+	READ_PLAYER_SAVE(S, document, "screentip_pref", screentip_pref)
+	READ_PLAYER_SAVE(S, document, "screentip_color", screentip_color)
+	READ_PLAYER_SAVE(S, document, "screentip_images", screentip_images)
+	READ_PLAYER_SAVE(S, document, "hotkeys", hotkeys)
+	READ_PLAYER_SAVE(S, document, "chat_on_map", chat_on_map)
+	READ_PLAYER_SAVE(S, document, "chat_on_map_looc", chat_on_map_looc)
+	READ_PLAYER_SAVE(S, document, "max_chat_length", max_chat_length)
+	READ_PLAYER_SAVE(S, document, "see_chat_non_mob", see_chat_non_mob)
+	READ_PLAYER_SAVE(S, document, "runechat_anim", runechat_anim)
+	READ_PLAYER_SAVE(S, document, "tgui_fancy", tgui_fancy)
+	READ_PLAYER_SAVE(S, document, "tgui_lock", tgui_lock)
+	READ_PLAYER_SAVE(S, document, "tgui_input_mode", tgui_input_mode)
+	READ_PLAYER_SAVE(S, document, "tgui_input_verbs", tgui_input_verbs)
+	READ_PLAYER_SAVE(S, document, "tgui_large_buttons", tgui_large_buttons)
+	READ_PLAYER_SAVE(S, document, "tgui_swapped_buttons", tgui_swapped_buttons)
+	READ_PLAYER_SAVE(S, document, "tgui_panel_theme", tgui_panel_theme)
+	READ_PLAYER_SAVE(S, document, "tgui_panel_state", tgui_panel_state)
+	READ_PLAYER_SAVE(S, document, "ui_zoom_preferences", ui_zoom_preferences)
+	READ_PLAYER_SAVE(S, document, "windowflash", windowflashing)
+	READ_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
+	READ_PLAYER_SAVE(S, document, "windownoise", windownoise)
+	READ_PLAYER_SAVE(S, document, "mood_vignette", mood_vignette)
+	READ_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
+	READ_PLAYER_SAVE(S, document, "action_buttons_screen_locs", action_buttons_screen_locs)
+	READ_PLAYER_SAVE(S, document, "be_special", be_special)
 
 	//SKYRAT CHANGES BEGIN
-	S["see_chat_emotes"] 	>> see_chat_emotes
+	READ_PLAYER_SAVE(S, document, "see_chat_emotes", see_chat_emotes)
 	//SKYRAT CHANGES END
 
-	S["default_slot"] >> default_slot
-	S["chat_toggles"] >> chat_toggles
-	S["toggles"] >> toggles
-	S["sound_toggles"] >> sound_toggles
-	S["custom_colors"] >> custom_colors
-	S["deadmin"] >> deadmin
-	S["ticket_nickname"] >> ticket_nickname
-	S["ghost_form"] >> ghost_form
-	S["ghost_orbit"] >> ghost_orbit
-	S["ghost_accs"] >> ghost_accs
-	S["ghost_others"] >> ghost_others
-	S["preferred_map"] >> preferred_map
-	S["ignoring"] >> ignoring
-	S["hearted_until"] >> hearted_until
+	READ_PLAYER_SAVE(S, document, "default_slot", default_slot)
+	READ_PLAYER_SAVE(S, document, "chat_toggles", chat_toggles)
+	READ_PLAYER_SAVE(S, document, "toggles", toggles)
+	READ_PLAYER_SAVE(S, document, "sound_toggles", sound_toggles)
+	READ_PLAYER_SAVE(S, document, "custom_colors", custom_colors)
+	READ_PLAYER_SAVE(S, document, "deadmin", deadmin)
+	READ_PLAYER_SAVE(S, document, "ticket_nickname", ticket_nickname)
+	READ_PLAYER_SAVE(S, document, "ghost_form", ghost_form)
+	READ_PLAYER_SAVE(S, document, "ghost_orbit", ghost_orbit)
+	READ_PLAYER_SAVE(S, document, "ghost_accs", ghost_accs)
+	READ_PLAYER_SAVE(S, document, "ghost_others", ghost_others)
+	READ_PLAYER_SAVE(S, document, "preferred_map", preferred_map)
+	READ_PLAYER_SAVE(S, document, "ignoring", ignoring)
+	READ_PLAYER_SAVE(S, document, "hearted_until", hearted_until)
 	sync_hearted_pref(src)
-	S["inquisitive_ghost"] >> inquisitive_ghost
-	S["uses_glasses_colour"]>> uses_glasses_colour
-	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
-	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
-	S["neural_interface_visibility"]>> neural_interface_visibility // BLUEMOON ADD
-	S["chem_dispenser_classic_view"]>> chem_dispenser_classic_view // BLUEMOON ADD
-	S["chem_dispenser_use_reagent_color"]>> chem_dispenser_use_reagent_color // BLUEMOON ADD
-	S["chem_dispenser_show_icons"]>> chem_dispenser_show_icons // BLUEMOON ADD
-	S["chem_dispenser_alphabetical_sort"]>> chem_dispenser_alphabetical_sort // BLUEMOON ADD
-	S["ie_classic_circuit_ui"]>> ie_classic_circuit_ui // BLUEMOON ADD
-	S["color_presets_tint"]>> color_presets_tint // BLUEMOON ADD
-	S["color_presets_hsv"]>> color_presets_hsv // BLUEMOON ADD
-	S["color_presets_matrix"]>> color_presets_matrix // BLUEMOON ADD
-	S["clientfps"] >> clientfps
-	S["sound_volume_midi"] >> sound_volume_midi
-	S["sound_volume_ambience"] >> sound_volume_ambience
-	S["sound_volume_ship_ambience"] >> sound_volume_ship_ambience
-	S["sound_volume_announcements"] >> sound_volume_announcements
-	S["sound_volume_bark"] >> sound_volume_bark
-	S["sound_volume_prayers"] >> sound_volume_prayers
-	S["sound_volume_adminhelp"] >> sound_volume_adminhelp
-	S["sound_volume_instruments"] >> sound_volume_instruments
-	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
-	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
-	S["sound_volume_emote"] >> sound_volume_emote
-	S["sound_volume_mentorhelp"] >> sound_volume_mentorhelp
-	S["sound_volume_fax"] >> sound_volume_fax
-	S["mentor_toggles"] >> mentor_toggles
-	S["parallax"] >> parallax
-	S["ambientocclusion"] >> ambientocclusion
-	S["lighting_blur"] >> lighting_blur
-	S["auto_fit_viewport"] >> auto_fit_viewport
-	S["widescreenpref"] >> widescreenpref
-	S["fullscreen"] >> fullscreen
-	S["long_strip_menu"] >> long_strip_menu
-	S["pixel_size"]	    	>> pixel_size
-	S["scaling_method"]	    >> scaling_method
-	S["hud_toggle_flash"] >> hud_toggle_flash
-	S["hud_toggle_color"] >> hud_toggle_color
-	S["menuoptions"] >> menuoptions
-	S["enable_tips"] >> enable_tips
-	S["tip_delay"] >> tip_delay
+	READ_PLAYER_SAVE(S, document, "inquisitive_ghost", inquisitive_ghost)
+	READ_PLAYER_SAVE(S, document, "uses_glasses_colour", uses_glasses_colour)
+	READ_PLAYER_SAVE(S, document, "auto_capitalize_enabled", auto_capitalize_enabled)
+	READ_PLAYER_SAVE(S, document, "surgical_disable_radial", surgical_disable_radial) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "neural_interface_visibility", neural_interface_visibility) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "chem_dispenser_classic_view", chem_dispenser_classic_view) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "chem_dispenser_use_reagent_color", chem_dispenser_use_reagent_color) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "chem_dispenser_show_icons", chem_dispenser_show_icons) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "chem_dispenser_alphabetical_sort", chem_dispenser_alphabetical_sort) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "ie_classic_circuit_ui", ie_classic_circuit_ui) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "color_presets_tint", color_presets_tint) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "color_presets_hsv", color_presets_hsv) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "color_presets_matrix", color_presets_matrix) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "clientfps", clientfps)
+	READ_PLAYER_SAVE(S, document, "sound_volume_midi", sound_volume_midi)
+	READ_PLAYER_SAVE(S, document, "sound_volume_ambience", sound_volume_ambience)
+	READ_PLAYER_SAVE(S, document, "sound_volume_ship_ambience", sound_volume_ship_ambience)
+	READ_PLAYER_SAVE(S, document, "sound_volume_announcements", sound_volume_announcements)
+	READ_PLAYER_SAVE(S, document, "sound_volume_bark", sound_volume_bark)
+	READ_PLAYER_SAVE(S, document, "sound_volume_prayers", sound_volume_prayers)
+	READ_PLAYER_SAVE(S, document, "sound_volume_adminhelp", sound_volume_adminhelp)
+	READ_PLAYER_SAVE(S, document, "sound_volume_instruments", sound_volume_instruments)
+	READ_PLAYER_SAVE(S, document, "sound_volume_jukeboxes", sound_volume_jukeboxes)
+	READ_PLAYER_SAVE(S, document, "sound_volume_personal_jukeboxes", sound_volume_personal_jukeboxes)
+	READ_PLAYER_SAVE(S, document, "sound_volume_emote", sound_volume_emote)
+	READ_PLAYER_SAVE(S, document, "sound_volume_mentorhelp", sound_volume_mentorhelp)
+	READ_PLAYER_SAVE(S, document, "sound_volume_fax", sound_volume_fax)
+	READ_PLAYER_SAVE(S, document, "mentor_toggles", mentor_toggles)
+	READ_PLAYER_SAVE(S, document, "parallax", parallax)
+	READ_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
+	READ_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	READ_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
+	READ_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
+	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
+	READ_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
+	READ_PLAYER_SAVE(S, document, "pixel_size", pixel_size)
+	READ_PLAYER_SAVE(S, document, "scaling_method", scaling_method)
+	READ_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
+	READ_PLAYER_SAVE(S, document, "hud_toggle_color", hud_toggle_color)
+	READ_PLAYER_SAVE(S, document, "menuoptions", menuoptions)
+	READ_PLAYER_SAVE(S, document, "enable_tips", enable_tips)
+	READ_PLAYER_SAVE(S, document, "tip_delay", tip_delay)
 
 	// Custom hotkeys
-	S["key_bindings"] >> key_bindings
-	S["modless_key_bindings"] >> modless_key_bindings
+	READ_PLAYER_SAVE(S, document, "key_bindings", key_bindings)
+	READ_PLAYER_SAVE(S, document, "modless_key_bindings", modless_key_bindings)
 
 	//citadel code
-	S["arousable"] >> arousable
-	S["sexknotting"] >> sexknotting // BLUEMOON ADD
-	S["screenshake"] >> screenshake
-	S["damagescreenshake"] >> damagescreenshake
-	S["autostand"] >> autostand
-	S["cit_toggles"] >> cit_toggles
-	S["preferred_chaos_level"] >> preferred_chaos_level
-	S["auto_ooc"] >> auto_ooc
-	S["no_tetris_storage"] >> no_tetris_storage
-	S["recoil_screenshake"] >> recoil_screenshake
+	READ_PLAYER_SAVE(S, document, "arousable", arousable)
+	READ_PLAYER_SAVE(S, document, "sexknotting", sexknotting) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "screenshake", screenshake)
+	READ_PLAYER_SAVE(S, document, "damagescreenshake", damagescreenshake)
+	READ_PLAYER_SAVE(S, document, "autostand", autostand)
+	READ_PLAYER_SAVE(S, document, "cit_toggles", cit_toggles)
+	READ_PLAYER_SAVE(S, document, "preferred_chaos_level", preferred_chaos_level)
+	READ_PLAYER_SAVE(S, document, "auto_ooc", auto_ooc)
+	READ_PLAYER_SAVE(S, document, "no_tetris_storage", no_tetris_storage)
+	READ_PLAYER_SAVE(S, document, "recoil_screenshake", recoil_screenshake)
 
 	// Splurt
-	S["disable_combat_cursor"]	>> disable_combat_cursor
-	S["disable_combat_mouse_lock"]	>> disable_combat_mouse_lock
-	S["gfluid_blacklist"]		>> gfluid_blacklist
+	READ_PLAYER_SAVE(S, document, "disable_combat_cursor", disable_combat_cursor)
+	READ_PLAYER_SAVE(S, document, "disable_combat_mouse_lock", disable_combat_mouse_lock)
+	READ_PLAYER_SAVE(S, document, "gfluid_blacklist", gfluid_blacklist)
 
-	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
-	S["charcreation_theme"]		>> charcreation_theme
-	S["modern_button_shape"]	>> modern_button_shape
-	S["modern_custom_enabled"]	>> modern_custom_enabled
-	S["modern_custom_bg_primary"]	>> modern_custom_bg_primary
-	S["modern_custom_bg_secondary"]	>> modern_custom_bg_secondary
-	S["modern_custom_text_primary"]	>> modern_custom_text_primary
-	S["modern_custom_text_secondary"]	>> modern_custom_text_secondary
-	S["modern_custom_button_bg"]	>> modern_custom_button_bg
-	S["modern_custom_button_hover"]	>> modern_custom_button_hover
-	S["modern_custom_button_active"]	>> modern_custom_button_active
-	S["modern_custom_button_text"]	>> modern_custom_button_text
-	S["modern_custom_border_color"]	>> modern_custom_border_color
-	S["modern_custom_accent_color"]	>> modern_custom_accent_color
-	S["modern_custom_bg_pattern"]	>> modern_custom_bg_pattern
-	S["ui_decoration_level"]	>> ui_decoration_level
-	S["modern_ui_language"]		>> modern_ui_language
-	S["use_modern_translations"]	>> use_modern_translations
-	S["new_character_creator"]	>> new_character_creator
-	S["view_pixelshift"]		>> view_pixelshift
+	READ_PLAYER_SAVE(S, document, "collapse_empty_character_slots", collapse_empty_character_slots)
+	READ_PLAYER_SAVE(S, document, "charcreation_theme", charcreation_theme)
+	READ_PLAYER_SAVE(S, document, "modern_button_shape", modern_button_shape)
+	READ_PLAYER_SAVE(S, document, "modern_custom_enabled", modern_custom_enabled)
+	READ_PLAYER_SAVE(S, document, "modern_custom_bg_primary", modern_custom_bg_primary)
+	READ_PLAYER_SAVE(S, document, "modern_custom_bg_secondary", modern_custom_bg_secondary)
+	READ_PLAYER_SAVE(S, document, "modern_custom_text_primary", modern_custom_text_primary)
+	READ_PLAYER_SAVE(S, document, "modern_custom_text_secondary", modern_custom_text_secondary)
+	READ_PLAYER_SAVE(S, document, "modern_custom_button_bg", modern_custom_button_bg)
+	READ_PLAYER_SAVE(S, document, "modern_custom_button_hover", modern_custom_button_hover)
+	READ_PLAYER_SAVE(S, document, "modern_custom_button_active", modern_custom_button_active)
+	READ_PLAYER_SAVE(S, document, "modern_custom_button_text", modern_custom_button_text)
+	READ_PLAYER_SAVE(S, document, "modern_custom_border_color", modern_custom_border_color)
+	READ_PLAYER_SAVE(S, document, "modern_custom_accent_color", modern_custom_accent_color)
+	READ_PLAYER_SAVE(S, document, "modern_custom_bg_pattern", modern_custom_bg_pattern)
+	READ_PLAYER_SAVE(S, document, "ui_decoration_level", ui_decoration_level)
+	READ_PLAYER_SAVE(S, document, "modern_ui_language", modern_ui_language)
+	READ_PLAYER_SAVE(S, document, "use_modern_translations", use_modern_translations)
+	READ_PLAYER_SAVE(S, document, "new_character_creator", new_character_creator)
+	READ_PLAYER_SAVE(S, document, "view_pixelshift", view_pixelshift)
 
 	//favorite outfits
-	S["favorite_outfits"] >> favorite_outfits
+	READ_PLAYER_SAVE(S, document, "favorite_outfits", favorite_outfits)
 
 	var/list/parsed_favs = list()
 	for(var/typetext in favorite_outfits)
@@ -715,10 +697,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
-		var/bacpath = "[path].updatebac" //todo: if the savefile version is higher then the server, check the backup, and give the player a prompt to load the backup
-		if (fexists(bacpath))
-			fdel(bacpath) //only keep 1 version of backup
-		fcopy(S, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		update_preferences(needs_update, S)		//needs_update = savefile_version if we need an update (positive integer)
 
 	//Sanitize
@@ -854,32 +832,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	verify_keybindings_valid()		// one of these days this will runtime and you'll be glad that i put it in a different proc so no one gets their saves wiped
 
-	if(S["unlockable_loadout"])
-		unlockable_loadout_data = safe_json_decode(S["unlockable_loadout"])
+	if(PLAYER_SAVE_VALUE(S, document, "unlockable_loadout"))
+		unlockable_loadout_data = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "unlockable_loadout"))
 	else
 		unlockable_loadout_data = list()
 
-	if(needs_update >= 0) //save the updated version
-		var/old_default_slot = default_slot
-		var/old_max_save_slots = max_save_slots
 
-		for (var/slot in S.dir) //but first, update all current character slots.
-			if (copytext(slot, 1, 10) != "character")
-				continue
-			var/slotnum = text2num(copytext(slot, 10))
-			if (!slotnum)
-				continue
-			if (slotnum > SAVEFILE_MIGRATION_MAX_CHARACTER_SLOT)
-				continue
-			max_save_slots = max(max_save_slots, slotnum) //so we can still update byond member slots after they lose memeber status
-			default_slot = slotnum
-			if (load_character(null, TRUE)) // this updtates char slots
-				save_character(TRUE)
-		default_slot = old_default_slot
-		max_save_slots = old_max_save_slots
-		save_preferences(TRUE)
-
-	return S
+	return document || S
 
 /datum/preferences/proc/verify_keybindings_valid()
 	// Sanitize the actual keybinds to make sure they exist.
@@ -1085,7 +1044,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
  * Вызывающий обязан держать target.cd на корне: одиночные ключи живут там же, где их
  * пишет save_preferences. Возвращает число записанных ключей.
  */
-/datum/preferences/proc/write_pending_single_prefs(savefile/target)
+/datum/preferences/proc/write_pending_single_prefs(savefile/target, datum/player_save_document/document)
 	if(!target || !length(pending_single_prefs))
 		return 0
 	// Забираем список себе до записи: если по дороге кто-то положит ещё ключ, он обязан
@@ -1095,7 +1054,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/written = 0
 	for(var/key in pending)
 		var/value = pending[key]
-		WRITE_FILE(target[key], value)
+		WRITE_PLAYER_SAVE(target, document, key, value)
 		written++
 	return written
 
@@ -1124,7 +1083,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!path)
 		pending_single_prefs = null
 		return FALSE
-	if(!fexists(path))
+	if(!player_save_exists())
 		// Одиночная запись создала бы savefile без "version", поэтому уходим полной
 		// записью. Буфер при этом НЕ обнуляем заранее: полная запись дописывает его
 		// сама (write_pending_single_prefs), а если файл не откроется - буфер
@@ -1137,23 +1096,36 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// тридцати миллисекунд не дотягивает, поэтому в логе 10146 разложить 3712 записей по
 	// источникам было нечем. Теперь итоговая строка раунда разложит их сама.
 	var/blocking_started_ms = blocking_call_start()
-	var/savefile/single_file = new /savefile(path)
-	if(!single_file)
-		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+	var/datum/player_save_document/document = open_player_document()
+	if(!document)
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 		return FALSE
-	single_file.cd = "/"
 	// Файл ниже текущей версии дописывать по ключу нельзя - миграция уходит полной записью.
-	var/file_version
-	READ_FILE(single_file["version"], file_version)
-	if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MAX)
-		single_file = null
-		blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
+	var/file_version = document.read("version")
+	if(!isnum(file_version) || file_version < SAVEFILE_VERSION_MIN || file_version > SAVEFILE_VERSION_MAX)
+		player_save_error("Неподдерживаемая версия старого сохранения")
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "неподдерживаемая версия")
+		return FALSE
+	if(file_version < SAVEFILE_VERSION_MAX || isnull(document.directories))
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "непромигрированный файл [parent?.ckey || "?"]")
 		return save_preferences(bypass_cooldown = TRUE, silent = TRUE)
-	write_pending_single_prefs(single_file)
-	blocking_call_finish(blocking_started_ms, "savefile (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
+	var/list/pending_before_write = pending_single_prefs?.Copy()
+	try
+		for(var/key in pending_before_write)
+			document.write(key, pending_before_write[key])
+		if(!document.commit())
+			player_save_error(document.storage.error)
+			blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ошибка записи")
+			return FALSE
+	catch(var/exception/failure)
+		player_save_error(failure.name)
+		blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ошибка подготовки")
+		return FALSE
+	pending_single_prefs = null
+	blocking_call_finish(blocking_started_ms, "JSON (одиночные)", "ключей [keys_written] [parent?.ckey || "?"]")
 	return TRUE
 
-/datum/preferences/proc/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/proc/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -1168,13 +1140,21 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// постановка в очередь сверялась бы с протухшим крайним сроком.
 	pref_queue = null
 	pref_queue_deadline = 0
-	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
-	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
-	// безымянный "внешний столл", поэтому замеряем
-	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(path)
+	// Модульные писатели заполняют только свои поля; документ сохранит остальные.
+	var/savefile/S
+	var/datum/player_save_document/document
+	if(patch_context)
+		document = open_player_document()
+		if(document)
+			if(islist(document.directories))
+				patch_context["document"] = document
+				S = new
+			else
+				document = null
+				S = open_player_save("/")
+	else
+		S = open_player_save("/")
 	if(!S)
-		blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "не открылся [parent?.ckey || "?"]")
 		// Очередь полной записи уже снята, а буфер одиночных ключей своего таймера не
 		// заводил, полагаясь на неё (buffer_single_pref): без перезарядки он долежал бы
 		// до логаута. Возвращаем ему собственный сброс.
@@ -1187,159 +1167,156 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		deltimer(single_pref_queue)
 	single_pref_queue = null
 	single_pref_queue_deadline = 0
-	write_pending_single_prefs(S)
+	write_pending_single_prefs(S, document)
 
-	WRITE_FILE(S["version"] , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
+	WRITE_PLAYER_SAVE(S, document, "version" , SAVEFILE_VERSION_MAX)		//updates (or failing that the sanity checks) will ensure data is not invalid at load. Assume up-to-date
 
 	//general preferences
-	WRITE_FILE(S["ooccolor"], ooccolor)
-	WRITE_FILE(S["aooccolor"], aooccolor)
-	WRITE_FILE(S["lastchangelog"], lastchangelog)
-	WRITE_FILE(S["UI_style"], UI_style)
-	WRITE_FILE(S["outline_enabled"], outline_enabled)
-	WRITE_FILE(S["outline_color"], outline_color)
-	WRITE_FILE(S["screentip_pref"], screentip_pref)
-	WRITE_FILE(S["screentip_color"], screentip_color)
-	WRITE_FILE(S["screentip_images"], screentip_images)
-	WRITE_FILE(S["hotkeys"], hotkeys)
-	WRITE_FILE(S["chat_on_map"], chat_on_map)
-	WRITE_FILE(S["chat_on_map_looc"], chat_on_map_looc)
-	WRITE_FILE(S["max_chat_length"], max_chat_length)
-	WRITE_FILE(S["see_chat_non_mob"], see_chat_non_mob)
-	WRITE_FILE(S["runechat_anim"], runechat_anim)
-	WRITE_FILE(S["tgui_fancy"], tgui_fancy)
-	WRITE_FILE(S["tgui_lock"], tgui_lock)
-	WRITE_FILE(S["tgui_input_mode"], tgui_input_mode)
-	WRITE_FILE(S["tgui_input_verbs"], tgui_input_verbs)
-	WRITE_FILE(S["tgui_large_buttons"], tgui_large_buttons)
-	WRITE_FILE(S["tgui_swapped_buttons"], tgui_swapped_buttons)
-	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
-	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
-	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
-	WRITE_FILE(S["windowflash"], windowflashing)
-	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
-	WRITE_FILE(S["windownoise"], windownoise)
-	WRITE_FILE(S["mood_vignette"], mood_vignette)
-	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
+	WRITE_PLAYER_SAVE(S, document, "ooccolor", ooccolor)
+	WRITE_PLAYER_SAVE(S, document, "aooccolor", aooccolor)
+	WRITE_PLAYER_SAVE(S, document, "lastchangelog", lastchangelog)
+	WRITE_PLAYER_SAVE(S, document, "UI_style", UI_style)
+	WRITE_PLAYER_SAVE(S, document, "outline_enabled", outline_enabled)
+	WRITE_PLAYER_SAVE(S, document, "outline_color", outline_color)
+	WRITE_PLAYER_SAVE(S, document, "screentip_pref", screentip_pref)
+	WRITE_PLAYER_SAVE(S, document, "screentip_color", screentip_color)
+	WRITE_PLAYER_SAVE(S, document, "screentip_images", screentip_images)
+	WRITE_PLAYER_SAVE(S, document, "hotkeys", hotkeys)
+	WRITE_PLAYER_SAVE(S, document, "chat_on_map", chat_on_map)
+	WRITE_PLAYER_SAVE(S, document, "chat_on_map_looc", chat_on_map_looc)
+	WRITE_PLAYER_SAVE(S, document, "max_chat_length", max_chat_length)
+	WRITE_PLAYER_SAVE(S, document, "see_chat_non_mob", see_chat_non_mob)
+	WRITE_PLAYER_SAVE(S, document, "runechat_anim", runechat_anim)
+	WRITE_PLAYER_SAVE(S, document, "tgui_fancy", tgui_fancy)
+	WRITE_PLAYER_SAVE(S, document, "tgui_lock", tgui_lock)
+	WRITE_PLAYER_SAVE(S, document, "tgui_input_mode", tgui_input_mode)
+	WRITE_PLAYER_SAVE(S, document, "tgui_input_verbs", tgui_input_verbs)
+	WRITE_PLAYER_SAVE(S, document, "tgui_large_buttons", tgui_large_buttons)
+	WRITE_PLAYER_SAVE(S, document, "tgui_swapped_buttons", tgui_swapped_buttons)
+	WRITE_PLAYER_SAVE(S, document, "tgui_panel_theme", tgui_panel_theme)
+	WRITE_PLAYER_SAVE(S, document, "tgui_panel_state", tgui_panel_state)
+	WRITE_PLAYER_SAVE(S, document, "ui_zoom_preferences", ui_zoom_preferences)
+	WRITE_PLAYER_SAVE(S, document, "windowflash", windowflashing)
+	WRITE_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
+	WRITE_PLAYER_SAVE(S, document, "windownoise", windownoise)
+	WRITE_PLAYER_SAVE(S, document, "mood_vignette", mood_vignette)
+	WRITE_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
 	// Одиночный путь кладёт в буфер уже санитизированный список - пишем тем же видом.
-	WRITE_FILE(S["action_buttons_screen_locs"], sanitize_action_button_positions(action_buttons_screen_locs))
-	WRITE_FILE(S["be_special"], be_special)
-	WRITE_FILE(S["default_slot"], default_slot)
-	WRITE_FILE(S["toggles"], toggles)
-	WRITE_FILE(S["sound_toggles"], sound_toggles)
-	WRITE_FILE(S["custom_colors"], custom_colors)
-	WRITE_FILE(S["deadmin"], deadmin)
-	WRITE_FILE(S["chat_toggles"], chat_toggles)
-	WRITE_FILE(S["ghost_form"], ghost_form)
-	WRITE_FILE(S["ghost_orbit"], ghost_orbit)
-	WRITE_FILE(S["ghost_accs"], ghost_accs)
-	WRITE_FILE(S["ghost_others"], ghost_others)
-	WRITE_FILE(S["preferred_map"], preferred_map)
-	WRITE_FILE(S["ignoring"], ignoring)
-	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
-	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
-	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
-	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
-	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
-	WRITE_FILE(S["neural_interface_visibility"], neural_interface_visibility) // BLUEMOON ADD
-	WRITE_FILE(S["chem_dispenser_classic_view"], chem_dispenser_classic_view) // BLUEMOON ADD
-	WRITE_FILE(S["chem_dispenser_use_reagent_color"], chem_dispenser_use_reagent_color) // BLUEMOON ADD
-	WRITE_FILE(S["chem_dispenser_show_icons"], chem_dispenser_show_icons) // BLUEMOON ADD
-	WRITE_FILE(S["chem_dispenser_alphabetical_sort"], chem_dispenser_alphabetical_sort) // BLUEMOON ADD
-	WRITE_FILE(S["ie_classic_circuit_ui"], ie_classic_circuit_ui) // BLUEMOON ADD
-	WRITE_FILE(S["color_presets_tint"], color_presets_tint) // BLUEMOON ADD
-	WRITE_FILE(S["color_presets_hsv"], color_presets_hsv) // BLUEMOON ADD
-	WRITE_FILE(S["color_presets_matrix"], color_presets_matrix) // BLUEMOON ADD
-	WRITE_FILE(S["clientfps"], clientfps)
-	WRITE_FILE(S["sound_volume_midi"], sound_volume_midi)
-	WRITE_FILE(S["sound_volume_ambience"], sound_volume_ambience)
-	WRITE_FILE(S["sound_volume_ship_ambience"], sound_volume_ship_ambience)
-	WRITE_FILE(S["sound_volume_announcements"], sound_volume_announcements)
-	WRITE_FILE(S["sound_volume_bark"], sound_volume_bark)
-	WRITE_FILE(S["sound_volume_prayers"], sound_volume_prayers)
-	WRITE_FILE(S["sound_volume_adminhelp"], sound_volume_adminhelp)
-	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
-	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
-	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
-	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
-	WRITE_FILE(S["sound_volume_mentorhelp"], sound_volume_mentorhelp)
-	WRITE_FILE(S["sound_volume_fax"], sound_volume_fax)
-	WRITE_FILE(S["mentor_toggles"], mentor_toggles)
-	WRITE_FILE(S["parallax"], parallax)
-	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
-	WRITE_FILE(S["lighting_blur"], lighting_blur)
-	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
-	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
-	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
-	WRITE_FILE(S["menuoptions"], menuoptions)
-	WRITE_FILE(S["enable_tips"], enable_tips)
-	WRITE_FILE(S["tip_delay"], tip_delay)
+	WRITE_PLAYER_SAVE(S, document, "action_buttons_screen_locs", sanitize_action_button_positions(action_buttons_screen_locs))
+	WRITE_PLAYER_SAVE(S, document, "be_special", be_special)
+	WRITE_PLAYER_SAVE(S, document, "default_slot", default_slot)
+	WRITE_PLAYER_SAVE(S, document, "toggles", toggles)
+	WRITE_PLAYER_SAVE(S, document, "sound_toggles", sound_toggles)
+	WRITE_PLAYER_SAVE(S, document, "custom_colors", custom_colors)
+	WRITE_PLAYER_SAVE(S, document, "deadmin", deadmin)
+	WRITE_PLAYER_SAVE(S, document, "chat_toggles", chat_toggles)
+	WRITE_PLAYER_SAVE(S, document, "ghost_form", ghost_form)
+	WRITE_PLAYER_SAVE(S, document, "ghost_orbit", ghost_orbit)
+	WRITE_PLAYER_SAVE(S, document, "ghost_accs", ghost_accs)
+	WRITE_PLAYER_SAVE(S, document, "ghost_others", ghost_others)
+	WRITE_PLAYER_SAVE(S, document, "preferred_map", preferred_map)
+	WRITE_PLAYER_SAVE(S, document, "ignoring", ignoring)
+	WRITE_PLAYER_SAVE(S, document, "hearted_until", (hearted_until > world.realtime ? hearted_until : null))
+	WRITE_PLAYER_SAVE(S, document, "inquisitive_ghost", inquisitive_ghost)
+	WRITE_PLAYER_SAVE(S, document, "uses_glasses_colour", uses_glasses_colour)
+	WRITE_PLAYER_SAVE(S, document, "auto_capitalize_enabled", auto_capitalize_enabled)
+	WRITE_PLAYER_SAVE(S, document, "surgical_disable_radial", surgical_disable_radial) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "neural_interface_visibility", neural_interface_visibility) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "chem_dispenser_classic_view", chem_dispenser_classic_view) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "chem_dispenser_use_reagent_color", chem_dispenser_use_reagent_color) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "chem_dispenser_show_icons", chem_dispenser_show_icons) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "chem_dispenser_alphabetical_sort", chem_dispenser_alphabetical_sort) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "ie_classic_circuit_ui", ie_classic_circuit_ui) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "color_presets_tint", color_presets_tint) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "color_presets_hsv", color_presets_hsv) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "color_presets_matrix", color_presets_matrix) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "clientfps", clientfps)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_midi", sound_volume_midi)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_ambience", sound_volume_ambience)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_ship_ambience", sound_volume_ship_ambience)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_announcements", sound_volume_announcements)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_bark", sound_volume_bark)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_prayers", sound_volume_prayers)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_adminhelp", sound_volume_adminhelp)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_instruments", sound_volume_instruments)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_jukeboxes", sound_volume_jukeboxes)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_personal_jukeboxes", sound_volume_personal_jukeboxes)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_emote", sound_volume_emote)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_mentorhelp", sound_volume_mentorhelp)
+	WRITE_PLAYER_SAVE(S, document, "sound_volume_fax", sound_volume_fax)
+	WRITE_PLAYER_SAVE(S, document, "mentor_toggles", mentor_toggles)
+	WRITE_PLAYER_SAVE(S, document, "parallax", parallax)
+	WRITE_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
+	WRITE_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	WRITE_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
+	WRITE_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
+	WRITE_PLAYER_SAVE(S, document, "hud_toggle_color", hud_toggle_color)
+	WRITE_PLAYER_SAVE(S, document, "menuoptions", menuoptions)
+	WRITE_PLAYER_SAVE(S, document, "enable_tips", enable_tips)
+	WRITE_PLAYER_SAVE(S, document, "tip_delay", tip_delay)
 
-	WRITE_FILE(S["key_bindings"], key_bindings)
-	WRITE_FILE(S["modless_key_bindings"], modless_key_bindings)
-	WRITE_FILE(S["favorite_outfits"], favorite_outfits)
+	WRITE_PLAYER_SAVE(S, document, "key_bindings", key_bindings)
+	WRITE_PLAYER_SAVE(S, document, "modless_key_bindings", modless_key_bindings)
+	WRITE_PLAYER_SAVE(S, document, "favorite_outfits", favorite_outfits)
 
 	//citadel code
-	WRITE_FILE(S["screenshake"], screenshake)
-	WRITE_FILE(S["damagescreenshake"], damagescreenshake)
-	WRITE_FILE(S["arousable"], arousable)
-	WRITE_FILE(S["sexknotting"], sexknotting) // BLUEMOON ADD
-	WRITE_FILE(S["widescreenpref"], widescreenpref)
-	WRITE_FILE(S["fullscreen"], fullscreen)
-	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
-	WRITE_FILE(S["autostand"], autostand)
-	WRITE_FILE(S["cit_toggles"], cit_toggles)
-	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)
-	WRITE_FILE(S["auto_ooc"], auto_ooc)
-	WRITE_FILE(S["no_tetris_storage"], no_tetris_storage)
-	WRITE_FILE(S["recoil_screenshake"], recoil_screenshake)
+	WRITE_PLAYER_SAVE(S, document, "screenshake", screenshake)
+	WRITE_PLAYER_SAVE(S, document, "damagescreenshake", damagescreenshake)
+	WRITE_PLAYER_SAVE(S, document, "arousable", arousable)
+	WRITE_PLAYER_SAVE(S, document, "sexknotting", sexknotting) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
+	WRITE_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
+	WRITE_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
+	WRITE_PLAYER_SAVE(S, document, "autostand", autostand)
+	WRITE_PLAYER_SAVE(S, document, "cit_toggles", cit_toggles)
+	WRITE_PLAYER_SAVE(S, document, "preferred_chaos_level", preferred_chaos_level)
+	WRITE_PLAYER_SAVE(S, document, "auto_ooc", auto_ooc)
+	WRITE_PLAYER_SAVE(S, document, "no_tetris_storage", no_tetris_storage)
+	WRITE_PLAYER_SAVE(S, document, "recoil_screenshake", recoil_screenshake)
 
 	// Splurt
-	WRITE_FILE(S["disable_combat_cursor"], disable_combat_cursor)
-	WRITE_FILE(S["disable_combat_mouse_lock"], disable_combat_mouse_lock)
-	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
+	WRITE_PLAYER_SAVE(S, document, "disable_combat_cursor", disable_combat_cursor)
+	WRITE_PLAYER_SAVE(S, document, "disable_combat_mouse_lock", disable_combat_mouse_lock)
+	WRITE_PLAYER_SAVE(S, document, "gfluid_blacklist", gfluid_blacklist)
 
-	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
-	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
-	WRITE_FILE(S["modern_button_shape"], modern_button_shape)
-	WRITE_FILE(S["modern_custom_enabled"], modern_custom_enabled)
-	WRITE_FILE(S["modern_custom_bg_primary"], modern_custom_bg_primary)
-	WRITE_FILE(S["modern_custom_bg_secondary"], modern_custom_bg_secondary)
-	WRITE_FILE(S["modern_custom_text_primary"], modern_custom_text_primary)
-	WRITE_FILE(S["modern_custom_text_secondary"], modern_custom_text_secondary)
-	WRITE_FILE(S["modern_custom_button_bg"], modern_custom_button_bg)
-	WRITE_FILE(S["modern_custom_button_hover"], modern_custom_button_hover)
-	WRITE_FILE(S["modern_custom_button_active"], modern_custom_button_active)
-	WRITE_FILE(S["modern_custom_button_text"], modern_custom_button_text)
-	WRITE_FILE(S["modern_custom_border_color"], modern_custom_border_color)
-	WRITE_FILE(S["modern_custom_accent_color"], modern_custom_accent_color)
-	WRITE_FILE(S["modern_custom_bg_pattern"], modern_custom_bg_pattern)
-	WRITE_FILE(S["ui_decoration_level"], ui_decoration_level)
-	WRITE_FILE(S["modern_ui_language"], modern_ui_language)
-	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
-	WRITE_FILE(S["new_character_creator"], new_character_creator)
-	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
+	WRITE_PLAYER_SAVE(S, document, "collapse_empty_character_slots", collapse_empty_character_slots)
+	WRITE_PLAYER_SAVE(S, document, "charcreation_theme", charcreation_theme)
+	WRITE_PLAYER_SAVE(S, document, "modern_button_shape", modern_button_shape)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_enabled", modern_custom_enabled)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_bg_primary", modern_custom_bg_primary)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_bg_secondary", modern_custom_bg_secondary)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_text_primary", modern_custom_text_primary)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_text_secondary", modern_custom_text_secondary)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_button_bg", modern_custom_button_bg)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_button_hover", modern_custom_button_hover)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_button_active", modern_custom_button_active)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_button_text", modern_custom_button_text)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_border_color", modern_custom_border_color)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_accent_color", modern_custom_accent_color)
+	WRITE_PLAYER_SAVE(S, document, "modern_custom_bg_pattern", modern_custom_bg_pattern)
+	WRITE_PLAYER_SAVE(S, document, "ui_decoration_level", ui_decoration_level)
+	WRITE_PLAYER_SAVE(S, document, "modern_ui_language", modern_ui_language)
+	WRITE_PLAYER_SAVE(S, document, "use_modern_translations", use_modern_translations)
+	WRITE_PLAYER_SAVE(S, document, "new_character_creator", new_character_creator)
+	WRITE_PLAYER_SAVE(S, document, "view_pixelshift", view_pixelshift)
 
 	//SKYRAT CHANGES BEGIN
-	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)
+	WRITE_PLAYER_SAVE(S, document, "see_chat_emotes", see_chat_emotes)
 	//SKYRAT CHANGES END
 
 	if(length(unlockable_loadout_data))
-		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
+		WRITE_PLAYER_SAVE(S, document, "unlockable_loadout", safe_json_encode(unlockable_loadout_data))
 	else
-		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
+		WRITE_PLAYER_SAVE(S, document, "unlockable_loadout", safe_json_encode(list()))
 
-	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
+	WRITE_PLAYER_SAVE(S, document, "ticket_nickname", ticket_nickname)
 
 	if(parent)
 		if(ishuman(parent?.mob))
 			var/mob/living/carbon/human/H = parent.mob
 			H.set_antag_target_indicator() // Update consent HUD
 
-		if(!silent)
-			to_chat(parent, span_notice("Saved preferences!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (полные префы)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
@@ -1365,27 +1342,40 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				to_chat(parent, "<span class='warning'>You're attempting to load your character a little too fast. Wait half a second, then try again.</span>")
 			return "SLOW THE FUCK DOWN" //the reason this isn't null is to make sure that people don't have their character slots overridden by random chars if they accidentally double-click a slot
 		COOLDOWN_START(src, loadcharcooldown, PREF_LOAD_COOLDOWN)
-	if(!fexists(path))
+	if(!provided && !player_save_exists())
 		return FALSE
-	var/savefile/S
-	if(provided)
-		S = provided
-	else
-		S = new /savefile(path)
-	if(!S)
+	var/savefile/S = provided
+	var/datum/player_save_document/document
+	var/selected_slot = sanitize_integer(slot || default_slot, 1, max_save_slots, initial(default_slot))
+	if(!provided)
+		var/datum/player_save_document/root = open_player_document()
+		if(!root)
+			return FALSE
+		if(!isnull(root.directories) && ("character[selected_slot]" in root.tree) && player_save_version_status(root.read("version")) == -1)
+			var/datum/player_save_json/account/account = root.storage
+			var/datum/player_save_character_transaction/transaction = account.character_transaction("character[selected_slot]")
+			if(!transaction)
+				player_save_error(account.error)
+				return FALSE
+			document = transaction.character
+			root = transaction.root
+			// Перенос старых взаимодействий меняет корень и слот одной транзакцией через адаптер.
+			if(player_save_version_status(document.read("version")) != -1 || (isnull(document.read("custom_interactions")) && !root.read("custom_interactions_migrated") && islist(root.read("custom_interactions"))))
+				document = null
+		if(!document)
+			S = open_player_save("/character[selected_slot]")
+	if(!document && !S)
 		return FALSE
 
-	S.cd = "/"
-	if(!slot)
-		slot = default_slot
-	slot = sanitize_integer(slot, 1, max_save_slots, initial(default_slot))
+	slot = selected_slot
 	if(slot != default_slot)
 		default_slot = slot
-		WRITE_FILE(S["default_slot"] , slot)
+		if(!provided)
+			buffer_single_pref("default_slot", slot)
 
-	if(!provided)
-		S.cd = "/character[slot]"
-	var/needs_update = savefile_needs_update(S)
+	if(S)
+		S.cd = provided ? "/" : "/character[slot]"
+	var/needs_update = document ? player_save_version_status(document.read("version")) : savefile_needs_update(S)
 	if(needs_update == -2)		//fatal, can't load any data
 		return FALSE
 
@@ -1502,7 +1492,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Species
 	var/species_id
-	S["species"] >> species_id
+	READ_PLAYER_SAVE(S, document, "species", species_id)
 	if(species_id)
 		if(species_id == "avian" || species_id == "aquatic")
 			species_id = "mammal"
@@ -1525,278 +1515,287 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	scars_index = rand(1,5) // WHY
 
 	//Character
-	S["real_name"] 							>> real_name
-	S["nameless"] 							>> nameless
-	S["custom_species"] 					>> custom_species
-	S["name_is_always_random"] 				>> be_random_name
-	S["body_is_always_random"] 				>> be_random_body
-	S["gender"] 							>> gender
-	S["body_model"] 						>> features["body_model"]
-	S["body_size"] 							>> features["body_size"]
-	S["feature_fuzzy"] 						>> features["fuzzy"]
-	S["age"] 								>> age
-	S["hair_color"] 						>> hair_color
-	S["facial_hair_color"] 					>> facial_hair_color
-	S["eye_type"] 							>> eye_type
-	S["left_eye_color"] 					>> left_eye_color
-	S["right_eye_color"] 					>> right_eye_color
-	S["use_custom_skin_tone"] 				>> use_custom_skin_tone
-	S["skin_tone"] 							>> skin_tone
-	S["hair_style_name"] 					>> hair_style
-	S["facial_style_name"] 					>> facial_hair_style
-	S["grad_style"] 						>> grad_style
-	S["grad_color"] 						>> grad_color
-	S["underwear"] 							>> underwear
-	S["undie_color"] 						>> undie_color
-	S["undershirt"] 						>> undershirt
-	S["shirt_color"] 						>> shirt_color
-	S["socks"] 								>> socks
-	S["socks_color"] 						>> socks_color
-	S["backbag"] 							>> backbag
-	S["jumpsuit_style"] 					>> jumpsuit_style
-	S["uplink_loc"] 						>> uplink_spawn_loc
-	S["custom_speech_verb"] 				>> custom_speech_verb
-	S["custom_tongue"] 						>> custom_tongue
-	S["feature_mcolor"] 					>> features["mcolor"]
-	S["feature_lizard_tail"] 				>> features["tail_lizard"]
-	S["feature_lizard_snout"] 				>> features["snout"]
-	S["feature_lizard_horns"] 				>> features["horns"]
-	S["feature_lizard_frills"] 				>> features["frills"]
-	S["feature_lizard_spines"] 				>> features["spines"]
-	S["feature_lizard_legs"] 				>> features["legs"]
-	S["feature_human_tail"] 				>> features["tail_human"]
-	S["feature_human_ears"] 				>> features["ears"]
-	S["feature_deco_wings"] 				>> features["deco_wings"]
-	S["feature_insect_wings"] 				>> features["insect_wings"]
-	S["feature_insect_fluff"] 				>> features["insect_fluff"]
-	S["feature_insect_markings"] 			>> features["insect_markings"]
-	S["feature_arachnid_legs"] 				>> features["arachnid_legs"]
-	S["feature_arachnid_spinneret"] 		>> features["arachnid_spinneret"]
-	S["feature_arachnid_mandibles"] 		>> features["arachnid_mandibles"]
-	S["feature_horns_color"] 				>> features["horns_color"]
-	S["feature_wings_color"] 				>> features["wings_color"]
-	S["feature_color_scheme"] 				>> features["color_scheme"]
-	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
-	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
-	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
-	S["onelife_death_type"]					>> onelife_death_type // BLUEMOON ADD - форма рассыпания для Одной Жизни
-	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
-	S["persistent_scars"] 					>> persistent_scars
-	S["scars1"] 							>> scars_list["1"]
-	S["scars2"] 							>> scars_list["2"]
-	S["scars3"] 							>> scars_list["3"]
-	S["scars4"] 							>> scars_list["4"]
-	S["scars5"] 							>> scars_list["5"]
+	READ_PLAYER_SAVE(S, document, "real_name", real_name)
+	READ_PLAYER_SAVE(S, document, "nameless", nameless)
+	READ_PLAYER_SAVE(S, document, "custom_species", custom_species)
+	READ_PLAYER_SAVE(S, document, "name_is_always_random", be_random_name)
+	READ_PLAYER_SAVE(S, document, "body_is_always_random", be_random_body)
+	READ_PLAYER_SAVE(S, document, "gender", gender)
+	READ_PLAYER_SAVE(S, document, "body_model", features["body_model"])
+	READ_PLAYER_SAVE(S, document, "body_size", features["body_size"])
+	READ_PLAYER_SAVE(S, document, "feature_fuzzy", features["fuzzy"])
+	READ_PLAYER_SAVE(S, document, "age", age)
+	READ_PLAYER_SAVE(S, document, "hair_color", hair_color)
+	READ_PLAYER_SAVE(S, document, "facial_hair_color", facial_hair_color)
+	READ_PLAYER_SAVE(S, document, "eye_type", eye_type)
+	READ_PLAYER_SAVE(S, document, "left_eye_color", left_eye_color)
+	READ_PLAYER_SAVE(S, document, "right_eye_color", right_eye_color)
+	READ_PLAYER_SAVE(S, document, "use_custom_skin_tone", use_custom_skin_tone)
+	READ_PLAYER_SAVE(S, document, "skin_tone", skin_tone)
+	READ_PLAYER_SAVE(S, document, "hair_style_name", hair_style)
+	READ_PLAYER_SAVE(S, document, "facial_style_name", facial_hair_style)
+	READ_PLAYER_SAVE(S, document, "grad_style", grad_style)
+	READ_PLAYER_SAVE(S, document, "grad_color", grad_color)
+	READ_PLAYER_SAVE(S, document, "underwear", underwear)
+	READ_PLAYER_SAVE(S, document, "undie_color", undie_color)
+	READ_PLAYER_SAVE(S, document, "undershirt", undershirt)
+	READ_PLAYER_SAVE(S, document, "shirt_color", shirt_color)
+	READ_PLAYER_SAVE(S, document, "socks", socks)
+	READ_PLAYER_SAVE(S, document, "socks_color", socks_color)
+	READ_PLAYER_SAVE(S, document, "backbag", backbag)
+	READ_PLAYER_SAVE(S, document, "jumpsuit_style", jumpsuit_style)
+	READ_PLAYER_SAVE(S, document, "uplink_loc", uplink_spawn_loc)
+	READ_PLAYER_SAVE(S, document, "custom_speech_verb", custom_speech_verb)
+	READ_PLAYER_SAVE(S, document, "custom_tongue", custom_tongue)
+	READ_PLAYER_SAVE(S, document, "feature_mcolor", features["mcolor"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_tail", features["tail_lizard"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_snout", features["snout"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_horns", features["horns"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_frills", features["frills"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_spines", features["spines"])
+	READ_PLAYER_SAVE(S, document, "feature_lizard_legs", features["legs"])
+	READ_PLAYER_SAVE(S, document, "feature_human_tail", features["tail_human"])
+	READ_PLAYER_SAVE(S, document, "feature_human_ears", features["ears"])
+	READ_PLAYER_SAVE(S, document, "feature_deco_wings", features["deco_wings"])
+	READ_PLAYER_SAVE(S, document, "feature_insect_wings", features["insect_wings"])
+	READ_PLAYER_SAVE(S, document, "feature_insect_fluff", features["insect_fluff"])
+	READ_PLAYER_SAVE(S, document, "feature_insect_markings", features["insect_markings"])
+	READ_PLAYER_SAVE(S, document, "feature_arachnid_legs", features["arachnid_legs"])
+	READ_PLAYER_SAVE(S, document, "feature_arachnid_spinneret", features["arachnid_spinneret"])
+	READ_PLAYER_SAVE(S, document, "feature_arachnid_mandibles", features["arachnid_mandibles"])
+	READ_PLAYER_SAVE(S, document, "feature_horns_color", features["horns_color"])
+	READ_PLAYER_SAVE(S, document, "feature_wings_color", features["wings_color"])
+	READ_PLAYER_SAVE(S, document, "feature_color_scheme", features["color_scheme"])
+	READ_PLAYER_SAVE(S, document, "shriek_type", shriek_type) // BLUEMOON ADD - выбор вида крика для квирка
+	READ_PLAYER_SAVE(S, document, "summon_nickname", summon_nickname) // BLUEMOON ADD - выбор прозвища для призываемого
+	READ_PLAYER_SAVE(S, document, "phobia_type", phobia_type) // BLUEMOON ADD - выбор фобии для квирка
+	READ_PLAYER_SAVE(S, document, "onelife_death_type", onelife_death_type) // BLUEMOON ADD - форма рассыпания для Одной Жизни
+	READ_PLAYER_SAVE(S, document, "feature_hardsuit_with_tail", features["hardsuit_with_tail"])
+	READ_PLAYER_SAVE(S, document, "persistent_scars", persistent_scars)
+	READ_PLAYER_SAVE(S, document, "scars1", scars_list["1"])
+	READ_PLAYER_SAVE(S, document, "scars2", scars_list["2"])
+	READ_PLAYER_SAVE(S, document, "scars3", scars_list["3"])
+	READ_PLAYER_SAVE(S, document, "scars4", scars_list["4"])
+	READ_PLAYER_SAVE(S, document, "scars5", scars_list["5"])
 	var/limbmodstr
-	S["modified_limbs"] >> limbmodstr
+	READ_PLAYER_SAVE(S, document, "modified_limbs", limbmodstr)
 	if(length(limbmodstr))
 		modified_limbs = safe_json_decode(limbmodstr)
 	else
 		modified_limbs = list()
 
 	var/tcgcardstr
-	S["tcg_cards"] >> tcgcardstr
+	READ_PLAYER_SAVE(S, document, "tcg_cards", tcgcardstr)
 	if(length(tcgcardstr))
 		tcg_cards = safe_json_decode(tcgcardstr)
 	else
 		tcg_cards = list()
 
 	var/tcgdeckstr
-	S["tcg_decks"] >> tcgdeckstr
+	READ_PLAYER_SAVE(S, document, "tcg_decks", tcgdeckstr)
 	if(length(tcgdeckstr))
 		tcg_decks = safe_json_decode(tcgdeckstr)
 	else
 		tcg_decks = list()
 
-	S["chosen_limb_id"] >> chosen_limb_id
-	S["hide_ckey"] >> hide_ckey //saved per-character
+	READ_PLAYER_SAVE(S, document, "chosen_limb_id", chosen_limb_id)
+	READ_PLAYER_SAVE(S, document, "hide_ckey", hide_ckey) //saved per-character
 
 	//Headshots
 	var/list/headshots_temp = list()
 	for(var/i = 1, i <= MAX_HEADSHOTS, i++)
 		var/postfix = i == 1 ? null : i-1
 		headshots_temp += null
-		S["headshot[postfix]"] >> headshots_temp[i]
+		READ_PLAYER_SAVE(S, document, "headshot[postfix]", headshots_temp[i])
 	features["headshot_links"] = headshots_temp
 
 	headshots_temp = list()
 	for(var/i = 1, i <= MAX_HEADSHOTS_NAKED, i++)
 		var/postfix = i == 1 ? null : i-1
 		headshots_temp += null
-		S["headshot_naked[postfix]"] >> headshots_temp[i]
+		READ_PLAYER_SAVE(S, document, "headshot_naked[postfix]", headshots_temp[i])
 	features["headshot_naked_links"] = headshots_temp
 	headshots_temp = list()
 
 	//Custom names
 	for(var/custom_name_id in GLOB.preferences_custom_names)
 		var/savefile_slot_name = custom_name_id + "_name" //TODO remove this
-		S[savefile_slot_name] >> custom_names[custom_name_id]
+		READ_PLAYER_SAVE(S, document, savefile_slot_name, custom_names[custom_name_id])
 
-	S["preferred_ai_core_display"] >> preferred_ai_core_display
-	S["prefered_security_department"] >> prefered_security_department
+	READ_PLAYER_SAVE(S, document, "preferred_ai_core_display", preferred_ai_core_display)
+	READ_PLAYER_SAVE(S, document, "prefered_security_department", prefered_security_department)
 
 	//Jobs
-	S["joblessrole"] >> joblessrole
+	READ_PLAYER_SAVE(S, document, "joblessrole", joblessrole)
 
 	//Load prefs
-	S["job_preferences"] >> job_preferences
+	READ_PLAYER_SAVE(S, document, "job_preferences", job_preferences)
 	// Отсутствующее поле сейва затирает дефолт list() нулём, а компенсирующие присвоения
 	// заперты за current_version < 23 - современный сейв их проходит мимо. Дальше любой
 	// .len по этому списку рантаймит, и лобби перестаёт пускать игрока в раунд.
 	job_preferences = SANITIZE_LIST(job_preferences)
-	S["pda_theme"] >> pda_theme
+	READ_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
 	//Custom emote panel
-	S["custom_emote_panel"] >> custom_emote_panel
+	READ_PLAYER_SAVE(S, document, "custom_emote_panel", custom_emote_panel)
 
 	//Quirks
-	S["all_quirks"] >> all_quirks
+	READ_PLAYER_SAVE(S, document, "all_quirks", all_quirks)
 
-	S["language"] >> language
+	READ_PLAYER_SAVE(S, document, "language", language)
 
 	//Records
-	S["security_records"] >> security_records
-	S["medical_records"] >> medical_records
+	READ_PLAYER_SAVE(S, document, "security_records", security_records)
+	READ_PLAYER_SAVE(S, document, "medical_records", medical_records)
 
 	//Citadel code
-	S["feature_genitals_use_skintone"] >> features["genitals_use_skintone"]
-	S["feature_mcolor2"] >> features["mcolor2"]
-	S["feature_mcolor3"] >> features["mcolor3"]
+	READ_PLAYER_SAVE(S, document, "feature_genitals_use_skintone", features["genitals_use_skintone"])
+	READ_PLAYER_SAVE(S, document, "feature_mcolor2", features["mcolor2"])
+	READ_PLAYER_SAVE(S, document, "feature_mcolor3", features["mcolor3"])
 	// note safe json decode will runtime the first time it migrates but this is fine and it solves itself don't worry about it if you see it error
-	features["mam_body_markings"] = safe_json_decode(S["feature_mam_body_markings"])
-	features["emissive_parts"] = safe_json_decode(S["feature_emissive_parts"])
-	S["feature_mam_tail"] >> features["mam_tail"]
-	S["feature_mam_ears"] >> features["mam_ears"]
-	S["feature_mam_tail_animated"] >> features["mam_tail_animated"]
-	S["feature_taur"] >> features["taur"]
-	S["feature_mam_snouts"] >> features["mam_snouts"]
-	S["feature_meat"] >> features["meat_type"]
+	features["mam_body_markings"] = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "feature_mam_body_markings"))
+	features["emissive_parts"] = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "feature_emissive_parts"))
+	READ_PLAYER_SAVE(S, document, "feature_mam_tail", features["mam_tail"])
+	READ_PLAYER_SAVE(S, document, "feature_mam_ears", features["mam_ears"])
+	READ_PLAYER_SAVE(S, document, "feature_mam_tail_animated", features["mam_tail_animated"])
+	READ_PLAYER_SAVE(S, document, "feature_taur", features["taur"])
+	READ_PLAYER_SAVE(S, document, "feature_mam_snouts", features["mam_snouts"])
+	READ_PLAYER_SAVE(S, document, "feature_meat", features["meat_type"])
 	//Xeno features
-	S["feature_xeno_tail"] >> features["xenotail"]
-	S["feature_xeno_dors"] >> features["xenodorsal"]
-	S["feature_xeno_head"] >> features["xenohead"]
+	READ_PLAYER_SAVE(S, document, "feature_xeno_tail", features["xenotail"])
+	READ_PLAYER_SAVE(S, document, "feature_xeno_dors", features["xenodorsal"])
+	READ_PLAYER_SAVE(S, document, "feature_xeno_head", features["xenohead"])
 	//cock features
-	S["feature_has_cock"] >> features["has_cock"]
-	S["feature_cock_shape"] >> features["cock_shape"]
-	S["feature_cock_color"] >> features["cock_color"]
-	S["feature_cock_length"] >> features["cock_length"]
-	S["feature_cock_diameter_ratio"] >> features["cock_diameter_ratio"] //Why is this in the features but not a fucking option
-	S["feature_cock_diameter"] >> features["cock_diameter"]
-	S["feature_cock_taur"] >> features["cock_taur"]
-	S["feature_cock_visibility"] >> features["cock_visibility"]
-	S["feature_cock_accessible"] >> features["cock_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_cock", features["has_cock"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_shape", features["cock_shape"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_color", features["cock_color"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_length", features["cock_length"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_diameter_ratio", features["cock_diameter_ratio"]) //Why is this in the features but not a fucking option
+	READ_PLAYER_SAVE(S, document, "feature_cock_diameter", features["cock_diameter"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_taur", features["cock_taur"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_visibility", features["cock_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_accessible", features["cock_accessible"])
 	//balls features
-	S["feature_has_balls"] >> features["has_balls"]
-	S["feature_balls_color"] >> features["balls_color"]
-	S["feature_balls_shape"] >> features["balls_shape"]
-	S["feature_balls_size"] >> features["balls_size"]
-	S["feature_balls_visibility"] >> features["balls_visibility"]
-	S["feature_balls_fluid"] >> features["balls_fluid"]
-	S["feature_balls_accessible"] >> features["balls_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_balls", features["has_balls"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_color", features["balls_color"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_shape", features["balls_shape"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_size", features["balls_size"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_visibility", features["balls_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_fluid", features["balls_fluid"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
 	//breasts features
-	S["feature_has_breasts"] >> features["has_breasts"]
-	S["feature_breasts_size"] >> features["breasts_size"]
-	S["feature_breasts_shape"] >> features["breasts_shape"]
-	S["feature_breasts_color"] >> features["breasts_color"]
-	S["feature_breasts_producing"] >> features["breasts_producing"]
-	S["feature_breasts_fluid"] >> features["breasts_fluid"]
-	S["feature_breasts_visibility"] >> features["breasts_visibility"]
-	S["feature_breasts_accessible"] >> features["breasts_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_breasts", features["has_breasts"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_size", features["breasts_size"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_shape", features["breasts_shape"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_color", features["breasts_color"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_producing", features["breasts_producing"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_fluid", features["breasts_fluid"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_visibility", features["breasts_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_accessible", features["breasts_accessible"])
 	//vagina features
-	S["feature_has_vag"] >> features["has_vag"]
-	S["feature_vag_shape"] >> features["vag_shape"]
-	S["feature_vag_color"] >> features["vag_color"]
-	S["feature_vag_visibility"] >> features["vag_visibility"]
-	S["feature_vag_accessible"] >> features["vag_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_vag", features["has_vag"])
+	READ_PLAYER_SAVE(S, document, "feature_vag_shape", features["vag_shape"])
+	READ_PLAYER_SAVE(S, document, "feature_vag_color", features["vag_color"])
+	READ_PLAYER_SAVE(S, document, "feature_vag_visibility", features["vag_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_vag_accessible", features["vag_accessible"])
 	//womb features
-	S["feature_has_womb"] >> features["has_womb"]
-	S["feature_womb_fluid"] >> features["womb_fluid"]
+	READ_PLAYER_SAVE(S, document, "feature_has_womb", features["has_womb"])
+	READ_PLAYER_SAVE(S, document, "feature_womb_fluid", features["womb_fluid"])
 	//butt features
-	S["feature_has_butt"] >> features["has_butt"]
-	S["feature_butt_color"] >> features["butt_color"]
-	S["feature_butt_size"] >> features["butt_size"]
-	S["feature_butt_visibility"] >> features["butt_visibility"]
-	S["feature_butt_accessible"] >> features["butt_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_butt", features["has_butt"])
+	READ_PLAYER_SAVE(S, document, "feature_butt_color", features["butt_color"])
+	READ_PLAYER_SAVE(S, document, "feature_butt_size", features["butt_size"])
+	READ_PLAYER_SAVE(S, document, "feature_butt_visibility", features["butt_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_butt_accessible", features["butt_accessible"])
 	//belly features
-	S["feature_has_belly"] >> features["has_belly"]
-	S["feature_belly_size"] >> features["belly_size"]
-	S["feature_belly_color"] >> features["belly_color"]
-	S["feature_belly_visibility"] >> features["belly_visibility"]
-	S["feature_belly_accessible"] >> features["belly_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_belly", features["has_belly"])
+	READ_PLAYER_SAVE(S, document, "feature_belly_size", features["belly_size"])
+	READ_PLAYER_SAVE(S, document, "feature_belly_color", features["belly_color"])
+	READ_PLAYER_SAVE(S, document, "feature_belly_visibility", features["belly_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_belly_accessible", features["belly_accessible"])
 	//anus features
-	S["feature_has_anus"] >> features["has_anus"]
-	S["feature_anus_color"] >> features["anus_color"]
-	S["feature_anus_shape"] >> features["anus_shape"]
-	S["feature_anus_visibility"] >> features["anus_visibility"]
-	S["feature_anus_accessible"] >> features["anus_accessible"]
+	READ_PLAYER_SAVE(S, document, "feature_has_anus", features["has_anus"])
+	READ_PLAYER_SAVE(S, document, "feature_anus_color", features["anus_color"])
+	READ_PLAYER_SAVE(S, document, "feature_anus_shape", features["anus_shape"])
+	READ_PLAYER_SAVE(S, document, "feature_anus_visibility", features["anus_visibility"])
+	READ_PLAYER_SAVE(S, document, "feature_anus_accessible", features["anus_accessible"])
 
 	// Flavor texts, Made into a standard.
-	S["feature_flavor_text"] >> features["flavor_text"]
-	S["feature_silicon_flavor_text"] >> features["silicon_flavor_text"]
-	S["feature_ooc_notes"] >> features["ooc_notes"]
+	READ_PLAYER_SAVE(S, document, "feature_flavor_text", features["flavor_text"])
+	READ_PLAYER_SAVE(S, document, "feature_silicon_flavor_text", features["silicon_flavor_text"])
+	READ_PLAYER_SAVE(S, document, "feature_ooc_notes", features["ooc_notes"])
 
 	//SPLURT edit
-	S["feature_naked_flavor_text"] >> features["naked_flavor_text"]
-	S["feature_custom_species_lore"] >> features["custom_species_lore"]
-	S["feature_neckfire"] >> features["neckfire"]
-	S["feature_neckfire_color"] >> features["neckfire_color"]
+	READ_PLAYER_SAVE(S, document, "feature_naked_flavor_text", features["naked_flavor_text"])
+	READ_PLAYER_SAVE(S, document, "feature_custom_species_lore", features["custom_species_lore"])
+	READ_PLAYER_SAVE(S, document, "feature_neckfire", features["neckfire"])
+	READ_PLAYER_SAVE(S, document, "feature_neckfire_color", features["neckfire_color"])
 	//end
 	//death emote
-	S["feature_custom_deathgasp"] >> features["custom_deathgasp"] // BLUEMOON ADD - пользовательский эмоут смерти
-	S["feature_custom_deathsound"] >> features["custom_deathsound"] // BLUEMOON ADD - пользовательский эмоут смерти
-	S["feature_puddle_slime_fea"] >> features["puddle_slime_fea"]
+	READ_PLAYER_SAVE(S, document, "feature_custom_deathgasp", features["custom_deathgasp"]) // BLUEMOON ADD - пользовательский эмоут смерти
+	READ_PLAYER_SAVE(S, document, "feature_custom_deathsound", features["custom_deathsound"]) // BLUEMOON ADD - пользовательский эмоут смерти
+	READ_PLAYER_SAVE(S, document, "feature_puddle_slime_fea", features["puddle_slime_fea"])
 	// Barks
-	S["bark_id"] >> bark_id
-	S["bark_speed"] >> bark_speed
-	S["bark_pitch"] >> bark_pitch
-	S["bark_variance"] >> bark_variance
+	READ_PLAYER_SAVE(S, document, "bark_id", bark_id)
+	READ_PLAYER_SAVE(S, document, "bark_speed", bark_speed)
+	READ_PLAYER_SAVE(S, document, "bark_pitch", bark_pitch)
+	READ_PLAYER_SAVE(S, document, "bark_variance", bark_variance)
 
-	S["vore_flags"] >> vore_flags
-	S["vore_taste"] >> vore_taste
-	S["vore_smell"] >> vore_smell
+	READ_PLAYER_SAVE(S, document, "vore_flags", vore_flags)
+	READ_PLAYER_SAVE(S, document, "vore_taste", vore_taste)
+	READ_PLAYER_SAVE(S, document, "vore_smell", vore_smell)
 
-	S["feature_breasts_stuffing"] >> features["breasts_stuffing"]
-	S["feature_cock_stuffing"] >> features["cock_stuffing"]
-	S["feature_balls_stuffing"] >> features["balls_stuffing"]
-	S["feature_vag_stuffing"] >> features["vag_stuffing"]
-	S["feature_butt_stuffing"] >> features["butt_stuffing"]
-	S["feature_belly_stuffing"] >> features["belly_stuffing"]
-	S["feature_anus_stuffing"] >> features["anus_stuffing"]
+	READ_PLAYER_SAVE(S, document, "feature_breasts_stuffing", features["breasts_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_cock_stuffing", features["cock_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_balls_stuffing", features["balls_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_vag_stuffing", features["vag_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_butt_stuffing", features["butt_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_belly_stuffing", features["belly_stuffing"])
+	READ_PLAYER_SAVE(S, document, "feature_anus_stuffing", features["anus_stuffing"])
 
-	S["feature_inert_eggs"] >> features["inert_eggs"]
+	READ_PLAYER_SAVE(S, document, "feature_inert_eggs", features["inert_eggs"])
 
-	if(S["features_cock_max_length"])
-		S["features_cock_max_length"] >> features["cock_max_length"]
-	if(S["features_balls_max_size"])
-		S["features_balls_max_size"] >> features["balls_max_size"]
-	if(S["features_breasts_max_size"])
-		S["features_breasts_max_size"] >> features["breasts_max_size"]
-	if(S["features_belly_max_size"])
-		S["features_belly_max_size"] >> features["belly_max_size"]
-	if(S["features_butt_max_size"])
-		S["features_butt_max_size"] >> features["butt_max_size"]
+	if(PLAYER_SAVE_VALUE(S, document, "features_cock_max_length"))
+		READ_PLAYER_SAVE(S, document, "features_cock_max_length", features["cock_max_length"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_balls_max_size"))
+		READ_PLAYER_SAVE(S, document, "features_balls_max_size", features["balls_max_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_breasts_max_size"))
+		READ_PLAYER_SAVE(S, document, "features_breasts_max_size", features["breasts_max_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_belly_max_size"))
+		READ_PLAYER_SAVE(S, document, "features_belly_max_size", features["belly_max_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_butt_max_size"))
+		READ_PLAYER_SAVE(S, document, "features_butt_max_size", features["butt_max_size"])
 
-	if(S["features_cock_min_length"])
-		S["features_cock_min_length"] >> features["cock_min_length"]
-	if(S["features_balls_min_size"])
-		S["features_balls_min_size"] >> features["balls_min_size"]
-	if(S["features_breasts_min_size"])
-		S["features_breasts_min_size"] >> features["breasts_min_size"]
-	if(S["features_belly_min_size"])
-		S["features_belly_min_size"] >> features["belly_min_size"]
-	if(S["features_butt_min_size"])
-		S["features_butt_min_size"] >> features["butt_min_size"]
+	if(PLAYER_SAVE_VALUE(S, document, "features_cock_min_length"))
+		READ_PLAYER_SAVE(S, document, "features_cock_min_length", features["cock_min_length"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_balls_min_size"))
+		READ_PLAYER_SAVE(S, document, "features_balls_min_size", features["balls_min_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_breasts_min_size"))
+		READ_PLAYER_SAVE(S, document, "features_breasts_min_size", features["breasts_min_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_belly_min_size"))
+		READ_PLAYER_SAVE(S, document, "features_belly_min_size", features["belly_min_size"])
+	if(PLAYER_SAVE_VALUE(S, document, "features_butt_min_size"))
+		READ_PLAYER_SAVE(S, document, "features_butt_min_size", features["butt_min_size"])
 
-	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
-	if(fexists(char_vr_path))
-		var/list/json_from_file = json_decode(file2text(char_vr_path))
-		if(json_from_file)
-			belly_prefs = json_from_file["belly_prefs"]
+	if("belly_prefs" in (document ? document.tree : S.dir))
+		READ_PLAYER_SAVE(S, document, "belly_prefs", belly_prefs)
+	else if(!provided)
+		// Старый отдельный JSON читается один раз; последующие записи входят в снимок слота.
+		var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
+		if(fexists(char_vr_path))
+			try
+				var/list/json_from_file = json_decode(file2text(char_vr_path))
+				if(!islist(json_from_file) || !("belly_prefs" in json_from_file))
+					throw EXCEPTION("Неполный отдельный JSON персонажа")
+				belly_prefs = json_from_file["belly_prefs"]
+			catch(var/exception/failure)
+				player_save_error("Не удалось прочитать отдельный JSON персонажа: [failure.name]")
+				return FALSE
 
-	S["alt_titles_preferences"] 		>> alt_titles_preferences
+	READ_PLAYER_SAVE(S, document, "alt_titles_preferences", alt_titles_preferences)
 	//gear loadout
-	if(istext(S["loadout"]))
-		loadout_data = safe_json_decode(S["loadout"])
+	if(istext(PLAYER_SAVE_VALUE(S, document, "loadout")))
+		loadout_data = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "loadout"))
 		if(!islist(loadout_data))
 			loadout_data = list()
 
@@ -1885,9 +1884,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				loadout_data[save_key] = list()
 
 	//let's remember their last used slot, i'm sure "oops i brought the wrong stuff" will be an issue now
-	S["loadout_slot"] >> loadout_slot
+	READ_PLAYER_SAVE(S, document, "loadout_slot", loadout_slot)
 	// BLUEMOON ADD - загрузка переключателя лодаута
-	S["loadout_enabled"] >> loadout_enabled
+	READ_PLAYER_SAVE(S, document, "loadout_enabled", loadout_enabled)
 	// BLUEMOON ADD END
 
 	//try to fix any outdated data if necessary
@@ -2098,12 +2097,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 					if(accessory.color_src == MATRIXED && !accessory.matrixed_sections && feature_value != "None")
 						message_admins("Sprite Accessory Failure (loading data): Accessory [accessory.type] is a matrixed item without any matrixed sections set!")
 						continue
-					if(S["feature_[primary_string]"])
-						S["feature_[primary_string]"] >> features[primary_string]
-					if(S["feature_[secondary_string]"])
-						S["feature_[secondary_string]"] >> features[secondary_string]
-					if(S["feature_[tertiary_string]"])
-						S["feature_[tertiary_string]"] >> features[tertiary_string]
+					if(PLAYER_SAVE_VALUE(S, document, "feature_[primary_string]"))
+						READ_PLAYER_SAVE(S, document, "feature_[primary_string]", features[primary_string])
+					if(PLAYER_SAVE_VALUE(S, document, "feature_[secondary_string]"))
+						READ_PLAYER_SAVE(S, document, "feature_[secondary_string]", features[secondary_string])
+					if(PLAYER_SAVE_VALUE(S, document, "feature_[tertiary_string]"))
+						READ_PLAYER_SAVE(S, document, "feature_[tertiary_string]", features[tertiary_string])
 
 	persistent_scars = sanitize_integer(persistent_scars)
 	scars_list["1"] = sanitize_text(scars_list["1"])
@@ -2163,12 +2162,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	belly_prefs = SANITIZE_LIST(belly_prefs)
 
 	//SPLURT EDIT BEGIN - gregnancy
-	S["virile"] >> virility
-	S["fertile"] >> fertility
-	if(S["egg_shell"])
-		S["egg_shell"] >> egg_shell
-	S["pregnancy_inflation"] >> pregnancy_inflation
-	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
+	READ_PLAYER_SAVE(S, document, "virile", virility)
+	READ_PLAYER_SAVE(S, document, "fertile", fertility)
+	if(PLAYER_SAVE_VALUE(S, document, "egg_shell"))
+		READ_PLAYER_SAVE(S, document, "egg_shell", egg_shell)
+	READ_PLAYER_SAVE(S, document, "pregnancy_inflation", pregnancy_inflation)
+	READ_PLAYER_SAVE(S, document, "pregnancy_breast_growth", pregnancy_breast_growth)
 	//SPLURT EDIT END
 
 	loadout_slot = sanitize_num_clamp(loadout_slot, 1, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
@@ -2181,50 +2180,71 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				if(!(alt_titles_preferences[job.title] in job.alt_titles))
 					alt_titles_preferences.Remove(job.title)
 
-	cit_character_pref_load(S)
+	cit_character_pref_load(S, document)
 
-	sand_character_pref_load(S)
+	if(!sand_character_pref_load(S, !provided, document))
+		return FALSE
 
-	splurt_character_pref_load(S)
+	splurt_character_pref_load(S, document)
 
-	bluemoon_character_pref_load(S)
+	bluemoon_character_pref_load(S, document)
 
-	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+	load_tattoo_prefs(S, document) // BLUEMOON ADD - загрузка татуировок
 
-	return S
+	return document || S
 
-/// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
-/// Если удаляется текущий слот — переключается на ближайший непустой, или на слот 1.
+/// Публикует удаление в корне, не пересохраняя остальные анкеты.
+/// Если удаляется текущий слот, переключается на первый непустой или на слот 1.
 /datum/preferences/proc/delete_character(slot)
 	if(!path)
 		return FALSE
 	slot = sanitize_integer(slot, 1, max_save_slots, 1)
-	var/savefile/S = new /savefile(path)
-	if(!S)
+	var/datum/player_save_document/root = open_player_document()
+	if(!root)
 		return FALSE
-
-	// Проверяем, что в слоте действительно есть персонаж
-	S.cd = "/character[slot]"
-	var/check_name
-	S["real_name"] >> check_name
-	if(!check_name)
-		return FALSE // слот уже пуст
-
-	// Удаляем директорию персонажа из сейвфайла
-	S.cd = "/"
-	S.dir.Remove("character[slot]")
+	var/key = "character[slot]"
+	if(!(key in root.tree))
+		return FALSE
+	if(islist(root.directories))
+		var/datum/player_save_json/account/storage = get_player_save_storage()
+		// Проверка удаляемого раздела сохраняет согласованный откат при повреждении.
+		var/datum/player_save_character_transaction/transaction = storage.character_transaction(key)
+		if(!transaction)
+			player_save_error(storage.error)
+			return FALSE
+		if(!transaction.character.read("real_name"))
+			return FALSE
+		root = transaction.root
+		root.remove(key)
+		if(!root.commit())
+			player_save_error(storage.error)
+			return FALSE
+	else
+		// Старый монолит сначала переносится целиком с сохранением неизвестных разделов.
+		var/savefile/S = open_player_save()
+		if(!S)
+			return FALSE
+		S.cd = "/[key]"
+		var/check_name
+		S["real_name"] >> check_name
+		if(!check_name)
+			return FALSE
+		S.cd = "/"
+		S.dir.Remove(key)
+		if(!commit_player_save(S))
+			return FALSE
 
 	// Если удалили текущий слот — нужно переключиться на другой
 	if(slot == default_slot)
+		var/list/names = player_character_names()
+		if(!islist(names))
+			return FALSE
 		var/new_slot = 0
 		// Ищем ближайший непустой слот
 		for(var/i in 1 to max_save_slots)
 			if(i == slot)
 				continue
-			S.cd = "/character[i]"
-			var/name
-			S["real_name"] >> name
-			if(name)
+			if(names["character[i]"])
 				new_slot = i
 				break
 		// Если не нашли непустой — просто переключаемся на слот 1
@@ -2236,191 +2256,217 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
-/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
-	if(!path)
+/datum/preferences/proc/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context)
+	if(!path && !export)
 		return FALSE
-	if(!bypass_cooldown)
+	if(!export && !bypass_cooldown)
 		if(world.time < savecharcooldown)
 			if(istype(parent))
 				queue_save_char(PREF_SAVE_COOLDOWN, silent)
 			return FALSE
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
-	if(char_queue)
-		deltimer(char_queue)
-	char_queue = null
-	char_queue_deadline = 0
-	var/blocking_started_ms = blocking_call_start()
-	var/savefile/S = new /savefile(export ? null : path)
+	if(!export)
+		if(char_queue)
+			deltimer(char_queue)
+		char_queue = null
+		char_queue_deadline = 0
+	var/savefile/S
+	var/datum/player_save_document/document
+	if(export)
+		S = new
+	else if(patch_context)
+		var/datum/player_save_document/root = open_player_document()
+		if(!root)
+			return FALSE
+		if(islist(root.directories))
+			var/datum/player_save_json/account/storage = get_player_save_storage()
+			var/datum/player_save_character_transaction/transaction = storage.character_transaction("character[default_slot]")
+			if(!transaction)
+				player_save_error(storage.error)
+				return FALSE
+			if(length(transaction.character.tree) && player_save_version_status(transaction.character.read("version")) == -2)
+				player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
+				return FALSE
+			patch_context["transaction"] = transaction
+			document = transaction.character
+			S = new
+		else
+			S = open_player_save("/character[default_slot]")
+	else
+		S = open_player_save("/character[default_slot]")
 	if(!S)
 		return FALSE
 	if(!export)
 		S.cd = "/character[default_slot]"
+		if(length(S.dir) && savefile_needs_update(S) == -2)
+			player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
+			return FALSE
 
-	WRITE_FILE(S["version"]			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
+	WRITE_PLAYER_SAVE(S, document, "version"			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
 
 	//Character
-	WRITE_FILE(S["real_name"]							, real_name)
-	WRITE_FILE(S["nameless"]							, nameless)
-	WRITE_FILE(S["custom_species"]						, custom_species)
-	WRITE_FILE(S["name_is_always_random"]				, be_random_name)
-	WRITE_FILE(S["body_is_always_random"]				, be_random_body)
-	WRITE_FILE(S["gender"]								, gender)
-	WRITE_FILE(S["body_model"]							, features["body_model"])
-	WRITE_FILE(S["body_size"]							, features["body_size"])
-	WRITE_FILE(S["feature_fuzzy"]						, features["fuzzy"])
-	WRITE_FILE(S["age"]									, age)
-	WRITE_FILE(S["hair_color"]							, hair_color)
-	WRITE_FILE(S["facial_hair_color"]					, facial_hair_color)
-	WRITE_FILE(S["eye_type"]							, eye_type)
-	WRITE_FILE(S["shriek_type"]							, shriek_type) // BLUEMOON ADD
-	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
-	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
-	WRITE_FILE(S["onelife_death_type"]					, onelife_death_type) // BLUEMOON ADD
-	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
-	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
-	WRITE_FILE(S["right_eye_color"]						, right_eye_color)
-	WRITE_FILE(S["use_custom_skin_tone"]				, use_custom_skin_tone)
-	WRITE_FILE(S["pda_ringtone"]						, pda_ringtone)
-	WRITE_FILE(S["pda_theme"]							, pda_theme)
-	WRITE_FILE(S["skin_tone"]							, skin_tone)
-	WRITE_FILE(S["hair_style_name"]						, hair_style)
-	WRITE_FILE(S["facial_style_name"]					, facial_hair_style)
-	WRITE_FILE(S["grad_style"]							, grad_style)
-	WRITE_FILE(S["grad_color"]							, grad_color)
-	WRITE_FILE(S["underwear"]							, underwear)
-	WRITE_FILE(S["undie_color"]							, undie_color)
-	WRITE_FILE(S["undershirt"]							, undershirt)
-	WRITE_FILE(S["shirt_color"]							, shirt_color)
-	WRITE_FILE(S["socks"]								, socks)
-	WRITE_FILE(S["socks_color"]							, socks_color)
-	WRITE_FILE(S["backbag"]								, backbag)
-	WRITE_FILE(S["jumpsuit_style"]						, jumpsuit_style)
-	WRITE_FILE(S["uplink_loc"]							, uplink_spawn_loc)
-	WRITE_FILE(S["species"]								, pref_species.id)
-	WRITE_FILE(S["custom_speech_verb"]					, custom_speech_verb)
-	WRITE_FILE(S["custom_tongue"]						, custom_tongue)
-	WRITE_FILE(S["bark_id"]								, bark_id)
-	WRITE_FILE(S["bark_speed"]							, bark_speed)
-	WRITE_FILE(S["bark_pitch"]							, bark_pitch)
-	WRITE_FILE(S["bark_variance"]						, bark_variance)
+	WRITE_PLAYER_SAVE(S, document, "real_name"							, real_name)
+	WRITE_PLAYER_SAVE(S, document, "nameless"							, nameless)
+	WRITE_PLAYER_SAVE(S, document, "custom_species"						, custom_species)
+	WRITE_PLAYER_SAVE(S, document, "name_is_always_random"				, be_random_name)
+	WRITE_PLAYER_SAVE(S, document, "body_is_always_random"				, be_random_body)
+	WRITE_PLAYER_SAVE(S, document, "gender"								, gender)
+	WRITE_PLAYER_SAVE(S, document, "body_model"							, features["body_model"])
+	WRITE_PLAYER_SAVE(S, document, "body_size"							, features["body_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_fuzzy"						, features["fuzzy"])
+	WRITE_PLAYER_SAVE(S, document, "age"									, age)
+	WRITE_PLAYER_SAVE(S, document, "hair_color"							, hair_color)
+	WRITE_PLAYER_SAVE(S, document, "facial_hair_color"					, facial_hair_color)
+	WRITE_PLAYER_SAVE(S, document, "eye_type"							, eye_type)
+	WRITE_PLAYER_SAVE(S, document, "shriek_type"							, shriek_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "summon_nickname"						, summon_nickname) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "phobia_type"							, phobia_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "onelife_death_type"					, onelife_death_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "feature_hardsuit_with_tail"			, features["hardsuit_with_tail"])
+	WRITE_PLAYER_SAVE(S, document, "left_eye_color"						, left_eye_color)
+	WRITE_PLAYER_SAVE(S, document, "right_eye_color"						, right_eye_color)
+	WRITE_PLAYER_SAVE(S, document, "use_custom_skin_tone"				, use_custom_skin_tone)
+	WRITE_PLAYER_SAVE(S, document, "pda_ringtone"						, pda_ringtone)
+	WRITE_PLAYER_SAVE(S, document, "pda_theme"							, pda_theme)
+	WRITE_PLAYER_SAVE(S, document, "skin_tone"							, skin_tone)
+	WRITE_PLAYER_SAVE(S, document, "hair_style_name"						, hair_style)
+	WRITE_PLAYER_SAVE(S, document, "facial_style_name"					, facial_hair_style)
+	WRITE_PLAYER_SAVE(S, document, "grad_style"							, grad_style)
+	WRITE_PLAYER_SAVE(S, document, "grad_color"							, grad_color)
+	WRITE_PLAYER_SAVE(S, document, "underwear"							, underwear)
+	WRITE_PLAYER_SAVE(S, document, "undie_color"							, undie_color)
+	WRITE_PLAYER_SAVE(S, document, "undershirt"							, undershirt)
+	WRITE_PLAYER_SAVE(S, document, "shirt_color"							, shirt_color)
+	WRITE_PLAYER_SAVE(S, document, "socks"								, socks)
+	WRITE_PLAYER_SAVE(S, document, "socks_color"							, socks_color)
+	WRITE_PLAYER_SAVE(S, document, "backbag"								, backbag)
+	WRITE_PLAYER_SAVE(S, document, "jumpsuit_style"						, jumpsuit_style)
+	WRITE_PLAYER_SAVE(S, document, "uplink_loc"							, uplink_spawn_loc)
+	WRITE_PLAYER_SAVE(S, document, "species"								, pref_species.id)
+	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb"					, custom_speech_verb)
+	WRITE_PLAYER_SAVE(S, document, "custom_tongue"						, custom_tongue)
+	WRITE_PLAYER_SAVE(S, document, "bark_id"								, bark_id)
+	WRITE_PLAYER_SAVE(S, document, "bark_speed"							, bark_speed)
+	WRITE_PLAYER_SAVE(S, document, "bark_pitch"							, bark_pitch)
+	WRITE_PLAYER_SAVE(S, document, "bark_variance"						, bark_variance)
 
 	// records
-	WRITE_FILE(S["security_records"]					, security_records)
-	WRITE_FILE(S["medical_records"]						, medical_records)
+	WRITE_PLAYER_SAVE(S, document, "security_records"					, security_records)
+	WRITE_PLAYER_SAVE(S, document, "medical_records"						, medical_records)
 
-	WRITE_FILE(S["feature_custom_deathgasp"]			, features["custom_deathgasp"]) // BLUEMOON ADD - пользовательский эмоут смерти
-	WRITE_FILE(S["feature_custom_deathsound"]			, features["custom_deathsound"]) // BLUEMOON ADD - пользовательский эмоут смерти
-	WRITE_FILE(S["feature_mcolor"]						, features["mcolor"])
-	WRITE_FILE(S["feature_lizard_tail"]					, features["tail_lizard"])
-	WRITE_FILE(S["feature_human_tail"]					, features["tail_human"])
-	WRITE_FILE(S["feature_lizard_snout"]				, features["snout"])
-	WRITE_FILE(S["feature_lizard_horns"]				, features["horns"])
-	WRITE_FILE(S["feature_human_ears"]					, features["ears"])
-	WRITE_FILE(S["feature_lizard_frills"]				, features["frills"])
-	WRITE_FILE(S["feature_lizard_spines"]				, features["spines"])
-	WRITE_FILE(S["feature_lizard_legs"]					, features["legs"])
-	WRITE_FILE(S["feature_deco_wings"]					, features["deco_wings"])
-	WRITE_FILE(S["feature_horns_color"]					, features["horns_color"])
-	WRITE_FILE(S["feature_wings_color"]					, features["wings_color"])
-	WRITE_FILE(S["feature_insect_wings"]				, features["insect_wings"])
-	WRITE_FILE(S["feature_insect_fluff"]				, features["insect_fluff"])
-	WRITE_FILE(S["feature_insect_markings"]				, features["insect_markings"])
-	WRITE_FILE(S["feature_arachnid_legs"]				, features["arachnid_legs"])
-	WRITE_FILE(S["feature_arachnid_spinneret"]			, features["arachnid_spinneret"])
-	WRITE_FILE(S["feature_arachnid_mandibles"]			, features["arachnid_mandibles"])
-	WRITE_FILE(S["feature_meat"]						, features["meat_type"])
+	WRITE_PLAYER_SAVE(S, document, "feature_custom_deathgasp"			, features["custom_deathgasp"]) // BLUEMOON ADD - пользовательский эмоут смерти
+	WRITE_PLAYER_SAVE(S, document, "feature_custom_deathsound"			, features["custom_deathsound"]) // BLUEMOON ADD - пользовательский эмоут смерти
+	WRITE_PLAYER_SAVE(S, document, "feature_mcolor"						, features["mcolor"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_tail"					, features["tail_lizard"])
+	WRITE_PLAYER_SAVE(S, document, "feature_human_tail"					, features["tail_human"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_snout"				, features["snout"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_horns"				, features["horns"])
+	WRITE_PLAYER_SAVE(S, document, "feature_human_ears"					, features["ears"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_frills"				, features["frills"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_spines"				, features["spines"])
+	WRITE_PLAYER_SAVE(S, document, "feature_lizard_legs"					, features["legs"])
+	WRITE_PLAYER_SAVE(S, document, "feature_deco_wings"					, features["deco_wings"])
+	WRITE_PLAYER_SAVE(S, document, "feature_horns_color"					, features["horns_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_wings_color"					, features["wings_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_insect_wings"				, features["insect_wings"])
+	WRITE_PLAYER_SAVE(S, document, "feature_insect_fluff"				, features["insect_fluff"])
+	WRITE_PLAYER_SAVE(S, document, "feature_insect_markings"				, features["insect_markings"])
+	WRITE_PLAYER_SAVE(S, document, "feature_arachnid_legs"				, features["arachnid_legs"])
+	WRITE_PLAYER_SAVE(S, document, "feature_arachnid_spinneret"			, features["arachnid_spinneret"])
+	WRITE_PLAYER_SAVE(S, document, "feature_arachnid_mandibles"			, features["arachnid_mandibles"])
+	WRITE_PLAYER_SAVE(S, document, "feature_meat"						, features["meat_type"])
 
-	WRITE_FILE(S["feature_has_cock"], features["has_cock"])
-	WRITE_FILE(S["feature_cock_shape"], features["cock_shape"])
-	WRITE_FILE(S["feature_cock_color"], features["cock_color"])
-	WRITE_FILE(S["feature_cock_length"], features["cock_length"])
-	WRITE_FILE(S["feature_cock_diameter_ratio"], features["cock_diameter_ratio"])
-	WRITE_FILE(S["feature_cock_taur"], features["cock_taur"])
-	WRITE_FILE(S["feature_cock_visibility"], features["cock_visibility"])
-	WRITE_FILE(S["feature_cock_accessible"], features["cock_accessible"])
-	WRITE_FILE(S["feature_cock_stuffing"], features["cock_stuffing"])
-	WRITE_FILE(S["feature_cock_accessible"], features["cock_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_cock", features["has_cock"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_shape", features["cock_shape"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_color", features["cock_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_length", features["cock_length"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_diameter_ratio", features["cock_diameter_ratio"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_taur", features["cock_taur"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_visibility", features["cock_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_accessible", features["cock_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_stuffing", features["cock_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_cock_accessible", features["cock_accessible"])
 
-	WRITE_FILE(S["feature_has_balls"], features["has_balls"])
-	WRITE_FILE(S["feature_balls_color"], features["balls_color"])
-	WRITE_FILE(S["feature_balls_shape"], features["balls_shape"])
-	WRITE_FILE(S["feature_balls_size"], features["balls_size"])
-	WRITE_FILE(S["feature_balls_visibility"], features["balls_visibility"])
-	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
-	WRITE_FILE(S["feature_balls_stuffing"], features["balls_stuffing"])
-	WRITE_FILE(S["feature_balls_fluid"], features["balls_fluid"])
-	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_balls", features["has_balls"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_color", features["balls_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_shape", features["balls_shape"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_size", features["balls_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_visibility", features["balls_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_stuffing", features["balls_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_fluid", features["balls_fluid"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
 
-	WRITE_FILE(S["feature_has_breasts"], features["has_breasts"])
-	WRITE_FILE(S["feature_breasts_size"], features["breasts_size"])
-	WRITE_FILE(S["feature_breasts_shape"], features["breasts_shape"])
-	WRITE_FILE(S["feature_breasts_color"], features["breasts_color"])
-	WRITE_FILE(S["feature_breasts_fluid"], features["breasts_fluid"])
-	WRITE_FILE(S["feature_breasts_producing"], features["breasts_producing"])
-	WRITE_FILE(S["feature_breasts_visibility"], features["breasts_visibility"])
-	WRITE_FILE(S["feature_breasts_accessible"], features["breasts_accessible"])
-	WRITE_FILE(S["feature_breasts_stuffing"], features["breasts_stuffing"])
-	WRITE_FILE(S["feature_breasts_accessible"], features["breasts_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_breasts", features["has_breasts"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_size", features["breasts_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_shape", features["breasts_shape"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_color", features["breasts_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_fluid", features["breasts_fluid"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_producing", features["breasts_producing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_visibility", features["breasts_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_accessible", features["breasts_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_stuffing", features["breasts_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_accessible", features["breasts_accessible"])
 
-	WRITE_FILE(S["feature_has_vag"], features["has_vag"])
-	WRITE_FILE(S["feature_vag_shape"], features["vag_shape"])
-	WRITE_FILE(S["feature_vag_color"], features["vag_color"])
-	WRITE_FILE(S["feature_vag_visibility"], features["vag_visibility"])
-	WRITE_FILE(S["feature_vag_accessible"], features["vag_accessible"])
-	WRITE_FILE(S["feature_vag_stuffing"], features["vag_stuffing"])
-	WRITE_FILE(S["feature_vag_accessible"], features["vag_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_vag", features["has_vag"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_shape", features["vag_shape"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_color", features["vag_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_visibility", features["vag_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_accessible", features["vag_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_stuffing", features["vag_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_vag_accessible", features["vag_accessible"])
 
-	WRITE_FILE(S["feature_has_womb"], features["has_womb"])
-	WRITE_FILE(S["feature_womb_fluid"], features["womb_fluid"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_womb", features["has_womb"])
+	WRITE_PLAYER_SAVE(S, document, "feature_womb_fluid", features["womb_fluid"])
 
-	WRITE_FILE(S["feature_has_butt"], features["has_butt"])
-	WRITE_FILE(S["feature_butt_color"], features["butt_color"])
-	WRITE_FILE(S["feature_butt_size"], features["butt_size"])
-	WRITE_FILE(S["feature_butt_visibility"], features["butt_visibility"])
-	WRITE_FILE(S["feature_butt_accessible"], features["butt_accessible"])
-	WRITE_FILE(S["feature_butt_stuffing"], features["butt_stuffing"])
-	WRITE_FILE(S["feature_butt_accessible"], features["butt_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_butt", features["has_butt"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_color", features["butt_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_size", features["butt_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_visibility", features["butt_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_accessible", features["butt_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_stuffing", features["butt_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_butt_accessible", features["butt_accessible"])
 
-	WRITE_FILE(S["feature_has_belly"], features["has_belly"])
-	WRITE_FILE(S["feature_belly_color"], features["belly_color"])
-	WRITE_FILE(S["feature_belly_size"], features["belly_size"])
-	WRITE_FILE(S["feature_belly_visibility"], features["belly_visibility"])
-	WRITE_FILE(S["feature_belly_stuffing"], features["belly_stuffing"])
-	WRITE_FILE(S["feature_belly_accessible"], features["belly_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_belly", features["has_belly"])
+	WRITE_PLAYER_SAVE(S, document, "feature_belly_color", features["belly_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_belly_size", features["belly_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_belly_visibility", features["belly_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_belly_stuffing", features["belly_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_belly_accessible", features["belly_accessible"])
 
-	WRITE_FILE(S["feature_has_anus"], features["has_anus"])
-	WRITE_FILE(S["feature_anus_color"], features["anus_color"])
-	WRITE_FILE(S["feature_anus_visibility"], features["anus_visibility"])
-	WRITE_FILE(S["feature_anus_accessible"], features["anus_accessible"])
-	WRITE_FILE(S["feature_anus_shape"], features["anus_shape"])
-	WRITE_FILE(S["feature_anus_stuffing"], features["anus_stuffing"])
+	WRITE_PLAYER_SAVE(S, document, "feature_has_anus", features["has_anus"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_color", features["anus_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_visibility", features["anus_visibility"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_accessible", features["anus_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_shape", features["anus_shape"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_stuffing", features["anus_stuffing"])
 
-	WRITE_FILE(S["feature_inert_eggs"], features["inert_eggs"])
+	WRITE_PLAYER_SAVE(S, document, "feature_inert_eggs", features["inert_eggs"])
 
 
-	WRITE_FILE(S["features_cock_max_length"], features["cock_max_length"])
-	WRITE_FILE(S["features_balls_max_size"], features["balls_max_size"])
-	WRITE_FILE(S["features_breasts_max_size"], features["breasts_max_size"])
-	WRITE_FILE(S["features_belly_max_size"], features["belly_max_size"])
-	WRITE_FILE(S["features_butt_max_size"], features["butt_max_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_cock_max_length", features["cock_max_length"])
+	WRITE_PLAYER_SAVE(S, document, "features_balls_max_size", features["balls_max_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_breasts_max_size", features["breasts_max_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_belly_max_size", features["belly_max_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_butt_max_size", features["butt_max_size"])
 
-	WRITE_FILE(S["features_cock_min_length"], features["cock_min_length"])
-	WRITE_FILE(S["features_balls_min_size"], features["balls_min_size"])
-	WRITE_FILE(S["features_breasts_min_size"], features["breasts_min_size"])
-	WRITE_FILE(S["features_belly_min_size"], features["belly_min_size"])
-	WRITE_FILE(S["features_butt_min_size"], features["butt_min_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_cock_min_length", features["cock_min_length"])
+	WRITE_PLAYER_SAVE(S, document, "features_balls_min_size", features["balls_min_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_breasts_min_size", features["breasts_min_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_belly_min_size", features["belly_min_size"])
+	WRITE_PLAYER_SAVE(S, document, "features_butt_min_size", features["butt_min_size"])
 
-	WRITE_FILE(S["feature_neckfire"], features["neckfire"])
-	WRITE_FILE(S["feature_neckfire_color"], features["neckfire_color"])
-	WRITE_FILE(S["feature_puddle_slime_fea"], features["puddle_slime_fea"])
+	WRITE_PLAYER_SAVE(S, document, "feature_neckfire", features["neckfire"])
+	WRITE_PLAYER_SAVE(S, document, "feature_neckfire_color", features["neckfire_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_puddle_slime_fea", features["puddle_slime_fea"])
 
-	WRITE_FILE(S["alt_titles_preferences"], alt_titles_preferences)
+	WRITE_PLAYER_SAVE(S, document, "alt_titles_preferences", alt_titles_preferences)
 
-	WRITE_FILE(S["feature_ooc_notes"], features["ooc_notes"])
+	WRITE_PLAYER_SAVE(S, document, "feature_ooc_notes", features["ooc_notes"])
 
-	WRITE_FILE(S["feature_color_scheme"], features["color_scheme"])
+	WRITE_PLAYER_SAVE(S, document, "feature_color_scheme", features["color_scheme"])
 
-	WRITE_FILE(S["feature_anus_accessible"], features["anus_accessible"])
+	WRITE_PLAYER_SAVE(S, document, "feature_anus_accessible", features["anus_accessible"])
 
 	//save every advanced coloring mode thing in one go
 	for(var/feature in features)
@@ -2441,88 +2487,84 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 						message_admins("Sprite Accessory Failure (saving data): Accessory [accessory.type] is a matrixed item without any matrixed sections set!")
 						continue
 					if(features[primary_string])
-						WRITE_FILE(S["feature_[primary_string]"], features[primary_string])
+						WRITE_PLAYER_SAVE(S, document, "feature_[primary_string]", features[primary_string])
 					if(features[secondary_string])
-						WRITE_FILE(S["feature_[secondary_string]"], features[secondary_string])
+						WRITE_PLAYER_SAVE(S, document, "feature_[secondary_string]", features[secondary_string])
 					if(features[tertiary_string])
-						WRITE_FILE(S["feature_[tertiary_string]"], features[tertiary_string])
+						WRITE_PLAYER_SAVE(S, document, "feature_[tertiary_string]", features[tertiary_string])
 
 	//Custom names
 	for(var/custom_name_id in GLOB.preferences_custom_names)
 		var/savefile_slot_name = custom_name_id + "_name" //TODO remove this
-		WRITE_FILE(S[savefile_slot_name],custom_names[custom_name_id])
+		WRITE_PLAYER_SAVE(S, document, savefile_slot_name,custom_names[custom_name_id])
 
-	WRITE_FILE(S["preferred_ai_core_display"]		,  preferred_ai_core_display)
-	WRITE_FILE(S["prefered_security_department"]	, prefered_security_department)
+	WRITE_PLAYER_SAVE(S, document, "preferred_ai_core_display"		,  preferred_ai_core_display)
+	WRITE_PLAYER_SAVE(S, document, "prefered_security_department"	, prefered_security_department)
 
 	//Jobs
-	WRITE_FILE(S["joblessrole"]		, joblessrole)
+	WRITE_PLAYER_SAVE(S, document, "joblessrole"		, joblessrole)
 	//Write prefs
-	WRITE_FILE(S["job_preferences"] , job_preferences)
-	WRITE_FILE(S["hide_ckey"]		, hide_ckey)
+	WRITE_PLAYER_SAVE(S, document, "job_preferences" , job_preferences)
+	WRITE_PLAYER_SAVE(S, document, "hide_ckey"		, hide_ckey)
 
 	//Custom emote panel
-	WRITE_FILE(S["custom_emote_panel"]	, custom_emote_panel)
+	WRITE_PLAYER_SAVE(S, document, "custom_emote_panel"	, custom_emote_panel)
 
 	//Quirks
-	WRITE_FILE(S["all_quirks"]			, all_quirks)
+	WRITE_PLAYER_SAVE(S, document, "all_quirks"			, all_quirks)
 	//SKYRAT ADDITION - additional language
-	WRITE_FILE(S["language"]			, language)
+	WRITE_PLAYER_SAVE(S, document, "language"			, language)
 	//
 
-	WRITE_FILE(S["vore_flags"]			, vore_flags)
-	WRITE_FILE(S["vore_taste"]			, vore_taste)
-	WRITE_FILE(S["vore_smell"]			, vore_smell)
-	var/char_vr_path = "[vr_path]/character_[default_slot]_v2.json"
-	var/belly_prefs_json = safe_json_encode(list("belly_prefs" = belly_prefs))
-	if(fexists(char_vr_path))
-		fdel(char_vr_path)
-	text2file(belly_prefs_json,char_vr_path)
+	WRITE_PLAYER_SAVE(S, document, "vore_flags"			, vore_flags)
+	WRITE_PLAYER_SAVE(S, document, "vore_taste"			, vore_taste)
+	WRITE_PLAYER_SAVE(S, document, "vore_smell"			, vore_smell)
+	WRITE_PLAYER_SAVE(S, document, "belly_prefs", belly_prefs)
 
-	WRITE_FILE(S["persistent_scars"]			, persistent_scars)
-	WRITE_FILE(S["scars1"]						, scars_list["1"])
-	WRITE_FILE(S["scars2"]						, scars_list["2"])
-	WRITE_FILE(S["scars3"]						, scars_list["3"])
-	WRITE_FILE(S["scars4"]						, scars_list["4"])
-	WRITE_FILE(S["scars5"]						, scars_list["5"])
+	WRITE_PLAYER_SAVE(S, document, "persistent_scars"			, persistent_scars)
+	WRITE_PLAYER_SAVE(S, document, "scars1"						, scars_list["1"])
+	WRITE_PLAYER_SAVE(S, document, "scars2"						, scars_list["2"])
+	WRITE_PLAYER_SAVE(S, document, "scars3"						, scars_list["3"])
+	WRITE_PLAYER_SAVE(S, document, "scars4"						, scars_list["4"])
+	WRITE_PLAYER_SAVE(S, document, "scars5"						, scars_list["5"])
 	if(islist(modified_limbs))
-		WRITE_FILE(S["modified_limbs"]				, safe_json_encode(modified_limbs))
-	WRITE_FILE(S["chosen_limb_id"],   chosen_limb_id)
+		WRITE_PLAYER_SAVE(S, document, "modified_limbs"				, safe_json_encode(modified_limbs))
+	WRITE_PLAYER_SAVE(S, document, "chosen_limb_id",   chosen_limb_id)
 	//SPLURT EDIT BEGIN
-	WRITE_FILE(S["virile"], virility)
-	WRITE_FILE(S["fertile"], fertility)
-	WRITE_FILE(S["egg_shell"], egg_shell)
-	WRITE_FILE(S["pregnancy_inflation"], pregnancy_inflation)
-	WRITE_FILE(S["pregnancy_breast_growth"], pregnancy_breast_growth)
+	WRITE_PLAYER_SAVE(S, document, "virile", virility)
+	WRITE_PLAYER_SAVE(S, document, "fertile", fertility)
+	WRITE_PLAYER_SAVE(S, document, "egg_shell", egg_shell)
+	WRITE_PLAYER_SAVE(S, document, "pregnancy_inflation", pregnancy_inflation)
+	WRITE_PLAYER_SAVE(S, document, "pregnancy_breast_growth", pregnancy_breast_growth)
 
 	//Headshots
 	var/list/headshots_temp = features["headshot_links"]
 	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
 		var/postfix = i == 1 ? null : i-1
-		WRITE_FILE(S["headshot[postfix]"], headshots_temp[i])
+		WRITE_PLAYER_SAVE(S, document, "headshot[postfix]", headshots_temp[i])
 
 	headshots_temp = features["headshot_naked_links"]
 	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
 		var/postfix = i == 1 ? null : i-1
-		WRITE_FILE(S["headshot_naked[postfix]"], headshots_temp[i])
+		WRITE_PLAYER_SAVE(S, document, "headshot_naked[postfix]", headshots_temp[i])
 
 	//gear loadout
 	if(islist(loadout_data))
-		S["loadout"] << safe_json_encode(loadout_data)
+		WRITE_PLAYER_SAVE(S, document, "loadout", safe_json_encode(loadout_data))
 	else
-		S["loadout"] << safe_json_encode(list())
-	WRITE_FILE(S["loadout_slot"], loadout_slot)
-	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
+		WRITE_PLAYER_SAVE(S, document, "loadout", safe_json_encode(list()))
+	WRITE_PLAYER_SAVE(S, document, "loadout_slot", loadout_slot)
+	WRITE_PLAYER_SAVE(S, document, "loadout_enabled", loadout_enabled) // BLUEMOON ADD
 
 	if(length(tcg_cards))
-		S["tcg_cards"] << safe_json_encode(tcg_cards)
+		WRITE_PLAYER_SAVE(S, document, "tcg_cards", safe_json_encode(tcg_cards))
 	else
-		S["tcg_cards"] << safe_json_encode(list())
+		WRITE_PLAYER_SAVE(S, document, "tcg_cards", safe_json_encode(list()))
 
 	if(length(tcg_decks))
-		S["tcg_decks"] << safe_json_encode(tcg_decks)
+		WRITE_PLAYER_SAVE(S, document, "tcg_decks", safe_json_encode(tcg_decks))
 	else
-		S["tcg_decks"] << safe_json_encode(list())
+		WRITE_PLAYER_SAVE(S, document, "tcg_decks", safe_json_encode(list()))
 
 	cit_character_pref_save(S)
 
@@ -2539,10 +2581,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			var/mob/living/carbon/human/H = parent.mob
 			H.set_antag_target_indicator() // Update consent HUD
 
-		if(!silent)
-			to_chat(parent, span_notice("Saved character slot!"))
 
-	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)
@@ -2559,6 +2598,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 #undef SAVEFILE_VERSION_MAX
 #undef SAVEFILE_VERSION_MIN
+#undef WRITE_PLAYER_SAVE
 
 #ifdef TESTING
 //DEBUG

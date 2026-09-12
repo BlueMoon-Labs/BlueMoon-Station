@@ -82,22 +82,30 @@ SUBSYSTEM_DEF(metadollars)
 	fdel(backup_file)
 
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
-	if(!prefs_path || !fexists(prefs_path))
+	if(!prefs_path)
 		return 0
-	var/savefile/S = new /savefile(prefs_path)
-	S.cd = "/"
-	var/amount = 0
-	READ_FILE(S["metadollars"], amount)
+	var/datum/player_save_json/storage = new /datum/player_save_json/account(prefs_path)
+	if(!storage.exists())
+		return 0
+	var/datum/player_save_document/document = storage.snapshot()
+	if(!document)
+		return null
+	var/amount = document.read("metadollars")
 	return isnum(amount) ? max(0, round(amount)) : 0
 
 /proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
 	if(!target_ckey)
 		return 0
 	var/base = "data/player_saves/[target_ckey[1]]/[target_ckey]"
-	var/best = 0
-	for(var/suffix in list("/preferences.sav", "/preferences.sav.updatebac"))
-		best = max(best, bm_read_metadollars_from_savefile_path("[base][suffix]"))
-	return best
+	var/prefs_path = "[base]/preferences.sav"
+	var/amount = bm_read_metadollars_from_savefile_path(prefs_path)
+	// После перехода на JSON резервная копия SAV уже не отражает актуальный баланс.
+	if(fexists("[prefs_path].json") || fexists("[prefs_path].json.recovery"))
+		return amount
+	var/backup_amount = bm_read_metadollars_from_savefile_path("[prefs_path].updatebac")
+	if(isnull(amount) || isnull(backup_amount))
+		return null
+	return max(amount, backup_amount)
 
 /datum/controller/subsystem/metadollars/proc/reconcile_legacy_balance(target_ckey, legacy_hint = null)
 	if(!target_ckey)
@@ -109,9 +117,9 @@ SUBSYSTEM_DEF(metadollars)
 	var/legacy = legacy_hint
 	if(!isnum(legacy) || legacy < 0)
 		legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
-	legacy = max(0, round(legacy))
-	if(legacy <= 0)
+	if(isnull(legacy))
 		return FALSE
+	legacy = max(0, round(legacy))
 	var/current = 0
 	if(target_ckey in metadollar_amount_cache)
 		current = metadollar_amount_cache[target_ckey]
@@ -119,10 +127,11 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(file(bm_metadollar_json_path(target_ckey))))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			current = max(0, round(loaded["metadollar_count"]))
+	// Нулевой баланс тоже завершает перенос: лидерборд не импортирует SAV каждый раунд.
+	metadollar_amount_cache[target_ckey] = max(current, legacy)
+	metadollar_save(target_ckey)
 	if(legacy <= current)
 		return FALSE
-	metadollar_amount_cache[target_ckey] = legacy
-	metadollar_save(target_ckey)
 	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
 	return TRUE
 
@@ -144,6 +153,8 @@ SUBSYSTEM_DEF(metadollars)
 		metadollar_amount_cache[target_ckey] = amount
 		return amount
 	amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(isnull(amount))
+		return 0
 	reconcile_legacy_balance(target_ckey, amount)
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
@@ -205,8 +216,10 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(file(json_path)))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			return max(0, round(loaded["metadollar_count"]))
-	var/legacy = max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
-	if(recover && legacy > 0 && reconcile_legacy_balance(target_ckey, legacy))
+	var/legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(isnull(legacy))
+		return 0
+	if(recover && reconcile_legacy_balance(target_ckey, legacy))
 		legacy_balances_recovered++
 	return legacy
 

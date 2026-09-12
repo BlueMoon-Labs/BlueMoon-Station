@@ -4,16 +4,16 @@ GLOBAL_LIST_INIT(character_offers, list())
 
 /datum/character_offer_instance
 	var/owner_ckey
-	var/savefile/character_savefile
+	var/character_json
 	var/redemption_code
 
-/datum/character_offer_instance/New(owner_ckey, character_savefile)
+/datum/character_offer_instance/New(owner_ckey, character_json)
 	. = ..()
-	if(!owner_ckey || !character_savefile)
+	if(!owner_ckey || !character_json)
 		qdel(src)
 		return
 	src.owner_ckey = owner_ckey
-	src.character_savefile = character_savefile
+	src.character_json = character_json
 
 	// 5 digit number, no fucking way some idiot is guessing this
 	var/attempts = 0
@@ -33,7 +33,7 @@ GLOBAL_LIST_INIT(character_offers, list())
 		to_remove.offer = null
 	LAZYREMOVE(GLOB.character_offers, redemption_code)
 	owner_ckey = null
-	character_savefile = null
+	character_json = null
 	redemption_code = null
 	return ..()
 
