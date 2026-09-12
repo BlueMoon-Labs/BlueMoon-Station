@@ -429,7 +429,7 @@
 		ATMOS_TPROF_COUNT("vis_clean_air")
 		atmos_visual_rev = memo_rev
 		return
-	var/list/gas_overlays = GLOB.gas_data.overlays
+	var/list/gas_overlays = SSmapping.max_plane_offset ? GLOB.gas_data.get_overlays_for_offset(GET_Z_PLANE_OFFSET(z)) : GLOB.gas_data.overlays
 	var/list/gas_visibility = GLOB.gas_data.visibility
 	// One overlay per turf instead of one per visible gas, and it belongs to the
 	// gas that dominates the mixture. Blending the colours instead would erase

@@ -30,6 +30,9 @@ SUBSYSTEM_DEF(vis_overlays)
 
 //the "thing" var can be anything with vis_contents which includes images - in the future someone should totally allow vis overlays to be passed in as an arg instead of all this bullshit
 /datum/controller/subsystem/vis_overlays/proc/add_vis_overlay(atom/movable/thing, icon, iconstate, layer, plane, dir, alpha = 255, add_appearance_flags = NONE, unique = FALSE)
+	if(SSmapping.max_plane_offset && !isnull(plane))
+		plane = GET_NEW_PLANE(PLANE_TO_TRUE(plane), GET_TURF_PLANE_OFFSET(thing))
+
 	var/obj/effect/overlay/vis/overlay
 	if(!unique)
 		. = "[icon]|[iconstate]|[layer]|[plane]|[dir]|[alpha]|[add_appearance_flags]"

@@ -4,7 +4,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf
 	icon = 'icons/turf/floors.dmi'
 	flags_1 = CAN_BE_DIRTY_1
-	vis_flags = VIS_INHERIT_ID|VIS_INHERIT_PLANE // Important for interaction with and visualization of openspace.
+	// Без VIS_INHERIT_PLANE: он схлопывал содержимое нижнего этажа на плоскость контейнера, ломая порядок слоёв и свет.
+	vis_flags = VIS_INHERIT_ID // Important for interaction with and visualization of openspace.
 	luminosity = 1
 
 	/// Битовая укладка булевых свойств турфа, см. TURF_* в code/__DEFINES/turf_flags.dm.
@@ -63,6 +64,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 
+	// Турф нижнего этажа стопки живёт на смещённых плоскостях, чтобы его собирал свой набор plane master'ов.
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), GET_Z_PLANE_OFFSET(z))
+
 	// by default, vis_contents is inherited from the turf that was here before
 	vis_contents.Cut()
 	// Маплоадер (initTemplateBounds) инициализирует турфы ПОСЛЕ того, как ChangeTurf
@@ -88,12 +93,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	visibilityChanged()
 
-	for(var/atom/movable/AM in src)
-		Entered(AM)
+	if(length(contents))
+		//Снимок: Entered() у дыры роняет группу целиком и правит contents по ходу.
+		for(var/atom/movable/AM as anything in contents.Copy())
+			Entered(AM)
 
 	var/area/A = loc
 	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
-		add_overlay(/obj/effect/fullbright)
+		add_overlay(fullbright_turf_overlay(src))
 
 	if(turf_flags & TURF_REQUIRES_ACTIVATION)
 		CALCULATE_ADJACENT_TURFS(src)
@@ -188,6 +195,15 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/multiz_turf_new(turf/T, dir)
 	SEND_SIGNAL(src, COMSIG_TURF_MULTIZ_NEW, T, dir)
 
+/turf/proc/shows_level_below()
+	var/turf/our_turf = src
+	return HAS_TRAIT(our_turf, TURF_Z_TRANSPARENT_TRAIT)
+
+/turf/proc/zfall_if_on_turf(atom/movable/movable)
+	if(QDELETED(movable) || movable.loc != src)
+		return
+	zFall(movable)
+
 /**
  * Check whether the specified turf is blocked by something dense inside it with respect to a specific atom.
  *
@@ -248,52 +264,71 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/zAirOut(direction, turf/source)
 	return FALSE
 
-/turf/proc/zImpact(atom/movable/A, levels = 1, turf/prev_turf)
-	var/flags = NONE
-	var/mov_name = A.name
-	for(var/i in contents)
-		var/atom/thing = i
-		flags |= thing.intercept_zImpact(A, levels)
+/// Приземление: зовётся на каждый пролетевший этаж и может остановить падение. Флаги FALL_* в movement.dm.
+/turf/proc/zImpact(atom/movable/falling, levels = 1, turf/prev_turf, flags = NONE, list/falling_movables)
+	if(QDELETED(falling))
+		return FALSE
+	//Тот же состав группы, что уехал вниз в zFall(), иначе буксируемый долетит без приземления.
+	if(!falling_movables)
+		falling_movables = falling.get_z_move_affected(ZMOVE_INCLUDE_PULLED)
+	var/list/falling_mov_names = list()
+	for(var/atom/movable/falling_mov as anything in falling_movables)
+		falling_mov_names += falling_mov.name
+	for(var/atom/thing as anything in contents)
+		flags |= thing.intercept_zImpact(falling_movables, levels)
 		if(flags & FALL_STOP_INTERCEPTING)
 			break
 	if(prev_turf && !(flags & FALL_NO_MESSAGE))
-		prev_turf.visible_message("<span class='danger'>[mov_name] falls through [prev_turf]!</span>")
-	if(flags & FALL_INTERCEPTED)
-		return
-	if(zFall(A, levels + 1))
+		for(var/mov_name in falling_mov_names)
+			prev_turf.visible_message("<span class='danger'>[mov_name] проваливается сквозь [prev_turf]!</span>")
+	if(!(flags & FALL_INTERCEPTED) && zFall(falling, levels + 1, falling_movables = falling_movables))
 		return FALSE
-	A.visible_message("<span class='danger'>[A] crashes into [src]!</span>")
-	A.onZImpact(src, levels)
+	for(var/atom/movable/falling_mov as anything in falling_movables)
+		//Стак сливается с нижним прямо в forceMove и удаляется: дальше его двигать нельзя.
+		if(QDELETED(falling_mov))
+			continue
+		if(!(flags & FALL_RETAIN_PULL) && falling_mov.pulling && !(falling_mov.pulling in falling_movables))
+			falling_mov.stop_pulling()
+		if(!(flags & FALL_INTERCEPTED))
+			falling_mov.onZImpact(src, levels)
+		if(!QDELETED(falling_mov) && falling_mov.pulledby && (falling_mov.z != falling_mov.pulledby.z || get_dist(falling_mov, falling_mov.pulledby) > 1))
+			falling_mov.pulledby.stop_pulling()
 	return TRUE
 
-/turf/proc/can_zFall(atom/movable/A, levels = 1, turf/target)
-	SHOULD_BE_PURE(TRUE)
-	return zPassOut(A, DOWN, target) && target.zPassIn(A, DOWN, src)
+/// Роняет движимое со всем, что на нём, на этаж ниже и зовёт zImpact(). При отрицательной гравитации низ находится сверху.
+/turf/proc/zFall(atom/movable/falling, levels = 1, force = FALSE, falling_from_move = FALSE, list/falling_movables)
+	if(QDELETED(falling))
+		return FALSE
+	var/direction = DOWN
+	if(falling.has_gravity(src) <= NEGATIVE_GRAVITY)
+		direction = UP
+	var/turf/target = get_step_multiz(src, direction)
+	//Флаг падения ставит вызывающий (Enter/Entered у openspace), поэтому любой ранний отказ обязан его снять.
+	if(!target)
+		falling.set_currently_z_moving(FALSE, TRUE)
+		return FALSE
+	var/is_living = isliving(falling)
+	if(!is_living && !isobj(falling))
+		falling.set_currently_z_moving(FALSE, TRUE)
+		return FALSE
+	if(is_living)
+		var/mob/living/falling_living = falling
+		if(falling_living.buckled)
+			falling = falling_living.buckled
+	if(!falling_from_move && falling.currently_z_moving)
+		return FALSE
+	if(!force && !falling.can_z_move(direction, src, target, ZMOVE_FALL_FLAGS))
+		falling.set_currently_z_moving(FALSE, TRUE)
+		return FALSE
 
-/turf/proc/zFall(atom/movable/A, levels = 1, force = FALSE)
-	var/turf/target = get_step_multiz(src, DOWN)
-	if(!target || (!isobj(A) && !ismob(A)))
-		return FALSE
-	if(!force && (!can_zFall(A, levels, target) || !A.can_zFall(src, levels, target, DOWN)))
-		return FALSE
-	if(isliving(A))
-		var/mob/living/falling_mob = A
-		var/atom/movable/pulling = falling_mob.pulling
-		falling_mob.zfalling = TRUE
-		falling_mob.forceMove(target)
-		falling_mob.zfalling = FALSE
-		target.zImpact(falling_mob, levels, src)
-		if(pulling)
-			pulling.zfalling = TRUE
-			pulling.forceMove(target)
-			pulling.zfalling = FALSE
-			target.zImpact(pulling, levels, src)
-			INVOKE_ASYNC(falling_mob, TYPE_PROC_REF(/atom/movable, start_pulling), pulling)
-	else
-		A.zfalling = TRUE
-		A.forceMove(target)
-		A.zfalling = FALSE
-		target.zImpact(A, levels, src)
+	// Чтобы Entered() на целевом турфе не запустил падение повторно. Снимается в zMove().
+	falling.set_currently_z_moving(CURRENTLY_Z_FALLING)
+	//Состав группы не меняется между этажами: forceMove под currently_z_moving захваты не рвёт.
+	if(!falling_movables)
+		falling_movables = falling.get_z_move_affected(ZMOVE_INCLUDE_PULLED)
+	falling.zMove(null, target, ZMOVE_CHECK_PULLEDBY|ZMOVE_INCLUDE_PULLED, falling_movables)
+	target.zImpact(falling, levels, src, falling_movables = falling_movables)
+
 	return TRUE
 
 /turf/proc/handleRCL(obj/item/rcl/C, mob/user)
@@ -411,8 +446,6 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		var/obj/O = AM
 		if(O.obj_flags & FROZEN)
 			O.make_unfrozen()
-	if(!AM.zfalling)
-		zFall(AM)
 
 /turf/proc/is_plasteel_floor()
 	return FALSE

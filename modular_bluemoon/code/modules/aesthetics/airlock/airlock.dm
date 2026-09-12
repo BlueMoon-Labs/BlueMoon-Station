@@ -132,7 +132,7 @@
 	else
 		lights_overlay = ""
 
-	var/mutable_appearance/lights_appearance = mutable_appearance(overlays_file, lights_overlay, FLOAT_LAYER, ABOVE_LIGHTING_PLANE)
+	var/mutable_appearance/lights_appearance = mutable_appearance(overlays_file, lights_overlay, FLOAT_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 
 	if(greyscale_lights_color && !light_state)
 		lights_appearance.color = greyscale_lights_color
@@ -169,7 +169,7 @@
 		for(var/heading in list(NORTH,SOUTH,EAST,WEST))
 			if(!(unres_sides & heading))
 				continue
-			var/mutable_appearance/floorlight = mutable_appearance(overlays_file, "unres_[heading]", FLOAT_LAYER, src, ABOVE_LIGHTING_PLANE)
+			var/mutable_appearance/floorlight = mutable_appearance(overlays_file, "unres_[heading]", FLOAT_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			switch (heading)
 				if (NORTH)
 					floorlight.pixel_x = 0

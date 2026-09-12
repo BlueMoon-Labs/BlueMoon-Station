@@ -336,7 +336,7 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	if(!light_mask)
 		return
 	if(light_mask && !(machine_stat & BROKEN) && powered())
-		. += emissive_appearance(icon, light_mask)
+		. += emissive_appearance(icon, light_mask, offset_spokesman = src)
 
 /obj/machinery/vending/obj_break(damage_flag)
 	. = ..()

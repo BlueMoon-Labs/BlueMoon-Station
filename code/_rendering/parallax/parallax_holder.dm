@@ -148,7 +148,7 @@
  * Gets the base parallax planemaster for things like turning
  */
 /datum/parallax_holder/proc/GetPlaneMaster()
-	return planemaster_override || (owner && (locate(/atom/movable/screen/plane_master/parallax) in owner?.screen))
+	return planemaster_override || owner?.mob?.hud_used?.get_plane_master(PLANE_SPACE_PARALLAX)
 
 /**
  * Syncs us to our parallax objects. Does NOT check if we should have those objects, that's Reset()'s job.
@@ -236,8 +236,7 @@
 		. |= L
 	C.screen |= .
 	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(PM)
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob?.hud_used?.get_true_plane_masters(PLANE_SPACE))
 			PM.color =  list(
 				0, 0, 0, 0,
 				0, 0, 0, 0,
@@ -251,8 +250,7 @@
 		return
 	C.screen -= layers
 	if(!secondary_map)
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(PM)
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob?.hud_used?.get_true_plane_masters(PLANE_SPACE))
 			PM.color =  initial(PM.color)
 
 /**

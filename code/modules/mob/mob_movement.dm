@@ -428,33 +428,40 @@
 	set name = "Move Upwards"
 	set category = "IC.Z Layer Move"
 
-	if(zMove(UP, TRUE))
-		to_chat(src, "<span class='notice'>You move upwards.</span>")
+	move_vertically(UP)
 
 /mob/verb/down()
 	set name = "Move Down"
 	set category = "IC.Z Layer Move"
 
-	if(zMove(DOWN, TRUE))
-		to_chat(src, "<span class='notice'>You move down.</span>")
+	move_vertically(DOWN)
 
-/mob/proc/zMove(dir, feedback = FALSE)
-	if(dir != UP && dir != DOWN)
+/// Общий путь вертикальных вербов: сначала лестница под ногами, потом полёт.
+/mob/proc/move_vertically(direction)
+	var/turf/current_turf = get_turf(src)
+	if(!current_turf)
 		return FALSE
-	var/turf/target = get_step_multiz(src, dir)
-	if(!target)
-		if(feedback)
-			to_chat(src, "<span class='warning'>There's nothing in that direction!</span>")
+
+	var/obj/structure/ladder/current_ladder = locate() in current_turf
+	if(current_ladder)
+		var/obj/structure/ladder/destination = (direction == UP) ? current_ladder.up : current_ladder.down
+		if(destination)
+			//Лестница не спрашивает can_z_move(), поэтому дееспособность проверяем здесь; при клике те же ворота стоят в check_menu().
+			if(!isobserver(src) && incapacitated())
+				to_chat(src, "<span class='warning'>Вы не в состоянии лезть по лестнице!</span>")
+				return FALSE
+			current_ladder.travel(direction == UP, src, isobserver(src), destination)
+			return TRUE
+
+	if(!zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
 		return FALSE
-	if(!canZMove(dir, target))
-		if(feedback)
-			to_chat(src, "<span class='warning'>You couldn't move there!</span>")
-		return FALSE
-	forceMove(target)
+	to_chat(src, "<span class='notice'>Вы перемещаетесь [direction == UP ? "вверх" : "вниз"].</span>")
 	return TRUE
 
-/mob/proc/canZMove(direction, turf/target)
-	return FALSE
+/mob/set_currently_z_moving(new_z_moving_value, forced = FALSE)
+	if(buckled)
+		return buckled.set_currently_z_moving(new_z_moving_value, forced)
+	return ..()
 
 /mob/Moved(atom/old_loc, Dir, Forced = FALSE)
 	. = ..()
@@ -468,5 +475,6 @@
 
 /mob/onTransitZ(old_z, new_z)
 	. = ..()
-	if(old_z != new_z)
-		client?.parallax_holder?.Reset()
+	if(old_z == new_z)
+		return
+	client?.parallax_holder?.Reset()

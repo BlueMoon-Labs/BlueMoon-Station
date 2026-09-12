@@ -1,19 +1,11 @@
-/// Produces a mutable appearance glued to the [EMISSIVE_PLANE] dyed white ([EMISSIVE_COLOR]).
-/// Uses BlueMoon's single-channel white emissive convention (NOT the NovaSector 3-channel red/green/blue),
-/// matching how the rest of the codebase (machinery, gateway, and the legacy emissive_copy helper) renders
-/// emissive overlays against the lighting-plane alpha mask.
-/// offset_spokesman: atom used for z-level plane offset reference (multiz support). Pass src/owner for body overlays.
-/proc/emissive_appearance(icon, icon_state = "", atom/offset_spokesman, layer, alpha = 255, appearance_flags = NONE, offset_const, effect_type = EMISSIVE_BLOOM)
-	if(isnull(layer))
-		layer = FLOAT_LAYER
-
-	var/mutable_appearance/appearance
-	if(offset_spokesman)
-		appearance = mutable_appearance(icon, icon_state, layer, offset_spokesman, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS, offset_const)
-	else
-		appearance = mutable_appearance(icon, icon_state, layer, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS)
-
+/// Produces a mutable appearance glued to the [EMISSIVE_PLANE] dyed to be the [EMISSIVE_COLOR].
+/proc/emissive_appearance(icon, icon_state = "", layer = FLOAT_LAYER, alpha = 255, appearance_flags = NONE, atom/offset_spokesman)
+	var/mutable_appearance/appearance = mutable_appearance(icon, icon_state, layer, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS)
 	appearance.color = GLOB.emissive_color
+	if(offset_spokesman)
+		SET_PLANE_EXPLICIT(appearance, EMISSIVE_PLANE, offset_spokesman)
+	else if(SSmapping.max_plane_offset)
+		stack_trace("emissive_appearance([icon], \"[icon_state]\") без offset_spokesman на карте со стопкой этажей: свечение ляжет на этаж 0 и прорежет его маску света")
 	return appearance
 
 /// Produces a mutable appearance glued to the [EMISSIVE_PLANE] dyed to be the [EM_BLOCK_COLOR].
@@ -21,11 +13,11 @@
 	if(isnull(layer))
 		layer = FLOAT_LAYER
 
-	var/mutable_appearance/appearance
-	if(offset_spokesman)
-		appearance = mutable_appearance(icon, icon_state, layer, offset_spokesman, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS, offset_const)
-	else
-		appearance = mutable_appearance(icon, icon_state, layer, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS)
+	var/mutable_appearance/appearance = mutable_appearance(icon, icon_state, layer, EMISSIVE_PLANE, alpha, appearance_flags | EMISSIVE_APPEARANCE_FLAGS)
+	if(!isnull(offset_const))
+		SET_PLANE_W_SCALAR(appearance, EMISSIVE_PLANE, offset_const)
+	else if(offset_spokesman)
+		SET_PLANE_EXPLICIT(appearance, EMISSIVE_PLANE, offset_spokesman)
 
 	appearance.color = GLOB.em_block_color
 	return appearance

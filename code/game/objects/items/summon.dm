@@ -301,24 +301,25 @@
 	atom = new
 	if(!appearance)
 		GenerateAppearance()
+	atom.glow_icon = icon
+	atom.glow_state = icon_state
 	atom.appearance = appearance
+	atom.update_appearance(UPDATE_OVERLAYS)
 	atom.moveToNullspace()
 	if(host)
 		Reset()
 
 /datum/summon_weapon/proc/GenerateAppearance()
-	if(!appearance)
-		appearance = new
-		appearance.icon = icon
-		appearance.icon_state = icon_state
-		appearance.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-		appearance.opacity = FALSE
-		appearance.plane = GAME_PLANE
-		appearance.layer = ABOVE_MOB_LAYER
-		appearance.appearance_flags = KEEP_TOGETHER
-		appearance.overlays = list(
-			emissive_appearance(icon, icon_state)
-		)
+	if(appearance)
+		return
+	appearance = new
+	appearance.icon = icon
+	appearance.icon_state = icon_state
+	appearance.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance.opacity = FALSE
+	appearance.plane = GAME_PLANE
+	appearance.layer = ABOVE_MOB_LAYER
+	appearance.appearance_flags = KEEP_TOGETHER
 
 /datum/summon_weapon/proc/Reset(immediate = FALSE, del_no_host = TRUE)
 	angle = null
@@ -511,10 +512,18 @@
 	density = FALSE
 	/// locked atom
 	var/atom/locked
+	/// Спрайт свечения; сам оверлей собирает update_overlays(), чтобы он переезжал по этажам вместе с эффектом.
+	var/glow_icon
+	var/glow_state
 
 /atom/movable/summon_weapon_effect/Destroy()
 	Release()
 	return ..()
+
+/atom/movable/summon_weapon_effect/update_overlays()
+	. = ..()
+	if(glow_icon)
+		. += emissive_appearance(glow_icon, glow_state, offset_spokesman = src)
 
 /atom/movable/summon_weapon_effect/proc/Lock(atom/target)
 	if(locked == target)

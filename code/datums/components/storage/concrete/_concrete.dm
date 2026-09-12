@@ -123,6 +123,7 @@
 /datum/component/storage/concrete/_removal_reset(atom/movable/thing)
 	thing.layer = initial(thing.layer)
 	thing.plane = initial(thing.plane)
+	SET_PLANE_IMPLICIT(thing, initial(thing.plane))
 	thing.mouse_opacity = initial(thing.mouse_opacity)
 	if(thing.maptext)
 		thing.maptext = ""

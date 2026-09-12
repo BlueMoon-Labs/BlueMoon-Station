@@ -107,7 +107,9 @@
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
 
-/datum/map_template/proc/load_new_z(orientation = SOUTH, list/ztraits = src.ztraits || list(ZTRAIT_AWAY = TRUE), centered = TRUE)
+/// Грузит шаблон новыми z-уровнями, по одному на каждый z в файле, и сцепляет соседние этажи в связку.
+/// ztraits - либо один набор на все этажи, либо список наборов по этажам; копия набора у каждого этажа своя.
+/datum/map_template/proc/load_new_z(orientation = SOUTH, list/ztraits = src.ztraits, centered = TRUE, link_stack = TRUE)
 	// Пометка для чёрного ящика МК. Новый z-уровень - самое дорогое разовое выделение памяти
 	// в раунде (сам уровень плюс объекты света, 150-250 МБ), то есть первый подозреваемый,
 	// когда процесс умирает об потолок адресного пространства. Шаблоны, которые грузятся в
@@ -115,33 +117,20 @@
 	var/previous_template = SSmapping.loading_template
 	SSmapping.loading_template = name
 
-	var/x = centered? max(round((world.maxx - width) / 2), 1) : 1
-	var/y = centered? max(round((world.maxy - height) / 2), 1) : 1
-
 	if(!width || !height || !zdepth)
 		preload_size(mappath)
 
-	var/datum/space_level/first_level
-	if(zdepth == 1)
-		first_level = SSmapping.add_new_zlevel(name, ztraits)
-	else
-		var/list/trait_sets = list()
-		if(!length(ztraits))
-			for(var/i in 1 to zdepth)
-				trait_sets += list(list(ZTRAIT_AWAY = TRUE))
-		else if(zdepth != ztraits.len)
-			for(var/i in 1 to min(zdepth, ztraits.len))
-				trait_sets += list(ztraits[i])
-			while(trait_sets.len < zdepth)
-				trait_sets += list(trait_sets.len ? trait_sets[trait_sets.len] : ztraits)
-		else
-			for(var/i in 1 to zdepth)
-				trait_sets += list(ztraits[i])
-		for(var/i in 1 to zdepth)
-			var/level_name = (i == 1) ? name : "[name] [i]"
-			var/datum/space_level/level = SSmapping.add_new_zlevel(level_name, trait_sets[i])
-			if(i == 1)
-				first_level = level
+	var/x = centered? max(round((world.maxx - width) / 2), 1) : 1
+	var/y = centered? max(round((world.maxy - height) / 2), 1) : 1
+	var/depth = max(zdepth, 1)
+
+	var/list/trait_sets = build_z_trait_sets(ztraits, depth)
+	var/list/created = list()
+	for(var/index in 1 to depth)
+		var/level_name = (index == 1) ? name : "[name] [index]"
+		created += SSmapping.add_new_zlevel(level_name, trait_sets[index])
+
+	var/datum/space_level/first_level = created[1]
 
 	var/datum/parsed_map/parsed = load_map(file(mappath), x, y, first_level.z_value, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop = TRUE, orientation = orientation)
 	var/list/bounds = parsed.bounds
@@ -149,16 +138,44 @@
 		SSmapping.loading_template = previous_template
 		return FALSE
 
+	if(link_stack)
+		link_template_stack(created)
+
 	repopulate_sorted_areas()
 
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
-	smooth_zlevel(world.maxz)
-	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
-	on_map_loaded(world.maxz, parsed.bounds)
+	for(var/datum/space_level/level as anything in created)
+		smooth_zlevel(level.z_value)
+	log_game("Z-level [name] loaded at [x],[y],[first_level.z_value][depth > 1 ? " (этажей: [depth])" : ""]")
+	on_map_loaded(first_level.z_value, parsed.bounds)
 
 	SSmapping.loading_template = previous_template
 	return first_level
+
+/// Разворачивает ztraits в набор трейтов на каждый этаж. Случаи различает ztraits[1]: у assoc-списка индекс отдаёт ключ, а не список.
+/datum/map_template/proc/build_z_trait_sets(list/ztraits, depth)
+	. = list()
+	if(!length(ztraits))
+		for(var/index in 1 to depth)
+			. += list(list(ZTRAIT_AWAY = TRUE))
+		return
+
+	if(islist(ztraits[1]))
+		for(var/index in 1 to depth)
+			var/list/level_traits = (index <= length(ztraits)) ? ztraits[index] : ztraits[length(ztraits)]
+			. += list(level_traits.Copy())
+		return
+
+	for(var/index in 1 to depth)
+		. += list(ztraits.Copy())
+
+/// Сцепляет соседние этажи шаблона в связку.
+/datum/map_template/proc/link_template_stack(list/created)
+	var/list/pairs = list()
+	for(var/index in 1 to length(created) - 1)
+		pairs += list(list(created[index], created[index + 1]))
+	return SSmapping.link_z_level_pairs(pairs)
 
 //Override for custom behavior
 /datum/map_template/proc/on_map_loaded(z, list/bounds)

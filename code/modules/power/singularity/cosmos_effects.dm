@@ -73,30 +73,25 @@ GLOBAL_VAR_INIT(ratvar_cosmos_active, FALSE)
 	for(var/client/C in GLOB.clients)
 		if(!C?.mob || isnewplayer(C.mob))
 			continue
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(!PM)
-			continue
-		PM.color = grey_matrix
-		animate(PM, color = black_matrix, time = black_time, easing = SINE_EASING)
+		//Подложка космоса своя на каждом этаже стопки: красим все, а не первую в screen.
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob.hud_used?.get_true_plane_masters(PLANE_SPACE))
+			PM.color = grey_matrix
+			animate(PM, color = black_matrix, time = black_time, easing = SINE_EASING)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_cosmos_parallax_finalize_client), C, final_matrix, final_time), black_time)
 
 /proc/_cosmos_parallax_finalize_client(client/C, list/final_matrix, final_time)
-	if(!C)
+	if(!C?.mob)
 		return
-	var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-	if(!PM)
-		return
-	animate(PM, color = final_matrix, time = final_time, easing = SINE_EASING)
+	for(var/atom/movable/screen/plane_master/PM as anything in C.mob.hud_used?.get_true_plane_masters(PLANE_SPACE))
+		animate(PM, color = final_matrix, time = final_time, easing = SINE_EASING)
 
 /proc/_cosmos_parallax_direct_anim(list/final_matrix, final_time)
 	set waitfor = FALSE
 	for(var/client/C in GLOB.clients)
 		if(!C?.mob || isnewplayer(C.mob))
 			continue
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(!PM)
-			continue
-		animate(PM, color = final_matrix, time = final_time, easing = SINE_EASING)
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob.hud_used?.get_true_plane_masters(PLANE_SPACE))
+			animate(PM, color = final_matrix, time = final_time, easing = SINE_EASING)
 
 /proc/infernal_ascension_atmosphere(mob/source)
 	for(var/mob/M in GLOB.player_list)

@@ -65,6 +65,8 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 				continue	// this would reference the original's object, that will break when it is used or deleted.
 			else
 				O.vars[V] = original.vars[V]
+		//Вместе с appearance приехала плоскость этажа оригинала: копия рисуется на своём.
+		SET_PLANE_IMPLICIT(O, PLANE_TO_TRUE(O.plane))
 
 	if(isobj(O))
 		var/obj/N = O
@@ -258,6 +260,7 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	//filters тоже исключены из общего цикла и не переезжали ни с чем: присваиваем значением,
 	//как это делает mass_apply в filterrific. filter_data (обычный список) везёт общий цикл
 	filters = template.filters
+	SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
 	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
 	//заводим/гасим собственный по свежим light_range/light_power/light_on.
 	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов

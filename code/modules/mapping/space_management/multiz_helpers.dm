@@ -1,31 +1,17 @@
 /proc/get_step_multiz(ref, dir)
 	if(dir & UP)
 		dir &= ~UP
-		return get_step(SSmapping.get_turf_above(get_turf(ref)), dir)
+		var/turf/above = GET_TURF_ABOVE(get_turf(ref))
+		return dir ? get_step(above, dir) : above
 	if(dir & DOWN)
 		dir &= ~DOWN
-		return get_step(SSmapping.get_turf_below(get_turf(ref)), dir)
+		var/turf/below = GET_TURF_BELOW(get_turf(ref))
+		return dir ? get_step(below, dir) : below
 	return get_step(ref, dir)
 
+/// Связка z-уровней целиком. Кэш SSmapping, а не свежий список: не мутировать.
 /proc/get_multiz_accessible_levels(center_z)
-	. = list(center_z)
-	var/other_z = center_z
-	var/offset
-	while((offset = SSmapping.level_trait(other_z, ZTRAIT_DOWN)))
-		if(length(offset))
-			break
-		other_z += offset
-		if(other_z in .)
-			break	// no infinite loops
-		. += other_z
-	other_z = center_z
-	while((offset = SSmapping.level_trait(other_z, ZTRAIT_UP)))
-		if(length(offset))
-			break
-		other_z += offset
-		if(other_z in .)
-			break	// no infinite loops
-		. += other_z
+	return SSmapping.get_connected_levels(center_z)
 
 /proc/get_dir_multiz(turf/us, turf/them)
 	us = get_turf(us)
@@ -48,8 +34,8 @@
 		return (dir | get_dir(us, them))
 
 /turf/proc/above()
-	return get_step_multiz(src, UP)
+	return GET_TURF_ABOVE(src)
 
 /turf/proc/below()
-	return get_step_multiz(src, DOWN)
+	return GET_TURF_BELOW(src)
 

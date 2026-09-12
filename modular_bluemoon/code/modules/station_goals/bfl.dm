@@ -714,7 +714,7 @@
 	SIGNAL_HANDLER
 	. = FALSE
 	var/turf/T = get_turf(src)
-	if(!istransparentturf(T) && !isspaceturf(T)) //we're not open. REOPEN
+	if(!isopenspaceturf(T) && !isspaceturf(T)) //we're not open. REOPEN
 		T.ScrapeAway(INFINITY)
 	var/thing_to_check = get_turf(src)
 	if(AM && !isspaceturf(AM))

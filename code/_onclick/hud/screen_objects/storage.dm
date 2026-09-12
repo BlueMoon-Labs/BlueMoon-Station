@@ -188,8 +188,8 @@
 /atom/movable/screen/storage/volumetric_box/center/makeItemActive()
 	if(!holder || !holder.our_item)
 		return
-	holder.our_item.layer = VOLUMETRIC_STORAGE_ACTIVE_ITEM_LAYER		//make sure we display infront of the others!
-	holder.our_item.plane = VOLUMETRIC_STORAGE_ACTIVE_ITEM_PLANE
+	holder.layer = VOLUMETRIC_STORAGE_ACTIVE_ITEM_LAYER
+	holder.plane = VOLUMETRIC_STORAGE_ACTIVE_ITEM_PLANE
 
 /atom/movable/screen/storage/volumetric_edge
 	layer = VOLUMETRIC_STORAGE_BOX_LAYER
@@ -228,10 +228,10 @@
 	set_item(I)
 
 /atom/movable/screen/storage/item_holder/Destroy()
-	vis_contents.Cut()
-	our_item = null
+	set_item(null)
 	return ..()
 
+/// Предмет рисуется на плоскости держателя: своя у него смещена под этаж и множится освещением.
 /atom/movable/screen/storage/item_holder/proc/set_item(obj/item/I)
 	//предмет мог умереть между сбором содержимого и отрисовкой (слияние стеков):
 	//на удалённый COMSIG_PARENT_QDELETING уже не придёт, ссылку держать нельзя
@@ -242,9 +242,11 @@
 	vis_contents.Cut()
 	if(our_item)
 		UnregisterSignal(our_item, COMSIG_PARENT_QDELETING)
+		our_item.vis_flags &= ~VIS_INHERIT_PLANE
 	our_item = I
 	if(I)
 		RegisterSignal(I, COMSIG_PARENT_QDELETING, PROC_REF(on_item_deleted))
+		I.vis_flags |= VIS_INHERIT_PLANE
 		vis_contents += I
 
 /// Экраны хранилища живут в пуле дольше своего содержимого. Стек, слившийся

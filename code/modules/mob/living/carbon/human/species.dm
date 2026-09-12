@@ -933,9 +933,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					// Left and right eyes are handled independently via the hair's per-side flags.
 					var/datum/sprite_accessory/hair/hairstyle = GLOB.hair_styles_list[H.hair_style]
 					if(!istype(hairstyle) || !hairstyle.hides_left_eye)
-						standing += emissive_copy(left_eye)
+						standing += emissive_copy(left_eye, offset_spokesman = H)
 					if(!istype(hairstyle) || !hairstyle.hides_right_eye)
-						standing += emissive_copy(right_eye)
+						standing += emissive_copy(right_eye, offset_spokesman = H)
 
 	if(H.nail_style)
 		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)

@@ -7,6 +7,8 @@
 	anchored = TRUE
 	var/obj/structure/ladder/down   //the ladder below this one
 	var/obj/structure/ladder/up     //the ladder above this one
+	/// Называть ли, куда ведёт лестница: у загадочной лестницы весь смысл в том, что это неизвестно.
+	var/reveal_destination = TRUE
 
 /obj/structure/ladder/Initialize(mapload, obj/structure/ladder/up, obj/structure/ladder/down)
 	..()
@@ -68,6 +70,28 @@
 	else	//wtf make your ladders properly assholes
 		icon_state = "ladder00"
 
+/// Название места, куда ведёт этот конец лестницы.
+/obj/structure/ladder/proc/describe_link(obj/structure/ladder/target)
+	if(!target)
+		return null
+	if(!reveal_destination)
+		return "неизвестно куда"
+	var/turf/landing = get_turf(target)
+	if(!landing)
+		return null
+	return get_area_name(landing) || "неизвестно куда"
+
+/obj/structure/ladder/examine(mob/user)
+	. = ..()
+	var/up_where = describe_link(up)
+	var/down_where = describe_link(down)
+	if(up_where)
+		. += span_notice("Вверху: [up_where].")
+	if(down_where)
+		. += span_notice("Внизу: [down_where].")
+	if(!up_where && !down_where)
+		. += span_warning("Не ведёт никуда: соседних лестниц ни сверху, ни снизу нет.")
+
 /obj/structure/ladder/singularity_pull()
 	if (!(resistance_flags & INDESTRUCTIBLE))
 		visible_message("<span class='danger'>[src] is torn to pieces by the gravitational pull!</span>")
@@ -75,17 +99,12 @@
 
 /obj/structure/ladder/proc/travel(going_up, mob/user, is_ghost, obj/structure/ladder/ladder)
 	if(!is_ghost)
-		show_fluff_message(going_up, user)
+		show_fluff_message(going_up, user, ladder)
 		ladder.add_fingerprint(user)
 
 	var/turf/T = get_turf(ladder)
-	var/atom/movable/AM
-	if(user.pulling)
-		AM = user.pulling
-		AM.forceMove(T)
-	user.forceMove(T)
-	if(AM)
-		user.start_pulling(AM)
+	//Лестница сама решает, куда ставит: проверки полёта и препятствий не нужны, а пристёгнутые и буксируемые едут с мобом.
+	user.zMove(null, T, ZMOVE_CHECK_PULLEDBY|ZMOVE_ALLOW_BUCKLED|ZMOVE_INCLUDE_PULLED)
 
 	//reopening ladder radial menu ahead
 	T = get_turf(user)
@@ -97,22 +116,23 @@
 	if (!is_ghost && !in_range(src, user))
 		return
 
-	var/list/tool_list = list(
-		"Up" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH),
-		"Down" = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH)
-		)
+	//Подсказка при наведении берётся из ключа списка, см. radial.dm.
+	var/up_label = up ? "Вверх: [describe_link(up)]" : "Вверх"
+	var/down_label = down ? "Вниз: [describe_link(down)]" : "Вниз"
+	var/list/tool_list = list()
+	tool_list[up_label] = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = NORTH)
+	tool_list[down_label] = image(icon = 'icons/Testing/turf_analysis.dmi', icon_state = "red_arrow", dir = SOUTH)
 
 	if (up && down)
 		var/result = show_radial_menu(user, src, tool_list, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 		if (!is_ghost && !in_range(src, user))
 			return  // nice try
-		switch(result)
-			if("Up")
-				travel(TRUE, user, is_ghost, up)
-			if("Down")
-				travel(FALSE, user, is_ghost, down)
-			if("Cancel")
-				return
+		if(result == up_label)
+			travel(TRUE, user, is_ghost, up)
+		else if(result == down_label)
+			travel(FALSE, user, is_ghost, down)
+		else
+			return
 	else if(up)
 		travel(TRUE, user, is_ghost, up)
 	else if(down)
@@ -146,11 +166,13 @@
 	use(user, TRUE)
 	return ..()
 
-/obj/structure/ladder/proc/show_fluff_message(going_up, mob/user)
+/obj/structure/ladder/proc/show_fluff_message(going_up, mob/user, obj/structure/ladder/target)
+	var/where = describe_link(target)
+	var/suffix = where ? ", [where]" : ""
 	if(going_up)
-		user.visible_message("[user] climbs up [src].","<span class='notice'>You climb up [src].</span>")
+		user.visible_message("[user] забирается вверх по [src].", span_notice("Вы забираетесь вверх по [src][suffix]."))
 	else
-		user.visible_message("[user] climbs down [src].","<span class='notice'>You climb down [src].</span>")
+		user.visible_message("[user] спускается вниз по [src].", span_notice("Вы спускаетесь вниз по [src][suffix]."))
 
 
 // Indestructible away mission ladders which link based on a mapped ID and height value rather than X/Y/Z.
@@ -198,6 +220,7 @@
 /obj/structure/ladder/unbreakable/binary
 	name = "mysterious ladder"
 	desc = "Where does it go?"
+	reveal_destination = FALSE
 	height = 0
 	id = "lavaland_binary"
 	var/area_to_place = /area/lavaland/surface/outdoors

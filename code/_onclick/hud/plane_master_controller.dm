@@ -2,6 +2,8 @@
 /atom/movable/plane_master_controller
 	///List of planes in this controllers control. Initially this is a normal list, but becomes an assoc list of plane numbers as strings | plane instance
 	var/list/controlled_planes = list()
+	/// Несмещённые плоскости из объявления типа.
+	var/list/true_planes
 	///hud that owns this controller
 	var/datum/hud/owner_hud
 
@@ -12,14 +14,24 @@ INITIALIZE_IMMEDIATE(/atom/movable/plane_master_controller)
 /atom/movable/plane_master_controller/Initialize(mapload, datum/hud/hud)
 	. = ..()
 	owner_hud = hud
-	var/assoc_controlled_planes = list()
-	for(var/i in controlled_planes)
-		var/atom/movable/screen/plane_master/instance = owner_hud.plane_masters["[i]"]
-		if(!instance) //If we looked for a hud that isn't instanced, just keep going
+	true_planes = controlled_planes
+	controlled_planes = list()
+	for(var/i in true_planes)
+		if(!length(owner_hud.get_true_plane_masters(i)))
 			stack_trace("[i] isn't a valid plane master layer for [owner_hud.type], are you sure it exists in the first place?")
-			continue
-		assoc_controlled_planes["[i]"] = instance
-	controlled_planes = assoc_controlled_planes
+	adopt_plane_masters()
+
+/// Подхватить мастеров, достроенных после нас, вместе с уже повешенными фильтрами.
+/atom/movable/plane_master_controller/proc/adopt_plane_masters()
+	for(var/true_plane in true_planes)
+		for(var/atom/movable/screen/plane_master/instance as anything in owner_hud.get_true_plane_masters(true_plane))
+			var/plane_key = "[instance.plane]"
+			if(controlled_planes[plane_key])
+				continue
+			controlled_planes[plane_key] = instance
+			for(var/filter_name in filter_data)
+				var/list/params = filter_data[filter_name]
+				instance.add_filter(filter_name, params["priority"], params - "priority")
 
 // From BeeStation
 /atom/movable/plane_master_controller/Destroy()

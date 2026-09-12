@@ -73,20 +73,20 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 		if(!ignore_walls) //these sounds don't carry through walls
 			listeners = get_hearers_in_view(maxdistance, turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-			if(above_turf && istransparentturf(above_turf))
+			if(above_turf && isopenspaceturf(above_turf))
 				listeners += get_hearers_in_view(maxdistance, above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-			if(below_turf && istransparentturf(turf_source))
+			if(below_turf && isopenspaceturf(turf_source))
 				listeners += get_hearers_in_view(maxdistance, below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
 			extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)
 		else
 			listeners = SSspatial_grid.orthogonal_range_search(turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-			if(above_turf && istransparentturf(above_turf))
+			if(above_turf && isopenspaceturf(above_turf))
 				extra_listeners_1 = SSspatial_grid.orthogonal_range_search(above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-			if(below_turf && istransparentturf(turf_source))
+			if(below_turf && isopenspaceturf(turf_source))
 				extra_listeners_2 = SSspatial_grid.orthogonal_range_search(below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 	else //фолбэк до инита грида: старый обход клиентов z-уровня
 		// Реестры читаем через гарды: до MaxZChanged() строки под свежий z в них ещё нет,
@@ -97,18 +97,18 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 			listeners = z_listeners ? z_listeners.Copy() : list()
 			listeners = listeners & hearers(maxdistance,turf_source)
 
-			if(above_turf && istransparentturf(above_turf))
+			if(above_turf && isopenspaceturf(above_turf))
 				listeners += hearers(maxdistance,above_turf)
 
-			if(below_turf && istransparentturf(turf_source))
+			if(below_turf && isopenspaceturf(turf_source))
 				listeners += hearers(maxdistance,below_turf)
 		else
 			listeners = SSmobs.clients_on_zlevel(source_z)
 
-			if(above_turf && istransparentturf(above_turf))
+			if(above_turf && isopenspaceturf(above_turf))
 				extra_listeners_1 = SSmobs.clients_on_zlevel(above_turf.z)
 
-			if(below_turf && istransparentturf(turf_source))
+			if(below_turf && isopenspaceturf(turf_source))
 				extra_listeners_2 = SSmobs.clients_on_zlevel(below_turf.z)
 
 		extra_dead_listeners = SSmobs.dead_players_on_zlevel(source_z)

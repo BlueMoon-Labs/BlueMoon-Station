@@ -28,7 +28,7 @@
 /turf/open/floor/catwalk_floor/Destroy()
 	for(var/atom/A in contents)
 		if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-			A.plane = initial(A.plane)
+			SET_PLANE_EXPLICIT(A, initial(A.plane), src)
 	. = ..()
 	// BLUEMOON ADD END
 
@@ -43,7 +43,7 @@
 		catwalk_overlay = new()
 		catwalk_overlay.icon = icon
 		catwalk_overlay.icon_state = "[catwalk_type]_above"
-		catwalk_overlay.plane = FLOOR_PLANE // BLUEMOON EDIT - catwalks_fix
+		SET_PLANE_EXPLICIT(catwalk_overlay, FLOOR_PLANE, src)
 		catwalk_overlay.layer = CATWALK_LAYER
 		catwalk_overlay = catwalk_overlay.appearance
 
@@ -52,11 +52,11 @@
 	// BLUEMOON ADD START - catwalks_fix
 		for(var/atom/A in contents)
 			if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-				A.plane = FLOOR_PLANE
+				SET_PLANE_EXPLICIT(A, FLOOR_PLANE, src)
 	else
 		for(var/atom/A in contents)
 			if(is_type_in_list(A, CATWALK_BELOW_OBJECTS))
-				A.plane = initial(A.plane)
+				SET_PLANE_EXPLICIT(A, initial(A.plane), src)
 	// BLUEMOON ADD END
 
 /turf/open/floor/catwalk_floor/screwdriver_act(mob/living/user, obj/item/tool)
