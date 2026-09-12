@@ -6,6 +6,9 @@
 /// Открытый мешок обязан оставить базовым стейтом закрытый мешок и добавить зев
 /// оверлеем поверх него. Закрытие снимает оверлей и ничего больше не меняет.
 /datum/unit_test/bodybag_open_overlay/Run()
+	for(var/atom/movable/occupant in run_loc_floor_bottom_left.contents.Copy())
+		if(istype(occupant, /obj/structure/closet) || isliving(occupant))
+			occupant.forceMove(run_loc_floor_top_right)
 	var/obj/structure/closet/body_bag/bag = allocate(/obj/structure/closet/body_bag)
 
 	TEST_ASSERT_EQUAL(bag.icon_state, "bodybag", "закрытый мешок стоит не на базовом стейте")
