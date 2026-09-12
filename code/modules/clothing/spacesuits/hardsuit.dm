@@ -123,6 +123,7 @@
 	var/helmettype = /obj/item/clothing/head/helmet/space/hardsuit
 	var/obj/item/tank/jetpack/suit/jetpack = null
 	var/hardsuit_type
+	brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони хардсьюта
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemood add
 
 /obj/item/clothing/suit/space/hardsuit/Initialize(mapload)
@@ -162,6 +163,11 @@
 
 /obj/item/clothing/suit/space/hardsuit/equipped(mob/user, slot)
 	..()
+	// BLUEMOON ADD START
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+	// BLUEMOON ADD END
 	if(jetpack)
 		if(slot == ITEM_SLOT_OCLOTHING)
 			for(var/X in jetpack.actions)
@@ -170,6 +176,11 @@
 
 /obj/item/clothing/suit/space/hardsuit/dropped(mob/user)
 	..()
+	// BLUEMOON ADD START
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
+	// BLUEMOON ADD END
 	if(jetpack)
 		for(var/X in jetpack.actions)
 			var/datum/action/A = X
@@ -408,6 +419,7 @@
 	hardsuit_type = "syndi"
 	w_class = WEIGHT_CLASS_NORMAL
 	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, WOUND = 25)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi
 	jetpack = /obj/item/tank/jetpack/suit
@@ -440,6 +452,7 @@
 	hardsuit_type = "syndielite"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/elite
 	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -534,6 +547,7 @@
 	slowdown = -0.5
 	w_class = WEIGHT_CLASS_NORMAL
 	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 35, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/teleportation_scroll, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/wizard
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
@@ -653,6 +667,7 @@
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/blue_shield
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	unique_reskin = null
 
 /obj/item/clothing/suit/space/hardsuit/blue_shield/Initialize()
@@ -690,6 +705,7 @@
 	item_state = "sec_hardsuit"
 	tail_state = "sec"
 	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 	//BLUEMOON ADD вариация хардсьюта сб
@@ -736,6 +752,7 @@
 	armor = list(MELEE = 45, BULLET = 50, LASER = 40, ENERGY = 50, BOMB = 25, BIO = 100, RAD = 50, FIRE = 95, ACID = 95, WOUND = 40)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/hos
 	jetpack = /obj/item/tank/jetpack/suit
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	unique_reskin = list(
 		"Standart Variation" = list(RESKIN_ICON_STATE = "hardsuit-hos"),
 		"OTA Variation" = list(RESKIN_ICON_STATE = "hardsuit-alliance")
@@ -780,6 +797,7 @@
 	item_state = "capspacesuit"
 	tail_state = "captain"
 	armor = list(MELEE = 40, BULLET = 50, LASER = 50, ENERGY = 25, BOMB = 50, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 25)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT //this needed to be added a long fucking time ago
@@ -847,6 +865,7 @@
 	item_state = "anc_hardsuit"
 	tail_state = "atmos"
 	armor = list(MELEE = 20, BULLET = 15, LASER = 15, ENERGY = 45, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 15)
+	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	slowdown = 4 //Slow
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage, /obj/item/construction/rcd, /obj/item/pipe_dispenser)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ancient/mason
@@ -940,6 +959,7 @@
 	tail_state = "syndicate-blood" // Этот костюм вообще не используется на самом деле в игре, ну да ладно
 	slowdown = 0.5
 	armor = list(MELEE = 40, BULLET = 30, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 20, FIRE = 50, ACID = 75, WOUND = 15)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/soviet
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
 
@@ -956,6 +976,7 @@
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/hos
 	allowed = null
 	armor = list(MELEE = 30, BULLET = 15, LASER = 30, ENERGY = 10, BOMB = 10, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 20)
+	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/max_charges = 3 //How many charges total the shielding has
 	var/current_charges //if null, will default to max_chargs
@@ -986,6 +1007,7 @@
 	hardsuit_type = "ert_gmedical"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/shielded/ctf
 	armor = list(MELEE = 0, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 100, RAD = 100, FIRE = 95, ACID = 95, WOUND = 30)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	slowdown = 0
 	max_charges = 5
 
@@ -1040,6 +1062,7 @@
 	tail_state = "syndicate-blood"
 	hardsuit_type = "syndi"
 	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/shielded/syndi
 	slowdown = 0
@@ -1069,6 +1092,7 @@
 	max_charges = 4
 	recharge_delay = 15
 	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/shielded/swat
@@ -1144,6 +1168,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF | LAVA_PROOF
 	armor = list(melee = 50, bullet = 10, laser = 10, energy = 10, bomb = 50, bio = 100, rad = 50, fire = 100, acid = 100, WOUND = 30)
+	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/storage/bag/ore, /obj/item/pickaxe)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/lavaknight
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS

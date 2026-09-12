@@ -95,6 +95,7 @@
 	tail_state = "syndicate-elite"
 	hardsuit_type = "iron_tombstone"
 	armor = list(MELEE = 50, BULLET = 70, LASER = 10,ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
+	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	strip_delay = 120
 	equip_delay_self = 20
@@ -107,11 +108,20 @@
 // Взрыв при экипировке
 /obj/item/clothing/suit/space/syndicate/darktemplar/equipped(mob/user, slot)
 	..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
 	if(slot == ITEM_SLOT_OCLOTHING)
 		if(!IS_INTEQ(user))
 			to_chat(user, "<span class='danger'><B>Запуск проверки генетического кода</B><br> Обнаружены неавторизованные сигнатуры. <B>ПРОИЗВОДИТСЯ ОЧИСТКА</B></span>")
 			playsound(get_turf(src), 'sound/machines/nuke/confirm_beep.ogg', 65, 1, 1)
 			addtimer(CALLBACK(src, PROC_REF(explode)), 3 SECONDS)
+
+/obj/item/clothing/suit/space/syndicate/darktemplar/dropped(mob/user)  // BLUEMOON ADD
+	..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/space/syndicate/darktemplar/proc/explode()
 	do_sparks(3, 1, src)
@@ -163,6 +173,7 @@
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	alternate_screams = SPASEMAR_SCREAMS
 	armor = list(MELEE = 50, BULLET = 50, LASER = 35, ENERGY = 30, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 20)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp.ogg'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
@@ -288,7 +299,13 @@
 		return .
 	if(!isturf(owner.loc))
 		return .
-	if((attack_type & ATTACK_TYPE_PROJECTILE) && (rand(3) != 1))
+	if(attack_type & ATTACK_TYPE_PROJECTILE)
+		var/obj/item/active_hand = owner.get_active_held_item()
+		var/obj/item/inactive_hand = owner.get_inactive_held_item()
+		if(active_hand && inactive_hand)
+			return .
+		if((active_hand || inactive_hand) && !prob(50))
+			return .
 		owner.visible_message(pick("<span class='danger'>[owner] чудом уворачивается от пули, выгнувшись спиной в последний момент!</span>", "<span class='danger'>[owner] ловко уходит в сторону, предугадав траекторию выстрела!</span>", "<span class='danger'>[owner] делает резкий рывок, едва успевая уйти из под огня!</span>"))
 		playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, 1)
 		return BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL
@@ -494,6 +511,7 @@
 	cold_protection = CHEST|GROIN|ARMS
 	heat_protection = CHEST|GROIN|ARMS
 	armor = list(MELEE = 30, BULLET = 60, LASER = 25, ENERGY = 20, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/vest/ftu/ComponentInitialize()
 	. = ..()

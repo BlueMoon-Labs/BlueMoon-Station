@@ -126,6 +126,19 @@
 			Сказать, что они полностью нелетальные - было бы враньём."
 	item = /obj/item/ammo_box/magazine/m12g/stun
 
+/datum/uplink_item/ammo/shotgun/flechette
+	name = "12g flechette Drum"
+	desc = "Альтернативный барабан на 8 картечных флешет для дробовика Bulldog. \
+			Кто то подумал что засунуть гвозди в картридж было хорошей идеей.. И чёрт подери был прав!"
+	item = /obj/item/ammo_box/magazine/m12g/flechette
+
+/datum/uplink_item/ammo/shotgun/frangible
+	name = "12g frangible slug Drum"
+	desc = "Альтернативный барабан на 8 анти-материальных пулевых патронов для дробовика Bulldog. \
+			Пусть они не так хороши против плоти, но зато дверь на против вылетит со стилем."
+	item = /obj/item/ammo_box/magazine/m12g/frangible
+	cost = 1
+
 /datum/uplink_item/ammo/revolver
 	name = ".357 Speed Loader"
 	desc = "Быстрозарядник на семь патронов .357 Magnum, можно дозарядить отдельными пулями. \

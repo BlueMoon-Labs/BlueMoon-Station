@@ -739,7 +739,13 @@ SUBSYSTEM_DEF(lighting)
 			continue
 		idle_since_by_z[key] = since
 	// Гейт стоит после прохода: книга простоя обязана тикать и ниже порога.
-	if(!lighting_teardown_pressure_allows(pressure))
+	var/growth_mb_per_minute
+	var/list/sample_times = SStime_track?.memory_sample_times
+	if(length(sample_times) >= 2)
+		var/latest_sample = sample_times[length(sample_times)]
+		if(latest_sample - sample_times[1] >= LIGHTING_TEARDOWN_FORECAST_TIME && ISINRANGE(world.time - latest_sample, 0, LIGHTING_TEARDOWN_FORECAST_MAX_AGE))
+			growth_mb_per_minute = SStime_track.memory_growth_mb_per_minute
+	if(!lighting_teardown_pressure_allows(pressure, growth_mb_per_minute, SStime_track?.process_address_ceiling_mb))
 		return
 	if(!length(idle_since_by_z))
 		return

@@ -949,6 +949,7 @@
 	icon_state = "hardsuit-gear"
 	item_state = "rig-suit"
 	armor = list(MELEE = 40, BULLET = 20, LASER = 35, ENERGY = 15, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 20)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	slowdown = 1
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/gearsuit
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT

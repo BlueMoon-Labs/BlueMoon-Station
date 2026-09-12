@@ -345,8 +345,8 @@
 		return TRUE // Нет толстой брони
 
 	if(bypass_armor)
-		// Скафандры блокируют лечение
-		if(istype(covering, /obj/item/clothing/suit/space))
+		// Скафандры блокируют лечение, кроме брони ниндзи
+		if(istype(covering, /obj/item/clothing/suit/space) && !istype(covering, /obj/item/clothing/suit/space/space_ninja))
 			to_chat(user, span_warning("Скафандр на [limb.ru_name_v] [victim] мешает лечению!"))
 			return FALSE
 		return TRUE // Обычная броня — продвинутый предмет проходит

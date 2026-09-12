@@ -34,15 +34,8 @@
 	if(!P)
 		return -1
 
-	var/ap = P.armour_penetration
-
-	if(ap >= BULLET_BR6) return 6
-	if(ap >= BULLET_BR5) return 5
-	if(ap >= BULLET_BR4) return 4
-	if(ap >= BULLET_BR3) return 3
-	if(ap >= BULLET_BR2) return 2
-	if(ap >= BULLET_BR1) return 1
-	return 0
+	var/ap = round(P.armour_penetration / 5) * 5
+	return clamp(ap / 5, 0, 20)
 
 /obj/item/ammo_casing/examine(mob/user)
 	. = ..()

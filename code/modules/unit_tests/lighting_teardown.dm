@@ -41,15 +41,24 @@
 	var/list/snapshot = list(
 		"ceiling" = SStime_track.process_address_ceiling_mb,
 		"vsz" = SStime_track.memory_last_vsz_mb,
+		"sample_times" = SStime_track.memory_sample_times,
+		"sample_vsz" = SStime_track.memory_sample_vsz,
+		"growth" = SStime_track.memory_growth_mb_per_minute,
 	)
 	SStime_track.process_address_ceiling_mb = LIGHTING_TEST_PRESSURE_CEILING_MB
 	SStime_track.memory_last_vsz_mb = LIGHTING_TEST_PRESSURE_CEILING_MB * fraction
+	SStime_track.memory_sample_times = list()
+	SStime_track.memory_sample_vsz = list()
+	SStime_track.memory_growth_mb_per_minute = 0
 	return snapshot
 
 /// Возвращает замер давления, снятый force_memory_pressure().
 /datum/unit_test/proc/restore_memory_pressure(list/snapshot)
 	SStime_track.process_address_ceiling_mb = snapshot["ceiling"]
 	SStime_track.memory_last_vsz_mb = snapshot["vsz"]
+	SStime_track.memory_sample_times = snapshot["sample_times"]
+	SStime_track.memory_sample_vsz = snapshot["sample_vsz"]
+	SStime_track.memory_growth_mb_per_minute = snapshot["growth"]
 
 /// Возвращает флаги поднятости, снятые isolate_lit_deferred_zlevels().
 /datum/unit_test/proc/restore_lit_deferred_zlevels(list/snapshot)
@@ -169,6 +178,38 @@
 	SSlighting.abort_zlevel_lighting_teardown()
 	force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_HIGH + 0.05)
 
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since[key] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SStime_track.memory_sample_times = list(world.time - LIGHTING_TEARDOWN_FORECAST_TIME, world.time)
+	SStime_track.memory_sample_vsz = list(SStime_track.memory_last_vsz_mb - 25, SStime_track.memory_last_vsz_mb)
+	SStime_track.memory_growth_mb_per_minute = 2.5
+	SSlighting.scan_teardown_candidates()
+	var/picked_without_forecast_pressure = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since[key] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SStime_track.memory_growth_mb_per_minute = 40
+	SStime_track.memory_sample_vsz = list(SStime_track.memory_last_vsz_mb - 400, SStime_track.memory_last_vsz_mb)
+	SSlighting.scan_teardown_candidates()
+	var/picked_with_forecast_pressure = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since[key] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SStime_track.memory_growth_mb_per_minute = 0
+	SStime_track.memory_sample_times = list(world.time - LIGHTING_TEARDOWN_FORECAST_TIME + 1, world.time)
+	SStime_track.memory_sample_vsz = list(SStime_track.memory_last_vsz_mb, SStime_track.memory_last_vsz_mb)
+	SSlighting.scan_teardown_candidates()
+	var/picked_with_short_forecast = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+	level.lighting_initialized = TRUE
+	SSlighting.zlevel_empty_since[key] = world.time - LIGHTING_TEARDOWN_IDLE_TIME - 1
+	SStime_track.memory_sample_times = list(world.time - LIGHTING_TEARDOWN_FORECAST_TIME - LIGHTING_TEARDOWN_FORECAST_MAX_AGE - 1, world.time - LIGHTING_TEARDOWN_FORECAST_MAX_AGE - 1)
+	SSlighting.scan_teardown_candidates()
+	var/picked_with_stale_forecast = SSlighting.teardown_zlevel
+	SSlighting.abort_zlevel_lighting_teardown()
+	force_memory_pressure(LIGHTING_TEARDOWN_PRESSURE_HIGH + 0.05)
+
 	// 2c. Пауза между сносами: после финала уровень не берётся, по её истечении и под критикой - берётся.
 	level.lighting_initialized = TRUE
 	SSlighting.teardown_zlevel = 0
@@ -240,6 +281,10 @@
 	TEST_ASSERT(dropped_timer, "таймер простоя не сброшен при старте сноса")
 	TEST_ASSERT(!picked_under_gate, "снос запустился при давлении под порогом (взят z[picked_under_gate]) - рычаг не работает, качание продолжится")
 	TEST_ASSERT(timer_started_under_gate, "скан под гейтом не завёл отметку простоя - гейт обязан стоять ПОСЛЕ учёта, иначе уровень получит отсрочку на ровном месте")
+	TEST_ASSERT(!picked_without_forecast_pressure, "при умеренном давлении и медленном росте снос не нужен")
+	TEST_ASSERT_EQUAL(picked_with_forecast_pressure, test_z, "прогноз критического давления должен открывать снос заранее")
+	TEST_ASSERT_EQUAL(picked_with_short_forecast, test_z, "короткое окно не должно откладывать снос под высоким давлением")
+	TEST_ASSERT_EQUAL(picked_with_stale_forecast, test_z, "устаревший прогноз не должен откладывать снос под высоким давлением")
 	TEST_ASSERT(!picked_during_spacing, "уровень взяли на снос сразу после финала прошлого сноса (z[picked_during_spacing]) - пауза между сносами не работает, при открытии гейта уровни уйдут под снос подряд")
 	TEST_ASSERT_EQUAL(picked_during_spacing_critical, test_z, "под критическим давлением пауза между сносами обязана сниматься")
 	TEST_ASSERT_EQUAL(picked_after_spacing, test_z, "по истечении паузы между сносами просроченный уровень обязан браться")
@@ -1328,6 +1373,16 @@
 	requires_full_map = FALSE
 
 /datum/unit_test/lighting_teardown_pressure_gate/Run()
+	TEST_ASSERT(!lighting_teardown_pressure_allows(0, 100, LIGHTING_TEST_PRESSURE_CEILING_MB), "прогноз не заменяет неизвестное давление")
+	TEST_ASSERT(!lighting_teardown_pressure_allows(0.79, 100, LIGHTING_TEST_PRESSURE_CEILING_MB), "прогноз не должен открывать снос ниже нижнего порога")
+	TEST_ASSERT(!lighting_teardown_pressure_allows(0.85, 0, LIGHTING_TEST_PRESSURE_CEILING_MB), "стабильная память ниже критического порога не требует сноса")
+	TEST_ASSERT(!lighting_teardown_pressure_allows(0.85, -10, LIGHTING_TEST_PRESSURE_CEILING_MB), "падающее давление не требует сноса")
+	TEST_ASSERT(!lighting_teardown_pressure_allows(0.81, 2.5, LIGHTING_TEST_PRESSURE_CEILING_MB), "медленный рост с большим запасом не требует сноса")
+	TEST_ASSERT(lighting_teardown_pressure_allows(0.81, 40, LIGHTING_TEST_PRESSURE_CEILING_MB), "быстрый рост должен открывать снос до критического порога")
+	TEST_ASSERT(lighting_teardown_pressure_allows(0.85, null, LIGHTING_TEST_PRESSURE_CEILING_MB), "без прогноза ранний снос должен оставаться доступным")
+	TEST_ASSERT(lighting_teardown_pressure_allows(0.85, 0, 0), "неизвестный потолок не должен делать прогноз успокаивающим")
+	TEST_ASSERT(lighting_teardown_pressure_allows(LIGHTING_TEARDOWN_PRESSURE_CRITICAL, 0, LIGHTING_TEST_PRESSURE_CEILING_MB), "критическое давление важнее стабильного прогноза")
+	TEST_ASSERT(lighting_teardown_pressure_allows(LIGHTING_TEARDOWN_PRESSURE_CRITICAL, -100, LIGHTING_TEST_PRESSURE_CEILING_MB), "критическое давление важнее падающего прогноза")
 	TEST_ASSERT(!lighting_teardown_pressure_allows(0.59), "при 59% потолка снос обязан быть запрещён - именно там раунд качал свет впустую")
 	TEST_ASSERT(!lighting_teardown_pressure_allows(0.67), "при 67% потолка снос обязан быть запрещён")
 	TEST_ASSERT(!lighting_teardown_pressure_allows(LIGHTING_TEARDOWN_PRESSURE_HIGH - 0.01), "под самым порогом снос обязан быть запрещён")

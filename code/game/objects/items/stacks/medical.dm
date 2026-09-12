@@ -232,7 +232,7 @@
 		var/obj/item/bodypart/BP = H.get_bodypart(healed_zone)
 		if(BP)
 			var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
-			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && (istype(covering, /obj/item/clothing/mod_part)))
+			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && !istype(covering, /obj/item/clothing/suit/space/space_ninja))
 				if(!silent)
 					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
 				return FALSE
@@ -425,6 +425,7 @@
 	icon_state = "gauze_imp"
 	heal_brute = 5
 	heal_burn = 5
+	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
 	self_delay = 50
 	other_delay = 20
 	amount = 15
@@ -634,6 +635,7 @@
 	amount = 15
 	max_amount = 15
 	repeating = TRUE
+	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
 	heal_brute = 13
 	stop_bleeding = 0.6
 	grind_results = list(/datum/reagent/medicine/spaceacillin = 2)
@@ -702,6 +704,7 @@
 	max_amount = 15
 	heal_burn = 13
 	repeating = TRUE
+	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
 	sanitization = 0.75
 	flesh_regeneration = 3
 	var/is_open = TRUE /// Эта переменная определяет, была ли открыта стерильная упаковка сетки.

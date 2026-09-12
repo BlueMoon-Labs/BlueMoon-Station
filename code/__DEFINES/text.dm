@@ -371,3 +371,6 @@ GLOBAL_LIST_INIT(colors_ru, list(
 	"cyan" = "циановый",
 	"white" = "белый",
 ))
+
+// Список гласных для обработки приглушённой речи (английский и русский)
+GLOBAL_LIST_INIT(vowels_for_muffledspeech, list("a", "e", "i", "o", "u", "y", "а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"))

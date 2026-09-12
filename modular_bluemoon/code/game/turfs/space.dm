@@ -18,6 +18,32 @@
 			suffix = "defcon2.dmm"
 	. = ..()
 
+/datum/map_template/ruin/space/listeningstation
+	name = "Listening Station"
+	id = "listeningstation"
+	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/listening/"
+	description = "Listening stations form the backbone of the syndicate's information gathering operations. \
+	Assignment to these stations is dreaded by most agents, as it entails long and lonely shifts listening to nearby stations chatter incessently about the most meaningless things."
+	allow_duplicates = FALSE
+	always_place = TRUE
+
+/datum/map_template/ruin/space/listeningstation/New()
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		if(prob(50))
+			suffix = "syndie_listening_default.dmm"
+		else
+			suffix = "syndie_listening_siege.dmm"
+	else
+		var/num = rand(0, 2)
+		switch(num)
+			if(0)
+				suffix = "inteq_listening_default.dmm"
+			if(1)
+				suffix = "inteq_listening_cult.dmm"
+			if(2)
+				suffix = "inteq_listening_syndicate.dmm"
+	. = ..()
+
 //DS2.
 /datum/map_template/ruin/space/deepspacetwo
 	name = "Deep Space Two"

@@ -23,11 +23,6 @@
 	adjust_mobsize(new_size)
 
 	update_weight(mob_weight) //BLUEMOON ADD PLACEHOLDER стоило-бы развить тему возможности изменить вес, но пока это лишь вот так
-	// BLUEMOON ADDITION AHEAD - вызов проверки на размер у персонажа
-	if(HAS_TRAIT(src, TRAIT_BLUEMOON_DEVOURER))
-		for(var/datum/quirk/bluemoon_devourer/quirk in roundstart_quirks)
-			quirk.update_size_modifiers(new_size, cur_size)
-	// BLUEMOON ADDITION END
 
 	SEND_SIGNAL(src, COMSIG_MOB_RESIZED, new_size, cur_size)
 	return TRUE

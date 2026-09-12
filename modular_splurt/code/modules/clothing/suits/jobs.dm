@@ -28,6 +28,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/suit.dmi'
 	body_parts_covered = CHEST|ARMS
 	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 10, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50, "wound" = 10)
+	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
 	togglename = "buttons"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 

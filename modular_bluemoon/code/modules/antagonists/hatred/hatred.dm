@@ -46,7 +46,7 @@
 	 * 2 = high gear
 	 */
 	var/gear_level = 1
-	var/list/classic_guns = list("AK47", "Combat Shotgun", "Pistols")
+	var/list/classic_guns = list("AK47", "Automatic Shotgun", "Pistols")
 	// there won't be special level 2 guns, because I don't want antag to have cheat guns. Level 2 gear is always better stats/traits for level 1 gear.
 	var/list/high_gear = list(/*"Belt of Hatred", */"More armor", "Faster executions")
 	var/chosen_gun = null
@@ -101,7 +101,7 @@
 	greet_text += span_red("Обычная медицина не лечит раны и ожоги!<br>")
 	if(chosen_gun == "Pistols")
 		greet_text += "[span_red("Стрелять с двух рук - HARM INTENT")].<br>"
-	if(chosen_gun == "Combat Shotgun")
+	if(chosen_gun == "Automatic Shotgun")
 		greet_text += "Акимбо: Ты можешь стрелять из оружия одной рукой, даже если вторая занята, но забудь про автоматическую стрельбу. С твоим дробовиком это только бонус.<br>"
 		greet_text += "На твоем поясе висит [span_red("запасная двустволка")] для быстрой стрельбы другим типом боеприпасов. Заряжена выбивающими двери и окна патронами..<br>"
 	greet_text += "[span_red(span_bold("Время убивать. Время умирать."))] И пусть ни одна мразь не доживёт до завтра. Ибо никто сегодня не защищен от твоей Ненависти.<br>"
@@ -115,7 +115,7 @@
 		return
 	.["antag_name"] = name
 	.["objectives"] = get_objectives()
-	.["shotgun"] = (chosen_gun == "Combat Shotgun")
+	.["shotgun"] = (chosen_gun == "Automatic Shotgun")
 	.["pistols"] = (chosen_gun == "Pistols")
 
 /datum/antagonist/hatred/on_gain()
@@ -528,63 +528,52 @@
 
 /// SHOTGUN GEAR ///
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred
-	name = "\improper Combat Shotgun of Hatred"
+// /obj/item/gun/ballistic/shotgun/automatic/combat/hatred
+// 	name = "\improper Combat Shotgun of Hatred"
+// 	desc = "The scratches on this shotgun say: \"The Bringer of Doom\"."
+// 	icon_state = "cshotgun_slick"
+// 	// icon_state = "wood_riotshotgun"
+// 	mag_type = /obj/item/ammo_box/magazine/internal/shot/com/hatred
+// 	resistance_flags = FIRE_PROOF | ACID_PROOF
+// 	max_integrity = 400 // will be damaged during antag's death implant detonation
+// 	fire_delay = 4
+// 	weapon_weight = WEAPON_HEAVY
+// 	unique_reskin = null
+// 	var/quick_empty_flag = FALSE // is user quick emptying it right now
+
+// /obj/item/ammo_box/magazine/internal/shot/com/hatred
+// 	max_ammo = 7 // 7+1 = 2 clips
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hatred //заменил человеку без имени комбатку на АА-12
+	name = "\improper Automatic shotgun of Hatred"
 	desc = "The scratches on this shotgun say: \"The Bringer of Doom\"."
-	icon_state = "cshotgun_slick"
-	// icon_state = "wood_riotshotgun"
-	mag_type = /obj/item/ammo_box/magazine/internal/shot/com/hatred
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_integrity = 400 // will be damaged during antag's death implant detonation
 	fire_delay = 4
 	weapon_weight = WEAPON_HEAVY
-	unique_reskin = null
-	var/quick_empty_flag = FALSE // is user quick emptying it right now
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_BURST_SHOT)
+	burst_size = 2
 
-/obj/item/ammo_box/magazine/internal/shot/com/hatred
-	max_ammo = 7 // 7+1 = 2 clips
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hatred/update_icon_state()
+	if(magazine)
+		if(magazine.ammo_count(0))
+			icon_state = "minotaur-mag"
+		else
+			icon_state = "minotaur-mag-e"
+	else
+		icon_state = "minotaur-e"
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/Initialize(mapload)
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hatred/Initialize(mapload)
 	LAZYADD(actions_types, /datum/action/item_action/no_drop_toggle)
 	. = ..()
-	toggle_stock()
-	w_class = WEIGHT_CLASS_BULKY
-	pump()
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/update_icon_state()
-	icon_state = "cshotgun_slick"
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/ui_action_click(mob/user, action)
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hatred/ui_action_click(mob/user, action)
 	if(istype(action, /datum/action/item_action/no_drop_toggle))
 		return
 	. = ..()
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/examine(mob/user)
-	. = ..()
-	. += span_red("[span_bold("Ctrl-Shift-Click")] - быстрая разрядка.")
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/dropped(mob/user, silent) // lost arm, etc...
+/obj/item/gun/ballistic/automatic/shotgun/aa12/hatred/dropped(mob/user, silent) // lost arm, etc...
 	. = ..()
 	REMOVE_TRAIT(src, TRAIT_NODROP, null)
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/attack_self(mob/living/user)
-	if(!quick_empty_flag)
-		. = ..()
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/CtrlShiftClick(mob/living/carbon/human/user)
-	if(!quick_empty_flag)
-		quick_empty_flag = TRUE
-		pump(user)
-		while(chambered)
-			stoplag(3) // a bit slower than TRAIT_FAST_PUMP
-			pump(user)
-		quick_empty_flag = FALSE
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/hatred/toggle_stock(mob/living/user)
-	if(stock)
-		return
-	. = ..()
-
 // Импровизируем, чтобы избавиться от наслеования с револьверов /revolver/doublebarrel.
 // Не наследуемся с /ballistic/shotgun/automatic так кам основе лежит помповая дрочильня, даже если она автоматическая.
 // Частичный копипаст из обоих объектов.
@@ -782,7 +771,7 @@
 
 /obj/item/storage/bag/ammo/hatred/examine(mob/user)
 	. = ..()
-	. += span_red("Положи пустой магазин/картридж/клипсу в этот проклятый подсумок и он наполнится патронами.")
+	. += span_red("Положи пустой магазин/картридж в этот проклятый подсумок и он наполнится патронами.")
 	. += span_notice("[span_bold("Alt-Click")] - вытащить предмет.")
 
 /obj/item/storage/bag/ammo/hatred/Entered(atom/movable/AM, atom/oldLoc)
@@ -930,8 +919,8 @@
 		if("AK47")
 			suit_store = /obj/item/gun/ballistic/automatic/ak47/hatred
 			l_pocket = /obj/item/storage/bag/ammo/hatred
-		if("Combat Shotgun")
-			suit_store = /obj/item/gun/ballistic/shotgun/automatic/combat/hatred
+		if("Automatic Shotgun")
+			suit_store = /obj/item/gun/ballistic/automatic/shotgun/aa12/hatred
 			l_pocket = /obj/item/storage/bag/ammo/hatred
 			ADD_TRAIT(H, TRAIT_AKIMBO, HATRED_ANTAG)
 		if("Pistols")
@@ -994,18 +983,17 @@
 				STR.max_items = 3
 				new /obj/item/ammo_box/magazine/ak47(P)
 				new /obj/item/ammo_box/magazine/ak47(P)
-		if("Combat Shotgun")
+		if("Automatic Shotgun")
 			var/obj/item/storage/bag/ammo/hatred/P = H.get_item_by_slot(ITEM_SLOT_LPOCKET)
 			if(P)
 				var/datum/component/storage/STR = P.GetComponent(/datum/component/storage)
-				STR.can_hold = typecacheof(list(/obj/item/ammo_box/shotgun/loaded))
-				STR.max_items = 5
-				new /obj/item/ammo_box/shotgun/loaded/buckshot(P)
-				new /obj/item/ammo_box/shotgun/loaded(P)
-				new /obj/item/ammo_box/shotgun/loaded/incendiary(P)
+				STR.can_hold = typecacheof(list(/obj/item/ammo_box/magazine/aa12))
+				STR.max_items = 4
+				new /obj/item/ammo_box/magazine/aa12(P)
+				new /obj/item/ammo_box/magazine/aa12/slug(P)
 				// new /obj/item/ammo_casing/shotgun/dragonsbreath(P)
-				new /obj/item/ammo_box/shotgun/loaded/frangible(P)
-				new /obj/item/ammo_box/shotgun/loaded/flechette(P)
+				new /obj/item/ammo_box/magazine/aa12/frangible(P)
+				new /obj/item/ammo_box/magazine/aa12/flechette(P)
 			if(B)
 				new /obj/item/gun/ballistic/automatic/shotgun/doublebarrel_hatred(B)
 		if("Pistols")

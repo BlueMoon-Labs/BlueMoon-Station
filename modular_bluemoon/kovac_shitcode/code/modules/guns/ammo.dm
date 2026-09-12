@@ -1,8 +1,7 @@
-// 9x39mm (ВСС, командирская) — BR3 (дозвуковой, но тяжёлая пуля)
 /obj/item/projectile/bullet/a9x39
 	name = "9x39 bullet"
 	damage = 45
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD: BR3 — тяжёлая но дозвуковая
+	armour_penetration = BULLET_BR8
 	wound_bonus = 15
 
 /obj/item/ammo_casing/a9x39

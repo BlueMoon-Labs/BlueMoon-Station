@@ -17,6 +17,7 @@
 	slowdown = 1
 	resistance_flags = LAVA_PROOF | ACID_PROOF
 	armor = list(MELEE = 40, BULLET = 30, LASER = 20, ENERGY = 30, BOMB = 30, BIO = 30, RAD = 30, FIRE = 100, ACID = 100)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	tail_state = ""
 
 	actions_types = list(/datum/action/item_action/initialize_ninja_suit, /datum/action/item_action/ninjaboost, /datum/action/item_action/ninjapulse, /datum/action/item_action/ninjastar, /datum/action/item_action/ninjanet, /datum/action/item_action/ninja_sword_recall, /datum/action/item_action/ninja_stealth)
@@ -249,10 +250,23 @@
 /obj/item/clothing/suit/space/space_ninja/pre // Used at first ninja's spawn
 	actions_types = list()
 
+/obj/item/clothing/suit/space/space_ninja/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/space/space_ninja/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
+
 //////////////////////
 
 /obj/item/clothing/suit/space/space_ninja/ronin // Yokai red ninja suit
 	armor = list(MELEE = 50, BULLET = 50, LASER = 40, ENERGY = 50, BOMB = 45, BIO = 30, RAD = 30, FIRE = 100, ACID = 100)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	s_delay = 20
 	s_longdelay = 100
 	actions_types = list(/datum/action/item_action/initialize_ninja_suit, /datum/action/item_action/ninja_resonance, /datum/action/item_action/ninjaboost, /datum/action/item_action/ninjastar_lethal, /datum/action/item_action/ninja_naginata_recall)

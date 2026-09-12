@@ -722,8 +722,21 @@
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = COAT_MAX_TEMP_PROTECT
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 10, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/hooded/wintercoat/equipped(mob/living/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/hooded/wintercoat/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/head/hooded/winterhood
 	name = "winter hood"
@@ -742,6 +755,7 @@
 	icon_state = "coatcentcom"
 	item_state = "coatcentcom"
 	armor = list(MELEE = 40, BULLET = 45, LASER = 45, ENERGY = 35, BOMB = 40, BIO = 25, RAD = 25, FIRE = 35, ACID = 50)
+	brc_mitigation_bonus = BRC_MITIGATION_15  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/centcom
 
 /obj/item/clothing/suit/hooded/wintercoat/centcom/Initialize(mapload)
@@ -758,6 +772,7 @@
 	icon_state = "coatcaptain"
 	item_state = "coatcaptain"
 	armor = list(MELEE = 25, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/captain
 
 /obj/item/clothing/suit/hooded/wintercoat/captain/Initialize(mapload)
@@ -805,6 +820,7 @@
 	icon_state = "coathos"
 	item_state = "coathos"
 	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 15, BOMB = 30, BIO = 0, RAD = 0, FIRE = 0, ACID = 55)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/hos
 
 /obj/item/clothing/suit/hooded/wintercoat/hos/Initialize(mapload)
@@ -1069,6 +1085,7 @@
 	icon_state = "coatratvar"
 	item_state = "coatratvar"
 	armor = list(MELEE = 30, BULLET = 45, LASER = -10, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 60, ACID = 60)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/clockwork/replica_fabricator, /obj/item/clockwork/integration_cog, /obj/item/clockwork/slab, /obj/item/clockwork/weapon/ratvarian_spear)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/ratvar
 	var/real = TRUE
@@ -1098,6 +1115,7 @@
 	icon_state = "coatnarsie"
 	item_state = "coatnarsie"
 	armor = list(MELEE = 30, BULLET = 20, LASER = 30,ENERGY = 10, BOMB = 30, BIO = 10, RAD = 10, FIRE = 30, ACID = 30)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/restraints/legcuffs/bola/cult,/obj/item/melee/cultblade,/obj/item/melee/cultblade/dagger,/obj/item/reagent_containers/glass/beaker/unholywater,/obj/item/cult_shift,/obj/item/flashlight/flare/culttorch,/obj/item/cult_spear)
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/narsie
 	var/real = TRUE
@@ -1125,6 +1143,7 @@
 	item_state = "coatratvar"
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	real = FALSE
 
 /obj/item/clothing/suit/hooded/wintercoat/narsie/fake
@@ -1134,6 +1153,7 @@
 	item_state = "coatnarsie"
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	real = FALSE
 
 /obj/item/clothing/suit/hooded/wintercoat/durathread

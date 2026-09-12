@@ -11,6 +11,8 @@
 	wearer.remove_overlay_by_bodypart_key(index, need_update)
 	return TRUE
 
+//Хардлайт абилка
+
 /datum/action/item_action/mod/hardlight_deploy/chooce_color
 	name = "Choice hardlight color"
 	button_icon_state = "color"
@@ -30,7 +32,7 @@
 	name = "Activate Hardlight field"
 	icon_icon = 'modular_bluemoon/icons/mob/actions/mod_radial.dmi'
 	button_icon_state = "open"
-
+	button_block_right_click_context_menu = TRUE
 	var/list/standart_overlay_choices = list()
 	var/list/genital_overlay_choices = list()
 
@@ -65,20 +67,41 @@
 			choices[key] = genital_overlay_choices[key]
 	return choices
 
-/datum/action/item_action/mod/hardlight_deploy/Trigger(trigger_flags)
-	. = ..()
-	var/choice = show_radial_menu(mod.wearer, mod.wearer, get_radial_menu_choices(),)
+/datum/action/item_action/mod/hardlight_deploy/proc/toggle_all()
+	var/mode = mod.need_to_conseal.len ? TRUE : FALSE //все добавить/всё удалить
+	for(var/element in get_radial_menu_choices())
+		if(!mode)
+			deploy_hardlight(element, need_update = FALSE)
+		else
+			conseal_hardlight(element, need_update = FALSE)
 
-	if(!choice)
-		return
-	if(choice in mod.need_to_conseal)
-		mod.remove_hardlight(choice, TRUE)
+	mod.update_hardlight() //за пределами цикла. Всё и разом.
+
+/datum/action/item_action/mod/hardlight_deploy/proc/conseal_hardlight(name, need_update = TRUE)
+	if(name in mod.need_to_conseal)
+		mod.remove_hardlight(name, TRUE)
 		mod.wearer.balloon_alert(mod.wearer, "Защитный слой успешно убран!")
+		if(need_update)
+			mod.update_hardlight()
+
+/datum/action/item_action/mod/hardlight_deploy/proc/deploy_hardlight(name, need_update = TRUE)
+	if(name in mod.need_to_conseal)
 		return
-
-	mod.need_to_conseal += choice
-
+	mod.need_to_conseal += name
 	if(!mod.is_active())
 		mod.wearer.balloon_alert(mod.wearer, "Защитный слой активируется вместе с костюмом!")
 		return
-	mod.update_hardlight()
+	if(need_update)
+		mod.update_hardlight()
+
+/datum/action/item_action/mod/hardlight_deploy/Trigger(trigger_flags)
+	. = ..()
+	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
+		toggle_all()
+		return
+	var/choice = show_radial_menu(mod.wearer, mod.wearer, get_radial_menu_choices(),)
+
+	if(choice in mod.need_to_conseal)
+		return conseal_hardlight(choice)
+
+	deploy_hardlight(choice)

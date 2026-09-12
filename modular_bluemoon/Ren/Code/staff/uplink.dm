@@ -116,9 +116,10 @@
 		if("stealth") // 31 tc
 			new /obj/item/gun/energy/kinetic_accelerator/crossbow(src)
 			new /obj/item/pen/sleepy(src)
-			new /obj/item/healthanalyzer/rad_laser(src)
+			new /obj/item/camera_bug(src)
 			new /obj/item/chameleon(src)
 			new /obj/item/soap/inteq(src)
+			new /obj/item/clothing/shoes/chameleon/noslip(src)
 			new /obj/item/clothing/glasses/thermal/syndi(src)
 
 		if("bond") // 29 tc
@@ -135,14 +136,14 @@
 			new /obj/item/reagent_containers/syringe/stimulants(src)
 			new /obj/item/clothing/neck/tie/red(src)
 
-		if("screwed") // 29 tc
+/* 		if("screwed") // 29 tc
 			new /obj/item/sbeacondrop/bomb(src)
 			new /obj/item/sbeacondrop/bomb (src)
 			new /obj/item/grenade/syndieminibomb(src)
 			new /obj/item/sbeacondrop/powersink(src)
 			new /obj/item/clothing/suit/space/syndicate/black/orange(src)
 			new /obj/item/clothing/head/helmet/space/syndicate/orange(src)
-			new /obj/item/encryptionkey/inteq(src)
+			new /obj/item/encryptionkey/inteq(src) */
 
 		if("guns") // 30 tc now
 			new /obj/item/gun/ballistic/revolver/inteq(src)
@@ -167,16 +168,16 @@
 			new /obj/item/clothing/glasses/phantomthief/syndicate(src)
 			new /obj/item/reagent_containers/syringe/stimulants(src)
 
-		if("baseball") // 44~ tc
+		if("baseball") // 41~ tc
 			new /obj/item/melee/baseball_bat/ablative/inteq(src) //Lets say 12 tc, lesser sleeping carp
-			new /obj/item/clothing/glasses/sunglasses(src) //Lets say 2 tc
+			new /obj/item/clothing/glasses/sunglasses(src)
 			new /obj/item/card/emag(src) //6 tc
 			new /obj/item/clothing/shoes/sneakers/noslip(src) //2tc
 			new /obj/item/encryptionkey/inteq(src) //1tc
-			new /obj/item/autosurgeon/syndicate/anti_drop(src) //Lets just say 7~
-			new /obj/item/clothing/under/inteq/baseball(src) //3tc
-			new /obj/item/clothing/head/soft/inteq/baseball(src) //Lets say 4 tc
-			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src) //lets say 5tc
+			new /obj/item/autosurgeon/syndicate/anti_drop(src) //12tc
+			new /obj/item/clothing/under/inteq/baseball(src) //1tc
+			new /obj/item/clothing/head/soft/inteq/baseball(src) //1tc
+			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src) //4tc
 
 
 		if("implant") // 67+ tc holy shit what the fuck this is a lottery disguised as fun boxes isn't it?
@@ -196,11 +197,13 @@
 			new /obj/item/ai_module/toyAI(src)
 			new /obj/item/multitool/ai_detect(src)
 			new /obj/item/flashlight/emp(src)
+			new /obj/item/implanter/emp(src)
 			new /obj/item/emagrecharge(src)
+			new /obj/item/assembly/flash/handheld(src)
 			new	/obj/item/implanter/hijack(src)
 			new /obj/item/storage/toolbox/inteq/cooler(src)
 
-		if("lordsingulo") // "36" tc aka 23 tc
+/* 		if("lordsingulo") // "36" tc aka 23 tc
 			new /obj/item/sbeacondrop(src) // 14 kinda useless
 			new /obj/item/clothing/suit/space/syndicate/black/orange(src)
 			new /obj/item/clothing/head/helmet/space/syndicate/orange(src)
@@ -210,7 +213,7 @@
 			new /obj/item/encryptionkey/inteq(src) //2
 			new /obj/item/flashlight/emp(src) //2
 			new /obj/item/jammer(src) //5
-
+ */
 		if("sabotage") // ~28 tc now
 			new /obj/item/grenade/plastic/c4 (src)
 			new /obj/item/grenade/plastic/c4 (src)
@@ -225,7 +228,7 @@
 			new /obj/item/pizzabox/bomb
 
 		if("darklord") //20 tc + tk + summon item close enough for now
-			new /obj/item/dualsaber(src)
+			new /obj/item/melee/transforming/energy/sword/saber/red/darklord(src)
 			new /obj/item/dnainjector/telemut/darkbundle(src)
 			new /obj/item/clothing/suit/hooded/chaplain_hoodie(src)
 			new /obj/item/encryptionkey/inteq(src)

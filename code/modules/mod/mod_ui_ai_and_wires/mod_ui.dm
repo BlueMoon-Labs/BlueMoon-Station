@@ -32,7 +32,7 @@
 			use_power = module.use_power_cost,
 			complexity = module.complexity,
 			cooldown_time = module.cooldown_time,
-			cooldown = round(COOLDOWN_TIMELEFT(module, cooldown_timer), 1 SECONDS),
+			cooldown = round(COOLDOWN_TIMELEFT(module, cooldown_current_timer), 1 SECONDS),
 			id = module.tgui_id,
 			ref = REF(module),
 			configuration_data = module.get_configuration()

@@ -41,7 +41,7 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 						  list(/datum/quirk/jiggly_ass::name,			/datum/quirk/steel_ass::name),
 						  list(/datum/quirk/beastspirit::name, 			/datum/quirk/dullahan::name),
 						  list(/datum/quirk/clearly_audible::name, 		/datum/quirk/mute::name),
-						  list(/datum/quirk/no_smell::name, 			/datum/quirk/breathless::name),
+						  /*list(/datum/quirk/no_smell::name, 			/datum/quirk/breathless::name),*/
 						  list(/datum/quirk/shriek::name, 				/datum/quirk/mute::name),
 						  list(/datum/quirk/nt_employee::name, 			/datum/quirk/syndi_employee::name),
 						  list(/datum/quirk/powersaving::name, 			/datum/quirk/hungry::name),

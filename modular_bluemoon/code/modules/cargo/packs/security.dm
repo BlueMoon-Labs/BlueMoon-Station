@@ -58,9 +58,9 @@
 	crate_name = "C.U.C.K.S Deployable Barricades"
 
 
-/datum/supply_pack/security/blueprints
+/* /datum/supply_pack/security/blueprints
 	name = "Advanced weapon blueprints"
 	desc = "Some fancy schematics for R&D minds, that will improve sec efficiency to shot each other."
 	cost = 25000
 	contains = list(/obj/item/disk/weapon_blueprint)
-	crate_name = "Advanced weapon blueprints crate"
+	crate_name = "Advanced weapon blueprints crate" */

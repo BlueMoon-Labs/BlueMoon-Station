@@ -47,6 +47,8 @@
 	can_be_printed = TRUE
 	advanced_print_req = TRUE
 	custom_materials = list(/datum/material/iron = 4000, /datum/material/bananium = 1000) // пусть попробуют найти винтовку под этот калибр
+	can_be_printed = FALSE //fuck you
+
 
 ////////////////////////////////////////////////////////////////////
 // 5.56mm
