@@ -113,10 +113,17 @@
 		return 0
 	return min(idle_time, LIGHTING_TEARDOWN_IDLE_TIME_QUOTA)
 
-/// Пускать ли обычный снос света при этом давлении: ниже порога не сносится ничего.
-/// Ноль (давление не замерено) не пропуск.
-/proc/lighting_teardown_pressure_allows(pressure)
-	return pressure >= LIGHTING_TEARDOWN_PRESSURE_HIGH
+/// При умеренном давлении снос нужен, когда прогноз достигает критического порога.
+/proc/lighting_teardown_pressure_allows(pressure, growth_mb_per_minute = null, ceiling_mb = 0)
+	if(pressure < LIGHTING_TEARDOWN_PRESSURE_HIGH)
+		return FALSE
+	if(pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL)
+		return TRUE
+	// Без достоверного прогноза сохраняем раннее освобождение памяти.
+	if(isnull(growth_mb_per_minute) || ceiling_mb <= 0)
+		return TRUE
+	var/projected_pressure = pressure + max(0, growth_mb_per_minute) * (LIGHTING_TEARDOWN_FORECAST_TIME / (1 MINUTES)) / ceiling_mb
+	return projected_pressure >= LIGHTING_TEARDOWN_PRESSURE_CRITICAL
 
 /**
  * Рано ли сносить уровень, поднятый совсем недавно.
