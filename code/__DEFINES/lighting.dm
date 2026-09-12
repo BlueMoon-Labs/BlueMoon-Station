@@ -263,6 +263,9 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 /// Доля потолка адресного пространства: ниже неё снос не запускается вовсе, с неё срок простоя режется втрое.
 /// Ноль (давление не замерено) гейт не пропускает.
 #define LIGHTING_TEARDOWN_PRESSURE_HIGH 0.8
+/// Прогноз сноса использует не менее этого срока истории и смотрит на столько же вперёд.
+#define LIGHTING_TEARDOWN_FORECAST_TIME (10 MINUTES)
+#define LIGHTING_TEARDOWN_FORECAST_MAX_AGE (1 MINUTES)
 /// Срок простоя под высоким давлением.
 #define LIGHTING_TEARDOWN_IDLE_TIME_HIGH (3 MINUTES)
 /**
