@@ -990,10 +990,14 @@
 
 	if(isliving(source) && params)
 		var/list/calculated = calculate_projectile_angle_and_pixel_offsets(source, params)
-		p_x = calculated[2]
-		p_y = calculated[3]
-
-		setAngle(calculated[1] + spread)
+		if(istype(calculated, /list) && calculated.len >= 3)
+			p_x = calculated[2]
+			p_y = calculated[3]
+			setAngle(calculated[1] + spread)
+		else if(targloc)
+			yo = targloc.y - curloc.y
+			xo = targloc.x - curloc.x
+			setAngle(get_projectile_angle(src, targloc) + spread)
 	else if(targloc)
 		yo = targloc.y - curloc.y
 		xo = targloc.x - curloc.x
@@ -1011,20 +1015,29 @@
 		p_x = text2num(mouse_control["icon-x"])
 	if(mouse_control["icon-y"])
 		p_y = text2num(mouse_control["icon-y"])
-	if(mouse_control["screen-loc"])
+	if(mouse_control["screen-loc"] && user?.client)
 		//Split screen-loc up into X+Pixel_X and Y+Pixel_Y
 		var/list/screen_loc_params = splittext(mouse_control["screen-loc"], ",")
+		if(screen_loc_params.len < 2)
+			return list(angle, p_x, p_y)
 
 		//Split X+Pixel_X up into list(X, Pixel_X)
 		var/list/screen_loc_X = splittext(screen_loc_params[1],":")
+		if(screen_loc_X.len < 2)
+			return list(angle, p_x, p_y)
 
 		//Split Y+Pixel_Y up into list(Y, Pixel_Y)
 		var/list/screen_loc_Y = splittext(screen_loc_params[2],":")
+		if(screen_loc_Y.len < 2)
+			return list(angle, p_x, p_y)
+
 		var/x = text2num(screen_loc_X[1]) * 32 + text2num(screen_loc_X[2]) - 32
 		var/y = text2num(screen_loc_Y[1]) * 32 + text2num(screen_loc_Y[2]) - 32
 
 		//Calculate the "resolution" of screen based on client's view and world's icon size. This will work if the user can view more tiles than average.
 		var/list/screenview = view_to_pixels(user.client.view)
+		if(!istype(screenview, /list) || screenview.len < 2)
+			return list(angle, p_x, p_y)
 
 		var/ox = round(screenview[1] / 2) - user.client.pixel_x //"origin" x
 		var/oy = round(screenview[2] / 2) - user.client.pixel_y //"origin" y

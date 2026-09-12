@@ -4787,6 +4787,7 @@
 #include "modular_bluemoon\code\modules\antagonists\ert\pizza_ert.dm"
 #include "modular_bluemoon\code\modules\antagonists\ert\vdv_ert.dm"
 #include "modular_bluemoon\code\modules\antagonists\hatred\hatred.dm"
+#include "modular_bluemoon\code\modules\antagonists\hatred\miscshooters.dm"
 #include "modular_bluemoon\code\modules\antagonists\inteq_ghostrole\cybersun_tech.dm"
 #include "modular_bluemoon\code\modules\antagonists\inteq_ghostrole\forgottenship.dm"
 #include "modular_bluemoon\code\modules\antagonists\inteq_ghostrole\inteq_cards.dm"

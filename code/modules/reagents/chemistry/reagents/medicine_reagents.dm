@@ -1403,16 +1403,17 @@
 	..()
 
 /datum/reagent/medicine/stimulants/on_mob_life(mob/living/carbon/M)
+	var/jackal_exception = M.mind?.has_antag_datum(/datum/antagonist/jackal)
 	if(M.health < 50 && M.health > 0)
-		M.adjustOxyLoss(-1 * REM, FALSE)
-		M.adjustToxLoss(-1 * REM, FALSE)
-		M.adjustBruteLoss(-1 * REM, FALSE)
-		M.adjustFireLoss(-1 * REM, FALSE)
+		M.adjustOxyLoss(-1 * REM, jackal_exception)
+		M.adjustToxLoss(-1 * REM, jackal_exception)
+		M.adjustBruteLoss(-1 * REM, jackal_exception)
+		M.adjustFireLoss(-1 * REM, jackal_exception)
 	M.AdjustAllImmobility(-80, FALSE)
 	M.AdjustParalyzed(-40, FALSE)
 	M.AdjustKnockdown(-40, FALSE)
 	M.AdjustImmobilized(-40, FALSE)
-	M.adjustStaminaLoss(-40*REM, FALSE)
+	M.adjustStaminaLoss(-40*REM, jackal_exception)
 	..()
 	. = 1
 
