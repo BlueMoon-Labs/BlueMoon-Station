@@ -8,8 +8,8 @@
 	cuttable = FALSE
 	climbable = TRUE
 	max_integrity = 100
-	var/health = 70
-	var/maxhealth = 70
+	health = 70
+	maxhealth = 70
 	resistance_flags = ACID_PROOF
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 80, "acid" = 100)
 	CanAtmosPass = ATMOS_PASS_PROC

@@ -23,6 +23,7 @@
 		#include "map_files\CogStation\CogStation.dmm"
 		#include "map_files\TauStation\TauStation.dmm"
 		#include "map_files\bluemoon_maps\icemoonstation.dmm"
+		#include "map_files\LV759_Hybrisa_Prospera\LV759_Hybrisa_Prospera.dmm"
 		// #include "modular_bluemoon\_maps\PrisonStation\PrisonStation.dmm"
 		#ifdef CIBUILDING
 			#include "templates.dm"
