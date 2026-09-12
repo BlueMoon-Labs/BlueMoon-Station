@@ -122,6 +122,7 @@
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
 	.["disable_combat_mouse_lock"] = disable_combat_mouse_lock
+	.["smartlink"] = smartlink
 
 	// Screenshake
 	.["screenshake"] = screenshake
@@ -483,6 +484,11 @@
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 					dirty_var = "disable_combat_mouse_lock"
+				if("smartlink") //BLUEMOON ADD
+					smartlink = !smartlink
+					dirty_var = "smartlink"
+					if(isliving(user))
+						user.refresh_ammo_hud()
 			save_pref_var(dirty_var)
 			return TRUE
 

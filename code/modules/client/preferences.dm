@@ -112,6 +112,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/preferred_map = null
 	var/disable_combat_cursor = FALSE
 	var/disable_combat_mouse_lock = FALSE
+	var/smartlink = TRUE //BLUEMOON ADD: показывать боевой HUD (счётчик патронов); выключается квирком "Несовместимость со смартлинком"
 	var/tg_playerpanel = "TG"
 	var/pda_style = MONO
 	var/pda_color = "#808000"
@@ -5308,6 +5309,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					disable_combat_cursor = !disable_combat_cursor
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
+				if("smartlink") //BLUEMOON ADD
+					smartlink = !smartlink
+					if(isliving(user))
+						user.refresh_ammo_hud()
 				//CITADEL PREFERENCES EDIT - I can't figure out how to modularize these, so they have to go here. :c -Pooj
 				if("genital_colour")
 					features["genitals_use_skintone"] = !features["genitals_use_skintone"]
