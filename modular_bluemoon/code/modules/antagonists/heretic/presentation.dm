@@ -257,7 +257,7 @@
 	item_state = path.book_cover
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_books_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_books_righthand.dmi'
-	color = path.book_tint
+	color = null
 	update_icon()
 	if(ismob(loc))
 		var/mob/holder = loc
@@ -283,10 +283,6 @@
 		var/mutable_appearance/orbit = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', "cosmic_ring", ABOVE_OBJ_LAYER)
 		orbit.pixel_y = 10
 		. += orbit
-	else if(book_path == PATH_FLESH)
-		var/mutable_appearance/eye = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', "eye_pulse", ABOVE_OBJ_LAYER)
-		eye.transform = matrix(0.35, 0, 0, 0, 0.35, 0)
-		. += eye
 
 /obj/item/forbidden_book/proc/open_book(mob/user)
 	if(book_open)
