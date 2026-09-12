@@ -36,7 +36,7 @@
 		/obj/item/hatchet = "Топорик",
 		/obj/item/hemostat = "Хирургический зажим",
 		/obj/item/kitchen/fork = "Вилка",
-		/obj/item/kitchen/knife = "Кухонный нож",
+		/obj/item/kitchen/knife = "Нож, тесак или заточка",
 		/obj/item/lighter = "Зажигалка",
 		/obj/item/living_heart = "Живое сердце",
 		/obj/item/match = "Спичка",

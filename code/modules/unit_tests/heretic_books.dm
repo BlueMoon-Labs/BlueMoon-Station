@@ -137,7 +137,7 @@
 	var/list/ash_amounts = list()
 	for(var/list/ingredient as anything in ash_ingredients)
 		ash_amounts[ingredient["name"]] = ingredient["amount"]
-	TEST_ASSERT_EQUAL(ash_amounts["Кухонный нож"], 1, "Рецепт требует один нож с русским названием.")
+	TEST_ASSERT_EQUAL(ash_amounts["Нож, тесак или заточка"], 1, "Рецепт требует один нож с русским названием.")
 	TEST_ASSERT_EQUAL(ash_amounts["Спичка"], 1, "Рецепт требует одну спичку с русским названием.")
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/catalog_path = GLOB.heretic_paths[path_id]

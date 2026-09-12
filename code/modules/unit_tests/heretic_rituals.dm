@@ -21,9 +21,19 @@
 	TEST_ASSERT(!rune.do_ritual(user, recipe), "Тёплый воздух без поля не подходит.")
 	TEST_ASSERT(!QDELETED(knife), "Отказ сохраняет нож.")
 	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "20 °C"), "Отказ показывает температуру на руне.")
+	recipe.ritual_time = 0
 	ritual_floor.air.set_temperature(T0C)
 	TEST_ASSERT(recipe.recipe_snowflake_check(list(), ritual_floor, list(), user), "Нулевая температура подходит без поля.")
+	ritual_floor.air.set_temperature(T0C - 270)
+	TEST_ASSERT(rune.do_ritual(user, recipe), "После охлаждения воздуха та же руна должна изготовить клинок без перерисовки.")
+	TEST_ASSERT(QDELETED(knife), "Крафт после охлаждения расходует исходный нож.")
+	var/obj/item/melee/sickly_blade/void/cold_blade = locate() in ritual_floor
+	TEST_ASSERT_NOTNULL(cold_blade, "На старой руне появился клинок.")
+	qdel(cold_blade)
+	knife = allocate(/obj/item/kitchen/knife/combat, ritual_floor)
 	ritual_floor.air.set_temperature(T0C + 20)
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "После нагрева та же руна вновь отклоняет крафт без поля.")
+	TEST_ASSERT(!QDELETED(knife), "Нагрев не расходует следующий нож.")
 	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
 	STOP_PROCESSING(SSprocessing, winter)
 	winter.refresh_boundary(list(ritual_floor))
@@ -49,6 +59,11 @@
 	TEST_ASSERT_NOTNULL(blade, "Обряд создаёт клинок Пустоты.")
 	allocated += blade
 	TEST_ASSERT(QDELETED(knife), "Успешный обряд расходует нож.")
+	for(var/knife_type in list(/obj/item/kitchen/knife/butcher, /obj/item/kitchen/knife/shiv))
+		var/obj/item/kitchen/knife/variant = allocate(knife_type, ritual_floor)
+		var/list/selected = list()
+		TEST_ASSERT(rune.select_recipe_atoms(recipe, list(variant), selected, list(), user), "Рецепт должен принимать [knife_type].")
+		TEST_ASSERT(variant in selected, "Подходящий вариант выбран компонентом.")
 
 /// Рецепт брони открывается со второй ступени и расходует готовый стол рядом с руной и выложенный противогаз.
 /datum/unit_test/heretic_armor_recipe/Run()
