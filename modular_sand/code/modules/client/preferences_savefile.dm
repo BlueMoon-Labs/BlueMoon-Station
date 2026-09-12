@@ -44,6 +44,9 @@
 	WRITE_FILE(.["show_heart_over_self"], show_heart_over_self)
 	WRITE_FILE(.["interaction_effect"], interaction_effect)
 	WRITE_FILE(.["block_partner_pixel_shift"], block_partner_pixel_shift)
+	WRITE_FILE(.["panel_tab_toggles"], panel_tab_toggles)
+	WRITE_FILE(.["dynamic_window_size"], dynamic_window_size)
+	WRITE_FILE(.["compact_custom_tab"], compact_custom_tab)
 
 	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
 	WRITE_FILE(.["arousal_multiplier"],		arousal_multiplier)
@@ -92,6 +95,13 @@
 		interaction_effect = initial(interaction_effect)
 	.["block_partner_pixel_shift"] >> block_partner_pixel_shift
 	block_partner_pixel_shift = sanitize_integer(block_partner_pixel_shift, 0, 1, initial(block_partner_pixel_shift))
+
+	.["panel_tab_toggles"] >> panel_tab_toggles
+	panel_tab_toggles = sanitize_integer(panel_tab_toggles, 0, ALL_INTERACTION_MENU_TABS, initial(panel_tab_toggles))
+	.["dynamic_window_size"] >> dynamic_window_size
+	dynamic_window_size = sanitize_integer(dynamic_window_size, 0, 1, initial(dynamic_window_size))
+	.["compact_custom_tab"] >> compact_custom_tab
+	compact_custom_tab = sanitize_integer(compact_custom_tab, 0, 1, initial(compact_custom_tab))
 
 	use_arousal_multiplier = sanitize_integer(use_arousal_multiplier, 0, 1, initial(use_arousal_multiplier))
 	arousal_multiplier = sanitize_integer(arousal_multiplier, 0, 300, initial(arousal_multiplier))
