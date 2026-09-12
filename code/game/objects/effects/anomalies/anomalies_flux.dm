@@ -3,6 +3,7 @@
 	icon_state = "flux"
 	density = TRUE
 	aSignal = /obj/item/assembly/signaler/anomaly/flux
+	raw_core = /obj/item/raw_anomaly_core/flux
 	var/canshock = FALSE
 	var/shockdamage = 20
 	var/explosive = FLUX_EXPLOSIVE
@@ -53,10 +54,12 @@
 /// A flux anomaly which doesn't explode or produce a core
 /obj/effect/anomaly/flux/minor
 	explosive = FLUX_NO_EXPLOSION
+	drops_core = FALSE
 
 ///Bigger, meaner, immortal flux anomaly
 /obj/effect/anomaly/flux/big
 	immortal = TRUE
+	drops_core = FALSE
 	aSignal = null
 	shockdamage = 30
 

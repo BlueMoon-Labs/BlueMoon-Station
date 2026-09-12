@@ -3,6 +3,7 @@
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "hallucination"
 	aSignal = /obj/item/assembly/signaler/anomaly/poly
+	raw_core = null
 	drops_core = FALSE
 	var/const/work_range = 3
 	var/const/detonate_range = 16

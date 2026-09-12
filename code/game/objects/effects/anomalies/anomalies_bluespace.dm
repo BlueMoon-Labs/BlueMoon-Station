@@ -4,6 +4,7 @@
 	icon_state = "bluespace"
 	density = TRUE
 	aSignal = /obj/item/assembly/signaler/anomaly/bluespace
+	raw_core = /obj/item/raw_anomaly_core/bluespace
 	///range from which we can teleport someone
 	var/teleport_range = 1
 	///Distance we can teleport someone passively
@@ -80,6 +81,7 @@
 ///Bigger, meaner, immortal bluespace anomaly
 /obj/effect/anomaly/bluespace/big
 	immortal = TRUE
+	drops_core = FALSE
 	teleport_range = 2
 	teleport_distance = 12
 	aSignal = null

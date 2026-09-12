@@ -1,7 +1,7 @@
 // Embedded signaller used in anomalies.
 /obj/item/assembly/signaler/anomaly
 	name = "anomaly core"
-	desc = "The neutralized core of an anomaly. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро аномалии. Скорее всего, оно будет полезно для науки."
 	icon_state = "anomaly_core"
 	max_integrity = 1000
 	//item_state = "electronic"
@@ -38,67 +38,67 @@
 	return ..()
 
 /obj/item/assembly/signaler/anomaly/manual_suicide(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user]'s [src] is reacting to the radio signal, warping [user.ru_ego()] body!</span>")
+	user.visible_message(span_suicide("[user] искажается телом, как только начинает реагировать на флуктуации [src]!"))
 	//user.set_suicide(TRUE)
 	user.suicide_log()
 	user.gib()
 
 /obj/item/assembly/signaler/anomaly/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_ANALYZER)
-		to_chat(user, "<span class='notice'>Analyzing... [src]'s stabilized field is fluctuating along frequency [format_frequency(frequency)], code [code].</span>")
+		to_chat(user, span_notice("Анализ... Нестабильное поле вокруг [src] колеблется флуктуациями частоты [format_frequency(aSignal.frequency)] и кода [aSignal.code]."))
 	return ..()
 
 //Anomaly cores
 /obj/item/assembly/signaler/anomaly/pyro
 	name = "\improper pyroclastic anomaly core"
-	desc = "The neutralized core of a pyroclastic anomaly. It feels warm to the touch. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро пирокластической аномалии. Тёплое на ощупь. Скорее всего, оно будет полезно для науки."
 	icon_state = "pyro_core"
 	anomaly_type = /obj/effect/anomaly/pyro
 
 /obj/item/assembly/signaler/anomaly/grav
 	name = "\improper gravitational anomaly core"
-	desc = "The neutralized core of a gravitational anomaly. It feels much heavier than it looks. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро гравитационной аномалии. Кажется гораздо тяжелее, чем выглядит. Скорее всего, оно будет полезно для науки."
 	icon_state = "grav_core"
 	anomaly_type = /obj/effect/anomaly/grav
 
 /obj/item/assembly/signaler/anomaly/flux
 	name = "\improper flux anomaly core"
-	desc = "The neutralized core of a flux anomaly. Touching it makes your skin tingle. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро флукс-аномалии. От прикосновения кожа начинает покалывать. Скорее всего, оно будет полезно для науки."
 	icon_state = "flux_core"
 	anomaly_type = /obj/effect/anomaly/flux
 
 /obj/item/assembly/signaler/anomaly/bluespace
 	name = "\improper bluespace anomaly core"
-	desc = "The neutralized core of a bluespace anomaly. It keeps phasing in and out of view. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро блюспейс-аномалии. Постоянно мерцает, то появляясь, то исчезая из виду. Скорее всего, оно будет полезно для науки."
 	icon_state = "anomaly_core"
 	anomaly_type = /obj/effect/anomaly/bluespace
 
 /obj/item/assembly/signaler/anomaly/vortex
 	name = "\improper vortex anomaly core"
-	desc = "The neutralized core of a vortex anomaly. It won't sit still, as if some invisible force is acting on it. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро вихревой аномалии. Не может усидеть на месте, словно на него действует невидимая сила. Скорее всего, оно будет полезно для науки."
 	icon_state = "vortex_core"
 	anomaly_type = /obj/effect/anomaly/bhole
 
 /obj/item/assembly/signaler/anomaly/dimensional
 	name = "\improper dimensional anomaly core"
-	desc = "The neutralized core of a dimensional anomaly. Objects reflected on its surface don't look quite right. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро пространственной аномалии. Отражённые на его поверхности предметы выглядят как-то неправильно. Скорее всего, оно будет полезно для науки."
 	icon_state = "dimensional_core"
 	anomaly_type = /obj/effect/anomaly/dimensional
 
 /obj/item/assembly/signaler/anomaly/ectoplasm
 	name = "\improper ectoplasm anomaly core"
-	desc = "The neutralized core of an ectoplasmic anomaly. When you hold it close, you can hear faint murmuring from inside. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро эктоплазменной аномалии. Если поднести его ближе, внутри можно услышать тихий шёпот. Скорее всего, оно будет полезно для науки."
 	icon_state = "dimensional_core"
 	anomaly_type = /obj/effect/anomaly/ectoplasm
 
 /obj/item/assembly/signaler/anomaly/poly
 	name = "\improper polymorph anomaly core"
-	desc = "The neutralized core of a polymorph anomaly. It feels much heavier than it looks. It'd probably be valuable for research."
+	desc = "Обезвреженное ядро полиморфной аномалии. Кажется гораздо тяжелее, чем выглядит. Скорее всего, оно будет полезно для науки."
 	icon_state = "vortex_core"
 	anomaly_type = /obj/effect/anomaly/poly
 
 /obj/item/assembly/signaler/anomaly/fog
 	name = "\improper fog anomaly core"
-	desc = "The neutralized core of a fog anomaly. It constantly leaks a thick veil of short-lived smoke."
+	desc = "Обезвреженное ядро туманной аномалии. Постоянно выпускает густую завесу быстро исчезающего дыма."
 	icon_state = "dimensional_core"
 	anomaly_type = /obj/effect/anomaly/fog

@@ -2,6 +2,7 @@
 	desc = "Похоже, души проклятых снова пытаются прорваться в мир живых. Как неприятно."
 	icon_state = "ectoplasm"
 	aSignal = /obj/item/assembly/signaler/anomaly/ectoplasm
+	raw_core = null
 	lifespan = ANOMALY_COUNTDOWN_TIMER + 2 SECONDS //Действует чуть дольше, потому что аномалия может сбежать.
 	immobile = TRUE //не даёт аномалии разгуливать, чтобы призраки могли двигать её с достаточной точностью
 

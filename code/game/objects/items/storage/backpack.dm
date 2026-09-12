@@ -37,50 +37,6 @@
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_combined_w_class = 12
 
-/obj/item/storage/backpack/holding
-	name = "bag of holding"
-	desc = "Рюкзак с доступом в карманное блюспейс-пространство."
-	icon_state = "holdingpack"
-	item_state = "holdingpack"
-	resistance_flags = FIRE_PROOF
-	item_flags = NO_MAT_REDEMPTION
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 60, ACID = 50)
-	component_type = /datum/component/storage/concrete/bluespace/bag_of_holding
-	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
-
-/obj/item/storage/backpack/holding/satchel
-	name = "satchel of holding"
-	desc = "Поясной ранец с доступом в карманное блюспейс-пространство."
-	icon_state = "holdingsat"
-	item_state = "holdingsat"
-
-/obj/item/storage/backpack/holding/duffel
-	name = "duffel bag of holding"
-	desc = "Сумка с доступом в карманное блюспейс-пространство."
-	icon_state = "holdingduffel"
-	item_state = "holdingduffel"
-
-/obj/item/storage/backpack/holding/ComponentInitialize()
-	. = ..()
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_w_class = MAX_WEIGHT_CLASS_BAG_OF_HOLDING
-	STR.storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
-	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
-
-/obj/item/storage/backpack/holding/suicide_act(mob/living/user)
-	user.visible_message(span_suicide("[user] влезает внутрь [src]! Похоже, что [user.ru_who()] пытается исчезнуть навсегда!"))
-	user.dropItemToGround(src, TRUE)
-	user.Stun(100, ignore_canstun = TRUE)
-	sleep(20)
-	playsound(src, "rustle", 50, 1, -5)
-	qdel(user)
-	return
-
-/obj/item/storage/backpack/holding/singularity_act(current_size)
-	var/dist = max((current_size - 2),1)
-	explosion(src.loc,(dist),(dist*2),(dist*4))
-	return
-
 /obj/item/storage/backpack/santabag
 	name = "Santa's Gift Bag"
 	desc = "Space Santa uses this to deliver toys to all the nice children in space in Christmas! Wow, it's pretty big!"
