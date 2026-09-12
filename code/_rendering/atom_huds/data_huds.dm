@@ -33,7 +33,34 @@
 	return TRUE
 
 /datum/atom_hud/data/human/medical/basic/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD))
+		return FALSE
 	return check_sensors(A)
+
+/datum/atom_hud/data/human/medical/advanced/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD))
+		return FALSE
+	return TRUE
+
+/datum/atom_hud/data/human/security/basic/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_SECHUD))
+		return FALSE
+	return TRUE
+
+/datum/atom_hud/data/human/security/advanced/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_SECHUD))
+		return FALSE
+	return TRUE
+
+/datum/atom_hud/data/diagnostic/basic/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD) || HAS_TRAIT(M, TRAIT_BLOCK_SECHUD))
+		return FALSE
+	return TRUE
+
+/datum/atom_hud/data/diagnostic/advanced/should_show_to(mob/M, atom/A)
+	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD) || HAS_TRAIT(M, TRAIT_BLOCK_SECHUD))
+		return FALSE
+	return TRUE
 
 /datum/atom_hud/data/human/medical/basic/proc/update_suit_sensors(mob/living/carbon/H)
 	check_sensors(H) ? add_to_hud(H) : remove_from_hud(H)

@@ -147,6 +147,9 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	///used by CHECK_TICK as well so that the procs subsystems call can obey that SS's tick limits
 	var/static/current_ticklimit = TICK_LIMIT_RUNNING
 
+	/// Процент загрузки лобби во время инициализации (0-100), транслируется в bm_lobby_browser
+	var/loading_progress = 0
+
 /datum/controller/master/New()
 	if(!config)
 		config = new
@@ -282,7 +285,7 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if(init_sss)
 		init_subtypes(/datum/controller/subsystem, subsystems)
 
-	to_chat(world, span_boldannounce("Initializing subsystems..."))
+	to_chat(GLOB.admins, span_boldannounce("Initializing subsystems..."))
 
 	// Sort subsystems by init_order, so they initialize in the correct order.
 	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_init))
@@ -290,6 +293,14 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	var/start_timeofday = REALTIMEOFDAY
 	// Initialize subsystems.
 	current_ticklimit = CONFIG_GET(number/tick_limit_mc_init)
+	// Прогресс для лобби-заглушки BLUEMOON STATION (тот же стиль, но с процентами)
+	var/list/init_queue = list()
+	for (var/datum/controller/subsystem/preSS in subsystems)
+		if(!(preSS.flags & SS_NO_INIT) && !preSS.initialized)
+			init_queue += preSS
+	var/total_init = length(init_queue)
+	var/current_init = 0
+	loading_progress = 0
 	for (var/datum/controller/subsystem/SS in subsystems)
 		if (SS.flags & SS_NO_INIT || SS.initialized) //Don't init SSs with the correspondig flag or if they already are initialzized
 			continue
@@ -305,13 +316,22 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 		// ровно те пометки, ради которых запись здесь и стоит.
 		write_state_snapshot(force = TRUE)
 		SS.Initialize(REALTIMEOFDAY)
+		current_init++
+		loading_progress = total_init ? round((current_init / total_init) * 100) : 100
+		for(var/mob/dead/new_player/P as anything in GLOB.new_player_list)
+			if(P.client)
+				P.client << output("[loading_progress]", "bm_lobby_browser:bm_set_loading_progress")
 		CHECK_TICK
 	initializing_subsystem = null
+	loading_progress = 100
+	for(var/mob/dead/new_player/P as anything in GLOB.new_player_list)
+		if(P.client)
+			P.client << output("100", "bm_lobby_browser:bm_set_loading_progress")
 	current_ticklimit = TICK_LIMIT_RUNNING
 	var/time = (REALTIMEOFDAY - start_timeofday) / 10
 
 	var/msg = "Initializations complete within [time] second[time == 1 ? "" : "s"]!"
-	to_chat(world, span_boldannounce("[msg]"))
+	to_chat(GLOB.admins, span_boldannounce("[msg]"))
 	log_world(msg)
 
 	if (!current_runlevel)

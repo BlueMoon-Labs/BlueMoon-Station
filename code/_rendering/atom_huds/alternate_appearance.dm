@@ -219,3 +219,8 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 		ntransform.Translate(0, 16*(resize-1)) //Makes sure you stand on the tile no matter the size - sand
 
 	theImage.transform = ntransform
+
+/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity
+
+/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/mobShouldSee(mob/M)
+	return FALSE

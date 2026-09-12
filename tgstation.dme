@@ -3662,6 +3662,7 @@
 #include "code\modules\modular_computers\file_system\programs\snake.dm"
 #include "code\modules\modular_computers\file_system\programs\statusdisplay.dm"
 #include "code\modules\modular_computers\file_system\programs\tetris.dm"
+#include "code\modules\modular_computers\file_system\programs\wiki.dm"
 #include "code\modules\modular_computers\file_system\programs\antagonist\contract_uplink.dm"
 #include "code\modules\modular_computers\file_system\programs\antagonist\dos.dm"
 #include "code\modules\modular_computers\file_system\programs\antagonist\revelation.dm"

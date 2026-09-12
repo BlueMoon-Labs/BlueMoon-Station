@@ -75,43 +75,43 @@ export const CharacterProfile = (props) => {
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Персонажа" open>
-              <Section style={{ whiteSpace: "pre-line" }}>
-                {data.flavortext || "———"}
+              <Section>
+                <Box dangerouslySetInnerHTML={{__html: data.flavortext || "———"}} />
               </Section>
             </Collapsible>
 
             {data.flavortext_naked ? (
                <Collapsible title="Описание Голого Тела Персонажа" open>
-                <Section style={{ whiteSpace: "pre-line" }}>
-                  {data.flavortext_naked || "———"}
+                <Section>
+                  <Box dangerouslySetInnerHTML={{__html: data.flavortext_naked || "———"}} />
                 </Section>
                </Collapsible>
             ) : (<Box />)}
 
             {data.security_records ? (
               <Collapsible title="База Данных Службы Безопасности" open>
-                <Section style={{ whiteSpace: "pre-line" }}>
-                  {data.security_records || "———"}
+                <Section>
+                  <Box dangerouslySetInnerHTML={{__html: data.security_records || "———"}} />
                 </Section>
               </Collapsible>
             ) : (<Box />)}
 
             {data.medical_records ? (
               <Collapsible title="База Данных Медицинского Отдела" open>
-                <Section style={{ whiteSpace: "pre-line" }}>
-                  {data.medical_records || "———"}
+                <Section>
+                  <Box dangerouslySetInnerHTML={{__html: data.medical_records || "———"}} />
                 </Section>
               </Collapsible>
             ) : (<Box />)}
 
             <Collapsible title={`Раса - ${data.species_name}`} open>
-              <Section style={{ whiteSpace: "pre-line" }}>
-                {data.custom_species_lore || "———"}
+              <Section>
+                <Box dangerouslySetInnerHTML={{__html: data.custom_species_lore || "———"}} />
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ whiteSpace: "pre-line" }}>
-                {data.oocnotes || "———"}
+              <Section>
+                <Box dangerouslySetInnerHTML={{__html: data.oocnotes || "———"}} />
               </Section>
             </Collapsible>
             <Section title="Предпочтения персонажа" width="100%">

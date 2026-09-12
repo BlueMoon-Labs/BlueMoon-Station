@@ -55,13 +55,13 @@ export const CyborgProfile = (props) => {
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Юнита" open>
-              <Section style={{ whiteSpace: "pre-line" }}>
-                {data.silicon_flavor_text || "———"}
+              <Section>
+                <Box dangerouslySetInnerHTML={{__html: data.silicon_flavor_text || "———"}} />
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ whiteSpace: "pre-line" }}>
-                {data.oocnotes || "Отсутствуют"}
+              <Section>
+                <Box dangerouslySetInnerHTML={{__html: data.oocnotes || "Отсутствуют"}} />
               </Section>
             </Collapsible>
             <Section title="Преференсы киборга" width="100%">

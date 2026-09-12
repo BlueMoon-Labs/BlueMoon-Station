@@ -98,7 +98,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	if(iscarbon(M))
 		var/mob/living/carbon/H = M
-		data["oocnotes"] = H.dna?.ooc_notes || ""
+		data["oocnotes"] = format_flavor_for_tgui(H.dna?.ooc_notes) || ""
 		// mechanical_erp_verbs_examine AHEAD
 		if(H.client?.prefs.toggles & VERB_CONSENT)
 			data["erp_verbs"] = "Allowed"
@@ -106,8 +106,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 			data["erp_verbs"] = "Text Only"
 		// mechanical_erp_verbs_examine END
 	if (isobserver(user))
-		data["security_records"] = M?.client?.prefs.security_records || "" //BLUEMOON ADD - призраки видят базы данных в описании персонажей
-		data["medical_records"] = M?.client?.prefs.medical_records || "" //BLUEMOON ADD - призраки видят базы данных в описании персонажей
+		data["security_records"] = format_flavor_for_tgui(M?.client?.prefs.security_records) || "" //BLUEMOON ADD - призраки видят базы данных в описании персонажей
+		data["medical_records"] = format_flavor_for_tgui(M?.client?.prefs.medical_records) || "" //BLUEMOON ADD - призраки видят базы данных в описании персонажей
 	// BLUEMOON EDIT END
 	data["vore_tag"] = M?.client?.prefs?.vorepref || "No"
 	data["erp_tag"] = M?.client?.prefs?.erppref || "No"
@@ -121,6 +121,15 @@ GLOBAL_LIST_EMPTY(cached_previews)
 
 	return data
 
+/proc/format_flavor_for_tgui(text)
+	if(!text)
+		return ""
+	// html_encode + markdown + цвет -=RRGGBB=- + \n -> <br> (ссылки отключены)
+	var/encoded = html_encode(text)
+	var/parsed = parsemarkdown_basic(encoded, hyperlink = FALSE)
+	parsed = replacetext(parsed, "\n", "<br>")
+	return parsed
+
 /datum/description_profile/ui_data(mob/user)
 	. = ..()
 	var/data[0]
@@ -133,10 +142,10 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	if (iscarbon(M))
 		var/mob/living/carbon/C = M
 		unknown = (C.wear_mask && (C.wear_mask.flags_inv & HIDEFACE) && !isobserver(user)) || (C.head && (C.head.flags_inv & HIDEFACE) && !isobserver(user))
-		data["flavortext"] = (!unknown) ? (C.dna?.flavor_text || "") : "Скрыто"
+		data["flavortext"] = (!unknown) ? format_flavor_for_tgui(C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
-		data["custom_species_lore"] = (!unknown) ? (C.dna?.custom_species_lore || "")  : ""
+		data["custom_species_lore"] = (!unknown) ? format_flavor_for_tgui(C.dna?.custom_species_lore)  : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			var/can_see_naked = TRUE
@@ -156,7 +165,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 					if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
 						can_see_naked = FALSE
 						break
-			data["flavortext_naked"] = can_see_naked ? (C.dna?.naked_flavor_text || "") : ""
+			data["flavortext_naked"] = can_see_naked ? format_flavor_for_tgui(C.dna?.naked_flavor_text) : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END
 
@@ -236,8 +245,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	if(!M || !istype(M))
 		return
 	if(M.mind)
-		data["silicon_flavor_text"] = M.mind.silicon_flavor_text || ""
-		data["oocnotes"] = M.mind.ooc_notes || ""
+		data["silicon_flavor_text"] = format_flavor_for_tgui(M.mind.silicon_flavor_text) || ""
+		data["oocnotes"] = format_flavor_for_tgui(M.mind.ooc_notes) || ""
 		data["headshot_links"] = M.mind.headshot_links.Copy() || list()
 	if(M.client?.prefs)
 		var/datum/preferences/prefs = M.client.prefs

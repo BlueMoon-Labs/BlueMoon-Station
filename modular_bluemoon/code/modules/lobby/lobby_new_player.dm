@@ -126,6 +126,8 @@
 
 /mob/dead/new_player/proc/_bm_build_loading_stub()
 	// Фон — bm_stub_bg.gif, отправленный через browse() до этого вызова.
+	// Прогресс-бар в том же стиле, но с процентностью (width 0%→100% + цифра справа)
+	var/pct = Master?.loading_progress || 0
 	return {"<!DOCTYPE html><html><head><meta charset='UTF-8'>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -137,11 +139,13 @@ body,html{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Co
 .title{font-size:clamp(18px,4.5vmin,42px);letter-spacing:6px;text-shadow:0 0 18px rgba(80,180,255,0.9);margin-bottom:1.2vmin;}
 .sub{font-size:clamp(9px,1.6vmin,15px);letter-spacing:3px;color:rgba(80,140,220,0.7);}
 .bottom{width:100%;padding:0 8vmin 4vmin;}
-.bar-label{font-size:clamp(8px,1.2vmin,12px);letter-spacing:2px;color:rgba(80,140,220,0.55);margin-bottom:1.2vmin;}
-.bar-track{width:100%;height:3px;background:rgba(40,100,255,0.12);border-radius:2px;overflow:hidden;}
-.bar-fill{height:100%;position:relative;}
-.bar-fill::before{content:'';position:absolute;top:0;bottom:0;width:40%;left:0;background:linear-gradient(90deg,transparent,#4af,transparent);animation:bm-ray 1.6s ease-in-out infinite;}
-.bar-fill::after{content:'';position:absolute;top:0;bottom:0;width:20%;left:0;background:linear-gradient(90deg,transparent,#adf,transparent);animation:bm-ray 1.6s ease-in-out 0.5s infinite;}
+.bar-label{font-size:clamp(8px,1.2vmin,12px);letter-spacing:2px;color:rgba(80,140,220,0.55);margin-bottom:1.2vmin;display:flex;justify-content:space-between;align-items:center;}
+.bar-label-left{flex:1;}
+.bar-pct{min-width:36px;text-align:right;color:#4af;font-weight:700;text-shadow:0 0 6px rgba(80,180,255,0.6);}
+.bar-track{width:100%;height:4px;background:rgba(40,100,255,0.12);border-radius:2px;overflow:hidden;box-shadow:0 0 6px rgba(40,100,255,0.15);}
+.bar-fill{height:100%;width:[pct]%;position:relative;background:linear-gradient(90deg,#3777ff 0%,#4af 55%,#adf 100%);overflow:hidden;transition:width 0.35s ease;box-shadow:0 0 8px rgba(80,180,255,0.5);}
+.bar-fill::before{content:'';position:absolute;top:0;bottom:0;width:40%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent);animation:bm-ray 1.6s ease-in-out infinite;}
+.bar-fill::after{content:'';position:absolute;top:0;bottom:0;width:20%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);animation:bm-ray 1.6s ease-in-out 0.5s infinite;}
 @keyframes bm-ray{from{transform:translateX(-100%)}to{transform:translateX(350%)}}
 </style></head>
 <body>
@@ -153,12 +157,13 @@ body,html{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Co
     <div class='sub'>SPACE STATION 13</div>
   </div>
   <div class='bottom'>
-    <div class='bar-label'>LOADING<span id='d'></span></div>
+    <div class='bar-label'><span class='bar-label-left'>LOADING<span id='d'></span></span><span class='bar-pct' id='pct'>[pct]%</span></div>
     <div class='bar-track'><div class='bar-fill' id='bar'></div></div>
   </div>
 </div>
 <script>
-var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textContent=s===1?' .':s===2?'..':s===3?'...':'';_i++;},400);
+var _i=0;setInterval(function(){var e=document.getElementById('d');if(e){var s=_i%4;e.textContent=s===1?' .':s===2?' ..':s===3?' ...':'';_i++;}},400);
+function bm_set_loading_progress(p){p=Math.max(0,Math.min(100,parseInt(p)||0));var b=document.getElementById('bar');var t=document.getElementById('pct');if(b) b.style.width=p+'%';if(t) t.textContent=p+'%';}
 </script>
 </body></html>"}
 
