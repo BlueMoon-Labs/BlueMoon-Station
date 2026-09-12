@@ -54,6 +54,9 @@
 		var/obj/item/melee/sickly_blade/blade = allocate(blade_type)
 		var/expected_x = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD)) ? 0 : -9
 		var/expected_y = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD)) ? 0 : -8
+		if(blade.route == PATH_ECHO)
+			expected_x = 0
+			expected_y = -4
 		for(var/hand_icon in list(blade.lefthand_file, blade.righthand_file))
 			var/mutable_appearance/held = blade.build_worn_icon(default_icon_file = hand_icon, isinhands = TRUE)
 			TEST_ASSERT_EQUAL(held.icon_state, blade.icon_state, "Спрайт [blade.type] в руках должен соответствовать предмету.")

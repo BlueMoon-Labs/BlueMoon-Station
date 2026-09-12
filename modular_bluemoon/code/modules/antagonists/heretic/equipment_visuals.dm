@@ -86,6 +86,9 @@
 /obj/item/melee/sickly_blade/echo
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_echo_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/obj/heretic_blades_echo_righthand.dmi'
+	// Рисунок привязан к верхнему левому углу, без полей старого серпа.
+	held_offset_x = 8
+	held_offset_y = -2
 
 /obj/item/melee/sickly_blade/glass
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_blades_glass_lefthand.dmi'
