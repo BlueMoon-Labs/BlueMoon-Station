@@ -237,10 +237,20 @@ proc/string_repeat(string, count)
 	var/datum/neural_interface_module/image_highlight/module = modules["image"]
 	return module.write_image_data(key, overlay, target, text, decay_duration, pixel_x_text, pixel_y_text, text_size)
 
-/datum/component/neural_interface/proc/on_relay_data(datum/source, signal, force, radius = 15, ...)
+/datum/component/neural_interface/proc/on_relay_data(datum/source, datum/source_atom, signal, force, radius = 15, ...)
 	var/list/arguments = args.Copy()
-	arguments.Cut(2, 5)
-	if(!force && isatom(source) && get_dist(get_turf(source), get_turf(host_mob)) > radius)
+	arguments.Cut(2, 6)
+	if(force)
+		return src._SendSignal(signal, arguments)
+	if(!isatom(source_atom))
+		return FALSE
+	var/turf/source_turf = get_turf(source_atom)
+	var/turf/target_turf = get_turf(host_mob)
+	if(!source_turf || !target_turf)
+		return FALSE
+	if(source_turf.z != target_turf.z)
+		return FALSE
+	if(get_dist(source_turf, target_turf) > radius)
 		return FALSE
 	return src._SendSignal(signal, arguments)
 

@@ -100,16 +100,33 @@ Nothing else in the console has ID requirements.
 				linked_imprinter = D
 				D.linked_console = src
 
-/obj/machinery/computer/rdconsole/Initialize()
+/obj/machinery/computer/rdconsole/Initialize(mapload)
 	. = ..()
+	SyncRDevices()
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
 	if(network_id == RND_NETWORK_AUTO)	//BLUEMOON CHANGE: станция — в глобальную сеть науки, иное — без сети (подключается мультитулом к серверам)
 		if(is_station_level(z))
-			stored_research = SSresearch.science_tech
+			SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.science_tech)
 			stored_research.consoles_accessing[src] = TRUE
 	else if(network_id)	//BLUEMOON CHANGE: консоль подключается к своей сети через реестр; без ID — изолированная
-		stored_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)
+		SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
 		stored_research.consoles_accessing[src] = TRUE
-	SyncRDevices()
+
+/obj/machinery/computer/rdconsole/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	if(network_id == RND_NETWORK_AUTO)	//BLUEMOON CHANGE: станция — в глобальную сеть науки, иное — без сети (подключается мультитулом к серверам)
+		if(is_station_level(z))
+			SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.science_tech)
+			stored_research.consoles_accessing[src] = TRUE
+	else if(network_id)	//BLUEMOON CHANGE: консоль подключается к своей сети через реестр; без ID — изолированная
+		SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+		stored_research.consoles_accessing[src] = TRUE
 
 /obj/machinery/computer/rdconsole/Destroy()
 	if(stored_research)
@@ -229,26 +246,21 @@ Nothing else in the console has ID requirements.
 	locked = FALSE
 	return TRUE
 
+/obj/machinery/computer/rdconsole/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	if(stored_research)
+		stored_research.consoles_accessing -= src
+	stored_research = new_web
+	stored_research.consoles_accessing[src] = TRUE
+
+	if(linked_lathe)
+		SEND_SIGNAL(linked_lathe, COMSIG_ATOM_SET_TECHWEB, stored_research)
+	if(linked_imprinter)
+		SEND_SIGNAL(linked_imprinter, COMSIG_ATOM_SET_TECHWEB, stored_research)
+
 /obj/machinery/computer/rdconsole/multitool_act(mob/living/user, obj/item/multitool/I)
-	//BLUEMOON ADD - подключение консоли к сети исследований через мультитул
-	if(istype(I.buffer, /datum/techweb))
-		var/datum/techweb/new_web = I.buffer
-		if(new_web == stored_research)
-			to_chat(user, span_notice("Консоль уже подключена к [new_web.organization]."))
-			return TRUE
-		if(stored_research)
-			stored_research.consoles_accessing -= src
-		stored_research = new_web
-		stored_research.consoles_accessing[src] = TRUE
-		to_chat(user, span_notice("Вы подключаете консоль к [new_web.organization]."))
-		return TRUE
-	var/lathe = linked_lathe && linked_lathe.multitool_act(user, I)
-	var/print = linked_imprinter && linked_imprinter.multitool_act(user, I)
-	if(lathe || print)
-		return TRUE
-	if(I.buffer)
-		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
-	else if(!stored_research)
+	if(!stored_research)
 		to_chat(user, span_notice("Консоль не подключена ни к одной исследовательской сети."))
 	return TRUE
 

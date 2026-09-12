@@ -512,7 +512,7 @@
 			return
 		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, text, key, color, size)
 	else
-		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_LOG, FALSE, 15, text, key, color, size)
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, src, COMSIG_NEURAL_INTERFACE_WRITE_LOG, FALSE, 10, text, key, color, size)
 
 	if(!result)
 		activate_pin(3)
@@ -563,7 +563,7 @@
 
 		result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, key, value, decay_duration)
 	else
-		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_DATA, FALSE, 15, key, value, decay_duration)
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, src, COMSIG_NEURAL_INTERFACE_WRITE_DATA, FALSE, 10, key, value, decay_duration)
 
 	if(!result)
 		activate_pin(3)
@@ -675,7 +675,7 @@
 	else
 		var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
 		overlay_image.color = color_overlay
-		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, FALSE, 15, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+		result = SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEURAL_INTERFACE_RELAY, src, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, FALSE, 10, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
 
 	if(!result)
 		activate_pin(3)

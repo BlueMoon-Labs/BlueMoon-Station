@@ -856,6 +856,7 @@
 #include "code\datums\components\summoning.dm"
 #include "code\datums\components\swarming.dm"
 #include "code\datums\components\tackle.dm"
+#include "code\datums\components\techweb_holder.dm"
 #include "code\datums\components\thermite.dm"
 #include "code\datums\components\transforming.dm"
 #include "code\datums\components\twitch_plays.dm"

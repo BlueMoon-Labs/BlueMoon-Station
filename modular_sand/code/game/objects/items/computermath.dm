@@ -31,11 +31,24 @@
 
 /obj/item/computermath/Initialize(mapload)
 	. = ..()
-	linked_techweb = find_rnd_network_for_object(src) //BLUEMOON ADD: привязка к ближайшей серверной сети
 	START_PROCESSING(SSobj, src)
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+
+/obj/item/computermath/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/item/computermath/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	linked_techweb = new_web
 
 /obj/item/computermath/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	linked_techweb = null
 	return ..()
 
 /obj/item/computermath/proc/check_charges()

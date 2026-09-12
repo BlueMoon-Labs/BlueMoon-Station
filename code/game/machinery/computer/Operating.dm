@@ -15,8 +15,23 @@
 
 /obj/machinery/computer/operating/Initialize(mapload)
 	. = ..()
-	linked_techweb = SSresearch.science_tech
 	find_table()
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/machinery/computer/operating/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/machinery/computer/operating/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	linked_techweb = new_web
 
 /obj/machinery/computer/operating/Destroy()
 	if(table)
@@ -41,11 +56,12 @@
 	return ..()
 
 /obj/machinery/computer/operating/proc/sync_surgeries()
-	for(var/i in linked_techweb.researched_designs)
-		var/datum/design/surgery/D = SSresearch.techweb_design_by_id(i)
-		if(!istype(D))
-			continue
-		advanced_surgeries |= D.surgery
+	if(linked_techweb)
+		for(var/i in linked_techweb.researched_designs)
+			var/datum/design/surgery/D = SSresearch.techweb_design_by_id(i)
+			if(!istype(D))
+				continue
+			advanced_surgeries |= D.surgery
 
 /obj/machinery/computer/operating/proc/find_table()
 	for(var/direction in GLOB.cardinals)

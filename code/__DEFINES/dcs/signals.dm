@@ -888,7 +888,9 @@
 // Research signals
 #define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
 #define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам
-
+#define COMSIG_ATOM_GET_TECHWEB "atom_get_techweb"
+#define COMSIG_ATOM_SET_TECHWEB "atom_set_techweb"
+#define COMSIG_ATOM_TECHWEB_CHANGED "atom_techweb_changed"
 
 // Neural Interface Signals
 #define COMSIG_NEURAL_INTERFACE_ADD_SOURCE "neural_interface_add_source" // AddSource(id)

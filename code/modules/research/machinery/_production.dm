@@ -41,12 +41,23 @@
 	create_reagents(0, OPENCONTAINER | NO_REACT)
 	gen_access()
 	stored_research = new
-	host_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)	//BLUEMOON CHANGE: подключение к сети через реестр
 	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+
+/obj/machinery/rnd/production/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+
 
 /obj/machinery/rnd/production/Destroy()
 	if(deferred_sync_timer)
@@ -59,31 +70,23 @@
 	host_research = null
 	return ..()
 
+/obj/machinery/rnd/production/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	host_research = new_web
+	stored_research = new
+	cached_designs.Cut()
+	_ui_cached_designs.Cut()
+	designs_cache_built = FALSE
+	last_design_count = 0
+	INVOKE_ASYNC(src, PROC_REF(update_research))
+
 //BLUEMOON ADD - переподключение производственной машины к другой сети исследований через мультитул
 /obj/machinery/rnd/production/multitool_act(mob/living/user, obj/item/multitool/tool)
 	. = ..()
-	if(istype(tool.buffer, /datum/techweb))
-		var/datum/techweb/new_web = tool.buffer
-		if(new_web == host_research)
-			to_chat(user, span_notice("[src] уже подключён к [new_web.organization]."))
-			return TRUE
-		host_research = new_web
-		//BLUEMOON ADD: новая сеть — свежее локальное состояние и сброс кэшей, чтобы update_designs_incremental/update_designs_ui не тащили дизайны старой сети
-		stored_research = new
-		cached_designs.Cut()
-		_ui_cached_designs.Cut()
-		designs_cache_built = FALSE
-		last_design_count = 0
-		INVOKE_ASYNC(src, PROC_REF(update_research))
-		to_chat(user, span_notice("Вы подключаете [src] к [new_web.organization]."))
-		return TRUE
-	else if(istype(tool.buffer, /obj/machinery/ore_silo) && GetComponent(/datum/component/remote_materials))
+	if(istype(tool.buffer, /obj/machinery/ore_silo) && GetComponent(/datum/component/remote_materials))
 		//BLUEMOON ADD: не перехватываем линковку с ресурсным сило — её обработает remote_materials.OnAttackBy (COMSIG_PARENT_ATTACKBY)
 		return NONE
-	else if(!tool.buffer && host_research)
-		tool.buffer = host_research
-		to_chat(user, span_notice("Вы сохраняете базу данных исследований [host_research.organization] в буфер мультитула."))
-		return TRUE
 	else
 		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
 		return TRUE
@@ -134,7 +137,7 @@
 	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
 	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
 	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
-	host_research.copy_research_to(stored_research, TRUE)
+	host_research?.copy_research_to(stored_research, TRUE)
 	if(previously_known)
 		update_designs_incremental(previously_known)
 	else

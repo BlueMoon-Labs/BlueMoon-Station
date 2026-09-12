@@ -24,7 +24,22 @@
 
 /obj/machinery/nanite_program_hub/Initialize(mapload)
 	. = ..()
-	linked_techweb = SSresearch.science_tech
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/machinery/nanite_program_hub/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/machinery/nanite_program_hub/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	linked_techweb = new_web
 
 /obj/machinery/nanite_program_hub/update_overlays()
 	. = ..()
@@ -98,18 +113,19 @@
 /obj/machinery/nanite_program_hub/ui_static_data(mob/user)
 	var/list/data = list()
 	data["programs"] = list()
-	for(var/i in linked_techweb.researched_designs)
-		var/datum/design/nanites/D = SSresearch.techweb_design_by_id(i)
-		if(!istype(D))
-			continue
-		var/cat_name = D.category[1] //just put them in the first category fuck it
-		if(isnull(data["programs"][cat_name]))
-			data["programs"][cat_name] = list()
-		var/list/program_design = list()
-		program_design["id"] = D.id
-		program_design["name"] = D.name
-		program_design["desc"] = D.desc
-		data["programs"][cat_name] += list(program_design)
+	if(linked_techweb)
+		for(var/i in linked_techweb.researched_designs)
+			var/datum/design/nanites/D = SSresearch.techweb_design_by_id(i)
+			if(!istype(D))
+				continue
+			var/cat_name = D.category[1] //just put them in the first category fuck it
+			if(isnull(data["programs"][cat_name]))
+				data["programs"][cat_name] = list()
+			var/list/program_design = list()
+			program_design["id"] = D.id
+			program_design["name"] = D.name
+			program_design["desc"] = D.desc
+			data["programs"][cat_name] += list(program_design)
 
 	if(!length(data["programs"]))
 		data["programs"] = null
