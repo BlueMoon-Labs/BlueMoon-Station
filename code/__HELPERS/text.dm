@@ -559,29 +559,40 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 			return
 	return FALSE
 
-/proc/parsemarkdown_basic_step1(t, limited=FALSE)
+/proc/parsemarkdown_basic_step1(t, limited=FALSE, barebones=FALSE)
 	if(length(t) <= 0)
 		return
 
 	// This parses markdown with no custom rules
 
 	// Escape backslashed
-
-	t = replacetext(t, "$", "$-")
-	t = replacetext(t, "\\\\", "$1")
-	t = replacetext(t, "\\**", "$2")
-	t = replacetext(t, "\\*", "$3")
-	t = replacetext(t, "\\__", "$4")
-	t = replacetext(t, "\\_", "$5")
-	t = replacetext(t, "\\^", "$6")
-	t = replacetext(t, "\\((", "$7")
-	t = replacetext(t, "\\))", "$8")
-	t = replacetext(t, "\\|", "$9")
-	t = replacetext(t, "\\%", "$0")
+	if(!barebones)
+		t = replacetext(t, "$", "$-")
+		t = replacetext(t, "\\\\", "$1")
+		t = replacetext(t, "\\**", "$2")
+		t = replacetext(t, "\\*", "$3")
+		t = replacetext(t, "\\__", "$4")
+		t = replacetext(t, "\\_", "$5")
+		t = replacetext(t, "\\^", "$6")
+		t = replacetext(t, "\\((", "$7")
+		t = replacetext(t, "\\))", "$8")
+		t = replacetext(t, "\\|", "$9")
+		t = replacetext(t, "\\%", "$0")
 
 	// Escape  single characters that will be used
 
 	t = replacetext(t, "!", "$a")
+
+	// Parse colour (Twilight Axis style: -=RRGGBB text =- )
+	if(!barebones)
+		var/regex/hexgex = regex(@"(?<=-=)(.{6})", "g")
+		while(hexgex.Find(t))
+			var/endblock = findtext(t, "=-", hexgex.index)
+			if(!endblock)
+				break
+			t = replacetext(t, "=-", "</font>", hexgex.index, endblock+2)
+			var/c_code = sanitize_hexcolor(hexgex.match)
+			t = replacetext(t, "-=[hexgex.match]", "<font color='[c_code]'>", hexgex.index-2, endblock+2)
 
 	// Parse hr and small
 
@@ -641,25 +652,31 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 
 	// Parse headers
 
-	t = replacetext(t, regex("^#(?!#) ?(.+)$", "gm"), "<h2>$1</h2>")
-	t = replacetext(t, regex("^##(?!#) ?(.+)$", "gm"), "<h3>$1</h3>")
-	t = replacetext(t, regex("^###(?!#) ?(.+)$", "gm"), "<h4>$1</h4>")
-	t = replacetext(t, regex("^#### ?(.+)$", "gm"), "<h5>$1</h5>")
+	if(!barebones)
+		t = replacetext(t, regex("^#(?!#) ?(.+)$", "gm"), "<h2>$1</h2>")
+		t = replacetext(t, regex("^##(?!#) ?(.+)$", "gm"), "<h3>$1</h3>")
+		t = replacetext(t, regex("^###(?!#) ?(.+)$", "gm"), "<h4>$1</h4>")
+		t = replacetext(t, regex("^#### ?(.+)$", "gm"), "<h5>$1</h5>")
 
 	// Parse most rules
 
-	t = replacetext(t, regex("\\*(\[^\\*\]*)\\*", "g"), "<i>$1</i>")
-	t = replacetext(t, regex("_(\[^_\]*)_", "g"), "<i>$1</i>")
-	t = replacetext(t, "<i></i>", "!")
-	t = replacetext(t, "</i><i>", "!")
-	t = replacetext(t, regex("\\!(\[^\\!\]+)\\!", "g"), "<b>$1</b>")
-	t = replacetext(t, regex("\\^(\[^\\^\]+)\\^", "g"), "<font size=\"4\">$1</font>")
-	t = replacetext(t, regex("\\|(\[^\\|\]+)\\|", "g"), "<center>$1</center>")
-	t = replacetext(t, "!", "</i><i>")
+	if(!barebones)	//Barebones swaps * for + and | for bold and italics respectively, used in say / emote code.
+		t = replacetext(t, regex("\\*(\[^\\*\]*)\\*", "g"), "<i>$1</i>")
+		t = replacetext(t, regex("_(\[^_\]*)_", "g"), "<i>$1</i>")
+		t = replacetext(t, "<i></i>", "!")
+		t = replacetext(t, "</i><i>", "!")
+		t = replacetext(t, regex("\\!(\[^\\!\]+)\\!", "g"), "<b>$1</b>")
+		t = replacetext(t, regex("\\^(\[^\\^\]+)\\^", "g"), "<font size=\"4\">$1</font>")
+		t = replacetext(t, regex("\\|(\[^\\|\]+)\\|", "g"), "<center>$1</center>")
+		t = replacetext(t, "!", "</i><i>")
+	else
+		t = replacetext(t, regex("\\+(\[^\\+\]+)\\+", "g"), "<b>$1</b>")
+		t = replacetext(t, regex("\\|(\[^\\|\]+)\\|", "g"), "<i>$1</i>")
+		t = replacetext(t, regex("\\_(\[^\\_\]+)\\_", "g"), "<u>$1</u>")
 
 	return t
 
-/proc/parsemarkdown_basic_step2(t)
+/proc/parsemarkdown_basic_step2(t, hyperlink=FALSE)
 	if(length(t) <= 0)
 		return
 
@@ -681,11 +698,14 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 	t = replacetext(t, "$0", "%")
 	t = replacetext(t, "$-", "$")
 
+	if(hyperlink)
+		t = replacetext(t, regex(@"https?:\/\/[^\s$.?#].[^\s]*", "gi"), "<a href=\"$0\">$0</a>")
+
 	return t
 
-/proc/parsemarkdown_basic(t, limited=FALSE)
-	t = parsemarkdown_basic_step1(t, limited)
-	t = parsemarkdown_basic_step2(t)
+/proc/parsemarkdown_basic(t, limited=FALSE, barebones=FALSE, hyperlink=FALSE)
+	t = parsemarkdown_basic_step1(t, limited, barebones)
+	t = parsemarkdown_basic_step2(t, hyperlink)
 	return t
 
 /proc/parsemarkdown(t, mob/user=null, limited=FALSE)
@@ -702,6 +722,7 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 	t = replacetext(t, regex("%f(?:ield)?(?=\\s|$)", "igm"), "<span class=\"paper_field\"></span>")
 
 	t = parsemarkdown_basic_step2(t)
+	// Keep hyperlink off for paper; flavor texts enable it explicitly via parsemarkdown_basic(..., hyperlink=TRUE)
 
 	// Manage whitespace
 
