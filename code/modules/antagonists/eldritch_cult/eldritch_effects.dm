@@ -68,6 +68,7 @@
 	if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
 		var/datum/eldritch_knowledge/ritual = rituals[choice]
 		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
+			reject_ritual(user, ritual, "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты.")
 			heretic.ensure_hunt_target(user)
 		else
 			do_ritual(user, ritual)
@@ -245,16 +246,19 @@
 	var/list/recheck_selected = list()
 	return ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user)
 
+/obj/effect/eldritch/proc/reject_ritual(mob/living/user, datum/eldritch_knowledge/ritual, reason)
+	to_chat(user, span_warning("Ритуал «[ritual.name]» не готов. [reason]"))
+	log_game("[key_name(user)] не начинает ритуал «[ritual.name]» ([ritual.type]) в [AREACOORD(src)]: [reason]")
+	return FALSE
+
 /obj/effect/eldritch/proc/do_ritual(mob/living/user, datum/eldritch_knowledge/ritual)
 	var/list/atoms = collect_ritual_atoms(user)
 	var/list/selected_atoms = list()
 	var/list/stack_usage = list()
 	if(!select_recipe_atoms(ritual, atoms, selected_atoms, stack_usage, user))
-		to_chat(user, span_warning("Ритуал «[ritual.name]» не готов. [recipe_failure_reason(ritual, user)]"))
-		return FALSE
+		return reject_ritual(user, ritual, recipe_failure_reason(ritual, user))
 	if(!reserve_atoms(selected_atoms))
-		to_chat(user, span_warning("Компоненты уже заняты другим обрядом или исчезли. Дождитесь его окончания либо принесите другие."))
-		return FALSE
+		return reject_ritual(user, ritual, "Компоненты уже заняты другим обрядом или исчезли. Дождитесь его окончания либо принесите другие.")
 	ritual_user = user
 	apply_hunt_stasis(ritual, user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -264,10 +268,9 @@
 	if(istype(ascension_ritual) && !ascension_announced)
 		release_atoms()
 		if(world.time < heretic.ascension_ready_at)
-			to_chat(user, span_warning("Завеса ещё укреплена после предупреждения станции. До начала вознесения: [DisplayTimeText(heretic.ascension_ready_at - world.time)]."))
+			return reject_ritual(user, ritual, "Завеса ещё укреплена после предупреждения станции. До начала вознесения: [DisplayTimeText(heretic.ascension_ready_at - world.time)].")
 		else
-			to_chat(user, span_warning("Завеса ещё не успокоилась. Между попытками начать вознесение должно пройти три минуты."))
-		return FALSE
+			return reject_ritual(user, ritual, "Завеса ещё не успокоилась. Между попытками начать вознесение должно пройти три минуты.")
 	var/ascension_started_at = world.time
 	if(ascension_announced)
 		show_ascension_body_preview(user)
@@ -304,6 +307,22 @@
 
 /obj/effect/eldritch/proc/recipe_failure_reason(datum/eldritch_knowledge/ritual, mob/living/user)
 	var/list/available_atoms = collect_ritual_atoms(user)
+	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		if(!heretic || !heretic.hunt_target_available(heretic.hunt_target))
+			return "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты."
+		var/mob/living/carbon/human/victim = heretic.hunt_target.current
+		if(!(victim in available_atoms))
+			return "Назначенная цель [victim.real_name] должна лежать на руне или рядом с ней, вне шкафов и других контейнеров."
+		if(!heretic.hunt_target_ready(victim))
+			return "Цель [victim.real_name] ещё сопротивляется: свяжите её наручниками, оглушите или сбейте с ног."
+		var/has_own_heart = FALSE
+		for(var/obj/item/living_heart/heart in available_atoms)
+			if(!heart.owner_mind || heart.owner_mind == user.mind)
+				has_own_heart = TRUE
+				break
+		if(!has_own_heart)
+			return "Рядом с назначенной целью нужно выложить ваше живое сердце. Чужое сердце не подходит."
 	var/list/missing = list()
 	var/list/requirements = list()
 	for(var/required_type in ritual.required_atoms)
@@ -328,6 +347,11 @@
 			missing += "[heretic_ritual_ingredient_name(required_type)] ×[shortfall]"
 	if(length(missing))
 		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны."
+	if(ritual.type == /datum/eldritch_knowledge/base_void)
+		var/turf/open/floor/floor = get_turf(src)
+		if(!istype(floor))
+			return "Руна должна находиться на открытом полу."
+		return "Температура воздуха на руне: [round(floor.GetTemperature() - T0C, 0.1)] °C; нужно не выше 0 °C либо ваше поле Зимнего предела до конца обряда."
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
 		return "Нужны ваше живое сердце и назначенная цель: живая в наручниках, лёжа, оглушённая или без сознания, либо её труп за меньшую награду."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))

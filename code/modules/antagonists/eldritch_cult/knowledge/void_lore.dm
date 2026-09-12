@@ -1,6 +1,7 @@
 /datum/eldritch_knowledge/base_void
 	name = "Мерцание зимы"
-	desc = "Открывает Путь Пустоты: собирайте осколки зимы, оставляйте холодные зоны и выбирайте дистанцию боя. Кухонный нож на руне при минусовой температуре превращается в клинок Пустоты. Зимний предел создаёт область холода и молчания."
+	desc = "Открывает Путь Пустоты: собирайте осколки зимы, оставляйте холодные зоны и выбирайте дистанцию боя. Кухонный нож на руне при температуре не выше 0 °C или внутри вашего Зимнего предела превращается в клинок Пустоты. Зимний предел создаёт область холода и молчания."
+	ritual_hint = "Воздух на клетке руны должен быть не теплее 0 °C. Вместо охлаждения комнаты можно накрыть руну своим Зимним пределом: поле должно сохраняться до конца обряда."
 	gain_text = "В тишине между ударами сердца я услышал снег."
 	required_atoms = list(/obj/item/kitchen/knife)
 	result_atoms = list(/obj/item/melee/sickly_blade/void)
@@ -9,7 +10,12 @@
 
 /datum/eldritch_knowledge/base_void/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	var/turf/open/floor/floor = get_turf(loc)
-	return istype(floor) && floor.GetTemperature() <= T0C
+	if(!istype(floor))
+		return FALSE
+	if(floor.GetTemperature() <= T0C)
+		return TRUE
+	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
+	return user?.mind && istype(winter) && !QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs)
 
 /datum/eldritch_knowledge/void_grasp
 	name = "Хватка Пустоты"

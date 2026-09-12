@@ -1,3 +1,55 @@
+/// Клинок Пустоты требует холодного воздуха или своего действующего поля до конца обряда.
+/datum/unit_test/heretic_void_blade_recipe
+	var/turf/open/floor/ritual_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_void_blade_recipe/Destroy()
+	if(ritual_floor && !isnull(original_temperature))
+		ritual_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_void_blade_recipe/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	ritual_floor = get_turf(user)
+	original_temperature = ritual_floor.GetTemperature()
+	ritual_floor.air.set_temperature(T0C + 20)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, ritual_floor)
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Тёплый воздух без поля не подходит.")
+	TEST_ASSERT(!QDELETED(knife), "Отказ сохраняет нож.")
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "20 °C"), "Отказ показывает температуру на руне.")
+	ritual_floor.air.set_temperature(T0C)
+	TEST_ASSERT(recipe.recipe_snowflake_check(list(), ritual_floor, list(), user), "Нулевая температура подходит без поля.")
+	ritual_floor.air.set_temperature(T0C + 20)
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	winter.refresh_boundary(list(ritual_floor))
+	recipe.combat_zone = winter
+	var/datum/antagonist/heretic/other = allocate_heretic()
+	TEST_ASSERT(!recipe.recipe_snowflake_check(list(), ritual_floor, list(), other.owner.current), "Чужое поле не заменяет холод.")
+	winter.refresh_boundary(list())
+	TEST_ASSERT(!recipe.recipe_snowflake_check(list(), ritual_floor, list(), user), "Клетка за границей поля не подходит.")
+	winter.refresh_boundary(list(ritual_floor))
+	TEST_ASSERT(rune.reserve_atoms(list(knife)), "Нож резервируется для проверки канала.")
+	rune.ritual_user = user
+	TEST_ASSERT(rune.ritual_valid(user, recipe), "Своё поле разрешает обряд в тёплом воздухе.")
+	qdel(winter)
+	TEST_ASSERT(!rune.ritual_valid(user, recipe), "Исчезновение поля прерывает обряд.")
+	rune.release_atoms()
+	winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	winter.refresh_boundary(list(ritual_floor))
+	recipe.combat_zone = winter
+	recipe.ritual_time = 0
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Своё поле позволяет изготовить клинок.")
+	var/obj/item/melee/sickly_blade/void/blade = locate() in ritual_floor
+	TEST_ASSERT_NOTNULL(blade, "Обряд создаёт клинок Пустоты.")
+	allocated += blade
+	TEST_ASSERT(QDELETED(knife), "Успешный обряд расходует нож.")
+
 /// Рецепт брони открывается со второй ступени и расходует готовый стол рядом с руной и выложенный противогаз.
 /datum/unit_test/heretic_armor_recipe/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -182,6 +234,32 @@
 	if(previous_sacrificed)
 		GLOB.heretic_sacrificed_minds = previous_sacrificed
 	return ..()
+
+/// Отказ подношения различает отсутствие цели, сопротивление и чужое сердце, не исключая назначенный труп.
+/datum/unit_test/heretic_hunt_return/failure_reasons/Run()
+	test_level = SSmapping.get_level(run_loc_floor_bottom_left.z)
+	previous_traits = test_level.traits
+	test_level.traits = previous_traits.Copy()
+	test_level.traits[ZTRAIT_STATION] = TRUE
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	var/datum/eldritch_knowledge/spell/basic/recipe = allocate(/datum/eldritch_knowledge/spell/basic)
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "Выберите новую цель"), "Без назначения нужно выбрать цель.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "на руне или рядом"), "Отдалённую цель нужно доставить к руне.")
+	victim.forceMove(get_turf(rune))
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "ещё сопротивляется"), "Свободную цель нужно обезвредить.")
+	victim.death()
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, get_turf(rune))
+	heart.owner_mind = soul
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(recipe, user), "Чужое сердце"), "Для назначенного трупа отказ указывает на чужое сердце.")
+	heart.owner_mind = heretic.owner
+	TEST_ASSERT(rune.select_recipe_atoms(recipe, rune.collect_ritual_atoms(user), list(), list(), user), "Труп со своим сердцем подходит для подношения.")
 
 /datum/unit_test/heretic_hunt_return/Run()
 	test_level = SSmapping.get_level(run_loc_floor_bottom_left.z)
