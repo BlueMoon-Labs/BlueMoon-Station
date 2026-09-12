@@ -50,6 +50,8 @@ type Ritual = {
   name: string;
   desc: string;
   ingredients: { name: string; amount: number }[];
+  hint?: string;
+  duration?: number;
   ascension: BooleanLike;
 };
 
@@ -104,9 +106,6 @@ const useLoreBackend = () => {
         ...data.knowledge_state?.[knowledge.id],
         passive: data.passive_upgrades?.[knowledge.id],
       })),
-      rituals: data.knowledge_state
-        ? data.rituals.filter((ritual) => data.knowledge_state![ritual.id]?.known)
-        : data.rituals,
     },
   };
 };
@@ -181,6 +180,26 @@ const ResearchButton = ({ knowledge }: { knowledge: Knowledge }) => {
     </div>
   );
 };
+
+const KnowledgeRequirements = ({ knowledge }: { knowledge: Knowledge }) => (
+  <dl className="HereticBook__requirements">
+    <dt>Стоимость изучения</dt><dd>{knowledge.cost} очк. знаний</dd>
+    {knowledge.sacrifices > 0 && <><dt>Жертвоприношения</dt><dd>{knowledge.sacrifices}</dd></>}
+    {knowledge.stage > 0 && <><dt>Ступень пути</dt><dd>{knowledge.stage}</dd></>}
+  </dl>
+);
+
+const RitualIngredients = ({ ritual }: { ritual: Ritual }) => (
+  <>
+    <h3 className="HereticBook__ingredientsTitle">Компоненты обряда</h3>
+    <ul className="HereticBook__ingredients">
+      {ritual.ingredients.map((item, index) => <li key={`${item.name}-${index}`}><span>{item.name}</span><span className="HereticBook__leader" /><strong>×{item.amount}</strong></li>)}
+    </ul>
+    {ritual.hint && <LoreText text={ritual.hint} />}
+    <p className="HereticBook__annotation">Компоненты должны находиться на полу в пределах одной клетки от центра руны, включая диагонали. Предметы в руках, на персонаже и внутри сумок не учитываются.</p>
+    <p className="HereticBook__annotation">Нажмите на центр руны пустой рукой и выберите этот обряд. {ritual.duration !== undefined && `Время проведения: ${ritual.duration} сек. `}Не двигайтесь до его окончания и не перемещайте компоненты.</p>
+  </>
+);
 
 const PassiveResearch = ({ knowledge }: { knowledge: Knowledge }) => {
   const { data, act } = useLoreBackend();
@@ -367,6 +386,7 @@ const KnowledgeChapter = ({ turn }: { turn: () => void }) => {
   const visible = [...main, ...side, ...starting];
   const selected = visible.find((entry) => entry.id === selectedId)
     || main.find((entry) => !entry.known) || visible.find((entry) => entry.available) || visible[0];
+  const recipe = data.rituals.find((ritual) => ritual.id === selected?.id);
   useEffect(() => {
     if (selected) setSelectedId(selected.id);
   }, [selected?.id]);
@@ -407,14 +427,11 @@ const KnowledgeChapter = ({ turn }: { turn: () => void }) => {
             <h2>{selected.name}</h2>
             {selected.flavour && <blockquote><LoreText text={selected.flavour} /></blockquote>}
             <LoreText text={selected.desc} />
-            <dl className="HereticBook__requirements">
-              <dt>Стоимость</dt><dd>{selected.cost} очк. знаний</dd>
-              {selected.sacrifices > 0 && <><dt>Жертвоприношения</dt><dd>{selected.sacrifices}</dd></>}
-              {selected.kind === 'side' && selected.stage > 0 && <><dt>Ступень пути</dt><dd>{selected.stage}</dd></>}
-            </dl>
+            <KnowledgeRequirements knowledge={selected} />
             <ResearchButton knowledge={selected} />
             <PassiveResearch knowledge={selected} />
             {selected.kind === 'side' && <p className="HereticBook__annotation">Побочные знания не открывают следующую ступень пути. На них сначала расходуются очки для побочных знаний, затем обычные.</p>}
+            {recipe && <RitualIngredients ritual={recipe} />}
           </>
         ) : <p>Выберите путь в первой главе, чтобы открыть его знания.</p>}
       </Page>
@@ -426,9 +443,14 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
   const { data } = useLoreBackend();
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const rituals = data.rituals.filter((ritual) => `${ritual.name} ${ritual.desc} ${ritual.ingredients.map((item) => item.name).join(' ')}`
-    .toLowerCase().includes(search.trim().toLowerCase()));
+  const rituals = data.rituals.filter((ritual) => {
+    const knowledge = data.knowledge.find((entry) => entry.id === ritual.id);
+    return (!knowledge || knowledge.known || knowledge.kind !== 'path' || !data.selected_path || knowledge.path === data.selected_path)
+      && `${ritual.name} ${ritual.desc} ${ritual.hint || ''} ${ritual.ingredients.map((item) => item.name).join(' ')}`
+        .toLowerCase().includes(search.trim().toLowerCase());
+  });
   const selected = rituals.find((ritual) => ritual.id === selectedId) || rituals[0];
+  const knowledge = data.knowledge.find((entry) => entry.id === selected?.id);
   useEffect(() => {
     if (selected) setSelectedId(selected.id);
   }, [selected?.id]);
@@ -436,16 +458,20 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
     <>
       <Page side="left" chapter="Ритуалы">
         <h2>Ритуалы</h2>
+        <p className="HereticBook__annotation">Здесь видны и неизученные рецепты. Сначала изучите знание, затем проведите обряд на руне — предмет не выдаётся при изучении.</p>
         <label className="HereticBook__search"><span>Найти запись или ингредиент</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Нож, сердце, пепел…" /></label>
         <nav className="HereticBook__contents" aria-label="Ритуалы">
-          {rituals.map((ritual, index) => (
-            <button type="button" key={ritual.id} className="HereticBook__contentsLine" aria-pressed={selected?.id === ritual.id} onClick={() => { if (ritual.id !== selected?.id) { setSelectedId(ritual.id); turn(); } }}>
-              <span className="HereticBook__indexNumber">{index + 1}</span><span className="HereticBook__indexName">{ritual.name}</span><span className="HereticBook__leader" /><span>→</span>
-            </button>
-          ))}
+          {rituals.map((ritual, index) => {
+            const entry = data.knowledge.find((item) => item.id === ritual.id);
+            return (
+              <button type="button" key={ritual.id} className="HereticBook__contentsLine" aria-pressed={selected?.id === ritual.id} onClick={() => { if (ritual.id !== selected?.id) { setSelectedId(ritual.id); turn(); } }}>
+                <span className="HereticBook__indexNumber">{index + 1}</span><span className="HereticBook__indexName">{ritual.name}</span><span className="HereticBook__leader" /><span>{entry?.known ? 'Изучено' : entry ? 'Не изучено' : '→'}</span>
+              </button>
+            );
+          })}
         </nav>
         {!rituals.length && <p>{search ? 'Такой записи нет. Попробуйте другое название или ингредиент.' : 'Изучайте знания, чтобы открыть ритуалы.'}</p>}
-        <p className="HereticBook__annotation">Начертите руну Кодексом и положите на неё ингредиенты. Нажмите на руну пустой рукой, чтобы выбрать ритуал.</p>
+        <p className="HereticBook__annotation">Начертите руну Кодексом на участке пола 3×3. Столы, баки и предметы не мешают рисованию; стены, космос, лава и соседние руны мешают.</p>
       </Page>
       <Page side="right" chapter="Ритуалы" entryId={selected?.id}>
         {selected ? (
@@ -453,11 +479,15 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
             <p className="HereticBook__runningTitle">{selected.ascension ? 'Последний обряд' : 'Рецепт трансмутации'}</p>
             <h2>{selected.name}</h2>
             <LoreText text={selected.desc} />
-            <h3 className="HereticBook__ingredientsTitle">Положить на руну</h3>
-            <ul className="HereticBook__ingredients">
-              {selected.ingredients.map((item, index) => <li key={`${item.name}-${index}`}><span>{item.name}</span><span className="HereticBook__leader" /><strong>×{item.amount}</strong></li>)}
-            </ul>
-            <p className="HereticBook__annotation">Оставайтесь рядом с руной до окончания ритуала.</p>
+            {knowledge && !knowledge.known && (
+              <>
+                <p className="HereticBook__annotation">Рецепт ещё не изучен. {knowledge.kind === 'path' && `Путь: ${data.paths.find((path) => path.id === knowledge.path)?.name || knowledge.path}. `}Изучение открывает обряд в меню руны.</p>
+                <KnowledgeRequirements knowledge={knowledge} />
+                <ResearchButton knowledge={knowledge} />
+              </>
+            )}
+            {!!knowledge?.known && <p className="HereticBook__learned">Изучено · обряд доступен на руне</p>}
+            <RitualIngredients ritual={selected} />
             {!!selected.ascension && <p>Принесите {data.hunt.sacrifices_required} назначенных душ и изучите последнее знание. Обряд вознесения занимает 30 секунд; его подношения не возвращаются.</p>}
           </>
         ) : <p className="HereticBook__annotation">Нет ритуалов для просмотра.</p>}
@@ -550,8 +580,14 @@ const HelpChapter = () => {
         <InfluenceSchedule hunt={data.hunt} />
         <p>Новые разломы доступны и тем, кто стал еретиком позднее.</p>
         <h3>Приготовьте место</h3>
-        <p>Кодексом на полу начертите руну. Нужна свободная площадка 3×3 без стен, космоса и лавы. Рисование занимает 8 секунд. Ингредиенты кладут на руну; пустой рукой на ней выбирают обряд. Кодексом руну можно стереть.</p>
+        <p>Кодексом на полу начертите руну. Нужен участок пола 3×3 без стен, космоса, лавы и соседних рун. Столы, баки и предметы не мешают. Рисование занимает 8 секунд. Нажмите на центр руны пустой рукой, чтобы выбрать изученный обряд. Кодексом руну можно стереть.</p>
         <RitualDiagram />
+        <h3>Сделайте броню и клинок</h3>
+        <p>Изучение рецепта не выдаёт предмет: его нужно создать на руне. В главе «Ритуалы» ищите «клинок» или «броня» — там показаны и неизученные рецепты с условиями открытия. Ритуал оружейника доступен любому пути со второй ступени и стоит 1 очко знаний. Он превращает готовый стол и противогаз в мантию с капюшоном; стол разбирать не нужно.</p>
+        <h3>Разместите компоненты</h3>
+        <p>Обряд собирает компоненты со всей области 3×3: центральная клетка и восемь соседних. Выложите предметы из рук и сумок, снимите нужную одежду. Столы и баки должны стоять в этой области. Для проклятий предмет с отпечатками цели кладут строго в центр.</p>
+        <p>Количество в рецепте означает отдельные единицы: можно положить целую стопку, из неё уйдёт только нужное число листов или прутьев. Пепел, кровь и рвота — пятна на полу; начертите руну рядом с ними. Подробности и исключения указаны в рецепте.</p>
+        <p>Во время обряда стойте рядом с центром руны и не двигайтесь. Обычные компоненты расходуются при успехе; при прерывании сохраняются. Если чего-то не хватает, сообщение руны перечислит недостающие компоненты.</p>
       </Page>
       <Page side="right" chapter="Помощь">
         <h2>Охота и вознесение</h2>

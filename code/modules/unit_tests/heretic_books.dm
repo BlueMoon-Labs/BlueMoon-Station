@@ -121,9 +121,15 @@
 	for(var/list/recipe as anything in static_data["rituals"])
 		TEST_ASSERT(knowledge_by_id[recipe["id"]], "Каждый рецепт должен принадлежать знанию из каталога.")
 		TEST_ASSERT(length(recipe["ingredients"]), "Каждый рецепт должен содержать ингредиенты.")
+		TEST_ASSERT(recipe["duration"] > 0, "Книга должна показывать длительность обряда в секундах.")
 		for(var/list/ingredient as anything in recipe["ingredients"])
 			TEST_ASSERT(!latin_letters.Find(ingredient["name"]), "В рецепте [recipe["name"]] осталось английское имя ингредиента: [ingredient["name"]].")
 		rituals_by_id[recipe["id"]] = recipe
+	var/list/armor_recipe = rituals_by_id["/datum/eldritch_knowledge/armor"]
+	TEST_ASSERT_EQUAL(armor_recipe["duration"], 5, "Обряд брони занимает пять секунд.")
+	TEST_ASSERT(length(armor_recipe["hint"]), "Рецепт брони должен объяснять размещение готового стола.")
+	var/list/hunt_recipe = rituals_by_id["/datum/eldritch_knowledge/spell/basic"]
+	TEST_ASSERT_EQUAL(length(hunt_recipe["ingredients"]), 2, "Подношение требует и живое сердце, и назначенную цель.")
 	var/list/ash_recipe = rituals_by_id["/datum/eldritch_knowledge/base_ash"]
 	TEST_ASSERT(ash_recipe, "Книга должна показывать настоящий рецепт пепельного клинка.")
 	var/list/ash_ingredients = ash_recipe["ingredients"]

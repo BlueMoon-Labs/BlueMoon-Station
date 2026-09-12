@@ -1,3 +1,32 @@
+/// Рецепт брони открывается со второй ступени и расходует готовый стол рядом с руной и выложенный противогаз.
+/datum/unit_test/heretic_armor_recipe/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.knowledge_points = 10
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_ash, user), "Первый обет должен изучаться.")
+	TEST_ASSERT(!heretic.research_knowledge(/datum/eldritch_knowledge/armor, user), "До второй ступени броня закрыта.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/ashen_grasp, user), "Вторая ступень должна изучаться.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/armor, user), "Со второй ступени доступна броня.")
+	var/turf/center = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	TEST_ASSERT(user.put_in_hands(book), "Для рисования нужно держать книгу.")
+	var/obj/structure/table/table = allocate(/obj/structure/table, get_step(center, NORTH))
+	TEST_ASSERT(book.can_draw_rune(center, user), "Готовый стол в области 3×3 не мешает рисованию.")
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, center)
+	var/obj/item/clothing/mask/gas/mask = allocate(/obj/item/clothing/mask/gas)
+	TEST_ASSERT(user.put_in_hands(mask), "Противогаз должен помещаться во вторую руку.")
+	var/datum/eldritch_knowledge/armor/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/armor)
+	recipe.ritual_time = 0
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Предмет в руке не считается компонентом.")
+	TEST_ASSERT(!QDELETED(table), "Неудачный обряд сохраняет стол.")
+	user.dropItemToGround(mask)
+	mask.forceMove(center)
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Стол рядом с центром и выложенный противогаз должны создать броню.")
+	var/obj/item/clothing/suit/hooded/cultrobes/eldritch/robe = locate() in center
+	TEST_ASSERT_NOTNULL(robe, "На руне должна появиться мантия.")
+	allocated += robe
+	TEST_ASSERT(QDELETED(table) && QDELETED(mask), "Рецепт расходует целый стол и противогаз.")
+
 /// Один предмет не закрывает два требования, а общий тип не отбирает специализированный компонент.
 /datum/unit_test/heretic_recipe_matching/Run()
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, run_loc_floor_bottom_left)

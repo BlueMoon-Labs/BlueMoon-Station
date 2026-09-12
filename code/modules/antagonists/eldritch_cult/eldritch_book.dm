@@ -203,6 +203,8 @@
 				"name" = entry["name"],
 				"desc" = entry["desc"],
 				"ingredients" = ritual_ingredients(knowledge),
+				"hint" = knowledge.ritual_hint,
+				"duration" = knowledge.ritual_time / (1 SECONDS),
 				"ascension" = istype(knowledge, /datum/eldritch_knowledge/final_eldritch),
 			))
 		qdel(knowledge)
@@ -306,6 +308,8 @@
 	if(istype(knowledge, /datum/eldritch_knowledge/final_eldritch))
 		counts[/mob/living/carbon/human] = HERETIC_ASCENSION_BODIES
 	var/list/ingredients = list()
+	if(knowledge.type == /datum/eldritch_knowledge/spell/basic)
+		ingredients += list(list("name" = "Назначенная цель (живая или мёртвая)", "amount" = 1))
 	if(istype(knowledge, /datum/eldritch_knowledge/curse))
 		ingredients += list(list("name" = "Предмет с отпечатками цели", "amount" = 1))
 	for(var/atom/ingredient_type as anything in counts)

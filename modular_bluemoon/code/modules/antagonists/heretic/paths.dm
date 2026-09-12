@@ -196,7 +196,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 			return "Сначала выберите путь."
 	else if(knowledge_type in GLOB.heretic_side_knowledge)
 		if(path_stage < GLOB.heretic_side_knowledge[knowledge_type])
-			return "Продвиньтесь дальше по своему пути."
+			return "Сначала изучите ступень [GLOB.heretic_side_knowledge[knowledge_type]] своего пути."
 	else if(path_stage >= length(path.knowledge) || path.knowledge[path_stage + 1] != knowledge_type)
 		return "Сначала изучите предыдущую ступень выбранного пути."
 	var/datum/eldritch_knowledge/knowledge = knowledge_type

@@ -171,7 +171,7 @@ describe('Гримуар еретика', () => {
     expect(screen.getByText('Не доверяй своему отражению.')).toBeTruthy();
   });
 
-  test('статический каталог сохраняется при обновлении доступности и открывает только изученные рецепты', async () => {
+  test('показывает неизученный рецепт и обновляет его доступность без потери выбора', async () => {
     const data = makeData({ selected_path: 'Ash', path_stage: 1 });
     const knowledgeState = Object.fromEntries(data.knowledge.map((entry) => [entry.id, {
       known: false, available: false, reason: 'Не хватает очков знаний.',
@@ -189,12 +189,63 @@ describe('Гримуар еретика', () => {
     expect(screen.getByRole('button', { name: 'Изучить · 2 очк. знаний' }).hasAttribute('disabled')).toBe(false);
     fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
     expect(screen.getByRole('heading', { name: 'Пепельный клинок' })).toBeTruthy();
-    expect(screen.queryByText('Вознесение')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Вознесение/ }));
+    expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Изучить · 2 очк. знаний' }).hasAttribute('disabled')).toBe(false);
     store.dispatch(backendUpdate({ data: {
       knowledge_state: { ...knowledgeState, [data.knowledge[1].id]: { known: true, available: false, reason: '' } },
     } }));
     view.rerender(<ForbiddenLoreContent />);
-    expect(screen.getByText('Вознесение')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
+    expect(screen.getByText('Изучено · обряд доступен на руне')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Изучить ·/ })).toBeNull();
+  });
+
+  test('находит броню до изучения и разрешает покупку только после открытия ступени', async () => {
+    const data = makeData({ selected_path: 'Ash', path_stage: 1, points: 0, side_points: 1 });
+    const armor = {
+      ...data.knowledge[1], id: '/datum/eldritch_knowledge/armor', name: 'Ритуал оружейника — броня',
+      desc: 'Создаёт мантию с капюшоном.', kind: 'side' as const, path: 'Side', cost: 1,
+      reason: 'Сначала изучите ступень 2 своего пути.',
+    };
+    data.knowledge.push(armor);
+    data.rituals.push({
+      id: armor.id, name: armor.name, desc: armor.desc, ascension: false, duration: 5,
+      hint: 'Готовый стол будет израсходован.',
+      ingredients: [{ name: 'Стол', amount: 1 }, { name: 'Противогаз', amount: 1 }],
+    });
+    const { store, topic } = setupStore(data);
+    const view = await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'брон' } });
+    expect(screen.getByRole('heading', { name: armor.name })).toBeTruthy();
+    expect(screen.getByText('Готовый стол будет израсходован.')).toBeTruthy();
+    expect(screen.getByText(/Время проведения: 5 сек/)).toBeTruthy();
+    const research = screen.getByRole('button', { name: 'Изучить · 1 очк. знаний' });
+    expect(research.hasAttribute('disabled')).toBe(true);
+    expect(screen.getByText(armor.reason)).toBeTruthy();
+    fireEvent.click(research);
+    expect(readActions(topic)).toEqual([]);
+    act(() => store.dispatch(backendUpdate({ data: {
+      path_stage: 2,
+      knowledge_state: { [armor.id]: { known: false, available: true, reason: '' } },
+    } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(research.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(research);
+    expect(readActions(topic)).toEqual([{ type: 'act/research', payload: { id: armor.id } }]);
+  });
+
+  test('после выбора пути показывает его будущие рецепты и общие знания, скрывая чужие пути', async () => {
+    const data = makeData({ selected_path: 'Ash', path_stage: 1 });
+    data.rituals[0].id = data.knowledge[1].id;
+    data.rituals[1].id = data.knowledge[3].id;
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    expect(screen.getByRole('heading', { name: 'Пепельный клинок' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Вознесение/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Изучить · 2 очк. знаний' }).hasAttribute('disabled')).toBe(true);
   });
 
   test('закладки перелистываются стрелками, Home и End с переносом клавиатурного фокуса', async () => {
