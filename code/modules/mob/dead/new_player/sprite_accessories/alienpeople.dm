@@ -48,35 +48,47 @@
 /datum/sprite_accessory/xeno_tail/boiler
 	name = "Xenomorph Boiler Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	mutant_part_string = "boiler"
+	icon_state = "boiler"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/predalien
 	name = "Xenomorph Predalien Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	mutant_part_string = "predalien"
+	icon_state = "predalien"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/pretor
 	name = "Xenomorph Pretor Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	mutant_part_string = "pretor"
+	icon_state = "pretor"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/prowler
 	name = "Xenomorph Prowler Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	mutant_part_string = "prowler"
+	icon_state = "prowler"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/queen
 	name = "Xenomorph Queen Tail"
-	mutant_part_string = "queen"
+	icon_state = "queen"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/runner
 	name = "Xenomorph Runner Tail"
-	mutant_part_string = "runner"
+	icon_state = "runner"
+	color_src = MUTCOLORS
+	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/tails/mam_tails/xeno
