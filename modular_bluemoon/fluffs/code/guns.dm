@@ -1026,8 +1026,7 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "nebular-t"
 	item_state = "Nebular-9"
-	can_flashlight = TRUE
-	gunlight_state = "nebular-light"
+	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
