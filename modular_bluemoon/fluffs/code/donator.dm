@@ -2699,7 +2699,6 @@
 	path = /obj/item/clothing/head/donator/bm/pumpkin_cat
 	ckeywhitelist = list("kumikoshouko", "1hollowknight1")
 
-
 /datum/gear/donator/bm/light_plate_carrier
 	name = "Light plate carrier"
 	slot = ITEM_SLOT_BACKPACK
