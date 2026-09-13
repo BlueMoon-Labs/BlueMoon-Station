@@ -277,6 +277,8 @@
 	new /obj/item/modkit/spectral_kit(src) // температурка
 	new /obj/item/modkit/quasar_kit(src) // АЕГ - advanced energy gun
 	new /obj/item/modkit/neutron_kit(src) // x-ray
+	new /obj/item/modkit/black_hole_kit(src) // super-short shotgun
+	new /obj/item/modkit/black_hole_kit(src) // super-short shotgun
 	new /obj/item/modkit/pulsar_kit(src) // riot дробаш
 	new /obj/item/modkit/supernova_kit(src) // комбат дробаш
 	new /obj/item/modkit/katana_kit(src) // стан-катана

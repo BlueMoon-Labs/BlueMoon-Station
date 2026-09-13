@@ -2044,7 +2044,7 @@
 	var/fill_level = clamp(round(total / magazine.max_ammo * 2), 0, 2)
 	. += "blackhole-[fill_level]"
 
-/obj/item/modkit/melatonin_shotgun_hair_of_dog_kit
+/obj/item/modkit/black_hole_kit
 	name = "\"Black hole\" type one-hand short platform, modification \"P\" Kit"
 	desc = "A modkit for making an super shorty shotgun into a \"Black hole\" type one-hand short platform, modification \"P\"."
 	icon_state = "supershort-shotgun_kit"
