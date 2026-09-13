@@ -585,14 +585,16 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 
 	// Parse colour (Twilight Axis style: -=RRGGBB text =- )
 	if(!barebones)
-		var/regex/hexgex = regex(@"(?<=-=)(.{6})", "g")
+		var/regex/hexgex = regex(@"(?<=-=)(.{6})")
 		while(hexgex.Find(t))
 			var/endblock = findtext(t, "=-", hexgex.index)
 			if(!endblock)
 				break
-			t = replacetext(t, "=-", "</font>", hexgex.index, endblock+2)
-			var/c_code = sanitize_hexcolor(hexgex.match)
-			t = replacetext(t, "-=[hexgex.match]", "<font color='[c_code]'>", hexgex.index-2, endblock+2)
+			var/c_code = sanitize_hexcolor(hexgex.match, 6, TRUE)
+			var/prefix = copytext(t, 1, hexgex.index - 2)
+			var/middle = copytext(t, hexgex.index + 6, endblock)
+			var/suffix = copytext(t, endblock + 2)
+			t = prefix + "<font color='[c_code]'>" + middle + "</font>" + suffix
 
 	// Parse hr and small
 
