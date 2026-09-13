@@ -498,7 +498,17 @@
 
 /obj/item/proc/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	if((QDELETED(target) || target?.stat == DEAD) && !QDELETED(user) && user?.stat != DEAD)
-		user.fully_heal(TRUE) // the only way of healing
+		// Jackal gets partial healing instead of full heal
+		var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
+		if(istype(J))
+			// Partial healing for Jackal: heal 30% of damage
+			user.heal_overall_damage(30, 30, 0, FALSE, FALSE, FALSE, TRUE)
+			user.adjustToxLoss(-30, FALSE, TRUE)
+			user.adjustOxyLoss(-30, FALSE, TRUE)
+			user.adjustCloneLoss(-30, FALSE, TRUE)
+			user.updatehealth()
+		else
+			user.fully_heal(TRUE) // the only way of healing for regular hatred
 		// user.do_adrenaline(150, TRUE, 0, 0, TRUE, list(/datum/reagent/medicine/inaprovaline = 10, /datum/reagent/medicine/synaptizine = 15, /datum/reagent/medicine/regen_jelly = 20, /datum/reagent/medicine/stimulants = 20), "<span class='boldnotice'>You feel a sudden surge of energy!</span>")
 		user.visible_message("Кровь жертвы окрапляет [user], даруя ему нечеловеческое облегчение и силу продолжать бойню.")
 		user.add_movespeed_modifier(/datum/movespeed_modifier/hatred_glory_kill)
@@ -1108,17 +1118,23 @@
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
 	player_mind.active = TRUE
 	player_mind.transfer_to(body)
-	notify_ghosts("Массшутер готовится к геноциду...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Mass Shooter")
-	body.mind.make_MassShooter()
-	return TRUE
 
-#undef HATRED_ANTAG
+	// Random choice between standard Mass Shooter and Jackal (30% chance for Jackal)
+	var/is_jackal = prob(30)
+	if(is_jackal)
+		notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
+		body.mind.make_Jackal()
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Jackal by the midround ruleset.")
+		log_game("DYNAMIC: [key_name(body)] was spawned as a Jackal by the midround ruleset.")
+	else
+		notify_ghosts("Массшутер готовится к геноциду...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Mass Shooter")
+		body.mind.make_MassShooter()
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Mass Shooter by the midround ruleset.")
+		log_game("DYNAMIC: [key_name(body)] was spawned as a Mass Shooter by the midround ruleset.")
+	return TRUE
 
 /datum/mind/proc/make_MassShooter()
 	if(!has_antag_datum(/datum/antagonist/hatred))
 		special_role = "Mass Shooter"
 		assigned_role = "Mass Shooter"
 		add_antag_datum(/datum/antagonist/hatred)
-
-
-#undef HATRED_ANTAG

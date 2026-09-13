@@ -15,8 +15,7 @@
 		"...Мой компаньон будет рад",
 		"Просто бизнес.",
 		"...Сопутствующий ущерб",
-		"Слышишь этот щелчок? Ты слышишь? Это звук твоей судьбы.",
-		"Прости, мне платят за результат, а не за церемонии."
+		"Мне платят за результат, а не за церемонии."
 	)
 	ui_name = "AntagInfoJackal"
 
@@ -26,7 +25,7 @@
 	greet_text += "Твоя кровь кипит от чудовищной дозы боевых стимуляторов, а реальность давно превратилась в психоделический кошмар. Окружающие люди для тебя — не более чем мишени, глупый и бесполезный шум в твоей раскалывающейся голове.<br>"
 	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
 	greet_text += "Твои особые сигареты лечат тебя. Если в крови не останется алкоголя, Omnizine или стимуляторов, тело начнет постепенно разрушаться.<br>"
-	greet_text += "В холстере лежат два stimpack medipen, три эпипена и один боевой нож. Эпипены почти не лечат, зато останавливают кровотечение.<br>"
+	greet_text += "В холстере лежит один stimpack medipen, три эпипена и один боевой нож. Эпипены почти не лечат, зато останавливают кровотечение.<br>"
 	greet_text += "Казнь выполняется выстрелом из револьвера по критованной цели. После пяти казней револьвер станет ещё сильнее, уменьшая отдачу и увеличивая темп стрельбы.<br>"
 	greet_text += span_red(span_bold("Докуривай сигарету — и погнали"))
 	to_chat(owner.current, greet_text)
@@ -67,13 +66,25 @@
 /datum/reagent/medicine/omnizine/on_mob_life(mob/living/carbon/M)
 	var/healing = 0.5
 	var/jackal_immune = HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY)
-	var/should_heal = (jackal_immune ? TRUE : FALSE)
+	var/should_heal = (jackal_immune ? TRUE : FALSE) // Jackal bypasses natural healing restrictions
 	M.adjustToxLoss(-healing*REM, 0, should_heal)
 	M.adjustOxyLoss(-healing*REM, 0, should_heal)
 	M.adjustBruteLoss(-healing*REM, 0, should_heal)
 	M.adjustFireLoss(-healing*REM, 0, should_heal)
 	..()
 	. = 1
+
+// Jackal cigarette direct healing - bypasses medicine system entirely
+/obj/item/clothing/mask/cigarette/jackal/process()
+	. = ..()
+	if(lit)
+		var/mob/living/carbon/human/H = loc
+		if(istype(H) && H.wear_mask == src && HAS_TRAIT(H, JACKAL_OMNIZINE_IMMUNITY))
+			// Direct healing independent of medicine system - heals just because it's lit
+			H.heal_overall_damage(0.3, 0.3, 0, FALSE, FALSE, FALSE, TRUE)
+			H.adjustToxLoss(-0.3, FALSE, TRUE)
+			H.adjustOxyLoss(-0.3, FALSE, TRUE)
+			H.updatehealth()
 
 /datum/reagent/medicine/omnizine/overdose_process(mob/living/M)
 	if(HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY))
@@ -101,6 +112,12 @@
 	for(var/datum/reagent/R as anything in H.reagents.reagent_list)
 		if(istype(R, /datum/reagent/consumable/ethanol) || istype(R, /datum/reagent/medicine/omnizine) || istype(R, /datum/reagent/medicine/stimulants))
 			return TRUE
+	// Also check if smoking a jackal cigarette
+	var/obj/item/clothing/mask/cigarette/jackal/cig = H.wear_mask
+	if(istype(cig) && cig.lit && cig.reagents)
+		for(var/datum/reagent/R in cig.reagents.reagent_list)
+			if(istype(R, /datum/reagent/medicine/omnizine))
+				return TRUE
 	return FALSE
 
 /datum/admins/proc/makeJackal(mob/dead/observer/applicant)
@@ -117,6 +134,8 @@
 	player_mind.transfer_to(body)
 	notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
 	body.mind.make_Jackal()
+	message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Jackal by admin command.")
+	log_game("ADMIN: [key_name(body)] was spawned as a Jackal by admin command.")
 	return TRUE
 
 /datum/mind/proc/make_Jackal()
@@ -164,6 +183,8 @@
 	glasses = /obj/item/clothing/glasses/hud/health/sunglasses/jackal
 	uniform = /obj/item/clothing/under/jackal
 	suit = null
+	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
+	shoes = /obj/item/clothing/shoes/combat/jackal
 	belt = /obj/item/storage/belt/holster/jackal
 	suit_store = null
 	back = null
@@ -186,13 +207,13 @@
 		var/obj/item/I = H.get_item_by_slot(slot)
 		if(I)
 			I.resistance_flags |= FIRE_PROOF
-			if(slot in list(ITEM_SLOT_OCLOTHING, ITEM_SLOT_BELT))
-				ADD_TRAIT(I, TRAIT_NODROP, JACKAL_ANTAG)
+			ADD_TRAIT(I, TRAIT_NODROP, JACKAL_ANTAG)
 
 /obj/item/clothing/under/jackal
 	name = "Jackal combat uniform"
 	desc = "A fitted combat uniform reinforced against gunfire, blasts, and heat. It is tailored for a single ruthless operator."
 	icon = 'modular_bluemoon/code/modules/antagonists/hatred/misccloth.dmi'
+	mob_overlay_icon = 'modular_bluemoon/code/modules/antagonists/hatred/misccloth.dmi'
 	item_state = "jackalsuit"
 	icon_state = "jackalsuit"
 	body_parts_covered = CHEST|GROIN|ARMS
@@ -208,6 +229,11 @@
 	item_state = "jackalglasses"
 	flash_protect = 2
 	tint = 0
+
+/obj/item/clothing/shoes/combat/jackal
+	name = "Jackal combat boots"
+	desc = "Tactical combat boots with slip-resistant soles. Designed for high-mobility operations."
+	clothing_flags = NOSLIP
 
 /obj/item/gun/ballistic/revolver/jackal357
 	name = "Jackal .357 revolver"
@@ -228,6 +254,10 @@
 /obj/item/gun/ballistic/revolver/jackal357/equipped(mob/user, slot, initial)
 	. = ..()
 
+/obj/item/gun/ballistic/revolver/jackal357/add_blood_DNA(list/blood_dna, list/datum/disease/diseases)
+	// Jackal revolver doesn't get standard blood overlay - it has its own bloodmask after 5 glory kills
+	return FALSE
+
 /obj/item/gun/ballistic/revolver/jackal357/update_overlays()
 	. = ..()
 	if(glory_kills >= 5)
@@ -242,6 +272,8 @@
 			fire_delay = 0
 			upgrade_ammo()
 			to_chat(user, span_userdanger("Кровавая маска проступает на [src]. Револьвер становится легче и быстрее в руке."))
+			// Debug logging to verify upgrade
+			message_admins("[ADMIN_LOOKUPFLW(user)]'s Jackal revolver upgraded to enhanced mode. Recoil: [recoil], Spread: [spread], Fire delay: [fire_delay]")
 		update_icon()
 
 /obj/item/gun/ballistic/revolver/jackal357/proc/upgrade_ammo()
@@ -251,14 +283,22 @@
 	var/obj/item/ammo_box/magazine/internal/cylinder/jackal/jackal_cylinder = magazine
 	if(istype(jackal_cylinder))
 		jackal_cylinder.upgrade()
+		// Force re-chamber to ensure enhanced round is chambered
+		if(chambered)
+			qdel(chambered)
+			chambered = null
 		chamber_round()
+		// Verify the chambered round is enhanced
+		if(chambered && istype(chambered, /obj/item/ammo_casing/a357/jackal/enhanced))
+			message_admins("Jackal revolver successfully chambered enhanced round.")
+		else if(chambered)
+			message_admins("WARNING: Jackal revolver chambered non-enhanced round: [chambered.type]")
 
 /obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 5 SECONDS)
 	var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
 	if(!J || !ishuman(target) || !target.get_bodypart(BODY_ZONE_HEAD))
 		// Not a Jackal or invalid target: delegate to global hatred/handle_suicide override (hatred.dm:480)
-		var/obj/item/gun/G = src
-		return G../handle_suicide(user, target, params, bypass_timer, time_to_kill)
+		return ..()
 	var/is_glory = TRUE
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
@@ -270,10 +310,44 @@
 						"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
 						"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
 		COOLDOWN_START(J, killing_speech_cd, 10 SECONDS)
-	// Go straight to BASE GUN handle_suicide (gun.dm:828) so the global hatred.dm override doesn't
-	// interfere or check the same things twice. We handle cooldowns/quips above.
-	var/obj/item/gun/base_gun = src
-	. = base_gun../handle_suicide(user, target, params, bypass_timer, time_to_kill)
+
+	// Implement base gun handle_suicide logic directly to bypass hatred override
+	if(!ishuman(user) || !ishuman(target))
+		return
+
+	if(on_cooldown())
+		return
+
+	if(user == target)
+		target.visible_message(span_warning("[user] приставил[user.ru_a()] [src] к своему рту, готов[user.ru_aya()] спустить курок..."), \
+			span_userdanger("Вы приставили [src] к своему рту, готовые спустить курок..."))
+	else
+		target.visible_message(span_warning("[user] направляет [src] на голову [target] в готовности спустить курок..."), \
+			span_userdanger("[user] направляет [src] на вашу голову, в готовности спустить курок..."))
+
+	busy_action = TRUE
+
+	if(!bypass_timer && (!do_mob(user, target, time_to_kill) || user.zone_selected != BODY_ZONE_PRECISE_MOUTH))
+		if(user)
+			if(user == target)
+				user.visible_message(span_notice("[user] решил[user.ru_a()] не стрелять."))
+			else if(target && target.Adjacent(user))
+				target.visible_message(span_notice("[user] решил[user.ru_a()] пощадить жизнь [target]"), span_notice("[user] решил[user.ru_a()] пощадить вашу жизнь!"))
+		busy_action = FALSE
+		return
+
+	busy_action = FALSE
+
+	target.visible_message(span_warning("[user] спускает курок!"), span_userdanger("[user] спускает курок!"))
+
+	playsound('sound/weapons/dink.ogg', 30, 1)
+
+	if(chambered && chambered.BB)
+		chambered.BB.damage *= 10
+		. = TRUE
+
+	process_fire(target, user, TRUE, params, BODY_ZONE_HEAD, stam_cost = getstamcost(user))
+
 	if(!. || user == target || !is_glory)
 		return
 	addtimer(CALLBACK(src, PROC_REF(check_glory_kill), user, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
@@ -351,7 +425,6 @@
 	new /obj/item/kitchen/knife/combat(src)
 	new /obj/item/storage/fancy/cigarettes/jackal(src)
 	new /obj/item/lighter(src)
-	new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 	new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)

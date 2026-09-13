@@ -18,15 +18,23 @@
 /obj/item/ammo_box/magazine/internal/cylinder/jackal/proc/upgrade()
 	enhanced = TRUE
 	ammo_type = /obj/item/ammo_casing/a357/jackal/enhanced
-	// Upgrade existing ammo
+	// Ensure stored_ammo has enough slots (pad with nulls up to max_ammo)
+	while(stored_ammo.len < max_ammo)
+		stored_ammo += null
+	// Force replace all existing ammo with enhanced version
+	for(var/i in 1 to stored_ammo.len)
+		if(i > stored_ammo.len)
+			break
+		var/obj/item/ammo_casing/casing = stored_ammo[i]
+		if(casing)
+			qdel(casing)
+		stored_ammo[i] = new /obj/item/ammo_casing/a357/jackal/enhanced(src)
+	// Log upgrade for debugging
+	var/actual_ammo = 0
 	for(var/obj/item/ammo_casing/casing in stored_ammo)
-		if(istype(casing, /obj/item/ammo_casing/a357/jackal))
-			if(!casing.BB)
-				continue
-			qdel(casing.BB)
-			casing.BB = new /obj/item/projectile/bullet/a357/jackal/enhanced(casing)
-			casing.projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
-			casing.update_icon()
+		if(casing)
+			actual_ammo++
+	message_admins("Jackal cylinder upgraded. Enhanced: [enhanced], Ammo type: [ammo_type], Total rounds: [actual_ammo]/[stored_ammo.len]")
 
 /obj/item/ammo_box/magazine/internal/cylinder/jackal/give_round(obj/item/ammo_casing/R, replace_spent = 0)
 	// Accept jackal casings only — regular and blood-mask enhanced subtypes
