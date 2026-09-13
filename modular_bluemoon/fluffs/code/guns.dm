@@ -2041,7 +2041,7 @@
 		. += "blackhole-0"
 		return
 	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
-	var/fill_level = round(total / magazine.max_ammo * 2)
+	var/fill_level = clamp(round(total / magazine.max_ammo * 2), 0, 2)
 	. += "blackhole-[fill_level]"
 
 /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit
