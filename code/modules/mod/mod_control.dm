@@ -352,7 +352,7 @@
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()
 		return
-	if(!one_of_parts_deployed() || GetComponent(/datum/component/storage))
+	if(!one_of_parts_deployed() || GetComponent(/datum/component/storage) || !is_active()) //перепроверить!
 		return ..()
 
 /obj/item/mod/control/AltClick(mob/user)
@@ -481,10 +481,6 @@
 	if(!is_active() || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
 	selected_module = null
-	wearer.apply_damage(severity*0.2, BURN, spread_damage=TRUE)
-	to_chat(wearer, span_danger("Вы ощущаете как [src] нагревается из-за ЭМИ и обжигает вас!"))
-	if (wearer.stat < UNCONSCIOUS && prob(10))
-		wearer.emote("realagony")
 
 /obj/item/mod/control/on_outfit_equip(mob/living/carbon/human/outfit_wearer, visuals_only, item_slot)
 	if(visuals_only)
