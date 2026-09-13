@@ -71,6 +71,14 @@
 	prereq_ids = list("mk60")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
+/datum/techweb_node/jager
+	id = "jager"
+	display_name = "Improved CQB tactics."
+	description = "Kill some maintcrowlers with that bad boy!."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
+	design_ids = list("jager", "jaeger_mag")
+	prereq_ids = list("advanced_weaponry", "adv_weaponry")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 //////////////////
 //MWS-01 design//
 ////////////////

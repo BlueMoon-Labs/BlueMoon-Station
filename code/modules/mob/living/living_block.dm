@@ -83,6 +83,25 @@
 	/// Block priority, higher means we check this higher in the "chain".
 	var/block_priority = BLOCK_PRIORITY_DEFAULT
 
+/// Pозволяет блокировать попытки захвата/перетаскивания блокирующим предметом (щит и пр.). Возвращает TRUE, если захват заблокирован.
+/mob/living/proc/can_block_grab_attempt(mob/living/attacker)
+	if(!istype(attacker) || attacker == src)
+		return FALSE
+	if(incapacitated(FALSE, TRUE)) // без сознания/в отключке - блокирующий предмет выпал из рук, хватать можно
+		return FALSE
+	if(combat_flags & (COMBAT_FLAG_ACTIVE_BLOCK_STARTING | COMBAT_FLAG_ACTIVE_BLOCKING)) // стойка - всегда блок
+		visible_message("<span class='warning'>[src] blocks [attacker]'s grab attempt with [active_block_item], keeping them at bay!</span>", \
+			"<span class='userdanger'>Your defensive stance blocks [attacker]'s grab attempt!</span>", ignored_mobs = attacker)
+		to_chat(attacker, "<span class='warning'>[src]'s defensive stance blocks your grab attempt!</span>")
+		return TRUE
+	for(var/obj/item/I in held_items)
+		if(I.item_flags & ITEM_CAN_BLOCK && prob(50))
+			visible_message("<span class='warning'>[src] blocks [attacker]'s grab attempt with [I]!</span>", \
+				"<span class='userdanger'>You block [attacker]'s grab attempt with [I]!</span>", ignored_mobs = attacker)
+			to_chat(attacker, "<span class='warning'>[src] blocks your grab attempt with [I]!</span>")
+			return TRUE
+	return FALSE
+
 /// Runs block and returns flag for do_run_block to process.
 /obj/item/proc/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	. = SEND_SIGNAL(src, COMSIG_ITEM_RUN_BLOCK, owner, object, damage, attack_text, attack_type, armour_penetration, attacker, def_zone, final_block_chance, block_return)

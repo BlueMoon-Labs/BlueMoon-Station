@@ -115,6 +115,7 @@
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "tore", "lacerated", "ripped", "diced", "rended")
 	wound_bonus = 30
 	bare_wound_bonus = 35
+	armour_penetration = 25
 
 /obj/item/melee/sickly_blade/attack(mob/living/target, mob/living/user)
 	if(!(IS_HERETIC(user) || IS_HERETIC_MONSTER(user)))
@@ -231,8 +232,19 @@
 	hoodtype = /obj/item/clothing/head/hooded/cult_hoodie/eldritch
 	// slightly better than normal cult robes
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50,ENERGY = 50, BOMB = 35, BIO = 20, RAD = 0, FIRE = 20, ACID = 20)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD - балахон теперь реально превосходит бронежилет
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_screams = BLOOD_SCREAMS
+
+/obj/item/clothing/suit/hooded/cultrobes/eldritch/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/hooded/cultrobes/eldritch/dropped(mob/user)
+	. = ..()
+	if(brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 
 /obj/item/reagent_containers/glass/beaker/eldritch
 	name = "Фляжка с древней эссенцией"
@@ -279,7 +291,7 @@
 	else
 		to_chat(carbon_user,"<span class='danger'>Не могу натянуть капюшон на голову!</span>")
 
-/obj/item/clothing/mask/void_mask
+/obj/item/clothing/mask/gas/void_mask
 	name = "Маска бездны"
 	desc = "Маска, созданная из всевозможных страданий живых существ, вы можете посмотреть в ее глаза и заметить, что что-то смотрит в ответ."
 	icon_state = "mad_mask"
@@ -290,8 +302,10 @@
 	flags_inv = HIDEFACE|HIDEFACIALHAIR
 	///Who is wearing this
 	var/mob/living/carbon/human/local_user
+	///Список целей с активным кулдауном
+	var/list/mob/living/carbon/human/cooldown_targets = list()
 
-/obj/item/clothing/mask/void_mask/equipped(mob/user, slot)
+/obj/item/clothing/mask/gas/void_mask/equipped(mob/user, slot)
 	. = ..()
 	if(ishuman(user) && user.mind && slot == ITEM_SLOT_MASK)
 		local_user = user
@@ -301,13 +315,16 @@
 			return
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
-/obj/item/clothing/mask/void_mask/dropped(mob/M)
+/obj/item/clothing/mask/gas/void_mask/dropped(mob/M)
 	local_user = null
 	STOP_PROCESSING(SSobj, src)
 	REMOVE_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+	for(var/mob/living/carbon/human/target in cooldown_targets)
+		REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+	cooldown_targets.Cut()
 	return ..()
 
-/obj/item/clothing/mask/void_mask/process(delta_time)
+/obj/item/clothing/mask/gas/void_mask/process(delta_time)
 	if(!local_user)
 		return PROCESS_KILL
 
@@ -316,6 +333,9 @@
 
 	for(var/mob/living/carbon/human/human_in_range in viewers(9,local_user))
 		if(IS_HERETIC(human_in_range) || IS_HERETIC_MONSTER(human_in_range))
+			continue
+
+		if(HAS_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE))
 			continue
 
 		SEND_SIGNAL(human_in_range,COMSIG_VOID_MASK_ACT,rand(-2,-20)*delta_time)
@@ -332,6 +352,16 @@
 
 		if(DT_PROB(25,delta_time))
 			human_in_range.Dizzy(5)
+
+		ADD_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+		cooldown_targets |= human_in_range
+		addtimer(CALLBACK(src, PROC_REF(remove_immunity), human_in_range), 10 SECONDS, TIMER_STOPPABLE)
+
+/obj/item/clothing/mask/gas/void_mask/proc/remove_immunity(mob/living/carbon/human/target)
+	if(!target)
+		return
+	REMOVE_TRAIT(target, TRAIT_VOID_MASK_IMMUNE, VOID_MASK_TRAIT)
+	cooldown_targets -= target
 
 /obj/item/melee/rune_knife
 	name = "Нож для резьбы"

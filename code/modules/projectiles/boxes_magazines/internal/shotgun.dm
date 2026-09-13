@@ -49,7 +49,7 @@
 /obj/item/ammo_box/magazine/internal/shot/riot
 	name = "riot shotgun internal magazine"
 	ammo_type = /obj/item/ammo_casing/shotgun/rubbershot
-	max_ammo = 6
+	max_ammo = 8
 
 /obj/item/ammo_box/magazine/internal/shot/bounty
 	name = "triple-barrel shotgun internal magazine"

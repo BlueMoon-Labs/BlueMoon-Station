@@ -347,7 +347,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	complexity_max = CENTCOMM_MAX_COMPLEXITY
+	complexity_max = CENTCOM_MAX_COMPLEXITY
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
 		"apocryphal" = MOD_PRESET_DEFAULT,

@@ -1,7 +1,7 @@
 /datum/disease/revblight
 	name = "Unnatural Wasting"
 	max_stages = 5
-	stage_prob = 10
+	stage_prob = 2
 	spread_flags = DISEASE_SPREAD_NON_CONTAGIOUS
 	cure_text = "Holy water or extensive rest."
 	spread_text = "A burst of unholy energy"

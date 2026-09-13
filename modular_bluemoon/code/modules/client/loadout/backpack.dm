@@ -158,3 +158,8 @@
 	path = /obj/item/storage/box/shockcollar
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
 	cost = 2
+
+/datum/gear/accessory/hippads
+	name = "adjustable hip pads box"
+	path = /obj/item/storage/box/hippads
+	cost = 0

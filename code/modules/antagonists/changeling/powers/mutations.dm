@@ -545,6 +545,7 @@
 	item_flags = DROPDEL
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	armor = list(MELEE = 70, BULLET = 60, LASER = 30, ENERGY = 40, BOMB = 10, BIO = 4, RAD = 0, FIRE = 50, ACID = 90)
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	flags_inv = HIDEJUMPSUIT|HIDETAUR
 	cold_protection = 0
 	heat_protection = 0

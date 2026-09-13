@@ -3159,7 +3159,27 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(C)
 			C.clear_character_previews()
 
+/datum/preferences/proc/is_navigation_link(list/href_list)
+	var/list/navigation_keys
+	switch(href_list["preference"])
+		if("character_tab", "preferences_tab")
+			navigation_keys = list("_src_", "preference", "tab")
+		if("gear")
+			if(href_list["select_category"] || href_list["select_subcategory"])
+				navigation_keys = list("_src_", "preference", "select_category", "select_subcategory")
+		else
+			if(href_list["quirk_category"])
+				navigation_keys = list("_src_", "quirk_category")
+	if(!navigation_keys)
+		return FALSE
+	// Дополнительные параметры могут менять настройки в том же запросе.
+	for(var/key in href_list)
+		if(!(key in navigation_keys))
+			return FALSE
+	return TRUE
+
 /datum/preferences/proc/process_link(mob/user, list/href_list)
+	var/navigation_only = is_navigation_link(href_list)
 	// Взводится только теми ветками, про которые точно известно, что внешность
 	// персонажа они не меняют - листание вкладок и категорий. Хвост проца зовёт
 	// ShowChoices безусловно, а тот безусловно пересобирал манекен, и навигационный
@@ -6284,8 +6304,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				else
 					user_gear -= "loadout_examtooltip"
 
-	save_preferences(silent = TRUE)
-	ShowChoices(user, !preview_unchanged)
+	if(!navigation_only)
+		save_preferences(silent = TRUE)
+	ShowChoices(user, !preview_unchanged || !navigation_only)
 	return TRUE
 
 /datum/preferences/proc/get_sound_volume(sound_id)

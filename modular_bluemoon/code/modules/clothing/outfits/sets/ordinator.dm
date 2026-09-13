@@ -42,6 +42,7 @@
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	armor = list(MELEE = 20, BULLET = 60, LASER = 10, ENERGY = 40, BOMB = 50, BIO = 0, RAD = 30, FIRE = 70, ACID = 90, WOUND = 30)
+	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/mask/gas/atmos/lfwb
 	name = "gas mask"
