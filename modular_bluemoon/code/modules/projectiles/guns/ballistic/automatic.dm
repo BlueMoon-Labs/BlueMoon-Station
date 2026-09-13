@@ -29,6 +29,10 @@
 
 /obj/item/gun/ballistic/automatic/acr5m30/pinstation
 	pin = /obj/item/firing_pin
+
+/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard
+	pin = /obj/item/firing_pin/explorer
+
 //ACR modification for 7.62
 /obj/item/gun/ballistic/automatic/acrm
 	name = "ACR-M"
