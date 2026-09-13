@@ -242,9 +242,9 @@
 	fromitem = list(/obj/item/clothing/head/helmet/alt)
 
 /obj/item/modkit/kumiko_ncr_armor_vest
-	name = "NCR plate carrier kit"
+	name = "NCR armor vest kit"
 	desc = "A modkit for making a plate carrier into a ncr duster."
-	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+	product = /obj/item/clothing/suit/armor/vest/alt/kumiko_ncr_ranger
 	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)
 
 /obj/item/modkit/kumiko_ncr_bulletproof
