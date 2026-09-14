@@ -108,7 +108,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_MEDBAY_COLOR
-	allowed = /obj/item/clothing/suit/toggle/labcoat/paramedic::allowed
+	allowed = /obj/item/clothing/suit/toggle/labcoat/paramedic::allowed //TODO: поменять на GLOB.medical_allowed_list
 	skins = list(
 		"rescue" = MOD_PRESET_DEFAULT,
 	)
