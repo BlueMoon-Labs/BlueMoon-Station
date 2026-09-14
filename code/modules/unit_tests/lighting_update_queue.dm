@@ -44,9 +44,20 @@
 	lighting_object.update(use_animate = FALSE)
 	TEST_ASSERT_EQUAL(json_encode(lighting_object.color), initial_color, "Пропущенный апдейт обязан давать ту же матрицу цвета")
 
-	corner.lum_b = 1
-	corner.update_objects()
-	TEST_ASSERT(lighting_object.needs_update, "Смена оттенка насыщенного света должна перерисовываться")
+	for(var/channel in list("lum_r", "lum_g", "lum_b"))
+		corner.lum_r = 3
+		corner.lum_g = 3
+		corner.lum_b = 3
+		corner.update_objects()
+		lighting_object.needs_update = FALSE
+		GLOB.lighting_update_objects -= lighting_object
+		var/lumcount_before_hue_change = subject.get_lumcount(0, 10)
+		corner.vars[channel] = 1
+		corner.update_objects()
+		TEST_ASSERT_EQUAL(corner.cache_mx, 3, "Смена оттенка не должна менять максимум яркости")
+		TEST_ASSERT_NULL(subject.cached_lumcount, "Смена [channel] должна сбрасывать кэш яркости до обработки очереди")
+		TEST_ASSERT(subject.get_lumcount(0, 10) < lumcount_before_hue_change, "Смена [channel] должна сразу менять яркость для игровых проверок")
+		TEST_ASSERT(lighting_object.needs_update, "Смена оттенка насыщенного света должна перерисовываться")
 	lighting_object.needs_update = FALSE
 	GLOB.lighting_update_objects -= lighting_object
 	corner.lum_r = 0

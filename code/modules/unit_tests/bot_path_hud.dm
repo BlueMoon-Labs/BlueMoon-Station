@@ -25,6 +25,7 @@
 
 /datum/unit_test/bot_path_hud_updates/Destroy()
 	GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED] = previous_diagnostic_hud
+	previous_diagnostic_hud = null
 	return ..()
 
 /datum/unit_test/bot_path_hud_updates/Run()

@@ -149,7 +149,8 @@
 
 	// Объектам нужен цвет и переход через порог темноты; величина cache_mx на цвет не влияет.
 	var/luminosity_changed = (new_mx > LIGHTING_SOFT_THRESHOLD) != (cache_mx > LIGHTING_SOFT_THRESHOLD)
-	if(new_mx != cache_mx)
+	var/color_changed = new_r != cache_r || new_g != cache_g || new_b != cache_b
+	if(new_mx != cache_mx || color_changed)
 		if(northeast)
 			northeast.cached_lumcount = null
 		if(northwest)
@@ -159,7 +160,7 @@
 		if(southwest)
 			southwest.cached_lumcount = null
 	cache_mx = new_mx
-	if(new_r == cache_r && new_g == cache_g && new_b == cache_b && !luminosity_changed)
+	if(!color_changed && !luminosity_changed)
 		self_destruct_if_idle()
 		return
 
