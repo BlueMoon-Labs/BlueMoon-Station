@@ -4,6 +4,8 @@
 	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
 	allow_duplicates = FALSE
 	id = "tarkoff-base"
+	always_place = TRUE
+
 
 /datum/map_template/ruin/space/tarkoff/New()
 	var/num = rand(0, 3)
@@ -26,22 +28,22 @@
 	Assignment to these stations is dreaded by most agents, as it entails long and lonely shifts listening to nearby stations chatter incessently about the most meaningless things."
 	allow_duplicates = FALSE
 	always_place = TRUE
+	suffix = "inteq_listening_default.dmm"
+	var/variant_chosen = FALSE
 
-/datum/map_template/ruin/space/listeningstation/New()
-	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
-		if(prob(50))
-			suffix = "syndie_listening_default.dmm"
-		else
-			suffix = "syndie_listening_siege.dmm"
+/datum/map_template/ruin/space/listeningstation/proc/choose_variant()
+	if(variant_chosen)
+		return
+	variant_chosen = TRUE
+	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
+		suffix = prob(50) ? "syndie_listening_default.dmm" : "syndie_listening_siege.dmm"
 	else
-		var/num = rand(0, 2)
-		switch(num)
-			if(0)
-				suffix = "inteq_listening_default.dmm"
-			if(1)
-				suffix = "inteq_listening_cult.dmm"
-			if(2)
-				suffix = "inteq_listening_syndicate.dmm"
+		suffix = pick("inteq_listening_default.dmm", "inteq_listening_cult.dmm", "inteq_listening_syndicate.dmm")
+	mappath = prefix + suffix
+	preload_size(mappath)
+
+/datum/map_template/ruin/space/listeningstation/try_to_place(z, allowed_areas, forced_turf)
+	choose_variant()
 	. = ..()
 
 //DS2.

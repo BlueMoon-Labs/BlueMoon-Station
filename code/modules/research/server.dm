@@ -184,6 +184,11 @@
 	techweb_type = /datum/techweb/syndicate_isolated
 	heating_power = 0
 
+/obj/machinery/rnd/server/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
+	heating_power = 0
+
 /obj/machinery/rnd/server/inteq
 	network_id = RND_NETWORK_INTEQ
 	techweb_type = /datum/techweb/inteq

@@ -304,3 +304,10 @@
   - bugfix: Мутация генетики "Недышащий" получила фиксы от недавнего обновления квирка
       "Недышащий".
   - bugfix: ДНК-хранилище не даст юзеру выбрать оба улучшения.
+2026-09-13:
+  RG-TRK:
+  - qol: Tarkoff received various QOL things and was made to be always available unlike
+      earlier when i has certain low chance to spawn
+  - bugfix: fixed fire slector on M90
+  - map: modified all tarkoff defcons so it would use new R&D network and like of
+      Tarkoff survivors would be a bit more easier.

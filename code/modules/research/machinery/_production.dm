@@ -531,6 +531,10 @@
 	network_id = RND_NETWORK_SYNDICATE
 	techweb_type = /datum/techweb/syndicate_isolated
 
+/obj/machinery/rnd/production/protolathe/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
+
 /obj/machinery/rnd/production/protolathe/inteq
 	network_id = RND_NETWORK_INTEQ
 	techweb_type = /datum/techweb/inteq
@@ -538,6 +542,10 @@
 /obj/machinery/rnd/production/circuit_imprinter/syndicate
 	network_id = RND_NETWORK_SYNDICATE
 	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/rnd/production/circuit_imprinter/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
 
 /obj/machinery/rnd/production/circuit_imprinter/inteq
 	network_id = RND_NETWORK_INTEQ
