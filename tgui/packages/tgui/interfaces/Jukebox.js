@@ -186,7 +186,7 @@ export const Jukebox = (props) => {
               </Stack.Item>
               <Stack.Item>
                 <Dropdown
-                  fluid
+                  width="100%"
                   color="transparent"
                   selected={playlist}
                   displayText={playlist || 'Все треки'}

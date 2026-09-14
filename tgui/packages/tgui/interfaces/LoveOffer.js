@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Box, Button, Input, TextArea, Stack } from '../components';
+import { Box, Button, Input, Stack, TextArea } from '../components';
 import { Window } from '../layouts';
 
 export const LoveOffer = (props) => {
