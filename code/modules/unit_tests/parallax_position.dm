@@ -59,6 +59,39 @@
 	TEST_ASSERT(!animated_abs, "Absolute layer reported a glide animation")
 	TEST_ASSERT_EQUAL(abs_layer.screen_loc, "CENTER:-234,CENTER:-229", "Absolute layer screen_loc mismatch")
 
+/// Общие матрицы не меняют положение и анимацию других слоёв.
+/datum/unit_test/parallax_glide_matrix_isolation/Run()
+	var/atom/movable/screen/parallax_layer/first = allocate(/atom/movable/screen/parallax_layer)
+	var/atom/movable/screen/parallax_layer/second = allocate(/atom/movable/screen/parallax_layer)
+	var/atom/movable/screen/parallax_layer/control = allocate(/atom/movable/screen/parallax_layer)
+	var/matrix/scratch = matrix(1, 0, 7, 0, 1, -3)
+	first.transform = scratch
+	scratch.c = -11
+	scratch.f = 13
+	var/matrix/copied = first.transform
+	TEST_ASSERT_EQUAL(copied.c, 7, "Изменение исходной матрицы сдвинуло слой по x")
+	TEST_ASSERT_EQUAL(copied.f, -3, "Изменение исходной матрицы сдвинуло слой по y")
+	first.transform = matrix()
+	second.speed = 4
+
+	for(var/step_speed in list(0.6, 1, 1.4, 2, 4))
+		first.speed = control.speed = step_speed
+		first.offset_x = control.offset_x = 239
+		first.offset_y = control.offset_y = -239
+		for(var/step in 1 to 20)
+			var/rel_x = step % 2 ? 1 : -1
+			var/rel_y = step % 3 ? 1 : -1
+			var/animated = first.RelativePosition(0, 0, rel_x, rel_y, 2)
+			var/control_animated = control.LegacyRelativePosition(0, 0, rel_x, rel_y, 2)
+			TEST_ASSERT_EQUAL(animated, control_animated, "Изменилось условие запуска анимации")
+			TEST_ASSERT_EQUAL(first.offset_x, control.offset_x, "Изменилось смещение по x")
+			TEST_ASSERT_EQUAL(first.offset_y, control.offset_y, "Изменилось смещение по y")
+			second.RelativePosition(0, 0, -rel_x, -rel_y, 2)
+			var/matrix/actual = first.transform
+			var/matrix/expected = control.transform
+			for(var/component in list("a", "b", "c", "d", "e", "f"))
+				TEST_ASSERT_EQUAL(actual.vars[component], expected.vars[component], "Другой слой изменил компонент [component] матрицы")
+
 /// Слой произвольного размера обязан заворачиваться по СВОЕМУ периоду, а не по 480.
 /// Донорские ассеты идут в 672 (goonstation) и 736 (CEV-Eris) пикселей, и на
 /// историческом периоде их картинка рвалась бы посреди экрана.
