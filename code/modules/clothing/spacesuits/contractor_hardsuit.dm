@@ -15,6 +15,7 @@
 	icon_state = "hardsuit-contractor"
 	item_state = "contractor_hardsuit"
 	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 35, BIO = 100, RAD = 75, FIRE = 75, ACID = 90, WOUND = 40)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0
 	w_class = WEIGHT_CLASS_NORMAL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add

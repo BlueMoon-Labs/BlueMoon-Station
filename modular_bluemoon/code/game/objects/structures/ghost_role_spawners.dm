@@ -2,6 +2,9 @@
 /datum/antagonist/ghost_role/inteq
 	name = "InteQ Ship Crew"
 
+/datum/antagonist/ghost_role/inteq/comms
+	name = "InteQ Comms"
+
 /datum/antagonist/ghost_role/inteq/is_banned(mob/M)
 	. = ..()
 	if(.)

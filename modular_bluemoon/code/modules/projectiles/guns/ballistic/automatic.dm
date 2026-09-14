@@ -27,6 +27,12 @@
 	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
 	item_state = "acr5[magazine ? "" : "e"]"
 
+/obj/item/gun/ballistic/automatic/acr5m30/pinstation
+	pin = /obj/item/firing_pin
+
+/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard
+	pin = /obj/item/firing_pin/explorer
+
 //ACR modification for 7.62
 /obj/item/gun/ballistic/automatic/acrm
 	name = "ACR-M"
@@ -56,8 +62,6 @@
 	..()
 	icon_state = "acr5[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 30) /5, 1)*5]" : ""]"
 	item_state = "acr5[magazine ? "" : "e"]"
-
-
 
 ////////////////////////////////////////////////////////////////////
 // M16A4 and variations

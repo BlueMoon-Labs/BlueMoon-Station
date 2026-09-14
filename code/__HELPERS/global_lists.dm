@@ -135,6 +135,7 @@
 	init_keybindings()
 	GLOB.emote_list = init_emote_list()
 	init_subtypes(/datum/crafting_recipe, GLOB.crafting_recipes)
+	init_attackby_recipes()
 
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(init_ref_coin_values)) //so the current procedure doesn't sleep because of UNTIL()
 

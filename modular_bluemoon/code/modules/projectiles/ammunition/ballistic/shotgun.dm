@@ -5,7 +5,7 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "flechette"
 	projectile_type = /obj/item/projectile/bullet/pellet/shotgun_flechette
-	pellets = 8
+	pellets = 4
 	variance = 15
 
 /obj/item/ammo_casing/shotgun/frangible

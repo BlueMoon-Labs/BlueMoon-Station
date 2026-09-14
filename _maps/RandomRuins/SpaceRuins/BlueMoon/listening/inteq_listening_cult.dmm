@@ -523,6 +523,10 @@
 /obj/structure/table/reinforced/titaniumglass,
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"fw" = (
+/obj/structure/shield/yellow,
+/turf/open/floor/plating/asteroid/airless,
+/area/ruin/space)
 "fC" = (
 /obj/structure/chair/office/light{
 	dir = 4
@@ -1113,6 +1117,7 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "nT" = (
 /obj/structure/lattice,
+/obj/structure/shield/yellow,
 /turf/template_noop,
 /area/space)
 "ob" = (
@@ -1366,6 +1371,12 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/white,
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = 8
+	},
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = -8
+	},
 /obj/item/clothing/mask/gas/inteq{
 	pixel_x = 8
 	},
@@ -2441,6 +2452,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"Em" = (
+/obj/structure/shield/yellow,
+/turf/closed/mineral/random,
+/area/ruin/space)
 "Ew" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
@@ -4304,11 +4319,11 @@ tP
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP
@@ -4333,27 +4348,27 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
 dV
 dV
 dV
 dV
 dV
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP
@@ -4371,7 +4386,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4393,7 +4408,7 @@ sD
 sD
 sD
 sD
-tP
+Em
 tP
 tP
 tP
@@ -4410,7 +4425,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 rI
 Ql
@@ -4432,7 +4447,7 @@ Uz
 mj
 AM
 sD
-tP
+Em
 tP
 tP
 tP
@@ -4449,7 +4464,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 OJ
 Ru
@@ -4471,7 +4486,7 @@ CF
 eS
 NA
 sD
-tP
+Em
 tP
 tP
 tP
@@ -4487,8 +4502,8 @@ tP
 tP
 tP
 tP
-tP
-tP
+Em
+Em
 dV
 xa
 yA
@@ -4510,7 +4525,7 @@ ob
 bQ
 WW
 sD
-tP
+Em
 tP
 tP
 tP
@@ -4525,7 +4540,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4549,11 +4564,11 @@ Nd
 rj
 Zt
 sD
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
 tP
 Mp
 "}
@@ -4564,7 +4579,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 pB
 mz
@@ -4592,7 +4607,7 @@ Kq
 dV
 dV
 dV
-tP
+Em
 tP
 nv
 "}
@@ -4603,7 +4618,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 Ip
 hj
@@ -4631,7 +4646,7 @@ sd
 xv
 aj
 dV
-tP
+Em
 tP
 nv
 "}
@@ -4640,9 +4655,9 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
+Em
+Em
+Em
 dV
 Ko
 WG
@@ -4670,7 +4685,7 @@ ai
 vC
 xe
 Kq
-tP
+Em
 tP
 nv
 "}
@@ -4678,7 +4693,7 @@ nv
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4709,14 +4724,14 @@ mM
 ZN
 xD
 dV
-tP
+Em
 tP
 tP
 "}
 (15,1,1) = {"
 tP
 tP
-tP
+Em
 dV
 dV
 cA
@@ -4748,13 +4763,13 @@ dV
 dV
 dV
 dV
-tP
+Em
 tP
 tP
 "}
 (16,1,1) = {"
 tP
-tP
+Em
 dV
 dV
 ij
@@ -4787,13 +4802,13 @@ ib
 hU
 Uh
 dV
-tP
+Em
 tP
 tP
 "}
 (17,1,1) = {"
 tP
-tP
+Em
 dV
 bL
 eo
@@ -4826,13 +4841,13 @@ St
 fi
 SG
 dV
-tP
+Em
 tP
 tP
 "}
 (18,1,1) = {"
 tP
-tP
+Em
 dV
 Ao
 Du
@@ -4865,13 +4880,13 @@ Ji
 IQ
 cm
 dV
-tP
+Em
 tP
 tP
 "}
 (19,1,1) = {"
 tP
-tP
+Em
 dV
 IZ
 Wx
@@ -4904,13 +4919,13 @@ eU
 Nt
 cd
 dV
-tP
+Em
 tP
 tP
 "}
 (20,1,1) = {"
 tP
-tP
+Em
 dV
 dV
 AQ
@@ -4943,14 +4958,14 @@ zh
 IC
 po
 dV
-tP
+Em
 tP
 tP
 "}
 (21,1,1) = {"
 tP
 tP
-tP
+Em
 dV
 dV
 mF
@@ -4982,7 +4997,7 @@ dV
 dV
 dV
 dV
-tP
+Em
 tP
 tP
 "}
@@ -4990,7 +5005,7 @@ tP
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -5017,11 +5032,11 @@ dV
 xy
 aI
 nT
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 "}
@@ -5030,8 +5045,8 @@ nv
 tP
 tP
 tP
-tP
-tP
+Em
+Em
 dV
 de
 uC
@@ -5070,7 +5085,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 dV
 So
 Kd
@@ -5109,7 +5124,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 Kq
 Jo
 QK
@@ -5132,7 +5147,7 @@ wn
 kx
 Za
 dV
-tP
+Em
 tP
 tP
 tP
@@ -5148,7 +5163,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 Kq
 Uv
 Jd
@@ -5171,7 +5186,7 @@ ME
 xe
 Kq
 dV
-tP
+Em
 tP
 tP
 tP
@@ -5187,7 +5202,7 @@ Mp
 tP
 tP
 tP
-tP
+Em
 dV
 Cj
 cS
@@ -5209,7 +5224,7 @@ Zv
 dV
 zH
 Kq
-tP
+Em
 tP
 tP
 tP
@@ -5226,7 +5241,7 @@ Mp
 nv
 tP
 tP
-tP
+Em
 dV
 EI
 Pd
@@ -5248,9 +5263,9 @@ xn
 dV
 dV
 dV
-tP
-tP
-tP
+Em
+Em
+Em
 tP
 tP
 tP
@@ -5265,15 +5280,15 @@ Mp
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
 dV
 dV
 dV
-tP
-tP
+Em
+Em
 dV
 dV
 dV
@@ -5290,9 +5305,9 @@ Kq
 Kq
 Ph
 Ph
-tP
-tP
-tP
+Em
+Em
+Em
 tP
 nv
 nv
@@ -5305,17 +5320,17 @@ Mp
 tP
 tP
 tP
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
 ey
 ey
 fp
@@ -5332,7 +5347,7 @@ Ph
 Kq
 Ph
 Ph
-tP
+Em
 nv
 Mp
 Mp
@@ -5354,7 +5369,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 CT
 Xv
 bV
@@ -5371,7 +5386,7 @@ uk
 FQ
 qs
 nv
-tP
+Em
 nv
 Mp
 Mp
@@ -5393,7 +5408,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 ey
 ak
 Ax
@@ -5410,7 +5425,7 @@ Fy
 FQ
 qs
 nv
-tP
+Em
 nv
 Mp
 Mp
@@ -5432,7 +5447,7 @@ tP
 tP
 tP
 tP
-nv
+fw
 ey
 yy
 bk
@@ -5449,7 +5464,7 @@ JG
 FQ
 qs
 tP
-tP
+Em
 tP
 Mp
 Mp
@@ -5471,7 +5486,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 ey
 CT
 ff
@@ -5488,7 +5503,7 @@ Ph
 Ph
 Ph
 Ph
-tP
+Em
 tP
 Mp
 Mp
@@ -5511,7 +5526,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 Ph
 Kq
 Kq
@@ -5524,9 +5539,9 @@ Ph
 Kq
 Kq
 Ph
-nv
-tP
-tP
+fw
+Em
+Em
 tP
 tP
 Mp
@@ -5551,18 +5566,18 @@ tP
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP

@@ -88,6 +88,12 @@
 	uses = 1
 	starting_organ = /obj/item/organ/eyes/robotic/toggled/glow
 
+
+/obj/item/autosurgeon/vanguard
+	uses = 1
+
+
+
 /obj/item/autosurgeon/syndicate
 	name = "Suspicious Autosurgeon"
 	desc = "Автохирург имеет всего пять использований. "

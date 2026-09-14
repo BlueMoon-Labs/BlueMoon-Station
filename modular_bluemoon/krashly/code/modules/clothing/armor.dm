@@ -28,10 +28,23 @@
 /obj/item/clothing/suit/donator/bm/cerberus_suit/armored
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS
 	armor = list(MELEE = 45, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 70, ACID = 90, WOUND = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	strip_delay = 80
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/cerberus_suit/armored/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/donator/bm/cerberus_suit/armored/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/donator/bm/cerberus_suit/armored/censor
 	name = "censor's coat"
@@ -129,6 +142,7 @@ obj/item/clothing/suit/donator/bm/cerberus_suit/armored/inkvd
 	anthro_mob_worn_overlay = 'modular_bluemoon/krashly/icons/mob/clothing/suits.dmi'
 	icon_state = "armor"
 	item_state = "armor"
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/inteq/honorable_vanguard
 	name = "InteQ black armored coat"

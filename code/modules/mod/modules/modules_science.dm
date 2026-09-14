@@ -149,3 +149,35 @@
 
 /obj/item/mod/module/anomaly_locked/teleporter/prebuilt
 	prebuilt = TRUE
+
+/obj/item/mod/module/jump_jet
+	name = "Jump Jet Module"
+	icon_state = "jump_jet"
+	desc = "Специализированный нагнетатель газа, которы при наборе нужного давления способен \
+	с огромной силой высвободить накопленный безвредный газ, чтобы отправить пользователя в непродолжительный\
+	полет. Работает как в атмосфере, так и в космосе, благодаря встроенным бакам. Несовместим с джетпаком, потому что \
+	крепится ровно туда же."
+	incompatible_modules = list(/obj/item/mod/module/jetpack)
+	module_type = MODULE_USABLE
+	cooldown_time = 10 SECONDS
+	required_modpart_index = MOD_PART_FEET
+	var/beam_icon = 'icons/effects/effects.dmi'
+	var/beam_state = "ion_fade"
+	var/jumpdistance = 5
+	var/jumpspeed = 3
+	var/jumps_max = 1
+	var/jumps_avaible
+
+/obj/item/mod/module/jump_jet/on_use()
+	. = ..()
+	var/turf/start_from = mod.wearer.loc
+	if(mod.wearer.body_position == LYING_DOWN)
+		balloon_alert(mod.wearer, "Нужна опора!")
+		return
+	var/atom/target = get_edge_target_turf(mod.wearer, mod.wearer.dir)
+	if(mod.wearer.throw_at(target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
+		start_from.Beam(mod.wearer, beam_state, beam_icon, 0.5 SECONDS)
+		playsound(mod, 'sound/effects/stealthoff.ogg', 50, 1, 1)
+		mod.wearer.visible_message("<span class='warning'>[mod.wearer] мгновенно срывается вперёд, взмывая в воздух!</span>")
+	else
+		to_chat(mod.wearer, "<span class='warning'>Что-то мешает вам это сделать!</span>")

@@ -887,6 +887,8 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	new_spawn.fully_replace_character_name(new_spawn.real_name,generate_pirate_name())
 	new_spawn.mind.add_antag_datum(/datum/antagonist/pirate)
 	for(var/obj/item/I in new_spawn.get_equipped_items(include_pockets = TRUE))
+		if(istype(I, /obj/item/card/id))
+			continue
 		ADD_TRAIT(I, TRAIT_NODROP, "pirate_antag")
 
 /obj/effect/mob_spawn/human/pirate/proc/generate_pirate_name()

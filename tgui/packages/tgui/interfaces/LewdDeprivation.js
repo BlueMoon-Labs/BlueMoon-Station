@@ -20,7 +20,7 @@ export const LewdDeprivationContent = (props) => {
             </Grid>
 
             {levels.map((level) => (
-              <Grid mt={0.2}>
+              <Grid key={level.value} mt={0.2}>
                 <Stack>
                   <Stack.Item grow>
                     <Tooltip content={`${level.desc || `${level.value}% речи неразборчиво`}`}>

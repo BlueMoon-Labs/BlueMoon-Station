@@ -28,6 +28,7 @@
 #define RND_NETWORK_AUTO ""					//Нестанционная машина — персональная изолированная сеть; станционная — science_tech (дефолт)
 //BLUEMOON ADD: фракционные ID-сети исследований
 #define RND_NETWORK_SYNDICATE "syndicate"	//Сеть исследований Синдиката
+#define RND_NETWORK_TARKON "Tarkoff"		//Сеть исследований Таркова
 #define RND_NETWORK_INTEQ "inteq"			//Сеть исследований InteQ
 
 //BLUEMOON ADD: радиус авто-подключения устройств (computermath, research_table, strangerock, tesla_coil/research) к ближайшему РНД-серверу

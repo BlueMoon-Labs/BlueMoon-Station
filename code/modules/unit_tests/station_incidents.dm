@@ -159,7 +159,8 @@
 /datum/unit_test/station_incidents/proc/check_shipment_seal()
 	var/obj/structure/closet/crate/holding = allocate(/obj/structure/closet/crate)
 	var/obj/structure/closet/crate/incident_shipment/slimes/crate = allocate(/obj/structure/closet/crate/incident_shipment/slimes, holding)
-	allocated += crate.GetAllContents()
+	var/list/repaired_shipment = crate.GetAllContents()
+	allocated += repaired_shipment
 	TEST_ASSERT_NULL(crate.release_timer, "Таймер не должен идти внутри транспортного контейнера")
 	crate.forceMove(run_loc_floor_top_right)
 	TEST_ASSERT(crate.release_timer, "Выгрузка должна запускать отсчёт аварии")
@@ -178,6 +179,9 @@
 	TEST_ASSERT_EQUAL(slime_count, 2, "Оба образца должны сохраняться для перевозки и исследований")
 	TEST_ASSERT(crate.open(), "Исправленный контейнер можно намеренно открыть в камере")
 	TEST_ASSERT(!crate.repair_seal(), "Ремонт не должен задним числом отменять уже состоявшийся побег")
+	// Выпущенные слаймы могут забраться на крышку следующего ящика и помешать открытию.
+	for(var/atom/thing as anything in repaired_shipment)
+		qdel(thing)
 	var/obj/structure/closet/crate/incident_shipment/poultry/unrepaired = allocate(/obj/structure/closet/crate/incident_shipment/poultry, run_loc_floor_top_right)
 	allocated += unrepaired.GetAllContents()
 	unrepaired.release_cargo()

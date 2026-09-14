@@ -38,40 +38,35 @@
 
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
-	if(is_welded())
-		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	var/obj/item/item_in_slot
-	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
-		item_in_slot = wearer.s_store
+
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
+
 	if(!piece.conseal_to_overslot()) //скрывает одежду внутрь переменной элемента МОДа
 		balloon_alert(wearer, "ОШИБКА")
 		return to_chat(wearer, span_alertwarning("У вас не получилось развернуть поверх вашей текущей одежды элемент МОДа."))
 
+	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
+		item_in_slot = wearer.s_store
+
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
-		ADD_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
-		if(!user)
-			piece.toggle_all_linked_modules(MODPART_DEPLOYED)
-			return TRUE
-		wearer.visible_message(span_notice("[wearer]'s [piece] deploy[piece.p_s()] with a mechanical hiss."),
-			span_notice("[piece] разворачивается[piece.p_s()] с механическим шипением."),
-			span_hear("Вы слышите механическое шипение."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		piece.notify_user(FALSE, user)
+
 		if(item_in_slot)
 			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
-		if(need_to_conseal && is_active() && all_parts_deployed())
-			update_hardlight()
-		piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 		return TRUE
+
 	else if(piece.loc != src)
 		if(!user)
 			return FALSE
-		balloon_alert(user, "[piece] already deployed!")
+		balloon_alert(user, "[piece] уже развернуто!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	else
 		if(!user)
 			return FALSE
-		balloon_alert(user, "bodypart clothed!")
+		balloon_alert(user, "часть тела скрыта!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
@@ -86,13 +81,10 @@
 	piece.equip_item_from_overslot()
 	if(!user)
 		return
-	wearer.visible_message(span_notice("[wearer]'s [piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
-		span_notice("[piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
-		span_hear("You hear a mechanical hiss."))
+	piece.notify_user(TRUE, wearer)
 	remove_hardlight()
 	piece.toggle_all_linked_modules(MODPART_CONSEALED)
 	piece.restore_normal_features()
-	playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
 	var/obj/item/stock_parts/cell/cell = get_cell()
