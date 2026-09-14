@@ -421,7 +421,7 @@
 			fire_icon_state = "fire_big"
 
 	. += mutable_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, GAME_PLANE, appearance_flags = RESET_COLOR|RESET_ALPHA)
-	. += emissive_appearance(icon, fire_icon_state, BELOW_MOB_LAYER, alpha = src.alpha)
+	. += emissive_appearance(icon, fire_icon_state, layer = BELOW_MOB_LAYER, alpha = src.alpha)
 
 //LIQUIDS ADD - standalone smoothing (the /tg SMOOTH_BITMASK system the water icons were made for is not present in this codebase)
 /**
@@ -683,6 +683,8 @@
 	var/turf/T = source
 	if(isobserver(AM))
 		return //ghosts, camera eyes, etc. don't make water splashy splashy
+	if(isrobotic(AM) && HAS_TRAIT(AM, TRAIT_BLUEMOON_WATER_VULNERABILITY))
+		INVOKE_ASYNC(GLOBAL_PROC, /proc/synth_water_damage_start, AM)
 	if(liquid_state >= LIQUID_STATE_ANKLES)
 		if(prob(30))
 			var/sound_to_play = pick(list(

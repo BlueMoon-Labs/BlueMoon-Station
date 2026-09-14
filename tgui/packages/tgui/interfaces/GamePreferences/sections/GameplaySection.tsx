@@ -7,6 +7,7 @@ type GameplayData = {
   midround_antag: boolean;
   disable_combat_cursor: boolean;
   disable_combat_mouse_lock: boolean;
+  smartlink: boolean;
   deathrattle: boolean;
   arrivalrattle: boolean;
   intent_style: boolean;
@@ -33,6 +34,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'action_buttons_hide', label: 'Скрыть кнопки действий при спавне', flag: 'action_buttons_hide', tooltip: 'Не показывать кнопки способностей и предметов в интерфейсе при старте раунда' },
   { key: 'disable_combat_cursor', label: 'Отключить курсор боя', flag: 'disable_combat_cursor', tooltip: 'Не менять курсор при входе в боевой режим (harm intent)' },
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
+  { key: 'smartlink', label: 'Смартлинк (боевой HUD)', flag: 'smartlink', tooltip: 'Показывать боевой HUD со счётчиком патронов и зарядом энергии при удержании оружия в руках' },
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
   { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
 ];

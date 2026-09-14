@@ -272,7 +272,7 @@ datum/sprite_accessory/mam_body_markings/shark/datashark // BLUEMOON CHANGE PORT
 
 /datum/sprite_accessory/insect_fluff
 	icon = 'icons/mob/wings.dmi'
-	color_src = 0
+	color_src = WINGCOLOR
 	relevant_layers = list(BODY_FRONT_LAYER)
 	mutant_part_string = "insect_fluff"
 

@@ -76,8 +76,17 @@
 				var/turf/T = get_turf(src)
 				if(istype(S))
 					if(S.bloody_shoes && S.bloody_shoes[S.blood_state])
-						var/obj/effect/decal/cleanable/blood/footprints/oldFP = locate(/obj/effect/decal/cleanable/blood/footprints) in T
-						if(oldFP && (oldFP.blood_state == S.blood_state && oldFP.color == S.last_blood_color))
+						// След нужен со своим состоянием и цветом: чужой не дополняется, а копится сверху.
+						var/obj/effect/decal/cleanable/blood/footprints/old_footprints
+						for(var/obj/effect/decal/cleanable/blood/footprints/existing in T)
+							if(existing.blood_state != S.blood_state || existing.color != S.last_blood_color)
+								continue
+							old_footprints = existing
+							break
+						if(old_footprints)
+							if(!(old_footprints.entered_dirs & dir))
+								old_footprints.entered_dirs |= dir
+								old_footprints.update_icon()
 							return
 						S.bloody_shoes[S.blood_state] = max(0, S.bloody_shoes[S.blood_state] - BLOOD_LOSS_PER_STEP)
 						var/obj/effect/decal/cleanable/blood/footprints/FP = new /obj/effect/decal/cleanable/blood/footprints(T)

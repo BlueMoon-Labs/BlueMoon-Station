@@ -45,6 +45,14 @@
 	else
 		. = VV_NULL
 
+/// Загруженный через input() файл печатается своим именем на клиенте, по нему и судим.
+/proc/vv_upload_is_dmi(uploaded)
+	return lowertext(copytext("[uploaded]", -4)) == ".dmi"
+
+/proc/vv_upload_is_image(uploaded)
+	var/static/list/image_suffixes = list(".gif", ".png", ".jpg", ".bmp", ".dmi")
+	return (lowertext(copytext("[uploaded]", -4)) in image_suffixes) || lowertext(copytext("[uploaded]", -5)) == ".jpeg"
+
 /client/proc/vv_get_value(class, default_class, current_value, list/restricted_classes, list/extra_classes, list/classes, var_name)
 	. = list("class" = class, "value" = null)
 	if(!class)
@@ -203,11 +211,21 @@
 			if(.["value"] == null)
 				.["class"] = null
 				return
+			if(vv_upload_is_image(.["value"]) && !vv_upload_is_dmi(.["value"]))
+				to_chat(src, span_warning("Картинки через VV только в .dmi: анимированный GIF в appearance роняет DreamDaemon."), confidential = TRUE)
+				.["class"] = null
+				.["value"] = null
+				return
 
 		if(VV_ICON)
 			.["value"] = input("Pick icon:", "Icon") as null|icon
 			if(.["value"] == null)
 				.["class"] = null
+				return
+			if(!vv_upload_is_dmi(.["value"]))
+				to_chat(src, span_warning("Иконки через VV только в .dmi: анимированный GIF в appearance роняет DreamDaemon."), confidential = TRUE)
+				.["class"] = null
+				.["value"] = null
 				return
 
 		if(VV_MARKED_DATUM)

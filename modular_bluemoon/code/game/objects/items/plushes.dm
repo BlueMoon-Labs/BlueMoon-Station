@@ -15,6 +15,25 @@
 	icon_state = "blahaj"
 	attack_verb = list("gnawed", "gnashed", "chewed")
 	squeak_override = list('modular_bluemoon/sound/voice/rawr.ogg' = 1)
+	can_random_spawn = FALSE
+
+/obj/item/toy/plush/bm/shark/box_reskinnable
+	name = "Reskinnable Shark Plushie"
+	icon_state = "blahaj-uni"
+	can_random_spawn = TRUE
+	unique_reskin = list(
+		RESKIN_EMPTY
+	)
+
+/obj/item/toy/plush/bm/shark/box_reskinnable/Initialize(mapload, set_snowflake_id)
+	// Возвращаем вид изначальной игрушки
+	name = /obj/item/toy/plush/bm/shark::name
+	icon_state = /obj/item/toy/plush/bm/shark::icon_state
+	// Записываем все подтипы в рескины
+	for(var/sub_type in subtypesof(/obj/item/toy/plush/bm/shark) - type)
+		unique_reskin[sub_type:name] = list("name" = sub_type:name, RESKIN_ICON_STATE = sub_type:icon_state)
+
+	return ..()
 
 /obj/item/toy/plush/bm/shark/grey
 	name = "Shark Grey Plushie"
@@ -1016,3 +1035,14 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 
 #undef BASIC_ARIRAL_SKIN
 #undef ALT_ARIRAL_SKIN
+
+/obj/item/toy/plush/bm/tau
+	name = "Tau Plushie"
+	desc = "Sauce"
+	icon_state = "tau"
+	squeak_override = list('modular_bluemoon/sound/emotes/snakedies.ogg' = 1)
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/tau/emag_act()
+	. = ..()
+	icon_state = "tau_alt" //so much true/// it's a crime https://klipy.com/gifs/true-true-true-1

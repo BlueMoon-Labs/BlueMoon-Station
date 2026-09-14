@@ -110,9 +110,9 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	walltype = /turf/closed/wall/mineral/diamond
 
 GLOBAL_LIST_INIT(diamond_recipes, list ( \
-	new/datum/stack_recipe("diamond door", /obj/structure/mineral_door/transparent/diamond, 10, one_per_turf = 1, on_floor = 1), \
-	new/datum/stack_recipe("diamond tile", /obj/item/stack/tile/mineral/diamond, 1, 4, 20),  \
-	new/datum/stack_recipe("diamond ingot", /obj/item/ingot/diamond, 6, time = 100), \
+	new/datum/stack_recipe("diamond door", /obj/structure/mineral_door/transparent/diamond, 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("diamond tile", /obj/item/stack/tile/mineral/diamond, 1, 4, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED),  \
+	new/datum/stack_recipe("diamond ingot", /obj/item/ingot/diamond, 6, time = 100, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
     ))
 
 /obj/item/stack/sheet/mineral/diamond/get_main_recipes()
@@ -171,9 +171,9 @@ GLOBAL_LIST_INIT(uranium_recipes, list ( \
 	return TOXLOSS//dont you kids know that stuff is toxic?
 
 GLOBAL_LIST_INIT(plasma_recipes, list ( \
-	new/datum/stack_recipe("plasma door", /obj/structure/mineral_door/transparent/plasma, 10, one_per_turf = 1, on_floor = 1), \
-	new/datum/stack_recipe("plasma tile", /obj/item/stack/tile/mineral/plasma, 1, 4, 20), \
-	new/datum/stack_recipe("plasma plant", /obj/item/kirbyplants/plasma, 15, time = 50, on_floor = TRUE), \
+	new/datum/stack_recipe("plasma door", /obj/structure/mineral_door/transparent/plasma, 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("plasma tile", /obj/item/stack/tile/mineral/plasma, 1, 4, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("plasma plant", /obj/item/kirbyplants/plasma, 15, time = 50, on_floor = TRUE, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 //	new/datum/stack_recipe("plasma ingot", /obj/item/ingot/plasma, 6, time = 100), \ no
 	))
 
@@ -217,10 +217,10 @@ GLOBAL_LIST_INIT(plasma_recipes, list ( \
 	walltype = /turf/closed/wall/mineral/gold
 
 GLOBAL_LIST_INIT(gold_recipes, list ( \
-	new/datum/stack_recipe("golden door", /obj/structure/mineral_door/gold, 10, one_per_turf = 1, on_floor = 1), \
-	new/datum/stack_recipe("gold tile", /obj/item/stack/tile/mineral/gold, 1, 4, 20), \
-	new/datum/stack_recipe("Simple Crown", /obj/item/clothing/head/crown, 5), \
-	new/datum/stack_recipe("gold ingot", /obj/item/ingot/gold, 6, time = 100), \
+	new/datum/stack_recipe("golden door", /obj/structure/mineral_door/gold, 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("gold tile", /obj/item/stack/tile/mineral/gold, 1, 4, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("Simple Crown", /obj/item/clothing/head/crown, 5, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("gold ingot", /obj/item/ingot/gold, 6, time = 100, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	))
 
 /obj/item/stack/sheet/mineral/gold/get_main_recipes()
@@ -245,9 +245,9 @@ GLOBAL_LIST_INIT(gold_recipes, list ( \
 	walltype = /turf/closed/wall/mineral/silver
 
 GLOBAL_LIST_INIT(silver_recipes, list ( \
-	new/datum/stack_recipe("silver door", /obj/structure/mineral_door/silver, 10, one_per_turf = 1, on_floor = 1), \
-	new/datum/stack_recipe("silver tile", /obj/item/stack/tile/mineral/silver, 1, 4, 20), \
-	new/datum/stack_recipe("silver ingot", /obj/item/ingot/silver, 6, time = 100), \
+	new/datum/stack_recipe("silver door", /obj/structure/mineral_door/silver, 10, one_per_turf = 1, on_floor = 1, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("silver tile", /obj/item/stack/tile/mineral/silver, 1, 4, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("silver ingot", /obj/item/ingot/silver, 6, time = 100, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	))
 
 /obj/item/stack/sheet/mineral/silver/get_main_recipes()
@@ -275,8 +275,8 @@ GLOBAL_LIST_INIT(silver_recipes, list ( \
 	amount = 50
 
 GLOBAL_LIST_INIT(bananium_recipes, list ( \
-	new/datum/stack_recipe("bananium tile", /obj/item/stack/tile/mineral/bananium, 1, 4, 20), \
-	new/datum/stack_recipe("hilarious ingot", /obj/item/ingot/bananium, 6, time = 100), \
+	new/datum/stack_recipe("bananium tile", /obj/item/stack/tile/mineral/bananium, 1, 4, 20, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
+	new/datum/stack_recipe("hilarious ingot", /obj/item/ingot/bananium, 6, time = 100, trait_booster = TRAIT_QUICK_BUILD, trait_modifier = QUIICK_BUILD_SPEED), \
 	))
 
 /obj/item/stack/sheet/mineral/bananium/get_main_recipes()

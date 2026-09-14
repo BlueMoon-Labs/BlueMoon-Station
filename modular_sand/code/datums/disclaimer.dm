@@ -50,7 +50,7 @@
 			var/client/user_client = ui.user.client
 			if(user_client?.prefs)
 				user_client.prefs.bm_disclaimer_accepted = TRUE
-				user_client.prefs.save_preferences()
+				user_client.prefs.save_pref_var("bm_disclaimer_accepted")
 			ui.close()
 			return TRUE
 		if("close")

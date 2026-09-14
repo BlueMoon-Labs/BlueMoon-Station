@@ -102,6 +102,7 @@
 	tracer_type = null
 	muzzle_type = null
 	impact_type = null
+	knockdown = 60
 
 /obj/item/projectile/energy/electrode/security/hos/bolestrel/on_hit(atom/target, blocked = FALSE)
 	. = ..()

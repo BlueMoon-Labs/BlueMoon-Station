@@ -153,6 +153,7 @@
 		finish_manipulation()
 		return FALSE
 
+	hide_held_item()
 	held_atom.forceMove(drop_turf)
 	do_attack_animation(drop_turf)
 	manipulator_arm.do_attack_animation(drop_turf)
@@ -165,6 +166,129 @@
 	held_atom.throw_at(get_edge_target_turf(get_turf(src), get_dir(get_turf(src), drop_turf)), throw_task.throw_range, 2)
 	finish_manipulation()
 	return TRUE
+
+/// Attacks something in the given direction with the held item.
+/obj/machinery/big_manipulator/proc/try_harm_thing(datum/manipulator_task/harm/harm_task)
+	var/obj/item/held_item = held_object?.resolve()
+	if(!harm_task || !held_item)
+		finish_manipulation()
+		return FALSE
+
+	// Rotate the arm toward the harm direction first.
+	var/target_angle = dir2angle(harm_task.harm_dir)
+	var/current_angle = manipulator_arm.arm_angle
+	var/angle_diff = closer_angle_difference(current_angle, target_angle)
+
+	if(abs(angle_diff) > 1)
+		var/matrix/turn_matrix = matrix()
+		turn_matrix.Turn(target_angle)
+		animate(manipulator_arm, transform = turn_matrix, time = BASE_INTERACTION_TIME / speed_multiplier)
+		manipulator_arm.arm_angle = target_angle
+		addtimer(CALLBACK(src, PROC_REF(perform_harm_attack), harm_task), BASE_INTERACTION_TIME / speed_multiplier)
+	else
+		perform_harm_attack(harm_task)
+
+	return TRUE
+
+/// Actually performs the harm attack after the arm has rotated.
+/obj/machinery/big_manipulator/proc/perform_harm_attack(datum/manipulator_task/harm/harm_task)
+	var/atom/movable/resolved_held = held_object?.resolve()
+	if(!harm_task || !isitem(resolved_held))
+		finish_manipulation()
+		return
+	var/obj/item/held_item = resolved_held
+
+	var/turf/target_turf = get_step(src, harm_task.harm_dir)
+	if(!target_turf)
+		schedule_next_cycle()
+		return
+
+	// Find target: prioritize mobs, then any movable object.
+	var/atom/target = null
+	for(var/mob/living/candidate in target_turf.contents)
+		target = candidate
+		break
+	if(!target)
+		for(var/atom/movable/thing as anything in target_turf.contents)
+			if(thing == src || thing == manipulator_arm)
+				continue
+			target = thing
+			break
+
+	if(target)
+		if(isliving(target))
+			var/mob/living/victim = target
+			if(held_item.force > 0)
+				victim.apply_damage(held_item.force, held_item.damtype)
+		else if(isobj(target))
+			var/obj/obj_target = target
+			var/total_damage = held_item.get_damage_to_obj(obj_target, null)
+			if(total_damage > 0)
+				obj_target.take_damage(total_damage, held_item.damtype)
+
+	if(held_item.hitsound)
+		playsound(target || target_turf, held_item.hitsound, 50, TRUE)
+	do_attack_animation(target || target_turf)
+	manipulator_arm.do_attack_animation(target || target_turf)
+	schedule_next_cycle()
+
+/// Interacts with something in the given direction with the held item.
+/obj/machinery/big_manipulator/proc/try_interact_thing(datum/manipulator_task/interact/interact_task)
+	var/obj/item/held_item = held_object?.resolve()
+	if(!interact_task || !held_item)
+		finish_manipulation()
+		return FALSE
+
+	// Rotate the arm toward the interact direction first.
+	var/target_angle = dir2angle(interact_task.harm_dir)
+	var/current_angle = manipulator_arm.arm_angle
+	var/angle_diff = closer_angle_difference(current_angle, target_angle)
+
+	if(abs(angle_diff) > 1)
+		var/matrix/turn_matrix = matrix()
+		turn_matrix.Turn(target_angle)
+		animate(manipulator_arm, transform = turn_matrix, time = BASE_INTERACTION_TIME / speed_multiplier)
+		manipulator_arm.arm_angle = target_angle
+		addtimer(CALLBACK(src, PROC_REF(perform_interact_attack), interact_task), BASE_INTERACTION_TIME / speed_multiplier)
+	else
+		perform_interact_attack(interact_task)
+
+	return TRUE
+
+/// Actually performs the interact attack after the arm has rotated.
+/obj/machinery/big_manipulator/proc/perform_interact_attack(datum/manipulator_task/interact/interact_task)
+	var/atom/movable/resolved_held = held_object?.resolve()
+	if(!interact_task || !isitem(resolved_held))
+		finish_manipulation()
+		return
+	var/obj/item/held_item = resolved_held
+
+	var/turf/target_turf = get_step(src, interact_task.harm_dir)
+	if(!target_turf)
+		schedule_next_cycle()
+		return
+
+	// Find target: prioritize mobs, then any movable object.
+	var/atom/target = null
+	for(var/mob/living/candidate in target_turf.contents)
+		target = candidate
+		break
+	if(!target)
+		for(var/atom/movable/thing as anything in target_turf.contents)
+			if(thing == src || thing == manipulator_arm)
+				continue
+			target = thing
+			break
+
+	if(target)
+		// Interact uses attackby (help intent behavior).
+		target.attackby(held_item, dummy_user)
+
+	if(held_item.hitsound)
+		playsound(target || target_turf, held_item.hitsound, 50, TRUE)
+	do_attack_animation(target || target_turf)
+	manipulator_arm.do_attack_animation(target || target_turf)
+	schedule_next_cycle()
 
 /// Completes the current manipulation action and schedules the next step.
 /obj/machinery/big_manipulator/proc/finish_manipulation()
@@ -217,6 +341,7 @@
 	if(isnull(held_object))
 		return
 	var/obj/obj_resolve = held_object?.resolve()
+	hide_held_item()
 	if(obj_resolve)
-		obj_resolve.forceMove(get_turf(obj_resolve))
+		obj_resolve.forceMove(get_turf(src))
 	finish_manipulation()

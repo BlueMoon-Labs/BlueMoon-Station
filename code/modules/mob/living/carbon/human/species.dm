@@ -925,20 +925,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					right_eye.pixel_y += offset_features[OFFSET_EYES][2]
 				standing += left_eye
 				standing += right_eye
-				// Свечение глаз
-				if(H.dna?.features["emissive_eyes"])
-					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
-					left_eye_emissive.pixel_x = left_eye.pixel_x
-					left_eye_emissive.pixel_y = left_eye.pixel_y
-					right_eye_emissive.pixel_x = right_eye.pixel_x
-					right_eye_emissive.pixel_y = right_eye.pixel_y
-					left_eye_emissive.category = "HEAD"
-					right_eye_emissive.category = "HEAD"
-					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
-					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
-					standing += left_eye_emissive
-					standing += right_eye_emissive
+				// Свечение глаз — pixel-accurate glow copying the eye's exact icon/state/pixels
+				// via emissive_copy (BlueMoon white emissive convention against the lighting mask)
+				if(has_emissive_part(H.dna?.features, "eyes"))
+					// Don't glow eyes that are visually covered by hair (e.g. "Bedhead (Long)" hides
+					// the right eye): a hidden eye shouldn't punch a bright glow through the hairstyle.
+					// Left and right eyes are handled independently via the hair's per-side flags.
+					var/datum/sprite_accessory/hair/hairstyle = GLOB.hair_styles_list[H.hair_style]
+					if(!istype(hairstyle) || !hairstyle.hides_left_eye)
+						standing += emissive_copy(left_eye)
+					if(!istype(hairstyle) || !hairstyle.hides_right_eye)
+						standing += emissive_copy(right_eye)
 
 	if(H.nail_style)
 		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
@@ -1744,6 +1741,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	// BLUEMOON ADD START отстегавание с опер стола.
 	if(target.buckled && (istype(target.buckled, /obj/structure/table/optable) || istype(target.buckled, /obj/machinery/stasis)))
 		target.buckled.user_unbuckle_mob(target, user)
+	// BLUEMOON ADD START - щит/стойка блокирует любые попытки схватить
+	if(target.can_block_grab_attempt(user))
+		log_combat(user, target, "attempted to grab")
+		return FALSE
 	// BLUEMOON ADD END
 	if(target.check_martial_melee_block())
 		target.visible_message("<span class='warning'>[target] blocks [user]'s grab attempt!</span>", target = user, \

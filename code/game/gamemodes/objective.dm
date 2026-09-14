@@ -297,8 +297,14 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	return target
 
 /datum/objective/mutiny/check_completion()
+	if(!target)
+		return TRUE
 	var/turf/T = get_turf(target.current)
-	return !T || !is_station_level(T.z)
+	// A dead head's body left on-station must not stall the revolution forever:
+	// treat a dead (or otherwise non-living) target as eliminated, matching the "kill" part of "kill or exile".
+	if(!target.current || !considered_alive(target, FALSE) || !T || !is_station_level(T.z))
+		return TRUE
+	return FALSE
 
 /datum/objective/mutiny/check_midround_completion()
 	return FALSE
@@ -759,7 +765,7 @@ GLOBAL_LIST_EMPTY(possible_items)
 
 /datum/objective/steal/find_target(dupe_search_range, blacklist)
 	var/list/datum/mind/owners = get_owners()
-	var/approved_targets = list()
+	var/list/possible_targets = list()
 	check_items:
 		for(var/datum/objective_item/possible_item in GLOB.possible_items)
 			if(!is_unique_objective(possible_item.targetitem))
@@ -767,10 +773,12 @@ GLOBAL_LIST_EMPTY(possible_items)
 			for(var/datum/mind/M in owners)
 				if(M.current.mind.assigned_role in possible_item.excludefromjob)
 					continue check_items
-			if(!possible_item.ExtraCheck())
-				continue
-			approved_targets += possible_item
-	return set_target(safepick(approved_targets))
+			possible_targets += possible_item
+	while(length(possible_targets))
+		var/datum/objective_item/possible_item = pick_n_take(possible_targets)
+		if(possible_item.ExtraCheck())
+			return set_target(possible_item)
+	return set_target(null)
 
 /datum/objective/steal/proc/set_target(datum/objective_item/item)
 	if(item)
@@ -1553,7 +1561,7 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 	name = "frame"
 
 /datum/objective/frame/find_target(blacklist)
-	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain") // на силовиков и капитана подстава не выдаётся
+	var/static/list/excluded_roles = list("Head Of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Captain")
 	var/list/possible_targets = list()
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in SSticker.minds)

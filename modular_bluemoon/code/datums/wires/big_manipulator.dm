@@ -6,6 +6,7 @@
 	wires = list(
 		WIRE_ON,
 		WIRE_DROP,
+		"Interact",
 	)
 	return ..()
 
@@ -20,6 +21,7 @@
 	status += "The big light bulb [holder_manipulator.power_access_wire_cut ? "is off" : "is glowing [holder_manipulator.on ? "green" : "red"]"]."
 	status += "The small light bulb [holder_manipulator.held_object ? "is glowing bright green" : "is off"]."
 	status += "The number on the display shows [length(holder_manipulator.tasks)]."
+	status += "The [holder_manipulator.interact_unlocked ? "green" : "dark"] indicator [holder_manipulator.interact_unlocked ? "glows softly" : "is dim"]."
 	return status
 
 /datum/wires/big_manipulator/on_pulse(wire, user)
@@ -39,3 +41,9 @@
 		holder_manipulator.power_access_wire_cut = TRUE
 		if(holder_manipulator.on)
 			holder_manipulator.toggle_power_state(null)
+	if(wire == "Interact")
+		if(mend)
+			holder_manipulator.interact_unlocked = FALSE
+			return
+		holder_manipulator.interact_unlocked = TRUE
+		holder_manipulator.create_dummy_user()

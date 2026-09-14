@@ -1,7 +1,7 @@
 // Liquid-related reagent properties. LIQUIDS ADD - moved from modular_liquids, applied to base reagents.
 /datum/reagent
 	///Whether it will evaporate if left untouched on a liquids simulated puddle
-	var/evaporates = FALSE
+	var/evaporates = TRUE
 
 	///How much fire power does the liquid have, for burning on simulated liquids. Not enough fire power/unit of entire mixture may result in no fire
 	var/liquid_fire_power = 0
@@ -17,7 +17,7 @@
 */
 /datum/reagent/consumable/ethanol
 	liquid_fire_power = 10
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_DEFAULT
 
 // 0 fire power
 /datum/reagent/consumable/ethanol/threemileisland
@@ -202,23 +202,23 @@
 */
 /datum/reagent/thermite
 	liquid_fire_power = 20
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_DEFAULT
 
 /datum/reagent/phlogiston
 	liquid_fire_power = 20
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_LOW
 
 /datum/reagent/clf3
 	liquid_fire_power = 30
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_DEFAULT
 
 /datum/reagent/napalm
 	liquid_fire_power = 30
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_VERY_LOW
 
 /*
 *	OTHER
 */
 /datum/reagent/fuel
 	liquid_fire_power = 10
-	liquid_fire_burnrate = 0.1
+	liquid_fire_burnrate = LIQUID_FIRE_BURNRATE_DEFAULT

@@ -1,30 +1,36 @@
 
 //Preference toggles
-#define SOUND_ADMINHELP			(1<<0)
-#define SOUND_MIDI				(1<<1)
-#define SOUND_AMBIENCE			(1<<2)
-#define SOUND_LOBBY				(1<<3)
-#define MEMBER_PUBLIC			(1<<4)
-#define INTENT_STYLE			(1<<5)
-#define MIDROUND_ANTAG			(1<<6)
-#define SOUND_INSTRUMENTS		(1<<7)
-#define SOUND_SHIP_AMBIENCE		(1<<8)
-#define SOUND_PRAYERS			(1<<9)
-#define ANNOUNCE_LOGIN			(1<<10)
-#define SOUND_ANNOUNCEMENTS		(1<<11)
-#define DISABLE_DEATHRATTLE		(1<<12)
-#define DISABLE_ARRIVALRATTLE	(1<<13)
-#define COMBOHUD_LIGHTING		(1<<14)
-#define SOUND_BARK				(1<<15)
-#define NO_ANTAG				(1<<16)
-#define VERB_CONSENT			(1<<17) // Sandstorm - ERP Mechanic Addition
-#define LEWD_VERB_SOUNDS		(1<<18) // Sandstorm - ERP Mechanic Addition
-#define SOUND_JUKEBOXES			(1<<20)
-#define RANGED_VERBS_CONSENT	(1<<21) // BLUEMOON ADD интеракты с расстояния
+#define SOUND_ADMINHELP		        (1<<0)
+#define SOUND_MIDI				    (1<<1)
+#define SOUND_AMBIENCE		    	(1<<2)
+#define SOUND_LOBBY				    (1<<3)
+#define MEMBER_PUBLIC			    (1<<4)
+#define INTENT_STYLE		    	(1<<5)
+#define MIDROUND_ANTAG			    (1<<6)
+#define SOUND_INSTRUMENTS	    	(1<<7)
+#define SOUND_SHIP_AMBIENCE	    	(1<<8)
+#define SOUND_PRAYERS			    (1<<9)
+#define ANNOUNCE_LOGIN			    (1<<10)
+#define SOUND_ANNOUNCEMENTS		    (1<<11)
+#define DISABLE_DEATHRATTLE		    (1<<12)
+#define DISABLE_ARRIVALRATTLE	    (1<<13)
+#define COMBOHUD_LIGHTING		    (1<<14)
+#define SOUND_BARK				    (1<<15)
+#define NO_ANTAG				    (1<<16)
+#define VERB_CONSENT			    (1<<17) // Sandstorm - ERP Mechanic Addition
+#define LEWD_VERB_SOUNDS		    (1<<18) // Sandstorm - ERP Mechanic Addition
+#define SOUND_FAX				    (1<<19)	// toggles
+#define SOUND_JUKEBOXES			    (1<<20)
+#define RANGED_VERBS_CONSENT	    (1<<21) // BLUEMOON ADD интеракты с расстояния
 #define SOUND_PERSONAL_JUKEBOXES	(1<<22)
-#define SOUND_EMOTE					(1<<23)
-#define SOUND_FAX					(1<<19)	// toggles
-#define SOUND_MENTORHELP			(1<<0)	// mentor_toggles
+#define SOUND_EMOTE					(1<<23) // maximum
+
+// sound_toggles
+#define SOUND_BUTTONS               (1<<0)
+
+// mentor_toggles
+#define SOUND_MENTORHELP			(1<<0)
+#define DEMENTOR_ON_LOGIN			(1<<1)
 
 #define DEADMIN_ONSPAWN				(1<<0)
 #define DEADMIN_ANTAGONIST			(1<<1)
@@ -32,7 +38,7 @@
 #define DEADMIN_POSITION_SECURITY	(1<<3)
 #define DEADMIN_POSITION_SILICON	(1<<4)
 #define DEADMIN_ONLOGIN				(1<<5)
-#define DEMENTOR_ON_LOGIN			(1<<6)
+#define DEADMIN_AUTODMENTOR			(1<<6)
 
 #define TOGGLES_DEFAULT (SOUND_ADMINHELP|SOUND_MIDI|SOUND_AMBIENCE|SOUND_LOBBY|MEMBER_PUBLIC|INTENT_STYLE|MIDROUND_ANTAG|SOUND_INSTRUMENTS|SOUND_JUKEBOXES|SOUND_PERSONAL_JUKEBOXES|SOUND_SHIP_AMBIENCE|SOUND_PRAYERS|SOUND_ANNOUNCEMENTS|SOUND_BARK|SOUND_EMOTE|SOUND_FAX)
 

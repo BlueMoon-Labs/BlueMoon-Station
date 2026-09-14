@@ -614,6 +614,40 @@
 
 	TEST_ASSERT_EQUAL(booked, 7, "A mob on a clientless z-level must book 4 fires ahead, got [booked]")
 
+///Моб вне мира (loc == null) обрабатывается как пустой z-уровень: полного Life нет.
+/datum/unit_test/life_bucket_books_nullspace/Run()
+	var/mob/living/carbon/human/ssmobs_delta_spy/subject = allocate(/mob/living/carbon/human/ssmobs_delta_spy)
+	subject.moveToNullspace()
+	TEST_ASSERT_NULL(get_turf(subject), "Subject must be out of the world for this test")
+
+	subject.last_delta = 0
+	subject.Life(2, 3)
+
+	TEST_ASSERT_EQUAL(subject.last_delta, 0, "A mob out of the world must not reach BiologicalLife, got delta [subject.last_delta]")
+	TEST_ASSERT_EQUAL(subject.life_next_fire, 7, "A mob out of the world must book 4 fires ahead, got [subject.life_next_fire]")
+
+///Горящий моб вне мира: огонь не обрабатывается, бронь ставится, z-регистрация снимается.
+/datum/unit_test/life_nullspace_skips_fire/Run()
+	var/mob/living/carbon/human/ssmobs_delta_spy/subject = allocate(/mob/living/carbon/human/ssmobs_delta_spy)
+	var/turf/subject_turf = get_turf(subject)
+	TEST_ASSERT_NOTNULL(subject_turf, "Subject has no turf")
+	if(!islist(SSmobs.clients_by_zlevel) || subject_turf.z > SSmobs.clients_by_zlevel.len)
+		SSmobs.MaxZChanged()
+	subject.registered_z = subject_turf.z
+	subject.moveToNullspace()
+	TEST_ASSERT_NULL(get_turf(subject), "Subject must be out of the world for this test")
+	subject.on_fire = TRUE
+	subject.fire_stacks = 5
+
+	subject.last_delta = 0
+	subject.Life(2, 3)
+
+	TEST_ASSERT(subject.on_fire, "Огонь моба вне мира не должен ни гаснуть, ни обрабатываться - воздуха, в котором он горит, там нет")
+	TEST_ASSERT_EQUAL(subject.fire_stacks, 5, "Огонь моба вне мира не должен расходоваться")
+	TEST_ASSERT_EQUAL(subject.last_delta, 0, "Горящий моб вне мира не должен доходить до BiologicalLife")
+	TEST_ASSERT_EQUAL(subject.life_next_fire, 7, "Горящий моб вне мира обязан бронировать фаер как любой моб вне мира, получено [subject.life_next_fire]")
+	TEST_ASSERT_NULL(subject.registered_z, "Моб вне мира обязан сниматься с реестра z-уровней")
+
 ///Моб рядом с игроком брони не получает - ему положен каждый фаер.
 /datum/unit_test/life_bucket_clear_near_player/Run()
 	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)

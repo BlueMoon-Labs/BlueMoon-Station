@@ -209,6 +209,10 @@
 	return shoving || (user.a_intent != INTENT_HARM)
 
 /obj/item/melee/baton/proc/baton_stun(mob/living/L, mob/living/user, shoving = FALSE)
+	if(HAS_TRAIT(L, TRAIT_BATON_RESISTANCE))
+		L.visible_message(span_warning("[L] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
+		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
+		return FALSE
 	var/list/return_list = list()
 	if(L.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, return_list) & BLOCK_SUCCESS) //No message; check_shields() handles that
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
@@ -399,11 +403,25 @@
 
 /obj/item/melee/baton/boomerang/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(turned_on)
-		var/caught = hit_atom.hitby(src, FALSE, FALSE, throwingdatum=throwingdatum)
 		var/mob/thrown_by = thrownby?.resolve()
-		if(ishuman(hit_atom) && !caught && prob(throw_hit_chance) && thrown_by)//if they are a carbon and they didn't catch it
+		if(!thrown_by || QDELETED(thrown_by))
+			return
+
+		hit_atom.hitby(src, FALSE, FALSE, throwingdatum=throwingdatum)
+
+		// Если бумеранг пойман другим мобом (кроме владельца) - оглушаем, вырываем из рук и возвращаем
+		var/mob/holder = loc
+		if(isliving(holder) && holder != thrown_by)
+			if(ishuman(holder) && prob(throw_hit_chance))
+				baton_stun(holder, thrown_by, shoving = TRUE)
+			holder.dropItemToGround(src, TRUE)
+			throw_back()
+			return
+
+		// Обычная логика - если не пойман, оглушаем и возвращаем
+		if(ishuman(hit_atom) && loc != thrown_by && prob(throw_hit_chance) && thrown_by)
 			baton_stun(hit_atom, thrown_by, shoving = TRUE)
-		if(thrownby && !caught)
+		if(thrownby && loc != thrown_by)
 			throw_back()
 	else
 		return ..()
@@ -412,8 +430,8 @@
 	set waitfor = FALSE
 	sleep(1)
 	var/mob/thrown_by = thrownby?.resolve()
-	if(!QDELETED(src))
-		throw_at(thrown_by, throw_range+2, throw_speed, null, TRUE)
+	if(!QDELETED(src) && thrown_by && !QDELETED(thrown_by))
+		throw_at(thrown_by, throw_range+2, throw_speed, thrown_by, TRUE)
 
 /obj/item/melee/baton/boomerang/update_icon()
 	. = ..()

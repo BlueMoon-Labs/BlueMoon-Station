@@ -379,7 +379,7 @@ GLOBAL_LIST_INIT(unlocked_mutant_parts, list("horns", "insect_fluff"))
 GLOBAL_LIST_INIT(mismatched_toggle_parts, list("xenohead", "xenodorsal"))
 
 //parts in either of the above two lists that require a second option that allows them to be coloured
-GLOBAL_LIST_INIT(colored_mutant_parts, list("insect_wings" = "wings_color", "deco_wings" = "wings_color", "horns" = "horns_color"))
+GLOBAL_LIST_INIT(colored_mutant_parts, list("insect_wings" = "wings_color", "deco_wings" = "wings_color", "insect_fluff" = "wings_color", "insect_markings" = "wings_color", "horns" = "horns_color"))
 
 //body ids that have greyscale sprites
 GLOBAL_LIST_INIT(greyscale_limb_types, list("human","moth","lizard","pod","plant","jelly","slime","golem","slimelumi","stargazer","mush","ethereal","snail","c_golem","b_golem","mammal","xeno","ipc","insect","synthliz","avian","sergal","aquatic", "vox", "shadekin", "nucleation", "teshari"))

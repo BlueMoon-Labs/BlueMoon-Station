@@ -14,31 +14,29 @@
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_SUPPLY // BLUEMOON ADD
+	var/datum/component/gps/item/internal_gps
+
+/obj/item/mod/module/gps/on_install()
+	. = ..()
+	internal_gps = mod.AddComponent(/datum/component/gps/item, "MODsuit GPS", FALSE, TRUE, null, null, TRUE)
+
+/obj/item/mod/module/gps/on_uninstall(deleting, user)
+	qdel(internal_gps)
+	internal_gps = null
+	. = ..()
+
+/obj/item/mod/module/gps/on_use()
+	. = ..()
+	if(!.)
+		return
+	if(SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_SELF, mod.wearer))
+		return
+	internal_gps.interact(mod, mod.wearer)//source, user
+
 
 /obj/item/mod/module/gps/vanguard
 	complexity = 0
 	removable = FALSE
-
-/obj/item/gps/mod
-	name = "MOD internal GPS"
-	icon_state = "gps-trac"
-	desc = "Выдвижной экран GPS, который является образцом самого обычного \
-			модуля позиционирования, разработанного в Nanotrasen. Стоит \
-			осознавать, что вашу позицию будет видно всем остальным владельцам такого устройства."
-
-/obj/item/mod/module/gps/on_install()
-	. = ..()
-	var/obj/item/item_to_snap = new /obj/item/gps/mod(src)
-	my_retract_component = AddComponent(/datum/component/mod_retractable, device = item_to_snap, modsuit = mod, retract_sound = my_retract_sound)
-
-/obj/item/mod/module/gps/on_uninstall()
-	. = ..()
-	my_retract_component.RemoveComponent()
-	qdel(my_retract_component)
-
-/obj/item/mod/module/gps/on_use()
-	. = ..()
-	SEND_SIGNAL(my_retract_component, COMSIG_MODULE_ON_USE, src, mod.wearer)
 
 ///Hydraulic Clamp - Lets you pick up and drop crates.
 /obj/item/mod/module/clamp

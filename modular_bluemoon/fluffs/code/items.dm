@@ -98,6 +98,47 @@
 		for(var/i = 1 to 3)
 			new path(src)
 
+/obj/item/sign/flag/marine
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+	unique_reskin = list(
+		"United Americas" = list(
+			RESKIN_ICON_STATE = "folded_ua",
+			RESKIN_ITEM_STATE = "folded_ua",
+			sign_path = /obj/structure/sign/flag/marine/ua
+		),
+		"USCMC" = list(
+			RESKIN_ICON_STATE = "folded_uscmc",
+			RESKIN_ITEM_STATE = "folded_uscmc",
+			sign_path = /obj/structure/sign/flag/marine/uscmc)
+	)
+
+/obj/structure/sign/flag/marine
+	icon = 'modular_bluemoon/fluffs/icons/obj/flags.dmi'
+
+/obj/item/sign/flag/marine/ua
+	name = "folded flag of United Americas"
+	desc = "folded flag of United Americas, abbreviated as the UA."
+	icon_state = "folded_ua"
+	sign_path = /obj/structure/sign/flag/marine/ua
+
+/obj/structure/sign/flag/marine/ua
+	name = "flag of United Americas"
+	desc = "flag of United Americas. Why did they need to unite them?"
+	icon_state = "flag_ua"
+	item_flag = /obj/item/sign/flag/marine/ua
+
+/obj/item/sign/flag/marine/uscmc
+	name = "folded USCMC flag"
+	desc = "folded flag of United States Colonial Marine Corps. There some sign at corner: \"Delta one love\"."
+	icon_state = "folded_uscmc"
+	sign_path = /obj/structure/sign/flag/marine/uscmc
+
+/obj/structure/sign/flag/marine/uscmc
+	name = "USCMC flag"
+	desc = "flag of United States Colonial Marine Corps. Commonly known as just the Colonial Marines, was the United Americas' primary \"force-in-readiness\". They specialized in force projection, being able to operate independently in environments far from home for extended periods thanks to their technological prowess and sizeable space fleet at their disposal."
+	icon_state = "flag_uscmc"
+	item_flag = /obj/item/sign/flag/marine/uscmc
+
 ////////////////////////
 
 /obj/item/clothing/mask/vape/custom

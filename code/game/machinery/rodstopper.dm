@@ -1,5 +1,6 @@
 /obj/item/circuitboard/machine/rodstopper
 	name = "Rodstopper (Machine Board)"
+	desc = "Плата одноразового уловителя стержня Rodstopper. Машину нужно строить прямо на пути стержня: после сборки её нельзя передвинуть или разобрать инструментами. Через пять секунд после поимки происходит опасный локальный коллапс — немедленно отойдите подальше!"
 	icon_state = "generic"
 	build_path = /obj/machinery/rodstopper
 	req_components = list(
@@ -19,6 +20,7 @@
 
 /obj/machinery/rodstopper/examine(mob/user)
 	. = ..()
+	. += span_notice("Одноразовая установка: стройте прямо на пути стержня. После сборки её нельзя передвинуть или разобрать инструментами.")
 	. += span_warning("При остановке стержня она вызовет локальный коллапс реальности - держитесь подальше!")
 
 /obj/machinery/rodstopper/Initialize(mapload)

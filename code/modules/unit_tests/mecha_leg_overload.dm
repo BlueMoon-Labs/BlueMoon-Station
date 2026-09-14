@@ -35,7 +35,8 @@
 	TEST_ASSERT_EQUAL(base_drain, mech.normal_step_energy_drain, "Санити: до форсажа цена шага штатная")
 	TEST_ASSERT(!mech.leg_overload_mode, "Санити: свежий мех без форсажа")
 
-	action.Trigger()
+	//нажатия идут как с экранной кнопки: Click() передаёт trigger_flags первым позиционным
+	action.Trigger(NONE)
 	TEST_ASSERT(mech.leg_overload_mode, "Первое нажатие обязано ВКЛЮЧАТЬ форсаж")
 	TEST_ASSERT(mech.movedelay < base_delay, "Включённый форсаж обязан ускорять мех: задержка [mech.movedelay] против штатной [base_delay]")
 	TEST_ASSERT(mech.step_energy_drain > base_drain, "Включённый форсаж обязан дорожать: [mech.step_energy_drain] против штатной [base_drain]")
@@ -51,7 +52,7 @@
 	TEST_ASSERT_EQUAL(get_turf(mech), east_turf, "Мех обязан сдвинуться на восток")
 	TEST_ASSERT_EQUAL(mech.cell.charge, mech.cell.maxcharge - overload_drain, "Шаг под форсажем обязан стоить форсажную цену")
 
-	action.Trigger()
+	action.Trigger(NONE)
 	TEST_ASSERT(!mech.leg_overload_mode, "Второе нажатие обязано ВЫКЛЮЧАТЬ форсаж")
 	TEST_ASSERT_EQUAL(mech.movedelay, base_delay, "После выключения форсажа задержка шага обязана вернуться к штатной")
 	TEST_ASSERT_EQUAL(mech.step_energy_drain, base_drain, "После выключения форсажа цена шага обязана вернуться к штатной")
@@ -60,7 +61,7 @@
 
 	//резерв: форсаж не имеет права высушить ячейку досуха. На пороге он сам
 	//отключается, и тот же шаг проходит по штатной цене - мех уходит своим ходом
-	action.Trigger()
+	action.Trigger(NONE)
 	TEST_ASSERT(mech.leg_overload_mode, "Санити: третье нажатие снова включает форсаж")
 	var/reserve = mech.cell.maxcharge * MECHA_OVERLOAD_POWER_RESERVE
 	mech.cell.charge = reserve - 1
@@ -74,9 +75,26 @@
 	TEST_ASSERT_EQUAL(mech.movedelay, base_delay, "После самоотключения задержка шага штатная")
 
 	//на резерве форсаж не включается, вместо этого пилота предупреждают
-	action.Trigger()
+	action.Trigger(NONE)
 	TEST_ASSERT(!mech.leg_overload_mode, "На резерве заряда форсаж не обязан включаться")
 	TEST_ASSERT_EQUAL(mech.step_energy_drain, base_drain, "Отказ включения обязан оставить штатную цену шага")
+
+	mech.cell.charge = mech.cell.maxcharge
+	action.Trigger(TRIGGER_RIGHT_CLICK)
+	TEST_ASSERT(mech.leg_overload_mode, "ПКМ по кнопке обязана включать форсаж так же, как ЛКМ")
+	action.Trigger(TRIGGER_RIGHT_CLICK)
+	TEST_ASSERT(!mech.leg_overload_mode, "Повторная ПКМ обязана выключать форсаж")
+
+	action.Trigger(NONE, TRUE)
+	TEST_ASSERT(mech.leg_overload_mode, "forced_state = TRUE обязан включать форсаж")
+	action.Trigger(NONE, TRUE)
+	TEST_ASSERT(mech.leg_overload_mode, "Повторный forced_state = TRUE обязан ОСТАВЛЯТЬ форсаж включённым, а не переключать его")
+	action.Trigger(NONE, FALSE)
+	TEST_ASSERT(!mech.leg_overload_mode, "forced_state = FALSE обязан выключать форсаж")
+	action.Trigger(NONE, FALSE)
+	TEST_ASSERT(!mech.leg_overload_mode, "Повторный forced_state = FALSE обязан оставлять форсаж выключенным")
+	TEST_ASSERT_EQUAL(mech.movedelay, base_delay, "После принудительных переключений задержка шага обязана быть штатной")
+	TEST_ASSERT_EQUAL(mech.step_energy_drain, base_drain, "После принудительных переключений цена шага обязана быть штатной")
 
 	//Medical Gygax таранит по умолчанию: выключение форсажа не должно это отнимать
 	var/obj/vehicle/sealed/mecha/medical/medigax/medigax = allocate(/obj/vehicle/sealed/mecha/medical/medigax, east_turf)
@@ -86,14 +104,14 @@
 	var/datum/action/vehicle/sealed/mecha/mech_overload_mode/medigax_action = LAZYACCESSASSOC(medigax.occupant_actions, medic, /datum/action/vehicle/sealed/mecha/mech_overload_mode)
 	TEST_ASSERT_NOTNULL(medigax_action, "Санити: пилоту Medical Gygax обязана выдаваться кнопка форсажа")
 	TEST_ASSERT(medigax.bumpsmash, "Санити: Medical Gygax таранит по умолчанию")
-	medigax_action.Trigger()
+	medigax_action.Trigger(NONE)
 	TEST_ASSERT(medigax.leg_overload_mode, "Форсаж Medical Gygax обязан включаться с первого нажатия")
-	medigax_action.Trigger()
+	medigax_action.Trigger(NONE)
 	TEST_ASSERT(!medigax.leg_overload_mode, "Форсаж Medical Gygax обязан выключаться со второго нажатия")
 	TEST_ASSERT(medigax.bumpsmash, "Выключение форсажа не имеет права отнимать у Medical Gygax типовой таран")
 
 	//новый пилот получает кнопку в состоянии шасси, а не в дефолтном "выключено"
-	medigax_action.Trigger()
+	medigax_action.Trigger(NONE)
 	medigax.remove_occupant(medic)
 	medic.forceMove(east_turf)
 	var/mob/living/carbon/human/second_medic = allocate(/mob/living/carbon/human, east_turf)

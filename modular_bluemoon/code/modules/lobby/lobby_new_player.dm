@@ -361,6 +361,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(QDELETED(src) || !client)
 				return
 			ready = !ready
+			if(ready == PLAYER_READY_TO_PLAY)
+				ready_reward_pending = TRUE
+			else
+				ready_reward_pending = FALSE
 			SStitle_bm?.on_player_ready_change(ready ? 1 : -1)
 			client << output(ready, "bm_lobby_browser:bm_toggle_ready")
 			return
@@ -375,14 +379,14 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 					prefs.toggles |= MIDROUND_ANTAG
 				else
 					prefs.toggles &= ~MIDROUND_ANTAG
-				prefs.save_preferences()
+				prefs.save_pref_var("toggles")
 				client << output(antag_on, "bm_lobby_browser:bm_toggle_antag")
 			return
 
 		if("toggle_nsfw")
 			if(client?.prefs)
 				client.prefs.bm_lobby_show_nsfw = !client.prefs.bm_lobby_show_nsfw
-				client.prefs.save_preferences()
+				client.prefs.save_pref_var("bm_lobby_show_nsfw")
 				client << output(client.prefs.bm_lobby_show_nsfw, "bm_lobby_browser:bm_update_nsfw_indicator")
 				bm_push_background()
 			return
@@ -390,7 +394,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		if("toggle_admin_bg")
 			if(client?.prefs)
 				client.prefs.bm_lobby_show_admin_bg = !client.prefs.bm_lobby_show_admin_bg
-				client.prefs.save_preferences()
+				client.prefs.save_pref_var("bm_lobby_show_admin_bg")
 				client << output(client.prefs.bm_lobby_show_admin_bg, "bm_lobby_browser:bm_update_admin_bg_indicator")
 				bm_push_background()
 			return

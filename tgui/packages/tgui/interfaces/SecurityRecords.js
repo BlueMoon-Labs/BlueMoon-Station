@@ -592,6 +592,9 @@ const ViewSecurity = (_properties) => {
           />
         </Box>
         <Box mt="0.75rem">
+          <FinesTable fines={security.fines || []} isPrinting={isPrinting} />
+        </Box>
+        <Box mt="0.75rem">
           <LabeledList>
             <LabeledList.Item label="Заметки">
               {security.notes}
@@ -748,6 +751,79 @@ const CrimeTable = (properties) => {
                   onClick={() =>
                     act(deleteAction, { cdataid: crime.dataId })
                   }
+                />
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table>
+      )}
+    </Section>
+  );
+};
+
+const FinesTable = (properties) => {
+  const { act } = useBackend();
+  const { fines, isPrinting } = properties;
+  const formatTime = (decisecs) => {
+    if (!decisecs || decisecs <= 0) return 'ПРОСРОЧЕНО';
+    const totalSec = Math.floor(decisecs / 10);
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins}м ${secs}с`;
+  };
+  return (
+    <Section
+      title={`Штрафы (${fines.length})`}
+      level={2}
+      buttons={
+        <Button
+          icon="plus"
+          color="yellow"
+          content="Выписать штраф"
+          onClick={() => act('fine_add')}
+        />
+      }>
+      {fines.length === 0 ? (
+        <Box color="label" italic>
+          Нет выписанных штрафов.
+        </Box>
+      ) : (
+        <Table>
+          <Table.Row bold header>
+            <Table.Cell>Статья</Table.Cell>
+            <Table.Cell>Подробности</Table.Cell>
+            <Table.Cell>Выписал</Table.Cell>
+            <Table.Cell>Время</Table.Cell>
+            <Table.Cell textAlign="center">Сумма</Table.Cell>
+            <Table.Cell textAlign="center">Оплачено</Table.Cell>
+            <Table.Cell textAlign="center">Остаток</Table.Cell>
+            <Table.Cell textAlign="center">Таймер</Table.Cell>
+            <Table.Cell textAlign="center">Действия</Table.Cell>
+          </Table.Row>
+          {fines.map((fine) => (
+            <Table.Row key={fine.dataId} className={fine.time_left === 0 && fine.fine > 0 ? 'candystripe' : ''}>
+              <Table.Cell bold color={fine.time_left === 0 && fine.fine > 0 ? 'bad' : undefined}>{fine.name}</Table.Cell>
+              <Table.Cell>{fine.details}</Table.Cell>
+              <Table.Cell color="label">{fine.author}</Table.Cell>
+              <Table.Cell color="label">{fine.time}</Table.Cell>
+              <Table.Cell textAlign="center" color="yellow">{fine.total} кр.</Table.Cell>
+              <Table.Cell textAlign="center" color="good">{fine.paid} кр.</Table.Cell>
+              <Table.Cell textAlign="center" color={fine.fine > 0 ? 'bad' : 'good'}>{fine.fine} кр.</Table.Cell>
+              <Table.Cell textAlign="center" color={fine.time_left === 0 && fine.fine > 0 ? 'bad' : fine.time_left < 3000 ? 'average' : 'good'}>
+                {fine.fine === 0 ? 'ОПЛАЧЕН' : formatTime(fine.time_left)}
+              </Table.Cell>
+              <Table.Cell textAlign="center">
+                <Button
+                  icon="print"
+                  tooltip="Печать квитанции"
+                  disabled={isPrinting}
+                  onClick={() => act('fine_print_receipt', { cdataid: fine.dataId })}
+                />
+                <Button.Confirm
+                  icon="trash"
+                  color="bad"
+                  tooltip="Снять штраф (ГСБ/Смотритель/Капитан)"
+                  onClick={() => act('fine_remove', { cdataid: fine.dataId })}
                 />
               </Table.Cell>
             </Table.Row>

@@ -94,7 +94,7 @@
 	desc = "A sturdy shotgun with a longer magazine and a fixed tactical stock designed for non-lethal riot control."
 	icon_state = "riotshotgun"
 	item_state = "gun_wielded"
-	fire_delay = 5
+	fire_delay = 2
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/riot
 	sawn_desc = "Come with me if you want to live."
 	spread = 0.5
@@ -257,13 +257,6 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
 	pin = /obj/item/firing_pin/implant/pindicate
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/warden
-	name = "Warden's Combat Shotgun"
-	desc = "A modified version of the semi-automatic combat shotgun with a collapsible stock and a safety that prevents firing while folded. For close encounters."
-	fire_delay = 4
-	recoil = 5
-	spread = 2
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/AltClick(mob/living/user)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)

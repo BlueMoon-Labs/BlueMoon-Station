@@ -218,6 +218,8 @@
 	var/uber_duration = 10 SECONDS
 	/// Сообщили ли уже пользователю о готовности заряда
 	var/charge_ready_reported = FALSE
+	/// Моб, на котором сейчас висит эффект уберзаряда (под лучом)
+	var/mob/living/uber_target
 
 /obj/item/gun/medbeam/syndicate/examine(mob/user)
 	. = ..()
@@ -229,16 +231,37 @@
 /obj/item/gun/medbeam/syndicate/attack_self(mob/living/user)
 	activate_uber(user)
 
+/obj/item/gun/medbeam/syndicate/LoseTarget()
+	if(uber_target)
+		uber_target.remove_status_effect(/datum/status_effect/ubercharged)
+		uber_target = null
+	..()
+
+/obj/item/gun/medbeam/syndicate/dropped(mob/user)
+	if(uber_deployed && isliving(user))
+		var/mob/living/living_user = user
+		living_user.remove_status_effect(/datum/status_effect/ubercharged)
+	..()
+
 /// Пока луч работает, уберзаряд копится сам собой
 /obj/item/gun/medbeam/syndicate/on_beam_tick(var/mob/living/target)
 	..()
-	if(uber_deployed || !isliving(loc))
+	if(!isliving(loc))
 		return
-	uber_charge = min(100, uber_charge + MEDBEAM_UBER_CHARGE_PER_TICK)
-	if(uber_charge >= 100 && !charge_ready_reported)
-		charge_ready_reported = TRUE
-		var/mob/living/user = loc
-		user.balloon_alert(user, "уберзаряд готов!")
+	if(!uber_deployed)
+		uber_charge = min(100, uber_charge + MEDBEAM_UBER_CHARGE_PER_TICK)
+		if(uber_charge >= 100 && !charge_ready_reported)
+			charge_ready_reported = TRUE
+			var/mob/living/user = loc
+			user.balloon_alert(user, "уберзаряд готов!")
+	else
+		// Динамический перевод уберзаряда: снимаем со старой цели, ставим на новую
+		if(target != uber_target)
+			if(uber_target)
+				uber_target.remove_status_effect(/datum/status_effect/ubercharged)
+			if(isliving(target) && !(target.status_flags & GODMODE))
+				target.apply_status_effect(/datum/status_effect/ubercharged, uber_duration)
+			uber_target = target
 
 /obj/item/gun/medbeam/syndicate/proc/activate_uber(mob/living/user)
 	if(uber_deployed)
@@ -247,6 +270,8 @@
 	if(uber_charge < 100)
 		user.balloon_alert(user, "уберзаряд не готов ([round(uber_charge)]%)")
 		return
+	if(loc != user)
+		return
 
 	uber_charge = 0
 	charge_ready_reported = FALSE
@@ -254,14 +279,14 @@
 	addtimer(CALLBACK(src, PROC_REF(end_uber)), uber_duration)
 	playsound(src, 'sound/magic/tf2/medigun_charged.ogg', 50, TRUE)
 
-	// Неуязвимость получает и медик, и пациент под лучом
 	if(isliving(user) && !(user.status_flags & GODMODE))
 		user.apply_status_effect(/datum/status_effect/ubercharged, uber_duration)
-	if(isliving(current_target) && current_target != user && !(current_target.status_flags & GODMODE))
-		current_target.apply_status_effect(/datum/status_effect/ubercharged, uber_duration)
 
 /obj/item/gun/medbeam/syndicate/proc/end_uber()
 	uber_deployed = FALSE
+	if(uber_target)
+		uber_target.remove_status_effect(/datum/status_effect/ubercharged)
+		uber_target = null
 
 #undef MEDBEAM_UBER_CHARGE_PER_TICK
 

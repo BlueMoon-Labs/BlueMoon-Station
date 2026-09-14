@@ -424,7 +424,7 @@
 					to_chat(client, span_userdanger("Здесь слишком горячо!"))
 		// BLUEMOON ADD END
 
-/mob/living/simple_animal/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+/mob/living/simple_animal/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	if(butcher_results || guaranteed_butcher_results)
 		var/list/butcher = list()
 		if(butcher_results)

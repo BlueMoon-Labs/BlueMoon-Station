@@ -138,6 +138,10 @@
 
 // Called every game tick
 /client/keyLoop()
+	if(!length(keys_held) && !next_move_dir_add && !next_move_dir_sub)
+		if(mob?.focus)
+			move_delay = keybindings_idle_move_delay(move_delay, world.time, world.tick_lag)
+		return
 	release_expired_movement_keys()
 	holder?.keyLoop(src)
 	mob?.focus?.keyLoop(src)

@@ -17,7 +17,7 @@
 	var/datum/weather/saved_current_weather = SSweather.current_weather
 	var/list/saved_current_weather_mobs = SSweather.current_weather_mobs
 	var/list/saved_eligible_zlevels = SSweather.eligible_zlevels
-	var/saved_state = SSweather.state
+	var/saved_can_fire = detach_subsystem(SSweather)
 	var/saved_ticklimit = Master.current_ticklimit
 	var/saved_profile_strikes = SSweather.profile_strikes
 	var/saved_profile_armed = SSweather.profile_armed
@@ -68,7 +68,7 @@
 	SSweather.current_weather = saved_current_weather
 	SSweather.current_weather_mobs = saved_current_weather_mobs
 	SSweather.eligible_zlevels = saved_eligible_zlevels
-	SSweather.state = saved_state
+	release_subsystem(SSweather, saved_can_fire)
 	SSweather.profile_strikes = saved_profile_strikes
 	SSweather.profile_armed = saved_profile_armed
 	SSweather.profile_cooldown_until = saved_profile_cooldown_until

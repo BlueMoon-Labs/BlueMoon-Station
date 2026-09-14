@@ -63,6 +63,7 @@
 	icon_state = "hair_module_mask"
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/mask/hair_module/on_mob_death(mob/living/L, gibbed)
 	. = ..()
@@ -98,10 +99,12 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "star_dust"
+	alternate_worn_layer = BACK_LAYER
 
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
 	desc = "A modkit for making a Security Gas Mask into a \"Star dust\" rebriser mask."
+	icon_state = "gas-mask_kit"
 	product = /obj/item/clothing/mask/gas/sechailer/star_dust
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
 
@@ -125,3 +128,31 @@
 
 /obj/item/clothing/mask/gas/half_mask_skull/attack_self(mob/user)
     adjustmask(user)
+
+/obj/item/clothing/mask/gas/sechailer/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Dishonored \"Star Dust\" Combat Rebreather"
+	desc = "Измененный и переделанный боевой ребризер ранней серии «Star Dust», некогда поставлявшийся ополчению Небулы и бойцам запаса Конкорда. Конструктивное отличие этой старой модели — дыхательные пазухи, расположенные по всему внешнему ободу корпуса, а не у основания, как на современных образцах. В отличие от фабричного оригинала, предназначенного для распыления аэрозольных медикаментов, этот прибор полностью заглушен. Его корпус запечатан глухими заглушками, намертво изолируя дыхательные пути пользователя от окружающей среды и превращая медицинское устройство в сугубо защитную маску."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "melatonin_gasmask"
+	alternate_worn_layer = BACK_LAYER
+	flags_inv = HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
+
+/obj/item/modkit/melatonin_gasmask_kit
+	name = "Dishonored \"Star Dust\" Combat Rebreather Kit"
+	desc = "A modkit for making a Security Gas Mask into a Dishonored \"Star Dust\" Combat Rebreather."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/mask/gas/sechailer/melatonin
+	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
+
+/obj/item/clothing/mask/gas/sechailer/syndicate/cybersun
+	name = "Cybersun half mask"
+	desc = "Модная полу-маска в брендовых цветах компании Киберсан. Поговаривают, такие продают как сувенир на далеких научных станциях. "
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "cybersun"
+	item_state = "cybersun"

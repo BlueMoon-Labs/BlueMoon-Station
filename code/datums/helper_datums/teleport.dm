@@ -199,3 +199,55 @@
 	var/list/turfs = get_teleport_turfs(center, precision)
 	if (length(turfs))
 		return pick(turfs)
+
+/**
+ * Checks to see if a given turf is a "safe" location. Being safe requires the following to be true:
+ * * Must be a [floor][/turf/open/floor]
+ * * Must have air, and that air must have [breathable bounds][/proc/check_gases] for humans
+ * * Must have goldilocks temperature
+ * * Must have safe pressure
+ * * Must be unobstructed (no blocking objects such as machines, structures or mobs)
+ * *
+ * Returns TRUE if all conditions pass, FALSE otherwise.
+ */
+/proc/is_safe_turf(turf/T)
+	. = FALSE
+	if(!isfloorturf(T))
+		return
+	var/turf/open/floor/floor_turf = T
+
+	// Check that we're not warping onto a table or window
+	for(var/atom/movable/found_movable in floor_turf)
+		if(found_movable.density)
+			return
+
+	var/datum/gas_mixture/floor_gas_mixture = floor_turf.air
+	if(!floor_gas_mixture)
+		return
+	var/list/floor_gases = floor_gas_mixture.get_gases()
+	for(var/id in floor_gases)
+		if(id in GLOB.hardcoded_gases) // Can most things breathe?
+			continue
+		return
+	var/oxy_moles = floor_gas_mixture.get_moles(GAS_O2)
+	if(oxy_moles < 16 || oxy_moles > 50)
+		return
+	if(floor_gas_mixture.get_moles(GAS_PLASMA))
+		return
+	if(floor_gas_mixture.get_moles(GAS_CO2) >= 10)
+		return
+
+	// Aim for goldilocks temperatures and pressure
+	if((floor_gas_mixture.temperature <= BODYTEMP_COLD_DAMAGE_LIMIT) || (floor_gas_mixture.temperature >= BODYTEMP_HEAT_DAMAGE_LIMIT))
+		return
+	var/pressure = floor_gas_mixture.return_pressure()
+	if((pressure <= HAZARD_LOW_PRESSURE) || (pressure >= HAZARD_HIGH_PRESSURE))
+		return
+
+	if(islava(floor_turf)) //chasms aren't /floor, and so are pre-filtered
+		var/turf/open/lava/lava_turf = floor_turf // Cyberboss: okay, this makes no sense and I don't understand the above comment, but I'm too lazy to check history to see what it's supposed to do right now
+		if(!lava_turf.is_safe())
+			return
+
+	// DING! You have passed the gauntlet, and are "probably" safe.
+	return TRUE

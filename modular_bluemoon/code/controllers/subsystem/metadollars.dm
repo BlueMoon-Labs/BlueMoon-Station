@@ -11,6 +11,8 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metadollar_leaderboard = list()
 	var/metadollar_leaderboard_positions_tracked = 5
 	var/list/metashop_round_limited_purchases = list()
+	var/leaderboard_refresh_running = FALSE
+	var/legacy_balances_recovered = 0
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -25,9 +27,6 @@ SUBSYSTEM_DEF(metadollars)
 
 /datum/controller/subsystem/metadollars/Initialize()
 	prep_metadollar_leaderboard()
-	var/recovered = recover_all_legacy_balances()
-	if(recovered)
-		log_world("Metadollars: restored legacy balances for [recovered] player(s) from preferences.sav backups.")
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(round_begin_reset))
 	return ..()
 
@@ -36,7 +35,7 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings = list()
 	metadollar_burn_round_notice = null
 	metashop_round_limited_purchases = list()
-	refresh_metadollar_leaderboard_from_saves()
+	INVOKE_ASYNC(src, PROC_REF(refresh_metadollar_leaderboard_from_saves))
 
 /datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
 	if(!limit_key)
@@ -85,9 +84,10 @@ SUBSYSTEM_DEF(metadollars)
 /proc/bm_read_metadollars_from_savefile_path(prefs_path)
 	if(!prefs_path || !fexists(prefs_path))
 		return 0
-	var/savefile/S = new(prefs_path)
+	var/savefile/S = new /savefile(prefs_path)
+	S.cd = "/"
 	var/amount = 0
-	S["metadollars"] >> amount
+	READ_FILE(S["metadollars"], amount)
 	return isnum(amount) ? max(0, round(amount)) : 0
 
 /proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
@@ -125,22 +125,6 @@ SUBSYSTEM_DEF(metadollars)
 	metadollar_save(target_ckey)
 	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
 	return TRUE
-
-/datum/controller/subsystem/metadollars/proc/recover_all_legacy_balances()
-	if(!fexists("data/player_saves"))
-		return 0
-	var/recovered = 0
-	for(var/letterdir in flist("data/player_saves/"))
-		var/prefix = "data/player_saves/[letterdir]"
-		if(!fexists(prefix))
-			continue
-		for(var/sub in flist(prefix))
-			var/ck = ckey(sub)
-			if(!ck)
-				continue
-			if(reconcile_legacy_balance(ck))
-				recovered++
-	return recovered
 
 /datum/controller/subsystem/metadollars/proc/import_legacy_balance(target_ckey, amount)
 	reconcile_legacy_balance(target_ckey, amount)
@@ -210,7 +194,8 @@ SUBSYSTEM_DEF(metadollars)
 			return display_key
 	return save_dir_name || target_ckey
 
-/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey)
+/// С recover найденный в preferences.sav баланс сразу переносится в metadollars.json.
+/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey, recover = FALSE)
 	if(!target_ckey)
 		return 0
 	if(target_ckey in metadollar_amount_cache)
@@ -220,31 +205,72 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(file(json_path)))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			return max(0, round(loaded["metadollar_count"]))
-	return max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+	var/legacy = max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+	if(recover && legacy > 0 && reconcile_legacy_balance(target_ckey, legacy))
+		legacy_balances_recovered++
+	return legacy
 
 /datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
+	if(leaderboard_refresh_running)
+		return FALSE
+	leaderboard_refresh_running = TRUE
 	var/list/rebuilt = list()
+	var/list/rebuilt_ckeys = list()
 	if(fexists("data/player_saves"))
 		for(var/letterdir in flist("data/player_saves/"))
 			var/prefix = "data/player_saves/[letterdir]"
 			if(!fexists(prefix))
 				continue
-			for(var/save_dir_name in flist(prefix))
+			for(var/save_dir_entry in flist(prefix))
+				var/save_dir_name = save_dir_entry
+				if(copytext(save_dir_name, -1) == "/")
+					save_dir_name = copytext(save_dir_name, 1, -1)
 				var/target_ckey = ckey(save_dir_name)
 				if(!target_ckey)
 					continue
-				var/amount = read_metadollar_balance_from_save(target_ckey)
+				var/amount = read_metadollar_balance_from_save(target_ckey, recover = TRUE)
+				CHECK_TICK
 				if(amount < 1)
 					continue
 				var/display_key = resolve_leaderboard_display_key(target_ckey, save_dir_name)
 				if(!display_key)
 					continue
-				rebuilt[display_key] = amount
+				offer_leaderboard_entry(rebuilt, display_key, amount)
+				rebuilt_ckeys[display_key] = target_ckey
+	// Обход растянут по тикам, поэтому баланс, изменившийся за это время, берём из кэша.
+	var/list/emptied = list()
+	for(var/display_key in rebuilt)
+		var/target_ckey = rebuilt_ckeys[display_key]
+		if(!(target_ckey in metadollar_amount_cache))
+			continue
+		rebuilt[display_key] = metadollar_amount_cache[target_ckey]
+		if(rebuilt[display_key] < 1)
+			emptied += display_key
+	rebuilt -= emptied
 	metadollar_leaderboard = rebuilt
 	sort_metadollar_leaderboard()
 	while(metadollar_leaderboard.len > metadollar_leaderboard_positions_tracked)
 		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
 	save_metadollar_leaderboard()
+	if(legacy_balances_recovered)
+		log_world("Metadollars: restored legacy balances for [legacy_balances_recovered] player(s) from preferences.sav backups.")
+		legacy_balances_recovered = 0
+	leaderboard_refresh_running = FALSE
+	return TRUE
+
+/// Держит в board не больше positions_tracked лучших записей, чтобы не сортировать тысячи ckey.
+/datum/controller/subsystem/metadollars/proc/offer_leaderboard_entry(list/board, display_key, amount)
+	if(board.len < metadollar_leaderboard_positions_tracked)
+		board[display_key] = amount
+		return
+	var/weakest_key = board[1]
+	for(var/key in board)
+		if(board[key] < board[weakest_key])
+			weakest_key = key
+	if(board[weakest_key] >= amount)
+		return
+	board -= weakest_key
+	board[display_key] = amount
 
 /datum/controller/subsystem/metadollars/proc/save_metadollar_leaderboard()
 	var/leaderboard_file = file("data/metadollar_leaderboard.json")
@@ -355,7 +381,7 @@ SUBSYSTEM_DEF(metadollars)
 	if(category == "living")
 		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
 		// Полный сейв префов это ~124 WRITE_FILE подряд ради одного числа, поэтому кладём
-		// ключ в буфер склейки: он уйдёт на диск одним открытием савфайла вместе с
+		// ключ в буфер склейки: он уйдёт на диск одним открытием savefile вместе с
 		// остальными одиночными ключами игрока.
 		C.prefs.save_single_pref("metadollar_minute_pool", C.prefs.metadollar_minute_pool)
 	if(category == "living" && isliving(C.mob))

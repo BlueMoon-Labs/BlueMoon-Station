@@ -38,60 +38,60 @@
 
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
-	if(is_welded())
-		return balloon_alert(user, "Заварено!")
 	var/obj/item/clothing/mod_part/piece = part
 	var/obj/item/item_in_slot
-	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
-		item_in_slot = wearer.s_store
+
+	if(is_welded())
+		return balloon_alert(user, "Заварено!")
+
 	if(!piece.conseal_to_overslot()) //скрывает одежду внутрь переменной элемента МОДа
 		balloon_alert(wearer, "ОШИБКА")
 		return to_chat(wearer, span_alertwarning("У вас не получилось развернуть поверх вашей текущей одежды элемент МОДа."))
 
+	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
+		item_in_slot = wearer.s_store
+
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
-		ADD_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
-		if(!user)
-			piece.toggle_all_linked_modules(MODPART_DEPLOYED)
-			return TRUE
-		wearer.visible_message(span_notice("[wearer]'s [piece] deploy[piece.p_s()] with a mechanical hiss."),
-			span_notice("[piece] разворачивается[piece.p_s()] с механическим шипением."),
-			span_hear("Вы слышите механическое шипение."))
-		playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		piece.notify_user(FALSE, user)
+
 		if(item_in_slot)
 			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
-		if(need_to_conseal && is_active() && all_parts_deployed())
-			update_hardlight()
-		piece.toggle_all_linked_modules(MODPART_DEPLOYED)
 		return TRUE
+
 	else if(piece.loc != src)
 		if(!user)
 			return FALSE
-		balloon_alert(user, "[piece] already deployed!")
+		balloon_alert(user, "[piece] уже развернуто!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	else
 		if(!user)
 			return FALSE
-		balloon_alert(user, "bodypart clothed!")
+		balloon_alert(user, "часть тела скрыта!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
 /obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
 	if(is_welded() && !force)
 		return balloon_alert(user, "Заварено!")
+	if(!theme?.can_activate_without_deploy_all_parts && is_active())
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return balloon_alert(user, "Отключите костюм!")
 	var/obj/item/clothing/mod_part/piece = part
 	wearer.transferItemToLoc(piece, null, TRUE)
 	piece.equip_item_from_overslot()
 	if(!user)
 		return
-	wearer.visible_message(span_notice("[wearer]'s [piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
-		span_notice("[piece] retract[piece.p_s()] back into [src] with a mechanical hiss."),
-		span_hear("You hear a mechanical hiss."))
+	piece.notify_user(TRUE, wearer)
 	remove_hardlight()
 	piece.toggle_all_linked_modules(MODPART_CONSEALED)
-	playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	piece.restore_normal_features()
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
 	var/obj/item/stock_parts/cell/cell = get_cell()
+	if(!can_activate() && !is_active())
+		balloon_alert(wearer, "Разверните костюм!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
@@ -174,7 +174,15 @@
 	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 	return FALSE
 
+/obj/item/mod/control/proc/toggle_storage(on)
+	var/datum/component/storage/mod_storage = GetComponent(/datum/component/storage)
+	if(!mod_storage)
+		return
+	mod_storage.set_locked(src, !on)
+
 /obj/item/mod/control/proc/finish_activation(on)
+	if(theme?.need_block_storage_when_not_active)
+		toggle_storage(on)
 	if(on == TRUE)
 		ENABLE_BITFIELD(status_flags, MOD_ACTIVE)
 	else

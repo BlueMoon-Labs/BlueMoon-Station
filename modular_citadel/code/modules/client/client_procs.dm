@@ -39,7 +39,7 @@
 /client/proc/mentor_datum_set(admin) //BLUEMOON EDIT: PLAYER RANKS
 	mentor_datum = GLOB.mentor_datums[ckey]
 	if(!mentor_datum && is_admin(src)) // admin with no mentor datum? let's fix that //BLUEMOON EDIT: PLAYER RANKS
-		new /datum/mentors(ckey)
+		mentor_datum = new /datum/mentors(ckey)
 
 	if(mentor_datum)
 		if(!check_rights_for(src, R_ADMIN,0) && !admin)

@@ -302,10 +302,12 @@
 	sec_hud_set_security_status()
 
 /mob/living/proc/sec_hud_set_implants()
-	if(!icon)
+	if(!icon || !hud_list)
 		return
 	var/image/holder
 	for(var/i in list(IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD))
+		if(!(i in hud_list))
+			continue
 		holder = hud_list[i]
 		holder.icon_state = null
 	for(var/obj/item/implant/I in implants)

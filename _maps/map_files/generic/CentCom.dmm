@@ -18115,12 +18115,6 @@
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
-"jah" = (
-/obj/machinery/vending/liberationstation{
-	shut_up = 1
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/centcom/holding)
 "jar" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/red/opposingcorners,
@@ -20630,12 +20624,6 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/syndicate_mothership/control)
-"ltx" = (
-/obj/machinery/vending/toyliberationstation{
-	shut_up = 1
-	},
-/turf/open/floor/mineral/plastitanium/red,
-/area/centcom/holding)
 "lui" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/filingcabinet/filingcabinet,
@@ -64796,12 +64784,12 @@ nRT
 itf
 pgx
 nxA
-jah
-ltx
 sXf
-ltx
 rrY
 jGx
+itf
+itf
+itf
 itf
 itf
 jVl

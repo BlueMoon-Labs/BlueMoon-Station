@@ -64,7 +64,7 @@
 		S.ContactSwarmers()
 
 /atom/movable/screen/swarmer/CreateSwarmBeacon
-	icon_state = "swarmer_console"
+	icon_state = "ui_swarmer_console"
 	name = "Create swarm beacon (Costs 100 Resources)"
 	desc = "Creates a swarm beacon that will endlessly produce AI-controlled swarmers to overwhelm this area. (Costs 100 resources)"
 

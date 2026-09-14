@@ -255,8 +255,12 @@
 	var/old_nutrition = nutrition
 	var/uninjured=quickcheckuninjured()
 	//I did have special snowflake code, but this is easier.
-	revive()
+	revive(full_heal = TRUE)
 	cure_husk()
+
+	for(var/obj/item/organ/O in internal_organs)
+		if(!(O.organ_flags & ORGAN_SYNTHETIC))
+			O.setOrganDamage(O.maxHealth * 0.2) // 20% повреждение органов при возраждении за ксенохимерку
 
 
 	if(!uninjured)

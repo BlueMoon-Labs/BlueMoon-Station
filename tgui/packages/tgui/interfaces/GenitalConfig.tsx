@@ -46,7 +46,6 @@ export const GenitalConfig = (props) => {
     <Window
       width={850}
       height={600}
-      theme="hotpink"
       resizable>
       <Window.Content scrollable={false}>
         {data.target_name ? (

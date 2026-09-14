@@ -94,8 +94,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
+	var/sound_toggles = NONE
 	/// A separate variable for deadmin toggles, only deals with those.
-	var/deadmin = NONE
+	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
@@ -111,6 +112,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/preferred_map = null
 	var/disable_combat_cursor = FALSE
 	var/disable_combat_mouse_lock = FALSE
+	var/smartlink = TRUE //BLUEMOON ADD: показывать боевой HUD (счётчик патронов); выключается квирком "Несовместимость со смартлинком"
 	var/tg_playerpanel = "TG"
 	var/pda_style = MONO
 	var/pda_color = "#808000"
@@ -501,8 +503,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pref_queue_deadline = 0
 	/// То же самое для записи персонажа.
 	var/char_queue_deadline = 0
-	/// Буфер склейки одиночных записей в савфайл: ключ -> значение.
-	/// Открытие савфайла стоит столько же, сколько сама запись, поэтому поток правок
+	/// Буфер склейки одиночных записей в savefile: ключ -> значение.
+	/// Открытие savefile стоит столько же, сколько сама запись, поэтому поток правок
 	/// одного ключа копится тут и уходит на диск одним открытием. См. save_single_pref().
 	var/list/pending_single_prefs
 	/// id таймера, который сбросит буфер одиночных записей на диск.
@@ -1785,6 +1787,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
+								// Show extra/extra2 colors for wings and other colored parts if they have them
+								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
+								var/find_part_list_extra = GLOB.mutant_reference_list[mutant_part]
+								if(find_part_extra && find_part_extra != "None" && find_part_list_extra)
+									var/datum/sprite_accessory/accessory_extra = find_part_list_extra[find_part_extra]
+									if(accessory_extra && accessory_extra.extra)
+										if(accessory_extra.extra_color_src == MUTCOLORS || accessory_extra.extra_color_src == MUTCOLORS2 || accessory_extra.extra_color_src == MUTCOLORS3)
+											if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
+												var/mutant_string_extra = accessory_extra.mutant_part_string
+												var/secondary_feature_extra = "[mutant_string_extra]_secondary"
+												var/tertiary_feature_extra = "[mutant_string_extra]_tertiary"
+												if(!features[secondary_feature_extra])
+													features[secondary_feature_extra] = features["mcolor2"]
+												if(!features[tertiary_feature_extra])
+													features[tertiary_feature_extra] = features["mcolor3"]
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features[secondary_feature_extra]];'><font color='[color_hex2num(features[secondary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[secondary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[secondary_feature_extra];task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features[tertiary_feature_extra]];'><font color='[color_hex2num(features[tertiary_feature_extra]) < 200 ? "FFFFFF" : "000000"]'>#[features[tertiary_feature_extra]]</font></span> <a href='?_src_=prefs;preference=[tertiary_feature_extra];task=input'>Change</a><BR>"
+											else
+												if(!features["mcolor2"])
+													features["mcolor2"] = "FFFFFF"
+												if(!features["mcolor3"])
+													features["mcolor3"] = "FFFFFF"
+												dat += "<b>Secondary Color</b><BR>"
+												dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor2"]];'><font color='[color_hex2num(features["mcolor2"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor2"]]</font></span> <a href='?_src_=prefs;preference=mutant_color2;task=input'>Change</a><BR>"
+												if(accessory_extra.extra2 && (accessory_extra.extra2_color_src == MUTCOLORS || accessory_extra.extra2_color_src == MUTCOLORS2 || accessory_extra.extra2_color_src == MUTCOLORS3))
+													dat += "<b>Tertiary Color</b><BR>"
+													dat += "<span style='border:1px solid #161616; background-color: #[features["mcolor3"]];'><font color='[color_hex2num(features["mcolor3"]) < 200 ? "FFFFFF" : "000000"]'>#[features["mcolor3"]]</font></span> <a href='?_src_=prefs;preference=mutant_color3;task=input'>Change</a><BR>"
 							else
 								if(features["color_scheme"] == ADVANCED_CHARACTER_COLORING) //advanced individual part colouring system
 									//is it matrixed or does it have extra parts to be coloured?
@@ -3134,7 +3166,27 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(C)
 			C.clear_character_previews()
 
+/datum/preferences/proc/is_navigation_link(list/href_list)
+	var/list/navigation_keys
+	switch(href_list["preference"])
+		if("character_tab", "preferences_tab")
+			navigation_keys = list("_src_", "preference", "tab")
+		if("gear")
+			if(href_list["select_category"] || href_list["select_subcategory"])
+				navigation_keys = list("_src_", "preference", "select_category", "select_subcategory")
+		else
+			if(href_list["quirk_category"])
+				navigation_keys = list("_src_", "quirk_category")
+	if(!navigation_keys)
+		return FALSE
+	// Дополнительные параметры могут менять настройки в том же запросе.
+	for(var/key in href_list)
+		if(!(key in navigation_keys))
+			return FALSE
+	return TRUE
+
 /datum/preferences/proc/process_link(mob/user, list/href_list)
+	var/navigation_only = is_navigation_link(href_list)
 	// Взводится только теми ветками, про которые точно известно, что внешность
 	// персонажа они не меняют - листание вкладок и категорий. Хвост проца зовёт
 	// ShowChoices безусловно, а тот безусловно пересобирал манекен, и навигационный
@@ -3259,7 +3311,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("toggle")
 				modern_theme_picker_collapsed = !modern_theme_picker_collapsed
 				modern_theme_picker_animate = FALSE
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				// Обе переменные - var/tmp, в savefile их не пишет ни один ключ: сохранять нечего.
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3274,7 +3326,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("set_button_shape")
 				var/shape = href_list["shape"]
 				modern_button_shape = sanitize_inlist(shape, list("rect", "soft", "round"), initial(modern_button_shape))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_button_shape")
 				ShowChoices(user)
 				return TRUE
 			if("set_language")
@@ -3283,13 +3335,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					modern_ui_language = 1
 				else if(lang == "en")
 					modern_ui_language = 0
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("modern_ui_language")
 				ShowChoices(user)
 				return TRUE
 			if("set_decoration_level")
 				var/level = href_list["level"]
 				ui_decoration_level = sanitize_inlist(level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
-				save_preferences(bypass_cooldown = TRUE, silent = TRUE)
+				save_pref_var("ui_decoration_level")
 				ShowChoices(user)
 				return TRUE
 		ShowChoices(user)
@@ -3299,7 +3351,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		switch(href_list["action"])
 			if("toggle_empty")
 				collapse_empty_character_slots = !collapse_empty_character_slots
-				save_preferences(silent = TRUE)
+				save_pref_var("collapse_empty_character_slots")
 				ShowChoices(user)
 				return TRUE
 			if("delete_slot")
@@ -4477,7 +4529,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						features["xenodorsal"] = new_dors
 
 				//every single primary/secondary/tertiary colouring done at once
-				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary")
+				if("xenodorsal_primary","xenodorsal_secondary","xenodorsal_tertiary","xhead_primary","xhead_secondary","xhead_tertiary","tail_primary","tail_secondary","tail_tertiary","insect_markings_primary","insect_markings_secondary","insect_markings_tertiary","insect_fluff_primary","insect_fluff_secondary","insect_fluff_tertiary","ears_primary","ears_secondary","ears_tertiary","frills_primary","frills_secondary","frills_tertiary","ipc_antenna_primary","ipc_antenna_secondary","ipc_antenna_tertiary","taur_primary","taur_secondary","taur_tertiary","snout_primary","snout_secondary","snout_tertiary","spines_primary","spines_secondary","spines_tertiary", "mam_body_markings_primary", "mam_body_markings_secondary", "mam_body_markings_tertiary", "insect_wings_primary", "insect_wings_secondary", "insect_wings_tertiary")
 					var/the_feature = features[href_list["preference"]]
 					if(!the_feature)
 						features[href_list["preference"]] = "FFFFFF"
@@ -5283,6 +5335,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					disable_combat_cursor = !disable_combat_cursor
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
+				if("smartlink") //BLUEMOON ADD
+					smartlink = !smartlink
+					if(isliving(user))
+						user.refresh_ammo_hud()
 				//CITADEL PREFERENCES EDIT - I can't figure out how to modularize these, so they have to go here. :c -Pooj
 				if("genital_colour")
 					features["genitals_use_skintone"] = !features["genitals_use_skintone"]
@@ -5621,6 +5677,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("toggle_deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
+				if("deadmin_autodementor")
+					deadmin ^= DEADMIN_AUTODMENTOR
 				//
 
 				if("disable_antag")
@@ -6030,7 +6088,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(href_list["select_category"] || href_list["select_subcategory"])
 			// листание категорий лодаута: надетое не поменялось, манекен тот же
 			preview_unchanged = TRUE
-			save_preferences(silent = TRUE)
 		if(href_list["toggle_gear_path"])
 			// а вот это уже надевает или снимает вещь - превью обязано пересобраться
 			preview_unchanged = FALSE
@@ -6258,8 +6315,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				else
 					user_gear -= "loadout_examtooltip"
 
-	save_preferences(silent = TRUE)
-	ShowChoices(user, !preview_unchanged)
+	if(!navigation_only)
+		save_preferences(silent = TRUE)
+	ShowChoices(user, !preview_unchanged || !navigation_only)
 	return TRUE
 
 /datum/preferences/proc/get_sound_volume(sound_id)

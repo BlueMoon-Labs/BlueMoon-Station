@@ -106,7 +106,9 @@
 	recalculateChannels()
 
 /obj/item/radio/Destroy()
-	remove_radio_all(src) //Just to be sure
+	remove_radio(src, frequency)
+	for(var/ch_name in secure_radio_connections)
+		remove_radio(src, secure_radio_connections[ch_name])
 	QDEL_NULL(wires)
 	QDEL_NULL(keyslot)
 	return ..()

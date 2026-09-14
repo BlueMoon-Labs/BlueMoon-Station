@@ -296,7 +296,7 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 /mob/living/simple_animal/hostile/guardian/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	adjustBruteLoss(EXPLOSION_POWER_STANDARD_SCALE_MOB_DAMAGE(power, explosion.mob_damage_mod * 0.33))
 
-/mob/living/simple_animal/hostile/guardian/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
+/mob/living/simple_animal/hostile/guardian/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion, drop_items = FALSE)
 	if(summoner)
 		to_chat(summoner, "<span class='danger'><B>Your [src] was blown up!</span></B>")
 		if(was_randomized)

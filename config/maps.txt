@@ -15,7 +15,7 @@ max_rounds_played [number] (This determines how many times a map can be played w
 disabled (disables the map)
 endmap
 
-map boxstation
+map boxstation_variants_rand
 ##maxplayers 70
 ##max_round_search_span 6
 ##max_rounds_played 2
@@ -30,13 +30,6 @@ endmap
 map syndicatestation
 voteweight 2
 disabled
-##max_round_search_span 6
-##max_rounds_played 2
-endmap
-
-map peacesyndicatestation
-maxplayers 70
-voteweight 2
 ##max_round_search_span 6
 ##max_rounds_played 2
 endmap

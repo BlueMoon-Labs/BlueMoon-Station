@@ -13,10 +13,10 @@ export const PersonalMusicBox = (props) => {
   const { act, data } = useBackend();
   const {
     playing,
+    repeat,
     has_track,
     track_name,
     track_duration,
-    repeat,
     volume,
     upload_ready,
     play_ready,

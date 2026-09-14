@@ -349,6 +349,10 @@
 	},
 /turf/open/floor/carpet/blue,
 /area/awaymission/jungleresort)
+"eS" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating,
+/area/awaymission/jungleresort)
 "eT" = (
 /obj/machinery/light/small{
 	dir = 4
@@ -1185,6 +1189,7 @@
 "rv" = (
 /obj/structure/table/wood/fancy,
 /obj/item/his_grace,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "rx" = (
@@ -3042,6 +3047,11 @@
 /area/awaymission/jungleresort)
 "Pp" = (
 /obj/structure/flora/junglebush/c,
+/turf/open/floor/plating/dirt/jungle,
+/area/awaymission/jungleresort)
+"Pq" = (
+/obj/structure/stone_tile/slab,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating/dirt/jungle,
 /area/awaymission/jungleresort)
 "Pu" = (
@@ -5428,7 +5438,7 @@ tT
 RP
 BQ
 aL
-tT
+Pq
 oZ
 AR
 AR
@@ -18311,7 +18321,7 @@ AR
 Xj
 qa
 qa
-Ih
+eS
 Ih
 kW
 AR

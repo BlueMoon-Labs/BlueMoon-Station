@@ -85,7 +85,7 @@
 
 /obj/item/lipstick/mime
 	name = "Kiss of Mute"
-	desc = "Тихий тюбик помады. Он говорит о многом без слов."
+	desc = "Тихий тюбик помады. Наносить её может только мим. Воздушный поцелуй (*kiss) вводит углеродной цели 1 единицу Mute Toxin; контактный поцелуй через меню взаимодействий — 1–2 единицы, только при намерении навредить."
 	colour = "#808080"
 	closed_icon_state = "lipstick_mime"
 	lipstick_trait = TRAIT_KISS_MIME

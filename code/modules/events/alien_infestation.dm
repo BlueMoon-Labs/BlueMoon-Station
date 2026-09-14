@@ -1,7 +1,7 @@
 /datum/round_event_control/alien_infestation
 	name = "Alien Infestation"
 	typepath = /datum/round_event/ghost_role/alien_infestation
-	weight = 4
+	weight = 5
 	// На типичных 30-40 тяжёлый трек гост-пула состоял из одного мага: порог 40 открывал
 	// улей только на пиковом онлайне. 35 не дожал (медиум-экипаж в логах 9766-9775 = 22-33,
 	// улей не выпал ни разу) - 30 открывает пиковый медиум и весь хард.

@@ -321,6 +321,12 @@
 			. += "-organic"
 		else
 			. += "-robotic"
+		// Include any bodypart overlays (e.g. augment implants) so their sprite and
+		// state participate in cache invalidation.
+		if(BP.bodypart_overlays)
+			for(var/datum/bodypart_overlay/overlay as anything in BP.bodypart_overlays)
+				for(var/extra_key in overlay.icon_render_key(BP))
+					. += "-[overlay]-[extra_key]"
 
 	if(HAS_TRAIT(src, TRAIT_HUSK))
 		. += "-husk"

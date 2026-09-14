@@ -98,3 +98,9 @@
 		LAZYINITLIST(A.fingerprintshidden)
 		A.fingerprintshidden |= fingerprintshidden    //admin
 	A.fingerprintslast = fingerprintslast
+
+/atom/proc/clear_fingerprints()
+	fingerprints = null
+	fingerprintshidden = null
+	fingerprintslast = null
+	return TRUE

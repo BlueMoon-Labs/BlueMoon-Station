@@ -586,6 +586,7 @@
 /obj/item/modkit/concord_riot_helmet_kit
 	name = "Concord light riot helmet Kit"
 	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	icon_state = "riot-helmet_kit"
 	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
@@ -594,10 +595,11 @@
 	name = "Concord light riot helmet"
 	desc = "Котелок для защиты пустой и не очень балды от летящих в неё камней, бит, клинков и прочей гадости, с которой только можно столкнуться при подавлении беспорядков. Прочное забрало-визор обеспечивает защиту глупой головы владельца не только от внешних факторов, не только подавляет лучи глупенькости из миниатюрного мозга, но ещё и излучает ауру стиля, на зависть окружающим."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/helmet.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
 	icon_state = "lapkee-helmet"
-	flags_inv = HIDEEARS|HIDEFACE
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
 
 /obj/item/clothing/head/donator/bm/custom_helmet
     name = "Custom helmet"
@@ -652,3 +654,48 @@
 		"red" = list("icon_state" = "commando_beret_red", "item_state" = "commando_beret_red")
 	)
 
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail
+	name = "Hounskull With Aventail"
+	desc = "A steel hounskull bascinet with a thick maille aventail secured to the inside. Just as a froggemund befits a knight in the tournaments, an aventailed bascinet befits a knight on the battlefield; unmatched in coverage, durability, and weight."
+	icon = 'icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
+	icon_state = "visaventail"
+	item_state = "visaventail"
+
+/obj/item/clothing/head/helmet/riot/melatonin_helmet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Refurbished Concord Riot Helmet"
+	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "melatonin_helmet"
+	item_state = "melatonin_helmet"
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
+
+/obj/item/modkit/melatonin_riot_kit
+	name = "Refurbished Concord Riot Helmet Kit"
+	desc = "A modkit for making a riot helmet into a Refurbished Concord Riot Helmet."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/head/helmet/riot/melatonin_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/sec/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Gugnir Helmet"
+	desc = " Gungnir helmet with a binocular module. Typically used in conjunction with the Jaeger combat exoskeleton. The protective plates are heavily damaged and offer reduced protection; plate replacement is recommended."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+
+/obj/item/modkit/tau_helmet_kit
+	name = "Gugnir Helmet Kit"
+	desc = "A modkit for making a helmet into a Gugnir Helmet."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/head/helmet/sec/tau
+	fromitem = list(/obj/item/clothing/head/helmet/sec)

@@ -1,16 +1,8 @@
-/**
- * Ресурс трека шлётся всем, кому он СЛЫШЕН, а не только тем, кто стоит в зоне джукбокса или
- * в семи тайлах от него.
- *
- * Досылка по факту входа в радиус слышимости появилась, чтобы не раздавать многомегабайтные
- * личные треки всему серверу. Но радиус взяли с потолка: hearers(7) либо та же зона. Позиционное
- * затухание BYOND несёт звук куда дальше - при штатной громкости тайлов на пятнадцать, у
- * взломанной колонки на весь сектор. Слушатель в соседней комнате слышал предыдущий трек
- * приглушённым, а следующий не получал вовсе: ресурс до него не доходил, пока он не подойдёт.
- *
- * Порог - доля громкости JUKEBOX_AUDIBLE_GAIN: громкость на расстоянии d за пределами falloff
- * равна falloff / d, где d считается в единицах звука (тайл = SOUND_DEFAULT_DISTANCE_MULTIPLIER).
- */
+/// Тайлов до слушателя, за которыми прямой звук штатной громкости уже задавлен.
+#define JUKEBOX_TEST_INAUDIBLE_TILES 30
+
+/// Радиус досылки файла трека: порог прямого звука для личной шкатулки, весь достижимый z для
+/// стационарного джукбокса.
 /datum/unit_test/jukebox_send_range_follows_falloff
 	requires_full_map = FALSE
 
@@ -23,7 +15,7 @@
 	TEST_ASSERT(jukebox_audible_at(default_falloff, 12 * SOUND_DEFAULT_DISTANCE_MULTIPLIER, 5, 0), \
 		"двенадцать тайлов при штатной громкости слышны, ресурс обязан уйти в соседнюю комнату")
 	// Тридцать тайлов: 2 / 75 = 2.7% - неслышно, слать незачем.
-	TEST_ASSERT(!jukebox_audible_at(default_falloff, 30 * SOUND_DEFAULT_DISTANCE_MULTIPLIER, 5, 0), \
+	TEST_ASSERT(!jukebox_audible_at(default_falloff, JUKEBOX_TEST_INAUDIBLE_TILES * SOUND_DEFAULT_DISTANCE_MULTIPLIER, 5, 0), \
 		"тридцать тайлов при штатной громкости неслышны, ресурс не должен уходить")
 	// Выключенная громкость: falloff 0, слать некому.
 	TEST_ASSERT(!jukebox_audible_at(0, 0, 5, 0), \
@@ -42,3 +34,16 @@
 		"слушатель в двух клетках на том же z обязан попадать в радиус досылки")
 	TEST_ASSERT(!SSjukeboxes.jukebox_within_earshot(source, near, default_falloff, list()), \
 		"слушатель на недостижимом z не должен получать ресурс, как бы близко он ни стоял")
+
+	// Дальний угол z: за порогом прямого звука, но в пределах реверберации
+	var/turf/far = locate(1, 1, source.z)
+	var/turf/opposite = locate(world.maxx, world.maxy, source.z)
+	if(get_dist(source, opposite) > get_dist(source, far))
+		far = opposite
+	TEST_ASSERT(get_dist(source, far) > JUKEBOX_TEST_INAUDIBLE_TILES, "предпосылка: дальний угол z должен быть дальше порога прямого звука")
+	TEST_ASSERT(SSjukeboxes.jukebox_within_earshot(source, far, default_falloff, audible_zlevels, personal = FALSE), \
+		"стационарный джукбокс слышен через реверберацию на всём z - файл обязан уйти в дальний угол")
+	TEST_ASSERT(!SSjukeboxes.jukebox_within_earshot(source, far, default_falloff, audible_zlevels, personal = TRUE), \
+		"личная шкатулка не должна слать файл туда, где прямой звук уже задавлен")
+
+#undef JUKEBOX_TEST_INAUDIBLE_TILES

@@ -56,6 +56,7 @@
 "an" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate2)
 "ao" = (
@@ -147,6 +148,7 @@
 "aJ" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate3)
 "aK" = (
@@ -4589,6 +4591,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate1)
+"uJ" = (
+/obj/item/disk/gatereward/bigest,
+/turf/open/floor/plating/rust,
+/area/space/nearstation)
 "uK" = (
 /obj/structure/closet/emcloset,
 /turf/open/floor/plating/airless,
@@ -4717,7 +4723,6 @@
 "vB" = (
 /obj/item/storage/backpack/duffelbag/syndie/inteq/shotgun,
 /obj/structure/rack/shelf,
-/obj/item/clothing/mask/gas/syndicate/cool_version,
 /obj/effect/turf_decal/tile/brown/anticorner/contrasted,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate7)
@@ -4876,6 +4881,7 @@
 	},
 /obj/effect/decal/cleanable/glass,
 /obj/item/lighter/gold,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "wH" = (
@@ -5343,6 +5349,7 @@
 /area/awaymission/spacebattle/secret)
 "Af" = (
 /obj/structure/table/reinforced,
+/obj/item/disk/gatereward,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate1)
 "Ah" = (
@@ -6351,6 +6358,10 @@
 /obj/item/clothing/gloves/combat,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate3)
+"Hz" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating/asteroid/airless,
+/area/space/nearstation)
 "HC" = (
 /obj/structure/window/reinforced/fulltile,
 /obj/structure/grille/broken,
@@ -6468,6 +6479,14 @@
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plasteel/airless,
 /area/space/nearstation)
+"It" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/tile/brown/half/contrasted{
+	dir = 8
+	},
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/spacebattle/syndicate7)
 "Iv" = (
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
@@ -7020,6 +7039,10 @@
 /obj/item/kirbyplants/hedge,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate3)
+"MV" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plasteel/rockvault/alien,
+/area/awaymission/spacebattle/secret)
 "MW" = (
 /obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
@@ -7888,6 +7911,7 @@
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 1
 	},
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate4)
 "Td" = (
@@ -8122,6 +8146,10 @@
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
+/area/space/nearstation)
+"UP" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "UQ" = (
 /obj/machinery/door/airlock/external,
@@ -22176,7 +22204,7 @@ jk
 jk
 qX
 qX
-qX
+uJ
 qX
 qX
 qX
@@ -60681,7 +60709,7 @@ aa
 jk
 jk
 aa
-jk
+UP
 lG
 aa
 aa
@@ -66746,7 +66774,7 @@ jk
 jk
 aa
 aa
-jk
+Hz
 jk
 jk
 jk
@@ -67827,7 +67855,7 @@ VV
 hS
 hj
 hS
-hj
+It
 hS
 Dt
 hc
@@ -72559,7 +72587,7 @@ jm
 jm
 mt
 jm
-jm
+MV
 jm
 jm
 yk

@@ -475,6 +475,36 @@
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	rad_flags = RAD_NO_CONTAMINATE
 
+// Спрайты принадлежат cnaperdodo
+// /obj/item/clothing/head/donator/bm/hood_armored
+// 	name = "Большой капюшон"
+// 	desc = "Большой капюшон, используемый террористами и контробандистами для маскировки. Обеспечивает некоторую защиту головы благодаря прочным волокнам, используемым при производстве."
+// 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_hood_armored.dmi'
+// 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_hood_armored.dmi'
+// 	icon_state = "hood_armored"
+// 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+// 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+// 	item_state = "empire_head"
+// 	body_parts_covered = HEAD
+// 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+// 	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 20, ACID = 0)
+// 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+// Спрайты принадлежат cnaperdodo
+// /obj/item/clothing/suit/armor/donator/bm/rebel_armor
+// 	name = "Кольчуга контрабандистов"
+// 	desc = "Кольчуга контрабандистов, изготовленная из вареной кожи и некоторых современных бронепластин. Хотя это не самый мощный вид брони и примитивный по сравнению с большинством современных брони, он обеспечивает почти идеальную мобильность, что соответствует потребностям местных колонистов. Его также быстро надевают, легко прячут и дешево изготавливают в больших мастерских."
+// 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_rebel_armor.dmi'
+// 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_rebel_armor.dmi'
+// 	icon_state = "rebel_armor_full"
+// 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+// 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+// 	item_state = "officer_armor"
+// 	body_parts_covered = CHEST|GROIN
+// 	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 15, BOMB = 20, BIO = 10, RAD = 0, FIRE = 30, ACID = 20)
+// 	slowdown = 0
+// 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/armor/wy_expensive_fur_trenchcoat
     name = "Expensive trenchcoat"
     desc = "A coat designed for exploring hostile planets. Explore new worlds in style!"
@@ -877,3 +907,310 @@
 	item_state = "wypmcmedical_hat"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/clothing/suit/donator/bm/kumiko_ncr_duster
+	name = "NCR ranger duster"
+	desc = "Highly advanced armor used by the NCR Veteran Rangers. This one has no armor plating."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Recon" = list(
+			"icon_state" = "duster_recon_t",
+			"item_state" = "duster_recon_t",
+			"name" = "NCR recon duster"
+		),
+		"Combat" = list(
+			"icon_state" = "combatduster",
+			"item_state" = "combatduster",
+			"name" = "NCR combat duster"
+		),
+		"Desert" = list(
+			"icon_state" = "desert_ranger",
+			"item_state" = "desert_ranger",
+			"name" = "NCR desert duster"
+		),
+		"Veteran" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger duster"
+		),
+		"Price" = list(
+			"icon_state" = "price_ranger",
+			"item_state" = "price_ranger",
+			"name" = "NCR price duster"
+		)
+	)
+
+/obj/item/modkit/kumiko_ncr_riot
+	name = "NCR ranger riot kit"
+	desc = "A modkit for making a riot armor into a ncr ranger duster."
+	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
+	fromitem = list(/obj/item/clothing/suit/armor/riot)
+
+/obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
+	name = "NCR ranger elite desert duster"
+	desc = "An upgraded version of the standard riot gear, featuring reinforced plating against melee."
+	icon_state = "elite_riot"
+	item_state = "elite_riot"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/modkit/kumiko_ncr_bulletproof
+	name = "NCR ranger bulletproof kit"
+	desc = "A modkit for making a bulletproof armor into a ncr ranger duster."
+	product = /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
+	fromitem = list(/obj/item/clothing/suit/armor/bulletproof)
+
+/obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
+	name = "NCR custom duster"
+	desc = "Worn by members of the US Marine Corps during the Yangtze Campaign, this armor found its way into the hands of the Desert Rangers."
+	icon_state = "rigscustom_suit"
+	item_state = "rigscustom_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/modkit/kumiko_ncr_plate_carrier
+	name = "NCR plate carrier kit"
+	desc = "A modkit for making a plate carrier into a ncr duster."
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+	name = "NCR ranger duster"
+	desc = "Highly advanced armor used by the NCR Veteran Rangers."
+	icon_state = "reclaimed_desert_ranger"
+	item_state = "reclaimed_desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet"
+	desc = "Matching helmet for the NCR Ranger duster."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	unique_reskin = list(
+		"Ranger" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger helmet"
+		),
+		"Desert" = list(
+			"icon_state" = "oldranger",
+			"item_state" = "oldranger",
+			"name" = "NCR desert ranger helmet"
+		)
+	)
+
+/obj/item/modkit/kumiko_ncr_riot_helmet
+	name = "NCR riot helmet kit"
+	desc = "A modkit for making a riot helmet into ncr riot helmet."
+	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	name = "NCR elite desert ranger helmet"
+	desc = "NCR ranger riot helmet"
+	icon_state = "desert_ranger"
+	item_state = "desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/kumiko_ncr_bulletproof_helmet
+	name = "NCR plate bulletproof helmet kit"
+	desc = "A modkit for making a bulletproof helmet into ncr bulletproof helmet."
+	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/alt)
+
+/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	name = "Custom NCR ranger helmet"
+	desc = "NCR ranger bulletproof helmet"
+	icon_state = "rangercustom"
+	item_state = "rangercustom"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+/obj/item/modkit/light_plate_carrier
+	name = "Light plate carrier Armor Kit"
+	desc = "A modkit for making an armor vest into a Light plate carrier Armor."
+	product = /obj/item/clothing/suit/armor/vest/light_plate_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/vest/peacekeeper, /obj/item/clothing/suit/armor/vest/alt)
+
+/obj/item/clothing/suit/armor/vest/light_plate_carrier
+	name = "Light plate carrier"
+	desc = "An ergonomic plate carrier, manufactured by Hephaestus Industries. Basically the same plate carrier you beg for in the armory, but with no pouches attached and with a set of lighter plates inserted."
+	icon_state = "light_plate_carrier"
+	item_state = "light_plate_carrier"
+	dog_fashion = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	unique_reskin = list(
+		"Black" = list("icon_state" = "light_plate_carrier", "item_state" = "light_plate_carrier"),
+		"Tan" = list("icon_state" = "light_plate_carrier_tan", "item_state" = "light_plate_carrier_tan"),
+		"Navy" = list("icon_state" = "light_plate_carrier_navy", "item_state" = "light_plate_carrier_navy"),
+		"Green" = list("icon_state" = "light_plate_carrier_green", "item_state" = "light_plate_carrier_green")
+	)
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat
+	name = "Lycanthrope's Worn Coat"
+	desc = "Потрепанная временем кожаная куртка с ремнями на рукавах, серебристыми клёпками и порванным швом у правого плеча. Украшена нашивкой-полумесяцем и оснащена наплечной кобурой. От неё за версту разит табачным дымом и перегаром."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "melatonin-carrier-coat-0"
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_OCLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/suit/donator/bm/melatonin_coat/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-carrier-coat-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "melatonin-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Lycanthrope's Reinforced Coat"
+	desc = "Тяжелая кожаная куртка со следами долгого износа. Ткань на груди и спине заметно уплотнена — изнутри она прошита защитным слоем кевлара. По швам и воротнику куртки идут массивные клёпки из серебристого металла, а на рукавах затянуты грубые ремни. Шов между рукавом и правым плечом небрежно порван, обнажая подкладку, а чуть ниже пришита нашивка в форме полумесяца. Из-под потертой кожаной кобуры на плече отчетливо несет стойким запахом сигаретного дыма и перегара."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "melatonin-carrier-coat-0"
+	body_parts_covered = CHEST|GROIN|ARMS
+	unique_reskin = list()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/equipped(mob/user, slot)
+	. = ..()
+	update_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-carrier-coat-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "melatonin-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()
+
+/obj/item/modkit/melatonin_carrier_kit
+	name = "Lycanthrope's Reinforced Coat Kit"
+	desc = "A modkit for making a plate carrier into a Lycanthrope's Reinforced Coat."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/modkit/melatonin_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
+
+/obj/item/modkit/lapkee_carrier_kit
+	name = "Concord armored top Kit"
+	desc = "A modkit for making a plate carrier into a Concord armored top."
+	icon_state = "plate-carrier_kit"
+	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
+
+/obj/item/modkit/lapkee_carrier_kit/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier) // Модкит ложился внутрь плитки, пробуем починить меняя afterattack на pre_attack
+	if(istype(target, product))
+		to_chat(user, span_warning("[target] is already modified!"))
+		return TRUE
+
+	if(target.type in fromitem)
+		var/loc_to_spawn = target.loc || get_turf(target)
+		var/atom/movable/result = new product
+		user.visible_message(span_warning("[user] modifies [target]!"), span_warning("You modify the [target]!"))
+		qdel(target)
+		qdel(src)
+		if(ismob(loc_to_spawn))
+			var/mob/M = loc_to_spawn
+			M.put_in_hands(result)
+		else
+			result.forceMove(loc_to_spawn)
+	else
+		to_chat(user, span_warning("You can't modify [target] with this kit!"))
+	return TRUE
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Concord armored top"
+	desc = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	icon_state = "lapkee-carrier-top"
+	unique_reskin = list(
+		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
+		"Coat" = list("icon_state" = "lapkee-carrier-coat", "desc" = " Альтернативный стильный вариант переработанных бронежилетов, оформленный на манер бронехалата. Обычно - используется научными и медицинскими бригадами, служа цели защиты конечностей от биологических, бактериологических, радиационных угроз. В меньшей степени от вражеского огня, но как повезло, что это именно вариант с повышенной защитой, да? В комплекте два смешных подсумка для мелочёвки.", "name" = "Concord armored coat")
+	)
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	update_icon()
+
+/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/update_icon_state()
+	. = ..()
+	var/base_state = current_skin == "Coat" ? "lapkee-carrier-coat" : "lapkee-carrier-top"
+	icon_state = base_state
+	if(base_state != "lapkee-carrier-coat" || !istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	icon_state = "lapkee-carrier-coat-[breast_size]"
+	wearer.update_inv_wear_suit()
+	wearer.update_body()
+
+/obj/item/clothing/suit/armor/vest/alt/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Jaeger Combat Exoskeleton MK.1"
+	desc = "Jaeger Combat Exoskeleton MK.1. Designed to accommodate various modular armor components and support systems. This model comes equipped with EOD pauldrons, a Mjolnir torso, and Hell Diver knee guards. The light and storage module appears to be broken, and the armor plates are heavily damaged, offering reduced protection compared to their original state. The armor also features an empty slot for an armor module compatible with all TerraGov armor modules."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+
+/obj/item/modkit/tau_armor_kit
+	name = "Jaeger armor Kit"
+	desc = "A modkit for making a armor vest into a Jaeger Combat Exoskeleton MK.1"
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/suit/armor/vest/alt/tau
+	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)

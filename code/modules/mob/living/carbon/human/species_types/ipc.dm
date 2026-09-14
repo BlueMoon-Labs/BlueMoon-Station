@@ -74,6 +74,10 @@
 	interface?.RemoveSource("SPECIES")
 	..()
 
+/datum/species/ipc/spec_updatehealth(mob/living/carbon/human/H)
+	if(H.getCloneLoss() > 0)
+		H.setCloneLoss(0, TRUE)
+
 /mob/living/carbon/human
 	var/ipc_name_pending = FALSE
 

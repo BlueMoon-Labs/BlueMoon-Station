@@ -95,7 +95,9 @@
 		"F-Meka" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "fmekasyndi"), // SPLURT Addon (Bubbers Port)
 		"K4T" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tsyndi"), // SPLURT Addon (Bubbers Port)
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahansyndi"),
-		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurninja")
+		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurninja"),
+		"Syndicate" = image(icon = 'modular_splurt/icons/mob/widerobot_synd.dmi', icon_state = "syndihounddark"),
+		"K9-Dark" = image(icon = 'modular_citadel/icons/mob/widerobot.dmi', icon_state = "k9dark")
 		))
 	var/list/selectable_syndicatejack_icons = get_selectable_borg_icons(syndicatejack_icons, R.client)
 	var/syndiejack_icon = show_radial_menu(R, R , selectable_syndicatejack_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
@@ -189,6 +191,19 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("Syndicate") 
+			cyborg_base_icon = "syndihounddark"
+			cyborg_icon_override = 'modular_splurt/icons/mob/widerobot_synd.dmi'
+			hat_offset = HOUND_HAT_OFFSET
+			hasrest = TRUE
+			dogborg = TRUE
+		if("K9-Dark")
+			cyborg_base_icon = "k9dark"
+			sleeper_overlay = "k9darksleeper"
+			cyborg_icon_override = 'modular_citadel/icons/mob/widerobot.dmi'
+			hat_offset = HOUND_HAT_OFFSET
+			hasrest = TRUE
+			dogborg = TRUE
 		else
 			return FALSE
 	return ..()

@@ -318,8 +318,17 @@
 
 /atom/proc/attempt_examinate(mob/user)
 	var/flags = SEND_SIGNAL(src, COMSIG_CLICK_SHIFT, user) | SEND_SIGNAL(user, COMSIG_MOB_CLICKED_SHIFT_ON, src)
-	if(!(flags & COMPONENT_DENY_EXAMINATE) && user.client && (user.client.eye == user || user.client.eye == user.loc || flags & COMPONENT_ALLOW_EXAMINATE))
+	if(flags & COMPONENT_DENY_EXAMINATE)
+		return
+	if(user.client && (user.client.eye == user || user.client.eye == user.loc || flags & COMPONENT_ALLOW_EXAMINATE))
 		user.examinate(src)
+	else if(user.client && ismob(src))
+		// Deregulated fallback: a glow-enabled (emissive) character can still be examined in total
+		// darkness, even though it's outside the normal view()/see_in_dark range that the base
+		// examinate verb is restricted to. Normal dark tiles/atoms stay unclickable.
+		var/mob/target = src
+		if(target.has_active_emissive())
+			user.examinate_glowing(src)
 
 /*
 	Ctrl + Right click

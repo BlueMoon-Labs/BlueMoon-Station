@@ -503,3 +503,8 @@
 	playsound(user, active ? 'sound/weapons/saberon.ogg' : 'sound/weapons/saberoff.ogg', 35, 1)
 	if(!supress_message_text)
 		to_chat(user, "<span class='notice'>[src] [active ? "is now active":"can now be concealed"].</span>")
+
+/obj/item/melee/transforming/energy/sword/saber/red/darklord
+	name = "Chosen one"
+	desc = "There were no signs!"
+	throwforce_on = 35

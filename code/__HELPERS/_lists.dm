@@ -222,7 +222,7 @@
 //Checks if the list is empty
 /// @depricated
 /proc/isemptylist(list/L)
-	if(!L.len)
+	if(isnull(L) || !L.len)
 		return TRUE
 	return FALSE
 

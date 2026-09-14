@@ -177,6 +177,7 @@
 	name = "nanosuit"
 	desc = "Some sort of alien future suit. It looks very robust. Property of CryNet Systems."
 	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 40)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/grenade, /obj/item/nullrod, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/tank/internals)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -1245,7 +1246,7 @@
 	name = "Нанокостюм CryNet"
 	desc = "Станьте постчеловеческим воином с этим тяжелобронированным и мощным костюмом. Нанокостюм нельзя снять, а также он предупреждает экипаж о вашем местоположении, если вы его надели."
 	item = /obj/item/storage/box/syndie_kit/nanosuit
-	cost = 30
+	cost = 15
 	surplus = 1
 	cant_discount = TRUE
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)

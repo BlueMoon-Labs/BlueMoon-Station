@@ -1278,25 +1278,25 @@
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
 				L.client.prefs.chem_dispenser_classic_view = !L.client.prefs.chem_dispenser_classic_view
-				L.client.prefs.save_preferences()
+				L.client.prefs.save_pref_var("chem_dispenser_classic_view")
 			. = TRUE
 		if("toggle_color_mode")
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
 				L.client.prefs.chem_dispenser_use_reagent_color = !L.client.prefs.chem_dispenser_use_reagent_color
-				L.client.prefs.save_preferences()
+				L.client.prefs.save_pref_var("chem_dispenser_use_reagent_color")
 			. = TRUE
 		if("toggle_icons")
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
 				L.client.prefs.chem_dispenser_show_icons = !L.client.prefs.chem_dispenser_show_icons
-				L.client.prefs.save_preferences()
+				L.client.prefs.save_pref_var("chem_dispenser_show_icons")
 			. = TRUE
 		if("toggle_sort")
 			var/mob/living/L = usr
 			if(istype(L) && L.client && L.client.prefs)
 				L.client.prefs.chem_dispenser_alphabetical_sort = !L.client.prefs.chem_dispenser_alphabetical_sort
-				L.client.prefs.save_preferences()
+				L.client.prefs.save_pref_var("chem_dispenser_alphabetical_sort")
 			. = TRUE
 		if("amount")
 			if(!is_operational() || QDELETED(beaker))

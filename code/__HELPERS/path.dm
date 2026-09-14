@@ -25,6 +25,7 @@
  * * simulated_only: Whether we consider turfs without atmos simulation (AKA do we want to ignore space)
  * * exclude: If we want to avoid a specific turf, like if we're a mulebot who already got blocked by some turf
  * * skip_first: Whether or not to delete the first item in the path. This would be done because the first item is the starting tile, which can break movement for some creatures.
+ * * search_status: Optional list filled with the search outcome; see [JPS_SEARCH_EXHAUSTED].
  */
 /**
  * Bounds an AI pathfinding search radius to what a chase actually needs.
@@ -42,7 +43,7 @@
 		return 0
 	return min(max_path_length, get_dist(mover, target) + AI_JPS_DETOUR_SLACK)
 
-/proc/get_path_to(atom/movable/path_owner, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE, datum/cancel_source)
+/proc/get_path_to(atom/movable/path_owner, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE, datum/cancel_source, list/search_status)
 	var/turf/start_turf = get_turf(path_owner)
 	var/turf/end_turf = get_turf(end)
 	if(!path_owner || !start_turf || !end_turf || (cancel_source && QDELETED(cancel_source)))
@@ -65,6 +66,8 @@
 	var/list/path
 	var/datum/pathfind/pathfind_datum = new(path_owner, start_turf, end_turf, id, max_distance, mintargetdist, simulated_only, exclude, cancel_source)
 	path = pathfind_datum.search()
+	if(search_status)
+		search_status[JPS_SEARCH_EXHAUSTED] = pathfind_datum.exhausted_search
 	qdel(pathfind_datum)
 
 	SSpathfinder.mobs.found(l)
@@ -153,6 +156,9 @@
 	var/check_environment = FALSE
 	/// Optional owner whose deletion cancels this otherwise synchronous search.
 	var/datum/cancel_source
+	/// TRUE only when the open list ran dry without a path: proof that no clean route
+	/// exists inside max_distance. Early bail-outs and cancellations leave it FALSE.
+	var/exhausted_search = FALSE
 
 	// general pathfinding vars/args
 	/// An ID card representing what access we have and what doors we can open. Its location relative to the pathing atom is irrelevant
@@ -278,6 +284,8 @@
 	if(path)
 		for(var/i = 1 to round(0.5 * length(path)))
 			path.Swap(i, length(path) - i + 1)
+	else
+		exhausted_search = TRUE
 
 	sources = null
 	if(open)

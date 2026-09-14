@@ -4,6 +4,12 @@
 /datum/sprite_accessory/hair
 	icon = 'icons/mob/hair.dmi'	  // default icon for all hairs
 	mutable_category = "HEAD"
+	/// Whether this hairstyle visually covers the LEFT eye. When true, the left eye glow (emissive)
+	/// is not drawn, so a covered eye doesn't glow through the hair.
+	var/hides_left_eye = FALSE
+	/// Whether this hairstyle visually covers the RIGHT eye. When true, the right eye glow (emissive)
+	/// is not drawn, so a covered eye doesn't glow through the hair.
+	var/hides_right_eye = FALSE
 
 	// please make sure they're sorted alphabetically and, where needed, categorized
 	// try to capitalize the names please~
@@ -85,6 +91,7 @@
 /datum/sprite_accessory/hair/bedhead_long
 	name = "Bedhead (Long)"
 	icon_state = "hair_long_bedhead"
+	hides_right_eye = TRUE
 
 /datum/sprite_accessory/hair/bedhead_longer
 	name = "Bedhead (Longer)"

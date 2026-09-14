@@ -2,7 +2,8 @@
 	name = "Fake Virus"
 	typepath = /datum/round_event/fake_virus
 	// Флавор с реальными симптомами у игроков (паника, беготня в медбей) - в мягких профилях режется.
-	weight = 50
+	weight = 35
+	max_occurrences = 4
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_FLAVOR
 	disruption = DIRECTOR_DISRUPTION_MILD

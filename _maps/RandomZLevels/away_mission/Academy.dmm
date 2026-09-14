@@ -3934,6 +3934,7 @@
 /obj/structure/safe/floor,
 /obj/item/clothing/suit/space/hardsuit/wizard,
 /obj/item/gun/magic/wand/fireball/inert,
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/academy/headmaster)
 "ll" = (
@@ -4111,6 +4112,7 @@
 /area/awaymission/academy/academyengine)
 "lQ" = (
 /obj/structure/table,
+/obj/item/disk/gatereward,
 /turf/open/floor/plating,
 /area/awaymission/academy/academyengine)
 "lR" = (
@@ -5173,6 +5175,10 @@
 /obj/machinery/portable_atmospherics/canister/nob,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
+"tW" = (
+/obj/item/disk/gatereward,
+/turf/open/floor/mineral/plastitanium/red,
+/area/awaymission/academy/academycellar)
 "tX" = (
 /turf/open/floor/grass/grass0,
 /area/awaymission/academy/academygate)
@@ -5368,6 +5374,7 @@
 "vM" = (
 /obj/structure/table/plasmaglass,
 /obj/item/disk/medical/defib_speed,
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plasteel,
 /area/awaymission/academy/academyengine)
 "vP" = (
@@ -7152,6 +7159,10 @@
 /obj/item/weldingtool/experimental/brass,
 /turf/open/floor/clockwork/reebe,
 /area/awaymission/academy)
+"JU" = (
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/plating,
+/area/awaymission/academy/academyengine)
 "JY" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -13591,7 +13602,7 @@ aa
 aa
 aa
 mY
-Jm
+tW
 Qx
 nK
 Jm
@@ -25081,7 +25092,7 @@ lt
 ll
 lv
 lL
-lv
+JU
 ll
 tF
 Lz

@@ -1442,6 +1442,7 @@
 				O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 			SEND_SIGNAL(O, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 			O.clean_blood()
+			O.clear_fingerprints()
 			O.wash_cum() //sandstorm edit
 
 /datum/reagent/space_cleaner/reaction_turf(turf/T, reac_volume)
@@ -1450,6 +1451,7 @@
 		T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 	SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 	T.clean_blood()
+	T.clear_fingerprints()
 	T.wash_cum() //sandstorm edit
 	for(var/obj/effect/decal/cleanable/C in T)
 		if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
@@ -1482,32 +1484,40 @@
 			for(var/obj/item/I in C.held_items)
 				SEND_SIGNAL(I, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 				I.clean_blood()
+				I.clear_fingerprints()
 			if(C.wear_mask)
 				SEND_SIGNAL(C.wear_mask, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 				if(C.wear_mask.clean_blood())
 					C.update_inv_wear_mask()
+				C.wear_mask.clear_fingerprints()
 			if(ishuman(M))
 				var/mob/living/carbon/human/H = C
 				if(H.head)
 					SEND_SIGNAL(H.head, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 					if(H.head.clean_blood())
 						H.update_inv_head()
+					H.head.clear_fingerprints()
 				if(H.wear_suit)
 					SEND_SIGNAL(H.wear_suit, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 					if(H.wear_suit.clean_blood())
 						H.update_inv_wear_suit()
+					H.wear_suit.clear_fingerprints()
 				else if(H.w_uniform)
 					SEND_SIGNAL(H.w_uniform, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 					if(H.w_uniform.clean_blood())
 						H.update_inv_w_uniform()
+					H.w_uniform.clear_fingerprints()
 				if(H.shoes)
 					SEND_SIGNAL(H.shoes, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 					if(H.shoes.clean_blood())
 						H.update_inv_shoes()
+					H.shoes.clear_fingerprints()
 				H.wash_cream()
 				H.wash_cum() //sandstorm edit
+				H.clear_fingerprints()
 			SEND_SIGNAL(M, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 			M.clean_blood()
+			M.clear_fingerprints()
 
 /datum/reagent/space_cleaner/ez_clean
 	name = "EZ Clean"

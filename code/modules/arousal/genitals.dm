@@ -372,7 +372,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					item_names += I.name
 		if(!isemptylist(item_names))
 			var/tooltip_content = "[ru_name_capital] имеет: [item_names.Join(", ")]"
-			. += " [span_tooltip(tooltip_content, "\[+\]", "", "userlove", "")]"
+			. += " [span_tooltip(tooltip_content, "\[+\]", "", "bold", "color:#ff42a6")]"
 
 /mob/living/carbon/human/proc/update_genitals()
 	if(QDELETED(src))
@@ -526,14 +526,12 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 				LAZYADD(fully_exposed, genital_overlay)
 				if(has_emissive_part(dna.features, G.slot))
-					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay)
-					LAZYADD(fully_exposed, genital_emissive)
+					LAZYADD(fully_exposed, emissive_copy(genital_overlay))
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
 				if(has_emissive_part(dna.features, G.slot))
-					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay)
-					standing += genital_emissive
+					standing += emissive_copy(genital_overlay)
 
 		if(LAZYLEN(standing))
 			overlays_standing[layers_num[layer]] = standing

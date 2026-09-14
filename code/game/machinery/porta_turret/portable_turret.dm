@@ -339,7 +339,7 @@ DEFINE_BITFIELD(turret_flags, list(
 		//This code handles moving the turret around. After all, it's a portable turret!
 		if(!anchored && !isinspace())
 			setAnchored(TRUE)
-			invisibility = INVISIBILITY_MAXIMUM
+			invisibility = has_cover ? INVISIBILITY_MAXIMUM : 0
 			update_icon()
 			to_chat(user, "<span class='notice'>You secure the exterior bolts on the turret.</span>")
 			if(has_cover)
@@ -350,7 +350,7 @@ DEFINE_BITFIELD(turret_flags, list(
 			to_chat(user, "<span class='notice'>You unsecure the exterior bolts on the turret.</span>")
 			power_change()
 			invisibility = 0
-			qdel(cover) //deletes the cover, and the turret instance itself becomes its own cover.
+			QDEL_NULL(cover) // У незакреплённой турели кожух отображается спрайтом самой турели.
 
 	else if(I.GetID())
 		//Behavior lock/unlock mangement
@@ -604,7 +604,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	if(cover)
 		cover.icon_state = "turretCover"
 	raised = 0
-	invisibility = 2
+	invisibility = has_cover ? INVISIBILITY_OBSERVER : 0
 	update_icon()
 
 /obj/machinery/porta_turret/proc/assess_perp(mob/living/carbon/human/perp)

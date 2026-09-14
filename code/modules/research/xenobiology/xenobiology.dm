@@ -873,6 +873,7 @@
 	to_chat(user, "<span class='notice'>Вы размазали зелье по поверхности [C], делая предмет легче и быстрее.</span>")
 	C.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 	C.add_atom_colour("#FF0000", FIXED_COLOUR_PRIORITY)
+	C.obj_flags |= SPEED_POTION_EFFECT
 	qdel(src)
 
 /obj/item/slimepotion/fireproof

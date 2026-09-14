@@ -203,6 +203,7 @@
 
 /mob/living/carbon/emp_act(severity)
 	. = ..()
+	SEND_SIGNAL(src, COMSIG_LIVING_FORCE_EMP, severity)
 	if(. & EMP_PROTECT_CONTENTS)
 		return
 	if(isrobotic(src))
@@ -563,7 +564,7 @@
 
 	return embeds
 
-/mob/living/carbon/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0)
+/mob/living/carbon/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0, visual = 0, type = /atom/movable/screen/fullscreen/tiled/flash, override_protection = 0, duration = 25)
 	. = ..()
 
 	var/damage = override_protection ? intensity : intensity - get_eye_protection()

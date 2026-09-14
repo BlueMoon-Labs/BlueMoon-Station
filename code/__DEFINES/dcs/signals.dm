@@ -347,6 +347,8 @@
 #define COMSIG_GUN_AUTOFIRE_SELECTED "gun_autofire_selected"
 ///When a gun is switched off of automatic fire mode
 #define COMSIG_GUN_AUTOFIRE_DESELECTED "gun_autofire_deselected"
+///The gun needs to update the gun hud!
+#define COMSIG_UPDATE_AMMO_HUD "update_ammo_hud"
 
 // Lighting:
 ///from base of [atom/proc/set_light]: (l_range, l_power, l_color, l_on)
@@ -409,6 +411,10 @@
 #define COMSIG_LIVING_SHOCK_PREVENTED "living_shock_prevented"  //sent when items with siemen coeff. of 0 block a shock: (power_source, source, siemens_coeff, dist_check)
 #define COMSIG_LIVING_MINOR_SHOCK "living_minor_shock"			//sent by stuff like stunbatons and tasers: ()
 #define COMSIG_LIVING_REVIVE "living_revive"					//from base of mob/living/revive() (full_heal, admin_revive)
+
+//Используется для отправки сигнала о ЕМП в обход проверок
+//нужно для использовании энергии в adv emp модуле.
+#define COMSIG_LIVING_FORCE_EMP "living_force_emp"
 
 #define COMSIG_MOB_RESET_PERSPECTIVE "mob_reset_perspective"		//from base of /mob/reset_perspective(): (atom/target)
 #define COMSIG_LIVING_GUN_PROCESS_FIRE "living_gun_process_fire"	//from base of /obj/item/gun/proc/process_fire(): (atom/target, params, zone_override)
@@ -884,7 +890,9 @@
 // Research signals
 #define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
 #define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам
-
+#define COMSIG_ATOM_GET_TECHWEB "atom_get_techweb"
+#define COMSIG_ATOM_SET_TECHWEB "atom_set_techweb"
+#define COMSIG_ATOM_TECHWEB_CHANGED "atom_techweb_changed"
 
 // Neural Interface Signals
 #define COMSIG_NEURAL_INTERFACE_ADD_SOURCE "neural_interface_add_source" // AddSource(id)

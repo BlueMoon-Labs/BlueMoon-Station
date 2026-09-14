@@ -65,7 +65,7 @@
 		но при этом создаёт раздражающий красный фильтр. Говорят, с ним можно видеть даже то, что за спиной."
 	item = /obj/item/mod/module/visor/thermal
 	cost = 3
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_TRAITORS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/mod/emp_shield //
 	name = "MOD advanced EMP shield module"
@@ -73,8 +73,8 @@
 		которые могли бы повредить электронные системы костюма или устройства на владельце, \
 		включая аугментации. Однако для этого расходуется энергия костюма."
 	item = /obj/item/mod/module/emp_shield/advanced
-	cost = 6
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+	cost = 4
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_TRAITORS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/mod/storage_upgrader
 	name = "MOD Storage Upgrader"

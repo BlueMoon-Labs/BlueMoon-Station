@@ -48,6 +48,8 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 	health = 750
 	maxHealth = 750 //""""low-ish"""" HP because it's a passive boss, and the swarm itself is the real foe
 	mob_biotypes = MOB_ROBOTIC
+	del_on_death = TRUE
+	deathmessage = "falls to pieces, leaving an odd prosthesis behind."
 	achievement_type = /datum/award/achievement/boss/swarmer_beacon_kill
 	crusher_achievement_type = /datum/award/achievement/boss/swarmer_beacon_crusher
 	score_achievement_type = /datum/award/score/swarmer_beacon_score
@@ -87,6 +89,16 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 	if(. > 0 && world.time > call_help_cooldown)
 		call_help_cooldown = world.time + call_help_cooldown_amt
 		summon_backup(25) //long range, only called max once per 15 seconds, so it's not deathlag
+
+/mob/living/simple_animal/hostile/megafauna/swarmer_swarm_beacon/death(gibbed, list/force_grant)
+	if(health > 0 || stat == DEAD)
+		return
+	visible_message(span_danger("[src] распадается на части, разбрасывая вокруг обломки и блюспейс-кристаллы!"))
+	playsound(loc, 'sound/effects/explosion_distant.ogg', 100, TRUE)
+	new /obj/effect/gibspawner/robot(drop_location(), src, get_static_viruses())
+	for(var/i in 1 to 5)
+		new /obj/item/stack/ore/bluespace_crystal(loc)
+	return ..()
 
 
 /obj/item/gps/internal/swarmer_beacon

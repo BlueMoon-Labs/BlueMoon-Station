@@ -9,19 +9,23 @@
 			её относительно корпуса пользователя для минимизации нагрузки на точки опоры."
 	icon_state = "harness"
 	complexity = 5
+	var/list/allowed_items = list(
+		/obj/item/storage/backpack,
+		/obj/item/gun,
+	)
 
 /obj/item/mod/module/backpack_harness/on_install()
 	. = ..()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
-	chestplate.allowed += /obj/item/storage/backpack
+	chestplate.allowed += allowed_items
 
 /obj/item/mod/module/backpack_harness/on_uninstall()
 	. = ..()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	var/mob/living/carbon/human/wearer = mod.wearer
 	var/obj/item/item_to_drop
-	if(/obj/item/storage/backpack in chestplate.allowed)
-		chestplate.allowed -= /obj/item/storage/backpack
+	if(/obj/item/storage/backpack in chestplate.allowed) //тут надо будет заменить backpack на проверку по list/allowed_items, я просто не знаю как правильнее.
+		chestplate.allowed -= allowed_items
 		item_to_drop = wearer.s_store
 		wearer.dropItemToGround(item_to_drop)
 
@@ -32,7 +36,6 @@
 	icon_state = "storage"
 	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/storage)
-	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON
@@ -40,6 +43,7 @@
 	var/max_volume = STORAGE_VOLUME_MOD_DEFAULT
 	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 	var/component_type = /datum/component/storage/concrete
+	var/datum/component/storage/mod_storage
 
 /obj/item/mod/module/storage/extended
 	name = "Extended MOD storage module"
@@ -78,13 +82,16 @@
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
-	if(component_type)
-		mod.AddComponent(component_type)
+	if(!component_type)
+		return
 
-		var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
-		Storage.storage_flags = storage_flags
-		Storage.max_volume = max_volume
-		Storage.max_w_class = max_w_class
+	mod_storage = mod.AddComponent(component_type)
+	if(mod.theme.need_block_storage_when_not_active && !mod.is_active())
+		mod.toggle_storage(mod.is_active())
+	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+	Storage.storage_flags = storage_flags
+	Storage.max_volume = max_volume
+	Storage.max_w_class = max_w_class
 
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
@@ -93,7 +100,10 @@
 		return
 	//вещи лежат в contents самого костюма, а окно к ним даёт только компонент:
 	//снести компонент молча = запереть содержимое в МОДе навсегда
-	Storage.do_quick_empty(mod.drop_location())
+	if(mod.contents)
+		Storage.do_quick_empty(mod.drop_location())
+	Storage.RemoveComponent()
+	mod_storage = null
 	qdel(Storage)
 
 //PAI модуль
@@ -277,9 +287,34 @@
 		Однако для этого он будет потреблять энергию костюма."
 	icon_state = "empshield"
 	complexity = 1
-	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.3
+	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	incompatible_modules = list(/obj/item/mod/module/emp_shield)
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	var/is_advanced = FALSE
+
+/obj/item/mod/module/emp_shield/handle_emp_act(source, severity)
+	. = ..()
+	var/obj/item/stock_parts/cell/mod_cell = mod.get_cell()
+	if(!mod_cell)
+		return
+	var/can_bloow_up = FALSE
+	//Запись ниже выглядит примерно так: (18 * 100) = 1800, далее 1800 * 7 = 12600
+	//т.е только если МОД забит модулями подзавязку ЕМП будет очень быстро сажать батарею.
+	var/charge_waste = (mod.complexity * severity) * MOD_EMP_CHARGE_LOOSE_MODIFICATOR
+	if(!is_advanced && severity >= MOD_EMP_SEVERITY_MAX)
+		can_bloow_up = mod_cell.self_recharge ? prob(MOD_CELL_BLOOW_UP_CHANCE) : FALSE
+	//Бабах с шансом, если батарейка перезаряжается сама
+	if(charge_waste > mod_cell.charge)
+		charge_waste = mod_cell.charge //батарека не может разрядиться ниже нуля.
+	mod_cell.use(charge_waste, can_bloow_up)
+
+/obj/item/mod/module/emp_shield/on_suit_activation()
+	. = ..()
+	RegisterSignal(mod.wearer, COMSIG_LIVING_FORCE_EMP, PROC_REF(handle_emp_act))
+
+/obj/item/mod/module/emp_shield/on_suit_deactivation(deleting)
+	. = ..()
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_FORCE_EMP)
 
 /obj/item/mod/module/emp_shield/on_install()
 	mod.AddElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_WIRES|EMP_PROTECT_CONTENTS)
@@ -293,11 +328,14 @@
 		электромагнитные импульсы, которые в противном случае повредили бы электронные системы костюма или электронные устройства на носителе, \
 		включая аугментации. Однако для этого он будет потреблять энергию костюма."
 	complexity = 2
+	is_advanced = TRUE
 
 /obj/item/mod/module/emp_shield/advanced/on_suit_activation()
+	. = ..()
 	mod.wearer.AddElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS)
 
 /obj/item/mod/module/emp_shield/advanced/on_suit_deactivation(deleting)
+	. = ..()
 	mod.wearer.RemoveElement(/datum/element/empprotection, EMP_PROTECT_SELF|EMP_PROTECT_CONTENTS)
 
 ///Flashlight - Gives the suit a customizable flashlight.
@@ -437,6 +475,7 @@
 
 /obj/item/mod/module/dna_lock/antag
 	name = "Advanced DNA Lock Module"
+	icon_state = "dnalock_ninja"
 	complexity = 1
 	individual_protect_from_emp = TRUE
 

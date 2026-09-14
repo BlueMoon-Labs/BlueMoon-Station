@@ -303,11 +303,23 @@
 /datum/borg_donator_skin/peacemaker/moth_meka
 	name = "Moth Meka"
 	module_type = /obj/item/robot_module/peacekeeper
-	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon = 'modular_splurt/icons/mob/robots_tech_r2_32x64.dmi'
 	preview_icon_state = "mekamoth"
 	ckey_whitelist = list("techgrid", "mrpelmenik007")
 	cyborg_base_icon = "mekamoth"
-	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_tech_r2_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+	sit_lamp_has_state = TRUE
+
+/datum/borg_donator_skin/medical
+	name = "Moth Meka"
+	module_type = /obj/item/robot_module/medical
+	preview_icon = 'modular_splurt/icons/mob/robots_tech_r2_32x64.dmi'
+	preview_icon_state = "mekamoth"
+	ckey_whitelist = list("techgrid", "mrpelmenik007")
+	cyborg_base_icon = "mekamoth"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_tech_r2_32x64.dmi'
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 	sit_lamp_has_state = TRUE

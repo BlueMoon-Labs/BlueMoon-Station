@@ -410,7 +410,19 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 // This function can not be undone; do not call this unless you are sure
 /obj/machinery/cryopod/proc/despawn_occupant()
+	charge_cryo_exit()
 	cryoMob(occupant, control_computer_weakref, src, tele, initial(name))
+
+/obj/machinery/cryopod/proc/charge_cryo_exit()
+	var/mob/living/mob_occupant = occupant
+	if(!mob_occupant?.ckey || !SSmetadollars)
+		return
+	var/old_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	SSmetadollars.metadollar_adjust(-1, mob_occupant.ckey)
+	var/new_balance = SSmetadollars.get_metadollars(mob_occupant.ckey)
+	log_game("[key_name(mob_occupant)] cryo exit: charged 1 M$ (balance [old_balance] -> [new_balance]).")
+	if(mob_occupant.client)
+		to_chat(mob_occupant, span_warning("Уход в крио забрал 1 М$ из вашего счёта метадолларов."))
 
 /proc/cryoMob(mob/living/mob_occupant, datum/weakref/control_computer_weakref, obj/machinery/cryopod/pod, is_teleporter, initial_name, effects = FALSE)
 	var/list/crew_member = list()

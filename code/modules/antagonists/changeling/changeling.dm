@@ -513,7 +513,7 @@
 
 /datum/antagonist/changeling/get_admin_commands()
 	. = ..()
-	if(stored_profiles.len && (owner.current.real_name != first_prof.name))
+	if(stored_profiles.len && owner?.current && (owner.current.real_name != first_prof.name))
 		.["Transform to initial appearance."] = CALLBACK(src,PROC_REF(admin_restore_appearance))
 
 /datum/antagonist/changeling/proc/admin_restore_appearance(mob/admin)

@@ -5965,6 +5965,7 @@
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior/escapepods)
 "mq" = (
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plating,
 /area/awaymission/research/exterior)
 "mr" = (
@@ -6399,6 +6400,7 @@
 /area/awaymission/research/interior/maint)
 "Hs" = (
 /obj/structure/table/wood,
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/mineral/plasma,
 /area/space/nearstation)
 "Km" = (
@@ -6416,6 +6418,13 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior)
+"OB" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/research/interior/secure)
 "Qd" = (
 /obj/machinery/door/airlock/medical{
 	name = "Medical"
@@ -30290,7 +30299,7 @@ ad
 cQ
 db
 db
-dK
+OB
 cQ
 er
 cQ
@@ -30302,7 +30311,7 @@ hs
 cQ
 db
 db
-dK
+OB
 cQ
 ad
 ad

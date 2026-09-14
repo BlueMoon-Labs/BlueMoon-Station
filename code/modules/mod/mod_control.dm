@@ -39,10 +39,8 @@
 	var/status_flags
 	var/datum/mod_theme/theme = /datum/mod_theme
 
-	/// Looks of the MOD.		//]
-	var/skin = "standard"		//]
-	/// Theme of the MOD TGUI	//] <-- перенести в mod_theme
-	var/ui_theme = "ntos"		//]
+	var/skin = "standard"
+	var/ui_theme = "ntos"
 
 	var/seconds_electrified = MACHINE_NOT_ELECTRIFIED
 	var/interface_break = FALSE
@@ -130,6 +128,14 @@
 
 /obj/item/mod/control/proc/get_boots()
 	return mod_parts[MOD_PART_FEET]
+
+/obj/item/mod/control/get_cell()
+	return mod_parts[MOD_PART_CELL]
+
+/obj/item/mod/control/proc/can_activate()
+	if(theme?.can_activate_without_deploy_all_parts)
+		return TRUE
+	return all_parts_deployed() //результат прока.
 
 //Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
 /obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
@@ -415,6 +421,7 @@
 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
+//TODO: Вынести каждый кейс в отдельный proc. Эта функция становится трудночитаемой.
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
@@ -431,6 +438,11 @@
 		if(can_install_pai)
 			insert_pai(user, attacking_item)
 			return TRUE
+	if(istype(attacking_item, /obj/item/slimepotion))
+		var/obj/item/slimepotion/potion = attacking_item
+		for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
+			potion.afterattack(piece, user)
+		return TRUE
 	if(istype(attacking_item, /obj/item/mod/module))
 		if(!is_open())
 			balloon_alert(user, "сначала откройте панель!")
@@ -462,9 +474,6 @@
 		update_access(user, attacking_item)
 		return TRUE
 	return ..()
-
-/obj/item/mod/control/get_cell()
-	return mod_parts[MOD_PART_CELL]
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
@@ -555,7 +564,7 @@
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		part.update_flags(used_skin)
 
-/obj/item/mod/control/proc/quick_module(mob/user)
+/obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
 	if(!length(modules))
 		return
 	var/list/display_names = list()
@@ -575,7 +584,12 @@
 	var/obj/item/mod/module/selected_module = locate(module_reference) in modules
 	if(!istype(selected_module) || user.incapacitated())
 		return
-	selected_module.on_select()
+
+	return right_click ? generate_ability_button(selected_module) : selected_module.on_select()
+
+/obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
+	var/datum/action/cooldown/module_action/new_action = new(module = M)
+	new_action.Grant(wearer)
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
 	var/list/all_parts = mod_parts
@@ -717,6 +731,8 @@
 		return
 	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
 	for(var/obj/item/clothing/mod_part/part as anything in parts)
+		if(obj_flags & SPEED_POTION_EFFECT && !part.slowdown)
+			return FALSE //уже применялось, обновлять скорость не требуется. Иначе сбросится модификатор
 		part.slowdown = part_slowdown
 	wearer?.update_equipment_speed_mods()
 

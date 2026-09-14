@@ -5,6 +5,9 @@
 	var/show_heart_over_self = TRUE
 	var/interaction_effect = INTERACTION_EFFECT_HEART
 	var/block_partner_pixel_shift = FALSE
+	var/panel_tab_toggles = ALL_INTERACTION_MENU_TABS
+	var/dynamic_window_size = FALSE
+	var/compact_custom_tab = FALSE
 
 /datum/preferences/proc/get_custom_interaction_limit()
 	var/user_ckey = parent?.ckey
@@ -13,6 +16,106 @@
 	if(user_ckey && is_donator_group(user_ckey, DONATOR_GROUP_TIER_1))
 		return MAX_CUSTOM_INTERACTIONS_SUBSCRIBER
 	return MAX_CUSTOM_INTERACTIONS
+
+#define CUSTOM_SOUND_GROUP_NONE "Без звука"
+#define CUSTOM_SOUND_GROUP_SPECIAL "Unholy"
+#define CUSTOM_SOUND_GROUP_THRUSTS "Толчки"
+#define CUSTOM_SOUND_GROUP_BLOWJOB "Минет"
+#define CUSTOM_SOUND_GROUP_SMACKING "Чавканье"
+#define CUSTOM_SOUND_GROUP_WET "Влажные звуки"
+#define CUSTOM_SOUND_GROUP_FEET "Ноги"
+#define CUSTOM_SOUND_GROUP_AFFECTION "Объятия и поцелуи"
+#define CUSTOM_SOUND_GROUP_MOANS "Стоны"
+#define CUSTOM_SOUND_GROUP_PURRS "Мурлыканье"
+#define CUSTOM_SOUND_GROUP_MISC "Прочее"
+
+#define CUSTOM_SOUND_GROUPS_NORMAL list(CUSTOM_SOUND_GROUP_MISC, CUSTOM_SOUND_GROUP_AFFECTION, CUSTOM_SOUND_GROUP_PURRS)
+
+GLOBAL_LIST_INIT(custom_interaction_sounds, list(
+	CUSTOM_INTERACTION_SOUND_NONE = list("label" = "Без звука", "group" = CUSTOM_SOUND_GROUP_NONE, "file" = null),
+
+	"asscrap1" = list("label" = "Хлопок 1", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap1.ogg'),
+	"asscrap2" = list("label" = "Хлопок 2", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap2.ogg'),
+	"asscrap3" = list("label" = "Хлопок 3", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap3.ogg'),
+	"squelch3" = list("label" = "Хлюп 3", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/squelch3.ogg'),
+
+	"bang1" = list("label" = "Толчок 1", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang1.ogg'),
+	"bang2" = list("label" = "Толчок 2", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang2.ogg'),
+	"bang3" = list("label" = "Толчок 3", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang3.ogg'),
+	"bang4" = list("label" = "Толчок 4", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang4.ogg'),
+	"bang5" = list("label" = "Толчок 5", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang5.ogg'),
+	"bang6" = list("label" = "Толчок 6", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang6.ogg'),
+
+	"bj1" = list("label" = "Минет 1", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj1.ogg'),
+	"bj2" = list("label" = "Минет 2", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj2.ogg'),
+	"bj3" = list("label" = "Минет 3", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj3.ogg'),
+	"bj4" = list("label" = "Минет 4", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj4.ogg'),
+	"bj5" = list("label" = "Минет 5", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj5.ogg'),
+	"bj6" = list("label" = "Минет 6", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj6.ogg'),
+	"bj7" = list("label" = "Минет 7", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj7.ogg'),
+	"bj8" = list("label" = "Минет 8", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj8.ogg'),
+	"bj9" = list("label" = "Минет 9", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj9.ogg'),
+	"bj10" = list("label" = "Минет 10", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj10.ogg'),
+	"bj11" = list("label" = "Минет 11", "group" = CUSTOM_SOUND_GROUP_BLOWJOB, "file" = 'modular_sand/sound/interactions/bj11.ogg'),
+
+	"champ1" = list("label" = "Чавканье 1", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ1.ogg'),
+	"champ2" = list("label" = "Чавканье 2", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ2.ogg'),
+	"champ_fingering" = list("label" = "Чавканье (пальцы)", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ_fingering.ogg'),
+
+	"squelch1" = list("label" = "Хлюп 1", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/squelch1.ogg'),
+	"squelch2" = list("label" = "Хлюп 2", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/squelch2.ogg'),
+	"oral1" = list("label" = "Влажный 1", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/oral1.ogg'),
+	"oral2" = list("label" = "Влажный 2", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/oral2.ogg'),
+	"swallow" = list("label" = "Глотание", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/swallow.ogg'),
+
+	"foot_dry1" = list("label" = "Сухие ноги 1", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_dry1.ogg'),
+	"foot_dry2" = list("label" = "Сухие ноги 2", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_dry2.ogg'),
+	"foot_dry3" = list("label" = "Сухие ноги 3", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_dry3.ogg'),
+	"foot_dry4" = list("label" = "Сухие ноги 4", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_dry4.ogg'),
+	"foot_wet1" = list("label" = "Мокрые ноги 1", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_wet1.ogg'),
+	"foot_wet2" = list("label" = "Мокрые ноги 2", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_wet2.ogg'),
+	"foot_wet3" = list("label" = "Мокрые ноги 3", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_wet3.ogg'),
+
+	"hug" = list("label" = "Объятия", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/hug.ogg'),
+	"kiss1" = list("label" = "Поцелуй 1", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss1.ogg'),
+	"kiss2" = list("label" = "Поцелуй 2", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss2.ogg'),
+	"kiss3" = list("label" = "Поцелуй 3", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss3.ogg'),
+	"kiss4" = list("label" = "Поцелуй 4", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss4.ogg'),
+	"kiss5" = list("label" = "Поцелуй 5", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss5.ogg'),
+
+	"moan_f1" = list("label" = "Стон (ж) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f1.ogg'),
+	"moan_f2" = list("label" = "Стон (ж) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f2.ogg'),
+	"moan_f3" = list("label" = "Стон (ж) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f3.ogg'),
+	"moan_f4" = list("label" = "Стон (ж) 4", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f4.ogg'),
+	"moan_f5" = list("label" = "Стон (ж) 5", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f5.ogg'),
+	"moan_f6" = list("label" = "Стон (ж) 6", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f6.ogg'),
+	"moan_f7" = list("label" = "Стон (ж) 7", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f7.ogg'),
+	"moan_m1" = list("label" = "Стон (м) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m1.ogg'),
+	"moan_m2" = list("label" = "Стон (м) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m2.ogg'),
+	"moan_m3" = list("label" = "Стон (м) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m3.ogg'),
+	"under_moan_f1" = list("label" = "Приглушённый стон (ж) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f1.ogg'),
+	"under_moan_f2" = list("label" = "Приглушённый стон (ж) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f2.ogg'),
+	"under_moan_f3" = list("label" = "Приглушённый стон (ж) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f3.ogg'),
+	"under_moan_f4" = list("label" = "Приглушённый стон (ж) 4", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f4.ogg'),
+	"final_f1" = list("label" = "Финал (ж) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_f1.ogg'),
+	"final_f2" = list("label" = "Финал (ж) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_f2.ogg'),
+	"final_f3" = list("label" = "Финал (ж) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_f3.ogg'),
+	"final_m1" = list("label" = "Финал (м) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m1.ogg'),
+	"final_m2" = list("label" = "Финал (м) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m2.ogg'),
+	"final_m3" = list("label" = "Финал (м) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m3.ogg'),
+	"final_m4" = list("label" = "Финал (м) 4", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m4.ogg'),
+	"final_m5" = list("label" = "Финал (м) 5", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m5.ogg'),
+
+	"purr1" = list("label" = "Мурлыканье 1", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr1.ogg'),
+	"purr2" = list("label" = "Мурлыканье 2", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr2.ogg'),
+	"purr3" = list("label" = "Мурлыканье 3", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr3.ogg'),
+
+	"slap" = list("label" = "Шлепок", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/slap.ogg'),
+	"whistle" = list("label" = "Свист", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_bluemoon/sound/emotes/svist.ogg'),
+	"applause" = list("label" = "Салютование", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/voice/salute.ogg'),
+	"clawcum1" = list("label" = "Коготь 1", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/clawcum1.ogg'),
+	"clawcum2" = list("label" = "Коготь 2", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/clawcum2.ogg'),
+))
 
 /datum/interaction/custom
 	max_distance = 1
@@ -27,6 +130,7 @@
 	var/required_body_parts = NONE
 	var/requires_tail = FALSE
 	var/requires_telekinesis = FALSE
+	var/list/sound_keys = list()
 
 /datum/interaction/custom/proc/get_lust_amount(level = arousal_level)
 	switch(level)
@@ -63,6 +167,14 @@
 		if(CUSTOM_AROUSAL_STRONG)
 			return "Сильное"
 	return "Нет"
+
+/datum/interaction/custom/proc/get_sound_labels()
+	var/list/labels = list()
+	for(var/key in sound_keys)
+		var/list/sound_data = GLOB.custom_interaction_sounds[key]
+		if(sound_data)
+			labels += sound_data["label"]
+	return labels
 
 /datum/interaction/custom/proc/get_scope_label()
 	switch(scope)
@@ -141,6 +253,22 @@
 	requires_tail = !!requires_tail
 	requires_telekinesis = !!requires_telekinesis
 	max_distance = sanitize_integer(max_distance, 1, 3, 1)
+	sanitize_sound_keys()
+
+/datum/interaction/custom/proc/sanitize_sound_keys()
+	sound_keys = SANITIZE_LIST(sound_keys)
+	for(var/i in length(sound_keys) to 1 step -1)
+		var/key = sound_keys[i]
+		var/list/sound_data = GLOB.custom_interaction_sounds[key]
+		if(!sound_data || key == CUSTOM_INTERACTION_SOUND_NONE)
+			sound_keys.Cut(i, i + 1)
+			continue
+		var/sound_group = sound_data["group"]
+		if(sound_group == CUSTOM_SOUND_GROUP_SPECIAL && interaction_type != CUSTOM_INTERACTION_TYPE_UNHOLY)
+			sound_keys.Cut(i, i + 1)
+			continue
+		if(interaction_type == CUSTOM_INTERACTION_TYPE_NORMAL && !(sound_group in CUSTOM_SOUND_GROUPS_NORMAL))
+			sound_keys.Cut(i, i + 1)
 
 /datum/interaction/custom/proc/get_interaction_type_num()
 	switch(interaction_type)
@@ -297,6 +425,18 @@
 		user.try_play_interaction_effect(is_hidden)
 		if(user != target)
 			target.try_play_interaction_effect(is_hidden)
+	if(length(sound_keys))
+		var/chosen_sound_key = pick(sound_keys)
+		var/list/sound_data = GLOB.custom_interaction_sounds[chosen_sound_key]
+		var/soundfile = sound_data?["file"]
+		if(soundfile)
+			var/turf/sound_turf = get_turf(user)
+			if(sound_turf)
+				var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+				if(is_lewd)
+					playlewdinteractionsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange, ignored_mobs = user.get_unconsenting(get_interaction_flags()))
+				else
+					playsound(sound_turf, soundfile, interaction_sound_volume, 1, extrarange)
 	var/lust_amount = get_lust_amount()
 	if(!QDELETED(user))
 		if(self_orgasm)

@@ -31,6 +31,7 @@
 	damage = 30
 	damage_type = STAMINA
 	flag = ENERGY
+	knockdown = 60
 	hitsound = 'sound/weapons/tap.ogg'
 	eyeblur = 0
 	pixels_per_second = TILES_TO_PIXELS(16.667)

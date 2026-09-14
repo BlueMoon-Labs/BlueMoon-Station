@@ -600,6 +600,14 @@
 		.["interaction_effect"] = 			prefs.interaction_effect
 		.["block_partner_pixel_shift"] = 	prefs.block_partner_pixel_shift
 
+		.["tab_interactions_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+		.["tab_genital_options_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+		.["tab_character_prefs_enabled"] = 	!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+		.["tab_sex_animations_enabled"] = 		!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+		.["tab_custom_enabled"] = 				!!CHECK_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+		.["dynamic_window_size"] = 				prefs.dynamic_window_size
+		.["compact_custom_tab"] = 				prefs.compact_custom_tab
+
 	var/list/custom_interactions_sent = list()
 	if(self.client?.prefs?.custom_verb_consent && (!target || self == target || target.client?.prefs?.custom_verb_consent))
 		var/list/customs_mob = list()
@@ -642,6 +650,8 @@
 				"requires_tail" = custom.requires_tail,
 				"requires_telekinesis" = custom.requires_telekinesis,
 				"max_distance" = custom.max_distance,
+				"sound_keys" = custom.sound_keys,
+				"sound_labels" = custom.get_sound_labels(),
 			))
 	.["own_custom_interactions"] = own_customs
 	.["max_custom_interactions"] = self.client.prefs.get_custom_interaction_limit()
@@ -692,6 +702,16 @@
 	.["interactions"] = sent_interactions
 	.["interaction_speeds"] = GLOB.interaction_speeds
 	.["interaction_effects_list"] = GLOB.interaction_effects_list
+
+	var/list/custom_sound_options = list()
+	for(var/sound_key in GLOB.custom_interaction_sounds)
+		var/list/sound_data = GLOB.custom_interaction_sounds[sound_key]
+		custom_sound_options += list(list(
+			"key" = sound_key,
+			"label" = sound_data["label"],
+			"group" = sound_data["group"],
+		))
+	.["custom_interaction_sounds"] = custom_sound_options
 
 /proc/num_to_pref(num)
 	switch(num)
@@ -888,28 +908,41 @@
 			return TRUE
 		if("pref")
 			var/datum/preferences/prefs = parent_mob.client.prefs
+			// Имя переменной, которую тронула ветка: в savefile уходит только этот ключ. Ветки на
+			// переменных, отличных от cit_toggles, переставляют имя сами.
+			var/dirty_var = "cit_toggles"
 			switch(params["pref"])
 				if("use_arousal_multiplier")
 					prefs.use_arousal_multiplier = !prefs.use_arousal_multiplier
+					dirty_var = "use_arousal_multiplier"
 				if("arousal_multiplier")
 					prefs.arousal_multiplier = params["amount"]
+					dirty_var = "arousal_multiplier"
 				if("use_moaning_multiplier")
 					prefs.use_moaning_multiplier = !prefs.use_moaning_multiplier
+					dirty_var = "use_moaning_multiplier"
 				if("moaning_multiplier")
 					prefs.moaning_multiplier = params["amount"]
+					dirty_var = "moaning_multiplier"
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
+					dirty_var = "toggles"
 				if("custom_verb_consent")
 					prefs.custom_verb_consent = !prefs.custom_verb_consent
+					dirty_var = "custom_verb_consent"
 				if("ranged_verb_pref")
 					TOGGLE_BITFIELD(prefs.toggles, RANGED_VERBS_CONSENT)
+					dirty_var = "toggles"
 				if("lewd_verb_sounds")
 					TOGGLE_BITFIELD(prefs.toggles, LEWD_VERB_SOUNDS)
+					dirty_var = "toggles"
 				if("arousable")
 					prefs.arousable = !prefs.arousable
+					dirty_var = "arousable"
 				if("sexknotting")
 					prefs.sexknotting = !prefs.sexknotting
+					dirty_var = "sexknotting"
 				if("genital_examine")
 					TOGGLE_BITFIELD(prefs.cit_toggles, GENITAL_EXAMINE)
 				if("vore_examine")
@@ -962,16 +995,41 @@
 				//
 				if("show_heart_over_self")
 					prefs.show_heart_over_self = !prefs.show_heart_over_self
+					dirty_var = "show_heart_over_self"
 				if("interaction_effect")
 					var/effect = params["effect"]
 					if(effect in GLOB.interaction_effects_list)
 						prefs.interaction_effect = effect
+					dirty_var = "interaction_effect"
 				if("block_partner_pixel_shift")
 					prefs.block_partner_pixel_shift = !prefs.block_partner_pixel_shift
+					dirty_var = "block_partner_pixel_shift"
 				//
+
+				if("tab_interactions_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_INTERACTIONS)
+					dirty_var = "panel_tab_toggles"
+				if("tab_genital_options_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_GENITAL_OPTIONS)
+					dirty_var = "panel_tab_toggles"
+				if("tab_character_prefs_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CHARACTER_PREFS)
+					dirty_var = "panel_tab_toggles"
+				if("tab_sex_animations_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_SEX_ANIMATIONS)
+					dirty_var = "panel_tab_toggles"
+				if("tab_custom_enabled")
+					TOGGLE_BITFIELD(prefs.panel_tab_toggles, TAB_CUSTOM)
+					dirty_var = "panel_tab_toggles"
+				if("dynamic_window_size")
+					prefs.dynamic_window_size = !prefs.dynamic_window_size
+					dirty_var = "dynamic_window_size"
+				if("compact_custom_tab")
+					prefs.compact_custom_tab = !prefs.compact_custom_tab
+					dirty_var = "compact_custom_tab"
 				else
 					return FALSE
-			prefs.save_preferences()
+			prefs.save_pref_var(dirty_var)
 			return TRUE
 		if("genitals_menu")
 			switch(params["who"])
@@ -1009,8 +1067,13 @@
 			return custom_edit(parent_mob, params)
 		if("custom_delete")
 			return custom_delete(parent_mob, params)
-		if("open_customs_window")
-			return open_customs_window(parent_mob)
+		if("custom_preview_sound")
+			var/list/sound_data = GLOB.custom_interaction_sounds[params["sound_key"]]
+			var/soundfile = sound_data?["file"]
+			if(!soundfile)
+				return FALSE
+			parent_mob.playsound_local(get_turf(parent_mob), soundfile, 50, FALSE)
+			return TRUE
 
 //BLUEMOON ADD START
 /datum/component/interaction_menu_granter/proc/play_pixel_shift_animation(mob/living/mob)
@@ -1051,6 +1114,8 @@
 		details += list(list("info" = "Нужен хвост у кого-то из пары", "icon" = "paw", "color" = "purple"))
 	if(custom.requires_telekinesis)
 		details += list(list("info" = "Нужен телекинез у кого-то из пары", "icon" = "brain", "color" = "purple"))
+	if(length(custom.sound_keys))
+		details += list(list("info" = "Звук: [jointext(custom.get_sound_labels(), ", ")]", "icon" = "volume-up", "color" = "blue"))
 	interaction["additionalDetails"] = details
 	return interaction
 
@@ -1081,6 +1146,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	LAZYADD(prefs.custom_interactions, custom)
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "создал", custom)
@@ -1112,6 +1179,8 @@
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
 	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
+	custom.sound_keys = islist(params["sound_keys"]) ? params["sound_keys"] : list()
+	custom.sanitize_sound_keys()
 	prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	refresh_interaction_panels()
@@ -1140,18 +1209,7 @@
 	var/log_text = "[user.ckey] ([user.real_name]) [action] кастомный интеракт \"[custom.name]\" (тип: [custom.get_type_label()], текст: \"[custom.message]\")"
 	log_admin(log_text)
 
-/datum/component/interaction_menu_granter/proc/open_customs_window(mob/living/user)
-	if(!user?.client)
-		return FALSE
-	for(var/datum/tgui/ui in SStgui.get_all_open_uis(src))
-		if(ui.interface == "MobInteractionCustoms" && ui.user == user)
-			ui.send_update()
-			return TRUE
-	var/datum/tgui/ui = new(user, src, "MobInteractionCustoms", "Custom Interactions")
-	ui.open()
-	return TRUE
-
-/// Обновляет все открытые панели взаимодействия и окно кастомизации
+/// Обновляет все открытые панели взаимодействия
 /// (удаление/изменение кастомов должно немедленно отражаться везде).
 /datum/component/interaction_menu_granter/proc/refresh_interaction_panels()
 	for(var/datum/interaction_menu_panel/panel as anything in panels)

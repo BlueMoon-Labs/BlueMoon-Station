@@ -24,7 +24,6 @@
 /obj/item/gun/ballistic/rebarxbow/Initialize(mapload)
 	. = ..()
 	bowstring_loose = TRUE
-	chambered = null
 
 /obj/item/gun/ballistic/rebarxbow/attackby(obj/item/A, mob/user, params)
 	if(!bowstring_loose)
@@ -51,7 +50,11 @@
 		draw_bowstring(user)
 		return
 	bowstring_loose = TRUE
-	chambered = null
+	if(chambered?.BB)
+		chambered.forceMove(drop_location())
+		chambered = null
+	else
+		QDEL_NULL(chambered)
 	if(user)
 		balloon_alert(user, "bowstring loosened")
 	playsound(src, 'sound/weapons/shotgunpump.ogg', 60, 1)
@@ -80,6 +83,10 @@
 	..()
 	rack(user)
 
+/obj/item/gun/ballistic/rebarxbow/process_chamber(mob/living/user, empty_chamber = TRUE)
+	// Следующий болт подаётся только при натяжении тетивы, а не сразу после выстрела.
+	return
+
 /obj/item/gun/ballistic/rebarxbow/can_shoot()
 	if(bowstring_loose || !chambered?.BB)
 		return FALSE
@@ -87,14 +94,14 @@
 
 /obj/item/gun/ballistic/rebarxbow/shoot_with_empty_chamber(mob/living/user)
 	if(chambered && !chambered.BB)
-		chambered = null
+		QDEL_NULL(chambered)
+	if(bowstring_loose && (chambered?.BB || magazine?.ammo_count()))
+		draw_bowstring(user)
+		return
 	if(chambered?.BB)
 		return ..()
 	if(!magazine || !magazine.ammo_count())
 		return ..()
-	if(bowstring_loose)
-		draw_bowstring(user)
-		return
 	chamber_round()
 	if(chambered?.BB)
 		balloon_alert(user, "bolt seated")
@@ -107,7 +114,7 @@
 
 /obj/item/gun/ballistic/rebarxbow/update_overlays()
 	. = ..()
-	if(!magazine || !magazine.ammo_count(0))
+	if(!chambered?.BB && (!magazine || !magazine.ammo_count(0)))
 		. += "[initial(icon_state)]_empty"
 	if(!bowstring_loose)
 		. += "[initial(icon_state)]_bolt_locked"

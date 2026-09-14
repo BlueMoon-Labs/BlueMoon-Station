@@ -47,7 +47,7 @@
 			download_objective.owner = T.owner
 			download_objective.gen_amount_goal()
 			T.add_objective(download_objective)
-		else if(prob(20) && !(locate(/datum/objective/frame) in T.objectives))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг
+		else if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT && prob(20) && !(locate(/datum/objective/frame) in T.objectives))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг. Выдаётся только в Лайт-Динамик.
 			var/datum/objective/frame/frame_objective = new
 			frame_objective.owner = T.owner
 			if(!frame_objective.find_target())

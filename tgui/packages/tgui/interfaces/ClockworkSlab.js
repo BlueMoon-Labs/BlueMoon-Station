@@ -328,9 +328,9 @@ export const CSTutorial = (props) => {
           к кнопкам действий.
         </Box>
         <br /><br />
-        {rec_binds?.map(bind => (
-          <Fragment key={bind.name ? bind.name : "none"}>
-            Слот <b>быстрой привязки</b> ({rec_binds.indexOf(bind)+1}),
+        {rec_binds?.map((bind, index) => (
+          <Fragment key={index}>
+            Слот <b>быстрой привязки</b> ({index + 1}),
             сейчас:&nbsp;
             <span style={{ color: bind ? bind.color : "#BE8700" }}>
               {bind?.name ? bind.name : "Нет"}

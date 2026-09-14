@@ -24,11 +24,14 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	var/global_mode = TRUE //If disabled, only GPS signals of the same Z level are shown
 	/// UI state of GPS, altering when it can be used.
 	var/datum/ui_state/state = null
+	var/need_use_overlay
 
-/datum/component/gps/item/Initialize(_gpstag = "COM0", emp_proof = FALSE, starton = TRUE, state = null, overlay_state = "working")
+/datum/component/gps/item/Initialize(_gpstag = "COM0", emp_proof = FALSE, starton = TRUE, state = null, overlay_state = "working", not_use_overlay = FALSE)
 	. = ..()
 	if(. == COMPONENT_INCOMPATIBLE || !isitem(parent))
 		return COMPONENT_INCOMPATIBLE
+
+	need_use_overlay = !not_use_overlay
 
 	if(isnull(state))
 		state = GLOB.default_state
@@ -36,7 +39,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 
 	var/atom/A = parent
 	if(starton)
-		if(overlay_state)
+		if(overlay_state && !not_use_overlay)
 			A.add_overlay(overlay_state)
 	else
 		tracking = FALSE
@@ -75,8 +78,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /datum/component/gps/item/proc/on_emp_act(datum/source, severity)
 	emped = TRUE
 	var/atom/A = parent
-	A.cut_overlay("working")
-	A.add_overlay("emp")
+	if(need_use_overlay)
+		A.cut_overlay("working")
+		A.add_overlay("emp")
 	addtimer(CALLBACK(src, PROC_REF(reboot)), 300, TIMER_UNIQUE|TIMER_OVERRIDE) //if a new EMP happens, remove the old timer so it doesn't reactivate early
 	SStgui.close_uis(src) //Close the UI control if it is open.
 
@@ -84,8 +88,9 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /datum/component/gps/item/proc/reboot()
 	emped = FALSE
 	var/atom/A = parent
-	A.cut_overlay("emp")
-	A.add_overlay("working")
+	if(need_use_overlay)
+		A.cut_overlay("emp")
+		A.add_overlay("working")
 
 ///Calls toggletracking
 /datum/component/gps/item/proc/on_AltClick(datum/source, mob/user)
@@ -107,7 +112,8 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		to_chat(user, "<span class='notice'>[parent] is no longer tracking, or visible to other GPS devices.</span>")
 		tracking = FALSE
 	else
-		A.add_overlay("working")
+		if(need_use_overlay)
+			A.add_overlay("working")
 		to_chat(user, "<span class='notice'>[parent] is now tracking, and visible to other GPS devices.</span>")
 		tracking = TRUE
 

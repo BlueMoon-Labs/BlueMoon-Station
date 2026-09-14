@@ -321,7 +321,8 @@
 	actions_types = list(
 		/datum/action/item_action/degree_distortion_effect,
 		/datum/action/item_action/toggle_echo_effect_dress,
-		/datum/action/item_action/toggle_particle_effect_dress
+		/datum/action/item_action/toggle_particle_effect_dress,
+		/datum/action/item_action/dress_summon_pod
 	)
 	can_adjust = TRUE
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
@@ -345,6 +346,14 @@
 	var/skin = "default"
 	var/datum/component/ntnet_interface/net
 	var/datum/component/neural_interface/neural_interface
+	var/list/summon_pod_items = list(
+		"AA-MOD plate" = /obj/item/mod/construction/armor/anomalous_archeotech,
+		// "AA-MOD PROTOTYPE MODULE" = /obj/item/mod/module/kinesis,
+		// "CELL :01" = /obj/item/stock_parts/cell/hyper,
+		// "TOOLBELT" = /obj/item/storage/belt,
+		// "COOLING UNIT" = /obj/item/device/cooler
+	)
+	var/processing_summon_pod = FALSE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/New()
 	. = ..()
@@ -608,6 +617,58 @@
 	velocity = generator("circle", 0.3, 1)
 	fade = 1
 
+/datum/action/item_action/dress_summon_pod
+	name = "Summon Pod"
+
+/datum/action/item_action/dress_summon_pod/Trigger(trigger_flags)
+	if(!..())
+		return FALSE
+
+	var/list/items = list()
+	var/obj/item/clothing/under/donator/bm/inlaid_data_dress/T = target
+
+	if(T.processing_summon_pod)
+		return
+	T.processing_summon_pod = TRUE
+
+	for(var/name in T.summon_pod_items)
+		items += name
+
+	SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: INITIATED", "INFO")
+	var/list/selected_items = list()
+	var/index_selected
+	do
+		index_selected = tgui_input_list(owner, "Запрашиваю поставку...","SELECT...", items)
+		if(index_selected)
+			selected_items += index_selected
+			items -= index_selected
+	while(index_selected)
+
+	if(QDELETED(T))
+		return FALSE
+
+	if(LAZYLEN(selected_items) < 1)
+		SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: REJECTED", "INFO")
+		T.processing_summon_pod = FALSE
+		return
+
+	var/area/pod_storage_area = locate(/area/centcom/supplypod/podStorage) in GLOB.sortedAreas
+	var/obj/structure/closet/supplypod/bluespacepod/pod = new(pick(get_area_turfs(pod_storage_area)))
+
+	for(var/item_name in selected_items)
+		var/type = T.summon_pod_items[item_name]
+		var/obj/item = new type()
+		item.forceMove(pod)
+
+	for(var/remove in selected_items)
+		T.summon_pod_items -= remove
+
+	SEND_SIGNAL(owner, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "DELIVERY: PROCESSING", "INFO")
+
+	T.processing_summon_pod = FALSE
+	return new /obj/effect/pod_landingzone(get_turf(T), pod)
+
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/under/donator/bm/saareuni
@@ -621,6 +682,19 @@
 	icon_state = "saare"
 	item_state = "saare"
 	can_adjust = TRUE
+
+// Спрайты принадлежат cnaperdodo
+/obj/item/clothing/under/donator/bm/clf_uniform
+	name = "Перекрашенный комплект ЧВК"
+	desc = "Старый перекрашеный комплект ЧВК. По сути своей это когда то было универсальным нижним комплектов для тактических отрядов. А теперь это любят носить те, кто против закона."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/cnaperdodo_clf_uniform.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/cnaperdodo_clf_uniform.dmi'
+	icon_state = "clf_uniform"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	item_state = "officer_jumpsuit"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/under/donator/bm/kladmen_dress
 	name = "Gothic Dress"
@@ -873,6 +947,32 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+
+/obj/item/clothing/under/donator/bm/concord/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/concord/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
+		return
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	icon_state = "[initial(icon_state)]_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/concord/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		update_icon()
 
 /obj/item/clothing/under/donator/bm/h_pmc_jeans
 	name = "PMC jeans"
@@ -954,3 +1054,100 @@
 	body_parts_covered = NONE
 	can_adjust = TRUE
 	alternate_worn_layer = GLOVES_LAYER
+
+/obj/item/clothing/under/donator/bm/fulted_plate_armor
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied councilmen that wish to flaunt their opulence towards the unwashed masses."
+	icon = 'icons/obj/clothing/suits.dmi'
+	icon_state = "military"
+	item_state = "military"
+	mob_overlay_icon = 'icons/mob/clothing/suit.dmi'
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit.dmi'
+
+/obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
+	name = "The stylish one's tracksuit"
+	desc = "Dear guests have arrived."
+	icon_state = "the_stylish_one_tracksuit"
+	item_state = "the_stylish_one_tracksuit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit
+	name = "Lycanthrope's Form-Fitting Bodysuit"
+	desc = "Практически новый темно-серый бодисьют в безупречном состоянии, без единого следа износа. Светлые эластичные вставки по бокам и плотные шорты туго облегают тело, выгодно подчеркивая каждый изгиб фигуры — грудь, бедра и ягодицы. Длинные рукава закрывают руки вплоть до самых кистей. Со стороны костюм выглядит настолько утягивающим, будто готов пережать всё что угодно, но на удивление он ощущается невероятно удобным и совершенно не сковывает движения. На левом бедре аккуратно вышит фирменный полумесяц."
+	icon_state = "melatonin-uniform-0"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = FALSE
+	fitted = NO_FEMALE_UNIFORM
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-uniform-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	icon_state = "melatonin-uniform-[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco
+	name = "Lycanthrope Disco Shirt"
+	desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "melatonin_disco_0"
+	item_state = "melatonin_disco_0"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+	alt_covers_chest = FALSE
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "melatonin_disco_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		if(adjusted)
+			desc = "Модная диско-майка и обтягивающие рваные шорты. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		else
+			desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		update_icon()
+
+/obj/item/clothing/under/donator/bm/caligram
+	name = "Caligram uniform"
+	desc = "With a suit lined with this many pockets, you are ready to operate." //описание /obj/item/clothing/under/syndicate/combat
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "caligram_fatigues_tan"
+	item_state = "caligram_fatigues_tan"
+	can_adjust = TRUE
+	unique_reskin = list(
+		"blue" = list("icon_state" = "caligram_fatigues_blue"),
+		"tan" = list("icon_state" = "caligram_fatigues_tan"),
+	)

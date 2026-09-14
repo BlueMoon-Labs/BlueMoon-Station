@@ -9,7 +9,8 @@
 	maxHealth = 7
 	health = 7
 	chew_probability = 0
-	gold_core_spawnable = HOSTILE_SPAWN
+	gold_core_spawnable = NO_SPAWN //грифозная хуйня что срёт плзамой. Из за неё один раз упал сервак. Пусть лучше это будет щитспавном
+
 
 
 /mob/living/simple_animal/mouse/boommouse/Initialize()

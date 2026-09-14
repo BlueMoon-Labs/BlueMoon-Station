@@ -47,6 +47,8 @@
 	var/datum/preferences/prefs = null
 	/// The client's UI DPI multiplier reported by BYOND. 1 equals 100% Windows scaling.
 	var/window_scaling = 1
+	/// TRUE после первого ответа клиента на winget dpi, удачного или нет: этого ждёт панель tgui.
+	var/window_scaling_resolved = FALSE
 	/// Current DPI acquisition retry count for delayed post-login reads.
 	var/window_scaling_retry_count = 0
 	var/last_turn = 0

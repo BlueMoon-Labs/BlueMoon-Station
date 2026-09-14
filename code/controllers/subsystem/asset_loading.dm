@@ -17,6 +17,9 @@ SUBSYSTEM_DEF(asset_loading)
 	var/list/datum/asset/generate_queue = list()
 	/// Сколько задач сейчас считает rust-g.
 	var/assets_generating = 0
+	/// Сколько листов сейчас внутри realize_spritesheets(). Кэш разобранных DMI в rust
+	/// общий на процесс, поэтому отдавать его между шардами можно только в одиночку.
+	var/sheets_realizing = 0
 	/// Длина очереди на прошлом проходе - по ней видно, что очередь только что опустела.
 	var/last_queue_len = 0
 

@@ -62,7 +62,7 @@
 ///Anti-Gravity - Makes the user weightless.
 /obj/item/mod/module/anomaly_locked/antigrav
 	name = "MOD anti-gravity module"
-	desc = "Модуль, использующий гравитационное ядро для полного обнуления веса пользователя."
+	desc = "Модуль, использующий гравитационное ядро для полного обнуления веса пользователя. К сожалению, не способен работать когда пользователь лежит."
 	icon_state = "antigrav"
 	module_type = MODULE_TOGGLE
 	complexity = 3
@@ -72,10 +72,22 @@
 	accepted_anomalies = list(/obj/item/assembly/signaler/anomaly/grav)
 	mod_module_flags = MOD_MODULE_SCIENCE // BLUEMOON ADD
 
+/obj/item/mod/module/proc/check_lying_down()
+	if(mod.wearer.body_position == LYING_DOWN)
+		on_deactivation()
+
+/obj/item/mod/module/antigrav/on_select(atom/target)
+	if(mod.wearer.body_position == LYING_DOWN)
+		balloon_alert(mod.wearer, "Модуль сбоит!")
+		to_chat(mod.wearer, span_boldwarning("Антиграв нельзя использовать лёжа!"))
+		return FALSE
+	. = ..()
+
 /obj/item/mod/module/anomaly_locked/antigrav/on_activation()
 	. = ..()
 	if(!.)
 		return
+	RegisterSignal(mod.wearer, COMSIG_LIVING_SET_BODY_POSITION, PROC_REF(check_lying_down))
 	if(mod.wearer.has_gravity())
 		new /obj/effect/temp_visual/mook_dust(get_turf(mod))
 	mod.wearer.AddElement(/datum/element/forced_gravity, 0)
@@ -86,6 +98,7 @@
 	. = ..()
 	if(!.)
 		return
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_SET_BODY_POSITION)
 	mod.wearer.RemoveElement(/datum/element/forced_gravity, 0)
 	mod.wearer.refresh_gravity()
 	if(deleting)
@@ -136,3 +149,35 @@
 
 /obj/item/mod/module/anomaly_locked/teleporter/prebuilt
 	prebuilt = TRUE
+
+/obj/item/mod/module/jump_jet
+	name = "Jump Jet Module"
+	icon_state = "jump_jet"
+	desc = "Специализированный нагнетатель газа, которы при наборе нужного давления способен \
+	с огромной силой высвободить накопленный безвредный газ, чтобы отправить пользователя в непродолжительный\
+	полет. Работает как в атмосфере, так и в космосе, благодаря встроенным бакам. Несовместим с джетпаком, потому что \
+	крепится ровно туда же."
+	incompatible_modules = list(/obj/item/mod/module/jetpack)
+	module_type = MODULE_USABLE
+	cooldown_time = 10 SECONDS
+	required_modpart_index = MOD_PART_FEET
+	var/beam_icon = 'icons/effects/effects.dmi'
+	var/beam_state = "ion_fade"
+	var/jumpdistance = 5
+	var/jumpspeed = 3
+	var/jumps_max = 1
+	var/jumps_avaible
+
+/obj/item/mod/module/jump_jet/on_use()
+	. = ..()
+	var/turf/start_from = mod.wearer.loc
+	if(mod.wearer.body_position == LYING_DOWN)
+		balloon_alert(mod.wearer, "Нужна опора!")
+		return
+	var/atom/target = get_edge_target_turf(mod.wearer, mod.wearer.dir)
+	if(mod.wearer.throw_at(target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
+		start_from.Beam(mod.wearer, beam_state, beam_icon, 0.5 SECONDS)
+		playsound(mod, 'sound/effects/stealthoff.ogg', 50, 1, 1)
+		mod.wearer.visible_message("<span class='warning'>[mod.wearer] мгновенно срывается вперёд, взмывая в воздух!</span>")
+	else
+		to_chat(mod.wearer, "<span class='warning'>Что-то мешает вам это сделать!</span>")

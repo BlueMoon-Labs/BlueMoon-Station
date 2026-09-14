@@ -6,15 +6,14 @@
 #include "map_files\generic\CentCom_minimal.dmm"
 #else
 #include "map_files\generic\CentCom.dmm"
-#include "RandomRuins\SpaceRuins\BlueMoon\siege\Inteq_base.dmm"
 #endif
 
 #ifndef LOWMEMORYMODE
 	#ifdef ALL_MAPS
 		#include "map_files\Mining\Lavaland.dmm"
 		#include "map_files\debug\runtimestation.dmm"
-		#include "map_files\BoxStation\BoxStation.dmm"
-		#include "map_files\SyndicateStation\SyndicateBoxStation.dmm"
+		#include "map_files\BoxStations\BoxStation.dmm"
+		#include "map_files\BoxStations\SyndicateBoxStation.dmm"
 		#include "map_files\Deltastation\DeltaStation2.dmm"
 		#include "map_files\MetaStation\MetaStation.dmm"
 		#include "map_files\OmegaStation\OmegaStation.dmm"

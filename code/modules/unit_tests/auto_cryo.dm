@@ -482,7 +482,7 @@
 
 /datum/unit_test/auto_cryo_yield_keeps_pending_ghost/Run()
 	var/list/prev_config = auto_cryo_test_enable_config()
-	var/prev_state = SSauto_cryo.state
+	var/saved_can_fire = detach_subsystem(SSauto_cryo)
 	var/prev_next_scan = SSauto_cryo.next_scan
 
 	var/mob/dead/observer/first = new(run_loc_floor_bottom_left)
@@ -499,7 +499,7 @@
 
 	SSauto_cryo.fire()
 
-	SSauto_cryo.state = prev_state
+	release_subsystem(SSauto_cryo, saved_can_fire)
 
 	TEST_ASSERT(QDELETED(second), "Санити: первый кандидат обязан быть удалён до yield'а")
 	TEST_ASSERT(first in SSauto_cryo.currentrun_ghosts, "Yield потерял госта, уже снятого со снапшота - он не удалится до следующего рескана")

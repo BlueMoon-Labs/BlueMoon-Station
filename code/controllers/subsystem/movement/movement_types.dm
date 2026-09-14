@@ -430,15 +430,18 @@
 	// AI chases bound the search to distance + detour slack so a walled-off close target
 	// costs a small diamond, not the whole max_path_length one. Bots keep the full radius.
 	var/effective_max = istype(controller) ? ai_effective_path_radius(moving, target, max_path_length) : max_path_length
-	var/list/new_path = get_path_to(moving, target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	// Отчёт о поиске нужен только фолбэку ИИ ниже: остальные муверы за него не платят.
+	var/list/jps_status = istype(controller) ? list() : null
+	var/list/new_path = get_path_to(moving, target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src, jps_status)
 	if(QDELETED(src))
 		return
 	if(!length(new_path))
+		// Фолбэк идёт только на исчерпанном открытом списке: пустой ответ по другой причине недостижимости не доказывает.
 		// A target beyond the full budget is unreachable by either pathfinder, so
 		// skip the breach fallback entirely instead of blocking on a pathfinder slot
 		// for a search that can only fail. Gate on the real budget, search the bounded
 		// radius. The cheap direct loop keeps closing the gap.
-		if(istype(controller) && (!max_path_length || get_dist(moving, target) <= max_path_length))
+		if(istype(controller) && jps_status[JPS_SEARCH_EXHAUSTED] && (!max_path_length || get_dist(moving, target) <= max_path_length))
 			new_path = controller.get_path_through_obstacles(target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
 	if(QDELETED(src))
 		return

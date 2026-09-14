@@ -60,11 +60,38 @@ def _decoded_bytes(fullpath):
     return width * height * 4
 
 
+def _description_chunk_type(fullpath):
+    """Каким PNG-чанком записана метадата DMI.
+
+    DreamMaker пишет Description в zTXt, и только его читает rust-g при сборке
+    спрайтшитов: файл с tEXt-описанием (сторонние редакторы) BYOND открывает молча,
+    а rust-g не видит вовсе - лист теряет спрайты и пересобирается каждый раунд.
+    Возвращает 'zTXt', 'tEXt', 'iTXt' или None, если описания нет.
+    """
+    with open(fullpath, 'rb') as handle:
+        if handle.read(8) != PNG_MAGIC:
+            return None
+        while True:
+            header = handle.read(8)
+            if len(header) < 8:
+                return None
+            length, chunk_type = struct.unpack('>I4s', header)
+            if chunk_type == b'IEND':
+                return None
+            if chunk_type in (b'zTXt', b'tEXt', b'iTXt'):
+                if handle.read(length).split(b'\0', 1)[0] == b'Description':
+                    return chunk_type.decode('ascii')
+                handle.seek(4, os.SEEK_CUR)
+            else:
+                handle.seek(length + 4, os.SEEK_CUR)
+
+
 def _self_test():
     # test: can we load every DMI in the tree
     count = 0
     total_decoded = 0
     measured = []
+    failures = []
     for dirpath, dirnames, filenames in os.walk('.'):
         for skipped in ('.git', '.claude', 'node_modules'):
             if skipped in dirnames:
@@ -78,6 +105,13 @@ def _self_test():
                     print('Failed on:', fullpath)
                     raise
                 count += 1
+                chunk_type = _description_chunk_type(fullpath)
+                if chunk_type not in (None, 'zTXt'):
+                    failures.append(
+                        f"{os.path.relpath(fullpath).replace(os.sep, '/')}: метадата DMI лежит в чанке "
+                        f"{chunk_type}, а не zTXt. rust-g такой файл не читает, и спрайтшиты теряют его "
+                        f"спрайты. Пересохраните файл в DreamMaker или через tools/dmi."
+                    )
                 decoded = _decoded_bytes(fullpath)
                 if decoded is not None:
                     total_decoded += decoded
@@ -86,7 +120,6 @@ def _self_test():
     print(f"{os.path.relpath(__file__)}: successfully parsed {count} .dmi files")
     print(f"{os.path.relpath(__file__)}: распакованными у клиента это {total_decoded / MIB:.0f} МБ")
 
-    failures = []
     for decoded, relpath in sorted(measured, reverse=True):
         if decoded <= DECODED_BUDGET_BYTES:
             break

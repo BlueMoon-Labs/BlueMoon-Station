@@ -102,6 +102,12 @@
 	set_busy(FALSE)
 	if(!occupant)
 		return
+	if(isliving(occupant))
+		var/mob/living/L = occupant
+		var/obj/item/implant/nanite_pump/pump = locate() in L.implants
+		if(pump)
+			qdel(pump)
+
 	SEND_SIGNAL(occupant, COMSIG_NANITE_DELETE)
 
 /obj/machinery/nanite_chamber/update_icon_state()

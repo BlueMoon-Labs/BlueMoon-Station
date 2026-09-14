@@ -331,7 +331,14 @@
 	loc.handle_fall(src, forced)//it's loc so it doesn't call the mob's handle_fall which does nothing
 
 /mob/living/carbon/is_muzzled()
-	return(istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
+	return get_muzzle_strength() == MUFFLE_MUTE
+
+/mob/living/carbon/get_muzzle_strength()
+	if(src.wear_mask && istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
+		var/obj/item/clothing/mask/muzzle/M = src.wear_mask
+		return M.mute
+
+	return MUFFLE_NONE
 
 /mob/living/carbon/hallucinating()
 	if(hallucination)
@@ -840,6 +847,11 @@
 	if(HAS_TRAIT(src, TRAIT_XRAY_VISION))
 		sight |= SEE_TURFS|SEE_MOBS|SEE_OBJS
 		see_in_dark = max(see_in_dark, 8)
+
+	// A character with active emissive (body-part) glow can see farther into darkness so that distant
+	// glowing atoms get delivered to the client and their emissive pixels render at any radius.
+	if(has_active_emissive())
+		see_in_dark = max(see_in_dark, EMISSIVE_DARKSIGHT_RANGE)
 
 	lighting_color_cutoffs = color_cutoffs_accumulator
 

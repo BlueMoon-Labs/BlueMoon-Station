@@ -811,6 +811,7 @@
 	},
 /obj/effect/decal/cleanable/glass/titanium,
 /obj/structure/table/wood/fancy/royalblack,
+/obj/item/disk/gatereward,
 /turf/open/indestructible/gold,
 /area/awaymission/wildwest/gov)
 "cM" = (
@@ -4958,6 +4959,14 @@
 /obj/machinery/door/airlock/sandstone,
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/refine)
+"sj" = (
+/obj/effect/rune/narsie{
+	color = "#ff0000";
+	used = 1
+	},
+/obj/item/disk/gatereward/bigest,
+/turf/open/floor/circuit/off,
+/area/awaymission/wildwest/vault)
 "sk" = (
 /obj/item/clothing/shoes/cowboyboots,
 /turf/open/floor/plating/ironsand{
@@ -5020,6 +5029,10 @@
 /area/awaymission/wildwest/vault)
 "su" = (
 /obj/structure/closet/crate/freezer/surplus_limbs,
+/turf/open/floor/wood,
+/area/awaymission/wildwest/mines)
+"sv" = (
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "sw" = (
@@ -5991,6 +6004,11 @@
 /obj/effect/decal/cleanable/blood/splatter,
 /turf/closed/indestructible/wood,
 /area/awaymission/wildwest/mines)
+"wH" = (
+/obj/structure/destructible/cult/talisman,
+/obj/item/disk/gatereward,
+/turf/open/floor/plasteel,
+/area/awaymission/wildwest/vault)
 "wI" = (
 /obj/structure/chair/wood/normal,
 /turf/open/floor/plasteel/cafeteria{
@@ -7113,6 +7131,11 @@
 /obj/structure/barricade/wooden,
 /turf/open/floor/plating,
 /area/awaymission/wildwest/mines)
+"Bz" = (
+/obj/structure/rack/shelf,
+/obj/item/disk/gatereward,
+/turf/open/floor/wood,
+/area/awaymission/wildwest/mines)
 "BA" = (
 /obj/machinery/door/unpowered/shuttle,
 /obj/structure/fans/tiny,
@@ -7559,6 +7582,7 @@
 	dir = 9
 	},
 /obj/structure/table/reinforced,
+/obj/item/disk/gatereward,
 /turf/open/space/basic,
 /area/space/nearstation)
 "CX" = (
@@ -7661,6 +7685,11 @@
 /obj/item/ammo_box/c45/lethal,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
+"Dt" = (
+/obj/structure/flora/ausbushes/sparsegrass,
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/grass/grass0,
+/area/awaymission/wildwest/gov)
 "Du" = (
 /obj/effect/rune,
 /turf/open/floor/plasteel,
@@ -7854,6 +7883,7 @@
 /area/awaymission/wildwest/vault)
 "Eh" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
+/obj/item/disk/gatereward,
 /turf/open/floor/carpet/green,
 /area/awaymission/wildwest/mines)
 "Ei" = (
@@ -8751,6 +8781,7 @@
 /obj/item/coin/gold,
 /obj/item/coin/silver,
 /obj/item/stack/spacecash/c100,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "Hy" = (
@@ -9878,6 +9909,11 @@
 	},
 /turf/open/indestructible/spooknecropolis,
 /area/awaymission/wildwest/vault)
+"Ms" = (
+/obj/structure/closet/crate/large,
+/obj/item/disk/gatereward,
+/turf/open/floor/wood,
+/area/awaymission/wildwest/mines)
 "Mt" = (
 /obj/item/clothing/head/cowboyhat,
 /turf/open/floor/plating/ironsand{
@@ -10005,6 +10041,12 @@
 /area/awaymission/wildwest/vault)
 "MZ" = (
 /obj/effect/decal/cleanable/shreds,
+/turf/open/floor/wood,
+/area/awaymission/wildwest/mines)
+"Na" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/coffin,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "Nb" = (
@@ -10861,6 +10903,7 @@
 "Qt" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /obj/item/gun/ballistic/revolver/r45l,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "Qu" = (
@@ -11001,6 +11044,11 @@
 /obj/item/flashlight/lamp/green,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
+"QW" = (
+/obj/structure/table/reinforced,
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/mineral/titanium/yellow,
+/area/awaymission/wildwest/refine)
 "QY" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 8
@@ -11986,6 +12034,7 @@
 /obj/structure/closet/crate{
 	name = "Gold Crate"
 	},
+/obj/item/disk/gatereward/bigger,
 /turf/open/floor/plating,
 /area/awaymission/wildwest/vault)
 "UL" = (
@@ -12875,6 +12924,7 @@
 /obj/item/stack/sheet/mineral/gold,
 /obj/item/coin/diamond,
 /obj/effect/decal/cleanable/flour,
+/obj/item/disk/gatereward,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "Yp" = (
@@ -34295,7 +34345,7 @@ fL
 Oi
 bP
 NQ
-Oi
+Dt
 ze
 hi
 BV
@@ -36022,7 +36072,7 @@ ap
 iH
 YG
 oM
-AK
+wH
 BK
 BK
 BK
@@ -40489,7 +40539,7 @@ TC
 Dq
 SX
 PS
-EH
+QW
 Vo
 aa
 aa
@@ -41140,7 +41190,7 @@ KJ
 ox
 hC
 ag
-CU
+sj
 ag
 Bt
 TP
@@ -48132,7 +48182,7 @@ HY
 bu
 tv
 bj
-dE
+Ms
 bu
 az
 az
@@ -50224,7 +50274,7 @@ bu
 bj
 qA
 vr
-bj
+sv
 fp
 bu
 vv
@@ -55115,7 +55165,7 @@ az
 bu
 py
 bj
-vB
+Bz
 pz
 py
 bk
@@ -62003,7 +62053,7 @@ aa
 sG
 aG
 bu
-XQ
+Na
 hp
 hp
 bu

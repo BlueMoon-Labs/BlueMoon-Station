@@ -18,8 +18,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/gateway_announced = FALSE
 	/// Evac timer elapsed — InteQ must launch the shuttle from the console aboard it
 	var/evac_ready = FALSE
-	var/list/datum/weakref/defenders = list()
-	var/list/datum/weakref/attackers = list()
+	var/list/defenders = list() // weakref
+	var/list/attackers = list() // weakref
 	/// Visual sync: whether station gateway was already flipped to «open» overlays
 	var/gateway_visual_open = FALSE
 	/// Round report: siege was activated this round
@@ -175,17 +175,17 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return FALSE
 	return is_on_battlefield_turf(get_turf(L))
 
-/datum/inteq_pact_siege/proc/register_defender(mob/living/L)
-	if(QDELETED(L) || !(ROLE_INTEQ in L.faction))
+/datum/inteq_pact_siege/proc/register_defender(mob/living/carbon/human/H)
+	if(QDELETED(H) || !istype(H) || !(ROLE_INTEQ in H.faction))
 		return
-	if(HAS_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER))
+	if(HAS_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER))
 		return
-	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
-	ADD_TRAIT(L, TRAIT_NODISMEMBER, PACT_SIEGE_TRAIT_SOURCE)
-	defenders |= WEAKREF(L)
+	ADD_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
+	ADD_TRAIT(H, TRAIT_NODISMEMBER, PACT_SIEGE_TRAIT_SOURCE)
+	defenders |= WEAKREF(H)
 	defenders_ever_registered = TRUE
-	track_participant(L, "defender")
-	RegisterSignal(L, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_defender_station_breach))
+	track_participant(H, "defender")
+	RegisterSignal(H, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(check_defender_station_breach))
 
 /datum/inteq_pact_siege/proc/check_defender_station_breach(datum/source)
 	SIGNAL_HANDLER
@@ -259,7 +259,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return get_step(GLOB.the_gateway.portal, GLOB.the_gateway.dir)
 
 /datum/inteq_pact_siege/proc/station_siege_gateway_linked()
-	return GLOB.the_gateway?.target == battle_dest
+	return GLOB.the_gateway && battle_dest && GLOB.the_gateway.target == battle_dest
 
 /datum/inteq_pact_siege/proc/find_return_gateway_turf()
 	var/z = resolve_siege_z()
@@ -304,7 +304,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	return_gateway = new /obj/machinery/gateway/away/pact_siege(spawn_turf)
 
 /datum/inteq_pact_siege/proc/on_station_siege_gateway_closed()
-	if(return_gateway?.target == station_return_dest)
+	if(return_gateway && !QDELETED(return_gateway) && station_return_dest && return_gateway.target == station_return_dest)
 		return_gateway.deactivate()
 	if(GLOB.the_gateway && !GLOB.the_gateway.target && active)
 		GLOB.the_gateway.teleportion_possible = FALSE
@@ -345,9 +345,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	GLOB.the_gateway.update_appearance()
 
 /datum/inteq_pact_siege/proc/register_existing_defenders()
-	for(var/mob/living/L in GLOB.mob_living_list)
-		if(is_on_battlefield(L))
-			register_defender(L)
+	for(var/mob/living/carbon/human/H as anything in GLOB.human_list)
+		if(is_on_battlefield(H))
+			register_defender(H)
 
 /datum/inteq_pact_siege/proc/remove_inteq_spawners()
 	var/z = resolve_siege_z()
@@ -364,6 +364,23 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	if(length(to_remove))
 		message_admins("PACT siege: удалено [length(to_remove)] спейвнеров InteQ на поле боя (z=[z]).")
 		log_game("PACT siege: removed [length(to_remove)] inteqspace spawners on battlefield z=[z].")
+
+/datum/inteq_pact_siege/proc/remove_inteq_borgs()
+	/// BLUEMOON ADD - борги ИнтеКью (robot/modules/inteq и подтипы) пропадают вместе с окончанием осады
+	var/removed = 0
+	for(var/mob/living/silicon/robot/R as anything in GLOB.silicon_mobs)
+		if(QDELETED(R) || !istype(R, /mob/living/silicon/robot/modules/inteq))
+			continue
+		if(!is_on_battlefield(R) && !is_on_evac_shuttle(R))
+			continue
+		log_game("PACT siege: removing InteQ cyborg [key_name(R)] from the battlefield after the siege.")
+		if(R.client)
+			R.ghostize(FALSE)
+		qdel(R, TRUE)
+		removed++
+	if(removed)
+		message_admins("PACT siege: удалено [removed] киборгов InteQ после осады.")
+		log_game("PACT siege: removed [removed] InteQ cyborgs after the siege.")
 
 /datum/inteq_pact_siege/proc/gates_unlocked()
 	return active && gateway_announced && (world.time >= started_at + PACT_SIEGE_PREP_TIME)
@@ -772,6 +789,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	else
 		/// PACT победил — шаттл остаётся на объекте: без оповещений об эвакуации, без стирания шаттла/поля боя
 		finish_siege_cleanup()
+	remove_inteq_borgs()	//BLUEMOON ADD: борги ИнтеКью так же пропадают после окончания осады
 	recall_attackers()
 	cleanup_gateway()
 	remove_siege_traits()

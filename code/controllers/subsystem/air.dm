@@ -821,6 +821,9 @@ SUBSYSTEM_DEF(air)
 					net.air.merge(item.air_temporary)
 					QDEL_NULL(item.air_temporary)
 			else
+				// Машина держит на слот одного соседа; вторая труба того же турфа связи с её стороны не имеет.
+				if(QDELETED(P) || !(borderline in P.nodes))
+					continue
 				P.setPipenet(net, borderline)
 				net.addMachineryMember(P)
 		if(yield && MC_TICK_CHECK)

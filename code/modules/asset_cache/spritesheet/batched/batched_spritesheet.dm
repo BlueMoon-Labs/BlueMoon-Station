@@ -191,6 +191,7 @@
 
 	generation_in_progress = TRUE
 	generation_error = null
+	SSasset_loading.sheets_realizing++
 	try
 		realize_spritesheets_owned(yield)
 	catch(var/exception/error)
@@ -201,8 +202,10 @@
 		job_id = null
 		cache_job_id = null
 		generation_in_progress = FALSE
+		SSasset_loading.sheets_realizing--
 		throw error
 	generation_in_progress = FALSE
+	SSasset_loading.sheets_realizing--
 
 /datum/asset/spritesheet_batched/proc/realize_spritesheets_owned(yield)
 	if(!length(entries))
@@ -235,6 +238,15 @@
 		// как есть, но в логе должно остаться, что причина была не в контенте.
 		log_asset("Кэш spritesheet_[name] сброшен: [cache_mismatch_reason] - ждать больше нечего, собираем лист заново.")
 
+	// Дерево иконок ещё копируется - собирать нечего. Частичный лист всё равно уедет в
+	// пересборку, а пик кэша разобранных DMI из него аллокатор уже не отдаст.
+	if(can_retry_unread(yield))
+		var/list/absent = absent_dmi_files(entries)
+		if(length(absent))
+			unread_dmi_paths = absent
+			schedule_unread_retry()
+			return
+
 	// Досюда дошли - кэш невалиден, нечего его хранить.
 	fdel(cache_meta_path())
 	// Число шардов между версиями меняется: сносим png только этого листа, чтобы
@@ -257,6 +269,7 @@
 		if(length(shard_entries) < sprites_per_shard)
 			continue
 		generate_shard(shard_index++, shard_entries, generated_cache_shards, yield)
+		release_icon_cache()
 		shard_entries = list()
 		// Лист всё равно уйдёт на пересборку целиком - остальные шарды считать незачем.
 		if(needs_unread_retry(yield))
@@ -267,6 +280,7 @@
 			CHECK_TICK
 	if(length(shard_entries) && !needs_unread_retry(yield))
 		generate_shard(shard_index, shard_entries, generated_cache_shards, yield)
+		release_icon_cache()
 	if(needs_unread_retry(yield))
 		schedule_unread_retry()
 		return
@@ -368,6 +382,21 @@
 	))
 
 	unread_dmi_paths |= unread_shard_dmis(shard_entries, generated["dmi_hashes"])
+
+/**
+ * Отдаёт rust кэш разобранных DMI.
+ *
+ * Кадры в нём - мелкие аллокации, и аллокатор не возвращает их ОС: пик кэша за сборку
+ * навсегда занимает адресное пространство 32-битного процесса. Возвращает TRUE, если
+ * чистка действительно ушла в rust.
+ */
+/datum/asset/spritesheet_batched/proc/release_icon_cache()
+	// Кэш общий на процесс: пока рядом считается другой лист, чистка отняла бы
+	// разобранные DMI у него.
+	if(SSasset_loading.sheets_realizing > 1)
+		return FALSE
+	rustg_iconforge_cleanup()
+	return TRUE
 
 /**
  * DMI шарда, которые rust не смог прочитать.
@@ -502,6 +531,21 @@
 		if(!fexists(icon_path))
 			missing += icon_path
 	return missing
+
+/**
+ * Все DMI описания, которых нет на диске.
+ *
+ * В отличие от missing_dmi_files() список полный: по нему решается, начинать сборку
+ * или ждать деплой. Зовётся только с отложенного пути - внутри CHECK_TICK.
+ */
+/datum/asset/spritesheet_batched/proc/absent_dmi_files(list/check_entries)
+	RETURN_TYPE(/list)
+	var/list/absent = list()
+	for(var/icon_path in shard_dmi_paths(check_entries))
+		if(!fexists(icon_path))
+			absent += icon_path
+		CHECK_TICK
+	return absent
 
 /// Все DMI, на которые ссылается описание шарда, включая вложенные в blend_icon.
 /datum/asset/spritesheet_batched/proc/shard_dmi_paths(list/shard_entries)

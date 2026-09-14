@@ -19,7 +19,7 @@
 
 ///Прогнать полный цикл планирования контроллера мимо MC
 /datum/unit_test/proc/drive_ai_planning(datum/ai_controller/controller)
-	var/saved_state = SSai_controllers.state
+	var/saved_can_fire = detach_subsystem(SSai_controllers)
 	var/saved_limit = Master.current_ticklimit
 	SSai_controllers.state = SS_RUNNING
 	Master.current_ticklimit = INFINITY
@@ -27,7 +27,7 @@
 	while(length(SSai_controllers.currentrun))
 		SSai_controllers.fire(TRUE)
 	Master.current_ticklimit = saved_limit
-	SSai_controllers.state = saved_state
+	release_subsystem(SSai_controllers, saved_can_fire)
 
 ///Карп на адаптере: цель найдена планированием и отзеркалена в pawn.target
 /datum/unit_test/ai_adapter_carp_acquires_target/Run()

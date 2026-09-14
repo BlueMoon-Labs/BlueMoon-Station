@@ -6,7 +6,7 @@
 #define HULK		/datum/mutation/human/hulk
 #define XRAY		/datum/mutation/human/thermal/x_ray
 #define SPACEMUT	/datum/mutation/human/space_adaptation
-#define NOBREATHMUT	/datum/mutation/human/no_breathing
+/*#define NOBREATHMUT	/datum/mutation/human/no_breathing*/
 #define TK			/datum/mutation/human/telekinesis
 #define NERVOUS		/datum/mutation/human/nervousness
 #define EPILEPSY	/datum/mutation/human/epilepsy

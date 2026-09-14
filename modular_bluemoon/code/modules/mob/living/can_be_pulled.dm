@@ -26,7 +26,7 @@
 				can_pull = TRUE
 			if(user_mob.mob_weight > MOB_WEIGHT_NORMAL) // другие сверхтяжёлые или тяжёлые персонажи могут тащить
 				can_pull = TRUE
-			if(user_mob.mind.martial_art?.id) // обладатели некоторых боевых искусств могут хватать и тащить сверхтяжелых персонажей
+			if(user_mob.mind?.martial_art?.id) // обладатели некоторых боевых искусств могут хватать и тащить сверхтяжелых персонажей
 				#define ALLOWED_MARTIAL_ARTS list(MARTIALART_SLEEPINGCARP, MARTIALART_CQC, MARTIALART_PLASMAFIST, MARTIALART_BOUNCER, MARTIALART_RISINGBASS)
 				var/datum/martial_art/puller_martial_art = user_mob.mind.martial_art
 				if(puller_martial_art.id in ALLOWED_MARTIAL_ARTS)

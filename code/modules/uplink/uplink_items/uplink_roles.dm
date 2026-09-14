@@ -157,6 +157,14 @@
 	item = /obj/item/storage/box/syndie_kit/mimery
 	restricted_roles = list("Mime")
 
+/datum/uplink_item/role_restricted/reticence
+	name = "Reticence Exosuit"
+	desc = "Бесшумный, быстрый и почти невидимый мимский боевой экзокостюм. Оснащается бесшумным пистолетом \
+			и РЦД для возведения стен. Улучшен до уровня лёгкого боевого экзоскелета. Только для мимов."
+	cost = 15
+	item = /obj/vehicle/sealed/mecha/combat/reticence/loaded
+	restricted_roles = list("Mime")
+
 /datum/uplink_item/role_restricted/ultrahonkpins
 	name = "Hilarious firing pin"
 	desc = "A single firing pin made for Clown agents, this firing pin makes any gun honk when fired if not a true clown! \

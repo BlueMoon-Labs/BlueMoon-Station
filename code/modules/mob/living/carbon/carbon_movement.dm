@@ -15,23 +15,29 @@
 		if(istype(I, /obj/item/tank/jetpack))
 			var/obj/item/tank/jetpack/J = I
 			if(J.on)
-				. = J.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 1)
-				if(stat != CONSCIOUS || body_position == LYING_DOWN)
+				. = J.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 0.5)
+				if(body_position == LYING_DOWN)
+					. *= 2
+				if(stat != CONSCIOUS)
 					. *= 2
 				return
 		else if(istype(I, /obj/item/mod/module/jetpack))
 			// Модуль МОД-костюма
 			var/obj/item/mod/module/jetpack/J = I
 			if(J.active)
-				. = J.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 1)
-				if(stat != CONSCIOUS || body_position == LYING_DOWN)
+				. = J.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 0.5)
+				if(body_position == LYING_DOWN)
+					. *= 2
+				if(stat != CONSCIOUS)
 					. *= 2
 				return
 		// Кибернетический имплант трастеров
 		var/obj/item/organ/cyberimp/chest/thrusters/T = getorganslot(ORGAN_SLOT_THRUSTERS)
 		if(istype(T) && T.on)
-			. = T.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 1)
-			if(stat != CONSCIOUS || body_position == LYING_DOWN)
+			. = T.full_speed ? (CONFIG_GET(number/movedelay/run_delay) - 0.5) : (CONFIG_GET(number/movedelay/walk_delay) - 0.5)
+			if(body_position == LYING_DOWN)
+				. *= 2
+			if(stat != CONSCIOUS)
 				. *= 2
 			return
 	return ..()

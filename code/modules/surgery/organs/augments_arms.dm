@@ -29,6 +29,10 @@
 	QDEL_NULL(holder)
 	return ..()
 
+/// Arm augments use directional sprites (_left/_right) determined by which arm the implant is in.
+/obj/item/organ/cyberimp/arm/get_overlay_state(image_layer, obj/item/bodypart/limb)
+	return "[aug_overlay][zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"
+
 /obj/item/organ/cyberimp/arm/proc/add_item(obj/item/I)
 	if(I in items_list)
 		return
@@ -182,6 +186,7 @@
 /obj/item/organ/cyberimp/arm/medibeam
 	name = "integrated medical beamgun"
 	desc = "A cybernetic implant that allows the user to project a healing beam from their hand."
+	aug_overlay = "toolkit_med"
 	contents = newlist(/obj/item/gun/medbeam)
 
 ///////////////
@@ -191,6 +196,7 @@
 /obj/item/organ/cyberimp/arm/toolset
 	name = "integrated toolset implant"
 	desc = "A stripped-down version of the engineering cyborg toolset, designed to be installed on subject's arm. Contains all necessary tools."
+	aug_overlay = "toolkit_engi"
 	contents = newlist(/obj/item/screwdriver/cyborg,
 						/obj/item/crowbar/cyborg,
 						/obj/item/wrench/cyborg,
@@ -217,6 +223,7 @@
 /obj/item/organ/cyberimp/arm/surgery
 	name = "surgical toolset implant"
 	desc = "A set of surgical tools hidden behind a concealed panel on the user's arm."
+	aug_overlay = "toolkit_med"
 	contents = newlist(/obj/item/surgical_drapes,
 						/obj/item/scalpel/augment,
 						/obj/item/hemostat/augment,
@@ -239,6 +246,7 @@
 /obj/item/organ/cyberimp/arm/janitor
 	name = "janitorial tools implant"
 	desc = "A set of janitorial tools on the user's arm."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/lightreplacer, /obj/item/holosign_creator, /obj/item/soap/nanotrasen, /obj/item/reagent_containers/spray/cyborg_drying, /obj/item/mop/advanced, /obj/item/paint/paint_remover, /obj/item/reagent_containers/glass/beaker/large, /obj/item/reagent_containers/spray/cleaner) //Beaker if for refilling sprays
 
 /obj/item/organ/cyberimp/arm/janitor/emag_act()
@@ -255,6 +263,7 @@
 /obj/item/organ/cyberimp/arm/service
 	name = "service toolset implant"
 	desc = "A set of miscellaneous gadgets hidden behind a concealed panel on the user's arm."
+	aug_overlay = "toolkit_engi"
 	contents = newlist(/obj/item/extinguisher/mini, /obj/item/kitchen/knife/combat/bone/plastic, /obj/item/hand_labeler, /obj/item/pen, /obj/item/reagent_containers/dropper, /obj/item/kitchen/rollingpin, /obj/item/reagent_containers/glass/beaker/large, /obj/item/reagent_containers/syringe,/obj/item/reagent_containers/food/drinks/shaker, /obj/item/radio/off, /obj/item/camera, /obj/item/modular_computer/tablet/preset/cargo)
 
 /obj/item/organ/cyberimp/arm/service/emag_act()
@@ -275,17 +284,20 @@
 	name = "arm-mounted laser implant"
 	desc = "A variant of the arm cannon implant that fires lethal laser beams. The cannon emerges from the subject's arm and remains inside when not in use."
 	icon_state = "arm_laser"
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/gun/energy/laser/mounted)
 
 /obj/item/organ/cyberimp/arm/gun/taser
 	name = "arm-mounted taser implant"
 	desc = "A variant of the arm cannon implant that fires electrodes and disabler shots. The cannon emerges from the subject's arm and remains inside when not in use."
 	icon_state = "arm_taser"
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/gun/energy/e_gun/advtaser/mounted)
 
 /obj/item/organ/cyberimp/arm/flash
 	name = "integrated high-intensity photon projector" //Why not
 	desc = "An integrated projector mounted onto a user's arm that is able to be used as a powerful flash."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/assembly/flash/armimplant)
 
 /obj/item/organ/cyberimp/arm/flash/Initialize(mapload)
@@ -297,11 +309,13 @@
 /obj/item/organ/cyberimp/arm/baton
 	name = "arm electrification implant"
 	desc = "An illegal combat implant that allows the user to administer disabling shocks from their arm."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/borg/stun)
 
 /obj/item/organ/cyberimp/arm/combat
 	name = "combat cybernetics implant"
 	desc = "A powerful cybernetic implant that contains combat modules built into the user's arm."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/melee/transforming/energy/blade/hardlight, /obj/item/gun/medbeam, /obj/item/borg/stun, /obj/item/assembly/flash/armimplant)
 
 /obj/item/organ/cyberimp/arm/combat/Initialize(mapload)
@@ -313,11 +327,13 @@
 /obj/item/organ/cyberimp/arm/esword
 	name = "arm-mounted energy blade"
 	desc = "An illegal and highly dangerous cybernetic implant that can project a deadly blade of concentrated energy."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/melee/transforming/energy/blade/hardlight)
 
 /obj/item/organ/cyberimp/arm/shield
 	name = "arm-mounted riot shield"
 	desc = "A deployable riot shield to help deal with civil unrest."
+	aug_overlay = "toolkit"
 	contents = newlist(/obj/item/shield/riot/implant)
 
 /obj/item/organ/cyberimp/arm/shield/Extend(obj/item/I, silent = FALSE)

@@ -357,7 +357,7 @@
 			Позволяет рубить на расстоянии!"
 	item = /obj/item/gun/magic/staff/motivation
 	cost = 10
-	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS
 
 /datum/uplink_item/dangerous/kudzu_seeds
 	name = "Pack of Kudzu Seeds"

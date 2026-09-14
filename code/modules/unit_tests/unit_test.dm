@@ -173,6 +173,27 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 #define WAIT_BUDGET_TIMER_FIRES 3
 #define WAIT_BUDGET_DESCRIPTION 4
 
+/// Забирает подсистему у МК на время теста и возвращает прежний can_fire для release_subsystem().
+/// Писать state поверх стоящей в очереди подсистемы нельзя: МК ставит её второй раз, и очередь замыкается в кольцо.
+/datum/unit_test/proc/detach_subsystem(datum/controller/subsystem/subsystem)
+	. = subsystem.can_fire
+	subsystem.can_fire = FALSE
+	if(subsystem.state == SS_QUEUED || subsystem.state == SS_PAUSED || subsystem.state == SS_PAUSING)
+		subsystem.dequeue()
+		subsystem.state = SS_IDLE
+
+/// Отдаёт подсистему МК: в очередь она встанет сама на ближайшем CheckQueue.
+/datum/unit_test/proc/release_subsystem(datum/controller/subsystem/subsystem, can_fire = TRUE)
+	subsystem.state = SS_IDLE
+	subsystem.can_fire = can_fire
+
+/// Один fire() подсистемы руками. Не ignite(): тот на паузе внутри fire() зовёт enqueue().
+/datum/unit_test/proc/fire_subsystem(datum/controller/subsystem/subsystem, resumed = FALSE)
+	var/saved_can_fire = detach_subsystem(subsystem)
+	subsystem.state = SS_RUNNING
+	subsystem.fire(resumed)
+	release_subsystem(subsystem, saved_can_fire)
+
 /// Бюджет одного ожидания отложенной работы, см. wait_budget_tick().
 /datum/unit_test/proc/new_wait_budget(max_wait, description)
 	return list(world.time + max_wait, null, null, description)

@@ -379,9 +379,13 @@
 /mob/living/start_pulling(atom/movable/AM, state, force = pull_force, supress_message = FALSE)
 	if(!AM || !src)
 		return FALSE
+	// ASSERT(ismovable(AM), "[src] attempted to pull [AM ? "[AM], a nonmovable atom" : "a null object"]")
 	if(!(AM.can_be_pulled(src, state, force)))
 		return FALSE
-	if(throwing || incapacitated())
+	if(throwing || !(mobility_flags & MOBILITY_PULL))
+		return FALSE
+	var/mob/living/prospective_target = AM // BLUEMOON ADD - щит/стойка блокирует перетаскивание
+	if(isliving(prospective_target) && prospective_target.can_block_grab_attempt(src))
 		return FALSE
 
 	AM.add_fingerprint(src)
@@ -390,10 +394,10 @@
 	if(pulling)
 		// Are we trying to pull something we are already pulling? Then just stop here, no need to continue.
 		if(AM == pulling)
-			return
+			return FALSE
 		stop_pulling()
 
-	DelayNextAction(CLICK_CD_GRABBING)
+	changeNext_move(CLICK_CD_GRABBING)
 
 	if(AM.pulledby)
 		if(!supress_message)
@@ -461,27 +465,30 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	var/target_dir = get_dir(M, src)
-	M.setDir(target_dir)
-	var/target_x
-	var/target_y
-	if(target_dir & NORTH)
-		target_y += offset
-	if(target_dir & SOUTH)
-		target_y -= offset
-	if(target_dir & EAST)
-		target_x += offset
-	if(target_dir & WEST)
-		target_x -= offset
+	M.setDir(get_dir(M, src))
+	var/dir_filter = M.dir
+	if(ISDIAGONALDIR(dir_filter))
+		dir_filter = EWCOMPONENT(dir_filter)
+	var/target_x = 0
+	var/target_y = 0
+	switch(dir_filter)
+		if(NORTH)
+			target_y += offset
+		if(SOUTH)
+			target_y -= offset
+		if(EAST)
+			if(offset && M.lying == 270)
+				M.lying = 90
+				M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
+				M.lying_prev = M.lying
+			target_x += offset
+		if(WEST)
+			if(offset && M.lying == 90)
+				M.lying = 270
+				M.update_transform(FALSE)
+				M.lying_prev = M.lying
+			target_x -= offset
 	if(target_x || target_y)
-		if(0 < target_x && M.lying == 270)
-			M.lying = 90
-			M.update_transform(FALSE) //force a transformation update, otherwise it'll take a few ticks for update_mobility() to do so
-			M.lying_prev = M.lying
-		if(0 > target_x && M.lying == 90)
-			M.lying = 270
-			M.update_transform(FALSE)
-			M.lying_prev = M.lying
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
@@ -707,7 +714,7 @@
 		clear_fullscreen("brute")
 
 //Proc used to resuscitate a mob, for full_heal see fully_heal()
-/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0)
+/mob/living/proc/revive(full_heal = FALSE, admin_revive = FALSE, excess_healing = 0, post_revive_effects = FALSE)
 	SEND_SIGNAL(src, COMSIG_LIVING_REVIVE, full_heal, admin_revive)
 	if(excess_healing)
 		adjustOxyLoss(-excess_healing, updating_health = FALSE)
@@ -728,6 +735,10 @@
 		update_sight()
 		clear_alert("not_enough_oxy")
 		reload_fullscreen()
+		if(post_revive_effects) // Эффект вспышки, спутанности и помутнённого зрения после возвращения с того света
+			adjust_blurriness(20)
+			Dizzy(20)
+			flash_act(override_blindness_check = 1, override_protection = 1, visual = 1, duration = rand(12, 15))
 		. = TRUE
 		if(excess_healing)
 			INVOKE_ASYNC(src, PROC_REF(emote), "gasp")

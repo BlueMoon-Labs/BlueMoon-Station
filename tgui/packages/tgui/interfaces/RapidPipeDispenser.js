@@ -158,10 +158,9 @@ export const RapidPipeDispenser = (props) => {
           </Flex.Item>
           <Flex.Item m={0.5} grow={1}>
             <Section>
-              <Tabs>
+              <Tabs fluid>
                 {categories.map((category, i) => (
                   <Tabs.Tab
-                    fluid
                     key={category.cat_name}
                     icon={ICON_BY_CATEGORY_NAME[category.cat_name]}
                     selected={category.cat_name === shownCategory.cat_name}

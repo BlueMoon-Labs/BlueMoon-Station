@@ -1,6 +1,6 @@
 {
     "map_name": "Box Station",
-    "map_path": "map_files/BoxStation",
+    "map_path": "map_files/BoxStations",
     "map_file": "BoxStation.dmm",
     "shuttles": {
 	    "cargo": "cargo_box",

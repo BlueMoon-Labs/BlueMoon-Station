@@ -122,20 +122,13 @@
 					fields[++fields.len] = FIELD("Псих. статус", active1.fields["m_stat"], "m_stat")
 					var/list/photos = list()
 					general["photos"] = photos
-					if(istype(active1.fields["photo_front"], /obj/item/photo))
-						var/obj/item/photo/P = active1.fields["photo_front"]
-						var/front_base64 = P.picture?.get_base64()
-						if(front_base64)
-							photos[++photos.len] = front_base64
-					else if(isicon(active1.fields["photo_front"]))
-						photos[++photos.len] = icon2base64(active1.fields["photo_front"])
-					if(istype(active1.fields["photo_side"], /obj/item/photo))
-						var/obj/item/photo/P = active1.fields["photo_side"]
-						var/side_base64 = P.picture?.get_base64()
-						if(side_base64)
-							photos[++photos.len] = side_base64
-					else if(isicon(active1.fields["photo_side"]))
-						photos[++photos.len] = icon2base64(active1.fields["photo_side"])
+					// ui_data гоняет SStgui и спать не может: кадр снимает ui_act("d_rec").
+					var/front_base64 = active1.get_record_photo_base64("photo_front")
+					if(front_base64)
+						photos[++photos.len] = front_base64
+					var/side_base64 = active1.get_record_photo_base64("photo_side")
+					if(side_base64)
+						photos[++photos.len] = side_base64
 					general["has_photos"] = length(photos) > 0
 					general["empty"] = 0
 				else
@@ -269,6 +262,8 @@
 				active1 = general_record
 				active2 = medical_record
 				screen = MED_DATA_RECORD
+				// Съёмка уступает тик, поэтому стоит после выставления экрана.
+				general_record.get_record_photo("photo_front")
 			if("new")
 				if(istype(active1, /datum/data/record) && !istype(active2, /datum/data/record))
 					var/datum/data/record/R = new /datum/data/record()
@@ -319,6 +314,7 @@
 						active1 = E
 						break
 				screen = MED_DATA_RECORD
+				active1?.get_record_photo("photo_front")
 			if("print_p")
 				if(!printing)
 					printing = TRUE

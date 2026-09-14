@@ -169,6 +169,8 @@
 /mob/living/proc/adjustOxyLoss(amount, updating_health = TRUE, forced = FALSE)
 	if(!forced && (status_flags & GODMODE))
 		return FALSE
+	if(!forced && HAS_TRAIT(src, TRAIT_NOBREATH) && amount > 0)
+		return FALSE
 	var/previous_oxyloss = oxyloss
 	oxyloss = clamp((oxyloss + (amount * CONFIG_GET(number/damage_multiplier))), 0, maxHealth * 2)
 	// Клампнутый в тот же ноль вдох. check_breath зовёт adjustOxyLoss(-breathModifier)

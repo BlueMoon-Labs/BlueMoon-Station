@@ -7,6 +7,7 @@ const TASK_TYPE_LABELS = {
   drop: 'Drop',
   throw: 'Throw',
   wait: 'Wait',
+  harm: 'Harm',
 };
 
 const ROWS = [
@@ -36,6 +37,8 @@ export const BigManipulator = (props) => {
     tasking_strategy,
     disk_inserted,
     disk_read_only,
+    harm_unlocked,
+    interact_unlocked,
     disk_task_count = 0,
     tasks_data = [],
   } = data;
@@ -120,6 +123,24 @@ export const BigManipulator = (props) => {
             >
               Wait
             </Button>
+            {!!harm_unlocked && (
+              <Button
+                icon="hand-rock"
+                color="red"
+                onClick={() => act('create_task', { task_type: 'harm' })}
+              >
+                Harm
+              </Button>
+            )}
+            {!!interact_unlocked && (
+              <Button
+                icon="hand-pointer"
+                color="green"
+                onClick={() => act('create_task', { task_type: 'interact' })}
+              >
+                Interact
+              </Button>
+            )}
           </Stack>
           <Box mt={1} color="label" fontSize="12px">
             Cargo tasks are placed on a free adjacent tile. Use the number pad
@@ -156,19 +177,17 @@ export const BigManipulator = (props) => {
                     />
                   )}
                   {task.task_type === 'drop' && (
-                    <>
-                      <Button
-                        compact
-                        content={task.overflow_status}
-                        tooltip="Allow: always drop here; TO HELD: no same-type item already there; FORBID: no items at all there"
-                        onClick={() =>
-                          act('adjust_task_param', {
-                            taskId: task.id,
-                            param: 'cycle_overflow_status',
-                          })
-                        }
-                      />
-                    </>
+                    <Button
+                      compact
+                      content={task.overflow_status}
+                      tooltip="Allow: always drop here; TO HELD: no same-type item already there; FORBID: no items at all there"
+                      onClick={() =>
+                        act('adjust_task_param', {
+                          taskId: task.id,
+                          param: 'cycle_overflow_status',
+                        })
+                      }
+                    />
                   )}
                   {task.task_type === 'throw' && (
                     <Box inline>
@@ -198,12 +217,13 @@ export const BigManipulator = (props) => {
                           act('adjust_task_param', {
                             taskId: task.id,
                             param: 'set_wait_time',
-                            value: value,
+                            value: Math.min(60, Math.max(1, value)),
                           })
                         }
                       />
                     </Box>
                   )}
+                  {task.task_type === 'harm' && null}
                   {task.turf && (
                     <Box mt={0.5}>
                       {ROWS.map((row, rowIndex) => (
@@ -213,6 +233,7 @@ export const BigManipulator = (props) => {
                               {direction && (
                                 <Button
                                   compact
+                                  color={task.task_type === 'harm' ? 'red' : task.task_type === 'interact' ? 'green' : undefined}
                                   icon={direction.icon}
                                   iconRotation={direction.iconRotation}
                                   tooltip={`Move point (${((direction.button - 1) % 3) - 1}, ${1 - Math.round((direction.button - 1) / 3)})`}

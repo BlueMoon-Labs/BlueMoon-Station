@@ -109,6 +109,9 @@
 	var/list/to_heal = list()
 	var/alert_category = "aura_healing_[REF(src)]"
 
+	if(!length(current_alerts) && !length(SSspatial_grid.orthogonal_range_search(parent, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, range)))
+		return
+
 	if(requires_visibility)
 		for(var/mob/living/candidate in view(range, parent))
 			if (!isnull(limit_to_trait) && !HAS_TRAIT(candidate, limit_to_trait))

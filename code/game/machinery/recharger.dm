@@ -23,6 +23,7 @@
 		/obj/item/ammo_casing/mws_batt,
 		/obj/item/ammo_box/magazine/mws_mag,
 		/obj/item/electrostaff,
+		/obj/item/melee/tomahawk,
 		/obj/item/gun/ballistic/automatic/magrifle,
 		/obj/item/paicard))
 
@@ -158,7 +159,7 @@
 			var/obj/item/ammo_box/magazine/recharge/R = charging
 			if(R.stored_ammo.len < R.max_ammo)
 				R.stored_ammo += new R.ammo_type(R)
-				use_power(200 * recharge_coeff)
+				use_power(1000 * recharge_coeff)
 				using_power = TRUE
 			update_appearance()
 			return

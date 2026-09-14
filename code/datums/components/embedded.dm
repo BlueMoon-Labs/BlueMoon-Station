@@ -438,6 +438,8 @@
 			us.visible_message("<span class='notice'>[us] пытается достать [weapon] из [parent].</span>", "<span class='notice'>Вы пытаетесь достать [weapon] из [parent]...</span>")
 
 		if(do_after(us, 30, target = parent))
+			if(QDELETED(weapon)) // Предмет могли убрать параллельно
+				return
 			us.put_in_hands(weapon)
 			weapon.unembedded()
 			qdel(src)
@@ -445,6 +447,8 @@
 
 /// This proc handles if something knocked the invisible item loose from the turf somehow (probably an explosion). Just make it visible and say it fell loose, then get outta here.
 /datum/component/embedded/proc/itemMoved()
+	if(QDELETED(weapon))
+		return
 	weapon.invisibility = initial(weapon.invisibility)
 	weapon.visible_message("<span class='notice'>[weapon] выпадает из [parent].</span>")
 	weapon.unembedded()

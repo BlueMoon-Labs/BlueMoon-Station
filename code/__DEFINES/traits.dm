@@ -123,6 +123,8 @@
 #define TRAIT_XENO_HOST			"xeno_host"	//Tracks whether we're gonna be a baby alien's mummy.
 #define TRAIT_STUNIMMUNE		"stun_immunity"
 #define TRAIT_TASED_RESISTANCE	"tased_resistance" //prevents you from suffering most of the effects of being tased
+#define TRAIT_BATON_RESISTANCE	"baton_resistance" //prevents you from suffering most of the effects of being batoned
+#define TRAIT_DISABLER_RESISTANCE "disabler_resistance" //prevents you from suffering stamina damage from disablers
 #define TRAIT_SLEEPIMMUNE		"sleep_immunity"
 #define TRAIT_PUSHIMMUNE		"push_immunity"
 #define TRAIT_SHOCKIMMUNE		"shock_immunity"
@@ -273,6 +275,7 @@
 #define TRAIT_FAST_PUMP				"fast_pump"
 #define TRAIT_NO_PROCESS_FOOD	"no-process-food" // You don't get benefits from nutriment, nor nutrition from reagent consumables
 #define TRAIT_NICE_SHOT			"nice_shot" //hnnnnnnnggggg..... you're pretty good...
+#define TRAIT_GUNFLIP			"gunflip" //дан термальными кобурами, позволяет крутить термальные пистолеты для зарядки
 #define TRAIT_NO_STAMINA_BUFFER_REGENERATION			"block_stamina_buffer_regen" /// Prevents stamina buffer regeneration
 #define TRAIT_NO_STAMINA_REGENERATION					"block_stamina_regen" /// Prevents stamina regeneration
 #define TRAIT_ARMOR_BROKEN		"armor_broken" //acts as if you are wearing no clothing when taking damage, does not affect non-clothing sources of protection
@@ -410,9 +413,12 @@
 #define OVERDOSE_TRAIT "overdose"
 #define CHAINSAW_FRENZY_TRAIT "chainsaw-frenzy"
 #define CHRONO_GUN_TRAIT "chrono-gun"
+#define THERMAL_HOLSTER_TRAIT "thermal-holster"
 #define REVERSE_BEAR_TRAP_TRAIT "reverse-bear-trap"
 #define GLUED_ITEM_TRAIT "glued-item"
 #define CURSED_MASK_TRAIT "cursed-mask"
+#define TRAIT_VOID_MASK_IMMUNE "void-mask-immune"
+#define VOID_MASK_TRAIT "void-mask"
 #define HIS_GRACE_TRAIT "his-grace"
 #define HAND_REPLACEMENT_TRAIT "magic-hand"
 #define HOT_POTATO_TRAIT "hot-potato"
@@ -552,7 +558,6 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 /// Makes you flashable from any direction
 #define TRAIT_FLASH_SENSITIVE "flash_sensitive"
 #define TRAIT_NAIVE "naive"
-#define TRAIT_GUNFLIP "gunflip"
 /// Increases chance of getting special traumas, makes them harder to cure
 #define TRAIT_SPECIAL_TRAUMA_BOOST "special_trauma_boost"
 #define TRAIT_BLOODCRAWL_EAT "bloodcrawl_eat"

@@ -37,12 +37,17 @@
 		else
 			dist = 1
 	if(dist)
+		var/turf/birth_turf = loc
 		for(var/i in 1 to dist)
 			sleep(2)
-			var/obj/effect/decal/cleanable/blood/splatter/xeno/splat = new /obj/effect/decal/cleanable/blood/splatter/xeno(loc, diseases)
-			splat.transfer_blood_dna(blood_DNA, diseases)
+			// Брызги ложатся на покинутый турф, иначе кап вытесняет сам гиб.
+			var/turf/left_turf = loc
 			if(!step_to(src, get_step(src, direction), 0))
 				break
+			var/obj/effect/decal/cleanable/blood/splatter/xeno/splat = new /obj/effect/decal/cleanable/blood/splatter/xeno(left_turf, diseases)
+			splat.transfer_blood_dna(blood_DNA, diseases)
+		if(!QDELETED(src) && isturf(loc) && loc != birth_turf)
+			enforce_turf_decal_cap()
 
 /obj/effect/decal/cleanable/blood/gibs/xeno/up
 	random_icon_states = list("gib1", "gib2", "gib3", "gib4", "gib5", "gib6","gibup1","gibup1","gibup1")

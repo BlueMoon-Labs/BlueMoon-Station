@@ -266,6 +266,15 @@
 
 	TEST_ASSERT_EQUAL(test_light.switchcount, 7, "Silent nightshift interpolation should not increment bulb aging.")
 
+/// Отмечает завершение отложенного update(0) из Initialize, сохраняя обычную инициализацию лампы.
+/obj/machinery/light/nightshift_relight_test
+	var/startup_update_complete = FALSE
+
+/obj/machinery/light/nightshift_relight_test/update(trigger = TRUE, silent = FALSE)
+	. = ..()
+	if(!trigger && !silent)
+		startup_update_complete = TRUE
+
 /datum/unit_test/nightshift_relight_resync
 	var/list/original_station_areas
 	var/list/original_apcs_list
@@ -285,7 +294,7 @@
 	SSnightshift.can_fire = FALSE
 	sleep(world.tick_lag)
 	SSnightshift.nightshift_refresh_running = FALSE
-	SSnightshift.nightshift_refresh_generation++ // Invalidate any running async refresh
+	SSnightshift.nightshift_refresh_generation++ // Отменяем незавершённое асинхронное обновление.
 	test_area = get_area(run_loc_floor_bottom_left)
 	light_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
 	original_station_areas = GLOB.the_station_areas.Copy()
@@ -308,13 +317,10 @@
 	test_apc.update()
 	test_area.power_light = TRUE
 	test_area.lightswitch = TRUE
-	test_light = allocate(/obj/machinery/light, light_turf)
-	// Initialize светильника отложен через spawn(2) { prob(2) break_light_tube; spawn(1) { update(0) } }.
-	// Чинит лампу код ниже, поэтому разбитие внутри этого окна безвредно - но 4 деци
-	// оставляли планировщику ровно один тик запаса: на загруженном раннере отложенная
-	// цепочка приезжала уже ПОСЛЕ ремонта, и фикстура уходила в тест разбитой, без
-	// источника света (падение "Setup should have a live light source").
-	sleep(1 SECONDS)
+	test_light = allocate(/obj/machinery/light/nightshift_relight_test, light_turf)
+	// Фиксированный sleep не гарантирует завершение вложенных spawn на загруженном CI.
+	// Ждём последний update из Initialize, чтобы случайное разбитие не произошло после ремонта.
+	TEST_ASSERT(wait_for_var(test_light, "startup_update_complete", TRUE, 5 SECONDS), "Лампа не завершила отложенную инициализацию.")
 	test_light.status = LIGHT_OK
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
@@ -338,6 +344,8 @@
 
 /datum/unit_test/nightshift_relight_resync/proc/prime_deep_night_fixture()
 	test_light.status = LIGHT_OK
+	// update APC вызывает power_change лампы: исключаем случайное перегорание при подготовке.
+	test_light.switchcount = -1
 	test_apc.update()
 	test_light.on = test_light.has_power()
 	test_light.switchcount = 0
@@ -381,6 +389,7 @@
 	test_light.on = FALSE
 	test_light.set_light(0, l_cone_angle = 0)
 	drain_nightshift_lighting_work()
+	test_light.switchcount = -1
 	test_light.fix()
 	assert_deep_night_emission("Fixture repair")
 

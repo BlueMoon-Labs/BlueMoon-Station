@@ -665,8 +665,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	src << browse(file('html/statbrowser.html'), "window=statbrowser")
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
-	acquire_dpi()
-	connect_probe.mark("dpi")
+	// winget за dpi - round-trip до скина клиента, на холодном кэше он отвечает секундами, а
+	// логину это значение не нужно. Асинхронно, а не таймером: таймеры не фиерят на init мира.
+	INVOKE_ASYNC(src, PROC_REF(acquire_dpi))
+	connect_probe.mark("панели")
 
 	if(alert_mob_dupe_login && !holder)
 		var/dupe_login_message = "Your ComputerID has already logged in with another key this round, please log out of this one NOW or risk being banned!"
@@ -901,7 +903,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
 	// Зум приходит пачкой, пока игрок тянет рамку окна, а запись savefile
 	// синхронная - она морозит весь процесс, а не только вызывающего. Кладём один
-	// ключ в буфер склейки: он уйдёт на диск одним открытием савфайла, а не полным
+	// ключ в буфер склейки: он уйдёт на диск одним открытием savefile, а не полным
 	// сейвом префов, и переживёт логаут - флаш висит на разлогине и на Destroy датума.
 	prefs.save_single_pref("ui_zoom_preferences", prefs.ui_zoom_preferences)
 	return TRUE
@@ -1094,6 +1096,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		window_scaling_retry_count = 0
 
 	var/new_scaling = text2num(tracked_winget(src, null, "dpi"))
+	// Клиент ответил чем угодно - панель tgui, ждущая масштаб, может ехать дальше.
+	window_scaling_resolved = TRUE
 	if(isnum(new_scaling) && new_scaling > 0)
 		window_scaling = new_scaling
 		window_scaling_retry_count = 0
@@ -1909,6 +1913,13 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		if(lighting_pm)
 			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
 			lighting_pm.filters = null
+		// The emissive plane only exists to feed the lighting plane's alpha mask, which is disabled
+		// above. Without that mask the raw white emissive overlays would blow out the whole preview,
+		// so hide the emissive plane in the character preview too.
+		var/atom/movable/screen/plane_master/emissive_pm = char_render_holders["plane_master-[EMISSIVE_PLANE]"]
+		if(emissive_pm)
+			emissive_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			emissive_pm.filters = null
 
 	var/pos = 0
 	for(var/dir in GLOB.cardinals)
@@ -2012,7 +2023,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/current = unlockable_loadout_data[key]
 	unlockable_loadout_data[key] = (isnull(current) ? 0 : current) + amount
 	prefs.unlockable_loadout_data = unlockable_loadout_data
-	// Прежде тут открывался савфайл и писался WRITE_FILE напрямую, мимо замера
+	// Прежде тут открывался savefile и писался WRITE_FILE напрямую, мимо замера
 	// блокирующих вызовов: каждая вымытая плитка уходила синхронно на диск, а
 	// детектор спайков видел её как безымянный "внешний столл". Ключ один, так что
 	// пишем его одиночной записью и под тем же прибором, что и остальные префы.

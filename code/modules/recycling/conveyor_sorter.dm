@@ -58,6 +58,8 @@
 	desc = "A mark that sorts items out based on what they are."
 	icon = 'icons/obj/recycling.dmi'
 	icon_state = "sorter"
+	// Настроенное игроком устройство, а не грязь: кап декалей турфа его не вытесняет.
+	cap_exempt = TRUE
 	layer = OBJ_LAYER
 	plane = GAME_PLANE
 	///the list of items that will be sorted to the sorted direction

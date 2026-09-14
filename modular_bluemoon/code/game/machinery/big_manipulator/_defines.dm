@@ -55,6 +55,9 @@
 #define TASK_TYPE_DROP "drop"
 #define TASK_TYPE_THROW "throw"
 #define TASK_TYPE_WAIT "wait"
+#define TASK_TYPE_HARM "harm"
 
 #define TASKING_SEQUENTIAL "Sequential"
 #define TASKING_STRICT "Strict order"
+
+#define TASK_TYPE_INTERACT "interact"

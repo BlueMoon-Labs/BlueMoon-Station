@@ -1,15 +1,15 @@
 /obj/effect/anomaly/ectoplasm
-	name = "ectoplasm anomaly"
-	desc = "It looks like the souls of the damned are trying to break into the realm of the living again. How upsetting."
+	desc = "Похоже, души проклятых снова пытаются прорваться в мир живых. Как неприятно."
 	icon_state = "ectoplasm"
 	aSignal = /obj/item/assembly/signaler/anomaly/ectoplasm
-	lifespan = ANOMALY_COUNTDOWN_TIMER + 2 SECONDS //This one takes slightly longer, because it can run away.
+	lifespan = ANOMALY_COUNTDOWN_TIMER + 2 SECONDS //Действует чуть дольше, потому что аномалия может сбежать.
+	immobile = TRUE //не даёт аномалии разгуливать, чтобы призраки могли двигать её с достаточной точностью
 
-	///Blocks the anomaly from updating ghost count. Used in case an admin wants to rig the anomaly to be a certain size or intensity.
+	///Блокирует пересчёт количества призраков аномалией. Используется, если админ хочет задать аномалии определённый размер или интенсивность.
 	var/override_ghosts = FALSE
-	///The numerical power of the anomaly. Calculated in anomalyEffect. Also used in determining the category of detonation effects.
+	///Численная сила аномалии. Рассчитывается в anomalyEffect. Также используется для определения категории эффектов детонации.
 	var/effect_power = 0
-	///The actual number of ghosts orbiting the anomaly.
+	///Текущее количество призраков, кружащихся вокруг аномалии.
 	var/ghosts_orbiting = 0
 
 /obj/effect/anomaly/ectoplasm/Initialize(mapload, new_lifespan)
@@ -21,18 +21,18 @@
 	. = ..()
 
 	if(isobserver(user))
-		. += span_info("Orbiting this anomaly will increase the size and intensity of its effects.")
+		. += span_info("Если вы будете кружить вокруг этой аномалии, её эффекты станут больше и мощнее.")
 
 /obj/effect/anomaly/ectoplasm/examine_more(mob/user)
 	. = ..()
 
 	switch(effect_power)
 		if(0 to 25)
-			. += span_notice("The space around the anomaly faintly resonates. It doesn't seem very powerful at the moment.")
+			. += span_notice("Пространство вокруг аномалии слабо резонирует. Похоже, сейчас она не очень сильна.")
 		if(26 to 49)
-			. += span_notice("The space around the anomaly seems to vibrate, letting out a noise that sounds like ghastly moaning. Someone should probably do something about that.")
+			. += span_notice("Пространство вокруг аномалии вибрирует, издавая звук, похожий на жуткий стон. Кому-то стоило бы что-то с этим сделать.")
 		if(50 to 100)
-			. += span_alert("The anomaly pulsates heavily, about to burst with unearthly energy. This can't be good.")
+			. += span_alert("Аномалия тяжело пульсирует и вот-вот разорвётся неземной энергией. Вряд ли это сулит что-то хорошее.")
 
 /obj/effect/anomaly/ectoplasm/anomalyEffect(seconds_per_tick)
 	. = ..()
@@ -55,11 +55,11 @@
 /obj/effect/anomaly/ectoplasm/detonate()
 	. = ..()
 
-	if(effect_power < 10) //Under 10% participation, we do nothing more than a small visual *poof*.
+	if(effect_power < 10) //При участии ниже 10% мы делаем лишь небольшой визуальный *хлопок*.
 		new /obj/effect/temp_visual/revenant/cracks(get_turf(src))
 		return
 
-	if(effect_power >= 10) //Performs something akin to a revenant defile spell.
+	if(effect_power >= 10) //Выполняет нечто вроде заклинания осквернения ревенанта.
 		var/effect_range = ghosts_orbiting + 3
 		var/effect_area = range(effect_range, src)
 
@@ -84,7 +84,7 @@
 				var/mob/living/carbon/human/mob_to_infect = impacted_thing
 				mob_to_infect.ForceContractDisease(new /datum/disease/revblight(), FALSE, TRUE)
 				new /obj/effect/temp_visual/revenant(get_turf(mob_to_infect))
-				to_chat(mob_to_infect, span_revenminor("A cacophony of ghostly wailing floods your ears for a moment. The noise subsides, but a distant whispering continues echoing inside of your head..."))
+				to_chat(mob_to_infect, span_revenminor("Какофония призрачных стонов на мгновение затопляет ваши уши. Шум стихает, но далёкий шёпот продолжает звучать эхом глубоко в вашей голове..."))
 
 			if(istype(impacted_thing, /obj/structure/window))
 				var/obj/structure/window/window_to_damage = impacted_thing
@@ -96,25 +96,25 @@
 		var/effect_range = ghosts_orbiting + 3
 		haunt_outburst(epicenter = get_turf(src), range = effect_range, haunt_chance = 45, duration = 2 MINUTES)
 
-	if(effect_power >= 50) //Summon a ghost swarm!
+	if(effect_power >= 50) //Вызывает рой призраков!
 		var/list/candidate_list = list()
 		for(var/mob/dead/observer/orbiter in orbiters?.orbiters)
 			candidate_list += orbiter
 
 		new /obj/structure/ghost_portal(get_turf(src), candidate_list)
 
-		priority_announce("Anomaly has reached critical mass. Ectoplasmic outburst detected.", "ВНИМАНИЕ: АНОМАЛИЯ")
+		priority_announce("Призрачная аномалия достигла своей критической массы. Обнаружен эктоплазматический выброс.", "ВНИМАНИЕ: АНОМАЛИЯ")
 
 /**
- * Manages updating the sprite for the anomaly based on how many orbiters it has.
+ * Управляет обновлением спрайта аномалии в зависимости от количества кружащихся вокруг неё призраков.
  *
  *
- * A check that is run to determine which sprite the anomaly should currently be displaying.
- * With 50% or more participation, the "heavy" sprite is used. Otherwise, it is reverted to the normal anomaly sprite.
+ * Проверка, определяющая, какой спрайт аномалия должна отображать в данный момент.
+ * При участии 50% и более используется «тяжёлый» спрайт. В противном случае возвращается обычный спрайт аномалии.
  */
 
 /obj/effect/anomaly/ectoplasm/proc/intensity_update()
-	if(effect_power >= 50) //If we're at the threshold for the highest tier effect, we change sprites in preparation for the spooks.
+	if(effect_power >= 50) //Если мы достигли порога эффекта высшего уровня, меняем спрайт в предвкушении жути.
 		icon_state = "ectoplasm_heavy"
 		update_icon_state()
 	else
@@ -123,12 +123,12 @@
 
 
 
-// Ghost Portal. Used to bring anomaly orbiters into the playing field as ghosts. Destroys itself and all of its associated ghosts after two minutes.
-// Can be destroyed early to the same effect.
+// Призрачный портал. Используется, чтобы доставить призраков-орбитеров аномалии на поле боя. Самоуничтожается вместе со всеми порождёнными призраками через две минуты.
+// Может быть уничтожен раньше с тем же эффектом.
 
 /obj/structure/ghost_portal
-	name = "Spooky Portal"
-	desc = "A portal between our dimension and who-knows-where? It's emitting an absolutely ungodly wailing sound."
+	name = "Жуткий портал"
+	desc = "Портал между нашим измерением и неизвестно чем. Из него доносится совершенно нечеловеческий вой."
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "anom"
 	anchored = TRUE
@@ -168,18 +168,18 @@
 	ghosts_spawned = null
 
 /**
- * Generates a poll for observers, spawning anyone who signs up in a large group of ghost mobs
+ * Устраивает опрос для наблюдателей, призывая согласившихся в качестве большой группы призрачных мобов
  *
- * Generates a poll that asks anyone observing for participation. Spawns a bunch of basicmob ghosts with the keys of candidates who have signed up.
- * Ghosts are deleted two minutes after being made, and exist to punch stuff until it breaks.
+ * Устраивает опрос с просьбой об участии для всех наблюдателей. Призывает группу призрачных мобов basicmob с клавиатурами согласившихся кандидатов.
+ * Призраки удаляются через две минуты после появления и существуют, чтобы крушить всё, пока оно не сломается.
  */
 
 /obj/structure/ghost_portal/proc/make_ghost_swarm(list/candidate_list = list())
-	if(!length(candidate_list)) //If we are not passed a candidate list we just poll everyone who is dead, meaning these can also be spawned directly.
+	if(!length(candidate_list)) //Если список кандидатов не передан, мы опрашиваем всех мёртвых, значит эти порталы можно также призывать напрямую.
 		candidate_list += GLOB.current_observers_list
 		candidate_list += GLOB.dead_mob_list
 
-	var/list/candidates = pollCandidates("Would you like to participate in a spooky ghost swarm? (Warning: you will not be able to return to your body!)", ROLE_SENTIENCE, FALSE, 10 SECONDS, group = candidate_list)
+	var/list/candidates = pollCandidates("Хотите присоединиться к жуткому рою призраков? (Предупреждение: вернуться в своё тело вы уже не сможете!)", ROLE_SENTIENCE, null, 0, 10 SECONDS, group = candidate_list)
 	for(var/mob/dead/observer/candidate_ghost as anything in candidates)
 		var/mob/living/simple_animal/hostile/ghost/swarm/new_ghost = new(get_turf(src))
 		ghosts_spawned += new_ghost
@@ -189,24 +189,24 @@
 		if(policy)
 			to_chat(new_ghost, policy)
 		else
-			to_chat(new_ghost, span_revenboldnotice("You are a lost soul, brought back to the realm of the living. Your time on this plane is limited, and you will soon be dragged back into the void!"))
-		new_ghost.log_message("was returned to the living world as a ghost by an ectoplasmic anomaly.", LOG_GAME)
+			to_chat(new_ghost, span_revenboldnotice("Вы — заблудшая душа, возвращённая в мир живых. Ваше время в этом мире ограничено, и скоро вас утащат обратно в пустоту!"))
+		new_ghost.log_message("эктоплазменная аномалия вернула его в мир живых в виде призрака.", LOG_GAME)
 
 /**
- * Gives a farewell message and deletes the ghosts produced by a ghost portal structure.
+ * Благодарит и удаляет призраков, порождённых структурой призрачного портала.
  *
- * Handles cleanup of all ghost mobs spawned a ghost portal. Iterates through the list
- * and calls qdel on its contents, gives a short message, and leaves behind some goop.
- * Stored as a global, as it is called immediately after the portal deletes itself.
+ * Обрабатывает зачистку всех призрачных мобов, призванных призрачным порталом. Проходится по списку,
+ * вызывает qdel для его содержимого, выводит короткое сообщение и оставляет после себя немного слизи.
+ * Хранится как глобальная процедура, поскольку вызывается сразу после самоуничтожения портала.
  *
- * * delete_list - The list of entities to be deleted by this proc.
+ * * delete_list - Список сущностей, которые должны быть удалены этой процедурой.
  */
 
 /proc/cleanup_ghosts(list/delete_list)
 	for(var/mob/living/mob_to_delete as anything in delete_list)
-		mob_to_delete.visible_message(span_alert("The [mob_to_delete] wails as it is torn back into the void!"), span_alert("You let out one last wail as you are sucked back into the realm of the dead. Then suddenly, you're back in the comforting embrace of the afterlife."), span_hear("You hear ethereal wailing."))
+		mob_to_delete.visible_message(span_alert("[mob_to_delete] завывает, когда его утягивает обратно в пустоту!"), span_alert("Вы издаёте последний вой, когда вас засасывает обратно в царство мёртвых. И тут же — вы снова в уютных объятиях загробного мира."), span_hear("Вы слышите призрачный вой."))
 		playsound(mob_to_delete, pick(delete_list), 50)
 		new /obj/effect/temp_visual/revenant/cracks(get_turf(mob_to_delete))
 		new /obj/effect/decal/cleanable/greenglow/ecto(get_turf(mob_to_delete))
-		mob_to_delete.ghostize(FALSE) //So we don't throw an alert for deleting a mob with a key inside.
+		mob_to_delete.ghostize(FALSE) //Чтобы не выводить предупреждение об удалении моба с клавиатурой внутри.
 		qdel(mob_to_delete)

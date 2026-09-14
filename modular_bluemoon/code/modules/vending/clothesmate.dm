@@ -106,6 +106,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/accessory/waistcoat/sweatervest = 2,
 				/obj/item/clothing/accessory/waistcoat/sweatervest/blue = 2,
 				/obj/item/clothing/accessory/waistcoat/sweatervest/red = 2,
+				/obj/item/storage/box/hippads = 5,
 				/obj/item/clothing/ears/earring/dangle = 3,
 				/obj/item/clothing/ears/earring/dangle/amber = 3,
 				/obj/item/clothing/ears/earring/dangle/amethyst = 3,
