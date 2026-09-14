@@ -44,6 +44,11 @@
 	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 	var/component_type = /datum/component/storage/concrete
 	var/datum/component/storage/mod_storage
+	var/silent = FALSE
+
+/obj/item/mod/module/storage/Destroy()
+	. = ..()
+	QDEL_NULL(mod_storage)
 
 /obj/item/mod/module/storage/extended
 	name = "Extended MOD storage module"
@@ -73,12 +78,14 @@
 		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
 	icon_state = "storage_syndi"
 	complexity = 0
+	silent = TRUE
 
 /obj/item/mod/module/storage/extended/syndicate
 	name = "MOD Blood-red Extended storage module"
 	desc = "Компактный расширенный модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
 	icon_state = "storage_case"
 	complexity = 1
+	silent = TRUE
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
@@ -86,6 +93,7 @@
 		return
 
 	mod_storage = mod.AddComponent(component_type)
+	mod_storage?.silent = silent
 	if(mod.theme.need_block_storage_when_not_active && !mod.is_active())
 		mod.toggle_storage(mod.is_active())
 	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)

@@ -73,7 +73,7 @@
 /obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
 	if(is_welded() && !force)
 		return balloon_alert(user, "Заварено!")
-	if(!theme?.can_activate_without_deploy_all_parts && is_active())
+	if(!force && !theme?.can_activate_without_deploy_all_parts && is_active())
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return balloon_alert(user, "Отключите костюм!")
 	var/obj/item/clothing/mod_part/piece = part
@@ -88,15 +88,15 @@
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(!can_activate() && !is_active())
-		balloon_alert(wearer, "Разверните костюм!")
-		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
+	if(!can_activate() && !is_active())
+		balloon_alert(wearer, "Разверните костюм!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return
 	if(!force_deactivate && (SEND_SIGNAL(src, COMSIG_MOD_ACTIVATE, user) & MOD_CANCEL_ACTIVATE))
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE

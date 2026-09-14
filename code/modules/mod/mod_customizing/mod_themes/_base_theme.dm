@@ -93,4 +93,6 @@
 		piece.siemens_coefficient = siemens_coefficient
 		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
 		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
+	var/obj/item/clothing/mod_part/suit/chestplate = modsuit.get_chestplate()
+	chestplate.allowed = allowed
 	return TRUE

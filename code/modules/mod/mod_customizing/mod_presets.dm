@@ -63,3 +63,5 @@
 				UNSEALED_CLOTHING = THICKMATERIAL,\
 			),\
 		),\
+
+#define ALLOWED_DEFAULT list(/obj/item/flashlight, /obj/item/tank/internals)

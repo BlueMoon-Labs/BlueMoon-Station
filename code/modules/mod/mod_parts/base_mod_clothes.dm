@@ -54,9 +54,7 @@
 
 /obj/item/clothing/mod_part/proc/on_dropped(mob/source, obj/item, force, new_location)
 	SIGNAL_HANDLER
-	if(!istype(item, /obj/item/clothing/mod_part))
-		return
-	if(!mod?.wearer)
+	if(!istype(item, /obj/item/clothing/mod_part) || item != src || !mod?.wearer)
 		return
 	UnregisterSignal(mod.wearer, COMSIG_MOB_UNEQUIPPED_ITEM)
 	if(new_location == null)//чтобы не путать со штатным свертыванием
@@ -114,11 +112,11 @@
 	var/obj/item/clothing/item = mod.wearer.get_item_by_slot(slot_flags)
 	if(!item)
 		return TRUE
-	overslot = item
 
 	for(var/type in overslot_blacklist)
 		if(istype(item, type))
 			return FALSE
+	overslot = item
 	return mod.wearer.transferItemToLoc(overslot, item, force = TRUE)
 
 /obj/item/clothing/mod_part/proc/use_clothing_features_through_overslot()

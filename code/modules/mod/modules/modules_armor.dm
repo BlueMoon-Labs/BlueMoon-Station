@@ -113,17 +113,19 @@
 
 /obj/item/mod/module/armor/prebuild/on_uninstall(deleting = FALSE, user)
 	. = ..()
+	var/mob/target_mob = user
+	if(mod.wearer)
+		target_mob = mod.wearer
 	if(deleting)
-		// Нас уже удаляют: свой qdel(src) отсюда замыкал петлю Destroy -> uninstall -> qdel.
 		return
-	playsound(src, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-	if(user)
-		balloon_alert(user, "модуль раскалывается и разрушается!")
+	playsound(mod, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(target_mob)
+		balloon_alert(target_mob, span_big_warning("модуль раскалывается и разрушается!"))
 	qdel(src)
 
 /obj/item/mod/module/armor/prebuild/Initialize(mapload)
 	. = ..()
-	name = "[armor_type] MOD armor"
+	name = "[armor_type] Pre-Installed MOD armor"
 	icon_state = "armor-[armor_type]"
 
 /obj/item/mod/module/armor/prebuild/melee
