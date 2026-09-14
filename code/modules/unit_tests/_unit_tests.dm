@@ -374,6 +374,7 @@
 #include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
+#include "techweb_machine_initialization.dm"
 #include "theft_target_selection.dm"
 #include "tick_spike_recorder.dm"
 #include "tile_pipe_placement.dm"

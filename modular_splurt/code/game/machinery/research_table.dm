@@ -23,14 +23,6 @@
 	var/slaver_mode = FALSE
 	var/datum/techweb/linked_techweb //BLUEMOON ADD: связанная исследовательская сеть
 
-/obj/machinery/research_table/Initialize(mapload)
-	. = ..()
-	if(mapload)
-		return INITIALIZE_HINT_LATELOAD
-	AddComponent(/datum/component/techweb_holder)
-	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
-
 /obj/machinery/research_table/LateInitialize()
 	. = ..()
 	AddComponent(/datum/component/techweb_holder)

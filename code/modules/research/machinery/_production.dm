@@ -46,11 +46,6 @@
 	RefreshParts()
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
-	if(mapload)
-		return INITIALIZE_HINT_LATELOAD
-	AddComponent(/datum/component/techweb_holder)
-	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
 
 /obj/machinery/rnd/production/LateInitialize()
 	. = ..()

@@ -103,18 +103,6 @@ Nothing else in the console has ID requirements.
 /obj/machinery/computer/rdconsole/Initialize(mapload)
 	. = ..()
 	SyncRDevices()
-	if(mapload)
-		return INITIALIZE_HINT_LATELOAD
-
-	AddComponent(/datum/component/techweb_holder)
-	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	if(network_id == RND_NETWORK_AUTO)	//BLUEMOON CHANGE: станция — в глобальную сеть науки, иное — без сети (подключается мультитулом к серверам)
-		if(is_station_level(z))
-			SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.science_tech)
-			stored_research.consoles_accessing[src] = TRUE
-	else if(network_id)	//BLUEMOON CHANGE: консоль подключается к своей сети через реестр; без ID — изолированная
-		SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
-		stored_research.consoles_accessing[src] = TRUE
 
 /obj/machinery/computer/rdconsole/LateInitialize()
 	. = ..()

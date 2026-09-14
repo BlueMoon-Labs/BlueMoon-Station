@@ -232,14 +232,6 @@
 	// Set the default tgui state
 	set_default_state()
 
-	// Link machine with research techweb. Used for discovering and accessing
-	//  already discovered mutations
-	if(mapload)
-		return INITIALIZE_HINT_LATELOAD
-	AddComponent(/datum/component/techweb_holder)
-	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
-
 /obj/machinery/computer/scan_consolenew/LateInitialize()
 	. = ..()
 	AddComponent(/datum/component/techweb_holder)

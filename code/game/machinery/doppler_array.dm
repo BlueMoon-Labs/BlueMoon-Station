@@ -183,13 +183,7 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 	desc = "A specialized tachyon-doppler bomb detection array that uses the results of the highest yield of explosions for research."
 	var/datum/techweb/linked_techweb
 
-/obj/machinery/doppler_array/research/Initialize(mapload)
-	. = ..()
-	if(mapload)
-		return INITIALIZE_HINT_LATELOAD
-	AddComponent(/datum/component/techweb_holder)
-	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+/obj/machinery/doppler_array/research/science
 
 /obj/machinery/doppler_array/research/LateInitialize()
 	. = ..()
