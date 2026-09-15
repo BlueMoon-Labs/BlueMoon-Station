@@ -40,3 +40,26 @@
 			continue
 
 		known_antag_flags[antag_flag] = ruleset
+
+/// Проверяет выдачу нескольких еретиков с учётом кандидатов, бюджета и доли антагонистов.
+/datum/unit_test/dynamic_heretics_scaling/Run()
+	var/datum/game_mode/dynamic/test_mode = allocate(/datum/game_mode/dynamic)
+	test_mode.roundstart_pop_ready = 20
+	var/list/expected_counts = list("1" = 1, "3" = 3, "8" = 5)
+	for(var/candidate_count_text in expected_counts)
+		var/candidate_count = text2num(candidate_count_text)
+		var/datum/dynamic_ruleset/roundstart/heretics/rule = allocate(/datum/dynamic_ruleset/roundstart/heretics)
+		rule.mode = test_mode
+		for(var/candidate_index in 1 to candidate_count)
+			var/mob/living/carbon/human/candidate = allocate(/mob/living/carbon/human)
+			candidate.mind_initialize()
+			rule.candidates += candidate
+
+		var/expected_count = expected_counts[candidate_count_text]
+		var/scaling_cost = rule.scale_up(test_mode.roundstart_pop_ready, candidate_count)
+		TEST_ASSERT_EQUAL(rule.scaled_times, expected_count - 1, "Масштабирование должно учитывать кандидатов и долю антагонистов")
+		TEST_ASSERT_EQUAL(scaling_cost, (expected_count - 1) * rule.scaling_cost, "Бюджет должен списываться только за доступные дополнительные роли")
+		TEST_ASSERT(rule.pre_execute(test_mode.roundstart_pop_ready), "Выдача ролей должна завершиться успешно")
+		TEST_ASSERT_EQUAL(length(rule.assigned), expected_count, "Должно выдаваться ожидаемое число еретиков")
+		for(var/datum/mind/assigned_mind as anything in rule.assigned)
+			TEST_ASSERT_EQUAL(assigned_mind.special_role, ROLE_HERETIC, "Каждый выбранный кандидат должен получить роль еретика")

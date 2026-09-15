@@ -171,18 +171,18 @@
 	antag_datum = /datum/antagonist/heretic
 	antag_flag = "heretic late"
 	antag_flag_override = ROLE_HERETIC
-	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")  //BLUEMOON CHANGES
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
 	required_candidates = 1
-	weight = 4 //BLUEMOON CHANGES
+	weight = 8
 	// Тот же медленный еретик, что и мидраунд-пробуждение (см. crew_conversion/heretic),
 	// только с латеджойна: до первых жертв полчаса-час тихого фарма влияний,
 	// поэтому цена и вес в нагрузке директора ниже агента.
 	cost = 6
 	intensity = 8
 	family = "heretic" // с мидраунд-пробуждением: не подряд
-	requirements = list(101,101,101,50,40,20,20,15,10,10)
+	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	repeatable = TRUE
 
 //BLUEMOON ADD START - я добавляю это сюда вместо модулей, чтобы было удобно изменять параметры (для наглядности)
