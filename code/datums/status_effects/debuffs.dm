@@ -1507,7 +1507,7 @@
 		return
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
-		carbon_owner.adjust_disgust(5 * tick_s)
+		carbon_owner.adjust_disgust(min(5 * tick_s, max(0, DISGUST_LEVEL_GROSS - carbon_owner.disgust)))
 		heretic_corrosion(carbon_owner, 2 * tick_s)
 		carbon_owner.reagents?.remove_all(0.75 * tick_s)
 		var/list/robotic_limbs = list()

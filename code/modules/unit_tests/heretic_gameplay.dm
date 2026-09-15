@@ -43,6 +43,21 @@
 	TEST_ASSERT(QDELETED(rust), "Полученная на месте антимагия снимает коррозию.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss() + user.getFireLoss() + user.getToxLoss(), damage, "Снятый эффект больше не повреждает тело.")
 
+/// Ржавый пол не доводит отвращение до рвоты и не снижает отвращение от других источников.
+/datum/unit_test/heretic_gameplay/rusted_floor_disgust/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/datum/status_effect/rust_corruption/rust = user.apply_status_effect(/datum/status_effect/rust_corruption)
+	for(var/tick_index in 1 to 8)
+		rust.tick()
+	TEST_ASSERT_EQUAL(user.disgust, DISGUST_LEVEL_GROSS, "Длительное воздействие ограничено лёгким отвращением.")
+	TEST_ASSERT(user.disgust < DISGUST_LEVEL_VERYGROSS, "Пол не достигает порога рвоты от отвращения.")
+	user.set_disgust(DISGUST_LEVEL_DISGUSTED)
+	rust.tick()
+	TEST_ASSERT_EQUAL(user.disgust, DISGUST_LEVEL_DISGUSTED, "Пол не лечит и не усиливает более высокое чужое отвращение.")
+	user.set_disgust(DISGUST_LEVEL_GROSS - 1)
+	rust.tick()
+	TEST_ASSERT_EQUAL(user.disgust, DISGUST_LEVEL_GROSS, "Последний прирост не перескакивает ограничение.")
+
 /// Пепел и Плоть сохраняют прямой урон по негорящему бескровному телу.
 /datum/unit_test/heretic_gameplay/blade_compatibility/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

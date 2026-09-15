@@ -32,3 +32,16 @@
 	desc = "Магия Пустоты замедляет ваши движения независимо от температуры тела. Эффект проходит через 4 секунды после последнего воздействия. Выйдите из зимнего поля и оторвитесь от еретика, чтобы скованность спала. Повторные воздействия обновляют время, не усиливая замедление."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_void"
+
+/obj/item/melee/sickly_blade/void/examine(mob/user)
+	. = ..()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic)
+		return
+	var/datum/eldritch_knowledge/void_blade_upgrade/upgrade = heretic.get_knowledge(/datum/eldritch_knowledge/void_blade_upgrade)
+	if(!upgrade)
+		. += span_notice("Для сдвига к отмеченному врагу нужно знание «Ищущий клинок» Пути Пустоты.")
+		return
+	. += span_notice("Держите клинок в активной руке и нажмите ЛКМ по врагу с Меткой Пустоты вне досягаемости удара, в поле зрения и не дальше 5 клеток. Shift не требуется. Возле цели нужна клетка без препятствий; защита от магии блокирует сдвиг.")
+	var/cooldown_text = COOLDOWN_FINISHED(upgrade, blink_cooldown) ? "Ищущий клинок: сдвиг готов." : "Ищущий клинок: сдвиг восстановится через [DisplayTimeText(COOLDOWN_TIMELEFT(upgrade, blink_cooldown))]."
+	. += span_notice(cooldown_text)

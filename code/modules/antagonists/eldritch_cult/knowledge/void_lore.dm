@@ -104,11 +104,14 @@
 
 /datum/eldritch_knowledge/void_blade_upgrade
 	name = "Ищущий клинок"
-	desc = "Каждое ранение вашим клинком Пустоты дополнительно наносит 8 холодовых ожогов и замедляет на 4 секунды. Щёлкните клинком по отмеченному врагу в поле зрения на расстоянии до 5 клеток, чтобы переместиться рядом с ним и ударить. Сдвиг восстанавливается 8 секунд и требует свободной клетки возле цели. Антимагия защищает от дополнительных эффектов и сдвига."
+	desc = "Каждое ранение вашим клинком Пустоты дополнительно наносит 8 холодовых ожогов и замедляет на 4 секунды. Держите клинок в активной руке и нажмите ЛКМ по отмеченному врагу вне досягаемости удара, в поле зрения и не дальше 5 клеток: вы переместитесь рядом и ударите. Shift не требуется. Сдвиг восстанавливается 8 секунд; осмотрите клинок, чтобы узнать готовность. Возле цели нужна клетка без препятствий. Антимагия защищает от дополнительных эффектов и сдвига."
 	gain_text = "Метки в снегу связывают места, которые никогда не были рядом."
 	cost = 2
 	route = PATH_VOID
 	COOLDOWN_DECLARE(blink_cooldown)
+	COOLDOWN_DECLARE(blink_feedback)
+	COOLDOWN_DECLARE(blink_failure_log)
+	var/blink_failure_reason
 	var/blade_damage = 8
 
 /datum/eldritch_knowledge/void_blade_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
@@ -119,27 +122,53 @@
 	victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
 
 /datum/eldritch_knowledge/void_blade_upgrade/on_ranged_attack_eldritch_blade(atom/target, mob/user, click_parameters)
-	if(!isliving(user) || !COOLDOWN_FINISHED(src, blink_cooldown) || !heretic_can_affect(user, target, chargecost = 0))
-		return
+	blink_failure_reason = null
+	if(!isliving(user) || !isliving(target))
+		return FALSE
 	var/mob/living/victim = target
 	var/mob/living/living_user = user
-	if(user.z != victim.z || get_dist(user, victim) > 5 || !(victim in view(5, user)) || !victim.has_status_effect(/datum/status_effect/eldritch/void))
-		return
 	if(!CHECK_MOBILITY(living_user, MOBILITY_USE) || living_user.incapacitated())
-		return
+		return reject_blink(user, "Вы не можете действовать: дождитесь окончания оглушения или освободитесь.")
 	var/obj/item/melee/sickly_blade/void/blade = user.get_active_held_item()
 	if(!istype(blade))
-		return
+		return reject_blink(user, "Возьмите клинок Пустоты в активную руку.")
+	if(!COOLDOWN_FINISHED(src, blink_cooldown))
+		return reject_blink(user, "Сдвиг восстановится через [DisplayTimeText(COOLDOWN_TIMELEFT(src, blink_cooldown))].")
+	if(!isturf(user.loc) || !isturf(victim.loc))
+		return reject_blink(user, "Вы и цель должны находиться вне контейнеров и укрытий.")
+	if(user.z != victim.z || get_dist(user, victim) > 5)
+		return reject_blink(user, "Цель должна быть на вашем уровне, не дальше 5 клеток.")
+	if(!(victim in view(5, user)))
+		return reject_blink(user, "Цель должна быть в поле зрения.")
+	if(victim.stat == DEAD || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		return reject_blink(user, "Выберите живого противника.")
+	if(!victim.has_status_effect(/datum/status_effect/eldritch/void))
+		return reject_blink(user, "На цели нет Метки Пустоты. Наложите её хваткой или доменом.")
+	if(!heretic_can_affect(user, victim, chargecost = 0))
+		return reject_blink(user, "Защита цели от магии блокирует сдвиг.")
 	var/turf/destination
 	for(var/direction in GLOB.cardinals)
 		var/turf/candidate = get_step(victim, direction)
 		if(isopenturf(candidate) && !is_blocked_turf(candidate, TRUE))
 			destination = candidate
 			break
-	if(!destination || !do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
-		return
+	if(!destination)
+		return reject_blink(user, "Возле цели нет клетки без препятствий.")
+	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
+		return reject_blink(user, "Перемещение заблокировано: покиньте зону запрета телепортации или снимите удерживающий эффект.")
 	COOLDOWN_START(src, blink_cooldown, 8 SECONDS)
 	blade.melee_attack_chain(user, victim, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
+	return TRUE
+
+/datum/eldritch_knowledge/void_blade_upgrade/proc/reject_blink(mob/user, reason)
+	blink_failure_reason = reason
+	if(COOLDOWN_FINISHED(src, blink_feedback))
+		COOLDOWN_START(src, blink_feedback, 1 SECONDS)
+		to_chat(user, span_warning("[name]: [reason]"))
+	if(COOLDOWN_FINISHED(src, blink_failure_log))
+		COOLDOWN_START(src, blink_failure_log, 5 SECONDS)
+		log_game("[key_name(user)] не применяет [name] ([type]): [reason] в [AREACOORD(user)].")
+	return FALSE
 
 /datum/eldritch_knowledge/spell/voidpull
 	name = "Притяжение пустоты"
