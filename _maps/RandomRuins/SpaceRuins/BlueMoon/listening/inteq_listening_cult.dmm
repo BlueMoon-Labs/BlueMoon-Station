@@ -3,7 +3,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
 	},
-/mob/living/simple_animal/hostile/cult/ghost,
+/mob/living/simple_animal/hostile/cult/ghost{
+	maxHealth = 150;
+	health = 150
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "aj" = (
@@ -166,10 +169,9 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "bQ" = (
-/obj/structure/statue/bone/rib{
+/turf/open/pool/cobble/corner/water{
 	dir = 1
 	},
-/turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "bS" = (
 /obj/machinery/status_display/syndie,
@@ -187,7 +189,7 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/airlock/hatch{
 	name = "Private Quarters Access";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	id_tag = "slp_dorm1"
 	},
 /obj/effect/turf_decal/siding/yellow/corner,
@@ -197,10 +199,10 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "bV" = (
-/mob/living/simple_animal/hostile/cult/horror,
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/cult/horror,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "bY" = (
@@ -274,7 +276,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "cS" = (
-/mob/living/simple_animal/hostile/boss/clockcultistboss,
+/mob/living/simple_animal/hostile/boss/clockcultistboss{
+	health = 300;
+	maxHealth = 300
+	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "de" = (
@@ -293,10 +298,6 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "dD" = (
-/obj/machinery/door/airlock/hatch{
-	name = "Medical Care";
-	req_access_txt = "150"
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
@@ -318,6 +319,10 @@
 	dir = 8
 	},
 /obj/structure/barricade/wooden/crude,
+/obj/machinery/door/airlock/hatch{
+	name = "Medical Care";
+	req_access_txt = "152"
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "dT" = (
@@ -332,7 +337,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/door/airlock/hatch{
 	name = "Bathroom";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	id_tag = "slp_bath"
 	},
 /obj/effect/turf_decal/delivery,
@@ -360,6 +365,7 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 9
 	},
+/obj/effect/turf_decal/big_sign/enclave/top/left,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "eq" = (
@@ -523,6 +529,10 @@
 /obj/structure/table/reinforced/titaniumglass,
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"fw" = (
+/obj/structure/shield/yellow,
+/turf/open/floor/plating/asteroid/airless,
+/area/ruin/space)
 "fC" = (
 /obj/structure/chair/office/light{
 	dir = 4
@@ -548,13 +558,14 @@
 	normaldoorcontrol = 1;
 	pixel_x = -24;
 	pixel_y = 24;
-	specialfunctions = 4
+	specialfunctions = 4;
+	req_access_txt = "152"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/structure/barricade/sandbags,
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
-	health = 125;
-	maxHealth = 125
+	health = 80;
+	maxHealth = 80
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -567,13 +578,19 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 9
 	},
-/mob/living/simple_animal/hostile/cult/magic,
+/mob/living/simple_animal/hostile/cult/magic{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "gr" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/cult/horror,
+/mob/living/simple_animal/hostile/cult/horror{
+	maxHealth = 150;
+	health = 150
+	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "gt" = (
@@ -581,8 +598,8 @@
 	dir = 1
 	},
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
-	health = 125;
-	maxHealth = 125
+	health = 80;
+	maxHealth = 80
 	},
 /turf/open/floor/plasteel/dark/smooth,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -678,6 +695,9 @@
 /obj/structure/extinguisher_cabinet{
 	pixel_y = 30
 	},
+/obj/structure/statue/bone/rib{
+	dir = 1
+	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "ib" = (
@@ -740,7 +760,6 @@
 	pixel_y = 30
 	},
 /obj/item/storage/box/syndie_kit/chameleon,
-/obj/item/door_remote/head_of_security,
 /turf/open/floor/plating{
 	icon_state = "platingdmg3"
 	},
@@ -754,7 +773,8 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/maintenance_hatch{
-	name = "Maintenance Hatch"
+	name = "Maintenance Hatch";
+	req_access_txt = "152"
 	},
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/effect/turf_decal/delivery,
@@ -840,7 +860,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/door/airlock/hatch{
 	name = "Restroom";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	id_tag = "ListPostRest"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -886,7 +906,7 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/airlock/hatch{
 	name = "Storage";
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /obj/effect/turf_decal/siding/yellow/corner,
 /obj/effect/turf_decal/siding/yellow/corner{
@@ -1012,8 +1032,8 @@
 	dir = 1
 	},
 /mob/living/simple_animal/hostile/construct/wraith/hostile{
-	health = 125;
-	maxHealth = 125
+	health = 80;
+	maxHealth = 80
 	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -1047,7 +1067,6 @@
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 8
 	},
-/obj/structure/destructible/cult/pylon,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "mF" = (
@@ -1113,6 +1132,7 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "nT" = (
 /obj/structure/lattice,
+/obj/structure/shield/yellow,
 /turf/template_noop,
 /area/space)
 "ob" = (
@@ -1248,6 +1268,9 @@
 /obj/machinery/light/small/broken{
 	dir = 1
 	},
+/obj/item/gun/ballistic/automatic/ak12,
+/obj/item/ammo_box/magazine/ak12/ap,
+/obj/item/ammo_box/magazine/ak12,
 /turf/open/floor/plasteel/dark/side{
 	dir = 9
 	},
@@ -1316,7 +1339,8 @@
 /obj/effect/turf_decal/stripes/asteroid/corner,
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/door/airlock/maintenance_hatch{
-	name = "Maintenance Hatch"
+	name = "Maintenance Hatch";
+	req_access_txt = "152"
 	},
 /obj/machinery/door/poddoor{
 	id = "slp_self_destruct"
@@ -1366,6 +1390,12 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/white,
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = 8
+	},
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = -8
+	},
 /obj/item/clothing/mask/gas/inteq{
 	pixel_x = 8
 	},
@@ -1391,21 +1421,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
-"qW" = (
-/obj/effect/turf_decal/siding/yellow/corner,
-/turf/open/floor/plasteel/cult,
-/area/ruin/space/has_grav/bluemoon/listeningstation)
 "rj" = (
-/obj/effect/turf_decal/siding/white{
-	dir = 10
-	},
 /obj/machinery/shower{
 	dir = 8
 	},
-/obj/effect/turf_decal/siding/white{
-	dir = 5
-	},
-/turf/open/floor/plasteel/white/smooth/diagonal,
+/turf/open/pool/cobble/corner/water,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "rn" = (
 /obj/machinery/vending/cola/random{
@@ -1436,7 +1456,8 @@
 	normaldoorcontrol = 1;
 	pixel_x = 24;
 	pixel_y = 24;
-	specialfunctions = 4
+	specialfunctions = 4;
+	req_access_txt = "152"
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -1452,10 +1473,6 @@
 /turf/open/floor/carpet/orange,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "rV" = (
-/obj/machinery/door/airlock/hatch{
-	name = "Medical Care";
-	req_access_txt = "150"
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -1467,6 +1484,10 @@
 /obj/effect/turf_decal/siding/yellow/corner,
 /obj/effect/turf_decal/siding/yellow/corner{
 	dir = 8
+	},
+/obj/machinery/door/airlock/hatch{
+	name = "Medical Care";
+	req_access_txt = "152"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -1551,8 +1572,8 @@
 	dir = 4
 	},
 /mob/living/simple_animal/hostile/cult/spear{
-	health = 125;
-	maxHealth = 125
+	health = 75;
+	maxHealth = 75
 	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -1640,6 +1661,7 @@
 /obj/effect/turf_decal/trimline/yellow/corner{
 	dir = 4
 	},
+/obj/effect/turf_decal/big_sign/enclave/middle/right,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "uU" = (
@@ -1760,7 +1782,7 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/airlock/clockwork{
 	name = "Cafeteria";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	req_access = null
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -1781,7 +1803,7 @@
 	},
 /obj/machinery/door/airlock/hatch{
 	name = "Engineering Hatch";
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /obj/effect/turf_decal/delivery,
 /obj/structure/cable/yellow{
@@ -1802,7 +1824,10 @@
 	dir = 8
 	},
 /obj/item/chair/stool/bar/brass,
-/mob/living/simple_animal/hostile/cult/assassin,
+/mob/living/simple_animal/hostile/cult/assassin{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "vU" = (
@@ -1817,13 +1842,22 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "wn" = (
-/mob/living/simple_animal/hostile/cult/ghost,
+/mob/living/simple_animal/hostile/cult/ghost{
+	health = 200;
+	maxHealth = 200
+	},
 /turf/open/floor/glass/reinforced,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "wo" = (
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"wq" = (
+/obj/machinery/light/small,
+/turf/open/pool/cobble/corner/water{
+	dir = 8
+	},
+/area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "wB" = (
 /obj/effect/turf_decal/siding/brown{
 	dir = 6
@@ -1851,7 +1885,7 @@
 /obj/effect/turf_decal/siding/dark/corner,
 /obj/machinery/door/airlock/hatch{
 	name = "Atmospherical";
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel/dark/textured/large,
@@ -1904,7 +1938,10 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/cult/ghost,
+/mob/living/simple_animal/hostile/cult/ghost{
+	maxHealth = 150;
+	health = 150
+	},
 /turf/open/floor/catwalk_floor,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "xu" = (
@@ -2047,10 +2084,6 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/door/airlock/hatch{
-	name = "Telecommunications";
-	req_access_txt = "150"
-	},
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 4
 	},
@@ -2068,6 +2101,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/yellow/corner,
+/obj/machinery/door/airlock/hatch{
+	name = "Telecommunications";
+	req_access_txt = "152"
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "zH" = (
@@ -2148,6 +2185,12 @@
 	},
 /turf/open/floor/plasteel/dark/textured/corner,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"AE" = (
+/obj/effect/turf_decal/siding/white{
+	dir = 10
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "AF" = (
 /obj/structure/window/reinforced/survival_pod{
 	dir = 1
@@ -2165,7 +2208,7 @@
 /obj/structure/table/wood,
 /obj/structure/bedsheetbin/towel,
 /obj/effect/turf_decal/siding/white{
-	dir = 10
+	dir = 8
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
@@ -2185,7 +2228,9 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "AR" = (
-/obj/machinery/door/airlock/titanium,
+/obj/machinery/door/airlock/titanium{
+	req_access_txt = "152"
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "AV" = (
@@ -2312,7 +2357,7 @@
 /obj/machinery/button/door/directional/east{
 	id = "syndie_listening_lockdown";
 	name = "Lockdown";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	pixel_y = 38;
 	pixel_x = 26;
 	dir = 2
@@ -2389,6 +2434,7 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 1
 	},
+/obj/effect/turf_decal/big_sign/enclave/top/middle,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "DC" = (
@@ -2419,7 +2465,8 @@
 	normaldoorcontrol = 1;
 	pixel_x = 24;
 	pixel_y = -24;
-	specialfunctions = 4
+	specialfunctions = 4;
+	req_access_txt = "152"
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -2441,6 +2488,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"Em" = (
+/obj/structure/shield/yellow,
+/turf/closed/mineral/random,
+/area/ruin/space)
 "Ew" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
@@ -2463,7 +2514,10 @@
 "EM" = (
 /obj/item/stack/sheet/mineral/titanium,
 /obj/structure/fluff/empty_cryostasis_sleeper,
-/mob/living/simple_animal/hostile/cult/warrior,
+/mob/living/simple_animal/hostile/cult/warrior{
+	health = 120;
+	maxHealth = 120
+	},
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Fc" = (
@@ -2504,7 +2558,7 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/airlock/hatch{
 	name = "Private Quarters Access";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	id_tag = "slp_dorm2"
 	},
 /obj/effect/turf_decal/siding/yellow/corner{
@@ -2642,7 +2696,7 @@
 	name = "Self Dectruct Access";
 	pixel_x = -26;
 	pixel_y = 38;
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 9
@@ -2675,7 +2729,6 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 1
 	},
-/obj/structure/destructible/clockwork/powered/clockwork_obelisk,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "HI" = (
@@ -2959,7 +3012,10 @@
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "KS" = (
-/mob/living/simple_animal/hostile/clockwork/marauder,
+/mob/living/simple_animal/hostile/clockwork/marauder{
+	health = 80;
+	maxHealth = 80
+	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Lg" = (
@@ -2973,7 +3029,7 @@
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/airlock/clockwork{
 	name = "Cafeteria";
-	req_access_txt = "150";
+	req_access_txt = "152";
 	req_access = null
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -3048,13 +3104,20 @@
 "Mp" = (
 /turf/template_noop,
 /area/template_noop)
+"Mr" = (
+/mob/living/simple_animal/hostile/cult{
+	maxHealth = 135;
+	health = 135
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "ME" = (
 /obj/machinery/button/door{
 	id = "syndie_listeningpost_external";
 	name = "External Bolt Control";
 	normaldoorcontrol = 1;
 	pixel_x = 24;
-	req_access_txt = "150";
+	req_access_txt = "152";
 	specialfunctions = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -3094,12 +3157,11 @@
 	name = "Shutters control";
 	pixel_x = -6;
 	pixel_y = 38;
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "MY" = (
-/obj/structure/destructible/cult/pylon,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Nd" = (
@@ -3127,7 +3189,8 @@
 	normaldoorcontrol = 1;
 	pixel_x = 24;
 	pixel_y = 34;
-	specialfunctions = 4
+	specialfunctions = 4;
+	req_access_txt = "152"
 	},
 /obj/machinery/light_switch{
 	pixel_x = 22;
@@ -3331,7 +3394,9 @@
 /obj/item/bedsheet/brown/double{
 	dir = 4
 	},
-/obj/effect/mob_spawn/human/inteqspace/comms,
+/obj/effect/mob_spawn/human/inteqspace/comms{
+	dir = 4
+	},
 /turf/open/floor/carpet/orange,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Qo" = (
@@ -3696,10 +3761,6 @@
 "Ut" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/hatch{
-	name = "E.V.A. Equipment";
-	req_access_txt = "150"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/delivery,
 /obj/effect/turf_decal/siding/yellow/corner{
@@ -3707,6 +3768,10 @@
 	},
 /obj/effect/turf_decal/siding/yellow/corner{
 	dir = 1
+	},
+/obj/machinery/door/airlock/hatch{
+	name = "E.V.A. Equipment";
+	req_access_txt = "152"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -3757,7 +3822,10 @@
 /turf/closed/wall/mineral/plastitanium/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "UO" = (
-/mob/living/simple_animal/hostile/cult/magic/elite,
+/mob/living/simple_animal/hostile/cult/magic/elite{
+	health = 200;
+	maxHealth = 200
+	},
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "UR" = (
@@ -3899,6 +3967,7 @@
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 5
 	},
+/obj/effect/turf_decal/big_sign/enclave/top/right,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "WG" = (
@@ -3949,10 +4018,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "WW" = (
-/obj/machinery/light/small,
-/obj/effect/turf_decal/siding/white,
-/mob/living/simple_animal/hostile/cult,
-/turf/open/floor/plasteel/showroomfloor,
+/obj/structure/pool/ladder,
+/turf/open/pool/cobble/side/water{
+	dir = 8
+	},
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Xe" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
@@ -3983,7 +4052,7 @@
 "Xr" = (
 /obj/machinery/door/airlock/hatch{
 	name = "Technical";
-	req_access_txt = "150"
+	req_access_txt = "152"
 	},
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 8
@@ -4013,6 +4082,14 @@
 /obj/item/stack/sheet/metal,
 /turf/open/floor/mineral/titanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"XG" = (
+/obj/machinery/shower{
+	dir = 8
+	},
+/turf/open/pool/cobble/corner/water{
+	dir = 4
+	},
+/area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "XI" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -4082,10 +4159,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
-"YN" = (
-/obj/structure/destructible/cult/pylon,
-/turf/open/floor/plasteel/cult,
-/area/ruin/space/has_grav/bluemoon/listeningstation)
 "Za" = (
 /obj/structure/closet/firecloset/full,
 /obj/effect/turf_decal/bot/white,
@@ -4100,23 +4173,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Zt" = (
-/obj/effect/turf_decal/siding/white{
-	dir = 9
+/turf/open/pool/cobble/side/water{
+	dir = 4
 	},
-/obj/effect/turf_decal/siding/white{
-	dir = 6
-	},
-/obj/machinery/shower{
-	dir = 8
-	},
-/turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Zv" = (
 /obj/structure/fans/tiny,
-/obj/machinery/door/airlock/external{
-	id_tag = "syndie_listeningpost_external";
-	req_access_txt = "150"
-	},
 /obj/machinery/door/poddoor/preopen{
 	id = "syndie_listening_lockdown"
 	},
@@ -4125,6 +4187,10 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
+	},
+/obj/machinery/door/airlock/external{
+	id_tag = "syndie_listeningpost_external";
+	req_access_txt = "152"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -4304,11 +4370,11 @@ tP
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP
@@ -4333,29 +4399,29 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
 dV
 dV
 dV
 dV
 dV
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP
@@ -4371,7 +4437,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4393,8 +4459,8 @@ sD
 sD
 sD
 sD
-tP
-tP
+sD
+Em
 tP
 tP
 tP
@@ -4410,7 +4476,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 rI
 Ql
@@ -4431,9 +4497,9 @@ aA
 Uz
 mj
 AM
+AE
 sD
-tP
-tP
+Em
 tP
 tP
 tP
@@ -4449,7 +4515,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 OJ
 Ru
@@ -4469,10 +4535,10 @@ VY
 hD
 CF
 eS
+Mr
 NA
 sD
-tP
-tP
+Em
 tP
 tP
 tP
@@ -4487,8 +4553,8 @@ tP
 tP
 tP
 tP
-tP
-tP
+Em
+Em
 dV
 xa
 yA
@@ -4509,9 +4575,9 @@ hW
 ob
 bQ
 WW
+wq
 sD
-tP
-tP
+Em
 tP
 tP
 tP
@@ -4525,7 +4591,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4548,12 +4614,12 @@ CP
 Nd
 rj
 Zt
+XG
 sD
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
 tP
 Mp
 "}
@@ -4564,7 +4630,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 pB
 mz
@@ -4592,7 +4658,7 @@ Kq
 dV
 dV
 dV
-tP
+Em
 tP
 nv
 "}
@@ -4603,7 +4669,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 dV
 Ip
 hj
@@ -4631,7 +4697,7 @@ sd
 xv
 aj
 dV
-tP
+Em
 tP
 nv
 "}
@@ -4640,9 +4706,9 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
+Em
+Em
+Em
 dV
 Ko
 WG
@@ -4670,7 +4736,7 @@ ai
 vC
 xe
 Kq
-tP
+Em
 tP
 nv
 "}
@@ -4678,7 +4744,7 @@ nv
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -4709,14 +4775,14 @@ mM
 ZN
 xD
 dV
-tP
+Em
 tP
 tP
 "}
 (15,1,1) = {"
 tP
 tP
-tP
+Em
 dV
 dV
 cA
@@ -4748,13 +4814,13 @@ dV
 dV
 dV
 dV
-tP
+Em
 tP
 tP
 "}
 (16,1,1) = {"
 tP
-tP
+Em
 dV
 dV
 ij
@@ -4787,13 +4853,13 @@ ib
 hU
 Uh
 dV
-tP
+Em
 tP
 tP
 "}
 (17,1,1) = {"
 tP
-tP
+Em
 dV
 bL
 eo
@@ -4826,17 +4892,17 @@ St
 fi
 SG
 dV
-tP
+Em
 tP
 tP
 "}
 (18,1,1) = {"
 tP
-tP
+Em
 dV
 Ao
 Du
-YN
+xe
 St
 ZX
 tf
@@ -4865,13 +4931,13 @@ Ji
 IQ
 cm
 dV
-tP
+Em
 tP
 tP
 "}
 (19,1,1) = {"
 tP
-tP
+Em
 dV
 IZ
 Wx
@@ -4904,13 +4970,13 @@ eU
 Nt
 cd
 dV
-tP
+Em
 tP
 tP
 "}
 (20,1,1) = {"
 tP
-tP
+Em
 dV
 dV
 AQ
@@ -4943,14 +5009,14 @@ zh
 IC
 po
 dV
-tP
+Em
 tP
 tP
 "}
 (21,1,1) = {"
 tP
 tP
-tP
+Em
 dV
 dV
 mF
@@ -4982,7 +5048,7 @@ dV
 dV
 dV
 dV
-tP
+Em
 tP
 tP
 "}
@@ -4990,7 +5056,7 @@ tP
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
@@ -5017,11 +5083,11 @@ dV
 xy
 aI
 nT
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 "}
@@ -5030,8 +5096,8 @@ nv
 tP
 tP
 tP
-tP
-tP
+Em
+Em
 dV
 de
 uC
@@ -5070,7 +5136,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 dV
 So
 Kd
@@ -5088,7 +5154,7 @@ mw
 pF
 dV
 bi
-qW
+xe
 Fl
 XU
 eq
@@ -5109,7 +5175,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 Kq
 Jo
 QK
@@ -5132,7 +5198,7 @@ wn
 kx
 Za
 dV
-tP
+Em
 tP
 tP
 tP
@@ -5148,7 +5214,7 @@ nv
 tP
 tP
 tP
-tP
+Em
 Kq
 Uv
 Jd
@@ -5171,7 +5237,7 @@ ME
 xe
 Kq
 dV
-tP
+Em
 tP
 tP
 tP
@@ -5187,7 +5253,7 @@ Mp
 tP
 tP
 tP
-tP
+Em
 dV
 Cj
 cS
@@ -5209,7 +5275,7 @@ Zv
 dV
 zH
 Kq
-tP
+Em
 tP
 tP
 tP
@@ -5226,7 +5292,7 @@ Mp
 nv
 tP
 tP
-tP
+Em
 dV
 EI
 Pd
@@ -5248,9 +5314,9 @@ xn
 dV
 dV
 dV
-tP
-tP
-tP
+Em
+Em
+Em
 tP
 tP
 tP
@@ -5265,15 +5331,15 @@ Mp
 nv
 tP
 tP
-tP
+Em
 dV
 dV
 dV
 dV
 dV
 dV
-tP
-tP
+Em
+Em
 dV
 dV
 dV
@@ -5290,9 +5356,9 @@ Kq
 Kq
 Ph
 Ph
-tP
-tP
-tP
+Em
+Em
+Em
 tP
 nv
 nv
@@ -5305,17 +5371,17 @@ Mp
 tP
 tP
 tP
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
 ey
 ey
 fp
@@ -5332,7 +5398,7 @@ Ph
 Kq
 Ph
 Ph
-tP
+Em
 nv
 Mp
 Mp
@@ -5354,7 +5420,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 CT
 Xv
 bV
@@ -5371,7 +5437,7 @@ uk
 FQ
 qs
 nv
-tP
+Em
 nv
 Mp
 Mp
@@ -5393,7 +5459,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 ey
 ak
 Ax
@@ -5410,7 +5476,7 @@ Fy
 FQ
 qs
 nv
-tP
+Em
 nv
 Mp
 Mp
@@ -5432,7 +5498,7 @@ tP
 tP
 tP
 tP
-nv
+fw
 ey
 yy
 bk
@@ -5449,7 +5515,7 @@ JG
 FQ
 qs
 tP
-tP
+Em
 tP
 Mp
 Mp
@@ -5471,7 +5537,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 ey
 CT
 ff
@@ -5488,7 +5554,7 @@ Ph
 Ph
 Ph
 Ph
-tP
+Em
 tP
 Mp
 Mp
@@ -5511,7 +5577,7 @@ tP
 tP
 tP
 tP
-tP
+Em
 Ph
 Kq
 Kq
@@ -5524,9 +5590,9 @@ Ph
 Kq
 Kq
 Ph
-nv
-tP
-tP
+fw
+Em
+Em
 tP
 tP
 Mp
@@ -5551,18 +5617,18 @@ tP
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
+Em
 tP
 tP
 tP

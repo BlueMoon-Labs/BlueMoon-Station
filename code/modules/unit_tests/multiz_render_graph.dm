@@ -33,6 +33,8 @@
 		if(master_type == /atom/movable/screen/plane_master/rendering_plate)
 			continue
 		var/plane_key = "[initial(master_type.plane)]"
+		if(!(initial(master_type.offsetting_flags) & BLOCKS_PLANE_OFFSETTING) && SSmapping.plane_offset_blacklist[plane_key])
+			TEST_FAIL("Мастер [master_type] использует несмещаемую плоскость [plane_key] без BLOCKS_PLANE_OFFSETTING.")
 		var/existing = claimed_by[plane_key]
 		if(existing)
 			TEST_FAIL("Плоскость [plane_key] заявлена дважды: [existing] и [master_type]. До клиента доедет только один из них.")
@@ -231,5 +233,53 @@
 			TEST_ASSERT_EQUAL(wearer.plane, GET_NEW_PLANE(GAME_PLANE, GET_Z_PLANE_OFFSET(destination.z)), "Плоскость самого моба должна следовать за этажом")
 			for(var/obj/item/item as anything in hud_items)
 				TEST_ASSERT_EQUAL(item.plane, ABOVE_HUD_PLANE, "После перехода на z=[destination.z] предмет [item.type] должен оставаться на плоскости HUD")
+
+/// Маски напольного свечения читают игровой слой своего этажа в основной и вторичной карте.
+/datum/unit_test/multiz_lamp_masks_follow_floor/Run()
+	var/list/group_types = list(/datum/plane_master_group/main, /datum/plane_master_group/popup)
+	for(var/group_type in group_types)
+		var/datum/plane_master_group/group = allocate(group_type, RENDER_GRAPH_TEST_KEY)
+		if(group.built_depth < 1)
+			group.build_plane_masters(group.built_depth + 1, 1)
+		for(var/floor_offset in 0 to 1)
+			var/atom/movable/screen/plane_master/game = group.plane_masters["[GET_NEW_PLANE(GAME_PLANE, floor_offset)]"]
+			TEST_ASSERT_NOTNULL(game, "У этажа нет игрового мастера")
+			TEST_ASSERT_EQUAL(copytext(game.render_target, 1, 2) == "*", group.use_render_plates, "Прямой игровой слой скрывается только при наличии реле")
+			var/list/masks = list(
+				"[FLOOR_LIGHTING_LAMPS_PLANE]" = "floor_game_mask",
+				"[FLOOR_LIGHTING_LAMPS_SELFGLOW]" = "floor_selfglow_game_mask",
+				"[FLOOR_LIGHTING_LAMPS_GLARE]" = "floor_glare_game_mask",
+			)
+			for(var/plane_key in masks)
+				var/atom/movable/screen/plane_master/master = group.plane_masters["[GET_NEW_PLANE(text2num(plane_key), floor_offset)]"]
+				TEST_ASSERT_NOTNULL(master, "У этажа нет мастера свечения [plane_key]")
+				var/list/mask = master.filter_data[masks[plane_key]]
+				TEST_ASSERT_EQUAL(mask?["render_source"], game.render_target, "Свечение должно читать игровой слой своего этажа")
+
+/// Свечение и экспозиция источника переезжают вместе с ним на нижний этаж и обратно.
+/datum/unit_test/multiz_lamp_overlays_follow_source/Run()
+	var/turf/lower_turf
+	for(var/datum/space_level/level as anything in SSmapping.z_list)
+		if(GET_Z_PLANE_OFFSET(level.z_value) == 1)
+			lower_turf = locate(1, 1, level.z_value)
+			break
+	if(!lower_turf)
+		var/datum/space_level/lower = SSmapping.add_new_zlevel("Тест свечения: нижний этаж", list())
+		var/datum/space_level/upper = SSmapping.add_new_zlevel("Тест свечения: верхний этаж", list())
+		var/datum/map_template/stack = allocate(/datum/map_template)
+		stack.link_template_stack(list(lower, upper))
+		lower_turf = locate(1, 1, lower.z_value)
+	TEST_ASSERT_NOTNULL(lower_turf, "Для проверки нужен нижний этаж связки")
+	var/obj/item/source = allocate(/obj/item, run_loc_floor_bottom_left)
+	source.glow_icon_state = "bulb"
+	source.exposure_icon_state = "circle"
+	source.light_range = 1
+	source.update_bloom()
+	for(var/turf/destination as anything in list(lower_turf, run_loc_floor_bottom_left))
+		source.forceMove(destination)
+		TEST_ASSERT_NOTNULL(source.glow_overlay, "Источник должен сохранять свечение")
+		TEST_ASSERT_NOTNULL(source.exposure_overlay, "Источник должен сохранять экспозицию")
+		TEST_ASSERT_EQUAL(source.glow_overlay.plane, GET_NEW_PLANE(LIGHTING_LAMPS_PLANE, GET_Z_PLANE_OFFSET(destination.z)), "Свечение осталось на чужом этаже")
+		TEST_ASSERT_EQUAL(source.exposure_overlay.plane, GET_NEW_PLANE(LIGHTING_EXPOSURE_PLANE, GET_Z_PLANE_OFFSET(destination.z)), "Экспозиция осталась на чужом этаже")
 
 #undef RENDER_GRAPH_TEST_KEY

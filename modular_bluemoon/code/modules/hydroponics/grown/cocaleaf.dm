@@ -1,8 +1,8 @@
 /obj/item/seeds/cocaleaf
 	name = "coca leaf seed pack"
 	desc = "These seeds grow into coca shrubs. They make you feel energized just looking at them..."
-	icon = 'modular_bluemoon/cocaine/icons/seeds_cocoleaf.dmi'
-	growing_icon = 'modular_bluemoon/cocaine/icons/growing_cocoleaf.dmi'
+	icon = 'modular_bluemoon/icons/obj/hydroponics/cocoleaf.dmi'
+	growing_icon = 'modular_bluemoon/icons/obj/hydroponics/cocoleaf.dmi'
 	icon_state = "seed-cocoleaf"
 	species = "cocoleaf"
 	plantname = "Coca Leaves"
@@ -18,7 +18,7 @@
 	seed = /obj/item/seeds/cocaleaf
 	name = "coca leaf"
 	desc = "A leaf of the coca shrub, which contains a potent psychoactive alkaloid known as 'cocaine'."
-	icon = 'modular_bluemoon/cocaine/icons/harvest_cocoleaf.dmi'
+	icon = 'modular_bluemoon/icons/obj/hydroponics/cocoleaf.dmi'
 	icon_state = "cocoleaf"
 	foodtype = FRUIT
 	tastes = list("leaves" = 1)

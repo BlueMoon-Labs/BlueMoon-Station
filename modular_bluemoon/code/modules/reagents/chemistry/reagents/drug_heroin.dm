@@ -316,7 +316,7 @@
 /obj/item/reagent_containers/pill/powder_heroin
 	name = "Героин"
 	desc = "Горстка порошка грязно-молочного цвета. "
-	icon = 'modular_bluemoon/icons/obj/moredrugs.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "heroinpowder"
 	volume = 10
 	list_reagents = list(/datum/reagent/drug/heroin = 10)

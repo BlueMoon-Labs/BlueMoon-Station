@@ -148,3 +148,11 @@
 	icon_state = "melatonin_modkit"
 	product = /obj/item/clothing/mask/gas/sechailer/melatonin
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
+
+/obj/item/clothing/mask/gas/sechailer/syndicate/cybersun
+	name = "Cybersun half mask"
+	desc = "Модная полу-маска в брендовых цветах компании Киберсан. Поговаривают, такие продают как сувенир на далеких научных станциях. "
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "cybersun"
+	item_state = "cybersun"

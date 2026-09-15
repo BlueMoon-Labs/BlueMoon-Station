@@ -95,6 +95,9 @@
 		//Стопка строится при первом открытии: у большинства консолей окно не открывают за раунд.
 		if(!cam_plane_group)
 			cam_plane_group = new /datum/plane_master_group/popup(PLANE_GROUP_POPUP_WINDOW(src), map_name)
+		for(var/plane_key in cam_plane_group.plane_masters)
+			var/atom/movable/screen/plane_master/plane = cam_plane_group.plane_masters[plane_key]
+			plane.backdrop(user)
 		cam_plane_group.register_to_client(user.client)
 		user.client.register_map_obj(cam_background)
 		// Open UI

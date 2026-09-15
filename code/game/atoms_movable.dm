@@ -1057,6 +1057,8 @@
 	SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), new_offset)
 
 	update_appearance()
+	if(glow_overlay || exposure_overlay)
+		update_bloom()
 
 	if(update_on_z)
 		for(var/image/update as anything in update_on_z)

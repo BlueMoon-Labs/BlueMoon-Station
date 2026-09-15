@@ -177,19 +177,17 @@ export const BigManipulator = (props) => {
                     />
                   )}
                   {task.task_type === 'drop' && (
-                    <>
-                      <Button
-                        compact
-                        content={task.overflow_status}
-                        tooltip="Allow: always drop here; TO HELD: no same-type item already there; FORBID: no items at all there"
-                        onClick={() =>
-                          act('adjust_task_param', {
-                            taskId: task.id,
-                            param: 'cycle_overflow_status',
-                          })
-                        }
-                      />
-                    </>
+                    <Button
+                      compact
+                      content={task.overflow_status}
+                      tooltip="Allow: always drop here; TO HELD: no same-type item already there; FORBID: no items at all there"
+                      onClick={() =>
+                        act('adjust_task_param', {
+                          taskId: task.id,
+                          param: 'cycle_overflow_status',
+                        })
+                      }
+                    />
                   )}
                   {task.task_type === 'throw' && (
                     <Box inline>

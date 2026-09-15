@@ -123,6 +123,7 @@
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
 	.["disable_combat_mouse_lock"] = disable_combat_mouse_lock
+	.["smartlink"] = smartlink
 
 	// Screenshake
 	.["screenshake"] = screenshake
@@ -190,6 +191,10 @@
 	.["view_pixelshift"] = view_pixelshift
 	.["lighting_blur"] = lighting_blur
 	.["multiz_performance"] = multiz_performance
+	.["lighting_brightness"] = lighting_brightness
+	.["lighting_lamp_brightness"] = lighting_lamp_brightness
+	.["lighting_bloom_intensity"] = lighting_bloom_intensity
+	.["lighting_quality"] = lighting_quality
 	.["hud_toggle_color"] = hud_toggle_color
 	.["tgui_input_mode"] = tgui_input_mode
 	.["tgui_input_verbs"] = tgui_input_verbs
@@ -486,6 +491,11 @@
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 					dirty_var = "disable_combat_mouse_lock"
+				if("smartlink") //BLUEMOON ADD
+					smartlink = !smartlink
+					dirty_var = "smartlink"
+					if(isliving(user))
+						user.refresh_ammo_hud()
 			save_pref_var(dirty_var)
 			return TRUE
 
@@ -579,7 +589,33 @@
 					dirty_var = "lighting_blur"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE))
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
+				if("lighting_brightness")
+					lighting_brightness = clamp(text2num(value), LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, O_LIGHTING_VISUAL_PLANE, EMISSIVE_PLANE))
+				if("lighting_lamp_brightness")
+					lighting_lamp_brightness = clamp(text2num(value), LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						H.refresh_plane_backdrops(user, list(LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE))
+				if("lighting_bloom_intensity")
+					lighting_bloom_intensity = clamp(text2num(value), LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						H.refresh_plane_backdrops(user, list(LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, EMISSIVE_PLANE))
+				if("lighting_quality")
+					lighting_quality = clamp(text2num(value), LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH)
+					if(lighting_quality == LIGHTING_QUALITY_FAST)
+						// Откат к стандарту до LightUp: сброс всех параметров освещения
+						lighting_blur = 0
+						lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
+						lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+						lighting_bloom_intensity = 0
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 				if("multiz_performance")
 					multiz_performance = clamp(text2num(value), MULTIZ_PERFORMANCE_DISABLE, MAX_EXPECTED_Z_DEPTH - 1)
 					rebuild_multiz_planes(user)

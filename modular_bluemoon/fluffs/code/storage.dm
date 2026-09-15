@@ -360,6 +360,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
 	force = 11
 
+
 /obj/item/storage/box/kumiko_ncr_case
 	name = "NCR ranger case"
 	desc = "Old NCR ranger case issued to a single ranger. The engraving on the lid reads: 'Patrolling the Mojave almost makes you wish for a nuclear winter.'"
@@ -374,8 +375,7 @@
 	new /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster(src)
 	new	/obj/item/modkit/kumiko_ncr_riot(src)
 	new	/obj/item/modkit/kumiko_ncr_bulletproof(src)
-	new	/obj/item/modkit/kumiko_ncr_plate_carrier(src)
-	new	/obj/item/modkit/kumiko_ncr_plate_carrier(src)
+	new	/obj/item/modkit/kumiko_ncr_armor_vest(src)
 	new	/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet(src)
 	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
 	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)
@@ -418,3 +418,14 @@
 	new /obj/item/modkit/melatonin_stunsword_kit(src)
 	new /obj/item/modkit/melatonin_carrier_kit(src)
 	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)
+
+/obj/item/storage/box/tau_box
+	name = "Tau modkits box"
+	desc = "Набор стиля"
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "tau_box"
+
+/obj/item/storage/box/tau_box/PopulateContents()
+	new /obj/item/modkit/tau_helmet_kit(src)
+	new /obj/item/modkit/tau_armor_kit(src)
+	new /obj/item/toy/plush/bm/tau(src)

@@ -301,7 +301,7 @@
 	atom = new
 	if(!appearance)
 		GenerateAppearance()
-	atom.glow_icon = icon
+	atom.emissive_icon = icon
 	atom.glow_state = icon_state
 	atom.appearance = appearance
 	atom.update_appearance(UPDATE_OVERLAYS)
@@ -513,7 +513,7 @@
 	/// locked atom
 	var/atom/locked
 	/// Спрайт свечения; сам оверлей собирает update_overlays(), чтобы он переезжал по этажам вместе с эффектом.
-	var/glow_icon
+	var/emissive_icon
 	var/glow_state
 
 /atom/movable/summon_weapon_effect/Destroy()
@@ -522,8 +522,8 @@
 
 /atom/movable/summon_weapon_effect/update_overlays()
 	. = ..()
-	if(glow_icon)
-		. += emissive_appearance(glow_icon, glow_state, offset_spokesman = src)
+	if(emissive_icon)
+		. += emissive_appearance(emissive_icon, glow_state, offset_spokesman = src)
 
 /atom/movable/summon_weapon_effect/proc/Lock(atom/target)
 	if(locked == target)
