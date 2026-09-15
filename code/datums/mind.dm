@@ -138,7 +138,10 @@
 /datum/mind/Destroy()
 	SSticker.minds -= src
 	QDEL_NULL(tgui_panel)
-	QDEL_LIST(antag_datums)
+	// Снятие последней роли обнуляет antag_datums внутри Destroy антагониста.
+	for(var/datum/antagonist/antagonist as anything in antag_datums?.Copy())
+		qdel(antagonist)
+	antag_datums = null
 	QDEL_LIST(ambition_objectives)
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()

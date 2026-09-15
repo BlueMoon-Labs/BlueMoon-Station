@@ -78,15 +78,17 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 	update_icon()
 
 /obj/effect/proc_holder/proc/remove_ranged_ability(msg)
-	if(!ranged_ability_user || !ranged_ability_user.client || (ranged_ability_user.ranged_ability && ranged_ability_user.ranged_ability != src)) //To avoid removing the wrong ability
-		return
-	ranged_ability_user.ranged_ability = null
-	ranged_ability_user.click_intercept = null
-	ranged_ability_user.update_mouse_pointer()
-	if(msg)
-		to_chat(ranged_ability_user, msg)
+	var/mob/living/user = ranged_ability_user
 	ranged_ability_user = null
 	active = FALSE
+	if(user)
+		if(user.ranged_ability == src)
+			user.ranged_ability = null
+		if(user.click_intercept == src)
+			user.click_intercept = null
+		user.update_mouse_pointer()
+		if(msg && user.client)
+			to_chat(user, msg)
 	update_icon()
 
 /obj/effect/proc_holder/spell
