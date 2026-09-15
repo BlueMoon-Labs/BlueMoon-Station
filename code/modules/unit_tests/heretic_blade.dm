@@ -143,6 +143,7 @@
 	attacker.forceMove(get_step(get_step(get_step(user, EAST), EAST), EAST))
 	lunge.cast(list(attacker), user)
 	TEST_ASSERT(user.Adjacent(attacker), "Первый выпад работает до парирования и изучения метки.")
+	TEST_ASSERT_EQUAL(attacker.AmountKnockdown(), 1.5 SECONDS, "Успешное сближение оставляет время на следующий удар.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Сближение расходует один Темп.")
 	var/datum/eldritch_knowledge/blade_grasp/grasp = allocate(/datum/eldritch_knowledge/blade_grasp)
 	TEST_ASSERT(grasp.on_mansus_grasp(attacker, user, TRUE), "Хватка попадает по противнику после выпада.")
@@ -164,11 +165,8 @@
 	TEST_ASSERT(!(user.do_run_block(FALSE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Предварительная проверка не должна парировать воображаемый удар.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Проверка без атаки не даёт Темп.")
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS, "Выстрел блокируется стойкой.")
-	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "быстрый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Быстрая серия обходит внутреннюю задержку парирования.")
-	knowledge.active_parry.next_block = world.time - 1
-	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Второй удар должен быть парирован после задержки.")
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Второй удар в тот же момент расходует следующий блок.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "Каждое парирование даёт один Темп.")
-	knowledge.active_parry.next_block = world.time - 1
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "третий удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Третий удар расходует последний блок.")
 	TEST_ASSERT_NULL(knowledge.active_parry, "Обычная стойка заканчивается после трёх ударов.")
 	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "четвёртый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "После исчерпания стойки нет бесплатного блока.")
@@ -244,15 +242,10 @@
 	TEST_ASSERT(knowledge.begin_parry(user, TRUE), "Вознесённый мастер может начать финальную стойку против цели поединка.")
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар сбоку", ATTACK_TYPE_MELEE, 0, stranger) & BLOCK_SUCCESS, "Финальная стойка защищает от любого противника.")
 	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 5, "Каждая атака расходует общий запас стойки.")
-	knowledge.active_parry.next_block = world.time - 1
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Атака выбранного противника блокируется.")
-	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "быстрый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "Быстрый второй удар обходит внутреннюю перезарядку.")
-	knowledge.active_parry.next_block = world.time - 1
-	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "После задержки можно блокировать второй удар.")
-	knowledge.active_parry.next_block = world.time - 1
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Одновременное попадание тоже расходует блок.")
 	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Четвёртый удар блокируется.")
 	for(var/remaining in 1 to 2)
-		knowledge.active_parry.next_block = world.time - 1
 		TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Последние блоки расходуют остаток стойки.")
 	TEST_ASSERT_NULL(knowledge.active_parry, "Финальная стойка имеет конечное число блоков.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 3, "Темп ограничен тремя единицами.")
@@ -398,11 +391,33 @@
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Перехват снаряда пополняет Темп.")
 	var/obj/item/offhand = allocate(/obj/item, get_turf(user))
 	user.put_in_hands(offhand)
-	knowledge.active_parry.next_block = world.time - 1
 	TEST_ASSERT(!(user.do_run_block(TRUE, bullet, 20, "снаряд", ATTACK_TYPE_PROJECTILE, 0, attacker) & BLOCK_SUCCESS), "Предмет во второй руке отключает уже поднятую защиту.")
 	user.dropItemToGround(offhand)
 	TEST_ASSERT(user.do_run_block(TRUE, bullet, 20, "снаряд турели", ATTACK_TYPE_PROJECTILE, 0, null) & BLOCK_SUCCESS, "Защита не требует живого стрелка.")
 	TEST_ASSERT_EQUAL(knowledge.active_parry.blocks_left, 1, "После двух перехватов остаётся один блок.")
+
+/// Одновременный залп расходует все блоки стойки, а оставшиеся снаряды наносят урон.
+/datum/unit_test/heretic_blade_projectile_guard/burst/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blade_guard)
+	TEST_ASSERT(knowledge.begin_parry(user), "Улучшенная стойка встречает залп четырьмя блоками.")
+	for(var/shot in 1 to 6)
+		var/obj/item/projectile/projectile = allocate(/obj/item/projectile, get_turf(attacker))
+		projectile.damage = 10
+		projectile.firer = attacker
+		projectile.starting = get_turf(attacker)
+		var/result = user.bullet_act(projectile, BODY_ZONE_CHEST)
+		if(shot <= 4)
+			TEST_ASSERT_EQUAL(result, BULLET_ACT_BLOCK, "Каждое из первых четырёх одновременных попаданий блокируется.")
+			TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "До исчерпания блоков залп не наносит урон.")
+		else
+			TEST_ASSERT_EQUAL(result, BULLET_ACT_HIT, "Избыточные снаряды пробивают исчерпанную стойку.")
+	TEST_ASSERT_NULL(knowledge.active_parry, "Четвёртый снаряд завершает стойку.")
+	TEST_ASSERT(abs(user.getBruteLoss() - 20) < DAMAGE_PRECISION, "Последние два снаряда наносят полный урон.")
 
 /// Парирование останавливает электроды без прямого урона и получает дополнительный блок от улучшения.
 /datum/unit_test/heretic_blade_electrode_guard/Run()
@@ -418,7 +433,6 @@
 		var/obj/item/projectile/projectile = allocate(projectile_type, get_turf(attacker))
 		projectile.firer = attacker
 		projectile.starting = get_turf(attacker)
-		knowledge.active_parry.next_block = world.time - 1
 		TEST_ASSERT_EQUAL(user.bullet_act(projectile, BODY_ZONE_CHEST), BULLET_ACT_BLOCK, "Стойка блокирует [projectile.type].")
 		TEST_ASSERT(!user.IsKnockdown() && !user.IsStun(), "Перехват не пропускает оглушение.")
 		TEST_ASSERT(!user.has_status_effect(STATUS_EFFECT_TASED) && !user.has_status_effect(STATUS_EFFECT_TASED_WEAK), "Перехват не пропускает электрический эффект.")

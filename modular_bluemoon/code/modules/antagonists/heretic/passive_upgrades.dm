@@ -21,7 +21,7 @@
 
 /datum/eldritch_knowledge/blade_guard
 	passive_values = list(10, 15, 20)
-	passive_desc = "Успешное парирование восстанавливает 10 / 15 / 20 выносливости. Стойка даёт четыре блока на три секунды; между блоками 0,1 секунды."
+	passive_desc = "Успешное парирование восстанавливает 10 / 15 / 20 выносливости. Стойка даёт четыре блока на три секунды, в том числе против одновременных попаданий."
 
 /datum/eldritch_knowledge/moon_shroud
 	passive_values = list(60 SECONDS, 75 SECONDS, 90 SECONDS)

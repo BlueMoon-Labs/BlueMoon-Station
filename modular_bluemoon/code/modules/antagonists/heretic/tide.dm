@@ -33,7 +33,7 @@
 
 /datum/eldritch_knowledge/base_tide
 	name = "Берег без солнца"
-	desc = "Сбивайте врагов волной и смывайте их к стенам. Сброс давления доступен сразу; давление восстанавливается само и накапливается от ударов гарпунным клинком. Волны оставляют настоящий скользкий пол, но вы не скользите на воде. Нож и лист металла создают гарпунный клинок."
+	desc = "Сбивайте врагов волной и смывайте их к стенам. Сброс давления доступен сразу; давление восстанавливается само и накапливается от ударов гарпунным клинком. Волны оставляют скользкий пол и замедляют намокших врагов на 8 секунд, даже в нескользящей обуви. Вы не скользите на воде. Нож и лист металла создают гарпунный клинок."
 	gain_text = "Море ушло, но я всё ещё слышал, как оно дышит под моими ногами."
 	route = PATH_TIDE
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/metal)
@@ -196,7 +196,7 @@
 		victim.adjustStaminaLoss(ascended_wave ? 40 : 24)
 		soak(victim)
 		move_with_tide(victim, center, inward_tide, ascended_wave ? 3 : 2)
-		victim.Knockdown(ascended_wave ? 2 SECONDS : 1.2 SECONDS)
+		victim.Knockdown(ascended_wave ? 3 SECONDS : 2.5 SECONDS)
 		log_combat(user, victim, "поражает приливной волной")
 	for(var/turf/tile in range(wave_radius, center))
 		if(line_clear(center, tile, wave_radius))
@@ -217,7 +217,7 @@
 	victim.adjustStaminaLoss(20)
 	soak(victim)
 	move_with_tide(victim, user, TRUE, 3)
-	victim.Knockdown(0.8 SECONDS)
+	victim.Knockdown(2 SECONDS)
 	for(var/turf/tile as anything in get_line(get_turf(user), origin))
 		wet_floor(tile)
 		new /obj/effect/temp_visual/heretic_tide/wave(tile)
@@ -291,6 +291,7 @@
 	if(!tide || owner.stat == DEAD || IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner))
 		return FALSE
 	tide.drenched += src
+	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched)
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_water_overlay))
 	owner.update_icon()
 	return TRUE
@@ -302,6 +303,7 @@
 /datum/status_effect/heretic_drenched/on_remove()
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
 	tide?.drenched.Remove(src)
+	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched)
 	UnregisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS)
 	owner.update_icon()
 	return ..()
@@ -316,9 +318,13 @@
 	tide_ref = null
 	return .
 
+/datum/movespeed_modifier/heretic_drenched
+	multiplicative_slowdown = 0.7
+	blacklisted_movetypes = FLYING | FLOATING
+
 /atom/movable/screen/alert/status_effect/heretic_drenched
 	name = "Вода Пучины"
-	desc = "Чужая вода стекает с одежды. Усиленный гарпун наносит вам ещё 5 ушибов, а хозяин воды может вернуть себе давление и немного выносливости. Вода исчезнет через 8 секунд после последнего попадания магии."
+	desc = "Вода Пучины замедляет ваши шаги даже в нескользящей обуви. Полёт позволяет двигаться без этого замедления. Усиленный гарпун наносит вам ещё 5 ушибов, а хозяин воды может вернуть себе давление и немного выносливости. Вода исчезнет через 8 секунд после последнего попадания магии."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_tide"
 
@@ -415,7 +421,7 @@
 		tide.soak(victim)
 		tide.move_with_tide(victim, src, !outward, reach_center = TRUE, collide = !outward)
 		if(erupting || in_core)
-			victim.Knockdown(0.6 SECONDS)
+			victim.Knockdown(erupting ? 1.5 SECONDS : 0.6 SECONDS)
 		log_combat(user, victim, outward ? "оттесняет водоворотом" : "затягивает водоворотом")
 	for(var/turf/tile in range(HERETIC_TIDE_WAVE_RADIUS, src))
 		if(tide.line_clear(src, tile, HERETIC_TIDE_WAVE_RADIUS))
@@ -514,7 +520,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_tide/release
 	name = "Сброс давления"
-	desc = "За 2 давления обдайте врагов в двух клетках волной: 18 ушибов, 24 урона выносливости, падение на 1,2 секунды и снос на две клетки. Упор в стену добавляет 8 ушибов. Колокол меняет отталкивание на притяжение."
+	desc = "За 2 давления обдайте врагов в двух клетках волной: 18 ушибов, 24 урона выносливости, падение на 2,5 секунды и снос на две клетки. Упор в стену добавляет 8 ушибов. Колокол меняет отталкивание на притяжение."
 	charge_max = 15 SECONDS
 
 /obj/effect/proc_holder/spell/self/heretic_tide/release/cast(list/targets, mob/living/user)
@@ -525,7 +531,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_tide/leviathan
 	name = "Голос Пучины"
-	desc = "Бесплатная волна в трёх клетках: 30 ушибов, 40 урона выносливости, падение на 2 секунды и снос на три клетки. Упор в стену добавляет 8 ушибов. Доступно после вознесения."
+	desc = "Бесплатная волна в трёх клетках: 30 ушибов, 40 урона выносливости, падение на 3 секунды и снос на три клетки. Упор в стену добавляет 8 ушибов. Доступно после вознесения."
 	charge_max = 30 SECONDS
 	action_icon_state = "tide_ascend"
 
@@ -605,7 +611,7 @@
 
 /datum/eldritch_knowledge/tide_grasp
 	name = "Хватка глубины"
-	desc = "Хватка Мансуса по противнику даёт 2 единицы давления и покрывает цель водой Пучины на 8 секунд. Антимагия и союзники не дают давления."
+	desc = "Хватка Мансуса по противнику даёт 2 единицы давления и покрывает цель замедляющей водой Пучины на 8 секунд. Антимагия и союзники не дают давления."
 	gain_text = "На дне нет воздуха, но ладонь помнит вес каждого вдоха."
 	cost = 1
 	route = PATH_TIDE
@@ -621,7 +627,7 @@
 
 /datum/eldritch_knowledge/spell/tide_undertow
 	name = "Отлив"
-	desc = "Отлив притягивает врага в пяти клетках на три клетки ближе, наносит 15 ушибов и 20 урона выносливости, сбивает на 0,8 секунды и покрывает водой Пучины. Не требует давления, перезарядка 20 секунд. Преграды защищают от течения."
+	desc = "Отлив притягивает врага в пяти клетках на три клетки ближе, наносит 15 ушибов и 20 урона выносливости, сбивает на 2 секунды и покрывает водой Пучины. Не требует давления, перезарядка 20 секунд. Преграды защищают от течения."
 	gain_text = "Я звал с берега. Ответ пришёл из-под ног."
 	cost = 1
 	route = PATH_TIDE
@@ -686,7 +692,7 @@
 
 /datum/eldritch_knowledge/spell/tide_well
 	name = "Чёрный водоворот"
-	desc = "За 2 давления создайте в пяти клетках воронку на 12 секунд. Первый удар в радиусе двух клеток: 12 ушибов, 18 выносливости, короткое падение и притяжение. Затем каждые 2 секунды она тянет на клетку и бьёт: на краю 6 ушибов и 8 выносливости, в центре и рядом — 12 и 12 с падением на 0,6 секунды. Воронка имеет 60 прочности, разрушается жезлом и работает в семи клетках от вас без преград. Одновременно одна; перезарядка 30 секунд."
+	desc = "За 2 давления создайте в пяти клетках воронку на 12 секунд. Первый удар в радиусе двух клеток: 12 ушибов, 18 выносливости, падение на 1,5 секунды и притяжение. Затем каждые 2 секунды она тянет на клетку и бьёт: на краю 6 ушибов и 8 выносливости, в центре и рядом — 12 и 12 с падением на 0,6 секунды. Воронка имеет 60 прочности, разрушается жезлом и работает в семи клетках от вас без преград. Одновременно одна; перезарядка 30 секунд."
 	gain_text = "Воронка ведёт не вниз. Она ведёт домой."
 	cost = 1
 	route = PATH_TIDE
@@ -723,7 +729,7 @@
 /datum/eldritch_knowledge/final_eldritch/tide_final
 	parallax_scene = ANTAG_SCENE_HERETIC_TIDE
 	name = "Владыка Пучины"
-	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение даёт запас давления 8 и восстанавливает единицу за 4 секунды. Вы не нуждаетесь в дыхании, защищены от высокого и низкого давления, получаете на четверть меньше ушибов и ожогов. Голос Пучины раз в 30 секунд бесплатно бьёт в радиусе трёх клеток: 30 ушибов, 40 выносливости, падение на 2 секунды и снос на три клетки."
+	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение даёт запас давления 8 и восстанавливает единицу за 4 секунды. Вы не нуждаетесь в дыхании, защищены от высокого и низкого давления, получаете на четверть меньше ушибов и ожогов. Голос Пучины раз в 30 секунд бесплатно бьёт в радиусе трёх клеток: 30 ушибов, 40 выносливости, падение на 3 секунды и снос на три клетки."
 	gain_text = "Берег исчез. Осталось только моё дыхание, и море дышало вместе со мной."
 	route = PATH_TIDE
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)

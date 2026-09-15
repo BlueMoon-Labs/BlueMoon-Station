@@ -1,5 +1,5 @@
 #define HERETIC_BLADE_LIMIT 3
-#define HERETIC_BLADE_PARRY_INTERVAL (0.1 SECONDS)
+#define HERETIC_BLADE_LUNGE_KNOCKDOWN (1.5 SECONDS)
 #define HERETIC_BLADE_FEINT_WINDUP (0.6 SECONDS)
 #define HERETIC_BLADE_FEINT_WINDOW (3 SECONDS)
 #define HERETIC_BLADE_FEINT_COOLDOWN (8 SECONDS)
@@ -242,7 +242,6 @@
 	var/expires_at
 	var/blocks_left = 1
 	var/master_stance = FALSE
-	var/next_block = 0
 	var/mutable_appearance/stance_overlay
 
 /datum/status_effect/heretic_parry/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blade/knowledge, window, blocks, master = FALSE)
@@ -329,7 +328,7 @@
 
 /datum/status_effect/heretic_parry/proc/parry_attack(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
-	if(!real_attack || world.time >= expires_at || world.time < next_block || blocks_left <= 0)
+	if(!real_attack || world.time >= expires_at || blocks_left <= 0)
 		return BLOCK_NONE
 	if(damage <= 0 && !(attack_type & (ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE)) && !(return_list?[BLOCK_CONTEXT_DAMAGE] > 0))
 		return BLOCK_NONE
@@ -343,7 +342,6 @@
 	if(!(attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)) && !source.Adjacent(attacker))
 		return BLOCK_NONE
 	blocks_left--
-	next_block = world.time + HERETIC_BLADE_PARRY_INTERVAL
 	knowledge.record_parry(source, attacker)
 	playsound(source, 'modular_bluemoon/sound/heretic/parry.ogg', 60, TRUE)
 	if(!blocks_left)
@@ -374,7 +372,7 @@
 
 /datum/eldritch_knowledge/spell/blade_lunge
 	name = "Шаг между ударами"
-	desc = "Открывает выпад: за 1 Темп сблизьтесь с видимой целью на расстоянии до пяти клеток и нанесите 20 ушибов и 20 урона выносливости. По противнику, чью атаку вы только что парировали, выпад также проводит ответный удар. Стены и закрытые двери преграждают путь. Перезарядка 10 секунд."
+	desc = "Открывает выпад: за 1 Темп сблизьтесь с видимой целью на расстоянии до пяти клеток и нанесите 20 ушибов и 20 урона выносливости, опрокинув цель на 1,5 секунды. По противнику, чью атаку вы только что парировали, выпад также проводит ответный удар. Стены и закрытые двери преграждают путь. Перезарядка 10 секунд."
 	route = PATH_BLADE
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lunge
@@ -461,7 +459,7 @@
 /datum/eldritch_knowledge/final_eldritch/blade_final
 	parallax_scene = ANTAG_SCENE_HERETIC_BLADE
 	name = "Последний поединок"
-	desc = "После трёх подношений проведите обряд над тремя трупами. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. Ответный удар получает ещё 12 урона. «Тысяча граней» на 6 секунд блокирует до шести ударов или снарядов, не чаще раза в 0,1 секунды. Нужен свой клинок и свободная вторая рука."
+	desc = "После трёх подношений проведите обряд над тремя трупами. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. Ответный удар получает ещё 12 урона. «Тысяча граней» на 6 секунд блокирует до шести ударов или снарядов, в том числе одновременно. Нужен свой клинок и свободная вторая рука."
 	gain_text = "Острие остановилось у самого сердца мира. Я ещё решаю, наносить ли удар."
 	route = PATH_BLADE
 	cost = 3
@@ -494,7 +492,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/parry
 	name = "Выжидание"
-	desc = "За 2 секунды отбейте три удара или снаряда своим клинком; улучшенная стойка длится 3 секунды и даёт четыре блока. Между блоками 0,1 секунды, вторая рука должна быть свободна. Парирование даёт бесплатный ответный удар по нападавшему."
+	desc = "За 2 секунды отбейте три удара или снаряда своим клинком; улучшенная стойка длится 3 секунды и даёт четыре блока. Блоки работают и против одновременных попаданий; вторая рука должна быть свободна. Парирование даёт бесплатный ответный удар по нападавшему."
 	charge_max = 8 SECONDS
 	action_icon_state = "furious_steel"
 
@@ -610,7 +608,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/master
 	name = "Тысяча граней"
-	desc = "На 6 секунд отразите до шести ударов или снарядов, не чаще раза в 0,1 секунды. Требуются собственный тёмный клинок и свободная вторая рука."
+	desc = "На 6 секунд отразите до шести ударов или снарядов, в том числе одновременно. Требуются собственный тёмный клинок и свободная вторая рука."
 	required_knowledge = /datum/eldritch_knowledge/final_eldritch/blade_final
 	charge_max = 45 SECONDS
 	action_icon_state = "blade_master"
@@ -630,7 +628,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"
-	desc = "За 1 Темп сблизьтесь с противником до пяти клеток по свободному пути: 20 ушибов и 20 урона выносливости. Выпад по только что парированному противнику также расходует и проводит ответный удар. Требуется собственный тёмный клинок в руке."
+	desc = "За 1 Темп сблизьтесь с противником до пяти клеток по свободному пути: 20 ушибов, 20 урона выносливости и падение на 1,5 секунды. Выпад по только что парированному противнику также расходует и проводит ответный удар. Требуется собственный тёмный клинок в руке."
 	clothes_req = FALSE
 	charge_max = 10 SECONDS
 	range = 5
@@ -689,6 +687,7 @@
 	var/damage_before = victim.getBruteLoss()
 	victim.adjustBruteLoss(20)
 	victim.adjustStaminaLoss(20)
+	victim.Knockdown(HERETIC_BLADE_LUNGE_KNOCKDOWN)
 	knowledge.try_riposte(victim, user)
 	log_combat(user, victim, "поражает выпадом", addition = "старт [AREACOORD(start)]; ушибы: [round(victim.getBruteLoss() - damage_before, 0.1)]; Темп: [knowledge.combat_resource]")
 	new /obj/effect/temp_visual/dir_setting/heretic_slash(get_turf(user), get_dir(user, victim))
@@ -729,7 +728,7 @@
 		heretic_revert_cast(user)
 
 #undef HERETIC_BLADE_LIMIT
-#undef HERETIC_BLADE_PARRY_INTERVAL
+#undef HERETIC_BLADE_LUNGE_KNOCKDOWN
 #undef HERETIC_BLADE_FEINT_WINDUP
 #undef HERETIC_BLADE_FEINT_WINDOW
 #undef HERETIC_BLADE_FEINT_COOLDOWN

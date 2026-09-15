@@ -55,9 +55,12 @@
 	TEST_ASSERT(abs(victim.getStaminaLoss() - 24) < 0.001, "Волна наносит двадцать четыре урона выносливости.")
 	TEST_ASSERT_EQUAL(get_dist(user, victim), 3, "Волна смывает соседнего врага на две клетки.")
 	TEST_ASSERT(victim.IsKnockdown(), "Волна сбивает противника с ног.")
+	TEST_ASSERT_EQUAL(victim.AmountKnockdown(), 2.5 SECONDS, "Сброс оставляет время на продолжение атаки или отход.")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Волна замедляет намокшую цель.")
 	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Волна не ранит другого еретика.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Волна не ранит создателя.")
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия блокирует весь урон волны.")
+	TEST_ASSERT(!protected.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Антимагия защищает и от замедления.")
 	TEST_ASSERT_EQUAL(protection.charges, 4, "Вся волна расходует один заряд защиты на цель.")
 
 /// Отлив требует знания, не действует сквозь преграду и не перемещает закреплённую цель.
@@ -84,6 +87,7 @@
 	victim.anchored = FALSE
 	TEST_ASSERT(tide.undertow(user, victim), "Свободную цель можно подтянуть.")
 	TEST_ASSERT_EQUAL(get_dist(user, victim), 1, "Отлив переносит цель на две клетки ближе.")
+	TEST_ASSERT_EQUAL(victim.AmountKnockdown(), 2 SECONDS, "Отлив удерживает противника на полу после сближения.")
 	TEST_ASSERT_EQUAL(tide.combat_resource, initial(tide.combat_resource), "Отлив не создаёт и не расходует давление.")
 	var/datum/eldritch_knowledge/spell/tide_undertow/spell_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/tide_undertow)
 	var/obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/spell = spell_knowledge.granted_spell
@@ -112,7 +116,10 @@
 	TEST_ASSERT(abs(victim.getBruteLoss() - 12) < 0.001, "Создание воронки сразу наносит урон.")
 	TEST_ASSERT(abs(victim.getStaminaLoss() - 18) < 0.001, "Первое течение изматывает противника.")
 	TEST_ASSERT_EQUAL(get_dist(first, victim), 1, "Создание воронки сразу притягивает цель.")
+	TEST_ASSERT_EQUAL(victim.AmountKnockdown(), 1.5 SECONDS, "Первый удар воронки даёт время воспользоваться притяжением.")
+	victim.SetKnockdown(0)
 	TEST_ASSERT(first.pulse(), "Водоворот действует в присутствии владельца.")
+	TEST_ASSERT_EQUAL(victim.AmountKnockdown(), 0.6 SECONDS, "Повторный пульс оставляет возможность выбраться между ударами.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 24) < 0.001, "Ядро воронки наносит ещё двенадцать ушибов.")
 	TEST_ASSERT(abs(victim.getStaminaLoss() - 30) < 0.001, "Ядро воронки дополнительно изматывает цель.")
 	TEST_ASSERT_EQUAL(get_dist(first, victim), 0, "Пульс затягивает цель в саму воронку.")
@@ -197,16 +204,38 @@
 	TEST_ASSERT_EQUAL(length(first_tide.drenched), 0, "Замена снимает эффект из списка прежнего владельца.")
 	TEST_ASSERT_EQUAL(length(second_tide.drenched), 1, "Новая вода принадлежит второму еретику.")
 	TEST_ASSERT_EQUAL(length(victim.has_status_effect_list(/datum/status_effect/heretic_drenched)), 1, "Вода не складывается на одной цели.")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Замена воды сохраняет замедление нового владельца.")
 	qdel(first)
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_drenched), "Удаление первой роли не снимает чужую воду.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/tide), "Удаление первой роли снимает её собственную метку.")
 	victim.remove_status_effect(/datum/status_effect/heretic_drenched)
+	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Окончание намокания снимает замедление.")
 	TEST_ASSERT_EQUAL(length(second_tide.drenched), 0, "Обычное снятие статуса освобождает список владельца.")
 	second_tide.soak(victim)
 	victim.apply_status_effect(/datum/status_effect/eldritch/tide, second_tide)
 	qdel(second)
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_drenched), "Удаление роли снимает оставшуюся воду.")
+	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Удаление владельца не оставляет замедление на цели.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/tide), "Удаление роли снимает оставшуюся метку.")
+
+/// Нескользящая обувь не блокирует течение, а иммунитет к оглушению сохраняется.
+/datum/unit_test/heretic_tide_undertow_obstacles/nonslip/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/tide_undertow)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
+	ADD_TRAIT(victim, TRAIT_NOSLIPALL, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(tide.undertow(user, victim), "Нескользящая цель поддаётся Отливу.")
+	TEST_ASSERT_EQUAL(victim.AmountKnockdown(), 2 SECONDS, "Прямое опрокидывание не зависит от обуви.")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Нескользящая цель замедляется после волны.")
+	victim.SetKnockdown(0)
+	ADD_TRAIT(victim, TRAIT_STUNIMMUNE, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(tide.undertow(user, victim), "Иммунитет к оглушению не отменяет саму волну.")
+	TEST_ASSERT(!victim.IsKnockdown(), "Отлив не обходит иммунитет к оглушению.")
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_drenched), "Замедление позволяет продолжить бой с устойчивой целью.")
 
 /// Колокол принадлежит создателю, переключает направление волны и допускает замену только после уничтожения.
 /datum/unit_test/heretic_tide_bell/Run()

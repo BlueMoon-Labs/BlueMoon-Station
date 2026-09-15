@@ -20,7 +20,7 @@
 		return baton.common_baton_melee(target, attacker, shoving = TRUE)
 	return weapon.attack(target, attacker)
 
-/// Парирование принимает разряды и полицейские дубинки, сохраняя задержку между блоками.
+/// Парирование останавливает последовательные разряды и удары дубинками до исчерпания блоков.
 /datum/unit_test/heretic_nonlethal_parry/Run()
 	var/list/attacks = list(
 		list(/obj/item/melee/baton/loaded, INTENT_DISARM),
@@ -47,9 +47,13 @@
 		TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Успешный блок приносит один Темп.")
 		TEST_ASSERT_EQUAL(cell?.charge, charge_before, "Полностью отражённый разряд не расходует батарею.")
 		attack_with_heretic_stun_weapon(weapon, user, attacker)
-		TEST_ASSERT(user.getStaminaLoss() + user.getFireLoss() > 0, "Повторный удар проходит в задержку парирования.")
-		TEST_ASSERT_EQUAL(parry.blocks_left, 2, "Задержка не расходует следующий блок.")
-		qdel(parry)
+		TEST_ASSERT_EQUAL(user.getStaminaLoss() + user.getBruteLoss() + user.getFireLoss(), 0, "Повторный удар блокируется без задержки.")
+		TEST_ASSERT_EQUAL(parry.blocks_left, 1, "Повторный удар расходует следующий блок.")
+		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		TEST_ASSERT_NULL(knowledge.active_parry, "Третий удар исчерпывает стойку.")
+		TEST_ASSERT_EQUAL(user.getStaminaLoss() + user.getBruteLoss() + user.getFireLoss(), 0, "Последний блок также предотвращает урон.")
+		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		TEST_ASSERT(user.getStaminaLoss() + user.getFireLoss() > 0, "После исчерпания блоков разряд действует.")
 
 /// Выключенное и разряженное оружие не расходует стойку и не даёт Темп.
 /datum/unit_test/heretic_nonlethal_inert/Run()
