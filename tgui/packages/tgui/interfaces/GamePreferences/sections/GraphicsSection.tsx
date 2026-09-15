@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Dropdown, Input, Section, Slider, Stack } from '../../../components';
+import { Box, Dropdown, Input, Slider, Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
 type GraphicsData = {

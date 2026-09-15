@@ -4,6 +4,8 @@
 	if(!ishuman(parent))
 		return FALSE
 	var/mob/living/carbon/human/host = parent
+	if(jobban_isbanned(host, ROLE_CHANGELING))
+		return FALSE
 	if(IS_CHANGELING(host))
 		return FALSE
 	if(!host.dna)

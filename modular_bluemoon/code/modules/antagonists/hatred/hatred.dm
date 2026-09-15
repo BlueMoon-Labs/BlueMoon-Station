@@ -271,7 +271,7 @@
 	multiplicative_slowdown = 0.5 // плохе настроение первой степени
 
 /datum/movespeed_modifier/hatred_glory_kill
-	multiplicative_slowdown = -1
+	multiplicative_slowdown = -0.75
 
 /datum/antagonist/hatred/proc/evaluate_security()
 	var/gear_points = length(SSjob.get_living_sec())
@@ -844,11 +844,11 @@
 	desc = "The shabby leather overcoat with decent armor paddings. Once it has been splashed with blood you can't take it off anymore."
 	resistance_flags = FIRE_PROOF
 	// clueless armor stats.
-	armor = list(MELEE 	= 40, \
-				BULLET 	= 40, \
-				LASER 	= 40, \
-				ENERGY 	= 40, \
-				BOMB 	= 40, \
+	armor = list(MELEE 	= 50, \
+				BULLET 	= 50, \
+				LASER 	= 50, \
+				ENERGY 	= 50, \
+				BOMB 	= 50, \
 				BIO 	= 40, \
 				RAD 	= 20, \
 				FIRE 	= 70, \
@@ -864,11 +864,11 @@
 	desc = "Once you felt <b><i>that</i></b> urge to commit relentless genocide of civilians, you clearly understood you were cursed... blessed... and... protected by invisible Veil of Hatred."
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	// clueless armor stats.
-	armor = list(MELEE 	= 40, \
-				BULLET 	= 40, \
-				LASER 	= 40, \
-				ENERGY 	= 40, \
-				BOMB 	= 40, \
+	armor = list(MELEE 	= 50, \
+				BULLET 	= 50, \
+				LASER 	= 50, \
+				ENERGY 	= 50, \
+				BOMB 	= 50, \
 				BIO 	= 40, \
 				RAD 	= 20, \
 				FIRE 	= 70, \
