@@ -47,6 +47,7 @@
 	dir = 8;
 	volume_rate = 200
 	},
+/obj/structure/shield/yellow,
 /turf/open/floor/plating{
 	icon_state = "platingdmg3"
 	},
@@ -291,6 +292,11 @@
 /obj/structure/spider/stickyweb,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"dz" = (
+/obj/structure/lattice,
+/obj/structure/shield/yellow,
+/turf/template_noop,
+/area/space)
 "dD" = (
 /obj/machinery/door/airlock/hatch{
 	name = "Medical Care";
@@ -577,6 +583,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"gS" = (
+/obj/structure/shield/yellow,
+/turf/open/floor/plating/asteroid/airless,
+/area/ruin/space)
 "gZ" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 8
@@ -793,6 +803,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
+"jT" = (
+/obj/structure/shield/yellow,
+/turf/closed/mineral/random,
+/area/ruin/space)
 "kc" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 5
@@ -1374,6 +1388,12 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/white,
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = 8
+	},
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = -8
+	},
 /obj/item/clothing/mask/gas/inteq{
 	pixel_x = 8
 	},
@@ -4297,11 +4317,11 @@ tP
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
+jT
+jT
+jT
+jT
+jT
 tP
 tP
 tP
@@ -4326,27 +4346,27 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+jT
+jT
+jT
+jT
+jT
+jT
+jT
+jT
+jT
+jT
 dV
 dV
 dV
 dV
 dV
-tP
-tP
-tP
-tP
-tP
-tP
+jT
+jT
+jT
+jT
+jT
+jT
 tP
 tP
 tP
@@ -4364,7 +4384,7 @@ nv
 tP
 tP
 tP
-tP
+jT
 dV
 dV
 dV
@@ -4386,7 +4406,7 @@ sD
 sD
 sD
 sD
-tP
+jT
 tP
 tP
 tP
@@ -4403,7 +4423,7 @@ tP
 tP
 tP
 tP
-tP
+jT
 dV
 rI
 Ql
@@ -4425,7 +4445,7 @@ Uz
 mj
 AM
 sD
-tP
+jT
 tP
 tP
 tP
@@ -4442,7 +4462,7 @@ tP
 tP
 tP
 tP
-tP
+jT
 dV
 OJ
 Ru
@@ -4464,7 +4484,7 @@ CF
 eS
 NA
 sD
-tP
+jT
 tP
 tP
 tP
@@ -4480,8 +4500,8 @@ tP
 tP
 tP
 tP
-tP
-tP
+jT
+jT
 dV
 xa
 yA
@@ -4503,7 +4523,7 @@ ob
 bQ
 WW
 sD
-tP
+jT
 tP
 tP
 tP
@@ -4518,7 +4538,7 @@ tP
 tP
 tP
 tP
-tP
+jT
 dV
 dV
 dV
@@ -4542,10 +4562,10 @@ Nd
 rj
 Zt
 sD
-tP
-tP
-tP
-tP
+jT
+jT
+jT
+jT
 tP
 tP
 Mp
@@ -4557,7 +4577,7 @@ tP
 tP
 tP
 tP
-tP
+jT
 dV
 pB
 mz
@@ -4585,7 +4605,7 @@ dV
 dV
 dV
 dV
-tP
+jT
 tP
 nv
 "}
@@ -4596,7 +4616,7 @@ tP
 tP
 tP
 tP
-tP
+jT
 dV
 Ip
 hj
@@ -4624,7 +4644,7 @@ sd
 xv
 aj
 dV
-tP
+jT
 tP
 nv
 "}
@@ -4633,9 +4653,9 @@ nv
 tP
 tP
 tP
-tP
-tP
-tP
+jT
+jT
+jT
 dV
 Ko
 WG
@@ -4663,7 +4683,7 @@ ai
 fi
 fi
 dV
-tP
+jT
 tP
 nv
 "}
@@ -4671,7 +4691,7 @@ nv
 nv
 tP
 tP
-tP
+jT
 dV
 dV
 dV
@@ -4702,14 +4722,14 @@ mM
 ZN
 xD
 dV
-tP
+jT
 tP
 tP
 "}
 (15,1,1) = {"
 tP
 tP
-tP
+jT
 dV
 dV
 cA
@@ -4741,13 +4761,13 @@ dV
 dV
 dV
 dV
-tP
+jT
 tP
 tP
 "}
 (16,1,1) = {"
 tP
-tP
+jT
 dV
 dV
 ij
@@ -4780,13 +4800,13 @@ ib
 hU
 Uh
 dV
-tP
+jT
 tP
 tP
 "}
 (17,1,1) = {"
 tP
-tP
+jT
 dV
 bL
 eo
@@ -4819,13 +4839,13 @@ fi
 fi
 SG
 dV
-tP
+jT
 tP
 tP
 "}
 (18,1,1) = {"
 tP
-tP
+jT
 dV
 Ao
 Du
@@ -4858,13 +4878,13 @@ Ji
 IQ
 cm
 dV
-tP
+jT
 tP
 tP
 "}
 (19,1,1) = {"
 tP
-tP
+jT
 dV
 IZ
 Wx
@@ -4897,13 +4917,13 @@ eU
 Nt
 cd
 dV
-tP
+jT
 tP
 tP
 "}
 (20,1,1) = {"
 tP
-tP
+jT
 dV
 dV
 AQ
@@ -4936,14 +4956,14 @@ zh
 IC
 po
 dV
-tP
+jT
 tP
 tP
 "}
 (21,1,1) = {"
 tP
 tP
-tP
+jT
 dV
 dV
 mF
@@ -4975,7 +4995,7 @@ dV
 dV
 dV
 dV
-tP
+jT
 tP
 tP
 "}
@@ -4983,7 +5003,7 @@ tP
 nv
 tP
 tP
-tP
+jT
 dV
 dV
 dV
@@ -5009,11 +5029,11 @@ dV
 dV
 xy
 aI
-nT
-tP
-tP
-tP
-tP
+dz
+jT
+jT
+jT
+jT
 tP
 tP
 tP
@@ -5023,8 +5043,8 @@ nv
 tP
 tP
 tP
-tP
-tP
+jT
+jT
 dV
 de
 uC
@@ -5047,7 +5067,7 @@ Th
 lW
 dV
 dV
-nT
+dz
 nT
 tP
 tP
@@ -5063,7 +5083,7 @@ nv
 tP
 tP
 tP
-tP
+jT
 dV
 So
 Kd
@@ -5086,7 +5106,7 @@ Fl
 XU
 eq
 dV
-nT
+dz
 tP
 tP
 tP
@@ -5102,7 +5122,7 @@ nv
 tP
 tP
 tP
-tP
+jT
 dV
 Jo
 QK
@@ -5125,7 +5145,7 @@ wn
 kx
 Za
 dV
-tP
+jT
 tP
 tP
 tP
@@ -5141,7 +5161,7 @@ nv
 tP
 tP
 tP
-tP
+jT
 dV
 Uv
 Jd
@@ -5164,7 +5184,7 @@ ME
 KS
 dV
 dV
-tP
+jT
 tP
 tP
 tP
@@ -5180,7 +5200,7 @@ Mp
 tP
 tP
 tP
-tP
+jT
 dV
 Cj
 HI
@@ -5202,7 +5222,7 @@ Zv
 dV
 zH
 dV
-tP
+jT
 tP
 tP
 tP
@@ -5219,7 +5239,7 @@ Mp
 nv
 tP
 tP
-tP
+jT
 dV
 EI
 Pd
@@ -5233,15 +5253,15 @@ Ib
 pS
 bg
 dV
-tP
-tP
-tP
+jT
+jT
+jT
 dV
 xn
 dV
 dV
 dV
-tP
+jT
 tP
 tP
 tP
@@ -5258,28 +5278,28 @@ Mp
 nv
 tP
 tP
+jT
+dV
+dV
+dV
+dV
+dV
+dV
+jT
+jT
+dV
+dV
+dV
+dV
+dV
+jT
 tP
-dV
-dV
-dV
-dV
-dV
-dV
-tP
-tP
-dV
-dV
-dV
-dV
-dV
-tP
-tP
-tP
+jT
 dV
 AR
 dV
-tP
-tP
+jT
+jT
 tP
 tP
 tP
@@ -5298,25 +5318,25 @@ Mp
 tP
 tP
 tP
+jT
+jT
+jT
+jT
+jT
+jT
 tP
 tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
-tP
+jT
+jT
+jT
+jT
+jT
 tP
 nv
 nv
-nv
-nv
-nv
+gS
+gS
+gS
 nv
 nv
 nv

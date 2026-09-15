@@ -1195,3 +1195,22 @@
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
+
+/obj/item/clothing/suit/armor/vest/alt/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Jaeger Combat Exoskeleton MK.1"
+	desc = "Jaeger Combat Exoskeleton MK.1. Designed to accommodate various modular armor components and support systems. This model comes equipped with EOD pauldrons, a Mjolnir torso, and Hell Diver knee guards. The light and storage module appears to be broken, and the armor plates are heavily damaged, offering reduced protection compared to their original state. The armor also features an empty slot for an armor module compatible with all TerraGov armor modules."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+
+/obj/item/modkit/tau_armor_kit
+	name = "Jaeger armor Kit"
+	desc = "A modkit for making a armor vest into a Jaeger Combat Exoskeleton MK.1"
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/suit/armor/vest/alt/tau
+	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)

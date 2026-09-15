@@ -681,3 +681,21 @@
 	icon_state = "melatonin_modkit"
 	product = /obj/item/clothing/head/helmet/riot/melatonin_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/sec/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Gugnir Helmet"
+	desc = " Gungnir helmet with a binocular module. Typically used in conjunction with the Jaeger combat exoskeleton. The protective plates are heavily damaged and offer reduced protection; plate replacement is recommended."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+
+/obj/item/modkit/tau_helmet_kit
+	name = "Gugnir Helmet Kit"
+	desc = "A modkit for making a helmet into a Gugnir Helmet."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/head/helmet/sec/tau
+	fromitem = list(/obj/item/clothing/head/helmet/sec)
