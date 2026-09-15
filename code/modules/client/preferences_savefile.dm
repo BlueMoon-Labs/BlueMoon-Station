@@ -673,7 +673,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//citadel code
 	S["arousable"] >> arousable
-	S["sexknotting"] >> sexknotting // BLUEMOON ADD
+	S["sexknotting"] >> sexknotting // BLUEMOON ADD START
+	S["panel_tab_toggles"] >> panel_tab_toggles
+	S["dynamic_window_size"] >> dynamic_window_size
+	S["compact_custom_tab"] >> compact_custom_tab// BLUEMOON ADD END
 	S["screenshake"] >> screenshake
 	S["damagescreenshake"] >> damagescreenshake
 	S["autostand"] >> autostand
@@ -826,6 +829,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	damagescreenshake = sanitize_integer(damagescreenshake, 0, 2, initial(damagescreenshake))
 	autostand = sanitize_integer(autostand, 0, 1, initial(autostand))
 	cit_toggles = sanitize_integer(cit_toggles, 0, 16777215, initial(cit_toggles))
+	panel_tab_toggles = sanitize_integer(panel_tab_toggles, 0, ALL_INTERACTION_MENU_TABS, initial(panel_tab_toggles))
+	dynamic_window_size = sanitize_integer(dynamic_window_size, 0, 1, initial(dynamic_window_size))
+	compact_custom_tab = sanitize_integer(compact_custom_tab, 0, 1, initial(compact_custom_tab))
 	auto_ooc = sanitize_integer(auto_ooc, 0, 1, initial(auto_ooc))
 	no_tetris_storage = sanitize_integer(no_tetris_storage, 0, 1, initial(no_tetris_storage))
 	recoil_screenshake = sanitize_integer(recoil_screenshake, 0, 800, initial(recoil_screenshake))
@@ -1305,7 +1311,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["screenshake"], screenshake)
 	WRITE_FILE(S["damagescreenshake"], damagescreenshake)
 	WRITE_FILE(S["arousable"], arousable)
-	WRITE_FILE(S["sexknotting"], sexknotting) // BLUEMOON ADD
+	WRITE_FILE(S["sexknotting"], sexknotting) // BLUEMOON ADD START
+	WRITE_FILE(S["panel_tab_toggles"], panel_tab_toggles)
+	WRITE_FILE(S["dynamic_window_size"], dynamic_window_size)
+	WRITE_FILE(S["compact_custom_tab"], compact_custom_tab) // BLUEMOON ADD END
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
