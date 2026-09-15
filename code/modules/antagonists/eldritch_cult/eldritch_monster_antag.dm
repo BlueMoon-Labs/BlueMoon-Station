@@ -67,6 +67,9 @@
 	master = new_master
 	var/mob/living/master_mob = new_master?.owner?.current
 	master_name = master_mob?.real_name
+	var/datum/antagonist/heretic/heretic_master = new_master
+	if(istype(heretic_master) && heretic_master.simulated)
+		return
 
 	var/datum/objective/master_objective = new
 	master_objective.owner = owner

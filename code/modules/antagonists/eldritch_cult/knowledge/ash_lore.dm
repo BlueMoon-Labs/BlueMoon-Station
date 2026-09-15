@@ -189,5 +189,6 @@
 	if(!..())
 		return FALSE
 	on_body_gain(user)
-	user.client?.give_award(/datum/award/achievement/misc/ash_ascension, user)
+	if(!simulated)
+		user.client?.give_award(/datum/award/achievement/misc/ash_ascension, user)
 	return TRUE

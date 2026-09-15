@@ -67,8 +67,9 @@
 	if(block_reason)
 		to_chat(user, span_warning(block_reason))
 		return FALSE
-	victim.grab_ghost()
-	if(!victim.mind || !victim.client)
+	if(!heretic.simulated)
+		victim.grab_ghost()
+	if(!heretic.simulated && (!victim.mind || !victim.client))
 		to_chat(user, span_warning("В этом теле нет души, готовой вернуться."))
 		return FALSE
 	if(!path.spend_combat_resource())
@@ -121,6 +122,9 @@
 		return FALSE
 	victim.revive(full_heal = TRUE, admin_revive = TRUE)
 	var/datum/antagonist/heretic_monster/voiceless_dead/servant = new
+	if(heretic.simulated)
+		servant.show_in_roundend = FALSE
+		servant.soft_antag = TRUE
 	servant.health_cap = VOICELESS_DEAD_MAX_HEALTH
 	servant.set_master(heretic)
 	victim.mind.add_antag_datum(servant)
@@ -288,7 +292,8 @@
 	if(!..())
 		return FALSE
 	on_body_gain(user)
-	user.client?.give_award(/datum/award/achievement/misc/flesh_ascension, user)
+	if(!simulated)
+		user.client?.give_award(/datum/award/achievement/misc/flesh_ascension, user)
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
 	var/datum/eldritch_knowledge/flesh_ghoul/ritual = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul)

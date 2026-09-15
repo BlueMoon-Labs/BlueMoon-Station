@@ -144,6 +144,7 @@
 #include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
 #include "heretic_knowledge.dm"
+#include "antag_training.dm"
 #include "heretic_metashop.dm"
 #include "heretic_passives.dm"
 #include "heretic_innates.dm"
@@ -474,6 +475,7 @@ TEST_FOCUS(/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority)
 TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
 TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
+
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

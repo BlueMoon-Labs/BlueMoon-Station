@@ -113,7 +113,7 @@
 /datum/eldritch_knowledge/curse/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/list/choices = list()
 	for(var/mob/living/carbon/human/victim as anything in GLOB.human_list)
-		if(QDELETED(victim) || !victim.dna || victim == user || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		if(!can_target(user, victim))
 			continue
 		if(fingerprints[md5(victim.dna.uni_identity)])
 			choices["[length(choices) + 1]. [victim.real_name]"] = victim
@@ -122,7 +122,7 @@
 		return FALSE
 	var/choice = tgui_input_list(user, "Выберите цель проклятия", "Проклятие", choices)
 	var/mob/living/victim = choices[choice]
-	if(!choice || QDELETED(victim) || !ritual_still_valid(user, atoms, get_turf(loc)) || victim.check_magic_resistance())
+	if(!choice || !can_target(user, victim) || !ritual_still_valid(user, atoms, get_turf(loc)) || victim.check_magic_resistance())
 		return FALSE
 	end_curse(victim)
 	curse(victim)
@@ -130,6 +130,9 @@
 	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(on_cursed_deleted))
 	log_combat(user, victim, "наложил [name] на")
 	return TRUE
+
+/datum/eldritch_knowledge/curse/proc/can_target(mob/living/user, mob/living/carbon/human/victim)
+	return !QDELETED(victim) && victim.dna && victim != user && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && user.training_origin == victim.training_origin
 
 /datum/eldritch_knowledge/curse/proc/end_curse(mob/living/victim)
 	if(!(victim in active_curses))
@@ -172,6 +175,17 @@
 		return FALSE
 	summoning = TRUE
 	var/mob/living/summoned = new mob_to_summon(loc)
+	if(heretic.simulated)
+		summoning = FALSE
+		summoned.mind_initialize()
+		var/datum/antagonist/heretic_monster/servant = new
+		servant.show_in_roundend = FALSE
+		servant.soft_antag = TRUE
+		servant.set_master(heretic)
+		summoned.mind.add_antag_datum(servant)
+		track_flesh_servant(servant)
+		to_chat(user, span_notice("Создан учебный слуга без игрока. Опрос призраков не требуется."))
+		return TRUE
 	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать [summoned.name], слугой [user.real_name]?", ROLE_HERETIC, null, FALSE, 10 SECONDS, summoned)
 	summoning = FALSE
 	if(!length(candidates) || QDELETED(summoned) || summoned.stat == DEAD || !ritual_still_valid(user, atoms, get_turf(loc)) || length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
@@ -200,6 +214,7 @@
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	ritual_time = 30 SECONDS
 	var/finished = FALSE
+	var/simulated = FALSE
 	var/parallax_scene
 	var/list/ascension_traits = list()
 	var/list/ascension_spells = list()
@@ -227,9 +242,10 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	finished = TRUE
+	simulated = heretic.simulated
 	heretic.ascended = TRUE
 	heretic.refresh_book_ui()
-	if(parallax_scene)
+	if(parallax_scene && !simulated)
 		set_antag_parallax_scene(parallax_scene, "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
 	log_game("[key_name(user)] завершает вознесение [name] в [AREACOORD(user)].")
 	announce_ascension(user)
@@ -266,7 +282,7 @@
 
 /datum/eldritch_knowledge/final_eldritch/on_lose(mob/user)
 	. = ..()
-	if(finished && parallax_scene)
+	if(finished && parallax_scene && !simulated)
 		clear_antag_parallax_scene("[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
 
 /datum/eldritch_knowledge/final_eldritch/on_death(mob/user)

@@ -140,6 +140,7 @@ export const RolelistItem = (props) => {
           </Tooltip>
           <Button
             content="Jump"
+            disabled={spawner.can_jump === false || spawner.can_jump === 0}
             onClick={() => act('jump', { name: spawner.name })}
           />
           <Button

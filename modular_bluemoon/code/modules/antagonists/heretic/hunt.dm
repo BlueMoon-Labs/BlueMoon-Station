@@ -117,7 +117,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	hunt_target = new_target
 	hunt_candidates.Cut()
 	if(new_target?.current)
-		GLOB.reality_smash_track.track_history_mind(new_target)
+		if(!simulated)
+			GLOB.reality_smash_track.track_history_mind(new_target)
 		sac_targetted[REF(new_target)] = new_target.current.real_name
 		log_game("[key_name(owner)] получает цель охоты: [key_name(new_target)].")
 	refresh_book_ui()
@@ -214,7 +215,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/datum/mind/soul = hunt_target
 	var/corpse_sacrifice = victim.stat == DEAD
 	var/datum/heretic_mansus_visit/visit
-	if(!corpse_sacrifice)
+	if(!corpse_sacrifice && !simulated)
 		var/turf/return_turf = get_hunt_return_turf()
 		if(!return_turf || !is_station_level(return_turf.z))
 			to_chat(user, span_warning("Мансус не находит безопасного пути назад для жертвы. Ритуал прерван."))
@@ -244,7 +245,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(visit && !visit.start())
 		qdel(visit)
 		return FALSE
-	GLOB.heretic_sacrificed_minds |= soul
+	if(!simulated)
+		GLOB.heretic_sacrificed_minds |= soul
 	sacrificed_minds |= soul
 	sac_targetted -= REF(soul)
 	actually_sacced += victim.real_name
@@ -257,10 +259,12 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		side_knowledge_points += HERETIC_LIVE_SACRIFICE_SIDE_KNOWLEDGE
 	set_hunt_target(null)
 	for(var/datum/antagonist/heretic/other_heretic in GLOB.antagonists)
-		if(other_heretic.hunt_target == soul)
+		if(!simulated && other_heretic.hunt_target == soul)
 			other_heretic.set_hunt_target(null)
 			to_chat(other_heretic.owner, span_warning("Назначенная вам душа уже принята Мансусом. Живое сердце готово выбрать новую цель."))
-	if(corpse_sacrifice)
+	if(simulated)
+		to_chat(user, span_notice("Учебное подношение принято. Очки начислены по обычным правилам; манекен остаётся на полигоне."))
+	else if(corpse_sacrifice)
 		user.log_message("принёс труп [key_name(victim)] в жертву Мансусу", LOG_ATTACK)
 		to_chat(user, span_notice("Мансус принял угасшую душу. Жертвоприношение засчитано: вы получили 1 очко знаний без побочного. Тело остаётся на месте; его ещё можно реанимировать. Сердце готово выбрать следующую цель."))
 	else

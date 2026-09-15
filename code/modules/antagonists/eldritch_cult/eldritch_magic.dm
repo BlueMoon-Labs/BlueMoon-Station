@@ -785,9 +785,13 @@
 	if(message)
 		var/msg = "<i><font color=#568b00>\[Связь Мансуса\] <b>[living_owner]:</b> [message]</font></i>"
 		log_directed_talk(living_owner, originator, msg, LOG_SAY, "Mansus Link")
-		to_chat(originator.linked_mobs, msg)
+		for(var/mob/recipient as anything in originator.linked_mobs)
+			if(recipient.training_origin == living_owner.training_origin)
+				to_chat(recipient, msg)
 
-		for(var/dead_mob in GLOB.dead_mob_list)
+		for(var/mob/dead_mob as anything in GLOB.dead_mob_list)
+			if(!isobserver(dead_mob) && dead_mob.training_origin != living_owner.training_origin)
+				continue
 			var/link = FOLLOW_LINK(dead_mob, living_owner)
 			to_chat(dead_mob, "[link] [msg]")
 

@@ -202,10 +202,15 @@
 	if(world.time < heretic.ascension_ready_at)
 		return FALSE
 	COOLDOWN_START(src, ascension_warning, HERETIC_ASCENSION_WARNING_COOLDOWN)
+	if(heretic.simulated)
+		to_chat(user, span_notice("Учебный обряд вознесения начался. Удерживайте позицию до его завершения."))
+		return TRUE
 	priority_announce("В секторе «[get_area(rune)]» начался обряд пути [path.name]. До разрыва завесы — [DisplayTimeText(ritual_time)]. Обряд можно прервать: не дайте заклинателю закончить или унесите тела с руны.", "Разрыв завесы — начало обряда", 'sound/misc/notice1.ogg')
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/proc/abort_ascension_ritual(area/ritual_area, ritual_elapsed)
+	if(istype(ritual_area, /area/antag_training))
+		return TRUE
 	if(finished || !isnum(ritual_elapsed) || ritual_elapsed < 0)
 		return FALSE
 	priority_announce("Обряд в секторе «[ritual_area]» прерван. Завеса удержалась; заклинатель может попытаться снова.", "Разрыв завесы — обряд прерван", 'sound/misc/notice2.ogg')
@@ -215,6 +220,11 @@
 /datum/eldritch_knowledge/final_eldritch/proc/announce_ascension(mob/living/user)
 	var/datum/heretic_path/path = GLOB.heretic_paths[route]
 	if(!path || !finished)
+		return
+	if(simulated)
+		to_chat(user, span_boldnotice("Учебное вознесение завершено: [path.ascension_title]."))
+		user.playsound_local(get_turf(user), path.ascension_sound, 75, FALSE)
+		new /obj/effect/temp_visual/heretic_ascension_echo(get_turf(user), route)
 		return
 	priority_announce("[path.ascension_message] [path.ascension_title] — [user.real_name]. Вознесение завершено в секторе «[get_area(user)]».", "Разрыв завесы — вознесение", sound(path.ascension_sound, channel = CHANNEL_EVENT_MUSIC))
 	user.visible_message(span_userdanger("[path.ascension_title] предстаёт перед вами. Вокруг [user] раскрывается чужая реальность!"))

@@ -47,6 +47,7 @@
 @include meta.load-css('./components/FindBar.scss');
 
 // Interfaces
+@include meta.load-css('./interfaces/AntagTraining.scss');
 @include meta.load-css('./interfaces/ListInput.scss');
 @include meta.load-css('./interfaces/IntegratedCircuit.scss');
 @include meta.load-css('./interfaces/AlertModal.scss');

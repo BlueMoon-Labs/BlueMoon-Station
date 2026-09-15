@@ -8,6 +8,7 @@
 	antag_hud_name = "heretic"
 	threat = 10
 	var/give_equipment = TRUE
+	var/simulated = FALSE
 	var/list/researched_knowledge = list()
 	var/total_sacrifices = 0
 	var/list/sac_targetted = list()		//Which targets did living hearts give them, but they did not sac?
@@ -48,7 +49,8 @@
 		for(var/knowledge_type in GLOB.heretic_start_knowledge)
 			gain_knowledge(knowledge_type)
 	current.log_message("has been converted to the cult of the forgotten ones!", LOG_ATTACK, color="#960000")
-	GLOB.reality_smash_track.AddMind(owner)
+	if(!simulated)
+		GLOB.reality_smash_track.AddMind(owner)
 	START_PROCESSING(SSprocessing,src)
 	if(give_equipment)
 		equip_cultist()
@@ -75,7 +77,8 @@
 		remove_innate_effects(innate_body)
 	STOP_PROCESSING(SSprocessing, src)
 	if(owner)
-		GLOB.reality_smash_track.RemoveMind(owner)
+		if(!simulated)
+			GLOB.reality_smash_track.RemoveMind(owner)
 		if(owner.special_role == ROLE_HERETIC)
 			owner.special_role = null
 	for(var/knowledge_type in researched_knowledge)

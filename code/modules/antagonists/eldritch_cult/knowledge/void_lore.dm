@@ -213,7 +213,8 @@
 	if(!..())
 		return FALSE
 	on_body_gain(user)
-	user.client?.give_award(/datum/award/achievement/misc/void_ascension, user)
+	if(!simulated)
+		user.client?.give_award(/datum/award/achievement/misc/void_ascension, user)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/void_final/on_body_gain(mob/living/user)
