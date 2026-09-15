@@ -205,12 +205,20 @@
 //Proc for scaling brute damage on size difference
 /mob/living/carbon/proc/sizediffBruteloss(mob/living/carbon/target)
 	var/B = COMPARE_SIZES(src, target) * 3 //macro divided by micro, times 3
+
 	// BLUEMOON ADDITION AHEAD
 	if(src.mob_weight < MOB_WEIGHT_NORMAL && get_size(src) > 1) //лёгкие большие персонажи считаются по размеру за 1
 		B = abs((1 / get_size(target))) * 3
-	//усиление конечного результата за вес выше среднего
+
+	// усиление конечного результата за вес выше среднего
 	B *= max(1, src.mob_weight - MOB_WEIGHT_NORMAL)
+
+	// Сверхтяжёлые персонажи размером 200% и выше наносят огромный урон при наступании
+	if(src.mob_weight == MOB_WEIGHT_HEAVY_SUPER && get_size(src) >= 2)
+		B *= 5 * (get_size(src) / 2)
+
 	// BLUEMOON ADDITION END
+
 	target.adjustBruteLoss(B) //final result in brute loss
 
 //Proc for instantly grabbing valid size difference. Code optimizations soon(TM)
