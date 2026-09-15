@@ -135,6 +135,7 @@
 		playsound(src, 'sound/machines/defib_success.ogg', 50, 0)
 		H.set_heartattack(FALSE)
 		H.revive(post_revive_effects = TRUE)
+		H.mind?.revival_handle_memory("ghetto defibrillation")
 		if(breathless)
 			H.emote("twitch")
 			if(H.health > HALFWAYCRITDEATH)

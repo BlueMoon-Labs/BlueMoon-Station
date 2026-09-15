@@ -1550,7 +1550,10 @@
 		setFireLoss(round(fire_loss - fire_healing, DAMAGE_PRECISION), updating_health=TRUE, forced=TRUE)
 		healing_amount = max(0, healing_amount - fire_healing)
 
-	revive(FALSE, FALSE, excess_healing=max(healing_amount, 0)) // and any excess healing is passed along
+	if(revive(FALSE, FALSE, excess_healing=max(healing_amount, 0)))
+		grab_ghost()
+		mind?.forget_death(DEATH_FORGETFULNESS_REASON_STRANGE_REAGENT)
+		mind?.revival_handle_memory("strange reagent")
 
 /**
  * Called to give mob buff to surg. operations

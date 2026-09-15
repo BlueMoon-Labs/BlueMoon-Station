@@ -963,10 +963,6 @@
 		// Return without revival
 		return
 
-	// Define time dead
-	// Used for revive policy
-	var/time_dead = world.time - action_owner.timeofdeath
-
 	// Revive the action owner
 	action_owner.revive()
 
@@ -982,25 +978,7 @@
 	// Apply daze effect
 	action_owner.Daze(20)
 
-	// Define time limit for revival
-	// Determines memory loss, using defib time and policies
-	var/revive_time_limit = CONFIG_GET(number/defib_cmd_time_limit) * 10
-
-	// Define revive time threshold
-	// Late causes memory loss, according to policy
-	var/time_late = revive_time_limit && (time_dead > revive_time_limit)
-
-	// Define policy to use
-	var/list/policies = CONFIG_GET(keyed_list/policy)
-	var/time_policy = time_late? policies[POLICYCONFIG_ON_DEFIB_LATE] : policies[POLICYCONFIG_ON_DEFIB_INTACT]
-
-	// Check if policy exists
-	if(time_policy)
-		// Alert user in chat of policy
-		to_chat(action_owner, time_policy)
-
-	// Log the revival and effective policy
-	action_owner.log_message("revived using a vampire quirk ability after being dead for [time_dead] deciseconds. Considered [time_late? "late" : "memory-intact"] revival under configured policy limits.", LOG_GAME)
+	action_owner.mind?.revival_handle_memory("vampire quirk ability")
 
 	// Start cooldown
 	StartCooldown()
