@@ -1,0 +1,167 @@
+# Источники спрайтов еретика
+
+Лицензия ресурсов и производных работ — [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Пути файлов ниже относятся к корню проекта либо к указанному репозиторию источника. Таблицы фиксируют происхождение рисунков; последующие перекраски, перерисовки и анимации сохраняют это авторство.
+
+`heretic.dmi` и `heretic_ash.dmi` содержат состояния из [tgstation/tgstation](https://github.com/tgstation/tgstation), снимок `5f093a8cfbbe269b15bc73535f230909218e38d6`.
+
+Лицензия: [Creative Commons Attribution-ShareAlike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/), согласно [README источника](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/README.md#license).
+
+| Состояния | Авторы | Коммит источника |
+| --- | --- | --- |
+| `ash_blade` | EnterTheJake | [bc6c798ce17](https://github.com/tgstation/tgstation/commit/bc6c798ce17) |
+| `rust_blade` | EnterTheJake | [1e851842c09](https://github.com/tgstation/tgstation/commit/1e851842c09) |
+| `flesh_blade` | Tramz | [f01917730d4](https://github.com/tgstation/tgstation/commit/f01917730d4) |
+| `void_blade` | OrcaCora; перенос EnterTheJake | [6faa37853b7](https://github.com/tgstation/tgstation/commit/6faa37853b7) |
+| `dark_blade` | EnterTheJake | [0d0270b3dc0](https://github.com/tgstation/tgstation/commit/0d0270b3dc0) |
+| `moon_blade` | EnterTheJake | [12026e300b4](https://github.com/tgstation/tgstation/commit/12026e300b4) |
+| `cosmic_blade` | Comxy | [73ba9046dfe](https://github.com/tgstation/tgstation/commit/73ba9046dfe) |
+| `codex`, `codex_opening`, `codex_open`, `codex_closing` | EnterTheJake | [958116f9986](https://github.com/tgstation/tgstation/commit/958116f9986) |
+
+Клинки взяты из `icons/obj/weapons/khopesh.dmi`, книга — из `icons/obj/antags/eldritch.dmi`. Состояния книги `book`, `book_opening`, `book_open`, `book_closing` переименованы в `codex`, `codex_opening`, `codex_open`, `codex_closing`. Кадры, направления и параметры анимации сохранены; состояния собраны в отдельный DMI.
+
+204 кадра `ash_blade` вынесены в `heretic_ash.dmi`; остальные состояния остались в `heretic.dmi`. Пиксели и метаданные всех состояний сохранены.
+
+`heretic_effects.dmi` содержит `cosmic_star` (исходное имя `cosmic_diamond`, `icons/effects/eldritch.dmi`) и `cosmic_beam` (`icons/effects/beam.dmi`). Автор — Comxy, [73ba9046dfe](https://github.com/tgstation/tgstation/commit/73ba9046dfe), та же лицензия CC BY-SA 3.0. Изменены имя звезды и упаковка состояний; кадры и параметры анимации сохранены.
+
+
+
+| Файл | Исходные состояния и файлы | Изменения |
+| --- | --- | --- |
+| `heretic_feedback.dmi` | [icons/effects/eldritch.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/eldritch.dmi): `cleave`, `smoke`, `small_rune_1`–`small_rune_7`, `cloud_swirl`, `cosmic_cloud`, `cosmic_ring`, `cosmic_carpet`, `cosmic_gem`, `moon_insanity_overlay`, `ring_leader_effect`, `eye_open`, `eye_pulse`, `eye_flash`, `eye_close`, `realitycrack`, `emark1`–`emark7` | Переупаковка; кадры и анимация сохранены. |
+| `heretic_feedback.dmi`: `sigil_ash`, `sigil_rust`, `sigil_flesh`, `sigil_void`, `sigil_blade`, `sigil_moon`, `sigil_cosmic` | [icons/ui_icons/antags/heretic/knowledge.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/ui_icons/antags/heretic/knowledge.dmi): `node_ash`, `node_rust`, `node_flesh`, `node_void`, `node_blade`, `node_moon`, `node_cosmos`. ViktorKoL и участники tgstation, [переработка интерфейса знаний](https://github.com/tgstation/tgstation/commit/a40a92140d49c87495a1685cbe5f4a5ce55d593d). | Переименованы без изменения пикселей; статичные печати отличают пути на книге, рунах, полях и алертах. |
+| `heretic_alerts.dmi` | Семь `sigil_*` из строки выше и `realitycrack` из исходного `icons/effects/eldritch.dmi`. | Статические значки: печати перенесены целиком, `rift_exposure` содержит кадр 0 `realitycrack`. Пиксели не изменены. Компактный лист HUD занимает 36 КиБ после декодирования RGBA. |
+| `heretic_books.dmi` | [icons/obj/service/library.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/service/library.dmi): `booksacredflame`, `demonomicon`, `bookblind`; [icons/obj/storage/book.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/storage/book.dmi): `ithaqua`, `tome`; [icons/obj/antags/eldritch.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/antags/eldritch.dmi): `ogbook`, `book_morbus`, анимации `book` и `book_morbus` | Обложки переименованы в `ash`, `flesh`, `moon`, `void`, `blade`, `rust`, `cosmic` соответственно. Каждая дополнена состояниями `_open`, `_opening`, `_closing`. Космос использует полные анимации `book_morbus`. У остальных `_opening` состоит из первого кадра собственной обложки и кадров 14–20 исходного `book_opening`; `_closing` — из кадров 0–6 исходного `book_closing` и первого кадра собственной обложки (нумерация с нуля). `_open` сохраняет полный `book_open`. Задержки исходных кадров умножены на 0.8, 1.35, 1.1, 1.5, 0.5, 0.85, 0.75 для Пепла, Ржавчины, Плоти, Пустоты, Клинка, Луны, Космоса; добавленный кадр обложки длится не более 1 децисекунды. Пиксели исходных кадров не изменены. |
+
+В истории исходного файла эффектов указаны SmArtKar, EnterTheJake, Rex9001, jimmyl, Jacquerel, Comxy, MrMelbert, Krysonism, Nebulacrity и EdgeLordExe; в истории файлов книг — OnlineGirlfriend, Goat, Ghom, Profakos, jimmyl, Sealed101, YesterdaysPromise, Jacquerel, tattle, EnterTheJake, ViktorKoL, Rex9001, Comxy, ShizCalev, Tramz, necromanceranne, MrMelbert и EdgeLordExe. Это участники истории файлов; авторство отдельных состояний следует смотреть в связанных изменениях.
+
+`heretic_books_lefthand.dmi` и `heretic_books_righthand.dmi` переупаковывают существующие спрайты BlueMoon из `icons/mob/inhands/misc/books_lefthand.dmi` и `books_righthand.dmi`: `kingyellow` → `ash`, `necronomicon` → `rust`, `demonomicon` → `flesh`, `ithaqua` → `void`, `bible` → `blade`, `codex` → `moon`, `scientology` → `cosmic`. Кадры и направления сохранены; цвет и дополнительные эффекты задаёт игровой код.
+
+Источники предметов и границ полей перечислены в `heretic_oldpath_effects.txt`.
+
+## Одежда, действия, Замок и Пучина
+
+Источник: [tgstation/tgstation](https://github.com/tgstation/tgstation), ревизия `e49d800824115411dfd2740d705369f07afa8819`.
+
+Лицензия ресурсов: [Creative Commons Attribution-ShareAlike 3.0](https://creativecommons.org/licenses/by-sa/3.0/), согласно [README источника](https://github.com/tgstation/tgstation/blob/e49d800824115411dfd2740d705369f07afa8819/README.md#license).
+
+Состояния распределены по путям без изменения видимых пикселей, направлений, кадров и параметров анимации. У клинков удалены прозрачные поля: из полотна 64×64 оставлен прямоугольник от (7, 20) до (55, 56), с началом координат в левом верхнем углу. Игровой код компенсирует центрирование полотна 48×36, сохраняя положение в обеих руках. Масштаб и оттенок отдельных эффектов задаёт игровой код.
+
+| Файлы | Состояния | Источник и история авторства |
+| --- | --- | --- |
+| `heretic_robes.dmi`, `heretic_robes_<path>_worn.dmi` | `ash_armor`, `rust_armor`, `flesh_armor`, `void_armor`, `blade_armor`, `moon_armor`, `cosmic_armor` и их варианты `_t` | [Предметы](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/obj/clothing/suits/armor.dmi), [на теле](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/mob/clothing/suits/armor.dmi). Спрайты OrcaCora и GregorDM, указанные в [переработке еретика](https://github.com/tgstation/tgstation/commit/a2c7c8e57b8f9b73eabb8f8b4c164f29df4fc334). |
+| `heretic_hoods.dmi`, `heretic_hoods_<path>_worn.dmi` | Те же семь состояний без `_t` | [Предметы](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/obj/clothing/head/helmet.dmi), [на голове](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/mob/clothing/head/helmet.dmi). Та же переработка и авторы. Прозрачные состояния капюшонов Ржавчины и Космоса сохранены: поднятый капюшон нарисован в самой мантии `_t`. |
+| `heretic_blades_lefthand.dmi`, `heretic_blades_righthand.dmi`, `heretic_blades_<path>_lefthand.dmi`, `heretic_blades_<path>_righthand.dmi` | `eldritch_blade`, `ash_blade`, `rust_blade`, `flesh_blade`, `void_blade`, `dark_blade`, `moon_blade`, `cosmic_blade` | [Левая рука](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/mob/inhands/64x64_lefthand.dmi), [правая рука](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/mob/inhands/64x64_righthand.dmi). Авторы исходных клинков также перечислены в [источники спрайтов](heretic_attribution.md). |
+| `heretic_actions.dmi` | `furious_steel`, `cursed_steel`, `shatter`, `moon_smile`, `moon_parade`, `moon_ringleader`, `mind_gate`, `cosmic_rune`, `star_touch`, `star_blast`, `cosmic_domain`, `space_crawl`, `mansus_grasp` | Участники tgstation; [история actions_ecult.dmi](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/mob/actions/actions_ecult.dmi). |
+| `heretic_spell_effects.dmi` | `cosmic_explosion`, `space_explosion`, `circle_wave` | Участники tgstation; [история 64x64.dmi](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/effects/64x64.dmi). Космические эффекты — Comxy, [73ba9046dfe](https://github.com/tgstation/tgstation/commit/73ba9046dfe). |
+| `heretic_domain.dmi` | `cosmic_domain` | Comxy, [73ba9046dfe](https://github.com/tgstation/tgstation/commit/73ba9046dfe); [история 160x160.dmi](https://github.com/tgstation/tgstation/commits/e49d800824115411dfd2740d705369f07afa8819/icons/effects/160x160.dmi). |
+
+## Замок и Пучина
+
+Перечисленные ниже донорские состояния перенесены без изменения видимых пикселей. Одежда и знак Пучины подготовлены отдельно; их обработка описана в таблице. Источники донорских ресурсов: [tgstation `5f093a8`](https://github.com/tgstation/tgstation/tree/5f093a8cfbbe269b15bc73535f230909218e38d6), [NovaSector `cb61cf4`](https://github.com/NovaSector/NovaSector/tree/cb61cf4cde8b13d037c925edeeaf314e94b0f283), [Paradise `3add7ad`](https://github.com/ParadiseSS13/Paradise/tree/3add7ad52a2da72ab7568ec977fcfeceb6a2b86e). Лицензия этих файлов — CC BY-SA 3.0; см. [tgstation README](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/README.md#license), [NovaSector README](https://github.com/NovaSector/NovaSector/blob/cb61cf4cde8b13d037c925edeeaf314e94b0f283/README.md#license) и [Paradise README](https://github.com/ParadiseSS13/Paradise/blob/3add7ad52a2da72ab7568ec977fcfeceb6a2b86e/README.md).
+
+| Назначение | Исходные состояния и авторство | Упаковка |
+| --- | --- | --- |
+| `heretic_lock.dmi`, `heretic_blades_lock_*hand.dmi` | tgstation: `key_blade`, `icons/obj/weapons/khopesh.dmi` и `icons/mob/inhands/64x64_*hand.dmi`; `skeleton_key`, `icons/obj/mining_zones/artefacts.dmi`. [История клинков](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/weapons/khopesh.dmi), [история ключа](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/mining_zones/artefacts.dmi). | Ключ переименован в `lock_key`; прозрачные поля клинков обрезаны так же, как у семи прежних путей. |
+| Мантия и капюшон Замка | tgstation: `lock_armor`, `lock_armor_t`, те же четыре файла одежды, что у остальных путей выше. | Полные направления; общие предметные листы и отдельные `heretic_*_lock_worn.dmi`. |
+| `heretic_tide.dmi`, `heretic_blades_tide_*hand.dmi` | Собственный рисунок 2026-09: гарпун утопленника из позеленевшей бронзы с канатной обмоткой и окном чёрной воды в жале. Донорский `crusher_harpoon` NovaSector больше не используется. | `tide_blade` 24 кадра по 1 дс, в руках четыре направления. Отдельный световой слой `tide_blade_glow` удалён. |
+| Колокол Пучины | Собственный рисунок 2026-09: водолазный колокол с иллюминатором чёрной воды, балянусами и прядями водорослей. Донорский `desk_bell` Paradise больше не используется. | `tide_bell` (24 x 1.3 дс) и `tide_bell_ring` (24 x 0.7 дс, один проход) в `heretic_relics.dmi` и `heretic_relics_*hand.dmi`. |
+| Мантия и капюшон Пучины | Собственный рисунок 2026-09: плащ из лент водорослей поверх чёрной воды, бронзовый воротник водолаза, балянусы, манжеты, биолюминесцентные огни, капли в лужу. | `tide_armor`, `tide_armor_t` в общих листах и `heretic_*_tide_worn.dmi`: 32 кадра по 1 дс, четыре направления, бегущая волна вдоль лент. Капюшон - грива водорослей с закрытым лицом, 32 кадра. |
+| Действия Замка | tgstation `icons/mob/actions/actions_ecult.dmi`: `uncuff`, `apetra_vulnera`, `burglarsfinesse`, `caretaker`, `lock_ascension`. [История и авторство](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/mob/actions/actions_ecult.dmi). | `lock_seal`, `lock_bolt`, `lock_court`, `lock_release`, `lock_ascension` в `heretic_actions.dmi`. Все кадры сохранены. |
+| Эффекты и действия Пучины | Собственные рисунки 2026-09; донорские `bubbles`, `wave1`-`wave4`, `splash`, `carp_rift` tgstation больше не используются. | `heretic_tide_effects.dmi`: `tide_grasp`, `tide_wave` (16 x 0.5), `tide_burst` (24 x 0.75), `tide_warning` (20 x 1), `tide_mark`, `tide_puddle` (16 x 1). `heretic_tide_well.dmi`: `tide_whirlpool` 96x96, 16 x 1. Действия `tide_release`, `tide_undertow`, `tide_well`, `tide_deluge`, `tide_ascend` и активные варианты с суффиксом 1 - 24 кадра по 1 дс. |
+| Печати и нимбы | tgstation `knowledge.dmi`: `node_lock`, `grasp_lock`, `node_locked`, `node_finished`; действия `lock_ascension`, `carp_rift`; эффект `bubbles`. | `sigil_lock` ← `node_lock` в `heretic_feedback.dmi` и `heretic_alerts.dmi`. `sigil_tide` в обоих листах и в `heretic_tide.dmi` - собственный медальон 2026-09: иллюминатор в бронзовом кольце с приливом и колоколом, 24 кадра. Нимб `lock_aura` ← `lock_ascension`; `tide_aura` - собственный рисунок в `heretic_tide.dmi` (48 x 0.5 дс). В `heretic_lock_effects.dmi`: `lock_warning`, `lock_grasp`, `lock_seal`, `lock_open` в порядке исходных состояний знаний. |
+| Врата Замка | tgstation `icons/effects/96x96.dmi`: `door`, `door_opening`, `door_closing`; [история и авторство](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/96x96.dmi). | `lock_barrier`, `lock_opening`, `lock_closing` в `heretic_lock_gate.dmi`, 25 кадров открытия и 24 закрытия; масштаб задаётся в DM. |
+| Книги | tgstation `icons/obj/service/library.dmi`: `bookknock` → `lock`, `fishbook` → `tide`; открытая книга и переходы из `icons/obj/antags/eldritch.dmi`, как описано в `heretic_attribution.md`. | Скорости анимаций 0.7 и 1.2. Полные 28 кадров чтения и по 8 кадров открытия/закрытия. В руках сохранены BlueMoon `scrapbook` → `lock`, `album` → `tide` из `icons/mob/inhands/misc/books_*hand.dmi`. |
+
+Эффекты Замка позднее перерисованы в бронзовой палитре, врата осветлены; у волн Пучины изменены палитра, анимация и отметки предупреждения.
+
+## Взмахи, тени и медальон
+
+| Файл | Состояния | Источник и авторство | Лицензия |
+| --- | --- | --- | --- |
+| `heretic_slashes.dmi` | `left_swing`, `right_swing` — исходный `slash` | [tgstation, effects.dmi](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/effects.dmi). Участники tgstation; [история файла](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/effects.dmi). Поворот, отражение обратного взмаха и масштаб задаются в DM. | CC BY-SA 3.0, [README](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/README.md#license). |
+| `heretic_shadows.dmi` | `slingbeam` | [Monkestation2.0, darkspawn.dmi](https://github.com/Monkestation/Monkestation2.0/blob/6b9a616962c5d2f4822b3c89fa236238c3214f50/icons/mob/simple/darkspawn.dmi). Участники Darkspawn; [история файла](https://github.com/Monkestation/Monkestation2.0/commits/6b9a616962c5d2f4822b3c89fa236238c3214f50/icons/mob/simple/darkspawn.dmi). | CC BY-SA 3.0, [README](https://github.com/Monkestation/Monkestation2.0/blob/6b9a616962c5d2f4822b3c89fa236238c3214f50/README.md#license). |
+| `heretic_medallion.dmi` | `watching_eye`, `watching_eye_open`, `watching_eye_closed` | [Bubberstation, heretic_misc.dmi](https://github.com/Bubberstation/Bubberstation/blob/250db30e0c4f97590dfe25c79aca09367f3badb7/modular_zubbers/icons/obj/heretic_misc.dmi). Внесены nikothedude в [переработке еретика](https://github.com/Bubberstation/Bubberstation/commit/c3c54bf66c9f6849e6e3efd731c165e50fe15c5f), с участием Roxy; [история файла](https://github.com/Bubberstation/Bubberstation/commits/250db30e0c4f97590dfe25c79aca09367f3badb7/modular_zubbers/icons/obj/heretic_misc.dmi). | CC BY-SA 3.0, [README](https://github.com/Bubberstation/Bubberstation/blob/250db30e0c4f97590dfe25c79aca09367f3badb7/README.md#license). |
+
+Текст CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/.
+
+## Хватки
+
+Спрайты хваток взяты из [tgstation/tgstation](https://github.com/tgstation/tgstation), снимок `5f093a8cfbbe269b15bc73535f230909218e38d6`.
+
+Лицензия — [Creative Commons Attribution-ShareAlike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/), согласно [README источника](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/README.md#license). Состояния переименованы и упакованы отдельно; кадры, направления и задержки сохранены. Масштаб, скрещивание лезвий и серебристый цвет зеркальной трещины задаются игровым кодом.
+
+| Файл и состояние | Исходный файл и состояние |
+| --- | --- |
+| `heretic_grasp.dmi`: `blade_grasp` | [icons/effects/eldritch.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/eldritch.dmi): `dio_knife` |
+| `heretic_grasp.dmi`: `moon_grasp` | Тот же файл: `pierced_illusion` |
+| `heretic_grasp_large.dmi`: `cosmic_grasp` | [icons/effects/64x64.dmi](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/64x64.dmi): `cosmic_explosion` |
+
+Авторы указаны в связанной истории исходных файлов. В истории эффектов Мансуса участвуют SmArtKar, EnterTheJake, Rex9001, jimmyl, Jacquerel, Comxy, MrMelbert, Krysonism, Nebulacrity и EdgeLordExe; космический эффект добавлен Comxy в [73ba9046dfe](https://github.com/tgstation/tgstation/commit/73ba9046dfe).
+
+## Стекло и Кровь
+
+| Основа | Источник и авторство | Обработка |
+| --- | --- | --- |
+| Кристалл и кровавые сгустки хваток | [tgstation, `icons/effects/effects.dmi`](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/effects.dmi), состояния `cain_abel_crystal` и `blood_wisp`. Ben10Omintrix и участники tgstation, [добавление Cain & Abel](https://github.com/tgstation/tgstation/commit/7c81098d3368152e3a91b226fe5099ac5890a81c), [история файла](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/effects/effects.dmi). | Палитры приведены к цветам путей. Кристалл сдвинут вверх и дополнен сходящимися гранями; кровавые сгустки расположены в трёх точках с разными фазами и дополнены дугой. |
+| Мантия, капюшон, клинок и линза Стекла | Нарисованы заново по геометрии частей тела `icons/mob/human_parts_greyscale.dmi`; чужие спрайты не используются. | Пластины каркаса, нагрудник, шипы, осколки, куколь из сегментов с забралом и рогами, клинок и линза построены генератором по маскам торса, рук и головы для всех четырёх направлений; всё стекло полупрозрачно. |
+| Посадка мантии и капюшона Крови | Нарисованы заново по геометрии частей тела `icons/mob/human_parts_greyscale.dmi`; чужие спрайты не используются. | Сюртук, наплечники, сбруя, полы и капюшон построены по маскам торса, рук и головы для всех четырёх направлений. |
+| Чтение и открытие книг | EnterTheJake, tgstation `icons/obj/antags/eldritch.dmi`, [958116f9986](https://github.com/tgstation/tgstation/commit/958116f9986). Полная история переноса приведена в [источники спрайтов](heretic_attribution.md). | Сохранена геометрия перелистывания; добавлены собственные закрытые переплёты, цвета подвесок и задержки 1.05/1.15 децисекунды. |
+| Книги в руках | Существующее состояние BlueMoon `album` из `icons/mob/inhands/misc/books_lefthand.dmi` и `books_righthand.dmi`, уже включённое в листы книг как `tide`. | Сохранены положение, размер и четыре проекции; заменены материалы переплёта и добавлена светлая застёжка. |
+
+## Эхо
+
+| Ресурс | Основа и изменения |
+| --- | --- |
+| Резонатор | `mania_motor_inactive` из `icons/obj/clockwork_objects.dmi`. Сохранены объёмная подставка и изогнутая рама, добавлены три звучащие трубы и движущиеся блики. |
+| Книга | Переплёт Замка и проекции Клинка из [источники спрайтов](heretic_attribution.md); анимации открытия и чтения EnterTheJake из [источники спрайтов](heretic_attribution.md). Живой глаз на обложке и развороте следит за читателем и моргает; струны и нотные страницы движутся в разных фазах. Глаз на развороте расположен ниже парящей печати. Открытие и закрытие занимают по 0,8 секунды. |
+| Хватка | `moon_grasp`; [источники спрайтов](heretic_attribution.md). Латунные всполохи, расходящаяся волна и полное затухание. |
+| Печать | Обод `sigil_lock` из [источники спрайтов](heretic_attribution.md). Собственный центральный знак меняет форму: дуги расходятся с запаздыванием, внутренний просвет сжимается, по контуру проходит свет. Цикл — 48 кадров за 2,4 секунды. |
+
+## Реликвии
+
+`lantern-blue` и `lantern-blue-on` основаны на уже включённых в проект спрайтах `heretic_oldpath_effects.dmi`, исходно `icons/obj/lighting.dmi` из [tgstation, ревизия 5f093a8cfbbe269b15bc73535f230909218e38d6](https://github.com/tgstation/tgstation/tree/5f093a8cfbbe269b15bc73535f230909218e38d6). [История авторства](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/lighting.dmi), лицензия [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Корпус сохранён, добавлены движение фитиля и ледяных частиц.
+
+Прежний медальон в `heretic_medallion.dmi` использовал рисунок Bubberstation с добавленным морганием. Его надетый вариант был основан на `eye_medalion` из `icons/mob/clothing/neck.dmi`. Эти сведения сохранены для истории; в сентябре 2026 года предметный и надетый рисунки заменены самостоятельными подвесками.
+
+`heretic_medallion.dmi`, `heretic_medallion_worn.dmi`, `heretic_medallion_lefthand.dmi` и `heretic_medallion_righthand.dmi`: самостоятельные рисунки 32×32 под CC BY-SA 3.0. У каждого пути собственная подвеска: угольная кадильница Пепла, проржавевшая шестерня, костяная оправа Плоти, ледяной осколок Пустоты, скрещённые клинки, лунный серп, орбиты Космоса, ключ Замка, иллюминатор Пучины, огранённый осколок Стекла, капля Крови, камертон Эха, песочные часы и свеча Воска. Общий медальон до выбора пути также перерисован. У всех сохранены три степени раскрытия глаза и цикл 24 кадра по 1,3 дс; на шее и в руках используются отдельные рисунки четырёх направлений.
+
+## Демоны Мансуса
+
+`heretic_demons.dmi` использует исходные рисунки из `icons/mob/eldritch_mobs.dmi`: `raw_prophet`, `stalker`, `ash_walker`, `armsy_start`, `armsy_mid`, `armsy_end`. Файл пришёл из tgstation вместе с переносом еретиков; в истории BlueMoon этот перенос отмечен коммитом `eb8574d6d61` автора kiwedespars. Исходный файл не изменён.
+
+Рисунки и производная анимация распространяются по [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), согласно лицензии звуковых и графических ресурсов проекта. Сохранены исходные силуэты, направления и палитры; у Пепельного духа добавлены тёплые оттенки жара и прозрачные частицы пепла.
+
+Самостоятельные рисунки новых путей, включая Песок и Воск, распространяются под той же CC BY-SA 3.0. Книги новых путей используют производные анимации открытия и чтения EnterTheJake, указанные выше.
+
+`heretic_ascension.dmi`: составные нимбы Пучины и Воска на холсте 64×64 без масштабирования пикселей. Знак и боковые волны Пучины перенесены из собственного `heretic_tide.dmi`; водяной круг перерисован вокруг ног. Свечи Воска нарисованы в палитре `heretic_wax.dmi` и движутся вокруг персонажа. У каждого нимба отдельные передний и задний планы, 48 кадров по 0,5 дс; полное состояние используется для вспышек и знамений. Лицензия CC BY-SA 3.0.
+
+## Дух
+
+Сет пути Духа нарисован заново в сентябре 2026 года: перевозчик в истлевшем саване, обшитом серебряными оболами, с монетами на глазах под куколем. Лицензия CC BY-SA 3.0, донорские ресурсы не используются.
+
+| Файл | Состояния | Описание |
+| --- | --- | --- |
+| `heretic_robes_spirit_worn.dmi`, `heretic_hoods_spirit_worn.dmi`, `heretic_robes.dmi`, `heretic_hoods.dmi` | `spirit_armor`, `spirit_armor_t` | Саван с клином оболов, цепью-перевязью, кошелём и монетами-грузилами на подоле, туман душ; куколь с пустым лицом и монетами на глазах. 24 кадра по 1 дс, четыре направления. |
+| `heretic_spirit.dmi`, `heretic_blades_spirit_*hand.dmi`, `heretic_relics_spirit_*hand.dmi` | `spirit_blade`, `spirit_lantern` | Багор перевозчика с полой рукоятью и монетой (24 x 1 дс), железный фонарь с огнём душ (24 x 1.3 дс). |
+| `heretic_spirit_effects.dmi` | `spirit_soul`, `spirit_tether`, `spirit_mark`, `spirit_grasp`, `spirit_burst`, `spirit_step`, `spirit_reap`, `spirit_ascend` | Неприкаянная душа, цепь связи, обол над головой, ладонь тумана, столб душ, переправа, жатва, вознесение. |
+| `heretic_actions.dmi`, `heretic_alerts.dmi`, `heretic_feedback.dmi` | `spirit_sever`, `spirit_step`, `spirit_reap`, `spirit_bell`, `spirit_crown`; `sigil_spirit` | Значки способностей (24 x 1 дс) и медальон-сигил: фонарь в серебряном кольце. |
+| `heretic_spirit_ascension.dmi` | `spirit_aura`, `spirit_aura_back`, `spirit_aura_front` | Нимб 64x64, 48 x 0.5 дс: фонарь над головой, хоровод душ, кольцо тумана. |
+| `heretic_medallion*.dmi` | `spirit_watching_eye*` | Фонарь-подвеска с глазом в стекле. |
+| `heretic_books*.dmi` | `spirit`, `spirit_open`, `spirit_opening`, `spirit_closing` | Реестр перевозчика на общей основе книг путей. |
+| `ritual_inscriptions.dmi`, `ritual_casts.dmi` | `spirit_ferry_*` | Печать: лодка перевозчика с фонарём на шесте, заменила `spirit_gate_*`. |
+
+
+## Дом памяти в Мансусе
+
+`heretic_mansus.dmi` и `heretic_mansus_gates.dmi` — составные и переработанные ресурсы для пятнадцати путей. Лицензия [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+
+| Основа | Использование и изменения |
+| --- | --- |
+| BlueMoon `icons/turf/floors.dmi`; стены `cult_wall`, `sandstone_wall`, `icerock_wall`, `rusty_wall`, `iron_wall`, `clockwork_wall`, `diamond_wall`, `rock_wall`, `wood_wall` из `icons/turf/walls/` | Материалы полов, галерей и кладки. Скорректированы оттенки и освещённость; края стен собраны из исходных четвертей. Провал получил собственные края. Пепельные плиты дополнены угольками. |
+| [tgstation `structures.dmi`](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/obj/antags/cult/structures.dmi): `forge`, `forge_off`, `talismanaltar`, `talismanaltar_off`, `tomealtar`, `tomealtar_off`, `pylon`, `cultgirder` | Основа святилищ и жаровен. Изменены материалы и свечение, добавлены свечи, пламя и клинок. |
+| [tgstation `meat_wall.dmi`](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/icons/turf/walls/meat_wall.dmi): `meat_wall-255` | Переработанная поверхность пола Плоти. |
+| BlueMoon `icons/obj/cult.dmi`, `icons/obj/lighting.dmi`, `icons/obj/candle.dmi`, `icons/effects/eldritch.dmi` | Пламя, свечи, кристаллы, космическое святилище, разломы и свечение при срабатывании. Слои собраны в отдельные состояния, цвет и прозрачность адаптированы к путям. |
+| `heretic_robes_<path>_worn.dmi`, `heretic_hoods_<path>_worn.dmi` | Преследователи и видения: пустые мантии с рваным подолом и дымным следом. Сохранены исходные направления и кадры одежды. Источники и авторы комплектов перечислены выше. |
+| `heretic_lock_gate.dmi`, `heretic_feedback.dmi`, `heretic.dmi` | Резная вставка врат, знаки воспоминаний, подсказка и детали святилищ. Вставка вырезана из прозрачного полотна без изменения размера видимых пикселей. Каменная арка, её кладка и ступени собраны отдельно. Происхождение вставки, знаков и клинков указано в предыдущих разделах. |
+
+Ревизия новых источников tgstation: `5f093a8cfbbe269b15bc73535f230909218e38d6`. В истории двух указанных файлов перечислены carlarctg, LemonInTheDark, OrionTheFox и YesterdaysPromise; ссылки ведут на историю соответствующих ресурсов. Лицензия исходников указана в [README tgstation](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/README.md#license). Существующие авторы ресурсов BlueMoon сохраняются.

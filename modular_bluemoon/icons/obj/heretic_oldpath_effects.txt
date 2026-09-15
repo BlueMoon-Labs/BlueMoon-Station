@@ -1,0 +1,12 @@
+Источник: https://github.com/tgstation/tgstation
+Ревизия: 5f093a8cfbbe269b15bc73535f230909218e38d6
+Лицензия ассетов: Creative Commons Attribution-ShareAlike 3.0, https://creativecommons.org/licenses/by-sa/3.0/ (README.md исходного проекта).
+
+heretic_oldpath_effects.dmi, 32x32:
+- icons/obj/antags/eldritch.dmi: crucible, crucible_empty, living_heart.
+- icons/obj/medical/surgery_tools.dmi: flesh_shaper.
+- icons/obj/lighting.dmi: lantern-blue, lantern-blue-on.
+- icons/effects/fields.dmi: space_protection_north, space_protection_south, space_protection_east, space_protection_west.
+
+heretic_rust_heart.dmi, 64x32: неизменённый icons/obj/mining_zones/tumor.dmi.
+Кадры и анимационные метаданные сохранены. Цвет отдельных эффектов задаётся средствами BYOND.
