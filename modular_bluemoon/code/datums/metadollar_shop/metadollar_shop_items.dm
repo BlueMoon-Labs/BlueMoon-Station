@@ -156,6 +156,17 @@
 	minimum_players = 50
 	token_spawn_type = /obj/item/coin/antagtoken/metashop/changeling
 
+/datum/metadollar_shop_item/item/heretic_token
+	parent_type = /datum/metadollar_shop_item/item/antag_token
+	name = "Жетон «Еретик»"
+	desc = "Монета с запретным знаком. Alt+ЛКМ — стать еретиком; Ctrl+ЛКМ — вернуть 250 М$ до активации. Недоступна в Extended и на защищённых должностях."
+	cost = METASHOP_TRAITOR_TOKEN_REFUND_COST
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	minimum_players = 50
+	token_spawn_type = /obj/item/coin/antagtoken/metashop/heretic
+	disallowed_modes = list(/datum/game_mode/extended)
+	disallowed_mode_message = "Жетон «Еретик» недоступен в Extended."
+
 /datum/metadollar_shop_item/item/metadollar_total_burn
 	name = "Протокол «Пепелище»"
 	desc = "100000 М$: обнулить метадоллары у всех игроков. На вашем счёте должно быть не меньше 100000 М$."

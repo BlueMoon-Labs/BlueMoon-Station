@@ -34,11 +34,13 @@
 /obj/effect/proc_holder/spell/targeted/touch/proc/cancel_cast(mob/user = usr)
 	if(attached_hand)
 		remove_hand(TRUE)
-		to_chat(user, span_notice(dropmessage))
+		action?.UpdateButtons()
+		var/cancel_message = IS_HERETIC(user) ? "[name]: подготовка отменена." : dropmessage
+		to_chat(user, span_notice(cancel_message))
 		return TRUE
 
 /obj/effect/proc_holder/spell/targeted/touch/cast(list/targets,mob/user = usr)
-	if(cancel_cast())
+	if(cancel_cast(user))
 		return
 
 	for(var/mob/living/carbon/C in targets)
@@ -54,13 +56,18 @@
 		return ..()
 
 /obj/effect/proc_holder/spell/targeted/touch/proc/ChargeHand(mob/living/carbon/user)
+	user.prepare_ability(src)
 	attached_hand = new hand_path(src)
 	attached_hand.attached_spell = src
 	if(!user.put_in_hands(attached_hand))
 		remove_hand(TRUE)
 		to_chat(user, "<span class='warning'>Your hands are full!</span>")
 		return FALSE
-	to_chat(user, "<span class='notice'>[drawmessage]</span>")
+	if(IS_HERETIC(user))
+		user.balloon_alert(user, name)
+		to_chat(user, span_notice("[name]: коснитесь цели активной рукой. Чтобы рассеять способность, нажмите «Выбросить» или активируйте предмет в руке. Выбор другой прицельной или контактной способности заменит эту."))
+	else
+		to_chat(user, "<span class='notice'>[drawmessage]</span>")
 	return TRUE
 
 

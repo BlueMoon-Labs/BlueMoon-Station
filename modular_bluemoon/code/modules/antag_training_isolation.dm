@@ -1,0 +1,69 @@
+/atom/movable
+	var/datum/weakref/training_origin
+	var/datum/weakref/training_owner
+
+/atom/movable/proc/training_move_allowed(atom/destination)
+	if(isobserver(src))
+		return TRUE
+	var/area/antag_training/destination_area = get_area(destination)
+	if(!training_origin && !istype(destination_area) && isturf(loc) && !istype(loc.loc, /area/antag_training))
+		return TRUE
+	if(!training_origin)
+		register_training_atom()
+		var/atom/movable/container = loc
+		while(!training_origin && istype(container))
+			training_origin = container.training_origin
+			if(training_origin)
+				var/datum/antag_training_arena/container_arena = training_origin.resolve()
+				if(container_arena && !QDELETED(src))
+					container_arena.created_atoms += WEAKREF(src)
+			container = container.loc
+	if(istype(src, /mob/camera) && !training_origin && istype(destination_area) && destination_area.arena)
+		return FALSE
+	var/datum/antag_training_arena/origin = training_origin?.resolve()
+	if(training_origin && destination && !QDELETED(src))
+		if(!origin || origin.finished || destination_area != origin.room)
+			return FALSE
+		if(origin.reset_zone_id == "all")
+			return origin.inside_bounds(get_turf(destination), origin.zones["hub"]["bounds"])
+		return !origin.reset_zone_id || !origin.inside_bounds(get_turf(destination), origin.zones[origin.reset_zone_id]["bounds"])
+	if(istype(destination_area) && destination_area.arena && !destination_area.arena.finished)
+		if(!get_turf(src))
+			training_origin = WEAKREF(destination_area.arena)
+			destination_area.arena.created_atoms += WEAKREF(src)
+			return TRUE
+		return get_area(src) == destination_area
+	return TRUE
+
+/atom/movable/proc/register_training_atom()
+	var/area/antag_training/location = get_area(src)
+	if(training_origin || QDELETED(src) || isobserver(src) || !istype(location) || !location.arena || istype(src, /atom/movable/lighting_object))
+		return
+	training_origin = WEAKREF(location.arena)
+	location.arena.created_atoms += WEAKREF(src)
+	if(location.arena.ready && !location.arena.resetting && ismob(usr) && usr.ckey)
+		var/datum/antag_training_session/session = GLOB.antag_training_sessions[usr.ckey]
+		if(session?.arena == location.arena && session.current_body == usr)
+			training_owner = WEAKREF(session)
+
+/datum/antag_training_session/proc/update_safety()
+	SIGNAL_HANDLER
+	if(QDELETED(current_body) || !arena)
+		return
+	var/safe = arena.inside_bounds(get_turf(current_body), arena.zones["hub"]["bounds"])
+	if(safe)
+		current_body.status_flags |= GODMODE
+		ADD_TRAIT(current_body, TRAIT_PACIFISM, REF(src))
+		ADD_TRAIT(current_body, TRAIT_STUNIMMUNE, REF(src))
+	else
+		current_body.status_flags &= ~GODMODE
+		REMOVE_TRAIT(current_body, TRAIT_PACIFISM, REF(src))
+		REMOVE_TRAIT(current_body, TRAIT_STUNIMMUNE, REF(src))
+
+/datum/antag_training_session/proc/heal_self()
+	deltimer(recovery_timer)
+	recovery_timer = null
+	current_body.status_flags &= ~GODMODE
+	current_body.revive(full_heal = TRUE, admin_revive = TRUE)
+	current_body.updatehealth()
+	update_safety()

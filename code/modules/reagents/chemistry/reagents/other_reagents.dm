@@ -462,6 +462,8 @@
 		data = list("misc" = 1)
 	data["misc"]++
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(M)
+	if(data["misc"] >= 10 && M.remove_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE))
+		to_chat(M, span_notice("Святая вода рассеяла проклятие и преследующие вас тени."))
 	if(!iscultist(M, FALSE, TRUE) && !is_servant_of_ratvar(M) && !heretic && (HAS_TRAIT(M, TRAIT_HALLOWED) || M.mind?.isholy))
 		return ..()
 	if(iscultist(M, FALSE, TRUE))

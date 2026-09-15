@@ -1,10 +1,10 @@
 /mob/living/simple_animal/hostile/eldritch
-	name = "Demon"
-	real_name = "Demon"
+	name = "демон"
+	real_name = "демон"
 	desc = ""
 	gender = NEUTER
 	mob_biotypes = NONE
-	speak_emote = list("screams")
+	speak_emote = list("кричит")
 	response_help_continuous = "thinks better of touching"
 	response_help_simple = "think better of touching"
 	response_disarm_continuous = "flails at"
@@ -52,9 +52,10 @@
 		AddSpell(new spell())
 
 /mob/living/simple_animal/hostile/eldritch/raw_prophet
-	name = "Raw Prophet"
-	real_name = "Raw Prophet"
-	desc = "Abomination made from severed limbs."
+	name = "сырой пророк"
+	real_name = "сырой пророк"
+	desc = "Чудовище, сшитое из отрубленных конечностей."
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "raw_prophet"
 	status_flags = CANPUSH
 	icon_living = "raw_prophet"
@@ -85,7 +86,7 @@
 	if(linked_mobs[mob_linked])
 		return FALSE
 
-	to_chat(mob_linked, "<span class='notice'>You feel something new enter your sphere of mind, you hear whispers of people far away, screeches of horror and a humming of welcome to [src]'s Mansus Link.</span>")
+	to_chat(mob_linked, span_notice("В ваш разум проникает чужое присутствие. Далёкий шёпот и крики ужаса сливаются в приветствие: [src] связывает вас с Мансусом."))
 	var/datum/action/innate/mansus_speech/action = new(src)
 	linked_mobs[mob_linked] = action
 	action.Grant(mob_linked)
@@ -99,21 +100,31 @@
 	var/datum/action/innate/mansus_speech/action = linked_mobs[mob_linked]
 	action.Remove(mob_linked)
 	qdel(action)
-	to_chat(mob_linked, "<span class='notice'>Your mind shatters as the [src]'s Mansus Link leaves your mind.</span>")
+	to_chat(mob_linked, span_notice("Связь с Мансусом обрывается. Голос [src] исчезает из вашего разума."))
 	mob_linked.emote("realagony")
 	//micro stun
 	mob_linked.AdjustParalyzed(0.5 SECONDS)
 	linked_mobs -= mob_linked
 
 /mob/living/simple_animal/hostile/eldritch/raw_prophet/death(gibbed)
-	for(var/linked_mob in linked_mobs)
+	for(var/linked_mob in linked_mobs.Copy())
 		unlink_mob(linked_mob)
 	return ..()
 
+/mob/living/simple_animal/hostile/eldritch/raw_prophet/Destroy()
+	for(var/linked_mob in linked_mobs.Copy())
+		unlink_mob(linked_mob)
+	return ..()
+
+/mob/living/simple_animal/hostile/eldritch/raw_prophet/Logout()
+	client?.change_view(world.view)
+	return ..()
+
 /mob/living/simple_animal/hostile/eldritch/armsy
-	name = "Terror of the Night"
-	real_name = "Armsy"
-	desc = "Abomination made from severed limbs."
+	name = "ужас ночи"
+	real_name = "многорукий ужас"
+	desc = "Чудовище, сшитое из отрубленных конечностей."
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "armsy_start"
 	icon_living = "armsy_start"
 	maxHealth = 400
@@ -143,43 +154,20 @@
 //I tried Initalize but it didnt work, like at all. This proc just wouldnt fire if it was Initalize instead of New
 /mob/living/simple_animal/hostile/eldritch/armsy/Initialize(mapload,spawn_more = TRUE,len = 6)
 	. = ..()
-	if(len < 3)
-		stack_trace("Eldritch Armsy created with invalid len ([len]). Reverting to 3.")
-		len = 3 //code breaks below 3, let's just not allow it.
 	oldloc = loc
-	RegisterSignal(src,COMSIG_MOVABLE_MOVED, PROC_REF(update_chain_links))
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(update_chain_links))
 	if(!spawn_more)
 		return
 	allow_pulling = TRUE
-	///next link
-	var/mob/living/simple_animal/hostile/eldritch/armsy/next
-	///previous link
-	var/mob/living/simple_animal/hostile/eldritch/armsy/prev
-	///current link
-	var/mob/living/simple_animal/hostile/eldritch/armsy/current
-	for(var/i in 0 to len)
-		prev = current
-		//i tried using switch, but byond is really fucky and it didnt work as intended. Im sorry
-		if(i == 0)
-			current = new type(drop_location(),FALSE)
-			current.icon_state = "armsy_mid"
-			current.icon_living = "armsy_mid"
-			current.front = src
-			current.toggle_ai(AI_OFF)
-			back = current
-		else if(i < len)
-			current = new type(drop_location(),FALSE)
-			prev.back = current
-			prev.icon_state = "armsy_mid"
-			prev.icon_living = "armsy_mid"
-			prev.front = next
-			prev.toggle_ai(AI_OFF)
-		else
-			prev.icon_state = "armsy_end"
-			prev.icon_living = "armsy_end"
-			prev.front = next
-			prev.toggle_ai(AI_OFF)
-		next = prev
+	len = clamp(len, 3, 12)
+	var/mob/living/simple_animal/hostile/eldritch/armsy/previous = src
+	for(var/index in 2 to len)
+		var/mob/living/simple_animal/hostile/eldritch/armsy/segment = new type(drop_location(), FALSE)
+		previous.back = segment
+		segment.front = previous
+		segment.icon_state = index == len ? "armsy_end" : "armsy_mid"
+		segment.icon_living = segment.icon_state
+		previous = segment
 
 //we are literally a vessel of otherworldly destruction, we bring our own gravity unto this plane
 /mob/living/simple_animal/hostile/eldritch/armsy/has_gravity(turf/T)
@@ -219,6 +207,12 @@
 	decal.setDir(dir)
 
 /mob/living/simple_animal/hostile/eldritch/armsy/Destroy()
+	// При уничтожении оболочки пленённое в ней тело должно остаться на карте.
+	for(var/mob/living/inside in contents.Copy())
+		inside.forceMove(drop_location())
+		inside.remove_status_effect(STATUS_EFFECT_STASIS, STASIS_ASCENSION_EFFECT)
+		if(mind && !inside.mind)
+			mind.transfer_to(inside, TRUE)
 	if(front)
 		front.icon_state = "armsy_end"
 		front.icon_living = "armsy_end"
@@ -228,7 +222,9 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/armsy/BiologicalLife(delta_time, times_fired)
-	adjustBruteLoss(-2)
+	. = ..()
+	if(stat != DEAD)
+		adjustBruteLoss(-delta_time)
 
 /mob/living/simple_animal/hostile/eldritch/armsy/proc/heal()
 	if(health == maxHealth)
@@ -258,7 +254,9 @@
 
 
 /mob/living/simple_animal/hostile/eldritch/armsy/AttackingTarget()
-	if(istype(target,/obj/item/bodypart/r_arm) || istype(target,/obj/item/bodypart/l_arm))
+	if(QDELETED(target))
+		return
+	if(Adjacent(target) && (istype(target,/obj/item/bodypart/r_arm) || istype(target,/obj/item/bodypart/l_arm)))
 		qdel(target)
 		heal()
 		return
@@ -293,8 +291,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/armsy/prime
-	name = "Lord of the Night"
-	real_name = "Master of Decay"
+	name = "повелитель ночи"
+	real_name = "повелитель распада"
 	maxHealth = 800
 	health = 800
 	melee_damage_lower = 20
@@ -306,7 +304,7 @@
 	matrix_transformation.Scale(1.4,1.4)
 	transform = matrix_transformation
 
-/mob/living/simple_animal/hostile/eldritch/armsy/primeproc/heal()
+/mob/living/simple_animal/hostile/eldritch/armsy/prime/heal()
 	if(health == maxHealth)
 		if(back)
 			back.heal()
@@ -332,9 +330,9 @@
 
 
 /mob/living/simple_animal/hostile/eldritch/rust_spirit
-	name = "Rust Walker"
-	real_name = "Rusty"
-	desc = "Incomprehensible abomination actively seeping life out of it's surrounding."
+	name = "ржавый ходок"
+	real_name = "ржавый ходок"
+	desc = "Непостижимое чудовище, вытягивающее жизнь из всего вокруг."
 	icon_state = "rust_walker_s"
 	status_flags = CANPUSH
 	icon_living = "rust_walker_s"
@@ -367,9 +365,10 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/ash_spirit
-	name = "Ash Man"
-	real_name = "Ashy"
-	desc = "Incomprehensible abomination actively seeping life out of it's surrounding."
+	name = "пепельный дух"
+	real_name = "пепельный дух"
+	desc = "Непостижимое чудовище, вытягивающее жизнь из всего вокруг."
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "ash_walker"
 	status_flags = CANPUSH
 	icon_living = "ash_walker"
@@ -381,9 +380,10 @@
 	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash,/obj/effect/proc_holder/spell/pointed/cleave/long,/obj/effect/proc_holder/spell/aoe_turf/fire_cascade)
 
 /mob/living/simple_animal/hostile/eldritch/stalker
-	name = "Flesh Stalker"
-	real_name = "Flesh Stalker"
-	desc = "Abomination made from severed limbs."
+	name = "плотяной преследователь"
+	real_name = "плотяной преследователь"
+	desc = "Чудовище, сшитое из отрубленных конечностей."
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "stalker"
 	status_flags = CANPUSH
 	icon_living = "stalker"

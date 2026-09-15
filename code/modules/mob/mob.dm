@@ -870,6 +870,9 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client << output(null, "statbrowser:check_spells")
 
 /mob/proc/anti_magic_check(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
+	return check_magic_resistance(magic, holy, tinfoil, chargecost, self)
+
+/mob/proc/check_magic_resistance(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
 	if(!magic && !holy && !tinfoil)
 		return
 	var/list/protection_sources = list()

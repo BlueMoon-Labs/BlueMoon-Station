@@ -231,6 +231,9 @@
 /obj/item/radio/proc/talk_into_impl(atom/movable/M, message, channel, list/spans, datum/language/language)
 	if(!on)
 		return // the device has to be on
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	if(!M || !message)
 		return
 	if(wires.is_cut(WIRE_TX))  // Permacell and otherwise tampered-with radios
@@ -306,6 +309,9 @@
 		addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 20)
 
 /obj/item/radio/proc/backup_transmission(datum/signal/subspace/vocal/signal)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	var/turf/T = get_turf(src)
 	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
@@ -337,6 +343,9 @@
 
 // Checks if this radio can receive on the given frequency.
 /obj/item/radio/proc/can_receive(freq, level)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return FALSE
 	// deny checks
 	if (!on || !listening || wires.is_cut(WIRE_RX))
 		return FALSE

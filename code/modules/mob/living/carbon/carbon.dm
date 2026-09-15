@@ -210,6 +210,9 @@
 
 
 /mob/living/carbon/proc/throw_mode_on()
+	if(cancel_prepared_abilities())
+		balloon_alert(src, "режим броска")
+		to_chat(src, span_notice("Подготовленная способность отменена: включён режим броска."))
 	throw_mode = TRUE
 	if(client && hud_used)
 		hud_used.throw_icon.icon_state = "act_throw_on"

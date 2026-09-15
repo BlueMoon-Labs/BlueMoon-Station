@@ -835,8 +835,8 @@ GLOBAL_LIST_INIT(WALLITEMS_INVERSE, typecacheof(list(
 
 /proc/living_player_count()
 	var/living_player_count = 0
-	for(var/mob in GLOB.player_list)
-		if(mob in GLOB.alive_mob_list)
+	for(var/mob/player as anything in GLOB.player_list)
+		if(!player.training_origin && (player in GLOB.alive_mob_list))
 			living_player_count += 1
 	return living_player_count
 

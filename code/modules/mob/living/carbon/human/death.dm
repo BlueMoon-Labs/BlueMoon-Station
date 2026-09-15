@@ -40,14 +40,14 @@ GLOBAL_LIST_EMPTY(dead_players_during_shift)
 
 	dizziness = 0
 	jitteriness = 0
-	if(client && !suiciding && !(client in GLOB.dead_players_during_shift))
+	if(!training_origin && client && !suiciding && !(client in GLOB.dead_players_during_shift))
 		GLOB.dead_players_during_shift += client
 		GLOB.deaths_during_shift++
 
 	if(!QDELETED(dna)) //The gibbed param is bit redundant here since dna won't exist at this point if they got deleted.
 		dna.species.spec_death(gibbed, src)
 
-	if(SSticker.HasRoundStarted())
+	if(!training_origin && SSticker.HasRoundStarted())
 		SSblackbox.ReportDeath(src)
 	if(is_devil(src))
 		INVOKE_ASYNC(is_devil(src), TYPE_PROC_REF(/datum/antagonist/devil, beginResurrectionCheck), src)
