@@ -128,7 +128,7 @@
 	RegisterSignal(H, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(prevent_spawnloc_movement))
 	RegisterSignal(H, COMSIG_MOB_EQUIPPED_ITEM, PROC_REF(check_equipped_item)) // any knife we pick might be our deadliest weapon. also sets nodrop trait onto some weapons
 	RegisterSignal(H, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(recover_from_softcrit))
-	H.equipOutfit(/datum/outfit/hatred)
+	H.equipOutfit(istype(src, /datum/antagonist/jackal) ? /datum/outfit/jackal : /datum/outfit/hatred)
 	if(QDELETED(H)) // админы сказали "нет"
 		return
 	. = ..()
@@ -142,9 +142,11 @@
 	var/datum/component/mood/mood = H.GetComponent(/datum/component/mood)
 	mood?.RemoveComponent()
 	// сверхскорость и неуловимость страшнее сверхброни и бесконечных патронов
-	for(var/ms as anything in typesof(/datum/movespeed_modifier/reagent))
-		if(initial(ms:multiplicative_slowdown) < 0)
-			H.add_movespeed_mod_immunities(HATRED_ANTAG, ms)
+	// Jackal needs stimpack medipens for speed and dependency — do not block those
+	if(!istype(src, /datum/antagonist/jackal))
+		for(var/datum/movespeed_modifier/reagent/ms as anything in typesof(/datum/movespeed_modifier/reagent))
+			if(initial(ms.multiplicative_slowdown) < 0)
+				H.add_movespeed_mod_immunities(HATRED_ANTAG, ms)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, /datum/movespeed_modifier/grab_slowdown/aggressive)
 	H.add_movespeed_mod_immunities(HATRED_ANTAG, MOVESPEED_ID_MOB_GRAB_STATE)
 	H.drag_slowdown = FALSE
@@ -197,11 +199,17 @@
 	var/mob/living/carbon/human/H = owner
 	var/datum/antagonist/hatred/Ha = H.mind?.has_antag_datum(/datum/antagonist/hatred)
 	if(!Ha)
+		Ha = H.mind?.has_antag_datum(/datum/antagonist/jackal)
+	if(!Ha)
 		return FALSE
 	// WE ARE READY.
 	H.fully_heal(TRUE) // in case of some accidents in spawn room during preparation
 	Ha.UnregisterSignal(H, COMSIG_MOVABLE_PRE_MOVE)
 	Ha.appear_on_station()
+	if(istype(Ha, /datum/antagonist/jackal))
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_jackal_alarm_station), Ha), 5 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
+		INVOKE_ASYNC(src, PROC_REF(Remove), H)
+		return
 	var/picked_sound = pick('modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_1.ogg', \
 							'modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_2.ogg', \
 							'modular_bluemoon/code/modules/antagonists/hatred/hatred_begin_3.ogg')
@@ -432,9 +440,16 @@
 	if(!target.client || target.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(src, killing_speech_cd))
-		playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
+		if(istype(src, /datum/antagonist/jackal))
+			var/datum/antagonist/jackal/J = src
+			var/quip = pick(J.jackal_execution_quips)
+			killer.visible_message("<span class='bolddanger'>[killer] произносит \"[quip]\"</span>", \
+							"<span class='userdanger'>[killer] смотрит вам в глаза и произносит: [quip]</span>", \
+							"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
+		else
+			playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(src, killing_speech_cd, 10 SECONDS)
-	var/time_to_kill = chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS
+	var/time_to_kill = istype(src, /datum/antagonist/jackal) ? 5 SECONDS : (chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS)
 	if(do_after(killer, time_to_kill, target))
 		target.visible_message(span_bolddanger("[killer] перерезает горло [target]!"), span_userdanger("[killer] перерезает твое горло!"))
 		knife.melee_attack_chain(killer, target, damage_multiplier = 100)
@@ -446,10 +461,14 @@
 		if(is_glory)
 			addtimer(CALLBACK(knife, TYPE_PROC_REF(/obj/item/kitchen/knife, check_glory_kill), killer, target), 1 SECONDS, TIMER_STOPPABLE|TIMER_DELETE_ME)
 	else
-		killer.visible_message(span_notice("[killer] остановил свой нож."))
+		killer.visible_message(span_notice("[killer] остановил свой нож."), span_notice("Ты остановил свой нож."))
 
 /obj/item/gun/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 12 SECONDS)
 	var/datum/antagonist/hatred/Ha = user.mind?.has_antag_datum(/datum/antagonist/hatred)
+	var/is_jackal = FALSE
+	if(!Ha)
+		Ha = user.mind?.has_antag_datum(/datum/antagonist/jackal)
+		is_jackal = istype(Ha)
 	if(!Ha || !ishuman(target))
 		return ..()
 	if(!target.get_bodypart(BODY_ZONE_HEAD))
@@ -460,9 +479,18 @@
 	if(!target.client || target?.stat == DEAD)
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(Ha, killing_speech_cd))
-		playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
-		COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	var/new_ttk = Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS
+		// Jackal revolver has its OWN handle_suicide override that shows quips — skip this global check to avoid double speech
+		if(!istype(src, /obj/item/gun/ballistic/revolver/jackal357))
+			if(is_jackal)
+				var/datum/antagonist/jackal/J = Ha
+				var/quip = pick(J.jackal_execution_quips)
+				visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
+								"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
+								"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
+			else
+				playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
+			COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
+	var/new_ttk = is_jackal ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return
@@ -470,7 +498,17 @@
 
 /obj/item/proc/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	if((QDELETED(target) || target?.stat == DEAD) && !QDELETED(user) && user?.stat != DEAD)
-		user.fully_heal(TRUE) // the only way of healing
+		// Jackal gets partial healing instead of full heal
+		var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
+		if(istype(J))
+			// Partial healing for Jackal: heal 30% of damage
+			user.heal_overall_damage(30, 30, 0, FALSE, FALSE, FALSE, TRUE)
+			user.adjustToxLoss(-30, FALSE, TRUE)
+			user.adjustOxyLoss(-30, FALSE, TRUE)
+			user.adjustCloneLoss(-30, FALSE, TRUE)
+			user.updatehealth()
+		else
+			user.fully_heal(TRUE) // the only way of healing for regular hatred
 		// user.do_adrenaline(150, TRUE, 0, 0, TRUE, list(/datum/reagent/medicine/inaprovaline = 10, /datum/reagent/medicine/synaptizine = 15, /datum/reagent/medicine/regen_jelly = 20, /datum/reagent/medicine/stimulants = 20), "<span class='boldnotice'>You feel a sudden surge of energy!</span>")
 		user.visible_message("Кровь жертвы окрапляет [user], даруя ему нечеловеческое облегчение и силу продолжать бойню.")
 		user.add_movespeed_modifier(/datum/movespeed_modifier/hatred_glory_kill)
@@ -907,8 +945,8 @@
 
 /datum/outfit/hatred/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
 	var/datum/antagonist/hatred/Ha = H.mind?.has_antag_datum(/datum/antagonist/hatred)
-	if(!Ha)
-		return
+	if(!Ha || istype(Ha, /datum/antagonist/jackal))
+		return // Exclude Jackal which has its own outfit
 	// Ha.gear_level = tgui_input_list(H, "ЭТО ОКОШКО ДЛЯ ОБМАНА ПОДСЧЕТА ОФИЦЕРОВ В РАУНДЕ И НУЖНО ТОЛЬКО ДЛЯ ДЕБАГА, В ИГРЕ ЕГО НЕ БУДЕТ", "gear level?", list(1, 2), 1)
 	var/available_sets = Ha.classic_guns
 	SEND_SOUND(H, 'sound/misc/notice2.ogg')
@@ -1068,8 +1106,19 @@
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
 	player_mind.active = TRUE
 	player_mind.transfer_to(body)
-	notify_ghosts("Массшутер готовится к геноциду...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Mass Shooter")
-	body.mind.make_MassShooter()
+
+	// Random choice between standard Mass Shooter and Jackal (30% chance for Jackal)
+	var/is_jackal = prob(30)
+	if(is_jackal)
+		notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
+		body.mind.make_Jackal()
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Jackal by the midround ruleset.")
+		log_game("DYNAMIC: [key_name(body)] was spawned as a Jackal by the midround ruleset.")
+	else
+		notify_ghosts("Массшутер готовится к геноциду...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Mass Shooter")
+		body.mind.make_MassShooter()
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Mass Shooter by the midround ruleset.")
+		log_game("DYNAMIC: [key_name(body)] was spawned as a Mass Shooter by the midround ruleset.")
 	return TRUE
 
 /datum/mind/proc/make_MassShooter()
@@ -1077,6 +1126,3 @@
 		special_role = "Mass Shooter"
 		assigned_role = "Mass Shooter"
 		add_antag_datum(/datum/antagonist/hatred)
-
-
-#undef HATRED_ANTAG
