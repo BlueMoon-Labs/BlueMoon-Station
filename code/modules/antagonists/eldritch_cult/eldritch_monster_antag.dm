@@ -6,6 +6,8 @@
 /proc/heretic_conversion_block_reason(mob/living/carbon/human/target)
 	if(!ishuman(target))
 		return "Мансус не находит в этом теле плоти, за которую можно ухватиться."
+	if(HAS_TRAIT(target, TRAIT_HUSK) || target.heretic_flesh_raised)
+		return "Плоть этого тела уже истощена. Мансус не поднимет его вновь."
 	if(IS_HERETIC_MONSTER(target))
 		return "Это тело уже поднято чужой волей."
 	if(IS_HERETIC(target))
@@ -41,8 +43,11 @@
 	var/pre_conversion_max_health = 0
 	///Кнопка "кто я такой" в панели действий: без неё игрок остаётся без единого источника информации о роли.
 	var/datum/action/heretic_monster_briefing/briefing_button
+	var/mob/living/innate_body
+	var/body_generation = 0
 
 /datum/antagonist/heretic_monster/Destroy()
+	remove_innate_effects(innate_body)
 	QDEL_NULL(briefing_button)
 	master = null
 	return ..()
@@ -112,12 +117,15 @@
 
 /datum/antagonist/heretic_monster/apply_innate_effects(mob/living/mob_override)
 	. = ..()
-	//Родитель зовёт нас как из on_gain() (без аргумента), так и из on_body_transfer() (с новым телом).
-	//Опора на owner.current во втором случае промахивается: разум к этому моменту уже переехал.
 	var/mob/living/affected = mob_override || owner?.current
-	if(!affected)
+	if(QDELETED(affected) || affected == innate_body)
 		return
+	if(innate_body)
+		remove_innate_effects(innate_body)
+	innate_body = affected
+	body_generation++
 	add_antag_hud(antag_hud_type, antag_hud_name, affected)
+	RegisterSignal(affected, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING), PROC_REF(on_monster_body_death))
 	affected.faction |= "heretics"
 	apply_health_cap(affected)
 	if(!briefing_button)
@@ -126,13 +134,27 @@
 
 /datum/antagonist/heretic_monster/remove_innate_effects(mob/living/mob_override)
 	. = ..()
-	var/mob/living/affected = mob_override || owner?.current
-	if(!affected)
+	var/mob/living/affected = mob_override || innate_body
+	if(!affected || affected != innate_body)
 		return
+	innate_body = null
+	body_generation++
+	UnregisterSignal(affected, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING))
 	remove_antag_hud(antag_hud_type, affected)
 	affected.faction -= "heretics"
 	restore_health_cap(affected)
 	briefing_button?.Remove(affected)
+
+/// Освобождает место в свите после смерти или удаления сосуда; пересадка в другое тело роль сохраняет.
+/datum/antagonist/heretic_monster/proc/on_monster_body_death(mob/living/source)
+	SIGNAL_HANDLER
+	if(source == innate_body && owner?.current == source)
+		INVOKE_ASYNC(src, PROC_REF(remove_dead_body_role), body_generation)
+
+/datum/antagonist/heretic_monster/proc/remove_dead_body_role(expected_generation)
+	if(QDELETED(src) || QDELETED(owner) || body_generation != expected_generation || owner.has_antag_datum(type) != src)
+		return
+	owner.remove_antag_datum(type)
 
 /datum/antagonist/heretic_monster/on_body_transfer(mob/living/old_body, mob/living/new_body)
 	. = ..()
@@ -152,9 +174,10 @@
 
 ///Возвращает телу его прежний максимум здоровья при снятии роли.
 /datum/antagonist/heretic_monster/proc/restore_health_cap(mob/living/affected)
-	if(!health_cap || affected.maxHealth > health_cap)
+	if(!pre_conversion_max_health)
 		return
-	affected.setMaxHealth(pre_conversion_max_health || initial(affected.maxHealth))
+	affected.setMaxHealth(max(affected.maxHealth, pre_conversion_max_health))
+	pre_conversion_max_health = 0
 	affected.updatehealth()
 
 /datum/antagonist/heretic_monster/ghoul
