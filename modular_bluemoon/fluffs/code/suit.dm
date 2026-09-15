@@ -915,6 +915,7 @@
 	item_state = "ranger"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	unique_reskin = list(
 		"Recon" = list(
 			"icon_state" = "duster_recon_t",
@@ -950,6 +951,7 @@
 	item_state = "elite_riot"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
 	name = "NCR custom duster"
@@ -958,6 +960,7 @@
 	item_state = "rigscustom_suit"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/vest/alt/kumiko_ncr_ranger
 	name = "NCR ranger duster"
@@ -966,6 +969,7 @@
 	item_state = "reclaimed_desert_ranger"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/modkit/light_plate_carrier
 	name = "Light plate carrier Armor Kit"
