@@ -1151,3 +1151,15 @@
 		"blue" = list("icon_state" = "caligram_fatigues_blue"),
 		"tan" = list("icon_state" = "caligram_fatigues_tan"),
 	)
+
+/obj/item/clothing/under/donator/bm/skeleton_suit
+	name = "Skeleton suit"
+	desc = "Tight black suit with bone like drawing"
+	icon_state = "skeleton_suit"
+	item_state = "skeleton_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
+	can_adjust = FALSE

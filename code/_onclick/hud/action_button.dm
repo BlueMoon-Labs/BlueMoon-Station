@@ -53,6 +53,14 @@
 		return
 
 	var/list/modifiers = params2list(params)
+	if(LAZYACCESS(modifiers, CTRL_CLICK))
+		var/datum/hud/our_hud = user.hud_used
+		if(src.location == SCRN_OBJ_IN_PALETTE)
+			our_hud.position_action(src, SCRN_OBJ_IN_LIST)
+		else
+			our_hud.position_action(src, SCRN_OBJ_IN_PALETTE)
+		save_position()
+		return TRUE
 	if(LAZYACCESS(modifiers, SHIFT_CLICK))
 		var/datum/hud/our_hud = user.hud_used
 		our_hud.position_action(src, SCRN_OBJ_DEFAULT)
@@ -119,7 +127,10 @@
 /atom/movable/screen/movable/action_button/MouseEntered(location, control, params)
 	. = ..()
 	if(!QDELETED(src))
-		var/tooltip = linked_action ? linked_action.format_tooltip(usr, desc) : desc
+		var/extra_desc = desc || ""
+		var/ctrl_hint = (src.location == SCRN_OBJ_IN_PALETTE) ? "<br><b>Ctrl-click</b> to restore to hotbar" : "<br><b>Ctrl-click</b> to hide in Show Buttons"
+		extra_desc = "[extra_desc][ctrl_hint]"
+		var/tooltip = linked_action ? linked_action.format_tooltip(usr, extra_desc) : extra_desc
 		openToolTip(usr, src, params, title = name, content = tooltip, theme = actiontooltipstyle)
 
 /atom/movable/screen/movable/action_button/MouseExited(location, control, params)
@@ -245,7 +256,7 @@
 	hud_used.palette_actions.refresh_actions()
 
 /atom/movable/screen/button_palette
-	desc = "<b>Drag</b> buttons to move them<br><b>Shift-click</b> any button to reset it<br><b>Alt-click</b> this to reset all buttons"
+	desc = "<b>Drag</b> buttons to move them<br><b>Shift-click</b> any button to reset it<br><b>Ctrl-click</b> button to hide/show in palette<br><b>Alt-click</b> this to reset all buttons"
 	icon = 'icons/hud/64x16_actions.dmi'
 	icon_state = "screen_gen_palette"
 	screen_loc = ui_action_palette

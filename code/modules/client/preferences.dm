@@ -376,6 +376,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
+	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
+	var/light = LIGHT_DEFAULT
+	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -827,7 +833,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/dat
 	if(new_character_creator)
 		// Compact inline CSS: конкретные значения цветов для BYOND-браузера.
-		// Enhanced decoration — CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
+		// Enhanced decoration - CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
 		var/modern_palette_css = ""
 		if(is_modern_theme)
 			var/list/theme = get_character_setup_palette_modern()
@@ -931,7 +937,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				"modern_neutral" = "#bfc2c7"
 			)
 
-			// Theme hub — icon buttons that never move
+			// Theme hub - icon buttons that never move
 			dat += "<div class='theme-container'>"
 			dat += "<div class='theme-hub'>"
 			var/picker_active_cls = !modern_theme_picker_collapsed ? " active" : ""
@@ -1452,24 +1458,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<table width='100%'><tr><td width='30%' valign='top'>"
 
 					dat += "<h2>[flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a><br>"
-					if(length(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["flavor_text"]))
-							dat += "\[...\]"
-						else
-							dat += "[features["flavor_text"]]"
+					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/flavor_preview = parsemarkdown_basic(html_encode(features["flavor_text"]), hyperlink=FALSE)
+					flavor_preview = replacetext(flavor_preview, "\n", " ")
+					if(!length(features["flavor_text"]))
+						dat += "\[...\]"
+					else if(length_char(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += flavor_preview
 					else
-						dat += "[TextPreview(features["flavor_text"])]..."
+						dat += "[copytext_char(flavor_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<br><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["flavor_text"]))]...)</span>"
 					//SPLURT edit - naked flavor text
 					dat += "<h2>[naked_flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a><br>"
-					if(length(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["naked_flavor_text"]))
-							dat += "\[...\]<BR>"
-						else
-							dat += "[html_encode(features["naked_flavor_text"])]<BR>"
+					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/naked_preview = parsemarkdown_basic(html_encode(features["naked_flavor_text"]), hyperlink=FALSE)
+					naked_preview = replacetext(naked_preview, "\n", " ")
+					if(!length(features["naked_flavor_text"]))
+						dat += "\[...\]<BR>"
+					else if(length_char(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += "[naked_preview]<BR>"
 					else
-						dat += "[TextPreview(html_encode(features["naked_flavor_text"]))]...<BR>"
+						dat += "[copytext_char(naked_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["naked_flavor_text"]))]...)</span><BR>"
 					//SPLURT edit end
 					// BLUEMOON ADD START - пользовательский эмоут смерти
 					dat += "<h2>[custom_deathgasp_label]</h2>"
@@ -1487,34 +1495,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<BR><a href='?_src_=prefs;preference=deathsoundpreview;task=input''>[preview_deathsound_label]</a><BR>"
 					// BLUEMOON ADD END
 					dat += "<h2>[silicon_flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a><br>"
-					if(length(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["silicon_flavor_text"]))
-							dat += "\[...\]"
-						else
-							dat += "[features["silicon_flavor_text"]]"
+					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/silicon_preview = parsemarkdown_basic(html_encode(features["silicon_flavor_text"]), hyperlink=FALSE)
+					silicon_preview = replacetext(silicon_preview, "\n", " ")
+					if(!length(features["silicon_flavor_text"]))
+						dat += "\[...\]"
+					else if(length_char(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += silicon_preview
 					else
-						dat += "[TextPreview(features["silicon_flavor_text"])]...<BR>"
+						dat += "[copytext_char(silicon_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["silicon_flavor_text"]))]...)</span><BR>"
 					if(!is_modern_theme)
 						dat += "<h2>[custom_species_lore_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a><br>"
-						if(length(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!length(features["custom_species_lore"]))
-								dat += "\[...\]<BR>"
-							else
-								dat += "[features["custom_species_lore"]]<BR>"
+						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/lore_preview = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
+						lore_preview = replacetext(lore_preview, "\n", " ")
+						if(!length(features["custom_species_lore"]))
+							dat += "\[...\]<BR>"
+						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += "[lore_preview]<BR>"
 						else
-							dat += "[TextPreview(features["custom_species_lore"])]...<BR>"
+							dat += "[copytext_char(lore_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a><br>"
-						var/ooc_notes_len = length(features["ooc_notes"])
-						if(ooc_notes_len <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!ooc_notes_len)
-								dat += "\[...\]"
-							else
-								dat += "[features["ooc_notes"]]"
+						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/ooc_preview = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
+						ooc_preview = replacetext(ooc_preview, "\n", " ")
+						if(!length(features["ooc_notes"]))
+							dat += "\[...\]"
+						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += ooc_preview
 						else
-							dat += "[TextPreview(features["ooc_notes"])]..."
+							dat += "[copytext_char(ooc_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
 					dat += "</td>"
 
 					if(is_modern_theme)
@@ -1542,24 +1552,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 					if(is_modern_theme)
 						dat += "<br><h2>[custom_species_lore_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a><br>"
-						if(length(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!length(features["custom_species_lore"]))
-								dat += "\[...\]<BR>"
-							else
-								dat += "[features["custom_species_lore"]]<BR>"
+						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/lore_preview2 = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
+						lore_preview2 = replacetext(lore_preview2, "\n", " ")
+						if(!length(features["custom_species_lore"]))
+							dat += "\[...\]<BR>"
+						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += "[lore_preview2]<BR>"
 						else
-							dat += "[TextPreview(features["custom_species_lore"])]...<BR>"
+							dat += "[copytext_char(lore_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a><br>"
-						var/ooc_notes_len = length(features["ooc_notes"])
-						if(ooc_notes_len <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!ooc_notes_len)
-								dat += "\[...\]"
-							else
-								dat += "[features["ooc_notes"]]"
+						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/ooc_preview2 = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
+						ooc_preview2 = replacetext(ooc_preview2, "\n", " ")
+						if(!length(features["ooc_notes"]))
+							dat += "\[...\]"
+						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += ooc_preview2
 						else
-							dat += "[TextPreview(features["ooc_notes"])]..."
+							dat += "[copytext_char(ooc_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
 
 					if(is_modern_theme)
 						dat += "</td>"
@@ -3020,7 +3031,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	// BLUEMOON: per-quirk settings (kept inline)
 	dat += "<h3>Настройки квирков</h3>"
-	var/display_summon_nickname = summon_nickname ? summon_nickname : "—"
+	var/display_summon_nickname = summon_nickname ? summon_nickname : "-"
 	dat += "<div class='csetup-quirk-settings'>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
@@ -3532,7 +3543,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/list/phobia_choices = list("Случайная")
 				if(SStraumas && SStraumas.phobia_types)
 					phobia_choices += SStraumas.phobia_types
-				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете — будет случайная.", "Настройка фобии") as null|anything in phobia_choices
+				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете - будет случайная.", "Настройка фобии") as null|anything in phobia_choices
 				if(new_choice)
 					if(new_choice == "Случайная")
 						phobia_type = null
@@ -3710,26 +3721,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						medical_records = rec
 
 				if("flavor_text")
-					var/msg = input(usr, "Задайте внешнее описание вашего персонажа.", "Описание Bнешности Персонажа", features["flavor_text"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте внешнее описание вашего персонажа.\nПоддерживается форматирование:\n*курсив* _курсив_ !жирный! ^крупный^ |центр| ((мелкий))\n-=RRGGBB цветной текст =-  (например -=ff0000 красный=-)\n# Заголовок, ## Подзаголовок\nЭкранируйте спецсимволы обратным слешем \\* \\! \\_ и т.д.", "Описание Bнешности Персонажа", features["flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE) //Skyrat edit, removed strip_html_simple()
+						features["flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit
 				if("naked_flavor_text")
-					var/msg = input(usr, "Задайте описание вашего персонажа без одежды.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"]) as message|null
+					var/msg = input(usr, "Задайте описание вашего персонажа без одежды.\nПоддерживается форматирование:\n*курсив* !жирный! -=цвет=- и т.д.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["naked_flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE)
+						features["naked_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit end
 				if("silicon_flavor_text")
-					var/msg = input(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!", "Описание Борга", features["silicon_flavor_text"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Описание Борга", features["silicon_flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["silicon_flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE) //Skyrat edit, uses strip_html_simple()
+						features["silicon_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				if("custom_species_lore")
-					var/msg = input(usr, "Задайте особую предысторию расы своего персонажа!", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте особую предысторию расы своего персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"]) as message|null
 					if(!isnull(msg))
-						features["custom_species_lore"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE)
+						features["custom_species_lore"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 				// BLUEMOON ADD START - пользовательский эмоут смерти
 				if("custom_deathgasp")
 					var/msg = input(usr, "Задайте эмоцию, которая будет проигрываться при смерти вашего персонажа!", "Сообщение О Смерти", features["custom_deathgasp"]) as message|null
@@ -3763,9 +3774,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						to_chat(user, "<span class='warning'>Вы выбрали беззвучный deathgasp или выбранный вами звук отсутствует!</span>")
 				// BLUEMOON ADD END
 				if("ooc_notes")
-					var/msg = stripped_multiline_input(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.", "ООС-Заметки", html_decode(features["ooc_notes"]), MAX_FLAVOR_LEN, TRUE)
+					var/msg = input(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "ООС-Заметки", features["ooc_notes"]) as message|null
 					if(!isnull(msg))
-						features["ooc_notes"] = msg
+						features["ooc_notes"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
+
+				if("format_help")
+					var/help_text = {"Форматирование описания персонажа:
+
+*текст* или _текст_ — курсив
+!текст! — жирный
+^текст^ — крупный шрифт
+|текст| — по центру
+((текст)) — мелкий шрифт
+# Заголовок, ## Подзаголовок, ### и ####
+- Списки: строка начинается с * (поддерживаются вложенные)
+--- — горизонтальная линия
+-=RRGGBB текст =- — цвет (hex, например -=ff0000 красный=- , -=00ff00 зелёный=-)
+Экранирование: \\* \\! \\_ \\^ \\| \\( \\)
+"}
+					alert(usr, help_text, "Помощь по форматированию")
 
 				if("hide_ckey")
 					hide_ckey = !hide_ckey

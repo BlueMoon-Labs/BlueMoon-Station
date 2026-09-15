@@ -699,3 +699,51 @@
 	icon_state = "sec_armor_kit"
 	product = /obj/item/clothing/head/helmet/sec/tau
 	fromitem = list(/obj/item/clothing/head/helmet/sec)
+
+/obj/item/clothing/head/donator/bm/pumpkin_cat
+	name = "Pumpkin With Ears"
+	desc = "Strange pumpkin with cat ears on top"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "pumpkin_cat"
+	item_state = "pumpkin_cat"
+	flags_inv = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet"
+	desc = "Matching helmet for the NCR Ranger duster."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+	unique_reskin = list(
+		"Ranger" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger helmet"
+		),
+		"Desert" = list(
+			"icon_state" = "oldranger",
+			"item_state" = "oldranger",
+			"name" = "NCR desert ranger helmet"
+		)
+	)
+
+/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	name = "NCR elite desert ranger helmet"
+	desc = "NCR ranger riot helmet"
+	icon_state = "desert_ranger"
+	item_state = "desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+
+/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	name = "Custom NCR ranger helmet"
+	desc = "NCR ranger bulletproof helmet"
+	icon_state = "rangercustom"
+	item_state = "rangercustom"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
