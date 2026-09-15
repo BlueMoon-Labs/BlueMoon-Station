@@ -18,13 +18,17 @@
 #define HERETIC_BLOOD_RUSH_DURATION (6 SECONDS)
 #define HERETIC_BLOOD_PACT_PAYMENT 10
 #define HERETIC_BLOOD_PARTIAL_COLLECTION 10
+#define HERETIC_BLOOD_RECOVERY_FRACTION 0.25
+#define HERETIC_BLOOD_RECOVERY_LIMIT 10
+#define HERETIC_BLOOD_CLOT_DURATION (8 SECONDS)
+#define HERETIC_BLOOD_CLOT_MULTIPLIER 0.5
 
 /datum/heretic_path/blood
 	id = PATH_BLOOD
 	deed_type = /datum/heretic_deed/blood
 	name = "Кровь"
 	desc = "Притягивайте врагов, накапливайте кровный долг ударами и залечивайте свои раны при взыскании. Чаша отдаёт больше крови на лечение."
-	strengths = "Быстрое накопление долга, притяжение и лечение ушибов и ожогов за фактический урон врагу."
+	strengths = "Быстрое накопление долга, притяжение и лечение ушибов и ожогов за фактический урон врагу. Взыскание восполняет кровь и временно вдвое ослабляет кровотечение."
 	weaknesses = "Чтобы взыскать долг, нужно удержать прямую видимость в пяти клетках в течение секунды. Укрытие или оглушение срывает взыскание; антимагия разрывает связь."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_blood,
@@ -41,7 +45,7 @@
 
 /datum/eldritch_knowledge/base_blood
 	name = "Первая подпись"
-	desc = "Нож и стеклянный осколок создают багровый ланцет. Удар клинком сам связывает врага и добавляет долг раз в 2 секунды. «Связать / взыскать» создаёт связь на расстоянии или взыскивает долг после секунды предупреждения. В намерении «Разоружить» взыскивается до 10 долга с сохранением остатка и прежнего срока связи. Четверть нанесённого взысканием урона лечит ваши ушибы и ожоги, суммарно до 10 за одну связь. Держитесь в пяти клетках без преград."
+	desc = "Нож и стеклянный осколок создают багровый ланцет. Удар клинком сам связывает врага и добавляет долг раз в 2 секунды. «Связать / взыскать» создаёт связь на расстоянии или взыскивает долг после секунды предупреждения. В намерении «Разоружить» взыскивается до 10 долга с сохранением остатка и прежнего срока связи. Четверть нанесённого взысканием урона лечит ваши ушибы и ожоги, суммарно до 10 за одну связь. Дополнительно 25% фактического урона восполняет кровь до нормы вашего тела, не более 10 единиц за связь, а кровотечение ослабевает вдвое на 8 секунд. Повторное взыскание обновляет длительность; частичные взыскания делят предел восполнения крови. Держитесь в пяти клетках без преград."
 	gain_text = "На белом листе появилась капля. Подпись уже была моей."
 	route = PATH_BLOOD
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/shard)
@@ -49,7 +53,7 @@
 	combat_resource = 0
 	combat_resource_max = 20
 	combat_resource_name = "Кровный долг"
-	combat_resource_desc = "«Связать / взыскать»: новый враг — связь, свой должник — урон через секунду и лечение ваших ран. В намерении «Разоружить» взыскивается до 10 долга с сохранением остатка. Клинок добавляет долг раз в 2 секунды и продлевает связь. Чаша расходует долг на усиленное лечение; Договор покупает ускорение вашими ранами."
+	combat_resource_desc = "«Связать / взыскать»: новый враг — связь, свой должник — урон через секунду и лечение ваших ран. Взыскание также восполняет кровь на 25% фактического урона, до 10 единиц за связь и до нормы тела, и вдвое ослабляет кровотечение на 8 секунд. В намерении «Разоружить» взыскивается до 10 долга с сохранением остатка и общих пределов лечения. Клинок добавляет долг раз в 2 секунды и продлевает связь. Чаша расходует долг на усиленное лечение; Договор покупает ускорение вашими ранами."
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	grasp_visual = /obj/effect/temp_visual/heretic_blood/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/blood_grasp.ogg'
@@ -61,6 +65,7 @@
 	var/link_limit = 1
 	var/debt_cap = 20
 	var/datum/status_effect/heretic_blood_rush/blood_rush
+	var/datum/status_effect/heretic_blood_clot/blood_clot
 
 /datum/eldritch_knowledge/base_blood/on_body_gain(mob/living/user)
 	if(!user?.mind || blood_body == user)
@@ -109,6 +114,7 @@
 	QDEL_LIST(marks)
 	QDEL_LIST(visuals)
 	QDEL_NULL(blood_rush)
+	QDEL_NULL(blood_clot)
 	combat_resource = 0
 	notify_resource_changed()
 
@@ -417,6 +423,61 @@
 		return 0
 	return healed_brute + max(0, old_burn - user.getFireLoss())
 
+/datum/eldritch_knowledge/base_blood/proc/recover_blood(mob/living/user, amount)
+	if(!can_use(user) || !ishuman(user))
+		return 0
+	var/mob/living/carbon/human/human_user = user
+	if((NOBLOOD in human_user.dna.species.species_traits) || !human_user.get_blood_id())
+		return 0
+	var/recovered = min(max(0, amount), max(0, BLOOD_VOLUME_NORMAL * human_user.blood_ratio - human_user.blood_volume - human_user.integrating_blood))
+	human_user.blood_volume += recovered
+	human_user.apply_status_effect(/datum/status_effect/heretic_blood_clot, src)
+	blood_clot = human_user.has_status_effect(/datum/status_effect/heretic_blood_clot)
+	if(recovered > 0)
+		to_chat(user, span_notice("Взыскание восполняет [round(recovered, 0.1)] единиц вашей крови."))
+	return recovered
+
+/datum/status_effect/heretic_blood_clot
+	id = "heretic_blood_clot"
+	duration = HERETIC_BLOOD_CLOT_DURATION
+	tick_interval = -1
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blood_clot
+	on_remove_on_mob_delete = TRUE
+	var/datum/weakref/blood_ref
+	var/datum/physiology/affected_physiology
+
+/datum/status_effect/heretic_blood_clot/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood)
+	if(QDELETED(blood))
+		qdel(src)
+		return
+	blood_ref = WEAKREF(blood)
+	return ..()
+
+/datum/status_effect/heretic_blood_clot/on_apply()
+	if(!..() || !ishuman(owner))
+		return FALSE
+	var/mob/living/carbon/human/human_owner = owner
+	affected_physiology = human_owner.physiology
+	affected_physiology.bleed_mod *= HERETIC_BLOOD_CLOT_MULTIPLIER
+	to_chat(owner, span_notice("Ваша кровь густеет: кровотечение ослаблено вдвое на 8 секунд."))
+	return TRUE
+
+/datum/status_effect/heretic_blood_clot/on_remove()
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(blood?.blood_clot == src)
+		blood.blood_clot = null
+	if(!QDELETED(affected_physiology))
+		affected_physiology.bleed_mod /= HERETIC_BLOOD_CLOT_MULTIPLIER
+	affected_physiology = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_blood_clot
+	name = "Свёртывание крови"
+	desc = "Взыскание вдвое уменьшает потерю крови от кровотечения на 8 секунд. Новое успешное взыскание обновляет длительность. Раны остаются и требуют лечения."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "sigil_blood"
+
 /datum/eldritch_knowledge/base_blood/proc/refund(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/blood_relic)
@@ -464,6 +525,7 @@
 	var/collection_timer
 	var/collection_amount
 	var/siphoned = 0
+	var/blood_recovered = 0
 	var/expected_generation
 	var/contact_lost_at
 
@@ -595,6 +657,10 @@
 	if(!QDELETED(blood) && blood.blood_generation == generation && !QDELETED(victim))
 		var/actual_damage = min(damage, max(0, victim.getBruteLoss() - damage_before))
 		var/healed = blood.mend_wounds(user, min(max(0, healing_limit - siphoned), actual_damage * healing_fraction))
+		if(actual_damage > 0)
+			var/recovered = blood.recover_blood(user, min(max(0, HERETIC_BLOOD_RECOVERY_LIMIT - blood_recovered), actual_damage * HERETIC_BLOOD_RECOVERY_FRACTION))
+			if(!QDELETED(src))
+				blood_recovered += recovered
 		if(!QDELETED(src))
 			siphoned += healed
 		if(healed > 0)
@@ -1123,3 +1189,7 @@
 #undef HERETIC_BLOOD_RUSH_DURATION
 #undef HERETIC_BLOOD_PACT_PAYMENT
 #undef HERETIC_BLOOD_PARTIAL_COLLECTION
+#undef HERETIC_BLOOD_RECOVERY_FRACTION
+#undef HERETIC_BLOOD_RECOVERY_LIMIT
+#undef HERETIC_BLOOD_CLOT_DURATION
+#undef HERETIC_BLOOD_CLOT_MULTIPLIER

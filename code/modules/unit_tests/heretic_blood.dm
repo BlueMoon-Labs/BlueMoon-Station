@@ -1,3 +1,152 @@
+/// Взыскание восполняет кровь при целых конечностях и делит предел между частичными взысканиями.
+/datum/unit_test/heretic_blood_recovery/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/blood_vigor)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/eldritch_knowledge/blood_vigor/vigor = heretic.get_knowledge(/datum/eldritch_knowledge/blood_vigor)
+	vigor.passive_level = 2
+	vigor.on_passive_upgrade(user)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.blood_volume = BLOOD_VOLUME_NORMAL - 40
+	user.integrating_blood = 0
+	TEST_ASSERT(blood.release(user, victim), "Создана связь для восполнения крови.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	blood.add_debt(seal, 15)
+	for(var/index in 1 to 3)
+		TEST_ASSERT(blood.release(user, victim, partial = TRUE), "Начато частичное взыскание.")
+		seal.collection_ready_at = world.time
+		TEST_ASSERT(seal.detonate(), "Частичное взыскание завершено.")
+		TEST_ASSERT(abs(user.blood_volume - (BLOOD_VOLUME_NORMAL - 40 + min(index * 5, 10))) <= DAMAGE_PRECISION, "Кровь восстанавливается на четверть урона, не более десяти за связь.")
+	TEST_ASSERT_EQUAL(user.getBruteLoss() + user.getFireLoss(), 0, "Пассивка работает без ушибов и ожогов.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.5, "Повторные взыскания не складывают снижение кровотечения.")
+	var/obj/item/bodypart/arm = user.get_bodypart(BODY_ZONE_L_ARM)
+	arm.generic_bleedstacks = 5
+	var/blood_before = user.blood_volume
+	user.bleed(4)
+	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 2, "Настоящая потеря крови уменьшена вдвое.")
+	TEST_ASSERT_EQUAL(arm.generic_bleedstacks, 5, "Пассивка не удаляет источник кровотечения.")
+	TEST_ASSERT_NOTNULL(blood.blood_clot.linked_alert, "Ослабление кровотечения показано владельцу.")
+	blood.blood_clot.duration = world.time - 1
+	blood.blood_clot.process()
+	TEST_ASSERT_NULL(blood.blood_clot, "Истёкшая пассивка удалена из знания.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 1, "После истечения восстановлена прежняя скорость кровотечения.")
+	user.bleed(4)
+	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 6, "После истечения кровотечение снова теряет полный объём.")
+
+/// Восполнение учитывает фактический урон, норму тела и кровь, ожидающую усвоения.
+/datum/unit_test/heretic_blood_recovery_limits/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.blood_ratio = 1.25
+	var/normal_volume = BLOOD_VOLUME_NORMAL * user.blood_ratio
+	user.blood_volume = normal_volume - 20
+	user.integrating_blood = 0
+	for(var/obj/item/bodypart/limb as anything in victim.bodyparts)
+		limb.wound_damage_multiplier = 0.5
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено взыскание с устойчивой цели.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Взыскание с устойчивой цели завершено.")
+	var/actual_damage = victim.getBruteLoss()
+	TEST_ASSERT(actual_damage > 0 && actual_damage < 20, "Защита действительно уменьшила полученный урон.")
+	TEST_ASSERT(abs(user.blood_volume - (normal_volume - 20 + actual_damage * 0.25)) <= DAMAGE_PRECISION, "Восполнена четверть фактического урона после защиты.")
+	user.blood_volume = normal_volume - 8
+	user.integrating_blood = 7
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено взыскание у нормы крови.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Взыскание у нормы крови завершено.")
+	TEST_ASSERT_EQUAL(user.blood_volume + user.integrating_blood, normal_volume, "Суммарный объём не превышает норму тела.")
+	TEST_ASSERT_EQUAL(user.integrating_blood, 7, "Ожидающая усвоения кровь сохранена.")
+	user.blood_volume = normal_volume + 10
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено взыскание при избытке крови.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Взыскание при избытке крови завершено.")
+	TEST_ASSERT_EQUAL(user.blood_volume, normal_volume + 10, "Пассивка не добавляет и не отнимает избыточную кровь.")
+
+/// Неуязвимость, отмена взыскания и бескровное тело не дают восполнения или свёртывания.
+/datum/unit_test/heretic_blood_recovery_rejected/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.blood_volume = BLOOD_VOLUME_NORMAL - 40
+	user.integrating_blood = 0
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено взыскание с неуязвимой цели.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	victim.status_flags |= GODMODE
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Неуязвимость завершает попытку взыскания.")
+	TEST_ASSERT_EQUAL(user.blood_volume, BLOOD_VOLUME_NORMAL - 40, "Нулевой урон не создаёт кровь.")
+	TEST_ASSERT_NULL(blood.blood_clot, "Нулевой урон не ослабляет кровотечение.")
+	victim.status_flags &= ~GODMODE
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено прерываемое взыскание.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	user.Stun(1 SECONDS)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(!seal.detonate(), "Оглушение срывает взыскание.")
+	TEST_ASSERT_EQUAL(user.blood_volume, BLOOD_VOLUME_NORMAL - 40, "Отмена не создаёт кровь.")
+	TEST_ASSERT_NULL(blood.blood_clot, "Отмена не ослабляет кровотечение.")
+	user.SetStun(0)
+	user.set_species(/datum/species/skeleton)
+	var/blood_before = user.blood_volume
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Бескровное тело сохраняет доступ к взысканию.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Бескровное тело взыскивает долг.")
+	TEST_ASSERT_EQUAL(user.blood_volume, blood_before, "У бескровного тела не появляется кровь.")
+	TEST_ASSERT_NULL(blood.blood_clot, "Бескровное тело не получает свёртывание.")
+
+/// Свёртывание обновляется без усиления и сохраняет чужие модификаторы при смене тела и утрате роли.
+/datum/unit_test/heretic_blood_clot_lifecycle/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.physiology.bleed_mod = 0.25
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено первое взыскание.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Первое взыскание завершено.")
+	var/datum/status_effect/heretic_blood_clot/clot = blood.blood_clot
+	TEST_ASSERT_NOTNULL(clot, "Взыскание даёт свёртывание и при полном объёме крови.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.125, "Свёртывание учитывает прежний модификатор.")
+	clot.duration = world.time + 1 SECONDS
+	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено повторное взыскание.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Повторное взыскание завершено.")
+	TEST_ASSERT_EQUAL(blood.blood_clot, clot, "Повторное взыскание обновляет существующий эффект.")
+	TEST_ASSERT_EQUAL(clot.duration, world.time + 8 SECONDS, "Длительность обновлена до восьми секунд.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.125, "Повторное взыскание не усиливает снижение.")
+	user.physiology.bleed_mod *= 0.1
+	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human, get_turf(user))
+	user.mind.transfer_to(new_body)
+	TEST_ASSERT(QDELETED(clot), "Смена тела снимает свёртывание со старого.")
+	TEST_ASSERT(abs(user.physiology.bleed_mod - 0.025) <= DAMAGE_PRECISION, "Снятие сохраняет модификатор, добавленный во время действия.")
+	TEST_ASSERT_EQUAL(new_body.physiology.bleed_mod, 1, "Новое тело не наследует временное снижение.")
+	TEST_ASSERT(blood.release(new_body, victim) && blood.release(new_body, victim), "Новое тело начинает своё взыскание.")
+	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	TEST_ASSERT(seal.detonate(), "Новое тело завершает своё взыскание.")
+	clot = blood.blood_clot
+	TEST_ASSERT_NOTNULL(clot, "Новое тело получило свёртывание.")
+	qdel(heretic)
+	TEST_ASSERT(QDELETED(clot), "Удаление роли снимает свёртывание.")
+	TEST_ASSERT_EQUAL(new_body.physiology.bleed_mod, 1, "После удаления роли восстановлен исходный модификатор.")
+
 /// Частичное взыскание сохраняет остаток и срок связи, предупреждение и общий предел лечения.
 /datum/unit_test/heretic_blood_partial_collection/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
