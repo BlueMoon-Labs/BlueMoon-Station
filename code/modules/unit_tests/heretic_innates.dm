@@ -233,6 +233,7 @@
 	TEST_ASSERT(flesh.reserve > 0 && flesh.reserve <= 6, "Реальное попадание своим клинком даёт ограниченный запас.")
 	var/reserve_before = flesh.reserve
 	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
-	victim.put_in_hands(rod)
+	TEST_ASSERT(victim.put_in_hands(rod), "Цель держит нуллрод перед ударом.")
+	TEST_ASSERT(!heretic_can_affect(user, victim, chargecost = 0), "Антимагия действует до попадания.")
 	blade.attack(victim, user)
 	TEST_ASSERT_EQUAL(round(flesh.reserve, DAMAGE_PRECISION), reserve_before, "Антимагия блокирует питание черты.")

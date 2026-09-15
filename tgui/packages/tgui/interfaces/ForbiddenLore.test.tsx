@@ -77,6 +77,44 @@ const renderBook = async () => {
 };
 
 describe('Гримуар еретика', () => {
+  test('подготовка показывает реальные вещи и вызывает сердце из главы охоты', async () => {
+    const { topic } = setupStore(makeData({
+      selected_path: 'Blade',
+      preparation: {
+        blade_ready: false, blade_status: 'Клинка при вас нет.',
+        armor_ready: false, armor_status: 'Поднимите капюшон.',
+        heart: { ready: false, can_call: true, status: 'Сердце за завесой.', action_label: 'Призвать своё сердце' },
+      },
+    }));
+    await renderBook();
+    fireEvent.click(screen.getByText('Подготовка к охоте · 0/3'));
+    const preparation = screen.getByRole('region', { name: 'Подготовка к охоте' });
+    expect(within(preparation).getByText('Клинка при вас нет.')).toBeTruthy();
+    expect(within(preparation).getByText('Поднимите капюшон.')).toBeTruthy();
+    fireEvent.click(within(preparation).getByRole('button', { name: 'Проверить подготовку' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Призвать своё сердце' }));
+    expect(readActions(topic).map((message) => message.type)).toEqual(['act/refresh_preparation', 'act/call_heart']);
+  });
+
+  test('сердце в чужих руках нельзя вызвать, а завершённое дело не предлагает следующий шаг', async () => {
+    const { topic } = setupStore(makeData({
+      selected_path: 'Cosmic',
+      preparation: {
+        blade_ready: true, blade_status: 'Клинок при вас.',
+        armor_ready: true, armor_status: 'Мантия и капюшон надеты.',
+        heart: { ready: false, can_call: false, status: 'Сердце удерживает другой человек.', action_label: 'Вернуть своё сердце' },
+      },
+      deed: { name: 'Небо над отделами', desc: 'Дело завершено.', hint: '', next_step: 'Зажгите звезду.', tier: 3, max_tier: 3, progress: 0, goal: 0, counted: 6 },
+    }));
+    await renderBook();
+    fireEvent.click(screen.getByText('Подготовка к охоте · 2/3'));
+    expect(screen.getByRole('button', { name: 'Вернуть своё сердце' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.queryByText('Зажгите звезду.')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Вернуть своё сердце' }));
+    expect(readActions(topic)).toEqual([]);
+  });
+
   test.each(makeData().paths)('$name: врождённая черта видна до выбора пути', async (path) => {
     setupStore(makeData());
     await renderBook();

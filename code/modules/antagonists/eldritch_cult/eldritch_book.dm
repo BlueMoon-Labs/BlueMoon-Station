@@ -242,6 +242,7 @@
 		"combat_abilities" = combat_ability_data(heretic),
 		"ability_hotkey_help" = heretic.format_ability_hotkey_help(user.client?.prefs),
 		"deed" = heretic.deed_data(),
+		"preparation" = preparation_data(heretic),
 	)
 	if(book_style)
 		var/datum/eldritch_knowledge/base_knowledge = heretic.get_knowledge(book_style.knowledge[1])
@@ -358,6 +359,10 @@
 	if(!heretic || !user.is_holding(src) || user.incapacitated())
 		return FALSE
 	switch(action)
+		if("refresh_preparation")
+			return TRUE
+		if("call_heart")
+			return call_heart(user, heretic)
 		if("turn_page")
 			return turn_page(user)
 		if("research")

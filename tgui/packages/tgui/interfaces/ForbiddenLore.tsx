@@ -60,6 +60,14 @@ type Ritual = {
 
 type CombatAbility = { id: string; name: string; desc: string; usage: string; hotkey?: string | null };
 
+type Preparation = {
+  blade_ready: BooleanLike;
+  blade_status: string;
+  armor_ready: BooleanLike;
+  armor_status: string;
+  heart: { ready: BooleanLike; can_call: BooleanLike; status: string; action_label: string };
+};
+
 export type ForbiddenLoreData = {
   points: number;
   side_points?: number;
@@ -83,7 +91,8 @@ export type ForbiddenLoreData = {
   combat_resource: { name: string; value: number; max: number; description: string } | null;
   combat_abilities?: CombatAbility[];
   ability_hotkey_help?: string;
-  deed: { name: string; desc: string; hint: string; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
+  preparation?: Preparation | null;
+  deed: { name: string; desc: string; hint: string; next_step?: string; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
   hunt: {
     target_name: string | null;
     target_role: string | null;
@@ -392,6 +401,7 @@ const KnowledgeGuide = ({ selectKnowledge, selectAbility }: { selectKnowledge: (
   const abilities = data.combat_abilities || [];
   return (
     <aside className="HereticBook__guide" aria-label="Подсказки по развитию">
+      <PreparationSection compact />
       <DeedSection compact />
       {abilities.length > 0 && (
         <section aria-label="Доступные боевые способности">
@@ -413,7 +423,7 @@ const KnowledgeGuide = ({ selectKnowledge, selectAbility }: { selectKnowledge: (
           </div>
         </section>
       )}
-      {armor && (
+      {armor && !data.preparation && (
         <section aria-label="Стартовая броня">
           <h3>Стартовая броня</h3>
           <p>{armor.known
@@ -563,6 +573,32 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
   );
 };
 
+const PreparationSection = ({ heartOnly = false, compact = false }: { heartOnly?: boolean; compact?: boolean }) => {
+  const { data, act } = useLoreBackend();
+  const preparation = data.preparation;
+  if (!preparation) return null;
+  const entries = heartOnly ? [] : [
+    { name: 'Клинок', ready: preparation.blade_ready, status: preparation.blade_status },
+    { name: 'Броня', ready: preparation.armor_ready, status: preparation.armor_status },
+  ];
+  const content = (
+    <section aria-label={heartOnly ? 'Своё живое сердце' : 'Подготовка к охоте'}>
+      <h3>{heartOnly ? 'Своё живое сердце' : 'Подготовка к охоте'}</h3>
+      {entries.map((entry) => (
+        <p key={entry.name}><strong>{entry.ready ? '✓' : '○'} {entry.name}.</strong> {entry.status}</p>
+      ))}
+      <p><strong>{preparation.heart.ready ? '✓' : '○'} Сердце.</strong> {preparation.heart.status}</p>
+      <button type="button" className="HereticBook__inscribe" disabled={!preparation.heart.can_call} onClick={() => act('call_heart')}>
+        {preparation.heart.action_label}
+      </button>
+      <button type="button" className="HereticBook__guideLink" onClick={() => act('refresh_preparation')}>Проверить подготовку</button>
+    </section>
+  );
+  if (!compact) return content;
+  const ready = Number(!!preparation.blade_ready) + Number(!!preparation.armor_ready) + Number(!!preparation.heart.ready);
+  return <details><summary>Подготовка к охоте · {ready}/3</summary>{content}</details>;
+};
+
 const DeedSection = ({ compact = false }: { compact?: boolean }) => {
   const { data } = useLoreBackend();
   const deed = data.deed;
@@ -571,7 +607,8 @@ const DeedSection = ({ compact = false }: { compact?: boolean }) => {
   return (
     <section aria-label="Дело пути">
       <h3>{compact && 'Дело пути · '}{deed.name}</h3>
-      <LoreText text={deed.desc} />
+      {compact && !done && deed.next_step ? <p><strong>Следующий шаг:</strong> {deed.next_step}</p> : <LoreText text={deed.desc} />}
+      {!compact && !done && deed.next_step && <p><strong>Следующий шаг:</strong> {deed.next_step}</p>}
       {!compact && deed.hint && <p className="HereticBook__annotation">{deed.hint}</p>}
       <p>{done ? 'Завершено.' : <>Ступень <strong>{deed.tier + 1}</strong> из <strong>{deed.max_tier}</strong> · <strong>{deed.progress}</strong> из <strong>{deed.goal}</strong></>}</p>
       {compact && !done && <p>Завершите ступень, чтобы получить очко знаний.</p>}
@@ -613,6 +650,7 @@ const HuntChapter = ({ retargetDeadline }: { retargetDeadline: number }) => {
           {hunt.target_name ? 'Сменить цель' : 'Выбрать цель'}
         </button>
         {!canRetarget && <p className="HereticBook__annotation">Смена цели через {remaining} сек.</p>}
+        <PreparationSection heartOnly />
         <p className="HereticBook__annotation">Активируйте живое сердце в руке, чтобы узнать направление к цели. Alt-ЛКМ по сердцу позволяет сменить цель.</p>
         <h2>Дело пути</h2>
         <DeedSection />
@@ -669,6 +707,8 @@ const HelpChapter = () => {
         <p>Жертвоприношение длится 8 секунд. Живая цель даёт 2 очка знаний и 1 побочное, труп — только 1 очко знаний без побочного. Оба засчитываются для вознесения. Труп остаётся на месте для возможной реанимации; повторно принести ту же душу нельзя, даже после её оживления.</p>
         <p>На время обряда руна удерживает живую жертву и останавливает кровотечение. Перемещение жертвы или прерывание еретика срывает обряд. В Мансусе живой человек ищет дорогу домой: выйти можно через 30 секунд, а через 45 секунд он вернётся автоматически.</p>
         <p>Жертва помнит Дом и след на коже, но не может восстановить лицо, голос и имя похитителя по этому событию. Её более ранние знания сохраняются.</p>
+        <h3>Против культа крови</h3>
+        <p>Контактный стан культа крови сбивает еретика на 2 секунды, оглушает на 1 секунду и наносит 35 урона выносливости. Повторные попадания всё ещё опасны: после короткого оглушения можно ползти и применять предметы, если вы не истощены.</p>
         <h3>Вознесение</h3>
         <p>Совершите {data.hunt.sacrifices_required} жертвоприношений и изучите последнее знание пути. Для вознесения принесите на руну человеческие трупы: {data.hunt.ascension_bodies ?? 3}. Финальный обряд длится 30 секунд; его подношения не возвращаются. Каждая попытка объявляется станции, между началами попыток должно пройти три минуты. Выбранные тела подсвечиваются для вас зелёным.</p>
         <p>Станция заранее получает предупреждение об оккультной угрозе. Вознесение доступно не раньше чем через три минуты после этого предупреждения.</p>

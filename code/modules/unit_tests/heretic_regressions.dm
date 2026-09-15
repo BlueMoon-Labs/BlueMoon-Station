@@ -1,3 +1,36 @@
+/// Контакт культа оставляет здоровому еретику возможность ответить, сохраняя антимагию и обычные цели.
+/datum/unit_test/heretic_cult_stun_counterplay/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/victim = heretic.owner.current
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, get_step(victim, EAST))
+	var/datum/mind/mind = allocate_mind()
+	mind.current = user
+	user.mind = mind
+	var/datum/antagonist/cult/cult = allocate(/datum/antagonist/cult)
+	cult.owner = mind
+	mind.antag_datums = list(cult)
+	var/obj/item/melee/blood_magic/stun/hand = allocate(/obj/item/melee/blood_magic/stun)
+	hand.afterattack(victim, user, TRUE)
+	TEST_ASSERT(QDELETED(hand), "Попадание расходует подготовленную руку.")
+	TEST_ASSERT(victim.getStaminaLoss() > 0 && victim.getStaminaLoss() < 50, "Одно попадание истощает, но не отправляет здорового еретика в глубокий stamina-crit.")
+	TEST_ASSERT(victim.IsStun() && victim.IsKnockdown(), "Стан временно мешает двигаться и действовать.")
+	var/datum/status_effect/incapacitating/stun/stun = victim.IsStun()
+	TEST_ASSERT(wait_for_qdeleted(stun, 1.5 SECONDS), "Короткое оглушение заканчивается.")
+	TEST_ASSERT(CHECK_MOBILITY(victim, MOBILITY_MOVE | MOBILITY_USE), "Еретик может ползти и применять предметы.")
+	var/datum/status_effect/incapacitating/knockdown/fall = victim.IsKnockdown()
+	TEST_ASSERT(wait_for_qdeleted(fall, 3 SECONDS), "Еретик снова может встать.")
+	victim.setStaminaLoss(0)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 2)
+	hand = allocate(/obj/item/melee/blood_magic/stun)
+	hand.afterattack(victim, user, TRUE)
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 0, "Антимагия по-прежнему блокирует эффект.")
+	TEST_ASSERT(!victim.IsStun() && !victim.IsKnockdown(), "Защищённая цель не получает контроль.")
+	TEST_ASSERT_EQUAL(protection.charges, 1, "Антимагия расходует один заряд.")
+	var/mob/living/carbon/human/ordinary = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	hand = allocate(/obj/item/melee/blood_magic/stun)
+	hand.afterattack(ordinary, user, TRUE)
+	TEST_ASSERT(ordinary.getStaminaLoss() >= 100, "Стан по обычной цели сохраняет прежнюю силу.")
+
 /// Хватка прерывает действия, затем оставляет короткое падение; антимагия блокирует оба эффекта.
 /datum/unit_test/heretic_mansus_grasp_knockdown/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

@@ -637,7 +637,14 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_target(atom/target, mob/user, silent)
-	return heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите живого противника без защиты от магии.")
+	if(!heretic_check(user, isliving(target), silent, "Укажите самого противника: предметы и пол не подходят для выпада."))
+		return FALSE
+	var/mob/living/victim = target
+	if(!heretic_check(user, victim.stat != DEAD, silent, "Выпад нельзя направить на мёртвую цель."))
+		return FALSE
+	if(!heretic_check(user, victim != user && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выпад нельзя направить на себя или другого служителя Мансуса."))
+		return FALSE
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии. Выпад её не достанет.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_cast(mob/user, skipcharge, silent)
 	if(!..() || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/spell/blade_lunge) || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_blade, 1))

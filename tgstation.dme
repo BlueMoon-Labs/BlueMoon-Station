@@ -2190,6 +2190,8 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\ability_hotkeys.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\flesh.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\deeds.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\preparation.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\cult_resistance.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\blade.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\moon.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\cosmic.dm"

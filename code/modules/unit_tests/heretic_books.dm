@@ -1,3 +1,61 @@
+/// Подготовка различает изученный рецепт, доступные вещи и надетую защиту.
+/datum/unit_test/heretic_book_preparation/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.selected_path = PATH_BLADE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blade)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/armor)
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	var/list/data = book.preparation_data(heretic)
+	TEST_ASSERT(!data["blade_ready"] && !data["armor_ready"], "Изученные рецепты не означают наличие экипировки.")
+	var/obj/item/melee/sickly_blade/duelist/blade = allocate(/obj/item/melee/sickly_blade/duelist, user)
+	data = book.preparation_data(heretic)
+	TEST_ASSERT(!data["blade_ready"], "Чужой тёмный клинок не подходит.")
+	blade.bound_mind = heretic.owner
+	var/obj/item/clothing/suit/hooded/cultrobes/eldritch/robes = allocate(/obj/item/clothing/suit/hooded/cultrobes/eldritch)
+	TEST_ASSERT(user.equip_to_slot_if_possible(robes, ITEM_SLOT_OCLOTHING), "Мантия надета.")
+	data = book.preparation_data(heretic)
+	TEST_ASSERT(data["blade_ready"] && !data["armor_ready"], "Клинок доступен, но капюшон ещё не поднят.")
+	robes.ToggleHood()
+	data = book.preparation_data(heretic)
+	TEST_ASSERT(data["armor_ready"], "Поднятый капюшон завершает подготовку брони.")
+	blade.forceMove(run_loc_floor_top_right)
+	data = book.preparation_data(heretic)
+	TEST_ASSERT(!data["blade_ready"], "Утраченный клинок больше не отмечается готовым.")
+
+/// Кнопка книги вызывает своё сердце и не прячет его при запоздалом повторном нажатии.
+/datum/unit_test/heretic_book_call_heart/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	TEST_ASSERT(user.put_in_hands(book), "Книга в руке.")
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart)
+	heart.bind(heretic.owner)
+	heart.moveToNullspace()
+	heretic.summon_items += heart
+	var/list/data = book.heart_preparation_data(heretic)
+	TEST_ASSERT(data["can_call"] && !data["ready"], "Сердце за завесой доступно для призыва.")
+	TEST_ASSERT(book.call_heart(user, heretic), "Книга принимает призыв.")
+	TEST_ASSERT(heart in user.held_items, "Сердце оказывается в руке через обычную способность.")
+	TEST_ASSERT(book.call_heart(user, heretic), "Запоздалый повторный запрос безопасен.")
+	TEST_ASSERT(heart in user.held_items, "Кнопка призыва не прячет уже доступное сердце.")
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	user.dropItemToGround(heart)
+	TEST_ASSERT(other.put_in_hands(heart), "Другой человек забрал сердце.")
+	data = book.heart_preparation_data(heretic)
+	TEST_ASSERT(!data["can_call"] && !data["ready"], "Удерживаемое другим человеком сердце недоступно.")
+	book.call_heart(user, heretic)
+	TEST_ASSERT(heart in other.held_items, "Книга не отбирает сердце из чужой руки.")
+	TEST_ASSERT(!book.call_heart(other, heretic), "Чужое тело не вызывает способность владельца.")
+
+/// Подсказка следующего действия существует у каждого зарегистрированного пути.
+/datum/unit_test/heretic_deed_next_steps/Run()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		var/datum/heretic_deed/deed = allocate(path.deed_type)
+		TEST_ASSERT(length(deed.next_step), "Путь [path_id] объясняет конкретное следующее действие.")
+
 /// У каждого пути своя книга с полными анимациями, названием и звуками.
 /datum/unit_test/heretic_books_catalog/Run()
 	var/list/covers = list()
