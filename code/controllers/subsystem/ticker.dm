@@ -572,6 +572,7 @@ SUBSYSTEM_DEF(ticker)
 				if (living.client.prefs.chat_toggles & CHAT_OOC)
 					living.client.prefs.chat_toggles ^= CHAT_OOC
 			living.client.init_verbs()
+			living.client.show_spawn_text_overlay()
 		livings += living
 	if(livings.len)
 		addtimer(CALLBACK(src, PROC_REF(release_characters), livings), 30, TIMER_CLIENT_TIME)
