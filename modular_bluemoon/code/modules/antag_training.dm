@@ -80,6 +80,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	var/list/zones = list()
 	var/list/datum/weakref/created_atoms = list()
 	var/list/datum/weakref/issued_items = list()
+	var/list/datum/weakref/placed_structures = list()
 	var/datum/turf_reservation/reservation
 	var/datum/space_level/private_level
 	var/area/antag_training/room
@@ -176,6 +177,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 			yield_work()
 	QDEL_LIST(targets)
 	issued_items.Cut()
+	placed_structures.Cut()
 	if(reservation)
 		SSmapping.used_turfs -= reservation.reserved_turfs
 		for(var/turf/tile as anything in reservation.reserved_turfs)

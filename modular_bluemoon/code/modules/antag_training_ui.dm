@@ -13,11 +13,18 @@
 		ui.open()
 
 /datum/antag_training_session/ui_static_data(mob/user)
-	var/list/data = list("target_limit" = ANTAG_TRAINING_TARGET_LIMIT, "supply_limit" = ANTAG_TRAINING_SUPPLY_LIMIT)
+	var/list/data = list("target_limit" = ANTAG_TRAINING_TARGET_LIMIT, "supply_limit" = ANTAG_TRAINING_SUPPLY_LIMIT, "structure_limit" = ANTAG_TRAINING_STRUCTURE_LIMIT)
 	data["equipment"] = list()
 	for(var/equipment_id in GLOB.antag_training_equipment)
 		var/list/equipment = GLOB.antag_training_equipment[equipment_id]
-		data["equipment"] += list(list("id" = equipment_id, "name" = equipment["name"], "category" = equipment["category"]))
+		data["equipment"] += list(list("id" = equipment_id, "name" = equipment["name"], "category" = equipment["category"], "desc" = equipment["desc"]))
+	data["structures"] = list()
+	for(var/structure_id in GLOB.antag_training_structures)
+		var/list/template = GLOB.antag_training_structures[structure_id]
+		data["structures"] += list(list("id" = structure_id, "name" = template["name"], "category" = template["category"], "desc" = template["desc"]))
+	data["injuries"] = list()
+	for(var/injury_id in GLOB.antag_training_injuries)
+		data["injuries"] += list(list("id" = injury_id, "name" = GLOB.antag_training_injuries[injury_id]["name"]))
 	data["creatures"] = list()
 	for(var/template_id in GLOB.antag_training_creatures)
 		data["creatures"] += list(list("id" = template_id, "name" = GLOB.antag_training_creatures[template_id]["name"]))
@@ -30,6 +37,8 @@
 	arena.prune_targets()
 	arena.prune_supplies()
 	var/list/data = list("program" = program.name, "program_id" = "[program.type]", "auto_recover" = auto_recover, "health" = current_body.health, "max_health" = current_body.maxHealth, "busy" = arena.resetting, "supply_count" = arena.supply_count, "cleaning_personal" = cleaning_personal)
+	data["structure_count"] = length(arena.placed_structures)
+	data["build_error"] = arena.construction_error(get_step(current_body, current_body.dir))
 	var/list/member_counts = list()
 	var/list/target_counts = list()
 	data["members"] = list()
@@ -79,6 +88,8 @@
 			INVOKE_ASYNC(src, PROC_REF(clear_personal_entities))
 		if("equipment")
 			issue_equipment(params["id"], usr)
+		if("build")
+			build_structure(params["id"], usr)
 		if("spawn")
 			if(world.time < arena.next_spawn_at)
 				return FALSE
@@ -97,12 +108,14 @@
 				return FALSE
 			next_heal_at = world.time + 1 SECONDS
 			heal_self()
-		if("target_heal", "target_delete", "target_hunt")
+		if("target_heal", "target_delete", "target_hunt", "target_injure")
 			var/mob/living/target = locate(params["id"]) in arena.targets
 			if(!can_manage_target(target) || get_area(target) != arena.room)
 				return FALSE
 			if(action == "target_heal")
 				target.revive(full_heal = TRUE, admin_revive = TRUE)
+			else if(action == "target_injure")
+				injure_target(target, params["injury"])
 			else if(action == "target_hunt" && ishuman(target))
 				program.target_created(src, target)
 			else if(action == "target_delete")

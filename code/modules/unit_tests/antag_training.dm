@@ -562,3 +562,104 @@
 	TEST_ASSERT(QDELETED(body) && QDELETED(soul) && QDELETED(brain), "Тело, разум и мозг удаляются при выходе.")
 	TEST_ASSERT_NULL(body.mind, "Учебное тело отпускает удалённый разум.")
 	TEST_ASSERT_NULL(brain.brainmob, "Очистка не создаёт нового моба внутри удаляемого мозга.")
+
+/// Мастерская создаёт только каталог, учитывает лимиты и сохраняет изоляцию объектов.
+/datum/unit_test/antag_training_workshop/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/mob/living/user = session.current_body
+	TEST_ASSERT_NULL(session.build_structure("table", user), "В центре установка запрещена.")
+	user.forceMove(arena.zones["melee"]["spawn"])
+	user.setDir(NORTH)
+	TEST_ASSERT_NULL(session.build_structure("/obj/machinery/nuclearbomb", user), "Произвольный тип не принимается.")
+	var/turf/destination = get_step(user, NORTH)
+	var/obj/structure/chair/obstacle = new(destination)
+	TEST_ASSERT_NULL(session.build_structure("table", user), "Занятая клетка не застраивается.")
+	qdel(obstacle)
+	for(var/structure_id in GLOB.antag_training_structures)
+		session.next_supply_at = 0
+		var/obj/placed = session.build_structure(structure_id, user)
+		TEST_ASSERT(placed, "Создаётся [structure_id].")
+		TEST_ASSERT_EQUAL(get_turf(placed), destination, "Объект ставится перед участником.")
+		TEST_ASSERT_EQUAL(placed.training_owner?.resolve(), session, "Объект принадлежит создателю.")
+		TEST_ASSERT_EQUAL(placed.training_origin?.resolve(), arena, "Объект привязан к полигону.")
+		TEST_ASSERT(!placed.forceMove(run_loc_floor_bottom_left), "Объект не выходит на станцию.")
+		TEST_ASSERT_EQUAL(arena.supply_count, 1, "Установка занимает место в общем лимите.")
+		qdel(placed)
+		arena.prune_supplies()
+		TEST_ASSERT_EQUAL(length(arena.placed_structures), 0, "Удаление освобождает лимит мастерской.")
+		TEST_ASSERT_EQUAL(arena.supply_count, 0, "Удаление освобождает общий лимит.")
+	for(var/index in 1 to ANTAG_TRAINING_STRUCTURE_LIMIT)
+		session.next_supply_at = 0
+		var/obj/placed = session.build_structure("chair", user)
+		TEST_ASSERT(placed, "Создаются объекты в пределах квоты.")
+		placed.moveToNullspace()
+	session.next_supply_at = 0
+	TEST_ASSERT_NULL(session.build_structure("chair", user), "Превышение квоты отклоняется сервером.")
+	TEST_ASSERT(session.clear_personal_entities(), "Личная очистка завершена.")
+	TEST_ASSERT_EQUAL(length(arena.placed_structures), 0, "Личная очистка находит объекты в nullspace.")
+	TEST_ASSERT(session.build_structure("chair", user), "После очистки доступна новая установка.")
+	TEST_ASSERT_NULL(session.build_structure("table", user), "Быстрая повторная выдача ограничена.")
+	session.next_supply_at = 0
+	arena.resetting = TRUE
+	var/obj/during_reset = session.build_structure("table", user)
+	arena.resetting = FALSE
+	TEST_ASSERT_NULL(during_reset, "Во время сброса установка запрещена.")
+
+/// Личная очистка не удаляет созданную мебель, пока на ней сидит другой участник.
+/datum/unit_test/antag_training_occupied_furniture/Run()
+	var/datum/antag_training_session/creator = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(creator.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_session/guest = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(guest.prepare(), "Второй участник входит.")
+	creator.current_body.forceMove(creator.arena.zones["melee"]["spawn"])
+	creator.current_body.setDir(NORTH)
+	var/obj/structure/chair/chair = creator.build_structure("chair", creator.current_body)
+	TEST_ASSERT(chair, "Создан стул.")
+	guest.current_body.forceMove(get_turf(chair))
+	TEST_ASSERT(chair.buckle_mob(guest.current_body), "Гость садится на стул.")
+	TEST_ASSERT(creator.clear_personal_entities(), "Личная очистка завершена.")
+	TEST_ASSERT(!QDELETED(chair), "Занятый стул сохраняется.")
+	chair.unbuckle_mob(guest.current_body)
+	TEST_ASSERT(creator.clear_personal_entities(), "Повторная очистка завершена.")
+	TEST_ASSERT(QDELETED(chair), "Свободный стул удаляется.")
+
+/// Повреждения задаются своей живой учебной цели и не затрагивают участников.
+/datum/unit_test/antag_training_patient/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_session/guest = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(guest.prepare(), "Второй участник входит.")
+	var/mob/living/target = session.arena.spawn_creature("human", "laboratory", creator = session)
+	TEST_ASSERT(target, "Создан пациент.")
+	TEST_ASSERT(!guest.injure_target(target, "brute"), "Другой участник не меняет чужую цель.")
+	TEST_ASSERT(!session.injure_target(target, "unknown"), "Неизвестный вид повреждения отклоняется.")
+	TEST_ASSERT(!session.injure_target(session.current_body, "brute"), "Свой персонаж не становится пациентом пульта.")
+	for(var/injury_id in GLOB.antag_training_injuries)
+		target.revive(full_heal = TRUE, admin_revive = TRUE)
+		var/list/injury = GLOB.antag_training_injuries[injury_id]
+		TEST_ASSERT(session.injure_target(target, injury_id), "Применяется [injury_id].")
+		TEST_ASSERT_EQUAL(target.get_damage_amount(injury["type"]), injury["amount"], "Количество урона совпадает с описанием.")
+	target.death()
+	TEST_ASSERT(!session.injure_target(target, "burn"), "Мёртвую цель сначала нужно восстановить.")
+	target.revive(full_heal = TRUE, admin_revive = TRUE)
+	guest.avatar_mind.transfer_to(target)
+	TEST_ASSERT(!session.injure_target(target, "burn"), "После переноса разума участник защищён от подготовки пациента.")
+
+/// После строительства и сброса в каждом секторе сохраняется пригодный для дыхания воздух.
+/datum/unit_test/antag_training_air/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_arena/arena = session.arena
+	for(var/zone_id in arena.zones)
+		var/turf/open/tile = arena.zones[zone_id]["spawn"]
+		TEST_ASSERT(tile.air.return_pressure() >= ONE_ATMOSPHERE * 0.8, "В секторе [zone_id] есть воздух после строительства.")
+	sleep(5 SECONDS)
+	for(var/zone_id in arena.zones)
+		var/turf/open/tile = arena.zones[zone_id]["spawn"]
+		TEST_ASSERT(tile.air.return_pressure() >= ONE_ATMOSPHERE * 0.8, "В секторе [zone_id] воздух не уходит в космос.")
+	var/turf/open/laboratory = arena.zones["laboratory"]["spawn"]
+	laboratory.air.clear()
+	TEST_ASSERT(arena.reset_zone("laboratory"), "Сектор сбрасывается.")
+	TEST_ASSERT(laboratory.air.return_pressure() >= ONE_ATMOSPHERE * 0.8, "Сброс восстанавливает воздух сектора.")

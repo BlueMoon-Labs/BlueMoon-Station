@@ -21,6 +21,18 @@
   &__hint { color: #a3b6c2; padding: 16px 2px 0; line-height: 1.5; }
   &__hint > .Icon { margin-right: 6px; }
   &__equipment { background: #1d2b36; border-bottom: 1px solid #3d4f5b; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  &__catalogIcon { font-size: 20px; color: #94c8bf; width: 26px; flex-shrink: 0; text-align: center; }
+  &__catalogText { flex: 1; min-width: 0; line-height: 1.4; }
+  &__equipment > .Button { flex-shrink: 0; }
+  &__categories { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 8px; }
+  &__categories > .Button { margin: 0; }
+  &__workshopIntro { display: flex; gap: 16px; align-items: center; padding: 0 0 16px; line-height: 1.5; }
+  &__workshopIntro > .Icon { font-size: 28px; color: #a3d7cc; }
+  &__placement { padding: 12px; margin-bottom: 14px; background: #203b34; border-left: 3px solid #79bcb2; line-height: 1.5; }
+  &__placement > .Icon, &__targetHint > .Icon { margin-right: 8px; }
+  &__placement--blocked { background: #322f26; border-color: #c5aa6b; }
+  &__targetHint { margin: 4px 0 16px; color: #adbdc8; line-height: 1.5; }
+  &__injuries { border-top: 1px solid #3d4f5b; padding: 10px 0; margin-bottom: 4px; }
   &__target, &__member { background: #1d2b36; padding: 14px; border: 1px solid #3d4f5b; }
   &__member--self { border-left: 3px solid #79bcb2; }
   &__damage { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 12px 0; line-height: 1.6; }
@@ -33,7 +45,7 @@
 @media (max-width: 700px) {
   .AntagTraining {
     &__header, &__body { padding: 12px; }
-    &__tabs { padding: 8px 8px 0; font-size: 12px; }
+    &__tabs { padding: 8px 8px 0; font-size: 12px; overflow-x: auto; white-space: nowrap; }
     &__title { font-size: 19px; }
     &__map, &__catalog { grid-template-columns: 1fr; }
   }

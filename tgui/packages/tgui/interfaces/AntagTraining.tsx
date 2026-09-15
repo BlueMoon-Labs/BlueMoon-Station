@@ -6,6 +6,7 @@ import { Box, Button, Dropdown, Icon, Input, NoticeBox, ProgressBar, Section, St
 import { Window } from '../layouts';
 
 type Choice = { id: string; name: string };
+type CatalogEntry = Choice & { category: string; desc?: string | null };
 type Zone = Choice & { desc: string; current: BooleanLike; members: number; targets: number };
 type Target = Choice & {
   health: number;
@@ -30,6 +31,9 @@ export type AntagTrainingData = {
   target_limit: number;
   supply_count: number;
   supply_limit: number;
+  structure_count: number;
+  structure_limit: number;
+  build_error: string | null;
   busy: BooleanLike;
   cleaning_personal: BooleanLike;
   reset_vote: { zone: string; approved: number; total: number; remaining: number; voted: BooleanLike } | null;
@@ -44,7 +48,9 @@ export type AntagTrainingData = {
     self: BooleanLike;
   })[];
   zones: Zone[];
-  equipment: (Choice & { category: string })[];
+  equipment: CatalogEntry[];
+  structures: CatalogEntry[];
+  injuries: Choice[];
   creatures: Choice[];
   targets: Target[];
   programs: Choice[];
@@ -58,6 +64,7 @@ const sectorIcons: Record<string, string> = {
 const tabs = [
   { name: 'Зоны', icon: 'map' },
   { name: 'Снаряжение', icon: 'toolbox' },
+  { name: 'Мастерская', icon: 'hammer' },
   { name: 'Цели', icon: 'crosshairs' },
   { name: 'Моя роль', icon: 'user-gear' },
   { name: 'Участники', icon: 'users' },
@@ -109,6 +116,7 @@ export const AntagTraining = () => {
           {!!data.busy && <NoticeBox>Сектор восстанавливается. Подождите завершения работ.</NoticeBox>}
           {tab === 'Зоны' && <TrainingZones />}
           {tab === 'Снаряжение' && <TrainingEquipment />}
+          {tab === 'Мастерская' && <TrainingWorkshop />}
           {tab === 'Цели' && <TrainingTargets />}
           {tab === 'Моя роль' && <TrainingProgram />}
           {tab === 'Участники' && <TrainingMembers />}
@@ -153,24 +161,65 @@ const TrainingZones = () => {
 
 const TrainingEquipment = () => {
   const { act, data } = useBackend<AntagTrainingData>();
-  const [search, setSearch] = useState('');
-  const [category, setCategory] = useState('Все');
-  const categories = ['Все', ...new Set(data.equipment.map((item) => item.category))];
-  const items = data.equipment.filter((item) => (category === 'Все' || item.category === category) && item.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
+  return <TrainingCatalog entries={data.equipment} blocked={!!data.busy || data.supply_count >= data.supply_limit} onCreate={(id) => act('equipment', { id })} />;
+};
+
+const categoryIcons: Record<string, string> = {
+  'Ближний бой': 'hand-fist', 'Стрельба': 'crosshairs', 'Защита': 'shield-halved',
+  'Инструменты': 'screwdriver-wrench', 'Медицина': 'briefcase-medical', 'Материалы': 'layer-group',
+  'Химия': 'flask', 'Сборка машин': 'microchip', 'Обстановка': 'chair',
+  'Преграды': 'door-open', 'Оборудование': 'gears', 'Медицина и химия': 'flask',
+};
+
+const TrainingWorkshop = () => {
+  const { act, data } = useBackend<AntagTrainingData>();
   return (
     <>
-      <Section title="Снаряжение" buttons={<Box color="label">Выдано {data.supply_count} / {data.supply_limit}</Box>}>
-        <Input fluid placeholder="Найти оружие, инструмент или материал…" value={search} onInput={(_, value) => setSearch(value)} />
-        <Box mt={1}>
-          {categories.map((name) => <Button key={name} mb={0.5} selected={category === name} onClick={() => setCategory(name)}>{name}</Button>)}
-        </Box>
-        <Box color="label" mt={0.5}>Предмет появится на полу рядом с вами. Удаление предметов и сброс сектора освобождают лимит.</Box>
+      <div className="AntagTraining__workshopIntro">
+        <Icon name="hammer" />
+        <div>
+          <Box bold fontSize={1.2}>Соберите свой испытательный стенд</Box>
+          <Box color="label" mt={0.5}>Повернитесь к свободной клетке в секторе и установите объект перед собой. Инструменты, платы и материалы — во вкладке «Снаряжение».</Box>
+        </div>
+      </div>
+      <div className={`AntagTraining__placement${data.build_error ? ' AntagTraining__placement--blocked' : ''}`}>
+        <Icon name={data.build_error ? 'circle-info' : 'check'} />
+        {data.build_error || 'Место перед вами свободно. Можно устанавливать.'}
+      </div>
+      <TrainingCatalog workshop entries={data.structures} blocked={!!data.busy || !!data.build_error || data.structure_count >= data.structure_limit || data.supply_count >= data.supply_limit} onCreate={(id) => act('build', { id })} />
+      <Section title="Убрать после опыта" mt={1.5}>
+        <Box color="label" mb={1}>Личная очистка убирает ваши объекты и оборудование. Вещи, переданные другим участникам, и занятые ими объекты сохраняются.</Box>
+        <Button.Confirm icon="broom" disabled={!!data.busy || !!data.cleaning_personal} content={data.cleaning_personal ? 'Очистка…' : 'Очистить своё'} confirmContent="Удалить свои объекты?" onClick={() => act('clean_personal')} />
+      </Section>
+    </>
+  );
+};
+
+const TrainingCatalog = (props: { entries: CatalogEntry[]; workshop?: boolean; blocked: boolean; onCreate: (id: string) => void }) => {
+  const { data } = useBackend<AntagTrainingData>();
+  const { entries, workshop, blocked, onCreate } = props;
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('Все');
+  const categories = ['Все', ...new Set(entries.map((item) => item.category))];
+  const items = entries.filter((item) => (category === 'Все' || item.category === category) && `${item.name} ${item.category} ${item.desc || ''}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
+  return (
+    <>
+      <Section title={workshop ? 'Объекты для установки' : 'Снаряжение'} buttons={<Box color="label">{workshop ? `Установлено ${data.structure_count} / ${data.structure_limit}` : `Выдано ${data.supply_count} / ${data.supply_limit}`}</Box>}>
+        <Input fluid placeholder={workshop ? 'Найти объект или занятие: операции, химия, ремонт…' : 'Найти оружие, инструмент или материал…'} value={search} onInput={(_, value) => setSearch(value)} />
+        <div className="AntagTraining__categories">
+          {categories.map((name) => <Button key={name} icon={categoryIcons[name]} selected={category === name} onClick={() => setCategory(name)}>{name}</Button>)}
+        </div>
+        <Stack justify="space-between" wrap mt={0.5}>
+          <Stack.Item grow color="label">{workshop ? 'Общий лимит учитывает и предметы, и установленные объекты.' : 'Предмет появится на полу рядом с вами. Уборка освобождает лимит.'}</Stack.Item>
+          <Stack.Item color="label">Найдено: {items.length}</Stack.Item>
+        </Stack>
       </Section>
       <div className="AntagTraining__catalog">
         {items.map((item) => (
           <div key={item.id} className="AntagTraining__equipment">
-            <div><Box bold>{item.name}</Box><Box color="label" mt={0.5}>{item.category}</Box></div>
-            <Button icon="plus" disabled={!!data.busy || data.supply_count >= data.supply_limit} onClick={() => act('equipment', { id: item.id })}>Выдать</Button>
+            <Icon className="AntagTraining__catalogIcon" name={categoryIcons[item.category] || 'cube'} />
+            <div className="AntagTraining__catalogText"><Box bold>{item.name}</Box><Box color="label" mt={0.5}>{item.desc || item.category}</Box></div>
+            <Button icon={workshop ? 'hammer' : 'plus'} disabled={blocked} onClick={() => onCreate(item.id)}>{workshop ? 'Установить' : 'Выдать'}</Button>
           </div>
         ))}
       </div>
@@ -196,6 +245,7 @@ const TrainingTargets = () => {
         </Stack>
         <Box mt={1} color="label">Человеческие цели неподвижны: подходят для ритуалов, оружия и медицины. Включённый ИИ действует у животных и оперативников.</Box>
       </Section>
+      <Box className="AntagTraining__targetHint"><Icon name="briefcase-medical" /> Для медицинской практики создайте человека, задайте повреждения и лечите обычными средствами. Повторное применение добавляет урон; «Исцелить» восстанавливает цель. Пациента можно перетащить на стол из мастерской.</Box>
       <div className="AntagTraining__catalog">
         {data.targets.map((target) => (
           <div key={target.id} className="AntagTraining__target">
@@ -205,6 +255,12 @@ const TrainingTargets = () => {
             <div className="AntagTraining__damage">
               {[['Физический', target.brute], ['Ожоги', target.burn], ['Токсины', target.toxin], ['Кислород', target.oxygen]].map(([name, value]) => <div key={name}><Box color="label">{name}</Box><Box bold>{Math.round(Number(value))}</Box></div>)}
             </div>
+            {!!target.human && (
+              <div className="AntagTraining__injuries">
+                <Box color="label" mb={0.5}>Добавить повреждения</Box>
+                {data.injuries.map((injury) => <Button key={injury.id} disabled={!!data.busy || !target.can_manage || !!target.dead} onClick={() => act('target_injure', { id: target.id, injury: injury.id })}>{injury.name}</Button>)}
+              </div>
+            )}
             <Box>
               {!!target.human && data.options.length > 0 && <Button icon="crosshairs" disabled={!!data.busy || !target.can_manage} onClick={() => act('target_hunt', { id: target.id })}>Цель охоты</Button>}
               <Button icon="heart" disabled={!!data.busy || !target.can_manage} onClick={() => act('target_heal', { id: target.id })}>Исцелить</Button>

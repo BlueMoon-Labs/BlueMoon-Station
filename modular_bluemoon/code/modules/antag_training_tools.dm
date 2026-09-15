@@ -36,7 +36,47 @@ GLOBAL_LIST_INIT(antag_training_equipment, list(
 	"glass" = list("name" = "Стекло — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/glass, "amount" = 50),
 	"plasteel" = list("name" = "Пласталь — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/plasteel, "amount" = 50),
 	"wood" = list("name" = "Дерево — 50 досок", "category" = "Материалы", "type" = /obj/item/stack/sheet/mineral/wood, "amount" = 50),
-	"cable" = list("name" = "Кабель — 30 отрезков", "category" = "Материалы", "type" = /obj/item/stack/cable_coil, "amount" = 30)
+	"cable" = list("name" = "Кабель — 30 отрезков", "category" = "Материалы", "type" = /obj/item/stack/cable_coil, "amount" = 30),
+	"rods" = list("name" = "Прутья — 50 штук", "category" = "Материалы", "type" = /obj/item/stack/rods, "amount" = 50),
+	"rglass" = list("name" = "Армированное стекло — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/rglass, "amount" = 50),
+	"plastic" = list("name" = "Пластик — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/plastic, "amount" = 50),
+	"defibrillator" = list("name" = "Дефибриллятор с батареей", "category" = "Медицина", "desc" = "Для практики реанимации. Медицинский анализатор поможет проверить состояние тела.", "type" = /obj/item/defibrillator/loaded),
+	"burn_kit" = list("name" = "Аптечка от ожогов", "category" = "Медицина", "type" = /obj/item/storage/firstaid/fire),
+	"toxin_kit" = list("name" = "Аптечка от отравления", "category" = "Медицина", "type" = /obj/item/storage/firstaid/toxin),
+	"oxygen_kit" = list("name" = "Аптечка от кислородного голодания", "category" = "Медицина", "type" = /obj/item/storage/firstaid/o2),
+	"dropper" = list("name" = "Пипетка", "category" = "Химия", "desc" = "Перенос небольших доз реагентов между ёмкостями.", "type" = /obj/item/reagent_containers/dropper),
+	"dispenser_board" = list("name" = "Плата химраздатчика", "category" = "Сборка машин", "desc" = "Установите в каркас машины. Каркас подскажет, каких деталей не хватает.", "type" = /obj/item/circuitboard/machine/chem_dispenser),
+	"chemmaster_board" = list("name" = "Плата ChemMaster", "category" = "Сборка машин", "type" = /obj/item/circuitboard/machine/chem_master),
+	"recharger_board" = list("name" = "Плата зарядной станции", "category" = "Сборка машин", "type" = /obj/item/circuitboard/machine/recharger),
+	"capacitor" = list("name" = "Конденсатор", "category" = "Сборка машин", "type" = /obj/item/stock_parts/capacitor),
+	"manipulator" = list("name" = "Манипулятор", "category" = "Сборка машин", "type" = /obj/item/stock_parts/manipulator),
+	"matter_bin" = list("name" = "Ёмкость материи", "category" = "Сборка машин", "type" = /obj/item/stock_parts/matter_bin),
+	"micro_laser" = list("name" = "Микролазер", "category" = "Сборка машин", "type" = /obj/item/stock_parts/micro_laser),
+	"cell" = list("name" = "Батарея высокой ёмкости", "category" = "Сборка машин", "type" = /obj/item/stock_parts/cell/high)
+))
+
+GLOBAL_LIST_INIT(antag_training_structures, list(
+	"table" = list("name" = "Стол", "category" = "Обстановка", "desc" = "Разместить инструменты, проверить укрытие и взаимодействие с предметами.", "type" = /obj/structure/table),
+	"rack" = list("name" = "Стеллаж", "category" = "Обстановка", "desc" = "Хранение предметов и практика разборки.", "type" = /obj/structure/rack),
+	"closet" = list("name" = "Шкаф", "category" = "Обстановка", "desc" = "Проверка укрытия, захватов и взаимодействия с содержимым.", "type" = /obj/structure/closet),
+	"bed" = list("name" = "Кровать", "category" = "Обстановка", "desc" = "Пристёгивание, перенос пациентов и осмотр лежащего персонажа.", "type" = /obj/structure/bed),
+	"chair" = list("name" = "Стул", "category" = "Обстановка", "desc" = "Пристёгивание, перемещение и ближний бой.", "type" = /obj/structure/chair),
+	"window" = list("name" = "Полноразмерное окно", "category" = "Преграды", "desc" = "Проверка ударов, стрельбы, ремонта и демонтажа.", "type" = /obj/structure/window/fulltile),
+	"grille" = list("name" = "Решётка", "category" = "Преграды", "desc" = "Преграда для проверки инструментов и снарядов.", "type" = /obj/structure/grille),
+	"airlock" = list("name" = "Шлюз", "category" = "Преграды", "desc" = "Практика работы с проводами, взлома и разборки шлюза.", "type" = /obj/machinery/door/airlock),
+	"frame" = list("name" = "Каркас машины", "category" = "Оборудование", "desc" = "Соберите машину сами: кабель, платы и детали есть в снаряжении.", "type" = /obj/structure/frame),
+	"recharger" = list("name" = "Зарядная станция", "category" = "Оборудование", "desc" = "Зарядка энергетического оружия и электродубинок.", "type" = /obj/machinery/recharger),
+	"operating_table" = list("name" = "Операционный стол", "category" = "Медицина и химия", "desc" = "Для операций: перетащите пациента на стол и возьмите хирургические инструменты.", "type" = /obj/structure/table/optable),
+	"sleeper" = list("name" = "Слипер", "category" = "Медицина и химия", "desc" = "Помощь пациенту и проверка медицинских препаратов.", "type" = /obj/machinery/sleeper),
+	"chem_dispenser" = list("name" = "Химраздатчик", "category" = "Медицина и химия", "desc" = "Смешивание реагентов по рецептам. Стаканы и пипетки есть в снаряжении.", "type" = /obj/machinery/chem_dispenser),
+	"chem_master" = list("name" = "ChemMaster", "category" = "Медицина и химия", "desc" = "Разделение смесей и изготовление таблеток и бутылочек.", "type" = /obj/machinery/chem_master)
+))
+
+GLOBAL_LIST_INIT(antag_training_injuries, list(
+	"brute" = list("name" = "Ушибы: +40", "type" = BRUTE, "amount" = 40),
+	"burn" = list("name" = "Ожоги: +40", "type" = BURN, "amount" = 40),
+	"toxin" = list("name" = "Токсины: +30", "type" = TOX, "amount" = 30),
+	"oxygen" = list("name" = "Кислородный урон: +40", "type" = OXY, "amount" = 40)
 ))
 
 GLOBAL_LIST_INIT(antag_training_creatures, list(
@@ -83,10 +123,6 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 			break
 		tile = tile.ChangeTurf(is_wall && !is_door ? /turf/closed/indestructible : /turf/open/floor/plating)
 		tile.color = null
-		if(isopenturf(tile))
-			var/turf/open/floor = tile
-			floor.air.copy_from_turf(floor)
-			floor.air_update_turf(FALSE, FALSE)
 		if(is_door)
 			new /obj/structure/antag_training_barrier(tile, src)
 	if(!zone_id || zone_id == "pve")
@@ -116,6 +152,13 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 				new /obj/machinery/door/airlock(locate(column + 4, row + 2, private_level.z_value))
 				var/turf/marker = locate(column + 1, row + 1, private_level.z_value)
 				marker.color = "#63858f"
+	// Оболочка должна замкнуться до заполнения воздухом: строительство уступает тики атмосу.
+	for(var/turf/open/floor in work_tiles)
+		floor.air.copy_from_turf(floor)
+		floor.air_update_turf(FALSE, FALSE)
+		yield_work()
+		if(finished)
+			return
 
 /obj/machinery/vending/antag_training
 	name = "training vending machine"
@@ -230,6 +273,9 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		if(!item_ref?.resolve())
 			issued_items -= item_ref
 	supply_count = length(issued_items)
+	for(var/datum/weakref/structure_ref as anything in placed_structures.Copy())
+		if(!structure_ref?.resolve())
+			placed_structures -= structure_ref
 
 /datum/antag_training_arena/proc/issue_item(item_type, turf/destination, amount = 1, datum/antag_training_session/creator)
 	prune_supplies()
@@ -240,12 +286,60 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		item = new item_type(destination, amount)
 	else
 		item = new item_type(destination)
-	if(creator)
-		for(var/atom/movable/content as anything in item.GetAllContents())
-			content.training_owner = WEAKREF(creator)
-	issued_items += WEAKREF(item)
-	supply_count = length(issued_items)
+	track_supply(item, creator)
 	return item
+
+/datum/antag_training_arena/proc/track_supply(obj/supply, datum/antag_training_session/creator)
+	if(creator)
+		for(var/atom/movable/content as anything in supply.GetAllContents())
+			content.training_owner = WEAKREF(creator)
+	issued_items += WEAKREF(supply)
+	supply_count = length(issued_items)
+
+/datum/antag_training_arena/proc/construction_error(turf/destination)
+	if(finished || resetting)
+		return "Дождитесь окончания сброса полигона."
+	if(supply_count >= ANTAG_TRAINING_SUPPLY_LIMIT || length(placed_structures) >= ANTAG_TRAINING_STRUCTURE_LIMIT)
+		return "Достигнут лимит объектов. Уберите ненужное или очистите свои объекты."
+	var/zone_id = match_zone(destination)
+	if(!isfloorturf(destination) || get_area(destination) != room || !zone_id || zone_id == "hub")
+		return "Встаньте в секторе лицом к свободной клетке пола. В центре и переходах установка недоступна."
+	for(var/atom/movable/obstacle in destination)
+		if(obstacle.density || isliving(obstacle) || isstructure(obstacle) || ismachinery(obstacle))
+			return "Клетка перед вами занята. Повернитесь к свободному месту."
+	return null
+
+/datum/antag_training_session/proc/build_structure(structure_id, mob/user)
+	var/list/template = GLOB.antag_training_structures[structure_id]
+	if(!can_control(user) || !template || world.time < next_supply_at)
+		return null
+	arena.prune_supplies()
+	var/turf/destination = get_step(user, user.dir)
+	var/problem = arena.construction_error(destination)
+	if(problem)
+		to_chat(user, span_warning(problem))
+		return null
+	next_supply_at = world.time + 1 SECONDS
+	var/structure_type = template["type"]
+	var/obj/placed = new structure_type(destination)
+	placed.setDir(user.dir)
+	arena.track_supply(placed, src)
+	arena.placed_structures += WEAKREF(placed)
+	to_chat(user, span_notice("Установлено: [template["name"]]."))
+	return placed
+
+/datum/antag_training_session/proc/injure_target(mob/living/target, injury_id)
+	var/list/injury = GLOB.antag_training_injuries[injury_id]
+	if(!injury || !can_manage_target(target) || !ishuman(target) || target.stat == DEAD || get_area(target) != arena.room || arena.resetting || finished)
+		return FALSE
+	switch(injury["type"])
+		if(TOX)
+			target.setToxLoss(min(target.getToxLoss() + injury["amount"], target.maxHealth * 2), forced = TRUE)
+		if(OXY)
+			target.setOxyLoss(min(target.getOxyLoss() + injury["amount"], target.maxHealth * 2), forced = TRUE)
+		else
+			target.apply_damage(injury["amount"], injury["type"], BODY_ZONE_CHEST, forced = TRUE)
+	return TRUE
 
 /datum/antag_training_session/proc/issue_equipment(equipment_id, mob/user)
 	var/list/equipment = GLOB.antag_training_equipment[equipment_id]
@@ -371,7 +465,7 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 			continue
 		var/protected = FALSE
 		for(var/datum/antag_training_session/member as anything in members)
-			if(entity.contains_atom(member.current_body) || (member != active_owner && member.current_body.contains_atom(entity)))
+			if(entity.contains_atom(member.current_body) || member.current_body?.buckled == entity || (member != active_owner && member.current_body.contains_atom(entity)))
 				if(!active_owner)
 					entity.training_owner = WEAKREF(member)
 				protected = TRUE

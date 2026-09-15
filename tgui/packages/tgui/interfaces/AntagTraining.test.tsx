@@ -15,6 +15,9 @@ const fixture: AntagTrainingData = {
   target_limit: 12,
   supply_count: 0,
   supply_limit: 100,
+  structure_count: 0,
+  structure_limit: 16,
+  build_error: null,
   cleaning_personal: 0,
   reset_vote: null,
   members: [{ id: 'member', name: 'Участник', program: 'Еретик', health: 100, max_health: 100, dead: 0, connected: 1, zone: 'Безопасный центр', defeats: 0, self: 1 }],
@@ -23,6 +26,8 @@ const fixture: AntagTrainingData = {
     { id: 'pve', name: 'Арена противников', desc: 'Бой с ИИ', current: 0, members: 0, targets: 0 },
   ],
   equipment: [{ id: 'laser', name: 'Лазерный карабин', category: 'Стрельба' }],
+  structures: [{ id: 'operating_table', name: 'Операционный стол', category: 'Медицина и химия', desc: 'Для операций и осмотра пациента.' }],
+  injuries: [{ id: 'burn', name: 'Ожоги: +40' }],
   creatures: [{ id: 'human', name: 'Человек без брони' }, { id: 'carp', name: 'Карп' }],
   targets: [],
   programs: [{ id: '/datum/antag_training_program/heretic', name: 'Еретик — все пути' }],
@@ -120,4 +125,46 @@ test('личная очистка подтверждается отдельно 
   expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/clean_personal')).toBe(false);
   fireEvent.click(ui.getByText('Удалить свои объекты?'));
   expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/clean_personal')).toBe(true);
+});
+
+test('мастерская ищет по описанию и отправляет только идентификатор объекта', () => {
+  const ui = setup();
+  fireEvent.click(ui.getByText('Мастерская'));
+  fireEvent.input(ui.getByPlaceholderText(/Найти объект или занятие/), { target: { value: 'осмотра' } });
+  expect(ui.getByText('Операционный стол')).toBeTruthy();
+  fireEvent.click(ui.getByText('Установить'));
+  const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/build');
+  expect(JSON.parse(call[0].payload)).toEqual({ id: 'operating_table' });
+});
+
+test.each([
+  { build_error: 'Клетка перед вами занята.' },
+  { structure_count: 16 },
+  { supply_count: 100 },
+  { busy: 1 },
+])('мастерская блокирует установку при недоступном месте или лимите: %j', (overrides) => {
+  const ui = setup(overrides);
+  fireEvent.click(ui.getByText('Мастерская'));
+  if (overrides.build_error) {
+    expect(ui.getByText(overrides.build_error)).toBeTruthy();
+  }
+  fireEvent.click(ui.getByText('Установить'));
+  expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/build')).toBe(false);
+});
+
+const patient = { id: 'patient', name: 'Учебная цель', health: 100, max_health: 100, dead: 0, human: 1, brute: 0, burn: 0, toxin: 0, oxygen: 0, zone: 'Лаборатория', owner: 'Участник', can_manage: 1 };
+
+test('подготовка пациента передаёт вид повреждения и конкретную цель', () => {
+  const ui = setup({ targets: [patient] });
+  fireEvent.click(ui.getByText('Цели'));
+  fireEvent.click(ui.getByText('Ожоги: +40'));
+  const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/target_injure');
+  expect(JSON.parse(call[0].payload)).toEqual({ id: 'patient', injury: 'burn' });
+});
+
+test.each([{ dead: 1 }, { can_manage: 0 }])('повреждения недоступны мёртвой или чужой цели: %j', (overrides) => {
+  const ui = setup({ targets: [{ ...patient, ...overrides }] });
+  fireEvent.click(ui.getByText('Цели'));
+  fireEvent.click(ui.getByText('Ожоги: +40'));
+  expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/target_injure')).toBe(false);
 });
