@@ -279,6 +279,8 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	if(!user || !path)
 		return
 	var/datum/eldritch_knowledge/base_knowledge = path.knowledge[1]
+	var/datum/heretic_innate/innate = path.innate_type
+	to_chat(user, span_notice("Врождённая черта «[initial(innate.name)]»: [initial(innate.desc)]"))
 	var/resource_desc = initial(base_knowledge.combat_resource_desc)
 	if(resource_desc)
 		to_chat(user, span_notice("[initial(base_knowledge.combat_resource_name)]: [resource_desc]"))

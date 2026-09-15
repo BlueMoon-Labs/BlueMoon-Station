@@ -129,6 +129,7 @@
 	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
 
 /datum/eldritch_knowledge/Destroy()
+	QDEL_NULL(innate)
 	combat_resource_owner = null
 	remove_combat_power()
 	release_flesh_servants()

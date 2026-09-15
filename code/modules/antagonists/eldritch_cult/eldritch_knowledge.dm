@@ -14,8 +14,10 @@
 	if(user && gain_text)
 		to_chat(user, span_eldritch(gain_text))
 	on_body_gain(user)
+	bind_innate(user)
 
 /datum/eldritch_knowledge/proc/on_lose(mob/user)
+	innate?.unbind()
 	on_body_lose(user)
 
 /datum/eldritch_knowledge/proc/on_body_gain(mob/living/user)

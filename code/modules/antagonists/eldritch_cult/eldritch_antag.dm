@@ -88,10 +88,12 @@
 	for(var/knowledge_type in researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
 		knowledge.on_body_lose(old_body)
+		knowledge.innate?.unbind()
 	. = ..()
 	for(var/knowledge_type in researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
 		knowledge.on_body_gain(new_body)
+		knowledge.bind_innate(new_body)
 	update_combat_resource_alert(FALSE, new_body)
 
 /datum/antagonist/heretic/proc/equip_cultist()
@@ -142,6 +144,7 @@
 	for(var/X in researched_knowledge)
 		var/datum/eldritch_knowledge/EK = researched_knowledge[X]
 		EK.on_life(owner.current)
+		EK.innate?.tick()
 
 /datum/antagonist/heretic/proc/on_death(mob/living/dying_body)
 	SIGNAL_HANDLER

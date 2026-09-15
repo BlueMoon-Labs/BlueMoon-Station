@@ -21,20 +21,20 @@
 		TEST_ASSERT(seal.detonate(), "Частичное взыскание завершено.")
 		TEST_ASSERT(abs(user.blood_volume - (BLOOD_VOLUME_NORMAL - 40 + min(index * 5, 10))) <= DAMAGE_PRECISION, "Кровь восстанавливается на четверть урона, не более десяти за связь.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss() + user.getFireLoss(), 0, "Пассивка работает без ушибов и ожогов.")
-	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.5, "Повторные взыскания не складывают снижение кровотечения.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.375, "Свёртывание и врождённая черта перемножаются; повторные взыскания не усиливают эффект.")
 	var/obj/item/bodypart/arm = user.get_bodypart(BODY_ZONE_L_ARM)
 	arm.generic_bleedstacks = 5
 	var/blood_before = user.blood_volume
 	user.bleed(4)
-	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 2, "Настоящая потеря крови уменьшена вдвое.")
+	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 1.5, "Оба эффекта уменьшают фактическую потерю крови.")
 	TEST_ASSERT_EQUAL(arm.generic_bleedstacks, 5, "Пассивка не удаляет источник кровотечения.")
 	TEST_ASSERT_NOTNULL(blood.blood_clot.linked_alert, "Ослабление кровотечения показано владельцу.")
 	blood.blood_clot.duration = world.time - 1
 	blood.blood_clot.process()
 	TEST_ASSERT_NULL(blood.blood_clot, "Истёкшая пассивка удалена из знания.")
-	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 1, "После истечения восстановлена прежняя скорость кровотечения.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.75, "После истечения остаётся только врождённая черта.")
 	user.bleed(4)
-	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 6, "После истечения кровотечение снова теряет полный объём.")
+	TEST_ASSERT_EQUAL(user.blood_volume, blood_before - 4.5, "После истечения действует только врождённое снижение кровотечения.")
 
 /// Восполнение учитывает фактический урон, норму тела и кровь, ожидающую усвоения.
 /datum/unit_test/heretic_blood_recovery_limits/Run()
@@ -115,14 +115,14 @@
 	var/mob/living/carbon/human/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
-	user.physiology.bleed_mod = 0.25
+	user.physiology.bleed_mod *= 0.25
 	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено первое взыскание.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	seal.collection_ready_at = world.time
 	TEST_ASSERT(seal.detonate(), "Первое взыскание завершено.")
 	var/datum/status_effect/heretic_blood_clot/clot = blood.blood_clot
 	TEST_ASSERT_NOTNULL(clot, "Взыскание даёт свёртывание и при полном объёме крови.")
-	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.125, "Свёртывание учитывает прежний модификатор.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.09375, "Свёртывание учитывает прежний модификатор и врождённую черту.")
 	clot.duration = world.time + 1 SECONDS
 	TEST_ASSERT(blood.release(user, victim) && blood.release(user, victim), "Подготовлено повторное взыскание.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
@@ -130,13 +130,13 @@
 	TEST_ASSERT(seal.detonate(), "Повторное взыскание завершено.")
 	TEST_ASSERT_EQUAL(blood.blood_clot, clot, "Повторное взыскание обновляет существующий эффект.")
 	TEST_ASSERT_EQUAL(clot.duration, world.time + 8 SECONDS, "Длительность обновлена до восьми секунд.")
-	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.125, "Повторное взыскание не усиливает снижение.")
+	TEST_ASSERT_EQUAL(user.physiology.bleed_mod, 0.09375, "Повторное взыскание не усиливает снижение.")
 	user.physiology.bleed_mod *= 0.1
 	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human, get_turf(user))
 	user.mind.transfer_to(new_body)
 	TEST_ASSERT(QDELETED(clot), "Смена тела снимает свёртывание со старого.")
 	TEST_ASSERT(abs(user.physiology.bleed_mod - 0.025) <= DAMAGE_PRECISION, "Снятие сохраняет модификатор, добавленный во время действия.")
-	TEST_ASSERT_EQUAL(new_body.physiology.bleed_mod, 1, "Новое тело не наследует временное снижение.")
+	TEST_ASSERT_EQUAL(new_body.physiology.bleed_mod, 0.75, "Новое тело получает врождённую черту без временного свёртывания.")
 	TEST_ASSERT(blood.release(new_body, victim) && blood.release(new_body, victim), "Новое тело начинает своё взыскание.")
 	seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	seal.collection_ready_at = world.time

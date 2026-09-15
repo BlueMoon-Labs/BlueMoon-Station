@@ -146,6 +146,7 @@
 #include "heretic_knowledge.dm"
 #include "heretic_metashop.dm"
 #include "heretic_passives.dm"
+#include "heretic_innates.dm"
 #include "heretic_rituals.dm"
 #include "heretic_regressions.dm"
 #include "heretic_review_echo_blood_glass.dm"

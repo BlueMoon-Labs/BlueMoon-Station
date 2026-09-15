@@ -17,6 +17,8 @@ type HereticPath = {
   desc: string;
   strengths: string[];
   weaknesses: string[];
+  innate_name?: string;
+  innate_desc?: string;
 };
 
 type Knowledge = {
@@ -361,6 +363,7 @@ const PathChapter = ({ turn, openKnowledge }: { turn: () => void; openKnowledge:
             <h2>{path.name}</h2>
             <LoreText text={path.desc} />
             <dl className="HereticBook__promises">
+              {path.innate_name && <><dt>Врождённая черта — {path.innate_name}</dt><dd><p>{path.innate_desc}</p><p>Действует с выбора пути, без затрат знаний.</p></dd></>}
               <dt>Преимущества</dt><dd>{path.strengths.map((text) => <p key={text}>{text}</p>)}</dd>
               <dt>Слабости</dt><dd>{path.weaknesses.map((text) => <p key={text}>{text}</p>)}</dd>
             </dl>

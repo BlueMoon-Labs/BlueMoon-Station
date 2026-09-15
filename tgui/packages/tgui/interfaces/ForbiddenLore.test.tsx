@@ -12,6 +12,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
     ['Echo', 'Эхо'], ['Sand', 'Песок'], ['Wax', 'Воск'], ['Spirit', 'Дух'],
   ].map(([id, name]) => ({
     id, name, desc: `Учение: ${name}.`, strengths: ['Своя тактика.'], weaknesses: ['Своя уязвимость.'],
+    innate_name: `Черта: ${name}`, innate_desc: `Врождённое свойство: ${name}.`,
   }));
   return {
     points: 2,
@@ -76,6 +77,15 @@ const renderBook = async () => {
 };
 
 describe('Гримуар еретика', () => {
+  test.each(makeData().paths)('$name: врождённая черта видна до выбора пути', async (path) => {
+    setupStore(makeData());
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: path.name }));
+    expect(await screen.findByText(`Врождённая черта — ${path.innate_name}`)).toBeTruthy();
+    expect(screen.getByText(path.innate_desc!)).toBeTruthy();
+    expect(screen.getByText('Действует с выбора пути, без затрат знаний.')).toBeTruthy();
+  });
+
   test.each(makeData().paths)('$name: дело и прогресс видны рядом со знаниями', async (path) => {
     const deed = { name: `Дело: ${path.name}`, desc: `Действие пути ${path.name}.`, hint: '', tier: 0, max_tier: 3, progress: 1, goal: 2, counted: 1 };
     const { store } = setupStore(makeData({ selected_path: path.id, path_stage: 1, deed }));

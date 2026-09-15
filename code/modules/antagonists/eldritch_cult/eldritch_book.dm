@@ -183,10 +183,13 @@
 	var/list/data = list("paths" = list(), "knowledge" = list(), "rituals" = list())
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		var/datum/heretic_innate/innate = path.innate_type
 		data["paths"] += list(list(
 			"id" = path.id,
 			"name" = path.name,
 			"desc" = path.desc,
+			"innate_name" = initial(innate.name),
+			"innate_desc" = initial(innate.desc),
 			"strengths" = list(path.strengths),
 			"weaknesses" = list(path.weaknesses),
 		))

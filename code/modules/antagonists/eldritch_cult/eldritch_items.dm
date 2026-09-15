@@ -133,6 +133,11 @@
 	if(!heretic)
 		return
 	var/list/knowledge = heretic.get_all_knowledge()
+	var/strike_damage = target.getBruteLoss() + target.getFireLoss() - damage_before
+	for(var/knowledge_type in knowledge)
+		var/datum/eldritch_knowledge/entry = knowledge[knowledge_type]
+		if(entry.route == route)
+			entry.innate?.blade_hit(target, strike_damage)
 	var/datum/status_effect/eldritch/mark = target.has_status_effect(mark_type)
 	if(mark)
 		mark.on_effect()
