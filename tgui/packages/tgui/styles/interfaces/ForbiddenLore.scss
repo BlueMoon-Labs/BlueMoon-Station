@@ -184,7 +184,27 @@
     h3 { font-size: 14px; margin: 0 0 5px; text-align: left; }
     p, .HereticBook__prose { margin: 5px 0; }
   }
-  &__abilityLinks { display: flex; flex-wrap: wrap; gap: 3px 12px; }
+  &__abilityLinks { display: flex; flex-direction: column; gap: 3px; }
+  &__abilityLink {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    &.HereticBook__guideLink { text-decoration: none; }
+    > span { text-decoration: underline; text-underline-offset: 3px; }
+  }
+  &__hotkey {
+    flex-shrink: 0;
+    max-width: 55%;
+    padding: 1px 5px;
+    border: 1px solid var(--accent);
+    border-radius: 3px;
+    color: var(--ink);
+    font: inherit;
+    font-size: 11px;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
   &__guideLink {
     background: none;
     border: 0;

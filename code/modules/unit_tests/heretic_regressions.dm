@@ -706,9 +706,13 @@
 /// Отмена или сброс приостановленной хватки сохраняет перезарядку и не затрагивает следующую руку.
 /datum/unit_test/heretic_mansus_grasp_cancel_during_effect
 	var/drop_while_casting = FALSE
+	var/cancel_all_while_casting = FALSE
 
 /datum/unit_test/heretic_mansus_grasp_cancel_during_effect/drop
 	drop_while_casting = TRUE
+
+/datum/unit_test/heretic_mansus_grasp_cancel_during_effect/cancel_all
+	cancel_all_while_casting = TRUE
 
 /datum/unit_test/heretic_mansus_grasp_cancel_during_effect/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -726,6 +730,8 @@
 	TEST_ASSERT_EQUAL(suspension.grasp_calls, 1, "Эффект первого удара приостановлен.")
 	if(drop_while_casting)
 		user.dropItemToGround(old_hand)
+	else if(cancel_all_while_casting)
+		TEST_ASSERT(user.cancel_prepared_abilities(), "Общая отмена убирает приостановленную руку.")
 	else
 		TEST_ASSERT(spell.cancel_cast(user), "Игрок может убрать приостановленную руку.")
 	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Отмена уже нанесённого удара не возвращает заряд.")
@@ -757,3 +763,215 @@
 /datum/unit_test/heretic_mansus_grasp_cancel_on_hit/proc/cancel_on_hit(obj/item/melee/touch_attack/mansus_fist/hand, atom/target, mob/user)
 	SIGNAL_HANDLER
 	hand.attached_spell.cancel_cast(user)
+
+/// Переключение контактных способностей освобождает руку и сохраняет клинок и неиспользованный заряд.
+/datum/unit_test/heretic_prepared_touch_switch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/melee/sickly_blade/blade = allocate(/obj/item/melee/sickly_blade)
+	TEST_ASSERT(user.put_in_hands(blade), "Клинок занимает одну руку.")
+	var/obj/effect/proc_holder/spell/targeted/touch/previous
+	for(var/spell_type in list(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp, /obj/effect/proc_holder/spell/targeted/touch/mad_touch, /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay, /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp))
+		var/obj/effect/proc_holder/spell/targeted/touch/spell = allocate(spell_type)
+		var/obj/item/melee/touch_attack/old_hand = previous?.attached_hand
+		TEST_ASSERT(spell.ChargeHand(user), "Следующая способность заменяет предыдущую при занятой клинком руке.")
+		spell.charge_counter = 0
+		TEST_ASSERT(user.is_holding(blade) && user.is_holding(spell.attached_hand), "В руках остаются клинок и только выбранная способность.")
+		if(previous)
+			TEST_ASSERT(QDELETED(old_hand), "Предыдущая рука удалена.")
+			TEST_ASSERT_NULL(previous.attached_hand, "Предыдущее заклинание отпустило руку.")
+			TEST_ASSERT_EQUAL(previous.charge_counter, previous.charge_max, "Неиспользованный заряд возвращён.")
+		previous = spell
+	TEST_ASSERT(user.cancel_prepared_abilities(), "Общая отмена убирает подготовленную способность.")
+	TEST_ASSERT(user.is_holding(blade), "Отмена не выбрасывает клинок.")
+	TEST_ASSERT(!user.cancel_prepared_abilities(), "После отмены обычное выбрасывание снова доступно.")
+
+/// Контактная способность снимает прицеливание, а общая отмена освобождает перехватчик кликов.
+/datum/unit_test/heretic_prepared_target_cancel/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/effect/proc_holder/spell/pointed/blood_siphon/ranged_spell = allocate(/obj/effect/proc_holder/spell/pointed/blood_siphon)
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/touch_spell = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	user.ranged_ability = ranged_spell
+	user.click_intercept = ranged_spell
+	ranged_spell.ranged_ability_user = user
+	ranged_spell.active = TRUE
+	TEST_ASSERT(touch_spell.ChargeHand(user), "Хватка выбирается поверх прицеливания.")
+	TEST_ASSERT_NULL(user.ranged_ability, "Хватка снимает выбранную дальнюю способность.")
+	TEST_ASSERT_NULL(user.click_intercept, "Клики снова доходят до предмета в руке.")
+	TEST_ASSERT(!ranged_spell.active, "Предыдущая кнопка больше не подсвечена.")
+	TEST_ASSERT_EQUAL(ranged_spell.charge_counter, ranged_spell.charge_max, "Отмена прицеливания не расходует заряд.")
+	user.cancel_prepared_abilities(ranged_spell)
+	TEST_ASSERT_NULL(touch_spell.attached_hand, "Подготовка прицеливания освобождает контактную руку.")
+	user.ranged_ability = ranged_spell
+	user.click_intercept = ranged_spell
+	ranged_spell.ranged_ability_user = user
+	ranged_spell.active = TRUE
+	var/obj/item/melee/sickly_blade/blade = allocate(/obj/item/melee/sickly_blade)
+	TEST_ASSERT(user.put_in_hands(blade), "После смены способности можно взять клинок.")
+	TEST_ASSERT(user.cancel_prepared_abilities(), "Общая отмена снимает прицеливание.")
+	TEST_ASSERT_NULL(user.click_intercept, "Прицеливание не блокирует последующие клики.")
+	TEST_ASSERT(user.is_holding(blade), "Клинок сохранён при отмене прицеливания.")
+
+/// Активация контактной руки отменяет заклинание; другие роли сохраняют независимые руки.
+/datum/unit_test/heretic_prepared_inhand_cancel/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/spell = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	TEST_ASSERT(spell.ChargeHand(user), "Хватка подготовлена.")
+	spell.charge_counter = 0
+	spell.attached_hand.attack_self(user)
+	TEST_ASSERT_NULL(spell.attached_hand, "Активация предмета освобождает руку.")
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Отмена до удара сохраняет заряд.")
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human)
+	var/obj/effect/proc_holder/spell/targeted/touch/first = allocate(/obj/effect/proc_holder/spell/targeted/touch/disintegrate)
+	var/obj/effect/proc_holder/spell/targeted/touch/second = allocate(/obj/effect/proc_holder/spell/targeted/touch/flesh_to_stone)
+	TEST_ASSERT(first.ChargeHand(other) && second.ChargeHand(other), "У другой роли по-прежнему допустимы две контактные руки.")
+	TEST_ASSERT(other.is_holding(first.attached_hand) && other.is_holding(second.attached_hand), "Переключение еретика не меняет другие роли.")
+	TEST_ASSERT(!other.cancel_prepared_abilities(), "Общая отмена еретика не действует на другую роль.")
+
+/// Хоткей Хватки соблюдает состояние и перезарядку и повторным нажатием освобождает руку.
+/datum/unit_test/heretic_ability_hotkey_activation/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/eldritch_knowledge/spell/basic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/spell = knowledge.granted_spell
+	TEST_ASSERT(user.activate_ability_hotkey(1), "Первый слот вызывает Хватку через общий обработчик роли.")
+	TEST_ASSERT(user.is_holding(spell.attached_hand), "Хоткей создаёт контактную руку.")
+	TEST_ASSERT(user.activate_ability_hotkey(1), "Повторное нажатие отменяет Хватку.")
+	TEST_ASSERT_NULL(spell.attached_hand, "Повторное нажатие освобождает руку.")
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Отмена до удара возвращает заряд.")
+	user.Paralyze(5 SECONDS)
+	user.activate_ability_hotkey(1)
+	TEST_ASSERT_NULL(spell.attached_hand, "Оглушённый еретик не подготавливает способность хоткеем.")
+	user.SetParalyzed(0)
+	spell.charge_counter = 0
+	user.activate_ability_hotkey(1)
+	TEST_ASSERT_NULL(spell.attached_hand, "Хоткей не обходит перезарядку.")
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Отказ не восстанавливает потраченный заряд.")
+	spell.charge_counter = spell.charge_max
+	heretic.role_removed = TRUE
+	TEST_ASSERT(!user.activate_ability_hotkey(1), "Потерянная роль не даёт применять хоткеи.")
+	TEST_ASSERT_NULL(spell.attached_hand, "После потери роли рука не создаётся.")
+
+/// Все пути используют одни слоты в книге и хоткеях, а новые знания не сдвигают старые номера.
+/datum/unit_test/heretic_ability_hotkey_catalog/Run()
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/antagonist/heretic/heretic = allocate_heretic()
+		var/mob/living/user = heretic.owner.current
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+		TEST_ASSERT(heretic.research_knowledge(path.knowledge[1], user), "Путь [path_id] выбран.")
+		var/list/abilities = book.combat_ability_data(heretic)
+		TEST_ASSERT_EQUAL(length(abilities), 2, "У пути [path_id] есть Хватка и основная способность.")
+		TEST_ASSERT_EQUAL(heretic.ability_hotkey_types[1], /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp, "Первый слот всегда занят Хваткой.")
+		for(var/list/ability as anything in abilities)
+			TEST_ASSERT(findtext(ability["usage"], "Горячая клавиша:"), "Книга показывает назначение способности [path_id].")
+		var/list/old_slots = heretic.ability_hotkey_types.Copy()
+		heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+		book.combat_ability_data(heretic)
+		TEST_ASSERT_EQUAL(length(heretic.ability_hotkey_types), length(old_slots), "Призыв книги не занимает боевой слот.")
+		for(var/knowledge_type in path.knowledge)
+			heretic.gain_knowledge(knowledge_type)
+		book.combat_ability_data(heretic)
+		for(var/slot in 1 to length(old_slots))
+			TEST_ASSERT_EQUAL(heretic.ability_hotkey_types[slot], old_slots[slot], "Изучение пути не сдвигает слот [slot].")
+		var/datum/eldritch_knowledge/base_knowledge = heretic.get_knowledge(path.knowledge[1])
+		base_knowledge.on_body_lose(user)
+		TEST_ASSERT(!user.activate_ability_hotkey(2), "Удалённая основная способность не вызывается из старого слота.")
+	for(var/slot in 1 to ABILITY_HOTKEY_SLOTS)
+		var/datum/keybinding/living/ability_slot/binding = GLOB.keybindings_by_name["ability_slot_[slot]"]
+		TEST_ASSERT(istype(binding) && binding.ability_slot == slot, "Слот [slot] зарегистрирован в настройках клавиш.")
+		TEST_ASSERT("Alt[slot % ABILITY_HOTKEY_SLOTS]" in binding.hotkey_keys, "Слот [slot] имеет заявленное сочетание по умолчанию.")
+
+/// Подготовка Хватки выключает бросок, и следующий клик действительно поражает цель.
+/datum/unit_test/heretic_prepared_throw_click/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/spell = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	user.throw_mode_on()
+	TEST_ASSERT(user.throw_mode, "Перед подготовкой включён бросок.")
+	TEST_ASSERT(spell.ChargeHand(user), "Хватка подготавливается при включённом броске.")
+	TEST_ASSERT(!user.throw_mode, "Подготовка выключила режим броска.")
+	spell.charge_counter = 0
+	user.ClickOn(victim, "left=1")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 10) <= DAMAGE_PRECISION, "Клик наносит урон Хваткой вместо попытки бросить абстрактный предмет.")
+	TEST_ASSERT_NULL(spell.attached_hand, "Клик расходует Хватку.")
+	TEST_ASSERT(spell.recharging, "После попадания начинается перезарядка.")
+
+/// Включение броска отменяет подготовку без потери оружия; обратный выбор выключает бросок.
+/datum/unit_test/heretic_prepared_throw_switch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/melee/sickly_blade/blade = allocate(/obj/item/melee/sickly_blade)
+	TEST_ASSERT(user.put_in_hands(blade), "Клинок находится в руке.")
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/touch_spell = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	TEST_ASSERT(touch_spell.ChargeHand(user), "Хватка занимает свободную руку.")
+	touch_spell.charge_counter = 0
+	user.throw_mode_on()
+	TEST_ASSERT(user.throw_mode && user.is_holding(blade), "Режим броска включён, клинок остаётся в руке.")
+	TEST_ASSERT_NULL(touch_spell.attached_hand, "Бросок снял подготовленную Хватку.")
+	TEST_ASSERT_EQUAL(touch_spell.charge_counter, touch_spell.charge_max, "Неиспользованная Хватка сохраняет заряд.")
+	var/obj/effect/proc_holder/spell/pointed/blood_siphon/ranged_spell = allocate(/obj/effect/proc_holder/spell/pointed/blood_siphon)
+	user.prepare_ability(ranged_spell)
+	TEST_ASSERT(!user.throw_mode, "Подготовка прицеливания также выключает бросок.")
+	user.ranged_ability = ranged_spell
+	user.click_intercept = ranged_spell
+	ranged_spell.ranged_ability_user = user
+	ranged_spell.active = TRUE
+	user.throw_mode_on()
+	TEST_ASSERT(user.throw_mode, "Из прицеливания можно перейти к броску.")
+	TEST_ASSERT_NULL(user.ranged_ability, "Бросок снимает прицельную способность.")
+	TEST_ASSERT_NULL(user.click_intercept, "Следующий бросок не перехватывается заклинанием.")
+	TEST_ASSERT(!ranged_spell.active && user.is_holding(blade), "Кнопка погашена, оружие сохранено.")
+	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human)
+	other.throw_mode_on()
+	other.prepare_ability(ranged_spell)
+	TEST_ASSERT(other.throw_mode, "У других ролей режим броска не изменяется.")
+
+/// Памятка и книга показывают назначенные клавиши, включая независимые сочетания и снятые назначения.
+/datum/unit_test/heretic_ability_hotkey_help/Run()
+	var/datum/preferences/navigation_test/preferences = allocate(/datum/preferences/navigation_test)
+	preferences.key_bindings = list("F2" = list("ability_slot_1"), "CtrlShiftQ" = list("cancel_ability"), "G" = list("drop_item"))
+	preferences.modless_key_bindings = list()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	var/list/abilities = book.combat_ability_data(heretic, preferences)
+	var/list/grasp = abilities[1]
+	TEST_ASSERT_EQUAL(grasp["hotkey"], "F2", "Книга показывает переназначенную клавишу Хватки.")
+	var/help = heretic.format_ability_hotkey_help(preferences)
+	TEST_ASSERT(findtext(help, "F2") && findtext(help, "Ctrl+Shift+Q") && findtext(help, "G"), "Стартовая памятка использует текущие клавиши применения и отмены.")
+	TEST_ASSERT(!findtext(help, "Alt+1"), "Стандартная клавиша не подменяет действующее назначение.")
+	preferences.key_bindings = list("Unbound" = list("ability_slot_1"))
+	abilities = book.combat_ability_data(heretic, preferences)
+	grasp = abilities[1]
+	TEST_ASSERT_EQUAL(grasp["hotkey"], "Не назначена", "Снятое назначение видно в книге.")
+	preferences.modless_key_bindings["F3"] = "ability_slot_1"
+	abilities = book.combat_ability_data(heretic, preferences)
+	grasp = abilities[1]
+	TEST_ASSERT_EQUAL(grasp["hotkey"], "F3", "Независимая клавиша тоже показывается.")
+	preferences.key_bindings["AltCtrlShift4"] = list("ability_slot_1")
+	var/datum/keybinding/binding = GLOB.keybindings_by_name["ability_slot_1"]
+	TEST_ASSERT_EQUAL(binding.format_keys(preferences), "Alt+Ctrl+Shift+4 / F3", "Несколько назначений перечислены с разделёнными модификаторами.")
+
+/// Подсказка кнопки дополняет исходный текст и не накапливает подписи при повторном наведении.
+/datum/unit_test/heretic_ability_hotkey_tooltip/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/eldritch_knowledge/spell/basic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/action/action = knowledge.granted_spell.action
+	var/original_desc = action.desc
+	var/tooltip = action.format_tooltip(user, "Описание кнопки")
+	TEST_ASSERT(findtext(tooltip, "Описание кнопки") && findtext(tooltip, "Alt+1"), "Подсказка сохраняет описание и показывает клавишу.")
+	TEST_ASSERT(findtext(tooltip, "Alt+Q") && findtext(tooltip, "Отмена подготовки"), "Отмена объясняется прямо на кнопке.")
+	TEST_ASSERT_EQUAL(action.format_tooltip(user, "Описание кнопки"), tooltip, "Повторное наведение не дублирует подсказку.")
+	TEST_ASSERT_EQUAL(action.desc, original_desc, "Исходное описание действия не изменилось.")
+	var/mob/living/other = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_EQUAL(action.format_tooltip(other, "Чужая кнопка"), "Чужая кнопка", "Наблюдатель не получает подсказку чужих назначений.")
+	var/datum/action/ordinary = allocate(/datum/action)
+	TEST_ASSERT_EQUAL(ordinary.format_tooltip(user, "Обычная кнопка"), "Обычная кнопка", "Другие действия сохраняют прежний текст.")

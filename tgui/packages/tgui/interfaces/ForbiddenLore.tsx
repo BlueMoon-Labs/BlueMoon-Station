@@ -58,7 +58,7 @@ type Ritual = {
   ascension: BooleanLike;
 };
 
-type CombatAbility = { id: string; name: string; desc: string; usage: string };
+type CombatAbility = { id: string; name: string; desc: string; usage: string; hotkey?: string | null };
 
 export type ForbiddenLoreData = {
   points: number;
@@ -82,6 +82,7 @@ export type ForbiddenLoreData = {
   };
   combat_resource: { name: string; value: number; max: number; description: string } | null;
   combat_abilities?: CombatAbility[];
+  ability_hotkey_help?: string;
   deed: { name: string; desc: string; hint: string; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
   hunt: {
     target_name: string | null;
@@ -395,8 +396,20 @@ const KnowledgeGuide = ({ selectKnowledge, selectAbility }: { selectKnowledge: (
       {abilities.length > 0 && (
         <section aria-label="Доступные боевые способности">
           <h3>Боевые способности уже выданы</h3>
+          {data.ability_hotkey_help && <p>{data.ability_hotkey_help}</p>}
           <div className="HereticBook__abilityLinks">
-            {abilities.map((ability) => <button key={ability.id} type="button" className="HereticBook__guideLink" onClick={() => selectAbility(ability.id)}>{ability.name}</button>)}
+            {abilities.map((ability) => (
+              <button
+                key={ability.id}
+                type="button"
+                className="HereticBook__guideLink HereticBook__abilityLink"
+                aria-label={ability.name}
+                title={ability.hotkey ? `Горячая клавиша: ${ability.hotkey}` : undefined}
+                onClick={() => selectAbility(ability.id)}>
+                <span>{ability.name}</span>
+                {ability.hotkey && <kbd className="HereticBook__hotkey">{ability.hotkey}</kbd>}
+              </button>
+            ))}
           </div>
         </section>
       )}

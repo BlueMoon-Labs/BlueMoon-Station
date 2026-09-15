@@ -102,6 +102,30 @@ describe('Гримуар еретика', () => {
     expect(guide.queryByText('Завершите ступень, чтобы получить очко знаний.')).toBeNull();
   });
 
+  test.each(makeData().paths)('$name: клавиши видны рядом со способностями без открытия записи', async (path) => {
+    const ability = { id: 'grasp', name: 'Хватка Мансуса', desc: 'Хватка.', usage: 'Коснитесь цели.', hotkey: 'Alt+1' };
+    const help = 'Отмена подготовки: Alt+Q или Q. Переназначение — в настройках клавиш.';
+    setupStore(makeData({ selected_path: path.id, path_stage: 1, combat_abilities: [ability], ability_hotkey_help: help }));
+    await renderBook();
+    const guide = within(screen.getByRole('region', { name: 'Доступные боевые способности' }));
+    expect(guide.getByText(help)).toBeTruthy();
+    expect(within(guide.getByRole('button', { name: ability.name })).getByText('Alt+1')).toBeTruthy();
+  });
+
+  test('обновляет клавиши в открытой книге и явно показывает снятое назначение', async () => {
+    const ability = { id: 'grasp', name: 'Хватка Мансуса', desc: 'Хватка.', usage: 'Коснитесь цели.', hotkey: 'Alt+1' };
+    const { store } = setupStore(makeData({ selected_path: 'Ash', path_stage: 1, combat_abilities: [ability] }));
+    const view = await renderBook();
+    const button = screen.getByRole('button', { name: ability.name });
+    act(() => store.dispatch(backendUpdate({ data: { combat_abilities: [{ ...ability, hotkey: 'Ctrl+Shift+F2 / F3' }] } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(within(button).getByText('Ctrl+Shift+F2 / F3')).toBeTruthy();
+    expect(within(button).queryByText('Alt+1')).toBeNull();
+    act(() => store.dispatch(backendUpdate({ data: { combat_abilities: [{ ...ability, hotkey: 'Не назначена' }] } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(within(button).getByText('Не назначена')).toBeTruthy();
+  });
+
   test('выданные способности открывают применение без покупки или каста из книги', async () => {
     const ability = { id: 'sever', name: 'Разлучение', desc: 'Отделяет душу врага.', usage: 'Нажмите кнопку, затем укажите цель.' };
     const { store, topic } = setupStore(makeData({ selected_path: 'Spirit', path_stage: 1, combat_abilities: [ability] }));

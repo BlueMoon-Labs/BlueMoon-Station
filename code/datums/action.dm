@@ -183,6 +183,9 @@
 		return FALSE
 	return TRUE
 
+/datum/action/proc/format_tooltip(mob/viewer, base_description)
+	return base_description
+
 /datum/action/proc/UpdateButtons(status_only, force)
 	for(var/datum/hud/hud in viewers)
 		var/atom/movable/screen/movable/button = viewers[hud]

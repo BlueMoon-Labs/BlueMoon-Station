@@ -68,6 +68,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			user.ranged_ability.remove_ranged_ability()
 		else
 			return
+	user.prepare_ability(src)
 	user.ranged_ability = src
 	user.click_intercept = src
 	user.update_mouse_pointer()
@@ -76,6 +77,8 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		to_chat(ranged_ability_user, msg)
 	active = TRUE
 	update_icon()
+	if(IS_HERETIC(user))
+		user.balloon_alert(user, name)
 
 /obj/effect/proc_holder/proc/remove_ranged_ability(msg)
 	var/mob/living/user = ranged_ability_user
@@ -226,7 +229,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/Trigger(mob/user, skip_can_cast = TRUE)
 	if(cast_check(FALSE, user, skip_can_cast))
-		choose_targets()
+		choose_targets(user)
 	return TRUE
 
 /obj/effect/proc_holder/spell/proc/choose_targets(mob/user = usr) //depends on subtype - /targeted or /aoe_turf

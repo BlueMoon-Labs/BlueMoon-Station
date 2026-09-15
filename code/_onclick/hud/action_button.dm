@@ -119,7 +119,8 @@
 /atom/movable/screen/movable/action_button/MouseEntered(location, control, params)
 	. = ..()
 	if(!QDELETED(src))
-		openToolTip(usr, src, params, title = name, content = desc, theme = actiontooltipstyle)
+		var/tooltip = linked_action ? linked_action.format_tooltip(usr, desc) : desc
+		openToolTip(usr, src, params, title = name, content = tooltip, theme = actiontooltipstyle)
 
 /atom/movable/screen/movable/action_button/MouseExited(location, control, params)
 	closeToolTip(usr)

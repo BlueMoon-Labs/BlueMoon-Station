@@ -240,6 +240,7 @@
 		"passive_upgrades" = heretic.passive_upgrade_data(),
 		"combat_resource" = null,
 		"combat_abilities" = combat_ability_data(heretic),
+		"ability_hotkey_help" = heretic.format_ability_hotkey_help(user.client?.prefs),
 		"deed" = heretic.deed_data(),
 	)
 	if(book_style)
@@ -271,38 +272,28 @@
 	)
 	return data
 
-/obj/item/forbidden_book/proc/combat_ability_data(datum/antagonist/heretic/heretic)
+/obj/item/forbidden_book/proc/combat_ability_data(datum/antagonist/heretic/heretic, datum/preferences/preferences)
+	preferences ||= heretic.owner?.current?.client?.prefs
 	var/list/spells = list()
-	for(var/knowledge_type in heretic.researched_knowledge)
-		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
-		if(!QDELETED(knowledge.combat_power))
-			spells |= knowledge.combat_power
-		if(istype(knowledge, /datum/eldritch_knowledge/base_moon))
-			var/datum/eldritch_knowledge/base_moon/moon = knowledge
-			spells |= moon.reflection_spell
-		if(istype(knowledge, /datum/eldritch_knowledge/base_cosmic))
-			var/datum/eldritch_knowledge/base_cosmic/cosmic = knowledge
-			spells |= cosmic.manifest_spell
-		if(istype(knowledge, /datum/eldritch_knowledge/base_lock))
-			var/datum/eldritch_knowledge/base_lock/lock = knowledge
-			spells |= lock.seal_spell
-		if(istype(knowledge, /datum/eldritch_knowledge/spell) && !istype(knowledge, /datum/eldritch_knowledge/spell/summon))
-			var/datum/eldritch_knowledge/spell/spell_knowledge = knowledge
-			if(!QDELETED(spell_knowledge.granted_spell))
-				spells |= spell_knowledge.granted_spell
-		if(istype(knowledge, /datum/eldritch_knowledge/final_eldritch))
-			var/datum/eldritch_knowledge/final_eldritch/final_knowledge = knowledge
-			spells |= final_knowledge.ascension_spell_instances
+	heretic.collect_combat_spells(spells)
 	var/list/abilities = list()
 	for(var/obj/effect/proc_holder/spell/spell as anything in spells)
 		if(QDELETED(spell) || !(spell in heretic.owner?.spell_list))
 			continue
 		var/usage = "Нажмите кнопку этой способности на игровом экране."
 		if(istype(spell, /obj/effect/proc_holder/spell/targeted/touch))
-			usage = "Освободите активную руку, нажмите кнопку способности на игровом экране, затем коснитесь цели рядом с собой."
+			usage = "Освободите активную руку, нажмите кнопку способности, затем коснитесь цели рядом с собой. Другая контактная или прицельная способность заменит подготовленную. Для отмены нажмите «Выбросить» (по умолчанию Q), повторно кнопку способности или активируйте предмет в руке."
 		else if(istype(spell, /obj/effect/proc_holder/spell/pointed) || istype(spell, /obj/effect/proc_holder/spell/aimed))
-			usage = "Нажмите кнопку способности на игровом экране, затем укажите цель щелчком мыши."
-		abilities += list(list("id" = "[spell.type]", "name" = spell.name, "desc" = spell.desc, "usage" = usage))
+			usage = "Нажмите кнопку способности, затем укажите цель щелчком мыши. Другая контактная или прицельная способность заменит подготовленную. Для отмены нажмите «Выбросить» (по умолчанию Q) или повторно кнопку способности; предмет в руке сохранится."
+		var/slot = heretic.ability_hotkey_types.Find(spell.type)
+		var/hotkey
+		if(istype(spell, /obj/effect/proc_holder/spell/targeted/touch) || istype(spell, /obj/effect/proc_holder/spell/pointed) || istype(spell, /obj/effect/proc_holder/spell/aimed))
+			usage += " Подготовка выключает режим броска; включение броска отменяет подготовку."
+		if(slot && slot <= ABILITY_HOTKEY_SLOTS)
+			var/datum/keybinding/binding = GLOB.keybindings_by_name["ability_slot_[slot]"]
+			hotkey = binding.format_keys(preferences)
+			usage += " Горячая клавиша: [hotkey]. Переназначение: «Способность [slot]» в настройках клавиш."
+		abilities += list(list("id" = "[spell.type]", "name" = spell.name, "desc" = spell.desc, "usage" = usage, "hotkey" = hotkey))
 	return abilities
 
 /obj/item/forbidden_book/proc/knowledge_state(datum/antagonist/heretic/heretic)

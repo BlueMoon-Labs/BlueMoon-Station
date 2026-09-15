@@ -2,6 +2,24 @@
 	COOLDOWN_DECLARE(heretic_failure_log)
 	var/heretic_failure_reason
 
+/mob/living/cancel_prepared_abilities(obj/effect/proc_holder/except)
+	if(!IS_HERETIC(src))
+		return FALSE
+	. = FALSE
+	if(ranged_ability && ranged_ability != except)
+		ranged_ability.remove_ranged_ability(span_notice("Прицеливание отменено."))
+		. = TRUE
+	for(var/obj/item/melee/touch_attack/hand in held_items.Copy())
+		if(hand.attached_spell && hand.attached_spell != except)
+			. |= hand.attached_spell.cancel_cast(src)
+
+/mob/living/carbon/prepare_ability(obj/effect/proc_holder/ability)
+	..()
+	if(IS_HERETIC(src) && throw_mode)
+		throw_mode_off()
+		update_mouse_pointer()
+		to_chat(src, span_notice("Режим броска выключен для подготовки способности."))
+
 /obj/effect/proc_holder/spell/proc/heretic_check(mob/user, condition, silent, reason)
 	if(condition)
 		heretic_failure_reason = null
