@@ -121,6 +121,7 @@
 	icon_state = "vest_exp"
 	item_state = "vest_exp"
 	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = -20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30) //Для упрощения нейтрализации
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	unique_reskin = list(
 		"Standart" = list(
 			"icon_state" = "vest_exp",

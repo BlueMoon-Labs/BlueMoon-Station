@@ -15,6 +15,7 @@
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	blockTracking = TRUE//Roughly the only unique thing about this helmet.
 	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	flags_cover = HEADCOVERSEYES // Рот закрывает маска, а не капюшон.
 
 /obj/item/clothing/head/helmet/space/space_ninja/dropped(mob/user)
 	. = ..()

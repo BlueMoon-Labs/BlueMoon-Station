@@ -37,11 +37,18 @@
 	. = ..()
 	GLOB.rndservers_list += src
 	SSresearch.servers |= src
-	stored_research = SSresearch.get_rnd_network_for(src, network_id, techweb_type)	//BLUEMOON CHANGE: сеть через реестр
 	alarmloop = new(src, !working)
 
 	server_id = "[copytext(md5("[world.timeofday][rand()][src]"), 1, 5)]" // Генерируем серверу уникальный айди
 	name += " ([uppertext(server_id)])"
+	if(mapload)
+		return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/rnd/server/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
 
 /obj/machinery/rnd/server/process()
 	if(!(machine_stat & NOPOWER) && working)
@@ -81,45 +88,32 @@
 	if(obj_flags & EMAGGED) // Если емагнуто, то будет отрицательное
 		income_gen *= -1
 
-//BLUEMOON ADD - подключение сервера к другой сети исследований через мультитул
-/obj/machinery/rnd/server/multitool_act(mob/living/user, obj/item/multitool/tool)
-	. = ..()
-	if(istype(tool.buffer, /datum/techweb))
-		var/datum/techweb/new_web = tool.buffer
-		if(new_web == stored_research)
-			to_chat(user, span_notice("Сервер уже подключён к [new_web.organization]."))
-			return TRUE
-		stored_research = new_web
-		to_chat(user, span_notice("Вы подключаете сервер к [new_web.organization]."))
-	else if(!tool.buffer)
-		if(stored_research)
-			tool.buffer = stored_research
-			to_chat(user, span_notice("Вы сохраняете базу данных исследований [stored_research.organization] в буфер мультитула."))
-		else
-			to_chat(user, span_notice("Сервер не подключён ни к одной исследовательской сети."))
-	else
-		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
-	return TRUE
-//BLUEMOON ADD END
+/obj/machinery/rnd/server/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
 
-/// BLUEMOON ADD: сеть ближайшего РНД-сервера в радиусе max_dist от источника, либо null.
-/proc/find_nearest_rnd_techweb(atom/source, max_dist = RND_SERVER_LINK_RANGE)
+	stored_research = new_web
+
+/// BLUEMOON ADD: сеть ближайшего РНД-сервера на том же Z-уровне, что и источник, либо null.
+/proc/find_nearest_rnd_techweb(atom/source)
 	var/turf/source_turf = get_turf(source)
 	if(!source_turf)
 		return null
 	var/obj/machinery/rnd/server/nearest
-	var/best_dist = max_dist
-	for(var/obj/machinery/rnd/server/S in orange(max_dist, source_turf))
-		var/dist = get_dist(source_turf, get_turf(S))
+	var/best_dist = INFINITY
+	for(var/obj/machinery/rnd/server/S as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/rnd/server))
+		var/turf/server_turf = get_turf(S)
+		if(!server_turf || server_turf.z != source_turf.z)
+			continue
+		var/dist = get_dist(source_turf, server_turf)
 		if(dist <= best_dist)
 			best_dist = dist
 			nearest = S
 	return nearest?.stored_research
 
-/// BLUEMOON ADD: авто-подключение устройства к сети: ближайший сервер в радиусе,
+/// BLUEMOON ADD: авто-подключение устройства к сети: сервер на том же Z-уровне,
 /// иначе на станции — глобальная научная сеть (как раньше), вне станции — null (подключается вручную).
-/proc/find_rnd_network_for_object(atom/source, max_dist = RND_SERVER_LINK_RANGE)
-	var/datum/techweb/nearest = find_nearest_rnd_techweb(source, max_dist)
+/proc/find_rnd_network_for_object(atom/source)
+	var/datum/techweb/nearest = find_nearest_rnd_techweb(source)
 	if(nearest)
 		return nearest
 	var/turf/source_turf = get_turf(source)
@@ -182,6 +176,11 @@
 /obj/machinery/rnd/server/syndicate
 	network_id = RND_NETWORK_SYNDICATE
 	techweb_type = /datum/techweb/syndicate_isolated
+	heating_power = 0
+
+/obj/machinery/rnd/server/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
 	heating_power = 0
 
 /obj/machinery/rnd/server/inteq

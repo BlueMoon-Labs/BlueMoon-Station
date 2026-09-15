@@ -661,3 +661,89 @@
 	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
 	icon_state = "visaventail"
 	item_state = "visaventail"
+
+/obj/item/clothing/head/helmet/riot/melatonin_helmet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Refurbished Concord Riot Helmet"
+	desc = "Списанный и устаревший шлем противоударной защиты, некогда принадлежавший Небульскому Конкорду. Сам он выглядит как старая, возможно, дефектная модель, которую кропотливо восстанавливали вручную. Его защитные «уши» заметно отличаются по материалу и состоянию от остального корпуса — очевидно, их пришлось переделать, чтобы подогнать под анатомию Ликантропа. Несмотря на кустарный ремонт, шлем выглядит исключительно надежным и крепким. Внутри установлена простая операционная система, выводящая интерфейс на минималистичный дисплей теплого желтого оттенка, а само забрало оснащено функцией автоматического поднятия, избавляя от необходимости открывать его вручную."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "melatonin_helmet"
+	item_state = "melatonin_helmet"
+	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
+
+/obj/item/modkit/melatonin_riot_kit
+	name = "Refurbished Concord Riot Helmet Kit"
+	desc = "A modkit for making a riot helmet into a Refurbished Concord Riot Helmet."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/head/helmet/riot/melatonin_helmet
+	fromitem = list(/obj/item/clothing/head/helmet/riot)
+
+/obj/item/clothing/head/helmet/sec/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Gugnir Helmet"
+	desc = " Gungnir helmet with a binocular module. Typically used in conjunction with the Jaeger combat exoskeleton. The protective plates are heavily damaged and offer reduced protection; plate replacement is recommended."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+
+/obj/item/modkit/tau_helmet_kit
+	name = "Gugnir Helmet Kit"
+	desc = "A modkit for making a helmet into a Gugnir Helmet."
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/head/helmet/sec/tau
+	fromitem = list(/obj/item/clothing/head/helmet/sec)
+
+/obj/item/clothing/head/donator/bm/pumpkin_cat
+	name = "Pumpkin With Ears"
+	desc = "Strange pumpkin with cat ears on top"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "pumpkin_cat"
+	item_state = "pumpkin_cat"
+	flags_inv = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR
+
+/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
+	name = "NCR ranger helmet"
+	desc = "Matching helmet for the NCR Ranger duster."
+	icon_state = "ranger"
+	item_state = "ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+	unique_reskin = list(
+		"Ranger" = list(
+			"icon_state" = "ranger",
+			"item_state" = "ranger",
+			"name" = "NCR ranger helmet"
+		),
+		"Desert" = list(
+			"icon_state" = "oldranger",
+			"item_state" = "oldranger",
+			"name" = "NCR desert ranger helmet"
+		)
+	)
+
+/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
+	name = "NCR elite desert ranger helmet"
+	desc = "NCR ranger riot helmet"
+	icon_state = "desert_ranger"
+	item_state = "desert_ranger"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+
+/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
+	name = "Custom NCR ranger helmet"
+	desc = "NCR ranger bulletproof helmet"
+	icon_state = "rangercustom"
+	item_state = "rangercustom"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR

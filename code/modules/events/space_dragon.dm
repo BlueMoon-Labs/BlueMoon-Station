@@ -1,7 +1,7 @@
 /datum/round_event_control/space_dragon
 	name = "Spawn Space Dragon"
 	typepath = /datum/round_event/ghost_role/space_dragon
-	weight = 7
+	weight = 9
 	max_occurrences = 1
 	earliest_start = 30 MINUTES
 	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора

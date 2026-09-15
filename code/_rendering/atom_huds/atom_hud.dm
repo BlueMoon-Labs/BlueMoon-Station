@@ -84,7 +84,7 @@ GLOBAL_LIST_INIT(huds, alist(
 		UnregisterSignal(A, COMSIG_PARENT_QDELETING)
 	return TRUE
 
-/datum/atom_hud/proc/remove_from_single_hud(mob/M, atom/movable/A) //unsafe, no sanity apart from client
+/datum/atom_hud/proc/remove_from_single_hud(mob/M, atom/movable/A, list/hud_icon_keys = hud_icons) //unsafe, no sanity apart from client
 	if(!M || !M.client || !A || !A.hud_list)
 		return
 	// Симметрично add_to_single_hud: один `-=` на весь набор иконок вместо
@@ -93,7 +93,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	// худами исчисляется тысячами изображений.
 	var/client/their_client = M.client
 	var/list/atom_hud_list = A.hud_list
-	var/list/local_hud_icons = hud_icons
+	var/list/local_hud_icons = hud_icon_keys
 	if(length(local_hud_icons) == 1)
 		var/hud_image = atom_hud_list[local_hud_icons[1]]
 		if(hud_image)
@@ -158,7 +158,7 @@ GLOBAL_LIST_INIT(huds, alist(
 /datum/atom_hud/proc/should_show_to(mob/M, atom/movable/A)
 	return TRUE
 
-/datum/atom_hud/proc/add_to_single_hud(mob/M, atom/movable/A) //unsafe, no sanity apart from client
+/datum/atom_hud/proc/add_to_single_hud(mob/M, atom/movable/A, list/hud_icon_keys = hud_icons) //unsafe, no sanity apart from client
 	if(!M || !A)
 		return
 	var/client/their_client = M.client
@@ -169,7 +169,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	var/list/atom_hud_list = A.hud_list
 	if(!atom_hud_list)
 		return
-	var/list/local_hud_icons = hud_icons
+	var/list/local_hud_icons = hud_icon_keys
 	if(length(local_hud_icons) == 1)
 		var/hud_image = atom_hud_list[local_hud_icons[1]]
 		if(hud_image)

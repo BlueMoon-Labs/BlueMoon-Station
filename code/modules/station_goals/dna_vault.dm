@@ -3,13 +3,15 @@
 // DNA vault requires x animals ,y plants, z human dna
 // DNA vaults require high tier stock parts and cold
 // After completion each crewmember can receive single upgrade chosen out of 2 for the mob.
-#define VAULT_TOXIN "Toxin Adaptation"
-#define VAULT_NOBREATH "Lung Enhancement"
-#define VAULT_FIREPROOF "Thermal Regulation"
-#define VAULT_STUNTIME "Neural Repathing"
-#define VAULT_ARMOUR "Bone Reinforcement"
-#define VAULT_SPEED "Leg Muscle Stimulus"
-#define VAULT_QUICK "Arm Muscle Stimulus"
+#define VAULT_TOXIN "Адаптация к токсинам"
+#define VAULT_NOBREATH "Гиперфильтрация лёгких"
+#define VAULT_FIREPROOF "Терморегуляция"
+#define VAULT_STUNTIME "Нейронное перепрошивание"
+#define VAULT_ARMOUR "Укрепление костей"
+#define VAULT_SPEED "Стимуляция мышц ног"
+#define VAULT_QUICK "Стимуляция мышц рук"
+#define VAULT_NOSOFTCRIT "Адреностимуляция"
+#define VAULT_VENTCRAWL "Суставная суперфлексия"
 
 /datum/station_goal/dna_vault
 	name = "DNA Vault"
@@ -62,8 +64,8 @@
 
 
 /obj/item/dna_probe
-	name = "DNA Sampler"
-	desc = "Can be used to take chemical and genetic samples of pretty much anything."
+	name = "DNA sampler"
+	desc = "Позволяет брать химические и генетические образцы практически чего угодно."
 	icon = 'icons/obj/syringe.dmi'
 	item_state = "sampler"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
@@ -89,13 +91,13 @@
 		if(!H.myseed)
 			return
 		if(!H.harvest)// So it's bit harder.
-			to_chat(user, "<span class='alert'>Plant needs to be ready to harvest to perform full data scan.</span>") //Because space dna is actually magic
+			to_chat(user, span_alert("Растение должно полностью созреть для сканирования данных.")) //Because space dna is actually magic
 			return
 		if(plants[H.myseed.type])
-			to_chat(user, "<span class='notice'>Plant data already present in local storage.</span>")
+			to_chat(user, span_notice("Данные о растении уже сохранены в локальном хранилище."))
 			return
 		plants[H.myseed.type] = 1
-		to_chat(user, "<span class='notice'>Plant data added to local storage.</span>")
+		to_chat(user, span_notice("Данные о растении добавлены в локальное хранилище."))
 
 	//animals
 	var/static/list/non_simple_animals = typecacheof(list(/mob/living/carbon/monkey, /mob/living/carbon/alien))
@@ -103,26 +105,26 @@
 		if(isanimal(target))
 			var/mob/living/simple_animal/A = target
 			if(!A.healable)//simple approximation of being animal not a robot or similar
-				to_chat(user, "<span class='alert'>No compatible DNA detected.</span>")
+				to_chat(user, span_alert("Совместимая ДНК не обнаружена."))
 				return
 		if(animals[target.type])
-			to_chat(user, "<span class='alert'>Animal data already present in local storage.</span>")
+			to_chat(user, span_alert("Данные о животном уже сохранены в локальном хранилище."))
 			return
 		animals[target.type] = 1
-		to_chat(user, "<span class='notice'>Animal data added to local storage.</span>")
+		to_chat(user, span_notice("Данные о животном добавлены в локальное хранилище."))
 
 	//humans
 	if(ishuman(target))
 		var/mob/living/carbon/human/H = target
 		if(dna[H.dna.uni_identity])
-			to_chat(user, "<span class='notice'>Humanoid data already present in local storage.</span>")
+			to_chat(user, span_notice("Данные о гуманоиде уже сохранены в локальном хранилище."))
 			return
 		dna[H.dna.uni_identity] = 1
-		to_chat(user, "<span class='notice'>Humanoid data added to local storage.</span>")
+		to_chat(user, span_notice("Данные о гуманоиде добавлены в локальное хранилище."))
 
 /obj/machinery/dna_vault
 	name = "DNA Vault"
-	desc = "Break glass in case of apocalypse."
+	desc = "Разбить стекло в случае апокалипсиса."
 	icon = 'icons/obj/machines/dna_vault.dmi'
 	icon_state = "vault"
 	density = TRUE
@@ -186,7 +188,13 @@
 	if(!user?.ckey || (user.ckey in power_lottery))
 		return
 	var/list/L = list()
-	var/list/possible_powers = list(VAULT_TOXIN,VAULT_NOBREATH,VAULT_FIREPROOF,VAULT_STUNTIME,VAULT_ARMOUR,VAULT_SPEED,VAULT_QUICK)
+	var/list/possible_powers = list(
+		VAULT_TOXIN,		VAULT_NOBREATH,
+		VAULT_FIREPROOF,	VAULT_STUNTIME,
+		VAULT_ARMOUR,		VAULT_SPEED,
+		VAULT_QUICK,		VAULT_NOSOFTCRIT,
+		VAULT_VENTCRAWL
+	)
 	L += pick_n_take(possible_powers)
 	L += pick_n_take(possible_powers)
 	power_lottery[user.ckey] = L
@@ -218,8 +226,7 @@
 
 	switch(action)
 		if("gene")
-			upgrade(usr,params["choice"])
-			. = TRUE
+			. = upgrade(usr, params["choice"])
 
 /obj/machinery/dna_vault/proc/check_goal()
 	if(plants.len >= plants_max && animals.len >= animals_max && dna.len >= dna_max)
@@ -243,40 +250,63 @@
 				uploaded++
 				dna[ui] = 1
 		check_goal()
-		to_chat(user, "<span class='notice'>[uploaded] new datapoints uploaded.</span>")
+		to_chat(user, span_notice("Загружено новых очков данных: [uploaded]."))
 	else
 		return ..()
 
 /obj/machinery/dna_vault/proc/upgrade(mob/living/carbon/human/H,upgrade_type)
-	if(!(upgrade_type in power_lottery[H.ckey]))
-		return
+	if(!ishuman(H) || H.stat == DEAD || !completed || !H.ckey)
+		return FALSE
+	var/list/available_powers = power_lottery[H.ckey]
+	if(!length(available_powers) || !(upgrade_type in available_powers))
+		return FALSE
+
+	// Consume the lottery before applying the effect so repeated requests
+	// cannot claim both choices, even if an effect triggers another UI update.
+	power_lottery[H.ckey] = list()
 	var/datum/species/S = H.dna.species
 	switch(upgrade_type)
 		if(VAULT_TOXIN)
-			to_chat(H, "<span class='notice'>You feel resistant to airborne toxins.</span>")
+			to_chat(H, span_notice("Вы чувствуете устойчивость к токсинам и вирусам в воздухе."))
 			if(locate(/obj/item/organ/lungs) in H.internal_organs)
 				var/obj/item/organ/lungs/L = H.internal_organs_slot[ORGAN_SLOT_LUNGS]
 				L.gas_max -= GAS_PLASMA
 			ADD_TRAIT(H, TRAIT_VIRUSIMMUNE, "dna_vault")
 		if(VAULT_NOBREATH)
-			to_chat(H, "<span class='notice'>Your lungs feel great.</span>")
+			to_chat(H, span_notice("Ваши лёгкие работают превосходно."))
 			ADD_TRAIT(H, TRAIT_NOBREATH, "dna_vault")
 		if(VAULT_FIREPROOF)
-			to_chat(H, "<span class='notice'>You feel fireproof.</span>")
+			to_chat(H, span_notice("Вы чувствуете устойчивость к огню."))
 			S.burnmod = 0.5
 			ADD_TRAIT(H, TRAIT_RESISTHEAT, "dna_vault")
 			ADD_TRAIT(H, TRAIT_NOFIRE, "dna_vault")
 		if(VAULT_STUNTIME)
-			to_chat(H, "<span class='notice'>Nothing can keep you down for long.</span>")
+			to_chat(H, span_notice("Ничто не сможет надолго оглушить вас."))
 			S.stunmod = 0.5
 		if(VAULT_ARMOUR)
-			to_chat(H, "<span class='notice'>You feel tough.</span>")
+			to_chat(H, span_notice("Вы чувствуете себя прочнее."))
 			S.armor = 30
 			ADD_TRAIT(H, TRAIT_PIERCEIMMUNE, "dna_vault")
 		if(VAULT_SPEED)
-			to_chat(H, "<span class='notice'>Your legs feel faster.</span>")
+			to_chat(H, span_notice("Ваши ноги стали быстрее."))
 			H.add_movespeed_modifier(/datum/movespeed_modifier/dna_vault_speedup)
 		if(VAULT_QUICK)
-			to_chat(H, "<span class='notice'>Your arms move as fast as lightning.</span>")
+			to_chat(H, span_notice("Ваши руки двигаются со скоростью молнии."))
 			H.action_cooldown_mod = 0.5
-	power_lottery[H.ckey] = list()
+		if(VAULT_NOSOFTCRIT)
+			to_chat(H, span_notice("Ваше тело отказывается сдаваться."))
+			ADD_TRAIT(H, TRAIT_NOSOFTCRIT, "dna_vault")
+		if(VAULT_VENTCRAWL)
+			to_chat(H, span_notice("Вы ощущаете себя способным втиснуться в вентиляцию."))
+			H.AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_NUDE)
+	return TRUE
+
+#undef VAULT_TOXIN
+#undef VAULT_NOBREATH
+#undef VAULT_FIREPROOF
+#undef VAULT_STUNTIME
+#undef VAULT_ARMOUR
+#undef VAULT_SPEED
+#undef VAULT_QUICK
+#undef VAULT_NOSOFTCRIT
+#undef VAULT_VENTCRAWL

@@ -28,6 +28,14 @@
 	cost = 2
 	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
+/datum/uplink_item/inteq/speedloader_designdisk
+	name = ".357 speedloader Design Disk"
+	desc = "Этот диск содержит чертежи что-бы гордый ковбой никогда не заботился о патронах!"
+	item = /obj/item/disk/design_disk/adv/ammo/revolver
+	cost = 6
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
+
 /datum/uplink_item/ammo/slug23
 	name = "KS-23 slug box"
 	desc = "8 свинцовых пуль."

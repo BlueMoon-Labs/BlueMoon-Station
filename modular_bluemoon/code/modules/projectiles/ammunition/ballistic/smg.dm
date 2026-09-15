@@ -64,6 +64,12 @@
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/iron = 400)
 
+/obj/item/ammo_casing/c45/armour
+	harmful = TRUE
+	icon_state = "45ap"
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 200)
+
 ////////////////////////////////////////////////////////////////////
 
 

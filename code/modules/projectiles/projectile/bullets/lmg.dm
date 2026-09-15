@@ -1,40 +1,38 @@
-// C3D (Борги) — BR2 (технический)
+// C3D (Борги) — BR4 (технический)
 /obj/item/projectile/bullet/c3d
 	damage = 30
-	armour_penetration = BULLET_BR4   // BLUEMOON ADD
+	armour_penetration = BULLET_BR8
 
-// Mech LMG — BR2
+// Mech LMG — BR4
 /obj/item/projectile/bullet/lmg
 	damage = 30
-	armour_penetration = BULLET_BR4   // BLUEMOON ADD
+	armour_penetration = BULLET_BR9
 
-// Mech FNX-99 — BR2
+// Mech FNX-99 — BR4
 /obj/item/projectile/bullet/incendiary/fnx99
 	damage = 30
-	armour_penetration = BULLET_BR5   // BLUEMOON ADD
+	armour_penetration = BULLET_BR13
 
 // Турели
 /obj/item/projectile/bullet/manned_turret
 	damage = 20
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD: стандартная турель = BR2
+	armour_penetration = BULLET_BR5
 
 /obj/item/projectile/bullet/syndicate_turret
 	damage = 30
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD: синдикат = BR3
+	armour_penetration = BULLET_BR7
 
-
-// 7.12x82mm SAW — BR3 FMJ, BR4 AP, BR2 HP
 /obj/item/projectile/bullet/mm712x82
 	name = "7.12x82mm bullet"
 	damage = 40
-	armour_penetration = BULLET_BR3   // BLUEMOON EDIT: было 5 → BR3(35)
+	armour_penetration = BULLET_BR7
 	wound_bonus = -50
 	wound_falloff_tile = 0
 
 /obj/item/projectile/bullet/mm712x82_ap
 	name = "7.12x82mm armor-piercing bullet"
 	damage = 35
-	armour_penetration = BULLET_BR4   // BLUEMOON EDIT: было 40 → BR4(50)
+	armour_penetration = BULLET_BR10
 
 /obj/item/projectile/bullet/mm712x82_hp
 	name = "7.12x82mm hollow-point bullet"
@@ -48,15 +46,15 @@
 /obj/item/projectile/bullet/incendiary/mm712x82
 	name = "7.12x82mm incendiary bullet"
 	damage = 30
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD: как FMJ
+	armour_penetration = BULLET_BR7
 	fire_stacks = 3
 
 /obj/item/projectile/bullet/mm712x82/match
 	name = "7.12x82mm match bullet"
 	damage = 40
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD: match = как FMJ
+	armour_penetration = BULLET_BR7
 	ricochets_max = 2
-	ricochet_chance = 60
+	ricochet_chance = 100
 	ricochet_auto_aim_range = 4
 	ricochet_incidence_leeway = 35
 	wound_bonus = -50

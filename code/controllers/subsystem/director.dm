@@ -18,6 +18,8 @@
 /// Провалившееся действие ненадолго исключается из выбора: быстрый повтор предлагает раунду
 /// другой вариант, а не тот же самый 30-секундный гост-опрос.
 #define DIRECTOR_FAILED_ACTION_COOLDOWN (5 MINUTES)
+/// Повторные отказы: 5, 10, 20, затем 30 минут. Успешный спаун сбрасывает паузу.
+#define DIRECTOR_FAILED_ACTION_MAX_COOLDOWN (30 MINUTES)
 #define DIRECTOR_FAILED_ACTION_RETRY_DELAY (2 SECONDS)
 /// Возраст исполнения, до которого живой рулсет даёт полный вклад в intensity.
 /// Для раундстартов возраст считается от старта раунда, для мидраунд/латеджойн-инжекций -
@@ -108,6 +110,8 @@ SUBSYSTEM_DEF(director)
 	var/list/pool_target_options = list()
 	/// Действие -> world.time конца короткого карантина после фактического провала.
 	var/list/action_failure_cooldowns = list()
+	/// Длительность последней паузы после провала; сохраняется после её истечения.
+	var/list/action_failure_delays = list()
 	/// Действие -> снимок пейсинга до note_fired(). Нужен, пока асинхронный рулсет/ghost poll
 	/// не подтвердит, что контент действительно появился.
 	var/list/action_attempt_rollbacks = list()
@@ -487,6 +491,15 @@ SUBSYSTEM_DEF(director)
 		action_failure_cooldowns -= action
 		return FALSE
 	return TRUE
+
+/// Нет желающих или условий для спауна: оставляем другие действия доступными,
+/// но не повторяем один и тот же безуспешный опрос каждые пять минут весь раунд.
+/datum/controller/subsystem/director/proc/record_action_failure(datum/director_action/action)
+	var/previous_delay = action_failure_delays[action] || 0
+	var/delay = min(max(DIRECTOR_FAILED_ACTION_COOLDOWN, previous_delay * 2), DIRECTOR_FAILED_ACTION_MAX_COOLDOWN)
+	action_failure_delays[action] = delay
+	action_failure_cooldowns[action] = now() + delay
+	pool_cache = null
 
 /// Дефицит антаг-нагрузки (0..1) - скорость антаг-капли пропорциональна ему: пустой от антагов
 /// раунд (все выбыли или залегли) наполняет кошельки полным ходом, насыщенный не копит вовсе
@@ -1383,7 +1396,7 @@ SUBSYSTEM_DEF(director)
 		// Провал ДО планирования (например, рулсет не набрал кандидатов) - вернуть списанное.
 		// Провал ПОСЛЕ таймера (execute_scheduled_ruleset) рефандится отдельно через rule.clean_up().
 		budgets[action.severity] += spent
-		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
+		record_action_failure(action)
 		return FALSE
 	if(action.director_kind == DIRECTOR_KIND_RULESET)
 		var/datum/dynamic_ruleset/rule = action
@@ -1422,7 +1435,7 @@ SUBSYSTEM_DEF(director)
 	if(refund_budget)
 		refund_to_budget(action.severity, refund_amount)
 	if(retry_replacement)
-		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
+		record_action_failure(action)
 		if(pool_saving[action.severity] == action)
 			pool_saving[action.severity] = null
 		if(!dry_run)
@@ -1484,6 +1497,7 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/confirm_action_success(datum/director_action/action)
 	action_attempt_rollbacks -= action
 	action_failure_cooldowns -= action
+	action_failure_delays -= action
 	if(action.director_kind != DIRECTOR_KIND_RULESET)
 		return
 	var/datum/dynamic_ruleset/rule = action
@@ -1552,6 +1566,9 @@ SUBSYSTEM_DEF(director)
 /// и запирать им полосу битов (или таймер тишины) нельзя - именно так лейтджойны душили биты.
 /datum/controller/subsystem/director/proc/note_fired(datum/director_action/action, from_latejoin = FALSE)
 	remember_action_attempt(action)
+	// У обычного события запуск уже состоялся; опросы и рулсеты ждут подтверждения.
+	if(!dry_run && !action_attempt_rollbacks[action])
+		confirm_action_success(action)
 	// Возраст исполнения для затухания вклада (tally_ruleset_intensity): штампуется на ЛЮБОЙ
 	// запуск рулсета (бит, латеджойн, форс админа). Окно delay между schedule и execute на
 	// масштабе 40-минутного затухания несущественно.
@@ -1839,4 +1856,5 @@ SUBSYSTEM_DEF(director)
 #undef DIRECTOR_EVENT_HEAVY_TICK_USAGE
 #undef DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN
 #undef DIRECTOR_FAILED_ACTION_COOLDOWN
+#undef DIRECTOR_FAILED_ACTION_MAX_COOLDOWN
 #undef DIRECTOR_FAILED_ACTION_RETRY_DELAY

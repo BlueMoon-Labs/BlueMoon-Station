@@ -122,23 +122,6 @@
 	INVOKE_ASYNC(tether, TYPE_PROC_REF(/obj/item/projectile, fire))
 	drain_power(use_power_cost)
 
-// /obj/item/gun/ballistic/tether_firer
-// 	name = "Tether gun"
-// 	desc = "Устройство для запуска спасательного гарпуна."
-// 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
-// 	icon_state = "tether"
-// 	mag_type = /obj/item/ammo_box/magazine/m10mm
-// 	no_pin_required = TRUE
-
-// /obj/item/ammo_box/magazine/internal/tether
-// 	name = "Tether cartridge"
-// 	ammo_type = /obj/item/ammo_casing/caseless/tether
-// 	max_ammo = 1
-
-// /obj/item/ammo_casing/caseless/tether
-// 	caliber = "tether"
-// 	projectile_type = /obj/item/projectile/tether
-
 /obj/item/projectile/tether
 	name = "tether"
 	icon_state = "tether_projectile"
@@ -150,7 +133,6 @@
 	hitsound_wall = 'sound/weapons/batonextend.ogg'
 	suppressed = SUPPRESSED_VERY
 	hit_threshhold = LATTICE_LAYER
-	/// Reference to the beam following the projectile.
 	var/line
 
 /obj/item/projectile/tether/fire(setAngle)
@@ -204,19 +186,34 @@
 		продвинутыми сервоприводами рук, предназначенными для переноски членов экипажа. Однако он содержит \
 		последние инженерные чертежи в сочетании со встроенной памятью для помощи пользователю в строительстве стен."
 	icon_state = "constructor"
-	module_type = MODULE_USABLE
+	module_type = MODULE_ACTIVE
 	complexity = 2
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 2
 	incompatible_modules = list(/obj/item/mod/module/constructor, /obj/item/mod/module/quick_carry)
 	cooldown_time = 11 SECONDS
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	device = /obj/item/construction/rcd/industrial/mod_internal
 
-/obj/item/mod/module/constructor/on_suit_activation()
-	ADD_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
+/obj/item/construction/rcd/industrial/mod_internal
+	name = "MOD Consructor Module"
+	desc = "Этот модуль полностью занимает предплечье носителя, заметно конфликтуя с \
+		продвинутыми сервоприводами рук, предназначенными для переноски членов экипажа. Однако он содержит \
+		последние инженерные чертежи в сочетании со встроенной памятью для помощи пользователю в строительстве стен."
+	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
+	icon_state = "constructor"
+	delay_mod = 0.25
+	has_ammobar = FALSE
 
-/obj/item/mod/module/constructor/on_suit_deactivation(deleting = FALSE)
-	REMOVE_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
+/obj/item/construction/rcd/industrial/mod_internal/equipped(mob/user)
+	. = ..()
+	to_chat(user, span_greenannounce("Вы ощущаете, что можете строить быстрее"))
+	ADD_TRAIT(user, TRAIT_QUICK_BUILD, MOD_TRAIT)
+
+/obj/item/construction/rcd/industrial/mod_internal/dropped(mob/user, silent = FALSE)
+	. = ..()
+	to_chat(user, span_warning("Скорость вашего строительства вернулась в норму."))
+	REMOVE_TRAIT(user, TRAIT_QUICK_BUILD, MOD_TRAIT)
 
 ///Mister - Sprays water over an area.
 /obj/item/mod/module/mister
