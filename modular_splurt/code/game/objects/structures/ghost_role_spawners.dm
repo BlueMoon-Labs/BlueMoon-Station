@@ -254,6 +254,7 @@
 	important_info = "Используйте коммуникационное оборудование для оказания поддержки любым полевым агентам."
 	can_load_appearance = TRUE
 	outfit = /datum/outfit/inteqspace/inteq_comms
+	antagonist_type = /datum/antagonist/ghost_role/inteq/comms
 
 /datum/outfit/inteqspace/inteq_comms/post_equip(mob/living/carbon/human/H)
 	H.faction |= ROLE_INTEQ
