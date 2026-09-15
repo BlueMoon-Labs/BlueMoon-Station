@@ -30,11 +30,23 @@
 	zombified_text += "<div style='margin-bottom:6px'>Вы преобразились ужасным образом и вами движет [span_danger("жажда плоти")]... Вы мутант, порождённый генокрадом!</div>"
 	zombified_text += "<div style='margin-bottom:6px'>Рассудок помутняется и кипящее ощущение адреналина под мутировавшей кожей злит вас.</div>"
 	zombified_text += "<div style='margin-bottom:6px'>Вид окружающих живых существ вызывает у вас агрессию — [span_danger("разорвать на куски")].</div>"
+	zombified_text += "<div style='margin-bottom:6px'>[span_userdanger("Все непохожие на вас должны умереть.")]</div>"
 	to_chat(owner.current, examine_block(zombified_text))
 	owner.current.playsound_local(get_turf(owner.current), 'sound/effects/lingreadapt.ogg', 75)
 
+/datum/antagonist/changeling_zombie/on_gain()
+	var/datum/objective/changeling_zombie_rampage/ch_z_objective = new /datum/objective/changeling_zombie_rampage()
+	ch_z_objective.owner = owner
+	objectives += ch_z_objective
+	. = ..()
+
 /datum/antagonist/changeling_zombie/farewell()
 	to_chat(owner.current, span_userdanger("Безумие внутри вашего умирающего мозга утихает. Что происх-..."))
+
+/datum/objective/changeling_zombie_rampage
+	objective_name = "zombie rampage"
+	completable = FALSE
+	explanation_text = "Я должен атаковать всё живое и непохожее на себя, без исключений... Я могу распознать себе подобных по руке-лезвию <u>или</u> облику, как у меня."
 
 /datum/component/changeling_zombie_infection
 	var/zombified = FALSE
@@ -205,6 +217,7 @@
 	RegisterSignal(host, COMSIG_MOB_SAY, PROC_REF(handle_speech))
 	if(host.mind)
 		host.mind.add_antag_datum(/datum/antagonist/changeling_zombie)
+		host.mind.announce_objectives()
 	return TRUE
 
 /datum/component/changeling_zombie_infection/proc/generate_armblade(mob/living/carbon/human/host, hand_index)
