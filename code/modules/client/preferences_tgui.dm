@@ -75,6 +75,7 @@
 	// Graphics toggles
 	.["parallax"] = parallax
 	.["ambient_occlusion"] = ambientocclusion
+	.["multiz_parallax"] = multiz_parallax
 	.["widescreen"] = widescreenpref
 	.["fullscreen"] = fullscreen
 	.["fit_viewport"] = auto_fit_viewport
@@ -189,6 +190,7 @@
 	.["max_chat_length"] = max_chat_length
 	.["view_pixelshift"] = view_pixelshift
 	.["lighting_blur"] = lighting_blur
+	.["multiz_performance"] = multiz_performance
 	.["lighting_brightness"] = lighting_brightness
 	.["lighting_lamp_brightness"] = lighting_lamp_brightness
 	.["lighting_bloom_intensity"] = lighting_bloom_intensity
@@ -337,9 +339,10 @@
 					dirty_var = "ambientocclusion"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, LIGHTING_PLANE, CHAT_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, LIGHTING_PLANE, CHAT_PLANE))
+				if("multiz_parallax")
+					multiz_parallax = !multiz_parallax
+					rebuild_multiz_planes(user)
 				if("widescreen")
 					widescreenpref = !widescreenpref
 					dirty_var = "widescreenpref"
@@ -586,30 +589,22 @@
 					dirty_var = "lighting_blur"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 				if("lighting_brightness")
 					lighting_brightness = clamp(text2num(value), LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_PLANE, O_LIGHTING_VISUAL_PLANE, EMISSIVE_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, O_LIGHTING_VISUAL_PLANE, EMISSIVE_PLANE))
 				if("lighting_lamp_brightness")
 					lighting_lamp_brightness = clamp(text2num(value), LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE))
 				if("lighting_bloom_intensity")
 					lighting_bloom_intensity = clamp(text2num(value), LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX)
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, EMISSIVE_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, EMISSIVE_PLANE))
 				if("lighting_quality")
 					lighting_quality = clamp(text2num(value), LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH)
 					if(lighting_quality == LIGHTING_QUALITY_FAST)
@@ -620,9 +615,10 @@
 						lighting_bloom_intensity = 0
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
-							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
-							PM?.backdrop(user)
+						H.refresh_plane_backdrops(user, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
+				if("multiz_performance")
+					multiz_performance = clamp(text2num(value), MULTIZ_PERFORMANCE_DISABLE, MAX_EXPECTED_Z_DEPTH - 1)
+					rebuild_multiz_planes(user)
 				if("preferred_chaos_level")
 					preferred_chaos_level = clamp(text2num(value), 0, 3)
 					dirty_var = "preferred_chaos_level"
@@ -820,3 +816,12 @@
 		ui.send_update()
 	else
 		ShowChoices(user)
+
+/// Перестраивает масштабы и видимость этажей во всех стопках plane master'ов.
+/datum/preferences/proc/rebuild_multiz_planes(mob/user)
+	var/datum/hud/our_hud = user?.hud_used
+	if(!our_hud)
+		return
+	for(var/group_key in our_hud.master_groups)
+		var/datum/plane_master_group/group = our_hud.master_groups[group_key]
+		group.build_planes_offset(our_hud.current_plane_offset)

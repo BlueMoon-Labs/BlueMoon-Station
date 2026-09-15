@@ -218,7 +218,7 @@
 		C.hud_used.show_hud(HUD_STYLE_STANDARD)
 		C.Paralyze(95)
 		DIRECT_OUTPUT(C.client, sound(null))
-		var/list/screens = list(C.hud_used.plane_masters["[FLOOR_PLANE]"], C.hud_used.plane_masters["[GAME_PLANE]"], C.hud_used.plane_masters["[LIGHTING_PLANE]"])
+		var/list/screens = list(C.hud_used.get_game_screen_plate())
 		for(var/atom/movable/screen/plane_master/whole_screen in screens)
 			animate(whole_screen, transform = matrix(), pixel_x = 0, pixel_y = 0, color = "#ffffff", time = 200, easing = ELASTIC_EASING)
 			// remove_filter по ИМЕНИ, а не filters = list(). Плейн-мастер несёт свои
@@ -279,7 +279,7 @@
 	if(!H || !H.hud_used)
 		return
 	var/high_message
-	var/list/screens = list(H.hud_used.plane_masters["[FLOOR_PLANE]"], H.hud_used.plane_masters["[GAME_PLANE]"], H.hud_used.plane_masters["[LIGHTING_PLANE]"])
+	var/list/screens = list(H.hud_used.get_game_screen_plate())
 	switch(current_trip)
 		if("ovoshi")
 			switch(current_cycle)

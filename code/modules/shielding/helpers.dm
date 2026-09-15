@@ -40,12 +40,12 @@
 	if(zlevel in scanned_zlevels)
 		return
 	scanned_zlevels |= zlevel
-	if(recurse)
-		var/up = SSmapping.level_trait(zlevel, ZTRAIT_UP)
-		var/down = SSmapping.level_trait(zlevel, ZTRAIT_DOWN)
-		if(isnum(up) && (up != 0))
+	if(recurse && zlevel <= length(SSmapping.z_level_above))
+		var/up = SSmapping.z_level_above[zlevel]
+		var/down = SSmapping.z_level_below[zlevel]
+		if(up)
 			hull_shielding_get_tiles_in_z(up, check_tick, recurse, outlist, scanned_zlevels)
-		if(isnum(down) && (down != 0))
+		if(down)
 			hull_shielding_get_tiles_in_z(down, check_tick, recurse, outlist, scanned_zlevels)
 	// sigh. why.
 	var/turf/potential

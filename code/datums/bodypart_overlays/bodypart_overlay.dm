@@ -81,7 +81,7 @@
 	var/list/created_overlays = list(main_image)
 	// Emissive blockers prevent the glow of other overlays punching through this one.
 	if(blocks_emissive != EMISSIVE_BLOCK_NONE && !isnull(limb))
-		created_overlays += emissive_blocker(main_image.icon, main_image.icon_state, limb, layer = main_image.layer, alpha = main_image.alpha)
+		created_overlays += emissive_blocker(main_image.icon, main_image.icon_state, limb.owner || limb, layer = main_image.layer, alpha = main_image.alpha)
 	return created_overlays
 
 /// Applies the husk color tone to the overlay for husked owners.
@@ -160,7 +160,7 @@
 	var/list/all_images = list()
 	for(var/image/overlay as anything in imageset)
 		all_images += overlay
-		all_images += emissive_blocker(overlay.icon, overlay.icon_state, limb, layer = overlay.layer, alpha = overlay.alpha)
+		all_images += emissive_blocker(overlay.icon, overlay.icon_state, limb.owner || limb, layer = overlay.layer, alpha = overlay.alpha)
 
 	return all_images
 

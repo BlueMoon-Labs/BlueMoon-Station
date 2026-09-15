@@ -11,7 +11,7 @@
 	throwforce = 10
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
 	pass_flags_self = PASSMOB
-	vis_flags = VIS_INHERIT_PLANE //when this be added to vis_contents of something it inherit something.plane, important for visualisation of mob in openspace.
+	vis_flags = NONE
 
 	attack_hand_is_action = TRUE
 	attack_hand_unwieldlyness = CLICK_CD_MELEE

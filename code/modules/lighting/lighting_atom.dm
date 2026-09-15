@@ -336,9 +336,9 @@
 	if(glow_icon && glow_icon_state)
 		glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = -2)
 		if(layer <= LOW_OBJ_LAYER)
-			glow_overlay.plane = FLOOR_LIGHTING_LAMPS_PLANE
+			SET_PLANE_EXPLICIT(glow_overlay, FLOOR_LIGHTING_LAMPS_PLANE, src)
 		else
-			glow_overlay.plane = LIGHTING_LAMPS_PLANE
+			SET_PLANE_EXPLICIT(glow_overlay, LIGHTING_LAMPS_PLANE, src)
 		glow_overlay.blend_mode = BLEND_ADD
 		if(glow_colored)
 			var/datum/color_matrix/mat = new(
@@ -349,7 +349,7 @@
 		add_overlay(glow_overlay)
 	if(exposure_icon && exposure_icon_state)
 		exposure_overlay = image(icon = exposure_icon, icon_state = exposure_icon_state, dir = dir, layer = -1)
-		exposure_overlay.plane = LIGHTING_EXPOSURE_PLANE
+		SET_PLANE_EXPLICIT(exposure_overlay, LIGHTING_EXPOSURE_PLANE, src)
 		exposure_overlay.blend_mode = BLEND_ADD
 		exposure_overlay.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART
 		var/datum/color_matrix/mat = new(

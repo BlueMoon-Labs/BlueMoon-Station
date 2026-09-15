@@ -580,6 +580,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define GRAVITY_MOTION_BLUR list("type"="motion_blur","x"=0,"y"=0)
 
 #define STANDARD_GRAVITY 1 //Anything above this is high gravity, anything below no grav
+/// Гравитация, тянущая вверх: has_gravity() <= этого значит, что падают в потолок.
+#define NEGATIVE_GRAVITY -1
 #define GRAVITY_DAMAGE_TRESHOLD 3 //Starting with this value gravity will start to damage mobs
 
 #define CAMERA_NO_GHOSTS 0

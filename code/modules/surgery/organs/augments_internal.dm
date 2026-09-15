@@ -56,7 +56,7 @@
 	. = list()
 	. += image(icon = aug_icon, icon_state = get_overlay_state(), layer = image_layer)
 	if (emissive_overlay)
-		. += emissive_appearance(aug_icon, "[get_overlay_state()]_e", limb.owner || limb, image_layer)
+		. += emissive_appearance(aug_icon, "[get_overlay_state()]_e", layer = image_layer, offset_spokesman = limb.owner || limb)
 
 /// Called when this implant is inserted into a specific bodypart. Applies the augment overlay to the body.
 /obj/item/organ/cyberimp/proc/on_bodypart_insert(obj/item/bodypart/limb)

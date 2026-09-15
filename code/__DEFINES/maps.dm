@@ -57,6 +57,8 @@ require only minor tweaks.
 // numeric offsets - e.g. {"Down": -1} means that chasms will fall to z - 1 rather than oblivion
 #define ZTRAIT_UP "Up"
 #define ZTRAIT_DOWN "Down"
+#define ZTRAIT_NO_PLANE_STACK "No Plane Stack" //уровни связаны вертикально, но плоскостной куб на них не строится
+#define ZTRAIT_TRANSPARENT_SPACE "Transparent Space" //весь обычный космос уровня показывает этаж под ним вместо звёздной подложки
 
 // enum - how space transitions should affect this level
 #define ZTRAIT_LINKAGE "Linkage"
@@ -77,20 +79,24 @@ require only minor tweaks.
 // default trait definitions, used by SSmapping
 #define ZTRAITS_CENTCOM list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_DOWN = 0, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT1 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT2 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT3 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 0)
@@ -102,15 +108,14 @@ require only minor tweaks.
 	ZTRAIT_LAVA_RUINS = TRUE, \
 	ZTRAIT_BOMBCAP_MULTIPLIER = 5, \
 	ZTRAIT_DOWN = -1, \
-	ZTRAIT_UP = 6, \
 	ZTRAIT_BASETURF = /turf/open/lava/smooth/lava_land_surface) //You see Ivan, defines can't be modularized.
 //SKYRAT CHANGES oh a jungle
+// ZTRAIT_UP/ZTRAIT_DOWN - смещение до соседа, а не номер уровня; пара лежит соседними z.
 #define ZTRAITS_LAVALAND_JUNGLE list(\
 	ZTRAIT_MINING = TRUE, \
 	ZTRAIT_LAVA_JUNGLE_RUINS = TRUE, \
 	ZTRAIT_BOMBCAP_MULTIPLIER = 2, \
-	ZTRAIT_UP = 7, \
-	ZTRAIT_DOWN = 5, \
+	ZTRAIT_UP = 1, \
 	ZTRAIT_BASETURF = /turf/open/lava/smooth/lava_land_surface)
 #define ZTRAITS_REEBE list(ZTRAIT_REEBE = TRUE, ZTRAIT_BOMBCAP_MULTIPLIER = 0.5)
 #define ZTRAITS_VR list(ZTRAIT_VIRTUAL_REALITY = TRUE, ZTRAIT_AWAY = TRUE)

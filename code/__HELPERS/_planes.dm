@@ -16,7 +16,9 @@
 
 /// Takes a z reference that we are unsure of, sanity checks it
 /// Returns either its offset, or 0 if it's not a valid ref
-#define GET_TURF_PLANE_OFFSET(z_reference) ((SSmapping.max_plane_offset && isatom(z_reference)) ? GET_Z_PLANE_OFFSET(z_reference.z) : 0)
+#define GET_TURF_PLANE_OFFSET(z_reference) ((SSmapping.max_plane_offset && isatom(z_reference)) ? (z_reference.z ? GET_Z_PLANE_OFFSET(z_reference.z) : PLANE_TO_OFFSET(z_reference.plane)) : 0)
+/// Смещение этажа носителя для ключа кэша конечностей: как SET_PLANE_EXPLICIT в emissive_copy(), в nullspace смещения нет.
+#define LIMB_PLANE_OFFSET(wearer) ((SSmapping.max_plane_offset && wearer.z) ? GET_Z_PLANE_OFFSET(wearer.z) : 0)
 /// Essentially just an unsafe version of GET_TURF_PLANE_OFFSET()
 /// Takes a z value we returns its offset with a list lookup
 /// Will runtime during parts of init. Be careful :)
@@ -60,9 +62,9 @@
 /// Takes a z level, gets the lowest plane offset in its "stack"
 #define GET_LOWEST_STACK_OFFSET(z) ((SSmapping.max_plane_offset) ? SSmapping.z_level_to_lowest_plane_offset[z] : 0)
 /// Takes a plane, returns the canonical, unoffset plane it represents
-#define PLANE_TO_TRUE(plane) ((SSmapping.plane_offset_to_true) ? SSmapping.plane_offset_to_true["[plane]"] : plane)
+#define PLANE_TO_TRUE(plane) (isnull(SSmapping.plane_offset_to_true?["[plane]"]) ? (plane) : SSmapping.plane_offset_to_true["[plane]"])
 /// Takes a plane, returns the offset it uses
-#define PLANE_TO_OFFSET(plane) ((SSmapping.plane_to_offset) ? SSmapping.plane_to_offset["[plane]"] : plane)
+#define PLANE_TO_OFFSET(plane) (isnull(SSmapping.plane_to_offset?["[plane]"]) ? 0 : SSmapping.plane_to_offset["[plane]"])
 /// Takes a plane, returns TRUE if it is of critical priority, FALSE otherwise
 #define PLANE_IS_CRITICAL(plane) ((SSmapping.plane_to_offset) ? !!SSmapping.critical_planes["[plane]"] : FALSE)
 /// Takes a true plane, returns the offset planes that would canonically represent it

@@ -1078,19 +1078,19 @@
 		if(A != GLOB.ai_camera_room_landmark)
 			end_multicam()
 		client.perspective = EYE_PERSPECTIVE
-		client.eye = A
+		client.set_eye(A)
 	else
 		end_multicam()
 		if(isturf(loc))
 			if(eyeobj)
-				client.eye = eyeobj
+				client.set_eye(eyeobj)
 				client.perspective = EYE_PERSPECTIVE
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else
 			client.perspective = EYE_PERSPECTIVE
-			client.eye = loc
+			client.set_eye(loc)
 	update_sight()
 	if(client.eye != src)
 		var/atom/AT = client.eye
@@ -1281,8 +1281,16 @@
 		return eyeobj.emote(act, m_type, message, intentional, forced = TRUE)
 	return ..()
 
-/mob/living/silicon/ai/zMove(dir, feedback = FALSE)
-	. = eyeobj.zMove(dir, feedback)
+//Верб уводит камеру, а падение и лестницы приходят с целью и двигают само ядро.
+/mob/living/silicon/ai/zMove(dir, turf/target, z_move_flags = ZMOVE_FLIGHT_FLAGS)
+	if(target || !eyeobj)
+		return ..()
+	return eyeobj.zMove(dir, target, z_move_flags)
+
+/mob/living/silicon/ai/move_vertically(direction)
+	if(!eyeobj)
+		return FALSE
+	return zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK)
 
 /mob/living/silicon/ai/proc/stop_controlling_display()
 	if(!controlled_display)

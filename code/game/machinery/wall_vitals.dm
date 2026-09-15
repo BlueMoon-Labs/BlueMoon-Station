@@ -314,7 +314,7 @@
 	if(!is_operational)
 		return
 
-	. += emissive_appearance(icon, "outline", src, alpha = src.alpha)
+	. += emissive_appearance(icon, "outline", alpha = src.alpha, offset_spokesman = src)
 	if(isnull(patient))
 		return
 
