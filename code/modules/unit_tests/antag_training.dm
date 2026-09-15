@@ -546,3 +546,19 @@
 	TEST_ASSERT(!QDELETED(borrowed) && !QDELETED(other_target) && !QDELETED(second.current_body), "Чужая тренировка и одолженная вещь сохраняются.")
 	TEST_ASSERT_EQUAL(borrowed.training_owner?.resolve(), second, "Одолженная вещь получает нового владельца для последующей очистки.")
 	TEST_ASSERT_EQUAL(length(shared.members), 1, "Вышедший участник удаляется из состава.")
+
+/// Очистка учебных тел не создаёт brainmob и не обращается к удалённым навыкам.
+/datum/unit_test/antag_training_mind_cleanup/Run()
+	var/datum/skill_modifier/modifier = GLOB.skill_modifiers[/datum/skill_modifier/brain_damage] || new /datum/skill_modifier/brain_damage(null, TRUE)
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/mob/living/carbon/human/body = session.current_body
+	var/obj/item/organ/brain/brain = body.getorganslot(ORGAN_SLOT_BRAIN)
+	var/datum/mind/soul = body.mind
+	soul.add_skill_modifier(modifier.identifier)
+	var/start_usage = TICK_USAGE_REAL
+	qdel(session)
+	log_test("TRAINING BENCH mind cleanup: [round(TICK_USAGE_TO_MS(start_usage), 0.01)] ms")
+	TEST_ASSERT(QDELETED(body) && QDELETED(soul) && QDELETED(brain), "Тело, разум и мозг удаляются при выходе.")
+	TEST_ASSERT_NULL(body.mind, "Учебное тело отпускает удалённый разум.")
+	TEST_ASSERT_NULL(brain.brainmob, "Очистка не создаёт нового моба внутри удаляемого мозга.")
