@@ -532,18 +532,13 @@
 	if(istype(object, /obj/item/projectile))
 		var/obj/item/projectile/projectile = object
 		damage_type = projectile.damage_type
-	else if(istype(object, /obj/item/melee/baton) && damage == 0 && (attack_type & ATTACK_TYPE_MELEE))
-		// Электродубинка проверяет блок с нулевым уроном до применения STAMINA.
-		var/obj/item/melee/baton/baton = object
-		var/obj/item/stock_parts/cell/cell = baton.get_cell()
-		if(!cell?.charge)
-			return BLOCK_NONE
-		damage = baton.stamina_loss_amount
-		damage_type = STAMINA
+	else if(damage == 0 && (attack_type & ATTACK_TYPE_MELEE))
+		damage = return_list?[BLOCK_CONTEXT_DAMAGE]
+		damage_type = return_list?[BLOCK_CONTEXT_DAMAGE_TYPE]
 	else if(isitem(object))
 		var/obj/item/weapon = object
 		damage_type = weapon.damtype
-	if(damage <= 0)
+	if(!damage || damage <= 0)
 		return BLOCK_NONE
 	var/remaining_damage = max(0, block_calculate_resultant_damage(damage, return_list))
 	var/absorbed = min(capacity, remaining_damage)

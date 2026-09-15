@@ -329,7 +329,9 @@
 
 /datum/status_effect/heretic_parry/proc/parry_attack(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
-	if(!real_attack || (damage <= 0 && !(attack_type & (ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE))) || world.time >= expires_at || world.time < next_block || blocks_left <= 0)
+	if(!real_attack || world.time >= expires_at || world.time < next_block || blocks_left <= 0)
+		return BLOCK_NONE
+	if(damage <= 0 && !(attack_type & (ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE)) && !(return_list?[BLOCK_CONTEXT_DAMAGE] > 0))
 		return BLOCK_NONE
 	if((attack_type & ATTACK_TYPE_PARRY_COUNTERATTACK) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
 		return BLOCK_NONE
