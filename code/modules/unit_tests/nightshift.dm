@@ -584,11 +584,18 @@
 	assert_repeat_check_is_stable()
 
 	SSsecurity_level.set_level(SEC_LEVEL_BLUE)
+	wait_for_light_state(TRUE)
+	TEST_ASSERT_EQUAL(GLOB.security_level, SEC_LEVEL_BLUE, "Уровень безопасности должен смениться на синий.")
+	TEST_ASSERT(SSnightshift.nightshift_active, "Синий код должен сохранять ночное освещение.")
+	TEST_ASSERT(test_apc.nightshift_lights, "Синий код должен сохранять ночной режим APC.")
+	TEST_ASSERT(test_light.nightshift_enabled, "Синий код должен сохранять ночной режим светильников.")
+
+	SSsecurity_level.set_level(SEC_LEVEL_AMBER)
 	wait_for_light_state(FALSE)
-	TEST_ASSERT_EQUAL(GLOB.security_level, SEC_LEVEL_BLUE, "Security level should change to blue.")
-	TEST_ASSERT(!SSnightshift.nightshift_active, "Blue code should disable nightshift immediately.")
-	TEST_ASSERT(!test_apc.nightshift_lights, "Blue code should disable nightshift on the APC.")
-	TEST_ASSERT(!test_light.nightshift_enabled, "Blue code should disable nightshift on lights.")
+	TEST_ASSERT_EQUAL(GLOB.security_level, SEC_LEVEL_AMBER, "Уровень безопасности должен смениться на янтарный.")
+	TEST_ASSERT(!SSnightshift.nightshift_active, "Янтарный код должен сразу отключать ночное освещение.")
+	TEST_ASSERT(!test_apc.nightshift_lights, "Янтарный код должен отключать ночной режим APC.")
+	TEST_ASSERT(!test_light.nightshift_enabled, "Янтарный код должен отключать ночной режим светильников.")
 
 	SSsecurity_level.set_level(SEC_LEVEL_GREEN)
 	wait_for_light_state(TRUE)
