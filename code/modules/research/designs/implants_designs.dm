@@ -84,16 +84,10 @@
 	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 8500, /datum/material/glass = 8500, /datum/material/silver = 1800, /datum/material/titanium = 600)
 	construction_time = 200
-	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
+	build_path = /obj/item/organ/cyberimp/arm/shield
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = RIOT_SHIELD_SEC_LEVEL
-
-/datum/design/cyberimp_shield/hack
-	name = "Riot Shield implant"
-	id = "ci-shield-hack"
-	build_path = /obj/item/organ/cyberimp/arm/shield
-	hacked_only = TRUE
 
 /datum/design/cyberimp_chem
 	name = "Corporate Chemical Sequencer Implant"
@@ -102,16 +96,10 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
 	construction_time = 120
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	build_path = /obj/item/organ/cyberimp/chest/chem_implant
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = CHEM_SEQ_SEC_LEVEL
-
-/datum/design/cyberimp_chem/hack
-	name = "Chemical Sequencer Implant"
-	id = "ci-chemseq-hack"
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant
-	hacked_only = TRUE
 
 /datum/design/cyberimp_janitor
 	name = "Janitor Arm Implant"
@@ -175,16 +163,10 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 400, /datum/material/gold = 400)
-	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
+	build_path = /obj/item/organ/cyberimp/brain/anti_drop
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = ANTI_DROP_SEC_LEVEL
-
-/datum/design/cyberimp_antidrop/hack
-	name = "Anti-Drop Implant"
-	id = "ci-antidrop-hack"
-	build_path = /obj/item/organ/cyberimp/brain/anti_drop
-	hacked_only = TRUE
 
 /datum/design/cyberimp_antistun
 	name = "Corporate CNS Rebooter Implant"
@@ -193,16 +175,10 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
-	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
+	build_path = /obj/item/organ/cyberimp/brain/anti_stun
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = CNS_REBOOTER_SEC_LEVEL
-
-/datum/design/cyberimp_antistun/hack
-	name = "CNS Rebooter Implant"
-	id = "ci-antistun-hack"
-	build_path = /obj/item/organ/cyberimp/brain/anti_stun
-	hacked_only = TRUE
 
 /datum/design/cyberimp_robot_radshielding
 	name = "ECC System Guard Implant"
@@ -244,16 +220,10 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 800, /datum/material/gold = 300, /datum/material/uranium = 500)
-	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
+	build_path = /obj/item/organ/cyberimp/chest/reviver
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = REVIVER_SEC_LEVEL
-
-/datum/design/cyberimp_reviver/hack
-	name = "Reviver Implant"
-	id = "ci-reviver-hack"
-	build_path = /obj/item/organ/cyberimp/chest/reviver
-	hacked_only = TRUE
 
 /datum/design/cyberimp_thrusters
 	name = "Thrusters Set Implant"
@@ -273,16 +243,10 @@
 	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 3500, /datum/material/glass = 1500, /datum/material/silver = 1500)
 	construction_time = 200
-	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
+	build_path = /obj/item/organ/cyberimp/arm/mantis_blade
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
-
-/datum/design/cyberimp_mantis/hack
-	name = "Mantis Blade Implant"
-	id = "ci-mantis-hack"
-	build_path = /obj/item/organ/cyberimp/arm/mantis_blade
-	hacked_only = TRUE
 
 /datum/design/cyberimp_scanner
 	name = "Internal Medical Analyzer"

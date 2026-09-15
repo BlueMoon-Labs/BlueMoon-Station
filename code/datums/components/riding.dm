@@ -388,7 +388,13 @@
 		REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 	belly_harness = null
 
-	force_dismount_all()
+	// Харнесс снят - удерживать пассажира больше нечем: высаживаем всех сразу.
+	// Не через force_dismount_all(): у human-версии force_dismount() внутри
+	// do_after (sleep), а SIGNAL_HANDLER не может спать. Харнесса уже нет,
+	// так что задержка в любом случае не играет роли.
+	var/atom/movable/AM = parent
+	for(var/mob/living/rider in AM.buckled_mobs.Copy())
+		AM.unbuckle_mob(rider)
 
 /datum/component/riding/human/proc/rider_moved(datum/source, oldLoc, dir)
 	SIGNAL_HANDLER

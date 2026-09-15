@@ -3552,7 +3552,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						ShowChoices(user)
 					else
 						SetQuirks(user)
-// BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
 		// фильтр списка причуд - навигация. Ветка не выходит из проца, поэтому

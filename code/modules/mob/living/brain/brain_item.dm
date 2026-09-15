@@ -26,6 +26,15 @@
 
 	var/list/datum/brain_trauma/traumas = list()
 
+	/// List of skillchip items, their location should be this brain.
+	var/list/obj/item/skillchip/skillchips
+	/// Maximum skillchip complexity we can support before they stop working. Do not reference this var directly and instead call get_max_skillchip_complexity()
+	var/max_skillchip_complexity = 3
+	/// Maximum skillchip slots available. Do not reference this var directly and instead call get_max_skillchip_slots()
+	var/max_skillchip_slots = 5
+	/// Current NIF (Nanite Implant Framework), if any.
+	var/datum/modular_persistence/modular_persistence
+
 /obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0, no_id_transfer = FALSE, drop_if_replaced = TRUE)
 	// Аргументы родителю пересобираются, а не пробрасываются как есть: третий позиционный
 	// у него - drop_if_replaced, а у мозга - no_id_transfer, поэтому голый ..() отдавал ему
@@ -74,6 +83,14 @@
 /obj/item/organ/brain/Remove(special = FALSE, no_id_transfer = FALSE)
 	. = ..()
 	var/mob/living/carbon/C = .
+	// Delete skillchips first as parent proc sets owner to null, and skillchips need to know the brain's owner.
+	if(!QDELETED(C) && length(skillchips))
+		if(!special)
+			to_chat(C, span_notice("You feel your skillchips enable emergency power saving mode, deactivating as your brain leaves your body..."))
+			for(var/chip in skillchips)
+				var/obj/item/skillchip/skillchip = chip
+				// Run the try_ proc with force = TRUE.
+				skillchip.try_deactivate_skillchip(silent = special, force = TRUE, brain_owner = C)
 	for(var/X in traumas)
 		var/datum/brain_trauma/BT = X
 		BT.on_lose(TRUE)
@@ -94,6 +111,34 @@
 			continue
 		BT.owner = owner
 		BT.on_gain()
+
+/obj/item/organ/brain/attackby(obj/item/item, mob/user, list/modifiers, list/attack_modifiers)
+	user.changeNext_move(CLICK_CD_MELEE)
+
+	// Cutting out skill chips.
+	if(length(skillchips) && item.get_sharpness() == SHARP_EDGED)
+		to_chat(user,span_notice("You begin to excise skillchips from [src]."))
+		if(do_after(user, 15 SECONDS, target = src))
+			for(var/chip in skillchips)
+				var/obj/item/skillchip/skillchip = chip
+
+				if(!istype(skillchip))
+					stack_trace("Item of type [skillchip.type] qdel'd from [src] skillchip list.")
+					qdel(skillchip)
+					continue
+
+				remove_skillchip(skillchip)
+
+				if(skillchip.removable)
+					skillchip.forceMove(drop_location())
+					continue
+
+				qdel(skillchip)
+
+			skillchips = null
+		return
+
+	return ..()
 
 /obj/item/organ/brain/proc/transfer_identity(mob/living/L)
 	name = "[L.name]'s brain"
@@ -305,6 +350,7 @@
 	if(brainmob)
 		QDEL_NULL(brainmob)
 	QDEL_LIST(traumas)
+	QDEL_NULL(modular_persistence)
 	if(owner?.mind)
 		owner.mind.set_current(null)
 	return ..()

@@ -685,7 +685,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			var/D = sqrt(1 / max(1, get_dist(l, src)))
 			if(!l.hallucination)
 				to_chat(l, "<span class='warning'>Looking at the supermatter unprotected gives you a headache...</span>")
-			l.hallucination += power * hallucination_power * D
+			l.hallucination += bluemoon_hallucination_gain(l, D) // BLUEMOON ADD: TRAIT_SUPERMATTER_SOOTHER calms the gaze
 			l.hallucination = clamp(l.hallucination, 0, 200)
 	for(var/mob/living/l in range(src, round((power / 100) ** 0.25)))
 		var/rads = (power / 10) * sqrt( 1 / max(get_dist(l, src),1) )
