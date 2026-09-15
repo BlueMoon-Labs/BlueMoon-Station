@@ -65,6 +65,8 @@
 /datum/unit_test/foam_spread_keeps_reaction_snapshot/Destroy()
 	if(source_turf && saved_adjacency)
 		source_turf.atmos_adjacent_turfs = saved_adjacency
+	source_turf = null
+	saved_adjacency = null
 	return ..()
 
 /datum/unit_test/foam_spread_keeps_reaction_snapshot/Run()
