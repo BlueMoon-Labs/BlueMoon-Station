@@ -11,11 +11,11 @@
 #define ANOMALY_CORE_PYRO				/obj/item/assembly/signaler/anomaly/pyro
 
 // Max amounts of cores you can make
-#define MAX_CORES_BLUESPACE				8
-#define MAX_CORES_GRAVITATIONAL			8
-#define MAX_CORES_FLUX					8
-#define MAX_CORES_VORTEX				8
-#define MAX_CORES_PYRO					8
+#define MAX_CORES_BLUESPACE				20
+#define MAX_CORES_GRAVITATIONAL			20
+#define MAX_CORES_FLUX					20
+#define MAX_CORES_VORTEX				20
+#define MAX_CORES_PYRO					20
 
 /// chance supermatter anomalies drop real cores
 #define SUPERMATTER_ANOMALY_DROP_CHANCE 20
