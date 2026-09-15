@@ -34,6 +34,23 @@
 	. = ..()
 	if(IS_HERETIC(user))
 		. += span_notice("Положите компоненты на руну или рядом с ней и коснитесь круга, чтобы выбрать изученный ритуал. Перемещение компонентов прервёт обряд.")
+		var/preparation = preparation_hint(user)
+		if(preparation)
+			. += span_notice(preparation)
+
+/obj/effect/eldritch/proc/preparation_hint(mob/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_void/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
+	var/turf/open/floor/floor = get_turf(src)
+	if(!knowledge || !istype(floor))
+		return null
+	if(floor.GetTemperature() <= T0C)
+		return "Руна достаточно холодна для клинка Пустоты. Изготовление занимает [knowledge.ritual_time / (1 SECONDS)] сек."
+	var/obj/effect/heretic_combat_zone/void/winter = knowledge.combat_zone
+	if(!QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs))
+		var/remaining = max(0, winter.expires_at - world.time)
+		return "Зимний предел над руной: ещё [CEILING(remaining / (1 SECONDS), 1)] сек. Изготовление клинка занимает [knowledge.ritual_time / (1 SECONDS)] сек.[remaining < knowledge.ritual_time ? " Времени уже недостаточно — обновите поле." : ""]"
+	return "Для клинка Пустоты сначала накройте руну своим Зимним пределом или охладите её до 0 °C. Сейчас [round(floor.GetTemperature() - T0C, 0.1)] °C."
 
 /obj/effect/eldritch/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
@@ -64,12 +81,14 @@
 		if(length(knowledge.required_atoms))
 			rituals[knowledge.name] = knowledge
 	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
-	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё.", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
+	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё. [preparation_hint(user)]", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
 	if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
 		var/datum/eldritch_knowledge/ritual = rituals[choice]
 		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
-			reject_ritual(user, ritual, "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты.")
-			heretic.ensure_hunt_target(user)
+			reject_ritual(user, ritual, heretic.hunt_target_unavailable_reason(heretic.hunt_target))
+			var/datum/mind/target_mind = heretic.hunt_target
+			var/mob/living/target_body = target_mind?.current
+			log_game("Отказ подношения [key_name(user)]: mind=[REF(target_mind)], body=[REF(target_body)] ([target_body?.type]), body_mind=[REF(target_body?.mind)], stat=[target_body?.stat], ghost_role=[target_mind?.is_ghost_role()].")
 		else
 			do_ritual(user, ritual)
 	if(!QDELETED(src))
@@ -312,8 +331,11 @@
 	var/list/available_atoms = collect_ritual_atoms(user)
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
 		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-		if(!heretic || !heretic.hunt_target_available(heretic.hunt_target))
-			return "Назначенная цель отсутствует или больше не подходит для подношения. Выберите новую цель охоты."
+		if(!heretic)
+			return "Обряд доступен только еретику."
+		var/unavailable_reason = heretic.hunt_target_unavailable_reason(heretic.hunt_target)
+		if(unavailable_reason)
+			return unavailable_reason
 		var/mob/living/carbon/human/victim = heretic.hunt_target.current
 		if(!(victim in available_atoms))
 			return "Назначенная цель [victim.real_name] должна находиться на руне или рядом с ней, вне шкафов и других контейнеров."
@@ -349,7 +371,12 @@
 		if(shortfall > 0)
 			missing += "[heretic_ritual_ingredient_name(required_type)] ×[shortfall]"
 	if(length(missing))
-		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны."
+		var/summon_hint = ""
+		if(ritual.type == /datum/eldritch_knowledge/living_heart)
+			summon_hint = " Это изготовление запасного сердца. Для своего сердца используйте «Призвать живое сердце»; потерянное вернётся после 5 секунд неподвижности."
+		else if(ritual.type == /datum/eldritch_knowledge/codex_cicatrix)
+			summon_hint = " Это изготовление запасной книги. Уже выданный кодекс можно получить способностью «Призвать кодекс»."
+		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны.[summon_hint]"
 	if(ritual.type == /datum/eldritch_knowledge/base_void)
 		var/turf/open/floor/floor = get_turf(src)
 		if(!istype(floor))
@@ -378,6 +405,12 @@
 	transform = matrix() * (1 / HERETIC_RUNE_SCALE)
 
 #define HERETIC_NETWORK_INFLUENCE_LIMIT 12
+#define HERETIC_BRIG_INFLUENCE_CHANCE 20
+#define HERETIC_PUBLIC_INITIAL_INFLUENCES 2
+#define HERETIC_INFLUENCE_SPACING 12
+#define HERETIC_INFLUENCE_AREA_LIMIT 2
+#define HERETIC_INFLUENCE_SPAWN_ATTEMPTS 30
+#define HERETIC_INFLUENCE_UNIQUE_AREA_ATTEMPTS 20
 
 /// Смена тела или повторная выдача роли не сбрасывает личную историю разломов за раунд.
 /datum/reality_smash_tracker
@@ -439,10 +472,10 @@
 	if(!initial_influences_seeded)
 		if(length(smashes) < HERETIC_INFLUENCE_INITIAL_COUNT)
 			for(var/index in length(smashes) + 1 to HERETIC_INFLUENCE_INITIAL_COUNT)
-				if(!RandomSpawnSmash(TRUE))
+				if(!RandomSpawnSmash(TRUE, index <= HERETIC_PUBLIC_INITIAL_INFLUENCES))
 					break
 		// Если станция ещё не готова, первый успешный запуск сохранит стартовый запас.
-		initial_influences_seeded = !!length(smashes)
+		initial_influences_seeded = length(smashes) >= HERETIC_INFLUENCE_INITIAL_COUNT
 		ReworkNetwork()
 	if(!next_influence_at)
 		next_influence_at = world.time + HERETIC_INFLUENCE_INTERVAL
@@ -490,12 +523,52 @@
 	schedule_next_influence()
 	return spawned
 
-/datum/reality_smash_tracker/proc/find_spawn_turf()
+/datum/reality_smash_tracker/proc/find_spawn_turf(public_only = FALSE)
+	var/static/list/brig_areas = typecacheof(list(
+		/area/security/office,
+		/area/security/brig,
+		/area/security/brig_cells,
+		/area/security/brig_briefing,
+		/area/security/prison,
+		/area/security/processing,
+		/area/security/warden,
+		/area/security/range,
+		/area/security/execution,
+		/area/ai_monitored/security/armory,
+		/area/command/heads_quarters/hos,
+	))
 	if(!length(GLOB.the_station_areas))
 		return null
-	for(var/attempt in 1 to 30)
-		var/turf/location = get_safe_random_station_turf()
-		if(!location || !is_station_level(location.z))
+	var/list/allowed_areas = list()
+	var/list/unused_areas = list()
+	for(var/station_area_type in GLOB.the_station_areas)
+		if(public_only && !ispath(station_area_type, /area/hallway/primary))
+			continue
+		var/influence_count = 0
+		for(var/obj/effect/reality_smash/influence as anything in smashes)
+			var/area/influence_area = get_area(influence)
+			if(influence_area?.type == station_area_type)
+				influence_count++
+		if(influence_count >= HERETIC_INFLUENCE_AREA_LIMIT)
+			continue
+		allowed_areas += station_area_type
+		if(!influence_count)
+			unused_areas += station_area_type
+	if(!length(allowed_areas))
+		return null
+	for(var/attempt in 1 to HERETIC_INFLUENCE_SPAWN_ATTEMPTS)
+		var/turf/location = get_safe_random_station_turf(attempt <= HERETIC_INFLUENCE_UNIQUE_AREA_ATTEMPTS && length(unused_areas) ? unused_areas : allowed_areas)
+		if(!istype(location, /turf/open/floor) || !is_station_level(location.z) || !is_safe_turf(location))
+			continue
+		var/area/spawn_area = get_area(location)
+		if(is_type_in_typecache(spawn_area, brig_areas) && !prob(HERETIC_BRIG_INFLUENCE_CHANCE))
+			continue
+		var/too_close = FALSE
+		for(var/obj/effect/reality_smash/influence as anything in smashes)
+			if(influence.z == location.z && get_dist(influence, location) < HERETIC_INFLUENCE_SPACING)
+				too_close = TRUE
+				break
+		if(too_close)
 			continue
 		var/list/nearby = range(1, location)
 		if(locate(/obj/effect/reality_smash) in nearby)
@@ -505,13 +578,14 @@
 		return location
 	return null
 
-/datum/reality_smash_tracker/proc/RandomSpawnSmash(deferred = FALSE)
+/datum/reality_smash_tracker/proc/RandomSpawnSmash(deferred = FALSE, public_only = FALSE)
 	if(length(smashes) >= HERETIC_NETWORK_INFLUENCE_LIMIT)
 		return FALSE
-	var/turf/location = find_spawn_turf()
+	var/turf/location = find_spawn_turf(public_only)
 	if(!location)
 		return FALSE
 	new /obj/effect/reality_smash(location, src)
+	log_game("Появился разлом в [AREACOORD(location)] (общедоступный стартовый: [public_only]).")
 	if(!deferred)
 		ReworkNetwork()
 	return TRUE
@@ -704,3 +778,9 @@
 	return TRUE
 
 #undef HERETIC_NETWORK_INFLUENCE_LIMIT
+#undef HERETIC_BRIG_INFLUENCE_CHANCE
+#undef HERETIC_PUBLIC_INITIAL_INFLUENCES
+#undef HERETIC_INFLUENCE_SPACING
+#undef HERETIC_INFLUENCE_AREA_LIMIT
+#undef HERETIC_INFLUENCE_SPAWN_ATTEMPTS
+#undef HERETIC_INFLUENCE_UNIQUE_AREA_ATTEMPTS

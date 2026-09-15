@@ -3,7 +3,7 @@
 	var/list/spawn_locations = list()
 	var/spawn_index = 1
 
-/datum/reality_smash_tracker/influence_schedule_fixture/find_spawn_turf()
+/datum/reality_smash_tracker/influence_schedule_fixture/find_spawn_turf(public_only = FALSE)
 	if(spawn_index > length(spawn_locations))
 		return null
 	return spawn_locations[spawn_index++]

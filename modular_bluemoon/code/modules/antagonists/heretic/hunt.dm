@@ -9,7 +9,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/recovery_in_progress = FALSE
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart/can_cast(mob/user, skipcharge, silent)
-	return !recovery_in_progress && ..()
+	return heretic_check(user, !recovery_in_progress, silent, "Возвращение сердца уже началось. Стойте неподвижно до его завершения.") && ..()
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart/can_summon_item(obj/item/item, mob/user)
 	if(!..())
@@ -86,17 +86,32 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			rune.release_atoms()
 
 /datum/antagonist/heretic/proc/hunt_target_available(datum/mind/candidate, selecting = FALSE)
-	if(QDELETED(candidate) || candidate == owner || (candidate in GLOB.heretic_sacrificed_minds))
-		return FALSE
+	return !hunt_target_unavailable_reason(candidate, selecting)
+
+/datum/antagonist/heretic/proc/hunt_target_unavailable_reason(datum/mind/candidate, selecting = FALSE)
+	if(QDELETED(candidate))
+		return "Цель охоты не назначена или её душа больше недоступна. Выберите новую цель через живое сердце."
+	if(candidate == owner)
+		return "Собственная душа не подходит для подношения."
+	if(candidate in GLOB.heretic_sacrificed_minds)
+		return "Эта душа уже принята Мансусом. Выберите новую цель через живое сердце."
 	var/mob/living/carbon/human/body = candidate.current
-	if(!istype(body) || QDELETED(body) || IS_HERETIC(body) || IS_HERETIC_MONSTER(body) || candidate.is_ghost_role())
-		return FALSE
+	if(QDELETED(body) || !istype(body))
+		return "У назначенной души нет подходящего человеческого тела."
+	if(body.mind != candidate)
+		return "Связь назначенной души с телом нарушена. Повторите попытку после завершения смены тела."
+	if(IS_HERETIC(body) || IS_HERETIC_MONSTER(body))
+		return "Назначенная цель сама служит Мансусу и не подходит для подношения."
+	if(candidate.is_ghost_role())
+		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
 	var/turf/body_turf = get_turf(body)
 	if(!body_turf || !is_station_level(body_turf.z))
-		return FALSE
-	if(selecting && (body.stat == DEAD || !body.client))
-		return FALSE
-	return TRUE
+		return "Тело назначенной цели находится вне станции. Верните его на станцию или выберите другую цель."
+	if(selecting && body.stat == DEAD)
+		return "Погибшего нельзя назначить новой целью. Труп уже назначенной цели принимается."
+	if(selecting && !body.client)
+		return "Для нового назначения нужен игрок в теле цели. Уже назначенная цель сохраняется после выхода в призрака."
+	return null
 
 /datum/antagonist/heretic/proc/set_hunt_target(datum/mind/new_target)
 	hunt_target = new_target

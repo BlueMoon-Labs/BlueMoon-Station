@@ -951,7 +951,7 @@
 /obj/effect/proc_holder/spell/self/heretic_wax/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return ..() && wax?.can_use(user)
+	return ..() && heretic_check(user, wax?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_wax/release
 	name = "Снять печать"
@@ -963,7 +963,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.release(user, consume_shell = user.a_intent == INTENT_DISARM))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/shell
 	name = "Погребальная оболочка"
@@ -975,7 +975,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.raise_shell(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/procession
 	name = "Погребальная процессия"
@@ -987,7 +987,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.procession(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/crown
 	name = "Бессмертная процессия"
@@ -998,13 +998,13 @@
 /obj/effect/proc_holder/spell/self/heretic_wax/crown/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return ..() && wax?.ascension_active
+	return ..() && heretic_check(user, wax?.ascension_active, silent, "Сначала завершите вознесение этого пути.")
 
 /obj/effect/proc_holder/spell/self/heretic_wax/crown/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.procession(user, TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint
 	name = "Снятие оттиска"
@@ -1024,13 +1024,13 @@
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return wax?.can_use(user) && wax.combat_resource >= 1 && wax.line_clear(user, target) && heretic_can_affect(user, target, chargecost = 0)
+	return heretic_check(user, wax?.can_use(user) && wax.combat_resource >= 1 && wax.line_clear(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужны 1 Воск и видимый противник без защиты от магии; стены перекрывают путь.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!length(targets) || !isliving(targets[1]) || !wax?.imprint(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_WAX_RANGE
 #undef HERETIC_WAX_RELEASE_RANGE

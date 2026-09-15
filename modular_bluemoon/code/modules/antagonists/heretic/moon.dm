@@ -365,7 +365,7 @@
 	aim_assist = FALSE
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/can_cast(mob/user, skipcharge, silent)
-	return ..() && get_heretic_moon(user)
+	return ..() && heretic_check(user, get_heretic_moon(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create
 	name = "Лунное отражение"
@@ -386,7 +386,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!length(targets) || !knowledge || !knowledge.create_reflection(user, targets[1], replace_oldest = TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	if(length(knowledge.reflections) < knowledge.reflection_limit())
 		if(!knowledge.create_reflection(user, get_turf(user)))
@@ -414,7 +414,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!knowledge || !knowledge.exchange(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_moon
 	clothes_req = FALSE
@@ -424,7 +424,7 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/self/heretic_moon/can_cast(mob/user, skipcharge, silent)
-	return ..() && get_heretic_moon(user)
+	return ..() && heretic_check(user, get_heretic_moon(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_moon/mirage
 	name = "Шествие миражей"
@@ -435,7 +435,7 @@
 /obj/effect/proc_holder/spell/self/heretic_moon/mirage/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!knowledge || !knowledge.create_mirages(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_moon/eclipse
 	name = "Лунное затмение"
@@ -446,14 +446,14 @@
 /obj/effect/proc_holder/spell/self/heretic_moon/eclipse/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!knowledge)
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/list/visible = view(2, user)
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in knowledge.reflections)
 		if(reflection.z == user.z && get_dist(user, reflection) <= HERETIC_MOON_RANGE)
 			visible |= view(2, reflection)
 	if(!knowledge.create_reflection(user, get_turf(user), replace_oldest = TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	for(var/mob/living/victim in visible)
 		if(!heretic_can_affect(user, victim))

@@ -800,12 +800,12 @@
 /obj/effect/proc_holder/spell/pointed/heretic_blood/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	return ..() && blood?.can_use(user)
+	return ..() && heretic_check(user, blood?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	return blood?.valid_victim(user, target) && heretic_can_affect(user, target, chargecost = 0)
+	return heretic_check(user, blood?.valid_victim(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужен доступный живой противник без защиты от магии и чужой кровной связи.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	name = "Связать / взыскать"
@@ -833,7 +833,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!length(targets) || !blood?.release(user, targets[1], partial = user.a_intent == INTENT_DISARM))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance
 	name = "Натянуть жилу"
@@ -848,13 +848,13 @@
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !seal || (seal.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood) && !seal.collecting)
+	return heretic_check(user, !seal || (seal.blood_ref?.resolve() == heretic.get_knowledge(/datum/eldritch_knowledge/base_blood) && !seal.collecting), silent, "Нужен доступный живой противник без защиты от магии и чужой кровной связи.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!length(targets) || !blood?.lance(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/coronation
 	name = "Кровный приговор"
@@ -870,13 +870,13 @@
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	return blood.can_use_ascension(user) && seal?.blood_ref?.resolve() == blood && !seal.collecting
+	return heretic_check(user, blood.can_use_ascension(user) && seal?.blood_ref?.resolve() == blood && !seal.collecting, silent, "Нужны вознесение и ваша кровная связь на цели, по которой ещё не начато взыскание.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/coronation/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!length(targets) || !blood?.coronation(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_blood
 	clothes_req = FALSE
@@ -889,7 +889,7 @@
 /obj/effect/proc_holder/spell/self/heretic_blood/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	return ..() && blood?.can_use(user)
+	return ..() && heretic_check(user, blood?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_blood/pact
 	name = "Договор: ускорение"
@@ -899,7 +899,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!blood?.pact(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_blood/reckoning
 	name = "Взыскать долги"
@@ -911,7 +911,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!blood?.reckoning(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /datum/eldritch_knowledge/base_blood/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

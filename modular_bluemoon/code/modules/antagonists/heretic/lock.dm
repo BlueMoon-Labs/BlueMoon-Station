@@ -743,7 +743,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return ..() && knowledge?.valid_user(user)
+	return ..() && heretic_check(user, knowledge?.valid_user(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal
 	name = "Запечатать проход"
@@ -755,13 +755,13 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return isturf(target) && knowledge?.combat_resource >= 1 && length(knowledge.seals) < knowledge.seal_limit() && knowledge.valid_seal_turf(target, user)
+	return heretic_check(user, isturf(target) && knowledge?.combat_resource >= 1 && length(knowledge.seals) < knowledge.seal_limit() && knowledge.valid_seal_turf(target, user), silent, "Для печати нужны свободный видимый пол, 1 ключ и свободное место в пределе печатей.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!knowledge?.create_seal(targets[1], user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
 	action_icon_state = "lock_bolt"
@@ -789,18 +789,18 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!knowledge?.valid_user(user) || !clear_shot(target, user))
-		return FALSE
+		return heretic_check(user, FALSE, silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
 	if(!isliving(target))
-		return knowledge.can_open_lock(target, user)
+		return heretic_check(user, knowledge.can_open_lock(target, user), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
 	var/mob/living/victim = target
-	return victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim)
+	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/cast(list/targets, mob/living/user)
 	var/atom/target = targets[1]
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!can_target(target, user, TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	if(isliving(target))
 		if(!heretic_can_affect(user, target))
@@ -816,7 +816,7 @@
 					break
 		log_combat(user, victim, "поразил Открывающим ударом")
 	else if(!knowledge.open_lock(target, user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	for(var/turf/place as anything in get_line(user, target))
 		new /obj/effect/temp_visual/heretic_lock/release(place)
@@ -835,15 +835,15 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!isturf(target) || !knowledge || knowledge.court_busy || knowledge.combat_resource < 2)
-		return FALSE
+		return heretic_check(user, FALSE, silent, "Двор требует 2 ключа, минимум три свободных клетки для печатей и место в их общем пределе.")
 	var/list/positions = knowledge.court_turfs(target, user)
-	return length(positions) >= 3 && length(knowledge.seals) + length(positions) <= knowledge.seal_limit()
+	return heretic_check(user, length(positions) >= 3 && length(knowledge.seals) + length(positions) <= knowledge.seal_limit(), silent, "Двор требует 2 ключа, минимум три свободных клетки для печатей и место в их общем пределе.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/court/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!can_target(targets[1], user, TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/list/positions = knowledge.court_turfs(targets[1], user)
 	var/generation = knowledge.court_generation
@@ -858,7 +858,7 @@
 	if(QDELETED(src))
 		return
 	if(!completed || !knowledge.raise_court(user, positions, expected_generation = generation))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_lock
 	clothes_req = FALSE
@@ -870,7 +870,7 @@
 /obj/effect/proc_holder/spell/self/heretic_lock/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return ..() && knowledge?.valid_user(user)
+	return ..() && heretic_check(user, knowledge?.valid_user(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_lock/release
 	name = "Размыкание"
@@ -881,7 +881,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!knowledge?.release_seals(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_lock/house
 	action_icon_state = "lock_ascension"
@@ -892,18 +892,18 @@
 /obj/effect/proc_holder/spell/self/heretic_lock/house/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return ..() && knowledge?.ascension_active && !knowledge.court_busy
+	return ..() && heretic_check(user, knowledge?.ascension_active, silent, "Сначала завершите вознесение.") && heretic_check(user, !knowledge.court_busy, silent, "Предыдущий двор ещё создаётся.")
 
 /obj/effect/proc_holder/spell/self/heretic_lock/house/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!knowledge?.ascension_active || knowledge.court_busy)
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/list/positions = knowledge.court_turfs(get_turf(user), user, radius = 2)
 	var/generation = knowledge.court_generation
 	if(length(positions) < 3 || length(positions) + length(knowledge.seals) > knowledge.seal_limit())
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	knowledge.court_busy = TRUE
 	for(var/turf/place as anything in positions)
@@ -916,7 +916,7 @@
 	if(QDELETED(src))
 		return
 	if(!completed || !knowledge.ascension_active || !knowledge.raise_court(user, positions, key_cost = 0, expected_generation = generation))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	knowledge.gain_combat_resource(knowledge.combat_resource_max)
 

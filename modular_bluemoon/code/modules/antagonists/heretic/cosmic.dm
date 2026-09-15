@@ -526,7 +526,7 @@
 /obj/effect/proc_holder/spell/self/cosmic/can_cast(mob/user, skipcharge, silent)
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return . && heretic?.selected_path == PATH_COSMIC && !user.incapacitated()
+	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest
 	parent_type = /obj/effect/proc_holder/spell/pointed
@@ -547,7 +547,7 @@
 /obj/effect/proc_holder/spell/self/cosmic/manifest/can_cast(mob/user, skipcharge, silent)
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return . && heretic?.selected_path == PATH_COSMIC && !user.incapacitated()
+	return . && heretic_check(user, heretic?.selected_path == PATH_COSMIC && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/cosmic/manifest/intercept_check(mob/user, atom/target, silent = FALSE)
 	return ..(user, get_turf(target), silent)
@@ -571,7 +571,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(!length(targets) || !knowledge?.manifest(get_turf(targets[1]), user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/cosmic/step
 	parent_type = /obj/effect/proc_holder/spell/pointed
@@ -590,7 +590,7 @@
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
-	if(!. || heretic?.selected_path != PATH_COSMIC || !knowledge || user.incapacitated())
+	if(!. || !heretic_check(user, heretic?.selected_path == PATH_COSMIC && knowledge && !user.incapacitated(), silent, "Способность недоступна вашему пути или текущему телу."))
 		return FALSE
 	if(!knowledge.nearest_star(user, 1))
 		if(!silent)
@@ -607,7 +607,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(!length(targets) || !can_target(targets[1], user, TRUE) || !knowledge.travel(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/cosmic/pulse
 	name = "Гравитационный пульс"
@@ -619,7 +619,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(!knowledge?.pulse(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/cosmic/collapse
 	name = "Схлопнуть созвездие"
@@ -632,7 +632,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(collapse_pending || !length(knowledge?.stars))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/list/star_snapshot = list()
 	for(var/obj/structure/heretic_star/star as anything in knowledge.stars)
@@ -663,7 +663,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(!heretic?.ascended || !knowledge || !knowledge.safe_star_turf(get_turf(user)))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	knowledge.clear_stars()
 	knowledge.add_star(get_turf(user), user)

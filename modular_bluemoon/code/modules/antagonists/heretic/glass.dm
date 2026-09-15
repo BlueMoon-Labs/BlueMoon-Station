@@ -1130,12 +1130,12 @@
 /obj/effect/proc_holder/spell/pointed/heretic_glass/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return ..() && glass?.can_use(user)
+	return ..() && heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return glass?.can_use(user) && glass.line_clear(user, target)
+	return heretic_check(user, glass?.can_use(user) && glass.line_clear(user, target), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	name = "Преломлённый луч"
@@ -1147,13 +1147,13 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/destination = get_turf(target)
-	return glass?.can_use(user) && destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range && (!isliving(target) || heretic_can_affect(user, target, chargecost = 0))
+	return heretic_check(user, glass?.can_use(user) && destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range && (!isliving(target) || heretic_can_affect(user, target, chargecost = 0)), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!length(targets) || !glass?.release(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards
 	name = "Поставить призму"
@@ -1165,17 +1165,17 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!glass?.can_use(user))
-		return FALSE
+		return heretic_check(user, FALSE, silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
 	if(istype(target, /obj/structure/heretic_glass_prism))
 		var/obj/structure/heretic_glass_prism/prism = target
-		return prism.glass_ref?.resolve() == glass && glass.line_clear(user, prism, allow_prisms = TRUE)
-	return isturf(target) && glass.combat_resource >= 1 && glass.valid_prism_turf(user, target)
+		return heretic_check(user, prism.glass_ref?.resolve() == glass && glass.line_clear(user, prism, allow_prisms = TRUE), silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
+	return heretic_check(user, isturf(target) && glass.combat_resource >= 1 && glass.valid_prism_turf(user, target), silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!length(targets) || !glass?.shards(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/barrier
 	name = "Хрупкая преграда"
@@ -1186,13 +1186,13 @@
 /obj/effect/proc_holder/spell/pointed/heretic_glass/barrier/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return isturf(target) && glass?.combat_resource >= 1 && glass.valid_barrier_turf(user, target)
+	return heretic_check(user, isturf(target) && glass?.combat_resource >= 1 && glass.valid_barrier_turf(user, target), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/barrier/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!length(targets) || !isturf(targets[1]) || !glass?.create_barrier(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_glass
 	clothes_req = FALSE
@@ -1210,7 +1210,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!glass?.storm(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_glass/crown
 	name = "Вечный витраж"
@@ -1221,13 +1221,13 @@
 /obj/effect/proc_holder/spell/self/heretic_glass/crown/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return ..() && glass?.can_use(user) && glass.ascension_active
+	return ..() && heretic_check(user, glass?.can_use(user) && glass.ascension_active, silent, "Сначала завершите вознесение этого пути.")
 
 /obj/effect/proc_holder/spell/self/heretic_glass/crown/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!glass?.crown(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_GLASS_RANGE
 #undef HERETIC_GLASS_BARRIER_LIFETIME

@@ -1,3 +1,34 @@
+/obj/effect/proc_holder/spell
+	COOLDOWN_DECLARE(heretic_failure_log)
+	var/heretic_failure_reason
+
+/obj/effect/proc_holder/spell/proc/heretic_check(mob/user, condition, silent, reason)
+	if(condition)
+		heretic_failure_reason = null
+		return TRUE
+	if(user?.incapacitated())
+		reason = "Вы не можете действовать: дождитесь окончания оглушения или освободитесь."
+	else if(user && !isturf(user.loc))
+		reason = "Сначала выйдите из контейнера или укрытия на пол."
+	heretic_failure_reason = reason
+	if(!silent && user)
+		to_chat(user, span_warning("[name]: [reason]"))
+		if(COOLDOWN_FINISHED(src, heretic_failure_log))
+			COOLDOWN_START(src, heretic_failure_log, 5 SECONDS)
+			log_game("[key_name(user)] не применяет [name] ([type]): [reason] в [AREACOORD(user)].")
+	return FALSE
+
+/obj/effect/proc_holder/spell/proc/heretic_require_knowledge(mob/user, silent, knowledge_type, resource_cost = 0)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/knowledge = heretic?.get_knowledge(knowledge_type)
+	if(!heretic_check(user, isliving(user) && knowledge && !heretic.role_removed && heretic.owner?.current == user && !user.incapacitated(), silent, "Нужно изучить соответствующее знание своего пути."))
+		return FALSE
+	return heretic_check(user, knowledge.combat_resource >= resource_cost, silent, "Нужно [resource_cost] ед. ресурса «[knowledge.combat_resource_name]»; сейчас [knowledge.combat_resource].")
+
+/obj/effect/proc_holder/spell/proc/heretic_revert_cast(mob/user, reason)
+	heretic_check(user, FALSE, FALSE, reason || heretic_failure_reason || "Применение отменено. Условия способности: [desc]")
+	revert_cast(user)
+
 /proc/heretic_heal_damage(mob/living/target, brute = 0, burn = 0)
 	if(QDELETED(target) || target.stat == DEAD)
 		return 0
@@ -271,15 +302,7 @@
 	var/knowledge_type
 
 /obj/effect/proc_holder/spell/self/heretic_power/can_cast(mob/user, skipcharge, silent)
-	if(!..() || !isliving(user))
-		return FALSE
-	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
-	var/datum/eldritch_knowledge/knowledge = heretic?.get_knowledge(knowledge_type)
-	if(!knowledge || knowledge.combat_resource < 1)
-		if(!silent)
-			to_chat(user, span_warning("Недостаточно силы пути. Запас указан на индикаторе рядом с предупреждениями."))
-		return FALSE
-	return TRUE
+	return ..() && heretic_require_knowledge(user, silent, knowledge_type, 1)
 
 /obj/effect/proc_holder/spell/self/heretic_power/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
@@ -377,6 +400,7 @@
 	var/boundary_color = "#ffffff"
 	var/datum/movespeed_modifier/zone_slowdown
 	var/expiry_timer
+	var/expires_at
 
 /obj/effect/heretic_combat_zone/Initialize(mapload, datum/mind/master)
 	. = ..()
@@ -386,6 +410,7 @@
 	zone_slowdown.multiplicative_slowdown = 1
 	refresh_boundary()
 	START_PROCESSING(SSprocessing, src)
+	expires_at = world.time + duration
 	expiry_timer = QDEL_IN_STOPPABLE(src, duration)
 
 /obj/effect/heretic_combat_zone/Destroy()

@@ -158,7 +158,7 @@
 	. = ..()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!heretic) // Такого быть не должно, но вдруг
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/obj/item/I
 	for(var/obj/item/candidate in heretic.summon_items)
@@ -171,8 +171,7 @@
 			if(istype(I, /obj/item/forbidden_book))
 				heretic.on_codex_summoned()
 		else
-			to_chat(user, span_warning("Не удалось призвать предмет!"))
-			revert_cast(user)
+			heretic_revert_cast(user, "Не удалось призвать предмет!")
 		return
 
 	var/list/nearby = user.GetAllContents(summon_type)
@@ -187,8 +186,7 @@
 	if(recover_missing_item(user, heretic))
 		return
 
-	to_chat(user, span_warning("Вы не ощущаете [initial(summon_type.name)] ни поблизости, ни за завесой."))
-	revert_cast(user)
+	heretic_revert_cast(user, "Вы не ощущаете [initial(summon_type.name)] ни поблизости, ни за завесой.")
 
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/can_summon_item(obj/item/item, mob/user)
 	return !QDELETED(item) && istype(item, summon_type) && !GLOB.heretic_ritual_reservations[item]
@@ -276,7 +274,7 @@
 
 /obj/effect/proc_holder/spell/pointed/blood_siphon/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user, TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	if(!heretic_can_affect(user, targets[1]))
 		return
@@ -376,7 +374,7 @@
 
 /obj/effect/proc_holder/spell/pointed/cleave/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return FALSE
 	var/attempted_hit = FALSE
 	for(var/mob/living/carbon/human/victim in view(1, targets[1]))
@@ -392,7 +390,7 @@
 		victim.adjustBruteLoss(20)
 		new /obj/effect/temp_visual/cleave(victim.drop_location())
 	if(!attempted_hit)
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/cleave/can_target(atom/target, mob/user, silent)
 	. = ..()
@@ -719,8 +717,7 @@
 		if(victims_drained >= 4)
 			break
 	if(!was_on_fire && !victims_drained)
-		to_chat(user, span_warning("Рядом нет доступного пламени, из которого можно вытянуть жар."))
-		revert_cast(user)
+		heretic_revert_cast(user, "Рядом нет доступного пламени, из которого можно вытянуть жар.")
 		return
 	heretic_heal_damage(living_user, 10 * victims_drained, 10 * victims_drained)
 	playsound(user, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 60, TRUE)
@@ -966,12 +963,12 @@
 
 /obj/effect/proc_holder/spell/pointed/void_blink/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/turf/departure = get_turf(user)
 	var/turf/destination = get_turf(targets[1])
 	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	playsound(departure, 'sound/magic/voidblink.ogg', 80, TRUE)
 	playsound(destination, 'sound/magic/voidblink.ogg', 80, TRUE)
@@ -1053,17 +1050,17 @@
 
 /obj/effect/proc_holder/spell/pointed/boogie_woogie/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/mob/living/victim = targets[1]
 	var/turf/victim_turf = get_turf(victim)
 	var/turf/user_turf = get_turf(user)
 	if(!do_teleport(victim, user_turf, channel = TELEPORT_CHANNEL_MAGIC))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	if(!do_teleport(user, victim_turf, channel = TELEPORT_CHANNEL_MAGIC))
 		do_teleport(victim, victim_turf, channel = TELEPORT_CHANNEL_MAGIC)
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	user.emote("clap1")
 	playsound(user, 'sound/magic/voidblink.ogg', 75, TRUE)
@@ -1097,7 +1094,7 @@
 	user.cut_overlay(halo)
 	if(!completed || QDELETED(src) || !IS_HERETIC(user))
 		if(!QDELETED(src))
-			revert_cast(user)
+			heretic_revert_cast(user)
 		return
 	QDEL_NULL(active_domain)
 	user.emote("clap1")

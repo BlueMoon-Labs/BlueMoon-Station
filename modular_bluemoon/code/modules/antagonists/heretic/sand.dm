@@ -772,7 +772,7 @@
 /obj/effect/proc_holder/spell/self/heretic_sand/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
-	return ..() && sand?.can_use(user)
+	return ..() && heretic_check(user, sand?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_sand/release
 	name = "Осыпь"
@@ -784,7 +784,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!sand?.release(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand
 	clothes_req = FALSE
@@ -800,12 +800,12 @@
 /obj/effect/proc_holder/spell/pointed/heretic_sand/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
-	return ..() && sand?.can_use(user)
+	return ..() && heretic_check(user, sand?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
-	return target && (isturf(target) || isturf(target.loc)) && sand?.can_use(user) && sand.line_clear(user, target, range)
+	return heretic_check(user, target && (isturf(target) || isturf(target.loc)) && sand?.can_use(user) && sand.line_clear(user, target, range), silent, "Выберите видимую цель или клетку: стены и контейнеры перекрывают действие.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/wind
 	name = "Сквозняк"
@@ -817,7 +817,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.wind(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/step
 	name = "Пересыпание"
@@ -830,7 +830,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.step_through(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/burial
 	name = "Погребение"
@@ -842,7 +842,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.burial(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/final
 	name = "Последний полдень"
@@ -854,7 +854,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic?.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	if(!length(targets) || !sand?.burial(user, get_turf(targets[1]), final_cast = TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_SAND_RANGE
 #undef HERETIC_SAND_DELAY

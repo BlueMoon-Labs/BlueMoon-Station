@@ -783,12 +783,12 @@
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return ..() && spirit?.can_use(user)
+	return ..() && heretic_check(user, spirit?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return target && isturf(target.loc) && spirit?.can_use(user) && spirit.line_clear(user, target, range) && heretic_can_affect(user, target, chargecost = 0)
+	return heretic_check(user, target && isturf(target.loc) && spirit?.can_use(user) && spirit.line_clear(user, target, range) && heretic_can_affect(user, target, chargecost = 0), silent, "Выберите видимого противника вне контейнера и без защиты от магии.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	name = "Разлучение"
@@ -800,7 +800,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!length(targets) || !spirit?.sever(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/step
 	name = "Переправа"
@@ -815,13 +815,13 @@
 	var/datum/status_effect/heretic_spirit/separated/soul = anchor?.effect_ref?.resolve()
 	var/step_range = soul && soul.spirit_ref?.resolve() == spirit && soul.validate_link() ? HERETIC_SPIRIT_RANGE : HERETIC_SPIRIT_STEP_RANGE
 	var/turf/destination = get_turf(target)
-	return target && (isturf(target) || isturf(target.loc)) && spirit?.can_use(user) && spirit.line_clear(user, destination, step_range) && destination != get_turf(user) && !destination.is_blocked_turf()
+	return heretic_check(user, target && (isturf(target) || isturf(target.loc)) && spirit?.can_use(user) && spirit.line_clear(user, destination, step_range) && destination != get_turf(user) && !destination.is_blocked_turf(), silent, "Выберите другую свободную клетку в пределах шага и прямой видимости; связанная душа увеличивает дальность.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/step/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!length(targets) || !spirit?.cross(user, targets[1], preserve_soul = user.a_intent == INTENT_DISARM))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/reap
 	name = "Жатва неприкаянных"
@@ -833,7 +833,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!length(targets) || !spirit?.reap(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_spirit
 	clothes_req = FALSE
@@ -844,7 +844,7 @@
 /obj/effect/proc_holder/spell/self/heretic_spirit/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return ..() && spirit?.can_use(user)
+	return ..() && heretic_check(user, spirit?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_spirit/bell
 	name = "Заупокойный звон"
@@ -856,7 +856,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!spirit?.ring(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_spirit/crown
 	name = "Последний рейс"
@@ -867,13 +867,13 @@
 /obj/effect/proc_holder/spell/self/heretic_spirit/crown/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return ..() && spirit?.ascension_active
+	return ..() && heretic_check(user, spirit?.ascension_active, silent, "Сначала завершите вознесение этого пути.")
 
 /obj/effect/proc_holder/spell/self/heretic_spirit/crown/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!spirit?.ring(user, TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_SPIRIT_RANGE
 #undef HERETIC_SPIRIT_SOUL_LIMIT

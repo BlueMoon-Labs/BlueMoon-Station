@@ -169,6 +169,8 @@
 #include "heretic_progression.dm"
 #include "heretic_mansus.dm"
 #include "heretic_feedback.dm"
+#include "heretic_preparation.dm"
+#include "necropolis_curse.dm"
 #include "heretic_visuals.dm"
 #include "heretic_influence_schedule.dm"
 #include "heretic_ascension.dm"

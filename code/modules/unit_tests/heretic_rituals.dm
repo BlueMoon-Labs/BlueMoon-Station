@@ -230,6 +230,7 @@
 	var/capture_with_cuffs = FALSE
 	var/capture_in_crit = FALSE
 	var/sacrifice_corpse = FALSE
+	var/succumb_and_ghost = FALSE
 	var/dies_during_ritual = FALSE
 
 /// Связанная живая цель проходит полный канал и возвращается из Мансуса.
@@ -243,6 +244,10 @@
 /// Труп назначенной цели даёт меньшую награду, остаётся на месте и не приносится повторно после реанимации.
 /datum/unit_test/heretic_hunt_return/corpse
 	sacrifice_corpse = TRUE
+
+/// Succumb и ghostize сохраняют назначенную душу, доступность трупа и награду обряда.
+/datum/unit_test/heretic_hunt_return/corpse/ghost_exit
+	succumb_and_ghost = TRUE
 
 /// Смерть во время канала уменьшает награду и не отправляет труп в Мансус.
 /datum/unit_test/heretic_hunt_return/dies_during_ritual
@@ -334,7 +339,20 @@
 		victim.Unconscious(30 SECONDS)
 	var/obj/item/pen/belonging = allocate(/obj/item/pen, victim)
 	if(sacrifice_corpse)
-		victim.death()
+		if(succumb_and_ghost)
+			victim.adjustOxyLoss(120)
+			victim.succumb()
+			victim.key = "unit_test_heretic_sacrifice"
+			var/mob/dead/observer/ghost = victim.ghostize()
+			victim.key = null
+			if(ghost)
+				ghost.key = null
+				allocated += ghost
+			TEST_ASSERT_NOTNULL(ghost, "Выход после Succumb создаёт призрака.")
+			TEST_ASSERT_EQUAL(ghost.mind, victim_mind, "Призрак сохраняет ссылку на назначенную душу.")
+			TEST_ASSERT_EQUAL(victim_mind.current, victim, "Назначенная душа продолжает указывать на труп.")
+		else
+			victim.death()
 		TEST_ASSERT(heretic.hunt_target_available(victim_mind), "Смерть сохраняет уже назначенную цель доступной.")
 		TEST_ASSERT(!heretic.hunt_target_available(victim_mind, selecting = TRUE), "Мёртвое тело не назначается новой целью.")
 		var/mob/living/carbon/human/unassigned = allocate(/mob/living/carbon/human)

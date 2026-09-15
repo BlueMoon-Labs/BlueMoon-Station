@@ -59,7 +59,13 @@
 /atom/movable/screen/alert/heretic_resource/proc/activate_power(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/obj/effect/proc_holder/spell/power = power_ref?.resolve()
-	if(QDELETED(src) || user != owner || !heretic || heretic.role_removed || heretic.owner?.current != user || user.incapacitated() || QDELETED(power) || !(power in user.mind.spell_list))
+	if(QDELETED(src) || user != owner || !heretic || heretic.role_removed || heretic.owner?.current != user)
+		return FALSE
+	if(user.incapacitated())
+		to_chat(user, span_warning("Вы не можете действовать: дождитесь окончания оглушения или освободитесь."))
+		return FALSE
+	if(QDELETED(power) || !(power in user.mind.spell_list))
+		to_chat(user, span_warning("Способность этого значка больше недоступна. Проверьте изученные способности в кодексе."))
 		return FALSE
 	if(!power.cast_check(FALSE, user))
 		return FALSE

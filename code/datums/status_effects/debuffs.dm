@@ -964,6 +964,9 @@
 	if(!still_bleeding)
 		H.remove_status_effect(/datum/status_effect/neck_slice)
 
+#define NECROPOLIS_CURSE_MASS_LIMIT 2
+#define NECROPOLIS_CURSE_RESPITE 20 SECONDS
+
 /mob/living/proc/apply_necropolis_curse(set_curse, duration = 10 MINUTES)
 	var/datum/status_effect/necropolis_curse/C = has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE)
 	if(!set_curse)
@@ -973,16 +976,18 @@
 
 	else
 		C.apply_curse(set_curse)
-		C.duration += duration * 0.5 //additional curses add half their duration
 
 /datum/status_effect/necropolis_curse
 	id = "necrocurse"
-	duration = 10 MINUTES //you're cursed for 10 minutes have fun
-	tick_interval = 50
-	alert_type = null
+	duration = 10 MINUTES
+	tick_interval = 5 SECONDS
+	alert_type = /atom/movable/screen/alert/status_effect/necropolis_curse
+	examine_text = "SUBJECTPRONOUN окружён зловещими тенями. Святая вода поможет снять проклятие."
 	var/curse_flags = NONE
 	var/effect_last_activation = 0
-	var/effect_cooldown = 100
+	var/effect_cooldown = 10 SECONDS
+	var/list/curse_masses = list()
+	var/next_mass_at = 0
 	var/obj/effect/temp_visual/curse/wasting_effect = new
 
 /datum/status_effect/necropolis_curse/on_creation(mob/living/new_owner, set_curse, _duration)
@@ -991,8 +996,12 @@
 	. = ..()
 	if(.)
 		apply_curse(set_curse)
+		to_chat(owner, span_userdanger("На вас лежит проклятие. Святая вода в организме снимет его примерно за 20 секунд. Другие люди могут уничтожать преследующие вас массы."))
 
 /datum/status_effect/necropolis_curse/Destroy()
+	for(var/mob/living/simple_animal/hostile/asteroid/curseblob/mass as anything in curse_masses)
+		UnregisterSignal(mass, COMSIG_PARENT_QDELETING)
+	QDEL_LIST(curse_masses)
 	if(!QDELETED(wasting_effect))
 		qdel(wasting_effect)
 		wasting_effect = null
@@ -1013,6 +1022,8 @@
 	curse_flags &= ~remove_curse
 
 /datum/status_effect/necropolis_curse/tick()
+	if(linked_alert)
+		linked_alert.desc = "Осталось [CEILING(max(0, duration - world.time) / (1 SECONDS), 1)] сек. Святая вода в организме снимает проклятие примерно за 20 секунд. Массы можно замедлить и уничтожить вместе с союзниками; после уничтожения всех масс есть передышка."
 	if(owner.stat == DEAD)
 		return
 	if(curse_flags & CURSE_WASTING)
@@ -1025,7 +1036,7 @@
 		owner.adjustFireLoss(0.75)
 	if(effect_last_activation <= world.time)
 		effect_last_activation = world.time + effect_cooldown
-		if(curse_flags & CURSE_SPAWNING)
+		if((curse_flags & CURSE_SPAWNING) && owner.stat == CONSCIOUS && length(curse_masses) < NECROPOLIS_CURSE_MASS_LIMIT && world.time >= next_mass_at)
 			var/turf/spawn_turf
 			var/sanity = 10
 			while(!spawn_turf && sanity)
@@ -1033,6 +1044,8 @@
 				sanity--
 			if(spawn_turf)
 				var/mob/living/simple_animal/hostile/asteroid/curseblob/C = new (spawn_turf)
+				curse_masses += C
+				RegisterSignal(C, COMSIG_PARENT_QDELETING, PROC_REF(on_mass_deleted))
 				C.set_target = owner
 				C.GiveTarget()
 		if(curse_flags & CURSE_GRASPING)
@@ -1040,6 +1053,21 @@
 			var/turf/spawn_turf = get_ranged_target_turf(owner, grab_dir, 5)
 			if(spawn_turf)
 				grasp(spawn_turf)
+
+/datum/status_effect/necropolis_curse/proc/on_mass_deleted(datum/source)
+	SIGNAL_HANDLER
+	curse_masses -= source
+	if(!length(curse_masses))
+		next_mass_at = world.time + NECROPOLIS_CURSE_RESPITE
+
+/atom/movable/screen/alert/status_effect/necropolis_curse
+	name = "Проклятие"
+	desc = "Святая вода в организме снимает проклятие примерно за 20 секунд. Союзники могут уничтожать преследующие вас массы."
+	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
+	icon_state = "curseblob"
+
+#undef NECROPOLIS_CURSE_MASS_LIMIT
+#undef NECROPOLIS_CURSE_RESPITE
 
 /datum/status_effect/necropolis_curse/proc/grasp(turf/spawn_turf)
 	set waitfor = FALSE

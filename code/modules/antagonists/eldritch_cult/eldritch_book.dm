@@ -28,6 +28,8 @@
 	. += "Доступно очков знаний: [heretic.knowledge_points]. Прогресс принадлежит вам и сохраняется при потере книги."
 	. += "Откройте кодекс в руке для выбора пути, исследований и рецептов."
 	. += "Примените к полу, чтобы начертить руну 3×3 за 8 секунд; к разлому — чтобы исследовать его; к руне — чтобы стереть её."
+	if(heretic.deed && !heretic.deed.complete())
+		. += span_notice("[heretic.deed.name]: [heretic.deed.progress]/[heretic.deed.goal()] на ступени [heretic.deed.tier + 1]. [heretic.deed.desc] [heretic.deed.hint]")
 
 /obj/item/forbidden_book/attack_self(mob/user)
 	ui_interact(user)
@@ -242,7 +244,7 @@
 		data["combat_resource"] = base_knowledge?.get_combat_resource_data()
 	var/mob/living/target = heretic.hunt_target?.current
 	var/available_target = heretic.hunt_target_available(heretic.hunt_target)
-	var/target_status = "Цель недоступна: призовите новое имя."
+	var/target_status = heretic.hunt_target_unavailable_reason(heretic.hunt_target)
 	if(available_target)
 		if(target.stat == DEAD)
 			target_status = "Цель погибла. Труп принимается за 1 очко знаний без побочного; тело останется на месте."

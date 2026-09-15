@@ -45,6 +45,7 @@
 		return deed
 	deed = new path.deed_type
 	deed.heretic_ref = WEAKREF(src)
+	to_chat(owner?.current, span_notice("Дело пути «[deed.name]»: [deed.desc] [deed.hint] Для первой награды нужно [deed.goal()] действия. Эту подсказку можно перечитать, осмотрев кодекс."))
 	return deed
 
 /datum/antagonist/heretic/proc/deed_key_for(atom/target)
@@ -73,6 +74,7 @@
 	if(key)
 		deed.counted_keys += key
 	deed.progress++
+	log_game("[key_name(owner)] продвигает дело [deed.name]: ступень [deed.tier + 1], [deed.progress]/[deed.goal()], объект [trace_at?.type], место [AREACOORD(trace_at)].")
 	var/datum/heretic_path/path = GLOB.heretic_paths[selected_path]
 	var/datum/eldritch_knowledge/base_knowledge = get_knowledge(path.knowledge[1])
 	base_knowledge?.on_deed_progress(user)

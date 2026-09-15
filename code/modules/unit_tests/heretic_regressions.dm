@@ -607,13 +607,13 @@
 /// Сработавшая руна освобождает место у ножа и собирается без harddel.
 /datum/unit_test/heretic_spent_rune_cleanup/Run()
 	var/obj/item/melee/rune_knife/knife = allocate(/obj/item/melee/rune_knife)
-	var/rune_ref = trigger_rune(knife)
+	var/rune_uid = trigger_rune(knife)
 	var/list/wait_budget = new_wait_budget(5 SECONDS, "Удаление сработавшей руны")
-	while(!isnull(locate(rune_ref)))
+	while(!isnull(locateUID(rune_uid)))
 		if(!wait_budget_tick(wait_budget))
 			break
 	TEST_ASSERT_EQUAL(length(knife.current_runes), 0, "Сработавшая руна освобождает лимит ножа после завершения эффекта.")
-	var/datum/rune = locate(rune_ref)
+	var/datum/rune = locateUID(rune_uid)
 	TEST_ASSERT(!rune || !QDELING(rune), "Нож не удерживает удалённую руну до следующего вырезания.")
 
 /datum/unit_test/heretic_spent_rune_cleanup/proc/trigger_rune(obj/item/melee/rune_knife/knife)
@@ -621,9 +621,9 @@
 	knife.track_rune(rune)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
 	rune.last_trigger = world.time - rune.time_between_triggers - 1 SECONDS
-	var/rune_ref = text_ref(rune)
+	var/rune_uid = rune.UID()
 	rune.Crossed(victim)
-	return rune_ref
+	return rune_uid
 
 /// Разрушение рун удаляет все три знака, несмотря на изменение списка во время удаления.
 /datum/unit_test/heretic_rune_shatter_cleanup/Run()

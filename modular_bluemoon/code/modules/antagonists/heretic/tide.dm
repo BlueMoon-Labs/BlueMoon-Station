@@ -510,7 +510,7 @@
 /obj/effect/proc_holder/spell/self/heretic_tide/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return ..() && tide?.can_use(user)
+	return ..() && heretic_check(user, tide?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_tide/release
 	name = "Сброс давления"
@@ -521,7 +521,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	if(!tide?.release(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_tide/leviathan
 	name = "Голос Пучины"
@@ -533,7 +533,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	if(!tide?.release(user, ascended_wave = TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide
 	clothes_req = FALSE
@@ -549,25 +549,25 @@
 /obj/effect/proc_holder/spell/pointed/heretic_tide/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return ..() && tide?.can_use(user)
+	return ..() && heretic_check(user, tide?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return tide?.line_clear(user, target)
+	return heretic_check(user, tide?.line_clear(user, target), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow
 	name = "Отлив"
 	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 0,8 секунды. Не требует давления. Стены защищают, закрепление и пристёгивание мешают перемещению."
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/can_target(atom/target, mob/user, silent)
-	return ..() && heretic_can_affect(user, target, chargecost = 0)
+	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	if(!length(targets) || !tide?.undertow(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/well
 	name = "Чёрный водоворот"
@@ -579,7 +579,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	if(!length(targets) || !tide?.create_well(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/deluge
 	name = "Обрушение толщи"
@@ -592,7 +592,7 @@
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	var/turf/center = length(targets) ? get_turf(targets[1]) : null
 	if(!tide?.can_use(user) || tide.combat_resource < HERETIC_TIDE_RELEASE_COST || !tide.line_clear(user, center))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/list/telegraphed_turfs = tide.deluge_turfs(user, center)
 	var/expected_generation = tide.tide_generation
@@ -601,7 +601,7 @@
 	user.visible_message(span_danger("[user] поднимает руки. Над полом проступает чёрная вода — сейчас обрушится прилив!"))
 	playsound(center, 'modular_bluemoon/sound/heretic/tide_charge.ogg', 50, FALSE)
 	if(!do_after(user, 2 SECONDS, target = user) || QDELETED(src) || QDELETED(tide) || !tide.deluge(user, center, telegraphed_turfs, expected_generation))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /datum/eldritch_knowledge/tide_grasp
 	name = "Хватка глубины"

@@ -991,7 +991,7 @@
 /obj/effect/proc_holder/spell/self/heretic_echo/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	return ..() && echo?.can_use(user)
+	return ..() && heretic_check(user, echo?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_echo/release
 	name = "Последний удар"
@@ -1003,7 +1003,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!echo?.release(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_echo/final
 	name = "Последняя служба"
@@ -1015,7 +1015,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!echo?.final_chorus(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo
 	clothes_req = FALSE
@@ -1031,12 +1031,12 @@
 /obj/effect/proc_holder/spell/pointed/heretic_echo/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	return ..() && echo?.can_use(user)
+	return ..() && heretic_check(user, echo?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	return target && (isturf(target) || isturf(target.loc)) && echo?.can_use(user) && echo.line_clear(user, target)
+	return heretic_check(user, target && (isturf(target) || isturf(target.loc)) && echo?.can_use(user) && echo.line_clear(user, target), silent, "Выберите видимую цель или клетку: стены и контейнеры перекрывают действие.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/refrain
 	name = "Припев"
@@ -1048,7 +1048,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!length(targets) || !echo?.refrain(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/resonator
 	name = "Погребальный резонатор"
@@ -1060,7 +1060,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!length(targets) || !echo?.create_resonator(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/crescendo
 	name = "Крещендо"
@@ -1072,7 +1072,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!length(targets) || !echo?.crescendo(user, get_turf(targets[1])))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_ECHO_RANGE
 #undef HERETIC_ECHO_LINK_RANGE

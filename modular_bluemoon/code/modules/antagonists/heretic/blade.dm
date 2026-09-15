@@ -484,11 +484,11 @@
 	var/resource_cost = 0
 
 /obj/effect/proc_holder/spell/self/heretic_blade/can_cast(mob/user, skipcharge, silent)
-	if(!..() || !isliving(user))
+	if(!..() || !heretic_require_knowledge(user, silent, required_knowledge) || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_blade, resource_cost))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return knowledge && heretic.get_knowledge(required_knowledge) && knowledge.combat_resource >= resource_cost && (!requires_blade || knowledge.held_blade(user))
+	return heretic_check(user, !requires_blade || knowledge.held_blade(user), silent, "Возьмите собственный тёмный клинок в руку.")
 
 /obj/effect/proc_holder/spell/self/heretic_blade/parry
 	name = "Выжидание"
@@ -500,14 +500,14 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!knowledge?.begin_parry(user))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_blade/parry/can_cast(mob/user, skipcharge, silent)
 	if(!..())
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return QDELETED(knowledge.active_parry) && length(user.get_empty_held_indexes())
+	return heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для парирования.")
 
 /obj/effect/proc_holder/spell/self/heretic_blade/recall
 	name = "Зов клинка"
@@ -520,19 +520,18 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!knowledge || !heretic.get_knowledge(required_knowledge) || !length(user.get_empty_held_indexes()))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	for(var/datum/weakref/blade_ref in knowledge.created_blades)
 		var/obj/item/melee/sickly_blade/duelist/blade = blade_ref.resolve()
 		if(blade?.bound_mind != user.mind || !isturf(blade.loc) || !(blade in view(7, user)))
 			continue
 		if(!user.put_in_hands(blade))
-			revert_cast(user)
+			heretic_revert_cast(user)
 			return
 		playsound(user, 'sound/magic/repulse.ogg', 35, TRUE)
 		return
-	to_chat(user, span_warning("В поле зрения нет вашего свободно лежащего клинка."))
-	revert_cast(user)
+	heretic_revert_cast(user, "В поле зрения нет вашего свободно лежащего клинка.")
 
 /obj/effect/proc_holder/spell/self/heretic_blade/dance
 	name = "Танец граней"
@@ -546,7 +545,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!knowledge?.held_blade(user) || !heretic.get_knowledge(required_knowledge) || !knowledge.spend_combat_resource(resource_cost))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	user.apply_status_effect(/datum/status_effect/heretic_blade_dance)
 
@@ -564,7 +563,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!knowledge?.held_blade(user) || !heretic.get_knowledge(required_knowledge) || !isturf(user.loc) || !knowledge.spend_combat_resource(resource_cost))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/turf/center = get_turf(user)
 	for(var/mob/living/victim in range(1, center))
@@ -618,14 +617,14 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!heretic?.ascended || !heretic.get_knowledge(required_knowledge) || !knowledge?.begin_parry(user, master = TRUE))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 /obj/effect/proc_holder/spell/self/heretic_blade/master/can_cast(mob/user, skipcharge, silent)
 	if(!..())
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic.ascended && QDELETED(knowledge.active_parry) && length(user.get_empty_held_indexes())
+	return heretic_check(user, heretic.ascended, silent, "Сначала завершите вознесение.") && heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для парирования.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"
@@ -638,14 +637,14 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_target(atom/target, mob/user, silent)
-	return heretic_can_affect(user, target, chargecost = 0)
+	return heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите живого противника без защиты от магии.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_cast(mob/user, skipcharge, silent)
-	if(!..() || !isliving(user))
+	if(!..() || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/spell/blade_lunge) || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_blade, 1))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return knowledge?.held_blade(user) && heretic.get_knowledge(/datum/eldritch_knowledge/spell/blade_lunge) && knowledge.combat_resource > 0
+	return heretic_check(user, knowledge.held_blade(user), silent, "Возьмите собственный тёмный клинок в руку.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -653,7 +652,7 @@
 	var/mob/living/victim = length(targets) ? targets[1] : null
 	if(!knowledge?.held_blade(user) || !heretic.get_knowledge(/datum/eldritch_knowledge/spell/blade_lunge) || !isliving(victim) || !(victim in view(range, user)) || knowledge.combat_resource < 1)
 		user.log_message("Выпад отменён: клинок [!!knowledge?.held_blade(user)], знание [!!heretic?.get_knowledge(/datum/eldritch_knowledge/spell/blade_lunge)], цель [key_name(victim)], в поле зрения [victim in view(range, user)], Темп [knowledge?.combat_resource].", LOG_ATTACK)
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	var/turf/start = get_turf(user)
 	var/turf/route_step = start
@@ -664,11 +663,11 @@
 		if(is_blocked_turf(route_step, TRUE))
 			to_chat(user, span_warning("Прямая линия для выпада перекрыта. Темп и перезарядка сохранены."))
 			user.log_message("Выпад к [key_name(victim)] отменён: преграда [AREACOORD(route_step)], старт [AREACOORD(start)], Темп [knowledge.combat_resource] сохранён.", LOG_ATTACK)
-			revert_cast(user)
+			heretic_revert_cast(user)
 			return
 	if(!heretic_can_affect(user, victim) || !knowledge.spend_combat_resource())
 		user.log_message("Выпад к [key_name(victim)] отменён: защита цели или нехватка Темпа; Темп [knowledge.combat_resource].", LOG_ATTACK)
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	for(var/steps in 1 to range)
 		if(user.Adjacent(victim))
@@ -679,7 +678,7 @@
 	if(!user.Adjacent(victim))
 		if(user.loc == start)
 			knowledge.gain_combat_resource()
-			revert_cast(user)
+			heretic_revert_cast(user)
 		var/failure_message = user.loc == start ? "Сближение не удалось. Темп и перезарядка сохранены." : "Вы не достали цель. Темп потрачен на сближение."
 		to_chat(user, span_warning(failure_message))
 		user.log_message("Выпад не достал [key_name(victim)] [AREACOORD(victim)]: старт [AREACOORD(start)], финиш [AREACOORD(user)], Темп [knowledge.combat_resource], возврат [user.loc == start].", LOG_ATTACK)
@@ -706,22 +705,26 @@
 	deactive_msg = "Вы опускаете остриё."
 
 /obj/effect/proc_holder/spell/pointed/heretic_feint/can_cast(mob/user, skipcharge, silent)
-	if(!..())
+	if(!..() || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/blade_guard) || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_blade, 1))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return knowledge?.held_blade(user) && heretic.get_knowledge(/datum/eldritch_knowledge/blade_guard) && knowledge.combat_resource > 0 && length(user.get_empty_held_indexes()) && QDELETED(knowledge.active_parry) && world.time >= knowledge.riposte_until && COOLDOWN_FINISHED(knowledge, feint_cooldown)
+	if(!heretic_check(user, knowledge.held_blade(user), silent, "Возьмите собственный тёмный клинок в руку.") || !heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для финта."))
+		return FALSE
+	if(!heretic_check(user, QDELETED(knowledge.active_parry), silent, "Сначала завершите текущую стойку.") || !heretic_check(user, world.time >= knowledge.riposte_until, silent, "Сначала проведите доступный ответный удар или дождитесь конца его окна."))
+		return FALSE
+	return heretic_check(user, COOLDOWN_FINISHED(knowledge, feint_cooldown), silent, "Финт ещё восстанавливается.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_feint/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return isliving(target) && knowledge?.valid_feint_target(user, target)
+	return heretic_check(user, isliving(target) && knowledge?.valid_feint_target(user, target), silent, "Нужен доступный для удара противник рядом с вами, без защиты от магии.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_feint/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!length(targets) || !isliving(targets[1]) || !knowledge?.feint(user, targets[1]))
-		revert_cast(user)
+		heretic_revert_cast(user)
 
 #undef HERETIC_BLADE_LIMIT
 #undef HERETIC_BLADE_PARRY_INTERVAL

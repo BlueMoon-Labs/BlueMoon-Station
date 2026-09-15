@@ -403,11 +403,11 @@
 
 /obj/effect/proc_holder/spell/self/heretic_last_waltz/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return ..() && heretic?.ascended && heretic.selected_path == PATH_VOID && isfloorturf(user.loc)
+	return ..() && heretic_check(user, heretic?.ascended && heretic.selected_path == PATH_VOID && isfloorturf(user.loc), silent, "Нужно вознесение Пустоты; встаньте на пол вне контейнера.")
 
 /obj/effect/proc_holder/spell/self/heretic_last_waltz/cast(list/targets, mob/living/user)
 	if(!isfloorturf(user.loc))
-		revert_cast(user)
+		heretic_revert_cast(user)
 		return
 	QDEL_NULL(winter_circle)
 	winter_circle = new(get_turf(user), user.mind)
