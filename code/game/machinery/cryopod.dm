@@ -411,6 +411,9 @@ GLOBAL_LIST_EMPTY(ghost_records)
 // This function can not be undone; do not call this unless you are sure
 /obj/machinery/cryopod/proc/despawn_occupant()
 	charge_cryo_exit()
+	if(ishuman(occupant))
+		var/mob/living/carbon/human/persistent_human = occupant
+		persistent_human.save_individual_persistence()
 	cryoMob(occupant, control_computer_weakref, src, tele, initial(name))
 
 /obj/machinery/cryopod/proc/charge_cryo_exit()

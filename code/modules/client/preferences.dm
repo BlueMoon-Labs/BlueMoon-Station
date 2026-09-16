@@ -3592,7 +3592,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						ShowChoices(user)
 					else
 						SetQuirks(user)
-// BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))

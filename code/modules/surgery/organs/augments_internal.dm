@@ -163,11 +163,6 @@
 	if(active)
 		ui_action_click()
 
-/obj/item/organ/cyberimp/brain/anti_drop/sec_level
-	name = "Corporate Anti-Drop implant"
-	implant_color = "#ab6509"
-	active_security_level = ANTI_DROP_SEC_LEVEL
-
 /obj/item/organ/cyberimp/brain/anti_stun
 	name = "CNS Rebooter implant"
 	desc = "This implant will automatically give you back control over your central nervous system, reducing downtime when stunned."
@@ -192,11 +187,6 @@
 /obj/item/organ/cyberimp/brain/anti_stun/proc/reboot()
 	crit_fail = FALSE
 	organ_flags &= ~ORGAN_FAILING
-
-/obj/item/organ/cyberimp/brain/anti_stun/sec_level
-	name = "Corporate CNS Rebooter implant"
-	implant_color = "#c0c000"
-	active_security_level = CNS_REBOOTER_SEC_LEVEL
 
 /obj/item/organ/cyberimp/brain/robot_radshielding
 	name = "ECC System Guard implant"

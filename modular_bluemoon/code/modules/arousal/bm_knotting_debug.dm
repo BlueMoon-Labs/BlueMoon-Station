@@ -56,11 +56,11 @@
 	to_chat(mob, span_love("✅ Узел искусственно активирован (цель: [target], зона: [choice]) на 60 секунд."))
 	to_chat(mob, span_notice("📎 Поводок активирован — движение будет отслеживаться."))
 
-	to_chat(mob, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Запуск афродизиачного эффекта узла...</font>"))
+	to_chat(mob, span_love("<font color='#ff7ff5'><b>DEBUG</b> Запуск афродизиачного эффекта узла...</font>"))
 	P.knot_arousal_tick(H, target)
 
 	if(target == H)
-		to_chat(mob, span_love("<font color='#ff7ff5'><b>[DEBUG]</b> Симуляция: партнёрские сообщения будут отображаться здесь же.</font>"))
+		to_chat(mob, span_love("<font color='#ff7ff5'><b>DEBUG</b> Симуляция: партнёрские сообщения будут отображаться здесь же.</font>"))
 		to_chat(mob, span_lewd("<b>(Партнёр)</b> Ты ощущаешь, как узел блокирует выход и пульсирует внутри..."))
 	else
 		to_chat(target, span_love("<font color='#ff7ff5'><b>Узел блокирует выход — вы соединены с [H]!</b></font>"))

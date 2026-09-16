@@ -370,12 +370,7 @@
 	add_item(F)
 	F.I = src
 
-/obj/item/organ/cyberimp/arm/shield/sec_level
-	name = "Corporate arm-mounted riot shield"
-	active_security_level = RIOT_SHIELD_SEC_LEVEL
-
 /////////////////
-
 
 //IPC/Synth Arm//
 
