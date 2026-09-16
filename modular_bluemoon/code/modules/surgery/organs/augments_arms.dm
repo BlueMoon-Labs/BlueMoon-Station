@@ -35,9 +35,14 @@
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
 	sharpness = SHARP_POINTY
+	total_mass = TOTAL_MASS_HAND_REPLACEMENT
 	attack_verb = list("slashed", "cut")
 	item_flags = NEEDS_PERMIT //Beepers gets angry if you get caught with this.
 	hitsound = 'sound/weapons/bladeslice.ogg'
+
+/obj/item/melee/implantarmblade/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/ambidextria_attack, /obj/item/melee/implantarmblade)
 
 /obj/item/melee/implantarmblade/energy
 	name = "energy arm blade"
