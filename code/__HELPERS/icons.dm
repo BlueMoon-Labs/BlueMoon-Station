@@ -779,9 +779,10 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	//Define... defines.
 	var/static/icon/flat_template = icon('icons/effects/effects.dmi', "nothing")
 
+	#define FLAT_ICON_FIRST_FRAME 1
 	#define BLANK icon(flat_template)
 	#define SET_SELF(SETVAR) do { \
-		var/icon/SELF_ICON=icon(icon(curicon, curstate, base_icon_dir),"",SOUTH,no_anim?1:null); \
+		var/icon/SELF_ICON=icon(icon(curicon, curstate, base_icon_dir),"",SOUTH,no_anim?FLAT_ICON_FIRST_FRAME:null); \
 		if(A.alpha<255) { \
 			SELF_ICON.Blend(rgb(255,255,255,A.alpha),ICON_MULTIPLY);\
 		} \
@@ -915,7 +916,7 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 
 			if(I == copy) // 'I' is an /image based on the object being flattened.
 				curblend = BLEND_OVERLAY
-				add = icon(I.icon, I.icon_state, base_icon_dir)
+				add = icon(I.icon, I.icon_state, base_icon_dir, no_anim ? FLAT_ICON_FIRST_FRAME : null)
 			else // 'I' is an appearance object.
 				add = getFlatIcon(image(I), curdir, curicon, curstate, curblend, FALSE, no_anim)
 			if(!add)
@@ -964,10 +965,7 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 				flat.Blend(rc_overlays[rc_i], rc_overlays[rc_i+1], rc_overlays[rc_i+2] + 2 - flatX1, rc_overlays[rc_i+3] + 2 - flatY1)
 
 		if(no_anim)
-			//Clean up repeated frames
-			var/icon/cleaned = new /icon()
-			cleaned.Insert(flat, "", SOUTH, 1, 0)
-			. = cleaned
+			. = icon(flat, "", SOUTH, FLAT_ICON_FIRST_FRAME, FALSE)
 		else
 			. = icon(flat, "", SOUTH)
 	else	//There's no overlays.
@@ -989,6 +987,7 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	#undef INDEX_Y_LOW
 	#undef INDEX_Y_HIGH
 
+	#undef FLAT_ICON_FIRST_FRAME
 	#undef BLANK
 	#undef SET_SELF
 
@@ -1697,7 +1696,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 		cached = null
 
 	if(!cached)
-		var/icon/I = getFlatIcon(thing)
+		var/icon/I = getFlatIcon(thing, no_anim = TRUE)
 		I = icon(I, "", SOUTH, 1, FALSE)
 		var/list/name_and_ref = generate_and_hash_rsc_file(I, null)
 		var/rsc_ref = name_and_ref[1]

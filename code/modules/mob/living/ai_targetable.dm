@@ -54,6 +54,7 @@
 	//смена stat меняет ветку троттла Life (жив/мёртв, сознание) - бронь бакета
 	//больше не действительна
 	wake_life()
+	update_unconscious_visibility(., stat)
 	if(stat == DEAD)
 		lose_ai_targetable()
 	else if(. == DEAD) //ожил

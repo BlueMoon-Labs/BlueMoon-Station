@@ -77,7 +77,7 @@
 	item_state = "hardsuit0-iron_tombstone"
 	icon_state = "hardsuit0-iron_tombstone"
 	hardsuit_type = "iron_tombstone"
-	armor = list(MELEE = 50, BULLET = 70, LASER = 10,ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
+	armor = list(MELEE = 50, BULLET = 75, LASER = 25, ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
 	flash_protect = 2
 	strip_delay = 90
 	equip_delay_self = 15
@@ -94,12 +94,12 @@
 	icon_state = "hardsuit-iron_tombstone"
 	tail_state = "syndicate-elite"
 	hardsuit_type = "iron_tombstone"
-	armor = list(MELEE = 50, BULLET = 70, LASER = 10,ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
+	armor = list(MELEE = 50, BULLET = 75, LASER = 25, ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	strip_delay = 120
 	equip_delay_self = 20
-	slowdown = 0.3
+	slowdown = 0.25
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/iron_tombstone
 	actions_types = list(/datum/action/item_action/toggle_helmet)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC

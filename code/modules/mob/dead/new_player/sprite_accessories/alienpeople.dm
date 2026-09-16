@@ -48,50 +48,48 @@
 /datum/sprite_accessory/xeno_tail/boiler
 	name = "Xenomorph Boiler Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "boiler_tail"
+	icon_state = "boiler"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/predalien
 	name = "Xenomorph Predalien Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "predalien_tail"
+	icon_state = "predalien"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/pretor
 	name = "Xenomorph Pretor Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "pretor_tail"
+	icon_state = "pretor"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/prowler
 	name = "Xenomorph Prowler Tail"
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "prowler_tail"
+	icon_state = "prowler"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/queen
 	name = "Xenomorph Queen Tail"
-	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "queen_tail"
+	icon_state = "queen"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/runner
 	name = "Xenomorph Runner Tail"
-	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
-	icon_state = "runner_tail"
+	icon_state = "runner"
 	color_src = MUTCOLORS
 	matrixed_sections = MATRIX_NONE
-	recommended_species = list(SPECIES_MAMMAL, SPECIES_MAMMAL_SYNTHETIC, SPECIES_XENOHYBRID, SPECIES_SLIME_HYBRID, SPECIES_POD_WEAK, SPECIES_UMAMMAL)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/tails/mam_tails/xeno
 	name = "Xenomorph Tail"
