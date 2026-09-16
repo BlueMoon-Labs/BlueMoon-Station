@@ -389,6 +389,13 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	render_target = LIGHTING_LAMPS_RENDER_TARGET
 
+/atom/movable/screen/plane_master/lamps/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	// Маска GAME_PLANE: свет ламп не проходит через персонажей/объекты.
+	// У floor-версии такая маска уже была, у обычной не было — из-за этого
+	// свечение после Освещения 2.0 просвечивало через мобов.
+	add_filter("lamps_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
 /atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
 	remove_filter("user_brightness")
 	if(mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
@@ -469,6 +476,11 @@
 	blend_mode = BLEND_ADD
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_selfglow/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	// Как у floor-версии: персонажи перекрывают selfglow позади.
+	add_filter("selfglow_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_selfglow/floor
 	name = "floor lamps selfglow plane master"
@@ -552,6 +564,11 @@
 	plane = LIGHTING_LAMPS_GLARE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/target_rendering = LIGHTING_LAMPS_RENDER_TARGET
+
+/atom/movable/screen/plane_master/lamps_glare/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	// Как у floor-версии: персонажи перекрывают glare позади.
+	add_filter("glare_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_glare/floor
 	name = "floor lamps glare plane master"
