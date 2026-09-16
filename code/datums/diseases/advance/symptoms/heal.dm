@@ -54,6 +54,21 @@
 	transmittable = 1
 	level = 6
 	passive_message = "<span class='notice'>You miss the feeling of starlight on your skin.</span>"
+	var/nearspace_penalty = 0
+	threshold_desc = list(
+		"Stage Speed 6" = "Increases healing speed.",
+		"Transmission 6" = "Removes penalty for only being close to space."
+	)
+
+/datum/symptom/heal/starlight
+	name = "Starlight Condensation"
+	desc = "The virus reacts to direct starlight, producing regenerative chemicals. Works best against toxin-based damage."
+	stealth = -1
+	resistance = -2
+	stage_speed = 0
+	transmittable = 1
+	level = 6
+	passive_message = "<span class='notice'>You miss the feeling of starlight on your skin.</span>"
 	var/nearspace_penalty = 0.3
 	threshold_desc = list(
 		"Stage Speed 6" = "Increases healing speed.",
@@ -82,7 +97,7 @@
 	if(M.getToxLoss() && prob(5))
 		to_chat(M, "<span class='notice'>Your skin tingles as the starlight seems to heal you.</span>")
 
-	M.adjustToxLoss(-(4 * heal_amt), forced = TRUE) //most effective on toxins
+	M.adjustToxLoss(-(5 * heal_amt), forced = TRUE) //most effective on toxins
 
 	var/list/parts = M.get_damaged_bodyparts(1,1)
 
@@ -197,7 +212,7 @@
 			return power
 
 /datum/symptom/heal/darkness/Heal(mob/living/carbon/M, datum/disease/advance/A, actual_power)
-	var/heal_amt = 2 * actual_power
+	var/heal_amt = 5 * actual_power
 
 	var/list/parts = M.get_damaged_bodyparts(1,1)
 
@@ -293,7 +308,7 @@
 	M.update_mobility()
 
 /datum/symptom/heal/coma/Heal(mob/living/carbon/M, datum/disease/advance/A, actual_power)
-	var/heal_amt = 4 * actual_power
+	var/heal_amt = 8 * actual_power
 
 	var/list/parts = M.get_damaged_bodyparts(1,1)
 
@@ -351,7 +366,7 @@
 		. += power * 0.5
 
 /datum/symptom/heal/water/Heal(mob/living/carbon/M, datum/disease/advance/A, actual_power)
-	var/heal_amt = 2 * actual_power
+	var/heal_amt = 5 * actual_power
 
 	var/list/parts = M.get_damaged_bodyparts(1,1) //more effective on burns
 
@@ -411,7 +426,7 @@
 		. +=  power * 0.75
 
 /datum/symptom/heal/plasma/Heal(mob/living/carbon/M, datum/disease/advance/A, actual_power)
-	var/heal_amt = 4 * actual_power
+	var/heal_amt = 10 * actual_power
 
 	if(prob(5))
 		to_chat(M, "<span class='notice'>You feel yourself absorbing plasma inside and around you...</span>")
@@ -480,7 +495,7 @@
 			return 1.5
 
 /datum/symptom/heal/radiation/Heal(mob/living/carbon/M, datum/disease/advance/A, actual_power)
-	var/heal_amt = actual_power
+	var/heal_amt = 10 * actual_power
 
 	if(cellular_damage)
 		M.adjustCloneLoss(-heal_amt * 0.5)
