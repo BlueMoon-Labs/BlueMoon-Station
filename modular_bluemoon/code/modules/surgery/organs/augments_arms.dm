@@ -41,6 +41,9 @@
 	attack_verb = list("slashed", "cut")
 	item_flags = NEEDS_PERMIT //Beepers gets angry if you get caught with this.
 	hitsound = 'sound/weapons/bladeslice.ogg'
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
+	usesound = 'sound/items/jaws_pry.ogg'
 
 /obj/item/melee/implantarmblade/Initialize(mapload)
 	. = ..()
