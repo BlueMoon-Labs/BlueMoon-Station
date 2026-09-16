@@ -564,7 +564,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow
 	name = "Отлив"
-	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 0,8 секунды. Не требует давления. Стены защищают, закрепление и пристёгивание мешают перемещению."
+	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 2 секунды. Не требует давления. Стены защищают, закрепление и пристёгивание мешают перемещению."
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/can_target(atom/target, mob/user, silent)
 	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.")

@@ -10,6 +10,7 @@
 #define HERETIC_SAND_RELEASE_DAMAGE 20
 #define HERETIC_SAND_WIND_DAMAGE 28
 #define HERETIC_SAND_BURIAL_DAMAGE 28
+#define HERETIC_SAND_BURIAL_RADIUS 2
 #define HERETIC_SAND_FINAL_DAMAGE 40
 #define HERETIC_SAND_RECALL_RANGE 3
 #define HERETIC_SAND_EXTRA_DELAY (1.5 SECONDS)
@@ -173,9 +174,9 @@
 	harvest(sand_body)
 	return TRUE
 
-/datum/eldritch_knowledge/base_sand/proc/create_hourglass(turf/tile, datum/eldritch_knowledge/required, damage = HERETIC_SAND_CLOCK_DAMAGE)
+/datum/eldritch_knowledge/base_sand/proc/create_hourglass(turf/tile, datum/eldritch_knowledge/required, damage = HERETIC_SAND_CLOCK_DAMAGE, distance = HERETIC_SAND_RANGE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(sand_body)
-	if(!can_use(sand_body) || QDELETED(required) || heretic.get_knowledge(required.type) != required || !line_clear(sand_body, tile) || length(hourglasses) >= HERETIC_SAND_LIMIT)
+	if(!can_use(sand_body) || QDELETED(required) || heretic.get_knowledge(required.type) != required || !line_clear(sand_body, tile, distance) || length(hourglasses) >= HERETIC_SAND_LIMIT)
 		return null
 	for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in hourglasses)
 		if(get_turf(hourglass) == tile)
@@ -237,8 +238,9 @@
 	if(!can_use(user) || QDELETED(required) || !line_clear(user, target) || (final_cast && (!ascension_active || !heretic.ascended)))
 		return FALSE
 	var/list/tiles = list()
-	for(var/turf/tile in range(2, target))
-		if((abs(tile.x - target.x) + abs(tile.y - target.y)) % 2 || !line_clear(user, tile))
+	var/area_reach = HERETIC_SAND_RANGE + HERETIC_SAND_BURIAL_RADIUS
+	for(var/turf/tile in range(HERETIC_SAND_BURIAL_RADIUS, target))
+		if((abs(tile.x - target.x) + abs(tile.y - target.y)) % 2 || !line_clear(user, tile, area_reach))
 			continue
 		var/occupied = FALSE
 		for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in hourglasses)
@@ -254,7 +256,7 @@
 			if(!can_use(user))
 				return TRUE
 	for(var/turf/tile as anything in tiles)
-		var/obj/structure/heretic_sand_hourglass/hourglass = create_hourglass(tile, required, final_cast ? 44 : HERETIC_SAND_CLOCK_DAMAGE)
+		var/obj/structure/heretic_sand_hourglass/hourglass = create_hourglass(tile, required, final_cast ? 44 : HERETIC_SAND_CLOCK_DAMAGE, distance = area_reach)
 		for(var/mob/living/victim in tile)
 			if(hourglass?.record_target(victim))
 				break
@@ -869,6 +871,7 @@
 #undef HERETIC_SAND_RELEASE_DAMAGE
 #undef HERETIC_SAND_WIND_DAMAGE
 #undef HERETIC_SAND_BURIAL_DAMAGE
+#undef HERETIC_SAND_BURIAL_RADIUS
 #undef HERETIC_SAND_FINAL_DAMAGE
 #undef HERETIC_SAND_RECALL_RANGE
 #undef HERETIC_SAND_EXTRA_DELAY

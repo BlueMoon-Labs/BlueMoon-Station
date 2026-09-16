@@ -346,6 +346,43 @@
 	TEST_ASSERT(abs(victim.getBruteLoss() - 60) <= DAMAGE_PRECISION, "Остающийся в центре получает отложенный удар.")
 	TEST_ASSERT_EQUAL(dodging.getBruteLoss(), 0, "Соседняя клетка остаётся безопасным выходом от часов.")
 
+/// Дальнее Погребение сохраняет полный рисунок часов и возврат с последующим ударом на краю.
+/datum/unit_test/heretic_sand_burial_edge
+	var/final_cast = FALSE
+
+/datum/unit_test/heretic_sand_burial_edge/ascended
+	final_cast = TRUE
+
+/datum/unit_test/heretic_sand_burial_edge/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x - 1, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/center = locate(origin.x + 4, origin.y, origin.z)
+	var/turf/edge = locate(origin.x + 6, origin.y, origin.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/sand_burial)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	if(final_cast)
+		heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/sand_final)
+		var/datum/eldritch_knowledge/final_eldritch/sand_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/sand_final)
+		heretic.ascended = TRUE
+		finale.finished = TRUE
+		finale.on_body_gain(user)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, edge)
+	TEST_ASSERT(!sand.burial(user, edge, final_cast), "Дальность выбора центра остаётся пять клеток.")
+	TEST_ASSERT_NULL(sand.create_hourglass(edge, sand), "Отдельные часы нельзя ставить за пределами обычной дальности.")
+	TEST_ASSERT(sand.burial(user, center, final_cast), "Погребение достигает выбранной дальней области.")
+	TEST_ASSERT_EQUAL(length(sand.hourglasses), 13, "Дальняя сторона поля не обрезается по дальности выбора центра.")
+	var/obj/structure/heretic_sand_hourglass/hourglass = locate() in edge
+	TEST_ASSERT_NOTNULL(hourglass, "На краю области за пятью клетками стоят часы.")
+	TEST_ASSERT_EQUAL(hourglass.recorded_second?.owner, victim, "Дальние часы запоминают цель.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Первый удар не выходит за собственный радиус.")
+	victim.forceMove(get_step(edge, NORTH))
+	hourglass.resolve()
+	TEST_ASSERT_EQUAL(get_turf(victim), edge, "Дальние часы возвращают запомненную цель.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - (final_cast ? 44 : 32)) <= DAMAGE_PRECISION, "Возвращённая цель получает один удар часов.")
+
 /// Вознесение сохраняет полный запас при переселении, а снятие роли гасит силы.
 /datum/unit_test/heretic_sand_ascension_and_role_cleanup/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

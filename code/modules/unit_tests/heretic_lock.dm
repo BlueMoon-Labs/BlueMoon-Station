@@ -296,6 +296,31 @@
 	for(var/obj/structure/heretic_lock_seal/seal as anything in knowledge.seals)
 		TEST_ASSERT(get_turf(seal) in positions, "Печати появляются только на предупреждённых клетках.")
 
+/// Двор на предельной дальности сохраняет дальнюю стену и пропускает занятую после предупреждения клетку.
+/datum/unit_test/heretic_lock_court_edge/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x - 1, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/center = locate(origin.x + 5, origin.y, origin.z)
+	var/turf/edge = get_step(center, EAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_LOCK
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/lock_hinges)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	TEST_ASSERT_EQUAL(length(knowledge.court_turfs(edge, user)), 0, "Центр двора нельзя выбрать дальше пяти клеток.")
+	TEST_ASSERT_NULL(knowledge.create_seal(edge, user), "Отдельная печать сохраняет прежнюю дальность.")
+	var/list/positions = knowledge.court_turfs(center, user)
+	TEST_ASSERT_EQUAL(length(positions), 8, "Предупреждение включает все восемь клеток ограды.")
+	TEST_ASSERT(knowledge.raise_court(user, positions), "На предельной дальности создаётся полный двор.")
+	TEST_ASSERT_EQUAL(length(knowledge.seals), 8, "Дальняя сторона ограды появляется вместе с остальными.")
+	TEST_ASSERT(locate(/obj/structure/heretic_lock_seal) in edge, "Печать перекрывает дальний выход.")
+	QDEL_LIST(knowledge.seals)
+	knowledge.gain_combat_resource(2)
+	var/obj/structure/closet/crate/blocker = allocate(/obj/structure/closet/crate, edge)
+	TEST_ASSERT(knowledge.raise_court(user, positions), "Преграда на одной клетке не отменяет остальные печати.")
+	TEST_ASSERT_EQUAL(length(knowledge.seals), 7, "Занятая после предупреждения клетка пропускается.")
+	TEST_ASSERT(!(locate(/obj/structure/heretic_lock_seal) in get_turf(blocker)), "Двор не появляется внутри новой преграды.")
+
 /// Ритуальный ключ работает при пустом запасе, оплачивается здоровьем и связан с владельцем знания.
 /datum/unit_test/heretic_lock_relic/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

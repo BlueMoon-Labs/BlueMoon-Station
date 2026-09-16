@@ -1,4 +1,5 @@
 #define HERETIC_LOCK_RANGE 5
+#define HERETIC_LOCK_COURT_RADIUS 1
 #define HERETIC_LOCK_SEAL_LIFETIME (30 SECONDS)
 #define HERETIC_LOCK_BASE_LIMIT 4
 #define HERETIC_LOCK_UPGRADED_LIMIT 10
@@ -228,19 +229,19 @@
 	var/datum/eldritch_knowledge/lock_hinges/hinges = heretic?.get_knowledge(/datum/eldritch_knowledge/lock_hinges)
 	return hinges ? hinges.passive_values[hinges.passive_level] : 60
 
-/datum/eldritch_knowledge/base_lock/proc/valid_seal_turf(turf/place, mob/living/user, list/visible)
-	if(!valid_user(user) || !istype(place, /turf/open/floor) || place.z != user.z || get_dist(user, place) > HERETIC_LOCK_RANGE)
+/datum/eldritch_knowledge/base_lock/proc/valid_seal_turf(turf/place, mob/living/user, list/visible, distance = HERETIC_LOCK_RANGE)
+	if(!valid_user(user) || !istype(place, /turf/open/floor) || place.z != user.z || get_dist(user, place) > distance)
 		return FALSE
 	if(!visible)
-		visible = view(HERETIC_LOCK_RANGE, user)
+		visible = view(distance, user)
 	if(!(place in visible) || place.is_blocked_turf())
 		return FALSE
 	for(var/obj/structure/heretic_lock_seal/seal in place)
 		return FALSE
 	return TRUE
 
-/datum/eldritch_knowledge/base_lock/proc/create_seal(turf/place, mob/living/user, key_cost = 1, lifetime = HERETIC_LOCK_SEAL_LIFETIME, list/visible)
-	if(length(seals) >= seal_limit() || combat_resource < key_cost || !valid_seal_turf(place, user, visible))
+/datum/eldritch_knowledge/base_lock/proc/create_seal(turf/place, mob/living/user, key_cost = 1, lifetime = HERETIC_LOCK_SEAL_LIFETIME, list/visible, distance = HERETIC_LOCK_RANGE)
+	if(length(seals) >= seal_limit() || combat_resource < key_cost || !valid_seal_turf(place, user, visible, distance))
 		return null
 	if(key_cost && !spend_combat_resource(key_cost))
 		return null
@@ -327,32 +328,34 @@
 	playsound(user, 'modular_bluemoon/sound/heretic/lock_release.ogg', 55, TRUE)
 	return TRUE
 
-/datum/eldritch_knowledge/base_lock/proc/court_turfs(turf/center, mob/living/user, radius = 1)
+/datum/eldritch_knowledge/base_lock/proc/court_turfs(turf/center, mob/living/user, radius = HERETIC_LOCK_COURT_RADIUS)
 	var/list/positions = list()
 	if(!valid_user(user) || !istype(center, /turf/open/floor) || center.z != user.z || get_dist(user, center) > HERETIC_LOCK_RANGE)
 		return positions
-	var/list/visible = view(HERETIC_LOCK_RANGE, user)
+	var/area_reach = HERETIC_LOCK_RANGE + radius
+	var/list/visible = view(area_reach, user)
 	if(!(center in visible))
 		return positions
 	for(var/turf/open/floor/place in range(radius, center))
-		if(get_dist(place, center) == radius && valid_seal_turf(place, user, visible))
+		if(get_dist(place, center) == radius && valid_seal_turf(place, user, visible, distance = area_reach))
 			positions += place
 	return positions
 
-/datum/eldritch_knowledge/base_lock/proc/raise_court(mob/living/user, list/positions, key_cost = 2, expected_generation)
+/datum/eldritch_knowledge/base_lock/proc/raise_court(mob/living/user, list/positions, key_cost = 2, expected_generation, radius = HERETIC_LOCK_COURT_RADIUS)
 	if(!valid_user(user) || combat_resource < key_cost || (!isnull(expected_generation) && court_generation != expected_generation))
 		return FALSE
 	var/list/available = list()
-	var/list/visible = view(HERETIC_LOCK_RANGE, user)
+	var/area_reach = HERETIC_LOCK_RANGE + radius
+	var/list/visible = view(area_reach, user)
 	for(var/turf/place as anything in positions)
-		if(valid_seal_turf(place, user, visible))
+		if(valid_seal_turf(place, user, visible, distance = area_reach))
 			available += place
 	if(length(available) < 3 || length(seals) + length(available) > seal_limit())
 		return FALSE
 	if(key_cost && !spend_combat_resource(key_cost))
 		return FALSE
 	for(var/turf/place as anything in available)
-		create_seal(place, user, key_cost = 0, visible = visible)
+		create_seal(place, user, key_cost = 0, visible = visible, distance = area_reach)
 	return TRUE
 
 /obj/structure/heretic_lock_seal
@@ -962,12 +965,13 @@
 		knowledge.court_busy = FALSE
 	if(QDELETED(src))
 		return
-	if(!completed || !knowledge.ascension_active || !knowledge.raise_court(user, positions, key_cost = 0, expected_generation = generation))
+	if(!completed || !knowledge.ascension_active || !knowledge.raise_court(user, positions, key_cost = 0, expected_generation = generation, radius = 2))
 		heretic_revert_cast(user)
 		return
 	knowledge.gain_combat_resource(knowledge.combat_resource_max)
 
 #undef HERETIC_LOCK_RANGE
+#undef HERETIC_LOCK_COURT_RADIUS
 #undef HERETIC_LOCK_SEAL_LIFETIME
 #undef HERETIC_LOCK_BASE_LIMIT
 #undef HERETIC_LOCK_UPGRADED_LIMIT
