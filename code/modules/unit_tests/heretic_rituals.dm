@@ -147,11 +147,37 @@
 	ingredient.forceMove(get_step(run_loc_floor_bottom_left, NORTH))
 	ingredient.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT(first_rune.ritual_interrupted, "Перенос компонента туда и обратно должен прерывать обряд.")
+	TEST_ASSERT(findtext(first_rune.ritual_interrupt_reason, "Компонент"), "Перенос компонента сохраняет причину для сообщения и лога.")
 	first_rune.release_atoms()
 	TEST_ASSERT_NULL(GLOB.heretic_ritual_reservations[ingredient], "Отмена обряда освобождает компонент.")
 	TEST_ASSERT(second_rune.reserve_atoms(list(ingredient)), "После отмены компонент доступен другой руне.")
+	TEST_ASSERT_NULL(second_rune.ritual_interrupt_reason, "Новый обряд начинается без прежней причины отмены.")
 	qdel(second_rune)
 	TEST_ASSERT_NULL(GLOB.heretic_ritual_reservations[ingredient], "Удаление руны должно освобождать компоненты.")
+
+/// Прерывания настоящего канала различают оглушение и смену предмета, сохраняя компоненты.
+/datum/unit_test/heretic_ritual_interruption_feedback/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/datum/antagonist/heretic/heretic = fixture["heretic"]
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	var/obj/item/pen/ingredient = allocate(/obj/item/pen, get_turf(user))
+	var/datum/eldritch_knowledge/recipe = allocate(/datum/eldritch_knowledge)
+	recipe.required_atoms = list(/obj/item/pen)
+	recipe.result_atoms = list(/obj/item/stack/sheet/metal)
+	recipe.ritual_time = 2 SECONDS
+	heretic.researched_knowledge[recipe.type] = recipe
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob/living, Paralyze), 5 SECONDS), 0.2 SECONDS)
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Оглушение прерывает канал обряда.")
+	TEST_ASSERT(findtext(rune.ritual_interrupt_reason, "не можете действовать"), "Оглушение определяется даже при раннем выходе do_after.")
+	TEST_ASSERT(!QDELETED(ingredient) && !GLOB.heretic_ritual_reservations[ingredient], "Отмена сохраняет и освобождает компонент.")
+	user.SetParalyzed(0)
+	var/obj/item/held_item = fixture["blade"]
+	TEST_ASSERT(user.put_in_active_hand(held_item), "После оглушения возвращаем выпавший клинок в активную руку.")
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, dropItemToGround), held_item), 0.2 SECONDS)
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Смена предмета прерывает следующий канал.")
+	TEST_ASSERT(findtext(rune.ritual_interrupt_reason, "Предмет в активной руке"), "Новая попытка показывает свою причину отмены.")
+	TEST_ASSERT(!QDELETED(ingredient) && !GLOB.heretic_ritual_reservations[ingredient], "Смена предмета также сохраняет и освобождает компонент.")
 
 /datum/unit_test/heretic_final_body_selection/Run()
 	var/list/fixture = make_blade_fixture()

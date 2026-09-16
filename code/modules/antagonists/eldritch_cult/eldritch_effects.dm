@@ -7,6 +7,7 @@
 	layer = SIGIL_LAYER
 	var/is_in_use = FALSE
 	var/ritual_interrupted = FALSE
+	var/ritual_interrupt_reason
 	var/mob/living/ritual_user
 	var/obj/effect/temp_visual/heretic_ritual/ritual_visual
 	var/list/reserved_atoms = list()
@@ -25,6 +26,7 @@
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "heretic_rune", silicon_image)
 
 /obj/effect/eldritch/Destroy()
+	ritual_interrupt_reason ||= "Руна разрушена."
 	if(isturf(loc))
 		new /obj/effect/temp_visual/heretic_ritual/erase(loc, rune_path, null, HERETIC_RUNE_VISUAL_ERASE, src)
 	release_atoms()
@@ -156,6 +158,7 @@
 		if(QDELETED(ingredient) || GLOB.heretic_ritual_reservations[ingredient])
 			return FALSE
 	ritual_interrupted = FALSE
+	ritual_interrupt_reason = null
 	for(var/atom/movable/ingredient in selected_atoms)
 		reserved_atoms |= ingredient
 		reserved_locations[ingredient] = ingredient.loc
@@ -166,9 +169,13 @@
 		RegisterSignal(ingredient, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
 	return TRUE
 
-/obj/effect/eldritch/proc/on_ingredient_changed()
+/obj/effect/eldritch/proc/on_ingredient_changed(datum/source)
 	SIGNAL_HANDLER
 	ritual_interrupted = TRUE
+	if(source && (source == ritual_user || source == ascension_preview_mind))
+		ritual_interrupt_reason ||= "Положение или состояние исполнителя изменилось."
+	else
+		ritual_interrupt_reason ||= "Компонент обряда перемещён или удалён."
 	clear_hunt_stasis()
 	clear_ascension_body_preview()
 
@@ -245,25 +252,42 @@
 	ritual_user = null
 
 /obj/effect/eldritch/proc/ritual_valid(mob/living/user, datum/eldritch_knowledge/ritual)
-	if(QDELETED(src) || QDELETED(user) || ritual_interrupted || user.incapacitated() || !Adjacent(user))
+	if(ritual_interrupted)
+		return FALSE
+	if(QDELETED(src) || QDELETED(user))
+		ritual_interrupt_reason ||= "Руна или исполнитель больше недоступны."
+		return FALSE
+	if(user.incapacitated())
+		ritual_interrupt_reason ||= "Вы не можете действовать: оглушены, связаны или без сознания."
+		return FALSE
+	if(!Adjacent(user))
+		ritual_interrupt_reason ||= "Вы отошли от руны."
 		return FALSE
 	if(ritual_user && ritual_user != user)
+		ritual_interrupt_reason ||= "Исполнитель обряда сменился."
 		return FALSE
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	if(!heretic || heretic.get_knowledge(ritual.type) != ritual)
+		ritual_interrupt_reason ||= "Знание обряда больше недоступно."
 		return FALSE
 	for(var/atom/movable/ingredient in reserved_atoms)
 		if(QDELETED(ingredient) || ingredient.loc != reserved_locations[ingredient] || !isturf(ingredient.loc) || get_dist(ingredient, src) > 1)
+			ritual_interrupt_reason ||= "Компонент обряда перемещён или удалён."
 			return FALSE
 		if(GLOB.heretic_ritual_reservations[ingredient] != src)
+			ritual_interrupt_reason ||= "Компонент больше не закреплён за этой руной."
 			return FALSE
 		if(isstack(ingredient))
 			var/obj/item/stack/stack = ingredient
 			if(stack.amount != reserved_stack_amounts[stack])
+				ritual_interrupt_reason ||= "Количество материала в стопке изменилось."
 				return FALSE
 	var/list/recheck_atoms = reserved_atoms.Copy()
 	var/list/recheck_selected = list()
-	return ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user)
+	if(!ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user))
+		ritual_interrupt_reason ||= "Особые условия обряда больше не выполнены."
+		return FALSE
+	return TRUE
 
 /obj/effect/eldritch/proc/reject_ritual(mob/living/user, datum/eldritch_knowledge/ritual, reason)
 	to_chat(user, span_warning("Ритуал «[ritual.name]» не готов. [reason]"))
@@ -296,16 +320,21 @@
 	inscribe_path(heretic.selected_path)
 	ritual_visual = new(get_turf(src), heretic.selected_path, ritual.ritual_time + 1 SECONDS, HERETIC_RUNE_VISUAL_RITUAL, src)
 	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
-	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Сохраняйте неподвижность и не трогайте компоненты."))
+	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Сохраняйте неподвижность, не меняйте предмет в активной руке и не трогайте компоненты."))
 	log_game("[key_name(user)] начинает ритуал «[ritual.name]» в [AREACOORD(src)].")
 	flick("[icon_state]_active", src)
 	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
+	var/obj/item/held_item = user.get_active_held_item()
 	if(!do_after(user, ritual.ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
+		ritual_valid(user, ritual)
+		if(!QDELETED(user) && user.get_active_held_item() != held_item)
+			ritual_interrupt_reason ||= "Предмет в активной руке изменился."
+		var/reason = ritual_interrupt_reason || "Подготовка действия отменена."
 		if(ascension_announced && !QDELETED(ascension_ritual))
 			ascension_ritual.abort_ascension_ritual(ascension_area, world.time - ascension_started_at)
 		release_atoms()
-		to_chat(user, span_warning("Ритуал прерван. Компоненты не израсходованы."))
-		log_game("[key_name(user)] прерывает ритуал «[ritual.name]» в [AREACOORD(src)].")
+		to_chat(user, span_warning("Ритуал прерван. [reason] Компоненты не израсходованы."))
+		log_game("[key_name(user)] прерывает ритуал «[ritual.name]» в [AREACOORD(src)] через [(world.time - ascension_started_at) / (1 SECONDS)] сек.: [reason]")
 		return FALSE
 	// Стопки расходуются поштучно только после успешного завершения обряда.
 	var/succeeded = ritual.on_finished_recipe(user, selected_atoms, get_turf(src))

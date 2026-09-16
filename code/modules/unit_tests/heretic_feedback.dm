@@ -48,6 +48,29 @@
 	qdel(ash.combat_power)
 	TEST_ASSERT(!indicator.activate_power(body), "Удалённая сила не остаётся доступной через индикатор.")
 
+/// HUD адресных сил сохраняет заряд до выбора цели и отменяет подготовленную силу.
+/datum/unit_test/heretic_resource_hud_pointed/Run()
+	for(var/path_id in list(PATH_MOON, PATH_COSMIC, PATH_LOCK, PATH_SPIRIT, PATH_BLOOD, PATH_GLASS))
+		var/datum/antagonist/heretic/heretic = allocate_deed_heretic(path_id)
+		var/mob/living/body = heretic.owner.current
+		var/atom/movable/screen/alert/heretic_resource/indicator = body.alerts["heretic_path_resource"]
+		TEST_ASSERT(indicator, "Путь [path_id] должен выдать индикатор силы.")
+		var/obj/effect/proc_holder/spell/pointed/power = indicator.power_ref?.resolve()
+		TEST_ASSERT(istype(power), "У [path_id] должна быть адресная сила.")
+		TEST_ASSERT(indicator.activate_power(body), "Готовая сила [path_id] доступна через HUD.")
+		TEST_ASSERT_EQUAL(power.charge_counter, power.charge_max, "Выбор цели [path_id] не расходует заряд и не оставляет вечную перезарядку.")
+		// У тестового тела нет клиента: подключаем подготовленный прицел для проверки отмены.
+		power.active = TRUE
+		power.ranged_ability_user = body
+		body.ranged_ability = power
+		body.click_intercept = power
+		TEST_ASSERT(indicator.activate_power(body), "Повторное нажатие [path_id] отменяет прицел.")
+		TEST_ASSERT(!power.active, "Подготовленная сила [path_id] должна отключиться.")
+		TEST_ASSERT_NULL(body.ranged_ability, "Отмена [path_id] освобождает адресную способность.")
+		TEST_ASSERT_NULL(body.click_intercept, "Отмена [path_id] освобождает перехват кликов.")
+		TEST_ASSERT_EQUAL(power.charge_counter, power.charge_max, "Отмена [path_id] сохраняет заряд.")
+		qdel(heretic)
+
 /// Получение, расход и отказ от расхода обновляют HUD в тот же вызов, без ожидания обработки мира.
 /datum/unit_test/heretic_resource_hud_changes/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

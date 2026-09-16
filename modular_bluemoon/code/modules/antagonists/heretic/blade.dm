@@ -122,7 +122,8 @@
 			return FALSE
 		window = 6 SECONDS
 	active_parry = user.apply_status_effect(/datum/status_effect/heretic_parry, src, window, master ? 6 : upgraded ? 4 : 3, master)
-	user.visible_message(span_warning("[user] поднимает тёмный клинок, выжидая чужой удар."))
+	if(active_parry)
+		user.visible_message(span_warning("[user] поднимает тёмный клинок, выжидая чужой удар."), span_notice("Парирование включено: блоков — [active_parry.blocks_left], длительность — [window / (1 SECONDS)] сек."))
 	return !!active_parry
 
 /datum/eldritch_knowledge/base_blade/proc/record_parry(mob/living/user, mob/living/attacker)
@@ -234,14 +235,15 @@
 /datum/status_effect/heretic_parry
 	id = "heretic_parry"
 	duration = 2 SECONDS
-	tick_interval = -1
-	alert_type = null
+	tick_interval = 0.2 SECONDS
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_parry
 	status_type = STATUS_EFFECT_REPLACE
 	on_remove_on_mob_delete = TRUE
 	var/datum/weakref/knowledge_ref
 	var/expires_at
 	var/blocks_left = 1
 	var/master_stance = FALSE
+	var/stance_ready = TRUE
 	var/mutable_appearance/stance_overlay
 
 /datum/status_effect/heretic_parry/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blade/knowledge, window, blocks, master = FALSE)
@@ -250,7 +252,45 @@
 	expires_at = world.time + window
 	blocks_left = blocks
 	master_stance = master
-	return ..()
+	. = ..()
+	if(.)
+		update_stance_feedback()
+
+/datum/status_effect/heretic_parry/tick()
+	if(world.time >= expires_at)
+		qdel(src)
+		return
+	update_stance_feedback()
+
+/datum/status_effect/heretic_parry/proc/update_stance_feedback()
+	var/datum/eldritch_knowledge/base_blade/knowledge = knowledge_ref?.resolve()
+	var/reason
+	if(owner.incapacitated())
+		reason = "Вы не можете действовать."
+	else if(!knowledge?.held_blade(owner))
+		reason = "Возьмите свой клинок в руку."
+	else if(!length(owner.get_empty_held_indexes()))
+		reason = "Освободите вторую руку."
+	if(reason && stance_ready)
+		to_chat(owner, span_warning("Парирование не действует! [reason]"))
+	else if(!reason && !stance_ready)
+		to_chat(owner, span_notice("Парирование снова действует."))
+	stance_ready = !reason
+	if(linked_alert)
+		var/remaining = CEILING(max(0, expires_at - world.time) / (1 SECONDS), 1)
+		linked_alert.name = stance_ready ? "Парирование: активно" : "Парирование: не действует"
+		linked_alert.desc = "Осталось блоков: [blocks_left]; времени: [remaining] сек. [reason || "Держите свой клинок в руке и оставьте вторую руку свободной."]"
+		linked_alert.color = stance_ready ? "#b6c9f4" : "#ff7766"
+		linked_alert.maptext = MAPTEXT("<div style='text-align:center;font-size:8px;background-color:#17111d'>[stance_ready ? blocks_left : "!"]<br>[remaining]с</div>")
+	return stance_ready
+
+/atom/movable/screen/alert/status_effect/heretic_parry
+	name = "Парирование"
+	desc = "Свой клинок и свободная вторая рука позволяют отражать атаки."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "sigil_blade"
+	maptext_width = 32
+	maptext_height = 24
 
 /datum/status_effect/heretic_parry/on_apply()
 	. = ..()
@@ -270,6 +310,8 @@
 	var/datum/eldritch_knowledge/base_blade/knowledge = knowledge_ref?.resolve()
 	if(knowledge?.active_parry == src)
 		knowledge.active_parry = null
+		if(!QDELETED(owner) && (world.time >= expires_at || !blocks_left))
+			to_chat(owner, span_notice("Парирование окончено: [blocks_left ? "время стойки вышло" : "все блоки израсходованы"]."))
 	return ..()
 
 /datum/status_effect/heretic_parry/proc/keep_stance_overlay(atom/source, list/overlays)
@@ -335,7 +377,7 @@
 	if((attack_type & ATTACK_TYPE_PARRY_COUNTERATTACK) || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
 		return BLOCK_NONE
 	var/datum/eldritch_knowledge/base_blade/knowledge = knowledge_ref?.resolve()
-	if(!knowledge?.held_blade(source) || !length(source.get_empty_held_indexes()))
+	if(!update_stance_feedback())
 		return BLOCK_NONE
 	if(ismob(attacker) && (attacker == source || IS_HERETIC(attacker) || IS_HERETIC_MONSTER(attacker)))
 		return BLOCK_NONE
@@ -346,6 +388,8 @@
 	playsound(source, 'modular_bluemoon/sound/heretic/parry.ogg', 60, TRUE)
 	if(!blocks_left)
 		qdel(src)
+	else
+		update_stance_feedback()
 	return BLOCK_SUCCESS
 
 /datum/eldritch_knowledge/blade_grasp
@@ -507,7 +551,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для парирования.")
+	return heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Парирование не включено: освободите вторую руку.")
 
 /obj/effect/proc_holder/spell/self/heretic_blade/recall
 	name = "Зов клинка"
@@ -624,7 +668,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic_check(user, heretic.ascended, silent, "Сначала завершите вознесение.") && heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для парирования.")
+	return heretic_check(user, heretic.ascended, silent, "Сначала завершите вознесение.") && heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Парирование не включено: освободите вторую руку.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"

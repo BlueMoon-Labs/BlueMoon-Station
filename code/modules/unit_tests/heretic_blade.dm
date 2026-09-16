@@ -171,6 +171,43 @@
 	TEST_ASSERT_NULL(knowledge.active_parry, "Обычная стойка заканчивается после трёх ударов.")
 	TEST_ASSERT(!(user.do_run_block(TRUE, blade, 20, "четвёртый удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS), "После исчерпания стойки нет бесплатного блока.")
 
+/// Живая дубинка блокируется целиком, а HUD показывает запас, помехи и окончание стойки.
+/datum/unit_test/heretic_blade_baton_guard/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/item/melee/baton/loaded/baton = allocate(/obj/item/melee/baton/loaded, get_turf(attacker))
+	baton.switch_status(TRUE, TRUE)
+	TEST_ASSERT(knowledge.begin_parry(user), "Стойка должна включиться со свободной рукой.")
+	var/datum/status_effect/heretic_parry/parry = knowledge.active_parry
+	var/atom/movable/screen/alert/status_effect/indicator = parry.linked_alert
+	TEST_ASSERT(indicator && indicator == user.alerts["heretic_parry"], "Активная стойка видна на HUD.")
+	TEST_ASSERT(indicator.icon_state in icon_states(indicator.icon), "Значок стойки существует в листе иконок.")
+	var/charge_before = baton.cell.charge
+	TEST_ASSERT(!baton.baton_stun(user, attacker, shoving = TRUE), "Парирование должно остановить удар заряженной дубинки.")
+	TEST_ASSERT_EQUAL(user.getStaminaLoss(), 0, "Перехват не пропускает урон выносливости.")
+	TEST_ASSERT(!user.lying && !user.has_status_effect(STATUS_EFFECT_OFF_BALANCE), "Перехват не пропускает сбивание с ног и потерю равновесия.")
+	TEST_ASSERT_EQUAL(baton.cell.charge, charge_before, "Заблокированный контакт не разряжает дубинку.")
+	TEST_ASSERT_EQUAL(parry.blocks_left, 2, "Удар дубинкой расходует один блок.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Блок дубинки даёт Темп.")
+	TEST_ASSERT(findtext(indicator.desc, "блоков: 2"), "HUD сразу показывает уменьшенный запас.")
+	var/obj/item/offhand = allocate(/obj/item, get_turf(user))
+	TEST_ASSERT(user.put_in_hands(offhand), "Вторая рука должна стать занятой.")
+	parry.tick()
+	TEST_ASSERT(!parry.stance_ready && findtext(indicator.desc, "Освободите вторую руку"), "HUD показывает причину неработающей защиты.")
+	TEST_ASSERT(!knowledge.begin_parry(user), "Занятая рука не позволяет заново начать парирование.")
+	user.dropItemToGround(offhand)
+	parry.tick()
+	TEST_ASSERT(parry.stance_ready, "Освобождение руки возвращает защиту в пределах прежнего окна.")
+	parry.expires_at = world.time
+	parry.tick()
+	TEST_ASSERT_NULL(knowledge.active_parry, "По истечении времени стойка прекращается.")
+	TEST_ASSERT(QDELETED(indicator) && !user.alerts["heretic_parry"], "Истёкшая стойка не оставляет ложный значок.")
+	TEST_ASSERT(baton.baton_stun(user, attacker, shoving = TRUE), "После окончания стойки дубинка снова поражает цель.")
+	TEST_ASSERT(user.getStaminaLoss() > 0, "Незаблокированный удар действительно наносит урон выносливости.")
+	TEST_ASSERT(user.lying && user.has_status_effect(STATUS_EFFECT_OFF_BALANCE), "Незаблокированный удар сбивает с ног и лишает равновесия.")
+
 /datum/unit_test/heretic_blade_riposte_target/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/user = fixture["user"]

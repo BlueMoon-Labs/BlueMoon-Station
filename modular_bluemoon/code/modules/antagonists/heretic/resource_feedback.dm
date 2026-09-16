@@ -67,9 +67,9 @@
 	if(QDELETED(power) || !(power in user.mind.spell_list))
 		to_chat(user, span_warning("Способность этого значка больше недоступна. Проверьте изученные способности в кодексе."))
 		return FALSE
-	if(!power.cast_check(FALSE, user))
+	if(!power.can_cast(user, FALSE))
 		return FALSE
-	power.choose_targets(user)
+	power.Trigger(user, FALSE)
 	return TRUE
 
 /atom/movable/screen/alert/heretic_resource/proc/update_resource(datum/heretic_path/path, list/resource, feedback, obj/effect/proc_holder/spell/power)

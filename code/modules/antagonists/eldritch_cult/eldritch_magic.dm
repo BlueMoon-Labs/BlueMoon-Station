@@ -143,6 +143,7 @@
 	charge_max = 100
 	clothes_req = FALSE
 	var/obj/item/summon_type // istype
+	var/missing_item_hint
 	var/summon_sound = 'modular_bluemoon/sound/heretic/book_summon.ogg'
 	var/hide_sound = 'modular_bluemoon/sound/heretic/book_hide.ogg'
 
@@ -156,9 +157,10 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
-	desc = "Позволяет призывать и прятать кодекс в тайных глубинах. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	desc = "Возвращает спрятанный кодекс в руки; повторное применение прячет книгу из вашего инвентаря или с вашей клетки. Оставленную в другом месте книгу сначала нужно подобрать. Звук слышен только вплотную."
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
+	missing_item_hint = "Кодекс не спрятан за завесой. Подберите оставленную книгу: спрятать можно кодекс из своего инвентаря или с вашей клетки. Если книга утрачена, изготовьте запасную на руне из библии, человеческой кожи, ручки и пары глаз."
 
 /obj/effect/proc_holder/spell/self/heretic_summon/can_cast(mob/user, skipcharge, silent)
 	. = ..()
@@ -201,7 +203,7 @@
 	if(recover_missing_item(user, heretic))
 		return
 
-	heretic_revert_cast(user, "Вы не ощущаете [initial(summon_type.name)] ни поблизости, ни за завесой.")
+	heretic_revert_cast(user, missing_item_hint || "Вы не ощущаете [initial(summon_type.name)] ни поблизости, ни за завесой.")
 
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/can_summon_item(obj/item/item, mob/user)
 	return !QDELETED(item) && istype(item, summon_type) && !GLOB.heretic_ritual_reservations[item]
