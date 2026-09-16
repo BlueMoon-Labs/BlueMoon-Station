@@ -1809,8 +1809,8 @@
 
 /obj/item/gun/ballistic/shotgun/huntingrifle/m1903
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "M1903 Springfield"
-	desc = "Великолепный образец дальнобойной инженерной мысли начала XX века - продольно-скользящий поворотный затвор Маузера и деревянное ложе этой винтовки находятся в музейном, полностью рабочем состоянии. Ствол и патронник винтовки профессионально переточены и адаптированы под патрон .308, что делает боепитание доступным в современных реалиях. Прицел похоже сломан."
+	name = "PGM Hécate II"
+	desc = "A battered, heavily modified anti-materiel rifle that tells a grim story of wasteland survival. Originally designed as a high-caliber beast, this weapon has been radically altered to keep it firing: its chamber has been converted to accept common .308 rounds, and the magazine is permanently welded directly to the receiver, forcing you to painstakingly reload it one round at a time. To make matters worse, the long-range optic is completely shattered, turning this once-precise sniper rifle into a heavy, brutal tool for mid-range engagements."
 	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
 	icon_state = "308"
 	item_state = "1903"
