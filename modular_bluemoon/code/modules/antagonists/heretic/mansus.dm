@@ -1,13 +1,17 @@
 #define HERETIC_MANSUS_DURATION (150 SECONDS)
 #define HERETIC_MANSUS_RECALL_TIME (2 SECONDS)
 #define HERETIC_MANSUS_ROOM_SIZE 21
-#define HERETIC_MANSUS_MEMORIES 6
-#define HERETIC_MANSUS_CHAMBERS 3
+#define HERETIC_MANSUS_MEMORIES 3
 #define HERETIC_MANSUS_WARNING_TIME (2 SECONDS)
 #define HERETIC_MANSUS_HAZARD_LIFETIME (3 SECONDS)
 #define HERETIC_MANSUS_HIT_GRACE (4 SECONDS)
 #define HERETIC_MANSUS_HUNTER_GRACE (3 SECONDS)
 #define HERETIC_MANSUS_GATE_SAFETY 1
+#define HERETIC_MANSUS_GATE_CLEARANCE 2
+#define HERETIC_MANSUS_TRAIL_LENGTH 6
+#define HERETIC_MANSUS_FINAL_PRESSURE 2
+#define HERETIC_MANSUS_HUNTER_STEP (1 SECONDS)
+#define HERETIC_MANSUS_HUNTER_FAST_STEP (0.5 SECONDS)
 #define HERETIC_MANSUS_ALERT "heretic_mansus"
 
 GLOBAL_LIST_EMPTY(heretic_mansus_visits)
@@ -245,6 +249,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/turf/fallback_turf
 	var/turf/entry_turf
 	var/obj/effect/heretic_mansus_gate/gate
+	var/obj/effect/heretic_mansus_offering/offering
+	var/list/route_steps = list()
+	var/list/trail = list()
 	var/list/memories = list()
 	var/list/scenery = list()
 	var/list/timers = list()
@@ -252,6 +259,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/list/hazards = list()
 	var/memories_found = 0
 	var/forced_exit = 0
+	var/entered_at = 0
+	var/hits_taken = 0
 	var/recall_duration = HERETIC_MANSUS_RECALL_TIME
 	var/delivery_duration = 1 SECONDS
 	var/obj/effect/heretic_mansus_memory/recalling_memory
@@ -262,6 +271,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/next_hazard_hit = 0
 	var/obj/effect/heretic_mansus_hunter/hunter
 	var/hunter_ready_at = 0
+	var/hunter_timer
 	var/music_channel
 	var/client/music_listener
 	var/visit_duration = HERETIC_MANSUS_DURATION
@@ -298,9 +308,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"#####################",
 		"#######.......#######",
 		"#######.S.G.S.#######",
-		"#######..V.V..#######",
-		"#######...3...#######",
-		"#######..+++..#######",
+		"#######.......#######",
+		"#######.V.D.V.#######",
+		"#######3.+++..#######",
 		"#########+++#########",
 		"#.....#+++++++#.....#",
 		"#.S...#+S+V+S+#...S.#",
@@ -339,6 +349,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 				if("G")
 					gate = new(reserved, src)
 					scenery += gate
+				if("D")
+					offering = new(reserved, src)
+					scenery += offering
 				if("S")
 					scenery += new /obj/effect/heretic_mansus_statue(reserved, src)
 				if("V")
@@ -360,18 +373,15 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		if(locate(/obj/effect/heretic_mansus_statue) in floor)
 			continue
 		walkable_turfs += floor
-	var/list/chamber_order = list()
-	for(var/cycle in 1 to HERETIC_MANSUS_MEMORIES / HERETIC_MANSUS_CHAMBERS)
-		var/list/next_chambers = shuffle(list(1, 2, 3))
-		if(length(chamber_order) && next_chambers[1] == chamber_order[length(chamber_order)])
-			next_chambers.Swap(1, 2)
-		chamber_order += next_chambers
+		if(is_safe(floor))
+			scenery += new /obj/effect/heretic_mansus_sanctuary(floor)
+	var/list/chamber_order = list(3) + shuffle(list(1, 2))
 	var/list/used_positions = list()
 	for(var/chamber in chamber_order)
 		var/turf/center = chamber_centers[chamber]
 		var/list/candidates = list()
 		for(var/turf/floor as anything in walkable_turfs)
-			if(get_dist(center, floor) <= 2 && get_dist(gate, floor) > HERETIC_MANSUS_GATE_SAFETY && !(locate(/obj/effect/heretic_mansus_candle) in floor) && !(floor in used_positions))
+			if(get_dist(center, floor) <= 1 && get_dist(gate, floor) > HERETIC_MANSUS_GATE_CLEARANCE && !is_safe(floor) && floor.y < offering.y && !(locate(/obj/effect/heretic_mansus_candle) in floor) && !(floor in used_positions))
 				candidates += floor
 		if(!length(candidates))
 			return FALSE
@@ -382,6 +392,10 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		memory.chamber = chamber
 		memories += memory
 		scenery += memory
+	for(var/index in 1 to HERETIC_MANSUS_TRAIL_LENGTH)
+		var/obj/effect/heretic_mansus_trail/marker = new(entry_turf)
+		trail += marker
+		scenery += marker
 	return TRUE
 
 /datum/heretic_mansus_visit/proc/apply_style(atom/target, state)
@@ -409,8 +423,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(on_victim_deleted))
 	RegisterSignals(soul, list(COMSIG_MIND_TRANSFER, COMSIG_PARENT_QDELETING), PROC_REF(on_soul_changed))
 	RegisterSignal(reservation, COMSIG_PARENT_QDELETING, PROC_REF(on_reservation_deleted))
+	entered_at = world.time
 	forced_exit = world.time + visit_duration
-	timers += addtimer(CALLBACK(src, PROC_REF(finish)), visit_duration, TIMER_STOPPABLE)
+	timers += addtimer(CALLBACK(src, PROC_REF(timeout)), visit_duration, TIMER_STOPPABLE)
 	timers += addtimer(CALLBACK(src, PROC_REF(whisper), 1), 25 SECONDS, TIMER_STOPPABLE)
 	timers += addtimer(CALLBACK(src, PROC_REF(whisper), 2), 65 SECONDS, TIMER_STOPPABLE)
 	timers += addtimer(CALLBACK(src, PROC_REF(whisper), 3), HERETIC_MANSUS_DURATION - 15 SECONDS, TIMER_STOPPABLE)
@@ -418,18 +433,21 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	music_listener = victim.client
 	if(music_channel && victim.client?.prefs.toggles & SOUND_AMBIENCE)
 		SEND_SOUND(victim, sound(theme["ambience"], repeat = TRUE, channel = music_channel, volume = 45))
-	to_chat(victim, span_userdanger("Вы приходите в себя в Доме, которого нет. Найдите шесть осколков памяти и по одному доставьте их к северным вратам. Расположение и порядок осколков каждый раз меняются. За вами пойдёт тень забвения."))
-	to_chat(victim, span_notice("Коснитесь яркого осколка или наступите на него и сосредоточьтесь на [DisplayTimeText(recall_duration)]. Связанные руки не мешают. Относите осколки к вратам: там безопасно. Уходите с отмеченных трещинами клеток до вспышки и не подпускайте тень. Попадание возвращает несомый осколок на его место; уже доставленные сохраняются. Последний осколок сразу откроет выход. Радиосвязь не работает; через [DisplayTimeText(visit_duration)] Дом вернёт вас сам."))
+	to_chat(victim, span_userdanger("Верните себе имя, голос и дыхание. Доставьте три осколка на светящуюся печать перед северными вратами — и сможете вернуться домой."))
+	to_chat(victim, span_notice("Идите по светящимся стрелкам. Наступите на яркий осколок и остановитесь на [DisplayTimeText(recall_duration)], затем отнесите его на печать и остановитесь ещё на секунду. Связанные руки не мешают. Первый осколок можно доставить спокойно: тень и разломы появятся после него. Значок Дома памяти подсказывает текущую цель; нажмите на него, чтобы повторить подсказку."))
+	to_chat(victim, span_notice("У печати и врат безопасно. Уходите с трещин до вспышки и не подпускайте тень: удар возвращает несомый осколок в его комнату. Уже доставленные осколки не теряются. Последний осколок придётся нести под усиленным натиском. Радиосвязь не работает; через [DisplayTimeText(visit_duration)] Дом вернёт вас сам."))
 	to_chat(victim, span_notice("Дом памяти — [theme["title"]]. [theme["description"]]"))
 	awaken_memory()
-	if(danger_enabled)
-		next_hazard_at = world.time + 6 SECONDS
-		hunter = new(entry_turf, src)
-		scenery += hunter
-		reset_hunter()
-		START_PROCESSING(SSprocessing, src)
+	START_PROCESSING(SSprocessing, src)
+	log_game("Mansus: [key_name(victim)] entered [theme["id"]].")
 	record_mansus_memory()
 	return TRUE
+
+/datum/heretic_mansus_visit/proc/timeout()
+	finish(exit_reason = "timeout")
+
+/datum/heretic_mansus_visit/proc/is_safe(atom/position)
+	return contains(position) && ((!QDELETED(gate) && get_dist(position, gate) <= HERETIC_MANSUS_GATE_SAFETY) || (!QDELETED(offering) && get_dist(position, offering) <= HERETIC_MANSUS_GATE_SAFETY))
 
 /datum/heretic_mansus_visit/proc/contains(atom/thing)
 	return reservation && (get_turf(thing) in reservation.reserved_turfs)
@@ -460,10 +478,13 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	memory.awake = FALSE
 	carried_memory = memory
 	animate(memory)
-	memory.alpha = 35
-	memory.desc = "Этот осколок нужно донести к северным вратам."
-	to_chat(victim, span_notice("[memory.recollection] Вы удерживаете осколок. Донесите его к северным вратам, избегая тени и разломов."))
+	memory.alpha = 0
+	memory.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	memory.desc = "Этот осколок нужно донести на печать перед северными вратами."
+	to_chat(victim, span_notice("[memory.recollection] Осколок с вами. Следуйте стрелкам к светящейся печати перед вратами и остановитесь на ней."))
 	playsound(memory, theme["pickup"], 45, FALSE)
+	log_game("Mansus: [key_name(victim)] collected fragment [memories_found + 1]/[HERETIC_MANSUS_MEMORIES], chamber [memory.chamber].")
+	update_route()
 	update_guidance()
 	return TRUE
 
@@ -476,22 +497,53 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	memory.awake = TRUE
 	memory.recalled = FALSE
 	memory.alpha = 255
-	memory.desc = "Соберите осколок за [DisplayTimeText(recall_duration)] и отнесите к северным вратам. Можно наступить на него даже в наручниках."
+	memory.mouse_opacity = MOUSE_OPACITY_ICON
+	memory.desc = "Наступите на осколок и остановитесь на [DisplayTimeText(recall_duration)]. Затем следуйте стрелкам к печати перед вратами. Наручники не мешают."
 	animate(memory, alpha = 170, time = 1 SECONDS, loop = -1)
 	animate(alpha = 255, time = 1 SECONDS)
 	var/list/directions = list("В западной комнате загорается осколок.", "Из восточной комнаты доносится зов осколка.", "В северной комнате пробуждается осколок.")
 	to_chat(victim, span_boldnotice(directions[memory.chamber]))
+	update_route()
 	update_guidance()
+
+/datum/heretic_mansus_visit/proc/update_route()
+	route_steps.Cut()
+	var/obj/effect/heretic_mansus_memory/memory = memories[min(memories_found + 1, HERETIC_MANSUS_MEMORIES)]
+	var/turf/target = get_turf(carried_memory ? offering : memory)
+	if(!(target in walkable_turfs))
+		return
+	var/list/frontier = list(target)
+	var/index = 1
+	while(index <= length(frontier))
+		var/turf/current = frontier[index++]
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbor = get_step(current, direction)
+			if(!(neighbor in walkable_turfs) || neighbor == target || route_steps[neighbor])
+				continue
+			route_steps[neighbor] = current
+			frontier += neighbor
+	update_trail()
+
+/datum/heretic_mansus_visit/proc/update_trail()
+	var/turf/current = get_turf(victim)
+	for(var/obj/effect/heretic_mansus_trail/marker as anything in trail)
+		var/turf/next = route_steps[current]
+		marker.alpha = next ? 230 : 0
+		if(!next)
+			continue
+		marker.forceMove(current)
+		marker.setDir(get_dir(current, next))
+		current = next
 
 /datum/heretic_mansus_visit/proc/update_guidance()
 	if(finished || QDELETED(victim))
 		return
 	var/atom/movable/screen/alert/heretic_mansus/indicator = victim.throw_alert(HERETIC_MANSUS_ALERT, /atom/movable/screen/alert/heretic_mansus, no_anim = TRUE)
 	apply_style(indicator, "hud")
-	indicator.name = "Дом памяти: [memories_found]/[HERETIC_MANSUS_MEMORIES]"
+	indicator.name = "[carried_memory ? "Отнесите осколок на печать" : "Идите к яркому осколку"]: [memories_found]/[HERETIC_MANSUS_MEMORIES]"
 	var/list/chambers = list("западной", "восточной", "северной")
 	var/obj/effect/heretic_mansus_memory/next_memory = memories[min(memories_found + 1, HERETIC_MANSUS_MEMORIES)]
-	indicator.desc = "[carried_memory ? "Вы несёте осколок: отнесите его к северным вратам." : "Следующий осколок — в [chambers[next_memory.chamber]] комнате."] Тень и вспыхнувшие разломы выбивают несомый осколок. У врат безопасно. Доставленные осколки не теряются. Дом отпустит вас сам не позднее чем через [DisplayTimeText(visit_duration)] после входа."
+	indicator.desc = "[carried_memory ? "Вы несёте осколок: остановитесь на светящейся печати перед северными вратами на секунду." : "Следуйте стрелкам к осколку [chambers[next_memory.chamber]] комнаты. Наступите на него и остановитесь на [DisplayTimeText(recall_duration)]."] [memories_found ? "Избегайте тени и вспыхнувших трещин: удар возвращает несомый осколок в его комнату." : "Пока вы не доставите первый осколок, опасностей нет."] У печати безопасно. Доставленные осколки не теряются. Автоматическое возвращение через [DisplayTimeText(max(0, forced_exit - world.time))]."
 	indicator.maptext = MAPTEXT("[memories_found]/[HERETIC_MANSUS_MEMORIES][carried_memory ? "+" : ""]")
 
 /datum/heretic_mansus_visit/proc/open_gate()
@@ -503,38 +555,50 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	gate.balloon_alert(victim, "путь домой открыт")
 
 /datum/heretic_mansus_visit/proc/can_deliver(mob/user, obj/effect/heretic_mansus_memory/memory)
-	return !finished && !QDELETED(user) && !QDELETED(gate) && !QDELETED(memory) && user == victim && user.stat == CONSCIOUS && contains(user) && carried_memory == memory && get_dist(user, gate) <= 1
+	return !finished && !QDELETED(user) && !QDELETED(gate) && !QDELETED(memory) && user == victim && user.stat == CONSCIOUS && carried_memory == memory && is_safe(user)
 
 /datum/heretic_mansus_visit/proc/try_exit(mob/user)
-	if(finished || QDELETED(gate) || user != victim || !contains(user) || get_dist(user, gate) > 1 || user.stat != CONSCIOUS || delivering_memory)
+	if(finished || QDELETED(gate) || user != victim || !is_safe(user) || user.stat != CONSCIOUS || delivering_memory)
 		return FALSE
 	if(memories_found >= HERETIC_MANSUS_MEMORIES)
-		return finish()
+		return finish(exit_reason = "completed")
 	var/obj/effect/heretic_mansus_memory/memory = carried_memory
 	if(!memory)
 		gate.balloon_alert(victim, "доставлено: [memories_found]/[HERETIC_MANSUS_MEMORIES]")
 		return FALSE
 	delivering_memory = TRUE
-	var/delivered = do_after(user, delivery_duration, gate, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_deliver), user, memory))
+	gate.balloon_alert(victim, "закрепляете осколок")
+	var/delivered = do_after(user, delivery_duration, gate, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED, extra_checks = CALLBACK(src, PROC_REF(can_deliver), user, memory), progress_loc = offering)
 	delivering_memory = FALSE
 	if(!delivered || !can_deliver(user, memory))
 		return FALSE
 	carried_memory = null
 	memory.delivered = TRUE
-	memory.alpha = 65
+	memory.alpha = 0
 	memory.desc = "Этот осколок уже закреплён во вратах. Дом больше не отнимет его."
 	memories_found++
+	offering.icon_state = "offering[memories_found]"
 	playsound(gate, theme["deposit"], 45, FALSE)
 	to_chat(victim, span_boldnotice("Врата удержали осколок: [memories_found]/[HERETIC_MANSUS_MEMORIES]."))
+	log_game("Mansus: [key_name(victim)] delivered [memories_found]/[HERETIC_MANSUS_MEMORIES] after [(world.time - entered_at) / (1 SECONDS)] seconds.")
 	if(memories_found >= HERETIC_MANSUS_MEMORIES)
 		open_gate()
-		return finish()
+		return finish(exit_reason = "completed")
+	if(memories_found == 1 && danger_enabled)
+		next_hazard_at = world.time + 6 SECONDS
+		hunter = new(entry_turf, src)
+		scenery += hunter
+		reset_hunter()
+		to_chat(victim, span_warning("Дом заметил вас. Теперь тень идёт по галерее, а трещины предупреждают о вспышке. Продолжайте по стрелкам; у печати можно передохнуть."))
+	if(memories_found == HERETIC_MANSUS_FINAL_PRESSURE)
+		to_chat(victim, span_userdanger("Остался последний осколок. Тень ускоряется, трещины вспыхивают чаще. Выманите тень из комнаты, прежде чем останавливаться у осколка!"))
 	awaken_memory()
 	return TRUE
 
 /datum/heretic_mansus_visit/process(delta_time)
 	if(finished || !started)
 		return PROCESS_KILL
+	update_guidance()
 	if(!danger_enabled || QDELETED(victim) || !contains(victim))
 		return
 	for(var/obj/effect/heretic_mansus_hazard/hazard as anything in hazards.Copy())
@@ -547,16 +611,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			hazard.alpha = 255
 		if(hazard.armed && get_turf(victim) == get_turf(hazard))
 			suffer_hazard(victim)
-	if(world.time >= next_hazard_at)
-		next_hazard_at = world.time + (memories_found >= HERETIC_MANSUS_CHAMBERS ? rand(5, 7) : rand(7, 9)) * 1 SECONDS
+	if(memories_found && world.time >= next_hazard_at)
+		next_hazard_at = world.time + (memories_found >= HERETIC_MANSUS_FINAL_PRESSURE ? rand(5, 7) : rand(7, 9)) * 1 SECONDS
 		spawn_hazards()
-	if(!QDELETED(hunter) && world.time >= hunter_ready_at)
-		hunter.alpha = 190
-		for(var/step in 1 to (memories_found >= HERETIC_MANSUS_CHAMBERS ? 2 : 1))
-			move_hunter()
-			if(get_turf(hunter) == get_turf(victim))
-				suffer_hazard(victim)
-				break
 
 /datum/heretic_mansus_visit/proc/spawn_hazards()
 	if(finished || !contains(victim))
@@ -568,7 +625,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	positions += get_step(center, turn(direction, 180))
 	var/created_hazard = FALSE
 	for(var/turf/position as anything in positions)
-		if(!(position in walkable_turfs) || get_dist(position, gate) <= HERETIC_MANSUS_GATE_SAFETY || (locate(/obj/effect/heretic_mansus_hazard) in position))
+		if(!(position in walkable_turfs) || is_safe(position) || (locate(/obj/effect/heretic_mansus_hazard) in position))
 			continue
 		var/obj/effect/heretic_mansus_hazard/hazard = new(position, src)
 		hazards += hazard
@@ -579,19 +636,37 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /datum/heretic_mansus_visit/proc/reset_hunter()
 	if(finished || QDELETED(hunter))
 		return
+	deltimer(hunter_timer)
+	hunter_timer = null
 	var/list/candidates = list()
 	for(var/turf/position as anything in walkable_turfs)
-		if(get_dist(position, victim) >= 6 && get_dist(position, gate) > HERETIC_MANSUS_GATE_SAFETY)
+		if(get_dist(position, victim) >= 6 && !is_safe(position))
 			candidates += position
 	if(length(candidates))
+		hunter.alpha = 0
 		hunter.forceMove(pick(candidates))
 	hunter_ready_at = world.time + HERETIC_MANSUS_HUNTER_GRACE
-	hunter.alpha = 85
+	animate(hunter, alpha = 85, time = 0.5 SECONDS)
+	if(danger_enabled)
+		hunter_timer = addtimer(CALLBACK(src, PROC_REF(advance_hunter)), HERETIC_MANSUS_HUNTER_GRACE, TIMER_STOPPABLE)
 
-/datum/heretic_mansus_visit/proc/move_hunter()
+/datum/heretic_mansus_visit/proc/advance_hunter()
+	hunter_timer = null
+	if(finished || !danger_enabled || QDELETED(hunter) || QDELETED(victim) || !contains(victim))
+		return
+	var/step_delay = memories_found >= HERETIC_MANSUS_FINAL_PRESSURE ? HERETIC_MANSUS_HUNTER_FAST_STEP : HERETIC_MANSUS_HUNTER_STEP
+	if(world.time >= hunter_ready_at)
+		hunter.alpha = 190
+		move_hunter(step_delay)
+		if(get_turf(hunter) == get_turf(victim))
+			suffer_hazard(victim)
+	if(!hunter_timer && !finished)
+		hunter_timer = addtimer(CALLBACK(src, PROC_REF(advance_hunter)), step_delay, TIMER_STOPPABLE)
+
+/datum/heretic_mansus_visit/proc/move_hunter(step_delay = HERETIC_MANSUS_HUNTER_STEP)
 	var/turf/destination = get_turf(victim)
 	var/turf/origin = get_turf(hunter)
-	if(finished || !(destination in walkable_turfs) || !(origin in walkable_turfs) || get_dist(destination, gate) <= HERETIC_MANSUS_GATE_SAFETY)
+	if(finished || !(destination in walkable_turfs) || !(origin in walkable_turfs) || is_safe(destination))
 		return
 	var/list/frontier = list(destination)
 	var/list/next_steps = list()
@@ -604,27 +679,28 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 				continue
 			next_steps[neighbor] = current
 			if(neighbor == origin)
-				hunter.setDir(get_dir(origin, current))
-				hunter.forceMove(current)
-				playsound(hunter, theme["step"], 40, FALSE)
+				if(hunter.Move(current, get_dir(origin, current), DELAY_TO_GLIDE_SIZE(step_delay)))
+					playsound(hunter, theme["step"], 40, FALSE)
 				return
 			frontier += neighbor
 
 /datum/heretic_mansus_visit/proc/suffer_hazard(mob/user)
-	if(finished || user != victim || !contains(user) || world.time < next_hazard_hit || get_dist(user, gate) <= HERETIC_MANSUS_GATE_SAFETY)
+	if(finished || user != victim || !contains(user) || world.time < next_hazard_hit || is_safe(user))
 		return FALSE
 	next_hazard_hit = world.time + HERETIC_MANSUS_HIT_GRACE
+	hits_taken++
 	LAZYREMOVE(victim.do_afters, recalling_memory)
 	LAZYREMOVE(victim.do_afters, gate)
 	playsound(victim, theme["hit"], 50, FALSE)
 	victim.Knockdown(1 SECONDS)
 	if(carried_memory)
 		carried_memory = null
-		to_chat(victim, span_userdanger("Дом вырывает несомый осколок и возвращает его в комнату. Доставленные осколки остаются во вратах."))
 		awaken_memory()
+		to_chat(victim, span_userdanger("Дом вырвал несомый осколок и вернул его в комнату. Доставленные осколки остаются во вратах. Следуйте стрелкам, чтобы повторить попытку."))
 	else
 		to_chat(victim, span_warning("Чужая память сбивает вас с ног. Уходите с разлома и держитесь дальше от тени!"))
 	reset_hunter()
+	log_game("Mansus: [key_name(victim)] hit [hits_taken] times, delivered [memories_found]/[HERETIC_MANSUS_MEMORIES].")
 	return TRUE
 
 /// Видения принадлежат комнате; они не наносят урон и не остаются после возвращения.
@@ -645,6 +721,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /datum/heretic_mansus_visit/proc/on_victim_moved()
 	SIGNAL_HANDLER
+	if(!finished && contains(victim))
+		update_trail()
+		return
 	if(!finished && !finish_pending && !contains(victim))
 		finish_pending = TRUE
 		timers += addtimer(CALLBACK(src, PROC_REF(finish), TRUE), 0, TIMER_STOPPABLE)
@@ -694,21 +773,27 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	return return_turf || fallback_turf || get_turf(GET_ERROR_ROOM)
 
 /// Единый идемпотентный выход для таймера, врат, удаления и смены тела.
-/datum/heretic_mansus_visit/proc/finish(preserve_location = FALSE, delete_visit = TRUE)
+/datum/heretic_mansus_visit/proc/finish(preserve_location = FALSE, delete_visit = TRUE, exit_reason = "interrupted")
 	if(finished)
 		return FALSE
 	finish_pending = FALSE
 	var/turf/destination = (started || reservation) ? find_return_turf() : null
 	if((started || reservation) && !destination)
 		finish_pending = TRUE
-		timers += addtimer(CALLBACK(src, PROC_REF(finish), preserve_location), 5 SECONDS, TIMER_STOPPABLE)
+		timers += addtimer(CALLBACK(src, PROC_REF(finish), preserve_location, delete_visit, exit_reason), 5 SECONDS, TIMER_STOPPABLE)
 		return FALSE
 	finished = TRUE
+	if(started)
+		log_game("Mansus: [key_name(victim)] exited [theme["id"]], reason=[exit_reason], fragments=[memories_found]/[HERETIC_MANSUS_MEMORIES], hits=[hits_taken], duration=[(world.time - entered_at) / (1 SECONDS)] seconds.")
 	STOP_PROCESSING(SSprocessing, src)
+	deltimer(hunter_timer)
+	hunter_timer = null
 	QDEL_LIST(hazards)
 	carried_memory = null
 	hunter = null
 	walkable_turfs.Cut()
+	route_steps.Cut()
+	trail.Cut()
 	recalling_memory = null
 	for(var/timer in timers)
 		deltimer(timer)
@@ -736,7 +821,12 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			victim.forceMove(destination)
 		playsound(victim, theme["escape"], 45, FALSE)
 		victim.AddComponent(/datum/component/heretic_mansus_trace)
-		to_chat(victim, span_boldnotice("Стены Дома смыкаются за спиной. Вы помните свой путь среди чужих стен. На коже остался бледный след незнакомой двери."))
+		if(exit_reason == "completed")
+			to_chat(victim, span_boldnotice("Имя, голос и дыхание снова ваши. Вы прошли испытание и открыли дверь домой. На коже остался бледный след врат."))
+		else if(exit_reason == "timeout")
+			to_chat(victim, span_notice("Время истекло. Дом выталкивает вас наружу: доставлено [memories_found]/[HERETIC_MANSUS_MEMORIES] осколков. На коже остался бледный след незнакомой двери."))
+		else
+			to_chat(victim, span_notice("Стены Дома смыкаются за спиной. На коже остался бледный след незнакомой двери."))
 	// Возвращаем также брошенные вещи, контейнеры и посторонних: Release() уничтожает содержимое.
 	QDEL_LIST(scenery)
 	if(reservation)
@@ -750,6 +840,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	room = null
 	memories.Cut()
 	gate = null
+	offering = null
 	victim = null
 	soul = null
 	if(delete_visit)
@@ -801,7 +892,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus_gates.dmi'
 	icon_state = "ash_gate_closed"
 	name = "дверь в мир наяву"
-	desc = "Доставьте сюда шесть осколков памяти. Врата укрывают от тени и разломов."
+	desc = "Доставьте три осколка на светящуюся печать перед вратами. Здесь можно укрыться от тени и разломов."
 	pixel_x = -16
 	pixel_y = 0
 	anchored = TRUE
@@ -874,6 +965,65 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	maptext_width = 32
 	maptext_height = 12
 
+/atom/movable/screen/alert/heretic_mansus/Click(location, control, params)
+	if(!..())
+		return
+	var/datum/heretic_mansus_visit/visit = GLOB.heretic_mansus_visits[owner?.mind]
+	if(!visit || visit.victim != owner)
+		return
+	visit.update_guidance()
+	visit.update_trail()
+	to_chat(owner, span_notice(desc))
+	if(visit.carried_memory)
+		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, try_exit), owner)
+	else
+		var/obj/effect/heretic_mansus_memory/memory = visit.memories[visit.memories_found + 1]
+		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, collect_memory), memory, owner)
+
+/obj/effect/heretic_mansus_trail
+	name = "след памяти"
+	desc = "Стрелка указывает путь к осколку или к печати. Она не предупреждает об опасности: следите за трещинами и тенью."
+	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
+	icon_state = "trail"
+	anchored = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = TURF_LAYER + 0.1
+	alpha = 0
+
+/obj/effect/heretic_mansus_offering
+	name = "печать возвращения"
+	desc = "Остановитесь на печати с осколком на одну секунду, чтобы закрепить его. Три огня откроют выход. Печать и соседние клетки защищают от тени и разломов."
+	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
+	icon_state = "offering0"
+	anchored = TRUE
+	layer = BELOW_MOB_LAYER
+	var/datum/heretic_mansus_visit/visit
+
+/obj/effect/heretic_mansus_sanctuary
+	name = "защита печати"
+	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
+	icon_state = "sanctuary"
+	anchored = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = TURF_LAYER + 0.1
+
+/obj/effect/heretic_mansus_offering/Initialize(mapload, datum/heretic_mansus_visit/new_visit)
+	. = ..()
+	visit = new_visit
+
+/obj/effect/heretic_mansus_offering/Destroy()
+	visit = null
+	return ..()
+
+/obj/effect/heretic_mansus_offering/attack_hand(mob/user)
+	if(visit)
+		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, try_exit), user)
+
+/obj/effect/heretic_mansus_offering/Crossed(atom/movable/crosser)
+	. = ..()
+	if(ismob(crosser) && visit)
+		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, try_exit), crosser)
+
 /obj/effect/heretic_mansus_hazard
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_warning"
@@ -911,6 +1061,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	name = "тень забвения"
 	desc = "Она идёт по галерее за вами. Не подпускайте её к себе: тень вырывает несомый осколок. Возле северных врат безопасно."
 	anchored = TRUE
+	animate_movement = SLIDE_STEPS
+	appearance_flags = TILE_BOUND | PIXEL_SCALE | LONG_GLIDE
 	layer = ABOVE_MOB_LAYER
 	var/datum/heretic_mansus_visit/visit
 
@@ -945,10 +1097,14 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 #undef HERETIC_MANSUS_RECALL_TIME
 #undef HERETIC_MANSUS_ROOM_SIZE
 #undef HERETIC_MANSUS_MEMORIES
-#undef HERETIC_MANSUS_CHAMBERS
 #undef HERETIC_MANSUS_WARNING_TIME
 #undef HERETIC_MANSUS_HAZARD_LIFETIME
 #undef HERETIC_MANSUS_HIT_GRACE
 #undef HERETIC_MANSUS_HUNTER_GRACE
 #undef HERETIC_MANSUS_GATE_SAFETY
+#undef HERETIC_MANSUS_GATE_CLEARANCE
+#undef HERETIC_MANSUS_TRAIL_LENGTH
+#undef HERETIC_MANSUS_FINAL_PRESSURE
+#undef HERETIC_MANSUS_HUNTER_STEP
+#undef HERETIC_MANSUS_HUNTER_FAST_STEP
 #undef HERETIC_MANSUS_ALERT
