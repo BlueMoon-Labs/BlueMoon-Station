@@ -979,6 +979,7 @@
 #include "code\datums\diseases\floor_diseases\nebula_nausea.dm"
 #include "code\datums\elements\_element.dm"
 #include "code\datums\elements\ai_retaliate.dm"
+#include "code\datums\elements\ambidextria_attack.dm"
 #include "code\datums\elements\art.dm"
 #include "code\datums\elements\atmos_sensitive.dm"
 #include "code\datums\elements\beauty.dm"
