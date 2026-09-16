@@ -350,10 +350,21 @@
 
 /obj/effect/proc_holder/spell/self/heretic_power/rust
 	name = "Укоренение"
-	desc = "Потратьте нарост: создайте очаг ржавчины на 30 секунд. Он расширяется до области 5×5 и лечит вас и ваших слуг на своей территории. Одновременно существует один очаг."
+	desc = "Потратьте нарост: создайте очаг ржавчины на 30 секунд. Он ржавит подходящие полы в области 5×5 и лечит вас и ваших слуг на ржавом полу внутри отмеченной границы. Одновременно существует один очаг."
 	action_icon_state = "rust_root"
 	knowledge_type = /datum/eldritch_knowledge/base_rust
 	charge_max = 300
+
+/obj/effect/proc_holder/spell/self/heretic_power/rust/can_cast(mob/user, skipcharge, silent)
+	var/turf/open/floor/floor = user.loc
+	return ..() && heretic_check(user, istype(floor) && floor.heretic_rustable, silent, "Для очага встаньте на пол, поддающийся ржавчине: металлические плиты, обшивку или дерево.")
+
+/obj/effect/proc_holder/spell/self/heretic_power/rust/cast(list/targets, mob/living/user)
+	var/turf/open/floor/floor = user.loc
+	if(!istype(floor) || !floor.heretic_rustable)
+		heretic_revert_cast(user, "Этот пол не поддаётся ржавчине; нарост сохранён.")
+		return
+	return ..()
 
 /obj/effect/proc_holder/spell/self/heretic_power/rust/activate_power(mob/living/user, datum/eldritch_knowledge/knowledge)
 	QDEL_NULL(knowledge.combat_zone)
@@ -464,6 +475,8 @@
 			repair_boundary = TRUE
 	var/list/new_field = list()
 	for(var/turf/open/floor/floor in visible)
+		if(!accepts_field_turf(floor))
+			continue
 		new_field += floor
 	if(!repair_boundary && length(new_field) == length(field_turfs) && !length(new_field - field_turfs))
 		return
@@ -484,6 +497,9 @@
 				boundary += edge
 				break
 	QDEL_LIST(unused_edges)
+
+/obj/effect/heretic_combat_zone/proc/accepts_field_turf(turf/open/floor/floor)
+	return TRUE
 
 /obj/effect/heretic_combat_zone/proc/release_affected(list/victims)
 	for(var/mob/living/victim as anything in victims)
@@ -531,18 +547,25 @@
 	boundary_color = "#e7ad64"
 	icon_state = "sigil_rust"
 	duration = 30 SECONDS
-	var/list/claimed = list()
+
+/obj/effect/heretic_combat_zone/rust/accepts_field_turf(turf/open/floor/floor)
+	return istype(floor, /turf/open/floor/plating/rust)
 
 /obj/effect/heretic_combat_zone/rust/tick_zone(mob/living/user, list/visible)
+	visible = visible ? visible.Copy() : view(radius, src)
 	var/remaining = 3
-	for(var/turf/open/floor/floor as anything in field_turfs - claimed)
-		claimed += floor
-		floor.rust_heretic_act()
-		new /obj/effect/temp_visual/heretic_oldpath/rust(floor)
+	for(var/turf/open/floor/floor in visible.Copy())
+		if(!floor.heretic_rustable || istype(floor, /turf/open/floor/plating/rust))
+			continue
+		var/turf/changed = floor.rust_heretic_act()
+		visible -= floor
+		if(!changed)
+			continue
+		visible |= changed
+		new /obj/effect/temp_visual/heretic_oldpath/rust(changed)
 		if(!--remaining)
 			break
-	if(!visible)
-		visible = view(radius, src)
+	refresh_boundary(visible)
 	for(var/mob/living/ally in visible)
 		if(ally.stat == DEAD || !(ally.loc in field_turfs) || !istype(get_turf(ally), /turf/open/floor/plating/rust))
 			continue

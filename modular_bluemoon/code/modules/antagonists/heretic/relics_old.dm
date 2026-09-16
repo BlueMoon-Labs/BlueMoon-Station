@@ -98,12 +98,16 @@
 
 /obj/item/heretic_relic/rust_seed
 	name = "семя ржавчины"
-	desc = "Колючее семя с живыми корешками, пахнущее мокрым железом. Используйте в руке на открытом полу: за три секунды и один нарост оно прорастёт в разрушаемый очаг на минуту. Очаг распространяет ржавчину в области 5×5 и лечит вас и вашу свиту. У каждого хозяина может быть только один посаженный очаг."
+	desc = "Колючее семя с живыми корешками, пахнущее мокрым железом. Используйте в руке на полу, поддающемся ржавчине: за три секунды и один нарост оно прорастёт в разрушаемый очаг на минуту. Очаг распространяет ржавчину в области 5×5 и лечит вас и вашу свиту на ржавом полу внутри отмеченной границы. У каждого хозяина может быть только один посаженный очаг."
 	icon_state = "rust_seed"
 	knowledge_type = /datum/eldritch_knowledge/base_rust
 
 /obj/item/heretic_relic/rust_seed/attack_self(mob/living/user)
 	if(!get_path(user) || !isfloorturf(user.loc))
+		return
+	var/turf/open/floor/floor = user.loc
+	if(!floor.heretic_rustable)
+		to_chat(user, span_warning("Этот пол не поддаётся ржавчине. Посадите семя на металлические плиты, обшивку или дерево."))
 		return
 	user.visible_message(span_warning("[user] вдавливает [src] в пол. Из сердца тянутся ржавые корни."))
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(user))
@@ -112,7 +116,8 @@
 
 /obj/item/heretic_relic/rust_seed/proc/plant(mob/living/user)
 	var/datum/eldritch_knowledge/path = get_path(user)
-	if(!path || !isfloorturf(user.loc) || (locate(/obj/structure/heretic_rust_heart) in user.loc))
+	var/turf/open/floor/floor = user.loc
+	if(!path || !istype(floor) || !floor.heretic_rustable || (locate(/obj/structure/heretic_rust_heart) in user.loc))
 		return FALSE
 	if(!COOLDOWN_FINISHED(path, relic_cooldown) || !path.spend_combat_resource())
 		return FALSE
@@ -150,7 +155,7 @@
 /obj/structure/heretic_rust_heart/proc/burst(mob/living/user)
 	if(QDELETED(zone) || zone.master_mind?.resolve() != user.mind || !IS_HERETIC(user) || !user.Adjacent(src) || user.incapacitated())
 		return FALSE
-	for(var/turf/tile as anything in zone.field_turfs)
+	for(var/turf/open/floor/tile in range(zone.radius, src))
 		if(!can_see(src, tile, zone.radius))
 			continue
 		new /obj/effect/temp_visual/heretic_oldpath/rust(tile)

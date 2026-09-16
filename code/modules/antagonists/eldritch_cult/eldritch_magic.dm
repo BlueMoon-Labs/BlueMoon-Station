@@ -63,6 +63,7 @@
 	item_state = "mansus"
 	catchphrase = "T'IESA SIE'KTI VISATA"
 	var/grasp_in_progress = FALSE
+	COOLDOWN_DECLARE(rejected_grasp_log)
 
 /obj/item/melee/touch_attack/mansus_fist/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if(QDELETED(src) || QDELETED(user) || QDELETED(target) || grasp_in_progress || charges <= 0 || !proximity_flag || target == user)
@@ -89,9 +90,13 @@
 	if(isliving(target))
 		var/mob/living/victim = target
 		if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+			reject_grasp(victim, user, "Союзник Мансуса; заряд сохранён.")
 			return
-		if(victim.check_magic_resistance())
+		var/datum/protection = victim.check_magic_resistance()
+		if(protection)
 			to_chat(user, span_warning("Защита от магии отталкивает хватку."))
+			victim.balloon_alert(user, "защита от магии")
+			reject_grasp(victim, user, "Защита от магии ([protection.type]); заряд потрачен.")
 			return TRUE
 	var/use_charge = FALSE
 	var/grasp_sound = 'sound/items/welder.ogg'
@@ -100,12 +105,14 @@
 		var/mob/living/victim = target
 		if(victim.stat != DEAD)
 			use_charge = TRUE
+			var/brute_before = victim.getBruteLoss()
+			var/stamina_before = victim.getStaminaLoss()
 			victim.adjustBruteLoss(10)
 			if(iscarbon(victim))
 				victim.Stun(1 SECONDS)
 				victim.Knockdown(2 SECONDS)
 				victim.adjustStaminaLoss(60)
-			log_combat(user, victim, "поражает хваткой Мансуса")
+			log_combat(user, victim, "поражает хваткой Мансуса", addition = "базовый урон: [victim.getBruteLoss() - brute_before] ушибов, [victim.getStaminaLoss() - stamina_before] выносливости")
 	var/list/knowledge = heretic.get_all_knowledge()
 	for(var/knowledge_type in knowledge)
 		if(QDELETED(src) || QDELETED(user) || QDELETED(target))
@@ -120,7 +127,15 @@
 		playsound(user, grasp_sound, 60, TRUE)
 		if(grasp_visual && !QDELETED(target))
 			new grasp_visual(get_turf(target))
+	else if(!use_charge && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
+		reject_grasp(target, user, "Цель не приняла ни одного эффекта; заряд сохранён.")
 	return use_charge
+
+/obj/item/melee/touch_attack/mansus_fist/proc/reject_grasp(atom/target, mob/user, reason)
+	if(!COOLDOWN_FINISHED(src, rejected_grasp_log))
+		return
+	COOLDOWN_START(src, rejected_grasp_log, 5 SECONDS)
+	user.log_message("не поражает хваткой Мансуса [key_name(target)]: [reason]", LOG_ATTACK)
 
 /obj/effect/proc_holder/spell/self/heretic_summon
 	action_icon = 'icons/obj/eldritch.dmi'
@@ -245,14 +260,26 @@
 
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion/cast(list/targets, mob/user = usr)
 	playsound(user, 'sound/effects/clangsmall1.ogg', 75, TRUE)
+	var/changed_surfaces = 0
 	for(var/turf/T in targets)
 		///What we want is the 3 tiles around the user and the tile under him to be rusted, so min(dist,1)-1 causes us to get 0 for these tiles, rest of the tiles are based on chance
 		var/chance = 100 - (max(get_dist(T,user),1)-1)*100/(range+1)
 		if(!prob(chance))
 			continue
+		var/previous_type = T.type
+		var/surface_x = T.x
+		var/surface_y = T.y
+		var/surface_z = T.z
 		T.rust_heretic_act()
-		if(get_dist(T, user) <= 3)
-			new /obj/effect/temp_visual/heretic_oldpath/rust(T)
+		var/turf/changed = locate(surface_x, surface_y, surface_z)
+		if(changed.type == previous_type)
+			continue
+		changed_surfaces++
+		if(get_dist(changed, user) <= 3)
+			new /obj/effect/temp_visual/heretic_oldpath/rust(changed)
+	log_game("[key_name(user)] применяет [name]: изменено поверхностей [changed_surfaces]/[length(targets)] в [AREACOORD(user)].")
+	if(!changed_surfaces)
+		user.balloon_alert(user, "нет новых поверхностей")
 
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion/small
 	name = "Обращение ржавчины"

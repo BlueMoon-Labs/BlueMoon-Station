@@ -109,6 +109,7 @@
 	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
 	var/turf/center = get_step(user, EAST)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(get_step(center, EAST), EAST))
+	ADD_TRAIT(victim, TRAIT_NOSLIPWATER, REF(src))
 	tide.combat_resource = 4
 	TEST_ASSERT(tide.create_well(user, center), "На свободном полу создаётся водоворот.")
 	var/obj/structure/heretic_tide_well/first = tide.active_well

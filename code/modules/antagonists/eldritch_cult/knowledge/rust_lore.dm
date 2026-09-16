@@ -26,6 +26,11 @@
 	if(!isfloorturf(target) && !iswallturf(target))
 		return FALSE
 	var/turf/surface = target
+	if(isfloorturf(surface))
+		var/turf/open/floor/floor = surface
+		if(!floor.heretic_rustable)
+			floor.balloon_alert(user, "не поддаётся ржавчине")
+			return FALSE
 	var/was_rust = is_heretic_rust_turf(surface)
 	var/surface_x = surface.x
 	var/surface_y = surface.y

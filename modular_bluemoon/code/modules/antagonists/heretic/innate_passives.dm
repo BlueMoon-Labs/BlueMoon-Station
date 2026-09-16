@@ -243,6 +243,7 @@
 /datum/heretic_innate/rust/on_tick()
 	if(istype(body.loc, /turf/open/floor/plating/rust))
 		heretic_heal_damage(body, HERETIC_INNATE_RUST_HEAL, HERETIC_INNATE_RUST_HEAL)
+	update_healing_alert()
 
 /datum/heretic_innate/flesh
 	name = "Запасная плоть"
