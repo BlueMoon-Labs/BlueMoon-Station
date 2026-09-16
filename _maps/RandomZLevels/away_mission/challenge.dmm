@@ -96,7 +96,7 @@
 /turf/open/floor/plating/airless,
 /area/awaymission/challenge/main)
 "aG" = (
-/mob/living/simple_animal/hostile/syndicate/melee/anthro,
+/mob/living/simple_animal/hostile/inteq/melee,
 /turf/open/floor/carpet,
 /area/awaymission/challenge/start)
 "aH" = (
@@ -416,7 +416,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "ce" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro/cat,
+/mob/living/simple_animal/hostile/inteq/ranged/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "cf" = (
@@ -462,7 +462,7 @@
 /turf/open/floor/wood,
 /area/awaymission/challenge/end)
 "cl" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/anthro,
+/mob/living/simple_animal/hostile/inteq/melee/sword,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "cn" = (
@@ -574,7 +574,7 @@
 /turf/open/floor/circuit,
 /area/awaymission/challenge/end)
 "cF" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/anthro,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "cG" = (
@@ -665,7 +665,7 @@
 /turf/open/floor/plating,
 /area/awaymission/challenge/end)
 "dm" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro/cat,
+/mob/living/simple_animal/hostile/inteq/ranged/space,
 /turf/open/floor/circuit,
 /area/awaymission/challenge/end)
 "dn" = (
@@ -710,7 +710,7 @@
 /turf/open/space/basic,
 /area/awaymission/challenge/end)
 "Hr" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/anthro,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/circuit,
 /area/awaymission/challenge/end)
 "Lm" = (
@@ -733,7 +733,7 @@
 /turf/open/floor/plating/airless,
 /area/awaymission/challenge/main)
 "OT" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper/anthro/fox,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "Pv" = (
@@ -757,7 +757,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 "QE" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/anthro,
+/mob/living/simple_animal/hostile/inteq/ranged,
 /turf/open/floor/carpet,
 /area/awaymission/challenge/start)
 "Xm" = (
@@ -772,7 +772,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/challenge/end)
 "Zw" = (
-/mob/living/simple_animal/hostile/syndicate/melee/space/anthro/lizard,
+/mob/living/simple_animal/hostile/inteq/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/challenge/end)
 
@@ -26886,7 +26886,7 @@ aA
 aA
 bP
 go
-OT
+cd
 cd
 cd
 cx
@@ -27143,7 +27143,7 @@ aF
 Mx
 bP
 PS
-cd
+OT
 cd
 cd
 cx
@@ -27919,7 +27919,7 @@ bP
 bP
 bP
 cD
-cF
+cd
 cd
 cn
 cL
@@ -29160,7 +29160,7 @@ al
 au
 aq
 at
-au
+QE
 az
 aE
 aH
@@ -29417,7 +29417,7 @@ au
 al
 ar
 au
-QE
+au
 ax
 aA
 aA

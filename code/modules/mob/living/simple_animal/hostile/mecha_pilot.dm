@@ -146,6 +146,8 @@
 		return
 	if(!Adjacent(M) || !is_valid_mecha(M))
 		return
+	if(stat != CONSCIOUS)
+		return
 	if(!enter_mecha(M))
 		return
 	visible_message(span_notice("[src] забирается внутрь [M]."))
