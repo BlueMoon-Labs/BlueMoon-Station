@@ -119,7 +119,7 @@
 	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
 
 /obj/item/autosurgeon/syndicate/corp_chem_implant
-	starting_organ = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	starting_organ = /obj/item/organ/cyberimp/chest/chem_implant
 
 /datum/uplink_item/implants/arm_shied
 	name = "Corporate Arm Shield"
@@ -129,7 +129,7 @@
 	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
 
 /obj/item/autosurgeon/syndicate/corp_arm_shied
-	starting_organ = /obj/item/organ/cyberimp/arm/shield/sec_level
+	starting_organ = /obj/item/organ/cyberimp/arm/shield
 
 // /datum/uplink_item/implants/anti_stun
 // 	name = "Corporate CNS Rebooter"
@@ -138,7 +138,7 @@
 // 	cost = 3
 
 /obj/item/autosurgeon/syndicate/corp_anti_stun
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
+	starting_organ = /obj/item/organ/cyberimp/brain/anti_stun
 
 // /datum/uplink_item/implants/thermals
 // 	name = "Corporate Thermals"
@@ -147,7 +147,7 @@
 // 	cost = 4
 
 /obj/item/autosurgeon/syndicate/corp_thermals
-	starting_organ = /obj/item/organ/eyes/robotic/toggled/thermals/sec_level
+	starting_organ = /obj/item/organ/eyes/robotic/toggled/thermals
 
 // /datum/uplink_item/implants/anti_drop
 // 	name = "Corporate Anti drop implant"
@@ -156,7 +156,7 @@
 // 	cost = 5
 
 /obj/item/autosurgeon/syndicate/corp_antidrop
-	starting_organ = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
+	starting_organ = /obj/item/organ/cyberimp/brain/anti_drop
 
 // /datum/uplink_item/implants/arm_blade
 // 	name = "Corporate Blade implant"
@@ -165,7 +165,7 @@
 // 	cost = 4
 
 /obj/item/autosurgeon/syndicate/corp_arm_blade
-	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade
 
 /datum/uplink_item/implants/nutriment_pump
 	name = "Extreme Nutriment Pump"

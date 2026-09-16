@@ -138,11 +138,6 @@
 #undef MAX_HEAL_COOLDOWN
 #undef DEF_CONVALESCENCE_TIME
 
-/obj/item/organ/cyberimp/chest/reviver/sec_level
-	name = "Corporate Reviver implant"
-	implant_color = "#751010"
-	active_security_level = REVIVER_SEC_LEVEL
-
 /obj/item/organ/cyberimp/chest/thrusters
 	name = "implantable thrusters set"
 	desc = "An implantable set of thruster ports. They use the gas from environment or subject's internals for propulsion in zero-gravity areas. \
@@ -302,11 +297,6 @@
 	desc = "This implant can inject limited list of advanced reagents into your blood."
 	icon_state = "chem_implant_plus"
 	implant_level = 1
-
-/obj/item/organ/cyberimp/chest/chem_implant/sec_level
-	name = "Corporate Chemical Sequencer implant"
-	icon_state = "chem_implant_corpo"
-	active_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/chem_implant
 	var/chemname

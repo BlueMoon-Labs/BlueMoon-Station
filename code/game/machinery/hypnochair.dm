@@ -16,7 +16,8 @@
 
 /obj/machinery/hypnochair/Initialize(mapload)
 	. = ..()
-	open_machine()
+	state_open = TRUE
+	density = FALSE
 	update_icon()
 
 /obj/machinery/hypnochair/attackby(obj/item/I, mob/user, params)

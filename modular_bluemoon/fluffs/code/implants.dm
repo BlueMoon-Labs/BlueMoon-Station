@@ -1,10 +1,10 @@
 /obj/item/modkit/lapkee_arm_shield_kit
 	name = "Holographic shield Kit"
 	desc = "A modkit for making a arm-mounted riot shield into a Holographic shield."
-	product = /obj/item/organ/cyberimp/arm/shield/sec_level/lapkee
-	fromitem = list(/obj/item/organ/cyberimp/arm/shield/sec_level)
+	product = /obj/item/organ/cyberimp/arm/shield/lapkee
+	fromitem = list(/obj/item/organ/cyberimp/arm/shield)
 
-/obj/item/organ/cyberimp/arm/shield/sec_level/lapkee
+/obj/item/organ/cyberimp/arm/shield/lapkee
 	name = "Arm-mounted holographic shield"
 	contents = newlist(/obj/item/shield/riot/implant/lapkee)
 
