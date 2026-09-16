@@ -16,6 +16,32 @@ const inMenu = container =>
   within(container.querySelector('.Dropdown__menu'));
 
 describe('Dropdown', () => {
+  test.each([
+    [19, false],
+    [19, true],
+    ['240px', false],
+    ['240px', true],
+    ['15rem', false],
+    ['50%', false],
+    [undefined, false],
+  ])('меню и кнопка используют одинаковую ширину: %s, noscroll=%s', (width, noscroll) => {
+    const { container } = render(
+      <Dropdown
+        width={width}
+        noscroll={noscroll}
+        options={['a', 'b']}
+        selected="a"
+        onSelected={() => {}}
+      />,
+    );
+    const control = getControl(container);
+    fireEvent.click(control);
+    const menu = container.querySelector(noscroll
+      ? '.Dropdown__menu-noscroll'
+      : '.Dropdown__menu');
+    expect(menu.style.width).toBe(control.style.width);
+  });
+
   test('opens the menu on click', () => {
     const { container } = render(
       <Dropdown options={['a', 'b']} selected="a" onSelected={() => {}} />,

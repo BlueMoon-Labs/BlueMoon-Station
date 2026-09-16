@@ -12,7 +12,10 @@ const fixture: AntagTrainingData = {
   last_feedback: null,
   last_kit: null,
   kits: [{ id: 'medicine', name: 'Первая помощь' }],
-  paths: [{ id: 'blade', name: 'Клинок', desc: 'Парирование и ответ' }],
+  paths: [
+    { id: 'blade', name: 'Клинок', desc: 'Парирование и ответ' },
+    { id: 'ash', name: 'Пепел', desc: 'Огонь и перемещение' },
+  ],
   selected_path: null,
   path_stage: 0,
   recipes: [],
@@ -69,14 +72,31 @@ test('любой участник может запросить сброс се�
 });
 
 test('создание цели отправляет выбранный тип, сектор и режим ИИ', () => {
-  const ui = setup();
+  const ui = setup({ zones: [...fixture.zones, { id: 'laboratory', name: 'Лаборатория', desc: 'Ритуалы', current: 0, members: 0, targets: 0 }] });
   fireEvent.click(ui.getByText('Цели'));
   fireEvent.click(ui.container.querySelector('.Dropdown__control'));
   fireEvent.click(ui.getByText('Карп'));
+  fireEvent.click(ui.container.querySelectorAll('.Dropdown__control')[1]);
+  fireEvent.click(ui.getByText('Лаборатория'));
   fireEvent.click(ui.getByText('Активный ИИ'));
   fireEvent.click(ui.getByText('Создать'));
   const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/spawn');
-  expect(JSON.parse(call[0].payload)).toEqual({ id: 'carp', zone: 'pve', active: true });
+  expect(JSON.parse(call[0].payload)).toEqual({ id: 'carp', zone: 'laboratory', active: true });
+});
+
+test.each([
+  ['4', 'Основы: ступень 4'],
+  ['9', 'Полный путь: ступень 9'],
+])('подготовка отправляет выбранный путь и ступень %s', (stage, label) => {
+  const ui = setup();
+  fireEvent.click(ui.getByText('Моя роль'));
+  fireEvent.click(ui.container.querySelectorAll('.Dropdown__control')[0]);
+  fireEvent.click(ui.getByText('Пепел'));
+  fireEvent.click(ui.container.querySelectorAll('.Dropdown__control')[1]);
+  fireEvent.click(ui.getByText(label));
+  fireEvent.click(ui.getByText('Изучить до ступени'));
+  const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/prepare_path');
+  expect(JSON.parse(call[0].payload)).toEqual({ id: 'ash', stage });
 });
 
 test('сброс роли требует подтверждения и передаёт идентификатор программы', () => {
