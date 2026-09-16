@@ -40,6 +40,7 @@
 		new /datum/data/bounty_equipment("Amunitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
 		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									2000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,							500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Throwing knife",				/obj/item/kitchen/knife/combat/marksman,							250,	"Weaponry"),
 
 		// ============ ARMOR ============
 		new /datum/data/bounty_equipment("Vanguard armor",					/obj/item/vanguard_voucher_suit,								1500,	"Armor"),

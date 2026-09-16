@@ -310,6 +310,9 @@
 		/obj/item/extra_arm = 5000,
 		/obj/item/book/granter/martial/bass = 25000,
 		/obj/item/book/granter/martial/carp = 15000,
+		/obj/item/documents = 15000
+		/obj/item/documents/syndicate/red = 25000
+		/obj/item/disk/nuclear/fake = 5000 //потому что это смешно
 		//broken stuff
 		/obj/item/broken/inteq_sledgehammer = 3000,
 		/obj/item/broken/dualsaber = 5000,

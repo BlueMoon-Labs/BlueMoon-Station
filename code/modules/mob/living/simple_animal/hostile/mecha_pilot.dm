@@ -60,6 +60,7 @@
 	icon_living = "syndicate"
 	faction = list(ROLE_INTEQ)
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares
+	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes
