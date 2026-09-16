@@ -1814,10 +1814,8 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/big_guns.dmi'
 	icon_state = "308"
 	item_state = "1903"
-	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/big_guns_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/64x64_guns_righthand.dmi'
-	inhand_x_dimension = 64
-	inhand_y_dimension = 64
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/guns_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/guns_righthand.dmi'
 	can_bayonet = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_shot.ogg'
 	pumpsound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
