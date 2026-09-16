@@ -110,6 +110,9 @@ SUBSYSTEM_DEF(polling)
 
 		START_PROCESSING(SSprocessing, poll_alert_button)
 
+	// Название нужно и для опросов без откликов; ссылка различает одновременные
+	// предложения с общим заголовком Ghost role.
+	log_game("Ghost poll started: [new_poll.role], id [REF(new_poll)], offered [length(new_poll.alert_buttons)], question: [new_poll.question]")
 	UNTIL(new_poll.finished)
 
 	for(var/mob/M in new_poll.signed_up)
@@ -125,7 +128,7 @@ SUBSYSTEM_DEF(polling)
 	var/length_pre_trim = length(finishing_poll.signed_up)
 	finishing_poll.trim_candidates()
 
-	log_game("Ghost poll finished: [finishing_poll.role], signed [length_pre_trim], kept [length(finishing_poll.signed_up)].")
+	log_game("Ghost poll finished: [finishing_poll.role], signed [length_pre_trim], kept [length(finishing_poll.signed_up)]. id [REF(finishing_poll)], question: [finishing_poll.question]")
 
 	finishing_poll.finished = TRUE
 

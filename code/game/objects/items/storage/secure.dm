@@ -200,6 +200,15 @@
 /obj/item/storage/secure/briefcase/hos/multiphase_box/PopulateContents()
 	new /obj/item/gun/energy/e_gun/hos(src)
 
+/obj/item/storage/secure/briefcase/hos/katyusha
+	name = "\improper Katysha shotgun box"
+	desc = "A storage case for a high-tech firearm."
+
+/obj/item/storage/secure/briefcase/hos/katyusha/PopulateContents()
+	new /obj/item/gun/ballistic/automatic/shotgun/katyusha(src)
+	new /obj/item/ammo_box/magazine/katyusha/buckshot(src)
+	new /obj/item/ammo_box/magazine/katyusha/buckshot(src)
+
 // -----------------------------
 //        Secure Safe
 // -----------------------------

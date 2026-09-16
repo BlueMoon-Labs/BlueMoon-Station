@@ -564,7 +564,7 @@
 		var/obj/item/clothing/mod_part/part = mod_parts[index]
 		part.update_flags(used_skin)
 
-/obj/item/mod/control/proc/quick_module(mob/user)
+/obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
 	if(!length(modules))
 		return
 	var/list/display_names = list()
@@ -584,7 +584,12 @@
 	var/obj/item/mod/module/selected_module = locate(module_reference) in modules
 	if(!istype(selected_module) || user.incapacitated())
 		return
-	selected_module.on_select()
+
+	return right_click ? generate_ability_button(selected_module) : selected_module.on_select()
+
+/obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
+	var/datum/action/cooldown/module_action/new_action = new(module = M)
+	new_action.Grant(wearer)
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
 	var/list/all_parts = mod_parts

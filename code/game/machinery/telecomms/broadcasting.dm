@@ -148,24 +148,6 @@
 				if(R.can_receive(frequency, levels))
 					radios += R
 
-			// Syndicate radios can hear all well-known radio channels
-			if (num2text(frequency) in GLOB.reverseradiochannels)
-				var/list/radio_z = list(0) // reusable single-element list to avoid allocating new lists per radio
-				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_SYNDICATE]"])
-					radio_z[1] = R.z
-					if(R.can_receive(FREQ_SYNDICATE, radio_z))
-						radios |= R
-
-				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_INTEQ]"])
-					radio_z[1] = R.z
-					if(R.can_receive(FREQ_INTEQ, radio_z))
-						radios |= R
-
-				for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_PIRATE]"])
-					radio_z[1] = R.z
-					if(R.can_receive(FREQ_PIRATE, radio_z))
-						radios |= R
-
 		if (TRANSMISSION_RADIO)
 			// Only radios not currently in subspace mode
 			for(var/obj/item/radio/R in GLOB.all_radios["[frequency]"])
@@ -177,6 +159,36 @@
 			for(var/obj/item/radio/R in GLOB.all_radios["[frequency]"])
 				if(R.independent && R.can_receive(frequency, levels))
 					radios += R
+
+	// Syndicate-compatible radios can hear all well-known radio channels.
+	// This covers both subspace and mundane (backup) broadcasts, so channels like
+	// Syndicate/InteQ/Pirate and DS-1/DS-2 keep working even without telecomms.
+	if(transmission_method != TRANSMISSION_SUPERSPACE && (num2text(frequency) in GLOB.reverseradiochannels))
+		var/list/radio_z = list(0) // reusable single-element list to avoid allocating new lists per radio
+		for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_SYNDICATE]"])
+			radio_z[1] = R.z
+			if(R.can_receive(FREQ_SYNDICATE, radio_z))
+				radios |= R
+
+		for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_INTEQ]"])
+			radio_z[1] = R.z
+			if(R.can_receive(FREQ_INTEQ, radio_z))
+				radios |= R
+
+		for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_PIRATE]"])
+			radio_z[1] = R.z
+			if(R.can_receive(FREQ_PIRATE, radio_z))
+				radios |= R
+
+		for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_DS1]"])
+			radio_z[1] = R.z
+			if(R.can_receive(FREQ_DS1, radio_z))
+				radios |= R
+
+		for(var/obj/item/radio/R in GLOB.all_radios["[FREQ_DS2]"])
+			radio_z[1] = R.z
+			if(R.can_receive(FREQ_DS2, radio_z))
+				radios |= R
 
 	// From the list of radios, find all mobs who can hear those.
 	var/list/receive = get_mobs_in_radio_ranges(radios)

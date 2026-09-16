@@ -4,12 +4,13 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400)
 
-// .308 — BR3 (снайперский полуавтомат)
 /obj/item/projectile/bullet/a308
 	name = ".308 bullet"
 	damage = 45
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD
+	armour_penetration = BULLET_BR8   // .308 = 7,62x51, натовский снайперский калибр
 	wound_bonus = 15
 	wound_falloff_tile = 0
 
@@ -17,6 +18,7 @@
 	name = ".308 bullet casing (Soporific)"
 	desc = "A .308 bullet soporific casing."
 	projectile_type = /obj/item/projectile/bullet/a308/sleepy
+	can_be_printed = FALSE
 
 /obj/item/projectile/bullet/a308/sleepy
 	name =".308 Soporific bullet"
@@ -37,6 +39,8 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308/rubber //bluemoon change
+	advanced_print_req = FALSE
+	custom_materials = list(/datum/material/glass = 400)
 
 /obj/item/projectile/bullet/a308/rubber
 	name = ".308 Rubber bullet"
@@ -50,7 +54,7 @@
 /obj/item/projectile/bullet/kaiju
 	name = "8.83 Kaiju Bullet"
 	damage = 100
-	armour_penetration = BULLET_BR3   // BLUEMOON ADD
+	armour_penetration = BULLET_BR7   // всё равно - щитспавн
 	wound_bonus = 5
 	wound_falloff_tile = 0
 
@@ -61,11 +65,10 @@
 	caliber = "kaiju"
 	projectile_type = /obj/item/projectile/bullet/kaiju
 
-// 5.43mm — BR2 (промежуточный)
 /obj/item/projectile/bullet/a543
 	name = "5.43mm bullet"
 	damage = 35
-	armour_penetration = BULLET_BR2   // BLUEMOON ADD
+	armour_penetration = BULLET_BR7   // Винтовочный калибр розовой пушки из гейта
 	wound_bonus = 12
 	wound_falloff_tile = 0
 
@@ -115,7 +118,7 @@
 /obj/item/projectile/bullet/g45l/lethal
 	name = ".45 Long Lethal bullet"
 	damage = 35
-	armour_penetration = BULLET_BR4   // BLUEMOON ADD
+	armour_penetration = BULLET_BR7
 	wound_bonus = 15
 	stamina = 0
 	sharpness = SHARP_EDGED

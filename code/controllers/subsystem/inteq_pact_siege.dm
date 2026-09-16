@@ -365,6 +365,23 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		message_admins("PACT siege: удалено [length(to_remove)] спейвнеров InteQ на поле боя (z=[z]).")
 		log_game("PACT siege: removed [length(to_remove)] inteqspace spawners on battlefield z=[z].")
 
+/datum/inteq_pact_siege/proc/remove_inteq_borgs()
+	/// BLUEMOON ADD - борги ИнтеКью (robot/modules/inteq и подтипы) пропадают вместе с окончанием осады
+	var/removed = 0
+	for(var/mob/living/silicon/robot/R as anything in GLOB.silicon_mobs)
+		if(QDELETED(R) || !istype(R, /mob/living/silicon/robot/modules/inteq))
+			continue
+		if(!is_on_battlefield(R) && !is_on_evac_shuttle(R))
+			continue
+		log_game("PACT siege: removing InteQ cyborg [key_name(R)] from the battlefield after the siege.")
+		if(R.client)
+			R.ghostize(FALSE)
+		qdel(R, TRUE)
+		removed++
+	if(removed)
+		message_admins("PACT siege: удалено [removed] киборгов InteQ после осады.")
+		log_game("PACT siege: removed [removed] InteQ cyborgs after the siege.")
+
 /datum/inteq_pact_siege/proc/gates_unlocked()
 	return active && gateway_announced && (world.time >= started_at + PACT_SIEGE_PREP_TIME)
 
@@ -772,6 +789,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	else
 		/// PACT победил — шаттл остаётся на объекте: без оповещений об эвакуации, без стирания шаттла/поля боя
 		finish_siege_cleanup()
+	remove_inteq_borgs()	//BLUEMOON ADD: борги ИнтеКью так же пропадают после окончания осады
 	recall_attackers()
 	cleanup_gateway()
 	remove_siege_traits()

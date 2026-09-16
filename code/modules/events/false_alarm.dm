@@ -1,8 +1,8 @@
 /datum/round_event_control/falsealarm
 	name = "False Alarm"
 	typepath = /datum/round_event/falsealarm
-	weight = 20
-	max_occurrences = 5
+	weight = 15
+	max_occurrences = 4
 	// Раньше 30 минут (дефолт базы) флавор-пул почти пуст и крутится одна пыль - безобидную
 	// ложную тревогу можно пускать раньше для разнообразия.
 	earliest_start = 10 MINUTES

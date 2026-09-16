@@ -4,7 +4,7 @@ module.exports = {
     '<rootDir>/packages/**/__tests__/*.{js,ts,tsx}',
     '<rootDir>/packages/**/*.{spec,test}.{js,ts,tsx}',
   ],
-  testEnvironment: 'jsdom',
+  testEnvironment: '<rootDir>/scripts/jest/environment.cjs',
   testRunner: require.resolve('jest-circus/runner'),
   transform: {
     '^.+\\.(js|cjs|ts|tsx)$': require.resolve('babel-jest'),

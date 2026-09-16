@@ -762,8 +762,9 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 				return TRUE
 		return FALSE
 	var/key = "[icon_file]|[icon_state]"
-	if(key in GLOB.cached_icon_state_directional)
-		return GLOB.cached_icon_state_directional[key]
+	. = GLOB.cached_icon_state_directional[key]
+	if(!isnull(.))
+		return .
 	. = FALSE
 	for(var/checkdir in checkdirs)
 		if(length(icon_states(icon(icon_file, icon_state, checkdir))))

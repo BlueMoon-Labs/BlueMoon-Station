@@ -1,6 +1,7 @@
 /datum/round_event_control/gigachad_inteq
 	name = "InteQ Sledgehammer Mutant"
 	typepath = /datum/round_event/gigachad_inteq
+	min_players = 20
 	max_occurrences = 2
 	weight = 15
 	category = EVENT_CATEGORY_ENTITIES
@@ -144,8 +145,9 @@
 /datum/round_event_control/space_mosquito
 	name = "Space Mosquito"
 	typepath = /datum/round_event/space_mosquito
+	min_players = 15
 	max_occurrences = 2
-	weight = 30
+	weight = 15
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_MODERATE
 

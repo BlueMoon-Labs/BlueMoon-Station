@@ -9,7 +9,7 @@
 	damage = 70
 	knockdown = 100
 	dismemberment = 50
-	armour_penetration = BULLET_BR5   // BLUEMOON EDIT: было 50 → BR5(65)
+	armour_penetration = BULLET_BR14
 	zone_accuracy_factor = 100
 	var/breakthings = TRUE
 	var/can_head_gib = TRUE
@@ -49,7 +49,7 @@
 	name = "penetrator round"
 	icon_state = "gauss"
 	damage = 60
-	armour_penetration = BULLET_BR6   // BLUEMOON EDIT: проникающий → BR6(80)
+	armour_penetration = BULLET_BR20
 	projectile_piercing = PASSMOB
 	projectile_phasing = (ALL & (~PASSMOB))
 	dismemberment = 0
@@ -59,6 +59,6 @@
 /obj/item/projectile/bullet/p50/penetrator/shuttle
 	icon_state = "gaussstrong"
 	damage = 25
-	armour_penetration = BULLET_BR5   // чуть слабее основного
+	armour_penetration = BULLET_BR14
 	pixels_per_second = TILES_TO_PIXELS(33.33)
 	range = 16

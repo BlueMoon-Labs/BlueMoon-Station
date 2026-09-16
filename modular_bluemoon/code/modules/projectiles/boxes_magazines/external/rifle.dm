@@ -34,6 +34,33 @@
 	icon_state = "acr58mm_he"
 	ammo_type = /obj/item/ammo_casing/a58mm/he
 
+//ACRM ammo.
+/obj/item/ammo_box/magazine/acrm
+	name = "ACRM magazine (7.62x39mm)"
+	desc = "A high caliber magazine for new gen. ACRM rifle."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "acr762mm"
+	ammo_type = /obj/item/ammo_casing/a762x39
+	caliber = "a762x39"
+	max_ammo = 25
+
+/obj/item/ammo_box/magazine/acrm/empty
+	start_empty = TRUE
+
+/obj/item/ammo_box/magazine/acrm/ap
+	name = "ACRM magazine (AP 7.62x39mm)"
+	desc = "A high caliber magazine for new gen. ACRM rifle with armor piercing bullets."
+	icon_state = "acr762mm"
+	ammo_type = /obj/item/ammo_casing/a762x39/ap
+
+/obj/item/ammo_box/magazine/acrm/hp
+	name = "ACRM magazine (HP 7.62x39mm)"
+	desc = "A high caliber magazine for new gen. ACRM rifle with hollow point rounds."
+	icon_state = "acr762mm"
+	ammo_type = /obj/item/ammo_casing/a762x39/hp
+
+
+
 ////////////////////////////////////////////////////////////////////
 // M16A4 magazines
 /obj/item/ammo_box/magazine/m16

@@ -19,12 +19,14 @@
 /obj/machinery/telecomms/allinone/Initialize(mapload)
 	. = ..()
 	if (intercept)
-		freq_listening = list(FREQ_SYNDICATE,FREQ_INTEQ,FREQ_PIRATE)
+		freq_listening = list(FREQ_SYNDICATE,FREQ_INTEQ,FREQ_PIRATE,FREQ_DS1,FREQ_DS2)
 
 /obj/machinery/telecomms/allinone/receive_signal(datum/signal/subspace/signal)
 	if(!istype(signal) || signal.transmission_method != TRANSMISSION_SUBSPACE)  // receives on subspace only
 		return
 	if(!on || !is_freq_listening(signal))  // has to be on to receive messages
+		return
+	if(signal.data["done"]) // already broadcast by another mainframe or a receiver network
 		return
 	if (!intercept && !(z in signal.levels) && !(0 in signal.levels))  // has to be syndicate or on the right level
 		return
