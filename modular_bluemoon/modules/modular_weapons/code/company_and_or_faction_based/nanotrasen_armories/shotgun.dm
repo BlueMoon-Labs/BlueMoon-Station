@@ -20,7 +20,7 @@
 	var/spawned_magazine_type = /obj/item/ammo_box/magazine/katyusha/buckshot
 
 	can_suppress = FALSE
-	fire_delay = 8
+	fire_delay = 7
 	fire_sound = 'modular_bluemoon/sound/weapons/shotgun_nova.ogg'
 
 	burst_size = 1

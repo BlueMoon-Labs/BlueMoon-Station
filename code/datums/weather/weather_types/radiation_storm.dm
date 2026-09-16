@@ -2,12 +2,12 @@
 /datum/weather/rad_storm
 	parallax_profile = "ion_blizzard"
 	name = "radiation storm"
-	desc = "A cloud of intense radiation passes through the area dealing rad damage to those who are unprotected."
+	desc = "Интенсивное облако радиации проходит сквозь зону, нанося радиационный вред всем, кто от него не защищён."
 
 	telegraph_duration = 400
-	telegraph_message = "<span class='danger'>Воздух вокруг вас нагревается.</span>"
+	telegraph_message = span_danger("Воздух вокруг вас нагревается.")
 
-	weather_message = "<span class='userdanger'><i>Вы ощущаете волну жара, окатывающую вас! Ищите укрытие!</i></span>"
+	weather_message = span_userdanger("<i>Вы ощущаете волну жара, окатывающую вас! Ищите укрытие!</i>")
 	weather_overlay = "ash_storm"
 	weather_duration_lower = 600
 	weather_duration_upper = 1500
@@ -15,7 +15,9 @@
 	weather_sound = 'sound/misc/bloblarm.ogg'
 
 	end_duration = 100
-	end_message = "<span class='notice'>Кажется, воздух вокруг вас стал охлаждаться...</span>"
+	end_message = span_notice("Кажется, воздух вокруг вас стал охлаждаться...")
+
+	priority_end_message = "Облако радиации миновало космическую станцию. Пожалуйста, вернитесь на свои рабочие места."
 
 	area_type = /area
 	protected_areas = list(/area/maintenance, /area/ai_monitored/turret_protected/ai_upload, /area/ai_monitored/turret_protected/ai_upload_foyer, /area/commons/toilet, /area/security/prison, /area/security/brig,
@@ -39,7 +41,7 @@
 /datum/weather/rad_storm/end()
 	if(..())
 		return
-	priority_announce("Облако радиации миновало Космическю Станцию. Пожалуйста, вернитесь на свои рабочие места.", "ВНИМАНИЕ: АНОМАЛИЯ")
+	priority_announce(priority_end_message, "ВНИМАНИЕ: АНОМАЛИЯ")
 	status_alarm(FALSE)
 
 /datum/weather/rad_storm/proc/status_alarm(active)	//Makes the status displays show the radiation warning for those who missed the announcement.

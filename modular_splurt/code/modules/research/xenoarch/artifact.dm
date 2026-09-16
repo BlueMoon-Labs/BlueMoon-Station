@@ -32,9 +32,11 @@
 		if(!do_after(user, 100, target=src))
 			to_chat(user,"You must stand still to analyze.")
 			return
-		SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 4500))
-		to_chat(user,"You successfully researched the artifact. You have gained 4500 research points.")
-		qdel(src)
+		var/datum/techweb/web = find_rnd_network_for_object(src)
+		if(web)
+			web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 4500))
+			to_chat(user,"You successfully researched the artifact. You have gained 4500 research points.")
+			qdel(src)
 
 /obj/item/ancientartifact/faunafossil
 	name = "fauna fossil"
@@ -49,9 +51,11 @@
 		if(!do_after(user, 100, target=src))
 			to_chat(user,"You must stand still to analyze.")
 			return
-		SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 9000))
-		to_chat(user,"You successfully researched the artifact. You have gained 9000 research points.")
-		qdel(src)
+		var/datum/techweb/web = find_rnd_network_for_object(src)
+		if(web)
+			web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 9000))
+			to_chat(user,"You successfully researched the artifact. You have gained 9000 research points.")
+			qdel(src)
 
 /obj/item/ancientartifact/florafossil
 	name = "flora fossil"
@@ -66,7 +70,9 @@
 		if(!do_after(user, 100, target=src))
 			to_chat(user,"You must stand still to analyze.")
 			return
-		SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 9000))
+		var/datum/techweb/web = find_rnd_network_for_object(src)
+		if(web)
+			web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 9000))
 		to_chat(user,"You successfully researched the artifact. You have gained 9000 research points.")
 		qdel(src)
 	if(istype(W,/obj/item/xenoarch/help/plant))

@@ -101,6 +101,7 @@ GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 
 /obj/structure/shield/yellow
 	icon_state = "shield-yellow"
+	antag_type = /datum/antagonist/ghost_role/inteq/comms
 
 /obj/structure/shield/golden
 	icon_state = "shield-golden"

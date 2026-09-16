@@ -1,5 +1,5 @@
 import { useBackend, useLocalState } from '../backend';
-import { Button, NoticeBox, Section, Table, Tabs, ProgressBar, Box, Input, Flex, Icon, Divider } from '../components';
+import { Box, Button, Divider, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const BrigAssistantConsole = (props) => {
@@ -211,7 +211,7 @@ const FineRow = (props) => {
         {fine.fine > 0 && !fine.overdue ? (
           <ProgressBar value={fine.time_left} maxValue={fine.duration} minValue={0} color={timeColor} />
         ) : null}
-        {!!fine.overdue ? <Box color="bad" fontSize="0.8em">→ 303 + розыск</Box> : null}
+        {fine.overdue ? <Box color="bad" fontSize="0.8em">→ 303 + розыск</Box> : null}
       </Table.Cell>
       <Table.Cell collapsing>
         {fine.fine === 0 ? (

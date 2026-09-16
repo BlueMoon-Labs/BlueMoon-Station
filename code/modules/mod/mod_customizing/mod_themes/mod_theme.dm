@@ -7,7 +7,7 @@
 		внешним ударостойким слоем, делая костюм почти неуязвимым даже к экстремальному высоковольтному электричеству. \
 		Однако потенциал для модификации остаётся таким же, как у гражданских моделей."
 	default_skin = "engineering"
-	armor = list(MELEE = 20, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 20, BIO = 100, FIRE = 95, ACID = 25, WOUND = 10, RAD = 80)
+	armor = list(MELEE = 30, BULLET = 0, LASER = 0, ENERGY = 10, BOMB = 10, BIO = 100, FIRE = 100, ACID = 25, WOUND = 10, RAD = 80)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -24,7 +24,7 @@
 		коррозионным газам и жидкостям, что полезно в мире труб. \
 		Однако потенциал для модификации остаётся таким же, как у гражданских моделей."
 	default_skin = "atmospheric"
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100, FIRE = 100, ACID = 75, WOUND = 10, RAD = 35)
+	armor = list(MELEE = 30, BULLET = 0, LASER = 0, ENERGY = 15, BOMB = 10, BIO = 100, FIRE = 100, ACID = 75, WOUND = 10, RAD = 35)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -41,7 +41,7 @@
 		Использованная краска практически полностью невосприимчива к коррозии и, безусловно, выглядит чертовски хорошо. \
 		В комплекте предустановлены магнитные ботинки с продвинутой системой автоматического включения и выключения при ходьбе."
 	default_skin = "advanced"
-	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 15, BOMB = 70, BIO = 100, FIRE = 100, ACID = 100, WOUND = 10, RAD = 100)
+	armor = list(MELEE = 40, BULLET = 0, LASER = 10, ENERGY = 15, BOMB = 50, BIO = 100, FIRE = 100, ACID = 90, WOUND = 10, RAD = 100)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	complexity_max = COMMAND_MAX_COMPLEXITY
@@ -62,7 +62,7 @@
 		Однако всё это оказалось изнурительным для батареи и приводов костюма, \
 		заставляя его требовать больше энергии взамен."
 	default_skin = "mining"
-	armor = list(MELEE = 20, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 50, BIO = 100, FIRE = 100, ACID = 75, WOUND = 25, RAD = 50)
+	armor = list(MELEE = 30, BULLET = 0, LASER = 0, ENERGY = 5, BOMB = 30, BIO = 100, FIRE = 100, ACID = 75, WOUND = 15, RAD = 50)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	cell_drain = VERY_HIGHT_CHARGE_DRAIN
@@ -83,6 +83,7 @@
 		он невероятно кислотостойкий. Энергопотребление немного выше, чем у гражданских моделей, \
 		и он слаб против постукиваний пальцами по стеклу."
 	default_skin = "medical"
+	armor = list(MELEE = 5, BULLET = 0, LASER = 0, ENERGY = 5, BOMB = 10, BIO = 100, FIRE = 60, ACID = 75, WOUND = 15, RAD = 0)
 	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_MEDBAY_COLOR
 	skins = list(
@@ -101,7 +102,7 @@
 		при этом оставаясь полностью иммунными к химическим и термическим угрозам. \
 		Энергопотребление немного выше, чем у гражданских моделей, и он слаб против постукиваний пальцами по стеклу."
 	default_skin = "rescue"
-	armor = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 10, BIO = 100, FIRE = 100, ACID = 100, WOUND = 5, RAD = 0)
+	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 5, BOMB = 10, BIO = 100, FIRE = 100, ACID = 100, WOUND = 5, RAD = 0)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_MEDBAY_COLOR
@@ -121,7 +122,7 @@
 		других типов оружия и физического урона; а вся взрывостойкость в основном работает, чтобы сохранить пользователя целым, \
 		но не живым. Также пользователь обнаружит, что узкие дверные проёмы практически невозможно преодолеть."
 	default_skin = "research"
-	armor = list(MELEE = 20, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 40)
+	armor = list(MELEE = 20, BULLET = 0, LASER = 0, ENERGY = 5, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 40)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_RESEARCH_COLOR
@@ -141,7 +142,7 @@
 		Однако системы, используемые в этих костюмах, устарели более чем на несколько лет, \
 		что приводит к общему снижению ёмкости модулей."
 	default_skin = "security"
-	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 45, BOMB = 25, BIO = 100, FIRE = 75, ACID = 75, WOUND = 30, RAD = 50)
+	armor = list(MELEE = 35, BULLET = 5, LASER = 25, ENERGY = 40, BOMB = 25, BIO = 100, FIRE = 100, ACID = 75, WOUND = 20, RAD = 50)
 	siemens_coefficient = 0
 	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = MOD_SEC_COLOR
@@ -170,7 +171,7 @@
 		поверх утеплённой внутренней брони, обеспечивают защиту от агрессивных жидкостей, взрывов, \
 		огня, электрических разрядов и презрения со стороны остального экипажа."
 	default_skin = "praetorian"
-	armor = list(MELEE = 40, BULLET = 20, LASER = 20, ENERGY = 45, BOMB = 25, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 30)
+	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 60, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 100)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -197,7 +198,7 @@
 		По бокам костюма установлены теплоотводы, а для изоляции от \
 		коррозионных сред и внезапных ударов по суставам пользователя применены более совершенные технологии."
 	default_skin = "safeguard"
-	armor = list(MELEE = 30, BULLET = 20, LASER = 30, ENERGY = 45, BOMB = 25, BIO = 100, FIRE = 100, ACID = 75, WOUND = 30, RAD = 50) // BLUEMOON EDIT - was "MELEE = 15, BULLET = 15, LASER = 15, ENERGY = 15, BOMB = 40"
+	armor = list(MELEE = 45, BULLET = 10, LASER = 35, ENERGY = 40, BOMB = 40, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 50)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -220,7 +221,7 @@
 		и блюспейс-обработку для поддержки широкого спектра модулей, а для скорости задействованы только лучшие приводы. \
 		Сходство с шлемом Gorlex Marauder — чистое совпадение."
 	default_skin = "magnate"
-	armor = list(MELEE = 30, BULLET = 35, LASER = 45, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 100)
+	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 60, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 100)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -239,7 +240,7 @@
 		эта конкретная модель не использует марганцевые биполярные очистители конденсаторов, слава Хонк-Матери. \
 		Всё, что вам известно, — этот костюм загадочно энергоэффективен и слишком пёстрый, чтобы Мим мог его украсть."
 	default_skin = "cosmohonk"
-	armor = list(MELEE = 5, BULLET = 5, LASER = 20, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 60, ACID = 30, WOUND = 5, RAD = 0)
+	armor = list(MELEE = 5, BULLET = -10, LASER = 5, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 60, ACID = 30, WOUND = 5, RAD = 0)
 	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_SYNDICATE_COLOR
 	/*inbuilt_modules = list(/obj/item/mod/module/waddle)*/ // Waddling element not ported, commented for now as it is a prerequisite.
@@ -258,7 +259,7 @@
 		С него свисает маленькая бирка с надписью: 'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует гарантию."
 	default_skin = "syndicate"
-	armor = list(MELEE = 40, BULLET = 35, LASER = 15, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, RAD = 100, WOUND = 25)
+	armor = list(MELEE = 50, BULLET = 35, LASER = 25, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 50, ACID = 90, WOUND = 25, RAD = 100)
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
 	ui_theme = "syndicate"
@@ -279,7 +280,7 @@
 		'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует продолжительность жизни.'"
 	default_skin = "elite"
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30, RAD = 100)
+	armor = list(MELEE = 60, BULLET = 45, LASER = 35, ENERGY = 50, BOMB = 55, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 100)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -305,7 +306,7 @@
 		как и подразумевает забрало, не позволяя пользователю видеть на дальние расстояния. \
 		Однако способ складывания шлема довольно крутой."
 	default_skin = "prototype"
-	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 20, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 35)
+	armor = list(MELEE = 20, BULLET = 0, LASER = 0, ENERGY = 10, BOMB = 50, BIO = 100, FIRE = 100, ACID = 75, WOUND = 5, RAD = 35)
 	resistance_flags = FIRE_PROOF
 	cell_drain = VERY_HIGHT_CHARGE_DRAIN
 	ui_theme = "hackerman"
@@ -322,7 +323,7 @@
 		она сохраняет носителя в безопасности от суровой пустоты космоса, не жертвуя ни каплей скорости. \
 		Нося его, вы чувствуете крайнее почтение к тьме."
 	default_skin = "responsory"
-	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 100, ACID = 90, WOUND = 10, RAD = 0)
+	armor = list(MELEE = 50, BULLET = 25, LASER = 35, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 100, ACID = 90, WOUND = 10, RAD = 0)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -343,7 +344,7 @@
 		Использовать ли их — решение самого носителя. \
 		На запястье, кажется, есть маленькая гравировка: 'squiddie', милашка."
 	default_skin = "apocryphal"
-	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 60, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 0)
+	armor = list(MELEE = 80, BULLET = 65, LASER = 35, ENERGY = 60, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 0)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -362,7 +363,7 @@
 		считается военным преступлением и поводом для немедленной казни на более чем пятидесяти космических станциях Nanotrasen. \
 		Сходство с шлемом Gorlex Marauder — чистое совпадение."
 	default_skin = "corporate"
-	armor = list(MELEE = 30, BULLET = 35, LASER = 45, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 75)
+	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 60, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 100)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -462,7 +463,7 @@
 	desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука."
 	extended_desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука"
 	default_skin = "ninja"
-	armor = list(MELEE = 40, BULLET = 30, LASER = 20, ENERGY = 30, BOMB = 50, BIO = 100, RAD = 30, FIRE = 100, ACID = 100)
+	armor = list(MELEE = 40, BULLET = 15, LASER = 5, ENERGY = 30, BOMB = 30, BIO = 100, FIRE = 100, ACID = 100, WOUND = 10, RAD = 30)
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	complexity_max = ANTAG_MAX_COMPLEXITY
 	siemens_coefficient = 0
@@ -485,7 +486,7 @@
 		Несмотря на внешнюю «магическую» эстетику, вся работа обеспечивается передовыми технологиями: \
 		кристаллы служат высокоёмкими конденсаторами, а светящиеся узоры — проекциями хардлайт-полей."
 	default_skin = "enchanted"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 35, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	armor = list(MELEE = 40, BULLET = 25, LASER = 25, ENERGY = 50, BOMB = 35, BIO = 100, FIRE = 100, ACID = 100, WOUND = 30, RAD = 50)
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	complexity_max = ANTAG_MAX_COMPLEXITY
 	siemens_coefficient = 0
@@ -506,7 +507,7 @@
 		костюм оснащён гидравлическими усилителями конечностей и усиленной рамой, \
 		способной выдерживать экстремальные нагрузки при перемещении ящиков, паллет и оборудования."
 	default_skin = "loader"
-	armor = list(MELEE = 20, BULLET = 20, LASER = 10, ENERGY = 5, BOMB = 50, BIO = 100, FIRE = 70, ACID = 75, WOUND = 35, RAD = 50)
+	armor = list(MELEE = 15, BULLET = -10, LASER = -10, ENERGY = 5, BOMB = 10, BIO = 10, FIRE = 25, ACID = 25, WOUND = 10, RAD = 50)
 	cell_drain = DEFAULT_CHARGE_DRAIN
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_CARGO_BLUE

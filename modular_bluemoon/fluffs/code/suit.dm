@@ -944,12 +944,6 @@
 		)
 	)
 
-/obj/item/modkit/kumiko_ncr_riot
-	name = "NCR ranger riot kit"
-	desc = "A modkit for making a riot armor into a ncr ranger duster."
-	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
-	fromitem = list(/obj/item/clothing/suit/armor/riot)
-
 /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
 	name = "NCR ranger elite desert duster"
 	desc = "An upgraded version of the standard riot gear, featuring reinforced plating against melee."
@@ -958,12 +952,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/modkit/kumiko_ncr_bulletproof
-	name = "NCR ranger bulletproof kit"
-	desc = "A modkit for making a bulletproof armor into a ncr ranger duster."
-	product = /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
-	fromitem = list(/obj/item/clothing/suit/armor/bulletproof)
 
 /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
 	name = "NCR custom duster"
@@ -974,13 +962,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
-/obj/item/modkit/kumiko_ncr_plate_carrier
-	name = "NCR plate carrier kit"
-	desc = "A modkit for making a plate carrier into a ncr duster."
-	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
-	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
-
-/obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+/obj/item/clothing/suit/armor/vest/alt/kumiko_ncr_ranger
 	name = "NCR ranger duster"
 	desc = "Highly advanced armor used by the NCR Veteran Rangers."
 	icon_state = "reclaimed_desert_ranger"
@@ -988,54 +970,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
-	name = "NCR ranger helmet"
-	desc = "Matching helmet for the NCR Ranger duster."
-	icon_state = "ranger"
-	item_state = "ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	unique_reskin = list(
-		"Ranger" = list(
-			"icon_state" = "ranger",
-			"item_state" = "ranger",
-			"name" = "NCR ranger helmet"
-		),
-		"Desert" = list(
-			"icon_state" = "oldranger",
-			"item_state" = "oldranger",
-			"name" = "NCR desert ranger helmet"
-		)
-	)
-
-/obj/item/modkit/kumiko_ncr_riot_helmet
-	name = "NCR riot helmet kit"
-	desc = "A modkit for making a riot helmet into ncr riot helmet."
-	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
-	fromitem = list(/obj/item/clothing/head/helmet/riot)
-
-/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
-	name = "NCR elite desert ranger helmet"
-	desc = "NCR ranger riot helmet"
-	icon_state = "desert_ranger"
-	item_state = "desert_ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-
-/obj/item/modkit/kumiko_ncr_bulletproof_helmet
-	name = "NCR plate bulletproof helmet kit"
-	desc = "A modkit for making a bulletproof helmet into ncr bulletproof helmet."
-	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
-	fromitem = list(/obj/item/clothing/head/helmet/alt)
-
-/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
-	name = "Custom NCR ranger helmet"
-	desc = "NCR ranger bulletproof helmet"
-	icon_state = "rangercustom"
-	item_state = "rangercustom"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
 /obj/item/modkit/light_plate_carrier
 	name = "Light plate carrier Armor Kit"
@@ -1195,3 +1129,22 @@
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
+
+/obj/item/clothing/suit/armor/vest/alt/tau
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Jaeger Combat Exoskeleton MK.1"
+	desc = "Jaeger Combat Exoskeleton MK.1. Designed to accommodate various modular armor components and support systems. This model comes equipped with EOD pauldrons, a Mjolnir torso, and Hell Diver knee guards. The light and storage module appears to be broken, and the armor plates are heavily damaged, offering reduced protection compared to their original state. The armor also features an empty slot for an armor module compatible with all TerraGov armor modules."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "tau"
+	item_state = "tau"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+
+/obj/item/modkit/tau_armor_kit
+	name = "Jaeger armor Kit"
+	desc = "A modkit for making a armor vest into a Jaeger Combat Exoskeleton MK.1"
+	icon = 'modular_splurt/icons/obj/clothing/reinforcekits.dmi'
+	icon_state = "sec_armor_kit"
+	product = /obj/item/clothing/suit/armor/vest/alt/tau
+	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)

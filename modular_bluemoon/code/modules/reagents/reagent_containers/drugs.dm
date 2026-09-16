@@ -1,7 +1,7 @@
 /obj/item/reagent_containers/crack
 	name = "crack"
 	desc = "A rock of freebase cocaine, otherwise known as crack."
-	icon = 'modular_bluemoon/cocaine/icons/crack.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "crack"
 	volume = 10
 	list_reagents = list(/datum/reagent/drug/cocaine/freebase_cocaine = 10)
@@ -9,7 +9,7 @@
 /obj/item/reagent_containers/crackbrick
 	name = "crack brick"
 	desc = "A brick of crack cocaine."
-	icon = 'modular_bluemoon/cocaine/icons/crack.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "crackbrick"
 	volume = 40
 	list_reagents = list(/datum/reagent/drug/cocaine/freebase_cocaine = 40)
@@ -34,7 +34,7 @@
 /obj/item/reagent_containers/cocaine
 	name = "cocaine"
 	desc = "Reenact your favorite scenes from Scarface!"
-	icon = 'modular_bluemoon/cocaine/icons/crack.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "cocaine"
 	volume = 5
 	list_reagents = list(/datum/reagent/drug/cocaine = 5)
@@ -68,7 +68,7 @@
 /obj/item/reagent_containers/cocainebrick
 	name = "cocaine brick"
 	desc = "A brick of cocaine. Good for transport!"
-	icon = 'modular_bluemoon/cocaine/icons/crack.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "cocainebrick"
 	volume = 25
 	list_reagents = list(/datum/reagent/drug/cocaine = 25)
