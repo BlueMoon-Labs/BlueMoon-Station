@@ -325,11 +325,15 @@
 	else
 		moans = GLOB.lewd_moans_male
 
+	var/list/preferred_moans = client?.prefs?.use_custom_moan_sounds ? client.prefs.custom_moan_sounds : null
+	if(LAZYLEN(preferred_moans))
+		moans = preferred_moans
+
 	// Pick a sound from the list.
 	var/sound = pick(moans)
 
 	// If the sound is repeated, get a new from a list without it.
-	if (lastmoan == sound)
+	if (lastmoan == sound && length(moans) > 1)
 		sound = pick(LAZYCOPY(moans) - lastmoan)
 
 	if(isalien(src))

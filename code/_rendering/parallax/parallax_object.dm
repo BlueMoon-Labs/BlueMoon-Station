@@ -379,12 +379,15 @@
 	var/dx = old_visual_x - new_visual_x
 	var/dy = old_visual_y - new_visual_y
 	if(abs(dx) <= 1 && abs(dy) <= 1)
-		// A 1px glide is indistinguishable from the instant screen_loc snap while the
-		// viewport itself glides a full tile - skip the matrix alloc + animate(), which
-		// used to be ~75-80% of this proc's cost.
+		// Для сдвига на один пиксель достаточно обновить screen_loc.
 		return FALSE
-	transform = matrix(1, 0, dx, 0, 1, dy)
-	animate(src, transform = matrix(), time = anim_time, flags = ANIMATION_END_NOW)
+	var/static/matrix/glide_transform = matrix()
+	var/static/matrix/rest_transform = matrix()
+	glide_transform.c = dx
+	glide_transform.f = dy
+	// BYOND копирует матрицу при записи в transform.
+	transform = glide_transform
+	animate(src, transform = rest_transform, time = anim_time, flags = ANIMATION_END_NOW)
 	return TRUE
 
 #if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)

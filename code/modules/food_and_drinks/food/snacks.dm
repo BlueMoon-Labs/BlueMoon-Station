@@ -68,6 +68,7 @@ All foods are distributed among various categories. Use common sense.
 	var/list/tastes  // for example list("crisps" = 2, "salt" = 1)
 	var/dunkable = FALSE // for dunkable food, make true
 	var/dunk_amount = 10 // how much reagent is transferred per dunk
+	var/nutrition_check = TRUE
 
 	//Placeholder for effect that trigger on eating that aren't tied to reagents.
 
@@ -160,23 +161,26 @@ All foods are distributed among various categories. Use common sense.
 			fullness += C.nutriment_factor * C.volume / C.metabolization_rate
 
 		if(M == user)								//If you're eating it yourself.
-			if(junkiness && M.satiety < -150 && M.nutrition > NUTRITION_LEVEL_STARVING + 50 )
-				to_chat(M, "<span class='notice'>You don't feel like eating any more junk food at the moment.</span>")
-				return FALSE
-			else if(fullness <= 50)
-				user.visible_message("<span class='notice'>[user] hungrily takes a [eatverb] from \the [src], gobbling it down!</span>", "<span class='notice'>You hungrily take a [eatverb] from \the [src], gobbling it down!</span>")
-			else if(fullness > 50 && fullness < 150)
-				user.visible_message("<span class='notice'>[user] hungrily takes a [eatverb] from \the [src].</span>", "<span class='notice'>You hungrily take a [eatverb] from \the [src].</span>")
-			else if(fullness > 150 && fullness < 500)
+			if(nutrition_check)
+				if(junkiness && M.satiety < -150 && M.nutrition > NUTRITION_LEVEL_STARVING + 50 )
+					to_chat(M, "<span class='notice'>You don't feel like eating any more junk food at the moment.</span>")
+					return FALSE
+				else if(fullness <= 50)
+					user.visible_message("<span class='notice'>[user] hungrily takes a [eatverb] from \the [src], gobbling it down!</span>", "<span class='notice'>You hungrily take a [eatverb] from \the [src], gobbling it down!</span>")
+				else if(fullness > 50 && fullness < 150)
+					user.visible_message("<span class='notice'>[user] hungrily takes a [eatverb] from \the [src].</span>", "<span class='notice'>You hungrily take a [eatverb] from \the [src].</span>")
+				else if(fullness > 150 && fullness < 500)
+					user.visible_message("<span class='notice'>[user] takes a [eatverb] from \the [src].</span>", "<span class='notice'>You take a [eatverb] from \the [src].</span>")
+				else if((fullness > 500 && fullness < 600) || HAS_TRAIT(user, TRAIT_BLUEMOON_DEVOURER))
+					user.visible_message("<span class='notice'>[user] unwillingly takes a [eatverb] of a bit of \the [src].</span>", "<span class='warning'>You unwillingly take a [eatverb] of a bit of \the [src].</span>")
+				else if(fullness > (600 * (1 + M.overeatduration / 2000)))	// The more you eat - the more you can eat
+					user.visible_message("<span class='warning'>[user] cannot force any more of \the [src] to go down [user.p_their()] throat!</span>", "<span class='danger'>You cannot force any more of \the [src] to go down your throat!</span>")
+					return FALSE
+			else
 				user.visible_message("<span class='notice'>[user] takes a [eatverb] from \the [src].</span>", "<span class='notice'>You take a [eatverb] from \the [src].</span>")
-			else if((fullness > 500 && fullness < 600) || HAS_TRAIT(user, TRAIT_BLUEMOON_DEVOURER))
-				user.visible_message("<span class='notice'>[user] unwillingly takes a [eatverb] of a bit of \the [src].</span>", "<span class='warning'>You unwillingly take a [eatverb] of a bit of \the [src].</span>")
-			else if(fullness > (600 * (1 + M.overeatduration / 2000)))	// The more you eat - the more you can eat
-				user.visible_message("<span class='warning'>[user] cannot force any more of \the [src] to go down [user.p_their()] throat!</span>", "<span class='danger'>You cannot force any more of \the [src] to go down your throat!</span>")
-				return FALSE
 		else
 			if(!isbrain(M))		//If you're feeding it to someone else.
-				if(fullness <= (600 * (1 + M.overeatduration / 1000)))
+				if(!nutrition_check || (fullness <= (600 * (1 + M.overeatduration / 1000))))
 					M.visible_message("<span class='danger'>[user] attempts to feed [M] [src].</span>", \
 										"<span class='userdanger'>[user] attempts to feed [M] [src].</span>")
 				else

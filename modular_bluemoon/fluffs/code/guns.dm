@@ -953,23 +953,28 @@
 
 /obj/item/modkit/nebular_kit
 	name = "Nebular Gun Kit"
-	desc = "A modkit for making a Enforcer Gun into a Nebular-9."
+	desc = "A modkit for making a Enforcer Gun into a Nebular .75 (M. P-45)."
 	icon_state = "enforcer_kit"
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "\improper Nebular-9"
-	desc = "Трофей. 45 калибр. Унифицированное оружие самозащиты, выдаваемое каждому без исключения жителю-Касари флота-государства Небулы по окончании ими первой стадии жизни. Крайне редок, в сравнении с иным огнестрельным оружием галактики - штучный товар, использующий замысловатую систему заряжания и некоторые технически трудно реализуемые решения, крайне мешающие реверс-инженерингу и стороннему производству. Благодаря нему каждый житель Небулы может дать отпор неприятелю извне, коих у них полно. Не только эффективно, но и со стилем."
+	name = "\improper Nebular .75 (M. P-45)"
+	desc = "Оригинальный пистолет - это главный символ флота-государства \"Небулы\" - настоящая ручная ракетная установка под управляемые реактивные снаряды в скромном корпусе пистолета. Штатно, оснащается отличными мозгами - системой связи с оператором, корректировщиком огня, системой автонаведения, системой управления снарядами и шедевральной системой защиты от неавторизованого использования.\nЭтот же вариант - не только электронный кастрат не имеющий обязательных модулей, но ещё и конструктивно ближе к бревну, чем к оригиналу. Он - хоть и качественно, но все же сильно переделанный образец оружия, в обычный пистолет .45 калибра. На месте стандартно устанавливающейся электроники зияет дыра, а сбоку на стволе красуется унижительная надпись \"в ПАКТ\"."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "nebular-9"
 	unique_reskin = null
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	item_state = "Nebular-9"
-	can_flashlight = TRUE
-	gunlight_state = "nebular-light"
+	item_state = "nebular-9"
+	can_flashlight = FALSE
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-shot.ogg'
+	load_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-magazine-in.ogg'
+	load_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-magazine-in.ogg'
+	eject_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-magazine-out.ogg'
+	eject_empty_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-magazine-out.ogg'
+	lock_back_sound = 'modular_bluemoon/fluffs/sound/weapon/Nebular-rack.ogg'
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/nebular/get_worn_belt_overlay(icon_file)
 	return null
@@ -1021,8 +1026,7 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "nebular-t"
 	item_state = "Nebular-9"
-	can_flashlight = TRUE
-	gunlight_state = "nebular-light"
+	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/get_worn_belt_overlay(icon_file)
 	return null
@@ -2012,4 +2016,37 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "melatonin_modkit"
 	product = /obj/item/gun/ballistic/shotgun/shorty/melatonin
+	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
+
+/obj/item/gun/ballistic/shotgun/shorty/black_hole
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\"Black hole\" type one-hand short platform, modification \"P\""
+	desc = "Один из немногих коммерчески распространяемых оружий за авторством малоизвестной компании \"Nebula Workshop\". Чёрная дыра - жемчужина среди малогабаритных оружий, отличающаяся от одноклассников лёгкой кастомизацией - не только внутренностей, таких как встроенный баллистический калькулятор и подстраивающийся под него голоприцел с автопоправками на окружение, но и из за запатентованной технологии изменяемого ствола, что в зависимости от условий может работать с почти всеми распространёнными в галактике калибрами, и даже исполнять роль ручного однозарядного гранатомёта. Смена происходит на боковой панели через интерфейс, который у конкретно этого блэкхола намертво закрыт металлической пломбой с выдавленной буквой \"P\""
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	icon_state = "blackhole-loaded"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "blackhole-loaded"
+
+/obj/item/gun/ballistic/shotgun/shorty/black_hole/update_icon_state()
+	if(chambered && chambered.BB)
+		icon_state = "blackhole-loaded"
+	else
+		icon_state = "blackhole-not-loaded"
+
+/obj/item/gun/ballistic/shotgun/shorty/black_hole/update_overlays()
+	. = ..()
+
+	if(!magazine || !magazine.max_ammo)
+		. += "blackhole-0"
+		return
+	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/fill_level = clamp(round(total / magazine.max_ammo * 2), 0, 2)
+	. += "blackhole-[fill_level]"
+
+/obj/item/modkit/black_hole_kit
+	name = "\"Black hole\" type one-hand short platform, modification \"P\" Kit"
+	desc = "A modkit for making an super shorty shotgun into a \"Black hole\" type one-hand short platform, modification \"P\"."
+	icon_state = "supershort-shotgun_kit"
+	product = /obj/item/gun/ballistic/shotgun/shorty/black_hole
 	fromitem = list(/obj/item/gun/ballistic/shotgun/shorty)
