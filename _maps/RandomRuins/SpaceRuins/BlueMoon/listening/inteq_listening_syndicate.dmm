@@ -1727,12 +1727,6 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/white,
-/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
-	pixel_x = 8
-	},
-/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
-	pixel_x = -8
-	},
 /obj/item/clothing/mask/gas/inteq{
 	pixel_x = 8
 	},
