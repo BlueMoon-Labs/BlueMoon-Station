@@ -56,6 +56,7 @@
 		if(client)
 			for(var/datum/atom_hud/H in GLOB.all_huds)
 				if(H.hudusers[src])
+					H.push_all_atoms_to_user(src)
 					continue
 				var/needs_hud = FALSE
 				if(istype(H, /datum/atom_hud/data/human/security))
