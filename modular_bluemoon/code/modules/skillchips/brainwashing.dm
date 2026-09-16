@@ -1,5 +1,3 @@
-// TRAIT_BRAINWASHING (skillchip "Brainwashing") - someone with this trait running a washing machine turns it into a brainwasher:
-// loaded brains get their traumas and damage washed away (or are fried if the machine is used without the trait).
 /obj/machinery/washing_machine/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(user.pulling && user.a_intent == INTENT_GRAB && isliving(user.pulling) && !has_buckled_mobs())
 		var/mob/living/L = user.pulling
@@ -44,7 +42,6 @@
 		AM.clean_blood()
 		AM.machine_wash(src)
 
-	// if we got brainwashing capability, clear it after this cycle
 	REMOVE_TRAIT(src, TRAIT_BRAINWASHING, SKILLCHIP_TRAIT)
 	busy = FALSE
 	if(color_source)

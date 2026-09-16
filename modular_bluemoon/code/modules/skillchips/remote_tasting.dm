@@ -1,4 +1,3 @@
-// TRAIT_REMOTE_TASTING (skillchip "What's This?" / "Чтоо это?") lets you sample reagents by simply examining containers, food and the supermatter.
 /obj/item/reagent_containers/examine(mob/user)
 	. = ..()
 	if(isliving(user) && HAS_TRAIT(user, TRAIT_REMOTE_TASTING))

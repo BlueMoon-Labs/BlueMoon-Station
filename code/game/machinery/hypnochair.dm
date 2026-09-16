@@ -16,10 +16,6 @@
 
 /obj/machinery/hypnochair/Initialize(mapload)
 	. = ..()
-	// open_machine() тянет за собой updateUsrDialog() -> tgui open ->
-	// tracked_winexists (winexists "спит"), а Initialize не может спать.
-	// На самом деле при инициализации у стула ещё нет ни юзеров, ни содержимого -
-	// выставляем открытое состояние напрямую.
 	state_open = TRUE
 	density = FALSE
 	update_icon()

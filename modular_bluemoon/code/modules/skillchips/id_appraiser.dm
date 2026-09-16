@@ -1,4 +1,3 @@
-// TRAIT_ID_APPRAISER (skillchip "ID Appraiser") lets you tell whether an ID card was issued by Central Command or in the sector.
 /obj/item/card/id/examine(mob/user)
 	. = ..()
 	if(mining_points)

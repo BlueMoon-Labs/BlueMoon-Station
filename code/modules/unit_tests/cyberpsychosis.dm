@@ -1,11 +1,3 @@
-// Тесты инвариантов системы киберпсихоза (модуль modular_bluemoon/.../cyberpsychosis).
-// Нагрузку дают ТОЛЬКО хирургические кибераугменты /obj/item/organ/cyberimp
-// (status == ORGAN_ROBOTIC); подкожные /obj/item/implant НЕ участвуют.
-// Шкала перегрузки - 20: MILD 8 / MODERATE 15 / CRITICAL 20. Квирк
-// «Совместимость с имплантами» сдвигает пороги на 12/20/27.
-// Запуск: node tools/build/build.js dm-test, проверка data/logs/ci/clean_run.lk.
-
-/// Подкожные импланты не дают нагрузку и не создают датум, даже если их много.
 /datum/unit_test/cyberpsychosis_subdermal_implants_no_load/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/implant/mindshield/MS = new /obj/item/implant/mindshield()
@@ -17,21 +9,17 @@
 	H.update_cyberpsychosis()
 	TEST_ASSERT_NULL(H.cyberpsychosis, "Подкожные импланты создали киберпсихоз")
 
-/// Базовый кибераугмент имеет вклад 1 (легкая группа) по умолчанию.
 /datum/unit_test/cyberpsychosis_cyberimp_default_load/Run()
 	var/obj/item/organ/cyberimp/CO = new /obj/item/organ/cyberimp()
 	TEST_ASSERT_EQUAL(CO.cyber_load, 1, "Базовый /obj/item/organ/cyberimp должен иметь cyber_load = 1, получено [CO.cyber_load]")
 	qdel(CO)
 
-/// Пустой человек не получает датум киберпсихоза.
 /datum/unit_test/cyberpsychosis_no_cyberimps_no_datum/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	H.update_cyberpsychosis()
 	TEST_ASSERT_NULL(H.cyberpsychosis, "Датum киберпсихоза создался без кибераугментов")
 
-/// Нагрузка зависит от назначения импланта (1/2/3), и корректно суммируется.
 /datum/unit_test/cyberpsychosis_load_by_purpose/Run()
-	// Легкая группа.
 	var/obj/item/organ/cyberimp/brain/anti_stun/br = new /obj/item/organ/cyberimp/brain/anti_stun()
 	TEST_ASSERT_EQUAL(br.cyber_load, 1, "anti-stun: cyber_load=[br.cyber_load], ожидался 1")
 	qdel(br)
@@ -41,7 +29,6 @@
 	var/obj/item/organ/cyberimp/arm/toolset/ts = new /obj/item/organ/cyberimp/arm/toolset()
 	TEST_ASSERT_EQUAL(ts.cyber_load, 1, "toolset: cyber_load=[ts.cyber_load], ожидался 1")
 	qdel(ts)
-	// Средняя группа.
 	var/obj/item/organ/cyberimp/arm/surgery/surg = new /obj/item/organ/cyberimp/arm/surgery()
 	TEST_ASSERT_EQUAL(surg.cyber_load, 2, "surgery: cyber_load=[surg.cyber_load], ожидался 2")
 	qdel(surg)
@@ -51,7 +38,6 @@
 	var/obj/item/organ/cyberimp/chest/thrusters/th = new /obj/item/organ/cyberimp/chest/thrusters()
 	TEST_ASSERT_EQUAL(th.cyber_load, 2, "thrusters: cyber_load=[th.cyber_load], ожидался 2")
 	qdel(th)
-	// Тяжелая группа.
 	var/obj/item/organ/cyberimp/arm/gun/laser/las = new /obj/item/organ/cyberimp/arm/gun/laser()
 	TEST_ASSERT_EQUAL(las.cyber_load, 3, "arm laser: cyber_load=[las.cyber_load], ожидался 3")
 	qdel(las)
@@ -62,7 +48,6 @@
 	TEST_ASSERT_EQUAL(ch.cyber_load, 3, "chem implant: cyber_load=[ch.cyber_load], ожидался 3")
 	qdel(ch)
 
-	// Сквозная проверка через реальную установку.
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/organ/cyberimp/arm/gun/laser/gun = new /obj/item/organ/cyberimp/arm/gun/laser()
 	gun.Insert(H)
@@ -78,7 +63,6 @@
 	TEST_ASSERT_NOTNULL(H.cyberpsychosis, "Датum не создался при установке кибераугментов")
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.load, 8, "load=[H.cyberpsychosis.load], ожидался 8 (3+1+1+1+2)")
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.stage, CYBERPSYCHOSIS_TIER_MILD, "load=8 не дал MILD")
-	// Снятие тяжелого импланта пересчитывает нагрузку вниз.
 	gun.Remove(FALSE)
 	qdel(gun)
 	H.update_cyberpsychosis(FALSE)
@@ -86,7 +70,6 @@
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.stage, CYBERPSYCHOSIS_TIER_NONE, "load=5 не дал NONE")
 	qdel(H.cyberpsychosis)
 
-/// Границы стадий на шкале 20 (без квирка): 8 -> MILD, 15 -> MODERATE, 20 -> CRITICAL.
 /datum/unit_test/cyberpsychosis_stage_thresholds/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/datum/cyberpsychosis/CP = new /datum/cyberpsychosis(H)
@@ -106,21 +89,17 @@
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_CRITICAL, "load=20 должен быть CRITICAL")
 	TEST_ASSERT_NOTNULL(H.get_filter("cyberpsychosis"), "Фильтр критической стадии не применён")
 	TEST_ASSERT(H.eye_blurry > 0, "Блюр экрана не применён на критической стадии")
-	// Сброс нагрузки снимает все эффекты.
 	CP.update_stage(FALSE, 0)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_NONE, "Стадия не сбросилась при load=0")
 	TEST_ASSERT_EQUAL(H.eye_blurry, 0, "Блюр экрана не был снят после падения стадии")
 	TEST_ASSERT_NULL(H.get_filter("cyberpsychosis"), "Фильтр критической стадии не снят после падения стадии")
 	qdel(CP)
 
-/// Квирк «Совместимость с имплантами» сдвигает пороги на 12/20/27.
 /datum/unit_test/cyberpsychosis_threshold_offset_quirk/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/datum/cyberpsychosis/CP = new /datum/cyberpsychosis(H)
-	// Без квирка: load=19 -> MODERATE, load=20 -> CRITICAL.
 	CP.update_stage(FALSE, 19)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MODERATE, "Без квирка load=19 должен быть MODERATE")
-	// С квирком те же нагрузки дают более низкую стадию.
 	ADD_TRAIT(H, TRAIT_IMPLANT_COMPATIBILITY, "unit_test")
 	CP.update_stage(FALSE, 11)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_NONE, "С квирком load=11 должен быть NONE (MILD с 12)")
@@ -134,13 +113,11 @@
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MODERATE, "С квирком load=26 должен быть MODERATE (CRITICAL с 27)")
 	CP.update_stage(FALSE, 27)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_CRITICAL, "С квирком load=27 должен быть CRITICAL")
-	// Снятие квирка возвращает базовые пороги.
 	REMOVE_TRAIT(H, TRAIT_IMPLANT_COMPATIBILITY, "unit_test")
 	CP.update_stage(FALSE, 19)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MODERATE, "После снятия квирка load=19 снова MODERATE")
 	qdel(CP)
 
-/// На критической стадии применяется фильтр (аналог хардкрита) и блюр.
 /datum/unit_test/cyberpsychosis_critical_filter_applied/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/datum/cyberpsychosis/CP = new /datum/cyberpsychosis(H)
@@ -150,32 +127,24 @@
 	TEST_ASSERT(H.eye_blurry > 0, "Блюр экрана не применён на критической стадии")
 	qdel(CP)
 
-/// ЭМИ-перегрузка складывается с постоянной нагрузкой, толкает стадию вверх,
-/// спадает сама со временем и полностью сбрасывается псикодином.
 /datum/unit_test/cyberpsychosis_emp_overload/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/datum/cyberpsychosis/CP = new /datum/cyberpsychosis(H)
 	CP.update_stage(FALSE, CYBERPSYCHOSIS_MODERATE_LOAD - 1)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MILD, "load=14 должен быть MILD")
 	TEST_ASSERT_EQUAL(CP.temp_overload, 0, "temp_overload до ЭМИ должен быть 0")
-	// Одна порция перегрузки (0.5) поднимает 14 до 14.5 - ещё не MODERATE.
 	CP.add_emp_overload(CYBERPSYCHOSIS_EMP_OVERLOAD_PER_IMPLANT)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MILD, "load=14+0.5 должен остаться MILD")
 	TEST_ASSERT(round(CP.temp_overload, 0.001) == CYBERPSYCHOSIS_EMP_OVERLOAD_PER_IMPLANT, "temp_overload=0.5 не накоплен")
-	// Вторая порция - перегрузка 1.0 => load 15 -> MODERATE.
 	CP.add_emp_overload(CYBERPSYCHOSIS_EMP_OVERLOAD_PER_IMPLANT)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MODERATE, "load=14+1.0 должен дать MODERATE")
-	// Самостоятельный спад: 0.5 уходит за 60 секунд. Первые 30 секунд
-	// снимают 0.25, т.е. 14+0.75 уже ниже MODERATE (15).
 	CP.decay_temp_overload(30)
 	CP.update_stage(FALSE)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MILD, "load=14+0.75 должен вернуться к MILD")
-	// Оставшиеся 90 секунд снимают перегрузку полностью.
 	CP.decay_temp_overload(90)
 	CP.update_stage(FALSE)
 	TEST_ASSERT(round(CP.temp_overload, 0.001) == 0, "temp_overload не спал до нуля")
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_MILD, "После спада стадия не вернулась к MILD")
-	// Псикодин (clear_temp_overload) снимает перегрузку мгновенно.
 	CP.add_emp_overload(CYBERPSYCHOSIS_EMP_OVERLOAD_PER_IMPLANT * 6)
 	TEST_ASSERT_EQUAL(CP.stage, CYBERPSYCHOSIS_TIER_CRITICAL, "load=14+3.0 должен дать CRITICAL")
 	CP.clear_temp_overload()
@@ -184,8 +153,6 @@
 	TEST_ASSERT_NULL(H.get_filter("cyberpsychosis"), "Фильтр критической стадии не снят после псикодина")
 	qdel(CP)
 
-/// emp_act() на каждом роботизированном кибераугменте добавляет порцию
-/// временной перегрузки (0.5) его носителю.
 /datum/unit_test/cyberpsychosis_emp_act_stacks/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/organ/cyberimp/arm/toolset/ts = new /obj/item/organ/cyberimp/arm/toolset()
@@ -197,13 +164,11 @@
 	TEST_ASSERT_NOTNULL(H.cyberpsychosis, "Датum не создался при установке кибераугментов")
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.load, 3, "load должен быть 3 (1+1+1)")
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.stage, CYBERPSYCHOSIS_TIER_NONE, "load=3 должен быть NONE")
-	// ЭМИ по каждому импланту накапливает 0.5 за порцию.
 	ts.emp_act(2)
 	TEST_ASSERT(round(H.cyberpsychosis.temp_overload, 0.001) == 0.5, "temp_overload после ЭМИ по toolset != 0.5")
 	hud.emp_act(2)
 	TEST_ASSERT(round(H.cyberpsychosis.temp_overload, 0.001) == 1.0, "temp_overload после ЭМИ по HUD != 1.0")
 	mouth.emp_act(2)
 	TEST_ASSERT(round(H.cyberpsychosis.temp_overload, 0.001) == 1.5, "temp_overload после ЭМИ по breathing_tube != 1.5")
-	// 3 + 1.5 = 4.5 все ещё ниже MILD (8) - стадия не сдвинулась.
 	TEST_ASSERT_EQUAL(H.cyberpsychosis.stage, CYBERPSYCHOSIS_TIER_NONE, "load=3+1.5 должен быть NONE")
 	qdel(H.cyberpsychosis)

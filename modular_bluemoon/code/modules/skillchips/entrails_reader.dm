@@ -1,4 +1,3 @@
-// TRAIT_ENTRAILS_READER (skillchip "Coroner's Reading") lets you inspect what kind of person a liver came from.
 /obj/item/organ/liver/examine(mob/user)
 	. = ..()
 	if(!HAS_TRAIT(user, TRAIT_ENTRAILS_READER) && !isobserver(user))

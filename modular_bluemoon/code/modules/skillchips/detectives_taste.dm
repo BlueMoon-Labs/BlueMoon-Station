@@ -1,10 +1,8 @@
-// TRAIT_DETECTIVES_TASTE (skillchip "Detectives Taste") lets the user identify the exact reagents (and blood types) by taste.
 /mob/living/taste(datum/reagents/from)
 	if(HAS_TRAIT(src, TRAIT_DETECTIVES_TASTE))
 		return detectives_taste(from)
 	return ..()
 
-/// Precise tasting: reports the exact name of every reagent (or the blood type) being tasted.
 /mob/living/proc/detectives_taste(datum/reagents/from)
 	if(last_taste_time + 50 > world.time)
 		return FALSE

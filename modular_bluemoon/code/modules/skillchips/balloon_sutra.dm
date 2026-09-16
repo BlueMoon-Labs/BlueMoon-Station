@@ -1,4 +1,3 @@
-// TRAIT_BALLOON_SUTRA (skillchip "Clown's balloon sutra") - only balloon artists who know the sacred sutra can contort long balloons into balloon animals.
 /obj/item/toy/balloon/long/attackby(obj/item/attacking_item, mob/user, params)
 	if(!istype(attacking_item, /obj/item/toy/balloon/long) || !HAS_TRAIT(user, TRAIT_BALLOON_SUTRA))
 		return ..()

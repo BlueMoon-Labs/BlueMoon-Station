@@ -1,6 +1,3 @@
-// Musical skillchip, adapted to the build's say() structure (no SPEECH_MODS arglist; MODE_SING handled in say() only for message_mode).
-// To keep the "singing" we manually style the message with musical note characters instead.
-
 /obj/item/skillchip/musical
 	name = "\improper Old Copy of \"Space Station 13: The Musical\""
 	desc = "An old copy of \"Space Station 13: The Musical\", \

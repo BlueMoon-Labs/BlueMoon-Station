@@ -1,4 +1,3 @@
-// TRAIT_UNDERWATER_BASKETWEAVING_KNOWLEDGE (skillchip "Underwater Basketweaving") lets you weave baskets while underwater (or in the shower).
 /obj/item/storage/basket
 	name = "плетёная корзина"
 	desc = "Настоящий образец классического подводного плетения корзин."

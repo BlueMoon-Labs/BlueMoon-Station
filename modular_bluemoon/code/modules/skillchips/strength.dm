@@ -1,4 +1,3 @@
-// TRAIT_STRENGTH (skillchip "Genetical Improvements") - invested genetic strength makes you a noticeably better boxer.
 /datum/martial_art/boxing/harm_act(mob/living/carbon/human/A, mob/living/carbon/human/D)
 
 	A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
@@ -12,7 +11,7 @@
 		log_combat(A, D, "attempted to hit", atk_verb)
 		return TRUE
 
-	var/strength_bonus = HAS_TRAIT(A, TRAIT_STRENGTH) ? 2 : 0 //Investing into genetic strength improvements makes you a better boxer
+	var/strength_bonus = HAS_TRAIT(A, TRAIT_STRENGTH) ? 2 : 0
 
 	var/obj/item/bodypart/affecting = D.get_bodypart(ran_zone(A.zone_selected))
 	var/armor_block = D.run_armor_check(affecting, MELEE)

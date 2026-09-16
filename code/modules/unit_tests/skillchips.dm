@@ -1,8 +1,3 @@
-// Тесты скилл-чипов (code/modules/library/skill_learning).
-// Проверяют имплантацию, активацию/деактивацию, снятие и failsafe при извлечении мозга.
-// Запуск: node tools/build/build.js dm-test, проверка data/logs/ci/clean_run.lk.
-
-/// Имплантация чипа карбону через force кладёт его в список чипов мозга и занимает слот.
 /datum/unit_test/skillchips_implant/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/skillchip/wine_taster/chip = new /obj/item/skillchip/wine_taster()
@@ -13,7 +8,6 @@
 	TEST_ASSERT_EQUAL(brain.get_used_skillchip_slots(), 1, "Занято слотов [brain.get_used_skillchip_slots()] вместо 1")
 	qdel(chip)
 
-/// Активация чипа выдаёт трейт и учитывает сложность, деактивация всё снимает.
 /datum/unit_test/skillchips_activate_deactivate/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/skillchip/wine_taster/chip = new /obj/item/skillchip/wine_taster()
@@ -27,7 +21,6 @@
 	TEST_ASSERT_EQUAL(brain.get_used_skillchip_complexity(), 0, "Сложность не обнулена")
 	qdel(chip)
 
-/// Снятие чипа через карбона удаляет его из мозга.
 /datum/unit_test/skillchips_remove/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/skillchip/wine_taster/chip = new /obj/item/skillchip/wine_taster()
@@ -37,7 +30,6 @@
 	TEST_ASSERT(!(chip in brain.skillchips), "Чип остался в списке мозга после снятия")
 	qdel(chip)
 
-/// Извлечение мозга деактивирует активные чипы (failsafe).
 /datum/unit_test/skillchips_brain_removal_failsafe/Run()
 	var/mob/living/carbon/human/H = allocate(/mob/living/carbon/human)
 	var/obj/item/skillchip/wine_taster/chip = new /obj/item/skillchip/wine_taster()

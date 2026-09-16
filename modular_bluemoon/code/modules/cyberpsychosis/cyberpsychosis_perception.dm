@@ -1,9 +1,3 @@
-// Восприятие чужих при киберпсихозе. На стадиях >= MODERATE перестаёт
-// различать других персонажей: вместо имени - "Unknown", а вид - тёмный
-// силуэт в блюре (образец - /datum/hallucination/delusion + BM_FILTER_HARDCRIT).
-// Оверлеи живут только в owner.client.images, реальные мобы не меняются.
-
-/// Поддерживает у owner'а оверлеи "все люди = Unknown + тёмный силуэт".
 /datum/cyberpsychosis/proc/update_other_perception()
 	if(!owner || QDELETED(owner) || !owner.client)
 		clear_other_perception()
@@ -28,7 +22,6 @@
 			owner.client.images -= perception_images[H]
 			perception_images -= H
 
-/// Убирает у owner'а все оверлеи восприятия (когда стадия упала или нет клиента).
 /datum/cyberpsychosis/proc/clear_other_perception()
 	if(owner && !QDELETED(owner) && owner.client && length(perception_images))
 		for(var/K in perception_images)

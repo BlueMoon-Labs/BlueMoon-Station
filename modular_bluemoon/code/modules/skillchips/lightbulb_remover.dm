@@ -1,4 +1,3 @@
-// TRAIT_LIGHTBULB_REMOVER (skillchip "N16H7M4R3") lets you take out glowing light fixtures bare-handed, burning yourself in the process.
 /obj/machinery/light/on_attack_hand(mob/living/carbon/human/user)
 	. = ..()
 	user.DelayNextAction(CLICK_CD_MELEE)
@@ -41,7 +40,7 @@
 				to_chat(user, "<span class='notice'>You feel your hand burning, but the light begins to budge...</span>")
 				if(do_after(user, 5 SECONDS, target = src))
 					var/obj/item/bodypart/affecting = H.get_bodypart("[(user.active_hand_index % 2 == 0) ? "r" : "l" ]_arm")
-					if(affecting && affecting.receive_damage(0, 10)) // 10 burn damage for powering through
+					if(affecting && affecting.receive_damage(0, 10))
 						H.update_damage_overlays()
 					to_chat(user, "<span class='notice'>You manage to remove the light [fitting], shattering it in the process.</span>")
 					break_light_tube()

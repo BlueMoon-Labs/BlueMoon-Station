@@ -1,4 +1,3 @@
-// TRAIT_DRUNKEN_BRAWLER (skillchip "Drunken Brawler") - while intoxicated, your bare fists hit much harder and your grabs are harder to escape.
 /mob/living/carbon/human/UnarmedAttack(atom/A, proximity, intent = a_intent, attackchain_flags = NONE)
 
 	if(!has_active_hand()) //can't attack without a hand.
@@ -32,7 +31,6 @@
 	. |= A.attack_hand(src, intent, .)
 
 	if(intent == INTENT_HARM && drunkenness > 0 && HAS_TRAIT(src, TRAIT_DRUNKEN_BRAWLER) && isliving(A))
-		// A drunk brawler swings with way more force the more banged-up they already are.
 		var/mob/living/target = A
 		var/hurt = getBruteLoss() + getFireLoss()
 		var/bonus = clamp(hurt / 5, 3, 15)
@@ -49,9 +47,8 @@
 		escchance = 3
 	else if(istype(mind, /datum/mind) && istype(mind.martial_art, /datum/martial_art) && mind.martial_art.can_use(src))
 		escchance = mind.martial_art.resist_grab_chance
-	else // �?�+�<�ؐ?�? �'�? �+�?�?��' �?�?��?�?�� �� "�+�����?�?�?�?�?" �?��� �?�<�?�'���?�>��?�? 30, �"����>�ؐ�� �?�>�? ����?������?�����?�?� �?�>�?�ؐ���? �?�'�?�?�'�?�'�?��?
+	else // Обычно БИ будет всегда и "базовому" уже выставлено 30, фейлчек для ТЕОРЕТИЧЕСКИХ случаев отсутствия
 		escchance = 30
-	// A drunken brawler's hold is much harder to break out of.
 	if(ishuman(pulledby))
 		var/mob/living/carbon/human/grabber = pulledby
 		if(HAS_TRAIT(grabber, TRAIT_DRUNKEN_BRAWLER) && grabber.drunkenness)
