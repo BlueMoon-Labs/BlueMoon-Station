@@ -1,4 +1,5 @@
 #define HERETIC_TIDE_RANGE 5
+#define HERETIC_TIDE_CHANNEL_MOVEMENT 2
 #define HERETIC_TIDE_WAVE_RADIUS 2
 #define HERETIC_TIDE_RELEASE_COST 2
 #define HERETIC_TIDE_HARVEST_TIME (6 SECONDS)
@@ -234,6 +235,9 @@
 	active_well.pulse(erupting = TRUE)
 	playsound(place, 'modular_bluemoon/sound/heretic/tide_release.ogg', 45, TRUE)
 	return TRUE
+
+/datum/eldritch_knowledge/base_tide/proc/can_prepare_deluge(mob/living/user, turf/origin, turf/center, expected_generation)
+	return can_use(user) && tide_generation == expected_generation && origin && user.z == origin.z && get_dist(user, origin) <= HERETIC_TIDE_CHANNEL_MOVEMENT && combat_resource >= HERETIC_TIDE_RELEASE_COST && line_clear(user, center)
 
 /datum/eldritch_knowledge/base_tide/proc/deluge_turfs(mob/living/user, turf/center)
 	var/list/affected = list()
@@ -567,7 +571,7 @@
 	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 2 секунды. Не требует давления. Стены защищают, закрепление и пристёгивание мешают перемещению."
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/can_target(atom/target, mob/user, silent)
-	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.")
+	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -589,7 +593,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/deluge
 	name = "Обрушение толщи"
-	desc = "После двух секунд подготовки обрушьте весь запас на область в пяти клетках, радиус две клетки: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. Требует хотя бы 2 давления. Из подсвеченной области можно выйти."
+	desc = "После двух секунд подготовки обрушьте весь запас на область в пяти клетках, радиус две клетки: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. Требует хотя бы 2 давления. Из подсвеченной области можно выйти. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
 	charge_max = 40 SECONDS
 	action_icon_state = "tide_deluge"
 
@@ -602,12 +606,14 @@
 		return
 	var/list/telegraphed_turfs = tide.deluge_turfs(user, center)
 	var/expected_generation = tide.tide_generation
+	var/turf/origin = get_turf(user)
 	for(var/turf/tile as anything in telegraphed_turfs)
 		new /obj/effect/temp_visual/heretic_tide/warning(tile)
 	user.visible_message(span_danger("[user] поднимает руки. Над полом проступает чёрная вода — сейчас обрушится прилив!"))
 	playsound(center, 'modular_bluemoon/sound/heretic/tide_charge.ogg', 50, FALSE)
-	if(!do_after(user, 2 SECONDS, target = user) || QDELETED(src) || QDELETED(tide) || !tide.deluge(user, center, telegraphed_turfs, expected_generation))
-		heretic_revert_cast(user)
+	if(!do_after(user, 2 SECONDS, target = center, timed_action_flags = IGNORE_USER_LOC_CHANGE, extra_checks = CALLBACK(tide, TYPE_PROC_REF(/datum/eldritch_knowledge/base_tide, can_prepare_deluge), user, origin, center, expected_generation)) || QDELETED(src) || QDELETED(tide) || !tide.deluge(user, center, telegraphed_turfs, expected_generation))
+		if(!QDELETED(src))
+			heretic_revert_cast(user, "Подготовка сорвана: можно сместиться не дальше двух клеток от её начала. Сохраняйте видимость выбранной области в пяти клетках и возможность действовать; давление сохранено.")
 
 /datum/eldritch_knowledge/tide_grasp
 	name = "Хватка глубины"
@@ -719,7 +725,7 @@
 
 /datum/eldritch_knowledge/spell/tide_deluge
 	name = "Обрушение толщи"
-	desc = "После двух секунд неподвижной подготовки обрушьте весь запас давления на область радиусом две клетки в пяти клетках от вас: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. При полном начальном запасе это 44 ушиба и 32 выносливости. Нужно хотя бы 2 давления. Стены защищают, из области можно выйти; сорванная подготовка сохраняет запас. Перезарядка 40 секунд."
+	desc = "После двух секунд подготовки обрушьте весь запас давления на область радиусом две клетки в пяти клетках от вас: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. При полном начальном запасе это 44 ушиба и 32 выносливости. Нужно хотя бы 2 давления. Стены защищают, из области можно выйти; сорванная подготовка сохраняет запас. Перезарядка 40 секунд. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
 	gain_text = "Я услышал треск стекла. Между нами и морем никогда не было ничего прочнее."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -749,6 +755,7 @@
 	tide?.update_capacity()
 
 #undef HERETIC_TIDE_RANGE
+#undef HERETIC_TIDE_CHANNEL_MOVEMENT
 #undef HERETIC_TIDE_WAVE_RADIUS
 #undef HERETIC_TIDE_RELEASE_COST
 #undef HERETIC_TIDE_HARVEST_TIME

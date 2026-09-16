@@ -33,6 +33,10 @@
 	deadline = world.time + ANTAG_TRAINING_DUEL_INVITE
 	START_PROCESSING(SSprocessing, src)
 	opponent.practice_message("[challenger.current_body.real_name] приглашает на дуэль [to_death ? "до смерти" : "до крита"]. Примите вызов в пульте: используются ваши текущие вещи и способности, лечение кнопкой завершает бой.")
+	if(IS_HERETIC(challenger.current_body) && IS_HERETIC(opponent.current_body))
+		var/notice = "Оба участника — еретики: их магия защищает друг от друга даже в дуэли. Для проверки урона по экипажу один участник должен выбрать роль «Снаряжение и бой»."
+		challenger.practice_message(notice)
+		opponent.practice_message(notice)
 
 /datum/antag_training_duel/proc/includes(datum/antag_training_session/member)
 	return member == challenger || member == opponent
@@ -46,11 +50,11 @@
 		return FALSE
 	for(var/datum/antag_training_session/visitor as anything in arena.members)
 		if(!includes(visitor) && arena.match_zone(visitor.current_body) == "melee")
-			member.practice_message("Арена ближнего боя занята. Попросите остальных участников освободить её.")
+			member.practice_message("Арена ближнего боя занята: [visitor.current_body.real_name]. Попросите этого участника освободить её.")
 			return FALSE
 	for(var/mob/living/target as anything in arena.targets)
 		if(arena.match_zone(target) == "melee")
-			member.practice_message("Уберите цели с арены ближнего боя перед дуэлью.")
+			member.practice_message("Уберите [target.name] с арены ближнего боя перед дуэлью.")
 			return FALSE
 	var/turf/first_start = arena.zones["melee"]["spawn"]
 	var/turf/second_start = arena.zones["melee"]["target"]
@@ -125,6 +129,7 @@
 			var/datum/antag_training_measurement/result = index == 1 ? first_measurement : second_measurement
 			fighter.last_duel_result = "[message][result ? " Получено урона: [round(result.damage, 0.1)]; восстановлено здоровья: [round(result.healing, 0.1)]." : ""]"
 			fighter.practice_message(fighter.last_duel_result)
+	log_game("Дуэль на полигоне: [key_name(challenger.current_body)] и [key_name(opponent.current_body)]. [message] Полученный урон: [first_measurement?.damage || 0] / [second_measurement?.damage || 0]; лечение: [first_measurement?.healing || 0] / [second_measurement?.healing || 0].")
 	qdel(src)
 
 /datum/antag_training_duel/Destroy()

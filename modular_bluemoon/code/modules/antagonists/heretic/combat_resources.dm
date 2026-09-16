@@ -20,7 +20,7 @@
 		update_mouse_pointer()
 		to_chat(src, span_notice("Режим броска выключен для подготовки способности."))
 
-/obj/effect/proc_holder/spell/proc/heretic_check(mob/user, condition, silent, reason)
+/obj/effect/proc_holder/spell/proc/heretic_check(mob/user, condition, silent, reason, mob/living/target)
 	if(condition)
 		heretic_failure_reason = null
 		return TRUE
@@ -28,6 +28,11 @@
 		reason = "Вы не можете действовать: дождитесь окончания оглушения или освободитесь."
 	else if(user && !isturf(user.loc))
 		reason = "Сначала выйдите из контейнера или укрытия на пол."
+	else if(isliving(target) && target != user && (IS_HERETIC(target) || IS_HERETIC_MONSTER(target)))
+		reason = "Это союзник Мансуса: еретики и их слуги защищены от этой способности."
+		var/datum/antag_training_session/training = GLOB.antag_training_sessions[user?.ckey]
+		if(training && training.current_body == user)
+			reason += " Для проверки урона на полигоне соперник должен выбрать роль «Снаряжение и бой»; дуэль сохраняет иммунитеты."
 	heretic_failure_reason = reason
 	if(!silent && user)
 		to_chat(user, span_warning("[name]: [reason]"))

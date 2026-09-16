@@ -1167,7 +1167,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/destination = get_turf(target)
-	return heretic_check(user, glass?.can_use(user) && destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range && (!isliving(target) || heretic_can_affect(user, target, chargecost = 0)), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
+	return heretic_check(user, glass?.can_use(user) && destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range && (!isliving(target) || heretic_can_affect(user, target, chargecost = 0)), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

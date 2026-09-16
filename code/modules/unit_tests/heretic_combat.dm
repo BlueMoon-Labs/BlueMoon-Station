@@ -800,6 +800,22 @@
 	qdel(victim)
 	TEST_ASSERT(!(victim in domain.affected), "Удалённая цель сразу освобождается из поля.")
 
+/// Оба червя вырастают ровно на один связанный сегмент за порцию пищи.
+/datum/unit_test/heretic_armsy_growth/Run()
+	for(var/worm_type in list(/mob/living/simple_animal/hostile/eldritch/armsy, /mob/living/simple_animal/hostile/eldritch/armsy/prime))
+		var/mob/living/simple_animal/hostile/eldritch/armsy/worm = allocate(worm_type, run_loc_floor_bottom_left, FALSE)
+		TEST_ASSERT_NULL(worm.back, "Одиночный сегмент создаётся без цепочки.")
+		worm.current_stacks = worm.stacks_to_grow - 1
+		worm.heal()
+		TEST_ASSERT_NOTNULL(worm.back, "Пища должна создавать хвост без ошибки аргументов New.")
+		TEST_ASSERT_EQUAL(worm.back.type, worm_type, "Хвост сохраняет разновидность червя.")
+		TEST_ASSERT_EQUAL(worm.back.front, worm, "Новый хвост связан с прежним сегментом.")
+		TEST_ASSERT_NULL(worm.back.back, "Рост не порождает дополнительную начальную цепочку.")
+		TEST_ASSERT_EQUAL(worm.current_stacks, 0, "Пища расходуется на один сегмент.")
+		worm.back.current_stacks = worm.back.stacks_to_grow - 1
+		worm.heal()
+		TEST_ASSERT_EQUAL(worm.get_length(), 3, "Следующая порция удлиняет именно конец цепочки.")
+
 /// Удаление многорукой оболочки выпускает все тела и снимает их стазис.
 /datum/unit_test/heretic_armsy_releases_contents/Run()
 	var/mob/living/simple_animal/hostile/eldritch/armsy/shell = allocate(/mob/living/simple_animal/hostile/eldritch/armsy, run_loc_floor_bottom_left, FALSE)

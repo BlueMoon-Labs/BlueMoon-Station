@@ -436,6 +436,66 @@
 	TEST_ASSERT(abs(outer.getBruteLoss() - 52) <= DAMAGE_PRECISION, "Последнее кольцо Крещендо проходит по третьему радиусу.")
 	TEST_ASSERT(QDELETED(attack), "Три такта завершают последовательность.")
 
+/// Лира выбирает один узел; поздние волны сохраняют выбор и не умножают урон пересечений.
+/datum/unit_test/heretic_echo_conductor/Run()
+	var/turf/center = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_ECHO
+	for(var/knowledge in list(/datum/eldritch_knowledge/base_echo, /datum/eldritch_knowledge/spell/echo_resonator, /datum/eldritch_knowledge/echo_fork, /datum/eldritch_knowledge/spell/echo_crescendo))
+		heretic.gain_knowledge(knowledge)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/datum/eldritch_knowledge/echo_fork/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/echo_fork)
+	TEST_ASSERT(recipe.on_finished_recipe(user, list(), center), "Создаётся личная лира.")
+	var/obj/item/heretic_path_relic/echo_fork/fork = recipe.new_path_relic_ref.resolve()
+	allocated += fork
+	user.put_in_hands(fork)
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.create_resonator(user, get_step(get_step(center, EAST), EAST)), "Первый узел размещается справа.")
+	TEST_ASSERT(echo.create_resonator(user, get_step(get_step(center, NORTH), NORTH)), "Второй узел размещается сверху.")
+	var/obj/structure/heretic_echo_resonator/first = echo.resonators[1]
+	var/obj/structure/heretic_echo_resonator/second = echo.resonators[2]
+	TEST_ASSERT(fork.afterattack(first, user, FALSE), "Лира выбирает собственный удалённый узел.")
+	var/mob/living/relayed = allocate(/mob/living/carbon/human, get_step(get_step(first, EAST), EAST))
+	var/mob/living/unselected = allocate(/mob/living/carbon/human, get_step(get_step(second, NORTH), NORTH))
+	TEST_ASSERT(isfloorturf(relayed.loc) && isfloorturf(unselected.loc), "Обе удалённые цели остаются внутри тестовой комнаты.")
+	var/mob/living/overlap = allocate(/mob/living/carbon/human, get_step(center, EAST))
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.crescendo(user, center), "Крещендо готовит поздний повтор.")
+	TEST_ASSERT_EQUAL(echo.combat_resource, 0, "Резонатор не меняет расход Крещендо.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	TEST_ASSERT(fork.afterattack(second, user, FALSE), "Можно выбрать другой узел для следующего заклинания.")
+	attack.resolve()
+	TEST_ASSERT(abs(relayed.getBruteLoss() - 26) <= DAMAGE_PRECISION, "Уже предупреждённая волна звучит у первоначального узла.")
+	TEST_ASSERT_EQUAL(unselected.getBruteLoss(), 0, "Новый выбор не переносит уже подготовленную волну.")
+	TEST_ASSERT(abs(overlap.getBruteLoss() - 26) <= DAMAGE_PRECISION, "Пересечение основного креста и узла наносит только один такт.")
+	qdel(attack)
+	TEST_ASSERT(fork.afterattack(first, user, FALSE), "Выбор возвращается к первому узлу.")
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.crescendo(user, center), "Вторая последовательность готовится до разрушения.")
+	attack = echo.attacks[1]
+	qdel(first)
+	TEST_ASSERT_NULL(echo.conductor_ref, "Разрушение убирает выбранный узел.")
+	attack.resolve()
+	TEST_ASSERT(abs(relayed.getBruteLoss() - 26) <= DAMAGE_PRECISION, "Разрушенный узел не наносит подготовленный урон.")
+	TEST_ASSERT(abs(overlap.getBruteLoss() - 52) <= DAMAGE_PRECISION, "Основная область сохраняется при разрушении узла.")
+	qdel(attack)
+	TEST_ASSERT(fork.afterattack(second, user, FALSE), "Оставшийся узел доступен для финала.")
+	heretic.ascended = TRUE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/echo_final)
+	var/datum/eldritch_knowledge/final_eldritch/echo_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/echo_final)
+	finale.finished = TRUE
+	finale.on_body_gain(user)
+	TEST_ASSERT(echo.final_chorus(user), "Последняя служба подхватывает выбранный узел.")
+	attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT_EQUAL(unselected.getBruteLoss(), 0, "Второе кольцо не наносит урон до своего предупреждения.")
+	attack.resolve()
+	TEST_ASSERT(abs(unselected.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Второе кольцо финала доходит через выбранный узел.")
+	qdel(attack)
+	qdel(recipe)
+	TEST_ASSERT_NULL(echo.conductor_ref, "Утрата знания лиры снимает выбор узла.")
+
 /// Полный запас пассивки и вознесения сохраняется при переносе разума.
 /datum/unit_test/heretic_echo_capacity_transfer/Run()
 	for(var/ascended in list(FALSE, TRUE))

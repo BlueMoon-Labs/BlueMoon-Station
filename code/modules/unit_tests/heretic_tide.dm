@@ -186,6 +186,41 @@
 	tide.on_body_gain(user)
 	TEST_ASSERT(!tide.deluge(user, center, warned, original_generation), "Уход из тела и возврат не восстанавливают старую подготовку.")
 
+/// Реальная подготовка допускает шаг в пределах двух клеток и отменяет дальний отход.
+/datum/unit_test/heretic_tide_deluge_movement/Run()
+	var/turf/origin = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/tide_deluge)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/obj/effect/proc_holder/spell/pointed/heretic_tide/deluge/spell = allocate(/obj/effect/proc_holder/spell/pointed/heretic_tide/deluge)
+	var/turf/center = get_step(get_step(origin, EAST), EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, center)
+	var/turf/nearby = get_step(get_step(origin, NORTH), NORTH)
+	tide.combat_resource = 4
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/atom/movable, forceMove), nearby), 0.2 SECONDS)
+	spell.cast(list(center), user)
+	TEST_ASSERT_EQUAL(user.loc, nearby, "Игрок действительно сместился во время подготовки.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 44) <= DAMAGE_PRECISION, "Две клетки движения сохраняют полный удар по прежней области.")
+	TEST_ASSERT_EQUAL(tide.combat_resource, 0, "Успешный удар расходует давление.")
+	user.forceMove(origin)
+	tide.combat_resource = 4
+	var/turf/distant = get_step(nearby, NORTH)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/atom/movable, forceMove), distant), 0.2 SECONDS)
+	spell.cast(list(center), user)
+	TEST_ASSERT_EQUAL(user.loc, distant, "Игрок вышел за допустимые две клетки.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 44) <= DAMAGE_PRECISION, "Прерванный удар не наносит дополнительного урона.")
+	TEST_ASSERT_EQUAL(tide.combat_resource, 4, "Прерывание сохраняет запас.")
+	user.forceMove(origin)
+	var/obj/blocker = allocate(/obj, get_step(origin, EAST))
+	blocker.density = TRUE
+	TEST_ASSERT(!tide.can_prepare_deluge(user, origin, center, tide.tide_generation), "Преграда разрывает подготовку даже в пределах шага.")
+	qdel(blocker)
+	user.Paralyze(1 SECONDS)
+	TEST_ASSERT(!tide.can_prepare_deluge(user, origin, center, tide.tide_generation), "Оглушение по-прежнему прерывает подготовку.")
+
 /// Замена воды передаёт её новому источнику, а удаление роли снимает только собственные эффекты.
 /datum/unit_test/heretic_tide_drenched_cleanup/Run()
 	var/datum/antagonist/heretic/first = allocate_heretic()

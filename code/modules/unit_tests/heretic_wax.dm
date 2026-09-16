@@ -504,11 +504,19 @@
 	var/datum/status_effect/heretic_wax/effigy/effect = wax.active_effigy
 	var/obj/structure/heretic_wax_effigy/effigy = effect.effigy
 	TEST_ASSERT_EQUAL(effigy.icon, victim.icon, "Двойник копирует внешность цели.")
+	var/list/resource = wax.get_combat_resource_data()
+	TEST_ASSERT(findtext(resource["description"], victim.real_name), "Ресурсная подсказка называет цель оттиска.")
+	TEST_ASSERT(findtext(jointext(effigy.examine(user), " "), "30 переносимого"), "Осмотр показывает первоначальный запас урона.")
+	user.a_intent = INTENT_DISARM
+	resource = wax.get_combat_resource_data()
+	TEST_ASSERT_EQUAL(resource["name"], "Воск: выброс оболочки", "Режим разоружения явно предупреждает о расходе оболочки.")
+	user.a_intent = INTENT_HARM
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_clinging), "Снятие оттиска сразу мешает отступлению.")
 	victim.remove_status_effect(/datum/status_effect/heretic_wax/clinging)
 	TEST_ASSERT(user.Adjacent(effigy) && !user.Adjacent(victim), "Двойник позволяет достать клинком удалённого врага.")
 	blade.melee_attack_chain(user, effigy, null, NONE)
 	TEST_ASSERT(abs(victim.getBruteLoss() - 29) <= DAMAGE_PRECISION, "Первый удар клинком переносит пятнадцать ушибов.")
+	TEST_ASSERT(findtext(jointext(effigy.examine(user), " "), "15 переносимого"), "Осмотр учитывает израсходованный ударом запас.")
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_clinging), "Удар через двойника снова замедляет оригинал.")
 	user.FlushCurrentAction()
 	blade.melee_attack_chain(user, effigy, null, NONE)
@@ -517,6 +525,8 @@
 	TEST_ASSERT(abs(victim.getBruteLoss() - 44) <= DAMAGE_PRECISION, "Двойник переносит не больше тридцати ушибов за два удара.")
 	TEST_ASSERT(QDELETED(effigy) && QDELETED(effect), "Исчерпание двойника разрывает связь.")
 	TEST_ASSERT_NULL(wax.active_effigy, "Знание освобождает ссылку на израсходованный оттиск.")
+	resource = wax.get_combat_resource_data()
+	TEST_ASSERT(!findtext(resource["description"], "Двойник:"), "После разрушения подсказка не показывает старую цель.")
 
 /// Разрушение двойника противником, преграда, антимагия и утрата знания разрывают связь.
 /datum/unit_test/heretic_wax_effigy_counterplay/Run()

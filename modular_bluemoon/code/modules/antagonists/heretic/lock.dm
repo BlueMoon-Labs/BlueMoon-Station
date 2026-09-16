@@ -843,7 +843,7 @@
 	if(!isliving(target))
 		return heretic_check(user, knowledge.can_open_lock(target, user), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
 	var/mob/living/victim = target
-	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
+	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.", target = victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/cast(list/targets, mob/living/user)
 	var/atom/target = targets[1]

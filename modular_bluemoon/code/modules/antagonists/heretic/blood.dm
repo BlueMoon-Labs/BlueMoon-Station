@@ -871,7 +871,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_blood/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	return heretic_check(user, blood?.valid_victim(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужен доступный живой противник без защиты от магии и чужой кровной связи.")
+	return heretic_check(user, blood?.valid_victim(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужен доступный живой противник без защиты от магии и чужой кровной связи.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	name = "Связать / взыскать"

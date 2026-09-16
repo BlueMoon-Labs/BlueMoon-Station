@@ -686,9 +686,9 @@
 	var/mob/living/victim = target
 	if(!heretic_check(user, victim.stat != DEAD, silent, "Выпад нельзя направить на мёртвую цель."))
 		return FALSE
-	if(!heretic_check(user, victim != user && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выпад нельзя направить на себя или другого служителя Мансуса."))
+	if(!heretic_check(user, victim != user && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выпад нельзя направить на себя или другого служителя Мансуса.", target = victim))
 		return FALSE
-	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии. Выпад её не достанет.")
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии. Выпад её не достанет.", target = victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_cast(mob/user, skipcharge, silent)
 	if(!..() || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/spell/blade_lunge) || !heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_blade, 1))
@@ -770,7 +770,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_feint/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic_check(user, isliving(target) && knowledge?.valid_feint_target(user, target), silent, "Нужен доступный для удара противник рядом с вами, без защиты от магии.")
+	return heretic_check(user, isliving(target) && knowledge?.valid_feint_target(user, target), silent, "Нужен доступный для удара противник рядом с вами, без защиты от магии.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_feint/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

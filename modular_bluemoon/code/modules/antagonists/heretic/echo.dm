@@ -70,6 +70,7 @@
 	var/echo_generation = 0
 	var/diagonal_echo = FALSE
 	var/hold_next_repeat = FALSE
+	var/datum/weakref/conductor_ref
 	var/ascension_active = FALSE
 	COOLDOWN_DECLARE(grasp_harvest)
 	COOLDOWN_DECLARE(ascended_resonance)
@@ -111,6 +112,7 @@
 /datum/eldritch_knowledge/base_echo/proc/clear_echo()
 	echo_generation++
 	hold_next_repeat = FALSE
+	conductor_ref = null
 	QDEL_LIST(attacks)
 	QDEL_LIST(resonators)
 	QDEL_LIST(marks)
@@ -143,6 +145,8 @@
 /datum/eldritch_knowledge/base_echo/get_combat_resource_data()
 	var/list/data = ..()
 	data["description"] = "[combat_resource_desc] Рисунок повторов: [diagonal_echo ? "диагонали" : "крест"]. Резонаторов: [length(resonators)] из [HERETIC_ECHO_RESONATOR_LIMIT]."
+	var/obj/structure/heretic_echo_resonator/conductor = conductor_ref?.resolve()
+	data["description"] += conductor ? " Лира направляет поздние отзвуки через выбранный резонатор. Связь требует открытой линии в семи клетках." : " Выберите свой резонатор щелчком лиры: он повторит Крещендо и Последнюю службу."
 	return data
 
 /datum/eldritch_knowledge/base_echo/proc/harvest(mob/living/user)
@@ -203,19 +207,22 @@
 			tiles += tile
 	return tiles
 
-/datum/eldritch_knowledge/base_echo/proc/make_pattern(turf/center, radius, shape, damage, stamina, relay = FALSE)
+/datum/eldritch_knowledge/base_echo/proc/make_pattern(turf/center, radius, shape, damage, stamina, relay = FALSE, directed = FALSE)
 	var/list/zones = list()
 	var/list/cells = pattern_turfs(center, radius, shape)
 	if(length(cells))
 		zones += list(list("center" = center, "cells" = cells, "radius" = radius, "damage" = damage, "stamina" = stamina))
-	if(relay)
+	if(relay || directed)
 		for(var/obj/structure/heretic_echo_resonator/resonator as anything in resonators)
+			if(directed && resonator != conductor_ref?.resolve())
+				continue
 			if(!resonator.valid_source() || !line_clear(echo_body, resonator, HERETIC_ECHO_LINK_RANGE))
 				continue
 			var/turf/relay_center = get_turf(resonator)
-			var/list/relay_cells = pattern_turfs(relay_center, 1, shape)
+			var/relay_radius = directed ? radius : 1
+			var/list/relay_cells = pattern_turfs(relay_center, relay_radius, shape)
 			if(length(relay_cells))
-				zones += list(list("center" = relay_center, "cells" = relay_cells, "radius" = 1, "damage" = damage, "stamina" = stamina, "resonator" = WEAKREF(resonator)))
+				zones += list(list("center" = relay_center, "cells" = relay_cells, "radius" = relay_radius, "damage" = damage, "stamina" = stamina, "resonator" = WEAKREF(resonator)))
 	return zones
 
 /datum/eldritch_knowledge/base_echo/proc/start_attack(mob/living/user, list/patterns, datum/eldritch_knowledge/required, immediate_first = FALSE)
@@ -272,7 +279,7 @@
 	var/resonance = combat_resource
 	var/list/patterns = list()
 	for(var/shape in list(HERETIC_ECHO_CROSS, HERETIC_ECHO_DIAGONALS, HERETIC_ECHO_RING))
-		patterns += list(make_pattern(center, HERETIC_ECHO_CRESCENDO_RADIUS, shape, 18 + 2 * resonance, 18 + 2 * resonance))
+		patterns += list(make_pattern(center, HERETIC_ECHO_CRESCENDO_RADIUS, shape, 18 + 2 * resonance, 18 + 2 * resonance, directed = TRUE))
 	if(!start_attack(user, patterns, required))
 		return FALSE
 	spend_combat_resource(resonance)
@@ -286,7 +293,7 @@
 		return FALSE
 	var/list/patterns = list()
 	for(var/radius in 1 to 3)
-		patterns += list(make_pattern(get_turf(user), radius, HERETIC_ECHO_RING, 32, 35))
+		patterns += list(make_pattern(get_turf(user), radius, HERETIC_ECHO_RING, 32, 35, directed = TRUE))
 	if(!start_attack(user, patterns, required))
 		return FALSE
 	new /obj/effect/temp_visual/heretic_echo/ascend(get_turf(user))
@@ -524,6 +531,12 @@
 /obj/structure/heretic_echo_resonator/proc/expire()
 	qdel(src)
 
+/obj/structure/heretic_echo_resonator/examine(mob/user)
+	. = ..()
+	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+	if(echo?.conductor_ref?.resolve() == src)
+		. += span_notice("Лира настроена на этот резонатор: он повторяет Крещендо и Последнюю службу. Разрушение узла обрывает его отзвуки.")
+
 /obj/structure/heretic_echo_resonator/attackby(obj/item/item, mob/living/user)
 	if(istype(item, /obj/item/nullrod))
 		qdel(src)
@@ -542,6 +555,8 @@
 	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
 	if(echo)
 		echo.resonators.Remove(src)
+		if(echo.conductor_ref && echo.conductor_ref == weak_reference)
+			echo.conductor_ref = null
 		echo.notify_resource_changed()
 	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
 	if(required)
@@ -703,12 +718,32 @@
 
 /obj/item/heretic_path_relic/echo_fork
 	name = "mourning lyre"
-	desc = "Ручная лира на колоколе-резонаторе. Применение в руке меняет крест и диагонали повторов Последнего удара и Припева. Alt-клик готовит удержание следующего повтора на 3 секунды, следующий Alt-клик выпускает его раньше. Голубой рисунок показывает удержанный звук; перед ударом он снова предупреждает за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка доступна раз в 10 секунд."
+	desc = "Ручная лира на колоколе-резонаторе. Применение в руке меняет крест и диагонали повторов Последнего удара и Припева. Alt-клик готовит удержание следующего повтора на 3 секунды, следующий Alt-клик выпускает его раньше. Голубой рисунок показывает удержанный звук; перед ударом он снова предупреждает за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка доступна раз в 10 секунд. Щёлкните лирой по своему резонатору в семи клетках: Крещендо и Последняя служба повторят вокруг него весь рисунок. Повторный щелчок снимает выбор. Нужна открытая линия к резонатору; пересечения одного такта не умножают урон."
 	icon = 'modular_bluemoon/icons/obj/heretic_echo.dmi'
 	icon_state = "echo_fork"
 
 /obj/item/heretic_path_relic/echo_fork/attack_self(mob/living/user)
 	return retune(user)
+
+/obj/item/heretic_path_relic/echo_fork/afterattack(atom/target, mob/living/user, proximity_flag, click_parameters)
+	if(!istype(target, /obj/structure/heretic_echo_resonator))
+		return ..()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/obj/structure/heretic_echo_resonator/resonator = target
+	if(!authorized(user) || !echo?.can_use(user) || resonator.echo_ref?.resolve() != echo || !resonator.valid_source() || !echo.line_clear(user, resonator, HERETIC_ECHO_LINK_RANGE))
+		return FALSE
+	var/obj/structure/heretic_echo_resonator/previous = echo.conductor_ref?.resolve()
+	previous?.set_light(0)
+	if(previous == resonator)
+		echo.conductor_ref = null
+		to_chat(user, span_eldritch("Вы снимаете настройку: поздние волны больше не повторяются резонатором."))
+	else
+		echo.conductor_ref = WEAKREF(resonator)
+		resonator.set_light(2, 1, "#85ccd4")
+		to_chat(user, span_eldritch("Выбранный резонатор светится голубым. Крещендо и Последняя служба прозвучат также вокруг него; пересечения одного такта не умножают урон."))
+	echo.notify_resource_changed()
+	return TRUE
 
 /obj/item/heretic_path_relic/echo_fork/AltClick(mob/living/user)
 	return hold_echo(user)
@@ -843,7 +878,7 @@
 
 /datum/eldritch_knowledge/echo_fork
 	name = "Поминальная лира"
-	desc = "Лист золота и металлический прут создают лиру. Применение в руке переключает крест и диагонали повторов Последнего удара и Припева, включая резонаторные. Alt-клик готовит удержание следующего повтора на 3 секунды; повторный Alt-клик выпускает его раньше или отменяет подготовку. Голубой рисунок сохраняет прежние клетки, затем даёт обычное предупреждение за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка раз в 10 секунд, выпуск свободный. Резонанс не расходуется; можно иметь одну лиру."
+	desc = "Лист золота и металлический прут создают лиру. Применение в руке переключает крест и диагонали повторов Последнего удара и Припева, включая резонаторные. Alt-клик готовит удержание следующего повтора на 3 секунды; повторный Alt-клик выпускает его раньше или отменяет подготовку. Голубой рисунок сохраняет прежние клетки, затем даёт обычное предупреждение за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка раз в 10 секунд, выпуск свободный. Резонанс не расходуется; можно иметь одну лиру. Щёлкните лирой по своему резонатору в семи клетках: Крещендо и Последняя служба повторят вокруг него весь рисунок. Повторный щелчок снимает выбор. Нужна открытая линия к резонатору; пересечения одного такта не умножают урон."
 	gain_text = "Я отпустил струны. Третья продолжала звучать, хотя я её не касался."
 	cost = 1
 	route = PATH_ECHO
@@ -867,6 +902,9 @@
 	if(echo)
 		echo.diagonal_echo = FALSE
 		echo.hold_next_repeat = FALSE
+		var/obj/structure/heretic_echo_resonator/conductor = echo.conductor_ref?.resolve()
+		conductor?.set_light(0)
+		echo.conductor_ref = null
 		for(var/datum/heretic_echo_attack/attack as anything in echo.attacks.Copy())
 			if(attack.held)
 				qdel(attack)
@@ -933,7 +971,7 @@
 
 /datum/eldritch_knowledge/spell/echo_crescendo
 	name = "Крещендо"
-	desc = "Расходует весь резонанс, минимум 2. Вокруг выбранной точки звучат крест, диагонали и кольцо радиусом три клетки. Каждый рисунок предупреждает за 0,8 секунды. Такт наносит по 18 ушибов и урона выносливости плюс по 2 за единицу резонанса: при запасе 4 — по 26. Повторное попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Двигайтесь между рисунками, чтобы уклониться. Перезарядка — 40 секунд."
+	desc = "Расходует весь резонанс, минимум 2. Вокруг выбранной точки звучат крест, диагонали и кольцо радиусом три клетки. Каждый рисунок предупреждает за 0,8 секунды. Такт наносит по 18 ушибов и урона выносливости плюс по 2 за единицу резонанса: при запасе 4 — по 26. Повторное попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Двигайтесь между рисунками, чтобы уклониться. Перезарядка — 40 секунд. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
 	gain_text = "Первым вступил один голос. Последним — хор, которому не хватало места под небом."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -949,7 +987,7 @@
 /datum/eldritch_knowledge/final_eldritch/echo_final
 	parallax_scene = ANTAG_SCENE_HERETIC_ECHO
 	name = "Регент Последнего Хора"
-	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение увеличивает предел резонанса до 8 и восстанавливает единицу каждые 8 секунд, пока вы способны действовать. Вы не нуждаетесь в дыхании и получаете на четверть меньше ушибов и ожогов. «Последняя служба» бесплатно выпускает три кольца радиусом 1, 2 и 3 клетки вокруг вашей прежней позиции. Каждое отмечает пол за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Перезарядка — 35 секунд."
+	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение увеличивает предел резонанса до 8 и восстанавливает единицу каждые 8 секунд, пока вы способны действовать. Вы не нуждаетесь в дыхании и получаете на четверть меньше ушибов и ожогов. «Последняя служба» бесплатно выпускает три кольца радиусом 1, 2 и 3 клетки вокруг вашей прежней позиции. Каждое отмечает пол за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Перезарядка — 35 секунд. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
 	gain_text = "Я поднял руку. Мёртвые не воскресли — они запели."
 	route = PATH_ECHO
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -1007,7 +1045,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_echo/final
 	name = "Последняя служба"
-	desc = "Вокруг прежней позиции расходятся три кольца радиусом 1, 2 и 3 клетки. Каждое предупреждает за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Не расходует резонанс. Требует вознесения."
+	desc = "Вокруг прежней позиции расходятся три кольца радиусом 1, 2 и 3 клетки. Каждое предупреждает за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Не расходует резонанс. Требует вознесения. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
 	charge_max = 35 SECONDS
 	action_icon_state = "echo_final"
 

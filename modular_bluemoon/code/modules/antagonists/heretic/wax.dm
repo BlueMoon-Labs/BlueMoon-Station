@@ -122,7 +122,21 @@
 /datum/eldritch_knowledge/base_wax/proc/tile_open(turf/tile)
 	return isopenturf(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE)
 
+/datum/eldritch_knowledge/base_wax/get_combat_resource_data()
+	var/list/data = ..()
+	var/datum/status_effect/heretic_wax/shell/shell = wax_body?.has_status_effect(/datum/status_effect/heretic_wax/shell)
+	var/consume_shell = wax_body?.a_intent == INTENT_DISARM
+	data["name"] = consume_shell ? "Воск: выброс оболочки" : "Воск: волна"
+	data["description"] = consume_shell ? "Сейчас «Снять печать» расходует оставшуюся оболочку и её лечение, создавая веер в пяти клетках. Чтобы выпустить обычную волну за 1 воск, смените намерение «Разоружить»." : "Сейчас «Снять печать» выпускает волну за 1 воск в трёх клетках перед вами. В намерении «Разоружить» вместо неё расходуется оболочка."
+	data["description"] += " [combat_resource_desc] Оболочка: [shell?.capacity || 0] защиты."
+	if(!QDELETED(active_effigy) && !QDELETED(active_effigy.effigy))
+		data["description"] += " Двойник: [active_effigy.owner.real_name], осталось [active_effigy.effigy.obj_integrity] переносимого урона и [round(max(0, active_effigy.duration - world.time) / (1 SECONDS), 0.1)] с. Бейте его своим восковым клинком."
+	return data
+
 /datum/eldritch_knowledge/base_wax/on_life(mob/user)
+	if(user && user == wax_body)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		heretic?.update_combat_resource_alert(FALSE, user)
 	if(!can_use(user) || !COOLDOWN_FINISHED(src, wax_recovery))
 		return
 	if(ascension_active || combat_resource < HERETIC_WAX_SHELL_COST)
@@ -231,6 +245,7 @@
 	QDEL_NULL(active_effigy)
 	if(heretic_can_affect(user, victim, chargecost = 0))
 		active_effigy = victim.apply_status_effect(/datum/status_effect/heretic_wax/effigy, src, required, effigy_capacity)
+	notify_resource_changed()
 	new /obj/effect/temp_visual/heretic_wax/burst(get_turf(victim), src)
 	playsound(victim, 'modular_bluemoon/sound/heretic/wax_impact.ogg', 55, TRUE)
 	return TRUE
@@ -370,6 +385,7 @@
 	if(!wax.tile_open(position))
 		position = get_turf(wax.wax_body)
 	effigy = new(position, src, effigy_capacity)
+	to_chat(wax.wax_body, span_eldritch("Рядом с вами появился золотистый двойник [owner.real_name]. Бейте его своим восковым клинком: до [HERETIC_WAX_EFFIGY_HIT_LIMIT] урона за удар, всего [effigy_capacity], в течение 8 секунд. Сохраняйте открытую линию к цели в пяти клетках."))
 	to_chat(owner, span_userdanger("Рядом с еретиком застыл ваш восковой двойник! Его клинок может ранить и замедлить вас через оттиск. Разбейте двойника, скройтесь за преградой или отойдите дальше пяти клеток от него или еретика!"))
 	return TRUE
 
@@ -388,6 +404,7 @@
 	if(effigy)
 		effigy.effect_ref = null
 	QDEL_NULL(effigy)
+	wax?.notify_resource_changed()
 	return ..()
 
 /atom/movable/screen/alert/status_effect/heretic_wax_effigy
@@ -417,6 +434,12 @@
 	set_light(1, 0.5, "#e8ca85")
 	max_integrity = capacity
 	obj_integrity = capacity
+
+/obj/structure/heretic_wax_effigy/examine(mob/user)
+	. = ..()
+	var/datum/status_effect/heretic_wax/effigy/effect = effect_ref?.resolve()
+	if(effect?.owner)
+		. += span_notice("Оттиск [effect.owner.real_name]: осталось [obj_integrity] переносимого урона и [round(max(0, effect.duration - world.time) / (1 SECONDS), 0.1)] с. Один удар воскового клинка переносит не больше [HERETIC_WAX_EFFIGY_HIT_LIMIT] урона.")
 
 /obj/structure/heretic_wax_effigy/attackby(obj/item/weapon, mob/living/user, params, attackchain_flags = NONE, damage_multiplier = 1)
 	if(istype(weapon, /obj/item/nullrod))
@@ -449,6 +472,7 @@
 	new /obj/effect/temp_visual/heretic_wax/burst(get_turf(victim), wax)
 	playsound(src, 'modular_bluemoon/sound/heretic/wax_impact.ogg', 55, TRUE)
 	take_damage(damage, BRUTE, MELEE)
+	wax.notify_resource_changed()
 	return STOP_ATTACK_PROC_CHAIN
 
 /obj/structure/heretic_wax_effigy/Destroy()
@@ -1020,7 +1044,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return heretic_check(user, wax?.can_use(user) && wax.combat_resource >= 1 && wax.line_clear(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужны 1 Воск и видимый противник без защиты от магии; стены перекрывают путь.")
+	return heretic_check(user, wax?.can_use(user) && wax.combat_resource >= 1 && wax.line_clear(user, target) && heretic_can_affect(user, target, chargecost = 0), silent, "Нужны 1 Воск и видимый противник без защиты от магии; стены перекрывают путь.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

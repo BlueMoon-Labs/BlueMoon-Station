@@ -834,7 +834,7 @@
 	if(!heretic_check(user, isliving(target) && target != user, silent, "Выберите тело живого противника, а не силуэт души."))
 		return FALSE
 	var/mob/living/victim = target
-	if(!heretic_check(user, !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Это союзник Мансуса: еретики и их слуги защищены от этой способности."))
+	if(!heretic_check(user, !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Это союзник Мансуса: еретики и их слуги защищены от этой способности.", target = victim))
 		return FALSE
 	if(!heretic_check(user, victim.stat != DEAD && isturf(victim.loc), silent, "Нужно живое тело вне шкафа или другого контейнера."))
 		return FALSE
@@ -842,7 +842,7 @@
 		return FALSE
 	if(!heretic_check(user, spirit.line_clear(user, victim, range), silent, "Цель должна быть не дальше [range] клеток по открытой линии без стен и преград."))
 		return FALSE
-	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии.")
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии.", target = victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	name = "Разлучение"

@@ -27,6 +27,28 @@
 	TEST_ASSERT(parry.can_cast(user, silent = TRUE), "Свободная вторая рука разрешает стойку.")
 	TEST_ASSERT_EQUAL(parry.charge_counter, parry.charge_max, "Отказы не расходуют заряд стойки.")
 
+/// Отказ по союзнику объясняет иммунитет и сохраняет заряд и воск.
+/datum/unit_test/heretic_ally_failure_feedback/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/datum/antagonist/heretic/ally = allocate_heretic(get_step(user, EAST))
+	var/obj/effect/proc_holder/spell/pointed/heretic_wax/imprint/spell = allocate(/obj/effect/proc_holder/spell/pointed/heretic_wax/imprint)
+	var/initial_resource = wax.combat_resource
+	TEST_ASSERT(!spell.can_target(ally.owner.current, user, TRUE), "Союзник остаётся защищённым от оттиска.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "союзник Мансуса"), "Причина называет союзный иммунитет.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, initial_resource, "Отказ не расходует воск.")
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Отказ не расходует заряд заклинания.")
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Обычный противник остаётся допустимой целью.")
+	TEST_ASSERT_NULL(spell.heretic_failure_reason, "Успешный выбор убирает старую причину отказа.")
+	user.Paralyze(1 SECONDS)
+	TEST_ASSERT(!spell.can_target(ally.owner.current, user, TRUE), "Оглушённый пользователь не может атаковать.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "не можете действовать"), "Оглушение имеет приоритет перед иммунитетом цели.")
+
 /// Руна показывает срок своего холода и предупреждает, когда каналу уже не хватит времени.
 /datum/unit_test/heretic_void_preparation_feedback/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
