@@ -43698,14 +43698,6 @@
 	},
 /turf/open/space,
 /area/space/nearstation)
-"fPG" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/cable/white{
-	icon_state = "1-2"
-	},
-/turf/open/space/basic,
-/turf/open/floor/plasteel,
-/area/security/prison/upper)
 "fPI" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -185490,7 +185482,7 @@ wFO
 ppd
 nyS
 qWu
-fPG
+wFO
 hIF
 jMr
 iPn
