@@ -199,6 +199,7 @@
 	if(synthetic)
 		can_drop = TRUE
 	AddComponent(/datum/component/butchering, 60, 80)
+	AddElement(/datum/element/ambidextria_attack, /obj/item/melee/arm_blade)
 
 /obj/item/melee/arm_blade/afterattack(atom/target, mob/user, proximity)
 	. = ..()
