@@ -208,7 +208,7 @@
 		По бокам костюма установлены теплоотводы, а для изоляции от \
 		коррозионных сред и внезапных ударов по суставам пользователя применены более совершенные технологии."
 	default_skin = "safeguard"
-	armor = list(MELEE = 45, BULLET = 10, LASER = 35, ENERGY = 40, BOMB = 40, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 50)
+	armor = list(MELEE = 50, BULLET = 10, LASER = 35, ENERGY = 40, BOMB = 40, BIO = 100, FIRE = 100, ACID = 100, WOUND = 30, RAD = 50)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -232,7 +232,7 @@
 		и блюспейс-обработку для поддержки широкого спектра модулей, а для скорости задействованы только лучшие приводы. \
 		Сходство с шлемом Gorlex Marauder — чистое совпадение."
 	default_skin = "magnate"
-	armor = list(MELEE = 40, BULLET = 35, LASER = 35, ENERGY = 60, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 15, RAD = 100)
+	armor = list(MELEE = 50, BULLET = 35, LASER = 35, ENERGY = 60, BOMB = 50, BIO = 100, FIRE = 100, ACID = 100, WOUND = 30, RAD = 100)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -269,7 +269,7 @@
 		С него свисает маленькая бирка с надписью: 'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует гарантию."
 	default_skin = "syndicate"
-	armor = list(MELEE = 50, BULLET = 35, LASER = 25, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 50, ACID = 90, WOUND = 25, RAD = 100)
+	armor = list(MELEE = 50, BULLET = 35, LASER = 25, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 50, ACID = 90, WOUND = 30, RAD = 100)
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
 	ui_theme = "syndicate"
@@ -291,7 +291,7 @@
 		'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует продолжительность жизни.'"
 	default_skin = "elite"
-	armor = list(MELEE = 60, BULLET = 45, LASER = 35, ENERGY = 50, BOMB = 55, BIO = 100, FIRE = 100, ACID = 100, WOUND = 25, RAD = 100)
+	armor = list(MELEE = 60, BULLET = 45, LASER = 35, ENERGY = 50, BOMB = 55, BIO = 100, FIRE = 100, ACID = 100, WOUND = 45, RAD = 100)
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -318,7 +318,7 @@
 		как и подразумевает забрало, не позволяя пользователю видеть на дальние расстояния. \
 		Однако способ складывания шлема довольно крутой."
 	default_skin = "prototype"
-	armor = list(MELEE = 20, BULLET = 0, LASER = 0, ENERGY = 10, BOMB = 50, BIO = 100, FIRE = 100, ACID = 75, WOUND = 5, RAD = 35)
+	armor = list(MELEE = 20, BULLET = 0, LASER = 0, ENERGY = 10, BOMB = 50, BIO = 100, FIRE = 100, ACID = 75, WOUND = 15, RAD = 35)
 	resistance_flags = FIRE_PROOF
 	cell_drain = VERY_HIGHT_CHARGE_DRAIN
 	ui_theme = "hackerman"
@@ -335,7 +335,7 @@
 		она сохраняет носителя в безопасности от суровой пустоты космоса, не жертвуя ни каплей скорости. \
 		Нося его, вы чувствуете крайнее почтение к тьме."
 	default_skin = "responsory"
-	armor = list(MELEE = 50, BULLET = 25, LASER = 35, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 100, ACID = 90, WOUND = 10, RAD = 0)
+	armor = list(MELEE = 50, BULLET = 25, LASER = 35, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 100, ACID = 90, WOUND = 45, RAD = 100)
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
