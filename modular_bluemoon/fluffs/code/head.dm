@@ -661,6 +661,112 @@
 	mob_overlay_icon = 'icons/mob/clothing/head.dmi'
 	icon_state = "visaventail"
 	item_state = "visaventail"
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	strip_delay = 80
+	dog_fashion = null
+	can_toggle = TRUE
+	toggle_message = "You pull the visor down on"
+	alt_toggle_message = "You push the visor up on"
+	actions_types = list(/datum/action/item_action/toggle)
+	visor_flags_inv = HIDEEYES|HIDEFACE|HIDESNOUT
+	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	toggle_cooldown = 0
+	active_sound = 'sound/machines/closet_open.ogg'
+	dynamic_hair_suffix = ""
+	dynamic_fhair_suffix = ""
+	var/detail_tag
+	var/detail_color
+	var/altdetail_tag
+	var/altdetail_color
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/examine(mob/user)
+	. = ..()
+	. += span_notice("You can add a <b>feather</b> for a colored plume, or a sheet of <b>cloth</b> for an orle.")
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/attack_self(mob/user)
+	if(can_toggle && !user.incapacitated())
+		if(world.time > cooldown + toggle_cooldown)
+			cooldown = world.time
+			up = !up
+			flags_inv ^= visor_flags_inv
+			flags_cover ^= visor_flags_cover
+			icon_state = "[initial(icon_state)][up ? "_t" : ""]"
+			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
+			update_icon()
+			user.update_inv_head()
+			if(iscarbon(user))
+				var/mob/living/carbon/C = user
+				C.head_update(src, forced = 1)
+			if(active_sound && up)
+				playsound(src.loc, active_sound, 100, 0, 4)
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/attackby(obj/item/W, mob/living/user, params)
+	. = ..()
+	if(istype(W, /obj/item/feather) && !detail_tag)
+		var/choice = input(user, "Choose a color.", "Plume") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
+		if(!choice)
+			return
+		detail_color = (choice in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choice] : GLOB.aventail_detail_colors[choice]
+		detail_tag = "_detail"
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		qdel(W)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+	if(istype(W, /obj/item/stack/sheet/cloth) && !altdetail_tag)
+		var/obj/item/stack/sheet/cloth/C = W
+		if(C.amount < 1)
+			return
+		var/choicealt = input(user, "Choose a color.", "Orle") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
+		if(!choicealt)
+			return
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		altdetail_color = (choicealt in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choicealt] : GLOB.aventail_detail_colors[choicealt]
+		altdetail_tag = "_detailalt"
+		C.use(1)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/update_icon_state()
+	icon_state = "[initial(icon_state)][up ? "_t" : ""]"
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/update_icon()
+	cut_overlays()
+	update_icon_state()
+	if(detail_tag)
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(detail_color)
+			pic.color = detail_color
+		add_overlay(pic)
+	if(altdetail_tag)
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(altdetail_color)
+			pic2.color = altdetail_color
+		add_overlay(pic2)
+
+/obj/item/clothing/head/donator/bm/hounskull_with_aventail/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
+	. = ..()
+	if(isinhands)
+		return
+	if(detail_tag)
+		var/mutable_appearance/pic = mutable_appearance(icon(icon_file, "[used_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(detail_color)
+			pic.color = detail_color
+		. += pic
+	if(altdetail_tag)
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon_file, "[used_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(altdetail_color)
+			pic2.color = altdetail_color
+		. += pic2
 
 /obj/item/clothing/head/helmet/riot/melatonin_helmet
 	DONATE_ITEM_TOOLTIP_PARENT
