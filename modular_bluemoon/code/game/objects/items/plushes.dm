@@ -1035,3 +1035,14 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 
 #undef BASIC_ARIRAL_SKIN
 #undef ALT_ARIRAL_SKIN
+
+/obj/item/toy/plush/bm/tau
+	name = "Tau Plushie"
+	desc = "Sauce"
+	icon_state = "tau"
+	squeak_override = list('modular_bluemoon/sound/emotes/snakedies.ogg' = 1)
+	can_you_fuck_plush = FALSE
+
+/obj/item/toy/plush/bm/tau/emag_act()
+	. = ..()
+	icon_state = "tau_alt" //so much true/// it's a crime https://klipy.com/gifs/true-true-true-1

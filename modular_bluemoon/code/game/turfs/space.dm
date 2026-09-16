@@ -27,9 +27,13 @@
 	description = "Listening stations form the backbone of the syndicate's information gathering operations. \
 	Assignment to these stations is dreaded by most agents, as it entails long and lonely shifts listening to nearby stations chatter incessently about the most meaningless things."
 	allow_duplicates = FALSE
-	always_place = TRUE
+	unpickable = TRUE
 	suffix = "inteq_listening_default.dmm"
 	var/variant_chosen = FALSE
+
+/datum/map_template/ruin/space/listeningstation/New()
+	. = ..()
+	SSticker?.OnRoundstart(CALLBACK(src, PROC_REF(late_spawn)))
 
 /datum/map_template/ruin/space/listeningstation/proc/choose_variant()
 	if(variant_chosen)
@@ -41,6 +45,12 @@
 		suffix = pick("inteq_listening_default.dmm", "inteq_listening_cult.dmm", "inteq_listening_syndicate.dmm")
 	mappath = prefix + suffix
 	preload_size(mappath)
+
+/datum/map_template/ruin/space/listeningstation/proc/late_spawn()
+	var/list/space_levels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
+	if(!length(space_levels))
+		return
+	try_to_place(pick(space_levels), list(/area/space))
 
 /datum/map_template/ruin/space/listeningstation/try_to_place(z, allowed_areas, forced_turf)
 	choose_variant()

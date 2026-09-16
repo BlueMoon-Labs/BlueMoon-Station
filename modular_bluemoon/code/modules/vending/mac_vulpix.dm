@@ -35,3 +35,10 @@
 /obj/item/vending_refill/max_vulpix
 	machine_name = "MacVulpix Deluxe Food"
 	icon_state = "refill_snack"
+
+/datum/supply_pack/vending/max_vulpix
+	name = "MacVulpix Deluxe Supply Crate"
+	desc = "Одна заправка в торговом автомате, приносящая добро! Рекомендованный стоматологом номер один заказ!"
+	cost = 1500
+	contains = list(/obj/item/vending_refill/max_vulpix)
+	crate_name = "MacVulpix Deluxe Supply crate"

@@ -12790,7 +12790,7 @@
 /area/awaymission/wildwest/vault)
 "XL" = (
 /obj/structure/table/reinforced,
-/obj/item/documents/syndicate/red,
+/obj/item/documents/inteq,
 /turf/open/floor/mineral/titanium/yellow,
 /area/awaymission/wildwest/refine)
 "XM" = (

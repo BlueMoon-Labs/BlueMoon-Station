@@ -1759,4 +1759,16 @@
 	TEST_ASSERT(!pilot.ranged, "The ejected pilot must fall back to melee stats")
 	mech_loop = ride.move_packet ? ride.move_packet.existing_loops[SSai_movement] : null
 	TEST_ASSERT_NULL(mech_loop, "Ejecting must stop the mech's movement loops")
+
+	//задержка залезания: после эвакуации пилот не садится в новый мех мгновенно
+	var/turf/ride_turf = get_step(mech_turf, SOUTH)
+	var/obj/vehicle/sealed/mecha/combat/gygax/second_ride = allocate(/obj/vehicle/sealed/mecha/combat/gygax, ride_turf)
+	pilot.forceMove(get_step(ride_turf, WEST))
+	pilot.next_mecha_entry_time = world.time + 6 SECONDS
+	TEST_ASSERT(pilot.try_enter_mecha(second_ride), "A fresh theft attempt must be accepted")
+	TEST_ASSERT_NULL(pilot.mecha, "The pilot must not board instantly during the entry delay")
+	TEST_ASSERT_EQUAL(pilot.pending_entry_mecha, second_ride, "The boarding attempt must mark the pending mech")
+	pilot.next_mecha_entry_time = 0
+	TEST_ASSERT(pilot.try_enter_mecha(second_ride), "After the delay the theft attempt must complete")
+	TEST_ASSERT_EQUAL(pilot.mecha, second_ride, "After the delay the pilot boards the mech")
 	controller.CancelActions()
