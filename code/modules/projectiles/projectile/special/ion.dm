@@ -6,6 +6,11 @@
 	nodamage = TRUE
 	flag = ENERGY
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/ion
+	light_range = 2
+	light_power = 0.9
+	light_color = LIGHT_COLOR_LIGHTBLUE // синий для ионок
+	glow_icon = 'icons/obj/projectiles.dmi'
+	glow_icon_state = "ion"
 	var/emp_radius = 1
 
 /obj/item/projectile/ion/on_hit(atom/target, blocked = FALSE)

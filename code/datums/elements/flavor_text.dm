@@ -170,40 +170,41 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 	switch(chosen)
 		if("Флавор")
 			var/mob/living/carbon/our_mob = src
-			var/new_text = tgui_input_text(our_mob, "Введите новый флавор (максимум [MAX_FLAVOR_LEN] символов).", "Новый флавор", our_mob.dna.flavor_text, MAX_FLAVOR_LEN, TRUE, TRUE)
-			if(new_text)
-				our_mob.dna.flavor_text = new_text
+			var/new_text = tgui_input_text(our_mob, "Введите новый флавор (максимум [MAX_FLAVOR_LEN] символов).\nФорматирование: *курсив* !жирный! -=RRGGBB цвет=- ((мелкий)) |центр| и ссылки.", "Новый флавор", our_mob.dna.flavor_text, MAX_FLAVOR_LEN, TRUE, FALSE)
+			if(!isnull(new_text))
+				our_mob.dna.flavor_text = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 		if("Обнажённый Флавор")
 			var/mob/living/carbon/our_mob = src
-			var/new_text = tgui_input_text(our_mob, "Введите новый флавор обнажённого тела своего персонажа (максимум [MAX_FLAVOR_LEN] символов).", "Новый обнажённый флавор", our_mob.dna.naked_flavor_text, MAX_FLAVOR_LEN, TRUE, TRUE)
-			if(new_text)
-				our_mob.dna.naked_flavor_text = new_text
+			var/new_text = tgui_input_text(our_mob, "Введите новый флавор обнажённого тела своего персонажа (максимум [MAX_FLAVOR_LEN] символов).\nФорматирование: *курсив* !жирный! -=цвет=-", "Новый обнажённый флавор", our_mob.dna.naked_flavor_text, MAX_FLAVOR_LEN, TRUE, FALSE)
+			if(!isnull(new_text))
+				our_mob.dna.naked_flavor_text = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 		if("Лор Расы")
 			var/mob/living/carbon/our_mob = src
-			var/new_text = tgui_input_text(our_mob, "Введите новый лор биологического (или не совсем биологического) вида своего персонажа (максимум [MAX_FLAVOR_LEN] символов).", "Новый лор расы", our_mob.dna.custom_species_lore, MAX_FLAVOR_LEN, TRUE, TRUE)
-			if(new_text)
-				our_mob.dna.custom_species_lore = new_text
+			var/new_text = tgui_input_text(our_mob, "Введите новый лор биологического (или не совсем биологического) вида своего персонажа (максимум [MAX_FLAVOR_LEN] символов).\nФорматирование: *курсив* !жирный! -=цвет=-", "Новый лор расы", our_mob.dna.custom_species_lore, MAX_FLAVOR_LEN, TRUE, FALSE)
+			if(!isnull(new_text))
+				our_mob.dna.custom_species_lore = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 		if("OOC-заметки")
 			if(iscarbon(src))
 				var/mob/living/carbon/our_mob = src
-				var/new_text = tgui_input_text(our_mob, "Введите новые ООС-заметки своего персонажа (максимум [MAX_FLAVOR_LEN] символов).", "Новые ООС-заметки", our_mob.dna.ooc_notes, MAX_FLAVOR_LEN, TRUE, TRUE)
-				if(new_text)
-					our_mob.dna.ooc_notes = new_text
+				var/new_text = tgui_input_text(our_mob, "Введите новые ООС-заметки своего персонажа (максимум [MAX_FLAVOR_LEN] символов).\nФорматирование: *курсив* !жирный! -=цвет=-", "Новые ООС-заметки", our_mob.dna.ooc_notes, MAX_FLAVOR_LEN, TRUE, FALSE)
+				if(!isnull(new_text))
+					our_mob.dna.ooc_notes = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 			if(issilicon(src))
 				var/mob/living/silicon/our_borgy = src
-				var/new_text = tgui_input_text(our_borgy, "Введите новые ООС-заметки своего киборга (максимум [MAX_FLAVOR_LEN] символов).", "Новые ООС-заметки", our_borgy.mind.ooc_notes, MAX_FLAVOR_LEN, TRUE, TRUE)
-				if(new_text)
-					our_borgy.mind.ooc_notes = new_text
+				var/new_text = tgui_input_text(our_borgy, "Введите новые ООС-заметки своего киборга (максимум [MAX_FLAVOR_LEN] символов).\nФорматирование: *курсив* !жирный! -=цвет=-", "Новые ООС-заметки", our_borgy.mind.ooc_notes, MAX_FLAVOR_LEN, TRUE, FALSE)
+				if(!isnull(new_text))
+					our_borgy.mind.ooc_notes = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 		if("Временный Флавор (Поза)")
 			var/mob/living/our_mob = src
-			var/new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа (максимум 1024 символа).", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)
-			our_mob.tempflavor = new_text
+			var/new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа (максимум 1024 символа).\nФорматирование: *курсив* !жирный! -=цвет=-", "Новая поза", our_mob.tempflavor, 1024, TRUE, FALSE)
+			if(!isnull(new_text))
+				our_mob.tempflavor = copytext_char(new_text, 1, 1024)
 		if("Синтетический флавор")
 			var/mob/living/silicon/our_borgy = src
 			if(our_borgy.mind)
-				var/new_text = tgui_input_text(our_borgy, "Введите новый синт-флавор (максимум [MAX_FLAVOR_LEN] символов). Изменения действуют только в течении раунда и не затрагивают сами преференсы.", "Новый синт-флавор", our_borgy.mind.silicon_flavor_text, MAX_FLAVOR_LEN, TRUE, TRUE)
-				if(new_text)
-					our_borgy.mind.silicon_flavor_text = new_text
+				var/new_text = tgui_input_text(our_borgy, "Введите новый синт-флавор (максимум [MAX_FLAVOR_LEN] символов). Изменения действуют только в течении раунда и не затрагивают сами преференсы.\nФорматирование: *курсив* !жирный! -=цвет=-", "Новый синт-флавор", our_borgy.mind.silicon_flavor_text, MAX_FLAVOR_LEN, TRUE, FALSE)
+				if(!isnull(new_text))
+					our_borgy.mind.silicon_flavor_text = copytext_char(new_text, 1, MAX_FLAVOR_LEN)
 		if("Хедшоты", "Хедшоты без одежды")
 			var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)$", "i")
 
@@ -293,9 +294,11 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 
 	var/new_text = ""
 	if(our_mob.client?.prefs.tgui_input_verbs)
-		new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа.", "Новая поза", our_mob.tempflavor, 1024, TRUE, TRUE)
+		new_text = tgui_input_text(our_mob, "Введите новую позу своего персонажа.\nФорматирование: *курсив* !жирный! -=цвет=-", "Новая поза", our_mob.tempflavor, 1024, TRUE, FALSE)
 	else
 		new_text = stripped_multiline_input_or_reflect(our_mob, "Введите новую позу своего персонажа.", "Новая поза")
+	if(!isnull(new_text))
+		new_text = copytext_char(new_text, 1, 1024)
 
 	our_mob.tempflavor = new_text
 

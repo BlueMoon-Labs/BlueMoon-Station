@@ -257,7 +257,10 @@
 	var/turf/t_loc = get_turf(src)
 	if(!t_loc) // пену могли убрать из мира (kill_foam/подбор) между постановкой в очередь и спредом
 		return
-	for(var/turf/T in t_loc.GetAtmosAdjacentTurfs())
+	var/list/adjacent_turfs = t_loc.atmos_adjacent_turfs
+	var/copied_adjacency = FALSE
+	for(var/adjacent_index in 1 to length(adjacent_turfs))
+		var/turf/T = adjacent_turfs[adjacent_index]
 		var/obj/effect/particle_effect/foam/foundfoam = locate() in T //Don't spread foam where there's already foam!
 		if(foundfoam)
 			continue
@@ -265,6 +268,10 @@
 		if(is_type_in_typecache(T, blacklisted_turfs))
 			continue
 
+		// Реакция на мобе может изменить соседство; до неё снимок не нужен.
+		if(!copied_adjacency)
+			adjacent_turfs = adjacent_turfs.Copy()
+			copied_adjacency = TRUE
 		for(var/mob/living/L in T)
 			foam_mob(L)
 		var/obj/effect/particle_effect/foam/F = new src.type(T)

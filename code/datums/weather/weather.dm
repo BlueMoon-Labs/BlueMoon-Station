@@ -46,6 +46,9 @@
 	/// Area overlay while weather is ending
 	var/end_overlay
 
+	/// Сообщение конца для priority_announce() некоторых ивентов погоды
+	var/priority_end_message = ""
+
 	/// Types of area to affect
 	var/area_type = /area/space
 	/// TRUE value protects areas with outdoors marked as false, regardless of area type

@@ -1,8 +1,8 @@
 /obj/item/clothing/mask/cigarette/pipe/crackpipe
 	name = "crack pipe"
 	desc = "A slick, glass pipe made for smoking one thing: crack."
-	icon = 'modular_bluemoon/cocaine/icons/crack.dmi'
-	mob_overlay_icon = 'modular_bluemoon/cocaine/icons/mask.dmi'
+	icon = 'modular_bluemoon/icons/obj/clothing/mask/glass_pipe.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/mask/glass_pipe.dmi'
 	icon_state = "glass_pipeoff"
 	icon_on = "glass_pipeon"
 	icon_off = "glass_pipeoff"

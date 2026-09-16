@@ -174,6 +174,11 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/toy/fluff/tennis_poly/tri/squeak/rainbow
 
+/datum/gear/donator/caligram
+	name = "Caligram's Tactical Turtleneck"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/caligram
+
 /datum/gear/donator/syndicate
 	name = "Syndicate's Tactical Turtleneck"
 	slot = ITEM_SLOT_ICLOTHING
@@ -321,6 +326,11 @@
 	name = "S.T.A.L.K.E.R. mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/stalker
+
+/datum/gear/donator/cybersun
+	name = "Cybersun mask"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/sechailer/syndicate/cybersun
 
 /datum/gear/donator/stripedcollar
 	name = "Striped collar"

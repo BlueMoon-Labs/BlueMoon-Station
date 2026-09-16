@@ -36,7 +36,6 @@ jobs:
           tools/bootstrap/python -c ''
       - name: Run Linters
         run: |
-          touch ${GITHUB_WORKSPACE}/output-annotations.txt
           bash tools/ci/check_filedirs.sh tgstation.dme
           bash tools/ci/check_changelogs.sh
           bash tools/ci/check_grep.sh
@@ -45,13 +44,8 @@ jobs:
           tools/build/build --ci lint
           tools/bootstrap/python -m dmi.test
           tools/bootstrap/python -m mapmerge2.dmm_test
-          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1 || true
-      - name: Annotate Lints
-        if: always()
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-        with:
-          outputFile: output-annotations.txt
+      - name: Run DreamChecker
+        run: ~/dreamchecker -e tgstation.dme
 
   compile_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
@@ -76,14 +70,13 @@ jobs:
     outputs:
       maps: ${{ steps.map_finder.outputs.maps }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Find Maps
         id: map_finder
         run: |
-          echo "$(ls -mw0 _maps/*.json)" > maps_output.txt
-          sed -i -e s+_maps/+\"+g -e s+.json+\"+g maps_output.txt
-          echo "Maps: $(cat maps_output.txt)"
-          echo "::set-output name=maps::{\"paths\":[$(cat maps_output.txt)]}"
+          maps=$(printf '%s\n' _maps/*.json | jq -Rsc '{paths: split("\n")[:-1] | map(ltrimstr("_maps/") | rtrimstr(".json"))}')
+          echo "Maps: $maps"
+          echo "maps=$maps" >> "$GITHUB_OUTPUT"
   run_all_tests:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Integration Tests
@@ -140,7 +133,6 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: ci-logs
+          name: ci-logs-${{ matrix.map }}
           path: ci_test/data/logs/ci/*.log
           if-no-files-found: ignore
-          overwrite: true
