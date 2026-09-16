@@ -742,3 +742,143 @@
 	laboratory.air.clear()
 	TEST_ASSERT(arena.reset_zone("laboratory"), "Сектор сбрасывается.")
 	TEST_ASSERT(laboratory.air.return_pressure() >= ONE_ATMOSPHERE * 0.8, "Сброс восстанавливает воздух сектора.")
+
+/// Учебная выдача на всех путях сохраняет владельца, ограничения реликвий и изоляцию.
+/datum/unit_test/antag_training_recipe_results/Run()
+	var/datum/antag_training_session/anchor = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(anchor.prepare(), "Полигон подготовлен.")
+	var/old_warning = GLOB.heretic_threat_warning_until
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/antag_training_session/session = allocate_training_session()
+		TEST_ASSERT(session.prepare(anchor.arena), "Участник входит на общий полигон.")
+		TEST_ASSERT(session.prepare_path(path_id, 9), "Подготовлен путь [path_id].")
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(session.current_body)
+		TEST_ASSERT_EQUAL(heretic.path_stage, 9, "Открыты девять ступеней [path_id].")
+		TEST_ASSERT(!heretic.ascended, "Подготовка не возносит персонажа.")
+		for(var/knowledge_type in heretic.researched_knowledge)
+			var/datum/eldritch_knowledge/recipe = heretic.researched_knowledge[knowledge_type]
+			if(!length(recipe.result_atoms))
+				continue
+			session.next_supply_at = 0
+			TEST_ASSERT(session.issue_recipe(recipe), "Выдан результат [recipe.name].")
+			var/datum/weakref/item_ref = session.arena.issued_items[length(session.arena.issued_items)]
+			var/obj/item/item = item_ref.resolve()
+			TEST_ASSERT(item, "Выдача учтена в общем лимите.")
+			TEST_ASSERT_EQUAL(item.training_owner?.resolve(), session, "Выдача принадлежит сеансу.")
+			item.forceMove(run_loc_floor_bottom_left)
+			TEST_ASSERT_EQUAL(get_area(item), session.arena.room, "Предмет не покидает полигон.")
+			if(istype(item, /obj/item/heretic_path_relic))
+				var/obj/item/heretic_path_relic/relic = item
+				TEST_ASSERT_EQUAL(relic.creator?.resolve(), session.avatar_mind, "Реликвия привязана к разуму.")
+				TEST_ASSERT_EQUAL(relic.knowledge_ref?.resolve(), recipe, "Реликвия привязана к знанию.")
+				session.next_supply_at = 0
+				TEST_ASSERT(!session.issue_recipe(recipe), "Вторая уникальная реликвия не выдаётся.")
+			if(istype(item, /obj/item/melee/sickly_blade/duelist))
+				var/obj/item/melee/sickly_blade/duelist/blade = item
+				TEST_ASSERT_EQUAL(blade.bound_mind, session.avatar_mind, "Клинок привязан к владельцу.")
+				var/mob/living/carbon/human/user = session.avatar
+				user.drop_all_held_items()
+				user.put_in_hands(blade)
+				var/datum/eldritch_knowledge/base_blade/duelist = recipe
+				TEST_ASSERT_EQUAL(duelist.held_blade(user), blade, "Способности признают выданный клинок.")
+			qdel(item)
+		qdel(session)
+	TEST_ASSERT_EQUAL(GLOB.heretic_threat_warning_until, old_warning, "Подготовка путей не предупреждает станцию.")
+
+/// Рецепты, комплекты и упражнения соблюдают квоты и не трогают чужие цели.
+/datum/unit_test/antag_training_practice_limits/Run()
+	var/datum/antag_training_session/session = allocate_training_session()
+	TEST_ASSERT(session.prepare(), "Полигон подготовлен.")
+	var/datum/antag_training_session/other = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(other.prepare(session.arena), "Второй участник вошёл.")
+	var/mob/living/foreign = session.arena.spawn_creature("human", "laboratory", FALSE, other)
+	TEST_ASSERT(session.issue_kit("medicine"), "Выдан комплект первой помощи.")
+	TEST_ASSERT_EQUAL(session.arena.supply_count, 3, "Комплект учитывает каждый предмет.")
+	TEST_ASSERT(!session.issue_kit("medicine"), "Частая выдача отклоняется.")
+	TEST_ASSERT(session.start_practice("medicine"), "Подготовлен пациент.")
+	var/mob/living/patient = session.practice_target.resolve()
+	TEST_ASSERT(patient.health < patient.maxHealth, "У пациента есть повреждения.")
+	patient.revive(full_heal = TRUE, admin_revive = TRUE)
+	session.update_practice()
+	TEST_ASSERT(session.practice_complete, "Восстановление пациента завершает упражнение.")
+	TEST_ASSERT(session.measurement.healing > 0, "Лечение измерено отдельно.")
+	session.arena.next_spawn_at = 0
+	TEST_ASSERT(session.start_practice("combat"), "Повтор заменяет личную цель.")
+	TEST_ASSERT(QDELETED(patient), "Прежний пациент удалён.")
+	TEST_ASSERT(!QDELETED(foreign), "Чужая цель остаётся.")
+	TEST_ASSERT_EQUAL(length(session.arena.targets), 2, "Повтор не накапливает цели.")
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(session.current_body)
+	var/datum/eldritch_knowledge/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/living_heart)
+	session.next_supply_at = 0
+	var/supplies_before = session.arena.supply_count
+	TEST_ASSERT(session.issue_recipe(recipe, TRUE), "Компоненты сердца, включая лужу крови, выдаются.")
+	TEST_ASSERT_EQUAL(session.arena.supply_count - supplies_before, 3, "Каждый компонент учитывается в квоте.")
+	session.next_supply_at = 0
+	TEST_ASSERT(session.prepare_path(PATH_ASH, 9), "Подготовлен путь для проверки обряда.")
+	session.program.handle_choice(session, session.current_body, "Подготовить вознесение")
+	var/datum/eldritch_knowledge/final_eldritch/final_recipe = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/ash_final)
+	session.next_supply_at = 0
+	session.arena.next_spawn_at = 0
+	TEST_ASSERT(session.issue_recipe(final_recipe, TRUE), "Выданы тела для настоящего обряда.")
+	TEST_ASSERT_EQUAL(length(session.arena.targets), 2 + HERETIC_ASCENSION_BODIES, "Повторяющиеся компоненты создают нужное число тел.")
+	TEST_ASSERT(!heretic.ascended, "Выдача компонентов сама не проводит обряд.")
+	var/mob/living/occupied = session.practice_target.resolve()
+	other.avatar_mind.transfer_to(occupied)
+	session.update_practice()
+	TEST_ASSERT(session.measurement.stopped, "Замер прекращается, если цель занята участником.")
+	session.arena.next_spawn_at = 0
+	TEST_ASSERT(!session.start_practice("combat"), "Повтор не удаляет занятое тело.")
+	TEST_ASSERT(!QDELETED(occupied), "Занятое тело сохраняется после попытки повтора.")
+	while(session.arena.supply_count < ANTAG_TRAINING_SUPPLY_LIMIT)
+		session.arena.issue_item(/obj/item/pen, session.arena.entry_turf, creator = session)
+	session.next_supply_at = 0
+	TEST_ASSERT(!session.issue_recipe(recipe), "Рецепт не превышает общий лимит.")
+	TEST_ASSERT(!session.issue_kit("medicine"), "Комплект не выдаётся частично при нехватке квоты.")
+	TEST_ASSERT_EQUAL(session.arena.supply_count, ANTAG_TRAINING_SUPPLY_LIMIT, "Лимит сохранён.")
+
+/// Замер разделяет повреждения и лечение и прекращается вместе с упражнением.
+/datum/unit_test/antag_training_measurement/Run()
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human)
+	var/datum/antag_training_measurement/measurement = allocate(/datum/antag_training_measurement, target)
+	target.adjustOxyLoss(30)
+	TEST_ASSERT_EQUAL(measurement.damage, 30, "Зафиксирован фактический урон.")
+	target.adjustOxyLoss(-10)
+	TEST_ASSERT_EQUAL(measurement.healing, 10, "Лечение посчитано отдельно.")
+	TEST_ASSERT_EQUAL(measurement.last_damage, 30, "Лечение не становится последним ударом.")
+	target.adjustOxyLoss(100)
+	TEST_ASSERT_NOTNULL(measurement.critical_after, "Зафиксировано время до крита, включая нулевое.")
+	measurement.stop()
+	target.adjustOxyLoss(10)
+	TEST_ASSERT_EQUAL(measurement.damage, 130, "После остановки обработчик отключён.")
+
+/// Вызов требует согласия соперника, арена закрывается для посторонних, крит завершает бой.
+/datum/unit_test/antag_training_duel/Run()
+	var/datum/antag_training_session/first = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(first.prepare(), "Полигон подготовлен.")
+	var/datum/antag_training_session/second = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(second.prepare(first.arena), "Второй участник вошёл.")
+	var/datum/antag_training_session/outsider = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(outsider.prepare(first.arena), "Третий участник вошёл.")
+	TEST_ASSERT(first.request_duel(second), "Создано приглашение.")
+	var/datum/antag_training_duel/duel = first.arena.duel
+	TEST_ASSERT(!duel.accept(first), "Сам инициатор не принимает приглашение.")
+	TEST_ASSERT(!duel.accept(outsider), "Посторонний не принимает приглашение.")
+	TEST_ASSERT(duel.accept(second), "Соперник принимает вызов.")
+	TEST_ASSERT_EQUAL(duel.phase, "countdown", "Перед боем идёт отсчёт.")
+	outsider.current_body.forceMove(first.arena.zones["melee"]["spawn"])
+	TEST_ASSERT_NOTEQUAL(first.arena.match_zone(outsider.current_body), "melee", "Посторонний не входит на занятую арену.")
+	TEST_ASSERT_NULL(first.arena.spawn_creature("bear", "melee", TRUE, outsider), "В занятой арене нельзя создать противника.")
+	duel.deadline = world.time
+	duel.process()
+	TEST_ASSERT_EQUAL(duel.phase, "active", "Отсчёт завершён.")
+	second.current_body.adjustOxyLoss(110)
+	TEST_ASSERT_NULL(first.arena.duel, "Крит завершает дуэль.")
+	TEST_ASSERT(findtext(first.last_duel_result, first.current_body.real_name), "Победитель записан в результате.")
+	first.next_duel_at = 0
+	second.heal_self()
+	TEST_ASSERT(first.request_duel(second), "После восстановления доступен реванш.")
+	TEST_ASSERT(first.arena.duel.accept(second), "Соперник согласен на реванш.")
+	first.heal_self()
+	TEST_ASSERT_NULL(first.arena.duel, "Кнопка лечения завершает попытку.")
+	outsider.current_body.forceMove(first.arena.zones["melee"]["spawn"])
+	TEST_ASSERT_EQUAL(first.arena.match_zone(outsider.current_body), "melee", "После дуэли арена открыта.")

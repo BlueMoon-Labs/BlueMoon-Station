@@ -37,6 +37,10 @@ GLOBAL_LIST_INIT(antag_training_equipment, list(
 	"plasteel" = list("name" = "Пласталь — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/plasteel, "amount" = 50),
 	"wood" = list("name" = "Дерево — 50 досок", "category" = "Материалы", "type" = /obj/item/stack/sheet/mineral/wood, "amount" = 50),
 	"cable" = list("name" = "Кабель — 30 отрезков", "category" = "Материалы", "type" = /obj/item/stack/cable_coil, "amount" = 30),
+	"cloth" = list("name" = "Ткань — 10 отрезков", "category" = "Материалы", "type" = /obj/item/stack/sheet/cloth, "amount" = 10),
+	"silver" = list("name" = "Серебро — 10 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/mineral/silver, "amount" = 10),
+	"candle" = list("name" = "Свеча", "category" = "Инструменты", "type" = /obj/item/candle),
+	"matches" = list("name" = "Спички", "category" = "Инструменты", "type" = /obj/item/storage/box/matches),
 	"rods" = list("name" = "Прутья — 50 штук", "category" = "Материалы", "type" = /obj/item/stack/rods, "amount" = 50),
 	"rglass" = list("name" = "Армированное стекло — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/rglass, "amount" = 50),
 	"plastic" = list("name" = "Пластик — 50 листов", "category" = "Материалы", "type" = /obj/item/stack/sheet/plastic, "amount" = 50),
@@ -123,6 +127,8 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 			break
 		tile = tile.ChangeTurf(is_wall && !is_door ? /turf/closed/indestructible : /turf/open/floor/plating)
 		tile.color = null
+		if(inside_bounds(tile, zones["hub"]["bounds"]))
+			tile.color = "#87b6a4"
 		if(is_door)
 			new /obj/structure/antag_training_barrier(tile, src)
 	if(!zone_id || zone_id == "pve")
@@ -177,6 +183,7 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		return FALSE
 	next_reset_at = world.time + 5 SECONDS
 	resetting = TRUE
+	duel?.finish("Дуэль завершена: выполняется общий сброс.")
 	reset_zone_id = zone_id
 	for(var/datum/antag_training_session/member as anything in members)
 		if(inside_bounds(get_turf(member.current_body), zone["bounds"]))
@@ -195,6 +202,11 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 	if(finished || resetting || arena?.resetting || world.time < next_restart_at || !(program_type in subtypesof(/datum/antag_training_program)))
 		return FALSE
 	next_restart_at = world.time + ANTAG_TRAINING_RESTART_DELAY
+	if(arena.duel?.includes(src))
+		arena.duel.finish("Дуэль завершена: участник сменил программу.")
+	stop_practice()
+	recipe_cache = null
+	recipe_cache_size = -1
 	resetting = TRUE
 	deltimer(recovery_timer)
 	recovery_timer = null
@@ -242,6 +254,8 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 	var/list/zone = zones[zone_id]
 	prune_targets()
 	if(!template || !zone || zone_id == "hub" || finished || resetting || length(targets) >= ANTAG_TRAINING_TARGET_LIMIT)
+		return null
+	if(zone_id == "melee" && duel && duel.phase != "invite")
 		return null
 	var/mob_type = template["type"]
 	var/mob/living/target = new mob_type(zone["target"])
@@ -450,6 +464,7 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 	if(finished || cleaning_personal || arena.finished || arena.resetting)
 		return FALSE
 	cleaning_personal = TRUE
+	stop_practice()
 	. = arena.cleanup_owner(WEAKREF(src), src)
 	cleaning_personal = FALSE
 

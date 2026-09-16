@@ -6,6 +6,21 @@ import { debugReducer } from '../debug';
 import { AntagTraining, AntagTrainingData } from './AntagTraining';
 
 const fixture: AntagTrainingData = {
+  preparing: 0,
+  supply_ready: 1,
+  practice_ready: 1,
+  last_feedback: null,
+  last_kit: null,
+  kits: [{ id: 'medicine', name: 'Первая помощь' }],
+  paths: [{ id: 'blade', name: 'Клинок', desc: 'Парирование и ответ' }],
+  selected_path: null,
+  path_stage: 0,
+  recipes: [],
+  resource: null,
+  practice: null,
+  duel: null,
+  duel_ready: 1,
+  last_duel_result: null,
   program: 'Еретик — все пути',
   program_id: '/datum/antag_training_program/heretic',
   auto_recover: 1,
@@ -45,6 +60,7 @@ const setup = (overrides: Partial<AntagTrainingData> = {}) => {
 
 test('любой участник может запросить сброс сектора после подтверждения', () => {
   const ui = setup();
+  fireEvent.click(ui.getByText('Зоны'));
   fireEvent.click(ui.getByText('Сброс'));
   expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/reset_zone')).toBe(false);
   fireEvent.click(ui.getByText('Запросить сброс?'));
@@ -71,6 +87,54 @@ test('сброс роли требует подтверждения и пере�
   fireEvent.click(ui.getByText(/Сбросить своего персонажа\?/));
   const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/restart');
   expect(JSON.parse(call[0].payload)).toEqual({ program: fixture.program_id });
+});
+
+test('старт предлагает комплект и упражнение с отдельными командами', () => {
+  const ui = setup();
+  fireEvent.click(ui.getByText('Первая помощь'));
+  fireEvent.click(ui.getByText('Вылечить пациента'));
+  expect(ui.topic.mock.calls.map(([message]) => [message.type, JSON.parse(message.payload)])).toEqual([
+    ['act/kit', { id: 'medicine' }], ['act/practice', { id: 'medicine' }],
+  ]);
+});
+
+test('готовый предмет и компоненты используют конкретный изученный рецепт', () => {
+  const ui = setup({ recipes: [{ id: 'recipe', name: 'Принцип поединка', ingredients: 'Нож, металл', hint: '', components: 1, result: 1 }] });
+  fireEvent.click(ui.getByText('Путь и рецепты еретика'));
+  fireEvent.click(ui.getByText('Готовый предмет'));
+  fireEvent.click(ui.getByText('Компоненты'));
+  expect(ui.topic.mock.calls.filter(([message]) => message.type === 'act/recipe').map(([message]) => JSON.parse(message.payload))).toEqual([
+    { id: 'recipe', components: false }, { id: 'recipe', components: true },
+  ]);
+});
+
+test('повтор сохраняет вид упражнения, нулевое время до крита отображается', () => {
+  const ui = setup({ practice: { id: 'combat', target: 'Цель 1', complete: 1, hint: 'Готово', damage: 100, healing: 10, last_damage: 20, critical_seconds: 0 } });
+  expect(ui.getByText('0.0 с')).toBeTruthy();
+  fireEvent.click(ui.getByText('Повторить упражнение'));
+  expect(JSON.parse(ui.topic.mock.calls.find(([message]) => message.type === 'act/practice')[0].payload)).toEqual({ id: 'combat' });
+});
+
+test('чужая дуэль не даёт кнопки принятия или отмены', () => {
+  const ui = setup({ duel: { phase: 'invite', first: 'Первый', second: 'Второй', lethal: 0, remaining: 25, involved: 0, can_accept: 0 } });
+  expect(ui.queryByText('Принять вызов')).toBeNull();
+  expect(ui.queryByText('Отменить дуэль')).toBeNull();
+});
+
+test('вызов принимается с любой вкладки', () => {
+  const ui = setup({ duel: { phase: 'invite', first: 'Первый', second: 'Второй', lethal: 0, remaining: 25, involved: 1, can_accept: 1 } });
+  fireEvent.click(ui.getByText('Снаряжение'));
+  fireEvent.click(ui.getByText('Принять вызов'));
+  expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/duel_accept')).toBe(true);
+});
+
+test('подготовка блокирует повторную выдачу, сохраняя восстановление и выход', () => {
+  const ui = setup({ preparing: 1, supply_ready: 0, practice_ready: 0 });
+  fireEvent.click(ui.getByText('Первая помощь'));
+  fireEvent.click(ui.getByText('Вылечить пациента'));
+  expect(ui.topic.mock.calls).toHaveLength(0);
+  fireEvent.click(ui.getByText('Восстановиться'));
+  expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/heal')).toBe(true);
 });
 
 test('показывает всех участников без искусственного предела', () => {

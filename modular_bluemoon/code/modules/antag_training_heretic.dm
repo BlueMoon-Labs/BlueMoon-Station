@@ -1,5 +1,3 @@
-#define ANTAG_TRAINING_POINTS 100
-
 /datum/antag_training_program
 	var/name
 	var/list/options = list()
@@ -67,19 +65,7 @@
 	var/datum/eldritch_knowledge/recipe = recipes[recipe_name]
 	if(QDELETED(recipe) || heretic.get_knowledge(recipe.type) != recipe)
 		return
-	session.next_supply_at = world.time + 5 SECONDS
-	var/list/items = choice == "Предметы изученного рецепта" ? recipe.result_atoms : recipe.required_atoms
-	for(var/item_type in items)
-		if(!ispath(item_type, /obj/item) && !ispath(item_type, /obj/structure) && !ispath(item_type, /obj/effect/decal/cleanable))
-			continue
-		var/count = items[item_type] || 1
-		if(ispath(item_type, /obj/item/stack))
-			if(!session.arena.issue_item(item_type, get_turf(user), count, session))
-				break
-		else
-			for(var/index in 1 to count)
-				if(!session.arena.issue_item(item_type, get_turf(user), creator = session))
-					break
+	session.issue_recipe(recipe, choice == "Компоненты изученного рецепта")
 
 /datum/antagonist/heretic/training
 	simulated = TRUE
@@ -137,7 +123,6 @@
 	training = null
 	return ..()
 
-#undef ANTAG_TRAINING_POINTS
 
 /datum/antagonist/heretic/training/deed_key_for(atom/target)
 	var/turf/tile = get_turf(target)

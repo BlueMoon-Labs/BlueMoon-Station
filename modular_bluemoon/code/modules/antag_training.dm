@@ -154,6 +154,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 		return
 	finished = TRUE
 	ready = FALSE
+	duel?.finish("Полигон закрывается.")
 	cancel_reset()
 	INVOKE_ASYNC(src, PROC_REF(cleanup))
 
@@ -198,6 +199,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 
 /datum/antag_training_arena/Destroy()
 	finished = TRUE
+	QDEL_NULL(duel)
 	for(var/datum/antag_training_session/member as anything in members.Copy())
 		member.finish()
 	cancel_reset()
@@ -314,9 +316,13 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 		current_body.name = return_name
 	START_PROCESSING(SSprocessing, src)
 	to_chat(current_body, span_boldnotice("Полигон готов. «Пульт полигона» открывает зоны, снаряжение, цели и учебные роли. «Выйти в призрака» завершает ваш сеанс. После смерти вы восстановитесь в центре."))
+	if(current_body.client)
+		ui_interact(current_body)
 	return TRUE
 
 /datum/antag_training_session/proc/bind_body(mob/living/body)
+	if(arena?.duel?.includes(src))
+		arena.duel.finish("Дуэль завершена: участник сменил тело.")
 	if(current_body)
 		UnregisterSignal(current_body, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_MOB_GHOSTIZE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_PRE_PLAYER_CHANGE))
 	current_body = body
@@ -374,6 +380,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	if(QDELETED(current_body))
 		finish()
 		return
+	update_practice()
 	if(current_body.client)
 		disconnected_at = 0
 	else if(!disconnected_at)
@@ -396,6 +403,8 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	if(finished)
 		return
 	finished = TRUE
+	if(arena?.duel?.includes(src))
+		arena.duel.finish("Дуэль завершена: участник вышел.")
 	STOP_PROCESSING(SSprocessing, src)
 	if(connected)
 		. = restore_observer()
@@ -404,6 +413,9 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 		qdel(src)
 
 /datum/antag_training_session/proc/clear_avatar()
+	stop_practice()
+	recipe_cache = null
+	recipe_cache_size = -1
 	deltimer(recovery_timer)
 	recovery_timer = null
 	if(current_body)

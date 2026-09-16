@@ -24,6 +24,9 @@
 	if(training_origin && destination && !QDELETED(src))
 		if(!origin || origin.finished || destination_area != origin.room)
 			return FALSE
+		if(origin.duel && origin.duel.phase != "invite" && isliving(src) && origin.inside_bounds(get_turf(destination), origin.zones["melee"]["bounds"]))
+			if(src != origin.duel.challenger.current_body && src != origin.duel.opponent.current_body)
+				return FALSE
 		if(origin.reset_zone_id == "all")
 			return origin.inside_bounds(get_turf(destination), origin.zones["hub"]["bounds"])
 		return !origin.reset_zone_id || !origin.inside_bounds(get_turf(destination), origin.zones[origin.reset_zone_id]["bounds"])
@@ -61,6 +64,8 @@
 		REMOVE_TRAIT(current_body, TRAIT_STUNIMMUNE, REF(src))
 
 /datum/antag_training_session/proc/heal_self()
+	if(arena?.duel?.includes(src) && arena.duel.phase != "invite")
+		arena.duel.finish("Дуэль завершена: участник использовал восстановление.")
 	deltimer(recovery_timer)
 	recovery_timer = null
 	current_body.status_flags &= ~GODMODE

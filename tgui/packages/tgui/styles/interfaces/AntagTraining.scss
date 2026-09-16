@@ -32,6 +32,7 @@
   &__placement > .Icon, &__targetHint > .Icon { margin-right: 8px; }
   &__placement--blocked { background: #322f26; border-color: #c5aa6b; }
   &__targetHint { margin: 4px 0 16px; color: #adbdc8; line-height: 1.5; }
+  &__recipe { border-top: 1px solid #3d4f5b; padding: 12px 0; line-height: 1.5; }
   &__injuries { border-top: 1px solid #3d4f5b; padding: 10px 0; margin-bottom: 4px; }
   &__target, &__member { background: #1d2b36; padding: 14px; border: 1px solid #3d4f5b; }
   &__member--self { border-left: 3px solid #79bcb2; }

@@ -4791,6 +4791,8 @@
 #include "modular_bluemoon\code\modules\antag_training_tools.dm"
 #include "modular_bluemoon\code\modules\antag_training_isolation.dm"
 #include "modular_bluemoon\code\modules\antag_training_ui.dm"
+#include "modular_bluemoon\code\modules\antag_training_practice.dm"
+#include "modular_bluemoon\code\modules\antag_training_duel.dm"
 #include "modular_bluemoon\code\modules\admin\admin_ticket_stats_panel.dm"
 #include "modular_bluemoon\code\modules\admin\tetris_records.dm"
 #include "modular_bluemoon\code\modules\admin\tgs_metadollars.dm"

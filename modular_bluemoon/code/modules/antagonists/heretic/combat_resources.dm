@@ -31,6 +31,9 @@
 	heretic_failure_reason = reason
 	if(!silent && user)
 		to_chat(user, span_warning("[name]: [reason]"))
+		var/datum/antag_training_session/session = GLOB.antag_training_sessions[user.ckey]
+		if(session?.current_body == user)
+			session.last_feedback = "[name]: [reason]"
 		if(COOLDOWN_FINISHED(src, heretic_failure_log))
 			COOLDOWN_START(src, heretic_failure_log, 5 SECONDS)
 			log_game("[key_name(user)] не применяет [name] ([type]): [reason] в [AREACOORD(user)].")

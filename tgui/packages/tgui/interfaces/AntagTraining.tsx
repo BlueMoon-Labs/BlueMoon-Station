@@ -23,6 +23,21 @@ type Target = Choice & {
 };
 
 export type AntagTrainingData = {
+  preparing: BooleanLike;
+  supply_ready: BooleanLike;
+  practice_ready: BooleanLike;
+  last_feedback: string | null;
+  last_kit: string | null;
+  kits: Choice[];
+  paths: (Choice & { desc: string })[];
+  selected_path: string | null;
+  path_stage: number;
+  recipes: (Choice & { ingredients: string; hint: string; components: BooleanLike; result: BooleanLike })[];
+  resource: { name: string; value: number; max: number; description: string } | null;
+  practice: { id: string; target: string; complete: BooleanLike; hint: string; damage: number; healing: number; last_damage: number; critical_seconds: number | null } | null;
+  duel: { phase: string; first: string; second: string; lethal: BooleanLike; remaining: number; involved: BooleanLike; can_accept: BooleanLike } | null;
+  last_duel_result: string | null;
+  duel_ready: BooleanLike;
   program: string;
   program_id: string;
   auto_recover: BooleanLike;
@@ -62,6 +77,7 @@ const sectorIcons: Record<string, string> = {
   pve: 'paw', laboratory: 'flask',
 };
 const tabs = [
+  { name: 'Начать', icon: 'play' },
   { name: 'Зоны', icon: 'map' },
   { name: 'Снаряжение', icon: 'toolbox' },
   { name: 'Мастерская', icon: 'hammer' },
@@ -73,7 +89,7 @@ const healthFraction = (health: number, maximum: number) => health / Math.max(1,
 
 export const AntagTraining = () => {
   const { act, data } = useBackend<AntagTrainingData>();
-  const [tab, setTab] = useState('Зоны');
+  const [tab, setTab] = useState('Начать');
   return (
     <Window width={960} height={760}>
       <Window.Content fitted className="AntagTraining">
@@ -95,7 +111,7 @@ export const AntagTraining = () => {
               </ProgressBar>
             </Stack.Item>
             <Stack.Item><Button icon="heart" onClick={() => act('heal')}>Восстановиться</Button></Stack.Item>
-            <Stack.Item><Button icon="house" disabled={!!data.busy} onClick={() => act('move', { zone: 'hub' })}>В центр</Button></Stack.Item>
+            <Stack.Item><Button icon="house" disabled={!!data.busy || !!data.preparing} onClick={() => act('move', { zone: 'hub' })}>В центр</Button></Stack.Item>
             <Stack.Item><Button.Confirm icon="sign-out-alt" color="transparent" content="Выйти" confirmContent="Выйти в призрака?" onClick={() => act('exit')} /></Stack.Item>
           </Stack>
         </div>
@@ -107,6 +123,7 @@ export const AntagTraining = () => {
           <Button icon="xmark" color="transparent" onClick={() => act('reset_cancel')}>Отменить сброс</Button>
           </div>
         )}
+        {!!data.duel && <TrainingDuel />}
         <Tabs className="AntagTraining__tabs">
           {tabs.map(({ name, icon }) => (
             <Tabs.Tab key={name} selected={tab === name} onClick={() => setTab(name)} icon={icon}>{name}</Tabs.Tab>
@@ -114,6 +131,9 @@ export const AntagTraining = () => {
         </Tabs>
         <div className="AntagTraining__body">
           {!!data.busy && <NoticeBox>Сектор восстанавливается. Подождите завершения работ.</NoticeBox>}
+          {!!data.preparing && <NoticeBox>Подготавливаем комплект. Восстановление и выход доступны.</NoticeBox>}
+          {!!data.last_feedback && <NoticeBox>{data.last_feedback}</NoticeBox>}
+          {tab === 'Начать' && <TrainingStart navigate={setTab} />}
           {tab === 'Зоны' && <TrainingZones />}
           {tab === 'Снаряжение' && <TrainingEquipment />}
           {tab === 'Мастерская' && <TrainingWorkshop />}
@@ -123,6 +143,102 @@ export const AntagTraining = () => {
         </div>
       </Window.Content>
     </Window>
+  );
+};
+
+const TrainingDuel = () => {
+  const { act, data } = useBackend<AntagTrainingData>();
+  const duel = data.duel;
+  if (!duel) return null;
+  return (
+    <div className="AntagTraining__vote">
+      <Box bold>{duel.first} — {duel.second} · {duel.lethal ? 'до смерти' : 'до крита'}</Box>
+      <Box my={0.5}>{duel.phase === 'invite' ? 'Ожидаем согласия' : duel.phase === 'countdown' ? 'Приготовьтесь, дождитесь команды «Бой»' : 'Бой идёт'} · {duel.remaining} с.</Box>
+      {!!duel.can_accept && <Button icon="check" onClick={() => act('duel_accept')}>Принять вызов</Button>}
+      {!!duel.involved && <Button icon="xmark" color="transparent" onClick={() => act('duel_cancel')}>Отменить дуэль</Button>}
+    </div>
+  );
+};
+
+const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
+  const { act, data } = useBackend<AntagTrainingData>();
+  const practice = data.practice;
+  const blocked = !!data.busy || !!data.preparing;
+  return (
+    <>
+      <Box fontSize={1.4} bold mb={0.5}>Что хотите потренировать?</Box>
+      <Box color="label" mb={2}>Выберите комплект, наденьте снаряжение и подготовьте цель. Повтор упражнения заменяет только вашу учебную цель.</Box>
+      <Section title="1. Подготовка">
+        <div className="AntagTraining__categories">
+          {data.kits.map((kit) => <Button key={kit.id} icon="toolbox" disabled={blocked || !data.supply_ready} selected={data.last_kit === kit.id} onClick={() => act('kit', { id: kit.id })}>{kit.name}</Button>)}
+          <Button icon="book" onClick={() => navigate('Моя роль')}>Путь и рецепты еретика</Button>
+        </div>
+        <Box color="label">Комплект перенесёт вас в подходящий сектор и положит вещи рядом. Для личного набора откройте «Снаряжение».</Box>
+      </Section>
+      <Section title="2. Упражнение">
+        <Stack wrap>
+          <Stack.Item><Button icon="bullseye" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'combat' })}>Довести цель до крита</Button></Stack.Item>
+          <Stack.Item><Button icon="heart-pulse" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'medicine' })}>Вылечить пациента</Button></Stack.Item>
+          <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.options.length} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
+        </Stack>
+        <Box color="label" mt={1}>Человеческая цель неподвижна. Для активного противника выберите тип и включите ИИ в разделе «Цели».</Box>
+      </Section>
+      {!!practice && (
+        <Section title={practice.complete ? 'Упражнение выполнено' : `Ваша цель: ${practice.target}`}>
+          <Box mb={1.5} color={practice.complete ? 'good' : undefined}>{practice.hint}</Box>
+          <div className="AntagTraining__damage">
+            <div><Box color="label">Получено урона</Box><Box bold>{Math.round(practice.damage)}</Box></div>
+            <div><Box color="label">Восстановлено</Box><Box bold>{Math.round(practice.healing)}</Box></div>
+            <div><Box color="label">Последнее снижение HP</Box><Box bold>{Math.round(practice.last_damage)}</Box></div>
+            <div><Box color="label">До крита</Box><Box bold>{practice.critical_seconds === null ? '—' : `${practice.critical_seconds.toFixed(1)} с`}</Box></div>
+          </div>
+          <Box color="label" mb={1}>Считаются изменения здоровья цели от всех источников. Лечение учитывается отдельно; время идёт с первого изменения HP. «Исцелить» в пульте завершает упражнение.</Box>
+          <Button icon="rotate" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: practice.id })}>Повторить упражнение</Button>
+          <Button color="transparent" disabled={blocked} onClick={() => act('practice_stop')}>Завершить упражнение</Button>
+        </Section>
+      )}
+      <Section title="Совместная тренировка">
+        <Box mb={1}>Пригласите участника на дуэль с отсчётом и результатом. Условия и свои комплекты согласуйте перед вызовом.</Box>
+        <Button icon="users" onClick={() => navigate('Участники')}>Выбрать соперника</Button>
+        <Button icon="hammer" onClick={() => navigate('Мастерская')}>Строительство и оборудование</Button>
+      </Section>
+    </>
+  );
+};
+
+const TrainingRecipes = () => {
+  const { act, data } = useBackend<AntagTrainingData>();
+  const [path, setPath] = useState(data.selected_path || data.paths[0]?.id || '');
+  const [stage, setStage] = useState('1');
+  const [search, setSearch] = useState('');
+  const blocked = !!data.busy || !!data.preparing || !data.supply_ready;
+  const recipes = data.recipes.filter((recipe) => `${recipe.name} ${recipe.ingredients}`.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <>
+      <Section title="Подготовить путь">
+        <Stack wrap align="center">
+          <Stack.Item><Dropdown width={15} selected={data.selected_path || path} disabled={!!data.selected_path} options={data.paths.map((entry) => ({ value: entry.id, displayText: entry.name }))} onSelected={setPath} /></Stack.Item>
+          <Stack.Item><Dropdown width={19} selected={stage} options={[{ value: '1', displayText: 'Начало: ступень 1' }, { value: '4', displayText: 'Основы: ступень 4' }, { value: '9', displayText: 'Полный путь: ступень 9' }]} onSelected={setStage} /></Stack.Item>
+          <Stack.Item><Button disabled={blocked || !path} onClick={() => act('prepare_path', { id: data.selected_path || path, stage })}>Изучить до ступени</Button></Stack.Item>
+        </Stack>
+        <Box color="label" mt={1}>Сейчас: ступень {data.path_stage}. Подготовка выдаёт нужные знания и учебные души. Вознесение проводится отдельно. Для смены пути начните новым персонажем ниже.</Box>
+      </Section>
+      {!!data.resource && <Section title={`${data.resource.name}: ${data.resource.value} / ${data.resource.max}`}><Box>{data.resource.description}</Box></Section>}
+      <Section title="Рецепты и готовые предметы">
+        <Input fluid value={search} placeholder="Найти рецепт или компонент…" onInput={(_, value) => setSearch(value)} mb={1} />
+        {!recipes.length && <Box color="label">Изучите путь или измените поиск. Здесь появятся доступные рецепты.</Box>}
+        {recipes.map((recipe) => (
+          <div key={recipe.id} className="AntagTraining__recipe">
+            <Box bold>{recipe.name}</Box>
+            <Box color="label" my={0.5}>{recipe.ingredients || 'Особые условия обряда'}</Box>
+            {!!recipe.hint && <Box color="label" mb={0.5}>{recipe.hint}</Box>}
+            <Button disabled={blocked || !recipe.components} onClick={() => act('recipe', { id: recipe.id, components: true })}>Компоненты</Button>
+            <Button disabled={blocked || !recipe.result} onClick={() => act('recipe', { id: recipe.id, components: false })}>Готовый предмет</Button>
+          </div>
+        ))}
+        <Box color="label" mt={1}>Предметы появятся рядом; тела для вознесения — в лаборатории. Температуру, положение цели и прочие условия обряда подготовьте самостоятельно.</Box>
+      </Section>
+    </>
   );
 };
 
@@ -278,6 +394,7 @@ const TrainingProgram = () => {
   const { act, data } = useBackend<AntagTrainingData>();
   return (
     <>
+      {!!data.options.length && <TrainingRecipes />}
       <Section title="Восстановление после смерти">
         <Button.Checkbox checked={!!data.auto_recover} onClick={() => act('auto_recover')}>Автовосстановление через 3 секунды</Button.Checkbox>
         <Box color="label" mt={1}>Отключите для испытаний с телом погибшего участника. Ручное восстановление и выход доступны даже после смерти.</Box>
@@ -305,9 +422,15 @@ const TrainingProgram = () => {
 };
 
 const TrainingMembers = () => {
-  const { data } = useBackend<AntagTrainingData>();
+  const { act, data } = useBackend<AntagTrainingData>();
+  const [lethal, setLethal] = useState(false);
   return (
     <>
+      {!!data.last_duel_result && <NoticeBox>{data.last_duel_result}</NoticeBox>}
+      <Section title="Дуэль">
+        <Button.Checkbox checked={lethal} onClick={() => setLethal(!lethal)}>До смерти (по умолчанию — до крита)</Button.Checkbox>
+        <Box color="label" mt={1}>Одна дуэль на арене ближнего боя. При старте восстановится здоровье; вещи, ресурсы и перезарядки сохраняются. Дождитесь команды «Бой». Восстановление, выход и изменение подготовки через пульт завершат попытку.</Box>
+      </Section>
       <Section title="Общая тренировка">
         <Box>Все входят через гостроль «Тренировочный полигон» и используют общие секторы.</Box>
         <Box color="label" mt={1}>Роль, здоровье и автовосстановление каждый настраивает для себя. Общий сброс требует единогласия; любой участник может отменить его. После выхода очищаются оставленные игроком объекты. Предметы у других участников сохраняются. После последнего выхода очищается весь полигон.</Box>
@@ -320,6 +443,7 @@ const TrainingMembers = () => {
             <Box color="label" mt={0.5} mb={1}>{member.program}</Box>
             <ProgressBar value={healthFraction(member.health, member.max_health)} color={member.dead ? 'bad' : 'good'}>{member.dead ? 'Мёртв' : `Здоровье ${Math.round(member.health)} / ${member.max_health}`}</ProgressBar>
             <Box color="label" mt={1}>Поражений за сеанс: {member.defeats}</Box>
+            {!member.self && <Button mt={1} icon="hand-fist" disabled={!!data.duel || !!data.busy || !!data.preparing || !data.duel_ready || !member.connected || !!member.dead} onClick={() => act('duel_request', { id: member.id, lethal })}>Вызвать на дуэль</Button>}
           </div>
         ))}
       </div>

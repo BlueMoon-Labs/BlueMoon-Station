@@ -29,6 +29,13 @@
 	for(var/template_id in GLOB.antag_training_creatures)
 		data["creatures"] += list(list("id" = template_id, "name" = GLOB.antag_training_creatures[template_id]["name"]))
 	data["programs"] = list()
+	data["kits"] = list()
+	for(var/kit_id in GLOB.antag_training_kits)
+		data["kits"] += list(list("id" = kit_id, "name" = GLOB.antag_training_kits[kit_id]["name"]))
+	data["paths"] = list()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		data["paths"] += list(list("id" = path.id, "name" = path.name, "desc" = path.desc))
 	for(var/datum/antag_training_program/program_type as anything in subtypesof(/datum/antag_training_program))
 		data["programs"] += list(list("id" = "[program_type]", "name" = initial(program_type.name)))
 	return data
@@ -64,16 +71,63 @@
 		var/list/zone = arena.zones[zone_id]
 		data["zones"] += list(list("id" = zone_id, "name" = zone["name"], "desc" = zone["desc"], "members" = member_counts[zone_id] || 0, "targets" = target_counts[zone_id] || 0, "current" = arena.inside_bounds(get_turf(user), zone["bounds"])))
 	data["options"] = program.options
+	data["preparing"] = preparing
+	data["supply_ready"] = world.time >= next_supply_at && !preparing
+	data["practice_ready"] = world.time >= arena.next_spawn_at && !preparing
+	data["last_feedback"] = last_feedback
+	data["last_kit"] = last_kit
+	data["recipes"] = training_recipes()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+	data["selected_path"] = heretic?.selected_path
+	data["path_stage"] = heretic?.path_stage || 0
+	var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
+	var/datum/eldritch_knowledge/base = path ? heretic.get_knowledge(path.knowledge[1]) : null
+	data["resource"] = base?.get_combat_resource_data()
+	data["practice"] = null
+	if(practice_id)
+		var/mob/living/target = practice_target?.resolve()
+		data["practice"] = list("id" = practice_id, "target" = target?.name || "Цель недоступна", "complete" = practice_complete, "hint" = practice_hint, "damage" = measurement?.damage || 0, "healing" = measurement?.healing || 0, "last_damage" = measurement?.last_damage || 0, "critical_seconds" = isnull(measurement?.critical_after) ? null : measurement.critical_after / (1 SECONDS))
+	data["duel"] = null
+	data["last_duel_result"] = last_duel_result
+	data["duel_ready"] = world.time >= next_duel_at
+	if(arena.duel)
+		var/datum/antag_training_duel/duel = arena.duel
+		data["duel"] = list("phase" = duel.phase, "first" = duel.challenger.current_body?.real_name, "second" = duel.opponent.current_body?.real_name, "lethal" = duel.to_death, "remaining" = max(0, round((duel.deadline - world.time) / (1 SECONDS))), "involved" = duel.includes(src), "can_accept" = duel.opponent == src && duel.phase == "invite")
 	return data
 
 /datum/antag_training_session/ui_act(action, list/params)
 	if(..() || !can_control(usr))
 		return FALSE
 	if(action != "exit")
-		if(world.time < next_action_at || (arena.resetting && action != "heal"))
+		if(world.time < next_action_at || ((arena.resetting || preparing) && action != "heal"))
 			return FALSE
 		next_action_at = world.time + 0.5 SECONDS
+	if(arena.duel?.includes(src) && !(action in list("duel_accept", "duel_cancel", "reset_approve", "reset_cancel")))
+		arena.duel.finish("Дуэль завершена: участник изменил условия через пульт.")
 	switch(action)
+		if("kit")
+			issue_kit(params["id"])
+		if("practice")
+			start_practice(params["id"])
+		if("practice_stop")
+			stop_practice()
+		if("prepare_path")
+			prepare_path(params["id"], text2num("[params["stage"]]"))
+		if("recipe")
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+			for(var/knowledge_type in heretic?.researched_knowledge)
+				var/datum/eldritch_knowledge/recipe = heretic.researched_knowledge[knowledge_type]
+				if(REF(recipe) == params["id"])
+					issue_recipe(recipe, params["components"] == TRUE)
+					break
+		if("duel_request")
+			var/datum/antag_training_session/opponent = locate(params["id"]) in arena.members
+			request_duel(opponent, params["lethal"] == TRUE)
+		if("duel_accept")
+			arena.duel?.accept(src)
+		if("duel_cancel")
+			if(arena.duel?.includes(src))
+				arena.duel.finish("Дуэль отменена участником.")
 		if("move")
 			var/list/zone = arena.zones[params["zone"]]
 			if(zone)
@@ -113,6 +167,8 @@
 			if(!can_manage_target(target) || get_area(target) != arena.room)
 				return FALSE
 			if(action == "target_heal")
+				if(practice_target?.resolve() == target)
+					stop_practice()
 				target.revive(full_heal = TRUE, admin_revive = TRUE)
 			else if(action == "target_injure")
 				injure_target(target, params["injury"])
