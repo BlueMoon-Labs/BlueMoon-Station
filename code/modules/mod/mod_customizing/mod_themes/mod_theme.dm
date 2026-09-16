@@ -252,10 +252,8 @@
 		эта конкретная модель не использует марганцевые биполярные очистители конденсаторов, слава Хонк-Матери. \
 		Всё, что вам известно, — этот костюм загадочно энергоэффективен и слишком пёстрый, чтобы Мим мог его украсть."
 	default_skin = "cosmohonk"
-	armor = list(MELEE = 5, BULLET = -10, LASER = 5, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 60, ACID = 30, WOUND = 5, RAD = 0)
 	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_SYNDICATE_COLOR
-	/*inbuilt_modules = list(/obj/item/mod/module/waddle)*/ // Waddling element not ported, commented for now as it is a prerequisite.
 	skins = list(
 		"cosmohonk" = MOD_PRESET_DEFAULT,
 	)
@@ -531,7 +529,6 @@
 		костюм оснащён гидравлическими усилителями конечностей и усиленной рамой, \
 		способной выдерживать экстремальные нагрузки при перемещении ящиков, паллет и оборудования."
 	default_skin = "loader"
-	armor = list(MELEE = 15, BULLET = -10, LASER = -10, ENERGY = 5, BOMB = 10, BIO = 10, FIRE = 25, ACID = 25, WOUND = 10, RAD = 50)
 	cell_drain = DEFAULT_CHARGE_DRAIN
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_CARGO_BLUE

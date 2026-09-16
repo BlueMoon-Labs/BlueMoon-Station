@@ -419,6 +419,7 @@
 			else
 				if (occupant)
 					var/mob/living/mob_occupant = occupant
+					playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50)
 					to_chat(mob_occupant, span_userdanger("[capitalize(src.name)] confines grow warm, then hot, then scorching. You're being burned [!mob_occupant.stat ? "alive" : "away"]!"))
 				cook()
 		if ("lock", "unlock")

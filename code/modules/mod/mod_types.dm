@@ -445,6 +445,14 @@
 	var/obj/item/clothing/mod_part/suit/chest =  get_chestplate()
 	chest.AddElement(/datum/element/spellcasting, magic_flags, ITEM_SLOT_OCLOTHING)
 
+/obj/item/mod/control/pre_equipped/cosmohonk
+	theme = /datum/mod_theme/cosmohonk
+	initial_modules = list(
+		/obj/item/mod/module/waddle,
+		/obj/item/mod/module/bikehorn,
+		/obj/item/mod/module/flashlight,
+	)
+
 /obj/item/mod/control/pre_equipped/cargo
 	equip_cell = /obj/item/stock_parts/cell/vortex
 	theme = /datum/mod_theme/cargo
