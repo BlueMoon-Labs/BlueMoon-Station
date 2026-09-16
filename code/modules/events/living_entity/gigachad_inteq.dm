@@ -79,6 +79,12 @@
 	AIStatus = AI_ON
 	speak = list("БЕГАЮЩИЕ ГВОЗДИ!!!", "БЕГИ, СУКА, БЕГИ!!!", "КАК ОРЕХ ЩА РАСКОЛЮ!!!")
 	loot = list(/obj/item/storage/belt/military/inteq, /obj/item/clothing/head/helmet/swat/inteq, /obj/item/clothing/shoes/combat/coldres, /obj/effect/gibspawner/generic, /obj/effect/gibspawner/generic/animal, /obj/effect/gibspawner/human/bodypartless, /obj/effect/gibspawner/human)
+	faction = list(ROLE_INTEQ)
+	random_loot = list(
+		/obj/item/inteq_sledgehammer = 15,
+		/obj/item/broken/inteq_sledgehammer = 65,
+		null = 20
+	)
 
 /mob/living/simple_animal/hostile/gigachad_inteq/space
 	name = "InteQ Space Agent"
@@ -94,7 +100,11 @@
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
 	spacewalk = TRUE
-	faction = list(ROLE_INTEQ)
+	random_loot = list(
+		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 15,
+		/obj/item/broken/inteq_elite = 65,
+		null = 20
+	)
 
 /mob/living/simple_animal/hostile/gigachad_inteq/shooter
 	name = "InteQ Machinegunner"
@@ -109,7 +119,11 @@
 	casingtype = /obj/item/ammo_casing/n762
 	retreat_distance = 5
 	minimum_distance = 5
-	faction = list(ROLE_INTEQ)
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/m2a1 = 5,
+		/obj/item/broken/hmg = 45,
+		null = 50
+	)
 
 /mob/living/simple_animal/hostile/gigachad_inteq/shooter/sniper
 	name = "InteQ Buffed sniper"
@@ -124,6 +138,11 @@
 	ranged_cooldown = 150
 	check_friendly_fire = 1
 	speak = list("ДА ЁБ ТВОЮ МАТЬ! ОПЯТЬ КЛИН!!!", "А ЭТО ЧЁ? ПРОБИВНЫЕ? ЭТО НАМ НАДО!!!", "МАГАЗИН ГДЕ? БЛЯ! ГДЕ МАГАЗИН МОЙ!!!")
+	random_loot = list(
+		/obj/item/gun/ballistic/automatic/sniper_rifle = 15,
+		/obj/item/broken/sniper_rifle = 45,
+		null = 40
+	)
 
 /obj/item/ammo_casing/p50/inteqsniper
 	name = "cheap .50 bullet casing"

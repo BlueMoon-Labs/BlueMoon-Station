@@ -118,14 +118,17 @@
 /datum/reagent/consumable/choccyshake/lactose_free
 	description = "Milkshake without milk!"
 	glass_icon_state = "strawberryshake_alt"
+	nutriment_factor = 0.2
 
 /datum/reagent/consumable/milkshake_strawberry/lactose_free
 	description = "Milkshake without milk!"
 	glass_icon_state = "strawberryshake_alt"
+	nutriment_factor = 0.2
 
 /datum/reagent/consumable/milkshake_banana/lactose_free
 	description = "Milkshake without milk!"
 	glass_icon_state = "bananashake_alt"
+	nutriment_factor = 0.2
 
 /datum/reagent/consumable/non_alcoholic_beer
 	name = "Citrus Beer"
