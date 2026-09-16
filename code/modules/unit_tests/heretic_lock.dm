@@ -73,6 +73,30 @@
 	TEST_ASSERT(QDELETED(first), "Обычный урон разрушает печать.")
 	TEST_ASSERT_EQUAL(length(knowledge.seals), 3, "Разрушение освобождает место в общем пределе.")
 
+/// После заполнения запаса печати расходуют ключи и обновляют число на HUD до нуля.
+/datum/unit_test/heretic_lock_resource_cap/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_LOCK)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/atom/movable/screen/alert/heretic_resource/indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT_NOTNULL(indicator, "Изучение Замка создаёт индикатор ключей.")
+	knowledge.gain_combat_resource(10)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 4, "Запас заполнен до четырёх ключей.")
+	TEST_ASSERT_EQUAL(indicator.displayed_value, 4, "HUD показывает полный запас.")
+	for(var/direction in list(EAST, NORTH, NORTHEAST, EAST))
+		var/obj/structure/heretic_lock_seal/seal = knowledge.create_seal(get_step(user, direction), user)
+		TEST_ASSERT_NOTNULL(seal, "После заполнения запаса ключ можно потратить на печать.")
+		qdel(seal)
+		TEST_ASSERT_EQUAL(indicator.displayed_value, knowledge.combat_resource, "Расход немедленно обновляет числовое состояние HUD.")
+		TEST_ASSERT(findtext(indicator.maptext, ">[knowledge.combat_resource]/4</div>"), "Видимый текст HUD соответствует оставшимся ключам.")
+		var/list/resource = knowledge.get_combat_resource_data()
+		TEST_ASSERT_EQUAL(resource["value"], knowledge.combat_resource, "Кодекс показывает тот же остаток.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Четыре печати исчерпывают запас.")
+	TEST_ASSERT(!knowledge.seal_spell.can_target(get_step(user, EAST), user, TRUE), "Пустой запас блокирует создание печати.")
+	knowledge.gain_combat_resource()
+	TEST_ASSERT_EQUAL(indicator.displayed_value, 1, "Добыча после опустошения обновляет HUD.")
+	TEST_ASSERT(knowledge.seal_spell.can_target(get_step(user, EAST), user, TRUE), "Новый ключ снова позволяет создать печать.")
+
 /// Союзники и антимагия проходят через печать, проверка прохода не тратит заряды защиты.
 /datum/unit_test/heretic_lock_passage/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -344,9 +368,9 @@
 	var/obj/machinery/door/airlock/first_door = allocate(/obj/machinery/door/airlock, get_step(first_place, NORTH))
 	var/obj/machinery/door/airlock/second_door = allocate(/obj/machinery/door/airlock, get_step(second_place, NORTH))
 	user.a_intent = INTENT_HELP
-	key.afterattack(first_door, user, TRUE, null)
+	key.melee_attack_chain(user, first_door, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 	user.forceMove(second_place)
-	key.afterattack(second_door, user, TRUE, null)
+	key.melee_attack_chain(user, second_door, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 	user.forceMove(first_place)
 	return list("heretic" = heretic, "key" = key, "first_door" = first_door, "second_door" = second_door, "first_place" = first_place, "second_place" = second_place)
 
@@ -360,21 +384,30 @@
 	var/obj/machinery/door/airlock/first_door = fixture["first_door"]
 	var/obj/machinery/door/airlock/second_door = fixture["second_door"]
 	TEST_ASSERT_EQUAL(length(knowledge.thresholds), 2, "Касание ключом создаёт два порога.")
+	TEST_ASSERT(first_door.density && second_door.density, "Разметка ключом не открывает шлюзы обычным взаимодействием.")
 	var/obj/structure/blocker = allocate(/obj/structure, get_step(fixture["first_place"], EAST))
 	blocker.density = TRUE
 	blocker.opacity = TRUE
 	first_door.bolt()
 	second_door.bolt()
+	knowledge.gain_combat_resource(2)
+	var/atom/movable/screen/alert/heretic_resource/indicator = user.alerts["heretic_path_resource"]
+	TEST_ASSERT_EQUAL(indicator.displayed_value, 4, "Перед переходом HUD показывает полный запас.")
 	var/keys_before = knowledge.combat_resource
-	TEST_ASSERT(key.traverse(user, first_door), "Порог позволяет обойти стены между заранее связанными шлюзами.")
+	user.a_intent = INTENT_HARM
+	key.melee_attack_chain(user, first_door, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 	TEST_ASSERT_EQUAL(get_turf(user), fixture["second_place"], "Выход ведёт на выбранную при связывании сторону.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, keys_before - 1, "Успешный переход тратит один ключ.")
+	TEST_ASSERT_EQUAL(indicator.displayed_value, 3, "Переход уменьшает полный запас на HUD.")
 	TEST_ASSERT(first_door.locked && first_door.density && second_door.locked && second_door.density, "Переход не открывает и не отпирает обычные шлюзы.")
 	TEST_ASSERT(!key.traverse(user, second_door), "Обратный переход соблюдает общий интервал.")
 	COOLDOWN_RESET(key, passage_cooldown)
 	TEST_ASSERT(key.traverse(user, second_door), "После интервала пара работает в обратную сторону.")
 	TEST_ASSERT_EQUAL(get_turf(user), fixture["first_place"], "Обратный переход возвращает на исходную сторону шлюза.")
 	TEST_ASSERT_EQUAL(length(knowledge.thresholds), 2, "Переход не расходует сами пороги.")
+	user.a_intent = INTENT_HELP
+	key.melee_attack_chain(user, first_door, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
+	TEST_ASSERT_EQUAL(length(knowledge.thresholds), 1, "Повторное нажатие на помощи снимает метку.")
 
 /// Сварка, занятый выход, запрет телепортации, чужой ключ и перенос двери блокируют проход без оплаты.
 /datum/unit_test/heretic_lock_threshold_safety/Run()
@@ -387,6 +420,12 @@
 	var/obj/machinery/door/airlock/second_door = fixture["second_door"]
 	TEST_ASSERT_EQUAL(length(knowledge.thresholds), 2, "Для проверки нужны два порога.")
 	var/keys_before = knowledge.combat_resource
+	user.forceMove(get_step(fixture["first_place"], EAST))
+	TEST_ASSERT(!key.traverse(user, first_door), "Соседняя с меткой клетка не позволяет перейти.")
+	user.forceMove(fixture["first_place"])
+	knowledge.spend_combat_resource(keys_before)
+	TEST_ASSERT(!key.traverse(user, first_door), "Ритуальный предмет не заменяет ключ в запасе пути.")
+	knowledge.gain_combat_resource(keys_before)
 	second_door.welded = TRUE
 	TEST_ASSERT(!key.traverse(user, first_door), "Сварка выходного шлюза запирает проход.")
 	second_door.welded = FALSE

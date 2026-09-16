@@ -109,6 +109,7 @@
 	for(var/obj/structure/heretic_lock_threshold/threshold as anything in thresholds)
 		if(threshold.door_ref?.resolve() == door)
 			qdel(threshold)
+			to_chat(user, span_notice("Метка у этого шлюза снята. Для перехода нужны две метки; используйте намерение вреда, чтобы перейти, а не снять метку."))
 			return TRUE
 	if(length(thresholds) == 1)
 		var/obj/structure/heretic_lock_threshold/first = thresholds[1]
@@ -118,13 +119,26 @@
 		clear_thresholds()
 	var/obj/structure/heretic_lock_threshold/created = new(place, src, door)
 	thresholds += created
-	to_chat(user, span_eldritch((length(thresholds) == HERETIC_LOCK_THRESHOLD_LIMIT ? "Два порога связаны. На намерении вреда поверните ключ у любого из отмеченных шлюзов, чтобы перейти к другому." : "Порог запомнил вашу сторону шлюза. Отметьте ключом ещё один шлюз в пределах двадцати клеток.")))
+	to_chat(user, span_eldritch((length(thresholds) == HERETIC_LOCK_THRESHOLD_LIMIT ? "Две метки связаны. Встаньте на золотую скважину на полу, включите намерение вреда и нажмите ключом на шлюз рядом с этой меткой. Стойте неподвижно 2 секунды; переход стоит 1 ключ." : "Первая метка появилась на полу под вами. Встаньте рядом с другим шлюзом, не по диагонали, и нажмите на него ключом на намерении помощи. Второй шлюз должен быть в пределах двадцати клеток.")))
 	return TRUE
 
-/datum/eldritch_knowledge/base_lock/proc/threshold_destination(mob/living/user, obj/machinery/door/airlock/door)
+/datum/eldritch_knowledge/base_lock/proc/reject_threshold(mob/living/user, reason, silent)
+	if(!silent)
+		to_chat(user, span_warning("Переход не открылся. [reason]"))
+	return null
+
+/datum/eldritch_knowledge/base_lock/proc/threshold_destination(mob/living/user, obj/machinery/door/airlock/door, silent = TRUE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!valid_user(user) || heretic.role_removed || heretic.selected_path != PATH_LOCK || user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT) || !valid_threshold_door(door) || !user.Adjacent(door) || length(thresholds) != HERETIC_LOCK_THRESHOLD_LIMIT)
-		return null
+	if(!valid_user(user) || heretic.role_removed || heretic.selected_path != PATH_LOCK)
+		return reject_threshold(user, "Вы сейчас не можете пользоваться силой Замка.", silent)
+	if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
+		return reject_threshold(user, "Вас удерживает крепление или запрет телепортации.", silent)
+	if(length(thresholds) != HERETIC_LOCK_THRESHOLD_LIMIT)
+		return reject_threshold(user, "Связано меток: [length(thresholds)]/2. На намерении помощи нажмите ключом на два разных шлюза, стоя рядом с каждым. Метки живут 3 минуты.", silent)
+	if(!valid_threshold_door(door))
+		return reject_threshold(user, "Выбранный шлюз заварен, движется или не допускает переход.", silent)
+	if(!user.Adjacent(door))
+		return reject_threshold(user, "Встаньте на свою метку рядом с выбранным шлюзом.", silent)
 	var/obj/structure/heretic_lock_threshold/entrance
 	var/obj/structure/heretic_lock_threshold/destination
 	for(var/obj/structure/heretic_lock_threshold/threshold as anything in thresholds)
@@ -132,18 +146,24 @@
 			entrance = threshold
 		else
 			destination = threshold
-	if(QDELETED(entrance) || QDELETED(destination) || user.loc != entrance.loc || door.loc != entrance.door_place || !valid_threshold_door(destination.door_ref?.resolve()))
-		return null
+	if(QDELETED(entrance) || QDELETED(destination))
+		return reject_threshold(user, "Этот шлюз не связан с вашей парой меток. Нажмите на шлюз у золотой скважины.", silent)
+	if(user.loc != entrance.loc)
+		return reject_threshold(user, "Встаньте точно на золотую скважину на полу с той стороны шлюза, где вы оставили метку, затем нажмите ключом на шлюз на намерении вреда.", silent)
+	if(door.loc != entrance.door_place || !valid_threshold_door(destination.door_ref?.resolve()))
+		return reject_threshold(user, "Входной шлюз перемещён либо выходной шлюз заварен, движется или разрушен.", silent)
 	var/obj/machinery/door/airlock/exit_door = destination.door_ref.resolve()
 	if(exit_door.loc != destination.door_place || !exit_door.Adjacent(destination) || !(get_dir(exit_door, destination) in GLOB.cardinals))
-		return null
+		return reject_threshold(user, "Выходной шлюз перемещён. Создайте пару меток заново.", silent)
 	var/turf/landing = get_turf(destination)
-	if(!istype(landing, /turf/open/floor) || landing.z != user.z || get_dist(user, landing) > HERETIC_LOCK_THRESHOLD_RANGE || landing == user.loc || landing.is_blocked_turf(source_atom = user))
-		return null
+	if(!istype(landing, /turf/open/floor) || landing.z != user.z || get_dist(user, landing) > HERETIC_LOCK_THRESHOLD_RANGE || landing == user.loc)
+		return reject_threshold(user, "Метки должны стоять на разных клетках пола, на одном уровне и не дальше двадцати клеток друг от друга.", silent)
+	if(landing.is_blocked_turf(source_atom = user))
+		return reject_threshold(user, "Клетка выходной метки занята существом или преградой. Освободите выход.", silent)
 	var/area/origin_area = get_area(user)
 	var/area/destination_area = get_area(landing)
 	if(origin_area.area_flags & NOTELEPORT || destination_area.area_flags & NOTELEPORT)
-		return null
+		return reject_threshold(user, "В помещении входа или выхода запрещена телепортация.", silent)
 	return destination
 
 /obj/structure/heretic_lock_threshold
@@ -505,7 +525,7 @@
 /datum/eldritch_knowledge/lock_key
 	name = "Ключница"
 	gain_text = "На поясе привратника не осталось места. Последний ключ он носил под кожей."
-	desc = "Лом и лист золота создают ритуальный ключ. На помощи поочерёдно коснитесь им двух шлюзов, стоя у каждого с нужной стороны: видимые разрушаемые пороги свяжут эти места, до 20 клеток на одном уровне. Каждый порог живёт 3 минуты. На вреде поверните ключ у отмеченного шлюза: за 2 секунды и 1 ключ перейдите к другому порогу, перезарядка 15 секунд. Сварка, занятый выход и разрушение порога мешают переходу. Сжатие ключа при пустом запасе за 2 секунды и 8 ушибов создаёт 1 ключ, перезарядка 30 секунд."
+	desc = "Лом и лист золота создают ритуальный ключ. Возьмите его в активную руку. На намерении помощи нажмите на первый шлюз, стоя рядом, не по диагонали: золотая метка появится под вами. Так же отметьте второй шлюз в пределах 20 клеток на одном уровне. Для перехода встаньте точно на одну из меток, включите намерение вреда и нажмите ключом на шлюз рядом с ней. Не двигайтесь 2 секунды; переход стоит 1 ключ из запаса пути, перезарядка 15 секунд. Метки живут 3 минуты; сварка и занятый выход мешают переходу. При пустом запасе активируйте ключ в руке: за 2 секунды и 8 ушибов получите 1 ключ, перезарядка 30 секунд."
 	cost = 1
 	route = PATH_LOCK
 	required_atoms = list(/obj/item/crowbar, /obj/item/stack/sheet/mineral/gold)
@@ -525,12 +545,22 @@
 
 /obj/item/heretic_path_relic/lock_key
 	name = "steward's key"
-	desc = "На помощи отметьте два шлюза с выбранной стороны; на вреде поверните ключ у одного из них, стоя на метке, чтобы за 2 секунды и 1 ключ перейти ко второму. Дальность 20 клеток, один уровень, перезарядка 15 секунд. После изучения Размыкания укажите на вреде собственную печать до пяти клеток: через секунду она взорвётся отдельно, сохранив остальные; ключ не возвращается, перезарядка 15 секунд. Повторное касание шлюза на помощи снимает порог; третий шлюз начинает новую пару. Сжатие при пустом запасе за 2 секунды и 8 ушибов создаёт 1 ключ, перезарядка 30 секунд; делит откат с одиночным размыканием."
+	desc = "Ритуальный ключ связывает две золотые метки на полу у шлюзов. Для перехода нужен 1 ключ из запаса пути; сам предмет не расходуется."
 	icon_state = "lock_key"
+	item_flags = NOBLUDGEON
 	var/cutting_time = 2 SECONDS
 	var/passage_time = 2 SECONDS
 	var/releasing_time = 1 SECONDS
 	COOLDOWN_DECLARE(passage_cooldown)
+
+/obj/item/heretic_path_relic/lock_key/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Как перейти:</b><br>1. Возьмите ключ в активную руку и включите намерение помощи. Встаньте рядом со шлюзом, не по диагонали, и нажмите ключом на шлюз. Золотая скважина появится на полу под вами.<br>2. Так же отметьте другой шлюз в пределах 20 клеток на одном уровне. Метки живут 3 минуты.<br>3. Встаньте точно на любую из двух меток. Включите намерение вреда и нажмите ключом на шлюз рядом с этой меткой. Не двигайтесь 2 секунды. Переход стоит 1 ключ из запаса пути; перезарядка 15 секунд.")
+	. += span_notice("Повторное нажатие на отмеченный шлюз на помощи <b>снимает</b> метку. Третий шлюз начинает новую пару. Заваренный шлюз или занятая клетка выхода блокируют переход.")
+	. += span_notice("<b>Получить ключ при пустом запасе:</b> активируйте предмет в руке (по умолчанию Z) и подождите 2 секунды. Цена — 8 ушибов, перезарядка 30 секунд.")
+	. += span_notice("<b>После изучения Размыкания:</b> нажмите ключом на свою печать в пределах 5 клеток на намерении вреда. Через секунду она взорвётся; остальные сохранятся. Потраченный ключ не возвращается. Перезарядка 15 секунд, общая с получением ключа из ладони.")
+	if(user.mind == creator?.resolve() && !COOLDOWN_FINISHED(src, passage_cooldown))
+		. += span_notice("До следующего перехода: [CEILING(COOLDOWN_TIMELEFT(src, passage_cooldown) / (1 SECONDS), 1)] с.")
 
 /obj/item/heretic_path_relic/lock_key/afterattack(atom/target, mob/living/user, proximity_flag, click_parameters)
 	. = ..()
@@ -545,9 +575,9 @@
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(user.a_intent == INTENT_HELP)
 		if(!knowledge?.bind_threshold(user, target))
-			to_chat(user, span_warning("Порог не принимает ключ. Встаньте вплотную к незаваренному шлюзу с нужной стороны; второй порог должен быть в двадцати клетках."))
-	else if(user.a_intent == INTENT_HARM && !traverse(user, target))
-		to_chat(user, span_warning("Переход не открылся. Встаньте на свой порог: нужны два целых порога, незаваренные шлюзы, свободный выход и один ключ."))
+			to_chat(user, span_warning("Метка не создана. Встаньте на свободный пол рядом с незаваренным шлюзом, не по диагонали, и нажмите ключом на шлюз. Вторую метку ставьте на другой клетке в пределах двадцати клеток; помещение должно разрешать телепортацию."))
+	else if(user.a_intent == INTENT_HARM)
+		traverse(user, target)
 
 /obj/item/heretic_path_relic/lock_key/proc/can_release_seal(mob/living/user, obj/structure/heretic_lock_seal/seal, turf/expected_place)
 	if(!authorized(user) || !COOLDOWN_FINISHED(src, relic_cooldown) || QDELETED(seal) || seal.loc != expected_place)
@@ -574,21 +604,31 @@
 	COOLDOWN_START(src, relic_cooldown, HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN)
 	return TRUE
 
-/obj/item/heretic_path_relic/lock_key/proc/can_traverse(mob/living/user, obj/machinery/door/airlock/door, obj/structure/heretic_lock_threshold/destination, generation)
-	if(!authorized(user) || !COOLDOWN_FINISHED(src, passage_cooldown) || QDELETED(destination))
+/obj/item/heretic_path_relic/lock_key/proc/can_traverse(mob/living/user, obj/machinery/door/airlock/door, obj/structure/heretic_lock_threshold/destination, generation, silent = TRUE)
+	if(!authorized(user))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return knowledge?.combat_resource >= 1 && knowledge.court_generation == generation && knowledge.threshold_destination(user, door) == destination
+	if(!knowledge)
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, passage_cooldown))
+		return knowledge.reject_threshold(user, "Ключ ещё восстанавливает переход: осталось [CEILING(COOLDOWN_TIMELEFT(src, passage_cooldown) / (1 SECONDS), 1)] с.", silent)
+	if(knowledge.combat_resource < 1)
+		return knowledge.reject_threshold(user, "В запасе пути нет ключей. Активируйте ритуальный ключ в руке (по умолчанию Z), чтобы получить 1 ключ за 8 ушибов.", silent)
+	if(QDELETED(destination) || knowledge.court_generation != generation)
+		return knowledge.reject_threshold(user, "Связь меток разорвана. Отметьте два шлюза заново на намерении помощи.", silent)
+	return knowledge.threshold_destination(user, door, silent) == destination
 
 /obj/item/heretic_path_relic/lock_key/proc/traverse(mob/living/user, obj/machinery/door/airlock/door)
 	if(busy || !authorized(user))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	var/obj/structure/heretic_lock_threshold/destination = knowledge?.threshold_destination(user, door)
+	var/obj/structure/heretic_lock_threshold/destination = knowledge?.threshold_destination(user, door, silent = FALSE)
+	if(!destination)
+		return FALSE
 	var/generation = knowledge?.court_generation
-	if(!can_traverse(user, door, destination, generation))
+	if(!can_traverse(user, door, destination, generation, silent = FALSE))
 		return FALSE
 	busy = TRUE
 	user.visible_message(span_warning("[user] поворачивает золотой ключ в воздухе перед шлюзом. На полу разгорается скважина!"))
@@ -597,12 +637,16 @@
 	playsound(destination, 'modular_bluemoon/sound/heretic/lock_knock.ogg', 50, TRUE)
 	var/completed = do_after(user, passage_time, target = door, extra_checks = CALLBACK(src, PROC_REF(can_traverse), user, door, destination, generation))
 	busy = FALSE
-	if(!completed || !can_traverse(user, door, destination, generation) || !knowledge.spend_combat_resource())
+	if(!completed)
+		to_chat(user, span_warning("Переход прерван: оставайтесь на метке, держите ключ в руке и не меняйте условия перехода до конца подготовки. Ключ из запаса не потрачен."))
+		return FALSE
+	if(!can_traverse(user, door, destination, generation, silent = FALSE) || !knowledge.spend_combat_resource())
 		return FALSE
 	var/turf/origin = get_turf(user)
 	var/turf/landing = get_turf(destination)
 	if(!do_teleport(user, landing, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(user) != landing)
 		knowledge.gain_combat_resource()
+		to_chat(user, span_warning("Телепортация сорвалась. Ключ возвращён в запас пути."))
 		return FALSE
 	COOLDOWN_START(src, passage_cooldown, HERETIC_LOCK_THRESHOLD_COOLDOWN)
 	new /obj/effect/temp_visual/heretic_lock/release(origin)
@@ -755,7 +799,11 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return heretic_check(user, isturf(target) && knowledge?.combat_resource >= 1 && length(knowledge.seals) < knowledge.seal_limit() && knowledge.valid_seal_turf(target, user), silent, "Для печати нужны свободный видимый пол, 1 ключ и свободное место в пределе печатей.")
+	if(!heretic_require_knowledge(user, silent, /datum/eldritch_knowledge/base_lock, 1))
+		return FALSE
+	if(!heretic_check(user, length(knowledge.seals) < knowledge.seal_limit(), silent, "Достигнут предел печатей: [length(knowledge.seals)]/[knowledge.seal_limit()]. Снимите свою печать пустой рукой на намерении помощи или дождитесь её исчезновения."))
+		return FALSE
+	return heretic_check(user, isturf(target) && knowledge.valid_seal_turf(target, user), silent, "Укажите свободный видимый пол в пяти клетках от себя. На занятой клетке печать не появится.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
