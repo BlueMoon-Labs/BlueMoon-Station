@@ -33,6 +33,7 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/t_ray,
 		/obj/item/mod/module/mister/atmos,
+		/obj/item/mod/module/magboot,
 	)
 
 /obj/item/mod/control/pre_equipped/advanced
@@ -424,6 +425,7 @@
 		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/storage_upgrader,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/stealth/adv/ninja,
 	)
 
 /obj/item/mod/control/pre_equipped/mage
@@ -433,11 +435,18 @@
 		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/storage_upgrader,
 		/obj/item/mod/module/jetpack/advanced,
-		/obj/item/mod/module/anti_magic/wizard,
+		// /obj/item/mod/module/anti_magic/wizard,
 		/obj/item/mod/module/energy_shield/wizard,
 	)
 
+/obj/item/mod/control/pre_equipped/mage/ComponentInitialize()
+	. = ..()
+	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
+	var/obj/item/clothing/mod_part/suit/chest =  get_chestplate()
+	chest.AddElement(/datum/element/spellcasting, magic_flags, ITEM_SLOT_OCLOTHING)
+
 /obj/item/mod/control/pre_equipped/cargo
+	equip_cell = /obj/item/stock_parts/cell/vortex
 	theme = /datum/mod_theme/cargo
 	initial_modules = list(
 		/obj/item/mod/module/clamp/loader,

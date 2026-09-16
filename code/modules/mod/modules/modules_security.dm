@@ -13,6 +13,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
 	incompatible_modules = list(/obj/item/mod/module/stealth)
 	cooldown_time = 5 SECONDS
+	need_full_deploy = TRUE
 	/// Whether or not the cloak turns off on bumping.
 	var/bumpoff = TRUE
 	/// The alpha applied when the cloak is on.
@@ -73,7 +74,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/magnetic_harness)
 	/// Time before we activate the magnet.
-	var/magnet_delay = 0.8 SECONDS
+	var/magnet_delay = 0.5 SECONDS
 	/// The typecache of all guns we allow.
 	var/static/list/guns_typecache
 	/// The guns already allowed by the modsuit chestplate.
@@ -88,7 +89,7 @@
 /obj/item/mod/module/magnetic_harness/on_install()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	already_allowed_guns = guns_typecache & chestplate.allowed
-	chestplate.allowed |= guns_typecache
+	chestplate.allowed = chestplate.allowed += guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
@@ -219,6 +220,7 @@
 	incompatible_modules = list(
 		/obj/item/mod/module/anomaly_locked/antigrav,
 		/obj/item/mod/module/armor,
+		/obj/item/mod/module/energy_shield,
 		)
 	var/max_charges = 2
 	var/current_charges
@@ -228,6 +230,10 @@
 	var/used_modificator = MOD_DEFAULT_SHIELD_CELL_DRAIN_MODIFICATOR
 	var/need_drain_power = TRUE
 	var/datum/component/shielded/shield_comp
+
+/obj/item/mod/module/energy_shield/Initialize(mapload)
+	. = ..()
+	cooldown_time = recharge_delay //чтобы нельзя было включить/отключить модуль для фулл перезарядки.
 
 /obj/item/mod/module/energy_shield/emp_act(severity)
 	. = ..()

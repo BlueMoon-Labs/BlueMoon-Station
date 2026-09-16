@@ -42,7 +42,7 @@
 	/// Theme used by the MOD TGUI.
 	var/ui_theme = "ntos"
 	/// Allowed items in the chestplate's suit storage.
-	var/list/allowed = list(/obj/item/flashlight, /obj/item/tank/internals)
+	var/list/allowed = ALLOWED_DEFAULT
 	/// List of inbuilt modules. These are different from the pre-equipped suits, you should mainly use these for unremovable modules with 0 complexity.
 	var/list/inbuilt_modules = list()
 	/// Modules blacklisted from the MOD.
@@ -52,6 +52,7 @@
 	var/max_armor_module_count = 2
 	var/can_activate_without_deploy_all_parts = TRUE
 	var/need_block_storage_when_not_active = FALSE
+	var/compatible_with_armor_modules = TRUE
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = MOD_PRESET_DEFAULT,
@@ -59,19 +60,23 @@
 		"lustwish" = MOD_PRESET_DEFAULT,
 		)
 
-/datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin)
-	modsuit.extended_desc = extended_desc
-	modsuit.slowdown_inactive = slowdown_inactive
-	modsuit.slowdown_active = slowdown_active
-	modsuit.complexity_max = complexity_max
+//разделить кашу из кода на внятные проки change_skins_theme и set_theme_stats, чтобы
+//было понятнее и проще разделять инициализацию тему и смену её во время раунда, при рескине. Пока отделено только через if-ы
+/datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin, need_update_stat = TRUE)
+	if(need_update_stat)
+		modsuit.extended_desc = extended_desc
+		modsuit.slowdown_inactive = slowdown_inactive
+		modsuit.slowdown_active = slowdown_active
+		modsuit.complexity_max = complexity_max
+		modsuit.cell_drain = cell_drain
+		modsuit.initial_modules += inbuilt_modules
+		modsuit.hardlight_effect = new hardlight_effect
+		modsuit.max_armor_module_count = max_armor_module_count
+		var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
+		mod_effect.apply_color(hardlight_color)
+
 	modsuit.skin = new_skin || default_skin
 	modsuit.ui_theme = ui_theme
-	modsuit.cell_drain = cell_drain
-	modsuit.initial_modules += inbuilt_modules
-	modsuit.hardlight_effect = new hardlight_effect
-	modsuit.max_armor_module_count = max_armor_module_count
-	var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
-	mod_effect.apply_color(hardlight_color)
 	for(var/index in (modsuit.mod_parts + list(modsuit)))
 		if(index == MOD_PART_CELL)
 			continue
@@ -83,16 +88,19 @@
 			piece = modsuit
 		piece.name = "[name] [piece.name]"
 		piece.desc = "[piece.desc] [desc]"
-		piece.armor = getArmor(arglist(armor))
-		piece.resistance_flags = resistance_flags
-		piece.heat_protection = NONE
-		piece.cold_protection = NONE
-		piece.max_heat_protection_temperature = max_heat_protection_temperature
-		piece.min_cold_protection_temperature = min_cold_protection_temperature
-		piece.permeability_coefficient = permeability_coefficient
-		piece.siemens_coefficient = siemens_coefficient
 		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
 		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
+		if(need_update_stat)
+			//Статы которые НЕ надо менять при рескине
+			piece.armor = getArmor(arglist(armor))
+			piece.resistance_flags = resistance_flags
+			piece.heat_protection = NONE
+			piece.cold_protection = NONE
+			piece.max_heat_protection_temperature = max_heat_protection_temperature
+			piece.min_cold_protection_temperature = min_cold_protection_temperature
+			piece.permeability_coefficient = permeability_coefficient
+			piece.siemens_coefficient = siemens_coefficient
+
 	var/obj/item/clothing/mod_part/suit/chestplate = modsuit.get_chestplate()
-	chestplate.allowed = allowed
+	chestplate.allowed += allowed
 	return TRUE

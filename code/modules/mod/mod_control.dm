@@ -556,6 +556,11 @@
 /obj/item/mod/control/proc/unset_wearer()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_unequip()
+
+	for(var/datum/action/cooldown/module_action/action in wearer.actions)
+		action.Remove(wearer)
+		qdel(action) //сама не удаляется, надо под жопу пнуть
+
 	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, COMSIG_PARENT_QDELETING))
 	wearer.clear_alert("mod_charge")
 	wearer = null
@@ -651,6 +656,9 @@
 				if(armor_module.armor_type != also_module.armor_type)
 					continue
 				armor_by_type_num += 1
+			if(!theme.compatible_with_armor_modules)
+				balloon_alert(user, "Несовместимо!")
+				return
 			if(armor_by_type_num >= max_armor_module_count)
 				balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
 				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)

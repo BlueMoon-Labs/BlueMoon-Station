@@ -232,6 +232,8 @@
 	mod.wearer.face_atom(target)
 	if(!on_use())
 		return FALSE
+	if(mod.is_activating() || !mod.is_active())
+		return FALSE
 	return TRUE
 
 /// Called when an activated module without a device is active and the user alt/middle-clicks

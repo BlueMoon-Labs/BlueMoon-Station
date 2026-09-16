@@ -122,8 +122,9 @@
 /datum/action/cooldown/module_action/New(Target, obj/item/mod/module/module)
 	. = ..()
 	linked_module = module //лишние проверки ставить нет смысла
+	name = linked_module?.name
 	cooldown_time = linked_module?.cooldown_time
-	button_icon_state = module.icon_state
+	button_icon_state = linked_module?.icon_state
 
 /datum/action/cooldown/module_action/Destroy()
 	. = ..()

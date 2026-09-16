@@ -11,7 +11,7 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	allowed = ALLOWED_DEFAULT
+	allowed = ALLOWED_ENGINERING
 	skins = list(
 		"engineering" = MOD_PRESET_DEFAULT,
 		)
@@ -29,6 +29,7 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
+	allowed = ALLOWED_ENGINERING
 	skins = list(
 		"atmospheric" = MOD_PRESET_DEFAULT,
 		)
@@ -48,6 +49,7 @@
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	siemens_coefficient = 0
 	hardlight_color = MOD_COMMAND_COLOR
+	allowed = ALLOWED_ENGINERING
 	skins = list(
 		"advanced" = MOD_PRESET_DEFAULT,
 		)
@@ -69,7 +71,7 @@
 	cell_drain = VERY_HIGHT_CHARGE_DRAIN
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_CARGO_BLUE
-	allowed = /obj/item/clothing/suit/hooded/explorer/standard::allowed
+	allowed = ALLOWED_CARGO
 	skins = list(
 		"mining" = MOD_PRESET_DEFAULT,
 		"asteroid" = MOD_PRESET_DEFAULT,
@@ -87,7 +89,7 @@
 	default_skin = "medical"
 	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
 	hardlight_color = MOD_MEDBAY_COLOR
-	allowed = /obj/item/clothing/suit/toggle/labcoat/paramedic::allowed
+	allowed = ALLOWED_MEDICAL
 	skins = list(
 		"medical" = MOD_PRESET_DEFAULT,
 		"corpsman" = MOD_PRESET_DEFAULT,
@@ -108,7 +110,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_MEDBAY_COLOR
-	allowed = /obj/item/clothing/suit/toggle/labcoat/paramedic::allowed //TODO: поменять на GLOB.medical_allowed_list
+	allowed = ALLOWED_MEDICAL
 	skins = list(
 		"rescue" = MOD_PRESET_DEFAULT,
 	)
@@ -129,7 +131,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_RESEARCH_COLOR
-	allowed = /obj/item/clothing/suit/toggle/labcoat/science::allowed
+	allowed = ALLOWED_SCIENCE
 	skins = list(
 		"research" = MOD_PRESET_DEFAULT,
 	)
@@ -150,7 +152,7 @@
 	siemens_coefficient = 0
 	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = MOD_SEC_COLOR
-	allowed = /obj/item/clothing/suit/armor/hos/platecarrier::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"security" = MOD_PRESET_DEFAULT,
 	)
@@ -161,7 +163,7 @@
 	default_skin = "vanguard"
 	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = "#800080"
-	allowed = /obj/item/clothing/suit/armor/hos/platecarrier::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"vanguard" = MOD_PRESET_DEFAULT,
 	)
@@ -182,7 +184,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
 	hardlight_color = MOD_COMMAND_COLOR
-	allowed = /obj/item/clothing/suit/armor/hos/platecarrier::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"praetorian" = MOD_PRESET_DEFAULT,
 		"blacksec" = MOD_PRESET_DEFAULT,
@@ -211,7 +213,7 @@
 	siemens_coefficient = 0
 	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
-	allowed = /obj/item/clothing/suit/armor/hos/platecarrier::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"safeguard" = MOD_PRESET_DEFAULT,
 	)
@@ -235,7 +237,7 @@
 	siemens_coefficient = 0
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"magnate" = MOD_PRESET_DEFAULT,
 	)
@@ -273,7 +275,7 @@
 	siemens_coefficient = 0
 	ui_theme = "syndicate"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/hardsuit/syndi::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
 		"syndicate" = MOD_PRESET_DEFAULT,
@@ -296,7 +298,7 @@
 	siemens_coefficient = 0
 	ui_theme = "syndicate"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/hardsuit/syndi/elite::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
 		"elite"            = MOD_PRESET_DEFAULT,
@@ -338,7 +340,7 @@
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
 		"responsory"  = MOD_PRESET_DEFAULT,
@@ -360,7 +362,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	complexity_max = CENTCOM_MAX_COMPLEXITY
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
@@ -380,7 +382,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	hardlight_color = MOD_SYNDICATE_COLOR
 	skins = list(
 		"corporate" = MOD_PRESET_DEFAULT,
@@ -397,7 +399,7 @@
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	complexity_max = DEBUG_COMPLEXITY
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"debug" = MOD_PRESET_DEFAULT,
 	)
@@ -415,7 +417,7 @@
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	complexity_max = DEBUG_COMPLEXITY
 	cell_drain = DEBUG_LOW_CHARGE_DRAIN
-	allowed = /obj/item/clothing/suit/armor/vest/capcarapace::allowed
+	allowed = ALLOWED_SECURITY
 	skins = list(
 		"debug" = MOD_PRESET_DEFAULT,
 	)
@@ -430,7 +432,7 @@
 	siemens_coefficient = 0
 	ui_theme = "inteq"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/hardsuit/syndi/inteq::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_color = MOD_INTEQ_COLOR
 	skins = list(
 		"InteQ" = MOD_PRESET_DEFAULT,
@@ -442,7 +444,7 @@
 	Неплохая броня и улучшенный джетпак позволяют вести уверенный бой в условиях космоса и разгерметизаций, а \
 	встроенная кобура - прятать оружие, оно не помещается в рюкзак. "
 	default_skin = "inteqe"
-	allowed = /obj/item/clothing/suit/space/hardsuit/syndi/inteq::allowed
+	allowed = ALLOWED_ANTAG
 	armor = list(MELEE = 40, BULLET = 35, LASER = 15, ENERGY = 15, BOMB = 35, BIO = 100, RAD = 100, FIRE = 50, ACID = 90, RAD = 100, WOUND = 25)
 	skins = list(
 		"inteqe" = MOD_PRESET_DEFAULT,
@@ -458,7 +460,7 @@
 	siemens_coefficient = 0
 	ui_theme = "inteq"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/hardsuit/syndi/inteq::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
 	skins = list(
 		"infiltrator" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT,
@@ -488,7 +490,7 @@
 	siemens_coefficient = 0
 	ui_theme = "ninja"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/space_ninja::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
 	hardlight_color = MOD_NINJA_COLOR
 	skins = list(
@@ -512,7 +514,7 @@
 	siemens_coefficient = 0
 	ui_theme = "enchanted"
 	inbuilt_modules = list()
-	allowed = /obj/item/clothing/suit/space/hardsuit/shielded/wizard::allowed
+	allowed = ALLOWED_ANTAG
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
 	hardlight_color = MOD_MAGE_FEDERATION_COLOR
 	skins = list(
@@ -532,6 +534,7 @@
 	cell_drain = DEFAULT_CHARGE_DRAIN
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_CARGO_BLUE
+	allowed = ALLOWED_CARGO
 	skins = list(
 		//НЕ защищает от космоса. Он НЕ герметичный. Это просто рама для тягания тяжестей.
 		"loader" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT_NO_JUMSUIT_HIDE,

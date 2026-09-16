@@ -44,6 +44,9 @@
 		. += (span_alert("Материал --[(material)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
 
 /obj/item/mod/module/armor/proc/add_armor_bonus()
+	if(!mod.theme.compatible_with_armor_modules)
+		on_uninstall()
+		return
 	for(var/index in mod.mod_parts)
 		if(index == MOD_PART_CELL)
 			continue
