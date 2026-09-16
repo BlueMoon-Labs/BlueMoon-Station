@@ -152,13 +152,16 @@
 		return FALSE
 	var/mob/living/victim = soul.owner
 	var/reward = victim.mind && victim.mob_size >= MOB_SIZE_HUMAN && COOLDOWN_FINISHED(src, spirit_harvest)
+	var/resource_before = combat_resource
 	new /obj/effect/temp_visual/heretic_spirit/burst(get_turf(soul.anchor), src)
+	soul.reap_end_reason = "перевозчик собрал душу"
 	qdel(soul)
 	if(reward)
 		gain_combat_resource()
 		user.adjustStaminaLoss(-HERETIC_SPIRIT_STAMINA_RESTORE)
 		COOLDOWN_START(src, spirit_harvest, HERETIC_SPIRIT_HARVEST)
 		to_chat(user, span_notice("Фонарь принимает плату за переправу. Вы получаете обол."))
+	user.log_message("Собрана душа [key_name(victim)]: получено [combat_resource - resource_before] оболов, запас [combat_resource]/[combat_resource_max].", LOG_ATTACK)
 	playsound(user, 'modular_bluemoon/sound/heretic/spirit_impact.ogg', 40, TRUE)
 	return reward
 
@@ -167,10 +170,13 @@
 		return FALSE
 	if(!heretic_can_affect(user, victim))
 		return TRUE
+	var/brute_before = victim.getBruteLoss()
+	var/stamina_before = victim.getStaminaLoss()
 	victim.adjustBruteLoss(20)
 	if(!can_use(user) || QDELETED(victim))
 		return TRUE
 	victim.adjustStaminaLoss(15)
+	log_combat(user, victim, "поражает Разлучением", addition = "фактически [round(victim.getBruteLoss() - brute_before, 0.1)] ушибов и [round(victim.getStaminaLoss() - stamina_before, 0.1)] выносливости")
 	separate(victim, src)
 	new /obj/effect/temp_visual/heretic_spirit/grasp(get_turf(victim), src)
 	playsound(victim, 'modular_bluemoon/sound/heretic/spirit_grasp.ogg', 60, TRUE)
@@ -208,9 +214,11 @@
 		return FALSE
 	if(!heretic_can_affect(user, victim))
 		return TRUE
+	var/brute_before = victim.getBruteLoss()
 	victim.adjustBruteLoss(22)
 	if(!can_use(user) || QDELETED(victim))
 		return TRUE
+	log_combat(user, victim, "наносит первый удар Жатвы", addition = "фактически [round(victim.getBruteLoss() - brute_before, 0.1)] ушибов")
 	var/datum/status_effect/heretic_spirit/separated/soul = separate(victim, required)
 	soul?.arm(required, 25)
 	new /obj/effect/temp_visual/heretic_spirit/reap(get_turf(victim), src)
@@ -281,6 +289,7 @@
 	var/drain_limit = HERETIC_SPIRIT_DRAIN_LIMIT
 	var/reap_at = 0
 	var/reap_damage = 0
+	var/reap_end_reason = "связь оборвана: расстояние, преграда, защита или утрата силы"
 
 /datum/status_effect/heretic_spirit/separated/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_spirit/spirit, datum/eldritch_knowledge/required)
 	spirit_ref = WEAKREF(spirit)
@@ -311,10 +320,12 @@
 
 /datum/status_effect/heretic_spirit/separated/proc/on_knowledge_deleted(datum/source)
 	SIGNAL_HANDLER
+	reap_end_reason = "знание утрачено"
 	qdel(src)
 
 /datum/status_effect/heretic_spirit/separated/proc/on_owner_dead(datum/source)
 	SIGNAL_HANDLER
+	reap_end_reason = "цель погибла"
 	qdel(src)
 
 /datum/status_effect/heretic_spirit/separated/proc/update_overlay(atom/source, list/overlays)
@@ -330,6 +341,7 @@
 	if(get_turf(owner) != get_turf(anchor))
 		moved_away = TRUE
 	else if(moved_away)
+		reap_end_reason = "цель вернулась к своей душе"
 		qdel(src)
 
 /datum/status_effect/heretic_spirit/separated/proc/validate_link()
@@ -356,6 +368,7 @@
 	if(get_turf(owner) != get_turf(anchor))
 		moved_away = TRUE
 	else if(moved_away)
+		reap_end_reason = "цель вернулась к своей душе"
 		qdel(src)
 		return
 	if(reap_at && world.time >= reap_at)
@@ -370,17 +383,35 @@
 	if(!reap_at || world.time < reap_at)
 		return FALSE
 	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
-	var/can_hit = validate_link() && get_dist(owner, anchor) > 1 && heretic_can_affect(spirit.spirit_body, owner)
+	var/link_valid = validate_link()
+	var/near_soul = link_valid && get_dist(owner, anchor) <= 1
+	var/can_hit = link_valid && !near_soul && heretic_can_affect(spirit.spirit_body, owner)
 	if(can_hit)
-		owner.adjustBruteLoss(reap_damage)
-		if(!QDELETED(owner) && !QDELETED(spirit))
-			new /obj/effect/temp_visual/heretic_spirit/reap(get_turf(owner), spirit)
-			playsound(owner, 'modular_bluemoon/sound/heretic/spirit_impact.ogg', 65, TRUE)
-	qdel(src)
+		var/mob/living/victim = owner
+		var/mob/living/user = spirit.spirit_body
+		var/brute_before = victim.getBruteLoss()
+		reap_at = 0
+		victim.adjustBruteLoss(reap_damage)
+		if(!QDELETED(victim) && !QDELETED(user))
+			var/actual_damage = round(victim.getBruteLoss() - brute_before, 0.1)
+			log_combat(user, victim, "завершает Жатву", addition = "второй удар: [actual_damage] ушибов")
+			to_chat(user, span_notice("Жатва настигла [victim]: [actual_damage] ушибов."))
+			if(!QDELETED(spirit))
+				new /obj/effect/temp_visual/heretic_spirit/reap(get_turf(victim), spirit)
+				playsound(victim, 'modular_bluemoon/sound/heretic/spirit_impact.ogg', 65, TRUE)
+	else if(near_soul)
+		reap_end_reason = "цель осталась рядом со своей душой"
+	if(!QDELETED(src))
+		qdel(src)
 	return can_hit
 
 /datum/status_effect/heretic_spirit/separated/on_remove()
 	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	var/mob/living/user = spirit?.spirit_body
+	if(reap_at && !QDELETED(user))
+		user.log_message("Жатва [key_name(owner)] отменена: [reap_end_reason].", LOG_ATTACK)
+		to_chat(user, span_notice("Жатва не сработала: [reap_end_reason]."))
+	reap_at = 0
 	spirit?.souls.Remove(src)
 	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
 	if(required)
@@ -404,7 +435,7 @@
 
 /obj/structure/heretic_spirit_soul
 	name = "unmoored soul"
-	desc = "Серебристый силуэт, привязанный к ещё живому телу. Хозяин может погасить его касанием. Разрушение не вредит телу; нулевой жезл сразу обрывает связь. Перевозчик собирает силуэт пустой рукой."
+	desc = "Серебристый силуэт, привязанный к ещё живому телу. Хозяин может погасить его касанием. Разрушение не вредит телу; нулевой жезл сразу обрывает связь. Перевозчик собирает силуэт пустой рукой. Крюком нужно бить тело, а не душу; сбор души отменяет подготовленную Жатву."
 	icon = 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'
 	icon_state = "spirit_soul"
 	anchored = TRUE
@@ -413,6 +444,7 @@
 	layer = ABOVE_MOB_LAYER
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
 	var/datum/weakref/effect_ref
+	COOLDOWN_DECLARE(hook_warning)
 
 /obj/structure/heretic_spirit_soul/Initialize(mapload, datum/status_effect/heretic_spirit/separated/effect)
 	. = ..()
@@ -428,6 +460,7 @@
 	var/datum/status_effect/heretic_spirit/separated/effect = effect_ref?.resolve()
 	if(user == effect?.owner)
 		to_chat(user, span_notice("Вы возвращаете себе душу."))
+		effect.reap_end_reason = "цель коснулась своей души"
 		qdel(effect)
 		return
 	var/datum/eldritch_knowledge/base_spirit/spirit = effect?.spirit_ref?.resolve()
@@ -437,6 +470,14 @@
 	return ..()
 
 /obj/structure/heretic_spirit_soul/attackby(obj/item/weapon, mob/living/user, params, attackchain_flags = NONE, damage_multiplier = 1)
+	var/datum/status_effect/heretic_spirit/separated/effect = effect_ref?.resolve()
+	var/datum/eldritch_knowledge/base_spirit/spirit = effect?.spirit_ref?.resolve()
+	if(istype(weapon, /obj/item/melee/sickly_blade/spirit) && user == spirit?.spirit_body)
+		if(user.Adjacent(src) && COOLDOWN_FINISHED(src, hook_warning))
+			COOLDOWN_START(src, hook_warning, 5 SECONDS)
+			to_chat(user, span_notice("Крюком бейте тело: удары по душе не передают урон. Соберите душу пустой рукой или фонарём, если хотите получить обол; это отменит подготовленную Жатву."))
+			user.log_message("не разрушает свою отделённую душу [key_name(effect.owner)] крюком перевозчика; связь сохранена.", LOG_ATTACK)
+		return STOP_ATTACK_PROC_CHAIN
 	if(istype(weapon, /obj/item/nullrod) && user.Adjacent(src))
 		qdel(src)
 		return
@@ -446,6 +487,7 @@
 	var/datum/status_effect/heretic_spirit/separated/effect = effect_ref?.resolve()
 	effect_ref = null
 	if(!QDELETED(effect))
+		effect.reap_end_reason = "душа разрушена"
 		if(effect.anchor == src)
 			effect.anchor = null
 		qdel(effect)
@@ -505,7 +547,7 @@
 
 /obj/item/melee/sickly_blade/spirit
 	name = "ferryman's hook"
-	desc = "Серебряный ритуальный крюк с полой рукоятью. Внутри позвякивает единственная монета, которую невозможно вытряхнуть."
+	desc = "Серебряный ритуальный крюк с полой рукоятью. Внутри позвякивает единственная монета, которую невозможно вытряхнуть. Бейте тело противника: удар по отделённой вами душе сохраняет её для Жатвы. Для сбора души нужна пустая рука или фонарь."
 	icon = 'modular_bluemoon/icons/obj/heretic_spirit.dmi'
 	icon_state = "spirit_blade"
 	item_state = "spirit_blade"
@@ -789,7 +831,18 @@
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return heretic_check(user, target && isturf(target.loc) && spirit?.can_use(user) && spirit.line_clear(user, target, range) && heretic_can_affect(user, target, chargecost = 0), silent, "Выберите видимого противника вне контейнера и без защиты от магии.")
+	if(!heretic_check(user, isliving(target) && target != user, silent, "Выберите тело живого противника, а не силуэт души."))
+		return FALSE
+	var/mob/living/victim = target
+	if(!heretic_check(user, !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Это союзник Мансуса: еретики и их слуги защищены от этой способности."))
+		return FALSE
+	if(!heretic_check(user, victim.stat != DEAD && isturf(victim.loc), silent, "Нужно живое тело вне шкафа или другого контейнера."))
+		return FALSE
+	if(!heretic_check(user, spirit?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу."))
+		return FALSE
+	if(!heretic_check(user, spirit.line_clear(user, victim, range), silent, "Цель должна быть не дальше [range] клеток по открытой линии без стен и преград."))
+		return FALSE
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	name = "Разлучение"

@@ -211,6 +211,106 @@
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_spirit/separated), "Защищённый не получает душу.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Звон не ранит самого перевозчика.")
 
+/// Собственный крюк сохраняет душу и Жатву, а чужое оружие по-прежнему разрывает связь.
+/datum/unit_test/heretic_spirit_own_hook/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/obj/item/melee/sickly_blade/spirit/hook = allocate(/obj/item/melee/sickly_blade/spirit)
+	TEST_ASSERT(spirit.reap(user, victim), "Жатва подготовлена.")
+	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+	var/expiry = soul.duration
+	var/reap_at = soul.reap_at
+	var/resource_before = spirit.combat_resource
+	anchor.attackby(hook, user)
+	TEST_ASSERT(!QDELETED(anchor) && !QDELETED(soul), "Свой крюк не разрушает связь.")
+	TEST_ASSERT_EQUAL(anchor.obj_integrity, anchor.max_integrity, "Своя душа не повреждена.")
+	TEST_ASSERT_EQUAL(soul.reap_at, reap_at, "Подготовленная Жатва не отменяется и не откладывается.")
+	TEST_ASSERT_EQUAL(soul.duration, expiry, "Подсказка не продлевает душу.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, resource_before, "За подсказку не выдаётся обол.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 22) <= DAMAGE_PRECISION, "Клик не добавляет урона телу.")
+	anchor.attackby(hook, victim)
+	TEST_ASSERT(QDELETED(anchor) && QDELETED(soul), "Жертва может разрушить душу тем же оружием.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 22) <= DAMAGE_PRECISION, "Контрмера не ранит тело.")
+
+/// Причины отказа отличают союзника, душу, контейнер, преграду и антимагию без затрат ресурса.
+/datum/unit_test/heretic_spirit_target_feedback/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/sever/spell = spirit.combat_power
+	var/datum/antagonist/heretic/ally = allocate_heretic(get_step(user, NORTH))
+	TEST_ASSERT(!spell.can_target(ally.owner.current, user, TRUE), "Боевой эффект не действует на другого еретика.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "союзник Мансуса"), "Отказ прямо называет союзника.")
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	TEST_ASSERT(!spell.can_target(soul.anchor, user, TRUE), "Целью выбирается тело, а не душа.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "тело живого противника"), "Подсказка объясняет выбор тела.")
+	var/obj/item/storage/box/box = allocate(/obj/item/storage/box, get_turf(victim))
+	victim.forceMove(box)
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Контейнер защищает цель.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "контейнера"), "Подсказка указывает контейнер.")
+	victim.forceMove(get_step(user, EAST))
+	var/obj/blocker = allocate(/obj, get_turf(victim))
+	blocker.density = TRUE
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Преграда закрывает цель.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "преград"), "Подсказка указывает преграду.")
+	qdel(blocker)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 3)
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Антимагия закрывает цель.")
+	TEST_ASSERT_EQUAL(spell.heretic_failure_reason, "Цель защищена от магии.", "Подсказка указывает антимагию.")
+	TEST_ASSERT_EQUAL(protection.charges, 3, "Проверки не расходуют защиту.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 3, "Проверки не расходуют оболы.")
+	qdel(protection)
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Освобождённая цель доступна.")
+	TEST_ASSERT_NULL(spell.heretic_failure_reason, "Успешная проверка убирает старую причину.")
+
+/// Жатва пишет один итог с фактическим уроном или причиной отмены, включая смертельное попадание.
+/datum/unit_test/heretic_spirit_reap_logging/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	for(var/scenario in list("hit", "lethal", "stay", "touch", "destroy", "return"))
+		var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+		user.logging[num2text(LOG_ATTACK)] = list()
+		TEST_ASSERT(spirit.reap(user, victim), "Первый удар создаёт душу.")
+		var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+		var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+		switch(scenario)
+			if("hit", "lethal")
+				victim.forceMove(get_step(get_step(victim, NORTH), NORTH))
+				if(scenario == "lethal")
+					victim.setToxLoss(victim.getToxLoss() + victim.health - (HEALTH_THRESHOLD_DEAD + 5), forced = TRUE)
+					TEST_ASSERT(victim.stat != DEAD && abs(victim.health - (HEALTH_THRESHOLD_DEAD + 5)) <= DAMAGE_PRECISION, "Цель жива и находится в пяти единицах здоровья от смерти.")
+				soul.reap_at = world.time
+				soul.finish_reap()
+			if("stay")
+				soul.reap_at = world.time
+				soul.finish_reap()
+			if("touch")
+				anchor.attack_hand(victim)
+			if("destroy")
+				anchor.take_damage(100, BRUTE, MELEE)
+			if("return")
+				victim.forceMove(get_step(victim, NORTH))
+				victim.forceMove(get_turf(anchor))
+		TEST_ASSERT(QDELETED(soul), "Сценарий [scenario] завершает связь.")
+		var/list/attack_log = user.logging[num2text(LOG_ATTACK)]
+		TEST_ASSERT_EQUAL(length(attack_log), 2, "Есть начальный удар и ровно один итог [scenario].")
+		var/list/result = attack_log[2]
+		if(scenario == "hit" || scenario == "lethal")
+			TEST_ASSERT(findtext(result["what"], "второй удар: 25 ушибов"), "Попадание пишет фактический урон [scenario].")
+			if(scenario == "lethal")
+				TEST_ASSERT_EQUAL(victim.stat, DEAD, "Второй удар действительно смертелен.")
+		else
+			var/list/reasons = list("stay" = "цель осталась рядом", "touch" = "цель коснулась", "destroy" = "душа разрушена", "return" = "цель вернулась")
+			TEST_ASSERT(findtext(result["what"], reasons[scenario]), "Отмена пишет причину [scenario].")
+		qdel(victim)
+
 /// Плата ограничена общей задержкой, разумной целью и конечным запасом.
 /datum/unit_test/heretic_spirit_harvest/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))

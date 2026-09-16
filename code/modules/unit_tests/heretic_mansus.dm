@@ -611,12 +611,15 @@
 	var/previous_step_at
 	var/shortest_interval = INFINITY
 	var/longest_step = 0
+	var/expected_glide_size
 
 /obj/effect/heretic_mansus_hunter/movement_fixture/Move(atom/destination, direction, glide_size_override)
 	var/turf/origin = get_turf(src)
+	var/step_glide_size = DELAY_TO_GLIDE_SIZE(0.5 SECONDS)
 	. = ..()
 	if(!.)
 		return
+	expected_glide_size = step_glide_size
 	moves++
 	longest_step = max(longest_step, get_dist(origin, src))
 	if(!isnull(previous_step_at))
@@ -646,7 +649,7 @@
 	TEST_ASSERT_EQUAL(hunter.longest_step, 1, "Каждый шаг переносит тень только на соседнюю клетку.")
 	TEST_ASSERT_EQUAL(hunter.animate_movement, SLIDE_STEPS, "Шаги используют плавное движение BYOND.")
 	TEST_ASSERT(hunter.appearance_flags & LONG_GLIDE, "Запоздавшая анимация не обрывается на середине клетки.")
-	TEST_ASSERT_EQUAL(hunter.glide_size, DELAY_TO_GLIDE_SIZE(0.5 SECONDS), "Скорость анимации соответствует ускоренному темпу.")
+	TEST_ASSERT_EQUAL(hunter.glide_size, hunter.expected_glide_size, "Скорость анимации соответствует ускоренному темпу на момент шага.")
 	victim.forceMove(get_turf(hunter))
 	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Тень опасна и между шагами, пока её спрайт скользит по клетке.")
 	visit.finish()

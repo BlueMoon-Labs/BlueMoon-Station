@@ -31,12 +31,15 @@
 	start_recharge() //будит SSfastprocess: рука выставляется с charge_counter = 0
 	action.UpdateButtons()
 
-/obj/effect/proc_holder/spell/targeted/touch/proc/cancel_cast(mob/user = usr)
+/obj/effect/proc_holder/spell/targeted/touch/proc/cancel_cast(mob/user)
 	if(attached_hand)
 		remove_hand(TRUE)
 		action?.UpdateButtons()
-		var/cancel_message = IS_HERETIC(user) ? "[name]: подготовка отменена." : dropmessage
-		to_chat(user, span_notice(cancel_message))
+		if(!ismob(user))
+			user = action?.owner
+		if(!QDELETED(user))
+			var/cancel_message = IS_HERETIC(user) ? "[name]: подготовка отменена." : dropmessage
+			to_chat(user, span_notice(cancel_message))
 		return TRUE
 
 /obj/effect/proc_holder/spell/targeted/touch/cast(list/targets,mob/user = usr)

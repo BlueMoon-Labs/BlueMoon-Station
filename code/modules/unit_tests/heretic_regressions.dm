@@ -797,6 +797,36 @@
 	SIGNAL_HANDLER
 	hand.attached_spell.cancel_cast(user)
 
+/// Сброс контактной руки без usr и отмена с числом вместо пользователя безопасно освобождают руку.
+/datum/unit_test/heretic_touch_cancel_without_user/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	for(var/spell_type in list(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp, /obj/effect/proc_holder/spell/targeted/touch/disintegrate))
+		var/obj/effect/proc_holder/spell/targeted/touch/spell = allocate(spell_type)
+		for(var/has_owner in list(FALSE, TRUE))
+			if(has_owner)
+				spell.action.Grant(user)
+			for(var/drop_hand in list(FALSE, TRUE))
+				TEST_ASSERT(spell.ChargeHand(user), "Контактная рука подготовлена.")
+				spell.charge_counter = 0
+				var/obj/item/melee/touch_attack/hand = spell.attached_hand
+				if(drop_hand)
+					user.drop_all_held_items()
+				else
+					TEST_ASSERT(spell.cancel_cast(0), "Отмена принимает отсутствие моба-пользователя.")
+				TEST_ASSERT(QDELETED(hand), "Подготовленная рука удалена.")
+				TEST_ASSERT_NULL(spell.attached_hand, "Заклинание не удерживает удалённую руку.")
+				TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Неиспользованный заряд возвращён.")
+		qdel(spell)
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/grasp = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	TEST_ASSERT(grasp.ChargeHand(user), "Подготовлена рука для начатого удара.")
+	var/obj/item/melee/touch_attack/mansus_fist/active_hand = grasp.attached_hand
+	active_hand.grasp_in_progress = TRUE
+	TEST_ASSERT(grasp.cancel_cast(0), "Начатая Хватка тоже отменяется без пользователя.")
+	TEST_ASSERT(QDELETED(active_hand) && isnull(grasp.attached_hand), "Начатая рука удалена.")
+	TEST_ASSERT_EQUAL(grasp.charge_counter, 0, "Начатый удар не возвращает заряд.")
+	TEST_ASSERT(grasp.recharging, "Начатый удар запускает перезарядку.")
+
 /// Переключение контактных способностей освобождает руку и сохраняет клинок и неиспользованный заряд.
 /datum/unit_test/heretic_prepared_touch_switch/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

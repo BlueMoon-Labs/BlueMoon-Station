@@ -41,7 +41,7 @@
 	action_icon_state = "mansus_grasp"
 	action_background_icon_state = "bg_ecult"
 
-/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/cancel_cast(mob/user = usr)
+/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/cancel_cast(mob/user)
 	var/obj/item/melee/touch_attack/mansus_fist/hand = attached_hand
 	if(!istype(hand) || !hand.grasp_in_progress)
 		return ..()
@@ -52,7 +52,10 @@
 		charge_counter = 0
 		start_recharge()
 		action?.UpdateButtons()
-	to_chat(user, span_notice("Хватка рассеяна. Уже начатый удар расходует заряд."))
+	if(!ismob(user))
+		user = action?.owner
+	if(!QDELETED(user))
+		to_chat(user, span_notice("Хватка рассеяна. Уже начатый удар расходует заряд."))
 	return TRUE
 
 /obj/item/melee/touch_attack/mansus_fist
