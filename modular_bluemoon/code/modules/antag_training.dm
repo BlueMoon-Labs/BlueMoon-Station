@@ -13,7 +13,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	job_description = "Тренировочный полигон"
 	mob_name = "участник тренировки"
 	short_desc = "Арены, тир, противники, лаборатория и учебные роли. Одному или с друзьями."
-	flavour_text = "Войдите на общий полигон для совместных тренировок. Пульт выдаёт снаряжение, создаёт цели, восстанавливает здоровье и меняет учебную роль."
+	flavour_text = "Войдите на общий полигон своей куклой из активного слота персонажа или стандартным учебным персонажем. Пульт выдаёт снаряжение, создаёт цели, восстанавливает здоровье и меняет учебную роль."
 	important_info = "Тренировка изолирована от раунда. Возвращение в призрака сохраняет прежние ограничения на вход в игру. Совместный полигон предполагает добровольные бои и эксперименты между участниками."
 	roundstart = FALSE
 	death = FALSE
@@ -38,6 +38,9 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	var/choice = tgui_input_list(user, "Выберите личную программу для общего полигона. Вход означает согласие на совместные тренировки и PvP. Свою роль можно сменить позже.", job_description, programs)
 	if(!choice || QDELETED(user) || !allow_spawn(user) || jobban_isbanned(user, banType))
 		return FALSE
+	var/appearance_choice = tgui_alert(user, "Можно загрузить свою куклу из активного слота персонажа: имя, расу и внешность. Снаряжение выдаётся учебное.", job_description, list("Своя кукла", "Учебная кукла", "Отмена"))
+	if(!(appearance_choice in list("Своя кукла", "Учебная кукла")) || QDELETED(user) || !allow_spawn(user) || jobban_isbanned(user, banType))
+		return FALSE
 	var/datum/antag_training_arena/shared = GLOB.antag_training_arenas["shared"]
 	if(shared?.finished)
 		to_chat(user, span_notice("Общий полигон очищается. Попробуйте немного позже."))
@@ -45,7 +48,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	to_chat(user, span_notice("Подготавливаем учебного персонажа и полигон. Это может занять несколько секунд."))
 	var/player_key = user.ckey
 	GLOB.antag_training_pending |= player_key
-	var/datum/antag_training_session/session = new(programs[choice])
+	var/datum/antag_training_session/session = new(programs[choice], appearance_choice == "Своя кукла" ? user.client.prefs : null)
 	var/prepared = session.prepare()
 	GLOB.antag_training_pending -= player_key
 	if(!prepared || QDELETED(user) || !allow_spawn(user) || jobban_isbanned(user, banType) || !session.connect(user))
@@ -235,6 +238,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	var/mob/living/current_body
 	var/datum/mind/avatar_mind
 	var/datum/antag_training_program/program
+	var/datum/preferences/character_preferences
 	var/datum/antag_training_arena/arena
 	var/datum/action/antag_training_controls/controls
 	var/datum/action/antag_training_exit/exit_action
@@ -251,8 +255,9 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	var/auto_recover = TRUE
 	var/cleaning_personal = FALSE
 
-/datum/antag_training_session/New(program_type = /datum/antag_training_program/free)
+/datum/antag_training_session/New(program_type = /datum/antag_training_program/free, datum/preferences/selected_preferences)
 	program = new program_type
+	character_preferences = selected_preferences
 
 /datum/antag_training_session/proc/prepare(datum/antag_training_arena/shared_arena)
 	shared_arena ||= GLOB.antag_training_arenas["shared"]
@@ -272,8 +277,12 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 
 /datum/antag_training_session/proc/create_avatar()
 	avatar = new(arena.entry_turf)
-	avatar.real_name = return_name || "Участник [length(arena.members)]"
-	avatar.name = avatar.real_name
+	if(character_preferences)
+		character_preferences.copy_to(avatar, roundstart_checks = FALSE, initial_spawn = TRUE)
+		character_preferences.apply_tattoos_to_human(avatar)
+	else
+		avatar.real_name = return_name || "Участник [length(arena.members)]"
+		avatar.name = avatar.real_name
 	avatar.mind_initialize()
 	avatar_mind = avatar.mind
 	avatar_mind.add_antag_datum(/datum/antagonist/ghost_role/antag_training)
@@ -300,8 +309,9 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	GLOB.antag_training_sessions[player_key] = src
 	connected = TRUE
 	user.transfer_ckey(current_body, FALSE)
-	current_body.real_name = return_name
-	current_body.name = return_name
+	if(!character_preferences)
+		current_body.real_name = return_name
+		current_body.name = return_name
 	START_PROCESSING(SSprocessing, src)
 	to_chat(current_body, span_boldnotice("Полигон готов. «Пульт полигона» открывает зоны, снаряжение, цели и учебные роли. «Выйти в призрака» завершает ваш сеанс. После смерти вы восстановитесь в центре."))
 	return TRUE
@@ -419,6 +429,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	finish(FALSE)
 	clear_avatar()
 	QDEL_NULL(program)
+	character_preferences = null
 	if(arena)
 		arena.members -= src
 		arena.member_left(src)

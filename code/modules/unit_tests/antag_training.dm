@@ -1,11 +1,65 @@
-/datum/unit_test/proc/allocate_training_session(program_type = /datum/antag_training_program/heretic)
+/datum/unit_test/proc/allocate_training_session(program_type = /datum/antag_training_program/heretic, datum/preferences/selected_preferences)
 	for(var/code in GLOB.antag_training_arenas.Copy())
 		var/datum/antag_training_arena/closing = GLOB.antag_training_arenas[code]
 		if(closing?.finished)
 			wait_for_qdeleted(closing, 1 MINUTES)
-	var/datum/antag_training_session/session = new(program_type)
+	var/datum/antag_training_session/session = new(program_type, selected_preferences)
 	allocated += session
 	return session
+
+/// Своя кукла сохраняет внешность при входе, смене роли и восстановлении, а выход возвращает прежнего призрака.
+/datum/unit_test/antag_training_character_appearance/Run()
+	var/datum/preferences/preferences = new
+	allocated += preferences
+	preferences.pref_species = new /datum/species/lizard
+	preferences.real_name = "Training Appearance"
+	preferences.gender = FEMALE
+	preferences.hair_style = "Ponytail"
+	preferences.hair_color = "aabbcc"
+	preferences.features["mcolor"] = "123456"
+	preferences.features["body_size"] = 0.8
+	preferences.modified_limbs = list(BODY_ZONE_R_ARM = list(LOADOUT_LIMB_PROSTHETIC, "prosthetic"), BODY_ZONE_L_LEG = list(LOADOUT_LIMB_AMPUTATED))
+	preferences.persistent_tattoos = TRUE
+	var/tattoo_text = "Учебная татуировка"
+	var/mob/living/carbon/human/tattoo_source = allocate(/mob/living/carbon/human)
+	var/obj/item/bodypart/tattoo_head = tattoo_source.get_bodypart(BODY_ZONE_HEAD)
+	tattoo_head.tattoo_text = tattoo_text
+	preferences.tattoos_string = tattoo_source.format_tattoos()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free, preferences)
+	TEST_ASSERT(session.prepare(), "Полигон создаёт выбранную куклу.")
+	var/mob/dead/observer/observer = allocate(/mob/dead/observer, run_loc_floor_bottom_left)
+	observer.real_name = "Original Observer"
+	observer.can_reenter_corpse = FALSE
+	TEST_ASSERT(session.connect(observer), "Призрак входит своей куклой.")
+	for(var/stage in list("Вход", "Смена роли", "Восстановление"))
+		if(stage == "Смена роли")
+			TEST_ASSERT(session.restart(/datum/antag_training_program/heretic), "Смена роли создаёт новую куклу.")
+			TEST_ASSERT(IS_HERETIC(session.avatar), "Выбранная кукла получает учебную роль.")
+		else if(stage == "Восстановление")
+			session.avatar.forceMove(session.arena.zones["melee"]["spawn"])
+			session.avatar.death()
+			deltimer(session.recovery_timer)
+			session.recover()
+			TEST_ASSERT_EQUAL(session.avatar.stat, CONSCIOUS, "Кукла восстанавливается после смерти.")
+		TEST_ASSERT_EQUAL(session.avatar.real_name, preferences.real_name, "[stage]: имя куклы не заменяется именем призрака.")
+		TEST_ASSERT_EQUAL(session.avatar_mind.name, preferences.real_name, "[stage]: разум получает имя куклы.")
+		TEST_ASSERT_EQUAL(session.avatar.dna.species.type, /datum/species/lizard, "[stage]: сохраняется раса.")
+		TEST_ASSERT_EQUAL(session.avatar.gender, FEMALE, "[stage]: сохраняется пол.")
+		TEST_ASSERT_EQUAL(session.avatar.hair_style, preferences.hair_style, "[stage]: сохраняется причёска.")
+		TEST_ASSERT_EQUAL(session.avatar.hair_color, preferences.hair_color, "[stage]: сохраняется цвет волос.")
+		TEST_ASSERT_EQUAL(session.avatar.dna.features["mcolor"], preferences.features["mcolor"], "[stage]: сохраняется цвет тела.")
+		TEST_ASSERT_EQUAL(session.avatar.dna.features["body_size"], preferences.features["body_size"], "[stage]: сохраняется размер тела.")
+		var/obj/item/bodypart/arm = session.avatar.get_bodypart(BODY_ZONE_R_ARM)
+		TEST_ASSERT(arm?.is_robotic_limb(FALSE), "[stage]: сохраняется протез.")
+		TEST_ASSERT_NULL(session.avatar.get_bodypart(BODY_ZONE_L_LEG), "[stage]: сохраняется выбранная ампутация.")
+		var/obj/item/bodypart/head = session.avatar.get_bodypart(BODY_ZONE_HEAD)
+		TEST_ASSERT_EQUAL(head.tattoo_text, tattoo_text, "[stage]: сохраняется татуировка.")
+		TEST_ASSERT(istype(session.avatar.w_uniform, /obj/item/clothing/under/color/grey), "[stage]: кукла получает учебную форму.")
+	var/mob/dead/observer/returned = session.finish()
+	allocated += returned
+	TEST_ASSERT_EQUAL(returned.real_name, "Original Observer", "Выход возвращает прежнее имя призрака.")
+	TEST_ASSERT(!returned.can_reenter_corpse, "Своя кукла не снимает запрет возвращения в тело.")
+	TEST_ASSERT(!QDELETED(preferences), "Завершение сеанса не удаляет настройки игрока.")
 
 /// Квота подсистемы не блокирует отложенную работу при свободном бюджете тика.
 /datum/unit_test/antag_training_work_budget/Run()
@@ -42,6 +96,8 @@
 	var/obj/item/pen/item = new(arena.entry_turf)
 	TEST_ASSERT(!(SEND_SIGNAL(session.current_body, COMSIG_MOB_PRE_PLAYER_CHANGE, session.current_body, observer) & COMPONENT_STOP_MIND_TRANSFER), "Призрак может получить управление своим учебным персонажем.")
 	TEST_ASSERT(session.connect(observer), "Призрак входит в отдельного персонажа.")
+	TEST_ASSERT_EQUAL(session.current_body.real_name, observer.real_name, "Учебная кукла сохраняет имя призрака.")
+	TEST_ASSERT_EQUAL(session.avatar.dna.species.type, /datum/species/human, "Без своих настроек создаётся стандартная кукла.")
 	TEST_ASSERT_EQUAL(original.mind, original_mind, "Исходный разум остаётся у персонажа раунда.")
 	TEST_ASSERT(!IS_HERETIC(original), "Учебная роль не принадлежит исходному персонажу.")
 	var/mob/dead/observer/returned = session.finish()

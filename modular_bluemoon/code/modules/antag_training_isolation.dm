@@ -65,5 +65,8 @@
 	recovery_timer = null
 	current_body.status_flags &= ~GODMODE
 	current_body.revive(full_heal = TRUE, admin_revive = TRUE)
+	if(character_preferences && current_body == avatar)
+		character_preferences.apply_prefs_modified_limbs(avatar)
+		character_preferences.apply_tattoos_to_human(avatar)
 	current_body.updatehealth()
 	update_safety()
