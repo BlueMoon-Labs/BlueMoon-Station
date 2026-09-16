@@ -676,8 +676,8 @@
 /obj/effect/broken_illusion
 	name = "пронзённая реальность"
 	desc = "В воздухе дрожит тёмный след. При взгляде на него трудно вспомнить, о чём вы только что думали."
-	icon = 'icons/effects/eldritch.dmi'
-	icon_state = "pierced_illusion"
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "rift"
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	alpha = 0

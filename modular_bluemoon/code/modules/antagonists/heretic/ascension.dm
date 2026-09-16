@@ -20,10 +20,9 @@
 	ascension_message = "Пепел поднимается к потолку. Последний фонарь вновь зажжён."
 	ascension_omen = "Свет на мгновение кажется пламенем. Запах пепла проникает даже под герметичный шлем."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_ash.ogg'
-	ascension_aura_icon = 'icons/effects/turf_fire.dmi'
-	ascension_aura_state = "red_big"
+	ascension_aura_state = "ash_aura"
 	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 4
+	ascension_aura_height = 0
 	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
@@ -32,8 +31,7 @@
 	ascension_message = "Сталь отзывается протяжным стоном. Ржавые холмы приняли нового хозяина."
 	ascension_omen = "На языке появляется привкус железа. Кажется, за каждой стеной скребутся корни."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_rust.ogg'
-	ascension_aura_icon = 'icons/effects/eldritch.dmi'
-	ascension_aura_state = "cloud_swirl"
+	ascension_aura_state = "rust_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
 	ascension_aura_scale = 1.5
@@ -44,24 +42,32 @@
 	ascension_message = "Под обшивкой бьётся чужое сердце. Процессия Плоти встречает своего повелителя."
 	ascension_omen = "Чужой пульс на мгновение совпадает с вашим. В тёмном стекле открывается красный глаз."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_flesh.ogg'
-	ascension_aura_state = "eye_pulse"
-	ascension_aura_height = 22
+	ascension_aura_state = "flesh_aura"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/void
 	ascension_title = "Аристократ Пустоты"
 	ascension_message = "Зимняя буря проходит сквозь завесу. Начинается последний вальс."
 	ascension_omen = "Каждый звук приходит будто издалека. Снег мерещится даже там, где ему неоткуда взяться."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_void.ogg'
-	ascension_aura_state = "cloud_swirl"
+	ascension_aura_state = "void_aura"
+	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/blade
 	ascension_title = "Чемпион Последнего Клинка"
 	ascension_message = "В воздухе звенит сталь. Последний поединок окончен, и его победитель выходит за пределы человеческого."
 	ascension_omen = "На краю зрения смыкаются лезвия. Слышен звон удара, который ещё никто не нанёс."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blade.ogg'
-	ascension_aura_state = "ring_leader_effect"
+	ascension_aura_state = "blade_aura"
+	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/moon
@@ -69,8 +75,11 @@
 	ascension_message = "Отражения поворачиваются к невидимой луне. По ту сторону зеркала больше нет пустого места."
 	ascension_omen = "Ваше отражение запаздывает на один вдох. Кажется, оно смотрит на кого-то за вашей спиной."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_moon.ogg'
-	ascension_aura_state = "moon_insanity_overlay"
-	ascension_aura_height = 12
+	ascension_aura_state = "moon_aura"
+	ascension_aura_color = COLOR_WHITE
+	ascension_aura_height = 0
+	ascension_aura_scale = 1.5
+	ascension_aura_background = TRUE
 
 /datum/heretic_path/cosmic
 	ascension_title = "Живое Созвездие"
@@ -300,14 +309,6 @@
 		if(!foreground)
 			vis_flags |= VIS_UNDERLAY
 		appearance_flags |= KEEP_APART | PIXEL_SCALE
-	if(path_id == PATH_BLADE)
-		for(var/blade_index in 1 to 8)
-			var/blade_angle = blade_index * 45
-			var/mutable_appearance/blade = mutable_appearance('modular_bluemoon/icons/obj/heretic_grasp.dmi', "blade_grasp")
-			blade.transform = matrix(blade_angle, MATRIX_ROTATE) * 0.5
-			blade.pixel_x = round(sin(blade_angle) * 18)
-			blade.pixel_y = round(cos(blade_angle) * 18)
-			add_overlay(blade)
 	var/aura_height = pixel_y
 	animate(src, pixel_y = aura_height + (path.ascension_aura_background ? 0 : 3), alpha = 220, time = 2 SECONDS, loop = -1, easing = SINE_EASING)
 	animate(pixel_y = aura_height, alpha = 175, time = 2 SECONDS, easing = SINE_EASING)

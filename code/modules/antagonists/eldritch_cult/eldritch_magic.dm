@@ -23,12 +23,12 @@
 
 /obj/effect/temp_visual/dir_setting/ash_shift
 	name = "пепельный след"
-	icon = 'icons/mob/mob.dmi'
-	icon_state = "ash_shift2"
-	duration = 13
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "ash_shift_out"
+	duration = 12
 
 /obj/effect/temp_visual/dir_setting/ash_shift/out
-	icon_state = "ash_shift"
+	icon_state = "ash_shift_in"
 
 /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp
 	name = "Хватка Мансуса"
@@ -355,7 +355,8 @@
 
 /obj/item/projectile/magic/spell/rust_wave
 	name = "ржавый снаряд"
-	icon_state = "eldritch_projectile"
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "rust_bolt"
 	alpha = 180
 	damage = 50
 	damage_type = TOX
@@ -709,14 +710,16 @@
 	armsy.contract_next_chain_into_single_tile()
 
 /obj/effect/temp_visual/cleave
-	icon = 'icons/effects/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
 	icon_state = "cleave"
-	duration = 6
+	color = "#ff7a4a"
+	duration = 12
 
 /obj/effect/temp_visual/eldritch_smoke
-	icon = 'icons/effects/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
 	icon_state = "smoke"
-	duration = 10
+	color = "#b5a38e"
+	duration = 12
 
 /obj/effect/proc_holder/spell/targeted/fiery_rebirth
 	name = "Возрождение ночного дозорного"
@@ -863,23 +866,26 @@
 
 
 /obj/effect/temp_visual/dir_setting/entropic
-	icon = 'icons/effects/160x160.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_plume.dmi'
 	icon_state = "entropic_plume"
-	duration = 3 SECONDS
+	duration = 2.8 SECONDS
 
 /obj/effect/temp_visual/dir_setting/entropic/setDir(dir)
 	. = ..()
 	switch(dir)
 		if(NORTH)
 			pixel_x = -64
+			transform = matrix(180, MATRIX_ROTATE)
 		if(SOUTH)
 			pixel_x = -64
 			pixel_y = -128
 		if(EAST)
 			pixel_y = -64
+			transform = matrix(-90, MATRIX_ROTATE)
 		if(WEST)
 			pixel_y = -64
 			pixel_x = -128
+			transform = matrix(90, MATRIX_ROTATE)
 
 /obj/effect/temp_visual/glowing_rune
 	icon = 'icons/effects/eldritch.dmi'
@@ -1020,7 +1026,7 @@
 			victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
 
 /obj/effect/temp_visual/voidin
-	icon = 'icons/effects/96x96.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_void.dmi'
 	icon_state = "void_blink_in"
 	alpha = 150
 	duration = 6
@@ -1028,7 +1034,7 @@
 	pixel_y = -32
 
 /obj/effect/temp_visual/voidout
-	icon = 'icons/effects/96x96.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_void.dmi'
 	icon_state = "void_blink_out"
 	alpha = 150
 	duration = 6

@@ -718,6 +718,7 @@
 
 /datum/status_effect/eldritch/rust
 	id = "rust_mark"
+	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	effect_sprite = "sigil_rust"
 	effect_sprite_layer = ABOVE_MOB_LAYER
 	mark_name = "Метка Ржавчины"

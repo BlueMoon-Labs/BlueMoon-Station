@@ -361,8 +361,6 @@
 	desc = "Золотые зубья перекрывают проход. Печать можно разбить кулаками, оружием или снарядами; нуль-жезл снимает её сразу. Еретики, их слуги и защищённые от магии проходят свободно. Газ и свет проходят сквозь печать."
 	icon = 'modular_bluemoon/icons/obj/heretic_lock_gate.dmi'
 	icon_state = "lock_barrier"
-	pixel_x = -32
-	pixel_y = -32
 	density = TRUE
 	anchored = TRUE
 	max_integrity = 60
@@ -488,6 +486,7 @@
 /datum/status_effect/eldritch/lock
 	id = "lock_mark"
 	mark_name = "Метка Замка"
+	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	effect_sprite = "sigil_lock"
 	mark_alert_state = "sigil_lock"
 	detonation_visual = /obj/effect/temp_visual/heretic_lock/release

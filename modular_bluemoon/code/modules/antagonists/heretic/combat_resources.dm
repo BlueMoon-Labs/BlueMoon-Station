@@ -419,7 +419,7 @@
 /obj/effect/heretic_combat_zone
 	name = "эхо Мансуса"
 	desc = "Воздух дрожит над незнакомой печатью. Сила её создателя удерживает здесь частицу Мансуса."
-	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_ash"
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT

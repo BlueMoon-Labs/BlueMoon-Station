@@ -354,7 +354,7 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[book_path]
 	if(!book_open || !path)
 		return
-	var/mutable_appearance/seal = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', path.book_rune, ABOVE_OBJ_LAYER)
+	var/mutable_appearance/seal = mutable_appearance('modular_bluemoon/icons/obj/heretic_alerts.dmi', path.book_rune, ABOVE_OBJ_LAYER)
 	seal.appearance_flags = RESET_COLOR
 	seal.transform = matrix() * 0.6
 	seal.pixel_y = 7
@@ -471,7 +471,7 @@
 		book.attune_book(user, TRUE)
 
 /obj/effect/temp_visual/heretic_script
-	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_ash"
 	duration = 1 SECONDS
 	layer = ABOVE_MOB_LAYER

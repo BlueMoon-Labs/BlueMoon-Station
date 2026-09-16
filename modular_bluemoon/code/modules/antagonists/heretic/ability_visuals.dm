@@ -6,7 +6,7 @@
 	pixel_y = -16
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = ABOVE_MOB_LAYER
-	duration = 0.5 SECONDS
+	duration = 1.2 SECONDS
 
 /obj/effect/temp_visual/heretic_spell/star_step
 	icon_state = "space_explosion"
@@ -30,7 +30,7 @@
 	animate(src, transform = matrix() * 2.5, alpha = 0, time = duration, easing = SINE_EASING)
 
 /// Дуга центрируется на атакующем: её край проходит через соседнюю клетку цели.
-#define HERETIC_SLASH_SCALE 3
+#define HERETIC_SLASH_SCALE 1
 #define HERETIC_SLASH_ANGLE 135
 #define HERETIC_SLASH_REVERSE_ANGLE 225
 
@@ -40,6 +40,8 @@
 	color = "#d9c8ff"
 	alpha = 190
 	duration = 0.6 SECONDS
+	pixel_x = -32
+	pixel_y = -32
 	appearance_flags = PIXEL_SCALE
 
 /obj/effect/temp_visual/dir_setting/heretic_slash/Initialize(mapload, set_dir, reverse = FALSE)

@@ -122,7 +122,7 @@
 /obj/effect/decal/cleanable/heretic_trace
 	name = "след Мансуса"
 	desc = "Здесь произошло что-то, чему нет обычного объяснения."
-	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_ash"
 	alpha = 120
 	mergeable_decal = FALSE

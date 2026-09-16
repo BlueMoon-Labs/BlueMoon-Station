@@ -25,6 +25,7 @@
 	light_range = 0
 
 /obj/effect/temp_visual/heretic_oldpath/rust
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_rust"
 	duration = 12
 	layer = BELOW_MOB_LAYER
@@ -34,6 +35,7 @@
 	color = "#ff4067"
 
 /obj/effect/temp_visual/heretic_oldpath/flesh/mend
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_flesh"
 	color = null
 	duration = 15
@@ -59,18 +61,9 @@
 /obj/effect/temp_visual/heretic_grasp/blade
 	icon_state = "blade_grasp"
 
-/obj/effect/temp_visual/heretic_grasp/blade/Initialize(mapload)
-	. = ..()
-	var/mutable_appearance/crossing_blade = mutable_appearance(icon, icon_state)
-	crossing_blade.transform = matrix(90, MATRIX_ROTATE)
-	add_overlay(crossing_blade)
-	transform = matrix(-45, MATRIX_ROTATE) * 1.3
-	alpha = 230
-	animate(src, transform = matrix(20, MATRIX_ROTATE) * 0.4, alpha = 0, time = duration)
-
 /obj/effect/temp_visual/heretic_grasp/moon
 	icon_state = "moon_grasp"
-	duration = 1.2 SECONDS
+	duration = 0.8 SECONDS
 
 /obj/effect/temp_visual/heretic_grasp/moon/Initialize(mapload)
 	. = ..()
@@ -83,7 +76,7 @@
 	icon_state = "cosmic_grasp"
 	pixel_x = -16
 	pixel_y = -16
-	duration = 0.5 SECONDS
+	duration = 1.2 SECONDS
 
 /// Край поля лежит внутри затронутой клетки: шаг через него выводит из области.
 /obj/effect/heretic_field_edge

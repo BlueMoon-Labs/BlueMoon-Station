@@ -346,7 +346,7 @@
 	. = ..()
 	if(!.)
 		return FALSE
-	opening_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', "sigil_blade", ABOVE_MOB_LAYER)
+	opening_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_alerts.dmi', "sigil_blade", ABOVE_MOB_LAYER)
 	opening_overlay.transform = matrix() * 0.6
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(keep_opening_overlay))
 	owner.update_icon()
