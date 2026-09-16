@@ -1,7 +1,7 @@
 // ============================================================================
 // БАЗОВЫЙ НОЖ С КОГТЯМИ (для квирка)
 // ============================================================================
-#define ADD_AMBIDEXTRIA AddElement(/datum/element/ambidextria_attack, /obj/item/kitchen/knife/razor_claws, /obj/item/kitchen/knife/claws)
+#define ADD_AMBIDEXTRIA AddElement(/datum/element/ambidextria_attack, list(/obj/item/kitchen/knife/claws, /obj/item/kitchen/knife/razor_claws))
 #define CLAW_FORCE 12
 #define CLAW_WOUND_BONUS 5
 #define CLAW_BARE_WOUND_BONUS 5
@@ -256,7 +256,7 @@
 	bayonet = FALSE
 
 	var/knife_mode = TRUE
-	var/knife_force = CLAW_FORCE5
+	var/knife_force = CLAW_FORCE
 	var/knife_wound_bonus = CLAW_WOUND_BONUS
 	var/knife_bare_wound_bonus = CLAW_BARE_WOUND_BONUS
 

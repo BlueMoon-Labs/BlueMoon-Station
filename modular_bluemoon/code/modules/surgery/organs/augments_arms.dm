@@ -53,5 +53,5 @@
 /obj/item/melee/implantarmblade/syndie
 	name = "Gorlex mantis blade"
 	icon_state = "mantis_syndie"
-	force = 25
+	force = 30
 	armour_penetration = 40

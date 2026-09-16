@@ -181,13 +181,13 @@
 	item = /obj/item/autosurgeon/syndicate/biomorphedlungs
 	purchasable_from = UPLINK_SYNDICATE
 
+#define MANTIS_LEFT_NAME "Gorlex Mantis blade implant (left arm)"
+
 /datum/uplink_item/implants/mantis_blade
 	name = "Gorlex Mantis blade implant (right arm)"
 	item = /obj/item/autosurgeon/syndicate/inteq/mantis_blade
 	cost = 4
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
-
-#define MANTIS_LEFT_NAME "Gorlex Mantis blade implant (left arm)"
 
 /datum/uplink_item/implants/mantis_blade/l
 	name = MANTIS_LEFT_NAME
