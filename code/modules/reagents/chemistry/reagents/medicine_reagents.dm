@@ -730,14 +730,17 @@
 	var/healing = 0.5
 
 /datum/reagent/medicine/omnizine/on_mob_life(mob/living/carbon/M)
-	M.adjustToxLoss(-healing*REM, 0)
-	M.adjustOxyLoss(-healing*REM, 0)
-	M.adjustBruteLoss(-healing*REM, 0)
-	M.adjustFireLoss(-healing*REM, 0)
+	var/should_heal = HAS_TRAIT(M, "jackal_omnizine_immunity")
+	M.adjustToxLoss(-healing*REM, 0, should_heal)
+	M.adjustOxyLoss(-healing*REM, 0, should_heal)
+	M.adjustBruteLoss(-healing*REM, 0, should_heal)
+	M.adjustFireLoss(-healing*REM, 0, should_heal)
 	..()
 	. = 1
 
 /datum/reagent/medicine/omnizine/overdose_process(mob/living/M)
+	if(HAS_TRAIT(M, "jackal_omnizine_immunity"))
+		return
 	M.adjustToxLoss(1.5*REM, 0)
 	M.adjustOxyLoss(1.5*REM, 0)
 	M.adjustBruteLoss(1.5*REM, 0)

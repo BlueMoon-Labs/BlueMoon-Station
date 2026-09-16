@@ -1101,7 +1101,7 @@
 	log_game("DYNAMIC: [key_name(body)] was spawned as a Mass Shooter by the midround ruleset.")
 	return body
 
-/datum/admins/proc/makeMassShooter(mob/dead/observer/applicant)
+/datum/admins/proc/makeMassShooter(mob/dead/observer/applicant, make_jackal = FALSE)
 	var/mutable_appearance/alert_overlay = mutable_appearance('modular_bluemoon/code/modules/antagonists/hatred/hatred_icon.dmi', "human")
 	if(!istype(applicant))
 		var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for the position of a Mass Shooter?", "pacifist", null, ROLE_MASS_SHOOTER, 30 SECONDS,/* poll_header = "Mass Shooter",*/ poll_alert_pic = alert_overlay)
@@ -1119,18 +1119,16 @@
 	player_mind.active = TRUE
 	player_mind.transfer_to(body)
 
-	// Random choice between standard Mass Shooter and Jackal (30% chance for Jackal)
-	var/is_jackal = prob(30)
-	if(is_jackal)
+	if(make_jackal)
 		notify_ghosts("Jackal готовится к охоте...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Jackal")
 		body.mind.make_Jackal()
-		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Jackal by the midround ruleset.")
-		log_game("DYNAMIC: [key_name(body)] was spawned as a Jackal by the midround ruleset.")
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Jackal by admin command.")
+		log_game("ADMIN: [key_name(body)] was spawned as a Jackal by admin command.")
 	else
 		notify_ghosts("Массшутер готовится к геноциду...", 'sound/weapons/autoguninsert.ogg', source = body, alert_overlay = alert_overlay, action = NOTIFY_ORBIT, header = "Mass Shooter")
 		body.mind.make_MassShooter()
-		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Mass Shooter by the midround ruleset.")
-		log_game("DYNAMIC: [key_name(body)] was spawned as a Mass Shooter by the midround ruleset.")
+		message_admins("[ADMIN_LOOKUPFLW(body)] has been made into a Mass Shooter by admin command.")
+		log_game("ADMIN: [key_name(body)] was spawned as a Mass Shooter by admin command.")
 	return TRUE
 
 /datum/mind/proc/make_MassShooter()

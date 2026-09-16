@@ -39,7 +39,7 @@
 		return
 	H.remove_quirk(/datum/quirk/monochromatic)
 	// Jackal needs natural healing for omnizine and stimpacks to work
-	REMOVE_TRAIT(H, TRAIT_NONATURALHEAL, JACKAL_ANTAG)
+	REMOVE_TRAIT(H, TRAIT_NONATURALHEAL, HATRED_ANTAG)
 	// Jackal is immune to omnizine overdose and healing restrictions
 	ADD_TRAIT(H, JACKAL_OMNIZINE_IMMUNITY, JACKAL_ANTAG)
 	H.update_body()
@@ -62,18 +62,6 @@
 		REMOVE_TRAIT(H, JACKAL_OMNIZINE_IMMUNITY, JACKAL_ANTAG)
 	. = ..()
 
-// Jackal omnizine override - handles healing and overdose immunity
-/datum/reagent/medicine/omnizine/on_mob_life(mob/living/carbon/M)
-	var/healing = 0.5
-	var/jackal_immune = HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY)
-	var/should_heal = (jackal_immune ? TRUE : FALSE) // Jackal bypasses natural healing restrictions
-	M.adjustToxLoss(-healing*REM, 0, should_heal)
-	M.adjustOxyLoss(-healing*REM, 0, should_heal)
-	M.adjustBruteLoss(-healing*REM, 0, should_heal)
-	M.adjustFireLoss(-healing*REM, 0, should_heal)
-	..()
-	. = 1
-
 // Jackal cigarette direct healing - bypasses medicine system entirely
 /obj/item/clothing/mask/cigarette/jackal/process()
 	. = ..()
@@ -85,16 +73,6 @@
 			H.adjustToxLoss(-0.3, FALSE, TRUE)
 			H.adjustOxyLoss(-0.3, FALSE, TRUE)
 			H.updatehealth()
-
-/datum/reagent/medicine/omnizine/overdose_process(mob/living/M)
-	if(HAS_TRAIT(M, JACKAL_OMNIZINE_IMMUNITY))
-		return
-	M.adjustToxLoss(1.5*REM, 0)
-	M.adjustOxyLoss(1.5*REM, 0)
-	M.adjustBruteLoss(1.5*REM, 0)
-	M.adjustFireLoss(1.5*REM, 0)
-	..()
-	. = 1
 
 /datum/antagonist/jackal/proc/handle_dependency(mob/living/carbon/human/H, delta_time, times_fired)
 	SIGNAL_HANDLER
@@ -264,6 +242,7 @@
 		. += mutable_appearance(icon, "bloodmask")
 
 /obj/item/gun/ballistic/revolver/jackal357/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
+	. = ..()
 	if(!QDELETED(user) && user.mind?.has_antag_datum(/datum/antagonist/jackal) && (QDELETED(target) || target?.stat == DEAD))
 		glory_kills++
 		if(glory_kills == 5)
@@ -304,11 +283,9 @@
 		is_glory = FALSE
 	else if(COOLDOWN_FINISHED(J, killing_speech_cd))
 		var/quip = pick(J.jackal_execution_quips)
-		// visible_message with 3 params: public, private (viewer), ambient
-		// Use same format as other hatred executions
-		visible_message("<span class='bolddanger'>[user] произносит \"[quip]\"</span>", \
-						"<span class='userdanger'>[user] смотрит вам в глаза и произносит: [quip]</span>", \
-						"<span class='italics'>Вы слышите, как кто-то произносит угрожающие слова.</span>")
+		user.visible_message(span_bolddanger("[user] произносит \"[quip]\""), \
+								blind_message = span_italics("Вы слышите, как кто-то произносит угрожающие слова."))
+		to_chat(target, span_userdanger("[user] смотрит вам в глаза и произносит: [quip]"))
 		COOLDOWN_START(J, killing_speech_cd, 10 SECONDS)
 
 	// Implement base gun handle_suicide logic directly to bypass hatred override
@@ -427,8 +404,127 @@
 	new /obj/item/lighter(src)
 	new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 	new /obj/item/reagent_containers/hypospray/medipen(src)
-	new /obj/item/reagent_containers/hypospray/medipen(src)
-	new /obj/item/reagent_containers/hypospray/medipen(src)
+
+//////////////////////////////////////////////
+//                                          //
+//            JACKAL CYLINDER               //
+//                                          //
+//////////////////////////////////////////////
+
+/obj/item/ammo_box/magazine/internal/cylinder/jackal
+	name = "Jackal revolver cylinder"
+	ammo_type = /obj/item/ammo_casing/a357/jackal
+	caliber = list("357")
+	max_ammo = 7
+	var/enhanced = FALSE
+
+/obj/item/ammo_box/magazine/internal/cylinder/jackal/Initialize(mapload)
+	. = ..()
+	enhanced = FALSE
+
+/obj/item/ammo_box/magazine/internal/cylinder/jackal/proc/upgrade()
+	enhanced = TRUE
+	ammo_type = /obj/item/ammo_casing/a357/jackal/enhanced
+	// Ensure stored_ammo has enough slots (pad with nulls up to max_ammo)
+	while(stored_ammo.len < max_ammo)
+		stored_ammo += null
+	// Force replace all existing ammo with enhanced version
+	for(var/i in 1 to stored_ammo.len)
+		if(i > stored_ammo.len)
+			break
+		var/obj/item/ammo_casing/casing = stored_ammo[i]
+		if(casing)
+			qdel(casing)
+		stored_ammo[i] = new /obj/item/ammo_casing/a357/jackal/enhanced(src)
+	// Log upgrade for debugging
+	var/actual_ammo = 0
+	for(var/obj/item/ammo_casing/casing in stored_ammo)
+		if(casing)
+			actual_ammo++
+	message_admins("Jackal cylinder upgraded. Enhanced: [enhanced], Ammo type: [ammo_type], Total rounds: [actual_ammo]/[stored_ammo.len]")
+
+/obj/item/ammo_box/magazine/internal/cylinder/jackal/give_round(obj/item/ammo_casing/R, replace_spent = 0)
+	// Accept jackal casings only — regular and blood-mask enhanced subtypes
+	if(!R || !istype(R, /obj/item/ammo_casing/a357/jackal))
+		return FALSE
+	if(caliber && !(R.caliber in caliber))
+		return FALSE
+
+	// If we're enhanced, upgrade regular jackal ammo when loaded
+	if(enhanced && istype(R, /obj/item/ammo_casing/a357/jackal) && !istype(R, /obj/item/ammo_casing/a357/jackal/enhanced))
+		if(R.BB)
+			qdel(R.BB)
+		R.BB = new /obj/item/projectile/bullet/a357/jackal/enhanced(R)
+		R.projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
+		R.update_icon()
+
+	// Ensure stored_ammo has enough slots (pad with nulls up to max_ammo)
+	while(stored_ammo.len < max_ammo)
+		stored_ammo += null
+
+	for(var/i in 1 to stored_ammo.len)
+		var/obj/item/ammo_casing/bullet = stored_ammo[i]
+		if(!bullet || !bullet.BB || replace_spent) // found a spent or empty slot (or forced replace)
+			stored_ammo[i] = R
+			R.forceMove(src)
+
+			if(bullet)
+				bullet.forceMove(drop_location())
+			return TRUE
+
+	return FALSE
+
+/obj/item/ammo_box/magazine/internal/cylinder/jackal/ammo_box_reload(obj/item/ammo_box/A, mob/user, params, silent = FALSE, replace_spent = 0)
+	var/num_loaded = 0
+	if(!can_load(user))
+		return
+	if(istype(A, /obj/item/ammo_box/a357/jackal))
+		// Speedloader for Jackal: replace ALL rounds in one go
+		// Take a SNAPSHOT of the speedloader's ammo first (before mutating lists)
+		var/list/speedloader_snapshot = A.stored_ammo.Copy()
+		var/list/old_ammo = stored_ammo.Copy()
+		stored_ammo.Cut()
+		// Ensure we have enough slots
+		while(stored_ammo.len < max_ammo)
+			stored_ammo += null
+
+		var/slot_idx = 1
+		for(var/obj/item/ammo_casing/AC as anything in speedloader_snapshot)
+			if(!AC || slot_idx > max_ammo)
+				continue
+			if(!istype(AC, /obj/item/ammo_casing/a357/jackal))
+				continue
+			// Upgrade if needed
+			if(enhanced && istype(AC, /obj/item/ammo_casing/a357/jackal) && !istype(AC, /obj/item/ammo_casing/a357/jackal/enhanced))
+				if(AC.BB)
+					qdel(AC.BB)
+				AC.BB = new /obj/item/projectile/bullet/a357/jackal/enhanced(AC)
+				AC.projectile_type = /obj/item/projectile/bullet/a357/jackal/enhanced
+				AC.update_icon()
+			stored_ammo[slot_idx] = AC
+			AC.forceMove(src)
+			A.stored_ammo -= AC
+			num_loaded++
+			slot_idx++
+
+		// Drop old unspent casings
+		for(var/obj/item/ammo_casing/old_casing as anything in old_ammo)
+			if(!old_casing || QDELETED(old_casing))
+				continue
+			if(old_casing.BB)
+				old_casing.forceMove(drop_location())
+			else
+				old_casing.forceMove(drop_location()) // отстрелянные гильзы тоже обязаны покинуть цилиндр
+	else
+		// Fallback for non-jackal boxes: load one by one
+		. = ..(A, user, params, silent, replace_spent)
+		return
+
+	if(num_loaded)
+		A.update_icon()
+		update_icon()
+
+	return num_loaded
 
 // Helper proc: create a FRESH jackal speedloader with correct ammo type
 /obj/item/storage/belt/holster/jackal/proc/create_refilled_speedloader(target_loc)
