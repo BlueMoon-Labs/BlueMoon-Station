@@ -1,6 +1,7 @@
 
 /datum/element/ambidextria_attack
-	element_flags = ELEMENT_DETACH
+	element_flags = ELEMENT_DETACH | ELEMENT_BESPOKE
+	id_arg_index = 2
 	// С предметами какого типа, будет производиться двойная атака
 	var/list/attack_with_type
 
