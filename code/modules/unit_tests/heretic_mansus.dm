@@ -663,7 +663,7 @@
 		var/theme_id = theme["id"]
 		TEST_ASSERT(!(theme_id in theme_ids), "Пути используют собственные наборы: [path_id].")
 		theme_ids += theme_id
-		for(var/role in list("floor0", "floor1", "floor2", "path", "decor", "light", "memory", "hud", "hunter", "echo", "warning", "danger"))
+		for(var/role in list("floor0", "floor1", "floor2", "path", "decor", "light", "memory", "hunter", "warning", "danger"))
 			TEST_ASSERT("[theme_id]_[role]" in detail_states, "Состояние [theme_id]_[role] доступно клиенту.")
 		for(var/mask in 0 to 15)
 			TEST_ASSERT("[theme_id]_wall[mask]" in detail_states, "Край стены [theme_id]/[mask] существует.")
@@ -696,6 +696,6 @@
 	glass_visit.process(1)
 	TEST_ASSERT_EQUAL(hazard.icon_state, "glass_danger", "Срабатывание переключает видимую фазу разлома.")
 	var/atom/movable/screen/alert/heretic_mansus/indicator = victim.alerts["heretic_mansus"]
-	TEST_ASSERT_EQUAL(indicator.icon_state, "glass_hud", "Подсказка использует тот же путь.")
+	TEST_ASSERT_EQUAL(indicator.icon_state, "glass_memory", "Подсказка использует тот же путь.")
 	glass_visit.finish()
 	TEST_ASSERT_EQUAL(ash_visit.gate.icon_state, "ash_gate_closed", "Выход второй жертвы не меняет оставшуюся комнату.")

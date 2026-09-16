@@ -13,6 +13,7 @@
 #define HERETIC_MANSUS_HUNTER_STEP (1 SECONDS)
 #define HERETIC_MANSUS_HUNTER_FAST_STEP (0.5 SECONDS)
 #define HERETIC_MANSUS_ALERT "heretic_mansus"
+#define HERETIC_MANSUS_ECHO_TINT list(0.79, 0, 0, 0, 0.79, 0, 0, 0, 0.79, 0, 0, 0, 0.12, 0.12, 0.12)
 
 GLOBAL_LIST_EMPTY(heretic_mansus_visits)
 
@@ -539,7 +540,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	if(finished || QDELETED(victim))
 		return
 	var/atom/movable/screen/alert/heretic_mansus/indicator = victim.throw_alert(HERETIC_MANSUS_ALERT, /atom/movable/screen/alert/heretic_mansus, no_anim = TRUE)
-	apply_style(indicator, "hud")
+	apply_style(indicator, "memory")
 	indicator.name = "[carried_memory ? "Отнесите осколок на печать" : "Идите к яркому осколку"]: [memories_found]/[HERETIC_MANSUS_MEMORIES]"
 	var/list/chambers = list("западной", "восточной", "северной")
 	var/obj/effect/heretic_mansus_memory/next_memory = memories[min(memories_found + 1, HERETIC_MANSUS_MEMORIES)]
@@ -713,8 +714,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/turf/shadow_turf = get_step(get_turf(victim), turn(victim.dir, 180))
 	if(contains(shadow_turf) && !shadow_turf.density)
 		var/obj/effect/heretic_mansus_echo/echo = new(shadow_turf)
-		apply_style(echo, "echo")
-		echo.alpha = 150
+		apply_style(echo, "hunter")
+		echo.color = HERETIC_MANSUS_ECHO_TINT
+		echo.alpha = 82
 		echo.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		scenery += echo
 		animate(echo, alpha = 0, time = 4 SECONDS)
@@ -959,7 +961,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /atom/movable/screen/alert/heretic_mansus
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
-	icon_state = "ash_hud"
+	icon_state = "ash_memory"
 	name = "Дом памяти"
 	desc = "Соберите осколки и доставьте их к северным вратам."
 	maptext_width = 32
@@ -1094,6 +1096,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	examine_list += span_warning("На коже проступает бледный контур двери. Стоит отвести взгляд — и кажется, что она приоткрылась.")
 
 #undef HERETIC_MANSUS_DURATION
+#undef HERETIC_MANSUS_ECHO_TINT
 #undef HERETIC_MANSUS_RECALL_TIME
 #undef HERETIC_MANSUS_ROOM_SIZE
 #undef HERETIC_MANSUS_MEMORIES
