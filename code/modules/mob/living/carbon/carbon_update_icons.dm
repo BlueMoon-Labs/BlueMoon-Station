@@ -1,34 +1,8 @@
 /mob/living/carbon
 	var/list/overlays_standing[TOTAL_LAYERS]
-	/// Авто-блокеры emissive для одежды/тела: overlays_standing[X] -> список блокеров.
-	/// Нужны, чтобы светящиеся маркинги и мутант-части не просвечивали через одежду
-	/// и через персонажей спереди. Строятся автоматически в apply_overlay() из
-	/// game-plane оверлеев (копируют icon/state/layer/pixels, красятся в EM_BLOCK_COLOR).
-	var/list/overlays_emissive_blockers[TOTAL_LAYERS]
 
 /mob/living/carbon/proc/apply_overlay(cache_index)
 	if((. = overlays_standing[cache_index]))
-		// Авто-блокеры ПЕРЕД основным оверлеем: для каждого game-plane оверлея создаём blocker-копию.
-		// Emissive-плоскость (уже glow/blocker) пропускаем, чтобы не дублировать glow.
-		// Порядок важен: блокеры ниже своего же glow (same mob, same layer) — свой glow виден,
-		// а чужой glow позади перекрывается передним мобом (сортировка по Y на одном слое).
-		var/list/to_block
-		if(islist(.))
-			to_block = .
-		else
-			to_block = list(.)
-		var/list/blockers = list()
-		for(var/image/I as anything in to_block)
-			if(!istype(I))
-				continue
-			if(I.plane == EMISSIVE_PLANE || I.plane == EMISSIVE_UNBLOCKABLE_PLANE)
-				continue
-			// Пустые/прозрачные служебные оверлеи (damage blank и т.п.) тоже можно блокировать —
-			// у них прозрачные пиксели, они ничего не перекроют, но и не навредят.
-			blockers += emissive_blocker_copy(I)
-		if(length(blockers))
-			add_overlay(blockers)
-			overlays_emissive_blockers[cache_index] = blockers
 		add_overlay(.)
 	update_small_sprite()
 
@@ -37,10 +11,6 @@
 	if(I)
 		cut_overlay(I)
 		overlays_standing[cache_index] = null
-	var/B = overlays_emissive_blockers[cache_index]
-	if(B)
-		cut_overlay(B)
-		overlays_emissive_blockers[cache_index] = null
 	update_small_sprite()
 
 /mob/living/carbon/regenerate_icons()

@@ -1028,15 +1028,6 @@
 							marking_emissives += aux_marking_emissive
 				aux += aux_img
 			. += aux
-		// Блокеры тела: opaque-пиксели конечностей перекрывают свечение маркингов
-		// позади (другой персонаж) и дают базу, которую сверху перекроет одежда.
-		// Слой сохраняется от исходника, own glow (маркинги -41) выше базы (-42)
-		// и потому виден, а чужой glow позади блокируется передним мобом.
-		. += emissive_blocker_copy(limb)
-		if(second_limb)
-			. += emissive_blocker_copy(second_limb)
-		for(var/image/aux_block_img in aux)
-			. += emissive_blocker_copy(aux_block_img)
 		. += marking_emissives
 
 	else
@@ -1116,12 +1107,6 @@
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
 						marking_emissives += mark_emissive
-		// Блокеры протезов: аналогично органике — тело перекрывает чужой glow.
-		. += emissive_blocker_copy(limb)
-		if(second_limb)
-			. += emissive_blocker_copy(second_limb)
-		for(var/image/aux_block_img in aux)
-			. += emissive_blocker_copy(aux_block_img)
 		. += marking_emissives
 		. += get_bodypart_overlay_images()
 		return

@@ -1119,9 +1119,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 // MARK: добавление оверлея
 			update_overlay_by_key(mutant_string, H, accessory_overlay)
 			standing += accessory_overlay
-			// Блокер мутант-части: перекрывает чужой glow позади, свой glow (глаза/гениталии/маркинги)
-			// на более высоких слоях остаётся видимым, одежда сверху перекроет при необходимости.
-			standing += emissive_blocker_copy(accessory_overlay)
 
 			if(S.extra) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
@@ -1170,7 +1167,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				update_overlay_by_key(mutant_string, H, extra_accessory_overlay)
 				standing += extra_accessory_overlay
-				standing += emissive_blocker_copy(extra_accessory_overlay)
 
 			if(S.extra2) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
@@ -1214,7 +1210,6 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				update_overlay_by_key(mutant_string, H, extra2_accessory_overlay)
 				standing += extra2_accessory_overlay
-				standing += emissive_blocker_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing
 	H.add_all_overlays()
