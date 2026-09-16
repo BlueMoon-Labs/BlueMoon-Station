@@ -112,7 +112,8 @@
 /obj/effect/temp_visual/heretic_ritual/update_overlays()
 	. = ..()
 	if(inscription_state)
-		. += heretic_rune_inscription_overlay(inscription_state)
+		var/datum/heretic_path/path = GLOB.heretic_paths[visual_path]
+		. += heretic_rune_inscription_overlay(inscription_state, path.rune_inscription_icon)
 
 /obj/effect/temp_visual/heretic_ritual/proc/finish()
 	finished = TRUE
@@ -145,6 +146,7 @@
 /obj/effect/temp_visual/heretic_cast/Initialize(mapload, path_id, atom/movable/source)
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 	if(path)
+		icon = path.rune_cast_icon
 		icon_state = "[path.rune_inscription]_cast"
 	if(source)
 		transform = source.transform

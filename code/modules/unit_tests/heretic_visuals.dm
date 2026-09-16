@@ -237,17 +237,19 @@
 /datum/unit_test/heretic_rune_visual_states/Run()
 	var/list/rune_states = icon_states('modular_bluemoon/icons/obj/heretic_rune.dmi')
 	var/list/visual_states = icon_states('modular_bluemoon/icons/obj/heretic_rune_visuals.dmi')
-	var/list/inscriptions = icon_states('modular_bluemoon/icons/obj/ritual_inscriptions.dmi')
-	var/list/casts = icon_states('modular_bluemoon/icons/obj/ritual_casts.dmi')
 	for(var/state in list("rune", "rune_active"))
 		TEST_ASSERT(state in rune_states, "В листе руны нет состояния [state].")
 	for(var/state in list(HERETIC_RUNE_VISUAL_TRACE, HERETIC_RUNE_VISUAL_RITUAL, HERETIC_RUNE_VISUAL_ERASE, HERETIC_RUNE_VISUAL_SCATTER, HERETIC_RUNE_VISUAL_RELEASE))
 		TEST_ASSERT(state in visual_states, "В листе эффектов руны нет состояния [state].")
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/each_path = GLOB.heretic_paths[path_id]
+		var/list/inscriptions = icon_states(each_path.rune_inscription_icon)
+		var/list/casts = icon_states(each_path.rune_cast_icon)
 		for(var/suffix in list("_draw", "_idle", "_erase"))
 			TEST_ASSERT("[each_path.rune_inscription][suffix]" in inscriptions, "У пути [path_id] нет знака [each_path.rune_inscription][suffix].")
 		TEST_ASSERT("[each_path.rune_inscription]_cast" in casts, "У пути [path_id] нет вспышки [each_path.rune_inscription]_cast.")
+		var/mutable_appearance/mark = heretic_rune_inscription_overlay("[each_path.rune_inscription]_idle", each_path.rune_inscription_icon)
+		TEST_ASSERT_EQUAL(mark.icon, each_path.rune_inscription_icon, "Знак пути [path_id] использует свой лист.")
 	var/obj/effect/eldritch/big/rune = allocate(/obj/effect/eldritch/big, run_loc_floor_bottom_left)
 	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_ASH]
 	rune.inscribe_path(PATH_ASH)
@@ -293,3 +295,5 @@
 	var/obj/effect/temp_visual/heretic_cast/cast = new(erase_turf, PATH_WAX, rune)
 	allocated += cast
 	TEST_ASSERT_EQUAL(cast.icon_state, "wax_seal_cast", "Вспышка берёт знак выбранного пути.")
+	var/datum/heretic_path/wax_path = GLOB.heretic_paths[PATH_WAX]
+	TEST_ASSERT_EQUAL(cast.icon, wax_path.rune_cast_icon, "Вспышка воска использует отдельный лист новых путей.")

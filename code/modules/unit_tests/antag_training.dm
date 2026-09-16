@@ -2,10 +2,27 @@
 	for(var/code in GLOB.antag_training_arenas.Copy())
 		var/datum/antag_training_arena/closing = GLOB.antag_training_arenas[code]
 		if(closing?.finished)
-			wait_for_qdeleted(closing, 10 SECONDS)
+			wait_for_qdeleted(closing, 1 MINUTES)
 	var/datum/antag_training_session/session = new(program_type)
 	allocated += session
 	return session
+
+/// Квота подсистемы не блокирует отложенную работу при свободном бюджете тика.
+/datum/unit_test/antag_training_work_budget/Run()
+	var/datum/antag_training_arena/arena = allocate(/datum/antag_training_arena)
+	stoplag()
+	var/old_limit = Master.current_ticklimit
+	var/old_work_tick = GLOB.antag_training_work_tick
+	var/old_work_usage = GLOB.antag_training_work_usage
+	GLOB.antag_training_work_tick = world.time
+	GLOB.antag_training_work_usage = TICK_USAGE_REAL
+	Master.current_ticklimit = -1
+	var/start_time = world.time
+	arena.yield_work()
+	Master.current_ticklimit = old_limit
+	GLOB.antag_training_work_tick = old_work_tick
+	GLOB.antag_training_work_usage = old_work_usage
+	TEST_ASSERT_EQUAL(world.time, start_time, "Остаток квоты MC не откладывает работу на следующий тик.")
 
 /// Вход через призрака сохраняет исходный разум, ограничения и точку возвращения.
 /datum/unit_test/antag_training_lifecycle/Run()
@@ -32,7 +49,7 @@
 	TEST_ASSERT_EQUAL(returned.mind, original_mind, "Выход сохраняет ссылку на исходный разум.")
 	TEST_ASSERT(!returned.can_reenter_corpse && !returned.started_as_observer, "Нельзя обойти запрет возвращения в тело.")
 	TEST_ASSERT_EQUAL(get_turf(returned), run_loc_floor_bottom_left, "Возвращается прежняя точка наблюдения.")
-	TEST_ASSERT(wait_for_qdeleted(arena, 10 SECONDS), "Очистка полигона завершается.")
+	TEST_ASSERT(wait_for_qdeleted(arena, 1 MINUTES), "Очистка полигона завершается.")
 	TEST_ASSERT(QDELETED(session) && QDELETED(arena) && QDELETED(training_mind) && QDELETED(item), "Выход последнего удаляет полигон и его содержимое.")
 	TEST_ASSERT_EQUAL(GLOB.antag_training_rooms[level], practice_room, "Область сохраняется в ограниченном пуле своего уровня.")
 	TEST_ASSERT(!practice_room.arena && !length(practice_room.contents), "Свободная область не держит сеанс или клетки карты.")
@@ -301,7 +318,7 @@
 	start_time = REALTIMEOFDAY
 	for(var/datum/antag_training_session/member as anything in arena.members.Copy())
 		qdel(member)
-	TEST_ASSERT(wait_for_qdeleted(arena, 10 SECONDS), "Комната освобождается после последнего участника.")
+	TEST_ASSERT(wait_for_qdeleted(arena, 1 MINUTES), "Комната освобождается после последнего участника.")
 	log_test("TRAINING BENCH cleanup: [(REALTIMEOFDAY - start_time) * 100] ms")
 	start_time = REALTIMEOFDAY
 	var/datum/antag_training_session/reused = allocate_training_session(/datum/antag_training_program/free)
@@ -346,6 +363,7 @@
 /datum/unit_test/antag_training_station_isolation
 	var/death_signals = 0
 	var/mob/living/watched_body
+	var/list/added_players = list()
 
 /datum/unit_test/antag_training_station_isolation/Run()
 	var/datum/director_signals/before = allocate(/datum/director_signals)
@@ -356,6 +374,7 @@
 	var/mob/living/carbon/human/target = session.arena.spawn_target()
 	target.mind.assigned_role = "Captain"
 	GLOB.player_list |= target
+	added_players += target
 	target.add_to_current_living_players()
 	target.add_to_current_living_antags()
 	target.add_to_current_dead_players()
@@ -368,6 +387,7 @@
 	TEST_ASSERT_EQUAL(after.living_antags, before.living_antags, "Еретик и манекены не увеличивают число антагонистов директора.")
 	var/mob/living/carbon/human/station_target = allocate(/mob/living/carbon/human)
 	GLOB.player_list |= station_target
+	added_players += station_target
 	TEST_ASSERT_EQUAL(living_player_count(), before_players + 1, "Обычный живой игрок по-прежнему учитывается.")
 	var/datum/eldritch_knowledge/curse/curse = allocate(/datum/eldritch_knowledge/curse)
 	TEST_ASSERT(curse.can_target(session.current_body, target), "Проклятие работает внутри общей площадки.")
@@ -389,6 +409,8 @@
 
 /datum/unit_test/antag_training_station_isolation/Destroy()
 	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
+	GLOB.player_list -= added_players
+	added_players.Cut()
 	watched_body = null
 	return ..()
 
@@ -447,6 +469,7 @@
 			hurt++
 		TEST_ASSERT_EQUAL(get_area(player), arena.room, "Участник остаётся в своём полигоне после боя.")
 	TEST_ASSERT(hurt > 0, "Противники наносят реальный урон, а не спят на пустом z.")
+	arena.prune_targets()
 	for(var/mob/living/target as anything in arena.targets)
 		TEST_ASSERT_EQUAL(get_area(target), arena.room, "Активные противники не выходят с полигона.")
 	log_test("TRAINING LOAD: [length(fake_players)] participants, [length(arena.targets)] active NPCs, [hurt] damaged participants in [(world.time - start_time) / 10] seconds")

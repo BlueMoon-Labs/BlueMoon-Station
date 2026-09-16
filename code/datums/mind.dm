@@ -143,6 +143,8 @@
 		qdel(antagonist)
 	antag_datums = null
 	QDEL_LIST(ambition_objectives)
+	if(current?.mind == src)
+		current.mind = null
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()
 	set_assigned_heirloom(null)

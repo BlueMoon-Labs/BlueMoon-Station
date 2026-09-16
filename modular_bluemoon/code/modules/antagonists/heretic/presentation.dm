@@ -8,8 +8,10 @@
 	var/book_ink = "#b2ac7d"
 	var/book_tint = "#ffffff"
 	var/book_rune = "sigil_ash"
-	/// Знак пути на руне трансмутации: состояния <имя>_draw/_idle/_erase в ritual_inscriptions.dmi и <имя>_cast в ritual_casts.dmi.
+	/// Состояния <имя>_draw/_idle/_erase и <имя>_cast в листах пути.
 	var/rune_inscription = "ash_pyre"
+	var/rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions.dmi'
+	var/rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts.dmi'
 	var/book_open_sound = 'modular_bluemoon/sound/heretic/book_open.ogg'
 	var/book_page_sound = 'modular_bluemoon/sound/heretic/book_page.ogg'
 
@@ -112,6 +114,8 @@
 	book_page_sound = 'modular_bluemoon/sound/heretic/book_cosmic_page.ogg'
 
 /datum/heretic_path/lock
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/lock
 	book_name = "Каталог невозможных дверей"
 	book_title = "Каталог невозможных дверей"
@@ -126,6 +130,8 @@
 	book_page_sound = 'modular_bluemoon/sound/heretic/book_lock_page.ogg'
 
 /datum/heretic_path/tide
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/tide
 	book_name = "Лоция бездонного моря"
 	book_title = "Лоция бездонного моря"
@@ -148,6 +154,8 @@
 	COOLDOWN_DECLARE(page_turn_cooldown)
 
 /datum/heretic_path/glass
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/glass
 	book_name = "Евангелие разбитого света"
 	book_title = "Евангелие разбитого света"
@@ -162,6 +170,8 @@
 	book_page_sound = 'modular_bluemoon/sound/heretic/book_glass_page.ogg'
 
 /datum/heretic_path/blood
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/blood
 	book_name = "Служебник алой десятины"
 	book_title = "Служебник алой десятины"
@@ -179,6 +189,8 @@
 	book_path = PATH_GLASS
 
 /datum/heretic_path/echo
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/echo
 	book_name = "Партитура последнего голоса"
 	book_title = "Партитура последнего голоса"
@@ -196,6 +208,8 @@
 	book_path = PATH_ECHO
 
 /datum/heretic_path/sand
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/sand
 	book_name = "Хроника истёкшего часа"
 	book_title = "Хроника истёкшего часа"
@@ -209,6 +223,8 @@
 	book_page_sound = 'modular_bluemoon/sound/heretic/sand_grasp.ogg'
 
 /datum/heretic_path/wax
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/wax
 	book_name = "Служба негаснущей свечи"
 	book_title = "Служба негаснущей свечи"
@@ -228,6 +244,8 @@
 	book_path = PATH_WAX
 
 /datum/heretic_path/spirit
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/spirit
 	book_name = "Список непришедших"
 	book_title = "Список непришедших"
@@ -483,11 +501,11 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[rune_path]
 	if(!path)
 		return
-	. += heretic_rune_inscription_overlay("[path.rune_inscription]_idle")
+	. += heretic_rune_inscription_overlay("[path.rune_inscription]_idle", path.rune_inscription_icon)
 
 /// Знак пути 64x64 по центру полотна руны 96x96; палитра знака записана в пикселях, чернила руны его не красят.
-/proc/heretic_rune_inscription_overlay(state)
-	var/mutable_appearance/mark = mutable_appearance('modular_bluemoon/icons/obj/ritual_inscriptions.dmi', state)
+/proc/heretic_rune_inscription_overlay(state, icon_file)
+	var/mutable_appearance/mark = mutable_appearance(icon_file, state)
 	mark.pixel_x = 16
 	mark.pixel_y = 16
 	mark.appearance_flags = RESET_COLOR | PIXEL_SCALE

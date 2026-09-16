@@ -338,7 +338,7 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		if(OXY)
 			target.setOxyLoss(min(target.getOxyLoss() + injury["amount"], target.maxHealth * 2), forced = TRUE)
 		else
-			target.apply_damage(injury["amount"], injury["type"], BODY_ZONE_CHEST, forced = TRUE)
+			target.apply_damage(injury["amount"], injury["type"], BODY_ZONE_CHEST, forced = TRUE, wound_bonus = CANT_WOUND)
 	return TRUE
 
 /datum/antag_training_session/proc/issue_equipment(equipment_id, mob/user)

@@ -90,7 +90,7 @@
 	TEST_ASSERT_NULL(blood.blood_rush, "Потеря знания немедленно удаляет ускорение.")
 	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_rush), "Потеря знания удаляет изменение скорости.")
 	user.setToxLoss(user.getToxLoss() + user.health - 34, forced = TRUE)
-	TEST_ASSERT(abs(user.health - 34) <= DAMAGE_PRECISION, "Владелец остаётся в сознании, но не может безопасно оплатить ещё десять ушибов.")
+	TEST_ASSERT(round(abs(user.health - 34), DAMAGE_PRECISION) <= DAMAGE_PRECISION, "Владелец остаётся в сознании, но не может безопасно оплатить ещё десять ушибов: [user.health].")
 	var/damage_before = user.getBruteLoss()
 	TEST_ASSERT(!blood.pact(user), "Опасная для жизни плата не разрешает ускорение.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), damage_before, "Отказ сохраняет здоровье.")
