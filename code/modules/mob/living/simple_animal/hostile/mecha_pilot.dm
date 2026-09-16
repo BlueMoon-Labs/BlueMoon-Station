@@ -38,6 +38,11 @@
 	var/smoke_chance = 20 //Chance to deploy smoke for crowd control
 	var/retreat_chance = 40 //Chance to run away
 
+	//Задержка залезания в новый мех после вылезания из разбитого
+	var/mecha_entry_delay = 6 SECONDS
+	var/next_mecha_entry_time = 0 //Раньше этого времени пилот не может сесть в новый мех
+	var/obj/vehicle/sealed/mecha/pending_entry_mecha //Мех, в который пилот прямо сейчас залезает
+
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/no_mech
 	spawn_mecha_type = null
 	search_objects = 2
@@ -60,6 +65,7 @@
 	icon_living = "syndicate"
 	faction = list(ROLE_INTEQ)
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares
+	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light
 	spawn_mecha_type = /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes
@@ -114,6 +120,36 @@
 		ai_controller.update_grid()
 		ai_controller.reset_ai_status()
 
+///Попытка угнать мех. Сразу после эвакуации пилот не запрыгивает в новый мех
+///мгновенно: он "забирается" с видимой задержкой и лишь затем садится за
+///управление. Возврат TRUE - попытка обработана (идёт задержка или посадка).
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/try_enter_mecha(obj/vehicle/sealed/mecha/M)
+	if(!M || mecha)
+		return FALSE
+	if(!is_valid_mecha(M))
+		return FALSE
+	if(world.time < next_mecha_entry_time)
+		if(!pending_entry_mecha)
+			pending_entry_mecha = M
+			visible_message(span_warning("[src] начинает забираться в [M]!"))
+			addtimer(CALLBACK(src, PROC_REF(complete_mecha_entry), M), max(next_mecha_entry_time - world.time, 1))
+		return TRUE
+	complete_mecha_entry(M)
+	return TRUE
+
+///Финал залезания: без меха, рядом и мех всё ещё валиден - садимся.
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/complete_mecha_entry(obj/vehicle/sealed/mecha/M)
+	pending_entry_mecha = null
+	if(!M || QDELETED(M))
+		return
+	if(mecha)
+		return
+	if(!Adjacent(M) || !is_valid_mecha(M))
+		return
+	if(!enter_mecha(M))
+		return
+	visible_message(span_notice("[src] забирается внутрь [M]."))
+
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/set_mecha_movement_hook(obj/vehicle/sealed/mecha/M)
 	if(movement_hooked_mecha && !QDELETED(movement_hooked_mecha))
 		UnregisterSignal(movement_hooked_mecha, COMSIG_MOVABLE_MOVED)
@@ -146,6 +182,7 @@
 		return FALSE
 
 	mecha.aimob_exit_mech(src)
+	next_mecha_entry_time = world.time + mecha_entry_delay //не запрыгивает в новый мех мгновенно
 	set_mecha_movement_hook(null)
 	allow_movement_on_non_turfs = FALSE
 	targets_from = src
@@ -237,13 +274,11 @@
 	else
 		if(ismecha(target))
 			var/obj/vehicle/sealed/mecha/M = target
-			if(is_valid_mecha(M))
-				enter_mecha(M)
+			if(try_enter_mecha(M))
 				return
-			else
-				if(!CanAttack(M))
-					target = null
-					return
+			if(!CanAttack(M))
+				target = null
+				return
 
 		return target.attack_animal(src)
 

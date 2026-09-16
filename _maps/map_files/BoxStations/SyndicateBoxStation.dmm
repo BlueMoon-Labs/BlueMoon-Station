@@ -80316,7 +80316,7 @@
 /area/cargo/miningdock)
 "wyC" = (
 /obj/machinery/button/door{
-	id = "stationawaygate";
+	id = "gateshutter";
 	name = "Gateway Access Shutter Control";
 	pixel_x = 22;
 	pixel_y = 9;

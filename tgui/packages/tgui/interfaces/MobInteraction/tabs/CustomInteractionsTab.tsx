@@ -30,10 +30,19 @@ type CustomSoundOption = {
   group: string;
 }
 
+type MoanSoundOption = {
+  key: string;
+  label: string;
+  group: string;
+}
+
 type CustomTabInfo = {
   own_custom_interactions: CustomInteractionData[];
   max_custom_interactions: number;
   custom_interaction_sounds: CustomSoundOption[];
+  available_moan_sounds: MoanSoundOption[];
+  custom_moan_sounds: string[];
+  use_custom_moan_sounds: boolean;
 }
 
 const MAX_NAME_LENGTH = 100;
@@ -104,6 +113,10 @@ export const CustomInteractionsTab = (props) => {
   const customs = data.own_custom_interactions || [];
   const max_customs = data.max_custom_interactions || 10;
   const sounds = data.custom_interaction_sounds || [];
+  const moanSounds = data.available_moan_sounds || [];
+  const customMoanSounds = data.custom_moan_sounds || [];
+  const useCustomMoanSounds = !!data.use_custom_moan_sounds;
+  const [moanGroupBrowsing, setMoanGroupBrowsing] = useLocalState('customMoanSoundGroup', '');
 
   const [interactionType, setInteractionType] = useLocalState('customFormType', '');
   const [name, setName] = useLocalState('customFormName', '');
@@ -214,6 +227,20 @@ export const CustomInteractionsTab = (props) => {
     .map(key => sounds.find(sound => sound.key === key))
     .filter(Boolean) as CustomSoundOption[];
   const canSave = !!interactionType && !!name && !!message;
+
+  const moanGroups = [...new Set(moanSounds.map(sound => sound.group))];
+  const effectiveMoanGroup = moanGroups.includes(moanGroupBrowsing)
+    ? moanGroupBrowsing
+    : moanGroups[0];
+  const moanSoundsInGroup = moanSounds.filter(sound => sound.group === effectiveMoanGroup);
+  const selectedMoanSounds = moanSounds.filter(sound => customMoanSounds.includes(sound.key));
+
+  const toggleMoanSound = (key: string) => {
+    const nextKeys = customMoanSounds.includes(key)
+      ? customMoanSounds.filter(sound => sound !== key)
+      : [...customMoanSounds, key];
+    act('set_custom_moan_sounds', { sound_keys: nextKeys });
+  };
 
   const renderBodyPartButton = (part) => {
     const selected = !!(requiredBodyParts & part.flag);
@@ -608,14 +635,127 @@ export const CustomInteractionsTab = (props) => {
       </Stack.Item>
       {(!editingKey && !creating) && (
         <Stack.Item>
-          <Button
-            fluid
-            icon="plus"
-            content="Создать кастомный интеракт"
-            color="green"
-            disabled={customs.length >= max_customs}
-            onClick={startCreate}
-          />
+          <Stack>
+            <Stack.Item grow>
+              <Button
+                fluid
+                icon="plus"
+                content="Создать кастомный интеракт"
+                color="green"
+                disabled={customs.length >= max_customs}
+                onClick={startCreate}
+              />
+            </Stack.Item>
+            {moanSounds.length > 0 && (
+              <Stack.Item grow>
+                <Button
+                  fluid
+                  icon={useCustomMoanSounds ? "toggle-on" : "toggle-off"}
+                  color="transparent"
+                  content={useCustomMoanSounds ? "Свои звуки стонов включены" : "Использовать свои звуки стонов"}
+                  selected={useCustomMoanSounds}
+                  tooltip={`${useCustomMoanSounds ? "Отключить" : "Включить"} выбор своих звуков стонов`}
+                  onClick={() => act('pref', { pref: 'use_custom_moan_sounds' })}
+                />
+              </Stack.Item>
+            )}
+          </Stack>
+        </Stack.Item>
+      )}
+      {moanSounds.length > 0 && useCustomMoanSounds && (
+        <Stack.Item>
+          <Section title="Звуки стонов">
+            <Stack vertical>
+              {selectedMoanSounds.length > 0 && (
+                <Stack.Item>
+                  <Box color="label" nowrap>Выбрано ({selectedMoanSounds.length}):</Box>
+                  <Box style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3em' }}>
+                    {selectedMoanSounds.map(sound => (
+                      <Button
+                        key={sound.key}
+                        icon="times"
+                        content={sound.label}
+                        color="green"
+                        onClick={() => toggleMoanSound(sound.key)}
+                      />
+                    ))}
+                  </Box>
+                </Stack.Item>
+              )}
+              {moanGroups.length > 1 && (
+                <Stack.Item>
+                  <FormRow label="Категория:">
+                    <Dropdown
+                      fluid
+                      width="100%"
+                      options={moanGroups}
+                      selected={effectiveMoanGroup}
+                      displayText={effectiveMoanGroup}
+                      onSelected={(group) => setMoanGroupBrowsing(group)}
+                    />
+                  </FormRow>
+                </Stack.Item>
+              )}
+              <Stack.Item>
+                <Box color="label" nowrap>Можно выбрать несколько - сработает случайный:</Box>
+                {(() => {
+                  const allSelected = moanSoundsInGroup.length > 0
+                    && moanSoundsInGroup.every(s => customMoanSounds.includes(s.key));
+                  return (
+                    <Button
+                      fluid
+                      icon={allSelected ? "times" : "check-double"}
+                      color={allSelected ? "red" : "transparent"}
+                      content={allSelected
+                        ? "Отписаться от всех звуков в категории"
+                        : "Подписаться на все звуки в категории"}
+                      onClick={() => {
+                        if (allSelected) {
+                          const otherKeys = customMoanSounds.filter(
+                            k => !moanSoundsInGroup.some(s => s.key === k)
+                          );
+                          act('set_custom_moan_sounds', { sound_keys: otherKeys });
+                        } else {
+                          const groupKeys = moanSoundsInGroup.map(s => s.key);
+                          const otherKeys = customMoanSounds.filter(
+                            k => !moanSoundsInGroup.some(s => s.key === k)
+                          );
+                          act('set_custom_moan_sounds', { sound_keys: [...otherKeys, ...groupKeys] });
+                        }
+                      }}
+                    />
+                  );
+                })()}
+                <Stack vertical>
+                  {moanSoundsInGroup.map(sound => {
+                    const checked = customMoanSounds.includes(sound.key);
+                    return (
+                      <Stack.Item key={sound.key}>
+                        <Stack>
+                          <Stack.Item grow>
+                            <Button
+                              fluid
+                              icon={checked ? "check-square" : "square-o"}
+                              color={checked ? "green" : "transparent"}
+                              content={sound.label}
+                              selected={checked}
+                              onClick={() => toggleMoanSound(sound.key)}
+                            />
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button
+                              icon="play"
+                              onClick={() => act('preview_moan_sound', { sound_key: sound.key })}
+                            />
+                          </Stack.Item>
+                        </Stack>
+                      </Stack.Item>
+                      );
+                    })}
+                </Stack>
+              </Stack.Item>
+            </Stack>
+          </Section>
         </Stack.Item>
       )}
       {(editingKey || creating) && (

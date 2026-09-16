@@ -424,6 +424,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/arousal_multiplier = 100
 	var/use_moaning_multiplier = FALSE
 	var/moaning_multiplier = 65
+	var/use_custom_moan_sounds = FALSE
+	var/list/custom_moan_sounds = list()
 	var/datum/character_offer_instance/offer
 
 	//backgrounds
