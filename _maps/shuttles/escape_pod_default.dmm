@@ -19,7 +19,7 @@
 	port_direction = 2
 	},
 /obj/structure/fans/tiny,
-/obj/machinery/door/airlock/survival_pod/glass{
+/obj/machinery/door/airlock/survival_pod{
 	name = "Escape Pod Airlock"
 	},
 /turf/open/floor/pod/dark,
