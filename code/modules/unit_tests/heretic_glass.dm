@@ -637,3 +637,218 @@
 	TEST_ASSERT_EQUAL(outside.getBruteLoss(), 0, "Между предупреждёнными лучами остаётся укрытие.")
 	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Свет не поражает другого еретика.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Свет не поражает создателя после перемещения.")
+
+/// Дальняя установка проходит через свои призмы, но соблюдает занятость пола и перезарядку ресурса.
+/datum/unit_test/heretic_glass_remote_placement/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/spell/glass_shards/placement = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/obj/effect/proc_holder/spell/pointed/heretic_glass/shards/spell = placement.granted_spell
+	var/turf/near_place = get_step(user, EAST)
+	var/turf/far_place = locate(user.x + 5, user.y, user.z)
+	TEST_ASSERT(glass.shards(user, near_place), "Ближняя призма устанавливается первой.")
+	TEST_ASSERT(spell.can_target(far_place, user, TRUE), "Своё стекло не закрывает выбор свободного пола в пяти клетках.")
+	spell.cast(list(far_place), user)
+	TEST_ASSERT_EQUAL(length(glass.prisms), 2, "Настоящий cast устанавливает дальнюю призму.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 0, "Обе установки оплачены.")
+	glass.gain_combat_resource()
+	TEST_ASSERT(!glass.valid_prism_turf(user, near_place), "Нельзя сложить две призмы на одной клетке.")
+	var/obj/blocker = allocate(/obj, get_step(near_place, EAST))
+	blocker.density = TRUE
+	TEST_ASSERT(!spell.can_target(locate(user.x + 4, user.y, user.z), user, TRUE), "Обычная плотная преграда блокирует дальнюю установку.")
+	var/obj/structure/heretic_glass_prism/prism = glass.prisms[1]
+	prism.take_damage(50, BRUTE, MELEE)
+	TEST_ASSERT(!QDELETED(prism), "Призма выдерживает 50 урона.")
+	prism.take_damage(25, BRUTE, MELEE)
+	TEST_ASSERT(QDELETED(prism), "75 урона разбивают призму и освобождают место.")
+	COOLDOWN_RESET(glass, facet_regeneration)
+	glass.on_life(user)
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(glass, facet_regeneration) - 4 SECONDS) <= world.tick_lag, "Обычная грань восстанавливается за четыре секунды.")
+	glass.ascension_active = TRUE
+	COOLDOWN_RESET(glass, facet_regeneration)
+	glass.on_life(user)
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(glass, facet_regeneration) - 2 SECONDS) <= world.tick_lag, "Вознесение сокращает восстановление до двух секунд.")
+
+/// Все связанные призмы целятся в выбранную клетку, а пересечения соблюдают антимагию и один удар.
+/datum/unit_test/heretic_glass_aimed_volley/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	user.setDir(WEST)
+	TEST_ASSERT(glass.shards(user, locate(user.x, user.y + 2, user.z)), "Первая призма стоит в стороне от прямого луча.")
+	TEST_ASSERT(glass.shards(user, locate(user.x + 1, user.y + 4, user.z)), "Вторая призма тоже смотрит в сторону от цели.")
+	var/turf/destination = locate(user.x + 4, user.y + 2, user.z)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, destination)
+	var/mob/living/protected = allocate(/mob/living/carbon/human, destination)
+	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	var/datum/antagonist/heretic/ally = allocate_heretic(destination)
+	var/mob/living/first_lane = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 2, user.z))
+	var/mob/living/second_lane = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 3, user.z))
+	TEST_ASSERT(glass.release(user, victim), "Выбор цели запускает всю сеть без ручного поворота.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Общий залп сначала показывает предупреждение.")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_glass/warning) in get_turf(first_lane), "Первая боковая линия предупреждена.")
+	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_glass/warning) in get_turf(second_lane), "Вторая боковая линия тоже предупреждена.")
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Три пересекающихся луча наносят один усиленный удар.")
+	TEST_ASSERT(abs(first_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Первая призма действительно стреляет в цель.")
+	TEST_ASSERT(abs(second_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Вторая призма тоже стреляет в цель.")
+	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия блокирует общий залп.")
+	TEST_ASSERT_EQUAL(protection.charges, 4, "Вся сеть расходует один заряд защиты на цель.")
+	TEST_ASSERT_EQUAL(ally.owner.current.getBruteLoss(), 0, "Пересечение не поражает союзника.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 0, "Пустой запас граней не мешает залпу.")
+	for(var/obj/structure/heretic_glass_prism/prism as anything in glass.prisms)
+		TEST_ASSERT_EQUAL(prism.dir, WEST, "Прицельный залп сохраняет ручную настройку стрелки.")
+
+/// Выстрел в одну призму включает соседнюю за углом и отменяет только разорванную ветвь.
+/datum/unit_test/heretic_glass_relay_breaks/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	user.setDir(EAST)
+	TEST_ASSERT(glass.shards(user, locate(user.x + 2, user.y, user.z)), "Входная призма стоит перед владельцем.")
+	TEST_ASSERT(glass.shards(user, locate(user.x + 2, user.y + 3, user.z)), "Вторая призма не стоит на выходящем луче первой.")
+	var/obj/structure/heretic_glass_prism/root = glass.prisms[1]
+	var/obj/structure/heretic_glass_prism/relay = glass.prisms[2]
+	var/obj/corner = allocate(/obj, get_step(user, NORTHEAST))
+	corner.density = TRUE
+	TEST_ASSERT(!glass.line_clear(user, relay, allow_prisms = TRUE), "Стена закрывает вторую призму от владельца.")
+	var/mob/living/near_victim = allocate(/mob/living/carbon/human, get_step(root, EAST))
+	var/mob/living/far_victim = allocate(/mob/living/carbon/human, get_step(relay, EAST))
+	TEST_ASSERT(glass.release(user, root), "Выстрел в входную призму запускает сеть.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(near_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Входная призма стреляет по своей стрелке.")
+	TEST_ASSERT(abs(far_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Скрытая призма тоже стреляет, не требуя направлять на неё первый луч.")
+	TEST_ASSERT(glass.release(user, root), "Повторный залп создаёт новый снимок сети.")
+	attack = glass.attacks[1]
+	var/obj/blocker = allocate(/obj, get_step(root, NORTH))
+	blocker.density = TRUE
+	attack.resolve()
+	TEST_ASSERT(abs(near_victim.getBruteLoss() - 72) <= DAMAGE_PRECISION, "Независимый луч остаётся рабочим.")
+	TEST_ASSERT(abs(far_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Новая стена между призмами обрывает уже подготовленную передачу.")
+	qdel(blocker)
+	TEST_ASSERT(glass.release(user, root), "После удаления стены связь восстанавливается.")
+	attack = glass.attacks[1]
+	qdel(root)
+	attack.resolve()
+	TEST_ASSERT(abs(far_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Разрушение входной призмы отменяет зависимый залп.")
+
+/// Прицельная сеть сохраняет отмеченные клетки и теряет только луч разрушенного узла.
+/datum/unit_test/heretic_glass_volley_snapshot/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	TEST_ASSERT(glass.shards(user, locate(user.x - 1, user.y + 2, user.z)), "Установлена первая призма.")
+	TEST_ASSERT(glass.shards(user, locate(user.x + 1, user.y + 4, user.z)), "Установлена вторая призма.")
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y + 2, user.z))
+	var/mob/living/first_lane = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 2, user.z))
+	var/mob/living/second_lane = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 3, user.z))
+	TEST_ASSERT(glass.release(user, victim), "Подготовлен прицельный залп.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	victim.forceMove(get_step(user, WEST))
+	qdel(glass.prisms[1])
+	attack.resolve()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Сеть не доворачивает вслед за убежавшей целью.")
+	TEST_ASSERT_EQUAL(first_lane.getBruteLoss(), 0, "Уничтоженная призма не исполняет старое предупреждение.")
+	TEST_ASSERT(abs(second_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Независимая призма сохраняет свой залп.")
+
+/// Раздвоение следует выбранному направлению и сохраняет меньший урон боковых лучей.
+/datum/unit_test/heretic_glass_aimed_split/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	user.setDir(WEST)
+	TEST_ASSERT(glass.shards(user, locate(user.x, user.y + 2, user.z)), "Призма изначально направлена от цели.")
+	var/obj/structure/heretic_glass_prism/prism = glass.prisms[1]
+	prism.toggle_split()
+	var/mob/living/upper = allocate(/mob/living/carbon/human, get_step(prism, NORTHEAST))
+	var/mob/living/lower = allocate(/mob/living/carbon/human, get_step(prism, SOUTHEAST))
+	TEST_ASSERT(glass.release(user, locate(user.x + 4, user.y + 2, user.z)), "Сеть наводится на восток.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(upper.getBruteLoss() - 30) <= DAMAGE_PRECISION, "Верхний луч расходится от нового направления.")
+	TEST_ASSERT(abs(lower.getBruteLoss() - 30) <= DAMAGE_PRECISION, "Нижний луч не получает урон цельного преломления.")
+	TEST_ASSERT(prism.split && prism.dir == WEST, "Залп не меняет сохранённые настройки призмы.")
+
+/// Сеть не подключает чужие призмы и не передаёт залп через промежуток больше пяти клеток.
+/datum/unit_test/heretic_glass_relay_limits/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/turf_reservation/arena = SSmapping.RequestBlockReservation(19, 19, turf_type_override = /turf/open/floor/plating, border_type_override = /turf/closed/wall)
+	TEST_ASSERT_NOTNULL(arena, "Выделена площадка для проверки дальности сети.")
+	allocated += arena
+	var/turf/start = locate(arena.bottom_left_coords[1] + 4, arena.bottom_left_coords[2] + 4, arena.bottom_left_coords[3])
+	user.forceMove(start)
+	var/obj/structure/heretic_glass_prism/root = allocate(/obj/structure/heretic_glass_prism, locate(start.x + 2, start.y, start.z), glass)
+	var/obj/structure/heretic_glass_prism/relay = allocate(/obj/structure/heretic_glass_prism, locate(start.x + 2, start.y + 4, start.z), glass)
+	var/obj/structure/heretic_glass_prism/distant = allocate(/obj/structure/heretic_glass_prism, locate(start.x + 8, start.y + 4, start.z), glass)
+	var/datum/antagonist/heretic/other = allocate_heretic(get_step(start, SOUTH))
+	other.selected_path = PATH_GLASS
+	other.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	other.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/datum/eldritch_knowledge/base_glass/other_glass = other.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/heretic_glass_prism/foreign = allocate(/obj/structure/heretic_glass_prism, locate(start.x + 2, start.y - 3, start.z), other_glass)
+	for(var/obj/structure/heretic_glass_prism/prism as anything in list(root, relay, distant, foreign))
+		prism.setDir(EAST)
+	var/mob/living/connected_victim = allocate(/mob/living/carbon/human, get_step(relay, EAST))
+	var/mob/living/distant_victim = allocate(/mob/living/carbon/human, get_step(distant, EAST))
+	var/mob/living/foreign_victim = allocate(/mob/living/carbon/human, get_step(foreign, EAST))
+	TEST_ASSERT(glass.release(user, root), "Выстрел передаётся по доступной части сети.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	TEST_ASSERT(length(attack.cells) <= 3 * 12, "Каждая доступная призма трассируется один раз в пределах бюджета.")
+	attack.resolve()
+	TEST_ASSERT(abs(connected_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Связанный собственный узел стреляет.")
+	TEST_ASSERT_EQUAL(distant_victim.getBruteLoss(), 0, "Шестиклеточный разрыв не передаёт залп.")
+	TEST_ASSERT_EQUAL(foreign_victim.getBruteLoss(), 0, "Чужой узел не подключается к сети.")
+
+/// Буря и вознесение используют ту же связанную сеть, включая узлы за углом.
+/datum/unit_test/heretic_glass_relay_storm_and_crown/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_storm)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	user.setDir(EAST)
+	TEST_ASSERT(glass.shards(user, locate(user.x + 2, user.y, user.z)), "Установлен вход в сеть.")
+	TEST_ASSERT(glass.shards(user, locate(user.x + 2, user.y + 3, user.z)), "Установлен боковой узел сети.")
+	var/obj/structure/heretic_glass_prism/relay = glass.prisms[2]
+	var/obj/corner = allocate(/obj, get_step(user, NORTHEAST))
+	corner.density = TRUE
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(relay, EAST))
+	TEST_ASSERT(!glass.line_clear(user, relay, allow_prisms = TRUE), "Прямая видимость бокового узла закрыта.")
+	TEST_ASSERT(glass.storm(user), "Буря выпускает залп сети.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 46) <= DAMAGE_PRECISION, "Боковой узел наносит усиленный урон бури за углом.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	var/datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	final_knowledge.finished = TRUE
+	heretic.ascended = TRUE
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT(glass.crown(user), "Вознесение включает ту же сеть.")
+	attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 96) <= DAMAGE_PRECISION, "Витраж передаёт волну в скрытый узел.")
