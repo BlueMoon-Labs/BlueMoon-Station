@@ -327,6 +327,8 @@
 	#define SPEECH_LANGUAGE 5
 //	#define SPEECH_IGNORE_SPAM 6
 //	#define SPEECH_FORCED 7
+/// Из /mob/living/send_speech(): (message, message_range, source, bubble_type, spans, message_language, message_mode).
+#define COMSIG_LIVING_SEND_SPEECH "living_send_speech"
 #define COMSIG_MOB_FOV_VIEWER "mob_is_viewer"					//from base of /fov_viewers(): (atom/center, depth, viewers_list)
 #define COMSIG_MOB_GET_VISIBLE_MESSAGE "mob_get_visible_message" //from base of atom/visible_message(): (atom/A, msg, range, ignored_mobs)
 	#define COMPONENT_NO_VISIBLE_MESSAGE 1 //exactly what's said on the tin.

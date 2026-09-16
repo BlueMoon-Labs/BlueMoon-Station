@@ -7,6 +7,9 @@
 #define HERETIC_MOON_PRESSURE 18
 #define HERETIC_MOON_UPGRADED_PRESSURE 24
 #define HERETIC_MOON_ASCENDED_PRESSURE 30
+#define HERETIC_MOON_DAMAGE 5
+#define HERETIC_MOON_UPGRADED_DAMAGE 8
+#define HERETIC_MOON_ASCENDED_DAMAGE 10
 
 /proc/get_heretic_moon(mob/user)
 	var/datum/antagonist/heretic/heretic = user?.mind?.has_antag_datum(/datum/antagonist/heretic)
@@ -14,7 +17,7 @@
 
 /datum/eldritch_knowledge/base_moon
 	name = "Лицо под водой"
-	desc = "Открывает Путь Луны: создавайте двойников, изматывайте ими врага и меняйтесь с ними местами. Копии преследуют противников, а соседнее отражение может принять выстрел вместо вас и разбиться. Несколько копий не складывают урон по одной цели; удары и выстрелы разрушают их. Нож и осколок стекла создают лунный клинок."
+	desc = "Открывает Путь Луны: создавайте двойников, атакуйте ими врага и меняйтесь с ними местами. Копии повторяют вашу речь, преследуют противников и наносят физический урон и урон выносливости. Соседнее отражение может принять выстрел вместо вас и разбиться. Несколько копий не складывают урон по одной цели; удары и выстрелы разрушают их. Нож и осколок стекла создают лунный клинок."
 	gain_text = "Отражение подняло голову раньше меня."
 	cost = 0
 	route = PATH_MOON
@@ -37,12 +40,13 @@
 	moon_body = user
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_body_deleted))
 	RegisterSignal(user, COMSIG_LIVING_RUN_BLOCK, PROC_REF(intercept_projectile))
+	RegisterSignal(user, COMSIG_LIVING_SEND_SPEECH, PROC_REF(relay_speech))
 	reflection_spell = new
 	user.mind.AddSpell(reflection_spell)
 
 /datum/eldritch_knowledge/base_moon/on_body_lose(mob/living/user)
 	if(moon_body)
-		UnregisterSignal(moon_body, list(COMSIG_PARENT_QDELETING, COMSIG_LIVING_RUN_BLOCK))
+		UnregisterSignal(moon_body, list(COMSIG_PARENT_QDELETING, COMSIG_LIVING_RUN_BLOCK, COMSIG_LIVING_SEND_SPEECH))
 		moon_body.remove_status_effect(/datum/status_effect/heretic_moon_shroud)
 	moon_body = null
 	QDEL_NULL(reflection_spell)
@@ -51,6 +55,15 @@
 /datum/eldritch_knowledge/base_moon/proc/on_body_deleted(datum/source)
 	SIGNAL_HANDLER
 	on_body_lose(moon_body)
+
+/datum/eldritch_knowledge/base_moon/proc/relay_speech(mob/living/source, message, message_range, atom/movable/speech_source, bubble_type, list/spans, datum/language/message_language, message_mode)
+	SIGNAL_HANDLER
+	if(source != moon_body || source.stat == DEAD || speech_source != source || !length(message))
+		return
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections)
+		if(QDELETED(reflection) || reflection.stat == DEAD || reflection.parent_mob != source)
+			continue
+		INVOKE_ASYNC(reflection, TYPE_PROC_REF(/atom/movable, send_speech), message, message_range, reflection, bubble_type, spans?.Copy(), message_language, message_mode)
 
 /datum/eldritch_knowledge/base_moon/proc/intercept_projectile(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
 	SIGNAL_HANDLER
@@ -95,7 +108,7 @@
 		"name" = "Отражения",
 		"value" = length(reflections),
 		"max" = reflection_limit(),
-		"description" = "Копии наносят 18 / 24 / 30 урона выносливости раз в секунду на цель. Соседняя копия перехватывает снаряд ценой своей жизни, не чаще раза в 4 секунды. Обычные отражения живут 45 секунд; покров продлевает жизнь новых копий. Клинок направляет копии на вашу цель, обмен меняет вас местами до пяти клеток.",
+		"description" = "Копии наносят 5 / 8 / 10 физического и 18 / 24 / 30 урона выносливости раз в секунду на цель. Броня снижает физический урон. Копии повторяют вашу речь, сохраняя язык и шёпот. Соседняя копия перехватывает снаряд ценой своей жизни, не чаще раза в 4 секунды. Обычные отражения живут 45 секунд; покров продлевает жизнь новых копий. Клинок направляет копии на вашу цель, обмен меняет вас местами до пяти клеток.",
 	)
 
 /// Оба конца обмена остаются на открытом полу: нельзя выбрать шкаф, стену или космос.
@@ -260,6 +273,21 @@
 		if(witness.client)
 			count_witness(witness, delta_time)
 
+/mob/living/simple_animal/hostile/illusion/heretic_moon/GetVoice()
+	if(!QDELETED(parent_mob))
+		return parent_mob.GetVoice()
+	return ..()
+
+/mob/living/simple_animal/hostile/illusion/heretic_moon/get_alt_name()
+	if(!QDELETED(parent_mob))
+		return parent_mob.get_alt_name()
+	return ..()
+
+/mob/living/simple_animal/hostile/illusion/heretic_moon/say_mod(input, message_mode)
+	if(!QDELETED(parent_mob))
+		return parent_mob.say_mod(input, message_mode)
+	return ..()
+
 /mob/living/simple_animal/hostile/illusion/heretic_moon/proc/count_witness(mob/living/carbon/human/witness, delta_time)
 	var/datum/mind/witness_mind = witness.mind
 	if(!witness_mind || witness == parent_mob || witness.stat != CONSCIOUS || witness.is_blind() || IS_HERETIC(witness) || IS_HERETIC_MONSTER(witness))
@@ -295,14 +323,18 @@
 	if(!CanAttack(target) || !Adjacent(target))
 		return FALSE
 	var/mob/living/victim = target
+	var/obj/item/weapon = parent_mob.get_active_held_item()
 	setDir(get_dir(src, victim))
-	do_attack_animation(victim, used_item = parent_mob.get_active_held_item())
+	do_attack_animation(victim, used_item = weapon)
 	if(!victim.has_status_effect(/datum/status_effect/heretic_moon_pressure) && heretic_can_affect(parent_mob, victim))
 		var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
 		var/pressure = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_PRESSURE : knowledge?.upgraded ? HERETIC_MOON_UPGRADED_PRESSURE : HERETIC_MOON_PRESSURE
+		var/damage = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_DAMAGE : knowledge?.upgraded ? HERETIC_MOON_UPGRADED_DAMAGE : HERETIC_MOON_DAMAGE
 		victim.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
 		victim.adjustStaminaLoss(pressure)
-		playsound(victim, 'sound/weapons/punchmiss.ogg', 35, TRUE)
+		victim.apply_damage(damage, BRUTE, BODY_ZONE_CHEST, victim.run_armor_check(BODY_ZONE_CHEST, MELEE))
+		playsound(victim, weapon?.hitsound || 'sound/weapons/punch1.ogg', 35, TRUE)
+		log_combat(parent_mob, victim, "атаковал лунным отражением")
 	return TRUE
 
 /datum/status_effect/heretic_moon_pressure
@@ -369,7 +401,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create
 	name = "Лунное отражение"
-	desc = "Создайте двойника на видимом свободном полу и ещё одного возле себя, если позволяет лимит. При полном лимите новая копия заменяет старейшую. Копии изматывают врагов ложными ударами и перехватывают снаряды рядом с вами. До двух копий на 45 секунд, перезарядка 8 секунд; знания пути усиливают отражения."
+	desc = "Создайте двойника на видимом свободном полу и ещё одного возле себя, если позволяет лимит. При полном лимите новая копия заменяет старейшую. Копии повторяют вашу речь, наносят 5 физического и 18 урона выносливости раз в секунду на цель и перехватывают снаряды рядом с вами. До двух копий на 45 секунд, перезарядка 8 секунд; знания пути усиливают отражения."
 	active_msg = "Выберите открытый пол для отражения."
 	deactive_msg = "Лунный свет гаснет в вашей ладони."
 	charge_max = 8 SECONDS
@@ -610,7 +642,7 @@
 
 /datum/eldritch_knowledge/moon_upgrade
 	name = "Третий силуэт"
-	desc = "Вы можете поддерживать три отражения. Их ложные удары наносят 24 урона выносливости вместо 18. Общий интервал на цель — одна секунда."
+	desc = "Вы можете поддерживать три отражения. Их удары наносят 8 физического и 24 урона выносливости вместо 5 и 18. Общий интервал на цель — одна секунда."
 	cost = 2
 	route = PATH_MOON
 
@@ -634,7 +666,7 @@
 
 /datum/eldritch_knowledge/moon_refraction
 	name = "Осколки света"
-	desc = "Разбитый двойник путает врагов в соседних клетках и наносит 25 урона выносливости. Вспышки имеют общий интервал 2 секунды на цель и срабатывают независимо от ложных ударов. Истечение времени и замена копий не вызывают вспышку."
+	desc = "Разбитый двойник путает врагов в соседних клетках и наносит 25 урона выносливости. Вспышки имеют общий интервал 2 секунды на цель и срабатывают независимо от ударов копий. Истечение времени и замена копий не вызывают вспышку."
 	cost = 2
 	route = PATH_MOON
 
@@ -659,7 +691,7 @@
 /datum/eldritch_knowledge/final_eldritch/moon_final
 	parallax_scene = ANTAG_SCENE_HERETIC_MOON
 	name = "Обратная сторона Луны"
-	desc = "После трёх подношений принесите три человеческих трупа на руну. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. До пяти отражений; ложные удары наносят 30 урона выносливости с общим интервалом одна секунда на цель. Вы получаете ослабление входящих ранений."
+	desc = "После трёх подношений принесите три человеческих трупа на руну. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. До пяти отражений; удары наносят 10 физического и 30 урона выносливости с общим интервалом одна секунда на цель. Вы получаете ослабление входящих ранений."
 	gain_text = "Я видел другую сторону. Там каждый взгляд принадлежит мне."
 	cost = 3
 	route = PATH_MOON
@@ -705,3 +737,6 @@
 #undef HERETIC_MOON_PRESSURE
 #undef HERETIC_MOON_UPGRADED_PRESSURE
 #undef HERETIC_MOON_ASCENDED_PRESSURE
+#undef HERETIC_MOON_DAMAGE
+#undef HERETIC_MOON_UPGRADED_DAMAGE
+#undef HERETIC_MOON_ASCENDED_DAMAGE

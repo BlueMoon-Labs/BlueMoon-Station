@@ -276,7 +276,7 @@
 	TEST_ASSERT_EQUAL(length(reflection.filters), 1, "Копия сохраняет исходный фильтр без лунного покрова.")
 	TEST_ASSERT_EQUAL(length(user.filters), 2, "Синхронизация копии не должна изменять фильтры владельца.")
 
-/// Двойники получают цель в контроллере и делят ограничение урона выносливости.
+/// Двойники делят интервал физического урона и выносливости, учитывая броню и союзников.
 /datum/unit_test/heretic_moon_pressure/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
@@ -286,19 +286,29 @@
 	knowledge.direct_reflections(victim)
 	TEST_ASSERT_NOTNULL(first.ai_controller, "У двойника должен быть контроллер движения и атак.")
 	TEST_ASSERT_EQUAL(first.ai_controller.blackboard[BB_AI_CURRENT_TARGET], victim, "Команда должна передавать цель контроллеру.")
-	TEST_ASSERT(first.AttackingTarget(), "Соседняя цель должна принимать ложный удар.")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Ложный удар не должен наносить ранения.")
+	TEST_ASSERT(first.AttackingTarget(), "Соседняя цель должна принимать удар копии.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 5, "Начальное отражение наносит 5 физического урона.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 18, "Начальное отражение наносит 18 урона выносливости.")
 	second.AttackingTarget()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 5, "Вторая копия не должна складывать физический урон в общем интервале.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 18, "Вторая копия не должна обходить общий интервал.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.upgraded = TRUE
 	second.AttackingTarget()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 13, "Улучшение увеличивает физический урон до 8.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 42, "Улучшение увеличивает ложный удар до 24.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.ascension_active = TRUE
 	first.AttackingTarget()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 23, "Вознесение увеличивает физический урон до 10.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 72, "Вознесение увеличивает ложный удар до 30.")
+	var/obj/item/clothing/suit/armor/vest/armor = allocate(/obj/item/clothing/suit/armor/vest)
+	armor.armor = armor.armor.setRating(melee = 100)
+	victim.equip_to_slot_if_possible(armor, ITEM_SLOT_OCLOTHING)
+	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
+	first.AttackingTarget()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 23, "Полная защита от ближнего боя поглощает физический урон копии.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 102, "Броня не меняет прежний урон выносливости.")
 	TEST_ASSERT(!first.CanAttack(user), "Двойник не должен атаковать владельца.")
 	TEST_ASSERT(!first.CanAttack(second), "Двойники не должны атаковать друг друга.")
 	var/mob/living/ally = make_moon_heretic(get_step(victim, NORTH))
@@ -306,6 +316,62 @@
 	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_turf(victim))
 	victim.forceMove(closet)
 	TEST_ASSERT(!first.AttackingTarget(), "Ложный удар не должен доставать цель внутри шкафа.")
+
+/// Копии повторяют произнесённую речь с голосом, языком и дальностью владельца.
+/datum/unit_test/heretic_moon_speech
+	var/list/speeches = list()
+	var/speech_count = 0
+
+/datum/unit_test/heretic_moon_speech/Run()
+	var/mob/living/carbon/human/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/first = knowledge.create_reflection(user, get_step(user, EAST))
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/second = knowledge.create_reflection(user, get_step(user, NORTH))
+	TEST_ASSERT(first && second, "Создаются две копии для передачи речи.")
+	RegisterSignal(first, COMSIG_LIVING_SEND_SPEECH, PROC_REF(record_speech))
+	RegisterSignal(second, COMSIG_LIVING_SEND_SPEECH, PROC_REF(record_speech))
+	user.SetSpecialVoice("Чужое имя")
+	user.say("Проверка отражения.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 2, "Одна фраза повторяется каждой копией ровно один раз.")
+	var/list/spoken = speeches[first]
+	TEST_ASSERT_EQUAL(spoken["message"], user.last_words, "Копия повторяет обработанный текст владельца.")
+	TEST_ASSERT_EQUAL(spoken["source"], first, "Речь исходит от копии, а не от владельца.")
+	TEST_ASSERT_EQUAL(spoken["language"], /datum/language/common, "Язык сообщения сохраняется.")
+	TEST_ASSERT_EQUAL(first.GetVoice(), user.GetVoice(), "Изменённый голос не выдаёт оригинал.")
+	TEST_ASSERT_EQUAL(first.get_alt_name(), user.get_alt_name(), "Подпись замаскированного имени совпадает.")
+	TEST_ASSERT_EQUAL(first.say_mod("Проверка?", null), user.say_mod("Проверка?", null), "Манера речи копии совпадает с владельцем.")
+	user.whisper("Тихая проверка.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 4, "Шёпот также повторяется обеими копиями.")
+	spoken = speeches[second]
+	TEST_ASSERT_EQUAL(spoken["mode"], MODE_WHISPER, "Копия сохраняет режим шёпота.")
+	TEST_ASSERT_EQUAL(spoken["range"], 1, "Шёпот копии не становится обычной речью.")
+	TEST_ASSERT(SPAN_WHISPER in spoken["spans"], "Стиль шёпота сохраняется.")
+	ADD_TRAIT(user, TRAIT_MUTE, "moon-speech-test")
+	user.say("Несказанная фраза.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 4, "Немота владельца не позволяет говорить через копии.")
+	user.say("Привет!", language = /datum/language/signlanguage, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 6, "Жестовый язык передаётся и при немоте.")
+	spoken = speeches[first]
+	TEST_ASSERT_EQUAL(spoken["language"], /datum/language/signlanguage, "Жесты не превращаются в звуковую речь.")
+	REMOVE_TRAIT(user, TRAIT_MUTE, "moon-speech-test")
+	user.say(":p Проверка канала.", ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 6, "Сообщение служебного канала не произносится копиями.")
+	qdel(first)
+	user.say("Осталось одно отражение.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 7, "Удалённая копия больше не повторяет речь.")
+	knowledge.on_body_lose(user)
+	user.say("Отражений больше нет.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(speech_count, 7, "Потеря тела прекращает передачу речи.")
+	TEST_ASSERT(QDELETED(second), "Потеря тела удаляет оставшуюся копию.")
+
+/datum/unit_test/heretic_moon_speech/proc/record_speech(mob/living/source, message, message_range, atom/movable/speech_source, bubble_type, list/spans, datum/language/message_language, message_mode)
+	SIGNAL_HANDLER
+	speech_count++
+	speeches[source] = list("message" = message, "source" = speech_source, "range" = message_range, "language" = message_language, "mode" = message_mode, "spans" = spans?.Copy())
+
+/datum/unit_test/heretic_moon_speech/Destroy()
+	speeches = null
+	return ..()
 
 /// Шествие заменяет полный набор отражений и оставляет двойника на прежнем месте владельца.
 /datum/unit_test/heretic_moon_mirage/Run()
@@ -362,7 +428,7 @@
 	decoy.sync_appearance()
 	TEST_ASSERT_EQUAL(length(decoy.filters), length(user.filters) - 1, "Оставленный двойник не должен исчезать вместе с владельцем.")
 
-/// Контроллер самостоятельно подводит двойника к врагу и наносит ложный удар.
+/// Контроллер самостоятельно подводит двойника к врагу и наносит оба вида урона.
 /datum/unit_test/heretic_moon_pursuit
 	var/mob/living/carbon/human/caster
 
@@ -381,7 +447,7 @@
 			break
 	TEST_ASSERT_NOTEQUAL(get_turf(reflection), origin, "Двойник должен самостоятельно двигаться к врагу.")
 	TEST_ASSERT(victim.getStaminaLoss() > 0, "Контроллер должен проводить ложные атаки.")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Автономные атаки не должны наносить ранения.")
+	TEST_ASSERT(victim.getBruteLoss() > 0, "Автономные атаки должны наносить физический урон.")
 	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, destination)
 	bullet.damage = 20
 	bullet.firer = victim
