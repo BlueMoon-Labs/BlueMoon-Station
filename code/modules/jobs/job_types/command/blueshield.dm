@@ -141,7 +141,7 @@
 	name = "Blueshield's Quarters"
 	icon_state = "bridge"
 
-//BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
+/* //BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
 ///Subtype of CQC. Only used for the Blueshield.
 /datum/martial_art/cqc/restricted/blueshield
 	name = "CQC (Blueshield edition)"
@@ -158,4 +158,4 @@
 		return
 	var/datum/martial_art/cqc/restricted/blueshield/justablue = new
 	justablue.teach(H)
-//BLUEMOON CHANGE END
+//BLUEMOON CHANGE END */
