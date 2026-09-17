@@ -28,6 +28,28 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 	permit_id = GLOB.weapon_permits_issued
 	name += " #[permit_id]"
 
+// BLUEMOON ADD START - обновление HUD разрешений на оружие при креплении/снятии/блокировке бумажного пермита
+/obj/item/clothing/accessory/permit/attach(obj/item/clothing/cloth, user)
+	. = ..()
+	var/mob/living/carbon/human/wearer = ishuman(cloth?.loc) ? cloth.loc : null
+	if(wearer)
+		wearer.sec_hud_set_ID()
+
+/obj/item/clothing/accessory/permit/detach(obj/item/clothing/cloth, user)
+	var/mob/living/carbon/human/detach_wearer = ishuman(cloth?.loc) ? cloth.loc : null
+	. = ..()
+	if(detach_wearer)
+		detach_wearer.sec_hud_set_ID()
+
+/obj/item/clothing/accessory/permit/proc/refresh_wearer_permit_hud()
+	if(!current_uniform)
+		return
+	var/mob/living/carbon/human/wearer = current_uniform.loc
+	if(!ishuman(wearer))
+		return
+	wearer.sec_hud_set_ID()
+// BLUEMOON ADD END
+
 /obj/item/clothing/accessory/permit/ui_status(mob/user)
 	if(!can_see_permit(user))
 		return UI_CLOSE
@@ -80,6 +102,9 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 			issue_time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 			playsound(src, 'sound/machines/chime.ogg', 20)
 			locked = TRUE
+		// BLUEMOON ADD START - обновление HUD разрешений на оружие
+			refresh_wearer_permit_hud()
+		// BLUEMOON ADD END
 		if("reopen_license")
 			if(!has_access_to_issuing(usr))
 				to_chat(usr, span_warning("У вас нет прав на это действие!"))
@@ -89,6 +114,9 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 			issue_time = ""
 			playsound(src, 'sound/machines/beep.ogg', 20)
 			locked = FALSE
+		// BLUEMOON ADD START - обновление HUD разрешений на оружие
+			refresh_wearer_permit_hud()
+		// BLUEMOON ADD END
 		if("submit_owner")
 			if(!ishuman(usr))
 				return
@@ -186,6 +214,22 @@ GLOBAL_VAR_INIT(weapon_permits_issued, 0)
 
 /obj/item/clothing/accessory/permit/proc/register()
 	return
+
+// BLUEMOON ADD - проверка валидности разрешения для механической системы оружейных пинов (permit_pin)
+/obj/item/clothing/accessory/permit/proc/authorizes_user(mob/living/carbon/human/user)
+	if(!istype(user))
+		return FALSE
+	if(owner_name != user.get_visible_name())
+		return FALSE
+	return locked
+
+/obj/item/clothing/accessory/permit/special/authorizes_user(mob/living/carbon/human/user)
+	if(!istype(user))
+		return FALSE
+	if(owner_name != user.get_visible_name())
+		return FALSE
+	return first_inited
+// BLUEMOON ADD END
 
 
 // База для заранее созданных пермитов

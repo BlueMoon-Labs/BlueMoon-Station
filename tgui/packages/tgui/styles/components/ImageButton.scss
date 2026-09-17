@@ -1,0 +1,82 @@
+/**
+ * Copyright (c) 2020 Aleksej Komarov
+ * SPDX-License-Identifier: MIT
+ * BLUEMOON ADD: кнопка-строка каталога карго с превью-иконкой товара.
+ */
+
+@use '../base.scss';
+
+.ImageButton {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: base.em(1px) solid rgba(255, 255, 255, 0.15);
+  border-radius: base.$border-radius;
+  padding: 0.25em;
+  margin: 0.125em 0;
+  overflow: hidden;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.ImageButton--fluid {
+  width: 100%;
+}
+
+.ImageButton--disabled {
+  opacity: 0.5;
+  cursor: default;
+  background-color: rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+.ImageButton--color--yellow {
+  color: #e0e000;
+}
+
+.ImageButton--color--orange {
+  color: #e07d00;
+}
+
+.ImageButton--color--bad {
+  color: #f5391d;
+}
+
+.ImageButton__image {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5em;
+
+  img {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    object-fit: contain;
+  }
+}
+
+.ImageButton__placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.ImageButton__content {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.ImageButton__buttons {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding-left: 0.25em;
+}

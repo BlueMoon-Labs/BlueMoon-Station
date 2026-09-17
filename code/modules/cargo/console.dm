@@ -24,6 +24,8 @@
 	var/list/loaded_coupons
 	/// var that makes express console use rockets
 	var/is_express = FALSE
+	// BLUEMOON ADD - очередь ленивых обновлений каталога (иконки/содержимое) для нового UI
+	var/list/queued_inventory_updates = list()
 
 /obj/machinery/computer/cargo/request
 	name = "supply request console"
@@ -79,10 +81,12 @@
 
 /obj/machinery/computer/cargo/ui_data()
 	var/list/data = list()
+	data["department"] = "Cargo" // BLUEMOON ADD - заголовок отдела для нового интерфейса
 	data["location"] = SSshuttle.supply.getStatusText()
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		data["points"] = D.account_balance
+	data["grocery"] = 0 // BLUEMOON ADD - системы кухонных поставок в этом билде нет
 	data["away"] = SSshuttle.supply.getDockedId() == "supply_away"
 	data["self_paid"] = self_paid
 	data["docked"] = SSshuttle.supply.mode == SHUTTLE_IDLE
@@ -96,35 +100,65 @@
 	if(SSshuttle.supplyBlocked)
 		message = blockade_warning
 	data["message"] = message
-	data["cart"] = list()
+	// BLUEMOON ADD START - агрегированная корзина и количество заказов по именам (контракт нового UI)
+	var/list/amount_by_name = list()
+	var/list/cart_list = list()
 	for(var/datum/supply_order/SO in SSshuttle.shoppinglist)
-		data["cart"] += list(list(
+		if(cart_list[SO.pack.name])
+			amount_by_name[SO.pack.name] += 1
+			cart_list[SO.pack.name][1]["amount"]++
+			cart_list[SO.pack.name][1]["cost"] += SO.pack.get_cost()
+			if(!isnull(SO.paying_account))
+				cart_list[SO.pack.name][1]["paid"]++
+			continue
+
+		amount_by_name[SO.pack.name] += 1
+		cart_list[SO.pack.name] = list(list(
+			"cost_type" = "",
 			"object" = SO.pack.name,
 			"cost" = SO.pack.get_cost(),
 			"id" = SO.id,
+			"amount" = 1,
 			"orderer" = SO.orderer,
-			"paid" = !isnull(SO.paying_account) //paid by requester
+			"paid" = !isnull(SO.paying_account) ? 1 : 0, // количество заказов, оплаченных с личного счёта
+			"dep_order" = 0, // ведомственные заказы в этом билде не отслеживаются
+			"can_be_cancelled" = 1,
 		))
+	data["cart"] = list()
+	for(var/item_id in cart_list)
+		data["cart"] += cart_list[item_id]
 
 	data["requests"] = list()
 	for(var/datum/supply_order/SO in SSshuttle.requestlist)
+		var/datum/supply_pack/pack = SO.pack
+		amount_by_name[pack.name] += 1
 		data["requests"] += list(list(
-			"object" = SO.pack.name,
-			"cost" = SO.pack.get_cost(),
+			"object" = pack.name,
+			"cost" = pack.get_cost(),
 			"orderer" = SO.orderer,
 			"reason" = SO.reason,
-			"id" = SO.id
+			"id" = SO.id,
 		))
+	data["amount_by_name"] = amount_by_name
+	// BLUEMOON ADD END
+	// BLUEMOON ADD - отдаём запрошенные новым UI иконки/содержимое каталога одним разом
+	if(length(queued_inventory_updates))
+		data["inventory_updates"] = queued_inventory_updates
+		queued_inventory_updates = list()
+	// BLUEMOON ADD END
 
 	return data
 
 /obj/machinery/computer/cargo/ui_static_data(mob/user)
 	var/list/data = list()
+	// BLUEMOON ADD START - поля контракта нового UI
 	data["requestonly"] = requestonly
+	data["max_order"] = CARGO_MAX_ORDER
+	// BLUEMOON ADD END
 	data["supplies"] = list()
 	for(var/pack in SSshuttle.supply_packs)
 		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
-		if(P.exclusive_consoles)
+		if(P.exclusive_consoles) // BLUEMOON ADD - эксклюзивные паки видны только своим консолям
 			continue
 		if(!data["supplies"][P.group])
 			data["supplies"][P.group] = list(
@@ -133,6 +167,7 @@
 			)
 		if((P.hidden && !(obj_flags & EMAGGED)) || (P.contraband && !contraband) || (P.special && !P.special_enabled) || P.DropPodOnly)
 			continue
+		// BLUEMOON ADD - поля контракта нового UI. Иконки и содержимое тянем лениво по требованию. BLUEMOON EDIT
 		data["supplies"][P.group]["packs"] += list(list(
 			"name" = P.name,
 			"cost" = P.get_cost(),
@@ -140,9 +175,12 @@
 			"desc" = P.desc || P.name, // If there is a description, use it. Otherwise use the pack's name.
 			"goody" = P.goody,
 			"access" = P.access,
-			"private_goody" = P.goody == PACK_GOODY_PRIVATE,
-			"can_private_buy" = P.can_private_buy
+			"contraband" = P.contraband,
+			"small_item" = P.goody != PACK_GOODY_NONE,
+			"can_private_buy" = P.can_private_buy,
+			"private_goody" = P.goody == PACK_GOODY_PRIVATE
 		))
+		// BLUEMOON ADD END
 	return data
 
 /obj/machinery/computer/cargo/ui_act(action, params, datum/tgui/ui)
@@ -184,92 +222,45 @@
 				log_game("[key_name(usr)] accepted a shuttle loan event.")
 				. = TRUE
 		if("add")
-			if(is_express)
+			var/amount = text2num(params["amount"])
+			if(amount < 1)
+				amount = 1
+			return add_orders(ui.user, params["id"], clamp(amount, 1, CARGO_MAX_ORDER))
+		// BLUEMOON ADD START - действия нового UI
+		if("add_by_name")
+			var/supply_pack_id = name_to_id(params["order_name"])
+			if(!supply_pack_id)
 				return
-			var/id = text2path(params["id"])
-			var/datum/supply_pack/pack = SSshuttle.supply_packs[id]
-			if(!istype(pack))
-				return
-			if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.contraband && !contraband) || pack.DropPodOnly)
-				return
-			if(pack.exclusive_consoles && !is_type_in_list(src, pack.exclusive_consoles))
-				return
-
-			if(self_paid && !pack.can_private_buy)
-				say("This cannot be bought privately.")
-				return
-
-			var/name = "*None Provided*"
-			var/rank = "*None Provided*"
-			var/ckey = usr.ckey
-			if(ishuman(usr))
-				var/mob/living/carbon/human/H = usr
-				name = H.get_authentification_name()
-				rank = H.get_assignment(hand_first = TRUE)
-			else if(issilicon(usr))
-				name = usr.real_name
-				rank = "Silicon"
-
-			var/datum/bank_account/account
-			if(self_paid && isliving(usr))
-				var/mob/living/L = usr
-				var/obj/item/card/id/id_card = L.get_idcard(TRUE)
-				if(!istype(id_card))
-					say("No ID card detected.")
-					return
-				if(istype(id_card, /obj/item/card/id/departmental_budget))
-					say("The [src] rejects [id_card].")
-					return
-				account = id_card.registered_account
-				if(!istype(account))
-					say("Invalid bank account.")
-					return
-
-			var/reason = ""
-			if(requestonly && !self_paid)
-				reason = stripped_input("Reason:", name, "")
-				if(isnull(reason) || ..())
-					return
-
-			if(pack.goody == PACK_GOODY_PRIVATE && !self_paid)
-				playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
-				say("ERROR: Private small crates may only be purchased by private accounts.")
-				return
-
-			var/obj/item/coupon/applied_coupon
-			for(var/i in loaded_coupons)
-				var/obj/item/coupon/coupon_check = i
-				if(pack.type == coupon_check.discounted_pack)
-					say("Coupon found! [round(coupon_check.discount_pct_off * 100)]% off applied!")
-					coupon_check.moveToNullspace()
-					applied_coupon = coupon_check
-					break
-
-			var/turf/T = get_turf(src)
-			var/datum/supply_order/SO = new(pack, name, rank, ckey, reason, account, applied_coupon)
-			SO.generateRequisition(T)
-			if(requestonly && !self_paid)
-				SSshuttle.requestlist += SO
-			else
-				SSshuttle.shoppinglist += SO
-				if(self_paid && account)
-					say("Order processed. The price will be charged to [account.account_holder]'s bank account on delivery.")
-				else if(self_paid)
-					say("Order processed. Bank account could not be verified; charge may fail on delivery.")
-			if(requestonly && message_cooldown < world.time)
-				radio.talk_into(src, "Был запрошен новый заказ.", RADIO_CHANNEL_SUPPLY)
-				message_cooldown = world.time + 30 SECONDS
-			. = TRUE
-		if("remove")
-			var/id = text2num(params["id"])
+			return add_orders(ui.user, supply_pack_id, 1)
+		if("modify")
+			var/order_name = params["order_name"]
+			// снимаем все текущие заказы с этим именем, чтобы освободить место под новое количество
 			for(var/datum/supply_order/SO in SSshuttle.shoppinglist)
-				if(SO.id == id)
-					if(SO.applied_coupon)
-						say("Coupon refunded.")
-						SO.applied_coupon.forceMove(get_turf(src))
-					SSshuttle.shoppinglist -= SO
-					. = TRUE
-					break
+				if(SO.pack.name == order_name)
+					remove_item(SO.id)
+			var/amount = text2num(params["amount"])
+			if(amount == 0)
+				return TRUE
+			if(amount > CARGO_MAX_ORDER)
+				return
+			var/supply_pack_id = name_to_id(order_name)
+			if(!supply_pack_id)
+				return
+			return add_orders(ui.user, supply_pack_id, amount)
+		if("remove")
+			var/order_name = params["order_name"]
+			if(order_name)
+				// пытаемся снять хотя бы один заказ с указанным именем
+				for(var/datum/supply_order/SO in SSshuttle.shoppinglist)
+					if(SO.pack.name != order_name)
+						continue
+					if(remove_item(SO.id))
+						break
+				. = TRUE
+			else
+				var/id = text2num(params["id"])
+				. = remove_item(id)
+		// BLUEMOON ADD END
 		if("clear")
 			SSshuttle.shoppinglist.Cut()
 			. = TRUE
@@ -294,8 +285,122 @@
 		if("toggleprivate")
 			self_paid = !self_paid
 			. = TRUE
+		if("get_inventory") // BLUEMOON ADD - ленивая загрузка иконок/содержимого каталога
+			. = TRUE
+			for(var/pack_id in params["ids"])
+				if(!queued_inventory_updates[pack_id])
+					queued_inventory_updates[pack_id] = get_cargo_pack_inventory_data(pack_id)
 	if(.)
 		post_signal("supply")
+
+/**
+ * BLUEMOON ADD START
+ * Размещает один или несколько заказов на паки. Используется как старым UI (add), так и новым (add_by_name/modify).
+ */
+/obj/machinery/computer/cargo/proc/add_orders(mob/user, id, amount = 1)
+	var/supply_pack_id = text2path(id) || id
+	var/datum/supply_pack/pack = SSshuttle.supply_packs[supply_pack_id]
+	if(!istype(pack))
+		return
+	if(is_express)
+		return
+	if((pack.hidden && !(obj_flags & EMAGGED)) || (pack.contraband && !contraband) || pack.DropPodOnly)
+		return
+	if(pack.exclusive_consoles && !is_type_in_list(src, pack.exclusive_consoles))
+		return
+
+	if(self_paid && !pack.can_private_buy)
+		say("This cannot be bought privately.")
+		return
+
+	var/name = "*None Provided*"
+	var/rank = "*None Provided*"
+	var/ckey = user.ckey
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		name = H.get_authentification_name()
+		rank = H.get_assignment(hand_first = TRUE)
+	else if(issilicon(user))
+		name = user.real_name
+		rank = "Silicon"
+
+	var/datum/bank_account/account
+	if(self_paid && isliving(user))
+		var/mob/living/L = user
+		var/obj/item/card/id/id_card = L.get_idcard(TRUE)
+		if(!istype(id_card))
+			say("No ID card detected.")
+			return
+		if(istype(id_card, /obj/item/card/id/departmental_budget))
+			say("The [src] rejects [id_card].")
+			return
+		account = id_card.registered_account
+		if(!istype(account))
+			say("Invalid bank account.")
+			return
+
+	var/reason = ""
+	if(requestonly && !self_paid)
+		reason = stripped_input("Reason:", name, "")
+		if(isnull(reason))
+			return
+
+	if(pack.goody == PACK_GOODY_PRIVATE && !self_paid)
+		playsound(src, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
+		say("ERROR: Private small crates may only be purchased by private accounts.")
+		return
+
+	for(var/count in 1 to amount)
+		var/obj/item/coupon/applied_coupon
+		for(var/i in loaded_coupons)
+			var/obj/item/coupon/coupon_check = i
+			if(pack.type == coupon_check.discounted_pack)
+				say("Coupon found! [round(coupon_check.discount_pct_off * 100)]% off applied!")
+				coupon_check.moveToNullspace()
+				applied_coupon = coupon_check
+				break
+
+		var/turf/T = get_turf(src)
+		var/datum/supply_order/SO = new(pack, name, rank, ckey, reason, account, applied_coupon)
+		SO.generateRequisition(T)
+		if(requestonly && !self_paid)
+			SSshuttle.requestlist += SO
+		else
+			SSshuttle.shoppinglist += SO
+			if(self_paid && account)
+				say("Order processed. The price will be charged to [account.account_holder]'s bank account on delivery.")
+			else if(self_paid)
+				say("Order processed. Bank account could not be verified; charge may fail on delivery.")
+		if(requestonly && message_cooldown < world.time)
+			radio.talk_into(src, "Был запрошен новый заказ.", RADIO_CHANNEL_SUPPLY)
+			message_cooldown = world.time + 30 SECONDS
+	post_signal("supply")
+	return TRUE
+
+/**
+ * Снимает заказ с корзины по его id. Возвращает TRUE, если такой заказ был найден и снят.
+ */
+/obj/machinery/computer/cargo/proc/remove_item(id)
+	for(var/datum/supply_order/SO in SSshuttle.shoppinglist)
+		if(SO.id != id)
+			continue
+		if(SO.applied_coupon)
+			say("Coupon refunded.")
+			SO.applied_coupon.forceMove(get_turf(src))
+		SSshuttle.shoppinglist -= SO
+		return TRUE
+	return FALSE
+
+/**
+ * Сопоставляет имя заказа, отображаемое в UI, с id пака в списке supply_packs.
+ */
+/obj/machinery/computer/cargo/proc/name_to_id(order_name)
+	for(var/pack in SSshuttle.supply_packs)
+		var/datum/supply_pack/supply = SSshuttle.supply_packs[pack]
+		if(order_name == supply.name)
+			return pack
+	return null
+// BLUEMOON ADD END
 
 /obj/machinery/computer/cargo/proc/post_signal(command)
 

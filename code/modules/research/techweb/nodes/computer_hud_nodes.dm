@@ -45,7 +45,7 @@
 	description = "The usefulness of computerized records, projected straight onto your eyepiece!"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_SERVICE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("comp_recordkeeping", "emp_basic")
-	design_ids = list("health_hud", "security_hud", "diagnostic_hud", "skills_hud", "scigoggles")
+	design_ids = list("health_hud", "security_hud", "diagnostic_hud", "skills_hud", "scigoggles", "permit_glasses") // BLUEMOON EDIT - permit_glasses
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
 
 /datum/techweb_node/NVGtech

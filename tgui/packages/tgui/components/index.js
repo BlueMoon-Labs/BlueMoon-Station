@@ -22,6 +22,7 @@ export { FindBar } from './FindBar';
 export { Flex } from './Flex';
 export { Grid } from './Grid';
 export { Icon } from './Icon';
+export { ImageButton } from './ImageButton';
 export { InfinitePlane } from './InfinitePlane';
 export { Input } from './Input';
 export { Knob } from './Knob';

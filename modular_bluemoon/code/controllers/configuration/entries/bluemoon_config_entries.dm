@@ -35,3 +35,6 @@
 	default = 100
 	integer = TRUE
 	min_val = 0
+
+/// Turn on/off gun cargo permit-locked firing pins
+/datum/config_entry/flag/permit_pins

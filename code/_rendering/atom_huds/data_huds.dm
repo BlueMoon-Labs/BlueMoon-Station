@@ -70,10 +70,10 @@
 /datum/atom_hud/data/human/security
 
 /datum/atom_hud/data/human/security/basic
-	hud_icons = list(ID_HUD)
+	hud_icons = list(ID_HUD, PERMIT_HUD) // BLUEMOON ADD - разрешения на оружие встроены в штатный СБ-HUD
 
 /datum/atom_hud/data/human/security/advanced
-	hud_icons = list(ID_HUD, IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD, WANTED_HUD, NANITE_HUD)
+	hud_icons = list(ID_HUD, IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD, WANTED_HUD, NANITE_HUD, PERMIT_HUD) // BLUEMOON ADD - разрешения на оружие встроены в штатный СБ-HUD
 
 /datum/atom_hud/data/diagnostic
 
@@ -327,6 +327,13 @@
 	else if(wear_neck?.GetID())
 		holder.icon_state = "hud[ckey(wear_neck.get_job_name())]"
 	sec_hud_set_security_status()
+	// BLUEMOON ADD START - HUD разрешений на оружие (порт Skyrat)
+	var/image/permit_holder = hud_list[PERMIT_HUD]
+	if(permit_holder && icon)
+		permit_holder.icon = 'modular_bluemoon/icons/mob/hud.dmi' // оверлеи лицензий живут в модульном dmi
+		permit_holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
+		permit_holder.icon_state = get_gun_permit_iconstate()
+	// BLUEMOON ADD END
 
 /mob/living/proc/sec_hud_set_implants()
 	if(!icon || !hud_list)

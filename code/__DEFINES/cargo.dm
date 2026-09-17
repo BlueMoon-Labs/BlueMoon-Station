@@ -62,3 +62,7 @@ GLOBAL_LIST_INIT(podstyles, list(\
 //cit
 #define PACK_GOODY_NONE		0	// can be bought by cargo and privates
 #define PACK_GOODY_PRIVATE	1 	// can be bought only by privates
+
+// BLUEMOON ADDSTART - макс. количество одинаковых заказов в корзине (контракт нового UI)
+#define CARGO_MAX_ORDER 10
+// BLUEMOON ADDEND
