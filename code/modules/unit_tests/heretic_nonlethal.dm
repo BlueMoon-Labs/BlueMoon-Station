@@ -14,8 +14,8 @@
 		cell.charge = charge
 	return weapon
 
-/datum/unit_test/proc/attack_with_heretic_stun_weapon(obj/item/weapon, mob/living/target, mob/living/attacker)
-	if(istype(weapon, /obj/item/melee/baton))
+/datum/unit_test/proc/attack_with_heretic_stun_weapon(obj/item/weapon, mob/living/target, mob/living/attacker, shoving = TRUE)
+	if(shoving && istype(weapon, /obj/item/melee/baton))
 		var/obj/item/melee/baton/baton = weapon
 		return baton.common_baton_melee(target, attacker, shoving = TRUE)
 	return weapon.attack(target, attacker)
@@ -24,6 +24,7 @@
 /datum/unit_test/heretic_nonlethal_parry/Run()
 	var/list/attacks = list(
 		list(/obj/item/melee/baton/loaded, INTENT_DISARM),
+		list(/obj/item/melee/baton/loaded, INTENT_DISARM, FALSE),
 		list(/obj/item/melee/classic_baton, INTENT_DISARM),
 		list(/obj/item/melee/classic_baton/telescopic, INTENT_DISARM),
 		list(/obj/item/electrostaff, INTENT_DISARM),
@@ -35,24 +36,25 @@
 		var/mob/living/attacker = fixture["attacker"]
 		var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
 		attacker.a_intent = attack[2]
+		var/shoving = length(attack) < 3 || attack[3]
 		var/obj/item/weapon = prepare_heretic_stun_weapon(attack[1])
 		var/obj/item/stock_parts/cell/cell = weapon.get_cell()
 		var/charge_before = cell?.charge
 		TEST_ASSERT(knowledge.begin_parry(user), "Стойка доступна перед ударом [weapon.type].")
 		var/datum/status_effect/heretic_parry/parry = knowledge.active_parry
-		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		attack_with_heretic_stun_weapon(weapon, user, attacker, shoving)
 		TEST_ASSERT_EQUAL(user.getStaminaLoss() + user.getBruteLoss() + user.getFireLoss(), 0, "Парирование останавливает урон [weapon.type], режим [attacker.a_intent].")
 		TEST_ASSERT(!user.resting && !user.incapacitated(), "Полный блок предотвращает сбивание и оглушение.")
 		TEST_ASSERT_EQUAL(parry.blocks_left, 2, "Удар расходует один блок.")
 		TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Успешный блок приносит один Темп.")
 		TEST_ASSERT_EQUAL(cell?.charge, charge_before, "Полностью отражённый разряд не расходует батарею.")
-		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		attack_with_heretic_stun_weapon(weapon, user, attacker, shoving)
 		TEST_ASSERT_EQUAL(user.getStaminaLoss() + user.getBruteLoss() + user.getFireLoss(), 0, "Повторный удар блокируется без задержки.")
 		TEST_ASSERT_EQUAL(parry.blocks_left, 1, "Повторный удар расходует следующий блок.")
-		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		attack_with_heretic_stun_weapon(weapon, user, attacker, shoving)
 		TEST_ASSERT_NULL(knowledge.active_parry, "Третий удар исчерпывает стойку.")
 		TEST_ASSERT_EQUAL(user.getStaminaLoss() + user.getBruteLoss() + user.getFireLoss(), 0, "Последний блок также предотвращает урон.")
-		attack_with_heretic_stun_weapon(weapon, user, attacker)
+		attack_with_heretic_stun_weapon(weapon, user, attacker, shoving)
 		TEST_ASSERT(user.getStaminaLoss() + user.getFireLoss() > 0, "После исчерпания блоков разряд действует.")
 
 /// Выключенное и разряженное оружие не расходует стойку и не даёт Темп.
