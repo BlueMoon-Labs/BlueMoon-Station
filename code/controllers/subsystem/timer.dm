@@ -378,6 +378,34 @@ SUBSYSTEM_DEF(timer)
 	if(!TE.callBack)
 		. += ", NO CALLBACK"
 
+/// Первый живой таймер, чей колбек держит target объектом или аргументом. Строка для лога GC либо null.
+/datum/controller/subsystem/timer/proc/describe_timer_holding(datum/target)
+	if(isnull(target))
+		return null
+	var/list/candidates = second_queue + clienttime_timers
+	for(var/bucket_head in bucket_list)
+		if(!bucket_head)
+			continue
+		var/datum/timedevent/bucket_node = bucket_head
+		do
+			candidates += bucket_node
+			bucket_node = bucket_node.next
+		while(bucket_node && bucket_node != bucket_head)
+	for(var/datum/timedevent/timer as anything in candidates)
+		var/datum/callback/held_callback = timer.callBack
+		if(!held_callback)
+			continue
+		var/role
+		if(held_callback.object == target)
+			role = "объект"
+		else if(held_callback.arguments && (target in held_callback.arguments))
+			role = "аргумент"
+		if(!role)
+			continue
+		var/owner_desc = held_callback.object == GLOBAL_PROC ? "GLOBAL_PROC" : "[held_callback.object?.type]"
+		return "[role] колбека [owner_desc]->[held_callback.delegate], осталось [round((timer.timeToRun - (timer.flags & TIMER_CLIENT_TIME ? REALTIMEOFDAY : world.time)) / 10)]с[timer.source ? ", [timer.source]" : ""]"
+	return null
+
 /**
  * Destroys the existing buckets and creates new buckets from the existing timed events
  */

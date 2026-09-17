@@ -13,7 +13,18 @@
 	var/timer_id = addtimer(CALLBACK(thing, TYPE_PROC_REF(/atom, update_icon)), 10 MINUTES, TIMER_STOPPABLE)
 	var/context = SSgarbage.build_warnfail_context(thing)
 	deltimer(timer_id)
-	TEST_ASSERT(findtext(context, "таймеров на датуме"), "Активный таймер не попал в улики: [context]")
+	TEST_ASSERT(findtext(context, "таймер: объект"), "Активный таймер не попал в улики: [context]")
+
+/// Таймер чужого датума с целью в аргументах колбека переживает Destroy цели и обязан быть назван.
+/datum/unit_test/warnfail_context_timer_argument/Run()
+	var/obj/item/owner = allocate(/obj/item)
+	var/obj/item/held = allocate(/obj/item)
+	held.moveToNullspace()
+	var/timer_id = addtimer(CALLBACK(owner, TYPE_PROC_REF(/atom, balloon_alert), held, "x"), 10 MINUTES, TIMER_STOPPABLE)
+	qdel(held)
+	var/context = SSgarbage.build_warnfail_context(held)
+	deltimer(timer_id)
+	TEST_ASSERT(findtext(context, "таймер: аргумент"), "Таймер с целью в аргументах не попал в улики: [context]")
 
 /// Датум без внешних зацепок должен давать пустой снапшот - без ложных улик.
 /datum/unit_test/warnfail_context_clean_datum/Run()
