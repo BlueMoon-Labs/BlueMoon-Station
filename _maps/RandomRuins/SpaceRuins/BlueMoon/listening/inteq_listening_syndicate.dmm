@@ -52,7 +52,7 @@
 	volume_rate = 200
 	},
 /turf/open/floor/plating/airless,
-/area/space)
+/area/ruin/space/has_grav/bluemoon/listeningstation)
 "aQ" = (
 /obj/structure/extinguisher_cabinet{
 	pixel_x = -27;
