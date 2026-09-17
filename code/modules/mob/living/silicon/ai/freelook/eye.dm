@@ -110,7 +110,7 @@
 		if(use_static != USE_STATIC_NONE)
 			ai.camera_visibility(src)
 		if(ai.client && !ai.multicam_on)
-			ai.client.eye = src
+			ai.client.set_eye(src)
 		update_ai_detect_hud()
 		//Holopad
 		if(istype(ai.current, /obj/machinery/holopad))
@@ -124,23 +124,19 @@
 			ai.stop_controlling_display()
 
 //it uses setLoc not forceMove, talks to the sillycone and not the camera mob
-/mob/camera/aiEye/zMove(dir, feedback = FALSE)
-	if(dir != UP && dir != DOWN)
-		return FALSE
-	var/turf/target = get_step_multiz(src, dir)
+/mob/camera/aiEye/zMove(dir, turf/target, z_move_flags = ZMOVE_FLIGHT_FLAGS)
 	if(!target)
-		if(feedback)
-			to_chat(ai, "<span class='warning'>There's nowhere to go in that direction!</span>")
-		return FALSE
-	if(!canZMove(dir, target))
-		if(feedback)
-			to_chat(ai, "<span class='warning'>You couldn't move there!</span>")
-		return FALSE
+		target = can_z_move(dir, get_turf(src), null, z_move_flags)
+		if(!target)
+			return FALSE
 	setLoc(target, TRUE)
 	return TRUE
 
-/mob/camera/aiEye/canZMove(direction, turf/target) //cameras do not respect these FLOORS you speak so much of
-	return TRUE
+/mob/camera/aiEye/can_z_move(direction, turf/start, turf/destination, z_move_flags = NONE, mob/living/rider)
+	//cameras do not respect these FLOORS you speak so much of
+	z_move_flags |= ZMOVE_IGNORE_OBSTACLES
+	z_move_flags &= ~(ZMOVE_CAN_FLY_CHECKS|ZMOVE_FALL_CHECKS)
+	return ..(direction, start, destination, z_move_flags, rider || ai)
 
 /mob/camera/aiEye/Move()
 	return FALSE

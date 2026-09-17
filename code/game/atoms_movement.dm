@@ -56,8 +56,14 @@
  */
 /atom/movable/proc/abstract_move(atom/new_loc)
 	var/atom/old_loc = loc
-	// move_stacks++
+	var/turf/old_turf = get_turf(old_loc)
+	var/turf/new_turf = get_turf(new_loc)
 	loc = new_loc
+	//Порядок как в doMove(): loc уже новый, слушатели читают get_turf(src).
+	if(old_turf && !new_turf)
+		onEnteredNullspace(old_turf.z)
+	else if(old_turf?.z != new_turf?.z)
+		onTransitZ(old_turf?.z, new_turf?.z)
 	Moved(old_loc)
 
 /atom/movable/Move(atom/newloc, direct, glide_size_override = 0)
@@ -131,6 +137,8 @@
 
 	if(!loc || (loc == oldloc && oldloc != newloc))
 		last_move = 0
+		if(currently_z_moving)
+			set_currently_z_moving(FALSE, TRUE)
 		return
 
 	setDir(direct)
@@ -156,7 +164,17 @@
 
 	last_move = direct
 	if(. && has_buckled_mobs() && !handle_buckled_mob_movement(loc, direct, glide_size_override)) //movement failed due to buckled mob(s)
+		if(currently_z_moving)
+			set_currently_z_moving(FALSE, TRUE)
 		return FALSE
+
+	// Флаг взводит Enter() у openspace, а роняем уже здесь: падать можно только после состоявшегося шага.
+	if(currently_z_moving)
+		if(. && loc == newloc)
+			var/turf/pitfall = get_turf(src)
+			pitfall?.zFall(src, falling_from_move = TRUE)
+		else
+			set_currently_z_moving(FALSE, TRUE)
 
 /atom/movable/proc/handle_buckled_mob_movement(newloc, direct, glide_size_override)
 	for(var/mob/living/buckled_mob as anything in buckled_mobs)
@@ -245,6 +263,8 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
+	if(SSmapping.max_plane_offset)
+		update_plane_offset(old_z, new_z)
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
@@ -285,7 +305,8 @@
 		if(QDELETED(src))
 			stack_trace("doMove qdel-нутого [type] в [destination] ([destination.type])")
 			return
-		if(pulledby)
+		//Внутри вертикальной группы захват не рвём: разрыв решает ZMOVE_CHECK_PULLEDBY, когда переедут все.
+		if(pulledby && !currently_z_moving)
 			pulledby.stop_pulling()
 		var/atom/oldloc = loc
 		var/same_loc = oldloc == destination

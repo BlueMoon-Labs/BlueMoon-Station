@@ -298,7 +298,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
 		glow.color = "#ff2525"
 		. += glow
-		. += emissive_appearance(icon, "portal_light", src)
+		. += emissive_appearance(icon, "portal_light", offset_spokesman = src)
 		if(pact_siege_visual == "calibrating")
 			/// Drawn last so it sits in front of the frame / red light
 			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")

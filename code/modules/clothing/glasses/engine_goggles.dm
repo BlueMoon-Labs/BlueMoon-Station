@@ -104,7 +104,7 @@
 		MA.maptext = MAPTEXT("[strength]k")
 		MA.color = "#04e604"
 		MA.layer = RAD_TEXT_LAYER
-		MA.plane = GAME_PLANE
+		SET_PLANE_EXPLICIT(MA, GAME_PLANE, place)
 		pic.appearance = MA
 		flick_overlay(pic, list(user.client), 10)
 

@@ -26,7 +26,7 @@
 		M.add_client_colour(/datum/client_colour/psyshillium)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		var/list/screens = list(C.hud_used.plane_masters["[FLOOR_PLANE]"], C.hud_used.plane_masters["[GAME_PLANE]"], C.hud_used.plane_masters["[LIGHTING_PLANE]"])
+		var/list/screens = list(C.hud_used.get_game_screen_plate())
 		var/matrix/skew = matrix()
 		skew.Scale(2)
 		var/matrix/newmatrix = skew
@@ -60,7 +60,7 @@
 		M.remove_client_colour(/datum/client_colour/psyshillium)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		var/list/screens = list(C.hud_used.plane_masters["[FLOOR_PLANE]"], C.hud_used.plane_masters["[GAME_PLANE]"], C.hud_used.plane_masters["[LIGHTING_PLANE]"])
+		var/list/screens = list(C.hud_used.get_game_screen_plate())
 		for(var/whole_screen in screens)
 			animate(whole_screen, transform = matrix(), time = 5, easing = QUAD_EASING)
 	to_chat(M, "<span class='danger'>I feel mentally retarded</span>")

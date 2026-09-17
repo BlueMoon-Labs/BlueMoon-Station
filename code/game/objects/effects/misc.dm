@@ -48,6 +48,20 @@
 	layer = LIGHTING_LAYER
 	blend_mode = BLEND_ADD
 
+/// Засветка турфа по смещению плоскости его этажа; индекс = смещение + 1.
+GLOBAL_LIST_EMPTY(fullbright_turf_overlays)
+
+/proc/fullbright_turf_overlay(turf/target)
+	var/offset = GET_TURF_PLANE_OFFSET(target)
+	var/list/cache = GLOB.fullbright_turf_overlays
+	if(length(cache) <= offset)
+		cache.len = offset + 1
+	var/mutable_appearance/glow = cache[offset + 1]
+	if(!glow)
+		glow = mutable_appearance('icons/effects/alphacolors.dmi', "white", LIGHTING_LAYER, GET_NEW_PLANE(LIGHTING_PLANE, offset), blend_mode = BLEND_ADD)
+		cache[offset + 1] = glow
+	return glow
+
 /obj/effect/abstract/marker
 	name = "marker"
 	icon = 'icons/effects/effects.dmi'

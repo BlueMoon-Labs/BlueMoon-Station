@@ -23,8 +23,7 @@
 	// Stuff needed to render the map
 	var/map_name
 	var/atom/movable/screen/map_view/cam_screen
-	/// All the plane masters that need to be applied.
-	var/list/cam_plane_masters
+	var/datum/plane_master_group/popup/cam_plane_group
 	var/atom/movable/screen/background/cam_background
 
 /datum/computer_file/program/secureye/New()
@@ -42,20 +41,6 @@
 	cam_screen.assigned_map = map_name
 	cam_screen.del_on_map_removal = FALSE
 	cam_screen.screen_loc = "[map_name]:1,1"
-	cam_plane_masters = list()
-	var/list/_cam_pm_by_plane = list()
-	for(var/plane in subtypesof(/atom/movable/screen/plane_master))
-		var/atom/movable/screen/plane_master/instance = new plane()
-		instance.assigned_map = map_name
-		instance.del_on_map_removal = FALSE
-		instance.screen_loc = "[map_name]:CENTER"
-		var/plane_key = "[instance.plane]"
-		var/atom/movable/screen/plane_master/displaced = _cam_pm_by_plane[plane_key]
-		_cam_pm_by_plane[plane_key] = instance
-		if(displaced)
-			qdel(displaced)
-	for(var/key in _cam_pm_by_plane)
-		cam_plane_masters += _cam_pm_by_plane[key]
 	cam_background = new
 	cam_background.assigned_map = map_name
 	cam_background.del_on_map_removal = FALSE
@@ -64,9 +49,7 @@
 	if(cam_screen)
 		cam_screen.screen_loc = null
 		qdel(cam_screen)
-	for(var/atom/movable/screen/P in cam_plane_masters)
-		P.screen_loc = null
-	QDEL_LIST(cam_plane_masters)
+	QDEL_NULL(cam_plane_group)
 	qdel(cam_background)
 	return ..()
 
@@ -84,12 +67,14 @@
 		// an audible terminal_on click.
 		if(is_living)
 			concurrent_users += user_ref
-		for(var/atom/movable/screen/plane_master/PM as anything in cam_plane_masters)
-			PM.backdrop(user)
 		// Register map objects
 		user.client.register_map_obj(cam_screen)
-		for(var/plane in cam_plane_masters)
-			user.client.register_map_obj(plane)
+		if(!cam_plane_group)
+			cam_plane_group = new /datum/plane_master_group/popup(PLANE_GROUP_POPUP_WINDOW(src), map_name)
+		for(var/plane_key in cam_plane_group.plane_masters)
+			var/atom/movable/screen/plane_master/plane = cam_plane_group.plane_masters[plane_key]
+			plane.backdrop(user)
+		cam_plane_group.register_to_client(user.client)
 		user.client.register_map_obj(cam_background)
 		return ..()
 
@@ -150,6 +135,7 @@
 	// Living creature or not, we remove you anyway.
 	concurrent_users -= user_ref
 	// Unregister map objects
+	cam_plane_group?.unregister_from_client(user.client)
 	user.client.clear_map(map_name)
 	// Turn off the console
 	if(length(concurrent_users) == 0 && is_living)

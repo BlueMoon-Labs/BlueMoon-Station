@@ -189,6 +189,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/toggle_ntnet_debug,
 	/client/proc/set_parallax_profile,
 	/client/proc/show_parallax_state,
+	/client/proc/multiz_debug_panel,
+	/client/proc/space_sectors_panel,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,

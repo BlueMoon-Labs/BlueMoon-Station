@@ -287,7 +287,7 @@
 	var/final_pixel_y = round(owner.bound_height * 0.95)
 
 	message = image(loc = message_loc, layer = CHAT_LAYER + CHAT_LAYER_Z_STEP * current_z_idx++)
-	message.plane = CHAT_PLANE
+	SET_PLANE_EXPLICIT(message, CHAT_PLANE, message_loc)
 	message.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA | KEEP_APART
 	message.alpha = 0
 	message.pixel_y = anim_mode == RUNECHAT_ANIM_RISE ? final_pixel_y - CHAT_MESSAGE_RISE_OFFSET : final_pixel_y

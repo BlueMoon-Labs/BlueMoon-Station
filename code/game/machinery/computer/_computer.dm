@@ -146,7 +146,7 @@
 
 	if(icon_screen)
 		. += mutable_appearance(icon, icon_screen)
-		. += emissive_appearance(icon, icon_screen)
+		. += emissive_appearance(icon, icon_screen, offset_spokesman = src)
 
 /obj/machinery/computer/power_change()
 	..()

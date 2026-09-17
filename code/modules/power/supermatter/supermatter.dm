@@ -354,10 +354,10 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	if(holiday_lights)
 		if(istype(src, /obj/machinery/power/supermatter_crystal/shard))
 			. += mutable_appearance(icon, "holiday_lights_shard")
-			. += emissive_appearance(icon, "holiday_lights_shard_e", src, alpha = src.alpha)
+			. += emissive_appearance(icon, "holiday_lights_shard_e", alpha = src.alpha, offset_spokesman = src)
 		else
 			. += mutable_appearance(icon, "holiday_lights")
-			. += emissive_appearance(icon, "holiday_lights_e", src, alpha = src.alpha)
+			. += emissive_appearance(icon, "holiday_lights_e", alpha = src.alpha, offset_spokesman = src)
 
 /obj/machinery/power/supermatter_crystal/proc/countdown()
 	set waitfor = FALSE
@@ -1043,9 +1043,12 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	playsound(get_turf(src), 'sound/effects/supermatter.ogg', 50, TRUE)
 	Consume(AM)
 
-/obj/machinery/power/supermatter_crystal/intercept_zImpact(atom/movable/AM, levels)
+/obj/machinery/power/supermatter_crystal/intercept_zImpact(list/falling_movables, levels)
 	. = ..()
-	Bumped(AM)
+	for(var/atom/movable/falling as anything in falling_movables)
+		if(falling == src)
+			continue
+		Bumped(falling)
 	. |= FALL_STOP_INTERCEPTING | FALL_INTERCEPTED
 
 /obj/machinery/power/supermatter_crystal/proc/Consume(atom/movable/AM)

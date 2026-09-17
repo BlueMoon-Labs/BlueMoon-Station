@@ -723,7 +723,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	update_sight()
 	// Смены z здесь не будет, подъём под включённую темноту заказывается вручную.
-	request_ghost_lighting_init(registered_z)
+	if(registered_z)
+		for(var/visible_z in SSmapping.get_levels_visible_from(registered_z))
+			request_ghost_lighting_init(visible_z)
 
 /mob/dead/observer/update_sight(forced = TRUE)
 	if(client?.prefs)
@@ -1004,14 +1006,18 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			// в observers старой цели (класс утечек обсерверов). Лечим, но логируем.
 			stack_trace("do_observe у [src] при уже занятой цели (была: [observetarget], новая: [mob_eye])")
 			reset_perspective(null)
-		client.eye = mob_eye
+		client.set_eye(mob_eye)
+		set_observetarget(mob_eye)
 		if(mob_eye.hud_used)
 			client.clear_screen()
-			LAZYINITLIST(mob_eye.observers)
-			mob_eye.observers |= src
 			mob_eye.hud_used.show_hud(mob_eye.hud_used.hud_version, src)
-			observetarget = mob_eye
-			mob_eye.investigate_log("was observed by [src] as a ghost.", INVESTIGATE_GHOST)
+		mob_eye.investigate_log("was observed by [src] as a ghost.", INVESTIGATE_GHOST)
+
+/// Двусторонняя связь с наблюдаемым; нужна и мобу без худа, иначе его смена этажа не доходит до рендера госта.
+/mob/dead/observer/proc/set_observetarget(mob/mob_eye)
+	observetarget = mob_eye
+	LAZYINITLIST(mob_eye.observers)
+	mob_eye.observers |= src
 
 /mob/dead/observer/verb/register_pai_candidate()
 	set category = "Ghost"
