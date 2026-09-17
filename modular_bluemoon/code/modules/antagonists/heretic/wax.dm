@@ -34,7 +34,8 @@
 
 /datum/eldritch_knowledge/base_wax
 	name = "Свеча без огня"
-	desc = "Нож и свеча создают ритуальные щипцы-гаситель. «Снять печать» за единицу воска сразу поражает веер в трёх клетках перед вами: 18 ушибов, 20 урона выносливости и замедление на 2 секунды. Стены останавливают волну."
+	desc = "Нож и свеча создают ритуальные щипцы-гаситель. Свечу можно отлить Хваткой Мансуса из листа бумаги на полу за 1 Воск. «Снять печать» за единицу воска сразу поражает веер в трёх клетках перед вами: 18 ушибов, 20 урона выносливости и замедление на 2 секунды. Стены останавливают волну."
+	ritual_hint = "Нет свечи? Положите лист бумаги на пол и коснитесь его Хваткой Мансуса: лист и 1 Воск превратятся в обычную свечу. Это доступно сразу после выбора пути."
 	gain_text = "Свеча не горела. Она таяла от того, что видела."
 	route = PATH_WAX
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/candle)
@@ -42,7 +43,7 @@
 	combat_resource = 3
 	combat_resource_max = 5
 	combat_resource_name = "Воск"
-	combat_resource_desc = "Запас 3 из 5. Восстанавливается по единице каждые 10 секунд, пока не наберётся 2. Попадания клинком, хваткой, волной, оттиском и процессией, а также взрыв метки по живому разумному врагу дают единицу с общей задержкой 6 секунд; животные и союзники не подходят. Новое дело пути даёт единицу. Волна и снятие оттиска стоят 1, оболочка и процессия — 2. Смерть и смена тела гасят свечи и обнуляют запас."
+	combat_resource_desc = "Запас 3 из 5. Восстанавливается по единице каждые 10 секунд, пока не наберётся 2. Попадания клинком, хваткой, волной, оттиском и процессией, а также взрыв метки по живому разумному врагу дают единицу с общей задержкой 6 секунд; животные и союзники не подходят. Новое дело пути даёт единицу. Волна, снятие оттиска и отливка свечи Хваткой Мансуса из бумаги на полу стоят 1, оболочка и процессия — 2. Смерть и смена тела гасят свечи и обнуляют запас."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_wax/release
 	grasp_visual = /obj/effect/temp_visual/heretic_wax/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/wax_grasp.ogg'
@@ -261,7 +262,21 @@
 	return TRUE
 
 /datum/eldritch_knowledge/base_wax/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!can_use(user) || !proximity_flag || !user.Adjacent(target) || !istype(target, /obj/structure/table) || !isturf(target.loc))
+	if(!can_use(user) || QDELETED(target) || !proximity_flag || !user.Adjacent(target) || !isturf(target.loc))
+		return FALSE
+	if(istype(target, /obj/item/paper))
+		if(GLOB.heretic_ritual_reservations[target])
+			to_chat(user, span_warning("Этот лист уже используется в обряде."))
+			return FALSE
+		if(!spend_combat_resource(1))
+			to_chat(user, span_warning("Для отливки свечи нужен 1 Воск. Запас постепенно восстановится сам."))
+			return FALSE
+		new /obj/item/candle(get_turf(target))
+		new /obj/effect/temp_visual/heretic_wax/grasp(get_turf(target), src)
+		user.visible_message(span_warning("[user] сворачивает бумагу в фитиль и покрывает его бледным воском."), span_notice("Вы отливаете свечу, расходуя лист бумаги и 1 Воск."))
+		qdel(target)
+		return TRUE
+	if(!istype(target, /obj/structure/table))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!heretic.advance_deed(heretic.deed_key_for(target), get_turf(target)))
@@ -840,6 +855,7 @@
 
 /datum/eldritch_knowledge/wax_relic
 	name = "Подсвечник плакальщика"
+	ritual_hint = "Свечу можно отлить из листа бумаги на полу Хваткой Мансуса за 1 Воск."
 	desc = "Свеча и лист серебра создают единственный канделябр. В руке он поглощает оболочку без расхода воска, излечивая половину урона, принятого ею от разумных врагов: не больше 25 ушибов и ожогов суммарно. Неизрасходованная защита не лечит. Перезарядка 20 секунд."
 	gain_text = "Плакальщик собирал капли. Ни одна не принадлежала свече."
 	cost = 1

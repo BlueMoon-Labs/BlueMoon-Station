@@ -1,3 +1,66 @@
+/// Стартовая хватка отливает расходуемую свечу для оружия и уходит на перезарядку.
+/datum/unit_test/heretic_wax_candle/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_wax, user), "Отливка открывается вместе с выбором пути.")
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/center = get_turf(user)
+	var/obj/item/paper/paper = allocate(/obj/item/paper, center)
+	var/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp/spell = allocate(/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp)
+	TEST_ASSERT(spell.ChargeHand(user), "Хватка создаёт привязанную руку.")
+	spell.charge_counter = 0
+	spell.recharging = FALSE
+	var/obj/item/melee/touch_attack/mansus_fist/hand = spell.attached_hand
+	hand.afterattack(paper, user, TRUE)
+	TEST_ASSERT(QDELETED(paper), "Отливка расходует бумагу.")
+	TEST_ASSERT(QDELETED(hand) && spell.recharging, "Отливка расходует хватку и запускает перезарядку.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 2, "Одна свеча стоит единицу воска.")
+	var/obj/item/candle/candle = locate() in center
+	TEST_ASSERT_NOTNULL(candle, "На месте бумаги появляется свеча.")
+	allocated += candle
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, center)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, center)
+	wax.ritual_time = 0
+	TEST_ASSERT(rune.do_ritual(user, wax), "Отлитая свеча подходит для первого оружия.")
+	TEST_ASSERT(QDELETED(candle) && QDELETED(knife), "Обряд расходует свечу и нож.")
+	var/obj/item/melee/sickly_blade/wax/blade = locate() in center
+	TEST_ASSERT_NOTNULL(blade, "Обряд создаёт оружие Воска.")
+	allocated += blade
+
+/// Отказ от отливки сохраняет бумагу, воск и подготовленную хватку.
+/datum/unit_test/heretic_wax_candle_rejections/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/item/melee/touch_attack/mansus_fist/hand = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	var/obj/item/paper/paper = allocate(/obj/item/paper, get_turf(user))
+	hand.afterattack(paper, user, TRUE)
+	TEST_ASSERT(!QDELETED(paper) && !QDELETED(hand), "Без пути Воска отливка недоступна.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_wax, user), "Выбор пути доступен.")
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	wax.combat_resource = 0
+	hand.afterattack(paper, user, TRUE)
+	TEST_ASSERT(!QDELETED(paper) && !QDELETED(hand), "Без воска бумага и хватка сохраняются.")
+	wax.combat_resource = 2
+	TEST_ASSERT(user.put_in_hands(paper), "Бумагу можно взять в руку.")
+	TEST_ASSERT(!wax.on_mansus_grasp(paper, user, TRUE), "Бумага в инвентаре не превращается в свечу.")
+	user.dropItemToGround(paper)
+	TEST_ASSERT(!wax.on_mansus_grasp(paper, user, FALSE), "Дистанционный вызов не отливает свечу.")
+	paper.forceMove(get_step(get_step(user, EAST), EAST))
+	TEST_ASSERT(!wax.on_mansus_grasp(paper, user, TRUE), "Бумага вне досягаемости не подходит.")
+	paper.forceMove(get_turf(user))
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	TEST_ASSERT(rune.reserve_atoms(list(paper)), "Бумага занята другим обрядом.")
+	hand.afterattack(paper, user, TRUE)
+	TEST_ASSERT(!QDELETED(paper) && !QDELETED(hand), "Чужая резервация сохраняет бумагу и хватку.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 2, "Отклонённые попытки не тратят воск.")
+	rune.release_atoms()
+	hand.afterattack(paper, user, TRUE)
+	TEST_ASSERT(QDELETED(paper) && QDELETED(hand), "После снятия резервации та же хватка отливает свечу.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 1, "Успешная попытка тратит одну единицу.")
+	var/obj/item/candle/candle = locate() in get_turf(user)
+	TEST_ASSERT_NOTNULL(candle, "После отказов всё ещё можно изготовить свечу.")
+	allocated += candle
+
 /// Дальний выброс расходует оболочку, масштабируется от её остатка и не добавляет контроль.
 /datum/unit_test/heretic_wax_shell_release/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
