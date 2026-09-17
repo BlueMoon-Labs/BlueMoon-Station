@@ -583,6 +583,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/blood/old,
+/obj/structure/deployable_barricade/metal,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "fC" = (
@@ -1913,6 +1914,7 @@
 /obj/machinery/door/airlock/external{
 	req_access_txt = "152"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "sd" = (
@@ -1989,6 +1991,10 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/dark_red/corner,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "tc" = (
@@ -2343,10 +2349,7 @@
 /obj/structure/deployable_barricade/metal{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg{
-	health = 100;
-	maxHealth = 100
-	},
+/obj/machinery/porta_turret/syndicate,
 /turf/open/floor/glass/reinforced,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "wB" = (
@@ -3018,6 +3021,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 8
 	},
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "Dj" = (
@@ -3419,6 +3426,10 @@
 	name = "tactical chair"
 	},
 /obj/effect/turf_decal/delivery,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "HI" = (
@@ -3824,6 +3835,7 @@
 /obj/machinery/door/airlock/external{
 	req_access_txt = "152"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "Mp" = (
@@ -3844,7 +3856,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/structure/deployable_barricade/metal,
 /mob/living/simple_animal/hostile/syndicate/ranged,
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
@@ -4653,6 +4664,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
+/obj/machinery/porta_turret/syndicate,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "TM" = (
@@ -4754,6 +4766,10 @@
 	dir = 5
 	},
 /obj/effect/turf_decal/bot/white,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+	health = 100;
+	maxHealth = 100
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "UE" = (
@@ -5110,6 +5126,10 @@
 /obj/effect/decal/cleanable/blood/old,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
+	},
+/mob/living/simple_animal/hostile/syndicate/ranged/smg{
+	health = 100;
+	maxHealth = 100
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
