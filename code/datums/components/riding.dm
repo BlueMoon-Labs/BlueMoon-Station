@@ -388,7 +388,7 @@
 		REMOVE_TRAIT(belly_harness, TRAIT_NODROP, RIDING_TRAIT)
 	belly_harness = null
 
-	force_dismount_all()
+	INVOKE_ASYNC(src, PROC_REF(force_dismount_all))
 
 /datum/component/riding/human/proc/rider_moved(datum/source, oldLoc, dir)
 	SIGNAL_HANDLER

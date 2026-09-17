@@ -6505,5 +6505,3 @@
 #include "modular_splurt\code\modules\vending\wardrobes.dm"
 #include "tools\Redirector\textprocs.dm"
 // END_INCLUDE
-// BEGIN_PREFERENCES
-// END_PREFERENCES

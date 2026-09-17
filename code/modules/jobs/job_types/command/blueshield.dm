@@ -158,4 +158,5 @@
 		return
 	var/datum/martial_art/cqc/restricted/blueshield/justablue = new
 	justablue.teach(H)
-//BLUEMOON CHANGE END */
+//BLUEMOON CHANGE END
+*/

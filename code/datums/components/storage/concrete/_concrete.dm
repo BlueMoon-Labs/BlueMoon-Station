@@ -99,7 +99,7 @@
 	var/atom/real_location = parent
 	if(A in real_location)
 		usr = null
-		remove_from_storage(A, null)
+		INVOKE_ASYNC(src, PROC_REF(remove_from_storage), A, null)
 
 /datum/component/storage/concrete/proc/on_deconstruct(datum/source, disassembled)
 	SIGNAL_HANDLER
