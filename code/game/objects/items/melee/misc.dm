@@ -104,7 +104,7 @@
 /obj/item/melee/synthetic_arm_blade/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/butchering, 60, 80) //very imprecise
-	AddElement(/datum/element/ambidextria_attack, /obj/item/melee/synthetic_arm_blade)
+	AddElement(/datum/element/ambidextria_attack, list(/obj/item/melee/arm_blade, /obj/item/melee/synthetic_arm_blade))
 
 /obj/item/melee/sabre
 	name = "Officer's Sabre"
