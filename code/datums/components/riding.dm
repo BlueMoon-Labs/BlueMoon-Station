@@ -92,6 +92,8 @@
 	return TRUE
 
 /datum/component/riding/proc/force_dismount_all()
+	if(QDELETED(src))
+		return
 	var/atom/movable/AM = parent
 	for(var/i in AM.buckled_mobs)
 		force_dismount(i)
