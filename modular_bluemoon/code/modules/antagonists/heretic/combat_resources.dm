@@ -238,7 +238,7 @@
 	if(!proximity_flag || !istype(target, /obj/item/organ) || !isturf(target.loc))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(user.a_intent == INTENT_DISARM && heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul))
+	if(user.a_intent == INTENT_DISARM && (heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_grasp) || heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul)))
 		return grow_fleshling(user, target)
 	var/turf/target_turf = get_turf(target)
 	gain_combat_resource()
@@ -546,9 +546,17 @@
 		var/was_on_fire = victim.on_fire
 		victim.adjust_fire_stacks(1)
 		victim.IgniteMob()
+		if(victim.on_fire)
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+			heretic?.advance_combat_deed(victim, PATH_ASH)
 		if(!was_on_fire && victim.on_fire)
 			new /obj/effect/temp_visual/heretic_oldpath/ash(get_turf(victim))
 			playsound(victim, 'sound/effects/wounds/sizzle1.ogg', 35, TRUE)
+
+/datum/eldritch_knowledge/base_rust/on_eldritch_blade(atom/target, mob/living/user, proximity_flag, click_parameters)
+	if(proximity_flag && isliving(target) && istype(user.loc, /turf/open/floor/plating/rust))
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		heretic?.advance_combat_deed(target, PATH_RUST)
 
 /obj/effect/heretic_combat_zone/rust
 	name = "очаг ржавчины"
@@ -605,7 +613,9 @@
 			victim.add_movespeed_modifier(zone_slowdown)
 		present += victim
 		victim.adjust_bodytemperature(-10)
-		victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
+		if(victim.apply_status_effect(/datum/status_effect/heretic_void_chill))
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+			heretic?.advance_combat_deed(victim, PATH_VOID)
 		if(iscarbon(victim))
 			var/mob/living/carbon/carbon_victim = victim
 			carbon_victim.silent = max(carbon_victim.silent, 2)

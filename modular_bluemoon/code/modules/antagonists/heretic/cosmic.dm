@@ -307,8 +307,11 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(astronomer.current)
 	victim.apply_status_effect(/datum/status_effect/cosmic_tether)
+	var/damage_before = victim.getFireLoss()
 	victim.adjustStaminaLoss(25)
 	victim.adjustFireLoss(10)
+	if(victim.getFireLoss() > damage_before)
+		heretic.advance_combat_deed(victim, PATH_COSMIC)
 	victim.Knockdown(0.7 SECONDS)
 	new /obj/effect/temp_visual/heretic_path_feedback(get_turf(victim), "cosmic_ring", "#96d7ed", 6)
 	playsound(victim, 'modular_bluemoon/sound/heretic/cosmic_energy.ogg', 25, TRUE)

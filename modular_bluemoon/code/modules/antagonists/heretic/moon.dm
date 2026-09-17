@@ -331,10 +331,14 @@
 		var/pressure = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_PRESSURE : knowledge?.upgraded ? HERETIC_MOON_UPGRADED_PRESSURE : HERETIC_MOON_PRESSURE
 		var/damage = knowledge?.ascension_active ? HERETIC_MOON_ASCENDED_DAMAGE : knowledge?.upgraded ? HERETIC_MOON_UPGRADED_DAMAGE : HERETIC_MOON_DAMAGE
 		victim.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
+		var/stamina_before = victim.getStaminaLoss()
 		victim.adjustStaminaLoss(pressure)
 		victim.apply_damage(damage, BRUTE, BODY_ZONE_CHEST, victim.run_armor_check(BODY_ZONE_CHEST, MELEE))
 		playsound(victim, weapon?.hitsound || 'sound/weapons/punch1.ogg', 35, TRUE)
 		log_combat(parent_mob, victim, "атаковал лунным отражением")
+		if(victim.getStaminaLoss() > stamina_before)
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(parent_mob)
+			heretic?.advance_combat_deed(victim, PATH_MOON)
 	return TRUE
 
 /datum/status_effect/heretic_moon_pressure

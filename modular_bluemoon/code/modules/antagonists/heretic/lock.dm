@@ -323,7 +323,11 @@
 	for(var/mob/living/victim as anything in victims)
 		if(!heretic_can_affect(user, victim))
 			continue
+		var/damage_before = victim.getBruteLoss()
 		victim.adjustBruteLoss(ascension_active ? 45 : 30)
+		if(victim.getBruteLoss() > damage_before)
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+			heretic?.advance_combat_deed(victim, PATH_LOCK)
 		log_combat(user, victim, "разомкнул печати вокруг")
 	playsound(user, 'modular_bluemoon/sound/heretic/lock_release.ogg', 55, TRUE)
 	return TRUE
@@ -465,7 +469,7 @@
 /datum/eldritch_knowledge/spell/lock_bolt
 	name = "Открывающий удар"
 	gain_text = "Я спросил, где кончается дверь. «Там, где кончается твоя рука», — ответил он и протянул её через зал."
-	desc = "Направленный удар в пяти клетках наносит 25 ожогов и 20 урона выносливости или открывает шлюз либо запертый шкаф. Проходит через ваши печати: проведённый через них удар также накладывает изученную метку Замка. Остальные плотные преграды останавливают удар; сварка и неразрушимые двери сохраняются. Не требует ключей, перезарядка 18 секунд."
+	desc = "Направленный удар в пяти клетках наносит 25 ожогов и 20 урона выносливости или открывает шлюз либо запертый шкаф. Проходит через ваши печати: проведённый через них удар также накладывает изученную метку Замка. Остальные плотные преграды останавливают удар; сварка и неразрушимые двери сохраняются. При выборе своей печати размыкает только её после секунды неподвижной подготовки: 30 ушибов врагам в соседних клетках, печать расходуется без возврата ключа. Не требует ключей, перезарядка 18 секунд."
 	cost = 1
 	route = PATH_LOCK
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
@@ -816,11 +820,20 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
 	action_icon_state = "lock_bolt"
 	name = "Открывающий удар"
-	desc = "Наносит 25 ожогов и 20 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Проходит через ваши печати, накладывая за ними изученную метку Замка. Перезарядка 18 секунд."
-	active_msg = "Выберите противника или замок."
+	desc = "Наносит 25 ожогов и 20 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Проходит через ваши печати, накладывая за ними изученную метку Замка. Своя печать вместо этого размыкается после секунды неподвижной подготовки: 30 ушибов соседним врагам, без возврата ключа. Перезарядка 18 секунд."
+	active_msg = "Выберите противника, замок или свою печать."
 	deactive_msg = "Вы отпускаете невидимый ключ."
 	charge_max = 18 SECONDS
 	aim_assist = TRUE
+	var/opening_seal = FALSE
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/can_cast(mob/user, skipcharge, silent)
+	return heretic_check(user, !opening_seal, silent, "Печать уже размыкается. Не двигайтесь до окончания подготовки.") && ..()
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/proc/can_open_seal(mob/living/user, obj/structure/heretic_lock_seal/seal, turf/place)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/spell/lock_bolt/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/lock_bolt)
+	return !QDELETED(src) && knowledge?.granted_spell == src && !QDELETED(seal) && seal.loc == place && can_target(seal, user, TRUE)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/proc/clear_shot(atom/target, mob/living/user)
 	if(!target || !isturf(target.loc) || !isturf(user.loc) || target.z != user.z || get_dist(target, user) > range || !(target in view(range, user)))
@@ -839,18 +852,40 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!knowledge?.valid_user(user) || !clear_shot(target, user))
-		return heretic_check(user, FALSE, silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
+		return heretic_check(user, FALSE, silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.")
+	if(istype(target, /obj/structure/heretic_lock_seal))
+		var/obj/structure/heretic_lock_seal/seal = target
+		return heretic_check(user, (seal in knowledge.seals) && seal.knowledge_ref?.resolve() == knowledge, silent, "Разомкнуть можно только собственную печать.")
 	if(!isliving(target))
-		return heretic_check(user, knowledge.can_open_lock(target, user), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.")
+		return heretic_check(user, knowledge.can_open_lock(target, user), silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.")
 	var/mob/living/victim = target
-	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите живого противника либо запертый шлюз или шкаф на прямой линии.", target = victim)
+	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.", target = victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/cast(list/targets, mob/living/user)
+	if(!length(targets) || opening_seal)
+		return
 	var/atom/target = targets[1]
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
 	if(!can_target(target, user, TRUE))
 		heretic_revert_cast(user)
+		return
+	if(istype(target, /obj/structure/heretic_lock_seal))
+		var/obj/structure/heretic_lock_seal/seal = target
+		var/turf/place = get_turf(seal)
+		if(!can_open_seal(user, seal, place))
+			heretic_revert_cast(user)
+			return
+		opening_seal = TRUE
+		new /obj/effect/temp_visual/heretic_lock/warning(place)
+		seal.visible_message(span_danger("Зубья печати раздвигаются, готовясь ударить наружу!"))
+		playsound(seal, 'modular_bluemoon/sound/heretic/lock_knock.ogg', 40, TRUE)
+		var/completed = do_after(user, 1 SECONDS, target = user, extra_checks = CALLBACK(src, PROC_REF(can_open_seal), user, seal, place))
+		if(QDELETED(src))
+			return
+		opening_seal = FALSE
+		if(!completed || !can_open_seal(user, seal, place) || !knowledge.release_seals(user, seal))
+			heretic_revert_cast(user, "Размыкание прервано или печать больше недоступна.")
 		return
 	if(isliving(target))
 		if(!heretic_can_affect(user, target))

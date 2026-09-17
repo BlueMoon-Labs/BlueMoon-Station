@@ -658,6 +658,7 @@
 		var/actual_damage = min(damage, max(0, victim.getBruteLoss() - damage_before))
 		var/healed = blood.mend_wounds(user, min(max(0, healing_limit - siphoned), actual_damage * healing_fraction))
 		if(actual_damage > 0)
+			heretic.advance_combat_deed(victim, PATH_BLOOD)
 			var/recovered = blood.recover_blood(user, min(max(0, HERETIC_BLOOD_RECOVERY_LIMIT - blood_recovered), actual_damage * HERETIC_BLOOD_RECOVERY_FRACTION))
 			if(!QDELETED(src))
 				blood_recovered += recovered

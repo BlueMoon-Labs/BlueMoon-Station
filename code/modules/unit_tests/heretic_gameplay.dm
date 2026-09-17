@@ -185,7 +185,7 @@
 	user.a_intent = INTENT_DISARM
 	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
 	var/obj/item/organ/organ = allocate(/obj/item/organ/heart, get_turf(user))
-	TEST_ASSERT(!path.grow_fleshling(user, organ), "До Незавершённого ритуала ползун недоступен.")
+	TEST_ASSERT(!path.grow_fleshling(user, organ), "Без Хватки Плоти или Незавершённого ритуала ползун недоступен.")
 	heretic.gain_knowledge(/datum/eldritch_knowledge/flesh_ghoul)
 	path.combat_resource = 1
 	TEST_ASSERT(!path.grow_fleshling(user, organ), "Одна биомасса не оплачивает призыв.")

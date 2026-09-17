@@ -17,14 +17,15 @@
 
 /datum/eldritch_knowledge/base_flesh/proc/grow_fleshling(mob/living/user, obj/item/organ/organ)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(QDELETED(organ) || !isturf(organ.loc) || !user.Adjacent(organ) || user.incapacitated() || !heretic || heretic.role_removed || heretic.selected_path != PATH_FLESH || heretic.get_knowledge(type) != src || !heretic.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul))
+	var/datum/eldritch_knowledge/command_knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_grasp) || heretic?.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul)
+	if(QDELETED(organ) || !isturf(organ.loc) || !user.Adjacent(organ) || user.incapacitated() || !heretic || heretic.role_removed || heretic.selected_path != PATH_FLESH || heretic.get_knowledge(type) != src || QDELETED(command_knowledge))
 		return FALSE
 	if(!QDELETED(fleshling) || !heretic.can_add_servant() || combat_resource < HERETIC_FLESHLING_COST)
 		to_chat(user, span_warning("Нужны две биомассы и свободное место в свите. Можно удерживать только одного сшитого ползуна."))
 		return FALSE
 	if(!spend_combat_resource(HERETIC_FLESHLING_COST))
 		return FALSE
-	fleshling = new(get_turf(organ), heretic, heretic.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul))
+	fleshling = new(get_turf(organ), heretic, command_knowledge)
 	fleshling.mind_initialize()
 	var/datum/antagonist/heretic_monster/servant = new
 	servant.set_master(heretic)
@@ -45,7 +46,7 @@
 
 /mob/living/simple_animal/heretic_fleshling
 	name = "stitched crawler"
-	desc = "Небольшой слуга из сшитых органов. Живёт полторы минуты и слушается указаний хозяина через Живой шов. Хозяин может коснуться его на помощи, чтобы отменить преследование. Дальше девяти клеток от хозяина распадается."
+	desc = "Небольшой слуга из сшитых органов. Живёт полторы минуты и слушается указаний хозяина через Живой шов. Хозяин может коснуться его на помощи, чтобы вернуть к себе, или на разоружении, чтобы оставить ждать. Живой шов за биомассу обновляет срок жизни до полутора минут. Дальше девяти клеток от хозяина распадается."
 	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "raw_prophet"
 	icon_living = "raw_prophet"
@@ -68,6 +69,7 @@
 	var/list/movement_path = list()
 	var/pathfinding = FALSE
 	var/expires_at
+	var/holding_position = FALSE
 	COOLDOWN_DECLARE(attack_cooldown)
 	COOLDOWN_DECLARE(step_cooldown)
 	COOLDOWN_DECLARE(path_cooldown)
@@ -101,15 +103,23 @@
 	if(master?.owner?.current != user || !isturf(user.loc) || !isturf(victim?.loc) || user.incapacitated() || !heretic_can_affect(user, victim, chargecost = 0) || get_dist(user, victim) > 5 || user.z != victim.z || !can_see(user, victim, 5))
 		return FALSE
 	prey_ref = WEAKREF(victim)
+	holding_position = FALSE
 	movement_path.Cut()
 	return TRUE
 
+/mob/living/simple_animal/heretic_fleshling/examine(mob/user)
+	. = ..()
+	var/datum/antagonist/heretic/master = master_ref?.resolve()
+	if(master?.owner?.current == user)
+		. += span_notice("Приказ: [holding_position ? "ждать на месте" : prey_ref?.resolve() ? "преследовать цель" : "следовать за вами"]. До распада: [DisplayTimeText(max(0, expires_at - world.time))]. Помощь — следовать, разоружение — ждать. Живой шов поддерживает жизнь и даёт новую цель.")
+
 /mob/living/simple_animal/heretic_fleshling/attack_hand(mob/living/carbon/human/user)
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
-	if(master?.owner?.current == user && user.a_intent == INTENT_HELP && !user.incapacitated() && user.Adjacent(src))
+	if(master?.owner?.current == user && (user.a_intent in list(INTENT_HELP, INTENT_DISARM)) && !user.incapacitated() && user.Adjacent(src))
 		prey_ref = null
+		holding_position = user.a_intent == INTENT_DISARM
 		movement_path.Cut()
-		to_chat(user, span_notice("Ползун прекращает преследование и возвращается к вам."))
+		to_chat(user, span_notice((holding_position ? "Ползун остаётся ждать здесь. Живой шов по врагу отправит его в погоню." : "Ползун прекращает преследование и возвращается к вам.")))
 		return
 	return ..()
 
@@ -131,10 +141,15 @@
 			movement_path.Cut()
 		prey_ref = null
 		prey = null
+	if(holding_position)
+		return
 	if(prey && Adjacent(prey))
 		if(COOLDOWN_FINISHED(src, attack_cooldown) && heretic_can_affect(user, prey))
 			COOLDOWN_START(src, attack_cooldown, 2 SECONDS)
+			var/health_before = prey.health
 			prey.attack_animal(src)
+			if(!QDELETED(prey) && prey.health < health_before)
+				master?.advance_combat_deed(prey, PATH_FLESH)
 		return
 	var/atom/destination = prey || user
 	if(Adjacent(destination) || anchored || buckled || pulledby || !CHECK_MULTIPLE_BITFIELDS(mobility_flags, MOBILITY_STAND | MOBILITY_MOVE) || !COOLDOWN_FINISHED(src, step_cooldown))
@@ -168,7 +183,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch
 	name = "Живой шов"
-	desc = "Протяните сухожилие на 5 клеток: враг получает 15 ушибов и замедляется на 3 секунды. Свой слуга вместо этого восстанавливает по 15 ушибов и ожогов и подтягивается к вам на два шага за 1 биомассу. Шов по врагу направляет на него вашего сшитого ползуна. Стены и закрытые двери прерывают шов; пристёгнутого слугу можно вылечить, но нельзя сдвинуть."
+	desc = "Протяните сухожилие на 5 клеток: враг получает 15 ушибов и замедляется на 3 секунды. Свой слуга вместо этого восстанавливает по 15 ушибов и ожогов и подтягивается к вам на два шага за 1 биомассу. Шов по врагу направляет на него вашего сшитого ползуна. Шов по ползуну обновляет его срок жизни до 90 секунд и возвращает к вам; здорового ползуна рядом можно подкормить после первых 30 секунд. Стены и закрытые двери прерывают шов; пристёгнутого слугу можно вылечить, но нельзя сдвинуть."
 	clothes_req = FALSE
 	charge_max = 15 SECONDS
 	range = 5
@@ -188,27 +203,32 @@
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!valid_user(user) || !isliving(target) || QDELETED(target) || target == user || !isturf(user.loc) || !isturf(target.loc))
-		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
+		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
 	var/mob/living/victim = target
 	if(victim.stat == DEAD || user.z != victim.z || get_dist(user, victim) > range)
-		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
+		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
 	var/turf/previous
 	for(var/turf/tile as anything in get_line(user, victim))
 		if(!isopenturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
-			return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
+			return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
 		if(previous && previous.x != tile.x && previous.y != tile.y)
 			var/turf/side_horizontal = locate(previous.x, tile.y, tile.z)
 			var/turf/side_vertical = locate(tile.x, previous.y, tile.z)
 			if(!isopenturf(side_horizontal) || !isopenturf(side_vertical) || side_horizontal.is_blocked_turf(exclude_mobs = TRUE) || side_vertical.is_blocked_turf(exclude_mobs = TRUE))
-				return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
+				return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
 		previous = tile
 	var/datum/antagonist/heretic_monster/servant = IS_HERETIC_MONSTER(victim)
 	if(servant?.master == heretic)
 		var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
 		var/needs_healing = victim.getBruteLoss() > 0 || victim.getFireLoss() > 0
+		var/mob/living/simple_animal/heretic_fleshling/crawler = victim
+		if(istype(crawler) && world.time >= crawler.expires_at)
+			return heretic_check(user, FALSE, silent, "Ползун уже распадается: срок его жизни истёк.")
+		if(istype(crawler) && crawler.expires_at < world.time + HERETIC_FLESHLING_LIFETIME - 30 SECONDS)
+			needs_healing = TRUE
 		var/can_reposition = get_dist(user, victim) > 1 && !victim.anchored && !victim.buckled
-		return heretic_check(user, path?.combat_resource > 0 && (needs_healing || can_reposition) && !victim.check_magic_resistance(chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
-	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи своему слуге нужна биомасса и ранение или место для перемещения.")
+		return heretic_check(user, path?.combat_resource > 0 && (needs_healing || can_reposition) && !victim.check_magic_resistance(chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user, TRUE))
@@ -223,6 +243,12 @@
 			heretic_revert_cast(user)
 			return
 		heretic_heal_damage(victim, HERETIC_FLESH_STITCH_HEALING, HERETIC_FLESH_STITCH_HEALING)
+		var/mob/living/simple_animal/heretic_fleshling/crawler = victim
+		if(istype(crawler))
+			crawler.expires_at = world.time + HERETIC_FLESHLING_LIFETIME
+			crawler.holding_position = FALSE
+			crawler.prey_ref = null
+			crawler.movement_path.Cut()
 		if(!victim.anchored && !victim.buckled)
 			for(var/step_index in 1 to HERETIC_FLESH_STITCH_STEPS)
 				if(get_dist(user, victim) <= 1 || !step_towards(victim, user))

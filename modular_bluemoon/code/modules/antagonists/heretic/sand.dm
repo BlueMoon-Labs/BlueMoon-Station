@@ -167,9 +167,13 @@
 		last_clock_hits[victim_key] = world.time + HERETIC_SAND_HIT_INTERVAL
 	if(!heretic_can_affect(sand_body, victim))
 		return FALSE
+	var/damage_before = victim.getBruteLoss()
 	victim.adjustBruteLoss(damage)
 	if(QDELETED(victim) || !can_use(sand_body))
 		return TRUE
+	if(clock_hit && victim.getBruteLoss() > damage_before)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(sand_body)
+		heretic?.advance_combat_deed(victim, PATH_SAND)
 	victim.adjustStaminaLoss(stamina)
 	harvest(sand_body)
 	return TRUE

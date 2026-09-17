@@ -193,7 +193,10 @@
 	for(var/mob/living/victim in range(wave_radius, center))
 		if(!isturf(victim.loc) || !line_clear(center, victim, wave_radius) || !heretic_can_affect(user, victim))
 			continue
+		var/damage_before = victim.getBruteLoss()
 		victim.adjustBruteLoss(ascended_wave ? 30 : 18)
+		if(victim.getBruteLoss() > damage_before)
+			heretic.advance_combat_deed(victim, PATH_TIDE)
 		victim.adjustStaminaLoss(ascended_wave ? 40 : 24)
 		soak(victim)
 		move_with_tide(victim, center, inward_tide, ascended_wave ? 3 : 2)

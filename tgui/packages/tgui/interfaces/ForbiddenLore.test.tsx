@@ -603,6 +603,29 @@ describe('Гримуар еретика', () => {
     expect(screen.queryByText(/Завершено/)).toBeNull();
   });
 
+  test('боевой шаг виден в ведомости и охоте, обновляет доступность и скрывается после завершения дела', async () => {
+    const deed = {
+      name: 'Места последнего сна', desc: 'Расстилайте постели.', hint: '',
+      tier: 0, max_tier: 3, progress: 0, goal: 2, counted: 0,
+      combat_hint: 'Сместите душу назначенной цели и заставьте связь истощить её.',
+      combat_available: true,
+    };
+    const { store } = setupStore(makeData({ selected_path: 'Spirit', path_stage: 2, deed }));
+    const view = await renderBook();
+    expect(screen.getByText(deed.combat_hint)).toBeTruthy();
+    expect(screen.getByText(/Заменяет один шаг этой ступени/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
+    expect(screen.getByText(deed.combat_hint)).toBeTruthy();
+    act(() => store.dispatch(backendUpdate({ data: { deed: { ...deed, progress: 1, combat_available: false } } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(screen.getByText(/Боевой шаг этой ступени уже засчитан/)).toBeTruthy();
+    expect(screen.queryByText(/Заменяет один шаг этой ступени/)).toBeNull();
+    act(() => store.dispatch(backendUpdate({ data: { deed: { ...deed, tier: 3, goal: 0, combat_available: false } } })));
+    view.rerender(<ForbiddenLoreContent />);
+    expect(screen.queryByText(deed.combat_hint)).toBeNull();
+    expect(screen.queryByLabelText('Боевой шаг дела')).toBeNull();
+  });
+
   test.each([[1, 'разлом'], [2, 'разлома'], [5, 'разломов'], [11, 'разломов'], [14, 'разломов'], [21, 'разлом'], [22, 'разлома'], [25, 'разломов']])('пределы разломов согласованы с числом %s', async (count, noun) => {
     const data = makeData();
     data.hunt.influence_initial_count = Number(count);

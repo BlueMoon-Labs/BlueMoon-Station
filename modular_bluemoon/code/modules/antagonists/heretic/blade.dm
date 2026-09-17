@@ -385,6 +385,8 @@
 		return BLOCK_NONE
 	blocks_left--
 	knowledge.record_parry(source, attacker)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(source)
+	heretic?.advance_combat_deed(attacker, PATH_BLADE)
 	playsound(source, 'modular_bluemoon/sound/heretic/parry.ogg', 60, TRUE)
 	if(!blocks_left)
 		qdel(src)

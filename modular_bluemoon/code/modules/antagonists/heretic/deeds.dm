@@ -19,6 +19,8 @@
 	var/progress = 0
 	var/list/tier_goals = list(2, 2, 2)
 	var/list/counted_keys = list()
+	var/combat_hint
+	var/list/combat_tiers = list()
 	var/datum/weakref/heretic_ref
 	COOLDOWN_DECLARE(progress_cooldown)
 
@@ -39,6 +41,8 @@
 		"progress" = progress,
 		"goal" = goal(),
 		"counted" = length(counted_keys),
+		"combat_hint" = combat_hint,
+		"combat_available" = !complete() && !((tier + 1) in combat_tiers),
 	)
 
 /datum/antagonist/heretic/proc/create_deed()
@@ -105,6 +109,20 @@
 
 /datum/antagonist/heretic/proc/deed_data()
 	return deed?.get_data()
+
+/datum/antagonist/heretic/proc/advance_combat_deed(mob/living/victim, path_id)
+	var/mob/living/user = owner?.current
+	if(role_removed || selected_path != path_id || !deed?.combat_hint || deed.complete() || QDELETED(user) || user.incapacitated() || QDELETED(victim) || victim.stat == DEAD || !victim.mind || victim.mind != hunt_target || !heretic_can_affect(user, victim, chargecost = 0))
+		return FALSE
+	var/challenge_tier = deed.tier + 1
+	if(challenge_tier in deed.combat_tiers)
+		return FALSE
+	if(!advance_deed("hunt:[REF(victim.mind)]", victim, silent = TRUE))
+		return FALSE
+	deed.combat_tiers += challenge_tier
+	to_chat(user, span_notice("Приём пути на назначенной цели засчитан в дело. Эта душа больше не даст прогресс за приём."))
+	refresh_book_ui()
+	return TRUE
 
 /datum/eldritch_knowledge/proc/on_deed_progress(mob/living/user)
 	if(combat_resource_name)
@@ -249,3 +267,48 @@
 	trace_state = "sigil_echo"
 
 #undef HERETIC_DEED_COOLDOWN
+
+/datum/heretic_deed/ash
+	combat_hint = "Поразите назначенную цель огненным следом Угасания."
+
+/datum/heretic_deed/rust
+	combat_hint = "Поразите назначенную цель ржавым клинком, стоя на ржавом полу."
+
+/datum/heretic_deed/flesh
+	combat_hint = "Прикажите ползуну атаковать назначенную цель и добейтесь его попадания."
+
+/datum/heretic_deed/void
+	combat_hint = "Удержите назначенную цель внутри Зимнего предела до его воздействия."
+
+/datum/heretic_deed/blade
+	combat_hint = "Отразите атаку назначенной цели парированием."
+
+/datum/heretic_deed/moon
+	combat_hint = "Направьте отражение на назначенную цель и добейтесь его попадания."
+
+/datum/heretic_deed/cosmic
+	combat_hint = "Поразите назначенную цель звёздной нитью."
+
+/datum/heretic_deed/lock
+	combat_hint = "Разомкните свою печать рядом с назначенной целью и попадите взрывом."
+
+/datum/heretic_deed/glass
+	combat_hint = "Поразите назначенную цель лучом, прошедшим через призму."
+
+/datum/heretic_deed/blood
+	combat_hint = "Взыщите долг с назначенной цели и нанесите ей урон."
+
+/datum/heretic_deed/echo
+	combat_hint = "Поразите назначенную цель отложенной звуковой волной."
+
+/datum/heretic_deed/sand
+	combat_hint = "Взорвите свои часы так, чтобы они поразили назначенную цель."
+
+/datum/heretic_deed/wax
+	combat_hint = "Поразите назначенную цель через её воскового двойника."
+
+/datum/heretic_deed/spirit
+	combat_hint = "Сместите душу назначенной цели и заставьте связь истощить её."
+
+/datum/heretic_deed/tide
+	combat_hint = "Поразите назначенную цель Сбросом давления."

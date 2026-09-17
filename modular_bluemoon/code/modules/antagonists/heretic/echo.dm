@@ -459,6 +459,8 @@
 			continue
 		if(victim.getBruteLoss() > damage_before)
 			echo.harvest(user)
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+			heretic?.advance_combat_deed(victim, PATH_ECHO)
 		if(!valid_source())
 			qdel(src)
 			return FALSE

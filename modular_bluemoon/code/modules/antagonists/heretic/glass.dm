@@ -444,6 +444,7 @@
 	QDEL_LIST(warnings)
 	var/list/mob/living/hit_damage = list()
 	var/list/rendered = list()
+	var/list/refracted_targets = list()
 	var/datum/eldritch_knowledge/upgrade = heretic.get_knowledge(/datum/eldritch_knowledge/glass_upgrade)
 	for(var/list/cell as anything in cells)
 		if(!glass.route_valid(cell))
@@ -465,6 +466,7 @@
 			var/damage = (cell["split"] ? HERETIC_GLASS_SPLIT_DAMAGE : HERETIC_GLASS_BEAM_DAMAGE) + damage_bonus
 			if(length(nodes))
 				damage += HERETIC_GLASS_REFRACTION_BONUS
+				refracted_targets |= victim
 			var/datum/status_effect/heretic_glass_fracture/fracture = victim.has_status_effect(/datum/status_effect/heretic_glass_fracture)
 			if(fracture?.glass_ref?.resolve() == glass)
 				damage += !QDELETED(upgrade) ? 14 : 8
@@ -472,7 +474,10 @@
 	for(var/mob/living/victim as anything in hit_damage)
 		if(!heretic_can_affect(user, victim))
 			continue
+		var/damage_before = victim.getBruteLoss()
 		victim.adjustBruteLoss(hit_damage[victim])
+		if((victim in refracted_targets) && victim.getBruteLoss() > damage_before)
+			heretic.advance_combat_deed(victim, PATH_GLASS)
 		log_combat(user, victim, "поражает преломлённым лучом")
 	playsound(origin, stationary || network_ref ? 'modular_bluemoon/sound/heretic/glass_storm.ogg' : 'modular_bluemoon/sound/heretic/glass_release.ogg', 55, TRUE)
 	qdel(src)

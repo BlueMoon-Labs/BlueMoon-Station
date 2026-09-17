@@ -92,7 +92,7 @@ export type ForbiddenLoreData = {
   combat_abilities?: CombatAbility[];
   ability_hotkey_help?: string;
   preparation?: Preparation | null;
-  deed: { name: string; desc: string; hint: string; next_step?: string; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
+  deed: { name: string; desc: string; hint: string; next_step?: string; combat_hint?: string; combat_available?: BooleanLike; tier: number; max_tier: number; progress: number; goal: number; counted: number } | null;
   hunt: {
     target_name: string | null;
     target_role: string | null;
@@ -612,6 +612,15 @@ const DeedSection = ({ compact = false }: { compact?: boolean }) => {
       {!compact && deed.hint && <p className="HereticBook__annotation">{deed.hint}</p>}
       <p>{done ? 'Завершено.' : <>Ступень <strong>{deed.tier + 1}</strong> из <strong>{deed.max_tier}</strong> · <strong>{deed.progress}</strong> из <strong>{deed.goal}</strong></>}</p>
       {compact && !done && <p>Завершите ступень, чтобы получить очко знаний.</p>}
+      {!done && deed.combat_hint && (
+        <div aria-label="Боевой шаг дела">
+          <p><strong>Альтернатива — охота:</strong> {deed.combat_hint}</p>
+          <p className="HereticBook__annotation">{deed.combat_available
+            ? 'Заменяет один шаг этой ступени. Каждая душа засчитывается только один раз за всё дело.'
+            : 'Боевой шаг этой ступени уже засчитан. Продолжите обычное дело пути.'}
+          </p>
+        </div>
+      )}
       {!compact && (
         <div className="HereticBook__soulMarks" aria-label={`Ступеней дела: ${deed.tier} из ${deed.max_tier}`}>
           {Array.from({ length: deed.max_tier }, (_, index) => <span key={index} className={index < deed.tier ? 'HereticBook__soulMarks--filled' : ''}>◇</span>)}

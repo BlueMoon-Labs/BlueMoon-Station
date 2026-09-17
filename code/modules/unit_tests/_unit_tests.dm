@@ -159,6 +159,7 @@
 #include "heretic_combat.dm"
 #include "heretic_nonlethal.dm"
 #include "heretic_gameplay.dm"
+#include "heretic_engagement.dm"
 #include "heretic_blade.dm"
 #include "heretic_moon.dm"
 #include "heretic_cosmic.dm"

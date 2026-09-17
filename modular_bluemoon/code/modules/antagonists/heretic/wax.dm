@@ -462,9 +462,13 @@
 	var/damage = min(weapon.force, HERETIC_WAX_EFFIGY_HIT_LIMIT, obj_integrity)
 	if(damage <= 0)
 		return
+	var/damage_before = victim.getBruteLoss()
 	victim.adjustBruteLoss(damage)
 	if(QDELETED(src) || QDELETED(effect) || QDELETED(victim))
 		return
+	if(victim.getBruteLoss() > damage_before)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		heretic?.advance_combat_deed(victim, PATH_WAX)
 	wax.harvest(user, victim)
 	wax.hinder(victim, effect.knowledge_ref?.resolve())
 	log_combat(user, victim, "attacked through a wax effigy with", weapon)

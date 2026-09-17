@@ -207,6 +207,37 @@
 	playsound(user, 'modular_bluemoon/sound/heretic/spirit_step.ogg', 55, TRUE)
 	return TRUE
 
+/datum/eldritch_knowledge/base_spirit/proc/can_shift_soul(mob/living/user, obj/structure/heretic_spirit_soul/anchor, turf/origin)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/status_effect/heretic_spirit/separated/soul = anchor?.effect_ref?.resolve()
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	return can_use(user) && !QDELETED(required) && combat_resource >= 1 && !QDELETED(anchor) && (!origin || anchor.loc == origin) && soul?.spirit_ref?.resolve() == src && !soul.shifted && soul.validate_link() && get_dist(user, anchor) >= 3 && line_clear(user, anchor)
+
+/datum/eldritch_knowledge/base_spirit/proc/shift_soul(mob/living/user, obj/structure/heretic_spirit_soul/anchor)
+	if(!can_shift_soul(user, anchor))
+		return FALSE
+	var/datum/status_effect/heretic_spirit/separated/soul = anchor.effect_ref.resolve()
+	if(soul.shifting)
+		return FALSE
+	var/turf/origin = get_turf(anchor)
+	var/turf/destination = get_step_towards(get_step_towards(origin, user), user)
+	if(!line_clear(origin, destination) || !line_clear(destination, soul.owner))
+		return FALSE
+	soul.shifting = TRUE
+	new /obj/effect/temp_visual/heretic_spirit/step(destination, src)
+	to_chat(soul.owner, span_userdanger("Перевозчик тянет вашу душу к себе! Через секунду она сместится на две клетки. Коснитесь души или разбейте её, чтобы оборвать связь."))
+	var/completed = do_after(user, 1 SECONDS, target = user, extra_checks = CALLBACK(src, PROC_REF(can_shift_soul), user, anchor, origin))
+	if(QDELETED(soul))
+		return FALSE
+	soul.shifting = FALSE
+	if(!completed || !can_shift_soul(user, anchor, origin) || !line_clear(origin, destination) || !line_clear(destination, soul.owner) || !spend_combat_resource())
+		return FALSE
+	soul.shifted = TRUE
+	anchor.forceMove(destination)
+	playsound(anchor, 'modular_bluemoon/sound/heretic/spirit_step.ogg', 55, TRUE)
+	log_combat(user, soul.owner, "сместил отделённую душу")
+	return TRUE
+
 /datum/eldritch_knowledge/base_spirit/proc/reap(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
@@ -285,6 +316,8 @@
 	var/obj/structure/heretic_spirit_soul/anchor
 	var/mutable_appearance/spirit_overlay
 	var/moved_away = FALSE
+	var/shifted = FALSE
+	var/shifting = FALSE
 	var/drained = 0
 	var/drain_limit = HERETIC_SPIRIT_DRAIN_LIMIT
 	var/reap_at = 0
@@ -377,7 +410,12 @@
 	if(get_dist(owner, anchor) > 1 && drained < drain_limit)
 		var/damage = min(HERETIC_SPIRIT_DRAIN_PER_TICK, drain_limit - drained)
 		drained += damage
+		var/stamina_before = owner.getStaminaLoss()
 		owner.adjustStaminaLoss(damage)
+		if(shifted && owner.getStaminaLoss() > stamina_before)
+			var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+			var/datum/antagonist/heretic/heretic = IS_HERETIC(spirit?.spirit_body)
+			heretic?.advance_combat_deed(owner, PATH_SPIRIT)
 
 /datum/status_effect/heretic_spirit/separated/proc/finish_reap()
 	if(!reap_at || world.time < reap_at)
@@ -633,8 +671,10 @@
 	duration = 2 SECONDS
 
 /datum/eldritch_knowledge/spirit_grasp
+	parent_type = /datum/eldritch_knowledge/spell
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift
 	name = "Душа на ладони"
-	desc = "Хватка Мансуса отделяет душу живого врага на 10 секунд. Силуэт остаётся на месте; его можно собрать рукой для обола или использовать для Переправы и Жатвы. Уже отделённая душа не обновляет срок и запас истощения."
+	desc = "Хватка Мансуса отделяет душу живого врага на 10 секунд. Силуэт остаётся на месте; его можно собрать рукой для обола или использовать для Переправы и Жатвы. Даёт «Сместить душу»: за 1 обол и секунду подготовки подтяните силуэт на две клетки к себе, стоя в трёх–пяти клетках от него. Один раз за связь; её срок и запас истощения сохраняются."
 	gain_text = "Ладонь прошла сквозь грудь и вернулась тяжёлой."
 	cost = 1
 	route = PATH_SPIRIT
@@ -650,6 +690,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	spirit?.clear_knowledge_effects(src)
+	return ..()
 
 /datum/eldritch_knowledge/spell/spirit_step
 	name = "Переправа"
@@ -876,6 +917,24 @@
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	if(!length(targets) || !spirit?.cross(user, targets[1], preserve_soul = user.a_intent == INTENT_DISARM))
 		heretic_revert_cast(user)
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/shift
+	name = "Сместить душу"
+	desc = "За 1 обол притяните свою отделённую душу на две клетки к себе после секунды предупреждения. Встаньте в трёх–пяти клетках от неё и выберите силуэт. Каждую душу можно сместить один раз; срок связи и предел истощения сохраняются. Движение прерывает подготовку. Жертва может коснуться души, разбить её или оборвать связь стеной. Перезарядка 6 секунд."
+	action_icon_state = "spirit_step"
+	charge_max = 6 SECONDS
+	aim_assist = FALSE
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/can_target(atom/target, mob/user, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	return heretic_check(user, istype(target, /obj/structure/heretic_spirit_soul) && spirit?.can_shift_soul(user, target), silent, "Выберите свою ещё не смещённую душу в трёх–пяти клетках без преград. Нужен 1 обол и знание «Душа на ладони».")
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	if(!length(targets) || !istype(targets[1], /obj/structure/heretic_spirit_soul) || !spirit?.shift_soul(user, targets[1]))
+		heretic_revert_cast(user, "Смещение прервано или душа больше недоступна.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/reap
 	name = "Жатва неприкаянных"
