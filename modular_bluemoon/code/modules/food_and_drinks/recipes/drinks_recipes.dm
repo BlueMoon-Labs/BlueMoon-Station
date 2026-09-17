@@ -38,7 +38,7 @@
 // я хз куда их пихать - пихну сюда
 
 /datum/chemical_reaction/holywater
-	name = "holly water"
+	name = "holy water"
 	id = /datum/reagent/water/holywater
 	results = list(/datum/reagent/water/holywater = 3)
 	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/mercury = 1, /datum/reagent/consumable/ethanol/wine=1)
