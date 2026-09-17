@@ -1,17 +1,16 @@
 #define HERETIC_ASCENSION_OMEN_DURATION (30 SECONDS)
 #define HERETIC_ASCENSION_WARNING_COOLDOWN (3 MINUTES)
-#define HERETIC_ASCENSION_LAYER_SIZE 64
+#define HERETIC_ASCENSION_ICON_SIZE 64
 
 /datum/heretic_path
 	var/ascension_title
 	var/ascension_message
 	var/ascension_omen
 	var/ascension_sound
-	var/ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	var/ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
 	var/ascension_aura_state
 	var/ascension_aura_color
 	var/ascension_aura_height = 12
-	var/ascension_aura_scale = 1
 	var/ascension_aura_background = FALSE
 	var/ascension_aura_layered = FALSE
 
@@ -23,7 +22,6 @@
 	ascension_aura_state = "ash_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/rust
@@ -34,7 +32,6 @@
 	ascension_aura_state = "rust_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/flesh
@@ -45,7 +42,6 @@
 	ascension_aura_state = "flesh_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/void
@@ -56,7 +52,6 @@
 	ascension_aura_state = "void_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/blade
@@ -67,7 +62,6 @@
 	ascension_aura_state = "blade_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/moon
@@ -78,7 +72,6 @@
 	ascension_aura_state = "moon_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/cosmic
@@ -89,7 +82,6 @@
 	ascension_aura_state = "cosmic_presence"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/lock
@@ -100,7 +92,6 @@
 	ascension_aura_state = "lock_presence"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/tide
@@ -128,7 +119,6 @@
 	ascension_aura_state = "glass_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/blood
@@ -139,7 +129,6 @@
 	ascension_aura_state = "blood_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/echo
@@ -147,11 +136,9 @@
 	ascension_message = "Оборванные голоса возвращаются погребальным хором. Тот, кто задал им тон, поднимает руку для последнего такта."
 	ascension_omen = "Ваш последний шаг звучит снова. Из стен отвечает многоголосый шёпот, и на мгновение вы узнаёте в нём собственный голос."
 	ascension_sound = 'modular_bluemoon/sound/heretic/echo_ascend.ogg'
-	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_echo_effects.dmi'
 	ascension_aura_state = "echo_ascend"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/sand
@@ -159,11 +146,9 @@
 	ascension_message = "Звёзды осыпаются за стеклом. Последний час уже истёк, но его хранитель перевернул часы."
 	ascension_omen = "Сквозь пальцы сыплется невидимый песок. Часы на мгновение идут назад; следующий шаг звучит раньше, чем вы его делаете."
 	ascension_sound = 'modular_bluemoon/sound/heretic/sand_ascend.ogg'
-	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	ascension_aura_state = "sand_aura"
 	ascension_aura_color = COLOR_WHITE
 	ascension_aura_height = 0
-	ascension_aura_scale = 1.5
 	ascension_aura_background = TRUE
 
 /datum/heretic_path/wax
@@ -279,7 +264,7 @@
 
 /obj/effect/heretic_ascension_aura
 	name = "нимб вознесённого"
-	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
 	plane = ABOVE_LIGHTING_PLANE
 	layer = ABOVE_LIGHTING_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -295,13 +280,11 @@
 	icon = path.ascension_aura_icon
 	icon_state = path.ascension_aura_state
 	color = path.ascension_aura_color || path.book_tint
-	pixel_y = path.ascension_aura_height
-	transform = matrix() * path.ascension_aura_scale
+	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+	pixel_y = pixel_x + path.ascension_aura_height
 	if(path.ascension_aura_layered)
 		var/layer_suffix = foreground ? "front" : "back"
 		icon_state = "[icon_state]_[layer_suffix]"
-		pixel_x = (world.icon_size - HERETIC_ASCENSION_LAYER_SIZE) / 2
-		pixel_y += pixel_x
 	if(path.ascension_aura_background)
 		plane = GAME_PLANE
 		layer = FLOAT_LAYER
@@ -314,7 +297,7 @@
 	animate(pixel_y = aura_height, alpha = 175, time = 2 SECONDS, easing = SINE_EASING)
 
 /obj/effect/temp_visual/heretic_ascension_echo
-	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
 	layer = ABOVE_MOB_LAYER
 	duration = 3 SECONDS
 	alpha = 180
@@ -328,9 +311,8 @@
 	icon = path.ascension_aura_icon
 	icon_state = path.ascension_aura_state
 	color = path.ascension_aura_color || path.book_tint
-	if(path.ascension_aura_layered)
-		pixel_x = (world.icon_size - HERETIC_ASCENSION_LAYER_SIZE) / 2
-		pixel_y = pixel_x
+	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+	pixel_y = pixel_x + path.ascension_aura_height
 	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration)
 
 /// Короткое знамение не меняет зрение, здоровье, управление или постоянный цвет клиента.
@@ -371,13 +353,12 @@
 		personal_echo = image(path.ascension_aura_icon, owner, path.ascension_aura_state, ABOVE_LIGHTING_LAYER)
 		personal_echo.plane = ABOVE_LIGHTING_PLANE
 		personal_echo.color = path.ascension_aura_color || path.book_tint
-		if(path.ascension_aura_layered)
-			personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_LAYER_SIZE) / 2
-			personal_echo.pixel_y = personal_echo.pixel_x
+		personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+		personal_echo.pixel_y = personal_echo.pixel_x + path.ascension_aura_height
 		personal_echo.alpha = 180
 		echo_viewer_ref = REF(owner.client)
 		owner.client.images += personal_echo
-		animate(personal_echo, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = 12, time = 3 SECONDS)
+		animate(personal_echo, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = personal_echo.pixel_y + 12, time = 3 SECONDS)
 
 /datum/status_effect/heretic_ascension_omen/proc/clear_echo()
 	var/client/echo_viewer = locate(echo_viewer_ref)
@@ -458,4 +439,4 @@
 
 #undef HERETIC_ASCENSION_OMEN_DURATION
 #undef HERETIC_ASCENSION_WARNING_COOLDOWN
-#undef HERETIC_ASCENSION_LAYER_SIZE
+#undef HERETIC_ASCENSION_ICON_SIZE

@@ -237,6 +237,23 @@
 		TEST_ASSERT_EQUAL(echo.icon, path.ascension_aura_icon, "Вспышка использует ресурс своего пути.")
 		TEST_ASSERT(echo.icon_state in states, "Вспышка [path_id] выбирает существующее состояние.")
 
+/// Нимбы всех путей рисуются без растяжения и совпадают с центром клетки.
+/datum/unit_test/heretic_ascension_aura_alignment/Run()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		for(var/foreground in (path.ascension_aura_layered ? list(FALSE, TRUE) : list(FALSE)))
+			var/obj/effect/heretic_ascension_aura/aura = allocate(/obj/effect/heretic_ascension_aura, null, path_id, foreground)
+			var/icon/aura_icon = icon(aura.icon, aura.icon_state)
+			TEST_ASSERT_EQUAL(aura_icon.Width(), 64, "[path_id]: нимб подготовлен в размере 64x64.")
+			TEST_ASSERT_EQUAL(aura_icon.Height(), 64, "[path_id]: высота нимба совпадает с шириной.")
+			TEST_ASSERT_EQUAL(aura.pixel_x + aura_icon.Width() / 2, world.icon_size / 2, "[path_id]: нимб отцентрирован по горизонтали.")
+			TEST_ASSERT_EQUAL(aura.pixel_y + aura_icon.Height() / 2, world.icon_size / 2 + path.ascension_aura_height, "[path_id]: нимб отцентрирован по вертикали.")
+			var/matrix/aura_transform = aura.transform
+			TEST_ASSERT(aura_transform.a == 1 && aura_transform.e == 1 && !aura_transform.b && !aura_transform.c && !aura_transform.d && !aura_transform.f, "[path_id]: нимб сохраняет исходную пиксельную сетку.")
+		var/obj/effect/temp_visual/heretic_ascension_echo/echo = allocate(/obj/effect/temp_visual/heretic_ascension_echo, run_loc_floor_bottom_left, path_id)
+		var/icon/echo_icon = icon(echo.icon, echo.icon_state)
+		TEST_ASSERT_EQUAL(echo.pixel_x + echo_icon.Width() / 2, world.icon_size / 2, "[path_id]: вспышка растёт из центра клетки.")
+
 /// Передний и задний слои нимба переносятся и удаляются вместе с телом.
 /datum/unit_test/heretic_ascension_layered_presence/Run()
 	for(var/path_id in list(PATH_TIDE, PATH_WAX, PATH_SPIRIT))
