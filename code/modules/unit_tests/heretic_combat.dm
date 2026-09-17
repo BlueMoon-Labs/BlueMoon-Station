@@ -800,6 +800,66 @@
 	qdel(victim)
 	TEST_ASSERT(!(victim in domain.affected), "Удалённая цель сразу освобождается из поля.")
 
+/// Каскад доходит до внешнего кольца и показывает огонь без атмосферного топлива.
+/datum/unit_test/heretic_fire_cascade_wave/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/mob/living/user = heretic.owner.current
+	var/turf/outer = locate(center.x + 3, center.y, center.z)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, outer)
+	var/obj/effect/proc_holder/spell/aoe_turf/fire_cascade/spell = allocate(/obj/effect/proc_holder/spell/aoe_turf/fire_cascade)
+	spell.fire_cascade(user, 3)
+	TEST_ASSERT(victim.getFireLoss() >= 15, "Внешнее кольцо каскада наносит ожоги.")
+	TEST_ASSERT(victim.on_fire, "Внешнее кольцо поджигает противника.")
+	var/visible_flame = FALSE
+	for(var/obj/effect/temp_visual/visual in outer)
+		if(visual.icon == 'icons/effects/turf_fire.dmi' && visual.icon_state == "red_big")
+			visible_flame = TRUE
+	TEST_ASSERT(visible_flame, "Огонь каскада виден на обычном полу без горючего газа.")
+
+/// Клятва поддерживает видимое кольцо и после завершения перезарядки.
+/datum/unit_test/heretic_fire_sworn_lifecycle/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/turf/nearby = get_step(user, EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, nearby)
+	var/obj/effect/proc_holder/spell/targeted/fire_sworn/spell = allocate(/obj/effect/proc_holder/spell/targeted/fire_sworn)
+	spell.cast(list(user), user)
+	TEST_ASSERT_NOTEQUAL(spell.process(), PROCESS_KILL, "Действующее кольцо не останавливается вместе с перезарядкой.")
+	spell.process()
+	TEST_ASSERT_EQUAL(round(victim.getFireLoss(), DAMAGE_PRECISION), 4, "Кольцо наносит урон повторно.")
+	var/visible_flame = FALSE
+	for(var/obj/effect/temp_visual/visual in nearby)
+		if(visual.icon == 'icons/effects/turf_fire.dmi' && visual.icon_state == "red_big")
+			visible_flame = TRUE
+	TEST_ASSERT(visible_flame, "Клятва показывает огонь без горючего газа.")
+	spell.remove()
+	TEST_ASSERT_EQUAL(spell.process(), PROCESS_KILL, "Закончившееся кольцо без перезарядки прекращает обработку.")
+	TEST_ASSERT_NULL(spell.current_user, "Завершение освобождает владельца кольца.")
+
+/// Полный запуск домена создаёт поле 7×7 и повторно отмечает врага после активации метки.
+/datum/unit_test/heretic_domain_cast_area/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(center.x + 3, center.y, center.z))
+	var/obj/effect/proc_holder/spell/aoe_turf/domain_expansion/spell = allocate(/obj/effect/proc_holder/spell/aoe_turf/domain_expansion)
+	spell.cast(list(center), user)
+	var/obj/effect/domain_expansion/domain = spell.active_domain
+	TEST_ASSERT_NOTNULL(domain, "После сосредоточения появляется домен.")
+	TEST_ASSERT_EQUAL(length(domain.field_turfs), 49, "Без преград домен покрывает все 49 клеток.")
+	TEST_ASSERT_EQUAL(length(domain.boundary), 24, "Граница окружает всю область 7×7.")
+	domain.process()
+	var/datum/status_effect/eldritch/void/mark = victim.has_status_effect(/datum/status_effect/eldritch/void)
+	TEST_ASSERT_NOTNULL(mark, "Домен отмечает врага на внешней клетке.")
+	TEST_ASSERT(victim.has_movespeed_modifier(REF(domain)), "Домен замедляет врага на внешней клетке.")
+	mark.on_effect()
+	domain.process()
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/eldritch/void), "Следующая обработка накладывает новую метку.")
+	qdel(domain)
+	TEST_ASSERT_NULL(spell.active_domain, "Удаление домена освобождает заклинание.")
+	TEST_ASSERT(!victim.has_movespeed_modifier(REF(domain)), "Удаление домена снимает замедление поля.")
+
 /// Оба червя вырастают ровно на один связанный сегмент за порцию пищи.
 /datum/unit_test/heretic_armsy_growth/Run()
 	for(var/worm_type in list(/mob/living/simple_animal/hostile/eldritch/armsy, /mob/living/simple_animal/hostile/eldritch/armsy/prime))

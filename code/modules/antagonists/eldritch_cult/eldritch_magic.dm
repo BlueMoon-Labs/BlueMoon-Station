@@ -607,7 +607,7 @@
 
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade
 	name = "Огненный каскад"
-	desc = "Раскалите воздух вокруг себя."
+	desc = "Выпустите расширяющуюся волну пламени: она поджигает врагов и наносит 15 ожогов."
 	school = "transmutation"
 	charge_max = 300 //twice as long as mansus grasp
 	clothes_req = FALSE
@@ -630,6 +630,7 @@
 		for(var/turf/open/floor/floor in view(radius, origin))
 			if(get_dist(origin, floor) != radius)
 				continue
+			new /obj/effect/temp_visual/heretic_ash_flame(floor)
 			floor.hotspot_expose(700, 50, TRUE)
 			for(var/mob/living/victim in floor)
 				if(!heretic_can_affect(centre, victim))
@@ -666,11 +667,13 @@
 	var/mob/current_user
 	///Determines if you get the fire ring effect
 	var/has_fire_ring = FALSE
+	COOLDOWN_DECLARE(flame_visual_cooldown)
 
 /obj/effect/proc_holder/spell/targeted/fire_sworn/cast(list/targets, mob/user)
 	. = ..()
 	current_user = user
 	has_fire_ring = TRUE
+	START_PROCESSING(SSfastprocess, src)
 	addtimer(CALLBACK(src, PROC_REF(remove), user), duration, TIMER_OVERRIDE|TIMER_UNIQUE)
 
 /obj/effect/proc_holder/spell/targeted/fire_sworn/proc/remove()
@@ -683,7 +686,14 @@
 		has_fire_ring = FALSE
 		current_user = null
 		return
+	// Действующее кольцо обрабатывается и после завершения перезарядки.
+	. = null
+	var/show_flames = COOLDOWN_FINISHED(src, flame_visual_cooldown)
+	if(show_flames)
+		COOLDOWN_START(src, flame_visual_cooldown, 0.6 SECONDS)
 	for(var/turf/open/floor/floor in range(1, current_user))
+		if(show_flames)
+			new /obj/effect/temp_visual/heretic_ash_flame(floor)
 		floor.hotspot_expose(700, 50, TRUE)
 		for(var/mob/living/victim in floor)
 			if(!heretic_can_affect(current_user, victim, chargecost = 0))

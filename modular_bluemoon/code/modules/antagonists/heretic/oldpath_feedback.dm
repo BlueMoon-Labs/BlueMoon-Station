@@ -24,6 +24,18 @@
 	layer = BELOW_MOB_LAYER
 	light_range = 0
 
+/obj/effect/temp_visual/heretic_ash_flame
+	icon = 'icons/effects/turf_fire.dmi'
+	icon_state = "red_big"
+	duration = 0.6 SECONDS
+	randomdir = FALSE
+	plane = ABOVE_LIGHTING_PLANE
+	layer = ABOVE_LIGHTING_LAYER
+
+/obj/effect/temp_visual/heretic_ash_flame/Initialize(mapload)
+	. = ..()
+	animate(src, alpha = 0, time = 0.2 SECONDS, delay = duration - 0.2 SECONDS)
+
 /obj/effect/temp_visual/heretic_oldpath/rust
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_rust"
