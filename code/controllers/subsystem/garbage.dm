@@ -1158,6 +1158,9 @@ SUBSYSTEM_DEF(garbage)
 		var/list/client_hits = find_client_references(D, quiet = TRUE, yield = FALSE)
 		if (length(client_hits))
 			notes += "клиентские держатели ([length(client_hits)]): [client_hits[1]]"
+	// после остальных проб: непустой notes отключил бы их
+	if (SStimer.holder_probe_truncated)
+		notes += "проба таймеров оборвана по лимиту, колесо досмотрено не всё"
 	if (!length(notes))
 		return ""
 	return "; улики: [notes.Join(", ")]"

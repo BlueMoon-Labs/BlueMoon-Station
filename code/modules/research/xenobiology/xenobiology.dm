@@ -478,9 +478,9 @@
 	if(istype(species))
 		species.armor -= 25
 	// BLUEMOON ADD START
-	var/mob/living/M = user_ref?.resolve()
-	if(isliving(M))
-		M.brc_mitigation = max(0, M.brc_mitigation - 30)
+	var/mob/living/user = user_ref?.resolve()
+	if(isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - 30)
 	// BLUEMOON ADD END
 
 /obj/item/slime_extract/bluespace

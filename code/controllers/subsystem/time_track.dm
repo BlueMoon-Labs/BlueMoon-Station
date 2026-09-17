@@ -1587,6 +1587,8 @@ SUBSYSTEM_DEF(time_track)
 	var/client_images_max = 0
 	var/client_screen_total = 0
 	for(var/client/counted_client as anything in GLOB.clients)
+		if(!counted_client)
+			continue
 		var/image_count = length(counted_client.images)
 		client_images_total += image_count
 		client_images_max = max(client_images_max, image_count)
