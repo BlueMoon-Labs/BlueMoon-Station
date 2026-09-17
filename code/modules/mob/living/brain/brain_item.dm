@@ -96,6 +96,9 @@
 		BT.on_gain()
 
 /obj/item/organ/brain/proc/transfer_identity(mob/living/L)
+	// organ/Destroy зовёт Remove(TRUE): без этого удаляемый мозг заводил себе новый brainmob
+	if(QDELETED(src))
+		return
 	name = "[L.name]'s brain"
 	if(brainmob)
 		return

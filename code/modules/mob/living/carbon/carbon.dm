@@ -18,6 +18,7 @@
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
 	breath_buffer = new
+	breathing_loop = new(src, _direct = TRUE)
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -32,6 +33,7 @@
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
 	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	QDEL_NULL(breathing_loop)
 	last_mind = null
 	GLOB.carbon_list -= src
 	//unequip при QDELING(моб) пропускается (см. /obj/item/Destroy), поэтому

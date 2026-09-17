@@ -72,4 +72,4 @@
 /obj/item/broken/hmg
 	name = "Disassembled M2A1 HMG"
 	desc = "This one.. unique. Seems like your foe doesn't want you to get your dirty hands on this one THAT much, and riped off the belt fed mechanism"
-	item_state = "m2a1closed-empty"
+	icon_state = "m2a1closed-empty"

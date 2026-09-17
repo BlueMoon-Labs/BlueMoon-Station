@@ -1,3 +1,7 @@
+/// keyLoop одного клиента дороже этого (мс) идёт в учёт медленных
+#define SLOW_KEYLOOP_MS 5
+#define SLOW_KEYLOOP_REPORT_INTERVAL (10 SECONDS)
+
 SUBSYSTEM_DEF(input)
 	name = "Input"
 	wait = 1 //SS_TICKER means this runs every tick
@@ -23,6 +27,13 @@ SUBSYSTEM_DEF(input)
 	var/list/hotkey_mode_macros
 	/// Macro set for classic.
 	var/list/input_mode_macros
+
+	/// ckey -> сумма мс дорогих keyLoop с прошлого отчёта
+	var/list/slow_keyloop_total = list()
+	/// ckey -> число дорогих keyLoop с прошлого отчёта
+	var/list/slow_keyloop_count = list()
+	var/next_slow_keyloop_report = 0
+	var/last_slow_keyloop_report
 
 /datum/controller/subsystem/input/Initialize()
 	setup_macrosets()
@@ -97,11 +108,40 @@ SUBSYSTEM_DEF(input)
 	var/list/clients = GLOB.clients.Copy() // Let's sing the list cache song
 	for(var/i in 1 to clients.len)
 		var/client/C = clients[i]
-		if(C)
-			C.keyLoop()
+		if(!C)
+			continue
+		var/loop_started = TICK_USAGE
+		C.keyLoop()
+		var/loop_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - loop_started)
+		if(loop_cost_ms >= SLOW_KEYLOOP_MS)
+			note_slow_keyloop(C, loop_cost_ms)
+
+/// Копит дорогие keyLoop по клиенту и раз в SLOW_KEYLOOP_REPORT_INTERVAL пишет худшего в tick_spikes.log.
+/datum/controller/subsystem/input/proc/note_slow_keyloop(client/slow_client, cost_ms)
+	var/ckey = slow_client.ckey
+	slow_keyloop_total[ckey] += cost_ms
+	slow_keyloop_count[ckey] += 1
+	if(world.time < next_slow_keyloop_report)
+		return
+	next_slow_keyloop_report = world.time + SLOW_KEYLOOP_REPORT_INTERVAL
+	var/worst_ckey
+	for(var/candidate in slow_keyloop_total)
+		if(isnull(worst_ckey) || slow_keyloop_total[candidate] > slow_keyloop_total[worst_ckey])
+			worst_ckey = candidate
+	var/client/worst_client = GLOB.directory[worst_ckey]
+	var/mob/worst_mob = worst_client?.mob
+	var/atom/worst_loc = worst_mob?.loc
+	var/atom/movable/relay = worst_mob?.remote_control || worst_mob?.buckled
+	last_slow_keyloop_report = "медленный keyLoop: [worst_ckey], [slow_keyloop_count[worst_ckey]] шт на [round(slow_keyloop_total[worst_ckey], 0.1)]мс, моб [worst_mob?.type || "нет"], loc [worst_loc?.type || "нет"][relay ? ", управляет/пристёгнут: [relay.type]" : ""], клавиши: [worst_client ? jointext(worst_client.keys_held, "+") : "?"]; всего клиентов с дорогим keyLoop: [length(slow_keyloop_total)]"
+	SStick_spikes?.write_to_log("[SStick_spikes.time_stamp_from_world(world.time)] [last_slow_keyloop_report]")
+	slow_keyloop_total.Cut()
+	slow_keyloop_count.Cut()
 
 #define NONSENSICAL_VERB "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 /// *sigh
 /client/verb/NONSENSICAL_VERB_THAT_DOES_NOTHING()
 	set name = "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 	set hidden = TRUE
+
+#undef SLOW_KEYLOOP_MS
+#undef SLOW_KEYLOOP_REPORT_INTERVAL

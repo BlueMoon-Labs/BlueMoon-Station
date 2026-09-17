@@ -1820,7 +1820,7 @@
 	inhand_y_dimension = 64
 	can_bayonet = FALSE
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_shot.ogg'
-	load_sound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
+	pumpsound = 'modular_bluemoon/fluffs/sound/weapon/m1903_load.ogg'
 
 /obj/item/modkit/scorpion_evo_kit
 	name = "Scorpion EVO Kit"

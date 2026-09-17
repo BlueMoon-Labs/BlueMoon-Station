@@ -588,7 +588,8 @@
 	return right_click ? generate_ability_button(selected_module) : selected_module.on_select()
 
 /obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
-	var/datum/action/cooldown/module_action/new_action = new(module = M)
+	// Target обязан быть модулем: на его QDELETING действие удаляет себя само
+	var/datum/action/cooldown/module_action/new_action = new(M, M)
 	new_action.Grant(wearer)
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
