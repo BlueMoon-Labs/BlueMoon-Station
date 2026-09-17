@@ -21,6 +21,7 @@
 	var/role_removed = FALSE
 	var/mob/living/innate_body
 	var/list/summon_items = list()
+	var/datum/weakref/personal_codex
 
 	reminded_times_left = 2 // BLUEMOON ADD
 
@@ -114,14 +115,17 @@
 
 	// Да, спавн в null, ничего не перепутано
 	for(var/path in sm_items)
-		if(locate(path) in summon_items)
-			continue
-		if(length(H.GetAllContents(path)))
+		var/obj/item/existing = (locate(path) in summon_items) || (locate(path) in H.GetAllContents(path))
+		if(existing)
+			if(istype(existing, /obj/item/forbidden_book) && !personal_codex?.resolve())
+				personal_codex = WEAKREF(existing)
 			continue
 		var/obj/item/item = new path(null)
 		if(istype(item, /obj/item/living_heart))
 			var/obj/item/living_heart/heart = item
 			heart.bind(owner)
+		else if(istype(item, /obj/item/forbidden_book))
+			personal_codex = WEAKREF(item)
 		summon_items += item
 
 /datum/antagonist/heretic/proc/ecult_give_item(obj/item/item_path, mob/living/carbon/human/H)

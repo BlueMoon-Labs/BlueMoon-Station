@@ -160,10 +160,57 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
-	desc = "Возвращает спрятанный кодекс в руки; повторное применение прячет книгу из вашего инвентаря или с вашей клетки. Оставленную в другом месте книгу сначала нужно подобрать. Звук слышен только вплотную."
+	desc = "Призывает спрятанный кодекс или прячет книгу при вас. Потерянный личный кодекс возвращается после 20 секунд неподвижности; уничтоженный восстанавливается. Книгу в чужом инвентаре, контейнере или действующем обряде вернуть нельзя. Звук слышен только вплотную."
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
-	missing_item_hint = "Кодекс не спрятан за завесой. Подберите оставленную книгу: спрятать можно кодекс из своего инвентаря или с вашей клетки. Если книга утрачена, изготовьте запасную на руне из библии, человеческой кожи, ручки и пары глаз."
+	var/recovery_in_progress = FALSE
+	var/recovery_time = 20 SECONDS
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/can_cast(mob/user, skipcharge, silent)
+	return heretic_check(user, !recovery_in_progress, silent, "Возвращение кодекса уже началось. Не двигайтесь.") && ..()
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/hide_item(obj/item/item, datum/antagonist/heretic/heretic)
+	. = ..()
+	if(!heretic.personal_codex?.resolve())
+		heretic.personal_codex = WEAKREF(item)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/proc/recovery_allowed(mob/living/user, datum/antagonist/heretic/heretic, datum/weakref/original_ref)
+	if(QDELETED(user) || QDELETED(heretic) || heretic.role_removed || IS_HERETIC(user) != heretic || heretic.owner?.current != user || user.incapacitated() || !isturf(user.loc) || !(src in user.mind.spell_list) || heretic.personal_codex != original_ref)
+		return FALSE
+	var/obj/item/forbidden_book/book = original_ref?.resolve()
+	return !book || (isturf(book.loc) && !GLOB.heretic_ritual_reservations[book])
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/recover_missing_item(mob/living/user, datum/antagonist/heretic/heretic)
+	if(recovery_in_progress)
+		return TRUE
+	var/datum/weakref/original_ref = heretic.personal_codex
+	if(!recovery_allowed(user, heretic, original_ref))
+		heretic_revert_cast(user, "Личный кодекс недоступен для возврата. Освободите книгу из чужого инвентаря, контейнера или обряда; запасную можно изготовить на руне из библии, человеческой кожи, ручки и пары глаз.")
+		return TRUE
+	recovery_in_progress = TRUE
+	to_chat(user, span_notice("Вы зовёте личный кодекс. Не двигайтесь [DisplayTimeText(recovery_time)]."))
+	var/completed = do_after(user, recovery_time, target = user, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, original_ref))
+	if(QDELETED(src))
+		return TRUE
+	recovery_in_progress = FALSE
+	if(!completed || !recovery_allowed(user, heretic, original_ref))
+		heretic_revert_cast(user, "Возвращение кодекса прервано: сохраняйте неподвижность, а книга должна оставаться свободной.")
+		return TRUE
+	var/obj/item/forbidden_book/book = original_ref?.resolve()
+	if(!book)
+		var/datum/heretic_path/path = GLOB.heretic_paths[heretic.selected_path]
+		var/book_type = path?.book_type || /obj/item/forbidden_book
+		book = new book_type(null)
+		heretic.personal_codex = WEAKREF(book)
+	hide_item(book, heretic)
+	if(summon_item(book, user))
+		heretic.summon_items -= book
+		heretic.on_codex_summoned()
+		to_chat(user, span_notice("Личный кодекс вернулся. Знания сохранены."))
+	else
+		to_chat(user, span_notice("Кодекс ждёт за завесой. Освободите руку и призовите его снова."))
+	log_game("[key_name(user)] возвращает личный кодекс в [AREACOORD(user)].")
+	return TRUE
 
 /obj/effect/proc_holder/spell/self/heretic_summon/can_cast(mob/user, skipcharge, silent)
 	. = ..()

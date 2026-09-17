@@ -72,6 +72,8 @@
 	if(!heretic.simulated && (!victim.mind || !victim.client))
 		to_chat(user, span_warning("В этом теле нет души, готовой вернуться."))
 		return FALSE
+	if(heretic.simulated && !victim.mind)
+		victim.mind_initialize()
 	if(!path.spend_combat_resource())
 		return FALSE
 	victim.revive(full_heal = TRUE, admin_revive = TRUE)

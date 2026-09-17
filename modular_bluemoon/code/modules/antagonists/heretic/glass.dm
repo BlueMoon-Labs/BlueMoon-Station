@@ -299,11 +299,22 @@
 	return cells
 
 /datum/eldritch_knowledge/base_glass/proc/valid_prism_turf(mob/living/user, turf/place)
-	if(!can_use(user) || !isopenturf(place) || isspaceturf(place) || istype(place, /turf/open/lava) || !ray_tile_open(place, FALSE) || !line_clear(user, place, allow_prisms = TRUE) || length(prisms) >= (ascension_active ? 5 : 3))
-		return FALSE
+	return !prism_placement_failure(user, place)
+
+/datum/eldritch_knowledge/base_glass/proc/prism_placement_failure(mob/living/user, turf/place)
+	if(!can_use(user))
+		return "Способность недоступна вашему пути или текущему телу."
+	if(!isopenturf(place) || isspaceturf(place) || istype(place, /turf/open/lava))
+		return "Выберите клетку открытого пола; космос, стены и лава не подходят."
+	if(length(prisms) >= (ascension_active ? 5 : 3))
+		return "Достигнут предел призм: [ascension_active ? 5 : 3]. Уберите одну или дождитесь её исчезновения."
+	if(!ray_tile_open(place, FALSE))
+		return "Клетка занята плотным предметом или призмой. Выберите свободную клетку."
 	for(var/mob/living/occupant in place)
-		return FALSE
-	return TRUE
+		return "На выбранной клетке стоит живое существо. Выберите свободную клетку."
+	if(!line_clear(user, place, allow_prisms = TRUE))
+		return "До клетки нужна свободная линия не длиннее пяти клеток."
+	return null
 
 /datum/eldritch_knowledge/base_glass/proc/shards(mob/living/user, atom/target)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1185,11 +1196,18 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	if(!glass?.can_use(user))
-		return heretic_check(user, FALSE, silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
+		return heretic_check(user, FALSE, silent, "Способность недоступна вашему пути или текущему телу.")
 	if(istype(target, /obj/structure/heretic_glass_prism))
 		var/obj/structure/heretic_glass_prism/prism = target
-		return heretic_check(user, prism.glass_ref?.resolve() == glass && glass.line_clear(user, prism, allow_prisms = TRUE), silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
-	return heretic_check(user, isturf(target) && glass.combat_resource >= 1 && glass.valid_prism_turf(user, target), silent, "Выберите свою видимую призму либо свободный пол для новой призмы; создание требует 1 осколок.")
+		if(!heretic_check(user, prism.glass_ref?.resolve() == glass, silent, "Поворачивать можно только собственную призму."))
+			return FALSE
+		return heretic_check(user, glass.line_clear(user, prism, allow_prisms = TRUE), silent, "До своей призмы нужна свободная линия не длиннее пяти клеток.")
+	if(!heretic_check(user, isturf(target), silent, "Для новой призмы укажите саму клетку пола."))
+		return FALSE
+	var/reason = glass.prism_placement_failure(user, target)
+	if(!heretic_check(user, !reason, silent, reason))
+		return FALSE
+	return heretic_check(user, glass.combat_resource >= 1, silent, "Для новой призмы нужна 1 грань. Дождитесь восстановления запаса; поворот своей призмы бесплатен.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/shards/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

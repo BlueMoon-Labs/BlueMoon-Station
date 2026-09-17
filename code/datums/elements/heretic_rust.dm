@@ -6,6 +6,9 @@
 	. = ..()
 	if(!isturf(target))
 		return ELEMENT_INCOMPATIBLE
+	var/list/registered_signals = signal_procs?[target]
+	if(registered_signals && (COMSIG_ATOM_ENTERED in registered_signals))
+		return
 	RegisterSignal(target, COMSIG_ATOM_ENTERED, PROC_REF(on_entered))
 	RegisterSignal(target, COMSIG_ATOM_EXITED, PROC_REF(on_exited))
 	for(var/atom/movable/mover in target)

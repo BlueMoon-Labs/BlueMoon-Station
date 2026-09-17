@@ -182,7 +182,10 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		if("recharge")
 			if(charge_counter < charge_max)
 				if(!silent)
-					to_chat(user, still_recharging_msg)
+					if(IS_HERETIC(user))
+						heretic_check(user, FALSE, FALSE, "Перезарядка: осталось [DisplayTimeText(charge_max - charge_counter)].")
+					else
+						to_chat(user, still_recharging_msg)
 				return FALSE
 		if("charges")
 			if(!charge_counter)

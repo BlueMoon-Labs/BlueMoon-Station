@@ -409,11 +409,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create/can_target(atom/target, mob/user, silent)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || !isturf(target) || !knowledge.valid_reflection_turf(target, user))
-		if(!silent)
-			to_chat(user, span_warning("Нужен видимый свободный пол и место для нового отражения."))
-		return FALSE
-	return TRUE
+	return heretic_check(user, knowledge && isturf(target) && knowledge.valid_reflection_turf(target, user), silent, "Укажите саму клетку видимого свободного пола в пяти клетках; стены, космос и занятые клетки не подходят.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
@@ -437,11 +433,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/can_target(atom/target, mob/user, silent)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
-	if(!knowledge || !istype(target, /mob/living/simple_animal/hostile/illusion/heretic_moon) || !knowledge.can_exchange(user, target))
-		if(!silent)
-			to_chat(user, span_warning("Нельзя обменяться с этим отражением: нужен свободный пол и прямая видимость."))
-		return FALSE
-	return TRUE
+	return heretic_check(user, knowledge && istype(target, /mob/living/simple_animal/hostile/illusion/heretic_moon) && knowledge.can_exchange(user, target), silent, "Выберите своё отражение в видимости до пяти клеток. Оба места должны быть свободным полом.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)

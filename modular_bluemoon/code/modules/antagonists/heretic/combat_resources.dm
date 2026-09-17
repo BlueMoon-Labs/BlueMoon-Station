@@ -41,7 +41,8 @@
 			session.last_feedback = "[name]: [reason]"
 		if(COOLDOWN_FINISHED(src, heretic_failure_log))
 			COOLDOWN_START(src, heretic_failure_log, 5 SECONDS)
-			log_game("[key_name(user)] не применяет [name] ([type]): [reason] в [AREACOORD(user)].")
+			var/charge_state = charge_type == "recharge" && charge_counter < charge_max ? " charge=[charge_counter]/[charge_max], recharging=[recharging], processing=[src in SSfastprocess.processing]." : ""
+			log_game("[key_name(user)] не применяет [name] ([type]): [reason] в [AREACOORD(user)].[charge_state]")
 	return FALSE
 
 /obj/effect/proc_holder/spell/proc/heretic_require_knowledge(mob/user, silent, knowledge_type, resource_cost = 0)

@@ -165,6 +165,7 @@
 #include "heretic_lock.dm"
 #include "heretic_tide.dm"
 #include "heretic_glass.dm"
+#include "heretic_log_regressions.dm"
 #include "heretic_blood.dm"
 #include "heretic_echo.dm"
 #include "heretic_sand.dm"
