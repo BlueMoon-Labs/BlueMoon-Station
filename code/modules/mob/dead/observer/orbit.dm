@@ -95,7 +95,7 @@
 	var/list/npcs = list()
 	var/list/ghost_roles = list()
 
-	var/list/pois = getpois(mobs_only = compact_mode, skip_mindless = !compact_mode, specify_dead_role = FALSE)
+	var/list/pois = getpois(mobs_only = compact_mode, skip_mindless = !compact_mode, specify_dead_role = FALSE, sorted = FALSE)
 	for (var/name in pois)
 		var/list/serialized = list()
 		serialized["name"] = name

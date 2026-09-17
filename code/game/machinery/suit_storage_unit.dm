@@ -634,6 +634,21 @@
 		open_machine()
 		dump_contents()
 
+/obj/machinery/suit_storage_unit/Exited(atom/movable/gone, atom/newloc)
+	. = ..()
+	if(gone == suit)
+		suit = null
+	else if(gone == helmet)
+		helmet = null
+	else if(gone == mask)
+		mask = null
+	else if(gone == shoes)
+		shoes = null
+	else if(gone == mod)
+		mod = null
+	else if(gone == storage)
+		storage = null
+
 /obj/machinery/suit_storage_unit/proc/resist_open(mob/user)
 	if(!state_open && occupant && (user in src) && user.stat == CONSCIOUS) // Check they're still here.
 		visible_message(span_notice("You see [user] burst out of [src]!") , \

@@ -40,6 +40,8 @@
 		ADD_TRAIT(src, TRAIT_BLOCK_MEDHUD, "unconscious_obscurity")
 		ADD_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
 		for(var/datum/atom_hud/H in GLOB.all_huds)
+			if(!client || !H.hudusers[src])
+				continue
 			if(istype(H, /datum/atom_hud/data/human/security) || istype(H, /datum/atom_hud/data/human/medical) || istype(H, /datum/atom_hud/data/diagnostic))
 				for(var/atom/movable/A in H.hudatoms)
 					H.remove_from_single_hud(src, A)

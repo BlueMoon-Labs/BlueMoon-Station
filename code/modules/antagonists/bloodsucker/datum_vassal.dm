@@ -72,7 +72,7 @@
 	if(master && master.owner)
 		master.vassals -= src
 		if(owner.enslaved_to == master.owner.current)
-			owner.enslaved_to = null
+			owner.set_enslaved_to(null)
 	// Master Pinpointer
 	owner.current.remove_status_effect(/datum/status_effect/agent_pinpointer/vassal_edition)
 	// Powers

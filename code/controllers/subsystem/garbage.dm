@@ -21,6 +21,8 @@ Note that for any of these tools to work `TESTING` must be defined.
 By using these methods of finding references, you can make your life far, far easier when dealing with `qdel()` failures.
 */
 
+/// Сколько первых warnfail одного типа за раунд получают обход client.images: он стоит ~100 мс без уступки тика.
+#define GC_WARNFAIL_CLIENT_PROBE_PER_TYPE 3
 /// Харддел дороже этого (мс) уходит в harddels.log отдельной строкой: именно такие
 /// одиночные del() и рвут тик (в раунде 9847 их было пять по ~169мс).
 #define GC_HARDDEL_LOG_THRESHOLD_MS 10
@@ -854,7 +856,7 @@ SUBSYSTEM_DEF(garbage)
 				var/mob/leaked_mob = D
 				if (leaked_mob.pending_native_prompts > 0)
 					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
-			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D)]) --")
+			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D, I.warnfail_count <= GC_WARNFAIL_CLIENT_PROBE_PER_TYPE)]) --")
 			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
 			var/datum/gc_failure_viewer/gc_failure_entry/logged_failure = GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
 			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).
@@ -1087,12 +1089,13 @@ SUBSYSTEM_DEF(garbage)
  * забытый STOP_PROCESSING, бакл-связки мобов. Зовётся только на редких warnfail'ах -
  * стоимость не влияет на тик.
  */
-/datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D)
+/datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D, allow_client_probe = TRUE)
 	var/list/notes = list()
-	if (length(D.active_timers))
-		var/datum/timedevent/first_timer = D.active_timers[1]
-		var/timer_desc = istype(first_timer) && first_timer.callBack ? "[first_timer.callBack.delegate]" : "?"
-		notes += "таймеров на датуме: [length(D.active_timers)] (первый: [timer_desc])"
+	// D.active_timers после Destroy всегда null, а таймер чужого датума с D в аргументах
+	// колбека там и не значился - поэтому смотрим колесо целиком.
+	var/timer_holder = SStimer.describe_timer_holding(D)
+	if (timer_holder)
+		notes += "таймер: [timer_holder]"
 	if (D.datum_flags & DF_ISPROCESSING)
 		notes += "DF_ISPROCESSING всё ещё стоит"
 	// datum/Destroy сам снимает все подписки - непустой signal_procs ПОСЛЕ Destroy
@@ -1151,10 +1154,13 @@ SUBSYSTEM_DEF(garbage)
 	//
 	// Гейт ничего не теряет: улика ищется ровно там, где остальные ничего не нашли, а
 	// warnfail с уже названным держателем в ней не нуждается.
-	if (!length(notes))
+	if (!length(notes) && allow_client_probe)
 		var/list/client_hits = find_client_references(D, quiet = TRUE, yield = FALSE)
 		if (length(client_hits))
 			notes += "клиентские держатели ([length(client_hits)]): [client_hits[1]]"
+	// после остальных проб: непустой notes отключил бы их
+	if (SStimer.holder_probe_truncated)
+		notes += "проба таймеров оборвана по лимиту, колесо досмотрено не всё"
 	if (!length(notes))
 		return ""
 	return "; улики: [notes.Join(", ")]"
@@ -1196,6 +1202,9 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 	"pulling",
 	"pulledby",
 	"riding_target",
+	"enemies",          //monkey, hostile - цель лежит ключом списка
+	"Friends",          //slime
+	"friends",          //hostile
 ))
 
 /**
@@ -1222,7 +1231,8 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 			continue
 		var/list/candidate_vars = candidate.vars
 		for (var/var_name in GetMobTargetVarNames(candidate))
-			if (candidate_vars[var_name] != leaked_mob)
+			var/held = candidate_vars[var_name]
+			if (held != leaked_mob && !(islist(held) && (leaked_mob in held)))
 				continue
 			return list("держит [candidate.type] [text_ref(candidate)], вар [var_name]")
 	return list()
@@ -1489,6 +1499,7 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 
 #endif // GC_PROFILER
 
+#undef GC_WARNFAIL_CLIENT_PROBE_PER_TYPE
 #undef GC_HARDDEL_LOG_THRESHOLD_MS
 #undef GC_HARDDEL_LOG_AGGREGATE_INTERVAL
 #undef GC_HARDDEL_LOG_SUMMARY_MAX_TYPES
