@@ -68,33 +68,37 @@
 
 #define ALLOWED_ENGINERING list(/obj/item/t_scanner,\
 								/obj/item/construction/rcd,\
-								/obj/item/pipe_dispenser)
+								/obj/item/pipe_dispenser,)
 
 //тоже самое что и GLOB.security_hardsuit_allowed
 //Используется в: СБ, ГСБ, капитан, БЩ, киберсан, РД хев версия
 #define ALLOWED_SECURITY list(/obj/item/ammo_box,\
 								/obj/item/ammo_casing,\
-								/obj/item/flashlight,\
 								/obj/item/gun,\
 								/obj/item/melee,\
 								/obj/item/reagent_containers/spray,\
 								/obj/item/electrostaff,\
-								/obj/item/restraints,\
-								/obj/item/device/cooler,\
-								/obj/item/tank/internals)
+								/obj/item/restraints,)
 
 #define ALLOWED_MEDICAL list(/obj/item/storage/firstaid,\
 							/obj/item/healthanalyzer,\
 							/obj/item/stack/medical,\
-							/obj/item/gun/medbeam)
+							/obj/item/gun/medbeam,)
 
 #define ALLOWED_SCIENCE list(/obj/item/gun/energy/wormhole_projector,\
 							/obj/item/hand_tele,\
-							/obj/item/aicard)
+							/obj/item/aicard,)
 
 #define ALLOWED_CARGO list(/obj/item/storage/bag/ore,\
 							/obj/item/pickaxe,\
 							/obj/item/resonator,\
-							/obj/item/gun/energy/kinetic_accelerator)
+							/obj/item/gun/energy/kinetic_accelerator,)
 
-#define ALLOWED_ANTAG list(ALLOWED_SECURITY, /obj/item/teleportation_scroll)
+#define ALLOWED_ANTAG list(/obj/item/ammo_box,\
+							/obj/item/ammo_casing,\
+							/obj/item/gun,\
+							/obj/item/melee,\
+							/obj/item/reagent_containers/spray,\
+							/obj/item/electrostaff,\
+							/obj/item/restraints,\
+							/obj/item/teleportation_scroll,)

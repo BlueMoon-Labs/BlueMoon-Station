@@ -53,6 +53,7 @@ GLOBAL_LIST_INIT(mod_themes, setup_mod_themes())
 #define MOD_PART_GLOVES		3
 #define MOD_PART_FEET		4
 #define MOD_PART_CELL 		5
+#define MOD_PART_SELF		6
 
 #define MODPART_DEPLOYED  "deployed"
 #define MODPART_CONSEALED "consealed"
