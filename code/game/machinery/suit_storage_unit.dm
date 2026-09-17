@@ -63,6 +63,7 @@
 	suit_type = /obj/item/clothing/suit/space/eva
 	helmet_type = /obj/item/clothing/head/helmet/space/eva
 	mask_type = /obj/item/clothing/mask/breath
+	mod_type = /obj/item/mod/control/pre_equipped
 
 /obj/machinery/suit_storage_unit/captain
 	suit_type = /obj/item/clothing/suit/space/hardsuit/captain
@@ -419,6 +420,7 @@
 			else
 				if (occupant)
 					var/mob/living/mob_occupant = occupant
+					playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50)
 					to_chat(mob_occupant, span_userdanger("[capitalize(src.name)] confines grow warm, then hot, then scorching. You're being burned [!mob_occupant.stat ? "alive" : "away"]!"))
 				cook()
 		if ("lock", "unlock")

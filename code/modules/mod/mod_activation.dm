@@ -18,8 +18,6 @@
 
 	if(!istype(part) || user.incapacitated())
 		return
-	// Из alist вычитается КЛЮЧ, а не значение, поэтому прежнее `mod_parts - part`
-	// не исключало выбранную часть и она попадала в проверку остальных.
 	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
 	if(part.loc != user)
 		deploy(user, part)
@@ -39,23 +37,14 @@
 /// Deploys a part of the suit onto the user.
 /obj/item/mod/control/proc/deploy(mob/user, part)
 	var/obj/item/clothing/mod_part/piece = part
-	var/obj/item/item_in_slot
+	var/obj/item/target_item = wearer.s_store
 
-	if(is_welded())
-		return balloon_alert(user, "Заварено!")
-
-	if(!piece.conseal_to_overslot()) //скрывает одежду внутрь переменной элемента МОДа
-		balloon_alert(wearer, "ОШИБКА")
-		return to_chat(wearer, span_alertwarning("У вас не получилось развернуть поверх вашей текущей одежды элемент МОДа."))
-
-	if(piece.slot_flags == ITEM_SLOT_OCLOTHING)
-		item_in_slot = wearer.s_store
+	if(!check_welded_or_locked() || !check_can_conseal_to_overslot(piece))
+		return FALSE
 
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		piece.notify_user(FALSE, user)
-
-		if(item_in_slot)
-			wearer.equip_to_slot_if_possible(item_in_slot, ITEM_SLOT_SUITSTORE)
+		equip_suit_store_item_if_it_possible(piece, target_item)
 		return TRUE
 
 	else if(piece.loc != src)
@@ -73,7 +62,7 @@
 /obj/item/mod/control/proc/conceal(mob/user, part, force = FALSE)
 	if(is_welded() && !force)
 		return balloon_alert(user, "Заварено!")
-	if(!theme?.can_activate_without_deploy_all_parts && is_active())
+	if(!force && !theme?.can_activate_without_deploy_all_parts && is_active())
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return balloon_alert(user, "Отключите костюм!")
 	var/obj/item/clothing/mod_part/piece = part
@@ -88,15 +77,15 @@
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(!can_activate() && !is_active())
-		balloon_alert(wearer, "Разверните костюм!")
-		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
+	if(!can_activate() && !is_active())
+		balloon_alert(wearer, "Разверните костюм!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		return
 	if(!force_deactivate && (SEND_SIGNAL(src, COMSIG_MOD_ACTIVATE, user) & MOD_CANCEL_ACTIVATE))
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
@@ -125,10 +114,7 @@
 		to_chat(ai, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
 
 	if(force_deactivate)
-		for(var/index in mod_parts)
-			if(index == MOD_PART_CELL)
-				continue
-			var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+		for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
 			MOD_PART.seal_part(seal = FALSE)
 			conceal(user, MOD_PART)
 		finish_activation(on = FALSE)
@@ -138,10 +124,7 @@
 			send_modsuit_message(ai, "ОТКЛЮЧЕНИЕ", "<b>СИСТЕМЫ ДЕАКТИВИРОВАНЫ. ПРОЩАЙТЕ: \"[ai]\"</b>")
 		playsound(src, 'sound/machines/synth_no.ogg', 50, TRUE, SHORT_RANGE_SOUND_EXTRARANGE, frequency = 6000)
 		return TRUE
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
 		if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 			to_chat(wearer, span_notice("[MOD_PART.name] [is_active() ? pick(MOD_PART.unseal_message) : pick(MOD_PART.seal_message)]."))
 			playsound(src, 'sound/mecha/mechmove03.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
@@ -164,10 +147,7 @@
 	return TRUE
 
 /obj/item/mod/control/proc/toggle_activate_fail()
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/MOD_PART = get_mod_part_by_index(index)
+	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
 		MOD_PART.seal_part(TRUE)
 	to_chat(wearer, span_warning("[is_active() ? "Shut down" : "Start up"] cancelled."))
 	finish_activation(on = is_active())
@@ -200,7 +180,6 @@
 	update_speed()
 	update_icon_state()
 
-	// Костюм деактивируют и без носителя (разбор, крио, force_deactivate).
 	wearer?.update_inv_back()
 
 /obj/item/mod/control/update_icon_state()
@@ -209,17 +188,11 @@
 
 /obj/item/mod/control/proc/quick_activation()
 	var/seal = TRUE
-	// `as anything in mod_parts` отдавал КЛЮЧИ alist (числа 1-5) и передавал их в
-	// deploy() под видом частей - развёртывание костюма из аутфита не работало.
 	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
 		if(!deploy(null, part))
 			seal = FALSE
 	if(!seal)
 		return
-	// Слот батареи тоже лежит в mod_parts, а seal_part() у неё нет.
 	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		part.seal_part(TRUE)
 	finish_activation(on = TRUE)
-
-/obj/item/mod/control/proc/has_wearer()
-	return wearer

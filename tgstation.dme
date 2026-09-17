@@ -3618,6 +3618,7 @@
 #include "code\modules\mod\mod_construction.dm"
 #include "code\modules\mod\mod_control.dm"
 #include "code\modules\mod\mod_types.dm"
+#include "code\modules\mod\_mod_misc\mod_misc_procs.dm"
 #include "code\modules\mod\mod_customizing\mod_effects.dm"
 #include "code\modules\mod\mod_customizing\mod_hardlight.dm"
 #include "code\modules\mod\mod_customizing\mod_paint.dm"

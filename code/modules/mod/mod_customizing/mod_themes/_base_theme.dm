@@ -42,7 +42,7 @@
 	/// Theme used by the MOD TGUI.
 	var/ui_theme = "ntos"
 	/// Allowed items in the chestplate's suit storage.
-	var/list/allowed = list(/obj/item/flashlight, /obj/item/tank/internals)
+	var/list/allowed = ALLOWED_DEFAULT
 	/// List of inbuilt modules. These are different from the pre-equipped suits, you should mainly use these for unremovable modules with 0 complexity.
 	var/list/inbuilt_modules = list()
 	/// Modules blacklisted from the MOD.
@@ -52,6 +52,7 @@
 	var/max_armor_module_count = 2
 	var/can_activate_without_deploy_all_parts = TRUE
 	var/need_block_storage_when_not_active = FALSE
+	var/compatible_with_armor_modules = TRUE
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = MOD_PRESET_DEFAULT,
@@ -59,30 +60,8 @@
 		"lustwish" = MOD_PRESET_DEFAULT,
 		)
 
-/datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin)
-	modsuit.extended_desc = extended_desc
-	modsuit.slowdown_inactive = slowdown_inactive
-	modsuit.slowdown_active = slowdown_active
-	modsuit.complexity_max = complexity_max
-	modsuit.skin = new_skin || default_skin
-	modsuit.ui_theme = ui_theme
-	modsuit.cell_drain = cell_drain
-	modsuit.initial_modules += inbuilt_modules
-	modsuit.hardlight_effect = new hardlight_effect
-	modsuit.max_armor_module_count = max_armor_module_count
-	var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
-	mod_effect.apply_color(hardlight_color)
-	for(var/index in (modsuit.mod_parts + list(modsuit)))
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/piece
-
-		if(index != modsuit)
-			piece = modsuit.mod_parts[index]
-		else
-			piece = modsuit
-		piece.name = "[name] [piece.name]"
-		piece.desc = "[piece.desc] [desc]"
+/datum/mod_theme/proc/apply_theme_stats(obj/item/mod/control/modsuit, new_skin)
+	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
 		piece.armor = getArmor(arglist(armor))
 		piece.resistance_flags = resistance_flags
 		piece.heat_protection = NONE
@@ -91,6 +70,32 @@
 		piece.min_cold_protection_temperature = min_cold_protection_temperature
 		piece.permeability_coefficient = permeability_coefficient
 		piece.siemens_coefficient = siemens_coefficient
+
+	var/obj/item/clothing/mod_part/suit/chestplate = modsuit.get_chestplate()
+	chestplate.allowed += allowed
+
+/datum/mod_theme/proc/apply_theme_skin(obj/item/mod/control/modsuit, new_skin)
+	modsuit.skin = new_skin || default_skin
+	modsuit.ui_theme = ui_theme
+	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
+		piece.name = "[name] [piece.name]"
+		piece.desc = "[piece.desc] [desc]"
 		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
 		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
+
+/datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin, need_update_stat = TRUE)
+	apply_theme_skin(modsuit, new_skin)
+	if(!need_update_stat)
+		return TRUE
+	modsuit.extended_desc = extended_desc
+	modsuit.slowdown_inactive = slowdown_inactive
+	modsuit.slowdown_active = slowdown_active
+	modsuit.complexity_max = complexity_max
+	modsuit.cell_drain = cell_drain
+	modsuit.initial_modules += inbuilt_modules
+	modsuit.hardlight_effect = new hardlight_effect
+	modsuit.max_armor_module_count = max_armor_module_count
+	var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
+	mod_effect.apply_color(hardlight_color)
+	apply_theme_stats(modsuit, new_skin)
 	return TRUE

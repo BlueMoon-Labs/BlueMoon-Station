@@ -275,7 +275,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
-	armor = list(MELEE = 60, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
+	armor = list(MELEE = 60, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
 	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	blocks_shove_knockdown = TRUE
 	mutantrace_variation = STYLE_DIGITIGRADE
@@ -315,7 +315,7 @@
 	icon_state = "bulletproof"
 	item_state = "armor"
 	blood_overlay_type = "armor"
-	armor = list(MELEE = 15, BULLET = 60, LASER = 10, ENERGY = 10, BOMB = 40, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 20)
+	armor = list(MELEE = 35, BULLET = 60, LASER = 20, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
 	strip_delay = 70

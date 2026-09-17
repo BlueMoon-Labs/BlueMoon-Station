@@ -23,9 +23,6 @@
 	return ..()
 
 /datum/action/item_action/mod/Remove(mob/user)
-	// Фильтр "ИИ-действие снимается только с ИИ" нужен живому костюму: при сносе
-	// (свой qdel или qdel костюма, у которого ai уже занулен) снимать надо безусловно,
-	// иначе действие остаётся в owner.actions с живой кнопкой и держит костюм.
 	if(!QDELING(src) && !QDELETED(mod))
 		if(ai_action && user != mod.ai)
 			return
@@ -121,13 +118,14 @@
 
 /datum/action/cooldown/module_action/New(Target, obj/item/mod/module/module)
 	. = ..()
-	linked_module = module //лишние проверки ставить нет смысла
+	linked_module = module
+	name = linked_module?.name
 	cooldown_time = linked_module?.cooldown_time
-	button_icon_state = module.icon_state
+	button_icon_state = linked_module?.icon_state
 
 /datum/action/cooldown/module_action/Destroy()
 	. = ..()
-	linked_module = null //модуль дальше уже сам себя qdel-нет и action вместе с ним.
+	linked_module = null
 
 /datum/action/cooldown/module_action/Trigger(trigger_flags, atom/target)
 	. = ..()

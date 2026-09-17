@@ -64,9 +64,7 @@
 	dir = 8;
 	volume_rate = 200
 	},
-/turf/open/floor/plating{
-	icon_state = "platingdmg3"
-	},
+/turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "aQ" = (
 /obj/effect/turf_decal/siding/red{
@@ -174,7 +172,7 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "by" = (
 /obj/structure/sign/departments/medbay/alt,
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "bF" = (
 /obj/structure/cable{
@@ -202,7 +200,7 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "bS" = (
 /obj/machinery/status_display/syndie,
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "bU" = (
 /obj/machinery/door/firedoor,
@@ -400,7 +398,7 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "dV" = (
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "eb" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
@@ -1237,7 +1235,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "ni" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
@@ -1765,7 +1763,7 @@
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "sD" = (
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation_shower)
 "sR" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
@@ -2145,7 +2143,7 @@
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "xu" = (
 /obj/structure/sign/poster/contraband/random,
-/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "xv" = (
 /obj/machinery/portable_atmospherics/canister/nitrogen,

@@ -157,7 +157,7 @@
 	с огромной силой высвободить накопленный безвредный газ, чтобы отправить пользователя в непродолжительный\
 	полет. Работает как в атмосфере, так и в космосе, благодаря встроенным бакам. Несовместим с джетпаком, потому что \
 	крепится ровно туда же."
-	incompatible_modules = list(/obj/item/mod/module/jetpack)
+	incompatible_modules = list(/obj/item/mod/module/jetpack, /obj/item/mod/module/jump_jet)
 	module_type = MODULE_USABLE
 	cooldown_time = 10 SECONDS
 	required_modpart_index = MOD_PART_FEET
@@ -170,6 +170,8 @@
 
 /obj/item/mod/module/jump_jet/on_use()
 	. = ..()
+	if(!.)
+		return
 	var/turf/start_from = mod.wearer.loc
 	if(mod.wearer.body_position == LYING_DOWN)
 		balloon_alert(mod.wearer, "Нужна опора!")
