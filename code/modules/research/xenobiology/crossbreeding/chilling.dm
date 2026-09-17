@@ -8,6 +8,7 @@ Chilling extracts:
 	desc = "It's cold to the touch, as if frozen solid."
 	effect = "chilling"
 	icon_state = "chilling"
+	var/list/allies
 
 /obj/item/slimecross/chilling/Initialize(mapload)
 	. = ..()
@@ -22,6 +23,20 @@ Chilling extracts:
 	playsound(src, 'sound/effects/bubbles.ogg', 50, 1)
 	playsound(src, 'sound/effects/glassbr1.ogg', 50, 1)
 	do_effect(user)
+
+/// Привязка моба к экстракту (bluespace, sepia): запись снимается и при удалении моба.
+/obj/item/slimecross/chilling/proc/toggle_ally(mob/living/target)
+	if(target in allies)
+		allies -= target
+		UnregisterSignal(target, COMSIG_PARENT_QDELETING)
+		return FALSE
+	LAZYADD(allies, target)
+	RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_ally_qdeleting))
+	return TRUE
+
+/obj/item/slimecross/chilling/proc/on_ally_qdeleting(mob/living/gone)
+	SIGNAL_HANDLER
+	allies -= gone
 
 /obj/item/slimecross/chilling/proc/do_effect(mob/user) //If, for whatever reason, you don't want to delete the extract, don't do ..()
 	qdel(src)
@@ -131,18 +146,16 @@ Chilling extracts:
 
 /obj/item/slimecross/chilling/bluespace
 	colour = "bluespace"
-	var/list/allies = list()
+	allies = list()
 	var/active = FALSE
 
 /obj/item/slimecross/chilling/bluespace/afterattack(atom/target, mob/user, proximity)
 	if(!proximity || !isliving(target) || active)
 		return
-	if(target in allies)
-		allies -= target
+	if(!toggle_ally(target))
 		to_chat(user, "<span class='notice'>You unlink [src] with [target].</span>")
 		to_chat(target, "<span class='notice'>You feel unlinked with [src].</span>")
 	else
-		allies |= target
 		to_chat(user, "<span class='notice'>You link [src] with [target].</span>")
 		to_chat(target, "<span class='warning'>You feel linked with [src].</span>")
 	return
@@ -172,16 +185,14 @@ Chilling extracts:
 
 /obj/item/slimecross/chilling/sepia
 	colour = "sepia"
-	var/list/allies = list()
+	allies = list()
 
 /obj/item/slimecross/chilling/sepia/afterattack(atom/target, mob/user, proximity)
 	if(!proximity || !isliving(target))
 		return
-	if(target in allies)
-		allies -= target
+	if(!toggle_ally(target))
 		to_chat(user, "<span class='notice'>You unlink [src] with [target].</span>")
 	else
-		allies |= target
 		to_chat(user, "<span class='notice'>You link [src] with [target].</span>")
 	return
 
