@@ -95,19 +95,34 @@
 	desc = "Она недовольна."
 
 /obj/effect/hallucination/simple/your_mother/Initialize(mapload, mob/living/carbon/hallucinator)
+	var/flat_outfit
+	var/datum/preferences/flat_prefs
 	if(ishuman(hallucinator) && !isplasmaman(hallucinator))
-		image_icon = get_flat_human_icon(null, null, hallucinator.client?.prefs, DUMMY_HUMAN_SLOT_HALLUCINATION, list(SOUTH), /datum/outfit/yourmother)
-		image_state = ""
+		flat_outfit = /datum/outfit/yourmother
+		flat_prefs = hallucinator.client?.prefs
 	else if(isplasmaman(hallucinator))
 		image_icon = 'icons/turf/floors.dmi'
 		image_state = "liquidplasma"
 	else if(istype(hallucinator, /mob/living/simple_animal/pet/dog/corgi/Ian))
-		image_icon = get_flat_human_icon(null, null, null, DUMMY_HUMAN_SLOT_HALLUCINATION, list(SOUTH), /datum/outfit/job/hop)
-		image_state = ""
+		flat_outfit = /datum/outfit/job/hop
 		name = "Глава персонала"
 	else
 		image_icon = hallucinator.icon
 		image_state = hallucinator.icon_state
 		px = hallucinator.pixel_x
 		py = hallucinator.pixel_y
-	return ..()
+	if(flat_outfit)
+		image_icon = 'icons/effects/effects.dmi'
+		image_state = "nothing"
+	. = ..()
+	// get_flat_human_icon уступает тик, а Initialize спать нельзя
+	if(flat_outfit && . != INITIALIZE_HINT_QDEL)
+		INVOKE_ASYNC(src, PROC_REF(render_flat_image), flat_prefs, flat_outfit)
+
+/obj/effect/hallucination/simple/your_mother/proc/render_flat_image(datum/preferences/flat_prefs, flat_outfit)
+	var/icon/flat_icon = get_flat_human_icon(null, null, flat_prefs, DUMMY_HUMAN_SLOT_HALLUCINATION, list(SOUTH), flat_outfit)
+	if(QDELETED(src))
+		return
+	image_icon = flat_icon
+	image_state = ""
+	Show()
