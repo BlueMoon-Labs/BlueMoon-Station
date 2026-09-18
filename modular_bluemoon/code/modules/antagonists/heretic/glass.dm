@@ -7,6 +7,7 @@
 #define HERETIC_GLASS_SPLIT_DAMAGE 24
 #define HERETIC_GLASS_REFRACTION_BONUS 6
 #define HERETIC_GLASS_BARRIER_REFLECTIONS 2
+#define HERETIC_GLASS_BARRIER_LIMIT 2
 #define HERETIC_GLASS_REFLECTION_WEAR 15
 
 /datum/heretic_path/glass
@@ -38,7 +39,7 @@
 	result_atoms = list(/obj/item/melee/sickly_blade/glass)
 	combat_resource = 2
 	combat_resource_name = "Грани"
-	combat_resource_desc = "Начальный запас 2 из 4. Призма или защитная преграда стоят одну грань. Восстановление — одна каждые 4 секунды, после вознесения каждые 2. Лучи бесплатны и ограничены перезарядкой. Смерть и смена тела рассыпают запас, призмы и подготовленные лучи."
+	combat_resource_desc = "Начальный запас 2 из 4. Призма или защитная преграда стоят одну грань. Восстановление — одна каждые 4 секунды, после вознесения каждые 2; взрыв Метки Стекла клинком даёт ещё одну. Лучи бесплатны и ограничены перезарядкой. Смерть и смена тела рассыпают запас, призмы и подготовленные лучи."
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	grasp_visual = /obj/effect/temp_visual/heretic_glass/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/glass_grasp.ogg'
@@ -134,7 +135,8 @@
 	return data
 
 /datum/eldritch_knowledge/base_glass/on_mark_detonated(mob/living/user, mob/living/target)
-	return
+	if(can_use(user) && isturf(target?.loc) && heretic_can_affect(user, target, chargecost = 0))
+		gain_combat_resource()
 
 /datum/eldritch_knowledge/base_glass/on_life(mob/user)
 	if(!can_use(user) || !COOLDOWN_FINISHED(src, facet_regeneration))
@@ -183,14 +185,16 @@
 	var/list/first_path = list(start)
 	if(source_prism)
 		first_nodes += list(prism_snapshot(source_prism))
-	if(source_prism && (!aimed_turf || source_prism.split))
-		var/output_facing = aimed_turf ? get_dir(start, aimed_turf) : source_prism.dir
-		for(var/output_dir in source_prism.output_directions(output_facing))
+	if(source_prism && !aimed_turf)
+		for(var/output_dir in source_prism.output_directions())
 			queue += list(list("place" = start, "dir" = output_dir, "path" = first_path.Copy(), "nodes" = first_nodes.Copy(), "split" = source_prism.split))
 	else
 		var/aim_delta_x = aimed_turf ? aimed_turf.x - start.x : 0
 		var/aim_delta_y = aimed_turf ? aimed_turf.y - start.y : 0
-		queue += list(list("place" = start, "dir" = direction, "path" = first_path, "nodes" = first_nodes, "split" = FALSE, "aim_delta_x" = aim_delta_x, "aim_delta_y" = aim_delta_y))
+		queue += list(list("place" = start, "dir" = direction, "path" = first_path.Copy(), "nodes" = first_nodes.Copy(), "split" = FALSE, "aim_delta_x" = aim_delta_x, "aim_delta_y" = aim_delta_y))
+		if(source_prism?.split)
+			var/list/split_outputs = source_prism.output_directions(get_dir(start, aimed_turf))
+			queue += list(list("place" = start, "dir" = split_outputs[1], "path" = first_path.Copy(), "nodes" = first_nodes.Copy(), "split" = TRUE))
 	var/cell_budget = ascension_active ? 18 : 12
 	var/refraction_limit = ascension_active ? 5 : 3
 	while(length(queue) && cell_budget > 0)
@@ -335,7 +339,7 @@
 	return TRUE
 
 /datum/eldritch_knowledge/base_glass/proc/valid_barrier_turf(mob/living/user, turf/place)
-	if(!can_use(user) || !isopenturf(place) || isspaceturf(place) || istype(place, /turf/open/lava) || !line_clear(user, place) || length(barriers) >= 2)
+	if(!can_use(user) || !isopenturf(place) || isspaceturf(place) || istype(place, /turf/open/lava) || !line_clear(user, place) || length(barriers) >= HERETIC_GLASS_BARRIER_LIMIT)
 		return FALSE
 	for(var/mob/living/occupant in place)
 		return FALSE
@@ -698,7 +702,7 @@
 
 /obj/structure/heretic_glass_prism
 	name = "refracting prism"
-	desc = "Стеклянный узел на тонкой оправе. При выстреле создателя в цель связанные призмы целятся в выбранную клетку; выстрел в призму запускает общий залп по стрелкам. Связь требует свободной линии до соседнего узла в пяти клетках. В раздвоенном режиме выходят два луча под углом 45°. Прочность 75; призму можно разбить или разрушить нулевым жезлом."
+	desc = "Стеклянный узел на тонкой оправе. При выстреле создателя в цель связанные призмы целятся в выбранную клетку; выстрел в призму запускает общий залп по стрелкам. Связь требует свободной линии до соседнего узла в пяти клетках. В раздвоенном режиме при выстреле в цель один луч идёт точно в выбранную клетку, второй отходит на 45°; при выстреле в призму оба луча расходятся от стрелки на 45°. Прочность 75; призму можно разбить или разрушить нулевым жезлом."
 	icon = 'modular_bluemoon/icons/obj/heretic_glass_effects.dmi'
 	icon_state = "glass_prism"
 	density = TRUE
@@ -868,7 +872,7 @@
 
 /obj/item/heretic_path_relic/glass
 	name = "widow's prism"
-	desc = "Ручная линза в потемневшей оправе. Щёлкните ею по своей призме в пяти клетках, чтобы переключить один луч или два под углом 45°. При выстреле в цель они расходятся от направления на выбранную клетку; при выстреле в призму — от её стрелки. Применение в руке выбирает ближайшую призму. Раздвоенный свет наносит 30 ушибов вместо 36. Перезарядка переключения 5 секунд."
+	desc = "Ручная линза в потемневшей оправе. Щёлкните ею по своей призме в пяти клетках, чтобы переключить один луч или два. При выстреле в цель первый луч идёт точно в выбранную клетку с полным уроном, второй отходит от него на 45°; при выстреле в призму оба расходятся от её стрелки на 45°. Применение в руке выбирает ближайшую призму. Отклонённый луч наносит 30 ушибов вместо 36. Перезарядка переключения 5 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_glass.dmi'
 	icon_state = "glass_relic"
 
@@ -990,7 +994,7 @@
 
 /datum/eldritch_knowledge/glass_mark
 	name = "Метка Стекла"
-	desc = "Хватка Мансуса оставляет метку на 15 секунд. Удар стеклянного клинка взрывает её: 8 ушибов и стеклянные трещины на 12 секунд. Трещины подготавливают цель к преломлённым лучам; метка не создаёт строительного ресурса."
+	desc = "Хватка Мансуса оставляет метку на 15 секунд. Удар стеклянного клинка взрывает её: 8 ушибов и стеклянные трещины на 12 секунд. Трещины подготавливают цель к преломлённым лучам, а взрыв метки по живому врагу даёт одну грань."
 	gain_text = "Трещина обогнула сердце и замкнулась. Стекло ждало первого удара."
 	cost = 2
 	route = PATH_GLASS
@@ -1012,7 +1016,7 @@
 
 /datum/eldritch_knowledge/glass_relic
 	name = "Призма вдовы"
-	desc = "Лист стекла и лист серебра создают ручную линзу. Щелчок ею по своей призме в пяти клетках переключает один луч или два под углом 45°. При выстреле в цель они расходятся от направления на выбранную клетку; при выстреле в призму — от её стрелки. Применение в руке выбирает ближайшую призму. Раздвоенный свет наносит 30 ушибов вместо 36; каждая цель получает урон один раз за залп. Перезарядка 5 секунд, можно иметь одну линзу."
+	desc = "Лист стекла и лист серебра создают ручную линзу. Щелчок ею по своей призме в пяти клетках переключает один луч или два. При выстреле в цель первый луч идёт точно в выбранную клетку с полным уроном, второй отходит от него на 45°; при выстреле в призму оба расходятся от её стрелки на 45°. Применение в руке выбирает ближайшую призму. Отклонённый луч наносит 30 ушибов вместо 36; каждая цель получает урон один раз за залп. Перезарядка 5 секунд, можно иметь одну линзу."
 	gain_text = "Вдова держала призму перед свечой. На стене горели три огня, и ни один не грел."
 	cost = 1
 	route = PATH_GLASS
@@ -1171,7 +1175,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_glass/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return heretic_check(user, glass?.can_use(user) && glass.line_clear(user, target), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
+	return heretic_check(user, glass?.can_use(user) && glass.line_clear(user, target), silent, "Проверьте свободный пол, запас граней и прямую видимость цели.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release
 	name = "Преломлённый луч"
@@ -1183,7 +1187,11 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/destination = get_turf(target)
-	return heretic_check(user, glass?.can_use(user) && destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range && (!isliving(target) || heretic_can_affect(user, target, chargecost = 0)), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.", target = target)
+	if(!heretic_check(user, glass?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу."))
+		return FALSE
+	if(!heretic_check(user, destination && destination != get_turf(user) && destination.z == user.z && get_dist(user, destination) <= range, silent, "Выберите цель или клетку не дальше пяти клеток от вас. Грани для луча не нужны."))
+		return FALSE
+	return heretic_check(user, !isliving(target) || heretic_can_affect(user, target, chargecost = 0), silent, "Луч не заденет эту цель: она мертва или защищена от магии.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/release/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1229,7 +1237,11 @@
 /obj/effect/proc_holder/spell/pointed/heretic_glass/barrier/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_glass/glass = heretic?.get_knowledge(/datum/eldritch_knowledge/base_glass)
-	return heretic_check(user, isturf(target) && glass?.combat_resource >= 1 && glass.valid_barrier_turf(user, target), silent, "Проверьте свободный пол, запас осколков и прямую видимость цели.")
+	if(!heretic_check(user, glass?.combat_resource >= 1, silent, "Для преграды нужна 1 грань. Дождитесь восстановления запаса."))
+		return FALSE
+	if(!heretic_check(user, length(glass.barriers) < HERETIC_GLASS_BARRIER_LIMIT, silent, "Уже стоят две преграды. Уберите одну рукой или дождитесь, пока она исчезнет."))
+		return FALSE
+	return heretic_check(user, isturf(target) && glass.valid_barrier_turf(user, target), silent, "Укажите свободный пол без существ не дальше пяти клеток по прямой линии; космос и лава не подходят.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_glass/barrier/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -1281,4 +1293,5 @@
 #undef HERETIC_GLASS_SPLIT_DAMAGE
 #undef HERETIC_GLASS_REFRACTION_BONUS
 #undef HERETIC_GLASS_BARRIER_REFLECTIONS
+#undef HERETIC_GLASS_BARRIER_LIMIT
 #undef HERETIC_GLASS_REFLECTION_WEAR

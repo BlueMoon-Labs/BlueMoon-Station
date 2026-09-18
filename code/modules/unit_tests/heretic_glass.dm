@@ -1,4 +1,4 @@
-/// Клинок и метка не создают строительный ресурс; восстановление имеет отдельную задержку.
+/// Хватка не создаёт грани, взрыв метки даёт одну, восстановление имеет отдельную задержку.
 /datum/unit_test/heretic_glass_combat_cycle/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
@@ -21,7 +21,7 @@
 	blade.afterattack(victim, user, TRUE, null)
 	user.a_intent = INTENT_HARM
 	blade.attack(victim, user)
-	TEST_ASSERT_EQUAL(glass.combat_resource, 2, "Настоящий удар и детонация тоже не дают граней.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 3, "Взрыв метки настоящим ударом даёт одну грань.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/glass), "Удар клинком расходует метку.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force - 8) < 0.01, "Усиление луча не превращается в лишний клинковый урон.")
 	var/damage_before = victim.getBruteLoss()
@@ -29,6 +29,7 @@
 	var/datum/heretic_glass_attack/attack = glass.attacks[1]
 	attack.resolve()
 	TEST_ASSERT(abs(victim.getBruteLoss() - damage_before - 44) < 0.01, "Прямой луч получает усиленные трещины без призмы.")
+	glass.combat_resource = 2
 	COOLDOWN_RESET(glass, facet_regeneration)
 	glass.on_life(user)
 	TEST_ASSERT_EQUAL(glass.combat_resource, 3, "Пассивное восстановление даёт одну строительную грань.")
@@ -766,7 +767,7 @@
 	TEST_ASSERT_EQUAL(first_lane.getBruteLoss(), 0, "Уничтоженная призма не исполняет старое предупреждение.")
 	TEST_ASSERT(abs(second_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Независимая призма сохраняет свой залп.")
 
-/// Раздвоение следует выбранному направлению и сохраняет меньший урон боковых лучей.
+/// Раздвоенная призма при выстреле в цель бьёт по ней полным лучом, а второй луч отходит на 45°.
 /datum/unit_test/heretic_glass_aimed_split/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
@@ -778,13 +779,15 @@
 	TEST_ASSERT(glass.shards(user, locate(user.x, user.y + 2, user.z)), "Призма изначально направлена от цели.")
 	var/obj/structure/heretic_glass_prism/prism = glass.prisms[1]
 	prism.toggle_split()
+	var/mob/living/aimed = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y + 2, user.z))
 	var/mob/living/upper = allocate(/mob/living/carbon/human, get_step(prism, NORTHEAST))
-	var/mob/living/lower = allocate(/mob/living/carbon/human, get_step(prism, SOUTHEAST))
-	TEST_ASSERT(glass.release(user, locate(user.x + 4, user.y + 2, user.z)), "Сеть наводится на восток.")
+	var/obj/cover = allocate(/obj, locate(user.x + 1, user.y + 1, user.z))
+	cover.density = TRUE
+	TEST_ASSERT(glass.release(user, aimed), "Сеть наводится на цель на востоке.")
 	var/datum/heretic_glass_attack/attack = glass.attacks[1]
 	attack.resolve()
-	TEST_ASSERT(abs(upper.getBruteLoss() - 30) <= DAMAGE_PRECISION, "Верхний луч расходится от нового направления.")
-	TEST_ASSERT(abs(lower.getBruteLoss() - 30) <= DAMAGE_PRECISION, "Нижний луч не получает урон цельного преломления.")
+	TEST_ASSERT(abs(aimed.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Раздвоенная призма попадает в выбранную цель полным преломлённым лучом.")
+	TEST_ASSERT(abs(upper.getBruteLoss() - 30) <= DAMAGE_PRECISION, "Второй луч отходит на 45° с уменьшенным уроном.")
 	TEST_ASSERT(prism.split && prism.dir == WEST, "Залп не меняет сохранённые настройки призмы.")
 
 /// Сеть не подключает чужие призмы и не передаёт залп через промежуток больше пяти клеток.
