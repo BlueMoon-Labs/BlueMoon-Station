@@ -1,6 +1,6 @@
 /mob/living/simple_animal/hostile/eldritch
-	name = "демон"
-	real_name = "демон"
+	name = "demon"
+	real_name = "demon"
 	desc = ""
 	gender = NEUTER
 	mob_biotypes = NONE
@@ -52,8 +52,8 @@
 		AddSpell(new spell())
 
 /mob/living/simple_animal/hostile/eldritch/raw_prophet
-	name = "сырой пророк"
-	real_name = "сырой пророк"
+	name = "raw prophet"
+	real_name = "raw prophet"
 	desc = "Чудовище, сшитое из отрубленных конечностей."
 	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "raw_prophet"
@@ -121,8 +121,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/armsy
-	name = "ужас ночи"
-	real_name = "многорукий ужас"
+	name = "terror of the night"
+	real_name = "many-armed horror"
 	desc = "Чудовище, сшитое из отрубленных конечностей."
 	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "armsy_start"
@@ -291,8 +291,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/armsy/prime
-	name = "повелитель ночи"
-	real_name = "повелитель распада"
+	name = "lord of the night"
+	real_name = "lord of decay"
 	maxHealth = 800
 	health = 800
 	melee_damage_lower = 20
@@ -330,8 +330,8 @@
 
 
 /mob/living/simple_animal/hostile/eldritch/rust_spirit
-	name = "ржавый ходок"
-	real_name = "ржавый ходок"
+	name = "rust walker"
+	real_name = "rust walker"
 	desc = "Непостижимое чудовище, вытягивающее жизнь из всего вокруг."
 	icon_state = "rust_walker_s"
 	status_flags = CANPUSH
@@ -365,8 +365,8 @@
 	return ..()
 
 /mob/living/simple_animal/hostile/eldritch/ash_spirit
-	name = "пепельный дух"
-	real_name = "пепельный дух"
+	name = "ash spirit"
+	real_name = "ash spirit"
 	desc = "Непостижимое чудовище, вытягивающее жизнь из всего вокруг."
 	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "ash_walker"
@@ -380,8 +380,8 @@
 	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash,/obj/effect/proc_holder/spell/pointed/cleave/long,/obj/effect/proc_holder/spell/aoe_turf/fire_cascade)
 
 /mob/living/simple_animal/hostile/eldritch/stalker
-	name = "плотяной преследователь"
-	real_name = "плотяной преследователь"
+	name = "flesh stalker"
+	real_name = "flesh stalker"
 	desc = "Чудовище, сшитое из отрубленных конечностей."
 	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	icon_state = "stalker"

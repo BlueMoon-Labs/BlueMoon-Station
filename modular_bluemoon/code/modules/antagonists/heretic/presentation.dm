@@ -1,6 +1,6 @@
 /datum/heretic_path
 	var/book_type = /obj/item/forbidden_book
-	var/book_name = "Кодекс Рубцов"
+	var/book_name = "Codex Cicatrix"
 	var/book_title = "Кодекс Рубцов"
 	var/book_subtitle = "Пятнадцать дорог за одну завесу"
 	var/book_desc = "Строки проступают между старыми шрамами на страницах."
@@ -17,7 +17,7 @@
 
 /datum/heretic_path/ash
 	book_type = /obj/item/forbidden_book/ash
-	book_name = "Псалтирь последнего огня"
+	book_name = "Psalterium Ignis Ultimi"
 	book_title = "Псалтирь последнего огня"
 	book_subtitle = "Не гаси то, что ещё помнит тепло"
 	book_desc = "Обугленный молитвенник. В щелях переплёта тлеют угольки, а пепел между страницами складывается в буквы."
@@ -31,7 +31,7 @@
 
 /datum/heretic_path/rust
 	book_type = /obj/item/forbidden_book/rust
-	book_name = "Железный завет"
+	book_name = "Testamentum Ferreum"
 	book_title = "Железный завет"
 	book_subtitle = "Всякая вещь однажды станет почвой"
 	book_desc = "Тяжёлый том в железных пластинах. Петли скрипят, застёжка проросла зелёным налётом; гравюры медленно разъедает ржавчина."
@@ -45,7 +45,7 @@
 
 /datum/heretic_path/flesh
 	book_type = /obj/item/forbidden_book/flesh
-	book_name = "Анатомия голода"
+	book_name = "Anatomia Famis"
 	book_title = "Анатомия голода"
 	book_subtitle = "Ни один шов не бывает последним"
 	book_desc = "Тёплая книга, перетянутая сухожилиями. Обложка дышит под ладонью; страницы приходится разнимать, словно края раны."
@@ -59,7 +59,7 @@
 
 /datum/heretic_path/void
 	book_type = /obj/item/forbidden_book/void
-	book_name = "Палимпсест зимы"
+	book_name = "Palimpsestus Hiemis"
 	book_title = "Палимпсест зимы"
 	book_subtitle = "За последним словом начинается тишина"
 	book_desc = "Бледный том, покрытый инеем. Страницы холоднее воздуха, а забытые строки видны только там, где на них осело дыхание."
@@ -73,7 +73,7 @@
 
 /datum/heretic_path/blade
 	book_type = /obj/item/forbidden_book/blade
-	book_name = "Трактат о последнем ударе"
+	book_name = "Tractatus de Ictu Ultimo"
 	book_title = "Трактат о последнем ударе"
 	book_subtitle = "Не торопись. Он сам оставит открытие"
 	book_desc = "Узкий боевой трактат в потёртой коже. На полях вычерчены стойки и дуги ударов; стальные уголки заточены до бритвенной остроты."
@@ -87,7 +87,7 @@
 
 /datum/heretic_path/moon
 	book_type = /obj/item/forbidden_book/moon
-	book_name = "Зерцало без лица"
+	book_name = "Speculum sine Facie"
 	book_title = "Зерцало без лица"
 	book_subtitle = "Отражение перевернёт страницу первым"
 	book_desc = "Серебряная книга с зеркальными страницами. Отражение читателя смотрит в сторону ещё до того, как он поворачивает голову."
@@ -101,7 +101,7 @@
 
 /datum/heretic_path/cosmic
 	book_type = /obj/item/forbidden_book/cosmic
-	book_name = "Атлас внутреннего неба"
+	book_name = "Atlas Caeli Interioris"
 	book_title = "Атлас внутреннего неба"
 	book_subtitle = "Звёзды движутся, пока ты не смотришь"
 	book_desc = "Звёздный атлас в невозможном переплёте. Между страницами вращаются небесные сферы, а созвездия меняются при каждом открытии."
@@ -117,7 +117,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/lock
-	book_name = "Каталог невозможных дверей"
+	book_name = "Catalogus Portarum Impossibilium"
 	book_title = "Каталог невозможных дверей"
 	book_subtitle = "У каждого выхода есть обратная сторона"
 	book_desc = "Книга в тяжёлом переплёте с несколькими замочными скважинами. На каждой странице чертёж двери; ни одна не открывается туда, куда обещает."
@@ -133,7 +133,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/tide
-	book_name = "Лоция бездонного моря"
+	book_name = "Periplus Maris sine Fundo"
 	book_title = "Лоция бездонного моря"
 	book_subtitle = "Последний берег остался над вами"
 	book_desc = "Отсыревшая лоция в переплёте из чёрной парусины. Бронзовые уголки обросли солью, а между страницами слышен прибой моря, которого нет на картах."
@@ -157,7 +157,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/glass
-	book_name = "Евангелие разбитого света"
+	book_name = "Evangelium Lucis Fractae"
 	book_title = "Евангелие разбитого света"
 	book_subtitle = "Целое скрывает то, что видно в осколках"
 	book_desc = "Том в переплёте из тёмного витражного стекла. Свинцовые прожилки держат острые грани; между страницами свет распадается на чужие цвета."
@@ -173,7 +173,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/blood
-	book_name = "Служебник алой десятины"
+	book_name = "Missale Decimae Coccineae"
 	book_title = "Служебник алой десятины"
 	book_subtitle = "Каждая строка требует свою каплю"
 	book_desc = "Служебник в винно-красной коже с золотыми застёжками. По желобкам обложки медленно стекает алая влага; сухие страницы пахнут железом."
@@ -192,7 +192,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/echo
-	book_name = "Партитура последнего голоса"
+	book_name = "Partitura Vocis Ultimae"
 	book_title = "Партитура последнего голоса"
 	book_subtitle = "Голос смолк. Дождись ответа"
 	book_desc = "Партитура в переплёте из тёмной кожи с костяными накладками. Глаз под латунной скобой следит за пальцами читателя. Струны вдоль корешка отзываются на прикосновение; последняя нота звучит уже после того, как книга закрыта."
@@ -211,7 +211,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/sand
-	book_name = "Хроника истёкшего часа"
+	book_name = "Chronicon Horae Exactae"
 	book_title = "Хроника истёкшего часа"
 	book_subtitle = "Последняя песчинка ещё не упала"
 	book_desc = "Хроника в бронзовом переплёте, иссечённом сухим ветром. Чёрный песок течёт между страницами; часы на обложке отсчитывают время в обратную сторону."
@@ -226,7 +226,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/wax
-	book_name = "Служба негаснущей свечи"
+	book_name = "Officium Candelae Inexstinctae"
 	book_title = "Служба негаснущей свечи"
 	book_subtitle = "У каждого пламени есть цена"
 	book_desc = "Служебник в тёмной коже, залитый бледным воском. Свеча в застёжке горит без тепла; на полях проступают оттиски чужих лиц."
@@ -247,7 +247,7 @@
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
 	book_type = /obj/item/forbidden_book/spirit
-	book_name = "Список непришедших"
+	book_name = "Index Absentium"
 	book_title = "Список непришедших"
 	book_subtitle = "Не каждое тело уносит душу с собой"
 	book_desc = "Поминальная книга в тёмном саване. Имена на страницах написаны бледным светом; некоторые ещё принадлежат живым."

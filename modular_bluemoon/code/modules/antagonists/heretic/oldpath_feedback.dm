@@ -92,7 +92,7 @@
 
 /// Край поля лежит внутри затронутой клетки: шаг через него выводит из области.
 /obj/effect/heretic_field_edge
-	name = "граница Мансуса"
+	name = "Mansus boundary"
 	desc = "Светящийся край области. За его пределами сила печати не действует."
 	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_effects.dmi'
 	icon_state = null

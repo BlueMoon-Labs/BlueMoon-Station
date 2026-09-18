@@ -457,7 +457,7 @@
 
 /// Небольшая видимая область: её работа ограничена радиусом и временем жизни.
 /obj/effect/heretic_combat_zone
-	name = "эхо Мансуса"
+	name = "Mansus echo"
 	desc = "Воздух дрожит над незнакомой печатью. Сила её создателя удерживает здесь частицу Мансуса."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_ash"
@@ -564,7 +564,7 @@
 	return
 
 /obj/effect/heretic_combat_zone/ash
-	name = "угольный след"
+	name = "ember trail"
 	desc = "Угольки тлеют без топлива. Войти в эту печать — значит подставиться пламени."
 	boundary_color = "#ff9b43"
 	icon_state = "sigil_ash"
@@ -593,7 +593,7 @@
 		heretic?.advance_combat_deed(target, PATH_RUST)
 
 /obj/effect/heretic_combat_zone/rust
-	name = "очаг ржавчины"
+	name = "rust hearth"
 	desc = "В центре ржавого пятна бьётся живой нарост. Чужая плоть рядом с ним затягивает раны."
 	boundary_color = "#e7ad64"
 	icon_state = "sigil_rust"
@@ -628,7 +628,7 @@
 		heretic_heal_damage(ally, 3, 3)
 
 /obj/effect/heretic_combat_zone/void
-	name = "зимний предел"
+	name = "winter's edge"
 	desc = "Белая печать приглушает шаги и голоса. Её холод держится в нескольких шагах от центра."
 	boundary_color = "#b7edff"
 	icon_state = "sigil_void"

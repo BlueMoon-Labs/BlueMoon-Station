@@ -1,5 +1,5 @@
 /obj/structure/eldritch_crucible
-	name = "зловещий тигель"
+	name = "eldritch crucible"
 	desc = "Чугунный тигель на стальных зубчатых ножках. Вязкая жидкость внутри поглощает плоть и превращает её в колдовские напитки."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "crucible"
@@ -118,7 +118,7 @@
 		icon_state = "crucible_empty"
 
 /obj/structure/trap/eldritch
-	name = "запретная руна"
+	name = "forbidden rune"
 	desc = "Неизвестные символы, от которых веет смутно знакомым прошлым."
 	icon = 'icons/obj/eldritch.dmi'
 	charges = 1
@@ -147,7 +147,7 @@
 	owner = _owner
 
 /obj/structure/trap/eldritch/alert
-	name = "предупреждающая руна"
+	name = "warning rune"
 	icon_state = "alert_rune"
 	alpha = 10
 
@@ -161,7 +161,7 @@
 	return
 
 /obj/structure/trap/eldritch/tentacle
-	name = "хватающая руна"
+	name = "grasping rune"
 	icon_state = "tentacle_rune"
 
 /obj/structure/trap/eldritch/tentacle/trap_effect(mob/living/L)
@@ -176,7 +176,7 @@
 	return ..()
 
 /obj/structure/trap/eldritch/mad
-	name = "руна безумия"
+	name = "rune of madness"
 	icon_state = "madness_rune"
 
 /obj/structure/trap/eldritch/mad/trap_effect(mob/living/L)

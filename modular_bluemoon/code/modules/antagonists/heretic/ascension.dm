@@ -245,7 +245,7 @@
 		examine_list += span_eldritch("[path.ascension_title]. Человеческий облик больше не скрывает то, что смотрит на вас из-за завесы.")
 
 /obj/effect/heretic_ascension_aura
-	name = "нимб вознесённого"
+	name = "ascendant's halo"
 	plane = GAME_PLANE
 	layer = FLOAT_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -484,7 +484,7 @@
 		winter_circle = null
 
 /obj/effect/heretic_combat_zone/void/last_waltz
-	name = "последний вальс"
+	name = "last waltz"
 	desc = "Широкая зимняя печать хранит последний шаг Аристократа. За её границей холод отступает."
 	radius = 3
 	duration = 12 SECONDS

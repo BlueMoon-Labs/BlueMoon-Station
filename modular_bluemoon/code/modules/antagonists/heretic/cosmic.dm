@@ -431,7 +431,7 @@
 	return TRUE
 
 /obj/structure/heretic_star
-	name = "звезда Мансуса"
+	name = "Mansus star"
 	desc = "Холодная звезда, приколотая к полу. Между такими звёздами натягиваются опасные видимые нити. Звезду можно разбить."
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "cosmic_star"
@@ -476,7 +476,7 @@
 	return ..()
 
 /obj/effect/heretic_star_thread
-	name = "нить созвездия"
+	name = "constellation thread"
 	desc = "Видимая нить соединяет две звезды. Враги, которые её пересекают или стоят на ней, получают ожоги, падают и замедляются. Разбейте звезду, чтобы разорвать нить."
 	icon = null
 	anchored = TRUE
@@ -503,7 +503,7 @@
 	return ..()
 
 /obj/effect/ebeam/heretic_constellation
-	name = "нить созвездия"
+	name = "constellation thread"
 	desc = "Видимая нить между звёздами. Разбейте одну из них, чтобы разорвать соединение."
 	layer = SIGIL_LAYER
 	alpha = 180
@@ -556,7 +556,7 @@
 	return ..()
 
 /obj/item/melee/sickly_blade/cosmic
-	name = "космический клинок"
+	name = "cosmic blade"
 	desc = "Серп, внутри которого движутся далёкие звёзды. Удар по метке Космоса обжигает и изматывает жертву."
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "cosmic_blade"

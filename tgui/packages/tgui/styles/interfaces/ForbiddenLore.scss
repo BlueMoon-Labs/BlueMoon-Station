@@ -102,6 +102,7 @@
   &__page--left &__folio { flex-direction: row-reverse; }
   &__runningTitle { color: var(--faded); font-size: 11px; letter-spacing: .07em; margin: 2px 0 12px !important; text-align: center; }
   &__bookTitle { text-align: center; margin: 18px 0 14px !important; font-size: 33px; line-height: 1.12; text-wrap: balance; }
+  &__latinTitle { color: var(--faded); font-size: 13px; font-style: italic; letter-spacing: .08em; margin: -8px 0 14px !important; text-align: center; }
   &__titleRule { height: 11px; margin: 0 auto 20px; width: 60%; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); opacity: .6; }
   &__prose { white-space: pre-line; margin-bottom: 15px; }
   &__annotation { background: var(--paper); padding: 5px 7px; border-radius: 2px; font-size: 13px; line-height: 1.5; color: var(--faded); margin: 19px 3px 16px !important; }

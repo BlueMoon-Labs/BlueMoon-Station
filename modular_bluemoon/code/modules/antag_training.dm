@@ -57,7 +57,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	return TRUE
 
 /area/antag_training
-	name = "Тренировочный полигон"
+	name = "Training Grounds"
 	hidden = TRUE
 	requires_power = FALSE
 	has_gravity = STANDARD_GRAVITY

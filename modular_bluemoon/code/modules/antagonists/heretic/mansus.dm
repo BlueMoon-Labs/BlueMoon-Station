@@ -312,7 +312,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /// Комната принадлежит одному посещению: чужие жертвы никогда не встречаются внутри.
 /area/heretic_mansus
-	name = "Мансус: Дом памяти"
+	name = "Mansus: House of Memory"
 	requires_power = FALSE
 	has_gravity = STANDARD_GRAVITY
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
@@ -321,7 +321,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /turf/open/indestructible/heretic_mansus
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_floor0"
-	name = "забытая дорога"
+	name = "forgotten road"
 	desc = "Под камнями слышны шаги тех, кто ещё не родился."
 	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
 	baseturfs = /turf/open/indestructible/heretic_mansus
@@ -329,26 +329,26 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /turf/open/indestructible/heretic_mansus/path
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_path"
-	name = "дорога к себе"
+	name = "road home"
 	desc = "Светлый камень помнит шаги. Галерея огибает провал и соединяет комнаты Дома."
 	baseturfs = /turf/open/indestructible/heretic_mansus/path
 
 /turf/closed/indestructible/heretic_mansus
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_wall15"
-	name = "стена Дома"
+	name = "wall of the House"
 	desc = "Слишком много дверей. Ни одной ручки."
 	baseturfs = /turf/closed/indestructible/heretic_mansus
 
 /turf/closed/indestructible/heretic_mansus/shutter
-	name = "сомкнувшийся проход"
+	name = "closed passage"
 	desc = "Недавно здесь была галерея. Дом переставил стены; ищите другой путь."
 	baseturfs = /turf/closed/indestructible/heretic_mansus/shutter
 
 /turf/closed/indestructible/heretic_mansus/abyss
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_abyss0"
-	name = "двор без дна"
+	name = "bottomless courtyard"
 	desc = "Внизу нет ни пола, ни звёзд. По краю провала тянется каменная галерея."
 	opacity = FALSE
 	baseturfs = /turf/closed/indestructible/heretic_mansus/abyss
@@ -435,7 +435,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		layout_index = rand(1, length(GLOB.heretic_mansus_layouts))
 	var/list/layout = GLOB.heretic_mansus_layouts[layout_index]
 	var/list/words = list("Ваше имя. Никто здесь не вправе его отнять.", "Знакомый голос. Он ждёт вас по ту сторону стены.", "Собственное дыхание. Вы всё ещё живы.")
-	var/list/memory_names = list("имя", "голос", "дыхание")
+	var/list/memory_names = list("name", "voice", "breath")
 	var/list/chamber_centers = list(null, null, null)
 	for(var/row in 1 to HERETIC_MANSUS_ROOM_SIZE)
 		var/row_layout = layout[row]
@@ -492,7 +492,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		var/turf/position = pick(candidates)
 		used_positions += position
 		var/obj/effect/heretic_mansus_memory/memory = new(position, src, words[chamber])
-		memory.name = "осколок памяти: [memory_names[chamber]]"
+		memory.name = "memory shard: [memory_names[chamber]]"
 		memory.chamber = chamber
 		memories += memory
 		scenery += memory
@@ -1078,7 +1078,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /obj/effect/heretic_mansus_memory
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_memory"
-	name = "воспоминание о мире наяву"
+	name = "memory of the waking world"
 	desc = "Пока это лишь тусклый отголосок. Найдите яркий осколок и доставьте его к северным вратам, чтобы пробудить следующий."
 	alpha = 85
 	anchored = TRUE
@@ -1112,7 +1112,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /obj/effect/heretic_mansus_gate
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus_gates.dmi'
 	icon_state = "ash_gate_closed"
-	name = "дверь в мир наяву"
+	name = "door to the waking world"
 	desc = "Доставьте три осколка на светящуюся печать перед вратами. Здесь можно укрыться от тени и разломов."
 	pixel_x = -16
 	pixel_y = 0
@@ -1147,14 +1147,14 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, try_exit), crosser)
 
 /obj/effect/heretic_mansus_echo
-	name = "кто-то почти знакомый"
+	name = "someone almost familiar"
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/effect/heretic_mansus_statue
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_decor"
-	name = "святилище чужой памяти"
+	name = "shrine of a stranger's memory"
 	desc = "Здесь хранится что-то, чего вы никогда не переживали."
 	anchored = TRUE
 	density = TRUE
@@ -1168,7 +1168,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /obj/effect/heretic_mansus_candle
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_light"
-	name = "огонь воспоминания"
+	name = "memory flame"
 	desc = "Бледное пламя склоняется к галерее. Оно не греет и не сжигает воск."
 	anchored = TRUE
 
@@ -1202,7 +1202,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		INVOKE_ASYNC(visit, TYPE_PROC_REF(/datum/heretic_mansus_visit, collect_memory), memory, owner)
 
 /obj/effect/heretic_mansus_trail
-	name = "след памяти"
+	name = "memory trail"
 	desc = "Стрелка указывает путь к осколку или к печати. Она не предупреждает об опасности: следите за трещинами и тенью."
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
 	icon_state = "trail"
@@ -1212,7 +1212,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	alpha = 0
 
 /obj/effect/heretic_mansus_offering
-	name = "печать возвращения"
+	name = "seal of return"
 	desc = "Остановитесь на печати с осколком на одну секунду, чтобы закрепить его. Три огня откроют выход. Печать и соседние клетки защищают от тени и разломов."
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
 	icon_state = "offering0"
@@ -1221,7 +1221,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/datum/heretic_mansus_visit/visit
 
 /obj/effect/heretic_mansus_sanctuary
-	name = "защита печати"
+	name = "ward of the seal"
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi'
 	icon_state = "sanctuary"
 	anchored = TRUE
@@ -1248,7 +1248,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /obj/effect/heretic_mansus_hazard
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_warning"
-	name = "трещина забвения"
+	name = "crack of oblivion"
 	desc = "Уходите с отмеченной клетки до вспышки: разлом выбивает несомый осколок."
 	alpha = 255
 	anchored = TRUE
@@ -1279,7 +1279,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 /obj/effect/heretic_mansus_hunter
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_hunter"
-	name = "тень забвения"
+	name = "shade of oblivion"
 	desc = "Она идёт по галерее за вами. Не подпускайте её к себе: тень вырывает несомый осколок. Возле северных врат безопасно."
 	anchored = TRUE
 	animate_movement = SLIDE_STEPS

@@ -344,6 +344,7 @@ const PathChapter = ({ turn, openKnowledge }: { turn: () => void; openKnowledge:
       <Page side="left" chapter="Путь">
         <p className="HereticBook__runningTitle">{data.book?.subtitle || 'Пути Мансуса'}</p>
         <h1 className="HereticBook__bookTitle">{data.book?.title || bookTitles[skin] || bookTitles.Unbound}</h1>
+        {data.book?.name && data.book.name !== data.book.title && <p className="HereticBook__latinTitle" lang="la">{data.book.name}</p>}
         <div className="HereticBook__titleRule" />
         <nav className="HereticBook__oaths" aria-label="Пути Мансуса">
           {data.paths.map((entry, index) => (

@@ -9,7 +9,7 @@
 #define HERETIC_BLADE_IDLE_TEMPO_CAP 1
 
 /obj/item/melee/sickly_blade/duelist
-	name = "тёмный клинок"
+	name = "dark blade"
 	desc = "Тонкий тёмный клинок. Его отражение отстаёт от движения руки на долю секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "dark_blade"

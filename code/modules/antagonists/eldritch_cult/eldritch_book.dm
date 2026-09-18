@@ -1,5 +1,5 @@
 /obj/item/forbidden_book
-	name = "Кодекс Рубцов"
+	name = "Codex Cicatrix"
 	desc = "Страницы покрыты рубцами вместо строк. Между ними проступают имена, ритуалы и дороги в Мансус."
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "codex"
@@ -224,7 +224,7 @@
 	var/datum/heretic_path/book_style = GLOB.heretic_paths[heretic.selected_path]
 	var/list/data = list(
 		"book" = list(
-			"name" = book_style?.book_name || "Кодекс Рубцов",
+			"name" = book_style?.book_name || "Codex Cicatrix",
 			"title" = book_style?.book_title || "Кодекс Рубцов",
 			"subtitle" = book_style?.book_subtitle || "Пятнадцать дорог за одну завесу",
 			"path" = book_style?.id,
@@ -391,7 +391,7 @@
 	return ..()
 
 /obj/item/forbidden_book/debug
-	name = "Отладочный Кодекс Рубцов"
+	name = "debug Codex Cicatrix"
 	var/debug_knowledge_points = 100
 
 /obj/item/forbidden_book/debug/examine(mob/user)

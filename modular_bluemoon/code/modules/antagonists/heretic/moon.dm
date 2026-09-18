@@ -882,7 +882,7 @@
 	knowledge?.sync_reflection_auras()
 
 /obj/item/melee/sickly_blade/moon
-	name = "лунный клинок"
+	name = "moonlight blade"
 	desc = "Серебристый клинок с двойным лезвием. Его отражение всегда немного запаздывает."
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "moon_blade"

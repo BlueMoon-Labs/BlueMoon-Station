@@ -1,5 +1,5 @@
 /obj/effect/eldritch
-	name = "руна трансмутации"
+	name = "transmutation rune"
 	desc = "Круг неизвестных знаков, заполненный густой чёрной смолой."
 	anchored = TRUE
 	icon_state = ""
@@ -668,13 +668,13 @@
 	schedule_next_influence()
 
 /datum/reality_smash_tracker/proc/RandomRiftName(obj/rift, set_name = "", use_afteruse = FALSE)
-	var/static/list/prefixes = list("тревожное", "мимолётное", "шепчущее", "сокрытое", "забытое", "далёкое")
-	var/static/list/suffixes = list("присутствие", "воспоминание", "видение", "мерцание", "эхо", "наваждение")
+	var/static/list/prefixes = list("unsettling", "fleeting", "whispering", "hidden", "forgotten", "distant")
+	var/static/list/suffixes = list("presence", "memory", "vision", "flicker", "echo", "delusion")
 	var/base = set_name || "[pick(prefixes)] [pick(suffixes)]"
-	rift.name = use_afteruse ? "отголосок: [base]" : base
+	rift.name = use_afteruse ? "faded [base]" : base
 
 /obj/effect/broken_illusion
-	name = "пронзённая реальность"
+	name = "pierced reality"
 	desc = "В воздухе дрожит тёмный след. При взгляде на него трудно вспомнить, о чём вы только что думали."
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "rift"
@@ -713,7 +713,7 @@
 		. += span_warning("Кто-то недавно потревожил завесу в этом месте. Не касайтесь разрыва: он запоминает прикосновение и ранит тех, кто тянется к нему снова.")
 
 /obj/effect/reality_smash
-	name = "разрыв реальности"
+	name = "reality rift"
 	icon = 'icons/effects/eldritch.dmi'
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF

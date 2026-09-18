@@ -293,7 +293,7 @@ describe('Гримуар еретика', () => {
     expect(screen.getByRole('article', { name: 'Правая страница' })).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
     store.dispatch(backendUpdate({ data: { ...data, book: {
-      name: 'Серебряное завещание', title: 'Серебряное завещание', subtitle: 'Не доверяй своему отражению.',
+      name: 'Speculum sine Facie', title: 'Серебряное завещание', subtitle: 'Не доверяй своему отражению.',
       path: 'Moon', cover_state: 'moon_open',
     } } }));
     view.rerender(<ForbiddenLoreContent />);
@@ -302,6 +302,7 @@ describe('Гримуар еретика', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Путь' }));
     expect(screen.getByRole('heading', { name: 'Серебряное завещание' })).toBeTruthy();
     expect(screen.getByText('Не доверяй своему отражению.')).toBeTruthy();
+    expect(screen.getByText('Speculum sine Facie')).toBeTruthy();
   });
 
   test('показывает неизученный рецепт и обновляет его доступность без потери выбора', async () => {

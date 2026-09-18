@@ -66,7 +66,7 @@
 		var/obj/item/forbidden_book/book = allocate(path.book_type)
 		TEST_ASSERT_EQUAL(book.book_path, path_id, "Физический подтип книги должен соответствовать своему пути.")
 		TEST_ASSERT_EQUAL(book.name, path.book_name, "Имя предмета должно соответствовать переплёту.")
-		TEST_ASSERT_EQUAL(book.name, path.book_title, "Русское название должно совпадать у предмета и окна книги.")
+		TEST_ASSERT_EQUAL(length(book.name), length_char(book.name), "Имя тома [path_id] пишется латиницей.")
 		TEST_ASSERT(!(book.icon_state in covers), "Обложки путей не должны повторяться.")
 		TEST_ASSERT(!(path.book_title in titles), "Названия томов не должны повторяться.")
 		covers += book.icon_state
@@ -80,6 +80,34 @@
 		TEST_ASSERT(isfile(path.book_open_sound) && isfile(path.book_page_sound), "Звуки книги должны быть ресурсами сборки.")
 	TEST_ASSERT_EQUAL(length(covers), length(GLOB.heretic_paths), "У каждого пути должна быть своя обложка.")
 	TEST_ASSERT_EQUAL(length(page_sounds), length(GLOB.heretic_paths), "У каждого материала должен быть свой звук страницы.")
+
+/// Предметы, мобы, структуры и турфы еретика называются латиницей.
+/datum/unit_test/heretic_world_names_latin/Run()
+	var/list/atom_types = list(
+		/obj/item/living_heart,
+		/obj/item/melee/rune_knife,
+		/obj/item/melee/touch_attack/mansus_fist,
+		/obj/item/melee/touch_attack/mad_touch,
+		/obj/item/melee/touch_attack/grasp_of_decay,
+		/obj/item/projectile/magic/spell/rust_wave,
+		/obj/effect/reality_smash,
+		/obj/effect/broken_illusion,
+		/obj/effect/domain_expansion,
+		/obj/effect/temp_visual/dir_setting/ash_shift,
+		/area/antag_training,
+	)
+	atom_types |= typesof(/obj/item/forbidden_book, /obj/item/melee/sickly_blade)
+	for(var/atom/atom_type as anything in typesof(/obj, /mob, /turf, /area))
+		if(ispath(atom_type, /obj/effect/proc_holder))
+			continue
+		if(findtext("[atom_type]", "heretic") || findtext("[atom_type]", "eldritch"))
+			atom_types |= atom_type
+	for(var/atom/atom_type as anything in atom_types)
+		var/atom_name = initial(atom_type.name)
+		TEST_ASSERT_EQUAL(length(atom_name), length_char(atom_name), "[atom_type] называется латиницей, а не «[atom_name]».")
+	for(var/datum/heretic_deed/deed_type as anything in typesof(/datum/heretic_deed))
+		var/trace_name = initial(deed_type.trace_name)
+		TEST_ASSERT_EQUAL(length(trace_name), length_char(trace_name), "След [deed_type] называется латиницей, а не «[trace_name]».")
 
 /// TGUI получает экземпляр набора ресурсов с фонами всех путей.
 /datum/unit_test/heretic_book_ui_assets/Run()

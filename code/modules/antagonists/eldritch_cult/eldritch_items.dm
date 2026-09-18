@@ -1,5 +1,5 @@
 /obj/item/living_heart
-	name = "живое сердце"
+	name = "living heart"
 	desc = "Сердце, которое бьётся в такт чужой душе. Еретик может сжать его для поиска цели; Alt-ЛКМ позволяет выбрать другую цель."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "living_heart"
@@ -91,7 +91,7 @@
 	QDEL_IN(arrow, 1.6 SECONDS)
 
 /obj/item/melee/sickly_blade
-	name = "зловещий клинок"
+	name = "sickly blade"
 	desc = "Серповидный клинок болезненно-зелёного цвета с узором в виде глаза. Кажется, из него за вами наблюдают."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "eldritch_blade"
@@ -186,7 +186,7 @@
 		. += span_notice("Еретик или его слуга может активировать клинок в руке и разбить его, чтобы переместиться в случайное место, обычно безопасное.")
 
 /obj/item/melee/sickly_blade/rust
-	name = "ржавый клинок"
+	name = "rusted blade"
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	mark_type = /datum/status_effect/eldritch/rust
 	route = PATH_RUST
@@ -196,7 +196,7 @@
 	embedding = list("pain_mult" = 2, "embed_chance" = 25, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 
 /obj/item/melee/sickly_blade/ash
-	name = "пепельный клинок"
+	name = "ashen blade"
 	icon = 'modular_bluemoon/icons/obj/heretic_ash.dmi'
 	mark_type = /datum/status_effect/eldritch/ash
 	route = PATH_ASH
@@ -206,7 +206,7 @@
 	force = 25
 
 /obj/item/melee/sickly_blade/flesh
-	name = "клинок плоти"
+	name = "flesh blade"
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	mark_type = /datum/status_effect/eldritch/flesh
 	route = PATH_FLESH
@@ -215,7 +215,7 @@
 	item_state = "flesh_blade"
 
 /obj/item/melee/sickly_blade/void
-	name = "клинок Пустоты"
+	name = "void blade"
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	mark_type = /datum/status_effect/eldritch/void
 	route = PATH_VOID
@@ -225,7 +225,7 @@
 	throwforce = 20
 
 /obj/item/clothing/neck/eldritch_amulet
-	name = "зловещий медальон"
+	name = "eldritch medallion"
 	desc = "Медальон с живым глазом в оправе. На шее еретика или его слуги глаз приоткрывается и различает тепло живых тел. В чужих руках он спит."
 	icon = 'modular_bluemoon/icons/obj/heretic_medallion.dmi'
 	icon_state = "watching_eye_closed"
@@ -247,12 +247,12 @@
 	update_icon()
 
 /obj/item/clothing/neck/eldritch_amulet/piercing
-	name = "всевидящий медальон"
+	name = "all-seeing medallion"
 	desc = "Медальон с широко раскрывающимся глазом. На шее еретика или его слуги он видит сквозь стены; снятый медальон закрывает веко."
 	trait = TRAIT_XRAY_VISION
 
 /obj/item/clothing/head/hooded/cult_hoodie/eldritch
-	name = "капюшон еретика"
+	name = "ominous hood"
 	icon_state = "eldritch"
 	desc = "Пыльный рваный капюшон. Из складок на вас смотрят чужие глаза."
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
@@ -261,7 +261,7 @@
 	alternate_screams = BLOOD_SCREAMS
 
 /obj/item/clothing/suit/hooded/cultrobes/eldritch
-	name = "мантия еретика"
+	name = "ominous robes"
 	desc = "Рваное пыльное облачение. В складках ткани шевелятся чужие глаза."
 	icon_state = "eldritch_armor"
 	item_state = "eldritch_armor"
@@ -286,14 +286,14 @@
 		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 
 /obj/item/reagent_containers/glass/beaker/eldritch
-	name = "потусторонняя эссенция"
+	name = "flask of eldritch essence"
 	desc = "Яд для непосвящённых и целительный напиток для еретика. При усвоении лечит раны, восстанавливает 30 выносливости и сокращает оглушение и неподвижность на 8 секунд. Лучше выпить перед боем: напиток не защищает от новых попаданий."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "eldrich_flask"
 	list_reagents = list(/datum/reagent/eldritch = 50)
 
 /obj/item/clothing/head/hooded/cult_hoodie/void
-	name = "капюшон Пустоты"
+	name = "void hood"
 	icon_state = "void_cloak"
 	flags_inv = NONE
 	flags_cover = NONE
@@ -302,7 +302,7 @@
 	obj_flags = NONE | EXAMINE_SKIP
 
 /obj/item/clothing/suit/hooded/cultrobes/void
-	name = "плащ Пустоты"
+	name = "void cloak"
 	desc = "Чёрный плащ, который словно поглощает свет. Руны на ткани вспыхивают и ускользают из памяти."
 	icon_state = "void_cloak"
 	item_state = "void_cloak"
@@ -331,7 +331,7 @@
 		to_chat(carbon_user,"<span class='danger'>Не удаётся надеть капюшон!</span>")
 
 /obj/item/clothing/mask/gas/void_mask
-	name = "маска безумия"
+	name = "mask of madness"
 	desc = "Лицо, застывшее в мучительной гримасе. Если заглянуть в его глаза, что-то посмотрит в ответ."
 	icon_state = "mad_mask"
 	item_state = "mad_mask"
@@ -412,7 +412,7 @@
 	cooldown_targets -= target
 
 /obj/item/melee/rune_knife
-	name = "нож для вырезания рун"
+	name = "rune carving knife"
 	desc = "Холодное стальное лезвие для вырезания рун. Посвящённый может пробудить силу оставленных им знаков."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "rune_carver"
@@ -525,7 +525,7 @@
 	QDEL_LIST(knife.current_runes)
 
 /obj/item/eldritch_potion
-	name = "напиток дня и ночи"
+	name = "brew of day and night"
 	desc = "Я никогда не должен был видеть этого."
 	icon = 'icons/obj/eldritch.dmi'
 	///Typepath to the status effect this is supposed to hold
@@ -545,19 +545,19 @@
 	carbie.apply_status_effect(status_effect)
 
 /obj/item/eldritch_potion/crucible_soul
-	name = "напиток крепкой души"
+	name = "brew of the crucible soul"
 	desc = "Позволяет проходить сквозь стены в течение 15 секунд. Затем вы возвращаетесь туда, где выпили зелье."
 	icon_state = "crucible_soul"
 	status_effect = /datum/status_effect/crucible_soul
 
 /obj/item/eldritch_potion/duskndawn
-	name = "напиток заката и рассвета"
+	name = "brew of dusk and dawn"
 	desc = "Позволяет видеть сквозь стены и предметы в течение 60 секунд."
 	icon_state = "clarity"
 	status_effect = /datum/status_effect/duskndawn
 
 /obj/item/eldritch_potion/wounded
-	name = "напиток раненого солдата"
+	name = "brew of the wounded soldier"
 	desc = "В течение 60 секунд лечит каждую рану и защищает от замедления из-за урона. Незначительные раны восстанавливаются на 1 единицу урона в секунду, средние — на 3, критические — на 6."
 	icon_state = "marshal"
 	status_effect = /datum/status_effect/marshal
@@ -565,7 +565,7 @@
 /atom/movable/screen/navigate_arrow
 	icon = 'icons/effects/multitool_arrows.dmi'
 	icon_state = "navigate_arrow_appear"
-	name = "указатель направления"
+	name = "navigate arrow"
 	pixel_x = -32
 	pixel_y = -32
 

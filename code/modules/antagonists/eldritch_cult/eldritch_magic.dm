@@ -22,7 +22,7 @@
 	new /obj/effect/temp_visual/heretic_oldpath/ash/trail(get_turf(target))
 
 /obj/effect/temp_visual/dir_setting/ash_shift
-	name = "пепельный след"
+	name = "ash trail"
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "ash_shift_out"
 	duration = 12
@@ -59,7 +59,7 @@
 	return TRUE
 
 /obj/item/melee/touch_attack/mansus_fist
-	name = "Хватка Мансуса"
+	name = "Mansus Grasp"
 	desc = "Искажает пространство вокруг ладони. Хватка наносит ушибы, истощает и сбивает с ног. Изученные знания добавляют эффекты вашего пути."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "mansus_grasp"
@@ -405,7 +405,7 @@
 	invocation_type = "whisper"
 
 /obj/item/projectile/magic/spell/rust_wave
-	name = "ржавый снаряд"
+	name = "rust bolt"
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "rust_bolt"
 	alpha = 180
@@ -498,7 +498,7 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/item/melee/touch_attack/mad_touch
-	name = "Касание безумия"
+	name = "Touch of Madness"
 	desc = "Зловещая аура, от которой трескается чужой рассудок."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "mad_touch"
@@ -537,7 +537,7 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/item/melee/touch_attack/grasp_of_decay
-	name = "Хватка распада"
+	name = "Grasp of Decay"
 	desc = "Зловещая аура, разлагающая чужую плоть изнутри."
 	icon = 'icons/obj/eldritch.dmi'
 	icon_state = "mansus_grasp"
