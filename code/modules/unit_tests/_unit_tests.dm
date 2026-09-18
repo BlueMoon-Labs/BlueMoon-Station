@@ -284,6 +284,7 @@
 #include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
+#include "heal_noop_updates.dm"
 #include "hud_screen_lifecycle.dm"
 #include "icon_alloc_guard.dm"
 #include "keybindings_idle_move_delay.dm"
