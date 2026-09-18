@@ -72,6 +72,9 @@
 		piece.siemens_coefficient = siemens_coefficient
 
 	var/obj/item/clothing/mod_part/suit/chestplate = modsuit.get_chestplate()
+	modsuit.max_armor_module_count = max_armor_module_count
+	modsuit.slowdown_inactive = slowdown_inactive
+	modsuit.slowdown_active = slowdown_active
 	chestplate.allowed += allowed
 
 /datum/mod_theme/proc/apply_theme_skin(obj/item/mod/control/modsuit, new_skin)
@@ -88,13 +91,11 @@
 	if(!need_update_stat)
 		return TRUE
 	modsuit.extended_desc = extended_desc
-	modsuit.slowdown_inactive = slowdown_inactive
-	modsuit.slowdown_active = slowdown_active
 	modsuit.complexity_max = complexity_max
 	modsuit.cell_drain = cell_drain
 	modsuit.initial_modules += inbuilt_modules
 	modsuit.hardlight_effect = new hardlight_effect
-	modsuit.max_armor_module_count = max_armor_module_count
+
 	var/datum/overlay_effect/mod_effect = modsuit.hardlight_effect
 	mod_effect.apply_color(hardlight_color)
 	apply_theme_stats(modsuit, new_skin)
