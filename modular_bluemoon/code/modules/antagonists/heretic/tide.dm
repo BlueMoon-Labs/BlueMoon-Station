@@ -142,14 +142,17 @@
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/line_clear(atom/start, atom/end, max_distance = HERETIC_TIDE_RANGE)
+	return !line_failure(start, end, max_distance)
+
+/datum/eldritch_knowledge/base_tide/proc/line_failure(atom/start, atom/end, max_distance = HERETIC_TIDE_RANGE)
 	var/turf/origin = get_turf(start)
 	var/turf/destination = get_turf(end)
 	if(!origin || !destination || origin.z != destination.z || get_dist(origin, destination) > max_distance)
-		return FALSE
+		return "Цель вне досягаемости: выберите её не дальше [max_distance] клеток на этом же уровне."
 	for(var/turf/tile as anything in get_line(origin, destination))
-		if(!isopenturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
-			return FALSE
-	return TRUE
+		if(!heretic_line_tile_open(tile))
+			return "Линию перекрывает преграда: стена, закрытая дверь, окно или машина. Столы течению не мешают."
+	return null
 
 /datum/eldritch_knowledge/base_tide/proc/soak(mob/living/victim)
 	return victim.apply_status_effect(/datum/status_effect/heretic_drenched, src)
@@ -567,14 +570,19 @@
 /obj/effect/proc_holder/spell/pointed/heretic_tide/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_tide/tide = heretic?.get_knowledge(/datum/eldritch_knowledge/base_tide)
-	return heretic_check(user, tide?.line_clear(user, target), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.")
+	if(!heretic_check(user, tide, silent, "Способность недоступна вашему пути или текущему телу."))
+		return FALSE
+	var/reason = tide.line_failure(user, target)
+	return heretic_check(user, !reason, silent, reason)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow
 	name = "Отлив"
-	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 2 секунды. Не требует давления. Стены защищают, закрепление и пристёгивание мешают перемещению."
+	desc = "Притяните противника в пяти клетках на три клетки ближе: 15 ушибов, 20 урона выносливости и падение на 2 секунды. Не требует давления. Стены, закрытые двери, окна и машины защищают, столы — нет. Закрепление и пристёгивание мешают перемещению."
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/can_target(atom/target, mob/user, silent)
-	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Выберите доступную цель на прямой линии: стены перекрывают действие.", target = target)
+	if(!heretic_check(user, isliving(target) && target != user, silent, "Цели нет: Отлив тянет только живого противника, а не пол или предмет."))
+		return FALSE
+	return ..() && heretic_check(user, heretic_can_affect(user, target, chargecost = 0), silent, "Эту цель не притянуть: она мертва или защищена от магии.", target = target)
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -636,7 +644,7 @@
 
 /datum/eldritch_knowledge/spell/tide_undertow
 	name = "Отлив"
-	desc = "Отлив притягивает врага в пяти клетках на три клетки ближе, наносит 15 ушибов и 20 урона выносливости, сбивает на 2 секунды и покрывает водой Пучины. Не требует давления, перезарядка 20 секунд. Преграды защищают от течения."
+	desc = "Отлив притягивает врага в пяти клетках на три клетки ближе, наносит 15 ушибов и 20 урона выносливости, сбивает на 2 секунды и покрывает водой Пучины. Не требует давления, перезарядка 20 секунд. Стены, закрытые двери, окна и машины защищают от течения; столы и стойки его не останавливают."
 	gain_text = "Я звал с берега. Ответ пришёл из-под ног."
 	cost = 1
 	route = PATH_TIDE

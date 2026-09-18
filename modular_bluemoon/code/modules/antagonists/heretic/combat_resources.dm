@@ -183,6 +183,16 @@
 	. = view(radius, center_turf)
 	center_turf.luminosity = previous_luminosity
 
+/// Линию магии не закрывают столы и то, над чем пролетают брошенные предметы; стены, двери, окна и машины закрывают.
+/proc/heretic_line_tile_open(turf/tile)
+	if(!isopenturf(tile) || tile.density)
+		return FALSE
+	for(var/atom/movable/obstacle as anything in tile)
+		if(!obstacle.density || ismob(obstacle) || (obstacle.pass_flags_self & (PASSTABLE | LETPASSTHROW)))
+			continue
+		return FALSE
+	return TRUE
+
 /datum/eldritch_knowledge/base_ash
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
 	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'

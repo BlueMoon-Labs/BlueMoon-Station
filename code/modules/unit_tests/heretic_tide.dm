@@ -99,6 +99,30 @@
 	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Оплаченный блок антимагией не возвращает перезарядку Отлива.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina_before, "Заблокированный Отлив не наносит урон.")
 
+/// Стол между еретиком и целью не закрывает Отлив, а отказ отличает пустой выбор от преграды.
+/datum/unit_test/heretic_tide_undertow_table/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/tide_undertow)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/datum/eldritch_knowledge/spell/tide_undertow/spell_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/tide_undertow)
+	var/obj/effect/proc_holder/spell/pointed/heretic_tide/undertow/spell = spell_knowledge.granted_spell
+	var/turf/table_place = locate(user.x + 2, user.y, user.z)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y, user.z))
+	allocate(/obj/structure/table, table_place)
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Стол не закрывает выбор цели.")
+	TEST_ASSERT(tide.undertow(user, victim), "Отлив действует через стол.")
+	TEST_ASSERT(victim.getBruteLoss() >= 15, "Цель за столом получает урон Отлива.")
+	TEST_ASSERT(get_dist(user, victim) < 4, "Течение подтягивает цель к столу.")
+	TEST_ASSERT(!spell.can_target(locate(user.x + 1, user.y, user.z), user, TRUE), "Пустой пол не становится целью Отлива.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "Цели нет"), "Отказ без цели так и называется.")
+	var/obj/machinery/hydroponics/machine = allocate(/obj/machinery/hydroponics, locate(user.x + 1, user.y, user.z))
+	TEST_ASSERT(machine.density, "Лоток гидропоники плотный.")
+	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Плотная машина закрывает линию.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "преграда"), "Отказ называет преграду, а не отсутствие цели.")
+
 /// Водоворот разрушается жезлом, заменяется новым и прекращает действовать вдали от владельца.
 /datum/unit_test/heretic_tide_well_lifecycle/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
