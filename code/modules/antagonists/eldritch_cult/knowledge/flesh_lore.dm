@@ -36,6 +36,9 @@
 	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
 	flesh_servants -= source
 
+/datum/eldritch_knowledge/proc/poll_servant_candidates(question, mob/living/body, duration)
+	return pollCandidatesForMob(question, ROLE_HERETIC, null, ROLE_HERETIC, duration, body)
+
 /datum/eldritch_knowledge/proc/release_flesh_servants()
 	for(var/datum/antagonist/heretic_monster/servant as anything in flesh_servants.Copy())
 		UnregisterSignal(servant, COMSIG_PARENT_QDELETING)
@@ -45,18 +48,37 @@
 /datum/eldritch_knowledge/flesh_grasp
 	parent_type = /datum/eldritch_knowledge/spell
 	name = "Хватка Плоти"
-	desc = "Даёт Живой шов: дистанционный удар по врагу или спасение своего слуги за биомассу. Хватка на разоружении превращает извлечённый орган на полу и 2 биомассы в сшитого ползуна без призрака: 40 здоровья, 6 урона раз в 2 секунды, срок 90 секунд. Можно иметь одного ползуна; он занимает место в свите. Шов по врагу задаёт цель, по ползуну — лечит, возвращает к вам и обновляет его срок до 90 секунд за 1 биомассу. Касание ползуна на помощи — следовать, на разоружении — ждать. Дальше 9 клеток от хозяина ползун распадается. Хватка поднимает мёртвого человека с присутствующей душой в гуля за 1 биомассу. Гуль имеет 50 здоровья, выглядит иссохшим и подчиняется вам. Одновременно можно удерживать двух гулей. Защита разума, синтетики и скелеты не поддаются обращению. Истощённые и уже поднятые тела не подходят."
+	desc = "Даёт Живой шов: дистанционный удар по врагу или спасение своего слуги за биомассу. Хватка на разоружении превращает извлечённый орган на полу и 2 биомассы в сшитого ползуна без призрака: 40 здоровья, 6 урона раз в 2 секунды, срок 90 секунд. Можно иметь одного ползуна; он занимает место в свите. Шов по врагу задаёт цель, по ползуну — лечит, возвращает к вам и обновляет его срок до 90 секунд за 1 биомассу. Касание ползуна на помощи — следовать, на разоружении — ждать. Дальше 9 клеток от хозяина ползун распадается. Хватка поднимает мёртвого человека в гуля за 1 биомассу; если душа тела не возвращается, роль на 10 секунд предлагается призракам, а биомасса тратится только при подъёме. Гуль имеет 50 здоровья, выглядит иссохшим и подчиняется вам. Одновременно можно удерживать двух гулей. Защита разума, синтетики и скелеты не поддаются обращению. Истощённые и уже поднятые тела не подходят."
 	gain_text = "Одна рука не соберёт тело. Значит, нужны новые руки."
 	cost = 1
 	route = PATH_FLESH
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch
 	var/ghoul_amt = 2
+	var/ghoul_poll_pending = FALSE
 
 /datum/eldritch_knowledge/flesh_grasp/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!ishuman(target) || target == user)
 		return FALSE
 	var/mob/living/carbon/human/victim = target
-	if(victim.stat != DEAD)
+	if(!can_raise_ghoul(user, victim))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	if(heretic.simulated)
+		if(!victim.mind)
+			victim.mind_initialize()
+		return raise_ghoul(user, victim)
+	victim.grab_ghost()
+	if(victim.mind && victim.client)
+		return raise_ghoul(user, victim)
+	if(ghoul_poll_pending)
+		to_chat(user, span_warning("Мансус уже зовёт блуждающих духов. Дождитесь ответа."))
+		return FALSE
+	to_chat(user, span_notice("Душа этого тела не возвращается. Мансус зовёт блуждающих духов: ответ придёт через [DisplayTimeText(HERETIC_SERVANT_POLL_DURATION)]."))
+	INVOKE_ASYNC(src, PROC_REF(call_ghoul_spirit), user, victim)
+	return TRUE
+
+/datum/eldritch_knowledge/flesh_grasp/proc/can_raise_ghoul(mob/living/user, mob/living/carbon/human/victim)
+	if(QDELETED(victim) || victim.stat != DEAD)
 		return FALSE
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
@@ -67,14 +89,27 @@
 	if(block_reason)
 		to_chat(user, span_warning(block_reason))
 		return FALSE
-	if(!heretic.simulated)
-		victim.grab_ghost()
-	if(!heretic.simulated && (!victim.mind || !victim.client))
-		to_chat(user, span_warning("В этом теле нет души, готовой вернуться."))
+	return TRUE
+
+/datum/eldritch_knowledge/flesh_grasp/proc/call_ghoul_spirit(mob/living/user, mob/living/carbon/human/victim)
+	ghoul_poll_pending = TRUE
+	var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать гулем, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
+	ghoul_poll_pending = FALSE
+	if(QDELETED(src) || QDELETED(user) || !can_raise_ghoul(user, victim))
 		return FALSE
-	if(heretic.simulated && !victim.mind)
-		victim.mind_initialize()
-	if(!path.spend_combat_resource())
+	if(!victim.client)
+		var/mob/dead/observer/chosen = length(candidates) ? pick(candidates) : null
+		if(!chosen?.key)
+			to_chat(user, span_warning("Ни один дух не откликнулся: тело остаётся мёртвым, биомасса сохранена."))
+			return FALSE
+		victim.ghostize(FALSE)
+		victim.key = chosen.key
+	return raise_ghoul(user, victim)
+
+/datum/eldritch_knowledge/flesh_grasp/proc/raise_ghoul(mob/living/user, mob/living/carbon/human/victim)
+	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	if(!victim.mind || !path?.spend_combat_resource())
 		return FALSE
 	victim.revive(full_heal = TRUE, admin_revive = TRUE)
 	var/datum/antagonist/heretic_monster/ghoul/servant = new
@@ -110,7 +145,7 @@
 		return FALSE
 	victim.grab_ghost()
 	if(!victim.mind || !victim.client)
-		var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", ROLE_HERETIC, null, ROLE_HERETIC, 5 SECONDS, victim)
+		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
 		if(!length(candidates))
 			return FALSE
 		if(!ritual_still_valid(user, atoms, get_turf(loc)) || victim.stat != DEAD || length(flesh_servants) >= max_amt || heretic_conversion_block_reason(victim) || QDELETED(path) || path.combat_resource < 2 || !heretic.can_add_servant())
@@ -251,7 +286,7 @@
 
 /datum/eldritch_knowledge/flesh_blade_upgrade_2
 	name = "Воспоминание"
-	desc = "Раз в 8 секунд ранение клинком плоти может вывихнуть конечность. Соедините зажим, шовную нить и извлечённый орган, чтобы создать сшивающую иглу. За одну биомассу инструмент восстанавливает руку или ногу вашего живого слуги; если конечности целы, останавливает кровотечение."
+	desc = "Ранение клинком плоти вывихивает случайную часть тела, не чаще раза в 8 секунд. Соедините зажим, шовную нить и извлечённый орган, чтобы создать сшивающую иглу. За одну биомассу инструмент восстанавливает руку или ногу вашего живого слуги; если конечности целы, останавливает кровотечение."
 	required_atoms = list(/obj/item/hemostat, /obj/item/stack/medical/suture, /obj/item/organ)
 	result_atoms = list(/obj/item/heretic_relic/suture_needle)
 	gain_text = "Кость помнит форму. Я могу предложить ей другую."
@@ -272,7 +307,7 @@
 
 /datum/eldritch_knowledge/spell/touch_of_madness
 	name = "Касание безумия"
-	desc = "Навяжите врагу видение Мансуса: страх, короткая дезориентация и психическая травма отвлекут его от вашей свиты."
+	desc = "Коснитесь врага, чтобы навязать ему видение Мансуса: 60 урона мозгу, падение на пол и случайная фобия. Защита от магии отражает касание. Перезарядка 3 минуты."
 	gain_text = "Мой голод смотрит на них изнутри."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES

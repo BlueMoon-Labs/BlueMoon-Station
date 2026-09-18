@@ -132,6 +132,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_DEED_SIDE_KNOWLEDGE 1
 #define HERETIC_DEED_SIDE_TIER 2
 #define HERETIC_PENULTIMATE_SACRIFICES 2
+#define HERETIC_SERVANT_POLL_DURATION (10 SECONDS)
 
 //Overthrow time to update heads obj
 #define OBJECTIVE_UPDATING_TIME 300

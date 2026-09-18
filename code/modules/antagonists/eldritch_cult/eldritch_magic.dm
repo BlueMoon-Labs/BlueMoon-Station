@@ -488,7 +488,7 @@
 
 /obj/effect/proc_holder/spell/targeted/touch/mad_touch
 	name = "Касание безумия"
-	desc = "Коснитесь врага, чтобы обрушить на его разум запретные знания Мансуса."
+	desc = "Коснитесь врага: 60 урона мозгу, падение на пол и случайная фобия. Перезарядка 3 минуты."
 	hand_path = /obj/item/melee/touch_attack/mad_touch
 	school = "evocation"
 	charge_max = 1800

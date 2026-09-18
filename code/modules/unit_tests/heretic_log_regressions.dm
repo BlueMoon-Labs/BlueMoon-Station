@@ -1,4 +1,22 @@
-/// Учебная Хватка поднимает тело без mind, обычная роль сохраняет требование живой души.
+/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe
+	var/last_poll_body
+	var/last_poll_duration
+
+/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	last_poll_body = REF(body)
+	last_poll_duration = duration
+	return list()
+
+/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe
+	var/last_poll_body
+	var/last_poll_duration
+
+/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	last_poll_body = REF(body)
+	last_poll_duration = duration
+	return list()
+
+/// Учебная Хватка поднимает тело без mind; обычная роль зовёт призраков на 10 секунд и без ответа не тратит биомассу.
 /datum/unit_test/heretic_log_flesh_mindless/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_FLESH
@@ -6,12 +24,22 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/flesh_grasp)
 	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
 	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
 	victim.death()
 	TEST_ASSERT_NULL(victim.mind, "Тело изначально без разума.")
 	path.combat_resource = 2
-	TEST_ASSERT(!grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Обычная роль не поднимает пустое тело.")
-	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Отказ сохраняет биомассу.")
+	TEST_ASSERT(probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Обычная роль зовёт призраков в пустое тело.")
+	TEST_ASSERT_EQUAL(probe.last_poll_body, REF(victim), "Опрос предлагает именно это тело.")
+	TEST_ASSERT_EQUAL(probe.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд.")
+	TEST_ASSERT(!probe.ghoul_poll_pending, "Завершённый опрос снимает ожидание.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
+	TEST_ASSERT(victim.stat == DEAD && isnull(victim.mind), "Без ответа духов тело остаётся мёртвым.")
+	probe.ghoul_poll_pending = TRUE
+	probe.last_poll_duration = null
+	TEST_ASSERT(!probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Пока идёт опрос, второй не начинается.")
+	TEST_ASSERT_NULL(probe.last_poll_duration, "Повторный опрос не запущен.")
+	probe.ghoul_poll_pending = FALSE
 	heretic.simulated = TRUE
 	TEST_ASSERT(grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Учебная роль поднимает пустую мишень.")
 	TEST_ASSERT_NOTNULL(victim.mind, "Гулю создан разум.")
@@ -168,3 +196,19 @@
 	target.adjustOxyLoss(150)
 	session.update_practice()
 	TEST_ASSERT(session.practice_complete, "Реальный крит завершает упражнение.")
+
+/// Незавершённый ритуал даёт призракам 10 секунд и без ответа не тратит биомассу.
+/datum/unit_test/heretic_log_flesh_silent_dead_poll/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_FLESH
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe/ritual = allocate(/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	victim.death()
+	path.combat_resource = 2
+	TEST_ASSERT(!ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Без ответа духов ритуал не поднимает тело.")
+	TEST_ASSERT_EQUAL(ritual.last_poll_body, REF(victim), "Опрос предлагает тело с руны.")
+	TEST_ASSERT_EQUAL(ritual.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд, как и при других призывах.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
+	TEST_ASSERT(victim.stat == DEAD, "Тело остаётся мёртвым.")

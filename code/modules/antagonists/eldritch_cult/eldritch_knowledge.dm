@@ -186,7 +186,7 @@
 		track_flesh_servant(servant)
 		to_chat(user, span_notice("Создан учебный слуга без игрока. Опрос призраков не требуется."))
 		return TRUE
-	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать [summoned.name], слугой [user.real_name]?", ROLE_HERETIC, null, FALSE, 10 SECONDS, summoned)
+	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать [summoned.name], слугой [user.real_name]?", ROLE_HERETIC, null, FALSE, HERETIC_SERVANT_POLL_DURATION, summoned)
 	summoning = FALSE
 	if(!length(candidates) || QDELETED(summoned) || summoned.stat == DEAD || !ritual_still_valid(user, atoms, get_turf(loc)) || length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
 		qdel(summoned)
