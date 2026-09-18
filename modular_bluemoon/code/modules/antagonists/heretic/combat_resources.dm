@@ -1,3 +1,7 @@
+#define HERETIC_VOID_SHARD_INTERVAL (20 SECONDS)
+#define HERETIC_VOID_WARM_SHARD_INTERVAL (30 SECONDS)
+#define HERETIC_VOID_WARM_SHARD_CAP 2
+
 /obj/effect/proc_holder/spell
 	COOLDOWN_DECLARE(heretic_failure_log)
 	var/heretic_failure_reason
@@ -204,8 +208,9 @@
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/void
 	grasp_sound = 'modular_bluemoon/sound/heretic/void_deflect1.ogg'
 	combat_resource_name = "Осколки зимы"
-	combat_resource_desc = "Активируйте метки клинком или выходите на пол с воздухом холоднее 0 °C. Между пассивными пополнениями проходит 20 секунд: ждать всё это время в холоде не нужно. Клетка открытого космоса не подходит. При пустом запасе один осколок восстанавливается на полу даже в тепле с тем же интервалом. Зимний предел расходует осколок и создаёт область 5×5 на 15 секунд: враги замедляются независимо от температуры тела и теряют голос. Скованность проходит через 4 секунды после последнего воздействия. Само поле воздух не охлаждает."
+	combat_resource_desc = "Активируйте метки клинком или выходите на пол с воздухом холоднее 0 °C. Между пассивными пополнениями проходит 20 секунд: ждать всё это время в холоде не нужно. Клетка открытого космоса не подходит. В тепле осколки тоже копятся на полу, но только до двух: пустой запас пополняется с тем же интервалом, а второй осколок приходит через 30 секунд после предыдущего. Зимний предел расходует осколок и создаёт область 5×5 на 15 секунд: враги замедляются независимо от температуры тела и теряют голос. Скованность проходит через 4 секунды после последнего воздействия. Само поле воздух не охлаждает."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/void
+	COOLDOWN_DECLARE(warm_shard_harvest)
 
 /datum/eldritch_knowledge/base_blade
 	grasp_visual = /obj/effect/temp_visual/heretic_grasp/blade
@@ -326,10 +331,14 @@
 	var/turf/open/floor/floor = get_turf(user)
 	if(!istype(floor) || user.stat == DEAD || !COOLDOWN_FINISHED(src, resource_harvest))
 		return
-	if(combat_resource >= 1 && floor.GetTemperature() >= T0C)
-		return
+	if(floor.GetTemperature() >= T0C)
+		if(combat_resource >= HERETIC_VOID_WARM_SHARD_CAP)
+			return
+		if(combat_resource && !COOLDOWN_FINISHED(src, warm_shard_harvest))
+			return
 	gain_combat_resource()
-	COOLDOWN_START(src, resource_harvest, 20 SECONDS)
+	COOLDOWN_START(src, resource_harvest, HERETIC_VOID_SHARD_INTERVAL)
+	COOLDOWN_START(src, warm_shard_harvest, HERETIC_VOID_WARM_SHARD_INTERVAL)
 
 /obj/effect/proc_holder/spell/self/heretic_power
 	clothes_req = FALSE
@@ -631,3 +640,7 @@
 			carbon_victim.silent = max(carbon_victim.silent, 2)
 	release_affected(affected - present)
 	affected = present
+
+#undef HERETIC_VOID_SHARD_INTERVAL
+#undef HERETIC_VOID_WARM_SHARD_INTERVAL
+#undef HERETIC_VOID_WARM_SHARD_CAP

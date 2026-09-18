@@ -1,3 +1,5 @@
+#define HERETIC_VOID_WINTER_HEALING 1
+
 /datum/eldritch_knowledge/base_void
 	name = "Мерцание зимы"
 	desc = "Открывает Путь Пустоты: собирайте осколки зимы, замедляйте врагов магией и выбирайте дистанцию боя. Скованность держится 4 секунды после последнего воздействия; способности и поля обновляют её, не складывая силу замедления. Нож на руне при температуре не выше 0 °C или внутри вашего Зимнего предела превращается в клинок Пустоты. Зимний предел создаёт область холода и молчания."
@@ -37,7 +39,7 @@
 
 /datum/eldritch_knowledge/cold_snap
 	name = "Путь Аристократа"
-	desc = "Вы перестаёте дышать и получаете защиту от низких температур. Вакуум всё ещё опасен из-за недостатка давления."
+	desc = "Вы перестаёте дышать и получаете защиту от низких температур. Вакуум всё ещё опасен из-за недостатка давления. На полу с воздухом не теплее 0 °C, внутри своего Зимнего предела или поля фонаря тишины вы восстанавливаете по 1 ушибу и 1 ожогу в секунду."
 	gain_text = "Аристократ стоял среди снега, не оставляя в воздухе ни облачка пара."
 	cost = 1
 	route = PATH_VOID
@@ -53,6 +55,26 @@
 		return
 	REMOVE_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
 	REMOVE_TRAIT(user, TRAIT_NOBREATH, REF(src))
+
+/datum/eldritch_knowledge/cold_snap/on_life(mob/user)
+	if(!isliving(user) || user.stat == DEAD || !in_winter(user))
+		return
+	heretic_heal_damage(user, HERETIC_VOID_WINTER_HEALING, HERETIC_VOID_WINTER_HEALING)
+
+/datum/eldritch_knowledge/cold_snap/proc/in_winter(mob/living/user)
+	var/turf/open/floor/floor = get_turf(user)
+	if(!istype(floor))
+		return FALSE
+	if(floor.GetTemperature() <= T0C)
+		return TRUE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_void/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
+	if(!path)
+		return FALSE
+	for(var/obj/effect/heretic_combat_zone/void/winter in list(path.combat_zone, path.relic_zone))
+		if(!QDELETED(winter) && (floor in winter.field_turfs))
+			return TRUE
+	return FALSE
 
 /datum/eldritch_knowledge/void_cloak
 	name = "Плащ пустоты"
@@ -172,7 +194,7 @@
 
 /datum/eldritch_knowledge/spell/voidpull
 	name = "Притяжение пустоты"
-	desc = "Притягивает видимых врагов с расстояния до 3 клеток и замедляет их на 4 секунды. Ближайшие получают 20 ушибов и короткое оглушение. Препятствия останавливают притяжение."
+	desc = "Притягивает видимых врагов с расстояния до 3 клеток на два шага к вам и замедляет их на 4 секунды. Те, кто уже стоял вплотную к вам в момент применения, получают 20 ушибов и падают на 2 секунды. Препятствия останавливают притяжение."
 	gain_text = "Аристократ пригласил меня ближе. Отказаться я уже не мог."
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/void_pull
@@ -284,3 +306,5 @@
 	followed_area = new_area
 	area_type = new_area.type
 	update_areas()
+
+#undef HERETIC_VOID_WINTER_HEALING

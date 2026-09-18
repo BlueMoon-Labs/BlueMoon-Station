@@ -74,7 +74,7 @@
 	flesh.on_eldritch_blade(victim, user, TRUE)
 	TEST_ASSERT(abs(victim.getBruteLoss() - 4) < 0.1, "Усиленная Плоть наносит четыре ушиба бескровной цели.")
 
-/// Пустота восстанавливает один резерв в тепле и расходует подготовленную скованность для усиленной хватки.
+/// Пустота копит в тепле до двух осколков и расходует подготовленную скованность для усиленной хватки.
 /datum/unit_test/heretic_gameplay/void_reserve/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
@@ -83,9 +83,18 @@
 	path.combat_resource = 0
 	path.on_life(user)
 	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Тёплый пол не запирает путь без осколков.")
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(path, resource_harvest) - 20 SECONDS) <= world.tick_lag, "Пустой запас в тепле пополняется с прежним интервалом.")
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(path, warm_shard_harvest) - 30 SECONDS) <= world.tick_lag, "Второй осколок в тепле ждёт 30 секунд.")
 	COOLDOWN_RESET(path, resource_harvest)
 	path.on_life(user)
-	TEST_ASSERT_EQUAL(path.combat_resource, 1, "В тепле резерв не растёт выше одного.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Через 20 секунд второй осколок в тепле ещё не приходит.")
+	COOLDOWN_RESET(path, warm_shard_harvest)
+	path.on_life(user)
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Через 30 секунд в тепле приходит второй осколок.")
+	COOLDOWN_RESET(path, resource_harvest)
+	COOLDOWN_RESET(path, warm_shard_harvest)
+	path.on_life(user)
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "В тепле запас не растёт выше двух.")
 	var/datum/eldritch_knowledge/void_grasp/grasp = allocate(/datum/eldritch_knowledge/void_grasp)
 	grasp.passive_level = 3
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human)

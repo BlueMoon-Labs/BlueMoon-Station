@@ -135,3 +135,49 @@
 	var/obj/effect/proc_holder/spell/new_spell = knowledge.granted_spell
 	qdel(knowledge)
 	TEST_ASSERT(QDELETED(new_spell), "Удаление знания отзывает заклинание.")
+
+/// Путь Аристократа лечит в холодном воздухе и в своём Зимнем пределе; в холоде осколки копятся выше двух.
+/datum/unit_test/heretic_void_winter_healing
+	var/turf/open/floor/cold_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_void_winter_healing/Destroy()
+	if(cold_floor && !isnull(original_temperature))
+		cold_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_void_winter_healing/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/cold_snap)
+	var/datum/eldritch_knowledge/base_void/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/cold_snap/aristocrat = heretic.get_knowledge(/datum/eldritch_knowledge/cold_snap)
+	cold_floor = get_turf(user)
+	original_temperature = cold_floor.GetTemperature()
+	cold_floor.air.set_temperature(T0C + 20)
+	user.adjustBruteLoss(10)
+	user.adjustFireLoss(10)
+	aristocrat.on_life(user)
+	TEST_ASSERT(abs(user.getBruteLoss() - 10) < DAMAGE_PRECISION && abs(user.getFireLoss() - 10) < DAMAGE_PRECISION, "В тёплом воздухе без поля лечения нет.")
+	var/datum/antagonist/heretic/stranger = allocate_heretic(get_step(user, EAST))
+	var/obj/effect/heretic_combat_zone/void/foreign = allocate(/obj/effect/heretic_combat_zone/void, cold_floor, stranger.owner)
+	STOP_PROCESSING(SSprocessing, foreign)
+	aristocrat.on_life(user)
+	TEST_ASSERT(abs(user.getBruteLoss() - 10) < DAMAGE_PRECISION, "Чужое зимнее поле не лечит.")
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, cold_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	path.combat_zone = winter
+	path.track_combat_effect(winter)
+	aristocrat.on_life(user)
+	TEST_ASSERT(abs(user.getBruteLoss() - 9) < DAMAGE_PRECISION && abs(user.getFireLoss() - 9) < DAMAGE_PRECISION, "Свой Зимний предел лечит по единице ушибов и ожогов.")
+	qdel(winter)
+	cold_floor.air.set_temperature(T0C)
+	aristocrat.on_life(user)
+	TEST_ASSERT(abs(user.getBruteLoss() - 8) < DAMAGE_PRECISION && abs(user.getFireLoss() - 8) < DAMAGE_PRECISION, "Воздух при 0 °C лечит и без поля.")
+	cold_floor.air.set_temperature(T0C - 20)
+	path.combat_resource = 2
+	COOLDOWN_RESET(path, resource_harvest)
+	COOLDOWN_RESET(path, warm_shard_harvest)
+	path.on_life(user)
+	TEST_ASSERT_EQUAL(path.combat_resource, 3, "В холоде осколки копятся выше двух.")
