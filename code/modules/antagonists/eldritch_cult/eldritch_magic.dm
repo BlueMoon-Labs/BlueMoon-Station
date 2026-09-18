@@ -115,6 +115,7 @@
 				victim.Stun(1 SECONDS)
 				victim.Knockdown(2 SECONDS)
 				victim.adjustStaminaLoss(60)
+				victim.apply_status_effect(/datum/status_effect/heretic_grasp_hold, user)
 			log_combat(user, victim, "поражает хваткой Мансуса", addition = "базовый урон: [victim.getBruteLoss() - brute_before] ушибов, [victim.getStaminaLoss() - stamina_before] выносливости")
 	var/list/knowledge = heretic.get_all_knowledge()
 	for(var/knowledge_type in knowledge)
