@@ -9,6 +9,8 @@
 #define HERETIC_LOCK_THRESHOLD_LIMIT 2
 #define HERETIC_LOCK_THRESHOLD_COOLDOWN (15 SECONDS)
 #define HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN (15 SECONDS)
+#define HERETIC_LOCK_GRASP_BOLT_TIME (20 SECONDS)
+#define HERETIC_LOCK_HARVEST_COOLDOWN (20 SECONDS)
 
 /datum/heretic_path/lock
 	id = PATH_LOCK
@@ -40,7 +42,7 @@
 	combat_resource = 2
 	combat_resource_max = 4
 	combat_resource_name = "Ключи"
-	combat_resource_desc = "Метка даёт ключ при ударе клинком. Открытая ладонь добывает ключ из закрытого шлюза или запертого шкафа раз в 20 секунд. Одиночная печать стоит 1 ключ: снимите её рукой на намерении помощи, чтобы вернуть его. Бесплатные печати ключей не дают. Переход ритуальным ключом между связанными порогами стоит 1 ключ; Замкнутый двор — 2."
+	combat_resource_desc = "Метка даёт ключ при ударе клинком. Открытая ладонь раз в 20 секунд добывает ключ, открывая закрытый шлюз или запертый шкаф либо запирая шлюз на намерении вреда. Одиночная печать стоит 1 ключ: снимите её рукой на намерении помощи, чтобы вернуть его. Бесплатные печати ключей не дают. Переход ритуальным ключом между связанными порогами стоит 1 ключ; Замкнутый двор — 2."
 	grasp_visual = /obj/effect/temp_visual/heretic_lock
 	grasp_sound = 'modular_bluemoon/sound/heretic/lock_knock.ogg'
 	var/mob/living/lock_body
@@ -51,6 +53,8 @@
 	var/ascension_active = FALSE
 	var/court_busy = FALSE
 	var/court_generation = 0
+	/// Шлюзы, закрытые хваткой: шлюз -> таймер снятия болтов.
+	var/list/grasp_bolts = list()
 
 /datum/eldritch_knowledge/base_lock/on_body_gain(mob/living/user)
 	if(!user?.mind || lock_body == user)
@@ -74,6 +78,8 @@
 
 /datum/eldritch_knowledge/base_lock/Destroy()
 	on_body_lose(lock_body)
+	for(var/obj/machinery/door/airlock/door as anything in grasp_bolts.Copy())
+		release_grasp_bolt(door)
 	return ..()
 
 /datum/eldritch_knowledge/base_lock/proc/on_body_deleted(datum/source)
@@ -287,9 +293,7 @@
 	if(QDELETED(src) || !valid_user(user) || generation != court_generation)
 		return TRUE
 	if(harvest)
-		if(COOLDOWN_FINISHED(src, resource_harvest))
-			gain_combat_resource()
-			COOLDOWN_START(src, resource_harvest, 20 SECONDS)
+		harvest_key()
 		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 		if(heretic)
 			heretic.advance_deed(heretic.deed_key_for(target), get_turf(target), silent = TRUE)
@@ -297,6 +301,48 @@
 	playsound(target, 'modular_bluemoon/sound/heretic/lock_knock.ogg', 45, TRUE)
 	log_game("[key_name(user)] отпирает [target] силой Замка в [AREACOORD(target)].")
 	return TRUE
+
+/datum/eldritch_knowledge/base_lock/proc/harvest_key()
+	if(!COOLDOWN_FINISHED(src, resource_harvest))
+		return FALSE
+	gain_combat_resource()
+	COOLDOWN_START(src, resource_harvest, HERETIC_LOCK_HARVEST_COOLDOWN)
+	return TRUE
+
+/datum/eldritch_knowledge/base_lock/proc/can_bolt_door(obj/machinery/door/airlock/door, mob/living/user)
+	return valid_user(user) && istype(door) && !QDELETED(door) && isturf(door.loc) && user.Adjacent(door) && door.density && !door.locked && !door.welded && !door.operating && !(door.resistance_flags & INDESTRUCTIBLE)
+
+/// Хватка на вреде запирает шлюз на 20 секунд; ключ идёт из общего с отпиранием отката.
+/datum/eldritch_knowledge/base_lock/proc/bolt_door(obj/machinery/door/airlock/door, mob/living/user)
+	if(!can_bolt_door(door, user))
+		return FALSE
+	door.bolt()
+	if(!door.locked)
+		return FALSE
+	RegisterSignal(door, COMSIG_PARENT_QDELETING, PROC_REF(on_bolted_door_deleted), override = TRUE)
+	deltimer(grasp_bolts[door])
+	grasp_bolts[door] = addtimer(CALLBACK(src, PROC_REF(release_grasp_bolt), door), HERETIC_LOCK_GRASP_BOLT_TIME, TIMER_STOPPABLE)
+	harvest_key()
+	new /obj/effect/temp_visual/heretic_lock(get_turf(door))
+	playsound(door, 'modular_bluemoon/sound/heretic/lock_knock.ogg', 45, TRUE)
+	door.visible_message(span_warning("Засовы [door] с лязгом опускаются сами собой!"))
+	log_game("[key_name(user)] запирает [door] силой Замка на [HERETIC_LOCK_GRASP_BOLT_TIME / (1 SECONDS)] с в [AREACOORD(door)].")
+	return TRUE
+
+/datum/eldritch_knowledge/base_lock/proc/release_grasp_bolt(obj/machinery/door/airlock/door)
+	if(!(door in grasp_bolts))
+		return
+	deltimer(grasp_bolts[door])
+	grasp_bolts -= door
+	UnregisterSignal(door, COMSIG_PARENT_QDELETING)
+	if(!QDELETED(door) && door.locked)
+		door.unbolt()
+
+/datum/eldritch_knowledge/base_lock/proc/on_bolted_door_deleted(obj/machinery/door/airlock/source)
+	SIGNAL_HANDLER
+	deltimer(grasp_bolts[source])
+	grasp_bolts -= source
+	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
 
 /datum/eldritch_knowledge/base_lock/proc/release_seals(mob/living/user, obj/structure/heretic_lock_seal/only_seal)
 	if(!valid_user(user))
@@ -457,14 +503,18 @@
 /datum/eldritch_knowledge/lock_grasp
 	name = "Открытая ладонь"
 	gain_text = "Привратник показал мне пустую ладонь. По ту сторону стены кто-то отодвинул засов."
-	desc = "Хватка открывает соседний закрытый шлюз, поднимая болты, или запертый шкаф. Питание и доступ не нужны, сварка и неразрушимые преграды мешают. Успешное открытие даёт 1 ключ не чаще раза в 20 секунд. На живой цели сохраняется обычный эффект хватки."
+	desc = "Хватка открывает соседний закрытый шлюз, поднимая болты, или запертый шкаф. Питание и доступ не нужны, сварка и неразрушимые преграды мешают. Успешное открытие даёт 1 ключ не чаще раза в 20 секунд. На намерении вреда хватка, наоборот, опускает болты закрытого шлюза на 20 секунд, после чего они поднимаются сами. Запирание тоже даёт ключ, но делит с открытием ту же задержку в 20 секунд. На живой цели сохраняется обычный эффект хватки."
 	cost = 1
 	route = PATH_LOCK
 
 /datum/eldritch_knowledge/lock_grasp/on_mansus_grasp(atom/target, mob/living/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_lock/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_lock)
-	return proximity_flag && target && knowledge?.valid_user(user) && user.Adjacent(target) && knowledge.open_lock(target, user, harvest = TRUE)
+	if(!proximity_flag || !target || !knowledge?.valid_user(user) || !user.Adjacent(target))
+		return FALSE
+	if(user.a_intent == INTENT_HARM && istype(target, /obj/machinery/door/airlock) && knowledge.bolt_door(target, user))
+		return TRUE
+	return knowledge.open_lock(target, user, harvest = TRUE)
 
 /datum/eldritch_knowledge/spell/lock_bolt
 	name = "Открывающий удар"
@@ -797,7 +847,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/seal
 	name = "Запечатать проход"
-	desc = "За 1 ключ создайте печать на свободном полу в пяти клетках: 60 прочности, 30 секунд жизни, до четырёх одновременно. Еретики, слуги и антимагия проходят свободно. Снятие рукой на намерении помощи возвращает ключ. Перезарядка 8 секунд."
+	desc = "За 1 ключ создайте печать на свободном полу в пяти клетках на 30 секунд. Прочность 60, с «Петлями лабиринта» — от 90 до 120. Одновременно до четырёх печатей, после «Петель лабиринта» — до десяти, после вознесения — до шестнадцати. Еретики, слуги и антимагия проходят свободно. Снятие рукой на намерении помощи возвращает ключ. Перезарядка 8 секунд."
 	active_msg = "Укажите свободный пол для печати."
 	deactive_msg = "Ключ возвращается в ладонь."
 	charge_max = 8 SECONDS
@@ -1016,3 +1066,5 @@
 #undef HERETIC_LOCK_THRESHOLD_LIMIT
 #undef HERETIC_LOCK_THRESHOLD_COOLDOWN
 #undef HERETIC_LOCK_SELECTIVE_RELEASE_COOLDOWN
+#undef HERETIC_LOCK_GRASP_BOLT_TIME
+#undef HERETIC_LOCK_HARVEST_COOLDOWN

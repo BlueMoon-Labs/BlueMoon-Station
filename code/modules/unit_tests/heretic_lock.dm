@@ -146,6 +146,34 @@
 	TEST_ASSERT(closet.opened && !closet.locked, "Шкаф открыт, а его замок снят.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Второй замок не обходит общий интервал добычи.")
 
+/// Хватка на вреде запирает шлюз на 20 секунд, делит с отпиранием задержку ключей и снимает болты по сроку.
+/datum/unit_test/heretic_lock_grasp_bolt/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/lock_grasp)
+	var/datum/eldritch_knowledge/base_lock/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_lock)
+	var/datum/eldritch_knowledge/lock_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/lock_grasp)
+	knowledge.combat_resource = 0
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(user, EAST))
+	var/obj/machinery/door/airlock/second = allocate(/obj/machinery/door/airlock, get_step(user, NORTH))
+	user.a_intent = INTENT_HARM
+	TEST_ASSERT(grasp.on_mansus_grasp(door, user, TRUE), "Хватка на вреде запирает закрытый шлюз.")
+	TEST_ASSERT(door.locked && door.density, "Шлюз остаётся закрытым на болты.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Запирание даёт ключ.")
+	TEST_ASSERT(abs(timeleft(knowledge.grasp_bolts[door]) - 20 SECONDS) <= world.tick_lag, "Болты поднимутся через 20 секунд.")
+	TEST_ASSERT(grasp.on_mansus_grasp(second, user, TRUE), "Второй шлюз тоже запирается.")
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Второе запирание не обходит общую задержку ключей.")
+	knowledge.release_grasp_bolt(door)
+	TEST_ASSERT(!door.locked && door.density, "По сроку болты поднимаются, шлюз остаётся закрытым.")
+	TEST_ASSERT(!(door in knowledge.grasp_bolts), "Освобождённый шлюз больше не отслеживается.")
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT(grasp.on_mansus_grasp(second, user, TRUE), "На помощи хватка открывает запертый ею шлюз.")
+	TEST_ASSERT(!second.locked && !second.density, "Шлюз открыт и без болтов.")
+	knowledge.release_grasp_bolt(second)
+	TEST_ASSERT(!second.locked, "Срок запирания не опускает болты на уже открытом шлюзе.")
+	TEST_ASSERT_EQUAL(length(knowledge.grasp_bolts), 0, "Все запирания освобождены.")
+
 /// Направленный удар проверяет препятствия, союзников и один раз расходует антимагию при попадании.
 /datum/unit_test/heretic_lock_bolt/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
