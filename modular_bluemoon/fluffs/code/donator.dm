@@ -2697,7 +2697,7 @@
 	name = "NCR ranger clothes case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1")
+	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
 
 /datum/gear/donator/bm/skeleton_suit
 	name = "Skeleton suit"

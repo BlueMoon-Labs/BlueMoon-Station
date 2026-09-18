@@ -119,7 +119,7 @@
 	покрывающим затраты щита."
 	icon_state = "syndie_energy_shield"
 	shield_state = "shield-red"
-	used_modificator = MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG
+	used_modificator = MOD_ANTAG_SHIELD_CELL_DRAIN_MODIFICATOR
 	recharge_delay = 17 SECONDS
 	max_charges = 5
 
@@ -129,7 +129,7 @@
 	однако не способен выдерживать столько же много попаданий, как старшая версия."
 	icon_state = "inteq_energy_shield"
 	shield_state = "shield-yellow"
-	minimum_cell_charge = MOD_ANTAG_SHIELD_CELL_DRAIN_MODIFICATOR
+	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG
 	recharge_delay = 18 SECONDS
 	max_charges = 3
 
@@ -149,8 +149,7 @@
 	при столкновениях."
 	icon_state = "cloak_traitor"
 	bumpoff = FALSE
-	stealth_alpha = 45
-
+	stealth_alpha = 35
 
 /obj/item/mod/module/jump_jet/ninja
 	name = "Spider Clan Jump Module"
@@ -161,6 +160,15 @@
 	beam_icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	beam_state = "net_beam"
 	incompatible_modules = list()
+
+/obj/item/mod/module/stealth/adv/ninja
+	name = "Spider Clan stealth module"
+	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
+	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
+	при столкновениях."
+	icon_state = "cloak_ninja"
+	bumpoff = FALSE
+	stealth_alpha = 10
 
 /obj/item/mod/module/jump_jet/inteq
 	name = "InteQ Jump Jet Module"

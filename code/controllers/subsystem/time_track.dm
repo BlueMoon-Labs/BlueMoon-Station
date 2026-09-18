@@ -1573,12 +1573,26 @@ SUBSYSTEM_DEF(time_track)
 	"ledger_tgui_bytes",
 	"ledger_statpanel_bytes",
 	"ledger_spritesheets",
+	// SendMaps проверяет client.images каждого клиента на каждом проходе
+	"client_images_total",
+	"client_images_max",
+	"client_screen_total",
 	)
 
 /// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
 /// аргументах: без /proc (Windows) memory/host_memory приходят null, и колонки просто
 /// пустые - выкидывать их нельзя, иначе CSV прода и локального прогона не сравнить.
 /datum/controller/subsystem/time_track/proc/perf_log_row(list/memory, list/host_memory, gc_queue_depth)
+	var/client_images_total = 0
+	var/client_images_max = 0
+	var/client_screen_total = 0
+	for(var/client/counted_client as anything in GLOB.clients)
+		if(!counted_client)
+			continue
+		var/image_count = length(counted_client.images)
+		client_images_total += image_count
+		client_images_max = max(client_images_max, image_count)
+		client_screen_total += length(counted_client.screen)
 	return list(
 	world.time,
 	length(GLOB.clients),
@@ -1668,5 +1682,8 @@ SUBSYSTEM_DEF(time_track)
 	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_RSC_BYTES], 12),
 	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_TGUI_BYTES], 12),
 	num2text(GLOB.nondatum_ledger[NONDATUM_LEDGER_STATPANEL_BYTES], 12),
-	GLOB.nondatum_ledger[NONDATUM_LEDGER_SPRITESHEETS]
+	GLOB.nondatum_ledger[NONDATUM_LEDGER_SPRITESHEETS],
+	client_images_total,
+	client_images_max,
+	client_screen_total
 	)

@@ -16,7 +16,7 @@
 
 /obj/machinery/hypnochair/Initialize(mapload)
 	. = ..()
-	open_machine()
+	INVOKE_ASYNC(src, PROC_REF(open_machine))
 	update_icon()
 
 /obj/machinery/hypnochair/attackby(obj/item/I, mob/user, params)

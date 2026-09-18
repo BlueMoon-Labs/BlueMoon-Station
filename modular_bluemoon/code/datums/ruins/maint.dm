@@ -26,3 +26,22 @@
 	template_names = list("Shutters good integrity" = 5, "Shutters bad integrity" = 3, "Shutters lavaland" = 1, "Shutters cracked" = 1)
 	icon = 'icons/mob/landmarks.dmi'
 	icon_state = "x"
+
+/datum/map_template/ruin/station/delta/library
+	prefix = "_maps/map_files/Deltastation/library/"
+
+/datum/map_template/ruin/station/delta/library/classic
+	id = "delta_library_classic"
+	suffix = "classic.dmm"
+	name = "Delta Lib Classic"
+
+/datum/map_template/ruin/station/delta/library/private
+	id = "delta_library_private"
+	suffix = "private.dmm"
+	name = "Delta Lib Private spaces"
+
+
+/obj/effect/landmark/stationroom/delta/library
+	template_names = list("Delta Lib Private spaces" = 1, "Delta Lib Classic" = 1)
+	icon = 'icons/mob/landmarks.dmi'
+	icon_state = "x"

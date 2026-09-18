@@ -244,7 +244,7 @@
 			new/obj/item/shard(drop_location())
 		obj_integrity = 1
 		qdel(src)
-	..()
+	return ..()
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Drinks. END

@@ -51,6 +51,7 @@
 	.["sound_announcements"] = !!(toggles & SOUND_ANNOUNCEMENTS)
 	.["sound_bark"] = !!(toggles & SOUND_BARK)
 	.["sound_emote"] = !!(toggles & SOUND_EMOTE)
+	.["sound_breathing"] = !!(toggles & SOUND_BREATHING)
 	.["sound_prayers"] = !!(toggles & SOUND_PRAYERS)
 	.["sound_adminhelp"] = !!(toggles & SOUND_ADMINHELP)
 	.["sound_mentorhelp"] = !!(mentor_toggles & SOUND_MENTORHELP)
@@ -303,6 +304,12 @@
 					toggles ^= SOUND_BARK
 				if("sound_emote")
 					toggles ^= SOUND_EMOTE
+				if("sound_breathing")
+					toggles ^= SOUND_BREATHING
+					if(!(toggles & SOUND_BREATHING))
+						var/mob/living/carbon/carbon_mob = user
+						if(istype(carbon_mob))
+							carbon_mob.breathing_loop?.stop()
 				if("sound_prayers")
 					toggles ^= SOUND_PRAYERS
 				if("sound_adminhelp")

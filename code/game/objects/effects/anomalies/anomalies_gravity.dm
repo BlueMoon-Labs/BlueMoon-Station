@@ -13,6 +13,7 @@
 	icon_state = "shield2"
 	density = FALSE
 	aSignal = /obj/item/assembly/signaler/anomaly/grav
+	raw_core = /obj/item/raw_anomaly_core/grav
 	var/boing = 0
 	///Warp effect holder for displacement filter to "pulse" the anomaly
 	var/atom/movable/warp_effect/warp
@@ -108,6 +109,7 @@
 ///Bigger, meaner, immortal gravity anomaly. although this is just the super grav anomaly but bigger and shattering move force
 /obj/effect/anomaly/grav/high/big
 	immortal = TRUE
+	drops_core = FALSE
 	aSignal = null
 	move_force = MOVE_FORCE_OVERPOWERING
 

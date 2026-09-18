@@ -62,13 +62,16 @@
 	var/list/jani_upgrades = list()
 
 /mob/living/simple_animal/bot/cleanbot/proc/deputize(obj/item/stab_tool, mob/user)
-	if(in_range(src, user))
-		to_chat(user, "<span class='notice'>Вы прикрепили \the [stab_tool] к \the [src].</span>")
-		user.transferItemToLoc(stab_tool, src)
-		weapon = stab_tool
-		weapon_orig_force = weapon.force
-		if(!emagged)
-			weapon.force = weapon.force / 2
+	if(!in_range(src, user))
+		return
+	if(!user.transferItemToLoc(stab_tool, src))
+		to_chat(user, span_warning("Вам не удалось прикрепить \the [stab_tool] к \the [src]."))
+		return
+	to_chat(user, span_notice("Вы прикрепили \the [stab_tool] к \the [src]."))
+	weapon = stab_tool
+	weapon_orig_force = weapon.force
+	if(!emagged)
+		weapon.force = weapon.force / 2
 	add_overlay(weapon.build_worn_icon(default_layer = layer + 1, default_icon_file = weapon.lefthand_file, isinhands = TRUE))
 
 /mob/living/simple_animal/bot/cleanbot/proc/update_titles()

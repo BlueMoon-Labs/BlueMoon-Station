@@ -227,17 +227,21 @@
 
 /// Called when an activated module without a device is used
 /obj/item/mod/module/proc/on_select_use(atom/target)
+	if(!mod?.wearer)
+		return FALSE
 	if(mod.wearer.incapacitated(ignore_grab = TRUE))
 		return FALSE
 	mod.wearer.face_atom(target)
 	if(!on_use())
+		return FALSE
+	if(mod.is_activating() || !mod.is_active())
 		return FALSE
 	return TRUE
 
 /// Called when an activated module without a device is active and the user alt/middle-clicks
 /obj/item/mod/module/proc/on_special_click(mob/source, atom/target)
 	SIGNAL_HANDLER
-	on_select_use(target)
+	INVOKE_ASYNC(src, PROC_REF(on_select_use), target)
 	return COMSIG_MOB_CANCEL_CLICKON
 
 /// Called on the MODsuit's process
