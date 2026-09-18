@@ -496,6 +496,34 @@
 	qdel(recipe)
 	TEST_ASSERT_NULL(echo.conductor_ref, "Утрата знания лиры снимает выбор узла.")
 
+/// Волны Последней службы перекрываются: стоящая рядом цель получает два удара подряд.
+/datum/unit_test/heretic_echo_final_bands/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/echo_final)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/datum/eldritch_knowledge/final_eldritch/echo_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/echo_final)
+	heretic.ascended = TRUE
+	finale.finished = TRUE
+	finale.on_body_gain(user)
+	var/mob/living/near = allocate(/mob/living/carbon/human, get_step(center, EAST))
+	var/mob/living/far = allocate(/mob/living/carbon/human, locate(center.x - 3, center.y, center.z))
+	TEST_ASSERT(isfloorturf(far.loc), "Дальняя цель стоит на полу комнаты.")
+	TEST_ASSERT(echo.final_chorus(user), "Вознесённый еретик начинает Последнюю службу.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(near.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Первая волна накрывает соседнюю клетку.")
+	attack.resolve()
+	TEST_ASSERT(abs(near.getBruteLoss() - 64) <= DAMAGE_PRECISION, "Вторая волна снова задевает цель на расстоянии одной клетки.")
+	TEST_ASSERT_EQUAL(far.getBruteLoss(), 0, "Дальняя цель ещё вне первых двух волн.")
+	attack.resolve()
+	TEST_ASSERT(abs(near.getBruteLoss() - 64) <= DAMAGE_PRECISION, "Третья волна не достаёт до соседней клетки.")
+	TEST_ASSERT(abs(far.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Третья волна накрывает третью клетку.")
+	TEST_ASSERT(QDELETED(attack), "Три волны завершают службу.")
+
 /// Полный запас пассивки и вознесения сохраняется при переносе разума.
 /datum/unit_test/heretic_echo_capacity_transfer/Run()
 	for(var/ascended in list(FALSE, TRUE))
