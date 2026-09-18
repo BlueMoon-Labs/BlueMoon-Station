@@ -462,30 +462,41 @@
 	TEST_ASSERT(findtext(heretic.roundend_report(), "Тестовая цель"), "Раундэнд показывает имена из истории после сброса цели.")
 	TEST_ASSERT(!findtext(heretic.antag_panel(), "Тестовая цель"), "Панель текущей охоты не выдаёт историю за активную цель.")
 
-/// Неудачное затмение сохраняет копии, перезарядку и состояние врагов.
+/// Занятая клетка владельца не срывает затмение: без места копия не появляется, а свободная соседняя клетка её принимает.
 /datum/unit_test/heretic_moon_eclipse_failed_placement/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	TEST_ASSERT(knowledge.create_reflection(user, get_step(user, EAST)), "Первая копия создана.")
 	TEST_ASSERT(knowledge.create_reflection(user, get_step(user, NORTH)), "Вторая копия создана.")
 	var/list/mob/living/simple_animal/hostile/illusion/heretic_moon/original_reflections = knowledge.reflections.Copy()
-	var/obj/machinery/door/airlock/blocker = allocate(/obj/machinery/door/airlock, get_turf(user))
+	allocate(/obj/machinery/door/airlock, get_turf(user))
 	TEST_ASSERT(!knowledge.valid_reflection_turf(get_turf(user), user), "Закрытый шлюз блокирует место для отражения.")
-	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, NORTHEAST))
+	var/list/obj/structure/fillers = list()
+	for(var/direction in GLOB.alldirs)
+		var/turf/neighbour = get_step(user, direction)
+		if(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in neighbour)
+			continue
+		var/obj/structure/filler = allocate(/obj/structure, neighbour)
+		filler.density = TRUE
+		fillers += filler
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 2, user.z))
 	var/obj/effect/proc_holder/spell/self/heretic_moon/eclipse/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_moon/eclipse)
 	spell.charge_counter = 0
 	spell.cast(list(user), user)
-	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Неудачное размещение возвращает перезарядку.")
-	TEST_ASSERT_EQUAL(length(knowledge.reflections & original_reflections), 2, "Старые отражения не удалены.")
-	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Неудача не даёт саван.")
-	TEST_ASSERT_EQUAL(victim.confused, 0, "Неудача не ослепляет и не путает врагов.")
-	qdel(blocker)
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Нехватка места для копии не отменяет затмение.")
+	TEST_ASSERT(victim.confused > 0, "Затмение путает врага и без новой копии.")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Владелец скрывается и без новой копии.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Без места новая копия не появляется.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections & original_reflections), 2, "Без новой копии старые отражения не удаляются.")
+	var/obj/structure/freed = fillers[1]
+	var/turf/free_turf = get_turf(freed)
+	qdel(freed)
 	spell.charge_counter = 0
 	spell.cast(list(user), user)
 	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Успешное затмение расходует перезарядку.")
+	TEST_ASSERT(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in free_turf, "Копия встаёт на свободную соседнюю клетку.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), knowledge.reflection_limit(), "Замена на пределе сохраняет число копий.")
 	TEST_ASSERT(QDELETED(original_reflections[1]), "После создания новой копии удаляется самая старая.")
-	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Успешное затмение даёт саван.")
 
 /// Мелкие животные не получают метку и не дают ресурс после удара клинком.
 /datum/unit_test/heretic_small_animal_marks/Run()

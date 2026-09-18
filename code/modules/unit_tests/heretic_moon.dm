@@ -99,7 +99,7 @@
 	TEST_ASSERT(first && second, "Два отражения должны создаваться на свободном полу.")
 	TEST_ASSERT_NULL(knowledge.create_reflection(user, third_turf), "Начальный предел не должен разрешать третье отражение.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Отказ создания не должен менять список отражений.")
-	first.adjustBruteLoss(20)
+	first.adjustBruteLoss(first.maxHealth)
 	TEST_ASSERT(QDELETED(first), "Отражение должно разрушаться обычным уроном.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 1, "Разбитое отражение должно освобождать место в списке.")
 	knowledge.upgraded = TRUE
@@ -218,7 +218,7 @@
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_moon_opening), "Метка должна замедлять цель для атаки двойников.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/moon), "Активированная метка должна расходоваться.")
 
-/// Лунный клинок наносит обычный урон и разбивает отражение одним попаданием.
+/// Лунный клинок наносит обычный урон и разбивает отражение вторым попаданием.
 /datum/unit_test/heretic_moon_blade_damage/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
@@ -228,7 +228,9 @@
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = knowledge.create_reflection(user, get_step(user, EAST))
 	TEST_ASSERT_NOTNULL(reflection, "Отражение для проверки удара должно создаться.")
 	blade.attack(reflection, user)
-	TEST_ASSERT(QDELETED(reflection), "Одно попадание лунным клинком разбивает отражение.")
+	TEST_ASSERT(!QDELETED(reflection) && reflection.health < reflection.maxHealth, "Первое попадание ранит, но не разбивает отражение.")
+	blade.attack(reflection, user)
+	TEST_ASSERT(QDELETED(reflection), "Второе попадание лунным клинком разбивает отражение.")
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	blade.attack(victim, user)
 	TEST_ASSERT(victim.getBruteLoss() > 0, "Лунный путь сохраняет обычный урон своего клинка.")
@@ -415,17 +417,22 @@
 	TEST_ASSERT_EQUAL(get_turf(user), origin, "Шествие должно соблюдать запрет телепортации.")
 	REMOVE_TRAIT(user, TRAIT_NO_TELEPORT, "moon-test")
 
-/// Вспышка разбитой копии действует на врага, но не срабатывает при обычной очистке.
+/// Вспышка разбитой копии бьёт врагов в двух клетках, но не срабатывает при обычной очистке.
 /datum/unit_test/heretic_moon_refraction/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	knowledge.refracting = TRUE
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = knowledge.create_reflection(user, get_step(user, EAST))
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, NORTHEAST))
-	victim.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
-	reflection.adjustBruteLoss(20)
+	var/mob/living/distant = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y, user.z))
+	var/mob/living/outside = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y + 1, user.z))
+	for(var/mob/living/target as anything in list(victim, distant, outside))
+		target.apply_status_effect(/datum/status_effect/heretic_moon_pressure)
+	reflection.adjustBruteLoss(reflection.maxHealth)
 	TEST_ASSERT(QDELETED(reflection), "Урон должен разбивать копию.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 25, "Разбитая копия должна изматывать ближайшего врага.")
+	TEST_ASSERT_EQUAL(distant.getStaminaLoss(), 25, "Вспышка достаёт врага в двух клетках от копии.")
+	TEST_ASSERT_EQUAL(outside.getStaminaLoss(), 0, "Враг в трёх клетках от копии остаётся вне вспышки.")
 	TEST_ASSERT_EQUAL(user.getStaminaLoss(), 0, "Вспышка не должна изматывать владельца.")
 	victim.remove_status_effect(/datum/status_effect/heretic_moon_pressure)
 	knowledge.create_reflection(user, get_step(user, EAST))
@@ -475,7 +482,9 @@
 	bullet.firer = victim
 	bullet.starting = destination
 	reflection.bullet_act(bullet)
-	TEST_ASSERT(QDELETED(reflection), "Попадание снаряда должно разбивать двойника.")
+	TEST_ASSERT(!QDELETED(reflection), "Один снаряд в 20 урона не разбивает двойника.")
+	reflection.bullet_act(bullet)
+	TEST_ASSERT(QDELETED(reflection), "Второе попадание снаряда разбивает двойника.")
 
 /datum/unit_test/heretic_moon_pursuit/Destroy()
 	if(caster)
@@ -521,3 +530,37 @@
 	spell.cast(list(get_step(user, NORTH)), user)
 	TEST_ASSERT(QDELETED(oldest), "Новая копия заменяет старейшую без ручного удаления.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 2, "Замена сохраняет предел копий.")
+
+/// Затмение сразу после «Лунного отражения» срабатывает, хотя копия уже стоит под владельцем.
+/datum/unit_test/heretic_moon_eclipse_after_reflection/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/obj/effect/proc_holder/spell/pointed/heretic_moon/create/create_spell = knowledge.reflection_spell
+	create_spell.cast(list(get_step(get_step(user, EAST), EAST)), user)
+	TEST_ASSERT(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in get_turf(user), "Отражение оставляет копию под владельцем.")
+	var/list/before = knowledge.reflections.Copy()
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	var/obj/effect/proc_holder/spell/self/heretic_moon/eclipse/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_moon/eclipse)
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Копия под ногами не отменяет затмение.")
+	TEST_ASSERT(victim.confused > 0, "Затмение путает врага рядом.")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_moon_shroud), "Затмение скрывает владельца.")
+	TEST_ASSERT(locate(/mob/living/simple_animal/hostile/illusion/heretic_moon) in get_turf(user), "На месте владельца остаётся копия.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections & before), 2, "Готовая приманка под ногами не вытесняет другие копии.")
+
+/// Копии выдерживают 30 урона, 40 с «Третьим силуэтом» и 50 после вознесения.
+/datum/unit_test/heretic_moon_durability/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/basic = knowledge.create_reflection(user, get_step(user, EAST))
+	TEST_ASSERT_EQUAL(basic.maxHealth, 30, "Обычная копия выдерживает 30 урона.")
+	basic.adjustBruteLoss(20)
+	TEST_ASSERT(!QDELETED(basic), "Удар в 20 урона не разбивает копию.")
+	knowledge.upgraded = TRUE
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/upgraded = knowledge.create_reflection(user, get_step(user, NORTH))
+	TEST_ASSERT_EQUAL(upgraded.maxHealth, 40, "Третий силуэт повышает прочность копий до 40.")
+	knowledge.ascension_active = TRUE
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/ascended = knowledge.create_reflection(user, get_step(user, NORTHEAST))
+	TEST_ASSERT_EQUAL(ascended.maxHealth, 50, "Вознесение повышает прочность копий до 50.")
+	TEST_ASSERT_EQUAL(ascended.health, 50, "Новая копия появляется целой.")
