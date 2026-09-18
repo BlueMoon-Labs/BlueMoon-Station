@@ -343,7 +343,7 @@
 	icon_state = "multiphasecarabin"
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/karabiner_m13, /obj/item/ammo_casing/energy/laser/hos/karabiner_m13, /obj/item/ammo_casing/energy/ion/hos/karabiner_m13, /obj/item/ammo_casing/energy/electrode/hos/karabiner_m13)
 	ammo_x_offset = 0
-	pickup_sound = "modular_bluemoon/flaffs/sound/weapon/Karabiner-M13/GrabCarabine.ogg"
+	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/GrabCarabine.ogg'
 	flight_x_offset = 25
 	flight_y_offset = 5
 
