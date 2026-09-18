@@ -286,6 +286,7 @@
 #include "healthdoll_memo.dm"
 #include "heal_noop_updates.dm"
 #include "vitals_reader_redraw.dm"
+#include "wizard_event_costs.dm"
 #include "hud_screen_lifecycle.dm"
 #include "icon_alloc_guard.dm"
 #include "keybindings_idle_move_delay.dm"
