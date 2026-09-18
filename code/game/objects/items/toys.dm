@@ -298,6 +298,9 @@
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = FLAMMABLE
 
+/obj/item/toy/foamblade/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/ambidextria_attack, /obj/item/toy/foamblade)
 
 /obj/item/toy/windupToolbox
 	name = "windup toolbox"
