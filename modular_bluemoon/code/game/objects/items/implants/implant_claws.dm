@@ -51,7 +51,7 @@
 #undef CLAW_WOUND_BONUS
 #undef CLAW_BARE_WOUND_BONUS
 
-/obj/item/kitchen/knife/claws/Initialize(mapload)
+/obj/item/kitchen/knife/claws/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
 	ADD_AMBIDEXTRIA
@@ -270,7 +270,7 @@
 #undef CLAW_WOUND_BONUS
 #undef CLAW_BARE_WOUND_BONUS
 
-/obj/item/kitchen/knife/razor_claws/Initialize(mapload)
+/obj/item/kitchen/knife/razor_claws/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
 	ADD_AMBIDEXTRIA

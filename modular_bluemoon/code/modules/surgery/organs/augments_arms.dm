@@ -45,7 +45,7 @@
 	can_force_powered = TRUE
 	usesound = 'sound/items/jaws_pry.ogg'
 
-/obj/item/melee/implantarmblade/Initialize(mapload)
+/obj/item/melee/implantarmblade/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/ambidextria_attack, /obj/item/melee/implantarmblade)
 
