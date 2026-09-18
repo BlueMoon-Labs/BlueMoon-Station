@@ -855,7 +855,7 @@ To add randomization to your emote, copy and paste this line of code:
 	key_third_person = "woofs2"
 	name = "woof 2"
 	emote_type = EMOTE_AUDIBLE
-	sound = 'modular_splurt/sound/voice/woof2.ogg'
+	sound = 'sound/voice/woof.ogg'
 	emote_cooldown = 0.3 SECONDS
 
 /datum/emote/sound/human/howl
@@ -1074,7 +1074,7 @@ To add randomization to your emote, copy and paste this line of code:
 	message = "merowrs!"
 	message_mime = "изображает merowr!"
 	emote_type = EMOTE_AUDIBLE
-	sound = 'modular_splurt/sound/voice/merowr.ogg'
+	sound = 'modular_citadel/sound/voice/merowr.ogg'
 	emote_cooldown = 1.2 SECONDS
 
 /datum/emote/sound/human/hoot
@@ -1114,7 +1114,7 @@ To add randomization to your emote, copy and paste this line of code:
 	message = "издаёт трель!"
 	message_mime = "изображает трель!"
 	emote_type = EMOTE_AUDIBLE
-	sound = 'modular_splurt/sound/voice/trill.ogg'
+	sound = 'sound/voice/trills.ogg'
 	emote_cooldown = 1 SECONDS
 
 /datum/emote/sound/human/rattlesnek
@@ -1583,13 +1583,13 @@ To add randomization to your emote, copy and paste this line of code:
 	message = "жалобно мяукает!"
 	emote_type = EMOTE_AUDIBLE // No reason mimes shouldn't meow.
 	restraint_check = FALSE
-	sound = 'modular_splurt/sound/voice/catpeople/cat_meow1.ogg'
+	sound = 'modular_bluemoon/sound/plush/tiamat_meow1.ogg'
 
 	emote_cooldown = 0.8 SECONDS // the longest audio is 1 second but who gives a fuck mrrp mrrp meow
 	emote_pitch_variance = FALSE // why would you
 
 /datum/emote/sound/human/meow/run_emote(mob/user, params)
-	sound = pick('modular_splurt/sound/voice/catpeople/cat_meow1.ogg', 'modular_splurt/sound/voice/catpeople/cat_meow2.ogg', 'modular_splurt/sound/voice/catpeople/cat_meow3.ogg') // Credit to Nyanotrasen (https://github.com/Nyanotrasen/Nyanotrasen)
+	sound = pick('modular_bluemoon/sound/plush/tiamat_meow1.ogg', 'modular_bluemoon/sound/plush/tiamat_meow2.ogg', 'modular_bluemoon/sound/plush/tiamat_meow3.ogg') // Credit to Nyanotrasen (https://github.com/Nyanotrasen/Nyanotrasen)
 	. = ..()
 
 /datum/emote/sound/human/meow2
@@ -1628,7 +1628,7 @@ To add randomization to your emote, copy and paste this line of code:
 	emote_pitch_variance = FALSE
 
 /datum/emote/sound/human/mrrp/run_emote(mob/user, params)
-	sound = pick('modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg', 'modular_splurt/sound/voice/catpeople/cat_mrrp2.ogg')
+	sound = pick('modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg', 'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg')
 	. = ..()
 
 /datum/emote/sound/human/mrowl

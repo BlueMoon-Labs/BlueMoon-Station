@@ -8,8 +8,8 @@
 	item_state = "ds-case"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
-	drop_sound = 'modular_bluemoon/fluffs/sound/case_drop.ogg'
-	pickup_sound =  'modular_bluemoon/fluffs/sound/case_pickup.ogg'
+	drop_sound = 'sound/items/handling/ammobox_drop.ogg'
+	pickup_sound =  'sound/items/handling/ammobox_pickup.ogg'
 	foldable = FALSE
 	illustration = null
 

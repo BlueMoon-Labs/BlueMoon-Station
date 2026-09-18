@@ -4,7 +4,7 @@ GLOBAL_LIST_INIT(aperture_turret_fire_sounds, list(
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_deploy_sounds, list(
-	'modular_bluemoon/portal/sound/Звуки турелей/Включение.ogg',
+	'sound/items/modsuit/ballin.ogg',
 	'modular_bluemoon/portal/sound/Запуск турелей/Активация.ogg',
 	'modular_bluemoon/portal/sound/Запуск турелей/Подготовка.ogg',
 ))

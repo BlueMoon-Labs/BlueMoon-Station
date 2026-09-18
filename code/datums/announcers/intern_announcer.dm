@@ -1,7 +1,6 @@
 /datum/centcom_announcer/intern
 	welcome_sounds = list('sound/announcer/intern/welcome/1.ogg',
 		'sound/announcer/intern/welcome/2.ogg',
-		'sound/announcer/intern/welcome/3.ogg',
 		'sound/announcer/intern/welcome/4.ogg',
 		'sound/announcer/intern/welcome/5.ogg',
 		'sound/announcer/intern/welcome/6.ogg')
@@ -34,7 +33,7 @@
 		ANNOUNCER_IONSTORM = 'sound/announcer/intern/ionstorm.ogg',
 		ANNOUNCER_METEORS = 'sound/announcer/intern/meteors.ogg',
 		ANNOUNCER_NEWAI = 'sound/announcer/classic/newai.ogg',
-		ANNOUNCER_OUTBREAK5 = 'sound/announcer/intern/outbreak5.ogg',
+		ANNOUNCER_OUTBREAK5 = 'sound/announcer/intern/alerts/1.ogg',
 		ANNOUNCER_OUTBREAK7 = 'sound/announcer/intern/outbreak7.ogg',
 		ANNOUNCER_POWEROFF = 'sound/announcer/intern/poweroff.ogg', //Найтл крутой.
 		ANNOUNCER_POWERON = 'sound/announcer/intern/poweron.ogg', //Ваще.

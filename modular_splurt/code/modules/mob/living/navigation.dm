@@ -92,7 +92,7 @@
 	path |= get_turf(navigate_target)
 	for(var/i in 1 to length(path))
 		var/turf/current_turf = path[i]
-		var/image/path_image = image(icon = 'modular_splurt/icons/effects/navigation.dmi', layer = SIGIL_LAYER, loc = current_turf)
+		var/image/path_image = image(icon = 'icons/obj/power_cond/cables.dmi', layer = SIGIL_LAYER, loc = current_turf)
 		path_image.plane = GAME_PLANE
 		path_image.color = COLOR_CYAN
 		path_image.alpha = 0

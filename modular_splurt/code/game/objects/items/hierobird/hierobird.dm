@@ -14,7 +14,7 @@
 /turf/open/indestructible/hierophant/coolbird/two
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/coolbird
-	icon = 'modular_splurt/icons/obj/hierobird/hierophant_bird.dmi'
+	icon = 'modular_splurt/icons/mob/lavaland/hierophant.dmi'
 	name = "Hierophant"
 	desc = "A penguin-like entity, he's holding what appears to be a scepter of some sort..."
 
