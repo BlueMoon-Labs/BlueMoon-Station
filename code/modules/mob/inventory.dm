@@ -57,8 +57,8 @@
 //Rights:2, 4, 6, 8...
 /mob/proc/get_empty_held_index_for_side(side = "left", all = FALSE)
 	var/start = 0
-	var/static/list/lefts = list("l" = TRUE,"L" = TRUE,"LEFT" = TRUE,"left" = TRUE)
-	var/static/list/rights = list("r" = TRUE,"R" = TRUE,"RIGHT" = TRUE,"right" = TRUE) //"to remain silent"
+	var/static/list/lefts = list("l" = TRUE,"L" = TRUE,"LEFT" = TRUE,"left" = TRUE, BODY_ZONE_L_ARM = TRUE)
+	var/static/list/rights = list("r" = TRUE,"R" = TRUE,"RIGHT" = TRUE,"right" = TRUE, BODY_ZONE_R_ARM = TRUE) //"to remain silent"
 	if(lefts[side])
 		start = 1
 	else if(rights[side])
