@@ -135,6 +135,8 @@
 				counter++
 			P.default_raw_text += "</TT>"
 			P.name = "paper - '[G.fields["name"]]'"
+			P.add_raw_text(P.default_raw_text)
+			P.update_appearance()
 			virgin = FALSE //tabbing here is correct- it's possible for people to try and use it
 						//before the records have been generated, so we do this inside the loop.
 
@@ -169,6 +171,8 @@
 				counter++
 			P.default_raw_text += "</TT>"
 			P.name = "paper - '[G.fields["name"]]'"
+			P.add_raw_text(P.default_raw_text)
+			P.update_appearance()
 			virgin = FALSE //tabbing here is correct- it's possible for people to try and use it
 						//before the records have been generated, so we do this inside the loop.
 
@@ -212,7 +216,11 @@ GLOBAL_LIST_EMPTY(employmentCabinets)
 
 
 /obj/structure/filingcabinet/employment/proc/addFile(mob/living/carbon/human/employee)
-	new /obj/item/paper/contract/employment(src, employee)
+	if(!employee || !employee.real_name)
+		return
+	var/obj/item/paper/contract/employment/contract = new /obj/item/paper/contract/employment(src, employee)
+	if(QDELETED(contract) || !length(contract.employee_name))
+		return
 
 /obj/structure/filingcabinet/employment/interact(mob/user)
 	if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_EMPLOYMENT_CABINET))
