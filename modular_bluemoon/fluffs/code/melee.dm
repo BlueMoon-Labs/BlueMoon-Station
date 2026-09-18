@@ -135,6 +135,8 @@
 	unique_reskin = null
 	var/image/transform_overlay
 
+#define DARK_SABRE_TRANSFORM_TIME (0.5 SECONDS)
+
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
 	. = ..()
 	flick("dark_sabre[active ? "1" : "0"]_anim", src)
@@ -145,8 +147,10 @@
 		return
 	transform_overlay = image(H.held_index_to_dir(H.active_hand_index) == "r" ? righthand_file : lefthand_file, H, "dark_sabre[active ? "1" : "0"]_anim")
 	transform_overlay = center_image(transform_overlay, inhand_x_dimension, inhand_y_dimension)
-	flick_overlay(transform_overlay, GLOB.clients, 5)
-	addtimer(CALLBACK(src, PROC_REF(change_state)), 5)
+	H.flick_overlay_view(transform_overlay, DARK_SABRE_TRANSFORM_TIME)
+	addtimer(CALLBACK(src, PROC_REF(change_state)), DARK_SABRE_TRANSFORM_TIME)
+
+#undef DARK_SABRE_TRANSFORM_TIME
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/proc/change_state()
 	icon_state = "dark_sabre[active ? "1" : "0"]"

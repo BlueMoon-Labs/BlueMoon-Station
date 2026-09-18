@@ -213,8 +213,9 @@
 	if(toxins_type != TOX_OMNI && toxins_type != affected_by)
 		return FALSE
 
+	var/old_toxloss = toxloss
 	toxloss = clamp((toxloss + (amount * CONFIG_GET(number/damage_multiplier))), 0, maxHealth * 2)
-	if(updating_health)
+	if(updating_health && toxloss != old_toxloss)
 		updatehealth()
 	return amount
 
