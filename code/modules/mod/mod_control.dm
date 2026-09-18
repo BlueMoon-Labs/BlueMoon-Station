@@ -429,10 +429,7 @@
 
 /obj/item/mod/control/proc/update_flags()
 	var/list/used_skin = theme.skins[skin]
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
 		part.update_flags(used_skin)
 
 /obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
