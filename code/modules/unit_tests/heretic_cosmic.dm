@@ -86,7 +86,7 @@
 	TEST_ASSERT_EQUAL(length(knowledge.threads), 0, "При смене тела не остаются игровые нити.")
 	TEST_ASSERT_EQUAL(length(knowledge.beams), 0, "При смене тела не остаются лучи.")
 
-/// Закрытое пространство блокирует связь, а занятая точка не принимает телепортацию.
+/// Стена между звёздами не пропускает нить, а занятая точка не принимает телепортацию.
 /datum/unit_test/heretic_cosmic_obstacles/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -99,9 +99,11 @@
 	knowledge.add_star(first, user)
 	user.forceMove(last)
 	middle = middle.ChangeTurf(/turf/closed/wall)
-	TEST_ASSERT(!knowledge.add_star(last, user), "Стена между вершинами не позволяет проложить созвездие.")
+	TEST_ASSERT(knowledge.add_star(last, user), "Стена не мешает зажечь отдельную звезду.")
+	TEST_ASSERT_EQUAL(length(knowledge.threads), 0, "Стена между вершинами не пропускает нить.")
 	middle.ChangeTurf(/turf/open/floor/plasteel)
-	TEST_ASSERT(knowledge.add_star(last, user), "После открытия пути звезда создаётся.")
+	knowledge.rebuild_threads()
+	TEST_ASSERT(length(knowledge.threads), "После открытия пути звёзды соединяются.")
 	var/obj/structure/heretic_star/destination = knowledge.stars[2]
 	user.forceMove(first)
 	var/obj/structure/closet/crate/crate = allocate(/obj/structure/closet/crate, last)
@@ -136,7 +138,7 @@
 	TEST_ASSERT_EQUAL(length(knowledge.stars), 0, "Схлопывание расходует все звёзды.")
 	TEST_ASSERT_EQUAL(length(knowledge.threads), 0, "Схлопывание убирает ловушки.")
 
-/// Притяжение замедляет цель без повторного удара нитей, а снятие эффекта сохраняет чужое замедление.
+/// Притяжение замедляет цель без удара нитей по пути, но не защищает от них потом; снятие эффекта сохраняет чужое замедление.
 /datum/unit_test/heretic_cosmic_tether/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -158,12 +160,14 @@
 	knowledge.pulse(user)
 	TEST_ASSERT_EQUAL(tether.duration, world.time + 3 SECONDS, "Новый пульс обновляет длительность притяжения до трёх секунд.")
 	TEST_ASSERT_EQUAL(length(victim.has_status_effect_list(/datum/status_effect/cosmic_tether)), 1, "Пульс обновляет один эффект, не складывая замедления.")
+	TEST_ASSERT(knowledge.cross_thread(victim), "Замедление пульсом не защищает от удара нити.")
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
-	TEST_ASSERT(!knowledge.cross_thread(victim), "Во время замедления нить не активируется повторно.")
+	TEST_ASSERT(!knowledge.cross_thread(victim), "Сразу после удара нить не активируется повторно.")
 	TEST_ASSERT_EQUAL(protection.charges, 5, "Неактивная нить не расходует заряды антимагии.")
 	victim.remove_status_effect(/datum/status_effect/cosmic_tether)
 	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/cosmic_tether), "После снятия притяжения его замедление исчезает.")
 	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_moon_opening), "Чужое замедление сохраняется.")
+	victim.remove_status_effect(/datum/status_effect/cosmic_thread_cooldown)
 	TEST_ASSERT(!knowledge.cross_thread(victim), "Антимагия защищает от следующего пересечения.")
 	TEST_ASSERT_EQUAL(protection.charges, 5, "Пересечение постоянной нити не расходует заряды защиты.")
 	qdel(protection)
@@ -369,3 +373,148 @@
 			break
 	TEST_ASSERT(abs(victim.getFireLoss() - 45) < 0.001, "Перемещение владельца не отменяет схлопывание предупреждённой области.")
 	TEST_ASSERT_EQUAL(length(knowledge.stars), 0, "Завершённое схлопывание расходует созвездие.")
+
+/// Преграда до последней звезды не гасит созвездие: новая звезда тянет нить к более старой или встаёт отдельно.
+/datum/unit_test/heretic_cosmic_blocked_link/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/cosmic_expansion)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/origin = run_loc_floor_bottom_left
+	TEST_ASSERT(knowledge.manifest(locate(origin.x + 2, origin.y, origin.z), user), "Первая пара ставится одним применением.")
+	var/obj/structure/heretic_star/first = knowledge.stars[1]
+	var/obj/structure/heretic_star/second = knowledge.stars[2]
+	var/obj/barrier = allocate(/obj, locate(origin.x + 1, origin.y + 1, origin.z))
+	barrier.density = TRUE
+	TEST_ASSERT(knowledge.manifest(locate(origin.x, origin.y + 2, origin.z), user), "Звезду можно поставить за преградой от последней.")
+	TEST_ASSERT(!QDELETED(first) && !QDELETED(second), "Преграда до последней звезды не гасит созвездие.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 3, "Новая звезда добавляется к созвездию.")
+	var/turf/link_turf = locate(origin.x, origin.y + 1, origin.z)
+	TEST_ASSERT(locate(/obj/effect/heretic_star_thread) in link_turf, "Новая звезда соединяется с более старой по свободной прямой.")
+	TEST_ASSERT(!(locate(/obj/effect/heretic_star_thread) in get_turf(barrier)), "Нить не проходит через преграду.")
+	var/obj/structure/heretic_star/third = knowledge.stars[3]
+	for(var/list/offset as anything in list(list(3, 3), list(3, 4), list(4, 3)))
+		var/obj/wall_piece = allocate(/obj, locate(origin.x + offset[1], origin.y + offset[2], origin.z))
+		wall_piece.density = TRUE
+	TEST_ASSERT(knowledge.manifest(locate(origin.x + 4, origin.y + 4, origin.z), user), "Звезду без свободной прямой к остальным можно поставить отдельно.")
+	TEST_ASSERT(QDELETED(first), "Полное созвездие по-прежнему вытесняет старейшую звезду.")
+	TEST_ASSERT(!QDELETED(second) && !QDELETED(third), "Отдельная звезда не гасит остальные.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 3, "Отдельная звезда занимает место в созвездии.")
+
+/// Пульс без своих звёзд в семи клетках не срабатывает и не уходит на перезарядку.
+/datum/unit_test/heretic_cosmic_pulse_out_of_range/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/origin = get_turf(user)
+	TEST_ASSERT(knowledge.add_star(origin, user), "Звезда создана.")
+	var/far_x = origin.x + 12 <= world.maxx ? origin.x + 12 : origin.x - 12
+	user.forceMove(locate(far_x, origin.y, origin.z))
+	var/obj/effect/proc_holder/spell/self/cosmic/pulse/spell = allocate(/obj/effect/proc_holder/spell/self/cosmic/pulse)
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Пульс без звёзд рядом возвращает перезарядку.")
+	TEST_ASSERT(spell.heretic_failure_reason, "Владелец узнаёт, почему пульс не сработал.")
+	user.forceMove(origin)
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Звезда рядом позволяет пульсу сработать.")
+
+/// Сорванное схлопывание сообщает причину, возвращает перезарядку и сохраняет звёзды.
+/datum/unit_test/heretic_cosmic_collapse_cancelled/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/destination = get_step(get_step(get_step(user, EAST), EAST), EAST)
+	TEST_ASSERT(knowledge.manifest(destination, user), "Пара создана.")
+	var/obj/effect/proc_holder/spell/self/cosmic/collapse/spell = allocate(/obj/effect/proc_holder/spell/self/cosmic/collapse)
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT(spell.collapse_pending, "Схлопывание ждёт конца предупреждения.")
+	qdel(knowledge.stars[2])
+	var/list/budget = new_wait_budget(3 SECONDS, "сорванное схлопывание должно завершиться")
+	while(spell.collapse_pending)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Разбитая звезда возвращает перезарядку схлопывания.")
+	TEST_ASSERT(spell.heretic_failure_reason, "Владелец узнаёт о срыве схлопывания.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 1, "Сорванное схлопывание не расходует оставшуюся звезду.")
+	TEST_ASSERT(knowledge.manifest(destination, user), "Созвездие можно восстановить.")
+	spell.heretic_failure_reason = null
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	user.Stun(5 SECONDS)
+	budget = new_wait_budget(3 SECONDS, "схлопывание под оглушением должно завершиться")
+	while(spell.collapse_pending)
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Оглушение во время предупреждения возвращает перезарядку.")
+	TEST_ASSERT(spell.heretic_failure_reason, "Оглушённый владелец узнаёт о срыве схлопывания.")
+	TEST_ASSERT_EQUAL(length(knowledge.stars), 2, "Сорванное схлопывание сохраняет созвездие.")
+
+/// Замедление хваткой не защищает от нити: защиту даёт только удар самой нити.
+/datum/unit_test/heretic_cosmic_thread_after_grasp/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/cosmic_grasp)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/cosmic_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/cosmic_grasp)
+	var/turf/origin = run_loc_floor_bottom_left
+	TEST_ASSERT(knowledge.add_star(origin, user), "Первая звезда создана.")
+	var/turf/second = locate(origin.x + 2, origin.y, origin.z)
+	user.forceMove(second)
+	TEST_ASSERT(knowledge.add_star(second, user), "Вторая звезда создана.")
+	user.forceMove(locate(origin.x + 4, origin.y + 4, origin.z))
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 2, origin.z))
+	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE), "Хватка действует на врага.")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/cosmic_tether), "Хватка замедляет врага.")
+	var/turf/above_thread = locate(origin.x + 1, origin.y + 1, origin.z)
+	victim.forceMove(above_thread)
+	var/stamina_before = victim.getStaminaLoss()
+	TEST_ASSERT(victim.Move(get_step(above_thread, SOUTH), SOUTH), "Враг шагает на нить.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), stamina_before + 25, "Замедленный хваткой враг получает удар нити.")
+	TEST_ASSERT(!knowledge.cross_thread(victim), "Сразу после удара нить не ранит повторно.")
+
+/// Враг, под которым появилась нить, получает удар без пересечения.
+/datum/unit_test/heretic_cosmic_thread_standing/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/origin = run_loc_floor_bottom_left
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(origin, EAST))
+	TEST_ASSERT(knowledge.add_star(origin, user), "Первая звезда создана.")
+	var/turf/second = locate(origin.x + 2, origin.y, origin.z)
+	user.forceMove(second)
+	TEST_ASSERT(knowledge.add_star(second, user), "Вторая звезда создана.")
+	var/turf/victim_turf = get_turf(victim)
+	TEST_ASSERT(locate(/obj/effect/heretic_star_thread) in victim_turf, "Нить проходит под врагом.")
+	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 0, "Появление нити не считается пересечением.")
+	var/list/budget = new_wait_budget(3 SECONDS, "нить должна задеть врага, стоящего на ней")
+	while(!victim.getStaminaLoss())
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT(victim.getStaminaLoss() > 0, "Нить задевает врага, который стоит на ней.")
+
+/// Вознесённый Космос не нуждается в воздухе и не боится вакуума и холода.
+/datum/unit_test/heretic_cosmic_ascension_space/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/final_eldritch/cosmic_final/final_knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/cosmic_final)
+	final_knowledge.finished = TRUE
+	final_knowledge.on_body_gain(user)
+	var/trait_source = REF(final_knowledge)
+	for(var/trait in list(TRAIT_NOBREATH, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE, TRAIT_RESISTCOLD))
+		TEST_ASSERT(HAS_TRAIT_FROM(user, trait, trait_source), "Вознесение Космоса даёт черту [trait].")
+	final_knowledge.on_body_lose(user)
+	for(var/trait in list(TRAIT_NOBREATH, TRAIT_RESISTLOWPRESSURE, TRAIT_RESISTHIGHPRESSURE, TRAIT_RESISTCOLD))
+		TEST_ASSERT(!HAS_TRAIT_FROM(user, trait, trait_source), "Потеря тела снимает черту [trait].")
