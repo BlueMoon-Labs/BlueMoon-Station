@@ -35408,8 +35408,7 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "External Airlock";
-	req_access_txt = "13"
+	name = "Igla dock"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/machinery/door/firedoor,
@@ -36090,8 +36089,7 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "External Airlock";
-	req_access_txt = "13"
+	name = "Igla dock"
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -66844,6 +66842,12 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
+"kMA" = (
+/obj/docking_port/stationary/exploration{
+	dir = 2
+	},
+/turf/open/space,
+/area/space)
 "kMO" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/toilet/secret/low_loot{
@@ -166053,10 +166057,10 @@ pIV
 rnF
 wDZ
 mjH
-aad
-ajr
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166311,9 +166315,9 @@ jQJ
 ikw
 mjH
 aaa
-aad
+nph
 aaa
-ajr
+aaa
 aaa
 aaa
 aaa
@@ -166568,9 +166572,9 @@ nio
 oxf
 mjH
 aaa
-aad
 aaa
-aad
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166824,10 +166828,10 @@ sTX
 dHV
 oxf
 mjH
-aad
-ajr
+nph
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167081,10 +167085,10 @@ irs
 llf
 gKv
 oTr
-aad
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167338,10 +167342,10 @@ oTr
 oTr
 oTr
 oTr
-aad
-aad
+nph
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167595,12 +167599,12 @@ eeG
 eft
 egg
 egD
-abj
-abj
+kMA
+nph
 aaa
-aad
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167852,12 +167856,12 @@ edY
 edY
 edY
 egE
-aad
-aad
+nph
+nph
 aaa
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -168109,12 +168113,12 @@ eeH
 pNr
 egh
 egE
-aad
-ajr
-aad
-ajr
+nph
 aaa
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -168366,10 +168370,10 @@ kew
 oXR
 egi
 eeb
-aad
-aad
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -168624,9 +168628,9 @@ efw
 egj
 egF
 aaa
-aad
+nph
 aaa
-aad
+aaa
 aaa
 aaa
 aaa
@@ -168880,10 +168884,10 @@ jBu
 pgH
 egk
 egG
-aad
-aad
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -169137,10 +169141,10 @@ gjk
 fmS
 egl
 egE
-aad
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa

@@ -1,0 +1,406 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/unpowered)
+"e" = (
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"h" = (
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "exploration_ex_cargo1";
+	name = "Cargo Shutters"
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/button/door{
+	id = "exploration_ex_cargo1";
+	name = "Cargo Shutters Control";
+	pixel_y = 32;
+	req_access_txt = "49"
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"j" = (
+/obj/effect/abstract/open_area_marker{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"l" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/ruin/unpowered)
+"o" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"q" = (
+/obj/machinery/bounty_board{
+	dir = 4;
+	pixel_x = 32
+	},
+/obj/structure/chair/sofa/right{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/unpowered)
+"s" = (
+/obj/item/radio/intercom/directional/east,
+/obj/structure/chair/sofa/left{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/unpowered)
+"t" = (
+/obj/effect/spawner/randomsnackvend,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"u" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"v" = (
+/obj/effect/spawner/randomcolavend,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"y" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"C" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/machinery/light/red{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"D" = (
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "exploration_ex_cargo1";
+	name = "Cargo Shutters"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"H" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"I" = (
+/turf/closed/wall,
+/area/ruin/unpowered)
+"J" = (
+/obj/effect/abstract/open_area_marker{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"O" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/obj/structure/closet/emcloset,
+/obj/machinery/light/red{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"R" = (
+/turf/closed/wall/r_wall,
+/area/ruin/unpowered)
+"S" = (
+/obj/effect/abstract/doorway_marker,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"T" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"W" = (
+/obj/effect/abstract/open_area_marker,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"X" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Z" = (
+/turf/open/floor/plating/asteroid/no_generation,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+R
+R
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+R
+R
+e
+J
+e
+I
+"}
+(2,1,1) = {"
+l
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+l
+R
+e
+e
+e
+I
+"}
+(3,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+o
+e
+e
+e
+S
+"}
+(4,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+o
+e
+e
+e
+I
+"}
+(5,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+o
+e
+e
+e
+I
+"}
+(6,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+o
+e
+e
+e
+I
+"}
+(7,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+o
+e
+e
+e
+I
+"}
+(8,1,1) = {"
+l
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+l
+R
+e
+e
+e
+I
+"}
+(9,1,1) = {"
+R
+R
+R
+h
+D
+R
+R
+T
+R
+R
+o
+o
+R
+R
+e
+e
+e
+I
+"}
+(10,1,1) = {"
+R
+t
+C
+H
+H
+O
+X
+H
+y
+e
+e
+e
+e
+e
+e
+e
+e
+e
+"}
+(11,1,1) = {"
+R
+u
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+e
+W
+"}
+(12,1,1) = {"
+R
+v
+e
+e
+e
+e
+e
+e
+e
+c
+q
+s
+c
+u
+e
+e
+e
+e
+"}
+(13,1,1) = {"
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+I
+e
+j
+e
+I
+"}

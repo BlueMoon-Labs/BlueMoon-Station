@@ -1,0 +1,407 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/abstract/doorway_marker{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"c" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"e" = (
+/obj/item/stack/ore/plasma{
+	amount = 20
+	},
+/obj/item/stack/ore/titanium{
+	amount = 20
+	},
+/obj/item/stack/ore/uranium{
+	amount = 20
+	},
+/obj/structure/closet/crate{
+	icon_state = "crateopen"
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"f" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/item/stack/sheet/mineral/sandbags,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"g" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"h" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"i" = (
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"l" = (
+/obj/effect/abstract/open_area_marker{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"n" = (
+/obj/structure/closet/crate,
+/obj/item/stack/ore/diamond{
+	amount = 5
+	},
+/obj/item/stack/ore/bluespace_crystal{
+	amount = 3
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"p" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"q" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"s" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/sign/departments/cargo,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"t" = (
+/obj/structure/table,
+/obj/item/clothing/glasses/meson,
+/obj/item/storage/bag/ore,
+/obj/item/pickaxe,
+/obj/item/mining_scanner,
+/obj/item/flashlight,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"u" = (
+/obj/structure/tank_dispenser/oxygen,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"v" = (
+/obj/structure/chair,
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"w" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"y" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"z" = (
+/obj/machinery/door/airlock/mining/glass,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"A" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/monofloor,
+/area/ruin/unpowered)
+"C" = (
+/obj/item/stack/ore/iron{
+	amount = 50
+	},
+/obj/item/stack/ore/silver{
+	amount = 30
+	},
+/obj/item/stack/ore/gold{
+	amount = 30
+	},
+/obj/item/stack/ore/glass{
+	amount = 50
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/structure/closet/crate{
+	icon_state = "crateopen"
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"D" = (
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"E" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"F" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/machinery/light{
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"I" = (
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"J" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 4
+	},
+/turf/open/floor/plasteel/monofloor,
+/area/ruin/unpowered)
+"K" = (
+/obj/effect/turf_decal/siding/thinplating{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"L" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"M" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = 2;
+	pixel_y = -2
+	},
+/obj/item/stack/sheet/mineral/silver{
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"N" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"O" = (
+/turf/closed/wall,
+/area/ruin/unpowered)
+"P" = (
+/obj/effect/abstract/open_area_marker,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"T" = (
+/obj/machinery/mineral/ore_redemption{
+	input_dir = 8;
+	output_dir = 4;
+	req_access = 0
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"U" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -2;
+	pixel_y = -1
+	},
+/obj/item/pickaxe{
+	pixel_x = 5
+	},
+/obj/item/shovel{
+	pixel_x = -5
+	},
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/sheetsnatcher,
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"V" = (
+/obj/machinery/suit_storage_unit/mining,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"W" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/window/eastright{
+	base_state = "left";
+	dir = 2;
+	icon_state = "left";
+	name = "Robotics Desk";
+	req_access_txt = "29"
+	},
+/obj/item/stack/ore/bananium{
+	amount = 10;
+	pixel_x = 10;
+	pixel_y = -3
+	},
+/obj/item/folder/yellow{
+	pixel_x = -4;
+	pixel_y = 3
+	},
+/obj/item/pen,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"X" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Y" = (
+/obj/machinery/vendor/mining,
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+"Z" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/structure/ore_box,
+/turf/open/floor/plasteel/monofloor/dark,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+O
+O
+"}
+(2,1,1) = {"
+O
+Y
+c
+Z
+V
+u
+f
+C
+O
+"}
+(3,1,1) = {"
+O
+U
+I
+p
+h
+y
+N
+F
+O
+"}
+(4,1,1) = {"
+O
+n
+I
+I
+K
+i
+D
+A
+O
+"}
+(5,1,1) = {"
+b
+I
+I
+I
+O
+s
+z
+T
+O
+"}
+(6,1,1) = {"
+O
+t
+I
+I
+X
+q
+g
+J
+D
+"}
+(7,1,1) = {"
+O
+M
+I
+v
+W
+E
+D
+D
+P
+"}
+(8,1,1) = {"
+O
+w
+L
+e
+X
+E
+D
+D
+D
+"}
+(9,1,1) = {"
+O
+O
+O
+O
+O
+D
+l
+D
+O
+"}
