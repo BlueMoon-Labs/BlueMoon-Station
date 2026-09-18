@@ -112,10 +112,10 @@
 		return FALSE
 	var/turf/previous
 	for(var/turf/tile as anything in get_line(origin, destination))
-		if(!tile_open(tile))
+		if(!heretic_line_tile_open(tile))
 			return FALSE
 		if(previous && previous.x != tile.x && previous.y != tile.y)
-			if(!tile_open(locate(previous.x, tile.y, tile.z)) || !tile_open(locate(tile.x, previous.y, tile.z)))
+			if(!heretic_line_tile_open(locate(previous.x, tile.y, tile.z)) || !heretic_line_tile_open(locate(tile.x, previous.y, tile.z)))
 				return FALSE
 		previous = tile
 	return TRUE
@@ -215,7 +215,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
 	var/datum/status_effect/heretic_wax/shell/old_shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
-	if(!can_use(user) || QDELETED(required) || (old_shell && old_shell.capacity > 0) || !spend_combat_resource(HERETIC_WAX_SHELL_COST))
+	if(!can_use(user) || QDELETED(required) || !spend_combat_resource(HERETIC_WAX_SHELL_COST))
 		return FALSE
 	QDEL_NULL(old_shell)
 	user.apply_status_effect(/datum/status_effect/heretic_wax/shell, src, required)
@@ -442,6 +442,8 @@
 		return INITIALIZE_HINT_QDEL
 	effect_ref = WEAKREF(effect)
 	appearance = effect.owner.appearance
+	name = "wax effigy of [effect.owner.name]"
+	desc = "Восковая копия [effect.owner.name], а не живой человек. [initial(desc)]"
 	color = "#e8ca85"
 	alpha = 200
 	invisibility = 0
@@ -819,7 +821,7 @@
 
 /datum/eldritch_knowledge/spell/wax_shell
 	name = "Погребальная оболочка"
-	desc = "За 2 воска окружите себя оболочкой на 20 секунд: она принимает 45 урона от оружия, снарядов, бросков и ударов, включая урон электродубинок по выносливости. Избыток проходит. Вы немного замедляетесь. Свеча с 25 прочности следует по полу; её разрушение и телепортация снимают оболочку. Нулевой жезл проходит насквозь и гасит защиту. «Снять печать» в намерении «Разоружить» расходует оболочку и её запас лечения на веер до пяти клеток: две трети оставшейся прочности, максимум 30 ушибов, без замедления и печати. Исчерпанную оболочку можно заменить, когда способность перезарядится. Перезарядка 18 секунд."
+	desc = "За 2 воска окружите себя оболочкой на 20 секунд: она принимает 45 урона от оружия, снарядов, бросков и ударов, включая урон электродубинок по выносливости. Избыток проходит. Вы немного замедляетесь. Свеча с 25 прочности следует по полу; её разрушение и телепортация снимают оболочку. Нулевой жезл проходит насквозь и гасит защиту. «Снять печать» в намерении «Разоружить» расходует оболочку и её запас лечения на веер до пяти клеток: две трети оставшейся прочности, максимум 30 ушибов, без замедления и печати. Повторное применение за те же 2 воска заменяет оболочку новой: полная прочность и снова 20 секунд, но накопленное для канделябра лечение сбрасывается. Перезарядка 18 секунд."
 	gain_text = "Я отлил себе вторую кожу. Она знала, каково это — умереть."
 	cost = 1
 	route = PATH_WAX
@@ -1007,7 +1009,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_wax/shell
 	name = "Погребальная оболочка"
-	desc = "За два воска создайте конечную защиту на 20 секунд. Свеча принимает удары; её разрушение или телепортация гасят защиту. «Снять печать» в намерении «Разоружить» превращает оставшуюся оболочку в атакующий веер, расходуя защиту и запас лечения."
+	desc = "За два воска создайте конечную защиту на 20 секунд. Повторное применение восстанавливает её до полной прочности. Свеча принимает удары; её разрушение или телепортация гасят защиту. «Снять печать» в намерении «Разоружить» превращает оставшуюся оболочку в атакующий веер, расходуя защиту и запас лечения."
 	action_icon_state = "wax_shell"
 	charge_max = 18 SECONDS
 

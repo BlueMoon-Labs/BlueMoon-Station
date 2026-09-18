@@ -567,6 +567,8 @@
 	var/datum/status_effect/heretic_wax/effigy/effect = wax.active_effigy
 	var/obj/structure/heretic_wax_effigy/effigy = effect.effigy
 	TEST_ASSERT_EQUAL(effigy.icon, victim.icon, "Двойник копирует внешность цели.")
+	TEST_ASSERT(effigy.name != victim.name && findtext(effigy.name, victim.name) && findtext(effigy.name, "wax effigy"), "Имя двойника выдаёт восковую копию и называет оригинал.")
+	TEST_ASSERT(findtext(effigy.desc, "Восковая копия"), "Описание двойника говорит, что это копия.")
 	var/list/resource = wax.get_combat_resource_data()
 	TEST_ASSERT(findtext(resource["description"], victim.real_name), "Ресурсная подсказка называет цель оттиска.")
 	TEST_ASSERT(findtext(jointext(effigy.examine(user), " "), "30 переносимого"), "Осмотр показывает первоначальный запас урона.")
@@ -629,7 +631,7 @@
 		QDEL_NULL(blocker)
 		qdel(victim)
 
-/// Исчерпанную оболочку можно заменить, а переплавка при пустом запасе сохраняет предел лечения.
+/// Повторная оболочка за полную цену восстанавливает защиту, а переплавка при пустом запасе сохраняет предел лечения.
 /datum/unit_test/heretic_wax_shell_recast_and_melt/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_WAX
@@ -645,14 +647,20 @@
 	var/obj/item/kitchen/knife/weapon = allocate(/obj/item/kitchen/knife)
 	wax.raise_shell(user)
 	var/datum/status_effect/heretic_wax/shell/old_shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
+	var/full_capacity = old_shell.capacity
+	user.mob_run_block(weapon, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
+	TEST_ASSERT_EQUAL(old_shell.capacity, full_capacity - 20, "Удар снимает часть защиты.")
+	wax.combat_resource = 1
+	TEST_ASSERT(!wax.raise_shell(user), "Без двух воска оболочку не обновить.")
+	TEST_ASSERT_EQUAL(old_shell.capacity, full_capacity - 20, "Отклонённое обновление не чинит защиту.")
 	wax.combat_resource = 3
-	TEST_ASSERT(!wax.raise_shell(user), "Активную защиту нельзя бесплатно обновить.")
-	TEST_ASSERT_EQUAL(wax.combat_resource, 3, "Отклонённая замена не тратит ресурс.")
-	user.mob_run_block(weapon, 60, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
-	TEST_ASSERT(wax.raise_shell(user), "Исчерпанная оболочка заменяется без ожидания её удаления.")
-	TEST_ASSERT(QDELETED(old_shell), "Замена убирает прежнюю оболочку.")
+	TEST_ASSERT(wax.raise_shell(user), "Повреждённую оболочку можно обновить повторным применением.")
+	TEST_ASSERT_EQUAL(wax.combat_resource, 1, "Обновление стоит столько же, сколько новая оболочка.")
+	TEST_ASSERT(QDELETED(old_shell), "Обновление убирает прежнюю оболочку.")
 	var/datum/status_effect/heretic_wax/shell/shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
+	TEST_ASSERT_EQUAL(shell.capacity, full_capacity, "Обновлённая оболочка снова принимает полный урон.")
 	TEST_ASSERT_EQUAL(shell.absorbed_hostile, 0, "Замена не копирует раны старой оболочки.")
+	wax.combat_resource = 3
 	user.mob_run_block(weapon, 60, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
 	user.adjustBruteLoss(10)
 	user.adjustFireLoss(30)
