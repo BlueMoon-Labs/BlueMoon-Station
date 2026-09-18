@@ -477,20 +477,20 @@
 	return src
 
 /obj/item/card/id/update_overlays()
-    . = ..()
-    if(!uses_overlays)
-        return
-    cached_flat_icon = null
-    cached_flat_icon_asset = null
-    var/job = assignment ? ckey(get_job_name()) : null
-    var/list/specialjobs = list(/obj/item/card/id/syndicate/advanced/ds) // Для спец. ролей с уникальными картами
-    job = replacetext(job, " ", "")
-    job = replacetext(job, "-", "") // Для учёта более сложных assigment'ов, как на DS-1/2
-    job = lowertext(job)
-    if(registered_name && registered_name != "Captain" && !is_type_in_list(src, specialjobs))
-        . += mutable_appearance(icon, "assigned")
-    if(job)
-        . += mutable_appearance(icon, "id[job]")
+	. = ..()
+	if(!uses_overlays)
+		return
+	cached_flat_icon = null
+	cached_flat_icon_asset = null
+	var/job = assignment ? ckey(get_job_name()) : null
+	var/list/specialjobs = list(/obj/item/card/id/syndicate/advanced/ds) // Для спец. ролей с уникальными картами
+	job = replacetext(job, " ", "")
+	job = replacetext(job, "-", "") // Для учёта более сложных assigment'ов, как на DS-1/2
+	job = lowertext(job)
+	if(registered_name && registered_name != "Captain" && !is_type_in_list(src, specialjobs))
+		. += mutable_appearance(icon, "assigned")
+	if(job)
+		. += mutable_appearance(icon, "id[job]")
 
 /obj/item/card/id/proc/get_cached_flat_icon()
 	if(!cached_flat_icon)

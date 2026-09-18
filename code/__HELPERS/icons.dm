@@ -1505,7 +1505,7 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 
 	if(!SSassets.cache[key])
 		SSassets.transport.register_asset(key, rsc_ref, file_hash, icon_path)
-	for (var/client_target in targets)
+	for (var/client_target as anything in targets)
 		SSassets.transport.send_assets(client_target, key)
 	return key
 

@@ -54,6 +54,7 @@
 
 /datum/round_event/wizard/race/end()
 	for(var/datum/weakref/human_ref as anything in originals)
+		CHECK_TICK
 		var/mob/living/carbon/human/H = human_ref.resolve()
 		var/list/original = originals[human_ref]
 		if(!H || !(original[1] && original[2] && original[3]))

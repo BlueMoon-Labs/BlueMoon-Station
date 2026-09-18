@@ -3,10 +3,10 @@
 
 /datum/unit_test/pickup_animation_uses_turf_visual/Run()
 	var/turf/source = run_loc_floor_bottom_left
-	var/obj/item/toy/crayon/red/thing = allocate(/obj/item/toy/crayon/red, source)
+	var/obj/item/toy/crayon/red/crayon = allocate(/obj/item/toy/crayon/red, source)
 	var/mob/living/carbon/human/picker = allocate(/mob/living/carbon/human, get_step(source, NORTH))
 
-	thing.do_pickup_animation(picker)
+	crayon.do_pickup_animation(picker)
 
 	var/atom/movable/flick_visual/visual = locate() in source.vis_contents
 	TEST_ASSERT_NOTNULL(visual, "анимация подбора не попала в vis_contents турфа")
