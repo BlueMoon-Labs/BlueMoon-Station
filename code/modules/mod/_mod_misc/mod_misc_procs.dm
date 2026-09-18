@@ -63,21 +63,17 @@
 /obj/item/mod/control/proc/all_parts_deployed()
 	if(!wearer)
 		return FALSE
-
-	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
 		if(part.loc != wearer)
 			return FALSE
-
 	return TRUE
 
 /obj/item/mod/control/proc/one_of_parts_deployed()
 	if(!wearer)
 		return FALSE
-
-	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
 		if(part.loc == wearer)
 			return TRUE
-
 	return FALSE
 
 /obj/item/mod/control/proc/is_malfunctioning()

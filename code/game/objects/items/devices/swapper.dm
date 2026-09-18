@@ -112,7 +112,7 @@
 	if (!(. & EMP_PROTECT_SELF) && linked_swapper)
 		if(prob(90))
 			emped = clamp(emped + 1, 0, 1) // Значение никогда не будет выше 1, ниже 0
-			flick_overlay_view(image('modular_bluemoon/icons/obj/device.dmi', src, icon_state = "swapper_emped"), src, (2*severity))
+			flick_overlay_view_global(image('modular_bluemoon/icons/obj/device.dmi', src, icon_state = "swapper_emped"), src, (2*severity))
 			spawn(2 * severity)
 				emped -= 1
 		else if(prob(15))

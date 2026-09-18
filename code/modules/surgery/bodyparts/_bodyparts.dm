@@ -924,6 +924,7 @@
 	var/image/second_limb
 	var/list/aux = list()
 	var/list/marking_emissives = list()
+	var/render_species_id = species_id
 
 	. += limb
 
@@ -946,19 +947,27 @@
 		// BLUEMOON ADD START - красивые ноги
 		var/use_racial_sprite = FALSE
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox", "sergal")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
+			if(species_id in list(SPECIES_HUMAN, SPECIES_MAMMAL, SPECIES_SHADEKIN, SPECIES_XENOHYBRID, SPECIES_SLIME_LUMI, SPECIES_SLIME, SPECIES_SYNTH_LIZARD, SPECIES_STARGAZER, SPECIES_JELLY, "vox", "sergal", "sergal2")) // заносим только те расы, у которых есть свои прорисованные ноги. Иначе используется бэкап ниже
 				use_racial_sprite = TRUE
 		// BLUEMOON ADD END
+		render_species_id = species_id
+		if(species_id == "sergal2")
+			if(body_zone == BODY_ZONE_HEAD)
+				render_species_id = "human"
+			else if(body_zone == BODY_ZONE_CHEST)
+				render_species_id = "sergal2"
+			else
+				render_species_id = "sergal"
 		limb.icon = base_bp_icon || 'icons/mob/human_parts.dmi'
 		if(should_draw_gender)
-			limb.icon_state = "[species_id]_[body_zone]_[icon_gender]"
+			limb.icon_state = "[render_species_id]_[body_zone]_[icon_gender]"
 		else if (use_digitigrade)
 			if(!use_racial_sprite) // BLUEMOON CHANGES - was if(base_bp_icon == DEFAULT_BODYPART_ICON_ORGANIC) - чтобы использовались наши спрайты ног
 				limb.icon_state = "[digitigrade_type]_[use_digitigrade]_[body_zone]"
 			else
-				limb.icon_state = "[species_id]_[digitigrade_type]_[use_digitigrade]_[body_zone]"
+				limb.icon_state = "[render_species_id]_[digitigrade_type]_[use_digitigrade]_[body_zone]"
 		else
-			limb.icon_state = "[species_id]_[body_zone]"
+			limb.icon_state = "[render_species_id]_[body_zone]"
 
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
 			second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
@@ -1000,7 +1009,7 @@
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				var/image/aux_img = image(limb.icon, "[species_id]_[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, "[render_species_id]_[I]", -aux_layer, image_dir)
 				if(species_id == "husk")
 					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
 					husk_aux_mark.appearance_flags = RESET_COLOR
