@@ -225,6 +225,8 @@
 	harm_intent_damage = 10
 	vore_active = FALSE
 	vore_flags = NONE
+	hud_possible = list(HEALTH_HUD, STATUS_HUD, ID_HUD, WANTED_HUD, IMPLOYAL_HUD, IMPCHEM_HUD, IMPTRACK_HUD, NANITE_HUD, DIAG_NANITE_FULL_HUD, ANTAG_HUD, RAD_HUD)
+	var/sensors_shown
 	var/datum/weakref/knowledge_ref
 	var/reflection_expires_at
 	var/reflection_expiry_timer
@@ -238,6 +240,7 @@
 	knowledge_ref = WEAKREF(knowledge)
 	parent_mob = model
 	setDir(model.dir)
+	add_to_all_human_data_huds()
 	sync_appearance()
 	reflection_expires_at = world.time + duration
 	reflection_expiry_timer = QDEL_IN_STOPPABLE(src, duration)
@@ -260,6 +263,31 @@
 		if(shroud_index && shroud_index <= length(copied_filters))
 			copied_filters.Cut(shroud_index, shroud_index + 1)
 		filters = copied_filters
+	sync_huds()
+
+/mob/living/simple_animal/hostile/illusion/heretic_moon/proc/sync_huds()
+	if(!hud_list || QDELETED(parent_mob) || !parent_mob.hud_list)
+		return
+	for(var/hud_key in hud_list)
+		if(hud_key == ANTAG_HUD)
+			continue
+		var/image/holder = hud_list[hud_key]
+		var/image/mirrored = parent_mob.hud_list[hud_key]
+		if(!istype(holder) || !istype(mirrored))
+			continue
+		holder.icon_state = mirrored.icon_state
+		holder.pixel_y = mirrored.pixel_y
+	var/datum/atom_hud/data/human/medical/basic/basic_medhud = GLOB.huds[DATA_HUD_MEDICAL_BASIC]
+	var/sensors_on = basic_medhud.check_sensors(src)
+	if(sensors_on != sensors_shown)
+		sensors_shown = sensors_on
+		basic_medhud.update_suit_sensors(src)
+
+/mob/living/simple_animal/hostile/illusion/heretic_moon/med_hud_set_health()
+	sync_huds()
+
+/mob/living/simple_animal/hostile/illusion/heretic_moon/med_hud_set_status()
+	sync_huds()
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/BiologicalLife(delta_time, times_fired)
 	. = ..()

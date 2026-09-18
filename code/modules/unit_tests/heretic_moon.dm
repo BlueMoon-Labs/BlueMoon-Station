@@ -110,6 +110,27 @@
 	TEST_ASSERT(QDELETED(second), "Очистка должна удалять оставшиеся отражения.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 0, "После очистки список должен быть пуст.")
 
+/// Отражение показывает худы оригинала, а не свои.
+/datum/unit_test/heretic_moon_hud_mirror/Run()
+	var/mob/living/carbon/human/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	user.sec_hud_set_ID()
+	user.adjustBruteLoss(40)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = knowledge.create_reflection(user, get_step(user, EAST))
+	TEST_ASSERT_NOTNULL(reflection, "Отражение должно создаваться на свободном полу.")
+	var/datum/atom_hud/security_hud = GLOB.huds[DATA_HUD_SECURITY_ADVANCED]
+	TEST_ASSERT(reflection in security_hud.hudatoms, "Отражение должно быть видно в худе охраны.")
+	var/image/user_id = user.hud_list[ID_HUD]
+	var/image/reflection_id = reflection.hud_list[ID_HUD]
+	TEST_ASSERT_EQUAL(user_id.icon_state, "hudno_id", "Оригинал без карты должен иметь значок отсутствия ID.")
+	TEST_ASSERT_EQUAL(reflection_id.icon_state, user_id.icon_state, "Значок ID отражения должен совпадать с оригиналом.")
+	var/image/user_health = user.hud_list[HEALTH_HUD]
+	var/image/reflection_health = reflection.hud_list[HEALTH_HUD]
+	TEST_ASSERT_NOTEQUAL(user_health.icon_state, "hud", "Раненый оригинал должен иметь неполную полоску здоровья.")
+	TEST_ASSERT_EQUAL(reflection_health.icon_state, user_health.icon_state, "Полоска здоровья отражения должна совпадать с оригиналом.")
+	reflection.adjustBruteLoss(5)
+	TEST_ASSERT_EQUAL(reflection_health.icon_state, user_health.icon_state, "Урон по отражению не должен менять его полоску здоровья.")
+
 /datum/unit_test/heretic_moon_exchange/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
