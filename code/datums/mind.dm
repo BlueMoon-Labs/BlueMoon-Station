@@ -144,6 +144,7 @@
 	RemoveAllSpells()
 	set_assigned_heirloom(null)
 	set_current(null)
+	set_enslaved_to(null)
 	soulOwner = null
 	return ..()
 
@@ -173,6 +174,19 @@
 /datum/mind/proc/clear_current(datum/source)
 	SIGNAL_HANDLER
 	set_current(null)
+
+/datum/mind/proc/set_enslaved_to(mob/living/new_master)
+	if(enslaved_to == new_master)
+		return
+	if(enslaved_to)
+		UnregisterSignal(enslaved_to, COMSIG_PARENT_QDELETING)
+	enslaved_to = new_master
+	if(new_master)
+		RegisterSignal(new_master, COMSIG_PARENT_QDELETING, PROC_REF(on_master_qdeleting))
+
+/datum/mind/proc/on_master_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	set_enslaved_to(null)
 
 /datum/mind/proc/set_original_character(new_original_character)
 	original_character = WEAKREF(new_original_character)
@@ -521,7 +535,7 @@
 		N.nukeop_outfit = null
 		add_antag_datum(N,converter.nuke_team)
 
-	enslaved_to = creator
+	set_enslaved_to(creator)
 
 	current.faction |= creator.faction
 	creator.faction |= current.faction

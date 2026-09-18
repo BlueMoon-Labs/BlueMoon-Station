@@ -463,7 +463,7 @@
 			// BLUEMOON ADD START - BRC второй бакет для адамантьевого экстракта
 			user.brc_mitigation += 30
 			// BLUEMOON ADD END
-			addtimer(CALLBACK(src, PROC_REF(reset_armor), species, user), 1200)
+			addtimer(CALLBACK(src, PROC_REF(reset_armor), species, WEAKREF(user)), 2 MINUTES)
 			return 450
 
 		if(SLIME_ACTIVATE_MAJOR)
@@ -474,12 +474,13 @@
 				return
 			to_chat(user, "<span class='notice'>You stop feeding [src], and your body returns to its slimelike state.</span>")
 
-/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species, mob/living/M)
+/obj/item/slime_extract/adamantine/proc/reset_armor(datum/species/jelly/luminescent/species, datum/weakref/user_ref)
 	if(istype(species))
 		species.armor -= 25
 	// BLUEMOON ADD START
-	if(isliving(M) && !QDELETED(M))
-		M.brc_mitigation = max(0, M.brc_mitigation - 30)
+	var/mob/living/user = user_ref?.resolve()
+	if(isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - 30)
 	// BLUEMOON ADD END
 
 /obj/item/slime_extract/bluespace

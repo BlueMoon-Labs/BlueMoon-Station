@@ -33,6 +33,7 @@
 
 	if(H.internal == src)
 		to_chat(H, "<span class='notice'>Вы закрутили вентиль [src].</span>")
+		playsound(loc, 'sound/mobs/humanoids/breathing/internals_off.ogg', 15, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		H.internal = null
 	else
 		if(!H.getorganslot(ORGAN_SLOT_BREATHING_TUBE))
@@ -58,6 +59,7 @@
 			to_chat(H, "<span class='notice'>Вы подключили свою маску к [src].</span>")
 		else
 			to_chat(H, "<span class='notice'>Вы провернули вентиль [src].</span>")
+		playsound(loc, 'sound/mobs/humanoids/breathing/internals_on.ogg', 15, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 		H.internal = src
 	H.update_action_buttons_icon()
 

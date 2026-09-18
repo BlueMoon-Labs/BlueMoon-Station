@@ -25814,9 +25814,6 @@
 	dir = 4
 	},
 /obj/effect/landmark/navigate_destination/techstorage,
-/obj/structure/cable{
-	icon_state = "1-4"
-	},
 /obj/effect/turf_decal/trimline/yellow/filled/corner{
 	dir = 1
 	},
@@ -26386,9 +26383,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/storage/tech)
 "bGx" = (
-/obj/structure/cable{
-	icon_state = "0-2"
-	},
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
@@ -47058,6 +47052,9 @@
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 4
 	},
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
 /turf/open/floor/plasteel/dark/textured/half,
 /area/engineering/storage/tech)
 "fpI" = (
@@ -53279,6 +53276,9 @@
 	dir = 4
 	},
 /obj/structure/closet/secure_closet/engineering_personal,
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/storage/tech)
 "iyZ" = (
@@ -80316,7 +80316,7 @@
 /area/cargo/miningdock)
 "wyC" = (
 /obj/machinery/button/door{
-	id = "gateshutter";
+	id = "stationawaygate";
 	name = "Gateway Access Shutter Control";
 	pixel_x = 22;
 	pixel_y = 9;
