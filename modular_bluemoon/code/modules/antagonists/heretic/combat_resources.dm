@@ -187,7 +187,7 @@
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
 	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'
 	combat_resource_name = "Угольки"
-	combat_resource_desc = "После изучения Власти Пепла хватка поджигает врага и даёт +1 уголёк, если он горит, не чаще раза в 15 секунд. После изучения Метки Пепла наложите её хваткой и ударьте пепельным клинком: +1 уголёк. Хватка также даёт уголёк за погашенную спичку, свечу, зажигалку или другой открытый огонь раз в 15 секунд. Обычный уголь не нужен. Угасание расходует уголёк: тушит вас, лечит ожоги и оставляет горящий след для отступления."
+	combat_resource_desc = "После изучения Власти Пепла хватка поджигает врага и даёт +1 уголёк, если он горит, не чаще раза в 15 секунд. После изучения Метки Пепла наложите её хваткой и ударьте пепельным клинком: +1 уголёк. Хватка также гасит открытый огонь и даёт за это уголёк раз в 15 секунд: очаг пожара (коснитесь горящего пола), зажжённые свечу, зажигалку, сварочник или фальшфейер на полу или у вас в руке, горящую спичку в другой руке. Дело пути засчитывает только огонь на полу. Обычный уголь не нужен. Угасание расходует уголёк: тушит вас, лечит ожоги и оставляет горящий след для отступления."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/ash
 
 /datum/eldritch_knowledge/base_rust
@@ -266,13 +266,18 @@
 
 /datum/eldritch_knowledge/base_ash/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic || !proximity_flag || !isturf(target.loc))
+	if(!heretic || !proximity_flag)
+		return FALSE
+	var/held = target.loc == user
+	if(!held && !isturf(target) && !isturf(target.loc))
 		return FALSE
 	var/turf/target_turf = get_turf(target)
-	if(!extinguish_flame(target))
+	var/obj/effect/hotspot/floor_fire = locate() in target_turf
+	if(!extinguish_flame(target) && (held || isliving(target) || !extinguish_flame(floor_fire)))
 		return FALSE
 	var/previous_resource = combat_resource
-	heretic.advance_deed(heretic.deed_key_for(target_turf), target_turf)
+	if(!held)
+		heretic.advance_deed(heretic.deed_key_for(target_turf), target_turf)
 	if(COOLDOWN_FINISHED(src, resource_harvest))
 		if(combat_resource == previous_resource)
 			gain_combat_resource()

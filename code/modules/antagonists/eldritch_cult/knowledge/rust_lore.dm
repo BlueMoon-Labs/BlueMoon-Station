@@ -1,3 +1,5 @@
+#define HERETIC_RUST_GRASP_SPREAD 1
+
 /datum/eldritch_knowledge/base_rust
 	name = "История кузнеца"
 	ritual_hint = "Мусор — например, пустая упаковка от чипсов или изюма. Полная пачка еды, бумага и металлический хлам не подходят. Положите нож и пустую упаковку на руну или в пределах одной клетки от неё."
@@ -136,7 +138,7 @@
 
 /datum/eldritch_knowledge/rust_fist_upgrade
 	name = "Мерзкая хватка"
-	desc = "Хватка покрывает ржавчиной пол под противником: даже вдали от очага можно создать небольшой плацдарм для лечения."
+	desc = "Хватка покрывает ржавчиной пол под противником и вокруг него, область 3×3: даже вдали от очага можно создать плацдарм для лечения. Ржавеют только полы, поддающиеся ржавчине; стены закрывают клетки за собой."
 	gain_text = "Под чужими ногами уже пускает корни мой сад."
 	cost = 2
 	route = PATH_RUST
@@ -144,9 +146,7 @@
 /datum/eldritch_knowledge/rust_fist_upgrade/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!heretic_can_affect(user, target))
 		return FALSE
-	var/mob/living/victim = target
-	var/turf/floor = get_turf(victim)
-	if(isfloorturf(floor))
+	for(var/turf/open/floor/floor in heretic_field_view(HERETIC_RUST_GRASP_SPREAD, target))
 		floor.rust_heretic_act()
 	return TRUE
 
@@ -259,3 +259,5 @@
 
 /proc/is_heretic_rust_turf(turf/surface)
 	return istype(surface, /turf/open/floor/plating/rust) || istype(surface, /turf/closed/wall/rust) || istype(surface, /turf/closed/wall/r_wall/rust)
+
+#undef HERETIC_RUST_GRASP_SPREAD

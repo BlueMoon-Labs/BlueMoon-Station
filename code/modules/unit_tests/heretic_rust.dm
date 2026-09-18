@@ -146,3 +146,28 @@
 	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Защита блокирует ушибы.")
 	TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 0, "Защита блокирует урон выносливости.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/rust), "Защита блокирует метку.")
+
+/// Мерзкая хватка ржавит поддающиеся полы 3×3 вокруг врага и не трогает клетки дальше.
+/datum/unit_test/heretic_rust_vile_grasp_area/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/rust_fist_upgrade)
+	var/datum/eldritch_knowledge/rust_fist_upgrade/vile = heretic.get_knowledge(/datum/eldritch_knowledge/rust_fist_upgrade)
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, center)
+	var/turf/grass = get_step(center, NORTH)
+	grass = grass.ChangeTurf(/turf/open/floor/grass)
+	var/turf/outside = locate(center.x + 2, center.y, center.z)
+	TEST_ASSERT(vile.on_mansus_grasp(victim, user, TRUE, null), "Хватка действует на врага.")
+	var/rusted = 0
+	for(var/turf/tile as anything in RANGE_TURFS(1, center))
+		if(istype(tile, /turf/open/floor/plating/rust))
+			rusted++
+	TEST_ASSERT_EQUAL(rusted, 8, "Ржавеют все восемь поддающихся клеток 3×3.")
+	TEST_ASSERT_EQUAL(grass.type, /turf/open/floor/grass, "Трава не ржавеет.")
+	TEST_ASSERT(!istype(outside, /turf/open/floor/plating/rust), "Клетка за пределами 3×3 не ржавеет.")
+	var/turf/far_floor = run_loc_floor_top_right
+	var/mob/living/carbon/human/protected = allocate(/mob/living/carbon/human, far_floor)
+	protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(!vile.on_mansus_grasp(protected, user, TRUE, null), "Антимагия отражает хватку.")
+	TEST_ASSERT(!istype(far_floor, /turf/open/floor/plating/rust), "Под защищённым врагом пол не ржавеет.")

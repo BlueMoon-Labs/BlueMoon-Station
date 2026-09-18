@@ -23,8 +23,9 @@
 	var/obj/item/candle/held = allocate(/obj/item/candle, user)
 	held.light()
 	COOLDOWN_RESET(deed, progress_cooldown)
-	TEST_ASSERT(!ash.on_mansus_grasp(held, user, TRUE, null), "Свеча в руках не подходит.")
-	TEST_ASSERT(held.lit, "Свеча в руках не гаснет.")
+	TEST_ASSERT(ash.on_mansus_grasp(held, user, TRUE, null), "Свеча в руках гаснет ради уголька.")
+	TEST_ASSERT(!held.lit, "Свеча в руках погашена.")
+	TEST_ASSERT_EQUAL(deed.progress, 1, "Огонь в руках не продвигает дело.")
 
 /// Хватка Ржавчины засчитывает отдел при первой новой поверхности и молчит на повторных.
 /datum/unit_test/heretic_deed_rust_surface/Run()
