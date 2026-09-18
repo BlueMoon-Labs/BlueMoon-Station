@@ -286,6 +286,7 @@
 #include "healthdoll_memo.dm"
 #include "flick_view_animations.dm"
 #include "heal_noop_updates.dm"
+#include "id_card_examine_icon.dm"
 #include "vitals_reader_redraw.dm"
 #include "wizard_event_costs.dm"
 #include "hud_screen_lifecycle.dm"
