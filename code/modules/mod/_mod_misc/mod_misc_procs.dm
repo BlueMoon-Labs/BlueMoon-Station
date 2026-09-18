@@ -64,10 +64,7 @@
 	if(!wearer)
 		return FALSE
 
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		if(part.loc != wearer)
 			return FALSE
 
@@ -77,10 +74,7 @@
 	if(!wearer)
 		return FALSE
 
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		if(part.loc == wearer)
 			return TRUE
 

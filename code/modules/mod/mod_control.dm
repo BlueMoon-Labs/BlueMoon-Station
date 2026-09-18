@@ -189,8 +189,7 @@
 	if(is_active())
 		balloon_alert(wearer, "Отключите МОД!")
 		return playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		if(part.loc != null)
 			balloon_alert(wearer, "выдвиньте элементы МОДа!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
@@ -428,10 +427,7 @@
 
 /obj/item/mod/control/proc/update_flags()
 	var/list/used_skin = theme.skins[skin]
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		part.update_flags(used_skin)
 
 /obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
@@ -612,7 +608,7 @@
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)
 	SIGNAL_HANDLER
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(part.loc == src)
+	if(part == src || part.loc == src)
 		return
 	if(part == cell)
 		mod_parts[MOD_PART_CELL] = null
