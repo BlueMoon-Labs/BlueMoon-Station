@@ -224,15 +224,14 @@
 	SEND_SIGNAL(new_body, COMSIG_PARENT_EXAMINE, old_body, examine_lines)
 	TEST_ASSERT_EQUAL(length(examine_lines), 0, "После снятия знания титул не остаётся.")
 
-/// Знамение и вспышка используют цельный нимб, а присутствие на теле — его слои.
+/// Знамение, вспышка и присутствие на теле собираются из слоёв нимба, свечение - из его маски.
 /datum/unit_test/heretic_ascension_visual_catalog/Run()
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT_NOTNULL(path.ascension_aura_icon, "У вознесения [path_id] есть свой лист нимба.")
 		var/list/states = icon_states(path.ascension_aura_icon)
-		TEST_ASSERT(path.ascension_aura_state in states, "У вознесения [path_id] есть цельный нимб для вспышки и знамения.")
-		if(path.ascension_aura_layered)
-			TEST_ASSERT("[path.ascension_aura_state]_back" in states, "У вознесения [path_id] есть задний слой.")
-			TEST_ASSERT("[path.ascension_aura_state]_front" in states, "У вознесения [path_id] есть передний слой.")
+		for(var/suffix in list("back", "front", "glow"))
+			TEST_ASSERT("[path.ascension_aura_state]_[suffix]" in states, "У вознесения [path_id] есть слой [suffix].")
 		var/obj/effect/temp_visual/heretic_ascension_echo/echo = allocate(/obj/effect/temp_visual/heretic_ascension_echo, run_loc_floor_bottom_left, path_id)
 		TEST_ASSERT_EQUAL(echo.icon, path.ascension_aura_icon, "Вспышка использует ресурс своего пути.")
 		TEST_ASSERT(echo.icon_state in states, "Вспышка [path_id] выбирает существующее состояние.")
@@ -241,13 +240,14 @@
 /datum/unit_test/heretic_ascension_aura_alignment/Run()
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
-		for(var/foreground in (path.ascension_aura_layered ? list(FALSE, TRUE) : list(FALSE)))
+		for(var/foreground in list(FALSE, TRUE))
 			var/obj/effect/heretic_ascension_aura/aura = allocate(/obj/effect/heretic_ascension_aura, null, path_id, foreground)
 			var/icon/aura_icon = icon(aura.icon, aura.icon_state)
 			TEST_ASSERT_EQUAL(aura_icon.Width(), 64, "[path_id]: нимб подготовлен в размере 64x64.")
 			TEST_ASSERT_EQUAL(aura_icon.Height(), 64, "[path_id]: высота нимба совпадает с шириной.")
 			TEST_ASSERT_EQUAL(aura.pixel_x + aura_icon.Width() / 2, world.icon_size / 2, "[path_id]: нимб отцентрирован по горизонтали.")
-			TEST_ASSERT_EQUAL(aura.pixel_y + aura_icon.Height() / 2, world.icon_size / 2 + path.ascension_aura_height, "[path_id]: нимб отцентрирован по вертикали.")
+			TEST_ASSERT_EQUAL(aura.pixel_y + aura_icon.Height() / 2, world.icon_size / 2, "[path_id]: нимб отцентрирован по вертикали.")
+			TEST_ASSERT_EQUAL(aura.alpha, 255, "[path_id]: нимб не приглушён прозрачностью.")
 			var/matrix/aura_transform = aura.transform
 			TEST_ASSERT(aura_transform.a == 1 && aura_transform.e == 1 && !aura_transform.b && !aura_transform.c && !aura_transform.d && !aura_transform.f, "[path_id]: нимб сохраняет исходную пиксельную сетку.")
 		var/obj/effect/temp_visual/heretic_ascension_echo/echo = allocate(/obj/effect/temp_visual/heretic_ascension_echo, run_loc_floor_bottom_left, path_id)
@@ -256,7 +256,7 @@
 
 /// Передний и задний слои нимба переносятся и удаляются вместе с телом.
 /datum/unit_test/heretic_ascension_layered_presence/Run()
-	for(var/path_id in list(PATH_TIDE, PATH_WAX, PATH_SPIRIT))
+	for(var/path_id in GLOB.heretic_paths)
 		var/datum/antagonist/heretic/heretic = allocate_heretic()
 		var/mob/living/old_body = heretic.owner.current
 		var/datum/eldritch_knowledge/final_eldritch/knowledge = allocate(/datum/eldritch_knowledge/final_eldritch)
@@ -270,16 +270,24 @@
 		TEST_ASSERT((back in old_body.vis_contents) && (front in old_body.vis_contents), "Оба слоя привязаны непосредственно к телу.")
 		TEST_ASSERT(back.vis_flags & VIS_UNDERLAY, "Задний план проходит за телом.")
 		TEST_ASSERT(!(front.vis_flags & VIS_UNDERLAY), "Передний план проходит перед телом.")
+		TEST_ASSERT(length(back.overlays), "[path_id]: задний план несёт маску свечения для темноты.")
 		TEST_ASSERT_EQUAL(back.pixel_x, front.pixel_x, "Слои совмещены по горизонтали.")
 		TEST_ASSERT_EQUAL(back.pixel_y, front.pixel_y, "Слои совмещены по вертикали.")
 		TEST_ASSERT(back.icon_state in icon_states(back.icon), "Заднее состояние присутствует в ресурсе.")
 		TEST_ASSERT(front.icon_state in icon_states(front.icon), "Переднее состояние присутствует в ресурсе.")
 		knowledge.on_body_gain(old_body)
 		TEST_ASSERT_EQUAL(knowledge.ascension_aura_front, front, "Повторная выдача не дублирует передний план.")
+		var/faded_before = 0
+		for(var/obj/effect/temp_visual/heretic_ascension_fade/fade in get_turf(old_body))
+			faded_before++
 		var/datum/antagonist/heretic/replacement = allocate_heretic(run_loc_floor_top_right)
 		var/mob/living/new_body = replacement.owner.current
 		knowledge.on_body_gain(new_body)
 		TEST_ASSERT(QDELETED(back) && QDELETED(front), "Перенос удаляет оба старых слоя.")
+		var/fades = 0
+		for(var/obj/effect/temp_visual/heretic_ascension_fade/fade in get_turf(old_body))
+			fades++
+		TEST_ASSERT(fades > faded_before, "[path_id]: старый нимб гаснет на месте тела, а не пропадает разом.")
 		TEST_ASSERT(!(back in old_body.vis_contents) && !(front in old_body.vis_contents), "Старое тело освобождает оба слоя.")
 		back = knowledge.ascension_aura
 		front = knowledge.ascension_aura_front
@@ -287,6 +295,20 @@
 		qdel(new_body)
 		TEST_ASSERT(QDELETED(back) && QDELETED(front), "Удаление тела удаляет оба слоя.")
 		TEST_ASSERT_NULL(knowledge.ascension_aura_front, "Знание освобождает ссылку на передний план.")
+
+/// Нимб отстаёт от шага, а несимметричный перекладывает главную деталь за спину при повороте.
+/datum/unit_test/heretic_ascension_aura_follows_body/Run()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		var/obj/effect/heretic_ascension_aura/aura = allocate(/obj/effect/heretic_ascension_aura, null, path_id)
+		body.setDir(SOUTH)
+		aura.follow(body)
+		TEST_ASSERT(aura.signal_procs?[body]?[COMSIG_MOVABLE_MOVED], "[path_id]: нимб слушает шаги тела.")
+		TEST_ASSERT(!aura.mirrored, "[path_id]: лицом к зрителю нимб нарисован как есть.")
+		body.setDir(path.ascension_aura_side > 0 ? EAST : WEST)
+		TEST_ASSERT_EQUAL(aura.mirrored, !!path.ascension_aura_side, "[path_id]: поворот перекладывает только несимметричный нимб.")
+		qdel(aura)
 
 /// Смерть снимает вознесение с тела, а оживление возвращает его ровно один раз.
 /datum/unit_test/heretic_ascension_death_recovery/Run()

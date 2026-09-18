@@ -1,110 +1,101 @@
 #define HERETIC_ASCENSION_OMEN_DURATION (30 SECONDS)
 #define HERETIC_ASCENSION_WARNING_COOLDOWN (3 MINUTES)
 #define HERETIC_ASCENSION_ICON_SIZE 64
+#define HERETIC_ASCENSION_BACK_DRAG 3
+#define HERETIC_ASCENSION_FRONT_DRAG 1
+#define HERETIC_ASCENSION_DRAG_SETTLE (0.6 SECONDS)
+#define HERETIC_ASCENSION_TURN_TIME (0.15 SECONDS)
+#define HERETIC_ASCENSION_MANIFEST_TIME (1.5 SECONDS)
+#define HERETIC_ASCENSION_RISE 8
 
 /datum/heretic_path
 	var/ascension_title
 	var/ascension_message
 	var/ascension_omen
 	var/ascension_sound
-	var/ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
+	/// Лист 64x64: слои `_back` (за телом), `_front` (перед ногами) и маска свечения `_glow`.
+	var/ascension_aura_icon
 	var/ascension_aura_state
-	var/ascension_aura_color
-	var/ascension_aura_height = 12
-	var/ascension_aura_background = FALSE
-	var/ascension_aura_layered = FALSE
+	/// Где главная деталь нимба при взгляде на юг: -1 слева, 1 справа, 0 - симметричный нимб не зеркалится.
+	var/ascension_aura_side = 0
 
 /datum/heretic_path/ash
 	ascension_title = "Пепельный Лорд"
 	ascension_message = "Пепел поднимается к потолку. Последний фонарь вновь зажжён."
 	ascension_omen = "Свет на мгновение кажется пламенем. Запах пепла проникает даже под герметичный шлем."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_ash.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_ash.dmi'
 	ascension_aura_state = "ash_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
 
 /datum/heretic_path/rust
 	ascension_title = "Посланник Ржавчины"
 	ascension_message = "Сталь отзывается протяжным стоном. Ржавые холмы приняли нового хозяина."
 	ascension_omen = "На языке появляется привкус железа. Кажется, за каждой стеной скребутся корни."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_rust.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_rust.dmi'
 	ascension_aura_state = "rust_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
 
 /datum/heretic_path/flesh
 	ascension_title = "Повелитель Ночи"
 	ascension_message = "Под обшивкой бьётся чужое сердце. Процессия Плоти встречает своего повелителя."
 	ascension_omen = "Чужой пульс на мгновение совпадает с вашим. В тёмном стекле открывается красный глаз."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_flesh.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_flesh.dmi'
 	ascension_aura_state = "flesh_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = -1
 
 /datum/heretic_path/void
 	ascension_title = "Аристократ Пустоты"
 	ascension_message = "Зимняя буря проходит сквозь завесу. Начинается последний вальс."
 	ascension_omen = "Каждый звук приходит будто издалека. Снег мерещится даже там, где ему неоткуда взяться."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_void.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_void.dmi'
 	ascension_aura_state = "void_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = -1
 
 /datum/heretic_path/blade
 	ascension_title = "Чемпион Последнего Клинка"
 	ascension_message = "В воздухе звенит сталь. Последний поединок окончен, и его победитель выходит за пределы человеческого."
 	ascension_omen = "На краю зрения смыкаются лезвия. Слышен звон удара, который ещё никто не нанёс."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blade.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_blade.dmi'
 	ascension_aura_state = "blade_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = -1
 
 /datum/heretic_path/moon
 	ascension_title = "Владыка Обратной Луны"
 	ascension_message = "Отражения поворачиваются к невидимой луне. По ту сторону зеркала больше нет пустого места."
 	ascension_omen = "Ваше отражение запаздывает на один вдох. Кажется, оно смотрит на кого-то за вашей спиной."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_moon.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_moon.dmi'
 	ascension_aura_state = "moon_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = -1
 
 /datum/heretic_path/cosmic
 	ascension_title = "Живое Созвездие"
 	ascension_message = "Звёздные карты утратили смысл. Новое небо раскрылось внутри станции."
 	ascension_omen = "Между знакомыми предметами проступают незнакомые звёзды. Расстояние до потолка кажется бесконечным."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_cosmic.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_cosmic.dmi'
 	ascension_aura_state = "cosmic_presence"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
 
 /datum/heretic_path/lock
 	ascension_title = "Хранитель Последнего Порога"
 	ascension_message = "Все замки отвечают одним щелчком. За знакомыми дверями проступает дом без выхода."
 	ascension_omen = "Вы на мгновение забываете, с какой стороны двери стоите. Из замочной скважины доносится чужой вдох."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_lock.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_lock.dmi'
 	ascension_aura_state = "lock_presence"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = 1
 
 /datum/heretic_path/tide
 	ascension_title = "Владыка Бездонного Прилива"
 	ascension_message = "За стенами звучит погребальный колокол. Невидимое море достигло станции, и его глубина больше не имеет дна."
 	ascension_omen = "Уши закладывает от чужой глубины. Сквозь пол на мгновение видны тёмные волны."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_tide.ogg'
-	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension.dmi'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_tide.dmi'
 	ascension_aura_state = "tide_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
-	ascension_aura_layered = TRUE
+	ascension_aura_side = 1
 
 /datum/eldritch_knowledge/final_eldritch
 	var/obj/effect/heretic_ascension_aura/ascension_aura
@@ -116,52 +107,42 @@
 	ascension_message = "Каждый витраж раскололся в другом мире. Здесь слышен только звон: разбитый свет обрёл своего хозяина."
 	ascension_omen = "Свет распадается на острые полосы. Вы слышите, как трескается стекло, хотя всё вокруг цело."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_glass.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_glass.dmi'
 	ascension_aura_state = "glass_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = -1
 
 /datum/heretic_path/blood
 	ascension_title = "Святой Алой Десятины"
 	ascension_message = "Алая печать проступает за закрытыми веками. Десятина уплачена; её сборщик больше не принадлежит этому миру."
 	ascension_omen = "На языке остаётся вкус железа. На мгновение кажется, что под кожей начертаны незнакомые письмена."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blood.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_blood.dmi'
 	ascension_aura_state = "blood_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
 
 /datum/heretic_path/echo
 	ascension_title = "Регент Последнего Хора"
 	ascension_message = "Оборванные голоса возвращаются погребальным хором. Тот, кто задал им тон, поднимает руку для последнего такта."
 	ascension_omen = "Ваш последний шаг звучит снова. Из стен отвечает многоголосый шёпот, и на мгновение вы узнаёте в нём собственный голос."
 	ascension_sound = 'modular_bluemoon/sound/heretic/echo_ascend.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_echo.dmi'
 	ascension_aura_state = "echo_ascend"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
 
 /datum/heretic_path/sand
 	ascension_title = "Хранитель Истёкшего Часа"
 	ascension_message = "Звёзды осыпаются за стеклом. Последний час уже истёк, но его хранитель перевернул часы."
 	ascension_omen = "Сквозь пальцы сыплется невидимый песок. Часы на мгновение идут назад; следующий шаг звучит раньше, чем вы его делаете."
 	ascension_sound = 'modular_bluemoon/sound/heretic/sand_ascend.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_sand.dmi'
 	ascension_aura_state = "sand_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
+	ascension_aura_side = 1
 
 /datum/heretic_path/wax
 	ascension_title = "Святитель Негаснущей Свечи"
 	ascension_message = "За иллюминаторами проступает погребальная процессия. Свечи горят без воздуха; ни одна не погаснет, пока идёт их святитель."
 	ascension_omen = "Воздух пахнет воском. Тени склоняют головы перед бледным огоньком, которого никто не зажигал."
 	ascension_sound = 'modular_bluemoon/sound/heretic/wax_ascend.ogg'
-	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension.dmi'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_wax.dmi'
 	ascension_aura_state = "wax_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
-	ascension_aura_layered = TRUE
 
 /datum/eldritch_knowledge/final_eldritch/sand_final
 	parallax_scene = ANTAG_SCENE_HERETIC_SAND
@@ -174,12 +155,8 @@
 	ascension_message = "За иллюминаторами загораются бледные огни. Последняя переправа открыта; живые слышат, как называют их имена."
 	ascension_omen = "В груди остаётся пустота от пропущенного удара сердца. Вдалеке качается фонарь, хотя коридор пуст."
 	ascension_sound = 'modular_bluemoon/sound/heretic/spirit_ascend.ogg'
-	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_spirit_ascension.dmi'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_spirit.dmi'
 	ascension_aura_state = "spirit_aura"
-	ascension_aura_color = COLOR_WHITE
-	ascension_aura_height = 0
-	ascension_aura_background = TRUE
-	ascension_aura_layered = TRUE
 
 /datum/eldritch_knowledge/final_eldritch/spirit_final
 	parallax_scene = ANTAG_SCENE_HERETIC_SPIRIT
@@ -237,16 +214,21 @@
 	if(!path)
 		return
 	ascension_aura = new(null, route)
-	user.vis_contents += ascension_aura
-	if(path.ascension_aura_layered)
-		ascension_aura_front = new(null, route, TRUE)
-		user.vis_contents += ascension_aura_front
+	ascension_aura_front = new(null, route, TRUE)
+	ascension_aura.follow(user)
+	ascension_aura_front.follow(user)
+	user.vis_contents += list(ascension_aura, ascension_aura_front)
+	ascension_aura.manifest()
+	ascension_aura_front.manifest()
 	RegisterSignal(user, COMSIG_PARENT_EXAMINE, PROC_REF(on_ascended_examine))
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_ascended_body_deleted))
 
 /datum/eldritch_knowledge/final_eldritch/proc/remove_ascension_presence()
 	if(applied_body)
 		UnregisterSignal(applied_body, list(COMSIG_PARENT_EXAMINE, COMSIG_PARENT_QDELETING))
+		var/turf/last_turf = get_turf(applied_body)
+		if(last_turf && ascension_aura)
+			new /obj/effect/temp_visual/heretic_ascension_fade(last_turf, route, ascension_aura.transform)
 		applied_body.vis_contents -= ascension_aura
 		applied_body.vis_contents -= ascension_aura_front
 	QDEL_NULL(ascension_aura)
@@ -264,13 +246,14 @@
 
 /obj/effect/heretic_ascension_aura
 	name = "нимб вознесённого"
-	icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
-	plane = ABOVE_LIGHTING_PLANE
-	layer = ABOVE_LIGHTING_LAYER
+	plane = GAME_PLANE
+	layer = FLOAT_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	appearance_flags = RESET_COLOR | RESET_TRANSFORM
-	alpha = 175
-	vis_flags = VIS_INHERIT_ID
+	appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
+	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE
+	var/drag = HERETIC_ASCENSION_BACK_DRAG
+	var/side = 0
+	var/mirrored = FALSE
 
 /obj/effect/heretic_ascension_aura/Initialize(mapload, path_id, foreground = FALSE)
 	. = ..()
@@ -278,29 +261,74 @@
 	if(!path)
 		return INITIALIZE_HINT_QDEL
 	icon = path.ascension_aura_icon
-	icon_state = path.ascension_aura_state
-	color = path.ascension_aura_color || path.book_tint
+	icon_state = "[path.ascension_aura_state]_[foreground ? "front" : "back"]"
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
-	pixel_y = pixel_x + path.ascension_aura_height
-	if(path.ascension_aura_layered)
-		var/layer_suffix = foreground ? "front" : "back"
-		icon_state = "[icon_state]_[layer_suffix]"
-	if(path.ascension_aura_background)
-		plane = GAME_PLANE
-		layer = FLOAT_LAYER
-		vis_flags |= VIS_INHERIT_PLANE
-		if(!foreground)
-			vis_flags |= VIS_UNDERLAY
-		appearance_flags |= KEEP_APART | PIXEL_SCALE
-	var/aura_height = pixel_y
-	animate(src, pixel_y = aura_height + (path.ascension_aura_background ? 0 : 3), alpha = 220, time = 2 SECONDS, loop = -1, easing = SINE_EASING)
-	animate(pixel_y = aura_height, alpha = 175, time = 2 SECONDS, easing = SINE_EASING)
+	pixel_y = pixel_x
+	side = path.ascension_aura_side
+	if(foreground)
+		drag = HERETIC_ASCENSION_FRONT_DRAG
+		return
+	vis_flags |= VIS_UNDERLAY
+	// Маска свечения общая на оба слоя: в темноте видно только то, что светится само.
+	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow", src))
+
+/// Нимб отстаёт от шага и перекладывает главную деталь за спину при повороте.
+/obj/effect/heretic_ascension_aura/proc/follow(mob/living/body)
+	RegisterSignal(body, COMSIG_MOVABLE_MOVED, PROC_REF(on_body_moved))
+	if(!side)
+		return
+	RegisterSignal(body, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_body_turned))
+	face(body.dir, instant = TRUE)
+
+/// Нимб поднимается из пола и проступает, а не появляется разом.
+/obj/effect/heretic_ascension_aura/proc/manifest()
+	var/rest = pixel_y
+	alpha = 0
+	pixel_y = rest - HERETIC_ASCENSION_RISE
+	animate(src, alpha = 255, pixel_y = rest, time = HERETIC_ASCENSION_MANIFEST_TIME, easing = CUBIC_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+
+/obj/effect/heretic_ascension_aura/proc/on_body_moved(atom/movable/body, atom/old_loc, move_dir, forced)
+	SIGNAL_HANDLER
+	if(forced || !move_dir || !isturf(old_loc) || get_dist(old_loc, body) != 1)
+		return
+	var/rest = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+	var/dx = (move_dir & EAST) ? 1 : ((move_dir & WEST) ? -1 : 0)
+	var/dy = (move_dir & NORTH) ? 1 : ((move_dir & SOUTH) ? -1 : 0)
+	animate(src, pixel_x = rest - dx * drag, pixel_y = rest - dy * drag, time = 1, flags = ANIMATION_PARALLEL)
+	animate(pixel_x = rest, pixel_y = rest, time = HERETIC_ASCENSION_DRAG_SETTLE, easing = SINE_EASING | EASE_OUT)
+
+/obj/effect/heretic_ascension_aura/proc/on_body_turned(atom/body, old_dir, new_dir)
+	SIGNAL_HANDLER
+	face(new_dir)
+
+/obj/effect/heretic_ascension_aura/proc/face(new_dir, instant = FALSE)
+	if(!side)
+		return
+	var/wanted = side
+	switch(new_dir)
+		if(NORTH)
+			wanted = -side
+		if(EAST)
+			wanted = -1
+		if(WEST)
+			wanted = 1
+	var/flip = (wanted != side)
+	if(flip == mirrored)
+		return
+	mirrored = flip
+	// Холст зеркалится вокруг x = 32, а ось тела - столбец 31: сдвиг на пиксель держит её на месте.
+	var/matrix/target = flip ? matrix(-1, 0, -1, 0, 1, 0) : matrix()
+	if(instant)
+		transform = target
+		return
+	animate(src, transform = matrix(0.1, 0, 0, 0, 1, 0), time = HERETIC_ASCENSION_TURN_TIME, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+	animate(transform = target, time = HERETIC_ASCENSION_TURN_TIME, easing = SINE_EASING | EASE_OUT)
 
 /obj/effect/temp_visual/heretic_ascension_echo
-	icon = 'modular_bluemoon/icons/obj/heretic_ascension_auras.dmi'
-	layer = ABOVE_MOB_LAYER
+	plane = ABOVE_LIGHTING_PLANE
+	layer = ABOVE_LIGHTING_LAYER
+	appearance_flags = TILE_BOUND | PIXEL_SCALE
 	duration = 3 SECONDS
-	alpha = 180
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/effect/temp_visual/heretic_ascension_echo/Initialize(mapload, path_id)
@@ -309,11 +337,32 @@
 	if(!path)
 		return INITIALIZE_HINT_QDEL
 	icon = path.ascension_aura_icon
-	icon_state = path.ascension_aura_state
-	color = path.ascension_aura_color || path.book_tint
+	icon_state = "[path.ascension_aura_state]_back"
+	add_overlay(mutable_appearance(icon, "[path.ascension_aura_state]_front"))
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
-	pixel_y = pixel_x + path.ascension_aura_height
-	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration)
+	pixel_y = pixel_x
+	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration, easing = CUBIC_EASING | EASE_OUT)
+
+/// Потерянный нимб оседает в пол и гаснет на месте тела.
+/obj/effect/temp_visual/heretic_ascension_fade
+	layer = BELOW_MOB_LAYER
+	appearance_flags = TILE_BOUND | PIXEL_SCALE
+	duration = 1.2 SECONDS
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/temp_visual/heretic_ascension_fade/Initialize(mapload, path_id, matrix/facing)
+	. = ..()
+	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+	if(!path)
+		return INITIALIZE_HINT_QDEL
+	icon = path.ascension_aura_icon
+	icon_state = "[path.ascension_aura_state]_back"
+	add_overlay(mutable_appearance(icon, "[path.ascension_aura_state]_front"))
+	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+	pixel_y = pixel_x
+	if(facing)
+		transform = facing
+	animate(src, alpha = 0, pixel_y = pixel_y - HERETIC_ASCENSION_RISE, time = duration, easing = SINE_EASING | EASE_IN)
 
 /// Короткое знамение не меняет зрение, здоровье, управление или постоянный цвет клиента.
 /datum/status_effect/heretic_ascension_omen
@@ -350,12 +399,13 @@
 	clear_echo()
 	if(owner.client && owner.stat != DEAD)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
-		personal_echo = image(path.ascension_aura_icon, owner, path.ascension_aura_state, ABOVE_LIGHTING_LAYER)
+		personal_echo = image(path.ascension_aura_icon, owner, "[path.ascension_aura_state]_back", ABOVE_LIGHTING_LAYER)
+		personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
 		personal_echo.plane = ABOVE_LIGHTING_PLANE
-		personal_echo.color = path.ascension_aura_color || path.book_tint
+		personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
 		personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
-		personal_echo.pixel_y = personal_echo.pixel_x + path.ascension_aura_height
-		personal_echo.alpha = 180
+		personal_echo.pixel_y = personal_echo.pixel_x
+		personal_echo.alpha = 200
 		echo_viewer_ref = REF(owner.client)
 		owner.client.images += personal_echo
 		animate(personal_echo, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = personal_echo.pixel_y + 12, time = 3 SECONDS)
@@ -440,3 +490,9 @@
 #undef HERETIC_ASCENSION_OMEN_DURATION
 #undef HERETIC_ASCENSION_WARNING_COOLDOWN
 #undef HERETIC_ASCENSION_ICON_SIZE
+#undef HERETIC_ASCENSION_BACK_DRAG
+#undef HERETIC_ASCENSION_FRONT_DRAG
+#undef HERETIC_ASCENSION_DRAG_SETTLE
+#undef HERETIC_ASCENSION_TURN_TIME
+#undef HERETIC_ASCENSION_MANIFEST_TIME
+#undef HERETIC_ASCENSION_RISE
