@@ -31,6 +31,9 @@
 	force = 0
 	total_mass = TOTAL_MASS_TINY_ITEM
 
+/obj/item/toy/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_CUSTOM_TAP_SOUND, INNATE_TRAIT)
 
 // Balloons — see toy_balloons.dm
 
@@ -295,6 +298,8 @@
 	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	attack_verb = list("pricked", "absorbed", "gored")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = FLAMMABLE
 
