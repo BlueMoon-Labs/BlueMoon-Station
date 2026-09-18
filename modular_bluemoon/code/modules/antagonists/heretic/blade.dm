@@ -5,6 +5,8 @@
 #define HERETIC_BLADE_FEINT_COOLDOWN (8 SECONDS)
 #define HERETIC_BLADE_FEINT_DAMAGE 10
 #define HERETIC_BLADE_FEINT_RANGE 3
+#define HERETIC_BLADE_IDLE_TEMPO_DELAY (8 SECONDS)
+#define HERETIC_BLADE_IDLE_TEMPO_CAP 1
 
 /obj/item/melee/sickly_blade/duelist
 	name = "тёмный клинок"
@@ -19,14 +21,14 @@
 
 /datum/eldritch_knowledge/base_blade
 	name = "Принцип поединка"
-	desc = "Открывает Путь Клинка: отбивайте атаки, сближайтесь и отвечайте усиленным ударом. Для парирования держите свой клинок, оставив вторую руку свободной. Обычные попадания, парирования и хватка пополняют Темп для выпада и танца. Нож и лист стали создают тёмный клинок; можно иметь три."
+	desc = "Открывает Путь Клинка: отбивайте атаки, сближайтесь и отвечайте усиленным ударом. Для парирования держите свой клинок, оставив вторую руку свободной. Обычные попадания и парирования пополняют Темп для выпада и танца, после изучения «Вызова» его даёт и хватка. Пустой Темп вне боя восстанавливается до единицы. Нож и лист стали создают тёмный клинок; можно иметь три."
 	gain_text = "Между взмахом и раной есть мгновение. Отныне оно принадлежит мне."
 	route = PATH_BLADE
 	cost = 0
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/metal)
 	result_atoms = list(/obj/item/melee/sickly_blade/duelist)
 	combat_resource_name = "Темп"
-	combat_resource_desc = "Начальный запас — 2 Темпа. Удар тёмным клинком даёт 1 Темп раз в 4 секунды; парирование, изученная хватка и активация метки также дают Темп. Выпад, финт, танец и круговой разрез стоят по 1 Темпу. Ответ после парирования бесплатен."
+	combat_resource_desc = "Начальный запас — 2 Темпа. Удар тёмным клинком даёт 1 Темп раз в 4 секунды; парирование и активация метки также дают Темп, хватка — после изучения «Вызова». Если Темп пуст, а 8 секунд вы не наносили ударов клинком и не парировали, возвращается 1 Темп. Выпад, финт, танец и круговой разрез стоят по 1 Темпу. Ответ после парирования бесплатен."
 	combat_resource = 2
 	combat_resource_max = 3
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_blade/parry
@@ -38,12 +40,22 @@
 	var/feint_opening = FALSE
 	var/datum/weakref/feint_knowledge_ref
 	COOLDOWN_DECLARE(feint_cooldown)
+	COOLDOWN_DECLARE(idle_tempo)
 	var/datum/status_effect/heretic_parry/active_parry
 	var/datum/status_effect/heretic_blade_opening/opening_effect
 	var/next_strike_tempo = 0
 
 /datum/eldritch_knowledge/base_blade/on_body_gain(mob/living/user)
 	grant_combat_power(user)
+
+/datum/eldritch_knowledge/base_blade/on_life(mob/user)
+	if(combat_resource >= HERETIC_BLADE_IDLE_TEMPO_CAP || !COOLDOWN_FINISHED(src, idle_tempo) || user.stat != CONSCIOUS)
+		return
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(heretic?.get_knowledge(type) != src)
+		return
+	gain_combat_resource(HERETIC_BLADE_IDLE_TEMPO_CAP - combat_resource)
+	COOLDOWN_START(src, idle_tempo, HERETIC_BLADE_IDLE_TEMPO_DELAY)
 
 /datum/eldritch_knowledge/base_blade/on_body_lose(mob/living/user)
 	remove_combat_power()
@@ -128,6 +140,7 @@
 
 /datum/eldritch_knowledge/base_blade/proc/record_parry(mob/living/user, mob/living/attacker)
 	gain_combat_resource()
+	COOLDOWN_START(src, idle_tempo, HERETIC_BLADE_IDLE_TEMPO_DELAY)
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	var/datum/eldritch_knowledge/blade_guard/guard = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_guard)
 	if(guard)
@@ -190,6 +203,7 @@
 /datum/eldritch_knowledge/base_blade/on_eldritch_blade(atom/target, mob/living/user, proximity_flag, click_parameters)
 	if(!proximity_flag || !held_blade(user) || !heretic_can_affect(user, target, chargecost = 0))
 		return
+	COOLDOWN_START(src, idle_tempo, HERETIC_BLADE_IDLE_TEMPO_DELAY)
 	if(world.time >= next_strike_tempo)
 		gain_combat_resource()
 		next_strike_tempo = world.time + 4 SECONDS
@@ -617,6 +631,7 @@
 			continue
 		victim.adjustBruteLoss(sweep_damage)
 		victim.adjustStaminaLoss(sweep_stamina)
+		COOLDOWN_START(knowledge, idle_tempo, HERETIC_BLADE_IDLE_TEMPO_DELAY)
 		new /obj/effect/temp_visual/dir_setting/heretic_slash(get_turf(victim), get_dir(user, victim))
 		if(!victim.anchored && !victim.buckled)
 			step_away(victim, center)
@@ -737,6 +752,7 @@
 		user.log_message("Выпад не достал [key_name(victim)] [AREACOORD(victim)]: старт [AREACOORD(start)], финиш [AREACOORD(user)], Темп [knowledge.combat_resource], возврат [user.loc == start].", LOG_ATTACK)
 		return
 	knowledge.duel_target = WEAKREF(victim)
+	COOLDOWN_START(knowledge, idle_tempo, HERETIC_BLADE_IDLE_TEMPO_DELAY)
 	var/damage_before = victim.getBruteLoss()
 	victim.adjustBruteLoss(20)
 	victim.adjustStaminaLoss(20)
@@ -787,3 +803,5 @@
 #undef HERETIC_BLADE_FEINT_COOLDOWN
 #undef HERETIC_BLADE_FEINT_DAMAGE
 #undef HERETIC_BLADE_FEINT_RANGE
+#undef HERETIC_BLADE_IDLE_TEMPO_DELAY
+#undef HERETIC_BLADE_IDLE_TEMPO_CAP

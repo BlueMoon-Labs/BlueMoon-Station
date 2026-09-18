@@ -577,6 +577,34 @@
 	knowledge.on_eldritch_blade(attacker, user, TRUE)
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 2, "После задержки удар снова пополняет Темп.")
 
+/// Пустой Темп вне боя возвращается до единицы через 8 секунд после последнего удара или парирования.
+/datum/unit_test/heretic_blade_idle_tempo/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Без обмена ударами пустой Темп возвращается.")
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Вне боя Темп не копится выше единицы.")
+	knowledge.combat_resource = 0
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Следующая единица ждёт новые 8 секунд.")
+	COOLDOWN_RESET(knowledge, idle_tempo)
+	knowledge.on_eldritch_blade(attacker, user, TRUE)
+	knowledge.combat_resource = 0
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Сразу после удара клинком Темп сам не восстанавливается.")
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(knowledge, idle_tempo) - 8 SECONDS) <= world.tick_lag, "Удар откладывает восстановление на 8 секунд.")
+	COOLDOWN_RESET(knowledge, idle_tempo)
+	knowledge.record_parry(user, attacker)
+	knowledge.combat_resource = 0
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Парирование тоже считается боем.")
+	COOLDOWN_RESET(knowledge, idle_tempo)
+	knowledge.on_life(user)
+	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Через 8 секунд без боя возвращается единица.")
+
 /// Обычный кулак проходит через проверку блока с нулевым предварительным уроном.
 /datum/unit_test/heretic_blade_unarmed_guard/Run()
 	var/list/fixture = make_blade_fixture()
