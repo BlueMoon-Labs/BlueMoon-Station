@@ -169,6 +169,16 @@
 	var/mob/living/victim = target
 	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = TRUE, chargecost = chargecost)
 
+/// view() от эффекта или турфа не видит неосвещённые турфы, поэтому центр на время подсвечивается, как в get_hear().
+/proc/heretic_field_view(radius, atom/center)
+	var/turf/center_turf = get_turf(center)
+	if(!center_turf)
+		return list()
+	var/previous_luminosity = center_turf.luminosity
+	center_turf.luminosity = radius + 1
+	. = view(radius, center_turf)
+	center_turf.luminosity = previous_luminosity
+
 /datum/eldritch_knowledge/base_ash
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
 	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'
@@ -469,14 +479,14 @@
 	if(QDELETED(user) || user.stat == DEAD || !IS_HERETIC(user))
 		qdel(src)
 		return
-	var/list/visible = view(radius, src)
+	var/list/visible = heretic_field_view(radius, src)
 	refresh_boundary(visible)
 	tick_zone(user, visible)
 
 /// Видимость учитывается и при отрисовке, и при воздействии: за стеной нет невидимого поля.
 /obj/effect/heretic_combat_zone/proc/refresh_boundary(list/visible)
 	if(!visible)
-		visible = view(radius, src)
+		visible = heretic_field_view(radius, src)
 	var/repair_boundary = FALSE
 	for(var/obj/effect/heretic_field_edge/edge as anything in boundary.Copy())
 		if(QDELETED(edge))
@@ -539,7 +549,7 @@
 
 /obj/effect/heretic_combat_zone/ash/tick_zone(mob/living/user, list/visible)
 	if(!visible)
-		visible = view(radius, src)
+		visible = heretic_field_view(radius, src)
 	for(var/mob/living/victim in visible)
 		if(!(victim.loc in field_turfs) || !heretic_can_affect(user, victim, chargecost = 0))
 			continue
@@ -569,7 +579,7 @@
 	return istype(floor, /turf/open/floor/plating/rust)
 
 /obj/effect/heretic_combat_zone/rust/tick_zone(mob/living/user, list/visible)
-	visible = visible ? visible.Copy() : view(radius, src)
+	visible = visible ? visible.Copy() : heretic_field_view(radius, src)
 	var/remaining = 3
 	for(var/turf/open/floor/floor in visible.Copy())
 		if(!floor.heretic_rustable || istype(floor, /turf/open/floor/plating/rust))
@@ -601,7 +611,7 @@
 
 /obj/effect/heretic_combat_zone/void/tick_zone(mob/living/user, list/visible)
 	if(!visible)
-		visible = view(radius, src)
+		visible = heretic_field_view(radius, src)
 	var/list/present = list()
 	for(var/mob/living/victim in visible)
 		if(!(victim.loc in field_turfs) || !heretic_can_affect(user, victim, chargecost = 0))

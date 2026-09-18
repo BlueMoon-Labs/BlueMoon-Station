@@ -890,3 +890,97 @@
 		TEST_ASSERT(!QDELETED(body), "Удаление оболочки не удаляет ни одно из тел.")
 		TEST_ASSERT_EQUAL(get_turf(body), run_loc_floor_bottom_left, "Каждое тело возвращается на пол.")
 		TEST_ASSERT(!body.has_status_effect(STATUS_EFFECT_STASIS), "Каждое освобождённое тело выходит из стазиса.")
+
+/// Зимний предел в тёмном тоннеле охватывает весь радиус, а стены по-прежнему его ограничивают.
+/datum/unit_test/heretic_darkness
+	var/list/darkened_turfs = list()
+
+/datum/unit_test/heretic_darkness/Destroy()
+	for(var/turf/dark_turf as anything in darkened_turfs)
+		dark_turf.luminosity = darkened_turfs[dark_turf]
+	darkened_turfs.Cut()
+	return ..()
+
+/datum/unit_test/heretic_darkness/proc/darken(turf/center, radius)
+	for(var/turf/dark_turf as anything in RANGE_TURFS(radius, center))
+		if(isnull(darkened_turfs[dark_turf]))
+			darkened_turfs[dark_turf] = dark_turf.luminosity
+		dark_turf.luminosity = 0
+
+/datum/unit_test/heretic_darkness/proc/arena_center()
+	return locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+
+/datum/unit_test/heretic_darkness/Run()
+	var/turf/center = arena_center()
+	darken(center, 3)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(center.x + 2, center.y, center.z))
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, center, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	TEST_ASSERT_EQUAL(length(winter.field_turfs), 25, "В темноте Зимний предел охватывает все 25 клеток.")
+	TEST_ASSERT(victim.has_movespeed_modifier(REF(winter)), "Враг в двух клетках от центра замедляется в темноте.")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_void_chill), "Враг в темноте получает скованность.")
+	var/turf/wall = get_step(center, NORTH)
+	wall.ChangeTurf(/turf/closed/wall)
+	winter.refresh_boundary()
+	var/turf/behind_wall = locate(center.x, center.y + 2, center.z)
+	TEST_ASSERT(!(behind_wall in winter.field_turfs), "Стена по-прежнему закрывает клетку за собой.")
+
+/// Домен в темноте охватывает все 49 клеток, включая углы.
+/datum/unit_test/heretic_darkness/domain/Run()
+	var/turf/center = arena_center()
+	darken(center, 4)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/obj/effect/domain_expansion/domain = allocate(/obj/effect/domain_expansion, center, 3, 20 SECONDS, list(heretic.owner.current), FALSE)
+	TEST_ASSERT_EQUAL(length(domain.field_turfs), 49, "В темноте домен охватывает все 49 клеток.")
+
+/// Очаг ржавчины в темноте видит всю ржавую область и лечит хозяина на её краю.
+/datum/unit_test/heretic_darkness/rust_focus/Run()
+	var/turf/center = arena_center()
+	for(var/turf/open/floor/floor in RANGE_TURFS(2, center))
+		floor.rust_heretic_act()
+	darken(center, 3)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(locate(center.x + 2, center.y, center.z))
+	var/mob/living/user = heretic.owner.current
+	user.adjustBruteLoss(20)
+	var/obj/effect/heretic_combat_zone/rust/zone = allocate(/obj/effect/heretic_combat_zone/rust, center, heretic.owner)
+	STOP_PROCESSING(SSprocessing, zone)
+	TEST_ASSERT_EQUAL(length(zone.field_turfs), 25, "В темноте очаг видит всю ржавую область 5×5.")
+	zone.tick_zone(user)
+	TEST_ASSERT(abs(user.getBruteLoss() - 17) < DAMAGE_PRECISION, "Хозяин на краю очага лечится в темноте.")
+
+/// Угольный след в темноте поджигает соседа.
+/datum/unit_test/heretic_darkness/ash_trail/Run()
+	var/turf/center = arena_center()
+	darken(center, 2)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(center, EAST))
+	var/obj/effect/heretic_combat_zone/ash/trail = allocate(/obj/effect/heretic_combat_zone/ash, center, heretic.owner)
+	STOP_PROCESSING(SSprocessing, trail)
+	TEST_ASSERT_EQUAL(length(trail.field_turfs), 9, "В темноте след охватывает все 9 клеток.")
+	trail.tick_zone(heretic.owner.current)
+	TEST_ASSERT(victim.on_fire, "След поджигает соседа в темноте.")
+
+/// Сдвиг из тёмного угла ранит и сковывает врага у точки выхода.
+/datum/unit_test/heretic_darkness/void_blink/Run()
+	var/turf/departure = run_loc_floor_bottom_left
+	var/turf/destination = locate(departure.x + 3, departure.y, departure.z)
+	darken(departure, 1)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(departure)
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(departure, NORTH))
+	var/obj/effect/proc_holder/spell/pointed/void_blink/spell = allocate(/obj/effect/proc_holder/spell/pointed/void_blink)
+	spell.cast(list(destination), user)
+	TEST_ASSERT_EQUAL(get_turf(user), destination, "Сдвиг переносит к освещённой точке.")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_void_chill), "Враг у тёмной точки выхода сковывается.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 20) < DAMAGE_PRECISION, "Враг у тёмной точки выхода получает 20 ушибов.")
+
+/// Огненный каскад в темноте доходит до второго кольца.
+/datum/unit_test/heretic_darkness/fire_cascade/Run()
+	var/turf/center = arena_center()
+	darken(center, 3)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(center.x + 2, center.y, center.z))
+	var/obj/effect/proc_holder/spell/aoe_turf/fire_cascade/spell = allocate(/obj/effect/proc_holder/spell/aoe_turf/fire_cascade)
+	spell.fire_cascade(heretic.owner.current, 2)
+	TEST_ASSERT(victim.getFireLoss() >= 15, "Второе кольцо каскада обжигает врага в темноте.")

@@ -675,7 +675,7 @@
 	for(var/radius in 1 to max_range)
 		if(QDELETED(src) || QDELETED(centre))
 			return
-		for(var/turf/open/floor/floor in view(radius, origin))
+		for(var/turf/open/floor/floor in heretic_field_view(radius, origin))
 			if(get_dist(origin, floor) != radius)
 				continue
 			new /obj/effect/temp_visual/heretic_ash_flame(floor)
@@ -1077,9 +1077,9 @@
 	new /obj/effect/temp_visual/heretic_oldpath/void(departure)
 	new /obj/effect/temp_visual/heretic_oldpath/void(destination)
 	var/list/victims = list()
-	for(var/mob/living/victim in view(1, departure))
+	for(var/mob/living/victim in heretic_field_view(1, departure))
 		victims |= victim
-	for(var/mob/living/victim in view(1, destination))
+	for(var/mob/living/victim in heretic_field_view(1, destination))
 		victims |= victim
 	for(var/mob/living/victim as anything in victims)
 		if(heretic_can_affect(user, victim))
