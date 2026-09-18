@@ -90,6 +90,7 @@
 		var/obj/item/clothing/mod_part/part = new part_type
 		mod_parts[index] = part
 		part.mod = src
+	mod_parts[MOD_PART_SELF] = src
 	theme.setup_theme(src, new_skin)
 	update_flags()
 	update_speed()
@@ -189,12 +190,12 @@
 	if(is_active())
 		balloon_alert(wearer, "Отключите МОД!")
 		return playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		if(part.loc != null)
-			balloon_alert(wearer, "выдвиньте элементы МОДа!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
-			return
+
+	if(one_of_parts_deployed())
+		balloon_alert(wearer, "выдвиньте элементы МОДа!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
+		return
+
 	if(!wearer.incapacitated())
 		var/atom/movable/screen/inventory/hand/ui_hand = over_object
 		if(wearer.putItemFromInventoryInHandIfPossible(src, ui_hand.held_index))
