@@ -14,6 +14,11 @@
 #define HERETIC_MOON_UPGRADED_HEALTH 40
 #define HERETIC_MOON_ASCENDED_HEALTH 50
 #define HERETIC_MOON_REFRACTION_RADIUS 2
+#define HERETIC_MOON_MASQUERADE_RANGE 7
+#define HERETIC_MOON_MASQUERADE_TARGETS 5
+#define HERETIC_MOON_MASQUERADE_STAMINA 30
+#define HERETIC_MOON_MASQUERADE_CONFUSION 3
+#define HERETIC_MOON_MASQUERADE_LIFETIME (10 SECONDS)
 
 /proc/get_heretic_moon(mob/user)
 	var/datum/antagonist/heretic/heretic = user?.mind?.has_antag_datum(/datum/antagonist/heretic)
@@ -28,6 +33,7 @@
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/shard)
 	result_atoms = list(/obj/item/melee/sickly_blade/moon)
 	var/list/mob/living/simple_animal/hostile/illusion/heretic_moon/reflections = list()
+	var/list/mob/living/simple_animal/hostile/illusion/heretic_moon/temporary_reflections = list()
 	var/mob/living/moon_body
 	var/obj/effect/proc_holder/spell/pointed/heretic_moon/create/reflection_spell
 	var/upgraded = FALSE
@@ -93,10 +99,15 @@
 	on_body_lose(moon_body)
 	return ..()
 
-/datum/eldritch_knowledge/base_moon/proc/clear_reflections()
-	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections.Copy())
+/datum/eldritch_knowledge/base_moon/proc/clear_reflections(keep_temporary = FALSE)
+	var/list/doomed = reflections.Copy()
+	if(!keep_temporary)
+		doomed += temporary_reflections
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in doomed)
 		qdel(reflection)
 	reflections.Cut()
+	if(!keep_temporary)
+		temporary_reflections.Cut()
 
 /datum/eldritch_knowledge/base_moon/proc/reflection_limit()
 	return ascension_active ? HERETIC_MOON_ASCENDED_LIMIT : upgraded ? HERETIC_MOON_UPGRADED_LIMIT : HERETIC_MOON_BASE_LIMIT
@@ -139,12 +150,18 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/moon_shroud/shroud = heretic?.get_knowledge(/datum/eldritch_knowledge/moon_shroud)
 	var/lifetime = shrouded && shroud ? shroud.passive_values[shroud.passive_level] : 45 SECONDS
-	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = new(target, src, user, lifetime)
-	if(QDELETED(reflection))
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = spawn_reflection(user, target, lifetime)
+	if(!reflection)
 		return null
 	reflections += reflection
 	trim_reflections()
 	notify_resource_changed()
+	return reflection
+
+/datum/eldritch_knowledge/base_moon/proc/spawn_reflection(mob/living/user, turf/target, lifetime)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = new(target, src, user, lifetime)
+	if(QDELETED(reflection))
+		return null
 	new /obj/effect/temp_visual/heretic_path_feedback(target, "cosmic_ring", "#d6e2ff", 9)
 	playsound(target, 'modular_bluemoon/sound/heretic/moon_reflection.ogg', 30, TRUE)
 	return reflection
@@ -165,6 +182,44 @@
 			return decoy
 	return null
 
+/datum/eldritch_knowledge/base_moon/proc/masquerade_targets(mob/living/user)
+	var/list/candidates = list()
+	for(var/mob/living/candidate in view(HERETIC_MOON_MASQUERADE_RANGE, user))
+		if(!istype(candidate, /mob/living/simple_animal/hostile/illusion/heretic_moon))
+			candidates += candidate
+	var/list/chosen = list()
+	for(var/distance in 0 to HERETIC_MOON_MASQUERADE_RANGE)
+		for(var/mob/living/candidate as anything in candidates)
+			if(length(chosen) >= HERETIC_MOON_MASQUERADE_TARGETS)
+				return chosen
+			if(get_dist(user, candidate) == distance && heretic_can_affect(user, candidate))
+				chosen += candidate
+	return chosen
+
+/datum/eldritch_knowledge/base_moon/proc/masquerade_spot(mob/living/victim)
+	var/turf/center = get_turf(victim)
+	for(var/direction in shuffle(GLOB.alldirs))
+		var/turf/spot = get_step(center, direction)
+		if(istype(spot, /turf/open/floor) && !spot.is_blocked_turf() && center.Adjacent(spot))
+			return spot
+	return null
+
+/// Временные копии маскарада не входят в предел и не вытесняют обычные отражения.
+/datum/eldritch_knowledge/base_moon/proc/masquerade_strike(mob/living/user, mob/living/victim)
+	victim.adjustStaminaLoss(HERETIC_MOON_MASQUERADE_STAMINA)
+	victim.confused = max(victim.confused, HERETIC_MOON_MASQUERADE_CONFUSION)
+	new /obj/effect/temp_visual/heretic_path_feedback(get_turf(victim), "eye_flash", "#dce8ff", 6)
+	log_combat(user, victim, "окружил лунным маскарадом")
+	var/turf/spot = masquerade_spot(victim)
+	if(!spot)
+		return
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/shade = spawn_reflection(user, spot, HERETIC_MOON_MASQUERADE_LIFETIME)
+	if(!shade)
+		return
+	shade.leash_range = HERETIC_MOON_MASQUERADE_RANGE
+	temporary_reflections += shade
+	shade.GiveTarget(victim)
+
 /datum/eldritch_knowledge/base_moon/proc/direct_reflections(mob/living/victim)
 	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections)
 		if(!reflection.holding_position && reflection.CanAttack(victim))
@@ -182,7 +237,7 @@
 			positions += position
 	if(!length(positions))
 		return FALSE
-	clear_reflections()
+	clear_reflections(keep_temporary = TRUE)
 	for(var/turf/position as anything in shuffle(positions))
 		create_reflection(user, position, visible)
 		if(length(reflections) >= reflection_limit())
@@ -255,6 +310,7 @@
 	var/reflection_expiry_timer
 	var/list/witness_time
 	var/holding_position = FALSE
+	var/leash_range = HERETIC_MOON_RANGE
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/Initialize(mapload, datum/eldritch_knowledge/base_moon/knowledge, mob/living/model, duration = 45 SECONDS)
 	. = ..()
@@ -360,7 +416,7 @@
 /mob/living/simple_animal/hostile/illusion/heretic_moon/CanAttack(atom/the_target)
 	if(holding_position || !..() || !isturf(the_target.loc) || QDELETED(parent_mob) || parent_mob.stat == DEAD)
 		return FALSE
-	if(the_target.z != parent_mob.z || get_dist(parent_mob, the_target) > HERETIC_MOON_RANGE || istype(the_target, /mob/living/simple_animal/hostile/illusion/heretic_moon))
+	if(the_target.z != parent_mob.z || get_dist(parent_mob, the_target) > leash_range || istype(the_target, /mob/living/simple_animal/hostile/illusion/heretic_moon))
 		return FALSE
 	return heretic_can_affect(parent_mob, the_target, chargecost = 0)
 
@@ -409,6 +465,7 @@
 	var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
 	if(knowledge)
 		knowledge.reflections -= src
+		knowledge.temporary_reflections -= src
 		knowledge.notify_resource_changed()
 	knowledge_ref = null
 	parent_mob = null
@@ -544,6 +601,26 @@
 	user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 4 SECONDS)
 	for(var/turf/tile in visible)
 		new /obj/effect/temp_visual/heretic_path_feedback(tile, "cosmic_carpet", "#b0c1e5", 6)
+	new /obj/effect/temp_visual/heretic_spell/moon(get_turf(user))
+	playsound(user, 'modular_bluemoon/sound/heretic/moon_eclipse.ogg', 45, TRUE)
+
+/obj/effect/proc_holder/spell/self/heretic_moon/masquerade
+	name = "Лунный маскарад"
+	desc = "До пяти ближайших видимых врагов в семи клетках получают 30 урона выносливости и путаются на 3 секунды, а рядом с каждым встаёт временная копия и нападает на него. Такие копии живут 10 секунд и не занимают место среди обычных отражений. Без врагов в поле зрения маскарад не срабатывает. Перезарядка 40 секунд."
+	charge_max = 40 SECONDS
+	action_icon_state = "moon_ringleader"
+
+/obj/effect/proc_holder/spell/self/heretic_moon/masquerade/cast(list/targets, mob/living/user)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(!knowledge || user != knowledge.moon_body || !isturf(user.loc) || user.incapacitated())
+		heretic_revert_cast(user)
+		return
+	var/list/victims = knowledge.masquerade_targets(user)
+	if(!length(victims))
+		heretic_revert_cast(user, "Рядом нет видимых врагов, маскараду некого окружить.")
+		return
+	for(var/mob/living/victim as anything in victims)
+		knowledge.masquerade_strike(user, victim)
 	new /obj/effect/temp_visual/heretic_spell/moon(get_turf(user))
 	playsound(user, 'modular_bluemoon/sound/heretic/moon_eclipse.ogg', 45, TRUE)
 
@@ -738,18 +815,19 @@
 /datum/eldritch_knowledge/final_eldritch/moon_final
 	parallax_scene = ANTAG_SCENE_HERETIC_MOON
 	name = "Обратная сторона Луны"
-	desc = "После трёх подношений принесите три человеческих трупа на руну. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. После вознесения вы получаете на 40% меньше ушибов и ожогов. До пяти отражений; удары наносят 10 физического и 30 урона выносливости с общим интервалом одна секунда на цель, а новые копии выдерживают 50 урона."
+	desc = "После трёх подношений принесите три человеческих трупа на руну. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. После вознесения вы получаете на 40% меньше ушибов и ожогов. До пяти отражений; удары наносят 10 физического и 30 урона выносливости с общим интервалом одна секунда на цель, а новые копии выдерживают 50 урона. Открывается «Лунный маскарад»: до пяти ближайших видимых врагов в семи клетках получают 30 урона выносливости и путаются на 3 секунды, а рядом с каждым на 10 секунд встаёт копия, которая нападает на него и не занимает место в пределе. Перезарядка 40 секунд."
 	gain_text = "Я видел другую сторону. Там каждый взгляд принадлежит мне."
 	cost = 3
 	route = PATH_MOON
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	damage_modifier = 0.6
+	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade)
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_finished_recipe(mob/living/user, list/atoms, loc)
 	. = ..()
 	if(.)
 		on_body_gain(user)
-		to_chat(user, span_eldritch("За каждым плечом теперь скрывается ещё одна ваша тень. Предел отражений увеличен до пяти."))
+		to_chat(user, span_eldritch("За каждым плечом теперь скрывается ещё одна ваша тень. Предел отражений увеличен до пяти, а «Лунный маскарад» натравит тени на всех врагов вокруг."))
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_body_gain(mob/living/user)
 	. = ..()
@@ -791,3 +869,8 @@
 #undef HERETIC_MOON_UPGRADED_HEALTH
 #undef HERETIC_MOON_ASCENDED_HEALTH
 #undef HERETIC_MOON_REFRACTION_RADIUS
+#undef HERETIC_MOON_MASQUERADE_RANGE
+#undef HERETIC_MOON_MASQUERADE_TARGETS
+#undef HERETIC_MOON_MASQUERADE_STAMINA
+#undef HERETIC_MOON_MASQUERADE_CONFUSION
+#undef HERETIC_MOON_MASQUERADE_LIFETIME

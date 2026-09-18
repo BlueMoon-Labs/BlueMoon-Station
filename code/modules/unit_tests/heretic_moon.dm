@@ -564,3 +564,65 @@
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/ascended = knowledge.create_reflection(user, get_step(user, NORTHEAST))
 	TEST_ASSERT_EQUAL(ascended.maxHealth, 50, "Вознесение повышает прочность копий до 50.")
 	TEST_ASSERT_EQUAL(ascended.health, 50, "Новая копия появляется целой.")
+
+/// Лунный маскарад изматывает видимых врагов и подсылает к каждому временную копию вне предела.
+/datum/unit_test/heretic_moon_masquerade/Run()
+	var/mob/living/user = make_moon_heretic(locate(run_loc_floor_bottom_left.x - 1, run_loc_floor_bottom_left.y - 1, run_loc_floor_bottom_left.z))
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	knowledge.ascension_active = TRUE
+	var/obj/effect/proc_holder/spell/self/heretic_moon/masquerade/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade)
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Без врагов маскарад возвращает перезарядку.")
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/regular = knowledge.create_reflection(user, get_step(user, EAST))
+	var/regular_expiry = regular.reflection_expires_at
+	var/mob/living/first = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y + 1, user.z))
+	var/mob/living/second = allocate(/mob/living/carbon/human, locate(user.x + 6, user.y + 6, user.z))
+	var/mob/living/ally = make_moon_heretic(locate(user.x + 4, user.y + 4, user.z))
+	spell.charge_counter = 0
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "Маскарад с целями расходует перезарядку.")
+	for(var/mob/living/victim as anything in list(first, second))
+		TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 30, "Каждый видимый враг получает 30 урона выносливости.")
+		TEST_ASSERT(victim.confused >= 3, "Каждый видимый враг путается.")
+		var/mob/living/simple_animal/hostile/illusion/heretic_moon/shade
+		for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/candidate as anything in knowledge.temporary_reflections)
+			if(candidate.target == victim)
+				shade = candidate
+		TEST_ASSERT_NOTNULL(shade, "К каждому врагу приходит своя временная копия.")
+		TEST_ASSERT(get_dist(shade, victim) <= 1, "Временная копия встаёт рядом с целью.")
+		TEST_ASSERT(shade.CanAttack(victim), "Временная копия достаёт свою цель и дальше пяти клеток от владельца.")
+		TEST_ASSERT_EQUAL(shade.reflection_expires_at, world.time + 10 SECONDS, "Временная копия живёт 10 секунд.")
+	TEST_ASSERT_EQUAL(ally.getStaminaLoss(), 0, "Маскарад не трогает союзного еретика.")
+	TEST_ASSERT_EQUAL(length(knowledge.temporary_reflections), 2, "Временных копий ровно по одной на цель.")
+	TEST_ASSERT_EQUAL(length(knowledge.reflections), 1, "Временные копии не входят в предел отражений.")
+	TEST_ASSERT(!QDELETED(regular) && regular.reflection_expires_at == regular_expiry, "Обычная копия остаётся нетронутой.")
+	knowledge.clear_reflections()
+	TEST_ASSERT_EQUAL(length(knowledge.temporary_reflections), 0, "Очистка убирает и временные копии.")
+
+/// Маскарад задевает не больше пяти ближайших врагов.
+/datum/unit_test/heretic_moon_masquerade_cap/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/list/mob/living/victims = list()
+	for(var/list/offset as anything in list(list(1, 1), list(2, 0), list(0, 3), list(3, 3), list(4, 2)))
+		victims += allocate(/mob/living/carbon/human, locate(user.x + offset[1], user.y + offset[2], user.z))
+	var/mob/living/farthest = allocate(/mob/living/carbon/human, locate(user.x + 5, user.y + 5, user.z))
+	var/obj/effect/proc_holder/spell/self/heretic_moon/masquerade/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade)
+	spell.cast(list(user), user)
+	for(var/mob/living/victim as anything in victims)
+		TEST_ASSERT_EQUAL(victim.getStaminaLoss(), 30, "Пять ближайших врагов попадают под маскарад.")
+	TEST_ASSERT_EQUAL(farthest.getStaminaLoss(), 0, "Шестой, самый дальний враг остаётся вне маскарада.")
+	TEST_ASSERT_EQUAL(length(knowledge.temporary_reflections), 5, "Временных копий не больше пяти.")
+
+/// Вознесение Луны выдаёт маскарад, а потеря тела его забирает.
+/datum/unit_test/heretic_moon_masquerade_grant/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_moon)
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/final_knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	final_knowledge.finished = TRUE
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT(locate(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade) in user.mind.spell_list, "Вознесение выдаёт «Лунный маскарад».")
+	final_knowledge.on_body_lose(user)
+	TEST_ASSERT(!(locate(/obj/effect/proc_holder/spell/self/heretic_moon/masquerade) in user.mind.spell_list), "Потеря тела забирает маскарад.")
