@@ -192,6 +192,47 @@
 	TEST_ASSERT(wait_for_qdeleted(reflection), "Отражение должно исчезать по истечении своего времени жизни.")
 	TEST_ASSERT_EQUAL(length(knowledge.reflections), 0, "Истёкшее отражение должно освобождать место для нового.")
 
+/// Копии вознесённого носят его нимб и поворачивают его сами, покров приглушает нимб подлинника.
+/datum/unit_test/heretic_moon_ascension_aura/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/early = knowledge.create_reflection(user, get_step(user, EAST))
+	TEST_ASSERT_NOTNULL(early, "Создаётся копия до вознесения.")
+	TEST_ASSERT_NULL(early.aura_back, "До вознесения у копии нет нимба.")
+	var/datum/eldritch_knowledge/final_eldritch/moon_final/final_knowledge = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
+	heretic.researched_knowledge[final_knowledge.type] = final_knowledge
+	final_knowledge.finished = TRUE
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT((early.aura_back in early.vis_contents) && (early.aura_front in early.vis_contents), "Вознесение сразу проявляет нимб на живой копии.")
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/late = knowledge.create_reflection(user, get_step(user, NORTH))
+	TEST_ASSERT_NOTNULL(late?.aura_back, "Новая копия появляется с нимбом.")
+	TEST_ASSERT_EQUAL(late.aura_back.icon_state, final_knowledge.ascension_aura.icon_state, "Задний слой копии совпадает с нимбом подлинника.")
+	TEST_ASSERT_EQUAL(late.aura_front.icon_state, final_knowledge.ascension_aura_front.icon_state, "Передний слой копии совпадает с нимбом подлинника.")
+	TEST_ASSERT_EQUAL(length(late.aura_back.overlays), length(final_knowledge.ascension_aura.overlays), "Копия светится в темноте так же, как подлинник.")
+	late.sync_appearance()
+	var/aura_layers = 0
+	for(var/obj/effect/heretic_ascension_aura/aura in late.vis_contents)
+		aura_layers++
+	TEST_ASSERT_EQUAL(aura_layers, 2, "Повторная сверка не заводит второй нимб.")
+	late.setDir(EAST)
+	user.setDir(WEST)
+	TEST_ASSERT(late.aura_back.mirrored != final_knowledge.ascension_aura.mirrored, "Нимб копии поворачивается вместе с копией, а не с подлинником.")
+	user.apply_status_effect(/datum/status_effect/heretic_moon_shroud, 5 SECONDS)
+	TEST_ASSERT(final_knowledge.ascension_aura.alpha < 255 && final_knowledge.ascension_aura_front.alpha < 255, "Покров приглушает нимб подлинника вместе с телом.")
+	TEST_ASSERT_EQUAL(late.aura_back.alpha, 255, "Нимб копии покров не трогает.")
+	user.remove_status_effect(/datum/status_effect/heretic_moon_shroud)
+	TEST_ASSERT_EQUAL(final_knowledge.ascension_aura.alpha, 255, "Снятие покрова возвращает нимб.")
+	var/obj/effect/heretic_ascension_aura/copied = late.aura_back
+	final_knowledge.on_body_lose(user)
+	TEST_ASSERT(QDELETED(copied) && !late.aura_back && !early.aura_back, "Потеря вознесения снимает нимб с копий.")
+	TEST_ASSERT(!(copied in late.vis_contents), "Копия освобождает старый нимб.")
+	final_knowledge.on_body_gain(user)
+	copied = early.aura_back
+	TEST_ASSERT_NOTNULL(copied, "Повторное вознесение возвращает нимб копиям.")
+	qdel(early)
+	TEST_ASSERT(QDELETED(copied), "Разбитая копия уносит свой нимб.")
+
 /datum/unit_test/heretic_moon_reveal/Run()
 	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
 	var/mob/living/other = allocate(/mob/living/carbon/human, get_step(user, EAST))

@@ -19,6 +19,7 @@
 #define HERETIC_MOON_MASQUERADE_STAMINA 30
 #define HERETIC_MOON_MASQUERADE_CONFUSION 3
 #define HERETIC_MOON_MASQUERADE_LIFETIME (10 SECONDS)
+#define HERETIC_MOON_SHROUD_AURA_ALPHA 20
 
 /proc/get_heretic_moon(mob/user)
 	var/datum/antagonist/heretic/heretic = user?.mind?.has_antag_datum(/datum/antagonist/heretic)
@@ -114,6 +115,10 @@
 
 /datum/eldritch_knowledge/base_moon/proc/reflection_health()
 	return ascension_active ? HERETIC_MOON_ASCENDED_HEALTH : upgraded ? HERETIC_MOON_UPGRADED_HEALTH : HERETIC_MOON_HEALTH
+
+/datum/eldritch_knowledge/base_moon/proc/sync_reflection_auras(manifest = FALSE)
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in reflections + temporary_reflections)
+		reflection.sync_ascension_aura(manifest)
 
 /datum/eldritch_knowledge/base_moon/proc/trim_reflections()
 	while(length(reflections) > reflection_limit())
@@ -311,6 +316,8 @@
 	var/list/witness_time
 	var/holding_position = FALSE
 	var/leash_range = HERETIC_MOON_RANGE
+	var/obj/effect/heretic_ascension_aura/aura_back
+	var/obj/effect/heretic_ascension_aura/aura_front
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/Initialize(mapload, datum/eldritch_knowledge/base_moon/knowledge, mob/living/model, duration = 45 SECONDS)
 	. = ..()
@@ -344,7 +351,28 @@
 		if(shroud_index && shroud_index <= length(copied_filters))
 			copied_filters.Cut(shroud_index, shroud_index + 1)
 		filters = copied_filters
+	sync_ascension_aura()
 	sync_huds()
+
+/// Нимб вознесённого держится в vis_contents, а не в appearance, поэтому копия заводит свой.
+/mob/living/simple_animal/hostile/illusion/heretic_moon/proc/sync_ascension_aura(manifest = FALSE)
+	var/obj/effect/heretic_ascension_aura/model
+	if(!QDELETED(parent_mob))
+		model = locate() in parent_mob.vis_contents
+	if(!model)
+		QDEL_NULL(aura_back)
+		QDEL_NULL(aura_front)
+		return
+	if(aura_back)
+		return
+	aura_back = new(null, model.path_id)
+	aura_front = new(null, model.path_id, TRUE)
+	aura_back.follow(src)
+	aura_front.follow(src)
+	vis_contents += list(aura_back, aura_front)
+	if(manifest)
+		aura_back.manifest()
+		aura_front.manifest()
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/proc/sync_huds()
 	if(!hud_list || QDELETED(parent_mob) || !parent_mob.hud_list)
@@ -467,6 +495,8 @@
 		knowledge.reflections -= src
 		knowledge.temporary_reflections -= src
 		knowledge.notify_resource_changed()
+	QDEL_NULL(aura_back)
+	QDEL_NULL(aura_front)
 	knowledge_ref = null
 	parent_mob = null
 	witness_time = null
@@ -641,6 +671,9 @@
 	. = ..()
 	filter_name = "moon-shroud-[REF(src)]"
 	owner.add_filter(filter_name, 30, color_matrix_filter(list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0.08, 0,0,0,0)))
+	// KEEP_APART выводит нимб из-под фильтра тела.
+	for(var/obj/effect/heretic_ascension_aura/aura in owner.vis_contents)
+		aura.alpha = HERETIC_MOON_SHROUD_AURA_ALPHA
 	RegisterSignal(owner, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER), PROC_REF(reveal))
 	return TRUE
 
@@ -650,6 +683,8 @@
 
 /datum/status_effect/heretic_moon_shroud/on_remove()
 	owner.remove_filter(filter_name)
+	for(var/obj/effect/heretic_ascension_aura/aura in owner.vis_contents)
+		aura.alpha = 255
 	UnregisterSignal(owner, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER))
 	return ..()
 
@@ -836,13 +871,15 @@
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(knowledge)
 		knowledge.ascension_active = TRUE
+		knowledge.sync_reflection_auras(manifest = TRUE)
 
 /datum/eldritch_knowledge/final_eldritch/moon_final/on_body_lose(mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(knowledge)
 		knowledge.ascension_active = FALSE
 		knowledge.trim_reflections()
-	return ..()
+	. = ..()
+	knowledge?.sync_reflection_auras()
 
 /obj/item/melee/sickly_blade/moon
 	name = "лунный клинок"
@@ -874,3 +911,4 @@
 #undef HERETIC_MOON_MASQUERADE_STAMINA
 #undef HERETIC_MOON_MASQUERADE_CONFUSION
 #undef HERETIC_MOON_MASQUERADE_LIFETIME
+#undef HERETIC_MOON_SHROUD_AURA_ALPHA

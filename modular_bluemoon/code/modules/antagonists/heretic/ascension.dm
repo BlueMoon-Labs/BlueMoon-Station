@@ -251,6 +251,7 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART | PIXEL_SCALE
 	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE
+	var/path_id
 	var/drag = HERETIC_ASCENSION_BACK_DRAG
 	var/side = 0
 	var/mirrored = FALSE
@@ -260,6 +261,7 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 	if(!path)
 		return INITIALIZE_HINT_QDEL
+	src.path_id = path_id
 	icon = path.ascension_aura_icon
 	icon_state = "[path.ascension_aura_state]_[foreground ? "front" : "back"]"
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
