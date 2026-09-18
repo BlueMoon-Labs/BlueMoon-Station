@@ -81,7 +81,7 @@
 
 /datum/antagonist/ert/engineer
 	role = "Инженер"
-	outfit = /datum/outfit/ert/engineer
+	outfit = /datum/outfit/ert/engineer/green
 	skill_modifiers = list(/datum/skill_modifier/job/level/wiring)
 
 /datum/antagonist/ert/engineer/green

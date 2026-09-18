@@ -1332,8 +1332,8 @@
 	pixel_y = 32
 	},
 /obj/structure/table,
-/obj/item/gun/medbeam,
-/obj/item/gun/medbeam,
+/obj/item/gun/medbeam/syndicate,
+/obj/item/gun/medbeam/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "om" = (

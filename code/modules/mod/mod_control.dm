@@ -429,7 +429,7 @@
 
 /obj/item/mod/control/proc/update_flags()
 	var/list/used_skin = theme.skins[skin]
-	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
 		part.update_flags(used_skin)
 
 /obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
@@ -610,7 +610,7 @@
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)
 	SIGNAL_HANDLER
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(part == src || part.loc == src)
+	if(part.loc == src)
 		return
 	if(part == cell)
 		mod_parts[MOD_PART_CELL] = null
