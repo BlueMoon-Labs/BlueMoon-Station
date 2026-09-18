@@ -145,7 +145,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 			GLOB.antag_training_work_tick = world.time
 			GLOB.antag_training_work_usage = TICK_USAGE_REAL
 		// Отложенная работа не наследует остаток квоты последней подсистемы MC.
-		if(TICK_USAGE < TICK_LIMIT_TO_RUN && TICK_USAGE_TO_MS(GLOB.antag_training_work_usage) < ANTAG_TRAINING_WORK_BUDGET_MS)
+		if(ANTAG_TRAINING_TICK_FREE && TICK_USAGE_TO_MS(GLOB.antag_training_work_usage) < ANTAG_TRAINING_WORK_BUDGET_MS)
 			return
 		stoplag()
 

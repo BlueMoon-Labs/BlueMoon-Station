@@ -829,10 +829,11 @@
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
 	visit.memories_found = 1
+	var/expected_end = world.time + 120 SECONDS
 	visit.finish(exit_reason = "timeout")
 	var/datum/status_effect/heretic_mansus_unreturned/penalty = victim.has_status_effect(/datum/status_effect/heretic_mansus_unreturned)
 	TEST_ASSERT_NOTNULL(penalty, "Таймаут оставляет след недовозвращённой памяти.")
-	TEST_ASSERT_EQUAL(penalty.duration - world.time, 120 SECONDS, "Два недоставленных осколка дают две минуты.")
+	TEST_ASSERT_EQUAL(penalty.duration, expected_end, "Два недоставленных осколка дают две минуты.")
 	TEST_ASSERT_EQUAL(victim.getBruteLoss() + victim.getStaminaLoss(), 0, "Эффект не наносит урона.")
 	fixture = make_mansus_fixture()
 	victim = fixture["victim"]

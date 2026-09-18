@@ -643,6 +643,8 @@
 	var/rune_uid = trigger_rune(knife)
 	var/list/wait_budget = new_wait_budget(5 SECONDS, "Удаление сработавшей руны")
 	while(!isnull(locateUID(rune_uid)))
+		// BYOND держит атомы последнего view() до следующего вызова, а свет искр зовёт его рядом с руной.
+		pass(view(0, run_loc_floor_bottom_left))
 		if(!wait_budget_tick(wait_budget))
 			break
 	TEST_ASSERT_EQUAL(length(knife.current_runes), 0, "Сработавшая руна освобождает лимит ножа после завершения эффекта.")

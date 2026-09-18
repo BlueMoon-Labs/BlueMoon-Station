@@ -5,6 +5,12 @@
 #define ANTAG_TRAINING_SUPPLY_LIMIT 100
 #define ANTAG_TRAINING_STRUCTURE_LIMIT 16
 #define ANTAG_TRAINING_WORK_BUDGET_MS 5
+// В тестах stoplag() не ждёт свободного тика, и гейт не должен: МК держит тик занятым минутами.
+#ifdef UNIT_TESTS
+#define ANTAG_TRAINING_TICK_FREE TRUE
+#else
+#define ANTAG_TRAINING_TICK_FREE (TICK_USAGE < TICK_LIMIT_TO_RUN)
+#endif
 #define ANTAG_TRAINING_RESTART_DELAY (5 SECONDS)
 #define ANTAG_TRAINING_VOTE_TIME (45 SECONDS)
 #define ANTAG_TRAINING_BATCH_LIMIT 12
