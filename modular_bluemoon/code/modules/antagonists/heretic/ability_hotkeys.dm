@@ -77,3 +77,63 @@
 		spell.Trigger(user, FALSE)
 		return TRUE
 	return FALSE
+
+/obj/effect/proc_holder/spell/pointed/heretic_lunge
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_feint
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_blood
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/reap
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_tide/undertow
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_wax/imprint
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_moon/exchange
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/blood_siphon
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/cleave
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/manse_link
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/boogie_woogie
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/trigger/blind/eldritch
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/trigger/mute/eldritch
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_moon/create
+	aim_assist_turf = TRUE
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/seal
+	aim_assist_turf = TRUE
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/court
+	aim_assist_turf = TRUE
+
+/obj/effect/proc_holder/spell/pointed/heretic_glass/barrier
+	aim_assist_turf = TRUE

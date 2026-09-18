@@ -186,6 +186,7 @@
 #include "heretic_deeds.dm"
 #include "heretic_deeds_paths_a.dm"
 #include "heretic_deeds_paths_b.dm"
+#include "heretic_targeting.dm"
 #include "heretic_deeds_paths_c.dm"
 #include "heretic_deeds_paths_d.dm"
 // #include "holidays.dm"
