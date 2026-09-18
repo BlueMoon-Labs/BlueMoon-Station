@@ -130,6 +130,7 @@
 		var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
 		var/obj/blocker
 		if(scenario == "blade")
+			victim.forceMove(get_step(victim, NORTH))
 			anchor.attackby(blade, user)
 			TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Крюк не переносит урон с души на тело.")
 			qdel(anchor)
@@ -158,7 +159,7 @@
 		QDEL_NULL(blocker)
 		qdel(victim)
 
-/// Жатва оставляет первый урон, предупреждает и наносит конечный второй удар только вдали от души.
+/// Жатва оставляет первый урон, предупреждает и наносит второй удар: полный вдали от души, ослабленный рядом с ней.
 /datum/unit_test/heretic_spirit_reaping/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	heretic.selected_path = PATH_SPIRIT
@@ -181,8 +182,8 @@
 			victim.forceMove(get_step(get_step(victim, NORTH), NORTH))
 		var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
 		soul.reap_at = world.time
-		TEST_ASSERT_EQUAL(soul.finish_reap(), retreat, "Второй удар зависит от расстояния до души.")
-		TEST_ASSERT(abs(victim.getBruteLoss() - (retreat ? 47 : 22)) <= DAMAGE_PRECISION, "Фактический урон учитывает контрмеру.")
+		TEST_ASSERT(soul.finish_reap(), "Второй удар попадает при целой связи [retreat ? "вдали от души" : "рядом с душой"].")
+		TEST_ASSERT(abs(victim.getBruteLoss() - (retreat ? 47 : 37)) <= DAMAGE_PRECISION, "Второй удар наносит [retreat ? 25 : 15] ушибов.")
 		TEST_ASSERT(QDELETED(soul) && QDELETED(anchor), "Жатва расходует связь после одного разрешения.")
 		qdel(victim)
 	TEST_ASSERT_EQUAL(spirit.combat_resource, 3, "Жатва доступна без затрат оболов.")
@@ -222,6 +223,7 @@
 	TEST_ASSERT(spirit.reap(user, victim), "Жатва подготовлена.")
 	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
 	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+	victim.forceMove(get_step(victim, NORTH))
 	var/expiry = soul.duration
 	var/reap_at = soul.reap_at
 	var/resource_before = spirit.combat_resource
@@ -249,6 +251,8 @@
 	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
 	TEST_ASSERT(!spell.can_target(soul.anchor, user, TRUE), "Целью выбирается тело, а не душа.")
 	TEST_ASSERT(findtext(spell.heretic_failure_reason, "тело живого противника"), "Подсказка объясняет выбор тела.")
+	TEST_ASSERT(!spell.can_target(get_step(user, SOUTH), user, TRUE), "Пол не подходит целью.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "на пол") && !findtext(spell.heretic_failure_reason, "силуэт"), "Клик по полу объясняется полом, а не душой.")
 	var/obj/item/storage/box/box = allocate(/obj/item/storage/box, get_turf(victim))
 	victim.forceMove(box)
 	TEST_ASSERT(!spell.can_target(victim, user, TRUE), "Контейнер защищает цель.")
@@ -306,8 +310,10 @@
 			TEST_ASSERT(findtext(result["what"], "второй удар: 25 ушибов"), "Попадание пишет фактический урон [scenario].")
 			if(scenario == "lethal")
 				TEST_ASSERT_EQUAL(victim.stat, DEAD, "Второй удар действительно смертелен.")
+		else if(scenario == "stay")
+			TEST_ASSERT(findtext(result["what"], "второй удар: 15 ушибов"), "Цель у своей души получает ослабленный удар.")
 		else
-			var/list/reasons = list("stay" = "цель осталась рядом", "touch" = "цель коснулась", "destroy" = "душа разрушена", "return" = "цель вернулась")
+			var/list/reasons = list("touch" = "цель коснулась", "destroy" = "душа разрушена", "return" = "цель вернулась")
 			TEST_ASSERT(findtext(result["what"], reasons[scenario]), "Отмена пишет причину [scenario].")
 		qdel(victim)
 
@@ -345,7 +351,7 @@
 		spirit.on_life(user)
 	TEST_ASSERT_EQUAL(spirit.combat_resource, 2, "Ожидание возвращает только два обола.")
 
-/// Переправа проверяет диагональные преграды, занятые клетки и ограничения тела.
+/// Переправа проверяет диагональные преграды и ограничения тела.
 /datum/unit_test/heretic_spirit_crossing_collision/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	heretic.selected_path = PATH_SPIRIT
@@ -362,9 +368,6 @@
 	TEST_ASSERT(!spell.can_target(destination, user, TRUE), "Диагональный угол закрывает выбор.")
 	TEST_ASSERT(!spirit.cross(user, destination), "Прямое перемещение не срезает угол.")
 	qdel(blocker)
-	var/mob/living/occupant = allocate(/mob/living/carbon/human, destination)
-	TEST_ASSERT(!spirit.cross(user, destination), "Нельзя появиться в другом теле.")
-	qdel(occupant)
 	user.anchored = TRUE
 	TEST_ASSERT(!spirit.cross(user, destination), "Закреплённое тело не перемещается.")
 	user.anchored = FALSE
@@ -399,7 +402,6 @@
 	TEST_ASSERT_NOTNULL(soul, "Дальняя душа создана.")
 	victim.forceMove(get_step(victim, NORTH))
 	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
-	TEST_ASSERT(!spirit.cross(user, destination), "Обычная клетка за пределами трёх недоступна.")
 	TEST_ASSERT(spirit.cross(user, anchor), "Собственная душа даёт дальнюю переправу.")
 	TEST_ASSERT_EQUAL(get_turf(user), destination, "Перевозчик достигает души.")
 	TEST_ASSERT(QDELETED(soul) && QDELETED(anchor), "Прибытие собирает душу.")
@@ -581,3 +583,159 @@
 	TEST_ASSERT_NOTNULL(trace, "На полу остаётся видимый след.")
 	allocated += trace
 	TEST_ASSERT_EQUAL(trace.icon_state, "sigil_spirit", "След использует символ пути духа.")
+
+/// Душа под хозяином пропускает клики, а удар крюком и рука перевозчика по ней достаются лежащему телу.
+/datum/unit_test/heretic_spirit_soul_click_through/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/item/melee/sickly_blade/spirit/hook = allocate(/obj/item/melee/sickly_blade/spirit)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+	TEST_ASSERT_EQUAL(anchor.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Душа под хозяином не перехватывает клики.")
+	victim.Paralyze(10 SECONDS)
+	TEST_ASSERT_EQUAL(victim.body_position, LYING_DOWN, "Цель лежит на своей душе.")
+	user.a_intent = INTENT_HARM
+	hook.melee_attack_chain(user, anchor)
+	TEST_ASSERT(victim.getBruteLoss() > 0, "Удар крюком по душе под телом ранит тело.")
+	TEST_ASSERT(!QDELETED(soul) && !QDELETED(anchor), "Удар по телу не собирает и не разбивает душу.")
+	user.a_intent = INTENT_HELP
+	anchor.attack_hand(user)
+	TEST_ASSERT(!QDELETED(soul), "Рука перевозчика достаётся телу, а не собирает душу под ним.")
+	victim.forceMove(get_step(victim, NORTH))
+	TEST_ASSERT_EQUAL(anchor.mouse_opacity, MOUSE_OPACITY_OPAQUE, "Оставленную телом душу снова можно выбрать.")
+
+/// Удар крюком по связанному телу даёт обол раз в 6 секунд, а взрыв метки приносит ещё один.
+/datum/unit_test/heretic_spirit_combat_income/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_mark)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spirit_mark/mark_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_mark)
+	var/obj/item/melee/sickly_blade/spirit/hook = allocate(/obj/item/melee/sickly_blade/spirit)
+	hook.force = 5
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.a_intent = INTENT_HARM
+	spirit.combat_resource = 0
+	hook.attack(victim, user)
+	TEST_ASSERT(victim.getBruteLoss() > 0, "Крюк ранит цель.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 0, "Удар по телу без связи оболов не даёт.")
+	TEST_ASSERT_NOTNULL(spirit.separate(victim, spirit), "Связь создана.")
+	hook.attack(victim, user)
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Удар по связанному телу даёт обол.")
+	hook.attack(victim, user)
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 1, "Повторный удар в пределах 6 секунд обол не даёт.")
+	mark_knowledge.on_mansus_grasp(victim, user, TRUE)
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/eldritch/spirit), "Метка поставлена.")
+	hook.attack(victim, user)
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/eldritch/spirit), "Крюк взрывает метку.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 2, "Взрыв метки даёт обол даже в задержке удара.")
+	COOLDOWN_RESET(spirit, spirit_hook_income)
+	hook.attack(victim, user)
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 3, "После задержки удар снова даёт обол.")
+
+/// Переправа укорачивает дальнюю клетку до трёх, встаёт рядом с занятым телом и собирает душу под хозяином.
+/datum/unit_test/heretic_spirit_crossing_landing/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_step)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spell/spirit_step/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_step)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/step/spell = knowledge.granted_spell
+	var/turf/origin = get_turf(user)
+	var/turf/far_floor = locate(origin.x + 5, origin.y, origin.z)
+	TEST_ASSERT(spell.can_target(far_floor, user, TRUE), "Дальняя клетка пола доступна для укороченного перехода.")
+	spell.cast(list(far_floor), user)
+	TEST_ASSERT_EQUAL(get_turf(user), locate(origin.x + 3, origin.y, origin.z), "Переход укорочен до трёх клеток по линии.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 2, "Укороченный переход стоит один обол.")
+	user.forceMove(origin)
+	var/mob/living/enemy = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
+	TEST_ASSERT(spell.can_target(enemy, user, TRUE), "Тело врага подходит целью перехода.")
+	spell.cast(list(enemy), user)
+	TEST_ASSERT_EQUAL(get_turf(user), locate(origin.x + 1, origin.y, origin.z), "Перевозчик встаёт рядом с телом со своей стороны.")
+	qdel(enemy)
+	user.forceMove(origin)
+	spirit.combat_resource = 3
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y, origin.z))
+	victim.mind = allocate_mind()
+	victim.mind.current = victim
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Тело на своей душе даёт дальний переход к ней.")
+	spell.cast(list(victim), user)
+	TEST_ASSERT_EQUAL(get_turf(user), locate(origin.x + 3, origin.y, origin.z), "Перевозчик встаёт рядом с хозяином души.")
+	TEST_ASSERT(QDELETED(soul), "Душа под телом собрана по прибытии.")
+	TEST_ASSERT_EQUAL(spirit.combat_resource, 3, "Плата за душу возвращает потраченный обол.")
+	user.forceMove(origin)
+	var/obj/blocker = allocate(/obj, locate(origin.x + 2, origin.y, origin.z))
+	blocker.density = TRUE
+	TEST_ASSERT(!spell.can_target(get_turf(blocker), user, TRUE), "Плотный предмет на месте прибытия останавливает переход.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "плотным предметом"), "Отказ называет занятое место.")
+	TEST_ASSERT(!spirit.cross(user, get_turf(blocker)), "Прямой вызов тоже не проходит сквозь предмет.")
+	TEST_ASSERT_EQUAL(get_turf(user), origin, "Отказ не перемещает перевозчика.")
+
+/// Переправа переносит лежащую жертву, которую тащит перевозчик, и сохраняет захват; запрет телепортации и стоящих не трогает.
+/datum/unit_test/heretic_spirit_crossing_passenger/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_step)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/spell/spirit_step/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_step)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/step/spell = knowledge.granted_spell
+	var/turf/origin = get_turf(user)
+	var/turf/destination = locate(origin.x + 3, origin.y, origin.z)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(origin, WEST))
+	victim.Paralyze(30 SECONDS)
+	user.start_pulling(victim)
+	TEST_ASSERT_EQUAL(user.pulling, victim, "Перевозчик тащит жертву.")
+	user.setGrabState(GRAB_AGGRESSIVE)
+	spell.cast(list(destination), user)
+	TEST_ASSERT_EQUAL(get_turf(user), destination, "Перевозчик переправился.")
+	TEST_ASSERT_EQUAL(get_dist(victim, user), 1, "Жертва оказалась рядом с местом прибытия.")
+	TEST_ASSERT_EQUAL(user.pulling, victim, "Захват сохранён.")
+	TEST_ASSERT_EQUAL(user.grab_state, GRAB_AGGRESSIVE, "Сила захвата не сбрасывается.")
+	ADD_TRAIT(victim, TRAIT_NO_TELEPORT, TRAIT_GENERIC)
+	var/turf/victim_turf = get_turf(victim)
+	spell.cast(list(origin), user)
+	TEST_ASSERT_EQUAL(get_turf(user), origin, "Перевозчик вернулся без жертвы.")
+	TEST_ASSERT_EQUAL(get_turf(victim), victim_turf, "Запрет телепортации оставляет жертву на месте.")
+	var/mob/living/bystander = allocate(/mob/living/carbon/human, get_step(origin, SOUTH))
+	user.start_pulling(bystander)
+	TEST_ASSERT_EQUAL(user.pulling, bystander, "Перевозчик тащит стоящего.")
+	var/turf/bystander_turf = get_turf(bystander)
+	spell.cast(list(destination), user)
+	TEST_ASSERT_EQUAL(get_turf(user), destination, "Переправа без пассажира всё равно проходит.")
+	TEST_ASSERT_EQUAL(get_turf(bystander), bystander_turf, "Стоящего на ногах Переправа не переносит.")
+
+/// Стол не закрывает линию Духа, окно поперёк линии и полное окно закрывают, окно вдоль линии — нет.
+/datum/unit_test/heretic_spirit_line_obstacles/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/sever/spell = spirit.combat_power
+	var/turf/middle = get_step(get_step(user, EAST), EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(get_step(middle, EAST), EAST))
+	var/obj/structure/table/table = allocate(/obj/structure/table, middle)
+	TEST_ASSERT(spell.can_target(victim, user, TRUE), "Стол между перевозчиком и целью не закрывает линию.")
+	spell.cast(list(victim), user)
+	TEST_ASSERT(abs(victim.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Разлучение через стол ранит цель.")
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_spirit/separated), "Связь через стол держится.")
+	qdel(table)
+	var/obj/structure/window/side_window = allocate(/obj/structure/window, middle, NORTH)
+	TEST_ASSERT(spirit.line_clear(user, victim), "Окно вдоль линии её не закрывает.")
+	qdel(side_window)
+	var/obj/structure/window/facing_window = allocate(/obj/structure/window, middle, EAST)
+	TEST_ASSERT(!spirit.line_clear(user, victim), "Окно поперёк линии её закрывает.")
+	qdel(facing_window)
+	var/obj/structure/window/fulltile/full_window = allocate(/obj/structure/window/fulltile, middle)
+	TEST_ASSERT(!spirit.line_clear(user, victim), "Полное окно закрывает линию.")
+	qdel(full_window)
