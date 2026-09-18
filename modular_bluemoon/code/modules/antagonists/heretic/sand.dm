@@ -8,6 +8,7 @@
 #define HERETIC_SAND_BLADE_DELAY (0.6 SECONDS)
 #define HERETIC_SAND_STEP_RANGE 4
 #define HERETIC_SAND_RELEASE_DAMAGE 20
+#define HERETIC_SAND_RELEASE_STAMINA 10
 #define HERETIC_SAND_WIND_DAMAGE 28
 #define HERETIC_SAND_BURIAL_DAMAGE 28
 #define HERETIC_SAND_BURIAL_RADIUS 2
@@ -37,7 +38,7 @@
 
 /datum/eldritch_knowledge/base_sand
 	name = "Между двумя песчинками"
-	desc = "Нож и стекло создают клинок истёкшего часа. Осыпь за единицу песка сразу наносит 20 ушибов соседним врагам и ставит часы на четырёх соседних клетках. Через 1,5 секунды каждые часы наносят 32 ушиба и 20 урона выносливости только на своей клетке. Часы можно разбить: 15 прочности."
+	desc = "Нож и стекло создают клинок истёкшего часа. Осыпь за единицу песка сразу наносит соседним врагам 20 ушибов и 10 урона выносливости, затем ставит часы на четырёх соседних клетках. Через 1,5 секунды каждые часы наносят 32 ушиба и 20 урона выносливости только на своей клетке. Часы можно разбить: 15 прочности."
 	gain_text = "Я перевернул часы. Сверху осталось столько же песка. Снизу появилась моя тень."
 	route = PATH_SAND
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/glass)
@@ -146,10 +147,10 @@
 		return FALSE
 	var/turf/previous
 	for(var/turf/tile as anything in get_line(origin, destination))
-		if(!tile_open(tile))
+		if(!heretic_line_tile_open(tile))
 			return FALSE
 		if(previous && previous.x != tile.x && previous.y != tile.y)
-			if(!tile_open(locate(previous.x, tile.y, tile.z)) || !tile_open(locate(tile.x, previous.y, tile.z)))
+			if(!heretic_line_tile_open(locate(previous.x, tile.y, tile.z)) || !heretic_line_tile_open(locate(tile.x, previous.y, tile.z)))
 				return FALSE
 		previous = tile
 	return TRUE
@@ -187,11 +188,22 @@
 			return null
 	return new /obj/structure/heretic_sand_hourglass(tile, src, required, damage)
 
+/// Старые часы вне нового поля уступают место, чтобы рисунок не упирался в предел.
+/datum/eldritch_knowledge/base_sand/proc/make_room_for_hourglasses(needed, list/kept)
+	var/overflow = length(hourglasses) + needed - HERETIC_SAND_LIMIT
+	for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in hourglasses.Copy())
+		if(overflow <= 0)
+			return
+		if(hourglass in kept)
+			continue
+		qdel(hourglass)
+		overflow--
+
 /datum/eldritch_knowledge/base_sand/proc/release(mob/living/user)
 	if(!can_use(user) || length(hourglasses) > HERETIC_SAND_LIMIT - 4 || !spend_combat_resource())
 		return FALSE
 	for(var/mob/living/victim in range(1, user))
-		hit(victim, HERETIC_SAND_RELEASE_DAMAGE, 10)
+		hit(victim, HERETIC_SAND_RELEASE_DAMAGE, HERETIC_SAND_RELEASE_STAMINA)
 		if(!can_use(user))
 			return TRUE
 	for(var/direction in GLOB.cardinals)
@@ -242,6 +254,7 @@
 	if(!can_use(user) || QDELETED(required) || !line_clear(user, target) || (final_cast && (!ascension_active || !heretic.ascended)))
 		return FALSE
 	var/list/tiles = list()
+	var/list/obj/structure/heretic_sand_hourglass/field_hourglasses = list()
 	var/area_reach = HERETIC_SAND_RANGE + HERETIC_SAND_BURIAL_RADIUS
 	for(var/turf/tile in range(HERETIC_SAND_BURIAL_RADIUS, target))
 		if((abs(tile.x - target.x) + abs(tile.y - target.y)) % 2 || !line_clear(user, tile, area_reach))
@@ -250,10 +263,12 @@
 		for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in hourglasses)
 			if(get_turf(hourglass) == tile)
 				occupied = TRUE
+				field_hourglasses += hourglass
 		if(!occupied)
 			tiles += tile
-	if(!length(tiles) || length(hourglasses) + length(tiles) > HERETIC_SAND_LIMIT || (!final_cast && !spend_combat_resource(2)))
+	if(!length(tiles) || (!final_cast && !spend_combat_resource(2)))
 		return FALSE
+	make_room_for_hourglasses(length(tiles), field_hourglasses)
 	for(var/mob/living/victim in range(1, target))
 		if(line_clear(target, victim, 1))
 			hit(victim, final_cast ? HERETIC_SAND_FINAL_DAMAGE : HERETIC_SAND_BURIAL_DAMAGE, 15)
@@ -722,7 +737,7 @@
 
 /datum/eldritch_knowledge/spell/sand_burial
 	name = "Погребение"
-	desc = "За две единицы песка выбранная область 3×3 сразу получает 28 ушибов и 15 урона выносливости. На поле 5×5 появляются 13 часов в шахматном порядке, включая выбранную клетку. Каждые часы запоминают одного врага на своей клетке и через 1,5 секунды возвращают его перед взрывом. Между часами есть проходы; от возврата спасают отход дальше трёх клеток, преграды или разрушение часов. Перезарядка — 35 секунд."
+	desc = "За две единицы песка выбранная область 3×3 сразу получает 28 ушибов и 15 урона выносливости. На поле 5×5 появляются 13 часов в шахматном порядке, включая выбранную клетку. Каждые часы запоминают одного врага на своей клетке и через 1,5 секунды возвращают его перед взрывом. Между часами есть проходы; от возврата спасают отход дальше трёх клеток, преграды или разрушение часов. Если вместе с уже стоящими часами получится больше 13, самые старые часы вне поля исчезают. Перезарядка — 35 секунд."
 	gain_text = "Город исчез под песком. Улицы ещё долго помнили, где ходить."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -783,7 +798,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_sand/release
 	name = "Осыпь"
-	desc = "За единицу песка нанесите соседним врагам 20 ушибов и поставьте часы на четырёх соседних клетках. Они взорвутся через 1,5 секунды только на своей клетке: 32 ушиба и 20 урона выносливости."
+	desc = "За единицу песка нанесите соседним врагам 20 ушибов и 10 урона выносливости, затем поставьте часы на четырёх соседних клетках. Они взорвутся через 1,5 секунды только на своей клетке: 32 ушиба и 20 урона выносливости."
 	charge_max = 12 SECONDS
 	action_icon_state = "sand_release"
 
@@ -841,7 +856,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_sand/burial
 	name = "Погребение"
-	desc = "За две единицы песка нанесите 28 ушибов и 15 выносливости в области 3×3. Тринадцать часов на поле 5×5 запомнят стоящих на них врагов и вернут перед взрывом через 1,5 секунды. Возврат действует в трёх клетках от часов без преград."
+	desc = "За две единицы песка нанесите 28 ушибов и 15 выносливости в области 3×3. Тринадцать часов на поле 5×5 запомнят стоящих на них врагов и вернут перед взрывом через 1,5 секунды. Возврат действует в трёх клетках от часов без преград. Лишние старые часы вне поля исчезают, освобождая место."
 	charge_max = 35 SECONDS
 	action_icon_state = "sand_burial"
 
@@ -873,6 +888,7 @@
 #undef HERETIC_SAND_BLADE_DELAY
 #undef HERETIC_SAND_STEP_RANGE
 #undef HERETIC_SAND_RELEASE_DAMAGE
+#undef HERETIC_SAND_RELEASE_STAMINA
 #undef HERETIC_SAND_WIND_DAMAGE
 #undef HERETIC_SAND_BURIAL_DAMAGE
 #undef HERETIC_SAND_BURIAL_RADIUS

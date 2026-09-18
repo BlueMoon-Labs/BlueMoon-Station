@@ -322,6 +322,45 @@
 	hourglass = sand.hourglasses[1]
 	TEST_ASSERT_NULL(hourglass.recorded_second, "Пустой конец линии не записывает промежуточную цель.")
 
+/// Стол не закрывает Сквозняк, а плотная машина закрывает.
+/datum/unit_test/heretic_sand_wind_over_table/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/sand_wind)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/turf/target = locate(user.x + 3, user.y, user.z)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, target)
+	allocate(/obj/structure/table, locate(user.x + 1, user.y, user.z))
+	TEST_ASSERT(sand.wind(user, target), "Сквозняк проходит над столом.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 28) <= DAMAGE_PRECISION, "Цель за столом получает удар.")
+	var/obj/machinery/hydroponics/machine = allocate(/obj/machinery/hydroponics, locate(user.x + 2, user.y, user.z))
+	TEST_ASSERT(machine.density, "Лоток гидропоники плотный.")
+	TEST_ASSERT(!sand.line_clear(user, target), "Плотная машина по-прежнему закрывает линию.")
+
+/// Погребение переполняет предел, убирая самые старые часы вне своего поля.
+/datum/unit_test/heretic_sand_burial_replaces_old/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/sand_burial)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/list/old_hourglasses = list()
+	for(var/direction in list(NORTH, EAST, SOUTH))
+		var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(get_step(center, direction), sand)
+		TEST_ASSERT_NOTNULL(hourglass, "Старые часы стоят вне клеток нового поля.")
+		old_hourglasses += hourglass
+	sand.combat_resource = 4
+	TEST_ASSERT(sand.burial(user, center), "Погребение не отказывает из-за часов, оставшихся на поле.")
+	TEST_ASSERT(length(sand.hourglasses) <= 13, "Общее число часов не превышает предел.")
+	TEST_ASSERT_EQUAL(length(sand.hourglasses), 13, "Новое поле создаётся целиком.")
+	for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in old_hourglasses)
+		TEST_ASSERT(QDELETED(hourglass), "Старые часы уступили место новому полю.")
+	TEST_ASSERT_EQUAL(sand.combat_resource, 2, "Погребение стоит две единицы песка.")
+
 /// Погребение угрожает центру, оставляет проходы и ограничивает число одновременных часов.
 /datum/unit_test/heretic_sand_burial_and_limit/Run()
 	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
