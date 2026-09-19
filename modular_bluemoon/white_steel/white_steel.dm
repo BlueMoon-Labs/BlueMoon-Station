@@ -46,6 +46,17 @@
 #include "inner\super_cruise\orbital_poi_generator\loot\artifact_defenses.dm"
 #include "inner\super_cruise\orbital_poi_generator\loot\research_disks.dm"
 
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_template.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_loader.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_types.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_generator.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\mapping.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\asteroid_generator.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\_generator_settings.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\_ruin_event.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\asteriod_station.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\meteor_storm.dm"
+
 #include "inner\discovery_research\discoverable_component.dm"
 #include "inner\discovery_research\discovery_scanner.dm"
 
