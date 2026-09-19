@@ -1,5 +1,9 @@
 //WHITE-STEEL PORT - Химия рейнджеров (Feline)
 
+//BLUEMOON ADAPTATION: Feline medchems reference ORGAN_SLOT_PARASITE_EGG which bluemoon
+//only stores as a raw string on /obj/item/organ/body_egg. Define it here (was in _defines/access.dm).
+#define ORGAN_SLOT_PARASITE_EGG "parasite_egg"
+
 //	Зед-4 - контрапаразитный препарат с тяжелейшими побочными эффектами
 
 /datum/reagent/toxin/zed
