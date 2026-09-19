@@ -219,8 +219,10 @@
 		toggle_ai(AI_OFF)
 
 /mob/living/simple_animal/hostile/infected/Destroy()
-	if(SSblackmesa_events?.zombie_director)
-		SSblackmesa_events.zombie_director.active_zombies -= src
+	if(GLOB.zombie_director)
+		var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
+		if(D && (src in D.active_zombies))
+			D.active_zombies -= src
 	return ..()
 
 /mob/living/simple_animal/hostile/infected/Aggro()
@@ -934,6 +936,8 @@
 			if(D && D.zombie_hp_multiplier > 1.0)
 				Z.maxHealth = round(Z.maxHealth * D.zombie_hp_multiplier)
 				Z.health = Z.maxHealth
+			// Add to active zombies list for tracking
+			D.active_zombies += Z
 
 /mob/living/simple_animal/hostile/infected/hunter/proc/start_dragging(mob/living/victim)
 	if(!victim || QDELETED(victim))

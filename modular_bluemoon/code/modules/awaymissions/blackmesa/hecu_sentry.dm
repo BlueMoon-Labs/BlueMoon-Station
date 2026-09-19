@@ -57,7 +57,7 @@
 	if(beep_timer)
 		deltimer(beep_timer)
 	// Remove from all linked remotes
-	for(var/obj/item/hecusentry_remote/remote in GLOB.all_objects)
+	for(var/obj/item/hecusentry_remote/remote in world)
 		if(remote && remote.linked_sentries)
 			remote.linked_sentries -= src
 	return ..()
