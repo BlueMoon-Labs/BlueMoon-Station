@@ -10,6 +10,7 @@
 	catch(var/exception/e)
 		message_admins("Asteroid failed to generate!")
 		log_runtime("Asteroid failed to generate! [e] on [e.file]:[e.line]")
+		SSair.unpause_z(center_z)
 	space_level.generating = FALSE
 
 /proc/_generate_asteroids(center_x, center_y, center_z, max_radius, weight_offset = 0, scale = 65)

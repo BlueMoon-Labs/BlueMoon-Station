@@ -358,7 +358,7 @@
 	var/mob/camera/aiEye/remote/remote_eye = C.remote_control
 	var/obj/machinery/computer/shuttle_flight/console = remote_eye.origin
 
-	if(QDELETED(console.shuttleObject))
+	if(QDELETED(console.shuttleObject) || !console.shuttleObject.docking_target)
 		return
 
 	playsound(console, 'sound/machines/terminal_prompt_deny.ogg', 25, 0)

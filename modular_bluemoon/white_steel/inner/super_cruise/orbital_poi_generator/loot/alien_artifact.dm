@@ -172,7 +172,11 @@
 
 /datum/artifact_effect/atmosfix/process(delta_time)
 	var/turf/T = get_turf(source_object)
+	if(!T)
+		return
 	var/datum/gas_mixture/air = T.return_air()
+	if(!air)
+		return
 	air.parse_gas_string(T.initial_gas_mix)
 
 //===================
@@ -375,6 +379,8 @@
 /datum/artifact_effect/gas_remove/process(delta_time)
 	var/turf/T = get_turf(source_object)
 	var/datum/gas_mixture/air = T.return_air()
+	if(!air)
+		return
 	var/input_id = initial(input.id)
 	var/moles = min(air.get_moles(input_id), 5)
 	if(moles)

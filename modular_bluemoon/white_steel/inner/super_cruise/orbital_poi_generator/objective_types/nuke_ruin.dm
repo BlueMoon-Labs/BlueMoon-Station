@@ -5,11 +5,13 @@
 	var/obj/machinery/nuclearbomb/decomission/nuclear_bomb
 	var/obj/item/disk/nuclear/decommission/nuclear_disk
 	//Relatively easy mission.
-	min_payout = 40 * CARGO_CRATE_VALUE
-	max_payout = 20 * CARGO_CRATE_VALUE
+	min_payout = 20 * CARGO_CRATE_VALUE
+	max_payout = 40 * CARGO_CRATE_VALUE
 
 /datum/orbital_objective/nuclear_bomb/generate_objective_stuff(turf/chosen_turf)
 	generated = TRUE
+	if(!nuclear_bomb)
+		return
 	nuclear_disk = new(chosen_turf)
 	nuclear_bomb.target_z = chosen_turf.z
 	nuclear_bomb.linked_objective = src
@@ -26,8 +28,10 @@
 	//из-за чего generate_objective_stuff() падал на nuclear_bomb.target_z.
 	var/area/A = GLOB.areas_by_type[/area/cargo/exploration_mission]
 	if(A)
-		T = pick(A.get_unobstructed_turfs())
-		if(!T)
+		var/list/pickable_turfs = A.get_unobstructed_turfs()
+		if(length(pickable_turfs))
+			T = pick(pickable_turfs)
+		else
 			T = locate() in shuffle(A.contents)
 	if(!T)
 		T = get_turf(objective_computer)

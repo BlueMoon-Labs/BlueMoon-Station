@@ -53,7 +53,7 @@
 	var/israel = 0
 	if(rangers_count)
 		israel = round((payout / 2) / rangers_count)
-	var/goyam  = round((payout / 2) / SSeconomy.generated_accounts.len)
+	var/goyam  = round((payout / 2) / max(SSeconomy.generated_accounts.len, 1))
 	for(var/B in SSeconomy.bank_accounts_by_id)
 		var/datum/bank_account/A = SSeconomy.bank_accounts_by_id[B]
 		if(istype(A.account_job, /datum/job/expeditor))
