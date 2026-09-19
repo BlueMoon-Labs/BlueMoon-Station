@@ -323,6 +323,8 @@
 	var/list/minds = list()
 	///Tracked image
 	var/image/img
+	/// Переменная для учёта в on_destroy() для создания/не созданияи иллюзии
+	var/create_illusion = TRUE
 
 /obj/effect/reality_smash/Initialize(mapload)
 	. = ..()
@@ -335,6 +337,52 @@
 	on_destroy()
 	return ..()
 
+/obj/effect/reality_smash/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/anomaly_neutralizer))
+		to_chat(user, span_boldwarning("Вы засовываете руку с [I] прямо внутрь разлома, действуя отчаянно!"))
+		flick("smoke", src)
+
+		// Это будет иметь свою цену
+		if(ishuman(user))
+			var/mob/living/carbon/human/human_user = user
+			roll_punishment(human_user)
+		else
+			var/mob/living/carbon/carbon_user = user
+			carbon_user.apply_damage(rand(15, 80), BRUTE)
+		var/atom/throw_target = get_edge_target_turf(user, src.dir)
+		user.throw_at(throw_target, 1, 14)
+
+		// И это будет иметь свою награду
+		to_chat(user, span_boldwarning("Разлом со свистом закрывается, оставляя после себя нечто дымящееся!"))
+		if(prob(40))
+			new /obj/item/eldritch_shard(src.loc)
+		create_illusion = FALSE
+		qdel(I)
+		qdel(src)
+		return TRUE
+
+	return ..()
+
+/**
+ * Производим бросок виртуального D100 для решения судьбы хумана, обезвредившего разлом
+ */
+/obj/effect/reality_smash/proc/roll_punishment(mob/living/carbon/human/human_user)
+	if(!human_user)
+		return FALSE
+
+	var/obj/item/bodypart/arm = human_user.get_active_hand()
+	switch(rand(1, 100))
+		if(1 to 50)
+			arm.receive_damage(rand(10, 20), rand(10, 20), updating_health = TRUE)
+		if(51 to 62) // Примерно половина от шанса иллюзии откусить руку любопытной варваре
+			to_chat(human_user, span_userdanger("Потусторонние силы берут плату в виде моей руки за нейтрализацию разлома!"))
+			arm.dismember()
+			qdel(arm)
+		else
+			human_user.apply_damage(STAMINA_CRIT, STAMINA)
+
+	return TRUE
+
 /obj/effect/reality_smash/proc/on_destroy()
 	for(var/e_cultists in minds)
 		var/datum/mind/e_cultie = e_cultists
@@ -343,8 +391,9 @@
 		//clear the list
 		minds -= e_cultie
 	img = null
-	var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(drop_location())
-	GLOB.reality_smash_track.RandomRiftName(illusion, name, use_afteruse = TRUE)
+	if(create_illusion)
+		var/obj/effect/broken_illusion/illusion = new /obj/effect/broken_illusion(drop_location())
+		GLOB.reality_smash_track.RandomRiftName(illusion, name, use_afteruse = TRUE)
 
 ///Makes the mind able to see this effect
 /obj/effect/reality_smash/proc/AddMind(datum/mind/e_cultie)
