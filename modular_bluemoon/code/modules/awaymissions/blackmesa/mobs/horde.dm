@@ -218,6 +218,11 @@
 	if(!ckey)
 		toggle_ai(AI_OFF)
 
+/mob/living/simple_animal/hostile/infected/Destroy()
+	if(SSblackmesa_events?.zombie_director)
+		SSblackmesa_events.zombie_director.active_zombies -= src
+	return ..()
+
 /mob/living/simple_animal/hostile/infected/Aggro()
 	. = ..()
 	if(speak && speak.len && prob(30))

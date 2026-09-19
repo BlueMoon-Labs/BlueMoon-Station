@@ -56,6 +56,10 @@
 /obj/machinery/porta_turret/hecu/Destroy()
 	if(beep_timer)
 		deltimer(beep_timer)
+	// Remove from all linked remotes
+	for(var/obj/item/hecusentry_remote/remote in GLOB.all_objects)
+		if(remote && remote.linked_sentries)
+			remote.linked_sentries -= src
 	return ..()
 
 /obj/machinery/porta_turret/hecu/proc/beep()
@@ -142,3 +146,7 @@
 			to_chat(user, "<span class='notice'>Sentry linked.</span>")
 		return
 	..()
+
+/obj/item/hecusentry_remote/Destroy()
+	linked_sentries.Cut()
+	return ..()
