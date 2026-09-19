@@ -280,6 +280,8 @@
 		DefaultCombatKnockdown(60)
 
 /mob/living/carbon/proc/help_shake_act(mob/living/carbon/M)
+	if(SEND_SIGNAL(src, COMSIG_CARBON_PRE_MISC_HELP, M) & COMPONENT_BLOCK_MISC_HELP)
+		return
 	if(on_fire)
 		to_chat(M, "<span class='warning'>Вы не можете потушить [ru_ego()] голыми руками!!</span>")
 		return

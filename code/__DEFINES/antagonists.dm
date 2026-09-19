@@ -88,6 +88,51 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define PATH_RUST "Rust"
 #define PATH_FLESH "Flesh"
 #define PATH_VOID "Void"
+#define PATH_BLADE "Blade"
+#define PATH_MOON "Moon"
+#define PATH_COSMIC "Cosmic"
+#define PATH_LOCK "Lock"
+#define PATH_TIDE "Tide"
+#define PATH_GLASS "Glass"
+#define PATH_BLOOD "Blood"
+#define PATH_ECHO "Echo"
+#define PATH_SAND "Sand"
+#define PATH_WAX "Wax"
+#define PATH_SPIRIT "Spirit"
+
+#define HERETIC_ASCENSION_SACRIFICES 3
+#define HERETIC_ASCENSION_BODIES 3
+#define HERETIC_LIVE_SACRIFICE_KNOWLEDGE 2
+#define HERETIC_LIVE_SACRIFICE_SIDE_KNOWLEDGE 1
+#define HERETIC_DEAD_SACRIFICE_KNOWLEDGE 1
+#define HERETIC_THREAT_SACRIFICES 2
+#define HERETIC_THREAT_WARNING_TIME (3 MINUTES)
+/// Во сколько раз спрайт руны 96x96 больше тайла; картовая руна ужимается на этот множитель.
+#define HERETIC_RUNE_SCALE 3
+#define HERETIC_RUNE_VISUAL_TRACE "rune_write"
+#define HERETIC_RUNE_VISUAL_RITUAL "rune_ritual"
+#define HERETIC_RUNE_VISUAL_ERASE "rune_erase"
+#define HERETIC_RUNE_VISUAL_SCATTER "rune_scatter"
+#define HERETIC_RUNE_VISUAL_RELEASE "rune_release"
+/// Через сколько после начала начертания на смоле проступает знак пути.
+#define HERETIC_RUNE_INSCRIBE_DELAY (5.5 SECONDS)
+#define HERETIC_RUNE_ERASE_TIME (2 SECONDS)
+#define HERETIC_RUNE_RELEASE_TIME (1.6 SECONDS)
+#define HERETIC_RUNE_SCATTER_TIME (1.4 SECONDS)
+#define HERETIC_RUNE_CAST_TIME (1.8 SECONDS)
+#define HERETIC_INFLUENCE_LIMIT 6
+#define HERETIC_INFLUENCE_INITIAL_COUNT 3
+#define HERETIC_INFLUENCE_INTERVAL (8 MINUTES)
+#define HERETIC_STARTING_KNOWLEDGE 3
+#define HERETIC_STARTING_SIDE_KNOWLEDGE 2
+/// Сколько держится открытым список выбора обряда на руне.
+#define HERETIC_RITUAL_CHOICE_TIMEOUT (1 MINUTES)
+#define HERETIC_DEED_TIERS 3
+#define HERETIC_DEED_KNOWLEDGE 1
+#define HERETIC_DEED_SIDE_KNOWLEDGE 1
+#define HERETIC_DEED_SIDE_TIER 2
+#define HERETIC_PENULTIMATE_SACRIFICES 2
+#define HERETIC_SERVANT_POLL_DURATION (10 SECONDS)
 
 //Overthrow time to update heads obj
 #define OBJECTIVE_UPDATING_TIME 300

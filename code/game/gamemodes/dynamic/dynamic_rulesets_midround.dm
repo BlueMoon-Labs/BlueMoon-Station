@@ -349,16 +349,17 @@
 /datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
 	. = ..()
 	for(var/mob/living/player in living_players.Copy())
-		if(issilicon(player))
+		if(!can_convert(player))
 			living_players -= player
-		else if(is_centcom_level(player.z))
-			living_players -= player
-		else if(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
-			living_players -= player
+
+/datum/dynamic_ruleset/midround/crew_conversion/proc/can_convert(mob/living/player)
+	if(issilicon(player) || is_centcom_level(player.z) || player.stat != CONSCIOUS)
+		return FALSE
+	return !(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
 
 /datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
 	if(required_candidates > living_players.len)
-		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан, возраст и сознание)"
 		return FALSE
 	. = ..()
 	if(.)
@@ -389,11 +390,11 @@
 	antag_datum = /datum/antagonist/heretic
 	antag_flag = "heretic mid"
 	antag_flag_override = ROLE_HERETIC
-	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
-	weight = 4
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
+	weight = 8
 	family = "heretic" // с латеджойн-контрабандистом: не подряд
-	requirements = list(101,101,101,50,40,20,20,15,10,10)
+	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	// Мидраунд-еретик просыпается с нулём знаний и до первых жертв полчаса-час тихо фармит
 	// влияния: по базовой цене конверсии (10) он опустошал антаг-кошелёк, а intensity 15
 	// держала клапан нагрузки и глушила другие антаг-инжекции при нулевом движе. Разгон

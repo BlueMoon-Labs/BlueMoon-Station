@@ -3016,6 +3016,17 @@
 	qdel(heretic_rule)
 	qdel(changeling_rule)
 
+/// Экипажная конверсия не выбирает игрока в крите или без сознания.
+/datum/unit_test/director_crew_conversion_skips_unconscious
+
+/datum/unit_test/director_crew_conversion_skips_unconscious/Run()
+	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/rule = allocate(/datum/dynamic_ruleset/midround/crew_conversion/heretic)
+	var/mob/living/carbon/human/candidate = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(rule.can_convert(candidate), "Член экипажа в сознании подходит для пробуждения")
+	candidate.adjustOxyLoss(160)
+	TEST_ASSERT_NOTEQUAL(candidate.stat, CONSCIOUS, "Удушье должно уронить кандидата в крит")
+	TEST_ASSERT(!rule.can_convert(candidate), "Игрок в крите не получает пробуждение")
+
 /// Гост-команды затухают по возрасту, а вне станции давят вполсилы: улетевшие с лутом
 /// рейдеры (прод-раунд: 45 нагрузки до конца смены) больше не запирают антаг-каналы
 /// навсегда. Слежение через weakref-моба - без множителя активности, детерминированно.
