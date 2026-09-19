@@ -1,7 +1,6 @@
 //WHITE-STEEL PORT - Агрегатор модуля.
 //ПР1 + ПР2 + ПР3 (объединённый лоадер). Порядок включений повторяет upstream.
 
-#include "_defines\access.dm"
 #include "_defines\orbit_defines.dm"
 #include "_defines\sound.dm"
 
@@ -12,7 +11,6 @@
 #include "_support\radio_stuff.dm"
 #include "_support\circuits.dm"
 #include "_support\tactical.dm"
-#include "_support\duffel.dm"
 #include "_support\mre.dm"
 #include "_support\feline_chem.dm"
 #include "_support\ruin_stubs.dm"
