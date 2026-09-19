@@ -89,6 +89,9 @@
 		new /datum/data/bounty_equipment("Cigar",							/obj/item/clothing/mask/cigarette/cigar/havana,					75,		"Recreational"),
 		new /datum/data/bounty_equipment("High quality Soap",				/obj/item/soap/syndie,											150,	"Recreational"),
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
+		new /datum/data/bounty_equipment("ИРП-4",							/obj/item/storage/mre,											500,	"Recreational"),
+		new /datum/data/bounty_equipment("ИРП-6 Веган",						/obj/item/storage/mre/vegan,									500,	"Recreational"),
+		new /datum/data/bounty_equipment("ИРП-47 Белковый",					/obj/item/storage/mre/protein,									500,	"Recreational"),
 
 		// ============ MOD DESIGNS ============
 		new /datum/data/bounty_equipment("Extended MOD storage module",				/obj/item/mod/module/storage/extended,					2000,		"MOD Designs"),
