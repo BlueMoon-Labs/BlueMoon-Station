@@ -333,6 +333,7 @@
 #include "ping_measurement.dm"
 #include "playsound_no_listeners.dm"
 #include "sound_echo_cache.dm"
+#include "round_10325_performance.dm"
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
