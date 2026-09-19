@@ -18,7 +18,6 @@
 | Файл | Источник |
 | --- | --- |
 | `tide_grasp.ogg` | `sound/effects/bubbles.ogg`; сведение в моно и коррекция уровня. |
-| `tide_release.ogg` | `sound/effects/watersplash.ogg`, без изменений. |
 | `tide_bell.ogg` | `sound/hallucinations/psychosis/bell_creepy.ogg`; первые 3.2 с, затухание последних 0.65 с, коррекция уровня. |
 | `tide_deluge.ogg` | `sound/effects/splash.ogg`; первые 1.25 с, затухание последних 0.15 с, коррекция уровня. |
 | `ascend_tide.ogg` | 18-секундная композиция из `sound/hallucinations/psychosis/undercurrent_dark.ogg`, `whalesong_monotron.ogg`, `foghorn_distant.ogg`, `bell_creepy.ogg` и `sound/effects/watersplash.ogg`. |
@@ -60,11 +59,9 @@
 | Файл | Исходники и обработка |
 | --- | --- |
 | `glass_grasp.ogg` | tgstation `sound/effects/glass/glass_reverse.ogg`, громкость 0.8, затухание. |
-| `glass_page.ogg` | BlueMoon `sound/effects/Glassknock.ogg`, низкочастотный фильтр 5.5 кГц, громкость 0.55. |
 | `glass_release.ogg` | BlueMoon `Glassbr1.ogg` и `Glasshit.ogg`, громкости 0.8/0.35, второй слой задержан на 0.07 с и имеет короткое эхо. |
 | `glass_storm.ogg` | `glass_reverse.ogg`, BlueMoon `Glassbr3.ogg` и `Glassbr2.ogg`, громкости 0.45/0.75/0.38, задержки 0/0.65/1.15 с; последний слой понижен на 10% и дополнен эхом. |
 | `blood_grasp.ogg` | BlueMoon `sound/magic/enter_blood.ogg`, громкость 0.9. |
-| `blood_page.ogg` | BlueMoon `sound/effects/wounds/blood2.ogg`, фильтр 4.5 кГц, громкость 0.7. |
 | `blood_release.ogg` | BlueMoon `sound/magic/exit_blood.ogg` и `sound/effects/wounds/blood3.ogg`, громкости 0.75/0.45, второй слой задержан на 0.12 с. |
 | `blood_reckoning.ogg` | `exit_blood.ogg` понижен на 20%; первые три секунды `sound/hallucinations/psychosis/heartbeat_corrupted.ogg`, фильтр 3.2 кГц; `blood3.ogg`. Громкости 0.7/0.45/0.7, задержки 0.25/0/1.1 с. |
 | `ascend_glass.ogg` | Новая партия поющего стекла: десять синусоидальных голосов с негармоническим обертоном 2.76, медленным вступлением и затуханием. Ноты D3/A3/E♭4/A4/D5/E♭5/A5/D6/A♭5/D5, разнесённые по стереополю. Дополнены `glass_reverse.ogg`, `Glassbr3.ogg` и BlueMoon `sound/hallucinations/psychosis/cathedral_voice.ogg`, громкости 0.65/0.65/0.33, задержки 0.35/1.1/3.2 с. |
@@ -89,8 +86,8 @@
 | Космос | `cosmic_energy.ogg` |
 | Замок | `lock_knock.ogg` |
 | Пучина | `tide_grasp.ogg` |
-| Стекло | `glass_page.ogg` |
-| Кровь | `blood_page.ogg` и новый тональный пульс 73–61 Гц при открытии |
+| Стекло | BlueMoon `sound/effects/Glassknock.ogg`, низкочастотный фильтр 5.5 кГц, громкость 0.55 |
+| Кровь | BlueMoon `sound/effects/wounds/blood2.ogg`, фильтр 4.5 кГц, громкость 0.7, и новый тональный пульс 73–61 Гц при открытии |
 
 `book_close.ogg` использует `sound/items/handling/paper_drop.ogg`; `book_summon.ogg` и `book_hide.ogg` соединяют бумажную основу с `cosmic_energy.ogg`, разворачивая энергетический или бумажный слой соответственно.
 
@@ -111,7 +108,3 @@
 ## Синтезированные звуки
 
 `echo_grasp.ogg`, `echo_cast.ogg`, `echo_burst.ogg`, `echo_ascend.ogg` и звуки в `mansus/` созданы без сторонних записей и распространяются под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
-
-## Музыка Мансуса
-
-`mansus_memory.ogg` — `heretic_sacrifice.ogg`, автор sadboysusss. Лицензия CC-by-SA указана в `sound/music/antag/heretic/attribution.txt` [tgstation](https://github.com/tgstation/tgstation/tree/master/sound/music/antag/heretic).

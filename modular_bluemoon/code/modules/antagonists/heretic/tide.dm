@@ -210,7 +210,7 @@
 			wet_floor(tile)
 			new /obj/effect/temp_visual/heretic_tide/wave(tile)
 	new /obj/effect/temp_visual/heretic_tide/wave(center)
-	playsound(center, 'modular_bluemoon/sound/heretic/tide_release.ogg', 65, TRUE)
+	playsound(center, 'sound/effects/watersplash.ogg', 65, TRUE)
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/undertow(mob/living/user, mob/living/victim)
@@ -239,7 +239,7 @@
 	QDEL_NULL(active_well)
 	active_well = new(place, src)
 	active_well.pulse(erupting = TRUE)
-	playsound(place, 'modular_bluemoon/sound/heretic/tide_release.ogg', 45, TRUE)
+	playsound(place, 'sound/effects/watersplash.ogg', 45, TRUE)
 	return TRUE
 
 /datum/eldritch_knowledge/base_tide/proc/can_prepare_deluge(mob/living/user, turf/origin, turf/center, expected_generation)
@@ -344,7 +344,7 @@
 	mark_alert_state = "sigil_tide"
 	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_tide_effects.dmi'
 	effect_sprite = "tide_mark"
-	detonation_sound = 'modular_bluemoon/sound/heretic/tide_release.ogg'
+	detonation_sound = 'sound/effects/watersplash.ogg'
 	detonation_visual = /obj/effect/temp_visual/heretic_tide/burst
 	var/datum/weakref/tide_ref
 
