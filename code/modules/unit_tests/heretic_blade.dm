@@ -383,6 +383,30 @@
 	for(var/image/overlay as anything in attacker.overlays)
 		TEST_ASSERT(overlay.icon_state != "sigil_blade", "После снятия уязвимости её знак исчезает сразу.")
 
+/// Хватка Мансуса во второй руке не мешает включить и удерживать стойку.
+/datum/unit_test/heretic_blade_parry_with_grasp/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/item/blade = fixture["blade"]
+	var/obj/effect/proc_holder/spell/self/heretic_blade/parry/parry_spell = allocate(/obj/effect/proc_holder/spell/self/heretic_blade/parry)
+	user.mind.AddSpell(parry_spell)
+	var/obj/item/melee/touch_attack/mansus_fist/fist = allocate(/obj/item/melee/touch_attack/mansus_fist, get_turf(user))
+	TEST_ASSERT(user.put_in_hands(fist), "Хватка должна занять вторую руку.")
+	TEST_ASSERT(!length(user.get_empty_held_indexes()), "Обе руки заняты клинком и хваткой.")
+	TEST_ASSERT(parry_spell.can_cast(user, silent = TRUE), "Хватка во второй руке не мешает Выжиданию.")
+	TEST_ASSERT(knowledge.begin_parry(user), "Стойка включается с хваткой во второй руке.")
+	var/datum/status_effect/heretic_parry/parry = knowledge.active_parry
+	parry.tick()
+	TEST_ASSERT(parry.stance_ready, "Хватка во второй руке не гасит поднятую стойку.")
+	TEST_ASSERT(user.do_run_block(TRUE, blade, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker) & BLOCK_SUCCESS, "Стойка с хваткой отбивает удар.")
+	qdel(fist)
+	var/obj/item/offhand = allocate(/obj/item, get_turf(user))
+	TEST_ASSERT(user.put_in_hands(offhand), "Обычный предмет занимает вторую руку.")
+	parry.tick()
+	TEST_ASSERT(!parry.stance_ready, "Обычный предмет во второй руке по-прежнему гасит стойку.")
+
 /// Неудачный танец и стойка мастера сохраняют перезарядку и запас Темпа.
 /datum/unit_test/heretic_blade_failed_casts/Run()
 	var/list/fixture = make_blade_fixture()

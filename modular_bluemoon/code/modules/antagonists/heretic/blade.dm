@@ -21,7 +21,7 @@
 
 /datum/eldritch_knowledge/base_blade
 	name = "Принцип поединка"
-	desc = "Открывает Путь Клинка: отбивайте атаки, сближайтесь и отвечайте усиленным ударом. Для парирования держите свой клинок, оставив вторую руку свободной. Обычные попадания и парирования пополняют Темп для выпада и танца, после изучения «Вызова» его даёт и хватка. Пустой Темп вне боя восстанавливается до единицы. Нож и лист стали создают тёмный клинок; можно иметь три."
+	desc = "Открывает Путь Клинка: отбивайте атаки, сближайтесь и отвечайте усиленным ударом. Для парирования держите свой клинок, оставив вторую руку свободной; хватка Мансуса в ней не мешает. Обычные попадания и парирования пополняют Темп для выпада и танца, после изучения «Вызова» его даёт и хватка. Пустой Темп вне боя восстанавливается до единицы. Нож и лист стали создают тёмный клинок; можно иметь три."
 	gain_text = "Между взмахом и раной есть мгновение. Отныне оно принадлежит мне."
 	route = PATH_BLADE
 	cost = 0
@@ -123,8 +123,12 @@
 			return blade
 	return null
 
+/// Хватка Мансуса во второй руке не мешает стойкам клинка.
+/datum/eldritch_knowledge/base_blade/proc/offhand_free(mob/living/user)
+	return length(user.get_empty_held_indexes()) || (locate(/obj/item/melee/touch_attack/mansus_fist) in user.held_items)
+
 /datum/eldritch_knowledge/base_blade/proc/begin_parry(mob/living/user, master = FALSE)
-	if(!held_blade(user) || !length(user.get_empty_held_indexes()) || !QDELETED(active_parry))
+	if(!held_blade(user) || !offhand_free(user) || !QDELETED(active_parry))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	var/upgraded = heretic.get_knowledge(/datum/eldritch_knowledge/blade_guard)
@@ -161,7 +165,7 @@
 /datum/eldritch_knowledge/base_blade/proc/feint(mob/living/user, mob/living/target)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/blade_guard/guard = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_guard)
-	if(!held_blade(user) || QDELETED(guard) || !length(user.get_empty_held_indexes()) || !QDELETED(active_parry) || !COOLDOWN_FINISHED(src, feint_cooldown))
+	if(!held_blade(user) || QDELETED(guard) || !offhand_free(user) || !QDELETED(active_parry) || !COOLDOWN_FINISHED(src, feint_cooldown))
 		return FALSE
 	if(world.time < riposte_until || !valid_feint_target(user, target) || !spend_combat_resource())
 		return FALSE
@@ -283,7 +287,7 @@
 		reason = "Вы не можете действовать."
 	else if(!knowledge?.held_blade(owner))
 		reason = "Возьмите свой клинок в руку."
-	else if(!length(owner.get_empty_held_indexes()))
+	else if(!knowledge.offhand_free(owner))
 		reason = "Освободите вторую руку."
 	if(reason && stance_ready)
 		to_chat(owner, span_warning("Парирование не действует! [reason]"))
@@ -552,7 +556,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/parry
 	name = "Выжидание"
-	desc = "За 2 секунды отбейте три удара или снаряда своим клинком; улучшенная стойка длится 3 секунды и даёт четыре блока. Блоки работают и против одновременных попаданий; вторая рука должна быть свободна. Парирование даёт бесплатный ответный удар по нападавшему."
+	desc = "За 2 секунды отбейте три удара или снаряда своим клинком; улучшенная стойка длится 3 секунды и даёт четыре блока. Блоки работают и против одновременных попаданий; вторая рука должна быть свободна или держать хватку Мансуса. Парирование даёт бесплатный ответный удар по нападавшему."
 	charge_max = 8 SECONDS
 	action_icon_state = "furious_steel"
 
@@ -567,7 +571,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Парирование не включено: освободите вторую руку.")
+	return heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, knowledge.offhand_free(user), silent, "Парирование не включено: освободите вторую руку.")
 
 /obj/effect/proc_holder/spell/self/heretic_blade/recall
 	name = "Зов клинка"
@@ -685,7 +689,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	return heretic_check(user, heretic.ascended, silent, "Сначала завершите вознесение.") && heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, length(user.get_empty_held_indexes()), silent, "Парирование не включено: освободите вторую руку.")
+	return heretic_check(user, heretic.ascended, silent, "Сначала завершите вознесение.") && heretic_check(user, QDELETED(knowledge.active_parry), silent, "Вы уже удерживаете стойку.") && heretic_check(user, knowledge.offhand_free(user), silent, "Парирование не включено: освободите вторую руку.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"
@@ -779,7 +783,7 @@
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
-	if(!heretic_check(user, knowledge.held_blade(user), silent, "Возьмите собственный тёмный клинок в руку.") || !heretic_check(user, length(user.get_empty_held_indexes()), silent, "Освободите вторую руку для финта."))
+	if(!heretic_check(user, knowledge.held_blade(user), silent, "Возьмите собственный тёмный клинок в руку.") || !heretic_check(user, knowledge.offhand_free(user), silent, "Освободите вторую руку для финта."))
 		return FALSE
 	if(!heretic_check(user, QDELETED(knowledge.active_parry), silent, "Сначала завершите текущую стойку.") || !heretic_check(user, world.time >= knowledge.riposte_until, silent, "Сначала проведите доступный ответный удар или дождитесь конца его окна."))
 		return FALSE
