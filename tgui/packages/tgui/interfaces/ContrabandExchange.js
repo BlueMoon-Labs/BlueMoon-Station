@@ -13,7 +13,6 @@ export const ContrabandExchange = (props, context) => {
     user_points,
     total_value,
     items_on_pad,
-    blackbox_ready,
   } = data;
 
   return (
@@ -49,11 +48,6 @@ export const ContrabandExchange = (props, context) => {
         </Section>
 
         <Section title="Items on Pad">
-          {blackbox_ready && (
-            <Box color="good" mb={1}>
-              Objective blackbox detected! Sending it will complete the mission.
-            </Box>
-          )}
           {items_on_pad && items_on_pad.length > 0 ? (
             <Table>
               <Table.Row header>
@@ -89,7 +83,7 @@ export const ContrabandExchange = (props, context) => {
           <Button
             icon="paper-plane"
             content={sending ? 'Sending...' : 'Send Contraband'}
-            disabled={!pad || sending || (total_value === 0 && !blackbox_ready) || !user_has_id}
+            disabled={!pad || sending || total_value === 0 || !user_has_id}
             color="good"
             onClick={() => act(sending ? 'stop' : 'send')}
           />
