@@ -42,6 +42,6 @@
 
 
 /obj/effect/landmark/stationroom/delta/library
-	template_names = list("Delta Lib Private spaces" = 1, "Delta Lib Classic" = 1)
+	template_names = list("Delta Lib Private spaces" = 10, "Delta Lib Classic" = 1)
 	icon = 'icons/mob/landmarks.dmi'
 	icon_state = "x"
