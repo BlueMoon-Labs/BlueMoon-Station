@@ -1,14 +1,8 @@
-//WHITE-STEEL PORT - Химия рейнджеров (Feline)
-
-//BLUEMOON ADAPTATION: Feline medchems reference ORGAN_SLOT_PARASITE_EGG which bluemoon
-//only stores as a raw string on /obj/item/organ/body_egg. Define it here (was in _defines/access.dm).
 #define ORGAN_SLOT_PARASITE_EGG "parasite_egg"
-
-//	Зед-4 - контрапаразитный препарат с тяжелейшими побочными эффектами
 
 /datum/reagent/toxin/zed
 	name = "Зед-4"
-	description = "Контрпаразитный препарат. Оказывает тяжелейшее угнетающее воздействие на организм."
+	description = "Контропаразитный препарат. Оказывает тяжелейшее угнетающее воздействие на организм."
 	reagent_state = LIQUID
 	color = "#046104"
 	metabolization_rate = 0.25 * REAGENTS_METABOLISM
@@ -88,7 +82,7 @@
 		if(M != user)
 			M.visible_message(span_danger("<b>[user]</b> пытается вколоть <b>[M]</b> медипен с угрожающей расцветкой!") , \
 									span_userdanger("<b>[user]</b> пытается вколоть мне медипен с угрожающей расцветкой!"))
-	if(do_after(user, 5 SECONDS, user))
+	if(do_after(user, 5 SECONDS, M))
 		return ..()
 
 //	Ностромо-7 - от чужих
@@ -124,7 +118,7 @@
 		if(M != user)
 			M.visible_message(span_danger("<b>[user]</b> пытается вколоть <b>[M]</b> медипен с угрожающей расцветкой!") , \
 									span_userdanger("<b>[user]</b> пытается вколоть мне медипен с угрожающей расцветкой!"))
-	if(do_after(user, 5 SECONDS, user))
+	if(do_after(user, 5 SECONDS, M))
 		return ..()
 
 //	Спутник Лайт
@@ -144,7 +138,7 @@
 		if(M != user)
 			M.visible_message(span_danger("<b>[user]</b> пытается вколоть <b>[M]</b> медипен с угрожающей расцветкой!") , \
 									span_userdanger("<b>[user]</b> пытается вколоть мне медипен с угрожающей расцветкой!"))
-	if(do_after(user, 5 SECONDS, user))
+	if(do_after(user, 5 SECONDS, M))
 		return ..()
 
 //	Элитный медипен (товар вендора рейнджеров)
