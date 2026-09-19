@@ -188,14 +188,14 @@
 
 //STATION AIRLOCKS
 /obj/machinery/door/airlock
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/public.dmi'
+	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/overlays.dmi'
 
 /obj/machinery/door/airlock/command
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/command.dmi'
+	icon = 'icons/obj/doors/airlocks/station/command.dmi'
 
 /obj/machinery/door/airlock/security
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/security.dmi'
+	icon = 'icons/obj/doors/airlocks/station/security.dmi'
 	assemblytype = /obj/structure/door_assembly/door_assembly_sec
 
 /obj/machinery/door/airlock/security/glass
@@ -204,34 +204,34 @@
 	normal_integrity = 400
 
 /obj/machinery/door/airlock/engineering
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/engineering.dmi'
+	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
 
 /obj/machinery/door/airlock/medical
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/medical.dmi'
+	icon = 'icons/obj/doors/airlocks/station/medical.dmi'
 
 /obj/machinery/door/airlock/maintenance
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/maintenance.dmi'
+	icon = 'icons/obj/doors/airlocks/station/maintenance.dmi'
 
 /obj/machinery/door/airlock/maintenance/external
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/maintenanceexternal.dmi'
+	icon = 'icons/obj/doors/airlocks/station/maintenanceexternal.dmi'
 
 /obj/machinery/door/airlock/mining
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/mining.dmi'
+	icon = 'icons/obj/doors/airlocks/station/mining.dmi'
 
 /obj/machinery/door/airlock/atmos
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/atmos.dmi'
+	icon = 'icons/obj/doors/airlocks/station/atmos.dmi'
 
 /obj/machinery/door/airlock/research
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/research.dmi'
+	icon = 'icons/obj/doors/airlocks/station/research.dmi'
 
 /obj/machinery/door/airlock/freezer
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/freezer.dmi'
+	icon = 'icons/obj/doors/airlocks/station/freezer.dmi'
 
 /obj/machinery/door/airlock/science
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/science.dmi'
+	icon = 'icons/obj/doors/airlocks/station/science.dmi'
 
 /obj/machinery/door/airlock/virology
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/virology.dmi'
+	icon = 'icons/obj/doors/airlocks/station/virology.dmi'
 
 //STATION CUSTOM ARILOCKS
 /obj/machinery/door/airlock/corporate
@@ -323,52 +323,52 @@
 
 //STATION MINERAL AIRLOCKS
 /obj/machinery/door/airlock/gold
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/gold.dmi'
+	icon = 'icons/obj/doors/airlocks/station/gold.dmi'
 
 /obj/machinery/door/airlock/silver
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/silver.dmi'
+	icon = 'icons/obj/doors/airlocks/station/silver.dmi'
 
 /obj/machinery/door/airlock/diamond
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/diamond.dmi'
+	icon = 'icons/obj/doors/airlocks/station/diamond.dmi'
 
 /obj/machinery/door/airlock/uranium
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/uranium.dmi'
+	icon = 'icons/obj/doors/airlocks/station/uranium.dmi'
 
 /obj/machinery/door/airlock/plasma
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/plasma.dmi'
+	icon = 'icons/obj/doors/airlocks/station/plasma.dmi'
 
 /obj/machinery/door/airlock/bananium
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/bananium.dmi'
+	icon = 'icons/obj/doors/airlocks/station/bananium.dmi'
 
 /obj/machinery/door/airlock/sandstone
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/sandstone.dmi'
+	icon = 'icons/obj/doors/airlocks/station/sandstone.dmi'
 
 /obj/machinery/door/airlock/wood
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/wood.dmi'
+	icon = 'icons/obj/doors/airlocks/station/wood.dmi'
 
 //STATION 2 AIRLOCKS
 
 /obj/machinery/door/airlock/public
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/glass.dmi'
+	icon = 'icons/obj/doors/airlocks/station2/glass.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/overlays.dmi'
 
 //EXTERNAL AIRLOCKS
 /obj/machinery/door/airlock/external
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/external/external.dmi'
+	icon = 'icons/obj/doors/airlocks/external/external.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/external/overlays.dmi'
 
 //CENTCOM
 /obj/machinery/door/airlock/centcom
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/centcom.dmi'
+	icon = 'icons/obj/doors/airlocks/centcom/centcom.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/overlays.dmi'
 
 /obj/machinery/door/airlock/grunge
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/centcom.dmi'
+	icon = 'icons/obj/doors/airlocks/centcom/centcom.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/overlays.dmi'
 
 //VAULT
 /obj/machinery/door/airlock/vault
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/vault/vault.dmi'
+	icon = 'icons/obj/doors/airlocks/vault/vault.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/vault/overlays.dmi'
 
 //HATCH
@@ -382,12 +382,12 @@
 	doorClose = 'modular_bluemoon/icons/obj/machines/airlock/airlock_ext_close.ogg'
 
 /obj/machinery/door/airlock/maintenance_hatch
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/maintenance.dmi'
+	icon = 'icons/obj/doors/airlocks/hatch/maintenance.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/overlays.dmi'
 
 //HIGH SEC
 /obj/machinery/door/airlock/highsecurity
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/highsec/highsec.dmi'
+	icon = 'icons/obj/doors/airlocks/highsec/highsec.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/highsec/overlays.dmi'
 
 
@@ -401,103 +401,103 @@
 	doorClose = 'modular_bluemoon/icons/obj/machines/airlock/airlockclose.ogg'
 
 /obj/machinery/door/airlock/multi_tile/glass
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/multi_tile/multi_tile.dmi'
+	icon = 'modular_bluemoon/icons/obj/aesthetics/large_doors/glass/multi_tile.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/multi_tile/overlays.dmi'
 
 
 //ASSEMBLYS
 /obj/structure/door_assembly/door_assembly_public
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/glass.dmi'
+	icon = 'icons/obj/doors/airlocks/station2/glass.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_com
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/command.dmi'
+	icon = 'icons/obj/doors/airlocks/station/command.dmi'
 
 /obj/structure/door_assembly/door_assembly_sec
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/security.dmi'
+	icon = 'icons/obj/doors/airlocks/station/security.dmi'
 
 /obj/structure/door_assembly/door_assembly_eng
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/engineering.dmi'
+	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
 
 /obj/structure/door_assembly/door_assembly_min
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/mining.dmi'
+	icon = 'icons/obj/doors/airlocks/station/mining.dmi'
 
 /obj/structure/door_assembly/door_assembly_atmo
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/atmos.dmi'
+	icon = 'icons/obj/doors/airlocks/station/atmos.dmi'
 
 /obj/structure/door_assembly/door_assembly_research
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/research.dmi'
+	icon = 'icons/obj/doors/airlocks/station/research.dmi'
 
 /obj/structure/door_assembly/door_assembly_science
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/science.dmi'
+	icon = 'icons/obj/doors/airlocks/station/science.dmi'
 
 /obj/structure/door_assembly/door_assembly_viro
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/virology.dmi'
+	icon = 'icons/obj/doors/airlocks/station/virology.dmi'
 
 /obj/structure/door_assembly/door_assembly_med
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/medical.dmi'
+	icon = 'icons/obj/doors/airlocks/station/medical.dmi'
 
 /obj/structure/door_assembly/door_assembly_mai
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/maintenance.dmi'
+	icon = 'icons/obj/doors/airlocks/station/maintenance.dmi'
 
 /obj/structure/door_assembly/door_assembly_extmai
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/maintenanceexternal.dmi'
+	icon = 'icons/obj/doors/airlocks/station/maintenanceexternal.dmi'
 
 /obj/structure/door_assembly/door_assembly_ext
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/external/external.dmi'
+	icon = 'icons/obj/doors/airlocks/external/external.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/external/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_fre
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/freezer.dmi'
+	icon = 'icons/obj/doors/airlocks/station/freezer.dmi'
 
 /obj/structure/door_assembly/door_assembly_hatch
 	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/centcom.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_mhatch
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/maintenance.dmi'
+	icon = 'icons/obj/doors/airlocks/hatch/maintenance.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/hatch/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_highsecurity
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/highsec/highsec.dmi'
+	icon = 'icons/obj/doors/airlocks/highsec/highsec.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/highsec/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_vault
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/vault/vault.dmi'
+	icon = 'icons/obj/doors/airlocks/vault/vault.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/vault/overlays.dmi'
 
 
 /obj/structure/door_assembly/door_assembly_centcom
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/centcom.dmi'
+	icon = 'icons/obj/doors/airlocks/centcom/centcom.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_grunge
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/centcom.dmi'
+	icon = 'icons/obj/doors/airlocks/centcom/centcom.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/centcom/overlays.dmi'
 
 /obj/structure/door_assembly/door_assembly_gold
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/gold.dmi'
+	icon = 'icons/obj/doors/airlocks/station/gold.dmi'
 
 /obj/structure/door_assembly/door_assembly_silver
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/silver.dmi'
+	icon = 'icons/obj/doors/airlocks/station/silver.dmi'
 
 /obj/structure/door_assembly/door_assembly_diamond
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/diamond.dmi'
+	icon = 'icons/obj/doors/airlocks/station/diamond.dmi'
 
 /obj/structure/door_assembly/door_assembly_uranium
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/uranium.dmi'
+	icon = 'icons/obj/doors/airlocks/station/uranium.dmi'
 
 /obj/structure/door_assembly/door_assembly_plasma
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/plasma.dmi'
+	icon = 'icons/obj/doors/airlocks/station/plasma.dmi'
 
 /obj/structure/door_assembly/door_assembly_bananium
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/bananium.dmi'
+	icon = 'icons/obj/doors/airlocks/station/bananium.dmi'
 
 /obj/structure/door_assembly/door_assembly_sandstone
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/sandstone.dmi'
+	icon = 'icons/obj/doors/airlocks/station/sandstone.dmi'
 
 /obj/structure/door_assembly/door_assembly_wood
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/wood.dmi'
+	icon = 'icons/obj/doors/airlocks/station/wood.dmi'
 
 /obj/structure/door_assembly/door_assembly_corporate
 	name = "corporate airlock assembly"
@@ -573,7 +573,7 @@
 	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/botany.dmi'
 
 /obj/structure/door_assembly/
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/public.dmi'
+	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	overlays_file = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/overlays.dmi'
 
 #undef AIRLOCK_LIGHT_POWER

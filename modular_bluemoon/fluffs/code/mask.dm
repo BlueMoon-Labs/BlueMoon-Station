@@ -17,7 +17,7 @@
 	var/message_equip = "Kitsune magic appears!"
 	var/message_drop = "Kitsune magic dissapears!"
 
-/datum/component/fluff/Initialize(message_equip="Kitsune magic appears!", message_drop="Kitsune magic dissapears!", playsound_equip="/sound/magic/ForceWall.ogg", playsound_drop="/sound/magic/ForceWall.ogg")
+/datum/component/fluff/Initialize(message_equip="Kitsune magic appears!", message_drop="Kitsune magic dissapears!", playsound_equip='sound/magic/ForceWall.ogg', playsound_drop='sound/magic/ForceWall.ogg')
 	if(isitem(parent))
 		RegisterSignal(parent, COMSIG_ITEM_EQUIPPED, PROC_REF(on_equip))
 		RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))

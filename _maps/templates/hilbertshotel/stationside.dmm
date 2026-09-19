@@ -353,7 +353,7 @@
 "uW" = (
 /turf/closed/indestructible/hoteldoor{
 	icon_state = "closed";
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/glass.dmi'
+	icon = 'icons/obj/doors/airlocks/station2/glass.dmi'
 	},
 /area/hilbertshotel)
 "vd" = (
@@ -725,7 +725,7 @@
 /area/hilbertshotel)
 "Uk" = (
 /turf/closed/indestructible/sandstone{
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station2/glass.dmi';
+	icon = 'icons/obj/doors/airlocks/station2/glass.dmi';
 	icon_state = "closed";
 	name = "glass";
 	desc = "It opens and closes."

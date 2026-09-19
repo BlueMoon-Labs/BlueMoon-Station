@@ -112,7 +112,7 @@
 		if(!the_head)
 			return
 
-		playsound(get_turf(our_guy), "sound/effects/tableheadsmash.ogg", 90, TRUE)
+		playsound(get_turf(our_guy), 'sound/effects/tableheadsmash.ogg', 90, TRUE)
 		our_guy.visible_message("<span class='danger'>[our_guy] сильно ударяется головой при падении!</span>", "<span class='userdanger'>Ты сильно ударяешься головой при падении!</span>")
 		the_head.receive_damage(75 * damage_mod)
 		our_guy.adjustOrganLoss(ORGAN_SLOT_BRAIN, 100 * damage_mod)

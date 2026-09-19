@@ -74,7 +74,7 @@
 /datum/component/aperture_turret_skin/proc/on_break(datum/source, damage_flag)
 	SIGNAL_HANDLER
 	var/obj/machinery/porta_turret/turret = parent
-	playsound(turret, 'modular_bluemoon/portal/sound/Звуки турелей/Гибель.ogg', 90, TRUE)
+	playsound(turret, 'sound/items/modsuit/ballin.ogg', 90, TRUE)
 	for(var/obj/machinery/porta_turret/nearby in view(7, turret))
 		if(nearby == turret || !nearby.GetComponent(/datum/component/aperture_turret_skin))
 			continue
@@ -95,7 +95,7 @@
 			playsound(turret, pick(GLOB.aperture_turret_deploy_vo), 80, TRUE)
 
 	if(!turret.raised && last_raised)
-		playsound(turret, 'modular_bluemoon/portal/sound/Звуки турелей/Отключение.ogg', 70, TRUE)
+		playsound(turret, 'sound/items/modsuit/ballin.ogg', 70, TRUE)
 		if(prob(50))
 			playsound(turret, pick(GLOB.aperture_turret_disable_vo), 80, TRUE)
 

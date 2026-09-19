@@ -731,7 +731,7 @@
 */
 /obj/machinery/door/airlock/material
 	name = "Airlock"
-	icon = 'modular_bluemoon/icons/obj/aesthetics/airlock/airlocks/station/silver.dmi' // it need to be white for proper material color
+	icon = 'icons/obj/doors/airlocks/station/silver.dmi' // it need to be white for proper material color
 	material_flags = MATERIAL_COLOR | MATERIAL_ADD_PREFIX | MATERIAL_AFFECT_STATISTICS
 	assemblytype = /obj/structure/door_assembly/door_assembly_material
 

@@ -209,9 +209,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',
-							'modular_sand/sound/interactions/final_m3.ogg',
-							'modular_sand/sound/interactions/final_m4.ogg',
-							'modular_sand/sound/interactions/final_m5.ogg'), 90, 1, 0)
+							'modular_sand/sound/interactions/final_m3.ogg'), 90, 1, 0)
 	else if(gender == FEMALE || (gender == PLURAL && isfeminine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',
@@ -519,7 +517,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(lines)]</span>"
 	visible_message(message, ignored_mobs = get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 
 /mob/living/proc/smother_armpit(mob/living/target, is_hidden)
 	var/message

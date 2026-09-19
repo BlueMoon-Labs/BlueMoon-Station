@@ -106,7 +106,7 @@
 			else
 				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 
 	else
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_BREASTS)
@@ -226,7 +226,7 @@
 						'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 						'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 						'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-						'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange)
+						'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange)
 
 	// Обработка возбуждения
 	var/lust_amount = LOW_LUST

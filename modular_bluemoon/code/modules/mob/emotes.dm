@@ -247,9 +247,9 @@
 			if(is_species(user, /datum/species/skeleton))
 				sound = 'modular_citadel/sound/voice/scream_skeleton.ogg'
 			if (is_species(user, /datum/species/fly) || is_species(user, /datum/species/insect))
-				sound = 'modular_citadel/sound/voice/scream_moth.ogg'
+				sound = 'sound/voice/scream/moth1.ogg'
 			if(is_species(user, /datum/species/mammal/vox))
-				sound = 'modular_bluemoon/kovac_shitcode/sound/species/voxscream.ogg'
+				sound = 'sound/voice/shriek1.ogg'
 		if(isalien(user))
 			sound = 'sound/voice/hiss6.ogg'
 		LAZYINITLIST(user.alternate_screams)
@@ -386,7 +386,7 @@
 	key_third_person = "meow4"
 	message = "кротко мяукает."
 	message_mime = "безмолвно мяукает."
-	sound = 'modular_bluemoon/sound/emotes/meow4.ogg'
+	sound = 'sound/mobs/non-humanoids/cat/cat_meow1.ogg'
 	emote_cooldown = 0.5 SECONDS
 
 /datum/emote/sound/human/meow5
@@ -394,7 +394,7 @@
 	key_third_person = "meow5"
 	message = "мяукает."
 	message_mime = "безмолвно мяукает."
-	sound = 'modular_bluemoon/sound/emotes/meow5.ogg'
+	sound = 'sound/mobs/non-humanoids/cat/cat_meow2.ogg'
 	emote_cooldown = 0.5 SECONDS
 
 /datum/emote/sound/human/meow6
@@ -402,7 +402,7 @@
 	key_third_person = "meow6"
 	message = "натужно мяукает."
 	message_mime = "безмолвно мяукает."
-	sound = 'modular_bluemoon/sound/emotes/meow6.ogg'
+	sound = 'sound/mobs/non-humanoids/cat/cat_meow3.ogg'
 	emote_cooldown = 0.5 SECONDS
 
 /datum/emote/sound/human/meow7

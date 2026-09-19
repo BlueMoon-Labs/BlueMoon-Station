@@ -1,0 +1,10 @@
+borg_deathsound.ogg is spliced from two clips, both of which are under the CC Attribution license. The sound at https://freesound.org/people/simmfoc/sounds/28477/ was pitched down, sped up, and repeated a few times. https://freesound.org/people/nicStage/sounds/1522/ is then attached with a fadeout effect and lowered volume.
+
+The male sharp gasps are from https://freesound.org/people/bacruz666/sounds/341908/ and https://freesound.org/people/nettoi/sounds/677540/, the female sharp gasps are from https://freesound.org/people/drotzruhn/sounds/405203/
+
+Соответствие сохранённых файлов прежним копиям в sound/mobs/humanoids/human/:
+gasp_male4.ogg = gasp/gasp_male1.ogg
+gasp_male7.ogg = gasp/gasp_male2.ogg
+gasp_female5.ogg = gasp/gasp_female1.ogg
+gasp_female3.ogg = gasp/gasp_female2.ogg
+gasp_female7.ogg = gasp/gasp_female3.ogg
