@@ -1,6 +1,7 @@
 /datum/round_event_control/deathclaw_in_maints
 	name = "Spawn Funclaw in Maints"
 	typepath = /datum/round_event/deathclaw_in_maints
+	min_players = 20
 	// 50/5 при 10-25 у остального MODERATE-пула - клешни доминировали над аномалиями и штормами.
 	max_occurrences = 3
 	weight = 25

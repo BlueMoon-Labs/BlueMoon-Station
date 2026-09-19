@@ -2305,15 +2305,10 @@
 /obj/effect/turf_decal/trimline/purple/filled/corner{
 	dir = 4
 	},
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
-/obj/item/circuitboard/machine/circuit_imprinter/hacked,
+/obj/machinery/rnd/production/circuit_imprinter/syndicate,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "il" = (
@@ -4082,13 +4077,12 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 4
 	},
-/obj/item/circuitboard/computer/rdconsole,
-/obj/structure/frame/computer{
-	dir = 8
-	},
 /obj/machinery/airalarm/syndicate{
 	dir = 8;
 	pixel_x = 24
+	},
+/obj/machinery/computer/rdconsole/syndicate{
+	dir = 8
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
@@ -4501,13 +4495,10 @@
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/lounge)
 "qW" = (
-/obj/structure/table,
 /obj/effect/turf_decal/trimline/purple/filled/end{
 	dir = 1
 	},
-/obj/item/paicard{
-	name = "Syndicate personal AI device"
-	},
+/obj/machinery/rnd/server/syndicate,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "qY" = (
@@ -6464,18 +6455,13 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "zg" = (
-/obj/item/circuitboard/machine/protolathe,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
-	},
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
 	},
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
 	},
+/obj/machinery/rnd/production/protolathe/syndicate,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "zl" = (
@@ -8746,12 +8732,7 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 5
 	},
-/obj/item/circuitboard/machine/destructive_analyzer,
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
+/obj/machinery/rnd/destructive_analyzer,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "IM" = (
@@ -13237,7 +13218,10 @@
 	name = "Research shutters control";
 	req_access_txt = "150"
 	},
-/obj/effect/turf_decal/delivery/white,
+/obj/structure/table,
+/obj/item/paicard{
+	name = "Syndicate personal AI device"
+	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "YT" = (

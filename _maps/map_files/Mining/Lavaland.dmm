@@ -81,15 +81,11 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
+/obj/machinery/rnd/production/circuit_imprinter/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "aeu" = (
@@ -11192,9 +11188,6 @@
 /obj/item/storage/box/beakers/bluespace{
 	pixel_x = -6
 	},
-/obj/item/storage/box/rndboards{
-	pixel_x = 8
-	},
 /obj/item/storage/box/stockparts/deluxe{
 	pixel_x = -6;
 	pixel_y = 9
@@ -11346,15 +11339,11 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_c)
 "iEC" = (
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
+/obj/machinery/rnd/production/protolathe/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "iEJ" = (
@@ -19149,16 +19138,12 @@
 /turf/open/floor/light,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "odA" = (
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
 /obj/effect/turf_decal/siding/dark,
+/obj/machinery/rnd/server/syndicate,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "oed" = (
@@ -20428,12 +20413,11 @@
 /turf/open/floor/carpet/black,
 /area/mine/storage)
 "oSV" = (
-/obj/structure/frame/computer{
-	anchored = 1;
-	dir = 4
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/machinery/computer/rdconsole/syndicate{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -22533,15 +22517,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/structure/frame/machine{
-	anchored = 1;
-	icon_state = "box_1";
-	state = 2
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
 	},
+/obj/machinery/rnd/destructive_analyzer,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "qEg" = (

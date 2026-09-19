@@ -6,6 +6,7 @@
 		\nМечта любого химика."
 	icon = 'modular_sand/icons/obj/chemical.dmi'
 	icon_state = "beakerultimate"
+	cached_icon = "beakerbluespace"
 	custom_materials = list(/datum/material/glass = 5000, /datum/material/plasma = 3000, /datum/material/diamond = 1000, /datum/material/bluespace = 1000)
 	volume = 900
 	possible_transfer_amounts = list(5,10,15,20,25,30,50,100,300,450,600,900)

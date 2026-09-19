@@ -462,6 +462,10 @@
 				var/mob/living/carbon/human/H = target
 				if(check_martial_counter(H, user))
 					return
+			if(HAS_TRAIT(target, TRAIT_BATON_RESISTANCE))
+				target.visible_message(span_warning("[target] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
+				playsound(target, 'sound/weapons/genhit.ogg', 50, 1)
+				return
 			var/list/desc = get_stun_description(target, user)
 			if(stun_animation)
 				user.do_attack_animation(target)

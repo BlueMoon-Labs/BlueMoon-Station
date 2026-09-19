@@ -231,6 +231,7 @@ GLOBAL_LIST_INIT_TYPED(skill_datums, /datum/skill, init_skill_datums())
 			level = M.apply_modifier(level, type, H, MODIFIER_TARGET_LEVEL)
 
 		if(level)
+			level = clamp(level, 0, max_levels) // модификаторы могут поднять уровень выше максимума
 			current_lvl_xp_sum = associative ? levels[levels[level]] : levels[level]
 		else
 			current_lvl_xp_sum = 0

@@ -27,9 +27,11 @@
 	var/last_result = null // "correct", "incorrect"
 	var/last_points = 0
 	var/last_message = ""
+	var/datum/techweb/linked_techweb // BLUEMOON ADD: связанная исследовательская сеть (наука уходит сюда)
 
 /obj/item/computermath/Initialize(mapload)
 	. = ..()
+	linked_techweb = find_rnd_network_for_object(src) //BLUEMOON ADD: привязка к ближайшей серверной сети
 	START_PROCESSING(SSobj, src)
 
 /obj/item/computermath/Destroy()
@@ -460,6 +462,14 @@
 		if("Science")
 			points_awarded *= MATH_MULTIPLIER_SCIENCE
 
+	if(reward_type == "Science" && !linked_techweb) //BLUEMOON ADD: без подключения к серверной сети наука не начисляется
+		last_result = "incorrect"
+		last_points = 0
+		last_message = "Устройство не подключено к исследовательской сети."
+		say("Нет подключения к исследовательской сети!")
+		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
+		return
+
 	if(!correct)
 		var/points_lost = points_awarded / 4
 		last_result = "incorrect"
@@ -467,7 +477,7 @@
 		switch(reward_type)
 			if("Science")
 				last_message = "Исследовательские данные были повреждены. Утеряно [points_lost] очков исследования."
-				SSresearch.science_tech.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_lost))
+				linked_techweb.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_lost))
 			if("Cargo")
 				last_message = "Бюрократическая ошибка. Списано [points_lost] очков карго."
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
@@ -484,7 +494,7 @@
 	switch(reward_type)
 		if("Science")
 			last_message = "Данные корректны! Начислено [points_awarded] очков исследования."
-			SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
+			linked_techweb.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
 		if("Cargo")
 			last_message = "Данные корректны! Начислено [points_awarded] очков карго."
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
@@ -552,29 +562,41 @@
 	desc = "Проблемный компьютер научного отдела. Решайте мини-игры для получения очков."
 	icon_state = "sciencetab"
 	reward_type = "Science"
+	var/unlinked_notified = FALSE //BLUEMOON ADD: разовое предупреждение при отсутствии сети
 
 /obj/item/computermath/science/attack_self(mob/user)
 	ui_interact(user)
 
 /obj/item/computermath/science/process()
 	var/old_charge_count = charge_count
-	charge_count = SSresearch.problem_computer_charges
+	if(!linked_techweb) //BLUEMOON ADD: сеть — источник задач
+		charge_count = 0
+		if(!unlinked_notified)
+			unlinked_notified = TRUE
+			say("Нет подключения к исследовательской сети. Задачи недоступны.")
+		return
+	charge_count = linked_techweb.get_problem_computer_charges()
 	if(charge_count > old_charge_count)
 		say("Для решения стали доступны новые задачи! На данный момент доступно [charge_count] задач.")
 
 /obj/item/computermath/science/check_charges()
-	if(SSresearch.problem_computer_charges > 0)
+	if(!linked_techweb) //BLUEMOON ADD
+		return FALSE
+	if(linked_techweb.get_problem_computer_charges() > 0)
 		return TRUE
 	return FALSE
 
 /obj/item/computermath/science/consume_charges()
-	if(SSresearch.problem_computer_charges > 0)
-		SSresearch.problem_computer_charges -= 1
-		return TRUE
-	return FALSE
+	if(!linked_techweb) //BLUEMOON ADD
+		return FALSE
+	return linked_techweb.consume_problem_computer_charge()
 
 /obj/item/computermath/science/get_charges()
-	return SSresearch.problem_computer_charges
+	if(!linked_techweb) //BLUEMOON ADD
+		return 0
+	return linked_techweb.get_problem_computer_charges()
 
 /obj/item/computermath/science/get_max_charges()
-	return SSresearch.problem_computer_max_charges
+	if(!linked_techweb) //BLUEMOON ADD
+		return 0
+	return linked_techweb.get_problem_computer_max_charges()

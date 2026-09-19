@@ -217,6 +217,7 @@
 #include "spritesheet_asset_snapshot.dm"
 #include "spritesheet_batched.dm"
 #include "startup_bootstrap.dm"
+#include "station_incidents.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
 // #include "strippable.dm"

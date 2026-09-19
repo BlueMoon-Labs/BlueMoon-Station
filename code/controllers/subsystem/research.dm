@@ -25,19 +25,14 @@ SUBSYSTEM_DEF(research)
 	var/list/invalid_node_boost = list()		//associative id = error message
 
 	var/list/obj/machinery/rnd/server/servers = list()
+	//BLUEMOON ADD: реестр сетей исследований. ID сети = обособленный экземпляр /datum/techweb
+	var/list/rnd_networks = list()
 
 	var/list/techweb_nodes_starting = list()	//associative id = TRUE
 	var/list/techweb_categories = list()		//category name = list(node.id = TRUE)
 	var/list/techweb_boost_items = list()		//associative double-layer path = list(id = list(point_type = point_discount))
 	var/list/techweb_nodes_hidden = list()		//Node ids that should be hidden by default.
 	var/list/techweb_nodes_experimental = list()	//Node ids that are exclusive to the BEPIS.
-
-	//SKYRAT CHANGE
-	//PROBLEM COMPUTER CHARGES
-	var/problem_computer_max_charges = 5
-	var/problem_computer_charges = 5
-	var/problem_computer_charge_time = 90 SECONDS
-	var/problem_computer_next_charge_time = 0
 
 	var/list/techweb_point_items = list(		//path = list(point type = value)
 	/obj/item/assembly/signaler/anomaly            = list(TECHWEB_POINT_TYPE_GENERIC = 10000),
@@ -343,46 +338,77 @@ SUBSYSTEM_DEF(research)
 	return ..()
 
 /datum/controller/subsystem/research/fire()
-	var/list/bitcoins = list()
+	var/list/techwebs_income = list()	//экземпляр техвеба = биткойны сети в секунду
 	if(multiserver_calculation)
-		var/eff = calculate_server_coefficient()
 		for(var/obj/machinery/rnd/server/miner in servers)
 			if(!miner.working)
 				continue
-			var/list/result = (miner.mine())	//SLAVE AWAY, SLAVE.
-			for(var/i in result)
-				result[i] *= eff
-				bitcoins[i] = bitcoins[i]? bitcoins[i] + result[i] : result[i]
+			var/datum/techweb/mining_web = miner.stored_research
+			if(!mining_web)
+				continue	//сервер без подключённой сети (изолированная РНД) очков не приносит
+			var/list/mining_result = miner.mine()	//SLAVE AWAY, SLAVE.
+			if(!techwebs_income[mining_web])
+				techwebs_income[mining_web] = list()
+			for(var/i in mining_result)
+				var/cummulative = techwebs_income[mining_web][i]
+				techwebs_income[mining_web][i] = cummulative ? cummulative + mining_result[i] : mining_result[i]
+		//BLUEMOON CHANGE: убывающая отдача теперь считается ПО СЕТЯМ, а не по всей ферме
+		for(var/datum/techweb/mining_web as anything in techwebs_income)
+			var/server_count = 0
+			for(var/obj/machinery/rnd/server/miner in servers)
+				if(miner.working && miner.stored_research == mining_web)
+					server_count++
+			var/eff = calculate_server_coefficient(server_count)
+			if(eff)
+				for(var/i in techwebs_income[mining_web])
+					techwebs_income[mining_web][i] *= eff
 	else
 		for(var/obj/machinery/rnd/server/miner in servers)
-			if(miner.working)
-				bitcoins = single_server_income.Copy()
-				break			//Just need one to work.
+			if(miner.working && miner.stored_research && !techwebs_income[miner.stored_research])
+				techwebs_income[miner.stored_research] = single_server_income.Copy()
 	if (!isnull(last_income))
 		var/income_time_difference = world.time - last_income
-		for(var/i in bitcoins)
-			bitcoins[i] *= income_time_difference / 10
-		science_tech.add_point_list(bitcoins)
-		var/list/income = science_tech.commit_income()
-		for(var/i in income)
-			var/old_weighted = science_tech.last_bitcoins[i] * (1 MINUTES - income_time_difference)
-			var/new_weighted = income[i] * income_time_difference
-			science_tech.last_bitcoins[i] = (old_weighted + new_weighted) / (1 MINUTES)
+		for(var/datum/techweb/mining_web as anything in techwebs_income)
+			var/list/bitcoins = techwebs_income[mining_web]
+			for(var/i in bitcoins)
+				bitcoins[i] *= income_time_difference / 10
+			mining_web.add_point_list(bitcoins)
+			var/list/income = mining_web.commit_income()
+			for(var/i in income)
+				var/old_weighted = mining_web.last_bitcoins[i] * (1 MINUTES - income_time_difference)
+				var/new_weighted = income[i] * income_time_difference
+				mining_web.last_bitcoins[i] = (old_weighted + new_weighted) / (1 MINUTES)
 	else
-		science_tech.last_bitcoins = bitcoins.Copy()
+		for(var/datum/techweb/mining_web as anything in techwebs_income)
+			var/list/last_tick = techwebs_income[mining_web]
+			mining_web.last_bitcoins = last_tick.Copy()
 	last_income = world.time
-	// Skyrat change. Handles Problem Computer charges here
-	if(problem_computer_charges < problem_computer_max_charges && world.time >= problem_computer_next_charge_time)
-		problem_computer_next_charge_time = world.time + problem_computer_charge_time
-		problem_computer_charges += 1
 
-/datum/controller/subsystem/research/proc/calculate_server_coefficient()	//Diminishing returns.
-	var/amt = servers.len
+/datum/controller/subsystem/research/proc/calculate_server_coefficient(amt)	//Diminishing returns. BLUEMOON CHANGE: принимает число серверов сети
 	if(!amt)
 		return FALSE
 	var/coeff = 100
 	coeff = sqrt(coeff / amt)
 	return coeff
+
+//BLUEMOON ADD START - изоляция РНД
+/datum/controller/subsystem/research/proc/get_rnd_network(network_id, techweb_type = /datum/techweb/isolated)
+	if(network_id == RND_NETWORK_STATION)
+		return science_tech
+	. = rnd_networks[network_id]
+	if(!.)
+		. = new techweb_type
+		rnd_networks[network_id] = .
+
+/datum/controller/subsystem/research/proc/get_rnd_network_for(atom/target, network_id, techweb_type = /datum/techweb/isolated)
+	if(network_id == RND_NETWORK_AUTO)
+		if(target && is_station_level(target.z))
+			return science_tech
+		return new techweb_type
+	if(!network_id)
+		return new techweb_type
+	return get_rnd_network(network_id, techweb_type)
+//BLUEMOON ADD END
 
 /datum/controller/subsystem/research/proc/autosort_categories()
 	for(var/i in techweb_nodes)
