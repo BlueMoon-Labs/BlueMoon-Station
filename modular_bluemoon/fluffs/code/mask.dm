@@ -121,7 +121,7 @@
 
 /obj/item/clothing/mask/gas/sechailer/star_dust/adjustmask(mob/living/user, just_flavor)
 	. = ..()
-	if(.)
+	if(. && !just_flavor)
 		update_icon()
 
 /obj/item/modkit/star_dust_kit
