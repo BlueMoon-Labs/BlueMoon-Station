@@ -44,7 +44,7 @@
 		new /datum/data/bounty_equipment("Spare Tomahawk",				/obj/item/melee/tomahawk,											1000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320",					/obj/item/gun/ballistic/automatic/pistol/sigsauer,					1000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare Laspistol",				/obj/item/gun/ballistic/automatic/laser/vanguard,					1000,	"Weaponry"),
-		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/melee/tomahawk,											1500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/shield/riot/pointman,										1500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare lasbattery",			/obj/item/ammo_box/magazine/recharge/vanguard,						500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320 standart mag",		/obj/item/ammo_box/magazine/sig,									250,	"Weaponry"),
 
