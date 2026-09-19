@@ -1,5 +1,4 @@
 import { clamp } from 'common/math';
-
 import { Component } from 'react';
 
 const FPS = 20;

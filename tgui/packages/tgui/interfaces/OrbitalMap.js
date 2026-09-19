@@ -1,5 +1,5 @@
-import { Box, Button, Section, Table, DraggableClickableControl, Dropdown, Divider, NoticeBox, ProgressBar, OrbitalMapComponent, OrbitalMapSvg } from '../components';
 import { useBackend, useLocalState } from '../backend';
+import { Box, Button, Divider, DraggableClickableControl, Dropdown, NoticeBox, OrbitalMapComponent, OrbitalMapSvg, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
 export const OrbitalMap = (props) => {

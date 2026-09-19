@@ -1,9 +1,5 @@
 import { DraggableControl } from './DraggableControl';
 
-
-
-import { AnimatedNumber } from './AnimatedNumber';
-
 export class DraggableClickableControl extends DraggableControl {
   constructor(props) {
     super(props);
