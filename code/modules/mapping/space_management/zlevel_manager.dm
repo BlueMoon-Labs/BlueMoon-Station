@@ -13,18 +13,24 @@
 
 	for (var/I in 1 to default_map_traits.len)
 		var/list/features = default_map_traits[I]
-		var/datum/space_level/S = new(I, features[DL_NAME], features[DL_TRAITS])
+		//WHITE-STEEL PORT: первый default-уровень задаёт центр орбитальной карты (phobos).
+		//Without it linked_map.center stays null and station/lavaland fail to orbit.
+		var/datum/space_level/S
+		if(I == 1)
+			S = new(I, features[DL_NAME], features[DL_TRAITS], orbital_body_type = /datum/orbital_object/z_linked/phobos)
+		else
+			S = new(I, features[DL_NAME], features[DL_TRAITS])
 		z_list += S
 		calculate_z_level_gravity(I)
 
-/datum/controller/subsystem/mapping/proc/add_new_zlevel(name, traits = list(), z_type = /datum/space_level)
+/datum/controller/subsystem/mapping/proc/add_new_zlevel(name, traits = list(), z_type = /datum/space_level, orbital_body_type)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_NEW_Z, args)
 	var/new_z = z_list.len + 1
 	if (world.maxz < new_z)
 		world.incrementMaxZ()
 		CHECK_TICK
 	// TODO: sleep here if the Z level needs to be cleared
-	var/datum/space_level/S = new z_type(new_z, name, traits)
+	var/datum/space_level/S = new z_type(new_z, name, traits, orbital_body_type)
 	z_list += S
 	calculate_z_level_gravity(new_z)
 	//z-уровни, созданные до инита грида, разложит SSspatial_grid/Initialize сам
