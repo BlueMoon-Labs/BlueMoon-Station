@@ -917,12 +917,12 @@
 		to_x -= 32
 	if(!direction)
 		to_y += 16
-	flick_overlay(I, GLOB.clients, 6)
+	var/atom/movable/flick_visual/visual = T.flick_overlay_view(I, 0.6 SECONDS)
 	var/matrix/M = new
 	M.Turn(pick(-30, 30))
-	animate(I, alpha = 175, pixel_x = to_x, pixel_y = to_y, time = 3, transform = M, easing = CUBIC_EASING)
-	sleep(1)
-	animate(I, alpha = 0, transform = matrix(), time = 1, flags = ANIMATION_PARALLEL)
+	animate(visual, alpha = 175, pixel_x = to_x, pixel_y = to_y, time = 0.3 SECONDS, transform = M, easing = CUBIC_EASING)
+	sleep(0.1 SECONDS)
+	animate(visual, alpha = 0, transform = matrix(), time = 0.1 SECONDS, flags = ANIMATION_PARALLEL)
 
 /**
  * Called when a movable changes z-levels.

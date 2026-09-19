@@ -22,4 +22,5 @@
 			new /mob/living/simple_animal/hostile/carp/ranged/chaos(C.loc)
 		else
 			new /mob/living/simple_animal/hostile/carp/ranged(C.loc)
+		CHECK_TICK
 

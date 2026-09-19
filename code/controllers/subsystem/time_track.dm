@@ -1577,6 +1577,8 @@ SUBSYSTEM_DEF(time_track)
 	"client_images_total",
 	"client_images_max",
 	"client_screen_total",
+	"observer_clients",
+	"observer_images_total",
 	)
 
 /// Строка значений перф-CSV. Ширина обязана совпадать с perf_log_header() при любых
@@ -1586,6 +1588,8 @@ SUBSYSTEM_DEF(time_track)
 	var/client_images_total = 0
 	var/client_images_max = 0
 	var/client_screen_total = 0
+	var/observer_clients = 0
+	var/observer_images_total = 0
 	for(var/client/counted_client as anything in GLOB.clients)
 		if(!counted_client)
 			continue
@@ -1593,6 +1597,9 @@ SUBSYSTEM_DEF(time_track)
 		client_images_total += image_count
 		client_images_max = max(client_images_max, image_count)
 		client_screen_total += length(counted_client.screen)
+		if(isobserver(counted_client.mob))
+			observer_clients++
+			observer_images_total += image_count
 	return list(
 	world.time,
 	length(GLOB.clients),
@@ -1685,5 +1692,7 @@ SUBSYSTEM_DEF(time_track)
 	GLOB.nondatum_ledger[NONDATUM_LEDGER_SPRITESHEETS],
 	client_images_total,
 	client_images_max,
-	client_screen_total
+	client_screen_total,
+	observer_clients,
+	observer_images_total
 	)

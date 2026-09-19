@@ -7,6 +7,8 @@
 	var/obj/item/bodypart/BP = isbodypart(affected_zone)? affected_zone : (get_bodypart(check_zone(affected_zone)) || (length(bodyparts) ? bodyparts[1] : null))
 	if(!BP)
 		return FALSE
+	if(amount < 0 && !BP.stamina_dam)
+		return amount
 	if(amount > 0? BP.receive_damage(0, 0, amount * incomingstammult) : BP.heal_damage(0, 0, abs(amount), FALSE, FALSE))
 		update_damage_overlays()
 	if(updating_health)
