@@ -1,3 +1,8 @@
+#define ROUND_SOUND_TEST_VOLUME 50
+#define ROUND_SOUND_TEST_ENV_FULL 0
+#define ROUND_SOUND_TEST_ENV_MUTED -10000
+#define ROUND_SOUND_TEST_VACUUM_PRESSURE 0
+
 /// Каталоги звуков переиспользуются и сохраняют различия вариантов.
 /datum/unit_test/interaction_moan_catalogs/Run()
 	var/list/male = build_interaction_moan_options(FALSE)
@@ -43,14 +48,14 @@
 		var/mob/living/round_sound_listener/listener = allocate(/mob/living/round_sound_listener, source)
 		listener.enable_client_mobs_in_contents()
 		listeners += listener
-	playsound(source, 'sound/machines/ping.ogg', 50, FALSE)
+	playsound(source, 'sound/machines/ping.ogg', ROUND_SOUND_TEST_VOLUME, FALSE)
 	var/datum/gas_mixture/air = source.return_air()
 	var/pressure = air.return_pressure()
-	var/list/echo = sound_echo_for(0, -10000)
+	var/list/echo = sound_echo_for(ROUND_SOUND_TEST_ENV_FULL, ROUND_SOUND_TEST_ENV_MUTED)
 	for(var/mob/living/round_sound_listener/listener as anything in listeners)
 		TEST_ASSERT_EQUAL(listener.captured_pressure, pressure, "Давление источника не передано")
 		TEST_ASSERT(listener.captured_echo == echo, "Список эха не переиспользован")
-	playsound(source, 'sound/machines/ping.ogg', 50, FALSE, pressure_affected = FALSE)
+	playsound(source, 'sound/machines/ping.ogg', ROUND_SOUND_TEST_VOLUME, FALSE, pressure_affected = FALSE)
 	for(var/mob/living/round_sound_listener/listener as anything in listeners)
 		TEST_ASSERT_NULL(listener.captured_pressure, "Ненужный расчёт давления")
 		TEST_ASSERT_NULL(listener.captured_echo, "Ненужный расчёт эха")
@@ -60,11 +65,11 @@
 	var/mob/body = allocate(/mob, run_loc_floor_bottom_left)
 	var/mob/living/round_sound_listener/listener = allocate(/mob/living/round_sound_listener)
 	body.audiovisual_redirect = listener
-	body.playsound_local(run_loc_floor_bottom_left, 'sound/machines/ping.ogg', 50, FALSE, source_pressure = 0, source_echo = sound_echo_for(0, -10000))
-	TEST_ASSERT_EQUAL(listener.captured_pressure, 0, "Нулевое давление потеряно при перенаправлении")
+	body.playsound_local(run_loc_floor_bottom_left, 'sound/machines/ping.ogg', ROUND_SOUND_TEST_VOLUME, FALSE, source_pressure = ROUND_SOUND_TEST_VACUUM_PRESSURE, source_echo = sound_echo_for(ROUND_SOUND_TEST_ENV_FULL, ROUND_SOUND_TEST_ENV_MUTED))
+	TEST_ASSERT_EQUAL(listener.captured_pressure, ROUND_SOUND_TEST_VACUUM_PRESSURE, "Нулевое давление потеряно при перенаправлении")
 	TEST_ASSERT_NULL(listener.captured_echo, "Перенаправление получило исходный список эха")
-	TEST_ASSERT_EQUAL(listener.captured_envwet, 0, "Параметр envwet не изменён")
-	TEST_ASSERT_EQUAL(listener.captured_envdry, -10000, "Параметр envdry не изменён")
+	TEST_ASSERT_EQUAL(listener.captured_envwet, ROUND_SOUND_TEST_ENV_FULL, "Параметр envwet не изменён")
+	TEST_ASSERT_EQUAL(listener.captured_envdry, ROUND_SOUND_TEST_ENV_MUTED, "Параметр envdry не изменён")
 	TEST_ASSERT_EQUAL(listener.captured_virtual_hearer, run_loc_floor_bottom_left, "Позиция виртуального слушателя потеряна")
 	body.audiovisual_redirect = null
 
@@ -106,7 +111,7 @@
 	for(var/image/marker as anything in expected)
 		TEST_ASSERT(marker in hud.removed_images, "Потеряно изображение скрытого атома")
 
-/// Отложенная проба отвергает исчезнувший объект и несовпадающую метку удаления.
+/// Отложенная проба отвергает несуществующую ссылку и несовпадающую метку удаления.
 /datum/unit_test/gc_deferred_client_probe_identity/Run()
 	var/datum/target = allocate(/datum)
 	qdel(target)
@@ -114,5 +119,11 @@
 	TEST_ASSERT(!SSgarbage.probe_warnfail_clients(ref_id, target.type, target.gc_destroyed + 1), "Принята чужая метка удаления")
 	TEST_ASSERT(!SSgarbage.probe_warnfail_clients(ref_id, /obj, target.gc_destroyed), "Принят чужой тип")
 	TEST_ASSERT(SSgarbage.probe_warnfail_clients(ref_id, target.type, target.gc_destroyed), "Отклонена исходная цель")
-	del(target)
-	TEST_ASSERT(!SSgarbage.probe_warnfail_clients(ref_id, /datum, 1), "Принят исчезнувший объект")
+	var/missing_ref_id = "\[0x0]"
+	TEST_ASSERT_NULL(locate(missing_ref_id), "Тестовая ссылка разрешается в объект")
+	TEST_ASSERT(!SSgarbage.probe_warnfail_clients(missing_ref_id, /datum, target.gc_destroyed), "Принята несуществующая ссылка")
+
+#undef ROUND_SOUND_TEST_VOLUME
+#undef ROUND_SOUND_TEST_ENV_FULL
+#undef ROUND_SOUND_TEST_ENV_MUTED
+#undef ROUND_SOUND_TEST_VACUUM_PRESSURE
