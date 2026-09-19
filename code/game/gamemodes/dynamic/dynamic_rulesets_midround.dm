@@ -349,16 +349,17 @@
 /datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
 	. = ..()
 	for(var/mob/living/player in living_players.Copy())
-		if(issilicon(player))
+		if(!can_convert(player))
 			living_players -= player
-		else if(is_centcom_level(player.z))
-			living_players -= player
-		else if(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
-			living_players -= player
+
+/datum/dynamic_ruleset/midround/crew_conversion/proc/can_convert(mob/living/player)
+	if(issilicon(player) || is_centcom_level(player.z) || player.stat != CONSCIOUS)
+		return FALSE
+	return !(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
 
 /datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
 	if(required_candidates > living_players.len)
-		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан, возраст и сознание)"
 		return FALSE
 	. = ..()
 	if(.)
