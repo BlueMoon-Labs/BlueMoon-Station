@@ -343,6 +343,7 @@
 #include "preferences_single_pref_coalescing.dm"
 #include "image_leak_audit.dm"
 #include "radiation_contamination.dm"
+#include "round_10325_performance.dm"
 #include "rtt_window.dm"
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
