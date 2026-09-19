@@ -1,0 +1,2474 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aH" = (
+/obj/structure/transit_tube/diagonal,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"bw" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"cl" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/obj/effect/mapping_helpers/airlock/abandoned,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"cr" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/box,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"cP" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"eq" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"fN" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/structure/transit_tube/curved{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"ge" = (
+/obj/structure/sign/warning/vacuum,
+/turf/closed/wall,
+/area/ruin/unpowered)
+"gp" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"he" = (
+/obj/structure/transit_tube/curved{
+	dir = 1
+	},
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"hn" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"hK" = (
+/turf/open/floor/plating/asteroid,
+/area/space)
+"ie" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/button/door{
+	id = "exploration_ex_cargo1";
+	name = "Cargo Shutters Control";
+	pixel_x = 32;
+	req_access_txt = "49"
+	},
+/obj/machinery/door/poddoor/shutters{
+	id = "exploration_ex_cargo1"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"jk" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"jG" = (
+/obj/item/pickaxe,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"jZ" = (
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"kI" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/machinery/recharger{
+	pixel_y = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"kN" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/ruin/unpowered)
+"kS" = (
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"lc" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/light/small,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"lO" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"mf" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"mj" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"mm" = (
+/obj/machinery/door/airlock/external{
+	name = "Escape Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"mE" = (
+/obj/structure/window/reinforced/spawner,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"nz" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance,
+/obj/effect/spawner/lootdrop/ruinloot/basic,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"ou" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"oT" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/transit_tube/station/reverse{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"po" = (
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"qf" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"qq" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"qs" = (
+/obj/machinery/power/port_gen/pacman,
+/obj/item/wrench,
+/obj/structure/cable,
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"rp" = (
+/obj/machinery/door/airlock/external{
+	name = "Escape Airlock"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"sq" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"to" = (
+/turf/open/floor/plating/asteroid/no_generation,
+/area/ruin/unpowered)
+"tH" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 6
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"uc" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor/shutters{
+	id = "exploration_ex_cargo1"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"uX" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"vc" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/structure/transit_tube/curved,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"vj" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"vN" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/firecloset/full,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"vY" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/ruinloot/medical,
+/obj/effect/spawner/lootdrop/ruinloot/medical,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"vZ" = (
+/turf/open/space/basic,
+/area/space)
+"wg" = (
+/obj/machinery/door/airlock/external{
+	name = "Escape Airlock"
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"wl" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"wr" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/structure/closet/emcloset,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"wS" = (
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"xE" = (
+/obj/structure/sign/warning/vacuum{
+	pixel_x = 32
+	},
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"xY" = (
+/obj/structure/window/reinforced/spawner,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"ym" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"zc" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"zL" = (
+/turf/closed/mineral/random,
+/area/ruin/unpowered)
+"Ai" = (
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"As" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"AC" = (
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/ruinloot/armoury,
+/obj/effect/spawner/lootdrop/ruinloot/armoury,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"AQ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"BA" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Cj" = (
+/obj/effect/landmark/stationroom/maintenance/rdm3x5,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Cl" = (
+/obj/effect/turf_decal/box,
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Co" = (
+/obj/structure/lattice/catwalk,
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/turf/open/floor/plating/asteroid,
+/area/space)
+"Cr" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"CX" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Dq" = (
+/obj/effect/turf_decal/stripes/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Dx" = (
+/obj/structure/window/reinforced/spawner,
+/obj/structure/transit_tube/diagonal,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"EC" = (
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"EF" = (
+/obj/structure/transit_tube/diagonal/crossing,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"Fv" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Fw" = (
+/turf/closed/wall,
+/area/ruin/unpowered)
+"FG" = (
+/obj/machinery/door/airlock/external/glass,
+/obj/structure/fans/tiny,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"FX" = (
+/obj/item/crowbar/red,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"FY" = (
+/obj/structure/transit_tube/diagonal,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"GM" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Hc" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Hf" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"Ht" = (
+/obj/machinery/modular_computer/console/preset/id,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"HS" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"If" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"IL" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"IX" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"Jn" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/obj/effect/mapping_helpers/airlock/abandoned,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"JK" = (
+/obj/structure/bonfire,
+/obj/effect/spawner/lootdrop/ruinloot/important,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"JL" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/obj/effect/spawner/lootdrop/ruinloot/basic,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"JP" = (
+/obj/effect/landmark/stationroom/maintenance/rdm5x4,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"JU" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/box,
+/obj/structure/ore_box,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Ln" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"LG" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/space)
+"LM" = (
+/obj/effect/spawner/lootdrop/maintenance,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Nz" = (
+/obj/structure/chair/comfy/black,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"Ok" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"Ov" = (
+/obj/effect/abstract/doorway_marker,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Oz" = (
+/obj/effect/turf_decal/stripes/line,
+/obj/effect/turf_decal/stripes/line{
+	dir = 1
+	},
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch";
+	req_access_txt = "12"
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"OX" = (
+/obj/effect/landmark/stationroom/maintenance/rdm10x5,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Pk" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/space)
+"PF" = (
+/obj/effect/landmark/stationroom/maintenance/rdm10x10,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"PY" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/obj/structure/transit_tube/curved/flipped{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"QV" = (
+/turf/open/space/basic,
+/area/ruin/unpowered)
+"Ri" = (
+/obj/structure/lattice/catwalk,
+/turf/open/space/basic,
+/area/space)
+"Rq" = (
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"Rv" = (
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"RG" = (
+/obj/structure/transit_tube/diagonal,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"RT" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"SC" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"SY" = (
+/obj/machinery/door/airlock/external{
+	name = "Escape Airlock"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"Tt" = (
+/obj/effect/spawner/lootdrop/ruinloot/basic,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"Ue" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 4
+	},
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"UB" = (
+/obj/effect/turf_decal/caution/stand_clear{
+	dir = 4
+	},
+/obj/effect/spawner/lootdrop/ruinloot/basic,
+/turf/open/floor/plasteel,
+/area/ruin/unpowered)
+"Vd" = (
+/obj/structure/transit_tube,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"Vn" = (
+/obj/structure/window/reinforced/spawner{
+	dir = 1
+	},
+/obj/structure/transit_tube/station/reverse/flipped{
+	dir = 1
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/transit_tube_pod{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"Vo" = (
+/obj/structure/table/wood,
+/obj/item/candle,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+"VQ" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 10
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/firecloset/full,
+/turf/open/floor/plasteel/dark,
+/area/ruin/unpowered)
+"VS" = (
+/turf/closed/mineral/random,
+/area/space)
+"Xy" = (
+/obj/structure/transit_tube,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/space)
+"YT" = (
+/obj/structure/chair/stool,
+/turf/open/floor/plating/asteroid,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(2,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+mE
+IX
+RT
+Fw
+"}
+(3,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Ri
+Pk
+vj
+mE
+Vn
+If
+Ov
+"}
+(4,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vj
+xY
+PY
+If
+Fw
+"}
+(5,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+hK
+vj
+Dx
+Ue
+CX
+Fw
+"}
+(6,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+hK
+hK
+hK
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Ri
+Pk
+Pk
+Pk
+Pk
+Pk
+vj
+vj
+vj
+aH
+vj
+Co
+Fw
+Fw
+"}
+(7,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+SC
+SC
+SC
+SC
+SC
+SC
+Fw
+SC
+Fw
+hK
+hK
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+vZ
+vZ
+hK
+hK
+FY
+vj
+hK
+hK
+hK
+hK
+"}
+(8,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+SC
+Ai
+Ai
+jk
+AQ
+IL
+rp
+Cr
+SY
+Rv
+hK
+hK
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+hK
+hK
+hK
+EF
+vj
+vj
+vj
+vj
+vj
+VS
+"}
+(9,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Ri
+Pk
+SC
+Ai
+Ai
+Fv
+po
+Dq
+Fw
+wr
+SC
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+Rv
+RG
+hK
+hK
+vj
+hK
+hK
+VS
+VS
+"}
+(10,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Fw
+SC
+Fw
+Fw
+Fw
+GM
+Fw
+Fw
+Fw
+Hf
+Hf
+Hf
+Hf
+vc
+Vd
+Xy
+Vd
+Xy
+Vd
+Xy
+Vd
+Xy
+Xy
+he
+Rv
+vj
+vj
+Pk
+Pk
+Ri
+VS
+VS
+"}
+(11,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+vZ
+Fw
+Rq
+Rq
+Rq
+Rq
+OX
+Fw
+kI
+cP
+oT
+fN
+qq
+Fw
+Fw
+eq
+eq
+Fw
+Fw
+hK
+vj
+hK
+hK
+Rv
+hK
+hK
+Pk
+vZ
+vZ
+vZ
+VS
+"}
+(12,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Ri
+Pk
+Pk
+zL
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Ht
+UB
+po
+BA
+po
+Fw
+Rq
+Rq
+Rq
+JP
+Fw
+Fw
+Fw
+SC
+Fw
+Rv
+vj
+vZ
+Ri
+vZ
+vZ
+vZ
+vZ
+"}
+(13,1,1) = {"
+vZ
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+Pk
+zL
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+VQ
+po
+LM
+po
+vN
+Fw
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+wg
+Rq
+mm
+Rv
+hK
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(14,1,1) = {"
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+QV
+zL
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+hn
+po
+po
+po
+qf
+Fw
+Rq
+Rq
+Rq
+Rq
+Oz
+Rq
+Fw
+Fw
+Fw
+Rv
+vj
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(15,1,1) = {"
+Pk
+Pk
+Pk
+LG
+LG
+Pk
+Pk
+Pk
+kN
+zL
+zL
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Fw
+ym
+Fw
+Fw
+Fw
+Fw
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+SC
+hK
+hK
+Rv
+hK
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(16,1,1) = {"
+vZ
+LG
+to
+to
+to
+to
+zL
+QV
+kS
+zL
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Oz
+wS
+Rq
+mf
+Rq
+Rq
+eq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+SC
+vj
+Rv
+Ri
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(17,1,1) = {"
+zL
+zL
+to
+to
+to
+to
+zL
+zL
+kS
+Ok
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Fw
+Fw
+Fw
+Fw
+Jn
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Rq
+Fw
+hK
+Rv
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(18,1,1) = {"
+zL
+to
+to
+to
+to
+to
+to
+zL
+zL
+Ok
+Tt
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+PF
+Fw
+Rq
+SC
+hK
+Rv
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(19,1,1) = {"
+LG
+to
+to
+to
+to
+to
+to
+zL
+zL
+jZ
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+FX
+SC
+Rv
+Ri
+Pk
+Pk
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(20,1,1) = {"
+LG
+to
+to
+to
+to
+to
+to
+zL
+zL
+jZ
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+SC
+hK
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(21,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+Fw
+vY
+bw
+qs
+Fw
+Fw
+Fw
+ym
+Fw
+Fw
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Fw
+hK
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(22,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+Fw
+AC
+Rq
+EC
+Fw
+Rq
+Rq
+Rq
+Rq
+Cj
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Oz
+Rq
+SC
+hK
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(23,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+FG
+Hc
+Rq
+lc
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Oz
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Oz
+Rq
+SC
+Ri
+Ri
+Pk
+Pk
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(24,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+ge
+HS
+HS
+gp
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+SC
+vZ
+Ri
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(25,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+Fw
+jZ
+jZ
+jZ
+Fw
+Fw
+Fw
+Jn
+Fw
+Fw
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Fw
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(26,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+uc
+JL
+bw
+bw
+JU
+Fw
+Rq
+Rq
+Rq
+JP
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(27,1,1) = {"
+Pk
+to
+to
+to
+to
+to
+to
+ie
+Ln
+Rq
+Rq
+Cl
+SC
+Rq
+Rq
+Rq
+Rq
+Fw
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Rq
+Fw
+zc
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(28,1,1) = {"
+LG
+to
+to
+to
+to
+to
+to
+Fw
+uX
+As
+As
+cr
+Fw
+Rq
+Rq
+Rq
+Rq
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+Rq
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(29,1,1) = {"
+LG
+to
+to
+to
+to
+to
+to
+Fw
+jZ
+jZ
+jZ
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+cl
+jZ
+jZ
+uX
+As
+tH
+jZ
+jZ
+Ln
+Rq
+Rq
+ou
+Rq
+Fw
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(30,1,1) = {"
+zL
+to
+to
+to
+to
+to
+to
+zL
+jZ
+jZ
+jZ
+jZ
+Fw
+Rq
+Rq
+Rq
+Rq
+Fw
+Fw
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+zL
+zL
+zL
+Fw
+Fw
+Fw
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(31,1,1) = {"
+zL
+zL
+to
+zL
+to
+to
+zL
+zL
+zL
+jZ
+jZ
+jZ
+Fw
+Fw
+Fw
+Fw
+Fw
+Fw
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+zL
+zL
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(32,1,1) = {"
+vZ
+zL
+zL
+zL
+zL
+zL
+zL
+zL
+zL
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+YT
+YT
+YT
+jZ
+jZ
+zL
+zL
+vZ
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(33,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+zL
+zL
+xE
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+zL
+zL
+vZ
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(34,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+Fw
+zL
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+JK
+jZ
+jZ
+jZ
+sq
+zL
+zL
+Pk
+Pk
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(35,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+zL
+jZ
+jZ
+jZ
+nz
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+nz
+zL
+zL
+vZ
+Pk
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(36,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+zL
+zL
+zL
+sq
+jZ
+jZ
+jZ
+YT
+YT
+YT
+jZ
+jZ
+jZ
+wl
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(37,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+zL
+zL
+zL
+zL
+xE
+jG
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+Vo
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(38,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+Fw
+zL
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+jZ
+mj
+SC
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(39,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+nz
+nz
+Nz
+Vo
+lO
+zL
+zL
+zL
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(40,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+zL
+zL
+SC
+SC
+SC
+zL
+zL
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
+(41,1,1) = {"
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+zL
+zL
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+vZ
+"}
