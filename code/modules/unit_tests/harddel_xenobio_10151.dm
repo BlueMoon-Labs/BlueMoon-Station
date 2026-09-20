@@ -432,6 +432,36 @@ GLOBAL_LIST_EMPTY(harddel_10151_baselines)
 	for(var/list/record as anything in records)
 		assert_no_holder(record)
 
+/// Поиск пути, прерванный удалением обезьяны, не должен возобновлять walk_to.
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker
+	parent_type = /datum/unit_test/harddel_10151_base
+	var/walk_finished = FALSE
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/proc/run_walk(mob/living/carbon/monkey/walker, turf/destination)
+	walker.walk2derpless(destination)
+	walk_finished = TRUE
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/proc/delete_during_search()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/monkey/walker = allocate(/mob/living/carbon/monkey, start)
+	var/turf/destination = get_step(get_step(start, EAST), EAST)
+	var/previous_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = -1 // CHECK_TICK в поиске пути обязан уступить выполнение.
+	INVOKE_ASYNC(src, PROC_REF(run_walk), walker, destination)
+	Master.current_ticklimit = previous_ticklimit
+	TEST_ASSERT(!walk_finished, "Поиск пути завершился до удаления обезьяны")
+	var/list/record = target_record(walker, "обезьяна, удалённая во время поиска пути")
+	allocated -= walker
+	qdel(walker)
+	return record
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/Run()
+	var/list/record = delete_during_search()
+	TEST_ASSERT_NOTNULL(record, "Не удалось удалить обезьяну во время поиска пути")
+	sleep(10 SECONDS)
+	TEST_ASSERT(walk_finished, "Поиск пути не завершился после удаления обезьяны")
+	assert_soft_collected(record)
+
 /// Проба warnfail обязана НАЗЫВАТЬ держателя этого класса.
 ///
 /// В прод-раунде 10151 строка улик была пустой у всех 262 хардделов - потому что
