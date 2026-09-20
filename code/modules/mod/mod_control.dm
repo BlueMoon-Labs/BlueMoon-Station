@@ -141,10 +141,10 @@
 	cell.charge = max(0, cell.charge - (cell_drain + malfunctioning_charge_drain)*delta_time)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
-		if(is_malfunctioning() && module.active && DT_PROB(5, delta_time))
+		if(is_malfunctioning() && module.active && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time))
 			module.on_deactivation()
 		module.on_process(delta_time)
-	if(is_malfunctioning() && DT_PROB(5, delta_time)) //Случайное отключение/включение при ЕМП
+	if(is_malfunctioning() && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time)) //Случайное отключение/включение при ЕМП
 		toggle_activate()
 
 /obj/item/mod/control/equipped(mob/user, slot)
@@ -328,11 +328,22 @@
 		handle_change_access(attacking_item, user)
 	return ..()
 
+/obj/item/mod/control/proc/disable_emp_status()
+	if(!is_malfunctioning() || QDELETED(src))
+		return
+	DISABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	interface_break = FALSE
+	if(wearer)
+		balloon_alert(wearer, "Системы вернулись в норму")
+
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
 	to_chat(wearer, span_notice("Обнаружен [severity > 1 ? "слабый" : "сильный"] электромагнитный импульс!"))
 	if(!is_active() || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
+
+	ENABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	addtimer(CALLBACK(src, PROC_REF(disable_emp_status)), 5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 	selected_module = null
 	if(have_emp_special) //некоторые особые модули дают высокую уязвимость к ЕМП носителю.
 		emp_special(severity) //если есть ЕМП защита, то до этого прока даже не доходит.

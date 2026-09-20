@@ -60,7 +60,7 @@
 	. = ..()
 	if(.)
 		return
-	if(is_malfunctioning() && prob(75))
+	if(is_malfunctioning() && prob(MOD_BUTTON_MALFUNCTION_CHANCE))
 		balloon_alert(usr, "button malfunctions!")
 		return
 	switch(action)
