@@ -117,6 +117,14 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 	research_icon_state = "cosmohonk-plating"
 
+/datum/design/mod_plating/cargo_worker
+	name = "MOD Cargo Plating"
+	id = "mod_plating_cargo_worker"
+	build_path = /obj/item/mod/construction/armor/cargo_worker
+	materials = list(/datum/material/iron = 6000, /datum/material/titanium = 2000, /datum/material/glass = 1000, /datum/material/plasma = 1000)
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+	research_icon_state = "loader-plating"
+
 /datum/design/mod_paint_kit
 	name = "MOD Paint Kit"
 	desc = "A paint kit for Modular Suits."

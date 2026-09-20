@@ -3598,6 +3598,7 @@
 #include "code\modules\mod\mod_ui_ai_and_wires\mod_ui.dm"
 #include "code\modules\mod\mod_ui_ai_and_wires\mod_wires.dm"
 #include "code\modules\mod\modules\_module.dm"
+#include "code\modules\mod\modules\mod_powergen.dm"
 #include "code\modules\mod\modules\modules.dm"
 #include "code\modules\mod\modules\modules_antag.dm"
 #include "code\modules\mod\modules\modules_armor.dm"

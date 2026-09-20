@@ -107,6 +107,22 @@
 /obj/item/mod/construction/armor/magnate
 	theme = /datum/mod_theme/centcomm/magnate
 
+/obj/item/mod/construction/armor/cargo_worker
+	custom_price = 500
+	theme = /datum/mod_theme/cargo_default/cargo_worker
+
+/obj/item/mod/construction/armor/mage
+	theme = /datum/mod_theme/antagonist/mage
+
+/obj/item/mod/construction/armor/ninja
+	theme = /datum/mod_theme/antagonist/spider_clan
+
+/obj/item/mod/construction/armor/traitor
+	theme = /datum/mod_theme/antagonist/traitor
+
+/obj/item/mod/construction/armor/infiltrator
+	theme = /datum/mod_theme/antagonist/infiltrator
+
 /obj/item/mod/construction/armor/lustwish
 	name = "LustWish MOD plating"
 	theme = /datum/mod_theme/lustwish

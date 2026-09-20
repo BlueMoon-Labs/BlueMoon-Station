@@ -26,6 +26,7 @@
 	prereq_ids = list("mod", "robotics")
 	design_ids = list(
 		"mod_plating_mining",
+		"mod_plating_cargo_worker",
 		"mod_visor_diaghud",
 		"mod_gps",
 		"mod_reagent_scanner",

@@ -83,6 +83,8 @@ GLOBAL_LIST_INIT(mod_themes, setup_mod_themes())
 #define MOD_BUTTON_MALFUNCTION_CHANCE 75
 #define MOD_EMP_SHUTDOWN_CHANCE 0.5 //там используется DT_PROB, что делает даже 5 процентов - высоким шансом.
 
+#define MOD_FUELGEN_RATE_GENERIC 1
+
 #define MOD_ACTIVE      (1<<0)
 #define MOD_ACTIVATING  (1<<1)
 #define MOD_MALFUNCTION (1<<2)

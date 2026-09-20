@@ -206,6 +206,6 @@
 
 /mob/living/carbon/human/attackby(obj/item/I, mob/user, params)
 	. = ..()
-	if(istype(I, /obj/item/inducer) && is_wearing_mod())
-		var/obj/item/mod/control/target_mod = is_wearing_mod()
+	var/obj/item/mod/control/target_mod = is_wearing_mod()
+	if(istype(I, /obj/item/inducer) && target_mod)
 		target_mod.do_charge_by_inducer(I, user)
