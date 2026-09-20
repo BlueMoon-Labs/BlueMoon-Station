@@ -122,7 +122,7 @@
 		balloon_alert(user, "Несовместимо!")
 
 /obj/item/mod/module/armor/proc/check_unfinished_armor_state(mob/user)
-	if(armor_type)
+	if(armor_module_type)
 		return TRUE
 	if(user)
 		balloon_alert(user, "Модуль не завершен!")
@@ -131,7 +131,7 @@
 /obj/item/mod/control/proc/check_max_count_armor(armor_by_type_num, obj/item/mod/module/armor/armor_module, user)
 	if(armor_by_type_num >= max_armor_module_count)
 		if(user)
-			balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
+			balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_module_type] типа!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	return TRUE

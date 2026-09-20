@@ -492,7 +492,7 @@
 				return
 			var/armor_by_type_num = 0
 			for(var/obj/item/mod/module/armor/also_module in modules)
-				if(armor_module.armor_type != also_module.armor_type)
+				if(armor_module.armor_module_type != also_module.armor_module_type)
 					continue
 				armor_by_type_num += 1
 			if(!check_max_count_armor(armor_by_type_num, armor_module, user))

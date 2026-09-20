@@ -3590,6 +3590,7 @@
 #include "code\modules\mod\mod_customizing\mod_paint.dm"
 #include "code\modules\mod\mod_customizing\mod_presets.dm"
 #include "code\modules\mod\mod_customizing\mod_themes\_base_theme.dm"
+#include "code\modules\mod\mod_customizing\mod_themes\mod_armor.dm"
 #include "code\modules\mod\mod_customizing\mod_themes\mod_theme.dm"
 #include "code\modules\mod\mod_parts\base_mod_clothes.dm"
 #include "code\modules\mod\mod_parts\mod_clothes.dm"
