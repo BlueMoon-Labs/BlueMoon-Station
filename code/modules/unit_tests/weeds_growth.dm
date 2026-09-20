@@ -17,12 +17,12 @@
 	node.node_range = 1
 	node.last_expand = INFINITY
 	var/obj/structure/alien/weeds/growth_test/weed = allocate(/obj/structure/alien/weeds/growth_test, near)
-	weed.last_expand = world.time + 1
+	weed.last_expand = world.time + 0.1 SECONDS
 	node.process()
 	TEST_ASSERT_EQUAL(node.next_growth_check, weed.last_expand, "Узел должен ждать ближайшего роста")
 	node.process()
 	TEST_ASSERT_EQUAL(weed.expansions, 0, "Ожидание не должно ускорять рост")
-	sleep(1)
+	sleep(0.1 SECONDS)
 	node.process()
 	TEST_ASSERT_EQUAL(weed.expansions, 1, "Наступивший срок роста пропущен")
 	var/obj/structure/alien/weeds/growth_test/added = allocate(/obj/structure/alien/weeds/growth_test, near)

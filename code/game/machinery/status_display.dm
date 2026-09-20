@@ -190,8 +190,8 @@
 		if(light_range)
 			set_light(0)
 		return
-	if(light_range != 1.4 || light_power != 0.7 || light_color != LIGHT_COLOR_BLUE || (!light && light_on))
-		set_light(1.4, 0.7, LIGHT_COLOR_BLUE)
+	if(light_range != STATUS_DISPLAY_LIGHT_RANGE || light_power != STATUS_DISPLAY_LIGHT_POWER || light_color != LIGHT_COLOR_BLUE || (!light && light_on))
+		set_light(STATUS_DISPLAY_LIGHT_RANGE, STATUS_DISPLAY_LIGHT_POWER, LIGHT_COLOR_BLUE)
 
 /obj/machinery/status_display/update_overlays()
 	. = ..()

@@ -103,6 +103,7 @@
  */
 
 #define NODERANGE 3
+#define WEEDS_GROWTH_SCAN_UNPERFORMED -1
 
 GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 
@@ -193,7 +194,7 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 	/// Незавершённый обход продолжается с прежнего места после исчерпания бюджета тика.
 	var/list/growth_sweep_queue
 	var/next_growth_check = 0
-	var/growth_scan_revision = -1
+	var/growth_scan_revision = WEEDS_GROWTH_SCAN_UNPERFORMED
 	var/turf/growth_scan_turf
 	var/growth_scan_range
 
@@ -242,6 +243,7 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 			return
 
 #undef NODERANGE
+#undef WEEDS_GROWTH_SCAN_UNPERFORMED
 
 
 /*

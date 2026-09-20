@@ -147,9 +147,9 @@
 
 /// Пена снимается с активной очереди при растворении и прямом удалении в обеих фазах.
 /datum/unit_test/foam_processing_cleanup/Run()
-	for(var/foam_type in list(/obj/effect/particle_effect/foam, /obj/effect/particle_effect/foam/short_life, /obj/effect/particle_effect/foam/smart, /obj/effect/particle_effect/foam/firefighting))
-		for(var/use_slow in list(FALSE, TRUE))
-			for(var/direct_delete in list(FALSE, TRUE))
+	for(var/foam_type as anything in list(/obj/effect/particle_effect/foam, /obj/effect/particle_effect/foam/short_life, /obj/effect/particle_effect/foam/smart, /obj/effect/particle_effect/foam/firefighting))
+		for(var/use_slow as anything in list(FALSE, TRUE))
+			for(var/direct_delete as anything in list(FALSE, TRUE))
 				var/obj/effect/particle_effect/foam/foam = allocate(foam_type, run_loc_floor_bottom_left)
 				if(use_slow && !foam.allow_slow_processing)
 					qdel(foam)
@@ -158,7 +158,7 @@
 				var/datum/controller/subsystem/processing/processor = SSfastprocess
 				if(use_slow)
 					foam.amount = 0
-					foam.lifetime = 100
+					foam.lifetime = 10 SECONDS
 					foam.process()
 					TEST_ASSERT(foam.slow_processing, "Закончившая распространение пена должна перейти в медленную фазу")
 					TEST_ASSERT(!(foam in SSfastprocess.processing), "Переход не должен оставлять пену в быстрой очереди")

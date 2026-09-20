@@ -1,3 +1,5 @@
+#define PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER 0.82
+#define PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER 0.88
 
 /atom
 	var/light_power = 1 // Intensity of the light.
@@ -323,9 +325,9 @@
 	if(isnull(safe_color) || length(safe_color) < 7 || copytext(safe_color, 1, 2) != "#")
 		safe_color = lamp?.bulb_colour || LIGHT_COLOR_WARM_BLOOM
 	var/is_painted_lamp = !!lamp?.color
-	var/glow_contrast = (CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * (is_painted_lamp ? 0.82 : 1)
+	var/glow_contrast = (CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * (is_painted_lamp ? PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER : 1)
 	var/glow_brightness = CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power
-	var/exposure_contrast = (CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * (is_painted_lamp ? 0.88 : 1)
+	var/exposure_contrast = (CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * (is_painted_lamp ? PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER : 1)
 	var/exposure_brightness = CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power
 	var/glow_plane = layer <= LOW_OBJ_LAYER ? FLOOR_LIGHTING_LAMPS_PLANE : LIGHTING_LAMPS_PLANE
 	var/list/current_parameters = list(glow_icon, glow_icon_state, glow_colored, exposure_icon, exposure_icon_state, exposure_colored, dir, glow_plane, safe_color, glow_contrast, glow_brightness, exposure_contrast, exposure_brightness)
@@ -383,3 +385,6 @@
 
 /atom/proc/extinguish_light(force = FALSE)
 	return
+
+#undef PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER
+#undef PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER
