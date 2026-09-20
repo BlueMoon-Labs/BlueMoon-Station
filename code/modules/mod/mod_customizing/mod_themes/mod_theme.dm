@@ -461,6 +461,7 @@
 	inbuilt_modules = list()
 	allowed = ALLOWED_ANTAG
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
+	compatible_with_armor_modules = FALSE
 	skins = list(
 		"infiltrator" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT,
 	)
@@ -474,6 +475,7 @@
 	hardlight_color = MOD_LUSTWISH_COLOR
 	can_activate_without_deploy_all_parts = FALSE
 	need_block_storage_when_not_active = TRUE
+	compatible_with_armor_modules = FALSE
 	skins = list(
 		"lustwish" = MOD_PRESET_WITHOUT_PRESSURE_PROTECT,
 	)
@@ -514,6 +516,7 @@
 	ui_theme = "enchanted"
 	inbuilt_modules = list()
 	allowed = ALLOWED_ANTAG
+	compatible_with_armor_modules = FALSE
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
 	hardlight_color = MOD_MAGE_FEDERATION_COLOR
 	skins = list(
