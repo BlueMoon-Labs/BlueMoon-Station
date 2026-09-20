@@ -187,9 +187,11 @@
 		(current_mode == SD_BLANK) || \
 		(current_mode != SD_PICTURE && message1 == "" && message2 == "") \
 	)
-		set_light(0)
+		if(light_range)
+			set_light(0)
 		return
-	set_light(1.4, 0.7, LIGHT_COLOR_BLUE) // blue light
+	if(light_range != 1.4 || light_power != 0.7 || light_color != LIGHT_COLOR_BLUE || (!light && light_on))
+		set_light(1.4, 0.7, LIGHT_COLOR_BLUE)
 
 /obj/machinery/status_display/update_overlays()
 	. = ..()

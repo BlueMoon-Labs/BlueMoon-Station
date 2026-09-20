@@ -193,6 +193,7 @@
 #include "player_report_regressions.dm"
 #include "process_memory.dm"
 #include "projectiles.dm"
+#include "qareen_chalk.dm"
 #include "weather.dm"
 #include "weather_datum_lifecycle.dm"
 // #include "rcd.dm"

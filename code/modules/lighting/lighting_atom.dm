@@ -312,6 +312,8 @@
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_FLAGS, .)
 
 /atom/proc/update_bloom()
+	if(!(glow_icon && glow_icon_state) && !(exposure_icon && exposure_icon_state) && !glow_overlay && !exposure_overlay)
+		return
 	cut_overlay(glow_overlay)
 	cut_overlay(exposure_overlay)
 	if(!light_range || !light_power || !light_on)

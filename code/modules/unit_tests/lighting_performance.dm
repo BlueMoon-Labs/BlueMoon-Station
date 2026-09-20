@@ -953,3 +953,20 @@
 // working correctly. The 8 remaining hard_del tests above already cover the code
 // path the fix targets (animate + qdel, ChangeTurf transfer, clear_overlay,
 // rebuild_overlay, mass batch, FORCEOP).
+
+/// Быстрый выход без bloom не мешает включить эффект позднее и убрать существующие оверлеи.
+/datum/unit_test/bloom_empty_configuration/Run()
+	var/obj/item/source = allocate(/obj/item)
+	source.light_range = 2
+	source.light_power = 1
+	source.light_on = TRUE
+	source.update_bloom()
+	TEST_ASSERT_NULL(source.glow_overlay, "Без состояния свечения оверлей не нужен")
+	TEST_ASSERT_NULL(source.exposure_overlay, "Без состояния засветки оверлей не нужен")
+	source.glow_icon_state = "tube"
+	source.update_bloom()
+	TEST_ASSERT_NOTNULL(source.glow_overlay, "Позднее включение свечения должно создать оверлей")
+	source.glow_icon_state = null
+	source.light_on = FALSE
+	source.update_bloom()
+	TEST_ASSERT_NULL(source.glow_overlay, "Удаление настроек не должно оставить старый оверлей")
