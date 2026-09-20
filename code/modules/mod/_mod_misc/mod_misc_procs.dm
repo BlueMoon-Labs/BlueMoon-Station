@@ -161,7 +161,7 @@
 		if(user)
 			balloon_alert(user, "[new_module] превышает вместимость [src]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return FALSE
+			return FALSE
 	return TRUE
 
 /obj/item/mod/control/proc/handle_attack_cell(obj/item/stock_parts/cell/new_cell, obj/item/stock_parts/cell/cell, mob/user)

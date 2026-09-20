@@ -497,7 +497,8 @@
 				armor_by_type_num += 1
 			if(!check_max_count_armor(armor_by_type_num, armor_module, user))
 				return
-	check_new_complexity(new_module, user)
+	if(!check_new_complexity(new_module, user))
+		return
 	handle_pre_install(new_module)
 	new_module.on_install()
 	if(wearer)
