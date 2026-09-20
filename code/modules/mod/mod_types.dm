@@ -19,7 +19,7 @@
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
-		/obj/item/mod/module/rad_protection,
+		// /obj/item/mod/module/rad_protection, 100 защиты от рады раундстарт - жирно
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/magboot,
 	)
@@ -29,7 +29,7 @@
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
-		/obj/item/mod/module/rad_protection,
+		// /obj/item/mod/module/rad_protection,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/t_ray,
 		/obj/item/mod/module/mister/atmos,
@@ -421,6 +421,7 @@
 
 /obj/item/mod/control/pre_equipped/ninja
 	theme = /datum/mod_theme/spider_clan
+	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
 		/obj/item/mod/module/dna_lock/antag,
 		/obj/item/mod/module/storage/extended/syndicate,
@@ -431,6 +432,7 @@
 
 /obj/item/mod/control/pre_equipped/mage
 	theme = /datum/mod_theme/mage
+	equip_cell = /obj/item/stock_parts/cell/vortex
 	initial_modules = list(
 		/obj/item/mod/module/dna_lock/antag,
 		/obj/item/mod/module/storage/extended/syndicate,
@@ -455,7 +457,6 @@
 	)
 
 /obj/item/mod/control/pre_equipped/cargo
-	equip_cell = /obj/item/stock_parts/cell/vortex
 	theme = /datum/mod_theme/cargo
 	initial_modules = list(
 		/obj/item/mod/module/clamp/loader,
