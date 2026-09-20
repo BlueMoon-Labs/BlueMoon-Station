@@ -81,7 +81,7 @@ GLOBAL_LIST_INIT(mod_themes, setup_mod_themes())
 #define MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG 25
 
 #define MOD_BUTTON_MALFUNCTION_CHANCE 75
-#define MOD_EMP_SHUTDOWN_CHANCE 5
+#define MOD_EMP_SHUTDOWN_CHANCE 0.5 //там используется DT_PROB, что делает даже 5 процентов - высоким шансом.
 
 #define MOD_ACTIVE      (1<<0)
 #define MOD_ACTIVATING  (1<<1)
