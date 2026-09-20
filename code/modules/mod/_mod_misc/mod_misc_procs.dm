@@ -195,3 +195,17 @@
 /obj/item/mod/control/proc/handle_change_access(obj/item/attacking_item, mob/user)
 	update_access(user, attacking_item)
 	return TRUE
+
+/mob/living/carbon/human/proc/is_wearing_mod()
+	for(var/slot in GLOB.possible_modsuit_slot)
+		if(istype(get_item_by_slot(slot), /obj/item/mod/control))
+			return get_item_by_slot(slot)
+
+/obj/item/mod/control/proc/do_charge_by_inducer(obj/item/inducer/charger, mob/user)
+	charger.recharge(src, user)
+
+/mob/living/carbon/human/attackby(obj/item/I, mob/user, params)
+	. = ..()
+	if(istype(I, /obj/item/inducer) && is_wearing_mod())
+		var/obj/item/mod/control/target_mod = is_wearing_mod()
+		target_mod.do_charge_by_inducer(I, user)

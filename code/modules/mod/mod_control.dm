@@ -1,3 +1,6 @@
+GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
+//увы в дефайны МОДов этот список не пихнуть, потому что дефайны слотов компилятся позже
+
 /obj/item/mod
 	name = "Base MOD"
 	desc = "Вы не должны это видеть, кричите на кодера!"
