@@ -8,7 +8,7 @@
 	var/locked
 	var/quality
 	// Minimum station alert for printing mutators, including advanced injectors. Null means unrestricted. Activators are unaffected.
-	var/mutator_security_level = NULL
+	var/mutator_security_level = null
 	var/get_chance = 100
 	var/lowest_value = 256 * 8
 	var/text_gain_indication = ""

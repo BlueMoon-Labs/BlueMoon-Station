@@ -234,6 +234,7 @@
 	name = "Insulated"
 	desc = "The affected person does not conduct electricity."
 	quality = POSITIVE
+	mutator_security_level = INSULATED_PRINT_CODE
 	text_gain_indication = "<span class='notice'>Your fingertips go numb.</span>"
 	text_lose_indication = "<span class='notice'>Your fingertips regain feeling.</span>"
 	difficulty = 16
