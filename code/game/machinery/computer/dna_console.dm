@@ -787,11 +787,13 @@
 			if(!HM)
 				return
 
+			var/is_activator = text2num(params["is_activator"])
+			if(!is_activator && !check_mutator_security_level(HM, usr))
+				return
+
 			// Create a new DNA Injector and add the appropriate mutations to it
 			var/obj/item/dnainjector/activator/I = new /obj/item/dnainjector/activator(loc)
 			I.add_mutations += new HM.type(copymut = HM)
-
-			var/is_activator = text2num(params["is_activator"])
 
 			// Activators are also called "research" injectors and are used to create
 			//  chromosomes by recycling at the DNA Console
@@ -1470,6 +1472,11 @@
 				return
 
 			var/list/injector = injector_selection[inj_name]
+			// Check every mutation before creating an item or starting the cooldown.
+			for(var/datum/mutation/human/HM in injector)
+				if(!check_mutator_security_level(HM, usr))
+					return
+
 			var/obj/item/dnainjector/activator/I = new /obj/item/dnainjector/activator(loc)
 
 			// Run through each mutation in our Advanced Injector and add them to a
@@ -1786,6 +1793,19 @@
 		else
 			tgui_genetic_makeup["[i]"] = null
 
+/obj/machinery/computer/scan_consolenew/proc/check_mutator_security_level(datum/mutation/human/mutation, mob/user)
+	if(mutation.can_print_mutator())
+		return TRUE
+	to_chat(user, span_warning("Для печати мутатора [mutation.name] необходим код [SECURITY_LEVEL_COLORED_UPPERTEXT(mutation.mutator_security_level)] или выше."))
+	return FALSE
+
+// Mutator UI data
+/obj/machinery/computer/scan_consolenew/proc/mutator_print_data(datum/mutation/human/mutation)
+	return list(
+		"CanPrintMutator" = mutation.can_print_mutator(),
+		"MutatorSecurityLevel" = isnull(mutation.mutator_security_level) ? null : capitalize(SECURITY_LEVEL_NAME_RU(mutation.mutator_security_level)),
+	)
+
 /**
   * Builds the genetic makeup list which will be sent to tgui interface.
 	*
@@ -1826,6 +1846,7 @@
 			//  the mutation has been discovered. Prevents people being able to cheese
 			//  or "hack" their way to figuring out what undiscovered mutations are
 			if(discovered)
+				mutation_data += mutator_print_data(HM)
 				mutation_data["Name"] = HM.name
 				mutation_data["Description"] = HM.desc
 				mutation_data["Instability"] = HM.instability * GET_MUTATION_STABILIZER(HM)
@@ -1844,6 +1865,7 @@
 				mut_class = A.class
 				mutation_data["CanChromo"] = A.can_chromosome
 				mutation_data["ByondRef"] = REF(A)
+				mutation_data += mutator_print_data(A)
 				mutation_data["Type"] = A.type
 				if(A.can_chromosome)
 					mutation_data["ValidChromos"] = jointext(A.valid_chrom_list, ", ")
@@ -1899,6 +1921,7 @@
 			mutation_data["Class"] = HM.class
 			mutation_data["CanChromo"] = HM.can_chromosome
 			mutation_data["ByondRef"] = REF(HM)
+			mutation_data += mutator_print_data(HM)
 			mutation_data["Type"] = HM.type
 
 			if(HM.can_chromosome)
@@ -1929,6 +1952,7 @@
 		mutation_data["Description"] = HM.desc
 		mutation_data["Instability"] = HM.instability * GET_MUTATION_STABILIZER(HM)
 		mutation_data["ByondRef"] = REF(HM)
+		mutation_data += mutator_print_data(HM)
 		mutation_data["Type"] = HM.type
 
 		mutation_data["CanChromo"] = HM.can_chromosome
@@ -1968,6 +1992,7 @@
 			mutation_data["Description"] = HM.desc
 			mutation_data["Instability"] = HM.instability * GET_MUTATION_STABILIZER(HM)
 			mutation_data["ByondRef"] = REF(HM)
+			mutation_data += mutator_print_data(HM)
 			mutation_data["Type"] = HM.type
 
 			mutation_data["CanChromo"] = HM.can_chromosome
@@ -1996,6 +2021,7 @@
 				mutation_data["Description"] = HM.desc
 				mutation_data["Instability"] = HM.instability * GET_MUTATION_STABILIZER(HM)
 				mutation_data["ByondRef"] = REF(HM)
+				mutation_data += mutator_print_data(HM)
 				mutation_data["Type"] = HM.type
 
 				if(HM.can_chromosome)

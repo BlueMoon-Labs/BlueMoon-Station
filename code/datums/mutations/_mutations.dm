@@ -7,6 +7,8 @@
 	var/desc = "A mutation."
 	var/locked
 	var/quality
+	// Minimum station alert for printing mutators, including advanced injectors. Null means unrestricted. Activators are unaffected.
+	var/mutator_security_level = NULL
 	var/get_chance = 100
 	var/lowest_value = 256 * 8
 	var/text_gain_indication = ""
@@ -52,6 +54,9 @@
 		timed = TRUE
 	if(copymut && istype(copymut, /datum/mutation/human))
 		copy_mutation(copymut)
+
+/datum/mutation/human/proc/can_print_mutator()
+	return isnull(mutator_security_level) || GLOB.security_level >= mutator_security_level
 
 /datum/mutation/human/proc/on_acquiring(mob/living/carbon/human/H)
 	if(!H || !istype(H) || H.stat == DEAD || (src in H.dna.mutations))
@@ -160,6 +165,7 @@
 	if(!HM)
 		return
 	chromosome_name = HM.chromosome_name
+	mutator_security_level = HM.mutator_security_level
 	stabilizer_coeff = HM.stabilizer_coeff
 	synchronizer_coeff = HM.synchronizer_coeff
 	power_coeff = HM.power_coeff
