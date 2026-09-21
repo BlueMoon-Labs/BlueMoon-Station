@@ -67,6 +67,8 @@
 		"mod_jetpack",
 		"mod_rad_protection",
 		"mod_emp_shield",
+		"mod_diamondgen",
+		"mod_urangen",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
 
@@ -122,6 +124,7 @@
 		"mod_plating_cosmohonk",
 		"mod_bikehorn",
 		"mod_microwave_beam",
+		"mod_bananagen",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
@@ -148,6 +151,7 @@
 		"mod_springlock_advanced",
 		"mod_emp_shield_advanced",
 		"mod_harness_system",
+		"mod_teslagen",
 		"adv_mod_jet",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
