@@ -38,13 +38,13 @@
 		new /datum/data/bounty_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Weaponry"),
 		new /datum/data/bounty_equipment("Supressor",               	/obj/item/suppressor,                                   			500, 	"Weaponry"),
 		new /datum/data/bounty_equipment("Amunitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
-		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									2000,	"Weaponry"),
+		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									7500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,							500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Throwing knife",				/obj/item/kitchen/knife/combat/marksman,							250,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare Tomahawk",				/obj/item/melee/tomahawk,											1000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320",					/obj/item/gun/ballistic/automatic/pistol/sigsauer,					1000,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare Laspistol",				/obj/item/gun/ballistic/automatic/laser/vanguard,					1000,	"Weaponry"),
-		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/shield/riot/pointman,										1500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/shield/riot/pointman,										4500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare lasbattery",			/obj/item/ammo_box/magazine/recharge/vanguard,						500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320 standart mag",		/obj/item/ammo_box/magazine/sig,									250,	"Weaponry"),
 
@@ -63,12 +63,12 @@
 		new /datum/data/bounty_equipment("Vanguard belt",					/obj/item/storage/belt/avangard_belt,							1500,	"Armor"),
 
 		// ============ MEDICAL ============
-		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								25,		"Medical"),
-		new /datum/data/bounty_equipment("Brute First-Aid Kit",				/obj/item/storage/firstaid/brute,								50,		"Medical"),
-		new /datum/data/bounty_equipment("Burn First-Aid Kit",				/obj/item/storage/firstaid/fire,								50,		"Medical"),
-		new /datum/data/bounty_equipment("Survival Medipen",				/obj/item/reagent_containers/hypospray/medipen/survival,		100,	"Medical"),
-		new /datum/data/bounty_equipment("CMS",								/obj/item/stack/medical/fracture_kit/cms,						150,	"Medical"),
-		new /datum/data/bounty_equipment("Surv12",							/obj/item/stack/medical/fracture_kit/surv12,					250,	"Medical"),
+		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),
+		new /datum/data/bounty_equipment("Brute First-Aid Kit",				/obj/item/storage/firstaid/brute,								150,	"Medical"),
+		new /datum/data/bounty_equipment("Burn First-Aid Kit",				/obj/item/storage/firstaid/fire,								150,	"Medical"),
+		new /datum/data/bounty_equipment("Survival Medipen",				/obj/item/reagent_containers/hypospray/medipen/survival,		500,	"Medical"),
+		new /datum/data/bounty_equipment("CMS",								/obj/item/stack/medical/fracture_kit/cms,						750,	"Medical"),
+		new /datum/data/bounty_equipment("Surv12",							/obj/item/stack/medical/fracture_kit/surv12,					1500,	"Medical"),
 
 		// ============ TOOLS ============
 		new /datum/data/bounty_equipment("Lazarus injector",				/obj/item/lazarus_injector,										500,	"Tools"),
@@ -90,7 +90,7 @@
 		new /datum/data/bounty_equipment("High quality Soap",				/obj/item/soap/syndie,											150,	"Recreational"),
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
 		new /datum/data/bounty_equipment("ИРП-4",							/obj/item/storage/mre,											500,	"Recreational"),
-		new /datum/data/bounty_equipment("ИРП-6 Веган",						/obj/item/storage/mre/vegan,									500,	"Recreational"),
+		new /datum/data/bounty_equipment("ИРП-6 Вегатарианский",			/obj/item/storage/mre/vegan,									500,	"Recreational"),
 		new /datum/data/bounty_equipment("ИРП-47 Белковый",					/obj/item/storage/mre/protein,									500,	"Recreational"),
 
 		// ============ MOD DESIGNS ============

@@ -117,11 +117,13 @@
 	throwforce = 5
 	throw_speed = 1
 	throw_range = 1
-	block_chance = 40
+	block_chance = 30
 	w_class = WEIGHT_CLASS_BULKY
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
 	repair_material = /obj/item/stack/sheet/plasteel
+	max_integrity = 300
+	melee_block = 35
 
 /obj/item/shield/riot/pointman/shatter(mob/living/carbon/human/owner)
 	playsound(owner, 'sound/effects/glassbr3.ogg', 100)
