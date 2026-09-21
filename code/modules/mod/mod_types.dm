@@ -378,6 +378,7 @@
 		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/directional_shield,
 	)
 
 /obj/item/modsuit_modkit/souless
