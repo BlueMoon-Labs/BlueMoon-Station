@@ -91,8 +91,7 @@ export class OrbitalMapComponent extends Component {
               {...dragProps}
               value={yOffset}
               dragMatrix={[0, -1]}
-              onDrag={(e, value) => this.handleDrag(e, xOffset, value)}
-              onClick={(e, value) => this.handleClick(e, xOffset, value)}>
+              onDrag={(e, value) => this.handleDrag(e, xOffset, value)}>
               {controlY => {
                 this.yControl = controlY;
                 return children({

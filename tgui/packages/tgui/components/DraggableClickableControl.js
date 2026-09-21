@@ -9,6 +9,29 @@ import { Component, createRef } from 'react';
 
 const DEFAULT_UPDATE_RATE = 400;
 
+// Shared drag session bookkeeping so that pointer events over the document
+// body are only locked while at least one control is actively dragging, even
+// when several instances start and end their sessions at the same time.
+let dragSessionCount = 0;
+let originalPointerEvents = '';
+
+const beginDragPointerLock = () => {
+  if (dragSessionCount === 0) {
+    originalPointerEvents = document.body.style.pointerEvents;
+    document.body.style.pointerEvents = 'none';
+  }
+  dragSessionCount += 1;
+};
+
+const endDragPointerLock = () => {
+  if (dragSessionCount > 0) {
+    dragSessionCount -= 1;
+  }
+  if (dragSessionCount === 0) {
+    document.body.style.pointerEvents = originalPointerEvents;
+  }
+};
+
 /**
  * Reduces screen offset to a single number based on the matrix provided.
  */
@@ -23,6 +46,7 @@ export class DraggableClickableControl extends Component {
   constructor(props) {
     super(props);
     this.inputRef = createRef();
+    this.disposed = true;
     this.state = {
       value: props.value,
       dragging: false,
@@ -30,12 +54,18 @@ export class DraggableClickableControl extends Component {
       origin: null,
     };
 
+    this.handleWindowBlur = () => {
+      this.disposeSession();
+    };
+    window.addEventListener('blur', this.handleWindowBlur);
+
     this.handleDragStart = e => {
       const {
         value,
         dragMatrix,
       } = this.props;
-      document.body.style['pointer-events'] = 'none';
+      this.disposed = false;
+      beginDragPointerLock();
       this.setState({
         dragging: false,
         origin: getScalarScreenOffset(e, dragMatrix),
@@ -66,6 +96,12 @@ export class DraggableClickableControl extends Component {
         stepPixelSize,
         dragMatrix,
       } = this.props;
+      // Guard against non-finite or non-positive pixel size (e.g. a zoom
+      // scale that collapsed to 0 or Infinity) before dividing.
+      const safeStepPixelSize = Number.isFinite(stepPixelSize)
+        && stepPixelSize > 0
+        ? stepPixelSize
+        : 1;
       this.setState(prevState => {
         const state = { ...prevState };
         const offset = getScalarScreenOffset(e, dragMatrix) - state.origin;
@@ -77,7 +113,7 @@ export class DraggableClickableControl extends Component {
           // Give it some headroom (by increasing clamp range by 1 step)
           state.internalValue = clamp(
             state.internalValue
-              + offset * step / stepPixelSize,
+              + offset * step / safeStepPixelSize,
             minValue - step,
             maxValue + step);
           // Clamp the final value
@@ -97,6 +133,9 @@ export class DraggableClickableControl extends Component {
     };
 
     this.handleDragEnd = e => {
+      if (this.disposed) {
+        return;
+      }
       const {
         onChange,
         onDrag,
@@ -106,15 +145,7 @@ export class DraggableClickableControl extends Component {
         dragging,
         value,
       } = this.state;
-      document.body.style['pointer-events'] = 'auto';
-      clearTimeout(this.timer);
-      clearInterval(this.dragInterval);
-      document.removeEventListener('mousemove', this.handleDragMove);
-      document.removeEventListener('mouseup', this.handleDragEnd);
-      this.setState({
-        dragging: false,
-        origin: null,
-      });
+      this.disposeSession();
       if (dragging) {
         if (onChange) {
           onChange(e, value);
@@ -127,6 +158,31 @@ export class DraggableClickableControl extends Component {
         onClick(e, value);
       }
     };
+
+    // Idempotent drag session teardown, shared by mouseup, window blur and
+    // unmount so no listeners or timers survive a cancelled/interrupted drag.
+    this.disposeSession = () => {
+      if (this.disposed) {
+        return;
+      }
+      this.disposed = true;
+      endDragPointerLock();
+      clearTimeout(this.timer);
+      clearInterval(this.dragInterval);
+      this.timer = null;
+      this.dragInterval = null;
+      document.removeEventListener('mousemove', this.handleDragMove);
+      document.removeEventListener('mouseup', this.handleDragEnd);
+      this.setState({
+        dragging: false,
+        origin: null,
+      });
+    };
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('blur', this.handleWindowBlur);
+    this.disposeSession();
   }
 
   render() {
