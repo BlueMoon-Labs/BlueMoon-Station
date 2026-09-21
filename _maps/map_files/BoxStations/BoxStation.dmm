@@ -48272,7 +48272,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
-/obj/structure/closet/crate/freezer/surplus_limbs,
+/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/white/textured,
 /area/medical/medbay/central)
 "ibr" = (

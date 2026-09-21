@@ -29009,12 +29009,10 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 4
 	},
-/obj/structure/closet/secure_closet/medical1{
-	pixel_x = -3
-	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
+/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/white,
 /area/medical/cryo)
 "cnw" = (
@@ -31640,9 +31638,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-4"
 	},
-/obj/structure/table,
-/obj/machinery/reagentgrinder,
-/obj/item/stack/sheet/mineral/plasma,
+/obj/structure/closet/secure_closet/medical1{
+	pixel_x = -3
+	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "ctu" = (
@@ -53783,7 +53781,6 @@
 /area/command/teleporter)
 "gwW" = (
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted,
-/obj/machinery/medipen_refiller,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "gwZ" = (
@@ -91484,6 +91481,15 @@
 	},
 /turf/open/floor/plating,
 /area/cargo/qm)
+"xwy" = (
+/obj/effect/turf_decal/tile/yellow/half/contrasted{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/machinery/reagentgrinder,
+/obj/item/stack/sheet/mineral/plasma,
+/turf/open/floor/plasteel/white,
+/area/medical/medbay/factory)
 "xwN" = (
 /obj/structure/rack,
 /obj/item/electronics/apc,
@@ -114766,7 +114772,7 @@ coI
 cqd
 crs
 cxT
-duH
+ctr
 oIi
 lBh
 css
@@ -115023,7 +115029,7 @@ coJ
 cqe
 crt
 cxT
-ctr
+cts
 nIV
 cpZ
 mMV
@@ -115280,7 +115286,7 @@ coK
 cqf
 cru
 cxT
-cts
+xwy
 nIV
 lNA
 cwp
