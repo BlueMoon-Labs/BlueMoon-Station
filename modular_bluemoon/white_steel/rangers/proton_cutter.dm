@@ -175,7 +175,7 @@
 	item_state = "avangard"
 	mob_overlay_icon = 'modular_bluemoon/white/Feline/icons/rangers_belt_back.dmi'
 	content_overlays = FALSE
-	w_class = WEIGHT_CLASS_BULKY
+	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/belt/avangard_belt/update_icon_state()
 	if(locate(/obj/item/melee/sabre/proton_cutter) in contents)
@@ -205,7 +205,7 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 7
-	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.max_w_class = WEIGHT_CLASS_BULKY
 	STR.silent = TRUE
 	STR.can_hold = typecacheof(list(
 		/obj/item/melee/sabre/proton_cutter,
