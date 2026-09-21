@@ -252,6 +252,7 @@
 	obj_flags |= EMAGGED
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	to_chat(usr, span_warning("Вы снимаете ограничение на печать мутаторов."))
+	return TRUE
 
 /obj/machinery/computer/scan_consolenew/ui_interact(mob/user, datum/tgui/ui)
 	// Most of ui_interact is spent setting variables for passing to the tgui

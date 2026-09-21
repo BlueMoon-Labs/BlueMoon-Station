@@ -108,6 +108,7 @@
 	sec_level_needed = null
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	to_chat(usr, span_warning("Вы снимаете ограничение на использование по коду тревоги."))
+	return TRUE
 
 /obj/item/dnainjector/antihulk
 	name = "\improper DNA injector (Anti-Hulk)"

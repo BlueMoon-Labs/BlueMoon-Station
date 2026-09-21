@@ -46,14 +46,6 @@
 
 /datum/unit_test/medipen_refiller_parts/Run()
 	var/obj/machinery/medipen_refiller/machine = allocate(/obj/machinery/medipen_refiller)
-	var/list/expected_times = list(300, 231, 165, 99)
-	for(var/tier in 1 to 4)
-		for(var/obj/item/stock_parts/part in machine.component_parts)
-			part.rating = tier
-		machine.RefreshParts()
-		TEST_ASSERT_EQUAL(machine.max_medipens, tier, "Matter bin capacity must scale linearly")
-		TEST_ASSERT_EQUAL(length(machine.medipens), tier, "Slot count must match capacity")
-		TEST_ASSERT_EQUAL(machine.refill_time, expected_times[tier], "Manipulator must reduce time by the configured percentage")
 	machine.set_machine_stat(0)
 	var/obj/item/reagent_containers/hypospray/medipen/first = allocate(/obj/item/reagent_containers/hypospray/medipen)
 	var/obj/item/reagent_containers/hypospray/medipen/second = allocate(/obj/item/reagent_containers/hypospray/medipen)

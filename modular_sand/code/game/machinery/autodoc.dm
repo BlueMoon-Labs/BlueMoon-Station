@@ -246,6 +246,7 @@
 	obj_flags |= EMAGGED
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	to_chat(usr, span_warning("Вы активируете режим РАСЧЛЕНЕНИЕ на [src]."))
+	return TRUE
 
 /obj/machinery/autodoc/relaymove(mob/living/user)
 	container_resist(user)

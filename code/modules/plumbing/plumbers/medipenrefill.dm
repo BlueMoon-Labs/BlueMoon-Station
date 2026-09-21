@@ -41,6 +41,7 @@
 
 /obj/machinery/medipen_refiller/Destroy()
 	eject_all()
+	QDEL_NULL(soundloop)
 	return ..()
 
 /obj/machinery/medipen_refiller/RefreshParts()
