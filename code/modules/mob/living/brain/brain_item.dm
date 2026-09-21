@@ -39,7 +39,12 @@
 
 	name = "brain"
 
-	if(C.mind && C.mind.has_antag_datum(/datum/antagonist/changeling) && !no_id_transfer)	//congrats, you're trapped in a body you don't control
+	var/is_changeling = C.mind?.has_antag_datum(/datum/antagonist/changeling)
+	if(is_changeling)
+		organ_flags &= ~ORGAN_VITAL
+		decoy_override = TRUE
+
+	if(is_changeling && !no_id_transfer)	//congrats, you're trapped in a body you don't control
 		if(brainmob && !(C.stat == DEAD || (HAS_TRAIT(C, TRAIT_DEATHCOMA))))
 			to_chat(brainmob, "<span class = danger>You can't feel your body! You're still just a brain!</span>")
 		forceMove(C)
