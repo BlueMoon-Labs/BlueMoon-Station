@@ -6,7 +6,7 @@ export const MedipenRefiller = () => {
   const { act, data } = useBackend();
   const { slots, enabled, operational, refillTime, speedUp } = data;
   return (
-    <Window width={460} height={560} resizable>
+    <Window width={480} height={560} resizable>
       <Window.Content scrollable>
         <Section title="Заправщик медипенов" buttons={(
           <Button
@@ -31,7 +31,7 @@ export const MedipenRefiller = () => {
           <NoticeBox>Машина выключена или не готова к работе.</NoticeBox>
         )}
         {slots.map(slot => (
-          <Section key={slot.id} buttons={(
+          <Section key={slot.id} title={slot.name ? slot.name : ("Пустой слот")} buttons={(
             slot.name ? (
               <>
                 <Button
@@ -52,10 +52,9 @@ export const MedipenRefiller = () => {
           )}>
             {slot.name ? (
               <>
-                <Box mb={1}>{slot.name}</Box>
                 <ProgressBar value={slot.filling ? slot.progress : (slot.filled ? 1 : 0)} color="blue">
                   {slot.filling
-                    ? `Заправка: ${Math.floor(slot.progress * 100)}% — осталось ${slot.remaining} с`
+                    ? `Создание реагентов: ${Math.floor(slot.progress * 100)}%` //`Создание реагентов: ${Math.floor(slot.progress * 100)}% — осталось ${slot.remaining} с`
                     : (slot.filled ? 'Медипен содержит реагенты' : 'Готов к заправке')}
                 </ProgressBar>
               </>

@@ -1,3 +1,6 @@
+#define PERCENT_FASTER_FROM_MANIPULATOR 20
+#define BIN_ADD_SLOTS_COUNT 1
+
 /obj/machinery/medipen_refiller
 	name = "Medipen Refiller"
 	desc = "A machine that refills used medipens with chemicals."
@@ -6,7 +9,7 @@
 	density = TRUE
 	circuit = /obj/item/circuitboard/machine/medipen_refiller
 	idle_power_usage = 100
-	active_power_usage = 300
+	active_power_usage = 800
 	use_power = IDLE_POWER_USE
 	// Exact types: allowing a base medipen must not also allow its restricted subtypes.
 	var/list/allowed = list(
@@ -22,7 +25,7 @@
 		/obj/item/reagent_containers/hypospray/medipen/salbutamol,
 		/obj/item/reagent_containers/hypospray/medipen/ferrocortex,
 	)
-	var/max_medipens = 1
+	var/max_medipens = 2
 	var/refill_time = 30 SECONDS
 	var/speed_up_percent = 0
 	var/enabled = TRUE
@@ -30,25 +33,26 @@
 	var/list/medipens = list(null)
 	// Medipen => timer ID, start time and duration. Reagents only change on completion.
 	var/list/refill_jobs = list()
+	var/datum/looping_sound/machine_work/soundloop // Working sound
 
 /obj/machinery/medipen_refiller/Initialize(mapload)
 	. = ..()
 	update_icon()
+	soundloop = new(src, !!length(refill_jobs))
 
 /obj/machinery/medipen_refiller/Destroy()
 	eject_all()
 	return ..()
 
 /obj/machinery/medipen_refiller/RefreshParts()
-	cancel_all_refills()
 	var/bin_rating = 0
 	var/manipulator_rating = 0
 	for(var/obj/item/stock_parts/matter_bin/bin in component_parts)
 		bin_rating += bin.rating
 	for(var/obj/item/stock_parts/manipulator/manipulator in component_parts)
 		manipulator_rating += manipulator.rating
-	max_medipens = initial(max_medipens) * max(bin_rating, 1)
-	speed_up_percent = clamp(ceil((manipulator_rating - 1) * 22.2), 0, 90)
+	max_medipens = initial(max_medipens) + BIN_ADD_SLOTS_COUNT * round_down(bin_rating) - 1
+	speed_up_percent = clamp(ceil((manipulator_rating - 1) * PERCENT_FASTER_FROM_MANIPULATOR), 0, 95)
 	refill_time = max(round(initial(refill_time) * (1 - speed_up_percent / 100), 1), 1 SECONDS)
 	for(var/slot in max_medipens + 1 to length(medipens))
 		eject_medipen(slot)
@@ -56,8 +60,10 @@
 
 /obj/machinery/medipen_refiller/examine(mob/user)
 	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("Количество слотов: [max_medipens]. Время заправки: [DisplayTimeText(refill_time)] (сокращение на [speed_up_percent]%).")
+	. += span_notice("Количество слотов: [max_medipens]. Время заправки: [DisplayTimeText(refill_time)].")
+	if(speed_up_percent)
+		. += span_notice("- Машина работает на [span_nicegreen("[speed_up_percent]%")] быстрее.")
+	. += span_info("Alt-click для извлечения медипена.")
 
 /obj/machinery/medipen_refiller/is_operational()
 	return ..() && anchored && !panel_open && enabled
@@ -79,10 +85,18 @@
 /obj/machinery/medipen_refiller/update_overlays()
 	. = ..()
 	if(length(refill_jobs))
-		. += "active"
+		. += "active_3"
 
 /obj/machinery/medipen_refiller/proc/update_refilling()
-	use_power = length(refill_jobs) ? ACTIVE_POWER_USE : (enabled ? IDLE_POWER_USE : NO_POWER_USE)
+	var/refil_count = length(refill_jobs)
+	active_power_usage = initial(active_power_usage)
+	if(refil_count)
+		soundloop.start()
+		active_power_usage *= refil_count
+		use_power = ACTIVE_POWER_USE
+	else
+		soundloop.stop()
+		use_power = enabled ? IDLE_POWER_USE : NO_POWER_USE
 	machine_wake()
 	update_icon()
 
@@ -156,6 +170,7 @@
 	pen.forceMove(drop_location())
 	if(user && Adjacent(user) && user.can_hold_items())
 		user.put_in_hands(pen)
+	playsound(src, 'sound/machines/eject.ogg', 50, TRUE)
 
 /obj/machinery/medipen_refiller/proc/eject_all()
 	cancel_all_refills()
@@ -238,11 +253,11 @@
 		var/list/job = pen ? refill_jobs[pen] : null
 		slots += list(list(
 			"id" = slot,
-			"name" = pen?.name,
+			"name" = pen ? capitalize(name) : null,
 			"filling" = !!job,
 			"filled" = pen?.reagents?.total_volume > 0,
 			"progress" = job ? clamp((world.time - job["start"]) / job["duration"], 0, 1) : 0,
-			"remaining" = job ? max(ceil((job["start"] + job["duration"] - world.time) / 10), 0) : 0,
+			//*"remaining" = job ? max(ceil((job["start"] + job["duration"] - world.time) / 10), 0) : 0,
 		))
 	return list("slots" = slots, "enabled" = enabled, "operational" = is_operational(), "refillTime" = refill_time / 10, "speedUp" = speed_up_percent)
 
@@ -272,3 +287,6 @@
 		else
 			return
 	return TRUE
+
+#undef PERCENT_FASTER_FROM_MANIPULATOR
+#undef BIN_ADD_SLOTS_COUNT
