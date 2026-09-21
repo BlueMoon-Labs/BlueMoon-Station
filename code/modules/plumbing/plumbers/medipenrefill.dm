@@ -168,9 +168,11 @@
 	cancel_refill(pen)
 	medipens[slot] = null
 	pen.forceMove(drop_location())
-	if(user && Adjacent(user) && user.can_hold_items())
-		user.put_in_hands(pen)
-	playsound(src, 'sound/machines/eject.ogg', 50, TRUE)
+	if(user)
+		playsound(src, 'sound/machines/eject.ogg', 50, TRUE)
+		if(Adjacent(user) && user.can_hold_items())
+			if(!user.put_in_hands(pen))
+				pen.randomize_pixel_position()
 
 /obj/machinery/medipen_refiller/proc/eject_all()
 	cancel_all_refills()
