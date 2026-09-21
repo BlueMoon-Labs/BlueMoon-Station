@@ -117,13 +117,25 @@
 	. = ..()
 	if(.)
 		return
+	var/turf/user_turf = get_turf(user)
+	if(!user_turf)
+		return
 	var/explosives_trigged = 0
+	var/station_blocked = FALSE
 	for(var/obj/item/grenade/exploration/exploration in linked_explosives)
 		if(QDELETED(exploration) || QDELETED(exploration.target))
+			continue
+		var/turf/target_turf = get_turf(exploration.target)
+		if(isnull(target_turf) || target_turf.z != user_turf.z)
+			continue
+		if(is_station_level(target_turf.z) && !(obj_flags & EMAGGED))
+			station_blocked = TRUE
 			continue
 		if(get_dist(exploration.target, user) <= range)
 			addtimer(CALLBACK(exploration, TYPE_PROC_REF(/obj/item/grenade/exploration, prime), user), 10)
 			explosives_trigged ++
+	if(station_blocked)
+		to_chat(user, span_warning("Файрволл станции блокирует подрыв зарядов, установленных на станции."))
 	to_chat(user, span_notice("[explosives_trigged] зарядов было активировано."))
 
 /obj/item/exploration_detonator/emag_act(mob/user)

@@ -163,6 +163,9 @@
 			force = 30
 		..(M, user, attackchain_flags, damage_multiplier)
 		return
+//	Неспециализированные цели (например, личинки): базовый урон
+	force = initial(force)
+	..(M, user, attackchain_flags, damage_multiplier)
 
 /obj/item/storage/belt/avangard_belt
 	name = "пояс Авангарда"
