@@ -344,7 +344,9 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	to_chat(wearer, span_notice("Обнаружен [severity > 1 ? "слабый" : "сильный"] электромагнитный импульс!"))
 	if(!is_active() || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
-
+	//Так как модули находятся в null спейсе, emp_act до них не доходит. Приходится вручную перебирать
+	for(var/obj/item/mod/module/emp_target as anything in modules)
+		emp_target.emp_act(severity)
 	ENABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
 	addtimer(CALLBACK(src, PROC_REF(disable_emp_status)), 5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 	selected_module = null
