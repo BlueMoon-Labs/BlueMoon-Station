@@ -10,12 +10,12 @@
 	required_reagents = list(/datum/reagent/metalgen = 1, /datum/reagent/liquid_dark_matter = 1)
 	results = list(/datum/reagent/metalgen = 1)
 
-/datum/chemical_reaction/holywater
+/* /datum/chemical_reaction/holywater
 	name = "Holy Water"
 	id = /datum/reagent/water/holywater
 	results = list(/datum/reagent/water/holywater = 1)
 	required_reagents = list(/datum/reagent/water/hollowwater = 1)
-	required_catalysts = list(/datum/reagent/water/holywater = 1)
+	required_catalysts = list(/datum/reagent/water/holywater = 1) */
 
 /datum/chemical_reaction/metalgen_imprint/on_reaction(datum/reagents/holder, created_volume)
 	var/datum/reagent/metalgen/MM = holder.get_reagent(/datum/reagent/metalgen)
