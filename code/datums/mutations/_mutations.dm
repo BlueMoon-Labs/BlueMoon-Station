@@ -7,8 +7,6 @@
 	var/desc = "A mutation."
 	var/locked
 	var/quality
-	// Minimum station alert for printing mutators, including advanced injectors. Null means unrestricted. Activators are unaffected.
-	var/mutator_security_level = null
 	var/get_chance = 100
 	var/lowest_value = 256 * 8
 	var/text_gain_indication = ""
@@ -45,6 +43,9 @@
 	var/power_coeff = -1 //boosts mutation strength
 	var/energy_coeff = -1 //lowers mutation cooldown
 	var/list/valid_chrom_list = list() //List of strings of valid chromosomes this mutation can accept.
+
+	// Minimum station alert for printing mutators, including advanced injectors. Null means unrestricted. Activators are unaffected.
+	var/mutator_security_level = null
 
 /datum/mutation/human/New(class_ = MUT_OTHER, timer, datum/mutation/human/copymut)
 	. = ..()

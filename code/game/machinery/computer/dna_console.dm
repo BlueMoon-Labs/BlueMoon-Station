@@ -34,6 +34,8 @@
 /// Flag for the mutation ref search system. Search will include advanced injector mutations
 #define SEARCH_ADV_INJ 8
 
+#define DNA_CONSOLE_ERROR_COOLDOWN 3 SECONDS
+
 /obj/machinery/computer/scan_consolenew
 	name = "DNA Console"
 	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
@@ -242,6 +244,14 @@
 	SIGNAL_HANDLER
 
 	stored_research = new_web
+
+/obj/machinery/computer/scan_consolenew/emag_act()
+	. = ..()
+	if(obj_flags & EMAGGED)
+		return
+	obj_flags |= EMAGGED
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	to_chat(usr, span_warning("Вы снимаете ограничение на печать мутаторов."))
 
 /obj/machinery/computer/scan_consolenew/ui_interact(mob/user, datum/tgui/ui)
 	// Most of ui_interact is spent setting variables for passing to the tgui
@@ -809,6 +819,8 @@
 					injectorready = world.time + INJECTOR_TIMEOUT
 			else
 				I.name = "[HM.name] mutator"
+				if(!(obj_flags & EMAGGED))
+					I.sec_level_needed = HM.mutator_security_level
 				I.doitanyway = TRUE
 				// If there's an operational connected scanner, we can use its upgrades
 				//  to improve our injector's radiation generation
@@ -1481,9 +1493,12 @@
 
 			// Run through each mutation in our Advanced Injector and add them to a
 			//  new injector
-			for(var/A in injector)
-				var/datum/mutation/human/HM = A
+			var/hacked = obj_flags & EMAGGED
+			for(var/datum/mutation/human/HM in injector)
 				I.add_mutations += new HM.type(copymut=HM)
+				// add sec. level
+				if(!hacked && (!isnull(HM.mutator_security_level) && (isnull(I.sec_level_needed) || I.sec_level_needed < HM.mutator_security_level)))
+					I.sec_level_needed = HM.mutator_security_level
 
 			// Force apply any mutations, this is functionality similar to mutators
 			I.doitanyway = TRUE
@@ -1794,16 +1809,20 @@
 			tgui_genetic_makeup["[i]"] = null
 
 /obj/machinery/computer/scan_consolenew/proc/check_mutator_security_level(datum/mutation/human/mutation, mob/user)
-	if(mutation.can_print_mutator())
+	if((obj_flags & EMAGGED) || mutation.can_print_mutator())
 		return TRUE
-	to_chat(user, span_warning("Для печати мутатора [mutation.name] необходим код [SECURITY_LEVEL_COLORED_UPPERTEXT(mutation.mutator_security_level)] или выше."))
+	if(COOLDOWN_FINISHED(src, error_message_cooldown))
+		COOLDOWN_START(src, error_message_cooldown, DNA_CONSOLE_ERROR_COOLDOWN)
+		playsound(src, 'sound/machines/buzz-two.ogg', 50, FALSE)
+		say("Недостаточный уровень тревоги для печати.")
 	return FALSE
 
 // Mutator UI data
 /obj/machinery/computer/scan_consolenew/proc/mutator_print_data(datum/mutation/human/mutation)
+	var/hacked = obj_flags & EMAGGED
 	return list(
-		"CanPrintMutator" = mutation.can_print_mutator(),
-		"MutatorSecurityLevel" = isnull(mutation.mutator_security_level) ? null : capitalize(SECURITY_LEVEL_NAME_RU(mutation.mutator_security_level)),
+		"CanPrintMutator" = hacked || mutation.can_print_mutator(),
+		"MutatorSecurityLevel" = hacked ? "ER$&@R" : (isnull(mutation.mutator_security_level) ? null : capitalize(SECURITY_LEVEL_NAME_RU(mutation.mutator_security_level))),
 	)
 
 /**
@@ -2243,3 +2262,4 @@
 #undef SEARCH_DISKETTE
 #undef SEARCH_ADV_INJ
 
+#undef DNA_CONSOLE_ERROR_COOLDOWN
