@@ -1,4 +1,11 @@
-import { CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  CSSProperties,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Icon } from '../components';
@@ -763,38 +770,140 @@ const CreatePage = () => {
   );
 };
 
+const plural = (count: number, one: string, few: string, many: string) => {
+  const tail = count % 100;
+  if (tail > 10 && tail < 20) {
+    return many;
+  }
+  switch (count % 10) {
+    case 1:
+      return one;
+    case 2:
+    case 3:
+    case 4:
+      return few;
+    default:
+      return many;
+  }
+};
+
+const highlight = (snippet: string, query: string, t: Palette) => {
+  const stems = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 1)
+    .map((word) =>
+      word.length > 6
+        ? word.slice(0, -2)
+        : word.length > 4
+          ? word.slice(0, -1)
+          : word,
+    );
+  const lowered = snippet.toLowerCase();
+  const marks = new Array(snippet.length).fill(false);
+  for (const stem of stems) {
+    let at = lowered.indexOf(stem);
+    while (at >= 0) {
+      marks.fill(true, at, at + stem.length);
+      at = lowered.indexOf(stem, at + stem.length);
+    }
+  }
+  const parts: ReactNode[] = [];
+  let start = 0;
+  for (let index = 1; index <= snippet.length; index++) {
+    if (index === snippet.length || marks[index] !== marks[start]) {
+      const text = snippet.slice(start, index);
+      parts.push(
+        marks[start] ? (
+          <b key={start} style={{ color: t.text }}>
+            {text}
+          </b>
+        ) : (
+          <Box as="span" key={start}>
+            {text}
+          </Box>
+        ),
+      );
+      start = index;
+    }
+  }
+  return parts;
+};
+
 const SearchPage = () => {
   const { act, data } = useBackend<Data>();
-  const { search } = data;
+  const { catalog, search } = data;
   const t = palette(data);
-  return (
-    <Box style={{ padding: '24px' }}>
-      <Box mb={2} style={{ color: t.muted }}>
-        Результаты по запросу «{search.query}»
+  const query = search.query || '';
+  if (search.pending) {
+    return (
+      <Box style={{ padding: '40px', textAlign: 'center', color: t.muted }}>
+        <Icon name="spinner" spin mr={1} />
+        Ищем «{query}» в NTnet…
       </Box>
-      {(search.results.length &&
-        search.results.map((entry) => (
-          <Box
-            key={entry.site_id + '/' + entry.slug}
-            onClick={() =>
-              act('open', { site_id: entry.site_id, slug: entry.slug })
-            }
-            style={{
-              padding: '12px 14px',
-              marginBottom: '8px',
-              borderRadius: '10px',
-              background: t.surface,
-              cursor: 'pointer',
-            }}
-          >
-            <Box style={{ color: t.accent, fontWeight: 'bold' }}>
-              {entry.title}
+    );
+  }
+  return (
+    <Box style={{ padding: '18px 24px 40px', maxWidth: '760px' }}>
+      <Box style={{ color: t.muted, fontSize: '0.8rem' }}>
+        {search.results.length
+          ? `Найдено ${search.results.length} ${plural(search.results.length, 'страница', 'страницы', 'страниц')} по запросу «${query}»`
+          : `По запросу «${query}» ничего не найдено`}
+      </Box>
+      {search.results.map((entry) => {
+        const site = catalog.find((known) => known.id === entry.site_id);
+        if (!site) {
+          return null;
+        }
+        const first = site.pages[0].slug === entry.slug;
+        return (
+          <Box key={entry.site_id + '/' + entry.slug} mt={2.5}>
+            <Box
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: t.muted,
+                fontSize: '0.8rem',
+              }}
+            >
+              <Avatar site={site} size="16px" t={t} />
+              {site.domain}
+              {first ? null : ` › ${entry.title}`}
             </Box>
-            <Box style={{ color: t.muted, fontSize: '0.85rem' }}>
-              {entry.snippet}
+            <Box
+              onClick={() =>
+                act('open', { site_id: entry.site_id, slug: entry.slug })
+              }
+              style={{
+                marginTop: '2px',
+                color: t.accent,
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              {first ? site.title : entry.title}
+            </Box>
+            <Box mt={0.5} style={{ color: t.muted, lineHeight: '1.5' }}>
+              {highlight(entry.snippet, query, t)}
             </Box>
           </Box>
-        ))) || <Box style={{ color: t.muted }}>Ничего не нашлось.</Box>}
+        );
+      })}
+      {search.results.length ? null : (
+        <Box mt={2} style={{ color: t.muted, lineHeight: '1.6' }}>
+          Попробуйте другие слова или откройте{' '}
+          <Box
+            as="span"
+            onClick={() => act('view', { name: 'catalog' })}
+            style={{ color: t.accent, cursor: 'pointer' }}
+          >
+            список сайтов
+          </Box>
+          .
+        </Box>
+      )}
     </Box>
   );
 };

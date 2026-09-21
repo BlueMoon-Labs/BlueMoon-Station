@@ -20,8 +20,8 @@
 
 SUBSYSTEM_DEF(ntnet)
 	name = "NTnet"
-	wait = 2 SECONDS
-	flags = SS_NO_INIT | SS_BACKGROUND
+	wait = 1
+	flags = SS_NO_INIT | SS_BACKGROUND | SS_TICKER
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 
 	var/list/sites = list()
@@ -65,7 +65,7 @@ SUBSYSTEM_DEF(ntnet)
 		var/datum/callback/answer = requests[job]
 		requests -= job
 		deadlines -= job
-		answer.Invoke(decode_response(result))
+		answer.InvokeAsync(decode_response(result))
 
 /datum/controller/subsystem/ntnet/proc/decode_response(result)
 	if(!istext(result) || result == RUSTG_JOB_NO_RESULTS_YET || result == RUSTG_JOB_NO_SUCH_JOB || result == RUSTG_JOB_ERROR)
@@ -87,7 +87,7 @@ SUBSYSTEM_DEF(ntnet)
 	return "[CONFIG_GET(string/ntnet_api_url)]/api/v1/[path]"
 
 /datum/controller/subsystem/ntnet/proc/refresh_index()
-	if(!is_enabled() || index_pending || world.time < next_refresh)
+	if(world.time < next_refresh || index_pending || !is_enabled())
 		return
 	if(!request(RUSTG_HTTP_METHOD_GET, api_url("catalog"), "", CALLBACK(src, PROC_REF(on_index))))
 		return
