@@ -12,6 +12,8 @@
 	TEST_ASSERT(speaker.equip_to_slot_if_possible(gag, ITEM_SLOT_MASK), "Кляп не надет")
 	TEST_ASSERT_EQUAL(speaker.treat_message(message, /datum/language/signlanguage), message, "Кляп искажает жесты")
 
+#define TEST_POOL_WATER_VOLUME 300
+
 /// Водное дыхание защищает лежащего пловца от утопления в бассейне.
 /datum/unit_test/water_aspect_pool
 	var/area/test_area
@@ -20,6 +22,7 @@
 /datum/unit_test/water_aspect_pool/Destroy()
 	if(test_area)
 		test_area.has_gravity = saved_gravity
+	test_area = null
 	return ..()
 
 /datum/unit_test/water_aspect_pool/Run()
@@ -27,7 +30,7 @@
 	test_area = get_area(pool)
 	saved_gravity = test_area.has_gravity
 	test_area.has_gravity = STANDARD_GRAVITY
-	pool.add_liquid(/datum/reagent/water, 300, TRUE)
+	pool.add_liquid(/datum/reagent/water, TEST_POOL_WATER_VOLUME, TRUE)
 	TEST_ASSERT_NOTNULL(pool.liquids, "В бассейне нет воды")
 	var/mob/living/carbon/human/swimmer = allocate(/mob/living/carbon/human, get_step(pool, EAST))
 	ADD_TRAIT(swimmer, TRAIT_WATER_BREATHING, TRAIT_SOURCE_UNIT_TESTS)
@@ -43,6 +46,8 @@
 	swimming.tick()
 	TEST_ASSERT(swimmer.getOxyLoss() > 0, "Обычный персонаж перестал тонуть")
 
+#undef TEST_POOL_WATER_VOLUME
+
 /// Свечение аксессуаров появляется и снимается вместе с настройкой.
 /datum/unit_test/mutant_accessory_glow/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
@@ -52,19 +57,20 @@
 	human.dna.features["mam_snouts"] = "Husky"
 	human.dna.features["wings"] = "Angel"
 	human.dna.species.mutant_bodyparts["wings"] = "Angel"
-	human.dna.features["emissive_parts"] = list("ears", "tail", "snout", "wings")
-	for(var/enabled in list(TRUE, FALSE))
+	var/list/emissive_parts = list("ears", "tail", "snout", "wings")
+	human.dna.features["emissive_parts"] = emissive_parts
+	for(var/enabled as anything in list(TRUE, FALSE))
 		human.dna.features["allow_emissives"] = enabled
 		human.update_mutant_bodyparts()
 		var/list/glowing_parts = list()
-		for(var/layer in list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_ADJ_UPPER_LAYER, BODY_FRONT_LAYER, HORNS_LAYER))
+		for(var/layer as anything in list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_ADJ_UPPER_LAYER, BODY_FRONT_LAYER, HORNS_LAYER))
 			for(var/mutable_appearance/overlay as anything in human.overlays_standing[layer])
 				if(overlay.plane != EMISSIVE_PLANE)
 					continue
-				for(var/part in list("ears", "tail", "snout", "wings"))
+				for(var/part as anything in emissive_parts)
 					if(findtext(overlay.icon_state, "_[part]_"))
 						glowing_parts |= part
-		TEST_ASSERT_EQUAL(length(glowing_parts), enabled ? 4 : 0, "Свечение аксессуаров не соответствует настройке")
+		TEST_ASSERT_EQUAL(length(glowing_parts), enabled ? length(emissive_parts) : 0, "Свечение аксессуаров не соответствует настройке")
 
 /// Цвета молей сохраняются раздельно, старый общий цвет переносится без изменений.
 /datum/unit_test/insect_accessory_colors
@@ -93,16 +99,16 @@
 	human.dna.features["wings"] = "None"
 	var/list/colors = list("insect_wings" = "112233", "insect_fluff" = "445566", "insect_markings" = "778899")
 	var/list/styles = list("insect_wings" = "Moth (Whitefly Greyscale)", "insect_fluff" = "Deathshead", "insect_markings" = "Deathshead")
-	for(var/part in colors)
+	for(var/part as anything in colors)
 		var/list/choices = GLOB.mutant_reference_list[part]
 		TEST_ASSERT_NOTNULL(choices[styles[part]], "Нет аксессуара [part]: [styles[part]]")
 		human.dna.species.mutant_bodyparts[part] = styles[part]
 		human.dna.features[part] = styles[part]
 	human.update_mutant_bodyparts()
 	var/list/seen = list()
-	for(var/layer in list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_FRONT_LAYER))
+	for(var/layer as anything in list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_FRONT_LAYER))
 		for(var/mutable_appearance/overlay as anything in human.overlays_standing[layer])
-			for(var/part in colors)
+			for(var/part as anything in colors)
 				if(findtext(overlay.icon_state, "_[part]_"))
 					TEST_ASSERT_EQUAL(overlay.color, "#[colors[part]]", "У [part] неверный цвет")
 					seen |= part
@@ -162,9 +168,11 @@
 	briefs.worn_by_captain = FALSE
 	TEST_ASSERT(!objective.ExtraCheck(), "Непомеченное бельё допускает невыполнимую цель")
 
+#define TEST_CHANGELING_CRIT_DAMAGE 120
+
 /// Отстрел головы сохраняет разум генокрада и после замены мозга.
 /datum/unit_test/changeling_head_gib_mind/Run()
-	for(var/replace_brain in list(FALSE, TRUE))
+	for(var/replace_brain as anything in list(FALSE, TRUE))
 		var/mob/living/carbon/human/changeling = allocate(/mob/living/carbon/human)
 		changeling.mind_initialize()
 		var/datum/mind/ling_mind = changeling.mind
@@ -175,7 +183,7 @@
 		if(replace_brain)
 			var/obj/item/organ/brain/replacement = allocate(/obj/item/organ/brain)
 			replacement.Insert(changeling)
-		changeling.setBruteLoss(120)
+		changeling.setBruteLoss(TEST_CHANGELING_CRIT_DAMAGE)
 		changeling.gib_head()
 		TEST_ASSERT_EQUAL(ling_mind.current, changeling, "Разум генокрада покинул тело при отстреле головы; замена мозга: [replace_brain]")
 		TEST_ASSERT_NULL(changeling.get_bodypart(BODY_ZONE_HEAD), "Голова осталась на теле")
@@ -192,23 +200,68 @@
 	head.attach_limb(decapitated)
 	TEST_ASSERT(!HAS_TRAIT(decapitated, TRAIT_BLIND), "Генокрад не прозрел после возврата головы")
 
+#undef TEST_CHANGELING_CRIT_DAMAGE
+
+/// Пересадка через генокрада сохраняет свойства мозга и перенос разума обычного владельца.
+/datum/unit_test/changeling_brain_reuse/Run()
+	for(var/original_vital as anything in list(0, ORGAN_VITAL))
+		for(var/original_decoy as anything in list(FALSE, TRUE))
+			var/mob/living/carbon/human/changeling = allocate(/mob/living/carbon/human)
+			changeling.mind_initialize()
+			var/datum/mind/changeling_mind = changeling.mind
+			var/datum/antagonist/changeling/antag = new
+			antag.silent = TRUE
+			antag.give_objectives = FALSE
+			changeling_mind.add_antag_datum(antag)
+			var/obj/item/organ/brain/brain = allocate(/obj/item/organ/brain)
+			brain.organ_flags = original_vital
+			brain.decoy_override = original_decoy
+			brain.Insert(changeling)
+			TEST_ASSERT_EQUAL(brain.owner, changeling, "Мозг не вставлен генокраду")
+			TEST_ASSERT(!(brain.organ_flags & ORGAN_VITAL), "Мозг генокрада остался жизненно важным")
+			TEST_ASSERT(brain.decoy_override, "Мозг генокрада не стал рудиментарным")
+			TEST_ASSERT(!brain.Insert(changeling), "Повторная вставка в то же тело разрешена")
+			brain.organ_flags |= ORGAN_NO_SPOIL
+			brain.Remove()
+			TEST_ASSERT_EQUAL(changeling_mind.current, changeling, "Извлечение унесло разум генокрада")
+			TEST_ASSERT_NOTEQUAL(changeling.stat, DEAD, "Извлечение мозга убило генокрада")
+			TEST_ASSERT_EQUAL(brain.organ_flags, original_vital | ORGAN_NO_SPOIL, "Извлечение изменило исходную важность мозга или посторонние флаги")
+			TEST_ASSERT_EQUAL(brain.decoy_override, original_decoy, "Извлечение не вернуло исходный decoy_override")
+			brain.Insert(changeling)
+			brain.Remove(FALSE, TRUE)
+			TEST_ASSERT_EQUAL(brain.organ_flags, original_vital | ORGAN_NO_SPOIL, "Повторная пересадка потеряла исходные флаги")
+			TEST_ASSERT_EQUAL(brain.decoy_override, original_decoy, "Извлечение без переноса разума потеряло исходный decoy_override")
+			var/mob/living/carbon/human/recipient = allocate(/mob/living/carbon/human)
+			brain.Insert(recipient)
+			recipient.mind_initialize()
+			var/datum/mind/recipient_mind = recipient.mind
+			brain.Remove()
+			TEST_ASSERT_EQUAL(recipient_mind.current, original_decoy ? recipient : brain.brainmob, "Повторно использованный мозг неверно переносит разум обычного владельца")
+			TEST_ASSERT_EQUAL(recipient.stat == DEAD, !!original_vital, "Важность мозга не действует после пересадки обычному владельцу")
+
+#define TEST_MIXER_OFFSET 2
+#define TEST_MIXER_LAYER 2
+#define TEST_ADAPTER_OXYGEN_MOLES 10
+
 /// Слои возле миксера остаются раздельными, а адаптер соединяет нужный порт.
 /datum/unit_test/atmos_mixer_layer_adapter/Run()
-	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/center = locate(run_loc_floor_bottom_left.x + TEST_MIXER_OFFSET, run_loc_floor_bottom_left.y + TEST_MIXER_OFFSET, run_loc_floor_bottom_left.z)
 	var/obj/machinery/atmospherics/components/trinary/mixer/mixer = allocate(/obj/machinery/atmospherics/components/trinary/mixer, center)
 	mixer.setDir(EAST)
 	mixer.SetInitDirections()
-	mixer.setPipingLayer(2)
+	mixer.setPipingLayer(TEST_MIXER_LAYER)
 	var/obj/machinery/atmospherics/pipe/layer_manifold/adapter = allocate(/obj/machinery/atmospherics/pipe/layer_manifold, get_step(center, WEST))
 	adapter.setDir(EAST)
 	adapter.SetInitDirections()
 	adapter.on_construction(null, PIPING_LAYER_DEFAULT)
 	mixer.atmosinit()
 	TEST_ASSERT_EQUAL(mixer.nodes[1], adapter, "Адаптер не подключился ко входу миксера")
-	TEST_ASSERT_EQUAL(adapter.front_nodes[2], mixer, "Адаптер не нашёл второй слой миксера")
+	TEST_ASSERT_EQUAL(adapter.front_nodes[TEST_MIXER_LAYER], mixer, "Адаптер не нашёл слой миксера")
 	adapter.parent.ensure_built()
 	TEST_ASSERT_EQUAL(mixer.parents[1], adapter.parent, "Начальное соединение не построено")
-	for(var/piping_layer in list(1, 3, 4, 5))
+	for(var/piping_layer in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
+		if(piping_layer == TEST_MIXER_LAYER)
+			continue
 		var/obj/machinery/atmospherics/pipe/simple/other_layer = allocate(/obj/machinery/atmospherics/pipe/simple, adapter.loc)
 		other_layer.setDir(EAST)
 		other_layer.SetInitDirections()
@@ -222,7 +275,11 @@
 	adapter.parent.ensure_built()
 	TEST_ASSERT_EQUAL(mixer.parents[1], adapter.parent, "Адаптер и вход миксера оказались в разных сетях")
 	adapter.parent.air.set_temperature(T20C)
-	adapter.parent.air.adjust_moles(GAS_O2, 10)
+	adapter.parent.air.adjust_moles(GAS_O2, TEST_ADAPTER_OXYGEN_MOLES)
 	adapter.parent.reconcile_air()
 	var/datum/gas_mixture/input_air = mixer.airs[1]
 	TEST_ASSERT(input_air.get_moles(GAS_O2) > 0, "Газ не дошёл через адаптер до миксера")
+
+#undef TEST_MIXER_OFFSET
+#undef TEST_MIXER_LAYER
+#undef TEST_ADAPTER_OXYGEN_MOLES

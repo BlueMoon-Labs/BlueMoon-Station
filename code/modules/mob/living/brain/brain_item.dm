@@ -21,6 +21,8 @@
 	var/mob/living/brain/brainmob = null
 	var/brain_death = FALSE //if the brainmob was intentionally killed by attacking the brain after removal, or by severe braindamage
 	var/decoy_override = FALSE	//I apologize to the security players, and myself, who abused this, but this is going to go.
+	var/changeling_original_vital
+	var/changeling_original_decoy
 	//two variables necessary for calculating whether we get a brain trauma or not
 	var/damage_delta = 0
 
@@ -41,6 +43,8 @@
 
 	var/is_changeling = C.mind?.has_antag_datum(/datum/antagonist/changeling)
 	if(is_changeling)
+		changeling_original_vital = organ_flags & ORGAN_VITAL
+		changeling_original_decoy = decoy_override
 		organ_flags &= ~ORGAN_VITAL
 		decoy_override = TRUE
 
@@ -86,6 +90,12 @@
 
 	if((!QDELETED(src) || C) && !no_id_transfer)
 		transfer_identity(C)
+	// До transfer_identity() мозг должен оставаться рудиментарным для прежнего владельца.
+	if(!isnull(changeling_original_vital))
+		organ_flags = (organ_flags & ~ORGAN_VITAL) | changeling_original_vital
+		decoy_override = changeling_original_decoy
+		changeling_original_vital = null
+		changeling_original_decoy = null
 	if(C)
 		REMOVE_SKILL_MODIFIER_BODY(/datum/skill_modifier/brain_damage, null, C)
 		REMOVE_SKILL_MODIFIER_BODY(/datum/skill_modifier/heavy_brain_damage, null, C)
