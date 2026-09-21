@@ -52,6 +52,7 @@
 /// это десятки секунд; диагностике хватает первых нескольких, дальше только счёт.
 GLOBAL_VAR_INIT(harddel_10151_scans_done, 0)
 #define HARDDEL_10151_MAX_SCANS 4
+#define TEST_TICKLIMIT_FORCE_YIELD -1
 
 /// База "чистого" моба по типу: типпас -> число держателей через settle() после qdel.
 GLOBAL_LIST_EMPTY(harddel_10151_baselines)
@@ -432,6 +433,43 @@ GLOBAL_LIST_EMPTY(harddel_10151_baselines)
 	for(var/list/record as anything in records)
 		assert_no_holder(record)
 
+/// Поиск пути, прерванный удалением обезьяны, не должен возобновлять walk_to.
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker
+	parent_type = /datum/unit_test/harddel_10151_base
+	var/walk_finished = FALSE
+	var/deleted_during_search = FALSE
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/proc/run_walk(mob/living/carbon/monkey/walker, turf/destination)
+	walker.walk2derpless(destination)
+	walk_finished = TRUE
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/proc/on_search_checkpoint(mob/living/carbon/monkey/walker, datum/pathfind/search)
+	SIGNAL_HANDLER
+	UnregisterSignal(walker, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK)
+	TEST_ASSERT(search.pathing_movable == walker && !walk_finished, "Удаление должно произойти внутри поиска пути")
+	deleted_during_search = TRUE
+	allocated -= walker
+	qdel(walker)
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/proc/start_walk()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/monkey/walker = allocate(/mob/living/carbon/monkey, start)
+	var/turf/destination = get_step(get_step(start, EAST), EAST)
+	var/list/record = target_record(walker, "обезьяна, удалённая во время поиска пути")
+	RegisterSignal(walker, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK, PROC_REF(on_search_checkpoint))
+	var/previous_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = TEST_TICKLIMIT_FORCE_YIELD
+	INVOKE_ASYNC(src, PROC_REF(run_walk), walker, destination)
+	Master.current_ticklimit = previous_ticklimit
+	return record
+
+/datum/unit_test/monkey_pathfinding_qdel_releases_walker/Run()
+	var/list/record = start_walk()
+	sleep(10 SECONDS)
+	TEST_ASSERT(deleted_during_search, "Поиск пути не достиг точки удаления после первого CHECK_TICK")
+	TEST_ASSERT(walk_finished, "Поиск пути не завершился после удаления обезьяны")
+	assert_soft_collected(record)
+
 /// Проба warnfail обязана НАЗЫВАТЬ держателя этого класса.
 ///
 /// В прод-раунде 10151 строка улик была пустой у всех 262 хардделов - потому что
@@ -544,3 +582,4 @@ GLOBAL_LIST_EMPTY(harddel_10151_baselines)
 	assert_no_holder(chase_and_delete(hunter))
 
 #undef HARDDEL_10151_MAX_SCANS
+#undef TEST_TICKLIMIT_FORCE_YIELD

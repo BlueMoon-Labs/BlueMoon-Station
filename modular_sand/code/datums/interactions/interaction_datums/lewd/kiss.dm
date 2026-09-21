@@ -43,7 +43,7 @@
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())
+		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())
 
 
 ////////////////////// LEWD //////////////////////
@@ -194,4 +194,4 @@
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), pressure_affected = FALSE)
+		'modular_sand/sound/interactions/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), pressure_affected = FALSE)

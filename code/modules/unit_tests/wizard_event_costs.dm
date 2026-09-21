@@ -18,8 +18,9 @@
 
 /// Волна Petsplosion не клонирует больше потолка.
 /datum/unit_test/petsplosion_stops_at_dupe_cap/Run()
-	var/turf/station_turf = get_safe_random_station_turf()
-	TEST_ASSERT_NOTNULL(station_turf, "на станции нет свободного турфа")
+	var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+	TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
+	var/turf/station_turf = locate(1, 1, station_levels[1])
 	for(var/i in 1 to 3)
 		allocate(/mob/living/simple_animal/petsplosion_probe, station_turf)
 

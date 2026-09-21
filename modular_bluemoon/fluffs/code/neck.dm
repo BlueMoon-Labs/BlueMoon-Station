@@ -115,6 +115,8 @@
 	var/select_type = tgui_input_list(user, "Как сложить плащ?", "Изменение плаща", list("Cloak", "Kama", "Cloak and Kama")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
 	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
 		return
+	if(!istype(loc, /mob/living/carbon/human))
+		return
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
@@ -146,5 +148,5 @@
 			icon_state = "concord-kama"
 		if("Cloak and Kama")
 			icon_state = "concord-cloak-kama-[breast_size]"
-	wearer.update_inv_w_uniform()
+	wearer.update_inv_neck()
 	wearer.update_body()

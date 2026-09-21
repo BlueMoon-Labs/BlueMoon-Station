@@ -85,4 +85,4 @@
 		else if(C.stat == DEAD)
 			playsound(C, 'modular_sand/sound/misc/doomdies.wav', 100, -1)
 		else
-			playsound(C, pick('modular_sand/sound/misc/doomscream.wav', 'modular_sand/sound/misc/doomscream2.wav'), 100, -1)
+			playsound(C, pick('modular_sand/sound/misc/doomscream.wav', 'modular_sand/sound/misc/doomdies.wav'), 100, -1)

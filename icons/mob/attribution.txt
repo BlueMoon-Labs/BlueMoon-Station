@@ -1,0 +1,4 @@
+mothroach states in animals_held_lh.dmi and animals_held_rh.dmi:
+Author: kawoppi and /tg/station contributors.
+Source: https://github.com/tgstation/tgstation/commit/21199dc5391
+License: CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/).

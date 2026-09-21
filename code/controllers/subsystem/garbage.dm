@@ -23,6 +23,7 @@ By using these methods of finding references, you can make your life far, far ea
 
 /// Сколько первых warnfail одного типа за раунд получают обход client.images: он стоит ~100 мс без уступки тика.
 #define GC_WARNFAIL_CLIENT_PROBE_PER_TYPE 3
+#define GC_CLIENT_PROBE_NEEDED "needs_probe"
 /// Харддел дороже этого (мс) уходит в harddels.log отдельной строкой: именно такие
 /// одиночные del() и рвут тик (в раунде 9847 их было пять по ~169мс).
 #define GC_HARDDEL_LOG_THRESHOLD_MS 10
@@ -856,7 +857,9 @@ SUBSYSTEM_DEF(garbage)
 				var/mob/leaked_mob = D
 				if (leaked_mob.pending_native_prompts > 0)
 					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
-			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D, I.warnfail_count <= GC_WARNFAIL_CLIENT_PROBE_PER_TYPE)]) --")
+			var/list/client_probe_state = list(GC_CLIENT_PROBE_NEEDED = FALSE)
+			var/failure_context = build_warnfail_context(D, FALSE, client_probe_state)
+			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][failure_context]) --")
 			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
 			var/datum/gc_failure_viewer/gc_failure_entry/logged_failure = GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
 			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).
@@ -869,6 +872,8 @@ SUBSYSTEM_DEF(garbage)
 			// can still resolve this exact datum without accepting a reused ref.
 			if(logged_failure)
 				logged_failure.target_gc_destroyed = D.gc_destroyed
+			if(client_probe_state[GC_CLIENT_PROBE_NEEDED] && I.warnfail_count <= GC_WARNFAIL_CLIENT_PROBE_PER_TYPE)
+				addtimer(CALLBACK(src, PROC_REF(probe_warnfail_clients), refID, type, D.gc_destroyed), 0)
 
 		if (GC_QUEUE_HARDDELETE)
 			if (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG)
@@ -878,6 +883,14 @@ SUBSYSTEM_DEF(garbage)
 				Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
 				return
 			HardDelete(D)
+
+/datum/controller/subsystem/garbage/proc/probe_warnfail_clients(ref_id, expected_type, destroyed_at)
+	var/datum/target = locate(ref_id)
+	if(isnull(target) || target.type != expected_type || target.gc_destroyed != destroyed_at)
+		return FALSE
+	var/list/hits = find_client_references(target, quiet = TRUE)
+	log_world("## GC: клиентский поиск [ref_id] | [expected_type]: [length(hits) ? hits.Join("; ") : "держателей не найдено"]")
+	return TRUE
 
 /// Compact the dead prefix of a queue level if enough tombstoned entries have accumulated.
 /datum/controller/subsystem/garbage/proc/MaybeCompact(level, head)
@@ -1089,7 +1102,7 @@ SUBSYSTEM_DEF(garbage)
  * забытый STOP_PROCESSING, бакл-связки мобов. Зовётся только на редких warnfail'ах -
  * стоимость не влияет на тик.
  */
-/datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D, allow_client_probe = TRUE)
+/datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D, allow_client_probe = TRUE, list/client_probe_state)
 	var/list/notes = list()
 	// D.active_timers после Destroy всегда null, а таймер чужого датума с D в аргументах
 	// колбека там и не значился - поэтому смотрим колесо целиком.
@@ -1154,6 +1167,8 @@ SUBSYSTEM_DEF(garbage)
 	//
 	// Гейт ничего не теряет: улика ищется ровно там, где остальные ничего не нашли, а
 	// warnfail с уже названным держателем в ней не нуждается.
+	if(client_probe_state)
+		client_probe_state[GC_CLIENT_PROBE_NEEDED] = !length(notes)
 	if (!length(notes) && allow_client_probe)
 		var/list/client_hits = find_client_references(D, quiet = TRUE, yield = FALSE)
 		if (length(client_hits))
@@ -1500,6 +1515,7 @@ GLOBAL_LIST_INIT(gc_mob_target_var_names, list(
 #endif // GC_PROFILER
 
 #undef GC_WARNFAIL_CLIENT_PROBE_PER_TYPE
+#undef GC_CLIENT_PROBE_NEEDED
 #undef GC_HARDDEL_LOG_THRESHOLD_MS
 #undef GC_HARDDEL_LOG_AGGREGATE_INTERVAL
 #undef GC_HARDDEL_LOG_SUMMARY_MAX_TYPES

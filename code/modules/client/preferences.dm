@@ -205,6 +205,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "ears" = "None",
 "wings" = "None",
 "wings_color" = "FFF",
+"insect_fluff_color" = null,
+"insect_markings_color" = null,
 "frills" = "None",
 "deco_wings" = "None",
 "spines" = "None",
@@ -1793,6 +1795,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=[emissive_part_key];task=input'>[emissive_part_enabled(features, emissive_part_key) ? enabled_label : disabled_label]</a><BR>"
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
+								if(!features[color_type])
+									features[color_type] = features["wings_color"]
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
 								// Show extra/extra2 colors for wings and other colored parts if they have them
 								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
@@ -4410,13 +4414,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(new_wings)
 						features["wings"] = new_wings
 
-				if("wings_color")
-					var/new_wing_color = input(user, "Choose your character's wing colour:", "Character Preference","#"+features["wings_color"]) as color|null
+				if("wings_color", "insect_fluff_color", "insect_markings_color")
+					var/color_feature = href_list["preference"]
+					var/new_wing_color = input(user, "Выберите цвет части тела:", "Настройки персонажа", "#" + features[color_feature]) as color|null
 					if(new_wing_color)
-						if (new_wing_color == "#000000" && features["wings_color"] != "#FFFFFF") //SPLURT EDIT
-							features["wings_color"] = "#FFFFFF"
+						if(new_wing_color == "#000000" && features[color_feature] != "FFFFFF")
+							features[color_feature] = "FFFFFF"
 						else
-							features["wings_color"] = sanitize_hexcolor(new_wing_color, 6)
+							features[color_feature] = sanitize_hexcolor(new_wing_color, 6)
 
 				if("frills")
 					var/new_frills

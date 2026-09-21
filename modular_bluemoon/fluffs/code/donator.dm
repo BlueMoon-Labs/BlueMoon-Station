@@ -1263,6 +1263,18 @@
 	path = /obj/item/sign/moniq
 	ckeywhitelist = list("finkrld")
 
+/datum/gear/donator/bm/broadcast_camera
+	name = "broadcast camera"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/broadcast_camera
+	ckeywhitelist = list("finkrld")
+
+/datum/gear/donator/bm/microphone
+	name = "Microphone"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/radio/microphone
+	ckeywhitelist = list("finkrld")
+
 /////////////////////////////////////
 
 /datum/gear/donator/bm/impactbaton_jitte

@@ -677,3 +677,40 @@
 
 	qdel(runtime_cat)
 	TEST_ASSERT_NULL(experimentor.trackedRuntime.resolve(), "A qdeleted Runtime must not be retained by the experimentor")
+
+/obj/machinery/status_display/unit_test_light_counter
+	var/light_updates = 0
+
+/obj/machinery/status_display/unit_test_light_counter/set_light(l_range, l_power, l_color, l_height, l_cone_angle, l_cone_dir, l_on)
+	light_updates++
+	return ..()
+
+/// Таймер табло меняет текст без повторной установки света и восстанавливает подсветку после отключения.
+/datum/unit_test/status_display_backlight_gate/Run()
+	var/obj/machinery/status_display/unit_test_light_counter/display = allocate(/obj/machinery/status_display/unit_test_light_counter)
+	display.set_machine_stat(0)
+	display.current_mode = SD_MESSAGE
+	display.set_timer_messages("ETA", "4:59")
+	TEST_ASSERT_NOTNULL(display.light, "У включённого табло должен быть источник света")
+	var/initial_updates = display.light_updates
+	display.set_timer_messages("ETA", "4:58")
+	TEST_ASSERT_EQUAL(display.message2, "4:58", "Таймер должен обновлять текст")
+	TEST_ASSERT_EQUAL(display.light_updates, initial_updates, "Новый текст не должен заново устанавливать ту же подсветку")
+	display.set_machine_stat(NOPOWER)
+	display.update_appearance()
+	TEST_ASSERT_EQUAL(display.light_range, 0, "Без питания подсветка должна погаснуть")
+	var/updates_after_off = display.light_updates
+	display.update_appearance()
+	TEST_ASSERT_EQUAL(display.light_updates, updates_after_off, "Погашенное табло не должно повторно выключать свет")
+	display.set_machine_stat(0)
+	display.update_appearance()
+	TEST_ASSERT_EQUAL(display.light_range, STATUS_DISPLAY_LIGHT_RANGE, "Питание должно восстановить подсветку")
+	TEST_ASSERT_NOTNULL(display.light, "После восстановления питания нужен источник света")
+	display.set_timer_messages("", "")
+	TEST_ASSERT_EQUAL(display.light_range, 0, "Пустой экран должен погасить подсветку")
+	display.set_timer_messages("ETA", "4:57")
+	TEST_ASSERT_EQUAL(display.light_range, STATUS_DISPLAY_LIGHT_RANGE, "Новый текст должен снова включить подсветку")
+	display.set_light(2, 1, "#ff0000")
+	display.update_appearance()
+	TEST_ASSERT_EQUAL(display.light_color, LIGHT_COLOR_BLUE, "Обновление должно вернуть штатный цвет подсветки")
+	TEST_ASSERT_EQUAL(display.light_power, STATUS_DISPLAY_LIGHT_POWER, "Обновление должно вернуть штатную яркость")

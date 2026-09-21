@@ -70,7 +70,7 @@
 	"[user] неудачно отсверливает клапан у обработчика реагентов [target], повреждая [target.ru_na()] систему.",
 	"[user] completes the surgery on [target].")
 	target.adjustOrganLoss(ORGAN_SLOT_LIVER, 20)
-	playsound(target, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
+	playsound(target, 'sound/effects/watersplash.ogg', 40, 1)
 
 
 /datum/surgery_step/eject_reagents

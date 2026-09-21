@@ -40,7 +40,8 @@ type CustomTabInfo = {
   own_custom_interactions: CustomInteractionData[];
   max_custom_interactions: number;
   custom_interaction_sounds: CustomSoundOption[];
-  available_moan_sounds: MoanSoundOption[];
+  moan_sound_catalogs: { male: MoanSoundOption[]; female: MoanSoundOption[] };
+  feminine_moan_sounds: boolean;
   custom_moan_sounds: string[];
   use_custom_moan_sounds: boolean;
 }
@@ -113,7 +114,9 @@ export const CustomInteractionsTab = (props) => {
   const customs = data.own_custom_interactions || [];
   const max_customs = data.max_custom_interactions || 10;
   const sounds = data.custom_interaction_sounds || [];
-  const moanSounds = data.available_moan_sounds || [];
+  const moanSounds = data.moan_sound_catalogs?.[
+    data.feminine_moan_sounds ? 'female' : 'male'
+  ] || [];
   const customMoanSounds = data.custom_moan_sounds || [];
   const useCustomMoanSounds = !!data.use_custom_moan_sounds;
   const [moanGroupBrowsing, setMoanGroupBrowsing] = useLocalState('customMoanSoundGroup', '');
