@@ -332,6 +332,7 @@
 #include "perf_optimizations.dm"
 #include "perf_pass_non_atmos.dm"
 #include "ping_measurement.dm"
+#include "player_reports_september.dm"
 #include "playsound_no_listeners.dm"
 #include "sound_echo_cache.dm"
 #include "phobia_preference.dm"

@@ -34,6 +34,7 @@
 	icon_state = "mothroach"
 	icon_living = "mothroach"
 	icon_dead = "mothroach_dead"
+	held_icon = "mothroach"
 	speak = list("Furrr.","Uhh.", "Hurrr.")
 	speak_chance = 0
 	speak_emote = list("chitters")

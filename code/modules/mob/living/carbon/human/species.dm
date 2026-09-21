@@ -1020,6 +1020,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/mutable_appearance/accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
 			accessory_overlay.category = S.mutable_category
 			bodypart = S.mutant_part_string || dna_feature_as_text_string[S]
+			var/wing_color = H.dna.features[GLOB.colored_mutant_parts[bodypart]] || H.dna.features["wings_color"]
 			if(S.gender_specific)
 				accessory_overlay.icon_state = "[g]_[bodypart]_[S.icon_state]_[layertext]"
 			else
@@ -1031,6 +1032,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/mutant_string = S.mutant_part_string
 			if(mutant_string == "tailwag")
 				mutant_string = "tail"
+			var/emissive_part = mutant_string || GLOB.mutant_transform_list[bodypart] || bodypart
+			var/glowing = !husk && has_emissive_part(H.dna.features, emissive_part)
 			var/primary_string = advanced_color_system ? "[mutant_string]_primary" : "mcolor"
 			var/secondary_string = advanced_color_system ? "[mutant_string]_secondary" : "mcolor2"
 			var/tertiary_string = advanced_color_system ? "[mutant_string]_tertiary" : "mcolor3"
@@ -1094,7 +1097,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 						if(HORNCOLOR)
 							accessory_overlay.color = "#[H.dna.features["horns_color"]]"
 						if(WINGCOLOR)
-							accessory_overlay.color = "#[H.dna.features["wings_color"]]"
+							accessory_overlay.color = "#[wing_color]"
 				else
 					accessory_overlay.color = forced_colour
 			else
@@ -1119,6 +1122,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 // MARK: добавление оверлея
 			update_overlay_by_key(mutant_string, H, accessory_overlay)
 			standing += accessory_overlay
+			if(glowing)
+				standing += emissive_copy(accessory_overlay)
 
 			if(S.extra) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
@@ -1159,7 +1164,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					if(HORNCOLOR)
 						extra_accessory_overlay.color = "#[H.dna.features["horns_color"]]"
 					if(WINGCOLOR)
-						extra_accessory_overlay.color = "#[H.dna.features["wings_color"]]"
+						extra_accessory_overlay.color = "#[wing_color]"
 
 				if(OFFSET_MUTPARTS in H.dna.species.offset_features)
 					extra_accessory_overlay.pixel_x += H.dna.species.offset_features[OFFSET_MUTPARTS][1]
@@ -1167,6 +1172,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				update_overlay_by_key(mutant_string, H, extra_accessory_overlay)
 				standing += extra_accessory_overlay
+				if(glowing)
+					standing += emissive_copy(extra_accessory_overlay)
 
 			if(S.extra2) //apply the extra overlay, if there is one
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
@@ -1202,7 +1209,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					if(HORNCOLOR)
 						extra2_accessory_overlay.color = "#[H.dna.features["horns_color"]]"
 					if(WINGCOLOR)
-						extra2_accessory_overlay.color = "#[H.dna.features["wings_color"]]"
+						extra2_accessory_overlay.color = "#[wing_color]"
 
 				if(OFFSET_MUTPARTS in H.dna.species.offset_features)
 					extra2_accessory_overlay.pixel_x += H.dna.species.offset_features[OFFSET_MUTPARTS][1]
@@ -1210,6 +1217,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				update_overlay_by_key(mutant_string, H, extra2_accessory_overlay)
 				standing += extra2_accessory_overlay
+				if(glowing)
+					standing += emissive_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing
 	H.add_all_overlays()
