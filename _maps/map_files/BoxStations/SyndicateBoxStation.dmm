@@ -22651,7 +22651,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
-/obj/machinery/medipen_refiller,
+/obj/structure/closet/crate/freezer/surplus_limbs,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
 "bvz" = (
@@ -48993,6 +48993,13 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/virology)
+"gkt" = (
+/obj/effect/turf_decal/tile/blue/half{
+	dir = 1
+	},
+/obj/machinery/medipen_refiller,
+/turf/open/floor/mineral/plastitanium,
+/area/medical/medbay/central)
 "gkH" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -82005,39 +82012,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/rec)
 "xvX" = (
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = -3
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 1;
-	pixel_x = -7
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 10
-	},
-/obj/structure/table/reinforced/plastitaniumglass,
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = -3;
-	pixel_x = -6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 1
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 6;
-	pixel_x = -6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 10;
-	pixel_x = -5
-	},
 /obj/structure/window/reinforced{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/blue/full,
+/obj/machinery/medipen_refiller{
+	pixel_x = -3
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/medical/storage)
 "xwh" = (
@@ -119142,7 +119123,7 @@ nIy
 hwm
 bet
 fWM
-bhe
+gkt
 bit
 bjS
 tCd

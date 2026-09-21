@@ -22855,6 +22855,13 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"bSL" = (
+/obj/effect/turf_decal/tile/blue/half{
+	dir = 1
+	},
+/obj/machinery/medipen_refiller,
+/turf/open/floor/plasteel/white/textured/half,
+/area/medical/medbay/central)
 "bSM" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/atmospherics/pipe/simple/general/visible{
@@ -48272,7 +48279,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
 	},
-/obj/machinery/medipen_refiller,
+/obj/structure/closet/crate/freezer/surplus_limbs,
 /turf/open/floor/plasteel/white/textured,
 /area/medical/medbay/central)
 "ibr" = (
@@ -53682,39 +53689,13 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
 "kod" = (
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = -3
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 1;
-	pixel_x = -7
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 10
-	},
-/obj/structure/table/glass,
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = -3;
-	pixel_x = -6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 1
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 6;
-	pixel_x = -6
-	},
-/obj/item/clothing/glasses/hud/health{
-	pixel_y = 10;
-	pixel_x = -5
-	},
 /obj/structure/window/reinforced{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/blue/full,
+/obj/machinery/medipen_refiller{
+	pixel_x = -3
+	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/medical/storage)
 "koh" = (
@@ -123268,7 +123249,7 @@ jQX
 oQQ
 dzc
 sTK
-nzc
+bSL
 crJ
 khZ
 bll
