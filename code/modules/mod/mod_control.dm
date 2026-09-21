@@ -311,10 +311,10 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(!is_open() && !attacking_item.tool_behaviour)
-		balloon_alert(user, "Откройте панель!")
-		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return FALSE
+	// if(!is_open() && !attacking_item.tool_behaviour)
+	// 	balloon_alert(user, "Откройте панель!")
+	// 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+	// 	return FALSE
 	if(istype(attacking_item, /obj/item/paicard))
 		return handle_paicard_insertion(attacking_item, user)
 
