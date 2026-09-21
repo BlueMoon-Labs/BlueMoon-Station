@@ -151,6 +151,7 @@
 		"mod_springlock_advanced",
 		"mod_emp_shield_advanced",
 		"mod_harness_system",
+		"mod_energy_shield",
 		"mod_teslagen",
 		"adv_mod_jet",
 	)

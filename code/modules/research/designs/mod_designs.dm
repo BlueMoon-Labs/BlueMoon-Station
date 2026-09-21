@@ -385,6 +385,13 @@
 	build_path = /obj/item/mod/module/holster
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/module/on_stational_shield
+	name = "LEEXP VER-I EnergyShield Module"
+	id = "mod_energy_shield"
+	materials = list(/datum/material/iron = 2500, /datum/material/glass = 2000, /datum/material/uranium = 2000)
+	build_path = /obj/item/mod/module/energy_shield
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/module/surgicalprocessor
 	name = "Surgical Processor Module"
 	id = "mod_surgicalprocessor"
