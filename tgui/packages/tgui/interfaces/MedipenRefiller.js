@@ -42,13 +42,11 @@ export const MedipenRefiller = () => {
             )
           )}>
             {slot.name && (
-              <>
                 <ProgressBar value={slot.filling ? slot.progress : (slot.filled ? 1 : 0)} color={slot.filled ? "green" : "blue"}>
                   {slot.filling
-                    ? `Создание реагентов: ${Math.floor(slot.progress * 100)}%` //`Создание реагентов: ${Math.floor(slot.progress * 100)}% — осталось ${slot.remaining} с`
+                    ? `Синтез реагентов: ${Math.floor(slot.progress * 100)}%` // `Создание реагентов: ${Math.floor(slot.progress * 100)}% — осталось ${slot.remaining} с`
                     : (slot.filled ? 'Медипен заправлен' : 'Готов к заправке')}
                 </ProgressBar>
-              </>
             )/* : (
               <Box color="label">Вставьте поддерживаемый медипен.</Box>
             )*/
