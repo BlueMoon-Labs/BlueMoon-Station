@@ -90,7 +90,7 @@
 			с силой, отправляющей ту в полёт."
 	icon_state = "power_kick"
 	module_type = MODULE_ACTIVE
-	cooldown_time = 15 SECONDS
+	cooldown_time = 30 SECONDS
 	device = /obj/item/melee/baseball_bat/powerkick
 
 /obj/item/melee/baseball_bat/powerkick
@@ -101,6 +101,7 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
+	armour_penetration = 25 //как у obj/item/fireaxe
 	wound_bonus = 12
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)
