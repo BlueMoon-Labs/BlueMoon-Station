@@ -4,23 +4,14 @@ import { Window } from '../layouts';
 
 export const MedipenRefiller = () => {
   const { act, data } = useBackend();
-  const { slots, enabled, operational, refillTime, speedUp } = data;
+  const { slots, operational, refillTime, speedUp } = data;
   return (
-    <Window width={480} height={560} resizable>
+    <Window width={490} height={560} resizable>
       <Window.Content scrollable>
-        <Section title="Заправщик медипенов" buttons={(
-          <Button
-            icon="power-off"
-            selected={enabled}
-            onClick={() => act('power')}>
-            {enabled ? 'Выключить' : 'Включить'}
-          </Button>
-        )}>
+        <Section title="Заправщик медипенов">
           <LabeledList>
             <LabeledList.Item label="Слотов">{slots.length}</LabeledList.Item>
-            <LabeledList.Item label="Время заправки">
-              {refillTime} с (сокращение на {speedUp}%)
-            </LabeledList.Item>
+            <LabeledList.Item label="Время заправки">{refillTime} секунд</LabeledList.Item>
           </LabeledList>
           <Box mt={1} color="label">
             Медипен заправляется только после завершения цикла.
@@ -50,17 +41,18 @@ export const MedipenRefiller = () => {
               </Button>
             )
           )}>
-            {slot.name ? (
+            {slot.name && (
               <>
-                <ProgressBar value={slot.filling ? slot.progress : (slot.filled ? 1 : 0)} color="blue">
+                <ProgressBar value={slot.filling ? slot.progress : (slot.filled ? 1 : 0)} color={slot.filled ? "green" : "blue"}>
                   {slot.filling
                     ? `Создание реагентов: ${Math.floor(slot.progress * 100)}%` //`Создание реагентов: ${Math.floor(slot.progress * 100)}% — осталось ${slot.remaining} с`
-                    : (slot.filled ? 'Медипен содержит реагенты' : 'Готов к заправке')}
+                    : (slot.filled ? 'Медипен заправлен' : 'Готов к заправке')}
                 </ProgressBar>
               </>
-            ) : (
+            )/* : (
               <Box color="label">Вставьте поддерживаемый медипен.</Box>
-            )}
+            )*/
+            }
           </Section>
         ))}
       </Window.Content>

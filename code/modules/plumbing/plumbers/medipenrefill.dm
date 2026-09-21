@@ -1,4 +1,4 @@
-#define PERCENT_FASTER_FROM_MANIPULATOR 20
+#define PERCENT_FASTER_FROM_MANIPULATOR 25
 #define BIN_ADD_SLOTS_COUNT 1
 
 /obj/machinery/medipen_refiller
@@ -26,9 +26,8 @@
 		/obj/item/reagent_containers/hypospray/medipen/ferrocortex,
 	)
 	var/max_medipens = 2
-	var/refill_time = 30 SECONDS
+	var/refill_time = 120 SECONDS
 	var/speed_up_percent = 0
-	var/enabled = TRUE
 	// Slots keep their indices when a medipen is removed.
 	var/list/medipens = list(null)
 	// Medipen => timer ID, start time and duration. Reagents only change on completion.
@@ -51,7 +50,7 @@
 		bin_rating += bin.rating
 	for(var/obj/item/stock_parts/manipulator/manipulator in component_parts)
 		manipulator_rating += manipulator.rating
-	max_medipens = initial(max_medipens) + BIN_ADD_SLOTS_COUNT * round_down(bin_rating) - 1
+	max_medipens = initial(max_medipens) + BIN_ADD_SLOTS_COUNT * max((round_down(bin_rating) - 1), 0)
 	speed_up_percent = clamp(ceil((manipulator_rating - 1) * PERCENT_FASTER_FROM_MANIPULATOR), 0, 95)
 	refill_time = max(round(initial(refill_time) * (1 - speed_up_percent / 100), 1), 1 SECONDS)
 	for(var/slot in max_medipens + 1 to length(medipens))
@@ -66,7 +65,7 @@
 	. += span_info("Alt-click для извлечения медипена.")
 
 /obj/machinery/medipen_refiller/is_operational()
-	return ..() && anchored && !panel_open && enabled
+	return ..() && anchored && !panel_open
 
 /obj/machinery/medipen_refiller/on_stat_update(old_value)
 	. = ..()
@@ -85,7 +84,7 @@
 /obj/machinery/medipen_refiller/update_overlays()
 	. = ..()
 	if(length(refill_jobs))
-		. += "active_3"
+		. += "overlay_active"
 
 /obj/machinery/medipen_refiller/proc/update_refilling()
 	var/refil_count = length(refill_jobs)
@@ -96,7 +95,7 @@
 		use_power = ACTIVE_POWER_USE
 	else
 		soundloop.stop()
-		use_power = enabled ? IDLE_POWER_USE : NO_POWER_USE
+		use_power = IDLE_POWER_USE
 	machine_wake()
 	update_icon()
 
@@ -232,10 +231,20 @@
 	. = ..()
 	if(!user.canUseTopic(src, BE_CLOSE, no_tk = TRUE, silent = TRUE))
 		return
+	// First, an attempt to take full medipens
+	var/empty = TRUE
 	for(var/slot in 1 to length(medipens))
 		if(medipens[slot])
-			eject_medipen(slot, user)
-			return
+			empty = FALSE
+			var/obj/item/reagent_containers/hypospray/medipen/pen = medipens[slot]
+			if(pen.reagents.total_volume > 0)
+				eject_medipen(slot, user)
+				return
+	if(!empty)
+		for(var/slot in 1 to length(medipens))
+			if(medipens[slot])
+				eject_medipen(slot, user)
+				return
 
 /obj/machinery/medipen_refiller/ui_state(mob/user)
 	return GLOB.default_state
@@ -253,24 +262,18 @@
 		var/list/job = pen ? refill_jobs[pen] : null
 		slots += list(list(
 			"id" = slot,
-			"name" = pen ? capitalize(name) : null,
+			"name" = pen ? capitalize(pen.name) : null,
 			"filling" = !!job,
 			"filled" = pen?.reagents?.total_volume > 0,
 			"progress" = job ? clamp((world.time - job["start"]) / job["duration"], 0, 1) : 0,
-			//*"remaining" = job ? max(ceil((job["start"] + job["duration"] - world.time) / 10), 0) : 0,
+			//"remaining" = job ? max(ceil((job["start"] + job["duration"] - world.time) / 10), 0) : 0,
 		))
-	return list("slots" = slots, "enabled" = enabled, "operational" = is_operational(), "refillTime" = refill_time / 10, "speedUp" = speed_up_percent)
+	return list("slots" = slots, "operational" = is_operational(), "refillTime" = round(refill_time / 10), "speedUp" = speed_up_percent)
 
 /obj/machinery/medipen_refiller/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(.)
 		return
-	if(action == "power")
-		enabled = !enabled
-		if(!enabled)
-			cancel_all_refills()
-		update_refilling()
-		return TRUE
 	var/slot = text2num(params["slot"])
 	if(!isnum(slot) || slot != round(slot) || slot < 1 || slot > max_medipens)
 		return
