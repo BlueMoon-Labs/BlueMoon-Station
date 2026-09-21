@@ -17,7 +17,7 @@
 
 /obj/item/grenade/exploration/Initialize()
 	. = ..()
-	plastic_overlay = mutable_appearance(icon, "[item_state]2", HIGH_OBJ_LAYER)
+	plastic_overlay = mutable_appearance(icon, "[icon_state]", HIGH_OBJ_LAYER)
 
 /obj/item/grenade/exploration/Destroy()
 	for(var/obj/item/exploration_detonator/detonator in attached_detonators)
@@ -116,10 +116,6 @@
 /obj/item/exploration_detonator/attack_self(mob/user)
 	. = ..()
 	if(.)
-		return
-	var/turf/T = get_turf(user)
-	if(is_station_level(T.z) && !(obj_flags & EMAGGED))
-		to_chat(user, span_warning("Файрволл станции блокирует подрыв."))
 		return
 	var/explosives_trigged = 0
 	for(var/obj/item/grenade/exploration/exploration in linked_explosives)
