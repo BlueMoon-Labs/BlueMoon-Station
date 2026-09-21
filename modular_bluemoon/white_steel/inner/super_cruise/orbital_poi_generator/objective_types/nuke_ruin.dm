@@ -99,22 +99,16 @@
 	GLOB.decomission_bombs -= src
 	QDEL_NULL(radio)
 
-/obj/machinery/nuclearbomb/decomission/process()
+/obj/machinery/nuclearbomb/decomission/process(delta_time)
 	if(z != target_z)
 		timing = FALSE
 		detonation_timer = null
 		countdown?.stop()
 		update_icon()
 		return
-	. = ..()
-
-
-/obj/machinery/nuclearbomb/decomission/process(delta_time)
-	var/msg = "Код активации ядерной бомбы: [r_code]."
-
 	if(radio_talk)
+		var/msg = "Код активации ядерной бомбы: [r_code]."
 		timer_radio = timer_radio - delta_time * timer_speed
-
 		if(timer_radio < 0)
 			radio.talk_into(src, msg, radio_channel)
 			timer_radio = 10
