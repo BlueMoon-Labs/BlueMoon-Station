@@ -150,12 +150,15 @@
 
 // blocks
 // taken from /mob/living/carbon/human/interactive/
-/mob/living/carbon/monkey/proc/walk2derpless(target)
-	if(!target || IsStandingStill())
+/mob/living/carbon/monkey/proc/walk2derpless(atom/target)
+	if(QDELETED(src) || QDELETED(target) || IsStandingStill())
 		return FALSE
 
 	if(myPath.len <= 0)
-		myPath = get_path_to(src, target, 250, 1)
+		var/list/new_path = get_path_to(src, target, 250, 1, cancel_source = src)
+		if(QDELETED(src) || QDELETED(target))
+			return FALSE
+		myPath = new_path
 
 	if(myPath)
 		if(myPath.len > 0)

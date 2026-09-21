@@ -1,3 +1,5 @@
+#define PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER 0.82
+#define PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER 0.88
 
 /atom
 	var/light_power = 1 // Intensity of the light.
@@ -26,6 +28,7 @@
 	var/exposure_colored = TRUE
 	var/image/glow_overlay
 	var/image/exposure_overlay
+	var/list/bloom_parameters
 
 /atom/movable
 	var/light_cone_angle = 0 // Full cone width in degrees. 0 = omnidirectional.
@@ -312,61 +315,61 @@
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_FLAGS, .)
 
 /atom/proc/update_bloom()
-	cut_overlay(glow_overlay)
-	cut_overlay(exposure_overlay)
+	if(!(glow_icon && glow_icon_state) && !(exposure_icon && exposure_icon_state) && !glow_overlay && !exposure_overlay)
+		return
 	if(!light_range || !light_power || !light_on)
-		QDEL_NULL(glow_overlay)
-		QDEL_NULL(exposure_overlay)
+		delete_lights()
 		return
 	var/safe_color = light_color
+	var/obj/machinery/light/lamp = istype(src, /obj/machinery/light) ? src : null
 	if(isnull(safe_color) || length(safe_color) < 7 || copytext(safe_color, 1, 2) != "#")
-		if(istype(src, /obj/machinery/light))
-			var/obj/machinery/light/L = src
-			safe_color = L.bulb_colour || LIGHT_COLOR_WARM_BLOOM
-		else
-			safe_color = LIGHT_COLOR_WARM_BLOOM
-	var/is_painted_lamp = FALSE
-	if(istype(src, /obj/machinery/light))
-		var/obj/machinery/light/L = src
-		if(L.color)
-			is_painted_lamp = TRUE
-	var/paint_contrast_mult = is_painted_lamp ? 0.82 : 1
-	var/paint_exposure_mult = is_painted_lamp ? 0.88 : 1
+		safe_color = lamp?.bulb_colour || LIGHT_COLOR_WARM_BLOOM
+	var/is_painted_lamp = !!lamp?.color
+	var/glow_contrast = (CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * (is_painted_lamp ? PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER : 1)
+	var/glow_brightness = CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power
+	var/exposure_contrast = (CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * (is_painted_lamp ? PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER : 1)
+	var/exposure_brightness = CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power
+	var/glow_plane = layer <= LOW_OBJ_LAYER ? FLOOR_LIGHTING_LAMPS_PLANE : LIGHTING_LAMPS_PLANE
+	var/list/current_parameters = list(glow_icon, glow_icon_state, glow_colored, exposure_icon, exposure_icon_state, exposure_colored, dir, glow_plane, safe_color, glow_contrast, glow_brightness, exposure_contrast, exposure_brightness)
+	var/unchanged = length(bloom_parameters) == length(current_parameters)
+	if(unchanged)
+		for(var/index in 1 to length(current_parameters))
+			if(bloom_parameters[index] != current_parameters[index])
+				unchanged = FALSE
+				break
+	if(unchanged)
+		// Общая очистка overlays не обязана удалять сохранённые изображения bloom.
+		if(glow_overlay && !(glow_overlay.appearance in overlays))
+			add_overlay(glow_overlay)
+		if(exposure_overlay && !(exposure_overlay.appearance in overlays))
+			add_overlay(exposure_overlay)
+		return
+	cut_overlay(glow_overlay)
+	cut_overlay(exposure_overlay)
+	glow_overlay = null
+	exposure_overlay = null
+	bloom_parameters = current_parameters
 	var/static/list/exposure_icon_size_cache = list()
 	if(glow_icon && glow_icon_state)
 		glow_overlay = image(icon = glow_icon, icon_state = glow_icon_state, dir = dir, layer = -2)
-		if(layer <= LOW_OBJ_LAYER)
-			glow_overlay.plane = FLOOR_LIGHTING_LAMPS_PLANE
-		else
-			glow_overlay.plane = LIGHTING_LAMPS_PLANE
+		glow_overlay.plane = glow_plane
 		glow_overlay.blend_mode = BLEND_ADD
 		if(glow_colored)
-			var/datum/color_matrix/mat = new(
-				safe_color,
-				(CONFIG_GET(number/glow_contrast_base) + CONFIG_GET(number/glow_contrast_power) * light_power) * paint_contrast_mult,
-				CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power)
-			glow_overlay.color = mat.get()
+			var/datum/color_matrix/matrix = new(safe_color, glow_contrast, glow_brightness)
+			glow_overlay.color = matrix.get()
 		add_overlay(glow_overlay)
 	if(exposure_icon && exposure_icon_state)
 		exposure_overlay = image(icon = exposure_icon, icon_state = exposure_icon_state, dir = dir, layer = -1)
 		exposure_overlay.plane = LIGHTING_EXPOSURE_PLANE
 		exposure_overlay.blend_mode = BLEND_ADD
 		exposure_overlay.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART
-		var/datum/color_matrix/mat = new(
-			1,
-			(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
-			CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
-		if(exposure_colored)
-			mat.set_color(
-				safe_color,
-				(CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * paint_exposure_mult,
-				CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power)
-		exposure_overlay.color = mat.get()
+		var/datum/color_matrix/matrix = new(exposure_colored ? safe_color : 1, exposure_contrast, exposure_brightness)
+		exposure_overlay.color = matrix.get()
 		var/cache_key = "[exposure_icon]-[exposure_icon_state]"
 		var/list/cached_size = exposure_icon_size_cache[cache_key]
 		if(isnull(cached_size))
-			var/icon/EX = icon(icon = exposure_icon, icon_state = exposure_icon_state)
-			cached_size = list(EX.Width(), EX.Height())
+			var/icon/exposure = icon(icon = exposure_icon, icon_state = exposure_icon_state)
+			cached_size = list(exposure.Width(), exposure.Height())
 			exposure_icon_size_cache[cache_key] = cached_size
 		exposure_overlay.pixel_x = 16 - cached_size[1] / 2
 		exposure_overlay.pixel_y = 16 - cached_size[2] / 2
@@ -377,6 +380,11 @@
 	cut_overlay(exposure_overlay)
 	QDEL_NULL(glow_overlay)
 	QDEL_NULL(exposure_overlay)
+	if(bloom_parameters)
+		bloom_parameters = null
 
 /atom/proc/extinguish_light(force = FALSE)
 	return
+
+#undef PAINTED_LAMP_GLOW_CONTRAST_MULTIPLIER
+#undef PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER

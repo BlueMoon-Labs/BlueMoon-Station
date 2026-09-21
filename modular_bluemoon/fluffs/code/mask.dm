@@ -115,9 +115,14 @@
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
-	icon_state = "stardust-[breast_size]"
+	icon_state = "stardust-[breast_size][mask_adjusted ? "_up" : ""]"
 	wearer.update_inv_wear_mask()
 	wearer.update_body()
+
+/obj/item/clothing/mask/gas/sechailer/star_dust/adjustmask(mob/living/user, just_flavor)
+	. = ..()
+	if(. && !just_flavor)
+		update_icon()
 
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
