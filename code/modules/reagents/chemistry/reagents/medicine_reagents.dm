@@ -333,7 +333,7 @@
 				if(protecting_clothing.clothing_flags & THICKMATERIAL) // РИГ? ЕВА? Бронежилет СБ? Не подействует.
 					M.visible_message(span_danger("[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [protecting_clothing.name]!"), \
 								span_danger("Меня чем-то облили, но оно стекло вниз по [protecting_clothing.name]!"))
-					playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
+					playsound(src.loc, 'sound/effects/watersplash.ogg', 40, 1)
 					return ..()
 				else
 					reac_strength = reac_strength * 0.6 // Защита любой одеждой снижает эффективность препарата
@@ -459,7 +459,7 @@
 				if(protecting_clothing.clothing_flags & THICKMATERIAL) // РИГ? ЕВА? Бронежилет СБ? Не подействует.
 					M.visible_message(span_danger("[H] был[H.ru_a()] чем-то облит[H.ru_a()], но оно стекло вниз по [protecting_clothing.name]!"), \
 								span_danger("Меня чем-то облили, но оно стекло вниз по [protecting_clothing.name]!"))
-					playsound(src.loc, 'modular_bluemoon/krashly/sound/items/watersplash.ogg', 40, 1)
+					playsound(src.loc, 'sound/effects/watersplash.ogg', 40, 1)
 					return ..()
 				else
 					reac_strength = reac_strength * 0.6 // Защита любой одеждой снижает эффективность препарата

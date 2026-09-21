@@ -12,9 +12,9 @@ GLOBAL_LIST_INIT(lewd_prefs_choices, list(
 
 // Moaning Sounds
 GLOBAL_LIST_INIT(lewd_moans_male, list(
-	'modular_sand/sound/interactions/moan_m1.ogg',
-	'modular_sand/sound/interactions/moan_m2.ogg',
-	'modular_sand/sound/interactions/moan_m3.ogg'
+	'modular_sand/sound/interactions/final_m1.ogg',
+	'modular_sand/sound/interactions/final_m2.ogg',
+	'modular_sand/sound/interactions/final_m3.ogg'
 ))
 
 GLOBAL_LIST_INIT(lewd_moans_female, list(
@@ -58,9 +58,6 @@ GLOBAL_LIST_INIT(lewd_purr_sounds, list(
 GLOBAL_LIST_INIT(lewd_meow_sounds, list(
 	'modular_citadel/sound/voice/meow1.ogg',
 
-	'modular_bluemoon/sound/emotes/meow4.ogg',
-	'modular_bluemoon/sound/emotes/meow5.ogg',
-	'modular_bluemoon/sound/emotes/meow6.ogg',
 	'modular_bluemoon/sound/emotes/meow7_1.ogg',
 	'modular_bluemoon/sound/emotes/meow7_2.ogg',
 	'modular_bluemoon/sound/emotes/meow7_3.ogg',
@@ -72,14 +69,14 @@ GLOBAL_LIST_INIT(lewd_meow_sounds, list(
 	'modular_splurt/sound/voice/meow_meme.ogg',
 	'modular_splurt/sound/voice/mewo.ogg',
 
-	'modular_splurt/sound/voice/merowr.ogg',
-	'modular_splurt/sound/voice/catpeople/cat_meow1.ogg',
-	'modular_splurt/sound/voice/catpeople/cat_meow2.ogg',
-	'modular_splurt/sound/voice/catpeople/cat_meow3.ogg',
+	'modular_citadel/sound/voice/merowr.ogg',
+	'modular_bluemoon/sound/plush/tiamat_meow1.ogg',
+	'modular_bluemoon/sound/plush/tiamat_meow2.ogg',
+	'modular_bluemoon/sound/plush/tiamat_meow3.ogg',
 	'modular_splurt/sound/voice/catpeople/cat_mew1.ogg',
 	'modular_splurt/sound/voice/catpeople/cat_mew2.ogg',
 	'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg',
-	'modular_splurt/sound/voice/catpeople/cat_mrrp2.ogg',
+	'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg',
 	'sound/mobs/non-humanoids/cat/cat_meow1.ogg',
 	'sound/mobs/non-humanoids/cat/cat_meow2.ogg',
 	'sound/mobs/non-humanoids/cat/cat_meow3.ogg',
@@ -107,7 +104,6 @@ GLOBAL_LIST_INIT(lewd_dog_sounds, list(
 	'modular_splurt/sound/voice/yap.ogg',
 	'modular_splurt/sound/voice/yip.ogg',
 	'modular_splurt/sound/voice/woof.ogg',
-	'modular_splurt/sound/voice/woof2.ogg',
 	'modular_splurt/sound/voice/bork.ogg',
 	'modular_splurt/sound/voice/wolfhowl.ogg',
 
@@ -116,7 +112,7 @@ GLOBAL_LIST_INIT(lewd_dog_sounds, list(
 	'sound/voice/growl.ogg',
 	'sound/voice/growl2.ogg',
 	'sound/mobs/non-humanoids/dog/growl1.ogg',
-	'sound/mobs/non-humanoids/dog/growl2.ogg'
+	'sound/creatures/dog/growl2.ogg'
 ))
 
 GLOBAL_LIST_INIT(lewd_bird_sounds, list(
@@ -160,7 +156,6 @@ GLOBAL_LIST_INIT(lewd_robot_sounds, list(
 
 GLOBAL_LIST_INIT(lewd_insect_sounds, list(
 	'modular_citadel/sound/voice/mothsqueak.ogg',
-	'modular_citadel/sound/voice/scream_moth.ogg',
 	'modular_splurt/sound/voice/moth/mothchitter2.ogg',
 	'modular_splurt/sound/voice/barks/mothsqueak.ogg',
 	'sound/voice/moth/mothchitter.ogg',
@@ -170,7 +165,6 @@ GLOBAL_LIST_INIT(lewd_insect_sounds, list(
 	'sound/creatures/bee.ogg',
 	'sound/mobs/non-humanoids/bee/bee.ogg',
 	'sound/mobs/humanoids/moth/moth_flutter.ogg',
-	'sound/mobs/humanoids/moth/moth_laugh1.ogg',
 	'sound/voice/scream/moth1.ogg',
 	'modular_splurt/sound/voice/teshsqueak.ogg',
 	'modular_splurt/sound/voice/teshtrill.ogg',
@@ -195,7 +189,7 @@ GLOBAL_LIST_INIT(lewd_other_animal_sounds, list(
 	"Horse Snort" = 'modular_bluemoon/sound/emotes/snort.ogg',
 	"Horse Neigh" = 'modular_bluemoon/sound/emotes/neigh.ogg',
 	"Trills" = 'sound/voice/trills.ogg',
-	"Trill" = 'modular_splurt/sound/voice/trill.ogg',
+	"Trill" = 'sound/voice/trills.ogg',
 	"Warble" = 'modular_splurt/sound/voice/warble.ogg',
 	"Wurble" = 'modular_splurt/sound/voice/wurble.ogg',
 	"Hyena Cackle" = 'modular_splurt/sound/voice/cackle_yeen.ogg'
@@ -266,10 +260,10 @@ GLOBAL_LIST_INIT(lewd_scream_gachi, list(
 
 // Kissing sounds
 GLOBAL_LIST_INIT(lewd_kiss_sounds, list(
-	'modular_sand/sound/interactions/kiss1.ogg',
-	'modular_sand/sound/interactions/kiss2.ogg',
-	'modular_sand/sound/interactions/kiss3.ogg',
-	'modular_sand/sound/interactions/kiss4.ogg',
+	'modular_splurt/sound/interactions/kiss/kiss1.ogg',
+	'modular_splurt/sound/interactions/kiss/kiss2.ogg',
+	'modular_splurt/sound/interactions/kiss/kiss3.ogg',
+	'modular_splurt/sound/interactions/kiss/kiss4.ogg',
 	'modular_sand/sound/interactions/kiss5.ogg'
 ))
 GLOBAL_LIST_INIT(interaction_speeds, list(

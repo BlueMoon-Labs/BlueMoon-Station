@@ -134,7 +134,7 @@
 		to_chat(user, span_warning("Колба опустела!"))
 		return
 	user.visible_message(span_notice("[user] делает глубокую затяжку."), span_notice("Вы делаете глубокую затяжку."))
-	playsound(user, 'modular_bluemoon/sound/effects/hookah_inhale.ogg', 40, TRUE) // затяжка плейсхолдер
+	playsound(user, 'sound/effects/bubbles.ogg', 40, TRUE) // затяжка плейсхолдер
 
 	// Усиленная доза
 	var/fraction = min(REAGENTS_METABOLISM * 3 / hookah.reagents.total_volume, 1)

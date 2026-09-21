@@ -144,3 +144,34 @@
 				log_test("FOAMBENCH [scenario] pair=[paired_round] [variant] calls=[iterations] ms=[round(elapsed_ms, 0.001)]")
 
 #endif
+
+/// Пена снимается с активной очереди при растворении и прямом удалении в обеих фазах.
+/datum/unit_test/foam_processing_cleanup/Run()
+	for(var/foam_type as anything in list(/obj/effect/particle_effect/foam, /obj/effect/particle_effect/foam/short_life, /obj/effect/particle_effect/foam/smart, /obj/effect/particle_effect/foam/firefighting))
+		for(var/use_slow as anything in list(FALSE, TRUE))
+			for(var/direct_delete as anything in list(FALSE, TRUE))
+				var/obj/effect/particle_effect/foam/foam = allocate(foam_type, run_loc_floor_bottom_left)
+				if(use_slow && !foam.allow_slow_processing)
+					qdel(foam)
+					continue
+				TEST_ASSERT(foam in SSfastprocess.processing, "Новая пена должна зарегистрироваться в быстрой подсистеме")
+				var/datum/controller/subsystem/processing/processor = SSfastprocess
+				if(use_slow)
+					foam.amount = 0
+					foam.lifetime = 10 SECONDS
+					foam.process()
+					TEST_ASSERT(foam.slow_processing, "Закончившая распространение пена должна перейти в медленную фазу")
+					TEST_ASSERT(!(foam in SSfastprocess.processing), "Переход не должен оставлять пену в быстрой очереди")
+					processor = SSprocessing
+				TEST_ASSERT(foam in processor.processing, "Пена должна находиться в активной очереди")
+				processor.currentrun += foam
+				if(direct_delete)
+					qdel(foam)
+				else
+					foam.kill_foam()
+				TEST_ASSERT(!(foam.datum_flags & DF_ISPROCESSING), "Остановка должна снять флаг процессинга")
+				TEST_ASSERT(!(foam in processor.processing), "Остановка должна удалить пену из основной очереди")
+				TEST_ASSERT(!(foam in processor.currentrun), "Остановка должна удалить пену из текущего прохода")
+				if(!direct_delete)
+					qdel(foam)
+				TEST_ASSERT(!(foam in SSfastprocess.processing) && !(foam in SSprocessing.processing), "Удалённая пена не должна остаться в процессинге")

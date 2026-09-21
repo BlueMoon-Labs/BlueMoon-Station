@@ -20,7 +20,7 @@
 	speed = 0
 	damage_coeff = list(BRUTE = 0.5, BURN = 0.85, TOX = 1, CLONE = 0, STAMINA = 0, OXY = 1)
 	deathmessage =  "morbidly growls, flailing and crumbling as death finally washes away the burning hatred in it's eyes."
-	death_sound = 'sound/creatures/terrorspiders/prince_dead.ogg'
+	death_sound = 'sound/creatures/space_dragon_roar.ogg'
 	regeneration = 0 //no healing on life, prince should play agressive
 	force_threshold = 30
 	melee_damage_lower = 35
