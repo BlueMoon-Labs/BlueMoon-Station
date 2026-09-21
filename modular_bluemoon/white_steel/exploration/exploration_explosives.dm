@@ -122,7 +122,7 @@
 		if(QDELETED(exploration) || QDELETED(exploration.target))
 			continue
 		if(get_dist(exploration.target, user) <= range)
-			addtimer(CALLBACK(exploration, /obj/item/grenade/exploration.proc/prime, user), 10)
+			addtimer(CALLBACK(exploration, /obj/item/grenade/exploration/proc/prime, user), 10)
 			explosives_trigged ++
 	to_chat(user, span_notice("[explosives_trigged] зарядов было активировано."))
 
