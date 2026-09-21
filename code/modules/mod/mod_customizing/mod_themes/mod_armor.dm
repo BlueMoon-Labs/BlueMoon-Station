@@ -122,6 +122,7 @@
 //#MARK: СБ подобное
 /datum/armor/mod/security_officer
 	melee = 35
+	bullet = 15
 	laser = 25
 	energy = 40
 	bomb = 25
