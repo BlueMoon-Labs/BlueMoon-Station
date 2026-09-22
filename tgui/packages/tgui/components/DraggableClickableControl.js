@@ -35,7 +35,9 @@ export class DraggableClickableControl extends DraggableControl {
         }
       }
       else {
-        onClick(e, value);
+        if (onClick) {
+          onClick(e, value);
+        }
       }
     };
   }

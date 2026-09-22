@@ -172,9 +172,20 @@ export class OrbitalMapComponent extends Component {
         }
       }
       else {
-        onClick(e, xOffset, yOffset);
+        if (onClick) {
+          onClick(e, xOffset, yOffset);
+        }
       }
     };
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.flickerTimer);
+    clearTimeout(this.timer);
+    clearInterval(this.dragInterval);
+    document.removeEventListener('mousemove', this.handleDragMove);
+    document.removeEventListener('mouseup', this.handleDragEnd);
+    document.body.style['pointer-events'] = 'auto';
   }
 
   render() {

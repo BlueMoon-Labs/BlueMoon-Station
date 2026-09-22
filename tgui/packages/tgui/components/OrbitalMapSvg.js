@@ -56,9 +56,11 @@ export class OrbitalMapSvg extends Component {
 
     // Boop: Create new map objects and persist old ones
     map_objects.forEach(mapObject => {
+      const renderType = this.renderTypeDict[mapObject.render_mode]
+        || this.renderTypeDict["default"];
       newRenderableObjectTypes[mapObject.id]
         = renderableObjectTypes[mapObject.id]
-        || new this.renderTypeDict[mapObject.render_mode];
+        || new renderType();
       newRenderableObjectTypes[mapObject.id].onTick(
         mapObject.name,
         mapObject.position_x,
