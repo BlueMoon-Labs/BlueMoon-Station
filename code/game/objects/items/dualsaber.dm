@@ -281,7 +281,7 @@
 	force = 7
 	hitsound_on = 'sound/weapons/nebhit.ogg'
 	wound_bonus = 14
-	armour_penetration = 100
+	armour_penetration = 75
 	light_color = "#37FFF7"
 	rainbow_colors = list("#FF0000", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF","#FF00FF", "#3399ff", "#ff9900", "#fb008b", "#9800ff", "#00ffa3", "#ccff00")
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "destroyed", "ripped", "devastated", "shredded")
@@ -354,7 +354,6 @@
 	name = "divine lightblade"
 	desc = "A giant blade of bright and holy light, said to cut down the wicked with ease."
 	force = 5
-	armour_penetration = 0
 	block_parry_data = /datum/block_parry_data/chaplain
 	var/chaplain_spawnable = TRUE
 	can_reflect = FALSE
@@ -378,6 +377,6 @@
 
 /obj/item/dualsaber/hypereutactic/chaplain/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=20, \
+	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=25, \
 					wieldsound='sound/weapons/nebon.ogg', unwieldsound='sound/weapons/nebhit.ogg')
 	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, null, null, FALSE)

@@ -3,6 +3,7 @@
 	name = "Space Adaptation"
 	desc = "A strange mutation that renders the host immune to the vacuum of space. Will still need an oxygen supply."
 	quality = POSITIVE
+	mutator_security_level = SPACEMUT_PRINT_CODE
 	difficulty = 32
 	text_gain_indication = "<span class='notice'>Your body feels warm!</span>"
 	time_coeff = 5

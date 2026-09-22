@@ -406,7 +406,8 @@
 	update_icon()
 	sleep(time)
 	var/turf/T = get_turf(src)
-	T.audible_message("<span class='notice'>[src] beeps: Unit is recharged.</span>")
+	if(isturf(T))
+		T.audible_message("<span class='notice'>[src] beeps: Unit is recharged.</span>")
 	playsound(src, 'sound/machines/defib_ready.ogg', 50, 0)
 	cooldown = FALSE
 	update_icon()

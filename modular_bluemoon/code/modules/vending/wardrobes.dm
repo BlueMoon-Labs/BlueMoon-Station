@@ -278,6 +278,7 @@
 		/obj/item/clothing/mask/balaclava/breath/redscarf/yellowscarf = 4,
 		/obj/item/radio/headset/headset_cargo = 3,
 		/obj/item/mailmat_deployer = 3,
+		/obj/item/mod/construction/armor/cargo_worker = 3,
 	)
 	premium = list(
 		/obj/item/clothing/head/mailman = 1,

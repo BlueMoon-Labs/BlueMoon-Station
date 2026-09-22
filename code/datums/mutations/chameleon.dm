@@ -4,6 +4,7 @@
 	name = "Chameleon"
 	desc = "A genome that causes the holder's skin to become transparent over time."
 	quality = POSITIVE
+	mutator_security_level = CHAMELEON_PRINT_CODE
 	difficulty = 16
 	text_gain_indication = "<span class='notice'>You feel one with your surroundings.</span>"
 	text_lose_indication = "<span class='notice'>You feel oddly exposed.</span>"

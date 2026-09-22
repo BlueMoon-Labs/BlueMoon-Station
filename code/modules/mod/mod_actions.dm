@@ -37,8 +37,8 @@
 /datum/action/item_action/mod/Trigger(trigger_flags)
 	if(!IsAvailable())
 		return FALSE
-	if(mod.is_malfunctioning() && prob(75))
-		mod.balloon_alert(usr, "button malfunctions!")
+	if(mod.is_malfunctioning() && prob(MOD_BUTTON_MALFUNCTION_CHANCE))
+		mod.balloon_alert(usr, "кнопка сбоит!")
 		return FALSE
 	return TRUE
 

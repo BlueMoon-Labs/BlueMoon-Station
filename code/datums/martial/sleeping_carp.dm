@@ -129,11 +129,14 @@
 	if(!isturf(A.loc)) //NO MOTHERFLIPPIN MECHS!
 		return BULLET_ACT_HIT
 	if(A.throw_mode)
-		A.visible_message("<span class='danger'>[A] effortlessly swats the projectile aside! They can deflect projectile with their bare hands!</span>", "<span class='userdanger'>You deflect the projectile!</span>")
+		if(istype(P, /obj/item/projectile/beam) && !prob(STAMINA_DODGE_LASER_CHANCE))
+			return BULLET_ACT_HIT
+		if(!A.UseStaminaBuffer(STAMINA_COST_DODGE_PROJECTILE, warn = TRUE))
+			return BULLET_ACT_HIT
 		playsound(get_turf(A), pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
 		P.firer = A
 		P.setAngle(rand(0, 360))//SHING
-		A.adjustStaminaLoss(3)
+		A.balloon_alert_to_viewers("[A] отбивает снаряд!", "Вы отклоняете снаряд!")
 		return BULLET_ACT_FORCE_PIERCE
 	return BULLET_ACT_HIT
 

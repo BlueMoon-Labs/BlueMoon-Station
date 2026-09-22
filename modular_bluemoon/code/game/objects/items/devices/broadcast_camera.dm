@@ -7,7 +7,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/devices_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/devices_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
-	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	slot_flags = NONE
 	light_system = OVERLAY_LIGHT
 	light_color = COLOR_SOFT_RED

@@ -2,6 +2,7 @@
 	name = "Antenna"
 	desc = "The affected person sprouts an antenna. This is known to allow them to access common radio channels passively."
 	quality = POSITIVE
+	mutator_security_level = ANTENNA_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You feel an antenna sprout from your forehead.</span>"
 	text_lose_indication = "<span class='notice'>Your antenna shrinks back down.</span>"
 	instability = 5
@@ -43,6 +44,7 @@
 	name = "Mind Reader"
 	desc = "The affected person can look into the recent memories of others."
 	quality = POSITIVE
+	mutator_security_level = MINDREAD_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You hear distant voices at the corners of your mind.</span>"
 	text_lose_indication = "<span class='notice'>The distant voices fade.</span>"
 	power = /obj/effect/proc_holder/spell/targeted/mindread

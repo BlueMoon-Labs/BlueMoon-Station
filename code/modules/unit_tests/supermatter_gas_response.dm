@@ -1,6 +1,45 @@
 // Регрессии кристалла: три правки в расчёте газовых модификаторов, каждая из
 // которых годами меняла поведение движка молча.
 
+/// Зонд детонации: explode() здесь не разносит тестовую арену, а выставляет флаг,
+/// чтобы проверить сам диспетчер ex_act, а не сам взрыв.
+/obj/machinery/power/supermatter_crystal/shard/unit_test_detonation_probe
+	processes = FALSE
+	takes_damage = TRUE
+	var/detonated = FALSE
+
+/obj/machinery/power/supermatter_crystal/shard/unit_test_detonation_probe/explode()
+	detonated = TRUE
+
+/// "Суперматтер должен взрываться от дестракшн-взрывов": взрыв первой категории
+/// (EXPLODE_DEVASTATE) обязан детонировать кристалл, а HEAVY/LIGHT трогать его не
+/// должны - INDESTRUCTIBLE в resistance_flags отсекает их в базовом ex_act, который
+/// мы и шлём через ..() не достигнутым порогом. Декоративный hugbox/fakecrystal
+/// (takes_damage = FALSE) переживает даже дестракшн.
+/datum/unit_test/supermatter_detonates_from_destruction_explosion/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/obj/machinery/power/supermatter_crystal/shard/unit_test_detonation_probe/crystal = allocate(/obj/machinery/power/supermatter_crystal/shard/unit_test_detonation_probe)
+	SSair.stop_processing_machine(crystal)
+
+	crystal.ex_act(EXPLODE_DEVASTATE, crystal, null)
+	TEST_ASSERT(crystal.detonated, "дестракшн-взрыв обязан детонировать кристалл")
+	crystal.detonated = FALSE
+	TEST_ASSERT(!QDELETED(crystal), "детонация-заглушка не должна qdel'ить кристалл")
+
+	crystal.ex_act(EXPLODE_HEAVY, crystal, null)
+	TEST_ASSERT(!crystal.detonated, "тяжёлый взрыв не должен детонировать кристалл")
+	TEST_ASSERT(!QDELETED(crystal), "кристалл обязан пережить тяжелый взрыв")
+
+	crystal.ex_act(EXPLODE_LIGHT, crystal, null)
+	TEST_ASSERT(!crystal.detonated, "лёгкий взрыв не должен детонировать кристалл")
+	TEST_ASSERT(!QDELETED(crystal), "кристалл обязан пережить лёгкий взрыв")
+
+	var/obj/machinery/power/supermatter_crystal/shard/hugbox/fakecrystal/decoy = allocate(/obj/machinery/power/supermatter_crystal/shard/hugbox/fakecrystal)
+	SSair.stop_processing_machine(decoy)
+	decoy.ex_act(EXPLODE_DEVASTATE, decoy, null)
+	TEST_ASSERT(!QDELETED(decoy), "декоративный кристалл обязан пережить дестракшн-взрыв")
+	TEST_ASSERT(istype(decoy, /obj/machinery/power/supermatter_crystal), "декоративный кристалл должен остаться кристаллом, а не стать чем-то иным")
+
 /// Кристалл, снятый с обработки SSair (тест сам решает, когда крутить фаер) и с
 /// выключенным уроном: ни один из этих тестов о делам-цикле не говорит, а
 /// горячий газ иначе копил бы damage между проверками.

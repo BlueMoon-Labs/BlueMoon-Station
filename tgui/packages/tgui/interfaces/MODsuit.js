@@ -390,7 +390,8 @@ const LockedInterface = () => (
   <Section align="center" fill>
     <Icon color="red" name="exclamation-triangle" size={15} />
     <Box fontSize="30px" color="red">
-      ERROR: INTERFACE UNRESPONSIVE
+      ОШИБКА: ИНТЕРФЕЙС НЕ ОТВЕЧАЕТ
+      примечание: обратитесь к техническому специалисту для переподключения проводов
     </Box>
   </Section>
 );
@@ -401,7 +402,7 @@ const LockedModule = (props) => {
     <Dimmer>
       <Stack>
         <Stack.Item fontSize="16px" color="blue">
-          SUIT UNPOWERED
+          КОСТЮМ ОБЕСТОЧЕН
         </Stack.Item>
       </Stack>
     </Dimmer>

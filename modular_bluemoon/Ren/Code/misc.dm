@@ -43,6 +43,13 @@
 	icon_state = "screwdriver_caravan"
 	icon = 'modular_bluemoon/Ren/Icons/Obj/infiltrator.dmi'
 
+/obj/item/screwdriver/nuke/inteq/get_belt_overlay()
+	var/mutable_appearance/body = mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "screwdriver")
+	var/mutable_appearance/head = mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "screwdriver_head")
+	body.color = COLOR_INTEQ_LIGHT
+	head.add_overlay(body)
+	return head
+
 /obj/item/crowbar/brown
 	icon = 'modular_bluemoon/Ren/Icons/Obj/infiltrator.dmi'
 	desc = "A small brown crowbar that seems to have extra sharped edges."
@@ -57,6 +64,13 @@
 	random_color = FALSE
 	force = 9
 	toolspeed = 0.9
+
+/obj/item/wirecutters/brown/get_belt_overlay()
+	var/mutable_appearance/body = mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "cutters")
+	var/mutable_appearance/head = mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "cutters_cutty_thingy")
+	body.color = COLOR_INTEQ_LIGHT
+	head.add_overlay(body)
+	return head
 
 ///шуруповёрт
 /obj/item/screwdriver/power/inteq

@@ -9,12 +9,6 @@
 	instability = 10
 	energy_coeff = 1
 
-/datum/mutation/human/telepathy/on_acquiring(mob/living/carbon/human/owner)
-	. = ..()
-
-/datum/mutation/human/telepathy/on_losing(mob/living/carbon/human/owner)
-	. = ..()
-
 /obj/effect/proc_holder/spell/targeted/telepathy/genetic
 	magic_check = FALSE
 
@@ -22,6 +16,7 @@
 	name = "Fire Breath"
 	desc = "An ancient mutation that gives lizards breath of fire."
 	quality = POSITIVE
+	mutator_security_level = FIREBREATH_PRINT_CODE
 	difficulty = 12
 	locked = TRUE
 	text_gain_indication = "<span class='notice'>Your throat is burning!</span>"
@@ -106,6 +101,7 @@
 	name = "Void Magnet"
 	desc = "A rare genome that attracts odd forces not usually observed."
 	quality = MINOR_NEGATIVE //upsides and downsides
+	mutator_security_level = VOID_PRINT_CODE
 	text_gain_indication = "<span class='notice'>You feel a heavy, dull force just beyond the walls watching you.</span>"
 	instability = 30
 	power = /obj/effect/proc_holder/spell/self/void
@@ -143,6 +139,7 @@
 	name = "Shock Touch"
 	desc = "The affected can channel excess electricity through their hands without shocking themselves, allowing them to shock others."
 	quality = POSITIVE
+	mutator_security_level = SHOCKTOUCH_PRINT_CODE
 	locked = TRUE
 	difficulty = 16
 	text_gain_indication = "<span class='notice'>You feel power flow through your hands.</span>"

@@ -102,7 +102,7 @@
 	cooldown_time = 1.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
-	// device = /obj/item/gun/tether_firer
+	have_shortcut_activation = TRUE
 
 /obj/item/mod/module/tether/on_use()
 	if(mod.wearer.has_gravity(get_turf(src)))
@@ -235,7 +235,7 @@
 	device = null //не имеет встроенного РЦД.
 
 ///Mister - Sprays water over an area.
-/obj/item/mod/module/mister
+/obj/item/mod/module/mister//Этот отдельно не спавнить!! Он багованный пиздец.
 	name = "MOD water mister module"
 	desc = "Модуль, содержащий опрыскиватель, способный распылять воду на территорию."
 	icon_state = "mister"
@@ -255,6 +255,7 @@
 	tank.volume = volume
 	tank.in_modsuit = TRUE
 	device = tank.noz
+	internal_device = tank
 	return ..()
 
 ///Resin Mister - Sprays resin over an area.
@@ -266,4 +267,3 @@
 
 /obj/item/mod/module/mister/atmos/Initialize(mapload)
 	. = ..()
-

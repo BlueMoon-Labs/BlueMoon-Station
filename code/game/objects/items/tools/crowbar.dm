@@ -80,6 +80,9 @@
 	item_state = "crowbar"
 	toolspeed = 0.5
 
+/obj/item/crowbar/large/get_belt_overlay()
+	return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "crowbar")
+
 /obj/item/crowbar/large/heavy
 	name = "heavy crowbar"
 	desc = "It's a big crowbar. It doesn't fit in your pockets, because it's big. It feels oddly heavy.."
