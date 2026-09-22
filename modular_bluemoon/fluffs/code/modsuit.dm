@@ -124,12 +124,12 @@
 //////////////////////////////////////////////////////////
 
 /obj/item/mod/control/pre_equipped/magnate/heavy
-	theme =/datum/mod_theme/centcomm/magnate/heavy
+	theme =/datum/mod_theme/centcom/magnate/heavy
 
 /obj/item/mod/construction/armor/magnate/heavy
-	theme = /datum/mod_theme/centcomm/magnate/heavy
+	theme = /datum/mod_theme/centcom/magnate/heavy
 
-/datum/mod_theme/centcomm/magnate/heavy
+/datum/mod_theme/centcom/magnate/heavy
 	name = "heavy magnate"
 	ui_theme = "magnateHeavy"
 	default_skin = "magnateHeavy"

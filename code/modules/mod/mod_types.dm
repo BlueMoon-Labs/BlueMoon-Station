@@ -110,7 +110,7 @@
 	theme = /datum/mod_theme/station_combat/security
 
 /obj/item/mod/control/pre_equipped/safeguard
-	theme = /datum/mod_theme/centcomm/safeguard
+	theme = /datum/mod_theme/centcom/safeguard
 	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
@@ -124,7 +124,7 @@
 	)
 
 /obj/item/mod/control/pre_equipped/magnate
-	theme = /datum/mod_theme/centcomm/magnate
+	theme = /datum/mod_theme/centcom/magnate
 	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
@@ -189,7 +189,7 @@
 	)
 
 /obj/item/mod/control/pre_equipped/responsory
-	theme = /datum/mod_theme/centcomm/responsory
+	theme = /datum/mod_theme/centcom/responsory
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
@@ -266,7 +266,7 @@
 	/*additional_module = /obj/item/mod/module/injector*/ //Injector module unported as of now.
 
 /obj/item/mod/control/pre_equipped/apocryphal
-	theme = /datum/mod_theme/centcomm/apocryphal
+	theme = /datum/mod_theme/centcom/apocryphal
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage,

@@ -167,7 +167,7 @@
 /datum/mod_theme/station_combat/security/blueshied/blacksec
 	default_skin = "blacksec"
 
-/datum/mod_theme/centcomm/safeguard
+/datum/mod_theme/centcom/safeguard
 	name = "safeguard"
 	desc = "Продвинутый костюм безопасности от Apadyne Technologies, обеспечивающий большую скорость и огнезащиту по сравнению со стандартной моделью."
 	extended_desc = "Продвинутый костюм безопасности от Apadyne Technologies и их новейшая модель. Этот вариант полностью \
@@ -184,7 +184,7 @@
 		"safeguard" = MOD_PRESET_DEFAULT,
 	)
 
-/datum/mod_theme/centcomm/magnate
+/datum/mod_theme/centcom/magnate
 	name = "magnate"
 	desc = "Шикарный, высокозащитный костюм для капитанов Nanotrasen. Ударо-, огне- и кислотостойкий, при этом имеющий большую ёмкость и высокую скорость."
 	extended_desc = "Говорят, стоимость работы этого костюма MOD составляет четыреста тысяч кредитов... на двенадцать секунд. \
@@ -276,7 +276,7 @@
 		"prototype" = MOD_PRESET_DEFAULT,
 	)
 
-/datum/mod_theme/centcomm/responsory
+/datum/mod_theme/centcom/responsory
 	name = "responsory"
 	desc = "Высокоскоростной спасательный костюм от Nanotrasen, предназначенный для команд экстренного реагирования."
 	extended_desc = "Обтекаемый костюм дизайна Nanotrasen, эти гладкие чёрные костюмы носят только \
@@ -292,7 +292,7 @@
 		"marine"      = MOD_PRESET_DEFAULT,
 	)
 
-/datum/mod_theme/centcomm/apocryphal
+/datum/mod_theme/centcom/apocryphal
 	name = "apocryphal"
 	desc = "Высокотехнологичный, лишь формально легальный бронированный костюм, созданный совместными усилиями Nanotrasen и Apadyne Technologies."
 	extended_desc = "Громоздкий и лишь формально легальный костюм, этот зловещий чёрно-красный MOD-костюм носят только \

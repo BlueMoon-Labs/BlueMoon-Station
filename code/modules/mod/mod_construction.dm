@@ -96,7 +96,7 @@
 	theme = /datum/mod_theme/station_combat/security
 
 /obj/item/mod/construction/armor/safeguard
-	theme = /datum/mod_theme/centcomm/safeguard
+	theme = /datum/mod_theme/centcom/safeguard
 
 /obj/item/mod/construction/armor/research
 	theme = /datum/mod_theme/research
@@ -105,7 +105,7 @@
 	theme = /datum/mod_theme/simple_civilian/cosmohonk
 
 /obj/item/mod/construction/armor/magnate
-	theme = /datum/mod_theme/centcomm/magnate
+	theme = /datum/mod_theme/centcom/magnate
 
 /obj/item/mod/construction/armor/cargo_worker
 	custom_price = 500

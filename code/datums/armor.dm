@@ -52,6 +52,8 @@
 	if (!.)
 		var/datum/armor/new_armor = new /datum/armor()
 		new_armor = new_armor.generate_new_with_modifiers(list(MELEE = melee, BULLET = bullet, LASER = laser, ENERGY = energy, BOMB = bomb, BIO = bio, RAD = rad, FIRE = fire, ACID = acid, MAGIC = magic, WOUND = wound))
+		new_armor.datum_flags |= DF_USE_TAG
+		new_armor.tag = ARMORID // getArmor() обязан возвращать общий tag-кэшированный датум, а не приватный
 		return new_armor
 
 /// Assosciative list of type -> armor. Used to ensure we always hold a reference to default armor datums
