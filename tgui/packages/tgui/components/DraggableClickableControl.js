@@ -214,3 +214,4 @@ DraggableClickableControl.defaultProps = {
   step: 1,
   stepPixelSize: 1,
   dragMatrix: [1, 0],
+};
