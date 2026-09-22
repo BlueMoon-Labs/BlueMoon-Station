@@ -45,7 +45,7 @@
 	var/cutter_bare_wound_bonus = 0
 
 	// Переменные для емага
-	var/emag_force = 30 // Как у энергомеча
+	var/emag_force = 25
 
 #undef CLAW_FORCE
 #undef CLAW_WOUND_BONUS
@@ -162,7 +162,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 35
+	armour_penetration = 10
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"
@@ -264,7 +264,7 @@
 	var/cutter_wound_bonus = 0
 	var/cutter_bare_wound_bonus = 0
 
-	var/emag_force = 30
+	var/emag_force = 25
 
 #undef CLAW_FORCE
 #undef CLAW_WOUND_BONUS
@@ -377,7 +377,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 35
+	armour_penetration = 10
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"

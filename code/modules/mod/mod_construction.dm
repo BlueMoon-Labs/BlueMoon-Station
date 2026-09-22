@@ -75,37 +75,53 @@
 	icon_state = "[used_theme.default_skin]-plating"
 
 /obj/item/mod/construction/armor/engineering
-	theme = /datum/mod_theme/engineering
+	theme = /datum/mod_theme/engineering/default_engineer
 
 /obj/item/mod/construction/armor/atmospheric
-	theme = /datum/mod_theme/atmospheric
+	theme = /datum/mod_theme/engineering/fire_protected/atmospheric
 
 /obj/item/mod/construction/armor/advanced
-	theme = /datum/mod_theme/advanced
+	theme = /datum/mod_theme/engineering/fire_protected/advanced
 
 /obj/item/mod/construction/armor/mining
-	theme = /datum/mod_theme/mining
+	theme = /datum/mod_theme/cargo_default/mining
 
 /obj/item/mod/construction/armor/medical
-	theme = /datum/mod_theme/medical
+	theme = /datum/mod_theme/station_medbay/medical
 
 /obj/item/mod/construction/armor/rescue
-	theme = /datum/mod_theme/rescue
+	theme = /datum/mod_theme/station_medbay/rescue
 
 /obj/item/mod/construction/armor/security
-	theme = /datum/mod_theme/security
+	theme = /datum/mod_theme/station_combat/security
 
 /obj/item/mod/construction/armor/safeguard
-	theme = /datum/mod_theme/safeguard
+	theme = /datum/mod_theme/centcom/safeguard
 
 /obj/item/mod/construction/armor/research
 	theme = /datum/mod_theme/research
 
 /obj/item/mod/construction/armor/cosmohonk
-	theme = /datum/mod_theme/cosmohonk
+	theme = /datum/mod_theme/simple_civilian/cosmohonk
 
 /obj/item/mod/construction/armor/magnate
-	theme = /datum/mod_theme/magnate
+	theme = /datum/mod_theme/centcom/magnate
+
+/obj/item/mod/construction/armor/cargo_worker
+	custom_price = 500
+	theme = /datum/mod_theme/cargo_default/cargo_worker
+
+/obj/item/mod/construction/armor/mage
+	theme = /datum/mod_theme/antagonist/mage
+
+/obj/item/mod/construction/armor/ninja
+	theme = /datum/mod_theme/antagonist/spider_clan
+
+/obj/item/mod/construction/armor/traitor
+	theme = /datum/mod_theme/antagonist/traitor
+
+/obj/item/mod/construction/armor/infiltrator
+	theme = /datum/mod_theme/antagonist/infiltrator
 
 /obj/item/mod/construction/armor/lustwish
 	name = "LustWish MOD plating"

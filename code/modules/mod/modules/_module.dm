@@ -56,6 +56,8 @@
 	var/saved_state
 	var/need_full_deploy = FALSE
 	var/minimum_cell_charge
+	var/have_shortcut_activation = FALSE
+	var/obj/item/internal_device
 
 /obj/item/mod/module/Initialize(mapload)
 	. = ..()
@@ -91,7 +93,7 @@
 /obj/item/mod/module/proc/on_install()
 	if(module_type == MODULE_ACTIVE)
 		if(!my_retract_component && device)
-			my_retract_component = AddComponent(/datum/component/mod_retractable, device = device, modsuit = mod, retract_sound = my_retract_sound)
+			my_retract_component = AddComponent(/datum/component/mod_retractable, device = device, modsuit = mod, retract_sound = my_retract_sound, stored_in = internal_device)
 
 	if(required_modpart_index)
 		required_modpart = mod.get_mod_part_by_index(required_modpart_index)
@@ -100,9 +102,10 @@
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
 /obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
-	if(my_retract_component)
+	if(my_retract_component && deleting)
 		my_retract_component.RemoveComponent()
-		qdel(my_retract_component)
+		QDEL_NULL(internal_device)
+		QDEL_NULL(my_retract_component)
 	if(required_modpart)
 		required_modpart.linked_modules -= src
 		required_modpart = null
@@ -188,7 +191,7 @@
 		mod.selected_module = src
 		if(my_retract_component)
 			SEND_SIGNAL(my_retract_component, COMSIG_MODULE_ON_USE, src, mod.wearer)
-		if(!device)
+		if(!device && have_shortcut_activation)
 			update_signal()
 			mod.balloon_alert(mod.wearer, "[src] активирован. Нажмите Alt+click по цели, чтобы использовать")
 	active = TRUE
@@ -202,9 +205,12 @@
 	if(module_type == MODULE_ACTIVE)
 		mod.selected_module = null
 		mod.balloon_alert(mod.wearer, "[src] деактивирован")
-		used_signal = null
+
 		if(device)
 			my_retract_component.snap_back()
+		else
+			UnregisterSignal(mod.wearer, used_signal)
+			used_signal = null
 	mod.wearer.update_inv_back()
 	return TRUE
 

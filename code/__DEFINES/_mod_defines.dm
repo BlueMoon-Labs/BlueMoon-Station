@@ -80,6 +80,15 @@ GLOBAL_LIST_INIT(mod_themes, setup_mod_themes())
 #define MOD_MINIMUM_CELL_CHARGE_SHIELD_ERT 30
 #define MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG 25
 
+#define MOD_BUTTON_MALFUNCTION_CHANCE 75
+#define MOD_EMP_SHUTDOWN_CHANCE 0.5 //там используется DT_PROB, что делает даже 5 процентов - высоким шансом.
+
+#define MOD_FUELGEN_RATE_GENERIC 1
+#define MOD_PLASMAGEN_EMP_BURN_CHANCE 70
+#define MOD_CHARGE_MAX_DEFAULT 90
+#define MOD_CHARGE_ADJUSTED_MEDIUM 95
+#define MOD_CHARGE_ADJUSTED_MAX 100
+
 #define MOD_ACTIVE      (1<<0)
 #define MOD_ACTIVATING  (1<<1)
 #define MOD_MALFUNCTION (1<<2)

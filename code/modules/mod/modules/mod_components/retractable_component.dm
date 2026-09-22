@@ -2,15 +2,17 @@
 
 /datum/component/mod_retractable
 	var/obj/item/mod/module/storage_module
+	var/obj/item/special_location
 	var/obj/item/using_device
 	var/obj/item/mod/control/my_modsuit
 	var/already_holding = FALSE
 	var/need_to_protect_item = TRUE
 	var/sound
 
-/datum/component/mod_retractable/Initialize(mapload, device, modsuit, retract_sound, need_to_protect_item)
+/datum/component/mod_retractable/Initialize(mapload, device, modsuit, retract_sound, need_to_protect_item, obj/item/stored_in)
 	. = ..()
-	storage_module = parent //где храним
+	storage_module = stored_in ? stored_in : parent //где храним
+	special_location = stored_in
 	using_device = device //что храним
 	my_modsuit = modsuit
 	sound = retract_sound
@@ -62,10 +64,13 @@
 	snap_back()
 
 /datum/component/mod_retractable/proc/snap_back()
-	if(!using_device || !storage_module)
+	if(!using_device || !storage_module || using_device.loc == storage_module)
 		return
 	already_holding = FALSE
 	using_device.forceMove(storage_module)
-	if(storage_module.active)
+	if(special_location)
+		var/obj/item/mod/module/target_module = special_location.loc
+		target_module.on_deactivation()
+	if(!special_location && storage_module.active)
 		storage_module.on_deactivation()
 	playsound(get_turf(my_modsuit), sound, 30, 1)

@@ -9,6 +9,12 @@
 // Flat amounts
 /// Usage for eyestabbing with a screwdriver
 #define STAMINA_COST_ITEM_EYESTAB		7.5
+/// Usage for blocking an attack with block_chance
+#define STAMINA_COST_BLOCK_CHANCE		5
+/// Usage for dodging/deflecting a projectile via martial arts
+#define STAMINA_COST_DODGE_PROJECTILE	5
+/// Chance for martial art projectile dodges/deflections to work against laser/energy projectiles
+#define STAMINA_DODGE_LASER_CHANCE		75
 /// Usage for shoving yourself off the ground instantly
 //#define STAMINA_COST_SHOVE_UP			15 //BLUEMOON REMOVAL
 

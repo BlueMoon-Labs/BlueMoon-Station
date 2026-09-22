@@ -126,7 +126,7 @@
 	mid_sounds = list('sound/effects/rbmk/reactor_hum.ogg' = 10)
 	volume = 10
 
-/datum/looping_sound/bloodbankgen
+/datum/looping_sound/machine_work
 	mid_sounds = list('sound/machines/computer/computer_mid1.ogg'=1)
 	mid_length = 16
 	end_sound = 'sound/machines/computer/computer_end.ogg'

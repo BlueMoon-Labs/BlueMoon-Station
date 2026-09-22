@@ -219,10 +219,9 @@
 	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD
 	incompatible_modules = list(
 		/obj/item/mod/module/anomaly_locked/antigrav,
-		/obj/item/mod/module/armor,
 		/obj/item/mod/module/energy_shield,
 		)
-	var/max_charges = 2
+	var/max_charges = 3
 	var/current_charges
 	var/recharge_delay = 25 SECONDS //на 5 больше, чем дефолт у рига.
 	var/recharge_rate = 1
@@ -277,7 +276,31 @@
 	recharge_delay = 18 SECONDS
 	max_charges = 4 //в два раза больше станционного
 
-//СДЕЛАТЬ ЗАРяДКУ МОДА ИНДУЦЕРОМ
+/obj/item/mod/module/directional_shield
+	name = "Directional Shield module"
+	desc = "Экспериментальна версия направленного щита. Очень энергоэффективна и способна поддерживать сама себя. \
+	Однако, не пошла в серийное производство и довольно редка. Поставляется только для сотрудников должности Синий Щит."
+	icon_state = "directional_shield"
+	module_type = MODULE_ACTIVE
+	device = /obj/item/shield/adamantineshield/mod_lesser
+	required_modpart_index = MOD_PART_GLOVES
+	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
+	removable = FALSE
+
+/obj/item/shield/adamantineshield/mod_lesser
+	name = "MOD Energy Shield"
+	desc = "Огромный щит, созданный голопроекторами поля в перчатках МОД костюма."
+	icon = 'icons/mecha/durand_shield.dmi'
+	lefthand_file = 'icons/mecha/durand_shield.dmi'
+	righthand_file = 'icons/mecha/durand_shield.dmi'
+	item_state = "shield_mod_static"
+	icon_state = "shield"
+	item_flags = null
+	force = 15
+
+/obj/item/shield/adamantineshield/mod_lesser/on_shield_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance)
+	. = ..()
+	playsound(src, 'sound/mecha/mech_shield_deflect.ogg', 100, TRUE)
 
 ///Criminal Capture
 

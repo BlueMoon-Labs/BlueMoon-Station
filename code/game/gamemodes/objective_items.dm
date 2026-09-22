@@ -328,7 +328,8 @@
 			break
 	if(!istype(capt)) // если капитана уже нету в игре еще до выдачи цельки, то искать трусы не особо интересно
 		return FALSE
-	if(capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
+	var/obj/item/clothing/underwear/briefs/worn_briefs = capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR)
+	if(istype(worn_briefs) && worn_briefs.worn_by_captain)
 		return TRUE
 	for(var/obj/item/clothing/underwear/briefs/B in world)
 		if(B.worn_by_captain)

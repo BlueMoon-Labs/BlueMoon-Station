@@ -239,11 +239,14 @@
 	if(panel_open)
 		overlays += "[icon_state]_panel"
 
-/obj/machinery/autodoc/emag_act(mob/user)
+/obj/machinery/autodoc/emag_act()
+	. = ..()
 	if(obj_flags & EMAGGED)
 		return
 	obj_flags |= EMAGGED
-	to_chat(user, span_warning("Вы активируете режим РАСЧЛЕНЕНИЕ на [src]."))
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	to_chat(usr, span_warning("Вы активируете режим РАСЧЛЕНЕНИЕ на [src]."))
+	return TRUE
 
 /obj/machinery/autodoc/relaymove(mob/living/user)
 	container_resist(user)

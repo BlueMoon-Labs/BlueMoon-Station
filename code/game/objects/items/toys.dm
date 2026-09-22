@@ -30,6 +30,7 @@
 	throw_range = 7
 	force = 0
 	total_mass = TOTAL_MASS_TINY_ITEM
+	hitsound = 'sound/weapons/tap.ogg'
 
 /obj/item/toy/Initialize(mapload)
 	. = ..()
