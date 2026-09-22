@@ -121,7 +121,7 @@
 	hardlight_color = MOD_CARGO_BLUE
 	allowed = ALLOWED_CARGO
 
-/datum/mod_theme/centcomm
+/datum/mod_theme/centcom
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
