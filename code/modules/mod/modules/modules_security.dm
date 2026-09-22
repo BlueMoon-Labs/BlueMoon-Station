@@ -219,10 +219,9 @@
 	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD
 	incompatible_modules = list(
 		/obj/item/mod/module/anomaly_locked/antigrav,
-		/obj/item/mod/module/armor,
 		/obj/item/mod/module/energy_shield,
 		)
-	var/max_charges = 2
+	var/max_charges = 3
 	var/current_charges
 	var/recharge_delay = 25 SECONDS //на 5 больше, чем дефолт у рига.
 	var/recharge_rate = 1
