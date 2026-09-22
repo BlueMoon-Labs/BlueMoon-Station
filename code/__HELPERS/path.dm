@@ -258,6 +258,9 @@
 	var/datum/jps_node/current_processed_node = new (start, -1, 0, end)
 	open.insert(current_processed_node)
 	sources[start] = start // i'm sure this is fine
+	#ifdef UNIT_TESTS
+	var/test_checkpoint_sent = FALSE
+	#endif
 
 	//then run the main loop
 	while(!open.is_empty() && !path)
@@ -279,6 +282,11 @@
 		diag_scan_spec(current_turf, SOUTHWEST, current_processed_node)
 
 		CHECK_TICK
+		#ifdef UNIT_TESTS
+		if(!test_checkpoint_sent)
+			test_checkpoint_sent = TRUE
+			SEND_SIGNAL(pathing_movable, COMSIG_TEST_PATHFIND_AFTER_FIRST_TICK, src)
+		#endif
 
 	//we're done! reverse the path to get it from start to finish
 	if(path)

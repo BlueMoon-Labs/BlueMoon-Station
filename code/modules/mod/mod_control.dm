@@ -609,6 +609,8 @@
 
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)
 	SIGNAL_HANDLER
+	if(part == src)
+		return
 	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(part.loc == src)
 		return

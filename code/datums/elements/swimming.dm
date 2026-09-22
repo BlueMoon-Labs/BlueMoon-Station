@@ -56,7 +56,7 @@
 	// You can breathe while standing up with your head above the water.
 	if(owner.mob_size >= MOB_SIZE_HUMAN && owner.body_position == STANDING_UP)
 		return
-	if(HAS_TRAIT(owner, TRAIT_NOBREATH))
+	if(HAS_TRAIT(owner, TRAIT_NOBREATH) || HAS_TRAIT(owner, TRAIT_WATER_BREATHING))
 		return
 	if(iscarbon(owner))
 		var/mob/living/carbon/C = owner

@@ -44,7 +44,7 @@
 
 /datum/interaction/lewd/nut_smack
 	description = "Яйца. Шлёпнуть по яйцам."
-	interaction_sound = 'modular_sand/sound/interactions/slap.ogg'
+	interaction_sound = 'sound/effects/snap.ogg'
 	simple_message = "USER шлёпает семенники TARGET!"
 	required_from_user = INTERACTION_REQUIRE_HANDS
 	required_from_target_exposed = INTERACTION_REQUIRE_BALLS

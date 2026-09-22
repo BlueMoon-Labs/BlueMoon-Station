@@ -547,65 +547,7 @@
 		.["moaning_multiplier"] = 		prefs.moaning_multiplier
 		.["use_custom_moan_sounds"] = 	prefs.use_custom_moan_sounds
 
-		var/list/regular_moans
-		var/list/soft_moans = list()
-		var/list/scream_gendered
-		if(self.gender == FEMALE || (self.gender == PLURAL && isfeminine(self)))
-			regular_moans = GLOB.lewd_moans_female
-			soft_moans = GLOB.lewd_softmoans_female
-			scream_gendered = GLOB.lewd_scream_female
-		else
-			regular_moans = GLOB.lewd_moans_male
-			scream_gendered = GLOB.lewd_scream_male
-		var/list/moan_options = list()
-		var/moan_index = 0
-		for(var/moan_file in regular_moans)
-			moan_index++
-			moan_options += list(list("key" = "[moan_file]", "label" = "Стон [moan_index]", "group" = "	Громкие стоны"))
-		moan_index = 0
-		for(var/moan_file in soft_moans)
-			moan_index++
-			moan_options += list(list("key" = "[moan_file]", "label" = "Стон [moan_index]", "group" = "Тихие стоны"))
-		var/emote_index = 0
-		for(var/sound_file in GLOB.lewd_purr_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Мурчание [emote_index]", "group" = "Мурчание"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_meow_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Мяуканье [emote_index]", "group" = "Мяуканье"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_fox_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Лиса [emote_index]", "group" = "Лисьи"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_dog_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Собака [emote_index]", "group" = "Собачьи"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_bird_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Птица [emote_index]", "group" = "Птичьи"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_robot_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Робот [emote_index]", "group" = "Роботы"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_insect_sounds)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Насекомое [emote_index]", "group" = "Насекомые"))
-		emote_index = 0
-		for(var/sound_file in scream_gendered)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Крик [emote_index]", "group" = "Крики"))
-		emote_index = 0
-		for(var/sound_file in GLOB.lewd_scream_gachi)
-			emote_index++
-			moan_options += list(list("key" = "[sound_file]", "label" = "Гачи [emote_index]", "group" = "Гачи"))
-		for(var/sound_name in GLOB.lewd_other_animal_sounds)
-			var/sound_file = GLOB.lewd_other_animal_sounds[sound_name]
-			moan_options += list(list("key" = "[sound_file]", "label" = "[sound_name]", "group" = "Другие"))
-		.["available_moan_sounds"] = moan_options
+		.["feminine_moan_sounds"] = self.gender == FEMALE || (self.gender == PLURAL && isfeminine(self))
 		var/list/custom_moan_keys = list()
 		for(var/saved_moan in SANITIZE_LIST(prefs.custom_moan_sounds))
 			custom_moan_keys += "[saved_moan]"
@@ -723,6 +665,10 @@
 
 /datum/component/interaction_menu_granter/ui_static_data(mob/living/user)
 	. = ..()
+	.["moan_sound_catalogs"] = list(
+		"male" = build_interaction_moan_options(FALSE),
+		"female" = build_interaction_moan_options(TRUE),
+	)
 	//Getting interactions
 	var/list/sent_interactions = list()
 	for(var/interaction_key in SSinteractions.interactions)
@@ -777,6 +723,72 @@
 			"group" = sound_data["group"],
 		))
 	.["custom_interaction_sounds"] = custom_sound_options
+
+/proc/build_interaction_moan_options(feminine)
+	var/static/list/catalogs = list()
+	var/catalog_key = feminine ? "female" : "male"
+	if(catalogs[catalog_key])
+		return catalogs[catalog_key]
+	var/list/regular_moans
+	var/list/soft_moans = list()
+	var/list/scream_gendered
+	if(feminine)
+		regular_moans = GLOB.lewd_moans_female
+		soft_moans = GLOB.lewd_softmoans_female
+		scream_gendered = GLOB.lewd_scream_female
+	else
+		regular_moans = GLOB.lewd_moans_male
+		scream_gendered = GLOB.lewd_scream_male
+	var/list/moan_options = list()
+	var/moan_index = 0
+	for(var/moan_file in regular_moans)
+		moan_index++
+		moan_options += list(list("key" = "[moan_file]", "label" = "Стон [moan_index]", "group" = "	Громкие стоны"))
+	moan_index = 0
+	for(var/moan_file in soft_moans)
+		moan_index++
+		moan_options += list(list("key" = "[moan_file]", "label" = "Стон [moan_index]", "group" = "Тихие стоны"))
+	var/emote_index = 0
+	for(var/sound_file in GLOB.lewd_purr_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Мурчание [emote_index]", "group" = "Мурчание"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_meow_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Мяуканье [emote_index]", "group" = "Мяуканье"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_fox_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Лиса [emote_index]", "group" = "Лисьи"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_dog_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Собака [emote_index]", "group" = "Собачьи"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_bird_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Птица [emote_index]", "group" = "Птичьи"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_robot_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Робот [emote_index]", "group" = "Роботы"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_insect_sounds)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Насекомое [emote_index]", "group" = "Насекомые"))
+	emote_index = 0
+	for(var/sound_file in scream_gendered)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Крик [emote_index]", "group" = "Крики"))
+	emote_index = 0
+	for(var/sound_file in GLOB.lewd_scream_gachi)
+		emote_index++
+		moan_options += list(list("key" = "[sound_file]", "label" = "Гачи [emote_index]", "group" = "Гачи"))
+	for(var/sound_name in GLOB.lewd_other_animal_sounds)
+		var/sound_file = GLOB.lewd_other_animal_sounds[sound_name]
+		moan_options += list(list("key" = "[sound_file]", "label" = "[sound_name]", "group" = "Другие"))
+	catalogs[catalog_key] = moan_options
+	return moan_options
 
 /proc/num_to_pref(num)
 	switch(num)

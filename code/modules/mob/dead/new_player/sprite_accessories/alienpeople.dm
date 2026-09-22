@@ -50,7 +50,6 @@
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
 	icon_state = "boiler"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/predalien
@@ -58,7 +57,6 @@
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
 	icon_state = "predalien"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/pretor
@@ -66,7 +64,6 @@
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
 	icon_state = "pretor"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/prowler
@@ -74,22 +71,47 @@
 	icon = 'modular_citadel/icons/mob/xeno_parts_greyscale.dmi'
 	icon_state = "prowler"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/queen
 	name = "Xenomorph Queen Tail"
 	icon_state = "queen"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/xeno_tail/runner
 	name = "Xenomorph Runner Tail"
 	icon_state = "runner"
 	color_src = MUTCOLORS
-	matrixed_sections = MATRIX_NONE
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/xeno_tail/long
+	icon = 'modular_citadel/icons/mob/xeno_big_tails_greyscale.dmi'
+	dimension_x = 64
+	dimension_y = 32
+	center = TRUE
+	color_src = MUTCOLORS
+	mutant_part_string = "tail"
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/xeno_tail/long/lord
+	name = "Xenomorph Lord Tail"
+	icon_state = "lord"
+	color_src = MUTCOLORS
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/xeno_tail/long/queenl
+	name = "Xenomorph Queen Long Tail"
+	icon_state = "queenl"
+	color_src = MUTCOLORS
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
+/datum/sprite_accessory/xeno_tail/long/valkyr
+	name = "Xenomorph Valkyr tail"
+	icon_state = "valkyr"
+	color_src = MUTCOLORS
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
+
 
 /datum/sprite_accessory/tails/mam_tails/xeno
 	name = "Xenomorph Tail"

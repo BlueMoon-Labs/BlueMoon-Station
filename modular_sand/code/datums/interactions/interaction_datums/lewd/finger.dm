@@ -40,7 +40,7 @@
 		message += " над [liquid_container]"
 
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_VAGINA) //SPLURT edit
 
 /datum/interaction/lewd/fingerass
@@ -61,5 +61,5 @@
 	user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [pick("погружает палец в сфинктер <b>[partner]</b>.",
 		"суёт палец в анальное колечко <b>[partner]</b>.",
 		"разрабатывает анальное кольцо <b>[partner]</b> при помощи собственного пальца.")]</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(NORMAL_LUST, null, user, ORGAN_SLOT_ANUS) //SPLURT edit

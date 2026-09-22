@@ -147,7 +147,7 @@
 	amount = 12
 	max_amount = 12
 	self_delay = 240
-	other_delay = 12
+	other_delay = 120
 	jitter_amount = 10      // Лёгкая тряска
 	confusion_amount = 0    // Без контузии
 	item_state = "super_surgery"

@@ -1,8 +1,3 @@
-//WHITE-STEEL PORT - Агрегатор модуля.
-//ПР2: шаттл экспедиторов (supercruise, орбитальная карта, bg, таксирование).
-//Порядок включений повторяет upstream (modular_bluemoon/white_steel).
-//ВНИМАНИЕ: при мерже с ПР1 объединить include-блоки обоих лоадеров.
-
 #include "_defines\orbit_defines.dm"
 #include "_defines\sound.dm"
 
@@ -62,3 +57,11 @@
 
 #include "exploration\research_locator.dm"
 #include "exploration\exploration_shuttle.dm"
+
+#include "_support\tactical.dm"
+#include "_support\mre.dm"
+#include "_support\feline_chem.dm"
+
+#include "exploration\exploration_explosives.dm"
+
+#include "rangers\proton_cutter.dm"

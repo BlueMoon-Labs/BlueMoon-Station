@@ -1,73 +1,56 @@
-/// РАСКРЫВАЕМЫЕ КРЫЛЬЯ
-
-/datum/sprite_accessory/deco_wings/spreadable/big
-	icon = 'modular_bluemoon/icons/mob/wingspreadable.dmi' // 96x64 size
-	center = TRUE
-	upgrade_to = list()
-
-/datum/sprite_accessory/deco_wings/spreadable/big/spreaded
-	icon = 'modular_bluemoon/icons/mob/wingspreadable.dmi'
-	center = TRUE
-	upgrade_to = list()
-
-////
-
-/datum/sprite_accessory/deco_wings/spreadable/big/wyvern
-	name = "Wyvern"
+/datum/sprite_accessory/deco_wings/wyvern
+	icon = 'modular_bluemoon/icons/mob/human/wings_96x34.dmi'
 	icon_state = "wyvern"
+	mutant_part_string = "wings"
+	center = TRUE
 	dimension_x = 96
-	dimension_y = -1
+	dimension_y = 34 // BRUH
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_FRONT_LAYER)
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_ALL
-	extra = TRUE
-	extra_color_src = MUTCOLORS2
-	extra2 = TRUE
-	extra2_color_src = MUTCOLORS3
 	upgrade_to = SPECIES_WINGS_WYVERN
+	extra = TRUE
+	extra2 = TRUE
 
-/datum/sprite_accessory/deco_wings/spreadable/big/spreaded/wyvern
+/datum/sprite_accessory/deco_wings/wyvern/folded
+	name = "Wyvern"
+
+/datum/sprite_accessory/deco_wings/wyvern/spreaded
 	name = "Wyvern (Spreaded)"
-	icon_state = "wyvernspr"
-	dimension_x = 96
-	dimension_y = -1
-	color_src = MATRIXED
-	matrixed_sections = MATRIX_ALL
-	extra = TRUE
-	extra_color_src = MUTCOLORS2
-	extra2 = TRUE
-	extra2_color_src = MUTCOLORS3
-	upgrade_to = SPECIES_WINGS_WYVERN
+	mutant_part_string = "wingsopen"
+
+/datum/sprite_accessory/deco_wings/wyvern/spreaded_alt
+	name = "Wyvern (Spreaded Alt)"
+	icon_state = "wyvern_alt"
+	matrixed_sections = MATRIX_RED_GREEN
+	extra2 = FALSE
 
 /datum/sprite_accessory/wings/wyvern // Заглушка для зелий
 	name = "Wyvern"
-	icon = 'modular_bluemoon/icons/mob/wings_functional_big.dmi'
+	icon = 'modular_bluemoon/icons/mob/human/wings_96x34.dmi'
 	icon_state = "wyvern"
-	dimension_x = 96
 	center = TRUE
-	dimension_y = 35
+	dimension_x = 96
+	dimension_y = 34
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_ALL
 	extra = TRUE
-	extra_color_src = MUTCOLORS2
 	extra2 = TRUE
-	extra2_color_src = MUTCOLORS3
 	locked = TRUE
-	relevant_layers = list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_FRONT_LAYER)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/wings_open/wyvern
 	name = "Wyvern"
-	icon = 'modular_bluemoon/icons/mob/wings_functional_big.dmi'
+	icon = 'modular_bluemoon/icons/mob/human/wings_96x34.dmi'
 	icon_state = "wyvern"
-	dimension_x = 96
 	center = TRUE
-	dimension_y = 35
+	dimension_x = 96
+	dimension_y = 34
 	color_src = MATRIXED
 	matrixed_sections = MATRIX_ALL
 	extra = TRUE
-	extra_color_src = MUTCOLORS2
 	extra2 = TRUE
-	extra2_color_src = MUTCOLORS3
-	relevant_layers = list(BODY_BEHIND_LAYER, BODY_ADJ_LAYER, BODY_FRONT_LAYER)
+	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/wings_open/wyvern
 
