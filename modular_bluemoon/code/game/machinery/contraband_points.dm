@@ -296,6 +296,7 @@
 		/obj/item/storage/box/inteq_kit/revolver = 500,
 		/obj/item/guardiancreator = 5500,
 		/obj/item/syndicate_teleporter = 6500,
+		/obj/item/gun/ballistic/shotgun/boltaction = 2300,
 		/obj/item/book/granter/spell = 5000,
 		/obj/item/toy/plush/carpplushie/dehy_carp = 1000,
 		/obj/item/book/granter/martial/cqc = 10000,
@@ -309,6 +310,7 @@
 		/obj/item/reagent_containers/hypospray/medipen/stimulants = 10000,
 		/obj/item/dnainjector/lasereyesmut = 6000,
 		/obj/item/extra_arm = 5000,
+		/obj/item/sign/flag/inteq = 1500,
 		/obj/item/book/granter/martial/bass = 25000,
 		/obj/item/book/granter/martial/carp = 15000,
 		/obj/item/documents = 15000,
@@ -361,12 +363,14 @@
 		/obj/item/clothing/under/syndicate/maid/civil = 0,
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
 		//Mechs
-		/obj/vehicle/sealed/mecha/combat/five_stars = 50000,
+		/obj/vehicle/sealed/mecha/combat/five_stars = 100000,
 		/obj/vehicle/sealed/mecha/combat/durand/zeus = 25000,
 		/obj/vehicle/sealed/mecha/combat/gygax/dark = 12500,
 		/obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/hermes = 20000,
 		/obj/vehicle/sealed/mecha/combat/marauder/mauler = 25000,
 		/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares = 50000,
+		/obj/structure/mecha_wreckage/hermes = 5000,
+		/obj/structure/mecha_wreckage/ares = 12500,
 		/obj/vehicle/sealed/mecha/combat/durand/tu802 = 15000
 	)
 
@@ -419,16 +423,25 @@
 	if(sending)
 		return FALSE
 
+	var/has_blackbox = FALSE
 	var/total_value = 0
 	if(pad)
 		for(var/atom/movable/AM in get_turf(pad))
 			if(AM == pad)
 				continue
+			if(istype(AM, /obj/item/blackbox/objective))
+				var/datum/component/recoverable/recovery = AM.GetComponent(/datum/component/recoverable)
+				if(recovery && !recovery.recovered)
+					has_blackbox = TRUE
+					continue
 			var/base_value = get_contraband_value(AM)
 			if(base_value > 0)
 				total_value += pad.get_adjusted_value(AM, base_value)
 
-	if(total_value > 0)
+	if(has_blackbox)
+		status_report = "Objective blackbox detected. Ready to transmit data."
+		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
+	else if(total_value > 0)
 		var/mult_text = ""
 		if(pad && pad.efficiency_multiplier > 1.0)
 			mult_text = " (with [pad.efficiency_multiplier]x efficiency bonus)"
@@ -478,12 +491,24 @@
 		stop_sending()
 		return
 
+	//WHITE-STEEL: чёрный ящик задания отправляется терминалом — это завершает контракт,
+	//а не начисляет очки за контрабанду.
+	var/datum/component/recoverable/blackbox_recovery
+	for(var/atom/movable/AM in get_turf(pad))
+		if(AM == pad)
+			continue
+		if(istype(AM, /obj/item/blackbox/objective))
+			var/datum/component/recoverable/recovery = AM.GetComponent(/datum/component/recoverable)
+			if(recovery && !recovery.recovered)
+				blackbox_recovery = recovery
+				break
+
 	// Теперь можно безопасно удалять предметы и начислять очки
 	var/total_value = 0
 	var/items_sent = 0
 
 	for(var/atom/movable/AM in get_turf(pad))
-		if(AM == pad)
+		if(AM == pad || istype(AM, /obj/item/blackbox/objective))
 			continue
 		var/base_value = get_contraband_value(AM)
 		if(base_value > 0)
@@ -492,7 +517,15 @@
 			items_sent++
 			qdel(AM)
 
-	if(items_sent > 0)
+	if(blackbox_recovery)
+		if(items_sent > 0)
+			user_id.contraband_points += total_value
+			to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
+		status_report = "Blackbox recovered! Objective data transmitted to NanoTrasen."
+		pad.visible_message("<span class='notice'>[pad] activates and beams away the recovered blackbox!</span>")
+		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
+		blackbox_recovery.initiate_recovery()
+	else if(items_sent > 0)
 		user_id.contraband_points += total_value
 		to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
 		status_report = "Contraband processed! [total_value] points distributed."
@@ -538,10 +571,21 @@
 
 	var/total_value = 0
 	var/list/items_on_pad = list()
+	var/has_blackbox = FALSE
 	if(pad)
 		for(var/atom/movable/AM in get_turf(pad))
 			if(AM == pad)
 				continue
+			if(istype(AM, /obj/item/blackbox/objective))
+				var/datum/component/recoverable/recovery = AM.GetComponent(/datum/component/recoverable)
+				if(recovery && !recovery.recovered)
+					has_blackbox = TRUE
+					items_on_pad += list(list(
+						"name" = AM.name,
+						"base_value" = "Objective",
+						"adjusted_value" = "Mission"
+					))
+					continue
 			var/base_value = get_contraband_value(AM)
 			if(base_value > 0)
 				var/adjusted_value = pad.get_adjusted_value(AM, base_value)
@@ -554,6 +598,7 @@
 
 	data["total_value"] = total_value
 	data["items_on_pad"] = items_on_pad
+	data["blackbox_ready"] = has_blackbox
 
 	return data
 

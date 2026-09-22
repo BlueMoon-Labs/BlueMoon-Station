@@ -1,0 +1,453 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/light/directional/west,
+/obj/machinery/airalarm{
+	dir = 1;
+	pixel_y = -22;
+	req_access = list(62)
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"d" = (
+/obj/machinery/computer/shuttle_flight/exploration,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/exploration)
+"e" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "ex_cargo1";
+	name = "Cargo Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"f" = (
+/obj/machinery/button/door{
+	id = "ex_cab";
+	name = "Cabin Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_y = -32;
+	req_access_txt = "49";
+	specialfunctions = 4
+	},
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"g" = (
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"i" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/airalarm{
+	pixel_y = 23;
+	req_access = list(62)
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"j" = (
+/obj/machinery/power/port_gen/pacman,
+/obj/effect/turf_decal/bot,
+/obj/structure/cable,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -24
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"k" = (
+/obj/structure/window/reinforced,
+/obj/structure/table,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/item/dice/d6{
+	pixel_x = -1;
+	pixel_y = 7
+	},
+/obj/item/gps/mining{
+	pixel_x = 12;
+	pixel_y = 2
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/exploration)
+"l" = (
+/turf/template_noop,
+/area/template_noop)
+"m" = (
+/obj/machinery/modular_computer/console/preset/civilian,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/exploration)
+"n" = (
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/obj/structure/shuttle/engine/heater,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"o" = (
+/obj/item/circuitboard/computer/exploration_shuttle,
+/obj/structure/closet/crate,
+/obj/item/wrench,
+/obj/item/radio/headset/headset_exp,
+/obj/item/radio/headset/headset_exp,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"p" = (
+/obj/structure/cable,
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/airlock/shuttle{
+	id_tag = "ex_cab";
+	req_access_txt = "62"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"q" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	dir = 4;
+	id = "ex_cargo2";
+	name = "Cargo Shutters"
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"r" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "ex_cargo1";
+	name = "Cargo Shutters"
+	},
+/obj/machinery/button/door{
+	id = "ex_cargo1";
+	name = "Cargo Shutters Control";
+	pixel_y = 32;
+	req_access_txt = "62"
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"t" = (
+/obj/docking_port/mobile{
+	dir = 4;
+	dwidth = 5;
+	height = 7;
+	shuttle_id = "exploration";
+	name = "Vanguard Igla shuttle";
+	port_direction = 8;
+	width = 13
+	},
+/obj/structure/cable,
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/shuttle{
+	req_access_txt = "62"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"u" = (
+/obj/machinery/firealarm{
+	dir = 8;
+	pixel_x = 24
+	},
+/obj/structure/window/reinforced,
+/obj/structure/table,
+/obj/machinery/cell_charger{
+	pixel_x = 2;
+	pixel_y = -3
+	},
+/turf/open/floor/mineral/titanium/purple,
+/area/shuttle/exploration)
+"v" = (
+/obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters{
+	dir = 4;
+	id = "ex_cargo2";
+	name = "Cargo Shutters"
+	},
+/obj/machinery/button/door{
+	id = "ex_cargo2";
+	name = "Cargo Shutters Control";
+	pixel_y = 32;
+	req_access_txt = "62"
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"w" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"y" = (
+/obj/machinery/power/apc/auto_name/north{
+	cell_type = /obj/item/stock_parts/cell/high/plus;
+	req_access = list(62)
+	},
+/obj/machinery/button/door{
+	id = "ex_cab";
+	name = "Cabin Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_y = -25;
+	req_access_txt = "62";
+	specialfunctions = 4
+	},
+/obj/machinery/light/small,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"z" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/exploration)
+"A" = (
+/obj/structure/cable,
+/obj/machinery/door/airlock/shuttle{
+	id_tag = "ex_cab";
+	req_access_txt = "62"
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/machinery/door/firedoor/border_only,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"D" = (
+/obj/structure/table,
+/obj/machinery/recharger{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/machinery/button/door{
+	id = "ex_cargo3";
+	name = "Фронтовые бронежалюзи";
+	pixel_x = 5;
+	pixel_y = 6;
+	req_access_txt = "62"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"E" = (
+/turf/closed/wall/mineral/plastitanium/nodiagonal,
+/area/shuttle/exploration)
+"F" = (
+/obj/structure/table,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = 5;
+	pixel_y = 10
+	},
+/obj/item/multitool{
+	pixel_x = -3;
+	pixel_y = 4
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"G" = (
+/obj/structure/shuttle/engine/propulsion/burst,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"H" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 8
+	},
+/obj/item/storage/secure/safe/rangers{
+	pixel_y = -29
+	},
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/exploration)
+"I" = (
+/turf/closed/wall/mineral/plastitanium,
+/area/shuttle/exploration)
+"J" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 1;
+	piping_layer = 4
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"L" = (
+/obj/structure/cable,
+/obj/structure/closet/crate/science,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/item/tank/internals/tactical,
+/obj/item/tank/internals/tactical,
+/obj/item/tank/internals/tactical,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"M" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/camera/autoname,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"P" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"Q" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"R" = (
+/obj/effect/spawner/structure/window/shuttle,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "ex_cargo3"
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"S" = (
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"T" = (
+/obj/machinery/light/directional/east,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"U" = (
+/turf/open/floor/mineral/plastitanium,
+/area/shuttle/exploration)
+"W" = (
+/obj/machinery/computer/objective,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/exploration)
+"X" = (
+/obj/machinery/light_switch/directional/south,
+/obj/machinery/sleeper{
+	dir = 8
+	},
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/exploration)
+"Z" = (
+/obj/machinery/light/directional/north,
+/obj/effect/turf_decal/bot,
+/obj/machinery/button/door{
+	id = "ex_cab";
+	name = "Cabin Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_y = 24;
+	req_access_txt = "62";
+	specialfunctions = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+
+(1,1,1) = {"
+l
+R
+R
+z
+z
+t
+z
+z
+r
+e
+E
+I
+l
+"}
+(2,1,1) = {"
+R
+R
+D
+a
+z
+y
+z
+i
+U
+U
+w
+E
+I
+"}
+(3,1,1) = {"
+R
+W
+P
+f
+z
+p
+z
+Z
+U
+U
+o
+n
+G
+"}
+(4,1,1) = {"
+R
+d
+P
+S
+g
+S
+A
+Q
+U
+U
+J
+n
+G
+"}
+(5,1,1) = {"
+R
+m
+P
+S
+k
+H
+z
+M
+U
+U
+L
+n
+G
+"}
+(6,1,1) = {"
+R
+R
+F
+T
+u
+X
+z
+Q
+U
+U
+j
+E
+I
+"}
+(7,1,1) = {"
+l
+R
+R
+z
+z
+z
+z
+z
+v
+q
+E
+I
+l
+"}
