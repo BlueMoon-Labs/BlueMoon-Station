@@ -18,7 +18,7 @@
 		user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>[user]</b> [replacetext(pick(GLOB.dirty_rimming_messages), "$PARTNER", "\the <b>[partner]</b>")]</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	else
 		user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>[user]</b> вылизывает попку <b>[partner]</b>.</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(NORMAL_LUST, null, user, "anus") //SPLURT edit
 
 /datum/interaction/lewd/lickfeet
@@ -44,6 +44,6 @@
 	else
 		message = "облизывает <b>[partner]</b> [partner.has_feet() == 1 ? "ножку" : "ножки"]."
 
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	user.handle_post_sex(LOW_LUST, null, user)

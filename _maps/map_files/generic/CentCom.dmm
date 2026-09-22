@@ -14841,7 +14841,7 @@
 	pixel_y = 7;
 	pixel_x = 9
 	},
-/obj/item/gun/medbeam{
+/obj/item/gun/medbeam/syndicate{
 	pixel_x = -6;
 	pixel_y = 7
 	},

@@ -1,0 +1,1868 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ac" = (
+/obj/machinery/light,
+/obj/machinery/status_display/evac{
+	pixel_y = -32
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"ap" = (
+/obj/effect/landmark/navigate_destination/library,
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"aC" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"aH" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer2,
+/turf/open/floor/carpet,
+/area/template_noop)
+"bq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"bY" = (
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"cb" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/structure/chair/office/dark,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/effect/landmark/start/assistant,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"cx" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"cH" = (
+/obj/effect/landmark/event_spawn,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"cL" = (
+/obj/machinery/camera{
+	c_tag = "Library - Beam";
+	name = "library camera"
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"cO" = (
+/obj/machinery/photocopier,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"dD" = (
+/turf/open/floor/plasteel,
+/area/template_noop)
+"dR" = (
+/obj/structure/filingcabinet,
+/obj/machinery/airalarm{
+	dir = 1;
+	pixel_y = -22
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"dT" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"ec" = (
+/obj/structure/easel,
+/obj/item/canvas/twentythreeXtwentythree,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"ef" = (
+/obj/structure/easel,
+/obj/item/canvas/nineteenXnineteen,
+/obj/item/canvas/twentythreeXtwentythree,
+/obj/item/canvas/twentythreeXtwentythree,
+/obj/machinery/button/door{
+	id = "PrivateStudy1";
+	name = "Privacy Shutters";
+	pixel_x = 9;
+	pixel_y = 24
+	},
+/obj/machinery/button/door{
+	desc = "Bolts the doors to the Private Study.";
+	id = "PrivateStudy";
+	name = "Private Study Lock";
+	pixel_x = -5;
+	pixel_y = 24;
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"eh" = (
+/turf/closed/wall,
+/area/template_noop)
+"eU" = (
+/obj/structure/table/wood,
+/obj/machinery/photocopier{
+	pixel_x = 0;
+	pixel_y = 7
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 1
+	},
+/obj/machinery/light_switch{
+	pixel_y = 5;
+	pixel_x = 23
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"fb" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/template_noop)
+"fg" = (
+/obj/machinery/light,
+/obj/machinery/light_switch{
+	pixel_y = -26
+	},
+/obj/item/storage/briefcase,
+/obj/structure/table/wood,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"fn" = (
+/obj/structure/chair/comfy/plywood{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"fH" = (
+/obj/machinery/status_display/evac{
+	pixel_x = 32
+	},
+/obj/structure/table/wood,
+/obj/machinery/computer/library/checkout,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"fN" = (
+/obj/structure/table/wood,
+/obj/item/storage/crayons,
+/obj/item/storage/crayons,
+/obj/item/chisel,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"ga" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/door/airlock/wood{
+	id_tag = "PrivateStudy";
+	name = "Gaming Backroom"
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"ge" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/turf/open/floor/carpet,
+/area/template_noop)
+"gQ" = (
+/obj/structure/noticeboard{
+	dir = 8;
+	pixel_x = 32
+	},
+/obj/machinery/libraryscanner,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"gU" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/sign/painting/library{
+	pixel_y = -32
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"hg" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/carpet,
+/area/template_noop)
+"hj" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"hY" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"iR" = (
+/obj/machinery/door/window{
+	dir = 8;
+	name = "Library Desk";
+	req_access_txt = "37"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"jx" = (
+/obj/structure/table/wood,
+/obj/item/taperecorder,
+/obj/item/camera,
+/obj/machinery/status_display/ai{
+	pixel_y = -32
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"jE" = (
+/obj/effect/landmark/start/librarian,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"jF" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"jX" = (
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"kf" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"ks" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"kK" = (
+/obj/structure/table/wood/fancy,
+/obj/machinery/door/window{
+	name = "Secure Art Exhibition"
+	},
+/obj/structure/sign/painting/large/library_private/directional/north,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"kR" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"lc" = (
+/obj/structure/extinguisher_cabinet,
+/turf/closed/wall,
+/area/template_noop)
+"lH" = (
+/obj/machinery/status_display/evac,
+/turf/closed/wall,
+/area/template_noop)
+"lK" = (
+/obj/machinery/computer/security/telescreen/entertainment{
+	pixel_y = -32
+	},
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"md" = (
+/obj/machinery/newscaster{
+	pixel_x = -32
+	},
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"mf" = (
+/obj/structure/chair/office/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"mC" = (
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"mE" = (
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"mW" = (
+/obj/structure/chair/sofa/left/brown,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"nk" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/chair/office/dark,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"nq" = (
+/obj/machinery/door/morgue{
+	name = "Curator's Study";
+	req_access_txt = "37"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"nE" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"nH" = (
+/obj/item/kirbyplants/random,
+/obj/structure/sign/painting/library_private{
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"nX" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/sign/painting/large/library/directional/south,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"oe" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"on" = (
+/obj/structure/chair/office/dark{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"px" = (
+/obj/structure/table/wood,
+/obj/item/newspaper{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -4;
+	pixel_y = 2
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"pK" = (
+/obj/machinery/airalarm{
+	dir = 1;
+	pixel_y = -22
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"qt" = (
+/obj/structure/extinguisher_cabinet{
+	pixel_x = -26
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/holopad{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"qw" = (
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "General Fax";
+	name = "General Fax";
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"qO" = (
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 8
+	},
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/carpet,
+/area/template_noop)
+"rv" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/sign/painting/large/library/directional/east,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"rD" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"rU" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"rZ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/carpet,
+/area/template_noop)
+"si" = (
+/obj/structure/table/wood,
+/obj/machinery/status_display/evac{
+	pixel_x = -32
+	},
+/obj/item/storage/fancy/donut_box,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"sJ" = (
+/obj/effect/landmark/barthpot,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/template_noop)
+"tr" = (
+/obj/machinery/light,
+/obj/structure/bookcase/random/opacity/nonfiction,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"tw" = (
+/obj/machinery/newscaster{
+	pixel_x = 32
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"tF" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/machinery/light_switch{
+	pixel_y = 21;
+	pixel_x = 11
+	},
+/obj/machinery/firealarm{
+	dir = 4;
+	pixel_x = -24
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"tJ" = (
+/obj/machinery/firealarm{
+	pixel_y = 26
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"ui" = (
+/obj/structure/displaycase/trophy,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"uT" = (
+/obj/structure/sign/directions/evac{
+	pixel_y = -8
+	},
+/obj/structure/sign/directions/medical,
+/obj/structure/sign/directions/security{
+	pixel_y = 8
+	},
+/turf/closed/wall,
+/area/template_noop)
+"vn" = (
+/turf/template_noop,
+/area/template_noop)
+"vo" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"vr" = (
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"vB" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/sign/painting/library{
+	pixel_x = 32
+	},
+/obj/machinery/light,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"vS" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"vT" = (
+/obj/structure/table/wood,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"vU" = (
+/obj/item/kirbyplants{
+	icon_state = "plant-26"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"vY" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/disposalpipe/segment,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"wi" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/template_noop)
+"wj" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"wt" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"wx" = (
+/obj/machinery/newscaster{
+	pixel_x = -32
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"wG" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"wJ" = (
+/obj/structure/bookcase/random/opacity/fiction,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"wO" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"xn" = (
+/obj/structure/table/wood,
+/obj/item/storage/dice,
+/obj/item/toy/figure/curator{
+	pixel_x = -11;
+	pixel_y = 0
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"xq" = (
+/obj/effect/turf_decal/siding/wood/thin/corner,
+/turf/open/floor/carpet,
+/area/template_noop)
+"xI" = (
+/obj/machinery/photocopier,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"yg" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/donut_box,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"AV" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Bc" = (
+/obj/structure/bookcase/random/opacity/nonfiction,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Bn" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Bo" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Bp" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"BE" = (
+/obj/structure/bookcase/random/opacity/fiction,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"BK" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -7;
+	pixel_y = 7
+	},
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/pen,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"BY" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/item/folder,
+/obj/item/pen/red{
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/obj/item/pen/blue{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/pen{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/structure/table/wood,
+/obj/machinery/door/window{
+	dir = 1;
+	name = "Library Desk";
+	req_access_txt = "37"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Cv" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Cy" = (
+/obj/machinery/camera{
+	c_tag = "Library - Port";
+	name = "library camera";
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/template_noop)
+"Df" = (
+/obj/structure/railing/corner/end{
+	pixel_x = 0;
+	pixel_y = 6
+	},
+/obj/structure/sign/painting/library{
+	pixel_x = 32
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Dj" = (
+/obj/structure/table/wood/fancy,
+/obj/structure/sign/painting/library_secure{
+	pixel_y = 32
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Dn" = (
+/obj/structure/chair/comfy/plywood{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"DD" = (
+/obj/machinery/newscaster{
+	pixel_x = 32
+	},
+/obj/structure/table/wood,
+/obj/item/camera_film{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/camera_film,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"DN" = (
+/obj/machinery/airalarm{
+	dir = 4;
+	pixel_x = -22
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -3;
+	pixel_y = 0
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"DQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"EA" = (
+/obj/structure/chair/comfy/black,
+/obj/effect/landmark/start/librarian,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"Fc" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"FW" = (
+/obj/machinery/computer/security/telescreen/entertainment{
+	pixel_x = -32
+	},
+/obj/structure/chair/comfy/plywood{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Gd" = (
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"GW" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 10
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Hb" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/vending/games,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Hh" = (
+/obj/structure/chair/sofa/right/brown,
+/obj/effect/landmark/start/assistant,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Hp" = (
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Hv" = (
+/obj/structure/disposalpipe/segment{
+	dir = 10
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"HQ" = (
+/obj/structure/railing{
+	dir = 1
+	},
+/obj/structure/sign/painting/library{
+	pixel_y = -32
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"HX" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Ib" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/template_noop)
+"Iu" = (
+/obj/structure/table/wood,
+/obj/item/storage/briefcase{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/secure/briefcase,
+/obj/machinery/newscaster{
+	pixel_x = 32
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Jm" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"JL" = (
+/obj/structure/bookcase/random/opacity/reference,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"KA" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"KM" = (
+/obj/structure/table/wood,
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/fancy/candle_box,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"La" = (
+/obj/structure/destructible/cult/tome,
+/obj/item/book/codex_gigas,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"Lo" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Lz" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"LP" = (
+/obj/structure/railing,
+/obj/structure/sign/painting/large/library/directional/north,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Mr" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/chair/office/dark{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"Mt" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"MB" = (
+/obj/structure/table/wood/fancy,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced,
+/obj/structure/sign/painting/library_secure{
+	pixel_y = 32
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"MD" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"MK" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"NB" = (
+/obj/structure/railing,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Oh" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Library Access"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"OM" = (
+/obj/structure/bookcase{
+	name = "Forbidden Knowledge"
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"OR" = (
+/obj/structure/table/wood/fancy,
+/obj/machinery/door/window{
+	name = "Secure Art Exhibition"
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Pd" = (
+/obj/effect/spawner/structure/window,
+/obj/machinery/door/poddoor/shutters/preopen{
+	desc = "Privacy shutters for the Private Study. Stops people spying in on your game.";
+	id = "PrivateStudy1";
+	name = "Private Study Privacy Shutters"
+	},
+/turf/open/floor/plating,
+/area/template_noop)
+"Ph" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/machinery/status_display/evac{
+	pixel_y = -32
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"PF" = (
+/obj/machinery/status_display/evac{
+	pixel_y = -32
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"PJ" = (
+/obj/structure/chair/comfy/plywood{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Qa" = (
+/obj/machinery/vending/wardrobe/curator_wardrobe,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"Qh" = (
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Rb" = (
+/obj/machinery/bookbinder,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Re" = (
+/obj/structure/bookcase/random/opacity/adult,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Rm" = (
+/obj/effect/turf_decal/siding/wood/thin/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"So" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/paicard,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"Sp" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/table/wood/fancy/royalblack,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"SO" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Ti" = (
+/obj/machinery/airalarm{
+	dir = 8;
+	pixel_x = 24
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Tx" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"TS" = (
+/obj/structure/table/wood,
+/obj/item/clipboard,
+/obj/item/folder,
+/obj/machinery/status_display/ai{
+	pixel_x = -32
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Uk" = (
+/obj/machinery/light_switch{
+	pixel_y = 26
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"UA" = (
+/obj/machinery/newscaster{
+	pixel_x = 32
+	},
+/obj/structure/filingcabinet,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"UO" = (
+/obj/item/kirbyplants/random,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"UP" = (
+/obj/structure/table/wood/fancy/royalblack,
+/obj/item/folder,
+/obj/item/pen,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"Vx" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/template_noop)
+"VA" = (
+/obj/machinery/computer/security/telescreen/entertainment{
+	pixel_y = -32
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/table/wood,
+/obj/item/storage/bag/books,
+/obj/item/taperecorder,
+/obj/item/clipboard,
+/obj/machinery/camera{
+	c_tag = "Library - Aft";
+	dir = 10;
+	name = "library camera"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"VB" = (
+/obj/item/kirbyplants{
+	icon_state = "plant-21"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"VO" = (
+/obj/structure/table/wood,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/obj/item/folder,
+/obj/item/pen,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Wf" = (
+/obj/structure/table/wood,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
+/obj/item/flashlight/lamp,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Wm" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/disposal/bin,
+/obj/structure/sign/plaques/kiddie/library{
+	pixel_x = -32
+	},
+/obj/structure/disposalpipe/trunk{
+	dir = 4
+	},
+/obj/machinery/camera{
+	c_tag = "Library Backroom";
+	dir = 4;
+	name = "library camera"
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Wu" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/landmark/start/librarian,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/turf/open/floor/carpet,
+/area/template_noop)
+"WC" = (
+/obj/effect/landmark/blobstart,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"Xa" = (
+/obj/structure/bookcase/random/opacity/religion,
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Xi" = (
+/obj/machinery/vending/coffee,
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"XI" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"XP" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/machinery/door/airlock/wood{
+	id_tag = "PrivateStudy";
+	name = "Gaming Backroom"
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"XQ" = (
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -3;
+	pixel_y = 6
+	},
+/obj/item/folder{
+	pixel_x = 3;
+	pixel_y = -2
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+"XT" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/carpet,
+/area/template_noop)
+"XY" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/table/wood/fancy/royalblack,
+/turf/open/floor/carpet/royalblack,
+/area/template_noop)
+"Yp" = (
+/obj/machinery/light,
+/obj/structure/table/wood,
+/obj/item/folder,
+/obj/item/laser_pointer{
+	pixel_x = 3
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_y = -26
+	},
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/red,
+/area/template_noop)
+"Yy" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/holopad{
+	pixel_x = 1;
+	pixel_y = 0
+	},
+/obj/machinery/newscaster{
+	pixel_x = 0;
+	pixel_y = 32
+	},
+/turf/open/floor/wood/wood_large,
+/area/template_noop)
+"Zo" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/template_noop)
+"Zw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/template_noop)
+
+(1,1,1) = {"
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+dD
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+"}
+(2,1,1) = {"
+eh
+BK
+FW
+Xa
+XQ
+md
+DN
+Zw
+Re
+vT
+PJ
+wx
+ui
+eh
+tF
+TS
+Wm
+qt
+si
+Mt
+eh
+"}
+(3,1,1) = {"
+fb
+Xa
+vr
+vr
+fn
+VO
+fn
+Zw
+vU
+Re
+Re
+vr
+ui
+Pd
+UO
+vr
+dT
+on
+on
+pK
+eh
+"}
+(4,1,1) = {"
+HX
+hg
+nE
+XT
+XT
+SO
+Zo
+aH
+Zo
+Zo
+Zo
+wt
+Zo
+ga
+Zo
+wj
+nk
+So
+XY
+lK
+eh
+"}
+(5,1,1) = {"
+Lo
+ks
+Hp
+xq
+cH
+rU
+rU
+Rm
+xq
+rU
+rU
+AV
+rU
+XP
+rU
+Bp
+cb
+UP
+Sp
+Gd
+eh
+"}
+(6,1,1) = {"
+fb
+Xa
+rD
+ge
+eU
+Fc
+qw
+aC
+wi
+VB
+JL
+cx
+Bc
+Pd
+ec
+Bo
+mC
+mf
+Mr
+ac
+eh
+"}
+(7,1,1) = {"
+eh
+eh
+Bn
+Ib
+eh
+eh
+eh
+cL
+wi
+BE
+Dn
+cx
+ui
+eh
+ef
+Bo
+WC
+bY
+hj
+UO
+eh
+"}
+(8,1,1) = {"
+eh
+LP
+MK
+wi
+HQ
+eh
+Xi
+MK
+wi
+wJ
+Wf
+KA
+tr
+lH
+fN
+vo
+Hv
+mE
+jX
+vY
+dD
+"}
+(9,1,1) = {"
+eh
+NB
+MK
+wi
+nX
+eh
+Hh
+aC
+wi
+BE
+fn
+vr
+ui
+eh
+KM
+Iu
+Hb
+UA
+Rb
+xI
+eh
+"}
+(10,1,1) = {"
+eh
+MB
+GW
+ge
+hY
+eh
+mW
+aC
+wi
+VB
+JL
+vr
+Bc
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+"}
+(11,1,1) = {"
+eh
+kK
+XI
+wi
+gU
+eh
+px
+aC
+sJ
+Qh
+MD
+iR
+VA
+eh
+Qa
+La
+dR
+eh
+vn
+vn
+vn
+"}
+(12,1,1) = {"
+eh
+OR
+XI
+Cy
+lc
+eh
+Yy
+aC
+wi
+yg
+Tx
+oe
+fg
+eh
+Uk
+wG
+Ph
+eh
+vn
+vn
+vn
+"}
+(13,1,1) = {"
+eh
+Dj
+jE
+qO
+kR
+vS
+kR
+ap
+Vx
+BY
+Wu
+rZ
+bq
+nq
+Jm
+EA
+Yp
+eh
+vn
+vn
+vn
+"}
+(14,1,1) = {"
+eh
+LP
+kf
+rU
+rU
+jF
+rU
+Rm
+wi
+xn
+ks
+Lz
+PF
+eh
+nH
+DQ
+jx
+eh
+vn
+vn
+vn
+"}
+(15,1,1) = {"
+eh
+Df
+wO
+rv
+vB
+eh
+tJ
+Cv
+Lz
+DD
+fH
+gQ
+Ti
+eh
+OM
+tw
+cO
+eh
+vn
+vn
+vn
+"}
+(16,1,1) = {"
+uT
+eh
+eh
+eh
+eh
+eh
+eh
+Oh
+Lo
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+eh
+vn
+vn
+vn
+"}

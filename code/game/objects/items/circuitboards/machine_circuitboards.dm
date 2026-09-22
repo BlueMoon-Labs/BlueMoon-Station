@@ -1599,6 +1599,20 @@
 		/obj/item/stock_parts/micro_laser = 1,
 		/obj/item/stock_parts/manipulator = 1,)
 
+/obj/item/circuitboard/machine/manucrafter // BLUEMOON ADD
+	name = "Manufacturing Assembling Machine (Machine Board)"
+	icon_state = "engineering"
+	build_path = /obj/machinery/power/manufacturing/crafter
+	req_components = list(
+		/obj/item/stack/sheet/metal = 5,
+		/obj/item/stock_parts/manipulator = 1,
+	)
+
+/obj/item/circuitboard/machine/manucrafter/cooker // BLUEMOON ADD
+	name = "Manufacturing Cooking Machine (Machine Board)"
+	icon_state = "service"
+	build_path = /obj/machinery/power/manufacturing/crafter/cooker
+
 /obj/item/circuitboard/machine/circuit_imprinter/hacked // BLUEMOON ADD
 	name = "Hacked Imprinter (Machine Board)"
 	build_path = /obj/machinery/rnd/production/circuit_imprinter/hacked

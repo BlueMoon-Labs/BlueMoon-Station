@@ -45,7 +45,20 @@
 	item_state = "blackops"
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
 	armor = list(MELEE = 30, BULLET = 40, LASER = 5, ENERGY = 0, BOMB = 20, BIO = 15, RAD = 5, FIRE = 5, ACID = 20)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/blackops/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/blackops/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 //obj/item/clothing/glasses/welding/hecu
 //	name = "welding goggles"

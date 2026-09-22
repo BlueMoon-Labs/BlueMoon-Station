@@ -20,6 +20,7 @@
 	item_state = "darkcarapace"
 	blood_overlay_type = "armor"
 	armor = list("melee" = 95, "bullet" = 95, "laser" = 95, "energy" = 95, "bomb" = 95, "bio" = 95, "rad" = 100, "fire" = 98, "acid" = 98)
+	brc_mitigation_bonus = 30  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/debug
 	name = "Bluespace Tech Helmet"
@@ -30,6 +31,7 @@
 	name = "Bluespace Tech Hardsuit"
 	desc = "A specialised hardsuit for Bluespace agents."
 	armor = list("melee" = 99, "bullet" = 99, "laser" = 99, "energy" = 99, "bomb" = 99, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
+	brc_mitigation_bonus = 30  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/debug
 
 /obj/item/storage/backpack/holding/duffel/debug

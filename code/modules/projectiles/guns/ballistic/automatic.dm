@@ -131,10 +131,10 @@
 	mag_type = /obj/item/ammo_box/magazine/m556
 	fire_sound = 'sound/weapons/rifleshot.ogg'
 	can_suppress = FALSE
-	automatic_burst_overlay = FALSE
 	var/obj/item/gun/ballistic/revolver/grenadelauncher/underbarrel
 	burst_size = 3
 	burst_shot_delay = 2
+	fire_delay = 2
 	pin = /obj/item/firing_pin/implant/pindicate
 
 /obj/item/gun/ballistic/automatic/m90/unrestricted
@@ -166,31 +166,8 @@
 		return underbarrel.attackby(A, user, params)
 	return ..()
 
-/obj/item/gun/ballistic/automatic/m90/update_overlays()
-	. = ..()
-	switch(select)
-		if(0)
-			. += "[initial(icon_state)]semi"
-		if(1)
-			. += "[initial(icon_state)]burst"
-
 /obj/item/gun/ballistic/automatic/m90/update_icon_state()
 	icon_state = "[initial(icon_state)][magazine ? "" : "-e"]"
-
-/obj/item/gun/ballistic/automatic/m90/fire_select()
-	var/mob/living/carbon/human/user = usr
-	switch(select)
-		if(0)
-			select = 1
-			burst_size = initial(burst_size)
-			to_chat(user, span_notice("You switch to [burst_size]-rnd burst."))
-		if(1)
-			select = 0
-			burst_size = 1
-			to_chat(user, span_notice("You switch to semi-auto."))
-	playsound(user, 'sound/weapons/empty.ogg', 100, 1)
-	update_icon()
-	return
 
 /obj/item/gun/ballistic/automatic/tommygun
 	name = "\improper Thompson SMG"
@@ -380,6 +357,7 @@
 	fire_sound = 'sound/weapons/gunshot.ogg'
 	can_suppress = FALSE
 	zoomable = FALSE
+	casing_ejector = FALSE
 	mag_type = /obj/item/ammo_box/magazine/toy/sniper_rounds
 
 /obj/item/gun/ballistic/automatic/sniper_rifle/syndicate

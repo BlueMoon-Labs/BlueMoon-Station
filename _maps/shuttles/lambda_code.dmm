@@ -144,7 +144,7 @@
 "Z" = (
 /obj/structure/closet/crate,
 /obj/item/storage/firstaid/tactical,
-/obj/item/gun/medbeam,
+/obj/item/gun/medbeam/syndicate,
 /obj/item/grenade/smokebomb,
 /obj/item/grenade/smokebomb,
 /obj/item/grenade/stingbang/mega,

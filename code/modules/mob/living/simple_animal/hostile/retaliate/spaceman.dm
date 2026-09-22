@@ -64,6 +64,7 @@
 	unsuitable_atmos_damage = 15
 	status_flags = CANPUSH
 	search_objects = 1
+	del_on_death = TRUE
 
 /mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/Aggro()
 	..()

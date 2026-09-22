@@ -30,6 +30,10 @@
 	name = ".45 Laser casing"
 	projectile_type = /obj/item/projectile/beam/laser
 
+/obj/item/ammo_casing/c45/armour
+	name = ".45 ACP"
+	projectile_type = /obj/item/projectile/bullet/c45/ap
+
 /obj/item/ammo_casing/c9mm/rubber
 	name = "9mm Rubber casing"
 	projectile_type = /obj/item/projectile/bullet/c9mm/rubber

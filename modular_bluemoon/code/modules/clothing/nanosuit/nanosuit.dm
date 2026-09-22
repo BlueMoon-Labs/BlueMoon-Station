@@ -177,6 +177,7 @@
 	name = "nanosuit"
 	desc = "Some sort of alien future suit. It looks very robust. Property of CryNet Systems."
 	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 40)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/grenade, /obj/item/nullrod, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/tank/internals)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT

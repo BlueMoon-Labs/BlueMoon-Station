@@ -18,20 +18,20 @@
 		to_chat(usr, "<span class='notice'>You frown because now there's nothing you can show.</span>")
 	else if(!HAS_TRAIT(I, ABSTRACT_ITEM_TRAIT))
 		I.showoff(src)
-		point_bubble(I)
+		showoff_bubble(I)
 
-/atom/movable/proc/point_bubble(atom/pointed_atom)
+/atom/movable/proc/showoff_bubble(atom/pointed_atom)
 	var/mutable_appearance/thought_bubble = mutable_appearance(
 		'modular_bluemoon/icons/effects/effects.dmi',
 		"thought_bubble",
 		//offset_spokesman = src,	//here MAY be some problems on multi-z maps
-		plane = POINT_PLANE,
+		layer = POINT_LAYER,
 		appearance_flags = KEEP_APART,
 	)
 
 	var/mutable_appearance/pointed_atom_appearance = new(pointed_atom.appearance)
 	pointed_atom_appearance.blend_mode = BLEND_INSET_OVERLAY
-	pointed_atom_appearance.plane = FLOAT_PLANE
+	pointed_atom_appearance.plane = thought_bubble.plane
 	pointed_atom_appearance.layer = FLOAT_LAYER
 	pointed_atom_appearance.pixel_x = 0
 	pointed_atom_appearance.pixel_y = 0
@@ -40,6 +40,7 @@
 	thought_bubble.pixel_x = 16
 	thought_bubble.pixel_y = 32
 	thought_bubble.alpha = 200
+	thought_bubble.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 	add_overlay(thought_bubble)
 	LAZYADD(update_overlays_on_z, thought_bubble)

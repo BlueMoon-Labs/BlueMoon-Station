@@ -417,6 +417,8 @@
 #define REVERSE_BEAR_TRAP_TRAIT "reverse-bear-trap"
 #define GLUED_ITEM_TRAIT "glued-item"
 #define CURSED_MASK_TRAIT "cursed-mask"
+#define TRAIT_VOID_MASK_IMMUNE "void-mask-immune"
+#define VOID_MASK_TRAIT "void-mask"
 #define HIS_GRACE_TRAIT "his-grace"
 #define HAND_REPLACEMENT_TRAIT "magic-hand"
 #define HOT_POTATO_TRAIT "hot-potato"
@@ -486,6 +488,8 @@
 Remember to update _globalvars/traits.dm if you're adding/removing/renaming traits.
 */
 
+#define TRAIT_BLOCK_SECHUD "block_sechud"
+#define TRAIT_BLOCK_MEDHUD "block_medhud"
 //mob traits
 /// Forces the user to stay unconscious.
 #define TRAIT_KNOCKEDOUT "knockedout"

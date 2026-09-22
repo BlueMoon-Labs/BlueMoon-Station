@@ -81,7 +81,7 @@
 	custom_materials = list(/datum/material/iron=20000)
 	bolts = FALSE
 	var/obj/machinery/power/dynamo/Generator = null
-	var/next_pedal = 0
+	COOLDOWN_DECLARE(pedal_cd)
 	// var/pedal_left_leg = FALSE
 
 /obj/structure/chair/pedalgen/Initialize(mapload)
@@ -107,7 +107,7 @@
 		. += "<b>[Generator.raw_power]</b> мощи накоплено, и генератор вырабатывает <b>[Generator.raw_power > 10 ? "[2*Generator.power_produced/1000]" : "[Generator.power_produced/1000]"]k</b> электроэнергии!"
 	else
 		. += "Генератор затих. Кто-то должен крутить педали!"
-	. += span_notice("Используй клавиши передвижения или кликай по [src] для выработки энергии.")
+	. += span_notice("Используй клавиши передвижения для выработки энергии.")
 
 /obj/structure/chair/pedalgen/update_icon_state()
 	switch(Generator.raw_power)
@@ -134,40 +134,28 @@
 	else
 		return ..()
 
-/obj/structure/chair/pedalgen/attack_hand(mob/user)
-	pedal(user)
-	return FALSE
-
 /obj/structure/chair/pedalgen/proc/pedal(mob/user)
+	if(!COOLDOWN_FINISHED(src, pedal_cd))
+		return FALSE
 	if(!has_buckled_mobs())
 		return FALSE
 	if(buckled_mobs[1].buckled != src)
 		return FALSE
-	if(buckled_mobs[1] != user)
-		buckled_mobs[1].visible_message(\
-			"<span class='notice'>[buckled_mobs[1].name] was unbuckled by [user.name]!</span>",\
-			"You were unbuckled from [src] by [user.name].",\
-			"You hear metal clanking")
-		unbuckle_mob(buckled_mobs[1])
-		add_fingerprint(user)
-		return FALSE
 	var/mob/living/carbon/C = buckled_mobs[1]
 	if(!istype(C))
 		return FALSE
-	if(next_pedal >= world.time)
+	if(!C.has_legs())
 		return FALSE
-	// if(!C.has_legs())
-	// 	return FALSE
 	if(/*C.IsImmobilized() || C.IsParalyzed() || */!CHECK_MOBILITY(C, MOBILITY_MOVE))
 		return FALSE
-	if(C.stat >= SOFT_CRIT)
+	if(C.stat)
 		return FALSE
 	if(ismonkey(C))
 		if(!C.handcuffed)
 			unbuckle_mob(C)
 			visible_message(span_warning("[C] спрыгивает с [src]!"))
 			return FALSE
-	next_pedal = world.time + 4
+	COOLDOWN_START(src, pedal_cd, 5)
 	playsound(src, 'sound/items/ratchet.ogg', 10)
 	Generator.Rotated()
 	C.doSprintLossTiles(4)
@@ -176,7 +164,7 @@
 			C.visible_message(span_warning("[C] теряет сознание из-за голода и жажды."))
 			C.Unconscious(30 SECONDS)
 		else
-			to_chat(user, span_danger("Вы слишком истощены. Необходимо поесть и попить."))
+			to_chat(C, span_danger("Вы слишком истощены. Необходимо поесть и попить."))
 			C.DefaultCombatKnockdown(300)
 	// var/mob/living/carbon/human/pedaler = buckled_mobs[1]
 	// if(ishuman(pedaler))
@@ -195,7 +183,7 @@
 			C.adjust_nutrition(-10*HUNGER_FACTOR) // we are burning calories.
 	if(!HAS_TRAIT(C, TRAIT_NOTHIRST))
 		if(ismonkey(C))
-			C.adjust_nutrition(-THIRST_FACTOR)
+			C.adjust_thirst(-THIRST_FACTOR)
 		else
 			C.adjust_thirst(-10*THIRST_FACTOR)
 	// pedal_left_leg = !pedal_left_leg
@@ -245,6 +233,8 @@
 	if(I.force >= 5 && istype(M))
 		if(M.IsUnconscious())
 			M.SetUnconscious(0)
+			M.set_nutrition(max(M.nutrition, NUTRITION_LEVEL_STARVING + 20*HUNGER_FACTOR))
+			M.set_thirst(max(M.thirst, THIRST_LEVEL_PARCHED + 20*THIRST_FACTOR))
 		M.emote("scream")
 		pedal(M)
 		M.set_lust(0) // some whips appy lust damage. no comments.
@@ -258,17 +248,13 @@
 
 /obj/structure/chair/pedalgen/process(delta_time)
 	if(!has_buckled_mobs() || !ismonkey(buckled_mobs[1]))
-		STOP_PROCESSING(SSobj, src)
-		return
-	if(next_pedal < world.time)
-		pedal(buckled_mobs[1])
+		return PROCESS_KILL
+	pedal(buckled_mobs[1])
 
-/obj/structure/chair/pedalgen/Move(NewLoc, Dir = 0, step_x = 0, step_y = 0)
+/obj/structure/chair/pedalgen/Moved(atom/OldLoc, Dir)
 	. = ..()
-	if(has_buckled_mobs() && !moving_diagonally)
-		if(buckled_mobs[1].buckled == src)
-			buckled_mobs[1].loc = loc
-			handle_layer()
+	if(!moving_diagonally)
+		handle_layer()
 
 /obj/structure/chair/pedalgen/verb/release()
 	set name = "Release Pedalgen"

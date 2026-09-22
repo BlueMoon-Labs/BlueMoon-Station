@@ -88,6 +88,12 @@
 	uses = 1
 	starting_organ = /obj/item/organ/eyes/robotic/toggled/glow
 
+
+/obj/item/autosurgeon/vanguard
+	uses = 1
+
+
+
 /obj/item/autosurgeon/syndicate
 	name = "Suspicious Autosurgeon"
 	desc = "Автохирург имеет всего пять использований. "
@@ -133,6 +139,19 @@
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
 	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/mantis_blade
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
+
+/obj/item/autosurgeon/syndicate/mantis_blade/l
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
+
+/obj/item/autosurgeon/syndicate/inteq/mantis_blade
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
+
+/obj/item/autosurgeon/syndicate/inteq/mantis_blade/l
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
+
 
 //BOX O' IMPLANTS
 

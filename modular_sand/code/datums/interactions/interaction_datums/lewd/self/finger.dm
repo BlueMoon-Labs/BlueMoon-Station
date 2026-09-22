@@ -22,7 +22,7 @@
 		"погружает палец в свой сфинктер.",
 		"суёт палец в своё анальное колечко.",
 		"разрабатывает своё анальное кольцо собственного пальца.")]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_ANUS) //SPLURT edit
 
 /datum/interaction/lewd/finger_self
@@ -69,5 +69,5 @@
 		message += " прямо в [liquid_container]"
 
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_VAGINA)

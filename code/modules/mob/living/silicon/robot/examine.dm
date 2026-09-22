@@ -1,5 +1,8 @@
 /mob/living/silicon/robot/examine(mob/user)
-	. = list("<span class='info'>Это [icon2html(src, user)] \a <EM>[src]</EM>, [chameleon_module() ? "инженерный" : vocabulary_to_ru(GLOB.borgmodule_ru_adjective, src.module.name)] юнит!")
+	var/display_name = src.name
+	if(isliving(user) && user.stat == UNCONSCIOUS && user != src)
+		display_name = "неизвестный киборг"
+	. = list("<span class='info'>Это [icon2html(src, user)] \a <EM>[display_name]</EM>, [chameleon_module() ? "инженерный" : vocabulary_to_ru(GLOB.borgmodule_ru_adjective, src.module.name)] юнит!")
 	if(desc)
 		. += "[desc]"
 

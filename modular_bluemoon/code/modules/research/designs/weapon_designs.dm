@@ -307,6 +307,17 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_AMBER
 
+/datum/design/jager
+	name = "\improper jager Shotgun conversion kit"
+	desc = "A set of spare parts for converting a combat shotgun into the jager mag-fed shotgun. Can be used only on empty gun"
+	id = "jager"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/silver = 3500, /datum/material/titanium = 2000 )
+	build_path = /obj/item/weaponcrafting/gunkit/jager
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER
+
 //////////////////
 // Requiem 12.7x55 (syndicate kit disk) //
 //////////////////

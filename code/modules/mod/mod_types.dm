@@ -33,6 +33,7 @@
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/t_ray,
 		/obj/item/mod/module/mister/atmos,
+		/obj/item/mod/module/magboot,
 	)
 
 /obj/item/mod/control/pre_equipped/advanced
@@ -47,6 +48,7 @@
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/magboot/advanced,
 		/obj/item/mod/module/constructor,
+		/obj/item/mod/module/megaphone,
 	)
 
 /obj/item/mod/control/pre_equipped/mining
@@ -118,6 +120,7 @@
 		/obj/item/mod/module/holster,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/megaphone,
 	)
 
 /obj/item/mod/control/pre_equipped/magnate
@@ -130,6 +133,7 @@
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/megaphone,
 	)
 
 /obj/item/mod/control/pre_equipped/traitor
@@ -189,6 +193,7 @@
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended,
+		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/flashlight,
@@ -277,6 +282,8 @@
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/holster,
+		/obj/item/mod/module/megaphone,
+		/obj/item/mod/module/stamp,
 	)
 
 /obj/item/mod/control/pre_equipped/debug
@@ -313,6 +320,8 @@
 		/obj/item/mod/module/jetpack/advanced,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/magnetic_harness,
+		/obj/item/mod/module/holster,
 	)
 
 //these exist for the prefs menu
@@ -408,6 +417,51 @@
 		/obj/item/mod/module/gps/vanguard,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+	)
+
+/obj/item/mod/control/pre_equipped/ninja
+	theme = /datum/mod_theme/spider_clan
+	initial_modules = list(
+		/obj/item/mod/module/dna_lock/antag,
+		/obj/item/mod/module/storage/extended/syndicate,
+		/obj/item/mod/module/storage_upgrader,
+		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/stealth/adv/ninja,
+	)
+
+/obj/item/mod/control/pre_equipped/mage
+	theme = /datum/mod_theme/mage
+	initial_modules = list(
+		/obj/item/mod/module/dna_lock/antag,
+		/obj/item/mod/module/storage/extended/syndicate,
+		/obj/item/mod/module/storage_upgrader,
+		/obj/item/mod/module/jetpack/advanced,
+		// /obj/item/mod/module/anti_magic/wizard,
+		/obj/item/mod/module/energy_shield/wizard,
+	)
+
+/obj/item/mod/control/pre_equipped/mage/ComponentInitialize()
+	. = ..()
+	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
+	var/obj/item/clothing/mod_part/suit/chest =  get_chestplate()
+	chest.AddElement(/datum/element/spellcasting, magic_flags, ITEM_SLOT_OCLOTHING)
+
+/obj/item/mod/control/pre_equipped/cosmohonk
+	theme = /datum/mod_theme/cosmohonk
+	initial_modules = list(
+		/obj/item/mod/module/waddle,
+		/obj/item/mod/module/bikehorn,
+		/obj/item/mod/module/flashlight,
+	)
+
+/obj/item/mod/control/pre_equipped/cargo
+	equip_cell = /obj/item/stock_parts/cell/vortex
+	theme = /datum/mod_theme/cargo
+	initial_modules = list(
+		/obj/item/mod/module/clamp/loader,
+		/obj/item/mod/module/flashlight,
+		/obj/item/mod/module/gps,
+		/obj/item/mod/module/storage,
 	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)

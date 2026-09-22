@@ -25,6 +25,7 @@
 		/obj/item/modular_computer/tablet/syndicate_contract_uplink = null,
 		/obj/item/modular_computer/tablet/syndicate_contract_uplink/preset/uplink = null,
 		/obj/item/melee/classic_baton/telescopic/contractor_baton = null,
+		/obj/item/clothing/suit/space/hardsuit/syndi/inteq = null, //потому что до этого риг интека не работал
 	)
 
 /datum/techweb_node/advanced_illegal_ballistics
@@ -35,6 +36,15 @@
 	design_ids = list("10mm","10mmap","10mminc","10mmhp", /*"sl357","sl357ap", "sl357dumdum",*/ "m45","bolt_clip","m10apbox","m10firebox","m10hpbox", "10mm_large", "10mm_large_soporific", "combatinducer")
 	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 25000) //This gives sec lethal mags/clips for guns from traitors, space, or anything in between.
+
+/datum/techweb_node/improved_shotgun_ballistics
+	id = "Improved_shotgun_ballistics"
+	display_name = "Improved shotgun ballistics"
+	description = "Improved shotgun shells widly usable by Syndicate PMC forces."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
+	design_ids = list("flechette_shell", "frangible_slug")
+	prereq_ids = list("ballistic_weapons","syndicate_basic","explosive_weapons")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 
 //Helpers for debugging/balancing the techweb in its entirety!
 

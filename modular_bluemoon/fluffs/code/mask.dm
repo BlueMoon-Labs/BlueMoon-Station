@@ -17,7 +17,7 @@
 	var/message_equip = "Kitsune magic appears!"
 	var/message_drop = "Kitsune magic dissapears!"
 
-/datum/component/fluff/Initialize(message_equip="Kitsune magic appears!", message_drop="Kitsune magic dissapears!", playsound_equip="/sound/magic/ForceWall.ogg", playsound_drop="/sound/magic/ForceWall.ogg")
+/datum/component/fluff/Initialize(message_equip="Kitsune magic appears!", message_drop="Kitsune magic dissapears!", playsound_equip='sound/magic/ForceWall.ogg', playsound_drop='sound/magic/ForceWall.ogg')
 	if(isitem(parent))
 		RegisterSignal(parent, COMSIG_ITEM_EQUIPPED, PROC_REF(on_equip))
 		RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
@@ -98,8 +98,31 @@
 	desc = "Сильно модифицированный внутри и лишь незначительно внешне противогаз, превращённый в маску с установленным фильтром и аккумулирующим кислород вместо пользователя мотором. Сверх того, имеет внутри встроенные системы оповещения и некоторой фильтрации изображения. Тактика как она есть."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
-	icon_state = "star_dust"
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "stardust-0"
 	alternate_worn_layer = BACK_LAYER
+
+
+/obj/item/clothing/mask/gas/sechailer/star_dust/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	update_icon()
+
+/obj/item/clothing/mask/gas/sechailer/star_dust/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "stardust-[breast_size][mask_adjusted ? "_up" : ""]"
+	wearer.update_inv_wear_mask()
+	wearer.update_body()
+
+/obj/item/clothing/mask/gas/sechailer/star_dust/adjustmask(mob/living/user, just_flavor)
+	. = ..()
+	if(. && !just_flavor)
+		update_icon()
 
 /obj/item/modkit/star_dust_kit
 	name = "\"Star dust\" rebriser mask Kit"
@@ -128,3 +151,31 @@
 
 /obj/item/clothing/mask/gas/half_mask_skull/attack_self(mob/user)
     adjustmask(user)
+
+/obj/item/clothing/mask/gas/sechailer/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Dishonored \"Star Dust\" Combat Rebreather"
+	desc = "Измененный и переделанный боевой ребризер ранней серии «Star Dust», некогда поставлявшийся ополчению Небулы и бойцам запаса Конкорда. Конструктивное отличие этой старой модели — дыхательные пазухи, расположенные по всему внешнему ободу корпуса, а не у основания, как на современных образцах. В отличие от фабричного оригинала, предназначенного для распыления аэрозольных медикаментов, этот прибор полностью заглушен. Его корпус запечатан глухими заглушками, намертво изолируя дыхательные пути пользователя от окружающей среды и превращая медицинское устройство в сугубо защитную маску."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "melatonin_gasmask"
+	alternate_worn_layer = BACK_LAYER
+	flags_inv = HIDEFACE|HIDESNOUT
+	visor_flags_inv = HIDEFACE|HIDESNOUT
+
+/obj/item/modkit/melatonin_gasmask_kit
+	name = "Dishonored \"Star Dust\" Combat Rebreather Kit"
+	desc = "A modkit for making a Security Gas Mask into a Dishonored \"Star Dust\" Combat Rebreather."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/clothing/mask/gas/sechailer/melatonin
+	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
+
+/obj/item/clothing/mask/gas/sechailer/syndicate/cybersun
+	name = "Cybersun half mask"
+	desc = "Модная полу-маска в брендовых цветах компании Киберсан. Поговаривают, такие продают как сувенир на далеких научных станциях. "
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "cybersun"
+	item_state = "cybersun"

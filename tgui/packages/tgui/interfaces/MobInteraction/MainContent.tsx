@@ -119,8 +119,9 @@ export const MainContent = (props) => {
                   onInput={(e, value) => setSearchText(value)}
                 />
               </Stack.Item>
-          </Stack>
-        </Stack.Item> ) : null}
+            </Stack>
+          </Stack.Item>
+        ) : null}
         <Stack.Item grow basis={0} mb={tab === 'interactions' ? -1 : -2.3}>
           <Section scrollable fill>
             {(() => {

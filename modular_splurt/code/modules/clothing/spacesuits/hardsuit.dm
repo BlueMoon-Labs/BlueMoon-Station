@@ -43,6 +43,7 @@
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector,
 	/obj/item/hand_tele, /obj/item/aicard)
 	armor = list("melee" = 35, "bullet" = 25, "laser" = 25, "energy" = 5, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 80, "acid" = 100, "wound" = 30) // это костюм защиты от агресивной среды - без защиты от агресивной среды.
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev
 	var/firstpickup = TRUE
@@ -81,6 +82,7 @@
 	max_heat_protection_temperature = null
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector, /obj/item/hand_tele, /obj/item/aicard)
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 100, "rad" = 0, "fire" = 0, "acid" = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/cosmetic
 	actions_types = list(/datum/action/item_action/toggle_helmet, /datum/action/item_action/toggle_cool_music)
 	firstpickup = list('modular_splurt/sound/halflife/hevsuit_pickup.ogg')
@@ -103,6 +105,7 @@
 	current_charges = 4
 	recharge_delay = 15
 	armor = list("melee" = 80, "bullet" = 80, "laser" = 50, "energy" = 50, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100, "wound" = 50)
+	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
@@ -136,6 +139,7 @@
 	icon_state = "tesla_pa"
 	item_state = "tesla_pa"
 	armor = list("melee" = 70, "bullet" = 70, "laser" = 90, "energy" = 90, "bomb" = 70, "bio" = 100, "rad" = 40, "fire" = 100, "acid" = 100, "wound" = 50)
+	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 300
 	equip_delay_self = 300
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -214,6 +218,7 @@
 	icon_state = "advanced_pa"
 	item_state = "advanced_pa"
 	armor = list("melee" = 95, "bullet" = 95, "laser" = 70, "energy" = 80, "bomb" = 70, "bio" = 100, "rad" = 40, "fire" = 100, "acid" = 100, "wound" = 50)
+	brc_mitigation_bonus = 30  // BLUEMOON ADD
 	strip_delay = 300 //chonky armor means chonky strip
 	equip_delay_self = 300
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -265,6 +270,7 @@
 	item_state = "hardsuit-corpus"
 	max_integrity = 300
 	armor = list(MELEE = 15, BULLET = 10, LASER = 15, ENERGY = 10, BOMB = 10, BIO = 100, RAD = 100, FIRE = 50, ACID = 75, WOUND = 25)
+	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser)
 	siemens_coefficient = 0
 	actions_types = list(/datum/action/item_action/toggle_helmet)

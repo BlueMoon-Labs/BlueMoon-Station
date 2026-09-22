@@ -13,6 +13,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
 	incompatible_modules = list(/obj/item/mod/module/stealth)
 	cooldown_time = 5 SECONDS
+	need_full_deploy = TRUE
 	/// Whether or not the cloak turns off on bumping.
 	var/bumpoff = TRUE
 	/// The alpha applied when the cloak is on.
@@ -73,7 +74,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/magnetic_harness)
 	/// Time before we activate the magnet.
-	var/magnet_delay = 0.8 SECONDS
+	var/magnet_delay = 0.5 SECONDS
 	/// The typecache of all guns we allow.
 	var/static/list/guns_typecache
 	/// The guns already allowed by the modsuit chestplate.
@@ -88,7 +89,7 @@
 /obj/item/mod/module/magnetic_harness/on_install()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	already_allowed_guns = guns_typecache & chestplate.allowed
-	chestplate.allowed |= guns_typecache
+	chestplate.allowed = chestplate.allowed += guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
@@ -203,6 +204,80 @@
 	speech_args[SPEECH_SPANS] |= voicespan
 	playsound(get_turf(mod), 'sound/items/megaphone.ogg', 100, 0, 1)
 	drain_power(use_power_cost)
+
+/obj/item/mod/module/energy_shield
+	name = "LEEXP VER-I EnergyShield Module"
+	desc = "Первая массовая версия встроенных проекторов энергитического щита, защищающая пользователя от \
+	любых снарядов, тратя заряд батареи. Это Low-Effecticy-Experimental(LEEXP) модель из экспериментальной ветки, \
+	которая требует просто чудовищных затрат электроэнергии и способна посадить  мгновение ока даже блюспейс батарею. \
+	Более старшие модели, обычно, имеют встроенный реактор, способный компенсировать перепады напряжения, однако, \
+	это крайне дефицитная деталь, поэтому энергополе будет отключено как только заряд батареи упадёт ниже 50%."
+	icon_state = "bad_energy_shield"
+	complexity = 5
+	module_type = MODULE_TOGGLE
+	need_full_deploy = TRUE
+	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD
+	incompatible_modules = list(
+		/obj/item/mod/module/anomaly_locked/antigrav,
+		/obj/item/mod/module/armor,
+		/obj/item/mod/module/energy_shield,
+		)
+	var/max_charges = 2
+	var/current_charges
+	var/recharge_delay = 25 SECONDS //на 5 больше, чем дефолт у рига.
+	var/recharge_rate = 1
+	var/shield_state = "shield-old"
+	var/used_modificator = MOD_DEFAULT_SHIELD_CELL_DRAIN_MODIFICATOR
+	var/need_drain_power = TRUE
+	var/datum/component/shielded/shield_comp
+
+/obj/item/mod/module/energy_shield/Initialize(mapload)
+	. = ..()
+	cooldown_time = recharge_delay //чтобы нельзя было включить/отключить модуль для фулл перезарядки.
+
+/obj/item/mod/module/energy_shield/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	on_emp(src, severity)
+
+/obj/item/mod/module/energy_shield/proc/on_emp(datum/source, severity)
+	SIGNAL_HANDLER
+	on_deactivation()
+
+/obj/item/mod/module/energy_shield/proc/calculate_cell_drain(mob/living/source, real_attack, object, damage, attack_text, attack_type, armour_penetration, attacker, def_zone, return_list)
+	if(!need_drain_power)
+		return
+	var/obj/item/stock_parts/cell/mod_cell = mod.get_cell()
+	var/charge_drain = (damage * armour_penetration) * used_modificator
+	mod_cell.use(charge_drain, FALSE)
+
+/obj/item/mod/module/energy_shield/on_activation()
+	. = ..()
+	if(!. || shield_comp) //чтобы не добавлять лишнего.
+		return
+	shield_comp = mod.wearer.AddComponent(/datum/component/shielded, current_charges, max_charges, recharge_delay, recharge_rate, mod.slot_flags, shield_state)
+	RegisterSignal(mod.wearer, COMSIG_LIVING_RUN_BLOCK, PROC_REF(calculate_cell_drain))
+
+/obj/item/mod/module/energy_shield/on_deactivation()
+	. = ..()
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_RUN_BLOCK)
+	qdel(shield_comp)
+	shield_comp = null
+
+/obj/item/mod/module/energy_shield/ert
+	name = "HESP II Responce Team module"
+	desc = "Старшая модель энергощита для модулярных костюмов, способная выдерживать куда больше попаданий, чем\
+	гражданская версия. В неё встроен небольшой реактор, который компенсирует часть попаданий, тратя куда меньше \
+	энергии, держа поле включенным дольше. Сбоку есть гравировка, которая гласит о том, что данный модуль является \
+	собственностью ПАКТа."
+	icon_state = "ert_energy_shield"
+	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD_ERT
+	used_modificator = MOD_ERT_SHIELD_CELL_DRAIN_MODIFICATOR
+	recharge_delay = 18 SECONDS
+	max_charges = 4 //в два раза больше станционного
+
+//СДЕЛАТЬ ЗАРяДКУ МОДА ИНДУЦЕРОМ
 
 ///Criminal Capture
 

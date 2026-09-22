@@ -6,7 +6,7 @@
 	show_in_report = TRUE
 	report_message = "При транспортировке отработанного топлива и реакторных компонентов произошла утечка. Станция получила повышенный фон; экипажу выдано СИЗ и средства локализации."
 	trait_to_give = STATION_TRAIT_RADIATION_CONTAMINATION
-	/// Atoms spawned for this trait (waste spawners delete themselves; not tracked).
+	/// Слабые ссылки позволяют убрать оставшиеся предметы при отмене черты.
 	var/list/contamination_atoms = list()
 
 /datum/station_trait/radiation_contamination/New()
@@ -14,9 +14,10 @@
 	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_SPAWN, PROC_REF(on_job_roundstart_spawn))
 
 /datum/station_trait/radiation_contamination/revert()
-	for(var/atom/A as anything in contamination_atoms)
-		if(!QDELETED(A))
-			qdel(A)
+	for(var/datum/weakref/source_ref as anything in contamination_atoms)
+		var/atom/source = source_ref.resolve()
+		if(source)
+			qdel(source)
 	contamination_atoms.Cut()
 	return ..()
 
@@ -97,7 +98,7 @@
 	switch(spawn_index % 5)
 		if(0)
 			var/obj/structure/reagent_dispensers/urbanismbarrel/radium/brl = new(spawn_turf)
-			contamination_atoms += brl
+			contamination_atoms += WEAKREF(brl)
 		if(1)
 			var/obj/effect/landmark/nuclear_waste_spawner/spawner = new(spawn_turf)
 			spawner.fire()
@@ -106,13 +107,13 @@
 			// Theft core only pulses on SSobj ticks; forcing one immediate pulse avoids "silent until touched" behavior.
 			core.cooldown = world.time - 61
 			core.process()
-			contamination_atoms += core
+			contamination_atoms += WEAKREF(core)
 		if(3)
 			var/obj/item/stock_parts/cell/bluespacereactor/cell = new(spawn_turf)
-			contamination_atoms += cell
+			contamination_atoms += WEAKREF(cell)
 		if(4)
 			var/obj/item/fuel_rod/plutonium/rod = new(spawn_turf)
-			contamination_atoms += rod
+			contamination_atoms += WEAKREF(rod)
 
 /datum/station_trait/radiation_contamination/proc/on_job_roundstart_spawn(datum/source, datum/job/job, mob/living/spawned, client/player_client)
 	SIGNAL_HANDLER

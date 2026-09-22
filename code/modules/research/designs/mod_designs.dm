@@ -309,10 +309,10 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/module/mod_constructor
-	name = "Constructor Module"
+	name = "Fast Build and Blueprints Module"
 	id = "mod_constructor"
 	materials = list(/datum/material/iron = 1000, /datum/material/titanium = 500)
-	build_path = /obj/item/mod/module/constructor
+	build_path = /obj/item/mod/module/constructor/lesser
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/module/mod_quick_carry

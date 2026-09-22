@@ -53,7 +53,7 @@
 
 /obj/item/clothing/shoes/jackboots/tall/Initialize()
 	. = ..()
-	AddComponent(/datum/component/squeak, list('modular_splurt/sound/effects/footstep/highheel1.ogg' = 1,'modular_splurt/sound/effects/footstep/highheel2.ogg' = 1), 75)
+	AddComponent(/datum/component/squeak, list('modular_splurt/sound/lewd/highheel1.ogg' = 1,'modular_splurt/sound/lewd/highheel2.ogg' = 1), 75)
 
 /obj/item/clothing/shoes/jackboots/tall_default
 	name = "tall jackboots"
@@ -131,4 +131,4 @@
 
 /obj/item/clothing/shoes/highheel_sandals/Initialize()
 	. = ..()
-	AddComponent(/datum/component/squeak, list('modular_splurt/sound/effects/footstep/highheel1.ogg' = 1,'modular_splurt/sound/effects/footstep/highheel2.ogg' = 1), 20)
+	AddComponent(/datum/component/squeak, list('modular_splurt/sound/lewd/highheel1.ogg' = 1,'modular_splurt/sound/lewd/highheel2.ogg' = 1), 20)

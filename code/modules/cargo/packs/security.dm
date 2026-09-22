@@ -47,6 +47,14 @@
 					/obj/item/gun/energy/disabler)
 	crate_name = "disabler crate"
 
+/datum/supply_pack/security/disabler_smg
+	name = "Disabler SMG Crate"
+	desc = "Два полностью автоматических дизейблера, истощающих выносливость. Требуется доступ СБ."
+	cost = 2100
+	contains = list(/obj/item/gun/energy/disabler/smg,
+					/obj/item/gun/energy/disabler/smg)
+	crate_name = "disabler SMG crate"
+
 /datum/supply_pack/security/forensics
 	name = "Forensics Crate"
 	desc = "Идите по горячим следам преступника с помощью Nanotrasen's Detective Essentials(tm). Содержит криминалистический сканер, шесть пакетов для улик, фотоаппарат, магнитофон, белый карандаш и, конечно же, федору. Для открытия требуется доступ СБ."

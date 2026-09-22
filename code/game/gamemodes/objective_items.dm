@@ -179,6 +179,12 @@
 	difficulty = 5
 	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
 
+/datum/objective_item/steal/mod_constructor
+	name = "усовершенствованный модуль строительства из МОД костюма Главного Инженера."
+	targetitem =  /obj/item/mod/module/constructor
+	difficulty = 5
+	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
+
 /datum/objective_item/steal/capmedal
 	name = "медаль Капитана."
 	targetitem = /obj/item/clothing/accessory/medal/gold/captain

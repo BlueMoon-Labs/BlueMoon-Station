@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	80
+#define SAVEFILE_VERSION_MAX	82
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -172,6 +172,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(CHECK_BITFIELD(mentor_toggles, (1<<6)))
 			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
 			DISABLE_BITFIELD(mentor_toggles, (1<<6))
+
+	if(current_version < 81) // BLUEMOON ADD - звук дыхания из баллона
+		toggles |= SOUND_BREATHING
+
+	if(current_version < 82) // BLUEMOON ADD - звук кнопок способностей включён по умолчанию
+		sound_toggles |= SOUND_BUTTONS
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -649,6 +655,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
+	S["lighting_brightness"] >> lighting_brightness
+	S["lighting_lamp_brightness"] >> lighting_lamp_brightness
+	S["lighting_bloom_intensity"] >> lighting_bloom_intensity
+	S["lighting_quality"] >> lighting_quality
+	S["light"] >> light
+	S["glowlevel"] >> glowlevel
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -667,7 +679,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//citadel code
 	S["arousable"] >> arousable
-	S["sexknotting"] >> sexknotting // BLUEMOON ADD
+	S["sexknotting"] >> sexknotting // BLUEMOON ADD START
+	S["panel_tab_toggles"] >> panel_tab_toggles
+	S["dynamic_window_size"] >> dynamic_window_size
+	S["compact_custom_tab"] >> compact_custom_tab// BLUEMOON ADD END
 	S["screenshake"] >> screenshake
 	S["damagescreenshake"] >> damagescreenshake
 	S["autostand"] >> autostand
@@ -681,6 +696,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["disable_combat_cursor"]	>> disable_combat_cursor
 	S["disable_combat_mouse_lock"]	>> disable_combat_mouse_lock
 	S["gfluid_blacklist"]		>> gfluid_blacklist
+
+	// BLUEMOON
+	S["smartlink"]				>> smartlink
 
 	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
 	S["charcreation_theme"]		>> charcreation_theme
@@ -770,7 +788,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
-	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
+	toggles = sanitize_integer(toggles, 0, 33554431, initial(toggles))
 	sound_toggles = sanitize_integer(sound_toggles, 0, 16777215, initial(sound_toggles))
 	custom_colors = sanitize_integer(custom_colors, 0, 16777215, initial(custom_colors))
 	deadmin = sanitize_integer(deadmin, 0, 16777215, initial(deadmin))
@@ -793,6 +811,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
+	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
+	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
+	lighting_quality = sanitize_integer(lighting_quality, LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH, LIGHTING_QUALITY_DEFAULT)
+	light = sanitize_integer(light, 0, 7, initial(light))
+	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -811,6 +835,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	damagescreenshake = sanitize_integer(damagescreenshake, 0, 2, initial(damagescreenshake))
 	autostand = sanitize_integer(autostand, 0, 1, initial(autostand))
 	cit_toggles = sanitize_integer(cit_toggles, 0, 16777215, initial(cit_toggles))
+	panel_tab_toggles = sanitize_integer(panel_tab_toggles, 0, ALL_INTERACTION_MENU_TABS, initial(panel_tab_toggles))
+	dynamic_window_size = sanitize_integer(dynamic_window_size, 0, 1, initial(dynamic_window_size))
+	compact_custom_tab = sanitize_integer(compact_custom_tab, 0, 1, initial(compact_custom_tab))
 	auto_ooc = sanitize_integer(auto_ooc, 0, 1, initial(auto_ooc))
 	no_tetris_storage = sanitize_integer(no_tetris_storage, 0, 1, initial(no_tetris_storage))
 	recoil_screenshake = sanitize_integer(recoil_screenshake, 0, 800, initial(recoil_screenshake))
@@ -822,6 +849,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
 	screentip_color = sanitize_hexcolor(screentip_color, 6, 1, initial(screentip_color))
 	screentip_pref = sanitize_inlist(screentip_pref, GLOB.screentip_pref_options, SCREENTIP_PREFERENCE_ENABLED)
+	smartlink = sanitize_integer(smartlink, 0, 1, initial(smartlink)) //BLUEMOON ADD
 
 	//SKYRAT CHANGES BEGIN
 	see_chat_emotes	= sanitize_integer(see_chat_emotes, 0, 1, initial(see_chat_emotes))
@@ -1268,6 +1296,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
+	WRITE_FILE(S["lighting_brightness"], lighting_brightness)
+	WRITE_FILE(S["lighting_lamp_brightness"], lighting_lamp_brightness)
+	WRITE_FILE(S["lighting_bloom_intensity"], lighting_bloom_intensity)
+	WRITE_FILE(S["lighting_quality"], lighting_quality)
+	WRITE_FILE(S["light"], light)
+	WRITE_FILE(S["glowlevel"], glowlevel)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
@@ -1283,7 +1317,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["screenshake"], screenshake)
 	WRITE_FILE(S["damagescreenshake"], damagescreenshake)
 	WRITE_FILE(S["arousable"], arousable)
-	WRITE_FILE(S["sexknotting"], sexknotting) // BLUEMOON ADD
+	WRITE_FILE(S["sexknotting"], sexknotting) // BLUEMOON ADD START
+	WRITE_FILE(S["panel_tab_toggles"], panel_tab_toggles)
+	WRITE_FILE(S["dynamic_window_size"], dynamic_window_size)
+	WRITE_FILE(S["compact_custom_tab"], compact_custom_tab) // BLUEMOON ADD END
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
@@ -1298,6 +1335,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["disable_combat_cursor"], disable_combat_cursor)
 	WRITE_FILE(S["disable_combat_mouse_lock"], disable_combat_mouse_lock)
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
+
+	// BLUEMOON
+	WRITE_FILE(S["smartlink"], smartlink)
 
 	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
 	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
@@ -2194,7 +2234,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	return S
 
 /// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
-/// Если удаляется текущий слот — переключается на ближайший непустой, или на слот 1.
+/// Если удаляется текущий слот - переключается на ближайший непустой, или на слот 1.
 /datum/preferences/proc/delete_character(slot)
 	if(!path)
 		return FALSE
@@ -2214,7 +2254,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S.cd = "/"
 	S.dir.Remove("character[slot]")
 
-	// Если удалили текущий слот — нужно переключиться на другой
+	// Если удалили текущий слот - нужно переключиться на другой
 	if(slot == default_slot)
 		var/new_slot = 0
 		// Ищем ближайший непустой слот
@@ -2227,7 +2267,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			if(name)
 				new_slot = i
 				break
-		// Если не нашли непустой — просто переключаемся на слот 1
+		// Если не нашли непустой - просто переключаемся на слот 1
 		if(!new_slot)
 			new_slot = 1
 		default_slot = new_slot

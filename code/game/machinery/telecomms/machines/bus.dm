@@ -29,7 +29,7 @@
 	if(!istype(signal) || !is_freq_listening(signal))
 		return
 
-	if(change_frequency && (change_freq_value && (signal.frequency != FREQ_SYNDICATE || signal.frequency != FREQ_INTEQ || signal.frequency != FREQ_PIRATE)))
+	if(change_frequency && (change_freq_value && (signal.frequency != FREQ_SYNDICATE && signal.frequency != FREQ_INTEQ && signal.frequency != FREQ_PIRATE)))
 		signal.frequency = change_freq_value
 
 	if(!istype(machine_from, /obj/machinery/telecomms/processor) && machine_from != src) // Signal must be ready (stupid assuming machine), let's send it

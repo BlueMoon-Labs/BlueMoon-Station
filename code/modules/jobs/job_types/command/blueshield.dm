@@ -6,8 +6,8 @@
 	faction = "Station"
 	head_announce = list(RADIO_CHANNEL_COMMAND)
 	supervisors = "Центрального Командования"
-	total_positions = 2
-	spawn_positions = 2
+	total_positions = 1
+	spawn_positions = 1
 	selection_color = "#aac1ee"
 	minimal_player_age = 7
 	exp_requirements = 1500
@@ -141,7 +141,7 @@
 	name = "Blueshield's Quarters"
 	icon_state = "bridge"
 
-//BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
+/* //BLUEMOON CHANGE однородность для cqc с ограниченой зоной использования
 ///Subtype of CQC. Only used for the Blueshield.
 /datum/martial_art/cqc/restricted/blueshield
 	name = "CQC (Blueshield edition)"
@@ -159,3 +159,4 @@
 	var/datum/martial_art/cqc/restricted/blueshield/justablue = new
 	justablue.teach(H)
 //BLUEMOON CHANGE END
+*/

@@ -190,6 +190,7 @@
 		/obj/item/gun/ballistic/automatic/p90 = 3000,
 		/obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1 = 6000,
 		/obj/item/gun/ballistic/automatic/laser/vanguard = 0,
+		/obj/item/gun/ballistic/automatic/m2a1 = 30000,
 		// Mele weapons
 		/obj/item/melee/rapier/karakurt = 1500,
 		/obj/item/melee/baseball_bat/ablative/inteq = 2500,
@@ -310,6 +311,9 @@
 		/obj/item/extra_arm = 5000,
 		/obj/item/book/granter/martial/bass = 25000,
 		/obj/item/book/granter/martial/carp = 15000,
+		/obj/item/documents = 15000,
+		/obj/item/documents/inteq = 25000,
+		/obj/item/disk/nuclear/fake = 5000, //потому что это смешно
 		//broken stuff
 		/obj/item/broken/inteq_sledgehammer = 3000,
 		/obj/item/broken/dualsaber = 5000,
@@ -324,6 +328,7 @@
 		/obj/item/broken/vss = 3500,
 		/obj/item/broken/homemadeak = 4500,
 		/obj/item/broken/m1garand = 2250,
+		/obj/item/broken/hmg = 15000,
 		//alien organs
 		/obj/item/organ/eyes/night_vision/alien = 3000,
 		/obj/item/organ/alien/plasmavessel = 2500,

@@ -99,17 +99,17 @@
 	var/atom/real_location = parent
 	if(A in real_location)
 		usr = null
-		remove_from_storage(A, null)
+		INVOKE_ASYNC(src, PROC_REF(remove_from_storage), A, null)
 
 /datum/component/storage/concrete/proc/on_deconstruct(datum/source, disassembled)
 	SIGNAL_HANDLER
 	if(drop_all_on_deconstruct)
-		do_quick_empty()
+		INVOKE_ASYNC(src, PROC_REF(do_quick_empty))
 
 /datum/component/storage/concrete/proc/on_break(datum/source, damage_flag)
 	SIGNAL_HANDLER
 	if(drop_all_on_break)
-		do_quick_empty()
+		INVOKE_ASYNC(src, PROC_REF(do_quick_empty))
 	if(unlock_on_break)
 		set_locked(source, FALSE)
 
