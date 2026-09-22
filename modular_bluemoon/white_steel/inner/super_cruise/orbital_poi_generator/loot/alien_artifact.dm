@@ -321,10 +321,13 @@
 	SIGNAL_HANDLER
 	if(world.time < next_use_world_time)
 		return
+	next_use_world_time = world.time + 150
+	INVOKE_ASYNC(src, .proc/teleport_effect, warper)
+
+/datum/artifact_effect/warp/proc/teleport_effect(mob/warper)
 	var/turf/T = get_turf(warper)
 	if(T)
 		do_teleport(warper, pick(RANGE_TURFS(10, T)), channel = TELEPORT_CHANNEL_FREE)
-		next_use_world_time = world.time + 150
 
 //===================
 // Curse
@@ -415,10 +418,6 @@
 /datum/artifact_effect/light_breaker/process(delta_time)
 	if(world.time < next_world_time)
 		return
-	var/turf/T = get_turf(source_object)
-	for(var/datum/light_source/light_source in T.contents)
-		var/atom/movable/AM = light_source.source_atom
-		//Starts at light but gets stronger the longer it is in light.
 	next_world_time = world.time + rand(30 SECONDS, 5 MINUTES)
 
 //===================

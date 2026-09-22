@@ -56,7 +56,7 @@
 /datum/component/recoverable/proc/attack_self(mob/user)
 	SIGNAL_HANDLER
 	var/atom/movable/pA = parent
-	pA.say("Чёрный ящик должен быть отправлен NanoTrasen через терминал сдачи контрабанды на станции.")
+	INVOKE_ASYNC(pA, TYPE_PROC_REF(/atom/movable, say), "Чёрный ящик должен быть отправлен NanoTrasen через терминал сдачи контрабанды на станции.")
 
 /datum/component/recoverable/proc/initiate_recovery()
 	var/atom/movable/parentobj = parent
