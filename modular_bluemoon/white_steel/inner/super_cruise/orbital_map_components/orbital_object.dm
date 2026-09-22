@@ -86,8 +86,8 @@
 	map.remove_body(src)
 	LAZYREMOVE(target_orbital_body?.orbitting_bodies, src)
 	if(length(orbitting_bodies))
-		for(var/datum/orbital_object/orbitting_bodies in orbitting_bodies)
-			orbitting_bodies.target_orbital_body = null
+		for(var/datum/orbital_object/orbitting_body in orbitting_bodies)
+			orbitting_body.target_orbital_body = null
 		orbitting_bodies.Cut()
 	. = ..()
 
