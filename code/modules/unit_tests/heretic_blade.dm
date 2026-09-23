@@ -436,6 +436,23 @@
 			hit_count++
 	TEST_ASSERT_EQUAL(hit_count, 1, "Один клинок на орбите - одна цель.")
 
+/// Буря против одного врага тратит один клинок, остальные остаются на орбите.
+/datum/unit_test/heretic_blade_storm_single_target/Run()
+	var/list/fixture = make_blade_fixture()
+	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
+	var/datum/eldritch_knowledge/final_eldritch/blade_final/finale = ascend_blade_fixture(fixture)
+	var/datum/component/heretic_blade_orbit/orbit = user.GetComponent(/datum/component/heretic_blade_orbit)
+	var/obj/effect/proc_holder/spell/self/heretic_blade/storm/storm = locate() in finale.ascension_spell_instances
+	storm.cast(list(user), user)
+	TEST_ASSERT(abs(attacker.getBruteLoss() - HERETIC_BLADE_STORM_BRUTE) < DAMAGE_PRECISION, "Клинок бьёт единственную цель.")
+	TEST_ASSERT_EQUAL(length(orbit.orbit_blades), HERETIC_BLADE_ORBIT_MAX - 1, "Потрачен только брошенный клинок.")
+	var/shown_blades = 0
+	for(var/obj/effect/heretic_orbit_blade/shown in user.vis_contents)
+		shown_blades++
+	TEST_ASSERT_EQUAL(shown_blades, HERETIC_BLADE_ORBIT_MAX - 1, "Оставшиеся клинки видны на теле.")
+	TEST_ASSERT(orbit.regen_timer, "Брошенный клинок отрастает.")
+
 /datum/unit_test/heretic_blade_lunge_obstacle/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/user = fixture["user"]

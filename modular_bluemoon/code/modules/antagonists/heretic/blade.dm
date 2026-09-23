@@ -540,7 +540,7 @@
 /datum/eldritch_knowledge/final_eldritch/blade_final
 	parallax_scene = ANTAG_SCENE_HERETIC_BLADE
 	name = "Последний поединок"
-	desc = "После трёх подношений проведите обряд над тремя трупами. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. После вознесения вы получаете общую стойкость вознесения. Вокруг вас кружат четыре клинка: каждый целиком принимает на себя один удар, бросок или снаряд и разбивается, новый появляется раз в 6 секунд. Картечь - это отдельные дробины, один выстрел сдирает всю орбиту. Попадание тёмным клинком по живому врагу лечит вам четверть нанесённого им урона. Ответный удар после парирования получает ещё 12 урона; удар после финта не усиливается. Парирование и финт больше не требуют свободной второй руки. «Буря клинков» бросает все кружащие клинки в ближайших видимых врагов в семи клетках, по клинку на врага: 20 ушибов и 20 урона выносливости каждому, окна, решётки и стены перехватывают клинок. После броска орбита собирается заново. Перезарядка 30 секунд. Смерть снимает эти усиления, оживление возвращает."
+	desc = "После трёх подношений проведите обряд над тремя трупами. Начало обряда раскроет его место станции и даст экипажу 30 секунд, чтобы помешать. После вознесения вы получаете общую стойкость вознесения. Вокруг вас кружат четыре клинка: каждый целиком принимает на себя один удар, бросок или снаряд и разбивается, новый появляется раз в 6 секунд. Картечь - это отдельные дробины, один выстрел сдирает всю орбиту. Попадание тёмным клинком по живому врагу лечит вам четверть нанесённого им урона. Ответный удар после парирования получает ещё 12 урона; удар после финта не усиливается. Парирование и финт больше не требуют свободной второй руки. «Буря клинков» бросает кружащие клинки в ближайших видимых врагов в семи клетках, по клинку на врага: 20 ушибов и 20 урона выносливости каждому, окна, решётки и стены перехватывают клинок. Клинки, которым не нашлось цели, остаются на орбите, брошенные отрастают заново. Перезарядка 30 секунд. Смерть снимает эти усиления, оживление возвращает."
 	gain_text = "Острие остановилось у самого сердца мира. Теперь вокруг меня кружит сталь, и каждый удар, летящий ко мне, встречает свой клинок."
 	route = PATH_BLADE
 	cost = 3
@@ -610,10 +610,9 @@
 	var/atom/movable/owner = parent
 	owner.vis_contents += blade
 
-/datum/component/heretic_blade_orbit/proc/remove_blades(amount = 1)
+/datum/component/heretic_blade_orbit/proc/remove_blades(list/blades)
 	var/atom/movable/owner = parent
-	for(var/count in 1 to min(amount, length(orbit_blades)))
-		var/obj/effect/heretic_orbit_blade/blade = orbit_blades[length(orbit_blades)]
+	for(var/obj/effect/heretic_orbit_blade/blade as anything in blades)
 		orbit_blades -= blade
 		owner.vis_contents -= blade
 		qdel(blade)
@@ -814,7 +813,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_blade/storm
 	name = "Буря клинков"
-	desc = "Бросьте кружащие вокруг вас клинки в ближайших видимых врагов в семи клетках, по клинку на врага, до четырёх целей: каждый получает 20 ушибов и 20 урона выносливости. Окна, решётки и стены перехватывают клинки. Нужен хотя бы один клинок на орбите; свой клинок в руке не нужен. Орбита собирается заново по клинку раз в 6 секунд. Перезарядка 30 секунд."
+	desc = "Бросьте кружащие вокруг вас клинки в ближайших видимых врагов в семи клетках, по клинку на врага, до четырёх целей: каждый получает 20 ушибов и 20 урона выносливости. Окна, решётки и стены перехватывают клинки. Нужен хотя бы один клинок на орбите; свой клинок в руке не нужен. Тратятся только брошенные клинки, остальные продолжают кружить; брошенные отрастают по одному раз в 6 секунд. Перезарядка 30 секунд."
 	required_knowledge = /datum/eldritch_knowledge/final_eldritch/blade_final
 	requires_blade = FALSE
 	charge_max = HERETIC_BLADE_STORM_COOLDOWN
@@ -867,16 +866,15 @@
 		heretic_revert_cast(user, "Рядом нет видимых врагов на открытой линии, клинкам некуда лететь.")
 		return
 	var/turf/origin = get_turf(user)
-	var/list/launch_angles = list()
-	for(var/obj/effect/heretic_orbit_blade/blade as anything in orbit.orbit_blades)
-		launch_angles += blade.orbit_angle()
+	var/list/launched = orbit.orbit_blades.Copy(1, length(victims) + 1)
 	for(var/index in 1 to length(victims))
 		var/mob/living/victim = victims[index]
-		heretic_blade_storm_fx(origin, victim, launch_angles[index], index % 2 ? 1 : -1, index == 1)
+		var/obj/effect/heretic_orbit_blade/blade = launched[index]
+		heretic_blade_storm_fx(origin, victim, blade.orbit_angle(), index % 2 ? 1 : -1, index == 1)
 		victim.apply_damage(HERETIC_BLADE_STORM_BRUTE, BRUTE, BODY_ZONE_CHEST)
 		victim.adjustStaminaLoss(HERETIC_BLADE_STORM_STAMINA)
 		log_combat(user, victim, "поражает Бурей клинков")
-	orbit.remove_blades(length(orbit.orbit_blades))
+	orbit.remove_blades(launched)
 	heretic_blade_storm_cast_fx(user)
 	playsound(user, 'sound/weapons/rapierhit.ogg', 60, TRUE)
 	user.visible_message(span_danger("Клинки, кружившие вокруг [user], разом срываются к врагам!"))
