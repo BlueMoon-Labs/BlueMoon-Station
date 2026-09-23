@@ -126,6 +126,7 @@
 	data["viewer"] = list(
 		"token" = tab.site_id ? SSntnet.viewer_token(viewer, tab.site_id) : null,
 		"error" = LAZYACCESS(viewer_entry, "error"),
+		"answer" = LAZYACCESS(viewer_entry, "answer"),
 	)
 	data["search"] = list(
 		"query" = tab.query,

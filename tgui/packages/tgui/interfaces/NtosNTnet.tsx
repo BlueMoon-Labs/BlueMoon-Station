@@ -220,6 +220,7 @@ type Data = {
   viewer?: {
     token: string | null;
     error: string | null;
+    answer: number | null;
   };
   catalog: Site[];
   site: Site | null;
@@ -944,7 +945,7 @@ const PageFrame = (props: FrameProps) => {
   const [loaded, setLoaded] = useState(false);
   const frame = useRef<HTMLIFrameElement | null>(null);
   const wantsToken = useRef(false);
-  const staleToken = useRef<string | null>(null);
+  const askedAnswer = useRef<number | null>(null);
   const viewer = useRef(data.viewer);
   viewer.current = data.viewer;
   const deliverToken = () => {
@@ -953,17 +954,18 @@ const PageFrame = (props: FrameProps) => {
     if (!wantsToken.current || !target || !current) {
       return;
     }
-    if (current.token && current.token !== staleToken.current) {
-      target.postMessage({ ntnet: 'token', token: current.token }, '*');
-      staleToken.current = null;
-    } else if (current.error) {
-      target.postMessage({ ntnet: 'token', error: current.error }, '*');
-    } else {
+    if ((current.answer || null) === askedAnswer.current) {
       return;
+    }
+    if (current.token) {
+      target.postMessage({ ntnet: 'token', token: current.token }, '*');
+    } else {
+      const error = current.error || 'Не удалось получить доступ к базе сайта.';
+      target.postMessage({ ntnet: 'token', error }, '*');
     }
     wantsToken.current = false;
   };
-  useEffect(deliverToken, [data.viewer?.token, data.viewer?.error]);
+  useEffect(deliverToken, [data.viewer?.answer]);
   useEffect(() => {
     let alive = true;
     const receive = (event: MessageEvent) => {
@@ -972,14 +974,21 @@ const PageFrame = (props: FrameProps) => {
       }
       const asked = tokenRequest(event.data);
       if (asked) {
+        const token = viewer.current?.token;
+        if (!asked.renew && token) {
+          frame.current.contentWindow?.postMessage(
+            { ntnet: 'token', token },
+            '*'
+          );
+          return;
+        }
         wantsToken.current = true;
+        askedAnswer.current = viewer.current?.answer || null;
         if (asked.renew) {
-          staleToken.current = viewer.current?.token || null;
           act('token', { renew: 1 });
-        } else if (!viewer.current?.token) {
+        } else {
           act('token');
         }
-        deliverToken();
         return;
       }
       const request = navigationRequest(event.data);

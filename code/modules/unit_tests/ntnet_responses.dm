@@ -12,7 +12,7 @@
 /datum/unit_test/ntnet_responses/Run()
 	var/datum/controller/subsystem/ntnet/network = SSntnet
 	saved_state = list()
-	for(var/var_name in list("sites", "catalog", "pages", "page_retry", "pending", "available", "index_pending", "next_refresh"))
+	for(var/var_name in list("sites", "catalog", "pages", "page_retry", "page_wait", "pending", "available", "index_pending", "next_refresh"))
 		saved_state[var_name] = network.vars[var_name]
 	saved_host = CONFIG_GET(string/ntnet_sandbox_host)
 	CONFIG_SET(string/ntnet_sandbox_host, "sandbox.wiki-ss13.space")
@@ -20,6 +20,7 @@
 	network.catalog = list()
 	network.pages = list()
 	network.page_retry = list()
+	network.page_wait = list()
 	network.pending = list()
 
 	var/list/site = list("id" = "test", "domain" = "test.bm", "title" = "Test", "version" = "1", "pages" = list(list("slug" = "index", "title" = "Index")))
@@ -31,6 +32,10 @@
 
 	network.on_index(list("status_code" = 200, "body" = json_encode(list("sites" = list(list("id" = "broken"))))))
 	TEST_ASSERT(!(network.available), "Malformed catalog was accepted")
+	var/list/junk_site = site.Copy()
+	junk_site["version"] = "junk"
+	network.on_index(list("status_code" = 200, "body" = json_encode(list("sites" = list(junk_site)))))
+	TEST_ASSERT(!(network.available), "Catalog with a junk version was accepted")
 	network.on_index(list("status_code" = 200, "body" = json_encode(list("sites" = list(site)))))
 
 	var/cache_key = json_encode(list("test", "index"))
@@ -61,7 +66,9 @@
 	document["version"] = "0"
 	network.on_page("test", "index", list("status_code" = 200, "body" = json_encode(document)))
 	TEST_ASSERT_NULL(network.pages[cache_key], "Stale page was cached")
-	TEST_ASSERT(!network.page_failed("test", "index"), "Stale page blocked an immediate retry")
+	TEST_ASSERT(!network.page_failed("test", "index"), "Stale page was reported as failed")
+	TEST_ASSERT(world.time < network.page_wait[cache_key], "Stale page was requested again without a pause")
+	network.page_wait -= cache_key
 	document["version"] = "junk"
 	network.on_page("test", "index", list("status_code" = 200, "body" = json_encode(document)))
 	TEST_ASSERT(network.page_failed("test", "index"), "Junk version was not treated as a broken response")
@@ -71,6 +78,8 @@
 	network.on_page("test", "index", list("status_code" = 200, "body" = json_encode(document)))
 	TEST_ASSERT_NOTNULL(network.pages[cache_key], "Page saved after the catalog refresh was rejected")
 	TEST_ASSERT_EQUAL(network.next_refresh, 0, "Newer page did not schedule a catalog refresh")
+	network.on_index(list("status_code" = 200, "body" = json_encode(list("sites" = list(site)))))
+	TEST_ASSERT_NOTNULL(network.pages[cache_key], "Older catalog dropped a newer page")
 	network.pages -= cache_key
 	network.on_page("test", "index", list("status_code" = 404, "body" = ""))
 	TEST_ASSERT(network.available, "Missing page took the whole network offline")

@@ -1,5 +1,6 @@
 #define NTNET_REFRESH_INTERVAL (5 MINUTES)
 #define NTNET_RETRY_INTERVAL (30 SECONDS)
+#define NTNET_STALE_PAGE_RETRY (5 SECONDS)
 #define NTNET_IDLE_TIMEOUT (15 MINUTES)
 #define NTNET_REQUEST_TIMEOUT (20 SECONDS)
 #define NTNET_LOGIN_COOLDOWN (1 MINUTES)
@@ -34,6 +35,7 @@ SUBSYSTEM_DEF(ntnet)
 	var/list/catalog = list()
 	var/list/pages = list()
 	var/list/page_retry = list()
+	var/list/page_wait = list()
 	var/list/pending = list()
 	var/list/requests = list()
 	var/list/deadlines = list()
@@ -42,6 +44,7 @@ SUBSYSTEM_DEF(ntnet)
 	var/next_refresh = 0
 	var/last_used = -INFINITY
 	var/generation = 0
+	var/viewer_answers = 0
 
 /datum/controller/subsystem/ntnet/fire(resumed = FALSE)
 	collect_requests()
@@ -116,7 +119,7 @@ SUBSYSTEM_DEF(ntnet)
 	for(var/list/site as anything in entries)
 		if(!islist(site) || !istext(site["id"]) || !length(site["id"]) || length(site["id"]) > 64)
 			return
-		if(!istext(site["domain"]) || !istext(site["title"]) || !istext(site["version"]) || !islist(site["pages"]))
+		if(!istext(site["domain"]) || !istext(site["title"]) || !istext(site["version"]) || !isnum(text2num(site["version"])) || !islist(site["pages"]))
 			return
 		var/list/site_pages = site["pages"]
 		if(new_sites[site["id"]] || !length(site_pages) || length(site_pages) > NTNET_MAX_PAGES)
@@ -136,9 +139,10 @@ SUBSYSTEM_DEF(ntnet)
 	for(var/cache_key in pages.Copy())
 		var/list/cached = pages[cache_key]
 		var/list/site = sites[cached["site_id"]]
-		if(!site || site["version"] != cached["version"])
+		if(!site || text2num(cached["version"]) < text2num(site["version"]))
 			pages -= cache_key
 	page_retry.Cut()
+	page_wait.Cut()
 	generation++
 	next_refresh = world.time + NTNET_REFRESH_INTERVAL
 	available = TRUE
@@ -151,6 +155,7 @@ SUBSYSTEM_DEF(ntnet)
 	var/cache_key = json_encode(list(site_id, slug))
 	pages -= cache_key
 	page_retry -= cache_key
+	page_wait -= cache_key
 	request_page(site_id, slug)
 
 /datum/controller/subsystem/ntnet/proc/has_page(site_id, slug)
@@ -187,7 +192,7 @@ SUBSYSTEM_DEF(ntnet)
 	if(!is_enabled() || !has_page(site_id, slug))
 		return
 	var/cache_key = json_encode(list(site_id, slug))
-	if(pages[cache_key] || pending[cache_key] || world.time < page_retry[cache_key])
+	if(pages[cache_key] || pending[cache_key] || world.time < page_retry[cache_key] || world.time < page_wait[cache_key])
 		return
 	var/url = api_url("sites/[url_encode(site_id)]/pages/[url_encode(slug)]")
 	if(!request(RUSTG_HTTP_METHOD_GET, url, "", CALLBACK(src, PROC_REF(on_page), site_id, slug)))
@@ -221,6 +226,7 @@ SUBSYSTEM_DEF(ntnet)
 		return
 	var/catalog_version = text2num(site["version"])
 	if(document_version < catalog_version)
+		page_wait[cache_key] = world.time + NTNET_STALE_PAGE_RETRY
 		return
 	if(document_version > catalog_version)
 		next_refresh = 0
@@ -238,6 +244,7 @@ SUBSYSTEM_DEF(ntnet)
 		pages.Cut(1, 2)
 	pages[cache_key] = stored
 	page_retry -= cache_key
+	page_wait -= cache_key
 
 /datum/controller/subsystem/ntnet/proc/text_from_tree(list/node, depth = 0)
 	if(depth > NTNET_MAX_TREE_DEPTH || !islist(node))
@@ -300,8 +307,14 @@ SUBSYSTEM_DEF(ntnet)
 	if(renew && entry)
 		entry["expires"] = 0
 	if(viewer_token(user, site_id))
+		answer_viewer(entry)
 		return
-	if(entry && (entry["pending"] || world.time < entry["retry"]))
+	if(entry && entry["pending"])
+		return
+	if(entry && world.time < entry["retry"])
+		if(!entry["error"])
+			entry["error"] = "Слишком частые запросы к базе сайта. Попробуйте ещё раз."
+		answer_viewer(entry)
 		return
 	if(!entry && length(user.ntnet_viewer_tokens) >= NTNET_VIEWER_MAX_TOKENS)
 		user.ntnet_viewer_tokens.Cut(1, 2)
@@ -309,12 +322,17 @@ SUBSYSTEM_DEF(ntnet)
 	user.ntnet_viewer_tokens[site_id] = entry
 	if(IsGuestKey(user.key))
 		entry["error"] = "Для базы сайта нужен BYOND-аккаунт."
+		answer_viewer(entry)
 		return
 	var/body = json_encode(list("ckey" = user.ckey, "site_id" = site_id, "name" = copytext_char(character_name, 1, NTNET_VIEWER_MAX_NAME + 1)))
 	if(!request(RUSTG_HTTP_METHOD_POST, api_url("viewer-token"), body, CALLBACK(src, PROC_REF(on_viewer_token), user.ckey, site_id)))
 		entry["error"] = "NTnet занят. Попробуйте ещё раз."
+		answer_viewer(entry)
 		return
 	entry["pending"] = TRUE
+
+/datum/controller/subsystem/ntnet/proc/answer_viewer(list/entry)
+	entry["answer"] = ++viewer_answers
 
 /datum/controller/subsystem/ntnet/proc/on_viewer_token(user_ckey, site_id, list/response)
 	var/client/user = GLOB.directory[user_ckey]
@@ -324,6 +342,7 @@ SUBSYSTEM_DEF(ntnet)
 	if(!entry || !entry["pending"])
 		return
 	entry["pending"] = FALSE
+	answer_viewer(entry)
 	var/token = viewer_token_value(response)
 	if(!token)
 		entry["error"] = "Не удалось получить доступ к базе сайта."
@@ -389,6 +408,7 @@ SUBSYSTEM_DEF(ntnet)
 
 #undef NTNET_REFRESH_INTERVAL
 #undef NTNET_RETRY_INTERVAL
+#undef NTNET_STALE_PAGE_RETRY
 #undef NTNET_IDLE_TIMEOUT
 #undef NTNET_REQUEST_TIMEOUT
 #undef NTNET_LOGIN_COOLDOWN
