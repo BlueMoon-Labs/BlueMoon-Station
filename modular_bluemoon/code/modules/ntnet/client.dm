@@ -6,3 +6,4 @@
 	var/ntnet_login_request = 0
 	var/ntnet_login_error
 	var/ntnet_light_theme = FALSE
+	var/list/ntnet_viewer_tokens = list()

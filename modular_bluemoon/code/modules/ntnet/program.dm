@@ -112,7 +112,8 @@
 	data["tabs"] = strip
 	data["can_open_tab"] = length(tabs) < NTNET_MAX_TABS
 	data["available"] = SSntnet.available
-	data["loading"] = tab.site_id ? !!SSntnet.pending[cache_key] : SSntnet.index_pending
+	data["loading"] = tab.site_id ? !SSntnet.pages[cache_key] && !SSntnet.page_failed(tab.site_id, tab.slug) : SSntnet.index_pending
+	data["failed"] = tab.site_id && SSntnet.page_failed(tab.site_id, tab.slug)
 	data["catalog"] = SSntnet.catalog
 	data["site"] = SSntnet.sites[tab.site_id]
 	data["page"] = SSntnet.pages[cache_key]
@@ -121,6 +122,11 @@
 	data["has_back"] = !!length(tab.back)
 	data["has_forward"] = !!length(tab.forward)
 	data["theme"] = viewer?.ntnet_light_theme ? "light" : "dark"
+	var/list/viewer_entry = tab.site_id && viewer ? viewer.ntnet_viewer_tokens[tab.site_id] : null
+	data["viewer"] = list(
+		"token" = tab.site_id ? SSntnet.viewer_token(viewer, tab.site_id) : null,
+		"error" = LAZYACCESS(viewer_entry, "error"),
+	)
 	data["search"] = list(
 		"query" = tab.query,
 		"results" = tab.results,
@@ -175,6 +181,9 @@
 			return TRUE
 		if("refresh")
 			SSntnet.force_refresh(tab.site_id, tab.slug)
+			return TRUE
+		if("token")
+			SSntnet.request_viewer_token(ui.user.client, tab.site_id, ui.user.real_name, !!params["renew"])
 			return TRUE
 		if("tab_open")
 			open_tab()

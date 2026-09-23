@@ -65,22 +65,24 @@ const FRAME_ADDRESS =
 const FRAME_SITE = /^[a-f0-9]{32}$/;
 const FRAME_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const FRAME_SANDBOX = 'allow-scripts';
-const FRAME_POLICY = [
-  "default-src 'none'",
-  "script-src 'unsafe-inline'",
-  "style-src 'unsafe-inline'",
-  'img-src https: data:',
-  'media-src https:',
-  "font-src data:",
-  "connect-src 'none'",
-  "form-action 'none'",
-  "frame-src 'none'",
-  "child-src 'none'",
-  "worker-src 'none'",
-  "object-src 'none'",
-  "base-uri 'none'",
-  'sandbox allow-scripts',
-].join('; ');
+const FRAME_POLICY_VERSION = 2;
+const framePolicy = (url: string) =>
+  [
+    "default-src 'none'",
+    "script-src 'unsafe-inline'",
+    "style-src 'unsafe-inline'",
+    'img-src https: data:',
+    'media-src https:',
+    "font-src data:",
+    `connect-src ${url.slice(0, url.indexOf('/', 'https://'.length))}`,
+    "form-action 'none'",
+    "frame-src 'none'",
+    "child-src 'none'",
+    "worker-src 'none'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    'sandbox allow-scripts',
+  ].join('; ');
 const PROBE_TIMEOUT = 700;
 const LAG_TICK = 1000;
 const LAG_LIMIT = 4000;
@@ -168,6 +170,11 @@ const navigationRequest = (value: any) => {
   return { siteId: site, slug };
 };
 
+const tokenRequest = (value: any) =>
+  value && typeof value === 'object' && value.ntnet === 'token'
+    ? { renew: value.renew === true }
+    : null;
+
 type SitePage = {
   slug: string;
   title: string;
@@ -209,6 +216,11 @@ type Data = {
   can_open_tab: boolean;
   available: boolean;
   loading: boolean;
+  failed?: boolean;
+  viewer?: {
+    token: string | null;
+    error: string | null;
+  };
   catalog: Site[];
   site: Site | null;
   page: Page | null;
@@ -926,13 +938,48 @@ type FrameProps = {
 
 const PageFrame = (props: FrameProps) => {
   const { url, title, t, fallback, onNavigate } = props;
+  const { act, data } = useBackend<Data>();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [stopped, setStopped] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const frame = useRef<HTMLIFrameElement | null>(null);
+  const wantsToken = useRef(false);
+  const staleToken = useRef<string | null>(null);
+  const viewer = useRef(data.viewer);
+  viewer.current = data.viewer;
+  const deliverToken = () => {
+    const target = frame.current?.contentWindow;
+    const current = viewer.current;
+    if (!wantsToken.current || !target || !current) {
+      return;
+    }
+    if (current.token && current.token !== staleToken.current) {
+      target.postMessage({ ntnet: 'token', token: current.token }, '*');
+      staleToken.current = null;
+    } else if (current.error) {
+      target.postMessage({ ntnet: 'token', error: current.error }, '*');
+    } else {
+      return;
+    }
+    wantsToken.current = false;
+  };
+  useEffect(deliverToken, [data.viewer?.token, data.viewer?.error]);
   useEffect(() => {
     let alive = true;
     const receive = (event: MessageEvent) => {
       if (!frame.current || event.source !== frame.current.contentWindow) {
+        return;
+      }
+      const asked = tokenRequest(event.data);
+      if (asked) {
+        wantsToken.current = true;
+        if (asked.renew) {
+          staleToken.current = viewer.current?.token || null;
+          act('token', { renew: 1 });
+        } else if (!viewer.current?.token) {
+          act('token');
+        }
+        deliverToken();
         return;
       }
       const request = navigationRequest(event.data);
@@ -950,7 +997,7 @@ const PageFrame = (props: FrameProps) => {
       alive = false;
       window.removeEventListener('message', receive);
     };
-  }, [onNavigate]);
+  }, [onNavigate, act]);
   useEffect(() => {
     if (allowed !== true) {
       return;
@@ -975,10 +1022,10 @@ const PageFrame = (props: FrameProps) => {
       }
       node.dataset.ntnetLoaded = url;
       node.setAttribute('sandbox', FRAME_SANDBOX);
-      node.setAttribute('csp', FRAME_POLICY);
+      node.setAttribute('csp', framePolicy(url));
       node.setAttribute('referrerpolicy', 'no-referrer');
       node.setAttribute('allow', '');
-      node.setAttribute('src', url);
+      node.setAttribute('src', `${url}?csp=${FRAME_POLICY_VERSION}`);
     },
     [url],
   );
@@ -998,16 +1045,34 @@ const PageFrame = (props: FrameProps) => {
     );
   }
   return (
-    <iframe
-      title={title}
-      ref={attach}
-      style={{
-        width: '100%',
-        height: '100%',
-        border: 'none',
-        background: '#ffffff',
-      }}
-    />
+    <Box style={{ position: 'relative', height: '100%' }}>
+      <iframe
+        title={title}
+        ref={attach}
+        onLoad={() => setLoaded(true)}
+        style={{
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          background: '#ffffff',
+        }}
+      />
+      {!loaded && (
+        <Box
+          style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            padding: '24px',
+            color: '#5c6b77',
+          }}
+        >
+          <Icon name="spinner" spin mr={1} />
+          Загрузка страницы…
+        </Box>
+      )}
+    </Box>
   );
 };
 
@@ -1068,7 +1133,18 @@ export const NtosNTnet = () => {
                     />
                   )) || <PageText text={page.text} t={t} />)) || (
                   <Box style={{ padding: '24px', color: t.muted }}>
-                    Страница не открылась.
+                    Страница не открылась.{' '}
+                    <Box
+                      as="span"
+                      onClick={() => act('refresh')}
+                      style={{
+                        color: t.accent,
+                        cursor: 'pointer',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      Повторить
+                    </Box>
                   </Box>
                 ))) ||
               (search.query && <SearchPage />) ||

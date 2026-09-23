@@ -5,7 +5,7 @@
 #define NTNET_LOGIN_COOLDOWN (1 MINUTES)
 #define NTNET_CODE_LIFETIME (15 MINUTES)
 #define NTNET_MAX_INDEX_BYTES (512 * 1024)
-#define NTNET_MAX_PAGE_BYTES (64 * 1024)
+#define NTNET_MAX_PAGE_BYTES (96 * 1024)
 #define NTNET_MAX_SEARCH_BYTES (64 * 1024)
 #define NTNET_MAX_LOGIN_BYTES 4096
 #define NTNET_MAX_SITES 500
@@ -17,6 +17,12 @@
 #define NTNET_MAX_TREE_DEPTH 12
 #define NTNET_SEARCH_MAX_RESULTS 20
 #define NTNET_SEARCH_MAX_SNIPPET 400
+#define NTNET_VIEWER_TOKEN_TTL (1 HOURS)
+#define NTNET_VIEWER_TOKEN_MARGIN (5 MINUTES)
+#define NTNET_VIEWER_TOKEN_COOLDOWN (10 SECONDS)
+#define NTNET_VIEWER_MAX_TOKENS 16
+#define NTNET_VIEWER_MAX_TOKEN_LENGTH 1024
+#define NTNET_VIEWER_MAX_NAME 64
 
 SUBSYSTEM_DEF(ntnet)
 	name = "NTnet"
@@ -183,32 +189,47 @@ SUBSYSTEM_DEF(ntnet)
 	var/cache_key = json_encode(list(site_id, slug))
 	if(pages[cache_key] || pending[cache_key] || world.time < page_retry[cache_key])
 		return
-	var/list/site = sites[site_id]
 	var/url = api_url("sites/[url_encode(site_id)]/pages/[url_encode(slug)]")
-	if(!request(RUSTG_HTTP_METHOD_GET, url, "", CALLBACK(src, PROC_REF(on_page), site_id, slug, site["version"])))
+	if(!request(RUSTG_HTTP_METHOD_GET, url, "", CALLBACK(src, PROC_REF(on_page), site_id, slug)))
 		return
 	pending[cache_key] = TRUE
 
-/datum/controller/subsystem/ntnet/proc/on_page(site_id, slug, version, list/response)
+/datum/controller/subsystem/ntnet/proc/page_failed(site_id, slug)
+	var/cache_key = json_encode(list(site_id, slug))
+	return !pages[cache_key] && world.time < page_retry[cache_key]
+
+/datum/controller/subsystem/ntnet/proc/on_page(site_id, slug, list/response)
 	var/cache_key = json_encode(list(site_id, slug))
 	pending -= cache_key
-	page_retry[cache_key] = world.time + NTNET_RETRY_INTERVAL
-	if(!islist(response) || response["status_code"] != 200 || length(response["body"]) > NTNET_MAX_PAGE_BYTES)
+	if(!islist(response) || response["status_code"] >= 500)
 		available = FALSE
+		page_retry[cache_key] = world.time + NTNET_RETRY_INTERVAL
+		return
+	available = TRUE
+	if(response["status_code"] == 404)
+		next_refresh = min(next_refresh, world.time + NTNET_RETRY_INTERVAL)
+	if(response["status_code"] != 200 || length(response["body"]) > NTNET_MAX_PAGE_BYTES)
+		page_retry[cache_key] = world.time + NTNET_RETRY_INTERVAL
+		return
+	if(!has_page(site_id, slug))
 		return
 	var/list/site = sites[site_id]
-	if(!site || site["version"] != version || !has_page(site_id, slug))
-		return
 	var/list/document = decode_json(response["body"])
-	if(!islist(document) || document["site_id"] != site_id || document["slug"] != slug || document["version"] != version)
-		available = FALSE
+	var/document_version = islist(document) && istext(document["version"]) ? text2num(document["version"]) : null
+	if(!islist(document) || document["site_id"] != site_id || document["slug"] != slug || !isnum(document_version))
+		page_retry[cache_key] = world.time + NTNET_RETRY_INTERVAL
 		return
+	var/catalog_version = text2num(site["version"])
+	if(document_version < catalog_version)
+		return
+	if(document_version > catalog_version)
+		next_refresh = 0
 	var/list/frame = document["interactive"]
 	var/address = islist(frame) ? frame["url"] : null
 	var/list/stored = list(
 		"site_id" = site_id,
 		"slug" = slug,
-		"version" = version,
+		"version" = document["version"],
 		"title" = istext(document["title"]) ? document["title"] : slug,
 		"frame" = (CONFIG_GET(flag/ntnet_interactive) && frame_address(address)) ? address : null,
 		"text" = text_from_tree(document["tree"]),
@@ -217,7 +238,6 @@ SUBSYSTEM_DEF(ntnet)
 		pages.Cut(1, 2)
 	pages[cache_key] = stored
 	page_retry -= cache_key
-	available = TRUE
 
 /datum/controller/subsystem/ntnet/proc/text_from_tree(list/node, depth = 0)
 	if(depth > NTNET_MAX_TREE_DEPTH || !islist(node))
@@ -264,6 +284,64 @@ SUBSYSTEM_DEF(ntnet)
 			continue
 		found += list(entry)
 	return found
+
+/datum/controller/subsystem/ntnet/proc/viewer_token(client/user, site_id)
+	if(!user)
+		return null
+	var/list/entry = user.ntnet_viewer_tokens[site_id]
+	if(!entry || world.time > entry["expires"])
+		return null
+	return entry["token"]
+
+/datum/controller/subsystem/ntnet/proc/request_viewer_token(client/user, site_id, character_name, renew = FALSE)
+	if(!user || !is_enabled() || !CONFIG_GET(flag/ntnet_interactive) || !istext(site_id) || !sites[site_id])
+		return
+	var/list/entry = user.ntnet_viewer_tokens[site_id]
+	if(renew && entry)
+		entry["expires"] = 0
+	if(viewer_token(user, site_id))
+		return
+	if(entry && (entry["pending"] || world.time < entry["retry"]))
+		return
+	if(!entry && length(user.ntnet_viewer_tokens) >= NTNET_VIEWER_MAX_TOKENS)
+		user.ntnet_viewer_tokens.Cut(1, 2)
+	entry = list("retry" = world.time + NTNET_VIEWER_TOKEN_COOLDOWN)
+	user.ntnet_viewer_tokens[site_id] = entry
+	if(IsGuestKey(user.key))
+		entry["error"] = "Для базы сайта нужен BYOND-аккаунт."
+		return
+	var/body = json_encode(list("ckey" = user.ckey, "site_id" = site_id, "name" = copytext_char(character_name, 1, NTNET_VIEWER_MAX_NAME + 1)))
+	if(!request(RUSTG_HTTP_METHOD_POST, api_url("viewer-token"), body, CALLBACK(src, PROC_REF(on_viewer_token), user.ckey, site_id)))
+		entry["error"] = "NTnet занят. Попробуйте ещё раз."
+		return
+	entry["pending"] = TRUE
+
+/datum/controller/subsystem/ntnet/proc/on_viewer_token(user_ckey, site_id, list/response)
+	var/client/user = GLOB.directory[user_ckey]
+	if(!user)
+		return
+	var/list/entry = user.ntnet_viewer_tokens[site_id]
+	if(!entry || !entry["pending"])
+		return
+	entry["pending"] = FALSE
+	var/token = viewer_token_value(response)
+	if(!token)
+		entry["error"] = "Не удалось получить доступ к базе сайта."
+		return
+	entry -= "error"
+	entry["token"] = token
+	entry["expires"] = world.time + NTNET_VIEWER_TOKEN_TTL - NTNET_VIEWER_TOKEN_MARGIN
+
+/datum/controller/subsystem/ntnet/proc/viewer_token_value(list/response)
+	if(!islist(response) || response["status_code"] != 201 || length(response["body"]) > NTNET_MAX_LOGIN_BYTES)
+		return
+	var/list/document = decode_json(response["body"])
+	if(!islist(document) || !istext(document["token"]) || length(document["token"]) > NTNET_VIEWER_MAX_TOKEN_LENGTH)
+		return
+	if(document["expires_in"] != NTNET_VIEWER_TOKEN_TTL / (1 SECONDS))
+		return
+	var/static/regex/pattern = regex(@"^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$")
+	return pattern.Find(document["token"]) ? document["token"] : null
 
 /datum/controller/subsystem/ntnet/proc/request_login(client/user)
 	if(!user || !is_enabled() || user.ntnet_login_pending || world.time < user.ntnet_login_retry)
@@ -328,3 +406,9 @@ SUBSYSTEM_DEF(ntnet)
 #undef NTNET_MAX_TREE_DEPTH
 #undef NTNET_SEARCH_MAX_RESULTS
 #undef NTNET_SEARCH_MAX_SNIPPET
+#undef NTNET_VIEWER_TOKEN_TTL
+#undef NTNET_VIEWER_TOKEN_MARGIN
+#undef NTNET_VIEWER_TOKEN_COOLDOWN
+#undef NTNET_VIEWER_MAX_TOKENS
+#undef NTNET_VIEWER_MAX_TOKEN_LENGTH
+#undef NTNET_VIEWER_MAX_NAME
