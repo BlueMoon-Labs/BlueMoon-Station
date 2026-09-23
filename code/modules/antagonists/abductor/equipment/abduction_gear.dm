@@ -690,7 +690,7 @@
 #define ALIEN_LIGHT_ON \
 	Initialize(mapload) { \
 		. = ..(); \
-		set_light(); \
+		set_light(1); \
 	} ;
 
 /obj/item/scalpel/alien
@@ -698,7 +698,6 @@
 	desc = "It's a gleaming sharp knife made out of silvery-green metal."
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -708,7 +707,6 @@
 	desc = "It's a gleaming sharp tool. It looks like it could cut off your hand."
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "combi_scalpel"
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -718,7 +716,6 @@
 	desc = "You've never seen this before."
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -728,7 +725,6 @@
 	desc = "You're not sure if you want the veil pulled back."
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -738,7 +734,6 @@
 	desc = "An agglomerate of lasers and something else."
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "combi_retractor"
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -748,7 +743,6 @@
 	desc = "Do the aliens also lose this, and need to find an alien hatchet?"
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_SMALL
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	force = 16
@@ -759,7 +753,6 @@
 	desc = "Maybe alien surgeons have finally found a use for the drill."
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_SMALL
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -769,7 +762,6 @@
 	desc = "Some energy tool. It can burn and drill holes in flesh."
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "combi_drill"
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
@@ -779,7 +771,6 @@
 	desc = "Why would bloodless aliens have a tool to stop bleeding? Unless..."
 	icon = 'icons/obj/abductor.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	light_range = 1
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	ALIEN_LIGHT_ON
