@@ -34,7 +34,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/unpowered)
 "C" = (
-/obj/machinery/door/poddoor/shutters{
+/obj/machinery/door/poddoor/shutters/preopen{
 	id = "gateshutter";
 	name = "Gateway Access Shutter"
 	},

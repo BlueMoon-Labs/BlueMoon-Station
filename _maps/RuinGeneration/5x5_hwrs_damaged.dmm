@@ -5,7 +5,7 @@
 /area/ruin/unpowered)
 "C" = (
 /obj/effect/abstract/open_area_marker{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/ruin/unpowered)
