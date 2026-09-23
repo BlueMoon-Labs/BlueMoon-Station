@@ -47,6 +47,7 @@
 @include meta.load-css('./components/FindBar.scss');
 
 // Interfaces
+@include meta.load-css('./interfaces/AntagTraining.scss');
 @include meta.load-css('./interfaces/ListInput.scss');
 @include meta.load-css('./interfaces/IntegratedCircuit.scss');
 @include meta.load-css('./interfaces/AlertModal.scss');
@@ -74,6 +75,9 @@
 @include meta.load-css('./interfaces/PersonalCrafting');
 @include meta.load-css('./interfaces/AdminLogViewer.scss');
 @include meta.load-css('./interfaces/Hypertorus.scss');
+@include meta.load-css('./interfaces/ForbiddenLore.scss');
+@include meta.load-css('./interfaces/HereticBookAtmosphere.scss');
+@include meta.load-css('./interfaces/HereticBookMaterials.scss');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');
