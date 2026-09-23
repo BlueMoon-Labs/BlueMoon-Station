@@ -24,7 +24,7 @@
 	description = "Stasis, but now mobile!"
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("cryotech", "adv_biotech")
-	design_ids = list("stasis_roller_bed")
+	design_ids = list("stasis_roller_bed", "noreactsyringe")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 1500)
 
 /datum/techweb_node/adv_defibrillator_tec
@@ -135,7 +135,7 @@
 	description = "When simple medicine doesn't cut it."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("imp_wt_surgery")
-	design_ids = list("surgery_lobotomy", "surgery_heal_brute_upgrade_femto","surgery_heal_burn_upgrade_femto","surgery_heal_robo_upgrade","surgery_heal_combo", "surgery_toxinhealing", "organbox", "surgery_adv_dissection")
+	design_ids = list("surgery_lobotomy", "surgery_heal_brute_upgrade_femto","surgery_heal_burn_upgrade_femto","surgery_heal_robo_upgrade","surgery_heal_combo", "surgery_toxinhealing", "surgery_adv_dissection")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/advance_surgerytools
@@ -144,7 +144,7 @@
 	description = "Refined and improved redesigns for the run-of-the-mill medical utensils."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
 	prereq_ids = list("upgraded_surgerytools", "adv_surgery") // BLUEMOON ADD basic_tools for order consistency
-	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv")
+	design_ids = list("retractor_adv", "surgicaldrill_adv", "scalpel_adv", "autodoc")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/exp_surgery
