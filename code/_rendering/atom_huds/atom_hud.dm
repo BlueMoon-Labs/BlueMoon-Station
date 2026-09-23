@@ -70,10 +70,14 @@ GLOBAL_LIST_INIT(huds, alist(
 			next_time_allowed -= M
 		if(queued_to_see[M])
 			queued_to_see -= M
-		else
+		else if(viewer_has_images(M))
 			var/list/images_to_remove = list()
 			collect_hud_images_for(M, images_to_remove, check_visibility = FALSE)
 			remove_hud_images(M, images_to_remove)
+
+/// Картинки худа живут в client.images: у моба без клиента снимать нечего.
+/datum/atom_hud/proc/viewer_has_images(mob/viewer)
+	return !!viewer.client
 
 /datum/atom_hud/proc/remove_hud_images(mob/viewer, list/images_to_remove)
 	if(viewer?.client && length(images_to_remove))
