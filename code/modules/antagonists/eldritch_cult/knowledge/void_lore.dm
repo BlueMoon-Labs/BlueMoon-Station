@@ -137,7 +137,7 @@
 
 /datum/eldritch_knowledge/void_blade_upgrade
 	name = "Ищущий клинок"
-	desc = "Каждое ранение вашим клинком Пустоты дополнительно наносит 8 холодовых ожогов и замедляет на 4 секунды. Держите клинок в активной руке и нажмите ЛКМ по отмеченному врагу вне досягаемости удара, в поле зрения и не дальше 5 клеток: вы переместитесь рядом и ударите. Shift не требуется. Сдвиг восстанавливается 8 секунд; осмотрите клинок, чтобы узнать готовность. Возле цели нужна клетка без препятствий. Антимагия защищает от дополнительных эффектов и сдвига."
+	desc = "Каждое ранение вашим клинком Пустоты дополнительно наносит 8 холодовых ожогов и замедляет на 4 секунды. Держите клинок в активной руке и нажмите ЛКМ по отмеченному врагу вне досягаемости удара, в поле зрения и не дальше 5 клеток: вы переместитесь рядом и ударите. Shift не требуется. Сдвиг восстанавливается 8 секунд, а к цели внутри вашего домена Бесконечной пустоты — 2 секунды; осмотрите клинок, чтобы узнать готовность. Возле цели нужна клетка без препятствий. Антимагия защищает от дополнительных эффектов и сдвига."
 	gain_text = "Метки в снегу связывают места, которые никогда не были рядом."
 	cost = 2
 	route = PATH_VOID
@@ -189,9 +189,16 @@
 		return reject_blink(user, "Возле цели нет клетки без препятствий.")
 	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
 		return reject_blink(user, "Перемещение заблокировано: покиньте зону запрета телепортации или снимите удерживающий эффект.")
-	COOLDOWN_START(src, blink_cooldown, 8 SECONDS)
+	COOLDOWN_START(src, blink_cooldown, in_own_domain(user, victim) ? HERETIC_VOID_DOMAIN_BLINK_COOLDOWN : HERETIC_VOID_BLINK_COOLDOWN)
 	blade.melee_attack_chain(user, victim, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 	return TRUE
+
+/datum/eldritch_knowledge/void_blade_upgrade/proc/in_own_domain(mob/living/user, mob/living/victim)
+	var/datum/status_effect/heretic_domain/presence = victim.has_status_effect(/datum/status_effect/heretic_domain)
+	for(var/obj/effect/domain_expansion/domain as anything in presence?.domains)
+		if(user in domain.immune)
+			return TRUE
+	return FALSE
 
 /datum/eldritch_knowledge/void_blade_upgrade/proc/reject_blink(mob/user, reason)
 	blink_failure_reason = reason
@@ -221,7 +228,7 @@
 
 /datum/eldritch_knowledge/spell/domain_expansion
 	name = "Бесконечная пустота"
-	desc = "После трёх секунд сосредоточения создайте домен 7×7 на 20 секунд. Враги в нём замедляются и получают метки Пустоты. Скованность проходит через 4 секунды после выхода."
+	desc = "После трёх секунд сосредоточения создайте домен 7×7 на 20 секунд. Враги в нём замедляются и получают метки Пустоты. С «Ищущим клинком» сдвиг к врагу внутри домена восстанавливается 2 секунды вместо 8. Скованность проходит через 4 секунды после выхода. Перезарядка 60 секунд."
 	gain_text = "Мне больше не нужен снег, чтобы слышать шаги гостя."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES

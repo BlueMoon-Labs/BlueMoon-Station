@@ -28,6 +28,36 @@
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/eldritch/void), "Отказ сохраняет метку.")
 	TEST_ASSERT(findtext(jointext(second_blade.examine(user), " "), "восстановится через"), "Осмотр другого клинка показывает ту же перезарядку.")
 
+/// Внутри своего домена сдвиг к меченому восстанавливается 2 секунды, в чужом - обычные 8.
+/datum/unit_test/heretic_void_seeking_blade_domain/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/void_blade_upgrade)
+	var/datum/eldritch_knowledge/void_blade_upgrade/upgrade = heretic.get_knowledge(/datum/eldritch_knowledge/void_blade_upgrade)
+	var/turf/origin = get_turf(user)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y + 1, origin.z))
+	var/obj/item/melee/sickly_blade/void/blade = allocate(/obj/item/melee/sickly_blade/void)
+	user.put_in_active_hand(blade)
+	user.a_intent = INTENT_HARM
+	var/mob/living/stranger = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y + 4, origin.z))
+	var/obj/effect/domain_expansion/foreign = allocate(/obj/effect/domain_expansion, get_turf(victim), 1, 20 SECONDS, list(stranger), FALSE)
+	foreign.tick_zone(stranger)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/heretic_domain), "Чужой домен держит цель.")
+	blade.ranged_attack_chain(user, victim)
+	TEST_ASSERT(user.Adjacent(victim), "Сдвиг к цели в чужом домене проходит.")
+	TEST_ASSERT(COOLDOWN_TIMELEFT(upgrade, blink_cooldown) > HERETIC_VOID_DOMAIN_BLINK_COOLDOWN, "Чужой домен не ускоряет сдвиг.")
+	qdel(foreign)
+	COOLDOWN_RESET(upgrade, blink_cooldown)
+	user.forceMove(origin)
+	var/obj/effect/domain_expansion/domain = allocate(/obj/effect/domain_expansion, get_turf(victim), 1, 20 SECONDS, list(user), FALSE)
+	domain.tick_zone(user)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/eldritch/void), "Домен метит цель.")
+	blade.ranged_attack_chain(user, victim)
+	TEST_ASSERT(user.Adjacent(victim), "Сдвиг к цели в своём домене проходит.")
+	TEST_ASSERT(!COOLDOWN_FINISHED(upgrade, blink_cooldown), "Сдвиг в домене всё равно запускает перезарядку.")
+	TEST_ASSERT(COOLDOWN_TIMELEFT(upgrade, blink_cooldown) <= HERETIC_VOID_DOMAIN_BLINK_COOLDOWN, "В своём домене сдвиг восстанавливается 2 секунды.")
+
 /// Отказы сдвига объясняют метку, дальность, преграды и защиту, сохраняя готовность и цель.
 /datum/unit_test/heretic_void_seeking_blade_rejections/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
