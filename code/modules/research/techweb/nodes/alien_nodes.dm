@@ -14,6 +14,7 @@
 	. = ..()
 	boost_item_paths = typesof(/obj/item/gun/energy/alien, /obj/item/scalpel/alien, /obj/item/hemostat/alien,
 							/obj/item/retractor/alien, /obj/item/circular_saw/alien, /obj/item/cautery/alien,
+							/obj/item/scalpel/advanced/alien, /obj/item/retractor/advanced/alien, /obj/item/surgicaldrill/advanced/alien,
 							/obj/item/surgicaldrill/alien, /obj/item/screwdriver/abductor, /obj/item/wrench/abductor,
 							/obj/item/crowbar/abductor, /obj/item/multitool/abductor,
 							/obj/item/stock_parts/cell/infinite/abductor, /obj/item/weldingtool/abductor,
