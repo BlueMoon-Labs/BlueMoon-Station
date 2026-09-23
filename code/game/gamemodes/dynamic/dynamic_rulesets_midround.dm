@@ -402,6 +402,9 @@
 	cost = 6
 	intensity = 8
 
+/datum/dynamic_ruleset/midround/crew_conversion/heretic/can_convert(mob/living/player)
+	return ..() && !HAS_TRAIT(player, TRAIT_MINDSHIELD)
+
 /datum/dynamic_ruleset/midround/crew_conversion/heretic/ready(forced = FALSE)
 	var/block_reason = heretic_injection_block_reason(length(mode.current_players[CURRENT_LIVING_PLAYERS]))
 	if(!forced && block_reason)

@@ -40,7 +40,11 @@
 	return ..()
 
 /datum/status_effect/heretic_ascended/tick()
-	if(owner.stat == DEAD || world.time - last_damage_time < HERETIC_ASCENDED_REGEN_DELAY)
+	if(owner.stat == DEAD)
+		return
+	if(iscarbon(owner) && owner.blood_volume && owner.blood_volume < BLOOD_VOLUME_NORMAL)
+		owner.blood_volume = min(BLOOD_VOLUME_NORMAL, owner.blood_volume + HERETIC_ASCENDED_BLOOD_REGEN)
+	if(world.time - last_damage_time < HERETIC_ASCENDED_REGEN_DELAY)
 		return
 	owner.heal_overall_damage(HERETIC_ASCENDED_REGEN, HERETIC_ASCENDED_REGEN, only_organic = FALSE)
 

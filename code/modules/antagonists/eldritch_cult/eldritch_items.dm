@@ -193,6 +193,14 @@
 		if(HAS_TRAIT(user, TRAIT_NO_TELEPORT) || origin_area.area_flags & NOTELEPORT)
 			escape_failure(user, "Телепортация заблокирована.")
 			return
+		var/containment_reason = heretic_containment_reason(user)
+		if(containment_reason)
+			escape_failure(user, containment_reason)
+			return
+		var/escape_wait = user.mind.heretic_escape_ready_at - world.time
+		if(escape_wait > 0)
+			escape_failure(user, "Мансус ещё не отпустил вас после прошлого побега: подождите [DisplayTimeText(escape_wait, 1)].")
+			return
 		escape_in_progress = TRUE
 		log_game("HERETIC ESCAPE: [key_name(user)] activates [src] at [AREACOORD(origin)].")
 		var/turf/safe_turf = find_escape_turf(origin)
@@ -205,6 +213,7 @@
 				escape_failure(user, "Побег прерван: вы потеряли клинок, возможность действовать или покинули уровень.")
 			return
 		if(safe_turf && do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
+			user.mind.heretic_escape_ready_at = world.time + HERETIC_BLADE_ESCAPE_COOLDOWN
 			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, и [user] исчезает в клубах дыма."))
 			new /obj/effect/temp_visual/eldritch_smoke(origin)
 			playsound(origin, "shatter", 70, TRUE)
@@ -243,7 +252,7 @@
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место, потеряв оружие. Успейте до оглушения или потери сознания. При неудаче клинок сохранится.")
+		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место, потеряв оружие. Успейте до оглушения или потери сознания. После побега Мансус отпустит вас для следующего только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. При неудаче клинок сохранится.")
 
 /obj/item/melee/sickly_blade/rust
 	name = "rusted blade"

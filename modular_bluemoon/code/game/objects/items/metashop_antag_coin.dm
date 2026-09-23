@@ -191,6 +191,8 @@
 	qdel(heretic_rule)
 	if(is_restricted)
 		return "Ваша должность не позволяет активировать жетон еретика."
+	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+		return "Щит разума не пускает зов Мансуса: с имплантом защиты разума жетон еретика не активировать."
 	return null
 
 /obj/item/coin/antagtoken/metashop/heretic/on_activation_success(mob/living/carbon/human/user, datum/antagonist/antagonist)

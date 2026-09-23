@@ -19,7 +19,7 @@
 
 /proc/heretic_ritual_ingredient_name(atom/ingredient_type)
 	var/static/list/names = list(
-		/mob/living/carbon/human = "Человеческий труп",
+		/mob/living/carbon/human = "Труп члена экипажа",
 		/obj/effect/decal/cleanable/ash = "Пепел",
 		/obj/effect/decal/cleanable/blood = "Лужа крови",
 		/obj/effect/decal/cleanable/vomit = "Рвота",

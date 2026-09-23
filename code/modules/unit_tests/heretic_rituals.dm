@@ -191,6 +191,7 @@
 	var/list/expected = list()
 	for(var/index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.death()
 		atoms += body
 		expected += body

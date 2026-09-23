@@ -87,6 +87,7 @@
 	heretic.researched_knowledge[final_knowledge.type] = final_knowledge
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.stat = DEAD
 	TEST_ASSERT(rune.do_ritual(user, final_knowledge), "Обряд завершается вознесением.")
 	var/turf/center = get_turf(user)
@@ -186,6 +187,7 @@
 	var/list/bodies = list()
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.stat = DEAD
 		bodies += body
 	rune.escapee = bodies[1]
@@ -220,6 +222,7 @@
 	heretic.researched_knowledge[final_knowledge.type] = final_knowledge
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.stat = DEAD
 	user.add_or_update_variable_actionspeed_modifier(/datum/actionspeed_modifier/heretic_crescendo_test, multiplicative_slowdown = -0.5)
 	var/expected = final_knowledge.ritual_time * user.cached_multiplicative_actions_slowdown

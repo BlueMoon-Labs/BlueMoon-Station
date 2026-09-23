@@ -24,6 +24,7 @@
 	heretic.researched_knowledge[finale.type] = finale
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, rune_turf)
+		body.last_mind = allocate_mind()
 		body.stat = DEAD
 	TEST_ASSERT(rune.do_ritual(user, finale), "Обряд вознесения Ржавчины завершается.")
 	var/obj/structure/heretic_rust_ascension_heart/heart = finale.ascension_heart

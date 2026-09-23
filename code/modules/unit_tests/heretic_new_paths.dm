@@ -76,12 +76,14 @@
 		var/list/bodies = list()
 		for(var/body_index in 1 to HERETIC_ASCENSION_BODIES - 1)
 			var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_turf(rune))
+			victim.last_mind = allocate_mind()
 			victim.stat = DEAD
 			bodies += victim
 		TEST_ASSERT(!rune.do_ritual(old_body, final_knowledge), "Два тела не завершают вознесение [path_id].")
 		for(var/mob/living/victim as anything in bodies)
 			TEST_ASSERT(!QDELETED(victim), "Отказ сохраняет тела для следующей попытки.")
 		var/mob/living/carbon/human/last_victim = allocate(/mob/living/carbon/human, get_turf(rune))
+		last_victim.last_mind = allocate_mind()
 		last_victim.stat = DEAD
 		bodies += last_victim
 		var/original_brute_mod = old_body.physiology.brute_mod

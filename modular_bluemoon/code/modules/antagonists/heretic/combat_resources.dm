@@ -28,7 +28,10 @@
 	if(condition)
 		heretic_failure_reason = null
 		return TRUE
-	if(user?.incapacitated())
+	var/containment_reason = heretic_containment_reason(user)
+	if(containment_reason)
+		reason = containment_reason
+	else if(user?.incapacitated())
 		reason = "Вы не можете действовать: дождитесь окончания оглушения или освободитесь."
 	else if(user && !isturf(user.loc))
 		reason = "Сначала выйдите из контейнера или укрытия на пол."

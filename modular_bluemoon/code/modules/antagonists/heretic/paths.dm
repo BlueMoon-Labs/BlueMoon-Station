@@ -19,6 +19,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	/datum/eldritch_knowledge/curse/paralysis = 5,
 	/datum/eldritch_knowledge/spell/blood_siphon = 6,
 	/datum/eldritch_knowledge/crucible = 6,
+	/datum/eldritch_knowledge/unshielded_mind = 6,
 	/datum/eldritch_knowledge/summon/ashy = 7,
 	/datum/eldritch_knowledge/summon/rusty = 7,
 	/datum/eldritch_knowledge/spell/cleave = 8,
@@ -222,7 +223,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		return FALSE
 	GLOB.heretic_threat_warning_until = world.time + HERETIC_THREAT_WARNING_TIME
 	ascension_ready_at = GLOB.heretic_threat_warning_until
-	priority_announce("Зафиксировано усиление оккультной активности. Последователи запретных путей готовят заключительный обряд. До возможного разрыва завесы остаётся не менее трёх минут. Сообщайте службе безопасности о ритуальных знаках и необъяснимых исчезновениях экипажа.", "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
+	priority_announce("Зафиксировано усиление оккультной активности: последователи запретных путей уже приносят экипаж в жертву. Вознесения пока не было. О начале заключительного обряда станция получит отдельное оповещение, и оно возможно не раньше чем через три минуты. Сообщайте службе безопасности о ритуальных знаках и необъяснимых исчезновениях экипажа. Задержанного еретика держите в наручниках или смирительной рубашке, а для долгого содержания установите ему имплант защиты разума: так магия запретных путей и побег через разбитый клинок недоступны.", "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
 	return TRUE
 
 /datum/antagonist/heretic/proc/research_knowledge(knowledge_type, mob/living/user)

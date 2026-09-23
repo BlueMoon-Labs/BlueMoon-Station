@@ -160,6 +160,7 @@
 #include "heretic_review_oldpaths.dm"
 #include "heretic_review_tide_lock_cosmic.dm"
 #include "heretic_combat.dm"
+#include "heretic_containment.dm"
 #include "heretic_nonlethal.dm"
 #include "heretic_gameplay.dm"
 #include "heretic_engagement.dm"

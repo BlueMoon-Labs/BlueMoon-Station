@@ -213,7 +213,7 @@
 	if(user != ritual_user || !IS_HERETIC(user))
 		return FALSE
 	for(var/mob/living/carbon/human/body in reserved_atoms)
-		if(body.stat != DEAD || IS_HERETIC(body) || IS_HERETIC_MONSTER(body))
+		if(!heretic_ascension_body_valid(body, user))
 			continue
 		var/image/body_image = image(loc = body)
 		body_image.appearance = body.appearance
@@ -406,6 +406,8 @@
 				var/mob/living/body = candidate
 				if(body.stat != DEAD && ritual.type != /datum/eldritch_knowledge/spell/basic)
 					continue
+				if(istype(ritual, /datum/eldritch_knowledge/final_eldritch) && !heretic_ascension_body_valid(body, user))
+					continue
 			if(isstack(candidate))
 				var/obj/item/stack/stack = candidate
 				if(!stack.is_cyborg)
@@ -430,9 +432,11 @@
 	if(ritual.type == /datum/eldritch_knowledge/base_blade)
 		return "Достигнут предел связанных тёмных клинков: у вас уже есть три. Разбитый для побега клинок освобождает место. «Зов клинка» возвращает только ваш клинок, лежащий на полу в поле зрения до 7 клеток; из чужих рук и контейнеров он его не заберёт."
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
-		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, лёжа или оглушённая, либо её труп за меньшую награду."
+		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Добровольно лёгший или уснувший не считается."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
-		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] человеческих тела. Тела еретиков и их слуг не подходят."
+		if(heretic_ascension_in_open_space(src))
+			return "Финальный обряд нельзя провести в зоне открытого космоса, даже на своей площадке с воздухом. Начертите руну в помещении станции или другой локации."
+		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] трупа членов экипажа. Подходят только тела, которыми управлял человек: очеловеченные мартышки, пустые клоны, тела еретиков и их слуг не годятся."
 	return "Особые условия обряда не выполнены. Проверьте требования выбранного ритуала в кодексе."
 
 /obj/effect/eldritch/big

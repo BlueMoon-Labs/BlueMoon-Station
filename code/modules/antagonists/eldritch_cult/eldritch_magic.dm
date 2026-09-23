@@ -1296,7 +1296,7 @@
 	user.cut_overlay(halo)
 	if(!completed || QDELETED(src) || !IS_HERETIC(user))
 		if(!QDELETED(src))
-			heretic_revert_cast(user)
+			heretic_revert_cast(user, "Сосредоточение прервано: 3 секунды нужно стоять на месте, не получая оглушения.")
 		return
 	QDEL_NULL(active_domain)
 	user.emote("clap1")

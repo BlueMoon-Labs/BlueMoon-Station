@@ -189,7 +189,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(victim.stat == DEAD)
 		return "Мёртвого сердце не принимает: новой целью может стать только живой."
 	if(!hunt_target_ready(victim))
-		return "Цель ещё сопротивляется. Сердце принимает поверженного: в крите, связанного, оглушённого или лежащего."
+		return "Цель ещё сопротивляется. Сердце принимает поверженного: в крите, без сознания, связанного, оглушённого или сбитого с ног. Добровольно лёгший или уснувший не считается."
 	if(!claim_is_crew_player(victim))
 		return "Сердце принимает только членов экипажа станции с игроком в теле."
 	return null
@@ -275,10 +275,26 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	else
 		to_chat(user, span_notice("[victim.real_name] повержен. Сердце сможет принять его целью через [DisplayTimeText(COOLDOWN_TIMELEFT(src, hunt_refresh_cooldown))]."))
 
+/mob/living
+	var/knocked_to_floor = FALSE
+
+/mob/living/KnockToFloor(disarm_items = FALSE, silent = TRUE, updating = TRUE)
+	. = ..()
+	if(resting)
+		knocked_to_floor = TRUE
+
+/mob/living/set_resting(new_resting, silent = FALSE, updating = TRUE)
+	. = ..()
+	if(!resting)
+		knocked_to_floor = FALSE
+
 /datum/antagonist/heretic/proc/hunt_target_ready(mob/living/carbon/human/victim)
 	if(!istype(victim) || QDELETED(victim))
 		return FALSE
-	return victim.stat >= SOFT_CRIT || victim.handcuffed || victim.body_position == LYING_DOWN || victim.IsStun() || victim.IsParalyzed()
+	if(victim.stat == DEAD || victim.handcuffed || victim.IsStun() || victim.IsParalyzed() || victim.IsKnockdown() || victim.IsUnconscious() || (victim.combat_flags & COMBAT_FLAG_HARD_STAMCRIT) || (victim.resting && victim.knocked_to_floor))
+		return TRUE
+	// Сон по своей воле тоже даёт UNCONSCIOUS, поэтому считается только настоящий крит.
+	return victim.stat >= SOFT_CRIT && victim.health <= victim.crit_threshold
 
 /datum/antagonist/heretic/proc/prepare_hunt_choices()
 	var/datum/objective/crew_records = new
@@ -293,6 +309,18 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			hunt_candidates -= candidate_ref
 		else
 			available_candidates -= candidate
+	for(var/list/role_group in list(GLOB.command_positions, GLOB.security_positions))
+		if(length(hunt_candidates) >= HERETIC_HUNT_CHOICES || hunt_candidates_include_role(role_group))
+			continue
+		var/list/role_candidates = list()
+		for(var/datum/mind/candidate as anything in available_candidates)
+			if(candidate.assigned_role in role_group)
+				role_candidates += candidate
+		if(!length(role_candidates))
+			continue
+		var/datum/mind/role_pick = pick(role_candidates)
+		available_candidates -= role_pick
+		hunt_candidates += WEAKREF(role_pick)
 	while(length(available_candidates) && length(hunt_candidates) < HERETIC_HUNT_CHOICES)
 		var/datum/mind/candidate = pick_n_take(available_candidates)
 		hunt_candidates += WEAKREF(candidate)
@@ -301,6 +329,13 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		var/datum/mind/candidate = candidate_ref.resolve()
 		choices["[length(choices) + 1]. [candidate.current.real_name] — [candidate.assigned_role]"] = candidate_ref
 	return choices
+
+/datum/antagonist/heretic/proc/hunt_candidates_include_role(list/role_group)
+	for(var/datum/weakref/candidate_ref as anything in hunt_candidates)
+		var/datum/mind/candidate = candidate_ref.resolve()
+		if(candidate?.assigned_role in role_group)
+			return TRUE
+	return FALSE
 
 /datum/antagonist/heretic/proc/prompt_hunt_target(mob/living/user, list/choices)
 	return tgui_input_list(user, "Кому предстоит увидеть Мансус? Живую цель достаточно связать, оглушить или сбить с ног, а затем коснуться живым сердцем. Цель в крите принимается без наручников.", "Зов живого сердца", choices)
@@ -333,7 +368,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(replacing_target)
 		COOLDOWN_START(src, hunt_refresh_cooldown, HERETIC_HUNT_REFRESH_COOLDOWN)
 	set_hunt_target(chosen)
-	to_chat(user, span_notice("Сердце запомнило [chosen.current.real_name]. Обезвредьте цель: подойдут наручники, оглушение, положение лёжа или потеря сознания. Цель в крите принимается без наручников, даже если ещё стоит. Затем коснитесь её живым сердцем, и круг проступит прямо под телом, или положите сердце рядом с ней на руне и выберите «Обряд возвращения». Если цель погибнет, её труп тоже примут, но лишь за 1 очко знаний без побочного."))
+	to_chat(user, span_notice("Сердце запомнило [chosen.current.real_name]. Обезвредьте цель: подойдут наручники, оглушение, сбивание с ног или потеря сознания. Добровольно лёгший или уснувший не считается. Цель в крите принимается без наручников, даже если ещё стоит. Затем коснитесь её живым сердцем, и круг проступит прямо под телом, или положите сердце рядом с ней на руне и выберите «Обряд возвращения». Если цель погибнет, её труп тоже примут, но лишь за 1 очко знаний без побочного."))
 	return TRUE
 
 /datum/antagonist/heretic/proc/select_hunt_atoms(mob/living/user, list/atoms, list/selected_atoms)

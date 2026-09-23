@@ -350,7 +350,7 @@
 
 /datum/objective/sacrifice_ecult/update_explanation_text()
 	. = ..()
-	explanation_text = "Принесите в жертву [target_amount] разных назначенных душ: на руне трансмутации или касанием живого сердца. Живая цель в крите, без сознания, в наручниках, лёжа или оглушённая даёт 2 очка знаний и 1 побочное, а затем возвращается из Мансуса. Труп назначенной цели тоже засчитывается, но даёт только 1 очко знаний и остаётся на месте."
+	explanation_text = "Принесите в жертву [target_amount] разных назначенных душ: на руне трансмутации или касанием живого сердца. Живая цель в крите, без сознания, в наручниках, оглушённая или сбитая с ног даёт 2 очка знаний и 1 побочное, а затем возвращается из Мансуса. Труп назначенной цели тоже засчитывается, но даёт только 1 очко знаний и остаётся на месте."
 
 /datum/objective/sacrifice_ecult/check_completion()
 	if(!owner)
@@ -365,7 +365,7 @@
 
 /datum/objective/ascend_ecult/update_explanation_text()
 	. = ..()
-	explanation_text = "Дополнительная цель: вознеситесь. Принесите [HERETIC_ASCENSION_SACRIFICES] назначенных душ, изучите финал своего пути и завершите обряд с [HERETIC_ASCENSION_BODIES] человеческими трупами. Для успеха достаточно выполнить основные цели."
+	explanation_text = "Дополнительная цель: вознеситесь. Принесите [HERETIC_ASCENSION_SACRIFICES] назначенных душ, изучите финал своего пути и завершите обряд с [HERETIC_ASCENSION_BODIES] трупами членов экипажа. Для успеха достаточно выполнить основные цели."
 
 /datum/objective/ascend_ecult/check_completion()
 	var/datum/antagonist/heretic/heretic = owner?.has_antag_datum(/datum/antagonist/heretic)

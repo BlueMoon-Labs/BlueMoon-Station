@@ -222,7 +222,7 @@
 	cost = 3
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	ritual_time = 30 SECONDS
-	ritual_hint = "Любое вознесение делает вас целью для всей станции и даёт общую стойкость. Здоровья становится 150, вы держитесь на ногах до самого крита, получаете на 40% меньше ушибов и ожогов, а урон выносливости проходит лишь на 30%. Оглушения, сбивания с ног и обездвиживание длятся вчетверо короче, электрошок почти не действует, раны не замедляют. Дышать не нужно, холод и давление не страшны. Наручники рвутся за 5 секунд. Если вас 5 секунд не ранят, каждые 2 секунды заживает по 2 ушиба и 2 ожога. Экипаж видит при осмотре, что дубинки и станы вас почти не берут: против вас пойдут изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног. Смерть снимает всё это, оживление возвращает."
+	ritual_hint = "Любое вознесение делает вас целью для всей станции и даёт общую стойкость. Здоровья становится 150, вы держитесь на ногах до самого крита, получаете на 40% меньше ушибов и ожогов, а урон выносливости проходит лишь на 30%. Оглушения, сбивания с ног и обездвиживание длятся вчетверо короче, электрошок почти не действует, раны не замедляют. Дышать не нужно, холод и давление не страшны. Наручники рвутся за 5 секунд, а имплант защиты разума вашу магию не глушит. Если вас 5 секунд не ранят, каждые 2 секунды заживает по 2 ушиба и 2 ожога. Кровь восполняется сама даже в бою, так что кровотечение вас не убьёт. Экипаж видит при осмотре, что дубинки и станы вас почти не берут: против вас пойдут изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног. Смерть снимает всё это, оживление возвращает. Финальный обряд нельзя провести в зоне открытого космоса, даже на своей площадке с воздухом: руна должна лежать в помещении станции или другой локации."
 	var/finished = FALSE
 	var/simulated = FALSE
 	var/parallax_scene
@@ -232,13 +232,28 @@
 	var/list/ascension_spell_instances = list()
 	var/list/ascension_spell_ready_at = list()
 
+/proc/heretic_ascension_in_open_space(atom/rune_loc)
+	var/turf/rune_turf = get_turf(rune_loc)
+	if(!rune_turf)
+		return TRUE
+	return istype(get_area(rune_turf), /area/space) && !SSmapping.level_trait(rune_turf.z, ZTRAIT_RESERVED)
+
+/// Годится только труп, которым когда-то управлял игрок: очеловеченные мартышки и пустые тела отклоняются.
+/proc/heretic_ascension_body_valid(mob/living/carbon/human/body, mob/living/user)
+	if(!istype(body) || body == user || body.stat != DEAD || IS_HERETIC(body) || IS_HERETIC_MONSTER(body))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return !!(heretic?.simulated || body.mind || body.last_mind)
+
 /datum/eldritch_knowledge/final_eldritch/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(finished || !heretic || heretic.ascended || heretic.total_sacrifices < HERETIC_ASCENSION_SACRIFICES)
 		return FALSE
+	if(heretic_ascension_in_open_space(loc))
+		return FALSE
 	var/list/bodies = list()
 	for(var/mob/living/carbon/human/victim in atoms)
-		if(victim == user || victim.stat != DEAD || IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
+		if(!heretic_ascension_body_valid(victim, user))
 			continue
 		bodies |= victim
 		if(length(bodies) == HERETIC_ASCENSION_BODIES)

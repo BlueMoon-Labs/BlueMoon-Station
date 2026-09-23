@@ -12,6 +12,7 @@
 	var/list/bodies = list()
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.stat = DEAD
 		bodies += body
 	COOLDOWN_START(final_knowledge, ascension_warning, 3 MINUTES)
@@ -105,6 +106,7 @@
 	var/list/expected = list()
 	for(var/body_index in 1 to HERETIC_ASCENSION_BODIES)
 		var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		body.last_mind = allocate_mind()
 		body.death()
 		atoms += body
 		expected += body

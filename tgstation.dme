@@ -2190,6 +2190,7 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\ui_assets.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\hunt.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\combat_resources.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\containment.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\ash.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\rust.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\ability_hotkeys.dm"
