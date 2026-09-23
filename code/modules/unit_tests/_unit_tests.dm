@@ -289,6 +289,7 @@
 #include "tgui_preview_caches.dm"
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
+#include "turf_reservation_flag.dm"
 #include "unit_test.dm"
 #include "vending_product_enumeration.dm"
 #include "vending_stock_keys.dm"
