@@ -13,10 +13,6 @@
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/escape)
 "ae" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "honking clowns on the Emergency Clown Shuttle";
-	effect_range = 4
-	},
 /obj/structure/table,
 /obj/item/storage/firstaid/fire,
 /turf/open/floor/mineral/bananium,
@@ -351,6 +347,32 @@
 /obj/item/pneumatic_cannon/pie/selfcharge,
 /turf/open/floor/bluespace,
 /area/shuttle/escape)
+"tC" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/random,
+/mob/living/simple_animal/hostile/retaliate/clown,
+/turf/open/floor/mineral/bananium,
+/area/shuttle/escape)
+"DD" = (
+/obj/item/toy/snappop/phoenix,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "honking clowns on the Emergency Clown Shuttle";
+	effect_range = 4
+	},
+/turf/open/floor/bluespace,
+/area/shuttle/escape)
+"Jv" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/random,
+/mob/living/simple_animal/hostile/retaliate/clown,
+/turf/open/floor/mineral/bananium,
+/area/shuttle/escape)
 "Zf" = (
 /obj/structure/closet/emcloset,
 /obj/item/toy/sword,
@@ -465,9 +487,9 @@ ac
 aF
 ak
 aO
-aO
-aO
-aO
+Jv
+Jv
+Jv
 aO
 ak
 ab
@@ -490,7 +512,7 @@ aG
 ak
 ak
 ak
-ak
+DD
 ak
 ak
 aq
@@ -513,9 +535,9 @@ aD
 aH
 ak
 aN
-aN
-aN
-aN
+tC
+tC
+tC
 aN
 ak
 ac

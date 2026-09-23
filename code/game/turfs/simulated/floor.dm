@@ -216,10 +216,10 @@
 		broken = 0
 		burnt = 0
 		if(user && !silent)
-			to_chat(user, "<span class='notice'>You remove the broken plating.</span>")
+			to_chat(user, span_notice("Вы убрали повреждённое покрытие."))
 	else
 		if(user && !silent)
-			to_chat(user, "<span class='notice'>You remove the floor tile.</span>")
+			to_chat(user, span_notice("Вы сняли покрытие пола."))
 		if(floor_tile && make_tile)
 			spawn_tile()
 	return make_plating()
@@ -282,14 +282,18 @@
 
 /turf/open/floor/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
+		// DM язык "по-китайски" считает приоритет операторов (|| идёт раньше чем in), нежели интуитивно понятно
+		// и это приводит к тому, что 2+ locate() читается как ублюдское "locate(A) in (src || (locate(B) in src))"
+		// Решилось оно вложением locate() проверки в скобки
 		if(RCD_FLOORWALL)
-			to_chat(user, "<span class='notice'>You build a wall.</span>")
+			to_chat(user, span_notice("Вы возвели стену."))
 			PlaceOnTop(/turf/closed/wall)
 			return TRUE
 		if(RCD_AIRLOCK)
-			if(locate(/obj/machinery/door/airlock) in src)
+			if((locate(/obj/machinery/door/airlock) in src))
+				to_chat(user, span_warning("Здесь нет места для возведения шлюза!"))
 				return FALSE
-			to_chat(user, "<span class='notice'>You build an airlock.</span>")
+			to_chat(user, span_notice("Вы построили шлюз."))
 			var/obj/machinery/door/airlock/A = new the_rcd.airlock_type(src)
 
 			A.electronics = new/obj/item/electronics/airlock(A)
@@ -307,17 +311,18 @@
 		if(RCD_DECONSTRUCT)
 			if(!ScrapeAway(flags = CHANGETURF_INHERIT_AIR))
 				return FALSE
-			to_chat(user, "<span class='notice'>You deconstruct [src].</span>")
+			to_chat(user, span_notice("Вы разобрали [src]."))
 			return TRUE
 		if(RCD_WINDOWGRILLE)
-			if(locate(/obj/structure/grille) in src)
+			if((locate(/obj/structure/grille) in src))
 				return FALSE
-			to_chat(user, "<span class='notice'>You construct the grille.</span>")
+			to_chat(user, span_notice("Вы возвели решётку."))
 			var/obj/structure/grille/G = new(src)
 			G.anchored = TRUE
 			return TRUE
 		if(RCD_MACHINE)
-			if(locate(/obj/structure/frame/machine) in src)
+			if((locate(/obj/structure/frame/machine) in src) || (locate(/obj/machinery) in src))
+				to_chat(user, span_warning("Здесь нет места для возведения машинного каркаса!"))
 				return FALSE
 			var/obj/structure/frame/machine/M = new(src)
 			M.state = 2
@@ -325,7 +330,8 @@
 			M.anchored = TRUE
 			return TRUE
 		if(RCD_COMPUTER)
-			if(locate(/obj/structure/frame/computer) in src)
+			if((locate(/obj/structure/frame/computer) in src) || (locate(/obj/machinery) in src))
+				to_chat(user, span_warning("Здесь нет места для возведения компьютерного каркаса!"))
 				return FALSE
 			var/obj/structure/frame/computer/C = new(src)
 			C.anchored = TRUE

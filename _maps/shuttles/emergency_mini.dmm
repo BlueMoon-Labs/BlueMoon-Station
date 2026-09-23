@@ -130,6 +130,10 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
+"w" = (
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/escape)
 "x" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
@@ -159,6 +163,12 @@
 	dir = 8
 	},
 /turf/open/floor/mineral/titanium/blue,
+/area/shuttle/escape)
+"C" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the shuttle"
+	},
+/turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
 "D" = (
 /obj/structure/table,
@@ -308,8 +318,8 @@ b
 c
 d
 X
-X
-X
+C
+w
 n
 f
 f

@@ -33,9 +33,6 @@
 /area/shuttle/escape)
 "ah" = (
 /obj/machinery/computer/emergency_shuttle,
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "security escorts on the Emergency Box Shuttle"
-	},
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "ai" = (
@@ -365,6 +362,12 @@
 	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
+"fi" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "clown staff on shuttle"
+	},
+/turf/open/floor/mineral/titanium/white,
+/area/shuttle/escape)
 "ga" = (
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
@@ -372,9 +375,9 @@
 /obj/structure/table/optable,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
-"mx" = (
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
-/turf/open/floor/mineral/titanium,
+"Ne" = (
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
 "XC" = (
 /obj/structure/closet/emcloset,
@@ -485,7 +488,7 @@ bk
 (5,1,1) = {"
 ac
 ag
-mx
+aC
 as
 ad
 ac
@@ -509,7 +512,7 @@ bk
 (6,1,1) = {"
 ac
 ah
-mx
+aC
 at
 ad
 aB
@@ -533,7 +536,7 @@ bk
 (7,1,1) = {"
 ac
 ag
-mx
+aC
 aC
 ay
 aC
@@ -573,7 +576,7 @@ aT
 aC
 aZ
 ga
-ga
+Ne
 ZQ
 bi
 bk
@@ -597,8 +600,8 @@ aC
 aC
 ac
 ga
-ga
-ga
+Ne
+fi
 bi
 bk
 "}
