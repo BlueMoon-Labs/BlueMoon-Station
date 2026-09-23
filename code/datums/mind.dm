@@ -138,8 +138,13 @@
 /datum/mind/Destroy()
 	SSticker.minds -= src
 	QDEL_NULL(tgui_panel)
-	QDEL_LIST(antag_datums)
+	// Снятие последней роли обнуляет antag_datums внутри Destroy антагониста.
+	for(var/datum/antagonist/antagonist as anything in antag_datums?.Copy())
+		qdel(antagonist)
+	antag_datums = null
 	QDEL_LIST(ambition_objectives)
+	if(current?.mind == src)
+		current.mind = null
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()
 	set_assigned_heirloom(null)
@@ -173,6 +178,8 @@
 
 /datum/mind/proc/clear_current(datum/source)
 	SIGNAL_HANDLER
+	if(current?.mind == src)
+		current.mind = null
 	set_current(null)
 
 /datum/mind/proc/set_enslaved_to(mob/living/new_master)
@@ -192,6 +199,9 @@
 	original_character = WEAKREF(new_original_character)
 
 /datum/mind/proc/transfer_to(mob/new_character, var/force_key_move = 0)
+	if(current && new_character && current.training_origin != new_character.training_origin)
+		if(current.training_origin || new_character.training_origin)
+			return FALSE
 	var/old_character = current
 	var/signals = SEND_SIGNAL(new_character, COMSIG_MOB_PRE_PLAYER_CHANGE, new_character, old_character) | SEND_SIGNAL(src, COMSIG_PRE_MIND_TRANSFER, new_character, old_character)
 	if(signals & COMPONENT_STOP_MIND_TRANSFER)

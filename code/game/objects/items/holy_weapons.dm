@@ -276,11 +276,12 @@
 	obj_flags = UNIQUE_RENAME
 	wound_bonus = -10
 	var/chaplain_spawnable = TRUE
+	var/antimagic_slots = ~ITEM_SLOT_BACKPACK
 	total_mass = TOTAL_MASS_MEDIEVAL_WEAPON
 
 /obj/item/nullrod/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, null, null, FALSE)
+	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, antimagic_slots, null, FALSE)
 
 /obj/item/nullrod/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is killing себя with [src]! It looks like [user.ru_who()] trying to get closer to god!</span>")
@@ -393,7 +394,8 @@
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	name = "holy claymore"
-	desc = "A weapon fit for a crusade!"
+	desc = "Оружие для священного похода. Защищает от магии, только пока вы держите его в руке. На поясе или спине защита не действует."
+	antimagic_slots = ITEM_SLOT_HANDS
 	w_class = WEIGHT_CLASS_HUGE
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
 	block_chance = 30

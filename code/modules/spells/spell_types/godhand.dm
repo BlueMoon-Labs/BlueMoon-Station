@@ -55,6 +55,11 @@
 	attached_spell?.cancel_cast()
 	return ..()
 
+/obj/item/melee/touch_attack/attack_self(mob/user)
+	if(IS_HERETIC(user) && attached_spell)
+		return attached_spell.cancel_cast(user)
+	return ..()
+
 /obj/item/melee/touch_attack/disintegrate
 	name = "\improper disintegrating touch"
 	desc = "This hand of mine glows with an awesome power!"

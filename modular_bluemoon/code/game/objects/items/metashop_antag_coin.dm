@@ -167,3 +167,36 @@
 
 /obj/item/coin/antagtoken/metashop/changeling/attack_self(mob/user)
 	return TRUE
+
+/obj/item/coin/antagtoken/metashop/heretic
+	name = "Heretic Token"
+	desc = "Пластиковая монета с запретным знаком. Если прислушаться, из неё доносится едва различимый шёпот."
+	antag_type = /datum/antagonist/heretic
+	metashop_refund_amount = METASHOP_TRAITOR_TOKEN_REFUND_COST
+	activation_verb_text = "стать еретиком"
+
+/obj/item/coin/antagtoken/metashop/heretic/examine(mob/user)
+	. = ..()
+	. += span_notice("Активация: <b>Alt+ЛКМ</b> — [activation_verb_text].")
+	. += span_notice("Возврат: <b>Ctrl+ЛКМ</b> — обменять на [metashop_refund_amount] М$ (пока не активирован).")
+
+/obj/item/coin/antagtoken/metashop/heretic/activation_extra_block_reason(mob/living/carbon/human/user)
+	if(jobban_isbanned(user, ROLE_HERETIC) || jobban_isbanned(user, ROLE_INTEQ))
+		return "Вам запрещена роль еретика."
+	if(istype(SSticker.mode, /datum/game_mode/extended))
+		return "Жетон «Еретик» недоступен в Extended."
+	var/datum/dynamic_ruleset/roundstart/heretics/heretic_rule = new
+	SSdirector.apply_role_protection(heretic_rule)
+	var/is_restricted = (user.job in heretic_rule.restricted_roles)
+	qdel(heretic_rule)
+	if(is_restricted)
+		return "Ваша должность не позволяет активировать жетон еретика."
+	return null
+
+/obj/item/coin/antagtoken/metashop/heretic/on_activation_success(mob/living/carbon/human/user, datum/antagonist/antagonist)
+	to_chat(user, span_bolddanger("Шёпот монеты складывается в слова. Запретное знание открывается вам."))
+	message_admins("[key_name_admin(user)] активировал метамагазинный жетон еретика.")
+	log_game("Metashop antag token: [key_name(user)] became heretic via coin.")
+
+/obj/item/coin/antagtoken/metashop/heretic/attack_self(mob/user)
+	return TRUE

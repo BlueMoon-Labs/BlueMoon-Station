@@ -327,6 +327,8 @@
 	#define SPEECH_LANGUAGE 5
 //	#define SPEECH_IGNORE_SPAM 6
 //	#define SPEECH_FORCED 7
+/// Из /mob/living/send_speech(): (message, message_range, source, bubble_type, spans, message_language, message_mode).
+#define COMSIG_LIVING_SEND_SPEECH "living_send_speech"
 #define COMSIG_MOB_FOV_VIEWER "mob_is_viewer"					//from base of /fov_viewers(): (atom/center, depth, viewers_list)
 #define COMSIG_MOB_GET_VISIBLE_MESSAGE "mob_get_visible_message" //from base of atom/visible_message(): (atom/A, msg, range, ignored_mobs)
 	#define COMPONENT_NO_VISIBLE_MESSAGE 1 //exactly what's said on the tin.
@@ -473,6 +475,8 @@
 #define COMSIG_CARBON_EMBED_RIP "item_embed_start_rip"						// defined twice, in carbon and human's topics, fired when interacting with a valid embedded_object to pull it out (mob/living/carbon/target, /obj/item, /obj/item/bodypart/L)
 #define COMSIG_CARBON_EMBED_REMOVAL "item_embed_remove_safe"		// called when removing a given item from a mob, from mob/living/carbon/remove_embedded_object(mob/living/carbon/target, /obj/item)
 #define COMSIG_CARBON_UPDATEHEALTH "comsig_carbon_updatehealth"		// called from /mob/living/carbon/updatehealth()
+#define COMSIG_CARBON_PRE_MISC_HELP "carbon_pre_misc_help"			//from base of /mob/living/carbon/help_shake_act(): (mob/living/carbon/helper)
+	#define COMPONENT_BLOCK_MISC_HELP (1<<0)
 // /mob/living/silicon signals
 #define COMSIG_ROBOT_UPDATE_ICONS "robot_update_icons"			//from base of robot/update_icons(): ()
 
@@ -497,6 +501,8 @@
 #define COMSIG_MACHINERY_POWER_RESTORED "machinery_power_restored"
 ///from /obj/machinery/obj_break(damage_flag): (damage_flag)
 #define COMSIG_MACHINERY_BROKEN "machinery_broken"
+///from /obj/machinery/door/airlock/proc/unbolt(): ()
+#define COMSIG_AIRLOCK_UNBOLTED "airlock_unbolted"
 
 // /obj/machinery/power/supermatter_crystal signals
 /// from /obj/machinery/power/supermatter_crystal/process_atmos(); when the SM delam reaches the point of sounding alarms

@@ -171,19 +171,40 @@
 	antag_datum = /datum/antagonist/heretic
 	antag_flag = "heretic late"
 	antag_flag_override = ROLE_HERETIC
-	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")  //BLUEMOON CHANGES
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
 	required_candidates = 1
-	weight = 4 //BLUEMOON CHANGES
+	weight = 8
 	// Тот же медленный еретик, что и мидраунд-пробуждение (см. crew_conversion/heretic),
 	// только с латеджойна: до первых жертв полчаса-час тихого фарма влияний,
 	// поэтому цена и вес в нагрузке директора ниже агента.
 	cost = 6
 	intensity = 8
 	family = "heretic" // с мидраунд-пробуждением: не подряд
-	requirements = list(101,101,101,50,40,20,20,15,10,10)
+	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	repeatable = TRUE
+
+/datum/dynamic_ruleset/latejoin/heretic_smuggler/ready(forced = FALSE)
+	if(!forced && heretic_injection_block_reason(length(mode.current_players[CURRENT_LIVING_PLAYERS])))
+		return FALSE
+	return ..()
+
+/// Новому еретику нужны полчаса до первых жертв: под эвак он не успеет, а лишний на малом онлайне душит станцию.
+/proc/heretic_injection_block_reason(living_crew)
+	if(SSshuttle.emergency && !EMERGENCY_IDLE_OR_RECALLED)
+		return "эвакуация уже вызвана"
+	var/active_heretics = 0
+	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists)
+		if(heretic.simulated || heretic.role_removed)
+			continue
+		var/mob/living/body = heretic.owner?.current
+		if(istype(body) && body.stat != DEAD)
+			active_heretics++
+	var/allowed = max(1, FLOOR(living_crew / HERETIC_CREW_PER_HERETIC, 1))
+	if(active_heretics >= allowed)
+		return "живых еретиков [active_heretics] при допустимых [allowed] на [living_crew] живого экипажа"
+	return null
 
 //BLUEMOON ADD START - я добавляю это сюда вместо модулей, чтобы было удобно изменять параметры (для наглядности)
 //////////////////////////////////////////////

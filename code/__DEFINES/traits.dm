@@ -763,6 +763,12 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_ALLOW_HERETIC_CASTING "allow_heretic_casting"
 /// Designates a heart as a living heart for a heretic.
 #define TRAIT_LIVING_HEART "living_heart"
+/// Ascended heretic: breaks cuffs fast and carries the shared ascension base.
+#define TRAIT_HERETIC_ASCENDED "heretic_ascended"
+/// Moon masquerade victim: guns fire with extra spread.
+#define TRAIT_HERETIC_LUNATIC "heretic_lunatic"
+/// Projectile already slowed by an ascended Sand heretic.
+#define TRAIT_HERETIC_SAND_SLOWED "heretic_sand_slowed"
 
 #define TRAIT_FAN_CLOWN "fan_clown"
 #define TRAIT_FAN_MIME "fan_mime"

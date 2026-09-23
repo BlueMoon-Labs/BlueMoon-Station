@@ -1,31 +1,47 @@
+#define CRUCIBLE_FILL_STAGES 3
+
 /obj/structure/eldritch_crucible
-	name = "Растерзанный тигель"
-	desc = "Увековеченный чугун, стальные зубья удерживающие его на месте, этот мерзкий экстракт в нем обладает способностью возрождать вещи, переделывая саму их суть."
-	icon = 'icons/obj/eldritch.dmi'
-	icon_state = "crucible"
+	name = "eldritch crucible"
+	desc = "Чугунный котёл, утопленный в мясистую челюсть с костяными клыками. Костяная поварёшка сама мешает вязкую жидкость, которая поглощает плоть и превращает её в колдовские напитки; руны на брюхе загораются по мере наполнения."
+	icon = 'modular_bluemoon/icons/obj/heretic_crucible.dmi'
+	icon_state = "crucible_0"
 	anchored = FALSE
 	density = TRUE
 	///How much mass this currently holds
-	var/current_mass = 5
+	var/current_mass = 0
 	///Maximum amount of mass
-	var/max_mass = 5
+	var/max_mass = 3
+	///How long the crucible takes to gather one unit of mass by itself
+	var/refill_time = 30 SECONDS
+	var/refill_timer
 	///Check to see if it is currently being used.
 	var/in_use = FALSE
+
+/obj/structure/eldritch_crucible/Initialize(mapload)
+	. = ..()
+	update_icon()
+	queue_refill()
+
+/obj/structure/eldritch_crucible/Destroy()
+	deltimer(refill_timer)
+	refill_timer = null
+	return ..()
 
 /obj/structure/eldritch_crucible/examine(mob/user)
 	. = ..()
 	if(!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user))
 		return
 	if(current_mass < max_mass)
-		. += "Тигель требует [max_mass - current_mass] больше органов или частей тела!"
+		. += "Тигель наполнен на [current_mass] из [max_mass]. Он сам набирает одну долю каждые [DisplayTimeText(refill_time)]; орган или часть тела добавляет долю сразу."
 	else
-		. += "Тигель готов к использованию!"
-
-	. += "Могу открутить и закрепить его повторно с помощью Кодекса Рубцов!"
-	. += "Сейчас он [anchored == FALSE ? "незакреплен" : "закреплен"]"
-	. += "Позволяет вам сварить 'Напиток Крепкой Души' - Позволяет проходить сквозь стены в течение 15 секунд, по истечении этого времени вы телепортируетесь в свое первоначальное местоположение"
-	. += "Позволяет вам сварить 'Напиток Заката и Рассвета' - Позволяет вам четко видеть сквозь стены и предметы в течение 60 секунд"
-	. += "Позволяет вам сварить 'Напиток Раненного солдата' - В течение следующих 60 секунд каждая рана будет заживать на вас, незначительные раны заживают на 1 единицу урона в секунду, средние - на 3, а критические - на 6. Вы также становитесь невосприимчивы к замедленнию от урона."
+		. += "Тигель готов к использованию! Одно зелье забирает все [max_mass] доли."
+	. += "Мозг и голову с мозгом тигель не примет."
+	. += "Повторный обряд тигля переносит его вместе с содержимым."
+	. += "Кодекс позволяет закрепить или освободить тигель."
+	. += "Сейчас он [anchored ? "закреплён" : "не закреплён"]."
+	. += "Напиток крепкой души позволяет проходить сквозь стены в течение 15 секунд, затем возвращает туда, где его выпили."
+	. += "Напиток заката и рассвета позволяет видеть сквозь стены и предметы в течение 60 секунд."
+	. += "Напиток раненого солдата в течение 60 секунд лечит каждую рану и защищает от замедления из-за урона. Незначительные раны восстанавливаются на 1 единицу урона в секунду, средние — на 3, критические — на 6."
 
 /obj/structure/eldritch_crucible/attacked_by(obj/item/I, mob/living/user)
 	if(istype(I,/obj/item/nullrod))
@@ -40,26 +56,40 @@
 	if(istype(I,/obj/item/forbidden_book))
 		playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
 		anchored = !anchored
-		to_chat(user,"<span class='notice'>Ты [anchored == FALSE ? "откручиваешь" : "закрепляешь"] тигель</span>")
+		to_chat(user,"<span class='notice'>Вы [anchored == FALSE ? "освобождаете" : "закрепляете"] тигель.</span>")
 		return
 
 	if(istype(I,/obj/item/bodypart) || istype(I,/obj/item/organ))
-		//Both organs and bodyparts hold information if they are organic or robotic in the exact same way.
-		var/obj/item/bodypart/forced = I
-		if(forced.status != BODYPART_ORGANIC)
-			return
-
-		if(current_mass >= max_mass)
-			to_chat(user,"<span class='notice'> Тигель полон!</span>")
-			return
-		playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
-		to_chat(user,"<span class='notice'>Тигель поглощает [I.name] и наполняется небольшим количеством вязкой жидкости!</span>")
-		current_mass++
-		qdel(I)
-		update_icon_state()
+		consume(I, user)
 		return
 
 	return ..()
+
+/obj/structure/eldritch_crucible/proc/consume(obj/item/fuel, mob/living/user)
+	if(isbodypart(fuel))
+		var/obj/item/bodypart/part = fuel
+		if(part.status != BODYPART_ORGANIC)
+			return FALSE
+		if(locate(/obj/item/organ/brain) in part)
+			to_chat(user, span_warning("Тигель не примет голову с мозгом. Сначала извлеките мозг."))
+			return FALSE
+	else
+		var/obj/item/organ/organ = fuel
+		if(organ.status != ORGAN_ORGANIC)
+			return FALSE
+		if(istype(organ, /obj/item/organ/brain) || (organ.organ_flags & ORGAN_VITAL))
+			to_chat(user, span_warning("Тигель не примет мозг."))
+			return FALSE
+
+	if(current_mass >= max_mass)
+		to_chat(user, span_notice("Тигель полон!"))
+		return FALSE
+	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
+	to_chat(user, span_notice("Тигель поглощает [fuel.name] и наполняется небольшим количеством вязкой жидкости!"))
+	qdel(fuel)
+	set_mass(current_mass + 1)
+	flick("crucible_chomp", src)
+	return TRUE
 
 /obj/structure/eldritch_crucible/attack_hand(mob/user)
 	if(!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user))
@@ -67,52 +97,92 @@
 			devour(user)
 		return
 
+	if(user.incapacitated() || !Adjacent(user))
+		return
 	if(in_use)
-		to_chat(user,"<span class='notice'>Тигель готов к использованию!</span>")
+		to_chat(user, span_notice("Тигель уже занят приготовлением."))
 		return
 
 	if(current_mass < max_mass)
-		to_chat(user,"<span class='notice'>Тигель недостаточно полон! Принесите ещё органов или частей тел!</span>")
+		to_chat(user, span_notice("Тигель наполнен на [current_mass] из [max_mass]. Подождите или принесите органы и части тел."))
 		return
 
+	INVOKE_ASYNC(src, PROC_REF(choose_potion), user)
+
+/obj/structure/eldritch_crucible/proc/choose_potion(mob/living/user)
+	var/static/list/choices
+	var/static/list/names_to_path
+	if(!choices)
+		choices = list()
+		names_to_path = list()
+		for(var/obj/item/eldritch_potion/potion as anything in subtypesof(/obj/item/eldritch_potion))
+			names_to_path[initial(potion.name)] = potion
+			choices[initial(potion.name)] = image(icon = initial(potion.icon), icon_state = initial(potion.icon_state))
 	in_use = TRUE
-	var/list/lst = list()
-	for(var/X in subtypesof(/obj/item/eldritch_potion))
-		var/obj/item/eldritch_potion/potion = X
-		lst[initial(potion.name)] = potion
-	var/type = lst[input(user,"Выберите своё варево","Напиток") in lst]
-	playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
-	new type(drop_location())
-	current_mass = 0
+	var/choice = show_radial_menu(user, src, choices, require_near = TRUE, tooltips = TRUE)
 	in_use = FALSE
-	update_icon_state()
+	if(QDELETED(src) || QDELETED(user) || !choice || user.incapacitated() || !Adjacent(user) || (!IS_HERETIC(user) && !IS_HERETIC_MONSTER(user)))
+		return
+	brew(user, names_to_path[choice])
+
+/obj/structure/eldritch_crucible/proc/brew(mob/living/user, potion_type)
+	if(current_mass < max_mass || !ispath(potion_type, /obj/item/eldritch_potion))
+		return null
+	var/obj/item/eldritch_potion/potion = new potion_type(drop_location())
+	playsound(src, 'sound/misc/desceration-02.ogg', 75, TRUE)
+	visible_message(span_notice("Сияющая жидкость из [src] стекает в колбу: [potion.name]."))
+	set_mass(0)
+	return potion
+
+/obj/structure/eldritch_crucible/proc/set_mass(amount)
+	current_mass = clamp(amount, 0, max_mass)
+	update_icon()
+	if(current_mass < max_mass)
+		queue_refill()
+		return
+	deltimer(refill_timer)
+	refill_timer = null
+
+/obj/structure/eldritch_crucible/proc/queue_refill()
+	if(refill_timer || current_mass >= max_mass)
+		return
+	refill_timer = addtimer(CALLBACK(src, PROC_REF(refill)), refill_time, TIMER_STOPPABLE)
+
+/obj/structure/eldritch_crucible/proc/refill()
+	refill_timer = null
+	playsound(src, 'sound/effects/bubbles.ogg', 40, TRUE)
+	set_mass(current_mass + 1)
 
 ///Proc that eats the active limb of the victim
 /obj/structure/eldritch_crucible/proc/devour(mob/living/carbon/user)
 	if(HAS_TRAIT(user,TRAIT_NODISMEMBER))
 		return
-	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
-	to_chat(user,"<span class='danger'>Тигель хватает твою руку и пожирает её целиком!</span>")
 	var/obj/item/bodypart/arm = user.get_active_hand()
-	arm.dismember()
+	if(!arm || !arm.dismember())
+		return
+	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
+	to_chat(user, span_danger("Тигель хватает вашу руку и пожирает её целиком!"))
 	qdel(arm)
-	current_mass += current_mass < max_mass ? 1 : 0
-	update_icon_state()
+	set_mass(current_mass + 1)
+	flick("crucible_chomp", src)
 
 /obj/structure/eldritch_crucible/update_icon_state()
 	. = ..()
-	if(current_mass == max_mass)
-		icon_state = "crucible"
-	else
-		icon_state = "crucible_empty"
+	icon_state = "crucible_[max_mass ? round(CRUCIBLE_FILL_STAGES * current_mass / max_mass) : 0]"
+
+#undef CRUCIBLE_FILL_STAGES
 
 /obj/structure/trap/eldritch
-	name = "Резьба старших"
-	desc = "Коллекция неизвестных символов, они напоминают вам о давно минувших днях..."
+	name = "forbidden rune"
+	desc = "Неизвестные символы, от которых веет смутно знакомым прошлым."
 	icon = 'icons/obj/eldritch.dmi'
 	charges = 1
 	///Owner of the trap
 	var/mob/owner
+
+/obj/structure/trap/eldritch/Destroy()
+	owner = null
+	return ..()
 
 /obj/structure/trap/eldritch/Crossed(atom/movable/AM)
 	if(!isliving(AM))
@@ -132,7 +202,7 @@
 	owner = _owner
 
 /obj/structure/trap/eldritch/alert
-	name = "Резьба предосторожности"
+	name = "warning rune"
 	icon_state = "alert_rune"
 	alpha = 10
 
@@ -146,7 +216,7 @@
 	return
 
 /obj/structure/trap/eldritch/tentacle
-	name = "Резьба захвата"
+	name = "grasping rune"
 	icon_state = "tentacle_rune"
 
 /obj/structure/trap/eldritch/tentacle/trap_effect(mob/living/L)
@@ -161,7 +231,7 @@
 	return ..()
 
 /obj/structure/trap/eldritch/mad
-	name = "Резьба безумия"
+	name = "rune of madness"
 	icon_state = "madness_rune"
 
 /obj/structure/trap/eldritch/mad/trap_effect(mob/living/L)

@@ -158,13 +158,17 @@
 	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	required_candidates = 1
-	weight = 8 //BLUEMOON CHANGES
-	cost = 15
+	weight = 16
+	cost = 12
 	scaling_cost = 9
 	intensity = 15
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
-	requirements = list(101,101,101,50,40,20,20,15,10,10) //higher because of 'round end'
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
+	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	antag_cap = 1 //BLUEMOON CHANGES
+
+/datum/dynamic_ruleset/roundstart/heretics/scale_up(population, max_scale)
+	var/density_cap = max(0, FLOOR(population / HERETIC_CREW_PER_HERETIC, 1) - 1)
+	return ..(population, min(max_scale, max(0, length(candidates) - 1), density_cap))
 
 /datum/dynamic_ruleset/roundstart/heretics/pre_execute(population)
 	. = ..()

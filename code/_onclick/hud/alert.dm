@@ -10,8 +10,9 @@
  new_master is optional and sets the alert's icon state to "template" in the ui_style icons with the master as an overlay.
  Clicks are forwarded to master
  Override makes it so the alert is not replaced until cleared by a clear_alert with clear_override, and it's used for hallucinations.
+ place_first ставит новое предупреждение в первый слот; обновление сохраняет существующий порядок.
  */
-/mob/proc/throw_alert(category, type, severity, atom/new_master, override = FALSE, duration_ds, no_anim = FALSE)
+/mob/proc/throw_alert(category, type, severity, atom/new_master, override = FALSE, duration_ds, no_anim = FALSE, place_first = FALSE)
 
 	if(!category || QDELETED(src))
 		return
@@ -61,6 +62,8 @@
 		thealert.icon_state = "[initial(thealert.icon_state)][severity]"
 		thealert.severity = severity
 
+	if(place_first && !(category in alerts))
+		alerts.Insert(1, category)
 	alerts[category] = thealert
 	if(client && hud_used)
 		hud_used.reorganize_alerts()

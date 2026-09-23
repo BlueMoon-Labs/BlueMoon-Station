@@ -20,14 +20,9 @@
 
 /// Test that you can resist out of a container
 /datum/unit_test/container_resist/Run()
-	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
-	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_turf(human))
-
-	closet.open(human)
-	TEST_ASSERT(!(human in closet.contents), "Human was in the contents of an open closet")
-
-	closet.close(human)
-	TEST_ASSERT(human in closet.contents, "Human was not in the contents of the closed closet")
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet)
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human, closet)
+	TEST_ASSERT(!closet.opened && human.loc == closet, "Персонаж начинает проверку внутри закрытого шкафа.")
 
 	human.resist()
 
@@ -35,4 +30,4 @@
 	// instead of executing inline, so drain the queue before asserting.
 	SSverb_manager.run_verb_queue()
 
-	TEST_ASSERT(!(human in closet.contents), "Human resisted out of a standard closet, but was still in it")
+	TEST_ASSERT(closet.opened && human.loc == get_turf(closet), "Сопротивление открывает шкаф и выпускает персонажа на его клетку.")

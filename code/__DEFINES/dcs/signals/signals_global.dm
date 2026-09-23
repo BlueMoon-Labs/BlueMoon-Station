@@ -3,3 +3,6 @@
 
 /// Global signal sent before we decide what job everyone has
 #define COMSIG_GLOB_PRE_JOBS_ASSIGNED "!pre_roles_assigned"
+
+/// Яркая вспышка флешера, флешбанга или настенного флешера: (turf/origin, mob/user)
+#define COMSIG_GLOB_BRIGHT_FLASH "!bright_flash"

@@ -59,6 +59,9 @@
 #define BLOCK_RETURN_ACTIVE_BLOCK_DAMAGE_MITIGATED				"damage_mitigated"
 /// For [BLOCK_CHANGE_DAMAGE]. Set damage to this.
 #define BLOCK_RETURN_SET_DAMAGE_TO								"set_damage_to"
+/// Урон и его тип для отдельного эффекта оружия, проверяющего блок с damage = 0.
+#define BLOCK_CONTEXT_DAMAGE "attack_damage"
+#define BLOCK_CONTEXT_DAMAGE_TYPE "attack_damage_type"
 /// For [BLOCK_SHOULD_PARTIAL_MITIGATE]. Percentage mitigation.
 #define BLOCK_RETURN_MITIGATION_PERCENT							"partial_mitigation"
 /// Used internally by run_parry proc, use on an on_active_parry() proc to override parrying efficiency.

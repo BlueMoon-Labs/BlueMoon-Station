@@ -149,3 +149,13 @@
 
 	// Verify the Destroy chain ran without runtimes
 	// (runtimes during fire cycles would cause test failure)
+
+/// Удаление разума отвязывает даже тело, назначенное без set_current().
+/datum/unit_test/mind_destroy_detaches_body/Run()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = body
+	body.mind = soul
+	qdel(soul)
+	TEST_ASSERT_NULL(body.mind, "Тело не хранит удалённый разум.")
+	qdel(body)
