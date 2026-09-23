@@ -21,19 +21,24 @@
 /obj/item/retractor/advanced
 	name = "advanced retractor"
 	desc = "An agglomerate of rods and gears."
-	icon_state = "retractor_a"
+	icon_state = "adv_retractor"
 	toolspeed = 0.7
 
 /obj/item/retractor/advanced/attack_self(mob/user)
 	playsound(get_turf(user), 'sound/items/change_drill.ogg', 50, TRUE)
 	if(tool_behaviour == TOOL_RETRACTOR)
 		tool_behaviour = TOOL_HEMOSTAT
-		to_chat(user, "<span class='notice'>You configure the gears of [src], they are now in hemostat mode.</span>")
-		icon_state = "hemostat_a"
+		to_chat(user, "<span class='notice'>You configure [src], it are now in hemostat mode.</span>")
 	else
 		tool_behaviour = TOOL_RETRACTOR
-		to_chat(user, "<span class='notice'>You configure the gears of [src], they are now in retractor mode.</span>")
-		icon_state = "retractor_a"
+		to_chat(user, "<span class='notice'>You configure [src], it are now in retractor mode.</span>")
+	update_icon(UPDATE_ICON_STATE)
+
+/obj/item/retractor/advanced/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(tool_behaviour == TOOL_HEMOSTAT)
+		icon_state += "-hemostat"
 
 /obj/item/retractor/advanced/examine(mob/living/user)
 	. = ..()
@@ -171,7 +176,7 @@
 /obj/item/surgicaldrill/advanced
 	name = "surgical laser drill"
 	desc = "It projects a high power laser used for medical application."
-	icon_state = "surgicaldrill_a"
+	icon_state = "surgical_laser_drill"
 	hitsound = 'sound/items/welder.ogg'
 	w_class = WEIGHT_CLASS_TINY
 	force = 10
@@ -186,14 +191,19 @@
 	playsound(get_turf(user), 'sound/weapons/tap.ogg', 50, TRUE)
 	if(tool_behaviour == TOOL_DRILL)
 		tool_behaviour = TOOL_CAUTERY
-		to_chat(user, "<span class='notice'>You focus the lenses of [src], it is now in mending mode.</span>")
-		icon_state = "cautery_a"
+		to_chat(user, "<span class='notice'>You increase the power of [src], it is now in mending mode.</span>")
 		heat = 3500 // BLUEMOON ADD - чтобы прижигание не путали с дрелью
 	else
 		tool_behaviour = TOOL_DRILL
-		to_chat(user, "<span class='notice'>You dilate the lenses of [src], it is now in drilling mode.</span>")
-		icon_state = "surgicaldrill_a"
+		to_chat(user, "<span class='notice'>You lower the power of [src], it is now in drilling mode.</span>")
 		heat = 0 // BLUEMOON ADD - чтобы прижигание не путали с дрелью
+	update_icon(UPDATE_ICON_STATE)
+
+/obj/item/surgicaldrill/advanced/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(tool_behaviour == TOOL_CAUTERY)
+		icon_state += "-cautery"
 
 /obj/item/surgicaldrill/advanced/examine(mob/living/user)
 	. = ..()
@@ -245,7 +255,7 @@
 /obj/item/scalpel/advanced
 	name = "laser scalpel"
 	desc = "An advanced scalpel which uses laser technology to cut."
-	icon_state = "scalpel_a"
+	icon_state = "laser_scalpel"
 	hitsound = 'sound/weapons/blade1.ogg'
 	force = 16
 	toolspeed = 0.7
@@ -264,13 +274,18 @@
 		to_chat(user, "<span class='notice'>You increase the power of [src], now it can cut bones.</span>")
 		set_light(2)
 		force += 1 //we don't want to ruin sharpened stuff
-		icon_state = "saw_a"
 	else
 		tool_behaviour = TOOL_SCALPEL
 		to_chat(user, "<span class='notice'>You lower the power of [src], it can no longer cut bones.</span>")
 		set_light(1)
 		force -= 1
-		icon_state = "scalpel_a"
+	update_icon(UPDATE_ICON_STATE)
+
+/obj/item/scalpel/advanced/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(tool_behaviour == TOOL_SAW)
+		icon_state += "-saw"
 
 /obj/item/scalpel/advanced/examine(mob/living/user)
 	. = ..()
