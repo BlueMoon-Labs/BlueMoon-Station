@@ -245,6 +245,49 @@
 	user.Paralyze(1 SECONDS)
 	TEST_ASSERT(!tide.can_prepare_deluge(user, origin, center, tide.tide_generation), "Оглушение по-прежнему прерывает подготовку.")
 
+/// Обрушение оставляет море радиусом 4: оно мочит врагов, ускоряет героя, копит давление и уходит со смертью.
+/datum/unit_test/heretic_tide_deluge_sea/Run()
+	var/turf/center = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/tide_deluge)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/turf/shore = locate(center.x + 4, center.y, center.z)
+	var/turf/beyond = locate(center.x + 5, center.y, center.z)
+	var/turf/glazed = locate(center.x, center.y + 3, center.z)
+	var/turf/behind_glass = locate(center.x, center.y + 4, center.z)
+	allocate(/obj/structure/window/fulltile, glazed)
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human, locate(center.x + 3, center.y + 3, center.z))
+	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, beyond)
+	tide.combat_resource = 2
+	TEST_ASSERT(tide.deluge(user, center, tide.deluge_turfs(user, center), tide.tide_generation), "Обрушение должно состояться.")
+	TEST_ASSERT_EQUAL(tide_flood_puddles(shore), 1, "Море доходит до четырёх клеток.")
+	TEST_ASSERT_EQUAL(tide_flood_puddles(beyond), 0, "Пятая клетка остаётся сухой.")
+	TEST_ASSERT_EQUAL(tide_flood_puddles(behind_glass), 0, "Окно не пропускает море.")
+	TEST_ASSERT_NULL(shore.GetComponent(/datum/component/wet_floor), "Море за зоной удара не делает пол скользким.")
+	var/obj/effect/heretic_tide_puddle/sea/puddle = locate() in shore
+	TEST_ASSERT(puddle.expires_at == world.time + 15 SECONDS, "Море держится 15 секунд.")
+	TEST_ASSERT(bystander.has_status_effect(/datum/status_effect/heretic_drenched), "Враг, стоявший в разлившейся воде, намокает.")
+	walker.forceMove(shore)
+	TEST_ASSERT(walker.has_status_effect(/datum/status_effect/heretic_drenched), "Вошедший в море намокает.")
+	TEST_ASSERT(user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea), "В своём море герой быстрее.")
+	user.forceMove(beyond)
+	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea), "На сухом полу ускорение пропадает.")
+	user.forceMove(center)
+	COOLDOWN_START(tide, ascended_pressure, 12 SECONDS)
+	tide.on_life(user)
+	TEST_ASSERT(COOLDOWN_TIMELEFT(tide, ascended_pressure) <= 4 SECONDS, "В море давление восстанавливается раз в 4 секунды.")
+	COOLDOWN_RESET(tide, ascended_pressure)
+	tide.on_life(user)
+	TEST_ASSERT_EQUAL(tide.combat_resource, 1, "Море возвращает давление.")
+	TEST_ASSERT(COOLDOWN_TIMELEFT(tide, ascended_pressure) <= 4 SECONDS, "Следующая единица тоже через 4 секунды.")
+	tide.on_death(user)
+	TEST_ASSERT_EQUAL(tide_flood_puddles(shore), 0, "Смерть осушает море.")
+	TEST_ASSERT_EQUAL(length(tide.sea), 0, "Знание не держит ссылок на ушедшую воду.")
+	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea), "Смерть снимает ускорение моря.")
+
 /// Замена воды передаёт её новому источнику, а удаление роли снимает только собственные эффекты.
 /datum/unit_test/heretic_tide_drenched_cleanup/Run()
 	var/datum/antagonist/heretic/first = allocate_heretic()

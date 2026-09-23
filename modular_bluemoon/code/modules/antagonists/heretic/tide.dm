@@ -23,14 +23,18 @@
 #define HERETIC_TIDE_VOICE_QUAKE 0.15
 #define HERETIC_TIDE_VOICE_QUAKE_RADIUS 7
 #define HERETIC_TIDE_VOICE_QUAKE_TIME (0.4 SECONDS)
+#define HERETIC_TIDE_DELUGE_CHANNEL (1 SECONDS)
+#define HERETIC_TIDE_SEA_RADIUS 4
+#define HERETIC_TIDE_SEA_LIFETIME (15 SECONDS)
+#define HERETIC_TIDE_SEA_PRESSURE_INTERVAL (4 SECONDS)
 
 /datum/heretic_path/tide
 	id = PATH_TIDE
 	deed_type = /datum/heretic_deed/tide
 	name = "Пучина"
 	desc = "Сбивайте врагов приливом, смывайте их к стенам и затягивайте в чёрный водоворот."
-	strengths = "Сильное перемещение и падения, опасная воронка, устойчивость на мокром полу. Вознёсшийся каждые 2 секунды заливает пол в двух клетках вокруг себя и оставляет мокрый след: враги в этой воде мокнут и замедляются, а сам он по ней ходит быстрее."
-	weaknesses = "Сильные волны расходуют запас; преграды останавливают течение, а обрушение выдаёт себя заранее. Вознёсшегося держите дальше двух клеток, не идите по его мокрому следу и стреляйте издалека: вода не проходит сквозь стены, окна, закрытые двери и машины, а пристёгнутых и закреплённых его волна не сносит."
+	strengths = "Сильное перемещение и падения, опасная воронка, устойчивость на мокром полу. Обрушение толщи на 15 секунд разливает море радиусом 4 клетки: враги в нём мокнут и замедляются, а еретик по нему ходит быстрее и копит давление раз в 4 секунды. Вознёсшийся каждые 2 секунды заливает пол в двух клетках вокруг себя и оставляет мокрый след: враги в этой воде мокнут и замедляются, а сам он по ней ходит быстрее."
+	weaknesses = "Сильные волны расходуют запас; преграды останавливают течение, а обрушение выдаёт себя за секунду до удара. Из его моря лучше выйти, а не драться в нём. Вознёсшегося держите дальше двух клеток, не идите по его мокрому следу и стреляйте издалека: вода не проходит сквозь стены, окна, закрытые двери и машины, а пристёгнутых и закреплённых его волна не сносит."
 	knowledge = list(
 		/datum/eldritch_knowledge/base_tide,
 		/datum/eldritch_knowledge/tide_grasp,
@@ -62,6 +66,7 @@
 	var/obj/structure/heretic_tide_well/active_well
 	var/list/datum/status_effect/heretic_drenched/drenched = list()
 	var/list/datum/status_effect/eldritch/tide/marks = list()
+	var/list/obj/effect/heretic_tide_puddle/sea/sea = list()
 	var/inward_tide = FALSE
 	var/tide_generation = 0
 	var/ascension_active = FALSE
@@ -77,14 +82,16 @@
 	tide_body = user
 	ADD_TRAIT(user, TRAIT_NOSLIPWATER, REF(src))
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_body_deleted))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_body_moved))
 	grant_combat_power(user)
 	update_capacity()
 	COOLDOWN_START(src, ascended_pressure, HERETIC_TIDE_PRESSURE_INTERVAL)
 
 /datum/eldritch_knowledge/base_tide/on_body_lose(mob/living/user)
 	if(tide_body)
-		UnregisterSignal(tide_body, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(tide_body, list(COMSIG_PARENT_QDELETING, COMSIG_MOVABLE_MOVED))
 		REMOVE_TRAIT(tide_body, TRAIT_NOSLIPWATER, REF(src))
+		tide_body.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea)
 	tide_body = null
 	remove_combat_power()
 	clear_tide()
@@ -111,6 +118,8 @@
 	for(var/datum/status_effect/eldritch/tide/mark as anything in marks.Copy())
 		qdel(mark)
 	marks.Cut()
+	QDEL_LIST(sea)
+	update_sea_haste()
 
 /datum/eldritch_knowledge/base_tide/proc/can_use(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -136,12 +145,23 @@
 
 /datum/eldritch_knowledge/base_tide/on_life(mob/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!can_use(user) || !COOLDOWN_FINISHED(src, ascended_pressure))
+	if(!can_use(user))
+		return
+	for(var/obj/effect/heretic_tide_puddle/sea/puddle as anything in sea)
+		for(var/mob/living/victim in puddle.loc)
+			if(victim != user)
+				keep_soaked(victim)
+	var/in_own_sea = in_sea(user)
+	if(in_own_sea && COOLDOWN_TIMELEFT(src, ascended_pressure) > HERETIC_TIDE_SEA_PRESSURE_INTERVAL)
+		COOLDOWN_START(src, ascended_pressure, HERETIC_TIDE_SEA_PRESSURE_INTERVAL)
+	if(!COOLDOWN_FINISHED(src, ascended_pressure))
 		return
 	gain_combat_resource()
 	var/datum/eldritch_knowledge/tide_depth/depth = heretic?.get_knowledge(/datum/eldritch_knowledge/tide_depth)
 	var/interval = HERETIC_TIDE_PRESSURE_INTERVAL - (depth ? 2 SECONDS * depth.passive_level : 0)
-	COOLDOWN_START(src, ascended_pressure, ascension_active ? 4 SECONDS : interval)
+	if(ascension_active || in_own_sea)
+		interval = min(interval, HERETIC_TIDE_SEA_PRESSURE_INTERVAL)
+	COOLDOWN_START(src, ascended_pressure, interval)
 
 /datum/eldritch_knowledge/base_tide/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!proximity_flag || !can_use(user) || !is_type_in_typecache(target, water_sources))
@@ -169,6 +189,54 @@
 
 /datum/eldritch_knowledge/base_tide/proc/soak(mob/living/victim)
 	return victim.apply_status_effect(/datum/status_effect/heretic_drenched, src)
+
+/// Стоящего в своей воде не перемачивает заново, а продлевает намокание.
+/datum/eldritch_knowledge/base_tide/proc/keep_soaked(mob/living/victim)
+	if(QDELETED(tide_body) || !heretic_can_affect(tide_body, victim, chargecost = 0))
+		return
+	var/datum/status_effect/heretic_drenched/water = victim.has_status_effect(/datum/status_effect/heretic_drenched)
+	if(water?.tide_ref?.resolve() == src)
+		water.refresh()
+	else
+		soak(victim)
+
+/datum/eldritch_knowledge/base_tide/proc/in_sea(atom/movable/thing)
+	if(!length(sea) || !isturf(thing?.loc))
+		return FALSE
+	for(var/obj/effect/heretic_tide_puddle/sea/puddle in thing.loc)
+		if(puddle.tide_ref?.resolve() == src)
+			return TRUE
+	return FALSE
+
+/datum/eldritch_knowledge/base_tide/proc/update_sea_haste()
+	if(!tide_body)
+		return
+	if(tide_body.stat != DEAD && !ascension_active && in_sea(tide_body))
+		tide_body.add_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea)
+	else
+		tide_body.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_tide_sea)
+
+/datum/eldritch_knowledge/base_tide/proc/on_body_moved(datum/source)
+	SIGNAL_HANDLER
+	update_sea_haste()
+
+/datum/eldritch_knowledge/base_tide/proc/raise_sea(turf/center)
+	for(var/turf/open/tile in RANGE_TURFS(HERETIC_TIDE_SEA_RADIUS, center))
+		if(isgroundlessturf(tile) || istype(tile, /turf/open/lava) || !line_clear(center, tile, HERETIC_TIDE_SEA_RADIUS))
+			continue
+		var/obj/effect/heretic_tide_puddle/sea/puddle
+		for(var/obj/effect/heretic_tide_puddle/sea/existing in tile)
+			if(existing.tide_ref?.resolve() == src)
+				puddle = existing
+				break
+		if(puddle)
+			puddle.refresh()
+		else
+			new /obj/effect/heretic_tide_puddle/sea(tile, src)
+		for(var/mob/living/victim in tile)
+			if(victim != tide_body)
+				keep_soaked(victim)
+	update_sea_haste()
 
 /datum/eldritch_knowledge/base_tide/proc/wet_floor(turf/open/place)
 	if(!istype(place) || isspaceturf(place) || istype(place, /turf/open/lava))
@@ -298,6 +366,7 @@
 	for(var/turf/tile as anything in telegraphed_turfs)
 		if(line_clear(center, tile, HERETIC_TIDE_WAVE_RADIUS))
 			wet_floor(tile)
+	raise_sea(center)
 	new /obj/effect/temp_visual/heretic_tide/burst(center)
 	playsound(center, 'modular_bluemoon/sound/heretic/tide_deluge.ogg', 80, TRUE)
 	return TRUE
@@ -353,7 +422,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_drenched
 	name = "Вода Пучины"
-	desc = "Вода Пучины замедляет ваши шаги даже в нескользящей обуви. Полёт позволяет двигаться без этого замедления. Усиленный гарпун наносит вам ещё 5 ушибов, а хозяин воды может вернуть себе давление и немного выносливости. Вода исчезнет через 8 секунд после последнего попадания магии или шага по чёрной воде вознёсшегося."
+	desc = "Вода Пучины замедляет ваши шаги даже в нескользящей обуви. Полёт позволяет двигаться без этого замедления. Усиленный гарпун наносит вам ещё 5 ушибов, а хозяин воды может вернуть себе давление и немного выносливости. Вода исчезнет через 8 секунд после последнего попадания магии или шага по чёрной воде Пучины."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sigil_tide"
 
@@ -532,7 +601,7 @@
 
 /obj/effect/temp_visual/heretic_tide/warning
 	icon_state = "tide_warning"
-	duration = 2 SECONDS
+	duration = HERETIC_TIDE_DELUGE_CHANNEL
 
 /// Корона воды вокруг вознёсшегося: задняя половина уходит под героя, передняя встаёт перед ним.
 /obj/effect/temp_visual/heretic_tide_swell
@@ -667,8 +736,8 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/deluge
 	name = "Обрушение толщи"
-	desc = "После двух секунд подготовки обрушьте весь запас на область в пяти клетках, радиус две клетки: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. Требует хотя бы 2 давления. Из подсвеченной области можно выйти. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
-	charge_max = 40 SECONDS
+	desc = "После секунды подготовки обрушьте весь запас на область в пяти клетках, радиус две клетки: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. Затем на 15 секунд разливается море радиусом 4 клетки: враги в нём мокнут и замедляются, вы ходите по нему быстрее и восстанавливаете давление раз в 4 секунды. Требует хотя бы 2 давления. Из подсвеченной области можно выйти. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
+	charge_max = 25 SECONDS
 	action_icon_state = "tide_deluge"
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/deluge/cast(list/targets, mob/living/user)
@@ -685,7 +754,7 @@
 		new /obj/effect/temp_visual/heretic_tide/warning(tile)
 	user.visible_message(span_danger("[user] поднимает руки. Над полом проступает чёрная вода — сейчас обрушится прилив!"))
 	playsound(center, 'modular_bluemoon/sound/heretic/tide_charge.ogg', 50, FALSE)
-	if(!do_after(user, 2 SECONDS, target = center, timed_action_flags = IGNORE_USER_LOC_CHANGE, extra_checks = CALLBACK(tide, TYPE_PROC_REF(/datum/eldritch_knowledge/base_tide, can_prepare_deluge), user, origin, center, expected_generation)) || QDELETED(src) || QDELETED(tide) || !tide.deluge(user, center, telegraphed_turfs, expected_generation))
+	if(!do_after(user, HERETIC_TIDE_DELUGE_CHANNEL, target = center, timed_action_flags = IGNORE_USER_LOC_CHANGE, extra_checks = CALLBACK(tide, TYPE_PROC_REF(/datum/eldritch_knowledge/base_tide, can_prepare_deluge), user, origin, center, expected_generation)) || QDELETED(src) || QDELETED(tide) || !tide.deluge(user, center, telegraphed_turfs, expected_generation))
 		if(!QDELETED(src))
 			heretic_revert_cast(user, "Подготовка сорвана: можно сместиться не дальше двух клеток от её начала. Сохраняйте видимость выбранной области в пяти клетках и возможность действовать; давление сохранено.")
 
@@ -799,7 +868,7 @@
 
 /datum/eldritch_knowledge/spell/tide_deluge
 	name = "Обрушение толщи"
-	desc = "После двух секунд подготовки обрушьте весь запас давления на область радиусом две клетки в пяти клетках от вас: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. При полном начальном запасе это 44 ушиба и 32 выносливости. Нужно хотя бы 2 давления. Стены защищают, из области можно выйти; сорванная подготовка сохраняет запас. Перезарядка 40 секунд. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
+	desc = "После секунды подготовки обрушьте весь запас давления на область радиусом две клетки в пяти клетках от вас: 20 ушибов + 6 за давление, 20 выносливости + 3 за давление и падение на 2 секунды. При полном начальном запасе это 44 ушиба и 32 выносливости. После удара на 15 секунд разливается море радиусом 4 клетки: враги в нём мокнут и замедляются, пока стоят в воде, а вы ходите по нему быстрее и восстанавливаете давление раз в 4 секунды. Вода не проходит сквозь стены, окна, закрытые двери и машины. Нужно хотя бы 2 давления. Стены защищают, из области можно выйти; сорванная подготовка сохраняет запас. Перезарядка 25 секунд. Во время подготовки можно сместиться до двух клеток от исходной позиции; выбранная область не движется. Потеря видимости, выход за дальность или оглушение срывают удар без расхода давления."
 	gain_text = "Я услышал треск стекла. Между нами и морем никогда не было ничего прочнее."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -906,13 +975,8 @@
 
 /datum/component/heretic_tide_flood/proc/soak(mob/living/victim)
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(!tide?.ascension_active || !heretic_can_affect(parent, victim, chargecost = 0))
-		return
-	var/datum/status_effect/heretic_drenched/water = victim.has_status_effect(/datum/status_effect/heretic_drenched)
-	if(water?.tide_ref?.resolve() == tide)
-		water.refresh()
-	else
-		tide.soak(victim)
+	if(tide?.ascension_active)
+		tide.keep_soaked(victim)
 
 /datum/component/heretic_tide_flood/proc/update_haste()
 	var/mob/living/owner = parent
@@ -957,13 +1021,12 @@
 	var/datum/weakref/flood_ref
 	var/expires_at
 	var/expiry_timer
+	var/lifetime = HERETIC_TIDE_FLOOD_LIFETIME
 
-/obj/effect/heretic_tide_puddle/Initialize(mapload, datum/component/heretic_tide_flood/flood)
+/obj/effect/heretic_tide_puddle/Initialize(mapload, datum/source)
 	. = ..()
-	if(QDELETED(flood))
+	if(QDELETED(source) || !attach(source))
 		return INITIALIZE_HINT_QDEL
-	flood_ref = WEAKREF(flood)
-	flood.puddles += src
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
 	)
@@ -978,16 +1041,28 @@
 		drain_away()
 	deltimer(expiry_timer)
 	expiry_timer = null
+	detach()
+	return ..()
+
+/obj/effect/heretic_tide_puddle/proc/attach(datum/component/heretic_tide_flood/flood)
+	flood_ref = WEAKREF(flood)
+	flood.puddles += src
+	return TRUE
+
+/obj/effect/heretic_tide_puddle/proc/detach()
 	var/datum/component/heretic_tide_flood/flood = flood_ref?.resolve()
 	flood?.puddle_gone(src)
 	flood_ref = null
-	return ..()
+
+/obj/effect/heretic_tide_puddle/proc/soak_arrival(mob/living/arrived)
+	var/datum/component/heretic_tide_flood/flood = flood_ref?.resolve()
+	flood?.soak(arrived)
 
 /// Обновлённая вода держится ещё полный срок.
 /obj/effect/heretic_tide_puddle/proc/refresh()
 	deltimer(expiry_timer)
-	expires_at = world.time + HERETIC_TIDE_FLOOD_LIFETIME
-	expiry_timer = QDEL_IN_STOPPABLE(src, HERETIC_TIDE_FLOOD_LIFETIME)
+	expires_at = world.time + lifetime
+	expiry_timer = QDEL_IN_STOPPABLE(src, lifetime)
 
 /// Ушедшая вода, в срок или раньше, не пропадает рывком: её отпечаток стекает на месте.
 /obj/effect/heretic_tide_puddle/proc/drain_away()
@@ -1000,11 +1075,38 @@
 
 /obj/effect/heretic_tide_puddle/proc/on_entered(datum/source, atom/movable/arrived)
 	SIGNAL_HANDLER
-	var/datum/component/heretic_tide_flood/flood = flood_ref?.resolve()
-	if(flood && isliving(arrived))
-		flood.soak(arrived)
+	if(isliving(arrived))
+		soak_arrival(arrived)
+
+/// Море после Обрушения: держится без хозяина рядом и принадлежит знанию, а не телу.
+/obj/effect/heretic_tide_puddle/sea
+	desc = "Чёрная вода Пучины разлилась после обрушения толщи. Вошедший в неё намокает и замедляется, а еретик в ней быстрее ходит и быстрее копит давление. Вода уходит через 15 секунд."
+	lifetime = HERETIC_TIDE_SEA_LIFETIME
+	var/datum/weakref/tide_ref
+
+/obj/effect/heretic_tide_puddle/sea/attach(datum/eldritch_knowledge/base_tide/tide)
+	tide_ref = WEAKREF(tide)
+	tide.sea += src
+	return TRUE
+
+/obj/effect/heretic_tide_puddle/sea/detach()
+	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
+	tide_ref = null
+	if(!tide)
+		return
+	tide.sea -= src
+	if(tide.tide_body?.loc == loc)
+		tide.update_sea_haste()
+
+/obj/effect/heretic_tide_puddle/sea/soak_arrival(mob/living/arrived)
+	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
+	if(tide && arrived != tide.tide_body)
+		tide.keep_soaked(arrived)
 
 /datum/movespeed_modifier/heretic_tide_flow
+	multiplicative_slowdown = -HERETIC_TIDE_FLOOD_HASTE
+
+/datum/movespeed_modifier/heretic_tide_sea
 	multiplicative_slowdown = -HERETIC_TIDE_FLOOD_HASTE
 
 #undef HERETIC_TIDE_RANGE
@@ -1032,3 +1134,7 @@
 #undef HERETIC_TIDE_VOICE_QUAKE
 #undef HERETIC_TIDE_VOICE_QUAKE_RADIUS
 #undef HERETIC_TIDE_VOICE_QUAKE_TIME
+#undef HERETIC_TIDE_DELUGE_CHANNEL
+#undef HERETIC_TIDE_SEA_RADIUS
+#undef HERETIC_TIDE_SEA_LIFETIME
+#undef HERETIC_TIDE_SEA_PRESSURE_INTERVAL
