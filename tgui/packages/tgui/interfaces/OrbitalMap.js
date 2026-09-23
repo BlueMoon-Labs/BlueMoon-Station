@@ -129,7 +129,7 @@ export const OrbitalMap = (props) => {
                 selected={trackedBody}
                 width="100%"
                 color="grey"
-                options={map_objects.sort((first,
+                options={[...map_objects].sort((first,
                   second) => { return second.priority - first.priority; })
                   .map(map_object => (map_object.name))}
                 onSelected={value => setTrackedBody(value)} />
@@ -510,7 +510,7 @@ export const ShuttleControls = (props) => {
     autopilot_enabled = false,
   } = data;
   // Sort the map objects by priority
-  let sortedMapObjects = map_objects.sort((first,
+  let sortedMapObjects = [...map_objects].sort((first,
     second) => { return second.priority - first.priority; });
   return (
     <>

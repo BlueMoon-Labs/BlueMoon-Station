@@ -3,8 +3,8 @@
 	var/generated = FALSE
 	var/mob/mob_to_recover
 	//Relatively easy mission.
-	min_payout = 10 * CARGO_CRATE_VALUE
-	max_payout = 50 * CARGO_CRATE_VALUE
+	min_payout = 75 * CARGO_CRATE_VALUE
+	max_payout = 150 * CARGO_CRATE_VALUE
 
 /datum/orbital_objective/vip_recovery/get_text()
 	return "Кто-то, представляющий особый интерес, находится по адресу [station_name]. Мы требуем его немедленно спасти. \

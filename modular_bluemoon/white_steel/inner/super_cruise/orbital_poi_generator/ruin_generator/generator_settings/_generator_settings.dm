@@ -12,22 +12,22 @@
 	return list()
 
 //Сломанная контробанда из мондуля vanguard (broken_stuff.dm).
-//Добавляется во все темы, вес выше, чем у работающего оружия/брони.
+//Добавляется во все темы, вес ниже, чем у работающего оружия/брони.
 /datum/generator_settings/proc/get_broken_stuff()
 	return list(
-		/obj/item/broken/inteq_sledgehammer = 3,
-		/obj/item/broken/dualsaber = 3,
-		/obj/item/broken/energy_sword = 3,
-		/obj/item/broken/inteq_elite = 3,
-		/obj/item/broken/makarov = 3,
-		/obj/item/broken/c20r = 3,
-		/obj/item/broken/bulldog = 3,
-		/obj/item/broken/ushm = 3,
-		/obj/item/broken/sniper_rifle = 3,
-		/obj/item/broken/m1garand = 3,
-		/obj/item/broken/homemadeak = 3,
-		/obj/item/broken/vss = 3,
-		/obj/item/broken/hmg = 3,
+		/obj/item/broken/inteq_sledgehammer = 0.33,
+		/obj/item/broken/dualsaber = 0.33,
+		/obj/item/broken/energy_sword = 0.33,
+		/obj/item/broken/inteq_elite = 0.33,
+		/obj/item/broken/makarov = 0.33,
+		/obj/item/broken/c20r = 0.33,
+		/obj/item/broken/bulldog = 0.33,
+		/obj/item/broken/ushm = 0.33,
+		/obj/item/broken/sniper_rifle = 0.33,
+		/obj/item/broken/m1garand = 0.33,
+		/obj/item/broken/homemadeak = 0.33,
+		/obj/item/broken/vss = 0.33,
+		/obj/item/broken/hmg = 0.33,
 	)
 
 //Get directional stuff that goes on walls.

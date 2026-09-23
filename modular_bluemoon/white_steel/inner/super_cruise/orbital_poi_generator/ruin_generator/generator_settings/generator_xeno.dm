@@ -15,7 +15,7 @@
 		/obj/effect/spawner/lootdrop/glowstick = 1,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
 		/obj/item/ammo_casing/c9mm = 4,
-		/obj/item/gun/ballistic/automatic/pistol/no_mag = 0.5,
+		/obj/item/gun/ballistic/automatic/pistol/no_mag = 0.1,
 		/mob/living/simple_animal/hostile/alien/drone = 1,
 		/mob/living/simple_animal/hostile/alien/sentinel = 1,
 		/mob/living/simple_animal/hostile/alien = 1,

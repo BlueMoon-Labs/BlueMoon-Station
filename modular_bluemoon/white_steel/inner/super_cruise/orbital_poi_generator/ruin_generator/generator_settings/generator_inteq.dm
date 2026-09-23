@@ -26,7 +26,7 @@
 		/obj/item/folder/inteq = 1,
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
-		/obj/item/gun/ballistic/revolver/inteq = 0.5,
+		/obj/item/gun/ballistic/revolver/inteq = 0.1,
 		null = 110,
 	)
 	. += get_broken_stuff()

@@ -5,8 +5,8 @@
 	var/objective_z_level
 	var/mob/living/mob_to_recover
 	var/obj/structure/closet/supplypod/extractionpod/extraction_pod
-	min_payout = 20 * CARGO_CRATE_VALUE
-	max_payout = 50 * CARGO_CRATE_VALUE
+	min_payout = 75 * CARGO_CRATE_VALUE
+	max_payout = 150 * CARGO_CRATE_VALUE
 
 /datum/orbital_objective/headhunt/get_text()
 	return "Требуется ликвидировать опасного преступника, скрывающегося на [station_name]. \

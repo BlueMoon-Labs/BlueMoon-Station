@@ -35,10 +35,12 @@ export const OrbitalMapSvg = (props) => {
   } = props;
 
   const toScreen = (x, y) => ({
-    x: x * 10 * zoomScale + scaledXOffset,
-    y: -y * 10 * zoomScale + scaledYOffset,
+    x: x * zoomScale + scaledXOffset,
+    y: y * zoomScale + scaledYOffset,
   });
 
+  //WHITE-STEEL PORT: направление вектора скорости совпадает с направлением
+  //движения на карте (без инверсии по Y, как в списке карт белого стиля).
   const velocityVector = (vx, vy) => {
     const magnitude = Math.hypot(vx, vy);
     if (!magnitude) {
@@ -47,7 +49,7 @@ export const OrbitalMapSvg = (props) => {
     const length = Math.min(magnitude, 50) * zoomScale;
     return {
       x: (vx / magnitude) * length,
-      y: -(vy / magnitude) * length,
+      y: (vy / magnitude) * length,
     };
   };
 
@@ -64,7 +66,7 @@ export const OrbitalMapSvg = (props) => {
 
   const drawObject = (mapObject) => {
     const position = toScreen(mapObject.position_x, mapObject.position_y);
-    const radius = Math.max(mapObject.radius * 10 * zoomScale, 4);
+    const radius = Math.max(mapObject.radius * zoomScale, 4);
     switch (mapObject.render_mode) {
       case RENDER_MODE_PLANET:
         return (
@@ -206,7 +208,7 @@ export const OrbitalMapSvg = (props) => {
       <circle
         cx={position.x}
         cy={position.y}
-        r={interdiction_range * 10 * zoomScale}
+        r={interdiction_range * zoomScale}
         fill="none"
         stroke={INTERDICTION_COLOR}
         strokeWidth="2"

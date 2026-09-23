@@ -77,5 +77,10 @@
 			continue
 		id_card.contraband_points += cargo_share * 2
 		to_chat(H, span_notice("Вы получили [cargo_share * 2] очков Авангарда за выполнение задания."))
+	//WHITE-STEEL PORT: на счёт карго дополнительно поступают деньги в полуторном размере от награды за задание.
+	var/datum/bank_account/department/cargo_dep = SSeconomy.get_dep_account(ACCOUNT_CAR)
+	if(cargo_dep)
+		var/cargo_money = round(payout * 1.5)
+		cargo_dep.adjust_money(cargo_money)
 	//Delete
 	QDEL_NULL(SSorbits.current_objective)
