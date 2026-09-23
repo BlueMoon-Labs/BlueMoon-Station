@@ -29,8 +29,6 @@
 	icon_state = "red_big"
 	duration = 0.6 SECONDS
 	randomdir = FALSE
-	plane = ABOVE_LIGHTING_PLANE
-	layer = ABOVE_LIGHTING_LAYER
 
 #define HERETIC_ASH_FLAME_RISE (0.12 SECONDS)
 #define HERETIC_ASH_FLAME_FALL (0.25 SECONDS)
@@ -44,6 +42,7 @@
 /// Язык огня вырастает из пола, горит и опадает, а не мигает целиком.
 /obj/effect/temp_visual/heretic_ash_flame/Initialize(mapload)
 	. = ..()
+	add_overlay(emissive_appearance(icon, icon_state))
 	alpha = 0
 	transform = matrix(HERETIC_ASH_FLAME_BUD_WIDTH, 0, 0, 0, HERETIC_ASH_FLAME_BUD_HEIGHT, -HERETIC_ASH_FLAME_BUD_SINK)
 	animate(src, alpha = 255, transform = matrix(), time = HERETIC_ASH_FLAME_RISE, easing = CUBIC_EASING | EASE_OUT)
@@ -121,8 +120,7 @@
 	icon_state = null
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	plane = ABOVE_LIGHTING_PLANE
-	layer = ABOVE_LIGHTING_LAYER
+	layer = ABOVE_MOB_LAYER
 	alpha = 210
 	var/edge_directions
 
@@ -145,3 +143,4 @@
 	for(var/direction in GLOB.cardinals)
 		if(edge_directions & direction)
 			add_overlay(edge_states["[direction]"])
+			add_overlay(emissive_appearance(icon, edge_states["[direction]"]))

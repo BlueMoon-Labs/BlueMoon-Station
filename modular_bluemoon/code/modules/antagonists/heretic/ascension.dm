@@ -377,8 +377,7 @@
 	animate(transform = target, time = HERETIC_ASCENSION_TURN_TIME, easing = SINE_EASING | EASE_OUT)
 
 /obj/effect/temp_visual/heretic_ascension_echo
-	plane = ABOVE_LIGHTING_PLANE
-	layer = ABOVE_LIGHTING_LAYER
+	layer = ABOVE_MOB_LAYER
 	appearance_flags = TILE_BOUND | PIXEL_SCALE
 	duration = 3 SECONDS
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -391,6 +390,7 @@
 	icon = path.ascension_aura_icon
 	icon_state = "[path.ascension_aura_state]_back"
 	add_overlay(mutable_appearance(icon, "[path.ascension_aura_state]_front"))
+	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow"))
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 	pixel_y = pixel_x
 	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration, easing = CUBIC_EASING | EASE_OUT)
@@ -458,9 +458,9 @@
 	clear_echo()
 	if(owner.client && owner.stat != DEAD)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
-		personal_echo = image(path.ascension_aura_icon, owner, "[path.ascension_aura_state]_back", ABOVE_LIGHTING_LAYER)
+		personal_echo = image(path.ascension_aura_icon, owner, "[path.ascension_aura_state]_back", ABOVE_MOB_LAYER)
 		personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
-		personal_echo.plane = ABOVE_LIGHTING_PLANE
+		personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow")
 		personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
 		personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 		personal_echo.pixel_y = personal_echo.pixel_x

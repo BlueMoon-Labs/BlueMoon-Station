@@ -229,3 +229,19 @@
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
+
+/// Огонь каскада и клятвы, край печати и вспышка вознесения рисуются спрайтом, а не в карте освещения, и светятся в темноте.
+/datum/unit_test/heretic_visuals_off_lighting_plane/Run()
+	var/turf/place = run_loc_floor_bottom_left
+	var/list/visuals = list(
+		allocate(/obj/effect/temp_visual/heretic_ash_flame, place),
+		allocate(/obj/effect/heretic_field_edge, place, list(place), "#ff8b3d"),
+		allocate(/obj/effect/temp_visual/heretic_ascension_echo, place, PATH_ASH),
+	)
+	for(var/atom/movable/visual as anything in visuals)
+		TEST_ASSERT_NOTEQUAL(visual.plane, LIGHTING_PLANE, "[visual.type] не лежит на плоскости освещения.")
+		var/glowing = FALSE
+		for(var/mutable_appearance/overlay as anything in visual.overlays)
+			if(overlay.plane == EMISSIVE_PLANE)
+				glowing = TRUE
+		TEST_ASSERT(glowing, "[visual.type] светится в темноте.")
