@@ -1,3 +1,6 @@
+//WHITE-STEEL PORT - Агрегатор модуля.
+//ПР1 + ПР2 + ПР3 (объединённый лоадер). Порядок включений повторяет upstream.
+
 #include "_defines\orbit_defines.dm"
 #include "_defines\sound.dm"
 
@@ -7,6 +10,11 @@
 #include "_atmos\air_extension.dm"
 #include "_support\radio_stuff.dm"
 #include "_support\circuits.dm"
+#include "_support\tactical.dm"
+#include "_support\mre.dm"
+#include "_support\feline_chem.dm"
+#include "_support\ruin_stubs.dm"
+
 
 #include "_subsystem\orbits.dm"
 #include "_subsystem\zclear.dm"
@@ -44,10 +52,22 @@
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_template.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_loader.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_part_types.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_objects.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_generator.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\mapping.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\asteroid_generator.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\exoplanets\exoplanet_generator.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\exoplanets\biomes\_biome.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\exoplanets\biomes\lavaland.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\exoplanets\biomes\lush.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\_generator_settings.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_abandoned.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_blob.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_city.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_netherworld.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_ratvar.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_inteq.dm"
+#include "inner\super_cruise\orbital_poi_generator\ruin_generator\generator_settings\generator_xeno.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\_ruin_event.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\asteriod_station.dm"
 #include "inner\super_cruise\orbital_poi_generator\ruin_generator\ruin_events\meteor_storm.dm"
@@ -55,13 +75,8 @@
 #include "inner\discovery_research\discoverable_component.dm"
 #include "inner\discovery_research\discovery_scanner.dm"
 
+#include "exploration\exploration_explosives.dm"
 #include "exploration\research_locator.dm"
 #include "exploration\exploration_shuttle.dm"
-
-#include "_support\tactical.dm"
-#include "_support\mre.dm"
-#include "_support\feline_chem.dm"
-
-#include "exploration\exploration_explosives.dm"
 
 #include "rangers\proton_cutter.dm"

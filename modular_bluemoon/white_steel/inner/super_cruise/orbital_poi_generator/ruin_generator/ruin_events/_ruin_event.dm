@@ -15,7 +15,7 @@
 /datum/ruin_event/New()
 	. = ..()
 	start_tick = rand(start_tick_min, start_tick_max)
-	end_tick = rand(start_tick_min, start_tick_max)
+	end_tick = rand(end_tick_min, end_tick_max)
 
 /datum/ruin_event/proc/update()
 	if(QDELETED(linked_z))

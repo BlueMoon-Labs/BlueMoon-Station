@@ -147,7 +147,10 @@
 	effect_act_descs = list("стреляющий")
 
 /datum/artifact_effect/projreflect/process(delta_time)
-	for(var/obj/item/projectile/P in range(3, src))
+	var/turf/T = get_turf(source_object)
+	if(!T)
+		return
+	for(var/obj/item/projectile/P in range(3, T))
 		//Reflect projectile
 		P.setAngle(rand(0, 360))
 
@@ -198,7 +201,7 @@
 	var/turf/T = get_turf(warper)
 	if(T)
 		goonchem_vortex(T, FALSE, 8)
-		playsound(src, 'sound/magic/repulse.ogg')
+		playsound(T, 'sound/magic/repulse.ogg')
 		next_use_world_time = world.time + 150
 
 //===================
@@ -212,11 +215,14 @@
 	effect_act_descs = list("рядом с чем-то")
 
 /datum/artifact_effect/access/process(delta_time)
-	if(next_use_time < world.time)
+	if(world.time < next_use_time)
 		return
 	next_use_time = world.time + rand(30 SECONDS, 5 MINUTES)
 	var/list/idcards = list()
-	var/list/things_in_view = view(5, src)
+	var/turf/T = get_turf(source_object)
+	if(!T)
+		return
+	var/list/things_in_view = view(5, T)
 	for(var/mob/living/carbon/human/H in things_in_view)
 		if(H.get_idcard())
 			idcards += H.get_idcard()
@@ -261,7 +267,7 @@
 	if(!T)
 		return
 	for(var/atom/movable/AM in view(3, T))
-		if(AM == src)
+		if(AM == source_object)
 			continue
 		if(isobj(AM))
 			var/obj/O = AM
