@@ -78,13 +78,19 @@
 		subject.next_space_wind_at = 0
 	return ..()
 
-/// Зона с критичной машиной распознаётся без обхода её содержимого, обычная машина зону не защищает.
+/// Зона с критичной машиной распознаётся без обхода её содержимого, включая собранный ускоритель частиц; обычная машина зону не защищает.
 /datum/unit_test/grid_check_critical_area/Run()
 	var/area/test_area = get_area(run_loc_floor_bottom_left)
 	TEST_ASSERT(!area_has_critical_machine(test_area), "в пустой тестовой зоне нашлась критичная машина")
 
 	allocate(/obj/machinery/door/airlock/engineering/glass, run_loc_floor_bottom_left)
 	TEST_ASSERT(!area_has_critical_machine(test_area), "обычный шлюз посчитан критичным")
+
+	var/obj/machinery/particle_accelerator/control_box/accelerator = allocate(/obj/machinery/particle_accelerator/control_box, locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	TEST_ASSERT(!area_has_critical_machine(test_area), "несобранный ускоритель частиц посчитан критичным")
+	accelerator.critical_machine = TRUE
+	TEST_ASSERT(area_has_critical_machine(test_area), "собранный ускоритель частиц не защитил свою зону")
+	accelerator.critical_machine = FALSE
 
 	allocate(/obj/machinery/door/airlock/engineering/glass/critical, run_loc_floor_top_right)
 	TEST_ASSERT(area_has_critical_machine(test_area), "критичный шлюз не защитил свою зону")
