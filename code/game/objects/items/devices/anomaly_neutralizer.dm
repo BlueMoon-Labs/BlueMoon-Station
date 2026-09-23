@@ -14,6 +14,10 @@
 	..()
 	if(!proximity || !target)
 		return
+	if(istype(target, /obj/effect/broken_illusion))
+		var/obj/effect/broken_illusion/trace = target
+		trace.neutralize(user, src)
+		return
 	if(istype(target, /obj/effect/anomaly))
 		var/obj/effect/anomaly/A = target
 		to_chat(user, span_notice("Электроника устройства поджаривается в процессе нейтрализации [A]!"))

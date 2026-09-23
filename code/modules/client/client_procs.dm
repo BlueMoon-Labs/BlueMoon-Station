@@ -1956,6 +1956,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 ///Redirect proc that makes it easier to call the unlock achievement proc. Achievement type is the typepath to the award, user is the mob getting the award, and value is an optional variable used for leaderboard value increments
 /client/proc/give_award(achievement_type, mob/user, value = 1)
+	if(user?.training_origin)
+		return FALSE
 	return	player_details.achievements.unlock(achievement_type, user, value)
 
 ///Redirect proc that makes it easier to get the status of an achievement. Achievement type is the typepath to the award.

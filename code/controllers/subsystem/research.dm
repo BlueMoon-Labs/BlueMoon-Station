@@ -36,6 +36,7 @@ SUBSYSTEM_DEF(research)
 
 	var/list/techweb_point_items = list(		//path = list(point type = value)
 	/obj/item/assembly/signaler/anomaly            = list(TECHWEB_POINT_TYPE_GENERIC = 10000),
+	/obj/item/heretic_veil_crystal                 = list(TECHWEB_POINT_TYPE_GENERIC = HERETIC_VEIL_CRYSTAL_POINTS),
 	//   -   Slime Extracts!   - Basics
 	/obj/item/slime_extract/grey                   = list(TECHWEB_POINT_TYPE_GENERIC = 500),
 	/obj/item/slime_extract/metal                  = list(TECHWEB_POINT_TYPE_GENERIC = 750),

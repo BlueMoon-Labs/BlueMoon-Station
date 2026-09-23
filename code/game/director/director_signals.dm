@@ -20,7 +20,7 @@
 /// Является ли моб экипажем с точки зрения директора (без проверки клиента/AFK -
 /// их проверяет счётчик; это позволяет юнит-тестировать классификацию).
 /proc/is_effective_crew_mob(mob/M)
-	if(!istype(M) || M.stat == DEAD)
+	if(!istype(M) || M.training_origin || M.stat == DEAD)
 		return FALSE
 	if(isnewplayer(M) || isobserver(M))
 		return FALSE
@@ -52,7 +52,7 @@
 /// фауна без mind): гейты "есть ли живой врач" зовутся битом директора по несколько раз в минуту.
 /proc/director_has_living_role(list/roles)
 	for(var/datum/mind/checked_mind as anything in SSticker.minds)
-		if(checked_mind.current && checked_mind.current.stat != DEAD && (checked_mind.assigned_role in roles))
+		if(checked_mind.current && !checked_mind.current.training_origin && checked_mind.current.stat != DEAD && (checked_mind.assigned_role in roles))
 			return TRUE
 	return FALSE
 
@@ -72,6 +72,13 @@
 	for(var/mob/M as anything in GLOB.player_list)
 		if(!M.client)
 			continue
+		if(M.training_origin)
+			var/datum/antag_training_session/session = GLOB.antag_training_sessions[M.ckey]
+			var/datum/mind/original_mind = session?.return_mind?.resolve()
+			if(original_mind?.assigned_role && !isnull(director_dept_of_job(original_mind.assigned_role, allow_other = TRUE)))
+				crew_total++
+				crew_dead++
+			continue
 		if(M.mind && M.mind.assigned_role && !isnewplayer(M))
 			var/dept = director_dept_of_job(M.mind.assigned_role, allow_other = TRUE)
 			if(!isnull(dept))
@@ -89,7 +96,7 @@
 	dead_fraction = crew_total ? (crew_dead / crew_total) : 0
 	for(var/datum/antagonist/A in GLOB.antagonists)
 		var/datum/mind/antag_mind = A.owner
-		if(antag_mind?.current && antag_mind.current.stat != DEAD)
+		if(antag_mind?.current && !antag_mind.current.training_origin && antag_mind.current.stat != DEAD)
 			living_antags++
 	if(EMERGENCY_ESCAPED_OR_ENDGAMED)
 		evac_state = DIRECTOR_EVAC_GONE

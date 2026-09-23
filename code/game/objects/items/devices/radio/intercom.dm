@@ -141,6 +141,9 @@
 	ui_interact(user, state = GLOB.default_state)
 
 /obj/item/radio/intercom/can_receive(freq, level)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return FALSE
 	if(!on)
 		return FALSE
 	if(wires.is_cut(WIRE_RX))
