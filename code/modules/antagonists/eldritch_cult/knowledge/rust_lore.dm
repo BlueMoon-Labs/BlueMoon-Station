@@ -52,7 +52,7 @@
 
 /datum/eldritch_knowledge/rust_regen
 	name = "Ржавая поступь"
-	desc = "На ржавом полу вы восстанавливаете ушибы, ожоги, отравление и выносливость. Укоренение усиливает это лечение; уход с подготовленной территории лишает вас её защиты."
+	desc = "На ржавом полу вы восстанавливаете ушибы, ожоги, отравление, удушье, выносливость и потерянную кровь, так что кровотечение на своей территории не добьёт вас. Укоренение усиливает это лечение; уход с подготовленной территории лишает вас её защиты."
 	gain_text = "Под ногами скрипит металл, но этот звук успокаивает меня."
 	cost = 1
 	route = PATH_RUST
@@ -64,7 +64,10 @@
 	var/healing_multiplier = passive_values[passive_level]
 	heretic_heal_damage(living_user, 2 * healing_multiplier, 2 * healing_multiplier)
 	living_user.adjustToxLoss(-healing_multiplier, FALSE, TRUE, toxins_type = TOX_OMNI)
+	living_user.adjustOxyLoss(-healing_multiplier)
 	living_user.adjustStaminaLoss(-4 * healing_multiplier)
+	if(iscarbon(living_user) && living_user.blood_volume && living_user.blood_volume < BLOOD_VOLUME_NORMAL)
+		living_user.blood_volume = min(BLOOD_VOLUME_NORMAL, living_user.blood_volume + 2 * healing_multiplier)
 
 /datum/eldritch_knowledge/rust_mark
 	name = "Метка Ржавчины"

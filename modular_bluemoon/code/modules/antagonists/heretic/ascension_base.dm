@@ -3,7 +3,7 @@
 	duration = -1
 	tick_interval = 2 SECONDS
 	alert_type = null
-	examine_text = "<span class='warning'>SUBJECTPRONOUN держится неестественно стойко: дубинки и станы почти не действуют, свалить можно только изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног.</span>"
+	examine_text = "<span class='warning'>SUBJECTPRONOUN держится неестественно стойко: дубинки и станы почти не действуют, свалить можно только изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног, а разбить клинок и скрыться SUBJECTPRONOUN уже не может.</span>"
 	var/added_max_health = 0
 	var/last_damage_time = 0
 	var/reentry = FALSE

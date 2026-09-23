@@ -22,6 +22,12 @@
 	TEST_ASSERT(shield.implant(user, null, TRUE), "Щит вводится без оператора.")
 	TEST_ASSERT(!grasp.can_cast(user, TRUE, TRUE), "Щит разума глушит магию.")
 	TEST_ASSERT(heretic_containment_reason(user), "Щит разума мешает и побегу клинком.")
+	var/obj/effect/eldritch/big/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	if(!heretic.get_knowledge(/datum/eldritch_knowledge/living_heart))
+		heretic.gain_knowledge(/datum/eldritch_knowledge/living_heart)
+	var/datum/eldritch_knowledge/ritual = heretic.get_knowledge(/datum/eldritch_knowledge/living_heart)
+	TEST_ASSERT(!rune.ritual_valid(user, ritual), "Щит разума срывает обряд на руне.")
+	TEST_ASSERT(findtext(rune.ritual_interrupt_reason, "Щит разума"), "Срыв обряда называет щит.")
 	ADD_TRAIT(user, TRAIT_HERETIC_ASCENDED, TRAIT_GENERIC)
 	TEST_ASSERT(grasp.can_cast(user, TRUE, TRUE), "Вознёсшегося щит не держит.")
 	REMOVE_TRAIT(user, TRAIT_HERETIC_ASCENDED, TRAIT_GENERIC)
@@ -75,6 +81,24 @@
 	second.attack_self(user)
 	TEST_ASSERT(QDELETED(second), "После перезарядки побег снова работает.")
 
+/// Вознёсшийся не может сбежать, разбив клинок, и клинок остаётся у него.
+/datum/unit_test/heretic_blade_escape_ascended/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/origin = get_turf(user)
+	var/obj/item/melee/sickly_blade/escape_fixture/blade = allocate(/obj/item/melee/sickly_blade/escape_fixture)
+	blade.drop_during_search = FALSE
+	blade.destination = get_step(origin, EAST)
+	user.put_in_hands(blade)
+	ADD_TRAIT(user, TRAIT_HERETIC_ASCENDED, TRAIT_GENERIC)
+	blade.attack_self(user)
+	TEST_ASSERT(!QDELETED(blade), "Клинок вознёсшегося не разбивается.")
+	TEST_ASSERT_EQUAL(blade.search_count, 0, "Отказ не ищет место для побега.")
+	TEST_ASSERT_EQUAL(get_turf(user), origin, "Вознёсшийся остаётся на месте.")
+	REMOVE_TRAIT(user, TRAIT_HERETIC_ASCENDED, TRAIT_GENERIC)
+	blade.attack_self(user)
+	TEST_ASSERT(QDELETED(blade), "Без вознесения побег работает.")
+
 /// Вознёсшийся восполняет кровь даже сразу после ранения.
 /datum/unit_test/heretic_ascended_blood_regen/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
@@ -96,7 +120,7 @@
 	TEST_ASSERT(istype(get_area(station_space), /area/space), "Угол станционного уровня лежит в зоне космоса.")
 	TEST_ASSERT(heretic_ascension_in_open_space(station_space), "Зона космоса станции запрещает обряд независимо от воздуха.")
 
-/// Добровольно лёгшая или уснувшая цель не считается поверженной, настоящий крит и сбивание с ног считаются.
+/// Добровольно лёгшая или уснувшая цель не считается поверженной, химический сон, крит и сбивание с ног считаются.
 /datum/unit_test/heretic_hunt_voluntary_rest/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human)
@@ -105,7 +129,10 @@
 	TEST_ASSERT(!heretic.hunt_target_ready(victim), "Добровольно лёгшая цель не подходит.")
 	victim.set_resting(FALSE, silent = TRUE)
 	victim.SetSleeping(10 SECONDS)
-	TEST_ASSERT(!heretic.hunt_target_ready(victim), "Уснувшая цель без ранений не подходит.")
+	victim.voluntary_sleep_until = world.time + 10 SECONDS
+	TEST_ASSERT(!heretic.hunt_target_ready(victim), "Уснувшая по своей воле цель без ранений не подходит.")
+	victim.voluntary_sleep_until = 0
+	TEST_ASSERT(heretic.hunt_target_ready(victim), "Усыплённая химией цель подходит.")
 	victim.SetSleeping(0)
 	victim.adjustBruteLoss(150)
 	TEST_ASSERT(victim.stat >= SOFT_CRIT, "Раны довели цель до крита.")

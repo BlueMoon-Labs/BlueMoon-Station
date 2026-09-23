@@ -99,12 +99,16 @@
 	user.adjustFireLoss(20)
 	user.adjustToxLoss(10)
 	user.adjustStaminaLoss(30)
+	user.adjustOxyLoss(10)
+	user.blood_volume = BLOOD_VOLUME_NORMAL - 100
 	var/datum/eldritch_knowledge/rust_regen/regen = allocate(/datum/eldritch_knowledge/rust_regen)
 	regen.passive_level = 3
 	regen.on_life(user)
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 17, "Ржавая поступь лечит три ушиба.")
 	TEST_ASSERT_EQUAL(user.getFireLoss(), 17, "Ржавая поступь лечит три ожога.")
 	TEST_ASSERT_EQUAL(user.getToxLoss(), 8.5, "Ржавая поступь лечит полторы единицы отравления.")
+	TEST_ASSERT_EQUAL(user.getOxyLoss(), 8.5, "Ржавая поступь лечит полторы единицы удушья.")
+	TEST_ASSERT_EQUAL(user.blood_volume, BLOOD_VOLUME_NORMAL - 97, "Ржавая поступь восполняет три единицы крови.")
 	TEST_ASSERT_EQUAL(user.getStaminaLoss(), 24, "Ржавая поступь лечит шесть выносливости.")
 	user.forceMove(run_loc_floor_top_right)
 	regen.on_life(user)

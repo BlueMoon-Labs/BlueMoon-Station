@@ -9,7 +9,7 @@
 
 /datum/eldritch_knowledge/rust_regen
 	passive_values = list(1, 1.25, 1.5)
-	passive_desc = "Лечение Ржавой поступи усиливается до 100 / 125 / 150%: ушибы, ожоги, отравление и выносливость. Работает только на ржавом полу."
+	passive_desc = "Лечение Ржавой поступи усиливается до 100 / 125 / 150%: ушибы, ожоги, отравление, удушье, выносливость и кровь. Работает только на ржавом полу."
 
 /datum/eldritch_knowledge/flesh_blade_upgrade
 	passive_values = list(2, 3, 4)

@@ -140,6 +140,22 @@
 	required_atoms = list(/mob/living/carbon/human, /obj/item/reagent_containers/food/snacks/grown/poppy)
 	route = PATH_FLESH
 
+/datum/eldritch_knowledge/flesh_ghoul/recipe_block_reason(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	if(!path)
+		return "Обряд требует открытого Пути Плоти."
+	if(path.combat_resource < 2)
+		return "Нужно 2 биомассы, у вас [round(path.combat_resource, 0.1)]. Биомасса собирается из меток Плоти и извлечённых органов."
+	if(length(flesh_servants) >= heretic.flesh_kind_limit())
+		return "Вы уже удерживаете предельное число Безмолвных мертвецов: [heretic.flesh_kind_limit()]."
+	if(!heretic.can_add_servant())
+		return "Свита заполнена: новый слуга не поместится, пока вы не потеряете одного из прежних."
+	return null
+
+/datum/eldritch_knowledge/flesh_ghoul/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	return ..() && !recipe_block_reason(user)
+
 /datum/eldritch_knowledge/flesh_ghoul/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/mob/living/carbon/human/victim = locate() in atoms
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
@@ -154,6 +170,7 @@
 	if(!victim.mind || !victim.client)
 		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
 		if(!length(candidates))
+			to_chat(user, span_warning("Ни одна душа не откликнулась, и тело осталось пустым. Компоненты не израсходованы."))
 			return FALSE
 		if(!ritual_still_valid(user, atoms, get_turf(loc)) || victim.stat != DEAD || length(flesh_servants) >= heretic.flesh_kind_limit() || heretic_conversion_block_reason(victim) || QDELETED(path) || path.combat_resource < 2 || !heretic.can_add_servant())
 			return FALSE

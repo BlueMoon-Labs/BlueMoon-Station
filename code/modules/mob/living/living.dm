@@ -681,6 +681,7 @@
 	else
 		if(alert(src, "You sure you want to sleep for a while?", "Sleep", "Yes", "No") == "Yes")
 			SetSleeping(400) //Short nap
+			voluntary_sleep_until = world.time + 400
 
 /mob/proc/get_contents()
 

@@ -234,6 +234,22 @@
 	qdel(path)
 	TEST_ASSERT(QDELETED(crawler), "Удаление знания сразу удаляет ползуна.")
 
+/// Незавершённый ритуал без двух биомасс отказывает до начала обряда и называет причину.
+/datum/unit_test/heretic_gameplay/flesh_ghoul_block_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_FLESH
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/flesh_ghoul)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_ghoul/ghoul = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_ghoul)
+	path.combat_resource = 1
+	TEST_ASSERT(findtext(ghoul.recipe_block_reason(user), "биомасс"), "Отказ называет нехватку биомассы.")
+	TEST_ASSERT(!ghoul.recipe_snowflake_check(list(), get_turf(user), list(), user), "Без биомассы обряд не начинается.")
+	path.combat_resource = 2
+	TEST_ASSERT_NULL(ghoul.recipe_block_reason(user), "Двух биомасс достаточно.")
+	TEST_ASSERT(ghoul.recipe_snowflake_check(list(), get_turf(user), list(), user), "С биомассой обряд начинается.")
+
 /// Смерть и перенос хозяина прекращают существование ползуна и освобождают место.
 /datum/unit_test/heretic_gameplay/fleshling_transfer/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

@@ -214,6 +214,12 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 	var/ascension_notice_sent = FALSE
 	var/ascension_ready_at = 0
 
+/proc/heretic_ascension_happened()
+	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists)
+		if(heretic.ascended && !heretic.simulated)
+			return TRUE
+	return FALSE
+
 /datum/antagonist/heretic/proc/announce_threat()
 	if(ascension_notice_sent)
 		return FALSE
@@ -223,7 +229,7 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 		return FALSE
 	GLOB.heretic_threat_warning_until = world.time + HERETIC_THREAT_WARNING_TIME
 	ascension_ready_at = GLOB.heretic_threat_warning_until
-	priority_announce("Зафиксировано усиление оккультной активности: последователи запретных путей уже приносят экипаж в жертву. Вознесения пока не было. О начале заключительного обряда станция получит отдельное оповещение, и оно возможно не раньше чем через три минуты. Сообщайте службе безопасности о ритуальных знаках и необъяснимых исчезновениях экипажа. Задержанного еретика держите в наручниках или смирительной рубашке, а для долгого содержания установите ему имплант защиты разума: так магия запретных путей и побег через разбитый клинок недоступны.", "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
+	priority_announce("Зафиксировано усиление оккультной активности: последователи запретных путей уже приносят экипаж в жертву. [heretic_ascension_happened() ? "Один из них уже разорвал завесу, остальные могут последовать за ним." : "Вознесения пока не было."] О начале заключительного обряда станция получит отдельное оповещение, и оно возможно не раньше чем через три минуты. Сообщайте службе безопасности о ритуальных знаках и необъяснимых исчезновениях экипажа. Задержанного еретика держите в наручниках или смирительной рубашке, а для долгого содержания установите ему имплант защиты разума: так магия запретных путей, их обряды и побег через разбитый клинок недоступны.", "Предупреждение об оккультной активности", 'sound/misc/notice1.ogg')
 	return TRUE
 
 /datum/antagonist/heretic/proc/research_knowledge(knowledge_type, mob/living/user)

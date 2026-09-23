@@ -225,7 +225,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(role_removed || QDELETED(user) || user.mind != owner || user.incapacitated() || QDELETED(victim) || QDELETED(heart) || !user.is_holding(heart))
 		return FALSE
 	var/datum/eldritch_knowledge/spell/basic/ritual = get_knowledge(/datum/eldritch_knowledge/spell/basic)
-	var/reason = heart_rite_refusal_reason(victim, ritual)
+	var/reason = heretic_containment_reason(user) || heart_rite_refusal_reason(victim, ritual)
 	if(reason)
 		victim.balloon_alert(user, "сердце молчит")
 		to_chat(user, span_warning(reason))
@@ -277,6 +277,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 
 /mob/living
 	var/knocked_to_floor = FALSE
+	/// До этого момента сон считается добровольным: глагол сна или эмоция обморока.
+	var/voluntary_sleep_until = 0
 
 /mob/living/KnockToFloor(disarm_items = FALSE, silent = TRUE, updating = TRUE)
 	. = ..()
@@ -291,9 +293,9 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 /datum/antagonist/heretic/proc/hunt_target_ready(mob/living/carbon/human/victim)
 	if(!istype(victim) || QDELETED(victim))
 		return FALSE
-	if(victim.stat == DEAD || victim.handcuffed || victim.IsStun() || victim.IsParalyzed() || victim.IsKnockdown() || victim.IsUnconscious() || (victim.combat_flags & COMBAT_FLAG_HARD_STAMCRIT) || (victim.resting && victim.knocked_to_floor))
+	if(victim.stat == DEAD || victim.handcuffed || victim.IsStun() || victim.IsParalyzed() || victim.IsKnockdown() || victim.IsUnconscious() || (victim.combat_flags & COMBAT_FLAG_HARD_STAMCRIT) || (victim.resting && victim.knocked_to_floor) || (victim.IsSleeping() && world.time >= victim.voluntary_sleep_until))
 		return TRUE
-	// Сон по своей воле тоже даёт UNCONSCIOUS, поэтому считается только настоящий крит.
+	// Сон по своей воле тоже даёт UNCONSCIOUS, поэтому в нём считается только настоящий крит.
 	return victim.stat >= SOFT_CRIT && victim.health <= victim.crit_threshold
 
 /datum/antagonist/heretic/proc/prepare_hunt_choices()

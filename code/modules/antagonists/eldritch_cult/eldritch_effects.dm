@@ -272,6 +272,10 @@
 	if(user.incapacitated())
 		ritual_interrupt_reason ||= "Вы не можете действовать: оглушены, связаны или без сознания."
 		return FALSE
+	var/containment_reason = heretic_containment_reason(user)
+	if(containment_reason)
+		ritual_interrupt_reason ||= containment_reason
+		return FALSE
 	if(!Adjacent(user))
 		ritual_interrupt_reason ||= "Вы отошли от руны."
 		return FALSE
@@ -297,7 +301,7 @@
 	var/list/recheck_atoms = reserved_atoms.Copy()
 	var/list/recheck_selected = list()
 	if(!ritual.recipe_snowflake_check(recheck_atoms, get_turf(src), recheck_selected, user))
-		ritual_interrupt_reason ||= "Особые условия обряда больше не выполнены."
+		ritual_interrupt_reason ||= ritual.recipe_block_reason(user) || "Особые условия обряда больше не выполнены."
 		return FALSE
 	return TRUE
 
@@ -307,6 +311,9 @@
 	return FALSE
 
 /obj/effect/eldritch/proc/do_ritual(mob/living/user, datum/eldritch_knowledge/ritual)
+	var/containment_reason = heretic_containment_reason(user)
+	if(containment_reason)
+		return reject_ritual(user, ritual, containment_reason)
 	var/list/atoms = collect_ritual_atoms(user)
 	var/list/selected_atoms = list()
 	var/list/stack_usage = list()
@@ -424,6 +431,9 @@
 		else if(ritual.type == /datum/eldritch_knowledge/codex_cicatrix)
 			summon_hint = " Это изготовление запасной книги. Уже выданный кодекс можно получить способностью «Призвать кодекс»."
 		return "Не хватает свободных компонентов: [jointext(missing, ", ")]. Компоненты другого незавершённого обряда недоступны.[summon_hint]"
+	var/block_reason = ritual.recipe_block_reason(user)
+	if(block_reason)
+		return block_reason
 	if(ritual.type == /datum/eldritch_knowledge/base_void)
 		var/turf/open/floor/floor = get_turf(src)
 		if(!istype(floor))
