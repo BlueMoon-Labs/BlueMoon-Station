@@ -1,9 +1,49 @@
 /// Прямые фикстуры не зависят от присутствия настоящей станции в профиле запуска.
+/// Раскладка фикстуры: врата в комнате 2, вход в 14, осколки в 3, 16 и 9, затворы между 8-12 (a) и 12-16 (b), в комнате 7 колонна и ниша.
+GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
+		"#################################",
+		"#.......#.......#.......#.......#",
+		"#.......#...G...#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......+...D...+...1...+.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.V...V.#.......#.......#",
+		"#.......#...+...#.......#.......#",
+		"####+#######+####################",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#...#...#.......#",
+		"#.......+.......+.......+.......#",
+		"#.......#.......#.n.....#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"############+###############a####",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#...3...+.......+.......+.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"############+###############b####",
+		"#.......#.......#.......#.......#",
+		"#.......#.S...S.#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#.......++..E..++.......+...2...#",
+		"#.......#.......#.......#.......#",
+		"#.......#.V...V.#.......#.......#",
+		"#.......#.......#.......#.......#",
+		"#################################",
+))
+
 /datum/heretic_mansus_visit/mansus_fixture
 	recall_duration = 0.3 SECONDS
 	delivery_duration = 0.3 SECONDS
 	danger_enabled = FALSE
-	layout_index = 1
+
+/datum/heretic_mansus_visit/mansus_fixture/New()
+	. = ..()
+	forced_rows = GLOB.heretic_mansus_test_rows
 
 /datum/heretic_mansus_visit/mansus_fixture/find_return_turf()
 	return return_turf
@@ -128,7 +168,7 @@
 	TEST_ASSERT_EQUAL(get_turf(victim), destination, "Жертва выходит на действительный турф.")
 	TEST_ASSERT_EQUAL(get_turf(item), destination, "Брошенная вещь возвращается вместе с жертвой.")
 
-/datum/unit_test/proc/make_mansus_fixture(visit_type = /datum/heretic_mansus_visit/mansus_fixture, previous_memory, path_id = PATH_ASH, layout_index)
+/datum/unit_test/proc/make_mansus_fixture(visit_type = /datum/heretic_mansus_visit/mansus_fixture, previous_memory, path_id = PATH_ASH, random_layout = FALSE)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/mind/soul = new
 	allocated += soul
@@ -136,8 +176,8 @@
 	victim.mind = soul
 	soul.memory = previous_memory
 	var/datum/heretic_mansus_visit/visit = allocate(visit_type)
-	if(layout_index)
-		visit.layout_index = layout_index
+	if(random_layout)
+		visit.forced_rows = null
 	if(!visit.prepare(victim, run_loc_floor_top_right, run_loc_floor_top_right, path_id) || !visit.start())
 		Fail("Не удалось открыть посещение Мансуса.")
 	return list("victim" = victim, "soul" = soul, "visit" = visit)
@@ -421,47 +461,54 @@
 	TEST_ASSERT(wait_for_var(victim, NAMEOF(victim, do_afters), null), "Ожидающее действие освобождает ссылки после выхода.")
 	TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_top_right, "Завершение действия не возвращает жертву в удалённую комнату.")
 
-/// Декор и провал оставляют связный маршрут ко всем воспоминаниям и вратам.
+/// Врата севернее входа, все осколки и врата доступны пешком, осколки в разных комнатах.
 /datum/unit_test/heretic_mansus_layout/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
-	var/list/reachable = list(visit.entry_turf)
-	var/next_turf = 1
-	while(next_turf <= length(reachable))
-		var/turf/current = reachable[next_turf++]
-		for(var/direction in GLOB.cardinals)
-			var/turf/neighbor = get_step(current, direction)
-			if(!visit.contains(neighbor) || neighbor.density || (neighbor in reachable))
-				continue
-			var/blocked = FALSE
-			for(var/atom/movable/obstacle in neighbor)
-				if(obstacle.density)
-					blocked = TRUE
-					break
-			if(!blocked)
-				reachable += neighbor
+	var/list/reachable = mansus_reachable(visit)
 	for(var/obj/effect/heretic_mansus_memory/memory as anything in visit.memories)
 		TEST_ASSERT(get_turf(memory) in reachable, "Каждое воспоминание доступно пешком из прихожей.")
-	TEST_ASSERT(get_turf(visit.gate) in reachable, "Врата доступны пешком из прихожей.")
-	TEST_ASSERT(visit.gate.y > visit.entry_turf.y, "Врата находятся к северу от прихожей, как сказано в подсказке.")
-	var/list/chambers = list(0, 0, 0)
-	var/previous_chamber = 0
-	var/list/positions = list()
+	TEST_ASSERT(get_turf(visit.offering) in reachable, "Печать доступна пешком из прихожей.")
+	TEST_ASSERT(visit.gate.y > visit.entry_turf.y, "Врата находятся к северу от прихожей.")
+	var/list/cells = list()
 	for(var/obj/effect/heretic_mansus_memory/memory as anything in visit.memories)
-		TEST_ASSERT(memory.chamber != previous_chamber, "Два последовательных задания не ведут в одну комнату.")
-		TEST_ASSERT(!(get_turf(memory) in positions), "Осколки занимают разные клетки.")
-		positions += get_turf(memory)
-		chambers[memory.chamber]++
-		previous_chamber = memory.chamber
-	TEST_ASSERT_EQUAL(chambers[1], 1, "Западная комната участвует один раз.")
-	TEST_ASSERT_EQUAL(chambers[2], 1, "Восточная комната участвует один раз.")
-	TEST_ASSERT_EQUAL(chambers[3], 1, "Северная комната участвует один раз.")
-	var/abyss_tiles = 0
-	for(var/turf/closed/indestructible/heretic_mansus/abyss/abyss in visit.reservation.reserved_turfs)
-		abyss_tiles++
-		TEST_ASSERT(!(abyss in reachable), "В провал нельзя войти.")
-	TEST_ASSERT_EQUAL(abyss_tiles, 9, "Внутренний двор содержит провал 3 на 3.")
-	TEST_ASSERT(length(visit.scenery) > 20, "Комнаты содержат постоянный декор.")
+		TEST_ASSERT(!(memory.chamber in cells), "Осколки лежат в разных комнатах.")
+		cells += memory.chamber
+	TEST_ASSERT_EQUAL(length(visit.walkable_turfs), length(reachable), "В раскладке нет закрытых карманов.")
+	TEST_ASSERT(locate(/obj/effect/heretic_mansus_niche) in mansus_tile(visit, 19, 14), "Ниша из раскладки стоит на месте.")
+
+/// Генератор: связность при обоих положениях затворов, первый осколок у врат, дальние в разных комнатах.
+/datum/unit_test/heretic_mansus_generated_layouts/Run()
+	for(var/attempt in 1 to 40)
+		var/datum/heretic_mansus_plan/plan = new
+		plan.generate(attempt % 2 ? 4 : 0)
+		TEST_ASSERT_EQUAL(length(plan.rows), 33, "Раскладка из 33 строк.")
+		var/datum/heretic_mansus_plan/parsed = new
+		parsed.parse(plan.rows)
+		TEST_ASSERT_EQUAL(parsed.gate_cell, plan.gate_cell, "Разбор находит врата.")
+		TEST_ASSERT_EQUAL(parsed.entry_cell, plan.entry_cell, "Разбор находит вход.")
+		TEST_ASSERT_EQUAL(jointext(parsed.shard_cells, ","), jointext(plan.shard_cells, ","), "Разбор находит осколки.")
+		TEST_ASSERT_EQUAL(length(parsed.doors), length(plan.doors), "Разбор находит все проёмы.")
+		TEST_ASSERT(plan.cell_row(plan.gate_cell) < plan.cell_row(plan.entry_cell), "Врата севернее входа.")
+		TEST_ASSERT(plan.shard_cells[1] in plan.cell_neighbors(plan.gate_cell), "Первый осколок в комнате рядом с вратами.")
+		TEST_ASSERT_EQUAL(plan.doors[plan.door_key(plan.gate_cell, plan.shard_cells[1])], "open", "К первому осколку ведёт постоянный проём.")
+		TEST_ASSERT_EQUAL(length(uniqueList(plan.shard_cells)), 3, "Осколки в разных комнатах.")
+		for(var/cell in plan.shard_cells)
+			TEST_ASSERT(cell != plan.gate_cell && cell != plan.entry_cell, "Осколки не лежат у врат и входа.")
+		for(var/phase in list("a", "b"))
+			var/list/reachable = mansus_rows_reachable(plan.rows, phase)
+			for(var/target in list("G", "D", "E", "1", "2", "3"))
+				TEST_ASSERT(reachable[target], "Раскладка [attempt], затвор [phase]: цель [target] доступна.")
+
+/// Каждая заготовка во всех поворотах держит проёмы открытыми и пол связным; ледяные разрешимы.
+/datum/unit_test/heretic_mansus_templates/Run()
+	var/datum/heretic_mansus_plan/plan = new
+	for(var/list/template as anything in GLOB.heretic_mansus_templates + GLOB.heretic_mansus_ice_templates)
+		for(var/list/variant as anything in mansus_variants(plan, template))
+			TEST_ASSERT(mansus_template_valid(variant), "Заготовка [jointext(variant, "|")] связна и открыта у проёмов.")
+	for(var/list/template as anything in GLOB.heretic_mansus_ice_templates)
+		for(var/list/variant as anything in mansus_variants(plan, template))
+			TEST_ASSERT(mansus_ice_solvable(variant), "Лёд [jointext(variant, "|")] проходим из любого проёма.")
 
 /// Указатели проводят связанную жертву по полу через все этапы и завершают испытание на печати.
 /datum/unit_test/heretic_mansus_guided_walk/Run()
@@ -474,9 +521,9 @@
 	var/obj/effect/heretic_mansus_offering/offering = visit.offering
 	var/count = 0
 	for(var/obj/effect/heretic_mansus_memory/memory as anything in memories)
-		TEST_ASSERT(walk_mansus_route(visit, get_turf(memory)), "Стрелки ведут к осколку по проходимым клеткам.")
+		TEST_ASSERT(walk_mansus_route(visit, get_turf(memory)), "Маршрут ведёт к осколку по проходимым клеткам.")
 		TEST_ASSERT(wait_for_var(memory, NAMEOF(memory, recalled), TRUE), "Связанная жертва собирает осколок без клика рукой.")
-		TEST_ASSERT(walk_mansus_route(visit, get_turf(offering)), "После подбора стрелки ведут к открытой площадке сдачи.")
+		TEST_ASSERT(walk_mansus_route(visit, get_turf(offering)), "После подбора маршрут ведёт к печати.")
 		count++
 		if(count < length(memories))
 			TEST_ASSERT(wait_for_var(visit, NAMEOF(visit, memories_found), count), "Наступание на печать закрепляет осколок.")
@@ -495,11 +542,11 @@
 			return FALSE
 	return FALSE
 
-/// Во всех оформлениях осколки и площадка сдачи лежат вне прямоугольника спрайта врат.
+/// Во всех оформлениях цели не прячутся под вратами, а граница защиты совпадает с механикой.
 /datum/unit_test/heretic_mansus_visible_objectives/Run()
 	var/icon/gate_icon = icon('modular_bluemoon/icons/obj/heretic_mansus_gates.dmi', "ash_gate_closed")
 	for(var/path_id in GLOB.heretic_paths)
-		var/list/fixture = make_mansus_fixture(path_id = path_id)
+		var/list/fixture = make_mansus_fixture(path_id = path_id, random_layout = TRUE)
 		var/datum/heretic_mansus_visit/visit = fixture["visit"]
 		var/gate_left = visit.gate.x * world.icon_size + visit.gate.pixel_x
 		var/gate_bottom = visit.gate.y * world.icon_size + visit.gate.pixel_y
@@ -508,8 +555,6 @@
 			var/target_left = target.x * world.icon_size
 			var/target_bottom = target.y * world.icon_size
 			TEST_ASSERT(target_left + world.icon_size <= gate_left || target_left >= gate_left + gate_icon.Width() || target_bottom + world.icon_size <= gate_bottom || target_bottom >= gate_bottom + gate_icon.Height(), "Врата не скрывают цель в оформлении [path_id].")
-		var/obj/effect/heretic_mansus_memory/first = visit.memories[1]
-		TEST_ASSERT_EQUAL(first.chamber, 3, "Вводный этап знакомит с северными вратами.")
 		for(var/turf/floor as anything in visit.walkable_turfs)
 			TEST_ASSERT_EQUAL(!!(locate(/obj/effect/heretic_mansus_sanctuary) in floor), !!visit.is_safe(floor), "Видимая граница защиты совпадает с механикой.")
 		visit.finish()
@@ -570,7 +615,7 @@
 	visit.process(1)
 	TEST_ASSERT(QDELETED(hazard), "Истёкший разлом удаляется.")
 
-/// Северные врата дают безопасное место для доставки и не покрываются разломами.
+/// Врата дают безопасное место для доставки и не покрываются разломами.
 /datum/unit_test/heretic_mansus_gate_safety/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
@@ -580,7 +625,7 @@
 	TEST_ASSERT_EQUAL(length(visit.hazards), 0, "Разломы не закрывают врата и соседние клетки.")
 	TEST_ASSERT(!visit.suffer_hazard(victim), "У врат жертва защищена.")
 
-/// Тень обходит стены и провал, а завершение посещения удаляет все угрозы.
+/// Тень обходит стены, доходит до жертвы по шагам, а выход удаляет все угрозы.
 /datum/unit_test/heretic_mansus_hunter_route/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
@@ -594,8 +639,8 @@
 		if(get_turf(hunter) == get_turf(victim))
 			break
 		var/turf/previous = get_turf(hunter)
-		visit.move_hunter(hunter)
-		TEST_ASSERT(get_turf(hunter) in visit.walkable_turfs, "Тень остаётся в доступных галереях.")
+		visit.move_hunter(hunter, get_turf(victim))
+		TEST_ASSERT(visit.walkable_turfs[get_turf(hunter)], "Тень остаётся на проходимых клетках.")
 		TEST_ASSERT_EQUAL(get_dist(previous, hunter), 1, "Тень продвигается на одну клетку без телепортации.")
 	TEST_ASSERT_EQUAL(get_turf(hunter), get_turf(victim), "Тень находит путь до жертвы.")
 	visit.spawn_hazards()
@@ -641,6 +686,7 @@
 	visit.hunters += hunter
 	visit.scenery += hunter
 	hunter.ready_at = world.time
+	hunter.last_seen_turf = get_turf(victim)
 	visit.advance_hunter(hunter)
 	TEST_ASSERT_EQUAL(hunter.moves, 1, "Ускорение не выполняет два шага в одном вызове.")
 	visit.process(1)
@@ -656,17 +702,23 @@
 	visit.finish()
 	TEST_ASSERT_NULL(hunter.step_timer, "Выход отменяет отдельный таймер преследования.")
 
-/// Каждый зарегистрированный путь получает полный набор доступных спрайтов и звуков Мансуса.
+/// Каждый путь получает полный набор спрайтов и звуков Мансуса и собственное правило.
 /datum/unit_test/heretic_mansus_theme_resources/Run()
 	var/list/detail_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus.dmi')
 	var/list/gate_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_gates.dmi')
 	var/list/theme_ids = list()
+	var/list/rule_types = list()
 	for(var/path_id in GLOB.heretic_paths)
 		var/list/theme = GLOB.heretic_mansus_themes[path_id]
 		TEST_ASSERT_NOTNULL(theme, "У пути [path_id] есть оформление Мансуса.")
 		var/theme_id = theme["id"]
 		TEST_ASSERT(!(theme_id in theme_ids), "Пути используют собственные наборы: [path_id].")
 		theme_ids += theme_id
+		TEST_ASSERT(ispath(theme["rule"], /datum/heretic_mansus_rule) && theme["rule"] != /datum/heretic_mansus_rule, "У пути [path_id] своё правило Дома.")
+		TEST_ASSERT(!(theme["rule"] in rule_types), "Правило пути [path_id] не повторяется.")
+		rule_types += theme["rule"]
+		var/datum/heretic_mansus_rule/rule_type = theme["rule"]
+		TEST_ASSERT(length(initial(rule_type.hint)), "Правило пути [path_id] объяснено жертве.")
 		for(var/role in list("floor0", "floor1", "floor2", "path", "decor", "light", "memory", "hunter", "warning", "danger"))
 			TEST_ASSERT("[theme_id]_[role]" in detail_states, "Состояние [theme_id]_[role] доступно клиенту.")
 		for(var/mask in 0 to 15)
@@ -676,6 +728,12 @@
 			TEST_ASSERT("[theme_id]_[state]" in gate_states, "Врата [theme_id]/[state] существуют.")
 		for(var/event in list("ambience", "pickup", "deposit", "warning", "hit", "escape", "step"))
 			TEST_ASSERT(isfile(theme[event]), "Звук [theme_id]/[event] включён в ресурсы.")
+	var/list/rule_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_rules.dmi')
+	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step"))
+		TEST_ASSERT(state in rule_states, "Спрайт правила [state] существует.")
+	var/list/guidance_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi')
+	for(var/state in list("trail", "sanctuary", "niche", "name"))
+		TEST_ASSERT(state in guidance_states, "Указатель [state] существует.")
 
 /// Одновременные комнаты сохраняют оформление своего ритуала при общей области.
 /datum/unit_test/heretic_mansus_theme_isolation/Run()
@@ -691,6 +749,7 @@
 	for(var/turf/tile as anything in glass_visit.reservation.reserved_turfs)
 		TEST_ASSERT(findtext(tile.icon_state, "glass_") == 1, "Пол, стены и провал принадлежат выбранному пути.")
 	var/mob/living/carbon/human/victim = glass_fixture["victim"]
+	victim.forceMove(mansus_tile(glass_visit, 4, 13))
 	glass_visit.spawn_hazards()
 	var/obj/effect/heretic_mansus_hazard/hazard = locate() in get_turf(victim)
 	TEST_ASSERT_EQUAL(hazard.icon_state, "glass_warning", "Разлом предупреждает в стиле Стекла.")
@@ -704,82 +763,44 @@
 	glass_visit.finish()
 	TEST_ASSERT_EQUAL(ash_visit.gate.icon_state, "ash_gate_closed", "Выход второй жертвы не меняет оставшуюся комнату.")
 
-/// Клетка раскладки по столбцу и строке; вход стоит в столбце 11 строки 19.
-/datum/unit_test/proc/mansus_tile(datum/heretic_mansus_visit/visit, column, row)
-	return locate(visit.entry_turf.x + column - 11, visit.entry_turf.y + 19 - row, visit.entry_turf.z)
-
-/datum/unit_test/proc/mansus_reachable(datum/heretic_mansus_visit/visit)
-	var/list/reachable = list(visit.entry_turf)
-	var/next_turf = 1
-	while(next_turf <= length(reachable))
-		var/turf/current = reachable[next_turf++]
-		for(var/direction in GLOB.cardinals)
-			var/turf/neighbor = get_step(current, direction)
-			if((neighbor in visit.walkable_turfs) && !(neighbor in reachable))
-				reachable += neighbor
-	return reachable
-
-/// Каждая раскладка при обоих положениях затворов оставляет путь ко всем целям.
-/datum/unit_test/heretic_mansus_layout_variants/Run()
-	TEST_ASSERT(length(GLOB.heretic_mansus_layouts) >= 3, "Дом памяти выбирает из нескольких раскладок.")
-	for(var/layout_index in 1 to length(GLOB.heretic_mansus_layouts))
-		var/list/fixture = make_mansus_fixture(layout_index = layout_index)
-		var/datum/heretic_mansus_visit/visit = fixture["visit"]
-		TEST_ASSERT(length(visit.shutters_a) && length(visit.shutters_b), "В раскладке [layout_index] есть обе группы затворов.")
-		for(var/turf/shutter as anything in visit.shutters_a + visit.shutters_b)
-			TEST_ASSERT(!visit.is_safe(shutter), "Затвор раскладки [layout_index] не стоит в защите печати.")
-			TEST_ASSERT(!(locate(/obj/effect/heretic_mansus_memory) in shutter), "Осколок раскладки [layout_index] не лежит на затворе.")
-		for(var/phase in 1 to 2)
-			var/list/reachable = mansus_reachable(visit)
-			TEST_ASSERT_EQUAL(length(reachable), length(visit.walkable_turfs), "Раскладка [layout_index], положение [phase]: закрытых карманов нет.")
-			for(var/obj/effect/heretic_mansus_memory/memory as anything in visit.memories)
-				TEST_ASSERT(get_turf(memory) in reachable, "Раскладка [layout_index], положение [phase]: осколок доступен.")
-			TEST_ASSERT(get_turf(visit.offering) in reachable, "Раскладка [layout_index], положение [phase]: печать доступна.")
-			visit.toggle_shutters()
-		visit.finish()
-
 /// Доставка меняет затворы местами; занятая клетка не закрывается.
 /datum/unit_test/heretic_mansus_shutters_toggle/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
-	for(var/turf/shutter as anything in visit.shutters_a)
-		TEST_ASSERT(!shutter.density && (shutter in visit.walkable_turfs), "Группа a открыта при входе.")
-	for(var/turf/shutter as anything in visit.shutters_b)
-		TEST_ASSERT(shutter.density && !(shutter in visit.walkable_turfs), "Группа b закрыта при входе.")
+	var/turf/shutter_a = mansus_tile(visit, 29, 17)
+	var/turf/shutter_b = mansus_tile(visit, 29, 25)
+	TEST_ASSERT(!shutter_a.density && visit.walkable_turfs[shutter_a], "Затвор a открыт при входе.")
+	TEST_ASSERT(shutter_b.density && !visit.walkable_turfs[shutter_b], "Затвор b закрыт при входе.")
 	var/obj/effect/heretic_mansus_memory/memory = visit.memories[1]
 	victim.forceMove(get_turf(memory))
 	TEST_ASSERT(wait_for_var(memory, NAMEOF(memory, recalled), TRUE), "Первый осколок подобран.")
 	victim.forceMove(get_turf(visit.offering))
 	TEST_ASSERT(wait_for_var(visit, NAMEOF(visit, memories_found), 1), "Первый осколок закреплён.")
-	for(var/turf/shutter as anything in visit.shutters_a)
-		TEST_ASSERT(shutter.density && !(shutter in visit.walkable_turfs), "Доставка закрывает группу a.")
-		TEST_ASSERT(findtext(shutter.icon_state, "ash_wall") == 1, "Закрытый затвор выглядит стеной пути.")
-	for(var/turf/shutter as anything in visit.shutters_b)
-		TEST_ASSERT(!shutter.density && (shutter in visit.walkable_turfs), "Доставка открывает группу b.")
+	TEST_ASSERT(shutter_a.density && !visit.walkable_turfs[shutter_a], "Доставка закрывает затвор a.")
+	TEST_ASSERT(findtext(shutter_a.icon_state, "ash_wall") == 1, "Закрытый затвор выглядит стеной пути.")
+	TEST_ASSERT(!shutter_b.density && visit.walkable_turfs[shutter_b], "Доставка открывает затвор b.")
 	for(var/turf/step as anything in visit.route_steps)
-		TEST_ASSERT(!step.density, "Стрелки не ведут через закрытый затвор.")
-	var/turf/occupied = visit.shutters_b[1]
-	victim.forceMove(occupied)
+		TEST_ASSERT(!step.density, "Маршрут не ведёт через закрытый затвор.")
+	victim.forceMove(shutter_b)
 	visit.toggle_shutters()
-	TEST_ASSERT(!occupied.density, "Затвор не смыкается на жертве.")
-	var/turf/neighbor = visit.shutters_b[2]
-	TEST_ASSERT(neighbor.density, "Свободные клетки той же группы закрываются.")
+	TEST_ASSERT(!shutter_b.density, "Затвор не смыкается на жертве.")
+	TEST_ASSERT(!shutter_a.density, "Свободный затвор другой группы открывается.")
 
 /// Второй залп трещин ложится линией по ходу жертвы.
 /datum/unit_test/heretic_mansus_hazard_line/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
-	victim.forceMove(mansus_tile(visit, 11, 16))
+	victim.forceMove(mansus_tile(visit, 4, 13))
 	victim.setDir(EAST)
 	visit.spawn_hazards()
 	TEST_ASSERT_EQUAL(length(visit.hazards), 3, "Первый залп накрывает жертву и две соседние клетки.")
 	QDEL_LIST(visit.hazards)
 	visit.spawn_hazards()
 	TEST_ASSERT_EQUAL(length(visit.hazards), 5, "Второй залп кладёт пять трещин.")
-	for(var/column in 11 to 15)
-		TEST_ASSERT(locate(/obj/effect/heretic_mansus_hazard) in mansus_tile(visit, column, 16), "Линия идёт вперёд по взгляду жертвы, столбец [column].")
+	for(var/column in 4 to 8)
+		TEST_ASSERT(locate(/obj/effect/heretic_mansus_hazard) in mansus_tile(visit, column, 13), "Линия идёт вперёд по взгляду жертвы, столбец [column].")
 
 /// На последнем осколке выходит вторая, медленная тень; первая ускоряется.
 /datum/unit_test/heretic_mansus_second_hunter/Run()
@@ -798,14 +819,14 @@
 	var/obj/effect/heretic_mansus_hunter/first = visit.hunters[1]
 	var/obj/effect/heretic_mansus_hunter/second = visit.hunters[2]
 	TEST_ASSERT(get_dist(first, second) >= 6, "Тени выходят с разных сторон.")
-	first.forceMove(mansus_tile(visit, 5, 16))
 	TEST_ASSERT_EQUAL(visit.hunter_step_delay(first), 0.5 SECONDS, "Первая тень ускоряется на последнем осколке.")
 	TEST_ASSERT_EQUAL(visit.hunter_step_delay(second), 1 SECONDS, "Вторая тень остаётся медленной.")
 	TEST_ASSERT_NOTNULL(second.step_timer, "Вторая тень шагает по собственному таймеру.")
+	TEST_ASSERT_EQUAL(visit.name_charges, 2, "Каждая доставка даёт заряд «Имени».")
 	visit.finish()
 	TEST_ASSERT(QDELETED(first) && QDELETED(second), "Выход удаляет обе тени.")
 
-/// Пока жертва несёт осколок, след короче.
+/// Стрелок три, с осколком в руках две.
 /datum/unit_test/heretic_mansus_trail_shortens/Run()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
@@ -813,7 +834,7 @@
 	var/lit = 0
 	for(var/obj/effect/heretic_mansus_trail/marker as anything in visit.trail)
 		lit += marker.alpha > 0
-	TEST_ASSERT_EQUAL(lit, 6, "К осколку ведут шесть стрелок.")
+	TEST_ASSERT_EQUAL(lit, 3, "К осколку ведут три стрелки.")
 	var/obj/effect/heretic_mansus_memory/memory = visit.memories[1]
 	victim.forceMove(get_turf(memory))
 	TEST_ASSERT(wait_for_var(memory, NAMEOF(memory, recalled), TRUE), "Осколок подобран.")
@@ -821,7 +842,10 @@
 	lit = 0
 	for(var/obj/effect/heretic_mansus_trail/marker as anything in visit.trail)
 		lit += marker.alpha > 0
-	TEST_ASSERT_EQUAL(lit, 3, "С осколком в руках видно три стрелки.")
+	TEST_ASSERT_EQUAL(lit, 2, "С осколком в руках видно две стрелки.")
+	var/atom/movable/screen/alert/heretic_mansus/indicator = victim.alerts["heretic_mansus"]
+	visit.update_guidance()
+	TEST_ASSERT(findtext(indicator.name, "на север"), "Значок называет сторону цели: [indicator.name].")
 
 /// Таймаут оставляет эффект по минуте за недоставленный осколок; другие выходы его не дают.
 /datum/unit_test/heretic_mansus_timeout_penalty/Run()
@@ -847,101 +871,500 @@
 	visit.finish(exit_reason = "completed")
 	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_mansus_unreturned), "Пройденное испытание не наказывает жертву.")
 
-/// Пять особенностей Дома поделены между путями поровну.
-/datum/unit_test/heretic_mansus_twist_assignment/Run()
-	var/list/uses = list("slick" = 0, "unseen" = 0, "lingering" = 0, "shifting" = 0, "relentless" = 0)
-	for(var/path_id in GLOB.heretic_paths)
-		var/list/fixture = make_mansus_fixture(path_id = path_id)
-		var/datum/heretic_mansus_visit/visit = fixture["visit"]
-		TEST_ASSERT(visit.twist in uses, "У пути [path_id] известная особенность Дома.")
-		uses[visit.twist]++
-		visit.finish()
-	for(var/twist in uses)
-		TEST_ASSERT_EQUAL(uses[twist], 3, "Особенность [twist] досталась трём путям.")
-
-/// Скользкий пол проносит на клетку дальше, галерея держит шаг.
-/datum/unit_test/heretic_mansus_twist_slick/Run()
-	var/list/fixture = make_mansus_fixture(path_id = PATH_VOID)
+/// Тень видит по прямой; колонна и ниша скрывают жертву, осколок в руках выдаёт её.
+/datum/unit_test/heretic_mansus_hunter_sight/Run()
+	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
-	victim.forceMove(mansus_tile(visit, 8, 18))
-	TEST_ASSERT_EQUAL(get_turf(victim), mansus_tile(visit, 8, 18), "Принудительное перемещение не вызывает скольжения.")
-	victim.Move(mansus_tile(visit, 9, 18), EAST)
-	TEST_ASSERT_EQUAL(get_turf(victim), mansus_tile(visit, 10, 18), "Шаг по полу проносит ещё на клетку.")
-	victim.forceMove(mansus_tile(visit, 7, 17))
-	victim.Move(mansus_tile(visit, 8, 17), EAST)
-	TEST_ASSERT_EQUAL(get_turf(victim), mansus_tile(visit, 8, 17), "На галерее скольжения нет.")
-	visit.finish()
-	fixture = make_mansus_fixture(path_id = PATH_BLADE)
-	victim = fixture["victim"]
-	visit = fixture["visit"]
-	victim.forceMove(mansus_tile(visit, 8, 18))
-	victim.Move(mansus_tile(visit, 9, 18), EAST)
-	TEST_ASSERT_EQUAL(get_turf(victim), mansus_tile(visit, 9, 18), "Без этой особенности пол не скользит.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	victim.forceMove(mansus_tile(visit, 21, 10))
+	hunter.forceMove(mansus_tile(visit, 23, 10))
+	TEST_ASSERT(visit.hunter_sees(hunter), "Тень видит жертву на открытом месте.")
+	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), get_turf(victim), "Увидев жертву, тень идёт к ней.")
+	var/turf/last_seen = get_turf(victim)
+	hunter.forceMove(mansus_tile(visit, 21, 14))
+	TEST_ASSERT(!visit.hunter_sees(hunter), "Колонна закрывает обзор.")
+	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), last_seen, "Потеряв жертву, тень идёт туда, где видела её в последний раз.")
+	hunter.forceMove(last_seen)
+	victim.forceMove(mansus_tile(visit, 30, 13))
+	var/turf/search = visit.hunter_goal(hunter)
+	TEST_ASSERT(search && search != last_seen && visit.walkable_turfs[search], "Дойдя до последней точки, тень обходит комнаты.")
+	victim.forceMove(mansus_tile(visit, 19, 14))
+	hunter.forceMove(mansus_tile(visit, 23, 14))
+	TEST_ASSERT(!visit.hunter_sees(hunter), "Ниша прячет жертву с пустыми руками.")
+	hunter.forceMove(mansus_tile(visit, 20, 14))
+	TEST_ASSERT(visit.hunter_sees(hunter), "Вплотную ниша не спасает.")
+	hunter.forceMove(mansus_tile(visit, 23, 14))
+	visit.carried_memory = visit.memories[1]
+	TEST_ASSERT(visit.hunter_sees(hunter), "С осколком в руках ниша не прячет.")
+	visit.carried_memory = null
 
-/// Невидимая тень проявляется только вблизи.
-/datum/unit_test/heretic_mansus_twist_unseen/Run()
+/// Тень на вспыхнувшей трещине рассыпается и возвращается нескоро; «Имя» отталкивает её за заряд.
+/datum/unit_test/heretic_mansus_counterplay/Run()
+	var/list/fixture = make_mansus_fixture()
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	victim.forceMove(mansus_tile(visit, 4, 13))
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	var/turf/trap = mansus_tile(visit, 6, 13)
+	hunter.forceMove(trap)
+	var/obj/effect/heretic_mansus_hazard/hazard = visit.place_hazard(trap)
+	hazard.armed_at = world.time
+	visit.danger_enabled = TRUE
+	visit.next_hazard_at = visit.forced_exit
+	visit.process(1)
+	TEST_ASSERT(get_turf(hunter) != trap, "Тень рассыпается на вспышке.")
+	TEST_ASSERT(hunter.ready_at >= world.time + 7 SECONDS, "Рассыпавшаяся тень возвращается не сразу.")
+	TEST_ASSERT_EQUAL(visit.hits_taken, 0, "Вспышка под тенью не задевает жертву.")
+	TEST_ASSERT(!visit.invoke_name(victim), "Без заряда «Имя» не срабатывает.")
+	visit.name_charges = 1
+	hunter.forceMove(mansus_tile(visit, 7, 13))
+	hunter.ready_at = world.time
+	TEST_ASSERT(visit.invoke_name(victim), "Заряд «Имени» тратится.")
+	TEST_ASSERT(get_dist(hunter, victim) >= 6, "«Имя» отбрасывает тень далеко.")
+	TEST_ASSERT_EQUAL(visit.name_charges, 0, "Заряд израсходован.")
+	TEST_ASSERT(visit.name_action?.owner == victim, "Кнопка «Имени» выдана жертве.")
+	visit.finish()
+	TEST_ASSERT(!(locate(/datum/action/innate/heretic_mansus_name) in victim.actions), "Кнопка снимается при выходе.")
+
+/// Пепел: за жертвой тлеет след из пяти углей, тень их не переходит.
+/datum/unit_test/heretic_mansus_rule_ash/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_ASH)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	visit.danger_enabled = TRUE
+	visit.rule.on_danger()
+	victim.forceMove(mansus_tile(visit, 2, 13))
+	for(var/column in 3 to 8)
+		victim.Move(mansus_tile(visit, column, 13), EAST)
+	var/obj/effect/heretic_mansus_hazard/ember/ember = locate() in mansus_tile(visit, 7, 13)
+	TEST_ASSERT_NOTNULL(ember, "Шаг оставляет уголь.")
+	TEST_ASSERT(ember.armed_at >= world.time + 2 SECONDS, "Уголь вспыхивает не сразу.")
+	TEST_ASSERT(!(locate(/obj/effect/heretic_mansus_hazard/ember) in mansus_tile(visit, 2, 13)), "След не длиннее пяти клеток.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	TEST_ASSERT(!visit.rule.hunter_can_enter(hunter, mansus_tile(visit, 7, 13)), "Тень не переходит угли.")
+
+/// Ржавчина: плиты не рвут связность и проваливаются на время.
+/datum/unit_test/heretic_mansus_rule_rust/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_RUST)
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/rust/rule = visit.rule
+	TEST_ASSERT(length(rule.plates) > 10, "В Доме есть ржавые плиты.")
+	var/list/keep = list(visit.entry_turf, get_turf(visit.offering))
+	for(var/obj/effect/heretic_mansus_memory/memory as anything in visit.memories)
+		keep += get_turf(memory)
+	TEST_ASSERT(rule.connected_without(rule.plates, keep), "Провал всех плит сразу не отрезает цели.")
+	var/turf/plate = rule.plates[1]
+	rule.collapse(plate)
+	TEST_ASSERT(!visit.walkable_turfs[plate], "Провалившаяся плита непроходима.")
+	rule.restore(plate)
+	TEST_ASSERT(visit.walkable_turfs[plate], "Дыра затягивается.")
+
+/// Плоть: проходы сжимаются вместе, занятый проход не смыкается.
+/datum/unit_test/heretic_mansus_rule_flesh/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_FLESH)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/flesh/rule = visit.rule
+	TEST_ASSERT(length(rule.sphincters) >= 5, "Внутренние проходы дышат.")
+	TEST_ASSERT(!(mansus_tile(visit, 13, 25) in rule.sphincters), "Проход у входа не сжимается.")
+	var/turf/occupied = mansus_tile(visit, 9, 13)
+	victim.forceMove(occupied)
+	rule.set_closed(TRUE)
+	TEST_ASSERT(!occupied.density, "Проход не смыкается на жертве.")
+	var/turf/closed = mansus_tile(visit, 25, 13)
+	TEST_ASSERT(closed.density && !visit.walkable_turfs[closed], "Свободный проход сжат.")
+	rule.set_closed(FALSE)
+	TEST_ASSERT(!closed.density && visit.walkable_turfs[closed], "Проход разжимается.")
+
+/// Пустота: на льду жертва скользит до преграды.
+/datum/unit_test/heretic_mansus_rule_void/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_VOID, random_layout = TRUE)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/void/rule = visit.rule
+	TEST_ASSERT(length(visit.ice_turfs) > 60, "В Доме есть ледяные комнаты.")
+	var/turf/start
+	var/direction
+	for(var/turf/ice as anything in visit.ice_turfs)
+		for(var/candidate in GLOB.cardinals)
+			var/turf/next = get_step(ice, candidate)
+			if(visit.ice_turfs[next] && visit.walkable_turfs[next] && visit.walkable_turfs[get_step(next, candidate)] && !(locate(/obj/effect/heretic_mansus_memory) in next))
+				start = ice
+				direction = candidate
+				break
+		if(start)
+			break
+	TEST_ASSERT_NOTNULL(start, "На льду есть разбег.")
+	var/turf/expected = get_step(start, direction)
+	while(visit.ice_turfs[expected] && visit.walkable_turfs[get_step(expected, direction)])
+		var/obj/effect/heretic_mansus_memory/memory = locate() in expected
+		if(memory?.awake)
+			break
+		expected = get_step(expected, direction)
+	victim.forceMove(start)
+	victim.Move(get_step(start, direction), direction)
+	TEST_ASSERT(wait_for_var(rule, NAMEOF(rule, sliding), FALSE), "Скольжение заканчивается.")
+	TEST_ASSERT_EQUAL(get_turf(victim), expected, "Жертва скользит до первой преграды.")
+
+/// Клинок: полоса предупреждает, удар сбивает жертву, тень лезвий не боится.
+/datum/unit_test/heretic_mansus_rule_blade/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_BLADE)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/blade/rule = visit.rule
+	TEST_ASSERT_EQUAL(length(rule.traps), 5, "Лезвия стоят в пяти проходах.")
+	var/turf/trap = rule.traps[1]
+	rule.warn(trap)
+	var/obj/effect/heretic_mansus_hazard/blade/strip = locate() in trap
+	TEST_ASSERT_NOTNULL(strip, "Сначала появляется полоса.")
+	TEST_ASSERT(!strip.dispels_hunters, "Лезвия не рассеивают тень.")
+	victim.forceMove(trap)
+	rule.strike(strip)
+	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Удар клинков сбивает жертву в проходе.")
+
+/// Луна: у осколка два отражения без тени, отражение выдаёт жертву.
+/datum/unit_test/heretic_mansus_rule_moon/Run()
 	var/list/fixture = make_mansus_fixture(path_id = PATH_MOON)
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
-	victim.forceMove(mansus_tile(visit, 5, 17))
-	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
-	hunter.forceMove(mansus_tile(visit, 17, 17))
-	hunter.ready_at = world.time
+	var/datum/heretic_mansus_rule/moon/rule = visit.rule
 	visit.danger_enabled = TRUE
-	visit.advance_hunter(hunter)
-	TEST_ASSERT_EQUAL(hunter.alpha, 0, "Вдали тень не видна.")
-	hunter.forceMove(mansus_tile(visit, 9, 17))
-	visit.advance_hunter(hunter)
-	TEST_ASSERT_EQUAL(hunter.alpha, 190, "В трёх клетках тень проявляется.")
+	mansus_deliver_first(visit)
+	var/obj/effect/heretic_mansus_memory/memory = visit.memories[2]
+	TEST_ASSERT_EQUAL(length(rule.reflections), 2, "У осколка два отражения.")
+	for(var/obj/effect/heretic_mansus_device/reflection/reflection as anything in rule.reflections)
+		TEST_ASSERT_EQUAL(visit.cell_of(reflection), memory.chamber, "Отражение лежит в комнате осколка.")
+	TEST_ASSERT(memory.get_filter("moon_shadow"), "Настоящий осколок отбрасывает тень.")
+	TEST_ASSERT(visit.route_target() != get_turf(memory), "Маршрут не выдаёт настоящий осколок.")
+	var/obj/effect/heretic_mansus_device/reflection/fake = rule.reflections[1]
+	var/turf/fake_turf = get_turf(fake)
+	victim.forceMove(fake_turf)
+	TEST_ASSERT(wait_for_qdeleted(fake), "Отражение рассыпается.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.hunters[1]
+	TEST_ASSERT_EQUAL(hunter.last_seen_turf, fake_turf, "Отражение выдаёт жертву тени.")
 
-/// Затяжные трещины живут вдвое дольше обычных.
-/datum/unit_test/heretic_mansus_twist_lingering/Run()
-	var/list/lifetimes = list(PATH_ASH = 6 SECONDS, PATH_BLADE = 3 SECONDS)
-	for(var/path_id in lifetimes)
-		var/list/fixture = make_mansus_fixture(path_id = path_id)
-		var/mob/living/carbon/human/victim = fixture["victim"]
-		var/datum/heretic_mansus_visit/visit = fixture["visit"]
-		visit.spawn_hazards()
-		var/obj/effect/heretic_mansus_hazard/hazard = locate() in get_turf(victim)
-		var/lifetime = hazard.expires_at - hazard.armed_at
-		TEST_ASSERT(abs(lifetime - lifetimes[path_id]) <= world.tick_lag, "Срок трещины пути [path_id]: [lifetime].")
-		visit.finish()
+/// Космос: врата парные и переносят к паре, маршрут их учитывает.
+/datum/unit_test/heretic_mansus_rule_cosmic/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_COSMIC)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/cosmic/rule = visit.rule
+	TEST_ASSERT_EQUAL(length(rule.portals), 6, "Три пары звёздных врат.")
+	var/obj/effect/heretic_mansus_portal/portal = rule.portals[1]
+	TEST_ASSERT(visit.cell_of(portal) != visit.cell_of(portal.partner), "Пара стоит в другой комнате.")
+	TEST_ASSERT(get_turf(portal.partner) in rule.route_links(get_turf(portal)), "Маршрут знает о вратах.")
+	victim.forceMove(get_turf(portal))
+	TEST_ASSERT(wait_for_var(victim, NAMEOF(victim, loc), get_turf(portal.partner)), "Шаг в врата переносит к паре.")
+	TEST_ASSERT_EQUAL(get_turf(victim), get_turf(portal.partner), "Жертва не прыгает обратно сразу.")
 
-/// Подвижный Дом переставляет затворы по таймеру, остальные только при доставке.
-/datum/unit_test/heretic_mansus_twist_shifting/Run()
-	for(var/path_id in list(PATH_LOCK, PATH_ASH))
-		var/list/fixture = make_mansus_fixture(path_id = path_id)
-		var/mob/living/carbon/human/victim = fixture["victim"]
-		var/datum/heretic_mansus_visit/visit = fixture["visit"]
-		visit.danger_enabled = TRUE
-		var/obj/effect/heretic_mansus_memory/memory = visit.memories[1]
-		victim.forceMove(get_turf(memory))
-		TEST_ASSERT(wait_for_var(memory, NAMEOF(memory, recalled), TRUE), "Первый осколок подобран.")
-		victim.forceMove(get_turf(visit.offering))
-		TEST_ASSERT(wait_for_var(visit, NAMEOF(visit, memories_found), 1), "Первый осколок закреплён.")
-		TEST_ASSERT_EQUAL(!!visit.shift_timer, path_id == PATH_LOCK, "Таймер затворов пути [path_id].")
-		if(path_id == PATH_LOCK)
-			var/phase = visit.shutter_phase
-			visit.shift_shutters()
-			TEST_ASSERT_NOTEQUAL(visit.shutter_phase, phase, "Срабатывание таймера переставляет затворы.")
-			TEST_ASSERT_NOTNULL(visit.shift_timer, "Таймер затворов взводится заново.")
-		visit.finish()
-		TEST_ASSERT_NULL(visit.shift_timer, "Выход снимает таймер затворов.")
+/// Замок: комната второго осколка заперта до ключа.
+/datum/unit_test/heretic_mansus_rule_lock/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_LOCK)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/lock/rule = visit.rule
+	TEST_ASSERT_NULL(rule.locked_cell, "Вводный осколок не заперт.")
+	mansus_deliver_first(visit)
+	var/obj/effect/heretic_mansus_memory/memory = visit.memories[2]
+	TEST_ASSERT_EQUAL(rule.locked_cell, memory.chamber, "Комната второго осколка заперта.")
+	TEST_ASSERT_EQUAL(length(rule.doors), 2, "Заперты все проёмы комнаты, включая затвор.")
+	TEST_ASSERT(visit.cell_of(rule.key) != memory.chamber, "Ключ лежит в другой комнате.")
+	TEST_ASSERT_EQUAL(visit.route_target(), get_turf(rule.key), "Маршрут ведёт к ключу.")
+	TEST_ASSERT(!rule.try_unlock(victim), "Без ключа дверь не открыть.")
+	var/obj/effect/heretic_mansus_device/key/key = rule.key
+	victim.forceMove(get_turf(key))
+	TEST_ASSERT(wait_for_var(rule, NAMEOF(rule, has_key), TRUE), "Ключ подбирается наступанием.")
+	TEST_ASSERT(rule.try_unlock(victim), "С ключом дверь открывается.")
+	TEST_ASSERT_EQUAL(length(rule.doors), 0, "Двери убраны.")
+	TEST_ASSERT(memory.chamber in rule.opened_cells, "Открытая комната больше не запирается.")
 
-/// Неотступная тень ускоряется на одной прямой с жертвой и возвращается ближе.
-/datum/unit_test/heretic_mansus_twist_relentless/Run()
-	for(var/path_id in list(PATH_BLADE, PATH_ASH))
-		var/list/fixture = make_mansus_fixture(path_id = path_id)
-		var/mob/living/carbon/human/victim = fixture["victim"]
-		var/datum/heretic_mansus_visit/visit = fixture["visit"]
-		victim.forceMove(mansus_tile(visit, 5, 17))
-		var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
-		hunter.forceMove(mansus_tile(visit, 11, 16))
-		var/apart = visit.hunter_step_delay(hunter)
-		hunter.forceMove(mansus_tile(visit, 11, 17))
-		var/aligned = visit.hunter_step_delay(hunter)
-		TEST_ASSERT_EQUAL(apart, 1 SECONDS, "Вне прямой тень пути [path_id] идёт обычным шагом.")
-		TEST_ASSERT_EQUAL(aligned < apart, path_id == PATH_BLADE, "Ускорение на прямой у пути [path_id].")
-		TEST_ASSERT_EQUAL(visit.hunter_respawn_distance, path_id == PATH_BLADE ? 4 : 6, "Дистанция возврата тени пути [path_id].")
-		visit.finish()
+/// Пучина: прилив замедляет жертву на юге и прячет трещины.
+/datum/unit_test/heretic_mansus_rule_tide/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_TIDE)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/tide/rule = visit.rule
+	victim.forceMove(mansus_tile(visit, 4, 29))
+	rule.flood()
+	TEST_ASSERT(victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_mansus_tide), "В воде жертва медленнее.")
+	visit.spawn_hazards()
+	var/obj/effect/heretic_mansus_hazard/hazard = locate() in get_turf(victim)
+	TEST_ASSERT_EQUAL(hazard.alpha, 60, "Трещина в воде видна рябью.")
+	victim.forceMove(mansus_tile(visit, 4, 5))
+	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_mansus_tide), "На севере сухо.")
+	rule.recede()
+	victim.forceMove(mansus_tile(visit, 4, 29))
+	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_mansus_tide), "После отлива замедления нет.")
+
+/// Стекло: отражение идёт через центр Дома, встреча с ним - удар.
+/datum/unit_test/heretic_mansus_rule_glass/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_GLASS)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/glass/rule = visit.rule
+	TEST_ASSERT_EQUAL(rule.mirror_turf(mansus_tile(visit, 4, 13)), mansus_tile(visit, 30, 21), "Отражение зеркально через центр.")
+	victim.forceMove(mansus_tile(visit, 4, 13))
+	rule.on_danger()
+	TEST_ASSERT_EQUAL(get_turf(rule.reflection), mansus_tile(visit, 30, 21), "Отражение появляется напротив.")
+	victim.Move(mansus_tile(visit, 5, 13), EAST)
+	TEST_ASSERT_EQUAL(get_turf(rule.reflection), mansus_tile(visit, 29, 21), "Отражение повторяет шаг зеркально.")
+	rule.reflection.forceMove(get_turf(victim))
+	rule.check_meeting()
+	TEST_ASSERT_EQUAL(visit.hits_taken, 1, "Встреча с отражением сбивает жертву.")
+
+/// Кровь: тень идёт по следам по порядку и быстрее.
+/datum/unit_test/heretic_mansus_rule_blood/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_BLOOD)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/blood/rule = visit.rule
+	rule.on_danger()
+	victim.forceMove(mansus_tile(visit, 2, 13))
+	for(var/column in 3 to 5)
+		victim.Move(mansus_tile(visit, column, 13), EAST)
+	TEST_ASSERT_EQUAL(length(rule.steps), 3, "Каждый шаг оставляет след.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	hunter.forceMove(mansus_tile(visit, 2, 20))
+	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), mansus_tile(visit, 2, 13), "Тень начинает с самого старого следа.")
+	hunter.forceMove(mansus_tile(visit, 2, 13))
+	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), mansus_tile(visit, 3, 13), "Тень идёт по следам по порядку.")
+	TEST_ASSERT(visit.hunter_step_delay(hunter) < 1 SECONDS, "По следу тень идёт быстрее.")
+	rule.on_hit()
+	TEST_ASSERT_EQUAL(length(rule.steps), 0, "Удар стирает след.")
+
+/// Эхо: тень слепа и слышит бег издалека, шаг только рядом.
+/datum/unit_test/heretic_mansus_rule_echo/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_ECHO)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	victim.forceMove(mansus_tile(visit, 3, 13))
+	hunter.forceMove(mansus_tile(visit, 8, 13))
+	TEST_ASSERT(!visit.hunter_sees(hunter), "Тень слепа даже на открытом месте.")
+	victim.m_intent = MOVE_INTENT_WALK
+	victim.Move(mansus_tile(visit, 4, 13), EAST)
+	TEST_ASSERT_NULL(hunter.last_seen_turf, "Шаг не слышен издалека.")
+	victim.m_intent = MOVE_INTENT_RUN
+	victim.Move(mansus_tile(visit, 3, 13), WEST)
+	TEST_ASSERT_EQUAL(hunter.last_seen_turf, mansus_tile(visit, 3, 13), "Бег слышен.")
+
+/// Песок: часы замораживают тени и забирают время; без теней не срабатывают.
+/datum/unit_test/heretic_mansus_rule_sand/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_SAND)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/obj/effect/heretic_mansus_device/hourglass/hourglass
+	for(var/obj/effect/heretic_mansus_device/hourglass/candidate in visit.scenery)
+		hourglass = candidate
+		break
+	TEST_ASSERT_NOTNULL(hourglass, "В Доме есть песочные часы.")
+	victim.forceMove(get_turf(hourglass))
+	TEST_ASSERT(!hourglass.try_use(victim) && !hourglass.used, "Без теней часы не переворачиваются.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	var/forced_exit = visit.forced_exit
+	hourglass.attack_hand(victim)
+	TEST_ASSERT(wait_for_var(hourglass, NAMEOF(hourglass, used), TRUE), "Часы переворачиваются стоя на них.")
+	TEST_ASSERT(hunter.ready_at >= world.time + 5 SECONDS, "Тень замирает.")
+	TEST_ASSERT_EQUAL(visit.forced_exit, forced_exit - 10 SECONDS, "Дом забирает десять секунд.")
+
+/// Воск: свет тает со временем, свеча под ногами возвращает его.
+/datum/unit_test/heretic_mansus_rule_wax/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_WAX)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/wax/rule = visit.rule
+	rule.on_danger()
+	rule.melt()
+	TEST_ASSERT_EQUAL(rule.darkness, 1, "Свет тает.")
+	TEST_ASSERT(victim.fullscreens["heretic_mansus_wax"], "Обзор затемнён.")
+	var/obj/effect/heretic_mansus_candle/candle = locate() in mansus_tile(visit, 11, 7)
+	TEST_ASSERT_NOTNULL(candle, "У врат стоит свеча.")
+	victim.forceMove(mansus_tile(visit, 11, 8))
+	victim.Move(get_turf(candle), NORTH)
+	TEST_ASSERT_EQUAL(rule.darkness, 0, "Свеча разжигает свет.")
+	rule.melt()
+	TEST_ASSERT_EQUAL(rule.darkness, 0, "Разожжённый свет какое-то время держится.")
+
+/// Дух: открытая клетка уводит тени за душой.
+/datum/unit_test/heretic_mansus_rule_spirit/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_SPIRIT)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/spirit/rule = visit.rule
+	var/obj/effect/heretic_mansus_device/cage/cage
+	for(var/obj/effect/heretic_mansus_device/cage/candidate in visit.scenery)
+		cage = candidate
+		break
+	TEST_ASSERT_NOTNULL(cage, "В Доме есть клетки с душами.")
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	victim.forceMove(get_turf(cage))
+	TEST_ASSERT(wait_for_var(cage, NAMEOF(cage, used), TRUE), "Клетка открывается.")
+	TEST_ASSERT_NOTNULL(rule.decoy, "Душа вылетает.")
+	hunter.forceMove(get_turf(rule.decoy))
+	TEST_ASSERT_EQUAL(visit.hunter_goal(hunter), get_turf(rule.decoy), "Тень гонится за душой.")
+
+/// Клетка фикстурной раскладки: столбец и строка от 1 до 33, строки с севера.
+/datum/unit_test/proc/mansus_tile(datum/heretic_mansus_visit/visit, column, row)
+	return visit.local_turf(column, row)
+
+/datum/unit_test/proc/mansus_reachable(datum/heretic_mansus_visit/visit)
+	var/list/reachable = list(visit.entry_turf)
+	var/next_turf = 1
+	while(next_turf <= length(reachable))
+		var/turf/current = reachable[next_turf++]
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbor = get_step(current, direction)
+			if(visit.walkable_turfs[neighbor] && !(neighbor in reachable))
+				reachable += neighbor
+	return reachable
+
+/datum/unit_test/proc/mansus_deliver_first(datum/heretic_mansus_visit/visit)
+	var/obj/effect/heretic_mansus_memory/memory = visit.memories[1]
+	visit.victim.forceMove(get_turf(memory))
+	TEST_ASSERT(wait_for_var(memory, NAMEOF(memory, recalled), TRUE), "Первый осколок подобран.")
+	visit.victim.forceMove(get_turf(visit.offering))
+	TEST_ASSERT(wait_for_var(visit, NAMEOF(visit, memories_found), 1), "Первый осколок закреплён.")
+
+/// Цели, достижимые по символам раскладки, при открытом затворе `open_shutter`.
+/datum/unit_test/proc/mansus_rows_reachable(list/rows, open_shutter)
+	var/list/found = list()
+	var/list/seen = list()
+	var/list/frontier = list()
+	for(var/row in 1 to length(rows))
+		var/column = findtext(rows[row], "E")
+		if(column)
+			frontier += list(list(column, row))
+			seen["[column],[row]"] = TRUE
+	var/index = 1
+	while(index <= length(frontier))
+		var/list/current = frontier[index++]
+		var/tile = copytext(rows[current[2]], current[1], current[1] + 1)
+		found[tile] = TRUE
+		for(var/list/offset in list(list(1, 0), list(-1, 0), list(0, 1), list(0, -1)))
+			var/column = current[1] + offset[1]
+			var/row = current[2] + offset[2]
+			if(row < 1 || row > length(rows) || column < 1 || column > length(rows[row]) || seen["[column],[row]"])
+				continue
+			var/next_tile = copytext(rows[row], column, column + 1)
+			if(next_tile == "#" || next_tile == "O" || next_tile == "S" || ((next_tile == "a" || next_tile == "b") && next_tile != open_shutter))
+				continue
+			seen["[column],[row]"] = TRUE
+			frontier += list(list(column, row))
+	return found
+
+/datum/unit_test/proc/mansus_variants(datum/heretic_mansus_plan/plan, list/template)
+	. = list()
+	var/list/current = template.Copy()
+	for(var/turn in 1 to 4)
+		. += list(current)
+		var/list/mirrored = list()
+		for(var/line in current)
+			mirrored += reverse_text(line)
+		. += list(mirrored)
+		current = plan.rotate_template(current)
+
+/datum/unit_test/proc/mansus_template_passable(list/template, column, row)
+	if(row < 1 || row > 7 || column < 1 || column > 7)
+		return FALSE
+	var/tile = copytext(template[row], column, column + 1)
+	return tile != "#" && tile != "O" && tile != "S"
+
+/datum/unit_test/proc/mansus_template_valid(list/template)
+	for(var/list/middle in list(list(4, 1), list(4, 7), list(1, 4), list(7, 4)))
+		if(!mansus_template_passable(template, middle[1], middle[2]))
+			return FALSE
+	var/total = 0
+	for(var/row in 1 to 7)
+		for(var/column in 1 to 7)
+			total += mansus_template_passable(template, column, row)
+	var/list/seen = list("4,1" = TRUE)
+	var/list/frontier = list(list(4, 1))
+	var/index = 1
+	while(index <= length(frontier))
+		var/list/current = frontier[index++]
+		for(var/list/offset in list(list(1, 0), list(-1, 0), list(0, 1), list(0, -1)))
+			var/column = current[1] + offset[1]
+			var/row = current[2] + offset[2]
+			if(!mansus_template_passable(template, column, row) || seen["[column],[row]"])
+				continue
+			seen["[column],[row]"] = TRUE
+			frontier += list(list(column, row))
+	return length(seen) == total
+
+/// Скольжение до преграды; выход через середину края означает уход в проём.
+/datum/unit_test/proc/mansus_slide(list/template, column, row, list/offset, stop_on_shard)
+	while(TRUE)
+		var/tile = copytext(template[row], column, column + 1)
+		if(tile != "i" && tile != "*")
+			return list(column, row)
+		if(stop_on_shard && tile == "*")
+			return list(column, row)
+		var/exit = mansus_ice_exit(column, row, offset)
+		if(exit)
+			return exit
+		if(!mansus_template_passable(template, column + offset[1], row + offset[2]))
+			return list(column, row)
+		column += offset[1]
+		row += offset[2]
+
+/datum/unit_test/proc/mansus_ice_exit(column, row, list/offset)
+	if(column == 4 && row == 1 && offset[2] == -1)
+		return "north"
+	if(column == 4 && row == 7 && offset[2] == 1)
+		return "south"
+	if(column == 1 && row == 4 && offset[1] == -1)
+		return "west"
+	if(column == 7 && row == 4 && offset[1] == 1)
+		return "east"
+	return null
+
+/datum/unit_test/proc/mansus_ice_solvable(list/template)
+	var/list/entries = list("north" = list(4, 1, 0, 1), "south" = list(4, 7, 0, -1), "west" = list(1, 4, 1, 0), "east" = list(7, 4, -1, 0))
+	var/list/shard
+	for(var/row in 1 to 7)
+		var/column = findtext(template[row], "*")
+		if(column)
+			shard = list(column, row)
+	for(var/entry in entries)
+		var/list/start = entries[entry]
+		var/list/result = mansus_ice_explore(template, mansus_slide(template, start[1], start[2], list(start[3], start[4]), TRUE), TRUE)
+		for(var/exit in entries)
+			if(!result["exits"][exit])
+				return FALSE
+		if(shard && !result["seen"]["[shard[1]],[shard[2]]"])
+			return FALSE
+	if(shard)
+		var/list/result = mansus_ice_explore(template, shard, FALSE)
+		if(!length(result["exits"]))
+			return FALSE
+	return TRUE
+
+/datum/unit_test/proc/mansus_ice_explore(list/template, first, stop_on_shard)
+	var/list/exits = list()
+	var/list/seen = list()
+	var/list/frontier = list()
+	if(istext(first))
+		exits[first] = TRUE
+	else
+		seen["[first[1]],[first[2]]"] = TRUE
+		frontier += list(first)
+	var/index = 1
+	while(index <= length(frontier))
+		var/list/current = frontier[index++]
+		for(var/list/offset in list(list(1, 0), list(-1, 0), list(0, 1), list(0, -1)))
+			var/exit = mansus_ice_exit(current[1], current[2], offset)
+			if(exit)
+				exits[exit] = TRUE
+				continue
+			if(!mansus_template_passable(template, current[1] + offset[1], current[2] + offset[2]))
+				continue
+			var/stop = mansus_slide(template, current[1] + offset[1], current[2] + offset[2], offset, stop_on_shard)
+			if(istext(stop))
+				exits[stop] = TRUE
+				continue
+			if(seen["[stop[1]],[stop[2]]"])
+				continue
+			seen["[stop[1]],[stop[2]]"] = TRUE
+			frontier += list(stop)
+	return list("exits" = exits, "seen" = seen)
