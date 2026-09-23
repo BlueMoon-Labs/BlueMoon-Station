@@ -44,7 +44,7 @@
 	name = "cyborg laser drill"
 
 /obj/item/scalpel/advanced/alien/cyborg
-	name = "cybrog alien combi scalpel"
+	name = "cyborg alien combi scalpel"
 
 /obj/item/retractor/advanced/alien/cyborg
 	name = "cyborg alien combi retractor"

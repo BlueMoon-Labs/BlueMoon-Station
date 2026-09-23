@@ -22,7 +22,7 @@
 	name = "Cyborg Upgrade (Alien Combi Surgery Tools)"
 	id = "borg_upgrade_alien_combi_med_tools"
 	build_type = MECHFAB
-	build_path = /obj/item/borg/upgrade/advmed_tools
+	build_path = /obj/item/borg/upgrade/advmed_tools/alien
 	materials = list(/datum/material/iron = 22500, /datum/material/glass = 4200, /datum/material/plasma = 3500, /datum/material/silver = 7000, /datum/material/gold = 6000, /datum/material/titanium = 8000)
 	construction_time = 120
 	category = list("Cyborg Upgrade Modules")
