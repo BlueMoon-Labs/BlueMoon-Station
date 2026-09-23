@@ -1,8 +1,10 @@
 /obj/item/living_heart
 	name = "living heart"
 	desc = "Сердце, которое бьётся в такт чужой душе. Еретик может сжать его для поиска цели; Alt-ЛКМ позволяет выбрать другую цель, касание поверженного члена экипажа делает целью его, а касание обезвреженной цели начинает обряд прямо на месте."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_living_heart.dmi'
 	icon_state = "living_heart"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_living_heart_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_living_heart_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/datum/mind/owner_mind
 	COOLDOWN_DECLARE(track_cooldown)
@@ -346,8 +348,8 @@
 /obj/item/reagent_containers/glass/beaker/eldritch
 	name = "flask of eldritch essence"
 	desc = "Яд для непосвящённых и целительный напиток для еретика. При усвоении лечит раны, восстанавливает 30 выносливости и сокращает оглушение и неподвижность на 8 секунд. Лучше выпить перед боем: напиток не защищает от новых попаданий."
-	icon = 'icons/obj/eldritch.dmi'
-	icon_state = "eldrich_flask"
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
+	icon_state = "eldritch_flask"
 	list_reagents = list(/datum/reagent/eldritch = 50)
 
 /obj/item/clothing/head/hooded/cult_hoodie/void
@@ -472,8 +474,10 @@
 /obj/item/melee/rune_knife
 	name = "rune carving knife"
 	desc = "Холодное стальное лезвие для вырезания рун. Посвящённый может пробудить силу оставленных им знаков."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "rune_carver"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_oldpath_items_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_oldpath_items_righthand.dmi'
 	flags_1 = CONDUCT_1
 	sharpness = SHARP_EDGED
 	w_class = WEIGHT_CLASS_SMALL

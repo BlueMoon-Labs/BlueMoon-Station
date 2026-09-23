@@ -694,8 +694,11 @@
 /obj/effect/broken_illusion
 	name = "pierced reality"
 	desc = "В воздухе дрожит тёмный след. При взгляде на него трудно вспомнить, о чём вы только что думали."
-	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_rift.dmi'
 	icon_state = "rift"
+	pixel_x = -16
+	pixel_y = -16
+	layer = BELOW_OBJ_LAYER
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	alpha = 0
@@ -709,9 +712,10 @@
 	var/image/silicon_image = image('icons/effects/eldritch.dmi', src, null, OBJ_LAYER)
 	silicon_image.override = TRUE
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", silicon_image)
+	add_overlay(emissive_appearance(icon, "rift_glow", src))
 
 /obj/effect/broken_illusion/proc/show_presence()
-	animate(src, alpha = 220, time = 5 SECONDS)
+	animate(src, alpha = 255, time = 5 SECONDS)
 
 /obj/effect/broken_illusion/proc/remove_presence()
 	qdel(src)
@@ -733,11 +737,11 @@
 
 /obj/effect/reality_smash
 	name = "reality rift"
-	icon = 'icons/effects/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_rift.dmi'
 	anchored = TRUE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	invisibility = INVISIBILITY_OBSERVER
-	var/image_state = "reality_smash"
+	var/image_state = "influence"
 	var/list/minds = list()
 	var/list/harvested_minds = list()
 	var/list/harvesting_minds = list()
@@ -752,6 +756,8 @@
 	network_ref = WEAKREF(network)
 	network.smashes |= src
 	img = image(icon, src, image_state, OBJ_LAYER)
+	img.pixel_x = -16
+	img.pixel_y = -16
 	network.RandomRiftName(src)
 
 /obj/effect/reality_smash/Destroy()

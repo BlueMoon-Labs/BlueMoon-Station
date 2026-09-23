@@ -61,7 +61,7 @@
 /obj/item/melee/touch_attack/mansus_fist
 	name = "Mansus Grasp"
 	desc = "Искажает пространство вокруг ладони. Хватка наносит ушибы, истощает и сбивает с ног. Изученные знания добавляют эффекты вашего пути. Касание руны трансмутации стирает её, не тратя заряд."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "mansus_grasp"
 	item_state = "mansus"
 	catchphrase = "T'IESA SIE'KTI VISATA"
@@ -169,6 +169,7 @@
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
 	name = "Призвать живое сердце"
 	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "living_heart"
 	summon_type = /obj/item/living_heart
 	summon_sound = 'sound/magic/enter_blood.ogg'
@@ -177,6 +178,7 @@
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
 	desc = "Призывает спрятанный кодекс или прячет книгу при вас. Потерянный личный кодекс возвращается после 20 секунд неподвижности, запертый в шкафу или сумке - после минуты; уничтоженный восстанавливается. Книгу в чужом инвентаре или действующем обряде вернуть нельзя. Звук слышен только вплотную."
+	action_icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
 	var/recovery_in_progress = FALSE
@@ -540,7 +542,7 @@
 /obj/item/melee/touch_attack/mad_touch
 	name = "Touch of Madness"
 	desc = "Зловещая аура, от которой трескается чужой рассудок."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "mad_touch"
 	item_state = "madness"
 	catchphrase = "SUNA'IKINTI PROTA"
@@ -579,7 +581,7 @@
 /obj/item/melee/touch_attack/grasp_of_decay
 	name = "Grasp of Decay"
 	desc = "Зловещая аура, разлагающая чужую плоть изнутри."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "mansus_grasp"
 	item_state = "mansus"
 	catchphrase = "SKILI'EDUONIS"
@@ -1009,11 +1011,11 @@
 			transform = matrix(90, MATRIX_ROTATE)
 
 /obj/effect/temp_visual/glowing_rune
-	icon = 'icons/effects/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "small_rune_1"
 	duration = 1 MINUTES
 	layer = LOW_SIGIL_LAYER
-	/// Стейты small_rune_1..N в eldritch.dmi.
+	/// Стейты small_rune_1..N в heretic_oldpath_items.dmi.
 	var/rune_variants = 12
 
 /obj/effect/temp_visual/glowing_rune/Initialize(mapload)

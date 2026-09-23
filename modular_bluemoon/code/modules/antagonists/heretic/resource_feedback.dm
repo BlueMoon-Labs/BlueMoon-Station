@@ -126,7 +126,7 @@
 /atom/movable/screen/alert/heretic_codex
 	name = "Кодекс ждёт"
 	desc = "Кодекс ещё не призван. Нажмите сюда или на способность «Призвать кодекс», чтобы получить книгу и выбрать путь."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "codex"
 
 /atom/movable/screen/alert/heretic_codex/Click(location, control, params)

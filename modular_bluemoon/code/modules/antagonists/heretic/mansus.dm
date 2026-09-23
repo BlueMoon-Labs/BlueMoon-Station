@@ -116,7 +116,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"id" = "ash",
 		"twist" = HERETIC_MANSUS_TWIST_LINGERING,
 		"title" = "Пепел",
-		"description" = "Тлеющие печи и почерневший камень хранят чужой пепел.",
+		"description" = "Тлеющие костры и почерневший камень хранят чужой пепел.",
 		"ambience" = 'modular_bluemoon/sound/heretic/mansus/ash_ambience.ogg',
 		"pickup" = 'modular_bluemoon/sound/heretic/mansus/ash_pickup.ogg',
 		"deposit" = 'modular_bluemoon/sound/heretic/mansus/ash_deposit.ogg',
@@ -181,7 +181,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"id" = "moon",
 		"twist" = HERETIC_MANSUS_TWIST_UNSEEN,
 		"title" = "Луна",
-		"description" = "Бледные свечи отбрасывают тени в сторону луны, которой здесь нет.",
+		"description" = "Бледные огни в серебряных серпах отбрасывают тени в сторону луны, которой здесь нет.",
 		"ambience" = 'modular_bluemoon/sound/heretic/mansus/moon_ambience.ogg',
 		"pickup" = 'modular_bluemoon/sound/heretic/mansus/moon_pickup.ogg',
 		"deposit" = 'modular_bluemoon/sound/heretic/mansus/moon_deposit.ogg',
@@ -233,7 +233,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"id" = "glass",
 		"twist" = HERETIC_MANSUS_TWIST_SLICK,
 		"title" = "Стекло",
-		"description" = "В кристаллах остаются отражения тех, кто уже ушёл.",
+		"description" = "В осколках остаются отражения тех, кто уже ушёл.",
 		"ambience" = 'modular_bluemoon/sound/heretic/mansus/glass_ambience.ogg',
 		"pickup" = 'modular_bluemoon/sound/heretic/mansus/glass_pickup.ogg',
 		"deposit" = 'modular_bluemoon/sound/heretic/mansus/glass_deposit.ogg',
@@ -272,7 +272,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"id" = "sand",
 		"twist" = HERETIC_MANSUS_TWIST_SHIFTING,
 		"title" = "Песок",
-		"description" = "Песок шуршит в погасших печах и стачивает выбитые на камне имена.",
+		"description" = "Песок шуршит в погасших жаровнях и стачивает выбитые на камне имена.",
 		"ambience" = 'modular_bluemoon/sound/heretic/mansus/sand_ambience.ogg',
 		"pickup" = 'modular_bluemoon/sound/heretic/mansus/sand_pickup.ogg',
 		"deposit" = 'modular_bluemoon/sound/heretic/mansus/sand_deposit.ogg',
@@ -298,7 +298,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		"id" = "spirit",
 		"twist" = HERETIC_MANSUS_TWIST_UNSEEN,
 		"title" = "Дух",
-		"description" = "За свечами скользит пустой саван. На старых досках не остаётся его следов.",
+		"description" = "В клетках мечутся чужие души, за ними скользит пустой саван. На старых досках не остаётся его следов.",
 		"ambience" = 'modular_bluemoon/sound/heretic/mansus/spirit_ambience.ogg',
 		"pickup" = 'modular_bluemoon/sound/heretic/mansus/spirit_pickup.ogg',
 		"deposit" = 'modular_bluemoon/sound/heretic/mansus/spirit_deposit.ogg',
@@ -1179,7 +1179,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	icon = 'modular_bluemoon/icons/obj/heretic_mansus.dmi'
 	icon_state = "ash_light"
 	name = "memory flame"
-	desc = "Бледное пламя склоняется к галерее. Оно не греет и не сжигает воск."
+	desc = "Бледное пламя склоняется к галерее. Оно не греет."
 	anchored = TRUE
 
 /obj/effect/heretic_mansus_candle/Initialize(mapload, datum/heretic_mansus_visit/visit)

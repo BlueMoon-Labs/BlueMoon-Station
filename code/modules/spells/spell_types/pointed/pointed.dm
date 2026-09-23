@@ -65,7 +65,8 @@
 	if(!action)
 		return
 	if(active)
-		action.button_icon_state = "[action_icon_state]1"
+		var/active_state = "[action_icon_state]1"
+		action.button_icon_state = (active_state in icon_states(action_icon)) ? active_state : action_icon_state
 	else
 		action.button_icon_state = "[action_icon_state]"
 	action.UpdateButtons()

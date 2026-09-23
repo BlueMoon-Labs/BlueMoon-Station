@@ -175,7 +175,7 @@
 /obj/structure/trap/eldritch
 	name = "forbidden rune"
 	desc = "Неизвестные символы, от которых веет смутно знакомым прошлым."
-	icon = 'icons/obj/eldritch.dmi'
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	charges = 1
 	///Owner of the trap
 	var/mob/owner

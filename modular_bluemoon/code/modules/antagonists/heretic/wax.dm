@@ -1219,7 +1219,7 @@
 /obj/effect/proc_holder/spell/self/heretic_wax
 	clothes_req = FALSE
 	invocation_type = "none"
-	action_icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/self/heretic_wax/can_cast(mob/user, skipcharge, silent)
@@ -1285,7 +1285,7 @@
 	desc = "За единицу воска нанесите 14 ушибов и создайте двойника на 8 секунд. Цель замедляется на 2 секунды. Удары вашего воскового клинка по двойнику переносят до 15 ушибов за удар, до 30 суммарно, и обновляют замедление. Печать добавляет 12 ушибов и 25 выносливости сразу и укрепляет двойника до 45. Двойника можно разбить; стены, антимагия и расстояние больше пяти клеток рвут связь."
 	clothes_req = FALSE
 	invocation_type = "none"
-	action_icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "wax_imprint"
 	action_background_icon_state = "bg_ecult"
 	range = HERETIC_WAX_RANGE

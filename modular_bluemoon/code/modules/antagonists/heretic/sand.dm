@@ -979,7 +979,7 @@
 /obj/effect/proc_holder/spell/self/heretic_sand
 	clothes_req = FALSE
 	invocation_type = "none"
-	action_icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/self/heretic_sand/can_cast(mob/user, skipcharge, silent)
@@ -1005,7 +1005,7 @@
 	range = HERETIC_SAND_RANGE
 	selection_type = "view"
 	aim_assist = FALSE
-	action_icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_background_icon_state = "bg_ecult"
 	active_msg = "Укажите место, где истечёт чужое время."
 	deactive_msg = "Вы удерживаете песок в ладони."
