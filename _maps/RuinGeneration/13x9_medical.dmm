@@ -194,7 +194,7 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/unpowered)
 "L" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible{
 	dir = 5
 	},
 /turf/open/floor/plasteel/white,
@@ -242,7 +242,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible{
 	dir = 5
 	},
 /turf/open/floor/plasteel/white,

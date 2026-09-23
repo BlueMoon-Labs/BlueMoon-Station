@@ -415,7 +415,7 @@
 /area/ruin/space/has_grav/austation/maint)
 "ed" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/visible{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
@@ -723,7 +723,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/austation/med)
 "hk" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible,
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible,
 /obj/effect/turf_decal/stripes/line,
 /obj/item/wrench/medical,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -984,7 +984,7 @@
 /turf/open/floor/plasteel/white,
 /area/ruin/space/has_grav/austation/med)
 "km" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden{
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden{
 	dir = 6
 	},
 /obj/effect/turf_decal/delivery,
@@ -1377,7 +1377,7 @@
 /area/ruin/space/has_grav/austation/rnd)
 "nk" = (
 /obj/machinery/rnd/server,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -1946,7 +1946,7 @@
 /turf/closed/wall/rust,
 /area/ruin/space/has_grav/austation/med)
 "te" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden,
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -2018,7 +2018,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/austation/med)
 "tM" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible{
 	dir = 5
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -2100,7 +2100,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/austation/maint)
 "uX" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden{
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral{
@@ -2272,7 +2272,7 @@
 	id = "rdxeno";
 	name = "Xenobiology Containment Door"
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden,
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden,
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/austation/rnd)
 "wt" = (
@@ -2404,7 +2404,7 @@
 /area/ruin/space/has_grav/austation/eng)
 "xB" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/supply/visible{
 	dir = 4
 	},
 /turf/open/floor/plating/rust,
@@ -3354,7 +3354,7 @@
 /turf/open/floor/plating/rust,
 /area/ruin/space/has_grav/austation/rnd)
 "GO" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden,
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -3400,7 +3400,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/austation/station)
 "GS" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/supply/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/supply/visible{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow{
@@ -3737,7 +3737,7 @@
 /area/ruin/space/has_grav/austation/med)
 "JH" = (
 /obj/machinery/rnd/server,
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden{
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden{
 	dir = 9
 	},
 /obj/effect/decal/cleanable/dirt/dust,
@@ -4311,7 +4311,7 @@
 /obj/effect/turf_decal/stripes/line{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible{
 	dir = 9
 	},
 /obj/structure/table,
@@ -4371,7 +4371,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/austation/med)
 "Pb" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/scrubbers/visible{
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/visible{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/yellow,
@@ -4541,7 +4541,7 @@
 	name = "Xenobiology Kill Room";
 	req_access_txt = "47"
 	},
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden{
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/line{
@@ -5108,7 +5108,7 @@
 	},
 /area/ruin/space/has_grav/austation/maint)
 "XB" = (
-/obj/machinery/atmospherics/pipe/smart/manifold4w/general/hidden{
+/obj/machinery/atmospherics/pipe/manifold4w/general/hidden{
 	dir = 9
 	},
 /obj/effect/turf_decal/tile/neutral{

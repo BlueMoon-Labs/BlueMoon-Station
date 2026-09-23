@@ -68,7 +68,7 @@
 /area/ruin/unpowered)
 "lI" = (
 /obj/machinery/door/airlock/public/glass{
-	id_tag = "permabolt2";
+	id_tag = "ruin_permabolt2";
 	name = "Cell 2"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
@@ -114,7 +114,7 @@
 /area/ruin/unpowered)
 "rp" = (
 /obj/machinery/door/airlock/public/glass{
-	id_tag = "permabolt3";
+	id_tag = "ruin_permabolt3";
 	name = "Cell 3"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
@@ -250,7 +250,7 @@
 /area/ruin/unpowered)
 "CC" = (
 /obj/machinery/door/airlock/public/glass{
-	id_tag = "permabolt1";
+	id_tag = "ruin_permabolt1";
 	name = "Cell 1"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,

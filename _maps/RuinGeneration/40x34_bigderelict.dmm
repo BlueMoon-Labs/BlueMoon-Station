@@ -580,7 +580,7 @@
 /area/ruin/unpowered)
 "vB" = (
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_bigderelict_cargo1"
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel,
@@ -896,7 +896,7 @@
 /area/ruin/unpowered)
 "DQ" = (
 /obj/machinery/door/airlock/security/glass{
-	id_tag = "innerbrig";
+	id_tag = "ruin_innerbrig";
 	name = "Security Checkpoint";
 	req_access_txt = "63"
 	},
@@ -919,7 +919,7 @@
 	name = "dried blood trail"
 	},
 /obj/machinery/door/airlock/security/glass{
-	id_tag = "innerbrig";
+	id_tag = "ruin_innerbrig";
 	name = "Security Checkpoint";
 	req_access_txt = "63"
 	},
@@ -1081,11 +1081,11 @@
 /area/ruin/unpowered)
 "Ii" = (
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_bigderelict_cargo1"
 	},
 /obj/structure/fans/tiny,
 /obj/machinery/button/door{
-	id = "exploration_ex_cargo1";
+	id = "exploration_bigderelict_cargo1";
 	name = "Cargo Shutters Control";
 	pixel_y = 32;
 	req_access_txt = "49"
@@ -1328,7 +1328,6 @@
 	name = "dried blood trail"
 	},
 /obj/structure/alien/weeds/creature,
-/obj/structure/alien/weeds/creature,
 /turf/open/floor/plating/asteroid,
 /area/ruin/unpowered)
 "On" = (
@@ -1354,7 +1353,6 @@
 /obj/structure/glowshroom/single,
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/public/glass,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel,
 /area/ruin/unpowered)
 "PB" = (
@@ -1663,7 +1661,6 @@
 /turf/open/floor/mineral/titanium/yellow,
 /area/ruin/unpowered)
 "XY" = (
-/obj/structure/alien/weeds/creature,
 /obj/structure/alien/weeds/creature,
 /obj/item/ammo_box/c45,
 /turf/open/floor/plating/asteroid,

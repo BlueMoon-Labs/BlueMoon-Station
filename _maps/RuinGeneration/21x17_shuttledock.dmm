@@ -170,17 +170,17 @@
 "W" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_shuttledockb_cargo1"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/unpowered)
 "Y" = (
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_shuttledockb_cargo1"
 	},
 /obj/structure/fans/tiny,
 /obj/machinery/button/door{
-	id = "exploration_ex_cargo1";
+	id = "exploration_shuttledockb_cargo1";
 	name = "Cargo Shutters Control";
 	pixel_x = 32;
 	req_access_txt = "49"

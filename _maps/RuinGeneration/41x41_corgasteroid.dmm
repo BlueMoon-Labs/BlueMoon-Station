@@ -87,13 +87,13 @@
 "ie" = (
 /obj/effect/turf_decal/delivery,
 /obj/machinery/button/door{
-	id = "exploration_ex_cargo1";
+	id = "exploration_corgasteroid_cargo1";
 	name = "Cargo Shutters Control";
 	pixel_x = 32;
 	req_access_txt = "49"
 	},
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_corgasteroid_cargo1"
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
@@ -248,7 +248,7 @@
 "uc" = (
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/poddoor/shutters{
-	id = "exploration_ex_cargo1"
+	id = "exploration_corgasteroid_cargo1"
 	},
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
