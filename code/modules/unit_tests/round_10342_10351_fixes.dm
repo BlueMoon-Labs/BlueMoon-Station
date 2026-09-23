@@ -198,3 +198,9 @@
 	if(eye)
 		QDEL_NULL(eye)
 	return ..()
+
+/// Костюмы ЦК наследуют защиту своей базовой темы.
+/datum/unit_test/mod_theme_centcom_base/Run()
+	for(var/datum/mod_theme/theme_type as anything in subtypesof(/datum/mod_theme/centcom))
+		TEST_ASSERT_EQUAL(initial(theme_type.siemens_coefficient), 0, "[theme_type] проводит ток")
+		TEST_ASSERT(initial(theme_type.resistance_flags) & FIRE_PROOF, "[theme_type] не огнеупорна")
