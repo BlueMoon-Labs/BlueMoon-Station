@@ -73,24 +73,32 @@
 	var/turf/lowerleft = locate(max(1, x - (view[1] - 1)/2), max(1, y - (view[2] - 1)/2), z)
 	var/turf/upperright = locate(min(world.maxx, lowerleft.x + (view[1] - 1)), min(world.maxy, lowerleft.y + (view[2] - 1)), lowerleft.z)
 	return block(lowerleft, upperright)
-// (ADD) Pe4henika Bluemoon -- start
+#define AI_EYE_CAMERA_LIGHT_RANGE 6
+
 /mob/camera/aiEye/proc/update_camera_vis()
-    var/list/obj/machinery/camera/nearby = list()
+	var/list/obj/machinery/camera/nearby = list()
+	var/turf/eye_turf = get_turf(src)
+	if(eye_turf)
+		var/list/checked_chunks = list()
+		for(var/chunk_x in list(eye_turf.x - AI_EYE_CAMERA_LIGHT_RANGE, eye_turf.x + AI_EYE_CAMERA_LIGHT_RANGE))
+			for(var/chunk_y in list(eye_turf.y - AI_EYE_CAMERA_LIGHT_RANGE, eye_turf.y + AI_EYE_CAMERA_LIGHT_RANGE))
+				var/datum/camerachunk/chunk = GLOB.cameranet.getCameraChunk(clamp(chunk_x, 1, world.maxx), clamp(chunk_y, 1, world.maxy), eye_turf.z)
+				if(checked_chunks[chunk])
+					continue
+				checked_chunks[chunk] = TRUE
+				for(var/obj/machinery/camera/camera as anything in chunk.cameras)
+					if(!nearby[camera] && get_dist(camera, eye_turf) <= AI_EYE_CAMERA_LIGHT_RANGE && camera.can_use())
+						nearby[camera] = TRUE
 
-    for(var/obj/machinery/camera/C in range(6, src))
-        if(C.can_use())
-            nearby += C
+	for(var/obj/machinery/camera/camera in (active_cameras - nearby))
+		camera.in_use_lights--
+		camera.update_icon()
+		active_cameras -= camera
 
-    for(var/obj/machinery/camera/C in (active_cameras - nearby))
-        C.in_use_lights--
-        C.update_icon()
-        active_cameras -= C
-
-    for(var/obj/machinery/camera/C in (nearby - active_cameras))
-        C.in_use_lights++
-        C.update_icon()
-        active_cameras += C
-// (ADD) Pe4henika bluemoon -- end
+	for(var/obj/machinery/camera/camera in (nearby - active_cameras))
+		camera.in_use_lights++
+		camera.update_icon()
+		active_cameras += camera
 
 // Use this when setting the aiEye's location.
 // It will also stream the chunk that the new loc is in.
@@ -327,3 +335,5 @@
 /mob/camera/aiEye/emote(act, m_type=1, message = null, intentional = FALSE, forced = FALSE)
 	if(ai?.current)
 		..()
+
+#undef AI_EYE_CAMERA_LIGHT_RANGE

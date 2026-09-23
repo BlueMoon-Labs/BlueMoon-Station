@@ -42,6 +42,7 @@
 	///затяжная разгерметизация плодила его каждый проход SSair поверх ещё живого
 	///и раздувала очередь GC (47 тысяч в раунде 9911).
 	var/tmp/next_space_wind_at = 0
+	var/tmp/obj/effect/temp_visual/dir_setting/space_wind/space_wind_visual
 	var/turf/pressure_specific_target
 
 	var/datum/excited_group/excited_group
@@ -1478,7 +1479,11 @@
 
 	if(pressure_difference > 100 && world.time >= next_space_wind_at)
 		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
-		new /obj/effect/temp_visual/dir_setting/space_wind(src, pressure_direction, clamp(round(sqrt(pressure_difference) * 2), 10, 255))
+		var/wind_alpha = clamp(round(sqrt(pressure_difference) * 2), 10, 255)
+		if(QDELETED(space_wind_visual))
+			space_wind_visual = new(src, pressure_direction, wind_alpha)
+		else
+			space_wind_visual.gust(pressure_direction, wind_alpha)
 
 /atom/movable/var/pressure_resistance = 10
 /atom/movable/var/last_high_pressure_movement_air_cycle = 0

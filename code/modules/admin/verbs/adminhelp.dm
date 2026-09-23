@@ -108,7 +108,13 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 //Dissasociate ticket
 /datum/admin_help_tickets/proc/ClientLogout(client/C)
-	if(!C || !C.current_ticket)
+	if(!C)
+		return
+	// Любая ссылка на клиента, пережившая логаут, стоит полного обхода мира на его del().
+	for(var/datum/admin_help/owned_ticket as anything in TicketsByCKey(C.ckey))
+		if(owned_ticket.initiator == C)
+			owned_ticket.initiator = null
+	if(!C.current_ticket)
 		return
 	var/datum/admin_help/ticket = C.current_ticket
 	ticket.AddInteraction("Клиент отключился.")
@@ -563,7 +569,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		if("reject")
 			Reject()
 		if("reply")
-			usr.client.cmd_ahelp_reply(initiator)
+			usr.client.cmd_ahelp_reply(initiator || initiator_ckey)
 		if("icissue")
 			ICIssue()
 		if("skillissue")
