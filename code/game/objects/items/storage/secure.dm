@@ -213,8 +213,8 @@
 	name = "\improper CQC implanter box"
 	desc = "Kept you waitin, huh?."
 
-/obj/item/storage/secure/briefcase/hos/cqc_implant/PopulateContents()
-	new /obj/item/implanter/cqc(src)
+/* /obj/item/storage/secure/briefcase/hos/cqc_implant/PopulateContents()
+	new /obj/item/implanter/cqc(src) */
 
 // -----------------------------
 //        Secure Safe
