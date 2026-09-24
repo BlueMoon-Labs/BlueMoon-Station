@@ -178,7 +178,7 @@
 	content_overlays = FALSE
 	w_class = WEIGHT_CLASS_NORMAL
 
-	var/recharge_interval = 5 SECONDS
+	var/recharge_interval = 10 SECONDS
 	var/last_recharge = 0
 
 /obj/item/storage/belt/avangard_belt/Initialize(mapload)
