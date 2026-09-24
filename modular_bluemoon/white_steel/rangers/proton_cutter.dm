@@ -11,8 +11,8 @@
 	toggle_ai(AI_ON)
 
 /obj/item/melee/sabre/proton_cutter
-	name = "протонный резак"
-	desc = "Массивный абордажный палаш оснащенный генератором гамма излучения, которое негативно сказывается на нервной системе примитивных форм жизни. Так же можно дополнительно форсировать генератор для полной парализации. Эффект на разумные формы жизни значительно снижен."
+	name = "Proton cutter"
+	desc = "A massive boarding sword equipped with a gamma radiation generator, which has a negative effect on the nervous system of primitive life forms. The generator can also be further boosted to achieve complete paralysis. The effect on intelligent life forms is significantly reduced."
 
 	force = 15
 	block_chance = 30
@@ -171,8 +171,8 @@
 	return 60
 
 /obj/item/storage/belt/avangard_belt
-	name = "пояс Авангарда"
-	desc = "Специальные тактические ножны для протонного резака оснащенные удобными карманами для снаряжения."
+	name = "Vanguard belt"
+	desc = "Special tactical sheaths for the proton cutter and magnetic tomahawk, equipped with convenient pockets for equipment."
 	icon = 'modular_bluemoon/white/Feline/icons/rangers_belt.dmi'
 	icon_state = "avangard"
 	item_state = "avangard"
