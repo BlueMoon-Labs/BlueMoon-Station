@@ -100,7 +100,7 @@
 /obj/item/melee/sabre/proton_cutter/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)	// 	Атака
 	// 	Мобы
 	if(!iscarbon(M) && !iscyborg(M))
-		if(amplification && !ismegafauna(M))
+		if(amplification && !ismegafauna(M) && !M.mind)
 			if(ishostile(M))
 				var/mob/living/simple_animal/stun_target = M
 				stun_target.toggle_ai(AI_OFF)
@@ -145,15 +145,15 @@
 		if(amplification)
 			force = 60
 
-			if(ishostile(M) && !isalienroyal(M))
+			if(ishostile(M) && !isalienroyal(M) && !M.mind)
 				var/mob/living/simple_animal/stun_target = M
 				stun_target.toggle_ai(AI_OFF)
 				addtimer(CALLBACK(stun_target, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
 				addtimer(CALLBACK(M, /atom/proc/cut_overlay, stun_overlay), 5 SECONDS)
 
-			if(!isalienroyal(M))
+			if(!isalienroyal(M) && !M.mind)
 				M.Paralyze(5 SECONDS, ignore_canstun = TRUE)
-			else
+			else if(isalienroyal(M))
 				M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter_heavy)
 				addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter_heavy), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
