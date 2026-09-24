@@ -541,6 +541,7 @@ SUBSYSTEM_DEF(ticker)
 		// Экипировка отвязана от клиента, а вот post_copy_to без префов не имеет смысла:
 		// отвалившийся игрок доедет до конца стадии, но уже без обращения к пустоте
 		N.client?.prefs?.post_copy_to(player)
+		SSpersistence.load_modular_persistence(player.getorganslot(ORGAN_SLOT_BRAIN))
 		.++
 	if(captainless)
 		for(var/mob/dead/new_player/N in GLOB.player_list)
