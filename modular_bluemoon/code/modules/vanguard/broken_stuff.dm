@@ -76,5 +76,5 @@
 
 /obj/item/broken/pirate_sword
 	name = "shattered energy cutlass"
-	desc = "Who took me gold?!"
+	desc = "Who took my gold?!"
 	icon_state = "cutlass0"
