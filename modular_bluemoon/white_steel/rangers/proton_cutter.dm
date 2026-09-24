@@ -100,7 +100,7 @@
 /obj/item/melee/sabre/proton_cutter/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)	// 	Атака
 	// 	Мобы
 	if(!iscarbon(M) && !iscyborg(M))
-		if(amplification)
+		if(amplification && !ismegafauna(M))
 			if(ishostile(M))
 				var/mob/living/simple_animal/stun_target = M
 				stun_target.toggle_ai(AI_OFF)
@@ -111,6 +111,8 @@
 			M.Jitter(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
+		else if(amplification)
+			force = 60
 		else
 			force = 30
 		..(M, user, attackchain_flags, damage_multiplier)
