@@ -214,6 +214,7 @@
 #include "shuttle_move_atmos_exposure.dm"
 #include "signal_teardown.dm"
 // #include "siunit.dm"
+#include "skillchips.dm"
 #include "sort_tim.dm"
 #include "space_cleaner_gentle.dm"
 #include "spatial_grid.dm"
