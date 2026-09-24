@@ -89,6 +89,13 @@
 	apply_custom_properties(new_item)
 	summoned_items += new_item
 	new_item.AddComponent(/datum/component/summoned_item, holographic_filter)
+	RegisterSignal(new_item, COMSIG_PARENT_QDELETING, PROC_REF(on_summoned_item_del))
+
+/// Removes a summoned item from the tracking list once it's been deleted.
+/datum/nifsoft/summoner/proc/on_summoned_item_del(atom/source)
+	SIGNAL_HANDLER
+
+	summoned_items -= source
 
 /// This proc is called while an item is being summoned, use this to modifiy aspects of the item that aren't modified by the component.
 /datum/nifsoft/summoner/proc/apply_custom_properties(obj/item/target_item)
@@ -129,9 +136,16 @@
 				stored_item.set_light(SUMMONED_ITEM_LIGHT)
 				stored_item.add_atom_colour("#acccff",FIXED_COLOUR_PRIORITY)
 				sub_items += stored_item
+				RegisterSignal(stored_item, COMSIG_PARENT_QDELETING, PROC_REF(on_sub_item_del))
+
+/// Removes a stored item from the tracking list once it's been deleted.
+/datum/component/summoned_item/proc/on_sub_item_del(atom/source)
+	SIGNAL_HANDLER
+
+	sub_items -= source
 
 /datum/component/summoned_item/Destroy(force, silent)
-	for(var/obj/item in sub_items)
+	for(var/obj/item in sub_items.Copy())
 		sub_items -= item
 		qdel(item)
 

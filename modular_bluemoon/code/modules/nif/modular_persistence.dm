@@ -26,7 +26,7 @@ GLOBAL_LIST_INIT(modular_persistence_ignored_vars, list(
 		player.save_individual_persistence()
 
 /// Loads the contents of the player's modular_persistence file to their character.
-/datum/controller/subsystem/persistence/proc/load_modular_persistence(obj/item/organ/brain/brain)
+/datum/controller/subsystem/persistence/proc/load_modular_persistence(obj/item/organ/brain/brain, ckey = null)
 	if(!brain)
 		return FALSE
 
@@ -35,7 +35,12 @@ GLOBAL_LIST_INIT(modular_persistence_ignored_vars, list(
 
 	var/mob/living/carbon/human/player = brain.owner
 
-	var/json_file = file("data/player_saves/[player.ckey[1]]/[player.ckey]/modular_persistence.json")
+	ckey = replacetext(ckey || player.ckey, "@", "")
+	if(!ckey)
+		// The player disconnected before roundstart and has no ckey to look up.
+		return FALSE
+
+	var/json_file = file("data/player_saves/[ckey[1]]/[ckey]/modular_persistence.json")
 	var/list/json = fexists(json_file) ? json_decode(file2text(json_file)) : null
 
 	brain.modular_persistence = new(brain, islist(json) ? json["[player.mind?.original_character_slot_index]"] : null)

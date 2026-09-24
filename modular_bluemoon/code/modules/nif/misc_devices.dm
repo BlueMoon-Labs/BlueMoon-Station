@@ -80,6 +80,7 @@
 	var/obj/item/organ/cyberimp/brain/nif/installed_nif = mob_to_repair.getorgan(/obj/item/organ/cyberimp/brain/nif)
 	if(!installed_nif)
 		balloon_alert(user, "[mob_to_repair] lacks a NIF")
+		return FALSE
 
 	if(!do_after(user, 5 SECONDS, mob_to_repair))
 		balloon_alert(user, "repair cancelled")

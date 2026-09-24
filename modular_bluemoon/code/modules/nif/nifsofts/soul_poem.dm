@@ -44,7 +44,7 @@
 	if(!transmitted_message)
 		transmitted_message = "Hello, I am [transmitted_name], it's nice to meet you!"
 
-	transmitted_identifier = linked_mob.ckey
+	transmitted_identifier = md5("[linked_mob]-[world.time]-[rand(1, 999999)]")
 
 	add_message("soul_poem_nifsoft", name, "Hello World")
 	START_PROCESSING(SSobj, src)

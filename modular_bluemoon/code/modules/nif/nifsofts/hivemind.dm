@@ -56,11 +56,24 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 	linked_keyboard = null
 
 	for(var/datum/component/mind_linker/active_linking/nif/hivemind as anything in network_list)
+		if(hivemind == user_network) // Don't tell the owner they left their own network.
+			continue
+
 		hivemind.linked_mobs -= linked_mob
 		var/mob/living/hivemind_owner = hivemind.parent
 
 		to_chat(hivemind_owner, span_abductor("[linked_mob] has left your Hivemind."))
 		to_chat(linked_mob, span_abductor("You have left [hivemind_owner]'s Hivemind."))
+
+	// Clean up the owner's network from everyone still connected to it before it gets deleted.
+	for(var/mob/living/carbon/human/hivemind_member as anything in user_network.linked_mobs)
+		var/datum/nifsoft/hivemind/member_hivemind = hivemind_member.find_nifsoft(/datum/nifsoft/hivemind)
+		if(QDELETED(member_hivemind))
+			continue
+
+		member_hivemind.network_list -= user_network
+		if(member_hivemind.active_network == user_network)
+			member_hivemind.active_network = member_hivemind.user_network
 
 	qdel(user_network)
 	return ..()
@@ -134,8 +147,7 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 	var/mob/living/carbon/human/user = owner
 	var/datum/nifsoft/hivemind/hivemind = user.find_nifsoft(/datum/nifsoft/hivemind)
 
-	var/list/network_list = hivemind.network_list
-	network_list -= hivemind.user_network
+	var/list/network_list = hivemind.network_list - hivemind.user_network
 
 	var/datum/component/mind_linker/active_linking/nif/hivemind_to_leave = tgui_input_list(user, "Choose a Hivemind to disconnect from.", "Remove Hivemind", network_list)
 	if(!hivemind_to_leave)
@@ -281,20 +293,34 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 	send_message(user)
 
 /obj/item/hivemind_keyboard/proc/send_message(mob/living/carbon/human/user)
-	var/mob/living/carbon/human/keyboard_owner = source_user?.resolve()
-	var/mob/living/carbon/human/network_owner = connected_network.parent
-	var/message = tgui_input_text(user, "Enter a message to transmit.", "[connected_network.network_name] Telepathy")
+	// Verify the person actually using the keyboard is the one it belongs to.
+	if(!source_user?.resolve() || source_user.resolve() != user)
+		return
+
+	var/datum/component/mind_linker/active_linking/nif/network = connected_network
+	if(QDELETED(network) || (!(user in network.linked_mobs) && user != network.parent))
+		return
+
+	var/mob/living/carbon/human/network_owner = network.parent
+	var/message = tgui_input_text(user, "Enter a message to transmit.", "[network.network_name] Telepathy")
 	if(!message || QDELETED(src) || QDELETED(user) || user.stat == DEAD)
 		return
 
-	if(QDELETED(connected_network))
+	// Access can change while the input dialog is open - re-validate before sending.
+	network = connected_network
+	if(QDELETED(network) || !source_user?.resolve() || source_user.resolve() != user)
 		to_chat(user, span_warning("The link seems to have been severed."))
 		return
 
-	var/formatted_message = "<i><font color=[connected_network.chat_color]>\ [network_owner.real_name]'s [connected_network.network_name]\] <b>[keyboard_owner]:</b> [message]</font></i>"
-	log_directed_talk(user, network_owner, message, LOG_SAY, "mind link ([connected_network.network_name])")
+	if(!(user in network.linked_mobs) && user != network.parent)
+		to_chat(user, span_warning("You are no longer a member of this Hivemind."))
+		return
 
-	var/list/all_who_can_hear = assoc_to_keys(connected_network.linked_mobs) + network_owner
+	var/mob/living/carbon/human/sender = source_user.resolve()
+	var/formatted_message = "<i><font color=[network.chat_color]>\ [network_owner.real_name]'s [network.network_name]\] <b>[sender]:</b> [message]</font></i>"
+	log_directed_talk(user, network_owner, message, LOG_SAY, "mind link ([network.network_name])")
+
+	var/list/all_who_can_hear = assoc_to_keys(network.linked_mobs) + network_owner
 
 	for(var/mob/living/recipient as anything in all_who_can_hear)
 		to_chat(recipient, formatted_message)

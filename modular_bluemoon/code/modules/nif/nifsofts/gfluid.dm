@@ -42,9 +42,7 @@
 	var/use_blacklist = TRUE
 
 /datum/action/innate/genital_fluid_infuse/Activate()
-	. = ..()
-	if(!.)
-		return
+	..()
 
 	// Set list of possible genitals
 	var/list/obj/item/organ/genital/genitals_list
