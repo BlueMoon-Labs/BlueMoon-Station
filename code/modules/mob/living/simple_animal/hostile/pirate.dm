@@ -27,7 +27,7 @@
 	random_loot = list(
 		/obj/item/clothing/shoes/combat/swat/knife = 15,
 		/obj/item/melee/transforming/energy/sword/pirate = 5,
-		/obj/item/broken/pirate_sword = 40
+		/obj/item/broken/pirate_sword = 40,
 		/obj/item/clothing/under/syndicate = 15,
 		null = 25
 	)
@@ -125,11 +125,10 @@
 	speak_emote = list("yarrs")
 	del_on_death = 1
 	faction = list("pirate")
-	loot = list(/obj/item/melee/transforming/energy/sword/pirate)
 	random_loot = list(
 		/obj/item/clothing/shoes/combat/swat/knife = 15,
 		/obj/item/melee/transforming/energy/sword/pirate = 5,
-		/obj/item/broken/pirate_sword = 40
+		/obj/item/broken/pirate_sword = 40,
 		/obj/item/clothing/under/syndicate = 15,
 		null = 25
 	)
