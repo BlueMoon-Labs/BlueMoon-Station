@@ -10,8 +10,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	var/atom/target = null
 	var/mutable_appearance/plastic_overlay
-	var/light_exp_range = 5
-	var/heavy_range = 2
+	var/light_exp_range = 3
+	var/heavy_range = 0
 	var/devastation_range = 0
 	var/list/attached_detonators = list()
 
