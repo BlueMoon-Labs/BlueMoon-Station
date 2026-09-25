@@ -80,6 +80,7 @@
 		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard points transfer card",	/obj/item/card/contraband_point_card,							100,	"Tools"),
+		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												4000,	"Tools"),
 		new /datum/data/bounty_equipment("Weapon blueprints",				/obj/item/disk/weapon_blueprint,								7500,	"Tools"),
 		new /datum/data/bounty_equipment("B&R kit",							/obj/item/storage/box/demolition,								1200,	"Tools"),
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
