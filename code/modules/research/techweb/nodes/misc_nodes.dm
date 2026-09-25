@@ -33,7 +33,7 @@
 	description = "Research on how to fully exploit the power of plasma."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("basic_plasma")
-	design_ids = list("mech_plasma_cutter")
+	design_ids = list("mech_plasma_cutter", "mod_plasmagen")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3000)
 
 /////////////////////////EMP tech/////////////////////////

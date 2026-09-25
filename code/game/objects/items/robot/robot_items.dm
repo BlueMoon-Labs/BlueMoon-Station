@@ -63,6 +63,7 @@
 	var/scooldown = 0
 	var/shockallowed = FALSE//Can it be a stunarm when emagged. Only PK borgs get this by default.
 	var/boop = FALSE
+	var/shock_hug_cooldown = 5 SECONDS
 
 /obj/item/borg/cyborghug/attack_self(mob/living/user)
 	if(iscyborg(user))
@@ -147,7 +148,7 @@
 								"<span class='danger'>You shock [M] to no effect.</span>")
 					playsound(loc, 'sound/effects/sparks2.ogg', 50, 1, -1)
 					user.cell.charge -= 500
-					scooldown = world.time + 20
+					scooldown = world.time + shock_hug_cooldown
 		if(3)
 			if(ccooldown < world.time)
 				if(M.health >= 0)
@@ -159,8 +160,8 @@
 								"<span class='danger'>You crush [M]!</span>")
 					playsound(loc, 'sound/weapons/smash.ogg', 50, 1, -1)
 					M.adjustBruteLoss(15)
-					user.cell.charge -= 300
-					ccooldown = world.time + 10
+					user.cell.charge -= 1000
+					ccooldown = world.time + shock_hug_cooldown
 
 /obj/item/borg/cyborghug/peacekeeper
 	shockallowed = TRUE

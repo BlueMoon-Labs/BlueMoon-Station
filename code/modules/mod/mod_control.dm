@@ -1,3 +1,6 @@
+GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
+//увы в дефайны МОДов этот список не пихнуть, потому что дефайны слотов компилятся позже
+
 /obj/item/mod
 	name = "Base MOD"
 	desc = "Вы не должны это видеть, кричите на кодера!"
@@ -141,10 +144,10 @@
 	cell.charge = max(0, cell.charge - (cell_drain + malfunctioning_charge_drain)*delta_time)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
-		if(is_malfunctioning() && module.active && DT_PROB(5, delta_time))
+		if(is_malfunctioning() && module.active && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time))
 			module.on_deactivation()
 		module.on_process(delta_time)
-	if(is_malfunctioning() && DT_PROB(5, delta_time)) //Случайное отключение/включение при ЕМП
+	if(is_malfunctioning() && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time)) //Случайное отключение/включение при ЕМП
 		toggle_activate()
 
 /obj/item/mod/control/equipped(mob/user, slot)
@@ -290,65 +293,62 @@
 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
-//TODO: Вынести каждый кейс в отдельный proc. Эта функция становится трудночитаемой.
+/obj/item/mod/control/welder_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(is_open() || !tool.tool_start_check(user, amount=5))
+		return
+
+	if(tool.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
+		balloon_alert(user, "Успешно")
+		toggle_state(MOD_WELDED)
+		return
+
+/obj/item/mod/control/wirecutter_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(!is_open())
+		return
+	wires.interact(user)
+
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
-		if(!attacking_item.tool_start_check(user, amount=5))
-			return
-		if(attacking_item.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
-			balloon_alert(user, "Успешно")
-			toggle_state(MOD_WELDED)
-			return
+	// if(!is_open() && !attacking_item.tool_behaviour)
+	// 	balloon_alert(user, "Откройте панель!")
+	// 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+	// 	return FALSE
 	if(istype(attacking_item, /obj/item/paicard))
-		if(!is_open()) //mod must be open
-			balloon_alert(user, "панель костюма должна быть открыта!")
-			return FALSE
-		if(can_install_pai)
-			insert_pai(user, attacking_item)
-			return TRUE
+		return handle_paicard_insertion(attacking_item, user)
+
 	if(istype(attacking_item, /obj/item/slimepotion))
-		var/obj/item/slimepotion/potion = attacking_item
-		for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
-			potion.afterattack(piece, user)
-		return TRUE
+		return handle_slimepotion_effect(attacking_item, user)
+
 	if(istype(attacking_item, /obj/item/mod/module))
-		if(!is_open())
-			balloon_alert(user, "сначала откройте панель!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
-		install(attacking_item, user)
-		return TRUE
+		return handle_module_inserting(attacking_item, user)
+
 	else if(istype(attacking_item, /obj/item/stock_parts/cell))
-		if(!is_open())
-			balloon_alert(user, "сначала откройте панель!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
-		if(cell)
-			if(!do_after(user, 1 SECONDS, target = src))
-				balloon_alert(user, "прервано!")
-				return FALSE
-			playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
-			cell.forceMove(drop_location())
-			user.put_in_hands(cell)
-		attacking_item.moveToNullspace()
-		mod_parts[MOD_PART_CELL] = attacking_item
-		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
-		update_cell_alert()
-		return TRUE
-	else if(is_wire_tool(attacking_item) && is_open())
-		wires.interact(user)
-		return TRUE
-	else if(is_open() && attacking_item.GetID())
-		update_access(user, attacking_item)
-		return TRUE
+		return handle_attack_cell(attacking_item, cell, user)
+
+	else if(attacking_item.GetID())
+		handle_change_access(attacking_item, user)
 	return ..()
+
+/obj/item/mod/control/proc/disable_emp_status()
+	if(!is_malfunctioning() || QDELETED(src))
+		return
+	DISABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	interface_break = FALSE
+	if(wearer)
+		balloon_alert(wearer, "Системы вернулись в норму")
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
 	to_chat(wearer, span_notice("Обнаружен [severity > 1 ? "слабый" : "сильный"] электромагнитный импульс!"))
 	if(!is_active() || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
+	//Так как модули находятся в null спейсе, emp_act до них не доходит. Приходится вручную перебирать
+	for(var/obj/item/mod/module/emp_target as anything in modules)
+		emp_target.emp_act(severity)
+	ENABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	addtimer(CALLBACK(src, PROC_REF(disable_emp_status)), 5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 	selected_module = null
 	if(have_emp_special) //некоторые особые модули дают высокую уязвимость к ЕМП носителю.
 		emp_special(severity) //если есть ЕМП защита, то до этого прока даже не доходит.
@@ -361,7 +361,7 @@
 
 /obj/item/mod/control/on_outfit_equip(mob/living/carbon/human/outfit_wearer, visuals_only, item_slot)
 	if(visuals_only)
-		set_wearer(outfit_wearer) //we need to set wearer manually since it doesnt call equipped
+		set_wearer(outfit_wearer)
 	quick_activation()
 
 /obj/item/mod/control/proc/check_can_item_can_unlock(obj/item/target_item)
@@ -500,45 +500,22 @@
 /obj/item/mod/control/proc/install(module, mob/user)
 	var/obj/item/mod/module/new_module = module
 	for(var/obj/item/mod/module/old_module as anything in modules)
-		if(is_type_in_list(new_module, old_module.incompatible_modules) || is_type_in_list(old_module, new_module.incompatible_modules))
-			if(user)
-				balloon_alert(user, "[new_module] несовместим с [old_module]!")
-				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		if(!check_modules_in_restricted_list(old_module, new_module, module, user))
 			return
-		if(new_module.module_type == MODULE_ARMOR)
+		if(new_module.is_armor_module())
 			var/obj/item/mod/module/armor/armor_module = module
-			if(!theme.compatible_with_armor_modules)
-				balloon_alert(user, "Несовместимо!")
-				return
-			if(!armor_module.armor_type)
-				balloon_alert(user, "Модуль не завершен!")
-				to_chat(user, span_alertwarning("Для завершения модуля брони вам нужно добавить в него материал. Для просмотра рецепта осмотрите сам модуль дважды"))
+			if(!check_compatible_theme_with_armor(user) || !armor_module.check_unfinished_armor_state(user))
 				return
 			var/armor_by_type_num = 0
 			for(var/obj/item/mod/module/armor/also_module in modules)
-				if(armor_module.armor_type != also_module.armor_type)
+				if(armor_module.armor_module_type != also_module.armor_module_type)
 					continue
 				armor_by_type_num += 1
-			if(armor_by_type_num >= max_armor_module_count)
-				balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
-				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+			if(!check_max_count_armor(armor_by_type_num, armor_module, user))
 				return
-	if(is_type_in_list(module, theme.module_blacklist))
-		if(user)
-			balloon_alert(user, "[src] не принимает [new_module]!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+	if(!check_new_complexity(new_module, user))
 		return
-	var/complexity_with_module = complexity
-	complexity_with_module += new_module.complexity
-	if(complexity_with_module > complexity_max)
-		if(user)
-			balloon_alert(user, "[new_module] превышает вместимость [src]!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return
-	new_module.moveToNullspace()
-	modules += new_module
-	complexity += new_module.complexity
-	new_module.mod = src
+	handle_pre_install(new_module)
 	new_module.on_install()
 	if(wearer)
 		new_module.on_equip()
@@ -546,11 +523,9 @@
 		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
-
 /obj/item/mod/control/proc/uninstall(module, user, deleting = FALSE)
 	var/obj/item/mod/module/old_module = module
 	if(!(old_module in modules))
-
 		old_module.mod = null
 		return
 	modules -= old_module
@@ -570,7 +545,7 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	req_access = card.access.Copy()
-	balloon_alert(user, "access updated")
+	balloon_alert(user, "доступ обновлён")
 
 /obj/item/mod/control/proc/update_cell_alert()
 	var/obj/item/stock_parts/cell/cell = get_cell()
@@ -609,11 +584,9 @@
 
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)
 	SIGNAL_HANDLER
-	if(part == src)
+	if(part.loc == src || part == src)
 		return
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(part.loc == src)
-		return
 	if(part == cell)
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()

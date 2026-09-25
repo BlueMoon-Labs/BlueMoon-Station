@@ -1182,6 +1182,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSparallax.currentrun -= src
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
+	GLOB.mentor_tickets?.ClientLogout(src)
 
 	if(credits)
 		QDEL_LIST(credits)
@@ -1262,6 +1263,22 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	QDEL_NULL(void)
 	QDEL_NULL(void_right)
 	QDEL_NULL(void_bottom)
+	SSmouse_entered.hovers -= src
+	SSchat.payload_by_client -= src
+	GLOB.requests.client_logout(src)
+	if(plug13?.owner == src)
+		plug13.owner = null
+	if(mentor_datum?.owner == src)
+		mentor_datum.owner = null
+	GLOB.mentors -= src
+	var/datum/tattoo_manager/tattoo_manager = GLOB.tattoo_managers[ckey]
+	if(tattoo_manager)
+		GLOB.tattoo_managers -= ckey
+		qdel(tattoo_manager)
+	for(var/menu_id in GLOB.radial_menus)
+		var/datum/radial_menu/menu = GLOB.radial_menus[menu_id]
+		if(menu?.current_user == src)
+			menu.current_user = null
 	screen.Cut()
 	images.Cut()
 

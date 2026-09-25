@@ -96,7 +96,7 @@
 /obj/effect/turf_decal{
 	icon_state = "warningline_white"
 	},
-/obj/machinery/suit_storage_unit/inteq_spacesuit,
+/obj/machinery/suit_storage_unit/syndicate/softsuit,
 /turf/open/floor/pod/dark,
 /area/ruin/space/has_grav/powered/infestedship)
 "bJ" = (
@@ -1696,10 +1696,11 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/powered/infestedship)
 "zV" = (
-/obj/machinery/suit_storage_unit/open,
 /obj/effect/turf_decal{
 	icon_state = "warningline_white"
 	},
+/obj/machinery/suit_storage_unit/syndicate/softsuit,
+/obj/machinery/suit_storage_unit/syndicate/softsuit,
 /turf/open/floor/pod/dark,
 /area/ruin/space/has_grav/powered/infestedship)
 "Ah" = (

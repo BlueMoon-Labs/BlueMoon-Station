@@ -694,10 +694,8 @@ SUBSYSTEM_DEF(shuttle)
 		if(!port || port.z != z)
 			continue
 		var/list/bounds = port.return_coords()
-		var/list/overlap = get_overlap(x0, y0, x1, y1, bounds[1], bounds[2], bounds[3], bounds[4])
-		var/list/xs = overlap[1]
-		var/list/ys = overlap[2]
-		if(xs.len && ys.len)
+		var/list/overlap = get_rect_overlap(x0, y0, x1, y1, bounds[1], bounds[2], bounds[3], bounds[4])
+		if(overlap)
 			.[port] = overlap
 
 /datum/controller/subsystem/shuttle/proc/update_hidden_docking_ports(list/remove_turfs, list/add_turfs)

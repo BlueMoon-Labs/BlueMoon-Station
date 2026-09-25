@@ -39,17 +39,16 @@ SUBSYSTEM_DEF(minor_mapping)
 // 		SEND_SIGNAL(F, COMSIG_OBJ_HIDE, T.intact)
 // 		amount--
 
-/proc/find_exposed_wires()
+/proc/find_exposed_wires(list/z_levels = SSmapping.levels_by_trait(ZTRAIT_STATION))
 	var/list/exposed_wires = list()
-
-	var/list/all_turfs
-	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
-		all_turfs += block(locate(1,1,z), locate(world.maxx,world.maxy,z))
-	for(var/turf/open/floor/plating/T in all_turfs)
-		if(is_blocked_turf(T))
+	var/list/checked_turfs = list()
+	for(var/obj/structure/cable/cable as anything in GLOB.cable_list)
+		var/turf/open/floor/plating/cable_turf = cable.loc
+		if(!istype(cable_turf) || checked_turfs[cable_turf] || !(cable_turf.z in z_levels))
 			continue
-		if(locate(/obj/structure/cable) in T)
-			exposed_wires += T
+		checked_turfs[cable_turf] = TRUE
+		if(!is_blocked_turf(cable_turf))
+			exposed_wires += cable_turf
 
 	return shuffle(exposed_wires)
 

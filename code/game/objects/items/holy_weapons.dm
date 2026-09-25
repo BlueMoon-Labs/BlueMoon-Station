@@ -778,8 +778,9 @@
 	name = "monk's staff"
 	desc = "A long, tall staff made of polished wood. Traditionally used in ancient old-Earth martial arts, it is now used to harass the clown."
 	w_class = WEIGHT_CLASS_BULKY
-	force = 15
+	force = 24
 	block_chance = 40
+	armour_penetration = 100
 	slot_flags = ITEM_SLOT_BACK
 	sharpness = SHARP_NONE
 	hitsound = "swing_hit"
@@ -789,6 +790,10 @@
 	item_state = "bostaff0"
 	lefthand_file = 'icons/mob/inhands/weapons/staves_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/staves_righthand.dmi'
+
+/obj/item/nullrod/claymore/bostaff/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, require_twohands = TRUE)
 
 /obj/item/nullrod/claymore/bostaff/attack(mob/target, mob/living/user)
 	add_fingerprint(user)

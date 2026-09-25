@@ -1443,6 +1443,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "ears" = "None",
 "wings" = "None",
 "wings_color" = "FFF",
+"insect_fluff_color" = null,
+"insect_markings_color" = null,
 "frills" = "None",
 "deco_wings" = "None",
 "spines" = "None",
@@ -1616,6 +1618,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_horns_color"] 				>> features["horns_color"]
 	S["feature_wings_color"] 				>> features["wings_color"]
 	S["feature_color_scheme"] 				>> features["color_scheme"]
+	S["feature_insect_fluff_color"] >> features["insect_fluff_color"]
+	S["feature_insect_markings_color"] >> features["insect_markings_color"]
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
 	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
@@ -1990,6 +1994,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	features["horns_color"] = sanitize_hexcolor(features["horns_color"], 6, FALSE, "85615a")
 	features["wings_color"] = sanitize_hexcolor(features["wings_color"], 6, FALSE, "FFFFFF")
+	features["insect_fluff_color"] = sanitize_hexcolor(features["insect_fluff_color"], 6, FALSE, features["wings_color"])
+	features["insect_markings_color"] = sanitize_hexcolor(features["insect_markings_color"], 6, FALSE, features["wings_color"])
 	backbag = sanitize_inlist(backbag, GLOB.backbaglist, initial(backbag))
 	jumpsuit_style = sanitize_inlist(jumpsuit_style, GLOB.jumpsuitlist, initial(jumpsuit_style))
 	uplink_spawn_loc = sanitize_inlist(uplink_spawn_loc, GLOB.uplink_spawn_loc_list, initial(uplink_spawn_loc))
@@ -2362,6 +2368,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_deco_wings"]					, features["deco_wings"])
 	WRITE_FILE(S["feature_horns_color"]					, features["horns_color"])
 	WRITE_FILE(S["feature_wings_color"]					, features["wings_color"])
+	WRITE_FILE(S["feature_insect_fluff_color"], features["insect_fluff_color"])
+	WRITE_FILE(S["feature_insect_markings_color"], features["insect_markings_color"])
 	WRITE_FILE(S["feature_insect_wings"]				, features["insect_wings"])
 	WRITE_FILE(S["feature_insect_fluff"]				, features["insect_fluff"])
 	WRITE_FILE(S["feature_insect_markings"]				, features["insect_markings"])

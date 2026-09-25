@@ -1,3 +1,6 @@
+#define BORG_UPGRD_ADV_TOOLS /obj/item/scalpel/advanced/cyborg, /obj/item/retractor/advanced/cyborg, /obj/item/surgicaldrill/advanced/cyborg
+#define BORG_UPGRD_BASIC_TOOLS /obj/item/retractor/upgraded_t2/cyborg, /obj/item/hemostat/upgraded_t2/cyborg, /obj/item/cautery/upgraded_t2/cyborg, /obj/item/surgicaldrill, /obj/item/scalpel/upgraded_t2/cyborg, /obj/item/circular_saw/upgraded_t2/cyborg
+
 /obj/item/borg/upgrade/advmed_tools
 	name = "cyborg advanced surgical tools"
 	desc = "A replacement for the medical module's standard surgical equipment. Provides the cyborg with brand-new advanced tools."
@@ -6,12 +9,9 @@
 	module_type = list(/obj/item/robot_module/medical)
 	module_flags = BORG_MODULE_MEDICAL
 	/// Инструменты, которые лучше предыдущих, на замену
-	var/list/adv_tools = list(/obj/item/scalpel/advanced/cyborg,
-		/obj/item/retractor/advanced/cyborg,
-		/obj/item/surgicaldrill/advanced/cyborg
-	)
+	var/list/adv_tools = list(BORG_UPGRD_ADV_TOOLS)
 	/// Базовые инструменты, что мы заменяем или возвращаем
-	var/list/basic_tools = list(/obj/item/retractor/upgraded_t2/cyborg, /obj/item/hemostat/upgraded_t2/cyborg, /obj/item/cautery/upgraded_t2/cyborg, /obj/item/surgicaldrill, /obj/item/scalpel/upgraded_t2/cyborg, /obj/item/circular_saw/upgraded_t2/cyborg)
+	var/list/basic_tools = list(BORG_UPGRD_BASIC_TOOLS)
 
 /obj/item/borg/upgrade/advmed_tools/action(mob/living/silicon/robot/R, user = usr)
 	. = ..()
@@ -68,11 +68,20 @@
 			R.module.remove_module(I, TRUE)
 
 	// Возвращение старых хирургических инструментов.
-	for (var/newtype in basic_tools)
+	for (var/newtype in list(BORG_UPGRD_BASIC_TOOLS))
 		if(!(locate(newtype) in R.module.modules))
 			var/obj/item/basic = new newtype(R.module)
 			R.module.basic_modules += basic
 			R.module.add_module(basic, FALSE, TRUE)
+
+/obj/item/borg/upgrade/advmed_tools/alien
+	name = "cyborg alien combi surgical tools"
+	desc = "A replacement for the medical module's standard surgical equipment. Provides the cyborg with alien combi tools."
+	adv_tools = list(/obj/item/scalpel/advanced/alien/cyborg, /obj/item/retractor/advanced/alien/cyborg, /obj/item/surgicaldrill/advanced/alien/cyborg)
+	basic_tools = list(BORG_UPGRD_BASIC_TOOLS, BORG_UPGRD_ADV_TOOLS)
+
+#undef BORG_UPGRD_ADV_TOOLS
+#undef BORG_UPGRD_BASIC_TOOLS
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 

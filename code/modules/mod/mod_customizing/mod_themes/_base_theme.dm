@@ -20,7 +20,7 @@
 	/// Default skin of the MOD.
 	var/default_skin = "standard"
 	/// Armor shared across the MOD pieces.
-	var/armor = list(MELEE = 10, BULLET = 5, LASER = 5, ENERGY = 5, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 5, RAD = 0)
+	var/armor = /datum/armor/mod
 	/// Resistance flags shared across the MOD pieces.
 	var/resistance_flags = NONE
 	/// Max heat protection shared across the MOD pieces.
@@ -53,6 +53,7 @@
 	var/can_activate_without_deploy_all_parts = TRUE
 	var/need_block_storage_when_not_active = FALSE
 	var/compatible_with_armor_modules = TRUE
+	var/overwrite_desc = FALSE
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = MOD_PRESET_DEFAULT,
@@ -62,7 +63,7 @@
 
 /datum/mod_theme/proc/apply_theme_stats(obj/item/mod/control/modsuit, new_skin)
 	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
-		piece.armor = getArmor(arglist(armor))
+		piece.normal_set_armor(armor)
 		piece.resistance_flags = resistance_flags
 		piece.heat_protection = NONE
 		piece.cold_protection = NONE
@@ -83,6 +84,8 @@
 	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
 		piece.name = "[name] [piece.name]"
 		piece.desc = "[piece.desc] [desc]"
+		if(overwrite_desc) //Если кого-то из донатеров будет корёжить, что их "особое" описание совмещается с дефолтным, от куска МОДа.
+			piece.desc = "[desc]"
 		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
 		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
 
@@ -100,3 +103,50 @@
 	mod_effect.apply_color(hardlight_color)
 	apply_theme_stats(modsuit, new_skin)
 	return TRUE
+
+/datum/mod_theme/simple_civilian
+	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
+
+/datum/mod_theme/engineering
+	allowed = ALLOWED_ENGINERING
+	siemens_coefficient = 0
+
+/datum/mod_theme/engineering/fire_protected
+	resistance_flags = FIRE_PROOF
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+
+/datum/mod_theme/cargo_default
+	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
+	cell_drain = VERY_HIGHT_CHARGE_DRAIN
+	hardlight_color = MOD_CARGO_BLUE
+	allowed = ALLOWED_CARGO
+
+/datum/mod_theme/centcom
+	resistance_flags = FIRE_PROOF|ACID_PROOF
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	siemens_coefficient = 0
+	allowed = ALLOWED_SECURITY
+	complexity_max = CENTCOM_MAX_COMPLEXITY
+	hardlight_color = MOD_COMMAND_COLOR
+
+/datum/mod_theme/station_combat
+	siemens_coefficient = 0
+	allowed = ALLOWED_SECURITY
+	hardlight_color = MOD_SEC_COLOR
+	resistance_flags = FIRE_PROOF|ACID_PROOF
+	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
+	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
+
+/datum/mod_theme/station_medbay
+	allowed = ALLOWED_MEDICAL
+	resistance_flags = FIRE_PROOF|ACID_PROOF
+	hardlight_color = MOD_MEDBAY_COLOR
+	cell_drain = CIVILIAN_LOW_CHARGE_DRAIN
+	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
+
+/datum/mod_theme/antagonist
+	complexity_max = ANTAG_MAX_COMPLEXITY
+	siemens_coefficient = 0
+	allowed = ALLOWED_ANTAG
+	compatible_with_armor_modules = FALSE
+	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize

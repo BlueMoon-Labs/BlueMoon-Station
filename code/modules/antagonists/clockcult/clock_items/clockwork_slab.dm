@@ -125,6 +125,9 @@
 	. = ..()
 	addtimer(CALLBACK(src, PROC_REF(check_on_mob), user), 1) //dropped is called before the item is out of the slot, so we need to check slightly later
 
+/obj/item/clockwork/slab/item_action_slot_check(slot, mob/user, datum/action/action)
+	return !!(slot & (ITEM_SLOT_HANDS | ITEM_SLOT_LPOCKET | ITEM_SLOT_RPOCKET | ITEM_SLOT_BELT))
+
 /obj/item/clockwork/slab/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
 	. = ..()
 	if(isinhands && item_state && inhand_overlay)
@@ -424,5 +427,5 @@
 			Q.desc = quickbind_slot.quickbind_desc
 			Q.button_icon_state = quickbind_slot.name
 			Q.UpdateButtons()
-			if(isliving(loc))
+			if(isliving(loc) && item_action_slot_check(current_equipped_slot, loc, Q))
 				Q.Grant(loc)

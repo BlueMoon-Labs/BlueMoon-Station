@@ -1528,7 +1528,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	ears = /obj/item/radio/headset/ds2
 	back = /obj/item/storage/backpack/duffelbag/syndie/backpack
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		)
 	id = /obj/item/card/id/syndicate/advanced/ds
@@ -1552,7 +1552,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	head = /obj/item/clothing/head/soft/sec/syndicate
 	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/eng
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		)
 	l_pocket = /obj/item/storage/bag/material
 	r_pocket = /obj/item/storage/bag/construction
@@ -1582,7 +1582,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	id = /obj/item/card/id/syndicate/advanced/ds/stationmed
 	id_trim = /datum/id_trim/syndicom/ds2/medicalofficer
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		/obj/item/storage/firstaid/tactical = 1,
 		)
@@ -1613,7 +1613,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	ears = /obj/item/radio/headset/ds2/command
 	back = /obj/item/storage/backpack/duffelbag/syndie/backpack/com
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		/obj/item/lighter/gonzofist = 1)
 	id = /obj/item/card/id/syndicate/advanced/ds/gold/command

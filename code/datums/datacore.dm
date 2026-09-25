@@ -283,12 +283,12 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 /datum/data/record/Destroy()
 	// Консоли кэшируют выбранную запись в active1/active2 и обнуляют их только в
 	// собственном Destroy - удалённая запись иначе висит на консоли вечно.
-	for(var/obj/machinery/computer/secure_data/sec_console in GLOB.machines)
+	for(var/obj/machinery/computer/secure_data/sec_console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/secure_data))
 		if(sec_console.active1 == src)
 			sec_console.active1 = null
 		if(sec_console.active2 == src)
 			sec_console.active2 = null
-	for(var/obj/machinery/computer/med_data/med_console in GLOB.machines)
+	for(var/obj/machinery/computer/med_data/med_console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/med_data))
 		if(med_console.active1 == src)
 			med_console.active1 = null
 		if(med_console.active2 == src)

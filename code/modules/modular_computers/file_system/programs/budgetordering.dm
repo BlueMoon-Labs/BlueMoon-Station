@@ -69,6 +69,19 @@
 
 	return FALSE
 
+// BLUEMOON ADD START - паки консолей Тарков и Deep Space недоступны через приложение
+/datum/computer_file/program/budgetorders/proc/is_exclusive_pack(datum/supply_pack/P)
+	if(!P?.exclusive_consoles)
+		return FALSE
+	var/list/consoles = islist(P.exclusive_consoles) ? P.exclusive_consoles : list(P.exclusive_consoles)
+	for(var/console_type in consoles)
+		if(ispath(console_type, /obj/machinery/computer/cargo/express/tar))
+			return TRUE
+		if(ispath(console_type, /obj/machinery/computer/cargo/express/ds))
+			return TRUE
+	return FALSE
+// BLUEMOON ADD END
+
 /datum/computer_file/program/budgetorders/ui_data()
 	. = ..()
 	var/list/data = get_header_data()
@@ -96,6 +109,10 @@
 	data["supplies"] = list()
 	for(var/pack in SSshuttle.supply_packs)
 		var/datum/supply_pack/P = SSshuttle.supply_packs[pack]
+		// BLUEMOON ADD START - скрываем паки консолей /tar и /ds
+		if(is_exclusive_pack(P))
+			continue
+		// BLUEMOON ADD END
 		if(!is_visible_pack(usr, P.access , null, P.contraband) || P.hidden)
 			continue
 		if(!data["supplies"][P.group])
@@ -197,6 +214,10 @@
 			var/datum/supply_pack/pack = SSshuttle.supply_packs[id]
 			if(!istype(pack))
 				return
+			// BLUEMOON ADD START - паки консолей /tar и /ds нельзя заказать через приложение
+			if(is_exclusive_pack(pack))
+				return
+			// BLUEMOON ADD END
 			if((pack.hidden && (pack.contraband && !contraband) || pack.DropPodOnly))
 				return
 

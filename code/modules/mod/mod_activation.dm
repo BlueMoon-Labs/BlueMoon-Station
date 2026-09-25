@@ -90,16 +90,16 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	if(!cell?.charge && !force_deactivate)
-		balloon_alert(user, "suit not powered!")
+		balloon_alert(user, "костюм обесточен!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	if(is_open() && !force_deactivate)
-		balloon_alert(user, "close the suit panel!")
+		balloon_alert(user, "закройте панель!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	if(is_activating())
 		if(!force_deactivate)
-			balloon_alert(user, "suit already [is_active() ? "shutting down" : "starting up"]!")
+			balloon_alert(user, "костюм уже [is_active() ? "отключается" : "включается"]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	for(var/obj/item/mod/module/module as anything in modules)

@@ -123,6 +123,7 @@
 	/// Time it takes to teleport
 	var/teleport_time = 3 SECONDS
 	mod_module_flags = MOD_MODULE_SCIENCE // BLUEMOON ADD
+	have_shortcut_activation = TRUE
 
 /obj/item/mod/module/anomaly_locked/teleporter/on_select_use(atom/target)
 	. = ..()

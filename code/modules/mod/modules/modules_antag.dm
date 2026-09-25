@@ -90,7 +90,7 @@
 			с силой, отправляющей ту в полёт."
 	icon_state = "power_kick"
 	module_type = MODULE_ACTIVE
-	cooldown_time = 15 SECONDS
+	cooldown_time = 30 SECONDS
 	device = /obj/item/melee/baseball_bat/powerkick
 
 /obj/item/melee/baseball_bat/powerkick
@@ -101,7 +101,8 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
-	wound_bonus = 12
+	armour_penetration = 100 //за 5 ТК норм.
+	wound_bonus = 20
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)
 	. = ..()
@@ -111,6 +112,20 @@
 	name = "Magic Neutralizer"
 	desc = "Свиток защищающий носителя от магии, при условии, что тот вставлен в костюм. Имеет печать Федерации магов."
 	icon_state = "magic_neutralizer"
+
+/obj/item/mod/module/spellcasting
+	name = "Spellcasting MOD enchanting"
+	desc = "Благославляющий свиток, позволяющий колдовать, нося элементы МОДа, словно в робе мага."
+	icon_state = "magic_neutralizer"
+	removable = FALSE
+
+/obj/item/mod/module/spellcasting/on_install()
+	. = ..()
+	var/obj/item/clothing/mod_part/suit/chest  = mod.get_chestplate()
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+
+	chest.AddElement(/datum/element/spellcasting, SPELL_WIZARD_ROBE, ITEM_SLOT_OCLOTHING)
+	helmet.AddElement(/datum/element/spellcasting, SPELL_WIZARD_HAT, ITEM_SLOT_HEAD)
 
 /obj/item/mod/module/energy_shield/syndie
 	name = "Cybersun Energy Shield module"

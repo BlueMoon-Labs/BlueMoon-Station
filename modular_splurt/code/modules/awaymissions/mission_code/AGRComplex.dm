@@ -1539,3 +1539,84 @@
 		M.stuttering = min(M.stuttering + 3, 3)
 		..()
 	return TRUE
+
+//Protective runes that ward the expedition spawn zone off from cultists.
+//A cultist is identified by mind and destroyed the moment they try to step across the line.
+/obj/effect/agr_rune_blocker
+	name = "protective rune"
+	desc = "A softly glowing rune inscribed into the dirt. Its light warns the wicked away, and punishes those who prove too stubborn to listen."
+	icon = 'icons/obj/rune.dmi'
+	icon_state = "1"
+	color = RUNE_COLOR_RED
+	light_color = RUNE_COLOR_RED
+	anchored = TRUE
+	density = TRUE
+	layer = SIGIL_LAYER
+	alpha = 220
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	CanAtmosPass = ATMOS_PASS_NO
+	resistance_flags = INDESTRUCTIBLE
+	light_power = 0.7
+	light_range = 1.5
+	var/punish_sound = 'sound/magic/disintegrate.ogg'
+
+/obj/effect/agr_rune_blocker/clockwork
+	name = "protective sigil"
+	desc = "A glowing brass sigil inscribed into the dirt. Its light warns the wicked away, and punishes those who prove too stubborn to listen."
+	icon = 'icons/effects/clockwork_effects.dmi'
+	icon_state = "sigil"
+	color = COLOR_GOLD
+	light_color = COLOR_GOLD
+	punish_sound = 'sound/magic/clockwork/ratvar_attack.ogg'
+
+/obj/effect/agr_rune_blocker/Initialize(mapload)
+	. = ..()
+	air_update_turf(TRUE)
+
+/obj/effect/agr_rune_blocker/Destroy(force)
+	if(!force)
+		return QDEL_HINT_LETMELIVE
+	return ..()
+
+/obj/effect/agr_rune_blocker/proc/is_forbidden(mob/M)
+	return iscultist(M) || is_servant_of_ratvar(M)
+
+/obj/effect/agr_rune_blocker/proc/block_and_punish(mob/living/L)
+	visible_message("<span class='danger'>[src] blazes fiercely as [L] is struck by a wave of protective energy!</span>")
+	to_chat(L, "<span class='userdanger'>The protective magic of the land itself sears through your body!</span>")
+	playsound(src, punish_sound, 100, TRUE)
+	L.dust()
+
+/obj/effect/agr_rune_blocker/CanPass(atom/movable/M, turf/target)
+	var/list/target_contents = M.GetAllContents() + M
+	for(var/mob/living/L in target_contents)
+		if(is_forbidden(L) && L.stat != DEAD)
+			block_and_punish(L)
+			return
+	if(isitem(M))
+		var/obj/item/I = M
+		if(is_forbidden(I.thrownby?.resolve()))
+			visible_message("<span class='danger'>[src] flares up and deflects \the [I]!</span>")
+			return
+	return TRUE
+
+/obj/effect/agr_rune_blocker/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	var/mob/living/L = AM
+	if(isliving(L) && is_forbidden(L) && L.stat != DEAD)
+		block_and_punish(L)
+
+/obj/effect/agr_rune_blocker/BlockThermalConductivity()
+	return TRUE
+
+/obj/effect/agr_rune_blocker/singularity_act()
+	return
+
+/obj/effect/agr_rune_blocker/singularity_pull()
+	return
+
+/obj/effect/agr_rune_blocker/ex_act(severity, target, origin)
+	return
+
+/obj/effect/agr_rune_blocker/safe_throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, force = MOVE_FORCE_STRONG, gentle = FALSE)
+	return

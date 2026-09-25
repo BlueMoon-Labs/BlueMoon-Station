@@ -34,12 +34,16 @@
 /obj/item/pickaxe,
 /turf/open/floor/plating/asteroid,
 /area/shuttle/escape/meteor)
-"i" = (
-/obj/effect/station_crash,
-/turf/open/floor/plating/asteroid,
-/area/shuttle/escape/meteor)
 "k" = (
 /obj/structure/closet/crate,
+/obj/item/storage/firstaid/regular{
+	pixel_x = 2;
+	pixel_y = 3
+	},
+/obj/item/storage/firstaid/regular{
+	pixel_x = 2;
+	pixel_y = 3
+	},
 /turf/open/floor/plating/asteroid,
 /area/shuttle/escape/meteor)
 "l" = (
@@ -57,6 +61,18 @@
 /obj/structure/shuttle/engine/propulsion,
 /turf/open/floor/plating/airless,
 /area/shuttle/escape/meteor)
+"p" = (
+/obj/structure/closet/crate,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/brute,
+/turf/open/floor/plating/asteroid,
+/area/shuttle/escape/meteor)
+"t" = (
+/obj/structure/closet/crate,
+/obj/item/storage/firstaid/fire,
+/obj/item/storage/firstaid/fire,
+/turf/open/floor/plating/asteroid,
+/area/shuttle/escape/meteor)
 "L" = (
 /obj/docking_port/mobile/emergency{
 	dwidth = 20;
@@ -65,6 +81,19 @@
 	name = "\proper a meteor with engines strapped to it";
 	width = 40
 	},
+/turf/open/floor/plating/asteroid,
+/area/shuttle/escape/meteor)
+"P" = (
+/obj/structure/table/wood/poker/shadow,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
+/turf/open/floor/plating/asteroid,
+/area/shuttle/escape/meteor)
+"R" = (
+/obj/vehicle/sealed/mecha/medical/medigax/loaded,
+/turf/open/floor/plating/asteroid,
+/area/shuttle/escape/meteor)
+"S" = (
+/obj/structure/bed/badhaybed,
 /turf/open/floor/plating/asteroid,
 /area/shuttle/escape/meteor)
 
@@ -130,7 +159,7 @@ d
 d
 d
 b
-i
+d
 b
 b
 b
@@ -256,9 +285,9 @@ b
 b
 b
 b
-b
-b
-b
+S
+d
+d
 d
 d
 d
@@ -298,16 +327,16 @@ b
 b
 b
 b
+S
+d
+d
+d
+d
+d
+d
+p
 b
-b
-d
-d
-d
-d
-d
-k
-b
-b
+R
 b
 b
 b
@@ -340,14 +369,14 @@ b
 b
 b
 b
-b
-b
+S
 d
 d
 d
 d
-b
-k
+P
+S
+t
 b
 b
 b

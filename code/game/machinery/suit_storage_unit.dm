@@ -350,9 +350,20 @@
 		new /obj/item/stack/sheet/metal(loc, 2)
 	qdel(src)
 
+/obj/machinery/suit_storage_unit/proc/choice_type_of_suit(mob/living/user)
+	var/user_choice = tgui_input_list(user, "Выберите тип скафандра:", "МОД или Обычный скафандр", list("MODsuit", "Hardsuit"))
+	var/obj/item/suit_to_delete
+	if(user_choice == "MODsuit")
+		suit_to_delete = suit
+	else
+		suit_to_delete = mod
+	if(user_choice) //если пользователь хоть что-то выбрал, то можно удалять.
+		QDEL_NULL(suit_to_delete)
+
 /obj/machinery/suit_storage_unit/interact(mob/living/user)
 	var/static/list/items
-
+	if(suit && mod)
+		choice_type_of_suit(user)
 	if (!items)
 		items = list(
 			"suit" = create_silhouette_of(/obj/item/clothing/suit/space/eva),

@@ -1785,10 +1785,25 @@
 	else
 		return FALSE
 
+/// Есть ли в зоне машина с critical_machine: такие зоны не обесточиваются сбоями питания.
+/proc/area_has_critical_machine(area/checked_area)
+	var/static/list/critical_types
+	if(!critical_types)
+		critical_types = list()
+		for(var/obj/machinery/machine_type as anything in subtypesof(/obj/machinery))
+			if(initial(machine_type.critical_machine))
+				critical_types += machine_type
+		// Пульт ускорителя частиц становится критичным только после сборки, в part_scan().
+		critical_types |= typesof(/obj/machinery/particle_accelerator/control_box)
+	for(var/obj/machinery/machine_type as anything in critical_types)
+		for(var/obj/machinery/machine as anything in SSmachines.get_machines_by_type(machine_type))
+			if(machine.critical_machine && get_area(machine) == checked_area)
+				return TRUE
+	return FALSE
+
 /obj/machinery/power/apc/proc/energy_fail(duration)
-	for(var/obj/machinery/M in area.contents)
-		if(M.critical_machine)
-			return
+	if(area_has_critical_machine(area))
+		return
 	for(var/A in GLOB.ai_list)
 		var/mob/living/silicon/ai/I = A
 		if(get_base_area(I) == area)

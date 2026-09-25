@@ -152,7 +152,7 @@
 	ears = /obj/item/radio/headset/ds1
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		)
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
@@ -190,10 +190,6 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	ears = /obj/item/radio/headset/ds1
 	back = /obj/item/storage/backpack/duffelbag/syndie
-	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
-		/obj/item/crowbar/red = 1,
-		)
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	id = /obj/item/card/id/syndicate/advanced/ds/lavaland/security
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/anchor, /obj/item/implant/deathrattle/deepspacecrew)
@@ -288,7 +284,7 @@
 	ears = /obj/item/radio/headset/ds1
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		/obj/item/storage/firstaid/tactical = 1,
 		)
@@ -320,10 +316,6 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	ears = /obj/item/radio/headset/ds1
 	back = /obj/item/storage/backpack/duffelbag/syndie
-	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
-		/obj/item/crowbar/red = 1,
-		)
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	id = /obj/item/card/id/syndicate/advanced/ds/lavaland/nucleartech
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/anchor, /obj/item/implant/deathrattle/deepspacecrew)
@@ -354,10 +346,6 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	ears = /obj/item/radio/headset/ds1
 	back = /obj/item/storage/backpack/duffelbag/syndie
-	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
-		/obj/item/crowbar/red = 1,
-		)
 	r_pocket = /obj/item/gun/ballistic/automatic/pistol
 	id = /obj/item/card/id/syndicate/advanced/ds/lavaland/mime
 	implants = list(/obj/item/implant/weapons_auth, /obj/item/implant/anchor, /obj/item/implant/deathrattle/deepspacecrew)
@@ -388,7 +376,7 @@
 	ears = /obj/item/radio/headset/ds1/comms
 	back = /obj/item/storage/backpack/duffelbag/syndie
 	backpack_contents = list(
-		/obj/item/storage/box/survival = 1,
+		/obj/item/storage/box/survival/syndie = 1,
 		/obj/item/crowbar/red = 1,
 		/obj/item/lighter/gonzofist = 1
 		)

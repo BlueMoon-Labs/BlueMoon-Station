@@ -214,6 +214,7 @@
 	name = "Station Intercom (General)";
 	pixel_y = 23
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "aJ" = (
@@ -429,6 +430,15 @@
 	dir = 1
 	},
 /turf/open/floor/mineral/titanium/blue,
+/area/shuttle/escape)
+"tR" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the shuttle"
+	},
+/turf/open/floor/mineral/titanium,
 /area/shuttle/escape)
 
 (1,1,1) = {"
@@ -680,7 +690,7 @@ aa
 aa
 ab
 aI
-aJ
+tR
 aM
 aM
 aM

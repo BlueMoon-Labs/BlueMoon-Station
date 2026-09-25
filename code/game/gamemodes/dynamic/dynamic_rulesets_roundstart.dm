@@ -533,7 +533,6 @@
 		new_cultist.clock_team = main_clockcult
 		new_cultist.give_equipment = TRUE
 		M.add_antag_datum(new_cultist)
-		SSticker.mode.equip_servant(M.current)
 		SSticker.mode.greet_servant(M.current)
 	return TRUE
 

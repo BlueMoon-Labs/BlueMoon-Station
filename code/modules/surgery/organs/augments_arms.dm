@@ -448,6 +448,11 @@
 
 		else if(istype(target, /mob/living/carbon/human))
 			var/mob/living/carbon/human/comrade = target
+			if(comrade.is_wearing_mod())
+				var/obj/item/mod/control/target_mod = comrade.is_wearing_mod()
+				var/obj/item/stock_parts/cell/target_cell = target_mod.get_cell()
+				cell_powershare_loop(target_cell, H)
+				do_sparks(1, FALSE, target_mod.drop_location())
 			if(comrade == H)
 				to_chat(H, span_warning("Вы не можете заряжать самого себя!"))
 				return
