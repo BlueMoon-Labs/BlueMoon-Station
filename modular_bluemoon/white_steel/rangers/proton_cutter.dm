@@ -1,8 +1,6 @@
 //WHITE-STEEL PORT - Рейнджеры: протонный резак
 //Перенесено из билда WhiteDream (white/Feline/code/rangers/voucher.dm)
 
-#define isstunmob(A) (istype(A, /mob/living/simple_animal/hostile/zombie) || istype(A, /mob/living/simple_animal/hostile/alien) || istype(A, /mob/living/simple_animal/hostile/poison/giant_spider))
-
 /datum/movespeed_modifier/proton_cutter
 	multiplicative_slowdown = 0.5
 
@@ -10,11 +8,11 @@
 	multiplicative_slowdown = 0.1
 
 /mob/living/simple_animal/proc/re_ai()
-	AIStatus = AI_ON
+	toggle_ai(AI_ON)
 
 /obj/item/melee/sabre/proton_cutter
-	name = "протонный резак"
-	desc = "Массивный абордажный палаш оснащенный генератором гамма излучения, которое негативно сказывается на нервной системе примитивных форм жизни. Так же можно дополнительно форсировать генератор для полной парализации. Эффект на разумные формы жизни значительно снижен."
+	name = "Proton cutter"
+	desc = "A massive boarding sword equipped with a gamma radiation generator, which has a negative effect on the nervous system of primitive life forms. The generator can also be further boosted to achieve complete paralysis. The effect on intelligent life forms is significantly reduced."
 
 	force = 15
 	block_chance = 30
@@ -102,17 +100,23 @@
 /obj/item/melee/sabre/proton_cutter/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)	// 	Атака
 	// 	Мобы
 	if(!iscarbon(M) && !iscyborg(M))
-		if(amplification)
-			if(isstunmob(M))
-				var/mob/living/simple_animal/hostile/zombie/Z = M
-				Z.AIStatus = AI_OFF
-				addtimer(CALLBACK(Z, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
+		if(amplification && !ismegafauna(M) && !M.mind)
+			if(ishostile(M))
+				var/mob/living/simple_animal/stun_target = M
+				stun_target.toggle_ai(AI_OFF)
+				addtimer(CALLBACK(stun_target, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
 
 			force = 60
 			M.Paralyze(5 SECONDS, ignore_canstun = TRUE)
 			M.Jitter(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
+		else if(amplification && M.mind && !ismegafauna(M))
+			force = 60
+			proton_off()
+			proton_attack(M, user, 5)
+		else if(amplification)
+			force = 60
 		else
 			force = 30
 		..(M, user, attackchain_flags, damage_multiplier)
@@ -145,15 +149,15 @@
 		if(amplification)
 			force = 60
 
-			if(isstunmob(M) && !isalienroyal(M))
-				var/mob/living/simple_animal/hostile/alien/Z = M
-				Z.AIStatus = AI_OFF
-				addtimer(CALLBACK(Z, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
+			if(ishostile(M) && !isalienroyal(M) && !M.mind)
+				var/mob/living/simple_animal/stun_target = M
+				stun_target.toggle_ai(AI_OFF)
+				addtimer(CALLBACK(stun_target, /mob/living/simple_animal/proc/re_ai), 5 SECONDS)
 				addtimer(CALLBACK(M, /atom/proc/cut_overlay, stun_overlay), 5 SECONDS)
 
-			if(!isalienroyal(M))
+			if(!isalienroyal(M) && !M.mind)
 				M.Paralyze(5 SECONDS, ignore_canstun = TRUE)
-			else
+			else if(isalienroyal(M))
 				M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter_heavy)
 				addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter_heavy), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
@@ -167,15 +171,39 @@
 	force = initial(force)
 	..(M, user, attackchain_flags, damage_multiplier)
 
+/obj/item/melee/sabre/proton_cutter/get_damage_to_obj(obj/O, mob/living/user)
+	return 60
+
 /obj/item/storage/belt/avangard_belt
-	name = "пояс Авангарда"
-	desc = "Специальные тактические ножны для протонного резака оснащенные удобными карманами для снаряжения."
+	name = "Vanguard belt"
+	desc = "Special tactical sheaths for the proton cutter and magnetic tomahawk, equipped with convenient pockets for equipment."
 	icon = 'modular_bluemoon/white/Feline/icons/rangers_belt.dmi'
 	icon_state = "avangard"
 	item_state = "avangard"
 	mob_overlay_icon = 'modular_bluemoon/white/Feline/icons/rangers_belt_back.dmi'
 	content_overlays = FALSE
 	w_class = WEIGHT_CLASS_NORMAL
+
+	var/recharge_interval = 10 SECONDS
+	var/last_recharge = 0
+
+/obj/item/storage/belt/avangard_belt/Initialize(mapload)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/storage/belt/avangard_belt/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	. = ..()
+
+/obj/item/storage/belt/avangard_belt/process()
+	if(world.time < last_recharge + recharge_interval)
+		return
+	last_recharge = world.time
+	for(var/obj/item/melee/tomahawk/T in contents)
+		var/obj/item/stock_parts/cell/C = T.get_cell()
+		if(!C || C.charge >= C.maxcharge)
+			continue
+		C.give(C.maxcharge * 0.05)
 
 /obj/item/storage/belt/avangard_belt/update_icon_state()
 	if(locate(/obj/item/melee/sabre/proton_cutter) in contents)
@@ -224,9 +252,11 @@
 		/obj/item/reagent_containers/pill,
 		/obj/item/reagent_containers/hypospray,
 		/obj/item/stack/medical,
-		/obj/item/reagent_containers/food/drinks
+		/obj/item/reagent_containers/food/drinks,
+		/obj/item/melee/tomahawk
 		))
 
 /obj/item/storage/belt/avangard_belt/PopulateContents()
 	new /obj/item/melee/sabre/proton_cutter(src)
+	new /obj/item/melee/tomahawk(src)
 	update_appearance()

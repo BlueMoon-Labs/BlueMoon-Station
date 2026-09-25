@@ -149,7 +149,7 @@
 	random_loot = list(
 		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
-		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
 		/obj/item/clothing/under/inteq = 5,
 		/obj/item/clothing/mask/gas/inteq = 5,
@@ -185,7 +185,7 @@
 	random_loot = list(
 		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
-		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
 		/obj/item/clothing/under/inteq = 5,
 		/obj/item/clothing/mask/gas/inteq = 5,
@@ -212,7 +212,7 @@
 	random_loot = list(
 		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
-		/obj/item/melee/transforming/energy/sword = 5,
+		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 20,
 		/obj/item/clothing/under/inteq = 5,
 		/obj/item/clothing/mask/gas/inteq = 5,

@@ -159,6 +159,7 @@
 		return FALSE
 	medipens[slot] = pen
 	playsound(src, 'sound/machines/eject.ogg', 50, TRUE)
+	start_refill(slot)
 	return TRUE
 
 /obj/machinery/medipen_refiller/proc/eject_medipen(slot, mob/user)

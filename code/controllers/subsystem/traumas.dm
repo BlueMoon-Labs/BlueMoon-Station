@@ -138,6 +138,8 @@ SUBSYSTEM_DEF(traumas)
 						/obj/item/clothing/suit/armor/abductor, /obj/item/abductor, /obj/item/gun/energy/alien,
 						/obj/item/abductor/baton, /obj/item/radio/headset/abductor, /obj/item/scalpel/alien, /obj/item/hemostat/alien,
 						/obj/item/retractor/alien, /obj/item/circular_saw/alien, /obj/item/surgicaldrill/alien, /obj/item/cautery/alien,
+						/obj/item/scalpel/advanced/alien, /obj/item/retractor/advanced/alien, /obj/item/surgicaldrill/advanced/alien,
+						/obj/item/scalpel/advanced/alien/cyborg, /obj/item/retractor/advanced/alien/cyborg, /obj/item/surgicaldrill/advanced/alien/cyborg,
 						/obj/item/clothing/head/helmet/abductor, /obj/structure/bed/abductor, /obj/structure/table_frame/abductor,
 						/obj/structure/table/abductor, /obj/structure/table/optable/abductor, /obj/structure/closet/abductor, /obj/item/organ/heart/gland,
 						/obj/machinery/abductor, /obj/item/crowbar/abductor, /obj/item/screwdriver/abductor, /obj/item/weldingtool/abductor,

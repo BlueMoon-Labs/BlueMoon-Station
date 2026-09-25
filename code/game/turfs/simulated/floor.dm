@@ -321,18 +321,26 @@
 			G.anchored = TRUE
 			return TRUE
 		if(RCD_MACHINE)
-			if((locate(/obj/structure/frame/machine) in src) || (locate(/obj/machinery) in src))
+			if((locate(/obj/structure/frame/machine) in src) || (locate(/obj/structure/frame/computer) in src))
 				to_chat(user, span_warning("Здесь нет места для возведения машинного каркаса!"))
 				return FALSE
+			for(var/obj/machinery/M in src)
+				if(M.density == 1)
+					to_chat(user, span_warning("Здесь нет места для возведения машинного каркаса!"))
+					return FALSE
 			var/obj/structure/frame/machine/M = new(src)
 			M.state = 2
 			M.icon_state = "box_1"
 			M.anchored = TRUE
 			return TRUE
 		if(RCD_COMPUTER)
-			if((locate(/obj/structure/frame/computer) in src) || (locate(/obj/machinery) in src))
+			if((locate(/obj/structure/frame/computer) in src) || (locate(/obj/structure/frame/machine) in src))
 				to_chat(user, span_warning("Здесь нет места для возведения компьютерного каркаса!"))
 				return FALSE
+			for(var/obj/machinery/M in src)
+				if(M.density == 1)
+					to_chat(user, span_warning("Здесь нет места для возведения компьютерного каркаса!"))
+					return FALSE
 			var/obj/structure/frame/computer/C = new(src)
 			C.anchored = TRUE
 			C.state = 1

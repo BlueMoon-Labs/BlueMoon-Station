@@ -2138,7 +2138,10 @@
 /obj/machinery/chem_dispenser/mutagensaltpeter
 	name = "Botanical Chemical Dispenser"
 	desc = "Создаёт и выдаёт ботанические химикаты."
-	flags_1 = NODECONSTRUCT_1
+	//Станционная машинерия, пускай и ограниченного количества. её должно быть можно
+	//переносить, для перестройки ботаники. Были тикеты с просьбой открутить, т.к ИЦ это было невозможно
+	//Пусть будет возможно.
+	// flags_1 = NODECONSTRUCT_1
 	canStore = FALSE
 	circuit = /obj/item/circuitboard/machine/chem_dispenser/mutagensaltpeter
 

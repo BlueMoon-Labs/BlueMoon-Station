@@ -209,12 +209,12 @@
 	new /obj/item/ammo_box/magazine/katyusha/buckshot(src)
 	new /obj/item/ammo_box/magazine/katyusha/buckshot(src)
 
-/obj/item/storage/secure/briefcase/hos/cqc_implant
+/* /obj/item/storage/secure/briefcase/hos/cqc_implant
 	name = "\improper CQC implanter box"
 	desc = "Kept you waitin, huh?."
 
-/obj/item/storage/secure/briefcase/hos/cqc_implant/PopulateContents()
-	new /obj/item/implanter/cqc(src)
+/* /obj/item/storage/secure/briefcase/hos/cqc_implant/PopulateContents()
+	new /obj/item/implanter/cqc(src) */ */
 
 // -----------------------------
 //        Secure Safe

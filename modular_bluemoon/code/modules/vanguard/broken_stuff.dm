@@ -73,3 +73,8 @@
 	name = "Disassembled M2A1 HMG"
 	desc = "This one.. unique. Seems like your foe doesn't want you to get your dirty hands on this one THAT much, and riped off the belt fed mechanism"
 	icon_state = "m2a1closed-empty"
+
+/obj/item/broken/pirate_sword
+	name = "shattered energy cutlass"
+	desc = "Who took my gold?!"
+	icon_state = "cutlass0"

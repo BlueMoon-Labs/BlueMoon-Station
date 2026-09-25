@@ -357,7 +357,8 @@
 		suit_to_delete = suit
 	else
 		suit_to_delete = mod
-	QDEL_NULL(suit_to_delete)
+	if(user_choice) //если пользователь хоть что-то выбрал, то можно удалять.
+		QDEL_NULL(suit_to_delete)
 
 /obj/machinery/suit_storage_unit/interact(mob/living/user)
 	var/static/list/items

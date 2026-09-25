@@ -144,7 +144,7 @@
 		else
 			to_chat(user, "<span class='warning'>You need your other hand to be empty!</span>")
 		return
-	if(user.get_num_arms() < 2)
+	if(user.calculate_emply_hand_slots() < 1)
 		if(require_twohands)
 			user.dropItemToGround(parent, force=TRUE)
 		to_chat(user, "<span class='warning'>You don't have enough intact hands.</span>")
@@ -270,6 +270,8 @@
 	if(wielded && attacksound)
 		var/obj/item/parent_item = parent
 		playsound(parent_item.loc, attacksound, 50, TRUE)
+	if(require_twohands)
+		return COMPONENT_BLOCK_SWAP
 
 /**
  * on_update_icon triggers on call to update parent items icon
