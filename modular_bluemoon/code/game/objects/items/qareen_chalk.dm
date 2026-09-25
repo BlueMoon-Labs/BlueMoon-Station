@@ -11,7 +11,7 @@
 	if(!proximity)
 		return
 	if(istype(target, /turf/open/floor))
-		if(do_after(user, 5))
+		if(do_after(user, 0.5 SECONDS, target = target))
 			to_chat(user, span_userdanger("[src] crumbles in your hands after being used!"))
 			playsound(loc, 'sound/items/gavel.ogg', 50, 1)
 			new /obj/effect/qareen_rune(target)

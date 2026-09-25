@@ -22,7 +22,7 @@
 /datum/interaction/highfive
 	description = "Дать пять!"
 	simple_message = "USER даёт пять TARGET!"
-	interaction_sound = 'modular_sand/sound/interactions/slap.ogg'
+	interaction_sound = 'sound/effects/snap.ogg'
 	required_from_user = INTERACTION_REQUIRE_HANDS
 	required_from_target = INTERACTION_REQUIRE_HANDS
 

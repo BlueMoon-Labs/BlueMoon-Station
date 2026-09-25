@@ -268,9 +268,9 @@
 	var/mob/living/carbon/C = user
 	if(. && iscarbon(user))
 		if(user.gender == FEMALE || (user.gender == PLURAL && isfeminine(user)))
-			playsound(C, pick('sound/voice/female_giggle1.ogg', 'sound/voice/female_giggle2.ogg'), 50, 1)
+			playsound(C, pick('sound/voice/chuckle_f.ogg', 'sound/voice/female_giggle2.ogg'), 50, 1)
 		else
-			playsound(C, pick('sound/voice/male_giggle1.ogg', 'sound/voice/male_giggle2.ogg'), 50, 1)
+			playsound(C, pick('sound/voice/laugh_m3.ogg', 'sound/voice/chuckle_m.ogg'), 50, 1)
 
 /datum/emote/sound/human/glare
 	name = "Смотреть с ненавистью"
@@ -428,7 +428,7 @@
 				if(key == "laugh_soft")
 					playsound(C, pick('sound/voice/human/manlaugh1.ogg', 'sound/voice/human/manlaugh2.ogg'), 50, 1)
 				else
-					playsound(C, pick('sound/voice/human/manlaugh1.ogg', 'sound/voice/human/manlaugh2.ogg', 'sound/voice/laugh_m1.ogg', 'sound/voice/laugh_m2.ogg', 'sound/voice/laugh_m3.ogg'), 50, 1)
+					playsound(C, pick('sound/voice/human/manlaugh1.ogg', 'sound/voice/human/manlaugh2.ogg', 'sound/voice/laugh_m1.ogg', 'sound/voice/laugh_m3.ogg'), 50, 1)
 				//BLUEMOON EDIT END
 */ // BLUEMOON REWRITE END
 

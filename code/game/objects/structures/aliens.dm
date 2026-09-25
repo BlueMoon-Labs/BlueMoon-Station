@@ -103,6 +103,9 @@
  */
 
 #define NODERANGE 3
+#define WEEDS_GROWTH_SCAN_UNPERFORMED -1
+
+GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 
 /obj/structure/alien/weeds
 	gender = PLURAL
@@ -135,6 +138,7 @@
 			/turf/open/openspace))
 
 	last_expand = world.time + rand(growth_cooldown_low, growth_cooldown_high)
+	GLOB.alien_weeds_revision++
 	if(icon == initial(icon))
 		switch(rand(1,3))
 			if(1)
@@ -143,6 +147,10 @@
 				icon = 'icons/obj/smooth_structures/alien/weeds2.dmi'
 			if(3)
 				icon = 'icons/obj/smooth_structures/alien/weeds3.dmi'
+
+/obj/structure/alien/weeds/Moved()
+	. = ..()
+	GLOB.alien_weeds_revision++
 
 /obj/structure/alien/weeds/proc/expand()
 	var/turf/U = get_turf(src)
@@ -183,11 +191,12 @@
 	var/lon_range = 4
 	var/node_range = NODERANGE
 	var/weak = FALSE // BLUEMOON ADD - xenohybrids_improvements - если включено, то трава не распространяется
-	/// Remainder of the current radius sweep, consumed across process() calls. A
-	/// plain `if(TICK_CHECK) return` with no cursor kept restarting range() from
-	/// the same deterministic head, so under sustained tick pressure the far side
-	/// of the radius - the growth frontier - never got its expand() call at all.
+	/// Незавершённый обход продолжается с прежнего места после исчерпания бюджета тика.
 	var/list/growth_sweep_queue
+	var/next_growth_check = 0
+	var/growth_scan_revision = WEEDS_GROWTH_SCAN_UNPERFORMED
+	var/turf/growth_scan_turf
+	var/growth_scan_range
 
 /obj/structure/alien/weeds/node/Initialize(mapload)
 	icon = 'icons/obj/smooth_structures/alien/weednode.dmi'
@@ -202,35 +211,39 @@
 /obj/structure/alien/weeds/node/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	growth_sweep_queue = null
+	growth_scan_turf = null
 	return ..()
 
 /obj/structure/alien/weeds/node/process()
-	// A mature node can cover dozens of weeds, and the whole radius used to be
-	// walked in a single process() call (observed at 70ms on a 50ms server tick).
-	// Hand the tick back to SSobj once the budget is spent - but resume from where
-	// the sweep stopped, not from the head of range(): its iteration order is
-	// deterministic, so restarting would service the same near weeds every fire
-	// and starve the growth frontier for as long as the pressure lasts. The queue
-	// is rebuilt from a fresh range() walk once fully drained, so newly grown
-	// weeds join the next sweep.
 	if(!length(growth_sweep_queue))
+		var/turf/source_turf = get_turf(src)
+		if(!source_turf)
+			return
+		// Соседний узел может только отложить рост; новые и перемещённые weeds меняют ревизию.
+		if(world.time < next_growth_check && growth_scan_revision == GLOB.alien_weeds_revision && growth_scan_turf == source_turf && growth_scan_range == node_range)
+			return
+		growth_scan_revision = GLOB.alien_weeds_revision
+		growth_scan_turf = source_turf
+		growth_scan_range = node_range
+		next_growth_check = INFINITY
 		growth_sweep_queue = list()
-		for(var/obj/structure/alien/weeds/W in range(node_range, src))
-			growth_sweep_queue += W
+		for(var/obj/structure/alien/weeds/weed in range(node_range, src))
+			growth_sweep_queue += weed
 	while(length(growth_sweep_queue))
-		var/obj/structure/alien/weeds/W = growth_sweep_queue[length(growth_sweep_queue)]
+		var/obj/structure/alien/weeds/weed = growth_sweep_queue[length(growth_sweep_queue)]
 		growth_sweep_queue.len--
-		if(QDELETED(W))
+		if(QDELETED(weed))
 			continue
-		if(W.last_expand <= world.time)
-			if(W.expand())
-				W.last_expand = world.time + rand(growth_cooldown_low, growth_cooldown_high)
-		// Checked after the work rather than before it, so a call that already
-		// paid for the queue refill never leaves without expanding anything.
+		if(weed.last_expand <= world.time)
+			if(weed.expand())
+				weed.last_expand = world.time + rand(growth_cooldown_low, growth_cooldown_high)
+		if(!QDELETED(weed))
+			next_growth_check = min(next_growth_check, weed.last_expand)
 		if(TICK_CHECK)
 			return
 
 #undef NODERANGE
+#undef WEEDS_GROWTH_SCAN_UNPERFORMED
 
 
 /*

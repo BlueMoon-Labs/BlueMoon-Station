@@ -38,7 +38,7 @@
 
 /obj/item/clothing/shoes/highheels/Initialize()
 	. = ..()
-	AddComponent(/datum/component/squeak, list('modular_splurt/sound/effects/footstep/highheel1.ogg' = 1,'modular_splurt/sound/effects/footstep/highheel2.ogg' = 1), 20)
+	AddComponent(/datum/component/squeak, list('modular_splurt/sound/lewd/highheel1.ogg' = 1,'modular_splurt/sound/lewd/highheel2.ogg' = 1), 20)
 //the classic click clack
 
 /obj/item/clothing/neck/stole

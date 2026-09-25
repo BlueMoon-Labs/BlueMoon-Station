@@ -68,3 +68,8 @@
 	name = "Disassembled VSS"
 	desc = "Barel have been bent, scope was riped out by force and shatered.. not gun, but a bunch a scrap for now"
 	icon_state = "vintorez_scope_open"
+
+/obj/item/broken/hmg
+	name = "Disassembled M2A1 HMG"
+	desc = "This one.. unique. Seems like your foe doesn't want you to get your dirty hands on this one THAT much, and riped off the belt fed mechanism"
+	icon_state = "m2a1closed-empty"

@@ -402,7 +402,7 @@
 		/obj/item/storage/firstaid/tactical/ert_first = 1,
 		/obj/item/storage/firstaid/tactical/ert_second = 1,
 		/obj/item/reagent_containers/hypospray/combat/nanites=1,\
-		/obj/item/gun/medbeam=1,
+		/obj/item/gun/medbeam/syndicate=1,
 		/obj/item/paper/beamgun_istruction=1,
 		/obj/item/roller=1,
 		/obj/item/bodybag/bluespace=1,

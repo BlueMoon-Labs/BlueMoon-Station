@@ -167,6 +167,7 @@
 	if(!preview)
 		var/icon/dummysprite = get_flat_human_icon(null,
 			dummy_key = dummy_key,
+			showDirs = list(SOUTH), // панель показывает один кадр, а каждая дирекция стоит ~120 мс
 			outfit_override = selected_outfit,
 			no_anim = TRUE)
 		preview = icon2base64_scaled(dummysprite, 2)

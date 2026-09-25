@@ -32,12 +32,12 @@
 	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	item = /obj/item/mod/control/pre_equipped/traitor
 
-/datum/uplink_item/mod/nanotrasen
-	name = "ERT MOD"
-	desc = "Списанный МОД костюм, побывавший во многих сражений, доказавши свою практичность, но не бронированность. Очень стильный."
-	cost = 10
-	item = /obj/item/mod/control/pre_equipped/responsory
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+// /datum/uplink_item/mod/nanotrasen
+// 	name = "ERT MOD"
+// 	desc = "Списанный МОД костюм, побывавший во многих сражений, доказавши свою практичность, но не бронированность. Очень стильный."
+// 	cost = 10
+// 	item = /obj/item/mod/control/pre_equipped/responsory
+// 	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/mod/syndie_jet
 	name = "MOD Advanced Jetpack"

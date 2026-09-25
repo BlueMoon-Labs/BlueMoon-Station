@@ -155,7 +155,7 @@
 	variance = 35
 	e_cost = 200
 	select_name = "Fire"
-	fire_sound = 'modular_bluemoon/code/modules/modular_laser_rifle/sounds/flamethrower.ogg'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/flamethrower.ogg'
 
 /datum/laser_weapon_mode/phoenix
 	standard_firing_mode = FALSE
@@ -182,7 +182,7 @@
 /obj/item/ammo_casing/energy/laser/squall
 	projectile_type = /obj/item/projectile/bullet/a556
 	e_cost = 200
-	fire_sound = 'modular_bluemoon/code/modules/modular_laser_rifle/sounds/ak17_fire.ogg'
+	fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'
 
 /datum/laser_weapon_mode/squall
 	name = "Squall"

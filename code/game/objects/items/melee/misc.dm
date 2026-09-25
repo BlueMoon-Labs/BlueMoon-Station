@@ -101,9 +101,10 @@
 	can_force_powered = TRUE
 	usesound = 'sound/items/crowbar.ogg'
 
-/obj/item/melee/synthetic_arm_blade/Initialize(mapload)
+/obj/item/melee/synthetic_arm_blade/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/butchering, 60, 80) //very imprecise
+	AddElement(/datum/element/ambidextria_attack, list(/obj/item/melee/arm_blade, /obj/item/melee/synthetic_arm_blade))
 
 /obj/item/melee/sabre
 	name = "Officer's Sabre"

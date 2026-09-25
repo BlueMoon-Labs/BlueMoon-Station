@@ -356,6 +356,7 @@
 
 	//ровно то, что делает cryoMob: перенос без dropped()
 	suit.forceMove(package)
+	TEST_ASSERT_EQUAL(suit.loc, package, "МОД не остался в упаковке после переноса")
 	TEST_ASSERT_EQUAL(suit.wearer, wearer, "forceMove неожиданно позвал dropped() - сценарий крио не воспроизведён")
 
 	var/list/record = target_record(wearer, "носитель МОДа, ушедший в крио")

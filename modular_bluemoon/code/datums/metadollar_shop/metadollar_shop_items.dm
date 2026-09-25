@@ -202,7 +202,7 @@
 /datum/metadollar_shop_item/item/medbeam
 	name = "Гражданская Медицинская Пушка"
 	desc = "Ого, лечебные наниты. Круто!"
-	cost = 25
+	cost = 50
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/gun/medbeam/weak
 

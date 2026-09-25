@@ -12,9 +12,10 @@
 
 /obj/item/implant/cqc/implant(mob/living/target, mob/user, silent = FALSE)
 	if(..())
-		if(target.mind)
-			if(!target.mind.has_martialart(MARTIALART_CQC))
-				style.teach(target,1)
+		if(target.mind && !target.mind.has_martialart(MARTIALART_CQC))
+			style.teach(target, TRUE)
+		return TRUE
+	return FALSE
 
 /obj/item/implanter/cqc
 	name = "Implanter (CQC)"

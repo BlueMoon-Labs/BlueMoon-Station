@@ -747,7 +747,11 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 	icon_state = "plushie_bee"
 	attack_verb = list("stung")
 	gender = FEMALE
-	squeak_override = list('modular_citadel/sound/voice/scream_moth.ogg' = 1)
+	squeak_override = list('sound/voice/scream/moth1.ogg' = 1)
+
+////////////////////////////////// MOTHS //////////////////////////////////
+
+//спрайты молек (кроме оригинального) были спи...одолженны от сюда https://github.com/BeeStation/BeeStation-Hornet
 
 ////////////////////////////////// MOTHS //////////////////////////////////
 

@@ -18,7 +18,7 @@
 		to_chat(user, span_big_warning("Не подходит!"))
 		return
 	modsuit.theme = new_theme
-	modsuit.theme.setup_theme(modsuit, new_theme.default_skin)
+	modsuit.theme.setup_theme(modsuit, new_theme.default_skin, need_update_stat = FALSE)
 	modsuit.skin = new_theme.default_skin
 	if(modsuit.theme.name == new_theme.name)
 		new_theme = null

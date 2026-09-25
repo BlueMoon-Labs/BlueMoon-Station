@@ -63,6 +63,7 @@
 	suit_type = /obj/item/clothing/suit/space/eva
 	helmet_type = /obj/item/clothing/head/helmet/space/eva
 	mask_type = /obj/item/clothing/mask/breath
+	mod_type = /obj/item/mod/control/pre_equipped
 
 /obj/machinery/suit_storage_unit/captain
 	suit_type = /obj/item/clothing/suit/space/hardsuit/captain
@@ -419,6 +420,7 @@
 			else
 				if (occupant)
 					var/mob/living/mob_occupant = occupant
+					playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50)
 					to_chat(mob_occupant, span_userdanger("[capitalize(src.name)] confines grow warm, then hot, then scorching. You're being burned [!mob_occupant.stat ? "alive" : "away"]!"))
 				cook()
 		if ("lock", "unlock")
@@ -633,6 +635,21 @@
 	else
 		open_machine()
 		dump_contents()
+
+/obj/machinery/suit_storage_unit/Exited(atom/movable/gone, atom/newloc)
+	. = ..()
+	if(gone == suit)
+		suit = null
+	else if(gone == helmet)
+		helmet = null
+	else if(gone == mask)
+		mask = null
+	else if(gone == shoes)
+		shoes = null
+	else if(gone == mod)
+		mod = null
+	else if(gone == storage)
+		storage = null
 
 /obj/machinery/suit_storage_unit/proc/resist_open(mob/user)
 	if(!state_open && occupant && (user in src) && user.stat == CONSCIOUS) // Check they're still here.

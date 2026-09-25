@@ -8,8 +8,8 @@
 	item_state = "ds-case"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/storage_righthand.dmi'
-	drop_sound = 'modular_bluemoon/fluffs/sound/case_drop.ogg'
-	pickup_sound =  'modular_bluemoon/fluffs/sound/case_pickup.ogg'
+	drop_sound = 'sound/items/handling/ammobox_drop.ogg'
+	pickup_sound =  'sound/items/handling/ammobox_pickup.ogg'
 	foldable = FALSE
 	illustration = null
 
@@ -277,6 +277,8 @@
 	new /obj/item/modkit/spectral_kit(src) // температурка
 	new /obj/item/modkit/quasar_kit(src) // АЕГ - advanced energy gun
 	new /obj/item/modkit/neutron_kit(src) // x-ray
+	new /obj/item/modkit/black_hole_kit(src) // super-short shotgun
+	new /obj/item/modkit/black_hole_kit(src) // super-short shotgun
 	new /obj/item/modkit/pulsar_kit(src) // riot дробаш
 	new /obj/item/modkit/supernova_kit(src) // комбат дробаш
 	new /obj/item/modkit/katana_kit(src) // стан-катана

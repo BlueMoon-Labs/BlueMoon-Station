@@ -16,39 +16,79 @@
 
 /obj/item/paper/contract/employment
 	icon_state = "paper_words"
+	var/employee_name = ""
 
 /obj/item/paper/contract/employment/New(atom/loc, mob/living/nOwner)
 	. = ..()
-	if(!nOwner || !nOwner.mind)
+	if(QDELETED(src))
+		return
+	if(nOwner)
+		set_employee(nOwner.real_name || nOwner.name, nOwner.mind)
+	if(!employee_name)
 		qdel(src)
-		return -1
-	target = nOwner.mind
-	update_text()
-
 
 /obj/item/paper/contract/employment/Initialize(mapload, new_employee_name)
-	if(!new_employee_name)
+	if(ismob(new_employee_name))
+		var/mob/living/employee_mob = new_employee_name
+		employee_name = employee_mob.real_name || employee_mob.name
+		target = employee_mob.mind
+	else if(istext(new_employee_name))
+		employee_name = new_employee_name
+	else if(istype(new_employee_name, /datum/mind))
+		var/datum/mind/employee_mind = new_employee_name
+		target = employee_mind
+		employee_name = employee_mind.name
+	if(!employee_name)
 		return INITIALIZE_HINT_QDEL
 	. = ..()
-	target = new_employee_name
-	name =  "Подписка о Корпоративной Лояльности Сотрудника [target]"
-	add_raw_text("<center>Подписка о Корпоративной Лояльности</center>\
-	<BR>\
-	<u><i>Сектор Голубых Лун</i></u>' \
-	<BR><BR>\
-	<u>Центральное Командование НаноТрейзен и Центральное Командование Триглава Синдикат, объединённое ПАКТом</u>, \
-	а именно Работодатель с одной стороны и <u>[target]</u>, являясь Работником с другой стороны, заключают настоящее соглашение, \
-	а Работник берёт на себя обязательство о нижеследующем: \
-	<BR><BR>\
-	Я, <u>[target]</u>, заключив трудовой договор с корпорациями ПАКТа, даю настоящую подписку о том, что я, в соответствии с \
-	Галактическим Актом No. 4590 «О защите корпоративных тайн», несу уголовную ответственность за разглашение корпоративной тайны, \
-	несогласованный переход или перевод на работу в несвязанные с ПАКТом структуры, а также обязуюсь сохранять корпоративную тайну, \
-	самовольно не сменять нанимателя, а также исправно выполнять всю работу, в соответствии со своим трудовым договором, НРП и Космозаконом, \
-	признавая их юрисдикцию в мою сторону. \
-	<BR><BR>\
-	Подпись: <u><i>[target]</u></i> \
-	<BR><BR>\
-	Подписка получена кадровиком #15782, ответственного за кадры ПАКТа и вступает в силу немедленно.")
+	if(QDELETED(src))
+		return
+	update_text()
+
+/obj/item/paper/contract/employment/proc/set_employee(new_name, datum/mind/new_mind)
+	if(new_mind)
+		target = new_mind
+	if(istext(new_name) && length(new_name))
+		employee_name = new_name
+	update_text()
+
+/obj/item/paper/contract/employment/update_text()
+	if(!employee_name)
+		return
+	name = "Подписка о Корпоративной Лояльности — [employee_name]"
+	var/sign_date = "[time2text(world.timeofday, "DD Month")] [GLOB.year_integer]"
+	clear_paper()
+	add_raw_text("# ПОДПИСКА О КОРПОРАТИВНОЙ ЛОЯЛЬНОСТИ\
+	\n### Сектор Голубых Лун · Реестр кадров ПАКТа · Форма К-15782\
+	\n\
+	\n**Работодатель:** Центральное Командование NanoTrasen и Центральное Командование Триглава, объединённые **ПАКТ**ом, в лице кадровика №15782.\
+	\n**Работник:** **[employee_name]**\
+	\n\
+	\n---\
+	\n\
+	\nНастоящим Работник, вступая в должность на объектах корпораций ПАКТа, торжественно даёт подписку о нижеследующем:\
+	\n\
+	\n## §1. Верность корпорациям\
+	\n1. **Хранить корпоративную тайну.** Не разглашать сведения о деятельности, технологиях, персонале и операциях ПАКТа — ни словом, ни делом, ни перестуком по вентиляции.\
+	\n2. **Не менять нанимателя самовольно.** Несогласованный переход, перевод или побег на работу в структуры, не связанные с ПАКТом, — нарушение подписки.\
+	\n3. **Исправно трудиться** согласно трудовому договору, НРП и Космозакону, признавая их юрисдикцию в свою сторону.\
+	\n\
+	\n## §2. Ответственность\
+	\nНарушение подписки карается по **Галактическому Акту №4590 «О защите корпоративных тайн»**: от вычета из жалованья и понижения — до трибунала, брига и полного аннулирования трудовых заслуг.\
+	\n\
+	\n## §3. О душе\
+	\nПодписывая, Работник признаёт: **душа его уже выкуплена NanoTrasen** авансом, вместе с первой зарплатой. Светлое будущее, стоматология и пенсия прилагаются. Попытки продать душу третьим лицам признаются недействительными и выкупаются обратно ударом данной подписки по голове.\
+	\n\
+	\n---\
+	\n\
+	\n**Подпись Работника:** *[employee_name]*\
+	\n\
+	\n**Кадровик №15782:** *Э. Вейн* · **Печать:** *ОТДЕЛ КАДРОВ ПАКТа*\
+	\n\
+	\n**Дата:** *[sign_date]*\
+	\n\
+	\n*Подписка вступает в силу немедленно и действует бессрочно, в том числе после смерти, клонирования и повышения.*")
+	update_appearance()
 
 
 /obj/item/paper/contract/employment/attack(mob/living/M, mob/living/carbon/human/user)

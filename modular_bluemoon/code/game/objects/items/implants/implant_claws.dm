@@ -1,6 +1,10 @@
 // ============================================================================
 // БАЗОВЫЙ НОЖ С КОГТЯМИ (для квирка)
 // ============================================================================
+#define ADD_AMBIDEXTRIA AddElement(/datum/element/ambidextria_attack, list(/obj/item/kitchen/knife/claws, /obj/item/kitchen/knife/razor_claws))
+#define CLAW_FORCE 12
+#define CLAW_WOUND_BONUS 5
+#define CLAW_BARE_WOUND_BONUS 5
 
 /obj/item/kitchen/knife/claws
 	name = "Claws"
@@ -12,7 +16,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/razorclaws_righthand.dmi'
 
 	flags_1 = CONDUCT_1
-	force = 13
+	force = CLAW_FORCE
 	throwforce = 10
 	throw_speed = 3
 	throw_range = 6
@@ -22,8 +26,8 @@
 	sharpness = SHARP_EDGED
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 
-	wound_bonus = 5
-	bare_wound_bonus = 5
+	wound_bonus = CLAW_WOUND_BONUS
+	bare_wound_bonus = CLAW_BARE_WOUND_BONUS
 
 	tool_behaviour = TOOL_KNIFE
 	toolspeed = 1
@@ -32,9 +36,9 @@
 
 	// Внутренние переменные для переключения режимов
 	var/knife_mode = TRUE
-	var/knife_force = 13
-	var/knife_wound_bonus = 5
-	var/knife_bare_wound_bonus = 5
+	var/knife_force = CLAW_FORCE
+	var/knife_wound_bonus = CLAW_WOUND_BONUS
+	var/knife_bare_wound_bonus = CLAW_BARE_WOUND_BONUS
 
 	var/cutter_force = 5
 	var/cutter_wound_bonus = 0
@@ -43,9 +47,14 @@
 	// Переменные для емага
 	var/emag_force = 30 // Как у энергомеча
 
-/obj/item/kitchen/knife/claws/Initialize(mapload)
+#undef CLAW_FORCE
+#undef CLAW_WOUND_BONUS
+#undef CLAW_BARE_WOUND_BONUS
+
+/obj/item/kitchen/knife/claws/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
+	ADD_AMBIDEXTRIA
 
 /obj/item/kitchen/knife/claws/attack_self(mob/user)
 	if(obj_flags & EMAGGED)
@@ -212,6 +221,10 @@
 // ИМПЛАНТ ВЕРСИЯ (для покупки в аплинке и т.д.)
 // ============================================================================
 
+#define CLAW_FORCE 15
+#define CLAW_WOUND_BONUS 5
+#define CLAW_BARE_WOUND_BONUS 5
+
 /obj/item/kitchen/knife/razor_claws
 	name = "Implanted razor claws"
 	desc = "Набор острых втягивающихся когтей, встроенных в кончики пальцев, пять обоюдоострых лезвий гарантированно превратят людей в фарш. Способны переключаться в 'Точный' режим, действуя как кусачки."
@@ -222,7 +235,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/razorclaws_righthand.dmi'
 
 	flags_1 = CONDUCT_1
-	force = 15
+	force = CLAW_FORCE
 	throwforce = 10
 	w_class = WEIGHT_CLASS_HUGE
 	throw_speed = 3
@@ -233,7 +246,7 @@
 	sharpness = SHARP_EDGED
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 
-	wound_bonus = 5
+	wound_bonus = CLAW_WOUND_BONUS
 	bare_wound_bonus = 5
 
 	tool_behaviour = TOOL_KNIFE
@@ -243,9 +256,9 @@
 	bayonet = FALSE
 
 	var/knife_mode = TRUE
-	var/knife_force = 15
-	var/knife_wound_bonus = 5
-	var/knife_bare_wound_bonus = 5
+	var/knife_force = CLAW_FORCE
+	var/knife_wound_bonus = CLAW_WOUND_BONUS
+	var/knife_bare_wound_bonus = CLAW_BARE_WOUND_BONUS
 
 	var/cutter_force = 5
 	var/cutter_wound_bonus = 0
@@ -253,9 +266,14 @@
 
 	var/emag_force = 30
 
-/obj/item/kitchen/knife/razor_claws/Initialize(mapload)
+#undef CLAW_FORCE
+#undef CLAW_WOUND_BONUS
+#undef CLAW_BARE_WOUND_BONUS
+
+/obj/item/kitchen/knife/razor_claws/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/butchering, 80 - force, 100, force - 10)
+	ADD_AMBIDEXTRIA
 
 /obj/item/kitchen/knife/razor_claws/attack_self(mob/user)
 	if(obj_flags & EMAGGED)
@@ -385,6 +403,8 @@
 /obj/item/kitchen/knife/razor_claws/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] разрезает [user.ru_ego()] горло с помощью [src]! Похоже, [user.p_theyre()] пытается совершить самоубийство.</span>")
 	return BRUTELOSS
+
+#undef ADD_AMBIDEXTRIA
 
 // ============================================================================
 // ИМПЛАНТЫ

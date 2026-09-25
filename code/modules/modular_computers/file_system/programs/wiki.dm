@@ -73,6 +73,4 @@
 					to_chat(usr, span_warning("Нет бумаги или принтера!"))
 					return FALSE
 
-			return TRUE
-
 	return FALSE
