@@ -329,6 +329,7 @@
 		/obj/item/broken/homemadeak = 4500,
 		/obj/item/broken/m1garand = 2250,
 		/obj/item/broken/hmg = 15000,
+		/obj/item/broken/pirate_sword = 1000,
 		//alien organs
 		/obj/item/organ/eyes/night_vision/alien = 3000,
 		/obj/item/organ/alien/plasmavessel = 2500,
