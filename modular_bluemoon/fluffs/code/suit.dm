@@ -602,7 +602,7 @@
 	lefthand_file = /obj/item/clothing/suit/hooded/wintercoat::lefthand_file
 	righthand_file = /obj/item/clothing/suit/hooded/wintercoat::righthand_file
 	flags_inv = HIDEJUMPSUIT|HIDETAUR
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC|STYLE_SNEK_TAURIC
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
 	cold_protection = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
 	heat_protection = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
