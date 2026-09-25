@@ -35,10 +35,14 @@
 	var/reason = heretic_containment_reason(user)
 	if(reason)
 		heretic_check(user, FALSE, silent, reason)
+		if(!silent)
+			heretic_fizzle_fx(user)
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(heretic_stun_check && heretic && !heretic.ascended && user.incapacitated(ignore_grab = usable_while_grabbed))
 		heretic_check(user, FALSE, silent)
+		if(!silent)
+			heretic_fizzle_fx(user)
 		return FALSE
 
 /obj/item/implant/mindshield/implant(mob/living/target, mob/user, silent = FALSE)

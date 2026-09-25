@@ -51,7 +51,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
       target_name: null, target_role: null, target_status: 'Цели ещё нет.',
       can_retarget: true, retarget_seconds: 0, sacrifices_required: 5,
       influences_harvested: 0, influence_limit: 6,
-      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3 },
+      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3, grip: 3, shake: 2 },
     },
     ...overrides,
   };
@@ -657,10 +657,10 @@ describe('Гримуар еретика', () => {
     const topic = () => screen.getByText('Изнанка', { selector: 'summary' }).closest('details')!;
     expect(topic().getAttribute('data-topic')).toBe('pocket');
     expect(topic().open).toBe(false);
-    expect(within(topic()).getByText(/«Увести за руну», 2 сек\./)).toBeTruthy();
+    expect(within(topic()).getByText(/«Увести за руну», увод займёт 2 сек\./)).toBeTruthy();
     expect(within(topic()).getByText(/держится 35 сек\., за 7 до конца/)).toBeTruthy();
     expect(within(topic()).getByText(/цель 4 сек\. не может двинуться/)).toBeTruthy();
-    expect(within(topic()).getByText(/руками его рвут 12 сек\. Снова открыть - через 90 сек\./)).toBeTruthy();
+    expect(within(topic()).getByText(/руками его можно разорвать за 12 сек\. Снова открыть изнанку можно через 90 сек\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'изнанке', hidden: true }));
     expect(topic().open).toBe(true);
   });

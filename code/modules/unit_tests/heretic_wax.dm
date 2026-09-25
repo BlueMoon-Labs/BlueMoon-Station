@@ -1448,7 +1448,7 @@
 	TEST_ASSERT(!wax.prick(user, puppet), "Кукла мёртвого не колется.")
 	TEST_ASSERT(findtext(wax.wax_failure, "живых"), "Отказ говорит, что человека нет среди живых: [wax.wax_failure]")
 
-/// Сон по кукле: 5 секунд жара без воды и без ухода дальше 9 клеток - сон 8 секунд, цель готова к обряду, кукла цела до пробуждения, невосприимчивость отсчитывается от пробуждения.
+/// Сон по кукле: 5 секунд жара без воды и без ухода дальше 9 клеток - цель охоты спит 8 секунд, готова к обряду, кукла цела до пробуждения, невосприимчивость отсчитывается от пробуждения; не цель охоты только дремлет 3 секунды.
 /datum/unit_test/heretic_wax_puppet_sleep/Run()
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
@@ -1480,6 +1480,7 @@
 	TEST_ASSERT(!wax.melt_puppet(user), "С другого уровня сон не начинается.")
 	TEST_ASSERT(findtext(wax.wax_failure, "на вашем уровне"), "Отказ называет уровень: [wax.wax_failure]")
 	model.forceMove(home)
+	heretic.set_hunt_target(model.mind)
 	TEST_ASSERT(!capture_immunity(model, "wax"), "Отказы до начала сна не дают невосприимчивости.")
 	TEST_ASSERT(wax.melt_puppet(user), "Кукла начинает таять.")
 	var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
@@ -1565,7 +1566,7 @@
 		TEST_ASSERT(!model.IsSleeping(), "После [scenario] человек не спит.")
 		TEST_ASSERT(!QDELETED(puppet), "Сорванный сон не ломает куклу ([scenario]).")
 		var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(model, "wax")
-		TEST_ASSERT(immunity && abs(immunity.duration - world.time - HERETIC_CAPTURE_IMMUNITY) < 1, "Сорванный сон ([scenario]) даёт минуту невосприимчивости.")
+		TEST_ASSERT(immunity && immunity.duration - world.time >= HERETIC_CAPTURE_MIN_IMMUNITY - 1 && immunity.duration - world.time < HERETIC_CAPTURE_IMMUNITY, "Сорванный сразу сон ([scenario]) даёт короткую невосприимчивость: [immunity?.duration - world.time] дс.")
 		user.SetStun(0)
 		user.forceMove(origin)
 		qdel(puppet)
@@ -1741,23 +1742,24 @@
 	TEST_ASSERT(findtext(deed.desc, "Каждый человек засчитывается один раз"), "Дело считает людей.")
 	TEST_ASSERT(findtext(deed.desc, "Между зачётами Мансусу нужно [HERETIC_DEED_COOLDOWN / (1 SECONDS)] с"), "Дело Воска называет паузу между зачётами.")
 	TEST_ASSERT(findtext(path.combat_practice, "Протечь") && findtext(path.combat_practice, "кукл"), "Полигон учит куклам и Протечь.")
-	TEST_ASSERT(findtext(path.combat_practice, "дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд"), "Полигон называет дальность и время сна.")
+	TEST_ASSERT(findtext(path.combat_practice, "[HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд держите куклу") && findtext(path.combat_practice, "дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток"), "Полигон называет дальность и время сна.")
 	TEST_ASSERT(findtext(deed.hint, "Держатся [HERETIC_WAX_PUPPET_LIMIT] куклы"), "Подсказка дела называет предел кукол.")
-	TEST_ASSERT(findtext(path.strengths, "в [HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках даже за стеной") && findtext(path.weaknesses, "дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток и нулевой жезл"), "Стороны пути называют дальность сна.")
+	TEST_ASSERT(findtext(path.strengths, "в [HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках даже за стеной") && findtext(path.weaknesses, "ухода дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток"), "Стороны пути называют дальность сна.")
 	TEST_ASSERT(!findtext(path.escape_summary, "любой") && findtext(path.weaknesses, "неразрушимые двери"), "Уход не обещает любую дверь.")
 	TEST_ASSERT(findtext(capture.desc, "[HERETIC_CAPTURE_IMMUNITY / (1 SECONDS)] секунд невосприимчив к Сну и [HERETIC_CAPTURE_SHARED_IMMUNITY / (1 SECONDS)] секунд к любому захвату"), "Сон называет сроки невосприимчивости.")
 	var/dollhouse_text = "[replacetext("[HERETIC_WAX_DOLLHOUSE_TIME / (1 SECONDS)]", ".", ",")] секунды"
-	var/shake_text = "[HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды растолкать"
+	var/shake_text = "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды"
 	TEST_ASSERT(findtext(capture.desc, "за [dollhouse_text] утягивает") && findtext(initial(sleep_spell.desc), "за [dollhouse_text] утянет"), "Тексты Сна называют время кукольного дома.")
-	TEST_ASSERT(findtext(capture.desc, "нулевой жезл и [shake_text]") && findtext(initial(sleep_spell.desc), "нулевой жезл и [shake_text]"), "Тексты Сна называют, что будит спящего.")
+	TEST_ASSERT(findtext(capture.desc, "нулевым жезлом или [shake_text]") && findtext(initial(sleep_spell.desc), "нулевым жезлом или [shake_text]"), "Тексты Сна называют, что будит спящего.")
 	TEST_ASSERT(findtext(capture.desc, "вода сон уже не рвёт") && findtext(initial(sleep_spell.desc), "вода сон уже не рвёт"), "Тексты Сна говорят, что вода рвёт только жар.")
 	var/datum/status_effect/doll_sleep = /datum/status_effect/heretic_capture_knockout/wax_doll
-	TEST_ASSERT(findtext(initial(doll_sleep.examine_text), "Нулевой жезл или [shake_text]"), "Спящий по кукле при осмотре подсказывает, что его будит.")
+	TEST_ASSERT(findtext(initial(doll_sleep.examine_text), "нулевым жезлом или [shake_text]"), "Спящий по кукле при осмотре подсказывает, что его будит.")
 	TEST_ASSERT(findtext(base.desc, "человек на вашем уровне чувствует укол"), "Укол ограничен уровнем.")
 	TEST_ASSERT(findtext(escape.desc, "неразрушимые и кодовые двери"), "Протечь называет запертые для неё двери.")
 	TEST_ASSERT(findtext(initial(sleep_spell.desc), "Перезарядка [HERETIC_WAX_PUPPET_SLEEP_COOLDOWN / (1 SECONDS)] секунд") && findtext(initial(leak_spell.desc), "Перезарядка [HERETIC_WAX_LEAK_COOLDOWN / (1 SECONDS)] секунд"), "Кнопки называют перезарядку.")
 	var/atom/movable/screen/alert/status_effect/heretic_wax_melting/melting_alert = /atom/movable/screen/alert/status_effect/heretic_wax_melting
-	TEST_ASSERT(findtext(initial(melting_alert.desc), "через [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд вы уснёте на [HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд"), "Предупреждение о жаре называет сроки.")
+	TEST_ASSERT(findtext(initial(melting_alert.desc), "через [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд вы уснёте"), "Предупреждение о жаре называет срок жара.")
+	TEST_ASSERT(findtext(capture.desc, "Кто не цель охоты, лишь задремлет на [HERETIC_WAX_PUPPET_DOZE_TIME / (1 SECONDS)] секунды"), "Сон говорит, что полный сон - только цели охоты.")
 	var/atom/movable/screen/alert/status_effect/heretic_wax_leak/leak_alert = /atom/movable/screen/alert/status_effect/heretic_wax_leak
 	TEST_ASSERT(findtext(initial(leak_alert.desc), "на [HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды"), "Значок лужицы называет срок.")
 	var/atom/movable/screen/alert/status_effect/heretic_wax_seal/seal_alert = /atom/movable/screen/alert/status_effect/heretic_wax_seal
@@ -1982,3 +1984,22 @@
 	TEST_ASSERT(listed, "Изнанка предлагает выход к свече.")
 	qdel(floor_candle)
 	TEST_ASSERT_EQUAL(length(wax.pocket_exits(user)), 0, "Погасшая свеча больше не выход.")
+
+/// Сон по кукле на человеке, который не цель охоты: только 3 секунды дрёмы, кукла трескается к пробуждению, невосприимчивость считается от него.
+/datum/unit_test/heretic_wax_puppet_doze/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	make_wax_puppet(wax, user, model)
+	TEST_ASSERT(model.mind != heretic.hunt_target, "Модель куклы - не цель охоты.")
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла начинает таять.")
+	var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
+	melting.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(melting, 1 SECONDS), "Жар заканчивается по сроку.")
+	TEST_ASSERT(model.IsSleeping(), "Не цель охоты тоже засыпает.")
+	TEST_ASSERT(model.AmountSleeping() <= HERETIC_WAX_PUPPET_DOZE_TIME + DAMAGE_PRECISION, "Не цель охоты дремлет не дольше 3 секунд: [model.AmountSleeping()] дс.")
+	var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(model, "wax")
+	TEST_ASSERT(immunity && abs(immunity.duration - world.time - HERETIC_WAX_PUPPET_DOZE_TIME - HERETIC_CAPTURE_IMMUNITY) < 1, "Невосприимчивость отсчитывается от конца дрёмы.")

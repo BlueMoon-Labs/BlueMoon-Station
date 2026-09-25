@@ -59,7 +59,7 @@
 	TEST_ASSERT_EQUAL(first.max_integrity, 60, "Начальная печать имеет 60 прочности.")
 	TEST_ASSERT_NULL(knowledge.create_seal(first_place, user), "На одну клетку нельзя поставить две печати.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Отклонённая установка не расходует ключ.")
-	TEST_ASSERT_NULL(knowledge.create_seal(get_turf(user), user), "Нельзя создать печать на занятой мобом клетке.")
+	TEST_ASSERT(knowledge.valid_seal_turf(get_turf(user), user), "Печать встаёт и под стоящим человеком.")
 	var/obj/structure/heretic_lock_seal/second = knowledge.create_seal(get_step(user, NORTH), user)
 	TEST_ASSERT_NOTNULL(second, "Второй ключ создаёт вторую печать.")
 	TEST_ASSERT_NULL(knowledge.create_seal(get_step(user, NORTHEAST), user), "Пустой запас не создаёт печать.")
@@ -324,7 +324,7 @@
 	var/turf/blocked_place = positions[1]
 	var/mob/living/blocker = allocate(/mob/living/carbon/human, blocked_place)
 	TEST_ASSERT(knowledge.raise_court(user, positions, expected_generation = knowledge.court_generation), "Оставшиеся свободные места принимают двор.")
-	TEST_ASSERT_EQUAL(length(knowledge.seals), 7, "Занятая после предупреждения клетка остаётся свободной от печати.")
+	TEST_ASSERT_EQUAL(length(knowledge.seals), 8, "Стоящего на краю двора печать накрывает.")
 	TEST_ASSERT_EQUAL(get_turf(blocker), blocked_place, "Создание двора не выталкивает занятого моба.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 0, "Весь двор стоит два ключа.")
 	for(var/obj/structure/heretic_lock_seal/seal as anything in knowledge.seals)
@@ -1120,8 +1120,10 @@
 	TEST_ASSERT_EQUAL(protection.charges, 5, "Проверка не тратит заряды антимагии.")
 	qdel(protection)
 	victim.set_resting(FALSE, TRUE)
-	var/obj/structure/heretic_lock_seal/pin = allocate(/obj/structure/heretic_lock_seal, victim_spot, knowledge)
-	knowledge.seals += pin
+	knowledge.combat_resource = max(knowledge.combat_resource, 1)
+	var/obj/structure/heretic_lock_seal/pin = knowledge.create_seal(victim_spot, user)
+	TEST_ASSERT_NOTNULL(pin, "Печать встаёт и под стоящим человеком.")
+	allocated += pin
 	TEST_ASSERT(!heretic.hunt_target_ready(victim), "До замка стоящая цель к обряду не готова.")
 	var/started = world.time
 	TEST_ASSERT(knowledge.shackle(user, victim), "Замок смыкается на цели в клетке своей печати.")
@@ -1140,6 +1142,7 @@
 	TEST_ASSERT(remaining <= 12 SECONDS + 1 && remaining > 12 SECONDS - 1 SECONDS, "Наручники держат цель охоты 12 секунд: осталось [remaining] дс.")
 	TEST_ASSERT_EQUAL(cuffs.breakouttime, 8 SECONDS, "Вырваться можно за 8 секунд.")
 	TEST_ASSERT(findtext(knowledge.shackles_block_reason(user, victim), "уже в наручниках"), "Повторный замок называет наручники.")
+	hold.held_since = world.time - HERETIC_LOCK_SHACKLES_DURATION
 	hold.duration = world.time
 	TEST_ASSERT(wait_for_qdeleted(hold), "Наручники кончаются по сроку.")
 	TEST_ASSERT(QDELETED(cuffs) && isnull(victim.handcuffed), "По сроку наручники исчезают с рук.")
@@ -1230,7 +1233,7 @@
 	TEST_ASSERT(findtext(path.escape_summary, "1 ключ") && findtext(path.escape_summary, "секунду"), "Модель пути называет цену и время перехода.")
 	var/datum/eldritch_knowledge/spell/lock_shackles/shackles = allocate(/datum/eldritch_knowledge/spell/lock_shackles)
 	var/shackles_text = jointext(shackles.details, " ")
-	for(var/fact in list("[HERETIC_LOCK_SHACKLES_RANGE] клетках", "Полсекунды", "[HERETIC_LOCK_SHACKLES_BREAKOUT / (1 SECONDS)] секунд", "[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд", "[HERETIC_LOCK_SHACKLES_COOLDOWN / (1 SECONDS)] секунд", "минуту", "[HERETIC_CAPTURE_SHARED_IMMUNITY / (1 SECONDS)] секунд"))
+	for(var/fact in list("[HERETIC_LOCK_SHACKLES_RANGE] клетках", "Полсекунды", "[HERETIC_LOCK_SHACKLES_BREAKOUT / (1 SECONDS)] секунд", "[HERETIC_LOCK_SHACKLES_DURATION / (1 SECONDS)] секунд", "[HERETIC_LOCK_SHACKLES_COOLDOWN / (1 SECONDS)] секунд", "до минуты", "[HERETIC_CAPTURE_SHARED_IMMUNITY / (1 SECONDS)] секунд"))
 		TEST_ASSERT(findtext(shackles_text, fact), "Замок на руках называет «[fact]».")
 	var/datum/eldritch_knowledge/lock_key/key = allocate(/datum/eldritch_knowledge/lock_key)
 	var/key_text = jointext(key.details, " ")

@@ -164,7 +164,7 @@
 			heal_self()
 		if("target_heal", "target_delete", "target_hunt", "target_injure")
 			var/mob/living/target = locate(params["id"]) in arena.targets
-			if(!can_manage_target(target) || get_area(target) != arena.room)
+			if(!can_manage_target(target) || get_area(heretic_pocket_anchor(get_turf(target))) != arena.room)
 				return FALSE
 			if(action == "target_heal")
 				if(practice_target?.resolve() == target)

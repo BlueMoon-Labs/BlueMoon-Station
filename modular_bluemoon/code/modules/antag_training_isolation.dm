@@ -22,8 +22,10 @@
 		return FALSE
 	var/datum/antag_training_arena/origin = training_origin?.resolve()
 	if(training_origin && destination && !QDELETED(src))
-		if(!origin || origin.finished || destination_area != origin.room)
+		if(!origin || origin.finished)
 			return FALSE
+		if(destination_area != origin.room)
+			return origin.pocket_allows(destination)
 		if(origin.duel && origin.duel.phase != "invite" && isliving(src) && origin.inside_bounds(get_turf(destination), origin.zones["melee"]["bounds"]))
 			if(src != origin.duel.challenger.current_body && src != origin.duel.opponent.current_body)
 				return FALSE
@@ -37,6 +39,17 @@
 			return TRUE
 		return get_area(src) == destination_area
 	return TRUE
+
+/// Изнанка учебного еретика этой арены - продолжение полигона: туда и по ней можно ходить.
+/datum/antag_training_arena/proc/pocket_allows(atom/destination)
+	var/turf/spot = get_turf(destination)
+	if(!istype(spot?.loc, /area/heretic_pocket))
+		return FALSE
+	for(var/datum/heretic_pocket/pocket as anything in GLOB.heretic_pockets)
+		var/datum/antagonist/heretic/training/heretic = pocket.owner
+		if(istype(heretic) && heretic.training?.arena == src && pocket.contains(spot))
+			return TRUE
+	return FALSE
 
 /atom/movable/proc/register_training_atom()
 	var/area/antag_training/location = get_area(src)

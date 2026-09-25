@@ -1254,6 +1254,7 @@
 	TEST_ASSERT(!spirit.become_incorporeal(user), "С чужой душой в руке бесплотным не стать.")
 	TEST_ASSERT(findtext(spirit.incorporeal_failure_reason, "держите"), "Отказ называет душу в руке: [spirit.incorporeal_failure_reason]")
 	qdel(other_soul)
+	hold.held_since = world.time - HERETIC_SPIRIT_HOLD_DURATION
 	hold.soul_item.attack_self(user)
 	TEST_ASSERT(QDELETED(hold), "Отпущенная душа возвращается.")
 	TEST_ASSERT(!victim.IsParalyzed(), "Тело снова двигается.")
@@ -1444,7 +1445,7 @@
 		TEST_ASSERT(findtext(base.desc, fragment), "Описание базы называет «[fragment]».")
 	var/datum/eldritch_knowledge/hold = allocate(/datum/eldritch_knowledge/spell/spirit_hold)
 	var/obj/effect/proc_holder/spell/hold_spell = /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
-	for(var/fragment in list("[HERETIC_SPIRIT_HOLD_DURATION / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_BREAK_DAMAGE]+", "[HERETIC_SPIRIT_HOLD_COOLDOWN / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_TELEGRAPH / (1 SECONDS)] секунд", "[HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды растолкать", "за [HERETIC_POCKET_PULL_TIME / (1 SECONDS)] секунд"))
+	for(var/fragment in list("[HERETIC_SPIRIT_HOLD_DURATION / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_BREAK_DAMAGE]+", "[HERETIC_SPIRIT_HOLD_COOLDOWN / (1 SECONDS)] секунд", "[HERETIC_SPIRIT_HOLD_TELEGRAPH / (1 SECONDS)] секунд", "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды", "за [HERETIC_POCKET_PULL_TIME / (1 SECONDS)] секунд"))
 		TEST_ASSERT(findtext(hold.desc, fragment), "Описание Удержать душу называет «[fragment]».")
 		TEST_ASSERT(findtext(initial(hold_spell.desc), fragment), "Кнопка Удержать душу называет «[fragment]».")
 	var/datum/eldritch_knowledge/incorporeal = allocate(/datum/eldritch_knowledge/spell/spirit_incorporeal)
@@ -1685,3 +1686,16 @@
 	restraint = hold.restraint
 	SEND_SIGNAL(victim, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN)
 	TEST_ASSERT(QDELETED(hold) && QDELETED(restraint) && !victim.IsParalyzed(), "Непродлённый паралич уходит вместе с удержанием.")
+
+/// Пустое тело в руке перевозчика немо: ни голосом, ни по рации не позвать; вернувшаяся душа снова говорит.
+/datum/unit_test/heretic_spirit_hold_mutes/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/eldritch_knowledge/base_spirit/spirit = allocate(/datum/eldritch_knowledge/base_spirit)
+	var/datum/status_effect/heretic_spirit_hold/hold = victim.apply_status_effect(/datum/status_effect/heretic_spirit_hold, user, spirit)
+	TEST_ASSERT_NOTNULL(hold, "Душа в руке перевозчика.")
+	TEST_ASSERT(HAS_TRAIT(victim, TRAIT_MUTE), "Пустое тело немо.")
+	TEST_ASSERT(!victim.can_speak_vocal(), "Пустое тело не может говорить.")
+	qdel(hold)
+	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MUTE), "Вернувшаяся душа снова говорит.")

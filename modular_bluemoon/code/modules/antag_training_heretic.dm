@@ -96,7 +96,7 @@
 	return FALSE
 
 /datum/antagonist/heretic/training/hunt_target_unavailable_reason(datum/mind/candidate, selecting = FALSE)
-	if(!training || QDELETED(candidate) || !(candidate in training.arena.target_minds) && !(candidate in training.arena.participant_minds()) || QDELETED(candidate.current) || get_area(candidate.current) != training.arena.room)
+	if(!training || QDELETED(candidate) || !(candidate in training.arena.target_minds) && !(candidate in training.arena.participant_minds()) || QDELETED(candidate.current) || get_area(heretic_pocket_anchor(get_turf(candidate.current))) != training.arena.room)
 		return "Создайте учебную цель через настройки полигона."
 	if(candidate in sacrificed_minds)
 		return "Эта учебная душа уже принята. Создайте новый манекен."

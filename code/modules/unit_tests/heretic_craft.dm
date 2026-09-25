@@ -240,3 +240,25 @@
 	SEND_SIGNAL(victim, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING)
 	TEST_ASSERT(QDELETED(knockout), "Начало обряда снимает сон захвата.")
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_HERETIC_CAPTURE_HOLD), "Метка захвата снята вместе с ним.")
+
+/// Хватка произносит заклинание только при касании живого: ремесло по вещам и полу идёт молча.
+/datum/unit_test/heretic_grasp_silent_craft/Run()
+	var/obj/item/melee/touch_attack/mansus_fist/fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human)
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	TEST_ASSERT(fist.speaks_on(crew), "Касание живого звучит заклинанием.")
+	TEST_ASSERT(!fist.speaks_on(pen), "Касание вещи молчит.")
+	TEST_ASSERT(!fist.speaks_on(run_loc_floor_bottom_left), "Касание пола молчит.")
+
+/// Невосприимчивость зависит от того, сколько захват держал: несостоявшийся не даёт ничего, секунда - 10 секунд без общей передышки, досмотренный - минуту и 15 секунд передышки.
+/datum/unit_test/heretic_capture_immunity_scales/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NULL(heretic_capture_release(victim, "probe", held_for = 0), "Несостоявшийся захват не даёт невосприимчивости.")
+	TEST_ASSERT_NULL(capture_immunity(victim, "probe"), "Невосприимчивости к несостоявшемуся захвату нет.")
+	var/datum/status_effect/heretic_capture_immunity/short = heretic_capture_release(victim, "probe", held_for = 1 SECONDS)
+	TEST_ASSERT(short && abs(short.duration - world.time - HERETIC_CAPTURE_MIN_IMMUNITY) < 1, "Секунда захвата - 10 секунд невосприимчивости.")
+	TEST_ASSERT_NULL(capture_immunity(victim, "shared"), "Секундный захват не закрывает цель от других захватов.")
+	var/datum/status_effect/heretic_capture_immunity/full = heretic_capture_release(victim, "full", held_for = 10 SECONDS)
+	TEST_ASSERT(full && abs(full.duration - world.time - HERETIC_CAPTURE_IMMUNITY) < 1, "Десять секунд захвата - минута невосприимчивости.")
+	var/datum/status_effect/heretic_capture_immunity/shared = capture_immunity(victim, "shared")
+	TEST_ASSERT(shared && abs(shared.duration - world.time - HERETIC_CAPTURE_SHARED_IMMUNITY) < 1, "Досмотренный захват даёт 15 секунд общей передышки.")

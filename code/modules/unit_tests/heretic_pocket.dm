@@ -744,7 +744,7 @@
 	heretic_capture_release(victim, HERETIC_POCKET_CAPTURE)
 	TEST_ASSERT(findtext(heretic.pocket_pull_reason(user, victim, entry), "приходит в себя"), "Своя минута изнанки держит.")
 
-/// Время, жезл и разрыв руками выносят еретика к ближайшему своему выходу на уровне входа, но не к клетке рядом со входом, цель - ко входу; без выходов и при крите еретика оба у входа.
+/// Время, жезл и разрыв руками выносят еретика к своему выходу подальше от входа, цель - ко входу: ближайший из дальних, иначе самый дальний из близких, не клетка у входа; без выходов - туда, где еретик стоял, если это не у входа; при крите еретика оба у входа.
 /datum/unit_test/heretic_pocket/forced_exit/Run()
 	var/datum/antagonist/heretic/heretic = pocket_heretic()
 	var/mob/living/carbon/human/user = heretic.owner.current
@@ -756,6 +756,7 @@
 
 	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку.")
 	var/datum/heretic_pocket/pocket = heretic.pocket
+	TEST_ASSERT_NULL(exit_label(heretic, origin), "Клетка у самого входа не отдельный выход.")
 	pocket.on_timeout()
 	TEST_ASSERT_EQUAL(get_turf(user), entry, "Без своих выходов еретик выпадает у входа.")
 	TEST_ASSERT_EQUAL(get_turf(victim), entry, "Цель выпадает у входа.")
@@ -765,6 +766,20 @@
 	var/datum/eldritch_knowledge/pocket_exit_probe/probe = allocate(/datum/eldritch_knowledge/pocket_exit_probe)
 	probe.exits = list("Дальний" = far, "Ближний" = near, "У самого входа" = get_step(entry, EAST))
 	heretic.researched_knowledge[probe.type] = probe
+	var/list/rules = list(
+		list(2, near, "ближайший из дальних"),
+		list(3, far, "единственный дальний"),
+		list(HERETIC_POCKET_ESCAPE_DISTANCE, far, "без дальних - самый дальний из близких"),
+	)
+	for(var/list/rule as anything in rules)
+		reset_pocket(pocket, victim)
+		user.forceMove(origin)
+		victim.forceMove(entry)
+		TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель снова уходит в изнанку ([rule[3]]).")
+		pocket.escape_distance = rule[1]
+		pocket.on_timeout()
+		TEST_ASSERT_EQUAL(get_turf(user), rule[2], "Еретика выносит к выходу: [rule[3]].")
+	pocket.escape_distance = 3
 	for(var/closer in list("время", "жезл", "руки"))
 		reset_pocket(pocket, victim)
 		user.forceMove(origin)
@@ -779,8 +794,22 @@
 				pocket.rift.tear_time = 1
 				TEST_ASSERT(pocket.rift.tear(crew), "Экипаж рвёт разрыв руками.")
 		TEST_ASSERT(!pocket.active, "Изнанка закрыта ([closer]).")
-		TEST_ASSERT_EQUAL(get_turf(user), near, "Еретика выносит к ближайшему своему выходу ([closer]).")
+		TEST_ASSERT_EQUAL(get_turf(user), far, "Еретика выносит к выходу подальше от входа ([closer]).")
 		TEST_ASSERT_EQUAL(get_turf(victim), entry, "Цель выпадает у входа ([closer]).")
+
+	probe.exits = list()
+	var/turf/stood = locate(entry.x + 2, entry.y + 2, entry.z)
+	reset_pocket(pocket, victim)
+	user.forceMove(stood)
+	victim.forceMove(entry)
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку, еретик тянул издалека.")
+	TEST_ASSERT_NOTNULL(exit_label(heretic, stood), "Клетка, где еретик стоял, - выход из изнанки.")
+	pocket.escape_distance = 2
+	pocket.on_timeout()
+	TEST_ASSERT_EQUAL(get_turf(user), stood, "Без выходов пути еретика выносит туда, где он стоял.")
+	TEST_ASSERT_EQUAL(get_turf(victim), entry, "Цель выпадает у входа.")
+	pocket.escape_distance = 3
+	probe.exits = list("Дальний" = far, "Ближний" = near, "У самого входа" = get_step(entry, EAST))
 
 	reset_pocket(pocket, victim)
 	user.forceMove(origin)
@@ -867,3 +896,115 @@
 	TEST_ASSERT_NULL(pocket.entry_hold, "Закрытие снимает удержание.")
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_HERETIC_CAPTURE_HOLD), "После выхода на жертве нет метки захвата.")
 	visit.finish()
+
+/datum/unit_test/heretic_pocket/door_grip
+	var/grip_failure = "вопрос не задан"
+	var/list/grip_ticks = list()
+
+/datum/unit_test/heretic_pocket/door_grip/proc/inspect_grip(mob/living/carbon/human/victim)
+	var/datum/status_effect/heretic_door_grip/grip = victim.has_status_effect(/datum/status_effect/heretic_door_grip)
+	if(!grip)
+		grip_failure = "прижатия нет"
+		return
+	if(!victim.IsParalyzed())
+		grip_failure = "цель может двигаться"
+		return
+	if(abs(grip.duration - world.time - HERETIC_POCKET_DOOR_GRIP) > 1)
+		grip_failure = "срок [grip.duration - world.time] дс вместо [HERETIC_POCKET_DOOR_GRIP]"
+		return
+	var/mob/living/carbon/human/helper = allocate(/mob/living/carbon/human, get_step(victim, NORTH))
+	victim.help_shake_act(helper)
+	qdel(helper)
+	if(QDELETED(grip) || !victim.IsParalyzed())
+		grip_failure = "«Помощь» подняла цель"
+		return
+	grip_failure = null
+
+/datum/unit_test/heretic_pocket/door_grip/proc/record_grip(mob/living/victim)
+	grip_ticks += !!victim.has_status_effect(/datum/status_effect/heretic_door_grip)
+	return TRUE
+
+/// Сердце прижимает цель, пока еретик выбирает дверь и тянет её сквозь завесу: «Помощь» не поднимает, растолкать и нулевой жезл снимают, закрытый вопрос отпускает, повтор только продлевает, дверь без прижатия не прижимает.
+/datum/unit_test/heretic_pocket/door_grip/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/mind/user_mind = allocate_mind()
+	user_mind.current = user
+	user.mind = user_mind
+	var/datum/antagonist/heretic/door_fixture/heretic = allocate(/datum/antagonist/heretic/door_fixture)
+	heretic.owner = user_mind
+	heretic.silent = TRUE
+	user_mind.antag_datums = list(heretic)
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, run_loc_floor_bottom_left)
+	TEST_ASSERT(heart.bind(user_mind), "Сердце привязано к еретику.")
+	user.put_in_hands(heart)
+	var/turf/entry = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = allocate_hunt_victim(heretic, entry)
+	var/datum/eldritch_knowledge/pocket_exit_probe/probe = allocate(/datum/eldritch_knowledge/pocket_exit_probe)
+	probe.offers_door = TRUE
+	heretic.researched_knowledge[probe.type] = probe
+
+	heretic.answer = null
+	heretic.during_prompt = CALLBACK(src, PROC_REF(inspect_grip), victim)
+	TEST_ASSERT(!heretic.touch_hunt_target(user, victim, heart), "Закрытый вопрос ничего не делает.")
+	TEST_ASSERT_NULL(grip_failure, "Пока открыт вопрос, сердце прижимает цель: [grip_failure].")
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_door_grip), "Закрытый вопрос отпускает цель.")
+	TEST_ASSERT(!victim.IsParalyzed(), "Отпущенная цель может двигаться.")
+	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_HERETIC_CAPTURE_HOLD), "Отпущенная цель без метки захвата.")
+	heretic.during_prompt = null
+
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, door_check = CALLBACK(src, PROC_REF(record_grip), victim)), "Дверь с каналом уводит цель.")
+	TEST_ASSERT(length(grip_ticks) >= 3, "Условие двери проверено до, во время и после канала: [length(grip_ticks)] раз.")
+	TEST_ASSERT(!grip_ticks[1], "До канала цель ещё не прижата.")
+	for(var/index in 2 to length(grip_ticks))
+		TEST_ASSERT(grip_ticks[index], "Весь канал цель прижата: проверка [index] из [length(grip_ticks)].")
+	heretic.pocket.collapse("проверка")
+	reset_pocket(heretic.pocket, victim)
+	victim.remove_status_effect(/datum/status_effect/heretic_door_grip)
+	user.forceMove(run_loc_floor_bottom_left)
+	victim.forceMove(entry)
+
+	grip_ticks.Cut()
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, door_check = CALLBACK(src, PROC_REF(record_grip), victim), grip = FALSE), "Дверь без прижатия уводит цель.")
+	for(var/index in 1 to length(grip_ticks))
+		TEST_ASSERT(!grip_ticks[index], "Дверь без прижатия цель не прижимает: проверка [index].")
+	heretic.pocket.collapse("проверка")
+
+	var/datum/status_effect/heretic_door_grip/grip = heretic_door_grip(victim, 1 SECONDS)
+	TEST_ASSERT_NOTNULL(grip, "Прижатие наложено.")
+	TEST_ASSERT_EQUAL(heretic_door_grip(victim, 3 SECONDS), grip, "Повторное прижатие продлевает то же.")
+	TEST_ASSERT(abs(grip.duration - world.time - 3 SECONDS) < 1, "Прижатие продлено до 3 секунд.")
+	TEST_ASSERT(victim.AmountParalyzed() >= 3 SECONDS - 1, "Паралич продлён вместе с ним: [victim.AmountParalyzed()] дс.")
+	heretic_door_grip(victim, 1 SECONDS)
+	TEST_ASSERT(abs(grip.duration - world.time - 3 SECONDS) < 1, "Короткий повтор не укорачивает прижатие.")
+	SEND_SIGNAL(victim, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, null)
+	TEST_ASSERT(QDELETED(grip), "Растолкать - снять прижатие.")
+	TEST_ASSERT(!victim.IsParalyzed(), "Растолканная цель может двигаться.")
+	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_HERETIC_CAPTURE_HOLD), "Снятое прижатие не оставляет метки захвата.")
+
+	grip = heretic_door_grip(victim, HERETIC_POCKET_DOOR_GRIP)
+	var/mob/living/carbon/human/chaplain = allocate(/mob/living/carbon/human, get_step(entry, NORTH))
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod, get_turf(chaplain))
+	chaplain.put_in_hands(rod)
+	victim.attackby(rod, chaplain)
+	TEST_ASSERT(QDELETED(grip), "Нулевой жезл снимает прижатие.")
+	TEST_ASSERT(!victim.IsParalyzed(), "После жезла цель может двигаться.")
+
+/// Своё живое сердце с пола изнанки при закрытии уходит за завесу, чужие вещи выпадают у входа.
+/datum/unit_test/heretic_pocket/stash/Run()
+	var/datum/antagonist/heretic/heretic = pocket_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/entry = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = pocket_victim(heretic, entry)
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку.")
+	var/datum/heretic_pocket/pocket = heretic.pocket
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, pocket.center)
+	TEST_ASSERT(heart.bind(user.mind), "Сердце привязано к еретику.")
+	var/obj/item/living_heart/stray_heart = allocate(/obj/item/living_heart, pocket.center)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, pocket.center)
+	pocket.on_timeout()
+	TEST_ASSERT(heart in heretic.summon_items, "Своё сердце ушло за завесу.")
+	TEST_ASSERT_NULL(heart.loc, "Своё сердце не лежит у входа.")
+	TEST_ASSERT_EQUAL(get_turf(stray_heart), entry, "Непривязанное сердце выпадает у входа.")
+	TEST_ASSERT_EQUAL(get_turf(pen), entry, "Прочие вещи выпадают у входа.")
+	heretic.summon_items -= heart

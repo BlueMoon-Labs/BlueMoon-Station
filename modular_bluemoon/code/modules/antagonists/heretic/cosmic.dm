@@ -26,7 +26,7 @@
 		"Начните с «Зажечь звезду»: укажите пол до 7 клеток от себя, звёзды загорятся там и под вами.",
 		"Между звёздами натягивается нить: враг на ней получает 10 ожогов, 25 урона выносливости и падает.",
 		"Держатся 2 звезды по 3 минуты; новая при полном созвездии заменяет самую старую.",
-		"Путеводная звезда: Хватка в «Помощи» по полу. До 4, по одной на отдел, без срока, 40 прочности.",
+		"Путеводную звезду зажигает Хватка в «Помощи» по полу: их до 4, по одной на отдел, горят без срока, прочность 40.",
 		"Звезда в новом отделе - шаг дела пути; к ней ведут Звёздная дорога и выход из изнанки.",
 		"Готовую цель охоты в 2 клетках от своей путеводной звезды сердце за секунду уводит в изнанку.",
 		"Экипаж видит холодную точку света без тени; жезл гасит звёзды. Нож и стекло на руне дают космический клинок.",
@@ -38,8 +38,8 @@
 	result_atoms = list(/obj/item/melee/sickly_blade/cosmic)
 	resource_rules = list(
 		"Созвездие: 2 звезды, с Третьей точкой 3, после вознесения 5; каждая живёт 3 минуты.",
-		"Первое нажатие ставит пару вдоль свободной прямой, преграда оставляет только дальнюю звезду.",
-		"Новая звезда тянет нить к самой свежей своей звезде со свободной прямой, иначе встаёт отдельно.",
+		"Если своей звезды рядом нет и прямая до точки свободна, вторая звезда загорится под вами; иначе - только в точке.",
+		"Новая звезда тянет нить к самой свежей из ваших звёзд, до которой свободна прямая; если такой нет, горит отдельно.",
 		"Нить: 10 ожогов, 25 урона выносливости, падение на 0,7 секунды и замедление на 3 секунды.",
 		"Одну цель нить ранит не чаще раза в 3 секунды; замедление от Хватки и пульса от нитей не защищает.",
 		"При полном созвездии новая звезда заменяет старейшую, нажатие на свою звезду гасит её.",
@@ -119,14 +119,25 @@
 		grasp_failure_reason = heretic.deed_wait_reason(key)
 		if(grasp_failure_reason)
 			return FALSE
-	for(var/obj/structure/heretic_guide_star/guide as anything in guide_stars.Copy())
-		if(heretic.deed_key_for(guide) != key)
-			continue
+	var/list/replaced = list()
+	var/obj/structure/heretic_guide_star/oldest
+	for(var/obj/structure/heretic_guide_star/guide as anything in guide_stars)
+		if(heretic.deed_key_for(guide) == key)
+			replaced += guide
+		else if(!oldest && !holds_captive(guide))
+			oldest = guide
+	for(var/obj/structure/heretic_guide_star/guide as anything in replaced)
+		if(holds_captive(guide))
+			grasp_failure_reason = "Путеводная звезда этого отдела держит пленника на Орбите."
+			return FALSE
+	if(length(guide_stars) - length(replaced) >= HERETIC_COSMIC_GUIDE_LIMIT && !oldest)
+		grasp_failure_reason = "Все путеводные звёзды держат пленников."
+		return FALSE
+	for(var/obj/structure/heretic_guide_star/guide as anything in replaced)
 		log_game("[key_name(user)] гасит путеводную звезду Космоса в [AREACOORD(guide)]: в том же отделе зажжена новая.")
 		guide_stars -= guide
 		qdel(guide)
-	while(length(guide_stars) >= HERETIC_COSMIC_GUIDE_LIMIT)
-		var/obj/structure/heretic_guide_star/oldest = guide_stars[1]
+	if(length(guide_stars) >= HERETIC_COSMIC_GUIDE_LIMIT)
 		log_game("[key_name(user)] теряет путеводную звезду Космоса в [AREACOORD(oldest)]: её вытеснила новая.")
 		guide_stars -= oldest
 		qdel(oldest)
@@ -358,14 +369,14 @@
 	if(QDELETED(src) || QDELETED(user))
 		return FALSE
 	if(QDELETED(victim) || victim.loc != place)
-		to_chat(user, span_warning("Цель ушла из звёздного кольца, и Орбита рассыпалась."))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/self/cosmic/orbit, "Цель ушла из звёздного кольца, и Орбита рассыпалась.")
 		return FALSE
 	if(!orbit_star_valid(star, victim))
-		to_chat(user, span_warning("Звезду погасили или она уже держит пленника, и Орбита рассыпалась."))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/self/cosmic/orbit, "Звезду погасили или она уже держит пленника, и Орбита рассыпалась.")
 		return FALSE
 	var/reason = orbit_block_reason(user, victim, check_ready = FALSE)
 	if(reason)
-		to_chat(user, span_warning("Орбита рассыпалась: [reason]"))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/self/cosmic/orbit, "Орбита рассыпалась: [reason]")
 		return FALSE
 	var/datum/status_effect/heretic_cosmic_orbit/orbit = victim.apply_status_effect(/datum/status_effect/heretic_cosmic_orbit, src, star)
 	if(!orbit || QDELETED(orbit))
@@ -454,8 +465,18 @@
 		heretic_cosmic_twinkle(place)
 
 /datum/eldritch_knowledge/base_cosmic/proc/make_room_for_star()
-	if(length(stars) >= star_limit())
-		qdel(stars[1])
+	if(length(stars) < star_limit())
+		return
+	for(var/obj/structure/heretic_star/star as anything in stars)
+		if(!holds_captive(star))
+			qdel(star)
+			return
+
+/datum/eldritch_knowledge/base_cosmic/proc/holds_captive(atom/movable/star)
+	for(var/datum/status_effect/heretic_cosmic_orbit/orbit as anything in orbits)
+		if(orbit.star == star)
+			return TRUE
+	return FALSE
 
 /datum/eldritch_knowledge/base_cosmic/proc/safe_star_turf(turf/place)
 	return isopenturf(place) && !isspaceturf(place) && !istype(place, /turf/open/lava) && !place.is_blocked_turf(exclude_mobs = TRUE)
@@ -954,13 +975,14 @@
 	return ..()
 
 /datum/status_effect/heretic_cosmic_orbit
+	var/held_since = 0
 	id = "heretic_cosmic_orbit"
 	duration = HERETIC_COSMIC_ORBIT_DURATION
 	tick_interval = HERETIC_COSMIC_ORBIT_STEP
 	status_type = STATUS_EFFECT_UNIQUE
 	on_remove_on_mob_delete = TRUE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_cosmic_orbit
-	examine_text = span_warning("SUBJECTPRONOUN кружит вокруг холодной звезды и не может вырваться. Разбейте звезду, коснитесь нулевым жезлом звезды или пленника или 2 секунды расталкивайте его.")
+	examine_text = span_warning("SUBJECTPRONOUN кружит вокруг холодной звезды и не может вырваться. Разбейте звезду, коснитесь нулевым жезлом звезды или пленника или растолкайте его за 2 секунды.")
 	var/datum/weakref/cosmic_ref
 	var/atom/movable/star
 	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
@@ -994,6 +1016,7 @@
 	base_pixel_w = owner.pixel_w
 	base_pixel_z = owner.pixel_z
 	applied = TRUE
+	held_since = world.time
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	RegisterSignals(owner, list(COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_LIVING_DEATH), PROC_REF(end_orbit))
@@ -1036,7 +1059,7 @@
 			qdel(restraint)
 		owner.set_anchored(was_anchored)
 		animate(owner, pixel_w = base_pixel_w, pixel_z = base_pixel_z, time = HERETIC_COSMIC_ORBIT_STEP, flags = ANIMATION_PARALLEL)
-		heretic_capture_release(owner, HERETIC_COSMIC_CAPTURE)
+		heretic_capture_release(owner, HERETIC_COSMIC_CAPTURE, held_for = heretic_capture_held_for(held_since))
 	restraint = null
 	star = null
 	var/datum/eldritch_knowledge/base_cosmic/cosmic = cosmic_ref?.resolve()
@@ -1046,7 +1069,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_cosmic_orbit
 	name = "Орбита"
-	desc = "Звезда держит вас на орбите до 10 секунд. Товарищ может разбить звезду, коснуться нулевым жезлом звезды или вас или 2 секунды вас расталкивать."
+	desc = "Звезда держит вас на орбите до 10 секунд. Товарищ может разбить звезду, коснуться нулевым жезлом звезды или вас или растолкать вас за 2 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "cosmic_orbiting"
 
@@ -1096,7 +1119,7 @@
 	parent_type = /obj/effect/proc_holder/spell/pointed
 	name = "Зажечь звезду"
 	desc = "Укажите свободный пол до семи клеток от себя. Если рядом с вами нет своей звезды, вторая загорится под вами и между ними натянется нить; нажатие на свою звезду гасит её."
-	summary = "Звезда на пол до 7 клеток; без своей звезды рядом вторая встаёт под вами, между ними нить."
+	summary = "Зажигает звезду до 7 клеток от вас; если своей рядом нет, вторая загорится под вами и натянется нить."
 	clothes_req = FALSE
 	range = HERETIC_STAR_RANGE
 	selection_type = "view"
@@ -1287,7 +1310,7 @@
 /obj/effect/proc_holder/spell/self/cosmic/orbit
 	parent_type = /obj/effect/proc_holder/spell/pointed
 	name = "Орбита"
-	desc = "Укажите сбитую или скованную звёздами цель в двух клетках от своей звезды: через секунду она 10 секунд кружит у звезды. Цель охоты на орбите сердце за секунду уводит к звёздам в изнанку. Товарищ растолкает пленника за 2 секунды."
+	desc = "Укажите сбитую или скованную звёздами цель в двух клетках от своей звезды: через секунду она 10 секунд кружит у звезды. Живое сердце за секунду уводит цель охоты с орбиты к звёздам в изнанку. Товарищ растолкает пленника за 2 секунды."
 	summary = "10 секунд держит поверженную цель на орбите вашей звезды."
 	clothes_req = FALSE
 	range = HERETIC_STAR_RANGE
@@ -1350,7 +1373,7 @@
 	details = list(
 		"Встаньте вплотную к своей звезде и укажите другую звезду созвездия: перенос мгновенный.",
 		"Щелчок по себе ведёт к путеводной звезде на этом уровне, видимую звезду можно указать сразу.",
-		"К путеводной звезде - 2 секунды на месте, от вас к ней тянется хвост кометы.",
+		"Путь к путеводной звезде занимает 2 секунды на месте, от вас к ней тянется хвост кометы.",
 		"Дорога к путеводной звезде работает и в чужой хватке, но сдвиг с места её срывает.",
 		"Прибытие к звезде созвездия взрывает ваши метки Космоса в клетке от выхода: 10 ожогов, 15 выносливости.",
 		"Перезарядка 18 секунд, дорога к путеводной звезде - раз в 30 секунд.",
@@ -1402,10 +1425,10 @@
 		"Цель не дальше 2 клеток от своей звезды, обычной или путеводной, по открытой линии.",
 		"Годится сбитая с ног или обессиленная цель либо замедленная нитью, Притяжением или пульсом.",
 		"Секунду вокруг цели горит кольцо: если она сошла с клетки или вас оглушили, Орбита рассыпается.",
-		"Затем цель 10 секунд кружит у звезды: не действует, её не утащить; «Помощь» не будит, растолкать - 2 секунды.",
-		"Цель охоты на Орбите сердце за секунду уводит к звёздам в изнанку.",
-		"Разбитая звезда или нулевой жезл по звезде или пленнику освобождают его. Защита от магии спасает от Орбиты.",
-		"После Орбиты цель минуту к ней невосприимчива и 15 секунд - к любому захвату. Перезарядка 40 секунд.",
+		"Цель 10 секунд беспомощно кружит у звезды, её не утащить; клик «Помощи» не спасёт, но можно растолкать за 2 секунды.",
+		"Коснитесь живым сердцем цели охоты на Орбите или её звезды - за секунду она уйдёт к звёздам в изнанку.",
+		"Пленника освобождает разбитая звезда или касание нулевым жезлом звезды или пленника. Защита от магии спасает от Орбиты.",
+		"После Орбиты цель до минуты к ней невосприимчива и 15 секунд - к любому захвату. Перезарядка 40 секунд.",
 	)
 	role = HERETIC_ROLE_CAPTURE
 	cost = 2
@@ -1424,7 +1447,7 @@
 	summary = "Ваши звёзды в 7 клетках бьют врагов в 2 клетках, подтягивают их и ставят метку."
 	details = list(
 		"20 ожогов, 25 урона выносливости, притяжение на 2 клетки и замедление на 3 секунды.",
-		"Одна цель получает эффект раз за применение; притяжение через нить не ранит, потом нити бьют как обычно.",
+		"Каждого врага пульс бьёт один раз; нить не ранит того, кого пульс протащил через неё, потом бьёт как обычно.",
 		"Без своих звёзд в 7 клетках пульс не срабатывает и не уходит на перезарядку.",
 		"Перезарядка 22 секунды.",
 	)
@@ -1464,7 +1487,7 @@
 		"Бьют ваши звёзды в 7 клетках, каждая - в радиусе 2 клеток; область подсвечена заранее.",
 		"45 ожогов, падение на 1,5 секунды, все поражённые стягиваются на клетку своей звезды.",
 		"Во время предупреждения можно двигаться; созвездие расходуется, путеводные звёзды - нет.",
-		"Разбитая или сдвинутая звезда, ваше оглушение или звёзды вне 7 клеток срывают удар и возвращают перезарядку.",
+		"Если звезду разбили или сдвинули, вас оглушили или звёзды дальше 7 клеток, удар срывается и перезарядка возвращается.",
 		"Перезарядка 35 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK

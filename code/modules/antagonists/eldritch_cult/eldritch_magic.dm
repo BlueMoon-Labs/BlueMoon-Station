@@ -3,7 +3,7 @@
 	usable_while_grabbed = TRUE
 	name = "Пепельный переход"
 	desc = "Ненадолго обратитесь в пепел, чтобы пройти сквозь стены. Работает в чужой хватке, но до вознесения не под оглушением."
-	summary = "1,5 секунды сквозь стены пеплом, затем 2,5 секунды проявления на месте."
+	summary = "1,5 секунды идёте пеплом сквозь стены, затем 2,5 секунды проявляетесь на месте."
 	school = "transmutation"
 	invocation = "DULK'ES PRE'ZIMAS"
 	invocation_type = "whisper"
@@ -18,7 +18,7 @@
 	jaunt_out_type = /obj/effect/temp_visual/dir_setting/ash_shift/out
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/long
-	summary = "7,5 секунды сквозь стены пеплом, затем 2,5 секунды проявления на месте."
+	summary = "7,5 секунды идёте пеплом сквозь стены, затем 2,5 секунды проявляетесь на месте."
 	jaunt_duration = 75
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/play_sound(type, mob/living/target)
@@ -85,6 +85,10 @@
 		return ..()
 	grasp_in_progress = FALSE
 
+/// Ремесло по вещам и полу идёт молча: заклинание звучит только при касании живого.
+/obj/item/melee/touch_attack/mansus_fist/speaks_on(atom/target)
+	return isliving(target)
+
 /obj/item/melee/touch_attack/mansus_fist/charges_check()
 	if(QDELETED(src))
 		return
@@ -146,7 +150,10 @@
 		else if(!QDELETED(entry) && entry.grasp_failure_reason)
 			failure_reason = entry.grasp_failure_reason
 	if(use_charge && !QDELETED(src) && !QDELETED(user))
-		playsound(user, grasp_sound, 60, TRUE)
+		if(isliving(target))
+			playsound(user, grasp_sound, 60, TRUE)
+		else
+			playsound(user, grasp_sound, 25, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE)
 		if(grasp_visual && !QDELETED(target))
 			new grasp_visual(get_turf(target))
 	else if(!use_charge && !QDELETED(src) && !QDELETED(user) && !QDELETED(target))
@@ -240,7 +247,7 @@
 		return TRUE
 	recovery_in_progress = FALSE
 	if(!completed || !recovery_allowed(user, heretic, original_ref))
-		heretic_revert_cast(user, "Возвращение кодекса прервано: сохраняйте неподвижность, а книга должна оставаться свободной.")
+		heretic_revert_cast(user, "Возвращение кодекса прервано: нужно стоять на месте, а книга не должна попасть в чужой инвентарь или в обряд.")
 		return TRUE
 	var/obj/item/forbidden_book/book = original_ref?.resolve()
 	if(book && !isturf(book.loc))
@@ -394,7 +401,7 @@
 	heretic_stun_check = TRUE
 	name = "Кровавый сифон"
 	desc = "Вытяните кровь из выбранного врага: нанесите 20 ушибов и вылечите столько же себе. Каждая ваша рана с вероятностью 50% перейдёт на соответствующую конечность цели."
-	summary = "20 ушибов врагу в 6 клетках и 20 лечения вам, часть ваших ран уходит к нему."
+	summary = "Наносит врагу в 6 клетках 20 ушибов и снимает с вас столько же; часть ваших ран переходит к нему."
 	school = "evocation"
 	charge_max = 150
 	clothes_req = FALSE
@@ -768,7 +775,7 @@
 
 /obj/effect/proc_holder/spell/targeted/fire_sworn
 	name = "Клятва огня"
-	desc = "60 секунд поддерживайте вокруг себя кольцо огня: оно поджигает врагов на соседних клетках и непрерывно их обжигает. Перезарядка 2 минуты."
+	desc = "60 секунд вокруг вас горит кольцо огня: оно поджигает врагов на соседних клетках и непрерывно их обжигает. Перезарядка 2 минуты."
 	summary = "60 секунд кольцо огня жжёт врагов рядом с вами."
 	invocation = "IGNIS'AISTRA'LISTRE"
 	invocation_type = "whisper"
@@ -870,8 +877,8 @@
 /obj/effect/proc_holder/spell/targeted/fiery_rebirth
 	heretic_stun_check = TRUE
 	name = "Возрождение ночного дозорного"
-	desc = "Погасите огонь на себе и вытяните жар из четырёх горящих врагов в пределах 4 клеток. Каждый получает 15 ожогов и восстанавливает вам по 10 ушибов и ожогов."
-	summary = "Гасит вас и лечит за счёт до 4 горящих врагов в 4 клетках."
+	desc = "Погасите огонь на себе и вытяните жар из горящих врагов в пределах 4 клеток, но не больше чем из четырёх. Каждый получает 15 ожогов и восстанавливает вам по 10 ушибов и ожогов."
+	summary = "Гасит огонь на вас и лечит, вытягивая жар из горящих врагов в 4 клетках, до 4 врагов за раз."
 	invocation = "PETHRO'MINO'IGNI"
 	invocation_type = "whisper"
 	clothes_req = FALSE
@@ -1095,7 +1102,7 @@
 /obj/effect/proc_holder/spell/targeted/shed_human_form
 	name = "Сбросить облик"
 	desc = "Смените человеческий облик на форму Повелителя Ночи или обратно. Убитый червь выбрасывает вас человеком, и облик вернётся только через 2 минуты."
-	summary = "Облик червя и обратно: голова пожирает трупы, червь лечится и растёт."
+	summary = "Превращает вас в червя и обратно; поедая трупы головой, червь лечится и растёт."
 	invocation_type = "shout"
 	invocation = "РЕАЛЬНОСТЬ, РАЗВЕРНИСЬ!"
 	clothes_req = FALSE
@@ -1231,7 +1238,7 @@
 	heretic_stun_check = TRUE
 	name = "Притяжение пустоты"
 	desc = "Притяните видимых врагов в пределах трёх клеток на два шага к себе и замедлите на 4 секунды. Те, кто уже стоит вплотную, получают 20 ушибов и падают на 2 секунды."
-	summary = "Тянет врагов в 3 клетках к вам, стоящих вплотную валит."
+	summary = "Тянет к вам врагов в 3 клетках, а тех, кто стоит вплотную, валит с ног."
 	invocation_type = "whisper"
 	invocation = "VISA'GALIS TRAUK'IMAS"
 	clothes_req = FALSE

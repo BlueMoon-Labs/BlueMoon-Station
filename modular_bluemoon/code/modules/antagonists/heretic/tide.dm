@@ -44,7 +44,7 @@
 	deed_type = /datum/heretic_deed/tide
 	name = "Пучина"
 	tagline = "Прорывы у раковин дают чёрную воду: в ней враги захлёбываются, а вы уходите в слив."
-	craft_summary = "Хватка по раковине, душу или баку открывает прорыв на 5 минут: до 3, вокруг чёрная вода."
+	craft_summary = "Хватка по раковине, душу или баку открывает прорыв на 5 минут: вокруг натекает чёрная вода, прорывов до 3."
 	capture_summary = "Сброс валит в лужу, через секунду Захлёб лишает голоса, через 5 секунд - сознания; сердце уводит в изнанку."
 	escape_summary = "Уйти в слив: от своего прорыва к другому за 1,5 секунды; из изнанки выходите к своему прорыву."
 	strength_points = list(
@@ -57,7 +57,7 @@
 	)
 	weakness_points = list(
 		"Прорыв виден: вода не уходит в слив; гаечный ключ или нулевой жезл по источнику его закрывают.",
-		"Захлёб смыкается секунду и берёт только цель на мокром полу; сухой пол, жезл и 2 секунды растолкать его рвут.",
+		"Захлёб берёт цель на мокром полу; его срывают 1,5 секунды на сухом, жезл или растолкать за 2 секунды.",
 		"Без второго своего прорыва на уровне уйти в слив некуда.",
 		"Лечения нет, а волны быстро расходуют давление.",
 		"Обрушение выдаёт себя за секунду: из подсвеченной области можно выйти.",
@@ -83,7 +83,7 @@
 		"Нож и лист металла создают гарпунный клинок.",
 		"Волны оставляют скользкий пол и на 8 секунд замедляют намокших врагов; вы на воде не скользите.",
 		"Прорыв держится 5 минут: чёрная вода в 2 клетках натекает раз в 20 секунд, враги мокнут, вы быстрее.",
-		"До 3 прорывов, новый вытесняет старый; смерть их не закрывает; отдел засчитывается делу один раз.",
+		"Прорывов держится до 3, новый вытесняет старый; ваша смерть их не закрывает, а каждый отдел засчитывается делу один раз.",
 		"Экипаж видит, что вода не уходит в слив; гаечный ключ или нулевой жезл по источнику закрывают прорыв.",
 		"Уйти в слив доступен сразу: 2 давления, перезарядка 60 секунд.",
 		"Из изнанки выходите к своему прорыву; весь её пол для вас - чёрная вода.",
@@ -380,11 +380,11 @@
 	if(QDELETED(src) || generation != tide_generation || QDELETED(user))
 		return FALSE
 	if(QDELETED(victim) || victim.loc != place)
-		to_chat(user, span_warning("Цель ушла из воды, и захлёб не случился."))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/heretic_tide/drown, "Цель ушла из воды, и захлёб не случился.")
 		return FALSE
 	var/reason = drown_block_reason(user, victim, check_cost = FALSE)
 	if(reason)
-		to_chat(user, span_warning("Захлёб сорвался: [reason]"))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/heretic_tide/drown, "Захлёб сорвался: [reason]")
 		return FALSE
 	if(!victim.apply_status_effect(/datum/status_effect/heretic_tide_drowning, src))
 		return FALSE
@@ -646,6 +646,7 @@
 		victim.adjustStaminaLoss(ascended_wave ? 40 : 24)
 		soak(victim)
 		move_with_tide(victim, center, inward_tide, ascended_wave ? 3 : 2)
+		wet_floor(get_turf(victim))
 		victim.Knockdown(ascended_wave ? 3 SECONDS : 2.5 SECONDS)
 		log_combat(user, victim, "поражает приливной волной")
 	for(var/turf/tile in range(wave_radius, center))
@@ -1093,7 +1094,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/drown
 	name = "Захлебнуться"
-	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках; не сошедшая с клетки цель 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. Если к концу она на мокром полу - без сознания 10 секунд; сухой пол, нулевой жезл и 2 секунды растолкать рвут захват."
+	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках. Если цель не сошла с клетки, она 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. Если к концу она ещё на мокром полу, то теряет сознание на 10 секунд. Захват рвётся, если цель полторы секунды пробудет на сухом полу, её коснутся нулевым жезлом или растолкают за 2 секунды."
 	summary = "Через секунду цель на мокром полу 5 секунд захлёбывается, затем без сознания 10 секунд; 2 давления."
 	range = HERETIC_TIDE_DROWN_RANGE
 	charge_max = HERETIC_TIDE_DROWN_COOLDOWN
@@ -1117,7 +1118,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/current
 	name = "Течение"
-	desc = "Полоса течения от вас к клетке в 8 клетках на 20 секунд: раз в секунду сносит лежащих и брошенные вещи, а вас ускоряет. Без давления, перезарядка 30 секунд."
+	desc = "На 20 секунд пускает полосу течения от вас к клетке не дальше 8 клеток: раз в секунду она сносит лежащих и брошенные вещи, а вас ускоряет. Давление не тратит, перезарядка 30 секунд."
 	summary = "Полоса течения на 20 секунд сносит лежащих и вещи и ускоряет вас."
 	range = HERETIC_TIDE_CURRENT_RANGE
 	charge_max = HERETIC_TIDE_CURRENT_COOLDOWN
@@ -1191,13 +1192,13 @@
 	name = "Захлебнуться"
 	summary = "За 2 давления цель на мокром полу 5 секунд захлёбывается, затем теряет сознание на 10 секунд."
 	details = list(
-		"Цель в 4 клетках по открытой линии, в вашей воде или водяной луже, в том числе от Сброса; мокрой одежды мало.",
+		"Цель в 4 клетках по открытой линии должна стоять в вашей воде или в водяной луже, хоть от Сброса; мокрой одежды мало.",
 		"Вода смыкается секунду: если цель сошла с клетки, захлёба нет, давление потрачено.",
 		"Цель немеет: ни голоса, ни рации; 6 удушья в секунду, за захлёб до 30, выше 50 не поднимает и не убивает.",
 		"Если к концу цель на мокром полу, она без сознания 10 секунд и готова к обряду.",
 		"Сердце уводит цель с первой секунды захлёба: пол изнанки - ваша вода, захлёб кончается внутри.",
-		"Срывают шаг на сухой пол, нулевой жезл, 2 секунды растолкать и ваша смерть; антимагия защищает.",
-		"Потом цель минуту невосприимчива к захлёбу, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
+		"Срывают полторы секунды на сухом полу, нулевой жезл, растолкать за 2 секунды или ваша смерть; антимагия защищает.",
+		"Потом цель до минуты невосприимчива к захлёбу, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
 	)
 	role = HERETIC_ROLE_CAPTURE
 	gain_text = "Я держал его под водой не руками. Вода сама помнила, как держать."
@@ -1254,7 +1255,7 @@
 	summary = "Полоса течения на 20 секунд сносит лежащих и вещи, ускоряет вас и удешевляет уход в слив."
 	details = list(
 		"Укажите клетку не дальше 8 клеток: полоса ложится от вас к ней.",
-		"Раз в секунду сносит лежащих и брошенные вещи на клетку; стоящих, пристёгнутых и антимагию не трогает.",
+		"Раз в секунду сносит лежащих и брошенные вещи на клетку; стоящих, пристёгнутых и защищённых антимагией не трогает.",
 		"Стены, закрытые двери, окна и машины обрывают полосу; новое течение заменяет прежнее.",
 		"Без давления, перезарядка 30 секунд.",
 		"С этим знанием Уйти в слив стоит 1 давление и перезаряжается 30 секунд вместо 60.",
@@ -1276,8 +1277,8 @@
 	summary = "За 2 давления воронка на 12 секунд в 5 клетках тянет и бьёт врагов."
 	details = list(
 		"Первый удар в 2 клетках: 12 ушибов, 18 выносливости, падение на 1,5 секунды и притяжение.",
-		"Каждые 2 секунды тянет на клетку: на краю 6 ушибов и 8 выносливости, у центра 12 и 12 с падением.",
-		"60 прочности, нулевой жезл её разрушает; работает, пока вы в 7 клетках без преград.",
+		"Каждые 2 секунды тянет врагов на клетку: на краю бьёт на 6 ушибов и 8 выносливости, у центра - на 12 и 12 и валит с ног.",
+		"У воронки 60 прочности, нулевой жезл её разрушает; она работает, пока вы в 7 клетках от неё без преград.",
 		"Одновременно одна, перезарядка 30 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK
@@ -1319,7 +1320,7 @@
 		"Море радиусом 4: враги мокнут и замедляются, вы быстрее и получаете давление раз в 4 секунды.",
 		"Вода не проходит сквозь стены, окна, закрытые двери и машины.",
 		"Нужно не меньше 2 давления; в подготовке можно сместиться на 2 клетки, область стоит на месте.",
-		"Потеря видимости, дальность или оглушение срывают удар без расхода. Перезарядка 25 секунд.",
+		"Если вы потеряете область из виду, уйдёте далеко или вас оглушат, удар сорвётся без расхода. Перезарядка 25 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK
 	gain_text = "Я услышал треск стекла. Между нами и морем никогда не было ничего прочнее."
@@ -1699,16 +1700,18 @@
 	examine_list += span_warning(desc)
 
 /datum/status_effect/heretic_tide_drowning
+	var/held_since = 0
 	id = "heretic_tide_drowning"
 	duration = HERETIC_TIDE_DROWN_DURATION
 	tick_interval = 1 SECONDS
 	status_type = STATUS_EFFECT_UNIQUE
 	on_remove_on_mob_delete = TRUE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_tide_drowning
-	examine_text = span_warning("SUBJECTPRONOUN захлёбывается: изо рта льётся чёрная вода, позвать на помощь не выходит. Вытащите на сухой пол, коснитесь нулевым жезлом или растолкайте 2 секунды.")
+	examine_text = span_warning("SUBJECTPRONOUN захлёбывается: изо рта льётся чёрная вода, позвать на помощь не выходит. Вытащите на сухой пол и подержите там пару секунд, коснитесь нулевым жезлом или растолкайте за 2 секунды.")
 	var/datum/weakref/tide_ref
 	var/applied = FALSE
 	var/interrupted = FALSE
+	var/dry_since = 0
 
 /datum/status_effect/heretic_tide_drowning/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_tide/tide)
 	tide_ref = WEAKREF(tide)
@@ -1720,18 +1723,20 @@
 	if(!. || !tide)
 		return FALSE
 	applied = TRUE
+	held_since = world.time
 	tide.drownings += src
 	ADD_TRAIT(owner, TRAIT_MUTE, HERETIC_TIDE_DROWN_TRAIT)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	RegisterSignals(owner, list(COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN), PROC_REF(on_sacrifice_starting))
 	heretic_capture_hold(owner, HERETIC_TIDE_CAPTURE)
+	tide.soak(owner)
 	owner.visible_message(span_danger("[owner] захлёбывается: изо рта хлещет чёрная вода!"), span_userdanger("Горло заливает чёрная вода: ни крикнуть, ни позвать по рации!"))
 	return TRUE
 
 /datum/status_effect/heretic_tide_drowning/tick()
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(!tide || owner.stat == DEAD || !tide.on_wet_floor(owner))
+	if(!tide || owner.stat == DEAD || !still_wet(tide))
 		qdel(src)
 		return
 	var/room = HERETIC_TIDE_DROWN_OXY_CAP - owner.getOxyLoss()
@@ -1741,8 +1746,16 @@
 /datum/status_effect/heretic_tide_drowning/proc/on_moved(datum/source)
 	SIGNAL_HANDLER
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(!tide?.on_wet_floor(owner))
+	if(!tide || !still_wet(tide))
 		qdel(src)
+
+/// Шаг на сухое не обрывает захлёб сразу: цель должна пробыть вне воды HERETIC_TIDE_DROWN_DRY_GRACE.
+/datum/status_effect/heretic_tide_drowning/proc/still_wet(datum/eldritch_knowledge/base_tide/tide)
+	if(tide.on_wet_floor(owner))
+		dry_since = 0
+		return TRUE
+	dry_since ||= world.time
+	return world.time - dry_since < HERETIC_TIDE_DROWN_DRY_GRACE
 
 /datum/status_effect/heretic_tide_drowning/proc/on_attackby(mob/living/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
@@ -1768,17 +1781,17 @@
 	tide_ref = null
 	tide?.drownings -= src
 	// Истёкший срок отличает естественный конец от срыва и снятия.
-	var/knocked_out = !interrupted && tide && world.time > duration && owner.stat != DEAD && tide.on_wet_floor(owner)
+	var/knocked_out = !interrupted && tide && world.time > duration && owner.stat != DEAD && still_wet(tide)
 	if(knocked_out)
 		owner.Unconscious(HERETIC_TIDE_DROWN_SLEEP)
 		heretic_capture_knock_out(owner, tide, HERETIC_TIDE_CAPTURE, HERETIC_TIDE_DROWN_SLEEP)
 		owner.visible_message(span_danger("[owner] обмякает, захлебнувшись чёрной водой."), span_userdanger("Вода заполняет лёгкие, и всё темнеет."))
-	heretic_capture_release(owner, HERETIC_TIDE_CAPTURE, knocked_out ? HERETIC_TIDE_DROWN_SLEEP : 0)
+	heretic_capture_release(owner, HERETIC_TIDE_CAPTURE, knocked_out ? HERETIC_TIDE_DROWN_SLEEP : 0, knocked_out ? INFINITY : heretic_capture_held_for(held_since))
 	return ..()
 
 /atom/movable/screen/alert/status_effect/heretic_tide_drowning
 	name = "Захлёб"
-	desc = "Горло залито чёрной водой: вы не можете говорить ни вслух, ни в рацию, удушье растёт. Выйдите на сухой пол или попросите коснуться вас нулевым жезлом или растолкать 2 секунды - захлёб прервётся. Иначе через 5 секунд вы потеряете сознание на 10 секунд."
+	desc = "Горло залито чёрной водой: вы не можете говорить ни вслух, ни в рацию, удушье растёт. Выйдите на сухой пол и продержитесь там пару секунд или попросите коснуться вас нулевым жезлом или растолкать за 2 секунды - захлёб прервётся. Иначе через 5 секунд вы потеряете сознание на 10 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "tide_drowning"
 

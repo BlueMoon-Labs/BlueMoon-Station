@@ -27,7 +27,7 @@
 		return
 	. += "Доступно очков знаний: [heretic.knowledge_points]. Прогресс принадлежит вам и сохраняется при потере книги."
 	. += "Откройте кодекс в руке для выбора пути, исследований и рецептов."
-	. += "Примените к полу, чтобы начертить руну 3×3 за 8 секунд; к разлому — чтобы исследовать его; к руне — чтобы стереть её. Руну стирает и Хватка Мансуса."
+	. += "Примените кодекс к полу, чтобы за 8 секунд начертить руну 3×3, к разлому - чтобы исследовать его, к руне - чтобы стереть её. Руну стирает и Хватка Мансуса."
 	if(heretic.deed && !heretic.deed.complete())
 		. += span_notice("[heretic.deed.name]: [heretic.deed.progress]/[heretic.deed.goal()] на ступени [heretic.deed.tier + 1]. [heretic.deed.desc] [heretic.deed.hint]")
 
@@ -261,7 +261,7 @@
 		else if(heretic.hunt_target_ready(target))
 			target_status = "Цель готова к обряду. Коснитесь её живым сердцем или доставьте к руне: 2 очка знаний и 1 побочное."
 		else
-			target_status = "Цель жива. Для обряда подойдут наручники, оглушение или сбивание с ног. Цель в крите принимается без наручников. Добровольно лёгший или уснувший не считается."
+			target_status = "Цель жива. Для обряда наденьте на неё наручники, оглушите или сбейте с ног; цель в крите подойдёт и без наручников. Если цель сама легла или уснула, это не считается."
 	data["hunt"] = list(
 		"target_name" = target?.real_name,
 		"target_role" = heretic.hunt_target?.assigned_role,
@@ -282,6 +282,8 @@
 			"tear" = HERETIC_POCKET_TEAR_TIME / (1 SECONDS),
 			"cooldown" = HERETIC_POCKET_COOLDOWN / (1 SECONDS),
 			"hold" = HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS),
+			"grip" = HERETIC_POCKET_DOOR_GRIP / (1 SECONDS),
+			"shake" = HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS),
 		),
 	)
 	return data

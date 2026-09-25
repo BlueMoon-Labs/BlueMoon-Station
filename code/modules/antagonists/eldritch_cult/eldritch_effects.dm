@@ -55,7 +55,7 @@
 	var/obj/effect/heretic_combat_zone/void/winter = knowledge.combat_zone
 	if(!QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs))
 		var/remaining = max(0, winter.expires_at - world.time)
-		return "Зимний предел над руной: ещё [CEILING(remaining / (1 SECONDS), 1)] сек. Изготовление клинка занимает [knowledge.ritual_time / (1 SECONDS)] сек.[remaining < knowledge.ritual_time ? " Времени уже недостаточно — обновите поле." : ""]"
+		return "Зимний предел над руной: ещё [CEILING(remaining / (1 SECONDS), 1)] сек. Изготовление клинка занимает [knowledge.ritual_time / (1 SECONDS)] сек.[remaining < knowledge.ritual_time ? " Времени уже недостаточно - примените «Зимний предел» заново." : ""]"
 	return "Для клинка Пустоты сначала накройте руну своим Зимним пределом или охладите её до 0 °C. Сейчас [round(floor.GetTemperature() - T0C, 0.1)] °C."
 
 /obj/effect/eldritch/attack_hand(mob/living/user, list/modifiers)
@@ -455,7 +455,7 @@
 	if(ritual.type == /datum/eldritch_knowledge/base_blade)
 		return "Достигнут предел связанных тёмных клинков: у вас уже есть три. Разбитый для побега клинок освобождает место. «Зов клинка» возвращает только ваш клинок, лежащий на полу в поле зрения до 7 клеток; из чужих рук и контейнеров он его не заберёт."
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
-		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Добровольно лёгший или уснувший не считается."
+		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Цель, которая сама легла или уснула, не считается."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
 		if(heretic_ascension_in_open_space(src))
 			return "Финальный обряд нельзя провести в зоне открытого космоса, даже на своей площадке с воздухом. Начертите руну в помещении станции или другой локации."

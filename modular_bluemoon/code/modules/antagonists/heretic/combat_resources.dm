@@ -191,11 +191,11 @@
 	return ..()
 
 /// Единая проверка боевых эффектов: союзники и защита от магии остаются полезны на всех путях.
-/proc/heretic_can_affect(mob/user, atom/target, chargecost = 1)
+/proc/heretic_can_affect(mob/user, atom/target, chargecost = 1, tinfoil = TRUE)
 	if(!isliving(target) || target == user || QDELETED(target))
 		return FALSE
 	var/mob/living/victim = target
-	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = TRUE, chargecost = chargecost)
+	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = tinfoil, chargecost = chargecost)
 
 /// Дверь старого пути открывает еретик этого знания в своём теле, на полу и не скованный.
 /datum/eldritch_knowledge/proc/door_user_ready(mob/living/user)
@@ -499,7 +499,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_power/flesh
 	name = "Сшивание"
-	desc = "Потратьте биомассу: восстановите себе 10 ушибов, а своим слугам в поле зрения на расстоянии до 5 клеток — по 25 ушибов и ожогов. Кровотечение из ран ослабеет вдвое."
+	desc = "Потратьте биомассу: восстановите себе 10 ушибов, а своим слугам в поле зрения на расстоянии до 5 клеток - по 25 ушибов и ожогов. Кровотечение из ран ослабеет вдвое."
 	summary = "За биомассу лечит вас и своих слуг в 5 клетках."
 	action_icon_state = "flesh_mend"
 	knowledge_type = /datum/eldritch_knowledge/base_flesh
@@ -656,7 +656,7 @@
 
 /obj/effect/heretic_combat_zone/ash
 	name = "ember trail"
-	desc = "Угольки тлеют без топлива. Войти в эту печать — значит подставиться пламени. Вода и пена гасят её сразу."
+	desc = "Угольки тлеют без топлива. Кто войдёт в эту печать, подставится пламени. Вода и пена гасят её сразу."
 	boundary_color = "#ff9b43"
 	icon_state = "sigil_ash"
 	radius = 1

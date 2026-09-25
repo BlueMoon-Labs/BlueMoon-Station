@@ -58,7 +58,7 @@
 /datum/eldritch_knowledge/base_flesh/proc/door_holds(mob/living/user, mob/living/victim)
 	return !!door_servant(user, victim)
 
-/// Слуга в сознании рядом с готовой целью, еретик не дальше HERETIC_FLESH_DOOR_RANGE клеток на том же уровне.
+/// Слуга в сознании, не скованный и не оглушённый, рядом с готовой целью; еретик не дальше HERETIC_FLESH_DOOR_RANGE клеток на том же уровне.
 /datum/eldritch_knowledge/base_flesh/proc/door_servant(mob/living/user, mob/living/victim)
 	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > HERETIC_FLESH_DOOR_RANGE)
 		return null
@@ -66,7 +66,7 @@
 	if(!heretic.hunt_target_ready(victim))
 		return null
 	for(var/mob/living/servant as anything in door_servants(user))
-		if(servant.stat == CONSCIOUS && servant.z == victim.z && get_dist(servant, victim) <= 1)
+		if(servant.stat == CONSCIOUS && !servant.incapacitated() && servant.z == victim.z && get_dist(servant, victim) <= 1)
 			return servant
 	return null
 
@@ -152,7 +152,7 @@
 	. = ..()
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
 	if(master?.owner?.current == user)
-		. += span_notice("Приказ: [holding_position ? "ждать на месте" : prey_ref?.resolve() ? "преследовать цель" : "следовать за вами"]. До распада: [DisplayTimeText(max(0, expires_at - world.time))]. Помощь — следовать, разоружение — ждать. Живой шов поддерживает жизнь и даёт новую цель.")
+		. += span_notice("Приказ: [holding_position ? "ждать на месте" : prey_ref?.resolve() ? "преследовать цель" : "следовать за вами"]. До распада: [DisplayTimeText(max(0, expires_at - world.time))]. Касание в «Помощи» зовёт его за вами, в «Разоружении» велит ждать. Живой шов продлевает ему жизнь и даёт новую цель.")
 
 /mob/living/simple_animal/heretic_fleshling/attack_hand(mob/living/carbon/human/user)
 	var/datum/antagonist/heretic/master = master_ref?.resolve()
@@ -245,19 +245,19 @@
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!valid_user(user) || !isliving(target) || QDELETED(target) || target == user || !isturf(user.loc) || !isturf(target.loc))
-		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
 	var/mob/living/victim = target
 	if(victim.stat == DEAD || user.z != victim.z || get_dist(user, victim) > range)
-		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+		return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
 	var/turf/previous
 	for(var/turf/tile as anything in get_line(user, victim))
 		if(!isopenturf(tile) || tile.is_blocked_turf(exclude_mobs = TRUE))
-			return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+			return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
 		if(previous && previous.x != tile.x && previous.y != tile.y)
 			var/turf/side_horizontal = locate(previous.x, tile.y, tile.z)
 			var/turf/side_vertical = locate(tile.x, previous.y, tile.z)
 			if(!isopenturf(side_horizontal) || !isopenturf(side_vertical) || side_horizontal.is_blocked_turf(exclude_mobs = TRUE) || side_vertical.is_blocked_turf(exclude_mobs = TRUE))
-				return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+				return heretic_check(user, FALSE, silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
 		previous = tile
 	var/datum/antagonist/heretic_monster/servant = IS_HERETIC_MONSTER(victim)
 	if(servant?.master == heretic)
@@ -269,8 +269,8 @@
 		if(istype(crawler) && crawler.expires_at < world.time + HERETIC_FLESHLING_LIFETIME - 30 SECONDS)
 			needs_healing = TRUE
 		var/can_reposition = get_dist(user, victim) > 1 && !victim.anchored && !victim.buckled
-		return heretic_check(user, path?.combat_resource > 0 && (needs_healing || can_reposition) && !victim.check_magic_resistance(chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
-	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Для помощи слуге нужна биомасса и ранение, место для перемещения или ползун старше 30 секунд.")
+		return heretic_check(user, path?.combat_resource > 0 && (needs_healing || can_reposition) && !victim.check_magic_resistance(chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Нужна видимая живая цель без защиты от магии. Слуге шов поможет, если есть биомасса и слуга ранен, стоит дальше клетки от вас или это ползун старше 30 секунд.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch/cast(list/targets, mob/user)
 	if(!length(targets) || !can_target(targets[1], user, TRUE))

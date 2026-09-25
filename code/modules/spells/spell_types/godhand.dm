@@ -25,10 +25,14 @@
 
 /obj/item/melee/touch_attack/afterattack(atom/target, mob/user, proximity)
 	. = ..()
-	user.say(catchphrase, forced = "spell")
+	if(speaks_on(target))
+		user.say(catchphrase, forced = "spell")
 	playsound(get_turf(user), on_use_sound,50,1)
 	charges--
 	charges_check()
+
+/obj/item/melee/touch_attack/proc/speaks_on(atom/target)
+	return TRUE
 
 /obj/item/melee/touch_attack/proc/charges_check()
 	if(charges > 0)

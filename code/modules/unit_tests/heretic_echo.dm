@@ -1097,9 +1097,9 @@
 	TEST_ASSERT(QDELETED(lullaby), "Удар другого существа от [HERETIC_ECHO_LULLABY_WAKE_DAMAGE] урона будит засыпающую цель.")
 	TEST_ASSERT(!victim.IsSleeping(), "Разбуженная цель не спит.")
 	TEST_ASSERT(!victim.has_movespeed_modifier(/datum/movespeed_modifier/heretic_echo_lullaby), "Разбуженная цель больше не замедлена.")
-	TEST_ASSERT(findtext(heretic_capture_block_reason(user, victim, "echo"), "приходит в себя"), "Сорванная Колыбельная тоже даёт минуту невосприимчивости.")
+	TEST_ASSERT(findtext(heretic_capture_block_reason(user, victim, "echo"), "приходит в себя"), "Сорванная Колыбельная даёт короткую невосприимчивость.")
 	var/datum/status_effect/heretic_capture_immunity/woken = capture_immunity(victim, "echo")
-	TEST_ASSERT(abs(woken.duration - world.time - HERETIC_CAPTURE_IMMUNITY) < 1, "Сорванная Колыбельная даёт ровно минуту: [woken.duration - world.time] дс.")
+	TEST_ASSERT(woken.duration - world.time >= HERETIC_CAPTURE_MIN_IMMUNITY - 1 && woken.duration - world.time < HERETIC_CAPTURE_IMMUNITY, "Сорванная сразу Колыбельная даёт короткую невосприимчивость: [woken.duration - world.time] дс.")
 	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y, origin.z))
 	echo.set_ringing(runner)
 	echo.combat_resource = 4

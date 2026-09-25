@@ -37,14 +37,17 @@
 	result = heretic.pocket_pull(user, victim, get_turf(victim), door["time"], door["check"], door["text"])
 	done = TRUE
 
-/// Готовая цель встаёт посреди канала двери: вход срывается, изнанка не открывается; вернёт текст ошибки или null.
+/// Готовую цель посреди канала двери расковали и растолкали: вход срывается, изнанка не открывается; вернёт текст ошибки или null.
 /datum/unit_test/proc/oldpath_door_stands_mid_channel(datum/antagonist/heretic/heretic, mob/living/user, mob/living/carbon/human/victim, list/door)
 	var/datum/oldpath_pull_probe/pull = new
 	allocated += pull
 	INVOKE_ASYNC(pull, TYPE_PROC_REF(/datum/oldpath_pull_probe, pull), heretic, user, victim, door)
 	if(!LAZYFIND(user.do_afters, victim))
 		return "Канал двери не начался: [heretic.pocket_pull_reason(user, victim, get_turf(victim)) || "дверь не держит цель"], завершён [pull.done]."
+	if(!victim.has_status_effect(/datum/status_effect/heretic_door_grip))
+		return "Сердце не прижало цель на время канала."
 	victim.uncuff()
+	SEND_SIGNAL(victim, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, null)
 	if(!wait_for_var(pull, NAMEOF(pull, done), TRUE, door["time"] * 3))
 		return "Канал двери не закончился."
 	if(pull.result || heretic.pocket_holds(victim))
@@ -195,6 +198,13 @@
 	ghoul.Unconscious(10 SECONDS)
 	TEST_ASSERT(!check.Invoke(), "Слуга без сознания цель не утащит.")
 	ghoul.SetUnconscious(0)
+	oldpath_door_cuff(ghoul)
+	TEST_ASSERT(!check.Invoke(), "Скованный слуга цель не утащит.")
+	ghoul.uncuff()
+	ghoul.Paralyze(5 SECONDS)
+	TEST_ASSERT(!check.Invoke(), "Оглушённый слуга цель не утащит.")
+	ghoul.SetParalyzed(0)
+	TEST_ASSERT(check.Invoke(), "Освобождённый слуга снова держит дверь.")
 	var/turf/limit = locate(spot.x + HERETIC_FLESH_DOOR_RANGE, spot.y, spot.z)
 	var/turf/beyond = get_step(spot, WEST)
 	TEST_ASSERT(limit && beyond, "Есть клетки на пределе и за ним.")
@@ -441,17 +451,17 @@
 		list(flesh_path.capture_summary, "в изнанку", "из [HERETIC_FLESH_DOOR_RANGE] клеток", madness_time, "гуля, мертвеца или ползуна"),
 		list(void_path.capture_summary, "в изнанку", pull_time),
 		list(rust_path.escape_summary, "очагу"),
-		list(jointext(ash_path.weakness_points, " "), "До вознесения", "Хватка и Пепельный переход"),
+		list(jointext(ash_path.weakness_points, " "), "До вознесения", "крепкой хватки уводит только Пепельный переход"),
 		list(jointext(ash_path.strength_points, " "), "Возрождение ночного дозорного", "до 4 горящих врагов"),
-		list(jointext(rust_path.weakness_points, " "), "До вознесения", "лишь Хватка"),
-		list(jointext(flesh_path.weakness_points, " "), "До вознесения", "лишь Хватка", "вырубленный слуга", "оттащенная от него цель"),
-		list(jointext(void_path.weakness_points, " "), "До вознесения", "Хватка и Пустотный сдвиг"),
+		list(jointext(rust_path.weakness_points, " "), "До вознесения", "крепкая чужая хватка"),
+		list(jointext(flesh_path.weakness_points, " "), "До вознесения", "крепкая чужая хватка", "слугу оглушат или скуют", "цель оттащат от него"),
+		list(jointext(void_path.weakness_points, " "), "До вознесения", "крепкой хватки уводит только Пустотный сдвиг"),
 		list(flesh_path.escape_summary, "к живому гулю, мертвецу или ползуну"),
-		list(flesh_path.combat_practice, "гулем, мертвецом или ползуном", "из [HERETIC_FLESH_DOOR_RANGE] клеток", "слугу вырубят", "цель оттащат"),
+		list(flesh_path.combat_practice, "гулем, мертвецом или ползуном", "из [HERETIC_FLESH_DOOR_RANGE] клеток", "слугу оглушат, скуют", "цель оттащат"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/base_ash), "в изнанку", pull_time, "Вода и пена гасят", "не встанет"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/base_rust), "в изнанку", pull_time),
-		list(heretic_codex_text(/datum/eldritch_knowledge/base_flesh), "в изнанку", "из [HERETIC_FLESH_DOOR_RANGE] клеток", flesh_time, "гуля, мертвеца или ползуна", "слуга потеряет сознание", "цель оттащат", "дальше [HERETIC_FLESH_DOOR_RANGE] клеток"),
-		list(heretic_codex_text(/datum/eldritch_knowledge/base_void), "в изнанку", pull_time, "вставшая"),
+		list(heretic_codex_text(/datum/eldritch_knowledge/base_flesh), "в изнанку", "из [HERETIC_FLESH_DOOR_RANGE] клеток", flesh_time, "гуля, мертвеца или ползуна", "слугу оглушат, скуют или схватят", "цель оттащат", "дальше [HERETIC_FLESH_DOOR_RANGE] клеток"),
+		list(heretic_codex_text(/datum/eldritch_knowledge/base_void), "в изнанку", pull_time, "встанет"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/touch_of_madness), madness_time),
 		list(initial(madness.desc), madness_time),
 		list(initial(ember.desc), "Вода и пена гасят"),

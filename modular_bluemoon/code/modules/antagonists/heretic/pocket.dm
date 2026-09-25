@@ -1,6 +1,7 @@
 #define HERETIC_POCKET_CENTER_OFFSET ((HERETIC_POCKET_SIZE - 1) / 2)
 #define HERETIC_POCKET_FLOOR_RADIUS (HERETIC_POCKET_CENTER_OFFSET - 1)
 #define HERETIC_POCKET_ENTRY_EXIT "Туда, откуда пришли"
+#define HERETIC_POCKET_ORIGIN_EXIT "Туда, где вы стояли"
 
 GLOBAL_LIST_EMPTY(heretic_pockets)
 GLOBAL_LIST_EMPTY(heretic_runes)
@@ -35,6 +36,10 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	var/datum/turf_reservation/reservation
 	var/turf/center
 	var/turf/entry_turf
+	/// Где еретик стоял перед входом: у дверей издалека это не клетка цели.
+	var/turf/origin_turf
+	/// Ближе этого к входу на том же уровне выход при силовом закрытии считается местом, где уже ждут.
+	var/escape_distance = HERETIC_POCKET_ESCAPE_DISTANCE
 	var/obj/effect/heretic_pocket_rift/rift
 	var/obj/effect/heretic_pocket_rift/inner/inner_rift
 	var/mob/living/heretic
@@ -108,12 +113,14 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	heretic = user
 	victim = target
 	entry_turf = entry
+	origin_turf = get_turf(user)
 	reset_room()
 	for(var/mob/living/traveller as anything in list(target, user))
 		traveller.pulledby?.stop_pulling()
 		traveller.stop_pulling()
 		traveller.buckled?.unbuckle_mob(traveller, TRUE)
 		traveller.unbuckle_all_mobs(TRUE)
+	heretic_pocket_vanish_fx(list(target, user), entry, owner?.selected_path)
 	target.forceMove(center)
 	user.forceMove(get_step(center, WEST))
 	if(hold_on_entry)
@@ -132,7 +139,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	leave_action = new(src)
 	leave_action.Grant(user)
 	if(intro)
-		to_chat(user, span_notice("Вы в изнанке. Она продержится [duration / (1 SECONDS)] с, за [HERETIC_POCKET_WARNING / (1 SECONDS)] с до конца придёт предупреждение. [hold_on_entry ? "Цель [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с не сможет двинуться: начинайте обряд сердцем. " : ""]«Покинуть изнанку» выведет вас ко входу, своей руне или ремеслу пути. Снаружи остался разрыв: экипаж может закрыть его жезлом или разорвать руками. Если разрыв закроют или время выйдет, вас вынесет к ближайшему своему выходу, а цель выпадет у входа."))
+		to_chat(user, span_notice("Вы в изнанке. Она продержится [duration / (1 SECONDS)] с, за [HERETIC_POCKET_WARNING / (1 SECONDS)] с до конца придёт предупреждение. [hold_on_entry ? "Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с цель не сможет двинуться: начинайте обряд сердцем. " : ""]«Покинуть изнанку» выведет вас ко входу, своей руне или ремеслу пути. Снаружи остался разрыв: экипаж может закрыть его жезлом или разорвать руками. Если разрыв закроют или время выйдет, вас вынесет к одному из ваших выходов подальше от входа, а цель выпадет у входа."))
 		to_chat(target, span_userdanger("Вас утянуло в изнанку, тесную комнату по ту сторону завесы. У стены дрожит разрыв: если вас не держат, разорвите его руками за [HERETIC_POCKET_TEAR_TIME / (1 SECONDS)] с. Через [duration / (1 SECONDS)] с изнанка схлопнется сама.[hold_on_entry ? " Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с переход держит вас на месте." : ""]"))
 	log_game("[key_name(user)] уводит [key_name(target)] в изнанку; разрыв открыт в [AREACOORD(entry)].")
 	return TRUE
@@ -148,7 +155,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	warning_timer = addtimer(CALLBACK(src, PROC_REF(warn)), duration - HERETIC_POCKET_WARNING, TIMER_STOPPABLE)
 	return TRUE
 
-/// Всех живых и вещи с пола - на вход, разрыв убирается, изнанка затягивается; heretic_escapes уводит еретика к ближайшему своему выходу, culprit - кто закрыл разрыв.
+/// Всех живых и вещи с пола - на вход, разрыв убирается, изнанка затягивается; heretic_escapes уводит еретика к своему выходу (escape_turf), culprit - кто закрыл разрыв.
 /datum/heretic_pocket/proc/collapse(reason, heretic_escapes = FALSE, mob/living/culprit)
 	if(!active)
 		return FALSE
@@ -168,14 +175,28 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		var/atom/movable/carrier = get_atom_on_turf(heretic)
 		carrier.forceMove(escape)
 		escape.visible_message(span_warning("Воздух расходится, и из ниоткуда выступает [heretic]."))
+		heretic_pocket_exit_fx(heretic, escape, owner?.selected_path)
 	for(var/mob/living/participant in list(heretic, victim))
 		var/turf/spot = get_turf(participant)
 		if(spot && !contains(spot) && SSmapping.level_trait(spot.z, ZTRAIT_RESERVED) && !SSmapping.used_turfs[spot])
 			var/atom/movable/holder = get_atom_on_turf(participant)
 			holder.forceMove(exit)
+	var/stashed = FALSE
+	for(var/turf/tile as anything in reservation?.reserved_turfs)
+		for(var/obj/effect/eldritch/rune in tile)
+			if(rune.is_in_use)
+				rune.ritual_interrupt_reason ||= "Изнанка схлопнулась."
+				rune.ritual_interrupted = TRUE
+				rune.release_atoms()
 	for(var/turf/tile as anything in reservation?.reserved_turfs)
 		for(var/atom/movable/thing as anything in tile.contents.Copy())
 			if(QDELETED(thing))
+				continue
+			if(owner?.stash_behind_veil(thing))
+				stashed = TRUE
+				continue
+			if(escape && istype(thing, /obj/item/melee/sickly_blade))
+				thing.forceMove(escape)
 				continue
 			if(isliving(thing) || (isobj(thing) && (!iseffect(thing) || length(thing.contents))))
 				thing.forceMove(exit)
@@ -183,9 +204,11 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	QDEL_NULL(inner_rift)
 	COOLDOWN_START(src, reopen_cooldown, HERETIC_POCKET_COOLDOWN)
 	playsound(exit, 'sound/magic/exit_blood.ogg', 50, TRUE)
+	if(victim_inside)
+		heretic_pocket_drop_fx(exit, owner?.selected_path)
 	if(heretic)
 		UnregisterSignal(heretic, list(COMSIG_MOB_STATCHANGE, COMSIG_PARENT_QDELETING))
-		to_chat(heretic, span_warning("Изнанка схлопнулась ([reason])[escape ? ", и вас вынесло к своему выходу: [get_area_name(escape, TRUE)]" : ""]. Снова открыть её можно через [HERETIC_POCKET_COOLDOWN / (1 SECONDS)] с."))
+		to_chat(heretic, span_warning("Изнанка схлопнулась ([reason])[escape ? ", и вас вынесло к своему выходу: [get_area_name(escape, TRUE)]" : ""]. Снова открыть её можно через [HERETIC_POCKET_COOLDOWN / (1 SECONDS)] с.[stashed ? " Ваше сердце или кодекс с пола ушли за завесу: призовите их." : ""]"))
 	if(victim)
 		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
 		heretic_capture_release(victim, HERETIC_POCKET_CAPTURE)
@@ -195,6 +218,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	heretic = null
 	victim = null
 	entry_turf = null
+	origin_turf = null
 	return TRUE
 
 /datum/heretic_pocket/proc/exit_turf()
@@ -210,22 +234,33 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 				return nearby
 	return owner?.get_hunt_return_turf() || entry_turf || get_turf(GET_ERROR_ROOM)
 
-/// Ближайший ко входу свой выход еретика на том же уровне, не у самого входа и не рядом с ним.
+/// Свой выход подальше от входа: ближайший из тех, что на уровне входа не ближе escape_distance, иначе выход на другом уровне, иначе самый дальний из близких.
 /datum/heretic_pocket/proc/escape_turf()
 	if(!heretic || heretic.stat >= SOFT_CRIT || !entry_turf || !owner)
 		return null
 	var/list/exits = owner.pocket_exits(heretic)
 	var/turf/drop = exit_turf()
-	var/turf/best
+	var/turf/far
+	var/turf/elsewhere
+	var/turf/close
 	for(var/label in exits)
 		if(label == HERETIC_POCKET_ENTRY_EXIT)
 			continue
 		var/turf/landing = heretic_pocket_landing(exits[label])
-		if(!landing || landing == drop || landing.z != entry_turf.z || get_dist(landing, entry_turf) <= 1)
+		if(!landing || landing == drop)
 			continue
-		if(!best || get_dist(landing, entry_turf) < get_dist(best, entry_turf))
-			best = landing
-	return best
+		if(landing.z != entry_turf.z)
+			elsewhere ||= landing
+			continue
+		var/distance = get_dist(landing, entry_turf)
+		if(distance <= 1)
+			continue
+		if(distance >= escape_distance)
+			if(!far || distance < get_dist(far, entry_turf))
+				far = landing
+		else if(!close || distance > get_dist(close, entry_turf))
+			close = landing
+	return far || elsewhere || close
 
 /datum/heretic_pocket/proc/leave(mob/living/user, turf/exit)
 	if(!active || user != heretic || !contains(user))
@@ -236,6 +271,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		return FALSE
 	user.forceMove(landing)
 	playsound(landing, 'sound/magic/exit_blood.ogg', 50, TRUE)
+	heretic_pocket_exit_fx(user, landing, owner?.selected_path)
 	landing.visible_message(span_warning("Воздух расходится, и из ниоткуда выступает [user]."))
 	log_game("[key_name(user)] покидает изнанку к [AREACOORD(landing)].")
 	collapse("еретик вышел")
@@ -289,9 +325,10 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 
 /datum/heretic_pocket/proc/warn()
 	warning_timer = null
+	heretic_pocket_warning_fx(src)
 	if(!active || !heretic)
 		return
-	to_chat(heretic, span_boldwarning("Изнанка истончается: через [HERETIC_POCKET_WARNING / (1 SECONDS)] с она схлопнется. Цель и вещи выпадут у входа, а вас вынесет к ближайшему своему выходу."))
+	to_chat(heretic, span_boldwarning("Изнанка истончается: через [HERETIC_POCKET_WARNING / (1 SECONDS)] с она схлопнется. Цель и вещи выпадут у входа, а вас вынесет к одному из ваших выходов подальше от входа."))
 	heretic.balloon_alert(heretic, "изнанка истончается")
 
 /datum/heretic_pocket/proc/on_timeout()
@@ -324,6 +361,9 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 
 /proc/heretic_pocket_exit_allowed(turf/spot)
 	var/area/spot_area = get_area(spot)
+	// Учебная арена изолирована от станции: там изнанка нужна, чтобы двери путей можно было попробовать.
+	if(istype(spot_area, /area/antag_training))
+		return TRUE
 	return !isnull(spot) && is_station_level(spot.z) && spot_area && !(spot_area.area_flags & NOTELEPORT)
 
 /// Клетка выхода или соседний свободный пол: окно или стол ремесла загораживают свою клетку.
@@ -393,8 +433,10 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	var/mutable_appearance/glow = mutable_appearance(icon, "pocket_rift_glow")
 	glow.color = heretic_path_ink(pocket?.owner?.selected_path)
 	add_overlay(glow)
+	heretic_pocket_rift_open_fx(src, pocket?.owner?.selected_path)
 
 /obj/effect/heretic_pocket_rift/Destroy()
+	heretic_pocket_rift_close_fx(src, pocket?.owner?.selected_path)
 	pocket = null
 	return ..()
 
@@ -407,6 +449,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	if(!istype(item, /obj/item/nullrod) && !istype(item, /obj/item/storage/book/bible))
 		return ..()
 	user.visible_message(span_warning("[user] касается разрыва [item], и края воздуха срастаются."), span_notice("Вы касаетесь разрыва [item], и он затягивается."))
+	heretic_pocket_breach_fx(src, holy = TRUE)
 	log_game("[key_name(user)] закрывает разрыв изнанки [item] в [AREACOORD(src)].")
 	pocket?.collapse("разрыв закрыт святым оружием", heretic_escapes = TRUE, culprit = user)
 	return STOP_ATTACK_PROC_CHAIN
@@ -436,13 +479,16 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	user.visible_message(span_warning("[user] вцепляется в надорванный воздух и тянет края в стороны!"), span_notice("Вы тянете края разрыва в стороны. Не отходите [DisplayTimeText(tear_time)]."))
 	if(pocket.heretic)
 		to_chat(pocket.heretic, span_boldwarning("Кто-то рвёт разрыв изнанки!"))
+	heretic_pocket_tear_fx(src, tear_time)
 	if(!do_after(user, tear_time, src) || QDELETED(src) || !pocket?.active || user.pulledby)
 		if(!QDELETED(src) && pocket?.active)
+			heretic_pocket_tear_stop_fx(src)
 			to_chat(user, span_warning("Вы выпускаете края разрыва, и он снова стягивается."))
 		return FALSE
 	user.visible_message(span_warning("[user] разрывает надорванный воздух, и изнанка выворачивается наружу!"))
+	heretic_pocket_breach_fx(src)
 	log_game("[key_name(user)] разрывает разрыв изнанки руками в [AREACOORD(src)].")
-	pocket.collapse("разрыв разорван руками", heretic_escapes = TRUE, culprit = user)
+	pocket.collapse("разрыв порвали руками", heretic_escapes = TRUE, culprit = user)
 	return TRUE
 
 /obj/effect/heretic_pocket_rift/inner
@@ -454,7 +500,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	. = ..()
 	if(!pocket?.active || IS_HERETIC(user))
 		return
-	. += span_notice("Это выход из изнанки. Если вас не держат и на руках нет наручников, разорвите разрыв руками: [DisplayTimeText(tear_time)]. Нулевой жезл или Библия закроют его сразу. Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с после входа переход может держать вас на месте. Через [heretic_capture_seconds_left(pocket.closes_at)] с изнанка схлопнется сама, и вас выбросит обратно.")
+	. += span_notice("Это выход из изнанки. Если вас не держат и на руках нет наручников, разрыв можно разорвать руками за [DisplayTimeText(tear_time)]. Нулевой жезл или Библия закроют его сразу. Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с после входа переход может держать вас на месте. Через [heretic_capture_seconds_left(pocket.closes_at)] с изнанка схлопнется сама, и вас выбросит обратно.")
 
 /datum/action/innate/heretic_pocket_leave
 	name = "Покинуть изнанку"
@@ -547,15 +593,20 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		to_chat(user, span_warning(reason))
 	return !reason
 
-/// door_check без аргументов: условие двери проверяется до канала, каждый тик и после него; hold_on_entry держит цель HERETIC_POCKET_ENTRY_HOLD внутри; victim_text - что видит сама цель вместо door_text; duration - срок изнанки.
-/datum/antagonist/heretic/proc/pocket_pull(mob/living/user, mob/living/victim, turf/entry, pull_time = HERETIC_POCKET_PULL_TIME, datum/callback/door_check, door_text, hunt_only = TRUE, hold_on_entry = TRUE, victim_text, duration = HERETIC_POCKET_DURATION, intro = TRUE)
+/// door_check без аргументов: условие двери проверяется до канала, каждый тик и после него; hold_on_entry держит цель HERETIC_POCKET_ENTRY_HOLD внутри; victim_text - что видит сама цель вместо door_text; duration - срок изнанки; grip прижимает цель на время канала.
+/datum/antagonist/heretic/proc/pocket_pull(mob/living/user, mob/living/victim, turf/entry, pull_time = HERETIC_POCKET_PULL_TIME, datum/callback/door_check, door_text, hunt_only = TRUE, hold_on_entry = TRUE, victim_text, duration = HERETIC_POCKET_DURATION, intro = TRUE, grip = TRUE)
 	if(!pocket_pull_check(user, victim, entry, door_check, hunt_only))
 		return FALSE
 	playsound(entry, 'sound/magic/enter_blood.ogg', 50, TRUE)
+	heretic_pocket_pull_fx(user, victim, entry, pull_time, selected_path)
 	victim.visible_message(span_danger("[door_text] Воздух вокруг [victim] надрывается!"), span_userdanger("[victim_text || door_text] Воздух вокруг вас надрывается, и вас тянет по ту сторону завесы!"))
 	to_chat(user, span_notice("Вы тянете [victim] в изнанку. Не двигайтесь."))
+	if(grip && pull_time > 0)
+		heretic_door_grip(victim, pull_time * user.cached_multiplicative_actions_slowdown + HERETIC_POCKET_GRIP_MARGIN)
 	if(pull_time > 0 && !do_after(user, pull_time, victim, extra_checks = CALLBACK(src, PROC_REF(pocket_pull_check), user, victim, entry, door_check, hunt_only, TRUE)))
 		to_chat(user, span_warning("Завеса сомкнулась: вход в изнанку сорван."))
+		if(grip)
+			victim.remove_status_effect(/datum/status_effect/heretic_door_grip)
 		return FALSE
 	if(!pocket_pull_check(user, victim, entry, door_check, hunt_only))
 		return FALSE
@@ -584,7 +635,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		if(length(.) >= HERETIC_POCKET_DOOR_CHOICES)
 			return
 
-/// Касание сердцем цели охоты: без дверей обряд идёт на месте, с дверью сердце спрашивает, где его провести.
+/// Касание сердцем цели охоты: без дверей обряд идёт на месте, с дверью сердце прижимает цель и спрашивает, где провести обряд.
 /datum/antagonist/heretic/proc/touch_hunt_target(mob/living/user, mob/living/carbon/human/victim, obj/item/living_heart/heart)
 	var/list/doors = pocket_doors(user, victim)
 	if(!length(doors))
@@ -592,7 +643,10 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	var/list/choices = list(HERETIC_POCKET_RITE_HERE)
 	for(var/label in doors)
 		choices += label
-	return choose_pocket_door(user, victim, heart, prompt_pocket_door(user, victim, choices))
+	heretic_door_grip(victim, HERETIC_POCKET_DOOR_GRIP)
+	. = choose_pocket_door(user, victim, heart, prompt_pocket_door(user, victim, choices))
+	if(!. && !QDELETED(victim))
+		victim.remove_status_effect(/datum/status_effect/heretic_door_grip)
 
 /// Сжатое сердце с дверью издалека спрашивает: найти цель или увести её; TRUE - сердце занято вопросом, искать не нужно.
 /datum/antagonist/heretic/proc/offer_remote_pocket_door(mob/living/user, mob/living/carbon/human/victim, obj/item/living_heart/heart)
@@ -647,6 +701,9 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	. = list()
 	if(pocket?.entry_turf)
 		heretic_add_pocket_exit(., HERETIC_POCKET_ENTRY_EXIT, pocket.entry_turf)
+		var/turf/origin = pocket.origin_turf
+		if(origin && (origin.z != pocket.entry_turf.z || get_dist(origin, pocket.entry_turf) > 1))
+			heretic_add_pocket_exit(., HERETIC_POCKET_ORIGIN_EXIT, origin)
 	for(var/obj/effect/eldritch/rune as anything in GLOB.heretic_runes)
 		if(rune.drawn_by?.resolve() == owner)
 			heretic_add_pocket_exit(., "Руна: [get_area_name(rune, TRUE)]", get_turf(rune))
@@ -655,6 +712,84 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		var/list/extra = knowledge.pocket_exits(user)
 		for(var/label in extra)
 			heretic_add_pocket_exit(., label, extra[label])
+
+/// Своё живое сердце или личный кодекс на полу закрывающейся изнанки уходят за завесу, а не к экипажу у входа.
+/datum/antagonist/heretic/proc/stash_behind_veil(atom/movable/thing)
+	var/obj/item/living_heart/heart = thing
+	var/own_heart = istype(heart) && heart.owner_mind == owner
+	if(!own_heart && (!istype(thing, /obj/item/forbidden_book) || personal_codex?.resolve() != thing))
+		return FALSE
+	if(GLOB.heretic_ritual_reservations[thing])
+		return FALSE
+	thing.moveToNullspace()
+	summon_items |= thing
+	return TRUE
+
+/proc/heretic_door_grip(mob/living/victim, time)
+	if(QDELETED(victim) || victim.stat == DEAD)
+		return null
+	var/datum/status_effect/heretic_door_grip/grip = victim.has_status_effect(/datum/status_effect/heretic_door_grip)
+	if(grip)
+		grip.extend(time)
+		return grip
+	return victim.apply_status_effect(/datum/status_effect/heretic_door_grip, time)
+
+/// Сердце прижимает уже поверженную цель, пока еретик выбирает дверь и тянет её сквозь завесу.
+/datum/status_effect/heretic_door_grip
+	id = "heretic_door_grip"
+	tick_interval = -1
+	alert_type = null
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	examine_text = span_warning("SUBJECTPRONOUN прижат к полу чужой волей: можно растолкать за 2 секунды, а нулевой жезл снимет её сразу.")
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
+
+/datum/status_effect/heretic_door_grip/on_creation(mob/living/new_owner, time)
+	duration = time
+	return ..()
+
+/datum/status_effect/heretic_door_grip/on_apply()
+	. = ..()
+	if(!.)
+		return
+	restraint = new(list(owner, duration, TRUE))
+	heretic_capture_hold(owner, REF(src))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	owner.visible_message(span_danger("Воздух вокруг [owner] густеет и прижимает к полу!"), span_userdanger("Чужая воля прижимает вас к полу!"))
+	heretic_door_grip_fx(owner)
+
+/datum/status_effect/heretic_door_grip/proc/extend(time)
+	var/ends_at = world.time + time
+	if(ends_at <= duration)
+		return
+	duration = ends_at
+	if(QDELETED(restraint))
+		restraint = new(list(owner, time, TRUE))
+	else
+		restraint.duration = max(restraint.duration, ends_at)
+
+/datum/status_effect/heretic_door_grip/proc/on_shaken(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/status_effect/heretic_door_grip/proc/on_attackby(mob/living/source, obj/item/item, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(!istype(item, /obj/item/nullrod))
+		return NONE
+	user.visible_message(span_warning("[user] касается [source] нулевым жезлом, и чужая воля отпускает."), span_notice("Вы касаетесь [source] нулевым жезлом, и чужая воля отпускает."))
+	heretic_capture_shaken_fx(user, source)
+	qdel(src)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_door_grip/on_remove()
+	UnregisterSignal(owner, list(COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_PARENT_ATTACKBY))
+	heretic_capture_unhold(owner, REF(src))
+	// Чужой Paralyze мог продлить этот экземпляр: тогда он остаётся.
+	if(!QDELETED(restraint) && restraint.duration <= duration)
+		qdel(restraint)
+	restraint = null
+	return ..()
 
 /obj/effect/eldritch
 	var/datum/weakref/drawn_by
@@ -685,3 +820,4 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 #undef HERETIC_POCKET_CENTER_OFFSET
 #undef HERETIC_POCKET_FLOOR_RADIUS
 #undef HERETIC_POCKET_ENTRY_EXIT
+#undef HERETIC_POCKET_ORIGIN_EXIT

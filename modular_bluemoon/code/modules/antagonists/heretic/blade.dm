@@ -34,12 +34,12 @@
 	name = "Принцип поединка"
 	summary = "Вызов на дуэль в изнанке, стойка «Выжидание» с ответом и до трёх тёмных клинков из ножа и листа стали."
 	details = list(
-		"«Вызов»: человек не дальше 5 клеток, оба 10 секунд без урона, ответ - 20 секунд; только там, где откроется изнанка.",
-		"Принявший уходит с вами в изнанку на 60 секунд: упавший, сдавшийся или вырвавшийся проиграл, ничья - оба у входа.",
-		"Победа - клятва на 12 секунд, растолкать - 2 секунды; цель охоты - к обряду там же, иначе вы выходите, он у входа.",
+		"«Вызов» бросают человеку не дальше 5 клеток, где откроется изнанка, если оба 10 секунд без урона; ответ ждут 20 секунд.",
+		"Принявший уходит с вами в изнанку на 60 секунд; проиграл тот, кто в стамкрите, крите, оглушён, сдался или вырвался.",
+		"Победа: соперника 12 секунд держит клятва, над целью охоты обряд идёт там же. Иначе вас выносит к выходу, его ко входу.",
 		"Хватка или заклинание, кроме Выжидания и призыва сердца или кодекса, - поражение, даже если соперник лежит.",
 		"Поражение обнуляет Темп, закрывает вызовы на 5 минут, роняет клинок, и 5 минут на вашей шее виден порез-знак.",
-		"Отказ или молчание ничего не дают, но этого человека снова можно вызвать только через 5 минут.",
+		"Отказ или молчание вызванного в 5 клетках от вас сбивают его с ног на 3 секунды; снова вызвать его можно через 5 минут.",
 		"Выжидание: 2 секунды и 3 блока, ответ на 18 ушибов; пули и лазеры спереди в секторе 90 градусов уходят вбок.",
 	)
 	role = HERETIC_ROLE_CRAFT
@@ -587,7 +587,7 @@
 	summary = "Выжидание дольше и крепче, открывается Финт, а вилка и два прута дают камертон."
 	details = list(
 		"Выжидание длится 3 секунды и держит 4 блока, парирование возвращает от 10 выносливости.",
-		"Финт за 1 Темп раскрывает врага в 3 клетках: через 0,6 секунды 3 секунды на удар с +10 ушибами.",
+		"Финт за 1 Темп раскрывает врага в 3 клетках: через 0,6 секунды у вас 3 секунды на удар с +10 ушибами.",
 		"Финту нужны свой клинок и пустая вторая рука; с ответом он не складывается. Перезарядка 8 секунд.",
 		"Камертон при пустом Темпе за 2 секунды настройки меняет 8 ушибов на 1 Темп, перезарядка 25 секунд.",
 		"Для камертона нужен свой клинок во второй руке; камертон бывает только один.",
@@ -617,15 +617,15 @@
 
 /datum/eldritch_knowledge/spell/blade_throat
 	name = "Клинок у горла"
-	summary = "Клинок к горлу соседа: он замирает до 12 секунд и идёт за вами шагом, цель охоты уводится разрезом."
+	summary = "Клинок у горла соседа: тот замирает до 12 секунд и идёт за вами шагом, а цель охоты можно увести разрезом."
 	details = list(
 		"Годится сбитая с ног цель или цель с пустой рукой после вашего ответа, не позже 3 секунд.",
 		"Полсекунды замаха: отошедшая за это время цель уходит от захвата. Защита от магии спасает от клинка.",
-		"Заложник не двигается сам и идёт за вами шагом, обряд сердцем над ним работает; растолкать - 2 секунды.",
+		"Заложник не двигается сам и идёт за вами шагом, обряд сердцем над ним работает; его можно растолкать за 2 секунды.",
 		"Цель охоты у горла сердце уводит разрезом в изнанку за 1,5 секунды.",
-		"Срывают: шаг дальше клетки, 15+ урона вам одним ударом, оглушение, падение, клинок не в руке.",
+		"Захват срывается, если вы отойдёте дальше клетки, упадёте, вас оглушат, ударят на 15+ урона или клинок выпадет из руки.",
 		"Удар нулевым жезлом по вам или по заложнику тоже освобождает его.",
-		"После захвата цель минуту невосприимчива к нему и 15 секунд - к любому захвату. Перезарядка 45 секунд.",
+		"После захвата цель до минуты невосприимчива к нему и 15 секунд - к любому захвату. Перезарядка 45 секунд.",
 	)
 	role = HERETIC_ROLE_CAPTURE
 	gain_text = "Остриё замерло у самой кожи. Теперь он слушает каждое моё слово."
@@ -679,7 +679,7 @@
 		"Клинок орбиты целиком принимает один удар, бросок или снаряд; новый растёт раз в 6 секунд.",
 		"Картечь - это отдельные дробины: один выстрел сдирает всю орбиту.",
 		"Удар тёмным клинком по живому врагу лечит вам четверть урона, ответ после парирования +12 ушибов.",
-		"Буря клинков: по клинку орбиты во врагов в 7 клетках, 20 ушибов и 20 выносливости, раз в 30 секунд.",
+		"Буря клинков бросает во врагов в 7 клетках по клинку орбиты: 20 ушибов и 20 выносливости каждому. Перезарядка 30 секунд.",
 		"Смерть снимает эти усиления, оживление возвращает.",
 	)
 	role = HERETIC_ROLE_ASCENSION
@@ -997,7 +997,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
 	name = "Выпад"
-	desc = "За 1 Темп сблизьтесь с противником до пяти клеток по свободному пути: 20 ушибов, 20 урона выносливости и падение на 1,5 секунды. Выпад по только что парированному противнику также расходует и проводит ответный удар. Требуется собственный тёмный клинок в руке."
+	desc = "За 1 Темп сблизьтесь с противником до пяти клеток по свободному пути: 20 ушибов, 20 урона выносливости и падение на 1,5 секунды. По только что парированному противнику выпад сразу проводит и ответный удар. Требуется собственный тёмный клинок в руке."
 	summary = "Рывок к врагу до 5 клеток за 1 Темп: 20 ушибов, 20 выносливости, падение на 1,5 секунды."
 	clothes_req = FALSE
 	charge_max = 10 SECONDS
@@ -1198,7 +1198,7 @@
 	active_duel = null
 
 /datum/eldritch_knowledge/base_blade/proc/ask_duel(mob/living/user, mob/living/target, serial)
-	var/answer = tgui_alert(target, "[user.name] бросает вам вызов на дуэль. Примете - вас обоих уведёт на арену в изнанке, тесную комнату без свидетелей, на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд: упавший или сдавшийся проиграл. Вызвавший дерётся только клинком: любое его заклинание, кроме Выжидания и призыва сердца или кодекса, - его поражение, и тогда [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на его шее будет виден свежий порез. Проигравшего вас клятва удержит на месте [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд. Отказ ничего не стоит.", "Вызов на дуэль", list(HERETIC_BLADE_CHALLENGE_ACCEPT, HERETIC_BLADE_CHALLENGE_DECLINE), HERETIC_BLADE_CHALLENGE_TIMEOUT)
+	var/answer = tgui_alert(target, "[user.name] бросает вам вызов на дуэль. Примете - вас обоих уведёт на арену в изнанке, тесную комнату без свидетелей, на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. Вызвавший дерётся только клинком: любое его заклинание, кроме Выжидания и призыва сердца или кодекса, - его поражение, и тогда [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на его шее будет виден свежий порез. Проигравшего вас клятва удержит на месте [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд. Если откажетесь или промолчите, стоя не дальше [HERETIC_BLADE_CHALLENGE_RANGE] клеток от него, невидимый клинок собьёт вас с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды.", "Вызов на дуэль", list(HERETIC_BLADE_CHALLENGE_ACCEPT, HERETIC_BLADE_CHALLENGE_DECLINE), HERETIC_BLADE_CHALLENGE_TIMEOUT)
 	if(QDELETED(src) || serial != challenge_serial || challenged_ref?.resolve() != target)
 		return
 	if(answer == HERETIC_BLADE_CHALLENGE_ACCEPT)
@@ -1254,9 +1254,22 @@
 	log_game("[key_name(target)] не принимает вызов на дуэль от [key_name(user)]: [reason].")
 	if(!user)
 		return TRUE
+	var/punished = FALSE
 	if(counts)
 		count_challenge(user, target, FALSE)
-	to_chat(user, span_warning("[target] не принимает вызов: [reason]. Снова вызвать - через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут."))
+		punished = punish_refusal(user, target)
+	to_chat(user, span_warning("[target] не принимает вызов: [reason].[punished ? " Клинок сбил труса с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды." : ""] Снова вызвать - через [HERETIC_BLADE_CHALLENGE_REPEAT / (1 MINUTES)] минут."))
+	return TRUE
+
+/// Отказ или молчание рядом с вызвавшим не бесплатны: невидимый клинок сбивает отказавшегося с ног.
+/datum/eldritch_knowledge/base_blade/proc/punish_refusal(mob/living/user, mob/living/target)
+	if(QDELETED(target) || target.stat != CONSCIOUS || !isturf(target.loc) || target.z != user.z || get_dist(user, target) > HERETIC_BLADE_CHALLENGE_RANGE || !heretic_can_affect(user, target, chargecost = 0))
+		return FALSE
+	target.Stun(HERETIC_BLADE_REFUSAL_STUN)
+	target.Knockdown(HERETIC_BLADE_REFUSAL_KNOCKDOWN)
+	heretic_blade_refusal_fx(target)
+	target.visible_message(span_danger("Невидимый клинок бьёт [target] плашмя, и [target] валится с ног!"), span_userdanger("Вы не приняли вызов, и невидимый клинок сбивает вас с ног!"))
+	log_combat(user, target, "сбивает с ног за отказ от дуэли")
 	return TRUE
 
 /// Шаг дела ложится на станции, где бросили или приняли вызов, а не в изнанке.
@@ -1288,7 +1301,7 @@
 			else
 				arena?.collapse("дуэль выиграна", heretic_escapes = TRUE)
 		if(HERETIC_BLADE_DUEL_LOST)
-			arena?.collapse("дуэль проиграна")
+			arena?.collapse("дуэль проиграна", heretic_escapes = TRUE)
 			combat_resource = 0
 			COOLDOWN_START(src, challenge_lockout, HERETIC_BLADE_DUEL_LOCKOUT)
 			brand_loser(user)
@@ -1297,7 +1310,7 @@
 			if(rival)
 				to_chat(rival, span_notice("Вы выиграли дуэль."))
 		else
-			arena?.collapse("дуэль окончена вничью")
+			arena?.collapse("дуэль окончена вничью", heretic_escapes = TRUE)
 			for(var/mob/living/fighter in list(user, rival))
 				to_chat(fighter, span_notice("Дуэль окончена без победителя: [reason]."))
 	notify_resource_changed()
@@ -1356,7 +1369,7 @@
 		return TRUE
 	return !victim.get_active_held_item() && last_riposte_victim?.resolve() == victim && world.time - last_riposte_at <= HERETIC_BLADE_THROAT_WINDOW
 
-/datum/eldritch_knowledge/base_blade/proc/throat_block_reason(mob/living/user, atom/target)
+/datum/eldritch_knowledge/base_blade/proc/throat_block_reason(mob/living/user, atom/target, check_ready = TRUE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!isliving(user) || heretic?.get_knowledge(type) != src || !heretic.get_knowledge(/datum/eldritch_knowledge/spell/blade_throat))
 		return "Способность недоступна вашему пути или текущему телу."
@@ -1372,7 +1385,7 @@
 		return "Возьмите собственный тёмный клинок в руку."
 	if(!isturf(user.loc) || !isturf(victim.loc) || !user.Adjacent(victim))
 		return "Цель должна стоять вплотную к вам."
-	if(!throat_ready(victim))
+	if(check_ready && !throat_ready(victim))
 		return "Клинок к горлу приставляют сбитой с ног цели или цели с пустой рукой после вашего ответа, не позже [HERETIC_BLADE_THROAT_WINDOW / (1 SECONDS)] секунд."
 	return null
 
@@ -1382,15 +1395,16 @@
 		return FALSE
 	user.visible_message(span_danger("[user] заносит тёмный клинок к горлу [victim]!"), span_notice("Вы заносите клинок к горлу [victim]."))
 	playsound(victim, 'sound/items/unsheath.ogg', 40, TRUE)
+	heretic_blade_throat_fx(victim, HERETIC_BLADE_THROAT_TELEGRAPH)
 	addtimer(CALLBACK(src, PROC_REF(seize_throat), user, victim), HERETIC_BLADE_THROAT_TELEGRAPH)
 	return TRUE
 
 /datum/eldritch_knowledge/base_blade/proc/seize_throat(mob/living/user, mob/living/victim)
 	if(QDELETED(user) || QDELETED(victim))
 		return FALSE
-	var/reason = throat_block_reason(user, victim)
+	var/reason = throat_block_reason(user, victim, check_ready = FALSE)
 	if(reason)
-		to_chat(user, span_warning("Клинок у горла сорвался: [reason]"))
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/heretic_blade_throat, "Клинок у горла сорвался: [reason]")
 		return FALSE
 	var/datum/status_effect/heretic_blade_throat/hold = victim.apply_status_effect(/datum/status_effect/heretic_blade_throat, user, src)
 	if(!hold || QDELETED(hold))
@@ -1406,8 +1420,9 @@
 /proc/heretic_blade_damage_total(mob/living/body)
 	return body.getBruteLoss() + body.getFireLoss() + body.getToxLoss() + body.getOxyLoss() + body.getCloneLoss() + body.getStaminaLoss()
 
+/// Толчок в стену и прочие короткие падения дуэль не решают: проигрывает выбитый из сил, оглушённый или в крите.
 /proc/heretic_blade_duel_beaten(mob/living/fighter)
-	return fighter.stat != CONSCIOUS || heretic_capture_downed(fighter) || fighter.IsStun() || fighter.IsParalyzed() || fighter.IsUnconscious()
+	return fighter.stat != CONSCIOUS || (fighter.combat_flags & COMBAT_FLAG_HARD_STAMCRIT) || fighter.IsStun() || fighter.IsParalyzed() || fighter.IsUnconscious()
 
 /datum/heretic_blade_duel
 	var/datum/weakref/blade_ref
@@ -1461,7 +1476,10 @@
 	return null
 
 /datum/heretic_blade_duel/proc/fighters_ready()
-	return !QDELETED(champion) && !QDELETED(rival) && !heretic_blade_duel_beaten(champion) && !heretic_blade_duel_beaten(rival)
+	for(var/mob/living/fighter as anything in list(champion, rival))
+		if(QDELETED(fighter) || heretic_blade_duel_beaten(fighter) || heretic_capture_downed(fighter))
+			return FALSE
+	return TRUE
 
 /// Изнанка этой дуэли, пока она открыта.
 /datum/heretic_blade_duel/proc/open_arena()
@@ -1638,7 +1656,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_blade_oath
 	name = "Клятва дуэли"
-	desc = "Вы проиграли дуэль и не можете пошевелиться, пока держит клятва. Удар нулевым жезлом её разорвёт, а товарищ может 2 секунды вас расталкивать."
+	desc = "Вы проиграли дуэль и не можете пошевелиться, пока держит клятва. Удар нулевым жезлом её разорвёт, а товарищ может вас растолкать за 2 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "blade_oath"
 
@@ -1660,6 +1678,7 @@
 	desc = "Вы проиграли честный поединок: [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на вашей шее виден свежий порез-знак."
 
 /datum/status_effect/heretic_blade_throat
+	var/held_since = 0
 	id = "heretic_blade_throat"
 	duration = HERETIC_BLADE_THROAT_DURATION
 	tick_interval = HERETIC_BLADE_THROAT_CHECK
@@ -1689,12 +1708,14 @@
 		return FALSE
 	restraint = new(list(owner, HERETIC_BLADE_THROAT_DURATION, TRUE))
 	held = TRUE
+	held_since = world.time
 	holder_damage = heretic_blade_damage_total(holder)
 	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(on_sacrifice))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_hostage_moved))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
 	heretic_capture_hold(owner, HERETIC_BLADE_THROAT_CAPTURE)
+	heretic_capture_lock_pull(owner, holder, REF(src))
 	RegisterSignal(holder, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	RegisterSignal(holder, COMSIG_MOVABLE_MOVED, PROC_REF(on_holder_moved))
 	RegisterSignal(holder, COMSIG_CARBON_UPDATEHEALTH, PROC_REF(on_holder_health))
@@ -1788,23 +1809,24 @@
 		blade.throat_hold = null
 	if(held)
 		heretic_capture_unhold(owner, HERETIC_BLADE_THROAT_CAPTURE)
+		heretic_capture_unlock_pull(owner, REF(src))
 		if(holder)
 			to_chat(holder, span_warning("Заложник свободен: [release_reason || "время вышло"]."))
 		log_combat(holder, owner, "отпускает заложника", addition = release_reason || "время вышло")
-		heretic_capture_release(owner, HERETIC_BLADE_THROAT_CAPTURE)
+		heretic_capture_release(owner, HERETIC_BLADE_THROAT_CAPTURE, held_for = heretic_capture_held_for(held_since))
 	holder = null
 	blade_ref = null
 	return ..()
 
 /atom/movable/screen/alert/status_effect/heretic_blade_throat
 	name = "Клинок у горла"
-	desc = "К горлу приставлен тёмный клинок: вы не двигаетесь сами и идёте за держащим. Спасёт сильный удар по нему, нулевой жезл, товарищ, который 2 секунды будет вас расталкивать, или если вас уведут."
+	desc = "К горлу приставлен тёмный клинок: вы не двигаетесь сами и идёте за держащим. Спасёт сильный удар по нему, нулевой жезл, товарищ, который может вас растолкать за 2 секунды, или если вас уведут."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "blade_hostage"
 
 /obj/effect/proc_holder/spell/pointed/heretic_blade_challenge
 	name = "Вызов"
-	desc = "Бросьте вызов на дуэль человеку не дальше 5 клеток; оба 10 секунд должны быть без урона. Вызов бросают только там, где может открыться изнанка: на станции, не в зоне без телепортации и пока своя изнанка не открыта и не затягивается. На ответ у него 20 секунд. Принявший уходит с вами в изнанку на 60 секунд: упавший или сдавшийся проиграл, ничья выводит обоих к входу. Вы деретесь только клинком и Выжиданием: Хватка или другое заклинание, кроме призыва сердца или кодекса, - поражение. Соперник, вырвавшийся из изнанки, проиграл. Победа связывает соперника клятвой на 12 секунд, растолкать его можно за 2 секунды; над целью охоты обряд идёт там же, остальных изнанка выбрасывает у входа, а вас - к своему выходу. Поражение обнуляет Темп, роняет клинок, на 5 минут оставляет на шее свежий порез-знак и закрывает вызовы на 5 минут. Отказ или молчание ничего не дают, но этого человека снова можно вызвать только через 5 минут."
+	desc = "Бросьте вызов на дуэль человеку не дальше 5 клеток; оба 10 секунд должны быть без урона. Вызов бросают только там, где может открыться изнанка: на станции, не в зоне без телепортации и пока своя изнанка не открыта и не затягивается. На ответ у него 20 секунд. Принявший уходит с вами в изнанку на 60 секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. При ничьей и поражении соперник выпадает у входа, а вас выносит к своему выходу. Вы деретесь только клинком и Выжиданием: Хватка или другое заклинание, кроме призыва сердца или кодекса, - поражение. Соперник, вырвавшийся из изнанки, проиграл. Победа связывает соперника клятвой на 12 секунд, растолкать его можно за 2 секунды; над целью охоты обряд идёт там же, остальных изнанка выбрасывает у входа, а вас - к своему выходу. Поражение обнуляет Темп, роняет клинок, на 5 минут оставляет на шее свежий порез-знак и закрывает вызовы на 5 минут. Отказ или молчание, пока он не дальше 5 клеток от вас, сбивают его с ног на 3 секунды: хватит, чтобы приставить клинок к горлу. Снова вызвать его можно через 5 минут."
 	summary = "Дуэль с человеком в 5 клетках: изнанка на 60 секунд, проигравшего держит клятва."
 	clothes_req = FALSE
 	range = HERETIC_BLADE_CHALLENGE_RANGE
@@ -1838,7 +1860,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blade_throat
 	name = "Клинок у горла"
-	desc = "Приставьте тёмный клинок к горлу соседа, который сбит с ног или остался с пустой рукой после вашего ответа не позже 3 секунд. Через полсекунды цель замирает до 12 секунд и идёт за вами шагом, обряд сердцем над ней работает; цель охоты сердце уводит разрезом в изнанку за 1,5 секунды. Шаг дальше клетки, 15+ урона вам одним ударом, оглушение, падение, выпавший клинок, нулевой жезл или 2 секунды растолкать освобождают заложника. Перезарядка 45 секунд."
+	desc = "Приставьте тёмный клинок к горлу соседа, который сбит с ног или остался с пустой рукой после вашего ответа не позже 3 секунд. Через полсекунды цель замирает до 12 секунд и идёт за вами шагом, обряд сердцем над ней работает; цель охоты сердце уводит разрезом в изнанку за 1,5 секунды. Захват срывается, если вы шагнёте дальше клетки, упадёте, вас оглушат, ударят на 15+ урона или клинок выпадет из руки; заложника освобождает и нулевой жезл, а ещё его можно растолкать за 2 секунды. Перезарядка 45 секунд."
 	summary = "Заложник: сбитый или обезоруженный ответом сосед замирает до 12 секунд."
 	clothes_req = FALSE
 	range = 1

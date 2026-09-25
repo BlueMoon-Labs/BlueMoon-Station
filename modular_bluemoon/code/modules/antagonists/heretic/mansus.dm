@@ -1172,7 +1172,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /// Амнезия относится к похищению; прежние записи и знания персонажа остаются на месте.
 /datum/heretic_mansus_visit/proc/record_mansus_memory()
-	var/recollection = "Само похищение распалось на белые пятна: лицо, голос и имя того, кто отправил вас в Мансус, не вспоминаются. По воспоминаниям о похищении вы не можете опознать этого человека — ни в Мансусе, ни после возвращения. Всё, что вы знали и видели до похищения, вы помните по-прежнему."
+	var/recollection = "Само похищение распалось на белые пятна: лицо, голос и имя того, кто отправил вас в Мансус, не вспоминаются. По воспоминаниям о похищении вы не можете опознать этого человека ни в Мансусе, ни после возвращения. Всё, что вы знали и видели до похищения, вы помните по-прежнему."
 	soul.store_memory(recollection)
 	if(soul.current)
 		to_chat(soul.current, span_boldnotice(recollection))
@@ -1501,4 +1501,4 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 
 /datum/component/heretic_mansus_trace/proc/on_examine(datum/source, mob/user, list/examine_list)
 	SIGNAL_HANDLER
-	examine_list += span_warning("На коже проступает бледный контур двери. Стоит отвести взгляд — и кажется, что она приоткрылась.")
+	examine_list += span_warning("На коже проступает бледный контур двери. Стоит отвести взгляд, и кажется, что она приоткрылась.")

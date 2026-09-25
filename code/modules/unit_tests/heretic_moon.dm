@@ -1252,6 +1252,7 @@
 	var/before = get_dist(victim, waiting)
 	walk.tick()
 	TEST_ASSERT_EQUAL(get_dist(victim, waiting), before - 1, "Цель шагает к ждущей копии.")
+	walk.held_since = world.time - HERETIC_MOON_SLEEPWALK_DURATION
 	walk.duration = world.time
 	TEST_ASSERT(wait_for_qdeleted(walk), "Сон заканчивается по сроку.")
 	TEST_ASSERT(!victim.IsParalyzed(), "Проснувшаяся цель владеет телом.")
@@ -1441,7 +1442,7 @@
 	walk.fall_asleep()
 	TEST_ASSERT(QDELETED(walk), "Ушедшая за секунду цель не засыпает.")
 	TEST_ASSERT(!runner.IsParalyzed(), "Сорванная Сомнамбула не держит цель.")
-	TEST_ASSERT_NOTNULL(capture_immunity(runner, HERETIC_MOON_CAPTURE), "Сорванная Сомнамбула даёт невосприимчивость.")
+	TEST_ASSERT_NULL(capture_immunity(runner, HERETIC_MOON_CAPTURE), "Сорванная на телеграфе Сомнамбула невосприимчивости не даёт.")
 	user.forceMove(origin)
 	var/mob/living/carbon/human/fainted = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
 	walk = moon_sleep_now(moon, fainted)
@@ -1480,7 +1481,7 @@
 	TEST_ASSERT(findtext(grasp.desc, "[HERETIC_MOON_DAZE_DURATION / (1 SECONDS)] секунд под лунным помутнением"), "Касание серебра называет помутнение.")
 	var/datum/eldritch_knowledge/sleepwalk_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/moon_sleepwalk)
 	var/obj/effect/proc_holder/spell/sleepwalk_spell = /obj/effect/proc_holder/spell/pointed/heretic_moon/sleepwalk
-	var/shake_text = "[HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды растолкать"
+	var/shake_text = "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды"
 	TEST_ASSERT(findtext(sleepwalk_knowledge.desc, "двойнику в [HERETIC_MOON_SLEEPWALK_POST_RANGE] клетках") && findtext(initial(sleepwalk_spell.desc), "не дальше [HERETIC_MOON_SLEEPWALK_POST_RANGE] клеток"), "Тексты Сомнамбулы называют дальность двойника.")
 	TEST_ASSERT(findtext(sleepwalk_knowledge.desc, shake_text) && findtext(initial(sleepwalk_spell.desc), shake_text), "Тексты Сомнамбулы называют время растолкать.")
 	var/atom/movable/screen/alert/door_alert = /atom/movable/screen/alert/heretic_moon_door
@@ -1524,7 +1525,7 @@
 	qdel(dozer.has_status_effect(/datum/status_effect/heretic_moon_sleepwalk))
 	TEST_ASSERT(dozer.pass_flags & PASSMOB, "Сорванная до сна Сомнамбула не снимает свой проход цели.")
 
-/// Дверь Луны: сомнамбула-цель охоты, дошедшая до двойника на посту, даёт еретику значок «Увести в отражение»; не цель охоты к двойнику не идёт; нажатие уводит цель в изнанку, даже если еретик далеко на том же уровне; с другого уровня, пока изнанка затягивается, и после пробуждения - отказ; к самому еретику ведёт дверь сердца.
+/// Дверь Луны: сомнамбула-цель охоты, дошедшая до двойника на посту, спит там ещё не меньше 3 секунд и даёт еретику значок «Увести в отражение»; не цель охоты к двойнику не идёт; нажатие уводит цель в изнанку, даже если еретик далеко на том же уровне; с другого уровня, пока изнанка затягивается, и после пробуждения - отказ; к самому еретику ведёт дверь сердца.
 /datum/unit_test/heretic_moon_reflection_door/Run()
 	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = make_moon_path_heretic()
@@ -1559,6 +1560,16 @@
 	TEST_ASSERT(istype(alert), "Дошедшая цель охоты даёт значок «Увести в отражение»: шагов [steps], до двойника [get_dist(victim, post)], двойник [moon.post_double == post], якорь [walk.door_anchor?.resolve()], держит [walk.reflection_door_holds(user)], цель [victim.mind == heretic.hunt_target], зритель [walk.door_viewer?.resolve()], значки [jointext(user.alerts, ",")], спит [walk.asleep], снят [QDELETED(walk)], может [moon.can_use(user)].")
 	TEST_ASSERT_EQUAL(alert.walk_ref?.resolve(), walk, "Значок ведёт к этой сомнамбуле.")
 	TEST_ASSERT(post.calling_sleepwalker(), "Двойник держит спящую у себя и не бродит.")
+	walk.lingered = FALSE
+	walk.duration = world.time + 5
+	walk.update_reflection_door(moon, post)
+	TEST_ASSERT(walk.duration - world.time >= HERETIC_MOON_SLEEPWALK_LINGER - 1, "Дошедшая до двойника спит ещё не меньше 3 секунд: [walk.duration - world.time] дс.")
+	TEST_ASSERT(walk.restraint.duration >= walk.duration, "Паралич сна продлён вместе с ним.")
+	var/lingered_until = walk.duration
+	walk.duration = world.time + 5
+	walk.update_reflection_door(moon, post)
+	TEST_ASSERT_EQUAL(walk.duration, world.time + 5, "Продление у двойника - один раз за сон.")
+	walk.duration = lingered_until
 	TEST_ASSERT_NULL(moon.pocket_door(user, victim), "Вдали от цели дверь сердца не открывается.")
 	var/turf/elsewhere = get_turf(GET_ERROR_ROOM)
 	TEST_ASSERT(elsewhere && elsewhere.z != origin.z, "Есть пол на другом уровне.")

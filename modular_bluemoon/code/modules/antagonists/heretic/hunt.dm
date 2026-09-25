@@ -58,7 +58,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			continue
 		var/atom/movable/holder = get_atom_on_turf(heart, /mob)
 		if(GLOB.heretic_ritual_reservations[heart] || (ismob(holder) && holder != user))
-			to_chat(user, span_warning("Сердце удерживает чужая рука или действующий обряд. Сначала освободите его."))
+			to_chat(user, span_warning("Сердце сейчас в чужой руке или в идущем обряде. Сначала освободите его."))
 			return FALSE
 	return TRUE
 
@@ -268,7 +268,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(!isturf(victim.loc) || !isopenturf(rite_turf) || isspaceturf(rite_turf))
 		return "Под целью нужен пол: в шкафу или в космосе круг не проступит."
 	if(GLOB.heretic_ritual_reservations[victim])
-		return "Цель уже удерживает другой обряд."
+		return "Над целью уже идёт другой обряд."
 	return null
 
 /datum/antagonist/heretic/proc/hint_hunt_claim(mob/living/user, mob/living/victim)
@@ -340,7 +340,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/list/choices = list()
 	for(var/datum/weakref/candidate_ref as anything in hunt_candidates)
 		var/datum/mind/candidate = candidate_ref.resolve()
-		choices["[length(choices) + 1]. [candidate.current.real_name] — [candidate.assigned_role]"] = candidate_ref
+		choices["[length(choices) + 1]. [candidate.current.real_name] - [candidate.assigned_role]"] = candidate_ref
 	return choices
 
 /datum/antagonist/heretic/proc/hunt_candidates_include_role(list/role_group)

@@ -348,7 +348,7 @@
 
 /datum/heretic_mansus_rule/flesh
 	hint = "Проходы между комнатами дышат: четыре секунды открыты, три сжаты. Ритм у всех общий, и тень ждёт у сомкнутой плоти так же, как вы."
-	reminder = "Проходы сжимаются каждые четыре секунды."
+	reminder = "Проходы открыты четыре секунды, потом сжимаются на три."
 	var/list/sphincters = list()
 	var/closed = FALSE
 
@@ -389,7 +389,7 @@
 
 /turf/closed/indestructible/heretic_mansus/sphincter
 	name = "clenched passage"
-	desc = "Плоть сомкнулась. Через пару секунд она снова разожмётся."
+	desc = "Плоть сомкнулась. Через три секунды она снова разожмётся."
 	baseturfs = /turf/closed/indestructible/heretic_mansus/sphincter
 
 // Пустота: ледяные комнаты-головоломки.
@@ -942,7 +942,7 @@
 // Эхо: слепая тень слышит бег.
 
 /datum/heretic_mansus_rule/echo
-	hint = "Тень здесь слепа, но слышит бег за девять клеток. Шагом вас слышно только вплотную. Сбор и доставка осколка тоже шумят."
+	hint = "Тень здесь слепа, но слышит бег за девять клеток. Шаги она слышит за две клетки. Сбор и доставка осколка тоже шумят."
 	reminder = "Идите шагом: бег слышен издалека."
 
 /datum/heretic_mansus_rule/echo/hunter_sees(obj/effect/heretic_mansus_hunter/hunter)
@@ -980,7 +980,7 @@
 		hunter.ready_at = max(hunter.ready_at, world.time + HERETIC_MANSUS_HOURGLASS_FREEZE)
 		animate(hunter, alpha = 60, time = 0.3 SECONDS)
 	visit.shorten_visit(HERETIC_MANSUS_HOURGLASS_COST)
-	to_chat(visit.victim, span_notice("Песок замер. Тени застыли на шесть секунд, а Дом стал на десять секунд ближе к рассвету."))
+	to_chat(visit.victim, span_notice("Песок замер. Тени застыли на шесть секунд, а времени до конца испытания стало на десять секунд меньше."))
 	playsound(visit.victim, visit.theme["deposit"], 40, FALSE)
 
 /obj/effect/heretic_mansus_device/hourglass

@@ -1290,6 +1290,7 @@
 	UnregisterSignal(victim, COMSIG_PARENT_ATTACKBY)
 	TEST_ASSERT_NULL(touched_with, "Отказанные сердца не касаются пленника.")
 	var/base_pixel_w = orbit.base_pixel_w
+	orbit.held_since = world.time - HERETIC_COSMIC_ORBIT_DURATION
 	star.take_damage(200, BRUTE, MELEE)
 	TEST_ASSERT(QDELETED(star), "Звезду можно разбить.")
 	TEST_ASSERT(QDELETED(orbit), "Разбитая звезда рвёт орбиту.")
@@ -1525,11 +1526,11 @@
 	TEST_ASSERT_EQUAL(path.knowledge[4], /datum/eldritch_knowledge/spell/cosmic_orbit, "Орбита на четвёртой ступени.")
 	TEST_ASSERT_EQUAL(path.knowledge[6], /datum/eldritch_knowledge/cosmic_mark, "Метка Космоса на шестой ступени.")
 	var/orbit_text = jointext(orbit_knowledge.details, " ")
-	TEST_ASSERT(findtext(orbit_text, "растолкать - [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды") && findtext(orbit_text, "уводит к звёздам в изнанку"), "Орбита называет «растолкать» и дверь.")
+	TEST_ASSERT(findtext(orbit_text, "растолкать за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды") && findtext(orbit_text, "к звёздам в изнанку"), "Орбита называет «растолкать» и дверь.")
 	TEST_ASSERT(!findtext(orbit_text, "клетках от звезды"), "Дверь Орбиты открывает касание сердцем пленника у звезды: дальность до звезды тексту не нужна.")
 	TEST_ASSERT(findtext(jointext(cosmic.details, " "), "в [HERETIC_COSMIC_DOOR_RANGE] клетках от своей путеводной звезды"), "База называет дверь путеводной звезды.")
 	TEST_ASSERT(findtext(jointext(cosmic.details, " "), "новая при полном созвездии заменяет самую старую"), "База называет вытеснение старейшей звезды.")
-	TEST_ASSERT(findtext(path.combat_practice, "за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды") && findtext(path.combat_practice, "изнанки нет"), "Полигон называет «растолкать» и изнанку только на станции.")
+	TEST_ASSERT(findtext(path.combat_practice, "за [HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды") && findtext(path.combat_practice, "учебной цели охоты"), "Полигон называет «растолкать» и изнанку на учебной цели.")
 
 /// Созвездие, удалённое посреди перестройки нитей (луч может уступить тик), не заводит проверку нитей и не оставляет нитей и лучей.
 /datum/unit_test/heretic_cosmic_threads_after_delete/Run()
@@ -1548,3 +1549,24 @@
 	TEST_ASSERT_NULL(cosmic.thread_sweep_timer, "Удалённое созвездие не заводит проверку нитей.")
 	TEST_ASSERT_EQUAL(length(cosmic.threads) + length(cosmic.beams), 0, "Удалённое созвездие не оставляет нитей и лучей.")
 	cosmic.stars.Cut()
+
+/// Новая звезда при полном созвездии гасит старейшую, но не ту, что держит пленника на Орбите.
+/datum/unit_test/heretic_cosmic_star_room_keeps_captive/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_COSMIC
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_cosmic/cosmic = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/turf/origin = get_turf(user)
+	var/list/spots = list(locate(origin.x + 1, origin.y + 1, origin.z), locate(origin.x + 3, origin.y + 1, origin.z), locate(origin.x + 2, origin.y + 3, origin.z))
+	for(var/index in 1 to cosmic.star_limit())
+		TEST_ASSERT(cosmic.add_star(spots[index], user), "Звезда [index] зажглась.")
+	var/obj/structure/heretic_star/oldest = cosmic.stars[1]
+	var/obj/structure/heretic_star/younger = cosmic.stars[2]
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_turf(oldest))
+	var/datum/status_effect/heretic_cosmic_orbit/orbit = victim.apply_status_effect(/datum/status_effect/heretic_cosmic_orbit, cosmic, oldest)
+	TEST_ASSERT_NOTNULL(orbit, "Старейшая звезда держит пленника.")
+	cosmic.make_room_for_star()
+	TEST_ASSERT(!QDELETED(oldest), "Звезда с пленником не гаснет.")
+	TEST_ASSERT(!QDELETED(orbit), "Орбита держится.")
+	TEST_ASSERT(QDELETED(younger), "Гаснет следующая по старшинству звезда.")
