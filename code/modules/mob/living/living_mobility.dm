@@ -71,6 +71,8 @@
 //Updates canmove, lying and icons. Could perhaps do with a rename but I can't think of anything to describe it.
 //Robots, animals and brains have their own version so don't worry about them
 /mob/living/proc/update_mobility()
+	if(HAS_TRAIT_FROM(src, TRAIT_MUTE, TIMESTOP_TRAIT)) //нельзя падать, будучи замороженным
+		return
 	var/stat_softcrit = stat == SOFT_CRIT
 	var/stat_conscious = (stat == CONSCIOUS) || stat_softcrit
 

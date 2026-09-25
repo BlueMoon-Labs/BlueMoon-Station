@@ -34,7 +34,7 @@
 	name = "CQC Manual"
 	desc = "Руководство по тактическому ближнему бою. Обучает одного пользователя, после чего самоуничтожается."
 	item = /obj/item/book/granter/martial/cqc
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW | UPLINK_TRAITORS)
 	cost = 12
 	surplus = 0
 

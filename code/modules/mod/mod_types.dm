@@ -1,6 +1,6 @@
 /obj/item/mod/control/pre_equipped
 	var/applied_skin
-	var/equip_cell = /obj/item/stock_parts/cell/high
+	var/equip_cell = /obj/item/stock_parts/cell/high/plus
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
 	new_skin = applied_skin
@@ -54,6 +54,7 @@
 /obj/item/mod/control/pre_equipped/mining
 	theme = /datum/mod_theme/cargo_default/mining
 	equip_cell = /obj/item/stock_parts/cell/high/plus
+	complexity_max = ANTAG_MAX_COMPLEXITY
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -104,6 +105,7 @@
 		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/armor/prebuild/bullet,
 		/obj/item/mod/module/armor/prebuild/laser,
+		/obj/item/mod/module/jetpack,
 	)
 
 /obj/item/mod/control/pre_equipped/security/catcrin
@@ -441,13 +443,8 @@
 		/obj/item/mod/module/jetpack/advanced,
 		// /obj/item/mod/module/anti_magic/wizard,
 		/obj/item/mod/module/energy_shield/wizard,
+		/obj/item/mod/module/spellcasting,
 	)
-
-/obj/item/mod/control/pre_equipped/mage/ComponentInitialize()
-	. = ..()
-	var/magic_flags = SPELL_WIZARD_ROBE|SPELL_CULT_ARMOR
-	var/obj/item/clothing/mod_part/suit/chest =  get_chestplate()
-	chest.AddElement(/datum/element/spellcasting, magic_flags, ITEM_SLOT_OCLOTHING)
 
 /obj/item/mod/control/pre_equipped/cosmohonk
 	theme = /datum/mod_theme/simple_civilian/cosmohonk

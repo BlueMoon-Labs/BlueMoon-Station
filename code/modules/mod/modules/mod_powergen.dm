@@ -144,6 +144,9 @@
 	can_generate_power()
 
 /obj/item/mod/module/power/proc/can_generate_power()
+	//пробуем найти батарейку, если она вдруг пропала(замена, вставка модуля в мод без батарейки)
+	if(!mod_cell)
+		mod_cell = mod.get_cell()
 	if(!COOLDOWN_FINISHED(src, power_generation_cooldown) || !mod || !mod.wearer || !mod_cell || QDELETED(mod))
 		return FALSE
 
@@ -201,12 +204,12 @@
 	name = "Plasma PowerGen Module"
 	desc = "Младший брат ПАКМАНа, но в виде модуля. Не имеет встроенных защит и довольно массивен для МОДа. \
 	Очень чувствителен к ЕМП, безысходно ломаясь после него, требуя полной замены. Потреблет 5 единиц плазмы на одну \
-	генерацию энергии, выдаввая 1,5 МДж каждые 20 секунд. И да, его надо включить."
+	генерацию энергии, выдаввая 2,5 МДж каждые 20 секунд. И да, его надо включить."
 	icon_state = "plasma_gen"
-	use_fuel_by_step = 5
+	use_fuel_by_step = 3
 	powergen_cooldown_time = 20 SECONDS
-	generation_amount = 1500
-	complexity = 4
+	generation_amount = 2500
+	complexity = 3
 	fuel_type = /obj/item/stack/sheet/mineral/plasma
 
 /obj/item/mod/module/power/plasma/go_destroy()
@@ -221,13 +224,13 @@
 	name = "Nuclear PowerGen Module"
 	desc = "Ваш личный атомный энергоблок на обогощенном уране за спиной. Мало того, он ещё и никак не экранирован. \
 	Отлично фонит и модно светится, пока включен. Третья рука в комплект входит? \
-	Генерирует 3.5 МДж каждые 20 секунд."
+	Генерирует 4 МДж каждые 20 секунд."
 	icon_state = "uranium_gen"
 	max_fuel_amount = 100
 	use_fuel_by_step = 2
 	powergen_cooldown_time = 20 SECONDS
-	generation_amount = 3500
-	complexity = 3
+	generation_amount = 4000
+	complexity = 2
 	fuel_type = /obj/item/stack/sheet/mineral/uranium
 
 /obj/item/mod/module/power/uranium/on_activation()
@@ -244,12 +247,12 @@
 /obj/item/mod/module/power/diamond
 	name = "Diamond PowerGen Module"
 	desc = "Встроенный, экологически чистый генератор на алмазах. Дорого-богато.\
-	Генерирует 4,5 МДж каждые 20 секунд."
+	Генерирует 6,5 МДж каждые 20 секунд."
 	icon_state = "diamond_gen"
 	max_fuel_amount = 100
 	use_fuel_by_step = 1
 	powergen_cooldown_time = 20 SECONDS
-	generation_amount = 4500
+	generation_amount = 6500
 	complexity = 2
 	fuel_type = /obj/item/stack/sheet/mineral/diamond
 
@@ -278,10 +281,10 @@
 /obj/item/mod/module/power/tesla
 	name = "Tesla PowerGen Module"
 	desc = "Особый встроенный генератор энергии для МОД костюмов, способный брать электричество напрямую из\
-	электричества текущего помещения, если оно запитано. Работает раз в 30 секунд, заряжает батарею на 1МДж"
+	электричества текущего помещения, если оно запитано. Работает раз в 30 секунд, заряжает батарею на 2 МДж"
 	icon_state = "tesla_gen"
 	powergen_cooldown_time = 30 SECONDS
-	generation_amount = 1000
+	generation_amount = 2000
 	have_tesla_relay = TRUE
 	complexity = 4
 	use_fuel = FALSE

@@ -47,6 +47,7 @@
 		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/shield/riot/pointman,										4500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare lasbattery",			/obj/item/ammo_box/magazine/recharge/vanguard,						500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320 standart mag",		/obj/item/ammo_box/magazine/sig,									250,	"Weaponry"),
+		new /datum/data/bounty_equipment("Spare Proton cutter",			/obj/item/melee/sabre/proton_cutter,								2500,	"Weaponry"),
 
 		// ============ ARMOR ============
 		new /datum/data/bounty_equipment("Vanguard armor",					/obj/item/vanguard_voucher_suit,								1500,	"Armor"),
@@ -265,7 +266,7 @@
 		if("Field Surgeon")
 			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
 			new /obj/item/storage/firstaid/frontier(drop_location)
-			new /obj/item/melee/tomahawk(drop_location)
+			new /obj/item/storage/belt/avangard_belt(drop_location)
 			new /obj/item/storage/firstaid/vanguard(drop_location)
 			new /obj/item/shield/riot/pointman(drop_location)
 			new /obj/item/defibrillator/compact/loaded(drop_location)

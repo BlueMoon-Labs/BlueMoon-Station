@@ -40954,9 +40954,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/science/mixing)
 "cBC" = (
-/obj/structure/cable{
-	icon_state = "2-4"
-	},
 /obj/effect/landmark/event_spawn,
 /obj/structure/cable{
 	icon_state = "4-8"

@@ -78,7 +78,7 @@
 
 /datum/armor/mod/head_of_sec
 	melee = 50
-	bullet = 10
+	bullet = 20 //на пять лучше чем просто sec
 	laser = 35
 	energy = 40
 	bomb = 40

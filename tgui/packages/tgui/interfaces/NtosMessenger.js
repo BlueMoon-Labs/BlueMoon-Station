@@ -393,7 +393,7 @@ const ChatScreen = (props) => {
     blocked,
   } = props;
 
-  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, can_set_url_photo } = data;
+  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, can_set_url_photo, credits_balance = 0, metadollar_balance = 0 } = data;
   const rawList = Array.isArray(emoji_list) ? emoji_list : Object.values(emoji_list || {});
   const uniqueEmojis = [...new Set(rawList)].slice(0, 100);
   const base64Map = emoji_base64 || {};
@@ -404,6 +404,22 @@ const ChatScreen = (props) => {
   const [showAdminUrl, setShowAdminUrl] = useState(false);
   const [adminUrlInput, setAdminUrlInput] = useState('');
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [transferAmount, setTransferAmount] = useState('');
+  const [transferCurrency, setTransferCurrency] = useState('credits');
+
+  const handleSendMoney = () => {
+    const amount = Math.floor(Number(transferAmount));
+    if (!amount || amount <= 0) {
+      return;
+    }
+    const ref = chatRef || recipient.ref;
+    act('PDA_sendMoney', {
+      ref: ref,
+      amount: amount,
+      currency: transferCurrency,
+    });
+    setTransferAmount('');
+  };
 
   const handleSendMessage = () => {
     if (message === '' && !has_scanned_photo && !admin_photo_url) {
@@ -623,6 +639,59 @@ const ChatScreen = (props) => {
           </>
         )}
       </Section>
+
+      {!!canReply && !blocked && (
+        <Section title="Перевод денег">
+          <Stack fill align="center">
+            <Stack.Item>
+              <Button
+                content={transferCurrency === 'credits' ? '₵' : 'M$'}
+                color={transferCurrency === 'credits' ? 'yellow' : 'green'}
+                tooltip={
+                  transferCurrency === 'credits'
+                    ? 'Кредиты. Нажмите чтобы переключить на M$'
+                    : 'Метадоллары. Нажмите чтобы переключить на кредиты'
+                }
+                onClick={() =>
+                  setTransferCurrency(
+                    transferCurrency === 'credits'
+                      ? 'metadollars'
+                      : 'credits',
+                  )
+                }
+              />
+            </Stack.Item>
+            <Stack.Item grow>
+              <Input
+                fluid
+                placeholder={
+                  transferCurrency === 'credits'
+                    ? `Сумма в кр. (баланс: ${credits_balance})...`
+                    : `Сумма в M$ (баланс: ${metadollar_balance})...`
+                }
+                value={transferAmount}
+                onInput={(e, val) =>
+                  setTransferAmount(val.replace(/[^0-9]/g, ''))
+                }
+                onEnter={handleSendMoney}
+                maxLength={7}
+              />
+            </Stack.Item>
+            <Stack.Item>
+              <Button
+                icon="money-bill-wave"
+                content="Отправить"
+                color="good"
+                disabled={
+                  !transferAmount ||
+                  Number(transferAmount) <= 0
+                }
+                onClick={handleSendMoney}
+              />
+            </Stack.Item>
+          </Stack>
+        </Section>
+      )}
 
       <Stack.Item grow={1}>
         <Section

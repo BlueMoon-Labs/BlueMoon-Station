@@ -2034,9 +2034,8 @@
 
 /obj/item/gun/ballistic/shotgun/shorty/black_hole/update_overlays()
 	. = ..()
-
+	. += "blackhole-0"
 	if(!magazine || !magazine.max_ammo)
-		. += "blackhole-0"
 		return
 	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
 	var/fill_level = clamp(round(total / magazine.max_ammo * 2), 0, 2)

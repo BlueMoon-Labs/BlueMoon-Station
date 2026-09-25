@@ -225,6 +225,7 @@ export const SettingsGeneral = (props) => {
         </Flex>
         <TextArea
           height="3em"
+          scrollbar
           value={highlightText}
           onInput={(e, value) => dispatch(updateSettings({
             highlightText: value,

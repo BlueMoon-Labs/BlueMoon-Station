@@ -417,6 +417,13 @@
 	item_path = /obj/item/clothing/suit/space/hardsuit/wizard
 	category = SPELL_CATEGORY_DEFEND
 
+/datum/spellbook_entry/item/mod
+	name = "Magic MODsuit"
+	desc = "Особым образом зачарованный и улучшенный МОД костюм с щитом и возможностью колдовать"
+	item_path = /obj/item/mod/control/pre_equipped/mage
+	category = SPELL_CATEGORY_DEFEND
+	cost = 3
+
 /datum/spellbook_entry/item/armor/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	. = ..()
 	if(.)

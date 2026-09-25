@@ -107,9 +107,8 @@
 /obj/effect/turf_decal/stripes/red{
 	dir = 4
 	},
-/obj/machinery/computer/camera_advanced/shuttle_docker/caravan/syndicate4{
-	dir = 8
-	},
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/item/reagent_containers/food/snacks/syndicake,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sbc_corvette)
 "j" = (
