@@ -14,7 +14,7 @@
 /// /client/Move считает то же самое вручную: база нужна ему ещё и для сигнала, и
 /// для пересчёта после шага, и обязана остаться той, что была до шага.
 /mob/proc/movement_step_cost(diagonal)
-	return movement_client_step_delay(movement_delay(), diagonal, world.tick_lag)
+	return movement_step_delay(movement_delay(), diagonal, world.tick_lag)
 
 /client/verb/drop_item()
 	set hidden = 1
@@ -101,7 +101,7 @@
 		if(!step_status)
 			step_schedule = null
 	var/base_delay = mob.movement_delay()
-	var/add_delay = movement_client_step_delay(base_delay, (direction & (direction - 1)), world.tick_lag)
+	var/add_delay = movement_step_delay(base_delay, (direction & (direction - 1)), world.tick_lag)
 	var/glide_delay = step_schedule ? max(world.tick_lag, base_delay * (ISDIAGONALDIR(direction) ? SQRT_2 : 1)) : add_delay
 	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(glide_delay), FALSE) // set it now in case of pulled objects
 	// Окно догоняющего шага - один тик, как в апстриме. Прежнее
@@ -142,7 +142,7 @@
 		add_delay = step_schedule.step_cost
 		move_delay = step_schedule.next_target
 	else
-		add_delay = movement_client_step_delay(base_delay, stepped_diagonally, world.tick_lag)
+		add_delay = movement_step_delay(base_delay, stepped_diagonally, world.tick_lag)
 		mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE)
 		move_delay += add_delay
 	// Слепок расписания целиком, и до всего, что может дёрнуть скорость.
