@@ -285,7 +285,7 @@
 			if(spell != summon_book.granted_spell)
 				TEST_ASSERT("[spell.type]" in ability_ids, "В подсказках [path_id] должна быть выданная способность [spell.name].")
 		TEST_ASSERT("/obj/effect/proc_holder/spell/targeted/touch/mansus_grasp" in ability_ids, "Хватка должна быть видна у каждого пути.")
-		TEST_ASSERT_EQUAL(length(abilities), 2, "Призыв кодекса не должен вытеснять боевые способности.")
+		TEST_ASSERT_EQUAL(length(abilities), length(heretic.owner.spell_list) - 1, "Призыв кодекса не должен вытеснять боевые способности: видны Хватка и всё, что выдала база.")
 		var/list/deed = data["deed"]
 		TEST_ASSERT(length(deed["desc"]) && deed["goal"] > 0, "Книга должна описывать текущее дело [path_id].")
 		base_knowledge.on_body_lose(reader)

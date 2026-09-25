@@ -9,7 +9,6 @@
 #define HERETIC_SPIRIT_DRAIN_PER_TICK 2.5
 #define HERETIC_SPIRIT_STAMINA_RESTORE 15
 #define HERETIC_SPIRIT_LANTERN_HEAL 12
-#define HERETIC_SPIRIT_BLADE_BONUS 6
 #define HERETIC_SPIRIT_HOOK_INCOME (6 SECONDS)
 #define HERETIC_SPIRIT_REAP_NEAR_DAMAGE 15
 #define HERETIC_SPIRIT_PASSAGE_COOLDOWN (0.2 SECONDS)
@@ -39,30 +38,69 @@
 #define HERETIC_SPIRIT_VOYAGE_SPIRAL_EMIT (0.8 SECONDS)
 #define HERETIC_SPIRIT_VOYAGE_SPIRAL_ARMS 6
 #define HERETIC_SPIRIT_VOYAGE_SPIRAL_SWIRL 1
+#define HERETIC_SPIRIT_OBOL_CRAFT "spirit_obol"
+#define HERETIC_SPIRIT_OBOL_CLUE "На глазах тела лежат две холодные серебряные монеты."
+#define HERETIC_SPIRIT_WHISPER_LENGTH 256
+#define HERETIC_SPIRIT_HOLD_CAPTURE "spirit_hold"
+#define HERETIC_SPIRIT_HOLD_CHECK (0.2 SECONDS)
+#define HERETIC_SPIRIT_INCORPOREAL_TRAIT "heretic_spirit_incorporeal"
+#define HERETIC_SPIRIT_INCORPOREAL_HASTE -0.35
+#define HERETIC_SPIRIT_INCORPOREAL_ALPHA 110
+#define HERETIC_SPIRIT_INCORPOREAL_CHECK (0.5 SECONDS)
+#define HERETIC_SPIRIT_ASCENDED_SOUL_LIMIT 6
+#define HERETIC_SPIRIT_WHISPER_COOLDOWN (5 SECONDS)
+#define HERETIC_SPIRIT_PASSMOB_TRAIT "heretic_spirit_passmob"
+#define HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT "heretic_spirit_passmob_owned"
 
 /datum/heretic_path/spirit
 	id = PATH_SPIRIT
 	deed_type = /datum/heretic_deed/spirit
 	name = "Дух"
-	desc = "Станьте перевозчиком живых: отделяйте души от тел, вынуждайте врага вернуться к оставленному силуэту и собирайте плату за переправу. Душа остаётся на поле боя, пока её хозяин продолжает сражаться."
-	strengths = "Разлучение сразу ранит врага. Отход от души истощает выносливость, а Жатва бьёт второй раз, пока связь цела: вдали от души сильнее, рядом слабее. Бесплатное смещение оттягивает душу от тела. После Жатвы остаётся время на удар крюком, Переправу или сбор души. Удары крюком по связанному телу и взрыв метки приносят оболы. Переправа встаёт рядом с врагом и переносит лежащую жертву, которую вы тащите, а фонарь собирает плату и лечит. Вознёсшийся проходит сквозь людей и столы, а смерть члена экипажа в семи клетках даёт ему 2 обола и лечит 20 урона."
-	weaknesses = "Душу можно погасить касанием или разбить без вреда хозяину. Возврат на клетку души после отхода обрывает связь вместе с Жатвой; стены, окна, закрытые двери, антимагия и расстояние больше пяти клеток тоже. Запас и истощение ограничены. Смерть защищённого от магии, например с нулевым жезлом, вознёсшемуся не платит; уносите раненых дальше семи клеток. Нулевой жезл сразу обрывает связь души."
+	tagline = "Кладёт оболы на глаза мёртвым, держит чужую душу в руке, становится бесплотным."
+	craft_summary = "Хватка в «Помощи» по трупу: обол открывает последний миг, а призрак 5 минут шепчет вам."
+	capture_summary = "Душа в руке держит тело пустым до 12 секунд; сердце во второй руке переправляет его в изнанку."
+	escape_summary = "3 секунды пули и удары проходят сквозь вас; из изнанки выходите к телам со своим оболом."
+	strength_points = list(
+		"Разлучение за обол сразу ранит врага в 5 клетках и оставляет его душу на месте.",
+		"Жатва и Заупокойный звон бьют второй раз, пока связь с душой цела.",
+		"Удержать душу держит цель до 12 секунд, а сердце во второй руке переправляет её в изнанку.",
+		"Переправа переносит вас к душе и берёт с собой лежащую жертву.",
+		"Бесплотность пропускает пули и удары и уводит сквозь толпу и столы.",
+		"Оболы на трупах называют убийцу, а призраки шепчут вам то, что видели.",
+	)
+	weakness_points = list(
+		"Хозяин гасит душу касанием, её можно разбить, а стены и дальность больше 5 клеток рвут связь.",
+		"Душу в руке вернут удар 15+ по вам, оглушение, нулевой жезл или 2 секунды растолкать тело.",
+		"Бесплотный не атакует: удар, хоть предметом по двери или стене, выстрел и заклинание возвращают плоть.",
+		"Антимагия и нулевой жезл гасят связи, а наручники закрывают Бесплотность.",
+		"Монеты на глазах трупов - улика, нулевой жезл их снимает.",
+	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_spirit,
 		/datum/eldritch_knowledge/spirit_grasp,
 		/datum/eldritch_knowledge/spell/spirit_step,
+		/datum/eldritch_knowledge/spell/spirit_hold,
+		/datum/eldritch_knowledge/spell/spirit_incorporeal,
 		/datum/eldritch_knowledge/spirit_mark,
-		/datum/eldritch_knowledge/spirit_relic,
-		/datum/eldritch_knowledge/spirit_upgrade,
 		/datum/eldritch_knowledge/spell/spirit_reap,
-		/datum/eldritch_knowledge/spirit_temper,
+		/datum/eldritch_knowledge/spirit_relic,
 		/datum/eldritch_knowledge/spell/spirit_bell,
 		/datum/eldritch_knowledge/final_eldritch/spirit_final,
 	)
 
 /datum/eldritch_knowledge/base_spirit
 	name = "Монета под языком"
-	desc = "Нож и лист серебра создают клинок перевозчика. «Разлучение» за один обол наносит цели в пяти клетках 20 ушибов и 15 урона выносливости, оставляя её душу на месте на 10 секунд. Отход дальше одной клетки от души наносит до 25 выносливости за всю связь. Касание своей души или возвращение на её клетку после отхода гасит связь. Удар крюком по телу с вашей душой возвращает обол, не чаще раза в 6 секунд. Перезарядка 12 секунд."
+	summary = "Разлучение отделяет душу врага, а Хватка в «Помощи» кладёт обол на глаза трупа."
+	details = list(
+		"Разлучение за 1 обол: 20 ушибов и 15 выносливости цели в 5 клетках, её душа 10 секунд стоит на месте.",
+		"Дальше клетки от души тело теряет выносливость, до 25 за связь; касание души или возврат на неё гасят связь.",
+		"Обол на глаза: Хватка в «Помощи» по трупу человека показывает, кто, чем, когда и где ранил его последним.",
+		"Призрак тела с оболом 5 минут может шептать только вам. Держатся 3 обола, новый вытесняет старый.",
+		"Каждый новый отдел с оболом идёт в дело. Экипаж видит монеты на глазах, нулевой жезл их снимает.",
+		"Нож и лист серебра на руне дают крюк перевозчика.",
+		"Из изнанки выходите к телу со своим оболом, на соседнюю с ним клетку.",
+	)
+	role = HERETIC_ROLE_CRAFT
 	gain_text = "Я положил монету под язык. На другом берегу назвали моё имя."
 	route = PATH_SPIRIT
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/sheet/mineral/silver)
@@ -70,7 +108,15 @@
 	combat_resource = 3
 	combat_resource_max = 5
 	combat_resource_name = "Оболы"
-	combat_resource_desc = "Начальный запас 3 из 5. По одному оболу каждые 10 секунд восстанавливаются только первые две монеты. Удар крюком по телу, чью душу отделили вы, даёт обол не чаще раза в 6 секунд; взрыв Метки Духа крюком — ещё обол. Коснитесь отделённой вами души живого разумного врага: связь исчезнет, вы получите обол и восстановите 15 выносливости, не чаще раза в 6 секунд. Новое дело пути даёт обол. Разлучение и Переправа стоят 1, Заупокойный звон — 2. Одновременно существуют три души; смерть и смена тела гасят их и обнуляют запас."
+	resource_rules = list(
+		"Начальный запас 3 из 5; сами восстанавливаются только первые 2 обола, по одному раз в 10 секунд.",
+		"Удар крюком по телу с вашей душой даёт обол раз в 6 секунд, взрыв Метки Духа - ещё один.",
+		"Сбор отделённой души разумного врага рукой даёт обол и 15 выносливости раз в 6 секунд.",
+		"Новый шаг дела даёт обол.",
+		"Кошель утонувших из знания Фонаря поднимает вместимость до 6, улучшения - до 8.",
+		"Разлучение и Переправа стоят 1 обол, Заупокойный звон - 2.",
+		"Одновременно держатся 3 души; смерть и смена тела гасят их и обнуляют запас.",
+	)
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	grasp_visual = /obj/effect/temp_visual/heretic_spirit/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/spirit_grasp.ogg'
@@ -79,10 +125,18 @@
 	var/list/datum/status_effect/heretic_spirit/separated/souls = list()
 	var/list/datum/status_effect/eldritch/spirit/marks = list()
 	var/list/obj/effect/temp_visual/heretic_spirit/visuals = list()
+	/// Трупы с оболом, старейший первым; значение - когда кончается шёпот призрака.
+	var/list/obols = list()
+	var/list/obol_ghosts = list()
+	var/list/whisper_ready = list()
+	var/datum/status_effect/heretic_spirit_hold/soul_hold
 	var/ascension_active = FALSE
 	var/crossing_failure
 	var/shift_failure
 	var/ring_failure
+	var/whisper_failure
+	var/hold_failure
+	var/incorporeal_failure_reason
 	COOLDOWN_DECLARE(spirit_recovery)
 	COOLDOWN_DECLARE(spirit_harvest)
 	COOLDOWN_DECLARE(spirit_hook_income)
@@ -120,9 +174,15 @@
 
 /datum/eldritch_knowledge/base_spirit/Destroy()
 	on_body_lose(spirit_body)
+	for(var/mob/living/corpse as anything in obols.Copy())
+		remove_obol(corpse)
+	obols.Cut()
+	obol_ghosts.Cut()
+	whisper_ready.Cut()
 	return ..()
 
 /datum/eldritch_knowledge/base_spirit/proc/clear_spirit()
+	soul_hold?.release("перевозчик потерял тело")
 	QDEL_LIST(souls)
 	QDEL_LIST(marks)
 	QDEL_LIST(visuals)
@@ -132,9 +192,9 @@
 		if(soul.knowledge_ref?.resolve() == required || soul.reaping_ref?.resolve() == required)
 			qdel(soul)
 
-/datum/eldritch_knowledge/base_spirit/proc/can_use(mob/living/user, allow_incapacitated = FALSE)
+/datum/eldritch_knowledge/base_spirit/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && user && user == spirit_body && user.stat != DEAD && (allow_incapacitated || !user.incapacitated()) && isturf(user.loc) && heretic?.selected_path == PATH_SPIRIT && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && user && user == spirit_body && user.stat != DEAD && (allow_incapacitated || !user.incapacitated(ignore_grab = ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_SPIRIT && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_spirit/proc/tile_open(turf/tile)
 	return isopenturf(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE)
@@ -190,6 +250,18 @@
 			return anchor
 	return null
 
+/// Своя душа по клику на силуэт, на тело, чья это душа, или на тело, стоящее на ней.
+/datum/eldritch_knowledge/base_spirit/proc/soul_anchor_of(atom/target)
+	if(isliving(target))
+		var/mob/living/victim = target
+		var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+		if(soul?.spirit_ref?.resolve() == src && !QDELETED(soul.anchor))
+			return soul.anchor
+	return own_soul_at(target)
+
+/datum/eldritch_knowledge/base_spirit/combat_resource_state()
+	return "Душ: [length(souls)] из [ascension_active ? HERETIC_SPIRIT_ASCENDED_SOUL_LIMIT : HERETIC_SPIRIT_SOUL_LIMIT]. Оболов на глазах: [length(obols)] из [HERETIC_SPIRIT_OBOL_LIMIT]."
+
 /datum/eldritch_knowledge/base_spirit/on_life(mob/user)
 	if(!can_use(user) || !COOLDOWN_FINISHED(src, spirit_recovery))
 		return
@@ -211,10 +283,10 @@
 	COOLDOWN_START(src, spirit_hook_income, HERETIC_SPIRIT_HOOK_INCOME)
 	gain_combat_resource()
 
-/datum/eldritch_knowledge/base_spirit/proc/update_capacity(ignore_temper = FALSE)
+/datum/eldritch_knowledge/base_spirit/proc/update_capacity(ignore_purse = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(spirit_body)
-	var/datum/eldritch_knowledge/spirit_temper/temper = heretic?.get_knowledge(/datum/eldritch_knowledge/spirit_temper)
-	combat_resource_max = ascension_active ? 8 : !ignore_temper && !QDELETED(temper) ? temper.passive_values[temper.passive_level] : initial(combat_resource_max)
+	var/datum/eldritch_knowledge/spirit_relic/purse = heretic?.get_knowledge(/datum/eldritch_knowledge/spirit_relic)
+	combat_resource_max = ascension_active ? 8 : !ignore_purse && !QDELETED(purse) ? purse.passive_values[purse.passive_level] : initial(combat_resource_max)
 	combat_resource = min(combat_resource, combat_resource_max)
 	notify_resource_changed()
 
@@ -225,7 +297,7 @@
 	var/datum/status_effect/heretic_spirit/separated/existing = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
 	if(existing)
 		return existing.spirit_ref?.resolve() == src ? existing : null
-	if(length(souls) >= (ascension_active ? 6 : HERETIC_SPIRIT_SOUL_LIMIT))
+	if(length(souls) >= (ascension_active ? HERETIC_SPIRIT_ASCENDED_SOUL_LIMIT : HERETIC_SPIRIT_SOUL_LIMIT))
 		qdel(souls[1])
 	return victim.apply_status_effect(/datum/status_effect/heretic_spirit/separated, src, required)
 
@@ -375,7 +447,7 @@
 	if(!can_use(user) || QDELETED(required))
 		shift_failure = "Для смещения изучите «Душа на ладони» и используйте своё тело еретика."
 	else if(QDELETED(anchor) || soul?.spirit_ref?.resolve() != src)
-		shift_failure = "Здесь нет отделённой вами души. Сначала примените Разлучение, затем укажите силуэт или тело на его клетке."
+		shift_failure = "Здесь нет отделённой вами души. Сначала примените Разлучение, затем укажите силуэт или само тело."
 	else if(soul.shifted)
 		shift_failure = "Эта душа уже смещена. Отделите новую: каждую душу можно сместить только один раз."
 	else if(origin && anchor.loc != origin)
@@ -484,21 +556,205 @@
 	heretic_vfx_quake(center, HERETIC_SPIRIT_VOYAGE_QUAKE_RADIUS, HERETIC_SPIRIT_VOYAGE_QUAKE, HERETIC_SPIRIT_VOYAGE_QUAKE_TIME)
 
 /datum/eldritch_knowledge/base_spirit/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!can_use(user) || !proximity_flag || !user.Adjacent(target) || !istype(target, /obj/structure/bed) || !isturf(target.loc))
+	grasp_failure_reason = null
+	if(!proximity_flag || !ishuman(target))
 		return FALSE
+	var/mob/living/carbon/human/corpse = target
+	if(corpse.stat != DEAD)
+		return FALSE
+	if(user.a_intent != INTENT_HELP)
+		grasp_failure_reason = "Обол на глаза кладут в намерении «Помощь»."
+		return FALSE
+	return place_obol(user, corpse)
+
+/datum/eldritch_knowledge/base_spirit/proc/place_obol(mob/living/user, mob/living/carbon/human/corpse)
+	grasp_failure_reason = null
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic.advance_deed(heretic.deed_key_for(target), get_turf(target)))
+	if(!heretic || !can_use(user) || !istype(corpse) || corpse.stat != DEAD || !isturf(corpse.loc))
 		return FALSE
-	new /obj/effect/temp_visual/heretic_spirit/grasp(get_turf(target), src)
-	user.visible_message(span_warning("Над [target] поднимается бледная фигура и склоняет голову перед [user]."))
-	playsound(target, 'modular_bluemoon/sound/heretic/spirit_grasp.ogg', 45, TRUE)
+	if(corpse.GetComponent(/datum/component/heretic_craft))
+		grasp_failure_reason = (corpse in obols) ? "На глазах этого тела уже лежит ваш обол." : "На этом теле уже лежит чужое ремесло."
+		return FALSE
+	grasp_failure_reason = heretic.deed_wait_reason(heretic.deed_key_for(corpse))
+	if(grasp_failure_reason)
+		return FALSE
+	while(length(obols) >= HERETIC_SPIRIT_OBOL_LIMIT)
+		var/mob/living/oldest = obols[1]
+		log_game("[key_name(user)] теряет обол Духа на [key_name(oldest)] в [AREACOORD(oldest)]: его вытеснил новый.")
+		remove_obol(oldest)
+	corpse.AddComponent(/datum/component/heretic_craft, src, HERETIC_SPIRIT_OBOL_CRAFT, HERETIC_SPIRIT_OBOL_CLUE)
+	obols[corpse] = 0
+	to_chat(user, span_eldritch(last_moment(corpse)))
+	var/mob/dead/observer/ghost = corpse.get_ghost(TRUE)
+	if(ghost?.client)
+		open_whisper(corpse, ghost)
+		to_chat(user, span_notice("Призрак [corpse.real_name] может шептать вам [HERETIC_SPIRIT_WHISPER_TIME / (1 MINUTES)] минут. Держится оболов: [length(obols)] из [HERETIC_SPIRIT_OBOL_LIMIT]."))
+	else
+		to_chat(user, span_notice("Призрака у этого тела нет: шептать вам некому. Держится оболов: [length(obols)] из [HERETIC_SPIRIT_OBOL_LIMIT]."))
+	playsound(corpse, 'modular_bluemoon/sound/heretic/spirit_grasp.ogg', 40, TRUE)
+	log_game("[key_name(user)] кладёт обол Духа на глаза [key_name(corpse)] в [AREACOORD(corpse)].")
+	heretic.advance_deed(heretic.deed_key_for(corpse), get_turf(corpse))
+	notify_resource_changed()
 	return TRUE
 
+/datum/eldritch_knowledge/base_spirit/proc/remove_obol(mob/living/corpse)
+	qdel(heretic_craft_on(corpse, HERETIC_SPIRIT_OBOL_CRAFT))
+	close_whisper(corpse)
+	obols -= corpse
+
+/datum/eldritch_knowledge/base_spirit/on_craft_removed(atom/crafted, craft_id)
+	if(craft_id != HERETIC_SPIRIT_OBOL_CRAFT)
+		return
+	close_whisper(crafted)
+	obols -= crafted
+	notify_resource_changed()
+
+/datum/eldritch_knowledge/base_spirit/pocket_exits(mob/living/user)
+	. = list()
+	for(var/mob/living/corpse as anything in obols)
+		if(isturf(corpse.loc))
+			heretic_add_pocket_exit(., "Обол - [get_area_name(corpse, TRUE)]", heretic_pocket_beside(corpse))
+
+/datum/eldritch_knowledge/base_spirit/pocket_door(mob/living/user, mob/living/victim)
+	if(!door_holds(user, victim))
+		return null
+	return list("name" = "за реку", "text" = "Пустое тело [victim] уходит вслед за своей душой, как в тёмную воду.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+
+/// Душа этой цели в руке еретика, во второй руке живое сердце, тело рядом.
+/datum/eldritch_knowledge/base_spirit/proc/door_holds(mob/living/user, mob/living/victim)
+	var/datum/status_effect/heretic_spirit_hold/hold = soul_hold
+	if(QDELETED(hold) || hold.owner != victim || hold.holder != user || !user.is_holding(hold.soul_item))
+		return FALSE
+	if(!can_use(user) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+		return FALSE
+	return !ferry_hands_reason(user) && !isnull(locate(/obj/item/living_heart) in user.held_items)
+
+/// Душа занимает одну руку, а переправе в изнанку нужна вторая: пустая или с живым сердцем.
+/datum/eldritch_knowledge/base_spirit/proc/ferry_hands_reason(mob/living/user)
+	for(var/obj/item/held in user.held_items)
+		if(held == soul_hold?.soul_item || istype(held, /obj/item/living_heart))
+			continue
+		return "Вторая рука занята ([held]): чтобы переправить тело в изнанку, держите в ней живое сердце."
+	return null
+
+/// Запись лога атак, после которой здоровье тела упало; схватить или обыскать - не ранить.
+/datum/eldritch_knowledge/base_spirit/proc/last_blow(mob/living/corpse)
+	var/list/entries = corpse.logging[num2text(LOG_VICTIM)]
+	if(!length(entries))
+		return null
+	for(var/index in length(entries) to 1 step -1)
+		var/list/entry = entries[index]
+		var/health_before = corpse.maxHealth
+		if(index > 1)
+			var/list/previous = entries[index - 1]
+			health_before = text2num(previous["health"])
+		var/health_after = text2num(entry["health"])
+		if(entry["target_name"] && !isnull(health_after) && !isnull(health_before) && health_after < health_before)
+			return entry
+	return null
+
+/datum/eldritch_knowledge/base_spirit/proc/last_moment(mob/living/corpse)
+	var/list/entry = last_blow(corpse)
+	if(!entry)
+		return "Последний миг [corpse.name]: смерть пришла тихо."
+	var/list/parts = list("ранил «[entry["target_name"]]»")
+	var/weapon = log_weapon(entry["what"])
+	if(weapon)
+		parts += "чем: [weapon]"
+	var/elapsed = world.time - entry["timestamp"]
+	parts += elapsed < 1 SECONDS ? "только что" : "[DisplayTimeText(elapsed, 1)] назад"
+	var/where = entry["where"]
+	var/coords_at = findlasttext(where, " (")
+	if(length(where) > 2 && coords_at > 2)
+		parts += "где: [copytext(where, 2, coords_at)]"
+	return "Последний миг [corpse.name]: [jointext(parts, "; ")]."
+
+/// Оружие из строки log_combat: предмет пишется как «[имя]», а имя строкой - как «имя[DC]».
+/datum/eldritch_knowledge/base_spirit/proc/log_weapon(what)
+	var/marker = "при помощи "
+	var/start = findtext(what, marker)
+	if(!start)
+		return null
+	start += length(marker)
+	if(copytext(what, start, start + 1) == "\[")
+		var/close = findtext(what, "\]", start + 1)
+		return close ? copytext(what, start + 1, close) : null
+	var/stop = length(what) + 1
+	for(var/ending in list("\[DC\]", " (", "/(", "<"))
+		var/found = findtext(what, ending, start)
+		if(found)
+			stop = min(stop, found)
+	var/weapon = trim(copytext(what, start, stop))
+	return length(weapon) ? weapon : null
+
+/datum/eldritch_knowledge/base_spirit/proc/open_whisper(mob/living/corpse, mob/dead/observer/ghost)
+	if(!(corpse in obols) || QDELETED(ghost))
+		return FALSE
+	obols[corpse] = world.time + HERETIC_SPIRIT_WHISPER_TIME
+	obol_ghosts[corpse] = WEAKREF(ghost)
+	add_verb(ghost, /mob/dead/observer/proc/heretic_spirit_whisper)
+	to_chat(ghost, span_deadsay("На ваши глаза положили обол. [HERETIC_SPIRIT_WHISPER_TIME / (1 MINUTES)] минут вы можете шептать тому, кто его положил: команда «Шепнуть перевозчику»."))
+	addtimer(CALLBACK(src, PROC_REF(expire_whisper), WEAKREF(corpse)), HERETIC_SPIRIT_WHISPER_TIME)
+	return TRUE
+
+/datum/eldritch_knowledge/base_spirit/proc/expire_whisper(datum/weakref/corpse_ref)
+	var/mob/living/corpse = corpse_ref?.resolve()
+	if(corpse && (corpse in obols) && world.time >= obols[corpse])
+		close_whisper(corpse)
+
+/datum/eldritch_knowledge/base_spirit/proc/close_whisper(mob/living/corpse)
+	var/datum/weakref/ghost_ref = obol_ghosts[corpse]
+	obol_ghosts -= corpse
+	whisper_ready -= corpse
+	var/mob/dead/observer/ghost = ghost_ref?.resolve()
+	if(ghost)
+		remove_verb(ghost, /mob/dead/observer/proc/heretic_spirit_whisper)
+
+/datum/eldritch_knowledge/base_spirit/proc/deliver_whisper(mob/dead/observer/ghost, message)
+	whisper_failure = null
+	var/mob/living/corpse = ghost?.mind?.current
+	var/datum/weakref/ghost_ref = corpse ? obol_ghosts[corpse] : null
+	message = sanitize(trim(copytext_char(message, 1, HERETIC_SPIRIT_WHISPER_LENGTH)))
+	if(!length(message))
+		whisper_failure = "Пустой шёпот никто не услышит."
+	else if(!corpse || !(corpse in obols) || ghost_ref?.resolve() != ghost)
+		whisper_failure = "На глазах вашего тела больше нет обола."
+	else if(world.time >= obols[corpse])
+		whisper_failure = "Время шёпота вышло."
+	else if(world.time < whisper_ready[corpse])
+		whisper_failure = "Слишком часто: следующий шёпот через [heretic_capture_seconds_left(whisper_ready[corpse])] с."
+	else if(QDELETED(spirit_body))
+		whisper_failure = "Перевозчик вас не слышит."
+	if(whisper_failure)
+		return FALSE
+	whisper_ready[corpse] = world.time + HERETIC_SPIRIT_WHISPER_COOLDOWN
+	to_chat(spirit_body, span_eldritch("Шёпот [corpse.real_name]: «[message]»"))
+	to_chat(ghost, span_deadsay("Вы шепчете перевозчику: «[message]»"))
+	log_directed_talk(ghost, spirit_body, message, LOG_SAY, "шёпот перевозчику")
+	return TRUE
+
+/mob/dead/observer/proc/heretic_spirit_whisper()
+	set name = "Шепнуть перевозчику"
+	set category = "Ghost"
+	set desc = "Шепните еретику, положившему обол на глаза вашего тела. Услышит только он."
+	var/datum/component/heretic_craft/craft = heretic_craft_on(mind?.current, HERETIC_SPIRIT_OBOL_CRAFT)
+	var/datum/eldritch_knowledge/base_spirit/spirit = craft?.owner_ref?.resolve()
+	if(!istype(spirit))
+		to_chat(src, span_warning("На глазах вашего тела больше нет обола."))
+		remove_verb(src, /mob/dead/observer/proc/heretic_spirit_whisper)
+		return
+	var/message = tgui_input_text(src, "Что прошептать перевозчику? Услышит только он.", "Шёпот перевозчику", max_length = HERETIC_SPIRIT_WHISPER_LENGTH)
+	if(!message || QDELETED(spirit))
+		return
+	if(!spirit.deliver_whisper(src, message))
+		to_chat(src, span_warning(spirit.whisper_failure))
+
 /datum/heretic_deed/spirit
-	next_step = "Коснитесь Хваткой Мансуса кровати в ещё не зачтённом отделе."
-	name = "Места последнего сна"
-	desc = "Касайтесь Хваткой Мансуса кроватей в разных отделах. Каждый отдел засчитывается один раз."
-	hint = "Медбей, общежитие, каюты: перевозчик узнаёт места, где люди закрывают глаза."
+	next_step = "В намерении «Помощь» коснитесь Хваткой Мансуса трупа человека в ещё не зачтённом отделе."
+	name = "Оболы на глазах"
+	desc = "Кладите Хваткой Мансуса в намерении «Помощь» обол на глаза трупов людей в разных отделах. Каждый отдел засчитывается один раз."
+	craft_wait = "обол не кладётся"
+	hint = "Морг, лазарет и места недавних драк. Обол называет, кто последним ранил умершего, а его призрак 5 минут может шептать вам. Держатся три обола, новый вытесняет самый старый; экипаж может заметить монеты на глазах тела, а нулевой жезл снимает обол."
 	trace_name = "ferry trail"
 	trace_desc = "Серебристый отпечаток пустой ладьи. Из него тянет холодом."
 	trace_state = "sigil_spirit"
@@ -543,9 +799,9 @@
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_overlay))
 	spirit_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_spirit_effects.dmi', "spirit_tether", ABOVE_MOB_LAYER)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(spirit.spirit_body)
-	var/datum/eldritch_knowledge/spirit_temper/temper = heretic?.get_knowledge(/datum/eldritch_knowledge/spirit_temper)
-	if(!QDELETED(temper))
-		drain_limit += temper.passive_level * 5
+	var/datum/eldritch_knowledge/spirit_relic/purse = heretic?.get_knowledge(/datum/eldritch_knowledge/spirit_relic)
+	if(!QDELETED(purse))
+		drain_limit += purse.passive_level * 5
 	anchor = new(get_turf(owner), src)
 	owner.update_icon()
 	to_chat(owner, span_userdanger("Ваша душа осталась на месте! Коснитесь её или вернитесь на её клетку после отхода. Пока вы стоите на душе, коснуться её можно нажатием на значок «Разлучение». Дальше одной клетки связь истощает выносливость; душу можно разбить, закрыть стеной или оставить дальше пяти клеток."))
@@ -676,7 +932,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_spirit
 	name = "Разлучение"
-	desc = "Душа осталась на месте на 10 секунд; Жатва продлевает короткую связь до удара, а при попадании оставляет минимум 4 секунды. Касание своей души или возврат на её клетку после отхода гасит связь; стоя на душе или рядом, коснитесь её нажатием на этот значок. Дальше одной клетки от неё вы теряете выносливость, но не более 25–40 за всю связь. Жатва предупреждает за 2 секунды и бьёт второй раз, пока связь цела: дальше одной клетки от души сильнее, рядом слабее. Душу можно разбить; стены, антимагия и расстояние больше пяти клеток от души или еретика разрывают связь."
+	desc = "Душа осталась на месте на 10 секунд; Жатва продлевает короткую связь до удара, а при попадании оставляет минимум 4 секунды. Касание своей души или возврат на её клетку после отхода гасит связь; стоя на душе или рядом, коснитесь её нажатием на этот значок. Дальше одной клетки от неё вы теряете выносливость, но не более 25–40 за всю связь. Жатва предупреждает за 2 секунды и бьёт второй раз, пока связь цела: дальше одной клетки от души сильнее, рядом слабее. Душу можно разбить; стены, антимагия и расстояние больше пяти клеток от души или еретика разрывают связь. Стоя рядом с душой, перевозчик может взять её в руку: тогда тело застынет до 12 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'
 	icon_state = "spirit_soul"
 
@@ -692,7 +948,7 @@
 
 /obj/structure/heretic_spirit_soul
 	name = "unmoored soul"
-	desc = "Серебристый силуэт, привязанный к ещё живому телу. Хозяин может погасить его касанием. Разрушение не вредит телу; нулевой жезл сразу обрывает связь. Перевозчик собирает силуэт пустой рукой. Крюком нужно бить тело, а не душу; сбор души отменяет подготовленную Жатву. Пока хозяин стоит или лежит на душе, клики проходят сквозь неё к телу."
+	desc = "Серебристый силуэт, привязанный к ещё живому телу. Хозяин может погасить его касанием. Разрушение не вредит телу; нулевой жезл сразу обрывает связь. Перевозчик собирает силуэт пустой рукой. Крюком нужно бить тело, а не душу; сбор души отменяет подготовленную Жатву. Пока хозяин стоит или лежит на душе, клики проходят сквозь неё к телу. Стоящий рядом перевозчик может взять душу в руку, и тело застынет."
 	icon = 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'
 	icon_state = "spirit_soul"
 	anchored = TRUE
@@ -914,7 +1170,15 @@
 	parent_type = /datum/eldritch_knowledge/spell
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift
 	name = "Душа на ладони"
-	desc = "Хватка Мансуса отделяет душу живого врага на 10 секунд. Силуэт остаётся на месте; его можно собрать рукой для обола или использовать для Переправы и Жатвы. Даёт «Сместить душу»: бесплатно за секунду подготовки подтяните силуэт на две клетки к себе, стоя в трёх–пяти клетках от него; если враг стоит на душе, выберите его тело. Один раз за связь; её срок и запас истощения сохраняются."
+	summary = "Хватка отделяет душу живого врага, а «Сместить душу» оттаскивает её от тела."
+	details = list(
+		"Хватка по живому врагу бесплатно отделяет его душу на 10 секунд.",
+		"Сместить душу: встаньте в 3-5 клетках от души и выберите её силуэт или само тело.",
+		"Через секунду душа сдвинется на 2 клетки к вам; ваш шаг прерывает подготовку.",
+		"Каждую душу можно сместить один раз, срок связи и предел истощения не меняются.",
+		"Смещение бесплатно, перезарядка 6 секунд.",
+	)
+	role = HERETIC_ROLE_GRASP
 	gain_text = "Ладонь прошла сквозь грудь и вернулась тяжёлой."
 	cost = 1
 	route = PATH_SPIRIT
@@ -934,7 +1198,15 @@
 
 /datum/eldritch_knowledge/spell/spirit_step
 	name = "Переправа"
-	desc = "За обол переместитесь по открытой линии на свободную клетку в пределах трёх клеток и восстановите 15 выносливости. Клетка дальше трёх укорачивает переход до трёх клеток по той же линии. Если выбрать отделённую вами душу или тело, стоящее на ней, дальность растёт до пяти клеток, а по прибытии вы собираете душу. Если место занято телом, вы встаёте рядом с ним со своей стороны. Лежащего или обездвиженного, которого вы тащите, Переправа переносит вместе с вами и захват не теряется. В намерении «Разоружить» душа сохраняется с прежним сроком и бюджетом истощения: награды за сбор нет, зато можно продолжить охоту и Жатву. Стены и окна на пути, плотный предмет на месте прибытия, пристёгивание и запрет телепортации останавливают переход. Перезарядка 12 секунд."
+	summary = "За обол переход по открытой линии на 3 клетки, к своей душе - на 5."
+	details = list(
+		"Дальняя клетка укорачивает переход до 3 клеток; на занятое телом место вы встаёте рядом.",
+		"У своей души вы собираете её по прибытии; в намерении «Разоружить» душа остаётся для Жатвы.",
+		"Лежащего или обездвиженного, которого вы тащите, Переправа берёт с собой, захват не теряется.",
+		"Переход восстанавливает 15 выносливости. Стены, окна и запрет телепортации не пускают.",
+		"Перезарядка 12 секунд.",
+	)
+	role = HERETIC_ROLE_SUPPORT
 	gain_text = "Река была шириной в один шаг. Только берегов у неё не было."
 	cost = 1
 	route = PATH_SPIRIT
@@ -942,10 +1214,17 @@
 
 /datum/eldritch_knowledge/spirit_mark
 	name = "Метка Духа"
-	desc = "Хватка оставляет метку на 15 секунд. Крюк взрывает её на 8 ушибов и отделяет душу, если её ещё нет. Метка не обновляет уже существующую связь."
+	summary = "Хватка ставит метку на 15 секунд, крюк её взрывает, а серебро крюка режет нить души."
+	details = list(
+		"Взрыв метки наносит 8 ушибов и отделяет душу, если её ещё нет; взрыв даёт обол.",
+		"Серебро режет нить: удар крюком по телу с вашей душой наносит ещё 6 ушибов, раз в 3 секунды.",
+		"Метка не обновляет существующую связь, удары по самому силуэту тело не ранят.",
+	)
+	role = HERETIC_ROLE_MARK
 	gain_text = "Я записал имя на монете. На обратной стороне появилось моё."
 	cost = 2
 	route = PATH_SPIRIT
+	COOLDOWN_DECLARE(spirit_blade)
 
 /datum/eldritch_knowledge/spirit_mark/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -956,6 +1235,18 @@
 	victim.apply_status_effect(/datum/status_effect/eldritch/spirit, spirit)
 	return TRUE
 
+/datum/eldritch_knowledge/spirit_mark/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	if(QDELETED(src) || !proximity_flag || !spirit?.can_use(user) || !user.Adjacent(target) || !heretic_can_affect(user, target, chargecost = 0) || !COOLDOWN_FINISHED(src, spirit_blade))
+		return
+	var/mob/living/victim = target
+	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	if(soul?.spirit_ref?.resolve() != spirit || !soul.validate_link())
+		return
+	COOLDOWN_START(src, spirit_blade, HERETIC_SPIRIT_BLADE_COOLDOWN)
+	victim.adjustBruteLoss(HERETIC_SPIRIT_BLADE_BONUS)
+
 /datum/eldritch_knowledge/spirit_mark/on_body_lose(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
@@ -965,12 +1256,23 @@
 
 /datum/eldritch_knowledge/spirit_relic
 	name = "Фонарь перевозчика"
-	desc = "Фонарик и лист серебра создают единственный фонарь. В руке он подтягивает ваши души в трёх клетках на клетку ближе и собирает ближайшие. Полученный обол лечит до 12 ушибов и ожогов суммарно; общая задержка сбора сохраняется. Фонарь не двигает тела и не проходит через стены. Перезарядка 20 секунд."
-	gain_text = "Огонёк освещал тех, кто ещё не знал, что заблудился."
+	summary = "Фонарик и лист серебра дают фонарь, а Кошель утонувших поднимает запас оболов до 6."
+	details = list(
+		"Фонарь в руке подтягивает ваши души в 3 клетках на клетку ближе и собирает соседние.",
+		"Обол за сбор фонарём лечит 12 ушибов и ожогов; тела и души за стеной фонарь не тянет.",
+		"Перезарядка фонаря 20 секунд, фонарь может быть только один.",
+		"Кошель утонувших: вместимость 6 оболов, предел истощения новых связей 30.",
+		"Кошель можно улучшить до 7 и 8 оболов, предел истощения растёт до 35 и 40.",
+	)
+	role = HERETIC_ROLE_RELIC
+	gain_text = "Огонёк освещал тех, кто ещё не знал, что заблудился. Ни одна монета в кошеле не звенела: каждая помнила дно."
 	cost = 1
 	route = PATH_SPIRIT
 	required_atoms = list(/obj/item/flashlight, /obj/item/stack/sheet/mineral/silver)
 	result_atoms = list(/obj/item/heretic_path_relic/spirit)
+	passive_values = list(6, 7, 8)
+	passive_desc = "Кошель утонувших: вместимость оболов 6 / 7 / 8, предел истощения новых связей 30 / 35 / 40. Изучение не заполняет кошель и не меняет уже отделённые души."
+	var/datum/weakref/spirit_ref
 
 /datum/eldritch_knowledge/spirit_relic/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return new_path_relic_available()
@@ -978,29 +1280,62 @@
 /datum/eldritch_knowledge/spirit_relic/on_finished_recipe(mob/living/user, list/atoms, loc)
 	return make_new_path_relic(user, get_turf(loc), /obj/item/heretic_path_relic/spirit)
 
-/datum/eldritch_knowledge/spirit_upgrade
-	name = "Серебро режет нить"
-	desc = "Удар крюком по телу с отделённой вами душой наносит ещё 6 ушибов, не чаще раза в 3 секунды. Душа остаётся; удары по самому силуэту по-прежнему не ранят тело."
-	gain_text = "Лезвие зацепило нить, которую я раньше не видел."
-	cost = 2
-	route = PATH_SPIRIT
-	COOLDOWN_DECLARE(spirit_blade)
-
-/datum/eldritch_knowledge/spirit_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
+/datum/eldritch_knowledge/spirit_relic/on_body_gain(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	if(QDELETED(src) || !proximity_flag || !spirit?.can_use(user) || !user.Adjacent(target) || !heretic_can_affect(user, target, chargecost = 0) || !COOLDOWN_FINISHED(src, spirit_blade))
-		return
-	var/mob/living/victim = target
-	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
-	if(soul?.spirit_ref?.resolve() != spirit || !soul.validate_link())
-		return
-	COOLDOWN_START(src, spirit_blade, 3 SECONDS)
-	victim.adjustBruteLoss(HERETIC_SPIRIT_BLADE_BONUS)
+	if(spirit)
+		spirit_ref = WEAKREF(spirit)
+		spirit.update_capacity()
+
+/datum/eldritch_knowledge/spirit_relic/on_passive_upgrade(mob/living/user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	spirit?.update_capacity()
+
+/datum/eldritch_knowledge/spirit_relic/on_lose(mob/user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	spirit?.update_capacity(ignore_purse = TRUE)
+	return ..()
+
+/datum/eldritch_knowledge/spirit_relic/Destroy()
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	spirit?.update_capacity(ignore_purse = TRUE)
+	spirit_ref = null
+	return ..()
+
+/datum/eldritch_knowledge/spell/spirit_hold
+	name = "Удержать душу"
+	summary = "Возьмите в руку отделённую душу рядом с собой: её тело стоит пустым до 12 секунд."
+	details = list(
+		"Выберите свою отделённую душу в соседней клетке или её тело; нужна свободная рука.",
+		"1 секунду душа тянется к руке: хозяин может коснуться её или вернуться на её клетку.",
+		"Пока душа у вас в руке, тело не двигается и готово к обряду, до 12 секунд.",
+		"Цель охоты рядом: живое сердце во второй руке за 1 секунду переправляет пустое тело в изнанку.",
+		"Душу вернут удар 15+ урона по вам, оглушение, выпущенная душа, нулевой жезл или 2 секунды растолкать тело.",
+		"Потом цель минуту невосприимчива к Удержанию и 15 секунд - к любому захвату. Перезарядка 40 секунд.",
+	)
+	role = HERETIC_ROLE_CAPTURE
+	gain_text = "Душа оказалась лёгкой, как монета. Тело без неё стояло и ждало, когда я верну сдачу."
+	cost = 2
+	route = PATH_SPIRIT
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
+
+/datum/eldritch_knowledge/spell/spirit_hold/on_body_lose(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	spirit?.soul_hold?.release("знание утрачено")
+	return ..()
 
 /datum/eldritch_knowledge/spell/spirit_reap
 	name = "Жатва неприкаянных"
-	desc = "Бесплатно нанесите цели в пяти клетках 22 ушиба и отделите её душу. На душе вспыхивает предупреждение: через 2 секунды, если связь цела, враг получит второй удар — 25 ушибов дальше одной клетки от души или 15 рядом с ней. Успешная Жатва сохраняет душу минимум на 4 секунды для крюка, Переправы или сбора; срок более долгой связи и остаток истощения сохраняются. Если связь истекает во время предупреждения, она дожидается второго удара. Касание души, её разрушение, возврат на её клетку после отхода, антимагия и разрыв связи отменяют удар. Перезарядка 18 секунд."
+	summary = "Бесплатно 22 ушиба цели в 5 клетках, её душа отделяется, а через 2 секунды бьёт второй раз."
+	details = list(
+		"Второй удар, пока связь цела: 25 ушибов дальше клетки от души или 15 рядом с ней.",
+		"После попадания душа остаётся минимум на 4 секунды для крюка, Переправы, Удержания или сбора.",
+		"Если связь истекает во время предупреждения, она дожидается второго удара.",
+		"Касание души, её разрушение, возврат на её клетку, антимагия и разрыв связи отменяют второй удар.",
+		"Перезарядка 18 секунд.",
+	)
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Я позвал живого по имени, которым его назовут после смерти."
 	cost = 1
 	route = PATH_SPIRIT
@@ -1012,41 +1347,37 @@
 	spirit?.clear_knowledge_effects(src)
 	return ..()
 
-/datum/eldritch_knowledge/spirit_temper
-	name = "Кошель утонувших"
-	desc = "Вместимость оболов растёт до 6, а предел истощения новых связей — до 30 выносливости. Изучение не заполняет кошель и не обновляет существующие души."
-	gain_text = "Ни одна монета не звенела. Каждая помнила дно."
+/datum/eldritch_knowledge/spell/spirit_incorporeal
+	name = "Бесплотность"
+	summary = "3 секунды пули и удары проходят сквозь вас, а вы проходите сквозь людей и столы."
+	details = list(
+		"Работает в чужом захвате и вырывает из него: бесплотного не удержать и не схватить заново.",
+		"Вы двигаетесь быстрее и становитесь полупрозрачным.",
+		"Удар, даже предметом по двери, машине или стене, выстрел, бросок и заклинание пропадают и сразу возвращают плоть.",
+		"Пока вы держите чужую душу, стать бесплотным нельзя.",
+		"Наручники и щит разума закрывают Бесплотность. Перезарядка 60 секунд.",
+	)
+	role = HERETIC_ROLE_ESCAPE
+	gain_text = "Я вспомнил, что тело - только лодка. Лодку можно оставить у берега."
 	cost = 2
 	route = PATH_SPIRIT
-	passive_values = list(6, 7, 8)
-	passive_desc = "Вместимость 6 / 7 / 8, предел истощения новых связей 30 / 35 / 40."
-	var/datum/weakref/spirit_ref
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal
 
-/datum/eldritch_knowledge/spirit_temper/on_body_gain(mob/living/user)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	if(spirit)
-		spirit_ref = WEAKREF(spirit)
-		spirit.update_capacity()
-
-/datum/eldritch_knowledge/spirit_temper/on_passive_upgrade(mob/living/user)
-	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
-	spirit?.update_capacity()
-
-/datum/eldritch_knowledge/spirit_temper/on_lose(mob/user)
-	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
-	spirit?.update_capacity(ignore_temper = TRUE)
-	return ..()
-
-/datum/eldritch_knowledge/spirit_temper/Destroy()
-	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
-	spirit?.update_capacity(ignore_temper = TRUE)
-	spirit_ref = null
+/datum/eldritch_knowledge/spell/spirit_incorporeal/on_body_lose(mob/living/user)
+	var/datum/status_effect/heretic_spirit_incorporeal/effect = user?.has_status_effect(/datum/status_effect/heretic_spirit_incorporeal)
+	effect?.end("знание утрачено")
 	return ..()
 
 /datum/eldritch_knowledge/spell/spirit_bell
 	name = "Заупокойный звон"
-	desc = "За два обола поразите врагов в трёх клетках на 20 ушибов и 20 выносливости и отделите до трёх душ. Каждая предупреждает о жатве через 2 секунды: пока связь цела, ещё 25 ушибов дальше одной клетки от души или 15 рядом с ней. После Жатвы души остаются минимум на 4 секунды для крюка, Переправы или сбора. Стены закрывают цель. Перезарядка 35 секунд."
+	summary = "За 2 обола 20 ушибов и 20 выносливости врагам в 3 клетках и жатва их душ."
+	details = list(
+		"Звон отделяет до трёх душ и готовит второй удар каждой через 2 секунды.",
+		"Второй удар, пока связь цела: 25 ушибов дальше клетки от души или 15 рядом с ней.",
+		"После попадания души остаются минимум на 4 секунды для крюка, Переправы или сбора.",
+		"Стены закрывают цель. Перезарядка 35 секунд.",
+	)
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Колокол ударил под водой. На берегу все обернулись."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -1061,7 +1392,16 @@
 
 /datum/eldritch_knowledge/final_eldritch/spirit_final
 	name = "Перевозчик без берега"
-	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вы получаете общую стойкость вознесения. Вы проходите сквозь существ и столы. Смерть члена экипажа в семи клетках от вас приносит 2 обола и лечит 20 урона, если умерший не был защищён от магии. Вместимость 8, восстановление обола каждые 4 секунды, до шести душ одновременно. «Последний рейс» бесплатно поражает врагов в четырёх клетках на 30 ушибов и 25 выносливости и готовит жатву через 2 секунды: 40 ушибов дальше одной клетки от души, 15 рядом с ней. После Жатвы души остаются минимум на 4 секунды. Касание души, возврат на её клетку после отхода и остальные способы разрыва связи спасают от второго удара. Перезарядка 40 секунд."
+	summary = "Люди и столы вас не держат, смерть экипажа рядом платит оболами, открывается Последний рейс."
+	details = list(
+		"Нужны 3 назначенные души и 3 человеческих трупа на руне; обряд длится 30 секунд.",
+		"Вы получаете общую стойкость вознесения и проходите сквозь людей и столы.",
+		"Смерть члена экипажа в 7 клетках даёт 2 обола и лечит 20 урона, если он не был защищён от магии.",
+		"Вместимость 8 оболов, обол каждые 4 секунды, до 6 душ одновременно.",
+		"Последний рейс бесплатно: 30 ушибов и 25 выносливости врагам в 4 клетках.",
+		"Второй удар рейса через 2 секунды: 40 ушибов дальше клетки от души, 15 рядом. Перезарядка 40 секунд.",
+	)
+	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Ладья пришла пустой. Перевозчик уступил мне весло и лёг на дно. Теперь каждый, кто умирает рядом, платит за переправу мне."
 	route = PATH_SPIRIT
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -1135,7 +1475,8 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	name = "Разлучение"
-	desc = "За один обол нанесите 20 ушибов и 15 выносливости и отделите душу врага на 10 секунд."
+	desc = "За один обол нанесите 20 ушибов и 15 выносливости цели в пяти клетках и отделите её душу на 10 секунд."
+	summary = "За обол 20 ушибов и 15 выносливости цели в 5 клетках, её душа 10 секунд стоит на месте."
 	action_icon_state = "spirit_sever"
 	charge_max = 12 SECONDS
 
@@ -1149,6 +1490,7 @@
 	name = "Переправа"
 	active_msg = "Выберите место по открытой линии: до трёх клеток, к своей душе — до пяти. Стены и окна не пропускают. На разоружении душа сохраняется для Жатвы; в остальных намерениях собирается."
 	desc = "За обол переместитесь по открытой линии до трёх клеток и восстановите 15 выносливости; клетка дальше укорачивает переход до трёх. Своя душа или тело, стоящее на ней, увеличивает дальность до пяти клеток, и душа собирается по прибытии. На занятое телом место вы встаёте рядом с ним. Лежащего или обездвиженного, которого вы тащите, Переправа переносит с вами. В намерении «Разоружить» душа остаётся для дальнейшей охоты: срок и истощение не обновляются, обол за сбор не выдаётся."
+	summary = "За обол переход на 3 клетки, к своей душе на 5; тащимую лежащую жертву берёт с собой."
 	action_icon_state = "spirit_step"
 	charge_max = 12 SECONDS
 
@@ -1170,28 +1512,50 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift
 	name = "Сместить душу"
-	active_msg = "Отойдите от души на 3–5 клеток, выберите её силуэт или тело на её клетке и стойте секунду. После смещения атакуйте тело; сбор души отменит Жатву."
-	desc = "Бесплатно притяните свою отделённую душу на две клетки к себе после секунды предупреждения. Встаньте в трёх–пяти клетках от неё и выберите силуэт или тело, стоящее на нём. Каждую душу можно сместить один раз; срок связи и предел истощения сохраняются. Движение прерывает подготовку. Жертва может коснуться души, разбить её или оборвать связь стеной. Перезарядка 6 секунд."
-	action_icon_state = "spirit_step"
+	active_msg = "Отойдите от души на 3–5 клеток, выберите её силуэт или само тело и стойте секунду. После смещения атакуйте тело; сбор души отменит Жатву."
+	desc = "Бесплатно притяните свою отделённую душу на две клетки к себе после секунды предупреждения. Встаньте в трёх–пяти клетках от неё и выберите силуэт или само тело. Каждую душу можно сместить один раз; срок связи и предел истощения сохраняются. Движение прерывает подготовку. Жертва может коснуться души, разбить её или оборвать связь стеной. Перезарядка 6 секунд."
+	summary = "Бесплатно тянет вашу душу на 2 клетки к вам, если вы стоите в 3-5 клетках от неё."
+	action_icon_state = "spirit_shift"
 	charge_max = 6 SECONDS
 	aim_assist = FALSE
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	var/obj/structure/heretic_spirit_soul/anchor = spirit?.own_soul_at(target)
+	var/obj/structure/heretic_spirit_soul/anchor = spirit?.soul_anchor_of(target)
 	return heretic_check(user, spirit?.can_shift_soul(user, anchor), silent, spirit?.shift_failure || "Сначала выберите путь Духа.")
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	var/obj/structure/heretic_spirit_soul/anchor = length(targets) ? spirit?.own_soul_at(targets[1]) : null
+	var/obj/structure/heretic_spirit_soul/anchor = length(targets) ? spirit?.soul_anchor_of(targets[1]) : null
 	if(!anchor || !spirit.shift_soul(user, anchor))
 		heretic_revert_cast(user, "Смещение прервано или душа больше недоступна.")
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
+	name = "Удержать душу"
+	active_msg = "Выберите свою отделённую душу рядом с собой или её тело. Нужна свободная рука."
+	desc = "Возьмите в руку свою отделённую душу в соседней клетке или выберите её тело; нужна свободная рука. Через 1 секунду тело стоит пустым до 12 секунд и готово к обряду. Живое сердце во второй руке переправит пустое тело цели охоты в изнанку за 1 секунду. Удар 15+ урона по вам, оглушение, выпущенная из руки душа, нулевой жезл по телу или по вам и 2 секунды растолкать тело возвращают её. Перезарядка 40 секунд."
+	summary = "Душа рядом с вами - в руку: тело стоит пустым до 12 секунд и готово к обряду."
+	action_icon_state = "spirit_hold"
+	charge_max = HERETIC_SPIRIT_HOLD_COOLDOWN
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/can_target(atom/target, mob/user, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/reason = spirit ? spirit.hold_block_reason(user, target) : "Сначала выберите путь Духа."
+	return heretic_check(user, !reason, silent, reason, target = isliving(target) ? target : null)
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	if(!length(targets) || !spirit?.grab_soul(user, targets[1]))
+		heretic_revert_cast(user, spirit?.hold_failure)
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/reap
 	name = "Жатва неприкаянных"
 	desc = "Бесплатный удар на 22 ушиба. Через 2 секунды, если связь цела, второй удар: 25 ушибов дальше одной клетки от души или 15 рядом с ней. После попадания душа остаётся минимум на 4 секунды для крюка, Переправы или сбора."
+	summary = "Бесплатно 22 ушиба и отделённая душа, через 2 секунды второй удар на 25 или 15."
 	action_icon_state = "spirit_reap"
 	charge_max = 18 SECONDS
 
@@ -1210,11 +1574,12 @@
 /obj/effect/proc_holder/spell/self/heretic_spirit/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	return ..() && heretic_check(user, spirit?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
+	return ..() && heretic_check(user, spirit?.can_use(user, FALSE, usable_while_grabbed), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_spirit/bell
 	name = "Заупокойный звон"
 	desc = "За два обола поразите врагов в трёх клетках на 20 ушибов и 20 выносливости и подготовьте жатву их душ через 2 секунды. После попадания души остаются минимум на 4 секунды."
+	summary = "За 2 обола 20 ушибов и 20 выносливости врагам в 3 клетках, их души ждёт жатва."
 	action_icon_state = "spirit_bell"
 	charge_max = 35 SECONDS
 
@@ -1227,9 +1592,30 @@
 	if(!spirit?.ring(user))
 		heretic_revert_cast(user, spirit?.ring_failure || "Сначала выберите путь Духа.")
 
+/obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal
+	name = "Бесплотность"
+	desc = "3 секунды пули, лазеры, броски и удары проходят сквозь вас, вы проходите сквозь людей и столы и двигаетесь быстрее. Работает в чужом захвате и вырывает из него. Атаковать, даже предметом по двери, машине или стене, стрелять, бросать и колдовать нельзя: попытка пропадает и сразу возвращает плоть; открыть дверь рукой можно. Недоступна в наручниках, под щитом разума и пока вы держите чужую душу. Перезарядка 60 секунд."
+	summary = "3 секунды сквозь вас проходят пули и удары, а вы - сквозь людей и столы."
+	action_icon_state = "spirit_incorporeal"
+	charge_max = HERETIC_SPIRIT_INCORPOREAL_COOLDOWN
+	usable_while_grabbed = TRUE
+
+/obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal/can_cast(mob/user, skipcharge, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/reason = spirit ? spirit.incorporeal_failure(user) : "Сначала выберите путь Духа."
+	return heretic_check(user, !reason, silent, reason) && ..()
+
+/obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	if(!spirit?.become_incorporeal(user))
+		heretic_revert_cast(user, spirit?.incorporeal_failure_reason || "Сначала выберите путь Духа.")
+
 /obj/effect/proc_holder/spell/self/heretic_spirit/crown
 	name = "Последний рейс"
 	desc = "Поразите врагов в четырёх клетках на 30 ушибов и 25 выносливости. До шести душ предупреждают о жатве через 2 секунды: 40 ушибов дальше одной клетки от души или 15 рядом с ней. После попадания души остаются минимум на 4 секунды. Требует вознесения."
+	summary = "Бесплатно 30 ушибов и 25 выносливости врагам в 4 клетках, жатва их душ на 40 или 15."
 	action_icon_state = "spirit_crown"
 	charge_max = 40 SECONDS
 
@@ -1244,13 +1630,418 @@
 	if(!spirit?.ring(user, TRUE))
 		heretic_revert_cast(user, spirit?.ring_failure || "Сначала выберите путь Духа.")
 
+/datum/eldritch_knowledge/base_spirit/proc/hold_block_reason(mob/living/user, atom/target)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!isliving(user) || heretic?.get_knowledge(type) != src || !heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold))
+		return "Способность недоступна вашему пути или текущему телу."
+	var/containment = heretic_containment_reason(user)
+	if(containment)
+		return containment
+	if(!can_use(user))
+		return "Сейчас вы не можете действовать: нужно быть в сознании, на полу и в своём теле еретика."
+	if(!QDELETED(soul_hold))
+		return "Вы уже держите душу."
+	var/obj/structure/heretic_spirit_soul/anchor = soul_anchor_of(target)
+	var/datum/status_effect/heretic_spirit/separated/soul = anchor?.effect_ref?.resolve()
+	if(!soul)
+		return "Выберите отделённую вами душу или тело, чью душу вы отделили."
+	var/reason = heretic_capture_block_reason(user, soul.owner, HERETIC_SPIRIT_HOLD_CAPTURE)
+	if(reason)
+		return reason
+	if(anchor.z != user.z || get_dist(user, anchor) > HERETIC_SPIRIT_HOLD_REACH)
+		return "Душу берут рукой: встаньте рядом с её силуэтом."
+	if(!soul.validate_link())
+		return "Связь с телом оборвана: снова отделите душу."
+	if(!length(user.get_empty_held_indexes()))
+		return "Освободите руку: душу держат в руке."
+	return null
+
+/datum/eldritch_knowledge/base_spirit/proc/grab_soul(mob/living/user, atom/target)
+	hold_failure = hold_block_reason(user, target)
+	if(hold_failure)
+		return FALSE
+	var/obj/structure/heretic_spirit_soul/anchor = soul_anchor_of(target)
+	var/datum/status_effect/heretic_spirit/separated/soul = anchor.effect_ref.resolve()
+	var/mob/living/victim = soul.owner
+	new /obj/effect/temp_visual/heretic_spirit/grasp(get_turf(anchor), src)
+	user.visible_message(span_danger("[user] тянется к бледному силуэту [victim]!"), span_notice("Вы тянетесь к душе [victim]."))
+	to_chat(victim, span_userdanger("Перевозчик тянется к вашей душе! Через секунду он возьмёт её в руку. Коснитесь души или вернитесь на её клетку."))
+	playsound(anchor, 'modular_bluemoon/sound/heretic/spirit_cast.ogg', 50, TRUE)
+	addtimer(CALLBACK(src, PROC_REF(seize_soul), user, victim), HERETIC_SPIRIT_HOLD_TELEGRAPH)
+	return TRUE
+
+/datum/eldritch_knowledge/base_spirit/proc/seize_soul(mob/living/user, mob/living/victim)
+	if(QDELETED(user) || QDELETED(victim))
+		return FALSE
+	var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	var/reason = soul ? hold_block_reason(user, soul.anchor) : "душа вернулась к телу."
+	if(reason)
+		to_chat(user, span_warning("Душа ускользнула: [reason]"))
+		return FALSE
+	var/datum/status_effect/heretic_spirit_hold/hold = victim.apply_status_effect(/datum/status_effect/heretic_spirit_hold, user, src)
+	if(!hold || QDELETED(hold))
+		to_chat(user, span_warning("Душа ускользнула: её не во что взять."))
+		return FALSE
+	soul_hold = hold
+	soul.reap_end_reason = "душа в руке перевозчика"
+	qdel(soul)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/refusal = ferry_hands_reason(user)
+	if(refusal && victim.mind && victim.mind == heretic?.hunt_target)
+		to_chat(user, span_warning(refusal))
+	return TRUE
+
+/datum/status_effect/heretic_spirit_hold
+	id = "heretic_spirit_hold"
+	duration = HERETIC_SPIRIT_HOLD_DURATION
+	tick_interval = HERETIC_SPIRIT_HOLD_CHECK
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_spirit_hold
+	examine_text = span_warning("SUBJECTPRONOUN стоит пустым: глаза стеклянные, а душу держит в руке перевозчик. Удар нулевым жезлом по телу или по перевозчику или 2 секунды растолкать тело вернут её.")
+	var/mob/living/holder
+	var/datum/weakref/spirit_ref
+	var/obj/item/heretic_spirit_soul/soul_item
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
+	var/holder_damage
+	var/hit_at = -1
+	var/hit_damage = 0
+	var/release_reason
+	var/held = FALSE
+
+/datum/status_effect/heretic_spirit_hold/on_creation(mob/living/new_owner, mob/living/new_holder, datum/eldritch_knowledge/base_spirit/spirit)
+	holder = new_holder
+	spirit_ref = WEAKREF(spirit)
+	return ..()
+
+/datum/status_effect/heretic_spirit_hold/on_apply()
+	. = ..()
+	if(!.)
+		return
+	if(QDELETED(holder))
+		return FALSE
+	soul_item = new(get_turf(holder), src)
+	if(!holder.put_in_hands(soul_item))
+		soul_item.hold = null
+		QDEL_NULL(soul_item)
+		return FALSE
+	restraint = new(list(owner, HERETIC_SPIRIT_HOLD_DURATION, TRUE))
+	held = TRUE
+	holder_damage = heretic_blade_damage_total(holder)
+	heretic_capture_hold(owner, HERETIC_SPIRIT_HOLD_CAPTURE)
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(on_sacrifice))
+	RegisterSignal(owner, COMSIG_MOB_DEATH, PROC_REF(on_owner_death))
+	RegisterSignal(holder, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignal(holder, COMSIG_CARBON_UPDATEHEALTH, PROC_REF(on_holder_health))
+	RegisterSignal(holder, COMSIG_PARENT_QDELETING, PROC_REF(on_holder_deleted))
+	owner.visible_message(span_danger("[holder] вынимает из [owner] бледную душу и сжимает её в кулаке. Тело застывает пустым."), span_userdanger("Ваша душа в руке перевозчика: тело не слушается!"))
+	log_combat(holder, owner, "берёт в руку душу")
+
+/datum/status_effect/heretic_spirit_hold/tick()
+	var/reason = break_reason()
+	if(reason)
+		release(reason)
+
+/datum/status_effect/heretic_spirit_hold/proc/break_reason()
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	if(QDELETED(holder) || !spirit)
+		return "перевозчик исчез"
+	if(holder.stat != CONSCIOUS || holder.incapacitated(ignore_grab = TRUE) || heretic_capture_downed(holder))
+		return "перевозчика оглушили или сбили"
+	if(QDELETED(soul_item) || !(soul_item in holder.held_items))
+		return "душу выпустили из руки"
+	return null
+
+/datum/status_effect/heretic_spirit_hold/proc/release(reason)
+	if(QDELETED(src))
+		return
+	release_reason = reason
+	qdel(src)
+
+/datum/status_effect/heretic_spirit_hold/proc/on_holder_health(mob/living/carbon/source)
+	SIGNAL_HANDLER
+	var/damage = heretic_blade_damage_total(holder)
+	var/delta = damage - holder_damage
+	holder_damage = damage
+	if(delta <= 0)
+		return
+	// Один удар доходит несколькими пересчётами здоровья за тик, поэтому урон тика складывается.
+	if(hit_at != world.time)
+		hit_at = world.time
+		hit_damage = 0
+	hit_damage += delta
+	if(round(hit_damage, DAMAGE_PRECISION) >= HERETIC_SPIRIT_HOLD_BREAK_DAMAGE)
+		release("перевозчик получил сильный удар")
+
+/datum/status_effect/heretic_spirit_hold/proc/on_attackby(atom/source, obj/item/item, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(!istype(item, /obj/item/nullrod))
+		return NONE
+	user.visible_message(span_warning("[user] касается [source] нулевым жезлом, и душа возвращается в тело [owner]."), span_notice("Вы касаетесь [source] нулевым жезлом и возвращаете душу [owner]."))
+	log_game("[key_name(user)] возвращает душу [key_name(owner)] нулевым жезлом в [AREACOORD(source)].")
+	release("нулевой жезл")
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_spirit_hold/proc/on_shaken(datum/source, mob/living/helper)
+	SIGNAL_HANDLER
+	release("тело растолкали")
+
+/datum/status_effect/heretic_spirit_hold/proc/on_sacrifice(datum/source)
+	SIGNAL_HANDLER
+	release("начался обряд")
+
+/datum/status_effect/heretic_spirit_hold/proc/on_owner_death(datum/source)
+	SIGNAL_HANDLER
+	release("тело погибло")
+
+/datum/status_effect/heretic_spirit_hold/proc/on_holder_deleted(datum/source)
+	SIGNAL_HANDLER
+	release("перевозчик исчез")
+
+/datum/status_effect/heretic_spirit_hold/on_remove()
+	UnregisterSignal(owner, list(COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_MOB_DEATH))
+	if(held)
+		heretic_capture_unhold(owner, HERETIC_SPIRIT_HOLD_CAPTURE)
+	if(holder)
+		UnregisterSignal(holder, list(COMSIG_PARENT_ATTACKBY, COMSIG_CARBON_UPDATEHEALTH, COMSIG_PARENT_QDELETING))
+	// Чужой Paralyze мог продлить этот экземпляр: тогда он остаётся.
+	if(!QDELETED(restraint) && !QDELETED(owner) && restraint.duration <= duration)
+		qdel(restraint)
+	restraint = null
+	var/obj/item/heretic_spirit_soul/item = soul_item
+	soul_item = null
+	if(item)
+		item.hold = null
+		if(!QDELETED(item))
+			qdel(item)
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	if(spirit?.soul_hold == src)
+		spirit.soul_hold = null
+	if(held)
+		owner.visible_message(span_notice("Бледная душа возвращается в тело [owner]."), span_notice("Душа вернулась: [release_reason || "время вышло"]."))
+		if(holder)
+			to_chat(holder, span_warning("Душа [owner] вернулась к телу: [release_reason || "время вышло"]."))
+		log_combat(holder, owner, "отпускает душу", addition = release_reason || "время вышло")
+		heretic_capture_release(owner, HERETIC_SPIRIT_HOLD_CAPTURE)
+	holder = null
+	spirit_ref = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_spirit_hold
+	name = "Душа в чужой руке"
+	desc = "Перевозчик держит вашу душу в руке, тело пусто и не двигается до 12 секунд. Душу вернут удар 15+ урона по нему, его оглушение, выпущенная из руки душа, нулевой жезл по вам или по нему и тот, кто растолкает вас 2 секунды."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "spirit_held"
+
+/obj/item/heretic_spirit_soul
+	name = "captured soul"
+	desc = "Бледный силуэт размером с ладонь. Пока душу держат, её тело стоит пустым; выпущенная из руки, она вернётся к хозяину. Живое сердце во второй руке переправит тело цели охоты в изнанку."
+	icon = 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'
+	icon_state = "spirit_soul"
+	item_flags = DROPDEL
+	w_class = WEIGHT_CLASS_HUGE
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	var/datum/status_effect/heretic_spirit_hold/hold
+
+/obj/item/heretic_spirit_soul/Initialize(mapload, datum/status_effect/heretic_spirit_hold/new_hold)
+	. = ..()
+	hold = new_hold
+
+/obj/item/heretic_spirit_soul/attack_self(mob/user)
+	hold?.release("перевозчик отпустил душу")
+
+/obj/item/heretic_spirit_soul/Destroy()
+	var/datum/status_effect/heretic_spirit_hold/current = hold
+	hold = null
+	current?.release("душу выпустили из руки")
+	return ..()
+
+/datum/eldritch_knowledge/base_spirit/proc/incorporeal_failure(mob/living/user)
+	var/containment = heretic_containment_reason(user)
+	if(containment)
+		return containment
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!can_use(user, FALSE, TRUE) || !heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_incorporeal))
+		return "Бесплотность недоступна: нужно изучить её, быть в сознании и в своём теле еретика."
+	if(user.has_status_effect(/datum/status_effect/heretic_spirit_incorporeal))
+		return "Вы уже бесплотны."
+	if(!QDELETED(soul_hold))
+		return "Пока вы держите чужую душу, стать бесплотным нельзя."
+	return null
+
+/datum/eldritch_knowledge/base_spirit/proc/become_incorporeal(mob/living/user)
+	incorporeal_failure_reason = incorporeal_failure(user)
+	if(incorporeal_failure_reason)
+		return FALSE
+	var/datum/status_effect/heretic_spirit_incorporeal/effect = user.apply_status_effect(/datum/status_effect/heretic_spirit_incorporeal, src)
+	if(!effect || QDELETED(effect))
+		incorporeal_failure_reason = "Бесплотность сорвалась."
+		return FALSE
+	playsound(user, 'modular_bluemoon/sound/heretic/spirit_step.ogg', 55, TRUE)
+	log_game("[key_name(user)] становится бесплотным (Дух) в [AREACOORD(user)].")
+	return TRUE
+
+/datum/status_effect/heretic_spirit_incorporeal
+	id = "heretic_spirit_incorporeal"
+	duration = HERETIC_SPIRIT_INCORPOREAL_DURATION
+	tick_interval = HERETIC_SPIRIT_INCORPOREAL_CHECK
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal
+	var/datum/weakref/spirit_ref
+	var/applied = FALSE
+	var/previous_alpha
+	var/end_reason
+	var/datum/weakref/watched_item_ref
+
+/// Флаг снимается, только если его ставили эти источники: чужой PASSMOB (форма слизи) остаётся.
+/proc/heretic_spirit_passmob_on(mob/living/target, source)
+	if(!HAS_TRAIT(target, HERETIC_SPIRIT_PASSMOB_TRAIT) && !(target.pass_flags & PASSMOB))
+		ADD_TRAIT(target, HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT, HERETIC_SPIRIT_PASSMOB_TRAIT)
+	ADD_TRAIT(target, HERETIC_SPIRIT_PASSMOB_TRAIT, source)
+	target.pass_flags |= PASSMOB
+
+/proc/heretic_spirit_passmob_off(mob/living/target, source)
+	REMOVE_TRAIT(target, HERETIC_SPIRIT_PASSMOB_TRAIT, source)
+	if(HAS_TRAIT(target, HERETIC_SPIRIT_PASSMOB_TRAIT) || !HAS_TRAIT(target, HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT))
+		return
+	REMOVE_TRAIT(target, HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT, HERETIC_SPIRIT_PASSMOB_TRAIT)
+	target.pass_flags &= ~PASSMOB
+
+/datum/status_effect/heretic_spirit_incorporeal/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_spirit/spirit)
+	spirit_ref = WEAKREF(spirit)
+	return ..()
+
+/datum/status_effect/heretic_spirit_incorporeal/on_apply()
+	if(!..() || !spirit_ref?.resolve())
+		return FALSE
+	applied = TRUE
+	heretic_spirit_passmob_on(owner, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+	passtable_on(owner, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+	ADD_TRAIT(owner, TRAIT_UNPULLABLE, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_spirit_incorporeal)
+	previous_alpha = owner.alpha
+	owner.alpha = HERETIC_SPIRIT_INCORPOREAL_ALPHA
+	var/atom/movable/grabber = owner.pulledby
+	if(grabber)
+		grabber.stop_pulling()
+		log_combat(owner, grabber, "выходит бесплотным из захвата")
+	if(ismob(owner.buckled))
+		var/mob/living/carrier = owner.buckled
+		carrier.unbuckle_mob(owner, TRUE)
+	RegisterSignal(owner, COMSIG_LIVING_RUN_BLOCK, PROC_REF(pass_through))
+	RegisterSignal(owner, COMSIG_MOB_CLICKON, PROC_REF(on_click))
+	RegisterSignal(owner, COMSIG_MOB_SPELL_CAN_CAST, PROC_REF(on_spell_check))
+	RegisterSignal(owner, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_GUN_PROCESS_FIRE, COMSIG_MOB_CAST_SPELL, COMSIG_MOB_THROW, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER), PROC_REF(on_attack_attempt))
+	RegisterSignal(owner, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_unarmed))
+	owner.visible_message(span_warning("[owner] бледнеет и становится прозрачным, как туман над рекой."), span_notice("Вы бесплотны [HERETIC_SPIRIT_INCORPOREAL_DURATION / (1 SECONDS)] секунды: пули и удары проходят сквозь вас. Атака или заклинание вернут плоть."))
+	return TRUE
+
+/datum/status_effect/heretic_spirit_incorporeal/tick()
+	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
+	if(!spirit?.can_use(owner, FALSE, TRUE) || heretic_containment_reason(owner))
+		end("вы больше не можете держать бесплотность")
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/pass_through(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/return_list)
+	SIGNAL_HANDLER
+	if(!(attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED | ATTACK_TYPE_THROWN)))
+		return BLOCK_NONE
+	return_list[BLOCK_RETURN_REDIRECT_METHOD] = REDIRECT_METHOD_PASSTHROUGH
+	return BLOCK_SUCCESS | BLOCK_SHOULD_REDIRECT | BLOCK_TARGET_DODGED
+
+/// Клик-атака, выстрел, бросок или цель заклинания пропадают и возвращают плоть; осмотр и ходьба - нет.
+/datum/status_effect/heretic_spirit_incorporeal/proc/on_click(mob/living/source, atom/target, params)
+	SIGNAL_HANDLER
+	var/list/modifiers = params2list(params)
+	if(modifiers["shift"] || modifiers["ctrl"] || modifiers["alt"] || modifiers["middle"])
+		return NONE
+	if(!attack_click(target))
+		watch_item(owner.get_active_held_item())
+		return NONE
+	end("атака прошла сквозь цель и пропала")
+	return COMSIG_MOB_CANCEL_CLICKON
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/attack_click(atom/target)
+	if(!target || target == owner || target.loc == owner)
+		return FALSE
+	if(owner.ranged_ability || owner.throw_mode || istype(owner.get_active_held_item(), /obj/item/gun))
+		return TRUE
+	if(isliving(target))
+		return owner.get_active_held_item() || owner.a_intent != INTENT_HELP
+	return isclosedturf(target) && owner.a_intent == INTENT_HARM && owner.get_active_held_item() && owner.Adjacent(target)
+
+/// Удар предметом по двери или машине в любом намерении доходит до attack_obj; инструменты и пустая рука туда не попадают.
+/datum/status_effect/heretic_spirit_incorporeal/proc/watch_item(obj/item/held)
+	var/obj/item/watched = watched_item_ref?.resolve()
+	if(watched == held)
+		return
+	if(watched)
+		UnregisterSignal(watched, COMSIG_ITEM_ATTACK_OBJ)
+	watched_item_ref = held ? WEAKREF(held) : null
+	if(held)
+		RegisterSignal(held, COMSIG_ITEM_ATTACK_OBJ, PROC_REF(on_item_strike))
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/on_item_strike(obj/item/source, obj/target, mob/living/user)
+	SIGNAL_HANDLER
+	if(user != owner || (source.item_flags & NOBLUDGEON) || source.get_damage_to_obj(target, user) <= 0)
+		return NONE
+	end("удар прошёл сквозь предмет и пропал")
+	return COMPONENT_NO_ATTACK_OBJ
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/on_spell_check(mob/living/source, obj/effect/proc_holder/spell/spell, silent)
+	SIGNAL_HANDLER
+	if(istype(spell, /obj/effect/proc_holder/spell/self/heretic_spirit/incorporeal))
+		return NONE
+	if(!silent)
+		end("заклинание не далось бесплотной руке")
+	return SPELL_CANCEL_CAST
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/on_attack_attempt(datum/source)
+	SIGNAL_HANDLER
+	end("атака возвращает плоть")
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/on_unarmed(datum/source, atom/target)
+	SIGNAL_HANDLER
+	if(isliving(target) && target != owner && owner.a_intent != INTENT_HELP)
+		end("атака возвращает плоть")
+
+/datum/status_effect/heretic_spirit_incorporeal/proc/end(reason)
+	if(QDELETED(src))
+		return
+	end_reason = reason
+	qdel(src)
+
+/datum/status_effect/heretic_spirit_incorporeal/on_remove()
+	if(applied)
+		UnregisterSignal(owner, list(COMSIG_LIVING_RUN_BLOCK, COMSIG_MOB_CLICKON, COMSIG_MOB_SPELL_CAN_CAST, COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_GUN_PROCESS_FIRE, COMSIG_MOB_CAST_SPELL, COMSIG_MOB_THROW, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
+		watch_item(null)
+		heretic_spirit_passmob_off(owner, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+		passtable_off(owner, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+		REMOVE_TRAIT(owner, TRAIT_UNPULLABLE, HERETIC_SPIRIT_INCORPOREAL_TRAIT)
+		owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_spirit_incorporeal)
+		// Прозрачность, изменённая кем-то другим за эти секунды, остаётся как есть.
+		if(owner.alpha == HERETIC_SPIRIT_INCORPOREAL_ALPHA)
+			owner.alpha = previous_alpha
+		to_chat(owner, span_notice("Вы снова во плоти[end_reason ? ": [end_reason]" : ""]."))
+	spirit_ref = null
+	return ..()
+
+/datum/movespeed_modifier/heretic_spirit_incorporeal
+	multiplicative_slowdown = HERETIC_SPIRIT_INCORPOREAL_HASTE
+
+/atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal
+	name = "Бесплотность"
+	desc = "3 секунды пули и удары проходят сквозь вас, вы проходите сквозь людей и столы и двигаетесь быстрее, вас не схватить. Атаковать, даже предметом по двери или стене, и колдовать нельзя: попытка пропадёт и сразу вернёт плоть."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "spirit_phased"
+
 /// Перевозчик: проход сквозь существ и столы, смерть экипажа рядом платит оболами и лечит.
 /datum/component/heretic_spirit_ferryman
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	var/datum/weakref/spirit_ref
 	var/ferry_range = HERETIC_SPIRIT_FERRY_RANGE
-	/// Снимается только добавленный проход сквозь существ; проход над столами считает passtable_on().
-	var/added_pass_flags = NONE
 	COOLDOWN_DECLARE(passage_trail)
 
 /datum/component/heretic_spirit_ferryman/Initialize(datum/eldritch_knowledge/base_spirit/spirit)
@@ -1260,8 +2051,7 @@
 
 /datum/component/heretic_spirit_ferryman/RegisterWithParent()
 	var/mob/living/owner = parent
-	added_pass_flags = PASSMOB & ~owner.pass_flags
-	owner.pass_flags |= added_pass_flags
+	heretic_spirit_passmob_on(owner, REF(src))
 	passtable_on(owner, REF(src))
 	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH, PROC_REF(on_mob_death))
 	RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
@@ -1269,8 +2059,7 @@
 
 /datum/component/heretic_spirit_ferryman/UnregisterFromParent()
 	var/mob/living/owner = parent
-	owner.pass_flags &= ~added_pass_flags
-	added_pass_flags = NONE
+	heretic_spirit_passmob_off(owner, REF(src))
 	passtable_off(owner, REF(src))
 	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
 	UnregisterSignal(parent, list(COMSIG_PARENT_EXAMINE, COMSIG_MOVABLE_MOVED))
@@ -1432,7 +2221,6 @@
 #undef HERETIC_SPIRIT_DRAIN_PER_TICK
 #undef HERETIC_SPIRIT_STAMINA_RESTORE
 #undef HERETIC_SPIRIT_LANTERN_HEAL
-#undef HERETIC_SPIRIT_BLADE_BONUS
 #undef HERETIC_SPIRIT_HOOK_INCOME
 #undef HERETIC_SPIRIT_REAP_NEAR_DAMAGE
 #undef HERETIC_SPIRIT_PASSAGE_COOLDOWN
@@ -1462,3 +2250,16 @@
 #undef HERETIC_SPIRIT_VOYAGE_SPIRAL_EMIT
 #undef HERETIC_SPIRIT_VOYAGE_SPIRAL_ARMS
 #undef HERETIC_SPIRIT_VOYAGE_SPIRAL_SWIRL
+#undef HERETIC_SPIRIT_OBOL_CRAFT
+#undef HERETIC_SPIRIT_OBOL_CLUE
+#undef HERETIC_SPIRIT_WHISPER_LENGTH
+#undef HERETIC_SPIRIT_HOLD_CAPTURE
+#undef HERETIC_SPIRIT_HOLD_CHECK
+#undef HERETIC_SPIRIT_INCORPOREAL_TRAIT
+#undef HERETIC_SPIRIT_INCORPOREAL_HASTE
+#undef HERETIC_SPIRIT_INCORPOREAL_ALPHA
+#undef HERETIC_SPIRIT_INCORPOREAL_CHECK
+#undef HERETIC_SPIRIT_ASCENDED_SOUL_LIMIT
+#undef HERETIC_SPIRIT_WHISPER_COOLDOWN
+#undef HERETIC_SPIRIT_PASSMOB_TRAIT
+#undef HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT

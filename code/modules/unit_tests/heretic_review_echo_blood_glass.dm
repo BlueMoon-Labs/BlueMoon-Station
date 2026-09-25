@@ -4,14 +4,13 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
 	heretic.selected_path = PATH_ECHO
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	var/turf/target = get_step(center, EAST)
 	var/mob/living/staying = allocate(/mob/living/carbon/human, target)
 	var/mob/living/dodging = allocate(/mob/living/carbon/human, target)
 	var/mob/living/protected = allocate(/mob/living/carbon/human, target)
-	TEST_ASSERT(echo.refrain(user, target), "Припев выпускает первый такт сразу.")
+	TEST_ASSERT(echo.release(user), "Последний удар выпускает первый такт сразу.")
 	TEST_ASSERT(!HAS_TRAIT(staying, TRAIT_MOBILITY_NOUSE), "Первое попадание не блокирует оружие.")
 	dodging.forceMove(get_step(center, SOUTHWEST))
 	var/datum/component/anti_magic/protection = protected.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
@@ -24,7 +23,7 @@
 	var/datum/status_effect/heretic_echo_dissonance/dissonance = staying.has_status_effect(/datum/status_effect/heretic_echo_dissonance)
 	dissonance.duration = world.time + 1 SECONDS
 	var/old_expiry = dissonance.duration
-	TEST_ASSERT(echo.refrain(user, target), "Следующая последовательность может задеть уже контуженную цель.")
+	TEST_ASSERT(echo.release(user), "Следующая последовательность может задеть уже контуженную цель.")
 	attack = echo.attacks[1]
 	attack.resolve()
 	TEST_ASSERT_EQUAL(dissonance.duration, old_expiry, "Новый повтор не продлевает действующую контузию.")
@@ -37,7 +36,6 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_ECHO
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
@@ -46,7 +44,7 @@
 		var/datum/heretic_echo_attack/attack = echo.attacks[1]
 		qdel(attack)
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MOBILITY_NOUSE), "Два первых такта разных волн не считаются последовательностью.")
-	TEST_ASSERT(echo.refrain(user, get_turf(victim)), "Припев подготавливает повтор.")
+	TEST_ASSERT(echo.release(user), "Последний удар подготавливает повтор.")
 	var/datum/heretic_echo_attack/attack = echo.attacks[1]
 	attack.resolve()
 	var/datum/status_effect/heretic_echo_dissonance/dissonance = victim.has_status_effect(/datum/status_effect/heretic_echo_dissonance)
@@ -58,50 +56,52 @@
 	REMOVE_TRAIT(victim, TRAIT_MOBILITY_NOUSE, "unrelated_nouse")
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MOBILITY_NOUSE), "Собственного источника запрета предметов больше нет.")
 
-/// Договор ускоряет без должников, сохраняет предел долга и удаляет ускорение вместе со знанием.
-/datum/unit_test/heretic_blood_review_rush/Run()
+/// Скользкая кровь работает без должников, не меняет долг, обновляется без второго эффекта, кончается по сроку и снимается вместе со знанием; опасная плата запрещена.
+/datum/unit_test/heretic_blood_review_slip/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_BLOOD
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	TEST_ASSERT(!blood.pact(user), "Неизученный Договор недоступен.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blood_pact)
-	TEST_ASSERT(blood.pact(user), "Договор работает без должников.")
-	TEST_ASSERT(abs(user.getBruteLoss() - 10) <= DAMAGE_PRECISION, "Самостоятельный рывок оплачивается десятью ушибами.")
-	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Ускорение не создаёт долг без должника.")
-	TEST_ASSERT(user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_rush), "Договор действительно ускоряет движение.")
-	var/datum/status_effect/heretic_blood_rush/rush = blood.blood_rush
-	TEST_ASSERT(wait_for_qdeleted(rush, max_wait = 8 SECONDS), "Ускорение заканчивается по таймеру.")
-	TEST_ASSERT_NULL(blood.blood_rush, "Истечение не оставляет ссылку на удалённый эффект.")
-	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_rush), "Скорость возвращается к обычной.")
+	TEST_ASSERT(!blood.slip(user), "Неизученная Скользкая кровь недоступна.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/blood_slip)
+	TEST_ASSERT(blood.slip(user), "Скользкая кровь работает без должников.")
+	TEST_ASSERT(abs(user.getBruteLoss() - HERETIC_BLOOD_SLIP_PAYMENT) <= DAMAGE_PRECISION, "Скользкая кровь оплачивается десятью ушибами.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 0, "Скользкая кровь не создаёт долг.")
+	TEST_ASSERT(user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_slip), "Скользкая кровь ускоряет.")
+	var/datum/status_effect/heretic_blood_slip/slip = blood.blood_slip
+	TEST_ASSERT(abs(slip.duration - world.time - HERETIC_BLOOD_SLIP_DURATION) < 1, "Скользкая кровь длится 5 секунд.")
+	TEST_ASSERT(wait_for_qdeleted(slip, max_wait = 7 SECONDS), "Скользкая кровь заканчивается по таймеру.")
+	TEST_ASSERT_NULL(blood.blood_slip, "Истечение не оставляет ссылку на удалённый эффект.")
+	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_slip), "Скорость возвращается к обычной.")
+	TEST_ASSERT(!HAS_TRAIT(user, TRAIT_UNPULLABLE), "После срока еретика снова можно схватить.")
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	TEST_ASSERT(blood.release(user, victim), "Цель принимает связь.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	blood.add_debt(seal, blood.debt_cap)
 	var/previous_debt = seal.debt
-	TEST_ASSERT(blood.pact(user), "Полная связь не запрещает оплаченный рывок.")
-	TEST_ASSERT_EQUAL(seal.debt, previous_debt, "Рывок не переполняет долг.")
-	rush = blood.blood_rush
-	TEST_ASSERT(blood.pact(user), "Повторное применение обновляет ускорение.")
-	TEST_ASSERT_EQUAL(blood.blood_rush, rush, "Обновление сохраняет ссылку на действующий эффект.")
-	var/datum/eldritch_knowledge/spell/blood_pact/pact = heretic.get_knowledge(/datum/eldritch_knowledge/spell/blood_pact)
-	pact.on_body_lose(user)
-	TEST_ASSERT_NULL(blood.blood_rush, "Потеря знания немедленно удаляет ускорение.")
-	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_rush), "Потеря знания удаляет изменение скорости.")
+	TEST_ASSERT(blood.slip(user), "Полная связь не мешает Скользкой крови.")
+	TEST_ASSERT_EQUAL(seal.debt, previous_debt, "Скользкая кровь не меняет долг.")
+	slip = blood.blood_slip
+	TEST_ASSERT(blood.slip(user), "Повторное применение обновляет эффект.")
+	TEST_ASSERT_EQUAL(blood.blood_slip, slip, "Обновление сохраняет ссылку на действующий эффект.")
+	var/datum/eldritch_knowledge/spell/blood_slip/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/blood_slip)
+	knowledge.on_body_lose(user)
+	TEST_ASSERT_NULL(blood.blood_slip, "Потеря знания немедленно снимает Скользкую кровь.")
+	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_blood_slip), "Потеря знания снимает ускорение.")
 	user.setToxLoss(user.getToxLoss() + user.health - 34, forced = TRUE)
 	TEST_ASSERT(round(abs(user.health - 34), DAMAGE_PRECISION) <= DAMAGE_PRECISION, "Владелец остаётся в сознании, но не может безопасно оплатить ещё десять ушибов: [user.health].")
 	var/damage_before = user.getBruteLoss()
-	TEST_ASSERT(!blood.pact(user), "Опасная для жизни плата не разрешает ускорение.")
+	TEST_ASSERT(!blood.slip(user), "Опасная для жизни плата не разрешает Скользкую кровь.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), damage_before, "Отказ сохраняет здоровье.")
-	TEST_ASSERT_NULL(blood.blood_rush, "Отказ не выдаёт бесплатное ускорение.")
+	TEST_ASSERT_NULL(blood.blood_slip, "Отказ не выдаёт бесплатный эффект.")
 
 /// Своя стеклянная преграда пропускает луч, сохраняя плотность; чужая преграда останавливает свет.
 /datum/unit_test/heretic_glass_review_cover/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/middle = get_step(user, EAST)
@@ -137,7 +137,6 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_ECHO
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
@@ -145,7 +144,7 @@
 	var/obj/item/heretic_echo_review_probe/weapon = allocate(/obj/item/heretic_echo_review_probe)
 	victim.put_in_hands(weapon)
 	victim.a_intent = INTENT_HARM
-	TEST_ASSERT(echo.refrain(user, get_turf(victim)), "Припев подготавливает боевую контузию.")
+	TEST_ASSERT(echo.release(user), "Последний удар подготавливает боевую контузию.")
 	var/datum/heretic_echo_attack/attack = echo.attacks[1]
 	attack.resolve()
 	var/datum/status_effect/heretic_echo_dissonance/effect = victim.has_status_effect(/datum/status_effect/heretic_echo_dissonance)

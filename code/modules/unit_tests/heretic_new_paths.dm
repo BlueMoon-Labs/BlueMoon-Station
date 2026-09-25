@@ -34,7 +34,8 @@
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 		heretic.selected_path = path_id
 		var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
-		for(var/stage in list(1, 5))
+		var/relic_stage = path_id == PATH_GLASS ? 6 : 5
+		for(var/stage in list(1, relic_stage))
 			heretic.gain_knowledge(path.knowledge[stage])
 			var/datum/eldritch_knowledge/recipe = heretic.get_knowledge(path.knowledge[stage])
 			recipe.ritual_time = 0

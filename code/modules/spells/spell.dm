@@ -263,6 +263,8 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		recharging = FALSE
 
 /obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = TRUE, mob/user = usr) //if recharge is started is important for the trigger spells
+	if(user)
+		SEND_SIGNAL(user, COMSIG_MOB_CAST_SPELL, src)
 	before_cast(targets)
 	invocation(user)
 	if(do_log && user?.ckey)
@@ -470,7 +472,9 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 /obj/effect/proc_holder/spell/proc/can_cast(mob/user = usr, skipcharge = FALSE, silent = FALSE)
 	if(!user || QDELETED(user))
 		return FALSE
-	var/magic_flags = SEND_SIGNAL(user, COMSIG_MOB_SPELL_CAN_CAST, src)
+	var/magic_flags = SEND_SIGNAL(user, COMSIG_MOB_SPELL_CAN_CAST, src, silent)
+	if(magic_flags & SPELL_CANCEL_CAST)
+		return FALSE
 	if(magic_flags & SPELL_SKIP_ALL_REQS)
 		return TRUE
 

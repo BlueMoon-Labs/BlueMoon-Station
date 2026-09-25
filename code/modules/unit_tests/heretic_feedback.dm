@@ -135,7 +135,7 @@
 	TEST_ASSERT_EQUAL(moon_indicator.displayed_value, 1, "Создание отражения немедленно видно на HUD.")
 	qdel(reflection)
 	TEST_ASSERT_EQUAL(moon_indicator.displayed_value, 0, "Разбитое отражение немедленно исчезает из счётчика.")
-	moon_heretic.gain_knowledge(/datum/eldritch_knowledge/moon_upgrade)
+	moon_heretic.gain_knowledge(/datum/eldritch_knowledge/moon_shroud)
 	TEST_ASSERT_EQUAL(moon_indicator.displayed_max, moon.reflection_limit(), "Изучение дополнительного отражения обновляет предел HUD.")
 	var/datum/antagonist/heretic/cosmic_heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
 	var/mob/living/cosmic_body = cosmic_heretic.owner.current
@@ -235,3 +235,118 @@
 	TEST_ASSERT(body.alerts["heretic_codex"], "Подсказка появляется вместе с ролью.")
 	qdel(heretic)
 	TEST_ASSERT_NULL(body.alerts["heretic_codex"], "Удалённая роль не оставляет подсказку.")
+
+/// Кнопки заклинаний путей и новых действий берутся из существующих стейтов, внутри пути нет двух одинаковых кнопок.
+/datum/unit_test/heretic_action_buttons/Run()
+	var/list/path_tokens = list(
+		PATH_BLADE = list("heretic_blade", "heretic_lunge", "heretic_feint"),
+		PATH_MOON = list("heretic_moon"),
+		PATH_COSMIC = list("/spell/self/cosmic/"),
+		PATH_LOCK = list("heretic_lock"),
+		PATH_TIDE = list("heretic_tide"),
+		PATH_GLASS = list("heretic_glass"),
+		PATH_BLOOD = list("heretic_blood"),
+		PATH_ECHO = list("heretic_echo"),
+		PATH_SAND = list("heretic_sand"),
+		PATH_WAX = list("heretic_wax"),
+		PATH_SPIRIT = list("heretic_spirit"),
+	)
+	var/list/states_by_icon = list()
+	var/list/seen = list()
+	var/checked = 0
+	for(var/spell_type in subtypesof(/obj/effect/proc_holder/spell))
+		var/obj/effect/proc_holder/spell/spell = spell_type
+		var/obj/effect/proc_holder/spell/parent = type2parent(spell_type)
+		if(initial(spell.name) == initial(parent.name))
+			continue
+		var/type_text = "[spell_type]"
+		var/path_id
+		for(var/candidate in path_tokens)
+			for(var/token in path_tokens[candidate])
+				if(findtext(type_text, token))
+					path_id = candidate
+		if(!path_id)
+			continue
+		var/icon_key = "[initial(spell.action_icon)]"
+		if(!states_by_icon[icon_key])
+			states_by_icon[icon_key] = icon_states(initial(spell.action_icon))
+		var/state = initial(spell.action_icon_state)
+		TEST_ASSERT(state in states_by_icon[icon_key], "Кнопка [spell_type] ([state]) есть в [icon_key].")
+		var/button_key = "[path_id]:[icon_key]:[state]"
+		TEST_ASSERT(!seen[button_key], "[spell_type] и [seen[button_key]] пути [path_id] показывают одну кнопку [state].")
+		seen[button_key] = spell_type
+		checked++
+	TEST_ASSERT(checked >= 70, "Проверены кнопки всех путей: [checked].")
+	var/list/action_states = icon_states('modular_bluemoon/icons/obj/heretic_actions.dmi')
+	for(var/action_type in list(/datum/action/innate/heretic_pocket_leave, /datum/action/innate/heretic_blade_surrender))
+		var/datum/action/action = action_type
+		TEST_ASSERT_EQUAL(initial(action.icon_icon), 'modular_bluemoon/icons/obj/heretic_actions.dmi', "[action_type] берёт кнопку из листа способностей еретика.")
+		TEST_ASSERT(initial(action.button_icon_state) in action_states, "Кнопка [action_type] существует.")
+	var/atom/movable/screen/alert/heretic_moon_door/door = /atom/movable/screen/alert/heretic_moon_door
+	TEST_ASSERT_EQUAL(initial(door.icon_state), "moon_door", "Кнопка «Увести в отражение» отличается от знака Луны.")
+	TEST_ASSERT(initial(door.icon_state) in icon_states(initial(door.icon)), "Стейт двери Луны существует.")
+
+/// Алерты состояний рисуются своими стейтами: внутри пути нет двух одинаковых, и ни один не повторяет знак пути.
+/datum/unit_test/heretic_status_alert_icons/Run()
+	var/list/groups = list(
+		PATH_BLADE = list(/atom/movable/screen/alert/status_effect/heretic_parry, /atom/movable/screen/alert/status_effect/heretic_blade_oath, /atom/movable/screen/alert/status_effect/heretic_blade_brand, /atom/movable/screen/alert/status_effect/heretic_blade_throat),
+		PATH_MOON = list(/atom/movable/screen/alert/status_effect/heretic_lunatic, /atom/movable/screen/alert/status_effect/heretic_moon_daze, /atom/movable/screen/alert/status_effect/heretic_moon_sleepwalk, /atom/movable/screen/alert/heretic_moon_door),
+		PATH_ECHO = list(/atom/movable/screen/alert/status_effect/heretic_echo_ringing, /atom/movable/screen/alert/status_effect/heretic_echo_dissonance, /atom/movable/screen/alert/status_effect/heretic_echo_lullaby, /atom/movable/screen/alert/status_effect/heretic_echo_hush),
+		PATH_BLOOD = list(/atom/movable/screen/alert/status_effect/heretic_blood_clot, /atom/movable/screen/alert/status_effect/heretic_blood_slip, /atom/movable/screen/alert/status_effect/heretic_blood_exsanguinated, /atom/movable/screen/alert/status_effect/heretic_blood_drain, /atom/movable/screen/alert/status_effect/heretic_blood_trail),
+		PATH_SPIRIT = list(/atom/movable/screen/alert/status_effect/heretic_spirit_hold, /atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal),
+		PATH_WAX = list(/atom/movable/screen/alert/status_effect/heretic_wax_seal, /atom/movable/screen/alert/status_effect/heretic_wax_clinging, /atom/movable/screen/alert/status_effect/heretic_wax_effigy, /atom/movable/screen/alert/status_effect/heretic_wax_melting, /atom/movable/screen/alert/status_effect/heretic_wax_leak),
+		PATH_RUST = list(/atom/movable/screen/alert/heretic_rust_healing),
+		PATH_VOID = list(/atom/movable/screen/alert/status_effect/heretic_domain, /atom/movable/screen/alert/status_effect/heretic_void_chill),
+		PATH_COSMIC = list(/atom/movable/screen/alert/status_effect/heretic_cosmic_orbit),
+		PATH_TIDE = list(/atom/movable/screen/alert/status_effect/heretic_drenched, /atom/movable/screen/alert/status_effect/heretic_tide_drowning),
+		PATH_GLASS = list(/atom/movable/screen/alert/status_effect/heretic_glass_fracture),
+		PATH_SAND = list(/atom/movable/screen/alert/status_effect/heretic_sand_recall, /atom/movable/screen/alert/status_effect/heretic_sand_stasis, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_drought),
+	)
+	for(var/path_id in groups)
+		var/list/seen = list()
+		for(var/alert_type in groups[path_id])
+			var/atom/movable/screen/alert/alert = alert_type
+			var/state = initial(alert.icon_state)
+			TEST_ASSERT(state in icon_states(initial(alert.icon)), "[alert_type]: стейт [state] есть в листе.")
+			TEST_ASSERT_NOTEQUAL(state, "sigil_[lowertext(path_id)]", "[alert_type] не повторяет знак пути.")
+			TEST_ASSERT(!seen[state], "[alert_type] и [seen[state]] показывают один значок [state].")
+			seen[state] = alert_type
+	var/list/alert_states = icon_states('modular_bluemoon/icons/obj/heretic_alerts.dmi')
+	for(var/distance in list("close", "medium", "far", "direct", "null"))
+		TEST_ASSERT("blood_trail_[distance]" in alert_states, "Стейт следа крови [distance] есть в листе.")
+
+/// Кромка разрыва изнанки красится чернилами пути владельца.
+/datum/unit_test/heretic_pocket_rift_tint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_MOON
+	var/datum/heretic_pocket/pocket = new(heretic)
+	allocated += pocket
+	var/obj/effect/heretic_pocket_rift/rift = new(run_loc_floor_bottom_left, pocket)
+	allocated += rift
+	var/glow_color
+	for(var/mutable_appearance/glow as anything in rift.overlays)
+		if(glow.icon_state == "pocket_rift_glow")
+			glow_color = lowertext(glow.color)
+	TEST_ASSERT_EQUAL(glow_color, lowertext(heretic_path_ink(PATH_MOON)), "Кромка разрыва Луны окрашена её чернилами.")
+
+/obj/item/radio/headset/click_probe
+	var/clicks = 0
+
+/obj/item/radio/headset/click_probe/transmit_click(mob/living/speaker)
+	clicks++
+
+/datum/unit_test/heretic_radio_jam_click/proc/jam(atom/movable/source, obj/item/radio/radio)
+	SIGNAL_HANDLER
+	return COMPONENT_CANNOT_USE_RADIO
+
+/// Заглушённая рация не щёлкает гарнитурой: щелчок звучит, только когда передача и правда уходит.
+/datum/unit_test/heretic_radio_jam_click/Run()
+	var/mob/living/carbon/human/speaker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/radio/headset/click_probe/headset = allocate(/obj/item/radio/headset/click_probe, run_loc_floor_bottom_left)
+	headset.on = TRUE
+	RegisterSignal(speaker, COMSIG_MOVABLE_USING_RADIO, PROC_REF(jam))
+	headset.talk_into(speaker, "Проверка связи.", null)
+	TEST_ASSERT_EQUAL(headset.clicks, 0, "Заглушённый говорящий не щёлкает гарнитурой.")
+	UnregisterSignal(speaker, COMSIG_MOVABLE_USING_RADIO)
+	headset.talk_into(speaker, "Проверка связи.", null)
+	TEST_ASSERT_EQUAL(headset.clicks, 1, "Без глушения гарнитура щёлкает.")

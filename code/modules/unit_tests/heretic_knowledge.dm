@@ -15,6 +15,56 @@
 	mind.antag_datums = list(heretic)
 	return heretic
 
+/// Уровень резервации не станция: на время теста он получает признак станции.
+/datum/heretic_test_station_level
+	var/datum/space_level/level
+	var/list/original_traits
+
+/datum/heretic_test_station_level/New(z)
+	level = SSmapping.z_list[z]
+	original_traits = level.traits
+	level.traits = original_traits.Copy()
+	level.traits[ZTRAIT_STATION] = TRUE
+
+/datum/heretic_test_station_level/Destroy()
+	level.traits = original_traits
+	level = null
+	return ..()
+
+/// Клетки резервации на время теста переходят в зону area_type и возвращаются в Destroy.
+/datum/heretic_test_room
+	var/area/room
+	var/list/turf/moved = list()
+
+/datum/heretic_test_room/New(area_type)
+	var/static/list/shared_rooms = list()
+	if(!shared_rooms[area_type])
+		shared_rooms[area_type] = new area_type
+	room = shared_rooms[area_type]
+
+/datum/heretic_test_room/proc/take(turf/spot)
+	if(moved[spot])
+		return
+	moved[spot] = spot.loc
+	room.contents += spot
+
+/datum/heretic_test_room/Destroy()
+	for(var/turf/spot as anything in moved)
+		var/area/old_area = moved[spot]
+		old_area.contents += spot
+	moved.Cut()
+	room = null
+	return ..()
+
+/datum/unit_test/proc/heretic_test_area(turf/spot, area_type)
+	for(var/datum/heretic_test_room/lease in allocated)
+		if(lease.room.type == area_type)
+			lease.take(spot)
+			return
+	var/datum/heretic_test_room/lease = new(area_type)
+	allocated += lease
+	lease.take(spot)
+
 /// Независимые пути укладываются в бюджет охоты.
 /datum/unit_test/heretic_knowledge/Run()
 	TEST_ASSERT_EQUAL(length(GLOB.heretic_paths), 15, "В каталоге должны быть все пятнадцать путей.")
@@ -39,7 +89,7 @@
 		TEST_ASSERT(ispath(path.knowledge[length(path.knowledge)], /datum/eldritch_knowledge/final_eldritch), "Путь завершается вознесением.")
 		TEST_ASSERT(total_cost <= HERETIC_STARTING_KNOWLEDGE + HERETIC_INFLUENCE_LIMIT + HERETIC_LIVE_SACRIFICE_KNOWLEDGE * HERETIC_ASCENSION_SACRIFICES, "Стартового бюджета, разломов и живых душ должно хватать на весь путь [path_id] без обязательного дела пути.")
 		registered |= unique_nodes
-	var/list/non_catalog_types = list(/datum/eldritch_knowledge/spell, /datum/eldritch_knowledge/spell/summon, /datum/eldritch_knowledge/curse, /datum/eldritch_knowledge/summon, /datum/eldritch_knowledge/final_eldritch, /datum/eldritch_knowledge/mansus_grasp_suspend_test, /datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe, /datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe)
+	var/list/non_catalog_types = list(/datum/eldritch_knowledge/spell, /datum/eldritch_knowledge/spell/summon, /datum/eldritch_knowledge/curse, /datum/eldritch_knowledge/summon, /datum/eldritch_knowledge/final_eldritch, /datum/eldritch_knowledge/mansus_grasp_suspend_test, /datum/eldritch_knowledge/craft_removal_probe, /datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe, /datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe, /datum/eldritch_knowledge/pocket_exit_probe)
 	for(var/datum/eldritch_knowledge/knowledge_type as anything in subtypesof(/datum/eldritch_knowledge) - non_catalog_types)
 		TEST_ASSERT(knowledge_type in registered, "Знание [knowledge_type] должно присутствовать в каталоге.")
 

@@ -5,6 +5,11 @@
 /obj/effect/proc_holder/spell
 	COOLDOWN_DECLARE(heretic_failure_log)
 	var/heretic_failure_reason
+	/// Одна строка для списка способностей в кодексе.
+	var/summary
+	/// Еретик до вознесения не колдует это под оглушением, в стамкрите и в чужой хватке.
+	var/heretic_stun_check = FALSE
+	var/usable_while_grabbed = FALSE
 
 /mob/living/cancel_prepared_abilities(obj/effect/proc_holder/except)
 	if(!IS_HERETIC(src))
@@ -31,7 +36,7 @@
 	var/containment_reason = heretic_containment_reason(user)
 	if(containment_reason)
 		reason = containment_reason
-	else if(user?.incapacitated())
+	else if(user?.incapacitated(ignore_grab = usable_while_grabbed))
 		reason = "Вы не можете действовать: дождитесь окончания оглушения или освободитесь."
 	else if(user && !isturf(user.loc))
 		reason = "Сначала выйдите из контейнера или укрытия на пол."
@@ -96,6 +101,8 @@
 	var/combat_resource_max = 4
 	var/combat_resource_name = ""
 	var/combat_resource_desc = ""
+	/// Правила запаса по одному на строку; без них кодекс показывает combat_resource_desc.
+	var/list/resource_rules
 	var/combat_resource_action
 	var/grasp_visual
 	var/grasp_sound
@@ -113,7 +120,19 @@
 /datum/eldritch_knowledge/proc/get_combat_resource_data()
 	if(!combat_resource_name)
 		return null
-	return list("name" = combat_resource_name, "value" = combat_resource, "max" = combat_resource_max, "description" = combat_resource_desc)
+	return combat_resource_payload(combat_resource_name, combat_resource, combat_resource_max)
+
+/datum/eldritch_knowledge/proc/combat_resource_payload(name, value, max, rules_text = combat_resource_desc)
+	var/list/rules = length(resource_rules) ? resource_rules.Copy() : list(rules_text)
+	var/state = combat_resource_state()
+	var/description = jointext(rules, " ")
+	if(state)
+		description += " [state]"
+	return list("name" = name, "value" = value, "max" = max, "rules" = rules, "state" = state, "description" = description)
+
+/// Живое состояние запаса одной строкой: счётчики построек, режимы, текущие цели.
+/datum/eldritch_knowledge/proc/combat_resource_state()
+	return ""
 
 /datum/eldritch_knowledge/proc/gain_combat_resource(amount = 1)
 	var/previous = combat_resource
@@ -177,6 +196,17 @@
 		return FALSE
 	var/mob/living/victim = target
 	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = TRUE, chargecost = chargecost)
+
+/// Дверь старого пути открывает еретик этого знания в своём теле, на полу и не скованный.
+/datum/eldritch_knowledge/proc/door_user_ready(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return !QDELETED(src) && isliving(user) && heretic && !heretic.role_removed && heretic.owner?.current == user && heretic.get_knowledge(type) == src && !user.incapacitated() && isturf(user.loc)
+
+/datum/eldritch_knowledge/proc/door_zone_under(mob/living/victim, zone_type)
+	for(var/obj/effect/heretic_combat_zone/zone in list(combat_zone, relic_zone))
+		if(istype(zone, zone_type) && !QDELETED(zone) && (victim.loc in zone.field_turfs))
+			return zone
+	return null
 
 /// view() от эффекта или турфа не видит неосвещённые турфы, поэтому центр на время подсвечивается, как в get_hear().
 /proc/heretic_field_view(radius, atom/center)
@@ -244,7 +274,6 @@
 	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'
 	grasp_catchphrase = "PE'LENAI ATSI'MENA"
 	combat_resource_name = "Угольки"
-	combat_resource_desc = "После изучения Власти Пепла хватка поджигает врага и даёт +1 уголёк, если он горит, не чаще раза в 15 секунд. После изучения Метки Пепла наложите её хваткой и ударьте пепельным клинком: +1 уголёк. Хватка также гасит открытый огонь и даёт за это уголёк раз в 15 секунд: очаг пожара (коснитесь горящего пола), зажжённые свечу, зажигалку, сварочник или фальшфейер на полу или у вас в руке, горящую спичку в другой руке. Дело пути засчитывает только огонь на полу. Обычный уголь не нужен. Угасание расходует уголёк: тушит вас, лечит ожоги и оставляет горящий след для отступления."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/ash
 
 /datum/eldritch_knowledge/base_rust
@@ -252,7 +281,6 @@
 	grasp_sound = 'sound/effects/clangsmall1.ogg'
 	grasp_catchphrase = "RU'DYS PRA'RYJA VISKA"
 	combat_resource_name = "Наросты"
-	combat_resource_desc = "Активируйте метки клинком или покройте новую поверхность ржавчиной хваткой (раз в 15 секунд). Укоренение расходует нарост и создаёт на 30 секунд ржавый очаг, лечащий вас и вашу свиту."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/rust
 
 /datum/eldritch_knowledge/base_flesh
@@ -260,7 +288,6 @@
 	grasp_sound = 'sound/effects/wounds/blood1.ogg'
 	grasp_catchphrase = "ME'SA TRO'KSTA ME'SOS"
 	combat_resource_name = "Биомасса"
-	combat_resource_desc = "Активируйте метки клинком или поглотите хваткой извлечённый орган. Сшивание расходует биомассу: лечит вас и ближайших слуг, ослабляет их кровотечение."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/flesh
 
 /datum/eldritch_knowledge/base_void
@@ -268,7 +295,6 @@
 	grasp_sound = 'modular_bluemoon/sound/heretic/void_deflect1.ogg'
 	grasp_catchphrase = "TY'LA UZ'GESINA"
 	combat_resource_name = "Осколки зимы"
-	combat_resource_desc = "Активируйте метки клинком или выходите на пол с воздухом холоднее 0 °C. Между пассивными пополнениями проходит 20 секунд: ждать всё это время в холоде не нужно. Клетка открытого космоса не подходит. В тепле осколки тоже копятся на полу, но только до двух: пустой запас пополняется с тем же интервалом, а второй осколок приходит через 30 секунд после предыдущего. Зимний предел расходует осколок и создаёт область 5×5 на 15 секунд: враги замедляются независимо от температуры тела и теряют голос. Скованность проходит через 4 секунды после последнего воздействия. Само поле воздух не охлаждает."
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/void
 	COOLDOWN_DECLARE(warm_shard_harvest)
 
@@ -431,7 +457,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_power/ash
 	name = "Угасание"
-	desc = "Потратьте уголёк: погасите пламя на себе, восстановите 15 ожогов и 10 ушибов. Вокруг останется пепельный огонь на 6 секунд."
+	desc = "Потратьте уголёк: погасите пламя на себе, восстановите 15 ожогов и 10 ушибов. Вокруг останется пепельный огонь на 6 секунд. Вода и пена гасят его сразу."
+	summary = "За уголёк тушит вас, лечит 15 ожогов и 10 ушибов и зажигает огонь вокруг."
 	action_icon_state = "ash_rekindle"
 	knowledge_type = /datum/eldritch_knowledge/base_ash
 
@@ -446,7 +473,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_power/rust
 	name = "Укоренение"
-	desc = "Потратьте нарост: создайте очаг ржавчины на 30 секунд. Он ржавит подходящие полы в области 5×5 и лечит вас и ваших слуг на ржавом полу внутри отмеченной границы. Одновременно существует один очаг."
+	desc = "Потратьте нарост: создайте очаг ржавчины на 30 секунд, новый заменяет прежний. Он ржавит пол 5×5 и лечит вас и ваших слуг на ржавом полу внутри границы."
+	summary = "За нарост очаг на 30 секунд лечит вас и свиту на ржавчине."
 	action_icon_state = "rust_root"
 	knowledge_type = /datum/eldritch_knowledge/base_rust
 	charge_max = 300
@@ -472,6 +500,7 @@
 /obj/effect/proc_holder/spell/self/heretic_power/flesh
 	name = "Сшивание"
 	desc = "Потратьте биомассу: восстановите себе 10 ушибов, а своим слугам в поле зрения на расстоянии до 5 клеток — по 25 ушибов и ожогов. Кровотечение из ран ослабеет вдвое."
+	summary = "За биомассу лечит вас и своих слуг в 5 клетках."
 	action_icon_state = "flesh_mend"
 	knowledge_type = /datum/eldritch_knowledge/base_flesh
 	charge_max = 150
@@ -497,7 +526,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_power/void
 	name = "Зимний предел"
-	desc = "Потратьте осколок зимы: создайте область 5×5 на 15 секунд. Противники сразу замедляются независимо от температуры тела, охлаждаются и теряют голос; скованность проходит через 4 секунды после последнего воздействия. Поле не охлаждает воздух, но позволяет изготовить на руне внутри него клинок Пустоты. Одновременно существует одна область."
+	desc = "Потратьте осколок зимы: создайте поле 5×5 на 15 секунд, новое заменяет прежнее. Враги в нём замедляются, охлаждаются и теряют голос."
+	summary = "За осколок поле 5×5 на 15 секунд сковывает, холодит и глушит врагов."
 	action_icon_state = "void_boundary"
 	knowledge_type = /datum/eldritch_knowledge/base_void
 
@@ -626,7 +656,7 @@
 
 /obj/effect/heretic_combat_zone/ash
 	name = "ember trail"
-	desc = "Угольки тлеют без топлива. Войти в эту печать — значит подставиться пламени."
+	desc = "Угольки тлеют без топлива. Войти в эту печать — значит подставиться пламени. Вода и пена гасят её сразу."
 	boundary_color = "#ff9b43"
 	icon_state = "sigil_ash"
 	radius = 1

@@ -322,24 +322,27 @@
 	var/datum/mind/remaining_mind = locate(servant_mind_ref)
 	TEST_ASSERT(!remaining_mind || !QDELING(remaining_mind), "Разум удалённого слуги освобождается без hard delete.")
 
-/// Рабочие места дают девять разных ключей и позволяют завершить дело Духа Хваткой Мансуса.
+/// Рабочие места дают девять разных ключей и позволяют завершить дело Духа оболами на трупах.
 /datum/unit_test/antag_training_deed/Run()
 	var/datum/antag_training_session/session = allocate_training_session()
 	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(session.avatar)
 	heretic.research_knowledge(/datum/eldritch_knowledge/base_spirit, session.avatar)
 	var/datum/eldritch_knowledge/base_spirit/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	session.avatar.a_intent = INTENT_HELP
 	var/list/keys = list()
 	for(var/column in list(5, 11, 17))
 		for(var/row in list(33, 39, 45))
 			var/turf/tile = locate(column, row, session.arena.private_level.z_value)
 			var/obj/structure/bed/bed = locate() in tile
 			TEST_ASSERT(bed, "На каждом рабочем месте есть кровать.")
+			var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, tile)
+			corpse.death()
 			session.avatar.forceMove(get_step(tile, NORTH))
-			keys |= heretic.deed_key_for(bed)
+			keys |= heretic.deed_key_for(corpse)
 			if(!heretic.deed.complete())
 				COOLDOWN_RESET(heretic.deed, progress_cooldown)
-				TEST_ASSERT(knowledge.on_mansus_grasp(bed, session.avatar, TRUE), "Кровать рабочего места засчитывается обычным действием.")
+				TEST_ASSERT(knowledge.on_mansus_grasp(corpse, session.avatar, TRUE), "Обол на трупе рабочего места засчитывается обычным действием.")
 	TEST_ASSERT_EQUAL(length(keys), 9, "Все рабочие места имеют разные ключи.")
 	TEST_ASSERT(heretic.deed.complete(), "Лаборатория позволяет завершить все ступени дела.")
 

@@ -972,7 +972,7 @@
 		heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
 		TEST_ASSERT(heretic.research_knowledge(path.knowledge[1], user), "Путь [path_id] выбран.")
 		var/list/abilities = book.combat_ability_data(heretic)
-		TEST_ASSERT_EQUAL(length(abilities), 2, "У пути [path_id] есть Хватка и основная способность.")
+		TEST_ASSERT_EQUAL(length(abilities), length(user.mind.spell_list), "У пути [path_id] в книге Хватка и все способности, выданные базой.")
 		TEST_ASSERT_EQUAL(heretic.ability_hotkey_types[1], /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp, "Первый слот всегда занят Хваткой.")
 		for(var/list/ability as anything in abilities)
 			TEST_ASSERT(findtext(ability["usage"], "Горячая клавиша:"), "Книга показывает назначение способности [path_id].")

@@ -8,13 +8,7 @@
 #define HERETIC_ECHO_OPENING_STAMINA 10
 #define HERETIC_ECHO_OPENING_RADIUS 2
 #define HERETIC_ECHO_RELEASE_RADIUS 3
-#define HERETIC_ECHO_REFRAIN_RADIUS 1
-#define HERETIC_ECHO_REPEAT_RADIUS 2
 #define HERETIC_ECHO_CRESCENDO_RADIUS 3
-#define HERETIC_ECHO_REFRAIN_DAMAGE 18
-#define HERETIC_ECHO_REFRAIN_STAMINA 15
-#define HERETIC_ECHO_REPEAT_DAMAGE 22
-#define HERETIC_ECHO_REPEAT_STAMINA 25
 #define HERETIC_ECHO_HARVEST_TIME (6 SECONDS)
 #define HERETIC_ECHO_RESONATOR_LIFETIME (30 SECONDS)
 #define HERETIC_ECHO_RESONATOR_LIMIT 2
@@ -25,7 +19,6 @@
 #define HERETIC_ECHO_RING 3
 #define HERETIC_ECHO_WAVE 4
 #define HERETIC_ECHO_BAND 5
-#define HERETIC_ECHO_DEED_WHISPER_RANGE 5
 #define HERETIC_ECHO_DISSONANCE_DURATION (1.5 SECONDS)
 #define HERETIC_ECHO_HOLD_TIME (3 SECONDS)
 #define HERETIC_ECHO_INK "#d9bb73"
@@ -42,22 +35,60 @@
 #define HERETIC_ECHO_FINAL_FLASH_RANGE 5
 #define HERETIC_ECHO_FINAL_FLASH_POWER 1.5
 #define HERETIC_ECHO_FINAL_FLASH_TIME (0.4 SECONDS)
+#define HERETIC_ECHO_TAP_CRAFT "echo_tap"
+#define HERETIC_ECHO_TAP_CLUE "Динамик повторяет слова с задержкой."
+#define HERETIC_ECHO_CAPTURE "echo"
+#define HERETIC_ECHO_LULLABY_RANGE 5
+#define HERETIC_ECHO_LULLABY_COST 2
+#define HERETIC_ECHO_LULLABY_COOLDOWN (40 SECONDS)
+#define HERETIC_ECHO_LULLABY_BLUR 2
+#define HERETIC_ECHO_LULLABY_COLOR "#b9c4f0"
+#define HERETIC_ECHO_LULLABY_NOTE_OFFSET 16
+#define HERETIC_ECHO_LULLABY_CHECK (0.2 SECONDS)
+#define HERETIC_ECHO_VOICE_COOLDOWN (20 SECONDS)
+#define HERETIC_ECHO_VOICE_RANGE 7
+#define HERETIC_ECHO_VOICE_MODE "Голос"
+#define HERETIC_ECHO_NOISE_SCREAM "Крик"
+#define HERETIC_ECHO_NOISE_GLASS "Звон стекла"
+#define HERETIC_ECHO_NOISE_VOLUME 80
+#define HERETIC_ECHO_HUSH_COOLDOWN (60 SECONDS)
+#define HERETIC_ECHO_HUSH_MODE "Тишина"
+#define HERETIC_ECHO_ETHER_SPELL_DELAY (1 SECONDS)
+#define HERETIC_ECHO_HUSH_TRAIT "heretic_echo_hush"
+#define HERETIC_ECHO_RESONATOR_COOLDOWN (8 SECONDS)
 
 /datum/heretic_path/echo
 	id = PATH_ECHO
 	deed_type = /datum/heretic_deed/echo
 	name = "Эхо"
-	desc = "Накройте врагов широкой звуковой волной и поймайте их сильным повтором. Ближняя и средняя дистанция, без обязательной подготовки."
-	strengths = "Сплошной первый удар по площади, дальние отзвуки и короткая контузия за два попадания одной последовательности. Резонаторы расширяют охват повторов. Вознёсшийся отвечает на попадание, снявшее больше 5 здоровья, не чаще раза в 2 секунды: через 0,8 секунды вокруг него бьёт крест в три клетки и оставляет Остаточный звон, как обычные волны."
-	weaknesses = "Сильный повтор поражает отмеченные клетки: из них можно уйти. Преграды глушат даже первую волну, резонаторы можно разбить. Отзвук вознёсшегося не достаёт дальше трёх клеток и мимо креста: стреляйте издалека и не стойте с ним на одной линии."
+	tagline = "Слушает станцию через интеркомы, усыпляет звенящих врагов и уходит в эфир."
+	craft_summary = "Хватка по интеркому ставит прослушку: до 4 интеркомов передают вам речь рядом с пометкой отдела."
+	capture_summary = "Хватка даёт звон, Колыбельная за 3 секунды усыпляет на 10 секунд; спящую сердце уводит в изнанку."
+	escape_summary = "Уйти в эфир от своего интеркома к другому за 1,5 секунды, вдали от них - Тишина; из изнанки - к интеркому."
+	strength_points = list(
+		"До 4 интеркомов передают вам речь рядом, Чужой голос говорит из них любым именем.",
+		"Звенящая хватка на 12 секунд глушит рацию цели.",
+		"Колыбельная усыпляет на 10 секунд, а 3 секунды напева цель идёт на 40% медленнее.",
+		"Засыпающую будит только удар другого существа от 10 урона: свой урон и выносливость не в счёт.",
+		"Последний удар сразу бьёт всю область 5×5, повтор крестом достаёт дальше.",
+		"Уйти в эфир уводит сквозь станцию от интеркома к интеркому за 1,5 секунды.",
+	)
+	weakness_points = list(
+		"Прослушанный интерком повторяет слова с задержкой: отвёртка или нулевой жезл снимают прослушку.",
+		"Колыбельную рвут сильный удар, 2 секунды растолкать и уход дальше 5 клеток, даже на руках.",
+		"Выход из эфира выдаёт хрип динамика; без прослушанных интеркомов уйти некуда.",
+		"Тишина длится 4 секунды и рвётся от атаки, заклинания и полученного урона.",
+		"Сильный повтор бьёт по отмеченным клеткам: из них можно уйти, преграды гасят волну.",
+		"Чужой голос звучит с пометкой «(сквозь помехи)» и не уходит в рацию.",
+	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_echo,
 		/datum/eldritch_knowledge/echo_grasp,
-		/datum/eldritch_knowledge/spell/echo_refrain,
+		/datum/eldritch_knowledge/spell/echo_lullaby,
 		/datum/eldritch_knowledge/echo_mark,
 		/datum/eldritch_knowledge/echo_fork,
-		/datum/eldritch_knowledge/echo_upgrade,
-		/datum/eldritch_knowledge/spell/echo_resonator,
+		/datum/eldritch_knowledge/spell/echo_voice,
+		/datum/eldritch_knowledge/spell/echo_ether,
 		/datum/eldritch_knowledge/echo_sustain,
 		/datum/eldritch_knowledge/spell/echo_crescendo,
 		/datum/eldritch_knowledge/final_eldritch/echo_final,
@@ -65,14 +96,30 @@
 
 /datum/eldritch_knowledge/base_echo
 	name = "Звук за закрытой дверью"
-	desc = "Нож и металлический прут создают звенящий клинок. «Последний удар» сразу накрывает всю область в двух клетках вокруг вас, затем повторяет звук отмеченным крестом до трёх клеток. Попадания возвращают резонанс. Первый удар не требует ловушек; от сильного повтора можно уйти, стены гасят оба такта."
+	summary = "Последний удар бьёт по площади; Хватка по интеркому ставит прослушку."
+	details = list(
+		"Нож и металлический прут создают звенящий клинок.",
+		"Последний удар за единицу: сразу вся область 5×5, затем повтор крестом до 3 клеток; стены гасят оба такта.",
+		"Хватка по интеркому ставит прослушку: он передаёт вам обычную речь рядом с названием отдела.",
+		"Радиопереговоры и ваша речь не передаются; оглохнув или потеряв сознание, вы не слышите.",
+		"До 4 прослушек, новая вытесняет старую; смерть их не снимает; отдел засчитывается делу один раз.",
+		"Экипаж видит, что динамик повторяет слова с задержкой; отвёртка или нулевой жезл снимают прослушку.",
+		"Из изнанки выходите к своему интеркому.",
+	)
+	role = HERETIC_ROLE_CRAFT
 	gain_text = "За дверью спели последнюю ноту. Она прозвучала снова, когда я перестал слушать."
 	route = PATH_ECHO
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/stack/rods)
 	result_atoms = list(/obj/item/melee/sickly_blade/echo)
 	combat_resource = 2
 	combat_resource_name = "Резонанс"
-	combat_resource_desc = "Попадание клинком или волной даёт единицу раз в 6 секунд, хватка — две, взрыв метки — одну. Пустой запас восстанавливается до единицы за 8 секунд. Последний удар и резонатор стоят единицу; Припев бесплатен. Крещендо расходует весь запас. Смена тела сохраняет резонанс, но обрывает прежние волны."
+	resource_rules = list(
+		"Начальный запас 2 из 4; пустой запас восстанавливается до единицы за 8 секунд.",
+		"Попадание клинком или волной даёт единицу раз в 6 секунд, Хватка - две, взрыв метки - одну.",
+		"Последний удар, резонатор лиры и уход в эфир стоят единицу, Колыбельная - две.",
+		"Крещендо расходует весь запас; Чужой голос и Тишина бесплатны.",
+		"Смена тела сохраняет резонанс, но обрывает прежние волны; прослушки остаются.",
+	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_echo/release
 	grasp_visual = /obj/effect/temp_visual/heretic_echo/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/echo_grasp.ogg'
@@ -83,6 +130,13 @@
 	var/list/datum/status_effect/eldritch/echo/marks = list()
 	var/list/datum/status_effect/heretic_echo_ringing/ringing = list()
 	var/list/datum/status_effect/heretic_echo_dissonance/dissonances = list()
+	var/list/datum/status_effect/heretic_echo_lullaby/lullabies = list()
+	var/list/datum/status_effect/heretic_echo_hush/hushes = list()
+	/// Интеркомы с ремеслом «echo_tap», старейший первым.
+	var/list/obj/item/radio/intercom/taps = list()
+	var/last_relay_line
+	var/last_relay_time
+	var/echo_failure
 	var/echo_generation = 0
 	var/diagonal_echo = FALSE
 	var/hold_next_repeat = FALSE
@@ -123,6 +177,8 @@
 
 /datum/eldritch_knowledge/base_echo/Destroy()
 	on_body_lose(echo_body)
+	for(var/obj/item/radio/intercom/intercom as anything in taps.Copy())
+		untap(intercom)
 	return ..()
 
 /datum/eldritch_knowledge/base_echo/proc/clear_echo()
@@ -134,6 +190,8 @@
 	QDEL_LIST(marks)
 	QDEL_LIST(ringing)
 	QDEL_LIST(dissonances)
+	QDEL_LIST(lullabies)
+	QDEL_LIST(hushes)
 
 /datum/eldritch_knowledge/base_echo/proc/clear_knowledge_effects(datum/eldritch_knowledge/knowledge)
 	for(var/datum/heretic_echo_attack/attack as anything in attacks.Copy())
@@ -158,12 +216,10 @@
 	combat_resource = min(combat_resource, combat_resource_max)
 	notify_resource_changed()
 
-/datum/eldritch_knowledge/base_echo/get_combat_resource_data()
-	var/list/data = ..()
-	data["description"] = "[combat_resource_desc] Рисунок повторов: [diagonal_echo ? "диагонали" : "крест"]. Резонаторов: [length(resonators)] из [HERETIC_ECHO_RESONATOR_LIMIT]."
+/datum/eldritch_knowledge/base_echo/combat_resource_state()
+	. = "Рисунок повторов: [diagonal_echo ? "диагонали" : "крест"]. Резонаторов: [length(resonators)] из [HERETIC_ECHO_RESONATOR_LIMIT]. Прослушек: [length(taps)] из [HERETIC_ECHO_TAP_LIMIT]."
 	var/obj/structure/heretic_echo_resonator/conductor = conductor_ref?.resolve()
-	data["description"] += conductor ? " Лира направляет поздние отзвуки через выбранный резонатор. Связь требует открытой линии в семи клетках." : " Выберите свой резонатор щелчком лиры: он повторит Крещендо и Последнюю службу."
-	return data
+	. += conductor ? " Лира направляет поздние отзвуки через выбранный резонатор. Связь требует открытой линии в семи клетках." : " Выберите свой резонатор щелчком лиры: он повторит Крещендо и Последнюю службу."
 
 /datum/eldritch_knowledge/base_echo/proc/harvest(mob/living/user)
 	if(!can_use(user) || !COOLDOWN_FINISHED(src, resource_harvest))
@@ -266,18 +322,310 @@
 		return FALSE
 	return TRUE
 
-/datum/eldritch_knowledge/base_echo/proc/refrain(mob/living/user, turf/center)
+/datum/eldritch_knowledge/base_echo/proc/tap(obj/item/radio/intercom/intercom, mob/living/user)
+	grasp_failure_reason = null
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_refrain)
-	if(!can_use(user) || !line_clear(user, center))
+	if(!heretic || !can_use(user) || !istype(intercom) || QDELETED(intercom) || !isturf(intercom.loc))
 		return FALSE
-	var/list/opening = make_pattern(center, HERETIC_ECHO_REFRAIN_RADIUS, HERETIC_ECHO_WAVE, HERETIC_ECHO_REFRAIN_DAMAGE, HERETIC_ECHO_REFRAIN_STAMINA)
-	var/list/repeat = make_pattern(center, HERETIC_ECHO_REPEAT_RADIUS, diagonal_echo ? HERETIC_ECHO_DIAGONALS : HERETIC_ECHO_CROSS, HERETIC_ECHO_REPEAT_DAMAGE, HERETIC_ECHO_REPEAT_STAMINA, TRUE)
-	return length(opening) && length(repeat) && start_attack(user, list(opening, repeat), required, immediate_first = TRUE)
+	if(intercom.GetComponent(/datum/component/heretic_craft))
+		grasp_failure_reason = (intercom in taps) ? "Этот интерком уже слушает для вас: выберите другой." : "На этом интеркоме уже лежит чужое ремесло."
+		return FALSE
+	grasp_failure_reason = heretic.deed_wait_reason(heretic.deed_key_for(intercom))
+	if(grasp_failure_reason)
+		return FALSE
+	while(length(taps) >= HERETIC_ECHO_TAP_LIMIT)
+		var/obj/item/radio/intercom/oldest = taps[1]
+		log_game("[key_name(user)] теряет прослушку Эха на [oldest] ([oldest.type]) в [AREACOORD(oldest)]: её вытеснила новая.")
+		untap(oldest)
+	intercom.AddComponent(/datum/component/heretic_craft, src, HERETIC_ECHO_TAP_CRAFT, HERETIC_ECHO_TAP_CLUE)
+	taps += intercom
+	RegisterSignal(intercom, COMSIG_MOVABLE_HEAR, PROC_REF(on_tap_hear))
+	RegisterSignal(intercom, COMSIG_ATOM_ITEM_INTERACTION, PROC_REF(on_tap_tool))
+	playsound(intercom, 'modular_bluemoon/sound/heretic/echo_cast.ogg', 35, TRUE)
+	to_chat(user, span_eldritch("[intercom] теперь передаёт вам речь рядом с собой: [get_area_name(intercom, TRUE)]. Прослушек: [length(taps)] из [HERETIC_ECHO_TAP_LIMIT]."))
+	log_game("[key_name(user)] ставит прослушку Эха на [intercom] ([intercom.type]) в [AREACOORD(intercom)].")
+	heretic.advance_deed(heretic.deed_key_for(intercom), intercom)
+	notify_resource_changed()
+	return TRUE
+
+/datum/eldritch_knowledge/base_echo/proc/untap(obj/item/radio/intercom/intercom)
+	if(!(intercom in taps))
+		return
+	taps -= intercom
+	UnregisterSignal(intercom, list(COMSIG_MOVABLE_HEAR, COMSIG_ATOM_ITEM_INTERACTION))
+	qdel(heretic_craft_on(intercom, HERETIC_ECHO_TAP_CRAFT))
+	notify_resource_changed()
+
+/datum/eldritch_knowledge/base_echo/on_craft_removed(atom/crafted, craft_id)
+	if(craft_id == HERETIC_ECHO_TAP_CRAFT)
+		untap(crafted)
+
+/datum/eldritch_knowledge/base_echo/pocket_exits(mob/living/user)
+	. = list()
+	for(var/obj/item/radio/intercom/intercom as anything in taps)
+		heretic_add_pocket_exit(., "Интерком - [get_area_name(intercom, TRUE)]", heretic_pocket_landing(get_turf(intercom)))
+
+/datum/eldritch_knowledge/base_echo/pocket_door(mob/living/user, mob/living/victim)
+	if(!door_holds(user, victim))
+		return null
+	return list("name" = "в тишину", "text" = "Над [victim] обрывается беззвучная нота.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+
+/// Цель спит от своей Колыбельной или готова к обряду у своего интеркома, еретик рядом с ней.
+/datum/eldritch_knowledge/base_echo/proc/door_holds(mob/living/user, mob/living/victim)
+	if(!can_use(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+		return FALSE
+	if(knocked_out_by_capture(victim))
+		return TRUE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic.hunt_target_ready(victim))
+		return FALSE
+	for(var/obj/item/radio/intercom/intercom as anything in taps)
+		var/turf/place = get_turf(intercom)
+		if(place?.z == victim.z && get_dist(place, victim) <= HERETIC_ECHO_TAP_DOOR_RANGE)
+			return TRUE
+	return FALSE
+
+/// Интерком слышит и радио, которое сам транслирует: такое сообщение приходит с частотой и не пересказывается.
+/datum/eldritch_knowledge/base_echo/proc/on_tap_hear(obj/item/radio/intercom/source, list/hearing_args)
+	SIGNAL_HANDLER
+	var/mob/living/listener = echo_body
+	var/atom/movable/speaker = hearing_args[HEARING_SPEAKER]
+	var/raw_message = hearing_args[HEARING_RAW_MESSAGE]
+	var/datum/language/language = hearing_args[HEARING_LANGUAGE]
+	if(hearing_args[HEARING_RADIO_FREQ] || !raw_message || QDELETED(listener) || listener.stat == DEAD || speaker == listener || istype(speaker, /atom/movable/virtualspeaker/heretic_echo))
+		return
+	if(language && initial(language.visual_language))
+		return
+	if(language && !listener.has_language(language))
+		var/datum/language/dialect = GLOB.language_datum_instances[language]
+		raw_message = dialect.scramble(raw_message)
+	var/line = "[get_area_name(source, TRUE)]: [speaker.GetVoice()] [hearing_args[HEARING_MESSAGE_MODE] == MODE_WHISPER ? "шепчет" : "говорит"] «[raw_message]»"
+	// Интерком передаёт одну реплику в Hear() дважды.
+	if(line == last_relay_line && world.time == last_relay_time)
+		return
+	last_relay_line = line
+	last_relay_time = world.time
+	listener.show_message(span_eldritch(line), MSG_AUDIBLE)
+
+/datum/eldritch_knowledge/base_echo/proc/on_tap_tool(obj/item/radio/intercom/source, mob/living/user, obj/item/tool, params)
+	SIGNAL_HANDLER
+	if(tool.tool_behaviour != TOOL_SCREWDRIVER)
+		return NONE
+	tool.play_tool_sound(source)
+	user.visible_message(span_warning("[user] вскрывает [source] отвёрткой и вытряхивает из динамика чужой звон."), span_notice("Вы вскрываете [source]: в динамике дрожал чужой звон. Прослушка снята."))
+	log_game("[key_name(user)] снимает прослушку Эха с [source] отвёрткой в [AREACOORD(source)].")
+	untap(source)
+	return TOOL_ACT_MELEE_CHAIN_BLOCKING
+
+/datum/eldritch_knowledge/base_echo/proc/rung_by_me(mob/living/victim)
+	var/datum/status_effect/heretic_echo_ringing/effect = victim?.has_status_effect(/datum/status_effect/heretic_echo_ringing)
+	return effect?.echo_ref?.resolve() == src
+
+/datum/eldritch_knowledge/base_echo/proc/lullaby_block_reason(mob/living/user, atom/target)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_lullaby)
+	if(!can_use(user) || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	var/reason = heretic_capture_block_reason(user, target, HERETIC_ECHO_CAPTURE)
+	if(reason)
+		return reason
+	var/mob/living/victim = target
+	if(!isturf(victim.loc) || !line_clear(user, victim, HERETIC_ECHO_LULLABY_RANGE))
+		return "Цель должна стоять не дальше пяти клеток по открытой линии."
+	if(victim.has_status_effect(/datum/status_effect/heretic_echo_lullaby))
+		return "Цель уже засыпает."
+	if(!rung_by_me(victim))
+		return "Колыбельная берёт только цель с вашим Остаточным звоном: сначала коснитесь её Хваткой или заденьте волной."
+	if(combat_resource < HERETIC_ECHO_LULLABY_COST)
+		return "Нужно [HERETIC_ECHO_LULLABY_COST] резонанса."
+	return null
+
+/datum/eldritch_knowledge/base_echo/proc/lullaby(mob/living/user, mob/living/victim)
+	echo_failure = lullaby_block_reason(user, victim)
+	if(echo_failure || !spend_combat_resource(HERETIC_ECHO_LULLABY_COST))
+		return FALSE
+	if(!victim.apply_status_effect(/datum/status_effect/heretic_echo_lullaby, src))
+		gain_combat_resource(HERETIC_ECHO_LULLABY_COST)
+		echo_failure = "Колыбельная не удержала цель."
+		return FALSE
+	playsound(victim, 'modular_bluemoon/sound/heretic/echo_grasp.ogg', 30, TRUE)
+	log_combat(user, victim, "убаюкивает Колыбельной Эха")
+	return TRUE
+
+/datum/eldritch_knowledge/base_echo/proc/voice_block_reason(mob/living/user, obj/item/radio/intercom/intercom)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_voice)
+	if(!can_use(user) || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	if(QDELETED(intercom) || !(intercom in taps) || !isturf(intercom.loc))
+		return "Нужен интерком с вашей прослушкой."
+	return null
+
+/// Невидимые символы и смена направления письма могли бы переставить пометку помех перед именем.
+/proc/heretic_echo_has_format_chars(text)
+	var/char = ""
+	for(var/index = 1, index <= length(text), index += length(char))
+		char = text[index]
+		var/code = text2ascii(char)
+		if((code >= 0x200B && code <= 0x200F) || (code >= 0x202A && code <= 0x202E) || (code >= 0x2066 && code <= 0x2069))
+			return TRUE
+	return FALSE
+
+/datum/eldritch_knowledge/base_echo/proc/fake_voice(mob/living/user, obj/item/radio/intercom/intercom, voice_name, phrase)
+	echo_failure = voice_block_reason(user, intercom)
+	if(echo_failure)
+		return FALSE
+	if(!user.can_speak_basic("[phrase]"))
+		echo_failure = "Сейчас вам нельзя говорить в игровом чате."
+		return FALSE
+	voice_name = reject_bad_text(trim("[voice_name]"), HERETIC_ECHO_VOICE_NAME_LEN, ascii_only = FALSE)
+	if(!voice_name || CHAT_FILTER_CHECK(voice_name) || heretic_echo_has_format_chars(voice_name))
+		echo_failure = "Имя не подходит: до [HERETIC_ECHO_VOICE_NAME_LEN] символов, без угловых скобок, косых черт, невидимых символов и запрещённых слов."
+		return FALSE
+	phrase = trim(copytext_char("[phrase]", 1, MAX_MESSAGE_LEN))
+	if(!phrase)
+		echo_failure = "Нечего сказать: фраза пуста."
+		return FALSE
+	if(CHAT_FILTER_CHECK(phrase))
+		echo_failure = "Мансус не повторит эту фразу: в ней запрещённое слово."
+		return FALSE
+	voice_name = sanitize(voice_name)
+	phrase = sanitize(phrase)
+	var/atom/movable/virtualspeaker/heretic_echo/voice = new(null, intercom, null)
+	voice.name = voice_name
+	voice.send_speech(phrase, HERETIC_ECHO_VOICE_RANGE, intercom, spans = list(), message_language = /datum/language/common)
+	qdel(voice)
+	user.log_talk(phrase, LOG_SAY, tag = "чужой голос «[voice_name]» через [intercom] в [AREACOORD(intercom)]")
+	user.log_message("говорит чужим голосом «[voice_name]» через [intercom] в [AREACOORD(intercom)]: [phrase]", LOG_GAME)
+	return TRUE
+
+/datum/eldritch_knowledge/base_echo/proc/fake_noise(mob/living/user, obj/item/radio/intercom/intercom, noise)
+	echo_failure = voice_block_reason(user, intercom)
+	if(echo_failure)
+		return FALSE
+	var/noise_sound
+	var/noise_text
+	switch(noise)
+		if(HERETIC_ECHO_NOISE_SCREAM)
+			noise_sound = pick('sound/voice/scream/scream_m1.ogg', 'sound/voice/scream/scream_f1.ogg')
+			noise_text = "Из динамика [intercom] рвётся истошный крик!"
+		if(HERETIC_ECHO_NOISE_GLASS)
+			noise_sound = SFX_SHATTER
+			noise_text = "Из динамика [intercom] раздаётся звон бьющегося стекла!"
+		else
+			echo_failure = "Такого шума динамик не знает."
+			return FALSE
+	playsound(intercom, noise_sound, HERETIC_ECHO_NOISE_VOLUME, TRUE)
+	intercom.visible_message(span_danger(noise_text), blind_message = span_danger(noise_text))
+	user.log_message("поднимает шум «[noise]» в [intercom] в [AREACOORD(intercom)]", LOG_GAME)
+	return TRUE
+
+/datum/eldritch_knowledge/base_echo/proc/hush(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	echo_failure = heretic_containment_reason(user)
+	if(echo_failure)
+		return FALSE
+	if(!can_use(user) || QDELETED(required))
+		echo_failure = "Способность недоступна вашему пути или текущему телу."
+		return FALSE
+	if(user.has_status_effect(/datum/status_effect/heretic_echo_hush))
+		echo_failure = "Тишина уже держится."
+		return FALSE
+	if(!user.apply_status_effect(/datum/status_effect/heretic_echo_hush, src))
+		echo_failure = "Тишина не легла."
+		return FALSE
+	log_game("[key_name(user)] уходит в Тишину Эха в [AREACOORD(user)].")
+	return TRUE
+
+/datum/eldritch_knowledge/base_echo/proc/adjacent_tap(mob/living/user)
+	for(var/obj/item/radio/intercom/intercom as anything in taps)
+		var/turf/place = get_turf(intercom)
+		if(place?.z == user.z && get_dist(user, place) <= HERETIC_ECHO_ETHER_REACH)
+			return intercom
+	return null
+
+/// Свои интеркомы на уровне еретика, кроме того, у которого он стоит: подпись -> интерком.
+/datum/eldritch_knowledge/base_echo/proc/ether_choices(mob/living/user)
+	. = list()
+	var/obj/item/radio/intercom/from_tap = adjacent_tap(user)
+	if(!from_tap)
+		return
+	for(var/obj/item/radio/intercom/intercom as anything in taps)
+		var/turf/place = get_turf(intercom)
+		if(intercom != from_tap && place?.z == user.z)
+			.[heretic_unique_label(., "Интерком - [get_area_name(intercom, TRUE)]")] = intercom
+
+/datum/eldritch_knowledge/base_echo/proc/ether_exit(obj/item/radio/intercom/to_tap)
+	var/turf/center = get_turf(to_tap)
+	if(!center || isgroundlessturf(center))
+		return null
+	if(isopenturf(center) && !center.is_blocked_turf(exclude_mobs = TRUE))
+		return center
+	for(var/turf/open/tile in RANGE_TURFS(HERETIC_ECHO_ETHER_REACH, center))
+		if(tile != center && !isgroundlessturf(tile) && !tile.is_blocked_turf(exclude_mobs = TRUE) && heretic_step_open(center, tile))
+			return tile
+	return null
+
+/datum/eldritch_knowledge/base_echo/proc/ether_failure(mob/living/user, obj/item/radio/intercom/from_tap, obj/item/radio/intercom/to_tap)
+	var/containment = heretic_containment_reason(user)
+	if(containment)
+		return containment
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	if(!can_use(user) || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	var/turf/entry = get_turf(from_tap)
+	if(!(from_tap in taps) || entry?.z != user.z || get_dist(user, entry) > HERETIC_ECHO_ETHER_REACH)
+		return "Встаньте вплотную к своему интеркому."
+	if(!(to_tap in taps) || to_tap == from_tap)
+		return "Выйти можно только из другого своего интеркома."
+	var/turf/exit_place = get_turf(to_tap)
+	if(exit_place?.z != user.z)
+		return "Этот интерком на другом уровне: эфир ведёт только к интеркомам на вашем уровне."
+	if(user.buckled || user.anchored || HAS_TRAIT(user, TRAIT_NO_TELEPORT))
+		return "Вас что-то держит на месте: в эфир не уйти."
+	var/turf/exit = ether_exit(to_tap)
+	if(!exit)
+		return "У того интеркома некуда выйти: все клетки рядом заняты."
+	var/area/origin_area = get_area(user)
+	var/area/exit_area = get_area(exit)
+	if((origin_area.area_flags & NOTELEPORT) || (exit_area.area_flags & NOTELEPORT))
+		return "Эфир здесь глух: вход или выход в зоне, закрытой для телепортации."
+	if(combat_resource < HERETIC_ECHO_ETHER_COST)
+		return "Нужна [HERETIC_ECHO_ETHER_COST] единица резонанса."
+	return null
+
+/datum/eldritch_knowledge/base_echo/proc/ether_ready(mob/living/user, obj/item/radio/intercom/from_tap, obj/item/radio/intercom/to_tap)
+	return !ether_failure(user, from_tap, to_tap)
+
+/// Уход в эфир: полторы секунды у своего интеркома, выход из другого своего, и его динамик хрипит.
+/datum/eldritch_knowledge/base_echo/proc/ether(mob/living/user, obj/item/radio/intercom/from_tap, obj/item/radio/intercom/to_tap)
+	echo_failure = ether_failure(user, from_tap, to_tap)
+	if(echo_failure)
+		return FALSE
+	user.visible_message(span_warning("[user] прижимается к [from_tap], и его очертания рассыпаются в шум."), span_notice("Вы уходите в эфир."))
+	playsound(from_tap, 'sound/misc/interference.ogg', 40, TRUE)
+	if(!do_after(user, HERETIC_ECHO_ETHER_TIME, target = from_tap, extra_checks = CALLBACK(src, PROC_REF(ether_ready), user, from_tap, to_tap)))
+		echo_failure = ether_failure(user, from_tap, to_tap) || "Уход в эфир прерван: полторы секунды стойте у интеркома неподвижно."
+		return FALSE
+	echo_failure = ether_failure(user, from_tap, to_tap)
+	if(echo_failure || !spend_combat_resource(HERETIC_ECHO_ETHER_COST))
+		return FALSE
+	var/turf/origin = get_turf(user)
+	var/turf/exit = ether_exit(to_tap)
+	if(!do_teleport(user, exit, channel = TELEPORT_CHANNEL_MAGIC) || get_turf(user) != exit)
+		gain_combat_resource(HERETIC_ECHO_ETHER_COST)
+		echo_failure = "Эфир не вынес вас: у выхода что-то мешает."
+		return FALSE
+	playsound(to_tap, 'sound/misc/interference.ogg', 60, TRUE)
+	to_tap.audible_message(span_warning("[to_tap] хрипит помехами."))
+	log_game("[key_name(user)] уходит в эфир Эха из [AREACOORD(origin)] к [to_tap] в [AREACOORD(exit)].")
+	return TRUE
 
 /datum/eldritch_knowledge/base_echo/proc/create_resonator(mob/living/user, turf/place)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/echo_resonator)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/echo_fork)
 	if(!can_use(user) || !required || !line_clear(user, place) || isspaceturf(place) || istype(place, /turf/open/lava) || length(resonators) >= HERETIC_ECHO_RESONATOR_LIMIT)
 		return FALSE
 	for(var/obj/structure/heretic_echo_resonator/resonator as anything in resonators)
@@ -556,7 +904,7 @@
 
 /obj/structure/heretic_echo_resonator
 	name = "sepulchral resonator"
-	desc = "Три латунные трубы поют чужими голосами. Повторяют Последний удар и Припев хозяина с полным уроном. Разбейте резонатор или коснитесь его нулевым жезлом, чтобы оборвать повтор."
+	desc = "Три латунные трубы поют чужими голосами. Повторяют Последний удар хозяина с полным уроном. Разбейте резонатор или коснитесь его нулевым жезлом, чтобы оборвать повтор."
 	icon = 'modular_bluemoon/icons/obj/heretic_echo.dmi'
 	icon_state = "echo_resonator"
 	anchored = TRUE
@@ -654,6 +1002,7 @@
 		return FALSE
 	echo.ringing += src
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_overlay))
+	RegisterSignal(owner, COMSIG_MOVABLE_USING_RADIO, PROC_REF(jam_radio))
 	owner.update_icon()
 	return TRUE
 
@@ -661,10 +1010,21 @@
 	SIGNAL_HANDLER
 	overlays += ringing_overlay
 
+/datum/status_effect/heretic_echo_ringing/proc/jam_radio(atom/movable/source, obj/item/radio/radio)
+	SIGNAL_HANDLER
+	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(echo?.echo_body)
+	if(!heretic?.get_knowledge(/datum/eldritch_knowledge/echo_grasp))
+		return NONE
+	// Интерком с микрофоном рядом слышит одну реплику дважды: жалуемся только на свою рацию.
+	if(get_atom_on_turf(radio) == owner)
+		owner.show_message(span_warning("В ушах звенит так, что [radio] не слышит вашего голоса."))
+	return COMPONENT_CANNOT_USE_RADIO
+
 /datum/status_effect/heretic_echo_ringing/on_remove()
 	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
 	echo?.ringing.Remove(src)
-	UnregisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS)
+	UnregisterSignal(owner, list(COMSIG_ATOM_UPDATE_OVERLAYS, COMSIG_MOVABLE_USING_RADIO))
 	owner.update_icon()
 	return ..()
 
@@ -680,9 +1040,9 @@
 
 /atom/movable/screen/alert/status_effect/heretic_echo_ringing
 	name = "Остаточный звон"
-	desc = "Чужая нота держится за ваше тело. Усиленный клинок её владельца наносит ещё 10 ушибов. Второе попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами: уходите с отмеченного пола. Звон исчезнет через 12 секунд после последнего попадания магии."
+	desc = "Чужая нота держится за ваше тело: рация может не услышать вашего голоса, тогда говорите вслух. Еретик может усыпить звенящую цель Колыбельной - держитесь от него дальше пяти клеток. Второе попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами: уходите с отмеченного пола. Звон исчезнет через 12 секунд после последнего попадания магии."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_echo"
+	icon_state = "echo_ring_note"
 
 /datum/status_effect/heretic_echo_dissonance
 	id = "heretic_echo_dissonance"
@@ -728,7 +1088,208 @@
 	name = "Звуковая контузия"
 	desc = "Повторная волна на 1,5 секунды блокирует стрельбу и удары предметами. Вы можете двигаться и говорить; оружие остаётся в руках."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_echo"
+	icon_state = "echo_concussion"
+
+/datum/status_effect/heretic_echo_lullaby
+	id = "heretic_echo_lullaby"
+	duration = HERETIC_ECHO_LULLABY_DROWSE
+	tick_interval = HERETIC_ECHO_LULLABY_CHECK
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_echo_lullaby
+	examine_text = span_warning("SUBJECTPRONOUN клюёт носом, над головой дрожит бледная нота. Разбудите сильным ударом, растолкайте или уведите (унесите) дальше пяти клеток от поющего.")
+	var/datum/weakref/echo_ref
+	var/mob/living/singer
+	var/mutable_appearance/note
+	var/applied = FALSE
+	var/interrupted = FALSE
+	var/foreign_hit_at = -1
+
+/datum/status_effect/heretic_echo_lullaby/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_echo/echo)
+	echo_ref = WEAKREF(echo)
+	singer = echo?.echo_body
+	return ..()
+
+/datum/status_effect/heretic_echo_lullaby/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+	if(!. || !echo || QDELETED(singer))
+		return FALSE
+	applied = TRUE
+	echo.lullabies += src
+	note = mutable_appearance('modular_bluemoon/icons/obj/heretic_echo_effects.dmi', "echo_mark", ABOVE_MOB_LAYER)
+	note.color = HERETIC_ECHO_LULLABY_COLOR
+	note.pixel_y = HERETIC_ECHO_LULLABY_NOTE_OFFSET
+	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_overlay))
+	RegisterSignal(owner, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_damage))
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(check_distance))
+	RegisterSignal(singer, COMSIG_MOVABLE_MOVED, PROC_REF(check_distance))
+	RegisterSignal(singer, COMSIG_PARENT_QDELETING, PROC_REF(wake))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(on_sacrifice_starting))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(wake))
+	RegisterSignal(owner, COMSIG_LIVING_ATTACKER_SET, PROC_REF(on_attacker_set))
+	RegisterSignal(owner, COMSIG_ATOM_BULLET_ACT, PROC_REF(on_bullet))
+	RegisterSignal(owner, COMSIG_ATOM_HITBY, PROC_REF(on_hitby))
+	heretic_capture_hold(owner, HERETIC_ECHO_CAPTURE)
+	owner.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/heretic_echo_lullaby, multiplicative_slowdown = owner.movement_delay() * (1 / (1 - HERETIC_ECHO_LULLABY_SLOWDOWN) - 1))
+	owner.update_icon()
+	owner.blur_eyes(HERETIC_ECHO_LULLABY_BLUR)
+	owner.visible_message(span_warning("[owner] клюёт носом, над головой дрожит бледная нота."), span_userdanger("Веки тяжелеют, в ушах звучит колыбельная. Уйдите от поющего дальше пяти клеток, иначе уснёте!"))
+	return TRUE
+
+/datum/status_effect/heretic_echo_lullaby/proc/update_overlay(atom/source, list/overlays)
+	SIGNAL_HANDLER
+	overlays += note
+
+/// Будит только сильный удар другого существа: удар в ближнем бою называет нападавшего до урона, пуля и бросок несут урон с собой.
+/datum/status_effect/heretic_echo_lullaby/proc/on_damage(datum/source, damage, damagetype)
+	SIGNAL_HANDLER
+	var/struck = foreign_hit_at == world.time
+	foreign_hit_at = -1
+	if(struck && heavy_hit(damage, damagetype))
+		wake()
+
+/datum/status_effect/heretic_echo_lullaby/proc/heavy_hit(damage, damagetype)
+	return damage >= HERETIC_ECHO_LULLABY_WAKE_DAMAGE && damagetype != STAMINA
+
+/datum/status_effect/heretic_echo_lullaby/proc/on_attacker_set(datum/source, mob/attacker)
+	SIGNAL_HANDLER
+	if(attacker && attacker != owner)
+		foreign_hit_at = world.time
+
+/datum/status_effect/heretic_echo_lullaby/proc/on_bullet(datum/source, obj/item/projectile/projectile)
+	SIGNAL_HANDLER
+	if(projectile?.firer && projectile.firer != owner && !projectile.nodamage && heavy_hit(projectile.damage, projectile.damage_type))
+		wake()
+
+/datum/status_effect/heretic_echo_lullaby/proc/on_hitby(datum/source, atom/movable/hitting_atom, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
+	SIGNAL_HANDLER
+	var/obj/item/thrown = hitting_atom
+	if(istype(thrown) && throwingdatum?.thrower && throwingdatum.thrower != owner && heavy_hit(thrown.throwforce, thrown.damtype))
+		wake()
+
+/datum/status_effect/heretic_echo_lullaby/tick()
+	check_distance()
+
+/datum/status_effect/heretic_echo_lullaby/proc/check_distance(datum/source)
+	SIGNAL_HANDLER
+	if(!singer_near())
+		wake()
+
+/// По клеткам, а не по самим мобам: цель в шкафу или на руках уносят без её собственного шага.
+/datum/status_effect/heretic_echo_lullaby/proc/singer_near()
+	var/turf/singer_turf = get_turf(singer)
+	var/turf/owner_turf = get_turf(owner)
+	return singer_turf && owner_turf && singer_turf.z == owner_turf.z && get_dist(singer_turf, owner_turf) <= HERETIC_ECHO_LULLABY_RANGE
+
+/datum/status_effect/heretic_echo_lullaby/proc/wake()
+	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
+	interrupted = TRUE
+	owner.visible_message(span_notice("[owner] вздрагивает и стряхивает дремоту."), span_notice("Вы вздрагиваете, и колыбельная обрывается."))
+	qdel(src)
+
+/datum/status_effect/heretic_echo_lullaby/proc/on_sacrifice_starting(datum/source)
+	SIGNAL_HANDLER
+	interrupted = TRUE
+	qdel(src)
+
+/datum/status_effect/heretic_echo_lullaby/on_remove()
+	if(applied)
+		UnregisterSignal(owner, list(COMSIG_ATOM_UPDATE_OVERLAYS, COMSIG_MOB_APPLY_DAMAGE, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_LIVING_ATTACKER_SET, COMSIG_ATOM_BULLET_ACT, COMSIG_ATOM_HITBY))
+		heretic_capture_unhold(owner, HERETIC_ECHO_CAPTURE)
+		owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_echo_lullaby)
+		if(singer)
+			UnregisterSignal(singer, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		owner.update_icon()
+		var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+		echo?.lullabies -= src
+		// Истёкший срок без срыва отличает досмотренную колыбельную от прерванной.
+		var/fell_asleep = !interrupted && echo && world.time >= duration && owner.stat != DEAD && singer_near()
+		if(fell_asleep)
+			owner.Sleeping(HERETIC_ECHO_LULLABY_SLEEP)
+			heretic_capture_knock_out(owner, echo, HERETIC_ECHO_CAPTURE, HERETIC_ECHO_LULLABY_SLEEP)
+			owner.visible_message(span_warning("[owner] засыпает под колыбельную, которой никто не пел."), span_userdanger("Колыбельная дотягивает последнюю ноту, и вы засыпаете."))
+		heretic_capture_release(owner, HERETIC_ECHO_CAPTURE, fell_asleep ? HERETIC_ECHO_LULLABY_SLEEP : 0)
+	singer = null
+	note = null
+	echo_ref = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_echo_lullaby
+	name = "Колыбельная"
+	desc = "Веки тяжелеют, ноги идут на 40% медленнее. Через 3 секунды вы уснёте на 10 секунд. Уйдите от поющего дальше пяти клеток; разбудит и сильный удар или тот, кто растолкает вас 2 секунды."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "echo_drowse"
+
+/datum/movespeed_modifier/heretic_echo_lullaby
+	variable = TRUE
+
+/datum/status_effect/heretic_echo_hush
+	id = "heretic_echo_hush"
+	duration = HERETIC_ECHO_HUSH_DURATION
+	tick_interval = -1
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_echo_hush
+	var/datum/weakref/echo_ref
+	var/applied = FALSE
+	var/previous_alpha
+
+/datum/status_effect/heretic_echo_hush/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_echo/echo)
+	echo_ref = WEAKREF(echo)
+	return ..()
+
+/datum/status_effect/heretic_echo_hush/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+	if(!. || !echo)
+		return FALSE
+	applied = TRUE
+	echo.hushes += src
+	previous_alpha = owner.alpha
+	owner.alpha = HERETIC_ECHO_HUSH_ALPHA
+	ADD_TRAIT(owner, TRAIT_SILENT_STEP, HERETIC_ECHO_HUSH_TRAIT)
+	RegisterSignal(owner, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_GUN_PROCESS_FIRE, COMSIG_MOB_CAST_SPELL, COMSIG_MOB_THROW, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER), PROC_REF(break_hush))
+	RegisterSignal(owner, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_unarmed))
+	RegisterSignal(owner, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_damage))
+	owner.visible_message(span_warning("[owner] бледнеет и тает в воздухе, как звук, который перестали слушать."), span_notice("Тишина смыкается вокруг вас: вы почти невидимы, шагов не слышно. Атака, заклинание или рана разорвут её."))
+	return TRUE
+
+/datum/status_effect/heretic_echo_hush/proc/on_unarmed(datum/source, atom/target)
+	SIGNAL_HANDLER
+	if(isliving(target) && target != owner && owner.a_intent != INTENT_HELP)
+		break_hush()
+
+/datum/status_effect/heretic_echo_hush/proc/on_damage(datum/source, damage)
+	SIGNAL_HANDLER
+	if(damage > 0)
+		break_hush()
+
+/datum/status_effect/heretic_echo_hush/proc/break_hush()
+	SIGNAL_HANDLER
+	if(!QDELETED(src))
+		qdel(src)
+
+/datum/status_effect/heretic_echo_hush/on_remove()
+	if(applied)
+		UnregisterSignal(owner, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_GUN_PROCESS_FIRE, COMSIG_MOB_CAST_SPELL, COMSIG_MOB_THROW, COMSIG_MOB_ATTACK_RANGED, COMSIG_LIVING_SET_AS_ATTACKER, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_APPLY_DAMAGE))
+		REMOVE_TRAIT(owner, TRAIT_SILENT_STEP, HERETIC_ECHO_HUSH_TRAIT)
+		// Прозрачность, изменённая кем-то другим во время Тишины, остаётся как есть.
+		if(owner.alpha == HERETIC_ECHO_HUSH_ALPHA)
+			owner.alpha = previous_alpha
+		var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
+		echo?.hushes -= src
+		to_chat(owner, span_notice("Тишина рассеивается: вас снова видно и слышно."))
+	echo_ref = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_echo_hush
+	name = "Тишина"
+	desc = "Вы почти невидимы, шагов не слышно. Любая ваша атака, заклинание или полученный урон разорвут Тишину."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "echo_hush"
 
 /datum/status_effect/eldritch/echo
 	id = "echo_mark"
@@ -781,16 +1342,20 @@
 
 /obj/item/heretic_path_relic/echo_fork
 	name = "mourning lyre"
-	desc = "Ручная лира на колоколе-резонаторе. Применение в руке меняет крест и диагонали повторов Последнего удара и Припева. Alt-клик готовит удержание следующего повтора на 3 секунды, следующий Alt-клик выпускает его раньше. Голубой рисунок показывает удержанный звук; перед ударом он снова предупреждает за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка доступна раз в 10 секунд. Щёлкните лирой по своему резонатору в семи клетках: Крещендо и Последняя служба повторят вокруг него весь рисунок. Повторный щелчок снимает выбор. Нужна открытая линия к резонатору; пересечения одного такта не умножают урон."
+	desc = "Ручная лира на колоколе-резонаторе. Щелчок лирой по полу в намерении «Помощь» в пяти клетках по открытой линии ставит резонатор за единицу резонанса: он повторяет Последний удар с полным уроном, живёт 30 секунд, держит 35 прочности; резонаторов не больше двух, новый - раз в 8 секунд. Применение в руке меняет крест и диагонали повторов Последнего удара. Alt-клик готовит удержание следующего повтора на 3 секунды, следующий Alt-клик выпускает его раньше. Голубой рисунок показывает удержанный звук; перед ударом он снова предупреждает за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка доступна раз в 10 секунд. Щёлкните лирой по своему резонатору в семи клетках: Крещендо и Последняя служба повторят вокруг него весь рисунок. Повторный щелчок снимает выбор. Нужна открытая линия к резонатору; пересечения одного такта не умножают урон."
 	icon = 'modular_bluemoon/icons/obj/heretic_echo.dmi'
 	icon_state = "echo_fork"
+	COOLDOWN_DECLARE(resonator_cooldown)
 
 /obj/item/heretic_path_relic/echo_fork/attack_self(mob/living/user)
 	return retune(user)
 
 /obj/item/heretic_path_relic/echo_fork/afterattack(atom/target, mob/living/user, proximity_flag, click_parameters)
+	. = ..()
+	if(isturf(target) && user.a_intent == INTENT_HELP)
+		return place_resonator(user, target)
 	if(!istype(target, /obj/structure/heretic_echo_resonator))
-		return ..()
+		return
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	var/obj/structure/heretic_echo_resonator/resonator = target
@@ -806,6 +1371,20 @@
 		resonator.set_light(2, 1, "#85ccd4")
 		to_chat(user, span_eldritch("Выбранный резонатор светится голубым. Крещендо и Последняя служба прозвучат также вокруг него; пересечения одного такта не умножают урон."))
 	echo.notify_resource_changed()
+	return TRUE
+
+/obj/item/heretic_path_relic/echo_fork/proc/place_resonator(mob/living/user, turf/place)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	if(!authorized(user) || !echo?.can_use(user))
+		return FALSE
+	if(!COOLDOWN_FINISHED(src, resonator_cooldown))
+		to_chat(user, span_warning("Струны ещё дрожат: новый резонатор через [DisplayTimeText(COOLDOWN_TIMELEFT(src, resonator_cooldown))]."))
+		return FALSE
+	if(!echo.create_resonator(user, place))
+		to_chat(user, span_warning("Резонатор не встаёт: нужен свободный пол в пяти клетках по открытой линии, единица резонанса и не больше двух резонаторов."))
+		return FALSE
+	COOLDOWN_START(src, resonator_cooldown, HERETIC_ECHO_RESONATOR_COOLDOWN)
 	return TRUE
 
 /obj/item/heretic_path_relic/echo_fork/AltClick(mob/living/user)
@@ -828,7 +1407,7 @@
 		return FALSE
 	echo.hold_next_repeat = TRUE
 	COOLDOWN_START(src, relic_cooldown, 10 SECONDS)
-	to_chat(user, span_eldritch("Следующий повтор Последнего удара или Припева задержится на 3 секунды. Alt-клик по лире отпустит его раньше; перед ударом прозвучит обычное предупреждение."))
+	to_chat(user, span_eldritch("Следующий повтор Последнего удара задержится на 3 секунды. Alt-клик по лире отпустит его раньше; перед ударом прозвучит обычное предупреждение."))
 	return TRUE
 
 /obj/item/heretic_path_relic/echo_fork/proc/retune(mob/living/user)
@@ -887,19 +1466,19 @@
 	fadein = 0.1 SECONDS
 
 /datum/eldritch_knowledge/base_echo/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic || !proximity_flag || !istype(target, /obj/item/radio/intercom) || !isturf(target.loc))
+	if(!proximity_flag || !istype(target, /obj/item/radio/intercom))
 		return FALSE
-	var/obj/item/radio/intercom/speaker = target
-	if(!speaker.on || !heretic.advance_deed(heretic.deed_key_for(speaker), get_turf(user)))
-		return FALSE
-	speaker.audible_message(span_hear("Из динамика [speaker] доносится хриплый шёпот на незнакомом языке."), hearing_distance = HERETIC_ECHO_DEED_WHISPER_RANGE)
-	playsound(speaker, 'modular_bluemoon/sound/heretic/echo_cast.ogg', 45, TRUE)
-	return TRUE
+	return tap(target, user)
 
 /datum/eldritch_knowledge/echo_grasp
 	name = "Звенящая хватка"
-	desc = "Хватка Мансуса оставляет Остаточный звон на 12 секунд и даёт 2 единицы резонанса раз в 6 секунд. Звон подготавливает врага к усиленному клинку. Антимагия и союзники не дают ресурса."
+	summary = "Хватка оставляет Остаточный звон на 12 секунд: рация цели молчит."
+	details = list(
+		"Голос звенящей цели слышен только рядом, по рации он не уходит.",
+		"Звенящую цель можно усыпить Колыбельной.",
+		"Даёт 2 резонанса раз в 6 секунд; антимагия и союзники ресурса не дают.",
+	)
+	role = HERETIC_ROLE_GRASP
 	gain_text = "Я коснулся горла. Голос ответил из пустой ладони."
 	cost = 1
 	route = PATH_ECHO
@@ -915,23 +1494,32 @@
 		COOLDOWN_START(echo, grasp_harvest, HERETIC_ECHO_HARVEST_TIME)
 	return TRUE
 
-/datum/eldritch_knowledge/spell/echo_refrain
-	name = "Припев"
-	desc = "Выберите точку в пяти клетках: вся область 3×3 вокруг неё сразу получает 18 ушибов и 15 урона выносливости. Через 0,8 секунды отмеченный крест радиусом две клетки повторит удар на 22 ушиба и 25 выносливости. От повтора можно уклониться. Попадание обоих тактов на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Не требует резонанса, перезарядка — 14 секунд. Лира меняет рисунок повтора; резонаторы расширяют его охват."
-	gain_text = "Я вычеркнул строку. Хор пропел её ещё раз."
+/datum/eldritch_knowledge/spell/echo_lullaby
+	name = "Колыбельная"
+	summary = "За 2 резонанса звенящая цель в 5 клетках через 3 секунды засыпает на 10 секунд."
+	details = list(
+		"Нужен ваш Остаточный звон на цели и открытая линия до 5 клеток.",
+		"3 секунды напева: зрение плывёт, шаг на 40% медленнее.",
+		"Будят удар другого существа от 10 урона, 2 секунды растолкать и уход дальше 5 клеток, даже на руках.",
+		"Свой урон цели, урон выносливости и клик «Помощи» не будят.",
+		"Спящая готова к обряду; сердце уводит её в изнанку, как и готовую цель в 3 клетках от прослушки.",
+		"Антимагия защищает; потом цель минуту невосприимчива, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
+	)
+	role = HERETIC_ROLE_CAPTURE
+	gain_text = "Я пел, пока звон не стал тишиной, а тишина - сном."
 	cost = 1
 	route = PATH_ECHO
-	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_echo/refrain
-
-/datum/eldritch_knowledge/spell/echo_refrain/on_body_lose(mob/living/user)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	echo?.clear_knowledge_effects(src)
-	return ..()
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby
 
 /datum/eldritch_knowledge/echo_mark
 	name = "Метка Эха"
-	desc = "Хватка Мансуса оставляет метку на 15 секунд. Удар клинком возвращает единицу резонанса и отмечает крест вокруг цели: через 0,8 секунды повтор нанесёт 20 ушибов и 20 урона выносливости. Из креста можно выйти. Метка оставляет Остаточный звон на 12 секунд."
+	summary = "Хватка ставит метку на 15 секунд, удар клинком её взрывает повтором крестом."
+	details = list(
+		"Взрыв возвращает единицу резонанса и отмечает крест вокруг цели.",
+		"Через 0,8 секунды повтор: 20 ушибов и 20 выносливости; из креста можно выйти.",
+		"Метка оставляет Остаточный звон на 12 секунд.",
+	)
+	role = HERETIC_ROLE_MARK
 	gain_text = "В партитуре было написано моё имя. Следующая нота принадлежала уже не мне."
 	cost = 2
 	route = PATH_ECHO
@@ -954,7 +1542,17 @@
 
 /datum/eldritch_knowledge/echo_fork
 	name = "Поминальная лира"
-	desc = "Лист золота и металлический прут создают лиру. Применение в руке переключает крест и диагонали повторов Последнего удара и Припева, включая резонаторные. Alt-клик готовит удержание следующего повтора на 3 секунды; повторный Alt-клик выпускает его раньше или отменяет подготовку. Голубой рисунок сохраняет прежние клетки, затем даёт обычное предупреждение за 0,8 секунды. Удержанный повтор не продолжает диссонанс первого удара. Настройка раз в 10 секунд, выпуск свободный. Резонанс не расходуется; можно иметь одну лиру. Щёлкните лирой по своему резонатору в семи клетках: Крещендо и Последняя служба повторят вокруг него весь рисунок. Повторный щелчок снимает выбор. Нужна открытая линия к резонатору; пересечения одного такта не умножают урон."
+	summary = "Лист золота и прут дают лиру: резонаторы расширяют Последний удар, лира меняет рисунок."
+	details = list(
+		"Щелчок лирой по полу в «Помощи» в 5 клетках ставит резонатор за единицу: 30 секунд, 35 прочности.",
+		"Резонатор повторяет Последний удар с полным уроном; их не больше двух, новый раз в 8 секунд.",
+		"Связь с резонатором - в 7 клетках без преград; нулевой жезл его разрушает, свой убирается рукой.",
+		"Применение в руке переключает крест и диагонали повторов, раз в 10 секунд.",
+		"Alt-клик держит следующий повтор до 3 секунд голубым рисунком на прежних клетках, повторный выпускает его.",
+		"Щелчок по своему резонатору: Крещендо и Последняя служба повторят рисунок вокруг него.",
+		"Настройка и удержание резонанс не тратят; лира одна, пересечения одного такта не умножают урон.",
+	)
+	role = HERETIC_ROLE_RELIC
 	gain_text = "Я отпустил струны. Третья продолжала звучать, хотя я её не касался."
 	cost = 1
 	route = PATH_ECHO
@@ -991,40 +1589,47 @@
 	on_body_lose(null)
 	return ..()
 
-/datum/eldritch_knowledge/echo_upgrade
-	name = "Режущая нота"
-	desc = "Звенящий клинок наносит ещё 10 ушибов противнику с вашим Остаточным звоном. Звон оставляют хватка, метка и попадания волн; он длится 12 секунд."
-	gain_text = "Я заточил сталь, слушая, где обрывается её песня."
+/datum/eldritch_knowledge/spell/echo_voice
+	name = "Чужой голос"
+	summary = "Из интеркома с прослушкой звучит фраза чужим голосом, крик или звон стекла."
+	details = list(
+		"«Голос»: имя до 26 символов и фраза, её слышно вслух рядом с интеркомом.",
+		"У имени пометка «(сквозь помехи)», по рации голос не уходит.",
+		"«Крик» и «Звон стекла» поднимают громкий шум у динамика.",
+		"Бесплатно, перезарядка 20 секунд.",
+	)
+	role = HERETIC_ROLE_SUPPORT
+	gain_text = "Я заговорил, и динамик ответил голосом, которого у меня никогда не было."
 	cost = 2
 	route = PATH_ECHO
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_echo/voice
 
-/datum/eldritch_knowledge/echo_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	if(!proximity_flag || !echo?.can_use(user) || !isturf(target?.loc) || !heretic_can_affect(user, target, chargecost = 0))
-		return
-	var/mob/living/victim = target
-	var/datum/status_effect/heretic_echo_ringing/effect = victim.has_status_effect(/datum/status_effect/heretic_echo_ringing)
-	if(effect?.echo_ref?.resolve() == echo)
-		victim.adjustBruteLoss(10)
-
-/datum/eldritch_knowledge/spell/echo_resonator
-	name = "Голос из пустой трубы"
-	desc = "Поставьте резонатор в пяти клетках за единицу резонанса. Он повторяет Последний удар и отголосок Припева с полным уроном, расширяя область поражения. Перекрытие волн не умножает урон. Можно иметь два; каждый живёт 30 секунд и имеет 35 прочности. Связь работает в семи клетках без преград. Нулевой жезл разрушает резонатор; свой можно убрать рукой."
-	gain_text = "Труба была пуста. Я услышал, как внутри набрали воздуха."
+/datum/eldritch_knowledge/spell/echo_ether
+	name = "Уйти в эфир"
+	summary = "От своего интеркома к другому своему на уровне за 1,5 секунды; вдали от них - Тишина."
+	details = list(
+		"Встаньте вплотную к своему интеркому и выберите другой свой интерком на этом уровне.",
+		"Через 1,5 секунды вы выходите у него, его динамик хрипит помехами. Единица резонанса, перезарядка 45 секунд.",
+		"Второй режим - Тишина: 4 секунды почти невидимы и беззвучны; бесплатно, перезарядка 60 секунд.",
+		"У эфира и Тишины свои перезарядки: после одного режима другой готов сразу.",
+		"Вдали от своего интеркома способность сразу включает Тишину.",
+		"Тишину рвут атака, заклинание и полученный урон.",
+		"Наручники, щит разума и зоны без телепортации не пускают; снятая прослушка закрывает выход.",
+	)
+	role = HERETIC_ROLE_ESCAPE
+	gain_text = "Последняя нота угасла, и вместе с ней угас я."
 	cost = 1
 	route = PATH_ECHO
-	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_echo/resonator
-
-/datum/eldritch_knowledge/spell/echo_resonator/on_body_lose(mob/living/user)
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	echo?.clear_knowledge_effects(src)
-	return ..()
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_echo/ether
 
 /datum/eldritch_knowledge/echo_sustain
 	name = "Долгое послезвучие"
-	desc = "Предел резонанса возрастает до 5. Улучшения пассивки увеличивают его до 6 и 7. Знание не создаёт резонанс само по себе."
+	summary = "Запас резонанса растёт до 5."
+	details = list(
+		"Улучшения: 6 и 7, вознесение - 8.",
+		"Само знание резонанс не создаёт.",
+	)
+	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Певцы давно замолчали. Своды продолжали держать их голоса."
 	cost = 2
 	route = PATH_ECHO
@@ -1047,7 +1652,16 @@
 
 /datum/eldritch_knowledge/spell/echo_crescendo
 	name = "Крещендо"
-	desc = "Расходует весь резонанс, минимум 2. Вокруг выбранной точки звучат крест, диагонали и кольцо радиусом три клетки. Каждый рисунок предупреждает за 0,8 секунды. Такт наносит по 18 ушибов и урона выносливости плюс по 2 за единицу резонанса: при запасе 4 — по 26. Повторное попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Двигайтесь между рисунками, чтобы уклониться. Перезарядка — 40 секунд. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
+	summary = "Весь резонанс уходит в три рисунка вокруг точки: крест, диагонали и кольцо радиусом 3."
+	details = list(
+		"Каждый рисунок предупреждает за 0,8 секунды; между ними можно уклониться.",
+		"Такт: по 18 ушибов и выносливости плюс по 2 за единицу резонанса, при запасе 4 - по 26.",
+		"Каждый поражённый получает Остаточный звон на 12 секунд.",
+		"Повторное попадание одной последовательности на 1,5 секунды блокирует стрельбу и удары предметами.",
+		"Нужно не меньше 2 резонанса, перезарядка 40 секунд.",
+		"Выбранный лирой резонатор в 7 клетках повторяет рисунок; его разрушение отменяет повторы.",
+	)
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Первым вступил один голос. Последним — хор, которому не хватало места под небом."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -1063,7 +1677,17 @@
 /datum/eldritch_knowledge/final_eldritch/echo_final
 	parallax_scene = ANTAG_SCENE_HERETIC_ECHO
 	name = "Регент Последнего Хора"
-	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вознесение увеличивает предел резонанса до 8 и восстанавливает единицу каждые 8 секунд, пока вы способны действовать. Вы получаете общую стойкость вознесения. Отзвук: попадание врага, снявшее больше 5 здоровья, не чаще раза в 2 секунды отмечает крест в три клетки вокруг вас, через 0,8 секунды он наносит 15 ушибов и 15 урона выносливости и оставляет Остаточный звон, как обычные волны. Стены глушат отзвук, из креста можно уйти. «Последняя служба» бесплатно выпускает три волны вокруг вашей прежней позиции: первая накрывает центр и соседние клетки, вторая — клетки в 1–2 шагах, третья — в 2–3. Соседние волны перекрываются: неподвижную цель в одной-двух клетках от центра задевают две волны подряд. Каждая отмечает пол за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Перезарядка — 35 секунд. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
+	summary = "Попадания по вам отвечают звуковым крестом, запас растёт, открывается Последняя служба."
+	details = list(
+		"Нужны 3 назначенные души и 3 человеческих трупа на руне; станция узнаёт место обряда, он длится 30 секунд.",
+		"Общая стойкость вознесения, запас резонанса 8, единица каждые 8 секунд, пока вы можете действовать.",
+		"Отзвук: попадание больше чем на 5 здоровья не чаще раза в 2 секунды ставит крест в 3 клетки вокруг вас.",
+		"Через 0,8 секунды крест бьёт на 15 ушибов и 15 выносливости и оставляет звон; стены его глушат.",
+		"Последняя служба: три волны вокруг прежней позиции, каждая 32 ушиба и 35 выносливости, предупреждение 0,8 секунды.",
+		"Соседние волны перекрываются: цель в 1-2 клетках от центра задевают две. Перезарядка 35 секунд.",
+		"Выбранный лирой резонатор повторяет рисунок; пересечения не усиливают один такт.",
+	)
+	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Я поднял руку. Мёртвые не воскресли — они запели."
 	route = PATH_ECHO
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -1169,7 +1793,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_echo/release
 	name = "Последний удар"
-	desc = "За единицу резонанса сразу ударьте по всей области 5×5 вокруг себя: 12 ушибов и 10 урона выносливости. Через 0,8 секунды отмеченный крест радиусом три клетки нанесёт 24 ушиба и 25 выносливости. Лира меняет рисунок повтора, резонаторы расширяют его. От повтора можно уйти; два попадания на 1,5 секунды блокируют стрельбу и удары предметами, сохраняя движение."
+	desc = "За единицу резонанса сразу бьёт область 5×5: 12 ушибов и 10 выносливости; через 0,8 секунды отмеченный крест в 3 клетки - 24 ушиба и 25 выносливости. Из креста можно уйти, два попадания на 1,5 секунды блокируют стрельбу и удары предметами."
+	summary = "Сразу 12 ушибов по области 5×5, через 0,8 секунды крест: 24 ушиба и 25 выносливости."
 	charge_max = 12 SECONDS
 	action_icon_state = "echo_release"
 
@@ -1181,7 +1806,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_echo/final
 	name = "Последняя служба"
-	desc = "Вокруг прежней позиции расходятся три волны шириной в две клетки: до 1 шага от центра, 1–2 и 2–3 шага. Соседние волны перекрываются: неподвижную цель в одной-двух клетках от центра задевают две волны подряд. Каждая предупреждает за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Не расходует резонанс. Требует вознесения. Выбранный лирой резонатор повторяет рисунок при открытой связи в семи клетках; пересечения не усиливают один такт. Разрушение резонатора отменяет его повторы."
+	desc = "Вокруг прежней позиции расходятся три волны шириной в две клетки; каждая предупреждает за 0,8 секунды и наносит 32 ушиба и 35 урона выносливости. Не расходует резонанс, требует вознесения."
+	summary = "Три волны вокруг прежней позиции по 32 ушиба и 35 выносливости, без резонанса."
 	charge_max = 35 SECONDS
 	action_icon_state = "echo_final"
 
@@ -1212,33 +1838,142 @@
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	return heretic_check(user, target && (isturf(target) || isturf(target.loc)) && echo?.can_use(user) && echo.line_clear(user, target), silent, "Выберите видимую цель или клетку: стены и контейнеры перекрывают действие.")
 
-/obj/effect/proc_holder/spell/pointed/heretic_echo/refrain
-	name = "Припев"
-	desc = "Вся область 3×3 вокруг выбранной точки сразу получает 18 ушибов и 15 урона выносливости. Через 0,8 секунды отмеченный крест радиусом две клетки нанесёт 22 ушиба и 25 выносливости. От повтора можно уклониться. Попадание обоих тактов на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Не требует резонанса."
-	charge_max = 14 SECONDS
-	action_icon_state = "echo_refrain"
+/obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby
+	name = "Колыбельная"
+	desc = "Цель с вашим Остаточным звоном в 5 клетках 3 секунды клюёт носом и идёт на 40% медленнее, затем засыпает на 10 секунд. Будят удар другого существа от 10 урона, 2 секунды растолкать и уход дальше 5 клеток; 2 резонанса."
+	summary = "Звенящая цель в 5 клетках через 3 секунды засыпает на 10 секунд; 2 резонанса."
+	charge_max = HERETIC_ECHO_LULLABY_COOLDOWN
+	range = HERETIC_ECHO_LULLABY_RANGE
+	aim_assist = TRUE
+	action_icon_state = "echo_lullaby"
+	active_msg = "Укажите звенящую цель."
 
-/obj/effect/proc_holder/spell/pointed/heretic_echo/refrain/cast(list/targets, mob/living/user)
+/obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	if(!length(targets) || !echo?.refrain(user, get_turf(targets[1])))
-		heretic_revert_cast(user)
+	if(!heretic_check(user, echo, silent, "Способность недоступна вашему пути или текущему телу."))
+		return FALSE
+	var/reason = echo.lullaby_block_reason(user, target)
+	return heretic_check(user, !reason, silent, reason)
 
-/obj/effect/proc_holder/spell/pointed/heretic_echo/resonator
-	name = "Погребальный резонатор"
-	desc = "За единицу резонанса поставьте резонатор: 35 прочности, 30 секунд жизни. Повторяет Последний удар и отголосок Припева с полным уроном. Можно иметь два в семи клетках без преград. Перекрытие волн не умножает урон; разрушение отменяет подготовленный повтор."
-	charge_max = 8 SECONDS
-	action_icon_state = "echo_resonator"
-
-/obj/effect/proc_holder/spell/pointed/heretic_echo/resonator/cast(list/targets, mob/living/user)
+/obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
-	if(!length(targets) || !echo?.create_resonator(user, get_turf(targets[1])))
+	if(!length(targets) || !echo?.lullaby(user, targets[1]))
+		heretic_revert_cast(user, echo?.echo_failure)
+
+/obj/effect/proc_holder/spell/self/heretic_echo/voice
+	name = "Чужой голос"
+	desc = "Интерком со своей прослушкой бесплатно произносит вслух фразу от имени до 26 символов с пометкой «(сквозь помехи)», по рации голос не уходит. Режимы «Крик» и «Звон стекла» поднимают в динамике громкий шум."
+	summary = "Фраза чужим голосом, крик или звон стекла из вашего интеркома."
+	charge_max = HERETIC_ECHO_VOICE_COOLDOWN
+	action_icon_state = "echo_voice"
+
+/obj/effect/proc_holder/spell/self/heretic_echo/voice/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	if(!length(echo?.taps))
+		heretic_revert_cast(user, "Нужна прослушка: сначала коснитесь интеркома Хваткой Мансуса.")
+		return
+	var/list/choices = list()
+	for(var/obj/item/radio/intercom/intercom as anything in echo.taps)
+		choices["[length(choices) + 1]. [get_area_name(intercom, TRUE)]"] = intercom
+	var/choice = length(choices) == 1 ? choices[1] : tgui_input_list(user, "Через какой интерком звучать?", name, choices)
+	if(QDELETED(src))
+		return
+	if(!(choice in choices))
+		heretic_revert_cast(user, "Отменено: интерком не выбран.")
+		return
+	var/obj/item/radio/intercom/intercom = choices[choice]
+	var/mode = tgui_input_list(user, "Что прозвучит из динамика?", name, list(HERETIC_ECHO_VOICE_MODE, HERETIC_ECHO_NOISE_SCREAM, HERETIC_ECHO_NOISE_GLASS))
+	if(QDELETED(src))
+		return
+	if(!mode)
+		heretic_revert_cast(user, "Отменено: режим не выбран.")
+		return
+	if(mode != HERETIC_ECHO_VOICE_MODE)
+		if(QDELETED(echo) || !echo.fake_noise(user, intercom, mode))
+			heretic_revert_cast(user, echo?.echo_failure)
+		return
+	var/voice_name = tgui_input_text(user, "Чьим голосом говорить? До [HERETIC_ECHO_VOICE_NAME_LEN] символов.", name, max_length = HERETIC_ECHO_VOICE_NAME_LEN)
+	if(QDELETED(src))
+		return
+	if(!voice_name)
+		heretic_revert_cast(user, "Отменено: имя не введено.")
+		return
+	var/phrase = tgui_input_text(user, "Что сказать? Слушатели увидят у имени пометку «(сквозь помехи)».", name, max_length = MAX_MESSAGE_LEN)
+	if(QDELETED(src))
+		return
+	if(!phrase)
+		heretic_revert_cast(user, "Отменено: фраза не введена.")
+		return
+	if(QDELETED(echo) || !echo.fake_voice(user, intercom, voice_name, phrase))
+		heretic_revert_cast(user, echo?.echo_failure)
+
+/obj/effect/proc_holder/spell/self/heretic_echo/ether
+	name = "Уйти в эфир"
+	desc = "Вплотную к своему интеркому выберите другой свой интерком на этом уровне: через 1,5 секунды вы выходите у него, а его динамик хрипит; единица резонанса, своя перезарядка 45 секунд. Вдали от интеркома или по выбору - Тишина на 4 секунды со своей перезарядкой 60 секунд."
+	summary = "От своего интеркома к другому за 1,5 секунды или Тишина на 4 секунды; у режимов свои перезарядки."
+	charge_max = HERETIC_ECHO_ETHER_SPELL_DELAY
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "echo_ether"
+	var/channeling = FALSE
+	COOLDOWN_DECLARE(ether_cooldown)
+	COOLDOWN_DECLARE(hush_cooldown)
+
+/obj/effect/proc_holder/spell/self/heretic_echo/ether/proc/choose_exit(mob/living/user, list/choices)
+	return tgui_input_list(user, "Из какого интеркома выйти?", name, choices)
+
+/obj/effect/proc_holder/spell/self/heretic_echo/ether/proc/wait_reason()
+	. = "Тишина восстановится через [heretic_capture_seconds_left(hush_cooldown)] с."
+	if(!COOLDOWN_FINISHED(src, ether_cooldown))
+		. += " Эфир - через [heretic_capture_seconds_left(ether_cooldown)] с."
+
+/// У эфира и Тишины свои перезарядки: предлагаются только готовые режимы.
+/obj/effect/proc_holder/spell/self/heretic_echo/ether/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	if(!echo)
 		heretic_revert_cast(user)
+		return
+	if(channeling)
+		heretic_revert_cast(user, "Уход в эфир уже идёт.")
+		return
+	var/obj/item/radio/intercom/from_tap = echo.adjacent_tap(user)
+	var/list/exits = COOLDOWN_FINISHED(src, ether_cooldown) ? echo.ether_choices(user) : list()
+	var/hush_ready = COOLDOWN_FINISHED(src, hush_cooldown)
+	var/choice = HERETIC_ECHO_HUSH_MODE
+	if(length(exits))
+		var/list/choices = exits.Copy()
+		if(hush_ready)
+			choices += HERETIC_ECHO_HUSH_MODE
+		choice = choose_exit(user, choices)
+		if(QDELETED(src))
+			return
+		if(!(choice in choices))
+			heretic_revert_cast(user, "Уход отменён: выход не выбран.")
+			return
+	else if(!hush_ready)
+		heretic_revert_cast(user, wait_reason())
+		return
+	if(choice == HERETIC_ECHO_HUSH_MODE)
+		if(QDELETED(echo) || !echo.hush(user))
+			heretic_revert_cast(user, echo?.echo_failure)
+			return
+		COOLDOWN_START(src, hush_cooldown, HERETIC_ECHO_HUSH_COOLDOWN)
+		return
+	channeling = TRUE
+	var/escaped = !QDELETED(echo) && echo.ether(user, from_tap, exits[choice])
+	channeling = FALSE
+	if(!escaped)
+		heretic_revert_cast(user, echo?.echo_failure)
+		return
+	COOLDOWN_START(src, ether_cooldown, HERETIC_ECHO_ETHER_COOLDOWN)
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/crescendo
 	name = "Крещендо"
-	desc = "Вокруг выбранной точки звучат крест, диагонали и кольцо радиусом три клетки. Каждый рисунок предупреждает за 0,8 секунды и наносит по 18 ушибов и урона выносливости плюс по 2 за единицу резонанса. Повторное попадание этой последовательности на 1,5 секунды блокирует стрельбу и удары предметами, сохраняя движение. Расходует весь запас, минимум 2."
+	desc = "Весь резонанс, минимум 2: вокруг точки звучат крест, диагонали и кольцо радиусом 3, каждый с предупреждением 0,8 секунды и уроном 18 + 2 за единицу. Поражённые получают Остаточный звон, повторное попадание на 1,5 секунды блокирует стрельбу."
+	summary = "Весь резонанс уходит в крест, диагонали и кольцо вокруг точки."
 	charge_max = 40 SECONDS
 	action_icon_state = "echo_crescendo"
 
@@ -1247,6 +1982,16 @@
 	var/datum/eldritch_knowledge/base_echo/echo = heretic?.get_knowledge(/datum/eldritch_knowledge/base_echo)
 	if(!length(targets) || !echo?.crescendo(user, get_turf(targets[1])))
 		heretic_revert_cast(user)
+
+/// Голос из интеркома: радио его не подхватывает, у имени пометка помех.
+/atom/movable/virtualspeaker/heretic_echo
+	name = "distant voice"
+
+/atom/movable/virtualspeaker/heretic_echo/get_alt_name()
+	return " (сквозь помехи)"
+
+/atom/movable/virtualspeaker/heretic_echo/IsVocal()
+	return FALSE
 
 #undef HERETIC_ECHO_RANGE
 #undef HERETIC_ECHO_LINK_RANGE
@@ -1258,13 +2003,7 @@
 #undef HERETIC_ECHO_OPENING_STAMINA
 #undef HERETIC_ECHO_OPENING_RADIUS
 #undef HERETIC_ECHO_RELEASE_RADIUS
-#undef HERETIC_ECHO_REFRAIN_RADIUS
-#undef HERETIC_ECHO_REPEAT_RADIUS
 #undef HERETIC_ECHO_CRESCENDO_RADIUS
-#undef HERETIC_ECHO_REFRAIN_DAMAGE
-#undef HERETIC_ECHO_REFRAIN_STAMINA
-#undef HERETIC_ECHO_REPEAT_DAMAGE
-#undef HERETIC_ECHO_REPEAT_STAMINA
 #undef HERETIC_ECHO_HARVEST_TIME
 #undef HERETIC_ECHO_RESONATOR_LIFETIME
 #undef HERETIC_ECHO_RESONATOR_LIMIT
@@ -1275,7 +2014,6 @@
 #undef HERETIC_ECHO_RING
 #undef HERETIC_ECHO_WAVE
 #undef HERETIC_ECHO_BAND
-#undef HERETIC_ECHO_DEED_WHISPER_RANGE
 #undef HERETIC_ECHO_DISSONANCE_DURATION
 #undef HERETIC_ECHO_HOLD_TIME
 #undef HERETIC_ECHO_INK
@@ -1292,3 +2030,24 @@
 #undef HERETIC_ECHO_FINAL_FLASH_RANGE
 #undef HERETIC_ECHO_FINAL_FLASH_POWER
 #undef HERETIC_ECHO_FINAL_FLASH_TIME
+#undef HERETIC_ECHO_TAP_CRAFT
+#undef HERETIC_ECHO_TAP_CLUE
+#undef HERETIC_ECHO_CAPTURE
+#undef HERETIC_ECHO_LULLABY_RANGE
+#undef HERETIC_ECHO_LULLABY_CHECK
+#undef HERETIC_ECHO_LULLABY_COST
+#undef HERETIC_ECHO_LULLABY_COOLDOWN
+#undef HERETIC_ECHO_LULLABY_BLUR
+#undef HERETIC_ECHO_LULLABY_COLOR
+#undef HERETIC_ECHO_LULLABY_NOTE_OFFSET
+#undef HERETIC_ECHO_VOICE_COOLDOWN
+#undef HERETIC_ECHO_VOICE_RANGE
+#undef HERETIC_ECHO_VOICE_MODE
+#undef HERETIC_ECHO_NOISE_SCREAM
+#undef HERETIC_ECHO_NOISE_GLASS
+#undef HERETIC_ECHO_NOISE_VOLUME
+#undef HERETIC_ECHO_HUSH_COOLDOWN
+#undef HERETIC_ECHO_HUSH_MODE
+#undef HERETIC_ECHO_ETHER_SPELL_DELAY
+#undef HERETIC_ECHO_HUSH_TRAIT
+#undef HERETIC_ECHO_RESONATOR_COOLDOWN

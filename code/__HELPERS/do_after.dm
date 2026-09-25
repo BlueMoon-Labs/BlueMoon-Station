@@ -13,13 +13,18 @@
 	LAZYADD(target.targeted_by, user)
 
 	var/holding = user.get_active_held_item()
-	var/datum/progressbar/progbar
-	if (progress)
-		progbar = new(user, time, target)
 
 	var/datum/cogbar/cog
 	if (progress && time >= 1 SECONDS)
 		cog = new(user)
+
+	var/datum/actionspeed_modifier/drought = user.has_actionspeed_modifier(/datum/actionspeed_modifier/heretic_sand_drought)
+	if(drought)
+		time *= 1 + drought.multiplicative_slowdown
+
+	var/datum/progressbar/progbar
+	if (progress)
+		progbar = new(user, time, target)
 
 	var/endtime = world.time+time
 	var/starttime = world.time

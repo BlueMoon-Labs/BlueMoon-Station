@@ -262,9 +262,9 @@
 #define COMSIG_MOVABLE_HEAR "movable_hear"						//from base of atom/movable/Hear(): (message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
 	#define HEARING_MESSAGE 1
 	#define HEARING_SPEAKER 2
-//	#define HEARING_LANGUAGE 3
+	#define HEARING_LANGUAGE 3
 	#define HEARING_RAW_MESSAGE 4
-//	 #define HEARING_RADIO_FREQ 5
+	#define HEARING_RADIO_FREQ 5
 //	#define HEARING_SPANS 6
 	#define HEARING_MESSAGE_MODE 7
 //	#define HEARING_SOURCE 8
@@ -335,7 +335,8 @@
 #define COMSIG_MOB_ANTAG_ON_GAIN "mob_antag_on_gain"			//from base of /datum/antagonist/on_gain(): (antag_datum)
 #define COMSIG_MOB_APPLY_DAMAGE	"mob_apply_damage"				//from base of /mob/living/proc/apply_damage(): (damage, damagetype, def_zone, wound_bonus, bare_wound_bonus, sharpness)
 
-#define COMSIG_MOB_SPELL_CAN_CAST "mob_spell_can_cast"			//from base of /obj/effect/proc_holder/spell/can_cast(): (spell)
+#define COMSIG_MOB_SPELL_CAN_CAST "mob_spell_can_cast"			//from base of /obj/effect/proc_holder/spell/can_cast(): (spell, silent)
+#define COMSIG_MOB_CAST_SPELL "mob_cast_spell"					//from base of /obj/effect/proc_holder/spell/perform(): (spell)
 #define COMSIG_MOB_SWAP_HANDS "mob_swap_hands"					//from base of mob/swap_hand(): (obj/item)
 	#define COMPONENT_BLOCK_SWAP 1
 
@@ -413,6 +414,9 @@
 #define COMSIG_LIVING_SHOCK_PREVENTED "living_shock_prevented"  //sent when items with siemen coeff. of 0 block a shock: (power_source, source, siemens_coeff, dist_check)
 #define COMSIG_LIVING_MINOR_SHOCK "living_minor_shock"			//sent by stuff like stunbatons and tasers: ()
 #define COMSIG_LIVING_REVIVE "living_revive"					//from base of mob/living/revive() (full_heal, admin_revive)
+#define COMSIG_LIVING_HERETIC_SACRIFICE_STARTING "living_heretic_sacrifice_starting"	//from /datum/heretic_mansus_visit/proc/start() before the victim is healed: ()
+#define COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN "living_heretic_capture_shaken"	//from /proc/heretic_capture_shake() when a helper finishes shaking a captured victim awake: (mob/living/helper)
+#define COMSIG_HERETIC_POCKET_COLLAPSING "heretic_pocket_collapsing"	//from /datum/heretic_pocket/proc/collapse() before anyone is moved out: (reason, mob/living/culprit)
 
 //Используется для отправки сигнала о ЕМП в обход проверок
 //нужно для использовании энергии в adv emp модуле.
@@ -608,6 +612,8 @@
 
 // /obj/item/radio signals
 #define COMSIG_RADIO_NEW_FREQUENCY "radio_new_frequency"		//called from base of /obj/item/radio/proc/set_frequency(): (list/args)
+#define COMSIG_MOVABLE_USING_RADIO "movable_using_radio"		//sent to the speaker from /obj/item/radio/proc/speaker_jammed() before a transmission or the headset click: (obj/item/radio/radio)
+	#define COMPONENT_CANNOT_USE_RADIO (1<<0)
 
 // /obj/item/pen signals
 #define COMSIG_PEN_ROTATED "pen_rotated"						//called after rotation in /obj/item/pen/attack_self(): (rotation, mob/living/carbon/user)

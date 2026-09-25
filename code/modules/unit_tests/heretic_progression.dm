@@ -69,6 +69,17 @@
 	TEST_ASSERT(ascension.check_completion(), "Завершённый финал выполняет цель.")
 	TEST_ASSERT(findtext(heretic.roundend_report(), "ЕРЕТИК СОВЕРШИЛ ВОЗНЕСЕНИЕ!"), "Вознесение отмечается отдельно от обычного успеха.")
 
+/// Удалённая роль еретика удаляет свои цели: в общем списке целей они держали бы разум владельца.
+/datum/unit_test/heretic_objectives_cleanup/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.forge_primary_objectives()
+	var/list/objectives = heretic.objectives.Copy()
+	TEST_ASSERT(length(objectives), "Роль получила цели.")
+	qdel(heretic)
+	for(var/datum/objective/objective as anything in objectives)
+		TEST_ASSERT(QDELETED(objective), "Цель [objective.type] удалена вместе с ролью.")
+		TEST_ASSERT(!(objective in GLOB.objectives), "Цель [objective.type] не осталась в общем списке целей.")
+
 /// Щелчок выбирает только свою звезду и не тратит заряд при заблокированном выходе.
 /datum/unit_test/heretic_starwalk_targeting/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()

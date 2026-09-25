@@ -97,3 +97,23 @@
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 		var/datum/eldritch_knowledge/knowledge = heretic.get_knowledge(path.knowledge[1])
 		TEST_ASSERT(knowledge.combat_resource >= 2, "Путь [path_id] начинает хотя бы с двумя единицами запаса.")
+
+/// Пауза дела отказывает только тому, что засчиталось бы, а тексты дел ремесла называют её срок.
+/datum/unit_test/heretic_deed_wait_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic()
+	var/datum/heretic_deed/deed = heretic.deed
+	TEST_ASSERT_NULL(heretic.deed_wait_reason("area_a"), "Без паузы отказа нет.")
+	TEST_ASSERT(heretic.advance_deed("area_a", null), "Первое действие засчитано.")
+	var/reason = heretic.deed_wait_reason("area_b")
+	TEST_ASSERT(findtext(reason, "Слишком быстро"), "Новое место во время паузы получает отказ: [reason]")
+	TEST_ASSERT(findtext(reason, "[HERETIC_DEED_COOLDOWN / (1 SECONDS)] с"), "Отказ называет остаток паузы: [reason]")
+	TEST_ASSERT_NULL(heretic.deed_wait_reason("area_a"), "Зачтённое место пауза не держит.")
+	COOLDOWN_RESET(deed, progress_cooldown)
+	TEST_ASSERT_NULL(heretic.deed_wait_reason("area_b"), "После паузы отказа нет.")
+	COOLDOWN_START(deed, progress_cooldown, HERETIC_DEED_COOLDOWN)
+	deed.tier = length(deed.tier_goals)
+	TEST_ASSERT_NULL(heretic.deed_wait_reason("area_b"), "Завершённое дело не держит ремесло.")
+	for(var/deed_type in list(/datum/heretic_deed/glass, /datum/heretic_deed/sand, /datum/heretic_deed/tide, /datum/heretic_deed/echo, /datum/heretic_deed/blood, /datum/heretic_deed/blade))
+		var/datum/heretic_deed/craft_deed = new deed_type
+		allocated += craft_deed
+		TEST_ASSERT(findtext(craft_deed.desc, "Между зачётами Мансусу нужно [HERETIC_DEED_COOLDOWN / (1 SECONDS)] с"), "Дело [deed_type] называет паузу между зачётами: [craft_deed.desc]")

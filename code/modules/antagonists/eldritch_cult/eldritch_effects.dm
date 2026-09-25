@@ -25,8 +25,10 @@
 	var/image/silicon_image = image(icon = 'icons/effects/eldritch.dmi', icon_state = null, loc = src)
 	silicon_image.override = TRUE
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "heretic_rune", silicon_image)
+	GLOB.heretic_runes += src
 
 /obj/effect/eldritch/Destroy()
+	GLOB.heretic_runes -= src
 	ritual_interrupt_reason ||= "Руна разрушена."
 	if(isturf(loc))
 		new /obj/effect/temp_visual/heretic_ritual/erase(loc, rune_path, null, HERETIC_RUNE_VISUAL_ERASE, src)
@@ -37,6 +39,7 @@
 	. = ..()
 	if(IS_HERETIC(user))
 		. += span_notice("Положите компоненты на руну или рядом с ней и коснитесь круга, чтобы выбрать изученный ритуал. Перемещение компонентов прервёт обряд.")
+		. += span_notice("Поверженную цель охоты на своей руне или рядом можно увести в изнанку, подальше от свидетелей: коснитесь руны с намерением «Помощь» и выберите «[HERETIC_POCKET_RUNE_CHOICE]».")
 		var/preparation = preparation_hint(user)
 		if(preparation)
 			. += span_notice(preparation)
@@ -89,13 +92,18 @@
 		is_in_use = FALSE
 		return
 	var/list/rituals = list()
+	var/mob/living/carbon/human/pocket_victim = pocket_door_victim(user)
+	if(pocket_victim)
+		rituals[HERETIC_POCKET_RUNE_CHOICE] = pocket_victim
 	for(var/knowledge_type in heretic.researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
 		if(length(knowledge.required_atoms))
 			rituals[knowledge.name] = knowledge
-	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
-	var/choice = tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё. [preparation_hint(user)]", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
-	if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
+	var/choice = prompt_ritual(user, rituals)
+	if(pocket_victim && choice == HERETIC_POCKET_RUNE_CHOICE)
+		if(!QDELETED(src) && !QDELETED(user) && !user.incapacitated() && Adjacent(user))
+			pull_behind_rune(user, pocket_victim)
+	else if(!QDELETED(src) && !QDELETED(user) && IS_HERETIC(user) && !user.incapacitated() && Adjacent(user) && rituals[choice])
 		var/datum/eldritch_knowledge/ritual = rituals[choice]
 		if(ritual.type == /datum/eldritch_knowledge/spell/basic && !heretic.hunt_target_available(heretic.hunt_target))
 			reject_ritual(user, ritual, heretic.hunt_target_unavailable_reason(heretic.hunt_target))
@@ -105,6 +113,10 @@
 	if(!QDELETED(src))
 		release_atoms()
 		is_in_use = FALSE
+
+/obj/effect/eldritch/proc/prompt_ritual(mob/living/user, list/rituals)
+	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
+	return tgui_input_list(user, "Какой обряд провести? Компоненты должны лежать на руне или в одной клетке от неё. [preparation_hint(user)]", "Трансмутация", rituals, timeout = HERETIC_RITUAL_CHOICE_TIMEOUT)
 
 /obj/effect/eldritch/proc/collect_ritual_atoms(mob/living/user)
 	. = list()
@@ -337,8 +349,9 @@
 	if(ascension_announced)
 		show_ascension_body_preview(user)
 	inscribe_path(heretic.selected_path)
+	var/ritual_time = istype(ascension_ritual) ? ritual.ritual_time : ritual.ritual_time * heretic_ritual_speed_multiplier(user, src)
 	// do_after растягивает ritual_time на замедление действий исполнителя; печать и нарастание идут по тому же времени.
-	var/ritual_duration = ritual.ritual_time * user.cached_multiplicative_actions_slowdown
+	var/ritual_duration = ritual_time * user.cached_multiplicative_actions_slowdown
 	ritual_visual = new(get_turf(src), heretic.selected_path, ritual_duration + 1 SECONDS, HERETIC_RUNE_VISUAL_RITUAL, src)
 	if(ascension_announced)
 		ascension_crescendo = new(get_turf(src), heretic.selected_path, ritual_duration, src, user)
@@ -348,7 +361,7 @@
 	flick("[icon_state]_active", src)
 	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
 	var/obj/item/held_item = user.get_active_held_item()
-	if(!do_after(user, ritual.ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
+	if(!do_after(user, ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
 		ritual_valid(user, ritual)
 		if(!QDELETED(user) && user.get_active_held_item() != held_item)
 			ritual_interrupt_reason ||= "Предмет в активной руке изменился."

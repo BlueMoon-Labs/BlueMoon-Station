@@ -1446,7 +1446,7 @@
 	..()
 
 /mob/living/can_be_pulled()
-	return ..() && !(buckled && buckled.buckle_prevents_pull)
+	return ..() && !(buckled && buckled.buckle_prevents_pull) && !HAS_TRAIT(src, TRAIT_UNPULLABLE)
 
 /mob/living/proc/AddAbility(obj/effect/proc_holder/A)
 	abilities.Add(A)

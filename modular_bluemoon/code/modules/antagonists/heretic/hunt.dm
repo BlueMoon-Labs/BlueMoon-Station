@@ -5,7 +5,8 @@ GLOBAL_LIST_EMPTY(heretic_ritual_reservations)
 GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
-	desc = "Призывает или прячет своё живое сердце. Если оно потеряно, стойте неподвижно 5 секунд, чтобы вернуть его; уничтоженное сердце восстановится. Сердце в чужих руках или рюкзаке и сердце действующего обряда вернуть нельзя."
+	desc = "Призывает или прячет своё живое сердце. Потерянное сердце возвращается, если 5 секунд стоять на месте."
+	summary = "Достаёт или прячет живое сердце."
 	var/recovery_in_progress = FALSE
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart/can_cast(mob/user, skipcharge, silent)
@@ -107,7 +108,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return "Назначенная цель сама служит Мансусу и не подходит для подношения. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(candidate.is_ghost_role())
 		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
-	var/turf/body_turf = get_turf(body)
+	var/turf/body_turf = heretic_pocket_anchor(get_turf(body))
 	if(!body_turf || !is_station_level(body_turf.z))
 		return "Тело назначенной цели находится вне станции. Верните его на станцию или выберите другую цель."
 	if(selecting && body.stat == DEAD)
@@ -168,7 +169,17 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(new_stat == DEAD)
 		to_chat(user, span_boldwarning("Цель охоты [source.real_name] погибла. Труп ещё примут, но лишь за 1 очко знаний без побочного: коснитесь его живым сердцем или принесите на руну."))
 	else
-		to_chat(user, span_boldnotice("Цель охоты [source.real_name] повержена. Коснитесь её живым сердцем: круг проступит прямо под телом, обряд займёт 8 секунд. Можно и перенести её на руну. Живая жертва даёт 2 очка знаний и 1 побочное."))
+		to_chat(user, span_boldnotice("Цель охоты [source.real_name] повержена. Коснитесь её живым сердцем: круг проступит прямо под телом, обряд займёт [DisplayTimeText(heart_rite_time(source), 1)]. Можно и перенести её на руну. Если у пути есть дверь, сердце предложит увести цель в изнанку. Живая жертва даёт 2 очка знаний и 1 побочное."))
+
+/// Длина обряда сердцем на месте цели: с Течением часа и скоростью действий еретика.
+/datum/antagonist/heretic/proc/heart_rite_time(atom/place)
+	var/datum/eldritch_knowledge/spell/basic/ritual = get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/mob/living/user = owner?.current
+	var/base_time = ritual?.ritual_time
+	if(isnull(base_time))
+		var/datum/eldritch_knowledge/spell/basic/ritual_type = /datum/eldritch_knowledge/spell/basic
+		base_time = initial(ritual_type.ritual_time)
+	return base_time * heretic_ritual_speed_multiplier(user, place) * (user ? user.cached_multiplicative_actions_slowdown : 1)
 
 /datum/antagonist/heretic/proc/claim_is_crew_player(mob/living/carbon/human/victim)
 	if(!victim.client)
@@ -293,7 +304,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 /datum/antagonist/heretic/proc/hunt_target_ready(mob/living/carbon/human/victim)
 	if(!istype(victim) || QDELETED(victim))
 		return FALSE
-	if(victim.stat == DEAD || victim.handcuffed || victim.IsStun() || victim.IsParalyzed() || victim.IsKnockdown() || victim.IsUnconscious() || (victim.combat_flags & COMBAT_FLAG_HARD_STAMCRIT) || (victim.resting && victim.knocked_to_floor) || (victim.IsSleeping() && world.time >= victim.voluntary_sleep_until))
+	if(victim.stat == DEAD || victim.handcuffed || victim.IsStun() || victim.IsParalyzed() || victim.IsUnconscious() || heretic_capture_downed(victim) || (victim.IsSleeping() && world.time >= victim.voluntary_sleep_until))
 		return TRUE
 	// Сон по своей воле тоже даёт UNCONSCIOUS, поэтому в нём считается только настоящий крит.
 	return victim.stat >= SOFT_CRIT && victim.health <= victim.crit_threshold
@@ -410,7 +421,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			to_chat(user, span_warning("Мансус не находит безопасного пути назад для жертвы. Ритуал прерван."))
 			return FALSE
 		visit = new
-		if(!visit.prepare(victim, return_turf, ritual_turf, selected_path))
+		if(!visit.prepare(victim, return_turf, heretic_pocket_anchor(ritual_turf), selected_path))
 			qdel(visit)
 			to_chat(user, span_warning("Врата Мансуса не открылись. Подношение не принято."))
 			return FALSE

@@ -68,6 +68,7 @@
 		qdel(researched_knowledge[knowledge_type])
 	researched_knowledge.Cut()
 	QDEL_NULL(deed)
+	QDEL_LIST(objectives)
 	return ..()
 
 /datum/antagonist/heretic/proc/clear_heretic()
@@ -88,6 +89,7 @@
 		knowledge.on_lose(owner?.current)
 	QDEL_LIST(summon_items)
 	clear_hunt()
+	QDEL_NULL(pocket)
 	if(!silent && owner?.current)
 		to_chat(owner.current, span_userdanger("Запретные знания покидают ваш разум."))
 

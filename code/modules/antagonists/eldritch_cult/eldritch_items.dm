@@ -1,6 +1,6 @@
 /obj/item/living_heart
 	name = "living heart"
-	desc = "Сердце, которое бьётся в такт чужой душе. Еретик может сжать его для поиска цели; Alt-ЛКМ позволяет выбрать другую цель, касание поверженного члена экипажа делает целью его, а касание обезвреженной цели начинает обряд прямо на месте."
+	desc = "Сердце, которое бьётся в такт чужой душе. Еретик может сжать его для поиска цели; Alt-ЛКМ позволяет выбрать другую цель, касание поверженного члена экипажа делает целью его, а касание обезвреженной цели начинает обряд прямо на месте или, если у пути есть дверь, уводит её в изнанку. Если дверь работает издалека, сжатое сердце спросит: найти цель или увести её."
 	icon = 'modular_bluemoon/icons/obj/heretic_living_heart.dmi'
 	icon_state = "living_heart"
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_living_heart_lefthand.dmi'
@@ -52,7 +52,8 @@
 		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Живую цель достаточно связать, оглушить или сбить с ног; цель в крите принимается без наручников. Награда — 2 очка знаний и 1 побочное. Труп назначенной цели даёт только 1 очко знаний.")
 	else
 		. += span_notice("Сожмите сердце, чтобы выбрать цель.")
-	. += span_notice("Коснитесь сердцем обезвреженной цели охоты: круг проступит прямо под телом, и обряд займёт 8 секунд. На руне трансмутации сердце кладут рядом с целью.")
+	. += span_notice("Коснитесь сердцем обезвреженной цели охоты: круг проступит прямо под телом, и обряд займёт [DisplayTimeText(heretic.heart_rite_time(heretic.hunt_target?.current || user), 1)]. На руне трансмутации сердце кладут рядом с целью.")
+	. += span_notice("Если у пути есть дверь, сердце предложит увести цель в изнанку; если дверь работает издалека, сжатое сердце спросит, найти цель или увести её.")
 	. += span_notice("Коснитесь сердцем поверженного члена экипажа, чтобы сделать целью его. Смена цели - не чаще раза в [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)].")
 
 /obj/item/living_heart/AltClick(mob/user)
@@ -67,7 +68,7 @@
 	if(!heretic || !bind(user.mind))
 		return ..()
 	if(target.mind && target.mind == heretic.hunt_target)
-		INVOKE_ASYNC(heretic, TYPE_PROC_REF(/datum/antagonist/heretic, begin_heart_rite), user, target, src)
+		INVOKE_ASYNC(heretic, TYPE_PROC_REF(/datum/antagonist/heretic, touch_hunt_target), user, target, src)
 		return
 	heretic.claim_hunt_target(user, target)
 
@@ -81,10 +82,16 @@
 	if(!heretic.hunt_target_available(heretic.hunt_target))
 		heretic.ensure_hunt_target(user)
 		return
-	if(!COOLDOWN_FINISHED(src, track_cooldown))
+	if(heretic.offer_remote_pocket_door(user, heretic.hunt_target.current, src))
 		return
+	track(user, heretic)
+
+/obj/item/living_heart/proc/track(mob/living/user, datum/antagonist/heretic/heretic)
+	var/mob/living/carbon/human/target = heretic.hunt_target?.current
+	if(QDELETED(user) || QDELETED(target) || !COOLDOWN_FINISHED(src, track_cooldown))
+		return FALSE
 	COOLDOWN_START(src, track_cooldown, 4 SECONDS)
-	var/mob/living/carbon/human/target = heretic.hunt_target.current
+	. = TRUE
 	var/turf/target_turf = get_turf(target)
 	var/turf/user_turf = get_turf(user)
 	playsound(src, 'modular_bluemoon/sound/heretic/heart_track.ogg', 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)

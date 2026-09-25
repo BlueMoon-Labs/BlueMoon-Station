@@ -125,7 +125,7 @@
 	wax.combat_resource = 0
 	TEST_ASSERT(!wax.release(user), "Пустой запас не выпускает волну.")
 
-/// Первые исследования дают дальнюю атаку, а оболочка открывается раньше своей реликвии.
+/// Первые исследования дают дальнюю атаку, за ней Сон по кукле, оболочка с канделябром, метка и Протечь.
 /datum/unit_test/heretic_wax_early_imprint/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -137,10 +137,10 @@
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
 	TEST_ASSERT(wax.imprint(user, victim), "Ранний оттиск работает без оболочки, реликвии и улучшения клинка.")
 	TEST_ASSERT_NOTNULL(wax.active_effigy, "Оттиск создаёт доступного для атаки двойника.")
-	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/wax_mark, user), "Метка следует за оттиском.")
-	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/spell/wax_shell, user), "Защита доступна на пятой ступени.")
-	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/wax_upgrade, user), "Улучшение клинка сохраняет место в развитии.")
-	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/wax_relic, user), "Канделябр открывается после оболочки.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep, user), "Сон по кукле следует за оттиском.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/spell/wax_shell, user), "Защита и канделябр доступны на пятой ступени.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/wax_mark, user), "Метка занимает шестую ступень.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/spell/wax_leak, user), "Протечь открывается седьмой ступенью.")
 
 /// Волна достаёт на три клетки, а краткое замедление обновляется без накопления силы.
 /datum/unit_test/heretic_wax_pressure/Run()
@@ -377,10 +377,9 @@
 	heretic.selected_path = PATH_WAX
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_relic)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	var/datum/eldritch_knowledge/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/wax_relic)
+	var/datum/eldritch_knowledge/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
 	var/obj/item/heretic_path_relic/wax/relic = allocate(/obj/item/heretic_path_relic/wax)
 	relic.creator = WEAKREF(user.mind)
 	relic.knowledge_ref = WEAKREF(recipe)
@@ -570,7 +569,7 @@
 	TEST_ASSERT(effigy.name != victim.name && findtext(effigy.name, victim.name) && findtext(effigy.name, "wax effigy"), "Имя двойника выдаёт восковую копию и называет оригинал.")
 	TEST_ASSERT(findtext(effigy.desc, "Восковая копия"), "Описание двойника говорит, что это копия.")
 	var/list/resource = wax.get_combat_resource_data()
-	TEST_ASSERT(findtext(resource["description"], victim.real_name), "Ресурсная подсказка называет цель оттиска.")
+	TEST_ASSERT(findtext(resource["state"], victim.real_name), "Ресурсная подсказка называет цель оттиска.")
 	TEST_ASSERT(findtext(jointext(effigy.examine(user), " "), "30 переносимого"), "Осмотр показывает первоначальный запас урона.")
 	user.a_intent = INTENT_DISARM
 	resource = wax.get_combat_resource_data()
@@ -591,7 +590,7 @@
 	TEST_ASSERT(QDELETED(effigy) && QDELETED(effect), "Исчерпание двойника разрывает связь.")
 	TEST_ASSERT_NULL(wax.active_effigy, "Знание освобождает ссылку на израсходованный оттиск.")
 	resource = wax.get_combat_resource_data()
-	TEST_ASSERT(!findtext(resource["description"], "Двойник:"), "После разрушения подсказка не показывает старую цель.")
+	TEST_ASSERT(!findtext(resource["state"], "Двойник:"), "После разрушения подсказка не показывает старую цель.")
 
 /// Разрушение двойника противником, преграда, антимагия и утрата знания разрывают связь.
 /datum/unit_test/heretic_wax_effigy_counterplay/Run()
@@ -637,7 +636,6 @@
 	heretic.selected_path = PATH_WAX
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_relic)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_temper)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
@@ -667,7 +665,7 @@
 	wax.combat_resource = 0
 	var/obj/item/heretic_path_relic/wax/relic = allocate(/obj/item/heretic_path_relic/wax)
 	relic.creator = WEAKREF(user.mind)
-	relic.knowledge_ref = WEAKREF(heretic.get_knowledge(/datum/eldritch_knowledge/wax_relic))
+	relic.knowledge_ref = WEAKREF(heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell))
 	user.put_in_hands(relic)
 	TEST_ASSERT(relic.melt(user), "Пустой запас не запрещает переплавить уже принятые раны.")
 	TEST_ASSERT(abs(user.getBruteLoss() + user.getFireLoss() - 15) <= DAMAGE_PRECISION, "Общее лечение двух типов ран ограничено двадцатью пятью.")
@@ -710,8 +708,8 @@
 		qdel(heretic)
 
 /datum/unit_test/proc/allocate_wax_phylactery(turf/location)
-	if(!(locate(/datum/wax_test_station_level) in allocated))
-		allocated += new /datum/wax_test_station_level(run_loc_floor_bottom_left.z)
+	if(!(locate(/datum/heretic_test_station_level) in allocated))
+		allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic(location)
 	heretic.selected_path = PATH_WAX
 	var/mob/living/carbon/human/user = heretic.owner.current
@@ -734,46 +732,6 @@
 	requires_power = FALSE
 	outdoors = TRUE
 
-/// Уровень резервации не станция: на время теста он получает признак станции.
-/datum/wax_test_station_level
-	var/datum/space_level/level
-	var/list/original_traits
-
-/datum/wax_test_station_level/New(z)
-	level = SSmapping.z_list[z]
-	original_traits = level.traits
-	level.traits = original_traits.Copy()
-	level.traits[ZTRAIT_STATION] = TRUE
-
-/datum/wax_test_station_level/Destroy()
-	level.traits = original_traits
-	level = null
-	return ..()
-
-/datum/wax_test_room
-	var/area/room
-	var/list/turf/moved = list()
-
-/datum/wax_test_room/New(area_type)
-	var/static/list/shared_rooms = list()
-	if(!shared_rooms[area_type])
-		shared_rooms[area_type] = new area_type
-	room = shared_rooms[area_type]
-
-/datum/wax_test_room/proc/take(turf/spot)
-	if(moved[spot])
-		return
-	moved[spot] = spot.loc
-	room.contents += spot
-
-/datum/wax_test_room/Destroy()
-	for(var/turf/spot as anything in moved)
-		var/area/old_area = moved[spot]
-		old_area.contents += spot
-	moved.Cut()
-	room = null
-	return ..()
-
 /datum/unit_test/proc/cast_wax_anchor(datum/eldritch_knowledge/base_wax/wax, mob/living/user, turf/destination, indoor = TRUE)
 	var/obj/item/paper/paper = allocate(/obj/item/paper, get_turf(user))
 	wax.combat_resource = wax.combat_resource_max
@@ -787,13 +745,7 @@
 	return candle
 
 /datum/unit_test/proc/wax_test_area(turf/spot, area_type = /area/unit_test_wax_room)
-	for(var/datum/wax_test_room/lease in allocated)
-		if(lease.room.type == area_type)
-			lease.take(spot)
-			return
-	var/datum/wax_test_room/lease = new(area_type)
-	allocated += lease
-	lease.take(spot)
+	heretic_test_area(spot, area_type)
 
 /datum/unit_test/proc/await_wax_phylactery(datum/eldritch_knowledge/final_eldritch/wax_final/final_knowledge)
 	for(var/attempt in 1 to 50)
@@ -1033,7 +985,7 @@
 	var/turf/start = get_turf(user)
 	var/obj/item/candle/candle = cast_wax_anchor(wax, user, locate(start.x + 2, start.y + 2, start.z))
 	TEST_ASSERT_EQUAL(wax.count_anchors(user), 1, "На уровне станции свеча держит жизнь.")
-	var/datum/wax_test_station_level/lease = locate() in allocated
+	var/datum/heretic_test_station_level/lease = locate() in allocated
 	allocated -= lease
 	qdel(lease)
 	TEST_ASSERT(!is_station_level(start.z), "Уровень резервации снова не станция.")
@@ -1257,3 +1209,776 @@
 		if(!wait_budget_tick(budget))
 			break
 	TEST_ASSERT(candle.light_power > rising_power, "Свет свечи набирает силу вместе с подъёмом.")
+
+/datum/unit_test/proc/allocate_wax_crew(turf/location)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, location)
+	crew.mind = allocate_mind()
+	crew.mind.current = crew
+	crew.dna.uni_identity = "wax_test_[REF(crew)]"
+	return crew
+
+/datum/unit_test/proc/wax_touched_item(mob/living/carbon/human/toucher, turf/location, item_type = /obj/item/pen)
+	var/obj/item/thing = allocate(item_type, location)
+	thing.add_fingerprint(toucher)
+	return thing
+
+/datum/unit_test/proc/make_wax_puppet(datum/eldritch_knowledge/base_wax/wax, mob/living/carbon/human/user, mob/living/carbon/human/model)
+	var/obj/item/pen/pen = wax_touched_item(model, get_turf(user))
+	user.a_intent = INTENT_HELP
+	if(!wax.on_mansus_grasp(pen, user, TRUE))
+		return null
+	var/obj/item/heretic_wax_puppet/puppet = wax.puppets[length(wax.puppets)]
+	allocated += puppet
+	if(!user.is_holding(puppet))
+		user.put_in_hands(puppet)
+	return puppet
+
+/// Воск: десять ступеней, Сон по кукле на четвёртой, Метка Воска на шестой, цены при знаниях, канделябр в Погребальной оболочке.
+/datum/unit_test/heretic_wax_layout/Run()
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_WAX]
+	var/list/order = list(
+		/datum/eldritch_knowledge/base_wax,
+		/datum/eldritch_knowledge/wax_grasp,
+		/datum/eldritch_knowledge/spell/wax_imprint,
+		/datum/eldritch_knowledge/spell/wax_puppet_sleep,
+		/datum/eldritch_knowledge/spell/wax_shell,
+		/datum/eldritch_knowledge/wax_mark,
+		/datum/eldritch_knowledge/spell/wax_leak,
+		/datum/eldritch_knowledge/wax_temper,
+		/datum/eldritch_knowledge/spell/wax_procession,
+		/datum/eldritch_knowledge/final_eldritch/wax_final,
+	)
+	var/list/costs = list(0, 1, 1, 2, 1, 2, 1, 2, 2)
+	TEST_ASSERT_EQUAL(length(path.knowledge), length(order), "У Воска десять ступеней.")
+	for(var/index in 1 to length(order))
+		TEST_ASSERT_EQUAL(path.knowledge[index], order[index], "Ступень [index] Воска на своём месте.")
+	for(var/index in 2 to length(costs))
+		var/datum/eldritch_knowledge/knowledge_type = order[index]
+		TEST_ASSERT_EQUAL(initial(knowledge_type.cost), costs[index], "Цена ступени [index] при своём знании.")
+	TEST_ASSERT_NULL(text2path("/datum/eldritch_knowledge/wax_upgrade"), "Срезать лицо удалено.")
+	TEST_ASSERT_NULL(text2path("/datum/eldritch_knowledge/wax_relic"), "Отдельной ступени канделябра нет.")
+	var/datum/eldritch_knowledge/spell/wax_shell/shell = allocate(/datum/eldritch_knowledge/spell/wax_shell)
+	TEST_ASSERT((/obj/item/candle in shell.required_atoms) && (/obj/item/stack/sheet/mineral/silver in shell.required_atoms), "Оболочка открывает обряд канделябра из свечи и серебра.")
+	TEST_ASSERT(/obj/item/heretic_path_relic/wax in shell.result_atoms, "Обряд оболочки создаёт канделябр.")
+	var/datum/eldritch_knowledge/spell/wax_puppet_sleep/capture = allocate(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	TEST_ASSERT_EQUAL(capture.role, HERETIC_ROLE_CAPTURE, "Сон по кукле - захват.")
+	var/datum/eldritch_knowledge/spell/wax_leak/escape = allocate(/datum/eldritch_knowledge/spell/wax_leak)
+	TEST_ASSERT_EQUAL(escape.role, HERETIC_ROLE_ESCAPE, "Протечь - уход.")
+	var/datum/eldritch_knowledge/base_wax/base = allocate(/datum/eldritch_knowledge/base_wax)
+	TEST_ASSERT_EQUAL(base.role, HERETIC_ROLE_CRAFT, "База Воска - ремесло кукол.")
+
+/// Кукла: Хватка в «Помощи» по предмету с отпечатками живого человека с разумом лепит куклу в руку, дело считает человека один раз, держатся две куклы, экипаж видит бирку и улику.
+/datum/unit_test/heretic_wax_puppet_craft/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/first = allocate_wax_crew(locate(origin.x, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/second = allocate_wax_crew(locate(origin.x + 2, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/third = allocate_wax_crew(locate(origin.x + 3, origin.y + 2, origin.z))
+	var/obj/item/pen/pen = wax_touched_item(first, get_step(user, EAST))
+	var/obj/item/melee/touch_attack/mansus_fist/hand = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	user.a_intent = INTENT_HARM
+	hand.afterattack(pen, user, TRUE)
+	TEST_ASSERT(!QDELETED(hand) && !length(wax.puppets), "Вне «Помощи» предмет не становится куклой, заряд хватки цел.")
+	user.a_intent = INTENT_HELP
+	var/obj/item/pen/clean = allocate(/obj/item/pen, get_step(user, EAST))
+	TEST_ASSERT(!wax.on_mansus_grasp(clean, user, TRUE), "Без отпечатков куклы нет.")
+	TEST_ASSERT(findtext(wax.grasp_failure_reason, "отпечат"), "Отказ называет отпечатки: [wax.grasp_failure_reason]")
+	clean.add_fingerprint(user)
+	TEST_ASSERT(!wax.on_mansus_grasp(clean, user, TRUE), "Свои отпечатки не годятся.")
+	var/mob/living/carbon/human/mindless = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 3, origin.z))
+	mindless.dna.uni_identity = "wax_test_mindless"
+	var/obj/item/pen/mindless_pen = wax_touched_item(mindless, get_step(user, EAST))
+	TEST_ASSERT(!wax.on_mansus_grasp(mindless_pen, user, TRUE), "Отпечатки тела без разума не годятся.")
+	var/mob/living/carbon/human/corpse = allocate_wax_crew(locate(origin.x + 2, origin.y + 3, origin.z))
+	var/obj/item/pen/corpse_pen = wax_touched_item(corpse, get_step(user, EAST))
+	corpse.death()
+	TEST_ASSERT(!wax.on_mansus_grasp(corpse_pen, user, TRUE), "Отпечатки мёртвого не годятся.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Отказы не трогают дело.")
+	hand.afterattack(pen, user, TRUE)
+	TEST_ASSERT(QDELETED(hand), "Кукла расходует заряд хватки.")
+	TEST_ASSERT_EQUAL(length(wax.puppets), 1, "Слеплена одна кукла.")
+	var/obj/item/heretic_wax_puppet/puppet = wax.puppets[1]
+	allocated += puppet
+	TEST_ASSERT(user.is_holding(puppet), "Кукла ложится в руку.")
+	TEST_ASSERT_EQUAL(puppet.model_ref?.resolve(), first, "Кукла повторяет владельца отпечатков.")
+	TEST_ASSERT(findtext(puppet.name, first.real_name), "Имя с бирки видно в названии куклы.")
+	TEST_ASSERT_NOTNULL(heretic_craft_on(puppet, "wax_puppet"), "Кукла - ремесло Воска.")
+	TEST_ASSERT(!QDELETED(pen), "Предмет с отпечатками остаётся целым.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Новый человек продвигает дело.")
+	var/crew_view = jointext(puppet.examine(second), " ")
+	TEST_ASSERT(findtext(crew_view, "по чужим отпечаткам"), "Экипаж видит улику при осмотре: [crew_view]")
+	TEST_ASSERT(findtext(crew_view, first.real_name), "Бирка называет человека.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(!wax.on_mansus_grasp(pen, user, TRUE), "Вторая кукла того же человека не лепится.")
+	TEST_ASSERT(findtext(wax.grasp_failure_reason, "уже"), "Отказ объясняет повтор: [wax.grasp_failure_reason]")
+	var/obj/item/pen/second_pen = wax_touched_item(second, get_step(user, EAST))
+	TEST_ASSERT(wax.on_mansus_grasp(second_pen, user, TRUE), "Вторая кукла лепится по другому человеку.")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Второй человек засчитан.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/pen/third_pen = wax_touched_item(third, get_step(user, EAST))
+	TEST_ASSERT(wax.on_mansus_grasp(third_pen, user, TRUE), "Третья кукла лепится сверх предела.")
+	TEST_ASSERT_EQUAL(length(wax.puppets), HERETIC_WAX_PUPPET_LIMIT, "Держатся две куклы.")
+	TEST_ASSERT(QDELETED(puppet), "Старейшая кукла вытеснена.")
+	for(var/obj/item/heretic_wax_puppet/kept as anything in wax.puppets)
+		allocated += kept
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(wax.on_mansus_grasp(pen, user, TRUE), "Вытесненного человека можно слепить заново.")
+	allocated += wax.puppets[length(wax.puppets)]
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 3, "Повторная кукла того же человека не продвигает дело.")
+	var/obj/item/paper/note = wax_touched_item(second, get_turf(user), /obj/item/paper)
+	wax.combat_resource = 1
+	TEST_ASSERT(wax.on_mansus_grasp(note, user, TRUE), "Лист бумаги на полу по-прежнему отливает свечу.")
+	TEST_ASSERT(QDELETED(note) && length(wax.anchor_candles), "Из бумаги с отпечатками выходит свеча, а не кукла.")
+	allocated += wax.anchor_candles[length(wax.anchor_candles)]
+
+/// Во время паузы дела кукла нового человека не лепится и хватка цела; уже засчитанный человек лепится.
+/datum/unit_test/heretic_wax_puppet_waits_for_deed/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/first = allocate_wax_crew(locate(origin.x, origin.y + 2, origin.z))
+	var/mob/living/carbon/human/second = allocate_wax_crew(locate(origin.x + 2, origin.y + 2, origin.z))
+	TEST_ASSERT_NOTNULL(make_wax_puppet(wax, user, first), "Первая кукла слеплена.")
+	var/obj/item/pen/second_pen = wax_touched_item(second, get_step(user, EAST))
+	TEST_ASSERT(!wax.on_mansus_grasp(second_pen, user, TRUE), "Во время паузы новый человек не лепится.")
+	TEST_ASSERT(findtext(wax.grasp_failure_reason, "Слишком быстро"), "Отказ называет паузу: [wax.grasp_failure_reason]")
+	TEST_ASSERT_EQUAL(length(wax.puppets), 1, "Отказ не лепит куклу.")
+	qdel(wax.puppets[1])
+	var/obj/item/pen/shared_pen = wax_touched_item(second, get_step(user, EAST))
+	shared_pen.add_fingerprint(first)
+	TEST_ASSERT(wax.on_mansus_grasp(shared_pen, user, TRUE), "Во время паузы с общей вещи лепится уже засчитанный человек.")
+	var/obj/item/heretic_wax_puppet/fallback = wax.puppets[length(wax.puppets)]
+	allocated += fallback
+	TEST_ASSERT_EQUAL(fallback.model_ref?.resolve(), first, "Пауза уступает место засчитанному человеку.")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 1, "Засчитанный человек не продвигает дело.")
+	qdel(fallback)
+	TEST_ASSERT_NOTNULL(make_wax_puppet(wax, user, first), "Уже засчитанный человек лепится и во время паузы.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(wax.on_mansus_grasp(second_pen, user, TRUE), "После паузы новый человек лепится.")
+	allocated += wax.puppets[length(wax.puppets)]
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Оба человека засчитаны по разу.")
+
+/// Куклу уничтожают нулевой жезл, зажигалка, сварка и огонь; смерть и смена тела её не трогают, удаление основы убирает.
+/datum/unit_test/heretic_wax_puppet_removal/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z))
+	var/list/removals = list("nullrod", "lighter", "welder", "fire")
+	for(var/removal in removals)
+		COOLDOWN_RESET(heretic.deed, progress_cooldown)
+		var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+		TEST_ASSERT_NOTNULL(puppet, "Кукла для проверки [removal] слеплена.")
+		user.dropItemToGround(puppet)
+		puppet.forceMove(get_step(crew, EAST))
+		switch(removal)
+			if("nullrod")
+				var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+				crew.put_in_hands(rod)
+				rod.melee_attack_chain(crew, puppet)
+				qdel(rod)
+			if("lighter")
+				var/obj/item/lighter/lighter = allocate(/obj/item/lighter)
+				lighter.set_lit(TRUE)
+				puppet.attackby(lighter, crew)
+				qdel(lighter)
+			if("welder")
+				var/obj/item/weldingtool/welder = allocate(/obj/item/weldingtool)
+				welder.welding = TRUE
+				puppet.attackby(welder, crew)
+				welder.welding = FALSE
+				qdel(welder)
+			if("fire")
+				puppet.fire_act(1000, 100)
+		TEST_ASSERT(QDELETED(puppet), "[removal] уничтожает куклу.")
+		TEST_ASSERT(!(puppet in wax.puppets), "После [removal] кукла уходит из списка.")
+	var/obj/item/heretic_wax_puppet/survivor = make_wax_puppet(wax, user, model)
+	var/obj/item/pen/plain = allocate(/obj/item/pen)
+	survivor.attackby(plain, crew)
+	TEST_ASSERT(!QDELETED(survivor), "Обычный предмет куклу не трогает.")
+	user.stat = DEAD
+	wax.on_death(user)
+	user.stat = CONSCIOUS
+	TEST_ASSERT(!QDELETED(survivor) && (survivor in wax.puppets), "Смерть еретика куклу не трогает.")
+	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	heretic.owner.transfer_to(new_body)
+	TEST_ASSERT(!QDELETED(survivor) && (survivor in wax.puppets), "Смена тела куклу не трогает.")
+	var/datum/component/heretic_craft/craft = heretic_craft_on(survivor, "wax_puppet")
+	TEST_ASSERT_EQUAL(craft?.owner_ref?.resolve(), wax, "Кукла по-прежнему принадлежит основе Воска.")
+	qdel(wax)
+	TEST_ASSERT(QDELETED(survivor), "Удаление основы уничтожает куклы.")
+
+/// Укол куклы: работает только у хозяина с куклой в руке, по живому человеку без защиты, перезарядка 30 секунд.
+/datum/unit_test/heretic_wax_puppet_prick/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z))
+	var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+	TEST_ASSERT(puppet.attack_self(user), "Хозяин колет куклу.")
+	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(puppet, prick_cooldown) - HERETIC_WAX_PUPPET_PRICK_COOLDOWN) < 1, "Перезарядка укола 30 секунд.")
+	TEST_ASSERT(!wax.prick(user, puppet), "Во время перезарядки укола нет.")
+	TEST_ASSERT(findtext(wax.wax_failure, "[HERETIC_WAX_PUPPET_PRICK_COOLDOWN / (1 SECONDS)] с"), "Отказ называет остаток перезарядки: [wax.wax_failure]")
+	COOLDOWN_RESET(puppet, prick_cooldown)
+	user.dropItemToGround(puppet)
+	TEST_ASSERT(!wax.prick(user, puppet), "Кукла на полу не колется.")
+	crew.put_in_hands(puppet)
+	TEST_ASSERT(!puppet.attack_self(crew), "Чужак ничего не может сделать с куклой.")
+	TEST_ASSERT(COOLDOWN_FINISHED(puppet, prick_cooldown), "Попытка чужака не запускает перезарядку.")
+	crew.dropItemToGround(puppet)
+	user.put_in_hands(puppet)
+	var/turf/home = get_turf(model)
+	model.forceMove(locate(home.x, home.y, home.z > 1 ? home.z - 1 : home.z + 1))
+	TEST_ASSERT(!wax.prick(user, puppet), "Человека на другом уровне кукла не достаёт.")
+	TEST_ASSERT(findtext(wax.wax_failure, "уровне"), "Отказ называет уровень: [wax.wax_failure]")
+	TEST_ASSERT(COOLDOWN_FINISHED(puppet, prick_cooldown), "Отказ по уровню не запускает перезарядку.")
+	model.forceMove(home)
+	var/datum/component/anti_magic/protection = model.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 3)
+	TEST_ASSERT(!wax.prick(user, puppet), "Защита от магии гасит укол.")
+	TEST_ASSERT_EQUAL(protection.charges, 3, "Проверка не тратит заряды антимагии.")
+	qdel(protection)
+	model.death()
+	TEST_ASSERT(!wax.prick(user, puppet), "Кукла мёртвого не колется.")
+	TEST_ASSERT(findtext(wax.wax_failure, "живых"), "Отказ говорит, что человека нет среди живых: [wax.wax_failure]")
+
+/// Сон по кукле: 5 секунд жара без воды и без ухода дальше 9 клеток - сон 8 секунд, цель готова к обряду, кукла цела до пробуждения, невосприимчивость отсчитывается от пробуждения.
+/datum/unit_test/heretic_wax_puppet_sleep/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/datum/eldritch_knowledge/spell/wax_puppet_sleep/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep/spell = knowledge.granted_spell
+	TEST_ASSERT(istype(spell), "Знание выдаёт Сон по кукле.")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_WAX_PUPPET_SLEEP_COOLDOWN, "Перезарядка 60 секунд.")
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	TEST_ASSERT(!wax.melt_puppet(user), "Без куклы в руке сна нет.")
+	TEST_ASSERT(findtext(wax.wax_failure, "кукл"), "Отказ просит куклу: [wax.wax_failure]")
+	var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+	var/datum/component/anti_magic/protection = model.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 3)
+	TEST_ASSERT(!wax.melt_puppet(user), "Защита от магии спасает от сна.")
+	TEST_ASSERT(findtext(wax.wax_failure, "защищена от магии"), "Отказ называет антимагию: [wax.wax_failure]")
+	TEST_ASSERT_EQUAL(protection.charges, 3, "Проверка не тратит заряды антимагии.")
+	qdel(protection)
+	model.fire_stacks = -1
+	TEST_ASSERT(!wax.melt_puppet(user), "Мокрого человека воск не берёт.")
+	TEST_ASSERT(findtext(wax.wax_failure, "Вода"), "Отказ называет воду: [wax.wax_failure]")
+	model.fire_stacks = 0
+	var/turf/home = get_turf(model)
+	model.forceMove(locate(origin.x + HERETIC_WAX_PUPPET_SLEEP_RANGE + 1, origin.y, origin.z))
+	TEST_ASSERT(!wax.melt_puppet(user), "Дальше 9 клеток сон не начинается.")
+	TEST_ASSERT(findtext(wax.wax_failure, "не дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток"), "Отказ называет дальность: [wax.wax_failure]")
+	model.forceMove(locate(home.x, home.y, home.z > 1 ? home.z - 1 : home.z + 1))
+	TEST_ASSERT(!wax.melt_puppet(user), "С другого уровня сон не начинается.")
+	TEST_ASSERT(findtext(wax.wax_failure, "на вашем уровне"), "Отказ называет уровень: [wax.wax_failure]")
+	model.forceMove(home)
+	TEST_ASSERT(!capture_immunity(model, "wax"), "Отказы до начала сна не дают невосприимчивости.")
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла начинает таять.")
+	var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
+	TEST_ASSERT_NOTNULL(melting, "Человек чувствует жар.")
+	TEST_ASSERT(abs(melting.duration - world.time - HERETIC_WAX_PUPPET_SLEEP_CHANNEL) < 1, "Жар длится 5 секунд.")
+	TEST_ASSERT(melting.steam && (melting.steam in model.vis_contents), "Над человеком поднимается пар.")
+	TEST_ASSERT(!model.IsSleeping(), "Во время жара человек ещё не спит.")
+	TEST_ASSERT(!wax.melt_puppet(user), "Вторая плавка на того же человека не начинается.")
+	melting.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(melting, 1 SECONDS), "Жар заканчивается по сроку.")
+	TEST_ASSERT(model.IsSleeping(), "Досмотревший жар человек спит.")
+	TEST_ASSERT(model.AmountSleeping() > HERETIC_WAX_PUPPET_SLEEP_TIME - 1 SECONDS && model.AmountSleeping() <= HERETIC_WAX_PUPPET_SLEEP_TIME + DAMAGE_PRECISION, "Сон длится 8 секунд: [model.AmountSleeping()] дс.")
+	TEST_ASSERT_EQUAL(model.voluntary_sleep_until, 0, "Сон не добровольный.")
+	TEST_ASSERT(heretic.hunt_target_ready(model), "Спящий готов к обряду.")
+	TEST_ASSERT(!QDELETED(puppet) && puppet.doll_sleep, "Пока человек спит, кукла цела и держит его сон.")
+	var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(model, "wax")
+	TEST_ASSERT(immunity && abs(immunity.duration - world.time - HERETIC_WAX_PUPPET_SLEEP_TIME - HERETIC_CAPTURE_IMMUNITY) < 1, "Минута невосприимчивости отсчитывается от пробуждения.")
+	var/datum/status_effect/heretic_capture_immunity/shared = capture_immunity(model, "shared")
+	TEST_ASSERT(shared && abs(shared.duration - world.time - HERETIC_WAX_PUPPET_SLEEP_TIME - HERETIC_CAPTURE_SHARED_IMMUNITY) < 1, "Общий пол 15 секунд отсчитывается от пробуждения.")
+	var/datum/status_effect/heretic_capture_knockout/knockout = puppet.doll_sleep
+	knockout.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(puppet, 2 SECONDS), "К пробуждению кукла трескается.")
+	TEST_ASSERT(!(puppet in wax.puppets), "Треснувшая кукла уходит из списка.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	make_wax_puppet(wax, user, model)
+	TEST_ASSERT(!wax.melt_puppet(user), "Невосприимчивого человека не усыпить.")
+	TEST_ASSERT(findtext(wax.wax_failure, "приходит в себя"), "Отказ называет невосприимчивость: [wax.wax_failure]")
+
+/// Сон по кукле рвут уход дальше 9 клеток, другой уровень, выпитая и вылитая вода, святая вода, нулевой жезл по цели или по еретику, выпущенная кукла, оглушение еретика и начало обряда; сорванный сон тоже даёт минуту невосприимчивости.
+/datum/unit_test/heretic_wax_puppet_sleep_breaks/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, locate(origin.x + 1, origin.y + 1, origin.z))
+	var/turf/far = locate(origin.x + HERETIC_WAX_PUPPET_SLEEP_RANGE + 1, origin.y, origin.z)
+	var/turf/elsewhere = locate(origin.x, origin.y, origin.z > 1 ? origin.z - 1 : origin.z + 1)
+	TEST_ASSERT(far && elsewhere, "Для проверки есть дальняя клетка и другой уровень.")
+	for(var/scenario in list("range", "zlevel", "drink", "splash", "holy", "rod_target", "rod_caster", "drop", "stun", "sacrifice"))
+		COOLDOWN_RESET(heretic.deed, progress_cooldown)
+		var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+		var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+		TEST_ASSERT(wax.melt_puppet(user), "Жар начат для проверки [scenario].")
+		var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
+		switch(scenario)
+			if("range")
+				model.forceMove(far)
+			if("zlevel")
+				model.forceMove(elsewhere)
+			if("drink")
+				model.reagents.add_reagent(/datum/reagent/water, 5)
+				melting.tick()
+			if("splash")
+				var/datum/reagents/bucket = new(10)
+				bucket.add_reagent(/datum/reagent/water, 10)
+				bucket.reaction(model, TOUCH)
+				qdel(bucket)
+			if("holy")
+				model.reagents.add_reagent(/datum/reagent/water/holywater, 5)
+				melting.tick()
+			if("rod_target", "rod_caster")
+				var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+				crew.put_in_hands(rod)
+				crew.a_intent = INTENT_HARM
+				rod.melee_attack_chain(crew, scenario == "rod_target" ? model : user)
+				crew.a_intent = INTENT_HELP
+				qdel(rod)
+				if(scenario == "rod_target")
+					TEST_ASSERT_EQUAL(model.getBruteLoss(), 0, "Жезл по цели гасит жар, не раня.")
+				else
+					TEST_ASSERT(user.getBruteLoss() > 0, "Жезл по еретику бьёт его как обычно.")
+					user.adjustBruteLoss(-user.getBruteLoss())
+			if("drop")
+				user.dropItemToGround(puppet)
+			if("stun")
+				user.Stun(2 SECONDS)
+				melting.tick()
+			if("sacrifice")
+				melting.duration = world.time - 1
+				SEND_SIGNAL(model, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING)
+		TEST_ASSERT(QDELETED(melting), "[scenario] обрывает жар.")
+		TEST_ASSERT(!model.IsSleeping(), "После [scenario] человек не спит.")
+		TEST_ASSERT(!QDELETED(puppet), "Сорванный сон не ломает куклу ([scenario]).")
+		var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(model, "wax")
+		TEST_ASSERT(immunity && abs(immunity.duration - world.time - HERETIC_CAPTURE_IMMUNITY) < 1, "Сорванный сон ([scenario]) даёт минуту невосприимчивости.")
+		user.SetStun(0)
+		user.forceMove(origin)
+		qdel(puppet)
+		qdel(model)
+
+/// Протечь не обрывает Бессмертную процессию: её свечи бьют и под лужицей, а обычная процессия под лужицей гаснет; Бессмертная процессия колдуется, как прежде.
+/datum/unit_test/heretic_wax_crown_ignores_leak/Run()
+	var/datum/antagonist/heretic/heretic = allocate_wax_leaker()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_procession)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	wax.combat_resource = 4
+	TEST_ASSERT(wax.procession(user), "Обычная процессия идёт.")
+	var/datum/status_effect/heretic_wax/procession/procession = user.has_status_effect(/datum/status_effect/heretic_wax/procession)
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается во время обычной процессии.")
+	procession.tick()
+	TEST_ASSERT(QDELETED(procession), "Лужица гасит обычную процессию.")
+	var/datum/status_effect/heretic_wax_leak/leak = wax.leak
+	leak.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(leak, 1 SECONDS), "Лужица собирается обратно.")
+	var/datum/eldritch_knowledge/final_eldritch/wax_final/final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final)
+	final_knowledge.finished = TRUE
+	heretic.ascended = TRUE
+	final_knowledge.on_body_gain(user)
+	var/obj/effect/proc_holder/spell/self/heretic_wax/crown/crown_spell = locate() in final_knowledge.ascension_spell_instances
+	TEST_ASSERT_NOTNULL(crown_spell, "Вознесение выдаёт Бессмертную процессию.")
+	TEST_ASSERT(crown_spell.can_cast(user, FALSE, TRUE), "Бессмертная процессия колдуется, как прежде.")
+	crown_spell.cast(list(user), user)
+	procession = user.has_status_effect(/datum/status_effect/heretic_wax/procession)
+	TEST_ASSERT(procession?.crown, "Идёт Бессмертная процессия.")
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается во время Бессмертной процессии.")
+	victim.remove_status_effect(/datum/status_effect/heretic_wax/clinging)
+	var/brute_before = victim.getBruteLoss()
+	procession.tick()
+	TEST_ASSERT(!QDELETED(procession), "Лужица не гасит Бессмертную процессию.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - brute_before - 18) <= DAMAGE_PRECISION, "Свеча под лужицей бьёт на прежние 18: [victim.getBruteLoss() - brute_before].")
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_wax/clinging), "Свеча под лужицей по-прежнему замедляет.")
+
+/datum/unit_test/proc/allocate_wax_leaker()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	return heretic
+
+/// Протечь: 4 секунды лужицей - неуязвим, медленнее, выскальзывает из захвата, вползает под шлюз на болтах и выходит из проёма на свободную клетку; наручники и щит разума не дают растечься.
+/datum/unit_test/heretic_wax_leak/Run()
+	var/datum/antagonist/heretic/heretic = allocate_wax_leaker()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/datum/eldritch_knowledge/spell/wax_leak/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	var/obj/effect/proc_holder/spell/self/heretic_wax/leak/spell = knowledge.granted_spell
+	TEST_ASSERT(istype(spell), "Знание выдаёт Протечь.")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_WAX_LEAK_COOLDOWN, "Перезарядка 60 секунд.")
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/grabber = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 1, origin.z))
+	grabber.start_pulling(user)
+	grabber.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT(user.incapacitated(), "Агрессивный захват сковывает еретика.")
+	TEST_ASSERT(spell.can_cast(user, FALSE, TRUE), "Протечь доступна в чужой хватке.")
+	var/alpha_before = user.alpha
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается.")
+	TEST_ASSERT_NULL(user.pulledby, "Лужица выскальзывает из захвата.")
+	var/datum/status_effect/heretic_wax_leak/leak = user.has_status_effect(/datum/status_effect/heretic_wax_leak)
+	TEST_ASSERT_NOTNULL(leak, "Еретик стал лужицей.")
+	TEST_ASSERT(abs(leak.duration - world.time - HERETIC_WAX_LEAK_DURATION) < 1, "Лужица держится 4 секунды.")
+	grabber.start_pulling(user)
+	TEST_ASSERT_NULL(user.pulledby, "Лужицу не схватить заново.")
+	user.apply_damage(30, BRUTE)
+	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Лужица неуязвима.")
+	TEST_ASSERT(user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_leak), "Лужица медленнее.")
+	TEST_ASSERT(!wax.start_leak(user), "Повторно растечься нельзя.")
+	var/obj/effect/abstract/heretic_wax_puddle/puddle = leak.puddle
+	TEST_ASSERT(puddle && (puddle in user.vis_contents) && user.alpha == 0, "Вместо тела видна лужица воска.")
+	var/obj/machinery/door/airlock/airlock = allocate(/obj/machinery/door/airlock, locate(origin.x + 1, origin.y, origin.z))
+	airlock.bolt()
+	TEST_ASSERT(airlock.density && airlock.locked, "Шлюз закрыт на болты.")
+	TEST_ASSERT(!airlock.CanPass(grabber, get_turf(airlock)), "Обычного человека закрытый шлюз не пускает.")
+	TEST_ASSERT(airlock.CanPass(user, get_turf(airlock)), "Лужица проходит под шлюзом на болтах.")
+	TEST_ASSERT(step(user, EAST), "Лужица вползает под шлюз.")
+	TEST_ASSERT_EQUAL(get_turf(user), get_turf(airlock), "Лужица под шлюзом.")
+	leak.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(leak, 1 SECONDS), "Лужица собирается обратно по сроку.")
+	var/turf/exit = get_turf(user)
+	TEST_ASSERT(exit != get_turf(airlock) && !exit.is_blocked_turf(exclude_mobs = TRUE), "Застывшая в проёме лужица выходит на свободную клетку.")
+	TEST_ASSERT(!airlock.CanPass(user, get_turf(airlock)), "Собравшийся еретик больше не проходит под шлюзом.")
+	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_leak) && user.alpha == alpha_before, "Облик и скорость возвращаются.")
+	TEST_ASSERT(QDELETED(puddle) && !(puddle in user.vis_contents), "Лужица убрана с тела.")
+	user.apply_damage(10, BRUTE)
+	TEST_ASSERT(user.getBruteLoss() > 0, "После лужицы еретик снова уязвим.")
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+	TEST_ASSERT(!wax.start_leak(user), "В наручниках растечься нельзя.")
+	TEST_ASSERT(findtext(wax.wax_failure, "наручниках"), "Отказ называет наручники: [wax.wax_failure]")
+	user.uncuff()
+	ADD_TRAIT(user, TRAIT_MINDSHIELD, "wax_test")
+	TEST_ASSERT(!wax.start_leak(user), "Под щитом разума растечься нельзя.")
+	TEST_ASSERT(findtext(wax.wax_failure, "Щит разума"), "Отказ называет щит разума: [wax.wax_failure]")
+	REMOVE_TRAIT(user, TRAIT_MINDSHIELD, "wax_test")
+
+/// Лужица проходит под пожарной заслонкой и стеклянной дверцей в обе стороны, но не сквозь гермозаслон, окно, стену, неразрушимую и кодовую дверь.
+/datum/unit_test/heretic_wax_leak_doors/Run()
+	var/datum/antagonist/heretic/heretic = allocate_wax_leaker()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 1, origin.z))
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается.")
+	var/obj/machinery/door/firedoor/closed/firedoor = allocate(/obj/machinery/door/firedoor/closed, locate(origin.x + 2, origin.y + 2, origin.z))
+	TEST_ASSERT(firedoor.density && firedoor.CanPass(user, get_turf(firedoor)), "Лужица проходит под пожарной заслонкой.")
+	var/obj/machinery/door/window/windoor = allocate(/obj/machinery/door/window, locate(origin.x + 3, origin.y + 2, origin.z))
+	TEST_ASSERT(windoor.density && windoor.CanPass(user, get_step(windoor, windoor.dir)), "Лужица проходит под стеклянной дверцей.")
+	TEST_ASSERT(windoor.CheckExit(user, get_step(windoor, windoor.dir)) && !windoor.CheckExit(crew, get_step(windoor, windoor.dir)), "Из-под стеклянной дверцы лужица выползает наружу, человек нет.")
+	var/obj/machinery/door/poddoor/blast = allocate(/obj/machinery/door/poddoor, locate(origin.x + 2, origin.y + 3, origin.z))
+	TEST_ASSERT(blast.density && !blast.CanPass(user, get_turf(blast)), "Гермозаслон лужицу не пускает.")
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, locate(origin.x + 3, origin.y + 3, origin.z))
+	TEST_ASSERT(!window.CanPass(user, get_turf(window)), "Окно лужицу не пускает.")
+	var/turf/wall = locate(origin.x - 2, origin.y, origin.z)
+	TEST_ASSERT(isclosedturf(wall) && !wall.Enter(user), "Стена лужицу не пускает.")
+	var/obj/machinery/door/airlock/vault = allocate(/obj/machinery/door/airlock, locate(origin.x + 1, origin.y + 3, origin.z))
+	vault.resistance_flags |= INDESTRUCTIBLE
+	TEST_ASSERT(vault.density && !vault.CanPass(user, get_turf(vault)), "Неразрушимая дверь лужицу не пускает.")
+	var/obj/machinery/door/password/puzzle = allocate(/obj/machinery/door/password, locate(origin.x, origin.y + 3, origin.z))
+	puzzle.resistance_flags &= ~INDESTRUCTIBLE
+	TEST_ASSERT(puzzle.density && !puzzle.CanPass(user, get_turf(puzzle)), "Кодовая дверь руин лужицу не пускает.")
+
+/// Лужица не кликает, не включает вещь в руке, не применяет способности Воска и не колдует чужие заклинания; после лужицы всё снова доступно.
+/datum/unit_test/heretic_wax_leak_cannot_act/Run()
+	var/datum/antagonist/heretic/heretic = allocate_wax_leaker()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/obj/effect/proc_holder/spell/self/basic_heal/heal = new
+	allocated += heal
+	user.mind.AddSpell(heal)
+	TEST_ASSERT(heal.can_cast(user, FALSE, TRUE), "Чужое заклинание до лужицы доступно.")
+	var/obj/item/flashlight/light = allocate(/obj/item/flashlight)
+	TEST_ASSERT(user.put_in_active_hand(light), "Фонарик в руке.")
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается с фонариком в руке.")
+	TEST_ASSERT(SEND_SIGNAL(user, COMSIG_MOB_CLICKON, light, "") & COMSIG_MOB_CANCEL_CLICKON, "Лужица не бьёт и не кликает.")
+	TEST_ASSERT(user.is_holding(light) && !user.execute_mode(light, user.active_hand_index) && !light.on, "Лужица держит вещь, но не включает её.")
+	TEST_ASSERT(!heal.cast_check(FALSE, user), "Лужица не колдует и чужие заклинания.")
+	TEST_ASSERT_EQUAL(heal.charge_counter, heal.charge_max, "Отказ не тратит заряд чужого заклинания.")
+	TEST_ASSERT(!wax.can_use(user), "Лужица не применяет способности Воска.")
+	qdel(user.has_status_effect(/datum/status_effect/heretic_wax_leak))
+	TEST_ASSERT(wax.can_use(user), "Способности Воска снова доступны.")
+	TEST_ASSERT(heal.can_cast(user, FALSE, TRUE), "Чужое заклинание снова доступно.")
+	TEST_ASSERT(user.execute_mode(light, user.active_hand_index) && light.on, "Собравшийся еретик снова включает вещь в руке.")
+
+/// Числа в текстах кукол, Сна по кукле, Протечь и дела Воска совпадают с дефайнами.
+/datum/unit_test/heretic_wax_texts/Run()
+	var/datum/eldritch_knowledge/base_wax/base = allocate(/datum/eldritch_knowledge/base_wax)
+	var/datum/eldritch_knowledge/spell/wax_puppet_sleep/capture = allocate(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/datum/eldritch_knowledge/spell/wax_leak/escape = allocate(/datum/eldritch_knowledge/spell/wax_leak)
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_WAX]
+	TEST_ASSERT(findtext(base.desc, "Держатся [HERETIC_WAX_PUPPET_LIMIT] куклы"), "База называет предел кукол.")
+	TEST_ASSERT(findtext(base.desc, "перезарядка [HERETIC_WAX_PUPPET_PRICK_COOLDOWN / (1 SECONDS)] секунд"), "База называет перезарядку укола.")
+	TEST_ASSERT(findtext(capture.desc, "растопите её [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд"), "Сон называет время жара.")
+	TEST_ASSERT(findtext(capture.desc, "в [HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках уснёт на [HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд"), "Сон называет дальность и длительность.")
+	TEST_ASSERT(findtext(capture.desc, "Перезарядка [HERETIC_WAX_PUPPET_SLEEP_COOLDOWN / (1 SECONDS)] секунд"), "Сон называет перезарядку.")
+	TEST_ASSERT(findtext(escape.desc, "На [HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды"), "Протечь называет длительность.")
+	TEST_ASSERT(findtext(escape.desc, "Перезарядка [HERETIC_WAX_LEAK_COOLDOWN / (1 SECONDS)] секунд"), "Протечь называет перезарядку.")
+	var/obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep/sleep_spell = /obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep
+	TEST_ASSERT(findtext(initial(sleep_spell.desc), "[HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках") && findtext(initial(sleep_spell.desc), "спит [HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд"), "Кнопка сна называет дальность и длительность.")
+	var/obj/effect/proc_holder/spell/self/heretic_wax/leak/leak_spell = /obj/effect/proc_holder/spell/self/heretic_wax/leak
+	TEST_ASSERT(findtext(initial(leak_spell.desc), "На [HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды"), "Кнопка Протечь называет длительность.")
+	TEST_ASSERT(findtext(path.capture_summary, "[HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд") && findtext(path.capture_summary, "[HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках"), "Модель пути называет сон и дальность.")
+	TEST_ASSERT(findtext(path.escape_summary, "[HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды"), "Модель пути называет длительность лужицы.")
+	TEST_ASSERT(findtext(path.craft_summary, "[HERETIC_WAX_PUPPET_LIMIT] куклы"), "Модель пути называет предел кукол.")
+	var/datum/heretic_deed/wax/deed = new
+	allocated += deed
+	TEST_ASSERT(findtext(deed.desc, "Каждый человек засчитывается один раз"), "Дело считает людей.")
+	TEST_ASSERT(findtext(deed.desc, "Между зачётами Мансусу нужно [HERETIC_DEED_COOLDOWN / (1 SECONDS)] с"), "Дело Воска называет паузу между зачётами.")
+	TEST_ASSERT(findtext(path.combat_practice, "Протечь") && findtext(path.combat_practice, "кукл"), "Полигон учит куклам и Протечь.")
+	TEST_ASSERT(findtext(path.combat_practice, "дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд"), "Полигон называет дальность и время сна.")
+	TEST_ASSERT(findtext(deed.hint, "Держатся [HERETIC_WAX_PUPPET_LIMIT] куклы"), "Подсказка дела называет предел кукол.")
+	TEST_ASSERT(findtext(path.strengths, "в [HERETIC_WAX_PUPPET_SLEEP_RANGE] клетках даже за стеной") && findtext(path.weaknesses, "дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток и нулевой жезл"), "Стороны пути называют дальность сна.")
+	TEST_ASSERT(!findtext(path.escape_summary, "любой") && findtext(path.weaknesses, "неразрушимые двери"), "Уход не обещает любую дверь.")
+	TEST_ASSERT(findtext(capture.desc, "[HERETIC_CAPTURE_IMMUNITY / (1 SECONDS)] секунд невосприимчив к Сну и [HERETIC_CAPTURE_SHARED_IMMUNITY / (1 SECONDS)] секунд к любому захвату"), "Сон называет сроки невосприимчивости.")
+	var/dollhouse_text = "[replacetext("[HERETIC_WAX_DOLLHOUSE_TIME / (1 SECONDS)]", ".", ",")] секунды"
+	var/shake_text = "[HERETIC_CAPTURE_SHAKE_TIME / (1 SECONDS)] секунды растолкать"
+	TEST_ASSERT(findtext(capture.desc, "за [dollhouse_text] утягивает") && findtext(initial(sleep_spell.desc), "за [dollhouse_text] утянет"), "Тексты Сна называют время кукольного дома.")
+	TEST_ASSERT(findtext(capture.desc, "нулевой жезл и [shake_text]") && findtext(initial(sleep_spell.desc), "нулевой жезл и [shake_text]"), "Тексты Сна называют, что будит спящего.")
+	TEST_ASSERT(findtext(capture.desc, "вода сон уже не рвёт") && findtext(initial(sleep_spell.desc), "вода сон уже не рвёт"), "Тексты Сна говорят, что вода рвёт только жар.")
+	var/datum/status_effect/doll_sleep = /datum/status_effect/heretic_capture_knockout/wax_doll
+	TEST_ASSERT(findtext(initial(doll_sleep.examine_text), "Нулевой жезл или [shake_text]"), "Спящий по кукле при осмотре подсказывает, что его будит.")
+	TEST_ASSERT(findtext(base.desc, "человек на вашем уровне чувствует укол"), "Укол ограничен уровнем.")
+	TEST_ASSERT(findtext(escape.desc, "неразрушимые и кодовые двери"), "Протечь называет запертые для неё двери.")
+	TEST_ASSERT(findtext(initial(sleep_spell.desc), "Перезарядка [HERETIC_WAX_PUPPET_SLEEP_COOLDOWN / (1 SECONDS)] секунд") && findtext(initial(leak_spell.desc), "Перезарядка [HERETIC_WAX_LEAK_COOLDOWN / (1 SECONDS)] секунд"), "Кнопки называют перезарядку.")
+	var/atom/movable/screen/alert/status_effect/heretic_wax_melting/melting_alert = /atom/movable/screen/alert/status_effect/heretic_wax_melting
+	TEST_ASSERT(findtext(initial(melting_alert.desc), "через [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд вы уснёте на [HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд"), "Предупреждение о жаре называет сроки.")
+	var/atom/movable/screen/alert/status_effect/heretic_wax_leak/leak_alert = /atom/movable/screen/alert/status_effect/heretic_wax_leak
+	TEST_ASSERT(findtext(initial(leak_alert.desc), "на [HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды"), "Значок лужицы называет срок.")
+	var/atom/movable/screen/alert/status_effect/heretic_wax_seal/seal_alert = /atom/movable/screen/alert/status_effect/heretic_wax_seal
+	TEST_ASSERT(!findtext(initial(seal_alert.desc), "Улучшенный клинок"), "Печать больше не ссылается на удалённый клинок.")
+
+/// Протечь из агрессивной хватки через горячую клавишу проходит путь заклинания и уходит на перезарядку; лужица сбрасывает того, кого еретик нёс.
+/datum/unit_test/heretic_wax_leak_hotkey/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/spell/wax_leak/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	var/obj/effect/proc_holder/spell/self/heretic_wax/leak/spell = knowledge.granted_spell
+	heretic.collect_combat_spells(list())
+	var/slot = heretic.ability_hotkey_types.Find(/obj/effect/proc_holder/spell/self/heretic_wax/leak)
+	TEST_ASSERT(slot, "У Протечь есть слот горячей клавиши.")
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/grabber = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 1, origin.z))
+	grabber.start_pulling(user)
+	grabber.setGrabState(GRAB_AGGRESSIVE)
+	TEST_ASSERT(user.incapacitated(), "Агрессивный захват сковывает еретика.")
+	TEST_ASSERT(user.activate_ability_hotkey(slot), "Хоткей Протечь обработан.")
+	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_wax_leak), "В захвате хоткей растекает еретика.")
+	TEST_ASSERT_NULL(user.pulledby, "Хоткей Протечь разрывает захват.")
+	TEST_ASSERT(spell.charge_counter < spell.charge_max, "Протечь уходит на перезарядку.")
+	grabber.stop_pulling()
+	qdel(user.has_status_effect(/datum/status_effect/heretic_wax_leak))
+	var/mob/living/carbon/human/rider = allocate(/mob/living/carbon/human, origin)
+	user.buckle_mob(rider, TRUE, buckle_type = RIDING_FIREMAN, auto_by_type = TRUE)
+	TEST_ASSERT(user.has_buckled_mobs(), "Еретик несёт человека на плечах.")
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	TEST_ASSERT(wax.start_leak(user), "Еретик с ношей растекается.")
+	TEST_ASSERT(!user.has_buckled_mobs(), "Лужица сбрасывает того, кого несла.")
+
+/// Обряд канделябра из свечи и слитка серебра на настоящей руне идёт от Погребальной оболочки и расходует компоненты.
+/datum/unit_test/heretic_wax_candelabrum_ritual/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/spell/wax_shell/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
+	recipe.ritual_time = 0
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	var/obj/item/candle/candle = allocate(/obj/item/candle, get_turf(rune))
+	var/obj/item/stack/sheet/mineral/silver/silver = allocate(/obj/item/stack/sheet/mineral/silver, get_turf(rune))
+	TEST_ASSERT(rune.do_ritual(user, recipe), "Обряд канделябра завершается на руне.")
+	TEST_ASSERT(QDELETED(candle) && QDELETED(silver), "Обряд расходует свечу и серебро.")
+	var/obj/item/heretic_path_relic/wax/relic = locate() in get_turf(rune)
+	TEST_ASSERT_NOTNULL(relic, "Руна создаёт канделябр.")
+	allocated += relic
+	TEST_ASSERT_EQUAL(relic.knowledge_ref?.resolve(), recipe, "Канделябр привязан к знанию оболочки.")
+	TEST_ASSERT(!recipe.recipe_snowflake_check(list(), get_turf(rune), list(), user), "Пока жив первый канделябр, второй не создаётся.")
+
+/datum/unit_test/proc/wax_sleep_by_puppet(datum/eldritch_knowledge/base_wax/wax, mob/living/carbon/human/user, mob/living/carbon/human/model)
+	var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+	if(!puppet || !wax.melt_puppet(user))
+		return null
+	var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
+	melting.duration = world.time
+	if(!wait_for_qdeleted(melting, 1 SECONDS))
+		return null
+	return puppet
+
+/// Кукольный дом: пока цель охоты спит от куклы, кукла цела, одна «Помощь» сон не снимает; дальше 9 клеток, с другого уровня и после пробуждения кукла не утягивает, а к пробуждению трескается; в 9 клетках за 1,5 секунды утягивает спящего в изнанку и рассыпается.
+/datum/unit_test/heretic_wax_dollhouse/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/turf/home = locate(origin.x + 3, origin.y + 3, origin.z)
+	var/mob/living/carbon/human/wanderer = allocate_wax_crew(home)
+	heretic.set_hunt_target(wanderer.mind)
+	var/notice = wax.doll_sleep_notice(user, wanderer)
+	TEST_ASSERT(findtext(notice, "куклу в руке") && findtext(notice, "за [replacetext("[HERETIC_WAX_DOLLHOUSE_TIME / (1 SECONDS)]", ".", ",")] секунды"), "Уснувшая цель охоты: сообщение велит взять куклу в руку и называет время: [notice]")
+	var/mob/living/carbon/human/bystander = allocate_wax_crew(locate(origin.x + 1, origin.y + 3, origin.z))
+	notice = wax.doll_sleep_notice(user, bystander)
+	TEST_ASSERT(!findtext(notice, "изнанк") && findtext(notice, "треснет"), "Не цели охоты кукольный дом не обещан: [notice]")
+	var/obj/item/heretic_wax_puppet/puppet = wax_sleep_by_puppet(wax, user, wanderer)
+	TEST_ASSERT(puppet && wanderer.IsSleeping(), "Цель охоты спит от куклы.")
+	TEST_ASSERT(!QDELETED(puppet) && puppet.doll_sleep, "Пока цель спит, кукла цела.")
+	var/mob/living/carbon/human/helper = allocate(/mob/living/carbon/human, get_step(home, SOUTH))
+	wanderer.help_shake_act(helper)
+	TEST_ASSERT(wanderer.IsSleeping(), "Одна «Помощь» не будит спящего по кукле.")
+	TEST_ASSERT(LAZYFIND(helper.do_afters, wanderer), "«Помощь» начинает расталкивать спящего.")
+	qdel(helper)
+	wanderer.forceMove(locate(origin.x + HERETIC_WAX_PUPPET_SLEEP_RANGE + 1, origin.y, origin.z))
+	TEST_ASSERT(!wax.pull_into_dollhouse(user, puppet), "Дальше 9 клеток кукла не утягивает.")
+	TEST_ASSERT(findtext(wax.wax_failure, "не дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток"), "Отказ называет дальность: [wax.wax_failure]")
+	wanderer.forceMove(get_turf(GET_ERROR_ROOM))
+	TEST_ASSERT(!wax.pull_into_dollhouse(user, puppet), "С другого уровня кукла не утягивает.")
+	TEST_ASSERT(findtext(wax.wax_failure, "на вашем уровне"), "Отказ называет уровень: [wax.wax_failure]")
+	wanderer.forceMove(home)
+	TEST_ASSERT(!heretic.pocket?.active && !QDELETED(puppet), "Отказы не открывают изнанку и не ломают куклу.")
+	wanderer.SetSleeping(0)
+	TEST_ASSERT(!wax.pull_into_dollhouse(user, puppet), "Проснувшегося кукла не утягивает.")
+	TEST_ASSERT(findtext(wax.wax_failure, "не спит"), "Отказ называет пробуждение: [wax.wax_failure]")
+	TEST_ASSERT(wait_for_qdeleted(puppet, 2 SECONDS), "К пробуждению кукла трескается.")
+	qdel(wanderer)
+	var/mob/living/carbon/human/model = allocate_wax_crew(home)
+	heretic.set_hunt_target(model.mind)
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	puppet = wax_sleep_by_puppet(wax, user, model)
+	TEST_ASSERT(puppet && model.IsSleeping(), "Новая цель охоты спит от куклы.")
+	var/started = world.time
+	puppet.attack_self(user)
+	TEST_ASSERT(heretic.pocket_holds(model), "Спящего утянуло в изнанку: [world.time - started] дс, [wax.dollhouse_block_reason(user, puppet)] / [heretic.pocket_pull_reason(user, model, home)].")
+	TEST_ASSERT(world.time - started >= HERETIC_WAX_DOLLHOUSE_TIME - 1, "Кукла утягивает [HERETIC_WAX_DOLLHOUSE_TIME / (1 SECONDS)] с: [world.time - started] дс.")
+	TEST_ASSERT(heretic.pocket.contains(user), "Еретик вошёл следом.")
+	TEST_ASSERT_EQUAL(heretic.pocket.entry_turf, home, "Разрыв остаётся там, где спал человек.")
+	TEST_ASSERT(QDELETED(puppet), "После утягивания кукла рассыпается.")
+	TEST_ASSERT(model.IsSleeping(), "В изнанке человек ещё спит.")
+
+/// Сон по кукле кончается от 2 секунд растолкать, нулевого жезла по спящему, его смерти и удаления, и вместе со сном трескается кукла; вода спящего не будит.
+/datum/unit_test/heretic_wax_doll_sleep_ends/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/turf/home = locate(origin.x + 3, origin.y + 3, origin.z)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(home, SOUTH))
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	crew.put_in_hands(rod)
+	for(var/scenario in list("water", "shake", "rod", "death", "deleted"))
+		COOLDOWN_RESET(heretic.deed, progress_cooldown)
+		var/mob/living/carbon/human/model = allocate_wax_crew(home)
+		var/obj/item/heretic_wax_puppet/puppet = wax_sleep_by_puppet(wax, user, model)
+		TEST_ASSERT(puppet && model.IsSleeping() && puppet.doll_sleep, "Человек спит от куклы ([scenario]).")
+		switch(scenario)
+			if("water")
+				model.reagents.add_reagent(/datum/reagent/water, 5)
+				var/datum/reagents/bucket = new(10)
+				bucket.add_reagent(/datum/reagent/water, 10)
+				bucket.reaction(model, TOUCH)
+				qdel(bucket)
+				puppet.doll_sleep.tick()
+				TEST_ASSERT(model.IsSleeping() && !QDELETED(puppet), "Вода спящего по кукле не будит.")
+				qdel(model)
+			if("shake")
+				TEST_ASSERT(heretic_capture_shake(crew, model), "Две секунды растолкать доходят до конца.")
+			if("rod")
+				crew.a_intent = INTENT_HARM
+				rod.melee_attack_chain(crew, model)
+				crew.a_intent = INTENT_HELP
+				TEST_ASSERT_EQUAL(model.getBruteLoss(), 0, "Жезл будит, не раня.")
+			if("death")
+				model.death()
+			if("deleted")
+				qdel(model)
+		TEST_ASSERT(QDELETED(puppet), "Кончился сон - кукла треснула сразу ([scenario]).")
+		TEST_ASSERT(!(puppet in wax.puppets), "Треснувшая кукла ушла из списка ([scenario]).")
+		if(!QDELETED(model) && model.stat != DEAD)
+			TEST_ASSERT(!model.IsSleeping(), "Человек проснулся ([scenario]).")
+
+/// Кукла по личной вещи: ID-карта и КПК с именем живого человека лепят его куклу, как отпечатки, с тем же делом; вещь с чужим или своим именем - нет.
+/datum/unit_test/heretic_wax_puppet_personal/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/owner = allocate_wax_crew(locate(origin.x + 3, origin.y + 3, origin.z))
+	var/mob/living/carbon/human/clerk = allocate_wax_crew(locate(origin.x + 2, origin.y + 3, origin.z))
+	owner.real_name = "Wax Owner [REF(owner)]"
+	clerk.real_name = "Wax Clerk [REF(clerk)]"
+	user.a_intent = INTENT_HELP
+	var/obj/item/card/id/nobody = allocate(/obj/item/card/id, get_step(user, EAST))
+	nobody.registered_name = "Nobody At All"
+	TEST_ASSERT(!wax.on_mansus_grasp(nobody, user, TRUE), "Карта без живого владельца куклы не даёт.")
+	var/obj/item/card/id/own = allocate(/obj/item/card/id, get_step(user, EAST))
+	own.registered_name = user.real_name
+	TEST_ASSERT(!wax.on_mansus_grasp(own, user, TRUE), "Своя карта куклы не даёт.")
+	var/obj/item/card/id/card = allocate(/obj/item/card/id, get_step(user, EAST))
+	card.registered_name = owner.real_name
+	TEST_ASSERT(wax.on_mansus_grasp(card, user, TRUE), "ID-карта лепит куклу владельца: [wax.grasp_failure_reason]")
+	var/obj/item/heretic_wax_puppet/puppet = wax.puppets[length(wax.puppets)]
+	allocated += puppet
+	TEST_ASSERT_EQUAL(puppet.model_ref?.resolve(), owner, "Кукла повторяет владельца карты.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Владелец карты идёт в дело.")
+	var/datum/component/heretic_craft/craft = heretic_craft_on(puppet, "wax_puppet")
+	TEST_ASSERT(findtext(craft?.clue, "по чужой вещи с именем"), "Улика называет вещь с именем: [craft?.clue]")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/obj/item/pen/pen = wax_touched_item(owner, get_step(user, EAST))
+	TEST_ASSERT(!wax.on_mansus_grasp(pen, user, TRUE), "Вторая кукла того же человека по отпечаткам не лепится.")
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda, get_step(user, EAST))
+	pda.saved_identification = clerk.real_name
+	TEST_ASSERT(wax.on_mansus_grasp(pda, user, TRUE), "КПК лепит куклу владельца: [wax.grasp_failure_reason]")
+	var/obj/item/heretic_wax_puppet/second = wax.puppets[length(wax.puppets)]
+	allocated += second
+	TEST_ASSERT_EQUAL(second.model_ref?.resolve(), clerk, "Кукла повторяет владельца КПК.")
+	TEST_ASSERT_EQUAL(length(wax.puppets), HERETIC_WAX_PUPPET_LIMIT, "Куклы по вещам в том же пределе.")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Дело считает людей по вещам так же, как по отпечаткам.")
+
+/// Выходы Воска: свои свечи на полу станции; свеча в руке и чужая свеча - нет.
+/datum/unit_test/heretic_wax_pocket_exits/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/obj/item/candle/floor_candle = cast_wax_anchor(wax, user, locate(origin.x + 3, origin.y + 2, origin.z))
+	var/obj/item/candle/held_candle = cast_wax_anchor(wax, user, locate(origin.x + 1, origin.y + 3, origin.z))
+	TEST_ASSERT(floor_candle && held_candle, "Две свечи отлиты.")
+	user.put_in_hands(held_candle)
+	var/datum/antagonist/heretic/rival = allocate_deed_heretic(PATH_WAX)
+	var/datum/eldritch_knowledge/base_wax/rival_wax = rival.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/obj/item/candle/foreign = cast_wax_anchor(rival_wax, rival.owner.current, locate(origin.x + 4, origin.y + 4, origin.z))
+	TEST_ASSERT(foreign, "Чужая свеча отлита.")
+	var/list/exits = wax.pocket_exits(user)
+	TEST_ASSERT_EQUAL(length(exits), 1, "Выход - только своя свеча на полу.")
+	for(var/label in exits)
+		TEST_ASSERT(findtext(label, "Свеча - "), "Выход подписан свечой и отделом: [label]")
+		TEST_ASSERT(get_dist(exits[label], floor_candle) <= 1, "Выход у своей свечи: [label]")
+	var/listed = FALSE
+	for(var/label in heretic.pocket_exits(user))
+		if(findtext(label, "Свеча - "))
+			listed = TRUE
+	TEST_ASSERT(listed, "Изнанка предлагает выход к свече.")
+	qdel(floor_candle)
+	TEST_ASSERT_EQUAL(length(wax.pocket_exits(user)), 0, "Погасшая свеча больше не выход.")

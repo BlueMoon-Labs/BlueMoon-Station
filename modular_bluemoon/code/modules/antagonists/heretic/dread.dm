@@ -134,7 +134,7 @@
 	name = "Домен Пустоты"
 	desc = "Холод замедляет вас и отнимает голос. Покиньте белую границу печати."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_void"
+	icon_state = "void_domain"
 
 /datum/client_colour/heretic_domain
 	priority = 4

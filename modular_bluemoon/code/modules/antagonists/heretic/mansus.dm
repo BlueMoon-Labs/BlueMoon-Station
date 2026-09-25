@@ -497,6 +497,8 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		return FALSE
 	started = TRUE
 	GLOB.heretic_mansus_visits[soul] = src
+	// Захваты снимают бессмертие и свой паралич до лечения, иначе fully_heal не тронет урон под GODMODE.
+	SEND_SIGNAL(victim, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING)
 	heal_victim()
 	victim.grab_ghost()
 	ADD_TRAIT(victim, TRAIT_NOBREATH, REF(src))

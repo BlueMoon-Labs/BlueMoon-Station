@@ -16,7 +16,13 @@
 
 /datum/eldritch_knowledge/unshielded_mind
 	name = "Разум за завесой"
-	desc = "Щит разума больше не глушит ваш зов: с имплантом защиты разума магия, обряды и побег клинком остаются доступны. Наручники и смирительная рубашка по-прежнему сковывают вас. Вознёсшегося щит не держит и без этого знания."
+	summary = "Щит разума больше не глушит вашу магию, обряды и побег клинком."
+	details = list(
+		"С имплантом защиты разума магия, обряды на руне и побег клинком остаются доступны.",
+		"Наручники и смирительная рубашка по-прежнему держат вас.",
+		"Вознёсшегося щит не держит и без этого знания.",
+	)
+	role = HERETIC_ROLE_PASSIVE
 	passive_desc = "Имплант защиты разума не подавляет вашу магию, обряды и побег клинком."
 	gain_text = "Они поставили замок на дверь, которой у меня больше нет."
 	cost = 2
@@ -29,6 +35,10 @@
 	var/reason = heretic_containment_reason(user)
 	if(reason)
 		heretic_check(user, FALSE, silent, reason)
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(heretic_stun_check && heretic && !heretic.ascended && user.incapacitated(ignore_grab = usable_while_grabbed))
+		heretic_check(user, FALSE, silent)
 		return FALSE
 
 /obj/item/implant/mindshield/implant(mob/living/target, mob/user, silent = FALSE)

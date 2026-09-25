@@ -13,22 +13,47 @@
 #define HERETIC_WAX_SHELL_RELEASE_FRACTION (2 / 3)
 #define HERETIC_WAX_COLOR "#e8ca85"
 #define HERETIC_WAX_ANCHOR_FILTER "heretic_wax_anchor"
+#define HERETIC_WAX_PUPPET_CRAFT "wax_puppet"
+#define HERETIC_WAX_CAPTURE "wax"
+#define HERETIC_WAX_PUPPET_CHECK (0.5 SECONDS)
+#define HERETIC_WAX_LEAK_TRAIT "heretic_wax_leak"
+#define HERETIC_WAX_LEAK_SLOWDOWN 1
+#define HERETIC_WAX_PUDDLE_SPREAD 1.3
+#define HERETIC_WAX_PUDDLE_SQUASH 0.25
+#define HERETIC_WAX_PUDDLE_SINK 12
+#define HERETIC_WAX_PUDDLE_ALPHA 220
 
 /datum/heretic_path/wax
 	id = PATH_WAX
 	deed_type = /datum/heretic_deed/wax
 	name = "Воск"
-	desc = "Снимите с врага форму и бейте воскового двойника вместо оригинала. Отлейте себе вторую кожу, затем переплавьте принятые ею раны в лечение; погребальные свечи пойдут за вами."
-	strengths = "Восковой двойник доступен с третьей ступени и позволяет ранить противника клинком на расстоянии. Волна и удары через оттиск ненадолго замедляют врага, помогая продолжить атаку. Печати укрепляют двойника, оболочка и канделябр поддерживают вас в затяжном бою. Вознёсшийся раз в 5 минут переживает крит или смерть: оставляет восковую куклу и поднимается с половиной здоровья у ближайшей из трёх последних свечей, отлитых им из бумаги на том же уровне."
-	weaknesses = "Противник может разбить двойника и свечи. Стены и отход дальше пяти клеток рвут связь с оттиском. Оболочка немного замедляет; для длительного боя нужно возвращать воск попаданиями. Прежде чем валить вознёсшегося, найдите и разбейте его свечи, обведённые золотистым контуром: хватит любого удара, зажигалки или нулевого жезла. Свеча держит жизнь только на полу или столе внутри станции, а не в руках, в ящике, под шкафом, на решётке, в космосе или снаружи под открытым небом. Разорванное или обращённое в прах тело, как и тело в шкафу, мехе или взятое на руки, будто крошечное существо, не возвращается; тело, которое тащат или несут на плече, возвращается."
+	tagline = "Лепит кукол по отпечаткам пальцев, усыпляет по кукле и протекает под дверью."
+	craft_summary = "Хватка в «Помощи» по вещи с отпечатками, ID-карте или КПК лепит куклу; держатся 2 куклы."
+	capture_summary = "Кукла: 5 секунд жара - человек в 9 клетках спит 8 секунд, а спящую цель кукла утягивает в изнанку."
+	escape_summary = "Протечь: 4 секунды неуязвимой лужицей под дверью и шлюзом; из изнанки выходите к своей свече."
+	strength_points = list(
+		"Кукла усыпляет человека в 9 клетках даже за стеной: хватит вещи, которую он держал.",
+		"Спящую цель охоты кукла в руке утягивает в изнанку, не подходя к ней.",
+		"Протечь уводит под закрытым шлюзом, даже на болтах, и вырывает из чужих рук.",
+		"Волна ранит и замедляет врагов в 3 клетках, оттиск и двойник - в 5; выброс оболочки бьёт на 5 без замедления.",
+		"Оболочка принимает удары, канделябр переплавляет принятое в лечение.",
+		"Вознёсшийся раз в 5 минут встаёт из крита у одной из трёх своих свечей.",
+	)
+	weakness_points = list(
+		"Потерянную куклу с биркой найдут: огонь или нулевой жезл её уничтожают.",
+		"Жар рвут вода, уход дальше 9 клеток и нулевой жезл; спящего будят жезл и 2 секунды растолкать.",
+		"Лужица не проходит сквозь стены, окна, гермозаслоны и неразрушимые двери и сама ничего не может.",
+		"Стены и отход дальше 5 клеток рвут связь с двойником, его можно разбить.",
+		"Перед боем с вознёсшимся разбейте его свечи с золотым контуром ударом или огнём.",
+	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_wax,
 		/datum/eldritch_knowledge/wax_grasp,
 		/datum/eldritch_knowledge/spell/wax_imprint,
-		/datum/eldritch_knowledge/wax_mark,
+		/datum/eldritch_knowledge/spell/wax_puppet_sleep,
 		/datum/eldritch_knowledge/spell/wax_shell,
-		/datum/eldritch_knowledge/wax_upgrade,
-		/datum/eldritch_knowledge/wax_relic,
+		/datum/eldritch_knowledge/wax_mark,
+		/datum/eldritch_knowledge/spell/wax_leak,
 		/datum/eldritch_knowledge/wax_temper,
 		/datum/eldritch_knowledge/spell/wax_procession,
 		/datum/eldritch_knowledge/final_eldritch/wax_final,
@@ -36,7 +61,17 @@
 
 /datum/eldritch_knowledge/base_wax
 	name = "Свеча без огня"
-	desc = "Нож и свеча создают ритуальные щипцы-гаситель. Свечу можно отлить Хваткой Мансуса из листа бумаги на полу за 1 Воск; после вознесения три последние такие свечи держат вашу жизнь. «Снять печать» за единицу воска сразу поражает веер в трёх клетках перед вами: 18 ушибов, 20 урона выносливости и замедление на 2 секунды. Стены останавливают волну."
+	summary = "Лепит кукол по чужим отпечаткам, отливает свечи из бумаги и бьёт веером воска за 1 Воск."
+	details = list(
+		"Хватка в «Помощи» по вещи с отпечатками живого человека с разумом, его ID-карте или КПК лепит его куклу в руку.",
+		"Держатся 2 куклы, новая вытесняет старую; каждый человек идёт в дело один раз.",
+		"Кукла в руке: «уколоть» - человек на вашем уровне чувствует укол и слышит шёпот, перезарядка 30 секунд.",
+		"Потерянную куклу найдёт экипаж по бирке; огонь и нулевой жезл её уничтожают.",
+		"Хватка по листу бумаги на полу отливает свечу за 1 Воск, из бумаги кукла не лепится; из изнанки - к своей свече.",
+		"«Снять печать» за 1 Воск бьёт веером на 3 клетки: 18 ушибов, 20 выносливости, замедление на 2 секунды.",
+		"Нож и свеча на руне дают восковой клинок.",
+	)
+	role = HERETIC_ROLE_CRAFT
 	ritual_hint = "Нет свечи? Положите лист бумаги на пол и коснитесь его Хваткой Мансуса: лист и 1 Воск превратятся в обычную свечу. Это доступно сразу после выбора пути."
 	gain_text = "Свеча не горела. Она таяла от того, что видела."
 	route = PATH_WAX
@@ -45,7 +80,13 @@
 	combat_resource = 3
 	combat_resource_max = 5
 	combat_resource_name = "Воск"
-	combat_resource_desc = "Запас 3 из 5. Восстанавливается по единице каждые 10 секунд, пока не наберётся 2. Попадания клинком, хваткой, волной, оттиском и процессией, а также взрыв метки по живому разумному врагу дают единицу с общей задержкой 6 секунд; животные и союзники не подходят. Новое дело пути даёт единицу. Волна, снятие оттиска и отливка свечи Хваткой Мансуса из бумаги на полу стоят 1, оболочка и процессия — 2. Смерть и смена тела гасят свечи и обнуляют запас."
+	resource_rules = list(
+		"Запас 3 из 5; пока воска меньше 2, единица возвращается каждые 10 секунд.",
+		"Попадания клинком, хваткой, волной, оттиском и процессией и взрыв метки по живому разумному врагу дают единицу раз в 6 секунд.",
+		"Животные и союзники воск не дают; новое дело пути даёт единицу.",
+		"Волна, оттиск и отливка свечи стоят 1, оболочка и процессия - 2.",
+		"Смерть и смена тела гасят свечи и обнуляют запас; куклы остаются.",
+	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_wax/release
 	grasp_visual = /obj/effect/temp_visual/heretic_wax/grasp
 	grasp_sound = 'modular_bluemoon/sound/heretic/wax_grasp.ogg'
@@ -57,6 +98,10 @@
 	var/ascension_active = FALSE
 	var/datum/status_effect/heretic_wax/effigy/active_effigy
 	var/list/obj/item/candle/anchor_candles = list()
+	var/list/obj/item/heretic_wax_puppet/puppets = list()
+	var/list/datum/status_effect/heretic_wax_melting/meltings = list()
+	var/datum/status_effect/heretic_wax_leak/leak
+	var/wax_failure
 	COOLDOWN_DECLARE(wax_recovery)
 	COOLDOWN_DECLARE(wax_harvest)
 
@@ -96,21 +141,26 @@
 	on_body_lose(wax_body)
 	for(var/obj/item/candle/candle as anything in anchor_candles.Copy())
 		release_anchor(candle)
+	for(var/obj/item/heretic_wax_puppet/puppet as anything in puppets.Copy())
+		qdel(puppet)
+	puppets.Cut()
 	return ..()
 
 /datum/eldritch_knowledge/base_wax/proc/clear_wax()
 	QDEL_LIST(effects)
 	QDEL_LIST(marks)
 	QDEL_LIST(visuals)
+	QDEL_LIST(meltings)
+	QDEL_NULL(leak)
 
 /datum/eldritch_knowledge/base_wax/proc/clear_knowledge_effects(datum/eldritch_knowledge/required)
 	for(var/datum/status_effect/heretic_wax/effect as anything in effects.Copy())
 		if(effect.knowledge_ref?.resolve() == required)
 			qdel(effect)
 
-/datum/eldritch_knowledge/base_wax/proc/can_use(mob/living/user, allow_incapacitated = FALSE)
+/datum/eldritch_knowledge/base_wax/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE, ignore_leak = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	return !QDELETED(src) && user && user == wax_body && user.stat != DEAD && (allow_incapacitated || !user.incapacitated()) && isturf(user.loc) && heretic?.selected_path == PATH_WAX && !heretic.role_removed && heretic.get_knowledge(type) == src
+	return !QDELETED(src) && user && user == wax_body && (ignore_leak || !leak) && user.stat != DEAD && (allow_incapacitated || !user.incapacitated(ignore_grab = ignore_grab)) && isturf(user.loc) && heretic?.selected_path == PATH_WAX && !heretic.role_removed && heretic.get_knowledge(type) == src
 
 /datum/eldritch_knowledge/base_wax/proc/line_clear(atom/start, atom/target, distance = HERETIC_WAX_RANGE)
 	var/turf/origin = get_turf(start)
@@ -205,19 +255,21 @@
 
 /datum/eldritch_knowledge/base_wax/get_combat_resource_data()
 	var/list/data = ..()
+	data["name"] = wax_body?.a_intent == INTENT_DISARM ? "Воск: выброс оболочки" : "Воск: волна"
+	return data
+
+/datum/eldritch_knowledge/base_wax/combat_resource_state()
 	var/datum/status_effect/heretic_wax/shell/shell = wax_body?.has_status_effect(/datum/status_effect/heretic_wax/shell)
-	var/consume_shell = wax_body?.a_intent == INTENT_DISARM
-	data["name"] = consume_shell ? "Воск: выброс оболочки" : "Воск: волна"
-	data["description"] = consume_shell ? "Сейчас «Снять печать» расходует оставшуюся оболочку и её лечение, создавая веер в пяти клетках. Чтобы выпустить обычную волну за 1 воск, смените намерение «Разоружить»." : "Сейчас «Снять печать» выпускает волну за 1 воск в трёх клетках перед вами. В намерении «Разоружить» вместо неё расходуется оболочка."
-	data["description"] += " [combat_resource_desc] Оболочка: [shell?.capacity || 0] защиты."
+	. = "Кукол: [length(puppets)] из [HERETIC_WAX_PUPPET_LIMIT]. "
+	. += wax_body?.a_intent == INTENT_DISARM ? "Сейчас «Снять печать» расходует оставшуюся оболочку и её лечение, создавая веер в пяти клетках. Чтобы выпустить обычную волну за 1 воск, смените намерение «Разоружить»." : "Сейчас «Снять печать» выпускает волну за 1 воск в трёх клетках перед вами. В намерении «Разоружить» вместо неё расходуется оболочка."
+	. += " Оболочка: [shell?.capacity || 0] защиты."
 	if(!QDELETED(active_effigy) && !QDELETED(active_effigy.effigy))
-		data["description"] += " Двойник: [active_effigy.owner.real_name], осталось [active_effigy.effigy.obj_integrity] переносимого урона и [round(max(0, active_effigy.duration - world.time) / (1 SECONDS), 0.1)] с. Бейте его своим восковым клинком."
+		. += " Двойник: [active_effigy.owner.real_name], осталось [active_effigy.effigy.obj_integrity] переносимого урона и [round(max(0, active_effigy.duration - world.time) / (1 SECONDS), 0.1)] с. Бейте его своим восковым клинком."
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(wax_body)
 	var/datum/eldritch_knowledge/final_eldritch/wax_final/final_knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final)
 	if(ascension_active && final_knowledge)
 		var/cooldown_left = COOLDOWN_TIMELEFT(final_knowledge, phylactery_cooldown)
-		data["description"] += " Филактерия: свечей на этом уровне [count_anchors(wax_body)] из [HERETIC_WAX_PHYLACTERY_ANCHORS], [cooldown_left ? "остынет через [DisplayTimeText(cooldown_left)]" : "готова"]."
-	return data
+		. += " Филактерия: свечей на этом уровне [count_anchors(wax_body)] из [HERETIC_WAX_PHYLACTERY_ANCHORS], [cooldown_left ? "остынет через [DisplayTimeText(cooldown_left)]" : "готова"]."
 
 /datum/eldritch_knowledge/base_wax/on_life(mob/user)
 	if(user && user == wax_body)
@@ -229,8 +281,8 @@
 		gain_combat_resource()
 	COOLDOWN_START(src, wax_recovery, ascension_active ? 4 SECONDS : HERETIC_WAX_RECOVERY)
 
-/datum/eldritch_knowledge/base_wax/proc/harvest(mob/living/user, mob/living/target)
-	if(!can_use(user) || !target?.mind || target.mob_size < MOB_SIZE_HUMAN || !heretic_can_affect(user, target, chargecost = 0) || !COOLDOWN_FINISHED(src, wax_harvest))
+/datum/eldritch_knowledge/base_wax/proc/harvest(mob/living/user, mob/living/target, ignore_leak = FALSE)
+	if(!can_use(user, ignore_leak = ignore_leak) || !target?.mind || target.mob_size < MOB_SIZE_HUMAN || !heretic_can_affect(user, target, chargecost = 0) || !COOLDOWN_FINISHED(src, wax_harvest))
 		return FALSE
 	gain_combat_resource()
 	COOLDOWN_START(src, wax_harvest, HERETIC_WAX_HARVEST)
@@ -250,13 +302,13 @@
 	combat_resource = min(combat_resource, combat_resource_max)
 	notify_resource_changed()
 
-/datum/eldritch_knowledge/base_wax/proc/seal(mob/living/victim)
-	if(!can_use(wax_body) || !isturf(victim?.loc) || !heretic_can_affect(wax_body, victim, chargecost = 0))
+/datum/eldritch_knowledge/base_wax/proc/seal(mob/living/victim, ignore_leak = FALSE)
+	if(!can_use(wax_body, ignore_leak = ignore_leak) || !isturf(victim?.loc) || !heretic_can_affect(wax_body, victim, chargecost = 0))
 		return null
 	return victim.apply_status_effect(/datum/status_effect/heretic_wax/seal, src, src)
 
-/datum/eldritch_knowledge/base_wax/proc/hinder(mob/living/victim, datum/eldritch_knowledge/required)
-	if(!can_use(wax_body) || !isturf(victim?.loc) || !heretic_can_affect(wax_body, victim, chargecost = 0))
+/datum/eldritch_knowledge/base_wax/proc/hinder(mob/living/victim, datum/eldritch_knowledge/required, ignore_leak = FALSE)
+	if(!can_use(wax_body, ignore_leak = ignore_leak) || !isturf(victim?.loc) || !heretic_can_affect(wax_body, victim, chargecost = 0))
 		return null
 	return victim.apply_status_effect(/datum/status_effect/heretic_wax/clinging, src, required || src)
 
@@ -347,37 +399,256 @@
 	return TRUE
 
 /datum/eldritch_knowledge/base_wax/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!can_use(user) || QDELETED(target) || !proximity_flag || !user.Adjacent(target) || !isturf(target.loc))
+	grasp_failure_reason = null
+	if(!can_use(user) || QDELETED(target) || !proximity_flag)
 		return FALSE
 	if(istype(target, /obj/item/paper))
-		if(GLOB.heretic_ritual_reservations[target])
-			to_chat(user, span_warning("Этот лист уже используется в обряде."))
-			return FALSE
-		if(!spend_combat_resource(1))
-			to_chat(user, span_warning("Для отливки свечи нужен 1 Воск. Запас постепенно восстановится сам."))
-			return FALSE
-		add_anchor(new /obj/item/candle(get_turf(target)))
-		new /obj/effect/temp_visual/heretic_wax/grasp(get_turf(target), src)
-		user.visible_message(span_warning("[user] сворачивает бумагу в фитиль и покрывает его бледным воском."), span_notice("Вы отливаете свечу, расходуя лист бумаги и 1 Воск."))
-		if(ascension_active)
-			to_chat(user, span_eldritch("Свеча держит вашу жизнь, пока стоит на полу или столе внутри станции. В счёт идут [HERETIC_WAX_PHYLACTERY_ANCHORS] последние отлитые свечи."))
-		qdel(target)
-		return TRUE
-	if(!istype(target, /obj/structure/table))
+		return isturf(target.loc) && user.Adjacent(target) && cast_candle(user, target)
+	if(user.a_intent != INTENT_HELP || !isitem(target) || istype(target, /obj/item/melee/touch_attack))
 		return FALSE
-	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic.advance_deed(heretic.deed_key_for(target), get_turf(target)))
+	if(target.loc != user && (!isturf(target.loc) || !user.Adjacent(target)))
 		return FALSE
-	new /obj/effect/temp_visual/heretic_wax/grasp(get_turf(target), src)
-	user.visible_message(span_warning("На [target] проступает восковой отпечаток ладони [user]."))
-	playsound(target, 'modular_bluemoon/sound/heretic/wax_grasp.ogg', 45, TRUE)
+	return make_puppet(user, target)
+
+/datum/eldritch_knowledge/base_wax/proc/cast_candle(mob/living/user, obj/item/paper/paper)
+	if(GLOB.heretic_ritual_reservations[paper])
+		to_chat(user, span_warning("Этот лист уже используется в обряде."))
+		return FALSE
+	if(!spend_combat_resource(1))
+		to_chat(user, span_warning("Для отливки свечи нужен 1 Воск. Запас постепенно восстановится сам."))
+		return FALSE
+	add_anchor(new /obj/item/candle(get_turf(paper)))
+	new /obj/effect/temp_visual/heretic_wax/grasp(get_turf(paper), src)
+	user.visible_message(span_warning("[user] сворачивает бумагу в фитиль и покрывает его бледным воском."), span_notice("Вы отливаете свечу, расходуя лист бумаги и 1 Воск."))
+	if(ascension_active)
+		to_chat(user, span_eldritch("Свеча держит вашу жизнь, пока стоит на полу или столе внутри станции. В счёт идут [HERETIC_WAX_PHYLACTERY_ANCHORS] последние отлитые свечи."))
+	qdel(paper)
 	return TRUE
 
+/datum/eldritch_knowledge/base_wax/proc/puppet_models(atom/source, mob/living/user)
+	. = list()
+	var/owner_name = heretic_wax_item_owner(source)
+	if(!length(source.fingerprints) && !owner_name)
+		return
+	for(var/mob/living/carbon/human/candidate as anything in GLOB.human_list)
+		if(QDELETED(candidate) || candidate == user || candidate.stat == DEAD || !candidate.mind || !candidate.dna || IS_HERETIC(candidate) || IS_HERETIC_MONSTER(candidate))
+			continue
+		var/print = md5(candidate.dna.uni_identity)
+		if(LAZYACCESS(source.fingerprints, print) || (owner_name && candidate.real_name == owner_name))
+			.[print] = candidate
+
+/// Имя владельца на личной вещи: кукла по ней лепится так же, как по отпечаткам.
+/proc/heretic_wax_item_owner(atom/item)
+	if(istype(item, /obj/item/card/id))
+		var/obj/item/card/id/card = item
+		return card.registered_name
+	if(istype(item, /obj/item/modular_computer))
+		var/obj/item/modular_computer/computer = item
+		return computer.saved_identification
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/puppet_of(mob/living/model)
+	for(var/obj/item/heretic_wax_puppet/puppet as anything in puppets)
+		if(puppet.model_ref?.resolve() == model)
+			return puppet
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/make_puppet(mob/living/user, obj/item/source)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || istype(source, /obj/item/heretic_wax_puppet))
+		return FALSE
+	var/list/models = puppet_models(source, user)
+	if(!length(models))
+		grasp_failure_reason = "На [source] нет отпечатков или имени живого человека с разумом: свои отпечатки и имя не годятся."
+		return FALSE
+	var/fresh_print
+	var/counted_print
+	for(var/candidate_print in models)
+		if(puppet_of(models[candidate_print]))
+			continue
+		if(heretic.deed && !(candidate_print in heretic.deed.counted_keys))
+			fresh_print ||= candidate_print
+		else
+			counted_print ||= candidate_print
+	if(!fresh_print && !counted_print)
+		grasp_failure_reason = "Куклы всех, чьи отпечатки есть на [source], уже у вас."
+		return FALSE
+	var/print = fresh_print || counted_print
+	if(fresh_print)
+		var/wait_reason = heretic.deed_wait_reason(fresh_print)
+		if(wait_reason)
+			if(!counted_print)
+				grasp_failure_reason = wait_reason
+				return FALSE
+			print = counted_print
+	var/fresh = print == fresh_print
+	var/mob/living/carbon/human/model = models[print]
+	while(length(puppets) >= HERETIC_WAX_PUPPET_LIMIT)
+		var/obj/item/heretic_wax_puppet/oldest = puppets[1]
+		puppets -= oldest
+		log_game("[key_name(user)] теряет восковую куклу [oldest.model_name]: её вытеснила новая.")
+		qdel(oldest)
+	var/turf/place = get_turf(source)
+	var/obj/item/heretic_wax_puppet/puppet = new(place, model)
+	var/by_prints = LAZYACCESS(source.fingerprints, print)
+	puppet.AddComponent(/datum/component/heretic_craft, src, HERETIC_WAX_PUPPET_CRAFT, "Восковая кукла с биркой «[model.real_name]»: её слепили [by_prints ? "по чужим отпечаткам пальцев" : "по чужой вещи с именем"].")
+	puppets += puppet
+	user.put_in_hands(puppet)
+	new /obj/effect/temp_visual/heretic_wax/grasp(place, src)
+	user.visible_message(span_warning("[user] сминает в ладони комок бледного воска, и тот принимает форму маленькой фигурки."), span_eldritch("Воск запомнил отпечатки [model.real_name]: кукла у вас в руках. Кукол: [length(puppets)] из [HERETIC_WAX_PUPPET_LIMIT]."))
+	log_game("[key_name(user)] лепит восковую куклу [key_name(model)] по [by_prints ? "отпечаткам" : "имени"] на [source] ([source.type]) в [AREACOORD(place)].")
+	if(fresh)
+		heretic.advance_deed(print, place)
+	notify_resource_changed()
+	return TRUE
+
+/datum/eldritch_knowledge/base_wax/on_craft_removed(atom/crafted, craft_id)
+	if(craft_id != HERETIC_WAX_PUPPET_CRAFT)
+		return
+	puppets -= crafted
+	if(!QDELETED(crafted))
+		qdel(crafted)
+	notify_resource_changed()
+
+/datum/eldritch_knowledge/base_wax/proc/prick(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	wax_failure = null
+	if(!can_use(user) || !(puppet in puppets) || !user.is_holding(puppet))
+		wax_failure = "Держите свою куклу в руке и оставайтесь в своём теле еретика."
+		return FALSE
+	if(!COOLDOWN_FINISHED(puppet, prick_cooldown))
+		wax_failure = "Воск ещё не остыл: ещё [heretic_capture_seconds_left(puppet.prick_cooldown)] с."
+		return FALSE
+	var/mob/living/carbon/human/model = puppet.model_ref?.resolve()
+	if(QDELETED(model) || model.stat == DEAD)
+		wax_failure = "Кукла молчит: того, чьи отпечатки в воске, нет среди живых."
+		return FALSE
+	var/turf/here = get_turf(user)
+	var/turf/there = get_turf(model)
+	if(!here || !there || here.z != there.z)
+		wax_failure = "Кукла не дотягивается: [model.real_name] не на вашем уровне."
+		return FALSE
+	if(!heretic_can_affect(user, model, chargecost = 0))
+		wax_failure = "Кукла холодна: [model.real_name] под защитой от магии."
+		return FALSE
+	COOLDOWN_START(puppet, prick_cooldown, HERETIC_WAX_PUPPET_PRICK_COOLDOWN)
+	to_chat(model, span_warning("Кожу колет тонкой иглой, и у самого уха кто-то шепчет: «Ты у меня в ладонях»."))
+	to_chat(user, span_eldritch("Вы колете куклу, и [model.real_name] вздрагивает от укола."))
+	log_game("[key_name(user)] колет восковую куклу [key_name(model)].")
+	return TRUE
+
+/datum/eldritch_knowledge/base_wax/proc/held_puppet(mob/living/user)
+	var/obj/item/heretic_wax_puppet/active = user.get_active_held_item()
+	if(istype(active) && (active in puppets))
+		return active
+	for(var/obj/item/heretic_wax_puppet/puppet in user.held_items)
+		if(puppet in puppets)
+			return puppet
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/puppet_sleep_block_reason(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	if(!can_use(user) || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	var/obj/item/heretic_wax_puppet/puppet = held_puppet(user)
+	if(!puppet)
+		return "Возьмите в руку свою восковую куклу."
+	var/mob/living/carbon/human/model = puppet.model_ref?.resolve()
+	var/reason = heretic_capture_block_reason(user, model, HERETIC_WAX_CAPTURE)
+	if(reason)
+		return reason
+	var/turf/here = get_turf(user)
+	var/turf/there = get_turf(model)
+	if(!here || !there || here.z != there.z || get_dist(here, there) > HERETIC_WAX_PUPPET_SLEEP_RANGE)
+		return "[model.real_name] должен быть на вашем уровне не дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток."
+	if(model.has_status_effect(/datum/status_effect/heretic_wax_melting))
+		return "Кукла [model.real_name] уже тает."
+	if(heretic_wax_doused(model))
+		return "Вода на коже или в крови [model.real_name] не даёт воску растаять."
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/melt_puppet(mob/living/user)
+	wax_failure = puppet_sleep_block_reason(user)
+	if(wax_failure)
+		return FALSE
+	var/obj/item/heretic_wax_puppet/puppet = held_puppet(user)
+	var/mob/living/carbon/human/model = puppet.model_ref.resolve()
+	if(!model.apply_status_effect(/datum/status_effect/heretic_wax_melting, src, puppet))
+		wax_failure = "Кукла не поддалась жару."
+		return FALSE
+	user.visible_message(span_warning("[user] сжимает в ладони восковую куклу, и та начинает оплывать."), span_eldritch("Кукла [model.real_name] тает: держите её [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд."))
+	log_combat(user, model, "растапливает восковую куклу")
+	return TRUE
+
+/datum/eldritch_knowledge/base_wax/proc/dollhouse_block_reason(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	if(!can_use(user) || QDELETED(puppet) || !(puppet in puppets) || !user.is_holding(puppet))
+		return "Держите свою куклу в руке и оставайтесь в своём теле еретика."
+	var/mob/living/carbon/human/model = puppet.model_ref?.resolve()
+	var/datum/status_effect/heretic_capture_knockout/knockout = puppet.doll_sleep
+	if(QDELETED(model) || QDELETED(knockout) || knockout.owner != model || !model.IsSleeping())
+		return "Кукольный дом закрыт: [puppet.model_name] уже не спит от этой куклы."
+	var/turf/here = get_turf(user)
+	var/turf/there = get_turf(model)
+	if(!here || !there || here.z != there.z || get_dist(here, there) > HERETIC_WAX_PUPPET_SLEEP_RANGE)
+		return "[model.real_name] должен быть на вашем уровне не дальше [HERETIC_WAX_PUPPET_SLEEP_RANGE] клеток."
+	return null
+
+/datum/eldritch_knowledge/base_wax/proc/dollhouse_holds(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	return !dollhouse_block_reason(user, puppet)
+
+/datum/eldritch_knowledge/base_wax/proc/doll_sleep_notice(mob/living/user, mob/living/sleeper)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(sleeper.mind && sleeper.mind == heretic?.hunt_target)
+		return "[sleeper.real_name] спит. Используйте куклу в руке: пока длится сон, за [replacetext("[HERETIC_WAX_DOLLHOUSE_TIME / (1 SECONDS)]", ".", ",")] секунды она утянет цель охоты в изнанку. К пробуждению кукла треснет."
+	return "[sleeper.real_name] спит [HERETIC_WAX_PUPPET_SLEEP_TIME / (1 SECONDS)] секунд. К пробуждению кукла треснет."
+
+/// Кукла, пока её человек спит, утягивает спящую цель охоты в изнанку и рассыпается.
+/datum/eldritch_knowledge/base_wax/proc/pull_into_dollhouse(mob/living/user, obj/item/heretic_wax_puppet/puppet)
+	wax_failure = dollhouse_block_reason(user, puppet)
+	if(wax_failure)
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/mob/living/carbon/human/model = puppet.model_ref.resolve()
+	if(!heretic?.pocket_pull(user, model, get_turf(model), HERETIC_WAX_DOLLHOUSE_TIME, CALLBACK(src, PROC_REF(dollhouse_holds), user, puppet), "Воск на коже [model] оплывает, и спящего утягивает в крошечную дверцу."))
+		return FALSE
+	log_combat(user, model, "утягивает в кукольный дом")
+	puppet.crack()
+	return TRUE
+
+/datum/eldritch_knowledge/base_wax/pocket_exits(mob/living/user)
+	. = list()
+	for(var/obj/item/candle/candle as anything in anchor_candles)
+		if(isturf(candle.loc))
+			heretic_add_pocket_exit(., "Свеча - [get_area_name(candle, TRUE)]", heretic_pocket_landing(get_turf(candle)))
+
+/datum/eldritch_knowledge/base_wax/proc/start_leak(mob/living/user)
+	wax_failure = heretic_containment_reason(user)
+	if(wax_failure)
+		return FALSE
+	if(leak)
+		wax_failure = "Вы уже растеклись воском."
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	if(!can_use(user, ignore_grab = TRUE) || QDELETED(required))
+		wax_failure = "Протечь недоступна: нужно изучить её, быть в сознании, на полу и в своём теле еретика."
+		return FALSE
+	if(!user.apply_status_effect(/datum/status_effect/heretic_wax_leak, src))
+		wax_failure = "Воск не растёкся."
+		return FALSE
+	log_game("[key_name(user)] растекается лужицей воска в [AREACOORD(user)].")
+	return TRUE
+
+/proc/heretic_wax_doused(mob/living/victim)
+	return victim.fire_stacks < 0 || victim.reagents?.has_reagent(/datum/reagent/water) || victim.reagents?.has_reagent(/datum/reagent/water/holywater)
+
 /datum/heretic_deed/wax
-	next_step = "Коснитесь Хваткой Мансуса стола в ещё не зачтённом отделе."
-	name = "Места за пустым столом"
-	desc = "Касайтесь Хваткой Мансуса столов в разных отделах. Каждый отдел засчитывается один раз."
-	hint = "В столовой, приёмных и мастерских найдётся место для тех, кто уже не вернётся. На полу остаётся восковой след."
+	next_step = "В намерении «Помощь» коснитесь Хваткой Мансуса предмета с отпечатками, ID-карты или КПК человека, которого ещё нет в деле."
+	name = "Восковые куклы"
+	desc = "Лепите Хваткой Мансуса в намерении «Помощь» кукол по чужим отпечаткам пальцев на предметах или по ID-карте и КПК с именем владельца. Каждый человек засчитывается один раз."
+	craft_wait_place = "кукла ещё не засчитанного человека"
+	craft_wait = "не лепится"
+	hint = "Кружки, инструменты, ручки и оружие хранят отпечатки тех, кто их держал, а ID-карта и КПК - имя владельца; бумага идёт на свечи. Держатся 2 куклы, новая вытесняет самую старую. Потерянную куклу экипаж узнает по бирке, огонь или нулевой жезл её уничтожают."
 	trace_name = "wax seal"
 	trace_desc = "Бледный воск застыл в форме ладони с шестью пальцами."
 	trace_state = "sigil_wax"
@@ -404,7 +675,7 @@
 		return FALSE
 	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
 	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
-	if(QDELETED(wax) || QDELETED(required) || !wax.can_use(wax.wax_body))
+	if(QDELETED(wax) || QDELETED(required) || !wax.can_use(wax.wax_body, ignore_leak = TRUE))
 		return FALSE
 	wax.effects += src
 	RegisterSignal(required, COMSIG_PARENT_QDELETING, PROC_REF(on_knowledge_deleted))
@@ -464,8 +735,8 @@
 /atom/movable/screen/alert/status_effect/heretic_wax_clinging
 	name = "Липкий воск"
 	desc = "Воск сковывает ваши движения на 2 секунды. Новое попадание волной, оттиском, двойником или процессией обновляет замедление."
-	icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
-	icon_state = "wax_mark"
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "wax_clinging"
 
 /datum/status_effect/heretic_wax/effigy
 	id = "heretic_wax_effigy"
@@ -512,8 +783,8 @@
 /atom/movable/screen/alert/status_effect/heretic_wax_effigy
 	name = "Восковой двойник"
 	desc = "Еретик может ранить вас клинком через восковой оттиск в течение 8 секунд. Попадание замедляет на 2 секунды. Разбейте двойника, перекройте связь стеной или отойдите дальше пяти клеток от него или еретика. Оттиск переносит ограниченный урон и расходуется при ударах; антимагия разрывает связь при попадании."
-	icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
-	icon_state = "wax_mark"
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "wax_effigy"
 
 /obj/structure/heretic_wax_effigy
 	name = "wax effigy"
@@ -593,9 +864,9 @@
 
 /atom/movable/screen/alert/status_effect/heretic_wax_seal
 	name = "Восковая печать"
-	desc = "На вас застыл воск. Снятие оттиска усилится на 12 ушибов и 25 выносливости, а двойник сможет перенести 45 урона вместо 30. Улучшенный клинок может снять печать с дополнительными 10 ушибами. Печать исчезнет через 12 секунд."
-	icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
-	icon_state = "sigil_wax"
+	desc = "На вас застыл воск. Снятие оттиска усилится на 12 ушибов и 25 выносливости, а двойник сможет перенести 45 урона вместо 30. Печать исчезнет через 12 секунд."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "wax_sealed"
 
 /datum/status_effect/heretic_wax/attended
 	var/list/obj/structure/heretic_wax_candle/candles = list()
@@ -722,7 +993,7 @@
 
 /datum/status_effect/heretic_wax/procession/tick()
 	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
-	if(!wax?.can_use(owner) || !length(candles) || (crown && !wax.ascension_active))
+	if(!wax?.can_use(owner, ignore_leak = crown) || !length(candles) || (crown && !wax.ascension_active))
 		qdel(src)
 		return
 	for(var/turf/tile in range(2, owner))
@@ -733,14 +1004,14 @@
 			if(!heretic_can_affect(owner, victim))
 				continue
 			victim.adjustBruteLoss(crown ? 18 : 14)
-			if(QDELETED(src) || !wax.can_use(owner))
+			if(QDELETED(src) || !wax.can_use(owner, ignore_leak = crown))
 				return
 			if(QDELETED(victim))
 				continue
 			victim.adjustStaminaLoss(crown ? 15 : 10)
-			wax.seal(victim)
-			wax.hinder(victim, knowledge_ref?.resolve())
-			wax.harvest(owner, victim)
+			wax.seal(victim, crown)
+			wax.hinder(victim, knowledge_ref?.resolve(), crown)
+			wax.harvest(owner, victim, crown)
 	playsound(owner, 'modular_bluemoon/sound/heretic/wax_impact.ogg', 50, TRUE)
 	var/mob/living/bearer = owner
 	var/crowned = crown
@@ -900,9 +1171,393 @@
 
 /obj/effect/temp_visual/heretic_wax/burst
 
+/obj/item/heretic_wax_puppet
+	name = "wax puppet"
+	desc = "Маленькая фигурка из бледного воска с бумажной биркой на шее."
+	icon = 'modular_bluemoon/icons/obj/heretic_wax.dmi'
+	icon_state = "wax_puppet"
+	item_state = "wax_puppet"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_relics_wax_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_relics_wax_righthand.dmi'
+	w_class = WEIGHT_CLASS_TINY
+	var/datum/weakref/model_ref
+	var/model_name
+	/// Сон, который держит эта кукла: пока он идёт, кукла цела и открывает кукольный дом.
+	var/datum/status_effect/heretic_capture_knockout/doll_sleep
+	COOLDOWN_DECLARE(prick_cooldown)
+
+/obj/item/heretic_wax_puppet/Initialize(mapload, mob/living/carbon/human/model)
+	. = ..()
+	if(!istype(model))
+		return
+	model_ref = WEAKREF(model)
+	model_name = model.real_name
+	name = "wax puppet ([model_name])"
+
+/obj/item/heretic_wax_puppet/examine(mob/user)
+	. = ..()
+	if(model_name)
+		. += span_notice("На бирке выведено: «[model_name]».")
+
+/obj/item/heretic_wax_puppet/attack_self(mob/living/user)
+	var/datum/component/heretic_craft/craft = heretic_craft_on(src, HERETIC_WAX_PUPPET_CRAFT)
+	var/datum/eldritch_knowledge/base_wax/wax = craft?.owner_ref?.resolve()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!wax || heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax) != wax)
+		to_chat(user, span_notice("Вы вертите в руках восковую куклу, но ничего не происходит."))
+		return FALSE
+	if(doll_sleep)
+		if(!wax.pull_into_dollhouse(user, src) && wax.wax_failure)
+			to_chat(user, span_warning(wax.wax_failure))
+		return TRUE
+	if(!wax.prick(user, src))
+		to_chat(user, span_warning(wax.wax_failure))
+		return FALSE
+	return TRUE
+
+/obj/item/heretic_wax_puppet/attackby(obj/item/weapon, mob/living/user, params)
+	if(weapon.get_temperature())
+		melt_away(user)
+		return TRUE
+	return ..()
+
+/obj/item/heretic_wax_puppet/fire_act(exposed_temperature, exposed_volume)
+	melt_away()
+
+/obj/item/heretic_wax_puppet/proc/melt_away(mob/living/user)
+	if(QDELETED(src))
+		return
+	visible_message(span_warning("[src] оплывает от жара и растекается бесформенной каплей воска."))
+	log_game("[user ? key_name(user) : "Огонь"] растапливает восковую куклу [model_name || "без бирки"] в [AREACOORD(src)].")
+	qdel(src)
+
+/obj/item/heretic_wax_puppet/proc/bind_sleep(datum/status_effect/heretic_capture_knockout/knockout)
+	if(QDELETED(knockout))
+		crack()
+		return
+	doll_sleep = knockout
+	RegisterSignal(knockout, COMSIG_PARENT_QDELETING, PROC_REF(on_sleep_ended))
+
+/obj/item/heretic_wax_puppet/proc/on_sleep_ended(datum/source)
+	SIGNAL_HANDLER
+	doll_sleep = null
+	crack()
+
+/obj/item/heretic_wax_puppet/proc/crack()
+	if(QDELETED(src))
+		return
+	visible_message(span_warning("[src] трескается и осыпается восковой крошкой."))
+	qdel(src)
+
+/obj/item/heretic_wax_puppet/Destroy()
+	if(doll_sleep)
+		UnregisterSignal(doll_sleep, COMSIG_PARENT_QDELETING)
+		doll_sleep = null
+	model_ref = null
+	return ..()
+
+/datum/status_effect/heretic_wax_melting
+	id = "heretic_wax_melting"
+	duration = HERETIC_WAX_PUPPET_SLEEP_CHANNEL
+	tick_interval = HERETIC_WAX_PUPPET_CHECK
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_wax_melting
+	examine_text = span_warning("SUBJECTPRONOUN обливается потом, от кожи поднимается пар. Вода или нулевой жезл остудят этот жар.")
+	var/datum/weakref/wax_ref
+	var/mob/living/caster
+	var/obj/item/heretic_wax_puppet/puppet
+	var/obj/effect/abstract/heretic_particle_holder/steam
+	var/applied = FALSE
+	var/interrupted = FALSE
+
+/datum/status_effect/heretic_wax_melting/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_wax/wax, obj/item/heretic_wax_puppet/puppet)
+	wax_ref = WEAKREF(wax)
+	caster = wax?.wax_body
+	src.puppet = puppet
+	return ..()
+
+/datum/status_effect/heretic_wax_melting/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
+	if(!. || !wax || QDELETED(caster) || QDELETED(puppet))
+		return FALSE
+	applied = TRUE
+	wax.meltings += src
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(check_hold))
+	RegisterSignal(caster, COMSIG_MOVABLE_MOVED, PROC_REF(check_hold))
+	RegisterSignal(puppet, COMSIG_MOVABLE_MOVED, PROC_REF(check_hold))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(interrupt))
+	RegisterSignal(caster, COMSIG_PARENT_QDELETING, PROC_REF(interrupt))
+	RegisterSignal(puppet, COMSIG_PARENT_QDELETING, PROC_REF(interrupt))
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignal(caster, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignal(owner, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed))
+	steam = heretic_vfx_attach_particles(owner, /particles/heretic_ascension/steam)
+	owner.visible_message(span_warning("[owner] вдруг покрывается испариной, от кожи поднимается пар."), span_userdanger("Вас бросает в жар, словно вы тающий воск! Выпейте воды или облейтесь ею, уходите подальше - или через [HERETIC_WAX_PUPPET_SLEEP_CHANNEL / (1 SECONDS)] секунд вы уснёте."))
+	return TRUE
+
+/datum/status_effect/heretic_wax_melting/tick()
+	check_hold()
+
+/datum/status_effect/heretic_wax_melting/proc/holds()
+	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
+	if(!wax?.can_use(caster) || QDELETED(puppet) || !caster.is_holding(puppet) || owner.stat == DEAD || heretic_wax_doused(owner))
+		return FALSE
+	var/turf/here = get_turf(caster)
+	var/turf/there = get_turf(owner)
+	return here && there && here.z == there.z && get_dist(here, there) <= HERETIC_WAX_PUPPET_SLEEP_RANGE && heretic_can_affect(caster, owner, chargecost = 0)
+
+/datum/status_effect/heretic_wax_melting/proc/check_hold(datum/source)
+	SIGNAL_HANDLER
+	if(!holds())
+		interrupt()
+
+/datum/status_effect/heretic_wax_melting/proc/interrupt(datum/source)
+	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
+	interrupted = TRUE
+	owner.visible_message(span_notice("Пар над [owner] рассеивается."), span_notice("Жар отступает."))
+	qdel(src)
+
+/datum/status_effect/heretic_wax_melting/proc/on_attackby(atom/source, obj/item/weapon, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(!istype(weapon, /obj/item/nullrod))
+		return NONE
+	log_game("[key_name(user)] обрывает Сон по кукле у [key_name(owner)] нулевым жезлом в [AREACOORD(source)].")
+	var/touched_target = source == owner
+	interrupt()
+	return touched_target ? COMPONENT_NO_AFTERATTACK : NONE
+
+/datum/status_effect/heretic_wax_melting/proc/on_exposed(datum/source, list/exposed, datum/reagents/holder, method)
+	SIGNAL_HANDLER
+	for(var/datum/reagent/reagent as anything in exposed)
+		if(istype(reagent, /datum/reagent/water))
+			interrupt()
+			return
+
+/datum/status_effect/heretic_wax_melting/on_remove()
+	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
+	if(applied)
+		UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_PARENT_ATTACKBY, COMSIG_ATOM_EXPOSE_REAGENTS))
+		if(caster)
+			UnregisterSignal(caster, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING, COMSIG_PARENT_ATTACKBY))
+		if(puppet)
+			UnregisterSignal(puppet, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		heretic_vfx_release_particles(owner, steam)
+		wax?.meltings -= src
+		// Истёкший срок без срыва отличает досмотренный жар от оборванного.
+		var/fell_asleep = !interrupted && wax && world.time >= duration && holds()
+		if(fell_asleep)
+			owner.Sleeping(HERETIC_WAX_PUPPET_SLEEP_TIME)
+			owner.visible_message(span_warning("[owner] обмякает и засыпает, от кожи поднимается последний пар."), span_userdanger("Жар накрывает с головой, и вы проваливаетесь в сон."))
+			log_combat(caster, owner, "усыпляет восковой куклой")
+			to_chat(caster, span_eldritch(wax.doll_sleep_notice(caster, owner)))
+			puppet.bind_sleep(owner.apply_status_effect(/datum/status_effect/heretic_capture_knockout/wax_doll, wax, HERETIC_WAX_CAPTURE, HERETIC_WAX_PUPPET_SLEEP_TIME))
+		heretic_capture_release(owner, HERETIC_WAX_CAPTURE, fell_asleep ? HERETIC_WAX_PUPPET_SLEEP_TIME : 0)
+	steam = null
+	caster = null
+	puppet = null
+	wax_ref = null
+	return ..()
+
+/// Сон по кукле: нулевой жезл по спящему и его смерть обрывают сон, а с ним трескается кукла.
+/datum/status_effect/heretic_capture_knockout/wax_doll
+	examine_text = span_warning("SUBJECTPRONOUN крепко спит, от кожи тянет тёплым воском. Нулевой жезл или 2 секунды растолкать разбудят.")
+
+/datum/status_effect/heretic_capture_knockout/wax_doll/on_apply()
+	. = ..()
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_death))
+
+/datum/status_effect/heretic_capture_knockout/wax_doll/on_remove()
+	UnregisterSignal(owner, list(COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_DEATH))
+	return ..()
+
+/datum/status_effect/heretic_capture_knockout/wax_doll/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(!istype(item, /obj/item/nullrod))
+		return NONE
+	log_game("[key_name(user)] будит спящего по кукле [key_name(owner)] нулевым жезлом в [AREACOORD(owner)].")
+	owner.visible_message(span_notice("[user] касается [owner] нулевым жезлом, и восковой сон рассыпается."), span_notice("Вы вздрагиваете и просыпаетесь."))
+	owner.SetSleeping(0)
+	qdel(src)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_capture_knockout/wax_doll/proc/on_death(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/atom/movable/screen/alert/status_effect/heretic_wax_melting
+	name = "Жар"
+	desc = "Вас бросает в жар, словно вы тающий воск: через 5 секунд вы уснёте на 8 секунд. Выпейте воды или облейтесь ею, уйдите подальше или пусть вас коснутся нулевым жезлом."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "wax_fever"
+
+/datum/status_effect/heretic_wax_leak
+	id = "heretic_wax_leak"
+	duration = HERETIC_WAX_LEAK_DURATION
+	tick_interval = -1
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_wax_leak
+	examine_text = span_warning("SUBJECTPRONOUN растёкся лужицей тёплого воска и медленно ползёт по полу.")
+	var/datum/weakref/wax_ref
+	var/obj/effect/abstract/heretic_wax_puddle/puddle
+	var/saved_alpha
+	var/granted_godmode = FALSE
+	var/applied = FALSE
+
+/datum/status_effect/heretic_wax_leak/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_wax/wax)
+	wax_ref = WEAKREF(wax)
+	return ..()
+
+/datum/status_effect/heretic_wax_leak/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
+	if(!. || !wax)
+		return FALSE
+	applied = TRUE
+	wax.leak = src
+	if(!(owner.status_flags & GODMODE))
+		owner.status_flags |= GODMODE
+		granted_godmode = TRUE
+	for(var/trait in list(TRAIT_UNPULLABLE, TRAIT_MOBILITY_NOUSE, TRAIT_MOBILITY_NOPICKUP, HERETIC_WAX_LEAK_TRAIT))
+		ADD_TRAIT(owner, trait, HERETIC_WAX_LEAK_TRAIT)
+	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_leak)
+	slip_free()
+	owner.update_mobility()
+	RegisterSignal(owner, COMSIG_MOB_CLICKON, PROC_REF(block_click))
+	if(isturf(owner.loc))
+		new /obj/effect/temp_visual/heretic_wax_melt(owner.loc, owner.appearance)
+	puddle = new(null, owner)
+	saved_alpha = owner.alpha
+	owner.alpha = 0
+	owner.visible_message(span_danger("[owner] оплывает и растекается по полу лужицей тёплого воска!"), span_eldritch("Вы растекаетесь воском: [HERETIC_WAX_LEAK_DURATION / (1 SECONDS)] секунды вас не ранить и не удержать, а двери вам не помеха."))
+	playsound(owner, 'modular_bluemoon/sound/heretic/wax_cast.ogg', 50, TRUE)
+	return TRUE
+
+/datum/status_effect/heretic_wax_leak/proc/slip_free()
+	var/atom/movable/grabber = owner.pulledby
+	if(grabber)
+		grabber.stop_pulling()
+		log_combat(owner, grabber, "вытекает лужицей воска из захвата")
+	owner.buckled?.unbuckle_mob(owner, TRUE)
+	owner.unbuckle_all_mobs(TRUE)
+	owner.stop_pulling()
+
+/datum/status_effect/heretic_wax_leak/proc/block_click(datum/source, atom/target, params)
+	SIGNAL_HANDLER
+	return COMSIG_MOB_CANCEL_CLICKON
+
+/datum/status_effect/heretic_wax_leak/proc/leave_door()
+	var/turf/here = owner.loc
+	if(!isturf(here))
+		return
+	var/inside_door = FALSE
+	for(var/obj/machinery/door/door in here)
+		if(door.density && !(door.flags_1 & ON_BORDER_1))
+			inside_door = TRUE
+			break
+	if(!inside_door)
+		return
+	for(var/direction in list(owner.dir, turn(owner.dir, 180), turn(owner.dir, 90), turn(owner.dir, -90)))
+		var/turf/exit = get_step(here, direction)
+		if(exit && !exit.is_blocked_turf(exclude_mobs = TRUE))
+			owner.forceMove(exit)
+			return
+
+/datum/status_effect/heretic_wax_leak/on_remove()
+	var/datum/eldritch_knowledge/base_wax/wax = wax_ref?.resolve()
+	if(wax?.leak == src)
+		wax.leak = null
+	if(applied)
+		UnregisterSignal(owner, COMSIG_MOB_CLICKON)
+		for(var/trait in list(TRAIT_UNPULLABLE, TRAIT_MOBILITY_NOUSE, TRAIT_MOBILITY_NOPICKUP, HERETIC_WAX_LEAK_TRAIT))
+			REMOVE_TRAIT(owner, trait, HERETIC_WAX_LEAK_TRAIT)
+		owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_wax_leak)
+		if(granted_godmode)
+			owner.status_flags &= ~GODMODE
+		owner.alpha = saved_alpha
+		QDEL_NULL(puddle)
+		if(!QDELETED(owner))
+			owner.update_mobility()
+			leave_door()
+			owner.visible_message(span_warning("Лужица воска вздымается и снова становится [owner]."), span_notice("Воск собирается обратно в тело."))
+	wax_ref = null
+	return ..()
+
+/datum/movespeed_modifier/heretic_wax_leak
+	multiplicative_slowdown = HERETIC_WAX_LEAK_SLOWDOWN
+
+/atom/movable/screen/alert/status_effect/heretic_wax_leak
+	name = "Лужица воска"
+	desc = "Вы растеклись воском на 4 секунды: неуязвимы и медленнее, проползаете под дверями и шлюзами, но ничего не можете делать."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "wax_puddle"
+
+/obj/effect/abstract/heretic_wax_puddle
+	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE
+	var/datum/weakref/host_ref
+
+/obj/effect/abstract/heretic_wax_puddle/Initialize(mapload, atom/movable/host)
+	. = ..()
+	if(QDELETED(host))
+		return INITIALIZE_HINT_QDEL
+	host_ref = WEAKREF(host)
+	appearance = host.appearance
+	appearance_flags = RESET_ALPHA | RESET_COLOR | RESET_TRANSFORM | KEEP_TOGETHER | PIXEL_SCALE
+	vis_flags = initial(vis_flags)
+	mouse_opacity = MOUSE_OPACITY_ICON
+	layer = FLOAT_LAYER
+	plane = FLOAT_PLANE
+	pixel_x = 0
+	pixel_y = 0
+	color = HERETIC_WAX_COLOR
+	alpha = HERETIC_WAX_PUDDLE_ALPHA
+	var/matrix/melted = matrix()
+	melted.Scale(HERETIC_WAX_PUDDLE_SPREAD, HERETIC_WAX_PUDDLE_SQUASH)
+	melted.Translate(0, -HERETIC_WAX_PUDDLE_SINK)
+	transform = melted
+	host.vis_contents += src
+
+/obj/effect/abstract/heretic_wax_puddle/Destroy()
+	var/atom/movable/host = host_ref?.resolve()
+	if(host)
+		host.vis_contents -= src
+	host_ref = null
+	return ..()
+
+/obj/machinery/door/CanAllowThrough(atom/movable/mover, turf/target)
+	. = ..()
+	if(!. && mover && !poddoor && !(resistance_flags & INDESTRUCTIBLE) && !istype(src, /obj/machinery/door/password) && HAS_TRAIT(mover, HERETIC_WAX_LEAK_TRAIT))
+		return TRUE
+
+/obj/machinery/door/window/CheckExit(atom/movable/mover, turf/target)
+	return ..() || HAS_TRAIT(mover, HERETIC_WAX_LEAK_TRAIT)
+
+/obj/machinery/door/firedoor/border_only/CheckExit(atom/movable/mover, turf/target)
+	return ..() || HAS_TRAIT(mover, HERETIC_WAX_LEAK_TRAIT)
+
+/obj/effect/proc_holder/spell/can_cast(mob/user = usr, skipcharge = FALSE, silent = FALSE)
+	if(user && HAS_TRAIT(user, HERETIC_WAX_LEAK_TRAIT))
+		return heretic_check(user, FALSE, silent, "Лужица воска не колдует: дождитесь, пока тело соберётся.")
+	return ..()
+
+/mob/living/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
+	if(HAS_TRAIT(src, HERETIC_WAX_LEAK_TRAIT))
+		return FALSE
+	return ..()
+
 /datum/eldritch_knowledge/wax_grasp
 	name = "Тёплый оттиск"
-	desc = "Хватка оставляет восковую печать на 12 секунд и даёт единицу воска от живого разумного врага. Общая задержка со всеми боевыми попаданиями — 6 секунд. Печать усиливает дальний удар и улучшенный клинок."
+	summary = "Хватка оставляет на враге восковую печать на 12 секунд."
+	details = list(
+		"Печать усиливает Снятие оттиска: +12 ушибов, +25 выносливости и двойник на 45 урона вместо 30.",
+		"Хватка по живому разумному врагу даёт единицу воска, общая задержка с боевыми попаданиями 6 секунд.",
+	)
+	role = HERETIC_ROLE_GRASP
 	gain_text = "Ладонь запомнила лицо лучше, чем глаза."
 	cost = 1
 	route = PATH_WAX
@@ -918,11 +1573,30 @@
 
 /datum/eldritch_knowledge/spell/wax_shell
 	name = "Погребальная оболочка"
-	desc = "За 2 воска окружите себя оболочкой на 20 секунд: она принимает 45 урона от оружия, снарядов, бросков и ударов, включая урон электродубинок по выносливости. Избыток проходит. Вы немного замедляетесь. Свеча с 25 прочности следует по полу; её разрушение и телепортация снимают оболочку. Нулевой жезл проходит насквозь и гасит защиту. «Снять печать» в намерении «Разоружить» расходует оболочку и её запас лечения на веер до пяти клеток: две трети оставшейся прочности, максимум 30 ушибов, без замедления и печати. Повторное применение за те же 2 воска заменяет оболочку новой: полная прочность и снова 20 секунд, но накопленное для канделябра лечение сбрасывается. Перезарядка 18 секунд."
+	summary = "За 2 воска оболочка на 20 секунд принимает 45 урона; свеча и серебро дают канделябр."
+	details = list(
+		"Оболочка берёт удары, пули, броски и дубинки, избыток проходит; вы чуть медленнее.",
+		"У ног горит свеча на 25 прочности: её разрушение или телепортация снимают оболочку.",
+		"Нулевой жезл проходит насквозь и гасит оболочку. Повтор за 2 воска даёт свежую, перезарядка 18 секунд.",
+		"«Снять печать» в «Разоружении» тратит оболочку на веер в 5 клеток: 2/3 остатка, до 30 ушибов.",
+		"Свеча и лист серебра на руне дают канделябр, он один на путь.",
+		"Канделябр в руке съедает оболочку и лечит половину урона, принятого ею от разумных врагов, до 25.",
+		"Перезарядка канделябра 20 секунд; неизрасходованная защита не лечит.",
+	)
+	role = HERETIC_ROLE_DEFENSE
+	ritual_hint = "Свечу можно отлить из листа бумаги на полу Хваткой Мансуса за 1 Воск."
 	gain_text = "Я отлил себе вторую кожу. Она знала, каково это — умереть."
 	cost = 1
 	route = PATH_WAX
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_wax/shell
+	required_atoms = list(/obj/item/candle, /obj/item/stack/sheet/mineral/silver)
+	result_atoms = list(/obj/item/heretic_path_relic/wax)
+
+/datum/eldritch_knowledge/spell/wax_shell/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	return new_path_relic_available()
+
+/datum/eldritch_knowledge/spell/wax_shell/on_finished_recipe(mob/living/user, list/atoms, loc)
+	return make_new_path_relic(user, get_turf(loc), /obj/item/heretic_path_relic/wax)
 
 /datum/eldritch_knowledge/spell/wax_shell/on_body_lose(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -932,7 +1606,12 @@
 
 /datum/eldritch_knowledge/wax_mark
 	name = "Метка Воска"
-	desc = "Хватка оставляет метку на 15 секунд. Клинок взрывает её на 8 ушибов и оставляет восковую печать. Живой разумный враг даёт единицу воска, с общей задержкой боевых попаданий 6 секунд."
+	summary = "Хватка ставит метку на 15 секунд, удар восковым клинком её взрывает."
+	details = list(
+		"Взрыв наносит 8 ушибов и оставляет восковую печать.",
+		"Взрыв по живому разумному врагу даёт единицу воска, общая задержка с боевыми попаданиями 6 секунд.",
+	)
+	role = HERETIC_ROLE_MARK
 	gain_text = "Воск закрыл имя, но сохранил его очертания."
 	cost = 2
 	route = PATH_WAX
@@ -952,43 +1631,67 @@
 	if(wax)
 		QDEL_LIST(wax.marks)
 
-/datum/eldritch_knowledge/wax_relic
-	name = "Подсвечник плакальщика"
-	ritual_hint = "Свечу можно отлить из листа бумаги на полу Хваткой Мансуса за 1 Воск."
-	desc = "Свеча и лист серебра создают единственный канделябр. В руке он поглощает оболочку без расхода воска, излечивая половину урона, принятого ею от разумных врагов: не больше 25 ушибов и ожогов суммарно. Неизрасходованная защита не лечит. Перезарядка 20 секунд."
-	gain_text = "Плакальщик собирал капли. Ни одна не принадлежала свече."
-	cost = 1
-	route = PATH_WAX
-	required_atoms = list(/obj/item/candle, /obj/item/stack/sheet/mineral/silver)
-	result_atoms = list(/obj/item/heretic_path_relic/wax)
-
-/datum/eldritch_knowledge/wax_relic/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
-	return new_path_relic_available()
-
-/datum/eldritch_knowledge/wax_relic/on_finished_recipe(mob/living/user, list/atoms, loc)
-	return make_new_path_relic(user, get_turf(loc), /obj/item/heretic_path_relic/wax)
-
-/datum/eldritch_knowledge/wax_upgrade
-	name = "Срезать лицо"
-	desc = "Клинок расходует вашу восковую печать, нанося ещё 10 ушибов. Выбирайте: снять печать близким ударом или сохранить для дальнего Снятия оттиска."
-	gain_text = "Под маской была другая маска. Последняя смотрела на меня."
+/datum/eldritch_knowledge/spell/wax_puppet_sleep
+	name = "Сон по кукле"
+	summary = "Со своей куклой в руке растопите её 5 секунд: человек в 9 клетках уснёт на 8 секунд."
+	details = list(
+		"Человек должен быть на вашем уровне не дальше 9 клеток; стены не мешают.",
+		"Он сразу чувствует жар, над ним поднимается пар; кукла всё это время должна быть у вас в руке.",
+		"Жар срывают уход дальше 9 клеток, вода в крови или на коже и нулевой жезл по нему или по вам.",
+		"Уснувший готов к обряду; будят его нулевой жезл и 2 секунды растолкать, вода сон уже не рвёт.",
+		"Спящую цель охоты кукла в руке за 1,5 секунды утягивает в изнанку из 9 клеток; иначе треснет к пробуждению.",
+		"После попытки человек 60 секунд невосприимчив к Сну и 15 секунд к любому захвату, после сна - с пробуждения.",
+		"Защита от магии спасает. Перезарядка 60 секунд.",
+	)
+	role = HERETIC_ROLE_CAPTURE
+	gain_text = "Воск помнил тепло чужих пальцев. Стоило его согреть, и хозяин пальцев засыпал."
 	cost = 2
 	route = PATH_WAX
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep
 
-/datum/eldritch_knowledge/wax_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
+/datum/eldritch_knowledge/spell/wax_puppet_sleep/on_body_lose(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	if(!proximity_flag || !wax?.can_use(user) || !user.Adjacent(target) || !heretic_can_affect(user, target, chargecost = 0))
-		return
-	var/mob/living/victim = target
-	var/datum/status_effect/heretic_wax/seal/sealed = victim.has_status_effect(/datum/status_effect/heretic_wax/seal)
-	if(sealed?.wax_ref?.resolve() == wax)
-		victim.adjustBruteLoss(10)
-		qdel(sealed)
+	if(wax)
+		QDEL_LIST(wax.meltings)
+	return ..()
+
+/datum/eldritch_knowledge/spell/wax_leak
+	name = "Протечь"
+	summary = "На 4 секунды вы становитесь лужицей воска и проползаете под закрытыми дверями."
+	details = list(
+		"Лужица неуязвима, но медленнее вас и ничего не может: ни бить, ни колдовать, ни трогать вещи в руках.",
+		"Проходит под дверями, шлюзами даже на болтах, пожарными заслонками и стеклянными дверцами.",
+		"Стены, окна, гермозаслоны, ставни, неразрушимые и кодовые двери лужицу не пускают.",
+		"Работает и в чужом захвате: лужица выскальзывает из рук, её не схватить.",
+		"Если лужица застыла в проёме двери, вы выходите на соседнюю свободную клетку.",
+		"Обычная процессия под лужицей гаснет, Бессмертная процессия горит дальше.",
+		"Наручники и щит разума не дают растечься. Перезарядка 60 секунд.",
+	)
+	role = HERETIC_ROLE_ESCAPE
+	gain_text = "Дверь заперли на засов. Воску не нужна дверь, ему хватит щели."
+	cost = 1
+	route = PATH_WAX
+	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_wax/leak
+
+/datum/eldritch_knowledge/spell/wax_leak/on_body_lose(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	if(wax)
+		QDEL_NULL(wax.leak)
+	return ..()
 
 /datum/eldritch_knowledge/spell/wax_imprint
 	name = "Снятие оттиска"
-	desc = "За единицу воска нанесите цели в пяти клетках 14 ушибов и отлейте рядом с собой её двойника на 8 секунд. Снятие оттиска замедляет цель на 2 секунды. Бейте двойника своим восковым клинком: каждый удар переносит до 15 ушибов на оригинал, всего до 30, и обновляет замедление. Ваша печать расходуется, добавляя 12 ушибов и 25 выносливости первому удару и укрепляя оттиск до 45. Только один двойник; его можно разбить. Стены, антимагия и отход дальше пяти клеток от вас или двойника рвут связь. Перезарядка 14 секунд."
+	summary = "За 1 Воск бьёт цель в 5 клетках на 14 ушибов и ставит рядом с вами её двойника на 8 секунд."
+	details = list(
+		"Цель замедляется на 2 секунды; удар вашего клинка по двойнику переносит на неё до 15 ушибов.",
+		"Двойник переносит всего 30 урона, с вашей печатью - 45, а сам оттиск получает +12 ушибов и +25 выносливости.",
+		"Двойник один: новый оттиск заменяет старый.",
+		"Стены, антимагия и отход дальше 5 клеток от вас или двойника рвут связь.",
+		"Двойника может разбить кто угодно, нулевой жезл гасит его сразу. Перезарядка 14 секунд.",
+	)
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Достаточно потянуть за край, чтобы форма рассталась с содержимым."
 	cost = 1
 	route = PATH_WAX
@@ -1002,7 +1705,12 @@
 
 /datum/eldritch_knowledge/wax_temper
 	name = "Тройной фитиль"
-	desc = "Вместимость растёт до 6, новые оболочки принимают 55 урона. Улучшение не заполняет запас и не чинит существующую оболочку."
+	summary = "Запас воска растёт до 6, новые оболочки принимают 55 урона."
+	details = list(
+		"Улучшение не заполняет запас и не чинит уже созданную оболочку.",
+		"Уровни: вместимость 6 / 7 / 8, оболочка 55 / 65 / 75.",
+	)
+	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Я сплёл фитили так, чтобы ни один не мог догореть в одиночестве."
 	cost = 2
 	route = PATH_WAX
@@ -1034,7 +1742,14 @@
 
 /datum/eldritch_knowledge/spell/wax_procession
 	name = "Погребальная процессия"
-	desc = "За 2 воска зажгите три свечи, следующие за вами. Первая гаснет сразу, следующие — с интервалом 2 секунды, поражая врагов в двух клетках на 14 ушибов и 10 выносливости, замедляя на 2 секунды и оставляя восковую печать. Три импульса за 4 секунды. Свечи можно разбить; стены закрывают цель, телепортация обрывает процессию. Перезарядка 35 секунд."
+	summary = "За 2 воска три свечи идут за вами и бьют врагов в 2 клетках."
+	details = list(
+		"Первая свеча гаснет сразу, остальные - через 2 и 4 секунды.",
+		"Каждый импульс: 14 ушибов, 10 выносливости, замедление на 2 секунды и восковая печать.",
+		"Разбитая свеча - на импульс меньше.",
+		"Стены закрывают цели, телепортация обрывает процессию. Перезарядка 35 секунд.",
+	)
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Процессия шла за пустым гробом. Я понял, для кого оставили место."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
@@ -1049,7 +1764,17 @@
 
 /datum/eldritch_knowledge/final_eldritch/wax_final
 	name = "Последний плакальщик"
-	desc = "После трёх назначенных душ принесите три человеческих трупа. Обряд раскрывает место станции и длится 30 секунд. Вы получаете общую стойкость вознесения. Запас воска вмещает 8 и восстанавливается каждые 4 секунды. «Бессмертная процессия» бесплатно зажигает пять разрушаемых свечей: первый импульс сразу и ещё четыре за 8 секунд на 18 ушибов и 15 выносливости в двух клетках, с замедлением на 2 секунды. Перезарядка 45 секунд. Филактерия: три последние свечи, отлитые Хваткой Мансуса из бумаги, держат вашу жизнь, пока стоят на полу или столе внутри станции: не в руках и не в ящике, не под шкафом или другим плотным предметом, не на решётке, не в космосе и не снаружи под открытым небом. Раз в 5 минут, упав в крит или умерев, вы оставляете на месте восковую куклу и поднимаетесь у ближайшей такой свечи на этом же уровне с половиной здоровья; свеча сгорает, наручники остаются. Ваше тело при этом должно быть на полу, а не в шкафу, мехе или на чужих руках, как крошечное существо; тело, которое тащат или несут на плече, возвращается. Свечи-якоря обведены золотистым контуром, экипаж узнаёт их роль при осмотре и разбивает любым ударом, зажигалкой или нулевым жезлом; осмотр куклы подсказывает, где вы поднялись. Разорванное или обращённое в прах тело, а также тело без мозга, без сердца или без нужных виду лёгких не возвращается. Смерть снимает эти усиления, оживление возвращает."
+	summary = "Стойкость вознесения, запас воска 8, Бессмертная процессия, а свечи держат вашу жизнь."
+	details = list(
+		"Нужны 3 назначенные души и 3 человеческих трупа на руне; обряд длится 30 секунд.",
+		"Запас вмещает 8 и возвращается по единице каждые 4 секунды.",
+		"Бессмертная процессия бесплатна: 5 свечей по 18 ушибов и 15 выносливости в 2 клетках, перезарядка 45 секунд.",
+		"Раз в 5 минут в крите или при смерти вы встаёте у ближайшей из 3 последних бумажных свечей с половиной здоровья.",
+		"Свеча держит жизнь на полу или столе внутри станции на вашем уровне, а тело должно лежать на полу.",
+		"Разорванное, обращённое в прах или лишённое мозга, сердца или лёгких тело не встаёт.",
+		"Свечи обведены золотом: экипаж разбивает их ударом, огнём или нулевым жезлом.",
+	)
+	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Погребальная песня закончилась. Я остался, чтобы встретить тех, кто ещё не родился. Пока горят мои свечи, в гроб ложится только воск."
 	route = PATH_WAX
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
@@ -1225,11 +1950,12 @@
 /obj/effect/proc_holder/spell/self/heretic_wax/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
-	return ..() && heretic_check(user, wax?.can_use(user), silent, "Способность недоступна вашему пути или текущему телу.")
+	return ..() && heretic_check(user, wax?.can_use(user, ignore_grab = usable_while_grabbed), silent, "Способность недоступна вашему пути или текущему телу.")
 
 /obj/effect/proc_holder/spell/self/heretic_wax/release
 	name = "Снять печать"
 	desc = "За единицу воска немедленно поразите веер в трёх клетках перед собой: 18 ушибов, 20 выносливости, замедление на 2 секунды и восковая печать. В намерении «Разоружить» вместо заряда расходует всю погребальную оболочку: веер достигает пяти клеток и наносит две трети оставшейся прочности, до 30 ушибов, без печати и замедления. Запас лечения оболочки также теряется."
+	summary = "За 1 Воск веер на 3 клетки: 18 ушибов, замедление и печать; в «Разоружении» тратит оболочку."
 	action_icon_state = "wax_release"
 	charge_max = 10 SECONDS
 
@@ -1242,6 +1968,7 @@
 /obj/effect/proc_holder/spell/self/heretic_wax/shell
 	name = "Погребальная оболочка"
 	desc = "За два воска создайте конечную защиту на 20 секунд. Повторное применение восстанавливает её до полной прочности. Свеча принимает удары; её разрушение или телепортация гасят защиту. «Снять печать» в намерении «Разоружить» превращает оставшуюся оболочку в атакующий веер, расходуя защиту и запас лечения."
+	summary = "За 2 воска оболочка на 20 секунд принимает 45 урона."
 	action_icon_state = "wax_shell"
 	charge_max = 18 SECONDS
 
@@ -1251,9 +1978,39 @@
 	if(!wax?.raise_shell(user))
 		heretic_revert_cast(user)
 
+/obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep
+	name = "Растопить куклу"
+	desc = "Держите в руке свою восковую куклу: человек в 9 клетках на вашем уровне 5 секунд чувствует жар и затем спит 8 секунд. Вода в крови или на коже, уход дальше 9 клеток или нулевой жезл по нему или по вам обрывают жар; спящего будят нулевой жезл и 2 секунды растолкать, вода сон уже не рвёт. Пока человек спит, кукла цела: спящую цель охоты она в руке за 1,5 секунды утянет в изнанку и рассыплется, иначе треснет к пробуждению. Перезарядка 60 секунд."
+	summary = "Кукла в руке: через 5 секунд жара человек в 9 клетках спит 8 секунд."
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "wax_puppet"
+	charge_max = HERETIC_WAX_PUPPET_SLEEP_COOLDOWN
+
+/obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	if(!wax?.melt_puppet(user))
+		heretic_revert_cast(user, wax?.wax_failure)
+
+/obj/effect/proc_holder/spell/self/heretic_wax/leak
+	name = "Протечь"
+	desc = "На 4 секунды станьте лужицей воска: вы неуязвимы и медленнее, проходите под закрытыми дверями и шлюзами, но не сквозь стены, окна, гермозаслоны и неразрушимые двери, и ничего не можете делать. Работает в чужом захвате, но не в наручниках и не под щитом разума. Перезарядка 60 секунд."
+	summary = "4 секунды неуязвимой лужицей воска под дверями и шлюзами."
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "wax_leak"
+	charge_max = HERETIC_WAX_LEAK_COOLDOWN
+	usable_while_grabbed = TRUE
+
+/obj/effect/proc_holder/spell/self/heretic_wax/leak/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	if(!wax?.start_leak(user))
+		heretic_revert_cast(user, wax?.wax_failure)
+
 /obj/effect/proc_holder/spell/self/heretic_wax/procession
 	name = "Погребальная процессия"
 	desc = "За два воска три разрушаемые свечи поражают врагов рядом: первая сразу, остальные следуют за вами и гаснут с интервалом две секунды."
+	summary = "За 2 воска три свечи бьют врагов в 2 клетках по 14 ушибов."
 	action_icon_state = "wax_procession"
 	charge_max = 35 SECONDS
 
@@ -1266,6 +2023,7 @@
 /obj/effect/proc_holder/spell/self/heretic_wax/crown
 	name = "Бессмертная процессия"
 	desc = "Пять разрушаемых свечей наносят по 18 ушибов и 15 выносливости в двух клетках: первая сразу, остальные следуют за вами и гаснут с интервалом две секунды."
+	summary = "Бесплатно пять свечей бьют врагов в 2 клетках по 18 ушибов."
 	action_icon_state = "wax_ascend"
 	charge_max = 45 SECONDS
 
@@ -1283,6 +2041,7 @@
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint
 	name = "Снятие оттиска"
 	desc = "За единицу воска нанесите 14 ушибов и создайте двойника на 8 секунд. Цель замедляется на 2 секунды. Удары вашего воскового клинка по двойнику переносят до 15 ушибов за удар, до 30 суммарно, и обновляют замедление. Печать добавляет 12 ушибов и 25 выносливости сразу и укрепляет двойника до 45. Двойника можно разбить; стены, антимагия и расстояние больше пяти клеток рвут связь."
+	summary = "За 1 Воск 14 ушибов цели в 5 клетках и её двойник рядом с вами на 8 секунд."
 	clothes_req = FALSE
 	invocation_type = "none"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
@@ -1321,3 +2080,12 @@
 #undef HERETIC_WAX_SHELL_RELEASE_FRACTION
 #undef HERETIC_WAX_COLOR
 #undef HERETIC_WAX_ANCHOR_FILTER
+#undef HERETIC_WAX_PUPPET_CRAFT
+#undef HERETIC_WAX_CAPTURE
+#undef HERETIC_WAX_PUPPET_CHECK
+#undef HERETIC_WAX_LEAK_TRAIT
+#undef HERETIC_WAX_LEAK_SLOWDOWN
+#undef HERETIC_WAX_PUDDLE_SPREAD
+#undef HERETIC_WAX_PUDDLE_SQUASH
+#undef HERETIC_WAX_PUDDLE_SINK
+#undef HERETIC_WAX_PUDDLE_ALPHA

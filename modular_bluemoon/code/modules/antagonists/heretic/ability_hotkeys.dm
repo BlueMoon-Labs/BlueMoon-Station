@@ -41,6 +41,12 @@
 		if(istype(knowledge, /datum/eldritch_knowledge/base_lock))
 			var/datum/eldritch_knowledge/base_lock/lock = knowledge
 			spells |= lock.seal_spell
+		if(istype(knowledge, /datum/eldritch_knowledge/base_blade))
+			var/datum/eldritch_knowledge/base_blade/blade = knowledge
+			spells |= blade.challenge_spell
+		if(istype(knowledge, /datum/eldritch_knowledge/base_tide))
+			var/datum/eldritch_knowledge/base_tide/tide = knowledge
+			spells |= tide.dive_power
 		if(istype(knowledge, /datum/eldritch_knowledge/spell) && !istype(knowledge, /datum/eldritch_knowledge/spell/summon))
 			var/datum/eldritch_knowledge/spell/spell_knowledge = knowledge
 			if(!QDELETED(spell_knowledge.granted_spell))
@@ -71,7 +77,7 @@
 		if(user.ranged_ability == spell)
 			spell.remove_ranged_ability(span_notice("Прицеливание отменено."))
 			return TRUE
-		if(user.incapacitated())
+		if(user.incapacitated(ignore_grab = TRUE))
 			to_chat(user, span_warning("Сейчас вы не можете использовать способность."))
 			return TRUE
 		spell.Trigger(user, FALSE)
@@ -96,7 +102,10 @@
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/reap
 	aim_assist_radius = 1
 
-/obj/effect/proc_holder/spell/pointed/heretic_tide/undertow
+/obj/effect/proc_holder/spell/pointed/heretic_tide/drown
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby
 	aim_assist_radius = 1
 
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint
@@ -105,7 +114,16 @@
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange
 	aim_assist_radius = 1
 
+/obj/effect/proc_holder/spell/pointed/heretic_glass/casket
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_sand/stasis
+	aim_assist_radius = 1
+
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt
+	aim_assist_radius = 1
+
+/obj/effect/proc_holder/spell/pointed/heretic_lock/shackles
 	aim_assist_radius = 1
 
 /obj/effect/proc_holder/spell/pointed/blood_siphon
@@ -135,5 +153,5 @@
 /obj/effect/proc_holder/spell/pointed/heretic_lock/court
 	aim_assist_turf = TRUE
 
-/obj/effect/proc_holder/spell/pointed/heretic_glass/barrier
+/obj/effect/proc_holder/spell/pointed/heretic_glass/shards
 	aim_assist_turf = TRUE

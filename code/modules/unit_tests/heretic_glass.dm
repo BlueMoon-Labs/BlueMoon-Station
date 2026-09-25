@@ -1,3 +1,12 @@
+/datum/unit_test/proc/glass_blind_timer(datum/eldritch_knowledge/base_glass/glass, mob/living/victim)
+	return SStimer.timer_id_dict[glass.blind_timers[REF(victim)]]
+
+/datum/unit_test/proc/expire_glass_blind(datum/eldritch_knowledge/base_glass/glass, mob/living/victim)
+	var/timer_id = glass.blind_timers[REF(victim)]
+	var/datum/timedevent/cure = SStimer.timer_id_dict[timer_id]
+	cure?.callBack.Invoke()
+	deltimer(timer_id)
+
 /// Хватка не создаёт грани, взрыв метки даёт одну, восстановление имеет отдельную задержку.
 /datum/unit_test/heretic_glass_combat_cycle/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
@@ -5,7 +14,6 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_grasp)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_mark)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_upgrade)
 	var/mob/living/user = heretic.owner.current
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
@@ -23,12 +31,19 @@
 	blade.attack(victim, user)
 	TEST_ASSERT_EQUAL(glass.combat_resource, 3, "Взрыв метки настоящим ударом даёт одну грань.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/eldritch/glass), "Удар клинком расходует метку.")
-	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force - 8) < 0.01, "Усиление луча не превращается в лишний клинковый урон.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - blade.force - 8) < 0.01, "Взрыв метки добавляет к удару клинком ровно восемь ушибов.")
+	TEST_ASSERT(victim.is_blind(), "Взрыв метки ослепляет цель.")
+	var/datum/timedevent/cure = glass_blind_timer(glass, victim)
+	TEST_ASSERT_NOTNULL(cure, "Слепоту снимает свой таймер.")
+	TEST_ASSERT(abs(cure.timeToRun - world.time - (1 SECONDS)) < 0.1, "Взрыв метки ослепляет ровно на секунду. Осталось: [cure.timeToRun - world.time] дс.")
+	TEST_ASSERT(wait_for_var(victim, NAMEOF(victim, eye_blind), 0, 3 SECONDS), "Слепота от метки проходит сама.")
+	TEST_ASSERT(!victim.is_blind(), "После секунды цель снова видит.")
 	var/damage_before = victim.getBruteLoss()
 	glass.release(user, victim)
 	var/datum/heretic_glass_attack/attack = glass.attacks[1]
 	attack.resolve()
-	TEST_ASSERT(abs(victim.getBruteLoss() - damage_before - 44) < 0.01, "Прямой луч получает усиленные трещины без призмы.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - damage_before - 30) < 0.01, "Трещины не добавляют урона прямому лучу.")
+	TEST_ASSERT(victim.is_blind(), "Луч по трещинам ослепляет цель.")
 	glass.combat_resource = 2
 	COOLDOWN_RESET(glass, facet_regeneration)
 	glass.on_life(user)
@@ -71,7 +86,6 @@
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_upgrade)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/node_place = get_step(get_step(user, EAST), EAST)
@@ -86,7 +100,8 @@
 	TEST_ASSERT(glass.release(user, prism), "Луч можно направить в собственную призму.")
 	var/datum/heretic_glass_attack/first = glass.attacks[1]
 	first.resolve()
-	TEST_ASSERT(abs(victim.getBruteLoss() - 50) < 0.01, "Преломление обходит угол и усиливает луч по трещинам.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 36) < 0.01, "Преломление обходит угол, трещины урон не добавляют.")
+	TEST_ASSERT(victim.eye_blind > 0, "Преломлённый луч ослепляет треснувшую цель.")
 	var/damage_before = victim.getBruteLoss()
 	glass.release(user, prism)
 	var/datum/heretic_glass_attack/second = glass.attacks[1]
@@ -115,8 +130,8 @@
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/turf/east = get_step(user, EAST)
-	TEST_ASSERT_NULL(glass.create_barrier(user, east), "Неизученная преграда не создаётся.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	TEST_ASSERT_NULL(glass.create_barrier(user, east), "Без призм преграда не создаётся.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	glass.combat_resource = 4
 	TEST_ASSERT_NULL(glass.create_barrier(user, get_turf(user)), "Преграда не возникает внутри человека.")
 	var/obj/structure/heretic_glass_barrier/first = glass.create_barrier(user, east)
@@ -152,7 +167,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/obj/structure/heretic_glass_barrier/barrier = glass.create_barrier(user, get_step(user, EAST))
@@ -181,7 +196,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/obj/structure/heretic_glass_barrier/barrier = glass.create_barrier(user, get_step(user, EAST))
@@ -208,7 +223,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/obj/structure/heretic_glass_barrier/barrier = glass.create_barrier(user, get_step(get_step(user, EAST), EAST))
@@ -241,14 +256,13 @@
 /datum/unit_test/heretic_glass_reflection_flight/shattering
 	fragile_barrier = TRUE
 
-/// Заклинание размещает и поворачивает реальные узлы, а линза расщепляет ближайший собственный луч.
+/// Заклинание размещает и поворачивает реальные узлы, а касание рукой расщепляет луч выбранного узла.
 /datum/unit_test/heretic_glass_prism/Run()
 	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH)
 	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_relic)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/datum/eldritch_knowledge/spell/glass_shards/placement = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
@@ -282,21 +296,12 @@
 	var/obj/structure/heretic_glass_prism/foreign = other_glass.prisms[1]
 	TEST_ASSERT(!spell.can_target(foreign, user, TRUE), "Чужая призма не выбирается для поворота.")
 	TEST_ASSERT(!glass.shards(user, foreign), "Прямой вызов тоже не присваивает чужой узел.")
-	var/datum/eldritch_knowledge/glass_relic/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/glass_relic)
-	TEST_ASSERT(recipe.on_finished_recipe(user, list(), center), "Обряд создаёт линзу.")
-	TEST_ASSERT(!recipe.on_finished_recipe(user, list(), center), "Вторая линза не создаётся.")
-	var/obj/item/heretic_path_relic/glass/lens = recipe.new_path_relic_ref.resolve()
-	allocated += lens
-	TEST_ASSERT(!lens.rotate_prism(user), "Линза на полу не действует.")
-	user.put_in_hands(lens)
-	TEST_ASSERT(lens.rotate_prism(user), "Линза меняет ближайший собственный узел.")
-	TEST_ASSERT(prism.split, "Призма переходит в режим расщепления.")
-	TEST_ASSERT(!lens.rotate_prism(user), "Повторное переключение ограничено перезарядкой.")
-	COOLDOWN_RESET(lens, relic_cooldown)
-	TEST_ASSERT(!lens.rotate_prism(user, foreign), "Адресное применение линзы не переключает чужую призму.")
+	prism.attack_hand(user)
+	TEST_ASSERT(prism.split, "Касание рукой переводит призму в режим расщепления.")
+	TEST_ASSERT_EQUAL(prism.dir, EAST, "Касание рукой не поворачивает стрелку.")
 	var/obj/structure/heretic_glass_prism/selected = glass.prisms[3]
-	TEST_ASSERT(lens.afterattack(selected, user, FALSE), "Линза переключает явно выбранную призму.")
-	TEST_ASSERT(selected.split && prism.split, "Выбор третьего узла сохраняет режим ближайшего.")
+	selected.attack_hand(user)
+	TEST_ASSERT(selected.split && prism.split, "Каждая призма переключается отдельно.")
 	var/mob/living/upper = allocate(/mob/living/carbon/human, get_step(node_place, NORTHEAST))
 	var/mob/living/lower = allocate(/mob/living/carbon/human, get_step(node_place, SOUTHEAST))
 	glass.release(user, prism)
@@ -304,10 +309,6 @@
 	attack.resolve()
 	TEST_ASSERT(abs(upper.getBruteLoss() - 30) < 0.01, "Верхняя ветвь наносит тридцать ушибов.")
 	TEST_ASSERT(abs(lower.getBruteLoss() - 30) < 0.01, "Нижняя ветвь наносит тридцать ушибов.")
-	TEST_ASSERT(lens.authorized(user), "Линза находится у законного владельца до удаления знания.")
-	qdel(recipe)
-	TEST_ASSERT(!lens.authorized(user), "Удалённое знание отключает удерживаемую линзу.")
-	TEST_ASSERT(!prism.split, "Потеря знания возвращает узел к одному выходу.")
 
 /// Пересечение сети бьёт один раз, а поворот и разрушение узлов не расширяют старое предупреждение.
 /datum/unit_test/heretic_glass_storm/Run()
@@ -350,7 +351,7 @@
 	TEST_ASSERT(!QDELETED(third), "Движение не отменяет уже предупреждённый свет.")
 	third.resolve()
 
-/// Смерть и переселение убирают призмы, чужие статусы, предупреждения и прежнюю способность.
+/// Смерть и переселение убирают призмы, чужие статусы, предупреждения и прежнюю способность, но оставляют настроенные стёкла.
 /datum/unit_test/heretic_glass_cleanup/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
@@ -360,6 +361,8 @@
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/obj/structure/window/fulltile/pane = allocate(/obj/structure/window/fulltile, get_step(user, SOUTH))
+	TEST_ASSERT(glass.attune(pane, user), "Окно настроено до смерти.")
 	glass.fracture(victim)
 	victim.apply_status_effect(/datum/status_effect/eldritch/glass, glass)
 	glass.shards(user, get_step(user, NORTH))
@@ -376,6 +379,7 @@
 	TEST_ASSERT_EQUAL(length(glass.visuals), 0, "Смерть убирает все предупреждения.")
 	TEST_ASSERT_EQUAL(glass.combat_resource, 0, "Смерть обнуляет строительный запас.")
 	TEST_ASSERT(glass.glass_generation > old_generation, "Поколение прежних атак закрыто.")
+	TEST_ASSERT(pane in glass.attuned_panes, "Настроенное стекло переживает смерть.")
 	user.stat = CONSCIOUS
 	glass.release(user, victim)
 	attack = glass.attacks[1]
@@ -387,10 +391,12 @@
 	TEST_ASSERT_EQUAL(glass.glass_body, new_body, "Оптика принадлежит новому телу.")
 	TEST_ASSERT(!glass.can_use(user), "Старое тело теряет полномочия.")
 	TEST_ASSERT(glass.can_use(new_body), "Новое тело получает полномочия.")
+	TEST_ASSERT_NOTNULL(heretic_craft_on(pane, "glass_pane"), "Настроенное стекло переживает смену тела.")
 	glass.release(new_body, victim)
 	attack = glass.attacks[1]
 	qdel(glass)
 	TEST_ASSERT(QDELETED(attack), "Удаление основного знания отменяет оставшийся луч.")
+	TEST_ASSERT_NULL(heretic_craft_on(pane, "glass_pane"), "Удаление основного знания снимает настройку стекла.")
 
 /// Удаление знания строительства разбирает узлы, а утрата метки снимает статус с чужого тела.
 /datum/unit_test/heretic_glass_knowledge_removal/Run()
@@ -398,19 +404,20 @@
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_mark)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	glass.shards(user, get_step(user, EAST))
 	var/obj/structure/heretic_glass_prism/prism = glass.prisms[1]
+	var/obj/structure/heretic_glass_barrier/barrier = glass.create_barrier(user, get_step(user, NORTH))
+	TEST_ASSERT_NOTNULL(barrier, "Знание призм поднимает и преграду.")
 	var/datum/eldritch_knowledge/shards = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
 	qdel(shards)
 	TEST_ASSERT(QDELETED(prism), "Удаление строительства удаляет существующие призмы.")
+	TEST_ASSERT(QDELETED(barrier), "Удаление строительства разбирает и преграды.")
+	glass.combat_resource = 2
 	TEST_ASSERT(!glass.shards(user, get_step(user, EAST)), "Удалённое знание не создаёт новый узел.")
-	var/obj/structure/heretic_glass_barrier/barrier = glass.create_barrier(user, get_step(user, NORTH))
-	qdel(heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_barrier))
-	TEST_ASSERT(QDELETED(barrier), "Удаление защиты разбирает защитную преграду.")
+	TEST_ASSERT_NULL(glass.create_barrier(user, get_step(user, NORTH)), "Удалённое знание не поднимает преграду.")
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	victim.apply_status_effect(/datum/status_effect/eldritch/glass, glass)
 	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/eldritch/glass), "Перед удалением знания метка существует.")
@@ -547,24 +554,21 @@
 	SIGNAL_HANDLER
 	return COMPONENT_NO_ATTACK_HAND
 
-/// Ручное управление стеклянными конструкциями соблюдает общий запрет взаимодействия.
+/// Касание рукой своей призмы и преграды соблюдает общий запрет взаимодействия.
 /datum/unit_test/heretic_glass_hand_interaction/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_barrier)
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
 	var/obj/structure/heretic_glass_prism/prism = allocate(/obj/structure/heretic_glass_prism, get_step(user, EAST), glass)
-	prism.setDir(EAST)
-	user.setDir(NORTH)
 	RegisterSignal(prism, COMSIG_ATOM_ATTACK_HAND, PROC_REF(block_hand))
 	prism.attack_hand(user)
-	TEST_ASSERT_EQUAL(prism.dir, EAST, "Запрет общего обработчика не позволяет повернуть призму.")
+	TEST_ASSERT(!prism.split, "Запрет общего обработчика не позволяет переключить призму.")
 	UnregisterSignal(prism, COMSIG_ATOM_ATTACK_HAND)
 	prism.attack_hand(user)
-	TEST_ASSERT_EQUAL(prism.dir, NORTH, "Без запрета владелец поворачивает призму рукой.")
+	TEST_ASSERT(prism.split, "Без запрета владелец переключает призму рукой.")
 	var/obj/structure/heretic_glass_barrier/barrier = allocate(/obj/structure/heretic_glass_barrier, get_step(user, NORTH), glass)
 	RegisterSignal(barrier, COMSIG_ATOM_ATTACK_HAND, PROC_REF(block_hand))
 	barrier.attack_hand(user)
@@ -1048,3 +1052,777 @@
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
+
+/// Хватка настраивает окно и зеркало без урона, считает дело, держит шесть стёкол и отдаёт настройку жезлу.
+/datum/unit_test/heretic_glass_attune/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_GLASS)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(user, EAST))
+	TEST_ASSERT(glass.on_mansus_grasp(window, user, TRUE), "Хватка настраивает окно.")
+	TEST_ASSERT_EQUAL(window.obj_integrity, window.max_integrity, "Настройка не повреждает стекло.")
+	TEST_ASSERT_NOTNULL(heretic_craft_on(window, "glass_pane"), "Окно несёт ремесло Стекла.")
+	TEST_ASSERT_EQUAL(length(glass.attuned_panes), 1, "Окно попало в список настроенных.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Настройка продвигает дело.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/heretic_trace) in get_turf(user), "След дела лежит на клетке еретика.")
+	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/heretic_trace) in get_turf(window), "Под полноклеточным окном след не прячется.")
+	TEST_ASSERT(findtext(jointext(window.examine(crew), " "), "не эта комната"), "Экипаж видит улику при осмотре.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(!glass.on_mansus_grasp(window, user, TRUE), "Настроенное стекло не настраивается повторно.")
+	TEST_ASSERT(findtext(glass.grasp_failure_reason, "уже настроено"), "Отказ объясняет повтор.")
+	TEST_ASSERT(COOLDOWN_FINISHED(heretic.deed, progress_cooldown), "Отказ не тратит перезарядку дела.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Повтор не продвигает дело.")
+	var/list/panes = list(window)
+	for(var/index in 2 to HERETIC_GLASS_ATTUNE_LIMIT)
+		var/obj/structure/mirror/mirror = allocate(/obj/structure/mirror, get_step(user, NORTHEAST))
+		TEST_ASSERT(glass.attune(mirror, user), "Зеркало [index] настраивается.")
+		panes += mirror
+	TEST_ASSERT_EQUAL(length(glass.attuned_panes), HERETIC_GLASS_ATTUNE_LIMIT, "Все стёкла до предела настроены.")
+	var/obj/structure/mirror/extra = allocate(/obj/structure/mirror, get_step(user, NORTHEAST))
+	TEST_ASSERT(glass.attune(extra, user), "Стекло сверх предела настраивается.")
+	TEST_ASSERT_EQUAL(length(glass.attuned_panes), HERETIC_GLASS_ATTUNE_LIMIT, "Предел настроенных стёкол соблюдается.")
+	TEST_ASSERT_NULL(heretic_craft_on(window, "glass_pane"), "Старейшее стекло вытеснено.")
+	TEST_ASSERT_EQUAL(glass.attuned_panes[1], panes[2], "Старейшим становится следующее стекло.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	crew.put_in_hands(rod)
+	var/obj/structure/mirror/rodded = panes[2]
+	rod.melee_attack_chain(crew, rodded)
+	TEST_ASSERT_NULL(heretic_craft_on(rodded, "glass_pane"), "Нулевой жезл снимает настройку с зеркала.")
+	TEST_ASSERT(!(rodded in glass.attuned_panes), "Снятое зеркало уходит из списка.")
+	TEST_ASSERT(glass.attune(window, user), "Вытесненное окно можно настроить заново.")
+	rod.melee_attack_chain(crew, window)
+	TEST_ASSERT_NULL(heretic_craft_on(window, "glass_pane"), "Нулевой жезл снимает настройку с окна.")
+	TEST_ASSERT(!(window in glass.attuned_panes), "Снятое окно уходит из списка.")
+	TEST_ASSERT_EQUAL(window.obj_integrity, window.max_integrity, "Жезл снимает настройку, не ударяя окно.")
+	var/list/remaining = glass.attuned_panes.Copy()
+	TEST_ASSERT(length(remaining), "Перед удалением знания остаются настроенные стёкла.")
+	qdel(glass)
+	for(var/atom/pane as anything in remaining)
+		TEST_ASSERT_NULL(heretic_craft_on(pane, "glass_pane"), "Удаление знания снимает настройку со всех стёкол.")
+
+/// Вечный витраж, как до переработки, бьёт треснувшую цель на 14 сильнее и не ослепляет её.
+/datum/unit_test/heretic_glass_eternal_fracture/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	final_knowledge.finished = TRUE
+	heretic.ascended = TRUE
+	final_knowledge.on_body_gain(user)
+	var/mob/living/carbon/human/cracked = allocate(/mob/living/carbon/human, get_step(user, WEST))
+	var/mob/living/carbon/human/plain = allocate(/mob/living/carbon/human, get_step(user, SOUTH))
+	TEST_ASSERT_NOTNULL(glass.fracture(cracked), "Цель треснула.")
+	TEST_ASSERT(glass.crown(user), "Вечный витраж запускается.")
+	var/datum/heretic_glass_attack/wave = glass.attacks[1]
+	wave.resolve()
+	TEST_ASSERT(abs(plain.getBruteLoss() - 44) <= DAMAGE_PRECISION, "Волна бьёт на 44: [plain.getBruteLoss()].")
+	TEST_ASSERT(abs(cracked.getBruteLoss() - 44 - HERETIC_GLASS_ETERNAL_FRACTURE_BONUS) <= DAMAGE_PRECISION, "По трещинам волна бьёт на 14 сильнее: [cracked.getBruteLoss()].")
+	TEST_ASSERT(!cracked.is_blind() && !glass_blind_timer(glass, cracked), "Волна витража треснувшую цель не ослепляет.")
+	qdel(glass.active_network)
+
+/// Луч по треснувшей цели ослепляет её, не добавляя урона.
+/datum/unit_test/heretic_glass_fracture_blinds/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_grasp)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/glass_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/glass_grasp)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human, get_step(victim, EAST))
+	TEST_ASSERT(grasp.on_mansus_grasp(victim, user, TRUE), "Хватка оставляет трещины.")
+	TEST_ASSERT(glass.release(user, victim), "Луч выпускается в треснувшую цель.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 30) < 0.01, "Трещины не добавляют урона: [victim.getBruteLoss()].")
+	TEST_ASSERT(victim.is_blind(), "Луч ослепляет треснувшую цель.")
+	var/datum/timedevent/cure = glass_blind_timer(glass, victim)
+	TEST_ASSERT_NOTNULL(cure, "Слепоту снимает свой таймер.")
+	TEST_ASSERT(abs(cure.timeToRun - world.time - (HERETIC_GLASS_FRACTURE_BLIND)) < 0.1, "Луч по трещинам ослепляет ровно на две секунды. Осталось: [cure.timeToRun - world.time] дс.")
+	TEST_ASSERT(abs(bystander.getBruteLoss() - 30) < 0.01, "Луч проходит дальше по линии.")
+	TEST_ASSERT(!bystander.is_blind(), "Цель без трещин не ослеплена.")
+	var/cure_at = cure.timeToRun
+	glass.blind(victim, 1 SECONDS)
+	cure = glass_blind_timer(glass, victim)
+	TEST_ASSERT_NOTNULL(cure, "После короткой вспышки слепоту всё так же снимает таймер.")
+	TEST_ASSERT(abs(cure.timeToRun - cure_at) < 0.1, "Короткая вспышка не сокращает идущую слепоту. Осталось: [cure.timeToRun - world.time] дс.")
+	expire_glass_blind(glass, victim)
+	TEST_ASSERT(!victim.is_blind(), "По истечении срока цель снова видит.")
+
+/// Призма в намерении «Разоружить» ставит преграду, а касание рукой переключает раздвоение.
+/datum/unit_test/heretic_glass_prism_barrier_mode/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/spell/glass_shards/placement = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/obj/effect/proc_holder/spell/pointed/heretic_glass/shards/spell = placement.granted_spell
+	var/turf/east = get_step(user, EAST)
+	var/turf/north = get_step(user, NORTH)
+	user.a_intent = INTENT_DISARM
+	TEST_ASSERT(spell.can_target(east, user, TRUE), "Разоружение выбирает свободный пол для преграды.")
+	spell.cast(list(east), user)
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/heretic_glass_barrier) in east, "Разоружение поднимает преграду.")
+	TEST_ASSERT_EQUAL(length(glass.prisms), 0, "Вместо преграды призма не ставится.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 1, "Преграда стоит одну грань.")
+	TEST_ASSERT(!spell.can_target(north, user, TRUE), "Вторая преграда ждёт своей перезарядки.")
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT(spell.can_target(north, user, TRUE), "Без разоружения тот же пол принимает призму.")
+	spell.cast(list(north), user)
+	var/obj/structure/heretic_glass_prism/prism = locate() in north
+	TEST_ASSERT_NOTNULL(prism, "Без разоружения ставится призма.")
+	user.setDir(EAST)
+	prism.setDir(NORTH)
+	prism.attack_hand(user)
+	TEST_ASSERT(prism.split, "Касание рукой раздваивает луч призмы.")
+	TEST_ASSERT_EQUAL(prism.dir, NORTH, "Касание рукой не поворачивает стрелку ни к еретику, ни по его взгляду.")
+	prism.attack_hand(user)
+	TEST_ASSERT(!prism.split, "Повторное касание возвращает один луч.")
+
+/datum/unit_test/heretic_glass_casket
+	var/obj/item/touched_with
+
+/datum/unit_test/heretic_glass_casket/proc/record_touch(datum/source, obj/item/item, mob/user)
+	SIGNAL_HANDLER
+	touched_with = item
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/unit_test/heretic_glass_casket/Destroy()
+	touched_with = null
+	return ..()
+
+/// Витраж берёт только поверженную цель, держит её, отражает лазер, ломается от ударов и оставляет невосприимчивость.
+/datum/unit_test/heretic_glass_casket/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/spell/glass_casket/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	TEST_ASSERT(istype(knowledge.granted_spell, /obj/effect/proc_holder/spell/pointed/heretic_glass/casket), "Знание выдаёт заклинание Витража.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	glass.combat_resource = 4
+	TEST_ASSERT(!glass.casket(user, victim), "Стоящую цель без трещин Витраж не берёт.")
+	TEST_ASSERT(findtext(glass.glass_failure, "Витраж смыкается только"), "Отказ называет подходящие цели.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 4, "Отказ не тратит грани.")
+	glass.fracture(victim)
+	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	TEST_ASSERT(!glass.casket(user, victim), "Антимагия отталкивает Витраж.")
+	TEST_ASSERT(findtext(glass.glass_failure, "защищена от магии"), "Отказ называет антимагию.")
+	qdel(protection)
+	TEST_ASSERT(glass.casket(user, victim), "Треснувшая цель запирается.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 2, "Витраж стоит две грани.")
+	TEST_ASSERT(!victim.IsParalyzed(), "Во время нарастания стекла цель ещё свободна.")
+	TEST_ASSERT(wait_for_var(victim, NAMEOF(victim, anchored), TRUE, 3 SECONDS), "После секунды нарастания саркофаг смыкается.")
+	var/obj/structure/heretic_glass_casket/casket = locate() in get_turf(victim)
+	TEST_ASSERT_NOTNULL(casket, "На клетке цели стоит саркофаг.")
+	TEST_ASSERT(casket.density, "Клетку саркофага не пройти.")
+	TEST_ASSERT(victim.IsParalyzed(), "Запертая цель неподвижна.")
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, victim), "уже заперта"), "Повторный Витраж по запертой цели называет саркофаг, а не линию.")
+	TEST_ASSERT(heretic.hunt_target_ready(victim), "Запертая цель готова к обряду.")
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(victim, NORTH))
+	crew.start_pulling(victim)
+	TEST_ASSERT(crew.pulling != victim, "Запертую цель не утащить.")
+	RegisterSignal(victim, COMSIG_PARENT_ATTACKBY, PROC_REF(record_touch))
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart)
+	user.put_in_hands(heart)
+	casket.attackby(heart, user)
+	UnregisterSignal(victim, COMSIG_PARENT_ATTACKBY)
+	TEST_ASSERT_EQUAL(touched_with, heart, "Касание саркофага сердцем доходит до цели.")
+	var/mob/living/carbon/human/shooter = allocate(/mob/living/carbon/human, get_step(get_step(victim, EAST), EAST))
+	var/obj/item/projectile/beam/laser = glass_test_projectile(shooter, /obj/item/projectile/beam/laser)
+	TEST_ASSERT_EQUAL(casket.bullet_act(laser), BULLET_ACT_FORCE_PIERCE, "Саркофаг отражает лазер.")
+	TEST_ASSERT_EQUAL(casket.max_integrity, 90, "Прочность саркофага 90.")
+	TEST_ASSERT_EQUAL(casket.obj_integrity, casket.max_integrity, "Отражение не ранит стекло.")
+	casket.take_damage(10, BRUTE, MELEE)
+	TEST_ASSERT_EQUAL(casket.obj_integrity, 75, "Удар в ближнем бою наносит полуторный урон.")
+	casket.take_damage(200, BRUTE, MELEE)
+	TEST_ASSERT(QDELETED(casket), "Разбитый саркофаг исчезает.")
+	TEST_ASSERT(!victim.anchored, "Освобождённую цель снова можно тянуть.")
+	TEST_ASSERT(!victim.IsParalyzed(), "Освобождённая цель может двигаться.")
+	TEST_ASSERT(findtext(heretic_capture_block_reason(user, victim, "glass"), "приходит в себя"), "После саркофага цель невосприимчива.")
+	glass.combat_resource = 4
+	TEST_ASSERT(!glass.casket(user, victim), "Повторный Витраж в течение минуты отклонён.")
+	TEST_ASSERT(findtext(glass.glass_failure, "приходит в себя"), "Отказ называет невосприимчивость.")
+	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	glass.fracture(runner)
+	TEST_ASSERT(glass.casket(user, runner), "Витраж нарастает вокруг второй цели.")
+	var/obj/effect/temp_visual/heretic_glass/casket_growth/growth = locate() in get_turf(runner)
+	TEST_ASSERT_NOTNULL(growth, "Нарастание стекла видно заранее.")
+	runner.forceMove(get_step(get_turf(runner), NORTH))
+	TEST_ASSERT(wait_for_qdeleted(growth, 3 SECONDS), "Нарастание завершается.")
+	TEST_ASSERT(!runner.anchored && !runner.IsParalyzed(), "Отошедшая цель не запечатана.")
+	TEST_ASSERT_NULL(locate(/obj/structure/heretic_glass_casket) in range(1, runner), "Саркофаг не смыкается на пустой клетке.")
+
+/// Витраж берёт сбитых с ног, обессиленных, ослеплённых светом и треснувших, но не лёгших сами, спящих и незрячих.
+/datum/unit_test/heretic_glass_casket_readiness/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_storm)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	glass.combat_resource = 4
+	var/mob/living/carbon/human/rester = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 2, user.z))
+	rester.set_resting(TRUE, silent = TRUE)
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, rester), "Витраж смыкается только"), "Добровольно лёгшая цель не подходит.")
+	var/mob/living/carbon/human/sleeper = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 1, user.z))
+	sleeper.SetSleeping(10 SECONDS)
+	sleeper.blind_eyes(1)
+	TEST_ASSERT(sleeper.is_blind(), "Спящий считается незрячим.")
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, sleeper), "Витраж смыкается только"), "Спящая цель не подходит.")
+	var/mob/living/carbon/human/blindman = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 3, user.z))
+	ADD_TRAIT(blindman, TRAIT_BLIND, TRAIT_SOURCE_UNIT_TESTS)
+	blindman.blind_eyes(1)
+	TEST_ASSERT(blindman.is_blind(), "Незрячий действительно не видит.")
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, blindman), "Витраж смыкается только"), "Незрячая от природы цель не подходит.")
+	REMOVE_TRAIT(blindman, TRAIT_BLIND, TRAIT_SOURCE_UNIT_TESTS)
+	var/mob/living/carbon/human/knocked = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y + 1, user.z))
+	knocked.DefaultCombatKnockdown(2 SECONDS, override_stamdmg = 0)
+	TEST_ASSERT_NULL(glass.casket_block_reason(user, knocked), "Сбитая с ног цель подходит.")
+	var/mob/living/carbon/human/exhausted = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y + 2, user.z))
+	exhausted.adjustStaminaLoss(500)
+	TEST_ASSERT(IS_STAMCRIT(exhausted), "Цель в стамкрите.")
+	TEST_ASSERT_NULL(glass.casket_block_reason(user, exhausted), "Обессиленная цель подходит.")
+	var/mob/living/carbon/human/dazzled = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, dazzled), "Витраж смыкается только"), "Стоящая зрячая цель не подходит.")
+	TEST_ASSERT(glass.storm(user), "Буря выпускается.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(dazzled.is_blind(), "Буря ослепила стоящую цель.")
+	TEST_ASSERT_NULL(glass.casket_block_reason(user, dazzled), "Ослеплённая светом Стекла цель подходит.")
+	expire_glass_blind(glass, dazzled)
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, dazzled), "Витраж смыкается только"), "Прозревшая цель снова не подходит.")
+
+/// Шаг сквозь настроенное окно переносит на другую сторону за грань и оставляет окно целым; стена за окном и наручники мешают.
+/datum/unit_test/heretic_glass_passage/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_passage)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/glass_passage/passage = heretic.get_knowledge(/datum/eldritch_knowledge/glass_passage)
+	TEST_ASSERT(istype(passage.combat_power, /obj/effect/proc_holder/spell/pointed/heretic_glass/passage), "Знание выдаёт заклинание шага.")
+	var/obj/structure/window/fulltile/walled = allocate(/obj/structure/window/fulltile, get_step(user, WEST))
+	TEST_ASSERT(iswallturf(get_step(walled, WEST)), "За проверочным окном стена.")
+	TEST_ASSERT(glass.attune(walled, user), "Окно у стены настроено.")
+	TEST_ASSERT(!glass.step_through(user, walled), "Стена за окном не пускает.")
+	TEST_ASSERT(findtext(glass.glass_failure, "стена"), "Отказ называет стену.")
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(user, EAST))
+	var/turf/exit = get_step(window, EAST)
+	TEST_ASSERT(glass.attune(window, user), "Окно настроено.")
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+	TEST_ASSERT(!glass.step_through(user, window), "В наручниках стекло не пускает.")
+	TEST_ASSERT(findtext(glass.glass_failure, "наручниках"), "Отказ называет наручники.")
+	user.uncuff()
+	glass.combat_resource = 2
+	TEST_ASSERT(glass.step_through(user, window), "Еретик проходит сквозь окно.")
+	TEST_ASSERT_EQUAL(get_turf(user), exit, "Выход на клетке за окном.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 1, "Шаг стоит одну грань.")
+	TEST_ASSERT(!QDELETED(window) && window.obj_integrity == window.max_integrity, "Окно остаётся целым.")
+	TEST_ASSERT_NOTNULL(window.GetComponent(/datum/component/heretic_glass_passage_trace), "На окне остаётся трещина-след.")
+	var/obj/structure/window/thin = allocate(/obj/structure/window, exit, EAST)
+	TEST_ASSERT(glass.attune(thin, user), "Направленное окно настроено.")
+	TEST_ASSERT(glass.step_through(user, thin), "Направленное окно пропускает с его стороны.")
+	TEST_ASSERT_EQUAL(get_turf(user), get_step(exit, EAST), "Выход по ту сторону направленного окна.")
+	glass.combat_resource = 1
+	TEST_ASSERT(glass.step_through(user, thin), "Направленное окно пропускает и обратно.")
+	TEST_ASSERT_EQUAL(get_turf(user), exit, "Обратный шаг возвращает на клетку окна.")
+	TEST_ASSERT(!glass.step_through(user, thin), "Без граней шаг не выходит.")
+
+/// Вдовья призма смотрит сквозь настроенное стекло, пока владелец неподвижен, цел и держит линзу.
+/datum/unit_test/heretic_glass_gaze/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_relic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/glass_relic/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/glass_relic)
+	TEST_ASSERT(recipe.on_finished_recipe(user, list(), center), "Обряд создаёт линзу.")
+	TEST_ASSERT(!recipe.on_finished_recipe(user, list(), center), "Вторая линза не создаётся.")
+	var/obj/item/heretic_path_relic/glass/lens = recipe.new_path_relic_ref.resolve()
+	allocated += lens
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(get_step(center, EAST), EAST))
+	var/obj/structure/window/fulltile/stranger = allocate(/obj/structure/window/fulltile, get_step(get_step(center, NORTH), NORTH))
+	TEST_ASSERT(glass.attune(window, user), "Окно настроено.")
+	TEST_ASSERT(!lens.gaze(user, window), "Линза на полу не действует.")
+	user.put_in_hands(lens)
+	var/list/choices = lens.gaze_choices(user)
+	TEST_ASSERT_EQUAL(length(choices), 1, "Выбор предлагает только настроенные стёкла.")
+	TEST_ASSERT(findtext(choices[1], get_area_name(window, TRUE)), "Стекло подписано отделом.")
+	TEST_ASSERT_EQUAL(choices[choices[1]], window, "Подпись ведёт к своему стеклу.")
+	TEST_ASSERT(!lens.gaze(user, stranger), "Ненастроенное стекло не открывает взгляд.")
+	TEST_ASSERT(lens.gaze(user, window), "Взгляд уходит в настроенное стекло.")
+	TEST_ASSERT_EQUAL(lens.gaze_pane, window, "Линза помнит, куда смотрит владелец.")
+	user.forceMove(get_step(center, SOUTH))
+	TEST_ASSERT_NULL(lens.gaze_pane, "Движение возвращает взгляд в тело.")
+	TEST_ASSERT(!lens.gaze(user, window), "После взгляда линза перезаряжается.")
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(lens.gaze(user, window), "После перезарядки взгляд снова доступен.")
+	user.adjustBruteLoss(5)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Урон обрывает взгляд.")
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(lens.gaze(user, window), "Взгляд доступен после урона.")
+	qdel(heretic_craft_on(window, "glass_pane"))
+	TEST_ASSERT_NULL(lens.gaze_pane, "Снятая со стекла настройка обрывает взгляд.")
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(glass.attune(window, user), "Окно настроено снова.")
+	TEST_ASSERT(lens.gaze(user, window), "Взгляд доступен после новой настройки.")
+	user.dropItemToGround(lens)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Выпавшая линза обрывает взгляд.")
+
+/// Перекрёстный свет стреляет и из настроенного стекла рядом, ослепляя всех поражённых.
+/datum/unit_test/heretic_glass_storm_attuned/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_storm)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, locate(user.x + 4, user.y + 1, user.z))
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y + 1, user.z))
+	var/mob/living/carbon/human/direct = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 1, user.z))
+	TEST_ASSERT(glass.storm(user), "Свет выпускается без настроенных стёкол.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Ненастроенное окно не стреляет.")
+	TEST_ASSERT(abs(direct.getBruteLoss() - 40) < 0.01, "Прямой луч бури наносит 40 ушибов.")
+	TEST_ASSERT(direct.is_blind(), "Прямой луч бури ослепляет.")
+	TEST_ASSERT(glass.attune(window, user), "Окно в семи клетках настроено.")
+	TEST_ASSERT(glass.storm(user), "Свет выпускается вместе с настроенным стеклом.")
+	attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(abs(victim.getBruteLoss() - 40) < 0.01, "Настроенное окно стреляет вместе с бурей: [victim.getBruteLoss()].")
+	TEST_ASSERT(victim.is_blind(), "Поражённый лучом стекла ослеплён.")
+	var/datum/timedevent/cure = glass_blind_timer(glass, victim)
+	TEST_ASSERT_NOTNULL(cure, "Слепоту снимает свой таймер.")
+	TEST_ASSERT(abs(cure.timeToRun - world.time - (3 SECONDS)) < 0.1, "Буря ослепляет ровно на три секунды. Осталось: [cure.timeToRun - world.time] дс.")
+	expire_glass_blind(glass, victim)
+	TEST_ASSERT(!victim.is_blind(), "По истечении срока цель снова видит.")
+
+/datum/unit_test/heretic_glass_casket_sacrifice
+	var/casket_at_revive = FALSE
+	var/revived = FALSE
+
+/datum/unit_test/heretic_glass_casket_sacrifice/proc/on_revive(mob/living/source)
+	SIGNAL_HANDLER
+	revived = TRUE
+	casket_at_revive = !!(locate(/obj/structure/heretic_glass_casket) in source.loc)
+
+/// Саркофаг рассыпается до лечения Мансуса и не держит жертву в Доме; невосприимчивость остаётся.
+/datum/unit_test/heretic_glass_casket_sacrifice/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	var/obj/structure/heretic_glass_casket/casket = allocate(/obj/structure/heretic_glass_casket, get_turf(victim), glass, victim)
+	TEST_ASSERT(victim.IsParalyzed(), "Саркофаг держит жертву.")
+	RegisterSignal(victim, COMSIG_LIVING_REVIVE, PROC_REF(on_revive))
+	var/datum/heretic_mansus_visit/visit = allocate(/datum/heretic_mansus_visit/mansus_fixture)
+	TEST_ASSERT(visit.prepare(victim, run_loc_floor_top_right, run_loc_floor_top_right), "Комната готова.")
+	TEST_ASSERT(visit.start(), "Жертва входит в Мансус.")
+	UnregisterSignal(victim, COMSIG_LIVING_REVIVE)
+	TEST_ASSERT(revived, "Мансус лечит жертву.")
+	TEST_ASSERT(!casket_at_revive, "Саркофаг рассыпается до лечения Мансуса.")
+	TEST_ASSERT(QDELETED(casket), "Саркофаг не уходит за жертвой.")
+	TEST_ASSERT(!victim.IsParalyzed(), "В Доме саркофаг жертву не держит.")
+	TEST_ASSERT(!victim.anchored, "Жертва не прикована к месту.")
+	TEST_ASSERT_NOTNULL(capture_immunity(victim, "glass"), "После саркофага невосприимчивость остаётся.")
+
+/// Саркофаг держит своим параличом: удержание обряда не становится срочным и не снимается при освобождении.
+/datum/unit_test/heretic_glass_casket_keeps_rite/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/rite = new(list(victim, -1, TRUE))
+	var/obj/structure/heretic_glass_casket/casket = allocate(/obj/structure/heretic_glass_casket, get_turf(victim), glass, victim)
+	TEST_ASSERT(victim.IsParalyzed(), "Цель в саркофаге неподвижна.")
+	TEST_ASSERT_EQUAL(rite.duration, -1, "Саркофаг не делает удержание обряда срочным.")
+	qdel(casket)
+	TEST_ASSERT(!QDELETED(rite), "Освобождение из саркофага не снимает удержание обряда.")
+	TEST_ASSERT_EQUAL(rite.duration, -1, "Удержание обряда остаётся бессрочным.")
+	TEST_ASSERT(victim.IsParalyzed(), "Обряд по-прежнему держит цель.")
+	qdel(rite)
+	TEST_ASSERT(!victim.IsParalyzed(), "Без обряда и саркофага цель свободна.")
+
+/// Сквозь стекло ведёт только своё настроенное окно и только сбоку: чужое окно и шаг по диагонали отклоняются без траты грани.
+/datum/unit_test/heretic_glass_passage_attuned/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_passage)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/turf/start = get_turf(user)
+	glass.combat_resource = 2
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(user, EAST))
+	TEST_ASSERT(!glass.step_through(user, window), "Ненастроенное окно не пускает.")
+	TEST_ASSERT(findtext(glass.glass_failure, "настроенное"), "Отказ называет настройку: [glass.glass_failure]")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 2, "Отказ не тратит грань.")
+	TEST_ASSERT_EQUAL(get_turf(user), start, "Еретик остаётся на месте.")
+	var/obj/structure/window/fulltile/corner = allocate(/obj/structure/window/fulltile, get_step(user, NORTHEAST))
+	TEST_ASSERT(glass.attune(corner, user), "Угловое окно настроено.")
+	TEST_ASSERT(!glass.step_through(user, corner), "По диагонали сквозь окно не шагнуть.")
+	TEST_ASSERT(findtext(glass.glass_failure, "вплотную"), "Отказ просит встать вплотную: [glass.glass_failure]")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 2, "Отказ по диагонали не тратит грань.")
+	var/obj/structure/window/fulltile/distant = allocate(/obj/structure/window/fulltile, locate(user.x, user.y + 2, user.z))
+	TEST_ASSERT(glass.attune(distant, user), "Окно через клетку настроено.")
+	TEST_ASSERT(!glass.step_through(user, distant), "Сквозь окно через клетку не шагнуть.")
+	TEST_ASSERT(findtext(glass.glass_failure, "вплотную"), "Отказ просит встать вплотную: [glass.glass_failure]")
+	TEST_ASSERT_EQUAL(get_turf(user), start, "Отказ издалека не переносит.")
+	TEST_ASSERT(glass.attune(window, user), "Окно настроено.")
+	TEST_ASSERT(glass.step_through(user, window), "Своё настроенное окно пропускает.")
+	TEST_ASSERT_EQUAL(get_turf(user), get_step(window, EAST), "Выход по ту сторону окна.")
+
+/// Запись о слепоте уходит вместе со слепотой, а удаление знания снимает идущую слепоту.
+/datum/unit_test/heretic_glass_blind_cleanup/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	glass.blind(victim, 0.5 SECONDS)
+	TEST_ASSERT(victim.is_blind(), "Вспышка ослепляет.")
+	TEST_ASSERT_EQUAL(length(glass.blind_timers), 1, "Слепота записана.")
+	var/list/budget = new_wait_budget(2 SECONDS, "слепота Стекла проходит")
+	while(length(glass.blind_timers))
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT_EQUAL(length(glass.blind_timers), 0, "Прошедшая слепота не оставляет записи.")
+	TEST_ASSERT(!victim.is_blind(), "По сроку цель снова видит.")
+	glass.blind(victim, 2 SECONDS)
+	qdel(glass)
+	TEST_ASSERT(!victim.is_blind(), "Удаление знания снимает идущую слепоту.")
+
+/// Столы и операционный стол не закрывают Витражу линию, плотная машина закрывает.
+/datum/unit_test/heretic_glass_casket_over_tables/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	glass.combat_resource = 4
+	allocate(/obj/structure/table, locate(user.x + 1, user.y, user.z))
+	var/turf/bed = locate(user.x + 2, user.y, user.z)
+	allocate(/obj/structure/table/optable, bed)
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, bed)
+	patient.DefaultCombatKnockdown(2 SECONDS, override_stamdmg = 0)
+	TEST_ASSERT_NULL(glass.casket_block_reason(user, patient), "Цель на операционном столе за столом доступна Витражу.")
+	var/obj/machinery/hydroponics/machine = allocate(/obj/machinery/hydroponics, locate(user.x + 1, user.y + 1, user.z))
+	TEST_ASSERT(machine.density, "Лоток гидропоники плотный.")
+	var/mob/living/carbon/human/hidden = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 2, user.z))
+	hidden.DefaultCombatKnockdown(2 SECONDS, override_stamdmg = 0)
+	TEST_ASSERT(findtext(glass.casket_block_reason(user, hidden), "открытой линии"), "Плотная машина закрывает линию.")
+
+/// Взгляд сквозь стекло обрывают урон выносливости, оглушение и беспамятство с неотнимаемой линзой и урон по телу без плоти.
+/datum/unit_test/heretic_glass_gaze_breaks/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_relic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/glass_relic/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/glass_relic)
+	TEST_ASSERT(recipe.on_finished_recipe(user, list(), center), "Обряд создаёт линзу.")
+	var/obj/item/heretic_path_relic/glass/lens = recipe.new_path_relic_ref.resolve()
+	allocated += lens
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(get_step(center, EAST), EAST))
+	TEST_ASSERT(glass.attune(window, user), "Окно настроено.")
+	user.put_in_hands(lens)
+	ADD_TRAIT(lens, TRAIT_NODROP, TRAIT_SOURCE_UNIT_TESTS)
+	TEST_ASSERT(lens.gaze(user, window), "Взгляд уходит в стекло.")
+	user.adjustStaminaLoss(10)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Урон выносливости обрывает взгляд.")
+	user.setStaminaLoss(0)
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(lens.gaze(user, window), "Взгляд снова доступен.")
+	user.Stun(1 SECONDS)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Оглушение обрывает взгляд.")
+	user.SetStun(0)
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(lens.gaze(user, window), "После оглушения взгляд доступен.")
+	user.Unconscious(1 SECONDS)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Беспамятство обрывает взгляд.")
+	user.SetUnconscious(0)
+	REMOVE_TRAIT(lens, TRAIT_NODROP, TRAIT_SOURCE_UNIT_TESTS)
+	user.dropItemToGround(lens)
+	var/mob/living/simple_animal/drone/drone = allocate(/mob/living/simple_animal/drone, center)
+	heretic.owner.transfer_to(drone, TRUE)
+	TEST_ASSERT_EQUAL(glass.glass_body, drone, "Стекло следует за разумом в новое тело.")
+	TEST_ASSERT(drone.put_in_hands(lens), "Дрон держит линзу.")
+	COOLDOWN_RESET(lens, relic_cooldown)
+	TEST_ASSERT(lens.gaze(drone, window), "Взгляд доступен телу без плоти.")
+	drone.apply_damage(5, BRUTE)
+	TEST_ASSERT_NULL(lens.gaze_pane, "Урон по телу без плоти обрывает взгляд.")
+
+/area/unit_test_glass_gallery
+	name = "Glass Gallery Test Room"
+	requires_power = FALSE
+
+/// Во время паузы дела окно в незачтённом отделе не настраивается, в зачтённом настраивается как обычно.
+/datum/unit_test/heretic_glass_attune_waits_for_deed/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_GLASS)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(user, EAST))
+	COOLDOWN_START(heretic.deed, progress_cooldown, HERETIC_DEED_COOLDOWN)
+	TEST_ASSERT(!glass.on_mansus_grasp(window, user, TRUE), "Во время паузы окно в новом отделе не настраивается.")
+	TEST_ASSERT(findtext(glass.grasp_failure_reason, "Слишком быстро"), "Отказ называет паузу: [glass.grasp_failure_reason]")
+	TEST_ASSERT_NULL(heretic_craft_on(window, "glass_pane"), "Окно осталось без ремесла.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Отказ не трогает дело.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(glass.on_mansus_grasp(window, user, TRUE), "После паузы окно настраивается.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Отдел засчитан.")
+	var/obj/structure/window/fulltile/neighbour = allocate(/obj/structure/window/fulltile, get_step(user, NORTH))
+	TEST_ASSERT(glass.on_mansus_grasp(neighbour, user, TRUE), "В зачтённом отделе пауза настройке не мешает.")
+	var/turf/gallery = locate(user.x + 2, user.y + 2, user.z)
+	heretic_test_area(gallery, /area/unit_test_glass_gallery)
+	var/obj/structure/window/fulltile/far = allocate(/obj/structure/window/fulltile, gallery)
+	TEST_ASSERT(!glass.attune(far, user), "Окно в другом отделе ждёт конца паузы.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	TEST_ASSERT(glass.attune(far, user), "После паузы окно в другом отделе настраивается.")
+	TEST_ASSERT_EQUAL(length(heretic.deed.counted_keys), 2, "Оба отдела засчитаны.")
+
+/// Дверь Стекла: цель в своём саркофаге или готовая у своего стекла уводится в изнанку, где вход держит её вместо разбитого саркофага; стоящая, вдали от стёкол или у снятого стекла - нет; клик «Помощи» по цели саркофаг не открывает, 2 секунды «Помощи» по саркофагу - открывают; выходы - свои стёкла, снятые и чужие не в счёт.
+/datum/unit_test/heretic_glass_pocket_door/Run()
+	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/eldritch_knowledge/spell/basic/ritual = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/origin = get_turf(user)
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/turf/spot = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = allocate_hunt_victim(heretic, spot)
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, get_step(spot, NORTH))
+	TEST_ASSERT(glass.attune(window, user), "Окно у цели настроено.")
+	TEST_ASSERT_NULL(glass.pocket_door(user, victim), "Стоящую цель стекло не уводит.")
+	var/obj/structure/heretic_glass_casket/casket = new(spot, glass, victim)
+	var/mob/living/carbon/human/helper = allocate(/mob/living/carbon/human, get_step(spot, SOUTH))
+	victim.help_shake_act(helper)
+	helper.forceMove(get_step(helper, EAST))
+	TEST_ASSERT(!QDELETED(casket) && victim.IsParalyzed(), "Клик «Помощи» не открывает саркофаг.")
+	var/list/door = glass.pocket_door(user, victim)
+	TEST_ASSERT_NOTNULL(door, "Цель в своём саркофаге у своего стекла уводится.")
+	TEST_ASSERT_EQUAL(door["name"], "в стекло", "Дверь подписана.")
+	TEST_ASSERT_EQUAL(door["time"], HERETIC_POCKET_PULL_TIME, "Дверь Стекла занимает [HERETIC_POCKET_PULL_TIME / (1 SECONDS)] с.")
+	TEST_ASSERT(heretic.pocket_pull(user, victim, spot, door["time"], door["check"], door["text"]), "Дверь Стекла уводит цель в изнанку.")
+	TEST_ASSERT(heretic.pocket_holds(victim), "Цель в изнанке.")
+	TEST_ASSERT(QDELETED(casket), "Саркофаг остаётся на станции и рассыпается.")
+	var/datum/timedevent/release = SStimer.timer_id_dict[heretic.pocket.entry_hold_timer]
+	TEST_ASSERT(victim.IsParalyzed() && abs(release?.timeToRun - world.time - HERETIC_POCKET_ENTRY_HOLD) < 1, "Вход держит цель [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с: [release?.timeToRun - world.time] дс.")
+	TEST_ASSERT_NULL(heretic.heart_rite_refusal_reason(victim, ritual), "Обряд сердцем над удержанной целью начинается.")
+	heretic.pocket.collapse("проверка")
+	TEST_ASSERT_EQUAL(get_turf(victim), spot, "Цель выпадает у входа.")
+	casket = new(spot, glass, victim)
+	helper.forceMove(get_step(spot, SOUTH))
+	helper.a_intent = INTENT_HELP
+	casket.attack_hand(helper)
+	TEST_ASSERT(LAZYFIND(helper.do_afters, victim), "«Помощь» по саркофагу начинает расталкивать запертого.")
+	helper.forceMove(get_step(helper, EAST))
+	var/list/budget = new_wait_budget(HERETIC_CAPTURE_SHAKE_TIME * 2, "сорванная попытка растолкать")
+	while(LAZYFIND(helper.do_afters, victim))
+		if(!wait_budget_tick(budget))
+			break
+	TEST_ASSERT(!QDELETED(casket), "Отошедший не растолкал запертого.")
+	helper.forceMove(get_step(spot, SOUTH))
+	casket.attack_hand(helper)
+	TEST_ASSERT(wait_for_qdeleted(casket, HERETIC_CAPTURE_SHAKE_TIME * 2), "Две секунды «Помощи» по саркофагу выпускают запертого.")
+
+	victim.handcuffed = allocate(/obj/item/restraints/handcuffs, victim)
+	victim.update_handcuffed()
+	TEST_ASSERT(heretic.hunt_target_ready(victim), "Скованная цель готова к обряду.")
+	TEST_ASSERT_NOTNULL(glass.pocket_door(user, victim), "Готовая цель у своего стекла уводится.")
+	var/turf/far_spot = locate(spot.x + 3, spot.y + 3, spot.z)
+	victim.forceMove(far_spot)
+	user.forceMove(get_step(far_spot, WEST))
+	TEST_ASSERT_NULL(glass.pocket_door(user, victim), "Вдали от своих стёкол готовую цель не увести.")
+	user.forceMove(origin)
+	victim.forceMove(spot)
+	var/obj/structure/mirror/mirror = allocate(/obj/structure/mirror, locate(spot.x + 3, spot.y, spot.z))
+	TEST_ASSERT(glass.attune(mirror, user), "Зеркало настроено.")
+	var/datum/antagonist/heretic/rival = allocate_heretic(locate(spot.x + 2, spot.y + 3, spot.z))
+	rival.selected_path = PATH_GLASS
+	rival.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/base_glass/rival_glass = rival.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/mirror/foreign = allocate(/obj/structure/mirror, locate(spot.x + 3, spot.y + 3, spot.z))
+	TEST_ASSERT(rival_glass.attune(foreign, rival.owner.current), "Чужое зеркало настроено другим еретиком.")
+	var/list/exits = glass.pocket_exits(user)
+	TEST_ASSERT_EQUAL(length(exits), 2, "Оба своих стекла - выходы.")
+	for(var/label in exits)
+		var/turf/exit = exits[label]
+		TEST_ASSERT(findtext(label, "Стекло - "), "Выход подписан стеклом и отделом: [label]")
+		TEST_ASSERT(heretic_pocket_landable(exit), "Выход - свободный пол: [label]")
+		TEST_ASSERT(get_dist(exit, window) <= 1 || get_dist(exit, mirror) <= 1, "Выход у своего стекла: [label]")
+		TEST_ASSERT(get_turf(foreign) != exit, "Чужое стекло не выход.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(window, EAST))
+	crew.put_in_hands(rod)
+	rod.melee_attack_chain(crew, window)
+	TEST_ASSERT_EQUAL(length(glass.pocket_exits(user)), 1, "Снятое стекло больше не выход.")
+	TEST_ASSERT_NULL(glass.pocket_door(user, victim), "У снятого стекла готовую цель не увести.")
+
+/datum/unit_test/heretic_glass_theft
+	var/theft_done = FALSE
+	var/theft_result
+
+/datum/unit_test/heretic_glass_theft/proc/steal_in_background(datum/eldritch_knowledge/base_glass/glass, mob/living/user, obj/structure/through, label)
+	theft_result = glass.steal_through(user, through, label)
+	theft_done = TRUE
+
+/// Кража сквозь стекло: цель у своего стекла одна (или треснула) и её никто не держит, канал рвётся, если цель отошла, удача тратит перезарядку, отказ - нет; цель предупреждена один раз; разрыв у дальнего стекла; два стекла в одном отделе - два выбора.
+/datum/unit_test/heretic_glass_theft/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	allocated += new /datum/heretic_test_station_level(start.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/window/fulltile/near_pane = allocate(/obj/structure/window/fulltile, locate(start.x + 1, start.y, start.z))
+	var/obj/structure/window/fulltile/far_pane = allocate(/obj/structure/window/fulltile, locate(start.x + 5, start.y + 3, start.z))
+	TEST_ASSERT(glass.attune(near_pane, user), "Ближнее стекло настроено.")
+	TEST_ASSERT(glass.attune(far_pane, user), "Дальнее стекло настроено.")
+	var/turf/by_glass = locate(start.x + 4, start.y + 3, start.z)
+	var/mob/living/carbon/human/echo_chat_probe/victim = allocate(/mob/living/carbon/human/echo_chat_probe, by_glass)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	var/mob/living/carbon/human/witness = allocate(/mob/living/carbon/human, locate(start.x + 4, start.y + 5, start.z))
+	user.a_intent = INTENT_HELP
+
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 0, "При свидетеле рядом с целью кражи нет.")
+	TEST_ASSERT_EQUAL(glass.on_pane_hand(near_pane, user), NONE, "Без одинокой цели рука по стеклу работает как обычно.")
+	witness.forceMove(locate(start.x, start.y + 5, start.z))
+	var/list/doors = glass.theft_doors(user, near_pane)
+	TEST_ASSERT_EQUAL(length(doors), 1, "Одинокая цель у своего стекла видна сквозь стекло.")
+	var/label = doors[1]
+	TEST_ASSERT(findtext(label, "Стекло - ") && findtext(label, victim.real_name), "Выбор назван стеклом, отделом и целью: [label]")
+	witness.forceMove(get_step(by_glass, NORTH))
+	TEST_ASSERT(!glass.steal_through(user, near_pane, label), "Свидетель рядом срывает кражу.")
+	TEST_ASSERT(COOLDOWN_FINISHED(glass, theft_cooldown), "Отказ не тратит перезарядку.")
+	witness.forceMove(locate(start.x, start.y + 5, start.z))
+
+	INVOKE_ASYNC(src, PROC_REF(steal_in_background), glass, user, near_pane, label)
+	TEST_ASSERT(!theft_done, "Кража идёт каналом.")
+	sleep(HERETIC_GLASS_THEFT_TIME / 2)
+	TEST_ASSERT(!theft_done, "Через секунду кража ещё идёт.")
+	victim.forceMove(locate(start.x + 2, start.y + 3, start.z))
+	TEST_ASSERT(wait_for_var(src, NAMEOF(src, theft_done), TRUE, HERETIC_GLASS_THEFT_TIME * 2), "Канал кражи завершается.")
+	TEST_ASSERT(!theft_result, "Отошедшую от стекла цель не утянуть.")
+	TEST_ASSERT(!heretic.pocket?.active, "Сорванная кража не открывает изнанку.")
+	TEST_ASSERT(COOLDOWN_FINISHED(glass, theft_cooldown), "Сорванная кража не тратит перезарядку.")
+
+	victim.forceMove(by_glass)
+	victim.shown.Cut()
+	var/started = world.time
+	TEST_ASSERT(glass.steal_through(user, near_pane, label), "Одинокую цель у своего стекла утягивает сквозь стекло.")
+	TEST_ASSERT_EQUAL(victim.count_shown("Стекло рядом с вами идёт рябью"), 1, "Цель предупреждена о краже один раз.")
+	TEST_ASSERT(world.time - started >= HERETIC_GLASS_THEFT_TIME - 1, "Кража длится [HERETIC_GLASS_THEFT_TIME / (1 SECONDS)] с: [world.time - started] дс.")
+	TEST_ASSERT(heretic.pocket_holds(victim), "Цель в изнанке.")
+	TEST_ASSERT(heretic.pocket.contains(user), "Еретик в изнанке с целью.")
+	TEST_ASSERT_EQUAL(heretic.pocket.entry_turf, by_glass, "Вход изнанки - у дальнего стекла.")
+	TEST_ASSERT(get_dist(heretic.pocket.rift, far_pane) <= 1, "Разрыв остаётся у дальнего стекла.")
+	TEST_ASSERT(abs(glass.theft_cooldown - world.time - HERETIC_GLASS_THEFT_COOLDOWN) < 1, "Перезарядка кражи [HERETIC_GLASS_THEFT_COOLDOWN / (1 SECONDS)] с: [glass.theft_cooldown - world.time] дс.")
+
+	heretic.pocket.collapse("проверка")
+	COOLDOWN_RESET(heretic.pocket, reopen_cooldown)
+	for(var/datum/status_effect/heretic_capture_immunity/immunity as anything in victim.has_status_effect_list(/datum/status_effect/heretic_capture_immunity))
+		qdel(immunity)
+	user.forceMove(start)
+	victim.forceMove(by_glass)
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 1, "Цель снова одна у стекла.")
+	TEST_ASSERT(!glass.steal_through(user, near_pane, label), "В перезарядке кражи нет.")
+	TEST_ASSERT(!heretic.pocket.active, "В перезарядке цель остаётся на станции.")
+	TEST_ASSERT_EQUAL(glass.on_pane_hand(near_pane, user), COMPONENT_NO_ATTACK_HAND, "Рука по стеклу при цели за стеклом не стучит, а объясняет перезарядку.")
+	user.a_intent = INTENT_HARM
+	TEST_ASSERT_EQUAL(glass.on_pane_hand(near_pane, user), NONE, "В намерении вреда рука по стеклу работает как обычно.")
+	var/obj/structure/mirror/twin_pane = allocate(/obj/structure/mirror, locate(start.x + 3, start.y + 4, start.z))
+	TEST_ASSERT(glass.attune(twin_pane, user), "Второе стекло у цели в том же отделе настроено.")
+	var/list/twin_doors = glass.theft_doors(user, near_pane)
+	TEST_ASSERT_EQUAL(length(twin_doors), 2, "Оба стекла у цели в одном отделе остаются разными выборами.")
+
+/// Витраж стоит на четвёртой ступени Стекла, Метка - на пятой.
+/datum/unit_test/heretic_glass_tiers/Run()
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_GLASS]
+	TEST_ASSERT_EQUAL(path.knowledge[4], /datum/eldritch_knowledge/spell/glass_casket, "Витраж - четвёртая ступень.")
+	TEST_ASSERT_EQUAL(path.knowledge[5], /datum/eldritch_knowledge/glass_mark, "Метка Стекла - пятая ступень.")
+
+/// Кража сквозь стекло берёт и треснувшую цель при свидетеле рядом; цель, которую тащат, несут на плечах или пристегнули, не крадётся, а схваченная посреди канала срывает кражу.
+/datum/unit_test/heretic_glass_theft/cracked/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	allocated += new /datum/heretic_test_station_level(start.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/window/fulltile/near_pane = allocate(/obj/structure/window/fulltile, locate(start.x + 1, start.y, start.z))
+	var/obj/structure/window/fulltile/far_pane = allocate(/obj/structure/window/fulltile, locate(start.x + 5, start.y + 3, start.z))
+	TEST_ASSERT(glass.attune(near_pane, user), "Ближнее стекло настроено.")
+	TEST_ASSERT(glass.attune(far_pane, user), "Дальнее стекло настроено.")
+	var/turf/by_glass = locate(start.x + 4, start.y + 3, start.z)
+	var/mob/living/carbon/human/victim = allocate_hunt_victim(heretic, by_glass)
+	var/mob/living/carbon/human/witness = allocate(/mob/living/carbon/human, locate(start.x + 4, start.y + 5, start.z))
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 0, "Цель без трещин при свидетеле рядом не утянуть.")
+	TEST_ASSERT_NOTNULL(glass.fracture(victim), "Цель треснула.")
+	var/list/doors = glass.theft_doors(user, near_pane)
+	TEST_ASSERT_EQUAL(length(doors), 1, "Треснувшую цель у своего стекла видно сквозь стекло и при свидетеле.")
+	var/label = doors[1]
+	witness.forceMove(get_step(by_glass, NORTH))
+	witness.start_pulling(victim)
+	TEST_ASSERT_EQUAL(witness.pulling, victim, "Свидетель держит цель.")
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 0, "Цель в чужих руках сквозь стекло не утянуть.")
+	TEST_ASSERT(!glass.steal_through(user, near_pane, label), "Кража не начинается, пока цель держат.")
+	TEST_ASSERT(COOLDOWN_FINISHED(glass, theft_cooldown), "Отказ не тратит перезарядку.")
+	witness.stop_pulling()
+	INVOKE_ASYNC(src, PROC_REF(steal_in_background), glass, user, near_pane, label)
+	TEST_ASSERT(!theft_done, "Кража идёт каналом.")
+	witness.start_pulling(victim)
+	TEST_ASSERT(wait_for_var(src, NAMEOF(src, theft_done), TRUE, HERETIC_GLASS_THEFT_TIME * 2), "Канал кражи завершается.")
+	TEST_ASSERT(!theft_result, "Свидетель, схвативший цель, срывает кражу.")
+	TEST_ASSERT(!heretic.pocket?.active, "Сорванная кража не открывает изнанку.")
+	witness.stop_pulling()
+	witness.buckle_mob(victim, TRUE, buckle_type = RIDING_FIREMAN, auto_by_type = TRUE)
+	TEST_ASSERT_EQUAL(victim.buckled, witness, "Свидетель несёт цель на плечах.")
+	TEST_ASSERT(get_dist(victim, far_pane) <= 1, "Цель на плечах стоит у стекла.")
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 0, "Цель на чужих плечах сквозь стекло не утянуть.")
+	witness.unbuckle_mob(victim, TRUE)
+	victim.forceMove(by_glass)
+	var/obj/structure/bed/bed = allocate(/obj/structure/bed, by_glass)
+	TEST_ASSERT(bed.buckle_mob(victim, TRUE), "Цель пристёгнута к кровати у стекла.")
+	TEST_ASSERT_EQUAL(length(glass.theft_doors(user, near_pane)), 0, "Пристёгнутую цель сквозь стекло не утянуть.")
+	bed.unbuckle_mob(victim, TRUE)
+	theft_done = FALSE
+	TEST_ASSERT(glass.steal_through(user, near_pane, label), "Треснувшую цель без чужих рук утягивает сквозь стекло при свидетеле рядом.")
+	TEST_ASSERT(heretic.pocket_holds(victim), "Цель в изнанке.")
+	heretic.pocket.collapse("проверка")
