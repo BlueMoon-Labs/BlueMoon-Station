@@ -10,7 +10,7 @@
 ## These modify the run/walk speed of all mobs before the mob-specific modifiers are applied.
 ## Дробное движение игрока сохраняет заданную цену шага.
 ## Прежнее расписание и движение без клиента округляются до серверного тика.
-RUN_DELAY 1.6
+RUN_DELAY 1.75
 WALK_DELAY 3
 
 ## Замедление и ускорение передвижения киборгов
