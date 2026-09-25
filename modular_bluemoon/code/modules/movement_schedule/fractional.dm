@@ -124,7 +124,11 @@
 		unwatch()
 		return FALSE
 	var/animation_mode = mover_ref?.resolve() == mover && !isnull(saved_animation) ? saved_animation : mover.animate_movement
-	if(!isturf(mover.loc) || mover.movement_type & FLOATING || mover.pulling || mover.pulledby || mover.buckled || length(mover.buckled_mobs) || animation_mode != SLIDE_STEPS || tick_lag <= 0)
+	if(!isturf(mover.loc) || mover.buckled || animation_mode != SLIDE_STEPS || tick_lag <= 0)
+		invalidate()
+		return FALSE
+	// NO_STEPS очереди рассинхронизировал бы тащимое, седока и дрейф; штатный glide их ведёт сам.
+	if(render_mode == FRACTIONAL_MOVEMENT_QUEUED && (mover.movement_type & FLOATING || mover.pulling || mover.pulledby || length(mover.buckled_mobs)))
 		invalidate()
 		return FALSE
 	if(mover_ref?.resolve() != mover)
@@ -244,7 +248,7 @@
 		to_chat(src, span_notice("Выбрано прежнее движение с округлением цены шага. При следующем подключении включится штатный glide."))
 	else
 		fractional_movement = new(selected == modes[2] ? FRACTIONAL_MOVEMENT_NATIVE : FRACTIONAL_MOVEMENT_QUEUED)
-		to_chat(src, span_notice("Выбран режим: [selected]. Скорость меняется со следующего шага. Транспорт, пуллинг, ИИ и дрейф используют прежнее расписание."))
+		to_chat(src, span_notice("Выбран режим: [selected]. Скорость меняется со следующего шага. Транспорт и ИИ используют прежнее расписание[selected == modes[3] ? ", очередь - ещё и при пуллинге, седоке и в невесомости" : ""]."))
 		if(selected == modes[3])
 			to_chat(src, span_notice("Очередь добавляет один тик визуальной задержки; первый шаг после прерывания требует ещё тик подготовки. Если пакет с сервера приходит по частям, спрайт и камера прыгают на тайл."))
 	last_step_target = 0

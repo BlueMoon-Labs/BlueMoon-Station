@@ -229,3 +229,23 @@
 	TEST_ASSERT_EQUAL(native.animate_movement, SYNC_STEPS, "Отключение штатного режима сохраняет чужую смену анимации")
 	queued_schedule.unwatch()
 	TEST_ASSERT_EQUAL(queued.animate_movement, SLIDE_STEPS, "Отключение очереди возвращает штатную анимацию")
+
+/// Штатный glide платит точную цену и при пуллинге, в невесомости и с седоком: округлённый путь там быстрее бега.
+/datum/unit_test/fractional_movement_native_covers_fallbacks/Run()
+	var/mob/living/simple_animal/fractional_movement_fixture/mover = allocate(/mob/living/simple_animal/fractional_movement_fixture)
+	var/obj/item/pullee = allocate(/obj/item, mover.loc)
+	var/datum/fractional_movement_schedule/schedule = allocate(/datum/fractional_movement_schedule)
+	mover.start_pulling(pullee)
+	TEST_ASSERT_EQUAL(mover.pulling, pullee, "Нужен настоящий пуллинг")
+	var/turf/start = mover.loc
+	TEST_ASSERT(fractional_test_step(schedule, mover, 1.75, EAST, 1000), "Пуллинг обязан идти по дробному расписанию")
+	TEST_ASSERT_EQUAL(pullee.loc, start, "Тащимый предмет обязан пойти следом")
+	TEST_ASSERT_EQUAL(schedule.step_cost, 1.75, "Пуллинг платит точную цену шага")
+	mover.stop_pulling()
+	mover.movement_type |= FLOATING
+	TEST_ASSERT(fractional_test_step(schedule, mover, 1.75, WEST, schedule.next_target), "Невесомость обязана идти по дробному расписанию")
+	mover.movement_type &= ~FLOATING
+	var/mob/living/simple_animal/fractional_movement_fixture/rider = allocate(/mob/living/simple_animal/fractional_movement_fixture, mover.loc)
+	LAZYADD(mover.buckled_mobs, rider)
+	TEST_ASSERT(fractional_test_step(schedule, mover, 1.75, EAST, schedule.next_target), "Седок на спине не выключает дробное расписание")
+	LAZYREMOVE(mover.buckled_mobs, rider)
