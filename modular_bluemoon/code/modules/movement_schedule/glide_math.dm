@@ -182,13 +182,6 @@ GLOBAL_VAR_INIT(movement_reschedule_applied, 0)
 		relief = min(1, abs(size - 1) / cancel_deviation)
 	return movement_quantize_slowdown(anchor_ticks * tick_lag * multiplier * (1 - relief), tick_lag)
 
-// Сверка конфига с сеткой тиков.
-//
-// Некратная задержка движение не ломает - её всё равно выровняют. Она делает
-// конфиг лживым: администратор пишет RUN_DELAY 1.6, а сервер ходит по 1.5, и
-// понять это можно только чтением кода. Молча расходиться с конфигом хуже, чем
-// один раз сказать об этом в лог.
-
 /// Сверяет задержки движения из конфига с текущим тиком. Зовётся при смене
 /// частоты мира, то есть уже после загрузки конфига.
 /proc/movement_audit_config_delays()
@@ -205,4 +198,4 @@ GLOBAL_VAR_INIT(movement_reschedule_applied, 0)
 	var/quantized = movement_quantize_delay(value, world.tick_lag)
 	if(abs(quantized - value) < MOVEMENT_TICK_EPSILON)
 		return
-	log_world("[entry_name] = [value] не кратно тику ([world.tick_lag]ds при [world.fps] fps): шаг всё равно пойдёт по [quantized]ds. Поправь конфиг, чтобы он не врал о скорости.")
+	log_world("[entry_name] = [value] не кратно тику ([world.tick_lag]ds при [world.fps] fps): дробное движение сохраняет цену, прежнее расписание округляет её до [quantized]ds.")
