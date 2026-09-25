@@ -157,6 +157,25 @@
 						/mob/living/simple_animal/hostile/clockwork/clocktank = 2)
 	triggersound = 'modular_bluemoon/sound/ambience/storm/clock_storm.ogg'
 
+/datum/round_event_control/portal_storm_mise
+	name = "Portal Storm: Mise"
+	typepath = /datum/round_event/portal_storm/portal_storm_mise
+	weight = 12
+	min_players = 40
+	earliest_start = 60 MINUTES
+	max_occurrences = 1
+	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
+
+/datum/round_event/portal_storm/portal_storm_mise
+	boss_types = list(/mob/living/simple_animal/hostile/mouse/admin = 1)
+	hostile_types = list(/mob/living/simple_animal/hostile/syndimouse = 8,\
+						/mob/living/simple_animal/mouse/boommouse = 8,\
+						/mob/living/simple_animal/hostile/bigmouse = 6,\
+						/mob/living/simple_animal/hostile/mouse/mentor = 4,\
+						/mob/living/simple_animal/mouse = 20)
+	triggersound = 'modular_bluemoon/sound/ambience/storm/syndie_storm.ogg'
+
 /datum/round_event/portal_storm
 	start_when = 7
 	end_when = 999
