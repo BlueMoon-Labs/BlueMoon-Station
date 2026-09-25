@@ -200,6 +200,7 @@ const renderStoredBook = async () => {
     hunt: {
       target_name: null, target_role: null, target_status: 'Цели ещё нет.', can_retarget: true,
       retarget_seconds: 0, sacrifices_required: 5, influences_harvested: 2, influence_limit: 6,
+      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3 },
     },
   };
   const store = createStore(combineReducers({ backend: backendReducer }));

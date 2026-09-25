@@ -51,6 +51,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
       target_name: null, target_role: null, target_status: 'Цели ещё нет.',
       can_retarget: true, retarget_seconds: 0, sacrifices_required: 5,
       influences_harvested: 0, influence_limit: 6,
+      pocket: { duration: 40, warning: 10, pull: 1, tear: 10, cooldown: 60, hold: 3 },
     },
     ...overrides,
   };
@@ -119,7 +120,7 @@ describe('Гримуар еретика', () => {
     setupStore(makeData());
     await renderBook();
     fireEvent.click(screen.getByRole('button', { name: path.name }));
-    expect(await screen.findByText(`Врождённая черта — ${path.innate_name}`)).toBeTruthy();
+    expect(await screen.findByText(`Врождённая черта: ${path.innate_name}`)).toBeTruthy();
     expect(screen.getByText(path.innate_desc!)).toBeTruthy();
     expect(screen.getByText('Действует с выбора пути, без затрат знаний.')).toBeTruthy();
   });
@@ -145,9 +146,15 @@ describe('Гримуар еретика', () => {
     const help = 'Отмена подготовки: Alt+Q или Q. Переназначение — в настройках клавиш.';
     setupStore(makeData({ selected_path: path.id, path_stage: 1, combat_abilities: [ability], ability_hotkey_help: help }));
     await renderBook();
+    const block = screen.getByText('Способности ·').closest('details')!;
+    expect(block.open).toBe(false);
+    const summary = block.querySelector('summary')!;
+    expect(summary.getAttribute('title')).toBe(help);
+    expect(within(summary).getByText('Alt+1').getAttribute('title')).toBe(ability.name);
     const guide = within(screen.getByRole('region', { name: 'Доступные боевые способности' }));
-    expect(guide.getByText(help)).toBeTruthy();
     expect(within(guide.getByRole('button', { name: ability.name })).getByText('Alt+1')).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    expect(screen.getByText(help).closest('details')?.getAttribute('data-topic')).toBe('hotkeys');
   });
 
   test('обновляет клавиши в открытой книге и явно показывает снятое назначение', async () => {
@@ -568,10 +575,11 @@ describe('Гримуар еретика', () => {
     setupStore(data);
     await renderBook();
     expect(screen.getByText('Созвездия')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Созвездия/ }));
     expect(screen.getByText('Замкните звёздную ловушку.')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
     expect(screen.getByText(/изучить 8 разломов/)).toBeTruthy();
-    expect(screen.getByText(/В начале раунда — 2 разлома. Затем каждые 5 мин/)).toBeTruthy();
+    expect(screen.getByText(/В начале раунда: 2 разлома. Затем каждые 5 мин/)).toBeTruthy();
     expect(screen.getByText(/Совершите 6 жертвоприношений/)).toBeTruthy();
   });
 
@@ -583,6 +591,8 @@ describe('Гримуар еретика', () => {
     data.hunt.deed_tiers = 3;
     const { store } = setupStore(data);
     const view = await renderBook();
+    const row = within(screen.getByRole('region', { name: 'Дело пути' })).getByText('Сожжённые письма').closest('summary')!;
+    expect(row.textContent).toBe('Сожжённые письмаСжигайте бумаги станции.2/5');
     expect(screen.getByRole('heading', { name: 'Дело пути · Сожжённые письма' })).toBeTruthy();
     expect(within(screen.getByRole('region', { name: 'Дело пути' })).getByText(/Ступень/).textContent).toBe('Ступень 2 из 3 · 2 из 5');
     fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
@@ -606,7 +616,7 @@ describe('Гримуар еретика', () => {
 
   test('боевой шаг виден в ведомости и охоте, обновляет доступность и скрывается после завершения дела', async () => {
     const deed = {
-      name: 'Места последнего сна', desc: 'Расстилайте постели.', hint: '',
+      name: 'Оболы на глазах', desc: 'Кладите оболы на глаза.', hint: '',
       tier: 0, max_tier: 3, progress: 0, goal: 2, counted: 0,
       combat_hint: 'Сместите душу назначенной цели и заставьте связь истощить её.',
       combat_available: true,
@@ -635,7 +645,24 @@ describe('Гримуар еретика', () => {
     await renderBook();
     fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
     expect(screen.getByText(new RegExp(`изучить ${count} ${noun}\\.`))).toBeTruthy();
-    expect(screen.getByText(new RegExp(`В начале раунда — ${count} ${noun}\\.`))).toBeTruthy();
+    expect(screen.getByText(new RegExp(`В начале раунда: ${count} ${noun}\\.`))).toBeTruthy();
+  });
+
+  test('помощь объясняет изнанку числами сервера, а тема охоты ведёт к ней', async () => {
+    const data = makeData();
+    data.hunt.pocket = { duration: 35, warning: 7, pull: 2, tear: 12, cooldown: 90, hold: 4 };
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const topic = () => screen.getByText('Изнанка', { selector: 'summary' }).closest('details')!;
+    expect(topic().getAttribute('data-topic')).toBe('pocket');
+    expect(topic().open).toBe(false);
+    expect(within(topic()).getByText(/«Увести за руну», 2 сек\./)).toBeTruthy();
+    expect(within(topic()).getByText(/держится 35 сек\., за 7 до конца/)).toBeTruthy();
+    expect(within(topic()).getByText(/цель 4 сек\. не может двинуться/)).toBeTruthy();
+    expect(within(topic()).getByText(/руками его рвут 12 сек\. Снова открыть - через 90 сек\./)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'изнанке', hidden: true }));
+    expect(topic().open).toBe(true);
   });
 
   test('отсчёт смены цели идёт без пакетов сервера и сохраняется между главами', async () => {
@@ -658,5 +685,270 @@ describe('Гримуар еретика', () => {
     } finally {
       jest.useRealTimers();
     }
+  });
+});
+
+const structuredGlass = (overrides: Partial<ForbiddenLoreData> = {}) => {
+  const data = makeData({ selected_path: 'Glass', path_stage: 1, ...overrides });
+  const casket = data.knowledge.find((entry) => entry.id === '/datum/eldritch_knowledge/glass/second')!;
+  Object.assign(casket, {
+    name: 'Витраж', available: true, reason: '', role: 'capture', flavour: 'Свет лёг цветными плитками.',
+    summary: 'Запирает поверженную цель в саркофаг на 10 секунд.',
+    details: ['Цель в 3 клетках.', 'Стекло нарастает секунду.', 'Прочность 90.', 'После выхода минута защиты.', 'Нулевой жезл рассеивает.', 'Перезарядка 45 секунд.'],
+    desc: 'Запирает поверженную цель в саркофаг на 10 секунд. Цель в 3 клетках. Стекло нарастает секунду.',
+  });
+  data.rituals.push({
+    id: casket.id, name: casket.name, desc: casket.summary!, ascension: false, duration: 5,
+    hints: ['Сердце кладут рядом.', 'Цель держат неподвижно.'],
+    ingredients: [{ name: 'Лист стекла', amount: 2 }],
+  });
+  return { data, casket };
+};
+
+describe('Структурированный кодекс', () => {
+  test('знание показывает лид, роль и кнопку над фактами, а лишние факты прячет под кнопкой Ещё', async () => {
+    const { data, casket } = structuredGlass();
+    const { topic } = setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: /Витраж, доступно/ }));
+    const right = within(screen.getByRole('article', { name: 'Правая страница' }));
+    const lead = right.getByText(casket.summary!);
+    expect(lead.className).toContain('HereticBook__lead');
+    expect(right.getByText('Захват').closest('.HereticBook__role--capture')).toBeTruthy();
+    expect(right.getByText('Доступно')).toBeTruthy();
+    const research = right.getByRole('button', { name: 'Изучить · 2 очк. знаний' });
+    const firstDetail = right.getByText('Цель в 3 клетках.');
+    expect(lead.compareDocumentPosition(research) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(research.compareDocumentPosition(firstDetail) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(right.queryByText('Нулевой жезл рассеивает.')).toBeNull();
+    const more = right.getByRole('button', { name: 'Ещё 2' });
+    expect(more.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(more);
+    expect(right.getByText('Нулевой жезл рассеивает.')).toBeTruthy();
+    expect(right.getByText('Перезарядка 45 секунд.')).toBeTruthy();
+    expect(right.getByRole('button', { name: 'Свернуть' }).getAttribute('aria-expanded')).toBe('true');
+    expect(right.queryByText(casket.desc)).toBeNull();
+    const flavour = right.getByText(casket.flavour);
+    expect(flavour.className).toContain('HereticBook__flavour');
+    expect(firstDetail.compareDocumentPosition(flavour) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(research);
+    expect(readActions(topic)).toEqual([{ type: 'act/research', payload: { id: casket.id } }]);
+  });
+
+  test('рецепт знания не повторяет лид и общие правила руны, а подсказки идут списком', async () => {
+    const { data, casket } = structuredGlass();
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: /Витраж, доступно/ }));
+    const right = within(screen.getByRole('article', { name: 'Правая страница' }));
+    expect(right.getAllByText(casket.summary!)).toHaveLength(1);
+    const recipe = within(right.getByRole('region', { name: 'Компоненты обряда' }));
+    expect(recipe.getByText('Лист стекла')).toBeTruthy();
+    expect(recipe.getByText('Сердце кладут рядом.').tagName).toBe('LI');
+    expect(recipe.getByText('Время проведения: 5 сек.')).toBeTruthy();
+    expect(screen.queryByText(/Предметы в руках/)).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    fireEvent.click(screen.getByRole('button', { name: /Витраж/ }));
+    expect(screen.getAllByText(casket.summary!)).toHaveLength(1);
+    expect(screen.queryByText('Цель в 3 клетках.')).toBeNull();
+    expect(screen.getAllByText('Предметы в руках, на теле и в сумках не считаются.')).toHaveLength(1);
+  });
+
+  test('знание без лида показывает прежнее описание, но кнопка изучения стоит над ним', async () => {
+    const data = makeData({ selected_path: 'Ash', path_stage: 1 });
+    data.knowledge[1].available = true;
+    data.knowledge[1].reason = '';
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: /Искусство: Пепел/ }));
+    const right = within(screen.getByRole('article', { name: 'Правая страница' }));
+    const research = right.getByRole('button', { name: 'Изучить · 2 очк. знаний' });
+    const desc = right.getByText('Продолжение пути.');
+    expect(research.compareDocumentPosition(desc) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(right.queryByRole('button', { name: /Ещё/ })).toBeNull();
+    expect(right.queryByText(/Ремесло|Захват/)).toBeNull();
+  });
+
+  test('дерево помечает записи ролью значком и подписью', async () => {
+    const { data } = structuredGlass();
+    setupStore(data);
+    const view = await renderBook();
+    const tree = screen.getByRole('navigation', { name: 'Дерево знаний' });
+    const line = within(tree).getByRole('button', { name: 'Витраж, доступно, 2 очк. знаний, Захват' });
+    const mark = line.querySelector('.HereticBook__roleMark');
+    expect(mark?.getAttribute('title')).toBe('Захват');
+    expect(mark?.classList.contains('HereticBook__role--capture')).toBe(true);
+    expect(within(tree).getByRole('button', { name: 'Обет: Стекло, доступно, 0 очк. знаний' }).querySelector('.HereticBook__roleMark')).toBeNull();
+    expect(view.container.querySelectorAll('.HereticBook__roleMark')).toHaveLength(1);
+  });
+
+  test('путь показывает шапку, модель, стороны списками и совет, а старый путь - прежние тексты', async () => {
+    const data = makeData();
+    const glass = data.paths.find((path) => path.id === 'Glass')!;
+    Object.assign(glass, {
+      tagline: 'Смотрит через окна и запирает жертву в витраж.',
+      craft: 'Хваткой настройте окно.', capture: 'Витраж на 10 секунд.', escape: 'Шаг сквозь своё окно.',
+      strength_points: ['Глаза по всей станции.', 'Луч без подготовки.', 'Саркофаг для обряда.'],
+      weakness_points: ['Нулевой жезл снимает настройку.', 'Витраж видно заранее.', 'Удары бьют сильнее.'],
+      practice: 'Настройте окно и шагните сквозь него.',
+    });
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: 'Стекло' }));
+    expect(screen.getByText(glass.tagline!).className).toContain('HereticBook__lead');
+    expect(screen.queryByText(glass.desc)).toBeNull();
+    const model = within(screen.getByLabelText('Ремесло, захват и уход'));
+    expect(model.getByText('Ремесло').nextElementSibling?.textContent).toBe(glass.craft);
+    expect(model.getByText('Захват').nextElementSibling?.textContent).toBe(glass.capture);
+    expect(model.getByText('Уход').nextElementSibling?.textContent).toBe(glass.escape);
+    const strong = within(screen.getByRole('region', { name: 'Сильные стороны' }));
+    expect(strong.getAllByRole('listitem').map((item) => item.textContent)).toEqual(glass.strength_points);
+    const weak = within(screen.getByRole('region', { name: 'Слабые стороны' }));
+    expect(weak.getAllByRole('listitem').map((item) => item.textContent)).toEqual(glass.weakness_points);
+    expect(screen.getByText('Совет.').parentElement?.textContent).toBe(`Совет. ${glass.practice}`);
+    expect(screen.getByText('Врождённая черта: Черта: Стекло').closest('details')?.open).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'Пепел' }));
+    expect(screen.getByText('Учение: Пепел.')).toBeTruthy();
+    expect(screen.queryByText('Ремесло')).toBeNull();
+    expect(within(screen.getByRole('region', { name: 'Сильные стороны' })).getByText('Своя тактика.').tagName).toBe('P');
+    expect(screen.queryByText(/^Совет/)).toBeNull();
+  });
+
+  test('ведомость показывает запас и состояние сразу, правила - в раскрытии', async () => {
+    setupStore(makeData({
+      selected_path: 'Glass', path_stage: 1,
+      combat_resource: {
+        name: 'Грани', value: 2, max: 4, description: 'Старое описание. Призм: 1 из 3.',
+        rules: ['Грань возвращается каждые 4 секунды.', 'Витраж стоит 2 грани.'], state: 'Призм: 1 из 3.',
+      },
+    }));
+    await renderBook();
+    const ledger = within(screen.getByRole('complementary', { name: 'Ваши знания и сила' }));
+    const toggle = ledger.getByRole('button', { name: /^Грани/ });
+    expect(ledger.getByText('Призм: 1 из 3.')).toBeTruthy();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.queryByRole('region', { name: 'Правила запаса' })).toBeNull();
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    const rules = screen.getByRole('region', { name: 'Правила запаса' });
+    expect(rules.closest('.HereticBook__pageScroll')).toBe(screen.getByLabelText('Текст левой страницы'));
+    expect(rules.closest('aside')).toBeNull();
+    expect(within(rules).getAllByRole('listitem').map((item) => item.textContent)).toEqual(['Грань возвращается каждые 4 секунды.', 'Витраж стоит 2 грани.']);
+    expect(screen.queryByText(/Старое описание/)).toBeNull();
+    fireEvent.click(within(rules).getByRole('button', { name: 'Свернуть' }));
+    expect(screen.queryByRole('region', { name: 'Правила запаса' })).toBeNull();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  test('способности свёрнуты с клавишами в строке, summary - отдельной строкой под именем, страница - только desc', async () => {
+    const ability = { id: 'casket', name: 'Витраж', summary: 'Саркофаг на 10 секунд.', desc: 'Полное описание Витража.', usage: 'Укажите цель.', hotkey: 'Alt+4' };
+    const unbound = { id: 'grasp', name: 'Хватка Мансуса', desc: 'Хватка.', usage: 'Коснитесь цели.' };
+    setupStore(makeData({ selected_path: 'Glass', path_stage: 1, combat_abilities: [ability, unbound] }));
+    await renderBook();
+    const block = screen.getByText('Способности ·').closest('details')!;
+    expect(block.open).toBe(false);
+    expect(Array.from(block.querySelectorAll('summary kbd')).map((key) => key.textContent)).toEqual(['Alt+4']);
+    fireEvent.click(block.querySelector('summary')!);
+    const button = screen.getByRole('button', { name: 'Витраж' });
+    const summary = within(button).getByText(ability.summary);
+    expect(summary.className).toBe('HereticBook__abilitySummary');
+    expect(summary.parentElement).toBe(button);
+    expect(within(button).getByText('Витраж').closest('.HereticBook__abilityHead')).toBeTruthy();
+    expect(within(button).getByText('Alt+4')).toBeTruthy();
+    expect(button.getAttribute('title')).toBe(ability.desc);
+    fireEvent.click(button);
+    const right = within(screen.getByRole('article', { name: 'Правая страница' }));
+    expect(right.getByText(ability.desc)).toBeTruthy();
+    expect(right.queryByText(ability.summary)).toBeNull();
+  });
+
+  test('строки подготовки, дела и способностей раскрываются одним маркером', async () => {
+    setupStore(makeData({
+      selected_path: 'Glass', path_stage: 1,
+      combat_abilities: [{ id: 'casket', name: 'Витраж', summary: 'Саркофаг на 10 секунд.', desc: 'Витраж.', usage: 'Укажите цель.' }],
+      preparation: {
+        blade_ready: false, blade_status: 'Клинка при вас нет.',
+        armor_ready: false, armor_status: 'Поднимите капюшон.',
+        heart: { ready: false, can_call: true, status: 'Сердце за завесой.', action_label: 'Призвать своё сердце' },
+      },
+      deed: { name: 'Настроенные стёкла', desc: 'Настройте стёкла.', hint: '', next_step: 'Коснитесь окна.', tier: 0, max_tier: 3, progress: 1, goal: 3, counted: 1 },
+    }));
+    await renderBook();
+    const rows = [
+      screen.getByText('Подготовка к охоте · 0/3'),
+      within(screen.getByRole('region', { name: 'Дело пути' })).getByText('Настроенные стёкла').closest('summary'),
+      screen.getByText('Способности ·').closest('summary'),
+    ].map((summary) => summary!.closest('details')!);
+    for (const row of rows) {
+      expect(row.classList.contains('HereticBook__guideBlock')).toBe(true);
+      const summary = row.firstElementChild!;
+      expect(summary.tagName).toBe('SUMMARY');
+      const marker = summary.firstElementChild!;
+      expect(marker.className).toBe('HereticBook__guideMarker');
+      expect(marker.getAttribute('aria-hidden')).toBe('true');
+      expect(marker.textContent).toBe('');
+      expect(summary.querySelectorAll('.HereticBook__guideMarker')).toHaveLength(1);
+    }
+  });
+
+  test('подсказки над деревом укладываются в строку каждая, а дерево стоит сразу под ними', async () => {
+    const abilities = [1, 2, 3, 4].map((slot) => ({ id: `spell${slot}`, name: `Способность ${slot}`, summary: `Строка ${slot}.`, desc: `Описание ${slot}.`, usage: 'Нажмите.', hotkey: `Alt+${slot}` }));
+    const nextStep = 'Настройте Хваткой Мансуса окно или зеркало в ещё не зачтённом отделе, где вас никто не видел.';
+    setupStore(makeData({
+      selected_path: 'Glass', path_stage: 1, combat_abilities: abilities,
+      deed: { name: 'Глазки', desc: 'Настраивайте стёкла.', hint: '', next_step: nextStep, tier: 0, max_tier: 3, progress: 0, goal: 2, counted: 0 },
+      preparation: {
+        blade_ready: false, blade_status: 'Клинка нет.', armor_ready: false, armor_status: 'Брони нет.',
+        heart: { ready: true, can_call: true, status: 'Сердце при вас.', action_label: 'Спрятать сердце' },
+      },
+    }));
+    await renderBook();
+    const guide = screen.getByRole('complementary', { name: 'Подсказки по развитию' });
+    const blocks = Array.from(guide.querySelectorAll('details')).filter((block) => !block.parentElement?.closest('details'));
+    expect(blocks).toHaveLength(3);
+    expect(blocks.every((block) => !block.open)).toBe(true);
+    const deedRow = guide.querySelector('summary.HereticBook__deedRow') as HTMLElement;
+    expect(within(deedRow).getByText(nextStep).className).toBe('HereticBook__deedStep');
+    expect(deedRow.getAttribute('title')).toBe(nextStep);
+    expect(within(deedRow).getByText('0/2')).toBeTruthy();
+    expect(within(blocks[2].querySelector('summary')!).getAllByText(/^Alt\+\d$/)).toHaveLength(4);
+    const tree = screen.getByRole('navigation', { name: 'Дерево знаний' });
+    expect(guide.compareDocumentPosition(tree) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(tree).getByRole('button', { name: /Обет: Стекло/ })).toBeTruthy();
+    fireEvent.click(deedRow);
+    expect(blocks[1].open).toBe(true);
+    expect(within(blocks[1]).getByText('Следующий шаг:').parentElement?.textContent).toBe(`Следующий шаг: ${nextStep}`);
+  });
+
+  test('помощь разбита на темы, охота ведёт в тему правил жертвы', async () => {
+    const data = makeData();
+    data.hunt.sacrifices_required = 3;
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const topics = Array.from(document.querySelectorAll('details.HereticBook__topic')) as HTMLDetailsElement[];
+    expect(topics.map((topic) => topic.querySelector('summary')?.textContent)).toEqual([
+      'Начало', 'Путь и знания', 'Разломы', 'Охота и жертва', 'Изнанка', 'Мансус', 'Удержание СБ', 'Вознесение', 'Дело пути', 'Горячие клавиши',
+    ]);
+    expect(topics.filter((topic) => topic.open).map((topic) => topic.dataset.topic)).toEqual(['start']);
+    for (const topic of topics) {
+      const points = topic.querySelectorAll('li').length + topic.querySelectorAll('.HereticBook__topicBody > p').length;
+      expect(points).toBeGreaterThanOrEqual(2);
+      expect(points).toBeLessThanOrEqual(5);
+    }
+    expect(screen.getByText(/Совершите 3 жертвоприношения и изучите/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Охота' }));
+    expect(screen.queryByText(/Одна душа - один раз/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Все правила жертвы - в Помощи' }));
+    expect(screen.getByRole('tabpanel', { name: 'Помощь' })).toBeTruthy();
+    const opened = (Array.from(document.querySelectorAll('details.HereticBook__topic')) as HTMLDetailsElement[]).filter((topic) => topic.open);
+    expect(opened.map((topic) => topic.dataset.topic)).toEqual(['hunt']);
+    expect(within(opened[0]).getByText(/Одна душа - один раз/)).toBeTruthy();
+    expect(within(opened[0]).getByText(/Перенос жертвы или прерывание срывают обряд/)).toBeTruthy();
+    const ascension = document.querySelector('details[data-topic="ascension"]')!;
+    expect(within(ascension as HTMLElement).getByText(/между попытками не меньше 3 минут/)).toBeTruthy();
+    expect(within(ascension as HTMLElement).getByText(/подсвечиваются зелёным/)).toBeTruthy();
+    const hotkeys = document.querySelector('details[data-topic="hotkeys"]')!;
+    expect(hotkeys.textContent).not.toMatch(/по умолчанию Q|видны в главе Знания/);
   });
 });

@@ -181,6 +181,7 @@
 #include "heretic_wax.dm"
 #include "heretic_new_paths.dm"
 #include "heretic_books.dm"
+#include "heretic_codex.dm"
 #include "heretic_progression.dm"
 #include "heretic_mansus.dm"
 #include "heretic_pocket.dm"

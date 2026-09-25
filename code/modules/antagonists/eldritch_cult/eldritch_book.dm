@@ -71,14 +71,16 @@
 	drawing = TRUE
 	to_chat(user, span_notice("Вы начинаете чертить руну трансмутации."))
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	var/obj/effect/temp_visual/heretic_ritual/trace = new(center, heretic.selected_path, 9 SECONDS, HERETIC_RUNE_VISUAL_TRACE)
-	var/completed = do_after(user, 8 SECONDS, target = center)
+	var/draw_time = 8 SECONDS * heretic_ritual_speed_multiplier(user, center)
+	var/obj/effect/temp_visual/heretic_ritual/trace = new(center, heretic.selected_path, draw_time + 1 SECONDS, HERETIC_RUNE_VISUAL_TRACE)
+	var/completed = do_after(user, draw_time, target = center)
 	drawing = FALSE
 	if(!completed || !can_draw_rune(center, user))
 		qdel(trace)
 		return FALSE
 	trace.finish()
 	var/obj/effect/eldritch/big/rune = new(center)
+	rune.drawn_by = WEAKREF(user.mind)
 	heretic = IS_HERETIC(user)
 	rune.inscribe_path(heretic.selected_path)
 	new /obj/effect/temp_visual/heretic_script(center, heretic.selected_path)
@@ -174,6 +176,7 @@
 	if(catalog)
 		return catalog
 	var/list/data = list("paths" = list(), "knowledge" = list(), "rituals" = list())
+	var/list/entries = list()
 	for(var/path_id in GLOB.heretic_paths)
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 		var/datum/heretic_innate/innate = path.innate_type
@@ -181,28 +184,37 @@
 			"id" = path.id,
 			"name" = path.name,
 			"desc" = path.desc,
+			"tagline" = path.tagline,
+			"craft" = path.craft_summary,
+			"capture" = path.capture_summary,
+			"escape" = path.escape_summary,
+			"strength_points" = path.strength_points?.Copy() || list(),
+			"weakness_points" = path.weakness_points?.Copy() || list(),
+			"practice" = path.combat_practice,
 			"innate_name" = initial(innate.name),
 			"innate_desc" = initial(innate.desc),
 			"strengths" = list(path.strengths),
 			"weaknesses" = list(path.weaknesses),
 		))
 		for(var/index in 1 to length(path.knowledge))
-			data["knowledge"] += list(knowledge_data(path.knowledge[index], index, "path", path.id))
+			entries += list(list(path.knowledge[index], index, "path", path.id))
 	for(var/knowledge_type in GLOB.heretic_side_knowledge)
-		data["knowledge"] += list(knowledge_data(knowledge_type, GLOB.heretic_side_knowledge[knowledge_type], "side", PATH_SIDE))
+		entries += list(list(knowledge_type, GLOB.heretic_side_knowledge[knowledge_type], "side", PATH_SIDE))
 	for(var/knowledge_type in GLOB.heretic_start_knowledge)
-		data["knowledge"] += list(knowledge_data(knowledge_type, 0, "start", "Start"))
-	for(var/list/entry as anything in data["knowledge"])
-		var/knowledge_type = text2path(entry["id"])
-		// Списки рецепта создаются на экземпляре и недоступны через initial() пути типа.
+		entries += list(list(knowledge_type, 0, "start", "Start"))
+	for(var/list/entry as anything in entries)
+		var/knowledge_type = entry[1]
+		// Списки и собранный из них desc есть только у экземпляра.
 		var/datum/eldritch_knowledge/knowledge = new knowledge_type
+		data["knowledge"] += list(knowledge_data(knowledge, entry[2], entry[3], entry[4]))
 		if(length(knowledge.required_atoms))
 			data["rituals"] += list(list(
-				"id" = entry["id"],
-				"name" = entry["name"],
-				"desc" = entry["desc"],
+				"id" = "[knowledge.type]",
+				"name" = knowledge.name,
+				"desc" = knowledge.summary || knowledge.desc,
 				"ingredients" = ritual_ingredients(knowledge),
 				"hint" = knowledge.ritual_hint,
+				"hints" = knowledge.ritual_hints?.Copy() || list(),
 				"duration" = knowledge.ritual_time / (1 SECONDS),
 				"ascension" = istype(knowledge, /datum/eldritch_knowledge/final_eldritch),
 			))
@@ -263,6 +275,14 @@
 		"influence_limit" = HERETIC_INFLUENCE_LIMIT,
 		"influence_initial_count" = HERETIC_INFLUENCE_INITIAL_COUNT,
 		"influence_interval_minutes" = HERETIC_INFLUENCE_INTERVAL / (1 MINUTES),
+		"pocket" = list(
+			"duration" = HERETIC_POCKET_DURATION / (1 SECONDS),
+			"warning" = HERETIC_POCKET_WARNING / (1 SECONDS),
+			"pull" = HERETIC_POCKET_PULL_TIME / (1 SECONDS),
+			"tear" = HERETIC_POCKET_TEAR_TIME / (1 SECONDS),
+			"cooldown" = HERETIC_POCKET_COOLDOWN / (1 SECONDS),
+			"hold" = HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS),
+		),
 	)
 	return data
 
@@ -287,7 +307,7 @@
 			var/datum/keybinding/binding = GLOB.keybindings_by_name["ability_slot_[slot]"]
 			hotkey = binding.format_keys(preferences)
 			usage += " Горячая клавиша: [hotkey]. Переназначение: «Способность [slot]» в настройках клавиш."
-		abilities += list(list("id" = "[spell.type]", "name" = spell.name, "desc" = spell.desc, "usage" = usage, "hotkey" = hotkey))
+		abilities += list(list("id" = "[spell.type]", "name" = spell.name, "summary" = spell.summary, "desc" = spell.desc, "usage" = usage, "hotkey" = hotkey))
 	return abilities
 
 /obj/item/forbidden_book/proc/knowledge_state(datum/antagonist/heretic/heretic)
@@ -311,19 +331,22 @@
 		)
 	return cached_knowledge_state
 
-/obj/item/forbidden_book/proc/knowledge_data(datum/eldritch_knowledge/knowledge_type, stage, kind, path)
+/obj/item/forbidden_book/proc/knowledge_data(datum/eldritch_knowledge/knowledge, stage, kind, path)
 	return list(
-		"id" = "[knowledge_type]",
-		"name" = initial(knowledge_type.name),
-		"desc" = initial(knowledge_type.desc),
-		"flavour" = initial(knowledge_type.gain_text),
-		"cost" = initial(knowledge_type.cost),
-		"sacrifices" = initial(knowledge_type.sacs_needed),
+		"id" = "[knowledge.type]",
+		"name" = knowledge.name,
+		"desc" = knowledge.desc,
+		"summary" = knowledge.summary,
+		"details" = knowledge.details?.Copy() || list(),
+		"role" = knowledge.role,
+		"flavour" = knowledge.gain_text,
+		"cost" = knowledge.cost,
+		"sacrifices" = knowledge.sacs_needed,
 		"path" = path,
 		"stage" = stage,
 		"kind" = kind,
-		"starter_armor" = knowledge_type == /datum/eldritch_knowledge/armor,
-		"passive_description" = initial(knowledge_type.passive_desc),
+		"starter_armor" = knowledge.type == /datum/eldritch_knowledge/armor,
+		"passive_description" = knowledge.passive_desc,
 	)
 
 /obj/item/forbidden_book/proc/ritual_ingredients(datum/eldritch_knowledge/knowledge)

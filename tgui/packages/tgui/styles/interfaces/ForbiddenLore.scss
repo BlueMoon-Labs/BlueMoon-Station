@@ -140,7 +140,55 @@
   &__signed { margin-left: auto; font-size: 15px; }
   &__illumination { display: block; width: 220px; max-width: 100%; height: 145px; margin: 0 auto 16px; color: var(--accent); overflow: visible; }
   &__illumination text { fill: currentColor; stroke: none; font: 11px Georgia, serif; }
-  &__promises { font-size: 14px; margin: 18px 0; dt { font-weight: 700; margin-top: 14px; } dd { padding-left: 12px; border-left: 1px solid var(--rule); margin-top: 5px; } p { margin-bottom: 4px; } }
+  &__lead { font-size: 17px; line-height: 1.45; margin: 2px 0 6px !important; color: var(--ink); }
+  &__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 12px; color: var(--faded); margin: -10px 0 12px !important; }
+  &__status { font-style: italic; }
+  &__status--known { color: var(--accent); }
+  &__role { --role-color: var(--accent); display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border: 1px solid var(--role-color); border-radius: 10px; line-height: 19px; color: var(--ink); > span { color: var(--role-color); } }
+  &__roleMark { --role-color: var(--accent); flex-shrink: 0; font-size: 12px; color: var(--role-color); }
+  &__role--craft { --role-color: #b07d3a; }
+  &__role--capture { --role-color: #8e5bb5; }
+  &__role--escape { --role-color: #3f8f8a; }
+  &__role--attack { --role-color: #c0504d; }
+  &__role--control { --role-color: #4f7fc0; }
+  &__role--defense { --role-color: #7a8a99; }
+  &__role--support { --role-color: #5d9c4a; }
+  &__role--passive { --role-color: #9a8a70; }
+  &__role--relic { --role-color: #b8943c; }
+  &__role--mark { --role-color: #c46a9a; }
+  &__role--grasp { --role-color: #6b6fc7; }
+  &__role--ritual { --role-color: #a0663c; }
+  &__role--ascension { --role-color: #d0a030; }
+  &__details {
+    list-style: none;
+    margin: 10px 0 12px;
+    padding: 0;
+    li { position: relative; padding-left: 16px; margin: 6px 0; }
+    li::before { content: ''; position: absolute; left: 3px; top: .62em; width: 5px; height: 5px; background: var(--accent); transform: rotate(45deg); }
+  }
+  &__more { background: none; border: 0; padding: 2px 0 2px 16px; color: var(--accent); font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; &:hover { color: var(--ink); } }
+  &__flavour { font-size: 12px; font-style: italic; color: var(--faded); margin: 24px 0 6px !important; padding-top: 8px; border-top: 1px solid var(--rule); }
+  &__passive { margin-top: 18px; h3 { margin-top: 0; } }
+  &__model {
+    display: grid;
+    gap: 6px;
+    margin: 14px 0;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: #ffffff14;
+    font-size: 14px;
+    > div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+    dt { font-weight: 700; font-size: 12px; letter-spacing: .03em; color: var(--faded); }
+  }
+  &__sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin: 12px 0; font-size: 14px; h3 { margin: 6px 0 4px; font-size: 15px; } p { margin-bottom: 6px; } }
+  &__sides--stacked { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  &__advice { font-size: 13px; line-height: 1.45; border-left: 3px solid var(--accent); background: #ffffff14; padding: 6px 10px; margin: 14px 0 !important; }
+  &__innate { margin: 12px 0; font-size: 14px; summary { cursor: pointer; font-weight: 700; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } p { margin: 6px 0; } }
+  &__guideBlock { margin: 4px 0; summary { cursor: pointer; font-weight: 700; color: var(--ink); } > summary { display: flex; align-items: baseline; gap: 6px; list-style: none; } > summary::-webkit-details-marker { display: none; } > summary > .HereticBook__guideMarker { flex-shrink: 0; color: var(--faded); font-weight: 400; } > summary > .HereticBook__guideMarker::before { content: '▸'; } &[open] > summary > .HereticBook__guideMarker::before { content: '▾'; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } section { margin-top: 6px; } }
+  &__topic { border-bottom: 1px solid var(--rule); padding: 7px 0; summary { cursor: pointer; font-weight: 700; font-size: 16px; } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } }
+  &__topicBody { padding: 4px 0 2px; p { margin: 6px 0; } }
+  &__ritualRules { font-size: 13px; color: var(--faded); }
   &__pathOutline { margin: 18px 0; font-size: 12px; summary { cursor: pointer; font-style: italic; color: var(--accent); } summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; } ol { padding: 0; margin: 15px 0; list-style: none; } li { display: flex; gap: 7px; align-items: baseline; margin: 9px 0; } li > span:last-child { flex-shrink: 0; } }
   &__inscribe,
   &__inscribe.Button {
@@ -166,15 +214,32 @@
   &__balances { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; dd { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; } }
   &__resource {
     margin-top: 10px;
-    summary { cursor: pointer; color: var(--ink); strong { display: inline-block; margin-left: 8px; font-weight: 400; font-variant-numeric: tabular-nums; } }
+    summary { cursor: pointer; color: var(--ink); }
     summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    details p { margin-top: 8px; max-height: 100px; overflow: auto; }
     meter { display: block; appearance: none; width: 100%; height: 5px; margin: 8px 0; background: #6b5b4425; border: 0; }
     meter::-webkit-meter-bar { background: #6b5b4425; border: 0; border-radius: 0; height: 4px; }
     meter::-webkit-meter-optimum-value { background: var(--accent); border-radius: 0; }
   }
+  &__resourceState { color: var(--ink); margin: 0 0 4px !important; }
+  &__resourceToggle {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+    border: 0;
+    background: none;
+    padding: 0;
+    text-align: left;
+    color: var(--ink);
+    strong { font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    > span::before { content: '▸ '; color: var(--faded); }
+    &[aria-expanded='true'] > span::before { content: '▾ '; }
+    &:hover > span { color: var(--accent); }
+  }
+  &__resourceRules { margin: 16px 0 4px; padding-top: 8px; border-top: 1px solid var(--rule); font-size: 13px; h3 { margin: 0 0 4px; font-size: 14px; } }
   &__deedLine p { display: flex; justify-content: space-between; gap: 8px; margin: 0; color: var(--ink); strong { font-weight: 400; font-variant-numeric: tabular-nums; white-space: nowrap; } }
-  &__contents h3 { font-size: 14px; text-align: left; margin-top: 22px; margin-bottom: 13px; }
+  &__contents h3 { font-size: 14px; text-align: left; margin-top: 14px; margin-bottom: 6px; }
+  &__contentsTitle { font-size: 20px !important; margin: 14px 0 0 !important; }
   &__guide {
     border-left: 2px solid var(--accent);
     padding-left: 12px;
@@ -188,14 +253,23 @@
   &__abilityLinks { display: flex; flex-direction: column; gap: 3px; }
   &__abilityLink {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
+    flex-direction: column;
+    width: 100%;
+    gap: 1px;
     &.HereticBook__guideLink { text-decoration: none; }
-    > span { text-decoration: underline; text-underline-offset: 3px; }
   }
+  &__abilityHead { display: flex; align-items: baseline; gap: 8px; }
+  &__abilityName { min-width: 0; text-decoration: underline; text-underline-offset: 3px; }
+  &__abilitySummary { color: var(--faded); font-size: 12px; line-height: 1.35; }
+  &__abilityBlock > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; .HereticBook__hotkey { margin-left: 0; font-weight: 400; } }
+  &__deedRow { display: flex; align-items: baseline; gap: 6px; min-width: 0; margin: 0 !important; }
+  &__deedName { flex-shrink: 0; max-width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 700; }
+  &__deedStep { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 400; color: var(--faded); }
+  &__deedCount { flex-shrink: 0; font-weight: 400; font-variant-numeric: tabular-nums; }
+  &__deedBlock > h3 { margin-top: 6px !important; }
   &__hotkey {
     flex-shrink: 0;
+    margin-left: auto;
     max-width: 55%;
     padding: 1px 5px;
     border: 1px solid var(--accent);
@@ -216,7 +290,7 @@
     text-underline-offset: 3px;
     &:hover { color: var(--ink); }
   }
-  &__contentsLine { display: flex; width: 100%; align-items: baseline; gap: 7px; border: 0; background: none; padding: 7px 0; font-size: 14px !important; line-height: 1.4; text-align: left; &[aria-pressed='true'] .HereticBook__indexName { text-decoration: underline; text-underline-offset: 3px; } &:hover { color: var(--accent); } }
+  &__contentsLine { display: flex; width: 100%; align-items: baseline; gap: 7px; border: 0; background: none; padding: 5px 0; font-size: 14px !important; line-height: 1.4; text-align: left; &[aria-pressed='true'] .HereticBook__indexName { text-decoration: underline; text-underline-offset: 3px; } &:hover { color: var(--accent); } }
   &__contentsLine--known { font-style: italic; }
   &__contentsLine--locked { color: var(--faded); }
   &__indexNumber { min-width: 20px; font-size: 11px; color: var(--faded); }
@@ -229,7 +303,6 @@
   &__ingredientsTitle { font-style: italic; font-size: 14px !important; margin-top: 30px !important; }
   &__ingredients { list-style: none; margin: 12px 0 26px; padding: 0; li { display: flex; gap: 12px; align-items: baseline; margin: 10px 0; } strong { font-weight: 400; } }
   &__target { text-align: center; margin: 28px 0 15px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 22px 8px; h3 { font-size: 27px; line-height: 1.2; margin: 13px 0; } }
-  &__steps { padding-left: 24px; margin: 22px 0 25px; li { padding-left: 4px; margin-bottom: 15px; } }
   &__soulMarks { display: flex; justify-content: space-around; color: var(--rule); font-size: 30px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin: 18px 0; }
   &__soulMarks--filled { color: var(--accent); text-shadow: 0 0 1px currentColor; }
   &__toolbar { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 12px; }
@@ -463,13 +536,12 @@
     &__annotation { background: var(--paper); padding: 5px 7px; border-radius: 2px; font-size: 12px; }
     &__contentsLine { font-size: 14px !important; gap: 5px; }
     &__indexNumber { min-width: 14px; }
-    &__promises { font-size: 14px; }
+    &__sides { grid-template-columns: minmax(0, 1fr); gap: 4px; }
     &__ledger { font-size: 12px; }
     &__inscribe, &__inscribe.Button { font-size: 14px; }
     &__spine { width: 30px; left: calc(50% - 15px); }
     &__clasp { width: 13px; right: -7px; }
     &__target h3 { font-size: 22px; }
-    &__steps { padding-left: 18px; li { padding-left: 1px; } }
   }
 }
 
@@ -479,7 +551,6 @@
     &__pageBody { flex: 0 0 auto; }
     &__pageScroll { flex: 0 0 auto; overflow: visible; }
     &__scrollHint { display: none; }
-    &__resource details p { max-height: none; overflow: visible; }
   }
 }
 
