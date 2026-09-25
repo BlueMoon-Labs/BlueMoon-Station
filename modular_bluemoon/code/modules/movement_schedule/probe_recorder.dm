@@ -60,6 +60,10 @@ GLOBAL_LIST_EMPTY(movement_probes)
 		"time" = world.time,
 		"glide" = source.glide_size,
 		"delay" = add_delay,
+		"fractional" = !!user?.fractional_movement?.visual_valid,
+		"render_mode" = user?.fractional_movement?.render_mode,
+		"planned_interval" = user?.fractional_movement?.next_target - world.time,
+		"visual_duration" = user?.fractional_movement?.visual_duration,
 		// Базовая цена, до диагонали. По ней и только по ней видно настоящую
 		// смену скорости: итоговая меняется на каждом повороте.
 		"base" = base_delay,
@@ -80,6 +84,13 @@ GLOBAL_LIST_EMPTY(movement_probes)
 /datum/movement_probe/proc/report()
 	if(length(samples) < 2)
 		return "Зонд записал [length(samples)] шаг(ов) - этого мало, побегай подольше."
+	var/list/first_sample = samples[1]
+	for(var/list/sample as anything in samples)
+		if(sample["render_mode"] != first_sample["render_mode"])
+			return "В записи смешаны режимы движения. Для сравнения начни новую запись после выбора режима."
+	for(var/list/sample as anything in samples)
+		if(sample["fractional"])
+			return fractional_report()
 
 	var/list/intervals = list()
 	var/list/diagonal_intervals = list()
@@ -172,6 +183,43 @@ GLOBAL_LIST_EMPTY(movement_probes)
 	out += outlier_lines(outliers)
 	out += ""
 	out += corrector_line()
+	return out.Join("\n")
+
+/datum/movement_probe/proc/fractional_report()
+	var/list/first_sample = samples[1]
+	var/queued = first_sample["render_mode"] == FRACTIONAL_MOVEMENT_QUEUED
+	var/list/intervals = list()
+	var/requested_total = 0
+	var/actual_total = 0
+	var/late_steps = 0
+	var/max_tail = 0
+	for(var/index in 1 to length(samples) - 1)
+		var/list/current_step = samples[index]
+		var/list/next_step = samples[index + 1]
+		if(!current_step["fractional"] || !next_step["fractional"] || !current_step["moved"] || !next_step["moved"])
+			continue
+		var/ticks = next_step["ticks"]
+		if(ticks <= 0 || ticks > MOVEMENT_PROBE_SERIES_GAP || !movement_probe_key_held_through(next_step["key_time"], current_step["time"]))
+			continue
+		intervals += ticks
+		requested_total += current_step["delay"]
+		actual_total += ticks * world.tick_lag
+		if(ticks * world.tick_lag > current_step["planned_interval"] + MOVEMENT_TICK_EPSILON)
+			late_steps++
+		max_tail = max(max_tail, current_step["visual_duration"] - current_step["planned_interval"])
+	if(!length(intervals))
+		return "Дробное движение: нет непрерывной серии успешных шагов с зажатой клавишей."
+	var/list/out = list(
+		"=== Дробное движение: [length(intervals)] интервалов ===",
+		"Отображение: [queued ? "очередь анимаций, буфер один тик" : "штатный glide, без дополнительного буфера"]",
+		"Сервер: [world.fps] FPS, тик [world.tick_lag * 100] мс",
+		"Интервалы: [movement_probe_histogram_line(movement_probe_histogram(intervals), "тик(ов)")]",
+		"Средняя цена: [round(requested_total * 100 / length(intervals), 0.1)] мс; фактический интервал: [round(actual_total * 100 / length(intervals), 0.1)] мс",
+		"Позже запланированного тика: [late_steps]",
+	)
+	if(queued)
+		out += "Максимальный расчётный хвост анимации: [round(max_tail * 100, 0.1)] мс"
+	out += "Кадры клиента и сетевые задержки зонд не измеряет; плавность проверяется в Dream Seeker."
 	return out.Join("\n")
 
 /// Самые заметные выбросы, от длинного к короткому.
