@@ -7,15 +7,37 @@
 	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_capture.dmi')
 	for(var/state in list("hold_back", "hold_front", "hold_back_glow", "hold_front_glow"))
 		TEST_ASSERT(state in states, "Стейт [state] есть в heretic_capture.dmi.")
-	var/list/rift_states = icon_states('modular_bluemoon/icons/obj/heretic_effects.dmi')
-	for(var/state in list("pocket_rift", "pocket_rift_glow"))
-		TEST_ASSERT(state in rift_states, "Стейт [state] есть в heretic_effects.dmi.")
-	TEST_ASSERT("blade_orbit" in icon_states('modular_bluemoon/icons/obj/heretic_blade_orbit.dmi'), "Клинок отказа берёт стейт орбиты.")
-	TEST_ASSERT("cloud_swirl" in icon_states('modular_bluemoon/icons/obj/heretic_feedback.dmi'), "Пыль прижатия берёт свой стейт.")
+	var/list/rift_states = icon_states('modular_bluemoon/icons/obj/heretic_pocket_rift.dmi')
+	for(var/state in list("rift", "rift_open", "rift_close", "rift_inner", "rift_inner_open"))
+		TEST_ASSERT(state in rift_states, "Стейт [state] есть в heretic_pocket_rift.dmi.")
+		TEST_ASSERT("[state]_glow" in rift_states, "У стейта [state] есть маска кромки.")
+	var/list/large_states = icon_states('modular_bluemoon/icons/obj/heretic_capture_large.dmi')
+	for(var/state in list("door_grip", "blade_refusal"))
+		TEST_ASSERT(state in large_states, "Стейт [state] есть в heretic_capture_large.dmi.")
+		TEST_ASSERT("[state]_glow" in large_states, "У стейта [state] есть маска свечения.")
 	for(var/path_id in GLOB.heretic_paths)
 		for(var/key in list("deposit", "warning", "hit", "escape"))
 			TEST_ASSERT(isfile(heretic_fx_theme_sound(path_id, key)), "У пути [path_id] есть звук [key] для отдачи.")
 		TEST_ASSERT(ispath(heretic_fx_particles(path_id), /particles/heretic_ascension), "У пути [path_id] есть свои частицы.")
+
+/// У каждого захвата пути свой звук защёлкивания, сон-захват звучит своим захватом, у изнанки, прижатия и отказа свои звуки.
+/datum/unit_test/heretic_capture_fx_sounds/Run()
+	var/list/latched = list()
+	for(var/capture_id in list("sand", "cosmic", "lock", "tide", "spirit_hold", "glass", HERETIC_MOON_CAPTURE, "echo", "blood", "blade_throat", "wax"))
+		var/latch = heretic_fx_latch_sound(capture_id)
+		TEST_ASSERT(isfile(latch) && fexists("[latch]"), "У захвата [capture_id] есть свой звук защёлкивания.")
+		TEST_ASSERT(!latched["[latch]"], "Захваты [capture_id] и [latched["[latch]"]] звучат одним файлом.")
+		latched["[latch]"] = capture_id
+	TEST_ASSERT_NULL(heretic_fx_latch_sound("probe"), "Чужая метка своего звука не даёт.")
+	TEST_ASSERT_NULL(heretic_fx_latch_sound(HERETIC_POCKET_CAPTURE), "Удержание изнанки звучит её разрывом, а не защёлкиванием.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/capture_fx_probe/probe = allocate(/datum/eldritch_knowledge/capture_fx_probe)
+	victim.Sleeping(10 SECONDS)
+	var/datum/status_effect/heretic_capture_knockout/knockout = heretic_capture_knock_out(victim, probe, "wax", 10 SECONDS)
+	TEST_ASSERT_EQUAL(heretic_fx_latch_sound(REF(knockout)), heretic_fx_latch_sound("wax"), "Сон по кукле звучит плавящимся воском.")
+	qdel(knockout)
+	for(var/name in list("pocket_open", "pocket_pull", "pocket_enter", "pocket_exit", "pocket_tear", "pocket_seal", "pocket_collapse", "heart_grip", "blade_refusal"))
+		TEST_ASSERT(fexists("modular_bluemoon/sound/heretic/capture/[name].ogg"), "Звук [name] лежит рядом с остальными.")
 
 /// Захват рисует у ног цели одну метку в чернилах пути: второй захват её не дублирует, снятие последнего гасит её.
 /datum/unit_test/heretic_capture_mark/Run()
@@ -112,17 +134,23 @@
 	var/datum/heretic_pocket/pocket = heretic.pocket
 	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_vfx/ghost) in entry, "У входа остаётся тающий силуэт ушедшей цели.")
 	TEST_ASSERT_EQUAL(victim.heretic_capture_mark?.path_id, PATH_GLASS, "Удержание в изнанке рисует метку в чернилах владельца.")
+	TEST_ASSERT_EQUAL(pocket.rift.icon_state, "rift_open", "Разрыв сперва раскрывается из щели.")
+	TEST_ASSERT_EQUAL(pocket.inner_rift.icon_state, "rift_inner_open", "Изнутри разрыв раскрывается своей стороной.")
+	pocket.rift.settle()
+	TEST_ASSERT_EQUAL(pocket.rift.icon_state, "rift", "Раскрытый разрыв переходит в покой.")
 	pocket.warn()
 	TEST_ASSERT(pocket.active, "Предупреждение не закрывает изнанку.")
 	heretic_pocket_tear_fx(pocket.rift, HERETIC_POCKET_TEAR_TIME)
+	TEST_ASSERT(pocket.rift.tear_crackle_timer, "Пока разрыв рвут, его треск нарастает.")
 	heretic_pocket_tear_stop_fx(pocket.rift)
+	TEST_ASSERT_NULL(pocket.rift.tear_crackle_timer, "Отпущенный разрыв перестаёт трещать.")
 	TEST_ASSERT(pocket.leave(user, landing), "Еретик выходит у ремесла.")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_vfx/pocket_seam) in landing, "У выхода воздух расходится щелью.")
 	TEST_ASSERT(window.get_filter(HERETIC_VFX_PULSE_FILTER), "Ремесло у выхода откликается.")
 	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_vfx/pocket_seam) in entry, "Схлопнутый разрыв стягивается в щель у входа.")
 	TEST_ASSERT(!victim.heretic_capture_mark || victim.heretic_capture_mark.fading, "Выпавшую цель изнанка больше не держит.")
 
-/// Сердце прижимает цель: вспышка контура, кольцо и пыль у ног; всё исчезает само.
+/// Сердце прижимает цель: вспышка контура, кольцо и когти из лужи под ней; всё исчезает само.
 /datum/unit_test/heretic_door_grip_fx/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/turf/place = get_turf(victim)
@@ -130,17 +158,18 @@
 	TEST_ASSERT(victim.get_filter(HERETIC_VFX_PULSE_FILTER), "Прижатая цель вспыхивает контуром.")
 	var/obj/effect/temp_visual/heretic_vfx/gather/ring = locate() in place
 	TEST_ASSERT(ring?.timerid, "Кольцо сходится на цели и удаляется само.")
-	var/obj/effect/temp_visual/heretic_path_feedback/dust = locate() in place
-	TEST_ASSERT(dust?.timerid, "У ног поднимается пыль и оседает сама.")
+	var/obj/effect/temp_visual/heretic_large_fx/door_grip/claws = locate() in place
+	TEST_ASSERT(claws?.timerid, "Когти смыкаются под целью и гаснут сами.")
+	TEST_ASSERT(claws.layer < victim.layer, "Когти рисуются под целью.")
 
-/// Отказ от дуэли: призрачный клинок бьёт сверху, остаётся след удара, цель вспыхивает.
+/// Отказ от дуэли: призрачный клинок плашмя падает на цель и гаснет, цель вспыхивает.
 /datum/unit_test/heretic_blade_refusal_fx/Run()
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/turf/place = get_turf(target)
 	heretic_blade_refusal_fx(target)
-	var/obj/effect/temp_visual/heretic_blade_refusal/blade = locate() in place
+	var/obj/effect/temp_visual/heretic_large_fx/blade_refusal/blade = locate() in place
 	TEST_ASSERT(blade?.timerid, "Призрачный клинок появляется над целью и гаснет сам.")
-	TEST_ASSERT(locate(/obj/effect/temp_visual/dir_setting/heretic_slash) in place, "На цели остаётся дуга удара.")
+	TEST_ASSERT(blade.layer > target.layer, "Клинок бьёт поверх цели.")
 	TEST_ASSERT(target.get_filter(HERETIC_VFX_PULSE_FILTER), "Сбитая с ног цель вспыхивает контуром.")
 
 /// Замах к горлу и тающая кукла видны у цели и у еретика.

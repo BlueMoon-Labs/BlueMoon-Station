@@ -121,7 +121,7 @@
 	TEST_ASSERT_NOTEQUAL(pocket.rift.icon_state, pocket.inner_rift.icon_state, "Снаружи и изнутри разрыв выглядит по-разному.")
 	var/glow_found = FALSE
 	for(var/mutable_appearance/glow as anything in pocket.rift.overlays)
-		if(glow.icon_state == "pocket_rift_glow")
+		if(glow.icon_state == "[pocket.rift.icon_state]_glow" && glow.plane != EMISSIVE_PLANE)
 			glow_found = TRUE
 	TEST_ASSERT(glow_found, "У разрыва есть слой кромки, который красится чернилами пути.")
 	TEST_ASSERT(locate(/datum/action/innate/heretic_pocket_leave) in user.actions, "Еретик получает действие выхода.")

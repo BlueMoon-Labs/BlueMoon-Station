@@ -203,7 +203,7 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	QDEL_NULL(rift)
 	QDEL_NULL(inner_rift)
 	COOLDOWN_START(src, reopen_cooldown, HERETIC_POCKET_COOLDOWN)
-	playsound(exit, 'sound/magic/exit_blood.ogg', 50, TRUE)
+	heretic_pocket_collapse_fx(exit)
 	if(victim_inside)
 		heretic_pocket_drop_fx(exit, owner?.selected_path)
 	if(heretic)
@@ -270,7 +270,6 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		to_chat(user, span_warning("Этот выход закрыт: он вне станции, там запрещены телепорты или всё вокруг загорожено."))
 		return FALSE
 	user.forceMove(landing)
-	playsound(landing, 'sound/magic/exit_blood.ogg', 50, TRUE)
 	heretic_pocket_exit_fx(user, landing, owner?.selected_path)
 	landing.visible_message(span_warning("Воздух расходится, и из ниоткуда выступает [user]."))
 	log_game("[key_name(user)] покидает изнанку к [AREACOORD(landing)].")
@@ -419,20 +418,20 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 /obj/effect/heretic_pocket_rift
 	name = "torn air"
 	desc = "Воздух здесь надорван, будто кто-то шагнул в никуда. Нулевой жезл или Библия закроют разрыв, руками его можно разорвать."
-	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
-	icon_state = "pocket_rift"
+	icon = 'modular_bluemoon/icons/obj/heretic_pocket_rift.dmi'
+	icon_state = "rift"
 	anchored = TRUE
 	layer = BELOW_MOB_LAYER
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	var/datum/heretic_pocket/pocket
 	var/tear_time = HERETIC_POCKET_TEAR_TIME
+	/// Стейт покоя; раскрытие - тот же с суффиксом _open.
+	var/rift_state = "rift"
+	var/tear_crackle_timer
 
 /obj/effect/heretic_pocket_rift/Initialize(mapload, datum/heretic_pocket/new_pocket)
 	. = ..()
 	pocket = new_pocket
-	var/mutable_appearance/glow = mutable_appearance(icon, "pocket_rift_glow")
-	glow.color = heretic_path_ink(pocket?.owner?.selected_path)
-	add_overlay(glow)
 	heretic_pocket_rift_open_fx(src, pocket?.owner?.selected_path)
 
 /obj/effect/heretic_pocket_rift/Destroy()
@@ -494,7 +493,8 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 /obj/effect/heretic_pocket_rift/inner
 	name = "tear in the wall"
 	desc = "Сквозь надрыв в стене проглядывает станция."
-	icon_state = "pocket_rift_inner"
+	icon_state = "rift_inner"
+	rift_state = "rift_inner"
 
 /obj/effect/heretic_pocket_rift/inner/examine(mob/user)
 	. = ..()
@@ -597,7 +597,6 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 /datum/antagonist/heretic/proc/pocket_pull(mob/living/user, mob/living/victim, turf/entry, pull_time = HERETIC_POCKET_PULL_TIME, datum/callback/door_check, door_text, hunt_only = TRUE, hold_on_entry = TRUE, victim_text, duration = HERETIC_POCKET_DURATION, intro = TRUE, grip = TRUE)
 	if(!pocket_pull_check(user, victim, entry, door_check, hunt_only))
 		return FALSE
-	playsound(entry, 'sound/magic/enter_blood.ogg', 50, TRUE)
 	heretic_pocket_pull_fx(user, victim, entry, pull_time, selected_path)
 	victim.visible_message(span_danger("[door_text] Воздух вокруг [victim] надрывается!"), span_userdanger("[victim_text || door_text] Воздух вокруг вас надрывается, и вас тянет по ту сторону завесы!"))
 	to_chat(user, span_notice("Вы тянете [victim] в изнанку. Не двигайтесь."))

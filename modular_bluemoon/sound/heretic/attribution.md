@@ -108,3 +108,46 @@
 ## Синтезированные звуки
 
 `echo_grasp.ogg`, `echo_cast.ogg`, `echo_burst.ogg`, `echo_ascend.ogg` и звуки в `mansus/` созданы без сторонних записей и распространяются под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+
+## Изнанка, прижатие и захваты
+
+Файлы в `capture/` собраны из синтеза (шум с фильтрами, удары с падающей частотой, негармонические колокола, пузыри, треск, напев через форманты, реверберация) и слои записей ниже, изменённые по скорости, фильтрам, огибающей и уровню. Итог распространяется под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+
+Записи-слои из [tgstation/tgstation](https://github.com/tgstation/tgstation), снимок `5f093a8cfbbe269b15bc73535f230909218e38d6`, лицензия CC BY-SA 3.0, если в [атрибуции источника](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/attributions.txt) не указано иное:
+
+| Слой | Автор и лицензия |
+| --- | --- |
+| [sound/effects/portal/portal_open_2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/portal/portal_open_2.ogg), `portal_open_3.ogg`, `portal_close.ogg`, `portal_travel.ogg` | virgilcore, CC BY-SA 3.0 |
+| [sound/effects/compressed_air/air_suck.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/compressed_air/air_suck.ogg) | [BBeats Air 60 - Department64](https://freesound.org/s/548262/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| [sound/effects/cloth_rip.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/cloth_rip.ogg) | CC BY-SA 3.0 |
+| [sound/effects/magic/magic_block_holy.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/magic/magic_block_holy.ogg) | CC BY-SA 3.0 |
+| [sound/items/weapons/block_blade.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/weapons/block_blade.ogg) | CC BY-SA 3.0 |
+| [sound/mobs/non-humanoids/fish/fish_slap2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/mobs/non-humanoids/fish/fish_slap2.ogg) | [Major punch - janbezouska](https://freesound.org/s/399183/), CC0, обработка sadboysuss |
+| [sound/machines/closet/closet_lock.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/machines/closet/closet_lock.ogg) | sadboysuss, CC BY-SA |
+| [sound/items/weapons/gun/tesla/squeak_latch.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/weapons/gun/tesla/squeak_latch.ogg) | [Sonicquinn](https://freesound.org/people/Sonicquinn/sounds/435834/), [holisoysilvi](https://freesound.org/people/holisoysilvi/sounds/610182/), CC0 |
+| [sound/mobs/humanoids/ethereal/ethereal_crystalization.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/mobs/humanoids/ethereal/ethereal_crystalization.ogg) | CC BY-SA 3.0 |
+
+`tinkly_bell.ogg` взят из [Baystation12](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/items/tinkly_bell.ogg), снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`, добавлен spookerton; лицензия CC BY-SA 3.0 согласно README источника.
+
+| Файл | Где звучит | Состав |
+| --- | --- | --- |
+| `pocket_pull.ogg` | Канал двери: цель тянет сквозь завесу | Развёрнутый `portal_travel` с нарастанием, восходящий гул 62-132 Гц, в конце `air_suck` со скоростью 0.8. |
+| `pocket_open.ogg` | Разрыв раскрывается снаружи | `portal_open_2` со скоростью 0.82, `cloth_rip` со скоростью 0.72, низкий удар 70-34 Гц. |
+| `pocket_enter.ogg` | Разрыв раскрывается изнутри: попавшие в изнанку | Приглушённый `portal_close` со скоростью 0.74, глухой удар, тихий звон в ушах 1.7 кГц. |
+| `pocket_exit.ogg` | Выход и вынос еретика у своего выхода | Развёрнутый `air_suck`, `portal_open_3` со скоростью 1.12, короткий удар. |
+| `pocket_tear.ogg` | Экипаж рвёт разрыв руками, три раза за попытку и громче с каждым | Синтезированный треск нарастающей плотности, четыре `cloth_rip` всё громче, напряжённый гул 48-78 Гц. |
+| `pocket_seal.ogg` | Разрыв закрыт нулевым жезлом или Библией | Развёрнутый `portal_close` схлопывается в удар, дальше `magic_block_holy`. |
+| `pocket_collapse.ogg` | Изнанка схлопывается у входа | Всасывающий шум нарастающей частоты, низкий удар 58-26 Гц с шумовым хвостом, треск обломков, `portal_close` со скоростью 0.66. |
+| `heart_grip.ogg` | Сердце прижимает цель | Синтез: нарастающее давление и двойной удар сердца 78-38 и 66-32 Гц с резонансом тела. |
+| `blade_refusal.ogg` | Невидимый клинок бьёт отказавшегося от дуэли | Свист полосового шума 0.7-4.5 кГц, `fish_slap2`, `block_blade`, стальной звон. |
+| `sand_latch.ogg` | Стазис Песка | Синтез: сыплющиеся песчинки редеют и обрываются, удар и стеклянный звон 1.3 кГц. |
+| `cosmic_latch.ogg` | Орбита Космоса | Синтез: восходящее арпеджио пяти звёздных колоколов, искры, низкий гул. |
+| `lock_latch.ogg` | Призрачный замок | `squeak_latch`, `closet_lock` со скоростью 0.92, короткий золотой звон 1.57 кГц. |
+| `tide_latch.ogg` | Захлёб Пучины | Синтез: 46 пузырей, бульканье низкого шума, захлёбывающийся тон. |
+| `spirit_latch.ogg` | Удержание души | Синтез: шёпот формантного шума, развёрнутый колокол нарастает в звон 1 кГц. |
+| `glass_latch.ogg` | Стеклянный саркофаг | `ethereal_crystalization` с нарастанием, восходящие хрустальные чирпы, звон 2.1 кГц. |
+| `moon_latch.ogg` | Сомнамбула Луны | Синтез: два мягких колокола G5 и C5, `tinkly_bell` со скоростью 0.62. |
+| `echo_latch.ogg` | Колыбельная Эха | Синтез: напев с закрытым ртом G4-E4-G4-E4 и три затухающих отражения. |
+| `blood_latch.ogg` | Кровопускание | Синтез: тянущийся скрип натянутой жилы 85-180 Гц, влажный всплеск, удар. |
+| `throat_latch.ogg` | Клинок у горла | Синтез: металлический скрежет вынимаемого клинка с восходящей полосой, щелчок и звон. |
+| `wax_latch.ogg` | Сон по кукле | Синтез: шипение и треск плавящегося воска, три капли, оседающий тон. |

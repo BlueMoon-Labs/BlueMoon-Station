@@ -325,7 +325,7 @@
 	allocated += rift
 	var/glow_color
 	for(var/mutable_appearance/glow as anything in rift.overlays)
-		if(glow.icon_state == "pocket_rift_glow")
+		if(glow.icon_state == "[rift.icon_state]_glow" && glow.plane != EMISSIVE_PLANE)
 			glow_color = lowertext(glow.color)
 	TEST_ASSERT_EQUAL(glow_color, lowertext(heretic_path_ink(PATH_MOON)), "Кромка разрыва Луны окрашена её чернилами.")
 

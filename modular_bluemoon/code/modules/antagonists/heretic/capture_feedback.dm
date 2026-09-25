@@ -18,7 +18,7 @@
 #define HERETIC_FX_SEAM_TAIL (0.3 SECONDS)
 #define HERETIC_FX_SEAM_ALPHA 220
 #define HERETIC_FX_RIFT_OPEN (0.35 SECONDS)
-#define HERETIC_FX_RIFT_CLOSE (0.4 SECONDS)
+#define HERETIC_FX_RIFT_CLOSE (0.45 SECONDS)
 #define HERETIC_FX_PULL_MIN (0.4 SECONDS)
 #define HERETIC_FX_PULL_RADIUS 48
 #define HERETIC_FX_PULL_ARMS 5
@@ -33,20 +33,17 @@
 #define HERETIC_FX_QUAKE_TIME (0.4 SECONDS)
 #define HERETIC_FX_TEAR_SHAKE 2
 #define HERETIC_FX_TEAR_STEP (0.15 SECONDS)
+#define HERETIC_FX_TEAR_STAGES 3
+#define HERETIC_FX_TEAR_STAGE_VOLUME 12
 #define HERETIC_FX_WARNING_BLINK (0.5 SECONDS)
 #define HERETIC_FX_WARNING_ALPHA 110
 #define HERETIC_FX_GRIP_TIME (0.5 SECONDS)
-#define HERETIC_FX_GRIP_DUST (0.8 SECONDS)
+#define HERETIC_FX_GRIP_SPRITE (1.75 SECONDS)
 #define HERETIC_FX_REFUSAL_PULSE (0.4 SECONDS)
 #define HERETIC_FX_REFUSAL_QUAKE (0.3 SECONDS)
-#define HERETIC_FX_REFUSAL_SWING (0.12 SECONDS)
-#define HERETIC_FX_REFUSAL_FADE (0.3 SECONDS)
-#define HERETIC_FX_REFUSAL_RAISED 20
-#define HERETIC_FX_REFUSAL_STRUCK 110
-#define HERETIC_FX_REFUSAL_SCALE 1.3
-#define HERETIC_FX_REFUSAL_LIFT 18
-#define HERETIC_FX_REFUSAL_ALPHA 190
+#define HERETIC_FX_REFUSAL_SPRITE (0.7 SECONDS)
 #define HERETIC_FX_REFUSAL_SPRAY 180
+#define HERETIC_FX_LARGE_OFFSET -16
 #define HERETIC_FX_BREACH_POWER 3
 #define HERETIC_FX_OUTLINE_THIN 1
 #define HERETIC_FX_OUTLINE_WIDE 2
@@ -62,6 +59,34 @@
 /proc/heretic_fx_theme_sound(path_id, key)
 	var/list/theme = GLOB.heretic_mansus_themes[path_id]
 	return theme?[key]
+
+/// Метка захвата -> свой звук защёлкивания; остальные захваты звучат ударом своего пути.
+GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
+	"sand" = 'modular_bluemoon/sound/heretic/capture/sand_latch.ogg',
+	"cosmic" = 'modular_bluemoon/sound/heretic/capture/cosmic_latch.ogg',
+	"lock" = 'modular_bluemoon/sound/heretic/capture/lock_latch.ogg',
+	"tide" = 'modular_bluemoon/sound/heretic/capture/tide_latch.ogg',
+	"spirit_hold" = 'modular_bluemoon/sound/heretic/capture/spirit_latch.ogg',
+	"glass" = 'modular_bluemoon/sound/heretic/capture/glass_latch.ogg',
+	"moon" = 'modular_bluemoon/sound/heretic/capture/moon_latch.ogg',
+	"echo" = 'modular_bluemoon/sound/heretic/capture/echo_latch.ogg',
+	"blood" = 'modular_bluemoon/sound/heretic/capture/blood_latch.ogg',
+	"blade_throat" = 'modular_bluemoon/sound/heretic/capture/throat_latch.ogg',
+	"wax" = 'modular_bluemoon/sound/heretic/capture/wax_latch.ogg',
+))
+
+/// Метка захвата по источнику удержания: у сна-захвата это метка усыпившего захвата.
+/proc/heretic_fx_capture_id(source)
+	if(!istext(source))
+		return null
+	if(findtext(source, "\[0x") == 1)
+		var/datum/status_effect/heretic_capture_knockout/knockout = locate(source)
+		return istype(knockout) ? knockout.capture_id : null
+	return source
+
+/proc/heretic_fx_latch_sound(source)
+	var/capture_id = heretic_fx_capture_id(source)
+	return istext(capture_id) ? GLOB.heretic_capture_latch_sounds[capture_id] : null
 
 /// Частицы пути для мелких событий или null.
 /proc/heretic_fx_particles(path_id)
@@ -123,9 +148,10 @@
 	if(QDELETED(mark))
 		return null
 	victim.heretic_capture_mark = mark
-	var/grip_sound = heretic_fx_theme_sound(path_id, "hit")
+	var/latch = heretic_fx_latch_sound(source)
+	var/grip_sound = latch || heretic_fx_theme_sound(path_id, "hit")
 	if(grip_sound && isturf(victim.loc))
-		playsound(victim, grip_sound, HERETIC_FX_HOLD_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		playsound(victim, grip_sound, latch ? HERETIC_FX_EVENT_VOLUME : HERETIC_FX_HOLD_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 	return mark
 
 /proc/heretic_capture_unhold_fx(mob/living/victim)
@@ -215,25 +241,33 @@
 
 // Изнанка: шов перед уводом, разрыв открывается и схлопывается, выход к своему месту.
 
-/// Копия разрыва изнанки на клетке: раскрывается из щели за open_time и стягивается обратно к концу жизни.
+/// Стейт разрыва с кромкой в чернилах пути поверх и свечением в темноте.
+/proc/heretic_rift_show(atom/movable/rift, state, ink)
+	rift.icon_state = state
+	rift.cut_overlays()
+	var/mutable_appearance/edge = mutable_appearance(rift.icon, "[state]_glow")
+	edge.color = ink
+	rift.add_overlay(edge)
+	rift.add_overlay(emissive_appearance(rift.icon, "[state]_glow"))
+
+/obj/effect/heretic_pocket_rift/proc/settle()
+	heretic_rift_show(src, rift_state, heretic_path_ink(pocket?.owner?.selected_path))
+
+/// Копия разрыва изнанки на клетке: раскрывается из щели за open_time и стягивается к концу жизни; без open_time схлопывается своей анимацией.
 /obj/effect/temp_visual/heretic_vfx/pocket_seam
-	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
-	icon_state = "pocket_rift"
+	icon = 'modular_bluemoon/icons/obj/heretic_pocket_rift.dmi'
+	icon_state = "rift"
 	layer = BELOW_MOB_LAYER
 
 /obj/effect/temp_visual/heretic_vfx/pocket_seam/Initialize(mapload, ink, lifetime = HERETIC_FX_STEP_OUT, open_time = HERETIC_FX_RIFT_OPEN, peak_alpha = 255)
 	duration = lifetime
 	. = ..()
-	var/mutable_appearance/edge = mutable_appearance(icon, "pocket_rift_glow")
-	edge.color = ink
-	add_overlay(edge)
-	add_overlay(emissive_appearance(icon, "pocket_rift_glow"))
-	var/matrix/slit = matrix(HERETIC_FX_SEAM_WIDTH, 0, 0, 0, HERETIC_FX_SEAM_HEIGHT, 0)
 	open_time = clamp(open_time, 0, lifetime)
+	heretic_rift_show(src, open_time ? "rift" : "rift_close", ink)
 	if(!open_time)
 		alpha = peak_alpha
-		animate(src, transform = slit, alpha = 0, time = lifetime, easing = QUAD_EASING | EASE_IN)
 		return
+	var/matrix/slit = matrix(HERETIC_FX_SEAM_WIDTH, 0, 0, 0, HERETIC_FX_SEAM_HEIGHT, 0)
 	transform = slit
 	alpha = 0
 	animate(src, transform = matrix(), alpha = peak_alpha, time = open_time, easing = BACK_EASING | EASE_OUT)
@@ -245,9 +279,7 @@
 	if(!place)
 		return
 	var/ink = heretic_path_ink(path_id)
-	var/warning = heretic_fx_theme_sound(path_id, "warning")
-	if(warning)
-		playsound(place, warning, HERETIC_FX_EVENT_VOLUME, TRUE)
+	playsound(place, 'modular_bluemoon/sound/heretic/capture/pocket_pull.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
 	heretic_vfx_pulse(victim, ink, HERETIC_FX_OUTLINE_WIDE, max(pull_time, HERETIC_FX_PULL_MIN))
 	if(pull_time <= 0)
 		return
@@ -278,20 +310,20 @@
 		var/shift_y = entry && entry.z == from.z ? (entry.y - from.y) * world.icon_size : 0
 		animate(ghost, transform = squeezed, alpha = 0, pixel_x = ghost.pixel_x + shift_x, pixel_y = ghost.pixel_y + shift_y, time = HERETIC_FX_VANISH_TIME, easing = QUAD_EASING | EASE_IN)
 
-/// Разрыв распахивается из щели со вспышкой и выбросом частиц пути.
+/// Разрыв распахивается из щели со вспышкой и выбросом частиц пути; изнутри звучит вход в изнанку.
 /proc/heretic_pocket_rift_open_fx(obj/effect/heretic_pocket_rift/rift, path_id)
+	var/ink = heretic_path_ink(path_id)
+	heretic_rift_show(rift, "[rift.rift_state]_open", ink)
+	addtimer(CALLBACK(rift, TYPE_PROC_REF(/obj/effect/heretic_pocket_rift, settle)), HERETIC_FX_RIFT_OPEN)
 	var/turf/place = get_turf(rift)
 	if(!place)
 		return
-	var/matrix/slit = matrix(HERETIC_FX_SEAM_WIDTH, 0, 0, 0, HERETIC_FX_SEAM_HEIGHT, 0)
-	rift.transform = slit
-	animate(rift, transform = matrix(), time = HERETIC_FX_RIFT_OPEN, easing = BACK_EASING | EASE_OUT)
-	var/ink = heretic_path_ink(path_id)
 	heretic_vfx_flash(place, ink, HERETIC_FX_FLASH_RANGE, HERETIC_FX_FLASH_POWER, HERETIC_FX_FLASH_TIME)
 	var/particles_type = heretic_fx_particles(path_id)
 	if(particles_type && heretic_vfx_watched(place))
 		heretic_vfx_burst(place, particles_type)
-	playsound(place, 'sound/magic/voidpull.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
+	var/inside = istype(rift, /obj/effect/heretic_pocket_rift/inner)
+	playsound(place, inside ? 'modular_bluemoon/sound/heretic/capture/pocket_enter.ogg' : 'modular_bluemoon/sound/heretic/capture/pocket_open.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
 
 /// Удалённый разрыв оставляет копию, которая стягивается в щель.
 /proc/heretic_pocket_rift_close_fx(obj/effect/heretic_pocket_rift/rift, path_id)
@@ -317,7 +349,7 @@
 	if(pocket?.inner_rift)
 		heretic_vfx_quake(pocket.inner_rift, HERETIC_FX_QUAKE_RADIUS, HERETIC_FX_QUAKE_STRENGTH, HERETIC_FX_QUAKE_TIME)
 
-/// Разрыв рвут руками: кромка дрожит всё время попытки.
+/// Разрыв рвут руками: кромка дрожит всё время попытки, треск нарастает к её концу.
 /proc/heretic_pocket_tear_fx(obj/effect/heretic_pocket_rift/rift, tear_time)
 	if(QDELETED(rift))
 		return
@@ -325,12 +357,21 @@
 	animate(rift, pixel_x = HERETIC_FX_TEAR_SHAKE, time = HERETIC_FX_TEAR_STEP, loop = shakes)
 	animate(pixel_x = -HERETIC_FX_TEAR_SHAKE, time = HERETIC_FX_TEAR_STEP)
 	animate(pixel_x = 0, time = HERETIC_FX_TEAR_STEP)
-	playsound(rift, 'sound/effects/dimensional_rend.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
+	deltimer(rift.tear_crackle_timer)
+	rift.tear_crackle(1, tear_time / HERETIC_FX_TEAR_STAGES)
+
+/obj/effect/heretic_pocket_rift/proc/tear_crackle(stage, step)
+	tear_crackle_timer = null
+	playsound(src, 'modular_bluemoon/sound/heretic/capture/pocket_tear.ogg', HERETIC_FX_QUIET_VOLUME + stage * HERETIC_FX_TEAR_STAGE_VOLUME, TRUE)
+	if(stage < HERETIC_FX_TEAR_STAGES)
+		tear_crackle_timer = addtimer(CALLBACK(src, PROC_REF(tear_crackle), stage + 1, step), step, TIMER_STOPPABLE)
 
 /proc/heretic_pocket_tear_stop_fx(obj/effect/heretic_pocket_rift/rift)
 	if(QDELETED(rift))
 		return
 	animate(rift, pixel_x = 0, time = HERETIC_FX_TEAR_STEP)
+	deltimer(rift.tear_crackle_timer)
+	rift.tear_crackle_timer = null
 
 /// Разрыв закрыли святыней или разорвали руками: вспышка у разрыва, всех рядом встряхивает.
 /proc/heretic_pocket_breach_fx(obj/effect/heretic_pocket_rift/rift, holy = FALSE)
@@ -340,7 +381,12 @@
 	heretic_vfx_flash(place, holy ? HERETIC_FX_HOLY_INK : heretic_path_ink(rift.pocket?.owner?.selected_path), HERETIC_FX_FLASH_RANGE, HERETIC_FX_BREACH_POWER, HERETIC_FX_FLASH_TIME)
 	heretic_vfx_quake(place, HERETIC_FX_QUAKE_RADIUS, HERETIC_FX_QUAKE_STRENGTH, HERETIC_FX_QUAKE_TIME)
 	if(holy)
-		playsound(place, 'sound/magic/Teleport_diss.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
+		playsound(place, 'modular_bluemoon/sound/heretic/capture/pocket_seal.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
+
+/// Изнанка схлопывается: у входа слышен провал внутрь себя.
+/proc/heretic_pocket_collapse_fx(turf/exit)
+	if(exit)
+		playsound(exit, 'modular_bluemoon/sound/heretic/capture/pocket_collapse.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
 
 /// Выход из изнанки: воздух расходится щелью, фигура проступает из неё, ремесло пути рядом отзывается.
 /proc/heretic_pocket_exit_fx(mob/living/traveller, turf/landing, path_id)
@@ -362,9 +408,7 @@
 	var/particles_type = heretic_fx_particles(path_id)
 	if(particles_type && heretic_vfx_watched(landing))
 		heretic_vfx_burst(landing, particles_type)
-	var/escape = heretic_fx_theme_sound(path_id, "escape")
-	if(escape)
-		playsound(landing, escape, HERETIC_FX_EVENT_VOLUME, TRUE)
+	playsound(landing, 'modular_bluemoon/sound/heretic/capture/pocket_exit.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
 	for(var/atom/nearby as anything in range(1, landing))
 		if(nearby.GetComponent(/datum/component/heretic_craft))
 			heretic_vfx_pulse(nearby, ink, HERETIC_FX_OUTLINE_WIDE, HERETIC_FX_STEP_OUT)
@@ -380,50 +424,53 @@
 
 // Отдача механик, которые подключаются одной строкой.
 
-/// Сердце прижимает цель к полу: удар сердца, кольцо давит на неё, у ног поднимается пыль. Вызывать при наложении прижатия.
+/// Сердце прижимает цель к полу: удар сердца, из тёмной лужи под ней смыкаются когти и пульсируют в такт. Вызывать при наложении прижатия.
 /proc/heretic_door_grip_fx(mob/living/victim)
 	var/turf/place = get_turf(victim)
 	if(!place)
 		return
-	playsound(place, 'sound/effects/singlebeat.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
+	playsound(place, 'modular_bluemoon/sound/heretic/capture/heart_grip.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
 	heretic_vfx_gather(place, HERETIC_FX_GRIP_INK, HERETIC_FX_GATHER_RADIUS, HERETIC_FX_GRIP_TIME)
 	heretic_vfx_pulse(victim, HERETIC_FX_GRIP_INK, HERETIC_FX_OUTLINE_WIDE, HERETIC_FX_GRIP_TIME)
-	new /obj/effect/temp_visual/heretic_path_feedback(place, "cloud_swirl", HERETIC_FX_GRIP_INK, HERETIC_FX_GRIP_DUST)
+	new /obj/effect/temp_visual/heretic_large_fx/door_grip(place)
 	heretic_vfx_quake(place, HERETIC_FX_QUAKE_SELF, HERETIC_FX_QUAKE_HIT, HERETIC_FX_GRIP_TIME)
 
-/// Невидимый клинок бьёт отказавшегося от дуэли плашмя сверху: след клинка, искры, звон стали.
+/// Невидимый клинок бьёт отказавшегося от дуэли плашмя сверху: свист, шлепок стали, искры.
 /proc/heretic_blade_refusal_fx(mob/living/target)
 	var/turf/place = get_turf(target)
 	if(!place)
 		return
 	var/ink = heretic_path_ink(PATH_BLADE, TRUE)
-	new /obj/effect/temp_visual/heretic_blade_refusal(place)
-	new /obj/effect/temp_visual/dir_setting/heretic_slash(place, SOUTH)
+	new /obj/effect/temp_visual/heretic_large_fx/blade_refusal(place)
 	heretic_vfx_spray(place, /particles/heretic_ascension/blade/sparks, HERETIC_FX_REFUSAL_SPRAY)
 	heretic_vfx_flash(place, ink, HERETIC_FX_FLASH_NEAR, HERETIC_FX_FLASH_POWER, HERETIC_FX_FLASH_TIME)
 	heretic_vfx_pulse(target, ink, HERETIC_FX_OUTLINE_WIDE, HERETIC_FX_REFUSAL_PULSE)
 	heretic_vfx_quake(place, HERETIC_FX_QUAKE_SELF, HERETIC_FX_QUAKE_HIT, HERETIC_FX_REFUSAL_QUAKE)
-	playsound(place, 'sound/weapons/slashmiss.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
-	playsound(place, heretic_fx_theme_sound(PATH_BLADE, "hit"), HERETIC_FX_LOUD_VOLUME, TRUE)
+	playsound(place, 'modular_bluemoon/sound/heretic/capture/blade_refusal.ogg', HERETIC_FX_LOUD_VOLUME, TRUE)
 
-/// Призрачный клинок поднят над целью и падает плашмя, раскалённый добела; гаснет после удара.
-/obj/effect/temp_visual/heretic_blade_refusal
-	icon = 'modular_bluemoon/icons/obj/heretic_blade_orbit.dmi'
-	icon_state = "blade_orbit"
-	layer = ABOVE_MOB_LAYER
+/// Разовая анимация 64x64 вокруг клетки; маска _glow светится в темноте.
+/obj/effect/temp_visual/heretic_large_fx
+	icon = 'modular_bluemoon/icons/obj/heretic_capture_large.dmi'
 	randomdir = FALSE
-	appearance_flags = PIXEL_SCALE
-	duration = HERETIC_FX_REFUSAL_SWING + HERETIC_FX_REFUSAL_FADE
+	pixel_x = HERETIC_FX_LARGE_OFFSET
+	pixel_y = HERETIC_FX_LARGE_OFFSET
 
-/obj/effect/temp_visual/heretic_blade_refusal/Initialize(mapload)
+/obj/effect/temp_visual/heretic_large_fx/Initialize(mapload)
 	. = ..()
-	color = heretic_blade_flare_matrix()
-	add_overlay(emissive_appearance(icon, icon_state))
-	transform = heretic_blade_facing(HERETIC_FX_REFUSAL_RAISED, HERETIC_FX_REFUSAL_SCALE)
-	pixel_y = HERETIC_FX_REFUSAL_LIFT
-	alpha = HERETIC_FX_REFUSAL_ALPHA
-	animate(src, transform = heretic_blade_facing(HERETIC_FX_REFUSAL_STRUCK, HERETIC_FX_REFUSAL_SCALE), pixel_y = 0, time = HERETIC_FX_REFUSAL_SWING, easing = QUAD_EASING | EASE_IN)
-	animate(alpha = 0, time = HERETIC_FX_REFUSAL_FADE, easing = SINE_EASING | EASE_IN)
+	add_overlay(emissive_appearance(icon, "[icon_state]_glow"))
+
+/// Когти из лужи под прижатой целью.
+/obj/effect/temp_visual/heretic_large_fx/door_grip
+	icon_state = "door_grip"
+	layer = BELOW_MOB_LAYER
+	duration = HERETIC_FX_GRIP_SPRITE
+
+/// Клинок плашмя падает на голову цели: низ холста совпадает с клеткой.
+/obj/effect/temp_visual/heretic_large_fx/blade_refusal
+	icon_state = "blade_refusal"
+	layer = ABOVE_MOB_LAYER
+	pixel_y = 0
+	duration = HERETIC_FX_REFUSAL_SPRITE
 
 /// Замах к горлу: кольцо в стальных чернилах сжимается на цели, пока клинок идёт к ней.
 /proc/heretic_blade_throat_fx(mob/living/victim, telegraph)
@@ -491,20 +538,17 @@
 #undef HERETIC_FX_QUAKE_TIME
 #undef HERETIC_FX_TEAR_SHAKE
 #undef HERETIC_FX_TEAR_STEP
+#undef HERETIC_FX_TEAR_STAGES
+#undef HERETIC_FX_TEAR_STAGE_VOLUME
 #undef HERETIC_FX_WARNING_BLINK
 #undef HERETIC_FX_WARNING_ALPHA
 #undef HERETIC_FX_GRIP_TIME
-#undef HERETIC_FX_GRIP_DUST
+#undef HERETIC_FX_GRIP_SPRITE
 #undef HERETIC_FX_REFUSAL_PULSE
 #undef HERETIC_FX_REFUSAL_QUAKE
-#undef HERETIC_FX_REFUSAL_SWING
-#undef HERETIC_FX_REFUSAL_FADE
-#undef HERETIC_FX_REFUSAL_RAISED
-#undef HERETIC_FX_REFUSAL_STRUCK
-#undef HERETIC_FX_REFUSAL_SCALE
-#undef HERETIC_FX_REFUSAL_LIFT
-#undef HERETIC_FX_REFUSAL_ALPHA
+#undef HERETIC_FX_REFUSAL_SPRITE
 #undef HERETIC_FX_REFUSAL_SPRAY
+#undef HERETIC_FX_LARGE_OFFSET
 #undef HERETIC_FX_BREACH_POWER
 #undef HERETIC_FX_OUTLINE_THIN
 #undef HERETIC_FX_OUTLINE_WIDE

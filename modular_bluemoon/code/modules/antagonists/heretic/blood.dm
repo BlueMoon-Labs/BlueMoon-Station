@@ -739,7 +739,6 @@
 	owner.update_icon()
 	heretic_vfx_thread(drainer, owner, heretic_path_ink(PATH_BLOOD, TRUE), HERETIC_BLOOD_DRAIN_TELEGRAPH)
 	owner.visible_message(span_danger("Кровяная нить между [drainer] и [owner] наливается багровым!"), span_userdanger("Кровяная нить к [drainer] краснеет и натягивается: через секунду из вас потечёт кровь! Уйдите за стену или дальше пяти клеток."))
-	playsound(owner, 'modular_bluemoon/sound/heretic/blood_grasp.ogg', 40, TRUE)
 	return TRUE
 
 /datum/status_effect/heretic_blood_drain/proc/link_failure()
