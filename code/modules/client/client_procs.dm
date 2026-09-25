@@ -517,7 +517,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
-	fractional_movement = new(FRACTIONAL_MOVEMENT_QUEUED)
+	fractional_movement = new(FRACTIONAL_MOVEMENT_NATIVE)
 
 	// Цена этого подключения по этапам - см. client_connect_probe.dm
 	var/datum/client_connect_probe/connect_probe = new(ckey)

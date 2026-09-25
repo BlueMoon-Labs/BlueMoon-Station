@@ -234,19 +234,19 @@
 	set desc = "Выбрать основной режим движения или режим для сравнения"
 	if(!check_rights(R_DEBUG))
 		return
-	var/list/modes = list("Прежнее: округлённый шаг", "Дробное: штатный glide", "Дробное: сглаженная очередь (основной)")
+	var/list/modes = list("Прежнее: округлённый шаг", "Дробное: штатный glide (основной)", "Дробное: сглаженная очередь (эксперимент)")
 	var/current_mode = fractional_movement ? (fractional_movement.render_mode == FRACTIONAL_MOVEMENT_QUEUED ? modes[3] : modes[2]) : modes[1]
-	var/selected = tgui_input_list(src, "Режим только для вашего подключения. При входе включается сглаженная очередь. FPS не меняется.", "Дробное движение", modes, current_mode)
+	var/selected = tgui_input_list(src, "Режим только для вашего подключения. При входе включается штатный glide. FPS не меняется.", "Дробное движение", modes, current_mode)
 	if(!selected || !check_rights(R_DEBUG))
 		return
 	QDEL_NULL(fractional_movement)
 	if(selected == modes[1])
-		to_chat(src, span_notice("Выбрано прежнее движение с округлением цены шага. При следующем подключении включится сглаженная очередь."))
+		to_chat(src, span_notice("Выбрано прежнее движение с округлением цены шага. При следующем подключении включится штатный glide."))
 	else
 		fractional_movement = new(selected == modes[2] ? FRACTIONAL_MOVEMENT_NATIVE : FRACTIONAL_MOVEMENT_QUEUED)
 		to_chat(src, span_notice("Выбран режим: [selected]. Скорость меняется со следующего шага. Транспорт, пуллинг, ИИ и дрейф используют прежнее расписание."))
 		if(selected == modes[3])
-			to_chat(src, span_notice("Очередь добавляет один тик визуальной задержки; первый шаг после прерывания требует ещё тик подготовки."))
+			to_chat(src, span_notice("Очередь добавляет один тик визуальной задержки; первый шаг после прерывания требует ещё тик подготовки. Если пакет с сервера приходит по частям, спрайт и камера прыгают на тайл."))
 	last_step_target = 0
 	last_step_cost = 0
 	log_admin("[key_name(src)] selected movement mode: [selected].")
