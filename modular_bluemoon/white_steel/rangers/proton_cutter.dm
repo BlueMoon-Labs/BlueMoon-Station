@@ -111,6 +111,10 @@
 			M.Jitter(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
+		else if(amplification && M.mind && !ismegafauna(M))
+			force = 60
+			proton_off()
+			proton_attack(M, user, 5)
 		else if(amplification)
 			force = 60
 		else
