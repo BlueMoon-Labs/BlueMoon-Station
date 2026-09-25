@@ -640,7 +640,7 @@
 	name = "Upgraded Size Tool"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/melee/sizetool/upgraded
-	ckeywhitelist = list("enotzlodey", "herobrine998")
+	ckeywhitelist = list("enotzlodey", "herobrine998", "nyaaaa")
 
 /datum/gear/donator/bm/pet_alta
 	name = "Alta Cat"
@@ -1615,6 +1615,18 @@
 	path = /obj/item/clothing/suit/donator/bm/long_fancy_kimono
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("nyaaaa")
+
+/datum/gear/donator/bm/long_wintercoat
+	name = "Long Winter Coat"
+	path = /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
+	slot = ITEM_SLOT_OCLOTHING
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+
+/datum/gear/donator/bm/wardrobe_box
+	name = "Wardrobe Box"
+	path = /obj/item/storage/box/wardrobe_box
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("herobrine998", "nyaaaa")
 
 /datum/gear/donator/bm/toggles_poly_evening
 	name = "Polychromic evening gloves"
