@@ -44,6 +44,47 @@
 	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
 	fleshling = null
 
+/datum/eldritch_knowledge/base_flesh/pocket_exits(mob/living/user)
+	. = list()
+	for(var/mob/living/servant as anything in door_servants(user))
+		heretic_add_pocket_exit(., "Слуга - [servant.real_name]", heretic_pocket_landing(get_turf(servant)))
+
+/datum/eldritch_knowledge/base_flesh/pocket_door(mob/living/user, mob/living/victim)
+	var/mob/living/servant = door_servant(user, victim)
+	if(!servant)
+		return null
+	return list("name" = "через слугу", "text" = "[servant] вцепляется в [victim] и тянет за собой сквозь завесу.", "time" = HERETIC_FLESH_DOOR_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim), "remote" = TRUE)
+
+/datum/eldritch_knowledge/base_flesh/proc/door_holds(mob/living/user, mob/living/victim)
+	return !!door_servant(user, victim)
+
+/// Слуга в сознании рядом с готовой целью, еретик не дальше HERETIC_FLESH_DOOR_RANGE клеток на том же уровне.
+/datum/eldritch_knowledge/base_flesh/proc/door_servant(mob/living/user, mob/living/victim)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > HERETIC_FLESH_DOOR_RANGE)
+		return null
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic.hunt_target_ready(victim))
+		return null
+	for(var/mob/living/servant as anything in door_servants(user))
+		if(servant.stat == CONSCIOUS && servant.z == victim.z && get_dist(servant, victim) <= 1)
+			return servant
+	return null
+
+/// Живые гули, Безмолвные мертвецы и ползун еретика на полу.
+/datum/eldritch_knowledge/base_flesh/proc/door_servants(mob/living/user)
+	. = list()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic)
+		return
+	for(var/knowledge_type in heretic.researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
+		for(var/datum/antagonist/heretic_monster/monster as anything in knowledge.flesh_servants)
+			var/mob/living/body = monster.owner?.current
+			if(QDELETED(body) || body.stat == DEAD || !isturf(body.loc))
+				continue
+			if(body == fleshling || istype(monster, /datum/antagonist/heretic_monster/ghoul) || istype(monster, /datum/antagonist/heretic_monster/voiceless_dead))
+				. |= body
+
 /mob/living/simple_animal/heretic_fleshling
 	name = "stitched crawler"
 	desc = "Небольшой слуга из сшитых органов. Живёт полторы минуты и слушается указаний хозяина через Живой шов. Хозяин может коснуться его на помощи, чтобы вернуть к себе, или на разоружении, чтобы оставить ждать. Живой шов за биомассу обновляет срок жизни до полутора минут. Дальше девяти клеток от хозяина распадается."
@@ -183,7 +224,8 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_flesh_stitch
 	name = "Живой шов"
-	desc = "Протяните сухожилие на 5 клеток: враг получает 15 ушибов и замедляется на 3 секунды. Свой слуга вместо этого восстанавливает по 15 ушибов и ожогов и подтягивается к вам на два шага за 1 биомассу. Шов по врагу направляет на него вашего сшитого ползуна. Шов по ползуну обновляет его срок жизни до 90 секунд и возвращает к вам; здорового ползуна рядом можно подкормить после первых 30 секунд. Стены и закрытые двери прерывают шов; пристёгнутого слугу можно вылечить, но нельзя сдвинуть."
+	desc = "Протяните сухожилие на 5 клеток: враг получает 15 ушибов и замедление. Свой слуга за 1 биомассу лечится и подтягивается к вам."
+	summary = "Удар врагу на 5 клеток или лечение своего слуги за биомассу."
 	clothes_req = FALSE
 	charge_max = 15 SECONDS
 	range = 5

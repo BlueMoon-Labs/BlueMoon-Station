@@ -41,11 +41,25 @@
 	if(!QDELETED(user) && user.stat != DEAD && IS_HERETIC(user))
 		tick_zone(user)
 
+/datum/eldritch_knowledge/base_void/pocket_door(mob/living/user, mob/living/victim)
+	if(!door_holds(user, victim))
+		return null
+	return list("name" = "в зиму", "text" = "Иней под [victim] проваливается в белую пустоту.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+
+/// Готовая цель в своём зимнем поле, еретик рядом.
+/datum/eldritch_knowledge/base_void/proc/door_holds(mob/living/user, mob/living/victim)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+		return FALSE
+	if(!door_zone_under(victim, /obj/effect/heretic_combat_zone/void))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic.hunt_target_ready(victim)
+
 /atom/movable/screen/alert/status_effect/heretic_void_chill
 	name = "Скованность Пустоты"
 	desc = "Магия Пустоты замедляет ваши движения независимо от температуры тела. Эффект проходит через 4 секунды после последнего воздействия. Выйдите из зимнего поля и оторвитесь от еретика, чтобы скованность спала. Повторные воздействия обновляют время, не усиливая замедление."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_void"
+	icon_state = "void_chill"
 
 /obj/item/melee/sickly_blade/void/examine(mob/user)
 	. = ..()

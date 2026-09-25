@@ -112,7 +112,7 @@
 /atom/movable/screen/alert/heretic_rust_healing
 	name = "Лечение Ржавчины"
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_rust"
+	icon_state = "rust_heal"
 	maptext_width = 32
 	maptext_height = 12
 	maptext_y = 1
@@ -144,6 +144,26 @@
 	maptext = MAPTEXT("<div style='text-align:center;color:#ffffff;font-size:8px;background-color:#17111d'>[label]</div>")
 
 #undef HERETIC_RUST_HEALING_ALERT
+
+/datum/eldritch_knowledge/base_rust/pocket_exits(mob/living/user)
+	. = list()
+	for(var/obj/effect/heretic_combat_zone/rust/hearth in list(combat_zone, relic_zone))
+		if(!QDELETED(hearth))
+			heretic_add_pocket_exit(., "Очаг - [get_area_name(hearth, TRUE)]", heretic_pocket_landing(get_turf(hearth)))
+
+/datum/eldritch_knowledge/base_rust/pocket_door(mob/living/user, mob/living/victim)
+	if(!door_holds(user, victim))
+		return null
+	return list("name" = "в очаг", "text" = "Ржавый пол под [victim] расходится, как гнилая доска.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+
+/// Готовая цель на ржавом полу в границе своего очага, еретик рядом с ней.
+/datum/eldritch_knowledge/base_rust/proc/door_holds(mob/living/user, mob/living/victim)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+		return FALSE
+	if(!istype(victim.loc, /turf/open/floor/plating/rust) || !door_zone_under(victim, /obj/effect/heretic_combat_zone/rust))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic.hunt_target_ready(victim)
 
 /// Пока сердце вознесения цело, ржавый пол вдвое снижает урон выносливости вознесённому.
 /datum/component/heretic_rust_ascension
@@ -298,7 +318,8 @@
 
 /obj/effect/proc_holder/spell/self/rust_corrosive_wave
 	name = "Коррозийный вал"
-	desc = "Обрушьте волну ржавчины на всё, что видно в пяти клетках вокруг себя: за стены и глухие двери вал не проходит. Враги получают 20 урона коррозией: треть ожогами, остальное отравлением или повреждением систем синтетика. Полы ржавеют, обычные стены рушатся. Наружные стены, за которыми космос, пропасть, лава или вода, вал не трогает вовсе. Укреплённые стены могут лишь заржаветь, корпус шаттлов не поддаётся. Еретики, их слуги и защищённые от магии не страдают. Вал не оглушает. Перезарядка 40 секунд."
+	desc = "Волна ржавчины бьёт всё, что видно в 5 клетках: 20 урона коррозией врагам, полы ржавеют, внутренние стены рушатся. Наружные стены и корпус шаттла она не трогает, укреплённые только ржавит, стены и двери её держат; не оглушает, перезарядка 40 секунд."
+	summary = "20 урона коррозией врагам в 5 клетках, полы ржавеют, внутренние стены рушатся."
 	school = "transmutation"
 	charge_max = HERETIC_RUST_WAVE_COOLDOWN
 	clothes_req = FALSE

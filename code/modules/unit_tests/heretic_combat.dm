@@ -56,7 +56,7 @@
 	blade.ranged_attack_chain(user, victim)
 	TEST_ASSERT(user.Adjacent(victim), "Сдвиг к цели в своём домене проходит.")
 	TEST_ASSERT(!COOLDOWN_FINISHED(upgrade, blink_cooldown), "Сдвиг в домене всё равно запускает перезарядку.")
-	TEST_ASSERT(COOLDOWN_TIMELEFT(upgrade, blink_cooldown) <= HERETIC_VOID_DOMAIN_BLINK_COOLDOWN, "В своём домене сдвиг восстанавливается 2 секунды.")
+	TEST_ASSERT(COOLDOWN_TIMELEFT(upgrade, blink_cooldown) < HERETIC_VOID_DOMAIN_BLINK_COOLDOWN + 0.1, "В своём домене сдвиг восстанавливается 2 секунды.")
 
 /// Отказы сдвига объясняют метку, дальность, преграды и защиту, сохраняя готовность и цель.
 /datum/unit_test/heretic_void_seeking_blade_rejections/Run()

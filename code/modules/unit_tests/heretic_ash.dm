@@ -83,6 +83,11 @@
 	var/obj/effect/proc_holder/spell/aoe_turf/fire_cascade/base_cascade = /obj/effect/proc_holder/spell/aoe_turf/fire_cascade
 	TEST_ASSERT(cascade?.range > initial(base_cascade.range), "Каскад вознесения больше обычного.")
 	TEST_ASSERT_EQUAL(sworn?.charge_max, HERETIC_ASH_FIRE_SWORN_COOLDOWN, "Клятва огня перезаряжается две минуты.")
+	TEST_ASSERT_EQUAL(sworn?.duration, HERETIC_ASH_FIRE_SWORN_DURATION, "Кольцо Клятвы огня держится минуту.")
+	var/duration_text = "[HERETIC_ASH_FIRE_SWORN_DURATION / (1 SECONDS)] секунд"
+	var/cooldown_text = "[HERETIC_ASH_FIRE_SWORN_COOLDOWN / (1 MINUTES)] минуты"
+	TEST_ASSERT(findtext(sworn?.desc, duration_text) && findtext(sworn?.desc, cooldown_text), "Кнопка Клятвы огня называет срок и перезарядку цифрами: [sworn?.desc]")
+	TEST_ASSERT(findtext(jointext(finale.details, " "), "Клятва огня: [duration_text] кольцо огня жжёт врагов рядом, перезарядка [cooldown_text]."), "Вознесение называет срок и перезарядку клятвы теми же цифрами.")
 
 /// Одна порция воды из огнетушителя гасит владыку на весь срок, хотя сама высыхает за тик жизни.
 /datum/unit_test/heretic_ash_lord_extinguisher/Run()

@@ -1,6 +1,9 @@
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash
+	heretic_stun_check = TRUE
+	usable_while_grabbed = TRUE
 	name = "Пепельный переход"
-	desc = "Ненадолго обратитесь в пепел, чтобы пройти сквозь стены."
+	desc = "Ненадолго обратитесь в пепел, чтобы пройти сквозь стены. Работает в чужой хватке, но до вознесения не под оглушением."
+	summary = "1,5 секунды сквозь стены пеплом, затем 2,5 секунды проявления на месте."
 	school = "transmutation"
 	invocation = "DULK'ES PRE'ZIMAS"
 	invocation_type = "whisper"
@@ -15,6 +18,7 @@
 	jaunt_out_type = /obj/effect/temp_visual/dir_setting/ash_shift/out
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/long
+	summary = "7,5 секунды сквозь стены пеплом, затем 2,5 секунды проявления на месте."
 	jaunt_duration = 75
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/play_sound(type, mob/living/target)
@@ -33,6 +37,7 @@
 /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp
 	name = "Хватка Мансуса"
 	desc = "Хватка наносит 10 ушибов и 60 урона выносливости, оглушает на 1 секунду и не даёт встать 2 секунды. Знания пути добавляют эффекты и метку, которую активирует ваш клинок."
+	summary = "10 ушибов, 60 выносливости и 2 секунды на полу; знания пути добавляют эффекты."
 	hand_path = /obj/item/melee/touch_attack/mansus_fist
 	school = "evocation"
 	charge_max = 12 SECONDS
@@ -168,7 +173,6 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
 	name = "Призвать живое сердце"
-	desc = "Позволяет призывать и прятать живое сердце в пучине безумия. Остальные услышат очень тихий звук призыва, только вплотную к вам."
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "living_heart"
 	summon_type = /obj/item/living_heart
@@ -177,7 +181,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
-	desc = "Призывает спрятанный кодекс или прячет книгу при вас. Потерянный личный кодекс возвращается после 20 секунд неподвижности, запертый в шкафу или сумке - после минуты; уничтоженный восстанавливается. Книгу в чужом инвентаре или действующем обряде вернуть нельзя. Звук слышен только вплотную."
+	desc = "Призывает спрятанный кодекс или прячет книгу при вас. Потерянный личный кодекс возвращается после 20 секунд неподвижности, из шкафа или сумки - после 60 секунд."
+	summary = "Достаёт спрятанный кодекс или прячет книгу при вас."
 	action_icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
@@ -342,8 +347,10 @@
 	return where
 
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion
+	heretic_stun_check = TRUE
 	name = "Буйное разрастание"
 	desc = "Покройте ржавчиной поверхности вокруг себя."
+	summary = "Ржавчина на полах и стенах в 6 клетках вокруг вас."
 	school = "transmutation"
 	charge_max = 300 //twice as long as mansus grasp
 	clothes_req = FALSE
@@ -380,11 +387,14 @@
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion/small
 	name = "Обращение ржавчины"
 	desc = "Покройте ржавчиной поверхности вокруг себя."
+	summary = "Ржавчина на полах и стенах в 4 клетках вокруг вас."
 	range = 4
 
 /obj/effect/proc_holder/spell/pointed/blood_siphon
+	heretic_stun_check = TRUE
 	name = "Кровавый сифон"
 	desc = "Вытяните кровь из выбранного врага: нанесите 20 ушибов и вылечите столько же себе. Каждая ваша рана с вероятностью 50% перейдёт на соответствующую конечность цели."
+	summary = "20 ушибов врагу в 6 клетках и 20 лечения вам, часть ваших ран уходит к нему."
 	school = "evocation"
 	charge_max = 150
 	clothes_req = FALSE
@@ -432,8 +442,10 @@
 	return ..() && heretic_can_affect(user, target, chargecost = 0)
 
 /obj/effect/proc_holder/spell/aimed/rust_wave
+	heretic_stun_check = TRUE
 	name = "Длань покровителя"
 	desc = "Выпустите волну, которая покрывает ржавчиной поверхности на своём пути."
+	summary = "Заряд ржавчины на 15 клеток: 50 отравления и ржавый след."
 	projectile_type = /obj/item/projectile/magic/spell/rust_wave
 	charge_max = 350
 	clothes_req = FALSE
@@ -478,14 +490,17 @@
 
 /obj/effect/proc_holder/spell/aimed/rust_wave/short
 	name = "Малая длань покровителя"
+	summary = "Заряд ржавчины на 7 клеток: 50 отравления и ржавый след."
 	projectile_type = /obj/item/projectile/magic/spell/rust_wave/short
 
 /obj/item/projectile/magic/spell/rust_wave/short
 	range = 7
 
 /obj/effect/proc_holder/spell/pointed/cleave
+	heretic_stun_check = TRUE
 	name = "Рассечение"
 	desc = "Нанесите 20 ушибов, резаную рану и кровотечение выбранному человеку и врагам в одной клетке от него."
+	summary = "20 ушибов, рана и кровотечение человеку и врагам рядом с ним."
 	school = "transmutation"
 	charge_max = 350
 	clothes_req = FALSE
@@ -529,8 +544,10 @@
 	charge_max = 650
 
 /obj/effect/proc_holder/spell/targeted/touch/mad_touch
+	heretic_stun_check = TRUE
 	name = "Касание безумия"
-	desc = "Коснитесь врага: 60 урона мозгу, падение на пол и случайная фобия. Перезарядка 3 минуты."
+	desc = "Коснитесь врага: 60 урона мозгу, падение на 3 секунды и случайная фобия. Перезарядка 3 минуты."
+	summary = "Касание: 60 урона мозгу, падение на 3 секунды и фобия."
 	hand_path = /obj/item/melee/touch_attack/mad_touch
 	school = "evocation"
 	charge_max = 1800
@@ -561,15 +578,17 @@
 		playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
 		var/mob/living/carbon/C = target
 		C.adjustOrganLoss(ORGAN_SLOT_BRAIN,60)
-		C.DefaultCombatKnockdown(60, override_stamdmg = 0)
+		C.Knockdown(HERETIC_FLESH_MADNESS_KNOCKDOWN)
 		C.gain_trauma(/datum/brain_trauma/mild/phobia)
 		to_chat(user, span_warning("На [target.name] наложено проклятие!"))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "gates_of_mansus", /datum/mood_event/gates_of_mansus)
 		return ..()
 
 /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
+	heretic_stun_check = TRUE
 	name = "Хватка распада"
 	desc = "Коснитесь врага: 2 секунды на земле и 20 секунд распада, повреждающего тело и органы. Перезарядка 2 минуты."
+	summary = "Касание: 2 секунды на полу и 20 секунд распада."
 	hand_path = /obj/item/melee/touch_attack/grasp_of_decay
 	school = "evocation"
 	charge_max = 1200
@@ -603,8 +622,10 @@
 	return ..()
 
 /obj/effect/proc_holder/spell/pointed/nightwatchers_rite
+	heretic_stun_check = TRUE
 	name = "Обряд ночного дозора"
-	desc = "Выпустите пять расходящихся потоков огня в выбранном направлении."
+	desc = "Выпустите 5 расходящихся потоков огня в выбранном направлении."
+	summary = "5 потоков огня веером на 15 клеток: 8 ожогов и поджог."
 	school = "transmutation"
 	invocation = "IGNIS'INTI"
 	invocation_type = "whisper"
@@ -698,6 +719,7 @@
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade
 	name = "Огненный каскад"
 	desc = "Выпустите расширяющуюся волну пламени: она поджигает врагов и наносит 15 ожогов."
+	summary = "Огненная волна на 8 клеток: 15 ожогов и поджог."
 	school = "transmutation"
 	charge_max = 300 //twice as long as mansus grasp
 	clothes_req = FALSE
@@ -735,6 +757,7 @@
 
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade/big
 	desc = "Выпустите волну пламени на 10 клеток вокруг себя: она поджигает врагов и наносит им 15 ожогов. Перезарядка 30 секунд."
+	summary = "Огненная волна на 10 клеток: 15 ожогов и поджог."
 	range = HERETIC_ASH_CASCADE_RANGE
 
 /obj/effect/proc_holder/spell/targeted/telepathy/eldritch
@@ -745,7 +768,8 @@
 
 /obj/effect/proc_holder/spell/targeted/fire_sworn
 	name = "Клятва огня"
-	desc = "Минуту поддерживайте вокруг себя кольцо огня: оно поджигает врагов на соседних клетках и непрерывно их обжигает. Перезарядка 2 минуты."
+	desc = "60 секунд поддерживайте вокруг себя кольцо огня: оно поджигает врагов на соседних клетках и непрерывно их обжигает. Перезарядка 2 минуты."
+	summary = "60 секунд кольцо огня жжёт врагов рядом с вами."
 	invocation = "IGNIS'AISTRA'LISTRE"
 	invocation_type = "whisper"
 	clothes_req = FALSE
@@ -756,7 +780,7 @@
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "fire_ring"
 	///how long it lasts
-	var/duration = 1 MINUTES
+	var/duration = HERETIC_ASH_FIRE_SWORN_DURATION
 	///who casted it right now
 	var/mob/current_user
 	///Determines if you get the fire ring effect
@@ -844,8 +868,10 @@
 	duration = 12
 
 /obj/effect/proc_holder/spell/targeted/fiery_rebirth
+	heretic_stun_check = TRUE
 	name = "Возрождение ночного дозорного"
 	desc = "Погасите огонь на себе и вытяните жар из четырёх горящих врагов в пределах 4 клеток. Каждый получает 15 ожогов и восстанавливает вам по 10 ушибов и ожогов."
+	summary = "Гасит вас и лечит за счёт до 4 горящих врагов в 4 клетках."
 	invocation = "PETHRO'MINO'IGNI"
 	invocation_type = "whisper"
 	clothes_req = FALSE
@@ -957,6 +983,7 @@
 /obj/effect/proc_holder/spell/pointed/trigger/mute/eldritch
 	name = "Безмолвие"
 	desc = "Сила Мансуса лишает выбранную цель голоса на тридцать секунд."
+	summary = "Цель немеет на 30 секунд."
 	school = "transmutation"
 	charge_max = 1800
 	clothes_req = FALSE
@@ -1026,8 +1053,10 @@
 	update_icon()
 
 /obj/effect/proc_holder/spell/cone/staggered/entropic_plume
+	heretic_stun_check = TRUE
 	name = "Энтропийное облако"
-	desc = "Выпустите облако, которое дезориентирует врагов, ослепляет и отравляет их. Вдали ослепление сильнее, а отравление слабее. Поверхности на пути облака покрываются ржавчиной."
+	desc = "Выпустите облако, которое ослепляет врагов, сводит их с ума и разъедает коррозией. Вдали ослепление сильнее, а коррозия слабее."
+	summary = "Конус ржавчины: врагов слепит, сводит с ума и разъедает коррозией."
 	school = "illusion"
 	invocation = "RU'KAS NU'DYTI"
 	invocation_type = "whisper"
@@ -1065,7 +1094,8 @@
 
 /obj/effect/proc_holder/spell/targeted/shed_human_form
 	name = "Сбросить облик"
-	desc = "Смените человеческий облик на форму Повелителя Ночи или обратно. Повторная смена доступна через 10 секунд, а если червя убьют, еретик выпадает в человеческом теле и сменить облик сможет только через 2 минуты, причём червь вернётся вполовину раненым: каждый сегмент с половиной здоровья. Раны и длина чудовища сохраняются между превращениями. Голова червя пожирает трупы экипажа: через 3 секунды тело исчезает, вещи и органы, включая мозг, падают на пол, а червь восстанавливает 100 здоровья от головы к хвосту и отращивает сегмент, пока в нём меньше 16 сегментов. Урон по любому сегменту, движение червя или сдвинутый труп срывают трапезу. Тела еретиков и слуг, а также трупы в шкафах и мешках не годятся."
+	desc = "Смените человеческий облик на форму Повелителя Ночи или обратно. Убитый червь выбрасывает вас человеком, и облик вернётся только через 2 минуты."
+	summary = "Облик червя и обратно: голова пожирает трупы, червь лечится и растёт."
 	invocation_type = "shout"
 	invocation = "РЕАЛЬНОСТЬ, РАЗВЕРНИСЬ!"
 	clothes_req = FALSE
@@ -1129,8 +1159,11 @@
 		return
 
 /obj/effect/proc_holder/spell/pointed/void_blink
+	heretic_stun_check = TRUE
+	usable_while_grabbed = TRUE
 	name = "Пустотный сдвиг"
-	desc = "Переместитесь на открытую клетку в поле зрения в 3–7 клетках от вас. Враги возле точек выхода и входа получают 20 ушибов и замедляются на 4 секунды."
+	desc = "Переместитесь на открытую клетку в поле зрения в 3–7 клетках от вас. Враги возле точек выхода и входа получают 20 ушибов и замедляются на 4 секунды. Работает в чужой хватке, но до вознесения не под оглушением."
+	summary = "Прыжок на 3-7 клеток: удар и замедление врагам у входа и выхода."
 	invocation_type = "whisper"
 	invocation = "PAS'VEIK"
 	clothes_req = FALSE
@@ -1195,8 +1228,10 @@
 	pixel_y = -32
 
 /obj/effect/proc_holder/spell/targeted/void_pull
+	heretic_stun_check = TRUE
 	name = "Притяжение пустоты"
 	desc = "Притяните видимых врагов в пределах трёх клеток на два шага к себе и замедлите на 4 секунды. Те, кто уже стоит вплотную, получают 20 ушибов и падают на 2 секунды."
+	summary = "Тянет врагов в 3 клетках к вам, стоящих вплотную валит."
 	invocation_type = "whisper"
 	invocation = "VISA'GALIS TRAUK'IMAS"
 	clothes_req = FALSE
@@ -1227,8 +1262,10 @@
 			step_towards(victim, user)
 
 /obj/effect/proc_holder/spell/pointed/boogie_woogie
+	heretic_stun_check = TRUE
 	name = "Аплодисменты пустоты"
 	desc = "Хлопните в ладоши и поменяйтесь местами с выбранной целью. После успешного обмена враждебная цель замедляется на 4 секунды."
+	summary = "Обмен местами с живым существом в поле зрения."
 	school = "transmutation"
 	charge_max = 100
 	clothes_req = FALSE
@@ -1278,8 +1315,10 @@
 	return heretic_check(user, !is_blocked_turf(get_turf(victim), TRUE) && !is_blocked_turf(get_turf(user), TRUE), silent, "Одну из клеток занимает преграда.")
 
 /obj/effect/proc_holder/spell/aoe_turf/domain_expansion
+	heretic_stun_check = TRUE
 	name = "Бесконечная пустота"
-	desc = "После трёх секунд сосредоточения создайте домен 7×7 на 20 секунд. Он замедляет врагов и накладывает метки Пустоты; союзники свободно проходят через него. Сдвиг «Ищущего клинка» к врагу внутри домена восстанавливается 2 секунды. Скованность проходит через 4 секунды после выхода."
+	desc = "После 3 секунд сосредоточения создайте домен 7×7 на 20 секунд. Он замедляет врагов и ставит им Метки Пустоты, союзники проходят свободно."
+	summary = "Домен 7×7 на 20 секунд: замедление и Метки Пустоты врагам."
 	charge_max = 60 SECONDS
 	clothes_req = FALSE
 	invocation_type = "none"

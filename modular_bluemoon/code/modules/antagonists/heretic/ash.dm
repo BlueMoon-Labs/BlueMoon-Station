@@ -200,6 +200,7 @@
 	radius = 0
 	duration = HERETIC_ASH_TRAIL_DURATION
 	applies_slowdown = FALSE
+	water_douses = FALSE
 	var/static/mutable_appearance/trail_glow
 
 /obj/effect/heretic_combat_zone/ash/lord_trail/Initialize(mapload, datum/mind/master)
@@ -241,6 +242,43 @@
 	expires_at = world.time + duration
 	expiry_timer = QDEL_IN_STOPPABLE(src, duration)
 	burn_down()
+
+/obj/effect/heretic_combat_zone/ash
+	/// Вода и пена гасят огонь целиком; след вознёсшегося им не поддаётся.
+	var/water_douses = TRUE
+
+/obj/effect/heretic_combat_zone/ash/Initialize(mapload, datum/mind/master)
+	. = ..()
+	if(water_douses)
+		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed))
+
+/obj/effect/heretic_combat_zone/ash/style_edge(obj/effect/heretic_field_edge/edge, reused = FALSE)
+	. = ..()
+	if(water_douses && !reused)
+		RegisterSignal(edge, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed))
+
+/// Вода или пена на любой клетке гасит весь огонь.
+/obj/effect/heretic_combat_zone/ash/proc/on_exposed(atom/source, list/reagents)
+	SIGNAL_HANDLER
+	for(var/datum/reagent/reagent as anything in reagents)
+		if(istype(reagent, /datum/reagent/water) || istype(reagent, /datum/reagent/firefighting_foam))
+			playsound(get_turf(src), 'sound/effects/extinguish.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
+			qdel(src)
+			return
+
+/datum/eldritch_knowledge/base_ash/pocket_door(mob/living/user, mob/living/victim)
+	if(!door_holds(user, victim))
+		return null
+	return list("name" = "в пепельный круг", "text" = "Пепел вокруг [victim] смыкается кругом и проваливается.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+
+/// Готовая цель на своём огне Угасания, еретик рядом; след вознёсшегося владыки дверью не служит.
+/datum/eldritch_knowledge/base_ash/proc/door_holds(mob/living/user, mob/living/victim)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+		return FALSE
+	if(!door_zone_under(victim, /obj/effect/heretic_combat_zone/ash))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic.hunt_target_ready(victim)
 
 /// Жар перед каскадом: воздух над владыкой дрожит, затем от него расходится огненная волна с выбросом углей.
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade/big/cascade_opening(turf/origin, atom/centre)

@@ -185,6 +185,7 @@
 #include "heretic_progression.dm"
 #include "heretic_mansus.dm"
 #include "heretic_pocket.dm"
+#include "heretic_oldpath_doors.dm"
 #include "heretic_feedback.dm"
 #include "heretic_rust.dm"
 #include "heretic_rust_ascension.dm"
