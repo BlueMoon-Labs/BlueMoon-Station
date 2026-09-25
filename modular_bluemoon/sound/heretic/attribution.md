@@ -111,7 +111,7 @@
 
 ## Изнанка, прижатие и захваты
 
-Файлы в `capture/` собраны из синтеза (шум с фильтрами, удары с падающей частотой, негармонические колокола, пузыри, треск, напев через форманты, реверберация) и слои записей ниже, изменённые по скорости, фильтрам, огибающей и уровню. Итог распространяется под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+Файлы в `capture/` собраны из синтеза (шум с фильтрами, удары с падающей частотой, диссонансный гул на тритон и малую секунду, негармонические колокола, голос через форманты, пузыри, треск, звон в ушах, развёрнутая и обычная реверберация) и слоёв записей ниже, изменённых по скорости, направлению, фильтрам, огибающей и уровню. Итог распространяется под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
 
 Записи-слои из [tgstation/tgstation](https://github.com/tgstation/tgstation), снимок `5f093a8cfbbe269b15bc73535f230909218e38d6`, лицензия CC BY-SA 3.0, если в [атрибуции источника](https://github.com/tgstation/tgstation/blob/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/attributions.txt) не указано иное:
 
@@ -126,28 +126,33 @@
 | [sound/machines/closet/closet_lock.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/machines/closet/closet_lock.ogg) | sadboysuss, CC BY-SA |
 | [sound/items/weapons/gun/tesla/squeak_latch.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/weapons/gun/tesla/squeak_latch.ogg) | [Sonicquinn](https://freesound.org/people/Sonicquinn/sounds/435834/), [holisoysilvi](https://freesound.org/people/holisoysilvi/sounds/610182/), CC0 |
 | [sound/mobs/humanoids/ethereal/ethereal_crystalization.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/mobs/humanoids/ethereal/ethereal_crystalization.ogg) | CC BY-SA 3.0 |
+| [sound/music/antag/bloodcult/ghost_whisper.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/music/antag/bloodcult/ghost_whisper.ogg), [sound/effects/heart_beat.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/heart_beat.ogg), [sound/items/handling/surgery/organ2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/handling/surgery/organ2.ogg), [sound/effects/wounds/crackandbleed.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/wounds/crackandbleed.ogg), [sound/effects/wounds/sizzle2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/wounds/sizzle2.ogg), [sound/machines/airlock/boltsdown.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/machines/airlock/boltsdown.ogg), [sound/items/unsheath.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/items/unsheath.ogg), [sound/effects/bubbles/bubbles2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/bubbles/bubbles2.ogg), [sound/effects/clock_tick.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/clock_tick.ogg), [sound/effects/magic/timeparadox2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/magic/timeparadox2.ogg), [sound/effects/magic/cosmic_energy.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/magic/cosmic_energy.ogg) | CC BY-SA 3.0 |
+| [sound/mobs/humanoids/shadow/shadow_wail.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/mobs/humanoids/shadow/shadow_wail.ogg) | [Robinhood76](https://freesound.org/people/Robinhood76/sounds/585631/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| [sound/effects/goresplat.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/goresplat.ogg) | [ThefitzyG](https://freesound.org/people/ThefitzyG/sounds/414296/), CC0 |
+| [sound/misc/metal_creak.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/misc/metal_creak.ogg) | [Metal door creak - BloodPixelHero](https://freesound.org/people/BloodPixelHero/sounds/585323/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| [sound/ambience/earth_rumble/earth_rumble_distant2.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/ambience/earth_rumble/earth_rumble_distant2.ogg) | [metrostock99](https://freesound.org/people/metrostock99/sounds/203281/), CC0 |
 
 `tinkly_bell.ogg` взят из [Baystation12](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/items/tinkly_bell.ogg), снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`, добавлен spookerton; лицензия CC BY-SA 3.0 согласно README источника.
 
 | Файл | Где звучит | Состав |
 | --- | --- | --- |
-| `pocket_pull.ogg` | Канал двери: цель тянет сквозь завесу | Развёрнутый `portal_travel` с нарастанием, восходящий гул 62-132 Гц, в конце `air_suck` со скоростью 0.8. |
-| `pocket_open.ogg` | Разрыв раскрывается снаружи | `portal_open_2` со скоростью 0.82, `cloth_rip` со скоростью 0.72, низкий удар 70-34 Гц. |
-| `pocket_enter.ogg` | Разрыв раскрывается изнутри: попавшие в изнанку | Приглушённый `portal_close` со скоростью 0.74, глухой удар, тихий звон в ушах 1.7 кГц. |
-| `pocket_exit.ogg` | Выход и вынос еретика у своего выхода | Развёрнутый `air_suck`, `portal_open_3` со скоростью 1.12, короткий удар. |
-| `pocket_tear.ogg` | Экипаж рвёт разрыв руками, три раза за попытку и громче с каждым | Синтезированный треск нарастающей плотности, четыре `cloth_rip` всё громче, напряжённый гул 48-78 Гц. |
-| `pocket_seal.ogg` | Разрыв закрыт нулевым жезлом или Библией | Развёрнутый `portal_close` схлопывается в удар, дальше `magic_block_holy`. |
-| `pocket_collapse.ogg` | Изнанка схлопывается у входа | Всасывающий шум нарастающей частоты, низкий удар 58-26 Гц с шумовым хвостом, треск обломков, `portal_close` со скоростью 0.66. |
-| `heart_grip.ogg` | Сердце прижимает цель | Синтез: нарастающее давление и двойной удар сердца 78-38 и 66-32 Гц с резонансом тела. |
-| `blade_refusal.ogg` | Невидимый клинок бьёт отказавшегося от дуэли | Свист полосового шума 0.7-4.5 кГц, `fish_slap2`, `block_blade`, стальной звон. |
-| `sand_latch.ogg` | Стазис Песка | Синтез: сыплющиеся песчинки редеют и обрываются, удар и стеклянный звон 1.3 кГц. |
-| `cosmic_latch.ogg` | Орбита Космоса | Синтез: восходящее арпеджио пяти звёздных колоколов, искры, низкий гул. |
-| `lock_latch.ogg` | Призрачный замок | `squeak_latch`, `closet_lock` со скоростью 0.92, короткий золотой звон 1.57 кГц. |
-| `tide_latch.ogg` | Захлёб Пучины | Синтез: 46 пузырей, бульканье низкого шума, захлёбывающийся тон. |
-| `spirit_latch.ogg` | Удержание души | Синтез: шёпот формантного шума, развёрнутый колокол нарастает в звон 1 кГц. |
-| `glass_latch.ogg` | Стеклянный саркофаг | `ethereal_crystalization` с нарастанием, восходящие хрустальные чирпы, звон 2.1 кГц. |
-| `moon_latch.ogg` | Сомнамбула Луны | Синтез: два мягких колокола G5 и C5, `tinkly_bell` со скоростью 0.62. |
-| `echo_latch.ogg` | Колыбельная Эха | Синтез: напев с закрытым ртом G4-E4-G4-E4 и три затухающих отражения. |
-| `blood_latch.ogg` | Кровопускание | Синтез: тянущийся скрип натянутой жилы 85-180 Гц, влажный всплеск, удар. |
-| `throat_latch.ogg` | Клинок у горла | Синтез: металлический скрежет вынимаемого клинка с восходящей полосой, щелчок и звон. |
-| `wax_latch.ogg` | Сон по кукле | Синтез: шипение и треск плавящегося воска, три капли, оседающий тон. |
+| `pocket_pull.ogg` | Канал двери: цель тянет сквозь завесу | Развёрнутый `portal_travel` со скоростью 0.75 с нарастанием, развёрнутый `ghost_whisper` двумя голосами со скоростями 0.8 и 0.62, восходящий диссонансный гул 38-76 Гц, в конце `air_suck` со скоростью 0.7. |
+| `pocket_open.ogg` | Разрыв раскрывается снаружи | Втягивающийся развёрнутый хвост, `portal_open_2` со скоростью 0.7, `cloth_rip` со скоростью 0.6, `crackandbleed` со скоростью 0.72, удар 62-28 Гц, диссонансный гул от 41 Гц, из разрыва выдыхается `ghost_whisper`. |
+| `pocket_enter.ogg` | Разрыв раскрывается изнутри: попавшие в изнанку | Приглушённый `portal_close` со скоростью 0.62, падающая полоса шума, глухой удар 55-24 Гц, звон в ушах около 4 кГц, далёкий стон из `shadow_wail` со скоростью 0.42, гул 33 Гц, реверберация пустого зала. |
+| `pocket_exit.ogg` | Выход и вынос еретика у своего выхода | Развёрнутый `air_suck` со скоростью 0.6, уходящий шёпот `ghost_whisper`, `portal_open_3` со скоростью 0.88, влажная перепонка из `organ2` со скоростью 0.72, удар 85-38 Гц. |
+| `pocket_tear.ogg` | Экипаж рвёт разрыв руками, три раза за попытку и громче с каждым | Треск нарастающей плотности, четыре `cloth_rip` со скоростью 0.72 всё громче, скрежет `metal_creak` со скоростью 0.6, гул 40-62 Гц с учащающимся тремоло, развёрнутый `shadow_wail` со скоростью 0.58 нарастает к концу, свист натяжения. |
+| `pocket_seal.ogg` | Разрыв закрыт нулевым жезлом или Библией | Развёрнутые `shadow_wail` со скоростью 0.55 и `portal_close` схлопываются в удар 95-38 Гц, дальше `magic_block_holy` со скоростью 0.92 и затухающий гул 49 Гц. |
+| `pocket_collapse.ogg` | Изнанка схлопывается у входа | Всасывающий шум и развёрнутый шёпот, удар 52-22 Гц с шумовым хвостом, перегруженный `earth_rumble_distant2`, `crackandbleed` со скоростью 0.55, треск обломков, `portal_close` со скоростью 0.6. |
+| `heart_grip.ogg` | Сердце прижимает цель | Удар «тук-тук» из `heart_beat` со скоростью 0.82 с резонансом грудной клетки, удары 70-34 и 60-30 Гц, влажные слои `goresplat`, давящий гул 34 Гц, глухая реверберация. |
+| `blade_refusal.ogg` | Невидимый клинок бьёт отказавшегося от дуэли | Свист полосового шума 0.45-3 кГц, `fish_slap2` со скоростью 0.8, `block_blade` со скоростью 0.84, удар 110-45 Гц, дрожащий стальной звон на малую секунду 698/740 Гц. |
+| `sand_latch.ogg` | Стазис Песка | Синтез осыпающегося песка, который замедляется и понижается, как остановленная лента; три `clock_tick` со скоростями 1, 0.8 и 0.55; на застывании `timeparadox2` со скоростью 0.78, удар и глухой колокол 311 Гц с тритоном. |
+| `cosmic_latch.ogg` | Орбита Космоса | Гул 36.7 Гц с тритоном и малой ноной, развёрнутый `cosmic_energy` со скоростью 0.6, три сползающих вниз негармонических колокола C♯5, G4 и G♯5 с обертонами на малую секунду и тритон, удар, редкие искры. |
+| `lock_latch.ogg` | Призрачный замок | Скрежет ключа из `metal_creak` со скоростью 0.75, `squeak_latch` со скоростью 0.8, `boltsdown` со скоростью 0.72, `closet_lock` со скоростью 0.78, резонансный лязг, звон на малую секунду 523/554 Гц. |
+| `tide_latch.ogg` | Захлёб Пучины | `bubbles2` со скоростью 0.6, 22 низких пузыря, давление ниже 120 Гц, китовый стон 205-145 Гц, бульканье, глухая подводная реверберация. |
+| `spirit_latch.ogg` | Удержание души | Развёрнутый `ghost_whisper` двумя голосами нарастает к хватке, вой из `shadow_wail` со скоростью 0.5, втягивающийся удар, колокол 311 Гц с тритоном, затихающий шёпот. |
+| `glass_latch.ogg` | Стеклянный саркофаг | `ethereal_crystalization` со скоростью 0.92 с нарастанием, двенадцать трещин с резонансами стекла, трение по стеклу, удар и режущий звон на малую секунду 1568/1661 Гц. |
+| `moon_latch.ogg` | Сомнамбула Луны | Синтез: колыбельная музыкальной шкатулки G5-E5-C5-B4-G4 с расстроенным на 40 центов двойником, мелодия сползает вниз на большую терцию, как засыпающая лента; тихий гул с тритоном, `tinkly_bell` со скоростью 0.45. |
+| `echo_latch.ogg` | Колыбельная Эха | Синтез: напев с закрытым ртом G3-C♯4-G3-F♯3 с голосом октавой ниже и расстроенным двойником, четыре отражения, каждое ниже и глуше, шёпот `ghost_whisper`. |
+| `blood_latch.ogg` | Кровопускание | `goresplat` со скоростью 0.7, скрип натянутой жилы 58-128 Гц, `organ2` со скоростью 0.6, пульсирующий ток крови, удар из `heart_beat` со скоростью 0.85. |
+| `throat_latch.ogg` | Клинок у горла | Резкий вдох, металлический скрежет вынимаемого клинка с восходящей полосой, `unsheath` со скоростью 0.72, звон на малую секунду 1318/1397 Гц, гул 55 Гц. |
+| `wax_latch.ogg` | Сон по кукле | `sizzle2` со скоростью 0.8, треск свечи, три тяжёлые капли, оседающий стон 138-108 Гц. |
