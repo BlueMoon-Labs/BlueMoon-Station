@@ -186,9 +186,11 @@
 	if(!moved)
 		mover.set_glide_size(previous_glide)
 		return
-	visual_duration = render_delay + step_cost
+	// BYOND не переносит недоезд glide на следующий шаг, поэтому штатный glide тянется ровно на интервал до него.
+	var/glide_time = render_mode == FRACTIONAL_MOVEMENT_NATIVE ? step_interval : step_cost
+	visual_duration = render_delay + glide_time
 	visual_distance = max(abs(delta_x), abs(delta_y)) * icon_size
-	applied_glide = min(MAX_GLIDE_SIZE, icon_size * tick_lag / step_cost * dilation)
+	applied_glide = min(MAX_GLIDE_SIZE, icon_size * tick_lag / glide_time * dilation)
 	visual_valid = TRUE
 	mover.set_glide_size(applied_glide)
 	if(render_mode == FRACTIONAL_MOVEMENT_NATIVE)

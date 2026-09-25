@@ -249,3 +249,18 @@
 	LAZYADD(mover.buckled_mobs, rider)
 	TEST_ASSERT(fractional_test_step(schedule, mover, 1.75, EAST, schedule.next_target), "Седок на спине не выключает дробное расписание")
 	LAZYREMOVE(mover.buckled_mobs, rider)
+
+/// Штатный glide покрывает ровно интервал до следующего шага: без остановки на длинном и без рывка на коротком.
+/datum/unit_test/fractional_movement_native_glide_per_interval/Run()
+	var/mob/living/simple_animal/fractional_movement_fixture/mover = allocate(/mob/living/simple_animal/fractional_movement_fixture, get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/datum/fractional_movement_schedule/schedule = allocate(/datum/fractional_movement_schedule, FRACTIONAL_MOVEMENT_NATIVE)
+	var/list/directions = list(EAST, WEST, EAST, WEST, NORTHEAST, SOUTHWEST)
+	var/now = 1000
+	var/list/intervals = list()
+	for(var/direction in directions)
+		TEST_ASSERT(fractional_test_step(schedule, mover, 1.75, direction, now), "Шаг должен идти по дробному расписанию")
+		intervals |= schedule.step_interval
+		TEST_ASSERT(abs(mover.glide_size - 16 / schedule.step_interval) < 0.001, "Glide [mover.glide_size] обязан покрыть интервал [schedule.step_interval]")
+		TEST_ASSERT(abs(schedule.visual_duration - schedule.step_interval) < 0.001, "Анимация обязана кончаться ровно к следующему шагу")
+		now = schedule.next_target
+	TEST_ASSERT(length(intervals) > 1, "Цена 1.75 обязана давать чередование интервалов")
