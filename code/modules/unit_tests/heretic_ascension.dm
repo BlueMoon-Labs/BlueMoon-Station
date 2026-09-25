@@ -418,3 +418,13 @@
 	spell.cast(list(), user)
 	TEST_ASSERT(QDELETED(first_circle), "Повторный такт удаляет предыдущий круг.")
 	TEST_ASSERT_NOTNULL(spell.winter_circle, "После повторного такта остаётся один новый круг.")
+
+/// Руна прямо отказывает во втором вознесении, а не перечисляет подношения.
+/datum/unit_test/heretic_ascension_repeat_refusal/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/final_eldritch/flesh_final/finale = allocate(/datum/eldritch_knowledge/final_eldritch/flesh_final)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	TEST_ASSERT(!findtext(rune.recipe_failure_reason(finale, user), "уже вознеслись"), "До вознесения руна называет подношения.")
+	heretic.ascended = TRUE
+	TEST_ASSERT(findtext(rune.recipe_failure_reason(finale, user), "уже вознеслись"), "После вознесения руна прямо отказывает во втором.")

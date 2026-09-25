@@ -177,14 +177,36 @@
 	for(var/datum/weakref/blade_ref in created_blades.Copy())
 		if(!blade_ref.resolve())
 			created_blades -= blade_ref
-	if(length(created_blades) >= HERETIC_BLADE_LIMIT)
-		to_chat(user, span_warning("У вас уже есть три тёмных клинка. Потерянный клинок можно вернуть изученным зовом."))
+	if(length(created_blades) >= HERETIC_BLADE_LIMIT && !reclaimable_blade(user))
+		to_chat(user, span_warning("Все три тёмных клинка при вас. Новый клинок рассыпает старейший из тех, что не у вас."))
 		return FALSE
 	return TRUE
+
+/// Старейший свой клинок не при еретике: на полу, в чужих руках или в контейнере.
+/datum/eldritch_knowledge/base_blade/proc/reclaimable_blade(mob/living/user)
+	for(var/datum/weakref/blade_ref in created_blades)
+		var/obj/item/melee/sickly_blade/duelist/blade = blade_ref.resolve()
+		if(blade && get_atom_on_turf(blade) != user)
+			return blade
+
+/datum/eldritch_knowledge/base_blade/proc/crumble_blade(obj/item/melee/sickly_blade/duelist/blade)
+	created_blades -= WEAKREF(blade)
+	var/turf/place = get_turf(blade)
+	var/mob/holder = get_atom_on_turf(blade, /mob)
+	if(ismob(holder))
+		to_chat(holder, span_warning("[blade] рассыпается в пепел прямо у вас в руках."))
+	if(place)
+		place.visible_message(span_warning("[blade] темнеет и рассыпается пеплом."))
+		new /obj/effect/decal/cleanable/ash(place)
+		playsound(place, "shatter", 40, TRUE)
+	log_game("HERETIC BLADE: [blade] рассыпается при создании нового клинка в [AREACOORD(place)].")
+	qdel(blade)
 
 /datum/eldritch_knowledge/base_blade/on_finished_recipe(mob/living/user, list/atoms, loc)
 	if(!recipe_snowflake_check(atoms, loc, list(), user))
 		return FALSE
+	if(length(created_blades) >= HERETIC_BLADE_LIMIT)
+		crumble_blade(reclaimable_blade(user))
 	var/obj/item/melee/sickly_blade/duelist/blade = new(loc)
 	blade.bound_mind = user.mind
 	created_blades += WEAKREF(blade)
@@ -639,6 +661,7 @@
 	details = list(
 		"Клинок должен лежать на виду не дальше 7 клеток.",
 		"Клинок в чужих руках или в закрытом контейнере не откликается.",
+		"Без зова: четвёртый клинок рассыпает пеплом старейший из тех, что не при вас.",
 	)
 	role = HERETIC_ROLE_SUPPORT
 	route = PATH_BLADE

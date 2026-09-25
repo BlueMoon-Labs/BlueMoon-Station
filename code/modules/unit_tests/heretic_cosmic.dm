@@ -595,7 +595,7 @@
 	TEST_ASSERT_EQUAL(count, 1, "Повторный призыв не создаёт второго Звездочёта.")
 	TEST_ASSERT_EQUAL(finale.stargazer, gazer, "Прежний Звездочёт остаётся на месте.")
 
-/// Луч бьёт ближайшего врага на открытой линии на 20 ожогов и проходит сквозь союзников Мансуса.
+/// Луч бьёт ближайшего врага на открытой линии на 20 ожогов, враждебных мобов тоже, и проходит сквозь союзников Мансуса.
 /datum/unit_test/heretic_cosmic_stargazer_beam/Run()
 	var/turf/origin = run_loc_floor_bottom_left
 	var/list/fixture = ascend_cosmic_fixture(get_step(origin, WEST))
@@ -633,6 +633,10 @@
 	qdel(victim)
 	qdel(hidden)
 	TEST_ASSERT_NULL(gazer.pick_target(user), "Рядом одни союзники: Звездочёту некого бить.")
+	allocate(/mob/living/simple_animal/pet/dog/corgi, get_step(origin, EAST))
+	TEST_ASSERT_NULL(gazer.pick_target(user), "Питомца Звездочёт не трогает.")
+	var/mob/living/simple_animal/hostile/carp/carp = allocate(/mob/living/simple_animal/hostile/carp, get_step(get_step(get_step(origin, EAST), EAST), EAST))
+	TEST_ASSERT_EQUAL(gazer.pick_target(user), carp, "Враждебного моба без игрока Звездочёт бьёт.")
 
 /// Гибель Звездочёта оставляет угасающее тело и запускает перезарядку призыва в 3 минуты.
 /datum/unit_test/heretic_cosmic_stargazer_death_cooldown/Run()

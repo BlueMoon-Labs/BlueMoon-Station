@@ -413,6 +413,11 @@
 				break
 		if(!has_own_heart)
 			return "Рядом с назначенной целью нужно выложить ваше живое сердце. Чужое сердце не подходит."
+	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
+		var/datum/eldritch_knowledge/final_eldritch/finale = ritual
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		if(finale.finished || heretic?.ascended)
+			return "Вы уже вознеслись: второго вознесения не бывает."
 	var/list/missing = list()
 	var/list/requirements = list()
 	for(var/required_type in ritual.required_atoms)
@@ -453,7 +458,7 @@
 			return "Руна должна находиться на открытом полу."
 		return "Температура воздуха на руне: [round(floor.GetTemperature() - T0C, 0.1)] °C; нужно не выше 0 °C. Можно обойтись без охлаждения: встаньте у руны, примените «Зимний предел» и сразу начните обряд. Поле должно сохраняться до его конца."
 	if(ritual.type == /datum/eldritch_knowledge/base_blade)
-		return "Достигнут предел связанных тёмных клинков: у вас уже есть три. Разбитый для побега клинок освобождает место. «Зов клинка» возвращает только ваш клинок, лежащий на полу в поле зрения до 7 клеток; из чужих рук и контейнеров он его не заберёт."
+		return "Достигнут предел связанных тёмных клинков, и все три при вас. Клинок, который вы уронили, отдали или у вас отняли, рассыпается при создании нового."
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
 		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Цель, которая сама легла или уснула, не считается."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))

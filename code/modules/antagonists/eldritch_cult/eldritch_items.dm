@@ -54,11 +54,21 @@
 		. += span_notice("Сожмите сердце, чтобы выбрать цель.")
 	. += span_notice("Коснитесь сердцем обезвреженной цели охоты: круг проступит прямо под телом, и обряд займёт [DisplayTimeText(heretic.heart_rite_time(heretic.hunt_target?.current || user), 1)]. На руне трансмутации сердце кладут рядом с целью.")
 	. += span_notice("Если у пути есть дверь, сердце предложит увести цель в изнанку; если дверь работает издалека, сжатое сердце спросит, найти цель или увести её.")
-	. += span_notice("Коснитесь сердцем поверженного члена экипажа, чтобы сделать целью его. Смена цели - не чаще раза в [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)].")
+	. += span_notice("Сменить цель: Alt+ЛКМ по сердцу, кнопка в кодексе или касание сердцем поверженного члена экипажа. Не чаще раза в [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)].")
 
 /obj/item/living_heart/AltClick(mob/user)
 	. = ..()
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK) || !bind(user.mind))
+		return
+	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
+	heretic.ensure_hunt_target(user, force_replace = TRUE)
+
+/obj/item/living_heart/Topic(href, list/href_list)
+	. = ..()
+	if(!href_list["retarget"])
+		return
+	var/mob/living/user = usr
+	if(!istype(user) || !user.is_holding(src) || !bind(user.mind))
 		return
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	heretic.ensure_hunt_target(user, force_replace = TRUE)
@@ -102,7 +112,10 @@
 	var/distance = get_dist(user_turf, target_turf)
 	var/direction = get_dir(user_turf, target_turf)
 	balloon_alert(user, distance ? "[distance] кл., [dir2text_ru(direction)]" : "прямо здесь")
-	to_chat(user, span_notice("[target.real_name]: [distance <= 15 ? "совсем рядом" : distance <= 31 ? "поблизости" : "далеко"], [dir2text_ru(direction)]."))
+	to_chat(user, span_notice("[target.real_name]: [distance <= 15 ? "совсем рядом" : distance <= 31 ? "поблизости" : "далеко"], [dir2text_ru(direction)]. [heretic.retarget_hint(src)]"))
+	if(!heretic.hunt_stale_hinted && world.time - heretic.hunt_assigned_at >= HERETIC_HUNT_STALE_TIME)
+		heretic.hunt_stale_hinted = TRUE
+		to_chat(user, span_boldnotice("Охота на [target.real_name] затянулась. Если цель охраняют или прячут, не упирайтесь: выберите другую. [heretic.retarget_hint(src)]"))
 	if(target.stat == DEAD)
 		to_chat(user, span_notice("Цель погибла. Её труп принимается за 1 очко знаний без побочного; тело останется на месте. Коснитесь его сердцем или принесите к руне."))
 	else if(heretic.hunt_target_ready(target))

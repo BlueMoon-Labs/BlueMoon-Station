@@ -75,6 +75,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/influences_harvested = 0
 	var/hunt_selection_open = FALSE
 	var/datum/weakref/watched_hunt_body
+	var/hunt_assigned_at = 0
+	var/hunt_stale_hinted = FALSE
 	COOLDOWN_DECLARE(hunt_refresh_cooldown)
 	COOLDOWN_DECLARE(hunt_downed_alert_cooldown)
 	COOLDOWN_DECLARE(hunt_claim_hint_cooldown)
@@ -123,6 +125,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	unwatch_hunt_body()
 	hunt_target = new_target
 	hunt_candidates.Cut()
+	hunt_assigned_at = world.time
+	hunt_stale_hinted = FALSE
 	if(new_target)
 		RegisterSignal(new_target, COMSIG_MIND_TRANSFER, PROC_REF(on_hunt_target_transferred))
 		watch_hunt_body(new_target.current)
@@ -352,6 +356,12 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 
 /datum/antagonist/heretic/proc/prompt_hunt_target(mob/living/user, list/choices)
 	return tgui_input_list(user, "Кому предстоит увидеть Мансус? Живую цель достаточно связать, оглушить или сбить с ног, а затем коснуться живым сердцем. Цель в крите принимается без наручников.", "Зов живого сердца", choices)
+
+/// Строка под поиском цели: ссылка на смену или время до неё.
+/datum/antagonist/heretic/proc/retarget_hint(obj/item/living_heart/heart)
+	if(!COOLDOWN_FINISHED(src, hunt_refresh_cooldown))
+		return "Сменить цель можно через [DisplayTimeText(COOLDOWN_TIMELEFT(src, hunt_refresh_cooldown))]."
+	return "<a href='byond://?src=[REF(heart)];retarget=1'>Сменить цель</a> (или Alt+ЛКМ по сердцу, или кнопка в кодексе)."
 
 /datum/antagonist/heretic/proc/ensure_hunt_target(mob/living/user, force_replace = FALSE)
 	if(role_removed || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || user.incapacitated() || hunt_selection_open)

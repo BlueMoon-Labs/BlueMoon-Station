@@ -694,29 +694,47 @@
 	knowledge.on_body_gain(user)
 	TEST_ASSERT(locate(/obj/effect/proc_holder/spell/pointed/heretic_blade_challenge) in user.mind.spell_list, "Новое тело получает Вызов заново.")
 
-/// Три связанных клинка допускаются, четвёртый запрещён; разрушенный освобождает место.
+/// Три клинка при еретике блокируют четвёртый; иначе новый клинок рассыпает старейший из тех, что не при нём.
 /datum/unit_test/heretic_blade_weapon_reserve/Run()
 	var/list/fixture = make_blade_fixture()
 	var/mob/living/user = fixture["user"]
+	var/mob/living/attacker = fixture["attacker"]
 	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/list/blades = list(fixture["blade"])
 	for(var/index in 1 to 2)
 		TEST_ASSERT(knowledge.on_finished_recipe(user, list(), get_turf(user)), "Можно создать второй и третий клинок.")
 		var/datum/weakref/blade_ref = knowledge.created_blades[length(knowledge.created_blades)]
 		var/obj/item/melee/sickly_blade/duelist/blade = blade_ref.resolve()
 		allocated += blade
 		TEST_ASSERT_EQUAL(blade.bound_mind, user.mind, "Резервный клинок привязан к создателю.")
-	TEST_ASSERT(!knowledge.on_finished_recipe(user, list(), get_turf(user)), "Четвёртый клинок не создаётся.")
+		blade.forceMove(user)
+		blades += blade
+	TEST_ASSERT(!knowledge.on_finished_recipe(user, list(), get_turf(user)), "Четвёртый клинок не создаётся, пока все три при еретике.")
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
 	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, get_turf(user))
 	allocate(/obj/item/stack/sheet/metal, get_turf(user))
 	TEST_ASSERT(!rune.do_ritual(user, knowledge), "Руна отклоняет четвёртый клинок.")
 	TEST_ASSERT(!QDELETED(knife), "Отказ не расходует нож.")
 	TEST_ASSERT(findtext(rune.recipe_failure_reason(knowledge, user), "предел связанных"), "Отказ руны объясняет лимит клинков.")
-	qdel(fixture["blade"])
-	TEST_ASSERT(knowledge.on_finished_recipe(user, list(), get_turf(user)), "Потраченный клинок можно заменить.")
-	var/datum/weakref/replacement_ref = knowledge.created_blades[length(knowledge.created_blades)]
-	allocated += replacement_ref.resolve()
-	TEST_ASSERT_EQUAL(length(knowledge.created_blades), 3, "Удалённые клинки не занимают лимит.")
+	var/obj/item/melee/sickly_blade/duelist/dropped = blades[2]
+	var/turf/drop_turf = get_step(user, NORTH)
+	dropped.forceMove(drop_turf)
+	TEST_ASSERT(knowledge.on_finished_recipe(user, list(), get_turf(user)), "Уроненный клинок не держит место.")
+	TEST_ASSERT(QDELETED(dropped), "Новый клинок рассыпает уроненный.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/decal/cleanable/ash) in drop_turf, "На месте рассыпанного клинка остаётся пепел.")
+	var/datum/weakref/fourth_ref = knowledge.created_blades[length(knowledge.created_blades)]
+	var/obj/item/melee/sickly_blade/duelist/fourth = fourth_ref.resolve()
+	allocated += fourth
+	var/obj/item/melee/sickly_blade/duelist/taken = blades[3]
+	attacker.put_in_hands(taken)
+	TEST_ASSERT(knowledge.on_finished_recipe(user, list(), get_turf(user)), "Отнятый клинок не держит место.")
+	TEST_ASSERT(QDELETED(taken), "Рассыпается старейший клинок не при еретике, даже в чужих руках.")
+	TEST_ASSERT(!QDELETED(fourth), "Более новый клинок на полу уцелел.")
+	var/obj/item/melee/sickly_blade/duelist/held = fixture["blade"]
+	TEST_ASSERT(!QDELETED(held), "Клинок в руке еретика не трогается.")
+	var/datum/weakref/fifth_ref = knowledge.created_blades[length(knowledge.created_blades)]
+	allocated += fifth_ref.resolve()
+	TEST_ASSERT_EQUAL(length(knowledge.created_blades), 3, "Клинков по-прежнему три.")
 
 /// Обычный удар поддерживает Темп без меток и парирований, но серия не даёт бесконечный запас.
 /datum/unit_test/heretic_blade_strike_tempo/Run()

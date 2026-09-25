@@ -145,7 +145,7 @@
 	for(var/mob/living/candidate in range(HERETIC_STARGAZER_RANGE, src))
 		// range() - квадрат, луч летит по кругу: углы квадрата ему недоступны.
 		var/distance = get_dist_euclidian(src, candidate)
-		if(distance > HERETIC_STARGAZER_RANGE || (chosen && distance >= best_distance) || candidate.stat != CONSCIOUS || !(iscarbon(candidate) || issilicon(candidate) || candidate.client))
+		if(distance > HERETIC_STARGAZER_RANGE || (chosen && distance >= best_distance) || candidate.stat != CONSCIOUS || !(iscarbon(candidate) || issilicon(candidate) || candidate.client || (ishostile(candidate) && !master.faction_check_mob(candidate))))
 			continue
 		if(!heretic_can_affect(master, candidate, chargecost = 0) || !line_clear(candidate))
 			continue

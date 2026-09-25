@@ -378,6 +378,9 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_FLESH_DOOR_TIME (1.5 SECONDS)
 #define HERETIC_FLESH_DOOR_RANGE 7
 #define HERETIC_FLESH_MADNESS_KNOCKDOWN (3 SECONDS)
+/// Тики Life, по одному за 2 секунды.
+#define HERETIC_FLESH_MADNESS_CONFUSION 10
+#define HERETIC_FLESH_MADNESS_PHOBIA_TIME (5 MINUTES)
 #define HERETIC_LIVE_SACRIFICE_KNOWLEDGE 2
 #define HERETIC_LIVE_SACRIFICE_SIDE_KNOWLEDGE 1
 #define HERETIC_DEAD_SACRIFICE_KNOWLEDGE 1
@@ -389,6 +392,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_HUNT_DOWNED_ALERT_RANGE 9
 #define HERETIC_HUNT_DOWNED_ALERT_COOLDOWN (20 SECONDS)
 #define HERETIC_HUNT_CLAIM_HINT_COOLDOWN (45 SECONDS)
+#define HERETIC_HUNT_STALE_TIME (12 MINUTES)
 /// Сколько живого экипажа приходится на одного еретика, прежде чем динамик добавит следующего.
 #define HERETIC_CREW_PER_HERETIC 20
 /// Во сколько раз спрайт руны 96x96 больше тайла; картовая руна ужимается на этот множитель.

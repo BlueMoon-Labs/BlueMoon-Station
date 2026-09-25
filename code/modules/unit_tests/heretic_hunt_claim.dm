@@ -106,3 +106,28 @@
 	allocated += visit
 	visit.finish()
 	GLOB.heretic_sacrificed_minds = previous_sacrificed
+
+/// Поиск цели сердцем предлагает ссылку на смену цели, а затянувшаяся охота один раз подсказывает сменить её.
+/datum/unit_test/heretic_hunt_retarget_hint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, get_turf(user))
+	user.put_in_hands(heart)
+	TEST_ASSERT(heart.bind(user.mind), "Сердце привязано к еретику.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	TEST_ASSERT(findtext(heretic.retarget_hint(heart), "retarget=1"), "Без перезарядки подсказка даёт ссылку на смену цели.")
+	COOLDOWN_START(heretic, hunt_refresh_cooldown, HERETIC_HUNT_REFRESH_COOLDOWN)
+	TEST_ASSERT(!findtext(heretic.retarget_hint(heart), "href"), "Во время перезарядки ссылки нет.")
+	TEST_ASSERT(findtext(heretic.retarget_hint(heart), "через"), "Во время перезарядки подсказка называет срок.")
+	heart.track(user, heretic)
+	TEST_ASSERT(!heretic.hunt_stale_hinted, "Свежая охота не считается затянувшейся.")
+	heretic.hunt_assigned_at = world.time - HERETIC_HUNT_STALE_TIME
+	COOLDOWN_RESET(heart, track_cooldown)
+	heart.track(user, heretic)
+	TEST_ASSERT(heretic.hunt_stale_hinted, "Затянувшаяся охота подсказывает смену цели.")
+	heretic.set_hunt_target(soul)
+	TEST_ASSERT(!heretic.hunt_stale_hinted, "Новая цель сбрасывает подсказку.")

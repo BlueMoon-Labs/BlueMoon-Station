@@ -87,7 +87,7 @@
 	return 0
 
 /datum/antagonist/heretic/training/greet()
-	to_chat(owner, span_boldnotice("Тренировка еретика: призовите кодекс и выберите любой путь. Настройки полигона позволяют выдать очки, снаряжение и учебную цель."))
+	to_chat(owner, span_boldnotice("Тренировка еретика: призовите кодекс и выберите любой путь. «Пульт полигона» выдаёт очки, компоненты и предметы изученных рецептов, учебную цель и снимает с вас любые травмы."))
 	to_chat(owner, span_notice("Другие еретики и их слуги защищены от ваших боевых заклинаний. Для проверки урона создайте учебную цель или попросите участника выбрать другую роль. Жатва Духа бьёт второй раз, пока связь цела: цель дальше одной клетки от своей души получает полный удар, неподвижная цель возле неё — ослабленный."))
 
 /datum/antagonist/heretic/training/announce_threat()
@@ -97,7 +97,7 @@
 
 /datum/antagonist/heretic/training/hunt_target_unavailable_reason(datum/mind/candidate, selecting = FALSE)
 	if(!training || QDELETED(candidate) || !(candidate in training.arena.target_minds) && !(candidate in training.arena.participant_minds()) || QDELETED(candidate.current) || get_area(heretic_pocket_anchor(get_turf(candidate.current))) != training.arena.room)
-		return "Создайте учебную цель через настройки полигона."
+		return "Создайте учебную цель в «Пульте полигона»."
 	if(candidate in sacrificed_minds)
 		return "Эта учебная душа уже принята. Создайте новый манекен."
 	if(candidate == owner || IS_HERETIC(candidate.current) || IS_HERETIC_MONSTER(candidate.current))

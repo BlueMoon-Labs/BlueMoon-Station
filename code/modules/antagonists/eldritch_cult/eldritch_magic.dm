@@ -553,8 +553,8 @@
 /obj/effect/proc_holder/spell/targeted/touch/mad_touch
 	heretic_stun_check = TRUE
 	name = "Касание безумия"
-	desc = "Коснитесь врага: 60 урона мозгу, падение на 3 секунды и случайная фобия. Перезарядка 3 минуты."
-	summary = "Касание: 60 урона мозгу, падение на 3 секунды и фобия."
+	desc = "Коснитесь врага: падение на 3 секунды, 20 секунд спутанных шагов и случайная фобия на 5 минут. Перезарядка 3 минуты."
+	summary = "Касание: падение на 3 секунды, спутанность и фобия на 5 минут."
 	hand_path = /obj/item/melee/touch_attack/mad_touch
 	school = "evocation"
 	charge_max = 1800
@@ -584,9 +584,11 @@
 	if(iscarbon(target))
 		playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
 		var/mob/living/carbon/C = target
-		C.adjustOrganLoss(ORGAN_SLOT_BRAIN,60)
 		C.Knockdown(HERETIC_FLESH_MADNESS_KNOCKDOWN)
-		C.gain_trauma(/datum/brain_trauma/mild/phobia)
+		C.confused = max(C.confused, HERETIC_FLESH_MADNESS_CONFUSION)
+		var/datum/brain_trauma/phobia = C.gain_trauma(/datum/brain_trauma/mild/phobia)
+		if(phobia)
+			QDEL_IN(phobia, HERETIC_FLESH_MADNESS_PHOBIA_TIME)
 		to_chat(user, span_warning("На [target.name] наложено проклятие!"))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "gates_of_mansus", /datum/mood_event/gates_of_mansus)
 		return ..()

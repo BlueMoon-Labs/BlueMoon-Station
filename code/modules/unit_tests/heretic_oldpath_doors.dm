@@ -292,7 +292,7 @@
 	oldpath_servant(heretic, grasp, /datum/antagonist/heretic_monster/voiceless_dead, get_step(spot, SOUTH))
 	TEST_ASSERT_NOTNULL(flesh.pocket_door(user, victim), "Безмолвный мертвец у цели - тоже дверь.")
 
-/// Касание безумия валит цель на 3 секунды настоящим падением, и она готова к обряду.
+/// Касание безумия валит цель на 3 секунды, путает шаги и даёт одну временную фобию без урона мозгу; сбитая цель готова к обряду.
 /datum/unit_test/heretic_flesh_madness_knockdown/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/carbon/human/user = heretic.owner.current
@@ -303,6 +303,11 @@
 	TEST_ASSERT(victim.IsKnockdown(), "Касание безумия сбивает с ног.")
 	TEST_ASSERT(abs(victim.AmountKnockdown() - HERETIC_FLESH_MADNESS_KNOCKDOWN) <= 1, "Падение длится 3 секунды: [victim.AmountKnockdown()] дс.")
 	TEST_ASSERT(heretic.hunt_target_ready(victim), "Сбитая касанием цель готова к обряду.")
+	TEST_ASSERT_EQUAL(victim.getOrganLoss(ORGAN_SLOT_BRAIN), 0, "Касание не бьёт по мозгу и не бросает кубик случайных травм.")
+	TEST_ASSERT_EQUAL(victim.confused, HERETIC_FLESH_MADNESS_CONFUSION, "Касание путает шаги.")
+	var/obj/item/organ/brain/brain = victim.getorganslot(ORGAN_SLOT_BRAIN)
+	TEST_ASSERT_EQUAL(length(brain.traumas), 1, "Касание даёт ровно одну травму.")
+	TEST_ASSERT(istype(brain.traumas[1], /datum/brain_trauma/mild/phobia), "Эта травма - фобия.")
 
 /// Пустота уводит готовую цель в своём Зимнем пределе; вставшая цель рвёт дверь и до канала, и в нём, выход из поля тоже.
 /datum/unit_test/heretic_void_pocket_door/Run()
