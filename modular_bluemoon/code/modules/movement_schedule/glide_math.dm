@@ -71,6 +71,11 @@
 		delay *= SQRT_2
 	return movement_quantize_delay(delay, tick_lag)
 
+/// Цена шага игрока на прежнем расписании. Диагональ берётся от уже выровненной прямой цены:
+/// иначе при беге 1.6 прямой шаг округляется вниз до 1.5, а диагональ вверх до 2.5.
+/proc/movement_client_step_delay(base_delay, diagonal, tick_lag)
+	return movement_step_delay(movement_quantize_delay(base_delay, tick_lag), diagonal, tick_lag)
+
 /// Насколько квирк "Быстрый Шаг" сокращает задержку ходьбы.
 ///
 /// Ровно до беговой, а не на константу. Прежние 1.25 не кратны ступени тика, и на проде

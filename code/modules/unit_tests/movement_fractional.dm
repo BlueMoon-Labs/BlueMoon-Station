@@ -229,3 +229,13 @@
 	TEST_ASSERT_EQUAL(native.animate_movement, SYNC_STEPS, "Отключение штатного режима сохраняет чужую смену анимации")
 	queued_schedule.unwatch()
 	TEST_ASSERT_EQUAL(queued.animate_movement, SLIDE_STEPS, "Отключение очереди возвращает штатную анимацию")
+
+/// Запасной путь игрока считает диагональ от уже выровненной прямой цены.
+/datum/unit_test/fractional_movement_fallback_diagonal/Run()
+	TEST_ASSERT_EQUAL(movement_client_step_delay(1.6, FALSE, 0.5), 1.5, "Прямой шаг 1.6 на прежнем расписании стоит три тика")
+	TEST_ASSERT_EQUAL(movement_client_step_delay(1.6, TRUE, 0.5), 2, "Диагональ при беге 1.6 обязана стоить как при прежних 1.5, а не 2.5")
+	for(var/base in list(0.5, 1, 1.5, 2, 3, 5))
+		for(var/diagonal in list(FALSE, TRUE))
+			TEST_ASSERT_EQUAL(movement_client_step_delay(base, diagonal, 0.5), movement_step_delay(base, diagonal, 0.5), "Кратная тику база [base] (диагональ: [diagonal]) не должна менять цену")
+	for(var/base in list(1.1, 1.6, 1.7, 2.2, 2.6))
+		TEST_ASSERT(movement_client_step_delay(base, TRUE, 0.5) > movement_client_step_delay(base, FALSE, 0.5), "Диагональ при базе [base] обязана стоить дороже прямого шага")
