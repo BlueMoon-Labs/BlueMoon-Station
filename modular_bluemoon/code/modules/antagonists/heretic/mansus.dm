@@ -324,6 +324,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	var/hazard_volleys = 0
 	var/hazard_lifetime = HERETIC_MANSUS_HAZARD_LIFETIME
 	var/name_charges = 0
+	var/const/amnesia_note = "Похищение стёрлось из памяти: вы не помните, кто вас схватил и отправил в Мансус, где и как это случилось и что происходило в минуты перед этим. Назвать или опознать похитителя вы не можете ни в Мансусе, ни после возвращения."
 	var/datum/action/innate/heretic_mansus_name/name_action
 	var/timeout_timer
 	var/music_channel
@@ -1146,6 +1147,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			victim.apply_status_effect(/datum/status_effect/heretic_mansus_unreturned, (HERETIC_MANSUS_MEMORIES - memories_found) * HERETIC_MANSUS_PENALTY_PER_MEMORY)
 		else
 			to_chat(victim, span_notice("Стены Дома смыкаются за спиной. На коже остался бледный след незнакомой двери."))
+		to_chat(victim, span_userdanger(amnesia_note))
 	// Возвращаем также брошенные вещи, контейнеры и посторонних: Release() уничтожает содержимое.
 	QDEL_LIST(scenery)
 	if(reservation)
@@ -1170,12 +1172,10 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		qdel(src)
 	return TRUE
 
-/// Амнезия относится к похищению; прежние записи и знания персонажа остаются на месте.
 /datum/heretic_mansus_visit/proc/record_mansus_memory()
-	var/recollection = "Само похищение распалось на белые пятна: лицо, голос и имя того, кто отправил вас в Мансус, не вспоминаются. По воспоминаниям о похищении вы не можете опознать этого человека ни в Мансусе, ни после возвращения. Всё, что вы знали и видели до похищения, вы помните по-прежнему."
-	soul.store_memory(recollection)
+	soul.store_memory(amnesia_note)
 	if(soul.current)
-		to_chat(soul.current, span_boldnotice(recollection))
+		to_chat(soul.current, span_boldnotice(amnesia_note))
 
 /datum/action/innate/heretic_mansus_name
 	name = "Имя"

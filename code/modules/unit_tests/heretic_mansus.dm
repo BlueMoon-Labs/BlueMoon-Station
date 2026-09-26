@@ -196,8 +196,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT(visit.start(), "Жертва входит в Мансус.")
 	TEST_ASSERT(visit.contains(victim), "Предупреждение проверяется внутри Мансуса.")
 	TEST_ASSERT_EQUAL(visit.memories_found, 0, "Предупреждение доступно до сбора первого воспоминания.")
-	TEST_ASSERT(findtext(soul.memory, "По воспоминаниям о похищении вы не можете опознать"), "При входе в заметках уже есть ограничение на опознание похитителя.")
-	TEST_ASSERT(findtext(soul.memory, previous_memory), "Вход сохраняет прежние записи.")
+	TEST_ASSERT(findtext(soul.memory, visit.amnesia_note), "При входе в заметках уже есть ограничение на опознание похитителя.")	TEST_ASSERT(findtext(soul.memory, previous_memory), "Вход сохраняет прежние записи.")
 	var/memory_at_entry = soul.memory
 	TEST_ASSERT(!visit.start(), "Повторный запуск действующего посещения отклоняется.")
 	TEST_ASSERT_EQUAL(soul.memory, memory_at_entry, "Повторный запуск не дублирует предупреждение.")
