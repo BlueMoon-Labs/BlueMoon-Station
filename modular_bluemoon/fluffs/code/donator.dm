@@ -640,7 +640,7 @@
 	name = "Upgraded Size Tool"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/melee/sizetool/upgraded
-	ckeywhitelist = list("enotzlodey", "herobrine998")
+	ckeywhitelist = list("enotzlodey", "herobrine998", "nyaaaa")
 
 /datum/gear/donator/bm/pet_alta
 	name = "Alta Cat"
@@ -1616,6 +1616,18 @@
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("nyaaaa")
 
+/datum/gear/donator/bm/long_wintercoat
+	name = "Long Winter Coat"
+	path = /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
+	slot = ITEM_SLOT_OCLOTHING
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+
+/datum/gear/donator/bm/wardrobe_box
+	name = "Wardrobe Box"
+	path = /obj/item/storage/box/wardrobe_box
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+
 /datum/gear/donator/bm/toggles_poly_evening
 	name = "Polychromic evening gloves"
 	path = /obj/item/clothing/gloves/toggled/hug/poly_evening
@@ -1724,8 +1736,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modsuit_modkit/syndicate_sec
 	ckeywhitelist = list("domilion")
-	restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
-	restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
+	//Это не целая плитка, её не нужно никак ограничивать. Не имея полноценного МОДа, это бесполезная вещь.
+	// restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
+	// restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 
 /datum/gear/donator/bm/modsuit_magnate_heavy
 	name = "Heavy Magnete Modsuit Plate"

@@ -13,6 +13,8 @@ $bg-map: colors.$bg-map !default;
 
   .Window__titleBar {
     overflow: hidden;
+    position: relative;
+    z-index: 20;
   }
 }
 
@@ -72,6 +74,9 @@ $bg-map: colors.$bg-map !default;
     rgba(12, 18, 28, 0.75) 100%
   );
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  // Тулбар поверх фиксированного канваса (ноды не должны перекрывать служебную панель).
+  position: relative;
+  z-index: 10;
 }
 
 .IntegratedCircuit__chip {
@@ -125,6 +130,20 @@ $bg-map: colors.$bg-map !default;
   position: relative;
 }
 
+.IntegratedCircuit__componentsToggle {
+  // кнопка «Компоненты» поверх поля (не мешает канвасу)
+}
+
+.IntegratedCircuit__componentsPanel {
+  background: linear-gradient(
+    180deg,
+    rgba(14, 20, 30, 0.97) 0%,
+    rgba(10, 14, 22, 0.98) 100%
+  );
+  border-left: 1px solid rgba(120, 170, 230, 0.22);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.45);
+}
+
 .IntegratedCircuit__variableDock {
   border-top: 2px solid rgba(100, 170, 255, 0.28);
   background: linear-gradient(
@@ -138,6 +157,7 @@ $bg-map: colors.$bg-map !default;
 .IntegratedCircuit__connections--base .IntegratedCircuit__wire {
   stroke-linecap: round;
   filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.65));
+  transition: filter 0.12s ease, opacity 0.12s ease;
 }
 
 .IntegratedCircuit__connections--base .IntegratedCircuit__wire--hot {
@@ -220,17 +240,34 @@ $bg-map: colors.$bg-map !default;
 
 .ObjectComponent__root {
   z-index: 1;
+  min-width: 11rem;
   border-radius: 10px;
   /* visible — чтобы всплывающее окно порядка связей не обрезалось у края ноды */
   overflow: visible;
+  background: rgba(14, 19, 28, 0.96);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.55),
     0 0 0 1px rgba(180, 210, 255, 0.09);
+  transition: box-shadow 0.14s ease;
+
+  &:hover {
+    box-shadow:
+      0 8px 26px rgba(0, 0, 0, 0.62),
+      0 0 0 1px rgba(190, 220, 255, 0.22);
+  }
 }
 
 .ObjectComponent--poweroff {
   opacity: 0.62;
   filter: saturate(0.65);
+}
+
+.ObjectComponent--selected {
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.62),
+    0 0 0 2px rgba(255, 205, 90, 0.85),
+    0 0 18px rgba(255, 205, 90, 0.35);
+  outline: none;
 }
 
 .ObjectComponent__ActivityLamp {
@@ -241,6 +278,7 @@ $bg-map: colors.$bg-map !default;
   background: rgba(80, 120, 90, 0.85);
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ObjectComponent__ActivityLamp--pulse {
@@ -256,8 +294,8 @@ $bg-map: colors.$bg-map !default;
 }
 
 .ObjectComponent__Titlebar {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 
   white-space: nowrap;
 
@@ -291,6 +329,10 @@ $bg-map: colors.$bg-map !default;
   color: rgba(255, 255, 255, 0.98);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   cursor: default;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ObjectComponent__titleInput {
@@ -299,7 +341,7 @@ $bg-map: colors.$bg-map !default;
 }
 
 .IntegratedCircuit__portDisplayName {
-  min-width: 0;
+  min-width: 7.5rem;
   max-width: 13.5rem;
   white-space: normal;
 }
@@ -365,6 +407,8 @@ $bg-map: colors.$bg-map !default;
     rgba(0, 0, 0, 0.58) 100%
   );
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 
   user-select: none;
 }
@@ -377,8 +421,13 @@ $bg-map: colors.$bg-map !default;
   bottom: 0;
 }
 
+.IntegratedCircuit__port--armed {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 5px rgba(120, 220, 200, 0.9));
+}
+
 .PortConnectionPopover {
-  min-width: 6.2rem;
+  min-width: 15rem;
   padding: 0.35rem 0.45rem;
   border-radius: 6px;
   background: linear-gradient(
@@ -403,6 +452,42 @@ $bg-map: colors.$bg-map !default;
   margin-bottom: 0.25rem;
   line-height: 1;
   white-space: nowrap;
+}
+
+.PortConnectionPopover__caption {
+  line-height: 1.3;
+}
+
+.PortConnectionPopover__row {
+  padding: 0.1rem 0;
+  cursor: grab;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.PortConnectionPopover__row--dragOver {
+  background: rgba(95, 200, 160, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(95, 200, 160, 0.4);
+}
+
+.PortConnectionPopover__name {
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: rgba(225, 238, 250, 0.95);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.PortConnectionPopover__name b {
+  color: rgba(150, 210, 190, 0.95);
+  font-weight: 700;
 }
 
 .PortConnectionOrder__hint {
@@ -477,4 +562,75 @@ $border-radius: base.$border-radius !default;
   border: base.em(1px) solid $border-color;
   border: base.em(1px) solid rgba($border-color, 0.75);
   border-radius: $border-radius;
+}
+
+// Нативный редактор значений пина (список / длинный текст).
+.PinEditor__modal {
+  width: 42rem;
+  max-width: calc(100vw - 4rem);
+}
+
+.PinEditor__subtitle {
+  color: rgba(210, 225, 245, 0.82);
+  font-size: 0.82rem;
+}
+
+.PinEditor__listHeader {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.25rem;
+}
+
+.PinEditor__listScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  scrollbar-gutter: stable;
+
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 0.25rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+  }
+}
+
+.PinEditor__row {
+  padding: 0.2rem 0.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.PinEditor__idx {
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.PinEditor__kind {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(180, 215, 240, 0.85);
+  background: rgba(40, 90, 140, 0.28);
+  border-radius: base.$border-radius;
+  padding: 0.12rem 0.3rem;
+}
+
+.PinEditor__display {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #d9e6f5;
+  word-break: break-word;
+}
+
+.PinEditor__empty {
+  color: rgba(200, 215, 235, 0.6);
 }
