@@ -242,12 +242,12 @@
 		to_chat(user, span_notice("Кодекс заперт в [container]. Мансус вытянет его оттуда: не двигайтесь [DisplayTimeText(delay)]."))
 	else
 		to_chat(user, span_notice("Вы зовёте личный кодекс. Не двигайтесь [DisplayTimeText(delay)]."))
-	var/completed = do_after(user, delay, target = user, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, original_ref))
+	var/completed = do_after(user, delay, target = user, timed_action_flags = IGNORE_HELD_ITEM, extra_checks = CALLBACK(src, PROC_REF(recovery_allowed), user, heretic, original_ref))
 	if(QDELETED(src))
 		return TRUE
 	recovery_in_progress = FALSE
 	if(!completed || !recovery_allowed(user, heretic, original_ref))
-		heretic_revert_cast(user, "Возвращение кодекса прервано: нужно стоять на месте, а книга не должна попасть в чужой инвентарь или в обряд.")
+		heretic_revert_cast(user, "Возвращение кодекса прервано: [recovery_failure || "вы сошли с места."]")
 		return TRUE
 	var/obj/item/forbidden_book/book = original_ref?.resolve()
 	if(book && !isturf(book.loc))

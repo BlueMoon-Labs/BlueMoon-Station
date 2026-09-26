@@ -26,12 +26,12 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return TRUE
 	recovery_in_progress = TRUE
 	to_chat(user, span_notice("Вы зовёте потерянное сердце. Не двигайтесь 5 секунд."))
-	var/completed = do_after(user, 5 SECONDS, target = user)
+	var/completed = do_after(user, 5 SECONDS, target = user, timed_action_flags = IGNORE_HELD_ITEM)
 	if(QDELETED(src))
 		return TRUE
 	recovery_in_progress = FALSE
 	if(!completed || !recovery_allowed(user, heretic))
-		revert_cast(user)
+		heretic_revert_cast(user, "Возвращение сердца прервано: нужно 5 секунд стоять на месте в сознании, а сердце не должно быть у другого существа или в обряде.")
 		return TRUE
 	var/obj/item/living_heart/heart
 	for(var/obj/item/living_heart/candidate as anything in GLOB.living_heart_cache)

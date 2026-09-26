@@ -186,6 +186,32 @@
 	TEST_ASSERT_EQUAL(replacement.loc, run_loc_floor_top_right, "Движение владельца прерывает возврат.")
 	TEST_ASSERT_EQUAL(heretic.personal_codex.resolve(), replacement, "Прерывания не создают дубликатов.")
 
+/// Предмет, взятый в руку во время канала, не срывает возврат кодекса и сердца.
+/datum/unit_test/heretic_log_recovery_ignores_held_item/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/datum/eldritch_knowledge/spell/summon/book/book_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/book/book_spell = book_knowledge.granted_spell
+	book_spell.recovery_time = 1 SECONDS
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	heretic.personal_codex = WEAKREF(book)
+	var/obj/item/pen/first_pen = allocate(/obj/item/pen)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, put_in_active_hand), first_pen), 0.3 SECONDS)
+	book_spell.recover_missing_item(user, heretic)
+	TEST_ASSERT(book in user.GetAllContents(), "Кодекс вернулся, хотя в руке сменился предмет.")
+	user.dropItemToGround(first_pen)
+	user.dropItemToGround(book)
+	var/datum/eldritch_knowledge/spell/heart_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/heart/heart_spell = heart_knowledge.granted_spell
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, run_loc_floor_top_right)
+	heart.bind(heretic.owner)
+	var/obj/item/pen/second_pen = allocate(/obj/item/pen)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, put_in_active_hand), second_pen), 1 SECONDS)
+	heart_spell.cast(list(user), user)
+	TEST_ASSERT(heart in user.GetAllContents(), "Сердце вернулось, хотя в руке сменился предмет.")
+
 /// Все пути получают боевую подсказку, результат по-прежнему определяется здоровьем цели.
 /datum/unit_test/heretic_log_training_guidance/Run()
 	var/datum/antag_training_session/session = allocate_training_session()
