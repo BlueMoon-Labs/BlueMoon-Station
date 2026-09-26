@@ -58,6 +58,7 @@ $include splurt/autocryo.txt
 $include bluemoon/bluemoon.txt
 $include bluemoon/discord.txt
 $include bluemoon/hilberts_hotel.txt
+$include bluemoon/ntnet.txt
 
 ## Tgui payloads larger than the 2kb limit for BYOND topic requests are split into roughly 512
 ## url-encoded characters per chunk and sent in sequence. This option caps how many chunks the
