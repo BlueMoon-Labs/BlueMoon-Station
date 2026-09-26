@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>code/modules/mod/_mod_misc/mod_notes.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Это файл заметок. Сюда изначально я решил перенести все избыточно большие комментарии <aside>code/modules/mod/_mod_misc/mod_notes.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/faf5f9ef39567454e503a53e22a9599f22d978f0/code/modules/mod/_mod_misc/mod_notes.md"><img src="git.png" width="16" height="16" title="code/modules/mod/_mod_misc/mod_notes.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><h1 id="комментарии-оставленные-dull-fox-и-перенесенные-сюда-с-указанием-proc">Комментарии, оставленные Dull_Fox и перенесенные сюда с указанием proc.</h1>
+<p>/// TRUE, если предмет лежит в одном из слотов mod_parts.
+/// Штатный поиск по списку тут не годится: у alist он идёт по КЛЮЧАМ, а ключи -
+/// числа, поэтому поиск части всегда возвращал ноль.</p>
+<p>mod/control/proc/is_mod_part(obj/item/part) </p>
+<p>/// Убирает часть из mod_parts, находя её ключ. Возвращает TRUE, если часть нашлась.
+/// Писать <code>mod_parts -= part</code> нельзя: alist вычитает по ключу, а не по значению,
+/// и костюм молча остаётся со ссылкой на удалённую часть.</p>
+<p>/obj/item/mod/control/proc/clear_mod_part(obj/item/part)</p>
+<p>/// Возвращает список частей костюма (значения mod_parts), пропуская пустые слоты.
+/// Перебирать alist напрямую нельзя: <code>for(var/obj/item/part in mod_parts)</code> выдаёт
+/// КЛЮЧИ, и фильтр по типу отбрасывает их все - тело такого цикла не исполняется.</p>
+<p>/obj/item/mod/control/proc/get_mod_parts(include_cell = TRUE, include_mod = FALSE)</p>
+<p>//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
+//forceMove'ом мимо dropped: костюм держал тело и две подписки на нём до конца смены
+// Хардлайт-оверлеи лежат в layers_for_apply_effect носителя вместе с нашим
+// hardlight_effect (датум плюс его /icon): без снятия тело держало их до конца смены.</p>
+<p>// mod_parts это alist, и вычитание из него идёт по КЛЮЧУ, а не по значению.
+// Прежний <code>mod_parts -= deleting_atom</code> получал на вход саму часть и потому не
+// удалял ничего: костюм продолжал держать qdel-нутые части, те не собирались
+// GC и уходили в харддел. Батарея в харддел не попадала только потому, что её
+// чистил QDEL_NULL(MOD_CELL) - макрос разворачивается в lvalue и зануляет слот.
+// Обход по копии: удаление ключа правит тот же alist.</p>
+<p>// part.mod НЕ зануляем до qdel: цепочка Destroy части читает mod.wearer,
+// а от повторного удаления костюма её страхует QDELETED(mod) в
+// /obj/item/clothing/mod_part/Destroy - qdel выставляет gc_destroyed до
+// вызова Destroy, так что для части костюм уже помечен уничтожаемым.</p>
+<p>/obj/item/mod/control/Destroy()</p>
+<p>// Части убираются ДО unset_wearer(): on_dropped первым делом проверяет mod.wearer и
+// молча выходит без него, а conceal() и remove_hardlight() работают через wearer.
+// С обратным порядком цикл не делал ничего, и снятый силой костюм (gib, крио,
+// принудительный дроп) оставлял шлем и сапоги на теле с TRAIT_NODROP навсегда.</p>
+<p>/obj/item/mod/control/dropped(mob/user)</p>
+<p>// conceal() снимает часть с носителя, поэтому без носителя тут делать нечего:
+// прежний цикл перебирал ключи alist и не исполнялся ни разу, так что этот путь
+// раньше просто не работал.
+// Снятие оверлеев стоит полного обновления иконок, поэтому один раз на весь
+// разбор, а не на каждую часть. Носителя держим в локальной копии: conceal()
+// снимает часть и может по дороге обнулить wearer.</p>
+<p>/obj/item/mod/control/doStrip(mob/living/stripper, mob/owner)</p>
+<p>//крио уносит надетый костюм forceMove'ом мимо dropped(), а коробка с ним живёт
+//в stored_packages до конца смены - без этой подписки МОД держал тело весь раунд</p>
+<p>/obj/item/mod/control/proc/set_wearer(mob/user)</p>
+<p>/// deleting = TRUE приходит из Destroy() самого модуля: тогда on_uninstall() не имеет
+/// права звать qdel(src) - это и был qdel-луп у /obj/item/mod/module/armor/prebuild.
+// Повторный заход: on_uninstall() модуля сам позвал qdel(), и Destroy() пришёл
+// сюда ещё раз. Снимать уже нечего, а второй проход портил бы complexity и
+// дважды дёргал on_unequip().
+/obj/item/mod/control/proc/uninstall(module, user, deleting = FALSE)</p>
+<p>// Замедление делится между ЧАСТЯМИ ОДЕЖДЫ: батарея в alist тоже лежит, но
+// slowdown у неё нет, а деление на полную длину alist раздавало частям лишь 4/5 номинала.
+/obj/item/mod/control/proc/update_speed()</p>
+<p>// Фильтр &quot;ИИ-действие снимается только с ИИ&quot; нужен живому костюму: при сносе
+// (свой qdel или qdel костюма, у которого ai уже занулен) снимать надо безусловно,
+// иначе действие остаётся в owner.actions с живой кнопкой и держит костюм.</p>
+<p>/datum/action/item_action/mod/Remove(mob/user)</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/faf5f9ef39567454e503a53e22a9599f22d978f0">faf5f9e</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

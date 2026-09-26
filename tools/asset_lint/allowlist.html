@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="dmdoc.css"><title>tools/asset_lint/allowlist.txt - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>tools/asset_lint/allowlist.txt <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/faf5f9ef39567454e503a53e22a9599f22d978f0/tools/asset_lint/allowlist.txt"><img src="git.png" width="16" height="16" title="tools/asset_lint/allowlist.txt"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><pre><code># Исключения для tools/asset_lint. Каждой записи - причина после #.
+#   unused &lt;путь или glob&gt;      файл ни на что не ссылается, но удалять его нельзя
+#   duplicate &lt;путь или glob&gt;   файл совпадает с другим; группа прощается, только если прикрыты все её члены
+# Запись, которая больше ничего не прикрывает, валит проверку - удаляйте её вместе с причиной.
+
+unused icons/effects/parallax/goon/weather/clouds_1.dmi  # маски без цвета, ждут своей окраски, см. layers/weather.dm
+unused icons/effects/parallax/goon/weather/clouds_2.dmi  # то же
+unused icons/turf/floors/catwalk_plating.dmi  # нужен турфу из PR #3920
+
+duplicate modular_sand/icons/hud/screen_*/*.dmi  # ui_style_modular() собирает путь из каталога стиля, одинаковые листы у стилей нормальны
+duplicate modular_bluemoon/fluffs/icons/mob/inhands/security_*hand.dmi  # правую руку не дорисовали, это копия левой
+</code></pre></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/faf5f9ef39567454e503a53e22a9599f22d978f0">faf5f9e</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>
