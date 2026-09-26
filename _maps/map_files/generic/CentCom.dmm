@@ -13690,7 +13690,6 @@
 /turf/open/floor/plasteel/white,
 /area/centcom/holding)
 "fCw" = (
-/obj/effect/decal/cleanable/blood/fly_trail,
 /obj/effect/turf_decal/siding/dark_red/corner{
 	dir = 4
 	},
@@ -13698,6 +13697,13 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/button/door{
+	id = "SyndShuttle";
+	name = "Shuttle Access";
+	pixel_x = -23;
+	pixel_y = 10;
+	req_access_txt = "151"
+	},
 /turf/open/floor/plasteel/dark/textured/corner,
 /area/syndicate_mothership)
 "fCy" = (
@@ -24728,6 +24734,11 @@
 	req_access_txt = "150";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
+/obj/machinery/door/poddoor{
+	id = "SyndShuttle";
+	name = "Blast Door";
+	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/syndicate_mothership)
 "pIG" = (
@@ -25394,6 +25405,11 @@
 /turf/open/floor/holofloor/beach/coast_t,
 /area/holodeck/rec_center/beach)
 "qrv" = (
+/obj/machinery/door/poddoor{
+	id = "SyndShuttle";
+	name = "Blast Door";
+	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
+	},
 /turf/open/floor/catwalk_floor,
 /area/syndicate_mothership)
 "qrw" = (
@@ -31855,9 +31871,15 @@
 /obj/machinery/door/airlock/hatch{
 	name = "E.V.A. Equipment";
 	req_access_txt = "150";
-	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
+	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100);
+	hackProof = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/door/poddoor{
+	id = "SyndShuttle";
+	name = "Blast Door";
+	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/syndicate_mothership)
 "vTS" = (
@@ -56948,7 +56970,7 @@ ahl
 ahl
 ahl
 anx
-ahl
+brC
 aQV
 pWO
 bpE
@@ -57205,7 +57227,7 @@ ahl
 ahl
 ahl
 ahl
-amy
+tTV
 aQV
 ygW
 rlT
@@ -57461,8 +57483,8 @@ ahl
 ahl
 amy
 ahl
-ahl
-ahl
+brC
+brC
 aQV
 xXv
 aQV
@@ -57718,9 +57740,9 @@ ahl
 amz
 ahl
 ahl
-ahl
-amz
-ahl
+brC
+vRz
+brC
 aQV
 aHL
 vrJ
@@ -57974,10 +57996,10 @@ amy
 ahl
 anx
 ahl
-ahl
-ahl
-ahl
-ahl
+brC
+brC
+brC
+brC
 aQV
 wxf
 dsN
@@ -58231,7 +58253,7 @@ oCl
 ahl
 ahl
 ahl
-ahl
+brC
 aQV
 aQV
 aQV
@@ -58488,7 +58510,7 @@ oCl
 ahl
 ahl
 amy
-ahl
+brC
 aQV
 dQI
 fqM
@@ -58745,7 +58767,7 @@ oCl
 ahl
 ahl
 amz
-ahl
+brC
 aQV
 nIu
 jzA
@@ -59002,7 +59024,7 @@ oCl
 ahl
 ahl
 ahl
-ahl
+brC
 aQV
 iQC
 aqU
