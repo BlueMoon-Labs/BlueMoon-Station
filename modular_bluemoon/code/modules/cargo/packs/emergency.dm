@@ -20,7 +20,7 @@
 /datum/supply_pack/emergency/ervos
 	name = "ERVOS Crate"
 	desc = "Три комплекта ERVOS костюмов, предназначенных для не космического давления."
-	cost = 3000
+	cost = 2000
 	contains = list(/obj/item/clothing/head/helmet/space/ervos,
 					/obj/item/clothing/head/helmet/space/ervos,
 					/obj/item/clothing/head/helmet/space/ervos,

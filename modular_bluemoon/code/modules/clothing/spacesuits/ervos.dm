@@ -5,6 +5,7 @@
 	item_state = "ervos_head"
 	flags_inv = null // нацепил аквариум на голову и довольный
 	repairable_by = /obj/item/stack/sheet/glass
+	mutantrace_variation = NONE
 	icon = 'modular_bluemoon/icons/obj/clothing/head/ervos.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head/ervos.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
