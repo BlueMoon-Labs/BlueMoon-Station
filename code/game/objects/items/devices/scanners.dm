@@ -288,6 +288,15 @@ GENETICS SCANNER
 			msg += "\n[dmgreport.Join()]"
 
 	msg += "\n"
+	//BLUEMOON CHANGES LATEXMOB ADDITIONS
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/organ/latexOrgan/latex_organ = locate(/obj/item/organ/latexOrgan) in H.internal_organs
+		latex_organ.update_hiding_state()
+		if(latex_organ && !latex_organ.is_hiding)
+			msg += "\n<span class='alert'>Обнаружена паразитическая форма жизни внутри пациента!</span>"
+			msg += "\n<span class='info'>Рекомендация: Удалить паразита хирургическим путём.</span>"
+	// BLUEMOON CHANGES END
 
 	//Organ damages report
 	var/heart_ded = FALSE
