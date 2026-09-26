@@ -296,6 +296,7 @@
 #include "mob_population_perf.dm"
 #include "mob_update_cascade.dm"
 #include "movement_glide_math.dm"
+#include "movement_fractional.dm"
 #include "movement_probe_math.dm"
 #include "movement_weight_slowdown.dm"
 #include "turf_enter_checks.dm"

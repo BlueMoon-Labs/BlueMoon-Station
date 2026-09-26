@@ -233,7 +233,7 @@
 	TEST_ASSERT_NOTNULL(loop, "The hostile movement datum must create a movement loop")
 	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "The movement loop must start with the legacy movement delay in deciseconds")
 
-	goliath.move_to_delay = 4
+	goliath.move_to_delay = CEILING(GLOB.ai_pursuit_min_move_delay / world.tick_lag, 1) + 1
 	SEND_SIGNAL(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK)
 	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "Runtime phase speed changes must update the adapter")
 	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "Runtime phase speed changes must update the active movement loop")

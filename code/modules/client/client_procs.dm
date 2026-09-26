@@ -517,6 +517,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
+	fractional_movement = new(FRACTIONAL_MOVEMENT_NATIVE)
+
 	// Цена этого подключения по этапам - см. client_connect_probe.dm
 	var/datum/client_connect_probe/connect_probe = new(ckey)
 
@@ -1145,6 +1147,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс", deletion_cost_ms)
 
 /client/Destroy()
+	QDEL_NULL(fractional_movement)
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)] | [connection_forensics()]")

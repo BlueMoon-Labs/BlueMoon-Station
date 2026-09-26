@@ -52,7 +52,7 @@
 ///datum/config_entry/number несёт default = 0, а ValidateAndSet без строки в
 //конфиге не зовётся вовсе.
 /datum/config_entry/number/movedelay/run_delay
-	default = 1.5
+	default = 1.75
 
 /datum/config_entry/number/movedelay/run_delay/ValidateAndSet()
 	. = ..()
