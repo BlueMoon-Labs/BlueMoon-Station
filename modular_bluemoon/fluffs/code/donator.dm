@@ -2675,7 +2675,7 @@
 	path = /obj/item/storage/box/melatonin_kit
 	ckeywhitelist = list("melatonin1")
 
-/datum/gear/donator/bm/melatonin_kit
+/datum/gear/donator/bm/melatonin_bola_kit
 	name = "Entangling Bola Crafting Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/melatonin_bola_kit

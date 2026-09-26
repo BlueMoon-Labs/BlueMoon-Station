@@ -511,7 +511,7 @@
 		return
 	playsound(src.loc,'modular_bluemoon/fluffs/sound/Entangling_Bola_throwing.ogg', 75, 1)
 
-/obj/item/restraints/legcuffs/bola/energy/on_removed() // оверрайд, чтобы убрать искры
+/obj/item/restraints/legcuffs/bola/energy/melatonin/on_removed() // оверрайд, чтобы убрать искры
 	qdel(src)
 
 /obj/item/modkit/entangling_bola_kit
