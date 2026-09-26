@@ -65,7 +65,8 @@ const FRAME_ADDRESS =
 const FRAME_SITE = /^[a-f0-9]{32}$/;
 const FRAME_SLUG = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const FRAME_SANDBOX = 'allow-scripts';
-const FRAME_POLICY_VERSION = 2;
+const FRAME_POLICY_VERSION = 3;
+const SANDBOX_MIRROR = 'https://sandbox-ru.wiki-ss13.space';
 const framePolicy = (url: string) =>
   [
     "default-src 'none'",
@@ -74,7 +75,7 @@ const framePolicy = (url: string) =>
     'img-src https: data:',
     'media-src https:',
     "font-src data:",
-    `connect-src ${url.slice(0, url.indexOf('/', 'https://'.length))}`,
+    `connect-src ${url.slice(0, url.indexOf('/', 'https://'.length))} ${SANDBOX_MIRROR}`,
     "form-action 'none'",
     "frame-src 'none'",
     "child-src 'none'",
