@@ -431,3 +431,19 @@
 	new /obj/item/modkit/tau_helmet_kit(src)
 	new /obj/item/modkit/tau_armor_kit(src)
 	new /obj/item/toy/plush/bm/tau(src)
+
+/obj/item/storage/box/melatonin_bola_kit
+	name = "Entangling Bola Crafting Kit"
+	desc = "Небольшая коробка с четырьмя комплектами деталей для создания опутывающей болы. Внутри — грубо обработанные каменные волчьи лапы, крепления и отрезки прочной верёвки. Похоже, кто-то решил, что обычных грузов для охоты недостаточно."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_bola_case"
+
+/obj/item/storage/box/melatonin_bola_kit/PopulateContents()
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+
+/obj/item/storage/box/melatonin_bola_kit/update_overlays()
+	. = ..()
+	// W.I.P

@@ -467,3 +467,48 @@
 		set_light(0)
 
 #undef STUNKATANA_BASE_STATE
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin
+	name = "Entangling Bola"
+	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
+	icon_state = "melatonin_bola"
+	hitsound = 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg'
+	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Initialize(mapload)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Moved(atom/oldloc, dir, forced)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/update_icon_state()
+	. = ..()
+	icon_state = "melatonin_bola[isturf(loc) ? "_flying" : ""]"
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/ensnare(mob/living/carbon/C) // оверрайд для изменения звука, более ничего не изменено
+	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
+		C.legcuffed = src
+		forceMove(C)
+		C.update_equipment_speed_mods()
+		C.update_inv_legcuffed()
+		SSblackbox.record_feedback("tally", "handcuffs", 1, type)
+		to_chat(C, "<span class='userdanger'>\The [src] опутывает вас!</span>")
+		C.Knockdown(knockdown)
+		playsound(src, 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg', 50, TRUE)
+		C.apply_status_effect(/datum/status_effect/bola_snared)
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, quickstart = TRUE) // оверрайд для изменения звука, более ничего не изменено
+	if(!..())
+		return
+	playsound(src.loc,'modular_bluemoon/fluffs/sound/Entangling_Bola_throwing.ogg', 75, 1)
+
+/obj/item/modkit/entangling_bola_kit
+	name = "Entangling Bola Kit"
+	desc = "A modkit for making a energy bola into a Entangling Bola."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/restraints/legcuffs/bola/energy/melatonin
+	fromitem = list(/obj/item/restraints/legcuffs/bola/energy)
