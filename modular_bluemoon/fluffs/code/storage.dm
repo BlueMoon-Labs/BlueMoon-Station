@@ -434,7 +434,7 @@
 
 ///////////////////////////////////////////
 
-#define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm
+#define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm, /obj/item/modkit/invis_belt
 
 /obj/item/storage/box/wardrobe_box
 	name = "Wardrobe Box"
