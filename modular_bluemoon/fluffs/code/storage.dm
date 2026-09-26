@@ -434,7 +434,7 @@
 
 ///////////////////////////////////////////
 
-#define WARDROBE_BOX_TYPES /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
+#define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm
 
 /obj/item/storage/box/wardrobe_box
 	name = "Wardrobe Box"
@@ -444,12 +444,12 @@
 /obj/item/storage/box/wardrobe_box/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.can_hold_extra = typecacheof(list(WARDROBE_BOX_TYPES))
+	STR.can_hold_extra = typecacheof(list(WARDROBE_BOX_ITEMS))
 
 /obj/item/storage/box/wardrobe_box/PopulateContents()
-	var/static/items_inside = list(WARDROBE_BOX_TYPES)
+	var/static/items_inside = list(WARDROBE_BOX_ITEMS)
 	generate_items_inside(items_inside, src)
 
-#undef WARDROBE_BOX_TYPES
+#undef WARDROBE_BOX_ITEMS
 
 ///////////////////////////////////////////
