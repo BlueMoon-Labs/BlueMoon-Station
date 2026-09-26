@@ -62,12 +62,12 @@
 	/// Holds all languages this mob can speak and understand
 	VAR_PRIVATE/datum/language_holder/language_holder
 
-	var/verb_say = "says"
-	var/verb_ask = "asks"
-	var/verb_exclaim = "exclaims"
-	var/verb_whisper = "whispers"
-	var/verb_sing = "sings" // Skyrat edit
-	var/verb_yell = "yells"
+	var/verb_say = "говорит"
+	var/verb_ask = "спрашивает"
+	var/verb_exclaim = "восклицает"
+	var/verb_whisper = "шепчет"
+	var/verb_sing = "поёт" // Skyrat edit
+	var/verb_yell = "кричит"
 	var/speech_span
 	var/inertia_dir = 0
 	var/atom/inertia_last_loc

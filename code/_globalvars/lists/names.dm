@@ -55,3 +55,13 @@ GLOBAL_LIST_INIT(preferences_custom_names, list(
 	"religion" = list("pref_name" = "Chaplain religion", "qdesc" = "religion" , "allow_numbers" = TRUE , "group" = "chaplain", "allow_null" = FALSE),
 	"deity" = list("pref_name" = "Chaplain deity", "qdesc" = "deity", "allow_numbers" = TRUE , "group" = "chaplain", "allow_null" = FALSE)
 	))
+
+GLOBAL_LIST_INIT(preferences_custom_names_ru, list(
+	"human" = list("pref_name" = "Запасное", "qdesc" = "запасное имя на случай, если вы будете на командной роли как другой вид", "allow_numbers" = FALSE , "group" = "backup_human", "allow_null" = FALSE),
+	"clown" = list("pref_name" = "Клоун" , "qdesc" = "псевдоним клоуна", "allow_numbers" = FALSE , "group" = "fun", "allow_null" = FALSE),
+	"mime" = list("pref_name" = "Мим", "qdesc" = "псевдоним мима" , "allow_numbers" = FALSE , "group" = "fun", "allow_null" = FALSE),
+	"cyborg" = list("pref_name" = "Киборг", "qdesc" = "имя киборга (Оставьте пустым для генерации стандартных обозначений)", "allow_numbers" = TRUE , "group" = "silicons", "allow_null" = TRUE),
+	"ai" = list("pref_name" = "ИИ", "qdesc" = "обозначение как искусственного интеллекта", "allow_numbers" = TRUE , "group" = "silicons", "allow_null" = FALSE),
+	"religion" = list("pref_name" = "Религия", "qdesc" = "название религии для роли священника" , "allow_numbers" = TRUE , "group" = "chaplain", "allow_null" = FALSE),
+	"deity" = list("pref_name" = "Божество", "qdesc" = "божество для роли священника", "allow_numbers" = TRUE , "group" = "chaplain", "allow_null" = FALSE)
+	))

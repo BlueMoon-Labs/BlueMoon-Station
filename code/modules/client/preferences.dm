@@ -308,6 +308,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/custom_emote_panel = list() //user custom emote panel
 
 	var/custom_speech_verb = "default" //if your say_mod is to be something other than your races
+	var/custom_speech_verb_ru = FALSE // Булевый тумблер использования русских глаголов речи у куклы при сейлогах
 	var/custom_tongue = "default" //if your tongue is to be something other than your races
 	var/list/language = list() //additional language your character has
 	var/modified_limbs = list() //prosthetic/amputated limbs
@@ -1301,6 +1302,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/identity_label = src.use_modern_translations ? get_modern_text("identity", src) : "Identity"
 					var/you_are_banned_label = src.use_modern_translations ? get_modern_text("you_are_banned", src) : "You are forbidden to use custom names and appearance. You can continue to set up your characters, but you will be randomized upon joining the game."
 					var/default_designation_label = src.use_modern_translations ? get_modern_text("default_designation", src) : "Default designation"
+					var/identity_prefs_label = src.use_modern_translations ? get_modern_text("identity_prefs", src) : "General Preferences"
 					var/name_label = src.use_modern_translations ? get_modern_text("name_label", src) : "Name"
 					var/random_name_label = src.use_modern_translations ? get_modern_text("random_name", src) : "Random name"
 					var/random_name_title_label = src.use_modern_translations ? get_modern_text("random_name_title", src) : "Random name"
@@ -1320,7 +1322,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/pda_style_label = src.use_modern_translations ? get_modern_text("pda_style", src) : "PDA style"
 					var/pda_reskin_label = src.use_modern_translations ? get_modern_text("pda_reskin", src) : "PDA reskin"
 					var/pda_ringtone_label = src.use_modern_translations ? get_modern_text("pda_ringtone", src) : "PDA ringtone"
+					var/pda_theme_label = src.use_modern_translations ? get_modern_text("pda_theme", src) : "PDA theme"
 					var/silicon_preferences_label = src.use_modern_translations ? get_modern_text("silicon_preferences", src) : "Silicon preferences"
+					var/silicon_laws_label = src.use_modern_translations ? get_modern_text("silicon_laws_label", src) : "Silicon laws"
 					var/server_has_disabled_laws_label = src.use_modern_translations ? get_modern_text("server_has_disabled_laws", src) : "The server has disabled choosing your own laws, you can still choose and save, but it won't do anything in-game."
 					var/starting_lawset_label = src.use_modern_translations ? get_modern_text("starting_lawset", src) : "Starting lawset"
 					var/server_default_label = src.use_modern_translations ? get_modern_text("server_default", src) : "Server default"
@@ -1345,45 +1349,44 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "<br><center><h2>[identity_label]</h2></center>"
 					else
 						dat += "<h2>[identity_label]</h2>"
-					dat += "<table width='100%'><tr><td width='30%' valign='top'>"
+					dat += "<table width='100%' style='table-layout:fixed'><tr><td width='34%' valign='top'>"
 					if(jobban_isbanned(user, "appearance"))
 						dat += "<b>[you_are_banned_label]</b><br>"
 
-					dat += "<b>[nameless ? default_designation_label : name_label]:</b><br>"
+					dat += "<h2>[identity_prefs_label]:</h2>"
+					dat += "<b>[nameless ? default_designation_label : name_label]:</b>"
 					if(is_modern_theme)
-						dat += "<div class='csetup-name-row'><a href='?_src_=prefs;preference=name;task=input'>[real_name]</a><a class='csetup-dice-btn' href='?_src_=prefs;preference=name;task=random' title='[random_name_title_label]' aria-label='[random_name_title_label]'>&#127922;</a></div><BR>"
+						dat += "<div class='csetup-name-row'><a href='?_src_=prefs;preference=name;task=input'>[real_name]</a><a class='csetup-dice-btn' href='?_src_=prefs;preference=name;task=random' title='[random_name_title_label]' aria-label='[random_name_title_label]'>&#127922;</a></div><br>"
 					else
 						dat += "<a href='?_src_=prefs;preference=name;task=input'>[real_name]</a><br>"
-					dat += "<a href='?_src_=prefs;preference=hide_ckey;task=input'><b>[hide_ckey_label]: [hide_ckey ? enabled_label : disabled_label]</b></a><BR>" // UI tweak
+					dat += "<b>[age_label]:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=age;task=input'>[age]</a><BR>"
 					if(!is_modern_theme)
 						dat += "<a style='display:block;width:150px' href='?_src_=prefs;preference=name;task=random'>[random_name_label]</a>"
-					dat += "<a style='display:block;width:150px' href='?_src_=prefs;preference=nameless'>[be_nameless_label]: [nameless ? yes_label : no_label]</a><BR>"
-					dat += "<b>[always_random_name_label]:</b><a style='display:block;width:30px' href='?_src_=prefs;preference=name'>[be_random_name ? yes_label : no_label]</a><BR>"
-					dat += "<b>[hardsuit_with_tail_label]:</b><a style='display:block;width:30px' href='?_src_=prefs;preference=hardsuit_with_tail'>[features["hardsuit_with_tail"] == TRUE ? yes_label : no_label]</a><BR>"
-
-					dat += "<b>[age_label]:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=age;task=input'>[age]</a><BR>"
-					dat += "<b>[custom_blood_color_label]:</b>"
-					dat += "<a style='display:block;width:150px' href='?_src_=prefs;preference=toggle_custom_blood_color;task=input'>[custom_blood_color ? enabled_label : disabled_label]</a><BR>"
+					dat += "<b>[be_nameless_label]?</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=nameless'>[nameless ? yes_label : no_label]</a><BR>"
+					dat += "<b>[always_random_name_label]?</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=name'>[be_random_name ? yes_label : no_label]</a>"
+					dat += "<hr>"
+					dat += "<b>[hide_ckey_label]?</b> <a href='?_src_=prefs;preference=hide_ckey;task=input'><b>[hide_ckey ? yes_label : no_label]</b></a><BR>" // UI tweak
+					dat += "<b>[custom_blood_color_label]?</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=toggle_custom_blood_color;task=input'>[custom_blood_color ? yes_label : no_label]</a><BR>"
 					if(custom_blood_color)
 						dat += "<b>[blood_color_label]:</b> <span style='border:1px solid #161616; background-color: [blood_color];'><font color='[color_hex2num(blood_color) < 200 ? "FFFFFF" : "000000"]'>[blood_color]</font></span> <a href='?_src_=prefs;preference=blood_color;task=input'>[change_label]</a><BR>"
-					dat += "</td>"
+					dat += "<b>[hardsuit_with_tail_label]? </b> <a style='display:block;width:30px' href='?_src_=prefs;preference=hardsuit_with_tail'>[features["hardsuit_with_tail"] == TRUE ? yes_label : no_label]</a><br>"
+					dat += "<BR></td>"
 
-					dat += "<td valign='top'>"
-					dat += "<b>[special_names_label]:</b><BR>"
+					dat += "<td width='34%' valign='top'>"
+					dat += "<h2>[special_names_label]:</h2>"
 					var/old_group
 					for(var/custom_name_id in GLOB.preferences_custom_names)
-						var/namedata = GLOB.preferences_custom_names[custom_name_id]
+						var/namedata = get_custom_namedata(custom_name_id)
 						if(!old_group)
 							old_group = namedata["group"]
 						else if(old_group != namedata["group"])
 							old_group = namedata["group"]
 							dat += "<br>"
-						dat += "<a href ='?_src_=prefs;preference=[custom_name_id];task=input'><b>[namedata["pref_name"]]:</b> [custom_names[custom_name_id]]</a> "
-					dat += "<br><br>"
+						dat += "<b>[namedata["pref_name"]]:</b> <a href ='?_src_=prefs;preference=[custom_name_id];task=input'>[custom_names[custom_name_id]]</a><br>"
 
-					dat += "<b>[custom_job_preferences_label]:</b><BR>"
-					dat += "<a href='?_src_=prefs;preference=sec_dept;task=input'><b>[preferred_security_dept_label]:</b> [prefered_security_department]</a><BR>" // UI tweak
-					dat += "<a href='?_src_=prefs;preference=ai_core_icon;task=input'><b>[preferred_ai_core_label]:</b> [preferred_ai_core_display]</a><br>"
+					dat += "<h2>[custom_job_preferences_label]</h2>"
+					dat += "<b>[preferred_security_dept_label]:</b> <a href='?_src_=prefs;preference=sec_dept;task=input'>[prefered_security_department]</a><BR>" // UI tweak
+					dat += "<b>[preferred_ai_core_label]:</b> <a href='?_src_=prefs;preference=ai_core_icon;task=input'>[preferred_ai_core_display]</a><br>"
 					if(is_modern_theme)
 						var/ai_core_icon_state
 						if(preferred_ai_core_display == "Random")
@@ -1397,7 +1400,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "<div class='csetup-ai-core-preview'>" + ai_core_preview_html + "</div>"
 					dat += "</td>"
 
-					dat += "<td valign='top'>"
+					dat += "<td width='32%' valign='top'>"
 					dat += "<h2>[pda_preferences_label]</h2>"
 					dat += "<b>[pda_color_label]:</b> <span style='border:1px solid #161616; background-color: [pda_color];'><font color='[color_hex2num(pda_color) < 200 ? "FFFFFF" : "000000"]'>[pda_color]</font></span> <a href='?_src_=prefs;preference=pda_color;task=input'>[change_label]</a><BR>"
 					dat += "<b>[pda_style_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_style'>[pda_style]</a><br>"
@@ -1408,7 +1411,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						if(GLOB.pda_name_to_theme[theme_name] == pda_theme)
 							pda_theme_display_name = theme_name
 							break
-					dat += "<b>PDA Theme:</b> <a href='?_src_=prefs;task=input;preference=pda_theme'>[pda_theme_display_name]</a><br>"
+					dat += "<b>[pda_theme_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_theme'>[pda_theme_display_name]</a><br>"
 
 					dat += "<h2>[silicon_preferences_label]</h2>"
 					if(!CONFIG_GET(flag/allow_silicon_choosing_laws))
@@ -1419,10 +1422,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/list/config_laws = CONFIG_GET(keyed_list/choosable_laws)
 						var/datum/ai_laws/law_datum = GLOB.all_law_datums[config_laws[silicon_lawset]]
 						if(law_datum)
-							dat += "<i>[law_datum]</i><br>"
-							dat += english_list(law_datum.get_law_list(TRUE),
-								lawset_not_found_label,
-								"<br>", "<br>")
+							dat += "<center><a href='#' onclick=\"var e=document.getElementById('law_details'); e.style.display = (e.style.display=='none' ? 'block' : 'none'); return false;\">[silicon_laws_label]</a></center>"
+							dat += "<div id='law_details' style='display:none;'>"
+							dat += "<center><i>[law_datum]</i></center>"
+							dat += english_list(law_datum.get_law_list(TRUE), lawset_not_found_label, "<br>", "<br>")
+							dat += "</div>"
 
 					dat += "</td></tr></table>"
 				//Character quirks (Modern only)
@@ -2357,6 +2361,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
 					var/speech_preferences_label = src.use_modern_translations ? get_modern_text("speech_preferences", src) : "Speech preferences"
 					var/custom_speech_verb_label = src.use_modern_translations ? get_modern_text("custom_speech_verb", src) : "Custom Speech Verb"
+					var/custom_speech_verb_ru_label = src.use_modern_translations ? get_modern_text("custom_speech_verb_ru", src) : "Use Russian Custom Verb"
 					var/custom_tongue_label = src.use_modern_translations ? get_modern_text("custom_tongue", src) : "Custom Tongue"
 					var/laugh_label = src.use_modern_translations ? get_modern_text("laugh", src) : "Laugh"
 					var/preview_laugh_label = src.use_modern_translations ? get_modern_text("preview_laugh", src) : "Preview Laugh"
@@ -2371,19 +2376,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/invalid_label = src.use_modern_translations ? get_modern_text("invalid_label", src) : "INVALID"
 					dat += "<h2>[speech_preferences_label]</h2>"
 					dat += "<b>[custom_speech_verb_label]</b><BR>"
-					dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=speech_verb;task=input'>[custom_speech_verb]</a><BR>"
+					var/custom_speech_verb_display = custom_speech_verb
+					var/list/verb_display_target = modern_ui_language == 1 ? GLOB.speech_verbs_ru : GLOB.speech_verbs
+					var/verb_display_index = GLOB.speech_verbs.Find(custom_speech_verb)
+					if(!verb_display_index)
+						verb_display_index = GLOB.speech_verbs_ru.Find(custom_speech_verb)
+					if(verb_display_index)
+						custom_speech_verb_display = verb_display_target[verb_display_index]
+					dat += "<a style='display:inline-block; margin-bottom:4px;' href='?_src_=prefs;preference=speech_verb;task=input'>[custom_speech_verb_display]</a><BR>"
+					dat += "<b>[custom_speech_verb_ru_label]?</b><BR>"
+					dat += "<a style='display:inline-block; margin-bottom:4px;' href='?_src_=prefs;preference=speech_verb_ru;task=input'>[custom_speech_verb_ru ? "Да" : "Нет"]</a><BR>"
 					dat += "<b>[custom_tongue_label]</b><BR>"
-					dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=tongue;task=input'>[custom_tongue]</a><BR>"
+					var/custom_tongue_display = get_tongue_display_key(custom_tongue)
+					dat += "<a style='display:inline-block; margin-bottom:4px;' href='?_src_=prefs;preference=tongue;task=input'>[custom_tongue_display]</a><BR>"
+					dat += "<hr>"
 					// BLUEMOON ADD выбор смеха
-					dat += "<b>[laugh_label]</b><BR>"
-					dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=laugh;task=input'>[custom_laugh]</a>"
+					var/custom_laugh_display = custom_laugh
+					if(modern_ui_language == 1)
+						var/laugh_index = GLOB.mob_laughs.Find(custom_laugh)
+						if(laugh_index)
+							custom_laugh_display = GLOB.mob_laughs_ru[laugh_index]
+					dat += "<b>[laugh_label]:</b><BR>"
+					dat += "<a style='display:inline-block; margin-bottom:4px;' href='?_src_=prefs;preference=laugh;task=input'>[custom_laugh_display]</a>"
 					if(custom_laugh != "Default")
-						dat += "<a href='?_src_=prefs;preference=laughpreview;task=input''>[preview_laugh_label]</a><BR>"
+						dat += "<a href='?_src_=prefs;preference=laughpreview;task=input''>[preview_laugh_label]</a>"
+					dat += "<br>"
 					// BLUEMOON ADD END
 					//SANDSTORM EDIT - additional language + runechat color
 					dat += "<BR><b>[additional_language_label]</b><br>"
 					dat += "<a href='?_src_=prefs;preference=language;task=menu'>[english_list(language, none_label)]</a></center><BR>"
-					dat += "<BR><b>[custom_runechat_color_label]</b> <a href='?_src_=prefs;preference=enable_personal_chat_color'>[enable_personal_chat_color ? enabled_label : disabled_label]</a><br> [enable_personal_chat_color ? "<span style='border: 1px solid #161616; background-color: [personal_chat_color];'><font color='[color_hex2num(personal_chat_color) < 200 ? "#FFFFFF" : "#000000"]'>[personal_chat_color]</font></span> <a href='?_src_=prefs;preference=personal_chat_color;task=input'>[change_label]</a>" : ""]<br>"
+					dat += "<BR><b>[custom_runechat_color_label]:</b> <a href='?_src_=prefs;preference=enable_personal_chat_color'>[enable_personal_chat_color ? enabled_label : disabled_label]</a><br> [enable_personal_chat_color ? "<span style='border: 1px solid #161616; background-color: [personal_chat_color];'><font color='[color_hex2num(personal_chat_color) < 200 ? "#FFFFFF" : "#000000"]'>[personal_chat_color]</font></span> <a href='?_src_=prefs;preference=personal_chat_color;task=input'>[change_label]</a>" : ""]<br>"
 					dat += "</td>"
 					//END OF SANDSTORM EDIT
 					dat += "<td width='340px' height='300px' valign='top'>"
@@ -2594,10 +2616,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	dat += "<center>"
 
 	if(!IsGuestKey(user.key))
-		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=load'>Undo</a> "
-		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=save'>Save Setup</a> "
+		var/undo_label = src.use_modern_translations ? get_modern_text("undo", src) : "Undo"
+		var/save_setup_label = src.use_modern_translations ? get_modern_text("save_setup", src) : "Save Setup"
+		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=load'>[undo_label]</a> "
+		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=save'>[save_setup_label]</a> "
 
-	dat += "<a class='csetup-btn' href='?_src_=prefs;preference=reset_all'>Reset Setup</a>"
+	var/reset_setup_label = src.use_modern_translations ? get_modern_text("reset_setup", src) : "Reset Setup"
+	dat += "<a class='csetup-btn' href='?_src_=prefs;preference=reset_all'>[reset_setup_label]</a>"
 	dat += "</center>"
 
 	if(new_character_creator)
@@ -2607,7 +2632,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return
 
 	winshow(user, "preferences_window", TRUE)
-	var/datum/browser/popup = new(user, "preferences_browser", "<div align='center'>Character Setup</div>", 640, 770)
+	var/datum/browser/popup = new(user, "preferences_browser", "<div align='center'>[modern_ui_language == TRUE? "Настройка персонажа" : "Character Setup"]</div>", 640, 770)
 	if(new_character_creator && findtext(charcreation_theme, "modern"))
 		popup.add_stylesheet("preferences_modern", 'html/browser/preferences_modern.css')
 	if(new_character_creator && findtext(charcreation_theme, "modern"))
@@ -2961,7 +2986,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		// BLUEMOON ADD START - настройки для отдельных квирков
 		dat += "Настройки для отдельных квирков. Если нужный квирк не будет выставлен, то они работать не будут.<br>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>([/datum/quirk/shriek::name]) Тип Крика: [shriek_type]</a>"
-		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого[summon_nickname ? ": ": ""][summon_nickname]</a>"
+		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого [summon_nickname ? ": ": ""][summon_nickname]</a>"
 		var/phobia_text = phobia_type ? phobia_type : "Случайная"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип фобии: [phobia_text]</a><br>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_onelife_option'>([/datum/quirk/onelife::name]) Во что рассыпаешься: [onelife_death_type]</a><br>"
@@ -3036,21 +3061,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/quirk_balance = GetQuirkBalance(user)
 
 	// BLUEMOON: per-quirk settings (kept inline)
-	dat += "<h3>Настройки квирков</h3>"
+	dat += "<center><h3>Настройка особенностей</h3></center>"
 	var/display_summon_nickname = summon_nickname ? summon_nickname : "-"
 	dat += "<div class='csetup-quirk-settings'>"
-	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
-	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
-	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип: <b>[phobia_type ? phobia_type : "Случайная"]</b></a>"
-	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_onelife_option'>([/datum/quirk/onelife::name]) Во что рассыпаешься: <b>[onelife_death_type]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика:&nbsp;<b>[shriek_type]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище:&nbsp;<b>[display_summon_nickname]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип:&nbsp;<b>[phobia_type ? phobia_type : "Случайная"]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_onelife_option'>([/datum/quirk/onelife::name]) Останки:&nbsp;<b>[onelife_death_type]</b></a>"
 	dat += "</div>"
 
-	dat += "<h3>Текущие квирки</h3>"
+	dat += "<center><h3>Текущие особенности</h3></center>"
 	var/display_current_quirks = english_list(all_quirks, "None")
 	var/positive_quirk_count = GetPositiveQuirkCount()
 	dat += "<div class='notice csetup-quirks-summary'>"
-	dat += "<div class='csetup-quirks-summary-current'><b>Current:</b> " + display_current_quirks + "</div>"
-	dat += "<div class='csetup-quirks-summary-meta'><b>Positive:</b> [positive_quirk_count] / [MAX_QUIRKS]<br><b>Points left:</b> [quirk_balance]</div>"
+	dat += "<div class='csetup-quirks-summary-current'><b>Текущие:</b> " + display_current_quirks + "</div>"
+	dat += "<div class='csetup-quirks-summary-meta'><b>Позитивных:</b> [positive_quirk_count] / [MAX_QUIRKS]<br><b>Очков осталось:</b> [quirk_balance]</div>"
 	dat += "</div>"
 	dat += "<div class='csetup-quirk-tabs'>"
 	dat += "<a href='?_src_=prefs;quirk_category=[QUIRK_POSITIVE]' " + (quirk_category == QUIRK_POSITIVE ? "class='linkOn'" : "") + ">[QUIRK_POSITIVE]</a>"
@@ -3215,7 +3240,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			allowed_keys = list("_src_", "preference", "action")
 		if("headshot", "headshot_naked")
 			allowed_keys = list("_src_", "preference", "select_slot")
-		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "barksound", "barkspeed", "barkpitch", "barkvary")
+		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "speech_verb_ru", "barksound", "barkspeed", "barkpitch", "barkvary")
 			if(href_list["task"] != "input")
 				return FALSE
 			allowed_keys = list("_src_", "preference", "task")
@@ -4416,7 +4441,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("wings_color", "insect_fluff_color", "insect_markings_color")
 					var/color_feature = href_list["preference"]
-					var/new_wing_color = input(user, "Выберите цвет части тела:", "Настройки персонажа", "#" + features[color_feature]) as color|null
+					var/new_wing_color = input(user, "Выберите цвет части тела:", "Настройка персонажа", "#" + features[color_feature]) as color|null
 					if(new_wing_color)
 						if(new_wing_color == "#000000" && features[color_feature] != "FFFFFF")
 							features[color_feature] = "FFFFFF"
@@ -4939,12 +4964,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						uplink_spawn_loc = new_loc
 
 				if("ai_core_icon")
-					var/ai_core_icon = tgui_input_list(user, "Choose your preferred AI core display screen:", "AI Core Display Screen Selection", GLOB.ai_core_display_screens)
+					var/ai_core_icon = tgui_input_list(user, "Выберите желаемый дисплей экрана ядра ИИ:", "AI Core Display Screen Selection", GLOB.ai_core_display_screens)
 					if(ai_core_icon)
 						preferred_ai_core_display = ai_core_icon
 
 				if("sec_dept")
-					var/department = tgui_input_list(user, "Choose your preferred security department:", "Security Departments", GLOB.security_depts_prefs)
+					var/department = tgui_input_list(user, "Выберите желаемый отдел станции для охраны, при игре офицером брига:", "Отдел Службы Безопасности", GLOB.security_depts_prefs)
 					if(department)
 						prefered_security_department = department
 
@@ -4998,7 +5023,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("toggle_custom_blood_color")
 					custom_blood_color = !custom_blood_color
 				if("blood_color")
-					var/pickedBloodColor = input(user, "Выбирайте цвет крови своего персонажа.", "Character Preference", blood_color) as color|null
+					var/pickedBloodColor = input(user, "Выберите цвет крови своего персонажа.", "Character Preference", blood_color) as color|null
 					if(!pickedBloodColor)
 						return
 					if(pickedBloodColor)
@@ -5007,27 +5032,27 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							custom_blood_color = TRUE
 				///
 				if("pda_style")
-					var/pickedPDAStyle = tgui_input_list(user, "Выбирайте стиль своего КПК.", "Character Preference", GLOB.pda_styles, pda_style)
+					var/pickedPDAStyle = tgui_input_list(user, "Выберите стиль своего КПК.", "Character Preference", GLOB.pda_styles, pda_style)
 					if(pickedPDAStyle)
 						pda_style = pickedPDAStyle
 				if("pda_color")
-					var/pickedPDAColor = input(user, "Выбирайте цвет интерфейса своего КПК.", "Character Preference", pda_color) as color|null
+					var/pickedPDAColor = input(user, "Выберите цвет интерфейса своего КПК.", "Character Preference", pda_color) as color|null
 					if(pickedPDAColor)
 						pda_color = pickedPDAColor
 				if("pda_skin")
-					var/pickedPDASkin = tgui_input_list(user, "Выбирайте модель своего КПК.", "Character Preference", GLOB.pda_reskins, pda_skin)
+					var/pickedPDASkin = tgui_input_list(user, "Выберите модель своего КПК.", "Character Preference", GLOB.pda_reskins, pda_skin)
 					if(pickedPDASkin)
 						pda_skin = pickedPDASkin
 				if("pda_ringtone")
-					var/pickedPDARingtone = reject_bad_name(input(user, "Выбирайте рингтон своего КПК.", "Character Preference", pda_ringtone) as null|text, TRUE)
+					var/pickedPDARingtone = reject_bad_name(input(user, "Выберите рингтон своего КПК.", "Character Preference", pda_ringtone) as null|text, TRUE)
 					if(pickedPDARingtone)
 						pda_ringtone = pickedPDARingtone
 				if("pda_theme")
-					var/pickedPDATheme = tgui_input_list(user, "Выбирайте тему своего КПК.", "Character Preference", GLOB.pda_name_to_theme, pda_theme)
+					var/pickedPDATheme = tgui_input_list(user, "Выберите тему своего КПК.", "Character Preference", GLOB.pda_name_to_theme, pda_theme)
 					if(pickedPDATheme)
 						pda_theme = GLOB.pda_name_to_theme[pickedPDATheme]
 				if("silicon_lawset")
-					var/picked_lawset = tgui_input_list(user, "Выбирайте предпочитаемый список законов", "Silicon preference", list("None") + CONFIG_GET(keyed_list/choosable_laws), silicon_lawset)
+					var/picked_lawset = tgui_input_list(user, "Выберите желаемый список законов", "Silicon preference", list("None") + CONFIG_GET(keyed_list/choosable_laws), silicon_lawset)
 					if(picked_lawset)
 						if(picked_lawset == "None")
 							picked_lawset = null
@@ -5038,12 +5063,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
 				//Sandstorm changes begin
 				if("personal_chat_color")
-					var/new_chat_color = input(user, "Choose your character's runechat color:", "Character Preference",personal_chat_color) as color|null
+					var/new_chat_color = input(user, "Выберите цвет рунчата вашего персонажа:", "Настройка персонажа", personal_chat_color) as color|null
 					if(new_chat_color)
 						if(color_hex2num(new_chat_color) > 200)
 							personal_chat_color = sanitize_hexcolor(new_chat_color, 6, TRUE)
 						else
-							to_chat(user, "<span class='danger'>Invalid color. Your color is not bright enough.</span>")
+							to_chat(user, span_danger("Неверный цвет. Выбранный цвет недостаточно яркий."))
 				//End of sandstorm changes
 
 				if("hud_toggle_color")
@@ -5098,13 +5123,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				// Выбор смеха
 				if("laugh")
-					var/select_laugh = tgui_input_list(user, "Choose your desired laugh", "Character Preference", GLOB.mob_laughs)
+					var/list/laugh_choices = modern_ui_language == 1 ? GLOB.mob_laughs_ru : GLOB.mob_laughs
+					var/select_laugh = tgui_input_list(user, "Выберите желаемый смех", "Настройка персонажа", laugh_choices)
 					if(select_laugh)
-						custom_laugh = select_laugh
+						var/laugh_index = laugh_choices.Find(select_laugh)
+						custom_laugh = laugh_index ? GLOB.mob_laughs[laugh_index] : select_laugh
 
 				if("laughpreview")
 					if(SSticker.current_state == GAME_STATE_STARTUP) //Timers don't tick at all during game startup, so let's just give an error message
-						to_chat(user, "<span class='warning'>Laugh sound previews can't play during initialization!</span>")
+						to_chat(user, span_warning("Звук смеха нельзя прослушать во время инициализации!"))
 						return
 					if(!COOLDOWN_FINISHED(src, laugh_preview))
 						return
@@ -5115,13 +5142,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				//BLUEMOON ADD END
 
 				if("tongue")
-					var/selected_custom_tongue = tgui_input_list(user, "Choose your desired tongue (none means your species tongue)", "Character Preference", GLOB.roundstart_tongues)
+					var/list/tongue_choices = modern_ui_language == 1 ? GLOB.roundstart_tongues_ru : GLOB.roundstart_tongues
+					var/selected_custom_tongue = tgui_input_list(user, "Выберите желаемый акцент (\"Обычный\" означает акцент вашего вида)", "Настройка персонажа", tongue_choices)
 					if(selected_custom_tongue)
-						custom_tongue = selected_custom_tongue
+						custom_tongue = get_tongue_true_key(selected_custom_tongue)
 				if("speech_verb")
-					var/selected_custom_speech_verb = tgui_input_list(user, "Choose your desired speech verb (none means your species speech verb)", "Character Preference", GLOB.speech_verbs)
+					var/selected_custom_speech_verb = tgui_input_list(user, "Выберите желаемый глагол речи (\"Обычный\" означает глагол вашего вида)", "Настройка персонажа", (custom_speech_verb_ru? GLOB.speech_verbs_ru : GLOB.speech_verbs))
 					if(selected_custom_speech_verb)
 						custom_speech_verb = selected_custom_speech_verb
+
+				if("speech_verb_ru")
+					if(!get_default_speech_verb(custom_speech_verb))
+						var/list/source_list = custom_speech_verb_ru ? GLOB.speech_verbs_ru : GLOB.speech_verbs
+						var/list/target_list = custom_speech_verb_ru ? GLOB.speech_verbs : GLOB.speech_verbs_ru
+						var/verb_index = source_list.Find(custom_speech_verb)
+						if(verb_index)
+							custom_speech_verb = target_list[verb_index]
+					custom_speech_verb_ru = !custom_speech_verb_ru
 
 				if("barksound")
 					var/list/woof_woof = list()
@@ -5134,7 +5171,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							if(!allowed.Find(user.client.ckey))
 								continue
 						woof_woof[initial(B.name)] = initial(B.id)
-					var/new_bork = tgui_input_list(user, "Choose your desired vocal bark", "Character Preference", woof_woof)
+					var/new_bork = tgui_input_list(user, "Выберите желаемое звучание речи", "Настройка персонажа", woof_woof)
 					if(new_bork)
 						bark_id = woof_woof[new_bork]
 						var/datum/bark/B = GLOB.bark_list[bark_id] //Now we need sanitization to take into account bark-specific min/max values
@@ -5144,19 +5181,19 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("barkspeed")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = input(user, "Choose your desired bark speed (Higher is slower, lower is faster). Min: [initial(B.minspeed)]. Max: [initial(B.maxspeed)]", "Character Preference") as null|num
+					var/borkset = input(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа") as null|num
 					if(!isnull(borkset))
 						bark_speed = round(clamp(borkset, initial(B.minspeed), initial(B.maxspeed)), 1)
 
 				if("barkpitch")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = input(user, "Choose your desired baseline bark pitch. Min: [initial(B.minpitch)]. Max: [initial(B.maxpitch)]", "Character Preference") as null|num
+					var/borkset = input(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа") as null|num
 					if(!isnull(borkset))
 						bark_pitch = clamp(borkset, initial(B.minpitch), initial(B.maxpitch))
 
 				if("barkvary")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = input(user, "Choose your desired baseline bark pitch. Min: [initial(B.minvariance)]. Max: [initial(B.maxvariance)]", "Character Preference") as null|num
+					var/borkset = input(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа") as null|num
 					if(!isnull(borkset))
 						bark_variance = clamp(borkset, initial(B.minvariance), initial(B.maxvariance))
 
@@ -5926,7 +5963,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if ("preferred_chaos_level")
 					var/chaos_level = tgui_input_number(user, \
-										"Выбирайте число в зависимости от своих предпочтений \
+										"Выберите число в зависимости от своих предпочтений \
 										к стилю игры.\n От предпочтений к Хаосу зависит режим Динамика, \
 										который будет выбран. \n\
 										0. - ничего не ожидайте от меня. Я убегу при первой же возможности. \n\
@@ -6505,7 +6542,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				qdel(T)
 			var/obj/item/organ/tongue/new_custom_tongue = new new_tongue
 			new_custom_tongue.Insert(character)
-	if(custom_speech_verb != "default")
+	if(!get_tongue_true_key(custom_speech_verb))
 		character.dna.species.say_mod = custom_speech_verb
 
 	character.set_bark(bark_id)
@@ -6586,11 +6623,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return random_unique_name()
 
 /datum/preferences/proc/ask_for_custom_name(mob/user,name_id)
-	var/namedata = GLOB.preferences_custom_names[name_id]
+	var/namedata = get_custom_namedata(name_id)
 	if(!namedata)
 		return
 
-	var/raw_name = input(user, "Choose your character's [namedata["qdesc"]]:","Character Preference") as text|null
+	var/raw_name = input(user, "Выберите своему персонажу [namedata["qdesc"]]:", "Настройка персонажа") as text|null
 	if(!raw_name)
 		if(namedata["allow_null"])
 			custom_names[name_id] = get_default_name(name_id)
@@ -6603,6 +6640,34 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return
 		else
 			custom_names[name_id] = sanitized_name
+
+/datum/preferences/proc/get_default_speech_verb(value)
+	return (value == GLOB.speech_verbs[1] || value == GLOB.speech_verbs_ru[1])
+
+/datum/preferences/proc/get_custom_namedata(name_id)
+	if(modern_ui_language == 1)
+		var/list/ru_namedata = GLOB.preferences_custom_names_ru[name_id]
+		if(ru_namedata)
+			return ru_namedata
+	return GLOB.preferences_custom_names[name_id]
+
+/datum/preferences/proc/get_tongue_display_key(true_key)
+	if(modern_ui_language != 1)
+		return true_key
+	var/tongue_value = GLOB.roundstart_tongues[true_key]
+	for(var/ru_key in GLOB.roundstart_tongues_ru)
+		if(GLOB.roundstart_tongues_ru[ru_key] == tongue_value)
+			return ru_key
+	return true_key
+
+/datum/preferences/proc/get_tongue_true_key(display_key)
+	if(modern_ui_language != 1)
+		return display_key
+	var/tongue_value = GLOB.roundstart_tongues_ru[display_key]
+	for(var/en_key in GLOB.roundstart_tongues)
+		if(GLOB.roundstart_tongues[en_key] == tongue_value)
+			return en_key
+	return display_key
 
 /datum/preferences/proc/get_filtered_holoform(filter_type)
 	if(!custom_holoform_icon)

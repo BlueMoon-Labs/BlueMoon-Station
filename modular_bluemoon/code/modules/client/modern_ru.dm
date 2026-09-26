@@ -51,6 +51,9 @@ var/list/ru_strings = list(
 	"char_tab_speech" = "Речь",
 	"char_tab_loadout" = "Лодаут",
 	"char_tab_quirks" = "Особенности",
+	"undo" = "Отменить",
+	"save_setup" = "Сохранить",
+	"reset_setup" = "Сбросить",
 
 	// Quirks tab labels
 	"quirks_disabled" = "Особенности отключены на этом сервере.",
@@ -58,11 +61,11 @@ var/list/ru_strings = list(
 	// Character slots
 	"local_storage" = "Локальное хранилище",
 	"empty_slot_label" = "Персонаж",
-	"export_slot" = "Экспортирт слота",
-	"import_slot" = "Импорт слота",
-	"delete_local" = "Удалить локально сохраненного персонажа",
+	"export_slot" = "Экспорт текущий слот",
+	"import_slot" = "Импорт в текущий слот",
+	"delete_local" = "Стереть персонажа в локальном хранилище",
 	"delete_slot_label" = "Удалить текущего персонажа",
-	"offer_slot" = "Предложить слот",
+	"offer_slot" = "Предложить свой слот",
 	"cancel_offer" = "Отменить предложение",
 	"retrieve_offered" = "Получить предложенного персонажа",
 	"redemption_code" = "Код слота",
@@ -161,25 +164,27 @@ var/list/ru_strings = list(
 	"danger_zone" = "Опасная зона",
 
 	// Speech tab labels
-	"speech_preferences" = "Предпочтения речи",
-	"custom_speech_verb" = "Пользовательский глагол речи",
-	"custom_tongue" = "Пользовательский язык",
-	"laugh" = "Смех",
-	"preview_laugh" = "Предпросмотр смеха",
-	"additional_language" = "Дополнительный язык",
-	"custom_runechat_color" = "Пользовательский цвет говора рун",
-	"vocal_bark_preferences" = "Предпочтения вокального лая",
-	"vocal_bark_sound" = "Звук вокального лая",
-	"vocal_bark_speed" = "Скорость вокального лая",
-	"vocal_bark_pitch" = "Высота вокального лая",
-	"vocal_bark_variance" = "Вариативность вокального лая",
-	"preview_bark" = "Предпросмотр лая",
+	"speech_preferences" = "Настройки речи",
+	"custom_speech_verb" = "Выбрать речевой глагол",
+	"custom_speech_verb_ru" = "Использовать русские глаголы",
+	"custom_tongue" = "Настроить акцент язык",
+	"laugh" = "Выбрать смех",
+	"preview_laugh" = "Прослушать смех",
+	"additional_language" = "Дополнительные языки",
+	"custom_runechat_color" = "Пользовательский цвет rune-чата",
+	"vocal_bark_preferences" = "Настройки голоса (Bark)",
+	"vocal_bark_sound" = "Выбрать звучание голоса",
+	"vocal_bark_speed" = "Выбрать скорость речи",
+	"vocal_bark_pitch" = "Выбрать высоту тона голоса",
+	"vocal_bark_variance" = "ыбрать вариативность речи",
+	"preview_bark" = "Прослушать речь",
 
 	// Identity section
 	"identity" = "Личность",
 	"gender" = "Пол",
 	"name_label" = "Имя",
 	"default_designation" = "Обозначение по умолчанию",
+	"identity_prefs" = "Общие данные",
 	"set_name" = "Установить имя",
 	"random_name" = "Случайное имя",
 	"random_name_title" = "Рандомное имя",
@@ -187,15 +192,15 @@ var/list/ru_strings = list(
 	"be_nameless" = "Без имени",
 	"yes" = "Да",
 	"no" = "Нет",
-	"always_random_name" = "Случайное имя",
+	"always_random_name" = "Имя всегда случайное",
 	"points_left" = "очков осталось",
 	"lawset_not_found" = "Не удалось найти законы для вашего набора, извините  <font style='translate: rotate(90deg)'>:(</font>",
-	"hardsuit_with_tail" = "Харсьют с хвостом",
+	"hardsuit_with_tail" = "Скафандр имеет хвост",
 	"age_label" = "Возраст",
 	"set_age" = "Установить возраст",
 
 	// Blood and appearance
-	"custom_blood_color" = "Кастомный цвет крови",
+	"custom_blood_color" = "Настраиваемый цвет крови",
 	"blood_color" = "Цвет крови",
 
 	// Special names
@@ -205,25 +210,27 @@ var/list/ru_strings = list(
 	"occupation_choices" = "Выбор профессии",
 	"set_occupation_prefs" = "Установить приоритет профессий",
 	"custom_job_preferences" = "Предпочтения профессий",
-	"preferred_security_dept" = "Предпочтительный отдел безопасности",
-	"preferred_ai_core" = "Предпочтительный отображение ядра ИИ",
+	"preferred_security_dept" = "Желаемый отдел СБ",
+	"preferred_ai_core" = "Дисплей ядра ИИ",
 
 	// PDA section
-	"pda_preferences" = "Настройки PDA",
-	"pda_color" = "Цвет PDA",
-	"set_pda_color" = "Установить цвет PDA",
-	"pda_style" = "Стиль PDA",
-	"set_pda_style" = "Интерфейс PDA",
-	"pda_reskin" = "Переделка PDA",
-	"set_pda_reskin" = "Вид PDA",
-	"pda_ringtone" = "Рингтон PDA",
-	"set_pda_ringtone" = "Установить рингтон PDA",
+	"pda_preferences" = "Настройки КПК",
+	"pda_color" = "Цвет КПК",
+	"set_pda_color" = "Установить цвет КПК",
+	"pda_style" = "Стиль КПК",
+	"set_pda_style" = "Интерфейс КПК",
+	"pda_reskin" = "Переделка КПК",
+	"set_pda_reskin" = "Вид КПК",
+	"pda_ringtone" = "Рингтон КПК",
+	"pda_theme" = "Тема КПК",
+	"set_pda_ringtone" = "Установить рингтон КПК",
 
 	// Silicon preferences
-	"silicon_preferences" = "Предпочтения силиконов",
-	"starting_lawset" = "Начальный набор законов",
-	"server_default" = "По умолчанию сервера",
-	"server_has_disabled_laws" = "Сервер отключил выбор собственных законов, но вы все еще можете выбирать и сохранять.",
+	"silicon_preferences" = "Настройки синтетов",
+	"starting_lawset" = "Свод законов",
+	"silicon_laws_label" = "Показать законы синтета",
+	"server_default" = "Стандартный серверный",
+	"server_has_disabled_laws" = "На сервере выключена настройки свода законов. Вы можете выбрать и сохранить его, но это ничего не сделает внутри игры.",
 
 	// Flavor text / background
 	"flavor_text" = "Текст описания",
@@ -256,12 +263,12 @@ var/list/ru_strings = list(
 	"loadout_enabled_label" = "Заменять одежду лодаутом",
 
 	// Quirks
-	"quirk_balance_remaining" = "Очков особенностей осталось:",
+	"quirk_balance_remaining" = "Баланс очков особенностей:",
 	"current_quirks" = "Текущие особенности",
 	"current" = "Текущие:",
 	"configure_quirks" = "Настроить особенности",
 	"open_quirks_tab" = "Открыть вкладку квирков",
-	"none" = "Нет",
+	"none" = "никаких",
 
 	// Notifications
 	"no_account_message" = "Пожалуйста, создайте аккаунт для сохранения предпочтений",
@@ -294,7 +301,7 @@ var/list/ru_strings = list(
 	"preview_deathsound" = "Предпросмотр звука смерти",
 	"silicon_flavor_text" = "Описание силикона",
 	"set_silicon_flavor_text" = "Изменить",
-	"custom_species_lore" = "Предистория вида",
+	"custom_species_lore" = "Информация о виде",
 	"set_custom_species_lore" = "Изменить",
 	"ooc_notes" = "OOC заметки",
 	"set_ooc_notes" = "Изменить",
@@ -305,9 +312,9 @@ var/list/ru_strings = list(
 	"medical_records" = "Медицинские записи",
 	"set_medical_records" = "Установить медицинские записи",
 	"headshots" = "Фотографии",
-	"set_headshot" = "Установить хедшот",
+	"set_headshot" = "Хедшот-слот",
 	"headshots_nsfw" = "Фотографии (NSFW)",
-	"set_naked_headshot" = "Установить хедшот",
+	"set_naked_headshot" = "NSFW-слот",
 	"naked_headshots" = "Портреты (NSFW)",
 
 	// Appearance body customization
@@ -548,12 +555,12 @@ var/list/ru_strings = list(
 
 	// Speech tab
 	"speech_settings" = "Параметры речи",
-	"custom_speech_verb" = "Пользовательский глагол речи:",
-	"custom_tongue" = "Пользовательский язык:",
+	"custom_speech_verb" = "Выбрать глагол речи:",
+	"custom_tongue" = "Акцент речи:",
 	"laugh" = "Смех",
 	"preview_laugh" = "Предпросмотр смеха",
-	"additional_language" = "Дополнительный язык",
-	"custom_runechat_color" = "Пользовательский цвет руначата",
+	"additional_language" = "Дополнительные языки",
+	"custom_runechat_color" = "Свой цвет rune-чата",
 	"vocal_bark_preferences" = "Параметры голоса",
 	"vocal_bark_sound" = "Звук голоса",
 	"vocal_bark_speed" = "Скорость голоса",
@@ -561,10 +568,10 @@ var/list/ru_strings = list(
 	"vocal_bark_variance" = "Разброс голоса",
 	"preview_bark" = "Предпросмотр голоса",
 	"accent" = "Акцент",
-	"set_accent" = "Установить акцент",
+	"set_accent" = "Выбрать акцент",
 	"allowed_accents" = "Допустимые акценты",
 	"speech_style" = "Стиль речи",
-	"set_speech_style" = "Установить стиль речи",
+	"set_speech_style" = "Выбрать стиль речи",
 
 	// Loadout tab (already partially covered)
 	"gear_points" = "Очки лодаут",
@@ -967,6 +974,9 @@ var/list/en_strings = list(
 	"char_tab_speech" = "Speech",
 	"char_tab_loadout" = "Loadout",
 	"char_tab_quirks" = "Quirks",
+	"undo" = "Undo",
+	"save_setup" = "Save Setup",
+	"reset_setup" = "Reset Setup",
 
 	// Quirks tab labels
 	"quirks_disabled" = "Quirks are disabled on this server.",
@@ -1024,6 +1034,7 @@ var/list/en_strings = list(
 	"gender" = "Gender",
 	"name_label" = "Name",
 	"default_designation" = "Default designation",
+	"identity_prefs" = "General",
 	"set_name" = "Set name",
 	"random_name" = "Random name",
 	"random_name_title" = "Random name",
@@ -1065,11 +1076,13 @@ var/list/en_strings = list(
 	"pda_reskin" = "PDA Reskin",
 	"set_pda_reskin" = "Set PDA reskin",
 	"pda_ringtone" = "PDA Ringtone",
+	"pda_theme" = "PDA Theme",
 	"set_pda_ringtone" = "Set PDA ringtone",
 
 	// Silicon preferences
 	"silicon_preferences" = "Silicon preferences",
 	"starting_lawset" = "Starting lawset",
+	"silicon_laws_label" = "Show silicon laws",
 	"server_default" = "Server Default",
 	"server_has_disabled_laws" = "The server has disabled choosing your own laws, you can still choose and save, but it won't do anything in-game.",
 
@@ -1364,9 +1377,9 @@ var/list/en_strings = list(
 	// Markings tab
 	"tattoos" = "Tattoos",
 	"view_remove_tattoos" = "View and remove tattoos",
-	"character_tattoos" = "Character Tattoos",
+	"character_tattoos" = "Татуировки",
 	"view_delete_tattoos" = "Просмотр и удаление татуировок",
-	"add" = "Add",
+	"add" = "Добавить",
 	"add_label" = "Add",
 	"clear" = "Clear",
 	"clear_label" = "Clear",
@@ -1399,6 +1412,7 @@ var/list/en_strings = list(
 	// Speech tab
 	"speech_settings" = "Speech Settings",
 	"custom_speech_verb" = "Custom Speech Verb",
+	"custom_speech_verb_ru" = "Use Russian Speech Verb",
 	"custom_tongue" = "Custom Tongue",
 	"laugh" = "Laugh",
 	"preview_laugh" = "Preview Laugh",
