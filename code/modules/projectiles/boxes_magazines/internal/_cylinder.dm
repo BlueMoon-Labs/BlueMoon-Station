@@ -4,7 +4,6 @@
 	caliber = list("357","38")
 	max_ammo = 7
 
-
 /obj/item/ammo_box/magazine/internal/cylinder/proc/ammo_box_reload(obj/item/ammo_box/A, mob/user, params, silent = FALSE, replace_spent = 0)
 	var/num_loaded = 0
 	if(!can_load(user))
