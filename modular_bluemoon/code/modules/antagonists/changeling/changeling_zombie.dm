@@ -271,6 +271,7 @@
 	armour_penetration = 10
 	wound_bonus = 5
 	bare_wound_bonus = 5
+	can_dismember = FALSE
 	COOLDOWN_DECLARE(sound_cooldown)
 
 /obj/item/melee/arm_blade/changeling_zombie/attack(mob/living/target_mob, mob/living/user)
