@@ -469,6 +469,7 @@
 #undef STUNKATANA_BASE_STATE
 
 /obj/item/restraints/legcuffs/bola/energy/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Entangling Bola"
 	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
 	icon_state = "melatonin_bola"
@@ -510,6 +511,9 @@
 		return
 	playsound(src.loc,'modular_bluemoon/fluffs/sound/Entangling_Bola_throwing.ogg', 75, 1)
 
+/obj/item/restraints/legcuffs/bola/energy/on_removed() // оверрайд, чтобы убрать искры
+	qdel(src)
+
 /obj/item/modkit/entangling_bola_kit
 	name = "Entangling Bola Kit"
 	desc = "A modkit for making a energy bola into a Entangling Bola."
@@ -517,3 +521,23 @@
 	icon_state = "melatonin_modkit"
 	product = /obj/item/restraints/legcuffs/bola/energy/melatonin
 	fromitem = list(/obj/item/restraints/legcuffs/bola/energy)
+
+/obj/item/modkit/nul_kit
+	name = "Nul Kit"
+	desc = "A modkit for making an combat knife into a Sword of Nul."
+	product = /obj/item/kitchen/knife/combat/nul
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/nul
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Sword of Nul"
+	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
+	item_state = "sword-nul"
+	icon_state = "sword-nul"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
+	.=..()
+	set_light(3, 0.9, "#1D6416")
