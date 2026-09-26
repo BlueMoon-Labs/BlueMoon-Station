@@ -22,6 +22,8 @@
 
 /obj/structure/closet/emcloset/PopulateContents()
 	..()
+	new /obj/item/clothing/head/helmet/space/ervos(src)
+	new /obj/item/clothing/suit/space/ervos(src)
 
 	if (prob(40))
 		new /obj/item/storage/toolbox/emergency(src)

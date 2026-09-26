@@ -4907,6 +4907,7 @@
 #include "modular_bluemoon\code\modules\clothing\outfits\sets\ordinator.dm"
 #include "modular_bluemoon\code\modules\clothing\outfits\sets\rabbit.dm"
 #include "modular_bluemoon\code\modules\clothing\shoes\miscellaneous.dm"
+#include "modular_bluemoon\code\modules\clothing\spacesuits\ervos.dm"
 #include "modular_bluemoon\code\modules\clothing\suits\_suits.dm"
 #include "modular_bluemoon\code\modules\clothing\suits\cloaks.dm"
 #include "modular_bluemoon\code\modules\clothing\suits\miscellaneous.dm"
