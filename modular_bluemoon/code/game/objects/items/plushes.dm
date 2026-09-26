@@ -1049,24 +1049,24 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 
 /obj/item/toy/plush/bm/reno
 	name = "Reno Plush"
-	desc = "The perfect organism... now in a perfectly compact, cozy shape.”
+	desc = "The perfect organism... now in a perfectly compact, cozy shape."
 	icon_state = "reno"
 	squeak_override = list('modular_bluemoon/sound/plush/xeno1.ogg' = 50, 'modular_bluemoon/sound/plush/xeno2.ogg' = 50)
 
 /obj/item/toy/plush/bm/surstruming
 	name = "Surstruming Plush"
-	desc = "DISGUSTING!!! WHO EVEN CREATED THIS SHIT!?”
+	desc = "DISGUSTING!!! WHO EVEN CREATED THIS SHIT!?"
 	icon_state = "surstromming"
 	squeak_override = list('modular_bluemoon/sound/plush/surstromming1.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming2.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming3.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming4.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming5.ogg' = 20)
 
 /obj/item/toy/plush/bm/flka
 	name = "Fl-ka Plush"
-	desc = "A worn-out toy Created in the Dyson Sphere”
+	desc = "A worn-out toy Created in the Dyson Sphere"
 	icon_state = "flka"
 	squeak_override = list('modular_bluemoon/sound/plush/xeno_roar.ogg' = 33, 'modular_bluemoon/sound/plush/xeno1.ogg' = 33, 'modular_bluemoon/sound/plush/xeno2.ogg' = 33)
 
 /obj/item/toy/plush/bm/pig
 	name = "Pig plush"
-	desc = "Dementyi's pig”
+	desc = "Dementyi's pig"
 	icon_state = "pig"
 	squeak_override = list('modular_bluemoon/sound/plush/pig1.ogg' = 20, 'modular_bluemoon/sound/plush/pig2.ogg' = 20, 'modular_bluemoon/sound/plush/pig3.ogg' = 20, 'modular_bluemoon/sound/plush/pig4.ogg' = 20, 'modular_bluemoon/sound/plush/pig5.ogg' = 20)
