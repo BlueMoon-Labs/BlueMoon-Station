@@ -7277,7 +7277,10 @@
 	roundstart_template = /datum/map_template/shuttle/infiltrator/syndicate_basic;
 	width = 23
 	},
-/turf/open/floor/plating/snowed/temperatre,
+/turf/open/floor/plating/snowed/temperatre{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293";
+	initial_temperature = 293.15
+	},
 /area/syndicate_mothership)
 "aRT" = (
 /obj/structure/railing{
@@ -13778,7 +13781,8 @@
 	},
 /obj/machinery/airalarm/syndicate{
 	pixel_y = 24;
-	req_access_txt = "151"
+	req_access_txt = "151";
+	req_access = list(151)
 	},
 /turf/open/floor/plasteel/textured,
 /area/syndicate_mothership)
@@ -21019,7 +21023,10 @@
 /turf/open/floor/plasteel/textured,
 /area/syndicate_mothership)
 "mhf" = (
-/turf/open/floor/plating/snowed/temperatre,
+/turf/open/floor/plating/snowed/temperatre{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293";
+	initial_temperature = 293.15
+	},
 /area/syndicate_mothership)
 "mhM" = (
 /obj/structure/flora/ausbushes/sunnybush,
@@ -22806,7 +22813,10 @@
 /area/syndicate_mothership/control)
 "oaX" = (
 /obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating/snowed/temperatre,
+/turf/open/floor/plating/snowed/temperatre{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293";
+	initial_temperature = 293.15
+	},
 /area/syndicate_mothership)
 "obA" = (
 /obj/structure/urbanismbigcrate/alt{
@@ -23764,6 +23774,13 @@
 	},
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
+"oQc" = (
+/obj/effect/turf_decal/stripes/asteroid,
+/turf/open/floor/plating/snowed/temperatre{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293";
+	initial_temperature = 293.15
+	},
+/area/syndicate_mothership)
 "oRM" = (
 /obj/machinery/status_display/evac,
 /turf/closed/indestructible/syndicate,
@@ -24707,7 +24724,7 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/hatch{
-	name = "Restroom";
+	name = "Technical";
 	req_access_txt = "150";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
@@ -25429,10 +25446,6 @@
 	dir = 4
 	},
 /area/slavers)
-"qsw" = (
-/obj/effect/turf_decal/stripes/asteroid,
-/turf/open/floor/plating/snowed/temperatre,
-/area/syndicate_mothership)
 "qth" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 4
@@ -57725,7 +57738,7 @@ aQV
 aQV
 aQV
 mhf
-cmj
+oQc
 mhf
 aRP
 mhf
@@ -57982,7 +57995,7 @@ wTt
 qrv
 ega
 aMI
-qsw
+oQc
 mhf
 mhf
 mhf
