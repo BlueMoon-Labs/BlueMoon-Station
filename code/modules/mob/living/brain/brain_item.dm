@@ -28,6 +28,9 @@
 
 	var/list/datum/brain_trauma/traumas = list()
 
+	/// Current NIF (Nanite Implant Framework), if any.
+	var/datum/modular_persistence/modular_persistence
+
 /obj/item/organ/brain/Insert(mob/living/carbon/C, special = 0, no_id_transfer = FALSE, drop_if_replaced = TRUE)
 	// Аргументы родителю пересобираются, а не пробрасываются как есть: третий позиционный
 	// у него - drop_if_replaced, а у мозга - no_id_transfer, поэтому голый ..() отдавал ему
@@ -323,6 +326,7 @@
 	if(brainmob)
 		QDEL_NULL(brainmob)
 	QDEL_LIST(traumas)
+	QDEL_NULL(modular_persistence)
 	if(owner?.mind)
 		owner.mind.set_current(null)
 	return ..()

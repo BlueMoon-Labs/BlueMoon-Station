@@ -177,6 +177,7 @@
 
 //organ slots
 #define ORGAN_SLOT_BRAIN "brain"
+#define ORGAN_SLOT_BRAIN_NIF "brain_nif"
 #define ORGAN_SLOT_APPENDIX "appendix"
 #define ORGAN_SLOT_RIGHT_ARM_AUG "r_arm_device"
 #define ORGAN_SLOT_LEFT_ARM_AUG "l_arm_device"

@@ -527,6 +527,7 @@
 		else
 			announce_arrival(humanc, rank)
 		AddEmploymentContract(humanc)
+		SSpersistence.load_modular_persistence(humanc.getorganslot(ORGAN_SLOT_BRAIN))
 		if(GLOB.highlander)
 			to_chat(humanc, "<span class='userdanger'><i>THERE CAN BE ONLY ONE!!!</i></span>")
 			humanc.make_scottish()
@@ -726,6 +727,7 @@
 		mind.active = 0					//we wish to transfer the key manually
 		mind.transfer_to(H)					//won't transfer key since the mind is not active
 		mind.set_original_character(H)
+		mind.original_character_slot_index = client.prefs.default_slot
 
 	H.name = real_name
 	client.init_verbs()
