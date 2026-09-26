@@ -285,3 +285,31 @@
 
 	TEST_ASSERT(blocker.was_hit, "Elapsed-time catch-up must preserve collision with every crossed dense object")
 	TEST_ASSERT(QDELETED(projectile), "A catch-up projectile must finish its impact instead of remaining suspended with debt")
+
+/obj/item/projectile/unit_test_speed_change
+	var/processed_pixel_steps = 0
+	var/speed_change_factor = 1
+
+/obj/item/projectile/unit_test_speed_change/pixel_move(times, hitscanning = FALSE, seconds_equivalent = world.tick_lag * 0.1, trajectory_multiplier = 1, allow_animation = TRUE)
+	if(speed_change_factor == 1)
+		processed_pixel_steps += times
+		return times
+	pixels_per_second *= speed_change_factor
+	speed_change_factor = 1
+	processed_pixel_steps++
+	return 1
+
+/// Смена скорости посреди догоняющего прохода не выходит за предел пикселей на проход и сохраняет остаток как долг.
+/datum/unit_test/projectile_speed_change_respects_pass_cap/Run()
+	for(var/factor in list(0.5, 2.9))
+		var/obj/item/projectile/unit_test_speed_change/projectile = allocate(/obj/item/projectile/unit_test_speed_change, run_loc_floor_bottom_left)
+		projectile.pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
+		projectile.pixels_per_second = TILES_TO_PIXELS(1)
+		projectile.trajectory = new(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z, 0, 0, EAST, projectile.pixel_increment_amount)
+		projectile.fired = TRUE
+		projectile.speed_change_factor = factor
+		projectile.process(60)
+		var/traced = projectile.processed_pixel_steps * projectile.pixel_increment_amount
+		TEST_ASSERT(traced <= SSprojectiles.max_pixels_per_process, "Смена скорости x[factor] не позволяет пройти [traced] пикселей за один проход.")
+		var/expected_total = projectile.pixel_increment_amount + (TILES_TO_PIXELS(60) - projectile.pixel_increment_amount) * factor
+		TEST_ASSERT(abs(traced + projectile.pixels_tick_leftover - expected_total) < 0.01, "Смена скорости x[factor] пересчитывает долг, а не теряет его: [traced] + [projectile.pixels_tick_leftover] вместо [expected_total].")

@@ -286,8 +286,9 @@
 
 //the actual emotes
 /datum/emote/sound/human/carbon/human/rockpaperscissors
-	key = "rps" // Give rockpaperscissors a key so it STOPS RUNTIMING
+	key = "rps"
 	message = "пытается играть в 'Камень-Ножницы-Бумага'!"
+	mob_type_allowed_typecache = list(/mob/living/carbon/human)
 
 /datum/emote/sound/human/carbon/human/rockpaperscissors/rock
 	name = "Рошамбо: Камень"
@@ -302,6 +303,12 @@
 	key = "scissors"
 
 /datum/emote/sound/human/carbon/human/rockpaperscissors/run_emote(mob/living/carbon/human/user, params)
-	if(!(user in GLOB.rockpaperscissors_players)) //no using the emote again while already playing!
-		. = ..()
-		user.beginRockPaperScissors(key)
+	if(!ishuman(user) || (user in GLOB.rockpaperscissors_players))
+		return FALSE
+	if(!(key in list("rock", "paper", "scissors")))
+		to_chat(user, span_notice("Выберите жест: *rock — камень, *paper — бумага, *scissors — ножницы."))
+		return FALSE
+	if(!..())
+		return FALSE
+	user.beginRockPaperScissors(key)
+	return TRUE

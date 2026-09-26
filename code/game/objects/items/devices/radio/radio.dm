@@ -221,6 +221,8 @@
 				. = TRUE
 
 /obj/item/radio/talk_into(atom/movable/M, message, channel, list/spans, datum/language/language)
+	if(speaker_jammed(M))
+		return ITALICS | REDUCE_RANGE
 	if(!spans)
 		spans = list(M.speech_span)
 	if(!language)
@@ -228,9 +230,15 @@
 	INVOKE_ASYNC(src, PROC_REF(talk_into_impl), M, message, channel, spans.Copy(), language)
 	return ITALICS | REDUCE_RANGE
 
+/obj/item/radio/proc/speaker_jammed(atom/movable/speaker)
+	return speaker && (SEND_SIGNAL(speaker, COMSIG_MOVABLE_USING_RADIO, src) & COMPONENT_CANNOT_USE_RADIO)
+
 /obj/item/radio/proc/talk_into_impl(atom/movable/M, message, channel, list/spans, datum/language/language)
 	if(!on)
 		return // the device has to be on
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	if(!M || !message)
 		return
 	if(wires.is_cut(WIRE_TX))  // Permacell and otherwise tampered-with radios
@@ -306,6 +314,9 @@
 		addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 20)
 
 /obj/item/radio/proc/backup_transmission(datum/signal/subspace/vocal/signal)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	var/turf/T = get_turf(src)
 	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
@@ -337,6 +348,9 @@
 
 // Checks if this radio can receive on the given frequency.
 /obj/item/radio/proc/can_receive(freq, level)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return FALSE
 	// deny checks
 	if (!on || !listening || wires.is_cut(WIRE_RX))
 		return FALSE

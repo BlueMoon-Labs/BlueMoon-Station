@@ -7,7 +7,7 @@
 import { classes } from 'common/react';
 import { Component } from 'react';
 
-import { Box } from './Box';
+import { Box, unit } from './Box';
 import { Icon } from './Icon';
 
 // Вариант списка — либо примитив (значение и подпись совпадают), либо пара
@@ -160,7 +160,7 @@ export class Dropdown extends Component {
         ref={menu => { this.menuRef = menu; }}
         tabIndex="-1"
         style={{
-          'width': width,
+          'width': unit(width),
         }}
         className={classes([
           noscroll && 'Dropdown__menu-noscroll' || 'Dropdown__menu',

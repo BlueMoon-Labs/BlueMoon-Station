@@ -462,6 +462,8 @@
 		data = list("misc" = 1)
 	data["misc"]++
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(M)
+	if(data["misc"] >= 10 && M.remove_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE))
+		to_chat(M, span_notice("Святая вода рассеяла проклятие и преследующие вас тени."))
 	if(!iscultist(M, FALSE, TRUE) && !is_servant_of_ratvar(M) && !heretic && (HAS_TRAIT(M, TRAIT_HALLOWED) || M.mind?.isholy))
 		return ..()
 	if(iscultist(M, FALSE, TRUE))
@@ -3125,16 +3127,23 @@
 	taste_description = "Ag'hsj'saje'sh"
 //	chemical_flags = REAGENT_ALL_PROCESS (BLUEMOON REMOVAL - роботы не должны получать эффекты реагента)
 	color = "#1f8016"
+	var/last_effect_time = -1
 
 /datum/reagent/eldritch/on_mob_life(mob/living/carbon/M)
+	if(last_effect_time == world.time)
+		holder.remove_reagent(type, 1)
+		return TRUE
+	// Метка на обеих эссенциях исключает двойной эффект даже на последней единице одной из них.
+	for(var/datum/reagent/eldritch/essence in holder.reagent_list)
+		essence.last_effect_time = world.time
 	if(IS_HERETIC(M))
 		M.drowsyness = max(M.drowsyness-10, 0)
 		M.AdjustAllImmobility(-80, FALSE)
 		M.adjustStaminaLoss(-30, FALSE)
 		M.adjustToxLoss(-6, FALSE, TRUE)
 		M.adjustOxyLoss(-6, FALSE)
-		M.adjustBruteLoss(-6, FALSE)
-		M.adjustFireLoss(-6, FALSE)
+		M.adjustBruteLoss(-6, FALSE, only_organic = !(chemical_flags & REAGENT_ROBOTIC_PROCESS))
+		M.adjustFireLoss(-6, FALSE, only_organic = !(chemical_flags & REAGENT_ROBOTIC_PROCESS))
 		if(ishuman(M) && M.blood_volume < BLOOD_VOLUME_NORMAL)
 			M.adjust_integration_blood(6)
 	else

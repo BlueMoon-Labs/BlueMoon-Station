@@ -681,6 +681,7 @@
 	else
 		if(alert(src, "You sure you want to sleep for a while?", "Sleep", "Yes", "No") == "Yes")
 			SetSleeping(400) //Short nap
+			voluntary_sleep_until = world.time + 400
 
 /mob/proc/get_contents()
 
@@ -1362,6 +1363,7 @@
 	apply_effect((amount*RAD_MOB_COEFFICIENT)/max(1, (radiation**2)*RAD_OVERDOSE_REDUCTION), EFFECT_IRRADIATE, blocked)
 
 /mob/living/anti_magic_check(magic = TRUE, holy = FALSE, chargecost = 1, self = FALSE)
+	// Старые вызовы сохраняют порядок аргументов; новые используют check_magic_resistance.
 	. = ..()
 	if(.)
 		return
@@ -1444,7 +1446,7 @@
 	..()
 
 /mob/living/can_be_pulled()
-	return ..() && !(buckled && buckled.buckle_prevents_pull)
+	return ..() && !(buckled && buckled.buckle_prevents_pull) && !HAS_TRAIT(src, TRAIT_UNPULLABLE)
 
 /mob/living/proc/AddAbility(obj/effect/proc_holder/A)
 	abilities.Add(A)

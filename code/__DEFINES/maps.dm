@@ -40,6 +40,7 @@ require only minor tweaks.
 #define ZTRAIT_ICE_RUINS_UNDERGROUND "Ice Ruins Underground"
 #define ZTRAIT_ISOLATED_RUINS "Isolated Ruins" //Placing ruins on z levels with this trait will use turf reservation instead of usual placement.
 #define ZTRAIT_VIRTUAL_REALITY "Virtual Reality"
+#define ZTRAIT_ANTAG_TRAINING "Training Ground"
 
 //boolean - weather types that occur on the level
 #define ZTRAIT_SNOWSTORM "Weather_Snowstorm"

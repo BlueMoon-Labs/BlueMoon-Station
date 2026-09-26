@@ -1,0 +1,60 @@
+.AntagTraining {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  background: #141d25;
+  color: #e2e9ef;
+  .Section { background: #1a2630; }
+  &__header { padding: 18px 20px 14px; background: #1c2c36; border-bottom: 1px solid #3c5664; flex-shrink: 0; }
+  &__title { font-size: 23px; font-weight: bold; }
+  &__capacity { text-align: right; font-size: 19px; color: #bce4df; }
+  &__tabs { padding: 8px 16px 0; margin: 0; flex-shrink: 0; }
+  &__body { padding: 16px 20px; flex: 1; min-height: 0; overflow-y: auto; }
+  &__map, &__catalog { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  &__sector { display: flex; flex-direction: column; background: #1d2b36; border: 1px solid #3d4f5b; border-left: 3px solid #677d8d; padding: 15px; }
+  &__sector--current { border-color: #79bcb2; background: #203637; }
+  &__sector--hub { grid-column: 1 / -1; background: #203331; border-left-color: #79bcb2; }
+  &__sectorHeading { display: flex; gap: 10px; align-items: center; }
+  &__sectorHeading > .Icon { color: #99bbbF; font-size: 18px; }
+  &__here { margin-left: auto; font-size: 12px; color: #b7e6da; white-space: nowrap; }
+  &__hint { color: #a3b6c2; padding: 16px 2px 0; line-height: 1.5; }
+  &__hint > .Icon { margin-right: 6px; }
+  &__equipment { background: #1d2b36; border-bottom: 1px solid #3d4f5b; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  &__catalogIcon { font-size: 20px; color: #94c8bf; width: 26px; flex-shrink: 0; text-align: center; }
+  &__catalogText { flex: 1; min-width: 0; line-height: 1.4; }
+  &__equipment > .Button { flex-shrink: 0; }
+  &__categories { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 8px; }
+  &__categories > .Button { margin: 0; }
+  &__workshopIntro { display: flex; gap: 16px; align-items: center; padding: 0 0 16px; line-height: 1.5; }
+  &__workshopIntro > .Icon { font-size: 28px; color: #a3d7cc; }
+  &__placement { padding: 12px; margin-bottom: 14px; background: #203b34; border-left: 3px solid #79bcb2; line-height: 1.5; }
+  &__placement > .Icon, &__targetHint > .Icon { margin-right: 8px; }
+  &__placement--blocked { background: #322f26; border-color: #c5aa6b; }
+  &__targetHint { margin: 4px 0 16px; color: #adbdc8; line-height: 1.5; }
+  &__recipe { border-top: 1px solid #3d4f5b; padding: 12px 0; line-height: 1.5; }
+  &__injuries { border-top: 1px solid #3d4f5b; padding: 10px 0; margin-bottom: 4px; }
+  &__target, &__member { background: #1d2b36; padding: 14px; border: 1px solid #3d4f5b; }
+  &__member--self { border-left: 3px solid #79bcb2; }
+  &__damage { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 12px 0; line-height: 1.6; }
+  &__emptyIcon { font-size: 36px; }
+  &__empty { text-align: center; padding: 42px 24px; color: #9bb8c5; }
+  &__code { font-size: 23px; font-weight: bold; letter-spacing: 2px; padding: 12px 16px; border: 1px solid #567c7a; background: #223b3b; color: #c6ece3; }
+}
+.AntagTraining.Layout__content { background-image: none; padding: 0; }
+.AntagTraining .color-label { color: #adbdc8; }
+@media (max-width: 700px) {
+  .AntagTraining {
+    &__header, &__body { padding: 12px; }
+    &__tabs { padding: 8px 8px 0; font-size: 12px; overflow-x: auto; white-space: nowrap; }
+    &__title { font-size: 19px; }
+    &__map, &__catalog { grid-template-columns: 1fr; }
+  }
+}
+
+.AntagTraining__vote {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: rgba(199, 152, 66, 0.16);
+  border-bottom: 1px solid rgba(199, 152, 66, 0.4);
+}

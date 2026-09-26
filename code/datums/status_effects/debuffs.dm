@@ -613,31 +613,49 @@
 /datum/status_effect/eldritch
 	duration = 15 SECONDS
 	status_type = STATUS_EFFECT_REPLACE
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_mark
 	on_remove_on_mob_delete = TRUE
-	///underlay used to indicate that someone is marked
 	var/mutable_appearance/marked_underlay
-	///path for the underlay
 	var/effect_sprite = ""
+	var/effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	var/effect_sprite_layer = BELOW_MOB_LAYER
+	var/mark_name = "Метка еретика"
+	var/mark_alert_state
+	var/detonation_sound = 'sound/magic/repulse.ogg'
+	var/detonation_visual
 
 /datum/status_effect/eldritch/on_creation(mob/living/new_owner, ...)
-	marked_underlay = mutable_appearance('icons/effects/effects.dmi', effect_sprite,BELOW_MOB_LAYER)
-	return ..()
+	marked_underlay = mutable_appearance(effect_sprite_icon, effect_sprite, effect_sprite_layer)
+	. = ..()
+	if(linked_alert)
+		linked_alert.name = mark_name
+		linked_alert.icon = mark_alert_state ? 'modular_bluemoon/icons/obj/heretic_alerts.dmi' : effect_sprite_icon
+		linked_alert.icon_state = mark_alert_state ? mark_alert_state : effect_sprite
 
 /datum/status_effect/eldritch/on_apply()
 	. = ..()
-	if(owner.mob_size >= MOB_SIZE_HUMAN)
-		RegisterSignal(owner,COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_owner_underlay))
-		owner.update_icon()
-		return TRUE
-	return FALSE
+	if(IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || owner.stat == DEAD || owner.mob_size < MOB_SIZE_HUMAN)
+		return FALSE
+	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(update_owner_underlay))
+	owner.update_icon()
+	to_chat(owner, span_userdanger("На вас проступает чужая метка. Удар клинком еретика активирует её — держитесь от него подальше!"))
+	return TRUE
+
+/atom/movable/screen/alert/status_effect/heretic_mark
+	name = "Метка еретика"
+	desc = "Удар подходящим клинком активирует метку и усилит еретика. Разорвите дистанцию: метка исчезнет через 15 секунд после наложения."
 
 /datum/status_effect/eldritch/on_remove()
 	UnregisterSignal(owner,COMSIG_ATOM_UPDATE_OVERLAYS)
 	owner.update_icon()
 	return ..()
 
+/datum/status_effect/eldritch/be_replaced()
+	on_remove()
+	return ..()
+
 /datum/status_effect/eldritch/proc/update_owner_underlay(atom/source, list/overlays)
+	SIGNAL_HANDLER
 	overlays += marked_underlay
 
 /datum/status_effect/eldritch/Destroy()
@@ -650,66 +668,99 @@
   * Adds actual functionality to each mark
   */
 /datum/status_effect/eldritch/proc/on_effect()
-	playsound(owner, 'sound/magic/repulse.ogg', 75, TRUE)
+	playsound(owner, detonation_sound, 65, TRUE)
+	if(detonation_visual)
+		new detonation_visual(get_turf(owner))
 	qdel(src) //what happens when this is procced.
 
 //Each mark has diffrent effects when it is destroyed that combine with the mansus grasp effect.
 /datum/status_effect/eldritch/flesh
 	id = "flesh_mark"
 	effect_sprite = "emark1"
+	mark_name = "Метка Плоти"
+	mark_alert_state = "sigil_flesh"
+	detonation_sound = 'sound/effects/wounds/crackandbleed.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/flesh
 
 /datum/status_effect/eldritch/flesh/on_effect()
-
 	if(ishuman(owner))
 		var/mob/living/carbon/human/H = owner
-		var/obj/item/bodypart/bodypart = pick(H.bodyparts)
-		var/datum/wound/slash/severe/crit_wound = new
-		crit_wound.apply_wound(bodypart)
+		if(length(H.bodyparts))
+			var/obj/item/bodypart/bodypart = pick(H.bodyparts)
+			var/datum/wound/slash/moderate/wound = new
+			wound.apply_wound(bodypart)
+			bodypart.generic_bleedstacks += 4
 	return ..()
 
 /datum/status_effect/eldritch/ash
 	id = "ash_mark"
-	effect_sprite = "emark2"
+	effect_sprite = "emark4"
+	mark_name = "Метка Пепла"
+	mark_alert_state = "sigil_ash"
+	detonation_sound = 'sound/effects/wounds/sizzle2.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/ash
 	///Dictates how much damage and stamina loss this mark will cause.
 	var/repetitions = 1
 
 /datum/status_effect/eldritch/ash/on_creation(mob/living/new_owner, _repetition = 5)
-	. = ..()
-	repetitions = min(1,_repetition)
+	repetitions = clamp(_repetition, 1, 5)
+	return ..()
 
 /datum/status_effect/eldritch/ash/on_effect()
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
-		carbon_owner.adjustStaminaLoss(10 * repetitions)
-		carbon_owner.adjustFireLoss(5 * repetitions)
-		for(var/mob/living/carbon/victim in range(1,carbon_owner))
-			if(IS_HERETIC(victim) || victim == carbon_owner)
-				continue
-			victim.apply_status_effect(type,repetitions-1)
-			break
+		carbon_owner.adjustStaminaLoss(6 * repetitions)
+		carbon_owner.adjustFireLoss(3 * repetitions)
+		if(repetitions > 1)
+			for(var/mob/living/carbon/victim in shuffle(view(1, carbon_owner)))
+				if(victim.mob_size < MOB_SIZE_HUMAN || victim.has_status_effect(type) || !heretic_can_affect(carbon_owner, victim, chargecost = 0))
+					continue
+				victim.apply_status_effect(type, repetitions - 1)
+				break
 	return ..()
 
 /datum/status_effect/eldritch/rust
 	id = "rust_mark"
-	effect_sprite = "emark3"
+	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	effect_sprite = "sigil_rust"
+	effect_sprite_layer = ABOVE_MOB_LAYER
+	mark_name = "Метка Ржавчины"
+	mark_alert_state = "sigil_rust"
+	detonation_sound = 'sound/effects/clangsmall2.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/rust
 
 /datum/status_effect/eldritch/rust/on_effect()
-	if(!iscarbon(owner))
-		return
-	var/mob/living/carbon/carbon_owner = owner
-	for(var/obj/item/I in carbon_owner.get_all_gear())	//Affects roughly 75% of items
-		if(!QDELETED(I) && prob(75)) //Just in case
-			I.take_damage(100)
+	heretic_corrosion(owner, 15)
+	var/list/equipment = owner.held_items.Copy()
+	if(ishuman(owner))
+		var/mob/living/carbon/human/victim = owner
+		if(victim.wear_suit)
+			equipment |= victim.wear_suit
+	var/corroded = FALSE
+	for(var/obj/item/item as anything in equipment)
+		if(QDELETED(item))
+			continue
+		corroded = item.heretic_corrode_surface() || corroded
+	if(corroded)
+		to_chat(owner, span_userdanger("Рыжие хлопья осыпаются с того, что вы держите и носите. Метка разъедает снаряжение!"))
 	return ..()
 
 /datum/status_effect/eldritch/void
 	id = "void_mark"
-	effect_sprite = "emark4"
+	effect_sprite = "emark2"
+	mark_name = "Метка Пустоты"
+	mark_alert_state = "sigil_void"
+	detonation_sound = 'modular_bluemoon/sound/heretic/void_deflect3.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/void
+	var/detonation_damage = 15
 
 /datum/status_effect/eldritch/void/on_effect()
-	var/turf/open/turfie = get_turf(owner)
-	turfie.TakeTemperature(-40)
-	owner.adjust_bodytemperature(-60)
+	owner.adjustFireLoss(detonation_damage)
+	owner.adjust_bodytemperature(-45)
+	owner.apply_status_effect(/datum/status_effect/heretic_void_chill)
+	if(iscarbon(owner))
+		var/mob/living/carbon/victim = owner
+		victim.silent = max(victim.silent, 4)
 	return ..()
 
 /datum/status_effect/domain
@@ -718,15 +769,18 @@
 	var/movespeed_mod = /datum/movespeed_modifier/status_effect/domain
 
 /datum/status_effect/domain/on_creation(mob/living/new_owner, set_duration)
-	if(isliving(owner))
-		var/mob/living/carbon/C = owner
-		C.add_movespeed_modifier(movespeed_mod)
+	if(isnum(set_duration))
+		duration = set_duration
+	return ..()
 
-/datum/status_effect/electrode/on_remove()
-	if(isliving(owner))
-		var/mob/living/carbon/C = owner
-		C.remove_movespeed_modifier(movespeed_mod)
+/datum/status_effect/domain/on_apply()
 	. = ..()
+	owner.add_movespeed_modifier(movespeed_mod)
+	return .
+
+/datum/status_effect/domain/on_remove()
+	owner.remove_movespeed_modifier(movespeed_mod)
+	return ..()
 
 /datum/status_effect/corrosion_curse
 	id = "corrosion_curse"
@@ -771,7 +825,6 @@
 	duration = 20 SECONDS
 
 /datum/status_effect/corrosion_curse/lesser/tick()
-	. = ..()
 	if(!ishuman(owner))
 		return
 	var/mob/living/carbon/human/H = owner
@@ -915,6 +968,9 @@
 	if(!still_bleeding)
 		H.remove_status_effect(/datum/status_effect/neck_slice)
 
+#define NECROPOLIS_CURSE_MASS_LIMIT 2
+#define NECROPOLIS_CURSE_RESPITE 20 SECONDS
+
 /mob/living/proc/apply_necropolis_curse(set_curse, duration = 10 MINUTES)
 	var/datum/status_effect/necropolis_curse/C = has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE)
 	if(!set_curse)
@@ -924,16 +980,18 @@
 
 	else
 		C.apply_curse(set_curse)
-		C.duration += duration * 0.5 //additional curses add half their duration
 
 /datum/status_effect/necropolis_curse
 	id = "necrocurse"
-	duration = 10 MINUTES //you're cursed for 10 minutes have fun
-	tick_interval = 50
-	alert_type = null
+	duration = 10 MINUTES
+	tick_interval = 5 SECONDS
+	alert_type = /atom/movable/screen/alert/status_effect/necropolis_curse
+	examine_text = "SUBJECTPRONOUN окружён зловещими тенями. Святая вода поможет снять проклятие."
 	var/curse_flags = NONE
 	var/effect_last_activation = 0
-	var/effect_cooldown = 100
+	var/effect_cooldown = 10 SECONDS
+	var/list/curse_masses = list()
+	var/next_mass_at = 0
 	var/obj/effect/temp_visual/curse/wasting_effect = new
 
 /datum/status_effect/necropolis_curse/on_creation(mob/living/new_owner, set_curse, _duration)
@@ -942,8 +1000,12 @@
 	. = ..()
 	if(.)
 		apply_curse(set_curse)
+		to_chat(owner, span_userdanger("На вас лежит проклятие. Святая вода в организме снимет его примерно за 20 секунд. Другие люди могут уничтожать преследующие вас массы."))
 
 /datum/status_effect/necropolis_curse/Destroy()
+	for(var/mob/living/simple_animal/hostile/asteroid/curseblob/mass as anything in curse_masses)
+		UnregisterSignal(mass, COMSIG_PARENT_QDELETING)
+	QDEL_LIST(curse_masses)
 	if(!QDELETED(wasting_effect))
 		qdel(wasting_effect)
 		wasting_effect = null
@@ -964,6 +1026,8 @@
 	curse_flags &= ~remove_curse
 
 /datum/status_effect/necropolis_curse/tick()
+	if(linked_alert)
+		linked_alert.desc = "Осталось [CEILING(max(0, duration - world.time) / (1 SECONDS), 1)] сек. Святая вода в организме снимает проклятие примерно за 20 секунд. Массы можно замедлить и уничтожить вместе с союзниками; после уничтожения всех масс есть передышка."
 	if(owner.stat == DEAD)
 		return
 	if(curse_flags & CURSE_WASTING)
@@ -976,7 +1040,7 @@
 		owner.adjustFireLoss(0.75)
 	if(effect_last_activation <= world.time)
 		effect_last_activation = world.time + effect_cooldown
-		if(curse_flags & CURSE_SPAWNING)
+		if((curse_flags & CURSE_SPAWNING) && owner.stat == CONSCIOUS && length(curse_masses) < NECROPOLIS_CURSE_MASS_LIMIT && world.time >= next_mass_at)
 			var/turf/spawn_turf
 			var/sanity = 10
 			while(!spawn_turf && sanity)
@@ -984,6 +1048,8 @@
 				sanity--
 			if(spawn_turf)
 				var/mob/living/simple_animal/hostile/asteroid/curseblob/C = new (spawn_turf)
+				curse_masses += C
+				RegisterSignal(C, COMSIG_PARENT_QDELETING, PROC_REF(on_mass_deleted))
 				C.set_target = owner
 				C.GiveTarget()
 		if(curse_flags & CURSE_GRASPING)
@@ -991,6 +1057,21 @@
 			var/turf/spawn_turf = get_ranged_target_turf(owner, grab_dir, 5)
 			if(spawn_turf)
 				grasp(spawn_turf)
+
+/datum/status_effect/necropolis_curse/proc/on_mass_deleted(datum/source)
+	SIGNAL_HANDLER
+	curse_masses -= source
+	if(!length(curse_masses))
+		next_mass_at = world.time + NECROPOLIS_CURSE_RESPITE
+
+/atom/movable/screen/alert/status_effect/necropolis_curse
+	name = "Проклятие"
+	desc = "Святая вода в организме снимает проклятие примерно за 20 секунд. Союзники могут уничтожать преследующие вас массы."
+	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
+	icon_state = "curseblob"
+
+#undef NECROPOLIS_CURSE_MASS_LIMIT
+#undef NECROPOLIS_CURSE_RESPITE
 
 /datum/status_effect/necropolis_curse/proc/grasp(turf/spawn_turf)
 	set waitfor = FALSE
@@ -1420,7 +1501,8 @@
 	tick_interval = 2 SECONDS
 
 /datum/status_effect/rust_corruption/tick()
-	if(!owner)
+	if(QDELETED(owner) || owner.stat == DEAD || IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || owner.anti_magic_check(chargecost = 0))
+		qdel(src)
 		return
 	// tick_interval is in deciseconds; scale SPLURT per-second values to our tick length.
 	var/tick_s = tick_interval * 0.1
@@ -1429,14 +1511,17 @@
 		return
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
-		carbon_owner.adjust_disgust(5 * tick_s)
-		carbon_owner.adjustToxLoss(2 * tick_s, FALSE, TRUE) // heretic rust (extra vs SPLURT: tox on carbons)
+		carbon_owner.adjust_disgust(min(5 * tick_s, max(0, DISGUST_LEVEL_GROSS - carbon_owner.disgust)))
+		heretic_corrosion(carbon_owner, 2 * tick_s)
 		carbon_owner.reagents?.remove_all(0.75 * tick_s)
+		var/list/robotic_limbs = list()
 		for(var/obj/item/bodypart/limb as anything in carbon_owner.bodyparts)
 			if(limb.is_robotic_limb())
-				limb.receive_damage(10, 0, 0, 0, FALSE)
+				robotic_limbs += limb
+		for(var/obj/item/bodypart/limb as anything in robotic_limbs)
+			limb.receive_damage(5 * tick_s / length(robotic_limbs), 0, 0, 0, FALSE)
 		carbon_owner.updatehealth()
 		return
-	owner.adjustToxLoss(2 * tick_s, FALSE, TRUE)
+	heretic_corrosion(owner, 2 * tick_s)
 
 /////////////////////////////////////////////////////

@@ -278,6 +278,7 @@
 	playsound(src,boltUp,30,0,3)
 	audible_message("<span class='italics'>You hear a click from the bottom of the door.</span>", null,  1)
 	update_icon()
+	SEND_SIGNAL(src, COMSIG_AIRLOCK_UNBOLTED)
 
 /obj/machinery/door/airlock/narsie_act()
 	var/turf/T = get_turf(src)

@@ -54,6 +54,8 @@
 #define SPELL_CULT_ARMOR		(1<<10)
 #define SPELL_WIZARD_GARB		(SPELL_WIZARD_HAT|SPELL_WIZARD_ROBE)
 #define SPELL_CULT_GARB			(SPELL_CULT_HELMET|SPELL_CULT_ARMOR)
+/// Заклинание запрещено, даже если остальные флаги что-то разрешают.
+#define SPELL_CANCEL_CAST		(1<<11)
 
 //// Identification ////
 // /datum/component/identification/identification_flags

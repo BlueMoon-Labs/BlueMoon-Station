@@ -267,7 +267,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 	updateEmbedding()
 
-	if(GLOB.rpg_loot_items)
+	if(GLOB.rpg_loot_items && !(item_flags & ABSTRACT))
 		AddComponent(/datum/component/fantasy)
 
 	if(sharpness && force > 5) //give sharp objects butchering functionality, for consistency

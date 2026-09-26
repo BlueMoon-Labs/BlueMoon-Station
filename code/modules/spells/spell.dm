@@ -68,6 +68,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			user.ranged_ability.remove_ranged_ability()
 		else
 			return
+	user.prepare_ability(src)
 	user.ranged_ability = src
 	user.click_intercept = src
 	user.update_mouse_pointer()
@@ -76,17 +77,21 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		to_chat(ranged_ability_user, msg)
 	active = TRUE
 	update_icon()
+	if(IS_HERETIC(user))
+		user.balloon_alert(user, name)
 
 /obj/effect/proc_holder/proc/remove_ranged_ability(msg)
-	if(!ranged_ability_user || !ranged_ability_user.client || (ranged_ability_user.ranged_ability && ranged_ability_user.ranged_ability != src)) //To avoid removing the wrong ability
-		return
-	ranged_ability_user.ranged_ability = null
-	ranged_ability_user.click_intercept = null
-	ranged_ability_user.update_mouse_pointer()
-	if(msg)
-		to_chat(ranged_ability_user, msg)
+	var/mob/living/user = ranged_ability_user
 	ranged_ability_user = null
 	active = FALSE
+	if(user)
+		if(user.ranged_ability == src)
+			user.ranged_ability = null
+		if(user.click_intercept == src)
+			user.click_intercept = null
+		user.update_mouse_pointer()
+		if(msg && user.client)
+			to_chat(user, msg)
 	update_icon()
 
 /obj/effect/proc_holder/spell
@@ -177,7 +182,10 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		if("recharge")
 			if(charge_counter < charge_max)
 				if(!silent)
-					to_chat(user, still_recharging_msg)
+					if(IS_HERETIC(user))
+						heretic_check(user, FALSE, FALSE, "Перезарядка: осталось [DisplayTimeText(charge_max - charge_counter)].")
+					else
+						to_chat(user, still_recharging_msg)
 				return FALSE
 		if("charges")
 			if(!charge_counter)
@@ -224,7 +232,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/Trigger(mob/user, skip_can_cast = TRUE)
 	if(cast_check(FALSE, user, skip_can_cast))
-		choose_targets()
+		choose_targets(user)
 	return TRUE
 
 /obj/effect/proc_holder/spell/proc/choose_targets(mob/user = usr) //depends on subtype - /targeted or /aoe_turf
@@ -255,6 +263,8 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		recharging = FALSE
 
 /obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = TRUE, mob/user = usr) //if recharge is started is important for the trigger spells
+	if(user)
+		SEND_SIGNAL(user, COMSIG_MOB_CAST_SPELL, src)
 	before_cast(targets)
 	invocation(user)
 	if(do_log && user?.ckey)
@@ -462,7 +472,9 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 /obj/effect/proc_holder/spell/proc/can_cast(mob/user = usr, skipcharge = FALSE, silent = FALSE)
 	if(!user || QDELETED(user))
 		return FALSE
-	var/magic_flags = SEND_SIGNAL(user, COMSIG_MOB_SPELL_CAN_CAST, src)
+	var/magic_flags = SEND_SIGNAL(user, COMSIG_MOB_SPELL_CAN_CAST, src, silent)
+	if(magic_flags & SPELL_CANCEL_CAST)
+		return FALSE
 	if(magic_flags & SPELL_SKIP_ALL_REQS)
 		return TRUE
 

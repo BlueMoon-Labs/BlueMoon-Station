@@ -672,8 +672,12 @@
 			to_chat(C, "<span class='unconscious'>Вы ощущаете поток свежего воздуха... неизвестно, откуда...</span>")
 
 /mob/living/carbon/human/cuff_resist(obj/item/I)
-	if(dna && dna.check_mutation(HULK) || istype(mind.martial_art, /datum/martial_art/nanosuit))
+	if(dna && dna.check_mutation(HULK) || istype(mind?.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
+		if(..(I, cuff_break = FAST_CUFFBREAK))
+			dropItemToGround(I)
+	else if(HAS_TRAIT(src, TRAIT_HERETIC_ASCENDED))
+		visible_message(span_warning("[src] начинает рвать путы, будто их тянет сама завеса!"))
 		if(..(I, cuff_break = FAST_CUFFBREAK))
 			dropItemToGround(I)
 	else if(iszombie_infectious(src))

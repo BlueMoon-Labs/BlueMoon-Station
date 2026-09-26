@@ -12,6 +12,7 @@
 	aggro_vision_range = 20
 	maxHealth = 40 //easy to kill, but oh, will you be seeing a lot of them.
 	health = 40
+	del_on_death = TRUE
 	melee_damage_lower = 10
 	melee_damage_upper = 10
 	melee_damage_type = BURN
@@ -24,33 +25,42 @@
 	sentience_type = SENTIENCE_BOSS
 	layer = LARGE_MOB_LAYER
 	blood_volume = 0
-	var/doing_move_loop = FALSE
 	var/mob/living/set_target
 	var/timerid
+	var/move_timer
+	var/move_step_running = FALSE
 
 /mob/living/simple_animal/hostile/asteroid/curseblob/Initialize(mapload)
 	. = ..()
-	timerid = QDEL_IN_STOPPABLE(src, 600)
+	timerid = QDEL_IN_STOPPABLE(src, 1 MINUTES)
 	playsound(src, 'sound/effects/curse1.ogg', 100, 1, -1)
 
 /mob/living/simple_animal/hostile/asteroid/curseblob/Destroy()
 	new /obj/effect/temp_visual/dir_setting/curse/blob(loc, dir)
-	doing_move_loop = FALSE
+	deltimer(timerid)
+	timerid = null
+	deltimer(move_timer)
+	move_timer = null
+	set_target = null
 	return ..()
 
-/mob/living/simple_animal/hostile/asteroid/curseblob/proc/move_loop(move_target, delay)
-	set waitfor = FALSE
-	if(doing_move_loop)
+/mob/living/simple_animal/hostile/asteroid/curseblob/proc/move_loop()
+	if(move_timer || move_step_running)
 		return
-	doing_move_loop = TRUE
-	if(check_for_target())
+	pursue_target()
+
+/mob/living/simple_animal/hostile/asteroid/curseblob/proc/pursue_target()
+	move_timer = null
+	if(QDELETED(src) || check_for_target() || !isturf(loc))
 		return
-	while(!QDELETED(src) && doing_move_loop && isturf(loc) && !check_for_target())
+	move_step_running = TRUE
+	if(!incapacitated())
 		var/step_turf = get_step(src, get_dir(src, set_target))
-		if(step_turf != get_turf(set_target))
+		if(step_turf && step_turf != get_turf(set_target))
 			forceMove(step_turf)
-		sleep(delay)
-	doing_move_loop = FALSE
+	move_step_running = FALSE
+	if(!QDELETED(src))
+		move_timer = addtimer(CALLBACK(src, PROC_REF(pursue_target)), max(world.tick_lag, move_to_delay + movement_delay()), TIMER_STOPPABLE)
 
 /mob/living/simple_animal/hostile/asteroid/curseblob/proc/check_for_target()
 	if(QDELETED(set_target) || set_target.stat != CONSCIOUS || z != set_target.z)
@@ -63,47 +73,16 @@
 		return
 	new_target = set_target
 	. = ..()
-	move_loop(target, move_to_delay)
+	if(!move_timer)
+		move_loop()
 
 /mob/living/simple_animal/hostile/asteroid/curseblob/LoseTarget() //we can't lose our target!
 	if(check_for_target())
 		return
 
-//if it's not our target, we ignore it
 /mob/living/simple_animal/hostile/asteroid/curseblob/CanAllowThrough(atom/movable/mover, turf/target)
 	. = ..()
 	if(mover == set_target)
 		return FALSE
 	if(istype(mover, /obj/item/projectile))
-		var/obj/item/projectile/P = mover
-		if(P.firer == set_target)
-			return FALSE
-
-#define IGNORE_PROC_IF_NOT_TARGET(X) /mob/living/simple_animal/hostile/asteroid/curseblob/##X(AM) { if (AM == set_target) return ..(); }
-
-IGNORE_PROC_IF_NOT_TARGET(attack_hand)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_hulk)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_paw)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_alien)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_larva)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_animal)
-
-IGNORE_PROC_IF_NOT_TARGET(attack_slime)
-
-/mob/living/simple_animal/hostile/asteroid/curseblob/bullet_act(obj/item/projectile/Proj)
-	if(Proj.firer != set_target)
-		return BULLET_ACT_FORCE_PIERCE
-	return ..()
-
-/mob/living/simple_animal/hostile/asteroid/curseblob/attacked_by(obj/item/I, mob/living/L, attackchain_flags = NONE, damage_multiplier = 1)
-	if(L != set_target)
-		I.ApplyAttackCooldown(L, src)
-		return
-	return ..()
-
-#undef IGNORE_PROC_IF_NOT_TARGET
+		return FALSE

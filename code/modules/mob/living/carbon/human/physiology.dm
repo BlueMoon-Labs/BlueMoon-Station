@@ -1,6 +1,8 @@
 //Stores several modifiers in a way that isn't cleared by changing species
 
 /datum/physiology
+	var/heretic_ascension_mod = 1 // Множитель ушибов и ожогов, независимый от сброса боевых искусств.
+	var/heretic_stamina_mod = 1 // Множитель урона выносливости вознесения, тоже вне сброса боевых искусств.
 	var/brute_mod = 1   	// % of brute damage taken from all sources
 	var/burn_mod = 1    	// % of burn damage taken from all sources
 	var/tox_mod = 1     	// % of toxin damage taken from all sources
