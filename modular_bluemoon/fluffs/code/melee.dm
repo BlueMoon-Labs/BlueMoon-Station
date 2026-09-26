@@ -472,6 +472,7 @@
 	name = "Entangling Bola"
 	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
 	icon_state = "melatonin_bola"
+	item_state = "melatonin_bola"
 	hitsound = 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg'
 	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
 
@@ -492,6 +493,10 @@
 		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
 		C.legcuffed = src
 		forceMove(C)
+		item_state = "melatonin_bola"
+		if(ishuman(C))
+			if(C.dna?.species && (DIGITIGRADE in C.dna.species.species_traits))
+				item_state = "melatonin_bola_digi"
 		C.update_equipment_speed_mods()
 		C.update_inv_legcuffed()
 		SSblackbox.record_feedback("tally", "handcuffs", 1, type)
