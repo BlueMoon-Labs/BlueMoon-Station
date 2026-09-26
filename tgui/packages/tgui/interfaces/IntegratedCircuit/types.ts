@@ -62,6 +62,8 @@ export interface SelectedPortState {
 export interface IntegratedCircuitState {
   locations: Record<string, PortLocation>;
   selectedPort: SelectedPortState | null;
+  /** Пин, выбранный кликом (без перетаскивания) для соединения «клик → клик». */
+  connectSource: SelectedPortState | null;
   dragClientX: number | null;
   dragClientY: number | null;
   zoom: number;
@@ -74,6 +76,23 @@ export interface IntegratedCircuitState {
   screenPanOverride: { x: number; y: number } | null;
   /** Сброс локального drag-offset в InfinitePlane (инкремент при «к началу координат»). */
   planeHomeNonce: number;
+  /** Показывать боковую панель списка компонентов. */
+  componentsPanelOpen: boolean;
+  /** Фильтр поиска в списке компонентов. */
+  componentsFilter: string;
+  /** Выделенные ноды (индексы 1-based) для группового перетаскивания. */
+  selection: number[];
+  /** Активное групповое перетаскивание выделенных нод. */
+  dragState: GroupDragState | null;
+}
+
+export interface GroupDragState {
+  ids: number[];
+  startPositions: Record<number, { x: number; y: number }>;
+  startClientX: number;
+  startClientY: number;
+  deltaX: number;
+  deltaY: number;
 }
 
 export interface IntegratedCircuitData {
@@ -101,11 +120,42 @@ export interface IntegratedCircuitData {
   ie_max_complexity?: number | null;
   /** BYOND list, array, or dense 1..N object of component dicts. */
   components?: unknown;
-  /** Краткая подсветка «какая связь сработала» (совпадает с ref портов в connections). */
+  /** IE: список «живых» импульсов в порядке активации. */
+  circuit_pulses?: CircuitPulse[] | null;
+  /** Wiremod: одиночная подсветка сработавшей связи. */
   circuit_pulse_out_ref?: string | null;
   circuit_pulse_in_ref?: string | null;
   /** Wiremod: заряд power cell на плате, null если нет. */
   circuit_cell_percent?: number | null;
+  /** IE: нативный редактор значений пина (список или текст). */
+  pin_editor?: PinEditorPayload | null;
+}
+
+export interface CircuitPulse {
+  out: string;
+  in: string;
+}
+
+export interface PinEditorPayload {
+  ref: string;
+  name: string;
+  /** Виджет редактора: список/число/текст/… («any» разрешается по текущему значению). */
+  type: string;
+  /** Фундаментальный тип пина (например «any», «number», «list»). */
+  pin_type?: string;
+  is_output: boolean;
+  /** "list" — редактирование списка; "value" — одно значение. */
+  kind: 'list' | 'value';
+  length?: number;
+  rows?: PinEditorRow[] | null;
+  value?: unknown;
+}
+
+export interface PinEditorRow {
+  index: number;
+  kind: string;
+  display: string;
+  value: unknown;
 }
 
 export interface WireConnection {

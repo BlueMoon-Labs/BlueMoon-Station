@@ -50,7 +50,13 @@
 	var/list/space_levels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
 	if(!length(space_levels))
 		return
-	try_to_place(pick(space_levels), list(/area/space))
+	var/list/valid_levels = space_levels.Copy()
+	for(var/obj/effect/landmark/ruin/ruin_landmark as anything in GLOB.ruin_landmarks)
+		if(istype(ruin_landmark.ruin_template, /datum/map_template/ruin/space/deepspacetwo))
+			valid_levels -= ruin_landmark.z
+	if(!length(valid_levels))
+		return
+	try_to_place(pick(valid_levels), list(/area/space))
 
 /datum/map_template/ruin/space/listeningstation/try_to_place(z, allowed_areas, forced_turf)
 	choose_variant()

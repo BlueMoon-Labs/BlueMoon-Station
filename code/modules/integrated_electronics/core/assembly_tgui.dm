@@ -69,51 +69,7 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 		if(D.accepting_refs)
 			to_chat(M, span_warning("Finish ref scan on the debugger first (click a target in the world), or switch mode."))
 			return
-		// Вставка памяти — только во входы; с выходов можно только скопировать (режим Copy выше).
-		if(ie_ic_is_output_side_pin(io))
-			to_chat(M, span_warning("Вставьте память отладчика во вход (слева). С выхода значение можно только скопировать (режим Copy на кнопке upload)."))
-			return
-		switch(ftype_mark)
-			if("entity")
-				if(isnull(D.data_to_write) || isweakref(D.data_to_write))
-					io.write_data_to_pin(D.data_to_write)
-				else
-					to_chat(M, span_warning("The debugger memory is not a reference. Use ref or null on the debugger, then upload again."))
-			if("number", "index", "dir")
-				if(isnull(D.data_to_write))
-					io.write_data_to_pin(null)
-				else if(isnum(D.data_to_write))
-					io.write_data_to_pin(D.data_to_write)
-				else if(istext(D.data_to_write))
-					io.write_data_to_pin(text2num(D.data_to_write))
-				else
-					to_chat(M, span_warning("Debugger memory must be a number or null for this pin."))
-			if("boolean")
-				if(isnull(D.data_to_write))
-					io.write_data_to_pin(null)
-				else if(D.data_to_write == TRUE || D.data_to_write == FALSE)
-					io.write_data_to_pin(D.data_to_write)
-				else if(isnum(D.data_to_write))
-					io.write_data_to_pin(!!D.data_to_write)
-				else if(istext(D.data_to_write))
-					var/nt = lowertext(D.data_to_write)
-					io.write_data_to_pin(nt == "true" || nt == "1" || nt == "yes")
-				else
-					to_chat(M, span_warning("Debugger memory must be boolean-like or null."))
-			if("char", "string", "color")
-				if(isnull(D.data_to_write) || istext(D.data_to_write))
-					io.write_data_to_pin(D.data_to_write)
-				else
-					to_chat(M, span_warning("Debugger memory must be text or null for this pin."))
-			if("list")
-				if(isnull(D.data_to_write) || islist(D.data_to_write))
-					io.write_data_to_pin(D.data_to_write)
-				else
-					to_chat(M, span_warning("Debugger memory must be a list or null."))
-			if("any")
-				io.write_data_to_pin(D.data_to_write)
-			else
-				io.write_data_to_pin(D.data_to_write)
+		ie_ic_write_debugger_memory(io, D, M)
 		return
 
 	if(istype(held) && !istype(held, /obj/item/integrated_electronics/debugger))
@@ -126,6 +82,75 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 	var/client/C = M.client
 	if((ftype_mark == "entity" || ftype_mark == "any") && C?.holder?.marked_datum)
 		io.write_data_to_pin(WEAKREF(C.holder.marked_datum))
+
+/// Пишет память отладчика (data_to_write: скопированное значение / ref / null) в пин
+/// данных с приведением типа по ftype. Возвращает TRUE в случае записи, иначе FALSE
+/// (сообщение пользователю при этом уже выводится).
+/proc/ie_ic_write_debugger_memory(datum/integrated_io/io, obj/item/integrated_electronics/debugger/D, mob/M)
+	var/ftype = ie_ic_fundamental_type(io)
+	var/val = D.data_to_write
+	switch(ftype)
+		if("entity")
+			if(isnull(val) || isweakref(val))
+				io.write_data_to_pin(val)
+				return TRUE
+			to_chat(M, span_warning("The debugger memory is not a reference. Use ref or null on the debugger, then upload again."))
+		if("number", "index", "dir")
+			if(isnull(val))
+				io.write_data_to_pin(null)
+				return TRUE
+			else if(isnum(val))
+				io.write_data_to_pin(val)
+				return TRUE
+			else if(istext(val))
+				io.write_data_to_pin(text2num(val))
+				return TRUE
+			to_chat(M, span_warning("Debugger memory must be a number or null for this pin."))
+		if("boolean")
+			if(isnull(val))
+				io.write_data_to_pin(null)
+				return TRUE
+			else if(val == TRUE || val == FALSE)
+				io.write_data_to_pin(val)
+				return TRUE
+			else if(isnum(val))
+				io.write_data_to_pin(!!val)
+				return TRUE
+			else if(istext(val))
+				var/nt = lowertext(val)
+				io.write_data_to_pin(nt == "true" || nt == "1" || nt == "yes")
+				return TRUE
+			to_chat(M, span_warning("Debugger memory must be boolean-like or null."))
+		if("char", "string", "color")
+			if(isnull(val) || istext(val))
+				if(ftype == "char" && istext(val) && length_char(val) > 1)
+					val = copytext_char(val, 1, 2)
+				io.write_data_to_pin(val)
+				return TRUE
+			to_chat(M, span_warning("Debugger memory must be text or null for this pin."))
+		if("list")
+			if(isnull(val) || islist(val))
+				io.write_data_to_pin(val)
+				return TRUE
+			to_chat(M, span_warning("Debugger memory must be a list or null."))
+		else
+			io.write_data_to_pin(val)
+			return TRUE
+	return FALSE
+
+/// Вставляет память отладчика в открытый пин нативного редактора (данные: скопированное
+/// значение / ref / null — в зависимости от того, что сейчас в памяти отладчика).
+/proc/ie_ic_paste_debugger_value(mob/M, datum/integrated_io/io)
+	if(!M || !io)
+		return
+	if(io.io_type != DATA_CHANNEL)
+		to_chat(M, span_warning("Вставить из отладчика можно только в пины данных, не в импульсные."))
+		return
+	var/obj/item/integrated_electronics/debugger/D = ie_ic_get_debugger_from_hands(M)
+	if(!D)
+		to_chat(M, span_warning("Возьмите отладчик (circuit debugger) в руку, чтобы вставить значение."))
+		return
+	ie_ic_write_debugger_memory(io, D, M)
 
 /proc/ie_ic_is_output_side_pin(datum/integrated_io/io)
 	if(!io)
@@ -263,6 +288,102 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 		return data
 	return "[data]"
 
+/// Тип значения в терминах TGUI-виджетов (для нативного редактора списка/текста).
+/proc/ie_ic_value_widget_kind(data)
+	if(isnull(data))
+		return "null"
+	if(isweakref(data))
+		return "ref"
+	if(isnum(data))
+		return "number"
+	if(istext(data))
+		return "string"
+	if(islist(data))
+		return "list"
+	return "text"
+
+/// Сериализация значения ЯЧЕЙКИ списка для нативного редактора. Возвращает ассоциативный
+/// список {kind, display, value}; value это JSON-безопасное представление для обратной записи.
+/proc/ie_ic_pack_list_entry(data)
+	if(isnull(data))
+		return list("kind" = "null", "display" = "null", "value" = null)
+	if(isweakref(data))
+		var/datum/weakref/wr = data
+		var/datum/resolved = wr.hard_resolve()
+		if(isnull(resolved))
+			resolved = wr.resolve()
+		return list("kind" = "ref", "display" = ie_ic_ref_display_name(resolved), "value" = null)
+	if(istype(data, /atom))
+		var/atom/raw_atom = data
+		return list("kind" = "ref", "display" = (raw_atom.name || "ref"), "value" = null)
+	if(isnum(data))
+		return list("kind" = "number", "display" = "[data]", "value" = data)
+	if(istext(data))
+		return list("kind" = "string", "display" = data, "value" = data)
+	if(islist(data))
+		return list("kind" = "list", "display" = "list([length(data)])", "value" = null) // вложенные списки редактируются через inspector
+	return list("kind" = "text", "display" = "[data]", "value" = "[data]")
+
+/// Читаемое имя ссылки (ref) для ячейки списка; не падает на не-atom и на удалённых целях.
+/proc/ie_ic_ref_display_name(datum/resolved)
+	if(isnull(resolved))
+		return "null"
+	if(istype(resolved, /atom))
+		var/atom/A = resolved
+		return (isnull(A.name) || A.name == "") ? "[A]" : A.name
+	return "[resolved]"
+
+/// Дерево «открытого в нативном редакторе» пина для ui_data. Per-user-ключ пином не является,
+/// т.к. окно TGUI у пользователя одно; редактор показывает значение последнего открытого пина.
+/proc/ie_ic_editor_payload(datum/integrated_io/io, is_output)
+	if(!io)
+		return null
+	var/ftype = ie_ic_fundamental_type(io)
+	// Для «any» виджет зависит от текущего значения (список/ref/число/текст).
+	var/widget_kind = ftype
+	if(ftype == "any")
+		if(islist(io.data))
+			widget_kind = "list"
+		else if(isweakref(io.data))
+			widget_kind = "entity"
+		else if(isnum(io.data))
+			widget_kind = "number"
+		else
+			widget_kind = "string"
+	var/list/out = list()
+	out["ref"] = REF(io)
+	out["name"] = io.name
+	out["type"] = widget_kind
+	out["pin_type"] = ftype
+	out["is_output"] = !!is_output
+	if(widget_kind == "list")
+		var/list/my_list = io.data
+		var/list/rows = list()
+		for(var/i in 1 to (islist(my_list) ? my_list.len : 0))
+			var/list/entry = ie_ic_pack_list_entry(my_list[i])
+			entry["index"] = i
+			rows += list(entry)
+		out["kind"] = "list"
+		out["rows"] = rows
+		out["length"] = islist(my_list) ? my_list.len : 0
+	else
+		out["kind"] = "value"
+		out["value"] = ie_ic_tgui_pack_pin_value(io.data)
+	return out
+
+/// Читает строку из TGUI и превращает в подходящий DM-тип для записи в список (по kind).
+/proc/ie_ic_decode_list_text(kind, text)
+	switch(kind)
+		if("number")
+			return text2num(text)
+		if("boolean")
+			var/t = lowertext(text)
+			return (t == "true" || t == "1" || t == "yes")
+		if("null")
+			return null
+		else
+			return text
+
 /proc/ie_ic_collect_input_ios(obj/item/integrated_circuit/chip)
 	var/list/L = list()
 	for(var/datum/integrated_io/io as anything in chip.inputs)
@@ -332,10 +453,19 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 	var/pulsing = FALSE
 	var/obj/item/electronic_assembly/ea = chip.assembly
 	if(ea)
-		if(world.time < ea.ie_tgui_pulse_until && ea.ie_tgui_pulse_chip_weak?.resolve() == chip)
-			pulsing = TRUE
-	else if(world.time < chip.ie_tgui_solo_pulse_until)
-		pulsing = TRUE
+		for(var/list/pulse in ea.ie_tgui_pulses)
+			if(world.time >= pulse["until"])
+				continue
+			var/datum/weakref/ci = pulse["chip_in"]
+			var/datum/weakref/co = pulse["chip_out"]
+			if(ci?.resolve() == chip || co?.resolve() == chip)
+				pulsing = TRUE
+				break
+	else
+		for(var/list/pulse in chip.ie_tgui_solo_pulses)
+			if(world.time < pulse["until"])
+				pulsing = TRUE
+				break
 	component_data["recent_pulse"] = pulsing
 	component_data["ie_size"] = chip.size
 	component_data["ie_complexity"] = chip.complexity
@@ -358,19 +488,63 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 /obj/item/electronic_assembly/proc/ie_tgui_register_data_pulse(datum/integrated_io/out_io, datum/integrated_io/in_io)
 	if(!out_io || !in_io)
 		return
-	ie_tgui_pulse_until = world.time + 0.35 SECONDS
-	ie_tgui_pulse_output_ref = REF(out_io)
-	ie_tgui_pulse_input_ref = REF(in_io)
-	ie_tgui_pulse_chip_weak = WEAKREF(in_io.holder)
-	SStgui.update_uis(src)
+	ie_tgui_pulses += list(list(
+		"out" = REF(out_io),
+		"in" = REF(in_io),
+		"chip_in" = WEAKREF(in_io.holder),
+		"chip_out" = WEAKREF(out_io.holder),
+		"until" = world.time + 0.35 SECONDS,
+	))
+	ie_tgui_prune_pulses()
+	// Полная ресериализация на каждый импульс упирается в O(компонентов x пинов) JSON.
+	// Форс-апдейт раз в 0.1с даёт плавную подсветку; при этом очередь выше сохраняет все
+	// недавние активации — ничего не теряется между апдейтами.
+	if(world.time >= ie_tgui_last_ui_push + 0.1 SECONDS)
+		ie_tgui_last_ui_push = world.time
+		SStgui.update_uis(src)
+
+/// Вычищает протухшие импульсы и ограничивает длину очереди (старые выпадают из хвоста).
+/obj/item/electronic_assembly/proc/ie_tgui_prune_pulses()
+	var/now = world.time
+	for(var/i = length(ie_tgui_pulses); i >= 1; i--)
+		var/list/pulse = ie_tgui_pulses[i]
+		if(now >= pulse["until"])
+			ie_tgui_pulses.Cut(i, i + 1)
+	var/over = length(ie_tgui_pulses) - IE_TGUI_MAX_LIVE_PULSES
+	if(over > 0)
+		ie_tgui_pulses.Cut(1, over + 1)
 
 /obj/item/integrated_circuit/proc/ie_tgui_register_solo_data_pulse(datum/integrated_io/out_io, datum/integrated_io/in_io)
 	if(!out_io || !in_io)
 		return
-	ie_tgui_solo_pulse_until = world.time + 0.35 SECONDS
-	ie_tgui_solo_pulse_out_ref = REF(out_io)
-	ie_tgui_solo_pulse_in_ref = REF(in_io)
+	ie_tgui_solo_pulses += list(list(
+		"out" = REF(out_io),
+		"in" = REF(in_io),
+		"until" = world.time + 0.35 SECONDS,
+	))
+	ie_tgui_solo_prune_pulses()
 	SStgui.update_uis(src)
+
+/// Тот же санитарный вычиститель для одиночного чипа.
+/obj/item/integrated_circuit/proc/ie_tgui_solo_prune_pulses()
+	var/now = world.time
+	for(var/i = length(ie_tgui_solo_pulses); i >= 1; i--)
+		var/list/pulse = ie_tgui_solo_pulses[i]
+		if(now >= pulse["until"])
+			ie_tgui_solo_pulses.Cut(i, i + 1)
+	var/over = length(ie_tgui_solo_pulses) - IE_TGUI_MAX_LIVE_PULSES
+	if(over > 0)
+		ie_tgui_solo_pulses.Cut(1, over + 1)
+
+/// Сериализует все «живые» импульсы (out/in ref) в порядке активации для TGUI.
+/proc/ie_ic_serialize_live_pulses(list/pulses)
+	var/list/out = list()
+	var/now = world.time
+	for(var/list/pulse in pulses)
+		if(now >= pulse["until"])
+			continue
+		out += list(list("out" = pulse["out"], "in" = pulse["in"]))
+	return out
 
 /proc/ie_ic_chip_from_index(atom/movable/host, component_id)
 	if(istype(host, /obj/item/electronic_assembly))
@@ -389,6 +563,208 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 	if(istype(ea, /obj/item/electronic_assembly) && (B?.loc == ea))
 		return ea
 	return null
+
+/// Возвращает {io, is_output} открытого в редакторе пина для сборки или одиночного чипа,
+/// либо null, если пин уже исчез (чип снят). shared-источник для ui_data и ui_act.
+/proc/ie_ic_get_editor_pin(atom/movable/host)
+	if(istype(host, /obj/item/electronic_assembly))
+		var/obj/item/electronic_assembly/ea = host
+		var/datum/integrated_io/io = ea.ie_gui_editor_io
+		if(!io || !io.holder || !(io.holder in ea.assembly_components) || io.holder.assembly != ea)
+			return null
+		return list("io" = io, "is_output" = ea.ie_gui_editor_is_output)
+	if(istype(host, /obj/item/integrated_circuit))
+		var/obj/item/integrated_circuit/chip = host
+		var/datum/integrated_io/io = chip.ie_gui_editor_io
+		if(!io || io.holder != chip || chip.assembly)
+			return null
+		return list("io" = io, "is_output" = chip.ie_gui_editor_is_output)
+	return null
+
+/// Устанавливает открытый в нативном редакторе пин; см. ie_ic_get_editor_pin.
+/proc/ie_ic_set_editor_pin(atom/movable/host, datum/integrated_io/io, is_output)
+	if(istype(host, /obj/item/electronic_assembly))
+		var/obj/item/electronic_assembly/ea = host
+		ea.ie_gui_editor_io = io
+		ea.ie_gui_editor_is_output = is_output
+	else if(istype(host, /obj/item/integrated_circuit))
+		var/obj/item/integrated_circuit/chip = host
+		chip.ie_gui_editor_io = io
+		chip.ie_gui_editor_is_output = is_output
+
+/// Достаёт weakref для вставки в pin/список: память-ref отладчика → предмет в активной
+/// руке → marked-датум админа. Возвращает weakref или null (с сообщением уже не пишет).
+/proc/ie_ic_obtain_ref_for_upload(mob/M)
+	if(!M)
+		return null
+	var/datum/weakref/out = null
+	var/obj/item/integrated_electronics/debugger/D = ie_ic_get_debugger_from_hands(M)
+	if(D)
+		if(isweakref(D.data_to_write))
+			out = D.data_to_write
+		else if(D.accepting_refs)
+			to_chat(M, span_warning("Завершите сканирование ref на отладчике (кликните по цели в мире), затем повторите."))
+			return null
+	if(isnull(out))
+		var/atom/movable/held = M.get_active_held_item()
+		if(istype(held) && !istype(held, /obj/item/integrated_electronics/debugger))
+			out = WEAKREF(held)
+	if(isnull(out))
+		var/client/C = M.client
+		if(C?.holder?.marked_datum)
+			out = WEAKREF(C.holder.marked_datum)
+	return out
+
+/// Копирует текущее значение пина в память отладчика (пин → debugger).
+/proc/ie_ic_copy_pin_to_debugger(mob/M, datum/integrated_io/io)
+	if(!M)
+		return
+	var/obj/item/integrated_electronics/debugger/D = ie_ic_get_debugger_from_hands(M)
+	if(!D)
+		to_chat(M, span_warning("Возьмите отладчик (circuit debugger) в руку, чтобы скопировать значение."))
+		return
+	D.data_to_write = io.data
+	D.accepting_refs = FALSE
+	D.copy_values = FALSE
+	D.copy_id = FALSE
+	to_chat(M, span_notice("Значение пина скопировано в память отладчика."))
+
+/// Вписывает значение из нативного редактора в список (пин-список или «any» со значением-списком).
+/proc/ie_ic_list_mutate(datum/integrated_io/io, action, index, kind, text, mob/user)
+	var/list/my_list = io.data
+	switch(action)
+		if("add")
+			var/val = ie_ic_decode_list_text(kind, text)
+			my_list.Add(val)
+			if(my_list.len > IC_MAX_LIST_LENGTH)
+				my_list.Cut(1, my_list.len - IC_MAX_LIST_LENGTH + 1)
+			io.holder.on_data_written()
+		if("set")
+			index = clamp(round(index), 1, max(1, my_list.len))
+			if(index > my_list.len)
+				return
+			my_list[index] = ie_ic_decode_list_text(kind, text)
+			io.holder.on_data_written()
+		if("remove")
+			index = round(index)
+			if(index >= 1 && index <= my_list.len)
+				my_list.Cut(index, index + 1)
+				io.holder.on_data_written()
+		if("move")
+			index = round(index)
+			var/dirn = text2num(text)
+			var/target = index + (dirn > 0 ? 1 : -1)
+			if(index >= 1 && index <= my_list.len && target >= 1 && target <= my_list.len)
+				my_list.Swap(index, target)
+				io.holder.on_data_written()
+		if("clear")
+			my_list.Cut()
+			io.holder.on_data_written()
+		if("add_ref")
+			var/datum/weakref/wr = ie_ic_obtain_ref_for_upload(user)
+			if(isnull(wr))
+				to_chat(user, span_warning("Чтобы добавить ссылку: возьми предмет в активную руку, либо память-ref на отладчике, либо marked-датум."))
+				return
+			my_list.Add(wr)
+			if(my_list.len > IC_MAX_LIST_LENGTH)
+				my_list.Cut(1, my_list.len - IC_MAX_LIST_LENGTH + 1)
+			io.holder.on_data_written()
+		if("set_ref")
+			index = round(index)
+			if(index >= 1 && index <= my_list.len)
+				var/datum/weakref/wr = ie_ic_obtain_ref_for_upload(user)
+				if(isnull(wr))
+					to_chat(user, span_warning("Чтобы вставить ссылку: возьми предмет в активную руку, либо память-ref на отладчике, либо marked-датум."))
+					return
+				my_list[index] = wr
+				io.holder.on_data_written()
+
+/// Обработка действий нативного редактора пинов. Возвращает TRUE, если action был наш.
+/proc/ie_ic_handle_editor_action(atom/movable/host, action, list/params, mob/user)
+	switch(action)
+		if("ie_pin_editor_open")
+			var/cid = text2num(params["component_id"])
+			var/pid = text2num(params["port_id"])
+			var/obj/item/integrated_circuit/chip = ie_ic_chip_from_index(host, cid)
+			if(!chip || !user)
+				return TRUE
+			var/is_out = params["is_output"] ? TRUE : FALSE
+			var/datum/integrated_io/io = is_out ? ie_ic_get_output_io(chip, pid) : ie_ic_get_input_io(chip, pid)
+			if(!io)
+				return TRUE
+			// Редактор открываем для всех пинов данных (не импульсных).
+			if(ie_ic_fundamental_type(io) != "signal")
+				ie_ic_set_editor_pin(host, io, is_out)
+			return TRUE
+		if("ie_pin_editor_close")
+			ie_ic_set_editor_pin(host, null, FALSE)
+			return TRUE
+		if("ie_copy_pin_to_debugger")
+			var/list/copy_editor = ie_ic_get_editor_pin(host)
+			if(!copy_editor)
+				return TRUE
+			ie_ic_copy_pin_to_debugger(user, copy_editor["io"])
+			return TRUE
+		if("ie_pin_editor_paste_debugger")
+			var/list/paste_editor = ie_ic_get_editor_pin(host)
+			if(!paste_editor)
+				return TRUE
+			ie_ic_paste_debugger_value(user, paste_editor["io"])
+			return TRUE
+		if("ie_list_edit")
+			var/list/editor = ie_ic_get_editor_pin(host)
+			if(!editor)
+				return TRUE
+			var/datum/integrated_io/io = editor["io"]
+			if(islist(io.data))
+				ie_ic_list_mutate(io, params["edit_action"], params["index"], params["kind"], params["text"], user)
+			return TRUE
+		if("ie_value_edit")
+			var/list/editor = ie_ic_get_editor_pin(host)
+			if(!editor)
+				return TRUE
+			var/datum/integrated_io/io = editor["io"]
+			if(params["set_null"])
+				io.write_data_to_pin(null)
+			else if(params["make_list"])
+				io.write_data_to_pin(list())
+			else if(islist(io.data))
+				return TRUE
+			else if(params["marked_atom"])
+				ie_ic_tgui_apply_marked_atom_or_debugger(user, io)
+			else if(ie_ic_fundamental_type(io) == "any")
+				// Для «any» можно явно выбрать тип значения (kind), иначе — по текущему типу (как в payload).
+				var/any_kind = params["kind"]
+				if(!isnull(any_kind) && any_kind != "" && any_kind != "any")
+					ie_ic_tgui_write_input(io, any_kind, params["value"])
+				else if(isnum(io.data))
+					io.write_data_to_pin(text2num(params["value"]))
+				else
+					io.write_data_to_pin(params["value"])
+			else
+				ie_ic_tgui_write_input(io, ie_ic_fundamental_type(io), params["value"])
+			return TRUE
+	return FALSE
+
+/// Удаляет одну конкретную связь пина по 1-based индексу в порядке списка связей
+/// (тот же порядок, что TGUI показывает в попапе «Порядок связей»). Возвращает TRUE,
+/// если связь была разорвана.
+/proc/ie_ic_remove_connection_at(atom/movable/host, list/params, mob/user)
+	var/cid = text2num(params["component_id"])
+	var/port_id = text2num(params["port_id"])
+	var/is_input = params["is_input"] ? TRUE : FALSE
+	var/conn_index = round(text2num(params["connection_index"]))
+	var/obj/item/integrated_circuit/chip = ie_ic_chip_from_index(host, cid)
+	if(!chip || !user)
+		return FALSE
+	var/datum/integrated_io/io = is_input ? ie_ic_get_input_io(chip, port_id) : ie_ic_get_output_io(chip, port_id)
+	if(!io)
+		return FALSE
+	if(conn_index < 1 || conn_index > length(io.linked))
+		return FALSE
+	var/datum/integrated_io/other = io.linked[conn_index]
+	io.disconnect_pin(other)
+	return TRUE
 
 /obj/item/electronic_assembly/ui_assets(mob/user)
 	return list(
@@ -445,13 +821,19 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 	.["examined_notices"] = examined ? ie_ic_ui_examine_notices(examined) : list()
 	.["examined_rel_x"] = ie_gui_examined_x
 	.["examined_rel_y"] = ie_gui_examined_y
-	var/pulse_live = world.time < ie_tgui_pulse_until
-	.["circuit_pulse_out_ref"] = pulse_live ? ie_tgui_pulse_output_ref : null
-	.["circuit_pulse_in_ref"] = pulse_live ? ie_tgui_pulse_input_ref : null
+	.["circuit_pulses"] = ie_ic_serialize_live_pulses(ie_tgui_pulses)
+	var/list/editor = ie_ic_get_editor_pin(src)
+	if(editor)
+		.["pin_editor"] = ie_ic_editor_payload(editor["io"], editor["is_output"])
+	else
+		.["pin_editor"] = null
 
 /obj/item/electronic_assembly/ui_act(action, list/params)
 	. = ..()
 	if(.)
+		return
+	if(ie_ic_handle_editor_action(src, action, params, usr))
+		. = TRUE
 		return
 	switch(action)
 		if("ie_switch_classic_ui")
@@ -530,6 +912,9 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 				return
 			io.disconnect_all()
 			. = TRUE
+		if("remove_connection_at")
+			if(ie_ic_remove_connection_at(src, params, usr))
+				. = TRUE
 		if("detach_component")
 			var/cid = text2num(params["component_id"])
 			var/obj/item/integrated_circuit/chip = ie_ic_chip_from_index(src, cid)
@@ -663,6 +1048,36 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 				return
 			io.linked.Swap(lower, lower + 1)
 			. = TRUE
+		if("move_input_connection_order")
+			var/cid = text2num(params["component_id"])
+			var/pid = text2num(params["port_id"])
+			var/from_pos = text2num(params["from_index"])
+			var/to_pos = text2num(params["to_index"])
+			var/obj/item/integrated_circuit/chip = ie_ic_chip_from_index(src, cid)
+			if(!chip)
+				return
+			var/datum/integrated_io/io = ie_ic_get_input_io(chip, pid)
+			if(!io || from_pos < 1 || to_pos < 1 || from_pos > length(io.linked) || to_pos > length(io.linked) || from_pos == to_pos)
+				return
+			var/datum/integrated_io/item = io.linked[from_pos]
+			io.linked.Cut(from_pos, from_pos + 1)
+			io.linked.Insert(to_pos, item)
+			. = TRUE
+		if("move_output_connection_order")
+			var/cid = text2num(params["component_id"])
+			var/pid = text2num(params["port_id"])
+			var/from_pos = text2num(params["from_index"])
+			var/to_pos = text2num(params["to_index"])
+			var/obj/item/integrated_circuit/chip = ie_ic_chip_from_index(src, cid)
+			if(!chip)
+				return
+			var/datum/integrated_io/io = ie_ic_get_output_io(chip, pid)
+			if(!io || !ie_ic_is_output_side_pin(io) || from_pos < 1 || to_pos < 1 || from_pos > length(io.linked) || to_pos > length(io.linked) || from_pos == to_pos)
+				return
+			var/datum/integrated_io/item = io.linked[from_pos]
+			io.linked.Cut(from_pos, from_pos + 1)
+			io.linked.Insert(to_pos, item)
+			. = TRUE
 		if("ie_copy_assembly_code")
 			if(!usr)
 				return
@@ -734,15 +1149,21 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 	.["examined_notices"] = examined ? ie_ic_ui_examine_notices(examined) : list()
 	.["examined_rel_x"] = ie_gui_examined_x
 	.["examined_rel_y"] = ie_gui_examined_y
-	var/solo_pulse = world.time < ie_tgui_solo_pulse_until
-	.["circuit_pulse_out_ref"] = solo_pulse ? ie_tgui_solo_pulse_out_ref : null
-	.["circuit_pulse_in_ref"] = solo_pulse ? ie_tgui_solo_pulse_in_ref : null
+	.["circuit_pulses"] = ie_ic_serialize_live_pulses(ie_tgui_solo_pulses)
+	var/list/editor = ie_ic_get_editor_pin(src)
+	if(editor)
+		.["pin_editor"] = ie_ic_editor_payload(editor["io"], editor["is_output"])
+	else
+		.["pin_editor"] = null
 
 /obj/item/integrated_circuit/ui_act(action, list/params)
 	if(assembly)
 		return assembly.ui_act(action, params)
 	. = ..()
 	if(.)
+		return
+	if(ie_ic_handle_editor_action(src, action, params, usr))
+		. = TRUE
 		return
 	switch(action)
 		if("ie_switch_classic_ui")
@@ -782,6 +1203,9 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 			var/datum/integrated_io/io = is_input ? ie_ic_get_input_io(src, port_id) : ie_ic_get_output_io(src, port_id)
 			if(io)
 				io.disconnect_all()
+				. = TRUE
+		if("remove_connection_at")
+			if(ie_ic_remove_connection_at(src, params, usr))
 				. = TRUE
 		if("detach_component")
 			. = TRUE
@@ -876,6 +1300,28 @@ GLOBAL_LIST_INIT(ie_integrated_circuit_ui_types, list("string", "number", "boole
 			if(ie_ic_is_output_side_pin(a) || ie_ic_is_output_side_pin(b))
 				return
 			io.linked.Swap(lower, lower + 1)
+			. = TRUE
+		if("move_input_connection_order")
+			var/pid = text2num(params["port_id"])
+			var/from_pos = text2num(params["from_index"])
+			var/to_pos = text2num(params["to_index"])
+			var/datum/integrated_io/io = ie_ic_get_input_io(src, pid)
+			if(!io || from_pos < 1 || to_pos < 1 || from_pos > length(io.linked) || to_pos > length(io.linked) || from_pos == to_pos)
+				return
+			var/datum/integrated_io/item = io.linked[from_pos]
+			io.linked.Cut(from_pos, from_pos + 1)
+			io.linked.Insert(to_pos, item)
+			. = TRUE
+		if("move_output_connection_order")
+			var/pid = text2num(params["port_id"])
+			var/from_pos = text2num(params["from_index"])
+			var/to_pos = text2num(params["to_index"])
+			var/datum/integrated_io/io = ie_ic_get_output_io(src, pid)
+			if(!io || !ie_ic_is_output_side_pin(io) || from_pos < 1 || to_pos < 1 || from_pos > length(io.linked) || to_pos > length(io.linked) || from_pos == to_pos)
+				return
+			var/datum/integrated_io/item = io.linked[from_pos]
+			io.linked.Cut(from_pos, from_pos + 1)
+			io.linked.Insert(to_pos, item)
 			. = TRUE
 		if("ie_copy_component_code")
 			if(!usr)

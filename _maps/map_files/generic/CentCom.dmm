@@ -29780,7 +29780,9 @@
 /area/centcom/holding)
 "umw" = (
 /obj/machinery/light/warm/directional/east,
-/mob/living/simple_animal/hostile/retaliate/frog,
+/mob/living/simple_animal/hostile/retaliate/frog{
+	name = "Набегатор"
+	},
 /obj/structure/micro_brick/road_threeway{
 	dir = 8
 	},

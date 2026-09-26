@@ -263,8 +263,9 @@
 	desc = "Прочный кейс для всякой всячины, включает в себя снаряжение всё снаряжение расы Касари, которое только можно добыть окольными путями - через чёрный рынок и непотребства в высоких кабинетах."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "nebula_box"
+	illustration = null
 
-/obj/item/storage/box/lapkee_kit/PopulateContents() // я заебался ебаться с тем что мне лапки пишет названия предметов из сски, а не кастомных, пропишу тут в комментах
+/obj/item/storage/box/lapkee_kit/PopulateContents()
 	new /obj/item/clothing/under/donator/bm/concord(src) // Форма
 	new /obj/item/clothing/neck/donator/bm/concord_cloak(src) // плащ
 	new /obj/item/modkit/star_dust_kit(src) // противогаз
@@ -410,6 +411,7 @@
 	desc = "Кейс с полным набором оружейных китов Melatonin. Содержит киты для модификации стандартного вооружения в кастомное."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "melatonin_box"
+	illustration = null
 
 /obj/item/storage/box/melatonin_kit/PopulateContents()
 	new /obj/item/modkit/melatonin_belt_kit(src)
@@ -431,3 +433,54 @@
 	new /obj/item/modkit/tau_helmet_kit(src)
 	new /obj/item/modkit/tau_armor_kit(src)
 	new /obj/item/toy/plush/bm/tau(src)
+
+/obj/item/storage/box/melatonin_bola_kit
+	name = "Entangling Bola Crafting Kit"
+	desc = "Небольшая коробка с четырьмя комплектами деталей для создания опутывающей болы. Внутри — грубо обработанные каменные волчьи лапы, крепления и отрезки прочной верёвки. Похоже, кто-то решил, что обычных грузов для охоты недостаточно."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_bola_case"
+	illustration = null
+
+/obj/item/storage/box/melatonin_bola_kit/PopulateContents()
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+
+/obj/item/storage/box/melatonin_bola_kit/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	update_icon()
+
+/obj/item/storage/box/melatonin_bola_kit/Exited(atom/movable/gone, direction)
+	. = ..()
+	update_icon()
+
+/obj/item/storage/box/melatonin_bola_kit/update_overlays()
+	. = ..()
+	var/kit_count = 0
+	for(var/obj/item/modkit/entangling_bola_kit/kit in contents)
+		kit_count++
+	if(kit_count != 0)
+		. += "melatonin_bola_case_[min(kit_count, 4)]"
+    
+///////////////////////////////////////////
+
+#define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm, /obj/item/modkit/invis_belt
+
+/obj/item/storage/box/wardrobe_box
+	name = "Wardrobe Box"
+	desc = "Коробка для путешествий с аккуратно упакованными вещами."
+	icon_state = "box_brown"
+
+/obj/item/storage/box/wardrobe_box/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.can_hold_extra = typecacheof(list(WARDROBE_BOX_ITEMS))
+
+/obj/item/storage/box/wardrobe_box/PopulateContents()
+	var/static/items_inside = list(WARDROBE_BOX_ITEMS)
+	generate_items_inside(items_inside, src)
+
+#undef WARDROBE_BOX_ITEMS
+
+///////////////////////////////////////////

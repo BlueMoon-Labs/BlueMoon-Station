@@ -324,7 +324,7 @@
 		/obj/item/broken/bulldog = 1500,
 		/obj/item/broken/ushm = 5000,
 		/obj/item/broken/sniper_rifle = 5000,
-		/obj/item/broken = 10000000,
+		/obj/item/broken = 1,
 		/obj/item/broken/vss = 3500,
 		/obj/item/broken/homemadeak = 4500,
 		/obj/item/broken/m1garand = 2250,

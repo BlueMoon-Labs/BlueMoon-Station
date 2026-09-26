@@ -467,3 +467,77 @@
 		set_light(0)
 
 #undef STUNKATANA_BASE_STATE
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Entangling Bola"
+	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
+	icon_state = "melatonin_bola"
+	item_state = "melatonin_bola"
+	hitsound = 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg'
+	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Initialize(mapload)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Moved(atom/oldloc, dir, forced)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/update_icon_state()
+	. = ..()
+	icon_state = "melatonin_bola[isturf(loc) ? "_flying" : ""]"
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/ensnare(mob/living/carbon/C) // оверрайд для изменения звука, более ничего не изменено
+	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
+		C.legcuffed = src
+		forceMove(C)
+		item_state = "melatonin_bola"
+		if(ishuman(C))
+			if(C.dna?.species && (DIGITIGRADE in C.dna.species.species_traits))
+				item_state = "melatonin_bola_digi"
+		C.update_equipment_speed_mods()
+		C.update_inv_legcuffed()
+		SSblackbox.record_feedback("tally", "handcuffs", 1, type)
+		to_chat(C, "<span class='userdanger'>\The [src] опутывает вас!</span>")
+		C.Knockdown(knockdown)
+		playsound(src, 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg', 50, TRUE)
+		C.apply_status_effect(/datum/status_effect/bola_snared)
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, quickstart = TRUE) // оверрайд для изменения звука, более ничего не изменено
+	if(!..())
+		return
+	playsound(src.loc,'modular_bluemoon/fluffs/sound/Entangling_Bola_throwing.ogg', 75, 1)
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/on_removed() // оверрайд, чтобы убрать искры
+	qdel(src)
+
+/obj/item/modkit/entangling_bola_kit
+	name = "Entangling Bola Kit"
+	desc = "A modkit for making a energy bola into a Entangling Bola."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/restraints/legcuffs/bola/energy/melatonin
+	fromitem = list(/obj/item/restraints/legcuffs/bola/energy)
+
+/obj/item/modkit/nul_kit
+	name = "Nul Kit"
+	desc = "A modkit for making an combat knife into a Sword of Nul."
+	product = /obj/item/kitchen/knife/combat/nul
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/nul
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Sword of Nul"
+	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
+	item_state = "sword-nul"
+	icon_state = "sword-nul"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
+	.=..()
+	set_light(3, 0.9, "#1D6416")

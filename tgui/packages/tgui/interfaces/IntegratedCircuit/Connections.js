@@ -57,8 +57,7 @@ export class Connections extends Component {
     const {
       connections,
       svgRef,
-      pulseOutRef,
-      pulseInRef,
+      pulseKeys,
       children,
     } = this.props;
     const { hoveredKey } = this.state;
@@ -95,9 +94,9 @@ export class Connections extends Component {
             const key = wireConnectionKey(val, index);
             const color = val.color || 'blue';
             const hexStroke = isHexStrokeColor(color);
-            const pulsing = !val.isPreview && pulseOutRef && pulseInRef
-              && val.outRef === pulseOutRef
-              && val.inRef === pulseInRef;
+            const pulsing = !val.isPreview && !!pulseKeys
+              && !!val.outRef && !!val.inRef
+              && pulseKeys.has(`${val.outRef}\u0000${val.inRef}`);
             const hot = pulsing || hoveredKey === key;
             return (
               <path

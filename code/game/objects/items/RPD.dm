@@ -578,8 +578,8 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 					if(queued_p_type == /obj/structure/c_transit_tube_pod)
 						var/obj/structure/c_transit_tube_pod/pod = new /obj/structure/c_transit_tube_pod(A)
 						pod.add_fingerprint(usr)
-						if(mode & WRENCH_MODE)
-							pod.wrench_act(user, src)
+						// if(mode & WRENCH_MODE)
+						// 	pod.wrench_act(user, src)
 
 					else
 						var/obj/structure/c_transit_tube/tube = new queued_p_type(A)
@@ -590,8 +590,8 @@ GLOBAL_LIST_INIT(fluid_duct_recipes, list(
 							tube.simple_rotate_flip()
 
 						tube.add_fingerprint(usr)
-						if(mode & WRENCH_MODE)
-							tube.wrench_act(user, src)
+						// if(mode & WRENCH_MODE)
+						// 	tube.wrench_act(user, src)
 					return
 			if(PLUMBING_CATEGORY) //Plumbing.
 				if(!can_make_pipe)

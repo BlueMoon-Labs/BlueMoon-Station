@@ -578,17 +578,17 @@
 	if((client.prefs.toggles & MIDROUND_ANTAG) && !(client.prefs.toggles & NO_ANTAG))
 		if(alert(src, "У вас включена возможность стать антагонистом посреди раунда. Вы уверены, что не хотите выключить её?", "...клянусь, что не сдам роль...", "Я готов", "Прошу временно отключить") == "Прошу временно отключить")
 			client.prefs.toggles ^= MIDROUND_ANTAG
-			to_chat(src, "<span class='redtext'>На этот раунд, у вас отключена возможность стать антагонистом посреди раунда (её можно включить в Character Setup > Preferences).</span>")
+			to_chat(src, "<span class='redtext'>На этот раунд, у вас отключена возможность стать антагонистом посреди раунда (её можно настроить в Параметрах Игры > Антагонисты).</span>")
 	// BLUEMOON ADD END
 
-	var/dat = "<div class='notice'>Round Duration: [DisplayTimeText(world.time - SSticker.round_start_time)]<br>Alert Level: [capitalize(SECURITY_LEVEL_NAME(GLOB.security_level) || SECURITY_LEVEL_NAME(SEC_LEVEL_GREEN))]</div>"
+	var/dat = "<div class='notice'>Длительность раунда: [DisplayTimeText(world.time - SSticker.round_start_time)]<br>Уровень тревоги: <b>[capitalize(SECURITY_LEVEL_COLORED(GLOB.security_level) || SECURITY_LEVEL_COLORED(SEC_LEVEL_GREEN))]</b></div>"
 	if(SSshuttle.emergency)
 		switch(SSshuttle.emergency.mode)
 			if(SHUTTLE_ESCAPE)
-				dat += "<div class='notice red'>The station has been evacuated.</div><br>"
+				dat += "<div class='notice red'>Экипаж станции эвакуировался.</div><br>"
 			if(SHUTTLE_CALL)
 				if(!SSshuttle.canRecall())
-					dat += "<div class='notice red'>The station is currently undergoing evacuation procedures.</div><br>"
+					dat += "<div class='notice red'>Станция сейчас проводит процедуру эвакуации экипажа.</div><br>"
 	for(var/datum/job/prioritized_job in SSjob.prioritized_jobs)
 		if(prioritized_job.current_positions >= prioritized_job.total_positions)
 			SSjob.prioritized_jobs -= prioritized_job
@@ -597,9 +597,11 @@
 	var/free_space = 0
 	for(var/list/category in list(GLOB.command_positions) + list(GLOB.supply_positions) + list(GLOB.engineering_positions) + list(GLOB.nonhuman_positions - "pAI") + list(GLOB.civilian_positions) + list(GLOB.law_positions) + list(GLOB.medical_positions) + list(GLOB.science_positions) + list(GLOB.security_positions))
 		var/cat_color = "fff" //random default
+		var/department_type = SSjob.name_occupations[category[1]].exp_type_department
+		var/department_title = GLOB.exp_type_department_ru[department_type] || department_type
 		cat_color = SSjob.name_occupations[category[1]].selection_color //use the color of the first job in the category (the department head) as the category color
 		dat += "<fieldset style='width: 185px; border: 2px solid [cat_color]; display: inline'>"
-		dat += "<legend align='center' style='color: [cat_color]'>[SSjob.name_occupations[category[1]].exp_type_department]</legend>"
+		dat += "<legend align='center' style='color: [cat_color]'>[department_title]</legend>"
 
 		var/list/dept_dat = list()
 		for(var/job in category)
@@ -623,11 +625,11 @@
 				else
 					dept_dat += "<a class='job[command_bold]' style='display:block;width:170px' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[job_datum.title] ([num_positions_current]/[num_positions_total])"
 				if(client && client.prefs && client?.prefs?.alt_titles_preferences[job_datum.title])
-					dept_dat += "<br><span style='color:#BBBBBB; font-style: italic;'>as [client?.prefs?.alt_titles_preferences[job_datum.title]]</span>"
+					dept_dat += "<br><span style='color:#BBBBBB; font-style: italic;'>как [client?.prefs?.alt_titles_preferences[job_datum.title]]</span>"
 				dept_dat += "</a>"
 
 		if(!dept_dat.len)
-			dept_dat += "<span class='nopositions'>No positions open.</span>"
+			dept_dat += "<span class='nopositions'>Нет доступных вакансий.</span>"
 		dat += jointext(dept_dat, "")
 		dat += "</fieldset><br>"
 		column_counter++
@@ -653,7 +655,7 @@
 		break
 
 	if(!available_ghosts)
-		dat += "<div class='notice red'>There are currently no open ghost spawners.</div>"
+		dat += "<div class='notice red'>В настоящее время нет гост-спавнеров.</div>"
 	else
 		var/list/categorizedJobs = list("Ghost Role" = list(jobs = list(), titles = GLOB.mob_spawners, color = "#ffffff"))
 		for(var/spawner in GLOB.mob_spawners)
@@ -682,7 +684,7 @@
 		dat += "</td></tr></table></center>"
 		dat += "</div></div>"
 
-	var/datum/browser/popup = new(src, "latechoices", "Choose Profession", 720, 600)
+	var/datum/browser/popup = new(src, "latechoices", "Выберите профессию", 720, 600)
 	popup.add_stylesheet("playeroptions", 'html/browser/playeroptions.css')
 	popup.set_content(jointext(dat, ""))
 	popup.open(FALSE) // FALSE is passed to open so that it doesn't use the onclose() proc

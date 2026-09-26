@@ -7,6 +7,12 @@
 	var/metashop_purchaser_ckey
 	var/activation_verb_text = "получить особую роль"
 	var/metashop_round_limit_key = null
+	/// Типы геймодов, в которых жетон метамагазина нельзя активировать.
+	/// istype() ловит и /datum/game_mode/extended, и announced (config_tag "Extended" с большой буквы).
+	var/list/disallowed_game_modes = list(/datum/game_mode/extended)
+	/// Типы раундов, в которых жетон метамагазина нельзя активировать.
+	/// Нужно отдельно от disallowed_game_modes: у динамика нет отдельных датумов на вариацию round_type.
+	var/list/disallowed_round_types = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
 
 /obj/item/coin/antagtoken/metashop/examine(mob/user)
 	. = ..()
@@ -65,6 +71,10 @@
 	if(SSticker.current_state != GAME_STATE_PLAYING || !SSticker.mode)
 		to_chat(H, span_warning("Сейчас нельзя активировать жетон."))
 		return FALSE
+	var/mode_block = game_mode_blocked_reason()
+	if(mode_block)
+		to_chat(H, span_warning(mode_block))
+		return FALSE
 	if(!ispath(antag_type, /datum/antagonist))
 		to_chat(H, span_warning("Жетон мёртвый — тип роли не задан."))
 		return FALSE
@@ -86,6 +96,20 @@
 
 /obj/item/coin/antagtoken/metashop/proc/already_has_antag_message()
 	return "Вы уже связаны с силами, с которыми хотел бы связаться жетон."
+
+/// Текст причины, по которой жетон нельзя активировать в текущем режиме игры, либо null.
+/// Проверяются и тип геймода, и round_type: не каждый режим, помеченный как Extended, выставляется в SSticker.mode.
+/obj/item/coin/antagtoken/metashop/proc/game_mode_blocked_reason()
+	if(disallowed_game_modes)
+		for(var/mode_type in disallowed_game_modes)
+			if(ispath(mode_type) && istype(SSticker?.mode, mode_type))
+				return game_mode_block_message()
+	if(disallowed_round_types && (GLOB.round_type in disallowed_round_types))
+		return game_mode_block_message()
+	return null
+
+/obj/item/coin/antagtoken/metashop/proc/game_mode_block_message()
+	return "Жетон метамагазина недоступен в режимах Extended и Dynamic Light."
 
 /obj/item/coin/antagtoken/metashop/proc/role_unavailable_message()
 	return "Жетон нагревается и остывает — роль недоступна."

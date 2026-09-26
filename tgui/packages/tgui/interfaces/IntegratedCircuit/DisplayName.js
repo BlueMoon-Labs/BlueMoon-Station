@@ -18,10 +18,15 @@ export const DisplayName = (props) => {
   const connectionRefs = connectedToRefList(port.connected_to);
 
   const hasInput = !isOutput && !!InputComponent;
+  const isSignal = fundamentalType === 'signal';
+  const isOption = fundamentalType === 'option';
+  // IE: пины данных правятся через нативное меню, а не инлайн-виджетами.
+  const nativeEditableInput = !isOutput && isIeCircuit && !isSignal && !isOption;
 
   const displayType = port.pin_type_label
     || (TypeDisplayHandler ? TypeDisplayHandler(port) : fundamentalType);
-  const showLive = isOutput || !!connectionRefs.length;
+  // Значение показываем всегда: выходы, подключённые входы и IE-входы данных.
+  const showLive = isOutput || !!connectionRefs.length || nativeEditableInput;
   const liveText = showLive
     ? formatPortLiveValue(port.current_data, fundamentalType)
     : null;
@@ -32,22 +37,12 @@ export const DisplayName = (props) => {
     || (pdata !== null && pdata !== undefined && typeof pdata === 'object')
   );
 
-  const showDebuggerUpload = isIeCircuit && hasInput && fundamentalType !== 'signal'
-    && fundamentalType !== 'option' && fundamentalType !== 'entity' && fundamentalType !== 'any'
-    && fundamentalType !== 'list';
-
-  const applyDebuggerUpload = () => act('set_component_input', {
-    component_id: componentId,
-    port_id: portIndex,
-    marked_atom: true,
-  });
-
   const openPortInspect = () => {
     if (!isIeCircuit) {
       return;
     }
     if (fundamentalType === 'list') {
-      act('ie_open_list_editor', {
+      act('ie_pin_editor_open', {
         component_id: componentId,
         port_id: portIndex,
         is_output: !!isOutput,
@@ -62,25 +57,37 @@ export const DisplayName = (props) => {
     }
   };
 
+  // Открыть нативный редактор значения для обычного (не списка и не импульса) пина.
+  const openNativeEditor = () => act('ie_pin_editor_open', {
+    component_id: componentId,
+    port_id: portIndex,
+    is_output: !!isOutput,
+  });
+
   return (
     <Box
       {...rest}
       className={classes([className, 'IntegratedCircuit__portDisplayName'])}>
       <Flex direction="column">
         <Flex.Item>
-          {(hasInput && (
+          {(nativeEditableInput && (
+            <Flex align="center" direction="row">
+              <Flex.Item>
+                <Button
+                  compact
+                  color="transparent"
+                  icon="expand"
+                  tooltip="Открыть нативный редактор значения"
+                  onClick={openNativeEditor}
+                />
+              </Flex.Item>
+              <Flex.Item grow>
+                <Box color="white">{port.name}</Box>
+              </Flex.Item>
+            </Flex>
+          ))
+            || (hasInput && (
             <Stack align="center" wrap>
-              {!!showDebuggerUpload && (
-                <Stack.Item>
-                  <Button
-                    compact
-                    color="transparent"
-                    icon="upload"
-                    tooltip="Debugger: вставить память (ref/null/строка/число/список) или скопировать сюда в режиме Copy; предмет в активной руке — ref на ref/any"
-                    onClick={applyDebuggerUpload}
-                  />
-                </Stack.Item>
-              )}
               <Stack.Item grow>
                 <InputComponent
                   act={act}
@@ -105,22 +112,6 @@ export const DisplayName = (props) => {
           ))
             || (isOutput && (
               <Flex align="center" direction="row">
-                {!!(isIeCircuit && fundamentalType !== 'signal' && fundamentalType !== 'option') && (
-                  <Flex.Item>
-                    <Button
-                      compact
-                      color="transparent"
-                      icon="upload"
-                      tooltip="Debugger: вставить память во вход (слева); режим Copy — скопировать текущее значение с этого выхода"
-                      onClick={() => act('set_component_input', {
-                        component_id: componentId,
-                        port_id: portIndex,
-                        marked_atom: true,
-                        is_output: true,
-                      })}
-                    />
-                  </Flex.Item>
-                )}
                 <Flex.Item>
                   <Button
                     compact
@@ -133,7 +124,7 @@ export const DisplayName = (props) => {
                         port_id: portIndex,
                       })} />
                 </Flex.Item>
-                {isIeCircuit && fundamentalType === 'list' && (
+                {(isIeCircuit && fundamentalType === 'list') && (
                   <Flex.Item>
                     <Button
                       compact
@@ -144,6 +135,18 @@ export const DisplayName = (props) => {
                     />
                   </Flex.Item>
                 )}
+                {isIeCircuit && fundamentalType !== 'signal'
+                  && fundamentalType !== 'option' && fundamentalType !== 'list' && (
+                    <Flex.Item>
+                      <Button
+                        compact
+                        color="transparent"
+                        icon="expand"
+                        tooltip="Открыть нативный редактор значения"
+                        onClick={openNativeEditor}
+                      />
+                    </Flex.Item>
+                  )}
                 <Flex.Item grow>
                   <Box color="white">{port.name}</Box>
                 </Flex.Item>

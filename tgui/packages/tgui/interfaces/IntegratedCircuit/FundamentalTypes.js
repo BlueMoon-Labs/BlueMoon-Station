@@ -19,7 +19,7 @@ const colorCommitTimers = new WeakMap();
 
 export const FUNDAMENTAL_DATA_TYPES = {
   'string': (props) => {
-    const { name, value, setValue, color } = props;
+    const { name, value, setValue } = props;
     return (
       <BasicInput name={name} setValue={setValue} value={value} defaultValue="">
         <Input
@@ -168,7 +168,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
             compact
             color="transparent"
             tooltip="Редактор / просмотр списка"
-            onClick={() => act('ie_open_list_editor', {
+            onClick={() => act('ie_pin_editor_open', {
               component_id: componentId,
               port_id: portId,
               is_output: !!isOutput,

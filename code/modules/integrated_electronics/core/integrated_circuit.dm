@@ -38,10 +38,11 @@
 	var/datum/weakref/ie_gui_examined_circuit
 	var/ie_gui_examined_x = 0
 	var/ie_gui_examined_y = 0
-	/// TGUI: одиночный чип без сборки — подсветка импульса по связи
-	var/ie_tgui_solo_pulse_until = 0
-	var/ie_tgui_solo_pulse_out_ref = null
-	var/ie_tgui_solo_pulse_in_ref = null
+	/// TGUI: очередь «живых» импульсов одиночного чипа (по порядку активации).
+	var/list/ie_tgui_solo_pulses = list()
+	/// TGUI: открытый в нативном редакторе значений пин (список/текст).
+	var/datum/integrated_io/ie_gui_editor_io
+	var/ie_gui_editor_is_output = FALSE
 
 
 /*
