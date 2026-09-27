@@ -386,10 +386,10 @@
 /obj/item/storage/wallet/xeno
 	name = "Xeno Wallet"
 	desc = "Поюшевый ксеноморф, в рот можно вставить карты и безделушки"
-	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi''
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "flka_open"
 
-/obj/item/storage/wallet/xebo/update_icon_state()
+/obj/item/storage/wallet/xeno/update_icon_state()
 	var/new_state = "flka_open"
 	if(front_id)
 		new_state = "flka_close"
@@ -447,7 +447,6 @@
 	new /obj/item/modkit/tau_armor_kit(src)
 	new /obj/item/toy/plush/bm/tau(src)
 
-<<<<<<< Updated upstream
 /obj/item/storage/box/melatonin_bola_kit
 	name = "Entangling Bola Crafting Kit"
 	desc = "Небольшая коробка с четырьмя комплектами деталей для создания опутывающей болы. Внутри — грубо обработанные каменные волчьи лапы, крепления и отрезки прочной верёвки. Похоже, кто-то решил, что обычных грузов для охоты недостаточно."
