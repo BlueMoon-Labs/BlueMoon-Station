@@ -112,7 +112,7 @@
 	name = "advance MOPP suit"
 	desc = "Mission Oriented Protective Posture. A suit design for harsh combat conditions short of no atmosphere. This is an advance version for Non-ERT Central Command Staff."
 	slowdown = 0 // This is suppose to be advance, hopefully not too OP
-	armor = list("melee" = 40, "bullet" = 60, "laser" = 40,"energy" = 40, "bomb" = 30, "bio" = 110, "rad" = 110, "fire" = 50, "acid" = 110) //Scale with standard MOPP suits as this effects all ERT suits
+	armor = list(MELEE = 45, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30) //Scale with standard MOPP suits as this effects all ERT suits
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/cbrn/mopp/advance/commander

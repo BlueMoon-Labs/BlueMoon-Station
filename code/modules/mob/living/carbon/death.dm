@@ -4,6 +4,7 @@
 
 	silent = FALSE
 	losebreath = 0
+	breathing_loop.stop()
 
 	if(!gibbed && !HAS_TRAIT(src, TRAIT_DEATHCOMA))
 		emote("deathgasp")

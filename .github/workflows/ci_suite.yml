@@ -43,6 +43,8 @@ jobs:
           find . -name "*.json" -not -path "*/node_modules/*" -print0 | xargs -0 python3 ./tools/json_verifier.py
           tools/build/build --ci lint
           tools/bootstrap/python -m dmi.test
+          tools/bootstrap/python -m unittest asset_lint.tests
+          tools/bootstrap/python -m asset_lint
           tools/bootstrap/python -m mapmerge2.dmm_test
       - name: Run DreamChecker
         run: ~/dreamchecker -e tgstation.dme

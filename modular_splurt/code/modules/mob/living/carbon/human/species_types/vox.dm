@@ -57,7 +57,7 @@
 	key_third_person = "shrieks"
 	message = "shrieks!"
 	message_mime = "lets out an <b>inaudible</b> shriek!"
-	sound = 'modular_splurt/sound/voice/shriek1.ogg' // Copyright CC BY 3.0 InspectorJ (freesound.org) for the source audio.
+	sound = 'sound/voice/shriek1.ogg' // Copyright CC BY 3.0 InspectorJ (freesound.org) for the source audio.
 	emote_cooldown = 2.1 SECONDS
 
 /datum/emote/sound/vox/shriek/run_emote(mob/user, params)

@@ -1494,6 +1494,21 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 /// Soft cap on icon2html_result_cache entries. Each entry is three short strings.
 #define ICON2HTML_RESULT_CACHE_MAX 2048
 
+/// Registers a single-frame icon as a png asset, sends it to targets and returns the asset name.
+/proc/register_icon_asset(icon/single_frame, icon_path, list/targets)
+	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
+	// md5 pass. A non-null dmi_file_path selects the cheap md5(rsc_ref) path.
+	var/list/name_and_ref = generate_and_hash_rsc_file(single_frame, icon_path)
+	var/rsc_ref = name_and_ref[1]
+	var/file_hash = name_and_ref[2]
+	var/key = "[name_and_ref[3]].png"
+
+	if(!SSassets.cache[key])
+		SSassets.transport.register_asset(key, rsc_ref, file_hash, icon_path)
+	for (var/client_target as anything in targets)
+		SSassets.transport.send_assets(client_target, key)
+	return key
+
 /proc/icon2html(atom/thing, client/target, icon_state, dir = SOUTH, frame = 1, moving = FALSE, sourceonly = FALSE)
 	if (!thing)
 		return
@@ -1598,18 +1613,7 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 	// вернулось выше, ещё до всей этой цепочки. Именно промахи и стоят памяти.
 	note_flat_icon_built(icon2collapse)
 
-	// Hash the rsc file once and reuse the hash inside register_asset to skip the second
-	// md5 pass. A non-null dmi_file_path selects the cheap md5(rsc_ref) path.
-	var/list/name_and_ref = generate_and_hash_rsc_file(icon2collapse, icon_path)
-	var/rsc_ref = name_and_ref[1]
-	var/file_hash = name_and_ref[2]
-	var/key = "[name_and_ref[3]].png"
-
-	if(!SSassets.cache[key])
-		SSassets.transport.register_asset(key, rsc_ref, file_hash, icon_path)
-	for (var/client_target in targets)
-		SSassets.transport.send_assets(client_target, key)
-
+	var/key = register_icon_asset(icon2collapse, icon_path, targets)
 	var/asset_url = SSassets.transport.get_asset_url(key)
 	var/result_html = "<img class='icon icon-[icon_state]' src='[asset_url]'>"
 

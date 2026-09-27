@@ -338,7 +338,6 @@
 	light_color = "#ff0000"
 	possible_colors = null
 
-
 /obj/item/melee/transforming/energy/blade
 	name = "energy blade"
 	desc = "A concentrated beam of energy in the shape of a blade. Very stylish... and lethal."

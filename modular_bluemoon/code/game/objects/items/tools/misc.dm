@@ -43,4 +43,13 @@
 /obj/item/surgicaldrill/advanced/cyborg
 	name = "cyborg laser drill"
 
+/obj/item/scalpel/advanced/alien/cyborg
+	name = "cyborg alien combi scalpel"
+
+/obj/item/retractor/advanced/alien/cyborg
+	name = "cyborg alien combi retractor"
+
+/obj/item/surgicaldrill/advanced/alien/cyborg
+	name = "cyborg alien combi drill"
+
 //////////////////////////////////////////////////////////////

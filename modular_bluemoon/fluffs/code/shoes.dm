@@ -67,7 +67,7 @@
 
 /obj/item/clothing/shoes/exo_legs/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/squeak, list('sound/effects/footstep/exo_footstep-1.ogg' = 1,'sound/effects/footstep/exo_footstep-2.ogg' = 1), 100)
+	AddComponent(/datum/component/squeak, list('sound/effects/footstep/exo_footstep-1.ogg' = 1), 100)
 	AddElement(/datum/element/polychromic, poly_colors, 1)
 
 /obj/item/clothing/shoes/blood_boots

@@ -2281,7 +2281,6 @@
 /area/awaymission/spacebattle/cruiser)
 "hC" = (
 /obj/structure/chair,
-/obj/effect/landmark/awaystart,
 /obj/effect/turf_decal/tile/bar,
 /obj/effect/turf_decal/tile/bar{
 	dir = 1
@@ -3836,7 +3835,6 @@
 	dir = 1
 	},
 /obj/structure/chair,
-/obj/effect/landmark/awaystart,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "pa" = (
@@ -4576,6 +4574,10 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
+"uz" = (
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/inteq/light,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/spacebattle/syndicate5)
 "uC" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
@@ -6949,15 +6951,8 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "Mo" = (
-/obj/structure/chair{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/bar,
-/obj/effect/turf_decal/tile/bar{
-	dir = 1
-	},
-/obj/effect/spawner/lootdrop/hostile/inteq,
-/turf/open/floor/plasteel,
+/mob/living/simple_animal/hostile/inteq/melee/ushm,
+/turf/open/floor/wood,
 /area/awaymission/spacebattle/cruiser)
 "Mq" = (
 /mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
@@ -8047,10 +8042,13 @@
 /turf/closed/mineral/plasma,
 /area/space/nearstation)
 "Uc" = (
-/obj/effect/turf_decal/tile/brown/fourcorners,
-/obj/machinery/suit_storage_unit/open,
-/turf/open/floor/plasteel/dark,
-/area/awaymission/spacebattle/syndicate2)
+/obj/effect/turf_decal/tile/bar,
+/obj/effect/turf_decal/tile/bar{
+	dir = 1
+	},
+/obj/effect/spawner/lootdrop/hostile/inteq,
+/turf/open/floor/plasteel,
+/area/awaymission/spacebattle/cruiser)
 "Ue" = (
 /obj/structure/statue/bone/rib,
 /obj/effect/clockwork/overlay/floor/bloodcult,
@@ -8148,7 +8146,7 @@
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "UP" = (
-/obj/item/disk/gatereward,
+/obj/item/disk/gatereward/bigest,
 /turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "UQ" = (
@@ -8547,6 +8545,14 @@
 	},
 /turf/open/space/basic,
 /area/space/nearstation)
+"XT" = (
+/obj/structure/window/reinforced{
+	dir = 1;
+	layer = 2.9
+	},
+/obj/item/disk/gatereward/bigger,
+/turf/open/floor/mineral/bananium,
+/area/awaymission/spacebattle/cruiser)
 "XW" = (
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
@@ -28003,7 +28009,7 @@ dh
 bT
 ht
 uN
-Vy
+XT
 vT
 el
 el
@@ -28824,7 +28830,7 @@ tn
 JF
 VL
 VL
-VL
+uz
 VL
 ku
 iW
@@ -30052,9 +30058,9 @@ cc
 cc
 cc
 cc
-cO
-cO
-cO
+cc
+cc
+cc
 dk
 ht
 hP
@@ -30309,9 +30315,9 @@ zO
 cc
 cr
 cc
-cO
-cO
-cO
+cc
+cc
+cc
 dl
 ht
 mG
@@ -38025,7 +38031,7 @@ da
 da
 da
 dQ
-Mo
+dQ
 da
 Zf
 da
@@ -38285,7 +38291,7 @@ dR
 dS
 ep
 dx
-da
+Uc
 da
 HX
 gR
@@ -38783,7 +38789,7 @@ ab
 ab
 bT
 nv
-cc
+cO
 ht
 cc
 cc
@@ -40354,7 +40360,7 @@ gy
 gy
 gy
 gy
-gy
+Mo
 gy
 ht
 cp
@@ -46153,7 +46159,7 @@ ai
 UR
 zp
 zp
-Uc
+am
 ah
 ao
 aj

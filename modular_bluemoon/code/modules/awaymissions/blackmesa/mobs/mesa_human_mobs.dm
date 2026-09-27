@@ -204,7 +204,7 @@
 		'modular_bluemoon/sound/creatures/mesa/blackops/bo_alert04.ogg',
 		'modular_bluemoon/sound/creatures/mesa/blackops/bo_alert05.ogg',
 		'modular_bluemoon/sound/creatures/mesa/blackops/bo_alert06.ogg',
-		'modular_bluemoon/sound/creatures/mesa/blackops/bo_alert07.ogg',
+		'modular_bluemoon/sound/emotes/boalert.ogg',
 		'modular_bluemoon/sound/creatures/mesa/blackops/bo_alert08.ogg'
 	)
 

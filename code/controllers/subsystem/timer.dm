@@ -97,6 +97,10 @@ SUBSYSTEM_DEF(timer)
 	/// тик-чека, то есть срабатывает ровно в тот момент, когда сервер и так плох.
 	/// Включать варедитом, когда ловишь "Invalid timer state".
 	var/static/log_timers_on_bucket_reset = FALSE
+	/// Потолок describe_timer_holding(): в проде таймеров до ~2000, запас на порядок
+	var/holder_probe_limit = 20000
+	/// Последний describe_timer_holding() упёрся в holder_probe_limit и досмотрел не всё
+	var/holder_probe_truncated = FALSE
 
 /datum/controller/subsystem/timer/PreInit()
 	bucket_list.len = BUCKET_LEN
@@ -377,6 +381,51 @@ SUBSYSTEM_DEF(timer)
 		. += ", QDELETED"
 	if(!TE.callBack)
 		. += ", NO CALLBACK"
+
+/// Первый живой таймер, чей колбек держит target объектом или аргументом. Строка для лога GC либо null.
+/// Проба синхронная и уступить тик не может, поэтому смотрит не больше holder_probe_limit таймеров;
+/// обрыв виден по holder_probe_truncated.
+/datum/controller/subsystem/timer/proc/describe_timer_holding(datum/target)
+	holder_probe_truncated = FALSE
+	if(isnull(target))
+		return null
+	var/checked = 0
+	for(var/list/flat_queue as anything in list(second_queue, clienttime_timers))
+		for(var/datum/timedevent/timer as anything in flat_queue)
+			if(++checked > holder_probe_limit)
+				holder_probe_truncated = TRUE
+				return null
+			. = describe_timer_hold(timer, target)
+			if(.)
+				return
+	for(var/datum/timedevent/bucket_head as anything in bucket_list)
+		if(!bucket_head)
+			continue
+		var/datum/timedevent/bucket_node = bucket_head
+		do
+			if(++checked > holder_probe_limit)
+				holder_probe_truncated = TRUE
+				return null
+			. = describe_timer_hold(bucket_node, target)
+			if(.)
+				return
+			bucket_node = bucket_node.next
+		while(bucket_node && bucket_node != bucket_head)
+	return null
+
+/datum/controller/subsystem/timer/proc/describe_timer_hold(datum/timedevent/timer, datum/target)
+	var/datum/callback/held_callback = timer.callBack
+	if(!held_callback)
+		return null
+	var/role
+	if(held_callback.object == target)
+		role = "объект"
+	else if(held_callback.arguments && (target in held_callback.arguments))
+		role = "аргумент"
+	if(!role)
+		return null
+	var/owner_desc = held_callback.object == GLOBAL_PROC ? "GLOBAL_PROC" : "[held_callback.object?.type]"
+	return "[role] колбека [owner_desc]->[held_callback.delegate], осталось [round((timer.timeToRun - (timer.flags & TIMER_CLIENT_TIME ? REALTIMEOFDAY : world.time)) / 10)]с[timer.source ? ", [timer.source]" : ""]"
 
 /**
  * Destroys the existing buckets and creates new buckets from the existing timed events

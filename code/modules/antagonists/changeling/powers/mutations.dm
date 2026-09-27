@@ -198,7 +198,11 @@
 		loc.visible_message("<span class='warning'>A grotesque blade forms around [loc.name]\'s arm!</span>", "<span class='warning'>Our arm twists and mutates, transforming it into a deadly blade.</span>", "<span class='italics'>You hear organic matter ripping and tearing!</span>")
 	if(synthetic)
 		can_drop = TRUE
+
+/obj/item/melee/arm_blade/ComponentInitialize()
+	. = ..()
 	AddComponent(/datum/component/butchering, 60, 80)
+	AddElement(/datum/element/ambidextria_attack, list(/obj/item/melee/arm_blade, /obj/item/melee/synthetic_arm_blade))
 
 /obj/item/melee/arm_blade/afterattack(atom/target, mob/user, proximity)
 	. = ..()

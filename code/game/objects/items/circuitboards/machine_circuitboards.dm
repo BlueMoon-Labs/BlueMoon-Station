@@ -1005,7 +1005,8 @@
 	icon_state = "medical"
 	build_path = /obj/machinery/medipen_refiller
 	req_components = list(
-		/obj/item/stock_parts/matter_bin = 1)
+		/obj/item/stock_parts/matter_bin = 1,
+		/obj/item/stock_parts/manipulator = 1)
 
 /obj/item/circuitboard/machine/techfab/department/medical
 	name = "\improper Departmental Techfab (Machine Board) - Medical"

@@ -368,6 +368,10 @@
 /obj/machinery/vending/coffee,
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/ruin/space/has_grav/whiteship/box)
+"lo" = (
+/obj/machinery/suit_storage_unit/syndicate/softsuit,
+/turf/open/floor/mineral/titanium/tiled/white,
+/area/ruin/space/has_grav/whiteship/box)
 "lt" = (
 /obj/effect/decal/cleanable/glass,
 /obj/structure/lattice,
@@ -1963,7 +1967,7 @@ Wc
 Ay
 MA
 Wc
-HT
+lo
 IA
 Qx
 Gp

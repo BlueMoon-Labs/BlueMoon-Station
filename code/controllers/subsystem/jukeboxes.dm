@@ -378,8 +378,9 @@ SUBSYSTEM_DEF(jukeboxes)
 			if(!M.client.prefs)
 				continue
 			if(!jukebox_sound_enabled(M, personal))
-				M.stop_sound_channel(jukeinfo[JUKE_CHANNEL])
-				sent_to -= M.ckey // Канал освобождён: если настройку вернут, ресурс придётся выслать заново
+				if(sent_to[M.ckey])
+					M.stop_sound_channel(jukeinfo[JUKE_CHANNEL])
+					sent_to -= M.ckey
 				continue
 
 			// Глушилку и приватизацию зоны надо пересматривать и для тех, кому трек уже играет:

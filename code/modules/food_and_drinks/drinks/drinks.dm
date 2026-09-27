@@ -122,7 +122,7 @@
 				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
 				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
 				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
-				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+				splash_turf.flick_overlay_view(splash_animation, 1.1 SECONDS)
 			if(isturf(target))
 				var/turf/target_turf = target
 				if(target_turf.can_liquid_spill_on_hit())
@@ -244,7 +244,7 @@
 			new/obj/item/shard(drop_location())
 		obj_integrity = 1
 		qdel(src)
-	..()
+	return ..()
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Drinks. END

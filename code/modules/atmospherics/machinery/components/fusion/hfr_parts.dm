@@ -38,8 +38,10 @@
 /obj/machinery/atmospherics/components/unary/hypertorus/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!fusion_started)
 		if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_off, I))
+			hfr_log_part_touch(src, user, panel_open ? "opened the panel of" : "closed the panel of")
 			return
 	if(default_change_direction_wrench(user, I))
+		hfr_log_part_touch(src, user, "rotated")
 		return
 	return ..()
 
@@ -53,11 +55,15 @@
 		balloon_alert(user, "repaired")
 		cracked = FALSE
 		update_appearance(UPDATE_ICON)
+		hfr_log_part_touch(src, user, "repaired")
 
 /obj/machinery/atmospherics/components/unary/hypertorus/crowbar_act(mob/living/user, obj/item/tool)
+	if(panel_open)
+		hfr_log_part_touch(src, user, "started deconstructing")
 	return crowbar_deconstruction_act(user, tool)
 
 /obj/machinery/atmospherics/components/unary/hypertorus/update_icon_state()
+
 	if(panel_open)
 		icon_state = icon_state_open
 		return ..()
@@ -108,6 +114,20 @@
 /*
 * Interface and corners
 */
+
+/// Действие игрока с частью машины. Ядро ищется в радиусе тайла - иначе виновник аварии
+/// остался бы без фамилии: в аварийных логах печатается last_touched_by ядра.
+/// Ядра нет только если части ещё не собраны реактором - тогда hypertorus.html некуда
+/// писать, но в hfr.log строчка всё равно нужна.
+/proc/hfr_log_part_touch(atom/part, mob/user, action)
+	if(isnull(user) || isnull(part))
+		return
+	var/obj/machinery/atmospherics/components/unary/hypertorus/core/core = locate(/obj/machinery/atmospherics/components/unary/hypertorus/core) in orange(1, part)
+	if(core)
+		core.log_hfr_action(user, "[action] [part]")
+		return
+	log_hfr("part [part] at [AREACOORD(part)]: [key_name(user)] [action]")
+
 /obj/machinery/hypertorus
 	name = "hypertorus_core"
 	desc = "hypertorus_core"
@@ -132,10 +152,13 @@
 /obj/machinery/hypertorus/attackby(obj/item/I, mob/user, list/modifiers, list/attack_modifiers)
 	if(!fusion_started)
 		if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_off, I))
+			hfr_log_part_touch(src, user, panel_open ? "opened the panel of" : "closed the panel of")
 			return
 	if(default_change_direction_wrench(user, I))
+		hfr_log_part_touch(src, user, "rotated")
 		return
 	if(default_deconstruction_crowbar(I))
+		hfr_log_part_touch(src, user, "started deconstructing")
 		return
 	return ..()
 
@@ -443,6 +466,8 @@
 			if(cooling_volume != null)
 				connected_core.airs[1].set_volume(clamp(cooling_volume, HFR_LIMIT_COOLING_VOLUME_MIN, HFR_LIMIT_COOLING_VOLUME_MAX))
 				. = TRUE
+	if(. && usr)
+		connected_core.log_setting_change(usr, action)
 
 /obj/machinery/hypertorus/corner
 	name = "HFR corner"
@@ -552,10 +577,10 @@
 				parts |= box
 			continue
 	if(parts.len == 8)
-		build_reactor(parts)
+		build_reactor(parts, user)
 	return
 
-/obj/item/hfr_box/core/proc/build_reactor(list/parts)
+/obj/item/hfr_box/core/proc/build_reactor(list/parts, mob/user)
 	for(var/obj/item/hfr_box/box in parts)
 		if(box.box_type == "corner")
 			if(!box.part_path || !ispath(box.part_path, /obj/machinery/hypertorus/corner))
@@ -580,6 +605,7 @@
 			continue
 
 	var/obj/machinery/atmospherics/components/unary/hypertorus/core/centre = new(loc, TRUE)
+	centre.log_hfr_action(user, "assembled [centre]")
 	for(var/obj/machinery/atmospherics/components/unary/hypertorus/part in orange(1, centre))
 		part.reconnect_nodes()
 	centre.reconnect_nodes()

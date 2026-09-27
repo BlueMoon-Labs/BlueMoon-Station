@@ -90,7 +90,7 @@
 			с силой, отправляющей ту в полёт."
 	icon_state = "power_kick"
 	module_type = MODULE_ACTIVE
-	cooldown_time = 15 SECONDS
+	cooldown_time = 30 SECONDS
 	device = /obj/item/melee/baseball_bat/powerkick
 
 /obj/item/melee/baseball_bat/powerkick
@@ -101,7 +101,8 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
-	wound_bonus = 12
+	armour_penetration = 100 //за 5 ТК норм.
+	wound_bonus = 20
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)
 	. = ..()
@@ -112,6 +113,20 @@
 	desc = "Свиток защищающий носителя от магии, при условии, что тот вставлен в костюм. Имеет печать Федерации магов."
 	icon_state = "magic_neutralizer"
 
+/obj/item/mod/module/spellcasting
+	name = "Spellcasting MOD enchanting"
+	desc = "Благославляющий свиток, позволяющий колдовать, нося элементы МОДа, словно в робе мага."
+	icon_state = "magic_neutralizer"
+	removable = FALSE
+
+/obj/item/mod/module/spellcasting/on_install()
+	. = ..()
+	var/obj/item/clothing/mod_part/suit/chest  = mod.get_chestplate()
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+
+	chest.AddElement(/datum/element/spellcasting, SPELL_WIZARD_ROBE, ITEM_SLOT_OCLOTHING)
+	helmet.AddElement(/datum/element/spellcasting, SPELL_WIZARD_HAT, ITEM_SLOT_HEAD)
+
 /obj/item/mod/module/energy_shield/syndie
 	name = "Cybersun Energy Shield module"
 	desc = "Одна из совершенных версий модулярных энергощитов, способная выдерживать до 5-ти попаданий. \
@@ -119,7 +134,7 @@
 	покрывающим затраты щита."
 	icon_state = "syndie_energy_shield"
 	shield_state = "shield-red"
-	used_modificator = MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG
+	used_modificator = MOD_ANTAG_SHIELD_CELL_DRAIN_MODIFICATOR
 	recharge_delay = 17 SECONDS
 	max_charges = 5
 
@@ -129,7 +144,7 @@
 	однако не способен выдерживать столько же много попаданий, как старшая версия."
 	icon_state = "inteq_energy_shield"
 	shield_state = "shield-yellow"
-	minimum_cell_charge = MOD_ANTAG_SHIELD_CELL_DRAIN_MODIFICATOR
+	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD_ANTAG
 	recharge_delay = 18 SECONDS
 	max_charges = 3
 
@@ -149,8 +164,7 @@
 	при столкновениях."
 	icon_state = "cloak_traitor"
 	bumpoff = FALSE
-	stealth_alpha = 45
-
+	stealth_alpha = 35
 
 /obj/item/mod/module/jump_jet/ninja
 	name = "Spider Clan Jump Module"
@@ -161,6 +175,15 @@
 	beam_icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	beam_state = "net_beam"
 	incompatible_modules = list()
+
+/obj/item/mod/module/stealth/adv/ninja
+	name = "Spider Clan stealth module"
+	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
+	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
+	при столкновениях."
+	icon_state = "cloak_ninja"
+	bumpoff = FALSE
+	stealth_alpha = 10
 
 /obj/item/mod/module/jump_jet/inteq
 	name = "InteQ Jump Jet Module"

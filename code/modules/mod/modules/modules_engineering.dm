@@ -102,7 +102,7 @@
 	cooldown_time = 1.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
-	// device = /obj/item/gun/tether_firer
+	have_shortcut_activation = TRUE
 
 /obj/item/mod/module/tether/on_use()
 	if(mod.wearer.has_gravity(get_turf(src)))
@@ -194,6 +194,15 @@
 	cooldown_time = 11 SECONDS
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 	device = /obj/item/construction/rcd/industrial/mod_internal
+	var/obj/item/areaeditor/blueprints/internal_blueprints
+
+/obj/item/mod/module/constructor/Initialize(mapload)
+	. = ..()
+	internal_blueprints = new(src)
+
+/obj/item/mod/module/constructor/Destroy()
+	. = ..()
+	QDEL_NULL(internal_blueprints)
 
 /obj/item/construction/rcd/industrial/mod_internal
 	name = "MOD Consructor Module"
@@ -205,18 +214,28 @@
 	delay_mod = 0.25
 	has_ammobar = FALSE
 
-/obj/item/construction/rcd/industrial/mod_internal/equipped(mob/user)
+/obj/item/mod/module/constructor/on_activation()
 	. = ..()
-	to_chat(user, span_greenannounce("Вы ощущаете, что можете строить быстрее"))
-	ADD_TRAIT(user, TRAIT_QUICK_BUILD, MOD_TRAIT)
+	to_chat(mod.wearer, span_greenannounce("Вы ощущаете, что можете строить быстрее"))
+	internal_blueprints.set_viewer(mod.wearer)
+	ADD_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
 
-/obj/item/construction/rcd/industrial/mod_internal/dropped(mob/user, silent = FALSE)
+/obj/item/mod/module/constructor/on_deactivation()
 	. = ..()
-	to_chat(user, span_warning("Скорость вашего строительства вернулась в норму."))
-	REMOVE_TRAIT(user, TRAIT_QUICK_BUILD, MOD_TRAIT)
+	to_chat(mod.wearer, span_warning("Скорость вашего строительства вернулась в норму."))
+	internal_blueprints.dropped(mod.wearer)
+	REMOVE_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
+
+/obj/item/mod/module/constructor/lesser
+	name = "Fast Build Module"
+	desc = "Модуль для ускорения ручного строительства, полностью занимает предплечье носителя, заметно конфликтуя с \
+		продвинутыми сервоприводами рук. Однако он содержит \
+		последние инженерные чертежи"
+	module_type = MODULE_TOGGLE
+	device = null //не имеет встроенного РЦД.
 
 ///Mister - Sprays water over an area.
-/obj/item/mod/module/mister
+/obj/item/mod/module/mister//Этот отдельно не спавнить!! Он багованный пиздец.
 	name = "MOD water mister module"
 	desc = "Модуль, содержащий опрыскиватель, способный распылять воду на территорию."
 	icon_state = "mister"
@@ -236,6 +255,7 @@
 	tank.volume = volume
 	tank.in_modsuit = TRUE
 	device = tank.noz
+	internal_device = tank
 	return ..()
 
 ///Resin Mister - Sprays resin over an area.
@@ -247,4 +267,3 @@
 
 /obj/item/mod/module/mister/atmos/Initialize(mapload)
 	. = ..()
-

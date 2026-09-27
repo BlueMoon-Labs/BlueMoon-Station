@@ -617,7 +617,7 @@
 
 /datum/design/jaeger_mag
 	name = "Jager magazine"
-	desc = "A pretty hefty 12g mag containing 4 shots."
+	desc = "A pretty hefty 12g mag containing 5 shots."
 	id = "jaeger_mag"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 4000)

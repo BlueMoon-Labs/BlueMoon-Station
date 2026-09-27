@@ -1341,8 +1341,8 @@
 
 /obj/item/integrated_circuit/input/list_selection/ask_for_input(mob/user)
 	var/list/selection = get_pin_data(IC_INPUT, 1)
-	var/selected = tgui_input_text(user,"Choose input.","Selection", selection)
-	if(!selected && !istext(selected))
+	var/selected = tgui_input_list(user,"Choose input.","Selection", selection)
+	if(!selected)
 		return
 	set_pin_data(IC_OUTPUT, 1, selected)
 	push_data()

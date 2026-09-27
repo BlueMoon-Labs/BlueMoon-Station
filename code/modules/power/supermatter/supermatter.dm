@@ -1029,6 +1029,21 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		default_unfasten_wrench(user, tool, time = 20)
 	return TRUE
 
+/// Destruction-class explosions detonate the crystal. Lower severities fall
+/// through to the base behavior, which is a no-op thanks to INDESTRUCTIBLE.
+/// Decorative props (hugbox/fakecrystal) keep their takes_damage = FALSE and stay inert.
+/obj/machinery/power/supermatter_crystal/ex_act(severity, target, origin)
+	if(severity == EXPLODE_DEVASTATE && takes_damage)
+		explode()
+		return
+	..()
+
+/// The supermatter crystal lets extinguisher foam (and the water droplets carrying it) pass through it.
+/obj/machinery/power/supermatter_crystal/CanAllowThrough(atom/movable/mover, turf/target)
+	if(istype(mover, /obj/effect/particle_effect/water) || istype(mover, /obj/effect/particle_effect/foam))
+		return TRUE
+	return ..()
+
 /obj/machinery/power/supermatter_crystal/Bumped(atom/movable/AM)
 	if(isliving(AM))
 		AM.visible_message("<span class='danger'>\The [AM] slams into \the [src] inducing a resonance... [AM.p_their()] body starts to glow and burst into flames before flashing into dust!</span>",\

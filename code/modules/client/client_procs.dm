@@ -1134,18 +1134,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		// клиентом, а держатели экранных объектов не успевали снять их до screen.Cut().
 		SEND_SIGNAL(src, COMSIG_PARENT_QDELETING, FALSE)
 		Destroy() //Clean up signals and timers.
-	// ..() здесь - это встроенное удаление, внутри которого BYOND и обходит мир,
-	// вычищая уцелевшие ссылки. Меряем именно его: половина дисконнектов прошлого
-	// раунда стоила около полусекунды заморозки, и без этой отметки детектор
-	// спайков валит их в общую кучу "внешний столл", где они выглядят как проблема
-	// хоста, а не наша. Порог тот же, что у остальной медленной работы.
+	// Логаут пишется всегда: BYOND ищет уцелевшие ссылки на клиента уже после выхода из Del(),
+	// этот столл в замер del() не попадает, а refcount после Destroy показывает, будет ли поиск.
+	var/leftover_refs = refcount(src)
 	var/deletion_started = TICK_USAGE
 	. = ..()
 	if(!SStick_spikes)
 		return
 	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
-	if(deletion_cost_ms >= SStick_spikes.slow_work_threshold_ms)
-		SStick_spikes.record_slow_work("del", "/client (логаут)", deletion_cost_ms)
+	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс", deletion_cost_ms)
 
 /client/Destroy()
 	GLOB.clients -= src
@@ -1185,6 +1182,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSparallax.currentrun -= src
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
+	GLOB.mentor_tickets?.ClientLogout(src)
 
 	if(credits)
 		QDEL_LIST(credits)
@@ -1265,6 +1263,22 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	QDEL_NULL(void)
 	QDEL_NULL(void_right)
 	QDEL_NULL(void_bottom)
+	SSmouse_entered.hovers -= src
+	SSchat.payload_by_client -= src
+	GLOB.requests.client_logout(src)
+	if(plug13?.owner == src)
+		plug13.owner = null
+	if(mentor_datum?.owner == src)
+		mentor_datum.owner = null
+	GLOB.mentors -= src
+	var/datum/tattoo_manager/tattoo_manager = GLOB.tattoo_managers[ckey]
+	if(tattoo_manager)
+		GLOB.tattoo_managers -= ckey
+		qdel(tattoo_manager)
+	for(var/menu_id in GLOB.radial_menus)
+		var/datum/radial_menu/menu = GLOB.radial_menus[menu_id]
+		if(menu?.current_user == src)
+			menu.current_user = null
 	screen.Cut()
 	images.Cut()
 

@@ -273,7 +273,7 @@ Contains:
 	icon_state = "hardsuit0-ert_commander"
 	item_state = "hardsuit0-ert_commander"
 	hardsuit_type = "ert_commander"
-	armor = list(MELEE = 65, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 80, WOUND = 30)
+	armor = list(MELEE = 50, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
 	strip_delay = 130
 	brightness_on = 16
 
@@ -293,7 +293,7 @@ Contains:
 	tail_state = "ert-commander"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
-	armor = list(MELEE = 65, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 80, WOUND = 30)
+	armor = list(MELEE = 50, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0
 	strip_delay = 130
@@ -519,7 +519,7 @@ Contains:
 	desc = "Spaceworthy and it looks like a space carp's head, smells like one too."
 	icon_state = "carp_helm"
 	item_state = "syndicate"
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 50, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
 	brightness_on = 0 //luminosity when on
 	actions_types = list()
 	heat_protection = HEAD
@@ -549,7 +549,7 @@ Contains:
 	item_state = "space_suit_syndicate"
 	tail_state = "carp"
 	slowdown = 0	//Space carp magic, never stop believing
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 25, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
+	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 50, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals, /obj/item/gun/ballistic/automatic/speargun)	//I'm giving you a hint here
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/carp
@@ -574,7 +574,7 @@ Contains:
 	item_state = "hardsuit0-prt"
 	hardsuit_type = "knight_grey"
 	actions_types = list()
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor =	list(MELEE = 75, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
 	mutantrace_variation = STYLE_MUZZLE
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -599,7 +599,7 @@ Contains:
 	item_state = "knight_grey"
 	tail_state = "syndicate-winter"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor =	list(MELEE = 75, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
 

@@ -139,7 +139,7 @@
 	squeak_override = list(
 		'modular_splurt/sound/voice/mrowl.ogg' = 1,
 		'modular_splurt/sound/voice/meow_meme.ogg' = 1,
-		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow2.ogg' = 1,
@@ -184,7 +184,7 @@
 	desc = " Мягкая игрушка в форме кошки легко утолит вашу жажду объятий и ласки, от неё вы можете почувствовать легкий аромат пепла и сладковато ягодного вкуса."
 	icon_state = "laska"
 	squeak_override = list(
-		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1
 	)
@@ -771,7 +771,7 @@
 	name = "Vox plushie"
 	desc = "Тот самый пернатый ублюдок, которого все ненавидят, но только не вы."
 	icon_state = "vox"
-	squeak_override = list('modular_splurt/sound/voice/shriek1.ogg' = 1)
+	squeak_override = list('sound/voice/shriek1.ogg' = 1)
 
 /obj/item/toy/plush/bm/expie
 	name = "Expie plushie"

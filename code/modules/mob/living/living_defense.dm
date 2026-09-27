@@ -2,6 +2,7 @@
 /mob/living/proc/run_armor_check(def_zone = null, attack_flag = MELEE, absorb_text = "Your armor absorbs the blow!", soften_text = "Your armor softens the blow!", armour_penetration, penetrated_text = "Your armor was penetrated!", silent=FALSE)
 	var/armor = getarmor(def_zone, attack_flag)
 
+/*
 	// BLUEMOON ADD START - characters_size_changes - броня хуже работает на персонажей большого размера
 	var/user_size_armor_reduction = get_size(src)
 	if(user_size_armor_reduction > 1)
@@ -9,6 +10,15 @@
 			if(!HAS_TRAIT(src, TRAIT_BLUEMOON_DEVOURER) && mob_weight > MOB_WEIGHT_LIGHT) // у пожирателей и лёгких уже дебаф к ХП, для них исключение
 				user_size_armor_reduction = min(user_size_armor_reduction, 1.75) // Смайли сказал, что убирать всю броню слишком жёстко, потому работает 25% от изначальной брони, если размер более 175%
 				armor = armor * (2 - user_size_armor_reduction) // За каждый % увеличения размера, броня работает на % хуже. Вплоть до того, что персонажи с размером +175% получают только 25% брони. Сделано для компенсации факта, что от увеличения размера уже повышается ХП, которое сродни наличию брони
+	// BLUEMOON ADD END
+*/
+// BLUEMOON ADD START - characters_size_changes - броня хуже работает на персонажей большого размера
+	var/user_size_armor_reduction = get_size(src)
+
+	if(user_size_armor_reduction > 1)
+		if(attack_flag in list(MELEE, BULLET, LASER))
+			if(!HAS_TRAIT(src, TRAIT_BLUEMOON_DEVOURER) && mob_weight > MOB_WEIGHT_LIGHT)
+				armor = armor * (1 - (0.09 * (user_size_armor_reduction - 1)))
 	// BLUEMOON ADD END
 
 	if(silent)

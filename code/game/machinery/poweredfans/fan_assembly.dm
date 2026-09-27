@@ -1,6 +1,6 @@
 /obj/machinery/fan_assembly
 	name = "fan assembly"
-	desc = "A basic microfan assembly."
+	desc = "Стандартный сборочный микролопастной каркас."
 	icon = 'icons/obj/poweredfans.dmi'
 	icon_state = "mfan_assembly"
 	max_integrity = 150
@@ -22,61 +22,56 @@
 	*/
 
 /obj/machinery/fan_assembly/attackby(obj/item/W, mob/living/user, params)
-	switch(build_state)
-		if(1)
-			// Stat 1
-			if(W.tool_behaviour == TOOL_WELDER)
-				if(weld(W, user))
-					to_chat(user, "<span class='notice'>You weld the fan assembly securely into place.</span>")
-					setAnchored(TRUE)
-					build_state = 2
-					update_icon_state()
-				return
-		if(2)
-			// Stat 2
-			if(istype(W, /obj/item/stack/cable_coil))
-				if(!W.tool_start_check(user, amount=2))
-					to_chat(user, "<span class='warning'>You need two lengths of cable to wire the fan assembly!</span>")
-					return
-				to_chat(user, "<span class='notice'>You start to add wires to the assembly...</span>")
-				if(W.use_tool(src, user, 30, volume=50, amount=2))
-					to_chat(user, "<span class='notice'>You add wires to the fan assembly.</span>")
-					build_state = 3
-					var/obj/machinery/poweredfans/F = new(loc, src)
-					forceMove(F)
-					F.setDir(src.dir)
-					return
-			else if(W.tool_behaviour == TOOL_WELDER)
-				if(weld(W, user))
-					to_chat(user, "<span class='notice'>You unweld the fan assembly from its place.</span>")
-					build_state = 1
-					update_icon_state()
-					setAnchored(FALSE)
-				return
+	if(istype(W, /obj/item/stack/cable_coil) && build_state == 2)
+		if(!isfloorturf(loc))
+			to_chat(user, span_notice("Под [src] нет пола и инфраструктуры электросети с ним же!"))
+			return FALSE
+		if(!W.tool_start_check(user, amount=2))
+			to_chat(user, span_warning("Нужно два метра кабеля, чтобы подключить к сети [src]!"))
+			return FALSE
+		to_chat(user, span_notice("Вы начинаете добавлять проводку к [src]..."))
+		if(W.use_tool(src, user, 30, volume=50, amount=2))
+			to_chat(user, span_notice("Вы провели проводку внутри [src]."))
+			build_state = 3
+			var/obj/machinery/poweredfans/F = new(loc, src)
+			forceMove(F)
+			F.setDir(src.dir)
+			return TRUE
 	return ..()
 
 /obj/machinery/fan_assembly/wrench_act(mob/user, obj/item/I)
 	if(build_state != 1)
 		return FALSE
-	user.visible_message("<span class='warning'>[user] disassembles [src].</span>",
-		"<span class='notice'>You start to disassemble [src]...</span>", "You hear wrenching noises.")
+	user.visible_message(span_warning("[user] разбирает [src] на части."),
+		span_warning("Вы начинаете разбирать [src]..."), "Вы слышите звуки раскручивания.")
 	if(I.use_tool(src, user, 30, volume=50))
 		deconstruct()
-	return TRUE
+	return TOOL_ACT_TOOLTYPE_SUCCESS
 
-/obj/machinery/fan_assembly/proc/weld(obj/item/W, mob/living/user)
-	if(!W.tool_behaviour == TOOL_WELDER)
-		return
-	if(!W.tool_start_check(user, amount=0))
+/obj/machinery/fan_assembly/welder_act(mob/living/user, obj/item/I)
+	if(build_state == 1 && !isfloorturf(loc))
+		to_chat(user, span_notice("[src] невозможно приварить к космосу!"))
 		return FALSE
 	switch(build_state)
 		if(1)
-			to_chat(user, "<span class='notice'>You start to weld \the [src]...</span>")
+			to_chat(user, span_notice("Вы начали приваривать [src]..."))
+			if(I.use_tool(src, user, 30, volume=50))
+				to_chat(user, span_notice("Вы надёжно приварили [src] к месту."))
+				setAnchored(TRUE)
+				build_state = 2
+				update_icon_state()
+				AddComponent(/datum/component/requires_floor)
+			return TOOL_ACT_TOOLTYPE_SUCCESS
 		if(2)
-			to_chat(user, "<span class='notice'>You start to unweld \the [src]...</span>")
-	if(W.use_tool(src, user, 30, volume=50))
-		return TRUE
-	return FALSE
+			to_chat(user, span_notice("Вы начали разваривать [src]..."))
+			if(I.use_tool(src, user, 30, volume=50))
+				to_chat(user, span_notice("Вы отварили [src] от пола."))
+				setAnchored(FALSE)
+				build_state = 1
+				update_icon_state()
+				qdel(GetComponent(/datum/component/requires_floor))
+			return TOOL_ACT_TOOLTYPE_SUCCESS
+	return ..()
 
 /obj/machinery/fan_assembly/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -87,11 +82,11 @@
 	. = ..()
 	switch(build_state)
 		if(1)
-			to_chat(user, "<span class='notice'>The fan assembly seems to be <b>unwelded</b> and loose.</span>")
+			to_chat(user, span_notice("Корпус [src], похоже, <b>неприварен</b> и ослаблен."))
 		if(2)
-			to_chat(user, "<span class='notice'>The fan assembly seems to be welded, but missing <b>wires</b>.</span>")
+			to_chat(user, span_notice("Корпус [src], похоже, надёжно приварен, но не имеет <b>проводки</b> внутри себя."))
 		if(3)
-			to_chat(user, "<span class='notice'>The outer plating is <b>wired</b> firmly in place.</span>")
+			to_chat(user, span_notice("Корпус [src] имеет надёжно протянутую <b>проводку</b> внутри себя."))
 
 /obj/machinery/fan_assembly/update_icon_state()
 	. = ..()

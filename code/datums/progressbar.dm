@@ -37,6 +37,14 @@
 	bar.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 	user = User
 
+	if(isnull(bar_loc) || !istype(bar_loc, /atom) || QDELETED(bar_loc))
+		//WHITE-STEEL PORT: цель отсутствует или уже удалена к моменту регистрации полосы.
+		//isnull/istype идут ДО QDELETED, иначе чтение члена у "протухшей" ссылки давало "Cannot read 0.gc_destroyed",
+		//а старый хэш-ключ в LAZYADDASSOCLIST - "list index out of bounds".
+		stack_trace("/datum/progressbar created with a missing or deleted target ([bar_loc])")
+		qdel(src)
+		return
+
 	LAZYADDASSOCLIST(user.progressbars, bar_loc, src)
 	var/list/bars = user.progressbars[bar_loc]
 	listindex = bars.len

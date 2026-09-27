@@ -112,6 +112,7 @@
 
 /obj/item/mod/module/defibrillator/proc/setup_internal_defib()
 	internal_defib = new defib_type(src)
+	internal_device = internal_defib
 	device = internal_defib.paddles
 	internal_defib.paddles.req_defib = FALSE
 

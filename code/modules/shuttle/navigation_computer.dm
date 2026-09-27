@@ -278,9 +278,7 @@
 			continue
 		var/port_hidden = !see_hidden && port.hidden
 		var/list/overlap = overlappers[port]
-		var/list/xs = overlap[1]
-		var/list/ys = overlap[2]
-		if(xs["[T.x]"] && ys["[T.y]"])
+		if(T.x >= overlap[1] && T.x <= overlap[3] && T.y >= overlap[2] && T.y <= overlap[4])
 			if(port_hidden)
 				. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
 			else
@@ -310,6 +308,8 @@
 	var/turf/last_checked_turf
 	/// Last dir checkLandingSpot was run for; rotation invalidates the dedup.
 	var/last_checked_dir = 0
+	/// relaymove() шагает несколько раз за нажатие, проверка места нужна только после последнего шага.
+	var/batching_steps = FALSE
 
 /mob/camera/aiEye/remote/shuttle_docker/Initialize(mapload, obj/machinery/computer/camera_advanced/origin)
 	src.origin = origin
@@ -317,6 +317,17 @@
 
 /mob/camera/aiEye/remote/shuttle_docker/setLoc(turf/destination, force_update = FALSE)
 	. = ..()
+	if(batching_steps)
+		return
+	refresh_landing_spot(force_update)
+
+/mob/camera/aiEye/remote/shuttle_docker/relaymove(mob/user, direct)
+	batching_steps = TRUE
+	. = ..()
+	batching_steps = FALSE
+	refresh_landing_spot()
+
+/mob/camera/aiEye/remote/shuttle_docker/proc/refresh_landing_spot(force_update = FALSE)
 	var/obj/machinery/computer/camera_advanced/shuttle_docker/console = origin
 	var/turf/current = get_turf(src)
 	if(!force_update && current == last_checked_turf && dir == last_checked_dir)

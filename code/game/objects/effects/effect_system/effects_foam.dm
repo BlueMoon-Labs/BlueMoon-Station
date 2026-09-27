@@ -68,7 +68,7 @@
 		T.air_update_turf()
 
 /obj/effect/particle_effect/foam/firefighting/kill_foam()
-	STOP_PROCESSING(SSfastprocess, src)
+	stop_processing()
 
 	if(absorbed_plasma)
 		var/obj/effect/decal/cleanable/plasma/P = (locate(/obj/effect/decal/cleanable/plasma) in get_turf(src))
@@ -132,10 +132,17 @@
 	AddComponent(/datum/component/slippery, 100)
 
 /obj/effect/particle_effect/foam/Destroy()
-	STOP_PROCESSING(SSfastprocess, src)
-	STOP_PROCESSING(SSprocessing, src)
+	stop_processing()
 	return ..()
 
+
+/obj/effect/particle_effect/foam/proc/stop_processing()
+	if(!(datum_flags & DF_ISPROCESSING))
+		return
+	if(slow_processing)
+		STOP_PROCESSING(SSprocessing, src)
+	else
+		STOP_PROCESSING(SSfastprocess, src)
 
 /// Выдаёт недоданный остаток батча химии турфу и предметам; звать повторно безопасно.
 /obj/effect/particle_effect/foam/proc/flush_batched_reagent_dose()
@@ -148,8 +155,7 @@
 	apply_reagent_dose(spent_ticks / max(reagent_divisor, 1), get_turf(src))
 
 /obj/effect/particle_effect/foam/proc/kill_foam()
-	STOP_PROCESSING(SSfastprocess, src)
-	STOP_PROCESSING(SSprocessing, src)
+	stop_processing()
 	flush_batched_reagent_dose()
 	switch(metal)
 		if(ALUMINUM_FOAM)
@@ -162,8 +168,7 @@
 	QDEL_IN(src, 5)
 
 /obj/effect/particle_effect/foam/smart/kill_foam() //Smart foam adheres to area borders for walls
-	STOP_PROCESSING(SSfastprocess, src)
-	STOP_PROCESSING(SSprocessing, src)
+	stop_processing()
 	flush_batched_reagent_dose()
 	if(metal)
 		var/turf/T = get_turf(src)

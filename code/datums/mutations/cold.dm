@@ -21,6 +21,7 @@
 	name = "Cryokinesis"
 	desc = "Draws negative energy from the sub-zero void to freeze surrounding temperatures at subject's will."
 	quality = POSITIVE //upsides and downsides
+	mutator_security_level = CRYOKINESIS_PRINT_CODE
 	text_gain_indication = "<span class='notice'>Your hand feels cold.</span>"
 	instability = 20
 	difficulty = 12

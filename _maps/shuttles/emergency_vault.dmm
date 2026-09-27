@@ -1,7 +1,6 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aH" = (
 /obj/structure/table/optable,
-/obj/machinery/iv_drip,
 /obj/machinery/light{
 	dir = 1
 	},
@@ -13,6 +12,9 @@
 	dir = 1
 	},
 /obj/machinery/light,
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
 /turf/open/floor/plating/damturf/platdmg1,
 /area/shuttle/escape)
 "bN" = (
@@ -116,6 +118,10 @@
 /obj/machinery/defibrillator_mount/loaded,
 /turf/closed/wall/r_wall,
 /area/shuttle/escape)
+"gg" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel,
+/area/shuttle/escape)
 "gt" = (
 /obj/structure/window/reinforced{
 	dir = 1
@@ -183,6 +189,7 @@
 /area/shuttle/escape)
 "jz" = (
 /obj/effect/decal/cleanable/ash,
+/obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/plasteel/damturf/scorched1,
 /area/shuttle/escape)
 "jE" = (
@@ -197,14 +204,13 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/shuttle/escape)
+"jR" = (
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/vault,
+/area/shuttle/escape)
 "ks" = (
 /obj/structure/window/reinforced{
 	dir = 4
-	},
-/mob/living/simple_animal/bot/medbot{
-	name = "\improper emergency medibot";
-	pixel_x = -3;
-	pixel_y = 2
 	},
 /obj/structure/fluff/broken_flooring,
 /turf/open/floor/plasteel/dark,
@@ -276,7 +282,9 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/structure/bed/roller,
+/obj/machinery/sleeper{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "pc" = (
@@ -425,6 +433,9 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "xB" = (
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
 /turf/open/floor/plasteel/damturf/damage5,
 /area/shuttle/escape)
 "xS" = (
@@ -441,7 +452,12 @@
 /obj/machinery/light/small/broken,
 /turf/open/floor/pod/dark,
 /area/shuttle/escape)
+"yR" = (
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/plasteel,
+/area/shuttle/escape)
 "yZ" = (
+/obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/plasteel/damturf,
 /area/shuttle/escape)
 "zB" = (
@@ -518,10 +534,6 @@
 	dir = 8
 	},
 /turf/open/floor/plating,
-/area/shuttle/escape)
-"DW" = (
-/obj/structure/extinguisher_cabinet,
-/turf/closed/wall/r_wall,
 /area/shuttle/escape)
 "Eg" = (
 /obj/structure/table/reinforced,
@@ -726,9 +738,7 @@
 	dir = 8
 	},
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
-/obj/item/reagent_containers/blood/universal,
-/obj/item/storage/firstaid/emergency,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/mineral/titanium/tiled/blue,
 /area/shuttle/escape)
 "OY" = (
@@ -862,6 +872,9 @@
 /area/shuttle/escape)
 "VQ" = (
 /obj/machinery/holopad,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the shuttle"
+	},
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
 "WE" = (
@@ -901,6 +914,7 @@
 	dir = 1
 	},
 /obj/structure/window/reinforced,
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "Yv" = (
@@ -925,6 +939,13 @@
 	dir = 4
 	},
 /obj/structure/closet/emcloset/anchored,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
+"ZA" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ZF" = (
@@ -1129,7 +1150,7 @@ MY
 MY
 zS
 MY
-MY
+gg
 NC
 sg
 iA
@@ -1166,9 +1187,9 @@ GZ
 OG
 oZ
 MY
-MY
+yR
 xB
-DW
+WW
 HP
 Xy
 "}
@@ -1230,7 +1251,7 @@ GZ
 Tl
 ks
 MY
-MY
+yR
 Fd
 ga
 HP
@@ -1305,7 +1326,7 @@ WW
 uU
 Dn
 Mu
-Dn
+jR
 NC
 wJ
 RJ
@@ -1325,7 +1346,7 @@ MY
 Gb
 Fd
 DO
-MY
+gg
 WW
 WE
 WW
@@ -1348,8 +1369,8 @@ IT
 MB
 MY
 MB
-ZF
-CE
+ZA
+NC
 GS
 ql
 Ky

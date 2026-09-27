@@ -94,7 +94,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
-	var/sound_toggles = NONE
+	var/sound_toggles = SOUND_BUTTONS
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP
@@ -205,6 +205,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "ears" = "None",
 "wings" = "None",
 "wings_color" = "FFF",
+"insect_fluff_color" = null,
+"insect_markings_color" = null,
 "frills" = "None",
 "deco_wings" = "None",
 "spines" = "None",
@@ -426,6 +428,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/arousal_multiplier = 100
 	var/use_moaning_multiplier = FALSE
 	var/moaning_multiplier = 65
+	var/use_custom_moan_sounds = FALSE
+	var/list/custom_moan_sounds = list()
 	var/datum/character_offer_instance/offer
 
 	//backgrounds
@@ -1793,6 +1797,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=[emissive_part_key];task=input'>[emissive_part_enabled(features, emissive_part_key) ? enabled_label : disabled_label]</a><BR>"
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
+								if(!features[color_type])
+									features[color_type] = features["wings_color"]
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
 								// Show extra/extra2 colors for wings and other colored parts if they have them
 								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
@@ -4410,13 +4416,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(new_wings)
 						features["wings"] = new_wings
 
-				if("wings_color")
-					var/new_wing_color = input(user, "Choose your character's wing colour:", "Character Preference","#"+features["wings_color"]) as color|null
+				if("wings_color", "insect_fluff_color", "insect_markings_color")
+					var/color_feature = href_list["preference"]
+					var/new_wing_color = input(user, "Выберите цвет части тела:", "Настройки персонажа", "#" + features[color_feature]) as color|null
 					if(new_wing_color)
-						if (new_wing_color == "#000000" && features["wings_color"] != "#FFFFFF") //SPLURT EDIT
-							features["wings_color"] = "#FFFFFF"
+						if(new_wing_color == "#000000" && features[color_feature] != "FFFFFF")
+							features[color_feature] = "FFFFFF"
 						else
-							features["wings_color"] = sanitize_hexcolor(new_wing_color, 6)
+							features[color_feature] = sanitize_hexcolor(new_wing_color, 6)
 
 				if("frills")
 					var/new_frills
@@ -6453,7 +6460,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if((parent?.can_have_part("legs") || pref_species.mutant_bodyparts["legs"])  && (character.dna.features["legs"] == "Digitigrade" || character.dna.features["legs"] == "Avian"))
 		pref_species.species_traits |= DIGITIGRADE
-	else if(character.dna.species.mutant_bodyparts["limbs_id"] == "sergal")
+	else if(character.dna.species.mutant_bodyparts["limbs_id"] in list("sergal", "sergal2"))
 		pref_species.species_traits |= DIGITIGRADE
 	else
 		pref_species.species_traits -= DIGITIGRADE

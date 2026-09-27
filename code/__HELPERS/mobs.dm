@@ -708,6 +708,12 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("hemi") return "двойной член"
 		if("hemiknot") return "двойной узловатый член"
 		if("bhemiknot") return "двойной с узлами колючий член"
+		if("pede_segmented") return "сегментированный член"
+		if("pede_hemi") return "двойной сегментированный член"
+		if("pede_knotted") return "узловатый сегментированный член"
+		if("pede_barbed") return "шипованный сегментированный член"
+		if("pede_ovipositor") return "яйцеклад"
+		if("pede_hose") return "гофрированный член-трубка"
 
 		else return "необычной формы член"
 

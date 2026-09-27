@@ -11,7 +11,7 @@
 	name = "Telescopic Baseball Bat"
 	desc = "Крепкая телескопическая бейсбольная бита — бьёт как грузовик и легко прячется в сложенном виде."
 	item = /obj/item/melee/baseball_bat/telescopic
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 	cost = 2
 
 /datum/uplink_item/stealthy_weapons/telescopicbat_inteq
@@ -34,7 +34,7 @@
 	name = "CQC Manual"
 	desc = "Руководство по тактическому ближнему бою. Обучает одного пользователя, после чего самоуничтожается."
 	item = /obj/item/book/granter/martial/cqc
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW | UPLINK_TRAITORS)
 	cost = 12
 	surplus = 0
 
@@ -109,6 +109,7 @@
 	item = /obj/item/book/granter/martial/krav_maga
 	cost = 6
 	surplus = 0
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/stealthy_weapons/crossbow
 	name = "Miniature Energy Crossbow"

@@ -964,7 +964,7 @@
 	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
 		return
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "[initial(icon_state)]_[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()

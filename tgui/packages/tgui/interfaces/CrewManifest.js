@@ -1,5 +1,5 @@
 import { useBackend } from "../backend";
-import { Icon, Section, Table } from "../components";
+import { Flex, Icon, Section, Table } from "../components";
 import { Window } from "../layouts";
 
 const commandJobs = [
@@ -12,18 +12,38 @@ const commandJobs = [
   "Quartermaster",
 ];
 
+const departmentNames = {
+  Command: "Командование",
+  Security: "Служба Безопасности",
+  Engineering: "Инженерный отдел",
+  Medical: "Медицинский отдел",
+  Science: "Научный отдел",
+  Supply: "Отдел снабжения",
+  Service: "Отдел сервиса",
+  Silicon: "Синтетика",
+  Law: "Юридический отдел",
+  Misc: "Прочее",
+};
+
 export const CrewManifest = (props) => {
   const { data: { manifest, positions } } = useBackend();
 
   return (
-    <Window title="Crew Manifest" width={350} height={500}>
+    <Window title="Манифест экипажа" width={440} height={550}>
       <Window.Content overflow="auto">
         {Object.entries(manifest).map(([department, crew]) => (
           <Section
             className={"CrewManifest--" + department}
             key={department}
             title={
-              `${department} (${positions[department]} positions open)`
+              <Flex style={{ width: '100%' }}>
+                <Flex.Item>
+                  {departmentNames[department] || department}
+                </Flex.Item>
+                <Flex.Item grow textAlign="right">
+                  (Открытых позиций: {positions[department]})
+                </Flex.Item>
+              </Flex>
             }
           >
             <Table>

@@ -101,6 +101,7 @@
 	soundloop = new(src, TRUE)
 	soundloop.volume = 5
 	connect_atmos_ports()
+	log_hfr_action(user, "activated [src] and linked all parts")
 
 /// Reconnects I/O ports and the core cooling loop to adjacent pipenets after assembly or re-activation.
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/connect_atmos_ports()
@@ -194,6 +195,9 @@
 			power_level = 5
 		else
 			power_level = 6
+	if(power_level > logged_power_level)
+		logged_power_level = power_level
+		log_hfr_event("reached power level [power_level] at [round(fusion_temperature)] K. [hfr_blame()]")
 
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/play_ambience(seconds_per_tick)
 	if(last_accent_sound < world.time && SPT_PROB(10, seconds_per_tick))
@@ -238,6 +242,71 @@
 	var/datum/gas_mixture/remove = internal_fusion.remove(internal_fusion.total_moles())
 	if(remove)
 		linked_output.airs[1].merge(remove)
+
+/// Событие машины: hfr.log для грепа по раунду и hypertorus.html для Investigate.
+/// Общий game.log не трогаем - логов ХФР за раунд может быть много, а он один на станцию.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/log_hfr_event(message)
+	log_hfr("([AREACOORD(src)]) ([REF(src)]) [message]")
+	investigate_log("[message]", INVESTIGATE_HYPERTORUS)
+
+/// Действие игрока. Всегда запоминает последнего, кто лазил в машину; write = FALSE
+/// только обновляет память, не трогая файлы (см. log_setting_change).
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/log_hfr_action(mob/user, action, value = null, write = TRUE)
+	if(isnull(user))
+		return
+	var/who = key_name(user)
+	last_touched_by = who
+	last_touched_action = "[action][isnull(value) ? "" : " to [value]"]"
+	last_touched_time = world.time
+	if(write)
+		log_hfr_event("[who] [last_touched_action]")
+
+/// Правка настройки через интерфейс. Слайдер шлёт ui_act на каждый шаг перетаскивания,
+/// поэтому строчка в файл идёт раз в HFR_SETTING_LOG_COOLDOWN на это действие.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/log_setting_change(mob/user, action)
+	if(isnull(user))
+		return
+	if(last_setting_log[action] && world.time - last_setting_log[action] < HFR_SETTING_LOG_COOLDOWN)
+		log_hfr_action(user, action, get_setting(action), FALSE)
+		return
+	last_setting_log[action] = world.time
+	log_hfr_action(user, action, get_setting(action))
+
+/// Текущее значение настройки, которую изменили через интерфейс - в лог идёт факт,
+/// а не заявка: clamps в ui_act могли её срезать.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/get_setting(action)
+	switch(action)
+		if("start_power") return start_power
+		if("start_cooling") return start_cooling
+		if("start_fuel") return start_fuel
+		if("start_moderator") return start_moderator
+		if("heating_conductor") return heating_conductor
+		if("magnetic_constrictor") return magnetic_constrictor
+		if("fuel_injection_rate") return fuel_injection_rate
+		if("moderator_injection_rate") return moderator_injection_rate
+		if("current_damper") return current_damper
+		if("waste_remove") return waste_remove
+		if("mod_filtering_rate") return moderator_filtering_rate
+		if("cooling_volume") return airs[1]?.return_volume()
+		if("fuel") return selected_fuel ? selected_fuel.name : "nothing"
+		if("filter") return moderator_scrubbing.Join("+")
+	return null
+
+/// Строка для аварийных логов: кто и когда последнее дёргал машину.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/hfr_blame()
+	var/stamp = GAMETIMESTAMP("hh:mm:ss", last_touched_time)
+	return "last touched by [last_touched_by] ([last_touched_action] at [stamp])"
+
+/// Состав газа строкой - в лог аварии: по нему видно, что вообще закачали в реактор.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/gas_log_string(datum/gas_mixture/mix)
+	if(isnull(mix) || !mix.total_moles())
+		return "empty"
+	var/list/parts = list()
+	for(var/gas_id, gas_moles in mix.gases)
+		if(gas_moles <= MINIMUM_MOLE_COUNT)
+			continue
+		parts += "[GLOB.gas_data.names[gas_id] || gas_id]:[round(gas_moles, 0.1)]"
+	return parts.Join(", ") || "empty"
 
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/get_status()
 	var/integrity = get_integrity_percent()
@@ -292,7 +361,8 @@
 			lastwarning = REALTIMEOFDAY
 			if(!has_reached_emergency)
 				investigate_log("has reached the emergency point for the first time.", INVESTIGATE_HYPERTORUS)
-				message_admins("[src] has reached the emergency point [ADMIN_JMP(src)].")
+				log_hfr_event("reached the emergency point: integrity [get_integrity_percent()]%, power level [power_level], [hfr_blame()]")
+				message_admins("[src] has reached the emergency point [ADMIN_JMP(src)]. [hfr_blame()].")
 				has_reached_emergency = TRUE
 			send_radio_explanation()
 		else if(critical_threshold_proximity >= critical_threshold_proximity_archived)
@@ -342,6 +412,7 @@
 		final_countdown = FALSE
 		return
 	var/critical = selected_fuel.meltdown_flags & HYPERTORUS_FLAG_CRITICAL_MELTDOWN
+	log_hfr_event("MELTDOWN countdown started: recipe [selected_fuel.name], power level [power_level], integrity [get_integrity_percent()]%, fusion [gas_log_string(internal_fusion)], moderator [gas_log_string(moderator_internal)]. [hfr_blame()]")
 	if(critical)
 		priority_announce("ВНИМАНИЕ! Взрыв ХФР, скорее всего, охватит большую часть станции, а грядущий ЭМИ уничтожит большую часть электроники. \
 				Отойдите как можно дальше от реактора или найдите способ его остановить от расщепления.", "ВНИМАНИЕ", 'sound/announcer/notice/notice3.ogg')
@@ -371,6 +442,7 @@
 	meltdown()
 
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/meltdown()
+	log_hfr_event("MELTDOWN: exploded with recipe [selected_fuel.name], power level [power_level], integrity [get_integrity_percent()]%, fusion [gas_log_string(internal_fusion)], moderator [gas_log_string(moderator_internal)]. [hfr_blame()]")
 	var/flash_explosion = 0
 	var/light_impact_explosion = 0
 	var/heavy_impact_explosion = 0
@@ -467,6 +539,7 @@
 	var/obj/machinery/atmospherics/components/unary/hypertorus/part = pick(machine_parts)
 	part.cracked = TRUE
 	part.update_appearance(UPDATE_ICON)
+	log_hfr_event("part [part.name] cracked from moderator overpressure, power level [power_level]")
 	return part
 
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/spill_gases(obj/origin, datum/gas_mixture/target_mix, ratio)

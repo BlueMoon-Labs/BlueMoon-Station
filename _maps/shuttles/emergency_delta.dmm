@@ -125,10 +125,6 @@
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
 "aj" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "medical staff on the Emergency Delta Shuttle"
-	},
-/obj/item/defibrillator/loaded,
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
@@ -136,6 +132,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/item/defibrillator/loaded,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "ak" = (
@@ -145,6 +142,9 @@
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
+	},
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the Emergency Delta Shuttle"
 	},
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
@@ -159,7 +159,6 @@
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "am" = (
-/obj/item/storage/backpack/duffelbag/med/surgery,
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
@@ -167,6 +166,14 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/item/radio/intercom{
+	name = "Station Intercom";
+	pixel_x = 32
+	},
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = 32
+	},
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "an" = (
@@ -274,11 +281,6 @@
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "at" = (
-/obj/item/radio/intercom{
-	name = "Station Intercom";
-	pixel_x = 26;
-	pixel_y = 58
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},

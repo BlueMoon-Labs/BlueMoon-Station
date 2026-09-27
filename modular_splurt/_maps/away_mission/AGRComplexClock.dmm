@@ -2088,6 +2088,7 @@
 	id = "mountaingarage1";
 	name = "gatehouse shutters"
 	},
+/obj/effect/agr_rune_blocker/clockwork,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/gatehouse)
 "bUJ" = (
@@ -5141,6 +5142,7 @@
 /area/awaymission/complex/minerhouse)
 "exC" = (
 /obj/machinery/door/airlock/security/glass,
+/obj/effect/agr_rune_blocker/clockwork,
 /turf/open/floor/plating,
 /area/awaymission/complex/gatehouse)
 "exV" = (
@@ -22121,6 +22123,9 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/complex/minerhouse)
+"sZD" = (
+/turf/closed/indestructible/wall,
+/area/awaymission/complex/gatehouse)
 "tas" = (
 /obj/structure/girder/displaced,
 /turf/open/floor/plating/asteroid/snow/complex,
@@ -24010,7 +24015,7 @@
 /obj/machinery/atmospherics/pipe/simple{
 	dir = 4
 	},
-/turf/closed/wall,
+/turf/closed/indestructible/wall,
 /area/awaymission/complex/gatehouse)
 "uFo" = (
 /obj/structure/closet/secure_closet/freezer/kitchen,
@@ -26221,7 +26226,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/complex/prison)
 "wwM" = (
-/turf/closed/wall/rust,
+/turf/closed/indestructible/wall,
 /area/awaymission/complex/exterior)
 "wxg" = (
 /obj/structure/cable{
@@ -47303,7 +47308,7 @@ sOv
 gIA
 gIA
 gIA
-fky
+sZD
 oiQ
 aIS
 aIS
@@ -47560,14 +47565,14 @@ sOv
 gIA
 jCp
 rhv
-fky
-fky
-wsx
-wsx
+sZD
+sZD
+sZD
+sZD
 exC
 uFm
-wsx
-wsx
+sZD
+sZD
 miw
 jna
 jna
@@ -47817,7 +47822,7 @@ sOv
 gIA
 iDa
 gIA
-fky
+sZD
 tTr
 ngZ
 iCw
@@ -48065,16 +48070,16 @@ sFr
 sFr
 wwM
 wwM
-jna
+sZD
 bUx
 bUx
 bUx
 bUx
 bUx
 bUx
-wsx
-wsx
-wsx
+sZD
+sZD
+sZD
 djC
 onU
 qBK

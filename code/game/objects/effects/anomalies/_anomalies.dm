@@ -8,6 +8,7 @@
 	light_range = 3
 
 	var/obj/item/assembly/signaler/anomaly/aSignal = /obj/item/assembly/signaler/anomaly
+	var/obj/item/raw_anomaly_core/raw_core = /obj/item/raw_anomaly_core
 	var/area/impact_area
 
 	var/lifespan = ANOMALY_COUNTDOWN_TIMER
@@ -84,22 +85,26 @@
 
 	return FALSE
 
-/obj/effect/anomaly/proc/anomalyNeutralize()
+/obj/effect/anomaly/proc/anomalyNeutralize(neutralized_via_signal = TRUE)
 	new /obj/effect/particle_effect/smoke/bad(loc)
 
 	if(drops_core)
-		if(isnull(aSignal))
+		if(!aSignal)
 			stack_trace("An anomaly ([src]) exists that drops a core, yet has no core!")
 		else
-			aSignal.forceMove(drop_location())
+			if(!neutralized_via_signal || !raw_core) // Фоллбек: если добавят аному без сырого ядра, выпадет целое
+				aSignal.forceMove(drop_location())
+			else
+				new raw_core(drop_location())
 			aSignal = null
+			raw_core = null
 	// else, anomaly core gets deleted by qdel(src).
 
 	qdel(src)
 
 /obj/effect/anomaly/attackby(obj/item/weapon, mob/user, params)
 	if(weapon.tool_behaviour == TOOL_ANALYZER && aSignal)
-		to_chat(user, span_notice("Analyzing... [src]'s unstable field is fluctuating along frequency [format_frequency(aSignal.frequency)], code [aSignal.code]."))
+		to_chat(user, span_notice("Анализ... Нестабильное поле вокруг [src] колеблется флуктуациями частоты [format_frequency(aSignal.frequency)] и кода [aSignal.code]."))
 		return TRUE
 
 	return ..()
