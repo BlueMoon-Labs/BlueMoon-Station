@@ -12,6 +12,15 @@
 		floor.rust_heretic_act()
 		TEST_ASSERT(istype(floor, /turf/open/floor/plating/rust), "Повторное воздействие не разрушает ржавый пол.")
 
+/// Заряд Длани покровителя гаснет о святой арбуз в руке, как прочая магия еретика.
+/datum/unit_test/heretic_rust_bolt_anti_magic/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/projectile/magic/spell/rust_wave/bolt = allocate(/obj/item/projectile/magic/spell/rust_wave, run_loc_floor_top_right)
+	TEST_ASSERT_NOTEQUAL(bolt.prehit_pierce(victim), PROJECTILE_DELETE_WITHOUT_HITTING, "Без защиты заряд попадает.")
+	var/obj/item/reagent_containers/food/snacks/grown/holymelon/melon = allocate(/obj/item/reagent_containers/food/snacks/grown/holymelon)
+	TEST_ASSERT(victim.put_in_active_hand(melon), "Жертва берёт святой арбуз.")
+	TEST_ASSERT_EQUAL(bolt.prehit_pierce(victim), PROJECTILE_DELETE_WITHOUT_HITTING, "Святой арбуз в руке гасит заряд.")
+
 /// Устойчивые покрытия и космос не меняются под действием ржавчины.
 /datum/unit_test/heretic_rust_floor_exclusions/Run()
 	var/turf/surface = run_loc_floor_bottom_left

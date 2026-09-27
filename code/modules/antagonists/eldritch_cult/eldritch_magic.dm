@@ -477,6 +477,15 @@
 	hitsound = 'sound/effects/curseattack.ogg'
 	range = 15
 
+/obj/item/projectile/magic/spell/rust_wave/prehit_pierce(atom/target)
+	if(!isliving(target))
+		return ..()
+	var/mob/living/victim = target
+	if(victim.check_magic_resistance(tinfoil = TRUE, chargecost = 1))
+		victim.visible_message(span_warning("Заряд ржавчины рассыпается хлопьями, едва коснувшись [victim]."))
+		return PROJECTILE_DELETE_WITHOUT_HITTING
+	return ..()
+
 /obj/item/projectile/magic/spell/rust_wave/Moved(atom/OldLoc, Dir)
 	. = ..()
 	playsound(src, 'sound/items/welder.ogg', 75, TRUE)

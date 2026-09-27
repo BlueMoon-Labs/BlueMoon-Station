@@ -378,6 +378,10 @@
 	TEST_ASSERT(!first.CanAttack(second), "Двойники не должны атаковать друг друга.")
 	var/mob/living/ally = make_moon_heretic(get_step(victim, NORTH))
 	TEST_ASSERT(!first.CanAttack(ally), "Другой еретик должен оставаться союзником.")
+	TEST_ASSERT(first.CanAttack(victim), "Свободная цель остаётся врагом копии.")
+	GLOB.heretic_ritual_reservations[victim] = first
+	TEST_ASSERT(!first.CanAttack(victim), "Копия не бьёт жертву, которую держит руна.")
+	GLOB.heretic_ritual_reservations -= victim
 	var/obj/structure/closet/closet = allocate(/obj/structure/closet, get_turf(victim))
 	victim.forceMove(closet)
 	TEST_ASSERT(!first.AttackingTarget(), "Ложный удар не должен доставать цель внутри шкафа.")

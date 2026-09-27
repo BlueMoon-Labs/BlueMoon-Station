@@ -246,9 +246,15 @@
 /// Для возвращения используем известную безопасную клетку тестовой станции.
 /datum/antagonist/heretic/ritual_fixture
 	var/turf/test_return_turf
+	var/kill_while_gates_open = FALSE
 
 /datum/antagonist/heretic/ritual_fixture/get_hunt_return_turf()
 	return test_return_turf
+
+/datum/antagonist/heretic/ritual_fixture/open_mansus_visit(mob/living/carbon/human/victim, turf/return_turf, turf/ritual_turf)
+	. = ..()
+	if(kill_while_gates_open)
+		victim.death()
 
 /datum/unit_test/heretic_hunt_return
 	var/datum/space_level/test_level
@@ -259,6 +265,7 @@
 	var/sacrifice_corpse = FALSE
 	var/succumb_and_ghost = FALSE
 	var/dies_during_ritual = FALSE
+	var/dies_while_gates_open = FALSE
 
 /// Связанная живая цель проходит полный канал и возвращается из Мансуса.
 /datum/unit_test/heretic_hunt_return/restrained
@@ -279,6 +286,10 @@
 /// Смерть во время канала уменьшает награду и не отправляет труп в Мансус.
 /datum/unit_test/heretic_hunt_return/dies_during_ritual
 	dies_during_ritual = TRUE
+
+/// Смерть, пока строится комната Мансуса, засчитывает труп вместо молчаливого срыва обряда.
+/datum/unit_test/heretic_hunt_return/dies_while_gates_open
+	dies_while_gates_open = TRUE
 
 /datum/unit_test/heretic_hunt_return/Destroy()
 	if(test_level && previous_traits)
@@ -401,9 +412,10 @@
 	TEST_ASSERT_EQUAL(heretic.knowledge_points, points_before, "Прерванный обряд не выдаёт знания.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[victim_mind], "Прерванный обряд не оставляет посещение Мансуса.")
 	rune.release_atoms()
-	var/expect_corpse = sacrifice_corpse || dies_during_ritual
-	if(expect_corpse)
+	var/expect_corpse = sacrifice_corpse || dies_during_ritual || dies_while_gates_open
+	if(sacrifice_corpse || dies_during_ritual)
 		heretic.test_return_turf = null
+	heretic.kill_while_gates_open = dies_while_gates_open
 	if(dies_during_ritual)
 		addtimer(CALLBACK(victim, TYPE_PROC_REF(/mob/living, death)), 2 SECONDS)
 	TEST_ASSERT(rune.do_ritual(user, heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)), "Полный канал должен принять назначенную душу.")

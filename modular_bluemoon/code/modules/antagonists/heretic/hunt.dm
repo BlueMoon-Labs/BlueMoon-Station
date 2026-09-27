@@ -412,49 +412,79 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return TRUE
 	return FALSE
 
-/datum/antagonist/heretic/proc/complete_hunt_ritual(mob/living/user, list/selected_atoms, turf/ritual_turf)
-	if(user?.mind != owner || !IS_HERETIC(user) || !hunt_target_available(hunt_target))
-		return FALSE
-	var/mob/living/carbon/human/victim = hunt_target.current
+/datum/antagonist/heretic/proc/refuse_hunt_ritual(mob/living/user, reason, datum/heretic_mansus_visit/visit)
+	qdel(visit)
+	if(!QDELETED(user))
+		to_chat(user, span_warning("Подношение не принято. [reason]"))
+	log_game("[key_name(owner)] не приносит в жертву [key_name(hunt_target)]: [reason]")
+	return FALSE
+
+/// Причина, по которой цель и сердце у руны больше не годятся для подношения, или null.
+/datum/antagonist/heretic/proc/hunt_offering_refusal_reason(mob/living/carbon/human/victim, obj/item/living_heart/heart, turf/ritual_turf)
 	var/turf/victim_turf = get_turf(victim)
-	if(!ritual_turf || !(victim in selected_atoms) || !hunt_target_ready(victim) || victim_turf?.z != ritual_turf.z || get_dist(victim, ritual_turf) > 1)
+	if(victim_turf?.z != ritual_turf.z || get_dist(victim, ritual_turf) > 1)
+		return "Цель [victim.real_name] оказалась дальше клетки от руны."
+	if(!hunt_target_ready(victim))
+		return "Цель [victim.real_name] больше не обезврежена."
+	var/turf/heart_turf = get_turf(heart)
+	if(QDELETED(heart) || heart.owner_mind != owner || heart_turf?.z != ritual_turf.z || get_dist(heart, ritual_turf) > 1)
+		return "Живое сердце пропало с руны."
+	return null
+
+/// Постройка комнаты уступает тик, поэтому после возврата состояние цели нужно проверять заново.
+/datum/antagonist/heretic/proc/open_mansus_visit(mob/living/carbon/human/victim, turf/return_turf, turf/ritual_turf)
+	var/datum/heretic_mansus_visit/visit = new
+	if(visit.prepare(victim, return_turf, heretic_pocket_anchor(ritual_turf), selected_path))
+		return visit
+	qdel(visit)
+	return null
+
+/datum/antagonist/heretic/proc/complete_hunt_ritual(mob/living/user, list/selected_atoms, turf/ritual_turf)
+	if(user?.mind != owner || !IS_HERETIC(user) || !ritual_turf)
 		return FALSE
+	var/unavailable_reason = hunt_target_unavailable_reason(hunt_target)
+	if(unavailable_reason)
+		return refuse_hunt_ritual(user, unavailable_reason)
+	var/mob/living/carbon/human/victim = hunt_target.current
+	if(!(victim in selected_atoms))
+		return refuse_hunt_ritual(user, "Цель [victim.real_name] не входила в этот обряд.")
 	var/obj/item/living_heart/heart = locate() in selected_atoms
-	if(!heart || heart.owner_mind != owner)
-		return FALSE
+	if(!heart)
+		return refuse_hunt_ritual(user, "В обряде нет живого сердца.")
+	var/refusal = hunt_offering_refusal_reason(victim, heart, ritual_turf)
+	if(refusal)
+		return refuse_hunt_ritual(user, refusal)
+	var/obj/effect/eldritch/rune = GLOB.heretic_ritual_reservations[heart]
 	var/datum/mind/soul = hunt_target
 	var/corpse_sacrifice = victim.stat == DEAD
 	var/datum/heretic_mansus_visit/visit
 	if(!corpse_sacrifice && !simulated)
 		var/turf/return_turf = get_hunt_return_turf()
 		if(!return_turf || !is_station_level(return_turf.z))
-			to_chat(user, span_warning("Мансус не находит безопасного пути назад для жертвы. Ритуал прерван."))
-			return FALSE
-		visit = new
-		if(!visit.prepare(victim, return_turf, heretic_pocket_anchor(ritual_turf), selected_path))
-			qdel(visit)
-			to_chat(user, span_warning("Врата Мансуса не открылись. Подношение не принято."))
-			return FALSE
+			return refuse_hunt_ritual(user, "Мансус не находит безопасного пути назад для жертвы.")
+		visit = open_mansus_visit(victim, return_turf, ritual_turf)
+		if(!visit)
+			return refuse_hunt_ritual(user, "Врата Мансуса не открылись.")
 	// Подготовка комнаты может уступить тик mapping: проверяем душу и обряд повторно.
-	var/turf/user_turf = get_turf(user)
-	var/turf/heart_turf = get_turf(heart)
-	victim_turf = get_turf(victim)
-	if(QDELETED(src) || QDELETED(user) || user.mind != owner || !IS_HERETIC(user) || user.incapacitated() || user_turf?.z != ritual_turf.z || get_dist(user, ritual_turf) > 1)
+	if(QDELETED(src) || QDELETED(user) || user.mind != owner || !IS_HERETIC(user))
 		qdel(visit)
 		return FALSE
-	if(hunt_target != soul || !hunt_target_available(soul) || victim.mind != soul || !hunt_target_ready(victim) || (victim.stat == DEAD) != corpse_sacrifice || victim_turf?.z != ritual_turf.z || get_dist(victim, ritual_turf) > 1)
-		qdel(visit)
-		return FALSE
-	if(QDELETED(heart) || heart.owner_mind != owner || heart_turf?.z != ritual_turf.z || get_dist(heart, ritual_turf) > 1)
-		qdel(visit)
-		return FALSE
+	if(hunt_target != soul || victim.mind != soul)
+		return refuse_hunt_ritual(user, "Душа цели ускользнула, пока открывались врата.", visit)
+	unavailable_reason = hunt_target_unavailable_reason(soul)
+	if(unavailable_reason)
+		return refuse_hunt_ritual(user, unavailable_reason, visit)
+	if(!corpse_sacrifice && victim.stat == DEAD)
+		QDEL_NULL(visit)
+		corpse_sacrifice = TRUE
+	refusal = hunt_offering_refusal_reason(victim, heart, ritual_turf)
+	if(refusal)
+		return refuse_hunt_ritual(user, refusal, visit)
 	var/datum/eldritch_knowledge/spell/basic/ritual = get_knowledge(/datum/eldritch_knowledge/spell/basic)
 	if(!ritual?.ritual_still_valid(user, selected_atoms, ritual_turf))
-		qdel(visit)
-		return FALSE
+		return refuse_hunt_ritual(user, rune?.ritual_interrupt_reason || "Вы не можете завершить обряд: отошли от руны или вас обездвижили.", visit)
 	if(visit && !visit.start())
-		qdel(visit)
-		return FALSE
+		return refuse_hunt_ritual(user, "Врата Мансуса захлопнулись перед жертвой.", visit)
 	if(!simulated)
 		GLOB.heretic_sacrificed_minds |= soul
 	sacrificed_minds |= soul

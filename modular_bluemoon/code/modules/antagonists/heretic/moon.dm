@@ -773,6 +773,8 @@
 		return FALSE
 	if(the_target.z != parent_mob.z || get_dist(parent_mob, the_target) > leash_range || istype(the_target, /mob/living/simple_animal/hostile/illusion/heretic_moon))
 		return FALSE
+	if(GLOB.heretic_ritual_reservations[the_target])
+		return FALSE
 	return heretic_can_affect(parent_mob, the_target, chargecost = 0)
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/proc/hold_position(hold)
