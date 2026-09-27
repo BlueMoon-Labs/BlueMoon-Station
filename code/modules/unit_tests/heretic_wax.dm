@@ -839,10 +839,12 @@
 	final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final)
 	var/turf/start = get_turf(user)
 	var/turf/elsewhere
-	for(var/attempt in 1 to 10)
-		var/turf/candidate = get_safe_random_station_turf()
-		if(candidate && candidate.z != start.z && wax.anchor_spot_valid(candidate))
-			elsewhere = candidate
+	for(var/area_type in GLOB.the_station_areas)
+		for(var/turf/candidate as anything in get_area_turfs(area_type))
+			if(candidate.z != start.z && wax.anchor_spot_valid(candidate))
+				elsewhere = candidate
+				break
+		if(elsewhere)
 			break
 	TEST_ASSERT_NOTNULL(elsewhere, "На станции нашлось свободное место для свечи.")
 	var/obj/item/candle/distant_candle = cast_wax_anchor(wax, user, elsewhere, indoor = FALSE)

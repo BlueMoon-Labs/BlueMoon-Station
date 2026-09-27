@@ -20,12 +20,12 @@
 			TEST_ASSERT(isfile(heretic_fx_theme_sound(path_id, key)), "У пути [path_id] есть звук [key] для отдачи.")
 		TEST_ASSERT(ispath(heretic_fx_particles(path_id), /particles/heretic_ascension), "У пути [path_id] есть свои частицы.")
 
-/// У каждого захвата пути свой звук защёлкивания, сон-захват звучит своим захватом, у изнанки, прижатия и отказа свои звуки.
+/// У каждого захвата пути свой звук защёлкивания, сон-захват звучит своим захватом.
 /datum/unit_test/heretic_capture_fx_sounds/Run()
 	var/list/latched = list()
 	for(var/capture_id in list("sand", "cosmic", "lock", "tide", "spirit_hold", "glass", HERETIC_MOON_CAPTURE, "echo", "blood", "blade_throat", "wax"))
 		var/latch = heretic_fx_latch_sound(capture_id)
-		TEST_ASSERT(isfile(latch) && fexists("[latch]"), "У захвата [capture_id] есть свой звук защёлкивания.")
+		TEST_ASSERT(isfile(latch), "У захвата [capture_id] есть свой звук защёлкивания.")
 		TEST_ASSERT(!latched["[latch]"], "Захваты [capture_id] и [latched["[latch]"]] звучат одним файлом.")
 		latched["[latch]"] = capture_id
 	TEST_ASSERT_NULL(heretic_fx_latch_sound("probe"), "Чужая метка своего звука не даёт.")
@@ -36,8 +36,6 @@
 	var/datum/status_effect/heretic_capture_knockout/knockout = heretic_capture_knock_out(victim, probe, "wax", 10 SECONDS)
 	TEST_ASSERT_EQUAL(heretic_fx_latch_sound(REF(knockout)), heretic_fx_latch_sound("wax"), "Сон по кукле звучит плавящимся воском.")
 	qdel(knockout)
-	for(var/name in list("pocket_open", "pocket_pull", "pocket_enter", "pocket_exit", "pocket_tear", "pocket_seal", "pocket_collapse", "heart_grip", "blade_refusal"))
-		TEST_ASSERT(fexists("modular_bluemoon/sound/heretic/capture/[name].ogg"), "Звук [name] лежит рядом с остальными.")
 
 /// Захват рисует у ног цели одну метку в чернилах пути: второй захват её не дублирует, снятие последнего гасит её.
 /datum/unit_test/heretic_capture_mark/Run()

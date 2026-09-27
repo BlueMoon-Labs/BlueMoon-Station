@@ -650,7 +650,7 @@ describe('Гримуар еретика', () => {
 
   test('помощь объясняет изнанку числами сервера, а тема охоты ведёт к ней', async () => {
     const data = makeData();
-    data.hunt.pocket = { duration: 35, warning: 7, pull: 2, tear: 12, cooldown: 90, hold: 4 };
+    data.hunt.pocket = { duration: 35, warning: 7, pull: 2, tear: 12, cooldown: 90, hold: 4, grip: 5, shake: 6 };
     setupStore(data);
     await renderBook();
     fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
@@ -660,6 +660,7 @@ describe('Гримуар еретика', () => {
     expect(within(topic()).getByText(/«Увести за руну», увод займёт 2 сек\./)).toBeTruthy();
     expect(within(topic()).getByText(/держится 35 сек\., за 7 до конца/)).toBeTruthy();
     expect(within(topic()).getByText(/цель 4 сек\. не может двинуться/)).toBeTruthy();
+    expect(within(topic()).getByText(/прижимает её к полу до 5 сек\.: .* растолкать можно за 6 сек\./)).toBeTruthy();
     expect(within(topic()).getByText(/руками его можно разорвать за 12 сек\. Снова открыть изнанку можно через 90 сек\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'изнанке', hidden: true }));
     expect(topic().open).toBe(true);

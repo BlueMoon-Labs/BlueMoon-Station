@@ -544,7 +544,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
       selectedPort: null,
       selection: [],
     });
-  }
+  };
 
   handleMouseUp(_event: MouseEvent) {
     if (!this.planePanDirty) {

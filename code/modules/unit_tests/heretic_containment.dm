@@ -116,8 +116,17 @@
 	TEST_ASSERT(!heretic_ascension_in_open_space(run_loc_floor_bottom_left), "Резервные уровни не считаются открытым космосом.")
 	var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
 	TEST_ASSERT(length(station_levels), "Есть станционный уровень.")
-	var/turf/station_space = locate(1, 1, station_levels[1])
-	TEST_ASSERT(istype(get_area(station_space), /area/space), "Угол станционного уровня лежит в зоне космоса.")
+	var/turf/station_space
+	for(var/station_z in station_levels)
+		for(var/turf/edge as anything in block(locate(1, 1, station_z), locate(world.maxx, 1, station_z)) + block(locate(1, world.maxy, station_z), locate(world.maxx, world.maxy, station_z)))
+			if(istype(get_area(edge), /area/space))
+				station_space = edge
+				break
+		if(station_space)
+			break
+	// У планетарных карт на станционных уровнях зоны космоса нет.
+	if(!station_space)
+		return
 	TEST_ASSERT(heretic_ascension_in_open_space(station_space), "Зона космоса станции запрещает обряд независимо от воздуха.")
 
 /// Добровольно лёгшая или уснувшая цель не считается поверженной, химический сон, крит и сбивание с ног считаются.
