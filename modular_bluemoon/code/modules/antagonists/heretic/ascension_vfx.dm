@@ -126,12 +126,8 @@
 	var/turf/center_turf = get_turf(center)
 	if(!center_turf)
 		return null
-	var/obj/effect/temp_visual/heretic_vfx/warp/warp = new(center_turf, radius, duration)
-	var/obj/effect/temp_visual/heretic_vfx/shockwave/wave = new(center_turf, color, radius, duration)
-	for(var/obj/effect/temp_visual/heretic_vfx/part as anything in list(warp, wave))
-		part.pixel_x += round(offset_x)
-		part.pixel_y += round(offset_y)
-	return wave
+	new /obj/effect/temp_visual/heretic_vfx/warp(center_turf, radius, duration, round(offset_x), round(offset_y))
+	return new /obj/effect/temp_visual/heretic_vfx/shockwave(center_turf, color, radius, duration, round(offset_x), round(offset_y))
 
 /// Кольцо стягивается из radius клеток в центр, светлея к концу: предвестие удара.
 /proc/heretic_vfx_gather(atom/center, color, radius = 3, duration = 0.8 SECONDS)
@@ -414,9 +410,9 @@
 	appearance_flags = PIXEL_SCALE
 
 /// Вырастает от точки до radius клеток с замедлением и гаснет во второй части пути.
-/obj/effect/temp_visual/heretic_vfx/proc/expand(radius)
-	pixel_x = (world.icon_size - HERETIC_VFX_RING_ICON_SIZE) / 2
-	pixel_y = pixel_x
+/obj/effect/temp_visual/heretic_vfx/proc/expand(radius, offset_x = 0, offset_y = 0)
+	pixel_x = (world.icon_size - HERETIC_VFX_RING_ICON_SIZE) / 2 + offset_x
+	pixel_y = (world.icon_size - HERETIC_VFX_RING_ICON_SIZE) / 2 + offset_y
 	var/end_scale = radius * world.icon_size / HERETIC_VFX_RING_RADIUS
 	transform = matrix(HERETIC_VFX_WAVE_START_SCALE, 0, 0, 0, HERETIC_VFX_WAVE_START_SCALE, 0)
 	animate(src, transform = matrix(end_scale, 0, 0, 0, end_scale, 0), time = duration, easing = CUBIC_EASING | EASE_OUT)
@@ -430,16 +426,17 @@
 	layer = BELOW_MOB_LAYER
 	appearance_flags = NONE
 
-/obj/effect/temp_visual/heretic_vfx/shockwave/Initialize(mapload, ink, radius = 7, lifetime = 1 SECONDS)
+/obj/effect/temp_visual/heretic_vfx/shockwave/Initialize(mapload, ink, radius = 7, lifetime = 1 SECONDS, offset_x = 0, offset_y = 0)
 	duration = lifetime
 	. = ..()
 	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
 	add_overlay(emissive_appearance(icon, icon_state))
 	add_filter(HERETIC_VFX_RIPPLE_FILTER, 1, ripple_filter(radius = HERETIC_VFX_RING_INNER, size = HERETIC_VFX_RIPPLE_SIZE, repeat = HERETIC_VFX_RIPPLE_REPEAT))
+	// Анимация фильтра запоминает облик на момент вызова: сдвиг и масштаб кольца задаются до неё.
+	expand(radius, offset_x, offset_y)
 	var/hold_radius = HERETIC_VFX_RING_INNER + (HERETIC_VFX_RING_OUTER - HERETIC_VFX_RING_INNER) * HERETIC_VFX_WAVE_HOLD
-	animate(get_filter(HERETIC_VFX_RIPPLE_FILTER), radius = hold_radius, time = lifetime * HERETIC_VFX_WAVE_HOLD)
+	animate(get_filter(HERETIC_VFX_RIPPLE_FILTER), radius = hold_radius, time = lifetime * HERETIC_VFX_WAVE_HOLD, flags = ANIMATION_PARALLEL)
 	animate(radius = HERETIC_VFX_RING_OUTER, size = 0, time = lifetime * (1 - HERETIC_VFX_WAVE_HOLD), easing = SINE_EASING | EASE_IN)
-	expand(radius)
 
 /// Та же волна картой смещения: пол и стены гнутся под фронтом и отыгрывают назад за ним.
 /obj/effect/temp_visual/heretic_vfx/warp
@@ -448,10 +445,10 @@
 	plane = GRAVITY_PULSE_PLANE
 	appearance_flags = NONE
 
-/obj/effect/temp_visual/heretic_vfx/warp/Initialize(mapload, radius = 7, lifetime = 1 SECONDS)
+/obj/effect/temp_visual/heretic_vfx/warp/Initialize(mapload, radius = 7, lifetime = 1 SECONDS, offset_x = 0, offset_y = 0)
 	duration = lifetime
 	. = ..()
-	expand(radius)
+	expand(radius, offset_x, offset_y)
 
 /obj/effect/temp_visual/heretic_vfx/gather
 	icon = 'modular_bluemoon/icons/effects/heretic_shockwave.dmi'
