@@ -385,7 +385,7 @@
 
 /obj/item/storage/wallet/xeno
 	name = "Xeno Wallet"
-	desc = "Поюшевый ксеноморф, в рот можно вставить карты и безделушки"
+	desc = "Плюшевый ксеноморф, в рот можно вставить карты и безделушки"
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "flka_open"
 
