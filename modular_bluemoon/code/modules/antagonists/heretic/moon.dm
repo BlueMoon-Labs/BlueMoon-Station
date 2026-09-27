@@ -59,7 +59,7 @@
 		"Копии повторяют вашу речь, гонятся за целью клинка и бьют её раз в секунду: 5 ушибов и 18 выносливости.",
 		"Соседняя копия раз в 4 секунды принимает выстрел вместо вас; удары и пули разбивают копии.",
 		"Двойника на посту ставит Хватка в «Помощи» по полу; он всего один, 10 минут бродит в 2 клетках и выглядит как вы.",
-		"«Голос двойника» заставляет его повторять вашу речь; отдел засчитывается в дело, когда двойника увидит экипаж.",
+		"«Голос двойника» заставляет его повторять вашу речь; отдел поста засчитывается, когда двойника увидит экипаж.",
 		"Двойник не моргает; 30 урона, нулевой жезл или вспышка в 3 клетках его рассеивают. Из изнанки выходите к нему.",
 		"Нож и осколок стекла на руне дают лунный клинок.",
 	)
@@ -942,6 +942,8 @@
 	var/datum/eldritch_knowledge/base_moon/knowledge = knowledge_ref?.resolve()
 	var/datum/antagonist/heretic/heretic = knowledge?.moon_heretic()
 	if(!heretic?.deed || heretic.deed.complete() || !isturf(loc) || !is_station_level(z) || !ishuman(viewer) || viewer == parent_mob || !viewer.mind)
+		return FALSE
+	if(!anchor_turf || get_area(src) != get_area(anchor_turf))
 		return FALSE
 	if(viewer.stat != CONSCIOUS || viewer.is_blind() || IS_HERETIC(viewer) || IS_HERETIC_MONSTER(viewer))
 		return FALSE

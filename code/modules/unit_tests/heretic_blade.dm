@@ -1601,6 +1601,30 @@
 	TEST_ASSERT(QDELETED(vanishing), "Такой предмет исчез, а не улетел.")
 	TEST_ASSERT_NULL(knowledge.disarm_ready_at[REF(attacker)], "Исчезнувший предмет не запускает перезарядку.")
 
+/// Отказ Клинка у горла называет, чего не хватает: предмет в руке, невыбитый ответом предмет или крит, где хватает сердца.
+/datum/unit_test/heretic_blade_throat_refusal_reasons/Run()
+	var/list/fixture = blade_throat_fixture()
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/mob/living/carbon/human/victim = fixture["attacker"]
+	var/datum/eldritch_knowledge/base_blade/knowledge = fixture["knowledge"]
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	victim.put_in_active_hand(pen)
+	var/reason = knowledge.throat_block_reason(user, victim)
+	TEST_ASSERT(findtext(reason, "держит") && findtext(reason, "ответный удар Выжидания"), "Вооружённой цели отказ называет предмет и ответный удар: [reason]")
+	knowledge.last_riposte_victim = WEAKREF(victim)
+	knowledge.last_riposte_at = world.time
+	reason = knowledge.throat_block_reason(user, victim)
+	TEST_ASSERT(findtext(reason, "не выбил"), "После ответа без выбитого предмета отказ говорит об этом: [reason]")
+	victim.dropItemToGround(pen)
+	knowledge.last_riposte_victim = null
+	reason = knowledge.throat_block_reason(user, victim)
+	TEST_ASSERT(findtext(reason, "ответного удара Выжидания"), "Безоружной стоящей цели отказ называет ответный удар: [reason]")
+	victim.adjustOxyLoss(victim.maxHealth - victim.crit_threshold + 20)
+	TEST_ASSERT(victim.stat != CONSCIOUS, "Цель в крите: stat [victim.stat].")
+	TEST_ASSERT(!knowledge.throat_ready(victim), "Крит без сбивания с ног не открывает клинок у горла.")
+	reason = knowledge.throat_block_reason(user, victim)
+	TEST_ASSERT(findtext(reason, "живое сердце"), "Цели в крите отказ отсылает к живому сердцу: [reason]")
+
 /// Клинок у горла не берёт вооружённую стоящую, дальнюю, защищённую цель и без клинка; сбитую или обезоруженную ответом через полсекунды держит 12 секунд, она готова к обряду и идёт за еретиком шагом.
 /datum/unit_test/heretic_blade_throat/Run()
 	var/list/fixture = blade_throat_fixture()

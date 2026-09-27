@@ -3,7 +3,7 @@
 	duration = -1
 	tick_interval = 2 SECONDS
 	alert_type = null
-	examine_text = "<span class='warning'>SUBJECTPRONOUN держится неестественно стойко: дубинки и станы почти не действуют, свалить можно только изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног, а разбить клинок и скрыться SUBJECTPRONOUN уже не может.</span>"
+	examine_text = "<span class='warning'>SUBJECTPRONOUN держится неестественно стойко: дубинки, станы и снотворное почти не действуют, свалить можно только изматыванием группой и стрельбой в упор. Светошумовые гранаты всё ещё сбивают с ног, а разбить клинок и скрыться SUBJECTPRONOUN уже не может.</span>"
 	var/added_max_health = 0
 	var/last_damage_time = 0
 	var/reentry = FALSE
@@ -23,10 +23,12 @@
 	RegisterSignal(owner, COMSIG_LIVING_STATUS_KNOCKDOWN, PROC_REF(shorten_knockdown))
 	RegisterSignal(owner, COMSIG_LIVING_STATUS_PARALYZE, PROC_REF(shorten_paralyze))
 	RegisterSignal(owner, COMSIG_LIVING_STATUS_IMMOBILIZE, PROC_REF(shorten_immobilize))
+	RegisterSignal(owner, COMSIG_LIVING_STATUS_UNCONSCIOUS, PROC_REF(shorten_unconscious))
+	RegisterSignal(owner, COMSIG_LIVING_STATUS_SLEEP, PROC_REF(block_sleep))
 	RegisterSignal(owner, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(on_damaged))
 
 /datum/status_effect/heretic_ascended/on_remove()
-	UnregisterSignal(owner, list(COMSIG_LIVING_STATUS_STUN, COMSIG_LIVING_STATUS_KNOCKDOWN, COMSIG_LIVING_STATUS_PARALYZE, COMSIG_LIVING_STATUS_IMMOBILIZE, COMSIG_MOB_APPLY_DAMAGE))
+	UnregisterSignal(owner, list(COMSIG_LIVING_STATUS_STUN, COMSIG_LIVING_STATUS_KNOCKDOWN, COMSIG_LIVING_STATUS_PARALYZE, COMSIG_LIVING_STATUS_IMMOBILIZE, COMSIG_LIVING_STATUS_UNCONSCIOUS, COMSIG_LIVING_STATUS_SLEEP, COMSIG_MOB_APPLY_DAMAGE))
 	var/mob/living/carbon/human/human = owner
 	if(ishuman(owner) && human.physiology)
 		human.physiology.heretic_stamina_mod /= HERETIC_ASCENDED_STAMINA_MOD
@@ -89,6 +91,20 @@
 	owner.Immobilize(amount * HERETIC_ASCENDED_STUN_MOD, updating, ignore_canstun)
 	reentry = FALSE
 	return COMPONENT_NO_STUN
+
+/datum/status_effect/heretic_ascended/proc/shorten_unconscious(datum/source, amount, updating, ignore_canstun)
+	SIGNAL_HANDLER
+	if(reentry || amount <= 0)
+		return NONE
+	reentry = TRUE
+	owner.Unconscious(amount * HERETIC_ASCENDED_STUN_MOD, updating, ignore_canstun)
+	reentry = FALSE
+	return COMPONENT_NO_STUN
+
+// Снотворное повторяет Sleeping() каждый тик, поэтому укороченный сон всё равно держал бы вознесённого лёжа.
+/datum/status_effect/heretic_ascended/proc/block_sleep(datum/source, amount, updating, ignore_canstun)
+	SIGNAL_HANDLER
+	return amount > 0 ? COMPONENT_NO_STUN : NONE
 
 /// Разворачивает чужой снаряд, летящий в source, назад веером; allowed_flags ограничивает типы снарядов.
 /proc/heretic_try_deflect(mob/living/source, real_attack, atom/object, attack_type, chance, list/allowed_flags)

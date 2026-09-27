@@ -77,6 +77,32 @@
 	body.SetParalyzed(0)
 	TEST_ASSERT(!body.IsParalyzed(), "Снятие паралича не перехватывается.")
 
+/// Снотворное и нарколепсия не усыпляют вознесённого, потеря сознания вчетверо короче, пробуждение не перехватывается.
+/datum/unit_test/heretic_ascended_sleep_resistance/Run()
+	var/list/found = list()
+	var/datum/antagonist/heretic/heretic = allocate_ascended_heretic(found)
+	var/datum/eldritch_knowledge/final_eldritch/knowledge = found[1]
+	var/mob/living/carbon/human/body = heretic.owner.current
+	knowledge.on_body_gain(body)
+	body.Sleeping(40)
+	TEST_ASSERT(!body.IsSleeping(), "Сон не накладывается.")
+	body.AdjustSleeping(20)
+	TEST_ASSERT(!body.IsSleeping(), "Добавка сна не накладывается.")
+	body.Unconscious(100)
+	TEST_ASSERT(body.AmountUnconscious() >= 20 && body.AmountUnconscious() <= 30, "Потеря сознания сокращена до четверти: [body.AmountUnconscious()].")
+	body.SetUnconscious(0)
+	TEST_ASSERT(!body.IsUnconscious(), "Снятие потери сознания не перехватывается.")
+	var/mob/living/carbon/human/plain = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	for(var/mob/living/carbon/human/drugged as anything in list(plain, body))
+		drugged.reagents.add_reagent(/datum/reagent/toxin/chloralhydrate, 20)
+		for(var/cycle in 1 to 15)
+			drugged.reagents.metabolize(drugged, SSMOBS_DT, cycle)
+	TEST_ASSERT(plain.IsSleeping(), "Хлоралгидрат усыпляет обычного человека.")
+	TEST_ASSERT(!body.IsSleeping(), "Хлоралгидрат не усыпляет вознесённого.")
+	knowledge.on_body_lose(body)
+	body.Sleeping(40)
+	TEST_ASSERT(body.IsSleeping(), "Без вознесения сон снова действует.")
+
 /// Стамкрит остаётся главным способом свалить вознесённого.
 /datum/unit_test/heretic_ascended_stamcrit_reachable/Run()
 	var/list/found = list()

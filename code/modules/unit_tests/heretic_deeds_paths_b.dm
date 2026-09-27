@@ -64,7 +64,7 @@
 	TEST_ASSERT_NULL(knowledge.challenged_ref, "Без игрока в теле вызов сразу считается отказом.")
 	TEST_ASSERT_EQUAL(heretic.deed.progress, 1, "Отказ без игрока в теле не засчитывается.")
 
-/// Двойник на посту засчитывает отдел станции, когда его видит член экипажа, каждый отдел один раз; вне станции, хозяин, слепой и другой еретик не в счёт.
+/// Двойник на посту засчитывает отдел станции, когда его видит член экипажа, каждый отдел один раз; вне станции, вне отдела поста, хозяин, слепой и другой еретик не в счёт.
 /datum/unit_test/heretic_deed_moon_post/Run()
 	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_MOON)
 	var/mob/living/user = heretic.owner.current
@@ -92,3 +92,11 @@
 	heretic_test_area(spot, /area/unit_test_moon_noteleport)
 	TEST_ASSERT(post.witnessed_by(second), "Двойника увидели в другом отделе.")
 	TEST_ASSERT_EQUAL(heretic.deed.tier, 1, "Два отдела закрывают первую ступень.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	var/turf/away = get_step(spot, WEST)
+	heretic_test_area(away, /area/unit_test_cosmic_deck)
+	post.forceMove(away)
+	TEST_ASSERT(!post.witnessed_by(second), "Двойник, утащенный с поста в другой отдел, не засчитывается.")
+	TEST_ASSERT_EQUAL(heretic.deed.progress, 0, "Утащенный двойник не двигает дело.")
+	post.anchor_turf = away
+	TEST_ASSERT(post.witnessed_by(second), "Двойник на новом посту засчитывается.")
