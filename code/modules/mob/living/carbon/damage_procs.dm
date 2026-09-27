@@ -235,6 +235,8 @@
 //Heal MANY bodyparts, in random order
 /mob/living/carbon/heal_overall_damage(brute = 0, burn = 0, stamina = 0, only_robotic = FALSE, only_organic = TRUE, updating_health = TRUE, forced = FALSE)
 	var/list/obj/item/bodypart/parts = get_damaged_bodyparts(brute, burn, stamina)
+	if(!length(parts))
+		return
 
 	var/update = NONE
 	while(parts.len && (brute > 0 || burn > 0 || stamina > 0))

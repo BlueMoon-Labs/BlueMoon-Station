@@ -28,6 +28,19 @@
 		/obj/item/reagent_containers/pill,/obj/item/storage/pill_bottle, /obj/item/restraints/handcuffs,/obj/item/hypospray
 		)
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
+
+/obj/item/clothing/suit/storage/trek/ds9/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/storage/trek/ds9/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/storage/trek/ds9/admiral // Only for adminuz
 	name = "Admiral Overcoat"
@@ -36,6 +49,7 @@
 	item_state = "trek_ds9_coat_adm"
 	permeability_coefficient = 0.01
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50,ENERGY = 50, BOMB = 50, BIO = 50, RAD = 50, FIRE = 50, ACID = 50)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 
 //MODERN ish Joan sqrl sprites. I think
 
@@ -67,7 +81,20 @@
 		/obj/item/storage/pill_bottle,
 		/obj/item/taperecorder)
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	var/unbuttoned = FALSE
+
+/obj/item/clothing/suit/storage/fluff/fedcoat/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/storage/fluff/fedcoat/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/suit/storage/fluff/fedcoat/verb/toggle()
 	set name = "Toggle coat buttons"
@@ -106,6 +133,7 @@
 	icon_state = "fedcapt"
 	item_state = "fedcapt"
 	armor = list(MELEE = 50, BULLET = 40, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 100, ACID = 90, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 
 //"modern" ones for fancy
 
@@ -135,6 +163,19 @@
 		/obj/item/storage/pill_bottle,
 		/obj/item/taperecorder)
 	armor = list("melee" = 50, "bullet" = 40, "laser" = 50, "energy" = 50, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 100, "acid" = 90, "wound" = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
+
+/obj/item/clothing/suit/storage/fluff/modernfedcoat/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/storage/fluff/modernfedcoat/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 //Variants
 /obj/item/clothing/suit/storage/fluff/modernfedcoat/medsci
@@ -152,6 +193,7 @@
 	icon_state = "fedmodernsec"
 	item_state = "fedmodernsec"
 	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/caphat/formal/fedcover
 	name = "Federation Officer's Cap"

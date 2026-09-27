@@ -137,7 +137,7 @@
 /obj/item/reagent_containers/pill/powder_mdma
 	name = "МДМА"
 	desc = "Горстка небольших кристаликов нежно-розового цвета."
-	icon = 'modular_bluemoon/icons/obj/moredrugs.dmi'
+	icon = 'modular_bluemoon/icons/obj/drugs.dmi'
 	icon_state = "mdmapowder"
 	volume = 5
 	list_reagents = list(/datum/reagent/drug/mdma = 5)

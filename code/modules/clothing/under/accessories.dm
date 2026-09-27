@@ -55,11 +55,15 @@
 	layer = NECK_LAYER
 	plane = FLOAT_PLANE
 
-	if (islist(cloth.armor) || isnull(cloth.armor)) 										// This proc can run before /obj/Initialize has run for cloth and src,
-		cloth.armor = getArmor(arglist(cloth.armor))	// we have to check that the armor list has been transformed into a datum before we try to call a proc on it
-																					// This is safe to do as /obj/Initialize only handles setting up the datum if actually needed.
+	if (islist(cloth.armor) || isnull(cloth.armor))
+		var/datum/armor/blank_armor = new()
+		cloth.armor = blank_armor.generate_new_with_specific(cloth.armor)
+		qdel(blank_armor)
+
 	if (islist(armor) || isnull(armor))
-		armor = getArmor(arglist(armor))
+		var/datum/armor/blank_armor = new()
+		armor = blank_armor.generate_new_with_specific(armor)
+		qdel(blank_armor)
 
 	cloth.armor = cloth.armor.attachArmor(armor)
 
@@ -334,6 +338,60 @@
 	icon_state = "sleevecrop"
 	item_state = "sleevecrop"
 	minimize_when_attached = FALSE
+
+/obj/item/clothing/accessory/hippads
+	name = "adjustable hip pads"
+	desc = "Регулируемые накладки на бёдра, которые можно набить ватой, увеличивая их размер."
+	icon = 'modular_bluemoon/icons/mob/clothing/hip_pads.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hip_pads.dmi'
+	icon_state = "hips"
+	item_state = ""
+	body_parts_covered = NONE
+	alternate_worn_layer = GENITALS_EXPOSED_LAYER
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/polychromic = TRUE
+	var/hipsize = 1
+
+/obj/item/clothing/accessory/hippads/ComponentInitialize()
+	. = ..()
+	if(polychromic)
+		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
+
+/obj/item/clothing/accessory/hippads/attackby(obj/item/A, mob/user, params, show_msg = TRUE)
+	if(!istype(A, /obj/item/stack/sheet/cotton))
+		return FALSE
+	if(hipsize >= 8)
+		to_chat(user, "<span class='notice'>\the [src] уже полностью набиты ватой!</span>")
+		return FALSE
+	var/obj/item/stack/sheet/cotton/cotton = A
+	to_chat(user, "<span class='notice'>Вы набиваете [cotton] внутрь \the [src]!</span>")
+	cotton.use(1)
+	hipsize++
+	update_icon()
+	return TRUE
+
+/obj/item/clothing/accessory/hippads/AltClick(mob/user)
+	if(hipsize <= 1)
+		to_chat(user, "<span class='notice'>Внутри \the [src] больше нет ваты!</span>")
+		return
+	var/obj/item/stack/sheet/cotton/cotton = new /obj/item/stack/sheet/cotton
+	cotton.amount = 1
+	user.put_in_hands(cotton)
+	hipsize--
+	update_icon()
+	to_chat(user, "<span class='notice'>Вы достаёте кусок ваты из \the [src].</span>")
+
+/obj/item/clothing/accessory/hippads/update_icon_state()
+	. = ..()
+	icon_state = "[initial(icon_state)]_[hipsize || 0]"
+
+/obj/item/storage/box/hippads
+	name = "adjustable hip pads box"
+	desc = "Регулируемые накладки на бёдра, которые можно набить ватой, увеличивая их размер. В комплект входят сами накладки и дополнительная вата."
+
+/obj/item/storage/box/hippads/PopulateContents()
+	new /obj/item/clothing/accessory/hippads(src)
+	new /obj/item/stack/sheet/cotton/ten(src)
 
 //////////
 //Medals//

@@ -1,5 +1,5 @@
 /datum/radiation_wave
-	var/source
+	var/source_name
 	var/turf/master_turf //The center of the wave
 	var/steps=0 //How far we've moved
 	var/intensity //How strong it was originaly
@@ -10,7 +10,7 @@
 	var/can_contaminate
 
 /datum/radiation_wave/New(atom/_source, dir, _intensity=0, _range_modifier=RAD_DISTANCE_COEFFICIENT, _can_contaminate=TRUE)
-	source = _source
+	source_name = "[_source]"
 	master_turf = get_turf(_source)
 
 	move_dir = dir
@@ -130,6 +130,6 @@
 			// Облучение мобов волнами от таких предметов сохранено полностью. Дизайновые
 			// источники (ядро реактора, стержни, ядерка) создают компонент сами и не затронуты.
 			// Продолжение нерфа RAD_CONTAMINATION_STR_COEFFICIENT 0.99 -> 0.35.
-			thing.AddComponent(/datum/component/radioactive, rad_strength, source, RAD_HALF_LIFE, FALSE)
+			thing.AddComponent(/datum/component/radioactive, rad_strength, source_name, RAD_HALF_LIFE, FALSE)
 			did_contam = 1
 	return did_contam

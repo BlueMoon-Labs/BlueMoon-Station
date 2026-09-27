@@ -56,6 +56,21 @@ const heldStamp = {
 };
 
 describe('PaperSheet PrimaryView', () => {
+  let canvasContextSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    canvasContextSpy = jest
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue({
+        font: '',
+        measureText: (text: string) => ({ width: text.length * 8 }),
+      } as CanvasRenderingContext2D);
+  });
+
+  afterEach(() => {
+    canvasContextSpy.mockRestore();
+  });
+
   test('renders existing text in read-only mode', () => {
     setupStore({
       raw_text_input: [
@@ -118,6 +133,9 @@ describe('PaperSheet PrimaryView', () => {
     const input = container.querySelector('input#paperfield_0');
     expect(input).toBeTruthy();
     expect((input as HTMLInputElement).disabled).toBe(true);
+    expect(canvasContextSpy).toHaveBeenCalledWith('2d');
+    expect(parseFloat((input as HTMLInputElement).style.minWidth))
+      .toBeGreaterThan(0);
   });
 
   test('renders [____] as an editable input field when holding a pen', () => {

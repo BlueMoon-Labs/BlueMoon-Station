@@ -36,6 +36,7 @@
 	item_state = "agent"
 	dog_fashion = null
 	armor = list("melee" = 50, "bullet" = 40, "laser" = 40, "energy" = 45, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 40)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/flakhelm	//Actually the M1 Helmet
 	name = "flak helmet"
@@ -132,10 +133,23 @@
 	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/restraints, /obj/item/tank)
 	slowdown = 0.7
 	armor = list(MELEE = 60, BULLET = 50, LASER = 40, ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	max_heat_protection_temperature = SPACE_SUIT_MAX_TEMP_PROTECT
 	species_restricted = list("Vox")
 	tail_state = ""
+
+/obj/item/clothing/suit/space/vox/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/space/vox/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/head/helmet/space/vox
 	armor = list(MELEE = 60, BULLET = 50, LASER = 40, ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30)

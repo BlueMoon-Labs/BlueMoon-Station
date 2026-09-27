@@ -243,9 +243,6 @@
 "aY" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
-/obj/item/stack/sheet/mineral/silver{
-	amount = 25
-	},
 /obj/machinery/airalarm/directional/east,
 /obj/effect/turf_decal/tile/purple/anticorner,
 /turf/open/floor/plasteel/dark,
@@ -577,6 +574,14 @@
 "db" = (
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
+"dd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/structure/curtain,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "df" = (
 /obj/machinery/light_switch/directional/west,
 /obj/effect/decal/cleanable/dirt,
@@ -1347,7 +1352,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/whiteship_cere_ripley,
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark/airless,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "hr" = (
@@ -1468,12 +1473,14 @@
 /turf/open/floor/engine/co2,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "hS" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/item/circuitboard/machine/ore_redemption,
-/obj/effect/decal/cleanable/glass,
 /obj/effect/turf_decal/tile/brown/anticorner{
 	dir = 4
 	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/safe/floor,
+/obj/item/resonator/upgraded,
+/obj/item/clothing/glasses/meson/night,
+/obj/item/mod/control/pre_equipped/mining,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "hV" = (
@@ -3021,7 +3028,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/afthall)
 "qh" = (
-/obj/machinery/door/poddoor/shutters/preopen{
+/obj/machinery/door/poddoor/shutters{
 	id = "tarkonouter";
 	name = "External Bay Shutters"
 	},
@@ -3029,7 +3036,6 @@
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "qi" = (
@@ -4103,6 +4109,7 @@
 /obj/effect/turf_decal/tile/purple/half{
 	dir = 8
 	},
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "wW" = (
@@ -4211,7 +4218,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/autolathe/hacked,
+/obj/machinery/ammo_workbench/unlocked,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "xL" = (
@@ -4903,11 +4910,17 @@
 "Cw" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
+/obj/effect/turf_decal/tile/purple/half{
+	dir = 4
+	},
 /obj/item/stack/sheet/mineral/gold{
 	amount = 25
 	},
-/obj/effect/turf_decal/tile/purple/half{
-	dir = 4
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 30
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 25
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
@@ -5653,10 +5666,12 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "GF" = (
-/obj/structure/bed,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/tile/blue/anticorner{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
 	dir = 1
+	},
+/obj/machinery/chem_heater{
+	pixel_y = 13
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
@@ -5948,14 +5963,13 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "Ix" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "tarkonouter";
+	name = "External Bay Shutters"
+	},
 /obj/effect/turf_decal/trimline/yellow/filled/warning,
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "tarkonouter";
-	name = "External Bay Shutters"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
@@ -5998,6 +6012,10 @@
 /obj/item/wrench,
 /obj/effect/decal/cleanable/dirt,
 /obj/item/circuitboard/machine/rtg,
+/obj/item/circuitboard/machine/circulator,
+/obj/item/circuitboard/machine/circulator,
+/obj/item/circuitboard/machine/generator,
+/obj/item/stock_parts/cell/high,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "IH" = (
@@ -6043,9 +6061,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
-/obj/structure/curtain,
 /obj/structure/window/reinforced/tinted,
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_master,
+/obj/structure/curtain,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "IY" = (
@@ -6500,12 +6519,11 @@
 /turf/open/floor/plating/asteroid,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/forehall)
 "Lo" = (
-/obj/effect/turf_decal/trimline/yellow/filled/warning,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/door/poddoor/shutters/preopen{
+/obj/machinery/door/poddoor/shutters{
 	id = "tarkonouter";
 	name = "External Bay Shutters"
 	},
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Lp" = (
@@ -6523,13 +6541,13 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Ls" = (
-/obj/machinery/iv_drip,
 /obj/structure/window/reinforced/tinted,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small/directional/west,
-/obj/effect/turf_decal/tile/blue/half{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 8
 	},
+/obj/machinery/chem_dispenser/fullupgrade,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Ly" = (
@@ -7340,6 +7358,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
 	},
+/obj/item/circuitboard/machine/ore_redemption,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Rf" = (
@@ -7564,10 +7583,8 @@
 "Sn" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
-/obj/item/stack/sheet/mineral/titanium{
-	amount = 30
-	},
 /obj/effect/turf_decal/tile/purple/half,
+/obj/effect/spawner/lootdrop/whiteship_cere_ripley,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Sp" = (
@@ -7919,6 +7936,8 @@
 /obj/item/circuitboard/machine/bluespace_miner,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/paper/fluff/ruins/tarkoff/coupplans,
+/obj/item/circuitboard/machine/bluespace_miner,
+/obj/item/disk/tech_disk/illegal,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Uc" = (
@@ -11889,7 +11908,7 @@ JB
 KQ
 FF
 cV
-EV
+dd
 IW
 HX
 gd

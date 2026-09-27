@@ -27,6 +27,8 @@
 	var/stun_status_duration = 25
 	var/stam_cost = 3.5
 	var/wielded = FALSE // track wielded status on item
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/electrostaff.dmi'
 
 // haha security desword time /s
 /datum/block_parry_data/electrostaff

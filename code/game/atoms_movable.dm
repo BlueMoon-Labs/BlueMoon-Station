@@ -654,17 +654,17 @@
 	return
 
 
-/atom/movable/proc/do_attack_animation(atom/A, visual_effect_icon, obj/item/used_item, no_effect, fov_effects = TRUE)
+/atom/movable/proc/do_attack_animation(atom/attacked_atom, visual_effect_icon, obj/item/used_item, no_effect, fov_effect = TRUE, item_animation_override = null)
 	if(!no_effect && (visual_effect_icon || used_item))
-		do_item_attack_animation(A, visual_effect_icon, used_item)
+		do_item_attack_animation(attacked_atom, visual_effect_icon, used_item, animation_type = item_animation_override)
 
-	if(A == src)
+	if(attacked_atom == src)
 		return //don't do an animation if attacking self
 	var/pixel_x_diff = 0
 	var/pixel_y_diff = 0
 	var/turn_dir = 1
 
-	var/direction = get_dir(src, A)
+	var/direction = get_dir(src, attacked_atom)
 	if(direction & NORTH)
 		pixel_y_diff = 8
 		turn_dir = prob(50) ? -1 : 1
@@ -677,51 +677,29 @@
 	else if(direction & WEST)
 		pixel_x_diff = -8
 		turn_dir = -1
-	if(fov_effects)
-		play_fov_effect(A, 5, "attack")
+	if(fov_effect)
+		play_fov_effect(attacked_atom, 5, "attack")
 
 	var/matrix/initial_transform = matrix(transform)
 	var/matrix/rotated_transform = transform.Turn(15 * turn_dir)
-	animate(src, pixel_x = pixel_x + pixel_x_diff, pixel_y = pixel_y + pixel_y_diff, transform=rotated_transform, time = 1, easing=BACK_EASING|EASE_IN)
-	animate(pixel_x = pixel_x - pixel_x_diff, pixel_y = pixel_y - pixel_y_diff, transform=initial_transform, time = 2, easing=SINE_EASING)
+	animate(src, pixel_x = pixel_x + pixel_x_diff, pixel_y = pixel_y + pixel_y_diff, transform=rotated_transform, time = 1, easing=BACK_EASING|EASE_IN, flags = ANIMATION_PARALLEL)
+	animate(pixel_x = pixel_x - pixel_x_diff, pixel_y = pixel_y - pixel_y_diff, transform=initial_transform, time = 2, easing=SINE_EASING, flags = ANIMATION_PARALLEL)
 
-/atom/movable/proc/do_item_attack_animation(atom/A, visual_effect_icon, obj/item/used_item)
-	var/image/I
-	if(visual_effect_icon)
-		I = image('icons/effects/effects.dmi', A, visual_effect_icon, A.layer + 0.1)
-	else if(used_item)
-		I = image(icon = used_item, loc = A, layer = A.layer + 0.1)
-		I.plane = GAME_PLANE
-
-		// Scale the icon.
-		I.transform *= 0.4
-		// The icon should not rotate.
-		I.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
-
-		// Set the direction of the icon animation.
-		var/direction = get_dir(src, A)
-		if(direction & NORTH)
-			I.pixel_y = -12
-		else if(direction & SOUTH)
-			I.pixel_y = 12
-
-		if(direction & EAST)
-			I.pixel_x = -14
-		else if(direction & WEST)
-			I.pixel_x = 14
-
-		if(!direction) // Attacked self?!
-			I.pixel_z = 16
-
-	if(!I)
+/atom/movable/proc/do_item_attack_animation(atom/attacked_atom, visual_effect_icon, obj/item/used_item, animation_type)
+	if(!visual_effect_icon)
+		if(used_item)
+			used_item.animate_attack(src, attacked_atom, animation_type)
 		return
 
-	flick_overlay(I, GLOB.clients, 10)
-
-	// And animate the attack!
-	animate(I, alpha = 175, transform = matrix() * 0.75, pixel_x = 0, pixel_y = 0, pixel_z = 0, time = 3)
-	animate(time = 1)
-	animate(alpha = 0, time = 3, easing = CIRCULAR_EASING|EASE_OUT)
+	var/image/attack_image = image(icon = 'icons/effects/effects.dmi', icon_state = visual_effect_icon)
+	attack_image.plane = attacked_atom.plane + 1
+	attack_image.transform *= 0.4
+	attack_image.appearance_flags = APPEARANCE_UI
+	var/atom/movable/flick_visual/attack = attacked_atom.flick_overlay_view(attack_image, 1 SECONDS)
+	var/matrix/copy_transform = new(transform)
+	animate(attack, alpha = 175, transform = copy_transform.Scale(0.75), time = 0.3 SECONDS)
+	animate(time = 0.1 SECONDS)
+	animate(alpha = 0, time = 0.3 SECONDS, easing = CIRCULAR_EASING|EASE_OUT)
 
 /// Common proc used by painting tools like spraycans and palettes that can access the entire 24 bits color space.
 /obj/item/proc/pick_painting_tool_color(mob/user, default_color)
@@ -939,12 +917,12 @@
 		to_x -= 32
 	if(!direction)
 		to_y += 16
-	flick_overlay(I, GLOB.clients, 6)
+	var/atom/movable/flick_visual/visual = T.flick_overlay_view(I, 0.6 SECONDS)
 	var/matrix/M = new
 	M.Turn(pick(-30, 30))
-	animate(I, alpha = 175, pixel_x = to_x, pixel_y = to_y, time = 3, transform = M, easing = CUBIC_EASING)
-	sleep(1)
-	animate(I, alpha = 0, transform = matrix(), time = 1, flags = ANIMATION_PARALLEL)
+	animate(visual, alpha = 175, pixel_x = to_x, pixel_y = to_y, time = 0.3 SECONDS, transform = M, easing = CUBIC_EASING)
+	sleep(0.1 SECONDS)
+	animate(visual, alpha = 0, transform = matrix(), time = 0.1 SECONDS, flags = ANIMATION_PARALLEL)
 
 /**
  * Called when a movable changes z-levels.

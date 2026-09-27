@@ -1541,6 +1541,9 @@
 /obj/item/ammo_casing/c9mm,
 /turf/open/floor/plasteel,
 /area/awaymission/complex/security)
+"boN" = (
+/turf/closed/indestructible/wall,
+/area/awaymission/complex/gatehouse)
 "bpj" = (
 /obj/structure/chair{
 	dir = 8
@@ -2044,6 +2047,7 @@
 	id = "mountaingarage1";
 	name = "gatehouse shutters"
 	},
+/obj/effect/agr_rune_blocker,
 /turf/open/floor/plating/snowed/complex,
 /area/awaymission/complex/gatehouse)
 "bUJ" = (
@@ -5134,6 +5138,7 @@
 /area/awaymission/complex/minerhouse)
 "exC" = (
 /obj/machinery/door/airlock/security/glass,
+/obj/effect/agr_rune_blocker,
 /turf/open/floor/plating,
 /area/awaymission/complex/gatehouse)
 "exV" = (
@@ -23966,7 +23971,7 @@
 /obj/machinery/atmospherics/pipe/simple{
 	dir = 4
 	},
-/turf/closed/wall,
+/turf/closed/indestructible/wall,
 /area/awaymission/complex/gatehouse)
 "uFo" = (
 /obj/structure/closet/secure_closet/freezer/kitchen,
@@ -26170,7 +26175,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/complex/prison)
 "wwM" = (
-/turf/closed/wall/rust,
+/turf/closed/indestructible/wall,
 /area/awaymission/complex/exterior)
 "wxg" = (
 /obj/structure/cable{
@@ -47552,14 +47557,14 @@ sOv
 gIA
 jCp
 rhv
-fky
-fky
-wsx
-wsx
+boN
+boN
+boN
+boN
 exC
 uFm
-wsx
-wsx
+boN
+boN
 miw
 jna
 jna
@@ -47809,7 +47814,7 @@ sOv
 gIA
 iDa
 gIA
-fky
+boN
 tTr
 ngZ
 iCw
@@ -48057,16 +48062,16 @@ sFr
 sFr
 wwM
 wwM
-jna
+boN
 bUx
 bUx
 bUx
 bUx
 bUx
 bUx
-wsx
-wsx
-wsx
+boN
+boN
+boN
 djC
 onU
 qBK

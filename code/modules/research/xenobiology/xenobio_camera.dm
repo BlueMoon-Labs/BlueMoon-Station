@@ -158,7 +158,7 @@
 	var/obj/machinery/computer/camera_advanced/xenobio/X = target
 
 	if(GLOB.cameranet.checkTurfVis(remote_eye.loc))
-		for(var/mob/living/simple_animal/slime/S in X.stored_slimes)
+		for(var/mob/living/simple_animal/slime/S in X.stored_slimes.Copy())
 			S.forceMove(remote_eye.loc)
 			S.visible_message("[S] warps in!")
 			X.stored_slimes -= S
@@ -394,7 +394,7 @@
 	var/obj/machinery/computer/camera_advanced/xenobio/X = E.origin
 	var/area/turfarea = get_area(T)
 	if(turfarea.name == E.allowed_area || turfarea.xenobiology_compatible)
-		for(var/mob/living/simple_animal/slime/S in X.stored_slimes)
+		for(var/mob/living/simple_animal/slime/S in X.stored_slimes.Copy())
 			S.forceMove(T)
 			S.visible_message("[S] warps in!")
 			X.stored_slimes -= S

@@ -2911,7 +2911,8 @@
 	can_synth = FALSE
 	// you know i wouldn't
 	// boiling_point = T0C + 100
-	nutriment_factor = 0.5 * REAGENTS_METABOLISM
+	nutriment_factor = 1 * REAGENTS_METABOLISM
+	metabolization_rate = 2 * REAGENTS_METABOLISM
 	var/decal_path = /obj/effect/decal/cleanable/semen
 	var/list/desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~"),
@@ -3043,6 +3044,8 @@
 	glass_desc = "Cloudy, viscous."
 	taste_description = "something with a tang" // wew coders who haven't eaten out a girl.
 	color = "#FFFFFF"
+	nutriment_factor = 0.5 * REAGENTS_METABOLISM
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	decal_path = /obj/effect/decal/cleanable/semen/femcum
 	desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежего сквирта~")
@@ -3064,6 +3067,7 @@
 	glass_name = "chalice of synthcum"
 	taste_description = "something with a silicone"
 	color = "#5cb2cc"
+	nutriment_factor = 0.1 * REAGENTS_METABOLISM
 	decal_path = /obj/effect/decal/cleanable/semen/siliconcum
 	desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~ Но отдает синтетикой..."),

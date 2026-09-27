@@ -5,7 +5,7 @@ import { Button } from "./Button";
 import { ProgressBar } from "./ProgressBar";
 import { Stack } from "./Stack";
 
-const ZOOM_MIN_VAL = 0.5;
+const ZOOM_MIN_VAL = 0.1;
 const ZOOM_MAX_VAL = 1.5;
 
 const ZOOM_INCREMENT = 0.1;
@@ -108,7 +108,12 @@ export class InfinitePlane extends Component {
     }
     event.preventDefault();
     event.stopPropagation();
-    const { onZoomChange } = this.props;
+    const {
+      onZoomChange,
+      onBackgroundMoved,
+      initialLeft = 0,
+      initialTop = 0,
+    } = this.props;
     const zoom = snapZoom(this.state.zoom);
     const next = event.deltaY < 0
       ? snapZoom(Math.min(zoom + ZOOM_INCREMENT, ZOOM_MAX_VAL))
@@ -116,9 +121,22 @@ export class InfinitePlane extends Component {
     if (next === zoom) {
       return;
     }
-    this.setState({ zoom: next });
+    // Зум к курсору: удерживаем мировую точку под указателем на месте.
+    const finalLeft0 = initialLeft + this.state.left;
+    const finalTop0 = initialTop + this.state.top;
+    const k = next / zoom;
+    const finalLeft1 = event.clientX - (event.clientX - finalLeft0) * k;
+    const finalTop1 = event.clientY - (event.clientY - finalTop0) * k;
+    this.setState({
+      zoom: next,
+      left: finalLeft1 - initialLeft,
+      top: finalTop1 - initialTop,
+    });
     if (onZoomChange) {
       onZoomChange(next);
+    }
+    if (onBackgroundMoved) {
+      onBackgroundMoved(finalLeft1, finalTop1);
     }
   }
 

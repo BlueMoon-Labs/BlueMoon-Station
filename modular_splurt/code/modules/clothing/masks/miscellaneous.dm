@@ -170,6 +170,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi'
 	icon_state = "ballgag"
 	item_state = "ballgag"
+	mute = MUFFLE_MEDIUM
 
 /obj/item/clothing/mask/ninja_replica
 	name = "Replica Ninja Mask"

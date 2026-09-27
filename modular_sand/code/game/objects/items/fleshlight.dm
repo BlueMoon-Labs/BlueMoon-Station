@@ -576,7 +576,7 @@
 														'modular_sand/sound/interactions/bang5.ogg',
 														'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
 				if(BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
-					playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+					playlewdinteractionsound(get_turf(src), 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 
 			to_chat(portal_target, "<span class='lewd'>Кто-то использует сопряжённый <b>'[name]'</b>, этот кто-то [target_message].</span>")
 

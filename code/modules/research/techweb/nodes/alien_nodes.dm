@@ -14,6 +14,7 @@
 	. = ..()
 	boost_item_paths = typesof(/obj/item/gun/energy/alien, /obj/item/scalpel/alien, /obj/item/hemostat/alien,
 							/obj/item/retractor/alien, /obj/item/circular_saw/alien, /obj/item/cautery/alien,
+							/obj/item/scalpel/advanced/alien, /obj/item/retractor/advanced/alien, /obj/item/surgicaldrill/advanced/alien,
 							/obj/item/surgicaldrill/alien, /obj/item/screwdriver/abductor, /obj/item/wrench/abductor,
 							/obj/item/crowbar/abductor, /obj/item/multitool/abductor,
 							/obj/item/stock_parts/cell/infinite/abductor, /obj/item/weldingtool/abductor,
@@ -22,11 +23,11 @@
 
 /datum/techweb_node/alien_bio
 	id = "alien_bio"
-	display_name = "Alien Biological Tools"
+	display_name = "Alien Biological Technology"
 	description = "Advanced biological tools."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("alientech", "advance_surgerytools")
-	design_ids = list("alien_scalpel", "alien_hemostat", "alien_retractor", "alien_saw", "alien_drill", "alien_cautery", "ayyplantgenes", "noreactsyringe", "surgery_revival")
+	design_ids = list("alien_scalpel", "alien_hemostat", "alien_retractor", "alien_saw", "alien_drill", "alien_cautery", "surgery_revival", "ayyplantgenes")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/alien_engi
@@ -35,5 +36,14 @@
 	description = "Reverse engineered alien tools." // BLUEMOON CHANGE
 	informing_radio_channels = list(RADIO_CHANNEL_ENGINEERING, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("alientech", "exp_tools")
-	design_ids = list("alien_wrench", "alien_wirecutters", "alien_screwdriver", "alien_crowbar", "alien_welder", "alien_multitool")
+	design_ids = list("alien_wrench", "alien_wirecutters", "alien_screwdriver", "alien_crowbar", "alien_welder", "alien_multitool", "alien_rcd")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+
+/datum/techweb_node/alien_combi_tools
+	id = "alien_combi_tools"
+	display_name = "Alien Combi Surgery Tools"
+	description = "Allows the creation of powerful alien combi-tools. Surgeons would sell their souls for them."
+	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL)
+	prereq_ids = list("alien_bio")
+	design_ids = list("drapes_adv", "alien_combi_scalpel", "alien_combi_retractor", "alien_combi_drill")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

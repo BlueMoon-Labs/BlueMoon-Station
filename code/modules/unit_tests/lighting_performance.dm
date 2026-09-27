@@ -953,3 +953,75 @@
 // working correctly. The 8 remaining hard_del tests above already cover the code
 // path the fix targets (animate + qdel, ChangeTurf transfer, clear_overlay,
 // rebuild_overlay, mass batch, FORCEOP).
+
+/// Быстрый выход без bloom не мешает включить эффект позднее и убрать существующие оверлеи.
+/datum/unit_test/bloom_empty_configuration/Run()
+	var/obj/item/source = allocate(/obj/item)
+	source.light_range = 2
+	source.light_power = 1
+	source.light_on = TRUE
+	source.update_bloom()
+	TEST_ASSERT_NULL(source.glow_overlay, "Без состояния свечения оверлей не нужен")
+	TEST_ASSERT_NULL(source.exposure_overlay, "Без состояния засветки оверлей не нужен")
+	source.glow_icon_state = "tube"
+	source.update_bloom()
+	TEST_ASSERT_NOTNULL(source.glow_overlay, "Позднее включение свечения должно создать оверлей")
+	source.glow_icon_state = null
+	source.light_on = FALSE
+	source.update_bloom()
+	TEST_ASSERT_NULL(source.glow_overlay, "Удаление настроек не должно оставить старый оверлей")
+
+/// Bloom переиспользует изображения и восстанавливает их после очистки overlays.
+/datum/unit_test/bloom_cached_appearance/Run()
+	var/obj/item/source = allocate(/obj/item)
+	source.light_range = 2
+	source.glow_icon_state = "tube"
+	source.exposure_icon_state = "circle"
+	source.update_bloom()
+	var/image/glow = source.glow_overlay
+	var/image/exposure = source.exposure_overlay
+	source.update_bloom()
+	TEST_ASSERT_EQUAL(source.glow_overlay, glow, "Неизменное свечение должно использовать прежнее изображение")
+	TEST_ASSERT_EQUAL(source.exposure_overlay, exposure, "Неизменная засветка должна использовать прежнее изображение")
+	source.cut_overlays()
+	source.update_bloom()
+	TEST_ASSERT(glow.appearance in source.overlays, "Очищенное свечение не восстановилось")
+	TEST_ASSERT(exposure.appearance in source.overlays, "Очищенная засветка не восстановилась")
+	TEST_ASSERT_EQUAL(length(source.overlays), 2, "Bloom не должен дублировать оверлеи")
+	var/list/changes = list("light_power" = 2, "light_color" = "#ff0000", "dir" = EAST, "layer" = LOW_OBJ_LAYER, "glow_colored" = FALSE, "exposure_colored" = FALSE)
+	for(var/parameter in changes)
+		glow = source.glow_overlay
+		source.vars[parameter] = changes[parameter]
+		source.update_bloom()
+		TEST_ASSERT_NOTEQUAL(source.glow_overlay, glow, "Изменение [parameter] должно обновить bloom")
+	TEST_ASSERT_EQUAL(source.glow_overlay.plane, FLOOR_LIGHTING_LAMPS_PLANE, "Слой пола должен менять plane свечения")
+	source.glow_icon_state = null
+	source.exposure_icon_state = null
+	source.update_bloom()
+	TEST_ASSERT_NULL(source.glow_overlay, "Отключённое свечение осталось в кэше")
+	TEST_ASSERT_NULL(source.exposure_overlay, "Отключённая засветка осталась в кэше")
+	TEST_ASSERT_EQUAL(length(source.overlays), 0, "Отключённые эффекты остались на атоме")
+
+/// Кэш лампы учитывает запасной цвет, покраску и настройки bloom.
+/datum/unit_test/bloom_lamp_cache/Run()
+	var/obj/machinery/light/lamp = allocate(/obj/machinery/light)
+	lamp.light_range = 2
+	lamp.light_power = 1
+	lamp.light_on = TRUE
+	lamp.light_color = null
+	lamp.bulb_colour = "#ffffff"
+	lamp.update_bloom()
+	var/image/glow = lamp.glow_overlay
+	lamp.bulb_colour = "#ff0000"
+	lamp.update_bloom()
+	TEST_ASSERT_NOTEQUAL(lamp.glow_overlay, glow, "Изменение запасного цвета должно обновить bloom")
+	glow = lamp.glow_overlay
+	lamp.color = "#00ff00"
+	lamp.update_bloom()
+	TEST_ASSERT_NOTEQUAL(lamp.glow_overlay, glow, "Покраска лампы должна обновить контраст bloom")
+	glow = lamp.glow_overlay
+	var/old_contrast = CONFIG_GET(number/glow_contrast_base)
+	CONFIG_SET(number/glow_contrast_base, old_contrast + 1)
+	lamp.update_bloom()
+	CONFIG_SET(number/glow_contrast_base, old_contrast)
+	TEST_ASSERT_NOTEQUAL(lamp.glow_overlay, glow, "Изменение конфигурации должно обновить bloom")

@@ -107,6 +107,7 @@
 // #include "breath.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
+#include "character_profile_performance.dm"
 #include "chem_dispenser_payload.dm"
 #include "client_connect_probe.dm"
 #include "connect_probe_attribution.dm"
@@ -130,6 +131,8 @@
 // #include "emoting.dm"
 #include "event_ports.dm"
 #include "families.dm"
+#include "flat_icon_static.dm"
+#include "foam_performance.dm"
 // #include "food_edibility_check.dm"
 #include "gas_mixture_parser.dm"
 #include "gc_rewrite.dm"
@@ -156,6 +159,7 @@
 #include "lighting_matrix_grid.dm"
 #include "lighting_object_var_diet.dm"
 #include "lighting_teardown.dm"
+#include "lighting_update_queue.dm"
 #include "maptext_surface_budget.dm"
 #include "icon_cache_ref_reuse.dm"
 #include "light_range_cap.dm"
@@ -189,6 +193,7 @@
 #include "player_report_regressions.dm"
 #include "process_memory.dm"
 #include "projectiles.dm"
+#include "qareen_chalk.dm"
 #include "weather.dm"
 #include "weather_datum_lifecycle.dm"
 // #include "rcd.dm"
@@ -198,6 +203,7 @@
 #include "reagent_recipe_collisions.dm"
 #include "recursive_hotpaths.dm"
 #include "resist.dm"
+#include "riot_shield_implant.dm"
 #include "runechat_sanity.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
@@ -258,6 +264,7 @@
 
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
+#include "bot_path_hud.dm"
 #include "bugfix_coverage.dm"
 #include "bugreports_2026_07.dm"
 #include "bugreports_2026_08.dm"
@@ -279,6 +286,11 @@
 #include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
+#include "flick_view_animations.dm"
+#include "heal_noop_updates.dm"
+#include "id_card_examine_icon.dm"
+#include "vitals_reader_redraw.dm"
+#include "wizard_event_costs.dm"
 #include "hud_screen_lifecycle.dm"
 #include "icon_alloc_guard.dm"
 #include "keybindings_idle_move_delay.dm"
@@ -295,6 +307,8 @@
 #include "round_10137_review_fixes.dm"
 #include "round_10137_review_fixes_b.dm"
 #include "round_10194_10199_fixes.dm"
+#include "round_10342_10351_fixes.dm"
+#include "round_10308_fixes.dm"
 #include "round_10203_10208_fixes.dm"
 #include "round_10211_fixes.dm"
 #include "round_10150_regressions.dm"
@@ -320,16 +334,21 @@
 #include "perf_optimizations.dm"
 #include "perf_pass_non_atmos.dm"
 #include "ping_measurement.dm"
+#include "player_reports_september.dm"
 #include "playsound_no_listeners.dm"
 #include "sound_echo_cache.dm"
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
 #include "player_save_json.dm"
+#include "preferences_navigation.dm"
+#include "preferences_preview_performance.dm"
+#include "round_10294_profile_icon_benchmark.dm"
 #include "preferences_save_deferral.dm"
 #include "preferences_single_pref_coalescing.dm"
 #include "image_leak_audit.dm"
 #include "radiation_contamination.dm"
+#include "round_10325_performance.dm"
 #include "rtt_window.dm"
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
@@ -374,10 +393,13 @@
 #include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
+#include "techweb_machine_initialization.dm"
+#include "theft_target_selection.dm"
 #include "tick_spike_recorder.dm"
 #include "tile_pipe_placement.dm"
 #include "update_icon_short_circuit.dm"
 #include "vent_label_numbering.dm"
+#include "weeds_growth.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH
@@ -447,6 +469,8 @@ TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_matches_full_save)
 TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush_migrates_stale_file)
 TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_reads_variable)
 TEST_FOCUS(/datum/unit_test/preferences_single_pref_keys_match_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_navigation_pending_save)
+TEST_FOCUS(/datum/unit_test/insect_accessory_colors)
 #endif
 
 #undef TEST_ASSERT

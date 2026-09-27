@@ -201,6 +201,13 @@
 	decayedRange = range
 	if(embedding)
 		updateEmbedding()
+	// LightUp: автосвечение для снарядов — если у типа задан свет, используем собственный спрайт как glow
+	if(!glow_icon_state && icon_state)
+		glow_icon = icon
+		glow_icon_state = icon_state
+		exposure_icon_state = null
+		exposure_icon = null
+		glow_colored = TRUE
 
 /**
   * Artificially modified to be called at around every world.icon_size pixels of movement.
@@ -765,7 +772,14 @@
 		transform = M
 	trajectory_ignore_forcemove = TRUE
 	forceMove(starting)
-	set_light(fired_light_range, fired_light_intensity, fired_light_color)
+	// LightUp: если у снаряда задан light_* (как у лазерных лучей), используем его как fallback для fired_*
+	var/use_fired_range = fired_light_range || light_range
+	var/use_fired_power = fired_light_intensity || light_power || 1
+	var/use_fired_color = fired_light_color || light_color
+	if(use_fired_range > 0)
+		set_light(use_fired_range, use_fired_power, use_fired_color)
+	else
+		set_light(fired_light_range, fired_light_intensity, fired_light_color)
 	trajectory_ignore_forcemove = FALSE
 	if(isnull(pixel_increment_amount))
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount

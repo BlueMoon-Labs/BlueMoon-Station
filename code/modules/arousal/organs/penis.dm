@@ -101,6 +101,18 @@
 			lowershape = "двойной узловатый"
 		if("bhemiknot")
 			lowershape = "двойной, узловатый и немного колючий"
+		if("pede_segmented")
+			lowershape = "покрытый хитиновыми кольцами"
+		if("pede_hemi")
+			lowershape = "двойной, покрытый хитиновыми кольцами"
+		if("pede_knotted")
+			lowershape = "узловатый, покрытый хитиновыми кольцами"
+		if("pede_barbed")
+			lowershape = "покрытый хитиновыми кольцами с загнутыми назад шипами"
+		if("pede_ovipositor")
+			lowershape = "сегментированный яйцеклад с утолщениями по длине"
+		if("pede_hose")
+			lowershape = "гибкий, гофрированный, как шланг, с раструбом на конце"
 		if("barbtapered")
 			lowershape = "утончённый к концу и покрыт шипами"
 		if("thick", "nondescript")

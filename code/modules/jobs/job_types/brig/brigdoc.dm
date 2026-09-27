@@ -65,7 +65,8 @@
 		/obj/item/storage/firstaid/regular,
 		/obj/item/sensor_device_security,
 		/obj/item/melee/classic_baton/telescopic,
-		/obj/item/choice_beacon/copgun
+		///obj/item/choice_beacon/copgun - меняю на дизейблер смг
+		/obj/item/gun/energy/disabler/smg
 		)
 
 	backpack = /obj/item/storage/backpack/security

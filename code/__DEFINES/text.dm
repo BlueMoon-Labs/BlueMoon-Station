@@ -360,6 +360,19 @@ GLOBAL_LIST_INIT(borgmodule_ru_adjective, list(
 	"roleplay" = "ролевой",
 ))
 
+/// Лист-словарь для названий отделов в существительном
+GLOBAL_LIST_INIT(exp_type_department_ru, list(
+	EXP_TYPE_COMMAND     = "Командование",
+	EXP_TYPE_SECURITY    = "Служба Безопасности",
+	EXP_TYPE_ENGINEERING = "Инженерный отдел",
+	EXP_TYPE_MEDICAL     = "Медицинский отдел",
+	EXP_TYPE_SCIENCE     = "Научный отдел",
+	EXP_TYPE_SUPPLY      = "Отдел снабжения",
+	EXP_TYPE_SERVICE     = "Отдел сервиса",
+	EXP_TYPE_SILICON     = "Синтетика",
+	EXP_TYPE_LAW         = "Юридический отдел"
+))
+
 /// Лист-словарь для цветов
 GLOBAL_LIST_INIT(colors_ru, list(
 	"red" = "красный",
@@ -371,3 +384,6 @@ GLOBAL_LIST_INIT(colors_ru, list(
 	"cyan" = "циановый",
 	"white" = "белый",
 ))
+
+// Список гласных для обработки приглушённой речи (английский и русский)
+GLOBAL_LIST_INIT(vowels_for_muffledspeech, list("a", "e", "i", "o", "u", "y", "а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"))

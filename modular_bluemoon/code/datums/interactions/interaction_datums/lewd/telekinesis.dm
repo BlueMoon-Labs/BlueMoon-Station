@@ -136,7 +136,7 @@
 	write_log_user = "TK-vagina-groped"
 	write_log_target = "was TK-vagina-groped by"
 	p13target_emote = PLUG13_EMOTE_PENIS
-	lewd_sounds = 'modular_sand/sound/interactions/champ_fingering.ogg'
+	lewd_sounds = 'modular_sand/sound/lewd/champ_fingering.ogg'
 	start_text = "Что-то упирается в чувствительные губки TARGET."
 	help_text = "Что-то невесомо ощупывает лепестки TARGET."
 	grab_text = "Что-то обхватывает с двух сторон чувствительную горошину TARGET."

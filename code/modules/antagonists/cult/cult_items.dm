@@ -332,6 +332,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	armor = list(MELEE = 40, BULLET = 30, LASER = 40,ENERGY = 20, BOMB = 65, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	flags_inv = HIDEJUMPSUIT
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	min_cold_protection_temperature = ARMOR_MIN_TEMP_PROTECT
@@ -339,6 +340,18 @@
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
 	alternate_screams = BLOOD_SCREAMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
+
+/obj/item/clothing/suit/cultrobes/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/cultrobes/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 /obj/item/clothing/head/culthood/alt
 	name = "cultist hood"
@@ -387,8 +400,19 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	armor = list(MELEE = 50, BULLET = 30, LASER = 50,ENERGY = 20, BOMB = 25, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	alternate_screams = BLOOD_SCREAMS
+
+/obj/item/clothing/suit/magusred/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/magusred/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 
 /obj/item/clothing/head/helmet/space/hardsuit/cult
 	name = "\improper Nar'Sien hardened helmet"
@@ -414,6 +438,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade, /obj/item/tank/internals/)
 	armor = list(MELEE = 70, BULLET = 50, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 100, ACID = 75)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/cult
 	alternate_screams = BLOOD_SCREAMS
 
@@ -444,6 +469,7 @@
 	item_state = "cult_armor"
 	w_class = WEIGHT_CLASS_BULKY
 	armor = list(MELEE = 75, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	var/current_charges = 3
@@ -478,6 +504,13 @@
 			user.emote("realagony")
 			user.adjustBruteLoss(25)
 			user.dropItemToGround(src, TRUE)
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0)  // BLUEMOON ADD
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/hooded/cultrobes/cult_shield/dropped(mob/living/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_mitigation_bonus > 0)
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
 
 /obj/item/clothing/suit/hooded/cultrobes/cult_shield/check_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
 	if(current_charges)

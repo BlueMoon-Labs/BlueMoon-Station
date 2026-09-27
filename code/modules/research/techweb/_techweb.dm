@@ -118,6 +118,10 @@
 	var/datum/techweb_node/syndicate_basic/Node = new()
 	research_node(Node, TRUE)
 
+/datum/techweb/tarkoff
+	id = "TAPKOV_NET" //ikr im really funny
+	organization = "Tarkoff"
+
 /datum/techweb/inteq
 	id = "INTEQ_NET"
 	organization = "InteQ"

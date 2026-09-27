@@ -9,10 +9,49 @@
 	equip_delay_other = 20
 	equip_delay_self = 20
 	mutantrace_variation = STYLE_MUZZLE
+	var/mute = MUFFLE_MUTE
 
 /obj/item/clothing/mask/muzzle/Initialize()
 	. = ..()
 	AddComponent(/datum/component/latex_lockable)
+
+/obj/item/clothing/mask/muzzle/attack_self(mob/user)
+	if(!user)
+		return FALSE
+	interact(user)
+	return TRUE
+
+/obj/item/clothing/mask/muzzle/interact(mob/user)
+	return ui_interact(user)
+
+/obj/item/clothing/mask/muzzle/ui_state(mob/user)
+	return GLOB.hands_state
+
+/obj/item/clothing/mask/muzzle/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "LewdDeprivation", name)
+		ui.open()
+
+/obj/item/clothing/mask/muzzle/ui_data(mob/user)
+	var/list/data = list()
+	data["mute"] = mute
+	data["levels"] = list(
+		list("value" = MUFFLE_NONE, "label" = "Свободно", "desc" = ""),
+		list("value" = MUFFLE_LOW, "label" = "Мягкая", "desc" = ""),
+		list("value" = MUFFLE_MEDIUM, "label" = "Средняя", "desc" = ""),
+		list("value" = MUFFLE_HIGH, "label" = "Сильная", "desc" = ""),
+		list("value" = MUFFLE_MUTE, "label" = "Мут", "desc" = "Никаких звуков вообще")
+	)
+	return data
+
+/obj/item/clothing/mask/muzzle/ui_act(action, params)
+	if(..())
+		return
+	switch(action)
+		if("set_mute")
+			mute = text2num(params["level"])
+			. = TRUE
 
 /obj/item/clothing/mask/muzzle/attack_paw(mob/user, act_intent, attackchain_flags)
     if(iscarbon(user))

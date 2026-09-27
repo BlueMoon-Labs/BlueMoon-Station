@@ -79,7 +79,7 @@
 		Её также можно надеть на неверного, после чего тот уже не сможет её снять..."
 	gain_text = "Ночной Страж пропал. Так подумала Стража. Но он всё ещё блуждал по миру, незримый для всех."
 	cost = 1
-	result_atoms = list(/obj/item/clothing/mask/void_mask)
+	result_atoms = list(/obj/item/clothing/mask/gas/void_mask)
 	required_atoms = list(/obj/item/organ/eyes,/obj/item/clothing/mask,/obj/item/candle)
 	next_knowledge = list(/datum/eldritch_knowledge/curse/corrosion,/datum/eldritch_knowledge/ash_blade_upgrade,/datum/eldritch_knowledge/curse/paralysis)
 	route = PATH_ASH

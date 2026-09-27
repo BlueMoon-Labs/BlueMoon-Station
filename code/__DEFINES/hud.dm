@@ -81,6 +81,7 @@
 #define ui_building "EAST-5:20,SOUTH:21"//CIT CHANGE - ditto
 #define ui_language_menu "EAST-5:4,SOUTH:21"//CIT CHANGE - ditto
 #define ui_voremode	"EAST-5:20,SOUTH:5"
+#define ui_ammocounter "RIGHT-1:28,CENTER-5:9" //BLUEMOON ADD - счётчик патрон с ФФа
 
 //Upper-middle right (alerts)
 #define ui_alert1 "EAST-1:28,CENTER+5:27"

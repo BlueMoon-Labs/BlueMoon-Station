@@ -59,6 +59,76 @@
 	TEST_ASSERT(!animated_abs, "Absolute layer reported a glide animation")
 	TEST_ASSERT_EQUAL(abs_layer.screen_loc, "CENTER:-234,CENTER:-229", "Absolute layer screen_loc mismatch")
 
+#define PARALLAX_TEST_INITIAL_SHIFT_X 7
+#define PARALLAX_TEST_INITIAL_SHIFT_Y -3
+#define PARALLAX_TEST_MUTATED_SHIFT_X -11
+#define PARALLAX_TEST_MUTATED_SHIFT_Y 13
+#define PARALLAX_TEST_SUBPIXEL_SPEED 0.6
+#define PARALLAX_TEST_SNAP_SPEED 1
+#define PARALLAX_TEST_MIXED_GLIDE_SPEED 1.4
+#define PARALLAX_TEST_GLIDE_SPEED 2
+#define PARALLAX_TEST_FAST_SPEED 4
+#define PARALLAX_TEST_NEAR_WRAP_OFFSET 239
+#define PARALLAX_TEST_MOVEMENT_STEPS 20
+#define PARALLAX_TEST_GLIDE_DURATION (0.2 SECONDS)
+#define PARALLAX_TEST_X_DIRECTION_PERIOD 2
+#define PARALLAX_TEST_Y_DIRECTION_PERIOD 3
+
+/// Общие матрицы не меняют положение и анимацию других слоёв.
+/datum/unit_test/parallax_glide_matrix_isolation/Run()
+	var/atom/movable/screen/parallax_layer/first = allocate(/atom/movable/screen/parallax_layer)
+	var/atom/movable/screen/parallax_layer/second = allocate(/atom/movable/screen/parallax_layer)
+	var/atom/movable/screen/parallax_layer/control = allocate(/atom/movable/screen/parallax_layer)
+	var/matrix/scratch = matrix(1, 0, PARALLAX_TEST_INITIAL_SHIFT_X, 0, 1, PARALLAX_TEST_INITIAL_SHIFT_Y)
+	first.transform = scratch
+	scratch.c = PARALLAX_TEST_MUTATED_SHIFT_X
+	scratch.f = PARALLAX_TEST_MUTATED_SHIFT_Y
+	var/matrix/copied = first.transform
+	TEST_ASSERT_EQUAL(copied.c, PARALLAX_TEST_INITIAL_SHIFT_X, "Изменение исходной матрицы сдвинуло слой по x")
+	TEST_ASSERT_EQUAL(copied.f, PARALLAX_TEST_INITIAL_SHIFT_Y, "Изменение исходной матрицы сдвинуло слой по y")
+	first.transform = matrix()
+	second.speed = PARALLAX_TEST_FAST_SPEED
+
+	var/list/test_speeds = list(
+		PARALLAX_TEST_SUBPIXEL_SPEED,
+		PARALLAX_TEST_SNAP_SPEED,
+		PARALLAX_TEST_MIXED_GLIDE_SPEED,
+		PARALLAX_TEST_GLIDE_SPEED,
+		PARALLAX_TEST_FAST_SPEED,
+	)
+	for(var/step_speed in test_speeds)
+		first.speed = control.speed = step_speed
+		first.offset_x = control.offset_x = PARALLAX_TEST_NEAR_WRAP_OFFSET
+		first.offset_y = control.offset_y = -PARALLAX_TEST_NEAR_WRAP_OFFSET
+		for(var/step in 1 to PARALLAX_TEST_MOVEMENT_STEPS)
+			var/rel_x = step % PARALLAX_TEST_X_DIRECTION_PERIOD ? 1 : -1
+			var/rel_y = step % PARALLAX_TEST_Y_DIRECTION_PERIOD ? 1 : -1
+			var/animated = first.RelativePosition(0, 0, rel_x, rel_y, PARALLAX_TEST_GLIDE_DURATION)
+			var/control_animated = control.LegacyRelativePosition(0, 0, rel_x, rel_y, PARALLAX_TEST_GLIDE_DURATION)
+			TEST_ASSERT_EQUAL(animated, control_animated, "Изменилось условие запуска анимации")
+			TEST_ASSERT_EQUAL(first.offset_x, control.offset_x, "Изменилось смещение по x")
+			TEST_ASSERT_EQUAL(first.offset_y, control.offset_y, "Изменилось смещение по y")
+			second.RelativePosition(0, 0, -rel_x, -rel_y, PARALLAX_TEST_GLIDE_DURATION)
+			var/matrix/actual = first.transform
+			var/matrix/expected = control.transform
+			for(var/component in list("a", "b", "c", "d", "e", "f"))
+				TEST_ASSERT_EQUAL(actual.vars[component], expected.vars[component], "Другой слой изменил компонент [component] матрицы")
+
+#undef PARALLAX_TEST_INITIAL_SHIFT_X
+#undef PARALLAX_TEST_INITIAL_SHIFT_Y
+#undef PARALLAX_TEST_MUTATED_SHIFT_X
+#undef PARALLAX_TEST_MUTATED_SHIFT_Y
+#undef PARALLAX_TEST_SUBPIXEL_SPEED
+#undef PARALLAX_TEST_SNAP_SPEED
+#undef PARALLAX_TEST_MIXED_GLIDE_SPEED
+#undef PARALLAX_TEST_GLIDE_SPEED
+#undef PARALLAX_TEST_FAST_SPEED
+#undef PARALLAX_TEST_NEAR_WRAP_OFFSET
+#undef PARALLAX_TEST_MOVEMENT_STEPS
+#undef PARALLAX_TEST_GLIDE_DURATION
+#undef PARALLAX_TEST_X_DIRECTION_PERIOD
+#undef PARALLAX_TEST_Y_DIRECTION_PERIOD
+
 /// Слой произвольного размера обязан заворачиваться по СВОЕМУ периоду, а не по 480.
 /// Донорские ассеты идут в 672 (goonstation) и 736 (CEV-Eris) пикселей, и на
 /// историческом периоде их картинка рвалась бы посреди экрана.

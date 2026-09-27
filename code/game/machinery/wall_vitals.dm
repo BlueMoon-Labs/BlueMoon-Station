@@ -70,6 +70,8 @@
 	VAR_FINAL/mob/living/patient
 	/// What machine are we talking to
 	VAR_FINAL/obj/machinery/connected
+	/// What the screen last drew for the patient, so health updates that change nothing visible skip the redraw
+	VAR_PRIVATE/last_display_key
 
 /obj/machinery/vitals_reader/advanced
 	name = "advanced vitals display"
@@ -228,31 +230,31 @@
 #define LOWER_BAR_OFFSET -3
 
 /**
- * Returns all overlays to be shown when a simple / basic animal patient is detected
+ * Returns all overlays to be shown when a simple / basic animal patient is detected, as construct_overlay() argument lists
  *
  * * hp_color - color being used for general, overrall health
  */
-/obj/machinery/vitals_reader/proc/get_simple_mob_overlays(hp_color)
+/obj/machinery/vitals_reader/proc/get_simple_mob_display(hp_color)
 	return list(
-		construct_overlay("mob", hp_color),
-		construct_overlay("blood", COLOR_GRAY),
-		construct_overlay("bar9", COLOR_GRAY),
-		construct_overlay("bar9", COLOR_GRAY, LOWER_BAR_OFFSET),
+		list("mob", hp_color),
+		list("blood", COLOR_GRAY),
+		list("bar9", COLOR_GRAY),
+		list("bar9", COLOR_GRAY, LOWER_BAR_OFFSET),
 	)
 
 /**
- * Returns all overlays to be shown when a humanoid patient is detected
+ * Returns all overlays to be shown when a humanoid patient is detected, as construct_overlay() argument lists
  *
  * * hp_color - color being used for general, overrall health
  */
-/obj/machinery/vitals_reader/proc/get_humanoid_overlays(hp_color)
+/obj/machinery/vitals_reader/proc/get_humanoid_display(hp_color)
 	var/list/returned_overlays = list()
 
 	var/static/list/body_zones = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	for(var/body_zone in body_zones)
 		var/obj/item/bodypart/real_part = patient.get_bodypart(body_zone)
 		var/bodypart_color = isnull(real_part) ? COLOR_GRAY : percent_to_color((real_part.brute_dam + real_part.burn_dam) / real_part.max_damage)
-		returned_overlays += construct_overlay("human_[body_zone]", bodypart_color)
+		returned_overlays[++returned_overlays.len] = list("human_[body_zone]", bodypart_color)
 
 	if(iscarbon(patient))
 		var/blood_color = "#a51919"
@@ -268,21 +270,21 @@
 			if(0.8 to INFINITY)
 				blood_color = "#a51919"
 
-		returned_overlays += construct_overlay("blood", blood_color)
+		returned_overlays[++returned_overlays.len] = list("blood", blood_color)
 	else
-		returned_overlays += construct_overlay("blood", COLOR_GRAY)
+		returned_overlays[++returned_overlays.len] = list("blood", COLOR_GRAY)
 
 	if(HAS_TRAIT(patient, TRAIT_NOBREATH))
-		returned_overlays += construct_overlay("bar9", COLOR_GRAY)
+		returned_overlays[++returned_overlays.len] = list("bar9", COLOR_GRAY)
 	else
 		var/oxy_percent = patient.getOxyLoss() / patient.maxHealth
-		returned_overlays += construct_overlay(percent_to_bar(oxy_percent), "#2A72AA")
+		returned_overlays[++returned_overlays.len] = list(percent_to_bar(oxy_percent), "#2A72AA")
 
 	if(HAS_TRAIT(patient, TRAIT_TOXIMMUNE))
-		returned_overlays += construct_overlay("bar9", COLOR_GRAY, LOWER_BAR_OFFSET)
+		returned_overlays[++returned_overlays.len] = list("bar9", COLOR_GRAY, LOWER_BAR_OFFSET)
 	else
 		var/tox_percent = patient.getToxLoss() / patient.maxHealth
-		returned_overlays += construct_overlay(percent_to_bar(tox_percent), "#5d9c11", LOWER_BAR_OFFSET)
+		returned_overlays[++returned_overlays.len] = list(percent_to_bar(tox_percent), "#5d9c11", LOWER_BAR_OFFSET)
 
 	return returned_overlays
 
@@ -291,7 +293,7 @@
  *
  * * hp_color - color being used for general, overrall health
  */
-/obj/machinery/vitals_reader/proc/get_ekg_and_resp(hp_color)
+/obj/machinery/vitals_reader/proc/get_ekg_and_resp_display(hp_color)
 	var/ekg_icon_state = "ekg"
 	var/resp_icon_state = "resp"
 	if(patient.stat == DEAD || HAS_TRAIT(patient, TRAIT_FAKEDEATH))
@@ -305,8 +307,8 @@
 		resp_icon_state = "resp_flat"
 
 	return list(
-		construct_overlay(ekg_icon_state, hp_color),
-		construct_overlay(resp_icon_state, "#00f7ff"),
+		list(ekg_icon_state, hp_color),
+		list(resp_icon_state, "#00f7ff"),
 	)
 
 /obj/machinery/vitals_reader/update_overlays()
@@ -320,12 +322,24 @@
 
 	. += "buttons"
 
+	var/list/display = get_patient_display()
+	last_display_key = display_key(display)
+	for(var/list/overlay_args as anything in display)
+		. += construct_overlay(arglist(overlay_args))
+
+/obj/machinery/vitals_reader/proc/get_patient_display()
 	var/hp_color = percent_to_color((patient.maxHealth - patient.health) / patient.maxHealth)
-	. += get_ekg_and_resp(hp_color)
+	. = get_ekg_and_resp_display(hp_color)
 	if(ishuman(patient))
-		. += get_humanoid_overlays(hp_color)
+		. += get_humanoid_display(hp_color)
 	else
-		. += get_simple_mob_overlays(hp_color)
+		. += get_simple_mob_display(hp_color)
+
+/obj/machinery/vitals_reader/proc/display_key(list/display)
+	var/list/key_parts = list()
+	for(var/list/overlay_args as anything in display)
+		key_parts += overlay_args.Join(",")
+	return key_parts.Join("|")
 
 /// Converts a percentage to a color
 /obj/machinery/vitals_reader/proc/percent_to_color(percent)
@@ -479,6 +493,8 @@
 /// Signal proc to update the display when a signal is received.
 /obj/machinery/vitals_reader/proc/update_overlay_on_signal(...)
 	SIGNAL_HANDLER
+	if(!is_operational || display_key(get_patient_display()) == last_display_key)
+		return
 	update_appearance()
 
 /obj/machinery/vitals_reader/emp_act(severity)

@@ -526,16 +526,31 @@
 /obj/effect/constructing_effect/proc/end()
 	qdel(src)
 
+/// Живёт дольше кулдауна ветра, чтобы турф переиспользовал его вместо нового объекта на каждый порыв.
 /obj/effect/temp_visual/dir_setting/space_wind
 	icon = 'icons/effects/atmospherics.dmi'
-	icon_state = "space_wind"
+	icon_state = null
 	layer = FLY_LAYER
-	duration = 20
+	duration = SPACE_WIND_VISUAL_COOLDOWN * 2
 	mouse_opacity = 0
 
 /obj/effect/temp_visual/dir_setting/space_wind/Initialize(mapload, set_dir, set_alpha = 255)
 	. = ..()
 	alpha = set_alpha
+	flick("space_wind", src)
+
+/obj/effect/temp_visual/dir_setting/space_wind/Destroy()
+	var/turf/open/wind_turf = loc
+	if(istype(wind_turf) && wind_turf.space_wind_visual == src)
+		wind_turf.space_wind_visual = null
+	return ..()
+
+/obj/effect/temp_visual/dir_setting/space_wind/proc/gust(set_dir, set_alpha)
+	setDir(set_dir)
+	alpha = set_alpha
+	flick("space_wind", src)
+	deltimer(timerid)
+	timerid = QDEL_IN_STOPPABLE(src, duration)
 
 /obj/effect/temp_visual/slime_puddle
 	icon = 'icons/mob/mob.dmi'

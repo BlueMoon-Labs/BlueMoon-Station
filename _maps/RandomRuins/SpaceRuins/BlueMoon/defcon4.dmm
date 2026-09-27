@@ -1349,6 +1349,10 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/safe/floor,
+/obj/item/resonator/upgraded,
+/obj/item/clothing/glasses/meson/night,
+/obj/item/mod/control/pre_equipped/mining,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "hV" = (
@@ -2493,6 +2497,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
+"oO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/structure/curtain,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "oQ" = (
 /obj/structure/window/reinforced{
 	dir = 1
@@ -2643,6 +2655,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark/airless,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "pH" = (
@@ -2732,7 +2745,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
 "qh" = (
-/obj/machinery/door/poddoor/shutters/preopen{
+/obj/machinery/door/poddoor/shutters{
 	id = "tarkonouter";
 	name = "External Bay Shutters"
 	},
@@ -2740,7 +2753,6 @@
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "qi" = (
@@ -3824,7 +3836,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/autolathe/hacked,
+/obj/machinery/ammo_workbench/unlocked,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "xL" = (
@@ -5148,11 +5160,13 @@
 /turf/open/floor/engine,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "GF" = (
-/obj/structure/bed,
-/obj/effect/turf_decal/tile/blue/anticorner{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_heater{
+	pixel_y = 13
+	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "GL" = (
@@ -5397,6 +5411,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark/airless,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Im" = (
@@ -5421,14 +5436,13 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/power1)
 "Ix" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "tarkonouter";
+	name = "External Bay Shutters"
+	},
 /obj/effect/turf_decal/trimline/yellow/filled/warning,
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "tarkonouter";
-	name = "External Bay Shutters"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
@@ -5508,9 +5522,10 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
 	},
-/obj/structure/curtain,
 /obj/structure/window/reinforced/tinted,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_master,
+/obj/structure/curtain,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "IY" = (
@@ -5902,12 +5917,11 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/cargo)
 "Lo" = (
-/obj/effect/turf_decal/trimline/yellow/filled/warning,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/door/poddoor/shutters/preopen{
+/obj/machinery/door/poddoor/shutters{
 	id = "tarkonouter";
 	name = "External Bay Shutters"
 	},
+/obj/effect/turf_decal/trimline/yellow/filled/warning,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Lp" = (
@@ -5924,13 +5938,13 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Ls" = (
-/obj/machinery/iv_drip,
 /obj/structure/window/reinforced/tinted,
 /obj/machinery/light/small/directional/west,
-/obj/effect/turf_decal/tile/blue/half{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_dispenser/fullupgrade,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "LA" = (
@@ -7226,6 +7240,7 @@
 /obj/structure/window/reinforced,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/paper/fluff/ruins/tarkoff/coupplans,
+/obj/item/disk/tech_disk/illegal,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Ud" = (
@@ -11138,7 +11153,7 @@ nN
 KQ
 yh
 cV
-EV
+oO
 IW
 HX
 gd

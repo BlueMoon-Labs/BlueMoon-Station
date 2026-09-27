@@ -242,7 +242,7 @@
 /obj/item/stack/sheet/hot_ice
 	name = "hot ice"
 	singular_name = "hot ice sheet"
-	icon = 'icons/obj/hot_ice.dmi'
+	icon = 'icons/obj/crystallizer_sheets.dmi'
 	icon_state = "hot-ice"
 	merge_type = /obj/item/stack/sheet/hot_ice
 	grind_results = list(/datum/reagent/hot_ice_slush = 25)
@@ -273,7 +273,7 @@
 /obj/item/hot_ice_pack
 	name = "hot ice cooling pack"
 	desc = "A pack of stabilized hot ice wrapped in cloth. Stays cold for a long time; use to cool down."
-	icon = 'icons/obj/hot_ice.dmi'
+	icon = 'icons/obj/crystallizer_sheets.dmi'
 	icon_state = "hot-ice"
 	w_class = WEIGHT_CLASS_SMALL
 

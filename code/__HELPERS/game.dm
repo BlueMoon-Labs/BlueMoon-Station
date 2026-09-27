@@ -527,13 +527,39 @@
 		C.images += I
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(remove_images_from_clients), I, show_to), duration, TIMER_CLIENT_TIME)
 
-/proc/flick_overlay_view(image/I, atom/target, duration) //wrapper for the above, flicks to everyone who can see the target atom
+/proc/flick_overlay_view_global(image/I, atom/target, duration) //wrapper for the above, flicks to everyone who can see the target atom
 	var/list/viewing = list()
 	for(var/m in viewers(target))
 		var/mob/M = m
 		if(M.client)
 			viewing += M.client
 	flick_overlay(I, viewing, duration)
+
+/atom/movable/flick_visual
+
+/// Показывает переданный образ поверх атома на время duration.
+/// Возвращает созданный объект, его можно анимировать, удалится сам по таймеру.
+/atom/proc/flick_overlay_view(mutable_appearance/display, duration)
+	if(!display)
+		return null
+
+	var/mutable_appearance/passed_appearance = \
+		istext(display) \
+			? mutable_appearance(icon, display, layer) \
+			: display
+
+	if(passed_appearance.layer == FLOAT_LAYER)
+		passed_appearance.layer = layer + 0.1
+	var/atom/movable/flick_visual/visual = new()
+	visual.appearance = passed_appearance
+	visual.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/atom/movable/lies_to_children = src
+	lies_to_children.vis_contents += visual
+	QDEL_IN_CLIENT_TIME(visual, duration)
+	return visual
+
+/area/flick_overlay_view(mutable_appearance/display, duration)
+	return
 
 /proc/get_active_player_count(var/alive_check = 0, var/afk_check = 0, var/human_check = 0)
 	// Get active players who are playing in the round

@@ -8,14 +8,11 @@
 	description = "Gives everyone a random race."
 
 /datum/round_event/wizard/race
-	var/list/stored_name
-	var/list/stored_species
-	var/list/stored_dna
+	/// Weakref to a swapped human -> list(real_name, species, unique_enzymes)
+	var/list/originals
 
 /datum/round_event/wizard/race/setup()
-	stored_name = list()
-	stored_species = list()
-	stored_dna = list()
+	originals = list()
 	end_when = rand(600,1200) //10 to 20 minutes
 	..()
 
@@ -34,15 +31,17 @@
 	if(prob(75))
 		all_the_same = 1
 
-	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
+	var/list/carbons = GLOB.carbon_list.Copy()
+	for(var/mob/living/carbon/human/H in carbons)
+		CHECK_TICK
+		if(QDELETED(H))
+			continue
 		var/turf/T = get_turf(H)
 		if(!T)
 			continue
 		if(!is_station_level(T.z))
 			continue
-		stored_name[H] = H.real_name
-		stored_species[H] = H.dna.species
-		stored_dna[H] = H.dna.unique_enzymes
+		remember_original(H)
 		H.set_species(new_species)
 		H.real_name = H.dna.species.random_name(H.gender,1)
 		H.dna.unique_enzymes = H.dna.generate_unique_enzymes()
@@ -50,11 +49,18 @@
 		if(!all_the_same)
 			new_species = pick(all_species)
 
+/datum/round_event/wizard/race/proc/remember_original(mob/living/carbon/human/H)
+	originals[WEAKREF(H)] = list(H.real_name, H.dna.species, H.dna.unique_enzymes)
+
 /datum/round_event/wizard/race/end()
-	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
-		if(!(stored_name[H] && stored_species[H] && stored_dna[H]))
+	for(var/datum/weakref/human_ref as anything in originals)
+		CHECK_TICK
+		var/mob/living/carbon/human/H = human_ref.resolve()
+		var/list/original = originals[human_ref]
+		if(!H || !(original[1] && original[2] && original[3]))
 			continue
-		H.set_species(stored_species[H])
-		H.real_name = stored_name[H]
-		H.dna.unique_enzymes = stored_dna[H]
+		H.set_species(original[2])
+		H.real_name = original[1]
+		H.dna.unique_enzymes = original[3]
 		to_chat(H, "<span class='notice'>You feel back to your normal self again.</span>")
+	originals = null

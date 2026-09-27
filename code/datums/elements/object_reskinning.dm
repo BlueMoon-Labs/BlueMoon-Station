@@ -74,7 +74,6 @@
 		else
 			item_image = new /mutable_appearance(to_reskin)
 		items += list("[reskin_option]" = item_image)
-	items = sort_list(items)
 
 	// Display to the user
 	var/pick = show_radial_menu(user, to_reskin, items, custom_check = CALLBACK(src, PROC_REF(check_reskin_menu), user, to_reskin), radius = 38, require_near = TRUE)

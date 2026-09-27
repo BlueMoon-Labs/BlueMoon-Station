@@ -117,6 +117,9 @@
 	},
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/firealarm/directional/west,
+/obj/effect/mob_spawn/human/tarkon/sci{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "aS" = (
@@ -224,6 +227,14 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/observ)
+"bx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
+	dir = 1
+	},
+/obj/structure/curtain,
+/turf/open/floor/plasteel,
+/area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "by" = (
 /obj/item/solar_assembly,
 /obj/item/solar_assembly,
@@ -715,6 +726,13 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/centerhall)
+"er" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "et" = (
 /obj/structure/fluff/empty_sleeper{
 	dir = 8
@@ -1370,6 +1388,10 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/safe/floor,
+/obj/item/resonator/upgraded,
+/obj/item/clothing/glasses/meson/night,
+/obj/item/mod/control/pre_equipped/mining,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "hT" = (
@@ -2752,6 +2774,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "pH" = (
@@ -3937,7 +3960,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/autolathe/hacked,
+/obj/machinery/ammo_workbench/unlocked,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/secoff)
 "xL" = (
@@ -5459,13 +5482,13 @@
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/atmos)
 "GF" = (
-/obj/structure/bed{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue/anticorner{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/anticorner/contrasted{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_heater{
+	pixel_y = 13
+	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "GP" = (
@@ -5748,9 +5771,8 @@
 /obj/effect/turf_decal/tile/purple/anticorner{
 	dir = 1
 	},
-/obj/structure/chair/comfy/black,
-/obj/effect/mob_spawn/human/tarkon/sci,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/rnd/server/tarkoff,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Il" = (
@@ -5889,13 +5911,13 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon)
 "IW" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 4;
-	piping_layer = 2
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 4
 	},
-/obj/structure/curtain,
 /obj/structure/window/reinforced/tinted,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_master,
+/obj/structure/curtain,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "IY" = (
@@ -6383,13 +6405,13 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Ls" = (
-/obj/machinery/iv_drip,
 /obj/structure/window/reinforced/tinted,
 /obj/machinery/light/small/directional/west,
-/obj/effect/turf_decal/tile/blue/half{
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/green/half/contrasted{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/chem_dispenser/fullupgrade,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/trauma)
 "Lw" = (
@@ -7859,6 +7881,7 @@
 /obj/structure/window/reinforced,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/paper/fluff/ruins/tarkoff/coupplans,
+/obj/item/disk/tech_disk/illegal,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/developement)
 "Ud" = (
@@ -10091,7 +10114,7 @@ MJ
 qe
 nP
 fa
-yG
+er
 UV
 YI
 YI
@@ -11988,7 +12011,7 @@ JB
 KQ
 ed
 cV
-EV
+bx
 IW
 HX
 gd

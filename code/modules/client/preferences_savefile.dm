@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	80
+#define SAVEFILE_VERSION_MAX	82
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
 #define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
@@ -153,6 +153,12 @@
 		if(CHECK_BITFIELD(mentor_toggles, (1<<6)))
 			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
 			DISABLE_BITFIELD(mentor_toggles, (1<<6))
+
+	if(current_version < 81) // BLUEMOON ADD - звук дыхания из баллона
+		toggles |= SOUND_BREATHING
+
+	if(current_version < 82) // BLUEMOON ADD - звук кнопок способностей включён по умолчанию
+		sound_toggles |= SOUND_BUTTONS
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -631,6 +637,12 @@
 	READ_PLAYER_SAVE(S, document, "parallax", parallax)
 	READ_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
 	READ_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	READ_PLAYER_SAVE(S, document, "lighting_brightness", lighting_brightness)
+	READ_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
+	READ_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
+	READ_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
+	READ_PLAYER_SAVE(S, document, "light", light)
+	READ_PLAYER_SAVE(S, document, "glowlevel", glowlevel)
 	READ_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	READ_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
@@ -650,6 +662,9 @@
 	//citadel code
 	READ_PLAYER_SAVE(S, document, "arousable", arousable)
 	READ_PLAYER_SAVE(S, document, "sexknotting", sexknotting) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "panel_tab_toggles", panel_tab_toggles)
+	READ_PLAYER_SAVE(S, document, "dynamic_window_size", dynamic_window_size)
+	READ_PLAYER_SAVE(S, document, "compact_custom_tab", compact_custom_tab)
 	READ_PLAYER_SAVE(S, document, "screenshake", screenshake)
 	READ_PLAYER_SAVE(S, document, "damagescreenshake", damagescreenshake)
 	READ_PLAYER_SAVE(S, document, "autostand", autostand)
@@ -664,6 +679,7 @@
 	READ_PLAYER_SAVE(S, document, "disable_combat_mouse_lock", disable_combat_mouse_lock)
 	READ_PLAYER_SAVE(S, document, "gfluid_blacklist", gfluid_blacklist)
 
+	READ_PLAYER_SAVE(S, document, "smartlink", smartlink)
 	READ_PLAYER_SAVE(S, document, "collapse_empty_character_slots", collapse_empty_character_slots)
 	READ_PLAYER_SAVE(S, document, "charcreation_theme", charcreation_theme)
 	READ_PLAYER_SAVE(S, document, "modern_button_shape", modern_button_shape)
@@ -748,7 +764,7 @@
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
-	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
+	toggles = sanitize_integer(toggles, 0, 33554431, initial(toggles))
 	sound_toggles = sanitize_integer(sound_toggles, 0, 16777215, initial(sound_toggles))
 	custom_colors = sanitize_integer(custom_colors, 0, 16777215, initial(custom_colors))
 	deadmin = sanitize_integer(deadmin, 0, 16777215, initial(deadmin))
@@ -771,6 +787,12 @@
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
+	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
+	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
+	lighting_quality = sanitize_integer(lighting_quality, LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH, LIGHTING_QUALITY_DEFAULT)
+	light = sanitize_integer(light, 0, 7, initial(light))
+	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -789,6 +811,9 @@
 	damagescreenshake = sanitize_integer(damagescreenshake, 0, 2, initial(damagescreenshake))
 	autostand = sanitize_integer(autostand, 0, 1, initial(autostand))
 	cit_toggles = sanitize_integer(cit_toggles, 0, 16777215, initial(cit_toggles))
+	panel_tab_toggles = sanitize_integer(panel_tab_toggles, 0, ALL_INTERACTION_MENU_TABS, initial(panel_tab_toggles))
+	dynamic_window_size = sanitize_integer(dynamic_window_size, 0, 1, initial(dynamic_window_size))
+	compact_custom_tab = sanitize_integer(compact_custom_tab, 0, 1, initial(compact_custom_tab))
 	auto_ooc = sanitize_integer(auto_ooc, 0, 1, initial(auto_ooc))
 	no_tetris_storage = sanitize_integer(no_tetris_storage, 0, 1, initial(no_tetris_storage))
 	recoil_screenshake = sanitize_integer(recoil_screenshake, 0, 800, initial(recoil_screenshake))
@@ -800,6 +825,7 @@
 	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
 	screentip_color = sanitize_hexcolor(screentip_color, 6, 1, initial(screentip_color))
 	screentip_pref = sanitize_inlist(screentip_pref, GLOB.screentip_pref_options, SCREENTIP_PREFERENCE_ENABLED)
+	smartlink = sanitize_integer(smartlink, 0, 1, initial(smartlink)) //BLUEMOON ADD
 
 	//SKYRAT CHANGES BEGIN
 	see_chat_emotes	= sanitize_integer(see_chat_emotes, 0, 1, initial(see_chat_emotes))
@@ -1248,6 +1274,12 @@
 	WRITE_PLAYER_SAVE(S, document, "parallax", parallax)
 	WRITE_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
 	WRITE_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	WRITE_PLAYER_SAVE(S, document, "lighting_brightness", lighting_brightness)
+	WRITE_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
+	WRITE_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
+	WRITE_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
+	WRITE_PLAYER_SAVE(S, document, "light", light)
+	WRITE_PLAYER_SAVE(S, document, "glowlevel", glowlevel)
 	WRITE_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_color", hud_toggle_color)
@@ -1264,6 +1296,9 @@
 	WRITE_PLAYER_SAVE(S, document, "damagescreenshake", damagescreenshake)
 	WRITE_PLAYER_SAVE(S, document, "arousable", arousable)
 	WRITE_PLAYER_SAVE(S, document, "sexknotting", sexknotting) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "panel_tab_toggles", panel_tab_toggles)
+	WRITE_PLAYER_SAVE(S, document, "dynamic_window_size", dynamic_window_size)
+	WRITE_PLAYER_SAVE(S, document, "compact_custom_tab", compact_custom_tab)
 	WRITE_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	WRITE_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
 	WRITE_PLAYER_SAVE(S, document, "long_strip_menu", long_strip_menu)
@@ -1279,6 +1314,7 @@
 	WRITE_PLAYER_SAVE(S, document, "disable_combat_mouse_lock", disable_combat_mouse_lock)
 	WRITE_PLAYER_SAVE(S, document, "gfluid_blacklist", gfluid_blacklist)
 
+	WRITE_PLAYER_SAVE(S, document, "smartlink", smartlink)
 	WRITE_PLAYER_SAVE(S, document, "collapse_empty_character_slots", collapse_empty_character_slots)
 	WRITE_PLAYER_SAVE(S, document, "charcreation_theme", charcreation_theme)
 	WRITE_PLAYER_SAVE(S, document, "modern_button_shape", modern_button_shape)
@@ -1393,6 +1429,8 @@
 "ears" = "None",
 "wings" = "None",
 "wings_color" = "FFF",
+"insect_fluff_color" = null,
+"insect_markings_color" = null,
 "frills" = "None",
 "deco_wings" = "None",
 "spines" = "None",
@@ -1566,6 +1604,8 @@
 	READ_PLAYER_SAVE(S, document, "feature_horns_color", features["horns_color"])
 	READ_PLAYER_SAVE(S, document, "feature_wings_color", features["wings_color"])
 	READ_PLAYER_SAVE(S, document, "feature_color_scheme", features["color_scheme"])
+	READ_PLAYER_SAVE(S, document, "feature_insect_fluff_color", features["insect_fluff_color"])
+	READ_PLAYER_SAVE(S, document, "feature_insect_markings_color", features["insect_markings_color"])
 	READ_PLAYER_SAVE(S, document, "shriek_type", shriek_type) // BLUEMOON ADD - выбор вида крика для квирка
 	READ_PLAYER_SAVE(S, document, "summon_nickname", summon_nickname) // BLUEMOON ADD - выбор прозвища для призываемого
 	READ_PLAYER_SAVE(S, document, "phobia_type", phobia_type) // BLUEMOON ADD - выбор фобии для квирка
@@ -1949,6 +1989,8 @@
 
 	features["horns_color"] = sanitize_hexcolor(features["horns_color"], 6, FALSE, "85615a")
 	features["wings_color"] = sanitize_hexcolor(features["wings_color"], 6, FALSE, "FFFFFF")
+	features["insect_fluff_color"] = sanitize_hexcolor(features["insect_fluff_color"], 6, FALSE, features["wings_color"])
+	features["insect_markings_color"] = sanitize_hexcolor(features["insect_markings_color"], 6, FALSE, features["wings_color"])
 	backbag = sanitize_inlist(backbag, GLOB.backbaglist, initial(backbag))
 	jumpsuit_style = sanitize_inlist(jumpsuit_style, GLOB.jumpsuitlist, initial(jumpsuit_style))
 	uplink_spawn_loc = sanitize_inlist(uplink_spawn_loc, GLOB.uplink_spawn_loc_list, initial(uplink_spawn_loc))
@@ -2234,7 +2276,7 @@
 		if(!commit_player_save(S))
 			return FALSE
 
-	// Если удалили текущий слот — нужно переключиться на другой
+	// Если удалили текущий слот - нужно переключиться на другой
 	if(slot == default_slot)
 		var/list/names = player_character_names()
 		if(!islist(names))
@@ -2247,7 +2289,7 @@
 			if(names["character[i]"])
 				new_slot = i
 				break
-		// Если не нашли непустой — просто переключаемся на слот 1
+		// Если не нашли непустой - просто переключаемся на слот 1
 		if(!new_slot)
 			new_slot = 1
 		default_slot = new_slot
@@ -2368,6 +2410,8 @@
 	WRITE_PLAYER_SAVE(S, document, "feature_deco_wings"					, features["deco_wings"])
 	WRITE_PLAYER_SAVE(S, document, "feature_horns_color"					, features["horns_color"])
 	WRITE_PLAYER_SAVE(S, document, "feature_wings_color"					, features["wings_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_insect_fluff_color", features["insect_fluff_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_insect_markings_color", features["insect_markings_color"])
 	WRITE_PLAYER_SAVE(S, document, "feature_insect_wings"				, features["insect_wings"])
 	WRITE_PLAYER_SAVE(S, document, "feature_insect_fluff"				, features["insect_fluff"])
 	WRITE_PLAYER_SAVE(S, document, "feature_insect_markings"				, features["insect_markings"])

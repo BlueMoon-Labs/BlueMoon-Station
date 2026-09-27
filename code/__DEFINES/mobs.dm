@@ -444,3 +444,12 @@
 #define PAIN_LOW 1 // TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD
 #define PAIN_MEDIUM 2 // drunkenness
 #define PAIN_FULL 3
+
+// Уровни искажения речи (текста) в проценте если рот прикрыт
+#define MUFFLE_NONE 0 // Нет искажений
+#define MUFFLE_LOW 45 // Речь разборчивая, но приглушенная
+#define MUFFLE_MEDIUM 75 // Явно невнятная, слова узнаваемы
+#define MUFFLE_HIGH 90 // Почти не разборчиво
+
+// Специальная константа для полной немоты
+#define MUFFLE_MUTE 255 // Запрещает издавать любые звуки

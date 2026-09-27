@@ -25,12 +25,12 @@
 	. = ..()
 	if(!.)
 		return
-	if(!do_after(mod.wearer, 10 SECONDS, target = mod))
+	if(!do_after(mod.wearer, 5 SECONDS, mod.wearer))
 		return FALSE
 	mod.wearer.adjustOxyLoss(20)
-	playsound(src, 'sound/items/modsuit/inflate_bloon.ogg', 50, TRUE)
-	var/obj/item/toy/balloon = new(get_turf(src))
-	mod.wearer.put_in_hands(balloon)
+	playsound(get_turf(mod.wearer), 'sound/items/modsuit/inflate_bloon.ogg', 50, TRUE)
+	var/obj/item/toy/balloon/new_ballon = new(get_turf(src))
+	mod.wearer.put_in_hands(new_ballon)
 	drain_power(use_power_cost)
 
 ///Paper Dispenser - Dispenses (sometimes burning) paper sheets.
@@ -52,7 +52,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(!do_after(mod.wearer, 1 SECONDS, target = mod))
+	if(!do_after(mod.wearer, 1 SECONDS, target = mod.wearer))
 		return FALSE
 
 	var/obj/item/paper/crisp_paper = new(get_turf(src))

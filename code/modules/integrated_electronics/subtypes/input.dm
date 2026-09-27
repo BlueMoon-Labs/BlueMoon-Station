@@ -1322,6 +1322,31 @@
 	push_data()
 	activate_pin(1)
 
+/obj/item/integrated_circuit/input/list_selection
+	name = "list selection circuit"
+	desc = "This circuit lets you choose between different strings from a selection."
+	extended_desc = "This circuit accepts a list of text values ​​as input; the user selects a value from this list, and the selected value is provided as the output."
+	icon_state = "addition"
+	can_be_asked_input = 1
+	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
+	inputs = list(
+		"selections" = IC_PINTYPE_LIST
+	)
+	outputs = list(
+		"selected" = IC_PINTYPE_STRING
+	)
+	activators = list(
+		"on selected" = IC_PINTYPE_PULSE_OUT
+	)
+
+/obj/item/integrated_circuit/input/list_selection/ask_for_input(mob/user)
+	var/list/selection = get_pin_data(IC_INPUT, 1)
+	var/selected = tgui_input_list(user,"Choose input.","Selection", selection)
+	if(!selected)
+		return
+	set_pin_data(IC_OUTPUT, 1, selected)
+	push_data()
+	activate_pin(1)
 
 // -storage examiner- // **works**
 /obj/item/integrated_circuit/input/storage_examiner

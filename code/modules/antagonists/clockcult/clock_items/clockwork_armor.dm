@@ -70,6 +70,7 @@
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	flags_inv = HIDETAUR
 	armor = list(MELEE = 60, BULLET = 70, LASER = 50, ENERGY = 50, BOMB = 60, BIO = 0, RAD = 0, FIRE = 100, ACID = 100, MAGIC = 60, WOUND = 65)
+	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	allowed = list(/obj/item/clockwork, /obj/item/clothing/glasses/wraith_spectacles, /obj/item/clothing/glasses/judicial_visor, /obj/item/mmi/posibrain/soul_vessel, /obj/item/reagent_containers/food/drinks/bottle/holyoil)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
 

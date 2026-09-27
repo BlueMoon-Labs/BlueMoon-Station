@@ -1040,6 +1040,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 	path = newpath ? newpath : list()
 	if(!path_hud)
 		return
+	var/list/path_images = hud_list?[DIAG_PATH_HUD]
+	if(!length(newpath) && !length(path_images))
+		return
+	var/static/list/path_icon_keys = list(DIAG_PATH_HUD)
 	var/list/path_huds_watching_me = list()
 	var/datum/atom_hud/diagnostic_hud = GLOB.huds[DATA_HUD_DIAGNOSTIC_ADVANCED]
 	if(diagnostic_hud)
@@ -1048,9 +1052,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
 		if(!H)
 			continue
-		H.remove_from_hud(src)
+		if(length(path_images))
+			for(var/mob/viewer as anything in H.hudusers)
+				H.remove_from_single_hud(viewer, src, path_icon_keys)
 
-	var/list/path_images = hud_list?[DIAG_PATH_HUD]
 	if(isnull(path_images))
 		path_images = list()
 		hud_list[DIAG_PATH_HUD] = path_images
@@ -1094,9 +1099,11 @@ Pass a positive integer as an argument to override a bot's default speed.
 			path_images += I
 
 	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
-		if(!H)
+		if(!H || !length(path_images))
 			continue
-		H.add_to_hud(src)
+		for(var/mob/viewer as anything in H.hudusers)
+			if(!H.queued_to_see[viewer])
+				H.add_to_single_hud(viewer, src, path_icon_keys)
 
 
 /mob/living/simple_animal/bot/proc/increment_path()

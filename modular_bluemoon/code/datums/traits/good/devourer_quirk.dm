@@ -62,16 +62,6 @@
 /datum/quirk/bluemoon_devourer/proc/on_examine_holder(atom/examine_target, mob/living/carbon/human/examiner, list/examine_list)
 	examine_list += "[quirk_holder.ru_ego(TRUE)] явно мучает голод."
 
-
-/datum/quirk/bluemoon_devourer/proc/update_size_modifiers(new_size, cur_size)
-	if (check_mob_size() && new_size != cur_size) // не даём уменьшиться, в т.ч. если мёртв
-		var/mob/living/carbon/human/H= quirk_holder
-
-		var/user_slowdown = (abs(new_size - 1) * CONFIG_GET(number/body_size_slowdown_multiplier))
-
-		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/devourer_quirk_boost, TRUE, user_slowdown * -0.8) // убираем 80% от замедления
-
-
 /datum/quirk/bluemoon_devourer/proc/check_mob_size()
 	if(!isliving(quirk_holder))
 		return FALSE
@@ -92,7 +82,7 @@
 	if(comp)
 		qdel(comp)
 	// конец участка
-	update_size_modifiers(get_size(H), 1)
+	check_mob_size()
 
 /*
 Действия

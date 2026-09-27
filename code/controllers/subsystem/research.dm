@@ -384,6 +384,14 @@ SUBSYSTEM_DEF(research)
 			mining_web.last_bitcoins = last_tick.Copy()
 	last_income = world.time
 
+
+/datum/controller/subsystem/research/proc/is_core_available(core_type)
+	if (!ispath(core_type, /obj/item/assembly/signaler/anomaly))
+		return FALSE // The fuck are you checking this random object for?
+	var/already_made = created_anomaly_types[core_type] || 0
+	var/hard_limit = anomaly_hard_limit_by_type[core_type]
+	return already_made < hard_limit
+
 /datum/controller/subsystem/research/proc/calculate_server_coefficient(amt)	//Diminishing returns. BLUEMOON CHANGE: принимает число серверов сети
 	if(!amt)
 		return FALSE

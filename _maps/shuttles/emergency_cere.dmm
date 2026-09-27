@@ -300,7 +300,6 @@
 	dir = 8
 	},
 /obj/structure/window/reinforced,
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "aC" = (
@@ -311,7 +310,6 @@
 	dir = 4
 	},
 /obj/structure/window/reinforced,
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "aE" = (
@@ -1044,9 +1042,6 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/mob/living/simple_animal/bot/medbot{
-	name = "Speedy* Recovery"
-	},
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "ci" = (
@@ -1187,6 +1182,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "cy" = (
@@ -1300,7 +1296,6 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/item/storage/backpack/duffelbag/med/surgery,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -1311,6 +1306,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "cG" = (
@@ -1745,18 +1741,25 @@
 	},
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
-"mb" = (
-/obj/structure/chair/office/light{
+"kW" = (
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/plasteel/white,
+/area/shuttle/escape)
+"GM" = (
+/obj/effect/turf_decal/tile/blue{
 	dir = 1
 	},
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "science crew on the Emergency Cere Shuttle"
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/plasteel/white,
 /area/shuttle/escape)
-"nc" = (
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
-/turf/open/floor/plasteel/dark,
+"Hl" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the shuttle"
+	},
+/turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 
 (1,1,1) = {"
@@ -2161,7 +2164,7 @@ aa
 ac
 ai
 at
-nc
+aC
 aC
 aC
 ab
@@ -2204,8 +2207,8 @@ aa
 aa
 ac
 aj
-mb
-nc
+at
+aC
 aC
 aO
 ab
@@ -2450,8 +2453,8 @@ ab
 ck
 cr
 cx
-co
-co
+GM
+GM
 cK
 ab
 cR
@@ -2493,9 +2496,9 @@ bc
 ac
 cl
 cs
-cp
-cp
-cp
+kW
+Hl
+kW
 cL
 ab
 cR
@@ -2537,9 +2540,9 @@ cd
 ab
 cm
 ct
-cp
-cp
-cp
+kW
+kW
+kW
 cM
 ab
 cQ

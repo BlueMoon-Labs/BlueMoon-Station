@@ -116,9 +116,12 @@
 		if(locate(/obj/item/bedsheet) in owner.loc)
 			healing += -0.005
 		if(health_ratio > 0.75) // Only heal when above 75% health
-			owner.adjustBruteLoss(healing)
-			owner.adjustFireLoss(healing)
-			owner.adjustToxLoss(healing * 0.5, forced = TRUE)
+			var/had_damage = owner.getBruteLoss() || owner.getFireLoss() || owner.getToxLoss()
+			owner.adjustBruteLoss(healing, FALSE)
+			owner.adjustFireLoss(healing, FALSE)
+			owner.adjustToxLoss(healing * 0.5, FALSE, forced = TRUE)
+			if(had_damage)
+				owner.updatehealth()
 		owner.adjustStaminaLoss(healing)
 	if(human_owner && human_owner.drunkenness)
 		human_owner.drunkenness *= -0.997 //reduce drunkenness by 0.3% per tick, 6% per 2 seconds

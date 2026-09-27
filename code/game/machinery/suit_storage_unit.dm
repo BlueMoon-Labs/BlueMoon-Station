@@ -63,6 +63,7 @@
 	suit_type = /obj/item/clothing/suit/space/eva
 	helmet_type = /obj/item/clothing/head/helmet/space/eva
 	mask_type = /obj/item/clothing/mask/breath
+	mod_type = /obj/item/mod/control/pre_equipped
 
 /obj/machinery/suit_storage_unit/captain
 	suit_type = /obj/item/clothing/suit/space/hardsuit/captain
@@ -349,9 +350,20 @@
 		new /obj/item/stack/sheet/metal(loc, 2)
 	qdel(src)
 
+/obj/machinery/suit_storage_unit/proc/choice_type_of_suit(mob/living/user)
+	var/user_choice = tgui_input_list(user, "Выберите тип скафандра:", "МОД или Обычный скафандр", list("MODsuit", "Hardsuit"))
+	var/obj/item/suit_to_delete
+	if(user_choice == "MODsuit")
+		suit_to_delete = suit
+	else
+		suit_to_delete = mod
+	if(user_choice) //если пользователь хоть что-то выбрал, то можно удалять.
+		QDEL_NULL(suit_to_delete)
+
 /obj/machinery/suit_storage_unit/interact(mob/living/user)
 	var/static/list/items
-
+	if(suit && mod)
+		choice_type_of_suit(user)
 	if (!items)
 		items = list(
 			"suit" = create_silhouette_of(/obj/item/clothing/suit/space/eva),
@@ -419,6 +431,7 @@
 			else
 				if (occupant)
 					var/mob/living/mob_occupant = occupant
+					playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50)
 					to_chat(mob_occupant, span_userdanger("[capitalize(src.name)] confines grow warm, then hot, then scorching. You're being burned [!mob_occupant.stat ? "alive" : "away"]!"))
 				cook()
 		if ("lock", "unlock")
@@ -633,6 +646,21 @@
 	else
 		open_machine()
 		dump_contents()
+
+/obj/machinery/suit_storage_unit/Exited(atom/movable/gone, atom/newloc)
+	. = ..()
+	if(gone == suit)
+		suit = null
+	else if(gone == helmet)
+		helmet = null
+	else if(gone == mask)
+		mask = null
+	else if(gone == shoes)
+		shoes = null
+	else if(gone == mod)
+		mod = null
+	else if(gone == storage)
+		storage = null
 
 /obj/machinery/suit_storage_unit/proc/resist_open(mob/user)
 	if(!state_open && occupant && (user in src) && user.stat == CONSCIOUS) // Check they're still here.

@@ -34,3 +34,18 @@
 	id = /datum/reagent/consumable/iceamericano
 	results = list(/datum/reagent/consumable/iceamericano = 3)
 	required_reagents = list(/datum/reagent/consumable/ice = 1, /datum/reagent/consumable/americano = 2)
+
+// я хз куда их пихать - пихну сюда
+
+/datum/chemical_reaction/holywater
+	name = "holy water"
+	id = /datum/reagent/water/holywater
+	results = list(/datum/reagent/water/holywater = 3)
+	required_reagents = list(/datum/reagent/water = 1, /datum/reagent/mercury = 1, /datum/reagent/consumable/ethanol/wine=1)
+
+/datum/chemical_reaction/hellwater
+	name = "hell water"
+	id = /datum/reagent/hellwater
+	results = list(/datum/reagent/hellwater = 2)
+	required_reagents = list(/datum/reagent/water/holywater = 1, /datum/reagent/consumable/capsaicin=1)
+

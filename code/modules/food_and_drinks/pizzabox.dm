@@ -110,8 +110,8 @@
 	else if(!open && !pizza && !bomb && foldable)
 		to_chat(user, span_notice("Складываю коробку из-под пиццы в картон."))
 		var/obj/item/stack/sheet/cardboard/cardboard = new (user.drop_location())
-		user.put_in_active_hand(cardboard)
 		qdel(src)
+		user.put_in_active_hand(cardboard)
 		return
 	update_icon()
 

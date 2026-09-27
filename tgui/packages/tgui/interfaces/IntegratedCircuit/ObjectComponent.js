@@ -14,22 +14,39 @@ import { formatIeCooldownDs, formatIeSizeDisplay } from './circuitNodeFormat';
 import { ABSOLUTE_Y_OFFSET } from './constants';
 import { Port } from './Port';
 
+/**
+ * Cheap structural equality for a single port row. Only the fields that can
+ * change at runtime are compared (live value + wiring); name/type/color are
+ * static for a mount so skipping them is safe and keeps this O(rows).
+ */
+const portSig = (p) => (p
+  ? `${p.ref}\u0000${JSON.stringify(p.current_data)}\u0000${JSON.stringify(p.connected_to)}`
+  : '');
+
+const portsEqual = (a, b) => {
+  if (a === b) {
+    return true;
+  }
+  if (!a || !b || a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (portSig(a[i]) !== portSig(b[i])) {
+      return false;
+    }
+  }
+  return true;
+};
+
 
 export class ObjectComponent extends Component {
   constructor() {
     super();
     this.state = {
-      isDragging: false,
-      dragPos: null,
-      startPos: null,
-      lastMousePos: null,
       editingNodeTitle: false,
       nodeTitleDraft: '',
     };
 
-    this.handleStartDrag = this.handleStartDrag.bind(this);
-    this.handleStopDrag = this.handleStopDrag.bind(this);
-    this.handleDrag = this.handleDrag.bind(this);
     this.commitNodeTitleEdit = this.commitNodeTitleEdit.bind(this);
   }
 
@@ -47,73 +64,39 @@ export class ObjectComponent extends Component {
     }
   }
 
-  handleStartDrag(e) {
-    const { x, y } = this.props;
-    e.stopPropagation();
-    this.setState({
-      lastMousePos: null,
-      isDragging: true,
-      dragPos: { x: x, y: y },
-      startPos: { x: x, y: y },
-    });
-    window.addEventListener('mousemove', this.handleDrag);
-    window.addEventListener('mouseup', this.handleStopDrag);
-  }
-
-  handleStopDrag(e) {
-    const { act } = useBackend();
-    const { dragPos } = this.state;
-    const { index } = this.props;
-    if (dragPos) {
-      act('set_component_coordinates', {
-        component_id: index,
-        rel_x: dragPos.x,
-        rel_y: dragPos.y,
-      });
-    }
-
-    window.removeEventListener('mousemove', this.handleDrag);
-    window.removeEventListener('mouseup', this.handleStopDrag);
-    this.setState({ isDragging: false });
-  }
-
-  handleDrag(e) {
-    const { dragPos, isDragging, lastMousePos } = this.state;
-    if (dragPos && isDragging) {
-      e.preventDefault();
-      const { screenZoomX, screenZoomY, screenX, screenY } = e;
-      let xPos = screenZoomX || screenX;
-      let yPos = screenZoomY || screenY;
-      if (lastMousePos) {
-        this.setState({
-          dragPos: {
-            x: dragPos.x - (lastMousePos.x - xPos),
-            y: dragPos.y - (lastMousePos.y - yPos),
-          },
-        });
-      }
-      this.setState({
-        lastMousePos: { x: xPos, y: yPos },
-      });
-    }
-  }
-
-  componentWillUnmount() {
-    // Cleanup if the node unmounts mid-drag
-    // (replaces the dead Inferno onComponentWillUnmount JSX prop).
-    window.removeEventListener('mousemove', this.handleDrag);
-    window.removeEventListener('mouseup', this.handleStopDrag);
-  }
-
   shouldComponentUpdate(nextProps, nextState) {
-    const { input_ports, output_ports } = this.props;
-
-    return (
-      shallowDiffers(this.props, nextProps)
-      || shallowDiffers(this.state, nextState)
-      || shallowDiffers(input_ports, nextProps.input_ports)
-      || shallowDiffers(output_ports, nextProps.output_ports)
-    );
+    // Локальное состояние ноды (перетаскивание, переименование) — редкое и важное.
+    if (shallowDiffers(this.state, nextState)) {
+      return true;
+    }
+    // Смена зума/панорамы обязана перемерить позиции портов, даже если данные не
+    // изменились: координаты проводов зависят от transform плоскости.
+    if (this.props.portLayoutKey !== nextProps.portLayoutKey) {
+      return true;
+    }
+    const p = this.props;
+    const n = nextProps;
+    if (
+      p.x !== n.x
+      || p.y !== n.y
+      || p.name !== n.name
+      || p.color !== n.color
+      || p.removable !== n.removable
+      || p.recent_pulse !== n.recent_pulse
+      || p.circuitOn !== n.circuitOn
+      || p.selected !== n.selected
+      || p.connectSourceRef !== n.connectSourceRef
+      || p.ie_size !== n.ie_size
+      || p.ie_complexity !== n.ie_complexity
+      || p.ie_cooldown_ds !== n.ie_cooldown_ds
+      || p.ie_ext_cooldown_ds !== n.ie_ext_cooldown_ds
+      || p.power_usage_per_input !== n.power_usage_per_input
+      || !portsEqual(p.input_ports, n.input_ports)
+      || !portsEqual(p.output_ports, n.output_ports)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   render() {
@@ -135,12 +118,15 @@ export class ObjectComponent extends Component {
       onPortRightClick,
       onPortMouseUp,
       portLayoutKey: _portLayoutKey,
-      debugCopyRef,
       ie_size,
       ie_complexity,
       ie_cooldown_ds,
       ie_ext_cooldown_ds,
       power_usage_per_input,
+      portLabelByRef,
+      connectSourceRef,
+      selected,
+      onNodeMouseDown,
       ...rest
     } = this.props;
     const input_ports = byondListToArray(rawInputPorts);
@@ -169,6 +155,7 @@ export class ObjectComponent extends Component {
             componentId={index}
             isOutput={!!isOutput}
             act={act}
+            portLabelByRef={portLabelByRef}
             {...PortOptions}
           />
         </Stack.Item>
@@ -194,14 +181,9 @@ export class ObjectComponent extends Component {
         </Stack.Item>
       </Stack>
     );
-    const { startPos, dragPos } = this.state;
     const powered = !!circuitOn;
-
-    let [x_pos, y_pos] = [x, y];
-    if (dragPos && startPos && startPos.x === x_pos && startPos.y === y_pos) {
-      x_pos = dragPos.x;
-      y_pos = dragPos.y;
-    }
+    const x_pos = x;
+    const y_pos = y;
 
     // Assigned onto the ports
     const PortOptions = {
@@ -210,6 +192,7 @@ export class ObjectComponent extends Component {
       onPortMouseDown: onPortMouseDown,
       onPortRightClick: onPortRightClick,
       onPortMouseUp: onPortMouseUp,
+      connectSourceRef: connectSourceRef,
     };
 
     return (
@@ -222,9 +205,9 @@ export class ObjectComponent extends Component {
           'ObjectComponent__root',
           !powered && 'ObjectComponent--poweroff',
           recent_pulse && powered && 'ObjectComponent--recentPulse',
+          selected && 'ObjectComponent--selected',
         ])}
-        onMouseDown={this.handleStartDrag}
-        onMouseUp={this.handleStopDrag}>
+        onMouseDown={onNodeMouseDown}>
         <Box
           backgroundColor={color}
           py={1}
@@ -339,18 +322,6 @@ export class ObjectComponent extends Component {
                   y: e.pageY + ABSOLUTE_Y_OFFSET,
                 })} />
             </Stack.Item>
-            {!!debugCopyRef && (
-              <Stack.Item>
-                <Button
-                  color="transparent"
-                  icon="hashtag"
-                  compact
-                  tooltip="Ref чипа в чат (только R_DEBUG)"
-                  onClick={() => act('ie_copy_component_ref', {
-                    component_id: index,
-                  })} />
-              </Stack.Item>
-            )}
             {!!removable && (
               <Stack.Item>
                 <Button

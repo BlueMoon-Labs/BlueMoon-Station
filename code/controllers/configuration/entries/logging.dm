@@ -87,6 +87,10 @@
 /datum/config_entry/flag/log_econ
 	default = TRUE
 
+/// log HFR actions and state changes into a dedicated hfr.log
+/datum/config_entry/flag/log_hfr
+	default = TRUE
+
 /// log per-reagent metabolism events (MOB ADD/DELETE/TRANSFER)
 /// Единственный логгер, который жил без гейта, и самый громкий: в прод-раунде 9832 это
 /// 1.6 МБ, из них две трети - пары add/delete курительной химии, которая пересоздаётся

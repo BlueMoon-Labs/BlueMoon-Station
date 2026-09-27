@@ -5,11 +5,10 @@
 	каждая такая плитка имеет вес и, следовательно, повышает энергопотребление из-за нагрузки на сервоприводы."
 	module_type = MODULE_ARMOR
 	var/datum/armor/additional_armor = new()
-	var/armor_type //MELEE, BULLET, LASER
+	var/armor_module_type //MELEE, BULLET, LASER
 	var/armor_bonus = 15
 	var/need_sheets = 10
 	var/slowdown_bonus = 0.25
-	idle_power_cost = DEFAULT_CHARGE_DRAIN
 	var/list/material_to_armor_list
 	incompatible_modules = list(/obj/item/mod/module/anomaly_locked/antigrav)
 	complexity = 2
@@ -37,19 +36,22 @@
 
 /obj/item/mod/module/armor/examine_more(mob/user)
 	. = ..()
-	if(armor_type)
+	if(armor_module_type)
 		return
 	. += span_boldnotice("Сейчас доступны варианты:")
 	for(var/material in material_to_armor_list)
 		. += (span_alert("Материал --[(material)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
 
 /obj/item/mod/module/armor/proc/add_armor_bonus()
+	if(!mod.theme.compatible_with_armor_modules)
+		on_uninstall()
+		return
 	for(var/index in mod.mod_parts)
 		if(index == MOD_PART_CELL)
 			continue
 		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_type]" = armor_bonus)))
+		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = armor_bonus)))
 	mod.slowdown_active += slowdown_bonus
 	mod.slowdown_inactive += slowdown_bonus
 
@@ -59,7 +61,7 @@
 			continue
 		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_type]" = -armor_bonus)))
+		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = -armor_bonus)))
 	mod.slowdown_active -= slowdown_bonus
 	mod.slowdown_inactive -= slowdown_bonus
 
@@ -70,14 +72,14 @@
 
 /obj/item/mod/module/armor/on_install()
 	. = ..()
-	if(!armor_type)
+	if(!armor_module_type)
 		return
 	mod.current_armor_module_installed += 1
 	add_armor_bonus()
 
 /obj/item/mod/module/armor/on_uninstall()
 	. = ..()
-	if(!armor_type)
+	if(!armor_module_type)
 		return
 	mod.current_armor_module_installed -= 1
 	remove_armor_bonus()
@@ -86,25 +88,25 @@
 /obj/item/mod/module/armor/attackby(obj/item/I, mob/living/user, params)
 //Чекает в списке какую броню ставить, если это материал и меняет icon_state с названием
 	. = ..()
-	if(armor_type)
+	if(armor_module_type)
 		return
 	var/mob/living/carbon/C = user
 	if(!istype(I, /obj/item/stack/sheet))
 		return
 	var/obj/item/stack/sheet/material = I
-	armor_type = get_armor_by_material(material)
-	if(material.amount < need_sheets || !armor_type)
-		var/ballon_message = armor_type ? "Нужно [need_sheets] листов" : "Не подходящий материал!"
+	armor_module_type = get_armor_by_material(material)
+	if(material.amount < need_sheets || !armor_module_type)
+		var/ballon_message = armor_module_type ? "Нужно [need_sheets] листов" : "Не подходящий материал!"
 		C.balloon_alert(C, ballon_message)
-		armor_type = null
+		armor_module_type = null
 		return
 	if(do_after(user, 2 SECONDS, src))
-		name = "[armor_type] MOD armor"
-		icon_state = "armor-[armor_type]"
-		desc = "Завершенный модуль брони для МОДа, который защищает от повреждений типа [armor_type]"
+		name = "[armor_module_type] MOD armor"
+		icon_state = "armor-[armor_module_type]"
+		desc = "Завершенный модуль брони для МОДа, который защищает от повреждений типа [armor_module_type]"
 		material.use(need_sheets)
 	else
-		armor_type = null
+		armor_module_type = null
 
 /obj/item/mod/module/armor/prebuild
 	name = "Base prebuild"
@@ -113,48 +115,50 @@
 
 /obj/item/mod/module/armor/prebuild/on_uninstall(deleting = FALSE, user)
 	. = ..()
+	var/mob/target_mob = user
+	if(mod.wearer)
+		target_mob = mod.wearer
 	if(deleting)
-		// Нас уже удаляют: свой qdel(src) отсюда замыкал петлю Destroy -> uninstall -> qdel.
 		return
-	playsound(src, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-	if(user)
-		balloon_alert(user, "модуль раскалывается и разрушается!")
+	playsound(mod, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	if(target_mob)
+		balloon_alert(target_mob, span_big_warning("модуль раскалывается и разрушается!"))
 	qdel(src)
 
 /obj/item/mod/module/armor/prebuild/Initialize(mapload)
 	. = ..()
-	name = "[armor_type] MOD armor"
-	icon_state = "armor-[armor_type]"
+	name = "[armor_module_type] Pre-Installed MOD armor"
+	icon_state = "armor-[armor_module_type]"
 
 /obj/item/mod/module/armor/prebuild/melee
-	armor_type = MELEE
+	armor_module_type = MELEE
 
 /obj/item/mod/module/armor/prebuild/bullet
-	armor_type = BULLET
+	armor_module_type = BULLET
 
 /obj/item/mod/module/armor/prebuild/laser
-	armor_type = LASER
+	armor_module_type = LASER
 
 /obj/item/mod/module/armor/prebuild/energy
-	armor_type = ENERGY
+	armor_module_type = ENERGY
 
 /obj/item/mod/module/armor/prebuild/bomb
-	armor_type = BOMB
+	armor_module_type = BOMB
 
 /obj/item/mod/module/armor/prebuild/bio
-	armor_type = BIO
+	armor_module_type = BIO
 
 /obj/item/mod/module/armor/prebuild/rad
-	armor_type = RAD
+	armor_module_type = RAD
 
 /obj/item/mod/module/armor/prebuild/fire
-	armor_type = FIRE
+	armor_module_type = FIRE
 
 /obj/item/mod/module/armor/prebuild/acid
-	armor_type = ACID
+	armor_module_type = ACID
 
 /obj/item/mod/module/armor/prebuild/magic
-	armor_type = MAGIC
+	armor_module_type = MAGIC
 
 /obj/item/mod/module/armor/prebuild/wound
-	armor_type = WOUND
+	armor_module_type = WOUND

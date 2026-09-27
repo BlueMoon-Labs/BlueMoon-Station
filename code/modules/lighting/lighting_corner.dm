@@ -147,15 +147,26 @@
 	#endif
 	var/new_mx = round(mx, LIGHTING_ROUND_VALUE)
 
-	// Early return: if rounded cache values are identical, skip queuing adjacent objects
-	if(new_r == cache_r && new_g == cache_g && new_b == cache_b && new_mx == cache_mx)
+	// Объектам нужен цвет и переход через порог темноты; величина cache_mx на цвет не влияет.
+	var/luminosity_changed = (new_mx > LIGHTING_SOFT_THRESHOLD) != (cache_mx > LIGHTING_SOFT_THRESHOLD)
+	var/color_changed = new_r != cache_r || new_g != cache_g || new_b != cache_b
+	if(new_mx != cache_mx || color_changed)
+		if(northeast)
+			northeast.cached_lumcount = null
+		if(northwest)
+			northwest.cached_lumcount = null
+		if(southeast)
+			southeast.cached_lumcount = null
+		if(southwest)
+			southwest.cached_lumcount = null
+	cache_mx = new_mx
+	if(!color_changed && !luminosity_changed)
 		self_destruct_if_idle()
 		return
 
 	cache_r = new_r
 	cache_g = new_g
 	cache_b = new_b
-	cache_mx = new_mx
 
 	#define QUEUE(turf) if(turf?.lighting_object && !turf.lighting_object.needs_update) { turf.lighting_object.needs_update = TRUE; GLOB.lighting_update_objects += turf.lighting_object }
 	QUEUE(northeast)

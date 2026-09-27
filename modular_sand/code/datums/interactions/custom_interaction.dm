@@ -34,9 +34,9 @@
 GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	CUSTOM_INTERACTION_SOUND_NONE = list("label" = "Без звука", "group" = CUSTOM_SOUND_GROUP_NONE, "file" = null),
 
-	"asscrap1" = list("label" = "Хлопок 1", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap1.ogg'),
-	"asscrap2" = list("label" = "Хлопок 2", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap2.ogg'),
-	"asscrap3" = list("label" = "Хлопок 3", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/asscrap3.ogg'),
+	"asscrap1" = list("label" = "Хлопок 1", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_bluemoon/sound/interactions/asscrap1.ogg'),
+	"asscrap2" = list("label" = "Хлопок 2", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_bluemoon/sound/interactions/asscrap2.ogg'),
+	"asscrap3" = list("label" = "Хлопок 3", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_bluemoon/sound/interactions/asscrap3.ogg'),
 	"squelch3" = list("label" = "Хлюп 3", "group" = CUSTOM_SOUND_GROUP_SPECIAL, "file" = 'modular_sand/sound/interactions/squelch3.ogg'),
 
 	"bang1" = list("label" = "Толчок 1", "group" = CUSTOM_SOUND_GROUP_THRUSTS, "file" = 'modular_sand/sound/interactions/bang1.ogg'),
@@ -60,7 +60,7 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 
 	"champ1" = list("label" = "Чавканье 1", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ1.ogg'),
 	"champ2" = list("label" = "Чавканье 2", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ2.ogg'),
-	"champ_fingering" = list("label" = "Чавканье (пальцы)", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/interactions/champ_fingering.ogg'),
+	"champ_fingering" = list("label" = "Чавканье (пальцы)", "group" = CUSTOM_SOUND_GROUP_SMACKING, "file" = 'modular_sand/sound/lewd/champ_fingering.ogg'),
 
 	"squelch1" = list("label" = "Хлюп 1", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/squelch1.ogg'),
 	"squelch2" = list("label" = "Хлюп 2", "group" = CUSTOM_SOUND_GROUP_WET, "file" = 'modular_sand/sound/interactions/squelch2.ogg'),
@@ -77,10 +77,10 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	"foot_wet3" = list("label" = "Мокрые ноги 3", "group" = CUSTOM_SOUND_GROUP_FEET, "file" = 'modular_sand/sound/interactions/foot_wet3.ogg'),
 
 	"hug" = list("label" = "Объятия", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/hug.ogg'),
-	"kiss1" = list("label" = "Поцелуй 1", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss1.ogg'),
-	"kiss2" = list("label" = "Поцелуй 2", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss2.ogg'),
-	"kiss3" = list("label" = "Поцелуй 3", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss3.ogg'),
-	"kiss4" = list("label" = "Поцелуй 4", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss4.ogg'),
+	"kiss1" = list("label" = "Поцелуй 1", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_splurt/sound/interactions/kiss/kiss1.ogg'),
+	"kiss2" = list("label" = "Поцелуй 2", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_splurt/sound/interactions/kiss/kiss2.ogg'),
+	"kiss3" = list("label" = "Поцелуй 3", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_splurt/sound/interactions/kiss/kiss3.ogg'),
+	"kiss4" = list("label" = "Поцелуй 4", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_splurt/sound/interactions/kiss/kiss4.ogg'),
 	"kiss5" = list("label" = "Поцелуй 5", "group" = CUSTOM_SOUND_GROUP_AFFECTION, "file" = 'modular_sand/sound/interactions/kiss5.ogg'),
 
 	"moan_f1" = list("label" = "Стон (ж) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f1.ogg'),
@@ -90,9 +90,9 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	"moan_f5" = list("label" = "Стон (ж) 5", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f5.ogg'),
 	"moan_f6" = list("label" = "Стон (ж) 6", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f6.ogg'),
 	"moan_f7" = list("label" = "Стон (ж) 7", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_f7.ogg'),
-	"moan_m1" = list("label" = "Стон (м) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m1.ogg'),
-	"moan_m2" = list("label" = "Стон (м) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m2.ogg'),
-	"moan_m3" = list("label" = "Стон (м) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/moan_m3.ogg'),
+	"moan_m1" = list("label" = "Стон (м) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m1.ogg'),
+	"moan_m2" = list("label" = "Стон (м) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m2.ogg'),
+	"moan_m3" = list("label" = "Стон (м) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m3.ogg'),
 	"under_moan_f1" = list("label" = "Приглушённый стон (ж) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f1.ogg'),
 	"under_moan_f2" = list("label" = "Приглушённый стон (ж) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f2.ogg'),
 	"under_moan_f3" = list("label" = "Приглушённый стон (ж) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/under_moan_f3.ogg'),
@@ -103,18 +103,18 @@ GLOBAL_LIST_INIT(custom_interaction_sounds, list(
 	"final_m1" = list("label" = "Финал (м) 1", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m1.ogg'),
 	"final_m2" = list("label" = "Финал (м) 2", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m2.ogg'),
 	"final_m3" = list("label" = "Финал (м) 3", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m3.ogg'),
-	"final_m4" = list("label" = "Финал (м) 4", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m4.ogg'),
-	"final_m5" = list("label" = "Финал (м) 5", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m5.ogg'),
+	"final_m4" = list("label" = "Финал (м) 4", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m2.ogg'),
+	"final_m5" = list("label" = "Финал (м) 5", "group" = CUSTOM_SOUND_GROUP_MOANS, "file" = 'modular_sand/sound/interactions/final_m3.ogg'),
 
 	"purr1" = list("label" = "Мурлыканье 1", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr1.ogg'),
 	"purr2" = list("label" = "Мурлыканье 2", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr2.ogg'),
 	"purr3" = list("label" = "Мурлыканье 3", "group" = CUSTOM_SOUND_GROUP_PURRS, "file" = 'modular_sand/sound/interactions/purr3.ogg'),
 
-	"slap" = list("label" = "Шлепок", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/slap.ogg'),
+	"slap" = list("label" = "Шлепок", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/effects/snap.ogg'),
 	"whistle" = list("label" = "Свист", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_bluemoon/sound/emotes/svist.ogg'),
 	"applause" = list("label" = "Салютование", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'sound/voice/salute.ogg'),
-	"clawcum1" = list("label" = "Коготь 1", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/clawcum1.ogg'),
-	"clawcum2" = list("label" = "Коготь 2", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_sand/sound/interactions/clawcum2.ogg'),
+	"clawcum1" = list("label" = "Коготь 1", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_splurt/sound/lewd/deathclaw1.ogg'),
+	"clawcum2" = list("label" = "Коготь 2", "group" = CUSTOM_SOUND_GROUP_MISC, "file" = 'modular_splurt/sound/lewd/deathclaw2.ogg'),
 ))
 
 /datum/interaction/custom

@@ -60,7 +60,7 @@
 	build_path = /obj/item/mod/construction/armor
 	category = list("MODsuit Chassis", "MODsuit Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
-	research_icon = 'icons/obj/clothing/modsuit/mod_construction.dmi'
+	research_icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_construction.dmi'
 	research_icon_state = "standard-plating"
 
 /datum/design/mod_plating/New()
@@ -116,6 +116,14 @@
 	materials = list(/datum/material/iron = 6000, /datum/material/bananium = 2000, /datum/material/glass = 1000, /datum/material/plasma = 1000)
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 	research_icon_state = "cosmohonk-plating"
+
+/datum/design/mod_plating/cargo_worker
+	name = "MOD Cargo Plating"
+	id = "mod_plating_cargo_worker"
+	build_path = /obj/item/mod/construction/armor/cargo_worker
+	materials = list(/datum/material/iron = 6000, /datum/material/titanium = 2000, /datum/material/glass = 1000, /datum/material/plasma = 1000)
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+	research_icon_state = "loader-plating"
 
 /datum/design/mod_paint_kit
 	name = "MOD Paint Kit"
@@ -309,10 +317,10 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_CARGO
 
 /datum/design/module/mod_constructor
-	name = "Constructor Module"
+	name = "Fast Build and Blueprints Module"
 	id = "mod_constructor"
 	materials = list(/datum/material/iron = 1000, /datum/material/titanium = 500)
-	build_path = /obj/item/mod/module/constructor
+	build_path = /obj/item/mod/module/constructor/lesser
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/module/mod_quick_carry
@@ -377,6 +385,13 @@
 	build_path = /obj/item/mod/module/holster
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/module/on_stational_shield
+	name = "LEEXP VER-I EnergyShield Module"
+	id = "mod_energy_shield"
+	materials = list(/datum/material/iron = 2500, /datum/material/glass = 2000, /datum/material/uranium = 2000)
+	build_path = /obj/item/mod/module/energy_shield
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/module/surgicalprocessor
 	name = "Surgical Processor Module"
 	id = "mod_surgicalprocessor"
@@ -420,4 +435,40 @@
 	materials = list(/datum/material/iron = 1500, /datum/material/uranium = 2000, /datum/material/diamond = 2000, /datum/material/bluespace = 2000)
 	build_path = /obj/item/mod/module/emp_shield/advanced
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/module/power_plasma
+	name = "MOD Plasma powergen Module"
+	id = "mod_plasmagen"
+	build_path = /obj/item/mod/module/power/plasma
+	materials = list(/datum/material/glass = 1000, /datum/material/titanium = 1500)
+	departmental_flags = DEPARTMENTAL_FLAG_CARGO
+
+/datum/design/module/power_uranium
+	name = "MOD Uranium powergen Module"
+	id = "mod_urangen"
+	build_path = /obj/item/mod/module/power/uranium
+	materials = list(/datum/material/glass = 1000, /datum/material/titanium = 1500)
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
+/datum/design/module/power_diamond
+	name = "MOD Diamond powergen Module"
+	id = "mod_diamondgen"
+	build_path = /obj/item/mod/module/power/diamond
+	materials = list(/datum/material/glass = 1000, /datum/material/titanium = 1500)
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/module/power_bananium
+	name = "MOD Bananium powergen Module"
+	id = "mod_bananagen"
+	build_path = /obj/item/mod/module/power/bananium
+	materials = list(/datum/material/glass = 1000, /datum/material/titanium = 1500)
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
+/datum/design/module/power_tesla
+	name = "MOD Tesla powergen Module"
+	id = "mod_teslagen"
+	build_path = /obj/item/mod/module/power/tesla
+	materials = list(/datum/material/titanium = 250, /datum/material/glass = 1000, /datum/material/silver = 1500)
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+
 // BLUEMOON ADD END

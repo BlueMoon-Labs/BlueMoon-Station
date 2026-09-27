@@ -280,10 +280,12 @@ export const TguiTarget = new Juke.Target({
 
 export const TguiEslintTarget = new Juke.Target({
   dependsOn: [YarnTarget],
-  executes: async ({ args }) => {
+  parameters: [CiParameter],
+  executes: async ({ args, get }) => {
     await yarn(
       'eslint', 'packages',
-      '--fix', '--ext', '.js,.cjs,.ts,.tsx',
+      ...(!get(CiParameter) ? ['--fix'] : []),
+      '--ext', '.js,.cjs,.ts,.tsx',
       ...args
     );
   },
