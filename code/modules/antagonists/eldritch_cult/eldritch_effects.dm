@@ -109,10 +109,24 @@
 			reject_ritual(user, ritual, heretic.hunt_target_unavailable_reason(heretic.hunt_target))
 			log_game("Отказ подношения [key_name(user)] в [AREACOORD(src)]: [heretic.hunt_target_unavailable_reason(heretic.hunt_target)]")
 		else
+			if(ritual.type == /datum/eldritch_knowledge/spell/basic)
+				release_petrified_hunt_target(user, heretic)
 			do_ritual(user, ritual)
 	if(!QDELETED(src))
 		release_atoms()
 		is_in_use = FALSE
+
+/// Разбитая статуя горгульи рассыпает тело в пыль, поэтому цель из камня выпускает сама руна.
+/obj/effect/eldritch/proc/release_petrified_hunt_target(mob/living/user, datum/antagonist/heretic/heretic)
+	var/mob/living/carbon/human/target = heretic.hunt_target?.current
+	var/obj/structure/statue/gargoyle/statue = target?.loc
+	if(!istype(statue) || statue.petrified_mob != target || !isturf(statue.loc) || get_dist(statue, src) > 1)
+		return FALSE
+	statue.visible_message(span_warning("Знаки руны раскалывают камень, и [target] падает из статуи."))
+	qdel(statue)
+	target.Paralyze(HERETIC_PETRIFIED_RELEASE_PARALYZE)
+	log_game("Руна [key_name(user)] выпускает цель [key_name(target)] из каменной формы в [AREACOORD(src)].")
+	return TRUE
 
 /obj/effect/eldritch/proc/prompt_ritual(mob/living/user, list/rituals)
 	// Открытый список выбора держит руну в памяти; без таймаута она не собирается после удаления.
@@ -373,7 +387,10 @@
 		log_game("[key_name(user)] прерывает ритуал «[ritual.name]» в [AREACOORD(src)] через [(world.time - ascension_started_at) / (1 SECONDS)] сек.: [reason]")
 		return FALSE
 	// Стопки расходуются поштучно только после успешного завершения обряда.
+	ritual.finish_failure_reason = null
 	var/succeeded = ritual.on_finished_recipe(user, selected_atoms, get_turf(src))
+	if(!succeeded && ritual.finish_failure_reason)
+		to_chat(user, span_warning("Ритуал «[ritual.name]» не завершён. [ritual.finish_failure_reason] Компоненты не израсходованы."))
 	if(succeeded)
 		if(istype(ascension_ritual))
 			heretic.update_combat_resource_alert()
@@ -388,7 +405,7 @@
 					stack.use(stack_usage[stack])
 		ritual.cleanup_atoms(selected_atoms)
 		to_chat(user, span_notice("Ритуал «[ritual.name]» завершён."))
-	log_game("[key_name(user)] [succeeded ? "завершает" : "не завершает"] ритуал «[ritual.name]» в [AREACOORD(src)].")
+	log_game("[key_name(user)] [succeeded ? "завершает" : "не завершает"] ритуал «[ritual.name]» в [AREACOORD(src)].[!succeeded && ritual.finish_failure_reason ? " [ritual.finish_failure_reason]" : ""]")
 	release_atoms()
 	return succeeded
 
@@ -402,6 +419,8 @@
 		if(unavailable_reason)
 			return unavailable_reason
 		var/mob/living/carbon/human/victim = heretic.hunt_target.current
+		if(istype(victim.loc, /obj/structure/statue/gargoyle))
+			return "Цель [victim.real_name] застыла в камне. Начертите руну вплотную к статуе: руна сама расколет камень. Разбитая оружием статуя рассыпается в пыль вместе с телом."
 		if(!(victim in available_atoms))
 			return "Назначенная цель [victim.real_name] должна находиться на руне или рядом с ней, вне шкафов и других контейнеров."
 		if(!heretic.hunt_target_ready(victim))

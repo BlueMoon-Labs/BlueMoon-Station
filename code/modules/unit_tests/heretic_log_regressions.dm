@@ -330,3 +330,67 @@
 	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
 	TEST_ASSERT(user.equip_to_slot_if_possible(rod, ITEM_SLOT_LPOCKET), "Жезл помещён в карман.")
 	TEST_ASSERT(user.anti_magic_check(), "Обычный жезл сохраняет прежние правила защиты.")
+
+/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe
+	var/list/poll_result = list()
+
+/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	return poll_result.Copy()
+
+/// Руна выпускает цель из камня горгульи целой и сбитой, а далёкая статуя получает понятный отказ.
+/datum/unit_test/heretic_log_gargoyle_target/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	var/obj/structure/statue/gargoyle/statue = allocate(/obj/structure/statue/gargoyle, run_loc_floor_top_right, victim)
+	var/obj/effect/eldritch/near_rune = allocate(/obj/effect/eldritch, get_step(run_loc_floor_top_right, WEST))
+	var/obj/effect/eldritch/far_rune = allocate(/obj/effect/eldritch, run_loc_floor_bottom_left)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/eldritch_knowledge/offering = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	TEST_ASSERT(!far_rune.release_petrified_hunt_target(user, heretic), "Далёкая руна не трогает статую.")
+	TEST_ASSERT_EQUAL(victim.loc, statue, "Цель осталась в камне.")
+	TEST_ASSERT(findtext(far_rune.recipe_failure_reason(offering, user), "застыла в камне"), "Отказ объясняет, что цель в камне.")
+	TEST_ASSERT(near_rune.release_petrified_hunt_target(user, heretic), "Соседняя руна раскалывает камень.")
+	TEST_ASSERT(QDELETED(statue), "Статуя удалена, а не разбита.")
+	TEST_ASSERT_EQUAL(victim.loc, run_loc_floor_top_right, "Цель стоит на месте статуи.")
+	TEST_ASSERT(victim.stat != DEAD && !(victim.status_flags & GODMODE), "Цель жива и уязвима.")
+	TEST_ASSERT(heretic.hunt_target_ready(victim), "Выпущенная цель готова к подношению.")
+
+/// Провал призыва после опроса называет причину и не оставляет пустого тела.
+/datum/unit_test/heretic_log_summon_failure_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe)
+	heretic.researched_knowledge[probe.type] = probe
+	var/turf/far_turf = run_loc_floor_top_right
+	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Без отклика призыв не удаётся.")
+	TEST_ASSERT_EQUAL(probe.finish_failure_reason, "Ни одна душа не откликнулась.", "Причина - пустой опрос.")
+	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Пустое тело удалено.")
+	TEST_ASSERT(!probe.summoning, "Призыв снова доступен.")
+	probe.poll_result = list(user)
+	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Отошедший от руны не завершает призыв.")
+	TEST_ASSERT_EQUAL(probe.finish_failure_reason, "Вы отошли от руны.", "Причина названа после отклика.")
+	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Тело после отклика тоже удалено.")
+	heretic.researched_knowledge -= probe.type
+
+/// Цели еретика отмечаются выполненными для панели антагонистов.
+/datum/unit_test/heretic_log_objective_completion/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/datum/objective/sacrifice_ecult/sacrifice = allocate(/datum/objective/sacrifice_ecult)
+	var/datum/objective/ascend_ecult/ascend = allocate(/datum/objective/ascend_ecult)
+	sacrifice.owner = heretic.owner
+	ascend.owner = heretic.owner
+	heretic.objectives += list(sacrifice, ascend)
+	heretic.refresh_objective_completion()
+	TEST_ASSERT(!sacrifice.completed && !ascend.completed, "Без жертв цели не выполнены.")
+	heretic.total_sacrifices = sacrifice.target_amount
+	heretic.ascended = TRUE
+	heretic.refresh_objective_completion()
+	TEST_ASSERT(sacrifice.completed, "Набранные жертвы видны в панели.")
+	TEST_ASSERT(ascend.completed, "Вознесение видно в панели.")
+	heretic.objectives -= list(sacrifice, ascend)

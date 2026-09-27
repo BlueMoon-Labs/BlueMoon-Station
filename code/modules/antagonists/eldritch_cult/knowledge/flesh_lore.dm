@@ -61,7 +61,7 @@
 	flesh_servants -= source
 
 /datum/eldritch_knowledge/proc/poll_servant_candidates(question, mob/living/body, duration)
-	return pollCandidatesForMob(question, ROLE_HERETIC, null, ROLE_HERETIC, duration, body)
+	return pollCandidatesForMob(question, ROLE_HERETIC, null, FALSE, duration, body, POLL_IGNORE_HERETIC_SERVANT)
 
 /datum/eldritch_knowledge/proc/release_flesh_servants()
 	for(var/datum/antagonist/heretic_monster/servant as anything in flesh_servants.Copy())
@@ -192,22 +192,22 @@
 	var/mob/living/carbon/human/victim = locate() in atoms
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
-	if(QDELETED(victim) || victim.stat != DEAD || length(flesh_servants) >= heretic.flesh_kind_limit() || !path || path.combat_resource < 2 || !heretic.can_add_servant())
-		return FALSE
-	var/block_reason = heretic_conversion_block_reason(victim)
-	if(block_reason)
-		to_chat(user, span_warning(block_reason))
+	finish_failure_reason = voiceless_dead_failure_reason(user, victim)
+	if(finish_failure_reason)
 		return FALSE
 	victim.grab_ghost()
 	if(!victim.mind || !victim.client)
+		to_chat(user, span_notice("Мансус ищет душу для тела. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
 		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
 		if(!length(candidates))
-			to_chat(user, span_warning("Ни одна душа не откликнулась, и тело осталось пустым. Компоненты не израсходованы."))
+			finish_failure_reason = "Ни одна душа не откликнулась, и тело осталось пустым."
 			return FALSE
-		if(!ritual_still_valid(user, atoms, get_turf(loc)) || victim.stat != DEAD || length(flesh_servants) >= heretic.flesh_kind_limit() || heretic_conversion_block_reason(victim) || QDELETED(path) || path.combat_resource < 2 || !heretic.can_add_servant())
+		finish_failure_reason = ritual_invalid_reason(user, atoms, get_turf(loc)) || voiceless_dead_failure_reason(user, victim)
+		if(finish_failure_reason)
 			return FALSE
 		var/mob/dead/observer/chosen = pick(candidates)
 		if(!chosen?.key || victim.client)
+			finish_failure_reason = "Откликнувшаяся душа ушла до вселения."
 			return FALSE
 		victim.ghostize(FALSE)
 		victim.key = chosen.key
@@ -225,6 +225,14 @@
 	atoms -= victim
 	log_game("[key_name(user)] raised [key_name(victim)] as a voiceless dead.")
 	return TRUE
+
+/datum/eldritch_knowledge/flesh_ghoul/proc/voiceless_dead_failure_reason(mob/living/user, mob/living/carbon/human/victim)
+	if(QDELETED(victim) || victim.stat != DEAD)
+		return "Тело на руне должно оставаться мёртвым."
+	var/block_reason = recipe_block_reason(user)
+	if(block_reason)
+		return block_reason
+	return heretic_conversion_block_reason(victim)
 
 /datum/eldritch_knowledge/flesh_ghoul/on_lose(mob/user)
 	release_flesh_servants()

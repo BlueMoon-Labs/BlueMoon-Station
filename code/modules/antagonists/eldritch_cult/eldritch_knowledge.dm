@@ -16,6 +16,8 @@
 	var/ritual_time = 5 SECONDS
 	var/ritual_hint = ""
 	var/list/ritual_hints
+	/// Причина последнего провала on_finished_recipe; руна показывает её исполнителю и пишет в лог.
+	var/finish_failure_reason
 
 /datum/eldritch_knowledge/New()
 	. = ..()
@@ -56,18 +58,27 @@
 	return null
 
 /datum/eldritch_knowledge/proc/ritual_still_valid(mob/living/user, list/atoms, turf/ritual_turf)
+	return !ritual_invalid_reason(user, atoms, ritual_turf)
+
+/datum/eldritch_knowledge/proc/ritual_invalid_reason(mob/living/user, list/atoms, turf/ritual_turf)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(QDELETED(src) || !heretic || heretic.get_knowledge(type) != src || user.incapacitated() || !user.Adjacent(ritual_turf))
-		return FALSE
+	if(QDELETED(src) || !heretic || heretic.get_knowledge(type) != src)
+		return "Знание обряда больше недоступно."
+	if(user.incapacitated())
+		return "Вы не можете действовать: оглушены, связаны или без сознания."
+	if(!user.Adjacent(ritual_turf))
+		return "Вы отошли от руны."
 	if(!length(atoms))
-		return FALSE
+		return "Компоненты обряда исчезли."
 	var/obj/effect/eldritch/rune = GLOB.heretic_ritual_reservations[atoms[1]]
-	if(QDELETED(rune) || !rune.ritual_valid(user, src))
-		return FALSE
+	if(QDELETED(rune))
+		return "Руна больше недоступна."
+	if(!rune.ritual_valid(user, src))
+		return rune.ritual_interrupt_reason || "Обряд прерван."
 	for(var/atom/ingredient as anything in atoms)
 		if(GLOB.heretic_ritual_reservations[ingredient] != rune || QDELETED(ingredient) || !isturf(ingredient.loc) || get_dist(ingredient, ritual_turf) > 1 || ingredient.z != ritual_turf.z)
-			return FALSE
-	return TRUE
+			return "Компонент обряда перемещён или удалён."
+	return null
 
 /datum/eldritch_knowledge/proc/on_finished_recipe(mob/living/user, list/atoms, loc)
 	if(!length(result_atoms))
@@ -209,7 +220,7 @@
 /datum/eldritch_knowledge/summon/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(summoning || !mob_to_summon || length(flesh_servants) >= summon_limit || !heretic?.can_add_servant())
-		to_chat(user, span_warning("Этот призыв уже занят или достиг предела в [summon_limit] слуг."))
+		finish_failure_reason = "Этот призыв уже занят или достиг предела в [summon_limit] слуг."
 		return FALSE
 	summoning = TRUE
 	var/mob/living/summoned = new mob_to_summon(loc)
@@ -224,13 +235,14 @@
 		track_flesh_servant(servant)
 		to_chat(user, span_notice("Создан учебный слуга без игрока. Опрос призраков не требуется."))
 		return TRUE
-	var/list/mob/dead/observer/candidates = pollCandidatesForMob("Хотите стать [summoned.name], слугой [user.real_name]?", ROLE_HERETIC, null, FALSE, HERETIC_SERVANT_POLL_DURATION, summoned)
+	to_chat(user, span_notice("Мансус ищет душу для [summoned.name]. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
+	var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать [summoned.name], слугой [user.real_name]?", summoned, HERETIC_SERVANT_POLL_DURATION)
 	summoning = FALSE
-	if(!length(candidates) || QDELETED(summoned) || summoned.stat == DEAD || !ritual_still_valid(user, atoms, get_turf(loc)) || length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
-		qdel(summoned)
-		return FALSE
-	var/mob/dead/observer/chosen = pick(candidates)
-	if(QDELETED(chosen) || !chosen.client)
+	finish_failure_reason = summon_poll_failure_reason(user, atoms, loc, candidates, summoned)
+	var/mob/dead/observer/chosen = finish_failure_reason ? null : pick(candidates)
+	if(!finish_failure_reason && (QDELETED(chosen) || !chosen.client))
+		finish_failure_reason = "Откликнувшаяся душа ушла до вселения."
+	if(finish_failure_reason)
 		qdel(summoned)
 		return FALSE
 	summoned.forceMove(get_turf(loc))
@@ -242,6 +254,19 @@
 	message_admins("[key_name_admin(user)] призвал [key_name_admin(summoned)] в [ADMIN_VERBOSEJMP(summoned)].")
 	log_game("[key_name(user)] призвал [key_name(summoned)] в [AREACOORD(summoned)].")
 	return TRUE
+
+/datum/eldritch_knowledge/summon/proc/summon_poll_failure_reason(mob/living/user, list/atoms, loc, list/candidates, mob/living/summoned)
+	if(!length(candidates))
+		return "Ни одна душа не откликнулась."
+	if(QDELETED(summoned) || summoned.stat == DEAD)
+		return "Призванное тело погибло до вселения."
+	var/invalid_reason = ritual_invalid_reason(user, atoms, get_turf(loc))
+	if(invalid_reason)
+		return invalid_reason
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
+		return "Свита заполнилась, пока шёл отклик."
+	return null
 
 /datum/eldritch_knowledge/summon/on_lose(mob/user)
 	release_flesh_servants()
@@ -311,6 +336,7 @@
 	finished = TRUE
 	simulated = heretic.simulated
 	heretic.ascended = TRUE
+	heretic.refresh_objective_completion()
 	heretic.refresh_book_ui()
 	if(parallax_scene && !simulated)
 		set_antag_parallax_scene(parallax_scene, "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")

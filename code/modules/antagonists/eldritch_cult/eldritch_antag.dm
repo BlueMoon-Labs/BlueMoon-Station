@@ -346,6 +346,12 @@
 // Objectives //
 ////////////////
 
+/// Панель антагов показывает поле completed, а не check_completion().
+/datum/antagonist/heretic/proc/refresh_objective_completion()
+	for(var/datum/objective/objective as anything in objectives)
+		if(istype(objective, /datum/objective/sacrifice_ecult) || istype(objective, /datum/objective/ascend_ecult))
+			objective.completed = objective.check_completion()
+
 /datum/objective/sacrifice_ecult
 	name = "Жертвоприношения"
 	target_amount = HERETIC_ASCENSION_SACRIFICES

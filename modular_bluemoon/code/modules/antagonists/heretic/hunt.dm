@@ -491,6 +491,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	sac_targetted -= REF(soul)
 	actually_sacced += victim.real_name
 	total_sacrifices++
+	refresh_objective_completion()
 	log_game("[key_name(owner)] приносит в жертву [key_name(victim)] ([corpse_sacrifice ? "труп" : "живьём"], всего [total_sacrifices]) в [AREACOORD(ritual_turf)].")
 	if(total_sacrifices >= HERETIC_THREAT_SACRIFICES)
 		announce_threat()
