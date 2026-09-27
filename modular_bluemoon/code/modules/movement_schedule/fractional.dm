@@ -248,6 +248,10 @@
 	QDEL_NULL(fractional_movement)
 	if(selected == modes[1])
 		to_chat(src, span_notice("Выбрано прежнее движение с округлением цены шага. При следующем подключении включится штатный glide."))
+		var/run_delay = CONFIG_GET(number/movedelay/run_delay)
+		var/rounded_run = movement_step_delay(run_delay, FALSE, world.tick_lag)
+		if(abs(rounded_run - run_delay) >= MOVEMENT_TICK_EPSILON)
+			to_chat(src, span_notice("Бег [run_delay]ds не кратен тику: здесь шаг стоит [rounded_run]ds прямо и [movement_step_delay(run_delay, TRUE, world.tick_lag)]ds наискось, поэтому скорость не совпадает с дробным режимом."))
 	else
 		fractional_movement = new(selected == modes[2] ? FRACTIONAL_MOVEMENT_NATIVE : FRACTIONAL_MOVEMENT_QUEUED)
 		to_chat(src, span_notice("Выбран режим: [selected]. Скорость меняется со следующего шага. Транспорт и ИИ используют прежнее расписание[selected == modes[3] ? ", очередь - ещё и при пуллинге, седоке и в невесомости" : ""]."))
