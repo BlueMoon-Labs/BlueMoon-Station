@@ -371,6 +371,10 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 	for(var/row in 1 to HERETIC_MANSUS_ROOM_SIZE)
 		var/row_layout = plan.rows[row]
 		for(var/column in 1 to HERETIC_MANSUS_ROOM_SIZE)
+			// Постройка тянется на несколько тиков: посещение могут закрыть посреди неё.
+			CHECK_TICK
+			if(finished)
+				return FALSE
 			var/turf/reserved = local_turf(column, row)
 			room.contents += reserved
 			var/tile = copytext(row_layout, column, column + 1)
@@ -409,6 +413,9 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 		return FALSE
 	for(var/turf/tile as anything in reservation.reserved_turfs)
 		style_turf(tile)
+		CHECK_TICK
+		if(finished)
+			return FALSE
 	for(var/turf/open/indestructible/heretic_mansus/floor in reservation.reserved_turfs)
 		if(locate(/obj/effect/heretic_mansus_statue) in floor)
 			continue
@@ -1158,7 +1165,7 @@ GLOBAL_LIST_INIT(heretic_mansus_themes, list(
 			if(reserved.color)
 				reserved.color = null
 		if(!QDELETED(reservation))
-			qdel(reservation)
+			reservation.release_gradually()
 	reservation = null
 	room = null
 	room_z = null

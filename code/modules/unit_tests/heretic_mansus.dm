@@ -254,7 +254,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT_EQUAL(get_turf(bag), run_loc_floor_top_right, "Брошенная сумка не удаляется при освобождении комнаты.")
 	TEST_ASSERT_EQUAL(packed.loc, bag, "Содержимое сумки остаётся в ней.")
 	TEST_ASSERT_EQUAL(carried.loc, victim, "Имущество на теле остаётся у владельца.")
-	TEST_ASSERT(QDELETED(reserved), "Резервирование комнаты освобождается.")
+	TEST_ASSERT(wait_for_qdeleted(reserved), "Резервирование комнаты освобождается.")
 	TEST_ASSERT_EQUAL(length(visit.timers), 0, "Аварийный выход отменяет все таймеры.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[soul], "Аварийный выход освобождает запись души.")
 	if(channel)
@@ -328,7 +328,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	var/previous_memory = soul.memory
 	qdel(soul, force = TRUE)
 	TEST_ASSERT(QDELETED(visit), "Принудительное удаление разума завершает посещение без runtime.")
-	TEST_ASSERT(QDELETED(reserved), "Принудительное удаление разума освобождает комнату.")
+	TEST_ASSERT(wait_for_qdeleted(reserved), "Принудительное удаление разума освобождает комнату.")
 	TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_top_right, "Тело эвакуируется после принудительного удаления разума.")
 	TEST_ASSERT_EQUAL(get_turf(dropped), run_loc_floor_top_right, "Выпавшие вещи сохраняются после удаления разума.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[soul], "Реестр не удерживает принудительно удалённый разум.")
@@ -417,6 +417,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	var/mob/living/second_victim = second.victim
 	TEST_ASSERT_EQUAL(second.room, shared_area, "Посещения используют одну область.")
 	TEST_ASSERT_NOTEQUAL(first.reservation, second.reservation, "Комнаты резервируются отдельно.")
+	var/list/rooms = list(first.reservation, second.reservation)
 	TEST_ASSERT(!first.contains(second.victim) && !second.contains(first.victim), "Жертвы находятся в разных комнатах.")
 	first.finish()
 	TEST_ASSERT(!QDELETED(shared_area), "Завершение посещения не удаляет общую область.")
@@ -424,8 +425,11 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	var/list/third_fixture = make_mansus_fixture()
 	var/datum/heretic_mansus_visit/third = third_fixture["visit"]
 	TEST_ASSERT_EQUAL(third.room, shared_area, "Новое посещение переиспользует область.")
+	rooms += third.reservation
 	second.finish()
 	third.finish()
+	for(var/datum/turf_reservation/room as anything in rooms)
+		TEST_ASSERT(wait_for_qdeleted(room), "Комната посещения освобождается.")
 	TEST_ASSERT_EQUAL(length(shared_area.contents), 0, "Завершённые посещения освобождают все турфы области.")
 
 /// Движение и потеря сознания прерывают сосредоточение; чужие и спящие воспоминания недоступны.
