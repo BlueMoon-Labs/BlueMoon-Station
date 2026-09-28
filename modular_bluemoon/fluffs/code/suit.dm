@@ -301,6 +301,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "renegat"
 	item_state = "renegat"
+	can_flashlight = TRUE
 
 /obj/item/clothing/suit/armor/armor_shield
 	name = "Heavy Peacekeeper Armor Shield"
@@ -320,6 +321,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "shield"
 	item_state = "shield"
+	can_flashlight = TRUE
 
 /obj/item/clothing/head/helmet/sec/adler_skull
 	name = "Tactical Skull Helmet"
@@ -919,6 +921,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "wypmc_helmet"
 	item_state = "wypmc_helmet"
+	can_flashlight = TRUE
 
 /obj/item/modkit/wypmchelmet
 	name = "Arctic PMC helmet Kit"

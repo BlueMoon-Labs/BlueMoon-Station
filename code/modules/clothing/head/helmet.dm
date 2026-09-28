@@ -22,7 +22,18 @@
 
 	var/can_flashlight = FALSE //if a flashlight can be mounted. if it has a flashlight and this is false, it is permanently attached.
 	var/obj/item/flashlight/seclite/attached_light
+	var/flashlight_overlay_icon = 'icons/obj/clothing/hats.dmi'
+	var/flashlight_overlay_mob_icon = 'icons/mob/clothing/head.dmi'
 	var/datum/action/item_action/toggle_helmet_flashlight/alight
+
+/obj/item/clothing/head/helmet/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
+	. = ..()
+	if(isinhands || !attached_light)
+		return
+	. += mutable_appearance(
+		flashlight_overlay_mob_icon,
+		attached_light.on ? "flashlight_on" : "attached_flashlight"
+	)
 
 /obj/item/clothing/head/helmet/Initialize(mapload)
 	. = ..()
@@ -301,7 +312,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	icon_state = "helmetalt"
 	item_state = "helmetalt"
 	armor = list(MELEE = 15, BULLET = 60, LASER = 10, ENERGY = 10, BOMB = 40, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 20)
-	can_flashlight = 1
+	can_flashlight = TRUE
 	dog_fashion = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
@@ -334,6 +345,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	nosrc = TRUE
+	can_flashlight = TRUE
 	can_toggle = 1
 	toggle_message = "You pull the chin strap out of the helmet and buckle it underneath your chin."
 	alt_toggle_message = "You unlatch the chin strap and tuck it underneath your helmet."
@@ -355,6 +367,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	toggle_message = "You pull the visor down on"
 	alt_toggle_message = "You push the visor up on"
 	can_toggle = 1
+	can_flashlight = TRUE
 	armor = list(MELEE = 45, BULLET = 15, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	strip_delay = 80
@@ -438,6 +451,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "An extremely robust, space-worthy helmet in a nefarious red and black stripe pattern."
 	icon_state = "swatsyndie"
 	item_state = "swatsyndie"
+	can_flashlight = TRUE
 	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 50, BIO = 90, RAD = 20, FIRE = 50, ACID = 50, WOUND = 20)
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
@@ -679,21 +693,23 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	strip_delay = 80
 	mutantrace_variation = STYLE_MUZZLE
 
-//LightToggle
 
 /obj/item/clothing/head/helmet/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/update_icon_updates_onmob)
 
 /obj/item/clothing/head/helmet/update_icon_state()
-	var/state = "[initial(icon_state)]"
-	if(attached_light)
-		if(attached_light.on)
-			state += "-flight-on" //"helmet-flight-on" // "helmet-cam-flight-on"
-		else
-			state += "-flight" //etc.
+	. = ..()
+	icon_state = initial(icon_state)
 
-	icon_state = state
+/obj/item/clothing/head/helmet/update_overlays()
+	. = ..()
+	if(!attached_light)
+		return
+	. += mutable_appearance(
+		flashlight_overlay_icon,
+		attached_light.on ? "flashlight_on" : "attached_flashlight"
+	)
 
 /obj/item/clothing/head/helmet/ui_action_click(mob/user, action)
 	if(istype(action, alight))
