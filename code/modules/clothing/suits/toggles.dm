@@ -66,8 +66,7 @@
 
 /obj/item/clothing/suit/hooded/proc/ToggleHood()
 	if(!hood)
-		to_chat(loc, "<span class='warning'>[src] seems to be missing its hood..</span>")
-		return
+		hood = MakeHelmet()
 	if(atom_colours)
 		hood.atom_colours = atom_colours.Copy()
 		hood.update_atom_colour()

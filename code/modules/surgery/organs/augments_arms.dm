@@ -354,7 +354,7 @@
 	return ..()
 
 /obj/item/organ/cyberimp/arm/shield/proc/on_signal(datum/source, obj/item/blocking_item, list/other_items)
-	if(!blocking_item)		//if they don't have something
+	if(!blocking_item && activate_allowed(silent = TRUE))
 		var/obj/item/shield/S = locate() in contents
 		if(!Extend(S, TRUE))
 			return

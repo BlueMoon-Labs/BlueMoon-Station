@@ -1058,26 +1058,6 @@
 	else if(charge_percent<=0.1)
 		. += "nebular-t-0"
 
-
-/obj/item/modkit/nul_kit
-	name = "Nul Kit"
-	desc = "A modkit for making an combat knife into a Sword of Nul."
-	product = /obj/item/kitchen/knife/combat/nul
-	fromitem = list(/obj/item/kitchen/knife/combat)
-
-/obj/item/kitchen/knife/combat/nul
-	name = "\improper Sword of Nul"
-	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
-	item_state = "sword-nul"
-	icon_state = "sword-nul"
-	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
-	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
-	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-
-/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
-	.=..()
-	set_light(3, 0.9, "#1D6416")
-
 /obj/item/modkit/supernova_kit
 	name = "Supernova Kit"
 	desc = "A modkit for making a combat shotgun into a Supernova."

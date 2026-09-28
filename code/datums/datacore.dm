@@ -632,15 +632,15 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 /datum/datacore/proc/get_manifest()
 	var/list/manifest_out = list()
 	var/list/departments = list(
-		"Command" = GLOB.command_positions,
-		"Security" = GLOB.security_positions,
-		"Engineering" = GLOB.engineering_positions,
-		"Medical" = GLOB.medical_positions,
-		"Science" = GLOB.science_positions,
-		"Supply" = GLOB.supply_positions,
-		"Service" = GLOB.civilian_positions,
-		"Law" = GLOB.law_positions,
-		"Silicon" = GLOB.nonhuman_positions
+		DEPARTMENT_COMMAND		= GLOB.command_positions,
+		DEPARTMENT_SECURITY		= GLOB.security_positions,
+		DEPARTMENT_ENGINEERING	= GLOB.engineering_positions,
+		DEPARTMENT_MEDICAL		= GLOB.medical_positions,
+		DEPARTMENT_SCIENCE		= GLOB.science_positions,
+		DEPARTMENT_SUPPLY		= GLOB.supply_positions,
+		DEPARTMENT_SERVICE		= GLOB.civilian_positions,
+		DEPARTMENT_LAW			= GLOB.law_positions,
+		DEPARTMENT_SILICON		= GLOB.nonhuman_positions
 	)
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
@@ -653,7 +653,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 				if(!manifest_out[department])
 					manifest_out[department] = list()
 				// Append to beginning of list if captain or department head
-				if (department_check == "Captain" || (department != "Command" && (rank in GLOB.command_positions)))
+				if (department_check == "Captain" || (department != DEPARTMENT_COMMAND && (rank in GLOB.command_positions)))
 					manifest_out[department] = list(list(
 						"name" = name,
 						"rank" = rank,

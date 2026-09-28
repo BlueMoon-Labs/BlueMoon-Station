@@ -381,7 +381,7 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			return TRUE
 
 		if("PDA_setAdminPhoto")
-			if(!usr.client?.holder && !is_donator_group(usr.ckey, DONATOR_GROUP_TIER_2))
+			if(!usr.client?.holder && !is_donator_group(usr.ckey, DONATOR_GROUP_TIER_1))
 				to_chat(usr, span_warning("Only administrators and sponsors can use this feature."))
 				return FALSE
 			var/url = params["url"]

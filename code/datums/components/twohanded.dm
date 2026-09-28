@@ -270,8 +270,6 @@
 	if(wielded && attacksound)
 		var/obj/item/parent_item = parent
 		playsound(parent_item.loc, attacksound, 50, TRUE)
-	if(require_twohands)
-		return COMPONENT_BLOCK_SWAP
 
 /**
  * on_update_icon triggers on call to update parent items icon
