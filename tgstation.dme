@@ -2219,6 +2219,7 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_beat.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_effects.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\dance_lesson.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_abilities.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_ascension.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_style_fx.dm"

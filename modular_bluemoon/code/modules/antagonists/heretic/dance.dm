@@ -21,7 +21,7 @@
 		"Наушники-заглушки и глухота закрывают от Приглашения, Колокола и барабана.",
 		"Дефибриллятор, сон, святая вода и нулевой жезл лечат навязчивый такт.",
 		"Схемы шагов видны всем и стираются шваброй или мылом.",
-		"Вне боя Такт быстро тает, а смена стиля мимо сильной доли делит его пополам.",
+		"Вне боя Такт быстро тает, а смена стиля мимо сильной доли ждёт следующей или делит его пополам.",
 		"Вознёсшегося сбивает фальшивая нота: светошумовая, клаксон или воздушный горн рядом.",
 	)
 	knowledge = list(
@@ -42,11 +42,11 @@
 	summary = "Клинок-шпилька, барабан доли в интерфейсе, Вальс и схемы шагов, заражающие экипаж навязчивым тактом."
 	details = list(
 		"Нож и пара любой обуви на руне дают клинок «Алая шпилька».",
-		"Барабан справа бьёт долю; первая доля такта - сильная. Нажмите на него или «Сменить стиль», чтобы сменить танец.",
+		"Барабан справа бьёт долю и ведёт счёт; первая доля - сильная. Нажмите на него или «Сменить стиль» для смены танца.",
 		"Удар по врагу даёт 1 Такт, в долю - 2, точно в долю - 3; удар в сильную долю - акцент стиля.",
 		"Хватка в «Помощи» по полу рисует схему шагов (до 5), по человеку - сразу заражает его навязчивым тактом.",
 		"Заражённых до 6, такт держится 6 минут; лечат дефибриллятор, сон, святая вода и нулевой жезл.",
-		"Фигура: несколько шагов подряд, каждый в свою долю, по рисунку стиля. Вальс - вперёд, вправо, назад, влево.",
+		"Фигура: шаги подряд, каждый в свою долю, по рисунку стиля; Вальс - вперёд, вправо, назад, влево. Сбой видно над вами.",
 		"Смена стиля связкой в бою даёт вход стиля; три разных стиля за 20 секунд - Попурри, входы вдвойне.",
 	)
 	role = HERETIC_ROLE_CRAFT
@@ -62,7 +62,7 @@
 		"Такт от 0 до 10: удар клинком или Хваткой по разумному врагу даёт 1 (раз в секунду), в долю - 2, точно - 3.",
 		"С 4 Такта работает пассивка текущего стиля.",
 		"Через 4 секунды без боя Такт тает по единице в секунду.",
-		"Смена стиля в сильную долю сохраняет Такт и удваивает следующий акцент, иначе делит Такт пополам.",
+		"Смена стиля в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле, тоже без потерь; выбор его ещё раз меняет сразу, деля Такт пополам.",
 		"Колокол тратит 4 Такта. Смерть и смена тела обнуляют Такт.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_dance/style
@@ -75,8 +75,17 @@
 	var/meter = 3
 	var/beat_origin = 0
 	var/beat_index = -1
+	/// Доли подряд без сброса сменой стиля: по ним считаются перезарядки в долях.
+	var/beat_total = 0
 	var/beat_timer
+	var/bar_world_start = 0
+	var/bar_real_start = 0
+	var/lag_grace_until = -1
 	var/last_timing_strong = FALSE
+	var/last_timing_beat = 0
+	var/last_timing_early = FALSE
+	var/pending_style_id
+	var/music_channel
 	var/link_bonus = FALSE
 	var/passive_active = FALSE
 	var/last_combat_at = -INFINITY
@@ -110,11 +119,10 @@
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_body_deleted))
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_body_moved))
 	grant_combat_power(user)
-	var/datum/heretic_dance_style/style = current_style()
-	beat_ds = style.beat_ds
-	meter = style.meter
+	apply_tempo()
 	restart_clock()
 	update_style_status()
+	update_ghosts()
 
 /datum/eldritch_knowledge/base_dance/on_body_lose(mob/living/user)
 	if(dance_body)
@@ -123,6 +131,8 @@
 		hide_aura()
 		dance_body.remove_status_effect(/datum/status_effect/heretic_dance_style)
 		dance_body.clear_alert("heretic_dance_beat")
+		dance_body.vis_contents -= bolero_ghosts
+	QDEL_LIST(bolero_ghosts)
 	stop_clock()
 	clear_dance()
 	dance_body = null
@@ -141,7 +151,7 @@
 		return
 	if(bolero_on)
 		new /obj/effect/temp_visual/heretic_dance/parquet(old_loc)
-	on_dance_step(dance_body, movement_dir || get_dir(old_loc, source.loc))
+	on_dance_step(dance_body, movement_dir || get_dir(old_loc, source.loc), old_loc)
 
 /datum/eldritch_knowledge/base_dance/on_death(mob/user)
 	set_passive(FALSE)
@@ -155,6 +165,9 @@
 		qdel(diagram)
 	diagrams.Cut()
 	QDEL_LIST(earworms)
+	if(music_channel)
+		SSsounds.free_sound_channel(music_channel)
+		music_channel = null
 	return ..()
 
 /// Снимает всё, что держится на живом танце: партнёров, приглашения, хоровод, маскарад и скелет.
@@ -170,6 +183,7 @@
 	figure_steps.Cut()
 	link_bonus = FALSE
 	lunge_until = 0
+	pending_style_id = null
 
 /datum/eldritch_knowledge/base_dance/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -274,6 +288,7 @@
 		user.visible_message(span_notice("[user] легко касается плеча [victim], будто приглашая на танец."), span_eldritch("Мелодия перешла к [victim]. Заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."))
 	log_combat(user || dance_body, victim, "заражает навязчивым тактом")
 	notify_resource_changed()
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "infect", victim, by_hand)
 	return TRUE
 
 /datum/eldritch_knowledge/base_dance/proc/draw_diagram(mob/living/user, turf/place)
@@ -446,10 +461,10 @@
 	var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
 	if(!dance?.can_use(user))
 		return FALSE
-	if(dance.beat_index < ready_beat)
-		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: следующая доля через [ready_beat - dance.beat_index]."))
+	if(dance.beat_total < ready_beat)
+		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: до следующего долей: [ready_beat - dance.beat_total]."))
 		return FALSE
-	ready_beat = dance.beat_index + HERETIC_DANCE_DRUM_BEATS
+	ready_beat = dance.beat_total + HERETIC_DANCE_DRUM_BEATS
 	flick("dance_relic_beat", src)
 	dance.drum_pulse(user)
 	return TRUE

@@ -72,6 +72,7 @@
 	.["sound_volume_jukeboxes"] = sound_volume_jukeboxes
 	.["sound_volume_emote"] = sound_volume_emote
 	.["sound_volume_personal_jukeboxes"] = sound_volume_personal_jukeboxes
+	.["sound_volume_heretic_dance"] = sound_volume_heretic_dance
 
 	// Graphics toggles
 	.["parallax"] = parallax

@@ -396,7 +396,13 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_DANCE_FALSE_NOTE_SILENCE (7 SECONDS)
 #define HERETIC_DANCE_TANGO_BONUS 6
 #define HERETIC_DANCE_BITE_HITS 4
-#define HERETIC_DANCE_PHRASES 4
+/// Расхождение реального и игрового времени в децисекундах, с которого часы Пляски догоняют музыку клиента.
+#define HERETIC_DANCE_LAG_MIN 1
+/// Разовый фриз сервера: действия, пришедшие сразу после него, не считаются промахом.
+#define HERETIC_DANCE_STALL 3
+#define HERETIC_DANCE_LAG_GRACE (1 SECONDS)
+#define HERETIC_DANCE_BOLERO_BEAT 7
+#define HERETIC_DANCE_BOLERO_METER 3
 #define HERETIC_DANCE_STEP_HEAL 0.5
 #define HERETIC_DANCE_FIGURE_HOROVOD_RANGE 3
 #define HERETIC_DANCE_BELL_RANGE 7
@@ -406,6 +412,8 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_DANCE_BELL_SOUND pick('modular_bluemoon/sound/heretic/dance/bell_1.ogg', 'modular_bluemoon/sound/heretic/dance/bell_2.ogg')
 /// Доля пути Пляски на базовом знании: (номер доли, сильная ли).
 #define COMSIG_HERETIC_DANCE_BEAT "heretic_dance_beat"
+/// Событие танца для урока на полигоне: (event, atom/subject, value)
+#define COMSIG_HERETIC_DANCE_EVENT "heretic_dance_event"
 #define HERETIC_STARGAZER_HEALTH 400
 #define HERETIC_STARGAZER_RANGE 7
 #define HERETIC_STARGAZER_BEAM_DAMAGE 20

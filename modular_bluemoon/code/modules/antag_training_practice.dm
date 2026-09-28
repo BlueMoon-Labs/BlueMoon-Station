@@ -18,6 +18,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	var/recipe_cache_size = -1
 	var/last_duel_result
 	var/next_duel_at = 0
+	var/datum/heretic_dance_lesson/dance_lesson
 
 /datum/antag_training_session/proc/practice_message(message)
 	last_feedback = message
@@ -188,16 +189,20 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 
 /datum/antag_training_session/proc/stop_practice()
 	QDEL_NULL(measurement)
+	QDEL_NULL(dance_lesson)
 	practice_id = null
 	practice_target = null
 	practice_complete = FALSE
 	practice_hint = null
 
 /datum/antag_training_session/proc/start_practice(id)
-	if(!(id in list("combat", "hunt", "medicine")) || !can_control(current_body) || preparing || arena.resetting || world.time < arena.next_spawn_at)
+	if(!(id in list("combat", "hunt", "medicine", "dance")) || !can_control(current_body) || preparing || arena.resetting || world.time < arena.next_spawn_at)
 		return FALSE
 	if(id == "hunt" && !IS_HERETIC(current_body))
 		practice_message("Для подношения выберите программу еретика в разделе «Моя роль».")
+		return FALSE
+	if(id == "dance" && !dance_knowledge())
+		practice_message("Урок Пляски доступен на пути Пляски: выберите его в разделе «Моя роль» и изучите первую ступень.")
 		return FALSE
 	var/mob/living/previous = practice_target?.resolve()
 	if(previous && (!can_manage_target(previous) || previous.client))
@@ -213,7 +218,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	if(previous)
 		QDEL_NULL(previous.mind)
 		qdel(previous)
-	var/zone_id = id == "combat" ? "range" : "laboratory"
+	var/zone_id = (id in list("combat", "dance")) ? "range" : "laboratory"
 	var/mob/living/carbon/human/target = arena.spawn_creature("human", zone_id, FALSE, src)
 	if(!target)
 		preparing = FALSE
@@ -227,6 +232,8 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		injure_target(target, "brute")
 		injure_target(target, "burn")
 	measurement = new(target)
+	if(id == "dance")
+		dance_lesson = new(src, dance_knowledge(), current_body, target)
 	preparing = FALSE
 	update_practice()
 	practice_message("Цель «[target.name]» подготовлена. [practice_hint]")
@@ -247,6 +254,9 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
 		if(!practice_complete && path?.combat_practice)
 			practice_hint = "[path.name]: [path.combat_practice] Результат упражнения — довести цель до крита; счётчик измеряет весь урон, а не выполнение приёмов."
+	else if(practice_id == "dance")
+		practice_complete = dance_lesson?.finished()
+		practice_hint = dance_lesson?.hint || "Урок прерван: начните его заново."
 	else if(practice_id == "medicine")
 		practice_complete = target.stat != DEAD && target.health >= target.maxHealth - 1
 		practice_hint = practice_complete ? "Здоровье пациента восстановлено." : "Осмотрите пациента анализатором и вылечите обычными средствами. Комплект первой помощи доступен выше."
@@ -266,6 +276,12 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	if(practice_complete)
 		measurement?.stop()
 		practice_message(practice_hint)
+
+/datum/antag_training_session/proc/dance_knowledge()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+	if(heretic?.selected_path != PATH_DANCE)
+		return null
+	return heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
 
 /datum/antag_training_measurement
 	var/datum/weakref/target_ref
@@ -323,7 +339,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	combat_practice = "Повернитесь к цели на расстоянии до трёх клеток и примените Снять печать. Проверьте направление веера, затем подходите с клинком, пока цель замедлена. Куклу лепят Хваткой в намерении «Помощь» по вещи с отпечатками живого человека с разумом или по его ID-карте и КПК: в дуэли возьмите вещь, которую держал напарник. Изучив «Сон по кукле», 5 секунд держите куклу в руке и не отпускайте напарника дальше 9 клеток, а он пусть попробует выпить воды. На станции спящую цель охоты кукла в руке за 1,5 секунды утягивает в изнанку; на полигоне то же пробуется на учебной цели охоты: кнопка «Первое подношение» или «Цель охоты» у мишени. «Помощь» захват не стряхивает: напарник растолкает мишень за 2 секунды. Изучив «Протечь», растекитесь у шлюза в лаборатории полигона и проползите под ним."
 
 /datum/heretic_path/dance
-	combat_practice = "Следите за барабаном справа: первая доля такта сильная. Бейте мишень клинком в долю и смотрите, как растёт Такт; удар в сильную долю даёт акцент Вальса. Шагните вперёд, вправо, назад и влево, каждый шаг в свою долю, стоя рядом с мишенью, - Вальс поведёт её за вами. Хваткой в намерении «Помощь» по мишени-человеку заразите её мелодией, затем изучите Приглашение и позовите её из 5-7 клеток. На станции дошедшего партнёра - цель охоты - живое сердце уводит в изнанку; на полигоне то же пробуется на учебной цели охоты: кнопка «Первое подношение» или «Цель охоты» у мишени. «Помощь» захват не стряхивает: напарник растолкает мишень за 2 секунды. Нажмите на барабан и смените стиль в сильную долю, чтобы проверить связку."
+	combat_practice = "Следите за барабаном справа: первая доля такта сильная. Бейте мишень клинком в долю и смотрите, как растёт Такт; удар в сильную долю даёт акцент Вальса. Шагните вперёд, вправо, назад и влево, каждый шаг в свою долю, стоя рядом с мишенью, - Вальс поведёт её за вами. Хваткой в намерении «Помощь» по мишени-человеку заразите её мелодией, затем изучите Приглашение и позовите её из 5-7 клеток. На станции дошедшего партнёра - цель охоты - живое сердце уводит в изнанку; на полигоне то же пробуется на учебной цели охоты: кнопка «Первое подношение» или «Цель охоты» у мишени. «Помощь» захват не стряхивает: напарник растолкает мишень за 2 секунды. Нажмите на барабан и смените стиль в сильную долю, чтобы проверить связку. Пошагово всё это ведёт кнопка «Урок Пляски» среди упражнений полигона."
 
 /datum/heretic_path/spirit
 	combat_practice = "На человеческой цели примените Разлучение: душа останется на месте, а тело будет терять выносливость, если отойдёт. Изучив «Душа на ладони», отойдите на 3–5 клеток и примените «Сместить душу» по силуэту или по телу, затем Жатву и крюк. Удержать душу: встаньте рядом с отделённой душой, освободите руку и выберите её - через секунду тело мишени замрёт до 12 секунд. На станции пустое тело цели охоты живое сердце во второй руке переправляет в изнанку; на полигоне то же пробуется на учебной цели охоты: кнопка «Первое подношение» или «Цель охоты» у мишени. «Помощь» захват не стряхивает: напарник растолкает мишень за 2 секунды. Бесплотность на 3 секунды пропускает пули и удары; если попробуете ударить, даже предметом по двери или стене, или колдовать, действие пропадёт и плоть сразу вернётся, а дверь рукой открыть можно. Для ремесла призовите «Тело для ритуала» и в намерении «Помощь» коснитесь его Хваткой: обол расскажет о последнем миге тела. У такого тела нет призрака, поэтому шёпота не будет: шепчет только призрак настоящего игрока."

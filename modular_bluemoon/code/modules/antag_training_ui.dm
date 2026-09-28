@@ -80,13 +80,14 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
 	data["selected_path"] = heretic?.selected_path
 	data["path_stage"] = heretic?.path_stage || 0
+	data["dance_lesson"] = !!dance_knowledge()
 	var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
 	var/datum/eldritch_knowledge/base = path ? heretic.get_knowledge(path.knowledge[1]) : null
 	data["resource"] = base?.get_combat_resource_data()
 	data["practice"] = null
 	if(practice_id)
 		var/mob/living/target = practice_target?.resolve()
-		data["practice"] = list("id" = practice_id, "target" = target?.name || "Цель недоступна", "complete" = practice_complete, "hint" = practice_hint, "damage" = measurement?.damage || 0, "healing" = measurement?.healing || 0, "last_damage" = measurement?.last_damage || 0, "critical_seconds" = isnull(measurement?.critical_after) ? null : measurement.critical_after / (1 SECONDS))
+		data["practice"] = list("id" = practice_id, "target" = target?.name || "Цель недоступна", "complete" = practice_complete, "hint" = practice_hint, "damage" = measurement?.damage || 0, "healing" = measurement?.healing || 0, "last_damage" = measurement?.last_damage || 0, "critical_seconds" = isnull(measurement?.critical_after) ? null : measurement.critical_after / (1 SECONDS), "steps" = dance_lesson?.steps())
 	data["duel"] = null
 	data["last_duel_result"] = last_duel_result
 	data["duel_ready"] = world.time >= next_duel_at

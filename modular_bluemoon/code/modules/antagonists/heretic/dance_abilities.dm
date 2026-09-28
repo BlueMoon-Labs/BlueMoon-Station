@@ -299,6 +299,7 @@
 		var/turf/next = get_step(user, user.dir)
 		if(!next || isgroundlessturf(next) || !heretic_tile_passable(next) || !heretic_step_open(get_turf(user), next))
 			break
+		new /obj/effect/temp_visual/decoy/fading(get_turf(user), user)
 		user.forceMove(next)
 	return TRUE
 
@@ -317,8 +318,7 @@
 			count++
 			log_combat(user, victim, "втягивает в хоровод")
 	if(count)
-		var/obj/effect/temp_visual/heretic_dance/horovod/ring = new(get_turf(user))
-		ring.duration = time
+		new /obj/effect/temp_visual/heretic_dance/horovod(get_turf(user), user, time)
 	return count > 0
 
 /datum/eldritch_knowledge/base_dance/proc/toll_bell(mob/living/user, steps = 1)
@@ -328,6 +328,8 @@
 		var/mob/living/victim = earworm.owner
 		if(victim.z != user.z || get_dist(victim, user) > HERETIC_DANCE_BELL_RANGE || !heretic_dance_can_sway(user, victim))
 			continue
+		victim.setDir(get_dir(victim, user))
+		heretic_dance_hop(victim, TRUE, TRUE)
 		for(var/step_index in 1 to steps)
 			heretic_dance_step_toward(victim, user)
 
@@ -404,6 +406,29 @@
 /obj/effect/temp_visual/heretic_dance/horovod
 	icon_state = "dance_horovod"
 	duration = 5 SECONDS
+	var/datum/weakref/leader_ref
+
+/obj/effect/temp_visual/heretic_dance/horovod/Initialize(mapload, mob/living/leader, time)
+	if(time)
+		duration = time
+	. = ..()
+	if(!leader)
+		return
+	leader_ref = WEAKREF(leader)
+	RegisterSignal(leader, COMSIG_MOVABLE_MOVED, PROC_REF(follow_leader))
+
+/obj/effect/temp_visual/heretic_dance/horovod/proc/follow_leader(atom/movable/source)
+	SIGNAL_HANDLER
+	var/turf/place = get_turf(source)
+	if(place)
+		forceMove(place)
+
+/obj/effect/temp_visual/heretic_dance/horovod/Destroy()
+	var/mob/living/leader = leader_ref?.resolve()
+	if(leader)
+		UnregisterSignal(leader, COMSIG_MOVABLE_MOVED)
+	leader_ref = null
+	return ..()
 
 /obj/effect/proc_holder/spell/self/heretic_dance
 	clothes_req = FALSE
@@ -422,8 +447,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_dance/style
 	name = "Сменить стиль"
-	desc = "Выберите танец из выученных. Смена в сильную долю сохраняет Такт и удваивает следующий акцент, иначе Такт делится пополам."
-	summary = "Выбор танца; смена в сильную долю сохраняет Такт и удваивает акцент."
+	desc = "Выберите танец из выученных. Смена в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле без потерь; выбор его ещё раз меняет сразу, деля Такт пополам."
+	summary = "Выбор танца; в сильную долю - связка, мимо - вступит со следующей сильной доли."
 	action_icon_state = "dance_style"
 	charge_max = 1 SECONDS
 	usable_while_grabbed = TRUE

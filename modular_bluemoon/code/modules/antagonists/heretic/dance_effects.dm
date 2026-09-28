@@ -59,6 +59,18 @@
 			return TRUE
 	return FALSE
 
+/proc/heretic_dance_break_fx(mob/living/dancer)
+	var/turf/place = get_turf(dancer)
+	if(!place)
+		return
+	new /obj/effect/temp_visual/heretic_dance/ribbons(place)
+	playsound(place, 'modular_bluemoon/sound/heretic/dance/false_note.ogg', 35, TRUE)
+
+/proc/heretic_dance_ribbon(mob/living/leader, mob/living/dancer, time)
+	if(!leader || !dancer)
+		return null
+	return leader.Beam(dancer, icon_state = "dance_ribbon_beam", icon = 'modular_bluemoon/icons/obj/heretic_dance_marks.dmi', time = time, maxdistance = HERETIC_DANCE_INVITE_BREAK_RANGE)
+
 /proc/heretic_dance_combat_deed(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	heretic?.advance_combat_deed(victim, PATH_DANCE)
@@ -258,6 +270,8 @@
 	if(--beats_left < 0)
 		stop("танец выдохся, не дойдя до вас")
 		return
+	if(linked_alert)
+		linked_alert.desc = "[initial(linked_alert.desc)] Шаг на каждой доле, осталось долей: [beats_left]."
 	INVOKE_ASYNC(src, PROC_REF(dance_step), user)
 
 /datum/status_effect/heretic_dance/invited/proc/start()
@@ -331,6 +345,7 @@
 		owner.apply_status_effect(/datum/status_effect/heretic_dance/partner, dance)
 		owner.visible_message(span_danger("[owner] в последнем па оказывается в руках [user]."), span_userdanger("Танец приводит вас прямо в руки [user]!"))
 		to_chat(user, span_eldritch("[owner] - ваш партнёр на [HERETIC_DANCE_PARTNER_TIME / (1 SECONDS)] секунды: живое сердце уведёт цель охоты в изнанку, фигура Вальса поведёт за собой."))
+		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "partner", owner, null)
 	held_since = world.time - held
 	qdel(src)
 
@@ -344,7 +359,11 @@
 		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/heretic_dance/invite, "Приглашение сорвалось: [reason].")
 	else if(user && reason)
 		to_chat(user, span_warning("Приглашение оборвалось: [reason]."))
+	if(dance)
+		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "invite_stopped", owner, reason)
 	owner.visible_message(span_notice("[owner] сбивается с шага, и чужая мелодия стихает."), span_notice("Музыка обрывается, ноги снова ваши."))
+	if(started)
+		heretic_dance_break_fx(owner)
 	qdel(src)
 
 /datum/status_effect/heretic_dance/invited/proc/on_shaken(datum/source, mob/living/helper)
@@ -417,6 +436,10 @@
 /datum/status_effect/heretic_dance/partner/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
 	owner.visible_message(span_notice("[helper] выдёргивает [owner] из танца."))
+	heretic_dance_break_fx(owner)
+	var/datum/eldritch_knowledge/base_dance/dance = dance()
+	if(dance)
+		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "rescued", owner, helper)
 	qdel(src)
 
 /datum/status_effect/heretic_dance/partner/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
@@ -449,12 +472,14 @@
 	examine_text = span_warning("SUBJECTPRONOUN кружится в вальсе, прикованный к партнёру. Можно растолкать за 2 секунды или схватить.")
 	opens_door = TRUE
 	var/held_since = 0
+	var/datum/beam/ribbon
 
 /datum/status_effect/heretic_dance/lead/on_apply()
 	. = ..()
 	if(!.)
 		return FALSE
 	held_since = world.time
+	ribbon = heretic_dance_ribbon(leader(), owner, duration)
 	heretic_capture_hold(owner, DANCE_LEAD_CAPTURE)
 	RegisterSignal(leader(), COMSIG_MOVABLE_MOVED, PROC_REF(on_leader_moved))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
@@ -473,9 +498,11 @@
 
 /datum/status_effect/heretic_dance/lead/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
+	heretic_dance_break_fx(owner)
 	qdel(src)
 
 /datum/status_effect/heretic_dance/lead/on_remove()
+	QDEL_NULL(ribbon)
 	if(applied)
 		var/mob/living/user = leader()
 		if(user)
@@ -499,6 +526,7 @@
 	examine_text = span_warning("SUBJECTPRONOUN движется в чужом хороводе, повторяя каждый шаг. Лечь, сесть, схватить или пристегнуть - и танец отпустит.")
 	var/stamina_per_step = HERETIC_DANCE_HOROVOD_STAMINA
 	var/stamina_dealt = 0
+	var/datum/beam/ribbon
 
 /datum/status_effect/heretic_dance/horovod/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, time)
 	if(time)
@@ -510,6 +538,7 @@
 	if(!.)
 		return FALSE
 	RegisterSignal(leader(), COMSIG_MOVABLE_MOVED, PROC_REF(on_leader_moved))
+	ribbon = heretic_dance_ribbon(leader(), owner, duration)
 	owner.visible_message(span_danger("[owner] против воли подхватывает чужой хоровод!"), span_userdanger("Вы повторяете каждый шаг танцора и не можете остановиться! Лягте, сядьте или пусть вас схватят."))
 	playsound(owner, pick(GLOB.heretic_dance_voices), 45, TRUE)
 	owner.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_note", ABOVE_MOB_LAYER))
@@ -522,10 +551,12 @@
 		return
 	var/mob/living/user = source
 	if(!heretic_dance_can_sway(user, owner))
+		heretic_dance_break_fx(owner)
 		qdel(src)
 		return
 	var/turf/next = get_step(owner, movement_dir)
 	if(next && !isgroundlessturf(next))
+		new /obj/effect/temp_visual/heretic_dance_bone_steps(get_turf(owner), movement_dir)
 		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(heretic_dance_move), owner, next, movement_dir)
 	var/drain = min(stamina_per_step, HERETIC_DANCE_HOROVOD_STAMINA_CAP - stamina_dealt)
 	if(drain > 0)
@@ -533,6 +564,7 @@
 		owner.adjustStaminaLoss(drain)
 
 /datum/status_effect/heretic_dance/horovod/on_remove()
+	QDEL_NULL(ribbon)
 	if(applied)
 		var/mob/living/user = leader()
 		if(user)
@@ -619,7 +651,7 @@
 	owner.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_tarantism_[stacks]", ABOVE_MOB_LAYER))
 
 /datum/status_effect/heretic_dance/tarantism/on_dance_beat(datum/source, index, strong)
-	heretic_dance_hop(owner, FALSE, TRUE)
+	heretic_dance_hop(owner, FALSE, TRUE, stacks)
 	if(strong)
 		owner.adjustStaminaLoss(4 * stacks)
 

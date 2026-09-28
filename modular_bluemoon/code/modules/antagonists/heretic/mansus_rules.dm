@@ -1055,6 +1055,10 @@
 	hint = "В зале играет вальс. Шагайте в такт: шаг в долю тень не слышит, а шаг мимо музыки она слышит за шесть клеток. Пульсирующие плиты отбивают долю."
 	reminder = "Шаг в такт вальсу - тень не слышит."
 	var/origin = 0
+	var/beat_index = -1
+	var/bar_world_start = 0
+	var/bar_real_start = 0
+	var/grace_until = -1
 
 /datum/heretic_mansus_rule/dance/on_generate()
 	var/list/cells = shuffle(ordinary_cells())
@@ -1065,18 +1069,46 @@
 
 /datum/heretic_mansus_rule/dance/on_start()
 	origin = world.time
-	play_bar()
+	beat_index = -1
+	pulse()
 
-/datum/heretic_mansus_rule/dance/proc/play_bar()
+/// Доля зала: плиты вспыхивают ровно в долю, в сильную долю играет фраза вальса.
+/datum/heretic_mansus_rule/dance/proc/pulse()
 	if(!active())
 		return
-	schedule(CALLBACK(src, PROC_REF(play_bar)), HERETIC_MANSUS_DANCE_BEAT * HERETIC_MANSUS_DANCE_METER)
+	follow_music()
+	beat_index = max(beat_index + 1, round((world.time - origin) / HERETIC_MANSUS_DANCE_BEAT + 0.01))
+	schedule(CALLBACK(src, PROC_REF(pulse)), max(world.tick_lag, origin + (beat_index + 1) * HERETIC_MANSUS_DANCE_BEAT - world.time))
+	for(var/obj/effect/heretic_mansus_dance_tile/tile in visit.scenery)
+		flick("dance_beat_tile", tile)
+	if(beat_index % HERETIC_MANSUS_DANCE_METER)
+		return
+	origin = world.time - beat_index * HERETIC_MANSUS_DANCE_BEAT
+	bar_world_start = world.time
+	bar_real_start = heretic_dance_real_time()
 	if(visit.victim?.client)
 		var/datum/heretic_dance_style/waltz = GLOB.heretic_dance_styles[HERETIC_DANCE_STYLE_WALTZ]
-		visit.victim.playsound_local(get_turf(visit.victim), pick(waltz.phrases), 35, FALSE)
+		visit.victim.playsound_local(get_turf(visit.victim), pick(waltz.phrases), heretic_dance_music_volume(visit.victim, 35), FALSE)
+
+/// Как у еретика: сетка долей догоняет музыку клиента после лага, шаги сразу после фриза не шумят.
+/datum/heretic_mansus_rule/dance/proc/follow_music()
+	if(!bar_real_start)
+		return
+	var/position = world.time - bar_world_start
+	var/drift = (heretic_dance_real_time() - bar_real_start) - position
+	if(abs(drift) < HERETIC_DANCE_LAG_MIN)
+		return
+	if(abs(drift) >= HERETIC_DANCE_STALL)
+		grace_until = world.time + HERETIC_DANCE_LAG_GRACE
+	drift = clamp(drift, -position, HERETIC_MANSUS_DANCE_BEAT * HERETIC_MANSUS_DANCE_METER - position)
+	origin -= drift
+	bar_world_start -= drift
 
 /// Шаг ближе к доле, чем окно, беззвучен; поправка на пинг как у еретика.
 /datum/heretic_mansus_rule/dance/proc/on_beat(time = world.time)
+	follow_music()
+	if(world.time <= grace_until)
+		return TRUE
 	var/latency = visit.victim?.client?.avgping_rtt ? clamp(visit.victim.client.avgping_rtt / 100, 0, HERETIC_DANCE_LATENCY_CAP) : 0
 	var/elapsed = time - latency - origin
 	var/nearest = round(elapsed / HERETIC_MANSUS_DANCE_BEAT + 0.5)
@@ -1095,7 +1127,7 @@
 	name = "ballroom tile"
 	desc = "Медная плита пульсирует в такт музыке зала."
 	icon = HERETIC_MANSUS_RULES_ICON
-	icon_state = "dance_beat_tile"
+	icon_state = "dance_beat_tile_rest"
 	anchored = TRUE
 	layer = TURF_DECAL_LAYER
 	plane = FLOOR_PLANE

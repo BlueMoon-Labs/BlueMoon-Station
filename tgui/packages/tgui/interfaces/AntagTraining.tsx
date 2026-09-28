@@ -35,7 +35,8 @@ export type AntagTrainingData = {
   path_stage: number;
   recipes: (Choice & { ingredients: string; hint: string; components: BooleanLike; result: BooleanLike })[];
   resource: { name: string; value: number; max: number; description: string } | null;
-  practice: { id: string; target: string; complete: BooleanLike; hint: string; damage: number; healing: number; last_damage: number; critical_seconds: number | null } | null;
+  practice: { id: string; target: string; complete: BooleanLike; hint: string; damage: number; healing: number; last_damage: number; critical_seconds: number | null; steps?: { name: string; done: BooleanLike; current: BooleanLike }[] | null } | null;
+  dance_lesson?: BooleanLike;
   duel: { phase: string; first: string; second: string; lethal: BooleanLike; remaining: number; involved: BooleanLike; can_accept: BooleanLike } | null;
   last_duel_result: string | null;
   duel_ready: BooleanLike;
@@ -181,12 +182,24 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
           <Stack.Item><Button icon="bullseye" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'combat' })}>Довести цель до крита</Button></Stack.Item>
           <Stack.Item><Button icon="heart-pulse" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'medicine' })}>Вылечить пациента</Button></Stack.Item>
           <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.options.length} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
+          {!!data.dance_lesson && <Stack.Item><Button icon="music" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'dance' })}>Урок Пляски</Button></Stack.Item>}
         </Stack>
         <Box color="label" mt={1}>Человеческая цель неподвижна. Для активного противника выберите тип и включите ИИ в разделе «Цели».</Box>
       </Section>
       {!!practice && (
         <Section title={practice.complete ? 'Упражнение выполнено' : `Ваша цель: ${practice.target}`}>
           <Box mb={1.5} color={practice.complete ? 'good' : undefined}>{practice.hint}</Box>
+          {!!practice.steps?.length && (
+            <Stack vertical mb={1.5}>
+              {practice.steps.map((step, index) => (
+                <Stack.Item key={step.name}>
+                  <Box color={step.done ? 'good' : step.current ? undefined : 'label'} bold={!!step.current}>
+                    {step.done ? <Icon name="check" mr={0.5} /> : `${index + 1}. `}{step.name}
+                  </Box>
+                </Stack.Item>
+              ))}
+            </Stack>
+          )}
           <div className="AntagTraining__damage">
             <div><Box color="label">Получено урона</Box><Box bold>{Math.round(practice.damage)}</Box></div>
             <div><Box color="label">Восстановлено</Box><Box bold>{Math.round(practice.healing)}</Box></div>

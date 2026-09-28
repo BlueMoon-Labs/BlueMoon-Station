@@ -5,7 +5,12 @@
 #define DANCE_FIGURE_COOLDOWN_BEATS 16
 #define DANCE_MUSIC_VOLUME 40
 #define DANCE_BEAT_VOLUME 25
+#define DANCE_SPECTATOR_VOLUME 20
+#define DANCE_SPECTATOR_RANGE 7
 #define DANCE_HUD_ALERT "heretic_dance_beat"
+#define DANCE_SWITCH_LINKED 1
+#define DANCE_SWITCH_QUEUED 2
+#define DANCE_SWITCH_RUSHED 3
 
 GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 
@@ -52,10 +57,22 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 /datum/heretic_dance_style/proc/flourish(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
 	return FALSE
 
-/datum/heretic_dance_style/proc/on_beat(datum/eldritch_knowledge/base_dance/dance, mob/living/user, strong)
+/// Последняя доля перед сильной: стиль готовит акцент телом.
+/datum/heretic_dance_style/proc/before_strong(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
 	return
 
 /datum/heretic_dance_style/proc/on_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
+	return
+
+/// Удар при работающей пассивке стиля: текущего или удержанного Болеро.
+/datum/heretic_dance_style/proc/passive_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
+	return
+
+/// Шаг ведущего в долю: след стиля на полу.
+/datum/heretic_dance_style/proc/on_step(datum/eldritch_knowledge/base_dance/dance, mob/living/user, turf/old_loc, direction)
+	return
+
+/datum/heretic_dance_style/proc/passive_beat(datum/eldritch_knowledge/base_dance/dance, mob/living/user, strong)
 	return
 
 /datum/heretic_dance_style/waltz
@@ -108,8 +125,8 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 	accent_text = "кортэ: цель падает на 1,5 секунды, не чаще раза в 10 секунд"
 	figure_text = "шаг в сторону, обратно, снова в сторону - следующий удар клинком выпадом с 2 клеток"
 
-/datum/heretic_dance_style/tango/on_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
-	if(!blade || accuracy == HERETIC_DANCE_MISS || !dance.passive_active)
+/datum/heretic_dance_style/tango/passive_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
+	if(!blade || accuracy == HERETIC_DANCE_MISS)
 		return
 	victim.adjustBruteLoss(HERETIC_DANCE_TANGO_BONUS)
 	if(accuracy == HERETIC_DANCE_PERFECT)
@@ -124,7 +141,14 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		victim.adjustStaminaLoss(15)
 		return
 	victim.apply_status_effect(/datum/status_effect/heretic_dance_dipped)
+	heretic_dance_lunge(user, victim)
+	heretic_dance_dip(victim, user)
 	victim.Knockdown(power >= 2 ? 2.5 SECONDS : 1.5 SECONDS)
+
+/datum/heretic_dance_style/tango/before_strong(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
+	var/mob/living/partner = dance.nearest_enemy(user)
+	if(partner)
+		heretic_dance_lean_back(user, partner, dance.beat_ds)
 
 /datum/heretic_dance_style/tango/flourish(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
 	dance.lunge_until = world.time + 3 SECONDS
@@ -152,18 +176,23 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		dance.bite_chain = 0
 		return
 	victim.apply_status_effect(/datum/status_effect/heretic_dance/tarantism, dance)
-	if(accuracy == HERETIC_DANCE_PERFECT && dance.passive_active)
-		heretic_heal_pool(user, 2)
-	if(!blade)
+	if(!blade || (accuracy != HERETIC_DANCE_PERFECT && dance.lag_forgiving()))
 		return
 	if(accuracy != HERETIC_DANCE_PERFECT || dance.bite_target?.resolve() != victim)
 		dance.bite_target = WEAKREF(victim)
 		dance.bite_chain = accuracy == HERETIC_DANCE_PERFECT ? 1 : 0
 		return
-	if(++dance.bite_chain >= HERETIC_DANCE_BITE_HITS)
+	if(++dance.bite_chain < HERETIC_DANCE_BITE_HITS)
+		victim.balloon_alert(user, "укус [dance.bite_chain] из [HERETIC_DANCE_BITE_HITS]")
+		return
+	if(dance.bite_chain >= HERETIC_DANCE_BITE_HITS)
 		dance.bite_chain = 0
 		victim.apply_status_effect(/datum/status_effect/heretic_dance/frenzy, dance, 4 SECONDS)
 		dance.flourish_fx(user, src)
+
+/datum/heretic_dance_style/tarantella/passive_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
+	if(accuracy == HERETIC_DANCE_PERFECT)
+		heretic_heal_pool(user, 2)
 
 /datum/heretic_dance_style/tarantella/accent(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, power = 1)
 	var/datum/status_effect/heretic_dance/tarantism/bite = victim.has_status_effect(/datum/status_effect/heretic_dance/tarantism)
@@ -201,6 +230,8 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 /datum/heretic_dance_style/cancan/accent(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, power = 1)
 	var/distance = power >= 2 ? 3 : (power < 1 ? 1 : 2)
 	victim.adjustStaminaLoss(power < 1 ? 10 : 20 * power)
+	if(power >= 1)
+		heretic_dance_kick(user, victim)
 	if(victim.anchored || victim.buckled || !isturf(victim.loc))
 		return
 	var/turf/target = get_ranged_target_turf(victim, get_dir(user, victim) || user.dir, distance)
@@ -232,9 +263,11 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 /datum/heretic_dance_style/macabre/passive_off(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
 	dance.hide_skeleton()
 
-/datum/heretic_dance_style/macabre/on_beat(datum/eldritch_knowledge/base_dance/dance, mob/living/user, strong)
-	if(!dance.passive_active)
-		return
+/datum/heretic_dance_style/macabre/on_step(datum/eldritch_knowledge/base_dance/dance, mob/living/user, turf/old_loc, direction)
+	if(dance.passive_active || (id in dance.bolero_passives))
+		new /obj/effect/temp_visual/heretic_dance_bone_steps(old_loc, direction)
+
+/datum/heretic_dance_style/macabre/passive_beat(datum/eldritch_knowledge/base_dance/dance, mob/living/user, strong)
 	for(var/mob/living/carbon/victim in range(5, user))
 		if(heretic_can_affect(user, victim, chargecost = 0, notify = FALSE))
 			victim.apply_status_effect(/datum/status_effect/heretic_dance_dread)
@@ -260,16 +293,71 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 	var/turf/landing = locate(center.x * 2 - from.x, center.y * 2 - from.y, center.z)
 	if(!landing || !heretic_tile_passable(landing) || landing.is_blocked_turf(exclude_mobs = FALSE))
 		return FALSE
+	var/shift_x = (from.x - landing.x) * world.icon_size
+	var/shift_y = (from.y - landing.y) * world.icon_size
 	victim.forceMove(landing)
 	victim.setDir(get_dir(landing, center))
+	heretic_dance_swing_arc(victim, shift_x, shift_y)
+	new /obj/effect/temp_visual/heretic_dance/ribbons(center)
 	return TRUE
 
+/proc/heretic_dance_swing_arc(atom/movable/dancer, shift_x, shift_y)
+	var/length = sqrt(shift_x ** 2 + shift_y ** 2)
+	if(!length)
+		return
+	var/bulge_x = -shift_y / length * (world.icon_size / 2)
+	var/bulge_y = shift_x / length * (world.icon_size / 2)
+	var/base_x = dancer.pixel_x
+	var/base_y = dancer.pixel_y
+	dancer.pixel_x = base_x + shift_x
+	dancer.pixel_y = base_y + shift_y
+	animate(dancer, pixel_x = base_x + shift_x / 2 + bulge_x, pixel_y = base_y + shift_y / 2 + bulge_y, time = 1.5, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+	animate(pixel_x = base_x, pixel_y = base_y, time = 1.5, easing = SINE_EASING | EASE_IN)
+
+/// Танго: выпад к цели и возврат; тело смещается к цели и отдёргивается.
+/proc/heretic_dance_lunge(mob/living/dancer, atom/target, reach = 8)
+	if(QDELETED(dancer) || !target)
+		return
+	var/direction = get_dir(dancer, target) || dancer.dir
+	var/shift_x = (direction & EAST) ? reach : ((direction & WEST) ? -reach : 0)
+	var/shift_y = (direction & NORTH) ? reach : ((direction & SOUTH) ? -reach : 0)
+	animate(dancer, pixel_x = shift_x, pixel_y = shift_y, time = 1, easing = CUBIC_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(pixel_x = -shift_x, pixel_y = -shift_y, time = 3, easing = SINE_EASING, flags = ANIMATION_RELATIVE)
+
+/// Танго: вдох перед акцентом - корпус отклоняется от цели и замирает.
+/proc/heretic_dance_lean_back(mob/living/dancer, atom/target, time)
+	if(QDELETED(dancer) || !target || dancer.resting)
+		return
+	var/direction = get_dir(dancer, target) || dancer.dir
+	var/shift_x = (direction & EAST) ? -3 : ((direction & WEST) ? 3 : 0)
+	var/shift_y = (direction & NORTH) ? -2 : ((direction & SOUTH) ? 2 : 0)
+	animate(dancer, pixel_x = shift_x, pixel_y = shift_y, time = time * 0.6, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(pixel_x = -shift_x, pixel_y = -shift_y, time = time * 0.4, easing = CUBIC_EASING | EASE_IN, flags = ANIMATION_RELATIVE)
+
+/// Кортэ: партнёр прогибается назад по дуге и опускается.
+/proc/heretic_dance_dip(mob/living/partner, atom/leader)
+	if(QDELETED(partner) || !leader)
+		return
+	var/direction = get_dir(leader, partner) || partner.dir
+	var/shift_x = (direction & EAST) ? 6 : ((direction & WEST) ? -6 : 0)
+	animate(partner, pixel_x = shift_x, pixel_z = 4, time = 1.5, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(pixel_x = -shift_x, pixel_z = -4, time = 4, easing = BOUNCE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE)
+
+/// Канкан: мах ногой - подскок вверх и отклонение корпуса назад.
+/proc/heretic_dance_kick(mob/living/dancer, atom/target)
+	if(QDELETED(dancer) || dancer.resting)
+		return
+	var/direction = get_dir(dancer, target) || dancer.dir
+	var/lean = (direction & EAST) ? -2 : ((direction & WEST) ? 2 : 0)
+	animate(dancer, pixel_z = 5, pixel_x = lean, time = 1, easing = CUBIC_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
+	animate(pixel_z = -5, pixel_x = -lean, time = 3, easing = BOUNCE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE)
+
 /// Видимый такт на теле: подскок на сильную долю, покачивание на слабых; jerky - рывок марионетки в раже.
-/proc/heretic_dance_hop(mob/living/dancer, strong, jerky = FALSE)
+/proc/heretic_dance_hop(mob/living/dancer, strong, jerky = FALSE, tremor = 2)
 	if(QDELETED(dancer) || dancer.stat != CONSCIOUS || !isturf(dancer.loc) || dancer.resting)
 		return
 	var/lift = strong ? 3 : 1
-	var/sway = jerky ? pick(-2, 2) : 0
+	var/sway = jerky ? pick(-tremor, tremor) : 0
 	animate(dancer, pixel_z = lift, pixel_w = sway, time = 1, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_RELATIVE | ANIMATION_PARALLEL)
 	animate(pixel_z = -lift, pixel_w = -sway, time = strong ? 3 : 2, easing = BOUNCE_EASING, flags = ANIMATION_RELATIVE)
 
@@ -288,6 +376,11 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 			return TRUE
 	return FALSE
 
+/// Громкость музыки Пляски с поправкой на ползунок слушателя в настройках звука.
+/proc/heretic_dance_music_volume(mob/listener, base)
+	var/datum/preferences/prefs = listener?.client?.prefs
+	return prefs ? base * prefs.get_sound_volume("heretic_dance") / 100 : base
+
 /// Слух для чар Пляски: глухота и наушники-заглушки закрывают от музыки, шлемы и гарнитуры - нет.
 /proc/heretic_dance_can_hear(mob/living/victim)
 	if(!istype(victim) || victim.stat != CONSCIOUS || HAS_TRAIT(victim, TRAIT_DEAF))
@@ -303,22 +396,54 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		return FALSE
 	return TRUE
 
-/// Точность действия по доле: промах, в долю или точно; strong_ref получает TRUE для сильной доли.
+/// Монотонные часы в децисекундах: в отличие от world.time идут и во время фриза сервера, как музыка у клиента.
+/proc/heretic_dance_real_time()
+	return SStick_spikes.now_ms() / 100
+
+/// Точность действия по доле: промах, в долю или точно; last_timing_* получают номер доли, сторону и сильную долю.
 /datum/eldritch_knowledge/base_dance/proc/timing(mob/living/user, time = world.time)
+	follow_music()
 	var/latency = 0
 	if(user?.client?.avgping_rtt)
 		latency = clamp(user.client.avgping_rtt / 100, 0, HERETIC_DANCE_LATENCY_CAP)
 	var/elapsed = time - latency - beat_origin
 	var/nearest = round(elapsed / beat_ds + 0.5)
-	var/offset = abs(elapsed - nearest * beat_ds)
+	var/signed_offset = elapsed - nearest * beat_ds
+	var/offset = abs(signed_offset)
+	last_timing_beat = nearest
+	last_timing_early = signed_offset < 0
 	last_timing_strong = (nearest % meter) == 0
 	var/datum/heretic_dance_style/style = current_style()
-	var/scale = style?.id == HERETIC_DANCE_STYLE_TARANTELLA ? 0.6 : 1
+	var/scale = style?.id == HERETIC_DANCE_STYLE_TARANTELLA && !bolero_on ? 0.6 : 1
 	if(offset <= HERETIC_DANCE_PERFECT_WINDOW * scale + 0.01)
 		return HERETIC_DANCE_PERFECT
-	if(offset <= HERETIC_DANCE_BEAT_WINDOW * scale + 0.01)
+	if(offset <= HERETIC_DANCE_BEAT_WINDOW * scale + 0.01 || lag_forgiving())
 		return HERETIC_DANCE_ON_BEAT
 	return HERETIC_DANCE_MISS
+
+/// Фраза такта играет у клиента в реальном времени: отставшую из-за лага сетку долей двигаем вслед за музыкой.
+/datum/eldritch_knowledge/base_dance/proc/follow_music()
+	if(QDELETED(dance_body))
+		return
+	var/position = world.time - bar_world_start
+	var/drift = (heretic_dance_real_time() - bar_real_start) - position
+	if(abs(drift) < HERETIC_DANCE_LAG_MIN)
+		return
+	if(abs(drift) >= HERETIC_DANCE_STALL)
+		lag_grace_until = world.time + HERETIC_DANCE_LAG_GRACE
+	drift = clamp(drift, -position, beat_ds * meter - position)
+	beat_origin -= drift
+	bar_world_start -= drift
+	if(beat_timer)
+		schedule_beat()
+
+/// Сразу после фриза сервера нельзя знать, когда игрок на самом деле нажал: промах не засчитывается.
+/datum/eldritch_knowledge/base_dance/proc/lag_forgiving()
+	return world.time <= lag_grace_until
+
+/datum/eldritch_knowledge/base_dance/proc/sync_bar()
+	bar_world_start = world.time
+	bar_real_start = heretic_dance_real_time()
 
 /datum/eldritch_knowledge/base_dance/proc/current_style()
 	return GLOB.heretic_dance_styles[style_id]
@@ -338,35 +463,66 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		if(style_known(id))
 			. += id
 
-/// Сменить стиль; в сильную долю Такт сохраняется и следующий акцент удваивается, иначе Такт делится пополам.
+/// В сильную долю стиль меняется сразу связкой; мимо неё ждёт следующей сильной доли с сохранением Такта. Повторный выбор ждущего стиля меняет сразу, деля Такт.
 /datum/eldritch_knowledge/base_dance/proc/switch_style(mob/living/user, new_style_id)
 	if(!can_use(user) || !style_known(new_style_id))
 		return FALSE
 	if(new_style_id == style_id)
-		return FALSE
+		if(!pending_style_id)
+			return FALSE
+		pending_style_id = null
+		user.balloon_alert(user, "остаёмся в стиле")
+		pulse_hud(FALSE, FALSE)
+		return TRUE
 	var/accuracy = timing(user)
-	var/linked = accuracy != HERETIC_DANCE_MISS && last_timing_strong
+	if(accuracy != HERETIC_DANCE_MISS && last_timing_strong)
+		return apply_style(user, new_style_id, DANCE_SWITCH_LINKED)
+	if(pending_style_id == new_style_id)
+		return apply_style(user, new_style_id, DANCE_SWITCH_RUSHED)
+	pending_style_id = new_style_id
+	var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[new_style_id]
+	user.balloon_alert(user, "[lowertext(style.name)] с сильной доли")
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "switch_queued", user, new_style_id)
+	to_chat(user, span_eldritch("[style.name] вступит на следующей сильной доле, Такт сохранится. Выберите стиль ещё раз, чтобы сменить сразу ценой половины Такта."))
+	pulse_hud(FALSE, FALSE)
+	return TRUE
+
+/datum/eldritch_knowledge/base_dance/proc/apply_style(mob/living/user, new_style_id, mode)
+	pending_style_id = null
 	set_passive(FALSE)
 	style_id = new_style_id
 	var/datum/heretic_dance_style/style = current_style()
-	beat_ds = style.beat_ds
-	meter = style.meter
-	if(linked)
-		link_bonus = TRUE
-		user.balloon_alert(user, "связка!")
-	else
-		combat_resource = round(combat_resource / 2)
+	apply_tempo()
+	switch(mode)
+		if(DANCE_SWITCH_LINKED)
+			link_bonus = TRUE
+			user.balloon_alert(user, "связка!")
+		if(DANCE_SWITCH_RUSHED)
+			combat_resource = round(combat_resource / 2)
 	figure_steps.Cut()
 	restart_clock()
 	update_passive()
 	refresh_bolero_passives()
-	if(linked)
+	if(mode == DANCE_SWITCH_LINKED)
 		style_entrance(user)
 	update_style_status()
 	notify_resource_changed()
 	playsound(user, style.switch_sound, 45, TRUE)
-	to_chat(user, span_eldritch("Стиль: [style.name]. [linked ? "Связка в сильную долю: Такт сохранён, следующий акцент удвоен." : "Такт делится пополам: меняйте стиль в сильную долю, чтобы его сохранить."]"))
+	switch(mode)
+		if(DANCE_SWITCH_LINKED)
+			to_chat(user, span_eldritch("Стиль: [style.name]. Связка в сильную долю: Такт сохранён, следующий акцент удвоен."))
+		if(DANCE_SWITCH_QUEUED)
+			to_chat(user, span_eldritch("Стиль: [style.name]. Вступление в сильную долю сохранило Такт."))
+		else
+			to_chat(user, span_eldritch("Стиль: [style.name]. Смена мимо сильной доли разделила Такт пополам."))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "switch", user, mode == DANCE_SWITCH_LINKED ? "linked" : (mode == DANCE_SWITCH_QUEUED ? "queued" : "rushed"))
 	return TRUE
+
+/// Болеро держит свой темп поверх любого стиля: под него записаны все его фразы.
+/datum/eldritch_knowledge/base_dance/proc/apply_tempo()
+	var/datum/heretic_dance_style/style = current_style()
+	beat_ds = bolero_on ? HERETIC_DANCE_BOLERO_BEAT : style.beat_ds
+	meter = bolero_on ? HERETIC_DANCE_BOLERO_METER : style.meter
 
 /datum/eldritch_knowledge/base_dance/proc/open_style_menu(mob/living/user)
 	if(!can_use(user, ignore_grab = TRUE))
@@ -390,33 +546,64 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 /datum/eldritch_knowledge/base_dance/proc/restart_clock()
 	beat_origin = world.time
 	beat_index = -1
+	last_step_beat = -1
 	deltimer(beat_timer)
 	beat_timer = null
+	sync_bar()
 	on_beat()
 
 /datum/eldritch_knowledge/base_dance/proc/stop_clock()
 	deltimer(beat_timer)
 	beat_timer = null
 
+/datum/eldritch_knowledge/base_dance/proc/schedule_beat()
+	deltimer(beat_timer)
+	var/next_at = beat_origin + (beat_index + 1) * beat_ds
+	beat_timer = addtimer(CALLBACK(src, PROC_REF(on_beat)), max(world.tick_lag, next_at - world.time), TIMER_STOPPABLE)
+
 /datum/eldritch_knowledge/base_dance/proc/on_beat()
 	beat_timer = null
 	if(QDELETED(src) || QDELETED(dance_body))
 		return
-	beat_index++
+	follow_music()
+	beat_index = max(beat_index + 1, round((world.time - beat_origin) / beat_ds + 0.01))
 	var/strong = (beat_index % meter) == 0
+	if(strong && pending_style_id && dance_body.stat != DEAD && style_known(pending_style_id))
+		apply_style(dance_body, pending_style_id, DANCE_SWITCH_QUEUED)
+		return
+	beat_total++
+	if(strong)
+		beat_origin = world.time - beat_index * beat_ds
+		sync_bar()
 	var/datum/heretic_dance_style/style = current_style()
 	if(dance_body.stat != DEAD)
 		decay_takt()
 		pulse_hud(strong)
 		if(strong)
 			play_bar(style)
-		style.on_beat(src, dance_body, strong)
+		for(var/datum/heretic_dance_style/passive as anything in passive_styles())
+			passive.passive_beat(src, dance_body, strong)
 		if(combat_resource >= HERETIC_DANCE_RAGE_TAKT)
 			heretic_dance_hop(dance_body, strong, TRUE)
+		if((beat_index + 1) % meter == 0 && in_combat())
+			style.before_strong(src, dance_body)
 		bolero_beat(strong)
 		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_BEAT, beat_index, strong)
-	var/next_at = beat_origin + (beat_index + 1) * beat_ds
-	beat_timer = addtimer(CALLBACK(src, PROC_REF(on_beat)), max(world.tick_lag, next_at - world.time), TIMER_STOPPABLE)
+	schedule_beat()
+
+/datum/eldritch_knowledge/base_dance/proc/nearest_enemy(mob/living/user)
+	for(var/mob/living/carbon/candidate in orange(1, user))
+		if(candidate.stat != DEAD && heretic_can_affect(user, candidate, chargecost = 0, notify = FALSE))
+			return candidate
+	return null
+
+/// Стили, чьи пассивки сейчас работают: текущий с 4 Такта и удержанные Болеро.
+/datum/eldritch_knowledge/base_dance/proc/passive_styles()
+	. = list()
+	if(passive_active)
+		. += current_style()
+	for(var/id in bolero_passives)
+		. |= GLOB.heretic_dance_styles[id]
 
 /datum/eldritch_knowledge/base_dance/proc/in_combat()
 	return world.time - last_combat_at < HERETIC_DANCE_COMBAT_WINDOW
@@ -451,14 +638,34 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		dance_body.playsound_local(get_turf(dance_body), 'modular_bluemoon/sound/heretic/dance/beat.ogg', DANCE_BEAT_VOLUME, FALSE)
 		return
 	var/sound_file = bolero_active() ? bolero_phrase() : next_phrase(style)
+	var/channel = dance_channel()
 	for(var/mob/living/listener as anything in listeners)
 		if(listener.client && heretic_dance_can_hear(listener))
-			listener.playsound_local(get_turf(listener), sound_file, DANCE_MUSIC_VOLUME, FALSE)
+			listener.playsound_local(get_turf(listener), sound_file, heretic_dance_music_volume(listener, DANCE_MUSIC_VOLUME), FALSE, channel = channel)
+	if(!bolero_active())
+		play_to_spectators(sound_file, listeners, channel)
+
+/// Зрители рядом, включая призраков, слышат ту же фразу тише и оттуда, где танцуют.
+/datum/eldritch_knowledge/base_dance/proc/play_to_spectators(sound_file, list/listeners, channel)
+	var/turf/stage = get_turf(dance_body)
+	if(!stage || !SSspatial_grid.initialized)
+		return
+	for(var/mob/spectator as anything in SSspatial_grid.orthogonal_range_search(stage, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, DANCE_SPECTATOR_RANGE))
+		if((spectator in listeners) || spectator.z != stage.z || !(spectator.client?.prefs?.toggles & SOUND_INSTRUMENTS))
+			continue
+		spectator.playsound_local(stage, sound_file, heretic_dance_music_volume(spectator, DANCE_SPECTATOR_VOLUME), FALSE, channel = channel, max_distance = DANCE_SPECTATOR_RANGE)
+
+/// Один канал на танец: новая фраза обрывает прежнюю, а не звучит поверх.
+/datum/eldritch_knowledge/base_dance/proc/dance_channel()
+	if(!music_channel)
+		music_channel = SSsounds.reserve_sound_channel(src)
+	return music_channel
 
 /datum/eldritch_knowledge/base_dance/proc/next_phrase(datum/heretic_dance_style/style)
-	var/index = rand(1, HERETIC_DANCE_PHRASES)
-	if(index == last_phrase)
-		index = (index % HERETIC_DANCE_PHRASES) + 1
+	var/count = length(style.phrases)
+	var/index = rand(1, count)
+	if(index == last_phrase && count > 1)
+		index = (index % count) + 1
 	last_phrase = index
 	return style.phrase(index)
 
@@ -474,7 +681,9 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		return
 	last_combat_at = world.time
 	var/datum/heretic_dance_style/style = current_style()
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "strike", victim, accuracy)
 	if(accuracy == HERETIC_DANCE_MISS)
+		user.balloon_alert(user, last_timing_early ? "раньше доли" : "позже доли")
 		if(COOLDOWN_FINISHED(src, takt_hit_gap))
 			COOLDOWN_START(src, takt_hit_gap, DANCE_TAKT_HIT_GAP)
 			gain_takt(DANCE_TAKT_ANY)
@@ -485,6 +694,8 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		entrance_strike_until = 0
 		victim.adjustBruteLoss(entrance_strike_bonus)
 	style.on_strike(src, user, victim, accuracy, blade)
+	for(var/datum/heretic_dance_style/passive as anything in passive_styles())
+		passive.passive_strike(src, user, victim, accuracy, blade)
 	if(accuracy != HERETIC_DANCE_MISS && strong && !QDELETED(victim))
 		var/power = link_bonus ? 2 : 1
 		link_bonus = FALSE
@@ -515,43 +726,79 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 		hide_aura()
 
 /// Шаг еретика: фигуры считают только шаги в долю, по одному на долю.
-/datum/eldritch_knowledge/base_dance/proc/on_dance_step(mob/living/user, direction)
+/datum/eldritch_knowledge/base_dance/proc/on_dance_step(mob/living/user, direction, turf/old_loc)
 	if(!can_use(user) || !direction)
 		return
 	var/accuracy = timing(user)
-	var/step_beat = round((world.time - beat_origin) / beat_ds + 0.5)
+	var/step_beat = last_timing_beat
+	var/forgiving = lag_forgiving()
+	if(forgiving && step_beat <= last_step_beat)
+		step_beat = last_step_beat + 1
 	if(accuracy == HERETIC_DANCE_MISS || step_beat == last_step_beat)
-		figure_steps.Cut()
+		lose_figure(user, accuracy == HERETIC_DANCE_MISS ? (last_timing_early ? "шаг раньше доли" : "шаг позже доли") : "второй шаг в ту же долю")
 		last_step_beat = step_beat
 		return
-	if(length(figure_steps) && step_beat - last_step_beat > 1)
-		figure_steps.Cut()
+	if(length(figure_steps) && step_beat - last_step_beat > 1 && !forgiving)
+		lose_figure(user, "пропущена доля")
 	last_step_beat = step_beat
 	figure_steps += direction
+	if(old_loc)
+		for(var/datum/heretic_dance_style/step_style as anything in passive_styles() | current_style())
+			step_style.on_step(src, user, old_loc, direction)
 	if(in_combat() || combat_resource > 0)
 		var/datum/heretic_dance_style/step_style = current_style()
 		playsound(user, pick(step_style.step_sounds), 20, TRUE, SILENCED_SOUND_EXTRARANGE)
 	if(in_combat() && combat_resource >= HERETIC_DANCE_PASSIVE_TAKT)
 		heretic_heal_pool(user, HERETIC_DANCE_STEP_HEAL)
-	check_figure(user)
+	if(check_figure(user))
+		return
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "step", user, direction)
+	var/progress = figure_progress()
+	if(progress >= 2)
+		var/datum/heretic_dance_style/style = current_style()
+		user.balloon_alert(user, "шаг [progress] из [length(style.figure)]")
+
+/datum/eldritch_knowledge/base_dance/proc/figure_progress()
+	var/datum/heretic_dance_style/style = current_style()
+	var/list/pattern = style.figure
+	var/steps = length(figure_steps)
+	if(!length(pattern) || !steps)
+		return 0
+	for(var/count in min(length(pattern), steps) to 1 step -1)
+		var/first = figure_steps[steps - count + 1]
+		var/matched = TRUE
+		for(var/index in 1 to count)
+			if(figure_steps[steps - count + index] != turn(first, pattern[index]))
+				matched = FALSE
+				break
+		if(matched)
+			return count
+	return 0
+
+/datum/eldritch_knowledge/base_dance/proc/lose_figure(mob/living/user, reason)
+	var/progress = figure_progress()
+	if(progress >= 1)
+		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure_lost", user, reason)
+	if(progress >= 2)
+		user.balloon_alert(user, "фигура сбита: [reason]")
+	figure_steps.Cut()
 
 /datum/eldritch_knowledge/base_dance/proc/check_figure(mob/living/user)
 	var/datum/heretic_dance_style/style = current_style()
 	var/list/pattern = style.figure
-	if(!length(pattern) || length(figure_steps) < length(pattern))
+	if(!length(pattern) || figure_progress() < length(pattern))
 		return FALSE
-	var/list/tail = figure_steps.Copy(length(figure_steps) - length(pattern) + 1)
-	var/first = tail[1]
-	for(var/index in 1 to length(pattern))
-		if(tail[index] != turn(first, pattern[index]))
-			return FALSE
 	figure_steps.Cut()
-	if(beat_index < figure_ready_beat)
+	if(beat_total < figure_ready_beat)
+		user.balloon_alert(user, "до фигуры долей: [figure_ready_beat - beat_total]")
+		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure_cooldown", user, figure_ready_beat - beat_total)
 		return FALSE
 	if(!style.flourish(src, user))
+		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure", user, FALSE)
 		return FALSE
-	figure_ready_beat = beat_index + DANCE_FIGURE_COOLDOWN_BEATS
+	figure_ready_beat = beat_total + DANCE_FIGURE_COOLDOWN_BEATS
 	flourish_fx(user, style)
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure", user, TRUE)
 	return TRUE
 
 /datum/eldritch_knowledge/base_dance/proc/beat_fx(mob/living/user, accuracy)
@@ -579,15 +826,15 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 	playsound(place, 'modular_bluemoon/sound/heretic/dance/figure.ogg', 55, TRUE)
 	to_chat(user, span_eldritch("Фигура «[style.figure_name]»!"))
 
-/datum/eldritch_knowledge/base_dance/proc/pulse_hud(strong)
+/// pulse - удар барабана в долю; без него только обновляются подписи.
+/datum/eldritch_knowledge/base_dance/proc/pulse_hud(strong, pulse = TRUE)
 	var/atom/movable/screen/alert/heretic_dance_beat/drum = dance_body.alerts[DANCE_HUD_ALERT]
 	if(!istype(drum))
 		drum = dance_body.throw_alert(DANCE_HUD_ALERT, /atom/movable/screen/alert/heretic_dance_beat)
 		if(!drum)
 			return
 		drum.dance_ref = WEAKREF(src)
-	var/datum/heretic_dance_style/style = current_style()
-	drum.update_style(style, combat_resource, strong)
+	drum.update_style(src, strong, pulse)
 
 /atom/movable/screen/alert/heretic_dance_beat
 	name = "Такт"
@@ -596,12 +843,29 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 	icon_state = "dance_hud_drum"
 	var/datum/weakref/dance_ref
 
-/atom/movable/screen/alert/heretic_dance_beat/proc/update_style(datum/heretic_dance_style/style, takt, strong)
+/atom/movable/screen/alert/heretic_dance_beat/proc/update_style(datum/eldritch_knowledge/base_dance/dance, strong, pulse = TRUE)
+	var/datum/heretic_dance_style/style = dance.current_style()
+	var/datum/heretic_dance_style/pending = dance.pending_style_id && GLOB.heretic_dance_styles[dance.pending_style_id]
+	var/count = (max(dance.beat_index, 0) % dance.meter) + 1
+	var/on_strong = count == 1
+	var/figure_wait = max(dance.figure_ready_beat - dance.beat_total, 0)
 	color = style.color
+	desc = "[style.name], доля [dance.beat_ds / 10] с, [dance.meter] в такте, сейчас [count]-я. Такт [dance.combat_resource] из [HERETIC_DANCE_TAKT_MAX].[pending ? " С сильной доли вступит [pending.name]." : ""][length(style.figure) ? " Фигура [figure_wait ? "готова через [figure_wait]" : "готова"]." : ""] Нажмите, чтобы сменить стиль."
+	cut_overlays()
+	var/mutable_appearance/counter = mutable_appearance(appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART)
+	counter.maptext = MAPTEXT("<span style='color:[on_strong ? "#ffe9b0" : "#d8c8b8"]'>[on_strong ? "<b>[count]</b>" : count]/[dance.meter]</span>")
+	counter.maptext_width = 32
+	counter.maptext_y = -2
+	add_overlay(counter)
+	if(pending)
+		var/mutable_appearance/next = mutable_appearance('modular_bluemoon/icons/obj/heretic_actions.dmi', "dance_style_[pending.id]", appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART)
+		next.transform = matrix(0.5, 0, 8, 0, 0.5, 8)
+		add_overlay(next)
+	if(!pulse)
+		return
 	icon_state = strong ? "dance_hud_drum_strong" : "dance_hud_drum"
-	desc = "[style.name], доля [style.beat_ds / 10] с, [style.meter] в такте. Такт [takt] из [HERETIC_DANCE_TAKT_MAX]. Нажмите, чтобы сменить стиль."
 	transform = strong ? matrix() * 1.3 : matrix() * 1.12
-	animate(src, transform = matrix(), time = min(style.beat_ds * 0.6, 4), easing = SINE_EASING | EASE_OUT)
+	animate(src, transform = matrix(), time = min(dance.beat_ds * 0.6, 4), easing = SINE_EASING | EASE_OUT)
 
 /atom/movable/screen/alert/heretic_dance_beat/Click(location, control, params)
 	var/datum/eldritch_knowledge/base_dance/dance = dance_ref?.resolve()
@@ -674,3 +938,21 @@ GLOBAL_LIST_INIT(heretic_dance_styles, init_heretic_dance_styles())
 #undef DANCE_MUSIC_VOLUME
 #undef DANCE_BEAT_VOLUME
 #undef DANCE_HUD_ALERT
+#undef DANCE_SWITCH_LINKED
+#undef DANCE_SWITCH_QUEUED
+#undef DANCE_SWITCH_RUSHED
+#undef DANCE_SPECTATOR_VOLUME
+#undef DANCE_SPECTATOR_RANGE
+
+/obj/effect/temp_visual/heretic_dance_bone_steps
+	icon = 'modular_bluemoon/icons/obj/heretic_dance_marks.dmi'
+	icon_state = "dance_bone_steps"
+	duration = 1.2 SECONDS
+	randomdir = FALSE
+	layer = ABOVE_OPEN_TURF_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/effect/temp_visual/heretic_dance_bone_steps/Initialize(mapload, step_dir)
+	if(step_dir)
+		dir = step_dir
+	return ..()

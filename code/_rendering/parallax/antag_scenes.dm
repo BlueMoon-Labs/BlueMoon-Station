@@ -37,6 +37,10 @@
 #define ANTAG_SCENE_HERETIC_WAX "heretic_wax"
 #define ANTAG_SCENE_HERETIC_SPIRIT "heretic_spirit"
 #define ANTAG_SCENE_HERETIC_DANCE "heretic_dance"
+/// Ступени Болеро: за иллюминаторами проступает бал, к Финалу он заполняет небо.
+#define ANTAG_SCENE_HERETIC_DANCE_BALL "heretic_dance_ball"
+#define ANTAG_SCENE_HERETIC_DANCE_ORCHESTRA "heretic_dance_orchestra"
+#define ANTAG_SCENE_HERETIC_DANCE_FINALE "heretic_dance_finale"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
@@ -117,6 +121,21 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_HERETIC_DANCE = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance,
 		/atom/movable/screen/parallax_layer/goon/dust_sparse,
+	),
+	ANTAG_SCENE_HERETIC_DANCE_BALL = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance,
+		/atom/movable/screen/parallax_layer/heretic_dance_couples,
+	),
+	ANTAG_SCENE_HERETIC_DANCE_ORCHESTRA = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_orchestra,
+		/atom/movable/screen/parallax_layer/heretic_dance_couples,
+		/atom/movable/screen/parallax_layer/heretic_dance_couples/near,
+	),
+	ANTAG_SCENE_HERETIC_DANCE_FINALE = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_finale,
+		/atom/movable/screen/parallax_layer/heretic_dance_couples,
+		/atom/movable/screen/parallax_layer/heretic_dance_couples/near,
+		/atom/movable/screen/parallax_layer/goon/embers_sparse,
 	),
 	ANTAG_SCENE_HERETIC_SPIRIT = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_spirit,
@@ -240,6 +259,33 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/heretic_dance
 	color = "#8f3a2a"
 	alpha = 70
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_orchestra
+	color = "#9a3324"
+	alpha = 85
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_finale
+	color = "#b0201c"
+	alpha = 105
+
+/// Призрачные пары кружатся за иллюминаторами по обороту на такт Болеро и медленно проплывают мимо.
+/atom/movable/screen/parallax_layer/heretic_dance_couples
+	icon = 'modular_bluemoon/icons/effects/heretic_dance_bolero_sky.dmi'
+	icon_state = "bolero_couples_far"
+	tile_size = 256
+	speed = 0.6
+	layer = 4.5
+	parallax_intensity = PARALLAX_MED
+	fade_in_time = 6 SECONDS
+	drift_time = 90 SECONDS
+	drift_angle = 90
+
+/atom/movable/screen/parallax_layer/heretic_dance_couples/near
+	icon_state = "bolero_couples_near"
+	speed = 1.4
+	layer = 4.6
+	drift_time = 50 SECONDS
+	drift_angle = 270
 
 /atom/movable/screen/parallax_layer/tint/antag/heretic_spirit
 	color = "#4b9384"

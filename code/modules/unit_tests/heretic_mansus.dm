@@ -1199,12 +1199,20 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	victim.forceMove(mansus_tile(visit, 3, 13))
 	hunter.forceMove(mansus_tile(visit, 8, 13))
 	hunter.last_seen_turf = null
+	rule.bar_real_start = 0
+	rule.grace_until = -1
 	rule.origin = world.time - 17
 	victim.Move(mansus_tile(visit, 4, 13), EAST)
 	TEST_ASSERT_NULL(hunter.last_seen_turf, "Шаг в долю тень не слышит.")
 	rule.origin = world.time - 4
 	victim.Move(mansus_tile(visit, 3, 13), WEST)
 	TEST_ASSERT_EQUAL(hunter.last_seen_turf, mansus_tile(visit, 3, 13), "Шаг мимо музыки тень слышит.")
+	hunter.last_seen_turf = null
+	rule.bar_world_start = world.time
+	rule.bar_real_start = heretic_dance_real_time() - 8
+	rule.origin = world.time - 4
+	victim.Move(mansus_tile(visit, 4, 13), EAST)
+	TEST_ASSERT_NULL(hunter.last_seen_turf, "Шаг сразу после фриза сервера тень не слышит.")
 
 /// Дух: открытая клетка уводит тени за душой.
 /datum/unit_test/heretic_mansus_rule_spirit/Run()

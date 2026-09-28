@@ -11,6 +11,8 @@
 /// Ставит часы так, чтобы сейчас была доля номер index со смещением offset в децисекундах.
 /datum/unit_test/proc/set_dance_beat(datum/eldritch_knowledge/base_dance/dance, index, offset = 0)
 	dance.beat_origin = world.time - index * dance.beat_ds - offset
+	dance.sync_bar()
+	dance.lag_grace_until = -1
 
 /// Точность по доле: точно, в долю, мимо и сильная доля такта.
 /datum/unit_test/heretic_dance_timing/Run()
@@ -51,7 +53,7 @@
 	dance.update_passive()
 	TEST_ASSERT(!user.has_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_waltz), "Растаявший Такт снимает пассивку.")
 
-/// Смена стиля в сильную долю сохраняет Такт и удваивает акцент, мимо - делит Такт.
+/// Смена стиля в сильную долю сохраняет Такт и удваивает акцент; мимо - ждёт сильной доли, повторный выбор меняет сразу и делит Такт.
 /datum/unit_test/heretic_dance_style_link/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -66,8 +68,13 @@
 	TEST_ASSERT(dance.link_bonus, "Связка удваивает следующий акцент.")
 	TEST_ASSERT_EQUAL(dance.beat_ds, 7.5, "Часы идут в темпе Танго.")
 	set_dance_beat(dance, 1, 3)
-	TEST_ASSERT(dance.switch_style(user, HERETIC_DANCE_STYLE_WALTZ), "Обратно в Вальс.")
-	TEST_ASSERT_EQUAL(dance.combat_resource, 3, "Смена мимо сильной доли делит Такт пополам.")
+	TEST_ASSERT(dance.switch_style(user, HERETIC_DANCE_STYLE_WALTZ), "Вальс выбран мимо сильной доли.")
+	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_TANGO, "Выбранный мимо сильной доли стиль ждёт её.")
+	TEST_ASSERT_EQUAL(dance.combat_resource, 6, "Ожидание сильной доли Такт не трогает.")
+	set_dance_beat(dance, 1, 3)
+	TEST_ASSERT(dance.switch_style(user, HERETIC_DANCE_STYLE_WALTZ), "Повторный выбор меняет стиль сразу.")
+	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_WALTZ, "Стиль сменился сразу.")
+	TEST_ASSERT_EQUAL(dance.combat_resource, 3, "Смена сразу мимо сильной доли делит Такт пополам.")
 
 /// Фигура Вальса из четырёх шагов в долю подхватывает соседа в вальс.
 /datum/unit_test/heretic_dance_figure_lead/Run()
@@ -369,3 +376,147 @@
 	set_dance_beat(dance, 3)
 	dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO)
 	TEST_ASSERT(!user.has_status_effect(/datum/status_effect/heretic_dance_glide), "Вне боя входов нет.")
+
+/// Стиль, выбранный мимо сильной доли, вступает на следующей сильной доле без потери Такта и без удвоения акцента.
+/datum/unit_test/heretic_dance_queued_switch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	dance.combat_resource = 6
+	set_dance_beat(dance, 1, 4)
+	TEST_ASSERT(dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO), "Танго встаёт в очередь.")
+	TEST_ASSERT_EQUAL(dance.pending_style_id, HERETIC_DANCE_STYLE_TANGO, "Ждёт сильной доли.")
+	dance.stop_clock()
+	dance.beat_index = dance.meter - 1
+	set_dance_beat(dance, dance.meter)
+	dance.on_beat()
+	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_TANGO, "На сильной доле вступает Танго.")
+	TEST_ASSERT_NULL(dance.pending_style_id, "Очередь пуста.")
+	TEST_ASSERT_EQUAL(dance.combat_resource, 6, "Такт сохранён.")
+	TEST_ASSERT(!dance.link_bonus, "Вступление по очереди акцент не удваивает.")
+	TEST_ASSERT_EQUAL(dance.beat_ds, 7.5, "Часы идут в темпе Танго.")
+
+/// Перезарядка фигуры идёт в долях подряд и не начинается заново от смены стиля.
+/datum/unit_test/heretic_dance_figure_cooldown_switch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	dance.figure_ready_beat = dance.beat_total + 4
+	set_dance_beat(dance, 3)
+	dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO)
+	TEST_ASSERT(dance.figure_ready_beat - dance.beat_total <= 4, "Смена стиля не отодвигает готовность фигуры.")
+
+/// Фриз сервера: сетка долей догоняет музыку клиента, действия сразу после фриза не считаются промахом и не рвут фигуру.
+/datum/unit_test/heretic_dance_lag/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	set_dance_beat(dance, 1, 4)
+	TEST_ASSERT_EQUAL(dance.timing(user), HERETIC_DANCE_MISS, "Без лага между долями - мимо.")
+	set_dance_beat(dance, 1, 4)
+	var/origin = dance.beat_origin
+	dance.bar_real_start -= 8
+	TEST_ASSERT_EQUAL(dance.timing(user), HERETIC_DANCE_ON_BEAT, "Сразу после фриза промах прощается.")
+	TEST_ASSERT(abs(origin - 8 - dance.beat_origin) < 1, "Сетка долей сдвинулась вслед за музыкой.")
+	set_dance_beat(dance, 1)
+	dance.on_dance_step(user, NORTH)
+	dance.bar_real_start -= 3
+	dance.on_dance_step(user, EAST)
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 2, "Шаги, пришедшие пачкой после фриза, не рвут рисунок.")
+
+/// Болеро: темп Болеро поверх стиля, пассивка Танго работает, пока танцуете Вальс.
+/datum/unit_test/heretic_dance_bolero_passives/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/mob/living/carbon/human/victim = allocate_dance_victim(get_step(user, EAST))
+	dance.start_bolero()
+	TEST_ASSERT_EQUAL(dance.beat_ds, HERETIC_DANCE_BOLERO_BEAT, "Болеро задаёт свой темп.")
+	TEST_ASSERT_EQUAL(dance.meter, HERETIC_DANCE_BOLERO_METER, "Болеро задаёт свой размер.")
+	dance.set_bolero_stage(2)
+	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_WALTZ, "Танцуется Вальс.")
+	var/before = victim.getBruteLoss()
+	dance.register_strike(user, victim, HERETIC_DANCE_ON_BEAT, FALSE, TRUE)
+	TEST_ASSERT_EQUAL(victim.getBruteLoss() - before, HERETIC_DANCE_TANGO_BONUS, "Удержанная Болеро пассивка Танго добавляет урон в Вальсе.")
+	dance.stop_bolero()
+	TEST_ASSERT_EQUAL(dance.beat_ds, 8.5, "Конец Болеро возвращает темп стиля.")
+
+/// Все восемь фраз стиля идут в ход.
+/datum/unit_test/heretic_dance_phrases/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/datum/heretic_dance_style/style = dance.current_style()
+	var/list/heard = list()
+	for(var/bar in 1 to 200)
+		heard |= dance.next_phrase(style)
+	TEST_ASSERT_EQUAL(length(heard), length(style.phrases), "Звучат все фразы стиля.")
+
+/// Урок Пляски проходит пять шагов по настоящим действиям: удары в долю, квадрат, смена стиля, приглашение, спасение.
+/datum/unit_test/heretic_dance_lesson/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/mob/living/carbon/human/target = allocate_dance_victim(get_step(user, WEST))
+	var/datum/heretic_dance_lesson/lesson = new(null, dance, user, target)
+	allocated += lesson
+	TEST_ASSERT(heretic.get_knowledge(/datum/eldritch_knowledge/dance_grasp), "Урок открывает Танго.")
+	dance.register_strike(user, target, HERETIC_DANCE_MISS, FALSE)
+	TEST_ASSERT_EQUAL(lesson.hits, 0, "Удар мимо доли не засчитан.")
+	for(var/hit in 1 to 3)
+		dance.register_strike(user, target, HERETIC_DANCE_ON_BEAT, FALSE)
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Три удара в долю открывают квадрат.")
+	var/index = 1
+	for(var/direction in list(NORTH, EAST, SOUTH, WEST))
+		set_dance_beat(dance, index++)
+		dance.on_dance_step(user, direction)
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Квадрат рядом с мишенью открывает смену стиля.")
+	set_dance_beat(dance, 3)
+	dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO)
+	TEST_ASSERT_EQUAL(lesson.stage, 4, "Смена стиля открывает приглашение.")
+	dance.infect(user, target, TRUE)
+	TEST_ASSERT(lesson.infected, "Заражение засчитано.")
+	SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "partner", target, null)
+	TEST_ASSERT(lesson.finished(), "Без полигона шаг спасения завершается сразу, урок пройден.")
+
+/// Каждая ступень Болеро зовёт призрачную пару вокруг вознёсшегося; конец Болеро их убирает.
+/datum/unit_test/heretic_dance_bolero_ghosts/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance.start_bolero()
+	dance.set_bolero_stage(3)
+	TEST_ASSERT_EQUAL(length(dance.bolero_ghosts), 3, "Три ступени - три пары.")
+	var/obj/effect/abstract/heretic_dance_ghost/ghost = dance.bolero_ghosts[1]
+	TEST_ASSERT(ghost in user.vis_contents, "Пара кружит вокруг вознёсшегося.")
+	dance.stop_bolero()
+	TEST_ASSERT_EQUAL(length(dance.bolero_ghosts), 0, "Конец Болеро убирает пары.")
+	TEST_ASSERT(QDELETED(ghost), "Пара удалена.")
+
+/// Рампа Финала встаёт на клетках края зоны удара.
+/datum/unit_test/heretic_dance_finale_zone/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(run_loc_floor_bottom_left)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance.mark_finale_zone(FALSE)
+	var/turf/edge = locate(user.x + 3, user.y + 1, user.z)
+	var/obj/effect/temp_visual/heretic_dance_finale_edge/lamp = locate() in edge
+	TEST_ASSERT_NOTNULL(lamp, "На краю зоны стоит рампа.")
+	TEST_ASSERT_EQUAL(lamp?.dir, EAST, "Рампа стоит по внешней кромке.")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_dance_finale_edge) in get_step(user, NORTHEAST), "Внутри зоны рампы нет.")
+
+/// Пляска смерти с работающей пассивкой оставляет костяные следы там, откуда шагнули.
+/datum/unit_test/heretic_dance_bone_steps/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_bell)
+	set_dance_beat(dance, 3)
+	dance.switch_style(user, HERETIC_DANCE_STYLE_MACABRE)
+	dance.combat_resource = 6
+	dance.update_passive()
+	var/turf/from = get_turf(user)
+	set_dance_beat(dance, 1)
+	dance.on_dance_step(user, NORTH, from)
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_dance_bone_steps) in from, "Шаг в долю оставил костяной след.")
