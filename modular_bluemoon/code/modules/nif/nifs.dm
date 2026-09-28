@@ -130,7 +130,7 @@
 	if(!iscarbon(insertee))
 		return FALSE
 
-	if(linked_mob && stored_ckey != insertee.ckey && theft_protection)
+	if(stored_ckey && stored_ckey != insertee.ckey && theft_protection)
 		insertee.audible_message(span_warning("[src] lets out a negative buzz before forcefully removing itself from [insertee]'s brain."))
 		playsound(insertee, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
 		return FALSE
@@ -238,15 +238,13 @@
 	if(!bypass && !nutrition_check())
 		return FALSE
 
-	var/hunger_modifier = linked_mob.physiology.hunger_mod
-
 	if(nutrition_drain)
-		hunger_modifier = nutrition_drain_rate
+		linked_mob.physiology.hunger_mod /= nutrition_drain_rate
 		power_usage += (nutrition_drain_rate * nutrition_conversion_rate)
 		nutrition_drain = FALSE
 		return TRUE
 
-	hunger_modifier *= nutrition_drain_rate
+	linked_mob.physiology.hunger_mod *= nutrition_drain_rate
 	power_usage -= (nutrition_drain_rate * nutrition_conversion_rate)
 	nutrition_drain = TRUE
 	return TRUE

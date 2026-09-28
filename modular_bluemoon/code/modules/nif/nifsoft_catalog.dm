@@ -102,12 +102,14 @@ GLOBAL_LIST_INIT(purchasable_nifsofts, list(
 	switch(action)
 		if("purchase_product")
 			var/datum/nifsoft/product_to_buy = text2path(params["product_to_buy"])
-			if(!product_to_buy || !paying_account)
+			if(!product_to_buy || !(product_to_buy in GLOB.purchasable_nifsofts) || !paying_account)
 				return FALSE
 
-			var/amount_to_charge = (params["product_cost"])
+			// The price always comes from the product itself, never from client-provided params.
+			var/amount_to_charge = initial(product_to_buy.purchase_price)
+
 			var/rewards_purchase = (params["rewards_purchase"])
-			var/obj/item/organ/cyberimp/brain/nif/buyer_nif = target_nif.resolve()
+			var/obj/item/organ/cyberimp/brain/nif/buyer_nif = target_nif?.resolve()
 
 			//SPLURT ADDITION START - TELLS THE USER THEY NEED A NIF TO BUY NIFSOFTs (FIXES NULL RUNTIME)
 			if(!buyer_nif)
@@ -116,16 +118,16 @@ GLOBAL_LIST_INIT(purchasable_nifsofts, list(
 			//SPLURT ADDITION END
 
 			if(rewards_purchase)
+				if(!initial(product_to_buy.rewards_points_eligible))
+					buyer_nif.send_message("This NIFSoft cannot be bought with reward points.", alert = TRUE)
+					return FALSE
+
 				if(buyer_nif.rewards_points < amount_to_charge)
 					buyer_nif.send_message("You don't have enough reward points to buy this.", alert = TRUE)
 					return FALSE
 
 			else if(!paying_account.has_money(amount_to_charge))
 				paying_account.bank_card_talk("You lack the money to make this purchase.")
-				return FALSE
-
-			if(!ispath(product_to_buy, /datum/nifsoft) || !buyer_nif)
-				paying_account.bank_card_talk("You are unable to buy this.")
 				return FALSE
 
 			var/datum/nifsoft/installed_nifsoft = new product_to_buy(buyer_nif, rewards_purchase)
