@@ -32,6 +32,14 @@ export const MourningLyre = ({ colored = false }: { colored?: boolean }) => (
   </g>
 );
 
+export const CarnivalMask = ({ colored = false, strokeWidth = 1.1 }: { colored?: boolean; strokeWidth?: number }) => (
+  <g className="HereticMask" fill={colored ? '#e8dccb' : 'none'} stroke={colored ? '#8f1d21' : 'currentColor'} strokeWidth={strokeWidth} strokeLinejoin="round">
+    <path d="M24 14C28 11 35 10 40 9 43 8 45 6.5 47 5 46.5 10 45 14 42.5 17.5 40 22 33 25 28.5 23.5L26.2 20.7 24.6 19 24 19.6 23.4 19 21.8 20.7 19.5 23.5C15 25 8 22 5.5 17.5 3 14 1.5 10 1 5 3 6.5 5 8 8 9 13 10 20 11 24 14Z" />
+    <path d="M28 17.6Q32 13 37.5 14.4 34 19.5 28 17.6ZM20 17.6Q16 13 10.5 14.4 14 19.5 20 17.6Z" fill={colored ? '#1b1012' : 'none'} />
+    <path d="M9 9q7 3 11 2m8 0q4 1 11-2" fill="none" stroke={colored ? '#c8553d' : 'currentColor'} strokeWidth={strokeWidth * 0.7} />
+  </g>
+);
+
 /** Рисунки путей выполнены чернилами, как и остальные записи в книге. */
 export const HereticIllumination = ({ path }: { path: string }) => (
   <svg
@@ -169,6 +177,23 @@ export const HereticIllumination = ({ path }: { path: string }) => (
         <path d="M65 31v113l25 38m165-151v113l-25 38M54 47v101l22 35m190-136v101l-22 35" opacity=".5" />
         <path d="M124 208h72M134 201h52" />
       </>
+    ) : path === 'Dance' ? (
+      <>
+        <ellipse cx="160" cy="184" rx="112" ry="22" /><ellipse cx="160" cy="184" rx="124" ry="29" strokeDasharray="2 7" />
+        <g className="HereticBook__danceRibbons">
+          <path d="M104 88C82 104 106 124 86 144S72 170 50 178M109 92C92 110 114 128 94 148S82 174 62 184M216 88c22 16-2 36 18 56s14 26 36 34M211 92c17 18-5 36 15 56s12 26 32 36" />
+        </g>
+        <g transform="translate(100 38) scale(2.5)"><CarnivalMask strokeWidth={0.55} /></g>
+        <path d="M106 52C97 36 86 20 70 6c17 5 30 20 34 40-11-8-22-20-34-40m12 11 4 9m5-2 5 8m-18-20 1 4M160 70l-4-7 4-7 4 7Z" />
+        <g className="HereticBook__danceSteps">
+          {[[57, 187, 118], [84, 205, 100], [133, 200, 93], [187, 210, 87], [234, 195, 80], [268, 196, 62]].map(([x, y, angle]) => (
+            <g key={x} transform={`translate(${x} ${y}) rotate(${angle})`}><path d="M0-7c3 0 4 4 3 8s-5 3-5 0 0-8 2-8Zm-1 11a2 2 0 1 0 .1 0Z" /></g>
+          ))}
+        </g>
+        <path d="M138 160c0 10 2 16 5 18 9 1 15 9 28 10l15 1q3-2-3-5c-11-3-18-8-24-14q-10 2-21-10Zm5 18-1 12h3l1-11m12-8-4-4v7Zm0 0 4-4v7Z" />
+        <ellipse cx="54" cy="112" rx="4" ry="3" /><ellipse cx="266" cy="118" rx="4" ry="3" /><ellipse cx="248" cy="148" rx="3" ry="2.2" />
+        <path d="M58 111V94l6 4M270 117v-17M251 147v-12l5 3M160 8v14m-7-7h14M34 60l6 6m0-6-6 6m240-6 6 6m0-6-6 6" />
+      </>
     ) : path === 'Spirit' ? (
       <>
         <path d="M77 191V79q0-56 65-56t65 56v112M85 188V81q0-50 57-50t57 50v107M62 197h160M87 205h109" opacity=".55" />
@@ -291,6 +316,16 @@ export const HereticPageOrnament = ({ path }: { path: string }) => (
         <path d="M14 72V14h292v58M14 528v58h292v-58M20 89v422m280-422v422" />
         <path d="M17 20q24 16 43 0m200 0q20 16 43 0M17 580q24-16 43 0m200 0q20-16 43 0M144 14l16-9 16 9-16 12Zm0 572 16-9 16 9-16 12Z" />
         {[129, 271, 413].map((y) => <g key={y}><path d={`M12 ${y}q-9 0-6 10l6 17 6-17q3-10-6-10Zm296 0q-9 0-6 10l6 17 6-17q3-10-6-10Z`} /><path d={`M12 ${y+33}v56m296-56v56`} strokeDasharray="1 5" /></g>)}
+      </>
+    ) : path === 'Dance' ? (
+      <>
+        <path d="M14 70V14h292v56M14 530v56h292v-56M20 90v420m280-420v420" />
+        <path d="M10 90q8 21 0 42t0 42 0 42 0 42 0 42 0 42 0 42 0 42 0 42 0 42M310 90q-8 21 0 42t0 42 0 42 0 42 0 42 0 42 0 42 0 42 0 42 0 42" strokeDasharray="7 3" />
+        <g transform="translate(22 20) scale(.62)"><CarnivalMask /></g>
+        <g transform="translate(268 20) scale(.62)"><CarnivalMask /></g>
+        <path d="M24 580l1-8q4-4 8-1l5 5 9 2q2 1 1 3H24Zm1 0v5M296 580l-1-8q-4-4-8-1l-5 5-9 2q-2 1-1 3h20Zm-1 0v5" />
+        {[78, 118, 158, 198, 238].map((x, index) => <path key={x} d={`M${x} ${index % 2 ? 588 : 582}c6-3 10-1 10 1s-4 4-10 1Zm-3 0a2 2 0 1 0 0 .1Z`} />)}
+        <path d="m151 14 9-8 9 8-9 8Z" />
       </>
     ) : path === 'Cosmic' ? (
       <>

@@ -10,6 +10,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
     ['Blade', 'Клинок'], ['Moon', 'Луна'], ['Cosmic', 'Космос'],
     ['Lock', 'Замок'], ['Tide', 'Пучина'], ['Glass', 'Стекло'], ['Blood', 'Кровь'],
     ['Echo', 'Эхо'], ['Sand', 'Песок'], ['Wax', 'Воск'], ['Spirit', 'Дух'],
+    ['Dance', 'Пляска'],
   ].map(([id, name]) => ({
     id, name, desc: `Учение: ${name}.`, strengths: ['Своя тактика.'], weaknesses: ['Своя уязвимость.'],
     innate_name: `Черта: ${name}`, innate_desc: `Врождённое свойство: ${name}.`,
@@ -458,13 +459,14 @@ describe('Гримуар еретика', () => {
   test.each([
     ['Cosmic', 'Космос'], ['Glass', 'Стекло'], ['Blood', 'Кровь'],
     ['Echo', 'Эхо'], ['Sand', 'Песок'], ['Wax', 'Воск'], ['Spirit', 'Дух'],
+    ['Dance', 'Пляска'],
   ])('%s: показывает все пути, подтверждает обет и отправляет только идентификатор знания', async (path, name) => {
     const data = makeData();
     const { topic } = setupStore(data);
     await renderBook();
     const index = screen.getByRole('navigation', { name: 'Пути Мансуса' });
-    expect(within(index).getAllByRole('button')).toHaveLength(15);
-    expect(within(index).getByText('XV')).toBeTruthy();
+    expect(within(index).getAllByRole('button')).toHaveLength(16);
+    expect(within(index).getByText('XVI')).toBeTruthy();
     fireEvent.click(within(index).getByRole('button', { name }));
     expect(screen.getByRole('heading', { name })).toBeTruthy();
     fireEvent.click(screen.getByText('Знания пути'));

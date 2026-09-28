@@ -140,7 +140,7 @@ const useLoreBackend = () => {
 
 const chapters = ['Путь', 'Знания', 'Ритуалы', 'Охота', 'Помощь'] as const;
 type Chapter = typeof chapters[number];
-const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];
+const numerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'];
 const bookTitles: Record<string, string> = {
   Unbound: 'Кодекс Рубцов', Ash: 'Псалтирь последнего огня', Rust: 'Железный завет',
   Flesh: 'Анатомия голода', Void: 'Палимпсест зимы', Blade: 'Трактат о последнем ударе',
@@ -149,7 +149,7 @@ const bookTitles: Record<string, string> = {
   Glass: 'Евангелие разбитого света', Blood: 'Служебник алой десятины',
   Echo: 'Партитура последнего голоса',
   Sand: 'Хроника истёкшего часа', Wax: 'Служба негаснущей свечи',
-  Spirit: 'Список непришедших',
+  Spirit: 'Список непришедших', Dance: 'Партитура бала без конца',
 };
 
 export const roleLabels: Record<string, { label: string; glyph: string }> = {

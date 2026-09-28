@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 
-import { MourningLyre, SpiritLantern } from './HereticIllumination';
+import { CarnivalMask, MourningLyre, SpiritLantern } from './HereticIllumination';
 
 export type BookPresentation = 'living' | 'muted' | 'plain';
 
@@ -26,11 +26,14 @@ const interactions: Record<string, string> = {
   Sand: 'Перевернуть часы в переплёте',
   Wax: 'Прикрыть огонёк ладонью',
   Spirit: 'Позвать душу к фонарю',
+  Dance: 'Завести шкатулку с танцовщицей',
 };
 
 // Частицы закреплены за переплётом: нажатия не создают новых элементов.
 const flames = [[8, 230], [975, 860], [491, 180]];
 const sparks = [[13, 208], [988, 850], [497, 156], [503, 753]];
+const danceSteps = [12, 500, 988].flatMap((x, seam) => [0, 1, 2, 3].map((step) => [x + (step % 2 ? 4 : -4), 130 + seam * 270 + step * 42]));
+const ribbon = (x: number, sway: number) => `M${x} 30${` q${sway} 30 0 60 t0 60`.repeat(8)}`;
 const stars = [[15, 110], [20, 362], [11, 690], [23, 912], [983, 158], [976, 474], [985, 733], [974, 893], [496, 170], [504, 396], [495, 720], [502, 911]];
 
 const Artwork = ({ path, full, prefix }: { path: string; full: boolean; prefix: string }) => (
@@ -85,6 +88,17 @@ const Artwork = ({ path, full, prefix }: { path: string; full: boolean; prefix: 
       <g fill="#bbae8d" stroke="#eee3c6" strokeWidth="1">
         <path d="M4 10h16v82q-5 12-9 0V60q-4-6-7 0ZM980 10h16v133q-6 10-9 0V78q-4-6-7 0ZM493 10h14v88q-4 10-7 0V73q-4-6-7 0Z" />
         {(full ? [170, 450, 780] : [170, 780]).map((y) => <g key={y}><path d={`M6 ${y}h12v45H6ZM982 ${y+70}h12v45h-12Z`} /><g className="HereticBookAtmosphere__waxFlames" fill="#eff4d6"><path d={`M12 ${y-31}c1 10 10 17 7 23-3 10-17 8-15-2 1-9 8-11 8-21ZM988 ${y+39}c1 10 10 17 7 23-3 10-17 8-15-2 1-9 8-11 8-21Z`} /></g></g>)}
+      </g>
+    )}
+    {path === 'Dance' && (
+      <g fill="none">
+        <path d="M12 15v970m976-970v970M494 12v976m12-976v976" stroke="#b87333" strokeWidth="1.6" />
+        {full && <path className="HereticBookAtmosphere__danceRibbon HereticBookAtmosphere__danceRibbon--back" d={`${ribbon(12, -10)}${ribbon(988, 10)}${ribbon(500, 8)}`} stroke="#8f1d21" strokeWidth="2" />}
+        <path className="HereticBookAtmosphere__danceRibbon" d={`${ribbon(12, 10)}${ribbon(988, -10)}${ribbon(500, -8)}`} stroke="#c8553d" strokeWidth={full ? 3.5 : 2.2} strokeLinecap="round" />
+        <g fill="#8f1d21" stroke="#e8dccb" strokeWidth=".6">
+          {(full ? danceSteps : danceSteps.filter((_, index) => index % 4 < 2)).map(([x, y], index) => <path key={`${x}-${y}`} className={`HereticBookAtmosphere__danceStep HereticBookAtmosphere__danceStep--${index % 4}`} d={`M${x} ${y}c3 0 4 4 3 8s-5 3-5 0 0-8 2-8Zm-1 11a2 2 0 1 0 .1 0Z`} />)}
+        </g>
+        {(full ? [60, 520, 930] : [60, 930]).map((y) => <g key={y}><g transform={`translate(0 ${y}) scale(.5 .7)`}><CarnivalMask colored /></g><g transform={`translate(976 ${y + 40}) scale(.5 .7)`}><CarnivalMask colored /></g></g>)}
       </g>
     )}
     {path === 'Flesh' && (
@@ -305,6 +319,23 @@ const Toy = ({ path, prefix }: { path: string; prefix: string }) => (
         <path d="M13 43q4-6 7 0v14q4 5 5 0V47q3-4 6 0" fill="none" stroke="#f6e9c7" />
         <path className="HereticBookAtmosphere__waxFlames" d="M22 6c-1 11 13 17 10 25-3 11-23 9-20-2 1-9 10-13 10-23Z" fill="#e8f4d2" stroke="#97b5a3" />
         <path d="M22 22v16" stroke="#fffce4" />
+      </g>
+    ) : path === 'Dance' ? (
+      <g stroke="#b87333" strokeWidth="1.2">
+        <path d="M5 60h34v22H5Z" fill="#1b1012" /><path d="M3 56h38v5H3Z" fill="#8f1d21" />
+        <path d="M8 64h28v14H8Z" fill="none" stroke="#c8553d" /><path d="M14 72q8-6 16 0" fill="none" stroke="#e8dccb" />
+        <path d="M7 82v4m30-4v4" strokeWidth="2.5" /><path d="M16 56v-3h12v3" fill="#b87333" />
+        <g className="HereticBookAtmosphere__boxKey"><path d="M39 71h3m1-5q4 0 4 5t-4 5Z" fill="#b87333" /></g>
+        <g className="HereticBookAtmosphere__boxDancer" strokeWidth="1">
+          <path d="M22 21v10M22 23l-8-9m8 9 7-10M21 37v15m2-15 4 9-3 6" stroke="#e8dccb" strokeWidth="1.8" />
+          <circle cx="22" cy="17" r="3.4" fill="#e8dccb" stroke="#6b4a3a" /><path d="M18.5 16.5h7" stroke="#8f1d21" strokeWidth="1.6" />
+          <path d="M22 28c-6 1-11 5-12 9 6 1 18 1 24 0-1-4-6-8-12-9Z" fill="#c8553d" stroke="#8f1d21" />
+          <path d="M19.5 53h3m1 0h3" stroke="#8f1d21" strokeWidth="2" />
+        </g>
+        <g className="HereticBookAtmosphere__boxNotes" fill="#e8dccb" stroke="#e8dccb">
+          <ellipse cx="5" cy="44" rx="2.4" ry="1.7" /><ellipse cx="38" cy="36" rx="2.4" ry="1.7" />
+          <path d="M7 44v-9l4 2M40 36v-9" fill="none" />
+        </g>
       </g>
     ) : path === 'Spirit' ? (
       <g className="HereticBookAtmosphere__lanternToy"><SpiritLantern colored /></g>

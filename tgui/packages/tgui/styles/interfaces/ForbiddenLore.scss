@@ -135,6 +135,7 @@
     &--Sand { --oath-color: #816135; }
     &--Wax { --oath-color: #774c56; }
     &--Spirit { --oath-color: #397b6d; }
+    &--Dance { --oath-color: #9a3a2a; }
   }
   &__ribbonMark { display: grid; place-items: center; width: 27px; height: 31px; flex-shrink: 0; font-size: 12px; background: var(--oath-color, var(--ribbon)); color: #eee2c9; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%); }
   &__signed { margin-left: auto; font-size: 15px; }
@@ -483,6 +484,25 @@
   .HereticBook__departingSoul { animation: heretic-soul-hover 7s ease-in-out infinite; }
   .HereticBook__soulThread { animation: heretic-soul-thread 5s linear infinite; }
 }
+
+.HereticBook--Dance {
+  --paper: #e8dccb; --paper-edge: #a8866a; --ink: #2a1a1b; --faded: #5c3a35; --accent: #9a3a2a; --cover: #1b1012; --cover-light: #b87333; --ribbon: #8f1d21; --rule: #b98f78;
+  --grain: repeating-linear-gradient(0deg, transparent 0 21px, #8f1d210b 21px 22px), radial-gradient(ellipse at 50% 0%, #c8553d14, transparent 55%);
+  .HereticBook__binding { border-color: #b87333; border-radius: 6px; }
+  .HereticBook__titleRule { border-color: #b87333; }
+  .HereticBook__bookTitle { font-style: italic; }
+  .HereticBook__danceRibbons { animation: heretic-dance-ribbons 6s ease-in-out infinite; transform-origin: 160px 88px; }
+  .HereticBook__danceSteps > g { animation: heretic-dance-step 4.8s ease-in-out infinite; }
+  .HereticBook__danceSteps > g:nth-child(2) { animation-delay: .8s; }
+  .HereticBook__danceSteps > g:nth-child(3) { animation-delay: 1.6s; }
+  .HereticBook__danceSteps > g:nth-child(4) { animation-delay: 2.4s; }
+  .HereticBook__danceSteps > g:nth-child(5) { animation-delay: 3.2s; }
+  .HereticBook__danceSteps > g:nth-child(6) { animation-delay: 4s; }
+  .HereticBook__clasp { background: linear-gradient(90deg, #3a1c14, #e0a070 45%, #b87333 58%, #3a1c14); border-color: #5a2a1c; }
+}
+
+@keyframes heretic-dance-ribbons { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+@keyframes heretic-dance-step { 0%, 100% { opacity: .25; } 12%, 30% { opacity: 1; } }
 
 @keyframes heretic-soul-hover { 0%, 100% { transform: translateY(2px); opacity: .65; } 50% { transform: translateY(-4px); opacity: 1; } }
 @keyframes heretic-soul-thread { to { stroke-dashoffset: -28; } }

@@ -195,6 +195,27 @@
   &--reacting .HereticBook__lanternSoul { fill-opacity: 1; }
   &--living#{&}--reacting &__lanternToy { transform-origin: 22px 3px; animation: book-lantern-call 2.8s ease-in-out; }
   &--living#{&}--reacting &__soulSeam { animation: book-soul-thread 2.8s linear; }
+  &--Dance { --atmosphere-glow: #e0674f; }
+  &__danceRibbon { opacity: .6; stroke-dasharray: 34 10; transition: opacity 300ms ease, stroke 400ms ease; }
+  &__danceRibbon--back { opacity: .45; }
+  &__danceStep { opacity: .35; transition: opacity 300ms ease; }
+  &__boxDancer { transform-origin: 22px 36px; }
+  &__boxKey { transform-box: fill-box; transform-origin: center; }
+  &__boxNotes { opacity: 0; transition: opacity 300ms ease; }
+  &--reacting &__danceRibbon { opacity: 1; stroke: #e0674f; }
+  &--reacting &__danceStep { opacity: .9; }
+  &--reacting &__boxNotes { opacity: 1; }
+  &--living &__danceRibbon { animation: book-dance-ribbon 9s linear infinite; }
+  &--living &__danceStep { animation: book-dance-step 4s ease-in-out infinite; }
+  &--living &__danceStep--1 { animation-delay: -3s; }
+  &--living &__danceStep--2 { animation-delay: -2s; }
+  &--living &__danceStep--3 { animation-delay: -1s; }
+  &--living &__boxDancer { animation: book-box-sway 4s ease-in-out infinite; }
+  &--living#{&}--reacting &__danceRibbon { animation-duration: 2.8s; }
+  &--living#{&}--reacting &__danceStep { animation-duration: 1s; }
+  &--living#{&}--reacting &__boxDancer { animation: book-box-pirouette 2.8s ease-in-out both; }
+  &--living#{&}--reacting &__boxKey { animation: book-box-wind 2.8s ease-out both; }
+  &--living#{&}--reacting &__boxNotes { animation: book-box-notes 2.8s ease-out both; }
 
   /* В приглушённом режиме нажатие меняет только статичный рисунок. */
   &--muted#{&}--reacting &__art { opacity: .65; }
@@ -211,6 +232,12 @@
   &--still#{&}--reacting &__steelSparks { opacity: .5; }
 }
 
+@keyframes book-dance-ribbon { to { stroke-dashoffset: -176; } }
+@keyframes book-dance-step { 0%, 100% { opacity: .15; } 20%, 40% { opacity: .85; } }
+@keyframes book-box-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes book-box-pirouette { 0%, 100% { transform: scaleX(1); } 15%, 45% { transform: scaleX(-1); } 30%, 60% { transform: scaleX(1); } 80% { transform: rotate(-4deg); } }
+@keyframes book-box-wind { 0%, 50%, 100% { transform: scaleY(1); } 25%, 75% { transform: scaleY(-1); } }
+@keyframes book-box-notes { 0% { opacity: 0; transform: translateY(4px); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
 @keyframes book-soul-drift { 0%, 100% { transform: translateY(5px); opacity: .3; } 50% { transform: translateY(-8px); opacity: .8; } }
 @keyframes book-soul-light { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 @keyframes book-lantern-call { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-12deg); } 45% { transform: rotate(9deg); } 75% { transform: rotate(-3deg); } }

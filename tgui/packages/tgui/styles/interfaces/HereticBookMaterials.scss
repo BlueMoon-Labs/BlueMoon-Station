@@ -118,6 +118,11 @@
     .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #acae9c, 0 0 17px #9be8cf19; }
     .HereticBook__spine { background: linear-gradient(90deg, transparent, #0c1125aa 38%, #a8bbaa45 49%, #0c1125aa 62%, transparent); }
   }
+  &.HereticBook--Dance {
+    --reading-wash: #e8d8c4dd;
+    .HereticBook__binding { box-shadow: 0 5px 12px #000a, inset 0 0 0 2px #b87333, 0 0 17px #8f1d2133; }
+    .HereticBook__spine { background: linear-gradient(90deg, transparent, #1b1012aa 38%, #c8553d40 49%, #1b1012aa 62%, transparent); }
+  }
 }
 
 .HereticBook[data-book-view='muted'] {
