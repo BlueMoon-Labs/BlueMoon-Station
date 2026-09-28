@@ -475,7 +475,7 @@
 		if(IS_HERETIC(human_in_range) || IS_HERETIC_MONSTER(human_in_range))
 			continue
 
-		if(HAS_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE))
+		if(HAS_TRAIT(human_in_range, TRAIT_VOID_MASK_IMMUNE) || heretic_magic_ward(local_user, human_in_range, chargecost = 0, tinfoil = TRUE))
 			continue
 
 		SEND_SIGNAL(human_in_range,COMSIG_VOID_MASK_ACT,rand(-2,-20)*delta_time)

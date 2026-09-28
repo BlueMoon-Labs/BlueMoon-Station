@@ -147,7 +147,7 @@
 		var/distance = get_dist_euclidian(src, candidate)
 		if(distance > HERETIC_STARGAZER_RANGE || (chosen && distance >= best_distance) || candidate.stat != CONSCIOUS || !(iscarbon(candidate) || issilicon(candidate) || candidate.client || (ishostile(candidate) && !master.faction_check_mob(candidate))))
 			continue
-		if(!heretic_can_affect(master, candidate, chargecost = 0) || !line_clear(candidate))
+		if(!heretic_can_affect(master, candidate, chargecost = 0, notify = FALSE) || !line_clear(candidate))
 			continue
 		chosen = candidate
 		best_distance = distance
@@ -187,7 +187,7 @@
 	var/mob/living/victim = target
 	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 		return PROJECTILE_PIERCE_PHASE
-	if(victim.check_magic_resistance(tinfoil = TRUE, chargecost = 1))
+	if(heretic_magic_ward(firer, victim))
 		victim.visible_message(span_warning("Звёздный луч гаснет, едва коснувшись [victim]."))
 		return PROJECTILE_DELETE_WITHOUT_HITTING
 	return ..()

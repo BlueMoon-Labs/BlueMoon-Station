@@ -300,7 +300,7 @@
 	heretic.clear_heretic()
 	TEST_ASSERT(heretic.role_removed && QDELETED(new_grasp), "Снятие бестелесной роли завершает очистку знаний.")
 
-/// Проверки защиты не расходуют зарядов, а атаки учитывают обычную и психическую антимагию.
+/// Проверки защиты не расходуют зарядов; шапочка из фольги держит только ментальные чары.
 /datum/unit_test/heretic_legacy_antimagic/Run()
 	var/mob/living/victim = allocate(/mob/living/carbon/human)
 	var/datum/component/anti_magic/protection = victim.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
@@ -314,10 +314,11 @@
 	var/obj/item/clothing/head/foilhat/hat = allocate(/obj/item/clothing/head/foilhat)
 	var/mob/living/carbon/human/human = victim
 	TEST_ASSERT(human.equip_to_slot_if_possible(hat, ITEM_SLOT_HEAD), "Шапочка надета на голову.")
-	TEST_ASSERT(!heretic_can_affect(null, victim, chargecost = 0), "Шапочка блокирует психическую магию еретика.")
 	var/datum/component/anti_magic/psychic = hat.GetComponent(/datum/component/anti_magic)
+	TEST_ASSERT(heretic_can_affect(null, victim), "Обычные чары еретика шапочка не держит.")
+	TEST_ASSERT(!heretic_can_affect(null, victim, chargecost = 0, tinfoil = TRUE), "Шапочка блокирует ментальную магию еретика.")
 	TEST_ASSERT_EQUAL(psychic.charges, 6, "Проверка не расходует заряд шапочки.")
-	TEST_ASSERT(!heretic_can_affect(null, victim), "Атака также блокируется шапочкой.")
+	TEST_ASSERT(!heretic_can_affect(null, victim, tinfoil = TRUE), "Ментальная атака блокируется шапочкой.")
 	TEST_ASSERT_EQUAL(psychic.charges, 5, "Настоящая атака расходует один заряд шапочки.")
 
 /// Промах клинка, недоступный сдвиг и повторное касание нити не расходуют защиту.

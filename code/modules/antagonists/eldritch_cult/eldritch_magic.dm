@@ -111,7 +111,7 @@
 		if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 			reject_grasp(victim, user, "Союзник Мансуса; заряд сохранён.")
 			return
-		var/datum/protection = victim.check_magic_resistance()
+		var/datum/protection = heretic_magic_ward(user, victim)
 		if(protection)
 			to_chat(user, span_warning("Защита от магии отталкивает хватку."))
 			victim.balloon_alert(user, "защита от магии")
@@ -557,7 +557,7 @@
 	if(!isliving(target))
 		return ..()
 	var/mob/living/victim = target
-	if(victim.check_magic_resistance(tinfoil = TRUE, chargecost = 1))
+	if(heretic_magic_ward(firer, victim))
 		victim.visible_message(span_warning("Заряд ржавчины рассыпается хлопьями, едва коснувшись [victim]."))
 		return PROJECTILE_DELETE_WITHOUT_HITTING
 	return ..()
@@ -1188,7 +1188,7 @@
 
 /obj/effect/proc_holder/spell/targeted/shed_human_form
 	name = "Сбросить облик"
-	desc = "Смените человеческий облик на форму Повелителя Ночи или обратно. Убитый червь выбрасывает вас человеком, и облик вернётся только через 2 минуты."
+	desc = "Смените человеческий облик на форму Повелителя Ночи или обратно. Убитый червь выбрасывает вас человеком, и облик вернётся только через 2 минуты. Превращение с шансом 1 к 4 травмирует мозг людям в 9 клетках; защита от магии и шапочка из фольги спасают."
 	summary = "Превращает вас в червя и обратно; поедая трупы головой, червь лечится и растёт."
 	invocation_type = "shout"
 	invocation = "РЕАЛЬНОСТЬ, РАЗВЕРНИСЬ!"
@@ -1232,7 +1232,7 @@
 		target.forceMove(outside)
 		target.apply_status_effect(STATUS_EFFECT_STASIS,STASIS_ASCENSION_EFFECT)
 		for(var/mob/living/carbon/human/humie in view(9,outside)-target)
-			if(IS_HERETIC(humie) || IS_HERETIC_MONSTER(humie))
+			if(!heretic_can_affect(user, humie, chargecost = 0, tinfoil = TRUE))
 				continue
 			SEND_SIGNAL(humie, COMSIG_ADD_MOOD_EVENT, "gates_of_mansus", /datum/mood_event/gates_of_mansus)
 			///They see the very reality uncoil before their eyes.

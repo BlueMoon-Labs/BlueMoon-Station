@@ -83,8 +83,7 @@
 		return "Себя не захватить."
 	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim))
 		return "Мансус не держит своих: еретика и его созданий захватить нельзя."
-	// Психозащита заряды здесь не тратит и держала бы вечно, поэтому от захватов тела она не спасает.
-	if(!heretic_can_affect(user, victim, chargecost = 0, tinfoil = FALSE))
+	if(!heretic_can_affect(user, victim, chargecost = 0))
 		return "Цель защищена от магии."
 	var/shared_until = 0
 	for(var/datum/status_effect/heretic_capture_immunity/immunity as anything in victim.has_status_effect_list(/datum/status_effect/heretic_capture_immunity))

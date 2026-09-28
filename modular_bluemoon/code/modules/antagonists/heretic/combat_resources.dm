@@ -1,6 +1,9 @@
 #define HERETIC_VOID_SHARD_INTERVAL (20 SECONDS)
 #define HERETIC_VOID_WARM_SHARD_INTERVAL (30 SECONDS)
 #define HERETIC_VOID_WARM_SHARD_CAP 2
+#define HERETIC_WARD_NOTICE_PRUNE_SIZE 64
+
+GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 
 /obj/effect/proc_holder/spell
 	COOLDOWN_DECLARE(heretic_failure_log)
@@ -190,12 +193,43 @@
 	release_flesh_servants()
 	return ..()
 
-/// Единая проверка боевых эффектов: союзники и защита от магии остаются полезны на всех путях.
-/proc/heretic_can_affect(mob/user, atom/target, chargecost = 1, tinfoil = TRUE)
+/// Единая проверка боевых эффектов: союзники и защита от магии остаются полезны на всех путях. tinfoil - только для ментальных эффектов, не для захватов.
+/proc/heretic_can_affect(mob/user, atom/target, chargecost = 1, tinfoil = FALSE, notify = TRUE)
 	if(!isliving(target) || target == user || QDELETED(target))
 		return FALSE
 	var/mob/living/victim = target
-	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(tinfoil = tinfoil, chargecost = chargecost)
+	return victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !heretic_magic_ward(user, victim, chargecost, tinfoil, notify)
+
+/// Источник защиты цели от чар еретика или null; о сработавшей защите узнают и цель, и еретик.
+/proc/heretic_magic_ward(mob/user, mob/living/victim, chargecost = 1, tinfoil = FALSE, notify = TRUE)
+	. = victim.check_magic_resistance(tinfoil = tinfoil, chargecost = chargecost)
+	if(. && notify)
+		heretic_ward_notice(user, victim, .)
+
+/// Возвращает текст, отправленный цели, или null, если она уже слышала его за последние HERETIC_WARD_NOTICE_COOLDOWN.
+/proc/heretic_ward_notice(mob/user, mob/living/victim, datum/protection)
+	if(ismob(user) && user != victim && heretic_ward_notice_due("heretic [REF(user)]"))
+		victim.balloon_alert(user, "защита от магии")
+	if(!heretic_ward_notice_due("victim [REF(victim)]"))
+		return null
+	var/obj/item/ward_item = protection
+	. = "Чары Мансуса отскакивают от вас: вас хранит [istype(ward_item) ? ward_item.name : "защита от магии"]."
+	to_chat(victim, span_notice(.))
+
+/proc/heretic_ward_notice_due(key)
+	var/list/stamps = GLOB.heretic_ward_notice_times
+	var/last_notice = stamps[key]
+	if(!isnull(last_notice) && world.time - last_notice < HERETIC_WARD_NOTICE_COOLDOWN)
+		return FALSE
+	if(length(stamps) >= HERETIC_WARD_NOTICE_PRUNE_SIZE)
+		var/list/fresh = list()
+		for(var/stamp_key in stamps)
+			if(world.time - stamps[stamp_key] < HERETIC_WARD_NOTICE_COOLDOWN)
+				fresh[stamp_key] = stamps[stamp_key]
+		GLOB.heretic_ward_notice_times = fresh
+		stamps = fresh
+	stamps[key] = world.time
+	return TRUE
 
 /// Дверь старого пути открывает еретик этого знания в своём теле, на полу и не скованный.
 /datum/eldritch_knowledge/proc/door_user_ready(mob/living/user)
@@ -750,3 +784,4 @@
 #undef HERETIC_VOID_SHARD_INTERVAL
 #undef HERETIC_VOID_WARM_SHARD_INTERVAL
 #undef HERETIC_VOID_WARM_SHARD_CAP
+#undef HERETIC_WARD_NOTICE_PRUNE_SIZE
