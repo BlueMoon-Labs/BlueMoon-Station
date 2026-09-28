@@ -102,6 +102,10 @@
 /datum/heretic_path/spirit
 	vfx_particles = /particles/heretic_ascension/spirit
 
+/datum/heretic_path/dance
+	vfx_particles = /particles/heretic_ascension/dance
+	vfx_accent = "#e0b27a"
+
 /// Чернила пути, а с accent - его второй оттенок, если он задан.
 /proc/heretic_path_ink(path_id, accent = FALSE)
 	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
@@ -795,6 +799,16 @@
 	gravity = list(0, -0.2)
 	friction = 0.05
 	lifespan = 1.8 SECONDS
+
+/// Пляска: медное конфетти и алые ленты кружатся и оседают.
+/particles/heretic_ascension/dance
+	icon_state = list("dance_confetti_1" = 3, "dance_confetti_2" = 3, "dance_confetti_3" = 2)
+	velocity = generator("circle", 2, 5)
+	gravity = list(0, -0.1)
+	friction = 0.1
+	spin = generator("num", -12, 12)
+	lifespan = 2 SECONDS
+	fade = 0.8 SECONDS
 
 /// Дух: души поднимаются полупрозрачными шлейфами и покачиваются.
 /particles/heretic_ascension/spirit

@@ -179,6 +179,7 @@
 #include "heretic_echo.dm"
 #include "heretic_sand.dm"
 #include "heretic_spirit.dm"
+#include "heretic_dance.dm"
 #include "heretic_wax.dm"
 #include "heretic_new_paths.dm"
 #include "heretic_books.dm"

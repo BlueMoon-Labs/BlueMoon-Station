@@ -33,6 +33,11 @@
 #define HERETIC_MANSUS_WAX_MAX_DARKNESS 2
 #define HERETIC_MANSUS_WAX_OVERLAY "heretic_mansus_wax"
 #define HERETIC_MANSUS_SPIRIT_CAGES 5
+#define HERETIC_MANSUS_DANCE_BEAT 8.5
+#define HERETIC_MANSUS_DANCE_METER 3
+#define HERETIC_MANSUS_DANCE_WINDOW 2.5
+#define HERETIC_MANSUS_DANCE_NOISE 6
+#define HERETIC_MANSUS_DANCE_TILES 5
 #define HERETIC_MANSUS_SPIRIT_DECOY (8 SECONDS)
 #define HERETIC_MANSUS_SPIRIT_LURE_RANGE 9
 #define HERETIC_MANSUS_SPIRIT_STEP (0.5 SECONDS)
@@ -1044,6 +1049,58 @@
 	darkness = 0
 	update_overlay()
 
+// Пляска: в бальном зале слышен каждый шаг мимо музыки.
+
+/datum/heretic_mansus_rule/dance
+	hint = "В зале играет вальс. Шагайте в такт: шаг в долю тень не слышит, а шаг мимо музыки она слышит за шесть клеток. Пульсирующие плиты отбивают долю."
+	reminder = "Шаг в такт вальсу - тень не слышит."
+	var/origin = 0
+
+/datum/heretic_mansus_rule/dance/on_generate()
+	var/list/cells = shuffle(ordinary_cells())
+	for(var/index in 1 to min(HERETIC_MANSUS_DANCE_TILES, length(cells)))
+		var/turf/position = free_spot(cells[index])
+		if(position)
+			spawn_object(/obj/effect/heretic_mansus_dance_tile, position)
+
+/datum/heretic_mansus_rule/dance/on_start()
+	origin = world.time
+	play_bar()
+
+/datum/heretic_mansus_rule/dance/proc/play_bar()
+	if(!active())
+		return
+	schedule(CALLBACK(src, PROC_REF(play_bar)), HERETIC_MANSUS_DANCE_BEAT * HERETIC_MANSUS_DANCE_METER)
+	if(visit.victim?.client)
+		var/datum/heretic_dance_style/waltz = GLOB.heretic_dance_styles[HERETIC_DANCE_STYLE_WALTZ]
+		visit.victim.playsound_local(get_turf(visit.victim), pick(waltz.phrases), 35, FALSE)
+
+/// Шаг ближе к доле, чем окно, беззвучен; поправка на пинг как у еретика.
+/datum/heretic_mansus_rule/dance/proc/on_beat(time = world.time)
+	var/latency = visit.victim?.client?.avgping_rtt ? clamp(visit.victim.client.avgping_rtt / 100, 0, HERETIC_DANCE_LATENCY_CAP) : 0
+	var/elapsed = time - latency - origin
+	var/nearest = round(elapsed / HERETIC_MANSUS_DANCE_BEAT + 0.5)
+	return abs(elapsed - nearest * HERETIC_MANSUS_DANCE_BEAT) <= HERETIC_MANSUS_DANCE_WINDOW + 0.01
+
+/datum/heretic_mansus_rule/dance/on_victim_moved(atom/old_loc, direction, forced)
+	if(forced || !active() || on_beat())
+		return
+	var/turf/source = get_turf(visit.victim)
+	for(var/obj/effect/heretic_mansus_hunter/hunter as anything in visit.hunters)
+		if(get_dist(hunter, source) <= HERETIC_MANSUS_DANCE_NOISE)
+			hunter.last_seen_turf = source
+			hunter.search_turf = null
+
+/obj/effect/heretic_mansus_dance_tile
+	name = "ballroom tile"
+	desc = "Медная плита пульсирует в такт музыке зала."
+	icon = HERETIC_MANSUS_RULES_ICON
+	icon_state = "dance_beat_tile"
+	anchored = TRUE
+	layer = TURF_DECAL_LAYER
+	plane = FLOOR_PLANE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
 // Дух: освобождённые души уводят тени.
 
 /datum/heretic_mansus_rule/spirit
@@ -1150,6 +1207,11 @@
 #undef HERETIC_MANSUS_WAX_MAX_DARKNESS
 #undef HERETIC_MANSUS_WAX_OVERLAY
 #undef HERETIC_MANSUS_SPIRIT_CAGES
+#undef HERETIC_MANSUS_DANCE_BEAT
+#undef HERETIC_MANSUS_DANCE_METER
+#undef HERETIC_MANSUS_DANCE_WINDOW
+#undef HERETIC_MANSUS_DANCE_NOISE
+#undef HERETIC_MANSUS_DANCE_TILES
 #undef HERETIC_MANSUS_SPIRIT_DECOY
 #undef HERETIC_MANSUS_SPIRIT_LURE_RANGE
 #undef HERETIC_MANSUS_SPIRIT_STEP

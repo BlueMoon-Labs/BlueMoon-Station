@@ -73,6 +73,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	"blood" = 'modular_bluemoon/sound/heretic/capture/blood_latch.ogg',
 	"blade_throat" = 'modular_bluemoon/sound/heretic/capture/throat_latch.ogg',
 	"wax" = 'modular_bluemoon/sound/heretic/capture/wax_latch.ogg',
+	"dance_invite" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
 ))
 
 /// Метка захвата по источнику удержания: у сна-захвата это метка усыпившего захвата.
@@ -281,6 +282,9 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	var/ink = heretic_path_ink(path_id)
 	playsound(place, 'modular_bluemoon/sound/heretic/capture/pocket_pull.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
 	heretic_vfx_pulse(victim, ink, HERETIC_FX_OUTLINE_WIDE, max(pull_time, HERETIC_FX_PULL_MIN))
+	if(path_id == PATH_DANCE)
+		playsound(place, 'modular_bluemoon/sound/heretic/dance/door.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
+		new /obj/effect/temp_visual/heretic_dance/ribbons(place)
 	if(pull_time <= 0)
 		return
 	new /obj/effect/temp_visual/heretic_vfx/pocket_seam(entry || place, ink, pull_time + HERETIC_FX_SEAM_TAIL, pull_time, HERETIC_FX_SEAM_ALPHA)

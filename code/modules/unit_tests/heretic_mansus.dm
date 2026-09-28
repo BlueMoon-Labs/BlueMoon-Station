@@ -732,7 +732,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 		for(var/event in list("ambience", "pickup", "deposit", "warning", "hit", "escape", "step"))
 			TEST_ASSERT(isfile(theme[event]), "Звук [theme_id]/[event] включён в ресурсы.")
 	var/list/rule_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_rules.dmi')
-	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step"))
+	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step", "dance_beat_tile"))
 		TEST_ASSERT(state in rule_states, "Спрайт правила [state] существует.")
 	var/list/guidance_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi')
 	for(var/state in list("trail", "sanctuary", "niche", "name"))
@@ -1188,6 +1188,23 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT_EQUAL(rule.darkness, 0, "Свеча разжигает свет.")
 	rule.melt()
 	TEST_ASSERT_EQUAL(rule.darkness, 0, "Разожжённый свет какое-то время держится.")
+
+/// Пляска: шаг в долю тень не слышит, шаг мимо музыки слышит.
+/datum/unit_test/heretic_mansus_rule_dance/Run()
+	var/list/fixture = make_mansus_fixture(path_id = PATH_DANCE)
+	var/mob/living/carbon/human/victim = fixture["victim"]
+	var/datum/heretic_mansus_visit/visit = fixture["visit"]
+	var/datum/heretic_mansus_rule/dance/rule = visit.rule
+	var/obj/effect/heretic_mansus_hunter/hunter = visit.spawn_hunter()
+	victim.forceMove(mansus_tile(visit, 3, 13))
+	hunter.forceMove(mansus_tile(visit, 8, 13))
+	hunter.last_seen_turf = null
+	rule.origin = world.time - 17
+	victim.Move(mansus_tile(visit, 4, 13), EAST)
+	TEST_ASSERT_NULL(hunter.last_seen_turf, "Шаг в долю тень не слышит.")
+	rule.origin = world.time - 4
+	victim.Move(mansus_tile(visit, 3, 13), WEST)
+	TEST_ASSERT_EQUAL(hunter.last_seen_turf, mansus_tile(visit, 3, 13), "Шаг мимо музыки тень слышит.")
 
 /// Дух: открытая клетка уводит тени за душой.
 /datum/unit_test/heretic_mansus_rule_spirit/Run()

@@ -15,6 +15,7 @@
 		"heretic-sand.webp" = 'tgui/packages/tgui/assets/heretic-sand.webp',
 		"heretic-wax.webp" = 'tgui/packages/tgui/assets/heretic-wax.webp',
 		"heretic-spirit.webp" = 'tgui/packages/tgui/assets/heretic-spirit.webp',
+		"heretic-dance.webp" = 'tgui/packages/tgui/assets/heretic-dance.webp',
 	)
 
 /proc/heretic_ritual_ingredient_name(atom/ingredient_type)
@@ -36,6 +37,7 @@
 		/obj/item/clothing/mask/gas = "Противогаз",
 		/obj/item/clothing/suit = "Верхняя одежда",
 		/obj/item/flashlight = "Фонарик",
+		/obj/item/clothing/shoes = "Пара обуви",
 		/obj/item/flashlight/lantern = "Фонарь",
 		/obj/item/hatchet = "Топорик",
 		/obj/item/hemostat = "Хирургический зажим",
@@ -56,6 +58,7 @@
 		/obj/item/stack/cable_coil = "Кабель",
 		/obj/item/stack/medical/suture = "Шовная нить",
 		/obj/item/stack/rods = "Металлический стержень",
+		/obj/item/stack/sheet/leather = "Кожа",
 		/obj/item/stack/sheet/animalhide/human = "Человеческая кожа",
 		/obj/item/stack/sheet/glass = "Лист стекла",
 		/obj/item/stack/sheet/metal = "Лист железа",

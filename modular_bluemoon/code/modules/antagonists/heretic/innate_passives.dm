@@ -62,6 +62,8 @@
 	innate_type = /datum/heretic_innate/spirit
 /datum/heretic_path/wax
 	innate_type = /datum/heretic_innate/wax
+/datum/heretic_path/dance
+	innate_type = /datum/heretic_innate/dance
 
 /datum/eldritch_knowledge
 	var/datum/heretic_innate/innate
@@ -425,6 +427,17 @@
 /datum/heretic_innate/wax/on_tick()
 	if(!body.on_fire)
 		reserve = max(0, reserve - heretic_heal_damage(body, min(reserve, HERETIC_INNATE_MENDING)))
+
+/datum/heretic_innate/dance
+	name = "Лёгкая поступь"
+	desc = "Пока у вас есть хоть один Такт, шаги беззвучны. В бою каждый шаг в долю на 4 Такта и больше лечит 0,5 урона."
+
+/datum/heretic_innate/dance/on_tick()
+	var/datum/eldritch_knowledge/base_dance/dance = knowledge_ref?.resolve()
+	if(dance?.combat_resource > 0)
+		ADD_TRAIT(body, TRAIT_SILENT_STEP, REF(src))
+	else
+		REMOVE_TRAIT(body, TRAIT_SILENT_STEP, REF(src))
 
 #undef HERETIC_INNATE_TICK
 #undef HERETIC_INNATE_BLEED_MULTIPLIER

@@ -2,7 +2,7 @@
 	var/book_type = /obj/item/forbidden_book
 	var/book_name = "Codex Cicatrix"
 	var/book_title = "Кодекс Рубцов"
-	var/book_subtitle = "Пятнадцать дорог за одну завесу"
+	var/book_subtitle = "Шестнадцать дорог за одну завесу"
 	var/book_desc = "Строки проступают между старыми шрамами на страницах."
 	var/book_cover = "codex"
 	var/book_ink = "#b2ac7d"
@@ -243,6 +243,24 @@
 /obj/item/forbidden_book/wax
 	book_path = PATH_WAX
 
+/datum/heretic_path/dance
+	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
+	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
+	book_type = /obj/item/forbidden_book/dance
+	book_name = "Saltatio Perpetua"
+	book_title = "Партитура бала без конца"
+	book_subtitle = "Музыка не кончится, пока ты стоишь"
+	book_desc = "Нотная тетрадь в алом бархате с медными уголками; застёжка - фарфоровая полумаска. Ноты на страницах выведены чем-то бурым и сами собой складываются в па."
+	book_cover = "dance"
+	book_ink = "#c8553d"
+	book_rune = "sigil_dance"
+	rune_inscription = "dance_steps"
+	book_open_sound = 'modular_bluemoon/sound/heretic/book_dance_open.ogg'
+	book_page_sound = 'modular_bluemoon/sound/heretic/book_dance_page.ogg'
+
+/obj/item/forbidden_book/dance
+	book_path = PATH_DANCE
+
 /datum/heretic_path/spirit
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
 	rune_cast_icon = 'modular_bluemoon/icons/obj/ritual_casts_extended.dmi'
@@ -436,6 +454,10 @@
 			opening.Scale(1, 0.9)
 			transform = opening
 			animate(src, transform = book_rest_transform, time = 0.9 SECONDS, easing = SINE_EASING)
+		if(PATH_DANCE)
+			opening.Turn(12)
+			transform = opening
+			animate(src, transform = book_rest_transform, time = 0.6 SECONDS, easing = ELASTIC_EASING)
 		if(PATH_SPIRIT)
 			animate(src, pixel_y = book_rest_y + 4, alpha = 180, time = 0.4 SECONDS, easing = SINE_EASING)
 			animate(pixel_y = book_rest_y, alpha = book_rest_alpha, time = 0.6 SECONDS, easing = SINE_EASING)

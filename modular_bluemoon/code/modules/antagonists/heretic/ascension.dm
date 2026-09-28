@@ -175,6 +175,17 @@
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_wax.dmi'
 	ascension_aura_state = "wax_aura"
 
+/datum/heretic_path/dance
+	ascension_title = "Дирижёр Бала без Конца"
+	ascension_message = "За иллюминаторами кружатся пары без лиц. Оркестр настроился: бал начнётся, как только все возьмутся за руки."
+	ascension_omen = "Где-то далеко бьёт малый барабан, и ноги сами пытаются попасть в такт."
+	ascension_sound = 'modular_bluemoon/sound/heretic/dance_ascend.ogg'
+	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_dance.dmi'
+	ascension_aura_state = "dance_aura"
+
+/datum/eldritch_knowledge/final_eldritch/dance_final
+	parallax_scene = ANTAG_SCENE_HERETIC_DANCE
+
 /datum/eldritch_knowledge/final_eldritch/sand_final
 	parallax_scene = ANTAG_SCENE_HERETIC_SAND
 

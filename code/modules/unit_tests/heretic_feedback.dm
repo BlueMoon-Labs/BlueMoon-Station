@@ -250,6 +250,7 @@
 		PATH_SAND = list("heretic_sand"),
 		PATH_WAX = list("heretic_wax"),
 		PATH_SPIRIT = list("heretic_spirit"),
+		PATH_DANCE = list("heretic_dance"),
 	)
 	var/list/states_by_icon = list()
 	var/list/seen = list()
@@ -300,6 +301,7 @@
 		PATH_COSMIC = list(/atom/movable/screen/alert/status_effect/heretic_cosmic_orbit),
 		PATH_TIDE = list(/atom/movable/screen/alert/status_effect/heretic_drenched, /atom/movable/screen/alert/status_effect/heretic_tide_drowning),
 		PATH_GLASS = list(/atom/movable/screen/alert/status_effect/heretic_glass_fracture),
+		PATH_DANCE = list(/atom/movable/screen/alert/status_effect/heretic_dance_earworm, /atom/movable/screen/alert/status_effect/heretic_dance_invited, /atom/movable/screen/alert/status_effect/heretic_dance_partner, /atom/movable/screen/alert/status_effect/heretic_dance_lead, /atom/movable/screen/alert/status_effect/heretic_dance_horovod, /atom/movable/screen/alert/status_effect/heretic_dance_frenzy, /atom/movable/screen/alert/status_effect/heretic_dance_tarantism, /atom/movable/screen/alert/status_effect/heretic_dance_masquerade, /atom/movable/screen/alert/status_effect/heretic_dance_masked),
 		PATH_SAND = list(/atom/movable/screen/alert/status_effect/heretic_sand_recall, /atom/movable/screen/alert/status_effect/heretic_sand_stasis, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_drought),
 	)
 	for(var/path_id in groups)

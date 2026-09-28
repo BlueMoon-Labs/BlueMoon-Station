@@ -111,6 +111,9 @@
 /obj/effect/proc_holder/spell/pointed/heretic_wax/imprint
 	aim_assist_radius = 1
 
+/obj/effect/proc_holder/spell/pointed/heretic_dance/invite
+	aim_assist_radius = 1
+
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange
 	aim_assist_radius = 1
 

@@ -36,6 +36,7 @@
 #define ANTAG_SCENE_HERETIC_SAND "heretic_sand"
 #define ANTAG_SCENE_HERETIC_WAX "heretic_wax"
 #define ANTAG_SCENE_HERETIC_SPIRIT "heretic_spirit"
+#define ANTAG_SCENE_HERETIC_DANCE "heretic_dance"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
@@ -112,6 +113,10 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_HERETIC_WAX = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_wax,
 		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
+	),
+	ANTAG_SCENE_HERETIC_DANCE = list(
+		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance,
+		/atom/movable/screen/parallax_layer/goon/dust_sparse,
 	),
 	ANTAG_SCENE_HERETIC_SPIRIT = list(
 		/atom/movable/screen/parallax_layer/tint/antag/heretic_spirit,
@@ -230,6 +235,10 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 
 /atom/movable/screen/parallax_layer/tint/antag/heretic_wax
 	color = "#807b62"
+	alpha = 70
+
+/atom/movable/screen/parallax_layer/tint/antag/heretic_dance
+	color = "#8f3a2a"
 	alpha = 70
 
 /atom/movable/screen/parallax_layer/tint/antag/heretic_spirit

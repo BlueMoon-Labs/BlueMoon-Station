@@ -52,8 +52,8 @@
 /datum/unit_test/heretic_blade_inhand_appearance/Run()
 	for(var/blade_type in subtypesof(/obj/item/melee/sickly_blade))
 		var/obj/item/melee/sickly_blade/blade = allocate(blade_type)
-		var/expected_x = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT)) ? 0 : -9
-		var/expected_y = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT)) ? 0 : -8
+		var/expected_x = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE)) ? 0 : -9
+		var/expected_y = (blade.route in list(PATH_TIDE, PATH_GLASS, PATH_BLOOD, PATH_SAND, PATH_WAX, PATH_SPIRIT, PATH_DANCE)) ? 0 : -8
 		if(blade.route == PATH_ECHO)
 			expected_x = 0
 			expected_y = -4

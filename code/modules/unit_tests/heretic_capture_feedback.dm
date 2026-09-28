@@ -23,7 +23,7 @@
 /// У каждого захвата пути свой звук защёлкивания, сон-захват звучит своим захватом.
 /datum/unit_test/heretic_capture_fx_sounds/Run()
 	var/list/latched = list()
-	for(var/capture_id in list("sand", "cosmic", "lock", "tide", "spirit_hold", "glass", HERETIC_MOON_CAPTURE, "echo", "blood", "blade_throat", "wax"))
+	for(var/capture_id in list("sand", "cosmic", "lock", "tide", "spirit_hold", "glass", HERETIC_MOON_CAPTURE, "echo", "blood", "blade_throat", "wax", "dance_invite"))
 		var/latch = heretic_fx_latch_sound(capture_id)
 		TEST_ASSERT(isfile(latch), "У захвата [capture_id] есть свой звук защёлкивания.")
 		TEST_ASSERT(!latched["[latch]"], "Захваты [capture_id] и [latched["[latch]"]] звучат одним файлом.")

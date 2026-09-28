@@ -143,6 +143,14 @@
 	TEST_ASSERT_EQUAL(sand.body.getStaminaLoss(), 30, "Принудительное перемещение не даёт бонус Песка.")
 	sand.body.Move(get_step(get_step(run_loc_floor_bottom_left, EAST), NORTH), NORTH)
 	TEST_ASSERT_EQUAL(sand.body.getStaminaLoss(), 18, "Обычный шаг после ранения восстанавливает выносливость.")
+	var/datum/heretic_innate/dance/dance = create_path(PATH_DANCE)
+	var/datum/eldritch_knowledge/base_dance/dance_knowledge = dance.knowledge_ref.resolve()
+	dance.tick()
+	TEST_ASSERT(!HAS_TRAIT(dance.body, TRAIT_SILENT_STEP), "Без Такта шаги Пляски слышны.")
+	dance_knowledge.combat_resource = 1
+	dance.next_tick = 0
+	dance.tick()
+	TEST_ASSERT(HAS_TRAIT(dance.body, TRAIT_SILENT_STEP), "С Тактом шаги Пляски беззвучны.")
 	var/datum/heretic_innate/wax/wax = create_path(PATH_WAX)
 	wax.body.adjustFireLoss(10)
 	TEST_ASSERT_EQUAL(round(wax.reserve, DAMAGE_PRECISION), 10, "Ожоги сохраняются в памяти воска.")
