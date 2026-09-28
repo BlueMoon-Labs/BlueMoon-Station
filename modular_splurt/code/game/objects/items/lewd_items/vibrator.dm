@@ -36,7 +36,7 @@
 	icon_state = "vibe"
 	item_state = "vibe"
 	w_class = WEIGHT_CLASS_SMALL
-	//slot_flags = ITEM_SLOT_DENYPOCKET   //no more pocket shockers
+	slot_flags = 0   // Запрещаем наследование от electropack
 	var/mode = VIB_OFF
 	var/style = "long"
 	var/last = 0
