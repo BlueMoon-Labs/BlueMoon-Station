@@ -49,6 +49,10 @@ GLOBAL_LIST_EMPTY(bar_areas)
 
 //away missions
 GLOBAL_LIST_EMPTY(vr_spawnpoints)
+/// Deathmatch machines and their lobbies (machine = lobby)
+GLOBAL_LIST_EMPTY(deathmatch_lobbies)
+/// All deathmatch arena player spawns, added by /obj/effect/landmark/deathmatch_player_spawn
+GLOBAL_LIST_EMPTY(deathmatch_player_spawns)
 
 	//used by jump-to-area etc. Updated by area/updateName()
 GLOBAL_LIST_EMPTY(sortedAreas)
