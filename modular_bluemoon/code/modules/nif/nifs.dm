@@ -14,7 +14,7 @@
 // This is the original NIF that other NIFs are based on.
 /obj/item/organ/cyberimp/brain/nif
 	name = "Nanite Implant Framework"
-	desc = "A brain implant that infuses the user with nanites."
+	desc = "Мозговой имплант, вводящий пользователю наниты."
 	icon = 'modular_bluemoon/code/modules/nif/icons/obj/nifs.dmi'
 	icon_state = "base_nif"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -95,7 +95,7 @@
 	///What programs do we want to carry between rounds?
 	var/list/persistent_nifsofts = list()
 	///This shows up in the NIF settings screen as a way to ICly display lore.
-	var/manufacturer_notes = "There is no data currently avalible for this product."
+	var/manufacturer_notes = "Данные о продукте в настоящее время недоступны."
 
 	//Appearance Variables
 	///This is the sound that plays when doing most things!
@@ -504,7 +504,7 @@
 
 /obj/item/storage/box/nif_ghost_box
 	name = "\improper NIF Starter Kit"
-	desc = "Contains a calibration-free NIF along with a variety of NIFSofts."
+	desc = "Содержит NIF без калибровки вместе с набором различных NIFSoft."
 	illustration = "disk_kit"
 
 /obj/item/storage/box/nif_ghost_box/PopulateContents()

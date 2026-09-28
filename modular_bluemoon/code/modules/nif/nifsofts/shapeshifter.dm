@@ -4,7 +4,7 @@
 
 /datum/nifsoft/action_granter/shapeshifter
 	name = "Polymorph"
-	program_desc = "This program is a large-scale refitting of the nanomachine channels running over the skin of a NIF user. This allows the nanites to reach under the skin and even into the very bone structure of the host; including incorporation of mimetic materials and femto-level manipulation devices all for the purpose of allowing the user to, essentially, shapeshift on a low level. However, despite the incredible complexity behind these processes, there are still limits on the range of 'forms' a user can take. Mass can neither be created nor destroyed, after all, and you can only distribute and rearrange it in so many ways across a functioning humanoid body; meaning, the user cannot adopt forms too far out of their 'true' one."
+	program_desc = "Эта программа — масштабная перестройка каналов наномашин, проходящих по коже пользователя NIF. Наниты проникают под кожу и даже в саму костную структуру носителя, включая встраивание миметических материалов и устройств фемто-манипуляции — всё ради того, чтобы позволить пользователю, по сути, менять облик на низком уровне. Однако, несмотря на невероятную сложность этих процессов, есть пределы диапазону «форм», которые может принять пользователь. Массу нельзя ни создать, ни уничтожить, и распределить её по функциональному гуманоидному телу можно лишь ограниченным числом способов; значит, пользователь не может принять форму, слишком далёкую от своей «истинной»."
 	compatible_nifs = list(/obj/item/organ/cyberimp/brain/nif/standard)
 	purchase_price = 350
 	buying_category = NIFSOFT_CATEGORY_COSMETIC

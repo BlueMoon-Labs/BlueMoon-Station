@@ -4,7 +4,7 @@
 
 /datum/nifsoft/money_sense
 	name = "Automatic Appraisal"
-	program_desc = "Connects the user's brain to a database containing the current monetary values for most items, allowing them to determine their value in realtime"
+	program_desc = "Подключает мозг пользователя к базе данных с актуальной денежной стоимостью большинства предметов, позволяя в реальном времени определять их ценность"
 	active_mode = TRUE
 	active_cost = 0.5
 	compatible_nifs = list(/obj/item/organ/cyberimp/brain/nif/standard)

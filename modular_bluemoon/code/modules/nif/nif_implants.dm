@@ -1,13 +1,13 @@
 ///This is the standard 'baseline' NIF model.
 /obj/item/organ/cyberimp/brain/nif/standard
 	name = "Standard Type NIF"
-	desc = "'Standard-Type' is a classification for high-quality Nanite Implant Frameworks. This category primarily includes Framework patterns with high reliability, seamless bonding with a user, and a combination of storage space and processing power to run a wide array of programs."
-	manufacturer_notes = "While countless manufacturers produce their own implementation of NIFs, open-source or not, there's less than a thousand Standard-Type models out there in the galaxy. These are the results of almost five years of improvements on older models of Frameworks, and are rather coveted due to being extremely difficult to 'homebrew."
+	desc = "«Standard-Type» — классификация высококачественных нанитовых имплант-каркасов. В эту категорию в основном входят каркасы с высокой надёжностью, безупречной интеграцией с пользователем и сочетанием объёма памяти и вычислительной мощности, достаточных для запуска широкого спектра программ."
+	manufacturer_notes = "Хотя бесчисленные производители выпускают собственные реализации NIF — открытые или нет, — в галактике существует меньше тысячи моделей Standard-Type. Они стали результатом почти пяти лет улучшений старых моделей Framework и довольно желанны, поскольку их крайне сложно «самодельничать»."
 
 /obj/item/organ/cyberimp/brain/nif/roleplay_model
 	name = "Econo-Deck Type NIF"
-	desc = "'Econo-Deck' is a classification for lower-quality Nanite Implant Frameworks. Typically, these are off-brand 'economical' bootlegs of higher-quality Frameworks featuring lower-grade power cells, outdated and risky construction patterns, and far rougher calibration with a user."
-	manufacturer_notes = "Most webspaces for hobbyists or hardcore users, Corpo neurologists, and developers of 'softs such as the Altspace Coven recommend against their purchase. Despite their affordability by the layman, it's a common notion in Framework user circles that a device directly hooked into a user's nervous system is never something which should be skimped on; hence, Econo-Decks typically find themselves in the hands of the truly desperate, criminals, or coming out of workshops as 'homebrews.'"
+	desc = "«Econo-Deck» — классификация нанитовых имплант-каркасов пониженного качества. Обычно это небрендовые «экономичные» подделки более качественных каркасов с батареями низшего класса, устаревшими и рискованными схемами сборки и куда более грубой калибровкой под пользователя."
+	manufacturer_notes = "Большинство сайтов энтузиастов и хардкорных пользователей, корпоративные неврологи и разработчики «софтов, такие как Ковен Альтспейс, не рекомендуют покупать их. Несмотря на доступность для обывателя, в кругах пользователей Framework принято считать, что на устройстве, напрямую подключённом к нервной системе, экономить нельзя; поэтому Econo-Deck обычно оказываются в руках по-настоящему отчаявшихся, преступников или выходят из мастерских как «самоделки»."
 
 	max_power_level = 500
 	max_nifsofts = 3
@@ -18,8 +18,8 @@
 
 /obj/item/organ/cyberimp/brain/nif/roleplay_model/cheap
 	name = "Trial-Lite Type NIF"
-	desc = "'Trial-Lite' is a classification for temporary Nanite Implant Frameworks. These are typically distributed at promotional events, for the use of single-purpose NIFsofts, or at some Corporate dealerships to offer prospective users a look into the scene. Normally, Trial-Lite frameworks do not actually 'bond' with their user, forming an extremely loose connection before dissolving into scattered and dead nanomachines within a few hours, typically exhaled."
-	manufacturer_notes = "Normally, Trial-Lite frameworks do not actually 'bond' with their user, forming an extremely loose connection before dissolving into scattered and dead nanomachines within a few hours, typically exhaled. It's so far been impossible to extend the lifespan of a Trial-Lite NIF, owing to their far inferior construction and programming."
+	desc = "«Trial-Lite» — классификация временных нанитовых имплант-каркасов. Обычно их распространяют на промомероприятиях, для использования с узкоспециализированными NIFSoft или в некоторых корпоративных дилерских центрах, чтобы дать потенциальным пользователям взглянуть на технологию. Обычно каркасы Trial-Lite не «связываются» со своим пользователем по-настоящему: они образуют крайне слабое соединение, а затем в течение нескольких часов растворяются в рассыпавшиеся мёртвые наномашины, которые обычно выдыхают."
+	manufacturer_notes = "Обычно каркасы Trial-Lite не «связываются» со своим пользователем: образуют крайне слабое соединение, а затем в течение нескольких часов растворяются в мёртвые наномашины, которые выдыхают. До сих пор невозможно продлить срок службы Trial-Lite NIF из-за их крайне низкокачественной конструкции и программирования."
 	nif_persistence = FALSE
 
 /obj/item/autosurgeon/nif/disposable //Disposable, as in the fact that this only lasts for one shift

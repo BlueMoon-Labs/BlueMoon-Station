@@ -6,7 +6,7 @@
 // More advanced variant for full brainwashing
 /datum/nifsoft/action_granter/hypnosis/brainwashing
 	name = "Mesmer Eye"
-	program_desc = "Based on illegal abductor technology, the Mesmer Eye NIFSoft allows the user to completely control others actions. Unlike Libidine Eye, victims are unable to resist once given an order. You will be held responsible for your target's actions."
+	program_desc = "Основанный на запрещённой технологии похитителей, NIFSoft Mesmer Eye позволяет пользователю полностью контролировать действия других. В отличие от Libidine Eye, жертвы не могут сопротивляться после получения приказа. Вы несёте ответственность за действия своей цели."
 
 	// Has a cost
 	active_cost = 0.1
@@ -20,7 +20,7 @@
 
 /datum/action/cooldown/hypnotize/brainwash
 	name = "Brainwash"
-	desc = "Stare deeply into someone's eyes, and force them to become your loyal slave."
+	desc = "Пристально посмотрите в глаза человеку и заставьте его стать вашим верным рабом."
 	button_icon_state = "Hypno_eye"
 	icon_icon = 'modular_splurt/icons/mob/actions/lewd_actions/lewd_icons.dmi'
 	background_icon_state = "bg_alien"

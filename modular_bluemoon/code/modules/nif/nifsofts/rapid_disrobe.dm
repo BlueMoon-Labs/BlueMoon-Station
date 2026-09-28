@@ -4,7 +4,7 @@
 
 /datum/nifsoft/action_granter/free/nif_disrobe
 	name = "Emergency Clothing Disruption Field"
-	program_desc = "Generates a lining of nanites along the epidermis with high power static charge emitters, allowing for the rapid removal of clothing. Precision not guaranteed."
+	program_desc = "Создаёт слой нанитов вдоль эпидермиса с мощными излучателями статического заряда, позволяя быстро снимать одежду. Точность не гарантируется."
 	buying_category = NIFSOFT_CATEGORY_FUN
 	lewd_nifsoft = TRUE
 	ui_icon = "eye"
@@ -12,7 +12,7 @@
 
 /datum/action/innate/nif_disrobe_action
 	name = "Rapid Disrobe"
-	desc = "Instantly eject all covering clothing from your body."
+	desc = "Мгновенно сбрасывает всю укрывающую одежду с вашего тела."
 	icon_icon = 'modular_splurt/icons/mob/actions/misc_actions.dmi'
 	button_icon_state = "no_uniform"
 	button_icon = 'modular_bluemoon/code/modules/nif/icons/mob/actions/action_backgrounds.dmi'

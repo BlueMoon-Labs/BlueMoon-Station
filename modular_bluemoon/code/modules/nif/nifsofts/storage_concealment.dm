@@ -4,7 +4,7 @@
 
 /datum/nifsoft/action_granter/free/nif_hide_backpack
 	name = "Chameleon Storage Concealment"
-	program_desc = "Emits a weak psychic signal that conceals the presence of back-equipped gear items."
+	program_desc = "Излучает слабый психический сигнал, скрывающий наличие снаряжения, размещённого на спине."
 	buying_category = NIFSOFT_CATEGORY_COSMETIC
 	ui_icon = "paintbrush"
 	action_to_grant = /datum/action/item_action/hide_backpack/nifsoft

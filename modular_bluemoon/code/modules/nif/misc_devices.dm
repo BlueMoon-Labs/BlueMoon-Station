@@ -1,9 +1,9 @@
 ///NIFSoft Remover. This is mostly here so that security and antags have a way to remove NIFSofts from someome
 /obj/item/nifsoft_remover
 	name = "Lopland 'Wrangler' NIF-Cutter"
-	desc = "A small device that lets the user remove NIFSofts from a NIF user. Given the relatively recent and sudden proliferation of NIFs, their use in crime both petty and organized has skyrocketed in recent years. \
-	The existence of nanomachine-based real-time burst communication that cannot be effectively monitored or hacked into has given most PMCs cause enough for concern \
-	to invent their own devices. This one is a 'Wrangler' model NIF-Cutter, used for crudely wiping programs directly off a user's Framework."
+	desc = "Небольшое устройство, позволяющее удалять NIFSoft у пользователя NIF. С учётом относительно недавнего и стремительного распространения NIF их использование в преступлениях — и мелких, и организованных — за последние годы резко возросло. \
+	Существование основанной на наномашинах мгновенной коммуникации, которую невозможно эффективно отследить или взломать, дало большинству ЧВК достаточно поводов \
+	разработать собственные устройства. Это «Wrangler»-модель NIF-Каттера, применяемая для грубого стирания программ прямо с Framework пользователя."
 	icon = 'modular_bluemoon/code/modules/nif/icons/obj/devices.dmi'
 	icon_state = "nifsoft_remover"
 
@@ -49,23 +49,23 @@
 
 /obj/item/nifsoft_remover/syndie
 	name = "Cybersun 'Scalpel' NIF-Cutter"
-	desc = "A modified version of a NIFSoft remover that allows the user to remove a NIFSoft and have a blank copy of the removed NIFSoft saved to a disk. In the upper echelons of the corporate world, Nanite Implant Frameworks are everywhere. Valuable targets will almost always be in constant NIF communication with at least one or two points of contact in the event of an emergency. To bypass this unfortunate conundrum, Cybersun Industries invented the 'Scalpel' NIF-Cutter. A device no larger than a PDA, this gift to the field of neurological theft is capable of extracting specific programs from a target in five seconds or less. On top of that, high-grade programming allows for the tool to copy the specific 'soft to a disk for the wielder's own use."
+	desc = "Модифицированная версия устройства удаления NIFSoft: позволяет извлечь NIFSoft и сохранить чистую копию удалённого софта на диск. В верхних эшелонах корпоративного мира нанитовые имплант-каркасы встречаются повсюду. Ценные цели почти всегда поддерживают постоянную NIF-связь как минимум с одним-двумя контактами на случай чрезвычайной ситуации. Чтобы обойти эту досадную проблему, Cybersun Industries изобрели NIF-Каттер «Scalpel». Устройство размером не больше КПК — подарок для любителей нейрокраж — способно извлечь конкретную программу из цели за пять секунд или меньше. Вдобавок высококлассное программное обеспечение позволяет скопировать конкретный «софт на диск для использования самим владельцем инструмента."
 	icon_state = "nifsoft_remover_syndie"
 	create_disk = TRUE
 
 /datum/uplink_item/device_tools/nifsoft_remover
 	name = "Cybersun 'Scalpel' NIF-Cutter"
-	desc = "A modified version of a NIFSoft remover that allows the user to remove a NIFSoft and have a blank copy of the removed NIFSoft saved to a disk."
+	desc = "Модифицированная версия устройства удаления NIFSoft: позволяет извлечь NIFSoft и сохранить чистую копию удалённого софта на диск."
 	item = /obj/item/nifsoft_remover/syndie
 	cost = 3
 
 ///NIF Repair Kit.
 /obj/item/nif_repair_kit
 	name = "Cerulean NIF Regenerator"
-	desc = "A repair kit that allows for NIFs to be repaired without the use of surgery. The effects of capitalism and industry run deep, and they run within the Nanite Implant Framework industry as well. \
-	Frameworks, complicated devices as they are, are normally locked at the firmware level to requiring specific 'approved' brands of repair paste or repair-docks. \
-	This hacked-kit has been developed by the Altspace Coven as a freeware alternative, spread far and wide throughout extra-Terran space for quality of life \
-	for users located on the peripheries of society."
+	desc = "Ремонтный набор, позволяющий чинить NIF без хирургии. Последствия капитализма и индустрии глубоки и проникли в том числе в индустрию нанитовых имплант-каркасов. \
+	Framework, будучи сложными устройствами, обычно заблокированы на уровне прошивки под конкретные «одобренные» бренды ремонтной пасты или ремонтных доков. \
+	Этот взломанный набор был разработан Ковеном Альтспейс как бесплатная альтернатива и широко распространился по всему внеземному пространству ради комфорта \
+	пользователей, находящихся на периферии общества."
 	icon = 'modular_bluemoon/code/modules/nif/icons/obj/devices.dmi'
 	icon_state = "repair_paste"
 	w_class = WEIGHT_CLASS_SMALL
@@ -99,7 +99,7 @@
 
 /obj/item/nif_hud_adapter
 	name = "Scrying Lens Adapter"
-	desc = "A kit that modifies select glasses to display HUDs for NIFs"
+	desc = "Набор, модифицирующий избранные очки для отображения NIF-шлемов"
 	icon = 'modular_bluemoon/code/modules/nif/icons/donator/obj/kits.dmi'
 	icon_state = "partskit"
 

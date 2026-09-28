@@ -4,7 +4,7 @@
 
 /datum/nifsoft/summoner/dorms
 	name = "Grimoire Libidine"
-	program_desc = "Grimoire Libidine, a fork of the Grimoire Caeruleam code, allows users to conveniently access an extensive database of various adult toys. Due to the nature of the codebase hosting the majority of these constructs, the available assortment is somewhat more limited to what the local firmware catalog permits."
+	program_desc = "Grimoire Libidine, ответвление кода Grimoire Caeruleam, предоставляет пользователям удобный доступ к обширной базе различных взрослых игрушек. Из-за особенностей кодовой базы, размещающей большинство этих конструктов, доступный ассортимент несколько ограничен тем, что допускает локальный каталог прошивок."
 	holographic_filter = FALSE //No RGB toys
 	name_tag = "libidine "
 	lewd_nifsoft = TRUE
@@ -61,7 +61,7 @@
 
 /datum/nifsoft/hypno
 	name = "Libidine Contract"
-	program_desc = "Once installed, the Libidine Contract compells the user to follow the rules stored in the data of the NIFSoft. \n OOC NOTE: This is strictly here for adult roleplay. None of the laws here actually need to be obeyed and you can uninstall this NIFSoft at any time."
+	program_desc = "После установки Libidine Contract принуждает пользователя следовать правилам, хранящимся в данных NIFSoft. \n OOC-примечание: это строго для взрослых ролевых игр. Никакие из этих «законов» соблюдать не обязательно, и вы можете в любой момент удалить этот NIFSoft."
 	purchase_price = 0
 	lewd_nifsoft = TRUE
 	ui_icon = "file-contract"

@@ -1,6 +1,6 @@
 /datum/nifsoft/hud
 	name = "Scrying Lens"
-	program_desc = "An umbrella term for all sorts of NIFsofts dealing with heads-up displays, this sort of technology dates back almost to the beginning of NIFsoft development. These 'softs are commonly used in the civilian field for integration with all sorts of activities; piloting, swordplay, scientific research, or even AI copiloting for important social interactions. While normally the nanomachines involved in the program's operation are used as a sort of artificial contact lens over the user's visual organs, Nanotrasen regulations have bid these particular forks to instead integrate with glasses the user's already wearing."
+	program_desc = "Собирательный термин для всевозможных NIFSoft, работающих с шлем-дисплеями; подобные технологии существуют почти с самого начала разработки NIFSoft. Эти «софты широко применяются в гражданской сфере для интеграции в самые разные занятия: пилотирование, фехтование, научные исследования или даже ИИ-второй пилот в важных социальных взаимодействиях. Обычно наномашины, задействованные в работе программы, выступают в роли искусственной контактной линзы поверх органов зрения пользователя, однако регламенты Nanotrasen предписывают этим конкретным ответвлениям интегрироваться с очками, которые пользователь уже носит."
 	compatible_nifs = list(/obj/item/organ/cyberimp/brain/nif/standard)
 	active_mode = TRUE
 	active_cost = 0.5

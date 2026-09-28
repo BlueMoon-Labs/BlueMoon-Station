@@ -7,7 +7,7 @@ GLOBAL_LIST_EMPTY(active_nif_scryers)
 
 /datum/nifsoft/scryer
 	name = "NIFLink Holocaller"
-	program_desc = "A streamlined version of the NIFLink comms system. While active, the program projects a small holo-emitter necklace that allows the user to send messages to any other currently active NIFLink user, completely bypassing local comms. ((ICly safe to use as a roleplay tool, works globally.))"
+	program_desc = "Упрощённая версия системы связи NIFLink. В активном состоянии программа проецирует небольшое ожерелье с голо-излучателем, позволяющее пользователю отправлять сообщения любому другому активному пользователю NIFLink, полностью минуя локальную связь. ((Использование безопасно как ролевой инструмент, работает глобально.))"
 	activation_cost = 20
 	active_mode = TRUE
 	active_cost = 1
@@ -44,7 +44,7 @@ GLOBAL_LIST_EMPTY(active_nif_scryers)
 
 /obj/item/clothing/neck/nif_scryer
 	name = "scryer"
-	desc = "A cheap holo-emitter necklace, used by NIFLink users to contact other members of the network. A small notice is printed on the back: \"This device is not affiliated with the Nanotrasen Telecommunications Administration.\""
+	desc = "Дешёвое ожерелье с голо-излучателем, используемое пользователями NIFLink для связи с другими членами сети. На обратной стороне напечатана небольшая надпись: \"Это устройство не связано с Администрацией телекоммуникаций Nanotrasen.\""
 	icon = 'icons/obj/clothing/neck.dmi'
 	icon_state = "ties"
 	item_state = "tie"

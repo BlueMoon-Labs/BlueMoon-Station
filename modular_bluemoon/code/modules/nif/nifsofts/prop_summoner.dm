@@ -11,7 +11,7 @@
 
 /datum/nifsoft/summoner
 	name = "Grimoire Caeruleam"
-	program_desc = "The Grimoire Caeruleam is an open-source, virtual decentralized directory of summonable objects originally developed by the Altspace Coven, a post-pagan group of witches first digitized into engrams in the year 2544. These summonable constructs, or 'Icons,' are comprised of delicate patterns of nanomachines serving as a framework and projector for hardlight; the name 'Caeruleam' referencing the blue light an Icon casts in the summoner's hand. While the Grimoire has served thousands thus far, Corporate interests have blocked all access to Icons capable of harming their assets."
+	program_desc = "Grimoire Caeruleam — открытый, виртуальный децентрализованный каталог призываемых объектов, первоначально разработанный Ковеном Альтспейс — группой постъязыческих ведьм, впервые оцифрованных в энграммы в 2544 году. Эти призываемые конструкции, или «Иконы», состоят из изящных узоров наномашин, служащих каркасом и проектором для жёсткого света; название «Caeruleam» отсылает к синему свету, который Икона излучает в руке призывателя. Хотя Гримуар уже послужил тысячам людей, корпоративные интересы блокируют доступ ко всем Иконам, способным навредить их активам."
 	cooldown = TRUE
 	activation_cost = 100 // Around 1/10th the energy of a standard NIF
 	buying_category = NIFSOFT_CATEGORY_FUN

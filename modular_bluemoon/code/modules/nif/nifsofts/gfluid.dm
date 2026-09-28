@@ -24,7 +24,7 @@
 
 /datum/nifsoft/action_granter/free/nif_gfluid
 	name = "Genital Fluid Inducer"
-	program_desc = "Allows the user to induce their genitals into producing a specific reagent. Will prevent harmful liquids from being accepted as a genital fluid replacement."
+	program_desc = "Позволяет пользователю заставить свои гениталии вырабатывать конкретный реагент. Предотвращает принятие вредных жидкостей в качестве замены генитальной жидкости."
 	buying_category = NIFSOFT_CATEGORY_FUN
 	lewd_nifsoft = TRUE
 	ui_icon = "eye"
@@ -32,7 +32,7 @@
 
 /datum/action/innate/genital_fluid_infuse
 	name = "Infuse Genital Fluids"
-	desc = "Activate an integrated reagent receptor device to modify your genital contents."
+	desc = "Активирует встроенное устройство-приёмник реагентов, чтобы изменить содержимое ваших гениталий."
 	icon_icon = 'modular_splurt/icons/obj/implants.dmi'
 	button_icon_state = "genital_fluid"
 	button_icon = 'modular_bluemoon/code/modules/nif/icons/mob/actions/action_backgrounds.dmi'

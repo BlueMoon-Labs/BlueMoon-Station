@@ -204,7 +204,7 @@
 /// Used in mind linker to talk to everyone in the network.
 /datum/action/innate/linked_speech
 	name = "Mind Link Speech"
-	desc = "Send a psychic message to everyone connected to your Link."
+	desc = "Отправить психическое сообщение всем, кто подключён к вашей связи."
 	button_icon_state = "link_speech"
 	icon_icon = 'icons/mob/actions/actions_slime.dmi'
 	background_icon_state = "bg_alien"
@@ -218,7 +218,7 @@
 
 	var/datum/component/mind_linker/linker = Target
 	name = "[linker.network_name] Speech"
-	desc = "Send a psychic message to everyone connected to your [linker.network_name]."
+	desc = "Отправить психическое сообщение всем, кто подключён к вашей [linker.network_name]."
 	icon_icon = linker.speech_action_icon
 	button_icon_state = linker.speech_action_icon_state
 	background_icon_state = linker.speech_action_background_icon_state

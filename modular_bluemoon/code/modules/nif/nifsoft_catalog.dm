@@ -12,7 +12,7 @@ GLOBAL_LIST_INIT(purchasable_nifsofts, list(
 /datum/computer_file/program/nifsoft_downloader
 	filename = "nifsoftcatalog"
 	filedesc = "NIFSoft Catalog"
-	extended_desc = "A virtual storefront that allows the user to install NIFSofts and purchase various NIF related products"
+	extended_desc = "Виртуальная витрина, позволяющая пользователю устанавливать NIFSoft и покупать различные товары, связанные с NIF"
 	category = PROGRAM_CATEGORY_DEVICE
 	size = 3
 	tgui_id = "NtosNifsoftCatalog"

@@ -7,7 +7,7 @@
 	///What is the name of the program when looking at the program from inside of a NIF? This is good if you want to mask a NIFSoft's name.
 	var/program_name
 	///A description of what the program does. This is used when looking at programs in the NIF, along with installing them from the store.
-	var/program_desc = "This program does stuff!"
+	var/program_desc = "Эта программа что-то делает!"
 	//What NIF does this program belong to?
 	var/datum/weakref/parent_nif
 	///Who is the NIF currently linked to?
@@ -166,7 +166,7 @@
 /// A disk that can upload NIFSofts to a recpient with a NIFSoft installed.
 /obj/item/disk/nifsoft_uploader
 	name = "Generic NIFSoft datadisk"
-	desc = "A datadisk that can be used to upload a loaded NIFSoft to the user's NIF"
+	desc = "Диск с данными, с помощью которого можно загрузить записанный NIFSoft в NIF пользователя"
 	icon = 'modular_bluemoon/code/modules/nif/icons/obj/disks.dmi'
 	icon_state = "base_disk"
 	///What NIFSoft is currently loaded in?

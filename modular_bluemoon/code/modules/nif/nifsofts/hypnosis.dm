@@ -4,7 +4,7 @@
 
 /datum/nifsoft/action_granter/hypnosis
 	name = "Libidine Eye"
-	program_desc = "Based on the hypnotic equipment provided by the LustWish vendor, the Libidine Eye NIFSoft allows the user to ensnare others in a hypnotic trance. ((This is intended as a tool for ERP, don't use this for gameplay reasons.))"
+	program_desc = "Основанный на гипнотическом оборудовании торговца LustWish, NIFSoft Libidine Eye позволяет пользователю вводить других в гипнотический транс. ((Предназначен исключительно как инструмент для ERP-ролеплея, не используйте для игровых преимуществ.))"
 	buying_category = NIFSOFT_CATEGORY_FUN
 	lewd_nifsoft = TRUE
 	purchase_price = 150

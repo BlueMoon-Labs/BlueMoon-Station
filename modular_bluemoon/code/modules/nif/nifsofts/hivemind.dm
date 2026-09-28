@@ -7,7 +7,7 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 
 /datum/nifsoft/hivemind
 	name = "Hivemind"
-	program_desc = "Hivemind is a program developed as a more reliable simulacrum of the mysterious means of communication that some varieties of slime share. It's built on a specific configuration of the NIF capable of generating a localized subspace network; the content the user's very thoughts, serving as a high-tech means of telepathic communication between NIF users."
+	program_desc = "Hivemind — программа, разработанная как более надёжная имитация загадочного способа связи, которым пользуются некоторые виды слаймов. Она построена на особой конфигурации NIF, способной генерировать локальную подпространственную сеть, передающую сами мысли пользователя, и служит высокотехнологичным средством телепатической связи между пользователями NIF."
 	activation_cost = 10
 	active_mode = TRUE
 	active_cost = 0.2
@@ -273,7 +273,7 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 
 /obj/item/hivemind_keyboard
 	name = "Hivemind Interface Device"
-	desc = "A holographic gesture controller, hooked to hand and finger signals of the user's own choice. This is paired with the Hivemind program itself, used as a means of filtering out unwanted thoughts from being added to the network, ensuring that only intentional thoughts of communication can go through."
+	desc = "Голографический контроллер жестов, настроенный на движения рук и пальцев пользователя. Работает в паре с программой Hivemind и служит для отсеивания нежелательных мыслей перед отправкой в сеть — в неё попадают только осознанные мысли."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "sflash"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
