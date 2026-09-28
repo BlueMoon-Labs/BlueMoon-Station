@@ -94,3 +94,19 @@
 	TEST_ASSERT_EQUAL(rune.offered["[base.name] → клинок"], base, "Рецепт клинка подписан результатом.")
 	var/status = book.preparation_data(heretic)["blade_status"]
 	TEST_ASSERT(findtext(status, base.name) && findtext(status, "Лист стекла") && findtext(status, "Нож"), "Подготовка называет рецепт и компоненты: [status]")
+
+/// Заложник идёт за еретиком и по диагонали: половина диагонального шага не срывает захват.
+/datum/unit_test/heretic_blade_throat_follow_walk/Run()
+	var/list/fixture = blade_throat_fixture()
+	var/mob/living/carbon/human/user = fixture["user"]
+	qdel(fixture["attacker"])
+	var/turf/origin = run_loc_floor_bottom_left
+	user.forceMove(locate(origin.x + 1, origin.y + 1, origin.z))
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, origin)
+	var/datum/status_effect/heretic_blade_throat/hold = seize_blade_hostage(fixture, victim)
+	TEST_ASSERT_NOTNULL(hold, "Заложник взят.")
+	for(var/direction in list(EAST, NORTH, EAST, NORTHEAST))
+		var/turf/destination = get_step(user, direction)
+		TEST_ASSERT(user.Move(destination, direction), "Еретик шагает на [dir2text(direction)].")
+		TEST_ASSERT(!QDELETED(hold), "Шаг на [dir2text(direction)] не срывает захват: [hold.release_reason]")
+		TEST_ASSERT(get_dist(victim, user) <= 1, "Заложник держится рядом после шага на [dir2text(direction)].")
