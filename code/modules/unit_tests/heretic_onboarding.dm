@@ -55,3 +55,42 @@
 	reader.SetStun(0)
 	reader.dropItemToGround(book)
 	TEST_ASSERT(findtext(book.ui_refusal_reason(reader), "держать в руке"), "Без книги в руке отказ просит взять её: [book.ui_refusal_reason(reader)]")
+
+/// Меню руны и кодекс называют, что даёт обряд; рецепт клинка стоит в первых строках базы каждого пути.
+/datum/unit_test/heretic_ritual_result_names/Run()
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		var/datum/eldritch_knowledge/base = allocate(path.knowledge[1])
+		TEST_ASSERT_EQUAL(base.ritual_result_name(), "клинок", "База [path_id] делает клинок.")
+		TEST_ASSERT_EQUAL(base.ritual_menu_name(), "[base.name] → клинок", "Меню руны [path_id] называет клинок.")
+		var/recipe_line = 0
+		for(var/index in 1 to min(length(base.details), 4))
+			if(findtext(base.details[index], "Нож"))
+				recipe_line = index
+				break
+		TEST_ASSERT(recipe_line, "Рецепт клинка [path_id] в первых четырёх строках: [jointext(base.details, " | ")]")
+	var/datum/eldritch_knowledge/spell/basic/sacrifice = allocate(/datum/eldritch_knowledge/spell/basic)
+	TEST_ASSERT_EQUAL(sacrifice.ritual_menu_name(), sacrifice.name, "Обряд без предмета называется как прежде.")
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	var/list/static_data = book.ui_static_data()
+	var/found_blade = FALSE
+	for(var/list/ritual as anything in static_data["rituals"])
+		if(ritual["id"] == "[/datum/eldritch_knowledge/base_cosmic]")
+			found_blade = ritual["result"] == "клинок"
+	TEST_ASSERT(found_blade, "Кодекс передаёт результат обряда.")
+
+/// Руна предлагает рецепт пути с результатом, а подготовка называет рецепт и компоненты клинка.
+/datum/unit_test/heretic_rune_menu_blade/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
+	TEST_ASSERT(findtext(book.preparation_data(heretic)["blade_status"], "выберите путь"), "До выбора пути подготовка просит выбрать путь.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_cosmic, user), "Путь Космоса выбран.")
+	var/datum/eldritch_knowledge/base = heretic.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
+	var/obj/effect/eldritch/big/pocket_fixture/rune = allocate(/obj/effect/eldritch/big/pocket_fixture, get_step(user, NORTHEAST))
+	rune.drawn_by = WEAKREF(heretic.owner)
+	rune.attack_hand(user)
+	TEST_ASSERT_NOTNULL(rune.offered, "Руна предлагает выбор обряда.")
+	TEST_ASSERT_EQUAL(rune.offered["[base.name] → клинок"], base, "Рецепт клинка подписан результатом.")
+	var/status = book.preparation_data(heretic)["blade_status"]
+	TEST_ASSERT(findtext(status, base.name) && findtext(status, "Лист стекла") && findtext(status, "Нож"), "Подготовка называет рецепт и компоненты: [status]")

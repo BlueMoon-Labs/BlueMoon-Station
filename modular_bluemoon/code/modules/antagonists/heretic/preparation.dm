@@ -24,11 +24,25 @@
 				wearing_hood = robes.hood && user.head == robes.hood
 	return list(
 		"blade_ready" = has_blade,
-		"blade_status" = has_blade ? "Клинок вашего пути при вас." : "Клинка вашего пути при вас нет. Изготовьте его по первому рецепту пути в главе «Ритуалы».",
+		"blade_status" = has_blade ? "Клинок вашего пути при вас." : blade_recipe_hint(heretic),
 		"armor_ready" = wearing_robes && wearing_hood,
 		"armor_status" = wearing_robes ? (wearing_hood ? "Мантия надета, капюшон поднят." : "Мантия надета. Поднимите капюшон для защиты головы.") : (has_robes ? "Мантия при вас: наденьте её и поднимите капюшон." : "Мантии при вас нет. Изучите «Ритуал оружейника — броня» и проведите обряд со столом и противогазом."),
 		"heart" = heart_preparation_data(heretic),
 	)
+
+/obj/item/forbidden_book/proc/blade_recipe_hint(datum/antagonist/heretic/heretic)
+	var/datum/eldritch_knowledge/recipe
+	for(var/knowledge_type in heretic.researched_knowledge)
+		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
+		if(knowledge.route == heretic.selected_path && knowledge.makes_blade())
+			recipe = knowledge
+			break
+	if(!recipe)
+		return "Клинка при вас нет. Сначала выберите путь: его первый рецепт даёт клинок."
+	var/list/parts = list()
+	for(var/list/ingredient as anything in ritual_ingredients(recipe))
+		parts += ingredient["amount"] > 1 ? "[ingredient["name"]] ×[ingredient["amount"]]" : ingredient["name"]
+	return "Клинка вашего пути при вас нет. Рецепт «[recipe.name]»: [jointext(parts, " + ")]. Положите их на руну, нажмите на её центр пустой рукой и выберите «[recipe.ritual_menu_name()]»."
 
 /obj/item/forbidden_book/proc/heart_preparation_data(datum/antagonist/heretic/heretic)
 	var/mob/living/user = heretic.owner?.current

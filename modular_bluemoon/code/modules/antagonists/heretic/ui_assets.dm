@@ -68,3 +68,21 @@
 		/obj/structure/table = "Стол",
 	)
 	return names[ingredient_type] || initial(ingredient_type.name)
+
+/datum/eldritch_knowledge/proc/makes_blade()
+	for(var/result_type in result_atoms)
+		if(ispath(result_type, /obj/item/melee/sickly_blade))
+			return TRUE
+	return FALSE
+
+/datum/eldritch_knowledge/proc/ritual_result_name()
+	if(makes_blade())
+		return "клинок"
+	if(!length(result_atoms))
+		return null
+	var/atom/first_result = result_atoms[1]
+	return initial(first_result.name)
+
+/datum/eldritch_knowledge/proc/ritual_menu_name()
+	var/result = ritual_result_name()
+	return result ? "[name] → [result]" : name

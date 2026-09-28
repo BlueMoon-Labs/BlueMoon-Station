@@ -99,7 +99,7 @@
 	for(var/knowledge_type in heretic.researched_knowledge)
 		var/datum/eldritch_knowledge/knowledge = heretic.researched_knowledge[knowledge_type]
 		if(length(knowledge.required_atoms))
-			rituals[knowledge.name] = knowledge
+			rituals[knowledge.ritual_menu_name()] = knowledge
 	var/choice = prompt_ritual(user, rituals)
 	if(pocket_victim && choice == HERETIC_POCKET_RUNE_CHOICE)
 		if(!QDELETED(src) && !QDELETED(user) && !user.incapacitated() && Adjacent(user))

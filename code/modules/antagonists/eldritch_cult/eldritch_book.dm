@@ -214,6 +214,7 @@
 				"name" = knowledge.name,
 				"desc" = knowledge.summary || knowledge.desc,
 				"ingredients" = ritual_ingredients(knowledge),
+				"result" = knowledge.ritual_result_name(),
 				"hint" = knowledge.ritual_hint,
 				"hints" = knowledge.ritual_hints?.Copy() || list(),
 				"duration" = knowledge.ritual_time / (1 SECONDS),
