@@ -10,6 +10,11 @@
 /// это пятая часть скорости из ничего.
 #define MOVEMENT_TICK_EPSILON 0.0001
 
+#define FRACTIONAL_MOVEMENT_ANIMATION_SLOTS 4
+#define FRACTIONAL_MOVEMENT_NATIVE "native"
+#define FRACTIONAL_MOVEMENT_QUEUED "queued"
+#define FRACTIONAL_MOVEMENT_PREPARING 2
+
 /// Мёртвая зона множителя glide. Дилатация меньше этой глазом не отличима -
 /// два процента шага при 32 пикселях на тайл дают полпикселя, - а вот
 /// множитель, застрявший в 0.99, ломает главное свойство выровненного

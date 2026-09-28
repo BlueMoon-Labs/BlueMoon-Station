@@ -24,8 +24,15 @@
 	if(!queue_delivery(C))
 		return FALSE
 	SSmetadollars.metadollar_adjust(-cost, C.ckey, C.key)
+	log_purchase(C)
 	to_chat(C.mob, span_notice("[delivery_message()]"))
 	return TRUE
+
+/datum/metadollar_shop_item/proc/log_purchase(client/C)
+	var/msg = "Метамагазин: [key_name_admin(C)] приобрёл [name] за [cost] М$ (баланс: [SSmetadollars.get_metadollars(C.ckey)] М$, каталог: [catalog ? catalog : "нет"])."
+	log_game(msg)
+	send2adminchat("Metadollar", msg)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(send2tgs_adminless_only), "Metadollar", msg, R_ADMIN)
 
 /datum/metadollar_shop_item/proc/queue_delivery(client/C)
 	return FALSE
@@ -172,6 +179,7 @@
 		to_chat(C.mob, span_warning("Недостаточно метадолларов (нужно [cost] М$)."))
 		return TRUE
 	bm_metadollar_global_burn(C.mob)
+	log_purchase(C)
 	message_admins("[key_name_admin(C.mob)] активировал протокол «Пепелище»: обнулены все балансы метадолларов.")
 	log_game("Metadollar total burn: [key_name(C.mob)] wiped all metadollar balances.")
 	for(var/mob/M in GLOB.player_list)

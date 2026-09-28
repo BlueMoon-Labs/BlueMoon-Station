@@ -122,7 +122,6 @@
 	attack_verb_continuous = list("shoves", "bashes")
 	attack_verb_simple = list("shove", "bash")
 	repair_material = /obj/item/stack/sheet/plasteel
-	max_integrity = 300
 	melee_block = 35
 
 /obj/item/shield/riot/pointman/shatter(mob/living/carbon/human/owner)
@@ -176,6 +175,8 @@
 	var/turned_on = FALSE
 	var/throw_cost = 500
 	var/return_cost = 0
+	/// Дополнительный урон бронку по неразумным враждебным существам
+	var/hostile_bonus_damage = 25
 
 /obj/item/melee/tomahawk/Initialize(mapload)
 	. = ..()
@@ -315,6 +316,12 @@
 	var/mob/thrown_by = thrownby?.resolve()
 	if(!thrown_by || QDELETED(thrown_by))
 		return
+
+	// Дополнительный урон по неразумным враждебным существам (обычные hostile/mob)
+	if(isliving(hit_atom) && !QDELETED(hit_atom) && ishostile(hit_atom))
+		var/mob/living/simple_animal/hostile/H = hit_atom
+		if(!H.ckey)
+			H.apply_damage(hostile_bonus_damage, BRUTE)
 
 	// Отталкиваем цель, если она живая и не владелец
 	if(hit_atom != thrown_by && isliving(hit_atom))

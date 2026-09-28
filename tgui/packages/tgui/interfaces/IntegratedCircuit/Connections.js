@@ -31,15 +31,26 @@ export function wireConnectionKey(conn, index) {
 }
 
 /**
- * Два SVG: base — линии; overlay — широкий hit-test для hover по проводам (только там, где нет ноды сверху).
- * children (ноды z-index:1) идут в DOM между SVG — overlay был z-index:2 и перехватывал клики по пинам; держим overlay на z-index:0.
+ * Два SVG: base — линии; overlay — широкий hit-test для hover по проводам (только
+ * там, где нет ноды сверху). Вынесено в отдельный класс с shouldComponentUpdate,
+ * чтобы на каждый кадр панорамы/драга нод НЕ пересоздавались сотни <path> —
+ * обновляем только когда массив `connections` (пересобирается родителем с мемоизацией)
+ * или `pulseKeys` реально изменились. Ноды (children) рендерятся родителем отдельно.
  */
-export class Connections extends Component {
+class WireCanvas extends Component {
   constructor(props) {
     super(props);
     this.state = { hoveredKey: null };
     this.handleClearHover = this.handleClearHover.bind(this);
     this.handleOverlayWireMouseEnter = this.handleOverlayWireMouseEnter.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return (
+      this.props.connections !== nextProps.connections
+      || this.props.pulseKeys !== nextProps.pulseKeys
+      || this.state.hoveredKey !== nextState.hoveredKey
+    );
   }
 
   handleClearHover() {
@@ -54,13 +65,7 @@ export class Connections extends Component {
   }
 
   render() {
-    const {
-      connections,
-      svgRef,
-      pulseOutRef,
-      pulseInRef,
-      children,
-    } = this.props;
+    const { connections, svgRef, pulseKeys } = this.props;
     const { hoveredKey } = this.state;
 
     const renderPathD = (val) => {
@@ -95,9 +100,9 @@ export class Connections extends Component {
             const key = wireConnectionKey(val, index);
             const color = val.color || 'blue';
             const hexStroke = isHexStrokeColor(color);
-            const pulsing = !val.isPreview && pulseOutRef && pulseInRef
-              && val.outRef === pulseOutRef
-              && val.inRef === pulseInRef;
+            const pulsing = !val.isPreview && !!pulseKeys
+              && !!val.outRef && !!val.inRef
+              && pulseKeys.has(`${val.outRef}\u0000${val.inRef}`);
             const hot = pulsing || hoveredKey === key;
             return (
               <path
@@ -117,7 +122,6 @@ export class Connections extends Component {
             );
           })}
         </svg>
-        {children}
         <svg
           className="IntegratedCircuit__connections IntegratedCircuit__connections--overlay"
           width="100%"
@@ -156,3 +160,23 @@ export class Connections extends Component {
     );
   }
 }
+
+export const Connections = (props) => {
+  const {
+    connections,
+    svgRef,
+    pulseKeys,
+    children,
+  } = props;
+
+  return (
+    <>
+      <WireCanvas
+        connections={connections}
+        pulseKeys={pulseKeys}
+        svgRef={svgRef}
+      />
+      {children}
+    </>
+  );
+};

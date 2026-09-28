@@ -234,65 +234,11 @@
 /datum/supply_pack/security/armory/altyn_helmets
 	name = "Altyn Helmets Crate"
 	desc = "Содержит три специальных шлема типа 'АЛТЫН'. Для открытия требуется доступ к оружейной."
-	cost = 1750
+	cost = 3000
 	contains = list(/obj/item/clothing/head/helmet/swat/nanotrasen/altyn,
 					/obj/item/clothing/head/helmet/swat/nanotrasen/altyn,
 					/obj/item/clothing/head/helmet/swat/nanotrasen/altyn)
 	crate_name = "Altyn Helmets Crate"
-
-/datum/supply_pack/security/armory/swat/updated_medsec
-	name = "ERT Armor Crate | MedSec"
-	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
-	cost = 6000
-	contains = list(/obj/item/clothing/suit/space/swat/security,
-					/obj/item/clothing/suit/space/swat/medical,
-					/obj/item/clothing/head/helmet/swat/security,
-					/obj/item/clothing/head/helmet/swat/medical,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/clothing/gloves/tackler/combat/insulated,
-					/obj/item/clothing/gloves/tackler/combat/insulated)
-	crate_name = "swat crate | MedSec"
-
-/datum/supply_pack/security/armory/swat/updated_janeng
-	name = "ERT Armor Crate | JanEng"
-	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
-	cost = 6000
-	contains = list(/obj/item/clothing/suit/space/swat/engineer,
-					/obj/item/clothing/suit/space/swat/janitor,
-					/obj/item/clothing/head/helmet/swat/engineer,
-					/obj/item/clothing/head/helmet/swat/janitor,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/clothing/gloves/tackler/combat/insulated,
-					/obj/item/clothing/gloves/tackler/combat/insulated)
-	crate_name = "swat crate | JanEng"
-
-/datum/supply_pack/security/armory/swat/updated_command
-	name = "ERT Armor Crate | Command"
-	desc = "Содержит два полных комплекта прочных костюмов, разработанных совместными усилиями Дочерних Компаний Синдиката и Nanotrasen. Каждый комплект содержит костюм, шлем, маску, боевой пояс, боевой нож и боевые перчатки. Для открытия требуется доступ к оружейной."
-	cost = 6000
-	contains = list(/obj/item/clothing/suit/space/swat/command,
-					/obj/item/clothing/suit/space/swat/command,
-					/obj/item/clothing/head/helmet/swat/command,
-					/obj/item/clothing/head/helmet/swat/command,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/clothing/mask/gas/sechailer/swat,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/storage/belt/military/assault,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/kitchen/knife/combat,
-					/obj/item/clothing/gloves/tackler/combat/insulated,
-					/obj/item/clothing/gloves/tackler/combat/insulated)
-	crate_name = "swat crate | Command"
 
 /datum/supply_pack/security/armory/lasguns
 	name = "Lasgun's Kit"

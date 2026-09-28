@@ -189,6 +189,11 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/syndicate/skirt
 
+/datum/gear/donator/syndicate_maid
+	name = "Syndicate's Tactical Maid Outfit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/syndicate/maid
+
 /datum/gear/donator/syndicate_overalls
 	name = "Utility Overalls Turtleneck"
 	slot = ITEM_SLOT_ICLOTHING

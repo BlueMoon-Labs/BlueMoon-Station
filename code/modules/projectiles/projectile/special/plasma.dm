@@ -71,3 +71,7 @@
 	range = 4
 	mine_range = 0
 	simplemob_damage_bonus = 1.5
+
+/// Borg plasma cutter uses a weaker shot that costs 4x less energy from the cyborg cell.
+/obj/item/projectile/plasma/weak/cyborg
+	range = 8

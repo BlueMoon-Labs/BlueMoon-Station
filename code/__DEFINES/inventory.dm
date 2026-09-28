@@ -88,6 +88,8 @@
 //sandstorm edit
 #define HIDEUNDERWEAR	(1<<14) //hides underwear, socks and shirt
 #define HIDEWRISTS		(1<<15) //hides wrists
+//bluemoon add
+#define HIDETAIL		(1<<16) //hides the tail, separate from taur bodies
 //
 
 //bitflags for clothing coverage - also used for limbs
