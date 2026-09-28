@@ -725,7 +725,8 @@ This is here to make the tiles around the station mininuke change when it's arme
 /// вес не трогаем: ненулевой вес там был бы мёртвым числом в панели и в логах.
 /obj/item/disk/nuclear/proc/operative_controls()
 	var/list/controls = list()
-	for(var/datum/round_event_control/operative/control as anything in SSdirector.event_controls())
+	// Без as anything: типизированный for отсекает все прочие события директора
+	for(var/datum/round_event_control/operative/control in SSdirector.event_controls())
 		if(control.required_round_type && !(GLOB.round_type in control.required_round_type))
 			continue
 		controls += control
