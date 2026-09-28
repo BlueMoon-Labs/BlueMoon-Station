@@ -135,11 +135,13 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 	RegisterSignal(user, COMSIG_MOB_STATCHANGE, PROC_REF(on_heretic_stat))
 	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_heretic_deleted))
 	RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_victim_deleted))
+	RegisterSignals(target, list(COMSIG_MOB_STATCHANGE, COMSIG_MOVABLE_MOVED), PROC_REF(on_victim_state))
+	update_crit_hold()
 	restart_timer(duration)
 	leave_action = new(src)
 	leave_action.Grant(user)
 	if(intro)
-		to_chat(user, span_notice("Вы в изнанке. Она продержится [duration / (1 SECONDS)] с, за [HERETIC_POCKET_WARNING / (1 SECONDS)] с до конца придёт предупреждение. [hold_on_entry ? "Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с цель не сможет двинуться: начинайте обряд сердцем. " : ""]«Покинуть изнанку» выведет вас ко входу, своей руне или ремеслу пути. Снаружи остался разрыв: экипаж может закрыть его жезлом или разорвать руками. Если разрыв закроют или время выйдет, вас вынесет к одному из ваших выходов подальше от входа, а цель выпадет у входа."))
+		to_chat(user, span_notice("Вы в изнанке. Она продержится [duration / (1 SECONDS)] с, за [HERETIC_POCKET_WARNING / (1 SECONDS)] с до конца придёт предупреждение. [hold_on_entry ? "Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с цель не сможет двинуться: начинайте обряд сердцем. " : ""]Цель в крите здесь не истекает кровью и не угасает, но новые раны её убьют. «Покинуть изнанку» выведет вас ко входу, своей руне или ремеслу пути. Снаружи остался разрыв: экипаж может закрыть его жезлом или разорвать руками. Если разрыв закроют или время выйдет, вас вынесет к одному из ваших выходов подальше от входа, а цель выпадет у входа."))
 		to_chat(target, span_userdanger("Вас утянуло в изнанку, тесную комнату по ту сторону завесы. У стены дрожит разрыв: если вас не держат, разорвите его руками за [HERETIC_POCKET_TEAR_TIME / (1 SECONDS)] с. Через [duration / (1 SECONDS)] с изнанка схлопнется сама.[hold_on_entry ? " Первые [HERETIC_POCKET_ENTRY_HOLD / (1 SECONDS)] с переход держит вас на месте." : ""]"))
 	log_game("[key_name(user)] уводит [key_name(target)] в изнанку; разрыв открыт в [AREACOORD(entry)].")
 	return TRUE
@@ -210,7 +212,8 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 		UnregisterSignal(heretic, list(COMSIG_MOB_STATCHANGE, COMSIG_PARENT_QDELETING))
 		to_chat(heretic, span_warning("Изнанка схлопнулась ([reason])[escape ? ", и вас вынесло к своему выходу: [get_area_name(escape, TRUE)]" : ""]. Снова открыть её можно через [HERETIC_POCKET_COOLDOWN / (1 SECONDS)] с.[stashed ? " Ваше сердце или кодекс с пола ушли за завесу: призовите их." : ""]"))
 	if(victim)
-		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+		UnregisterSignal(victim, list(COMSIG_PARENT_QDELETING, COMSIG_MOB_STATCHANGE, COMSIG_MOVABLE_MOVED))
+		victim.remove_status_effect(/datum/status_effect/grouped/stasis, REF(src))
 		heretic_capture_release(victim, HERETIC_POCKET_CAPTURE)
 		if(victim_inside)
 			to_chat(victim, span_notice("Изнанка схлопывается, и вас выбрасывает обратно."))
@@ -345,8 +348,21 @@ GLOBAL_LIST_EMPTY(heretic_runes)
 
 /datum/heretic_pocket/proc/on_victim_deleted(datum/source)
 	SIGNAL_HANDLER
-	UnregisterSignal(victim, list(COMSIG_PARENT_QDELETING, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING))
+	UnregisterSignal(victim, list(COMSIG_PARENT_QDELETING, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_MOB_STATCHANGE, COMSIG_MOVABLE_MOVED))
 	victim = null
+
+/datum/heretic_pocket/proc/on_victim_state(datum/source)
+	SIGNAL_HANDLER
+	update_crit_hold()
+
+/// Стазис с источником изнанки, пока цель в крите и внутри; обряд руны добавляет свой источник поверх.
+/datum/heretic_pocket/proc/update_crit_hold()
+	if(QDELETED(victim))
+		return
+	if(active && contains(victim) && victim.InCritical())
+		victim.apply_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+	else
+		victim.remove_status_effect(/datum/status_effect/grouped/stasis, REF(src))
 
 /datum/heretic_pocket/proc/on_reservation_deleted(datum/source)
 	SIGNAL_HANDLER

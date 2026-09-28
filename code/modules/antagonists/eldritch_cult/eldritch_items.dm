@@ -117,7 +117,7 @@
 		heretic.hunt_stale_hinted = TRUE
 		to_chat(user, span_boldnotice("Охота на [target.real_name] затянулась. Если цель охраняют или прячут, не упирайтесь: выберите другую. [heretic.retarget_hint(src)]"))
 	if(target.stat == DEAD)
-		to_chat(user, span_notice("Цель погибла. Её труп принимается за 1 очко знаний без побочного; тело останется на месте. Коснитесь его сердцем или принесите к руне."))
+		to_chat(user, span_notice("Цель погибла. Её труп принимается за 1 очко знаний без побочного; после обряда Мансус выбросит тело в коридор станции. Коснитесь его сердцем или принесите к руне."))
 	else if(heretic.hunt_target_ready(target))
 		to_chat(user, span_notice("Цель готова к обряду. Коснитесь её живым сердцем или перенесите к руне, сохранив живой."))
 	var/datum/hud/user_hud = user.hud_used

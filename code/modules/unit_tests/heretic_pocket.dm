@@ -388,6 +388,26 @@
 	visit.finish()
 	TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_top_right, "Мансус возвращает жертву в коридор станции.")
 
+/// Цель в крите изнанка держит стазисом; выход из крита или из изнанки его снимает.
+/datum/unit_test/heretic_pocket/crit_hold/Run()
+	var/datum/antagonist/heretic/heretic = pocket_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/turf/entry = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = pocket_victim(heretic, entry)
+	TEST_ASSERT(heretic.pocket_pull(user, victim, entry, pull_time = 0), "Цель уходит в изнанку.")
+	var/datum/heretic_pocket/pocket = heretic.pocket
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/grouped/stasis), "Цель на ногах не в стазисе.")
+	victim.adjustOxyLoss(victim.maxHealth + 10)
+	TEST_ASSERT(victim.InCritical(), "Цель в крите: здоровье [victim.health].")
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/grouped/stasis), "Изнанка держит цель в крите стазисом.")
+	victim.setOxyLoss(0)
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/grouped/stasis), "Выход из крита снимает стазис.")
+	victim.adjustOxyLoss(victim.maxHealth + 10)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/grouped/stasis), "Повторный крит снова держится.")
+	pocket.collapse("проверка")
+	TEST_ASSERT(!pocket.contains(victim), "Цель выпала из изнанки.")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/grouped/stasis), "Вне изнанки стазис не остаётся.")
+
 /// После закрытия цель минуту невосприимчива к изнанке, а изнанка минуту затягивается.
 /datum/unit_test/heretic_pocket/release/Run()
 	var/datum/antagonist/heretic/heretic = pocket_heretic()

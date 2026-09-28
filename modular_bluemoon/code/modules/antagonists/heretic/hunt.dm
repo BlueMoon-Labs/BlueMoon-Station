@@ -513,11 +513,25 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		to_chat(user, span_notice("Учебное подношение принято. Очки начислены по обычным правилам; манекен остаётся на полигоне."))
 	else if(corpse_sacrifice)
 		user.log_message("принёс труп [key_name(victim)] в жертву Мансусу", LOG_ATTACK)
-		to_chat(user, span_notice("Мансус принял угасшую душу. Жертвоприношение засчитано: вы получили 1 очко знаний без побочного. Тело остаётся на месте; его ещё можно реанимировать. Сердце готово выбрать следующую цель."))
+		var/turf/drop = return_sacrificed_corpse(victim)
+		to_chat(user, span_notice("Мансус принял угасшую душу. Жертвоприношение засчитано: вы получили 1 очко знаний без побочного. [drop ? "Мансус выбросил тело в [get_area_name(drop, TRUE)], где его найдут и смогут реанимировать." : "Тело остаётся на месте; его ещё можно реанимировать."] Сердце готово выбрать следующую цель."))
 	else
 		user.log_message("принёс [key_name(victim)] в жертву Мансусу", LOG_ATTACK)
 		to_chat(user, span_notice("Мансус принял подношение. Жертва пройдёт испытание Дома памяти: в лабиринте комнат, где действует особое правило вашего пути, ей нужно доставить три осколка на печать перед вратами, избегая тени и разломов. Через три минуты Дом отпустит её сам; вернувшись, она не вспомнит ни похищения, ни вас. Вы получили 2 очка знаний и 1 очко побочных знаний. Сердце готово выбрать следующую цель."))
 	return TRUE
+
+/datum/antagonist/heretic/proc/return_sacrificed_corpse(mob/living/carbon/human/victim)
+	var/turf/destination = get_hunt_return_turf()
+	if(!destination || QDELETED(victim))
+		return null
+	victim.pulledby?.stop_pulling()
+	victim.buckled?.unbuckle_mob(victim, TRUE)
+	new /obj/effect/temp_visual/dir_setting/curse/grasp_portal/fading(get_turf(victim), SOUTH)
+	victim.forceMove(destination)
+	new /obj/effect/temp_visual/dir_setting/curse/grasp_portal/fading(destination, SOUTH)
+	destination.visible_message(span_warning("Воздух расходится, как незримая дверь, и из неё выпадает [victim]."))
+	log_game("Мансус выбрасывает труп [key_name(victim)] в [AREACOORD(destination)].")
+	return destination
 
 /datum/antagonist/heretic/proc/get_hunt_return_turf()
 	return find_heretic_hallway_turf() || find_heretic_station_turf(for_escape = TRUE) || find_heretic_station_turf()

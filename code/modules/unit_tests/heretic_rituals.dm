@@ -275,7 +275,7 @@
 /datum/unit_test/heretic_hunt_return/critical
 	capture_in_crit = TRUE
 
-/// Труп назначенной цели даёт меньшую награду, остаётся на месте и не приносится повторно после реанимации.
+/// Труп назначенной цели даёт меньшую награду, выпадает в коридор станции и не приносится повторно после реанимации.
 /datum/unit_test/heretic_hunt_return/corpse
 	sacrifice_corpse = TRUE
 
@@ -413,7 +413,7 @@
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[victim_mind], "Прерванный обряд не оставляет посещение Мансуса.")
 	rune.release_atoms()
 	var/expect_corpse = sacrifice_corpse || dies_during_ritual || dies_while_gates_open
-	if(sacrifice_corpse || dies_during_ritual)
+	if(dies_during_ritual)
 		heretic.test_return_turf = null
 	heretic.kill_while_gates_open = dies_while_gates_open
 	if(dies_during_ritual)
@@ -431,7 +431,7 @@
 	if(expect_corpse)
 		TEST_ASSERT_NULL(visit, "Принятие трупа не создаёт посещения Мансуса.")
 		TEST_ASSERT(!QDELETED(victim) && victim.stat == DEAD, "Обряд сохраняет труп для реанимации.")
-		TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_bottom_left, "Тело остаётся на месте обряда.")
+		TEST_ASSERT_EQUAL(get_turf(victim), heretic.test_return_turf || run_loc_floor_bottom_left, "Мансус выбрасывает труп в коридор, а без безопасного коридора тело остаётся на месте обряда.")
 		TEST_ASSERT_EQUAL(victim.getBruteLoss(), 30, "Принятие трупа не лечит его повреждения.")
 	else
 		TEST_ASSERT_NOTNULL(visit, "Обряд отправляет жертву в отдельное посещение Мансуса.")
