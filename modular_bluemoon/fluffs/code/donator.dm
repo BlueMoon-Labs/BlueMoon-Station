@@ -2728,7 +2728,13 @@
 	name = "NCR ranger clothes case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
+	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda", "ottasuka")
+
+/datum/gear/donator/bm/xeno_waller
+	name = "Xeno Wallet"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/wallet/xeno
+	ckeywhitelist = list("kumikoshouko", "foxrtotlimda")
 
 /datum/gear/donator/bm/skeleton_suit
 	name = "Skeleton suit"

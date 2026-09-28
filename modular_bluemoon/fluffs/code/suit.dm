@@ -415,7 +415,7 @@
 	tail_state = "hahun_exosuit"
 	icon_state = "hahun_exosuit"
 	item_state = "hahun_exosuit"
-	flags_inv = HIDESHOES|HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDESHOES|HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/hahun_exohood
 
 /obj/item/clothing/head/hooded/winterhood/hahun_exohood
@@ -579,7 +579,7 @@
 	icon_state = "long_fancy_kimono"
 	item_state = "long_fancy_kimono"
 	body_parts_covered = CHEST|GROIN|ARMS
-	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC
 	always_reskinnable = TRUE
 	unique_reskin = list(
@@ -603,7 +603,7 @@
 	taur_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/suit_taur.dmi'
 	lefthand_file = /obj/item/clothing/suit/hooded/wintercoat::lefthand_file
 	righthand_file = /obj/item/clothing/suit/hooded/wintercoat::righthand_file
-	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC|STYLE_SNEK_TAURIC
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
 	cold_protection = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
@@ -623,9 +623,9 @@
 /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat/reskin_obj(mob/user)
 	. = ..()
 	if(current_skin == NO_BOOTS_SKIN)
-		DISABLE_BITFIELD(flags_inv, HIDETAUR)
+		DISABLE_BITFIELD(flags_inv, HIDETAUR|HIDETAIL)
 	else
-		ENABLE_BITFIELD(flags_inv, HIDETAUR)
+		ENABLE_BITFIELD(flags_inv, HIDETAUR|HIDETAIL)
 
 #undef NO_BOOTS_SKIN
 
