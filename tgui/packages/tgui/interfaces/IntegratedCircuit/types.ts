@@ -67,8 +67,6 @@ export interface IntegratedCircuitState {
   dragClientX: number | null;
   dragClientY: number | null;
   zoom: number;
-  backgroundX: number;
-  backgroundY: number;
   menuOpen: boolean;
   /** Клиентский «ЛГБТК+ режим»: радужные переливы всего окна схемы. */
   lgbtqRainbowMode: boolean;

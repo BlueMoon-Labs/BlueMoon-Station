@@ -252,6 +252,9 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 	if(movespeed_override)
 		cached_multiplicative_slowdown = max(cached_multiplicative_slowdown, movespeed_override)
 	// BLUEMOON ADD END
+	// Дробное расписание оплачивает шаг целиком; новая скорость действует со следующего шага.
+	if(client.fractional_movement?.mover_ref?.resolve() == src && (client.fractional_movement.in_step || client.last_step_target == client.fractional_movement.owned_target))
+		return
 	// Шаг в полёте оплачен по старой цене. Если скорость выросла, расписание
 	// подтягивается на разницу цен, а glide пересчитывается на остаток пути:
 	// иначе спрайт доедет до тайла и встанет ждать разрешения, и эта пауза

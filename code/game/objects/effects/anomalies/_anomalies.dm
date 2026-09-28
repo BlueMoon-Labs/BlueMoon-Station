@@ -8,7 +8,7 @@
 	light_range = 3
 
 	var/obj/item/assembly/signaler/anomaly/aSignal = /obj/item/assembly/signaler/anomaly
-	var/obj/item/raw_anomaly_core/raw_core = /obj/item/raw_anomaly_core
+	var/obj/item/raw_anomaly_core/raw_core
 	var/area/impact_area
 
 	var/lifespan = ANOMALY_COUNTDOWN_TIMER

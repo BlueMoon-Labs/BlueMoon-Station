@@ -31,7 +31,12 @@ const portsEqual = (a, b) => {
     return false;
   }
   for (let i = 0; i < a.length; i++) {
-    if (portSig(a[i]) !== portSig(b[i])) {
+    const pa = a[i];
+    const pb = b[i];
+    if (pa === pb) {
+      continue;
+    }
+    if (!pa || !pb || portSig(pa) !== portSig(pb)) {
       return false;
     }
   }
@@ -67,11 +72,6 @@ export class ObjectComponent extends Component {
   shouldComponentUpdate(nextProps, nextState) {
     // Локальное состояние ноды (перетаскивание, переименование) — редкое и важное.
     if (shallowDiffers(this.state, nextState)) {
-      return true;
-    }
-    // Смена зума/панорамы обязана перемерить позиции портов, даже если данные не
-    // изменились: координаты проводов зависят от transform плоскости.
-    if (this.props.portLayoutKey !== nextProps.portLayoutKey) {
       return true;
     }
     const p = this.props;
@@ -117,7 +117,6 @@ export class ObjectComponent extends Component {
       onPortMouseDown,
       onPortRightClick,
       onPortMouseUp,
-      portLayoutKey: _portLayoutKey,
       ie_size,
       ie_complexity,
       ie_cooldown_ds,
@@ -201,6 +200,7 @@ export class ObjectComponent extends Component {
         position="absolute"
         left={`${x_pos}px`}
         top={`${y_pos}px`}
+        data-ic-component-id={index}
         className={classes([
           'ObjectComponent__root',
           !powered && 'ObjectComponent--poweroff',
