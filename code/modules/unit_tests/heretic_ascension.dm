@@ -1,5 +1,6 @@
 /// Повторный обряд нельзя завершить, пока оповещение о его начале находится на задержке.
 /datum/unit_test/heretic_ascension_warning_gate/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.ascension_notice_sent = TRUE
 	var/mob/living/user = heretic.owner.current

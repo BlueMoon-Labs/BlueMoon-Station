@@ -277,7 +277,7 @@
 		return TRUE
 	// BLUEMOON ADDITION END
 
-	if(!M.buckled && !M.has_buckled_mobs())
+	if(!M.buckled && !M.has_buckled_mobs() && !HAS_TRAIT(M, TRAIT_NOMOBSWAP) && !HAS_TRAIT(src, TRAIT_NOMOBSWAP))
 		var/mob_swap = FALSE
 		var/too_strong = (M.move_resist > move_force) //can't swap with immovable objects unless they help us
 		if(!they_can_move) //we have to physically move them
@@ -327,7 +327,7 @@
 		return TRUE
 	if(isliving(M))
 		var/mob/living/L = M
-		if(HAS_TRAIT(L, TRAIT_PUSHIMMUNE))
+		if(HAS_TRAIT(L, TRAIT_PUSHIMMUNE) || HAS_TRAIT(L, TRAIT_NOMOBSWAP))
 			return TRUE
 	if(M.a_intent != INTENT_HELP)
 		//If they're a human, and they're not in help intent, block pushing

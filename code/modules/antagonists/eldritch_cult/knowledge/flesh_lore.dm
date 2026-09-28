@@ -60,8 +60,21 @@
 	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
 	flesh_servants -= source
 
+/datum/eldritch_knowledge
+	COOLDOWN_DECLARE(servant_poll_cooldown)
+
+/// Один опрос всех призраков, без второго круга для низкого приоритета.
 /datum/eldritch_knowledge/proc/poll_servant_candidates(question, mob/living/body, duration)
-	return pollCandidatesForMob(question, ROLE_HERETIC, null, FALSE, duration, body, POLL_IGNORE_HERETIC_SERVANT)
+	return pollCandidatesForMob(question, ROLE_HERETIC, null, FALSE, duration, body, POLL_IGNORE_HERETIC_SERVANT, priority_check = FALSE)
+
+/datum/eldritch_knowledge/proc/servant_poll_wait_reason()
+	if(COOLDOWN_FINISHED(src, servant_poll_cooldown))
+		return null
+	return "Мансус недавно звал души впустую. Позвать снова можно через [DisplayTimeText(COOLDOWN_TIMELEFT(src, servant_poll_cooldown))]."
+
+/datum/eldritch_knowledge/proc/servant_poll_came_back_empty(no_answer_text)
+	COOLDOWN_START(src, servant_poll_cooldown, HERETIC_SERVANT_POLL_COOLDOWN)
+	return "[no_answer_text] Позвать снова можно через [DisplayTimeText(HERETIC_SERVANT_POLL_COOLDOWN)]."
 
 /datum/eldritch_knowledge/proc/release_flesh_servants()
 	for(var/datum/antagonist/heretic_monster/servant as anything in flesh_servants.Copy())
@@ -74,8 +87,8 @@
 	name = "Хватка Плоти"
 	summary = "Хватка поднимает гулей и шьёт ползунов, Живой шов бьёт врага издали или спасает слугу."
 	details = list(
-		"Хватка по мёртвому человеку за 1 биомассу поднимает гуля с 50 здоровья; держится до 2 гулей.",
-		"Без души роль 10 секунд ждёт призраков; щит разума, синтетики, скелеты и истощённые тела не встают.",
+		"Хватка по мёртвому человеку за 1 биомассу поднимает гуля с 50 здоровья, до 2 гулей; скелеты и истощённые не встают.",
+		"Без души роль 10 секунд ждёт призрака, без отклика пауза 90 секунд; щит разума и синтетики не встают.",
 		"Хватка в «Разоружении» по органу на полу за 2 биомассы шьёт ползуна: 40 здоровья, 6 урона раз в 2 секунды.",
 		"Ползун один, живёт 90 секунд и распадается дальше 9 клеток от вас; «Помощь» зовёт его, «Разоружение» велит ждать.",
 		"Живой шов на 5 клеток: враг получает 15 ушибов, замедление на 3 секунды и становится целью ползуна.",
@@ -106,6 +119,10 @@
 	if(ghoul_poll_pending)
 		to_chat(user, span_warning("Мансус уже зовёт блуждающих духов. Дождитесь ответа."))
 		return FALSE
+	var/wait_reason = servant_poll_wait_reason()
+	if(wait_reason)
+		to_chat(user, span_warning(wait_reason))
+		return FALSE
 	to_chat(user, span_notice("Душа этого тела не возвращается. Мансус зовёт блуждающих духов: ответ придёт через [DisplayTimeText(HERETIC_SERVANT_POLL_DURATION)]."))
 	INVOKE_ASYNC(src, PROC_REF(call_ghoul_spirit), user, victim)
 	return TRUE
@@ -131,9 +148,12 @@
 	if(QDELETED(src) || QDELETED(user) || !can_raise_ghoul(user, victim))
 		return FALSE
 	if(!victim.client)
-		var/mob/dead/observer/chosen = length(candidates) ? pick(candidates) : null
+		if(!length(candidates))
+			to_chat(user, span_warning(servant_poll_came_back_empty("Ни один дух не откликнулся: тело остаётся мёртвым, биомасса сохранена.")))
+			return FALSE
+		var/mob/dead/observer/chosen = pick(candidates)
 		if(!chosen?.key)
-			to_chat(user, span_warning("Ни один дух не откликнулся: тело остаётся мёртвым, биомасса сохранена."))
+			to_chat(user, span_warning("Откликнувшийся дух ушёл до вселения: тело остаётся мёртвым, биомасса сохранена."))
 			return FALSE
 		victim.ghostize(FALSE)
 		victim.key = chosen.key
@@ -162,7 +182,7 @@
 	summary = "Мёртвый человек, мак и 2 биомассы дают Безмолвного мертвеца с 90 здоровья."
 	details = list(
 		"Безмолвный мертвец подчиняется вам и не может говорить; держится до 2.",
-		"Если душа не вернётся, роль ждёт призраков; без отклика компоненты сохранятся.",
+		"Если душа не вернётся, роль ждёт призраков; без отклика компоненты сохранятся, а позвать снова можно через 90 секунд.",
 		"Щит разума, синтетики, скелеты, истощённые и уже поднятые тела не подходят.",
 		"Мертвец занимает место в общей свите.",
 	)
@@ -183,7 +203,7 @@
 		return "Вы уже удерживаете предельное число Безмолвных мертвецов: [heretic.flesh_kind_limit()]."
 	if(!heretic.can_add_servant())
 		return "Свита заполнена: новый слуга не поместится, пока вы не потеряете одного из прежних."
-	return null
+	return servant_poll_wait_reason()
 
 /datum/eldritch_knowledge/flesh_ghoul/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return ..() && !recipe_block_reason(user)
@@ -200,7 +220,7 @@
 		to_chat(user, span_notice("Мансус ищет душу для тела. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
 		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
 		if(!length(candidates))
-			finish_failure_reason = "Ни одна душа не откликнулась, и тело осталось пустым."
+			finish_failure_reason = servant_poll_came_back_empty("Ни одна душа не откликнулась, и тело осталось пустым.")
 			return FALSE
 		finish_failure_reason = ritual_invalid_reason(user, atoms, get_turf(loc)) || voiceless_dead_failure_reason(user, victim)
 		if(finish_failure_reason)
@@ -440,7 +460,7 @@
 	name = "Последний гимн жреца"
 	summary = "Облик Повелителя Ночи: червь пожирает трупы и растёт, а свита вырастает до 8."
 	details = list(
-		"Нужны 3 назначенные души и 3 человеческих трупа на руне; станция узнаёт место и 30 секунд может помешать.",
+		"Нужны 3 назначенные души и 3 человеческих трупа на руне станции; станция узнаёт место и 30 секунд может помешать.",
 		"Человек получает общую стойкость вознесения; «Сбросить облик» меняет его на червя, перезарядка 10 секунд.",
 		"Голова червя за 3 секунды пожирает труп: +100 здоровья и сегмент, до 16 сегментов.",
 		"Вещи и органы съеденного, включая мозг, падают; еретиков, слуг и трупы в шкафах и мешках червь не ест.",

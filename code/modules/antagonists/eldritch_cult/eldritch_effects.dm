@@ -9,6 +9,7 @@
 	var/ritual_interrupted = FALSE
 	var/ritual_interrupt_reason
 	var/mob/living/ritual_user
+	var/ritual_user_walked = FALSE
 	var/obj/effect/temp_visual/heretic_ritual/ritual_visual
 	var/obj/effect/heretic_ritual_crescendo/ascension_crescendo
 	var/list/reserved_atoms = list()
@@ -208,11 +209,27 @@
 	SIGNAL_HANDLER
 	ritual_interrupted = TRUE
 	if(source && (source == ritual_user || source == ascension_preview_mind))
-		ritual_interrupt_reason ||= "Положение или состояние исполнителя изменилось."
+		ritual_interrupt_reason ||= "Исполнитель вышел из игры, пропал или сменил тело."
 	else
 		ritual_interrupt_reason ||= "Компонент обряда перемещён или удалён."
 	clear_hunt_stasis()
 	clear_ascension_body_preview()
+
+/// Moved приходит раньше COMSIG_MOB_CLIENT_MOVE, поэтому решение о сдвиге принимает ritual_valid на следующем тике.
+/obj/effect/eldritch/proc/on_ritual_user_moved(datum/source)
+	SIGNAL_HANDLER
+	ritual_user_walked = FALSE
+
+/obj/effect/eldritch/proc/on_ritual_user_stepped(datum/source)
+	SIGNAL_HANDLER
+	ritual_user_walked = TRUE
+
+/obj/effect/eldritch/proc/protect_ritual_user(mob/living/user)
+	ritual_user_walked = FALSE
+	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_ingredient_changed))
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_ritual_user_moved))
+	RegisterSignal(user, COMSIG_MOB_CLIENT_MOVE, PROC_REF(on_ritual_user_stepped))
+	ADD_TRAIT(user, TRAIT_NOMOBSWAP, REF(src))
 
 /obj/effect/eldritch/proc/apply_hunt_stasis(datum/eldritch_knowledge/ritual, mob/living/user)
 	if(ritual.type != /datum/eldritch_knowledge/spell/basic)
@@ -278,7 +295,8 @@
 	ascension_crescendo = null
 	clear_ascension_body_preview()
 	if(!QDELETED(ritual_user))
-		UnregisterSignal(ritual_user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		UnregisterSignal(ritual_user, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_MOVE, COMSIG_PARENT_QDELETING))
+		REMOVE_TRAIT(ritual_user, TRAIT_NOMOBSWAP, REF(src))
 	for(var/atom/movable/ingredient in reserved_atoms)
 		if(GLOB.heretic_ritual_reservations[ingredient] == src)
 			GLOB.heretic_ritual_reservations -= ingredient
@@ -296,15 +314,21 @@
 		ritual_interrupt_reason ||= "Руна или исполнитель больше недоступны."
 		return FALSE
 	if(user.incapacitated())
-		ritual_interrupt_reason ||= "Вы не можете действовать: оглушены, связаны или без сознания."
+		ritual_interrupt_reason ||= heretic_incapacitated_reason(user)
 		return FALSE
 	var/containment_reason = heretic_containment_reason(user)
 	if(containment_reason)
 		ritual_interrupt_reason ||= containment_reason
 		return FALSE
 	if(!Adjacent(user))
-		ritual_interrupt_reason ||= "Вы отошли от руны."
+		ritual_interrupt_reason ||= ritual_user_walked ? "Вы отошли от руны." : "Вас оттащили или оттолкнули от руны."
 		return FALSE
+	var/datum/eldritch_knowledge/final_eldritch/finale = ritual
+	if(istype(finale))
+		var/finale_reason = finale.ascension_block_reason(user, get_turf(src))
+		if(finale_reason)
+			ritual_interrupt_reason ||= finale_reason
+			return FALSE
 	if(ritual_user && ritual_user != user)
 		ritual_interrupt_reason ||= "Исполнитель обряда сменился."
 		return FALSE
@@ -340,6 +364,11 @@
 	var/containment_reason = heretic_containment_reason(user)
 	if(containment_reason)
 		return reject_ritual(user, ritual, containment_reason)
+	var/datum/eldritch_knowledge/final_eldritch/finale = ritual
+	if(istype(finale))
+		var/finale_reason = finale.ascension_block_reason(user, get_turf(src))
+		if(finale_reason)
+			return reject_ritual(user, ritual, finale_reason)
 	var/list/atoms = collect_ritual_atoms(user)
 	var/list/selected_atoms = list()
 	var/list/stack_usage = list()
@@ -369,13 +398,13 @@
 	ritual_visual = new(get_turf(src), heretic.selected_path, ritual_duration + 1 SECONDS, HERETIC_RUNE_VISUAL_RITUAL, src)
 	if(ascension_announced)
 		ascension_crescendo = new(get_turf(src), heretic.selected_path, ritual_duration, src, user)
-	RegisterSignal(user, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(on_ingredient_changed))
-	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Сохраняйте неподвижность, не меняйте предмет в активной руке и не трогайте компоненты."))
+	protect_ritual_user(user)
+	to_chat(user, span_notice("Вы начинаете ритуал «[ritual.name]». Не отходите от руны, не меняйте предмет в активной руке и не трогайте компоненты. Пока идёт обряд, с вами нельзя поменяться местами."))
 	log_game("[key_name(user)] начинает ритуал «[ritual.name]» в [AREACOORD(src)].")
 	flick("[icon_state]_active", src)
 	playsound(src, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 50, TRUE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_exponent = 10, ignore_walls = FALSE)
 	var/obj/item/held_item = user.get_active_held_item()
-	if(!do_after(user, ritual_time, src, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
+	if(!do_after(user, ritual_time, src, timed_action_flags = IGNORE_USER_LOC_CHANGE, extra_checks = CALLBACK(src, PROC_REF(ritual_valid), user, ritual)) || !ritual_valid(user, ritual))
 		ritual_valid(user, ritual)
 		if(!QDELETED(user) && user.get_active_held_item() != held_item)
 			ritual_interrupt_reason ||= "Предмет в активной руке изменился."
@@ -481,8 +510,10 @@
 	if(ritual.type == /datum/eldritch_knowledge/spell/basic)
 		return "Нужны ваше живое сердце и назначенная цель: живая в крите, без сознания, в наручниках, оглушённая или сбитая с ног, либо её труп за меньшую награду. Цель, которая сама легла или уснула, не считается."
 	if(istype(ritual, /datum/eldritch_knowledge/final_eldritch))
-		if(heretic_ascension_in_open_space(src))
-			return "Финальный обряд нельзя провести в зоне открытого космоса, даже на своей площадке с воздухом. Начертите руну в помещении станции или другой локации."
+		var/datum/eldritch_knowledge/final_eldritch/finale = ritual
+		var/place_reason = finale.ascension_block_reason(user, get_turf(src))
+		if(place_reason)
+			return place_reason
 		return "Нужны [HERETIC_ASCENSION_SACRIFICES] назначенных душ и [HERETIC_ASCENSION_BODIES] трупа членов экипажа. Подходят только тела, которыми управлял человек: очеловеченные мартышки, пустые клоны, тела еретиков и их слуг не годятся."
 	return "Особые условия обряда не выполнены. Проверьте требования выбранного ритуала в кодексе."
 

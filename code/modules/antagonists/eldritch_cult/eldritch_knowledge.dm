@@ -57,6 +57,22 @@
 /datum/eldritch_knowledge/proc/recipe_block_reason(mob/living/user)
 	return null
 
+/// Причина для living/incapacitated(): что именно мешает исполнителю обряда.
+/proc/heretic_incapacitated_reason(mob/living/user)
+	if(user.stat == DEAD)
+		return "Вы не можете действовать: вы погибли."
+	if(user.stat || user.IsUnconscious())
+		return "Вы не можете действовать: вы потеряли сознание."
+	if(user.IsStun() || user.IsParalyzed())
+		return "Вы не можете действовать: вас оглушили."
+	if(user.combat_flags & COMBAT_FLAG_HARD_STAMCRIT)
+		return "Вы не можете действовать: вы выбились из сил."
+	if(user.restrained())
+		return "Вы не можете действовать: вас связали или держат в захвате."
+	if(IS_IN_STASIS(user))
+		return "Вы не можете действовать: вас держит стазис."
+	return "Вы не можете действовать: оглушены, связаны или без сознания."
+
 /datum/eldritch_knowledge/proc/ritual_still_valid(mob/living/user, list/atoms, turf/ritual_turf)
 	return !ritual_invalid_reason(user, atoms, ritual_turf)
 
@@ -65,7 +81,7 @@
 	if(QDELETED(src) || !heretic || heretic.get_knowledge(type) != src)
 		return "Знание обряда больше недоступно."
 	if(user.incapacitated())
-		return "Вы не можете действовать: оглушены, связаны или без сознания."
+		return heretic_incapacitated_reason(user)
 	if(!user.Adjacent(ritual_turf))
 		return "Вы отошли от руны."
 	if(!length(atoms))
@@ -209,13 +225,19 @@
 /datum/eldritch_knowledge/summon
 	ritual_hints = list(
 		"После обряда нужен игрок-призрак, согласный стать вашим слугой.",
-		"Если никто не откликнется, компоненты сохранятся.",
+		"Если никто не откликнется, компоненты сохранятся, а позвать снова можно через 90 секунд.",
 		"Учитываются предел этого призыва и общий предел свиты.",
 	)
 	role = HERETIC_ROLE_RITUAL
 	var/mob/living/mob_to_summon
 	var/summon_limit = 2
 	var/summoning = FALSE
+
+/datum/eldritch_knowledge/summon/recipe_block_reason(mob/living/user)
+	return servant_poll_wait_reason()
+
+/datum/eldritch_knowledge/summon/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
+	return ..() && !recipe_block_reason(user)
 
 /datum/eldritch_knowledge/summon/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -257,7 +279,7 @@
 
 /datum/eldritch_knowledge/summon/proc/summon_poll_failure_reason(mob/living/user, list/atoms, loc, list/candidates, mob/living/summoned)
 	if(!length(candidates))
-		return "Ни одна душа не откликнулась."
+		return servant_poll_came_back_empty("Ни одна душа не откликнулась.")
 	if(QDELETED(summoned) || summoned.stat == DEAD)
 		return "Призванное тело погибло до вселения."
 	var/invalid_reason = ritual_invalid_reason(user, atoms, get_turf(loc))
@@ -284,7 +306,9 @@
 		"После вознесения побег клинком закрыт.",
 		"Экипаж видит при осмотре, что дубинки, станы и снотворное вас почти не берут; светошумовые гранаты всё ещё валят.",
 		"Смерть снимает всё это, оживление возвращает.",
-		"Финальный обряд нельзя провести в открытом космосе, даже на своей площадке с воздухом.",
+		"Финальный обряд проводится только на станции: шахта, Лаваленд и шаттлы вне станции не подходят.",
+		"Открытый космос не годится, даже на своей площадке с воздухом.",
+		"После отлёта эвакуационного шаттла со станции вознесение уже не начать и не завершить.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	cost = 3
@@ -304,6 +328,19 @@
 	if(!rune_turf)
 		return TRUE
 	return istype(get_area(rune_turf), /area/space) && !SSmapping.level_trait(rune_turf.z, ZTRAIT_RESERVED)
+
+/// Место и время финального обряда; учебный еретик на полигоне проверяется только на открытый космос.
+/datum/eldritch_knowledge/final_eldritch/proc/ascension_block_reason(mob/living/user, turf/ritual_turf)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(heretic_ascension_in_open_space(ritual_turf))
+		return "Финальный обряд нельзя провести в зоне открытого космоса, даже на своей площадке с воздухом. Начертите руну в помещении станции."
+	if(heretic?.simulated)
+		return null
+	if(EMERGENCY_ESCAPED_OR_ENDGAMED)
+		return "Эвакуационный шаттл уже покинул станцию: смена окончена, и завеса больше не разорвётся."
+	if(!ritual_turf || !is_station_level(ritual_turf.z))
+		return "Финальный обряд проводится только на станции, а руна сейчас в зоне «[get_area_name(ritual_turf, TRUE) || "вне карты"]». Шахта, Лаваленд, аванпосты и шаттлы вне станции не подходят."
+	return null
 
 /// Годится только труп, которым когда-то управлял игрок: очеловеченные мартышки и пустые тела отклоняются.
 /proc/heretic_ascension_body_valid(mob/living/carbon/human/body, mob/living/user)
@@ -404,17 +441,19 @@
 	name = "Обряд возвращения"
 	summary = "Обряд живым сердцем над обезвреженной назначенной целью даёт вам знания, а её душу уводит в Мансус."
 	details = list(
-		"Коснитесь цели живым сердцем или положите сердце и цель на руну; обряд длится 8 секунд.",
+		"Коснитесь цели живым сердцем или положите сердце и цель на руну; обряд длится 8 секунд и идёт только на станции.",
 		"Живая цель подходит, если она в наручниках, оглушена или сбита с ног; цель в крите подходит и без наручников.",
 		"Живая жертва даёт 2 очка знаний и 1 побочное и возвращается живой не позже чем через 3 минуты.",
 		"Труп назначенной цели даёт 1 очко без побочного; тело остаётся, его можно оживить.",
 		"Оба варианта идут в счёт вознесения; одну душу можно принести лишь раз за раунд.",
-		"Круг держит жертву, не даёт истечь кровью, копии её не бьют; сдвиг жертвы или помеха еретику срывают обряд.",
+		"Круг держит жертву, не даёт истечь кровью, копии её не бьют; сдвиг жертвы или уход еретика от руны срывают обряд.",
 		"Знание даёт Хватку Мансуса: 10 ушибов, 60 выносливости и 2 секунды на полу, перезарядка 12 секунд.",
 	)
 	role = HERETIC_ROLE_RITUAL
 	ritual_hints = list(
 		"Нужна цель, назначенная в главе «Охота».",
+		"Шахта, Лаваленд и шаттлы вне станции не в счёт: тело цели должно лежать на станции.",
+		"Не отрубайте цели голову: душа уйдёт в мозг, и тело рядом не примут, пока голову не пришьют обратно.",
 		"Руна не обязательна: коснитесь сердцем обезвреженной цели, и обряд пройдёт прямо под её телом.",
 		"Сердце после обряда остаётся у вас, труп назначенной цели - на месте.",
 		"Дион приносите живыми: при смерти они распадаются на нимф и не оставляют тела.",

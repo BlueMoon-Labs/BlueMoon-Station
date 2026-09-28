@@ -153,6 +153,7 @@
 #include "heretic_passives.dm"
 #include "heretic_innates.dm"
 #include "heretic_rituals.dm"
+#include "heretic_ritual_rules.dm"
 #include "heretic_crucible.dm"
 #include "heretic_hunt_claim.dm"
 #include "heretic_regressions.dm"

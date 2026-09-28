@@ -102,6 +102,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(candidate in GLOB.heretic_sacrificed_minds)
 		return "Эта душа уже принята Мансусом. Выберите новую цель через живое сердце."
 	var/mob/living/carbon/human/body = candidate.current
+	if(istype(candidate.current, /mob/living/brain) && !QDELETED(candidate.current))
+		return "Душа цели заперта в отрубленной голове или вынутом мозге, поэтому тело рядом не годится. Приставьте голову к шее операцией замены конечности или пересадите мозг в тело, и душа вернётся в него. Можно и выбрать новую цель через живое сердце."
 	if(QDELETED(body) || !istype(body))
 		return "У назначенной души нет подходящего человеческого тела. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(body.mind != candidate)
@@ -112,7 +114,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
 	var/turf/body_turf = heretic_pocket_anchor(get_turf(body))
 	if(!body_turf || !is_station_level(body_turf.z))
-		return "Тело назначенной цели находится вне станции. Верните его на станцию или выберите другую цель."
+		return "Тело назначенной цели находится вне станции: [get_area_name(body_turf || body, TRUE) || "неизвестно где"]. Подношение принимается только на станции, шахта, Лаваленд и шаттлы вне станции не в счёт. Верните тело на станцию или выберите другую цель."
 	if(selecting && body.stat == DEAD)
 		return "Погибшего нельзя назначить новой целью. Труп уже назначенной цели принимается."
 	if(selecting && !body.client)
@@ -412,9 +414,13 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return TRUE
 	return FALSE
 
+/// Руна сама показывает причину исполнителю и пишет её в лог завершения.
 /datum/antagonist/heretic/proc/refuse_hunt_ritual(mob/living/user, reason, datum/heretic_mansus_visit/visit)
 	qdel(visit)
-	if(!QDELETED(user))
+	var/datum/eldritch_knowledge/spell/basic/offering = get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	if(offering)
+		offering.finish_failure_reason = "Подношение не принято. [reason]"
+	else if(!QDELETED(user))
 		to_chat(user, span_warning("Подношение не принято. [reason]"))
 	log_game("[key_name(owner)] не приносит в жертву [key_name(hunt_target)]: [reason]")
 	return FALSE

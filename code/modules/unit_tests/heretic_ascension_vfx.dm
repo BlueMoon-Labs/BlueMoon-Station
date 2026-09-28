@@ -76,6 +76,7 @@
 
 /// Вознесение сопровождает кульминация: волна, искажение, частицы пути, вспышка и лучи, и всё гаснет само.
 /datum/unit_test/heretic_ascension_climax/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.ascension_notice_sent = TRUE
 	var/mob/living/user = heretic.owner.current
@@ -175,6 +176,7 @@
 
 /// Сорванный обряд вознесения гасит нарастание и не оставляет его объектов на полу.
 /datum/unit_test/heretic_ascension_crescendo_abort/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.ascension_notice_sent = TRUE
 	var/mob/living/user = heretic.owner.current
@@ -211,6 +213,7 @@
 
 /// Нарастание, печать обряда и объявление станции рассчитаны на настоящую длину обряда с учётом скорости действий исполнителя.
 /datum/unit_test/heretic_ascension_crescendo_actionspeed/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.ascension_notice_sent = TRUE
 	var/mob/living/user = heretic.owner.current

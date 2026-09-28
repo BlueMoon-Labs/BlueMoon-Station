@@ -369,7 +369,7 @@
 	heretic.researched_knowledge[probe.type] = probe
 	var/turf/far_turf = run_loc_floor_top_right
 	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Без отклика призыв не удаётся.")
-	TEST_ASSERT_EQUAL(probe.finish_failure_reason, "Ни одна душа не откликнулась.", "Причина - пустой опрос.")
+	TEST_ASSERT(findtext(probe.finish_failure_reason, "Ни одна душа не откликнулась."), "Причина - пустой опрос.")
 	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Пустое тело удалено.")
 	TEST_ASSERT(!probe.summoning, "Призыв снова доступен.")
 	probe.poll_result = list(user)

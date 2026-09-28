@@ -12,6 +12,7 @@
 
 /// Обряд вознесения Ржавчины сажает сердце на руну, а над космосом - у ног еретика.
 /datum/unit_test/heretic_rust_ascension_heart/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
 	var/turf/rune_turf = get_step(run_loc_floor_bottom_left, NORTHEAST)
 	var/datum/antagonist/heretic/heretic = allocate_heretic(rune_turf)
 	heretic.ascension_notice_sent = TRUE
