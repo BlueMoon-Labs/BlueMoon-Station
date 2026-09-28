@@ -271,6 +271,7 @@
 	new /obj/item/modkit/star_dust_kit(src) // противогаз
 	new /obj/item/modkit/lapkee_carrier_kit(src) // плитка
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
+	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 	new /obj/item/modkit/white_belt_kit(src) // пояс
 	new /obj/item/modkit/nebular_kit(src) // пистоль - энфорсер
 	new /obj/item/modkit/comet_kit(src) // WT-550 PDW
@@ -285,7 +286,6 @@
 	new /obj/item/modkit/katana_kit(src) // стан-катана
 	new /obj/item/modkit/pulsar_knife_kit(src) // ножик-режик
 	new /obj/item/modkit/lapkee_arm_shield_kit(src) // имплант щита
-	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
@@ -462,7 +462,7 @@
 		kit_count++
 	if(kit_count != 0)
 		. += "melatonin_bola_case_[min(kit_count, 4)]"
-    
+
 ///////////////////////////////////////////
 
 #define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm, /obj/item/modkit/invis_belt
