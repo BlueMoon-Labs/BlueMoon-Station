@@ -56,7 +56,25 @@ GLOBAL_LIST_INIT(antag_training_equipment, list(
 	"manipulator" = list("name" = "Манипулятор", "category" = "Сборка машин", "type" = /obj/item/stock_parts/manipulator),
 	"matter_bin" = list("name" = "Ёмкость материи", "category" = "Сборка машин", "type" = /obj/item/stock_parts/matter_bin),
 	"micro_laser" = list("name" = "Микролазер", "category" = "Сборка машин", "type" = /obj/item/stock_parts/micro_laser),
-	"cell" = list("name" = "Батарея высокой ёмкости", "category" = "Сборка машин", "type" = /obj/item/stock_parts/cell/high)
+	"cell" = list("name" = "Батарея высокой ёмкости", "category" = "Сборка машин", "type" = /obj/item/stock_parts/cell/high),
+	"telebaton" = list("name" = "Телескопическая дубинка", "category" = "Ближний бой", "type" = /obj/item/melee/classic_baton/telescopic),
+	"bola" = list("name" = "Бола", "category" = "Ближний бой", "desc" = "Бросок опутывает ноги и валит бегущую цель.", "type" = /obj/item/restraints/legcuffs/bola),
+	"pepper" = list("name" = "Перцовый баллончик", "category" = "Ближний бой", "type" = /obj/item/reagent_containers/spray/pepper),
+	"taser" = list("name" = "Гибридный тазер", "category" = "Стрельба", "type" = /obj/item/gun/energy/e_gun/advtaser),
+	"beanbag" = list("name" = "Коробка резиновых патронов", "category" = "Стрельба", "desc" = "Нелетальные патроны для дробовика.", "type" = /obj/item/storage/box/beanbag),
+	"teargas" = list("name" = "Граната со слезоточивым газом", "category" = "Стрельба", "type" = /obj/item/grenade/chem_grenade/teargas),
+	"bulletproof" = list("name" = "Пуленепробиваемый жилет", "category" = "Защита", "type" = /obj/item/clothing/suit/armor/bulletproof),
+	"sunglasses" = list("name" = "Солнцезащитные очки", "category" = "Защита", "desc" = "Защищают глаза от вспышек.", "type" = /obj/item/clothing/glasses/sunglasses),
+	"gauze" = list("name" = "Марля", "category" = "Медицина", "desc" = "Останавливает кровотечение.", "type" = /obj/item/stack/medical/gauze),
+	"suture" = list("name" = "Швы", "category" = "Медицина", "type" = /obj/item/stack/medical/suture),
+	"medipen" = list("name" = "Медипен с эпинефрином", "category" = "Медицина", "type" = /obj/item/reagent_containers/hypospray/medipen),
+	"nullrod" = list("name" = "Нуль-жезл", "category" = "Контрмеры", "desc" = "Защищает владельца от магии.", "type" = /obj/item/nullrod),
+	"holywater" = list("name" = "Святая вода", "category" = "Контрмеры", "desc" = "Выпитая смывает мелодию Пляски и выводит из стазиса Песка.", "type" = /obj/item/reagent_containers/food/drinks/bottle/holywater),
+	"foilhat" = list("name" = "Шапочка из фольги", "category" = "Контрмеры", "desc" = "Держит только ментальные чары.", "type" = /obj/item/clothing/head/foilhat),
+	"earmuffs" = list("name" = "Наушники-заглушки", "category" = "Контрмеры", "desc" = "Глушат такт Пляски.", "type" = /obj/item/clothing/ears/earmuffs),
+	"flashbang" = list("name" = "Светошумовая граната", "category" = "Контрмеры", "desc" = "Ослепляет и оглушает. В Болеро - фальшивая нота, сбивающая ступень.", "type" = /obj/item/grenade/flashbang),
+	"bikehorn" = list("name" = "Клаксон", "category" = "Контрмеры", "desc" = "Гудок в Болеро - фальшивая нота, сбивающая ступень.", "type" = /obj/item/bikehorn),
+	"bible" = list("name" = "Библия", "category" = "Контрмеры", "type" = /obj/item/storage/book/bible)
 ))
 
 GLOBAL_LIST_INIT(antag_training_structures, list(
@@ -73,7 +91,11 @@ GLOBAL_LIST_INIT(antag_training_structures, list(
 	"operating_table" = list("name" = "Операционный стол", "category" = "Медицина и химия", "desc" = "Для операций: перетащите пациента на стол и возьмите хирургические инструменты.", "type" = /obj/structure/table/optable),
 	"sleeper" = list("name" = "Слипер", "category" = "Медицина и химия", "desc" = "Помощь пациенту и проверка медицинских препаратов.", "type" = /obj/machinery/sleeper),
 	"chem_dispenser" = list("name" = "Химраздатчик", "category" = "Медицина и химия", "desc" = "Смешивание реагентов по рецептам. Стаканы и пипетки есть в снаряжении.", "type" = /obj/machinery/chem_dispenser),
-	"chem_master" = list("name" = "ChemMaster", "category" = "Медицина и химия", "desc" = "Разделение смесей и изготовление таблеток и бутылочек.", "type" = /obj/machinery/chem_master)
+	"chem_master" = list("name" = "ChemMaster", "category" = "Медицина и химия", "desc" = "Разделение смесей и изготовление таблеток и бутылочек.", "type" = /obj/machinery/chem_master),
+	"crate" = list("name" = "Ящик", "category" = "Обстановка", "desc" = "Укрытие для тела или предметов.", "type" = /obj/structure/closet/crate),
+	"secure_closet" = list("name" = "Запираемый шкаф", "category" = "Обстановка", "desc" = "Проверка замков и взлома запертых шкафов.", "type" = /obj/structure/closet/secure_closet),
+	"glass_table" = list("name" = "Стеклянный стол", "category" = "Обстановка", "desc" = "Разбивается, если на него бросить человека.", "type" = /obj/structure/table/glass),
+	"barricade" = list("name" = "Деревянная баррикада", "category" = "Преграды", "desc" = "Укрытие от выстрелов, ломается ударами.", "type" = /obj/structure/barricade/wooden)
 ))
 
 GLOBAL_LIST_INIT(antag_training_injuries, list(
@@ -98,7 +120,10 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 	"bear" = list("name" = "Медведь", "type" = /mob/living/simple_animal/hostile/bear),
 	"operative" = list("name" = "Оперативник с ножом", "type" = /mob/living/simple_animal/hostile/syndicate),
 	"gunner" = list("name" = "Оперативник со стрельбой", "type" = /mob/living/simple_animal/hostile/syndicate/ranged),
-	"goliath" = list("name" = "Голиаф", "type" = /mob/living/simple_animal/hostile/asteroid/goliath)
+	"goliath" = list("name" = "Голиаф", "type" = /mob/living/simple_animal/hostile/asteroid/goliath),
+	"spider" = list("name" = "Паук-охотник", "type" = /mob/living/simple_animal/hostile/poison/giant_spider/hunter),
+	"xeno" = list("name" = "Ксеноморф-охотник", "type" = /mob/living/simple_animal/hostile/alien),
+	"hivebot" = list("name" = "Хайвбот-стрелок", "type" = /mob/living/simple_animal/hostile/hivebot/range)
 ))
 
 /datum/antag_training_arena/proc/build_zones()

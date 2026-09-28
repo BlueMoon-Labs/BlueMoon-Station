@@ -2,7 +2,9 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	"melee" = list("name" = "Ближний бой", "zone" = "melee", "items" = list("baton", "cuffs", "vest", "helmet")),
 	"range" = list("name" = "Стрельба", "zone" = "range", "items" = list("pistol", "magazine", "vest", "helmet")),
 	"medicine" = list("name" = "Первая помощь", "zone" = "laboratory", "items" = list("health", "firstaid", "burn_kit")),
-	"workshop" = list("name" = "Строительство", "zone" = "laboratory", "items" = list("tools", "steel", "glass", "cable"))
+	"workshop" = list("name" = "Строительство", "zone" = "laboratory", "items" = list("tools", "steel", "glass", "cable")),
+	"security" = list("name" = "Сотрудник СБ", "zone" = "pve", "items" = list("baton", "disabler", "flash", "cuffs", "vest", "helmet", "sunglasses")),
+	"counter" = list("name" = "Против еретика", "zone" = "melee", "items" = list("nullrod", "holywater", "earmuffs", "flashbang", "cuffs"))
 ))
 
 /datum/antag_training_session

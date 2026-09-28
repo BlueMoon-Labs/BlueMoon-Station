@@ -301,6 +301,7 @@ const categoryIcons: Record<string, string> = {
   'Инструменты': 'screwdriver-wrench', 'Медицина': 'briefcase-medical', 'Материалы': 'layer-group',
   'Химия': 'flask', 'Сборка машин': 'microchip', 'Обстановка': 'chair',
   'Преграды': 'door-open', 'Оборудование': 'gears', 'Медицина и химия': 'flask',
+  'Контрмеры': 'cross',
 };
 
 const TrainingWorkshop = () => {
