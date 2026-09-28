@@ -4,7 +4,6 @@ import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from '
 
 import { resolveAsset } from '../assets';
 import { useBackend } from '../backend';
-import { Button } from '../components';
 import { Window } from '../layouts';
 import { sanitizeText } from '../sanitize';
 import { HereticBookAtmosphere } from './HereticBookAtmosphere';
@@ -63,6 +62,7 @@ type Ritual = {
   name: string;
   desc: string;
   ingredients: { name: string; amount: number }[];
+  result?: string | null;
   hint?: string;
   hints?: string[];
   duration?: number;
@@ -222,6 +222,37 @@ const DetailList = ({ lines }: { lines: string[] }) => {
   );
 };
 
+const PathChoiceButton = ({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => void }) => {
+  const [armed, setArmed] = useState(false);
+  const ref = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!armed) return;
+    const disarm = (event: MouseEvent) => {
+      if (!ref.current?.contains(event.target as Node)) setArmed(false);
+    };
+    window.addEventListener('click', disarm);
+    return () => window.removeEventListener('click', disarm);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      ref={ref}
+      className={`HereticBook__inscribe${armed ? ' HereticBook__inscribe--armed' : ''}`}
+      disabled={disabled}
+      onClick={() => {
+        if (!armed) {
+          setArmed(true);
+          return;
+        }
+        setArmed(false);
+        onConfirm();
+      }}
+    >
+      {armed ? 'Нажмите ещё раз, чтобы подтвердить' : 'Выбрать этот путь'}
+    </button>
+  );
+};
+
 const ResearchButton = ({ knowledge }: { knowledge: Knowledge }) => {
   const { data, act } = useLoreBackend();
   if (knowledge.known) return null;
@@ -234,15 +265,7 @@ const ResearchButton = ({ knowledge }: { knowledge: Knowledge }) => {
   return (
     <div className="HereticBook__research">
       {choosesPath ? (
-        <Button.Confirm
-          key={knowledge.id}
-          role="button"
-          className="HereticBook__inscribe"
-          content="Выбрать этот путь"
-          confirmContent="Подтвердить выбор пути"
-          disabled={disabled}
-          onClick={() => act('research', { id: knowledge.id })}
-        />
+        <PathChoiceButton key={knowledge.id} disabled={disabled} onConfirm={() => act('research', { id: knowledge.id })} />
       ) : (
         <button type="button" className="HereticBook__inscribe" disabled={disabled} onClick={() => act('research', { id: knowledge.id })}>
           Изучить · {knowledge.cost} очк. знаний
@@ -330,6 +353,7 @@ const RitualIngredients = ({ ritual }: { ritual: Ritual }) => (
     <ul className="HereticBook__ingredients">
       {ritual.ingredients.map((item, index) => <li key={`${item.name}-${index}`}><span>{item.name}</span><span className="HereticBook__leader" /><strong>×{item.amount}</strong></li>)}
     </ul>
+    {!!ritual.result && <p className="HereticBook__ritualResult">Итог обряда: <strong>{ritual.result}</strong></p>}
     <RitualHints ritual={ritual} />
     {ritual.duration !== undefined && <p className="HereticBook__annotation">Время проведения: {ritual.duration} сек.</p>}
   </section>
@@ -699,7 +723,7 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
   const rituals = data.rituals.filter((ritual) => {
     const knowledge = data.knowledge.find((entry) => entry.id === ritual.id);
     return (!knowledge || knowledge.known || knowledge.kind !== 'path' || !data.selected_path || knowledge.path === data.selected_path)
-      && `${ritual.name} ${ritual.desc} ${ritual.hint || ''} ${ritual.ingredients.map((item) => item.name).join(' ')}`
+      && `${ritual.name} ${ritual.result || ''} ${ritual.desc} ${ritual.hint || ''} ${ritual.ingredients.map((item) => item.name).join(' ')}`
         .toLowerCase().includes(search.trim().toLowerCase());
   });
   const selected = rituals.find((ritual) => ritual.id === selectedId) || rituals[0];
@@ -712,7 +736,7 @@ const RitualChapter = ({ turn }: { turn: () => void }) => {
       <Page side="left" chapter="Ритуалы">
         <h2>Ритуалы</h2>
         <p className="HereticBook__annotation">Здесь видны и неизученные рецепты. Изучение открывает обряд в меню руны, но предмет не выдаёт.</p>
-        <label className="HereticBook__search"><span>Найти запись или ингредиент</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Нож, сердце, пепел..." /></label>
+        <label className="HereticBook__search"><span>Найти запись, ингредиент или итог</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Клинок, нож, сердце..." /></label>
         <nav className="HereticBook__contents" aria-label="Ритуалы">
           {rituals.map((ritual, index) => {
             const entry = data.knowledge.find((item) => item.id === ritual.id);
@@ -907,13 +931,14 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
       <Page side="left" chapter="Помощь">
         <h2>Как играть</h2>
         <HelpTopic id="start" title="Начало" open={topic === 'start'}>
-          <ul className="HereticBook__details">
-            <li>Выберите путь в главе Путь. Первое знание бесплатно, сменить путь нельзя.</li>
-            <li>Очки знаний дают разломы, жертвы и дело пути. Тратьте их в главе Знания.</li>
-            <li>Руну чертят кодексом 8 секунд на полу 3×3 без стен, космоса, лавы и соседних рун.</li>
-            <li>Кодекс или Хватка Мансуса стирают руну, заряд хватки не тратится.</li>
-            <li>Потерянный кодекс возвращает способность Зов к кодексу, прогресс не теряется.</li>
-          </ul>
+          <h3>Первые пять минут</h3>
+          <ol className="HereticBook__details HereticBook__checklist" aria-label="Первые пять минут">
+            <li>Откройте кодекс и выберите путь. «Призвать кодекс» кладёт книгу в руку и возвращает потерянную, Z открывает её. В главе Путь выбор подтверждают вторым нажатием, сменить путь потом нельзя.</li>
+            <li>Начертите руну: с кодексом в руке нажмите на пол и стойте 8 секунд. Нужен пол 3×3 без стен, космоса, лавы и других рун; стирают руну кодекс или Хватка.</li>
+            <li>Сделайте клинок: компоненты первого рецепта пути из главы Ритуалы положите на руну, нажмите на её центр пустой рукой и выберите строку «... → клинок».</li>
+            <li>Подготовьтесь: со второй ступени изучите «Ритуал оружейника», стол и противогаз на руне дадут мантию. Готовность клинка, брони и сердца видна в главе Знания.</li>
+            <li>Охотьтесь: призовите живое сердце и сожмите его в руке (Z), оно назначит цель. Обезвредьте её и коснитесь сердцем. Жертва даёт очки знаний, как разломы и дело пути.</li>
+          </ol>
           <RitualDiagram />
         </HelpTopic>
         <HelpTopic id="path" title="Путь и знания" open={topic === 'path'}>

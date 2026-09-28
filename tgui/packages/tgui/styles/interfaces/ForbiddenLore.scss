@@ -209,6 +209,22 @@
     &:hover:not(:disabled):not(.Button--disabled) { background: #85704d15; }
     &:disabled, &.Button--disabled { color: var(--faded); border-bottom-style: dotted; opacity: 1; }
   }
+  &__inscribe.HereticBook__inscribe--armed,
+  &__inscribe.HereticBook__inscribe--armed:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 8px 12px 6px;
+    font-style: normal;
+    font-weight: 700;
+    box-shadow: 0 0 0 3px #00000022;
+  }
+  &__ritualResult { margin: 8px 0 4px !important; font-size: 14px; }
+  &__checklist {
+    counter-reset: heretic-step;
+    li { counter-increment: heretic-step; padding-left: 22px; }
+    li::before { content: counter(heretic-step) '.'; top: 0; left: 0; width: auto; height: auto; background: none; transform: none; color: var(--accent); font-weight: 700; }
+  }
   &__learned { font-style: italic; margin-top: 24px !important; color: var(--accent); }
   &__ledger { flex: 0 0 auto; border-top: 1px solid var(--rule); margin-top: 8px; padding: 9px 10px 0; color: var(--faded); font: 13px/1.5 Georgia, 'Times New Roman', serif; p { margin-bottom: 5px; } }
   &__balances { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; dd { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; } }

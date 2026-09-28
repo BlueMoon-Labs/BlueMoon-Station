@@ -37,7 +37,7 @@ const makeData = (overrides: Partial<ForbiddenLoreData> = {}): ForbiddenLoreData
     ]),
     rituals: [
       {
-        id: 'blade', name: 'Пепельный клинок', desc: 'Создаёт клинок.',
+        id: 'blade', name: 'Пепельный клинок', desc: 'Создаёт клинок.', result: 'клинок',
         ingredients: [{ name: 'Нож', amount: 1 }, { name: 'Спичка', amount: 1 }], ascension: false,
       },
       {
@@ -243,11 +243,39 @@ describe('Гримуар еретика', () => {
     act(() => store.dispatch(backendUpdate({ data: { rituals: [added, ...data.rituals] } })));
     view.rerender(<ForbiddenLoreContent />);
     expect(screen.getByRole('heading', { name: 'Пепельный клинок' })).toBeTruthy();
-    const search = screen.getByRole('textbox', { name: 'Найти запись или ингредиент' });
+    const search = screen.getByRole('textbox', { name: 'Найти запись, ингредиент или итог' });
     fireEvent.change(search, { target: { value: 'Человеческий труп' } });
     expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
     fireEvent.change(search, { target: { value: '' } });
     expect(screen.getByRole('heading', { name: 'Вознесение' })).toBeTruthy();
+  });
+
+  test('находит рецепт по итогу обряда и показывает итог на карточке', async () => {
+    const data = makeData();
+    data.rituals[0].name = 'Карта без неба';
+    setupStore(data);
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Найти запись, ингредиент или итог' }), { target: { value: 'клинок' } });
+    const contents = within(screen.getByRole('navigation', { name: 'Ритуалы' }));
+    expect(contents.getByText('Карта без неба')).toBeTruthy();
+    expect(contents.queryByText('Вознесение')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Карта без неба' })).toBeTruthy();
+    expect(screen.getByText('Итог обряда:').textContent).toBe('Итог обряда: клинок');
+  });
+
+  test('раздел Начало даёт порядок первых шагов', async () => {
+    setupStore(makeData());
+    await renderBook();
+    fireEvent.click(screen.getByRole('tab', { name: 'Помощь' }));
+    const steps = within(screen.getByRole('list', { name: 'Первые пять минут' })).getAllByRole('listitem').map((item) => item.textContent);
+    expect(steps).toHaveLength(5);
+    expect(steps[0]).toContain('Призвать кодекс');
+    expect(steps[0]).toContain('главе Путь');
+    expect(steps[1]).toContain('руну');
+    expect(steps[2]).toContain('→ клинок');
+    expect(steps[3]).toContain('Ритуал оружейника');
+    expect(steps[4]).toContain('сердце');
   });
 
   test('улучшает изученную пассивку за побочные очки и обновляет уровень без смены страницы', async () => {
@@ -443,10 +471,23 @@ describe('Гримуар еретика', () => {
     expect(screen.getByText(`II. Искусство: ${name}`)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Выбрать этот путь' }));
     expect(readActions(topic)).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Подтвердить выбор пути' }));
+    const confirm = screen.getByRole('button', { name: 'Нажмите ещё раз, чтобы подтвердить' });
+    expect(confirm.classList.contains('HereticBook__inscribe--armed')).toBe(true);
+    fireEvent.click(confirm);
     expect(readActions(topic)).toEqual([{
       type: 'act/research', payload: { id: `/datum/eldritch_knowledge/${path.toLowerCase()}/base` },
     }]);
+  });
+
+  test('клик мимо снимает взведённый выбор пути без отправки', async () => {
+    const { topic } = setupStore(makeData());
+    await renderBook();
+    fireEvent.click(screen.getByRole('button', { name: 'Выбрать этот путь' }));
+    expect(screen.getByRole('button', { name: 'Нажмите ещё раз, чтобы подтвердить' })).toBeTruthy();
+    act(() => { fireEvent.click(document.body); });
+    const idle = screen.getByRole('button', { name: 'Выбрать этот путь' });
+    expect(idle.classList.contains('HereticBook__inscribe--armed')).toBe(false);
+    expect(readActions(topic)).toHaveLength(0);
   });
 
   test('после принятия обета другой путь остаётся доступным только для чтения', async () => {

@@ -215,7 +215,7 @@ const renderStoredBook = async () => {
 test('смена оформления сохраняет открытую главу, фильтр ритуалов и игровой прогресс', async () => {
   const { name, topic, store, book } = await renderStoredBook();
   fireEvent.click(screen.getByRole('tab', { name: 'Ритуалы' }));
-  const search = screen.getByRole('textbox', { name: 'Найти запись или ингредиент' });
+  const search = screen.getByRole('textbox', { name: 'Найти запись, ингредиент или итог' });
   fireEvent.change(search, { target: { value: 'Спичка' } });
   topic.mockClear();
   const before = store.getState().backend;
@@ -224,7 +224,7 @@ test('смена оформления сохраняет открытую гла
     fireEvent.click(screen.getByRole('radio', { name: label }));
     expect(book.getAttribute('data-book-view')).toBe(mode);
     expect(screen.getByRole('tabpanel', { name: 'Ритуалы' })).toBeTruthy();
-    expect((screen.getByRole('textbox', { name: 'Найти запись или ингредиент' }) as HTMLInputElement).value).toBe('Спичка');
+    expect((screen.getByRole('textbox', { name: 'Найти запись, ингредиент или итог' }) as HTMLInputElement).value).toBe('Спичка');
     expect(screen.queryByRole('button', { name: /Сердце/ })).toBeNull();
     expect(store.getState().backend).toBe(before);
     expect(topic).not.toHaveBeenCalled();
