@@ -52,7 +52,7 @@
 		if(!chargecost)
 			return COMPONENT_BLOCK_MAGIC
 		reaction?.Invoke(user, chargecost)
-		adjustCharges(-chargecost)
+		adjustCharges(-chargecost, user)
 		return COMPONENT_BLOCK_MAGIC
 
 /datum/component/anti_magic/proc/adjustCharges(count, mob/user)
