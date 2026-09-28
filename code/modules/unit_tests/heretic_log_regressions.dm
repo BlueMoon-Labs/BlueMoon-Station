@@ -243,7 +243,7 @@
 	session.update_practice()
 	TEST_ASSERT(session.practice_complete, "Реальный крит завершает упражнение.")
 
-/// Незавершённый ритуал даёт призракам 10 секунд и без ответа не тратит биомассу.
+/// Незавершённый ритуал даёт призракам 10 секунд и без ответа не тратит биомассу; учебная роль поднимает мишень без опроса.
 /datum/unit_test/heretic_log_flesh_silent_dead_poll/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_FLESH
@@ -258,6 +258,15 @@
 	TEST_ASSERT_EQUAL(ritual.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд, как и при других призывах.")
 	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
 	TEST_ASSERT(victim.stat == DEAD, "Тело остаётся мёртвым.")
+	heretic.simulated = TRUE
+	ritual.last_poll_body = null
+	COOLDOWN_RESET(ritual, servant_poll_cooldown)
+	TEST_ASSERT(ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Учебная роль поднимает пустую мишень.")
+	TEST_ASSERT_NULL(ritual.last_poll_body, "Учебная роль не зовёт призраков сервера.")
+	TEST_ASSERT_NOTNULL(victim.mind, "Мертвецу создан разум.")
+	allocated += victim.mind
+	TEST_ASSERT_NOTNULL(victim.mind.has_antag_datum(/datum/antagonist/heretic_monster/voiceless_dead), "Мертвец получил роль слуги.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Подъём расходует две биомассы.")
 
 /// Смена облика сохраняет перезарядку, здоровье и оставшиеся сегменты Повелителя Ночи.
 /datum/unit_test/heretic_log_flesh_transformation/Run()

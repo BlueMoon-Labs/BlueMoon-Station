@@ -215,8 +215,12 @@
 	finish_failure_reason = voiceless_dead_failure_reason(user, victim)
 	if(finish_failure_reason)
 		return FALSE
-	victim.grab_ghost()
-	if(!victim.mind || !victim.client)
+	if(heretic.simulated)
+		if(!victim.mind)
+			victim.mind_initialize()
+	else
+		victim.grab_ghost()
+	if(!heretic.simulated && (!victim.mind || !victim.client))
 		to_chat(user, span_notice("Мансус ищет душу для тела. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
 		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
 		if(!length(candidates))

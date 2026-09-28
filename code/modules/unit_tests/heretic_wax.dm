@@ -91,6 +91,7 @@
 	TEST_ASSERT_EQUAL(protected.getBruteLoss(), 0, "Антимагия останавливает осколки.")
 	TEST_ASSERT_EQUAL(protection.charges, 2, "На защищённую цель потрачен один заряд.")
 	TEST_ASSERT(!wax.release(user, consume_shell = TRUE), "Повторный выброс без оболочки отклоняется.")
+	TEST_ASSERT(findtext(wax.wax_failure, "оболочки"), "Отказ выброса называет причину.")
 	TEST_ASSERT_EQUAL(wax.combat_resource, 1, "Отказ не расходует воск.")
 	wax.combat_resource = 2
 	wax.raise_shell(user)
@@ -124,6 +125,9 @@
 	TEST_ASSERT(abs(victim.getBruteLoss() - 18) <= DAMAGE_PRECISION, "Преграда закрывает повторный удар.")
 	wax.combat_resource = 0
 	TEST_ASSERT(!wax.release(user), "Пустой запас не выпускает волну.")
+	var/obj/effect/proc_holder/spell/self/heretic_wax/release/spell = wax.combat_power
+	spell.cast(list(user), user)
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "сейчас 0"), "Отказ называет нехватку воска, а не пересказывает описание: [spell.heretic_failure_reason]")
 
 /// Первые исследования дают дальнюю атаку, за ней Сон по кукле, оболочка с канделябром, метка и Протечь.
 /datum/unit_test/heretic_wax_early_imprint/Run()

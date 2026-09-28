@@ -312,7 +312,14 @@
 		return null
 	return victim.apply_status_effect(/datum/status_effect/heretic_wax/clinging, src, required || src)
 
+/datum/eldritch_knowledge/base_wax/proc/spend_wax(amount = 1)
+	if(spend_combat_resource(amount))
+		return TRUE
+	wax_failure = "Нужно [amount] ед. ресурса «[combat_resource_name]»; сейчас [combat_resource]."
+	return FALSE
+
 /datum/eldritch_knowledge/base_wax/proc/release(mob/living/user, consume_shell = FALSE)
+	wax_failure = null
 	if(!can_use(user))
 		return FALSE
 	var/release_range = HERETIC_WAX_RELEASE_RANGE
@@ -320,13 +327,13 @@
 	if(consume_shell)
 		var/datum/status_effect/heretic_wax/shell/shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
 		if(QDELETED(shell) || shell.wax_ref?.resolve() != src || shell.capacity <= 0)
-			to_chat(user, span_warning("Для выброса нужна неповреждённая часть погребальной оболочки."))
+			wax_failure = "Для выброса нужна неповреждённая часть погребальной оболочки."
 			return FALSE
 		damage = min(HERETIC_WAX_SHELL_RELEASE_LIMIT, shell.capacity * HERETIC_WAX_SHELL_RELEASE_FRACTION)
 		release_range = HERETIC_WAX_RANGE
 		qdel(shell)
 		user.visible_message(span_danger("[user] срывает погребальную оболочку и выбрасывает её осколки перед собой!"))
-	else if(!spend_combat_resource())
+	else if(!spend_wax())
 		return FALSE
 	var/list/directions = list(user.dir, turn(user.dir, 45), turn(user.dir, -45))
 	for(var/turf/tile in range(release_range, user))
@@ -352,7 +359,8 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
 	var/datum/status_effect/heretic_wax/shell/old_shell = user.has_status_effect(/datum/status_effect/heretic_wax/shell)
-	if(!can_use(user) || QDELETED(required) || !spend_combat_resource(HERETIC_WAX_SHELL_COST))
+	wax_failure = null
+	if(!can_use(user) || QDELETED(required) || !spend_wax(HERETIC_WAX_SHELL_COST))
 		return FALSE
 	QDEL_NULL(old_shell)
 	user.apply_status_effect(/datum/status_effect/heretic_wax/shell, src, required)
@@ -391,7 +399,8 @@
 /datum/eldritch_knowledge/base_wax/proc/procession(mob/living/user, crown = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = crown ? heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final) : heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_procession)
-	if(!can_use(user) || QDELETED(required) || (crown && !ascension_active) || user.has_status_effect(/datum/status_effect/heretic_wax/procession) || (!crown && !spend_combat_resource(2)))
+	wax_failure = null
+	if(!can_use(user) || QDELETED(required) || (crown && !ascension_active) || user.has_status_effect(/datum/status_effect/heretic_wax/procession) || (!crown && !spend_wax(2)))
 		return FALSE
 	var/datum/status_effect/heretic_wax/procession/procession = user.apply_status_effect(/datum/status_effect/heretic_wax/procession, src, required, crown)
 	procession?.tick()
@@ -1972,7 +1981,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.release(user, consume_shell = user.a_intent == INTENT_DISARM))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, wax?.wax_failure)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/shell
 	name = "Погребальная оболочка"
@@ -1985,7 +1994,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.raise_shell(user))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, wax?.wax_failure)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/puppet_sleep
 	name = "Растопить куклу"
@@ -2027,7 +2036,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_wax/wax = heretic?.get_knowledge(/datum/eldritch_knowledge/base_wax)
 	if(!wax?.procession(user))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, wax?.wax_failure)
 
 /obj/effect/proc_holder/spell/self/heretic_wax/crown
 	name = "Бессмертная процессия"
