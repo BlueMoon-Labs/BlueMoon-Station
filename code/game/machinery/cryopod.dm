@@ -411,9 +411,6 @@ GLOBAL_LIST_EMPTY(ghost_records)
 // This function can not be undone; do not call this unless you are sure
 /obj/machinery/cryopod/proc/despawn_occupant()
 	charge_cryo_exit()
-	if(ishuman(occupant))
-		var/mob/living/carbon/human/persistent_human = occupant
-		persistent_human.save_individual_persistence()
 	cryoMob(occupant, control_computer_weakref, src, tele, initial(name))
 
 /obj/machinery/cryopod/proc/charge_cryo_exit()
@@ -429,6 +426,10 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /proc/cryoMob(mob/living/mob_occupant, datum/weakref/control_computer_weakref, obj/machinery/cryopod/pod, is_teleporter, initial_name, effects = FALSE)
 	var/list/crew_member = list()
+
+	if(ishuman(mob_occupant))
+		var/mob/living/carbon/human/persistent_human = mob_occupant
+		persistent_human.save_individual_persistence()
 
 	// No computer passed in, use admin-cryo instead
 	if (!control_computer_weakref)
