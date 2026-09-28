@@ -66,6 +66,18 @@
 	new /obj/effect/temp_visual/heretic_dance/ribbons(place)
 	playsound(place, 'modular_bluemoon/sound/heretic/dance/false_note.ogg', 35, TRUE)
 
+/// Кто-то вырвал танцора из чужого танца: лента рвётся на глазах у всех, спасатель и спасённый это слышат и видят.
+/proc/heretic_dance_rescue_fx(mob/living/dancer, mob/living/helper)
+	var/turf/place = get_turf(dancer)
+	if(!place)
+		return
+	new /obj/effect/temp_visual/heretic_dance/rescue(place)
+	playsound(place, 'modular_bluemoon/sound/heretic/dance/rescue.ogg', 60, FALSE)
+	dancer.visible_message(span_notice("[helper] рывком выдёргивает [dancer] из чужого танца - алая лента лопается!"), span_notice("[helper] вырывает вас из танца. Ноги снова ваши."), ignored_mobs = helper)
+	if(helper)
+		to_chat(helper, span_notice("Вы вырвали [dancer] из чужого танца."))
+		helper.balloon_alert(helper, "танец сорван!")
+
 /proc/heretic_dance_ribbon(mob/living/leader, mob/living/dancer, time)
 	if(!leader || !dancer)
 		return null
@@ -227,6 +239,7 @@
 	var/stopped = FALSE
 	var/completed = FALSE
 	var/telegraph_beats = 0
+	var/rescued = FALSE
 
 /datum/status_effect/heretic_dance/invited/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, style_id)
 	src.style_id = style_id
@@ -250,6 +263,7 @@
 		new /obj/effect/temp_visual/heretic_dance_note(place)
 	playsound(owner, 'modular_bluemoon/sound/heretic/dance/invite.ogg', 60, TRUE)
 	owner.visible_message(span_warning("Над [owner] звучит далёкая мелодия, и ноги [owner] вздрагивают в такт."), span_userdanger("Музыка зовёт вас танцевать! Ноги больше не слушаются: вас ведут к тому, кто пригласил. Если вас схватят, повалят или растолкают, танец оборвётся."))
+	owner.balloon_alert(owner, "зовите на помощь: пусть растолкают")
 	return TRUE
 
 /datum/status_effect/heretic_dance/invited/on_dance_beat(datum/source, index, strong)
@@ -362,12 +376,14 @@
 	if(dance)
 		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "invite_stopped", owner, reason)
 	owner.visible_message(span_notice("[owner] сбивается с шага, и чужая мелодия стихает."), span_notice("Музыка обрывается, ноги снова ваши."))
-	if(started)
+	if(started && !rescued)
 		heretic_dance_break_fx(owner)
 	qdel(src)
 
 /datum/status_effect/heretic_dance/invited/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
+	rescued = TRUE
+	heretic_dance_rescue_fx(owner, helper)
 	stop("[helper] растолкал цель")
 
 /datum/status_effect/heretic_dance/invited/proc/on_attackby(datum/source, obj/item/item, mob/living/user, params)
@@ -435,8 +451,7 @@
 
 /datum/status_effect/heretic_dance/partner/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
-	owner.visible_message(span_notice("[helper] выдёргивает [owner] из танца."))
-	heretic_dance_break_fx(owner)
+	heretic_dance_rescue_fx(owner, helper)
 	var/datum/eldritch_knowledge/base_dance/dance = dance()
 	if(dance)
 		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "rescued", owner, helper)
@@ -498,7 +513,7 @@
 
 /datum/status_effect/heretic_dance/lead/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
-	heretic_dance_break_fx(owner)
+	heretic_dance_rescue_fx(owner, helper)
 	qdel(src)
 
 /datum/status_effect/heretic_dance/lead/on_remove()
@@ -527,10 +542,13 @@
 	var/stamina_per_step = HERETIC_DANCE_HOROVOD_STAMINA
 	var/stamina_dealt = 0
 	var/datum/beam/ribbon
+	/// В толпе вскрикивают только первые втянутые, иначе голоса сливаются в шум.
+	var/voiced = TRUE
 
-/datum/status_effect/heretic_dance/horovod/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, time)
+/datum/status_effect/heretic_dance/horovod/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, time, voiced = TRUE)
 	if(time)
 		duration = time
+	src.voiced = voiced
 	return ..()
 
 /datum/status_effect/heretic_dance/horovod/on_apply()
@@ -540,7 +558,9 @@
 	RegisterSignal(leader(), COMSIG_MOVABLE_MOVED, PROC_REF(on_leader_moved))
 	ribbon = heretic_dance_ribbon(leader(), owner, duration)
 	owner.visible_message(span_danger("[owner] против воли подхватывает чужой хоровод!"), span_userdanger("Вы повторяете каждый шаг танцора и не можете остановиться! Лягте, сядьте или пусть вас схватят."))
-	playsound(owner, pick(GLOB.heretic_dance_voices), 45, TRUE)
+	owner.balloon_alert(owner, "лягте - и танец отпустит")
+	if(voiced)
+		playsound(owner, pick(GLOB.heretic_dance_voices), 45, TRUE)
 	owner.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_note", ABOVE_MOB_LAYER))
 	heretic_dance_combat_deed(leader(), owner)
 	return TRUE

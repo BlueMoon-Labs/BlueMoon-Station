@@ -42,12 +42,12 @@
 	summary = "Клинок-шпилька, барабан доли в интерфейсе, Вальс и схемы шагов, заражающие экипаж навязчивым тактом."
 	details = list(
 		"Нож и пара любой обуви на руне дают клинок «Алая шпилька».",
-		"Барабан справа бьёт долю и ведёт счёт; первая доля - сильная. Нажмите на него или «Сменить стиль» для смены танца.",
+		"Кольцо у ног смыкается на доле, двойное - на сильной; барабан справа ведёт счёт. Подсказки скрываются в меню стиля.",
 		"Удар по врагу даёт 1 Такт, в долю - 2, точно в долю - 3; удар в сильную долю - акцент стиля.",
-		"Хватка в «Помощи» по полу рисует схему шагов (до 5), по человеку - сразу заражает его навязчивым тактом.",
-		"Заражённых до 6, такт держится 6 минут; лечат дефибриллятор, сон, святая вода и нулевой жезл.",
-		"Фигура: шаги подряд, каждый в свою долю, по рисунку стиля; Вальс - вперёд, вправо, назад, влево. Сбой видно над вами.",
-		"Смена стиля связкой в бою даёт вход стиля; три разных стиля за 20 секунд - Попурри, входы вдвойне.",
+		"Хватка в «Помощи» рисует на полу схему шагов (до 5) или заражает человека; заражённых до 6, на 6 минут.",
+		"Фигура: шаги подряд в долю по рисунку стиля; ромбы под ногами считают шаги. Один сбой после двух верных шагов прощается.",
+		"Фигура без цели ждёт её 4 доли. Квадрат Вальса подхватит последнего, по кому вы ударили; нота покажет, кого.",
+		"Связка в бою даёт вход стиля, три стиля за 20 секунд - Попурри. Ctrl+клик по барабану - прошлый стиль.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	ritual_hint = "Подойдёт любая обувь, даже снятая с себя: положите её и нож на руну."
@@ -85,6 +85,7 @@
 	var/last_timing_beat = 0
 	var/last_timing_early = FALSE
 	var/pending_style_id
+	var/previous_style_id
 	var/music_channel
 	var/link_bonus = FALSE
 	var/passive_active = FALSE
@@ -93,7 +94,16 @@
 	var/list/figure_steps = list()
 	var/last_step_beat = -1
 	var/figure_ready_beat = 0
+	/// Собранная фигура без цели ждёт её до этой доли (по beat_total); -1 - не ждёт.
+	var/held_figure_until = -1
+	var/held_figure_style
+	/// Одна ошибка шага на фигуру прощается: уклонение не рвёт весь рисунок.
+	var/figure_slip_used = FALSE
+	var/datum/weakref/last_struck
 	var/last_phrase = 0
+	/// Следующий такт начнёт музыку заново вступлением: после смены стиля или тишины.
+	var/music_entry = TRUE
+	var/phrase_step = 0
 	var/datum/weakref/bite_target
 	var/bite_chain = 0
 	var/lunge_until = 0
@@ -132,6 +142,7 @@
 		dance_body.remove_status_effect(/datum/status_effect/heretic_dance_style)
 		dance_body.clear_alert("heretic_dance_beat")
 		dance_body.vis_contents -= bolero_ghosts
+		clear_hints()
 	QDEL_LIST(bolero_ghosts)
 	stop_clock()
 	clear_dance()
@@ -156,6 +167,7 @@
 /datum/eldritch_knowledge/base_dance/on_death(mob/user)
 	set_passive(FALSE)
 	clear_dance()
+	clear_hints()
 	combat_resource = 0
 	notify_resource_changed()
 
@@ -181,6 +193,7 @@
 				qdel(effect)
 	dancers.Cut()
 	figure_steps.Cut()
+	held_figure_until = -1
 	link_bonus = FALSE
 	lunge_until = 0
 	pending_style_id = null

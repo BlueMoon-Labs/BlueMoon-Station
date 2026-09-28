@@ -363,6 +363,8 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_DANCE_PERFECT_WINDOW 1
 #define HERETIC_DANCE_BEAT_WINDOW 2.5
 #define HERETIC_DANCE_LATENCY_CAP 3
+/// Запас окна на разброс пинга: половина среднего джиттера клиента, не больше 0,5 дс.
+#define HERETIC_DANCE_JITTER_SLACK_CAP 0.5
 #define HERETIC_DANCE_MISS 0
 #define HERETIC_DANCE_ON_BEAT 1
 #define HERETIC_DANCE_PERFECT 2
@@ -388,6 +390,7 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define HERETIC_DANCE_BELL_COST 4
 #define HERETIC_DANCE_BELL_COOLDOWN (40 SECONDS)
 #define HERETIC_DANCE_HOROVOD_TIME (5 SECONDS)
+#define HERETIC_DANCE_HOROVOD_VOICES 2
 #define HERETIC_DANCE_HOROVOD_STAMINA 6
 #define HERETIC_DANCE_HOROVOD_STAMINA_CAP 42
 #define HERETIC_DANCE_BOLERO_STAGE_TIME (30 SECONDS)

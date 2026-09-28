@@ -270,20 +270,29 @@
 	to_chat(user, span_eldritch("Вы приглашаете [victim] на танец. Ждите: со следующей доли цель пойдёт к вам."))
 	return TRUE
 
-/// Фигура Вальса: соседний враг 4 секунды повторяет ваши шаги.
-/datum/eldritch_knowledge/base_dance/proc/start_lead(mob/living/user)
-	var/mob/living/partner
+/// Кого подхватит квадрат Вальса: последний, по кому вы ударили, затем партнёр, затем любой сосед.
+/datum/eldritch_knowledge/base_dance/proc/lead_candidate(mob/living/user)
+	var/mob/living/preferred = last_struck?.resolve()
+	var/mob/living/choice
 	for(var/mob/living/carbon/candidate in orange(1, user))
 		if(!heretic_dance_can_sway(user, candidate) || heretic_capture_block_reason(user, candidate, DANCE_LEAD_CAPTURE))
 			continue
-		if(candidate.has_status_effect(/datum/status_effect/heretic_dance/partner) || !partner)
-			partner = candidate
+		if(candidate == preferred)
+			return candidate
+		if(!choice || candidate.has_status_effect(/datum/status_effect/heretic_dance/partner))
+			choice = candidate
+	return choice
+
+/// Фигура Вальса: соседний враг 4 секунды повторяет ваши шаги.
+/datum/eldritch_knowledge/base_dance/proc/start_lead(mob/living/user)
+	var/mob/living/partner = lead_candidate(user)
 	if(!partner)
 		return FALSE
 	partner.remove_status_effect(/datum/status_effect/heretic_dance/partner)
 	if(!partner.apply_status_effect(/datum/status_effect/heretic_dance/lead, src))
 		return FALSE
 	partner.visible_message(span_danger("[user] подхватывает [partner] в вальс, и [partner] кружится следом, шаг в шаг!"), span_userdanger("Вас подхватили в вальс: вы повторяете каждый шаг партнёра!"))
+	partner.balloon_alert(partner, "пусть вас растолкают или схватят")
 	log_combat(user, partner, "ведёт в вальсе")
 	return TRUE
 
@@ -314,7 +323,7 @@
 			continue
 		if(!heretic_dance_can_sway(user, victim))
 			continue
-		if(victim.apply_status_effect(/datum/status_effect/heretic_dance/horovod, src, time))
+		if(victim.apply_status_effect(/datum/status_effect/heretic_dance/horovod, src, time, count < HERETIC_DANCE_HOROVOD_VOICES))
 			count++
 			log_combat(user, victim, "втягивает в хоровод")
 	if(count)
@@ -447,7 +456,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_dance/style
 	name = "Сменить стиль"
-	desc = "Выберите танец из выученных. Смена в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле без потерь; выбор его ещё раз меняет сразу, деля Такт пополам."
+	desc = "Выберите танец из выученных. Смена в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле без потерь; выбор его ещё раз меняет сразу, деля Такт пополам. Ctrl+клик по барабану возвращает прошлый стиль, а клавиши «Пляска: ...» для каждого стиля назначаются в настройках управления."
 	summary = "Выбор танца; в сильную долю - связка, мимо - вступит со следующей сильной доли."
 	action_icon_state = "dance_style"
 	charge_max = 1 SECONDS

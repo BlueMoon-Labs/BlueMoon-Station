@@ -16,7 +16,6 @@
 	var/stage = 0
 	var/hits = 0
 	var/infected = FALSE
-	var/image/next_step
 	var/hint
 
 /datum/heretic_dance_lesson/New(datum/antag_training_session/session, datum/eldritch_knowledge/base_dance/dance, mob/living/student, mob/living/target)
@@ -25,6 +24,8 @@
 	student_ref = WEAKREF(student)
 	target_ref = WEAKREF(target)
 	RegisterSignal(dance, COMSIG_HERETIC_DANCE_EVENT, PROC_REF(on_event))
+	if(!dance.beat_hints)
+		dance.toggle_hints(student)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(student)
 	for(var/knowledge_type in list(/datum/eldritch_knowledge/dance_grasp, /datum/eldritch_knowledge/spell/dance_invite))
 		if(!heretic.get_knowledge(knowledge_type))
@@ -35,7 +36,6 @@
 	var/datum/eldritch_knowledge/base_dance/dance = dance_ref?.resolve()
 	if(dance)
 		UnregisterSignal(dance, COMSIG_HERETIC_DANCE_EVENT)
-	hide_next_step()
 	var/mob/living/helper = helper_ref?.resolve()
 	if(helper)
 		QDEL_NULL(helper.mind)
@@ -60,17 +60,16 @@
 /datum/heretic_dance_lesson/proc/set_stage(new_stage)
 	var/changed = stage != new_stage
 	stage = new_stage
-	if(changed)
-		hide_next_step()
+	var/datum/eldritch_knowledge/base_dance/dance = dance_ref?.resolve()
 	switch(stage)
 		if(DANCE_LESSON_HITS)
-			hint = "Шаг 1 из 5. Встаньте вплотную к мишени и ударьте её [DANCE_LESSON_HITS_NEEDED] раза в долю: бейте, когда барабан справа вспыхивает. Засчитано: [hits] из [DANCE_LESSON_HITS_NEEDED]."
+			hint = "Шаг 1 из 5. Встаньте вплотную к мишени и ударьте её [DANCE_LESSON_HITS_NEEDED] раза в долю: бейте, когда кольцо у ваших ног сомкнётся: двойное кольцо - сильная доля. Засчитано: [hits] из [DANCE_LESSON_HITS_NEEDED]."
 		if(DANCE_LESSON_SQUARE)
-			hint = "Шаг 2 из 5. Квадрат Вальса: стоя вплотную к мишени, шагните вперёд, вправо, назад и влево, каждый шаг в свою долю. Первый шаг - в любую сторону, дальше медный след покажет, куда шагнуть."
+			hint = "Шаг 2 из 5. Квадрат Вальса: стоя вплотную к мишени, шагните вперёд, вправо, назад и влево, каждый шаг в свою долю. Первый шаг - в любую сторону, дальше медный след покажет, куда шагнуть, а ромбы под ногами - сколько шагов сделано. Один сбой после двух верных шагов прощается."
 		if(DANCE_LESSON_SWITCH)
 			hint = "Шаг 3 из 5. Нажмите на барабан и выберите Танго. Попадёте в сильную долю - связка сохранит Такт и удвоит акцент; мимо - Танго вступит на следующей сильной доле."
 		if(DANCE_LESSON_INVITE)
-			hint = "Шаг 4 из 5. Хваткой Мансуса в намерении «Помощь» коснитесь мишени, чтобы заразить её мелодией. Затем отойдите на 3-7 клеток и позовите её Приглашением: она придёт к вам шаг в долю."
+			hint = "Шаг 4 из 5. Хваткой Мансуса в намерении «Помощь» коснитесь мишени, чтобы заразить её мелодией. Затем отойдите на 2-[dance?.invite_range() || HERETIC_DANCE_INVITE_TANGO_RANGE] клетки и позовите её Приглашением: в Танго она одним рывком окажется рядом."
 		if(DANCE_LESSON_RESCUE)
 			hint = "Шаг 5 из 5. Так экипаж спасает партнёра: помощник трясёт его 2 секунды. Ударьте помощника, чтобы сорвать спасение, или посмотрите, как рвётся танец."
 			if(changed)
@@ -90,7 +89,7 @@
 			if(event != "strike" || subject != target)
 				return
 			if(value == HERETIC_DANCE_MISS)
-				say("мимо: удар [dance.last_timing_early ? "раньше" : "позже"] доли. Барабан вспыхивает на каждой доле, крупнее - на сильной; бейте ровно на вспышку.")
+				say("мимо: удар [dance.last_timing_early ? "раньше" : "позже"] доли. Кольцо у ног сжимается к доле; бейте, когда оно сомкнётся.")
 				return
 			hits++
 			if(hits >= DANCE_LESSON_HITS_NEEDED)
@@ -101,11 +100,12 @@
 			set_stage(DANCE_LESSON_HITS)
 		if(DANCE_LESSON_SQUARE)
 			switch(event)
-				if("step")
-					show_next_step(dance)
 				if("figure_lost")
-					hide_next_step()
 					say("фигура сбилась: [value]. Начните квадрат заново, по шагу в каждую долю.")
+				if("figure_slip")
+					say("сбой прощён: продолжайте квадрат со следующей доли. Второй сбой собьёт фигуру.")
+				if("figure_held")
+					say("квадрат собран, но вплотную к вам нет мишени: фигура подождёт [value] доли. Подойдите к мишени, над ней загорится нота.")
 				if("figure")
 					if(dance.style_id != HERETIC_DANCE_STYLE_WALTZ)
 						return
@@ -113,7 +113,7 @@
 						say("квадрат собран: мишень повторяет ваши шаги.")
 						set_stage(DANCE_LESSON_SWITCH)
 					else
-						say("квадрат собран, но вплотную к вам нет мишени. Встаньте рядом с ней и повторите.")
+						say("квадрат рассыпался, не дождавшись мишени. Встаньте рядом с ней и повторите.")
 				if("figure_cooldown")
 					say("квадрат собран, но фигура ещё остывает: подождите [value] долей.")
 		if(DANCE_LESSON_SWITCH)
@@ -134,7 +134,7 @@
 				if("infect")
 					if(subject == target && !infected)
 						infected = TRUE
-						say("мишень слышит мелодию: над ней нота, видная только вам. Теперь отойдите на 3-7 клеток и примените Приглашение.")
+						say("мишень слышит мелодию: над ней нота, видная только вам. Теперь отойдите на 2-[dance.invite_range()] клетки и примените Приглашение.")
 				if("invite_stopped")
 					if(subject == target)
 						say("приглашение сорвалось: [value].")
@@ -146,34 +146,6 @@
 			if(event == "rescued" && subject == target)
 				say("партнёра растолкали: лента порвалась, музыка оборвалась.")
 				set_stage(DANCE_LESSON_DONE)
-
-/// Медный след на клетке, куда нужен следующий шаг квадрата; виден только ученику.
-/datum/eldritch_knowledge/base_dance/proc/next_figure_dir()
-	var/datum/heretic_dance_style/style = current_style()
-	var/progress = figure_progress()
-	if(!progress || progress >= length(style.figure))
-		return null
-	var/first = figure_steps[length(figure_steps) - progress + 1]
-	return turn(first, style.figure[progress + 1])
-
-/datum/heretic_dance_lesson/proc/show_next_step(datum/eldritch_knowledge/base_dance/dance)
-	hide_next_step()
-	var/mob/living/student = student_ref?.resolve()
-	var/direction = dance.next_figure_dir()
-	if(!student?.client || !direction)
-		return
-	var/turf/spot = get_step(student, direction)
-	if(!spot)
-		return
-	next_step = image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', spot, "dance_next_step", ABOVE_OPEN_TURF_LAYER, direction)
-	student.client.images += next_step
-
-/datum/heretic_dance_lesson/proc/hide_next_step()
-	if(!next_step)
-		return
-	var/mob/living/student = student_ref?.resolve()
-	student?.client?.images -= next_step
-	next_step = null
 
 /// Помощник подходит к партнёру и трясёт его, как сделал бы экипаж.
 /datum/heretic_dance_lesson/proc/call_helper()

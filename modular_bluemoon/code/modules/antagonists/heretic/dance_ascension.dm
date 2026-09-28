@@ -28,7 +28,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		"Малый барабан Болеро слышат все на уровне, всё громче. Пока оно играет, любой стиль идёт в его темпе: 0,7 с, 3 в такте.",
 		"Каждые 30 секунд к вам навсегда добавляется пассивка следующего стиля: Вальс, Танго, Тарантелла, Канкан, Пляска смерти.",
 		"Финал: каждая сильная доля бьёт врагов в 3 клетках на 10 ушибов и 15 выносливости и тянет до 4 из них в хоровод.",
-		"Каждая ступень зовёт призрачную пару кружить вокруг вас и бал за иллюминаторы; за 8 секунд до Финала рампа очертит зону.",
+		"Ступени зовут призрачные пары и бал за иллюминаторы; перед каждым ударом Финала пары стягиваются, а рампа вспыхивает.",
 		"Под вами ползёт паркет; Большой хоровод бесплатно тянет до 6 врагов в 4 клетках, перезарядка 45 секунд.",
 		"Фальшивая нота (светошумовая, клаксон, горн в 7 клетках) сбивает ступень и глушит Болеро на 7 с, не чаще раза в 15 с.",
 	)
@@ -83,6 +83,11 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	var/list/bolero_passives = list()
 	var/list/obj/effect/abstract/heretic_dance_ghost/bolero_ghosts = list()
 	var/finale_warned = FALSE
+	/// Оркестр сбит фальшивой нотой и молчит; вступит снова, когда кончится тишина.
+	var/bolero_broken = FALSE
+	/// Фраза такта Болеро выбирается один раз и звучит у всех: у танцоров и у всего уровня.
+	var/bolero_bar_phrase
+	var/bolero_bar_beat = -1
 	COOLDOWN_DECLARE(false_note_cooldown)
 
 /datum/eldritch_knowledge/base_dance/proc/start_bolero()
@@ -103,6 +108,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	bolero_on = FALSE
 	bolero_stage = 0
 	finale_warned = FALSE
+	bolero_broken = FALSE
 	update_ghosts()
 	refresh_bolero_passives()
 	GLOB.heretic_dance_boleros -= src
@@ -115,10 +121,15 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	return bolero_on && world.time >= bolero_silent_until
 
 /datum/eldritch_knowledge/base_dance/bolero_phrase()
+	if(bolero_bar_beat == beat_total && bolero_bar_phrase)
+		return bolero_bar_phrase
+	bolero_bar_beat = beat_total
 	if(bolero_stage >= DANCE_BOLERO_FINALE_STAGE)
-		return pick(GLOB.heretic_dance_bolero_finale)
-	var/list/stage_phrases = GLOB.heretic_dance_bolero_phrases[clamp(bolero_stage + 1, 1, length(GLOB.heretic_dance_bolero_phrases))]
-	return pick(stage_phrases)
+		bolero_bar_phrase = pick(GLOB.heretic_dance_bolero_finale)
+	else
+		var/list/stage_phrases = GLOB.heretic_dance_bolero_phrases[clamp(bolero_stage + 1, 1, length(GLOB.heretic_dance_bolero_phrases))]
+		bolero_bar_phrase = pick(stage_phrases)
+	return bolero_bar_phrase
 
 /datum/eldritch_knowledge/base_dance/bolero_keeps_passive(id)
 	if(!bolero_on)
@@ -152,6 +163,8 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		return
 	if(world.time < bolero_silent_until)
 		return
+	if(bolero_broken)
+		orchestra_return()
 	if(bolero_stage < DANCE_BOLERO_FINALE_STAGE && world.time >= bolero_next_at)
 		set_bolero_stage(bolero_stage + 1)
 	var/finale_near = bolero_stage == HERETIC_DANCE_BOLERO_STAGES && bolero_next_at - world.time <= DANCE_FINALE_WARNING
@@ -159,6 +172,8 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		finale_warned = TRUE
 		dance_body.visible_message(span_userdanger("Оркестр набирает дыхание: скоро Финал! Рампа вокруг [dance_body] очерчивает, куда ударит музыка."), span_eldritch("Финал через [round((bolero_next_at - world.time) / (1 SECONDS))] секунд: рампа показывает всем зону удара."))
 	if(!strong)
+		if(bolero_stage >= DANCE_BOLERO_FINALE_STAGE && (beat_index + 1) % meter == 0)
+			finale_inhale()
 		return
 	broadcast_bolero()
 	heretic_dance_hop(dance_body, TRUE)
@@ -245,7 +260,36 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 			continue
 		victim.adjustBruteLoss(DANCE_BOLERO_PULSE_BRUTE)
 		victim.adjustStaminaLoss(DANCE_BOLERO_PULSE_STAMINA)
+		shake_camera(victim, 2, 1)
+	for(var/obj/effect/abstract/heretic_dance_ghost/ghost as anything in bolero_ghosts)
+		animate(ghost, transform = matrix() * 1.6, alpha = 230, time = 1.5, easing = CUBIC_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+		animate(transform = matrix(), alpha = initial(ghost.alpha), time = 5, easing = SINE_EASING)
 	start_horovod(dance_body, DANCE_BOLERO_HOROVOD_TIME, DANCE_BOLERO_HOROVOD_LIMIT, DANCE_BOLERO_PULSE_RANGE)
+
+/// Последняя доля перед ударом Финала: оркестр набирает воздух, пары стягиваются к вознёсшемуся, рампа вспыхивает.
+/datum/eldritch_knowledge/base_dance/proc/finale_inhale()
+	mark_finale_zone(TRUE)
+	playsound(dance_body, 'modular_bluemoon/sound/heretic/dance/finale_inhale.ogg', 55, FALSE, DANCE_BOLERO_PULSE_RANGE + 4)
+	for(var/obj/effect/abstract/heretic_dance_ghost/ghost as anything in bolero_ghosts)
+		animate(ghost, transform = matrix() * 0.55, time = beat_ds, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+
+/// Фальшивая нота разгоняет призрачные пары, будто оркестр сбился и бал рассыпался.
+/datum/eldritch_knowledge/base_dance/proc/scatter_ghosts()
+	for(var/obj/effect/abstract/heretic_dance_ghost/ghost as anything in bolero_ghosts)
+		var/matrix/stumble = matrix()
+		stumble.Turn(pick(-25, 25))
+		animate(ghost, transform = stumble, alpha = 0, time = 4, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
+
+/datum/eldritch_knowledge/base_dance/proc/orchestra_return()
+	bolero_broken = FALSE
+	var/turf/place = get_turf(dance_body)
+	if(!place)
+		return
+	new /obj/effect/temp_visual/heretic_dance/orchestra_return(place)
+	playsound(place, 'modular_bluemoon/sound/heretic/dance/orchestra_return.ogg', 70, FALSE, DANCE_BOLERO_PULSE_RANGE + 7)
+	for(var/obj/effect/abstract/heretic_dance_ghost/ghost as anything in bolero_ghosts)
+		animate(ghost, transform = matrix(), alpha = initial(ghost.alpha), time = 6, easing = SINE_EASING, flags = ANIMATION_PARALLEL)
+	dance_body.visible_message(span_warning("Оркестр собирается и снова вступает вокруг [dance_body]."), span_eldritch("Оркестр снова с вами: Болеро продолжается."))
 
 /datum/eldritch_knowledge/base_dance/proc/false_note(turf/origin)
 	if(!bolero_on || !COOLDOWN_FINISHED(src, false_note_cooldown))
@@ -254,6 +298,11 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	bolero_silent_until = world.time + HERETIC_DANCE_FALSE_NOTE_SILENCE
 	set_bolero_stage(bolero_stage - 1)
 	bolero_next_at = bolero_silent_until + HERETIC_DANCE_BOLERO_STAGE_TIME
+	bolero_broken = TRUE
+	scatter_ghosts()
+	var/turf/place = get_turf(dance_body)
+	if(place)
+		new /obj/effect/temp_visual/heretic_dance/false_note(place)
 	playsound(dance_body, 'modular_bluemoon/sound/heretic/dance/false_note.ogg', 80, FALSE)
 	dance_body.visible_message(span_warning("Фальшивая нота врезается в Болеро, и оркестр сбивается!"), span_userdanger("Фальшивая нота! Болеро сбилось на ступень назад и молчит [HERETIC_DANCE_FALSE_NOTE_SILENCE / (1 SECONDS)] секунд."))
 	log_game("[key_name(dance_body)]: Болеро сбито фальшивой нотой в [AREACOORD(origin)].")
