@@ -154,6 +154,28 @@
 		send_message("Loading preinstalled and stored NIFSofts, please wait...")
 		addtimer(CALLBACK(src, PROC_REF(install_preinstalled_nifsofts)), 3 SECONDS)
 
+	install_nifsoft_catalog_app()
+
+	return TRUE
+
+///Installs the NIFSoft catalog app onto the linked mob's PDA.
+/obj/item/organ/cyberimp/brain/nif/proc/install_nifsoft_catalog_app()
+	if(!linked_mob)
+		return FALSE
+
+	var/obj/item/modular_computer/pda/found_pda = locate(/obj/item/modular_computer/pda) in linked_mob.contents
+	if(!found_pda || found_pda.find_file_by_name("nifsoftcatalog"))
+		return FALSE
+
+	var/datum/computer_file/program/nifsoft_downloader/downloaded_app = new
+	downloaded_app.computer = found_pda
+
+	var/obj/item/computer_hardware/hard_drive/hdd = found_pda.all_components[MC_HDD]
+	if(hdd)
+		hdd.store_file(downloaded_app)
+	else
+		found_pda.store_file(downloaded_app)
+
 	return TRUE
 
 /obj/item/organ/cyberimp/brain/nif/Remove(special = FALSE)
