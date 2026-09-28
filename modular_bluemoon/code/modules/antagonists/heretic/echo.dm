@@ -1171,6 +1171,10 @@
 		wake()
 
 /datum/status_effect/heretic_echo_lullaby/tick()
+	if(!heretic_can_affect(singer, owner, chargecost = 0))
+		interrupted = TRUE
+		qdel(src)
+		return
 	check_distance()
 
 /datum/status_effect/heretic_echo_lullaby/proc/check_distance(datum/source)
@@ -1208,7 +1212,7 @@
 		var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
 		echo?.lullabies -= src
 		// Истёкший срок без срыва отличает досмотренную колыбельную от прерванной.
-		var/fell_asleep = !interrupted && echo && world.time >= duration && owner.stat != DEAD && singer_near()
+		var/fell_asleep = !interrupted && echo && world.time >= duration && owner.stat != DEAD && singer_near() && heretic_can_affect(singer, owner, chargecost = 0)
 		if(fell_asleep)
 			owner.Sleeping(HERETIC_ECHO_LULLABY_SLEEP)
 			heretic_capture_knock_out(owner, echo, HERETIC_ECHO_CAPTURE, HERETIC_ECHO_LULLABY_SLEEP)
@@ -1221,7 +1225,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_echo_lullaby
 	name = "Колыбельная"
-	desc = "Веки тяжелеют, ноги идут на 40% медленнее. Через 3 секунды вы уснёте на 10 секунд. Уйдите от поющего дальше пяти клеток; разбудит и сильный удар, и тот, кто растолкает вас за 2 секунды."
+	desc = "Веки тяжелеют, ноги идут на 40% медленнее. Через 3 секунды вы уснёте на 10 секунд. Уйдите от поющего дальше пяти клеток; разбудит и сильный удар, и тот, кто растолкает вас за 2 секунды, а защита от магии в руках оборвёт напев."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "echo_drowse"
 
@@ -1505,7 +1509,8 @@
 		"Цель будит чужой удар от 10 урона; её можно растолкать за 2 секунды или увести дальше 5 клеток, хоть на руках.",
 		"Не будят удары цели по самой себе, урон выносливости и клик в «Помощи».",
 		"Спящая цель готова к обряду, сердце уводит её в изнанку; прочие готовые цели - только в 3 клетках от прослушки.",
-		"Антимагия защищает. Потом цель до минуты невосприимчива к Колыбельной и 15 секунд - к любому захвату.",
+		"Антимагия защищает, даже взятая в руки во время напева.",
+		"Потом цель до минуты невосприимчива к Колыбельной и 15 секунд - к любому захвату.",
 	)
 	role = HERETIC_ROLE_CAPTURE
 	gain_text = "Я пел, пока звон не стал тишиной, а тишина - сном."
@@ -1842,7 +1847,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_echo/lullaby
 	name = "Колыбельная"
-	desc = "Цель с вашим Остаточным звоном в 5 клетках 3 секунды клюёт носом и идёт на 40% медленнее, затем засыпает на 10 секунд. Её будит чужой удар от 10 урона; ещё её можно растолкать за 2 секунды или увести дальше 5 клеток. Стоит 2 резонанса."
+	desc = "Цель с вашим Остаточным звоном в 5 клетках 3 секунды клюёт носом и идёт на 40% медленнее, затем засыпает на 10 секунд. Её будит чужой удар от 10 урона; ещё её можно растолкать за 2 секунды, увести дальше 5 клеток или дать ей защиту от магии. Стоит 2 резонанса."
 	summary = "Звенящая цель в 5 клетках через 3 секунды засыпает на 10 секунд; 2 резонанса."
 	charge_max = HERETIC_ECHO_LULLABY_COOLDOWN
 	range = HERETIC_ECHO_LULLABY_RANGE

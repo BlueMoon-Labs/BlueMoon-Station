@@ -706,7 +706,7 @@
 	return nearest
 
 /datum/eldritch_knowledge/base_cosmic/proc/can_affect(mob/living/victim, chargecost = 0)
-	return isliving(victim) && victim.stat != DEAD && astronomer?.current?.stat != DEAD && IS_HERETIC(astronomer?.current) && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !victim.check_magic_resistance(chargecost = chargecost)
+	return isliving(victim) && victim.stat != DEAD && astronomer?.current?.stat != DEAD && IS_HERETIC(astronomer?.current) && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim) && !heretic_magic_ward(astronomer.current, victim, chargecost)
 
 /datum/eldritch_knowledge/base_cosmic/proc/cross_thread(mob/living/victim)
 	if(!isliving(victim) || victim.has_status_effect(/datum/status_effect/cosmic_thread_cooldown) || victim.has_status_effect(/datum/status_effect/heretic_cosmic_orbit) || !can_affect(victim))
@@ -1401,9 +1401,9 @@
 	var/datum/eldritch_knowledge/base_cosmic/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_cosmic)
 	if(!proximity_flag || !knowledge || !isliving(target))
 		return FALSE
-	var/mob/living/victim = target
-	if(IS_HERETIC(victim) || IS_HERETIC_MONSTER(victim) || victim.check_magic_resistance())
+	if(!heretic_can_affect(user, target))
 		return FALSE
+	var/mob/living/victim = target
 	victim.apply_status_effect(/datum/status_effect/eldritch/cosmic, knowledge)
 	return TRUE
 

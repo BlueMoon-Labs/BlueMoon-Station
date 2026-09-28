@@ -299,6 +299,7 @@
 		to_chat(victim, span_notice("Живой шов затягивает ваши раны и тянет к хозяину."))
 	else
 		if(!heretic_can_affect(user, victim))
+			heretic_revert_cast(user, "Цель защищена от магии: шов её не достанет.")
 			return
 		victim.adjustBruteLoss(HERETIC_FLESH_STITCH_DAMAGE)
 		victim.apply_status_effect(/datum/status_effect/heretic_flesh_stitch)

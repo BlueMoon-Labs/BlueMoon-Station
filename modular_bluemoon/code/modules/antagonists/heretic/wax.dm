@@ -364,9 +364,9 @@
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
 	if(!can_use(user) || QDELETED(required) || !isturf(victim?.loc) || !line_clear(user, victim) || !heretic_can_affect(user, victim, chargecost = 0) || combat_resource < 1)
 		return FALSE
-	spend_combat_resource()
 	if(!heretic_can_affect(user, victim))
-		return TRUE
+		return FALSE
+	spend_combat_resource()
 	var/datum/status_effect/heretic_wax/seal/sealed = victim.has_status_effect(/datum/status_effect/heretic_wax/seal)
 	var/damage = HERETIC_WAX_IMPRINT_DAMAGE
 	var/effigy_capacity = HERETIC_WAX_EFFIGY_CAPACITY

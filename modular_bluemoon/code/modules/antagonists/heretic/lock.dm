@@ -1171,6 +1171,7 @@
 		"Удар сквозь свою печать ставит изученную Метку Замка.",
 		"По шлюзу или запертому шкафу открывает его; сварку и неразрушимые двери не берёт.",
 		"По своей печати: секунда на месте, затем 30 ушибов врагам рядом, печать тратится без возврата ключа.",
+		"Врага с защитой от магии удар не выбирает, перезарядка не тратится.",
 		"Бесплатно, перезарядка 18 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK
@@ -1857,7 +1858,7 @@
 	action_icon_state = "lock_bolt"
 	name = "Открывающий удар"
 	summary = "25 ожогов и 20 выносливости врагу в 5 клетках, открытый замок или взрыв своей печати."
-	desc = "Наносит 25 ожогов и 20 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Проходит через ваши печати, накладывая за ними изученную метку Замка. Своя печать вместо этого размыкается после секунды неподвижной подготовки: 30 ушибов соседним врагам, без возврата ключа. Перезарядка 18 секунд."
+	desc = "Наносит 25 ожогов и 20 урона выносливости видимому врагу либо открывает шлюз или запертый шкаф в пяти клетках. Проходит через ваши печати, накладывая за ними изученную метку Замка. Своя печать вместо этого размыкается после секунды неподвижной подготовки: 30 ушибов соседним врагам, без возврата ключа. Защищённого от магии не выбрать. Перезарядка 18 секунд."
 	active_msg = "Выберите противника, замок или свою печать."
 	deactive_msg = "Вы отпускаете невидимый ключ."
 	charge_max = 18 SECONDS
@@ -1896,7 +1897,9 @@
 	if(!isliving(target))
 		return heretic_check(user, knowledge.can_open_lock(target, user), silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.")
 	var/mob/living/victim = target
-	return heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.", target = victim)
+	if(!heretic_check(user, victim != user && victim.stat != DEAD && !IS_HERETIC(victim) && !IS_HERETIC_MONSTER(victim), silent, "Выберите противника, запертый шлюз, шкаф или свою печать на прямой линии.", target = victim))
+		return FALSE
+	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии: удар её не достанет.", target = victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_lock/bolt/cast(list/targets, mob/living/user)
 	if(!length(targets) || opening_seal)
@@ -1926,6 +1929,7 @@
 		return
 	if(isliving(target))
 		if(!heretic_can_affect(user, target))
+			heretic_revert_cast(user, "Цель защищена от магии: удар её не достанет.")
 			return
 		var/mob/living/victim = target
 		victim.adjustFireLoss(25)

@@ -189,6 +189,7 @@
 #include "heretic_oldpath_doors.dm"
 #include "heretic_feedback.dm"
 #include "heretic_capture_feedback.dm"
+#include "heretic_antimagic.dm"
 #include "heretic_rust.dm"
 #include "heretic_rust_ascension.dm"
 #include "heretic_preparation.dm"

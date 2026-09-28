@@ -436,7 +436,7 @@
 	if(!isliving(thing))
 		return FALSE
 	var/mob/living/body = thing
-	return !body.buckled && !(body.mobility_flags & MOBILITY_STAND) && !body.check_magic_resistance(tinfoil = TRUE, chargecost = 0)
+	return !body.buckled && !(body.mobility_flags & MOBILITY_STAND) && !heretic_magic_ward(tide_body, body, chargecost = 0)
 
 /datum/eldritch_knowledge/base_tide/proc/current_pulse()
 	deltimer(current_pulse_timer)
@@ -818,6 +818,8 @@
 	var/datum/weakref/tide_ref
 	var/expires_at
 	var/outward = FALSE
+	/// REF() целей, уже заплативших воронке заряд защиты.
+	var/list/warded_victims
 	COOLDOWN_DECLARE(well_pulse)
 
 /obj/structure/heretic_tide_well/Initialize(mapload, datum/eldritch_knowledge/base_tide/tide)
@@ -853,7 +855,11 @@
 	if(!tide || QDELETED(user) || user.stat == DEAD || !IS_HERETIC(user) || !tide.line_clear(user, src, 7) || world.time >= expires_at)
 		return FALSE
 	for(var/mob/living/victim in range(HERETIC_TIDE_WAVE_RADIUS, src))
-		if(!isturf(victim.loc) || !tide.line_clear(src, victim, HERETIC_TIDE_WAVE_RADIUS) || !heretic_can_affect(user, victim))
+		if(!isturf(victim.loc) || !tide.line_clear(src, victim, HERETIC_TIDE_WAVE_RADIUS))
+			continue
+		var/victim_key = REF(victim)
+		if(!heretic_can_affect(user, victim, LAZYACCESS(warded_victims, victim_key) ? 0 : 1))
+			LAZYSET(warded_victims, victim_key, TRUE)
 			continue
 		var/in_core = !outward && get_dist(victim, src) <= 1
 		victim.adjustBruteLoss(erupting ? 12 : in_core ? 12 : 6)
@@ -1056,7 +1062,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/well
 	name = "Чёрный водоворот"
-	desc = "За 2 давления воронка на 12 секунд в 5 клетках: первый удар в 2 клетках сбивает и притягивает, затем каждые 2 секунды тянет и бьёт. У неё 60 прочности, она работает, пока вы в 7 клетках без преград."
+	desc = "За 2 давления воронка на 12 секунд в 5 клетках: первый удар в 2 клетках сбивает и притягивает, затем каждые 2 секунды тянет и бьёт. У неё 60 прочности, она работает, пока вы в 7 клетках без преград. Защищённого от магии не трогает и снимает с его защиты не больше одного заряда."
 	summary = "Воронка на 12 секунд тянет и бьёт врагов в 2 клетках; 2 давления."
 	charge_max = 30 SECONDS
 	action_icon_state = "tide_well"
@@ -1094,7 +1100,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_tide/drown
 	name = "Захлебнуться"
-	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках. Если цель не сошла с клетки, она 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. Если к концу она ещё на мокром полу, то теряет сознание на 10 секунд. Захват рвётся, если цель полторы секунды пробудет на сухом полу, её коснутся нулевым жезлом или растолкают за 2 секунды."
+	desc = "За 2 давления вода секунду смыкается вокруг цели на мокром полу в 4 клетках. Если цель не сошла с клетки, она 5 секунд захлёбывается: ни голоса, ни рации, 6 удушья в секунду, за захлёб до 30. Если к концу она ещё на мокром полу, то теряет сознание на 10 секунд. Захват рвётся, если цель полторы секунды пробудет на сухом полу, её коснутся нулевым жезлом, растолкают за 2 секунды или у неё окажется защита от магии."
 	summary = "Через секунду цель на мокром полу 5 секунд захлёбывается, затем без сознания 10 секунд; 2 давления."
 	range = HERETIC_TIDE_DROWN_RANGE
 	charge_max = HERETIC_TIDE_DROWN_COOLDOWN
@@ -1197,7 +1203,7 @@
 		"Цель немеет: ни голоса, ни рации; 6 удушья в секунду, за захлёб до 30, выше 50 не поднимает и не убивает.",
 		"Если к концу цель на мокром полу, она без сознания 10 секунд и готова к обряду.",
 		"Сердце уводит цель с первой секунды захлёба: пол изнанки - ваша вода, захлёб кончается внутри.",
-		"Срывают полторы секунды на сухом полу, нулевой жезл, растолкать за 2 секунды или ваша смерть; антимагия защищает.",
+		"Срывают полторы секунды на сухом, нулевой жезл, растолкать за 2 секунды, антимагия или ваша смерть.",
 		"Потом цель до минуты невосприимчива к захлёбу, к любому захвату - 15 секунд. Перезарядка 40 секунд.",
 	)
 	role = HERETIC_ROLE_CAPTURE
@@ -1279,6 +1285,7 @@
 		"Первый удар в 2 клетках: 12 ушибов, 18 выносливости, падение на 1,5 секунды и притяжение.",
 		"Каждые 2 секунды тянет врагов на клетку: на краю бьёт на 6 ушибов и 8 выносливости, у центра - на 12 и 12 и валит с ног.",
 		"У воронки 60 прочности, нулевой жезл её разрушает; она работает, пока вы в 7 клетках от неё без преград.",
+		"Защищённого от магии воронка не трогает и за всю жизнь снимает с его защиты один заряд.",
 		"Одновременно одна, перезарядка 30 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK
@@ -1739,6 +1746,10 @@
 	if(!tide || owner.stat == DEAD || !still_wet(tide))
 		qdel(src)
 		return
+	if(!heretic_can_affect(tide.tide_body, owner, chargecost = 0))
+		interrupted = TRUE
+		qdel(src)
+		return
 	var/room = HERETIC_TIDE_DROWN_OXY_CAP - owner.getOxyLoss()
 	if(room > 0)
 		owner.adjustOxyLoss(min(HERETIC_TIDE_DROWN_OXY_PER_TICK, room))
@@ -1781,7 +1792,7 @@
 	tide_ref = null
 	tide?.drownings -= src
 	// Истёкший срок отличает естественный конец от срыва и снятия.
-	var/knocked_out = !interrupted && tide && world.time > duration && owner.stat != DEAD && still_wet(tide)
+	var/knocked_out = !interrupted && tide && world.time > duration && owner.stat != DEAD && still_wet(tide) && heretic_can_affect(tide.tide_body, owner, chargecost = 0)
 	if(knocked_out)
 		owner.Unconscious(HERETIC_TIDE_DROWN_SLEEP)
 		heretic_capture_knock_out(owner, tide, HERETIC_TIDE_CAPTURE, HERETIC_TIDE_DROWN_SLEEP)
@@ -1791,7 +1802,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_tide_drowning
 	name = "Захлёб"
-	desc = "Горло залито чёрной водой: вы не можете говорить ни вслух, ни в рацию, удушье растёт. Выйдите на сухой пол и продержитесь там пару секунд или попросите коснуться вас нулевым жезлом или растолкать за 2 секунды - захлёб прервётся. Иначе через 5 секунд вы потеряете сознание на 10 секунд."
+	desc = "Горло залито чёрной водой: вы не можете говорить ни вслух, ни в рацию, удушье растёт. Выйдите на сухой пол и продержитесь там пару секунд или попросите коснуться вас нулевым жезлом или растолкать за 2 секунды; защита от магии в руках тоже поможет - захлёб прервётся. Иначе через 5 секунд вы потеряете сознание на 10 секунд."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "tide_drowning"
 

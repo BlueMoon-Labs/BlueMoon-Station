@@ -96,7 +96,7 @@
 		"Взыскание бьёт через секунду предупреждения, 2 ушиба за единицу долга; потом ваше кровотечение 8 секунд вдвое слабее.",
 		"Держите цель в 5 клетках без преград: без контакта связь рвётся через 2 секунды.",
 		"Четверть урона лечит ваши раны, ещё четверть восполняет кровь, до 10 с одной цели; пустая печать помнит это 15 секунд.",
-		"Хватка в «Помощи» по чужой крови 3 минуты ведёт к владельцу на вашем уровне, след раз в 2 секунды.",
+		"Хватка в «Помощи» по чужой крови 3 минуты ведёт к владельцу на уровне, след раз в 2 секунды; антимагия его прячет.",
 		"Пятно становится меткой (до 3): наступивший враг получает 6 долга раз в 10 секунд, если вы в 5 клетках и связь свободна.",
 		"Швабра и жезл снимают метку; кровь нового человека продвигает дело пути и лечит 5 ушибов; из изнанки выходите к метке.",
 	)
@@ -314,6 +314,7 @@
 		qdel(seal)
 
 /datum/eldritch_knowledge/base_blood/proc/release(mob/living/user, mob/living/victim, partial = FALSE)
+	ability_failure = null
 	if(!valid_victim(user, victim))
 		return FALSE
 	drop_foreign_spent(victim)
@@ -326,6 +327,8 @@
 		to_chat(user, span_warning("Все кровные связи заняты. Взыщите долг прежнего врага кнопкой «Связать / взыскать» или разорвите связь отходом."))
 		return FALSE
 	if(!heretic_can_affect(user, victim))
+		ability_failure = "Цель защищена от магии: связь не легла, но заряд её защиты сгорел."
+		to_chat(user, span_warning(ability_failure))
 		return TRUE
 	var/datum/status_effect/heretic_blood_seal/seal = existing
 	if(seal)
@@ -366,6 +369,7 @@
 /datum/eldritch_knowledge/base_blood/proc/lance(mob/living/user, mob/living/victim)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/blood_lance)
+	ability_failure = null
 	if(QDELETED(required) || !valid_victim(user, victim))
 		return FALSE
 	drop_foreign_spent(victim)
@@ -374,6 +378,8 @@
 		return FALSE
 	if(!heretic_can_affect(user, victim))
 		qdel(seal)
+		ability_failure = "Цель защищена от магии: жила не натянулась, но заряд её защиты сгорел."
+		to_chat(user, span_warning(ability_failure))
 		return TRUE
 	if((!seal || seal.spent) && release(user, victim))
 		seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
@@ -456,7 +462,9 @@
 			fresh_signature = null
 	var/signature = fresh_signature || counted_signature
 	var/mob/living/carbon/quarry = blood_owner(signature)
-	if(quarry)
+	if(quarry && heretic_magic_ward(user, quarry, chargecost = 0))
+		to_chat(user, span_warning("Это кровь [quarry.real_name], но её владельца хранит защита от магии: следа нет."))
+	else if(quarry)
 		user.apply_status_effect(/datum/status_effect/heretic_blood_trail, quarry)
 		to_chat(user, span_eldritch("Это кровь [quarry.real_name]. [DisplayTimeText(HERETIC_BLOOD_TRAIL_DURATION)] вы чуете, в какой стороне этот человек и как он далеко, пока он на вашем уровне."))
 	else
@@ -607,6 +615,11 @@
 		update_trail()
 
 /datum/status_effect/heretic_blood_trail/tick()
+	var/mob/living/quarry = quarry_ref?.resolve()
+	if(quarry && heretic_magic_ward(owner, quarry, chargecost = 0))
+		to_chat(owner, span_warning("След [quarry_name] обрывается: владельца крови укрыла защита от магии."))
+		qdel(src)
+		return
 	update_trail()
 
 /datum/status_effect/heretic_blood_trail/proc/update_trail()
@@ -801,7 +814,7 @@
 
 /datum/status_effect/heretic_blood_drain/proc/pull_close()
 	SIGNAL_HANDLER
-	if(!channel_started || QDELETED(drainer) || QDELETED(src))
+	if(!channel_started || QDELETED(drainer) || QDELETED(src) || !heretic_can_affect(drainer, owner, chargecost = 0))
 		return
 	var/turf/anchor = get_turf(drainer)
 	for(var/step_index in 1 to HERETIC_BLOOD_DRAIN_LEASH)
@@ -1047,7 +1060,7 @@
 	if(!iscarbon(arrived) || arrived == owner_ref?.resolve())
 		return
 	var/mob/living/carbon/runner = arrived
-	if(IS_HERETIC(runner) || IS_HERETIC_MONSTER(runner))
+	if(!heretic_can_affect(owner_ref?.resolve(), runner, chargecost = 0))
 		return
 	runner.slip(HERETIC_BLOOD_SLICK_KNOCKDOWN, src, NO_SLIP_WHEN_WALKING)
 
@@ -1756,7 +1769,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!length(targets) || !blood?.release(user, targets[1], partial = user.a_intent == INTENT_DISARM))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, blood?.ability_failure)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance
 	name = "Натянуть жилу"
@@ -1780,7 +1793,7 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
 	if(!length(targets) || !blood?.lance(user, targets[1]))
-		heretic_revert_cast(user)
+		heretic_revert_cast(user, blood?.ability_failure)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/drain
 	name = "Кровопускание"
@@ -1989,7 +2002,7 @@
 	details = list(
 		"Работает в агрессивном грабе, на чужих руках и при таскании; схватить вас заново нельзя.",
 		"Вы бегаете быстрее; враги на следу поскальзываются, как на мокром полу, шагом его можно пройти.",
-		"След впитывается через 10 секунд, вы сами на нём не скользите.",
+		"След впитывается через 10 секунд, вы сами и защищённые от магии на нём не скользят.",
 		"Наручники, смирительная рубашка и щит разума закрывают способность; если плата опасна для жизни, она не сработает.",
 		"Перезарядка 30 секунд.",
 	)
