@@ -377,6 +377,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		song_played.volume = min((targetfalloff * 50), 100)
 
 		for(var/mob/M in GLOB.player_list)
+			CHECK_TICK
 			if(!M.client)
 				continue
 			if(!M.client.prefs)
@@ -444,7 +445,6 @@ SUBSYSTEM_DEF(jukeboxes)
 			song_played.volume = original_volume
 			if(first_send)
 				clear_catchup_offset(song_played)
-			CHECK_TICK
 	return
 
 #undef TRACK_NAME
