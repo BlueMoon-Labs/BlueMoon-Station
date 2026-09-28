@@ -429,7 +429,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 	if(ishuman(mob_occupant))
 		var/mob/living/carbon/human/persistent_human = mob_occupant
-		persistent_human.save_individual_persistence()
+		persistent_human.save_individual_persistence(ckey(persistent_human.ckey || persistent_human.mind?.key))
 
 	// No computer passed in, use admin-cryo instead
 	if (!control_computer_weakref)
