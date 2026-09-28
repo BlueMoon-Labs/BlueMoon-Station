@@ -30,20 +30,19 @@
 		stack_trace("/datum/progressbar created with [isnull(User) ? "null" : "invalid"] goal_number")
 		qdel(src)
 		return
+	//WHITE-STEEL PORT: цель отсутствует или уже удалена к моменту регистрации полосы.
+	//isnull/istype идут ДО QDELETED, иначе чтение члена у "протухшей" ссылки давало "Cannot read 0.gc_destroyed".
+	//user и bar_loc ставятся только после проверки: Destroy() читает user.progressbars[bar_loc].
+	if(isnull(target) || !istype(target, /atom) || QDELETED(target))
+		stack_trace("/datum/progressbar created with a missing or deleted target ([target])")
+		qdel(src)
+		return
 	goal = goal_number
 	bar_loc = target
 	bar = image('icons/effects/progessbar.dmi', bar_loc, "prog_bar_0")
 	bar.plane = ABOVE_HUD_PLANE
 	bar.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
 	user = User
-
-	if(isnull(bar_loc) || !istype(bar_loc, /atom) || QDELETED(bar_loc))
-		//WHITE-STEEL PORT: цель отсутствует или уже удалена к моменту регистрации полосы.
-		//isnull/istype идут ДО QDELETED, иначе чтение члена у "протухшей" ссылки давало "Cannot read 0.gc_destroyed",
-		//а старый хэш-ключ в LAZYADDASSOCLIST - "list index out of bounds".
-		stack_trace("/datum/progressbar created with a missing or deleted target ([bar_loc])")
-		qdel(src)
-		return
 
 	LAZYADDASSOCLIST(user.progressbars, bar_loc, src)
 	var/list/bars = user.progressbars[bar_loc]

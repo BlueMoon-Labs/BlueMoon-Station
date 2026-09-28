@@ -20,6 +20,10 @@
 	var/list/image/hud_list = null
 	///HUD images that this atom can provide.
 	var/list/hud_possible
+	/// Атом-худы, в которых атом числится значком
+	var/list/datum/atom_hud/hud_memberships
+	/// Группа z, по которой худы раздают значки атома (get_hud_z_group). null - ещё не считали
+	var/hud_z_group
 	///Proximity monitor associated with this atom
 	var/datum/proximity_monitor/proximity_monitor
 	/// Датумы связных кластеров, в которые входит этот атом. Стоят на движимом, а не на /atom:

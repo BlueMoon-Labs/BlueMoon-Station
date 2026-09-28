@@ -1098,11 +1098,12 @@ Pass a positive integer as an argument to override a bot's default speed.
 			path[T] = I
 			path_images += I
 
+	var/bot_z_group = get_hud_z_group_cached()
 	for(var/datum/atom_hud/H as anything in path_huds_watching_me)
 		if(!H || !length(path_images))
 			continue
 		for(var/mob/viewer as anything in H.hudusers)
-			if(!H.queued_to_see[viewer])
+			if(!H.queued_to_see[viewer] && viewer.get_hud_view_group_cached() == bot_z_group)
 				H.add_to_single_hud(viewer, src, path_icon_keys)
 
 
