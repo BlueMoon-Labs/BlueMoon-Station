@@ -613,6 +613,26 @@
 		))
 	STR.can_hold = can_hold
 
+/obj/item/storage/backpack/duffelbag/med/surgery/alien
+	name = "Alien Surgery Kit"
+	desc = "Контейнер, предназначенный для хранения и транспортировки хирургических инструментов. Выглядит очень необычно."
+	icon_state = "surgerykit_alien"
+	item_state = "surgerykit_alien"
+
+/obj/item/storage/backpack/duffelbag/med/surgery/alien/PopulateContents()
+	var/static/items_inside = list(
+		/obj/item/surgical_drapes/advanced,
+		/obj/item/scalpel/advanced/alien,
+		/obj/item/retractor/advanced/alien,
+		/obj/item/surgicaldrill/advanced/alien,
+		/obj/item/bonesetter,
+		/obj/item/healthanalyzer/advanced,
+		/obj/item/reagent_containers/medspray/sterilizine,
+		/obj/item/stack/medical/mesh/advanced,
+		/obj/item/stack/medical/suture/medicated,
+	)
+	generate_items_inside(items_inside, src)
+
 /obj/item/storage/backpack/duffelbag/sec
 	name = "security duffel bag"
 	desc = "A large duffel bag for holding extra security supplies and ammunition."

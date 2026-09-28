@@ -157,6 +157,16 @@
 					/obj/item/ammo_box/magazine/smgm45)
 	crate_name = "deep space crate"
 
+/datum/supply_pack/ds/r357sl
+	name = "Ящик с скоростными зарядниками 357го калибра."
+	desc = "Ваш представитель опять потерял свои аммуницию к служебному револьверу после попойки в баре? НЕ БЕДА! Закажите ещё 4 сейчас всего за..."
+	cost = 15000
+	contains = list(/obj/item/ammo_box/a357,
+					/obj/item/ammo_box/a357,
+					/obj/item/ammo_box/a357,
+					/obj/item/ammo_box/a357)
+	crate_name = "deep space crate"
+
 /datum/supply_pack/ds/acr
 	name = "Ящик с ACR"
 	desc = "Старая штурмовая винтовка синдиката на промежуточный калибр. Устарела но всё ещё страшна в бою. Содержит 2 экземпляра."
@@ -182,7 +192,7 @@
 	name = "Ящик с Лазерными Мечами"
 	desc = "Лазерные мечи. В коплекте 3 штуки."
 	cost = 25000
-	contains = list(/obj/item/melee/transforming/energy/sword,
-					/obj/item/melee/transforming/energy/sword,
-					/obj/item/melee/transforming/energy/sword)
+	contains = list(/obj/item/melee/transforming/energy/sword/saber/red,
+					/obj/item/melee/transforming/energy/sword/saber/red,
+					/obj/item/melee/transforming/energy/sword/saber/red)
 	crate_name = "deep space crate"

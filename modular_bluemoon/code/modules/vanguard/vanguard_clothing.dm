@@ -116,9 +116,11 @@
 	kit_slot_flag = ITEM_SLOT_HEAD
 	kit_prefix = "combined"
 
-// Хранилище Ranger hardsuit. Шлем и установленный джетпак физически лежат внутри костюма
-// (заложено механикой hardsuit), поэтому их нужно исключать из подсчёта слотов storage,
-// чтобы в костюм можно было класть до max_items мелких предметов, не теряя слоты на шлем/джетпак.
+/datum/component/storage/concrete/ranger_hardsuit/attackby(datum/source, obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/slimepotion) && user?.a_intent == INTENT_HARM)
+		return FALSE
+	return ..()
+
 /datum/component/storage/concrete/ranger_hardsuit/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
 	var/obj/item/clothing/suit/space/hardsuit/H = parent
 	if(I == H.helmet || I == H.jetpack)

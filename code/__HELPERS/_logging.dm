@@ -86,6 +86,10 @@
 	if (CONFIG_GET(flag/log_virus))
 		WRITE_LOG(GLOB.world_virus_log, "VIRUS: [text]")
 
+/proc/log_hfr(text)
+	if (CONFIG_GET(flag/log_hfr))
+		WRITE_LOG(GLOB.world_hfr_log, "HFR: [text]")
+
 /proc/log_asset(text)
 	WRITE_LOG(GLOB.world_asset_log, "ASSET: [text]")
 

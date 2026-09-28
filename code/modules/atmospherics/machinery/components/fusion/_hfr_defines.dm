@@ -130,6 +130,11 @@
 #define HFR_POWER_LEVEL_5_TEMPERATURE 1e6
 #define HFR_POWER_LEVEL_6_TEMPERATURE 1e7
 
+/// Интерфейс шлёт ui_act на каждый шаг перетаскивания слайдера, поэтому строчку в лог
+/// пишем не чаще раза в это окно (на каждое действие отдельно), а last_touched_* на
+/// ядре обновляем всегда - иначе к моменту аварии не осталось бы ничьей фамилии.
+#define HFR_SETTING_LOG_COOLDOWN 5 SECONDS
+
 ///Mole count required (tritium/hydrogen) to start a fusion reaction in HFR (reactions.dm uses 250 for other fusion)
 #define HFR_FUSION_MOLE_THRESHOLD 25
 ///Used to reduce the gas_power to a more useful amount

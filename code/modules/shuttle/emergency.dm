@@ -36,10 +36,10 @@
 	if(hijack_announce)
 		. += "<span class='danger'>Security systems present on console. Any unauthorized tampering will result in an emergency announcement.</span>"
 	if(user?.mind?.get_hijack_speed())
-		. += "<span class='danger'>Alt click on this to attempt to hijack the shuttle. This will take multiple tries (current: stage [SSshuttle.emergency.hijack_status]/[HIJACKED]).</span>"
-		. += "<span class='notice'>It will take you [(hijack_stage_time * user.mind.get_hijack_speed()) / 10] seconds to reprogram a stage of the shuttle's navigational firmware, and the console will undergo automated timed lockout for [hijack_stage_cooldown/10] seconds after each stage.</span>"
+		. += "<span class='danger'>ALT-ЛКМ по консоли - попытка взлома шаттла. Потребуется несколько попыток (стадия [SSshuttle.emergency.hijack_status]/[HIJACKED]).</span>"
+		. += "<span class='notice'>Одна попытка перехватывает одну стадию навигационной прошивки за [CEILING(hijack_stage_time / user.mind.get_hijack_speed() / 10, 1)] с, после чего консоль уходит в автоматический таймаут на [hijack_stage_cooldown/10] с.</span>"
 		if(hijack_announce)
-			. += "<span class='warning'>It is probably best to fortify your position as to be uninterrupted during the attempt, given the automatic announcements..</span>"
+			. += "<span class='warning'>Стоит заранее занять оборону: каждая попытка сопровождается объявлением на весь экипаж.</span>"
 
 /obj/machinery/computer/emergency_shuttle/attackby(obj/item/I, mob/user,params)
 	if(istype(I, /obj/item/card/id))
@@ -178,13 +178,13 @@
 
 /obj/machinery/computer/emergency_shuttle/proc/increase_hijack_stage()
 	var/obj/docking_port/mobile/emergency/shuttle = SSshuttle.emergency
-	shuttle.hijack_status++
+	shuttle.hijack_status = min(shuttle.hijack_status + 1, HIJACKED)
 	if(hijack_announce)
 		announce_hijack_stage()
 	hijack_last_stage_increase = world.time
-	say("Navigational protocol error! Rebooting systems.")
+	say("Сбой навигационного протокола! Перезагрузка систем.")
 	if(shuttle.mode == SHUTTLE_ESCAPE)
-		if(shuttle.hijack_status == HIJACKED)
+		if(shuttle.hijack_status >= HIJACKED)
 			shuttle.setTimer(hijack_completion_flight_time_set)
 		else
 			shuttle.setTimer(shuttle.timeLeft(1) + hijack_flight_time_increase)		//give the guy more time to hijack if it's already in flight.
@@ -197,49 +197,58 @@
 	if(!user.CanReach(src))
 		return
 	if(!user?.mind?.get_hijack_speed())
-		to_chat(user, "<span class='warning'>You manage to open a user-mode shell on [src], and hundreds of lines of debugging output fly through your vision. It is probably best to leave this alone.</span.")
+		to_chat(user, "<span class='warning'>Вам удалось открыть пользовательскую оболочку на [src], и перед глазами проносятся сотни строк отладочного вывода. Лучше не трогать это.</span>")
 		return
 	if(hijack_hacking == TRUE)
 		return
 	if(SSshuttle.emergency.hijack_status >= HIJACKED)
-		to_chat(user, "<span class='warning'>The emergency shuttle is already loaded with a corrupt navigational payload. What more do you want from it?</span>")
+		to_chat(user, "<span class='warning'>Аварийный шаттл уже загружен повреждённым навигационным пакетом. Что ещё вы от него хотите?</span>")
 		return
 	if(hijack_last_stage_increase >= world.time + hijack_stage_cooldown)
-		say("Error - Catastrophic software error detected. Input is currently on timeout.")
+		say("Ошибка - обнаружена катастрофическая программная ошибка. Ввод временно заблокирован.")
 		return
 	hijack_hacking = TRUE
-	to_chat(user, "<span class='boldwarning'>You [SSshuttle.emergency.hijack_status == NOT_BEGUN? "begin" : "continue"] to override [src]'s navigational protocols.</span>")
-	say("Software override initiated.")
+	to_chat(user, "<span class='boldwarning'>Вы [SSshuttle.emergency.hijack_status == NOT_BEGUN? "начинаете" : "продолжаете"] перехват навигационных протоколов [src].</span>")
+	say("Перехват управления начат.")
 	. = FALSE
 	if(do_after(user, hijack_stage_time * (1 / user.mind.get_hijack_speed()), target = src))
 		increase_hijack_stage()
 		. = TRUE
-		to_chat(user, "<span class='notice'>You reprogram some of [src]'s programming, putting it on timeout for [hijack_stage_cooldown/10] seconds.</span>")
+		to_chat(user, "<span class='notice'>Вы перепрограммировали часть кода [src] - консоль уходит в таймаут на [hijack_stage_cooldown/10] секунд.</span>")
 	hijack_hacking = FALSE
 
 /obj/machinery/computer/emergency_shuttle/proc/announce_hijack_stage()
 	var/msg
+	var/hijacked = FALSE
 	switch(SSshuttle.emergency.hijack_status)
 		if(NOT_BEGUN)
 			return
 		if(STAGE_1)
-			var/datum/species/S = new
-			msg = "AUTHENTICATING - FAIL. AUTHENTICATING - FAIL. AUTHENTICATING - FAI###### Welcome, technician JOHN DOE."
-			qdel(S)
+			msg = "АУТЕНТИФИКАЦИЯ - СБОЙ. АУТЕНТИФИКАЦИЯ - СБОЙ. АУТЕНТИФИКАЦИЯ - СБО###### Добро пожаловать, техник ДЖОН ДОУ."
 		if(STAGE_2)
-			msg = "Warning: Navigational route fails \"IS_AUTHORIZED\". Please try againNN[scramble_message_replace_chars("againagainagainagainagain", 70)]."
+			msg = "Внимание: навигационный маршрут не прошёл проверку \"IS_AUTHORIZED\". Повторите попыткNN[scramble_message_replace_chars("againnnagainnnagainnn", 70)]."
 		if(STAGE_3)
 			var/hex = ""
 			for(var/i in 1 to 8)
 				hex += num2hex(rand(1,16))
-			msg = "CRC mismatch at 0x[hex] in calculated route buffer. Full reset initiated of FTL_NAVIGATION_SERVICES. Memory decrypted for automatic repair."
+			msg = "Ошибка CRC по адресу 0x[hex] в буфере рассчитанного маршрута. Выполнен полный сброс FTL_NAVIGATION_SERVICES. Память расшифрована для автоматического восстановления."
 		if(STAGE_4)
-			msg = "~ACS_directive module_load(cyberdyne.exploit.nanotrasen.shuttlenav)... NT key mismatch. Confirm load? Y...###Reboot complete. $SET transponder_state = 0; System link initiated with connected engines..."
+			msg = "~ACS_directive module_load(cyberdyne.exploit.nanotrasen.shuttlenav)... Несовпадение ключа NT. Подтвердить загрузку? Д...###Перезагрузка завершена. $SET transponder_state = 0; Связь установлена с подключёнными двигателями..."
 		if(HIJACKED)
-			msg = "<font color='red'>SYSTEM OVERRIDE - Resetting course to \[[scramble_message_replace_chars("###########", 100)]\] \
+			hijacked = TRUE
+			msg = "ПЕРЕХВАТ СИСТЕМЫ - Курс сброшен на \[[scramble_message_replace_chars("###########", 100)]] \
 			([scramble_message_replace_chars("#######", 100)]/[scramble_message_replace_chars("#######", 100)]/[scramble_message_replace_chars("#######", 100)]) \
-			{AUTH - ROOT (uid: 0)}.</font>[SSshuttle.emergency.mode == SHUTTLE_ESCAPE? "Diverting from existing route - Bluespace exit in [hijack_completion_flight_time_set/10] seconds." : ""]"
-	minor_announce(scramble_message_replace_chars(msg, replaceprob = 10), "Emergency Shuttle", TRUE)
+			{АВТОРИЗАЦИЯ - ROOT (uid: 0)}.[SSshuttle.emergency.mode == SHUTTLE_ESCAPE? " Отклонение от текущего маршрута - выход в блюспейс через [hijack_completion_flight_time_set/10] с." : ""]"
+	if(isnull(msg)) // ветки для стадий вне STAGE_1..HIJACKED не существует, оглашать нечего
+		return
+	// Скреймл бьёт по байтам, поэтому кириллицу не трогаем: подмена байта внутри
+	// UTF-8-последовательности рассыпает сообщение в нечитаемую кашу. Латиница и
+	// символы техтекста глючатся как раньше.
+	msg = scramble_message_replace_chars(msg, replaceprob = 10, replace_letters_only = TRUE)
+	// Тег навешиваем после скреймла: иначе разглючится сам <font> и весь текст вцепится в него.
+	if(hijacked)
+		msg = "<font color='red'>[msg]</font>"
+	minor_announce(msg, "Аварийный шаттл", TRUE, html_encode = FALSE)
 
 /obj/machinery/computer/emergency_shuttle/emag_act(mob/user)
 	. = ..()

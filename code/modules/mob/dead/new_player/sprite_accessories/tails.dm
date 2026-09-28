@@ -4,7 +4,7 @@
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/tails/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
-	return ((H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)) || tauric)
+	return ((H.wear_suit && (H.wear_suit.flags_inv & HIDETAIL)) || tauric)
 
 /datum/sprite_accessory/tails_animated
 	icon = 'icons/mob/mutant_bodyparts.dmi'
@@ -16,7 +16,7 @@
 *******************************************/
 
 /datum/sprite_accessory/tails_animated/lizard/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
-	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)) || tauric) || H.dna.species.mutant_bodyparts["tail_lizard"])
+	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAIL)) || tauric) || H.dna.species.mutant_bodyparts["tail_lizard"])
 
 //this goes first regardless of alphabetical order
 /datum/sprite_accessory/tails/lizard/none
@@ -104,7 +104,7 @@
 	relevant_layers = null
 
 /datum/sprite_accessory/tails_animated/human/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
-	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)) || tauric)|| H.dna.species.mutant_bodyparts["tail_human"])
+	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAIL)) || tauric)|| H.dna.species.mutant_bodyparts["tail_human"])
 
 /datum/sprite_accessory/tails/human/axolotl
 	name = "Axolotl"
@@ -671,7 +671,7 @@
 	relevant_layers = list(BODY_BEHIND_LAYER, BODY_FRONT_LAYER)
 
 /datum/sprite_accessory/tails_animated/mam_tails_animated/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
-	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)) || tauric) || H.dna.species.mutant_bodyparts["mam_tail"])
+	return (((H.wear_suit && (H.wear_suit.flags_inv & HIDETAIL)) || tauric) || H.dna.species.mutant_bodyparts["mam_tail"])
 
 /datum/sprite_accessory/tails_animated/mam_tails_animated/none
 	name = "None"

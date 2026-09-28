@@ -82,8 +82,6 @@
 		if(HAS_TRAIT(quirk_holder, TRAIT_SWIMMING) || G.get_moles(GAS_H2O) > 0) // персонаж находится в бассейне или сауне, происходит мытьё
 			cleaning(10) // при вызове сигнала COMSIG_COMPONENT_CLEAN_ACT этой функции в аргументы присваивается персонаж, что делает невозможным применение TRUE
 
-	var/unholy_likes_it = human_owner.client?.prefs?.unholyhardpref == "Yes"
-
 	switch(cleanse_level)
 		if(-INFINITY to FINE_CLEAN)
 			if(warning_level > 0)
@@ -97,25 +95,19 @@
 				to_chat(quirk_holder, span_notice("Мне не помешает сходить в душ..."))
 				warning_level = 1
 		if(DIRTY to VERY_DIRTY)
-			if(unholy_likes_it)
-				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/like_it)
-			else
-				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/dirty)
-			if(warning_level < 2 && !unholy_likes_it)
+			SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/dirty)
+			if(warning_level < 2)
 				to_chat(quirk_holder, span_phobia("Мне нужно сходить в душ."))
 				warning_level = 2
 		if(VERY_DIRTY to INFINITY)
-			if(unholy_likes_it)
-				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/like_it)
-			else if(hide_visual_effect)
+			if(hide_visual_effect)
 				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/very_dirty_catastrophic)
 			else
 				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/very_dirty)
 			if(warning_level < 3)
 				if(!hide_visual_effect)
 					human_owner.add_overlay(stink_overlay)
-				if(!unholy_likes_it)
-					to_chat(quirk_holder, span_phobia("Мне ОЧЕНЬ нужно сходить в душ!"))
+				to_chat(quirk_holder, span_phobia("Мне ОЧЕНЬ нужно сходить в душ!"))
 				warning_level = 3
 
 /datum/quirk/bluemoon_shower_need/proc/examine(atom/examine_target, mob/examiner, list/examine_list)
@@ -251,11 +243,6 @@
 /datum/mood_event/need_shower/very_dirty_catastrophic
 	description = span_phobia("МНЕ КРИТИЧЕСКИ НУЖНО СХОДИТЬ В ДУШ!\n")
 	mood_change = -16 // игрок скрывает визуальный негативный эффект, но от этого персонаж сильно страдает
-
-/datum/mood_event/need_shower/like_it
-	description = span_nicegreen("Моё тело грязное, но кажется мне это нравится...\n")
-	mood_change = 2 // бафф вместо дебаффа если включен особо грязный секс
-	timeout = 10 SECONDS
 
 // Хелперы для секса (😳)
 /mob/living/proc/is_dirty()

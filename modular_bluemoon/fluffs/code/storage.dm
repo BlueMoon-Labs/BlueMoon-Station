@@ -263,13 +263,15 @@
 	desc = "Прочный кейс для всякой всячины, включает в себя снаряжение всё снаряжение расы Касари, которое только можно добыть окольными путями - через чёрный рынок и непотребства в высоких кабинетах."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "nebula_box"
+	illustration = null
 
-/obj/item/storage/box/lapkee_kit/PopulateContents() // я заебался ебаться с тем что мне лапки пишет названия предметов из сски, а не кастомных, пропишу тут в комментах
+/obj/item/storage/box/lapkee_kit/PopulateContents()
 	new /obj/item/clothing/under/donator/bm/concord(src) // Форма
 	new /obj/item/clothing/neck/donator/bm/concord_cloak(src) // плащ
 	new /obj/item/modkit/star_dust_kit(src) // противогаз
 	new /obj/item/modkit/lapkee_carrier_kit(src) // плитка
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
+	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 	new /obj/item/modkit/white_belt_kit(src) // пояс
 	new /obj/item/modkit/nebular_kit(src) // пистоль - энфорсер
 	new /obj/item/modkit/comet_kit(src) // WT-550 PDW
@@ -284,7 +286,6 @@
 	new /obj/item/modkit/katana_kit(src) // стан-катана
 	new /obj/item/modkit/pulsar_knife_kit(src) // ножик-режик
 	new /obj/item/modkit/lapkee_arm_shield_kit(src) // имплант щита
-	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
@@ -382,6 +383,19 @@
 	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
 	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)
 
+/obj/item/storage/wallet/xeno
+	name = "Xeno Wallet"
+	desc = "Плюшевый ксеноморф, в рот можно вставить карты и безделушки"
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "flka_open"
+
+/obj/item/storage/wallet/xeno/update_icon_state()
+	var/new_state = "flka_open"
+	if(front_id)
+		new_state = "flka_close"
+	if(new_state != icon_state)		//avoid so many icon state changes.
+		icon_state = new_state
+
 /obj/item/storage/belt/security/webbing/ds/melatonin_belt
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Heavy Tactical Belt"
@@ -410,6 +424,7 @@
 	desc = "Кейс с полным набором оружейных китов Melatonin. Содержит киты для модификации стандартного вооружения в кастомное."
 	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
 	icon_state = "melatonin_box"
+	illustration = null
 
 /obj/item/storage/box/melatonin_kit/PopulateContents()
 	new /obj/item/modkit/melatonin_belt_kit(src)
@@ -431,3 +446,54 @@
 	new /obj/item/modkit/tau_helmet_kit(src)
 	new /obj/item/modkit/tau_armor_kit(src)
 	new /obj/item/toy/plush/bm/tau(src)
+
+/obj/item/storage/box/melatonin_bola_kit
+	name = "Entangling Bola Crafting Kit"
+	desc = "Небольшая коробка с четырьмя комплектами деталей для создания опутывающей болы. Внутри — грубо обработанные каменные волчьи лапы, крепления и отрезки прочной верёвки. Похоже, кто-то решил, что обычных грузов для охоты недостаточно."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_bola_case"
+	illustration = null
+
+/obj/item/storage/box/melatonin_bola_kit/PopulateContents()
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+	new /obj/item/modkit/entangling_bola_kit(src)
+
+/obj/item/storage/box/melatonin_bola_kit/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	update_icon()
+
+/obj/item/storage/box/melatonin_bola_kit/Exited(atom/movable/gone, direction)
+	. = ..()
+	update_icon()
+
+/obj/item/storage/box/melatonin_bola_kit/update_overlays()
+	. = ..()
+	var/kit_count = 0
+	for(var/obj/item/modkit/entangling_bola_kit/kit in contents)
+		kit_count++
+	if(kit_count != 0)
+		. += "melatonin_bola_case_[min(kit_count, 4)]"
+
+///////////////////////////////////////////
+
+#define WARDROBE_BOX_ITEMS /obj/item/clothing/suit/donator/bm/long_fancy_kimono, /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat, /obj/item/clothing/neck/cloak/cybersun/civil, /obj/item/clothing/neck/cloak/syndieadm, /obj/item/modkit/invis_belt
+
+/obj/item/storage/box/wardrobe_box
+	name = "Wardrobe Box"
+	desc = "Коробка для путешествий с аккуратно упакованными вещами."
+	icon_state = "box_brown"
+
+/obj/item/storage/box/wardrobe_box/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.can_hold_extra = typecacheof(list(WARDROBE_BOX_ITEMS))
+
+/obj/item/storage/box/wardrobe_box/PopulateContents()
+	var/static/items_inside = list(WARDROBE_BOX_ITEMS)
+	generate_items_inside(items_inside, src)
+
+#undef WARDROBE_BOX_ITEMS
+
+///////////////////////////////////////////

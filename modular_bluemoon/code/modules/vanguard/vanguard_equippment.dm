@@ -145,7 +145,7 @@
 	new /obj/item/healthanalyzer/advanced(src)
 	new /obj/item/bonesetter(src)
 	new /obj/item/stack/medical/suture/medicated(src)
-	new /obj/item/reagent_containers/medspray/sterilizine(src)
+	new /obj/item/clothing/glasses/hud/health/sunglasses/aviators(src)
 	new /obj/item/stack/medical/mesh/advanced(src)
 	new /obj/item/stack/medical/gauze/adv(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)

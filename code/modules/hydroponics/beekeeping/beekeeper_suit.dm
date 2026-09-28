@@ -13,5 +13,5 @@
 	icon_state = "beekeeper"
 	item_state = "beekeeper"
 	tail_state = ""
-	flags_inv = HIDETAUR
+	flags_inv = HIDETAUR|HIDETAIL
 	clothing_flags = THICKMATERIAL

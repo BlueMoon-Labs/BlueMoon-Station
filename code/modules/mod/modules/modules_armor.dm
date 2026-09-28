@@ -9,7 +9,6 @@
 	var/armor_bonus = 15
 	var/need_sheets = 10
 	var/slowdown_bonus = 0.25
-	idle_power_cost = DEFAULT_CHARGE_DRAIN
 	var/list/material_to_armor_list
 	incompatible_modules = list(/obj/item/mod/module/anomaly_locked/antigrav)
 	complexity = 2

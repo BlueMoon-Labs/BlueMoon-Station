@@ -172,6 +172,8 @@
 	freeze_turf(T)
 	return ..()
 
+/datum/proximity_monitor/advanced/timestop
+	var/list/mirage_images = list()
 
 /datum/proximity_monitor/advanced/timestop/proc/freeze_projectile(obj/item/projectile/P)
 	P.paused = TRUE
@@ -184,6 +186,26 @@
 	L.Stun(20, ignore_canstun = TRUE)
 	ADD_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
 	walk(L, 0) //stops them mid pathing even if they're stunimmune
+	if(L.client)
+		L.hud_used.show_hud(HUD_STYLE_NOHUD) //полное скрытие
+		L.sight = (BLIND | SEE_SELF | SEE_TURFS)
+		L.add_client_colour(/datum/client_colour/sepia)
+		create_illusion(L)
+
+		var/image/fullview_timestop_effect = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
+		var/image/timestop_effect_with_plane = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
+
+		var/list/images_to_add = list(fullview_timestop_effect, timestop_effect_with_plane)
+
+		set_timestop_image(fullview_timestop_effect)
+		set_timestop_image(timestop_effect_with_plane, resize = 3, use_plane = TRUE)
+
+		L.client.images += images_to_add
+		mirage_images += images_to_add
+
+		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
+		user_chat.client = null //временно делаем null чтобы юзер ничего не мог получить
+
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(AI_OFF)
@@ -191,13 +213,43 @@
 		var/mob/living/simple_animal/hostile/H = L
 		H.LoseTarget()
 
+/datum/proximity_monitor/advanced/timestop/proc/set_timestop_image(image/timestop_effect, resize = 1, use_plane = FALSE)
+	timestop_effect.pixel_x = -64
+	timestop_effect.pixel_y = -64
+	timestop_effect.transform = matrix().Scale(resize, resize)
+	if(use_plane)
+		timestop_effect.plane = GRAVITY_PULSE_PLANE
+
 /datum/proximity_monitor/advanced/timestop/proc/unfreeze_mob(mob/living/L)
 	L.AdjustStun(-20, ignore_canstun = TRUE)
 	REMOVE_TRAIT(L, TRAIT_MUTE, TIMESTOP_TRAIT)
+	if(L.client)
+		L.hud_used.show_hud(HUD_STYLE_STANDARD)// полностью показать
+		L.remove_client_colour(/datum/client_colour/sepia)
+		L.sight = NONE
+		for(var/image/image in mirage_images)
+			L.client.images -= image
+		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
+		user_chat.client = L.client
 	frozen_mobs -= L
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(initial(S.AIStatus))
+
+/datum/proximity_monitor/advanced/timestop/proc/create_illusion(mob/living/L)
+	var/list/invisible_whitelist = list(/obj/effect/timestop, /atom/movable/lighting_object)
+
+	var/atoms_counter = 0
+	for(var/atom/movable/movable_neaby in oview(10, L.loc))
+		if(atoms_counter >= 1500)
+			return
+		if(movable_neaby.invisibility && !(movable_neaby in invisible_whitelist))
+			continue
+		var/image/temp_image = image(getFlatIcon(movable_neaby), movable_neaby.loc, layer = movable_neaby.layer, dir = movable_neaby.dir)
+		temp_image.appearance = movable_neaby.appearance
+		L.client.images += temp_image
+		mirage_images += temp_image
+		atoms_counter++
 
 //you don't look quite right, is something the matter?
 /datum/proximity_monitor/advanced/timestop/proc/into_the_negative_zone(atom/A)

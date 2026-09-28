@@ -480,6 +480,10 @@
 	cost = 12
 	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
+/datum/uplink_item/suits/hardsuit/syndi_elite/winter
+	name = "Syndicate Elite Winter Hardsuit"
+	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite/winter
+
 /datum/uplink_item/suits/hardsuit/syndi_shield
 	name = "Syndicate Shielded Hardsuit"
 	desc = "An upgraded version of the standard Syndicate hardsuit. It features a built-in energy shielding system. \

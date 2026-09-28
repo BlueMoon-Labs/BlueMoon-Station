@@ -828,9 +828,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/proc/swap_hand()
 	var/obj/item/held_item = get_active_held_item()
-	if(SEND_SIGNAL(src, COMSIG_MOB_SWAP_HANDS, held_item) & COMPONENT_BLOCK_SWAP)
-		to_chat(src, "<span class='warning'>Your other hand is too busy holding [held_item].</span>")
-		return FALSE
+	if(!held_item)
+		return TRUE
+	var/datum/component/two_handed/comp = held_item.GetComponent(/datum/component/two_handed)
+	if(comp)
+		if(comp.require_twohands && !calculate_emply_hand_slots())
+			to_chat(src, "<span class='warning'>Your other hand is too busy holding [held_item].</span>")
+			return FALSE
 	return TRUE
 
 /mob/proc/activate_hand(selhand)

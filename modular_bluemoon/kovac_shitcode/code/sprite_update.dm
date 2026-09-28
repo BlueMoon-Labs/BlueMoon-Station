@@ -49,6 +49,7 @@
 	name = "6b79 helmet"
 	icon_state = "russian_green_helmet"
 	item_state = "russian_green_helmet"
+	can_flashlight = TRUE
 	desc = "One of the newest NRI helmets, also widely spread asross space corporations security forces."
 	icon = 'modular_bluemoon/kovac_shitcode/icons/rus/obj_rus.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/rus/mob_rus.dmi'
@@ -66,6 +67,7 @@
 	name = "blast helmet"
 	icon_state = "blast_helmet"
 	item_state = "blast_helmet"
+	can_flashlight = TRUE
 	desc = "Generic heavy troopers helmet. Reinforced parts and plates were replaced with simpler parts."
 
 /obj/item/clothing/suit/chaplain/clownpriest

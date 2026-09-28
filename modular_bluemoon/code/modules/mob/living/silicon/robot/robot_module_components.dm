@@ -1,12 +1,31 @@
+/**
+ * Компонент, который должен удаляться при сбросе модуля у киборга
+ */
+/datum/component/robot_module_component
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+
+/datum/component/robot_module_component/Initialize(...)
+	if(!iscyborg(parent))
+		return COMPONENT_INCOMPATIBLE
+
+	RegisterSignal(parent, COMSIG_ROBOT_RESET_MODULE, PROC_REF(on_module_reset))
+	return ..()
+
+/datum/component/robot_module_component/proc/on_module_reset()
+	SIGNAL_HANDLER
+	return qdel(src)
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /// Goliath hide plating for mining cyborgs — same progression as explorer suit / Ripley mech armor plates.
-/datum/component/mining_cyborg_goliath_plating
+/datum/component/robot_module_component/mining_cyborg_goliath_plating
 	var/amount = 0
 	var/maxamount = 3
 	var/upgrade_item = /obj/item/stack/sheet/animalhide/goliath_hide
 	var/datum/armor/plate_bonus
 	var/upgrade_name
 
-/datum/component/mining_cyborg_goliath_plating/Initialize()
+/datum/component/robot_module_component/mining_cyborg_goliath_plating/Initialize()
 	if(!iscyborg(parent))
 		return COMPONENT_INCOMPATIBLE
 
@@ -17,22 +36,31 @@
 
 	RegisterSignal(parent, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
 	RegisterSignal(parent, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
-	RegisterSignal(parent, COMSIG_PARENT_PREQDELETED, PROC_REF(on_qdeleting))
 	return ..()
 
-/datum/component/mining_cyborg_goliath_plating/UnregisterFromParent()
+/datum/component/robot_module_component/mining_cyborg_goliath_plating/Destroy(force, silent)
+	var/mob/living/silicon/robot/R = parent
+	for(var/i in 1 to amount)
+		new upgrade_item(get_turf(R))
+	plate_bonus = null
+	upgrade_item = null
+	return ..()
+
+/datum/component/robot_module_component/mining_cyborg_goliath_plating/UnregisterFromParent()
 	var/mob/living/silicon/robot/R = parent
 	if(iscyborg(R))
 		R.borg_plating_armor = null
 	return ..()
 
-/datum/component/mining_cyborg_goliath_plating/proc/on_examine(datum/source, mob/user, list/examine_list)
+/datum/component/robot_module_component/mining_cyborg_goliath_plating/proc/on_examine(datum/source, mob/user, list/examine_list)
+	SIGNAL_HANDLER
 	if(amount)
 		examine_list += span_notice("Корпус укреплён [amount]/[maxamount] [upgrade_name].")
 	else
 		examine_list += span_notice("К корпусу можно прикрепить до [maxamount] [upgrade_name] для дополнительной защиты.")
 
-/datum/component/mining_cyborg_goliath_plating/proc/on_attackby(datum/source, obj/item/I, mob/user, params)
+/datum/component/robot_module_component/mining_cyborg_goliath_plating/proc/on_attackby(datum/source, obj/item/I, mob/user, params)
+	SIGNAL_HANDLER
 	if(!istype(I, upgrade_item))
 		return
 	if(amount >= maxamount)
@@ -59,34 +87,3 @@
 	R.update_icons()
 	to_chat(user, span_info("Вы укрепляете [R], повышая сопротивление урону в ближнем бою, огню и снарядам."))
 
-/datum/component/mining_cyborg_goliath_plating/proc/on_qdeleting(datum/source, force)
-	var/mob/living/silicon/robot/R = parent
-	for(var/i in 1 to amount)
-		new upgrade_item(get_turf(R))
-
-/mob/living/silicon/robot
-	var/datum/armor/borg_plating_armor
-
-/mob/living/silicon/robot/getarmor(def_zone, type)
-	if(borg_plating_armor && type)
-		return borg_plating_armor.getRating(type)
-	return ..()
-
-/obj/item/robot_module/miner/rebuild_modules()
-	. = ..()
-	var/mob/living/silicon/robot/R = loc
-	if(!iscyborg(R) || QDELETED(R))
-		return
-	if(!R.GetComponent(/datum/component/mining_cyborg_goliath_plating))
-		R.AddComponent(/datum/component/mining_cyborg_goliath_plating)
-
-/// Borg plasma cutter uses a weaker shot that costs 4x less energy from the cyborg cell.
-/obj/item/projectile/plasma/weak/cyborg
-	range = 8
-
-/obj/item/ammo_casing/energy/plasma/weak/cyborg
-	projectile_type = /obj/item/projectile/plasma/weak/cyborg
-	e_cost = 25
-
-/obj/item/gun/energy/plasmacutter/cyborg
-	ammo_type = list(/obj/item/ammo_casing/energy/plasma/weak/cyborg)

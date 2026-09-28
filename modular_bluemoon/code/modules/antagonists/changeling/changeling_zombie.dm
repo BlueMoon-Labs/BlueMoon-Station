@@ -267,8 +267,11 @@
 /obj/item/melee/arm_blade/changeling_zombie
 	name = "warped arm blade"
 	desc = "Неправильно срощенные кости и сухожилия — все ещё голодные."
-	force = 21
-	armour_penetration = 25
+	force = 22
+	armour_penetration = 10
+	wound_bonus = 5
+	bare_wound_bonus = 5
+	can_dismember = FALSE
 	COOLDOWN_DECLARE(sound_cooldown)
 
 /obj/item/melee/arm_blade/changeling_zombie/attack(mob/living/target_mob, mob/living/user)
