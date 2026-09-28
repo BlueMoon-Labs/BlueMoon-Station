@@ -18,6 +18,7 @@ type Target = Choice & {
   toxin: number;
   oxygen: number;
   stamina?: number | null;
+  states?: string[];
   zone: string;
   owner: string;
   can_manage: BooleanLike;
@@ -68,6 +69,7 @@ export type AntagTrainingData = {
   equipment: CatalogEntry[];
   structures: CatalogEntry[];
   injuries: Choice[];
+  conditions?: Choice[];
   creatures: Choice[];
   targets: Target[];
   programs: Choice[];
@@ -184,7 +186,7 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
           <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.options.length} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
           {!!data.dance_lesson && <Stack.Item><Button icon="music" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'dance' })}>Урок Пляски</Button></Stack.Item>}
         </Stack>
-        <Box color="label" mt={1}>Человеческая цель неподвижна. Для активного противника выберите тип и включите ИИ в разделе «Цели».</Box>
+        <Box color="label" mt={1}>Человеческая цель стоит на месте. В разделе «Цели» есть бегущий человек, противники с ИИ и кнопки, которые сбивают цель с ног, обессиливают или сковывают.</Box>
       </Section>
       {!!practice && (
         <Section title={practice.complete ? 'Упражнение выполнено' : `Ваша цель: ${practice.target}`}>
@@ -250,7 +252,7 @@ const TrainingRecipes = () => {
             <Button disabled={blocked || !recipe.result} onClick={() => act('recipe', { id: recipe.id, components: false })}>Готовый предмет</Button>
           </div>
         ))}
-        <Box color="label" mt={1}>Предметы появятся рядом; тела для вознесения — в лаборатории. Температуру, положение цели и прочие условия обряда подготовьте самостоятельно.</Box>
+        <Box color="label" mt={1}>Предметы появятся рядом; тела для вознесения — рядом с вами в секторе, а из центра — в лаборатории. Температуру, положение цели и прочие условия обряда подготовьте самостоятельно.</Box>
       </Section>
     </>
   );
@@ -363,7 +365,7 @@ const TrainingTargets = () => {
   const [zone, setZone] = useState('pve');
   const [template, setTemplate] = useState('human');
   const [active, setActive] = useState(false);
-  const canUseAi = !['human', 'armored', 'corpse'].includes(template);
+  const canUseAi = !['human', 'runner', 'armored', 'corpse'].includes(template);
   return (
     <>
       <Section title="Создать цель" buttons={<Box color="label">{data.targets.length} / {data.target_limit}</Box>}>
@@ -373,7 +375,7 @@ const TrainingTargets = () => {
           <Stack.Item><Button.Checkbox disabled={!canUseAi} checked={canUseAi && active} onClick={() => setActive(!active)}>Активный ИИ</Button.Checkbox></Stack.Item>
           <Stack.Item><Button icon="plus" disabled={!!data.busy || data.targets.length >= data.target_limit} onClick={() => act('spawn', { id: template, zone, active: canUseAi && active })}>Создать</Button></Stack.Item>
         </Stack>
-        <Box mt={1} color="label">Человеческие цели неподвижны: подходят для ритуалов, оружия, выносливости и медицины. Для боя с человеком пригласите второго игрока в дуэль и выберите ему роль «Снаряжение и бой».</Box>
+        <Box mt={1} color="label">Человек стоит на месте: подходит для ритуалов, оружия, выносливости и медицины. Бегущий человек ходит челноком поперёк сектора и замирает, пока его держат, сковали или сбили с ног. Для боя с человеком пригласите второго игрока в дуэль и выберите ему роль «Снаряжение и бой».</Box>
         <NoticeBox mt={1}>Животные и оперативники с ИИ не получают урон выносливости. На них нельзя оценить истощение души Духа и давление отражений Луны; используйте человеческую цель.</NoticeBox>
       </Section>
       <Box className="AntagTraining__targetHint"><Icon name="briefcase-medical" /> Для медицинской практики создайте человека, задайте повреждения и лечите обычными средствами. Повторное применение добавляет урон; «Исцелить» восстанавливает цель. Пациента можно перетащить на стол из мастерской.</Box>
@@ -387,10 +389,13 @@ const TrainingTargets = () => {
               {[['Физический', target.brute], ['Ожоги', target.burn], ['Токсины', target.toxin], ['Кислород', target.oxygen]].map(([name, value]) => <div key={name}><Box color="label">{name}</Box><Box bold>{Math.round(Number(value))}</Box></div>)}
             </div>
             <Box mt={1} color="label">{target.human ? `Урон выносливости: ${Math.round(target.stamina ?? 0)}` : 'Урон выносливости не действует'}</Box>
+            {!!target.human && !target.dead && <Box mt={0.5} color={target.states?.length ? 'average' : 'label'}>Состояние: {target.states?.length ? target.states.join(', ') : 'на ногах'}</Box>}
             {!!target.human && (
               <div className="AntagTraining__injuries">
                 <Box color="label" mb={0.5}>Добавить повреждения</Box>
                 {data.injuries.map((injury) => <Button key={injury.id} disabled={!!data.busy || !target.can_manage || !!target.dead} onClick={() => act('target_injure', { id: target.id, injury: injury.id })}>{injury.name}</Button>)}
+                <Box color="label" mt={0.5} mb={0.5}>Обездвижить: захваты и обряды еретика берут сбитую с ног, обессиленную или скованную цель</Box>
+                {(data.conditions || []).map((condition) => <Button key={condition.id} disabled={!!data.busy || !target.can_manage || !!target.dead} onClick={() => act('target_condition', { id: target.id, condition: condition.id })}>{condition.name}</Button>)}
               </div>
             )}
             <Box>

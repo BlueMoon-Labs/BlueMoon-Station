@@ -25,6 +25,9 @@
 	data["injuries"] = list()
 	for(var/injury_id in GLOB.antag_training_injuries)
 		data["injuries"] += list(list("id" = injury_id, "name" = GLOB.antag_training_injuries[injury_id]["name"]))
+	data["conditions"] = list()
+	for(var/condition_id in GLOB.antag_training_conditions)
+		data["conditions"] += list(list("id" = condition_id, "name" = GLOB.antag_training_conditions[condition_id]))
 	data["creatures"] = list()
 	for(var/template_id in GLOB.antag_training_creatures)
 		data["creatures"] += list(list("id" = template_id, "name" = GLOB.antag_training_creatures[template_id]["name"]))
@@ -65,7 +68,7 @@
 		var/zone_id = arena.match_zone(target)
 		target_counts[zone_id]++
 		var/datum/antag_training_session/creator = target.training_owner?.resolve()
-		data["targets"] += list(list("id" = REF(target), "name" = target.name, "zone" = arena.zones[zone_id]?["name"] || "Переход", "health" = target.health, "max_health" = target.maxHealth, "dead" = target.stat == DEAD, "brute" = target.getBruteLoss(), "burn" = target.getFireLoss(), "toxin" = target.getToxLoss(), "oxygen" = target.getOxyLoss(), "stamina" = ishuman(target) ? target.getStaminaLoss() : null, "human" = ishuman(target), "owner" = creator?.current_body?.real_name || "Общая цель", "can_manage" = can_manage_target(target)))
+		data["targets"] += list(list("id" = REF(target), "name" = target.name, "zone" = arena.zones[zone_id]?["name"] || "Переход", "health" = target.health, "max_health" = target.maxHealth, "dead" = target.stat == DEAD, "brute" = target.getBruteLoss(), "burn" = target.getFireLoss(), "toxin" = target.getToxLoss(), "oxygen" = target.getOxyLoss(), "stamina" = ishuman(target) ? target.getStaminaLoss() : null, "human" = ishuman(target), "states" = antag_training_target_states(target), "owner" = creator?.current_body?.real_name || "Общая цель", "can_manage" = can_manage_target(target)))
 	data["zones"] = list()
 	for(var/zone_id in arena.zones)
 		var/list/zone = arena.zones[zone_id]
@@ -163,7 +166,7 @@
 				return FALSE
 			next_heal_at = world.time + 1 SECONDS
 			heal_self()
-		if("target_heal", "target_delete", "target_hunt", "target_injure")
+		if("target_heal", "target_delete", "target_hunt", "target_injure", "target_condition")
 			var/mob/living/target = locate(params["id"]) in arena.targets
 			if(!can_manage_target(target) || get_area(heretic_pocket_anchor(get_turf(target))) != arena.room)
 				return FALSE
@@ -173,6 +176,8 @@
 				target.revive(full_heal = TRUE, admin_revive = TRUE)
 			else if(action == "target_injure")
 				injure_target(target, params["injury"])
+			else if(action == "target_condition")
+				condition_target(target, params["condition"])
 			else if(action == "target_hunt" && ishuman(target))
 				program.target_created(src, target)
 			else if(action == "target_delete")

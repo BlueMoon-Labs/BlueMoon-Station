@@ -104,6 +104,8 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	next_supply_at = world.time + ANTAG_TRAINING_PRACTICE_DELAY
 	if(body_count)
 		arena.next_spawn_at = next_supply_at
+	var/body_zone = arena.match_zone(user)
+	var/bodies_nearby = !(body_zone in list("hub", "corridor"))
 	var/issued = 0
 	for(var/item_type in items)
 		var/count = items[item_type] || 1
@@ -114,7 +116,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 				preparing = FALSE
 				return FALSE
 			if(ispath(item_type, /mob/living/carbon/human))
-				if(arena.spawn_creature("corpse", "laboratory", FALSE, src))
+				if(arena.spawn_creature("corpse", bodies_nearby ? body_zone : "laboratory", FALSE, src, bodies_nearby ? get_turf(user) : null))
 					issued++
 				continue
 			if(!components && !recipe.training_result_available(user))
@@ -130,7 +132,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 				recipe.configure_training_result(item, user)
 			issued++
 	preparing = FALSE
-	practice_message("«[recipe.name]»: выдано [issued] из [item_count + body_count]. Предметы рядом с вами[body_count ? "; тела — в лаборатории" : ""].")
+	practice_message("«[recipe.name]»: выдано [issued] из [item_count + body_count]. Предметы рядом с вами[body_count ? "; тела — [bodies_nearby ? "рядом с вами" : "в лаборатории"]" : ""].")
 	return issued == item_count + body_count
 
 /datum/eldritch_knowledge/proc/training_result_available(mob/living/user)
@@ -270,7 +272,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		else if(heretic.hunt_target != target.mind)
 			practice_hint = "Назначение изменилось. В разделе «Цели» назначьте эту учебную цель для охоты."
 		else if(!heretic.hunt_target_ready(target))
-			practice_hint = "Цель назначена. Призовите своё живое сердце. Свяжите, оглушите или сбейте цель с ног; крит тоже подходит."
+			practice_hint = "Цель назначена. Призовите своё живое сердце. Свяжите, оглушите или сбейте цель с ног: сами или кнопками у мишени в разделе «Цели»; крит тоже подходит."
 		else
 			practice_hint = "Цель обездвижена. Коснитесь её живым сердцем: если у пути есть дверь, сердце предложит увести цель в изнанку, иначе обряд пройдёт на месте. Можно и положить сердце рядом с ней на руне."
 	if(practice_complete)

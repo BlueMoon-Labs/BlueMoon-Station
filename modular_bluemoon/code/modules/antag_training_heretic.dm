@@ -49,7 +49,7 @@
 		for(var/knowledge_type in path.knowledge)
 			if(!heretic.get_knowledge(knowledge_type))
 				heretic.research_knowledge(knowledge_type, user)
-		to_chat(user, span_notice("Все ступени пути изучены. Создайте три тела, уложите их у руны и проведите заключительный обряд. Учебное вознесение не выдаёт достижений."))
+		to_chat(user, span_notice("Все ступени пути изучены. Встаньте в секторе и нажмите «Компоненты» у финального обряда в «Моей роли»: три тела лягут рядом с вами. Начертите руну у тел и проведите заключительный обряд. Учебное вознесение не выдаёт достижений."))
 		return
 	if(world.time < session.next_supply_at)
 		to_chat(user, span_warning("Подождите несколько секунд перед следующей выдачей."))

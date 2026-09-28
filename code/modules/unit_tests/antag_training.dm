@@ -920,3 +920,57 @@
 	heretic.pocket.collapse("проверка")
 	TEST_ASSERT_EQUAL(get_area(victim), session.arena.room, "Цель вернулась на полигон.")
 	TEST_ASSERT_EQUAL(get_area(user), session.arena.room, "Еретик вернулся на полигон.")
+
+/// Кнопки состояний открывают захваты, цели не встают стопкой, бегущая мишень ходит и замирает, тела обряда ложатся у еретика.
+/datum/unit_test/antag_training_target_states/Run()
+	var/datum/antag_training_session/session = allocate_training_session()
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_session/guest = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(guest.prepare(session.arena), "Второй участник входит.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/mob/living/carbon/human/target = arena.spawn_creature("human", "range", creator = session)
+	var/mob/living/carbon/human/neighbour = arena.spawn_creature("human", "range", creator = session)
+	TEST_ASSERT_NOTEQUAL(get_turf(target), get_turf(neighbour), "Вторая цель встаёт на соседнюю клетку.")
+	TEST_ASSERT(!guest.condition_target(target, "knockdown"), "Чужую цель не обездвижить.")
+	TEST_ASSERT(!session.condition_target(target, "unknown"), "Неизвестное состояние отклоняется.")
+	TEST_ASSERT(session.condition_target(target, "knockdown"), "Цель сбита с ног.")
+	TEST_ASSERT(heretic_capture_downed(target), "Сбитая с ног цель годится для захвата.")
+	TEST_ASSERT("сбита с ног" in antag_training_target_states(target), "Пульт показывает, что цель сбита с ног.")
+	target.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT(session.condition_target(target, "exhaust"), "Цель обессилена.")
+	TEST_ASSERT(IS_STAMCRIT(target) && heretic_capture_downed(target), "Обессиленная цель годится для захвата.")
+	target.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT(session.condition_target(target, "cuffs") && target.handcuffed, "На цель надеты наручники.")
+	TEST_ASSERT(session.condition_target(target, "cuffs") && !target.handcuffed, "Повторное нажатие снимает наручники.")
+	var/mob/living/carbon/human/runner = arena.spawn_creature("runner", "range", creator = session)
+	var/datum/antag_training_runner/legs
+	for(var/datum/antag_training_runner/candidate in SSfastprocess.processing)
+		if(candidate.runner == runner)
+			legs = candidate
+	TEST_ASSERT_NOTNULL(legs, "Бегущая мишень ходит сама.")
+	var/turf/start = get_turf(runner)
+	legs.next_step_at = 0
+	legs.process()
+	TEST_ASSERT_NOTEQUAL(get_turf(runner), start, "Бегущая мишень делает шаг.")
+	TEST_ASSERT(arena.inside_bounds(get_turf(runner), arena.zones["range"]["bounds"]), "Бегущая мишень остаётся в секторе.")
+	session.condition_target(runner, "knockdown")
+	start = get_turf(runner)
+	legs.next_step_at = 0
+	legs.process()
+	TEST_ASSERT_EQUAL(get_turf(runner), start, "Сбитая с ног мишень стоит на месте.")
+	qdel(runner)
+	TEST_ASSERT(QDELETED(legs), "Удаление мишени останавливает её ходьбу.")
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(session.current_body)
+	session.next_supply_at = 0
+	TEST_ASSERT(session.prepare_path(PATH_ASH, 9), "Подготовлен путь.")
+	session.program.handle_choice(session, session.current_body, "Подготовить вознесение")
+	var/datum/eldritch_knowledge/final_eldritch/final_recipe = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/ash_final)
+	session.current_body.forceMove(arena.zones["pve"]["spawn"])
+	var/list/before = arena.targets.Copy()
+	session.next_supply_at = 0
+	arena.next_spawn_at = 0
+	TEST_ASSERT(session.issue_recipe(final_recipe, TRUE), "Выданы тела для обряда.")
+	var/list/bodies = arena.targets - before
+	TEST_ASSERT_EQUAL(length(bodies), HERETIC_ASCENSION_BODIES, "Выдано нужное число тел.")
+	for(var/mob/living/body as anything in bodies)
+		TEST_ASSERT(get_dist(body, session.current_body) <= ANTAG_TRAINING_SPAWN_RADIUS && arena.match_zone(body) == "pve", "Тело лежит рядом с еретиком в его секторе.")

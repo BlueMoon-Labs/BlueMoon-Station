@@ -83,8 +83,15 @@ GLOBAL_LIST_INIT(antag_training_injuries, list(
 	"oxygen" = list("name" = "Кислородный урон: +40", "type" = OXY, "amount" = 40)
 ))
 
+GLOBAL_LIST_INIT(antag_training_conditions, list(
+	"knockdown" = "Сбить с ног на 10 с",
+	"exhaust" = "Обессилить",
+	"cuffs" = "Надеть или снять наручники"
+))
+
 GLOBAL_LIST_INIT(antag_training_creatures, list(
 	"human" = list("name" = "Человек без брони", "type" = /mob/living/carbon/human),
+	"runner" = list("name" = "Бегущий человек", "type" = /mob/living/carbon/human, "runner" = TRUE),
 	"armored" = list("name" = "Человек в бронежилете", "type" = /mob/living/carbon/human, "armored" = TRUE),
 	"corpse" = list("name" = "Тело для ритуала", "type" = /mob/living/carbon/human, "dead" = TRUE),
 	"carp" = list("name" = "Космический карп", "type" = /mob/living/simple_animal/hostile/carp),
@@ -249,7 +256,17 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 /datum/antag_training_arena/proc/spawn_target(armored = FALSE, dead = FALSE)
 	return spawn_creature(dead ? "corpse" : armored ? "armored" : "human", "laboratory", FALSE)
 
-/datum/antag_training_arena/proc/spawn_creature(template_id, zone_id, active = FALSE, datum/antag_training_session/creator)
+/// Ближайшая к center свободная клетка пола внутри bounds, чтобы цели не вставали стопкой.
+/datum/antag_training_arena/proc/free_spot(turf/center, list/bounds)
+	if(!inside_bounds(center, bounds))
+		return null
+	for(var/radius in 0 to ANTAG_TRAINING_SPAWN_RADIUS)
+		for(var/turf/open/spot in (radius ? orange(radius, center) : list(center)))
+			if(get_dist(spot, center) == radius && inside_bounds(spot, bounds) && !spot.is_blocked_turf(exclude_mobs = FALSE) && !(locate(/mob/living) in spot))
+				return spot
+	return null
+
+/datum/antag_training_arena/proc/spawn_creature(template_id, zone_id, active = FALSE, datum/antag_training_session/creator, turf/near)
 	var/list/template = GLOB.antag_training_creatures[template_id]
 	var/list/zone = zones[zone_id]
 	prune_targets()
@@ -257,8 +274,9 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		return null
 	if(zone_id == "melee" && duel && duel.phase != "invite")
 		return null
+	var/turf/location = free_spot(near, zone["bounds"]) || free_spot(zone["target"], zone["bounds"]) || zone["target"]
 	var/mob_type = template["type"]
-	var/mob/living/target = new mob_type(zone["target"])
+	var/mob/living/target = new mob_type(location)
 	if(creator)
 		target.training_owner = WEAKREF(creator)
 	if(ishuman(target))
@@ -274,6 +292,8 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 			human.equip_to_slot_or_del(new /obj/item/clothing/head/helmet, ITEM_SLOT_HEAD)
 		if(template["dead"])
 			human.death()
+		if(template["runner"])
+			new /datum/antag_training_runner(human, src, zone["bounds"])
 	else if(isanimal(target))
 		var/mob/living/simple_animal/animal = target
 		animal.toggle_ai(active ? AI_ON : AI_OFF)
@@ -281,6 +301,48 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 	ADD_TRAIT(target, TRAIT_EXEMPT_HEALTH_EVENTS, REF(src))
 	targets += target
 	return target
+
+/// Бегущая мишень ходит челноком поперёк сектора и замирает, пока её держат, сковали или сбили с ног.
+/datum/antag_training_runner
+	var/mob/living/carbon/human/runner
+	var/datum/antag_training_arena/arena
+	var/list/bounds
+	var/heading = NORTH
+	var/next_step_at = 0
+
+/datum/antag_training_runner/New(mob/living/carbon/human/target, datum/antag_training_arena/training, list/zone_bounds)
+	runner = target
+	arena = training
+	bounds = zone_bounds
+	RegisterSignal(runner, COMSIG_PARENT_QDELETING, PROC_REF(on_runner_deleted))
+	START_PROCESSING(SSfastprocess, src)
+
+/datum/antag_training_runner/proc/on_runner_deleted()
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/antag_training_runner/proc/can_run()
+	return !runner.client && runner.stat == CONSCIOUS && (runner.mobility_flags & MOBILITY_MOVE) && (runner.mobility_flags & MOBILITY_STAND) && !runner.resting && !runner.handcuffed && !runner.buckled && !runner.pulledby && !arena.resetting && isturf(runner.loc) && arena.inside_bounds(runner.loc, bounds)
+
+/datum/antag_training_runner/process()
+	if(world.time < next_step_at || !can_run())
+		return
+	next_step_at = world.time + ANTAG_TRAINING_RUNNER_STEP
+	for(var/attempt in 1 to 2)
+		var/turf/next = get_step(runner, heading)
+		if(next && next.y > bounds[3] && next.y < bounds[4])
+			runner.set_glide_size(DELAY_TO_GLIDE_SIZE(ANTAG_TRAINING_RUNNER_STEP))
+			if(runner.Move(next, heading))
+				return
+		heading = turn(heading, 180)
+
+/datum/antag_training_runner/Destroy()
+	STOP_PROCESSING(SSfastprocess, src)
+	if(runner)
+		UnregisterSignal(runner, COMSIG_PARENT_QDELETING)
+	runner = null
+	arena = null
+	return ..()
 
 /datum/antag_training_arena/proc/prune_supplies()
 	for(var/datum/weakref/item_ref as anything in issued_items.Copy())
@@ -354,6 +416,38 @@ GLOBAL_LIST_INIT(antag_training_creatures, list(
 		else
 			target.apply_damage(injury["amount"], injury["type"], BODY_ZONE_CHEST, forced = TRUE, wound_bonus = CANT_WOUND)
 	return TRUE
+
+/datum/antag_training_session/proc/condition_target(mob/living/carbon/human/target, condition_id)
+	if(!(condition_id in GLOB.antag_training_conditions) || !can_manage_target(target) || !ishuman(target) || target.stat == DEAD || get_area(target) != arena.room || arena.resetting || finished)
+		return FALSE
+	switch(condition_id)
+		if("knockdown")
+			target.Knockdown(ANTAG_TRAINING_KNOCKDOWN, ignore_canstun = TRUE)
+		if("exhaust")
+			target.adjustStaminaLoss(STAMINA_CRIT, forced = TRUE)
+		if("cuffs")
+			if(target.handcuffed)
+				QDEL_NULL(target.handcuffed)
+			else
+				target.handcuffed = new /obj/item/restraints/handcuffs(target)
+			target.update_handcuffed()
+	return TRUE
+
+/// Состояния цели, от которых зависят захваты и обряды.
+/proc/antag_training_target_states(mob/living/target)
+	var/list/states = list()
+	if(!ishuman(target) || target.stat == DEAD)
+		return states
+	var/mob/living/carbon/human/human = target
+	if(human.IsKnockdown() || human.IsParalyzed())
+		states += "сбита с ног"
+	if(IS_STAMCRIT(human))
+		states += "обессилена"
+	if(human.handcuffed)
+		states += "в наручниках"
+	if(human.stat != CONSCIOUS)
+		states += "без сознания"
+	return states
 
 /datum/antag_training_session/proc/issue_equipment(equipment_id, mob/user)
 	var/list/equipment = GLOB.antag_training_equipment[equipment_id]

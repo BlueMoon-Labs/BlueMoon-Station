@@ -46,6 +46,7 @@ const fixture: AntagTrainingData = {
   equipment: [{ id: 'laser', name: 'Лазерный карабин', category: 'Стрельба' }],
   structures: [{ id: 'operating_table', name: 'Операционный стол', category: 'Медицина и химия', desc: 'Для операций и осмотра пациента.' }],
   injuries: [{ id: 'burn', name: 'Ожоги: +40' }],
+  conditions: [{ id: 'knockdown', name: 'Сбить с ног на 10 с' }],
   creatures: [{ id: 'human', name: 'Человек без брони' }, { id: 'carp', name: 'Карп' }],
   targets: [],
   programs: [{ id: '/datum/antag_training_program/heretic', name: 'Еретик — все пути' }],
@@ -252,4 +253,13 @@ test.each([{ dead: 1 }, { can_manage: 0 }])('повреждения недост
   fireEvent.click(ui.getByText('Цели'));
   fireEvent.click(ui.getByText('Ожоги: +40'));
   expect(ui.topic.mock.calls.some(([message]) => message.type === 'act/target_injure')).toBe(false);
+});
+
+test('состояние цели видно в карточке, кнопка передаёт состояние и цель', () => {
+  const ui = setup({ targets: [{ ...patient, states: ['в наручниках'] }] });
+  fireEvent.click(ui.getByText('Цели'));
+  expect(ui.getByText('Состояние: в наручниках')).toBeTruthy();
+  fireEvent.click(ui.getByText('Сбить с ног на 10 с'));
+  const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/target_condition');
+  expect(JSON.parse(call[0].payload)).toEqual({ id: 'patient', condition: 'knockdown' });
 });
