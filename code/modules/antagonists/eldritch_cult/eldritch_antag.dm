@@ -34,7 +34,7 @@
 /datum/antagonist/heretic/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)
 	to_chat(owner, span_eldritch_big("Вы — еретик!"))
-	to_chat(owner, span_eldritch("Призовите кодекс и выберите свой путь. Выбор необратим. В кодексе есть описание всех способностей, рецепты и руководство."))
+	to_chat(owner, span_eldritch("Кнопка «Призвать кодекс» кладёт книгу в руку, Z открывает её. Выберите путь - выбор необратим. Первые шаги по порядку - в кодексе, глава «Помощь», раздел «Начало»."))
 	var/hotkey_help = html_encode(format_ability_hotkey_help(owner.current.client?.prefs))
 	to_chat(owner, span_notice(hotkey_help))
 	to_chat(owner, span_notice("Мансус защищает еретиков и их слуг от боевой магии друг друга независимо от наличия кодекса. Обычный физический урон эта защита не останавливает. Еретики и их слуги не подходят для подношений. Чужое вознесение не закрывает ваш путь к вознесению."))

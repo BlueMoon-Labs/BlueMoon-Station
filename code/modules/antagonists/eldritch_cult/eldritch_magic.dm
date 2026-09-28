@@ -188,8 +188,8 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book
 	name = "Призвать кодекс"
-	desc = "Призывает спрятанный кодекс или прячет книгу при вас. Потерянный личный кодекс возвращается после 20 секунд неподвижности, из шкафа или сумки - после 60 секунд."
-	summary = "Достаёт спрятанный кодекс или прячет книгу при вас."
+	desc = "Достаёт кодекс в руку из-за завесы, из вашей сумки или кармана и сразу открывает его. Кодекс, который уже в руке, прячется за завесу. Если руки заняты, призванная книга ляжет в карман или рюкзак. Потерянный личный кодекс возвращается после 20 секунд неподвижности, из шкафа или брошенной сумки - после 60 секунд."
+	summary = "Достаёт кодекс в руку и открывает его; кодекс в руке прячет за завесу."
 	action_icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	action_icon_state = "codex"
 	summon_type = /obj/item/forbidden_book
@@ -197,6 +197,7 @@
 	var/recovery_time = 20 SECONDS
 	var/container_recovery_time = 1 MINUTES
 	var/recovery_failure
+	var/last_notice
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book/can_cast(mob/user, skipcharge, silent)
 	return heretic_check(user, !recovery_in_progress, silent, "Возвращение кодекса уже началось. Не двигайтесь.") && ..()
@@ -205,6 +206,63 @@
 	. = ..()
 	if(!heretic.personal_codex?.resolve())
 		heretic.personal_codex = WEAKREF(item)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/announce_hidden(obj/item/item, mob/living/user)
+	notify(user, "Кодекс спрятан за завесой - нажмите ещё раз, чтобы достать.")
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/summon_item(obj/item/item, mob/living/carbon/human/user)
+	. = ..()
+	if(!.)
+		return
+	if(!user.is_holding(item))
+		notify(user, "Руки заняты, поэтому кодекс теперь [carried_place(item, user)]. Освободите руку и нажмите «Призвать кодекс» ещё раз.")
+		return
+	open_in_hand(item, user)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/take_carried_item(obj/item/item, mob/living/user, datum/antagonist/heretic/heretic)
+	var/place = carried_place(item, user)
+	if(!length(user.get_empty_held_indexes()))
+		heretic_revert_cast(user, "Кодекс [place], но обе руки заняты. Освободите руку и нажмите ещё раз.")
+		return
+	if(item.loc == user && !user.temporarilyRemoveItemFromInventory(item))
+		heretic_revert_cast(user, "Кодекс [place] не снимается. Достаньте его вручную.")
+		return
+	if(!user.put_in_hands(item))
+		heretic_revert_cast(user, "Кодекс [place] не удалось взять в руку.")
+		return
+	if(summon_sound)
+		playsound(user, summon_sound, 60, TRUE, -SOUND_RANGE+2, SOUND_FALLOFF_EXPONENT*4, falloff_distance = 0)
+	open_in_hand(item, user)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/proc/open_in_hand(obj/item/item, mob/living/user)
+	notify(user, "Кодекс в руке - используйте его (Z), чтобы открыть.")
+	if(user.client)
+		item.ui_interact(user)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/proc/carried_place(obj/item/item, mob/living/user)
+	var/atom/container = item.loc
+	while(container && container.loc != user && container != user)
+		container = container.loc
+	if(!ishuman(user) || !container)
+		return "при вас"
+	var/mob/living/carbon/human/human_user = user
+	if(container == user)
+		if(item == human_user.l_store || item == human_user.r_store)
+			return "в кармане"
+		if(item == human_user.belt)
+			return "на поясе"
+		return "на вас"
+	if(container == human_user.back)
+		return "в рюкзаке"
+	if(container == human_user.l_store || container == human_user.r_store)
+		return "в кармане, в [container.name]"
+	if(container == human_user.belt)
+		return "на поясе, в [container.name]"
+	return "в [container.name]"
+
+/obj/effect/proc_holder/spell/self/heretic_summon/book/proc/notify(mob/living/user, text)
+	last_notice = text
+	to_chat(user, span_notice(text))
 
 /obj/effect/proc_holder/spell/self/heretic_summon/book/proc/recovery_allowed(mob/living/user, datum/antagonist/heretic/heretic, datum/weakref/original_ref)
 	recovery_failure = null
@@ -297,14 +355,22 @@
 			heretic_revert_cast(user, "Не удалось призвать предмет!")
 		return
 
-	var/list/nearby = user.GetAllContents(summon_type)
+	for(var/obj/item/candidate in user.held_items)
+		if(can_summon_item(candidate, user))
+			stash_item(candidate, user, heretic)
+			return
+	for(var/obj/item/candidate in user.GetAllContents(summon_type))
+		if(can_summon_item(candidate, user))
+			take_carried_item(candidate, user, heretic)
+			return
+	var/list/nearby = list()
 	nearby |= user.loc?.contents
 	var/turf/user_turf = get_turf(user)
 	if(user_turf != user.loc)
 		nearby |= user_turf?.contents
 	for(var/obj/item/candidate in nearby)
 		if(can_summon_item(candidate, user))
-			hide_item(candidate, heretic)
+			stash_item(candidate, user, heretic)
 			return
 	if(recover_missing_item(user, heretic))
 		return
@@ -316,6 +382,16 @@
 
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/recover_missing_item(mob/living/user, datum/antagonist/heretic/heretic)
 	return FALSE
+
+/obj/effect/proc_holder/spell/self/heretic_summon/proc/take_carried_item(obj/item/item, mob/living/user, datum/antagonist/heretic/heretic)
+	stash_item(item, user, heretic)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/proc/stash_item(obj/item/item, mob/living/user, datum/antagonist/heretic/heretic)
+	hide_item(item, heretic)
+	announce_hidden(item, user)
+
+/obj/effect/proc_holder/spell/self/heretic_summon/proc/announce_hidden(obj/item/item, mob/living/user)
+	return
 
 /obj/effect/proc_holder/spell/self/heretic_summon/proc/hide_item(obj/item/I, datum/antagonist/heretic/heretic)
 	var/mob/living/M = heretic.owner.current

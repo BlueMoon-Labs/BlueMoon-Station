@@ -192,6 +192,7 @@
 #include "heretic_rust.dm"
 #include "heretic_rust_ascension.dm"
 #include "heretic_preparation.dm"
+#include "heretic_onboarding.dm"
 #include "necropolis_curse.dm"
 #include "heretic_visuals.dm"
 #include "heretic_influence_schedule.dm"

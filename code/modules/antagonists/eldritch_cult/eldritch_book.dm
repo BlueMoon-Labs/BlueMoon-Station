@@ -15,6 +15,7 @@
 	var/datum/weakref/observed_hunt_body
 	var/datum/weakref/observed_hunt_antag
 	var/hunt_update_timer
+	COOLDOWN_DECLARE(ui_refusal_notice)
 
 /obj/item/forbidden_book/Destroy()
 	clear_hunt_tracking()
@@ -370,11 +371,17 @@
 
 /obj/item/forbidden_book/ui_act(action, params, datum/tgui/ui)
 	. = ..()
-	if(.)
-		return
 	var/mob/living/user = ui?.user
+	if(.)
+		if(action != "turn_page")
+			explain_ui_refusal(user)
+		return
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-	if(!heretic || !user.is_holding(src) || user.incapacitated())
+	if(!heretic)
+		return FALSE
+	if(ui_refusal_reason(user))
+		if(action != "turn_page")
+			explain_ui_refusal(user)
 		return FALSE
 	switch(action)
 		if("refresh_preparation")
@@ -400,6 +407,22 @@
 			user.playsound_local(get_turf(user), 'sound/effects/magic.ogg', 25, TRUE)
 			return TRUE
 	return FALSE
+
+/obj/item/forbidden_book/proc/ui_refusal_reason(mob/living/user)
+	if(!istype(user) || user.stat != CONSCIOUS)
+		return null
+	if(!user.is_holding(src))
+		return "Кодекс нужно держать в руке, чтобы листать его и изучать знания."
+	if(user.incapacitated() || !(user.mobility_flags & MOBILITY_UI))
+		return "Сейчас кодекс не полистать: вы оглушены или связаны. Дождитесь, пока это пройдёт."
+	return null
+
+/obj/item/forbidden_book/proc/explain_ui_refusal(mob/living/user)
+	var/reason = ui_refusal_reason(user)
+	if(!reason || !COOLDOWN_FINISHED(src, ui_refusal_notice))
+		return
+	COOLDOWN_START(src, ui_refusal_notice, 1 SECONDS)
+	to_chat(user, span_warning(reason))
 
 /obj/item/forbidden_book/ui_close(mob/user)
 	if(book_reader?.resolve() == user)
