@@ -700,7 +700,7 @@
 	for(var/id in GLOB.heretic_dance_styles)
 		var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[id]
 		TEST_ASSERT("dance_figure_[id]" in icon_states('modular_bluemoon/icons/obj/heretic_dance_effects.dmi'), "У стиля [style.name] есть своя кульминация.")
-		TEST_ASSERT(fexists("[style.figure_sound]"), "У стиля [style.name] есть свой звук фигуры.")
+		TEST_ASSERT(isfile(style.figure_sound), "У стиля [style.name] есть свой звук фигуры.")
 
 /// Растолкавший партнёра видит, как рвётся лента, и получает подтверждение.
 /datum/unit_test/heretic_dance_rescue_fx/Run()
