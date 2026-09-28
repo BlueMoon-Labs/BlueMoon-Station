@@ -785,7 +785,7 @@
 		return FALSE
 	if(GLOB.heretic_ritual_reservations[the_target])
 		return FALSE
-	return heretic_can_affect(parent_mob, the_target, chargecost = 0)
+	return heretic_can_affect(parent_mob, the_target, chargecost = 0, notify = FALSE)
 
 /mob/living/simple_animal/hostile/illusion/heretic_moon/proc/hold_position(hold)
 	holding_position = hold
