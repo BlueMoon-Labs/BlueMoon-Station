@@ -46,6 +46,7 @@
 		return FALSE
 
 	if(mob.control_object)
+		fractional_movement?.invalidate()
 		return Move_object(direction)
 	if(!isliving(mob))
 		return mob.Move(n, direction)
@@ -64,6 +65,8 @@
 	//
 
 	var/mob/living/L = mob  //Already checked for isliving earlier
+	if(L.incorporeal_move || mob.remote_control || mob.buckled)
+		fractional_movement?.invalidate()
 	if(L.incorporeal_move)	//Move though walls
 		Process_Incorpmove(direction)
 		return FALSE
@@ -90,21 +93,25 @@
 	if(!mob.Process_Spacemove(direction))
 		return FALSE
 	//We are now going to move
-	// Цена шага обязана быть кратна тику. Шаг может случиться только на тике -
-	// keyLoop() зовётся из SSinput, а это SS_TICKER - поэтому дробная задержка
-	// заставляет интервал прыгать между соседними тиками: при 1.6ds это
-	// последовательность 4,3,3,3,3, то есть скачок скорости на треть каждый
-	// пятый шаг. Именно это видно как рывки.
+	var/datum/fractional_movement_schedule/step_schedule = fractional_movement
+	if(step_schedule)
+		var/step_status = step_schedule.begin_step(mob, old_move_delay, world.time, world.tick_lag)
+		if(step_status == FRACTIONAL_MOVEMENT_PREPARING)
+			return FALSE
+		if(!step_status)
+			step_schedule = null
 	var/base_delay = mob.movement_delay()
 	var/add_delay = movement_step_delay(base_delay, (direction & (direction - 1)), world.tick_lag)
-	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE) // set it now in case of pulled objects
+	var/glide_delay = step_schedule ? max(world.tick_lag, base_delay * (ISDIAGONALDIR(direction) ? SQRT_2 : 1)) : add_delay
+	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(glide_delay), FALSE) // set it now in case of pulled objects
 	// Окно догоняющего шага - один тик, как в апстриме. Прежнее
 	// (add_delay * 1.25 + 0.75) при задержке 1.6ds растягивалось на пять с
 	// половиной тиков и переиспользовало устаревшую базу расписания.
-	if(old_move_delay + world.tick_lag > world.time)
-		move_delay = old_move_delay
-	else
-		move_delay = world.time
+	if(!step_schedule)
+		if(old_move_delay + world.tick_lag > world.time)
+			move_delay = old_move_delay
+		else
+			move_delay = world.time
 	var/oldloc = mob.loc
 
 	var/confusion_level = L.get_confusion_movement_level()
@@ -121,14 +128,23 @@
 			n = get_step(L, direction)
 
 	. = ..()
+	if(step_schedule && (mob != L || QDELETED(L)))
+		step_schedule.in_step = FALSE
+		step_schedule.invalidate()
+		return
 
 	// Диагональ засчитывается только если она удалась: сорванный наискось шаг
 	// стоит как прямой. Конфуз мог поменять direction, поэтому смотрим на
 	// итоговое значение, а не на исходное намерение.
 	var/stepped_diagonally = ((direction & (direction - 1)) && mob.loc == n)
-	add_delay = movement_step_delay(base_delay, stepped_diagonally, world.tick_lag)
-	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE)
-	move_delay += add_delay
+	if(step_schedule)
+		step_schedule.finish_step(mob, base_delay, stepped_diagonally, world.time, move_delay, world.tick_lag, world.icon_size, GLOB.glide_size_multiplier)
+		add_delay = step_schedule.step_cost
+		move_delay = step_schedule.next_target
+	else
+		add_delay = movement_step_delay(base_delay, stepped_diagonally, world.tick_lag)
+		mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE)
+		move_delay += add_delay
 	// Слепок расписания целиком, и до всего, что может дёрнуть скорость.
 	// finalize() броска роняет предметы, setDir ниже шлёт сигналы - любой из
 	// них способен позвать update_movespeed(), а тот считает остаток пути от
@@ -137,7 +153,7 @@
 	// Сверяться со слепком обязательно: move_delay пишут ещё и захват, и
 	// отдача, и админские вербы, и подтягивать чужой срок как свой нельзя.
 	last_move = world.time
-	last_step_target = move_delay
+	last_step_target = step_schedule ? step_schedule.owned_target : move_delay
 	last_step_cost = add_delay
 	last_step_diagonal = stepped_diagonally
 	if(.) // If mob is null here, we deserve the runtime
