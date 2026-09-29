@@ -82,6 +82,7 @@
 	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/clothing/head.dmi'
 	icon_state = "inteq_swat"
 	item_state = "inteq_swat"
+	can_flashlight = TRUE
 
 /obj/item/clothing/head/helmet/inteq
 	name = "InteQ helmet"
@@ -90,6 +91,7 @@
 	mob_overlay_icon = 'modular_bluemoon/krashly/icons/mob/clothing/head.dmi'
 	icon_state = "inteq_helmet"
 	item_state = "inteq_helmet"
+	can_flashlight = TRUE
 
 /obj/item/clothing/head/maid/syndicate/inteq
 	name = "InteQ maid headband"

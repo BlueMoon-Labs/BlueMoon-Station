@@ -483,6 +483,7 @@
 	#define COMPONENT_BLOCK_MISC_HELP (1<<0)
 // /mob/living/silicon signals
 #define COMSIG_ROBOT_UPDATE_ICONS "robot_update_icons"			//from base of robot/update_icons(): ()
+#define COMSIG_ROBOT_RESET_MODULE "robot_reset_module"
 
 // /mob/living/simple_animal/hostile signals
 #define COMSIG_HOSTILE_ATTACKINGTARGET "hostile_attackingtarget"

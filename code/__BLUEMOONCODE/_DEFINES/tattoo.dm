@@ -29,7 +29,7 @@
 /// Специальный флаг покрытия для щёк (проверяет HIDEFACE на маске/шлеме через flags_inv)
 #define TATTOO_COVERED_FACE "face"
 
-/// Специальный флаг покрытия для хвоста (проверяет HIDETAUR на костюме через flags_inv)
+/// Специальный флаг покрытия для хвоста (проверяет HIDETAIL на костюме через flags_inv)
 #define TATTOO_COVERED_TAIL "tail"
 
 /// Все интимные зоны татуировок (хранятся на BODY_ZONE_CHEST)

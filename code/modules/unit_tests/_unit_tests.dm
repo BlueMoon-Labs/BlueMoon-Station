@@ -106,6 +106,8 @@
 #include "bodybag_open_sprite.dm"
 // #include "bloody_footprints.dm"
 // #include "breath.dm"
+#include "byond_list_references.dm"
+#include "byond_native_helpers.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
 #include "character_profile_performance.dm"
