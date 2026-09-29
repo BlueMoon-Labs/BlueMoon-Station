@@ -231,8 +231,14 @@
 	if(blood_drain && !blood_check()) //Disables blood draining if the mob fails the blood check
 		toggle_blood_drain(TRUE)
 
+	// Списываем ресурсы носителя ровно в том объёме, в котором NIF начисляет ему
+	// заряд. Раньше кровь и голод почти не убывали (регенерация крови и hunger_mod
+	// съедали эффект), из-за чего NIF фактически давал энергию бесплатно.
+	if(nutrition_drain)
+		linked_mob.adjust_nutrition(-(nutrition_drain_rate * nutrition_conversion_rate))
+
 	if(blood_drain)
-		linked_mob.blood_volume -= blood_drain_rate
+		linked_mob.blood_volume = max(linked_mob.blood_volume - (blood_drain_rate * blood_conversion_rate), 0)
 
 	if(power_usage > power_level)
 		for(var/datum/nifsoft/nifsoft as anything in loaded_nifsofts)
@@ -264,12 +270,10 @@
 		return FALSE
 
 	if(nutrition_drain)
-		linked_mob.physiology.hunger_mod /= nutrition_drain_rate
 		power_usage += (nutrition_drain_rate * nutrition_conversion_rate)
 		nutrition_drain = FALSE
 		return TRUE
 
-	linked_mob.physiology.hunger_mod *= nutrition_drain_rate
 	power_usage -= (nutrition_drain_rate * nutrition_conversion_rate)
 	nutrition_drain = TRUE
 	return TRUE
@@ -287,7 +291,7 @@
 ///Toggles Blood Drain. Bypasss -  Ignores the need to perform the blood_check proc.
 /obj/item/organ/cyberimp/brain/nif/proc/toggle_blood_drain(bypass = FALSE)
 	if(!bypass && !blood_check())
-		return
+		return FALSE
 
 	blood_drain = !blood_drain
 
@@ -295,10 +299,11 @@
 		power_usage += (blood_drain_rate * blood_conversion_rate)
 
 		balloon_alert(linked_mob, "blood draining disabled")
-		return
+		return TRUE
 
 	power_usage -= (blood_drain_rate * blood_conversion_rate)
 	balloon_alert(linked_mob, "blood draining enabled")
+	return TRUE
 
 ///Checks if the NIF is able to draw blood as a power source?
 /obj/item/organ/cyberimp/brain/nif/proc/blood_check()

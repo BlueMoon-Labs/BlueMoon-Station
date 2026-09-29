@@ -46,8 +46,8 @@ GLOBAL_LIST_EMPTY(active_nif_scryers)
 	name = "scryer"
 	desc = "Дешёвое ожерелье с голо-излучателем, используемое пользователями NIFLink для связи с другими членами сети. На обратной стороне напечатана небольшая надпись: \"Это устройство не связано с Администрацией телекоммуникаций Nanotrasen.\""
 	icon = 'icons/obj/clothing/neck.dmi'
-	icon_state = "ties"
-	item_state = "tie"
+	icon_state = "bling"
+	item_state = ""	//no inhands
 	strip_delay = 40
 	w_class = WEIGHT_CLASS_SMALL
 	///The user currently equipped with the scryer. Type is a weakref.
