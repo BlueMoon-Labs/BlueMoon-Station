@@ -89,6 +89,23 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   portDragStartX = 0;
   portDragStartY = 0;
   portDragMoved = false;
+  /** Текущий якорь панорамы (finalLeft/finalTop). Не в state: меняется на каждый кадр
+   *  панорамирования/зума и НЕ должен перерисовывать всё дерево — читается только в
+   *  handleMouseUp при отправке move_screen. */
+  backgroundX = 0;
+  backgroundY = 0;
+
+  /** Кэш данных, зависящих только от последнего payload с сервера (не от локального
+   *  зума/панорамы/драга). Ключ — сам объект `data` (референс стабилен между
+   *  локальными setState). Избавляет от O(компоненты+порты+провода) работы на каждый
+   *  кадр перетаскивания/панорамирования. */
+  memoDataKey: unknown = null;
+  memoComponents: (CircuitComponentView | null)[] = [];
+  memoPortLabelByRef: Map<string, string> = new Map();
+  memoPulseKeys: Set<string> = new Set();
+  /** Кэш результата buildWireConnections по referee-сам входов (не по содержимому). */
+  memoConnInputs: unknown[] | null = null;
+  memoConnections: WireConnection[] | null = null;
 
   constructor(props: unknown) {
     super(props);
@@ -99,8 +116,6 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
       dragClientX: null,
       dragClientY: null,
       zoom: 1,
-      backgroundX: 0,
-      backgroundY: 0,
       menuOpen: false,
       lgbtqRainbowMode: false,
       screenPanOverride: null,
@@ -389,10 +404,10 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
 
   handleBackgroundMoved(newX: number, newY: number) {
     this.planePanDirty = true;
-    this.setState({
-      backgroundX: newX,
-      backgroundY: newY,
-    });
+    // Просто запоминаем якорь, не пишем в state: иначе каждый кадр панорамы
+    // перерисовывал бы всё дерево компонентов и проводов.
+    this.backgroundX = newX;
+    this.backgroundY = newY;
     if (this.state.menuOpen) {
       this.setState({
         menuOpen: false,
@@ -404,17 +419,17 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   handlePanToOrigin() {
     const { act } = useBackend<IntegratedCircuitData>();
     this.planePanDirty = false;
+    this.backgroundX = 0;
+    this.backgroundY = 0;
     this.setState((s) => ({
       screenPanOverride: { x: 0, y: 0 },
-      backgroundX: 0,
-      backgroundY: 0,
       planeHomeNonce: s.planeHomeNonce + 1,
     }));
     act('move_screen', { screen_x: 0, screen_y: 0 });
   }
 
   /** Отцентрировать поле на компоненте из списка (jump to). */
-  handleJumpToComponent(comp: CircuitComponentView) {
+  handleJumpToComponent(comp: CircuitComponentView, index: number) {
     const { act } = useBackend<IntegratedCircuitData>();
     const svg = this.connectionsSvgRef?.current;
     const z = Math.max(this.state.zoom || 1, 0.01);
@@ -422,14 +437,28 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
     let targetY = 0;
     if (svg) {
       const r = svg.getBoundingClientRect();
-      targetX = r.width / 3 - (comp.x || 0) * z;
-      targetY = r.height / 3 - (comp.y || 0) * z;
+      // SVG лежит внутри scaled(zoom)-контейнера InfinitePlane, поэтому его
+      // bounding rect уже умножен на zoom. Делим, чтобы получить CSS-размер
+      // видимой области — иначе «прыжок к компоненту» уезжает пропорционально зуму.
+      const viewWidth = r.width / z;
+      const viewHeight = r.height / z;
+      // comp.x/y — левый-верхний угол ноды в плоскости. Замеряем реальный размер
+      // ноды (уже в экранных px, т.е. умноженный на zoom) и сдвигаем на половину,
+      // чтобы в центр видимой области попал ЦЕНТР ноды, а не её угол.
+      const host = svg.parentElement;
+      const node = host
+        ? host.querySelector<HTMLElement>(`[data-ic-component-id="${index}"]`)
+        : null;
+      const halfW = node ? node.getBoundingClientRect().width / 2 : 0;
+      const halfH = node ? node.getBoundingClientRect().height / 2 : 0;
+      targetX = viewWidth / 2 - (comp.x || 0) * z - halfW;
+      targetY = viewHeight / 2 - (comp.y || 0) * z - halfH;
     }
     this.planePanDirty = false;
+    this.backgroundX = targetX;
+    this.backgroundY = targetY;
     this.setState((s) => ({
       screenPanOverride: { x: targetX, y: targetY },
-      backgroundX: targetX,
-      backgroundY: targetY,
       planeHomeNonce: s.planeHomeNonce + 1,
     }));
     act('move_screen', { screen_x: targetX, screen_y: targetY });
@@ -544,7 +573,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
       selectedPort: null,
       selection: [],
     });
-  }
+  };
 
   handleMouseUp(_event: MouseEvent) {
     if (!this.planePanDirty) {
@@ -552,10 +581,9 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
     }
     this.planePanDirty = false;
     const { act } = useBackend<IntegratedCircuitData>();
-    const { backgroundX, backgroundY } = this.state;
     act("move_screen", {
-      screen_x: backgroundX,
-      screen_y: backgroundY,
+      screen_x: this.backgroundX,
+      screen_y: this.backgroundY,
     });
   }
 
@@ -753,9 +781,24 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
       circuit_pulse_out_ref,
       circuit_pulse_in_ref,
     } = data;
-    const components = byondListToArray(data.components).map(
-      normalizeCircuitComponent,
-    );
+    // Нормализованные компоненты/подписи/импульсы зависят только от payload
+    // сервера — пересобираем их один раз на каждый новый `data`, а не на каждый
+    // локальный setState (зум/панорама/драг).
+    if (this.memoDataKey !== data) {
+      this.memoDataKey = data;
+      this.memoComponents = byondListToArray(data.components).map(
+        normalizeCircuitComponent,
+      );
+      this.memoPortLabelByRef = buildPortLabelByRef(this.memoComponents);
+      this.memoPulseKeys = buildPulseKeys(
+        circuit_pulses,
+        circuit_pulse_out_ref,
+        circuit_pulse_in_ref,
+      );
+    }
+    const components = this.memoComponents;
+    const portLabelByRef = this.memoPortLabelByRef;
+    const pulseKeys = this.memoPulseKeys;
     this.latestComponents = components;
     const ieBatteryPercent = ie_circuit && data.ie_battery_percent !== undefined
       ? data.ie_battery_percent
@@ -769,14 +812,38 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
     const panY = this.state.screenPanOverride?.y ?? screen_y ?? 0;
     const { locations, selectedPort, menuOpen, zoom, dragClientX, dragClientY } = this.state;
     const { componentsPanelOpen, componentsFilter, selection, dragState } = this.state;
-    const connections = this.buildWireConnections(
+    // Провода пересчитываем только когда реально меняются их входы (порты,
+    // превью-провод, зум), а не на каждый кадр панорамы/драга нод.
+    const connInputs: unknown[] = [
       components,
       locations,
       selectedPort,
       dragClientX,
       dragClientY,
-      zoom,
-    );
+    ];
+    // Зум влияет на координаты превью-провода только когда пин выбран и тянут
+    // провод; без этого зум не должен заставлять пересобирать провода.
+    if (selectedPort) {
+      connInputs.push(zoom);
+    }
+    const connCached = this.memoConnInputs !== null
+      && this.memoConnInputs.length === connInputs.length
+      && this.memoConnInputs.every((v, i) => v === connInputs[i]);
+    let connections: WireConnection[];
+    if (connCached && this.memoConnections !== null) {
+      connections = this.memoConnections;
+    } else {
+      connections = this.buildWireConnections(
+        components,
+        locations,
+        selectedPort,
+        dragClientX,
+        dragClientY,
+        zoom,
+      );
+      this.memoConnInputs = connInputs;
+      this.memoConnections = connections;
+    }
     const componentCount = components.reduce((n, c) => n + (c ? 1 : 0), 0);
     const variableCount = variables?.length ?? 0;
     const zoomPercent = Math.round((zoom || 1) * 100);
@@ -790,16 +857,6 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
           || String(entry.index).includes(filterQuery)));
     /** Только корпус сборки (не одиночный чип в руках) — вставка чипа в поле. */
     const ieAssemblyUi = !!ie_circuit && ie_clone_copy_mode === 'assembly';
-
-    // Карта REF порта → подпись «Компонент · Порт» для попапа порядка связей.
-    const portLabelByRef = buildPortLabelByRef(components);
-
-    // Ключи «живых» импульсов проводов: out\0in. IE отдаёт список, wiremod — один ref.
-    const pulseKeys = buildPulseKeys(
-      circuit_pulses,
-      circuit_pulse_out_ref,
-      circuit_pulse_in_ref,
-    );
 
     return (
       <Window
@@ -935,7 +992,6 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
                             y={(comp.y || 0) + dy}
                             index={componentId}
                             circuitOn={circuit_on ?? true}
-                            portLayoutKey={`${zoom}|${this.state.backgroundX}|${this.state.backgroundY}`}
                             onPortUpdated={this.handlePortLocation}
                             onPortLoaded={this.handlePortLocation}
                             onPortMouseDown={this.handlePortClick}
@@ -1011,7 +1067,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
                             fluid
                             color="transparent"
                             tooltip={`Перейти к «${comp.name}»`}
-                            onClick={() => this.handleJumpToComponent(comp)}>
+                            onClick={() => this.handleJumpToComponent(comp, index)}>
                             <Icon name="circle" color={comp.color || 'blue'} />
                             {' '}
                             #{index}

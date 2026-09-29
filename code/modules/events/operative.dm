@@ -22,7 +22,11 @@
 	name = "Lone Operative (Disk Keeper)"
 	typepath = /datum/round_event/ghost_role/operative/keeper
 	admin_only = FALSE
-	weight = 10
+	// Как и боевой одиночка: нулевой старт, а вес растит лежащий диск (nuclearbomb.dm).
+	// В пуле раунда лежит только профильный контроль, поэтому в Extended защитник
+	// прилетает по той же неподвижности диска, что и оперативник в Dynamic.
+	weight = 0
+	weight_can_change = TRUE
 	min_players = 15 // Extended живёт и на лоупопе; унаследованные 30 делали событие практически недоступным
 	earliest_start = 30 MINUTES
 	required_round_type = list(ROUNDTYPE_EXTENDED)

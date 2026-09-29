@@ -2098,6 +2098,14 @@
 	moduleselect_icon = "miner"
 	hat_offset = 0
 
+/obj/item/robot_module/miner/rebuild_modules()
+	. = ..()
+	var/mob/living/silicon/robot/R = loc
+	if(!iscyborg(R) || QDELETED(R))
+		return
+	if(!R.GetComponent(/datum/component/robot_module_component/mining_cyborg_goliath_plating))
+		R.AddComponent(/datum/component/robot_module_component/mining_cyborg_goliath_plating)
+
 /obj/item/robot_module/miner/be_transformed_to(obj/item/robot_module/old_module)
 	var/mob/living/silicon/robot/R = loc
 	var/static/list/mining_icons

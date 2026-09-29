@@ -788,8 +788,8 @@ There are several things that need to be remembered:
 								center = !isnull(T) ? T.center : TRUE
 								dimension_x = T?.dimension_x || 64
 								dimension_y = T?.dimension_y || 32
-								suit.flags_inv &= ~HIDETAUR
-								suit.taur_flags_inv_changed |= HIDETAUR
+								suit.flags_inv &= ~(HIDETAUR|HIDETAIL)
+								suit.taur_flags_inv_changed |= HIDETAUR|HIDETAIL
 								taur_builded = TRUE
 								break
 

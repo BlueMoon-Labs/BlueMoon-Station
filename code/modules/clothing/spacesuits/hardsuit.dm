@@ -299,7 +299,7 @@
 	item_state = "mining_hardsuit"
 	hardsuit_type = "mining"
 	tail_state = "engineer"
-	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR
+	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR | HIDETAIL
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	armor = list(MELEE = 30, BULLET = 15, LASER = 15, ENERGY = 15, BOMB = 30, BIO = 100, RAD = 50, FIRE = 100, ACID = 75, WOUND = 15)

@@ -319,22 +319,8 @@
 
 /datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
 	if(!resumed)
-		// Отжившие записи кулдауна снимаются здесь же, раз фаза всё равно
-		// трогает журнал: истёкший гейт уже ничего не блокирует, а без чистки
-		// список растёт весь раунд и держит сильные ссылки на снесённые зоны
-		// (шаттлы, руины, комнаты Гильберта) - им не собраться сборщиком.
-		var/list/handled = decompression_handled_at
-		for(var/i = length(handled); i > 0; i--)
-			var/area/base = handled[i]
-			if(world.time >= handled[base] + DECOMPRESSION_AREA_ALARM_COOLDOWN)
-				handled.Cut(i, i + 1)
-		// Та же уборка для неподтверждённых замеров: за пределами окна запись уже
-		// ничего не подтвердит, а ссылку на снесённую зону держит.
-		var/list/pending = decompression_pending
-		for(var/i = length(pending); i > 0; i--)
-			var/area/base = pending[i]
-			if(times_fired - pending[base] > DECOMPRESSION_PENDING_WINDOW_FIRES)
-				pending.Cut(i, i + 1)
+		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
+		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
 		currentrun = decompression_areas.Copy()
 		decompression_areas.Cut()
 		num_decompression_areas = 0

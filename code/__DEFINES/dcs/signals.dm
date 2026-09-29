@@ -484,6 +484,7 @@
 #define COMSIG_CARBON_UPDATEHEALTH "comsig_carbon_updatehealth"		// called from /mob/living/carbon/updatehealth()
 // /mob/living/silicon signals
 #define COMSIG_ROBOT_UPDATE_ICONS "robot_update_icons"			//from base of robot/update_icons(): ()
+#define COMSIG_ROBOT_RESET_MODULE "robot_reset_module"
 
 // /mob/living/simple_animal/hostile signals
 #define COMSIG_HOSTILE_ATTACKINGTARGET "hostile_attackingtarget"

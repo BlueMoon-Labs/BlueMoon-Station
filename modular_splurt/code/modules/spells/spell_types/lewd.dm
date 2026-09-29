@@ -32,9 +32,19 @@
 	if(!chem)
 		return
 
+	var/chem_name = chem == LEWD_BOOK_ALL_REAG_ADD ? "все развратные реагенты" : chem
 	var/datum/reagent/used_reagent //istype
 	var/add_volume = 0
+	var/list/affected = list() //цели, давшие явное согласие
 	for(var/mob/living/carbon/C in targets)
+		// Наложение любого реагента, в том числе на самого себя, требует явного согласия цели.
+		var/is_self = C == user
+		var/prompt = is_self ? "Вы действительно хотите нанести на себя «[chem_name]»?" : "[user] хочет нанести на вас «[chem_name]». Вы согласны?"
+		var/decline = is_self ? "Вы передумали наносить реагент на себя." : "Вы отказались от нанесения реагента."
+		if(tgui_alert(C, prompt, "Развратная химия", list("Да", "Нет")) != "Да")
+			to_chat(C, span_warning(decline))
+			continue
+		affected += C
 		if(choices.Find(chem))
 			C.reagents.add_reagent(choices[chem], LEWD_BOOK_REAG_VOLUME)
 			used_reagent = choices[chem]
@@ -44,12 +54,14 @@
 				C.reagents.add_reagent(choices[reagent], LEWD_BOOK_ALL_REAG_VOLUME)
 				add_volume = LEWD_BOOK_ALL_REAG_VOLUME
 
+	if(!LAZYLEN(affected)) //все отказались - логировать нечего
+		return
+
 	var/msg = "cast the spell «[name]»"
-	if(LAZYLEN(targets))
-		var/list/to_log = list()
-		for(var/t in targets)
-			to_log += key_name(t)
-		msg += " on targets: [english_list(to_log, and_text = ", ")]"
+	var/list/to_log = list()
+	for(var/t in affected)
+		to_log += key_name(t)
+	msg += " on targets: [english_list(to_log, and_text = ", ")]"
 	msg += " and add [chem == LEWD_BOOK_ALL_REAG_ADD ? "all lewd reagents" : "[initial(used_reagent.name)]"], volume: [add_volume]"
 	user.log_message("[msg].", LOG_ATTACK)
 

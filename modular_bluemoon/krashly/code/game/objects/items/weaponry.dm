@@ -211,7 +211,7 @@
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 	w_class = WEIGHT_CLASS_BULKY
-	mag_type = /obj/item/ammo_box/magazine/ak12
+	mag_type = /obj/item/ammo_box/magazine/ak12/ap
 	can_suppress = FALSE
 	weapon_weight = WEAPON_HEAVY
 	burst_size = 3
