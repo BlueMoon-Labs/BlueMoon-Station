@@ -252,6 +252,29 @@
 	rift.harvested_minds |= user.mind
 	TEST_ASSERT_NULL(heretic_rift_at(rift_turf, user), "Исследованный разлом больше не перехватывает клик.")
 
+/// Клик кодексом в руке по разлому и по его клетке проходит всю цепочку ClickOn.
+/datum/unit_test/heretic_influence_codex_click/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.apply_innate_effects(user)
+	var/turf/rift_turf = get_step(user, NORTH)
+	var/datum/reality_smash_tracker/tracker = allocate(/datum/reality_smash_tracker)
+	var/obj/effect/reality_smash/rift = allocate(/obj/effect/reality_smash, rift_turf, tracker)
+	rift.AddMind(user.mind)
+	var/obj/item/forbidden_book/void/book = allocate(/obj/item/forbidden_book/void)
+	user.put_in_active_hand(book)
+	user.ClickOn(rift, "icon-x=16;icon-y=16;left=1")
+	TEST_ASSERT(user.mind in rift.harvesting_minds, "Клик кодексом по разлому начинает исследование.")
+
+	var/datum/antagonist/heretic/second_heretic = allocate_heretic(get_step(rift_turf, EAST))
+	var/mob/living/carbon/human/second_user = second_heretic.owner.current
+	rift.AddMind(second_user.mind)
+	var/obj/item/forbidden_book/second_book = allocate(/obj/item/forbidden_book)
+	second_user.put_in_active_hand(second_book)
+	second_user.ClickOn(rift_turf, "icon-x=2;icon-y=2;left=1")
+	TEST_ASSERT(second_user.mind in rift.harvesting_minds, "Клик кодексом по полу под разломом начинает исследование, а не руну.")
+	TEST_ASSERT(!second_book.drawing, "Клик по клетке разлома не чертит руну.")
+
 /datum/unit_test/heretic_history_mind_cleanup/Run()
 	var/datum/mind/mind = new
 	allocated += mind

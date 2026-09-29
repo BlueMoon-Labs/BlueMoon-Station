@@ -48,7 +48,7 @@
 		draw_rune(target, user)
 
 /obj/item/forbidden_book/proc/get_power_from_influence(obj/effect/reality_smash/influence, mob/living/user)
-	return influence.harvest(user, src)
+	INVOKE_ASYNC(influence, TYPE_PROC_REF(/obj/effect/reality_smash, harvest), user, src)
 
 /obj/item/forbidden_book/proc/can_draw_rune(turf/center, mob/living/user)
 	if(QDELETED(src) || !center || !IS_HERETIC(user) || user.incapacitated() || !user.is_holding(src) || !user.Adjacent(center))
