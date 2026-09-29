@@ -1009,6 +1009,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			stack_trace("do_observe у [src] при уже занятой цели (была: [observetarget], новая: [mob_eye])")
 			reset_perspective(null)
 		client.eye = mob_eye
+		refresh_hud_view_group()
 		if(mob_eye.hud_used)
 			client.clear_screen()
 			LAZYINITLIST(mob_eye.observers)

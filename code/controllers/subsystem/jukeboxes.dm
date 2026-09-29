@@ -212,6 +212,10 @@ SUBSYSTEM_DEF(jukeboxes)
 /datum/controller/subsystem/jukeboxes/proc/set_catchup_offset(sound/song, real_start_time, world_start_time)
 	song.offset = jukebox_catchup_seconds(real_start_time, world_start_time)
 
+/// Всё, что SOUND_UPDATE меняет у слушателя. Совпала строка с прошлой отправкой - слать нечего.
+/proc/jukebox_listener_state(sound/song, sent_volume)
+	return "[song.status]|[song.falloff]|[sent_volume]|[song.x]|[song.y]|[song.z]|[song.echo[1]]|[song.echo[3]]"
+
 /// Снимает смещение после досылки - именно в null, а НЕ в ноль. У /sound это разные значения:
 /// null означает "позицию не трогать", ноль - "перемотать в начало". Датум звука один на всех
 /// слушателей и живёт весь трек, поэтому оставленный ноль уезжает дальше с каждым SOUND_UPDATE,
@@ -373,6 +377,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		song_played.volume = min((targetfalloff * 50), 100)
 
 		for(var/mob/M in GLOB.player_list)
+			CHECK_TICK
 			if(!M.client)
 				continue
 			if(!M.client.prefs)
@@ -425,17 +430,21 @@ SUBSYSTEM_DEF(jukeboxes)
 				if((!inrange && !audible) || !jukebox_area_allows(M, jukebox, area_limit))
 					continue
 				first_send = TRUE
-				sent_to[M.ckey] = TRUE
 				song_played.status = 0 // Обычный старт, а не обновление уже играющего канала
 				set_catchup_offset(song_played, real_start_time, start_time) // Подхватываем с той же секунды, что слышат остальные
 			var/juke_vol = M.client?.prefs?.get_sound_volume(personal ? "personal_jukeboxes" : "jukeboxes")
 			var/original_volume = song_played.volume
-			song_played.volume = round(original_volume * juke_vol / 100)
+			var/sent_volume = round(original_volume * juke_vol / 100)
+			// В sent_to лежит последнее отправленное состояние: одинаковый SOUND_UPDATE клиенту не нужен
+			var/listener_state = jukebox_listener_state(song_played, sent_volume)
+			if(!first_send && sent_to[M.ckey] == listener_state)
+				continue
+			sent_to[M.ckey] = listener_state
+			song_played.volume = sent_volume
 			SEND_SOUND(M, song_played)
 			song_played.volume = original_volume
 			if(first_send)
 				clear_catchup_offset(song_played)
-			CHECK_TICK
 	return
 
 #undef TRACK_NAME

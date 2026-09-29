@@ -554,6 +554,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tmp/modern_theme_settings_open = FALSE
 	/// UI state: collapse empty character slots in the top slot list (persisted in preferences)
 	var/collapse_empty_character_slots = FALSE
+	/// Имена персонажей по номеру слота для окна настройки; null - перечитать из сейвфайла
+	var/tmp/list/slot_names_cache
 	/// UI decoration level for modern theme: "minimal" (performance), "standard" (current), "enhanced" (gradients)
 	var/ui_decoration_level = "enhanced"
 	var/unholypref = "No"
@@ -828,6 +830,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
  * и категории, внешность персонажа не трогают, и платить за неё им незачем.
  * По умолчанию TRUE: пропускаем только там, где точно знаем, что ничего не поехало.
  */
+/// Во сколько раз больше MAX_FLAVOR_PREVIEW_LEN символов текста разбирается ради превью: запас на теги разметки
+#define FLAVOR_PREVIEW_PARSE_SLACK 4
+
+/// Начало описания персонажа для превью в окне настройки: полный текст до 4096 символов не кодируется
+/proc/flavor_text_preview(text)
+	var/text_head = copytext_char(text, 1, MAX_FLAVOR_PREVIEW_LEN * FLAVOR_PREVIEW_PARSE_SLACK)
+	return replacetext(parsemarkdown_basic(html_encode(text_head), hyperlink = FALSE), "\n", " ")
+
+#undef FLAVOR_PREVIEW_PARSE_SLACK
+
 /datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
@@ -1064,8 +1076,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	switch(current_tab)
 		if(SETTINGS_TAB) // Character Settings#
 			if(path)
-				var/savefile/S = new /savefile(path)
-				if(S)
+				var/list/slot_names = get_slot_names()
+				if(slot_names)
 					dat += "<center>"
 					var/name
 					var/toggle_title = collapse_empty_character_slots ? "Показать пустые слоты" : "Скрыть пустые слоты"
@@ -1076,9 +1088,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/unspaced_slots = 0
 					var/empty_slot_label = src.use_modern_translations ? get_modern_text("empty_slot_label", src) : "Character"
 					for(var/i=1, i<=max_save_slots, i++)
-						name = null
-						S.cd = "/character[i]"
-						S["real_name"] >> name
+						name = slot_names[i]
 						var/is_empty_slot = !name
 						if(collapse_empty_character_slots && is_empty_slot && i != default_slot)
 							continue
@@ -1108,15 +1118,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/retrieve_offered_label = src.use_modern_translations ? get_modern_text("retrieve_offered", src) : "Retrieve offered character"
 				var/redemption_code_label = src.use_modern_translations ? get_modern_text("redemption_code", src) : "Redemption code"
 				var/offer_auto_cancel_label = src.use_modern_translations ? get_modern_text("offer_auto_cancel", src) : "The offer will automatically be cancelled if there is an error, or if someone takes it"
-				var/file = user.client.Import()
-				var/savefile/client_file
-				var/savefile_name
-				if(file)
-					client_file = new(file)
-					if(istype(client_file, /savefile))
-						if(!client_file["deleted"] || savefile_needs_update(client_file) != -2)
-							client_file["real_name"] >> savefile_name
-				dat += "[local_storage_label]: " + (savefile_name ? savefile_name : empty_label)
+				var/savefile_name = get_local_storage_name(user.client)
+				dat +="[local_storage_label]: " + (savefile_name ? savefile_name : empty_label)
 				dat += "<br />"
 				dat += "<a href='?_src_=prefs;preference=export_slot'>[export_slot_label]</a>"
 				var/import_attr = "class='linkOff'"
@@ -1391,11 +1394,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ai_core_icon_state = "ai-random"
 						else
 							ai_core_icon_state = resolve_ai_icon(preferred_ai_core_display, TRUE)
-						var/icon/ai_core_preview_icon = icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
-						var/ai_core_preview_html = icon2base64html(ai_core_preview_icon)
-						if(!ai_core_preview_html)
-							ai_core_preview_html = ""
-						dat += "<div class='csetup-ai-core-preview'>" + ai_core_preview_html + "</div>"
+						var/static/list/ai_core_preview_cache = list()
+						var/ai_core_preview_html = ai_core_preview_cache["[ai_core_icon_state]"]
+						if(isnull(ai_core_preview_html))
+							ai_core_preview_html = icon2base64html(icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)) || ""
+							ai_core_preview_cache["[ai_core_icon_state]"] = ai_core_preview_html
+						dat += "<div class='csetup-ai-core-preview'>"
+						dat += ai_core_preview_html
+						dat += "</div>"
 					dat += "</td>"
 
 					dat += "<td valign='top'>"
@@ -1464,8 +1470,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 					dat += "<h2>[flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/flavor_preview = parsemarkdown_basic(html_encode(features["flavor_text"]), hyperlink=FALSE)
-					flavor_preview = replacetext(flavor_preview, "\n", " ")
+					var/flavor_preview = flavor_text_preview(features["flavor_text"])
 					if(!length(features["flavor_text"]))
 						dat += "\[...\]"
 					else if(length_char(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1475,8 +1480,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					//SPLURT edit - naked flavor text
 					dat += "<h2>[naked_flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/naked_preview = parsemarkdown_basic(html_encode(features["naked_flavor_text"]), hyperlink=FALSE)
-					naked_preview = replacetext(naked_preview, "\n", " ")
+					var/naked_preview = flavor_text_preview(features["naked_flavor_text"])
 					if(!length(features["naked_flavor_text"]))
 						dat += "\[...\]<BR>"
 					else if(length_char(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1501,8 +1505,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					// BLUEMOON ADD END
 					dat += "<h2>[silicon_flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/silicon_preview = parsemarkdown_basic(html_encode(features["silicon_flavor_text"]), hyperlink=FALSE)
-					silicon_preview = replacetext(silicon_preview, "\n", " ")
+					var/silicon_preview = flavor_text_preview(features["silicon_flavor_text"])
 					if(!length(features["silicon_flavor_text"]))
 						dat += "\[...\]"
 					else if(length_char(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1512,8 +1515,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!is_modern_theme)
 						dat += "<h2>[custom_species_lore_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/lore_preview = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
-						lore_preview = replacetext(lore_preview, "\n", " ")
+						var/lore_preview = flavor_text_preview(features["custom_species_lore"])
 						if(!length(features["custom_species_lore"]))
 							dat += "\[...\]<BR>"
 						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1522,8 +1524,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "[copytext_char(lore_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/ooc_preview = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
-						ooc_preview = replacetext(ooc_preview, "\n", " ")
+						var/ooc_preview = flavor_text_preview(features["ooc_notes"])
 						if(!length(features["ooc_notes"]))
 							dat += "\[...\]"
 						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1558,8 +1559,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(is_modern_theme)
 						dat += "<br><h2>[custom_species_lore_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/lore_preview2 = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
-						lore_preview2 = replacetext(lore_preview2, "\n", " ")
+						var/lore_preview2 = flavor_text_preview(features["custom_species_lore"])
 						if(!length(features["custom_species_lore"]))
 							dat += "\[...\]<BR>"
 						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1568,8 +1568,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "[copytext_char(lore_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/ooc_preview2 = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
-						ooc_preview2 = replacetext(ooc_preview2, "\n", " ")
+						var/ooc_preview2 = flavor_text_preview(features["ooc_notes"])
 						if(!length(features["ooc_notes"]))
 							dat += "\[...\]"
 						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -2480,10 +2479,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/gear/gear = subcategory_items[name]
 									if(!gear)
 										continue
-									var/display_name = html_encode(name)
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
+									var/display_name = html_encode(name)
 									var/background_cl = "#23273C"
 									if(even)
 										background_cl = "#17191C"
@@ -2491,9 +2490,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/class_link = ""
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
-									var/gear_preview = gear.get_base64icon()
-									if(gear_preview)
-										extra_loadout_data += "<center><img src='data:image/png;base64,[gear_preview]'></center>"
 									if(loadout_item)
 										var/loadout_color_display = "#FFFFFF"
 										var/loadout_color_label = "#FFFFFF"
@@ -2544,7 +2540,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										class_link = "style='white-space:normal;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 									else
 										class_link = "style='white-space:normal;background:#eb2e2e;' class='linkOff'"
-									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>[extra_loadout_data]</td>"
+									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>"
+									dat += gear.get_preview_html()
+									dat += "[extra_loadout_data]</td>"
 									dat += "<td width = 5% style='vertical-align:top'>[gear.cost]</td><td>"
 									if(islist(gear.restricted_roles))
 										if(gear.restricted_roles.len)
@@ -3400,15 +3398,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					return TRUE
 				// Подсчитываем количество непустых слотов
 				var/occupied_count = 0
-				if(path)
-					var/savefile/S = new /savefile(path)
-					if(S)
-						for(var/i in 1 to max_save_slots)
-							S.cd = "/character[i]"
-							var/check_name
-							S["real_name"] >> check_name
-							if(check_name)
-								occupied_count++
+				for(var/slot_name in get_slot_names())
+					if(slot_name)
+						occupied_count++
 				if(occupied_count <= 1)
 					tgui_alert_async(user, "Нельзя удалить единственного персонажа! / Cannot delete the only character!")
 					ShowChoices(user, rebuild_preview = !preview_unchanged)
@@ -6009,6 +6001,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/savefile/S = save_character(export = TRUE)
 					if(istype(S, /savefile))
 						user.client.Export(S)
+						user.client.local_storage_name_read = FALSE
 						tgui_alert_async(user, "Successfully saved character slot")
 					else
 						tgui_alert_async(user, "Failed saving character slot")
@@ -6029,6 +6022,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("delete_local_copy")
 					user.client.clear_export()
+					user.client.local_storage_name_read = FALSE
 					tgui_alert_async(user, "Local save data erased.")
 
 				if("give_slot")

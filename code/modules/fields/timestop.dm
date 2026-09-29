@@ -1,3 +1,5 @@
+#define TIMESTOP_ILLUSION_RANGE 10
+#define TIMESTOP_ILLUSION_MAX_ATOMS 1500
 
 /obj/effect/timestop
 	anchored = TRUE
@@ -173,7 +175,8 @@
 	return ..()
 
 /datum/proximity_monitor/advanced/timestop
-	var/list/mirage_images = list()
+	/// Замороженный моб -> картинки, выданные его клиенту
+	var/list/mirage_images_by_mob = list()
 
 /datum/proximity_monitor/advanced/timestop/proc/freeze_projectile(obj/item/projectile/P)
 	P.paused = TRUE
@@ -190,18 +193,17 @@
 		L.hud_used.show_hud(HUD_STYLE_NOHUD) //полное скрытие
 		L.sight = (BLIND | SEE_SELF | SEE_TURFS)
 		L.add_client_colour(/datum/client_colour/sepia)
-		create_illusion(L)
 
+		var/list/images_to_add = build_illusion_images(oview(TIMESTOP_ILLUSION_RANGE, L.loc))
 		var/image/fullview_timestop_effect = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
 		var/image/timestop_effect_with_plane = image(icon = 'icons/effects/160x160.dmi', icon_state = "time", loc = L.loc)
-
-		var/list/images_to_add = list(fullview_timestop_effect, timestop_effect_with_plane)
-
 		set_timestop_image(fullview_timestop_effect)
 		set_timestop_image(timestop_effect_with_plane, resize = 3, use_plane = TRUE)
+		images_to_add += fullview_timestop_effect
+		images_to_add += timestop_effect_with_plane
 
 		L.client.images += images_to_add
-		mirage_images += images_to_add
+		mirage_images_by_mob[L] = images_to_add
 
 		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
 		user_chat.client = null //временно делаем null чтобы юзер ничего не мог получить
@@ -227,29 +229,29 @@
 		L.hud_used.show_hud(HUD_STYLE_STANDARD)// полностью показать
 		L.remove_client_colour(/datum/client_colour/sepia)
 		L.sight = NONE
-		for(var/image/image in mirage_images)
-			L.client.images -= image
+		var/list/given_images = mirage_images_by_mob[L]
+		if(given_images)
+			L.client.images -= given_images
 		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
 		user_chat.client = L.client
 	frozen_mobs -= L
+	mirage_images_by_mob -= L
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(initial(S.AIStatus))
 
-/datum/proximity_monitor/advanced/timestop/proc/create_illusion(mob/living/L)
-	var/list/invisible_whitelist = list(/obj/effect/timestop, /atom/movable/lighting_object)
-
-	var/atoms_counter = 0
-	for(var/atom/movable/movable_neaby in oview(10, L.loc))
-		if(atoms_counter >= 1500)
-			return
-		if(movable_neaby.invisibility && !(movable_neaby in invisible_whitelist))
+/// Застывшие копии видимых атомов: клиент замороженного видит их вместо живого мира.
+/datum/proximity_monitor/advanced/timestop/proc/build_illusion_images(list/candidates)
+	var/list/illusion_images = list()
+	for(var/atom/movable/movable_nearby in candidates)
+		if(length(illusion_images) >= TIMESTOP_ILLUSION_MAX_ATOMS)
+			break
+		if(movable_nearby.invisibility)
 			continue
-		var/image/temp_image = image(getFlatIcon(movable_neaby), movable_neaby.loc, layer = movable_neaby.layer, dir = movable_neaby.dir)
-		temp_image.appearance = movable_neaby.appearance
-		L.client.images += temp_image
-		mirage_images += temp_image
-		atoms_counter++
+		var/image/frozen_copy = image(loc = movable_nearby.loc)
+		frozen_copy.appearance = movable_nearby.appearance
+		illusion_images += frozen_copy
+	return illusion_images
 
 //you don't look quite right, is something the matter?
 /datum/proximity_monitor/advanced/timestop/proc/into_the_negative_zone(atom/A)
@@ -258,3 +260,6 @@
 //let's put some colour back into your cheeks
 /datum/proximity_monitor/advanced/timestop/proc/escape_the_negative_zone(atom/A)
 	A.remove_atom_colour(TEMPORARY_COLOUR_PRIORITY)
+
+#undef TIMESTOP_ILLUSION_RANGE
+#undef TIMESTOP_ILLUSION_MAX_ATOMS

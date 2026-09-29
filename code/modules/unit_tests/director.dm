@@ -974,7 +974,8 @@
 		var/min_reachable_cost
 		var/list/reachable_names = list()
 		for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+			// Нулевой вес с weight_can_change растит лежащий диск (оперативник, защитник диска)
+			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || (control.weight <= 0 && !control.weight_can_change))
 				continue
 			if(control.antag_heavy && !profile.antag_heavy_enabled)
 				continue

@@ -72,6 +72,8 @@
 #define ANTAG_HUD_ZOMBIE		31
 
 #define ADD_HUD_TO_COOLDOWN 20 //cooldown for being shown the images for any particular data hud
+/// collect_hud_images_for: значки атомов всех групп z
+#define HUD_Z_GROUP_ANY -1
 
 // Security HUD icon_state defines
 
