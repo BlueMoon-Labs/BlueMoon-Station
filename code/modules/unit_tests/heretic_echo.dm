@@ -378,6 +378,72 @@
 	TEST_ASSERT(attack && !attack.held && length(attack.warnings), "Через три секунды таймер выпускает новое предупреждение.")
 	TEST_ASSERT(wait_for_qdeleted(attack, 2 SECONDS), "Предупреждённый повтор завершается своим таймером.")
 
+/// Удержанная волна рисуется своим стейтом и звучит тоном из набора, разгон включается за своё время до выпуска.
+/datum/unit_test/heretic_echo_held_spinup/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	echo.hold_next_repeat = TRUE
+	TEST_ASSERT(echo.release(user), "Подготавливается задержанный повтор.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	TEST_ASSERT(attack.held && length(attack.warnings), "Задержанный повтор отмечает клетки.")
+	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_echo_effects.dmi')
+	TEST_ASSERT(("echo_held" in states) && ("echo_held_spinup" in states), "У удержания и разгона есть свои стейты.")
+	var/list/held_visuals = attack.warnings.Copy()
+	for(var/obj/effect/visual as anything in held_visuals)
+		TEST_ASSERT(istype(visual, /obj/effect/temp_visual/heretic_echo/warning/held) && visual.icon_state == "echo_held", "Удержанные клетки рисуются зависшей вибрацией, а не обычным предупреждением.")
+	var/spinup_left = timeleft(attack.spinup_timer)
+	TEST_ASSERT(spinup_left > 0, "Разгон ждёт своего момента.")
+	TEST_ASSERT_EQUAL(timeleft(attack.release_timer) - spinup_left, HERETIC_ECHO_SPINUP_TIME, "Разгон начинается ровно за время своей анимации до выпуска.")
+	TEST_ASSERT_EQUAL(length(GLOB.heretic_echo_hold_sounds), length(GLOB.heretic_echo_spinup_sounds), "У каждого тона удержания свой разгон.")
+	TEST_ASSERT(attack.hold_voice >= 1 && attack.hold_voice <= length(GLOB.heretic_echo_hold_sounds), "Тон удержания выбран из набора.")
+	for(var/sound_file in GLOB.heretic_echo_hold_sounds + GLOB.heretic_echo_spinup_sounds)
+		TEST_ASSERT(isfile(sound_file), "Звуки удержания и разгона - файлы ресурсов.")
+	TEST_ASSERT(attack.spin_up(), "Разгон срабатывает на удержанной волне.")
+	TEST_ASSERT_NULL(attack.spinup_timer, "Сработавший разгон не держит таймер.")
+	TEST_ASSERT(attack.held, "Разгон не выпускает волну раньше таймера.")
+	for(var/obj/effect/visual as anything in held_visuals)
+		TEST_ASSERT(visual.icon_state == "echo_held_spinup", "Перед выпуском кольца раскручиваются.")
+	TEST_ASSERT(attack.release_held(), "Выпуск после разгона показывает предупреждение.")
+	for(var/obj/effect/visual as anything in held_visuals)
+		TEST_ASSERT(QDELETED(visual), "Выпуск убирает кольца разгона.")
+	for(var/obj/effect/visual as anything in attack.warnings)
+		TEST_ASSERT(visual.icon_state == "echo_warning" && !istype(visual, /obj/effect/temp_visual/heretic_echo/warning/held), "После выпуска клетки отмечает обычное предупреждение.")
+
+/// Ранний выпуск и потеря атаки снимают таймер разгона вместе с кольцами.
+/datum/unit_test/heretic_echo_held_cleanup/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	echo.combat_resource = 4
+	echo.hold_next_repeat = TRUE
+	TEST_ASSERT(echo.release(user), "Подготавливается задержанный повтор.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	var/spinup_id = attack.spinup_timer
+	TEST_ASSERT(attack.release_held(), "Лира выпускает удержание раньше срока.")
+	TEST_ASSERT_NULL(timeleft(spinup_id), "Ранний выпуск отменяет разгон.")
+	TEST_ASSERT(!attack.spin_up(), "Разгон после выпуска не трогает новые предупреждения.")
+	for(var/obj/effect/visual as anything in attack.warnings)
+		TEST_ASSERT(visual.icon_state == "echo_warning", "Ранний выпуск сразу показывает обычное предупреждение.")
+	attack.resolve()
+	TEST_ASSERT(QDELETED(attack), "Выпущенный повтор завершается.")
+	echo.hold_next_repeat = TRUE
+	TEST_ASSERT(echo.release(user), "Снова подготавливается задержанный повтор.")
+	attack = echo.attacks[1]
+	spinup_id = attack.spinup_timer
+	var/release_id = attack.release_timer
+	var/list/held_visuals = attack.warnings.Copy()
+	TEST_ASSERT(length(held_visuals), "Удержание отмечает клетки.")
+	qdel(attack)
+	TEST_ASSERT_NULL(timeleft(spinup_id), "Удалённая атака не оставляет таймер разгона.")
+	TEST_ASSERT_NULL(timeleft(release_id), "Удалённая атака не оставляет таймер выпуска.")
+	for(var/obj/effect/visual as anything in held_visuals)
+		TEST_ASSERT(QDELETED(visual), "Удалённая атака убирает кольца удержания.")
+
 /// Разрушенный после предупреждения резонатор не выпускает свой повтор.
 /datum/unit_test/heretic_echo_destroyed_relay/Run()
 	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)

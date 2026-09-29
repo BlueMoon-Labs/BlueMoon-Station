@@ -21,6 +21,8 @@
 #define HERETIC_ECHO_BAND 5
 #define HERETIC_ECHO_DISSONANCE_DURATION (1.5 SECONDS)
 #define HERETIC_ECHO_HOLD_TIME (3 SECONDS)
+#define HERETIC_ECHO_HOLD_VOLUME 35
+#define HERETIC_ECHO_SPINUP_VOLUME 50
 #define HERETIC_ECHO_INK "#d9bb73"
 #define HERETIC_ECHO_RING_COUNT 3
 #define HERETIC_ECHO_RING_STEP (0.12 SECONDS)
@@ -689,6 +691,19 @@
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(heretic_vfx_shockwave), center, HERETIC_ECHO_INK, HERETIC_ECHO_REPRISE_RADIUS, HERETIC_ECHO_RING_TIME), ring * HERETIC_ECHO_RING_STEP)
 	heretic_vfx_burst(center, /particles/heretic_ascension/echo)
 
+/// Тон удержания и разгон с тем же номером начинаются с одной ноты.
+GLOBAL_LIST_INIT(heretic_echo_hold_sounds, list(
+	'modular_bluemoon/sound/heretic/echo_hold_1.ogg',
+	'modular_bluemoon/sound/heretic/echo_hold_2.ogg',
+	'modular_bluemoon/sound/heretic/echo_hold_3.ogg',
+))
+
+GLOBAL_LIST_INIT(heretic_echo_spinup_sounds, list(
+	'modular_bluemoon/sound/heretic/echo_spinup_1.ogg',
+	'modular_bluemoon/sound/heretic/echo_spinup_2.ogg',
+	'modular_bluemoon/sound/heretic/echo_spinup_3.ogg',
+))
+
 /// Все волны хранят прежние клетки; следующий такт заново показывает предупреждение.
 /datum/heretic_echo_attack
 	var/datum/weakref/echo_ref
@@ -701,6 +716,8 @@
 	var/pulse_index = 1
 	var/list/mob/living/sounded = list()
 	var/release_timer
+	var/spinup_timer
+	var/hold_voice
 	var/resolving = FALSE
 	var/hold_repeat = FALSE
 	var/held = FALSE
@@ -765,13 +782,28 @@
 				continue
 			warned += tile
 			warnings += new /obj/effect/temp_visual/heretic_echo/warning/held(tile)
+	hold_voice = rand(1, length(GLOB.heretic_echo_hold_sounds))
+	playsound(origin, GLOB.heretic_echo_hold_sounds[hold_voice], HERETIC_ECHO_HOLD_VOLUME, FALSE)
+	spinup_timer = addtimer(CALLBACK(src, PROC_REF(spin_up)), HERETIC_ECHO_HOLD_TIME - HERETIC_ECHO_SPINUP_TIME, TIMER_STOPPABLE)
 	release_timer = addtimer(CALLBACK(src, PROC_REF(release_held)), HERETIC_ECHO_HOLD_TIME, TIMER_STOPPABLE)
+	return TRUE
+
+/// Кольца раскручиваются ровно на остаток удержания: стейт разгона длится HERETIC_ECHO_SPINUP_TIME.
+/datum/heretic_echo_attack/proc/spin_up()
+	if(!held || QDELETED(src))
+		return FALSE
+	spinup_timer = null
+	for(var/obj/effect/temp_visual/heretic_echo/warning/held/visual in warnings)
+		visual.icon_state = "echo_held_spinup"
+	playsound(origin, GLOB.heretic_echo_spinup_sounds[hold_voice], HERETIC_ECHO_SPINUP_VOLUME, FALSE)
 	return TRUE
 
 /datum/heretic_echo_attack/proc/release_held()
 	if(!held || QDELETED(src))
 		return FALSE
 	held = FALSE
+	deltimer(spinup_timer)
+	spinup_timer = null
 	deltimer(release_timer)
 	release_timer = null
 	QDEL_LIST(warnings)
@@ -888,6 +920,7 @@
 
 /datum/heretic_echo_attack/Destroy()
 	deltimer(release_timer)
+	deltimer(spinup_timer)
 	var/datum/eldritch_knowledge/base_echo/echo = echo_ref?.resolve()
 	echo?.attacks.Remove(src)
 	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
@@ -1413,7 +1446,7 @@
 		return FALSE
 	echo.hold_next_repeat = TRUE
 	COOLDOWN_START(src, relic_cooldown, 10 SECONDS)
-	to_chat(user, span_eldritch("Следующий повтор Последнего удара задержится на 3 секунды. Alt-клик по лире отпустит его раньше; перед ударом прозвучит обычное предупреждение."))
+	to_chat(user, span_eldritch("Следующий повтор Последнего удара задержится на 3 секунды: кольца замрут и раскрутятся за 0,6 секунды до выпуска. Alt-клик по лире отпустит его раньше; перед ударом прозвучит обычное предупреждение."))
 	return TRUE
 
 /obj/item/heretic_path_relic/echo_fork/proc/retune(mob/living/user)
@@ -1451,8 +1484,8 @@
 	layer = BELOW_MOB_LAYER
 
 /obj/effect/temp_visual/heretic_echo/warning/held
+	icon_state = "echo_held"
 	duration = HERETIC_ECHO_HOLD_TIME
-	color = "#85ccd4"
 
 /obj/effect/temp_visual/heretic_echo/ascend
 	icon_state = "echo_ascend"
@@ -1555,7 +1588,7 @@
 		"Резонатор повторяет Последний удар с полным уроном; их не больше двух, новый раз в 8 секунд.",
 		"Связь с резонатором - в 7 клетках без преград; нулевой жезл его разрушает, свой убирается рукой.",
 		"Применение в руке переключает крест и диагонали повторов, раз в 10 секунд.",
-		"Alt-клик задерживает следующий повтор до 3 секунд, его клетки светятся голубым; второй Alt-клик выпускает повтор раньше.",
+		"Alt-клик задерживает следующий повтор до 3 секунд: кольца дрожат голубым, к концу раскручиваются; второй - раньше.",
 		"Щелчок по своему резонатору: Крещендо и Последняя служба повторят рисунок вокруг него.",
 		"Настройка и удержание резонанс не тратят; лира одна, пересечения одного такта не умножают урон.",
 	)
@@ -2023,6 +2056,8 @@
 #undef HERETIC_ECHO_BAND
 #undef HERETIC_ECHO_DISSONANCE_DURATION
 #undef HERETIC_ECHO_HOLD_TIME
+#undef HERETIC_ECHO_HOLD_VOLUME
+#undef HERETIC_ECHO_SPINUP_VOLUME
 #undef HERETIC_ECHO_INK
 #undef HERETIC_ECHO_RING_COUNT
 #undef HERETIC_ECHO_RING_STEP
