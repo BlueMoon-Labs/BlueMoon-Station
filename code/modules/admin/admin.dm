@@ -333,7 +333,7 @@
 			if("Server Restart (Kill and restart DD)")
 				to_chat(world, "Server restart - [init_by]")
 				log_admin("[key_name(usr)] killed and restarted DreamDaemon via TGS")
-				message_admins("[key_name_admin(usr)] killed and restarted DreamDaemon via TGS")
+				message_admins("[key_name_admin(usr)] убил и перезапустил DreamDaemon через TGS")
 				// Без пометки следующий старт примет кил за краш и устроит реролл карты.
 				flush_pending_single_prefs()
 				SSpersistence.RecordGracefulEnding()
