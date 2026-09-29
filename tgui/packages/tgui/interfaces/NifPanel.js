@@ -1,5 +1,7 @@
 // THIS IS A SKYRAT UI FILE
 import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   BlockQuote,
   Box,
@@ -14,8 +16,6 @@ import {
   Section,
   Table,
 } from '../components';
-
-import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
 export const NifPanel = (props) => {

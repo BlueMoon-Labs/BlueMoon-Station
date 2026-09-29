@@ -1,4 +1,5 @@
 // THIS IS A SKYRAT UI FILE
+import { useBackend, useSharedState } from '../backend';
 import {
   BlockQuote,
   Box,
@@ -10,8 +11,6 @@ import {
   Section,
   Tabs,
 } from '../components';
-
-import { useBackend, useSharedState } from '../backend';
 import { NtosWindow } from '../layouts';
 
 export const NtosNifsoftCatalog = (props) => {
