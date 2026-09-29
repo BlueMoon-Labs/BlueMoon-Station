@@ -732,7 +732,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 		for(var/event in list("ambience", "pickup", "deposit", "warning", "hit", "escape", "step"))
 			TEST_ASSERT(isfile(theme[event]), "Звук [theme_id]/[event] включён в ресурсы.")
 	var/list/rule_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_rules.dmi')
-	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step", "dance_beat_tile"))
+	for(var/state in list("ash_ember", "rust_plate", "rust_plate_broken", "flesh_sphincter", "flesh_sphincter_closed", "void_ice", "blade_strip", "blade_strike", "cosmic_portal", "lock_key", "lock_door", "sand_hourglass", "sand_hourglass_spent", "spirit_cage", "spirit_cage_open", "spirit_soul", "blood_step", "dance_beat_tile", "dance_beat_tile_rest"))
 		TEST_ASSERT(state in rule_states, "Спрайт правила [state] существует.")
 	var/list/guidance_states = icon_states('modular_bluemoon/icons/obj/heretic_mansus_guidance.dmi')
 	for(var/state in list("trail", "sanctuary", "niche", "name"))
