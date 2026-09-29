@@ -38,6 +38,15 @@
 #define HERETIC_TIDE_CURRENT_COOLDOWN (30 SECONDS)
 #define HERETIC_TIDE_DIVE_TIME (1.5 SECONDS)
 #define HERETIC_TIDE_DIVE_REACH 1
+#define HERETIC_TIDE_CHOKE_RISE 8
+#define HERETIC_TIDE_SPIT_TIME (1.2 SECONDS)
+#define HERETIC_TIDE_SPIT_VOLUME 40
+#define HERETIC_TIDE_SPILL_DELAY (0.3 SECONDS)
+#define HERETIC_TIDE_SPILL_TIME (1.3 SECONDS)
+#define HERETIC_TIDE_SPILL_AHEAD 9
+#define HERETIC_TIDE_SPILL_FRONT 4
+#define HERETIC_TIDE_SPILL_BEHIND 2
+#define HERETIC_TIDE_LYING_HEAD_EAST 90
 
 /datum/heretic_path/tide
 	id = PATH_TIDE
@@ -954,6 +963,53 @@
 /obj/effect/temp_visual/heretic_tide/warning/drown
 	duration = HERETIC_TIDE_DROWN_TELEGRAPH
 
+/// Лужица выплюнутой воды: ложится перед лицом, у лежащего - у головы.
+/obj/effect/temp_visual/heretic_tide/spill
+	icon_state = "tide_choke_spill"
+	duration = HERETIC_TIDE_SPILL_TIME
+	plane = FLOOR_PLANE
+	layer = ABOVE_NORMAL_TURF_LAYER
+
+/obj/effect/temp_visual/heretic_tide/spill/Initialize(mapload, facing, lying)
+	. = ..()
+	if(lying)
+		pixel_x = lying == HERETIC_TIDE_LYING_HEAD_EAST ? HERETIC_TIDE_SPILL_AHEAD : -HERETIC_TIDE_SPILL_AHEAD
+		return
+	switch(facing)
+		if(EAST)
+			pixel_x = HERETIC_TIDE_SPILL_AHEAD
+		if(WEST)
+			pixel_x = -HERETIC_TIDE_SPILL_AHEAD
+		if(NORTH)
+			pixel_y = HERETIC_TIDE_SPILL_BEHIND
+		else
+			pixel_y = -HERETIC_TIDE_SPILL_FRONT
+
+/// Чёрная вода изо рта захлёбывающегося: поворачивается и ложится вместе с ним, пузыри всплывают над головой.
+/obj/effect/abstract/heretic_vfx_attached/tide_choke
+	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_DIR
+
+/obj/effect/abstract/heretic_vfx_attached/tide_choke/Initialize(mapload, atom/movable/host)
+	transform = matrix(1, 0, 0, 0, 1, HERETIC_TIDE_CHOKE_RISE)
+	return ..(mapload, host, 'modular_bluemoon/icons/obj/heretic_tide_effects.dmi', "tide_choke", 255, HERETIC_VFX_ATTACH_FADE, FALSE, FALSE)
+
+/// Последний выплеск: вода рушится изо рта, у ног растекается лужица, струйки гаснут.
+/obj/effect/abstract/heretic_vfx_attached/tide_choke/proc/spit_out()
+	if(fading || QDELETED(src))
+		return
+	transform = null
+	icon_state = "tide_choke_spit"
+	var/atom/movable/host = host_ref?.resolve()
+	if(host)
+		playsound(host, SFX_SLOSH, HERETIC_TIDE_SPIT_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	addtimer(CALLBACK(src, PROC_REF(spill)), HERETIC_TIDE_SPILL_DELAY)
+	fade_out(HERETIC_TIDE_SPIT_TIME)
+
+/obj/effect/abstract/heretic_vfx_attached/tide_choke/proc/spill()
+	var/mob/living/host = host_ref?.resolve()
+	if(istype(host) && isturf(host.loc))
+		new /obj/effect/temp_visual/heretic_tide/spill(host.loc, host.dir, host.lying)
+
 /// Корона воды вокруг вознёсшегося: задняя половина уходит под героя, передняя встаёт перед ним.
 /obj/effect/temp_visual/heretic_tide_swell
 	icon = 'modular_bluemoon/icons/effects/heretic_vfx.dmi'
@@ -1718,7 +1774,9 @@
 	var/datum/weakref/tide_ref
 	var/applied = FALSE
 	var/interrupted = FALSE
+	var/rescued = FALSE
 	var/dry_since = 0
+	var/obj/effect/abstract/heretic_vfx_attached/tide_choke/choke
 
 /datum/status_effect/heretic_tide_drowning/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_tide/tide)
 	tide_ref = WEAKREF(tide)
@@ -1735,16 +1793,21 @@
 	ADD_TRAIT(owner, TRAIT_MUTE, HERETIC_TIDE_DROWN_TRAIT)
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
-	RegisterSignals(owner, list(COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN), PROC_REF(on_sacrifice_starting))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(on_sacrifice_starting))
+	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
 	heretic_capture_hold(owner, HERETIC_TIDE_CAPTURE)
+	choke = new(null, owner)
 	tide.soak(owner)
 	owner.visible_message(span_danger("[owner] захлёбывается: изо рта хлещет чёрная вода!"), span_userdanger("Горло заливает чёрная вода: ни крикнуть, ни позвать по рации!"))
 	return TRUE
 
 /datum/status_effect/heretic_tide_drowning/tick()
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(!tide || owner.stat == DEAD || !still_wet(tide))
+	if(!tide || owner.stat == DEAD)
 		qdel(src)
+		return
+	if(!still_wet(tide))
+		dried_out()
 		return
 	if(!heretic_can_affect(tide.tide_body, owner, chargecost = 0))
 		interrupted = TRUE
@@ -1757,8 +1820,19 @@
 /datum/status_effect/heretic_tide_drowning/proc/on_moved(datum/source)
 	SIGNAL_HANDLER
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
-	if(!tide || !still_wet(tide))
+	if(!tide)
 		qdel(src)
+	else if(!still_wet(tide))
+		dried_out()
+
+/datum/status_effect/heretic_tide_drowning/proc/dried_out()
+	owner.visible_message(span_warning("[owner] выкашливает чёрную воду на сухой пол и снова дышит."), span_notice("Вы выкашливаете чёрную воду и снова можете дышать."))
+	cough_up()
+
+/// Цель вырвалась сама или ей помогли: вода выходит из горла.
+/datum/status_effect/heretic_tide_drowning/proc/cough_up()
+	rescued = TRUE
+	qdel(src)
 
 /// Шаг на сухое не обрывает захлёб сразу: цель должна пробыть вне воды HERETIC_TIDE_DROWN_DRY_GRACE.
 /datum/status_effect/heretic_tide_drowning/proc/still_wet(datum/eldritch_knowledge/base_tide/tide)
@@ -1774,7 +1848,7 @@
 		return NONE
 	user.visible_message(span_warning("[user] касается [source] нулевым жезлом, и чёрная вода выплёскивается из горла."), span_notice("Вы касаетесь [source] нулевым жезлом, и вода отпускает."))
 	log_game("[key_name(user)] развеивает захлёб Пучины у [key_name(source)] нулевым жезлом в [AREACOORD(source)].")
-	qdel(src)
+	cough_up()
 	return COMPONENT_NO_AFTERATTACK
 
 /datum/status_effect/heretic_tide_drowning/proc/on_sacrifice_starting(datum/source)
@@ -1782,11 +1856,23 @@
 	interrupted = TRUE
 	qdel(src)
 
+/datum/status_effect/heretic_tide_drowning/proc/on_shaken(datum/source, mob/living/helper)
+	SIGNAL_HANDLER
+	interrupted = TRUE
+	cough_up()
+
 /datum/status_effect/heretic_tide_drowning/on_remove()
 	if(!applied)
 		return ..()
 	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN))
 	heretic_capture_unhold(owner, HERETIC_TIDE_CAPTURE)
+	if(QDELETED(owner))
+		qdel(choke)
+	else if(rescued)
+		choke?.spit_out()
+	else
+		choke?.fade_out()
+	choke = null
 	REMOVE_TRAIT(owner, TRAIT_MUTE, HERETIC_TIDE_DROWN_TRAIT)
 	var/datum/eldritch_knowledge/base_tide/tide = tide_ref?.resolve()
 	tide_ref = null
@@ -1852,3 +1938,12 @@
 #undef HERETIC_TIDE_CURRENT_COOLDOWN
 #undef HERETIC_TIDE_DIVE_TIME
 #undef HERETIC_TIDE_DIVE_REACH
+#undef HERETIC_TIDE_CHOKE_RISE
+#undef HERETIC_TIDE_SPIT_TIME
+#undef HERETIC_TIDE_SPIT_VOLUME
+#undef HERETIC_TIDE_SPILL_DELAY
+#undef HERETIC_TIDE_SPILL_TIME
+#undef HERETIC_TIDE_SPILL_AHEAD
+#undef HERETIC_TIDE_SPILL_FRONT
+#undef HERETIC_TIDE_SPILL_BEHIND
+#undef HERETIC_TIDE_LYING_HEAD_EAST

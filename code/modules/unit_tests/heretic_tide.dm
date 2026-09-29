@@ -711,7 +711,7 @@
 	TEST_ASSERT(wait_for_qdeleted(foam, 3 SECONDS), "Пена оседает.")
 
 /datum/unit_test/heretic_tide_visual_types_create_and_destroy/Run()
-	for(var/thing_type in list(/obj/effect/temp_visual/heretic_tide_swell, /obj/effect/temp_visual/heretic_tide_swell/front))
+	for(var/thing_type in list(/obj/effect/temp_visual/heretic_tide_swell, /obj/effect/temp_visual/heretic_tide_swell/front, /obj/effect/temp_visual/heretic_tide/spill, /obj/effect/abstract/heretic_vfx_attached/tide_choke))
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
@@ -944,6 +944,99 @@
 	TEST_ASSERT(QDELETED(drowning), "Смерть еретика обрывает захлёб.")
 	TEST_ASSERT(!HAS_TRAIT(gasping, TRAIT_MUTE), "Оборванный захлёб снимает немоту.")
 	TEST_ASSERT(!gasping.IsUnconscious(), "Оборванный захлёб не усыпляет.")
+
+/datum/unit_test/proc/await_tide_spill(turf/place)
+	var/list/budget = new_wait_budget(2 SECONDS, "лужица захлёба на [place]")
+	while(!(locate(/obj/effect/temp_visual/heretic_tide/spill) in place))
+		if(!wait_budget_tick(budget))
+			break
+	return locate(/obj/effect/temp_visual/heretic_tide/spill) in place
+
+/// Захлёб виден у рта: чёрная вода поворачивается и ложится вместе с телом; спасённая на сухом полу, жезлом или растолкавшим цель выплёвывает воду в лужицу перед собой, смерть и удаление тела просто гасят воду.
+/datum/unit_test/heretic_tide_choke_visuals/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_TIDE
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_tide)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/tide_drown)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_tide/tide = heretic.get_knowledge(/datum/eldritch_knowledge/base_tide)
+	var/turf/origin = get_turf(user)
+	var/list/spots = list("dry" = list(2, 0), "rod" = list(1, 2), "shaken" = list(2, 2), "dead" = list(3, 2), "deleted" = list(2, 3))
+	var/list/victims = list()
+	for(var/role in spots)
+		var/list/offset = spots[role]
+		var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + offset[1], origin.y + offset[2], origin.z))
+		tide.wet_floor(get_turf(victim))
+		tide.combat_resource = 4
+		TEST_ASSERT(tide.drown(user, victim), "Цель «[role]» в луже захлёбывается.")
+		victims[role] = victim
+	var/list/chokes = list()
+	for(var/role in victims)
+		var/mob/living/carbon/human/victim = victims[role]
+		var/datum/status_effect/heretic_tide_drowning/drowning = await_tide_drowning(victim)
+		TEST_ASSERT_NOTNULL(drowning, "Цель «[role]» захлёбывается.")
+		var/obj/effect/abstract/heretic_vfx_attached/tide_choke/choke = drowning.choke
+		TEST_ASSERT_NOTNULL(choke, "Изо рта цели «[role]» льётся чёрная вода.")
+		TEST_ASSERT(choke in victim.vis_contents, "Вода держится на самой цели.")
+		chokes[role] = choke
+	var/obj/effect/abstract/heretic_vfx_attached/tide_choke/choke = chokes["dry"]
+	TEST_ASSERT_EQUAL(choke.icon_state, "tide_choke", "Пока цель захлёбывается, вода течёт изо рта.")
+	TEST_ASSERT(choke.icon_state in icon_states(choke.icon), "Состояние захлёба есть в ресурсе.")
+	TEST_ASSERT("tide_choke_spit" in icon_states(choke.icon), "Состояние выплеска есть в ресурсе.")
+	TEST_ASSERT(choke.vis_flags & VIS_INHERIT_DIR, "Вода поворачивается вместе с целью.")
+	TEST_ASSERT(!(choke.appearance_flags & RESET_TRANSFORM), "Упавшая цель роняет воду вместе с головой.")
+	TEST_ASSERT_NULL(choke.glow, "Чёрная вода сама не светится.")
+	var/matrix/raised = choke.transform
+	TEST_ASSERT(raised.f > 0, "Рисунок поднят, чтобы пузыри успели всплыть над головой.")
+	var/mob/living/carbon/human/rescued = victims["dry"]
+	var/datum/status_effect/heretic_tide_drowning/dry_drowning = rescued.has_status_effect(/datum/status_effect/heretic_tide_drowning)
+	var/turf/dry_spot = locate(origin.x + 3, origin.y + 1, origin.z)
+	rescued.forceMove(dry_spot)
+	TEST_ASSERT(!tide.on_wet_floor(rescued), "Цель вышла на сухой пол.")
+	rescued.setDir(EAST)
+	dry_drowning.dry_since = world.time - HERETIC_TIDE_DROWN_DRY_GRACE
+	dry_drowning.tick()
+	TEST_ASSERT(QDELETED(dry_drowning), "На сухом полу захлёб кончается.")
+	TEST_ASSERT(!QDELETED(choke) && choke.icon_state == "tide_choke_spit", "Спасённая цель выплёвывает воду.")
+	var/matrix/level = choke.transform
+	TEST_ASSERT_EQUAL(level.f, 0, "Выплеск рисуется от рта до ног без подъёма.")
+	var/obj/effect/temp_visual/heretic_tide/spill/spill = await_tide_spill(dry_spot)
+	TEST_ASSERT_NOTNULL(spill, "Выплеснутая вода растекается лужицей.")
+	TEST_ASSERT(spill.icon_state in icon_states(spill.icon), "Состояние лужицы есть в ресурсе.")
+	TEST_ASSERT_EQUAL(spill.plane, FLOOR_PLANE, "Лужица лежит на полу.")
+	TEST_ASSERT(spill.pixel_x > 0 && !spill.pixel_y, "Вода падает перед лицом цели, смотрящей на восток.")
+	TEST_ASSERT_NULL(dry_spot.GetComponent(/datum/component/wet_floor), "Лужица - только картинка, пол не мокнет.")
+	TEST_ASSERT(wait_for_qdeleted(choke), "Выплеск гаснет.")
+	TEST_ASSERT(!(choke in rescued.vis_contents), "Погасшая вода снята с цели.")
+	TEST_ASSERT(wait_for_qdeleted(spill), "Лужица уходит.")
+	var/mob/living/carbon/human/blessed = victims["rod"]
+	var/mob/living/carbon/human/chaplain = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 2, origin.z))
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	chaplain.put_in_hands(rod)
+	rod.melee_attack_chain(chaplain, blessed)
+	choke = chokes["rod"]
+	TEST_ASSERT_NULL(blessed.has_status_effect(/datum/status_effect/heretic_tide_drowning), "Жезл развеивает захлёб.")
+	TEST_ASSERT(!QDELETED(choke) && choke.icon_state == "tide_choke_spit", "После жезла вода выплёскивается из горла.")
+	var/mob/living/carbon/human/shaken = victims["shaken"]
+	SEND_SIGNAL(shaken, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, chaplain)
+	choke = chokes["shaken"]
+	TEST_ASSERT_NULL(shaken.has_status_effect(/datum/status_effect/heretic_tide_drowning), "Растолканная цель вырывается.")
+	TEST_ASSERT(!QDELETED(choke) && choke.icon_state == "tide_choke_spit", "Растолканная цель выкашливает воду.")
+	var/mob/living/carbon/human/dead = victims["dead"]
+	var/datum/status_effect/heretic_tide_drowning/dead_drowning = dead.has_status_effect(/datum/status_effect/heretic_tide_drowning)
+	dead.death()
+	if(!QDELETED(dead_drowning))
+		dead_drowning.tick()
+	choke = chokes["dead"]
+	TEST_ASSERT(QDELETED(dead_drowning), "Смерть обрывает захлёб.")
+	TEST_ASSERT(QDELETED(choke) || choke.icon_state == "tide_choke", "У мёртвого вода не выплёскивается.")
+	TEST_ASSERT(wait_for_qdeleted(choke), "Вода у мёртвого гаснет.")
+	TEST_ASSERT(!(choke in dead.vis_contents), "Погасшая вода снята с тела.")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_tide/spill) in get_turf(dead), "Под мёртвым лужица не растекается.")
+	var/mob/living/carbon/human/deleted = victims["deleted"]
+	choke = chokes["deleted"]
+	qdel(deleted)
+	TEST_ASSERT(QDELETED(choke), "Удалённое тело забирает воду сразу.")
 
 /// Течение: бесплатно и раз в 30 секунд; полоса от еретика к клетке сносит лежащих и вещи на клетку к концу, стоящего, защищённого от магии и конец не трогает; еретик на полосе быстрее; преграда обрывает полосу, новое течение заменяет старое, по сроку полоса уходит.
 /datum/unit_test/heretic_tide_current/Run()
