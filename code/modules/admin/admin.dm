@@ -324,7 +324,7 @@
 					if(alert("Are you sure you want to restart the server?","This server is live","Restart","Cancel") != "Restart")
 						return FALSE
 				SSticker.Reboot(init_by, "admin reboot - by [usr.key] [usr.client.holder.fakekey ? "(stealth)" : ""]", delay * 10)
-			if("Hard Restart (No Delay, No Feeback Reason)")
+			if("Hard Restart (No Delay/Feeback Reason)")
 				to_chat(world, "World reboot - [init_by]")
 				world.Reboot()
 			if("Hardest Restart (No actions, just reboot)")
@@ -332,6 +332,13 @@
 				world.Reboot(fast_track = TRUE)
 			if("Server Restart (Kill and restart DD)")
 				to_chat(world, "Server restart - [init_by]")
+				log_admin("[key_name(usr)] killed and restarted DreamDaemon via TGS")
+				message_admins("[key_name_admin(usr)] killed and restarted DreamDaemon via TGS")
+				// Без пометки следующий старт примет кил за краш и устроит реролл карты.
+				flush_pending_single_prefs()
+				SSpersistence.RecordGracefulEnding()
+				mc_state_mark_clean("admin kill - by [usr.key]")
+				shutdown_logging()
 				world.TgsEndProcess()
 
 /datum/admins/proc/end_round()
