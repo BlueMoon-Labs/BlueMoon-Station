@@ -226,6 +226,32 @@
 	TEST_ASSERT(!influence.can_harvest(first_user, first_book), "Лимит шести знаний действует и на новый разлом.")
 	TEST_ASSERT(!influence.can_harvest(second_user, first_book), "Чужой кодекс, находящийся у другого персонажа, нельзя использовать удалённо.")
 
+/// Разлом исследуется касанием рукой или хваткой по нему или его клетке, пока кодекс при себе.
+/datum/unit_test/heretic_influence_touch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.apply_innate_effects(user)
+	var/mob/living/carbon/human/bystander = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/turf/rift_turf = get_step(user, EAST)
+	var/datum/reality_smash_tracker/tracker = allocate(/datum/reality_smash_tracker)
+	var/obj/effect/reality_smash/rift = allocate(/obj/effect/reality_smash, rift_turf, tracker)
+	rift.AddMind(user.mind)
+	TEST_ASSERT_EQUAL(heretic_rift_at(rift_turf, user), rift, "Клик по клетке разлома попадает в разлом.")
+	TEST_ASSERT_NULL(heretic_rift_at(rift_turf, bystander), "Не еретик разлом не находит.")
+	user.UnarmedAttack(rift_turf, TRUE)
+	TEST_ASSERT(!(user.mind in rift.harvesting_minds), "Без кодекса касание не начинает исследование.")
+	allocate(/obj/item/forbidden_book, user)
+	user.UnarmedAttack(rift_turf, TRUE)
+	TEST_ASSERT(user.mind in rift.harvesting_minds, "Касание рукой по клетке разлома начинает исследование.")
+	rift.harvesting_minds.Cut()
+	var/obj/item/melee/touch_attack/mansus_fist/grasp = allocate(/obj/item/melee/touch_attack/mansus_fist, user)
+	var/charges = grasp.charges
+	grasp.afterattack(rift, user, TRUE)
+	TEST_ASSERT(user.mind in rift.harvesting_minds, "Хватка по разлому начинает исследование.")
+	TEST_ASSERT(!QDELETED(grasp) && grasp.charges == charges, "Хватка не тратит заряд на разлом.")
+	rift.harvested_minds |= user.mind
+	TEST_ASSERT_NULL(heretic_rift_at(rift_turf, user), "Исследованный разлом больше не перехватывает клик.")
+
 /datum/unit_test/heretic_history_mind_cleanup/Run()
 	var/datum/mind/mind = new
 	allocated += mind

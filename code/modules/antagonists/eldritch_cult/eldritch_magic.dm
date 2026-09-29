@@ -65,7 +65,7 @@
 
 /obj/item/melee/touch_attack/mansus_fist
 	name = "Mansus Grasp"
-	desc = "Искажает пространство вокруг ладони. Хватка наносит ушибы, истощает и сбивает с ног. Изученные знания добавляют эффекты вашего пути. Касание руны трансмутации стирает её, не тратя заряд."
+	desc = "Искажает пространство вокруг ладони. Хватка наносит ушибы, истощает и сбивает с ног. Изученные знания добавляют эффекты вашего пути. Касание руны трансмутации стирает её, касание разлома исследует его при кодексе в инвентаре; заряд не тратится."
 	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
 	icon_state = "mansus_grasp"
 	item_state = "mansus"
@@ -101,6 +101,10 @@
 		return
 	if(istype(target, /obj/effect/eldritch))
 		INVOKE_ASYNC(target, TYPE_PROC_REF(/obj/effect/eldritch, erase_by), user, src)
+		return FALSE
+	var/obj/effect/reality_smash/rift = heretic_rift_at(target, user)
+	if(rift)
+		rift.touch_by(user)
 		return FALSE
 	if(isliving(target))
 		var/mob/living/victim = target

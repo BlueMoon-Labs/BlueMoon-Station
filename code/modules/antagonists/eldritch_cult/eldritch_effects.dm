@@ -885,6 +885,28 @@
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	return heretic && heretic.influences_harvested < HERETIC_INFLUENCE_LIMIT && !(user.mind in harvested_minds)
 
+/obj/effect/reality_smash/proc/perceived_by(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic && (user.mind in minds) && !(user.mind in harvested_minds) && heretic.influences_harvested < HERETIC_INFLUENCE_LIMIT
+
+/obj/effect/reality_smash/proc/touch_by(mob/living/user)
+	var/obj/item/forbidden_book/book = locate() in user.GetAllContents()
+	if(!book)
+		to_chat(user, span_warning("Разлом шепчет, но без кодекса при себе его слова не записать."))
+		return FALSE
+	INVOKE_ASYNC(src, PROC_REF(harvest), user, book)
+	return TRUE
+
+/// Спрайт разлома тонкий, поэтому клик по его клетке тоже считается касанием разлома.
+/proc/heretic_rift_at(atom/target, mob/living/user)
+	var/obj/effect/reality_smash/rift = target
+	if(!istype(rift))
+		if(!isturf(target))
+			return null
+		rift = locate() in target
+	if(rift?.perceived_by(user))
+		return rift
+
 /obj/effect/reality_smash/proc/harvest(mob/living/user, obj/item/forbidden_book/book)
 	if(!can_harvest(user, book) || (user.mind in harvesting_minds))
 		return FALSE

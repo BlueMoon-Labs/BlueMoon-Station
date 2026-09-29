@@ -28,7 +28,7 @@
 		return
 	. += "Доступно очков знаний: [heretic.knowledge_points]. Прогресс принадлежит вам и сохраняется при потере книги."
 	. += "Откройте кодекс в руке для выбора пути, исследований и рецептов."
-	. += "Примените кодекс к полу, чтобы за 8 секунд начертить руну 3×3, к разлому - чтобы исследовать его, к руне - чтобы стереть её. Руну стирает и Хватка Мансуса."
+	. += "Примените кодекс к полу, чтобы за 8 секунд начертить руну 3×3, к разлому - чтобы исследовать его, к руне - чтобы стереть её. Руну стирает и Хватка Мансуса. Разлом можно исследовать и рукой или хваткой, пока кодекс при вас."
 	if(heretic.deed && !heretic.deed.complete())
 		. += span_notice("[heretic.deed.name]: [heretic.deed.progress]/[heretic.deed.goal()] на ступени [heretic.deed.tier + 1]. [heretic.deed.desc] [heretic.deed.hint]")
 
@@ -39,10 +39,11 @@
 	. = ..()
 	if(!proximity_flag || !IS_HERETIC(user))
 		return
+	var/obj/effect/reality_smash/rift = heretic_rift_at(target, user)
 	if(istype(target, /obj/effect/eldritch))
 		remove_rune(target, user)
-	else if(istype(target, /obj/effect/reality_smash))
-		get_power_from_influence(target, user)
+	else if(rift)
+		get_power_from_influence(rift, user)
 	else if(isopenturf(target))
 		draw_rune(target, user)
 

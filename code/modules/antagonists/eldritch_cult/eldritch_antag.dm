@@ -217,6 +217,7 @@
 	current.faction |= "heretics"
 	RegisterSignal(current, COMSIG_MOB_DEATH, PROC_REF(on_death))
 	RegisterSignal(current, COMSIG_PARENT_QDELETING, PROC_REF(on_innate_body_deleted))
+	RegisterSignal(current, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
 	update_combat_resource_alert(FALSE, current)
 	update_codex_alert(current)
 
@@ -232,11 +233,16 @@
 	if(owner)
 		handle_clown_mutation(current, removing = FALSE)
 	current.faction -= "heretics"
-	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING))
+	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
 
 /datum/antagonist/heretic/proc/on_innate_body_deleted(mob/living/source)
 	SIGNAL_HANDLER
 	remove_innate_effects(source)
+
+/datum/antagonist/heretic/proc/on_unarmed_attack(mob/living/source, atom/target)
+	SIGNAL_HANDLER
+	var/obj/effect/reality_smash/rift = heretic_rift_at(target, source)
+	rift?.touch_by(source)
 
 /datum/antagonist/heretic/get_admin_commands()
 	. = ..()
