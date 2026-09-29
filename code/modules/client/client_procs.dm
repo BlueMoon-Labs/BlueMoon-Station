@@ -517,6 +517,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(connection != "seeker" && connection != "web")//Invalid connection type.
 		return null
 
+	fractional_movement = new(FRACTIONAL_MOVEMENT_NATIVE)
+
 	// Цена этого подключения по этапам - см. client_connect_probe.dm
 	var/datum/client_connect_probe/connect_probe = new(ckey)
 
@@ -693,6 +695,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/breaking_version = CONFIG_GET(number/client_error_version)
 	var/breaking_build = CONFIG_GET(number/client_error_build)
 	var/warn_version = CONFIG_GET(number/client_warn_version)
+	var/warn_build = CONFIG_GET(number/client_warn_build)
 	if (byond_version < breaking_version || (byond_version == breaking_version && byond_build < breaking_build))		//Out of date client.
 		to_chat_immediate(src, span_danger("<b>Your version of BYOND is too old:</b>"))
 		to_chat_immediate(src, CONFIG_GET(string/client_error_message))
@@ -706,19 +709,19 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			disconnect_reason = "сервер: версия BYOND ниже минимальной"
 			qdel(src)
 			return FALSE
-	else if (byond_version < warn_version)	// Bluemoon Edit: Better byond warning //We have words for this client.
+	else if (byond_version < warn_version || (byond_version == warn_version && byond_build < warn_build))
 		if(CONFIG_GET(flag/client_warn_popup))
-			var/msg = "<b>Your version of byond may be getting out of date:</b><br>"
+			var/msg = "<b>Доступна рекомендуемая версия BYOND:</b><br>"
 			msg += CONFIG_GET(string/client_warn_message) + "<br><br>"
-			msg += "Your version: [byond_version]<br>"
-			msg += "Required version to remove this message: [warn_version] or later<br>" // Bluemoon Edit: Better byond warning
-			msg += "Visit <a href=\"https://secure.byond.com/download\">BYOND's website</a> to get the latest version of BYOND.<br>"
+			msg += "Ваша версия: [byond_version].[byond_build]<br>"
+			msg += "Рекомендуемая версия: [warn_version].[warn_build] или новее<br>"
+			msg += "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.<br>"
 			src << browse(msg, "window=warning_popup")
 		else
-			to_chat(src, "<span class='danger'><b>Your version of byond may be getting out of date:</b></span>")
+			to_chat(src, span_notice("<b>Доступна рекомендуемая версия BYOND:</b>"))
 			to_chat(src, CONFIG_GET(string/client_warn_message))
-			to_chat(src, "Your version: [byond_version]")
-			to_chat(src, "Required version to remove this message: [warn_version] or later") // Bluemoon Edit: Better byond warning
+			to_chat(src, "Ваша версия: [byond_version].[byond_build]. Рекомендуемая версия: [warn_version].[warn_build] или новее.")
+			to_chat(src, "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.")
 
 	if (connection == "web" && !connecting_admin)
 		if (!CONFIG_GET(flag/allow_webclient))
@@ -1145,6 +1148,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	SStick_spikes.record_slow_work("логаут", "[ckey]: refcount после Destroy [leftover_refs], del() [round(deletion_cost_ms, 0.1)]мс", deletion_cost_ms)
 
 /client/Destroy()
+	QDEL_NULL(fractional_movement)
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)] | [connection_forensics()]")

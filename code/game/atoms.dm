@@ -1459,10 +1459,11 @@
 /atom/proc/update_filters()
 	filters = null
 	filter_data = sortTim(filter_data, GLOBAL_PROC_REF(cmp_filter_data_priority), TRUE)
-	for(var/f in filter_data)
-		var/list/data = filter_data[f]
+	for(var/filter_name in filter_data)
+		var/list/data = filter_data[filter_name]
 		var/list/arguments = data.Copy()
 		arguments -= "priority"
+		arguments["name"] = filter_name
 		filters += filter(arglist(arguments))
 	UNSETEMPTY(filter_data)
 
@@ -1495,10 +1496,11 @@
 /atom/proc/get_filter(name)
 	if(!length(filter_data) || !filter_data[name])
 		return
-	var/filter_index = filter_data.Find(name)
-	if(!filter_index || filter_index > length(filters))
-		return
-	return filters[filter_index]
+	// Движок не принимает пустую строку как имя фильтра.
+	if(name == "")
+		var/filter_index = filter_data.Find(name)
+		return filter_index && filter_index <= length(filters) ? filters[filter_index] : null
+	return filters[name]
 
 /// Returns the indice in filters of the given filter name.
 /// If it is not found, returns null.

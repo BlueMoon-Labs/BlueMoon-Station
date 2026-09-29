@@ -356,10 +356,10 @@ GLOBAL_LIST_INIT(tattoo_ink_colors, list(
 		return TRUE
 	return FALSE
 
-/// Проверяет, закрыт ли хвост костюмом (HIDETAUR через flags_inv)
+/// Проверяет, закрыт ли хвост костюмом (HIDETAIL через flags_inv)
 /// Используется для татуировок на хвосте
 /proc/is_tail_covered(mob/living/carbon/human/H)
-	if(H.wear_suit?.flags_inv & HIDETAUR)
+	if(H.wear_suit?.flags_inv & HIDETAIL)
 		return TRUE
 	return FALSE
 

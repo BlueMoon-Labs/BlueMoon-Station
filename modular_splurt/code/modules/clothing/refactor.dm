@@ -5,7 +5,7 @@
 	item_state = "techpriest"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	hoodtype = /obj/item/clothing/head/hooded/techpriest
-	flags_inv = HIDETAUR //bluemood add
+	flags_inv = HIDETAUR|HIDETAIL //bluemood add
 	mutantrace_variation = STYLE_ALL_TAURIC //bluemood add
 
 /obj/item/clothing/head/hooded/techpriest
