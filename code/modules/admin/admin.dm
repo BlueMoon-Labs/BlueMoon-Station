@@ -871,6 +871,7 @@
 			if(message)
 				to_chat(C, message, confidential = TRUE)
 			kicked_client_names.Add("[C.key]")
+			C.disconnect_reason = "сервер: кик из лобби[kick_only_afk ? " за неактивность" : ""]"
 			qdel(C)
 	return kicked_client_names
 
