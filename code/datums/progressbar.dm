@@ -20,6 +20,8 @@
 
 /datum/progressbar/New(mob/User, goal_number, atom/target)
 	. = ..()
+	if(isnull(target))
+		target = User
 	if (!istype(target))
 		EXCEPTION("Invalid target given")
 	if(QDELETED(User) || !istype(User))
