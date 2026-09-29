@@ -153,6 +153,10 @@
 #define TRAIT_TOXINLOVER		"toxinlover"
 #define TRAIT_ROBOTIC_ORGANISM	"robotic_organism"
 #define TRAIT_ROBOT_RADSHIELDING	"robot_radshielding"
+#define TRAIT_STASIS			"stasis"
+#define TRAIT_GHOSTROLE			"ghost_role"
+#define TRAIT_NIFSOFT			"nifsoft"
+#define TRAIT_NIFSOFT_HUD_GRANTER	"nifsoft_hud_granter"
 #define TRAIT_NOBREATH			"no_breath"
 #define TRAIT_AUXILIARY_LUNGS	"auxiliary_lungs"	//Lungs not neccessary required due to nobreath, but provides some other helpful function.
 #define TRAIT_ANTIMAGIC			"anti_magic"
@@ -701,6 +705,7 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_KNOW_MED_SURGERY_T3 "know_med_surgery_t3"
 #define TRAIT_KNOW_VIR_SURGERY_T1 "know_vir_surgery_t1"
 #define TRAIT_SKILLCHIP_ADAPTER "skillchip_adapter"
+#define TRAIT_MADNESS_IMMUNE "madness_immune"
 
 ///Movement type traits for movables. See elements/movetype_handler.dm
 #define TRAIT_MOVE_GROUND "move_ground"

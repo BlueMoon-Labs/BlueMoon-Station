@@ -43,6 +43,7 @@ SUBSYSTEM_DEF(persistence)
 
 /datum/controller/subsystem/persistence/proc/CollectData()
 	SaveServerPersistence()
+	save_modular_persistence()
 	if(station_persistence_save_disabled)
 		return
 	SaveGamePersistence()

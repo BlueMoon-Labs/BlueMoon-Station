@@ -45,6 +45,7 @@
 	var/name				//replaces mob/var/original_name
 	var/mob/living/current
 	var/active = 0
+	var/original_character_slot_index
 
 	var/memory
 

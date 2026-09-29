@@ -427,6 +427,10 @@ GLOBAL_LIST_EMPTY(ghost_records)
 /proc/cryoMob(mob/living/mob_occupant, datum/weakref/control_computer_weakref, obj/machinery/cryopod/pod, is_teleporter, initial_name, effects = FALSE)
 	var/list/crew_member = list()
 
+	if(ishuman(mob_occupant))
+		var/mob/living/carbon/human/persistent_human = mob_occupant
+		persistent_human.save_individual_persistence(ckey(persistent_human.ckey || persistent_human.mind?.key))
+
 	// No computer passed in, use admin-cryo instead
 	if (!control_computer_weakref)
 		if(!pod) // BLUEMOON - CRYO_ITEMS_AND_MESSAGES_FIX - ADD - админская кнопка, перемещение в ГК и другие приблуды используют эту функцию
