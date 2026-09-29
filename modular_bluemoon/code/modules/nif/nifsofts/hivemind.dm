@@ -274,8 +274,8 @@ GLOBAL_LIST_EMPTY(hivemind_users)
 /obj/item/hivemind_keyboard
 	name = "Hivemind Interface Device"
 	desc = "Голографический контроллер жестов, настроенный на движения рук и пальцев пользователя. Работает в паре с программой Hivemind и служит для отсеивания нежелательных мыслей перед отправкой в сеть — в неё попадают только осознанные мысли."
-	icon = 'icons/obj/device.dmi'
-	icon_state = "sflash"
+	icon = 'icons/obj/abductor.dmi'
+	icon_state = "multitool"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
 	item_state = "electronic"

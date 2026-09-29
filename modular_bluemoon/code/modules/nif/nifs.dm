@@ -212,6 +212,9 @@
 
 	return TRUE
 
+/obj/item/organ/cyberimp/brain/nif/decay(seconds, times_fired)
+	return
+
 /obj/item/organ/cyberimp/brain/nif/process(seconds_per_tick)
 	. = ..()
 
