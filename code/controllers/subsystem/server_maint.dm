@@ -87,7 +87,7 @@ SUBSYSTEM_DEF(server_maint)
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
-		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= 3000))
+		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || world.time - C.last_activity >= 3000))
 			winset(C, null, "command=.update_ping+[ping_wire_num(world.time+world.tick_lag*TICK_USAGE_REAL/100)]+[ping_wire_num(REALTIMEOFDAY)]")
 
 		MC_TICK_CHECK

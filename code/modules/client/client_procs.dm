@@ -1319,7 +1319,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		parts += "последний пинг [round((world.time - lastping_at) / 10, 0.1)]с назад, rtt [round(lastping_rtt_raw, 1)]мс (сред [round(avgping_rtt || 0, 1)], джиттер [round(avgping_jitter || 0, 1)])"
 	else
 		parts += "пинга не было ни разу"
-	parts += "без ввода [round(inactivity / 10, 0.1)]с"
+	parts += "без ввода [round((world.time - last_activity) / 10, 0.1)]с"
 	parts += "моб [mob ? "[mob.type]" : "нет"]"
 	parts += "инициатор: [disconnect_reason || "клиент/сеть"]"
 	return parts.Join(" | ")
