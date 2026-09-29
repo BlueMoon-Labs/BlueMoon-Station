@@ -13,6 +13,14 @@
 #define HERETIC_SAND_FINAL_DAMAGE 40
 #define HERETIC_SAND_RECALL_RANGE 3
 #define HERETIC_SAND_EXTRA_DELAY (1.5 SECONDS)
+#define HERETIC_SAND_COUNTDOWN (0.5 SECONDS)
+#define HERETIC_SAND_COUNTDOWN_VOLUME 35
+#define HERETIC_SAND_LEVEL_FILTER "heretic_sand_level"
+#define HERETIC_SAND_UPPER_TRAVEL 10
+#define HERETIC_SAND_LOWER_TRAVEL 9
+#define HERETIC_SAND_TETHER_DROP -11
+#define HERETIC_SAND_TETHER_SNAP (0.3 SECONDS)
+#define HERETIC_SAND_TETHER_MAX_GLIDE (0.5 SECONDS)
 #define HERETIC_SAND_SLOW_COLOR "#d6ad70"
 #define HERETIC_SAND_INK "#c8a66c"
 #define HERETIC_SAND_SUN_LIGHT "#ffd98a"
@@ -101,7 +109,7 @@
 	details = list(
 		"Нож и стекло создают клинок истёкшего часа.",
 		"Осыпь за единицу песка: соседям 20 ушибов и 10 выносливости, затем часы на 4 соседних клетках.",
-		"Через 1,5 секунды каждые часы бьют свою клетку: 32 ушиба и 20 выносливости; у часов 15 прочности.",
+		"Часы бьют свою клетку, когда пустеет верхняя колба, через 1,5 секунды: 32 ушиба, 20 выносливости; прочность 15.",
 		"Хватка в «Помощи» по свободному полу станции ставит засечку; до 3, новая вытесняет старую.",
 		"У засечки 30 прочности, песок в ней течёт вверх, нулевой жезл её снимает; смерть её не трогает.",
 		"Засечка в новом отделе продвигает дело пути; из изнанки можно выйти к своей засечке.",
@@ -501,7 +509,7 @@
 
 /obj/structure/heretic_sand_hourglass
 	name = "borrowed second"
-	desc = "Песок стремительно пересыпается сквозь невидимое горлышко. Через 1,5 секунды ударит только по этой клетке. Отойдите, разбейте часы или коснитесь их нулевым жезлом."
+	desc = "Песок стремительно пересыпается сквозь невидимое горлышко: когда верхняя колба опустеет, через 1,5 секунды, часы ударят только по этой клетке. За полсекунды до удара латунь раскаляется. Отойдите, разбейте часы или коснитесь их нулевым жезлом."
 	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
 	icon_state = "sand_hourglass"
 	anchored = TRUE
@@ -510,10 +518,18 @@
 	var/datum/weakref/sand_ref
 	var/datum/weakref/knowledge_ref
 	var/expiry_timer
+	var/countdown_timer
 	var/impact_damage
 	var/expires_at
 	var/delayed = FALSE
 	var/datum/status_effect/heretic_sand_recall/recorded_second
+	var/obj/effect/abstract/heretic_sand_grains/upper/upper_sand
+	var/obj/effect/abstract/heretic_sand_grains/lower/lower_sand
+	var/static/list/countdown_sounds = list(
+		'modular_bluemoon/sound/heretic/sand_countdown_1.ogg',
+		'modular_bluemoon/sound/heretic/sand_countdown_2.ogg',
+		'modular_bluemoon/sound/heretic/sand_countdown_3.ogg',
+	)
 
 /obj/structure/heretic_sand_hourglass/Initialize(mapload, datum/eldritch_knowledge/base_sand/sand, datum/eldritch_knowledge/required, damage)
 	. = ..()
@@ -526,10 +542,42 @@
 	sand.hourglasses += src
 	RegisterSignal(required, COMSIG_PARENT_QDELETING, PROC_REF(source_deleted))
 	expiry_timer = addtimer(CALLBACK(src, PROC_REF(resolve)), HERETIC_SAND_DELAY, TIMER_STOPPABLE)
+	upper_sand = new
+	lower_sand = new
+	vis_contents += upper_sand
+	vis_contents += lower_sand
+	pour_sand()
 
 /obj/structure/heretic_sand_hourglass/proc/source_deleted(datum/source)
 	SIGNAL_HANDLER
 	qdel(src)
+
+/// Доля песка в верхней колбе: 1 - полна, 0 - пора бить.
+/obj/structure/heretic_sand_hourglass/proc/sand_left()
+	return upper_sand ? upper_sand.current_level() : 0
+
+/// Песок сыплется до срока удара с того уровня, что виден сейчас: продление замедляет его, а не начинает заново.
+/obj/structure/heretic_sand_hourglass/proc/pour_sand()
+	var/time_left = max(expires_at - world.time, 0)
+	var/left = sand_left()
+	upper_sand.pour(left, 0, time_left)
+	lower_sand.pour(1 - left, 1, time_left)
+	icon_state = initial(icon_state)
+	deltimer(countdown_timer)
+	countdown_timer = addtimer(CALLBACK(src, PROC_REF(count_down)), max(time_left - HERETIC_SAND_COUNTDOWN, 0), TIMER_STOPPABLE)
+
+/// Последние полсекунды: латунь раскаляется и часы тихо отбивают отсчёт. Возвращает сыгранный звук.
+/obj/structure/heretic_sand_hourglass/proc/count_down()
+	countdown_timer = null
+	icon_state = "sand_hourglass_last"
+	heretic_vfx_pulse(src, HERETIC_SAND_SUN_LIGHT, 1, HERETIC_SAND_COUNTDOWN)
+	. = pick(countdown_sounds)
+	playsound(src, ., HERETIC_SAND_COUNTDOWN_VOLUME, FALSE)
+
+/// Дотянутся ли часы до цели: по этой линии идут и возврат, и песчаная нить.
+/obj/structure/heretic_sand_hourglass/proc/within_recall(mob/living/target)
+	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
+	return isturf(target?.loc) && sand?.line_clear(src, target, HERETIC_SAND_RECALL_RANGE)
 
 /obj/structure/heretic_sand_hourglass/proc/record_target(mob/living/victim)
 	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
@@ -537,7 +585,7 @@
 		return FALSE
 	recorded_second = victim.apply_status_effect(/datum/status_effect/heretic_sand_recall, src)
 	if(recorded_second)
-		desc = "[initial(desc)] Эти часы запомнили [victim]: перед взрывом вернут жертву, если она останется в трёх клетках без преград."
+		desc = "[initial(desc)] Эти часы запомнили [victim]: пока к жертве тянется песчаная нить - в трёх клетках без преград, - перед ударом часы вернут её сюда."
 	return !!recorded_second
 
 /obj/structure/heretic_sand_hourglass/proc/resolve()
@@ -547,7 +595,7 @@
 	if(sand?.can_use(sand.sand_body) && required && heretic.get_knowledge(required.type) == required && isturf(loc) && sand.line_clear(sand.sand_body, src, HERETIC_SAND_RANGE + 2))
 		var/mob/living/recorded_target = recorded_second?.owner
 		var/turf/destination = get_turf(src)
-		if(recorded_target && get_turf(recorded_target) != destination && isturf(recorded_target.loc) && !recorded_target.buckled && !recorded_target.anchored && !HAS_TRAIT(recorded_target, TRAIT_NO_TELEPORT) && !destination.is_blocked_turf() && sand.line_clear(src, recorded_target, HERETIC_SAND_RECALL_RANGE) && sand.line_clear(sand.sand_body, recorded_target, HERETIC_SAND_RANGE + 2) && heretic_can_affect(sand.sand_body, recorded_target))
+		if(recorded_target && get_turf(recorded_target) != destination && !recorded_target.buckled && !recorded_target.anchored && !HAS_TRAIT(recorded_target, TRAIT_NO_TELEPORT) && !destination.is_blocked_turf() && within_recall(recorded_target) && sand.line_clear(sand.sand_body, recorded_target, HERETIC_SAND_RANGE + 2) && heretic_can_affect(sand.sand_body, recorded_target))
 			new /obj/effect/temp_visual/heretic_sand/cast(get_turf(recorded_target))
 			do_teleport(recorded_target, destination, channel = TELEPORT_CHANNEL_MAGIC)
 		if(QDELETED(src) || !sand.can_use(sand.sand_body))
@@ -568,8 +616,9 @@
 	expires_at += HERETIC_SAND_EXTRA_DELAY
 	deltimer(expiry_timer)
 	expiry_timer = addtimer(CALLBACK(src, PROC_REF(resolve)), expires_at - world.time, TIMER_STOPPABLE)
-	color = "#d6ad70"
-	desc = "Песок пересыпается медленнее: создатель продлил отсчёт на 1,5 секунды. Часы ударят только по своей клетке; сохранённая ими цель вернётся перед ударом, если останется в трёх клетках без преград. Часы можно разбить или коснуться их нулевым жезлом."
+	pour_sand()
+	color = HERETIC_SAND_SLOW_COLOR
+	desc = "Песок пересыпается медленнее: создатель продлил отсчёт на 1,5 секунды, и верхняя колба опустеет к новому сроку. Часы ударят только по своей клетке; сохранённая ими цель вернётся перед ударом, если к ней ещё тянется песчаная нить. Часы можно разбить или коснуться их нулевым жезлом."
 	visible_message(span_warning("[src] вспыхивают бронзовым светом. Падение песчинок замедляется!"))
 	if(recorded_second?.owner)
 		to_chat(recorded_second.owner, span_userdanger("Часы удерживают ваш шаг ещё на 1,5 секунды. Успейте уйти дальше трёх клеток или разбейте их!"))
@@ -583,6 +632,11 @@
 
 /obj/structure/heretic_sand_hourglass/Destroy()
 	deltimer(expiry_timer)
+	deltimer(countdown_timer)
+	vis_contents -= upper_sand
+	vis_contents -= lower_sand
+	QDEL_NULL(upper_sand)
+	QDEL_NULL(lower_sand)
 	QDEL_NULL(recorded_second)
 	var/datum/eldritch_knowledge/base_sand/sand = sand_ref?.resolve()
 	sand?.hourglasses.Remove(src)
@@ -601,6 +655,7 @@
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_sand_recall
 	on_remove_on_mob_delete = TRUE
 	var/datum/weakref/hourglass_ref
+	var/obj/effect/abstract/heretic_sand_tether/tether
 
 /datum/status_effect/heretic_sand_recall/on_creation(mob/living/new_owner, obj/structure/heretic_sand_hourglass/hourglass)
 	hourglass_ref = WEAKREF(hourglass)
@@ -610,13 +665,27 @@
 	if(!..())
 		return FALSE
 	to_chat(owner, span_userdanger("Часы запомнили ваш шаг! Через 1,5 секунды они вернут вас к себе. Отойдите дальше трёх клеток, скройтесь за преградой или разбейте часы!"))
+	var/turf/hourglass_turf = get_turf(hourglass_ref?.resolve())
+	if(hourglass_turf)
+		tether = new(hourglass_turf)
+		new /obj/effect/temp_visual/heretic_sand/bind(get_turf(owner))
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(owner_moved))
 	return TRUE
+
+/datum/status_effect/heretic_sand_recall/proc/owner_moved(atom/movable/source)
+	SIGNAL_HANDLER
+	var/obj/structure/heretic_sand_hourglass/hourglass = hourglass_ref?.resolve()
+	if(QDELETED(hourglass) || QDELETED(tether))
+		return
+	tether.follow(source, hourglass.within_recall(source))
 
 /datum/status_effect/heretic_sand_recall/be_replaced()
 	on_remove()
 	return ..()
 
 /datum/status_effect/heretic_sand_recall/on_remove()
+	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
+	QDEL_NULL(tether)
 	var/obj/structure/heretic_sand_hourglass/hourglass = hourglass_ref?.resolve()
 	if(hourglass?.recorded_second == src)
 		hourglass.recorded_second = null
@@ -624,9 +693,106 @@
 
 /atom/movable/screen/alert/status_effect/heretic_sand_recall
 	name = "Украденная секунда"
-	desc = "Песочные часы вернут вас на отмеченную клетку перед взрывом. Отойдите дальше трёх клеток от часов, перекройте путь преградой или разбейте их. Антимагия и запрет телепортации защищают от возврата."
+	desc = "Песочные часы вернут вас на отмеченную клетку перед взрывом. Пока от них к вам тянется песчаная нить, вы в их досягаемости: отойдите дальше трёх клеток, перекройте путь преградой или разбейте часы. Антимагия и запрет телепортации защищают от возврата."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "sand_recall"
+
+/// Песок одной колбы часов. Уровень задаёт маска, её сдвиг ведёт animate() за pour_time - без тиков.
+/obj/effect/abstract/heretic_sand_grains
+	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
+	layer = FLOAT_LAYER
+	vis_flags = VIS_INHERIT_ID | VIS_INHERIT_PLANE
+	appearance_flags = RESET_COLOR
+	var/mask_state
+	var/travel = 0
+	var/level_from = 0
+	var/level_to = 0
+	var/pour_time = 0
+	var/poured_at = 0
+	var/static/list/level_masks = list()
+
+/obj/effect/abstract/heretic_sand_grains/upper
+	icon_state = "sand_hourglass_upper"
+	layer = FLOAT_LAYER - 1
+	mask_state = "sand_hourglass_upper_mask"
+	travel = HERETIC_SAND_UPPER_TRAVEL
+	level_to = 1
+
+/obj/effect/abstract/heretic_sand_grains/lower
+	icon_state = "sand_hourglass_lower"
+	mask_state = "sand_hourglass_lower_mask"
+	travel = HERETIC_SAND_LOWER_TRAVEL
+
+/obj/effect/abstract/heretic_sand_grains/Initialize(mapload)
+	. = ..()
+	pour(level_to, level_to, 0)
+
+/obj/effect/abstract/heretic_sand_grains/proc/current_level()
+	if(pour_time <= 0)
+		return level_to
+	return level_from + (level_to - level_from) * clamp((world.time - poured_at) / pour_time, 0, 1)
+
+/obj/effect/abstract/heretic_sand_grains/proc/pour(from_level, to_level, time)
+	level_from = from_level
+	level_to = to_level
+	pour_time = max(time, 0)
+	poured_at = world.time
+	add_filter(HERETIC_SAND_LEVEL_FILTER, 1, alpha_mask_filter(y = mask_offset(from_level), icon = level_mask()))
+	if(!pour_time)
+		return
+	animate(get_filter(HERETIC_SAND_LEVEL_FILTER), y = mask_offset(to_level), time = pour_time)
+	filter_data[HERETIC_SAND_LEVEL_FILTER]["y"] = mask_offset(to_level)
+
+/// Отрицательный y фильтра опускает маску: пустая колба - маска ниже на travel пикселей.
+/obj/effect/abstract/heretic_sand_grains/proc/mask_offset(level)
+	return -(1 - level) * travel
+
+/obj/effect/abstract/heretic_sand_grains/proc/level_mask()
+	if(!level_masks[mask_state])
+		level_masks[mask_state] = icon(icon, mask_state)
+	return level_masks[mask_state]
+
+/// Песчаная нить от часов к запомненной цели: видна, пока часы до неё дотягиваются, и втягивается обратно, когда цель уходит.
+/obj/effect/abstract/heretic_sand_tether
+	icon = 'modular_bluemoon/icons/obj/heretic_sand.dmi'
+	icon_state = "sand_tether"
+	layer = LOW_OBJ_LAYER
+	pixel_y = HERETIC_SAND_TETHER_DROP
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = PIXEL_SCALE
+	alpha = 0
+	var/taut = FALSE
+	var/length = 0
+	var/angle = 0
+
+/obj/effect/abstract/heretic_sand_tether/proc/follow(atom/movable/target, holds)
+	var/turf/end = get_turf(target)
+	if(!holds || !end || end == loc || end.z != z)
+		release()
+		return
+	var/delta_x = (end.x - x) * world.icon_size
+	var/delta_y = (end.y - y) * world.icon_size
+	length = sqrt(delta_x * delta_x + delta_y * delta_y)
+	angle = Get_Angle(loc, end)
+	var/glide = target.glide_size ? world.icon_size / target.glide_size * world.tick_lag : 0
+	glide = clamp(glide, world.tick_lag, HERETIC_SAND_TETHER_MAX_GLIDE)
+	if(!taut)
+		transform = span(0)
+	taut = TRUE
+	animate(src, transform = span(length), alpha = 255, time = glide, flags = ANIMATION_LINEAR_TRANSFORM)
+
+/obj/effect/abstract/heretic_sand_tether/proc/release()
+	if(!taut)
+		return
+	taut = FALSE
+	animate(src, transform = span(0), alpha = 0, time = HERETIC_SAND_TETHER_SNAP, easing = QUAD_EASING | EASE_IN, flags = ANIMATION_LINEAR_TRANSFORM)
+
+/obj/effect/abstract/heretic_sand_tether/proc/span(span_length)
+	var/matrix/line = matrix()
+	line.Scale(1, max(span_length, 1) / world.icon_size)
+	line.Translate(0, span_length / 2)
+	line.Turn(angle)
+	return line
 
 /obj/structure/heretic_sand_anchor
 	name = "unspent hour"
@@ -1070,6 +1236,9 @@
 	icon_state = "sand_ascend"
 	duration = HERETIC_SAND_STASIS_TELEGRAPH
 
+/obj/effect/temp_visual/heretic_sand/bind
+	icon_state = "sand_bind"
+
 /datum/heretic_deed/sand
 	next_step = "В намерении «Помощь» коснитесь Хваткой Мансуса свободного пола в ещё не зачтённом отделе: там встанет засечка."
 	name = "Засечки"
@@ -1141,6 +1310,7 @@
 	details = list(
 		"Взрыв: 20 выносливости и единица песка, часы запоминают клетку цели.",
 		"Через 1,5 секунды часы возвращают цель на эту клетку и взрываются.",
+		"Пока цель в досягаемости часов, к ней тянется песчаная нить; втянулась - возврата не будет.",
 		"Спастись можно, разбив часы, отойдя дальше 3 клеток или встав за преграду; защищают и антимагия, и запрет телепортации.",
 	)
 	role = HERETIC_ROLE_MARK
@@ -1577,6 +1747,14 @@
 #undef HERETIC_SAND_FINAL_DAMAGE
 #undef HERETIC_SAND_RECALL_RANGE
 #undef HERETIC_SAND_EXTRA_DELAY
+#undef HERETIC_SAND_COUNTDOWN
+#undef HERETIC_SAND_COUNTDOWN_VOLUME
+#undef HERETIC_SAND_LEVEL_FILTER
+#undef HERETIC_SAND_UPPER_TRAVEL
+#undef HERETIC_SAND_LOWER_TRAVEL
+#undef HERETIC_SAND_TETHER_DROP
+#undef HERETIC_SAND_TETHER_SNAP
+#undef HERETIC_SAND_TETHER_MAX_GLIDE
 #undef HERETIC_SAND_SLOW_COLOR
 #undef HERETIC_SAND_INK
 #undef HERETIC_SAND_SUN_LIGHT
