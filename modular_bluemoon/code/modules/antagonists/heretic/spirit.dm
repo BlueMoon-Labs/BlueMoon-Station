@@ -51,6 +51,16 @@
 #define HERETIC_SPIRIT_WHISPER_COOLDOWN (5 SECONDS)
 #define HERETIC_SPIRIT_PASSMOB_TRAIT "heretic_spirit_passmob"
 #define HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT "heretic_spirit_passmob_owned"
+#define HERETIC_SPIRIT_THREAD_CALM "spirit_thread"
+#define HERETIC_SPIRIT_THREAD_TAUT "spirit_thread_taut"
+#define HERETIC_SPIRIT_THREAD_REAP "spirit_thread_reap"
+#define HERETIC_SPIRIT_THREAD_SNAP "spirit_thread_snap"
+#define HERETIC_SPIRIT_THREAD_SNAP_TIME (0.8 SECONDS)
+#define HERETIC_SPIRIT_RETURN_TIME (0.8 SECONDS)
+#define HERETIC_SPIRIT_RETURN_GLIDE (0.4 SECONDS)
+#define HERETIC_SPIRIT_END_SNAP 1
+#define HERETIC_SPIRIT_END_RETURN 2
+#define HERETIC_SPIRIT_END_TAKEN 3
 
 /datum/heretic_path/spirit
 	id = PATH_SPIRIT
@@ -770,6 +780,9 @@
 	var/datum/weakref/knowledge_ref
 	var/datum/weakref/reaping_ref
 	var/obj/structure/heretic_spirit_soul/anchor
+	var/datum/beam/heretic_spirit_thread/thread
+	/// Чем кончится связь, если исход задан заранее; иначе решает срок.
+	var/ending
 	var/mutable_appearance/spirit_overlay
 	var/moved_away = FALSE
 	var/shifted = FALSE
@@ -803,6 +816,7 @@
 	if(!QDELETED(purse))
 		drain_limit += purse.passive_level * 5
 	anchor = new(get_turf(owner), src)
+	thread = new(anchor, owner)
 	owner.update_icon()
 	to_chat(owner, span_userdanger("Ваша душа осталась на месте! Коснитесь её или вернитесь на её клетку после отхода. Пока вы стоите на душе, коснуться её можно нажатием на значок «Разлучение». Дальше одной клетки связь истощает выносливость; душу можно разбить, закрыть стеной или оставить дальше пяти клеток."))
 	return TRUE
@@ -831,9 +845,31 @@
 		moved_away = TRUE
 	else if(moved_away)
 		reap_end_reason = "цель вернулась к своей душе"
+		ending = HERETIC_SPIRIT_END_RETURN
 		qdel(src)
 		return
+	update_thread()
 	anchor.update_click_through()
+
+/// Спокойная нить рядом с душой, натянутая, пока тянет выносливость, и стянутая перед Жатвой.
+/datum/status_effect/heretic_spirit/separated/proc/update_thread()
+	if(QDELETED(thread) || QDELETED(anchor))
+		return
+	var/style = HERETIC_SPIRIT_THREAD_CALM
+	if(reap_at)
+		style = HERETIC_SPIRIT_THREAD_REAP
+	else if(get_dist(owner, anchor) > 1)
+		style = HERETIC_SPIRIT_THREAD_TAUT
+	thread.update(style)
+
+/datum/status_effect/heretic_spirit/separated/proc/show_ending(turf/soul_turf)
+	if(QDELETED(owner) || !isturf(owner.loc))
+		return
+	var/outcome = ending || (world.time >= duration ? HERETIC_SPIRIT_END_RETURN : HERETIC_SPIRIT_END_SNAP)
+	if(outcome == HERETIC_SPIRIT_END_RETURN)
+		new /obj/effect/temp_visual/heretic_spirit/soul_return(owner.loc, null, soul_turf)
+	else if(outcome == HERETIC_SPIRIT_END_SNAP)
+		new /obj/effect/temp_visual/heretic_spirit/thread_snap(owner.loc, null, soul_turf)
 
 /datum/status_effect/heretic_spirit/separated/proc/validate_link()
 	var/datum/eldritch_knowledge/base_spirit/spirit = spirit_ref?.resolve()
@@ -853,6 +889,7 @@
 	reap_damage = damage
 	anchor.icon_state = "spirit_reap"
 	anchor.set_light(2, 1, "#b2ffe3")
+	update_thread()
 	to_chat(owner, span_userdanger("Перевозчик занёс крюк! Через 2 секунды связь ударит по вам: [reap_damage] ушибов дальше одной клетки от души, [min(reap_damage, HERETIC_SPIRIT_REAP_NEAR_DAMAGE)] рядом с ней. Коснитесь души, разбейте её или вернитесь на её клетку после отхода, чтобы оборвать связь!"))
 	return TRUE
 
@@ -864,8 +901,10 @@
 		moved_away = TRUE
 	else if(moved_away)
 		reap_end_reason = "цель вернулась к своей душе"
+		ending = HERETIC_SPIRIT_END_RETURN
 		qdel(src)
 		return
+	update_thread()
 	if(reap_at && world.time >= reap_at)
 		finish_reap()
 		return
@@ -906,6 +945,7 @@
 	duration = max(duration, world.time + HERETIC_SPIRIT_REAP_AFTERGLOW)
 	anchor.icon_state = "spirit_soul"
 	anchor.set_light(1, 0.7, "#a8f5dc")
+	update_thread()
 	return can_hit
 
 /datum/status_effect/heretic_spirit/separated/on_remove()
@@ -924,15 +964,20 @@
 		UnregisterSignal(reaping, COMSIG_PARENT_QDELETING)
 	UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_MOB_DEATH, COMSIG_ATOM_UPDATE_OVERLAYS))
 	spirit_overlay = null
+	var/linked = !isnull(thread)
+	var/turf/soul_turf = thread?.origin_oldloc
+	QDEL_NULL(thread)
 	if(anchor)
 		anchor.effect_ref = null
 	QDEL_NULL(anchor)
 	owner.update_icon()
+	if(linked)
+		show_ending(soul_turf)
 	return ..()
 
 /atom/movable/screen/alert/status_effect/heretic_spirit
 	name = "Разлучение"
-	desc = "Душа осталась на месте на 10 секунд; Жатва продлевает короткую связь до удара, а при попадании оставляет минимум 4 секунды. Касание своей души или возврат на её клетку после отхода гасит связь; стоя на душе или рядом, коснитесь её нажатием на этот значок. Дальше одной клетки от неё вы теряете выносливость, но не более 25–40 за всю связь. Жатва предупреждает за 2 секунды и бьёт второй раз, пока связь цела: дальше одной клетки от души сильнее, рядом слабее. Душу можно разбить; стены, антимагия и расстояние больше пяти клеток от души или еретика разрывают связь. Стоя рядом с душой, перевозчик может взять её в руку: тогда тело застынет до 12 секунд."
+	desc = "Душа осталась на месте на 10 секунд; Жатва продлевает короткую связь до удара, а при попадании оставляет минимум 4 секунды. Касание своей души или возврат на её клетку после отхода гасит связь; стоя на душе или рядом, коснитесь её нажатием на этот значок. Дальше одной клетки от неё вы теряете выносливость, но не более 25–40 за всю связь. Жатва предупреждает за 2 секунды и бьёт второй раз, пока связь цела: дальше одной клетки от души сильнее, рядом слабее. Душу можно разбить; стены, антимагия и расстояние больше пяти клеток от души или еретика разрывают связь. Стоя рядом с душой, перевозчик может взять её в руку: тогда тело застынет до 12 секунд. Нить от тела к душе провисает рядом с ней, натягивается, пока тянет выносливость, и скручивается перед ударом Жатвы."
 	icon = 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'
 	icon_state = "spirit_soul"
 
@@ -989,6 +1034,7 @@
 	if(user == effect?.owner)
 		to_chat(user, span_notice("Вы возвращаете себе душу."))
 		effect.reap_end_reason = "цель коснулась своей души"
+		effect.ending = HERETIC_SPIRIT_END_RETURN
 		qdel(effect)
 		return
 	var/datum/eldritch_knowledge/base_spirit/spirit = effect?.spirit_ref?.resolve()
@@ -1031,6 +1077,7 @@
 	if(effect && !effect.validate_link())
 		qdel(src)
 		return
+	effect?.update_thread()
 	update_click_through()
 
 /datum/status_effect/eldritch/spirit
@@ -1165,6 +1212,106 @@
 /obj/effect/temp_visual/heretic_spirit/ascend
 	icon_state = "spirit_ascend"
 	duration = 2 SECONDS
+
+/// Душа возвращается: силуэт летит с места, где стоял, и тонет в груди.
+/obj/effect/temp_visual/heretic_spirit/soul_return
+	icon_state = "spirit_return"
+	duration = HERETIC_SPIRIT_RETURN_TIME
+	var/from_x = 0
+	var/from_y = 0
+
+/obj/effect/temp_visual/heretic_spirit/soul_return/Initialize(mapload, datum/eldritch_knowledge/base_spirit/spirit, turf/soul_turf)
+	. = ..()
+	var/turf/body_turf = get_turf(src)
+	if(!isturf(soul_turf) || !body_turf || soul_turf.z != body_turf.z)
+		return
+	from_x = (soul_turf.x - body_turf.x) * world.icon_size
+	from_y = (soul_turf.y - body_turf.y) * world.icon_size
+	if(!from_x && !from_y)
+		return
+	pixel_x = from_x
+	pixel_y = from_y
+	animate(src, pixel_x = 0, pixel_y = 0, time = HERETIC_SPIRIT_RETURN_GLIDE, easing = SINE_EASING | EASE_IN)
+
+/// Связь оборвана: нить от души до тела рассыпается, обручи привязи лопаются.
+/obj/effect/temp_visual/heretic_spirit/thread_snap
+	icon_state = "spirit_snap"
+	duration = HERETIC_SPIRIT_THREAD_SNAP_TIME
+	var/datum/beam/heretic_spirit_thread/fracture
+
+/obj/effect/temp_visual/heretic_spirit/thread_snap/Initialize(mapload, datum/eldritch_knowledge/base_spirit/spirit, turf/soul_turf)
+	. = ..()
+	var/turf/body_turf = get_turf(src)
+	if(isturf(soul_turf) && body_turf && soul_turf != body_turf && soul_turf.z == body_turf.z)
+		fracture = new(soul_turf, body_turf, HERETIC_SPIRIT_THREAD_SNAP)
+
+/obj/effect/temp_visual/heretic_spirit/thread_snap/Destroy()
+	QDEL_NULL(fracture)
+	return ..()
+
+/// Нить от души к телу: отрезки перерисовываются только при сдвиге концов или смене вида, без опроса по таймеру.
+/datum/beam/heretic_spirit_thread
+	/// Отрезки по виду и длине: обрезанный хвост у тела не пересобирается на каждом шаге.
+	var/static/list/segment_icons = list()
+
+/datum/beam/heretic_spirit_thread/New(atom/soul, atom/body, style = HERETIC_SPIRIT_THREAD_CALM)
+	..(soul, body, 'modular_bluemoon/icons/obj/heretic_spirit_effects.dmi', style, INFINITY, HERETIC_SPIRIT_RANGE + 2, /obj/effect/ebeam/heretic_spirit_thread)
+	Draw()
+
+/datum/beam/heretic_spirit_thread/proc/update(style)
+	var/turf/soul_turf = get_turf(origin)
+	var/turf/body_turf = get_turf(target)
+	if(style == icon_state && soul_turf == origin_oldloc && body_turf == target_oldloc)
+		return FALSE
+	icon_state = style
+	origin_oldloc = soul_turf
+	target_oldloc = body_turf
+	Draw()
+	return TRUE
+
+/datum/beam/heretic_spirit_thread/proc/segment_icon(rows)
+	var/key = "[icon_state]_[rows]"
+	var/icon/look = segment_icons[key]
+	if(!look)
+		look = new(icon, icon_state)
+		if(rows < world.icon_size)
+			look.DrawBox(null, 1, rows + 1, world.icon_size, world.icon_size)
+		segment_icons[key] = look
+	return look
+
+/// Как у обычного луча, но без уступки тика: нить перерисовывается прямо из обработчика движения.
+/datum/beam/heretic_spirit_thread/Draw()
+	Reset()
+	if(finished || !origin_oldloc || !target_oldloc || origin_oldloc.z != target_oldloc.z)
+		return
+	var/angle = Get_Angle(origin_oldloc, target_oldloc)
+	var/matrix/facing = matrix()
+	facing.Turn(angle)
+	var/span = sqrt((target_oldloc.x - origin_oldloc.x) ** 2 + (target_oldloc.y - origin_oldloc.y) ** 2) * world.icon_size
+	for(var/walked = 0, walked < span, walked += world.icon_size)
+		var/icon/look = segment_icon(min(world.icon_size, round(span - walked)))
+		var/center = walked + world.icon_size / 2
+		var/offset_x = center * sin(angle)
+		var/offset_y = center * cos(angle)
+		var/tiles_x = round(offset_x / world.icon_size + 0.5)
+		var/tiles_y = round(offset_y / world.icon_size + 0.5)
+		var/turf/spot = locate(origin_oldloc.x + tiles_x, origin_oldloc.y + tiles_y, origin_oldloc.z)
+		if(!spot)
+			spot = origin_oldloc
+			tiles_x = 0
+			tiles_y = 0
+		var/obj/effect/ebeam/segment = new beam_type(spot)
+		segment.owner = src
+		segment.icon = look
+		segment.transform = facing
+		segment.pixel_x = round(offset_x - tiles_x * world.icon_size)
+		segment.pixel_y = round(offset_y - tiles_y * world.icon_size)
+		segment.add_overlay(emissive_appearance(look))
+		elements += segment
+
+/obj/effect/ebeam/heretic_spirit_thread
+	name = "soul thread"
+	layer = MOB_UPPER_LAYER
 
 /datum/eldritch_knowledge/spirit_grasp
 	parent_type = /datum/eldritch_knowledge/spell
@@ -1684,6 +1831,7 @@
 		return FALSE
 	soul_hold = hold
 	soul.reap_end_reason = "душа в руке перевозчика"
+	soul.ending = HERETIC_SPIRIT_END_TAKEN
 	qdel(soul)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/refusal = ferry_hands_reason(user)
@@ -1824,6 +1972,8 @@
 	if(spirit?.soul_hold == src)
 		spirit.soul_hold = null
 	if(held)
+		if(!QDELETED(owner) && isturf(owner.loc))
+			new /obj/effect/temp_visual/heretic_spirit/soul_return(owner.loc, null, get_turf(holder))
 		owner.visible_message(span_notice("Бледная душа возвращается в тело [owner]."), span_notice("Душа вернулась: [release_reason || "время вышло"]."))
 		if(holder)
 			to_chat(holder, span_warning("Душа [owner] вернулась к телу: [release_reason || "время вышло"]."))
@@ -2267,3 +2417,13 @@
 #undef HERETIC_SPIRIT_WHISPER_COOLDOWN
 #undef HERETIC_SPIRIT_PASSMOB_TRAIT
 #undef HERETIC_SPIRIT_PASSMOB_OWNED_TRAIT
+#undef HERETIC_SPIRIT_THREAD_CALM
+#undef HERETIC_SPIRIT_THREAD_TAUT
+#undef HERETIC_SPIRIT_THREAD_REAP
+#undef HERETIC_SPIRIT_THREAD_SNAP
+#undef HERETIC_SPIRIT_THREAD_SNAP_TIME
+#undef HERETIC_SPIRIT_RETURN_TIME
+#undef HERETIC_SPIRIT_RETURN_GLIDE
+#undef HERETIC_SPIRIT_END_SNAP
+#undef HERETIC_SPIRIT_END_RETURN
+#undef HERETIC_SPIRIT_END_TAKEN

@@ -1062,9 +1062,145 @@
 	TEST_ASSERT(wait_for_qdeleted(wave) && wait_for_qdeleted(spiral, 3 SECONDS), "Волна и спираль гаснут.")
 
 /datum/unit_test/heretic_spirit_visual_types_create_and_destroy/Run()
-	var/atom/movable/thing = new /obj/effect/abstract/heretic_spirit_toll_soul(run_loc_floor_bottom_left)
-	qdel(thing)
-	TEST_ASSERT(QDELETED(thing), "/obj/effect/abstract/heretic_spirit_toll_soul удаляется без ошибок.")
+	for(var/thing_type in list(/obj/effect/abstract/heretic_spirit_toll_soul, /obj/effect/temp_visual/heretic_spirit/soul_return, /obj/effect/temp_visual/heretic_spirit/thread_snap, /obj/effect/ebeam/heretic_spirit_thread))
+		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
+		qdel(thing)
+		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
+
+/// Нить связи: протягивается при разлучении, тянется за телом и душой, натягивается вдали и стягивается перед Жатвой; такт без перемен её не перерисовывает.
+/datum/unit_test/heretic_spirit_thread/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spell/spirit_reap/reap_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/turf/soul_turf = get_turf(victim)
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	var/datum/beam/heretic_spirit_thread/thread = soul.thread
+	TEST_ASSERT_NOTNULL(thread, "Разлучение протягивает нить.")
+	TEST_ASSERT(thread.origin == soul.anchor && thread.target == victim, "Нить связывает душу с телом.")
+	TEST_ASSERT_EQUAL(length(thread.elements), 0, "Пока тело стоит на душе, нить не видна.")
+	victim.forceMove(get_step(soul_turf, NORTH))
+	TEST_ASSERT_EQUAL(length(thread.elements), 1, "Шаг от души вытягивает нить на клетку.")
+	TEST_ASSERT_EQUAL(thread.icon_state, "spirit_thread", "Рядом с душой нить спокойна.")
+	var/obj/effect/ebeam/segment = thread.elements[1]
+	TEST_ASSERT(segment.layer > MOB_LAYER && segment.layer < soul.anchor.layer, "Нить идёт поверх толпы и под силуэтом души.")
+	TEST_ASSERT(length(segment.overlays), "Нить светится в темноте.")
+	victim.forceMove(get_step(get_step(soul_turf, NORTH), NORTH))
+	TEST_ASSERT_EQUAL(length(thread.elements), 2, "Нить тянется за телом.")
+	TEST_ASSERT_EQUAL(thread.icon_state, "spirit_thread_taut", "Вдали от души нить натянута.")
+	var/list/segments = thread.elements.Copy()
+	soul.tick()
+	soul.tick()
+	for(var/obj/effect/ebeam/drawn as anything in segments)
+		TEST_ASSERT(!QDELETED(drawn) && (drawn in thread.elements), "Такт без перемен не пересоздаёт нить.")
+	TEST_ASSERT(soul.arm(reap_knowledge, 25), "Жатва готовится.")
+	TEST_ASSERT_EQUAL(thread.icon_state, "spirit_thread_reap", "Перед Жатвой нить стягивается.")
+	soul.reap_at = world.time
+	TEST_ASSERT(soul.finish_reap(), "Жатва бьёт по целой нити.")
+	TEST_ASSERT_EQUAL(thread.icon_state, "spirit_thread_taut", "После удара нить снова натянута.")
+	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+	anchor.forceMove(get_step(soul_turf, NORTH))
+	TEST_ASSERT_EQUAL(thread.origin_oldloc, get_turf(anchor), "Нить идёт от сдвинутой души.")
+	TEST_ASSERT_EQUAL(thread.icon_state, "spirit_thread", "Душа рядом с телом - нить снова спокойна.")
+	victim.forceMove(get_step(get_turf(victim), EAST))
+	TEST_ASSERT_EQUAL(length(thread.elements), 2, "По диагонали нить из полного и обрезанного отрезка.")
+	var/obj/effect/ebeam/head = thread.elements[1]
+	var/obj/effect/ebeam/tail = thread.elements[2]
+	TEST_ASSERT(head.icon != tail.icon, "Последний отрезок обрезан у тела.")
+	segments = thread.elements.Copy()
+	victim.forceMove(get_turf(anchor))
+	TEST_ASSERT(QDELETED(soul) && QDELETED(thread), "Возврат души убирает нить.")
+	for(var/obj/effect/ebeam/drawn as anything in segments)
+		TEST_ASSERT(QDELETED(drawn) && isnull(drawn.owner), "Отрезки нити удалены.")
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(thread), 0, "Удалённую нить никто не держит.")
+
+/// Конец связи удаляет нить при любом исходе; обрыв рвёт её с разлётом, возврат и истёкший срок возвращают душу в тело, душа в руке перевозчика уходит без обрыва.
+/datum/unit_test/heretic_spirit_thread_endings/Run()
+	var/list/returns = list("touch", "expire")
+	var/list/snaps = list("destroy", "nullrod", "death", "ferryman_death", "collect", "sever_limit")
+	for(var/scenario in returns + snaps + list("body_deleted", "seize"))
+		var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+		heretic.selected_path = PATH_SPIRIT
+		heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+		heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+		var/mob/living/carbon/human/user = heretic.owner.current
+		var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+		var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+		var/turf/soul_turf = get_turf(victim)
+		var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+		var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+		victim.forceMove(get_step(soul_turf, NORTH))
+		var/turf/body_turf = get_turf(victim)
+		var/datum/beam/heretic_spirit_thread/thread = soul.thread
+		var/list/segments = thread.elements.Copy()
+		TEST_ASSERT(length(segments), "[scenario]: нить протянута до обрыва.")
+		var/datum/status_effect/heretic_spirit_hold/hold
+		switch(scenario)
+			if("touch")
+				anchor.attack_hand(victim)
+			if("expire")
+				soul.duration = world.time - 1
+				soul.process()
+			if("destroy")
+				anchor.take_damage(100, BRUTE, MELEE)
+			if("nullrod")
+				anchor.attackby(allocate(/obj/item/nullrod), victim)
+			if("death")
+				victim.death()
+			if("ferryman_death")
+				user.stat = DEAD
+				spirit.on_death(user)
+			if("collect")
+				spirit.collect(user, soul)
+			if("sever_limit")
+				for(var/index in 1 to 10)
+					if(QDELETED(soul))
+						break
+					spirit.separate(allocate(/mob/living/carbon/human, get_step(user, NORTH)), spirit)
+			if("body_deleted")
+				qdel(victim)
+			if("seize")
+				hold = seize_spirit_soul(spirit, user, victim)
+		TEST_ASSERT(QDELETED(soul) && QDELETED(anchor) && QDELETED(thread), "[scenario]: связь и нить удалены.")
+		for(var/obj/effect/ebeam/drawn as anything in segments)
+			TEST_ASSERT(QDELETED(drawn) && isnull(drawn.loc), "[scenario]: отрезки нити сняты с карты.")
+		TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(thread), 0, "[scenario]: удалённую нить никто не держит.")
+		var/obj/effect/temp_visual/heretic_spirit/soul_return/homecoming = locate() in body_turf
+		var/obj/effect/temp_visual/heretic_spirit/thread_snap/snap = locate() in body_turf
+		if(scenario in returns)
+			TEST_ASSERT(homecoming && !snap, "[scenario]: душа возвращается в тело без обрыва.")
+			TEST_ASSERT(homecoming.from_x == 0 && homecoming.from_y == (soul_turf.y - body_turf.y) * world.icon_size, "[scenario]: душа летит с места, где стояла.")
+		else if(scenario in snaps)
+			TEST_ASSERT(snap && !homecoming, "[scenario]: связь рвётся, а не возвращается.")
+			var/datum/beam/heretic_spirit_thread/fracture = snap.fracture
+			TEST_ASSERT(fracture?.icon_state == "spirit_thread_snap" && length(fracture.elements) == 1, "[scenario]: рвётся нить от души до тела.")
+			var/list/shards = fracture.elements.Copy()
+			if(scenario == "destroy")
+				TEST_ASSERT(wait_for_qdeleted(snap), "[scenario]: обрыв гаснет сам.")
+			else
+				qdel(snap)
+			TEST_ASSERT(QDELETED(fracture), "[scenario]: обрывки нити убраны вместе с обрывом.")
+			for(var/obj/effect/ebeam/shard as anything in shards)
+				TEST_ASSERT(QDELETED(shard), "[scenario]: обрывки сняты с карты.")
+			TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(fracture), 0, "[scenario]: обрывки никто не держит.")
+		else
+			TEST_ASSERT(!homecoming && !snap, "[scenario]: ни возврата, ни обрыва.")
+		if(scenario == "seize")
+			TEST_ASSERT_NOTNULL(hold, "Душа ушла в руку перевозчика.")
+			hold.release("проверка")
+			TEST_ASSERT(QDELETED(hold), "Душа отпущена.")
+			var/obj/effect/temp_visual/heretic_spirit/soul_return/released = locate() in body_turf
+			TEST_ASSERT_NOTNULL(released, "Отпущенная душа возвращается в тело.")
+			TEST_ASSERT(released.from_x == (user.x - victim.x) * world.icon_size && released.from_y == (user.y - victim.y) * world.icon_size, "Душа летит из руки перевозчика.")
+		for(var/obj/effect/temp_visual/heretic_spirit/leftover in body_turf)
+			qdel(leftover)
+		if(!QDELETED(victim))
+			qdel(victim)
+		qdel(heretic)
 
 /datum/unit_test/proc/spirit_corpse(turf/place, with_mind = FALSE) as /mob/living/carbon/human
 	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, place)

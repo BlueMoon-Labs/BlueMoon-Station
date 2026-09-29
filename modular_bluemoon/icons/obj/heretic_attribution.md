@@ -137,6 +137,7 @@
 | `heretic_medallion*.dmi` | `spirit_watching_eye*` | Обол с чеканным глазом на серебряной цепочке; предмет, надетый вид и руки в одном образе. |
 | `heretic_books*.dmi` | `spirit`, `spirit_opening`, `spirit_closing` | Реестр перевозчика на общей основе книг путей. |
 | `ritual_inscriptions_extended.dmi`, `ritual_casts_extended.dmi` | `spirit_ferry_*` | Печать: лодка перевозчика с фонарём на шесте, заменила `spirit_gate_*`. |
+| `heretic_spirit_effects.dmi` | `spirit_thread`, `spirit_thread_taut`, `spirit_thread_reap`, `spirit_thread_snap`, `spirit_snap`, `spirit_return`; `spirit_tether` | Нить от души к телу отрезками луча с бесшовным стыком: провисшая с бегущей волной (24 x 1 дс), натянутая с бусинами, текущими к душе (16 x 0.5 дс), свитая с серебряной жилой перед Жатвой (16 x 0.5 дс), обрыв на скрученные обрывки (8 x 1 дс). У тела обручи привязи лопаются и раскрываются (16 x 0.5 дс); возврат - силуэт души летит к телу и тонет в груди (16 x 0.5 дс). У `spirit_tether` убран свисающий конец цепи. |
 
 
 ## Старые пути: значки, нимбы и эффекты
