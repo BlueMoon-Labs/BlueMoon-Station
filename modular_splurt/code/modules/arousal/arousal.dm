@@ -109,7 +109,7 @@
 		var/obj/item/genital_equipment/urethral_plug/plug = locate(/obj/item/genital_equipment/urethral_plug) in sender.contents
 		if(plug)
 			var/message = ""
-			var/obj/item/clothing/underwear/chastity_belt/belt = sender.owner.get_item_by_slot(ITEM_SLOT_UNDERWEAR)
+			var/obj/item/clothing/underwear/chastity_belt/belt = get_item_by_slot(ITEM_SLOT_UNDERWEAR)
 			if(belt && istype(belt.bepis, /obj/item/organ/genital/vagina))
 				message = "Ты ощущаешь, как пробка упирается в пояс и не может выйти, поток жидкости обтекает её, раздувая уретру и вызывая болезненную пульсацию, отдающую в клитор!"
 				if(HAS_TRAIT(src, TRAIT_MASO))
