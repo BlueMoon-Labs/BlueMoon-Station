@@ -93,7 +93,7 @@
 
 	if(!G.owner.has_vagina() == HAS_EXPOSED_GENITAL)
 		to_chat(user, span_notice("Не можешь найти, куда вставить пробку!"))
-		return
+		return FALSE
 
 	if(locate(src.type) in G.contents)
 		if(user == G.owner)
@@ -107,7 +107,7 @@
 						span_warning("Ты пытаешься вставить пробку внутрь себя!"))
 	else
 		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить пробку внутрь <b>[G.owner]</b>!"),\
-						span_warning("<b>[user]</b> пытается вставить стержень внутрь тебя!"))
+						span_warning("<b>[user]</b> пытается вставить пробку внутрь тебя!"))
 
 	if(!do_mob(user, G.owner, 4 SECONDS))
 		return FALSE

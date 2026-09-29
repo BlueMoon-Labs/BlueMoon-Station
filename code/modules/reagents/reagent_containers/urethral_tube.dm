@@ -34,7 +34,8 @@
 				to_chat(user, "<span class='warning'>Внутри [target] пусто!</span>")
 				return
 			var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
-			to_chat(user, "<span class='notice'>Вы наполнили [src] на [trans] u раствора. Теперь внутри [reagents.total_volume] u.</span>")
+			if(trans > 0)
+				to_chat(user, "<span class='notice'>Вы наполнили [src] на [trans] u раствора. Теперь внутри [reagents.total_volume] u.</span>")
 		return
 	var/mob/living/L = target
 	INVOKE_ASYNC(src, PROC_REF(attempt_urethral_transfusion), L, user)
