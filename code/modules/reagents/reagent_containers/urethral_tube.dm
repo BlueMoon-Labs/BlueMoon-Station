@@ -2,11 +2,11 @@
 /obj/item/reagent_containers/urethral_tube
 	name = "уретральная трубка"
 	desc = "Гибкая трубка с наконечником для введения в уретру. Можно наполнить жидкостью и перелить её внутрь при обнажённом пахе цели."
-	icon = 'icons/obj/syringe.dmi'
-	item_state = "syringe_0"
-	icon_state = "0"
+	icon = 'modular_splurt/icons/obj/sounding.dmi'
+	item_state = "urethral_tube"
+	icon_state = "urethral_tube"
 	amount_per_transfer_from_this = 5
-	possible_transfer_amounts = list(5, 10, 15, 20)
+	possible_transfer_amounts = null
 	volume = 30
 	reagent_flags = TRANSPARENT
 	var/busy = FALSE
@@ -20,18 +20,33 @@
 
 /obj/item/reagent_containers/urethral_tube/update_icon_state()
 	if(reagents && reagents.total_volume)
-		icon_state = clamp(round((reagents.total_volume / volume) * 5), 1, 5)
+		icon_state = "urethral_tube_filled"
 	else
-		icon_state = "0"
+		icon_state = "urethral_tube"
 
 /obj/item/reagent_containers/urethral_tube/afterattack(atom/target, mob/user, proximity)
 	. = ..()
 	if(!proximity || busy)
 		return
 	if(!isliving(target))
+		if(istype(target, /obj/item/reagent_containers/glass))
+			if(!target.reagents.total_volume)
+				to_chat(user, "<span class='warning'>Внутри [target] пусто!</span>")
+				return
+			var/trans = target.reagents.trans_to(src, amount_per_transfer_from_this, log = TRUE)
+			to_chat(user, "<span class='notice'>Вы наполнили [src] на [trans] u раствора. Теперь внутри [reagents.total_volume] u.</span>")
 		return
 	var/mob/living/L = target
 	INVOKE_ASYNC(src, PROC_REF(attempt_urethral_transfusion), L, user)
+
+/obj/item/reagent_containers/urethral_tube/attack_self(mob/user)
+	. = ..()
+	if(reagents?.total_volume)
+		reagents.clear_reagents()
+		to_chat(user, span_notice("Вы опустошили трубку."))
+	else
+		to_chat(user, span_notice("В трубке нет жидкости."))
+
 
 /obj/item/reagent_containers/urethral_tube/proc/attempt_urethral_transfusion(mob/living/target, mob/user)
 	if(busy)
@@ -40,14 +55,14 @@
 		to_chat(user, span_notice("В трубке нет жидкости."))
 		return
 
-	// Только углеводородные гуманоиды с пенисом и обнажённым пахом
+	// Только углеводородные гуманоиды с обнажённым пахом
 	if(!iscarbon(target))
 		to_chat(user, span_warning("Перелить жидкость в уретру можно только гуманоиду с соответствующими органами."))
 		return
 
 	var/mob/living/carbon/C = target
 
-	if(!C.has_penis())
+	if(!(C.has_penis() || C.has_vagina()))
 		to_chat(user, span_warning("У [C] нет подходящего органа для введения трубки."))
 		return
 	if(!C.is_groin_exposed())
