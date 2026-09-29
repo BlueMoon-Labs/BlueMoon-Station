@@ -219,3 +219,21 @@
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
+
+/// У рождения, ударов и гибели сердца и у Коррозийного вала свои наборы из нескольких звуков, и наборы не пересекаются.
+/datum/unit_test/heretic_rust_sound_sets/Run()
+	var/list/sets = list(
+		"рождение сердца" = GLOB.heretic_rust_heart_rise_sounds,
+		"удар по сердцу" = GLOB.heretic_rust_heart_hit_sounds,
+		"гибель сердца" = GLOB.heretic_rust_heart_break_sounds,
+		"Коррозийный вал" = GLOB.heretic_rust_wave_sounds,
+	)
+	var/list/owners = list()
+	for(var/event in sets)
+		var/list/choices = sets[event]
+		TEST_ASSERT(length(choices) >= 2, "У события «[event]» несколько вариантов звука.")
+		for(var/sound_file in choices)
+			var/key = "[sound_file]"
+			TEST_ASSERT(isfile(sound_file), "Звук [key] события «[event]» включён в ресурсы.")
+			TEST_ASSERT(!owners[key], "Звук [key] события «[event]» уже звучит у события «[owners[key]]».")
+			owners[key] = event

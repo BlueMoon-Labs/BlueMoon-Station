@@ -33,6 +33,33 @@
 #define HERETIC_RUST_WAVE_FLASH_POWER 1.5
 #define HERETIC_RUST_WAVE_QUAKE 0.12
 #define HERETIC_RUST_WAVE_QUAKE_TIME (0.3 SECONDS)
+#define HERETIC_RUST_HEART_RISE_VOLUME 70
+#define HERETIC_RUST_HEART_HIT_VOLUME 60
+#define HERETIC_RUST_HEART_BREAK_VOLUME 85
+#define HERETIC_RUST_HEART_BREAK_SOUND_RANGE 10
+#define HERETIC_RUST_WAVE_VOLUME 80
+#define HERETIC_RUST_WAVE_SOUND_RANGE 5
+
+GLOBAL_LIST_INIT(heretic_rust_heart_rise_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_heart_rise_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_rise_2.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_rise_3.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_heart_hit_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_heart_hit_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_hit_2.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_hit_3.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_heart_break_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_heart_break_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_break_2.ogg',
+	'modular_bluemoon/sound/heretic/rust_heart_break_3.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_wave_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_wave_2.ogg',
+	'modular_bluemoon/sound/heretic/rust_wave_3.ogg',
+))
 
 /turf/open/floor
 	var/heretic_rustable = FALSE
@@ -252,7 +279,7 @@
 	animate(src, alpha = 255, pixel_y = rest_y, time = HERETIC_RUST_HEART_EMERGE, easing = CUBIC_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(src))
 	heretic_vfx_burst(src, /particles/heretic_ascension/rust)
-	playsound(src, 'sound/effects/clangsmall1.ogg', 80, TRUE)
+	playsound(src, pick(GLOB.heretic_rust_heart_rise_sounds), HERETIC_RUST_HEART_RISE_VOLUME, FALSE)
 
 /// Медленный двойной удар: сердце набухает и темнеет в такт, свечение дышит вместе с ним.
 /obj/structure/heretic_rust_ascension_heart/proc/beat()
@@ -263,6 +290,11 @@
 	animate(transform = matrix() * (HERETIC_RUST_HEART_SCALE * HERETIC_RUST_HEART_ECHO), color = flush, time = HERETIC_RUST_HEART_BEAT, easing = SINE_EASING | EASE_OUT)
 	animate(transform = rest, color = initial(color), time = HERETIC_RUST_HEART_BEAT * 2, easing = SINE_EASING | EASE_IN)
 	animate(transform = rest, time = HERETIC_RUST_HEART_REST)
+
+/obj/structure/heretic_rust_ascension_heart/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
+	if(!damage_amount || (damage_type != BRUTE && damage_type != BURN))
+		return ..()
+	playsound(src, pick(GLOB.heretic_rust_heart_hit_sounds), HERETIC_RUST_HEART_HIT_VOLUME, TRUE, MEDIUM_RANGE_SOUND_EXTRARANGE)
 
 /obj/structure/heretic_rust_ascension_heart/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir, armour_penetration = 0)
 	. = ..()
@@ -293,7 +325,7 @@
 		heretic_vfx_burst(place, /particles/heretic_ascension/rust/collapse)
 		heretic_vfx_shockwave(place, HERETIC_RUST_DARK_INK, HERETIC_RUST_HEART_DEATH_RADIUS, HERETIC_RUST_HEART_DEATH_WAVE)
 		heretic_vfx_flash(place, HERETIC_RUST_DARK_INK, HERETIC_RUST_HEART_DEATH_RADIUS + 1, HERETIC_RUST_HEART_DEATH_POWER, HERETIC_RUST_HEART_DEATH_FLASH)
-	playsound(src, 'sound/effects/clangsmall2.ogg', 80, TRUE)
+	playsound(src, pick(GLOB.heretic_rust_heart_break_sounds), HERETIC_RUST_HEART_BREAK_VOLUME, FALSE, HERETIC_RUST_HEART_BREAK_SOUND_RANGE)
 	heretic_vfx_release_particles(src, flakes)
 	flakes = null
 	return ..()
@@ -373,7 +405,7 @@
 	heretic_vfx_burst(origin, /particles/heretic_ascension/rust)
 	heretic_vfx_flash(origin, HERETIC_RUST_INK, HERETIC_RUST_WAVE_FLASH_RANGE, HERETIC_RUST_WAVE_FLASH_POWER)
 	heretic_vfx_quake(origin, HERETIC_RUST_WAVE_RANGE, HERETIC_RUST_WAVE_QUAKE, HERETIC_RUST_WAVE_QUAKE_TIME)
-	playsound(origin, 'sound/effects/clangsmall2.ogg', 90, TRUE)
+	playsound(origin, pick(GLOB.heretic_rust_wave_sounds), HERETIC_RUST_WAVE_VOLUME, TRUE, HERETIC_RUST_WAVE_SOUND_RANGE)
 	user.visible_message(span_danger("От [user] расходится волна ржавчины, разъедая всё вокруг!"))
 
 /obj/effect/proc_holder/spell/self/rust_corrosive_wave/proc/faces_void(turf/wall)
@@ -486,3 +518,9 @@
 #undef HERETIC_RUST_WAVE_FLASH_POWER
 #undef HERETIC_RUST_WAVE_QUAKE
 #undef HERETIC_RUST_WAVE_QUAKE_TIME
+#undef HERETIC_RUST_HEART_RISE_VOLUME
+#undef HERETIC_RUST_HEART_HIT_VOLUME
+#undef HERETIC_RUST_HEART_BREAK_VOLUME
+#undef HERETIC_RUST_HEART_BREAK_SOUND_RANGE
+#undef HERETIC_RUST_WAVE_VOLUME
+#undef HERETIC_RUST_WAVE_SOUND_RANGE

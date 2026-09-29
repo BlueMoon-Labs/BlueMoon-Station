@@ -163,6 +163,26 @@
 | `wax_latch.ogg` | Сон по кукле | `sizzle2` со скоростью 0.8, треск свечи, три тяжёлые капли, оседающий стон 138-108 Гц. |
 | `dance_latch.ogg` | Танцевальная хватка | Синтез: вихрь лент, двойной удар каблуков, малый барабан, литавра D2, стук сердца, аккорд музыкальной шкатулки D6-F6-A♭6 с расстроенными двойниками, «ум» шарманки и два «па-па», мелодия шкатулки A5-F5-E5-D5, которая замедляется и сползает вниз. |
 
+## Ржавчина
+
+`rust_heart_*` и `rust_wave_*` собраны из синтеза (удары с падающей частотой, негармонические моды ржавого листа, полая утроба удара, сухой треск, выдох через форманты, шорох трухи, диссонансный гул) и записей ниже, изменённых по скорости, направлению, фильтрам, огибающей и уровню. Итог распространяется под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
+
+| Слой | Источник, автор и лицензия |
+| --- | --- |
+| `sound/effects/heart_beat.ogg`, `creak2.ogg`, `creak3.ogg`, `meteorimpact.ogg`, `break_stone.ogg`, `sound/effects/wounds/blood2.ogg`, `crack2.ogg`, `crackandbleed.ogg`, `sizzle2.ogg` | Ресурсы BlueMoon, CC BY-SA 3.0 |
+| [sound/misc/metal_creak.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/misc/metal_creak.ogg) | tgstation, [Metal door creak - BloodPixelHero](https://freesound.org/people/BloodPixelHero/sounds/585323/), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| [sound/effects/goresplat.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/goresplat.ogg) | tgstation, [ThefitzyG](https://freesound.org/people/ThefitzyG/sounds/414296/), CC0 |
+| [sound/effects/structure_stress/pop1.ogg](https://github.com/tgstation/tgstation/commits/5f093a8cfbbe269b15bc73535f230909218e38d6/sound/effects/structure_stress/pop1.ogg), `pop2.ogg`, `pop3.ogg` | tgstation, CC BY-SA 3.0 |
+| [sound/effects/metalscrape1.ogg](https://github.com/Baystation12/Baystation12/commits/cf7e0488b7072dbf04dce078d086b80530b7d79d/sound/effects/metalscrape1.ogg), `metalscrape2.ogg`, `metalscrape3.ogg` | Baystation12, снимок `cf7e0488b7072dbf04dce078d086b80530b7d79d`, добавил Markus; CC BY-SA 3.0 согласно README источника |
+| [sound/effects/rockcrumble.ogg](https://github.com/NebulaSS13/Nebula/commits/064044947c69a7231c881fb7566adfd17125e100/sound/effects/rockcrumble.ogg) | Nebula, снимок `064044947c69a7231c881fb7566adfd17125e100`, добавил MistakeNot4892; CC BY-SA 3.0 согласно README источника |
+
+| Файлы | Где звучит | Состав |
+| --- | --- | --- |
+| `rust_heart_rise_1..3.ogg` | Ржавое сердце вырастает | Двойной удар «тук-тук» в такт набуханию спрайта: `heart_beat` со скоростью 0.72-0.82 (в 2 - синтезированные удары с `goresplat`), удар 68-82 Гц, негармонический ржавый лист; дальше стон железа: `creak3` проседает со скорости 0.9 до 0.62, `creak2` задом наперёд втягивается в удар и проседает с 0.95 до 0.7, `metal_creak` поднимается с 0.72 до 1; влажные слои `goresplat` и `blood2`, выдох через ржавую трубу, в 2 - далёкий гул на тритон и третий удар сердца. |
+| `rust_heart_hit_1..3.ogg` | Удар по сердцу | Полая утроба на негармонических модах 145-830 Гц с глухим ударом 100-265 Гц; к ней `goresplat` со скоростью 0.9 и ржавый лист, хруст `crackandbleed` со скоростью 0.82 или `blood2` со скоростью 0.85 и `rockcrumble` со скоростью 1.15. |
+| `rust_heart_break_1..3.ogg` | Сердце разбито | Надлом со вспышкой: `crackandbleed` со скоростью 0.62-0.7, `crack2`, `pop1-3`, удар 52-62 Гц до 19-24 Гц, в 1 и 3 `meteorimpact` со скоростью 0.72 и 0.6; стон оседающего железа (`creak3`, `metal_creak`, `creak2` со скоростью от 0.7-0.78 до 0.38-0.45); обвал `break_stone` и `rockcrumble` или сухой треск трухи с шорохом пыли. В 1 сердце ударяется о пол на 0.9 с, в 2 два надлома подряд и последний слабый удар сердца, в 3 скрежет `metalscrape2` в надлом, влажный `goresplat` и второй обвал на 0.5 с. |
+| `rust_wave_1..3.ogg` | Коррозийный вал | Сухой треск, который густеет и глохнет, расходясь кольцом (в 2 - четырьмя волнами); скрежет `metalscrape1/2/3` со скоростью 0.7-0.78, визг `creak3` на 1.35 или `metal_creak` на 1.6, шипение `sizzle2`, щелчки `pop1-3` и осыпь `rockcrumble` со скоростью 1.2. Без лязга. |
+
 ## Танец
 
 Все звуки пути Танца синтезированы без сторонних записей: музыкальная шкатулка из негармонических обертонов с расстроенным двойником, шарманка из трёх расстроенных регистров с тремоло и «плавающим» строем, язычки бандонеона, скрипка, медь, свисток, флейта, кларнет, струнные, пиццикато, духовой орган, литавры, малый барабан, бубен, щелчки пальцами, каблуки по паркету, ксилофон и костяной стук, колокола, стук сердца, тарелки, шорох лент и вееров, треск фарфора; голосоподобные слои (смешки масок, шёпот-вальс, напевы, вдохи и смех танцоров, визг канкана) собраны из шума и синтеза с формантами. Мелодии и остинато оригинальные. Распространяются под [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/).
