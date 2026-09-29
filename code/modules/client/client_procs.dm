@@ -28,6 +28,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 #define CHURN_REPORT_THRESHOLD 10
 /// Сколько РАЗНЫХ ckey должны переподключиться за окно, чтобы это считалось штормом.
 #define CHURN_ALERT_DISTINCT_CKEYS 5
+/// Доля онлайна, с которой начинается шторм: при сотне игроков фон - около двух реконнектов за окно.
+#define CHURN_ALERT_ONLINE_FRACTION 0.1
 /// Окно наблюдения за переподключениями.
 #define CHURN_ALERT_WINDOW (2 MINUTES)
 /// Не чаще одного крика в эфир за этот срок.
@@ -51,7 +53,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			stale += key
 	GLOB.recent_reconnects -= stale
 	var/distinct = length(GLOB.recent_reconnects)
-	if(distinct < CHURN_ALERT_DISTINCT_CKEYS)
+	if(distinct < max(CHURN_ALERT_DISTINCT_CKEYS, round(length(GLOB.clients) * CHURN_ALERT_ONLINE_FRACTION)))
 		return
 	GLOB.last_churn_alert = world.time
 	var/list/who = list()
@@ -97,6 +99,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 #undef CHURN_REPORT_THRESHOLD
 #undef CHURN_ALERT_DISTINCT_CKEYS
+#undef CHURN_ALERT_ONLINE_FRACTION
 #undef CHURN_ALERT_WINDOW
 #undef CHURN_ALERT_COOLDOWN
 
@@ -1310,7 +1313,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	return max(REALTIMEOFDAY - connection_realtimeofday, 0) / 10
 
 /client/proc/connection_forensics()
-	var/list/parts = list("вход №[round_login_index]")
+	var/list/parts = list(round_login_index ? "вход №[round_login_index]" : "не дошёл до входа")
 	if(connection_realtimeofday)
 		parts += "жил [round(connection_lifetime_seconds(), 0.1)]с"
 	if(connection_time)
@@ -1630,6 +1633,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	. = token
 	log_access("Failed Login: [key] [computer_id] [address] - CID randomizer check")
 	var/url = tracked_winget(src, null, "url")
+	disconnect_reason = "сервер: CID-проверка, редирект на реконнект с токеном"
 	//special javascript to make them reconnect under a new window.
 	src << browse({"<a id='link' href="byond://[url]?token=[token]">byond://[url]?token=[token]</a><script type="text/javascript">document.getElementById("link").click();window.location="byond://winset?command=.quit"</script>"}, "border=0;titlebar=0;size=1x1;window=redirect")
 	to_chat(src, {"<a href="byond://[url]?token=[token]">You will be automatically taken to the game, if not, click here to be taken manually</a>"})
