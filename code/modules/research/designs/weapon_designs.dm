@@ -819,8 +819,8 @@
 //апгрейды 41
 
 /datum/design/cal41_liturgy
-	name = "Enfrocer MK60 upgrade kit"
-	desc = "A set of spare parts for upgrading the enforcer pistol to the MK60 version. Can be used only on empty gun"
+	name = "Apostle to Liturgy upgrade kit"
+	desc = "A set of spare parts for upgrading the Apostle. Can be used only on empty gun"
 	id = "liturgy"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 7500, /datum/material/uranium = 2500, /datum/material/plastic = 1500)
@@ -830,8 +830,8 @@
 	min_security_level = SEC_LEVEL_BLUE
 
 /datum/design/cal41_dies_irae
-	name = "Enfrocer MK62 upgrade kit"
-	desc = "A set of spare parts for upgrading the MK60 pistol to the MK62 version. Can be used only on empty gun"
+	name = "Apostle to Dies Irae upgrade kit"
+	desc = "A set of spare parts for upgrading Apostle. Can be used only on empty gun"
 	id = "dies_irae"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 7500, /datum/material/gold = 1500, /datum/material/titanium = 1000 )

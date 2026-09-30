@@ -53,7 +53,7 @@
 
 /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
 	name = "Exorcist cylinder"
-	ammo_type = /obj/item/ammo_casing/cal410/rubber
+	ammo_type = /obj/item/ammo_casing/cal410
 	caliber = list(".410cal")
 	max_ammo = 5
 	multiload = 1

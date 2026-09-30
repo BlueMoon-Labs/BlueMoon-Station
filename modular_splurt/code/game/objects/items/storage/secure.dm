@@ -35,10 +35,10 @@
 
 /obj/item/storage/secure/briefcase/cop/r41_box/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/Apostle(src)
-	new /obj/item/ammo_box/cal41
-	new /obj/item/ammo_box/cal41
-	new /obj/item/ammo_box/cal41
-	new /obj/item/ammo_box/cal41
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
 
 //Blueshield melee options
 

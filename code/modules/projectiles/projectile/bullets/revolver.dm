@@ -291,7 +291,7 @@
 	name= ".41 FMJ casing"
 	desc = "An .41 FMJ bullet"
 	caliber = ".41cal"
-	projectile_type = /obj/item/projectile/bullet/cal41/magnum
+	projectile_type = /obj/item/projectile/bullet/cal41/fmj
 	can_be_printed = TRUE
 	advanced_print_req = TRUE
 	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
@@ -306,7 +306,7 @@
 
 //410 револьвер дробовик
 
-/obj/item/ammo_casing/cal410/rubber
+/obj/item/ammo_casing/cal410
 	name= ".410 rubber shot"
 	desc = "An .41 rubber shot."
 	caliber = ".410cal"
@@ -346,6 +346,7 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR2
+	damage = 10
 	tile_dropoff_ap = 6
 	wound_bonus = 1
 	bare_wound_bonus = 5
