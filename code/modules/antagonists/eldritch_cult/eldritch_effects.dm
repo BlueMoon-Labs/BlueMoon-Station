@@ -374,6 +374,10 @@
 	var/list/stack_usage = list()
 	if(!select_recipe_atoms(ritual, atoms, selected_atoms, stack_usage, user))
 		return reject_ritual(user, ritual, recipe_failure_reason(ritual, user))
+	if(!istype(finale))
+		var/start_reason = ritual.ritual_start_reason(user, get_turf(src), ritual.ritual_time * heretic_ritual_speed_multiplier(user, src) * user.cached_multiplicative_actions_slowdown)
+		if(start_reason)
+			return reject_ritual(user, ritual, start_reason)
 	if(!reserve_atoms(selected_atoms))
 		return reject_ritual(user, ritual, "Компоненты уже заняты другим обрядом или исчезли. Дождитесь его окончания либо принесите другие.")
 	ritual_user = user

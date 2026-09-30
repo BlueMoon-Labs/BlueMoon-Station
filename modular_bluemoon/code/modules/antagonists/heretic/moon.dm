@@ -1006,6 +1006,19 @@
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	return heretic_check(user, knowledge && isturf(target) && knowledge.valid_reflection_turf(target, user), silent, "Укажите саму клетку видимого свободного пола в пяти клетках; стены, космос и занятые клетки не подходят.")
 
+/obj/effect/proc_holder/spell/pointed/heretic_moon/create/assisted_target(mob/user, atom/target)
+	var/turf/clicked_turf = get_turf(target)
+	if(!clicked_turf || intercept_check(user, clicked_turf, TRUE))
+		return clicked_turf || target
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	if(!knowledge)
+		return target
+	var/list/visible = view(HERETIC_MOON_RANGE, user)
+	for(var/turf/candidate in range(1, clicked_turf))
+		if(candidate != clicked_turf && knowledge.valid_reflection_turf(candidate, user, visible))
+			return candidate
+	return target
+
 /obj/effect/proc_holder/spell/pointed/heretic_moon/create/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	if(!length(targets) || !knowledge || !knowledge.create_reflection(user, targets[1], replace_oldest = TRUE))
@@ -1030,6 +1043,22 @@
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/can_target(atom/target, mob/user, silent)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
 	return heretic_check(user, knowledge && istype(target, /mob/living/simple_animal/hostile/illusion/heretic_moon) && knowledge.can_exchange(user, target), silent, "Выберите своё отражение в видимости до пяти клеток. Оба места должны быть свободным полом.")
+
+/// Двойник дерётся вплотную к цели, поэтому клик по живому рядом с ним тоже ищет двойника.
+/obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/assisted_target(mob/user, atom/target)
+	if(intercept_check(user, target, TRUE))
+		return target
+	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)
+	var/turf/clicked_turf = get_turf(target)
+	var/mob/living/best_reflection
+	var/best_distance
+	for(var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection as anything in knowledge?.reflections)
+		var/distance = get_dist(reflection, clicked_turf)
+		if(distance > aim_assist_radius || (best_reflection && distance >= best_distance) || !intercept_check(user, reflection, TRUE))
+			continue
+		best_reflection = reflection
+		best_distance = distance
+	return best_reflection || ..()
 
 /obj/effect/proc_holder/spell/pointed/heretic_moon/exchange/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_moon/knowledge = get_heretic_moon(user)

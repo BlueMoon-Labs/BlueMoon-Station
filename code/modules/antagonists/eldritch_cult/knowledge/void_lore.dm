@@ -40,6 +40,18 @@
 	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
 	return user?.mind && istype(winter) && !QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs)
 
+/datum/eldritch_knowledge/base_void/ritual_start_reason(mob/living/user, turf/location, duration)
+	var/turf/open/floor = location
+	if(!istype(floor) || floor.GetTemperature() <= T0C)
+		return null
+	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
+	if(!istype(winter) || QDELETED(winter) || !winter.expires_at)
+		return null
+	var/remaining = winter.expires_at - world.time
+	if(remaining >= duration)
+		return null
+	return "Зимний предел погаснет через [DisplayTimeText(max(remaining, 0))], а обряд длится [DisplayTimeText(duration)]. Примените его заново и сразу начните обряд."
+
 /datum/eldritch_knowledge/void_grasp
 	name = "Хватка Пустоты"
 	summary = "Хватка сковывает врага на 4 секунды, ненадолго глушит голос и охлаждает."

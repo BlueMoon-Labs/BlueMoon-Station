@@ -57,6 +57,10 @@
 /datum/eldritch_knowledge/proc/recipe_block_reason(mob/living/user)
 	return null
 
+/// Причина не начинать обряд, который иначе сорвётся на середине, или null.
+/datum/eldritch_knowledge/proc/ritual_start_reason(mob/living/user, turf/location, duration)
+	return null
+
 /// Причина для living/incapacitated(): что именно мешает исполнителю обряда.
 /proc/heretic_incapacitated_reason(mob/living/user)
 	if(user.stat == DEAD)

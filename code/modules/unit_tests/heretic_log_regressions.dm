@@ -460,3 +460,37 @@
 	TEST_ASSERT(QDELETED(heart), "Привязанное сердце исчезает вместе с ролью.")
 	TEST_ASSERT(QDELETED(injector), "Стартовый инъектор у бывшего еретика исчезает.")
 	TEST_ASSERT(!QDELETED(stranger_heart), "Непривязанное сердце остаётся.")
+
+/// Клинок Пустоты в тепле не начинается, если Зимний предел погаснет раньше конца обряда.
+/datum/unit_test/heretic_log_void_field_expiring
+	var/turf/open/floor/ritual_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_log_void_field_expiring/Destroy()
+	if(ritual_floor && !isnull(original_temperature))
+		ritual_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_log_void_field_expiring/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	ritual_floor = get_turf(user)
+	original_temperature = ritual_floor.GetTemperature()
+	ritual_floor.air.set_temperature(T0C + 20)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, ritual_floor)
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	winter.refresh_boundary(list(ritual_floor))
+	recipe.combat_zone = winter
+	winter.expires_at = world.time + 1 SECONDS
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Гаснущее поле не начинает обряд.")
+	TEST_ASSERT(!QDELETED(knife) && !GLOB.heretic_ritual_reservations[knife], "Нож свободен после отказа.")
+	TEST_ASSERT(findtext(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "погаснет"), "Отказ говорит, что поле погаснет.")
+	winter.expires_at = world.time + recipe.ritual_time + 1 SECONDS
+	TEST_ASSERT_NULL(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "Поле на весь обряд не мешает.")
+	ritual_floor.air.set_temperature(T0C - 10)
+	winter.expires_at = world.time + 1 SECONDS
+	TEST_ASSERT_NULL(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "Холодному воздуху поле не нужно.")
