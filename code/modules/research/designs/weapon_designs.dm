@@ -846,7 +846,7 @@
 	id = "exorcist_rubber"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 1000)
-	build_path = /obj/item/ammo_casing/cal410/rubber
+	build_path = /obj/item/ammo_casing/cal410
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_GREEN 
