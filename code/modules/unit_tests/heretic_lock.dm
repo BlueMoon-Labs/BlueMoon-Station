@@ -561,6 +561,8 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_lock)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/lock_final)
 	var/mob/living/carbon/human/user = heretic.owner.current
+	// view() печатей отбрасывает неосвещённые клетки, а освещённость арены зависит от того, когда до неё дойдёт SSlighting.
+	user.see_in_dark = 8
 	var/datum/eldritch_knowledge/final_eldritch/lock_final/finale = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/lock_final)
 	finale.finished = TRUE
 	heretic.ascended = TRUE
