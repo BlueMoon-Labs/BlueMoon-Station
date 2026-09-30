@@ -743,6 +743,11 @@
 	for(var/step in 1 to steps_per_star)
 		wake.last_step_time = world.time - HERETIC_COSMIC_WAKE_STEP_GAP
 		TEST_ASSERT(user.Move(get_step(user, WEST), WEST), "Герой шагает на запад.")
+	// Под нагрузкой trail_star засыпает на CHECK_TICK в Draw() луча между сносом старейшей звезды и новой.
+	var/list/budget = new_wait_budget(2 SECONDS, "звезда следа")
+	while(length(cosmic.stars) < cosmic.star_limit())
+		if(!wait_budget_tick(budget))
+			break
 	TEST_ASSERT_EQUAL(length(cosmic.stars), cosmic.star_limit(), "След не превышает пяти звёзд.")
 	TEST_ASSERT(QDELETED(first), "Новая звезда следа заменяет старейшую.")
 	var/obj/structure/heretic_star/newest = cosmic.stars[length(cosmic.stars)]

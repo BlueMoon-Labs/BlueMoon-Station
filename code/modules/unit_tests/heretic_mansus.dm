@@ -76,6 +76,18 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 /datum/signal/subspace/vocal/mansus_fixture/broadcast()
 	broadcasts++
 
+/// Постепенное освобождение идёт на CHECK_TICK, а не на таймере: окно продлевается, пока клетки убывают.
+/datum/unit_test/proc/wait_for_reservation_release(datum/turf_reservation/reserved)
+	var/list/budget = new_wait_budget(2 SECONDS, "QDELETED([reserved?.type])")
+	var/remaining = length(reserved?.reserved_turfs)
+	while(!QDELETED(reserved))
+		if(length(reserved.reserved_turfs) < remaining)
+			remaining = length(reserved.reserved_turfs)
+			budget = new_wait_budget(2 SECONDS, "QDELETED([reserved.type])")
+		if(!wait_budget_tick(budget))
+			break
+	return QDELETED(reserved)
+
 /// Мансус блокирует приём на всех каналах и восстанавливает его при возвращении вещей.
 /datum/unit_test/heretic_mansus_radio_reception/Run()
 	var/list/fixture = make_mansus_fixture()
@@ -100,6 +112,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 		radio.on = TRUE
 		radio.independent = TRUE
 		radio.syndie = TRUE
+		radio.syndie_freq = FREQ_SYNDICATE
 		for(var/frequency in list(FREQ_COMMON, FREQ_SYNDICATE, FREQ_CENTCOM))
 			radio.set_frequency(frequency)
 			TEST_ASSERT(!radio.can_receive(frequency, list(victim.z)), "Мансус блокирует приём на частоте [frequency] у [radio.type].")
@@ -254,7 +267,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	TEST_ASSERT_EQUAL(get_turf(bag), run_loc_floor_top_right, "Брошенная сумка не удаляется при освобождении комнаты.")
 	TEST_ASSERT_EQUAL(packed.loc, bag, "Содержимое сумки остаётся в ней.")
 	TEST_ASSERT_EQUAL(carried.loc, victim, "Имущество на теле остаётся у владельца.")
-	TEST_ASSERT(wait_for_qdeleted(reserved), "Резервирование комнаты освобождается.")
+	TEST_ASSERT(wait_for_reservation_release(reserved), "Резервирование комнаты освобождается.")
 	TEST_ASSERT_EQUAL(length(visit.timers), 0, "Аварийный выход отменяет все таймеры.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[soul], "Аварийный выход освобождает запись души.")
 	if(channel)
@@ -328,7 +341,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	var/previous_memory = soul.memory
 	qdel(soul, force = TRUE)
 	TEST_ASSERT(QDELETED(visit), "Принудительное удаление разума завершает посещение без runtime.")
-	TEST_ASSERT(wait_for_qdeleted(reserved), "Принудительное удаление разума освобождает комнату.")
+	TEST_ASSERT(wait_for_reservation_release(reserved), "Принудительное удаление разума освобождает комнату.")
 	TEST_ASSERT_EQUAL(get_turf(victim), run_loc_floor_top_right, "Тело эвакуируется после принудительного удаления разума.")
 	TEST_ASSERT_EQUAL(get_turf(dropped), run_loc_floor_top_right, "Выпавшие вещи сохраняются после удаления разума.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[soul], "Реестр не удерживает принудительно удалённый разум.")
@@ -429,7 +442,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	second.finish()
 	third.finish()
 	for(var/datum/turf_reservation/room as anything in rooms)
-		TEST_ASSERT(wait_for_qdeleted(room), "Комната посещения освобождается.")
+		TEST_ASSERT(wait_for_reservation_release(room), "Комната посещения освобождается.")
 	TEST_ASSERT_EQUAL(length(shared_area.contents), 0, "Завершённые посещения освобождают все турфы области.")
 
 /// Движение и потеря сознания прерывают сосредоточение; чужие и спящие воспоминания недоступны.
