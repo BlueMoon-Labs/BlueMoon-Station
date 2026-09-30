@@ -78,8 +78,8 @@
 				//continue
 			if(ishuman(object))
 				var/mob/living/carbon/human/H = object
-				//if(!(H.client?.prefs.cit_toggles & CUM_ONTO))
-					//continue
+				if(!(H.client?.prefs.cit_toggles & CUM_ONTO))
+					continue
 				if(H != partner)
 					continue
 				LAZYADD(cumsplashed_items, object)	//у нас все равно сейчас только на хуманов накладывается оверлей
