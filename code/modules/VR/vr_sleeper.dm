@@ -15,6 +15,8 @@
 	var/vr_category = "default" //Specific category of spawn points to pick from
 	var/allow_creating_vr_mobs = TRUE //So you can have vr_sleepers that always spawn you as a specific person or 1 life/chance vr games
 	var/only_current_user_can_interact = FALSE
+	/// /datum/map_template/deathmatch name the occupant last picked in the TGUI.
+	var/selected_deathmatch_mode
 
 /obj/machinery/vr_sleeper/Initialize(mapload)
 	. = ..()
@@ -131,6 +133,40 @@
 			else if ((!occupant || usr == occupant) || !only_current_user_can_interact)
 				open_machine()
 			. = TRUE
+		if("select_deathmatch_mode")
+			if(get_deathmatch_map(params["mode"]))
+				selected_deathmatch_mode = params["mode"]
+			. = TRUE
+		if("start_deathmatch")
+			// The host has to be the one lying in the machine: it is what their
+			// real body is, and where they get put back to when the game ends.
+			// Typed, because /obj/machinery/occupant is untyped and this codebase
+			// compiles in strict mode.
+			var/mob/host_mob = occupant
+			if(usr != host_mob || !host_mob?.mind)
+				to_chat(usr, "<span class='warning'>You need to be inside the VR sleeper to start a deathmatch.</span>")
+				return TRUE
+			if(get_deathmatch_lobby_of(usr.ckey))
+				to_chat(usr, "<span class='warning'>You are already in a deathmatch game.</span>")
+				return TRUE
+			if(!allow_creating_vr_mobs)
+				to_chat(usr, "<span class='warning'>This sleeper does not open new virtual worlds.</span>")
+				return TRUE
+			var/datum/map_template/deathmatch/mode = get_deathmatch_map(selected_deathmatch_mode)
+			if(isnull(mode))
+				to_chat(usr, "<span class='warning'>No deathmatch mode is compiled in.</span>")
+				return TRUE
+			to_chat(usr, "<span class='notice'>Loading [mode.display_name]...</span>")
+			if(start_deathmatch_lobby(host_mob, mode.name))
+				SStgui.close_user_uis(host_mob, src)
+			. = TRUE
+		if("end_deathmatch")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			if(isnull(lobby) || lobby.host_key != usr.ckey)
+				to_chat(usr, "<span class='warning'>You are not hosting a deathmatch game.</span>")
+				return TRUE
+			lobby.end_lobby(reason = "the host ended the game")
+			. = TRUE
 
 /obj/machinery/vr_sleeper/ui_data(mob/user)
 	var/list/data = list()
@@ -160,6 +196,25 @@
 	data["toggle_open"] = state_open
 	data["emagged"] = you_die_in_the_game_you_die_for_real
 	data["isoccupant"] = (user == occupant)
+
+	// Deathmatch: only the occupant may host, because the machine is where their
+	// real body ends up when the game is over. Typed, because
+	// /obj/machinery/occupant is untyped and this codebase is in strict mode.
+	var/mob/deathmatch_host = occupant
+	var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(user.ckey)
+	var/list/modes = list()
+	for(var/map_ref as anything in get_deathmatch_templates())
+		var/datum/map_template/deathmatch/mode = map_ref
+		modes += list("id" = mode.name, "name" = mode.display_name, "description" = mode.description, \
+			"players" = "[mode.min_players]-[mode.max_players]")
+	data["deathmatch_modes"] = modes
+	data["selected_deathmatch_mode"] = selected_deathmatch_mode
+	data["can_start_deathmatch"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
+		&& allow_creating_vr_mobs
+	data["is_hosting_deathmatch"] = !isnull(lobby) && (lobby.host_key == user.ckey)
+	data["hosting_deathmatch"] = null
+	if(data["is_hosting_deathmatch"])
+		data["hosting_deathmatch"] = list("name" = lobby.template.display_name, "players" = lobby.player_count())
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something
