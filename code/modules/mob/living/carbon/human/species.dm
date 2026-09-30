@@ -2956,7 +2956,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		H.pass_flags &= ~PASSTABLE
 		H.CloseWings()
 		H.update_mobility()
-		H.update_gravity()
+		H.refresh_gravity()
 	update_species_slowdown(H)
 
 /datum/action/innate/flight

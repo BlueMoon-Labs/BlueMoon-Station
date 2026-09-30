@@ -627,24 +627,27 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 			src = null
 			spawn(0)
 				if(C)
-					temp = amplitude * sin(saved_dizz * world.time)
+					temp = round(amplitude * sin(saved_dizz * world.time), 1)
 					pixel_x_diff += temp
 					C.pixel_x += temp
-					temp = amplitude * cos(saved_dizz * world.time)
+					temp = round(amplitude * cos(saved_dizz * world.time), 1)
 					pixel_y_diff += temp
 					C.pixel_y += temp
 					sleep(3)
 					if(C)
-						temp = amplitude * sin(saved_dizz * world.time)
+						temp = round(amplitude * sin(saved_dizz * world.time), 1)
 						pixel_x_diff += temp
 						C.pixel_x += temp
-						temp = amplitude * cos(saved_dizz * world.time)
+						temp = round(amplitude * cos(saved_dizz * world.time), 1)
 						pixel_y_diff += temp
 						C.pixel_y += temp
 					sleep(3)
 					if(C)
 						C.pixel_x -= pixel_x_diff
 						C.pixel_y -= pixel_y_diff
+						var/mob/living/carbon/dizzy_mob = oldsrc
+						if(!QDELETED(dizzy_mob) && !dizzy_mob.dizziness && C.mob == dizzy_mob)
+							dizzy_mob.reset_client_pixel_offset()
 			src = oldsrc
 		dizziness = max(dizziness - restingpwr, 0)
 

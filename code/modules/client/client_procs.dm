@@ -711,11 +711,12 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			return FALSE
 	else if (byond_version < warn_version || (byond_version == warn_version && byond_build < warn_build))
 		if(CONFIG_GET(flag/client_warn_popup))
-			var/msg = "<b>Доступна рекомендуемая версия BYOND:</b><br>"
+			var/msg = "<html><head><meta charset='UTF-8'><title>Версия BYOND</title></head><body>"
+			msg += "<b>Доступна рекомендуемая версия BYOND:</b><br>"
 			msg += CONFIG_GET(string/client_warn_message) + "<br><br>"
 			msg += "Ваша версия: [byond_version].[byond_build]<br>"
 			msg += "Рекомендуемая версия: [warn_version].[warn_build] или новее<br>"
-			msg += "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.<br>"
+			msg += "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.<br></body></html>"
 			src << browse(msg, "window=warning_popup")
 		else
 			to_chat(src, span_notice("<b>Доступна рекомендуемая версия BYOND:</b>"))

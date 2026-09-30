@@ -28,6 +28,7 @@
 	var/bitcoinproduction_drain = 0.15
 	var/bitcoinmining = FALSE
 	rad_insulation = RAD_EXTREME_INSULATION
+	rad_flags = RAD_PROTECT_CONTENTS
 	var/obj/item/radio/Radio
 
 /obj/machinery/power/rad_collector/anchored
