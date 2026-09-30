@@ -358,7 +358,12 @@
 		heretic_dance_combat_deed(user, owner)
 		owner.apply_status_effect(/datum/status_effect/heretic_dance/partner, dance)
 		owner.visible_message(span_danger("[owner] в последнем па оказывается в руках [user]."), span_userdanger("Танец приводит вас прямо в руки [user]!"))
-		to_chat(user, span_eldritch("[owner] - ваш партнёр на [HERETIC_DANCE_PARTNER_TIME / (1 SECONDS)] секунды: живое сердце уведёт цель охоты в изнанку, фигура Вальса поведёт за собой."))
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		if(heretic?.hunt_target && heretic.hunt_target == owner.mind)
+			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Коснитесь партнёра живым сердцем: пока вы выбираете дверь, танец держит цель."))
+			user.balloon_alert(user, "сердцем - в изнанку!")
+		else
+			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Это не цель охоты: в изнанку не увести, но фигура Вальса поведёт партнёра за собой."))
 		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "partner", owner, null)
 	held_since = world.time - held
 	qdel(src)
@@ -436,6 +441,7 @@
 	examine_text = span_warning("SUBJECTPRONOUN застыл в танцевальной позе, будто ждёт следующего такта. Можно растолкать за 2 секунды или коснуться нулевым жезлом.")
 	opens_door = TRUE
 	var/held_since = 0
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
 
 /datum/status_effect/heretic_dance/partner/on_apply()
 	. = ..()
@@ -444,10 +450,16 @@
 	held_since = world.time
 	heretic_capture_hold(owner, DANCE_INVITE_CAPTURE)
 	ADD_TRAIT(owner, TRAIT_IMMOBILIZED, id)
+	restraint = new(list(owner, -1, TRUE))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
 	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	owner.update_mobility()
 	return TRUE
+
+/datum/status_effect/heretic_dance/partner/process()
+	if(owner?.has_status_effect(/datum/status_effect/heretic_door_grip))
+		duration = max(duration, world.time + 1)
+	return ..()
 
 /datum/status_effect/heretic_dance/partner/proc/on_shaken(datum/source, mob/living/helper)
 	SIGNAL_HANDLER
@@ -468,6 +480,9 @@
 	if(applied)
 		UnregisterSignal(owner, list(COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_PARENT_ATTACKBY))
 		REMOVE_TRAIT(owner, TRAIT_IMMOBILIZED, id)
+		if(!QDELETED(restraint))
+			qdel(restraint)
+		restraint = null
 		owner.update_mobility()
 		heretic_capture_unhold(owner, DANCE_INVITE_CAPTURE)
 		heretic_capture_release(owner, DANCE_INVITE_CAPTURE, held_for = heretic_capture_held_for(held_since))
@@ -825,10 +840,17 @@
 	layer = ABOVE_MOB_LAYER
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
-/// Кортэ Танго не валит одну цель чаще раза в 10 секунд.
+/// Кортэ Танго не валит одну цель чаще раза в 6 секунд.
 /datum/status_effect/heretic_dance_dipped
 	id = "heretic_dance_dipped"
-	duration = 10 SECONDS
+	duration = HERETIC_DANCE_ACCENT_LOCK
+	alert_type = null
+	status_type = STATUS_EFFECT_UNIQUE
+
+/// Мах Канкана не бросает одну цель чаще раза в 6 секунд: у стены бросок роняет.
+/datum/status_effect/heretic_dance_kicked
+	id = "heretic_dance_kicked"
+	duration = HERETIC_DANCE_ACCENT_LOCK
 	alert_type = null
 	status_type = STATUS_EFFECT_UNIQUE
 

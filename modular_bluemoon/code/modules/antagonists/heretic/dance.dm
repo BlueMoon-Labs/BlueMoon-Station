@@ -44,7 +44,7 @@
 		"Нож и пара любой обуви на руне дают клинок «Алая шпилька».",
 		"Кольцо у ног смыкается на доле, двойное - на сильной; барабан справа ведёт счёт. Подсказки скрываются в меню стиля.",
 		"Удар по врагу даёт 1 Такт, в долю - 2, точно в долю - 3; удар в сильную долю - акцент стиля.",
-		"Хватка в «Помощи» рисует на полу схему шагов (до 5) или заражает человека; заражённых до 6, на 6 минут.",
+		"Хватка в любом намерении заражает человека (до 6, на 6 минут); в «Помощи» по полу рисует схему шагов (до 5).",
 		"Фигура: шаги подряд в долю по рисунку стиля; ромбы под ногами считают шаги. Один сбой после двух верных шагов прощается.",
 		"Фигура без цели ждёт её 4 доли. Квадрат Вальса подхватит последнего, по кому вы ударили; нота покажет, кого.",
 		"Связка в бою даёт вход стиля, три стиля за 20 секунд - Попурри. Ctrl+клик по барабану - прошлый стиль.",
@@ -60,7 +60,7 @@
 	combat_resource_name = "Такт"
 	resource_rules = list(
 		"Такт от 0 до 10: удар клинком или Хваткой по разумному врагу даёт 1 (раз в секунду), в долю - 2, точно - 3.",
-		"С 4 Такта работает пассивка текущего стиля.",
+		"С 4 Такта работает пассивка стиля, а каждый Такт сверх 4 добавляет удару клинком в долю 1 урон.",
 		"Через 4 секунды без боя Такт тает по единице в секунду.",
 		"Смена стиля в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле, тоже без потерь; выбор его ещё раз меняет сразу, деля Такт пополам.",
 		"Колокол тратит 4 Такта. Смерть и смена тела обнуляют Такт.",
@@ -119,6 +119,12 @@
 	var/datum/status_effect/heretic_dance/masquerade/masquerade
 	var/dance_failure
 	COOLDOWN_DECLARE(takt_hit_gap)
+
+/datum/eldritch_knowledge/base_dance/on_gain(mob/user)
+	. = ..()
+	var/datum/antag_training_session/session = GLOB.antag_training_sessions[user?.ckey]
+	if(session?.current_body == user && !session.dance_lesson)
+		to_chat(user, span_notice("Для Пляски на полигоне есть пошаговый урок: панель полигона, вкладка «Начать», раздел «2. Упражнение», кнопка «Урок Пляски»."))
 
 /datum/eldritch_knowledge/base_dance/on_body_gain(mob/living/user)
 	if(!user?.mind || dance_body == user)
@@ -266,8 +272,13 @@
 		if(ishuman(target) && user.Adjacent(target))
 			return infect(user, target, TRUE)
 		return FALSE
-	if(isliving(target) && user.Adjacent(target) && heretic_can_affect(user, target, chargecost = 0, notify = FALSE))
-		register_strike(user, target, accuracy, strong)
+	if(!isliving(target) || !user.Adjacent(target) || !heretic_can_affect(user, target, chargecost = 0, notify = FALSE))
+		return FALSE
+	register_strike(user, target, accuracy, strong)
+	var/mob/living/victim = target
+	var/fresh = ishuman(victim) && !victim.has_status_effect(/datum/status_effect/heretic_dance_earworm)
+	if(ishuman(victim) && infect(user, victim) && fresh)
+		to_chat(user, span_eldritch("Хватка оставила в голове [victim] вашу мелодию. Заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."))
 	return FALSE
 
 /// Навязчивый такт на человеке: сам по себе безвреден, но открывает его Приглашению, Колоколу и барабану.
@@ -311,11 +322,12 @@
 	if(locate(/obj/effect/heretic_dance_diagram) in place)
 		grasp_failure_reason = "Здесь уже расчерчена схема шагов."
 		return FALSE
-	if(isgroundlessturf(place) || !is_station_level(place.z) || place.is_blocked_turf(exclude_mobs = TRUE) || !user.Adjacent(place))
-		grasp_failure_reason = "Схема шагов ложится только на свободный пол станции рядом с вами."
+	if(isgroundlessturf(place) || place.is_blocked_turf(exclude_mobs = TRUE) || !user.Adjacent(place))
+		grasp_failure_reason = "Схема шагов ложится только на свободный пол рядом с вами."
 		return FALSE
+	var/counts_for_deed = is_station_level(place.z)
 	var/deed_key = heretic.deed_key_for(place)
-	var/wait = heretic.deed_wait_reason(deed_key)
+	var/wait = counts_for_deed ? heretic.deed_wait_reason(deed_key) : "Это вне станции: схема заражает, но в дело не идёт."
 	while(length(diagrams) >= HERETIC_DANCE_DIAGRAM_LIMIT)
 		var/obj/effect/heretic_dance_diagram/oldest = diagrams[1]
 		log_game("[key_name(user)] теряет схему шагов в [AREACOORD(oldest)]: её вытеснила новая.")
@@ -474,10 +486,11 @@
 	var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
 	if(!dance?.can_use(user))
 		return FALSE
-	if(dance.beat_total < ready_beat)
-		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: до следующего долей: [ready_beat - dance.beat_total]."))
+	var/pressed_beat = dance.timed_beat_total(dance.timing(user))
+	if(pressed_beat < ready_beat)
+		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: до следующего долей: [ready_beat - pressed_beat]."))
 		return FALSE
-	ready_beat = dance.beat_total + HERETIC_DANCE_DRUM_BEATS
+	ready_beat = pressed_beat + HERETIC_DANCE_DRUM_BEATS
 	flick("dance_relic_beat", src)
 	dance.drum_pulse(user)
 	return TRUE

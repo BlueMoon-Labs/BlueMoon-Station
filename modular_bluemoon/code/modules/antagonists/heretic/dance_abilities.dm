@@ -36,7 +36,7 @@
 		"Вальс, Тарантелла и Канкан: из 7 клеток, до 8 долей, по пути в обход стен.",
 		"Танго: через 2 доли цель из 3 клеток одним рывком оказывается рядом и падает на секунду.",
 		"Пляска смерти: из 12 клеток, медленно, до 10 долей.",
-		"Дошедший 4 секунды - ваш партнёр: живое сердце уведёт цель охоты в изнанку, фигура Вальса поведёт за собой.",
+		"Дошедший 6 секунд замирает вашим партнёром: живое сердце уведёт цель охоты в изнанку, Вальс поведёт за собой.",
 		"Срывают: схватить, повалить, пристегнуть, растолкать за 2 секунды, заглушки, нулевой жезл, святая вода.",
 		"Сорвалось на первой доле - перезарядка возвращается. Перезарядка 45 секунд.",
 	)
@@ -79,10 +79,10 @@
 	name = "Барабан из кожи"
 	summary = "Кожа и сердце дают барабан: раз в 4 доли он бьёт акцентом стиля по заражённым рядом; открывает Тарантеллу."
 	details = list(
-		"Барабан бьёт из руки или кармана кнопкой «Ударить в барабан»; вне доли - только сердцебиение и 5 выносливости.",
+		"Кнопка «Ударить в барабан» бьёт из руки или кармана; удар в долю не даёт Такту таять, вне доли - лишь 5 выносливости.",
 		"Заражённые в 7 клетках, которые слышат, получают ослабленный акцент, а вы 3 секунды видите их сердца сквозь стены.",
 		"Тарантелла: доля 0,5 с, самый трудный темп; точные действия лечат 2, удары в долю копят тарантизм.",
-		"Стак отнимает 4 выносливости в такт; пять стаков срывают цель в пляску на 3 секунды. Фигура - 4 точных удара подряд.",
+		"Стак отнимает 4 выносливости в сильную долю; пять стаков срывают цель в пляску на 3 секунды. Фигура - 4 точных удара.",
 	)
 	role = HERETIC_ROLE_RELIC
 	ritual_hint = "Кожу даёт кожевенный станок или шкура животного; сердце - любое извлечённое сердце."
@@ -101,10 +101,10 @@
 
 /datum/eldritch_knowledge/dance_blade_upgrade
 	name = "Шпилька в доле"
-	summary = "Удары шпилькой в долю лечат 3, а третий подряд удар в долю по одной цели ставит на неё метку."
+	summary = "Удары шпилькой в долю лечат 3, а третий подряд удар в долю по одной цели сразу взрывает на ней метку."
 	details = list(
 		"Серия рвётся от удара мимо доли или по другой цели.",
-		"Метка от серии взрывается следующим ударом, как обычная Метка пляски.",
+		"Метка от серии взрывается тем же третьим ударом: двойной акцент стиля, как у Метки пляски.",
 	)
 	role = HERETIC_ROLE_ATTACK
 	gain_text = "Сталь научилась ждать сильной доли."
@@ -241,7 +241,7 @@
 	var/mob/living/victim = target
 	var/datum/status_effect/heretic_dance_earworm/earworm = victim.has_status_effect(/datum/status_effect/heretic_dance_earworm)
 	if(earworm?.dance_ref?.resolve() != src)
-		return "Приглашение слышат только заражённые вашей мелодией: сначала схема шагов или Хватка в «Помощи»."
+		return "[victim] не слышит вашей мелодии: сначала коснитесь человека Хваткой или заведите его на схему шагов. Над заражёнными видна нота."
 	if(!heretic_dance_can_hear(victim))
 		return "[victim] не слышит музыку: глухота или наушники-заглушки."
 	if(victim.has_status_effect(/datum/status_effect/heretic_dance/invited) || victim.has_status_effect(/datum/status_effect/heretic_dance/partner))
@@ -250,6 +250,16 @@
 	if(!isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > range)
 		return "Цель должна стоять на полу не дальше [range] клеток от вас."
 	return null
+
+/// Почему Приглашению сейчас некого звать: ни одного заражённого в радиусе стиля.
+/datum/eldritch_knowledge/base_dance/proc/invite_idle_reason(mob/living/user)
+	if(!length(earworms))
+		return "Заражённых вашей мелодией нет: коснитесь человека Хваткой Мансуса или заведите его на схему шагов."
+	var/range = invite_range()
+	for(var/datum/status_effect/heretic_dance_earworm/earworm as anything in earworms)
+		if(earworm.owner.z == user.z && get_dist(earworm.owner, user) <= range)
+			return null
+	return "Ближе [range] клеток нет заражённых. Их видно по ноте над головой; заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."
 
 /datum/eldritch_knowledge/base_dance/proc/invite_range()
 	switch(style_id)
@@ -477,10 +487,13 @@
 /obj/effect/proc_holder/spell/self/heretic_dance/drum/cast(list/targets, mob/living/user)
 	var/obj/item/heretic_path_relic/dance/drum = locate() in user.GetAllContents()
 	if(!drum)
-		heretic_revert_cast(user, "Барабана из кожи нет при вас.")
+		heretic_revert_cast(user, "Барабана из кожи нет при вас: положите на руну кожу и извлечённое сердце.")
 		return
 	if(!drum.beat(user))
 		revert_cast(user)
+		return
+	var/datum/eldritch_knowledge/base_dance/dance = dance_of(user)
+	charge_max = max(initial(charge_max), HERETIC_DANCE_DRUM_BEATS * dance.beat_ds - HERETIC_DANCE_BEAT_WINDOW)
 
 /obj/effect/proc_holder/spell/self/heretic_dance/masquerade
 	name = "Маскарад"
@@ -509,7 +522,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_dance/invite
 	name = "Приглашение"
-	desc = "Заражённый человек, который слышит музыку, против воли идёт к вам шаг в долю: в Вальсе, Тарантелле и Канкане из 7 клеток, в Танго одним рывком из 3, в Пляске смерти медленно из 12. Дошедший 4 секунды остаётся вашим партнёром. Схватить, повалить, пристегнуть, растолкать, заглушки, нулевой жезл и святая вода срывают танец. Перезарядка 45 секунд."
+	desc = "Заражённый человек, который слышит музыку, против воли идёт к вам шаг в долю: в Вальсе, Тарантелле и Канкане из 7 клеток, в Танго одним рывком из 3, в Пляске смерти медленно из 12. Дошедший 6 секунд стоит замерев - ваш партнёр. Схватить, повалить, пристегнуть, растолкать, заглушки, нулевой жезл и святая вода срывают танец. Перезарядка 45 секунд."
 	summary = "Заражённый идёт к вам шаг в долю и становится партнёром."
 	clothes_req = FALSE
 	invocation_type = "none"
@@ -522,6 +535,16 @@
 	charge_max = HERETIC_DANCE_INVITE_COOLDOWN
 	active_msg = "Укажите заражённого, которого пригласите на танец."
 	deactive_msg = "Музыка стихает."
+
+/obj/effect/proc_holder/spell/pointed/heretic_dance/invite/Trigger(mob/user, skip_can_cast = TRUE)
+	if(!active && isliving(user))
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
+		var/reason = dance?.invite_idle_reason(user)
+		if(reason)
+			heretic_check(user, FALSE, FALSE, reason)
+			return
+	return ..()
 
 /obj/effect/proc_holder/spell/pointed/heretic_dance/invite/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

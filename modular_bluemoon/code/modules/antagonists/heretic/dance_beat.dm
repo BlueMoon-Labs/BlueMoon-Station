@@ -101,7 +101,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	figure = list(0, -90, 180, 90)
 	figure_name = "квадрат"
 	passive_text = "шаги скользят: вы быстрее"
-	accent_text = "цель перелетает на другую сторону от вас и теряет ориентацию на секунду"
+	accent_text = "цель перелетает на другую сторону от вас, теряет ориентацию на 2-4 секунды и 15 выносливости"
 	figure_text = "шаг вперёд, вправо, назад, влево - 4 секунды ведёте соседнего врага: он повторяет каждый ваш шаг"
 
 /datum/heretic_dance_style/waltz/passive_on(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
@@ -112,6 +112,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 
 /datum/heretic_dance_style/waltz/accent(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, power = 1)
 	victim.confused = max(victim.confused, power >= 1 ? 2 : 1)
+	victim.adjustStaminaLoss(HERETIC_DANCE_ACCENT_STAMINA * power)
 	if(power < 1)
 		victim.setDir(turn(victim.dir, 180))
 		return
@@ -139,7 +140,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	figure = list(0, 180, 0)
 	figure_name = "очо"
 	passive_text = "удары в долю +6 ушибов, точные ещё и 12 урона выносливости"
-	accent_text = "кортэ: цель падает на 1,5 секунды, не чаще раза в 10 секунд"
+	accent_text = "кортэ: цель падает на 1,5 секунды, не чаще раза в 6 секунд, иначе теряет 15 выносливости"
 	figure_text = "шаг в сторону, обратно, снова в сторону - следующий удар клинком выпадом с 2 клеток"
 
 /datum/heretic_dance_style/tango/passive_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
@@ -151,11 +152,11 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 
 /datum/heretic_dance_style/tango/accent(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, power = 1)
 	if(power < 1)
-		victim.adjustStaminaLoss(15)
+		victim.adjustStaminaLoss(HERETIC_DANCE_ACCENT_STAMINA)
 		victim.apply_status_effect(/datum/status_effect/heretic_dance_stumble)
 		return
 	if(victim.has_status_effect(/datum/status_effect/heretic_dance_dipped))
-		victim.adjustStaminaLoss(15)
+		victim.adjustStaminaLoss(HERETIC_DANCE_ACCENT_STAMINA)
 		return
 	victim.apply_status_effect(/datum/status_effect/heretic_dance_dipped)
 	heretic_dance_lunge(user, victim)
@@ -189,7 +190,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	color = "#8f1d21"
 	figure_name = "укус"
 	passive_text = "каждое точное действие лечит 2"
-	accent_text = "стаки тарантизма взрываются: 5 ушибов за стак"
+	accent_text = "5 ушибов за стак тарантизма, стаки остаются; двойной акцент бьёт вдвое и сжигает их"
 	figure_text = "4 точных удара подряд по одной цели - она 4 секунды пляшет, не владея ногами"
 
 /datum/heretic_dance_style/tarantella/on_strike(datum/eldritch_knowledge/base_dance/dance, mob/living/user, mob/living/victim, accuracy, blade)
@@ -223,7 +224,8 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	if(!bite)
 		return
 	victim.adjustBruteLoss(bite.stacks * 5 * power)
-	qdel(bite)
+	if(power >= 2)
+		qdel(bite)
 
 /datum/heretic_dance_style/cancan
 	phrases = list('modular_bluemoon/sound/heretic/dance/cancan_1.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_2.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_3.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_4.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_5.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_6.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_7.ogg', 'modular_bluemoon/sound/heretic/dance/cancan_8.ogg')
@@ -240,7 +242,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	figure = list(0, 0, 180, 180)
 	figure_name = "линия"
 	passive_text = "столы и лежачие не задерживают вас"
-	accent_text = "мах ногой: отброс на 2 клетки и 20 выносливости"
+	accent_text = "мах ногой: 20 выносливости и отброс на 2 клетки, одну цель не чаще раза в 6 секунд"
 	figure_text = "два шага вперёд, два назад - медные ленты слепят всех в 2 клетках, а вы рывком проходите 3 клетки сквозь толпу"
 
 /datum/heretic_dance_style/cancan/passive_on(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
@@ -254,8 +256,9 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	victim.adjustStaminaLoss(power < 1 ? 10 : 20 * power)
 	if(power >= 1)
 		heretic_dance_kick(user, victim)
-	if(victim.anchored || victim.buckled || !isturf(victim.loc))
+	if(victim.anchored || victim.buckled || !isturf(victim.loc) || victim.has_status_effect(/datum/status_effect/heretic_dance_kicked))
 		return
+	victim.apply_status_effect(/datum/status_effect/heretic_dance_kicked)
 	var/turf/target = get_ranged_target_turf(victim, get_dir(user, victim) || user.dir, distance)
 	victim.throw_at(target, distance, 1, user, spin = FALSE)
 
@@ -280,7 +283,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	figure = list(0, 0, 0, 0)
 	figure_name = "процессия"
 	passive_text = "заражённые видят вместо вас скелет, враги в 5 клетках вязнут на каждой доле"
-	accent_text = "колокол: каждый заражённый в 7 клетках делает шаг к вам"
+	accent_text = "колокол: цель теряет 15 выносливости, она и каждый заражённый в 7 клетках делают шаг к вам"
 	figure_text = "четыре шага по прямой - хоровод на 3 секунды"
 
 /datum/heretic_dance_style/macabre/passive_on(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
@@ -302,6 +305,9 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	if(power < 1)
 		heretic_dance_step_toward(victim, user)
 		return
+	victim.adjustStaminaLoss(HERETIC_DANCE_ACCENT_STAMINA * power)
+	if(heretic_dance_can_sway(user, victim))
+		heretic_dance_step_toward(victim, user)
 	dance.toll_bell(user, power >= 2 ? 2 : 1)
 
 /datum/heretic_dance_style/macabre/flourish(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
@@ -743,6 +749,9 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	last_combat_at = world.time
 	last_struck = WEAKREF(victim)
 	var/datum/heretic_dance_style/style = current_style()
+	var/crescendo = blade && accuracy != HERETIC_DANCE_MISS ? max(0, combat_resource - HERETIC_DANCE_PASSIVE_TAKT) : 0
+	if(crescendo)
+		victim.adjustBruteLoss(crescendo)
 	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "strike", victim, accuracy)
 	if(accuracy == HERETIC_DANCE_MISS)
 		user.balloon_alert(user, last_timing_early ? "раньше доли" : "позже доли")
@@ -871,15 +880,20 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	figure_steps.Cut()
 	refresh_hints()
 
+/// Счёт долей для перезарядок: попадание чуть раньше доли, которая ещё не пробила, уже считается ею.
+/datum/eldritch_knowledge/base_dance/proc/timed_beat_total(accuracy)
+	return beat_total + (accuracy != HERETIC_DANCE_MISS && last_timing_early ? 1 : 0)
+
 /datum/eldritch_knowledge/base_dance/proc/check_figure(mob/living/user)
 	var/datum/heretic_dance_style/style = current_style()
 	var/list/pattern = style.figure
 	if(!length(pattern) || figure_progress() < length(pattern))
 		return FALSE
 	figure_steps.Cut()
-	if(beat_total < figure_ready_beat)
-		user.balloon_alert(user, "до фигуры долей: [figure_ready_beat - beat_total]")
-		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure_cooldown", user, figure_ready_beat - beat_total)
+	var/step_beat = timed_beat_total(HERETIC_DANCE_ON_BEAT)
+	if(step_beat < figure_ready_beat)
+		user.balloon_alert(user, "до фигуры долей: [figure_ready_beat - step_beat]")
+		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure_cooldown", user, figure_ready_beat - step_beat)
 		return FALSE
 	if(!style.flourish(src, user))
 		held_figure_until = beat_total + DANCE_FIGURE_HOLD_BEATS
