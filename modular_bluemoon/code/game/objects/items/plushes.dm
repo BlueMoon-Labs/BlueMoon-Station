@@ -139,7 +139,7 @@
 	squeak_override = list(
 		'modular_splurt/sound/voice/mrowl.ogg' = 1,
 		'modular_splurt/sound/voice/meow_meme.ogg' = 1,
-		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow2.ogg' = 1,
@@ -184,7 +184,7 @@
 	desc = " Мягкая игрушка в форме кошки легко утолит вашу жажду объятий и ласки, от неё вы можете почувствовать легкий аромат пепла и сладковато ягодного вкуса."
 	icon_state = "laska"
 	squeak_override = list(
-		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg' = 1,
+		'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg' = 1,
 		'modular_bluemoon/sound/plush/tiamat_meow1.ogg' = 1
 	)
@@ -771,7 +771,7 @@
 	name = "Vox plushie"
 	desc = "Тот самый пернатый ублюдок, которого все ненавидят, но только не вы."
 	icon_state = "vox"
-	squeak_override = list('modular_splurt/sound/voice/shriek1.ogg' = 1)
+	squeak_override = list('sound/voice/shriek1.ogg' = 1)
 
 /obj/item/toy/plush/bm/expie
 	name = "Expie plushie"
@@ -1046,3 +1046,27 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 /obj/item/toy/plush/bm/tau/emag_act()
 	. = ..()
 	icon_state = "tau_alt" //so much true/// it's a crime https://klipy.com/gifs/true-true-true-1
+
+/obj/item/toy/plush/bm/reno
+	name = "Reno Plush"
+	desc = "The perfect organism... now in a perfectly compact, cozy shape."
+	icon_state = "reno"
+	squeak_override = list('modular_bluemoon/sound/plush/xeno1.ogg' = 50, 'modular_bluemoon/sound/plush/xeno2.ogg' = 50)
+
+/obj/item/toy/plush/bm/surstruming
+	name = "Surstruming Plush"
+	desc = "DISGUSTING!!! WHO EVEN CREATED THIS SHIT!?"
+	icon_state = "surstromming"
+	squeak_override = list('modular_bluemoon/sound/plush/surstromming1.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming2.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming3.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming4.ogg' = 20, 'modular_bluemoon/sound/plush/surstromming5.ogg' = 20)
+
+/obj/item/toy/plush/bm/flka
+	name = "Fl-ka Plush"
+	desc = "A worn-out toy Created in the Dyson Sphere"
+	icon_state = "flka"
+	squeak_override = list('modular_bluemoon/sound/plush/xeno_roar.ogg' = 33, 'modular_bluemoon/sound/plush/xeno1.ogg' = 33, 'modular_bluemoon/sound/plush/xeno2.ogg' = 33)
+
+/obj/item/toy/plush/bm/pig
+	name = "Pig plush"
+	desc = "Dementyi's pig"
+	icon_state = "pig"
+	squeak_override = list('modular_bluemoon/sound/plush/pig1.ogg' = 20, 'modular_bluemoon/sound/plush/pig2.ogg' = 20, 'modular_bluemoon/sound/plush/pig3.ogg' = 20, 'modular_bluemoon/sound/plush/pig4.ogg' = 20, 'modular_bluemoon/sound/plush/pig5.ogg' = 20)

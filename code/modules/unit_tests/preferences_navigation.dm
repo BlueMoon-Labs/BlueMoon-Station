@@ -56,7 +56,7 @@
 	TEST_ASSERT_NULL(prefs.pref_queue, "Навигация поставила полную запись в очередь")
 	TEST_ASSERT(!prefs.preview_rebuilt, "Навигация по лодауту пересобрала превью")
 
-/// Изменения, в том числе смешанные с навигацией, сохраняются и обновляют превью.
+/// Изменения сохраняются, а смешанные запросы и смена слота обновляют превью.
 /datum/unit_test/preferences_navigation_mixed_links/Run()
 	var/datum/preferences/navigation_test/prefs = allocate(/datum/preferences/navigation_test)
 	prefs.save_calls = 0
@@ -64,6 +64,7 @@
 	prefs.process_link(null, list("preference" = "auto_capitalize_enabled"))
 	TEST_ASSERT(prefs.auto_capitalize_enabled, "Настройка не переключилась")
 	TEST_ASSERT_EQUAL(prefs.save_calls, 1, "Изменение настройки не вызвало сохранение")
+	TEST_ASSERT(!prefs.preview_rebuilt, "Автоматические заглавные буквы пересобрали превью")
 
 	prefs.process_link(null, list("quirk_category" = QUIRK_NEGATIVE, "preference" = "auto_capitalize_enabled"))
 	TEST_ASSERT(!prefs.auto_capitalize_enabled, "Изменение настройки потерялось в смешанном запросе")
@@ -79,6 +80,52 @@
 
 	prefs.process_link(null, list("preference" = "character_tab", "tab" = "[GENERAL_CHAR_TAB]", "unknown_action" = "1"))
 	TEST_ASSERT_EQUAL(prefs.save_calls, 4, "Неизвестный параметр ошибочно признан чистой навигацией")
+	TEST_ASSERT(prefs.preview_rebuilt, "Неизвестный параметр подавил пересборку превью")
+
+/// Темы и текстовые настройки сохраняют превью; внешность и режим просмотра пересобирают его.
+/datum/unit_test/preferences_nonvisual_changes/Run()
+	var/datum/preferences/navigation_test/prefs = allocate(/datum/preferences/navigation_test)
+	prefs.save_calls = 0
+	prefs.process_link(null, list("preference" = "charcreation_set", "theme" = "modern_purple"))
+	TEST_ASSERT_EQUAL(prefs.charcreation_theme, "modern_purple", "Тема редактора не изменилась")
+	TEST_ASSERT_EQUAL(prefs.save_calls, 1, "Новая тема не сохранилась")
+	TEST_ASSERT(!prefs.preview_rebuilt, "Тема редактора пересобрала превью")
+
+	prefs.modern_custom_editor_open = FALSE
+	prefs.process_link(null, list("preference" = "modern_theme_editor", "action" = "toggle"))
+	TEST_ASSERT(prefs.modern_custom_editor_open, "Редактор темы не открылся")
+	TEST_ASSERT_EQUAL(prefs.save_calls, 2, "Пользовательская тема не сохранилась")
+	TEST_ASSERT(!prefs.preview_rebuilt, "Открытие редактора темы пересобрало превью")
+
+	prefs.modern_ui_language = 0
+	prefs.process_link(null, list("preference" = "modern_theme_settings", "action" = "set_language", "lang" = "ru"))
+	TEST_ASSERT_EQUAL(prefs.modern_ui_language, 1, "Язык интерфейса не изменился")
+	TEST_ASSERT(!prefs.preview_rebuilt, "Язык интерфейса пересобрал превью")
+
+	prefs.hide_ckey = FALSE
+	prefs.process_link(null, list("preference" = "hide_ckey", "task" = "input"))
+	TEST_ASSERT(prefs.hide_ckey, "Настройка видимости ckey не изменилась")
+	TEST_ASSERT_EQUAL(prefs.save_calls, 3, "Настройка видимости ckey не сохранилась")
+	TEST_ASSERT(!prefs.preview_rebuilt, "Настройка видимости ckey пересобрала превью")
+
+	var/list/dialog_preferences = list("ooc_notes", "flavor_text", "security_records", "barksound", "barkspeed", "barkpitch", "barkvary")
+	for(var/preference in dialog_preferences)
+		var/list/href_list = list("_src_" = "prefs", "preference" = preference, "task" = "input")
+		TEST_ASSERT(prefs.is_nonvisual_preference_link(href_list), "Диалог [preference] требует лишней пересборки")
+		href_list["unknown_action"] = "1"
+		TEST_ASSERT(!prefs.is_nonvisual_preference_link(href_list), "Диалог [preference] проигнорировал неизвестный параметр")
+
+	prefs.process_link(null, list("preference" = "auto_capitalize_enabled", "unknown_action" = "1"))
+	TEST_ASSERT(prefs.preview_rebuilt, "Текстовая настройка проигнорировала неизвестный параметр")
+	prefs.process_link(null, list("preference" = "charcreation_set", "theme" = "modern", "unknown_action" = "1"))
+	TEST_ASSERT(prefs.preview_rebuilt, "Тема проигнорировала неизвестный параметр")
+	TEST_ASSERT(!prefs.is_nonvisual_preference_link(list("preference" = "character_slots", "action" = "delete_slot", "slot" = "1")), "Удаление персонажа ошибочно признано изменением интерфейса")
+
+	prefs.process_link(null, list("preference" = "character_preview", "tab" = PREVIEW_PREF_NAKED))
+	TEST_ASSERT_EQUAL(prefs.preview_pref, PREVIEW_PREF_NAKED, "Режим предпросмотра не изменился")
+	TEST_ASSERT(prefs.preview_rebuilt, "Смена режима предпросмотра не обновила изображение")
+	prefs.process_link(null, list("preference" = "hair", "task" = "random"))
+	TEST_ASSERT(prefs.preview_rebuilt, "Смена цвета волос не обновила изображение")
 
 /// Навигация сохраняет очередь и буфер, а отложенная запись доносит последние значения до savefile.
 /datum/unit_test/preferences_navigation_pending_save/Run()

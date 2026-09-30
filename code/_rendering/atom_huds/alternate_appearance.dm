@@ -83,6 +83,11 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	. = ..()
 	if(ghost_appearance)
 		QDEL_NULL(ghost_appearance)
+	// Одно изображение может использоваться другими внешностями живого владельца.
+	if(theImage && theImage.loc == target && QDELETED(target))
+		theImage.loc = null
+	theImage = null
+	target = null
 
 /datum/atom_hud/alternate_appearance/basic/add_to_hud(atom/movable/A)
 	LAZYINITLIST(A.hud_list)
@@ -219,3 +224,8 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 		ntransform.Translate(0, 16*(resize-1)) //Makes sure you stand on the tile no matter the size - sand
 
 	theImage.transform = ntransform
+
+/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity
+
+/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/mobShouldSee(mob/M)
+	return FALSE

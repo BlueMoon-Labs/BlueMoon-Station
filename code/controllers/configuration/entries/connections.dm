@@ -66,15 +66,15 @@
 /datum/config_entry/flag/webclient_only_byond_members
 
 /datum/config_entry/number/client_warn_version
-	default = null
+	default = 516
 	min_val = 500
 
-/datum/config_entry/number/client_warn_version
-	default = null
-	min_val = 500
+/datum/config_entry/number/client_warn_build
+	default = 1688
+	min_val = 0
 
 /datum/config_entry/string/client_warn_message
-	default = "Your version of byond may have issues or be blocked from accessing this server in the future."
+	default = "Рекомендуем обновить BYOND: в новой версии исправлены ошибки клиента, включая пропадание курсора после ввода текста."
 
 /datum/config_entry/flag/client_warn_popup
 

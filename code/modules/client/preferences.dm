@@ -94,7 +94,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
-	var/sound_toggles = NONE
+	var/sound_toggles = SOUND_BUTTONS
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = DEADMIN_AUTODMENTOR
 	var/mentor_toggles = SOUND_MENTORHELP
@@ -205,6 +205,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "ears" = "None",
 "wings" = "None",
 "wings_color" = "FFF",
+"insect_fluff_color" = null,
+"insect_markings_color" = null,
 "frills" = "None",
 "deco_wings" = "None",
 "spines" = "None",
@@ -376,6 +378,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
+	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
+	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
+	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
+	var/light = LIGHT_DEFAULT
+	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -418,6 +426,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/arousal_multiplier = 100
 	var/use_moaning_multiplier = FALSE
 	var/moaning_multiplier = 65
+	var/use_custom_moan_sounds = FALSE
+	var/list/custom_moan_sounds = list()
 	var/datum/character_offer_instance/offer
 
 	//backgrounds
@@ -543,6 +553,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tmp/modern_theme_settings_open = FALSE
 	/// UI state: collapse empty character slots in the top slot list (persisted in preferences)
 	var/collapse_empty_character_slots = FALSE
+	/// Имена персонажей по номеру слота для окна настройки; null - перечитать из сейвфайла
+	var/tmp/list/slot_names_cache
 	/// UI decoration level for modern theme: "minimal" (performance), "standard" (current), "enhanced" (gradients)
 	var/ui_decoration_level = "enhanced"
 	var/unholypref = "No"
@@ -817,6 +829,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
  * и категории, внешность персонажа не трогают, и платить за неё им незачем.
  * По умолчанию TRUE: пропускаем только там, где точно знаем, что ничего не поехало.
  */
+/// Во сколько раз больше MAX_FLAVOR_PREVIEW_LEN символов текста разбирается ради превью: запас на теги разметки
+#define FLAVOR_PREVIEW_PARSE_SLACK 4
+
+/// Начало описания персонажа для превью в окне настройки: полный текст до 4096 символов не кодируется
+/proc/flavor_text_preview(text)
+	var/text_head = copytext_char(text, 1, MAX_FLAVOR_PREVIEW_LEN * FLAVOR_PREVIEW_PARSE_SLACK)
+	return replacetext(parsemarkdown_basic(html_encode(text_head), hyperlink = FALSE), "\n", " ")
+
+#undef FLAVOR_PREVIEW_PARSE_SLACK
+
 /datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
@@ -827,7 +849,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/dat
 	if(new_character_creator)
 		// Compact inline CSS: конкретные значения цветов для BYOND-браузера.
-		// Enhanced decoration — CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
+		// Enhanced decoration - CSS-класс .csetup-decoration-enhanced (переключается без inline CSS).
 		var/modern_palette_css = ""
 		if(is_modern_theme)
 			var/list/theme = get_character_setup_palette_modern()
@@ -931,7 +953,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				"modern_neutral" = "#bfc2c7"
 			)
 
-			// Theme hub — icon buttons that never move
+			// Theme hub - icon buttons that never move
 			dat += "<div class='theme-container'>"
 			dat += "<div class='theme-hub'>"
 			var/picker_active_cls = !modern_theme_picker_collapsed ? " active" : ""
@@ -1053,8 +1075,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	switch(current_tab)
 		if(SETTINGS_TAB) // Character Settings#
 			if(path)
-				var/savefile/S = new /savefile(path)
-				if(S)
+				var/list/slot_names = get_slot_names()
+				if(slot_names)
 					dat += "<center>"
 					var/name
 					var/toggle_title = collapse_empty_character_slots ? "Показать пустые слоты" : "Скрыть пустые слоты"
@@ -1065,9 +1087,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/unspaced_slots = 0
 					var/empty_slot_label = src.use_modern_translations ? get_modern_text("empty_slot_label", src) : "Character"
 					for(var/i=1, i<=max_save_slots, i++)
-						name = null
-						S.cd = "/character[i]"
-						S["real_name"] >> name
+						name = slot_names[i]
 						var/is_empty_slot = !name
 						if(collapse_empty_character_slots && is_empty_slot && i != default_slot)
 							continue
@@ -1097,15 +1117,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/retrieve_offered_label = src.use_modern_translations ? get_modern_text("retrieve_offered", src) : "Retrieve offered character"
 				var/redemption_code_label = src.use_modern_translations ? get_modern_text("redemption_code", src) : "Redemption code"
 				var/offer_auto_cancel_label = src.use_modern_translations ? get_modern_text("offer_auto_cancel", src) : "The offer will automatically be cancelled if there is an error, or if someone takes it"
-				var/file = user.client.Import()
-				var/savefile/client_file
-				var/savefile_name
-				if(file)
-					client_file = new(file)
-					if(istype(client_file, /savefile))
-						if(!client_file["deleted"] || savefile_needs_update(client_file) != -2)
-							client_file["real_name"] >> savefile_name
-				dat += "[local_storage_label]: " + (savefile_name ? savefile_name : empty_label)
+				var/savefile_name = get_local_storage_name(user.client)
+				dat +="[local_storage_label]: " + (savefile_name ? savefile_name : empty_label)
 				dat += "<br />"
 				dat += "<a href='?_src_=prefs;preference=export_slot'>[export_slot_label]</a>"
 				var/import_attr = "class='linkOff'"
@@ -1380,11 +1393,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ai_core_icon_state = "ai-random"
 						else
 							ai_core_icon_state = resolve_ai_icon(preferred_ai_core_display, TRUE)
-						var/icon/ai_core_preview_icon = icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
-						var/ai_core_preview_html = icon2base64html(ai_core_preview_icon)
-						if(!ai_core_preview_html)
-							ai_core_preview_html = ""
-						dat += "<div class='csetup-ai-core-preview'>" + ai_core_preview_html + "</div>"
+						var/static/list/ai_core_preview_cache = list()
+						var/ai_core_preview_html = ai_core_preview_cache["[ai_core_icon_state]"]
+						if(isnull(ai_core_preview_html))
+							ai_core_preview_html = icon2base64html(icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)) || ""
+							ai_core_preview_cache["[ai_core_icon_state]"] = ai_core_preview_html
+						dat += "<div class='csetup-ai-core-preview'>"
+						dat += ai_core_preview_html
+						dat += "</div>"
 					dat += "</td>"
 
 					dat += "<td valign='top'>"
@@ -1452,24 +1468,24 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<table width='100%'><tr><td width='30%' valign='top'>"
 
 					dat += "<h2>[flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a><br>"
-					if(length(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["flavor_text"]))
-							dat += "\[...\]"
-						else
-							dat += "[features["flavor_text"]]"
+					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/flavor_preview = flavor_text_preview(features["flavor_text"])
+					if(!length(features["flavor_text"]))
+						dat += "\[...\]"
+					else if(length_char(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += flavor_preview
 					else
-						dat += "[TextPreview(features["flavor_text"])]..."
+						dat += "[copytext_char(flavor_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<br><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["flavor_text"]))]...)</span>"
 					//SPLURT edit - naked flavor text
 					dat += "<h2>[naked_flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a><br>"
-					if(length(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["naked_flavor_text"]))
-							dat += "\[...\]<BR>"
-						else
-							dat += "[html_encode(features["naked_flavor_text"])]<BR>"
+					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/naked_preview = flavor_text_preview(features["naked_flavor_text"])
+					if(!length(features["naked_flavor_text"]))
+						dat += "\[...\]<BR>"
+					else if(length_char(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += "[naked_preview]<BR>"
 					else
-						dat += "[TextPreview(html_encode(features["naked_flavor_text"]))]...<BR>"
+						dat += "[copytext_char(naked_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["naked_flavor_text"]))]...)</span><BR>"
 					//SPLURT edit end
 					// BLUEMOON ADD START - пользовательский эмоут смерти
 					dat += "<h2>[custom_deathgasp_label]</h2>"
@@ -1487,34 +1503,33 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<BR><a href='?_src_=prefs;preference=deathsoundpreview;task=input''>[preview_deathsound_label]</a><BR>"
 					// BLUEMOON ADD END
 					dat += "<h2>[silicon_flavor_text_label]</h2>"
-					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a><br>"
-					if(length(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
-						if(!length(features["silicon_flavor_text"]))
-							dat += "\[...\]"
-						else
-							dat += "[features["silicon_flavor_text"]]"
+					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+					var/silicon_preview = flavor_text_preview(features["silicon_flavor_text"])
+					if(!length(features["silicon_flavor_text"]))
+						dat += "\[...\]"
+					else if(length_char(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
+						dat += silicon_preview
 					else
-						dat += "[TextPreview(features["silicon_flavor_text"])]...<BR>"
+						dat += "[copytext_char(silicon_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR><span style='color:#888;font-size:80%'>(исходник: [html_encode(TextPreview(features["silicon_flavor_text"]))]...)</span><BR>"
 					if(!is_modern_theme)
 						dat += "<h2>[custom_species_lore_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a><br>"
-						if(length(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!length(features["custom_species_lore"]))
-								dat += "\[...\]<BR>"
-							else
-								dat += "[features["custom_species_lore"]]<BR>"
+						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/lore_preview = flavor_text_preview(features["custom_species_lore"])
+						if(!length(features["custom_species_lore"]))
+							dat += "\[...\]<BR>"
+						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += "[lore_preview]<BR>"
 						else
-							dat += "[TextPreview(features["custom_species_lore"])]...<BR>"
+							dat += "[copytext_char(lore_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a><br>"
-						var/ooc_notes_len = length(features["ooc_notes"])
-						if(ooc_notes_len <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!ooc_notes_len)
-								dat += "\[...\]"
-							else
-								dat += "[features["ooc_notes"]]"
+						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/ooc_preview = flavor_text_preview(features["ooc_notes"])
+						if(!length(features["ooc_notes"]))
+							dat += "\[...\]"
+						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += ooc_preview
 						else
-							dat += "[TextPreview(features["ooc_notes"])]..."
+							dat += "[copytext_char(ooc_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
 					dat += "</td>"
 
 					if(is_modern_theme)
@@ -1542,24 +1557,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 					if(is_modern_theme)
 						dat += "<br><h2>[custom_species_lore_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a><br>"
-						if(length(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!length(features["custom_species_lore"]))
-								dat += "\[...\]<BR>"
-							else
-								dat += "[features["custom_species_lore"]]<BR>"
+						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/lore_preview2 = flavor_text_preview(features["custom_species_lore"])
+						if(!length(features["custom_species_lore"]))
+							dat += "\[...\]<BR>"
+						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += "[lore_preview2]<BR>"
 						else
-							dat += "[TextPreview(features["custom_species_lore"])]...<BR>"
+							dat += "[copytext_char(lore_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
-						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a><br>"
-						var/ooc_notes_len = length(features["ooc_notes"])
-						if(ooc_notes_len <= MAX_FLAVOR_PREVIEW_LEN)
-							if(!ooc_notes_len)
-								dat += "\[...\]"
-							else
-								dat += "[features["ooc_notes"]]"
+						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
+						var/ooc_preview2 = flavor_text_preview(features["ooc_notes"])
+						if(!length(features["ooc_notes"]))
+							dat += "\[...\]"
+						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
+							dat += ooc_preview2
 						else
-							dat += "[TextPreview(features["ooc_notes"])]..."
+							dat += "[copytext_char(ooc_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
 
 					if(is_modern_theme)
 						dat += "</td>"
@@ -1780,6 +1794,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<b>[glow_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=toggle_emissive_part;part=[emissive_part_key];task=input'>[emissive_part_enabled(features, emissive_part_key) ? enabled_label : disabled_label]</a><BR>"
 							var/color_type = GLOB.colored_mutant_parts[mutant_part] //if it can be coloured, show the appropriate button
 							if(color_type)
+								if(!features[color_type])
+									features[color_type] = features["wings_color"]
 								dat += "<span style='border:1px solid #161616; background-color: #[features[color_type]];'><font color='[color_hex2num(features[color_type]) < 200 ? "FFFFFF" : "000000"]'>#[features[color_type]]</font></span> <a href='?_src_=prefs;preference=[color_type];task=input'>Change</a><BR>"
 								// Show extra/extra2 colors for wings and other colored parts if they have them
 								var/find_part_extra = features[mutant_part] || pref_species.mutant_bodyparts[mutant_part]
@@ -2462,10 +2478,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/gear/gear = subcategory_items[name]
 									if(!gear)
 										continue
-									var/display_name = html_encode(name)
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
+									var/display_name = html_encode(name)
 									var/background_cl = "#23273C"
 									if(even)
 										background_cl = "#17191C"
@@ -2473,9 +2489,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/class_link = ""
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
-									var/gear_preview = gear.get_base64icon()
-									if(gear_preview)
-										extra_loadout_data += "<center><img src='data:image/png;base64,[gear_preview]'></center>"
 									if(loadout_item)
 										var/loadout_color_display = "#FFFFFF"
 										var/loadout_color_label = "#FFFFFF"
@@ -2526,7 +2539,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										class_link = "style='white-space:normal;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 									else
 										class_link = "style='white-space:normal;background:#eb2e2e;' class='linkOff'"
-									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>[extra_loadout_data]</td>"
+									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>"
+									dat += gear.get_preview_html()
+									dat += "[extra_loadout_data]</td>"
 									dat += "<td width = 5% style='vertical-align:top'>[gear.cost]</td><td>"
 									if(islist(gear.restricted_roles))
 										if(gear.restricted_roles.len)
@@ -3020,7 +3035,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	// BLUEMOON: per-quirk settings (kept inline)
 	dat += "<h3>Настройки квирков</h3>"
-	var/display_summon_nickname = summon_nickname ? summon_nickname : "—"
+	var/display_summon_nickname = summon_nickname ? summon_nickname : "-"
 	dat += "<div class='csetup-quirk-settings'>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
@@ -3179,14 +3194,41 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return FALSE
 	return TRUE
 
+/datum/preferences/proc/is_nonvisual_preference_link(list/href_list)
+	var/list/allowed_keys
+	switch(href_list["preference"])
+		if("charcreation_accent")
+			allowed_keys = list("_src_", "preference")
+		if("charcreation_set")
+			allowed_keys = list("_src_", "preference", "theme")
+		if("modern_theme_editor", "modern_theme_picker")
+			allowed_keys = list("_src_", "preference", "action")
+		if("modern_theme_settings")
+			allowed_keys = list("_src_", "preference", "action", "shape", "lang", "level")
+		if("modern_custom_color")
+			allowed_keys = list("_src_", "preference", "key")
+		if("character_slots")
+			if(href_list["action"] != "toggle_empty")
+				return FALSE
+			allowed_keys = list("_src_", "preference", "action")
+		if("headshot", "headshot_naked")
+			allowed_keys = list("_src_", "preference", "select_slot")
+		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "barksound", "barkspeed", "barkpitch", "barkvary")
+			if(href_list["task"] != "input")
+				return FALSE
+			allowed_keys = list("_src_", "preference", "task")
+		if("auto_capitalize_enabled", "barkpreview", "disable_combat_cursor", "disable_combat_mouse_lock", "auto_ooc", "no_tetris_storage")
+			allowed_keys = list("_src_", "preference")
+		else
+			return FALSE
+	for(var/key in href_list)
+		if(!(key in allowed_keys))
+			return FALSE
+	return TRUE
+
 /datum/preferences/proc/process_link(mob/user, list/href_list)
 	var/navigation_only = is_navigation_link(href_list)
-	// Взводится только теми ветками, про которые точно известно, что внешность
-	// персонажа они не меняют - листание вкладок и категорий. Хвост проца зовёт
-	// ShowChoices безусловно, а тот безусловно пересобирал манекен, и навигационный
-	// клик стоил столько же, сколько смена расы. По умолчанию FALSE: неизвестная
-	// ветка ведёт себя как раньше и превью пересобирает
-	var/preview_unchanged = FALSE
+	var/preview_unchanged = navigation_only || is_nonvisual_preference_link(href_list)
 	if(href_list["jobbancheck"])
 		var/job = href_list["jobbancheck"]
 		var/datum/db_query/query_get_jobban = SSdbcore.NewQuery({"
@@ -3213,7 +3255,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if(href_list["preference"] == "charcreation_accent")
 		cycle_character_creation_modern_accent()
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "open_tgui_settings")
@@ -3229,40 +3271,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					new_character_creator = TRUE
 					charcreation_theme = "modern"
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if("modern_classic")
 					new_character_creator = TRUE
 					charcreation_theme = "modern_classic"
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if("modern_purple")
 					new_character_creator = TRUE
 					charcreation_theme = "modern_purple"
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if("modern_green")
 					new_character_creator = TRUE
 					charcreation_theme = "modern_green"
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if("modern_neutral")
 					new_character_creator = TRUE
 					charcreation_theme = "modern_neutral"
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if("modern_custom")
 					new_character_creator = TRUE
 					charcreation_theme = "modern_custom"
 					modern_custom_enabled = TRUE
 					save_preferences(silent = TRUE)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "modern_theme_editor")
@@ -3274,30 +3316,30 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					charcreation_theme = "modern_custom"
 					modern_custom_enabled = TRUE
 					save_preferences(silent = TRUE)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("toggle_enabled")
 				new_character_creator = TRUE
 				charcreation_theme = "modern_custom"
 				modern_custom_enabled = !modern_custom_enabled
 				save_preferences(silent = TRUE)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("toggle_pattern")
 				new_character_creator = TRUE
 				charcreation_theme = "modern_custom"
 				modern_custom_bg_pattern = !modern_custom_bg_pattern
 				save_preferences(silent = TRUE)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("reset")
 				new_character_creator = TRUE
 				charcreation_theme = "modern_custom"
 				reset_modern_custom_theme()
 				save_preferences(silent = TRUE)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "modern_theme_picker")
@@ -3306,22 +3348,22 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				modern_theme_picker_collapsed = !modern_theme_picker_collapsed
 				modern_theme_picker_animate = FALSE
 				// Обе переменные - var/tmp, в savefile их не пишет ни один ключ: сохранять нечего.
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "modern_theme_settings")
 		switch(href_list["action"])
 			if("toggle")
 				modern_theme_settings_open = !modern_theme_settings_open
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("set_button_shape")
 				var/shape = href_list["shape"]
 				modern_button_shape = sanitize_inlist(shape, list("rect", "soft", "round"), initial(modern_button_shape))
 				save_pref_var("modern_button_shape")
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("set_language")
 				var/lang = href_list["lang"]
@@ -3330,15 +3372,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				else if(lang == "en")
 					modern_ui_language = 0
 				save_pref_var("modern_ui_language")
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("set_decoration_level")
 				var/level = href_list["level"]
 				ui_decoration_level = sanitize_inlist(level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
 				save_pref_var("ui_decoration_level")
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "character_slots")
@@ -3346,46 +3388,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("toggle_empty")
 				collapse_empty_character_slots = !collapse_empty_character_slots
 				save_pref_var("collapse_empty_character_slots")
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
 			if("delete_slot")
 				var/slot = text2num(href_list["slot"])
 				if(!slot)
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				// Подсчитываем количество непустых слотов
 				var/occupied_count = 0
-				if(path)
-					var/savefile/S = new /savefile(path)
-					if(S)
-						for(var/i in 1 to max_save_slots)
-							S.cd = "/character[i]"
-							var/check_name
-							S["real_name"] >> check_name
-							if(check_name)
-								occupied_count++
+				for(var/slot_name in get_slot_names())
+					if(slot_name)
+						occupied_count++
 				if(occupied_count <= 1)
 					tgui_alert_async(user, "Нельзя удалить единственного персонажа! / Cannot delete the only character!")
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				// Запрашиваем подтверждение
 				var/confirm = tgui_alert(user, "Вы уверены, что хотите удалить этого персонажа? Это действие необратимо! / Are you sure you want to delete this character? This cannot be undone!", "Delete Character", list("Yes", "No"))
 				if(confirm != "Yes")
-					ShowChoices(user)
+					ShowChoices(user, rebuild_preview = !preview_unchanged)
 					return TRUE
 				if(delete_character(slot))
 					tgui_alert_async(user, "Персонаж удалён. / Character deleted.")
 				else
 					tgui_alert_async(user, "Не удалось удалить персонажа. / Failed to delete character.")
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = !preview_unchanged)
 				return TRUE
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "modern_custom_color")
 		var/color_key = href_list["key"]
 		if(!color_key)
-			ShowChoices(user)
+			ShowChoices(user, rebuild_preview = !preview_unchanged)
 			return TRUE
 		new_character_creator = TRUE
 		charcreation_theme = "modern_custom"
@@ -3404,13 +3440,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("accent_color") current_value = modern_custom_accent_color
 		var/new_value = input(user, "Выберите цвет:", "Custom theme: [color_key]", "#[current_value]") as color|null
 		if(isnull(new_value))
-			ShowChoices(user)
+			ShowChoices(user, rebuild_preview = !preview_unchanged)
 			return TRUE
 		if(set_modern_custom_color(color_key, new_value))
 			save_preferences(silent = TRUE)
 		else
 			to_chat(user, span_warning("Неверный цвет."))
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	if(href_list["preference"] == "job")
@@ -3532,7 +3568,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/list/phobia_choices = list("Случайная")
 				if(SStraumas && SStraumas.phobia_types)
 					phobia_choices += SStraumas.phobia_types
-				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете — будет случайная.", "Настройка фобии") as null|anything in phobia_choices
+				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете - будет случайная.", "Настройка фобии") as null|anything in phobia_choices
 				if(new_choice)
 					if(new_choice == "Случайная")
 						phobia_type = null
@@ -3555,9 +3591,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 // BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
-		// фильтр списка причуд - навигация. Ветка не выходит из проца, поэтому
-		// ShowChoices зовётся ещё раз в хвосте: без флага манекен собирался дважды
-		preview_unchanged = TRUE
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
 		var/temp_quirk_category = href_list["quirk_category"]
 		if(temp_quirk_category == QUIRK_POSITIVE || temp_quirk_category == QUIRK_NEUTRAL || temp_quirk_category == QUIRK_NEGATIVE)
@@ -3591,7 +3624,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			i = text2num(i)
 		i = clamp(i, 1, MAX_HEADSHOTS)
 		set_headshot_link(user, i, features["headshot_links"])
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	else if(href_list["preference"] == "headshot_naked")
@@ -3600,7 +3633,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			i = text2num(i)
 		i = clamp(i, 1, MAX_HEADSHOTS_NAKED)
 		set_headshot_link(user, i, features["headshot_naked_links"])
-		ShowChoices(user)
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
 	else if(href_list["preference"] == "open_tattoo_manager")
@@ -3710,26 +3743,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						medical_records = rec
 
 				if("flavor_text")
-					var/msg = input(usr, "Задайте внешнее описание вашего персонажа.", "Описание Bнешности Персонажа", features["flavor_text"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте внешнее описание вашего персонажа.\nПоддерживается форматирование:\n*курсив* _курсив_ !жирный! ^крупный^ |центр| ((мелкий))\n-=RRGGBB цветной текст =-  (например -=ff0000 красный=-)\n# Заголовок, ## Подзаголовок\nЭкранируйте спецсимволы обратным слешем \\* \\! \\_ и т.д.", "Описание Bнешности Персонажа", features["flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE) //Skyrat edit, removed strip_html_simple()
+						features["flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit
 				if("naked_flavor_text")
-					var/msg = input(usr, "Задайте описание вашего персонажа без одежды.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"]) as message|null
+					var/msg = input(usr, "Задайте описание вашего персонажа без одежды.\nПоддерживается форматирование:\n*курсив* !жирный! -=цвет=- и т.д.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["naked_flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE)
+						features["naked_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit end
 				if("silicon_flavor_text")
-					var/msg = input(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!", "Описание Борга", features["silicon_flavor_text"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Описание Борга", features["silicon_flavor_text"]) as message|null
 					if(!isnull(msg))
-						features["silicon_flavor_text"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE) //Skyrat edit, uses strip_html_simple()
+						features["silicon_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				if("custom_species_lore")
-					var/msg = input(usr, "Задайте особую предысторию расы своего персонажа!", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"]) as message|null //Skyrat edit, removed stripped_multiline_input()
+					var/msg = input(usr, "Задайте особую предысторию расы своего персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"]) as message|null
 					if(!isnull(msg))
-						features["custom_species_lore"] = strip_html_simple(msg, MAX_FLAVOR_LEN, TRUE)
+						features["custom_species_lore"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 				// BLUEMOON ADD START - пользовательский эмоут смерти
 				if("custom_deathgasp")
 					var/msg = input(usr, "Задайте эмоцию, которая будет проигрываться при смерти вашего персонажа!", "Сообщение О Смерти", features["custom_deathgasp"]) as message|null
@@ -3763,9 +3796,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						to_chat(user, "<span class='warning'>Вы выбрали беззвучный deathgasp или выбранный вами звук отсутствует!</span>")
 				// BLUEMOON ADD END
 				if("ooc_notes")
-					var/msg = stripped_multiline_input(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.", "ООС-Заметки", html_decode(features["ooc_notes"]), MAX_FLAVOR_LEN, TRUE)
+					var/msg = input(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "ООС-Заметки", features["ooc_notes"]) as message|null
 					if(!isnull(msg))
-						features["ooc_notes"] = msg
+						features["ooc_notes"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
+
+				if("format_help")
+					var/help_text = {"Форматирование описания персонажа:
+
+*текст* или _текст_ — курсив
+!текст! — жирный
+^текст^ — крупный шрифт
+|текст| — по центру
+((текст)) — мелкий шрифт
+# Заголовок, ## Подзаголовок, ### и ####
+- Списки: строка начинается с * (поддерживаются вложенные)
+--- — горизонтальная линия
+-=RRGGBB текст =- — цвет (hex, например -=ff0000 красный=- , -=00ff00 зелёный=-)
+Экранирование: \\* \\! \\_ \\^ \\| \\( \\)
+"}
+					alert(usr, help_text, "Помощь по форматированию")
 
 				if("hide_ckey")
 					hide_ckey = !hide_ckey
@@ -4357,13 +4406,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(new_wings)
 						features["wings"] = new_wings
 
-				if("wings_color")
-					var/new_wing_color = input(user, "Choose your character's wing colour:", "Character Preference","#"+features["wings_color"]) as color|null
+				if("wings_color", "insect_fluff_color", "insect_markings_color")
+					var/color_feature = href_list["preference"]
+					var/new_wing_color = input(user, "Выберите цвет части тела:", "Настройки персонажа", "#" + features[color_feature]) as color|null
 					if(new_wing_color)
-						if (new_wing_color == "#000000" && features["wings_color"] != "#FFFFFF") //SPLURT EDIT
-							features["wings_color"] = "#FFFFFF"
+						if(new_wing_color == "#000000" && features[color_feature] != "FFFFFF")
+							features[color_feature] = "FFFFFF"
 						else
-							features["wings_color"] = sanitize_hexcolor(new_wing_color, 6)
+							features[color_feature] = sanitize_hexcolor(new_wing_color, 6)
 
 				if("frills")
 					var/new_frills
@@ -5927,8 +5977,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					preview_pref = href_list["tab"]
 
 				if("character_tab")
-					// чистая навигация: меняется только то, какие поля рисуются
-					preview_unchanged = TRUE
 					if(href_list["tab"])
 						var/new_tab = text2num(href_list["tab"])
 						if(new_tab == QUIRKS_CHAR_TAB && !(findtext(charcreation_theme, "modern") && CONFIG_GET(flag/roundstart_traits)))
@@ -5936,7 +5984,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						character_settings_tab = new_tab
 
 				if("preferences_tab")
-					preview_unchanged = TRUE
 					if(href_list["tab"])
 						preferences_tab = text2num(href_list["tab"])
 
@@ -5953,6 +6000,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/savefile/S = save_character(export = TRUE)
 					if(istype(S, /savefile))
 						user.client.Export(S)
+						user.client.local_storage_name_read = FALSE
 						tgui_alert_async(user, "Successfully saved character slot")
 					else
 						tgui_alert_async(user, "Failed saving character slot")
@@ -5973,6 +6021,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("delete_local_copy")
 					user.client.clear_export()
+					user.client.local_storage_name_read = FALSE
 					tgui_alert_async(user, "Local save data erased.")
 
 				if("give_slot")
@@ -6079,12 +6128,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(href_list["select_subcategory"])
 			gear_subcategory = url_decode(href_list["select_subcategory"])
 		sanitize_loadout_navigation(src)
-		if(href_list["select_category"] || href_list["select_subcategory"])
-			// листание категорий лодаута: надетое не поменялось, манекен тот же
-			preview_unchanged = TRUE
 		if(href_list["toggle_gear_path"])
-			// а вот это уже надевает или снимает вещь - превью обязано пересобраться
-			preview_unchanged = FALSE
 			var/name = url_decode(href_list["toggle_gear_path"])
 			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
 			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
@@ -6311,7 +6355,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if(!navigation_only)
 		save_preferences(silent = TRUE)
-	ShowChoices(user, !preview_unchanged || !navigation_only)
+	ShowChoices(user, rebuild_preview = !preview_unchanged)
 	return TRUE
 
 /datum/preferences/proc/get_sound_volume(sound_id)
@@ -6430,7 +6474,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if((parent?.can_have_part("legs") || pref_species.mutant_bodyparts["legs"])  && (character.dna.features["legs"] == "Digitigrade" || character.dna.features["legs"] == "Avian"))
 		pref_species.species_traits |= DIGITIGRADE
-	else if(character.dna.species.mutant_bodyparts["limbs_id"] == "sergal")
+	else if(character.dna.species.mutant_bodyparts["limbs_id"] in list("sergal", "sergal2"))
 		pref_species.species_traits |= DIGITIGRADE
 	else
 		pref_species.species_traits -= DIGITIGRADE
@@ -6802,7 +6846,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/static/video_regex = regex("\\.(webm|mp4)(\[?#]|$)", "i")
 	if(findtext(link, video_regex))
 		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
-	return "<img src='[link]' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
+	return "<img src='[link]' referrerpolicy='no-referrer' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
 
 /datum/preferences/proc/mob_size_name_to_num(body_weight_name)
 	switch(body_weight_name)

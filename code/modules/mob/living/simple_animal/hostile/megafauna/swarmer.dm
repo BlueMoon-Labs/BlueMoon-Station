@@ -148,6 +148,10 @@ GLOBAL_LIST_INIT(AISwarmerCapsByType, list(/mob/living/simple_animal/hostile/swa
 				throw_at(get_edge_target_turf(src, get_dir(src, newloc)), 7 , 3, src, FALSE) //my planet needs me
 				return FALSE
 
+		// Swarmers pass through each other, so without this the whole pack piles onto one tile next to the victim.
+		if(isliving(target) && get_dist(newloc, target) <= 1 && (locate(/mob/living/simple_animal/hostile/swarmer) in newloc))
+			return FALSE
+
 		return ..()
 
 

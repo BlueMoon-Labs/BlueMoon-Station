@@ -23,7 +23,7 @@
 	var/clits = 1
 	var/clit_diam = 0.25
 	var/clit_len = 0.25
-	var/list/vag_types = list("tentacle", "dentata", "hairy", "gaping", "spade", "furred", "cloaca", "equine", "cervine", "sergal", "feline", "hemi", "puffy", "cloaca_teshari")
+	var/list/vag_types = list("tentacle", "dentata", "hairy", "gaping", "spade", "furred", "cloaca", "equine", "cervine", "sergal", "feline", "hemi", "puffy", "cloaca_teshari", "chitin", "chitin slit", "mandibled (chitin)", "ovipore (chitin)")
 
 /obj/item/organ/genital/vagina/update_appearance()
 	. = ..()
@@ -62,6 +62,14 @@
 			details = "Она имеет крайне пушистый и аккуратно ухоженный мех вокруг половых губок, которые "
 		if("cloaca_teshari")
 			details = "Это узкое, миниатюрное горизонтальное отверстие с крошечными внешними губами, что "
+		if("chitin")
+			details = "Её обрамляют гладкие хитиновые пластинки, а губы между ними "
+		if("chitin slit")
+			details = "Это узкая щель между сомкнутыми хитиновыми пластинами, края которой "
+		if("mandibled (chitin)")
+			details = "По бокам её сторожат маленькие подвижные жвалы, а губы между ними "
+		if("ovipore (chitin)")
+			details = "Это округлое отверстие в кольце хитиновых пластин, чьи мягкие края "
 		else
 			details = "Она имеет экзотическую форму, и её губы "
 	if(aroused_state)

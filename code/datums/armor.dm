@@ -50,7 +50,11 @@
 /proc/getArmor(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
 	. = locate(ARMORID)
 	if (!.)
-		. = new /datum/armor(melee, bullet, laser, energy, bomb, bio, rad, fire, acid, magic, wound)
+		var/datum/armor/new_armor = new /datum/armor()
+		new_armor = new_armor.generate_new_with_modifiers(list(MELEE = melee, BULLET = bullet, LASER = laser, ENERGY = energy, BOMB = bomb, BIO = bio, RAD = rad, FIRE = fire, ACID = acid, MAGIC = magic, WOUND = wound))
+		new_armor.datum_flags |= DF_USE_TAG
+		new_armor.tag = ARMORID // getArmor() обязан возвращать общий tag-кэшированный датум, а не приватный
+		return new_armor
 
 /// Assosciative list of type -> armor. Used to ensure we always hold a reference to default armor datums
 GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
@@ -69,31 +73,33 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 
 /datum/armor
 	datum_flags = DF_USE_TAG
-	var/melee
-	var/bullet
-	var/laser
-	var/energy
-	var/bomb
-	var/bio
-	var/rad
-	var/fire
-	var/acid
-	var/magic
-	var/wound
+	var/melee = 0
+	var/bullet = 0
+	var/laser = 0
+	var/energy = 0
+	var/bomb = 0
+	var/bio = 0
+	var/rad = 0
+	var/fire = 0
+	var/acid = 0
+	var/magic = 0
+	var/wound = 0
+	// tag = ARMORID
 
-/datum/armor/New(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
-	src.melee = melee
-	src.bullet = bullet
-	src.laser = laser
-	src.energy = energy
-	src.bomb = bomb
-	src.bio = bio
-	src.rad = rad
-	src.fire = fire
-	src.acid = acid
-	src.magic = magic
-	src.wound = wound
-	tag = ARMORID
+//Вы что конченные? Какое зануление параметров при New(). Как тогда создавать готовые датумы? Через жопу?
+// /datum/armor/New(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
+// 	src.melee = melee
+// 	src.bullet = bullet
+// 	src.laser = laser
+// 	src.energy = energy
+// 	src.bomb = bomb
+// 	src.bio = bio
+// 	src.rad = rad
+// 	src.fire = fire
+// 	src.acid = acid
+// 	src.magic = magic
+// 	src.wound = wound
+// 	tag = ARMORID
 
 /datum/armor/proc/modifyRating(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
   return getArmor(src.melee+melee, src.bullet+bullet, src.laser+laser, src.energy+energy, src.bomb+bomb, src.bio+bio, src.rad+rad, src.fire+fire, src.acid+acid, src.magic+magic, src.wound+wound)
@@ -154,6 +160,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 		else
 			stack_trace("Attempt to call generate_new_with_modifiers with illegal modifier '[modifier]'! Ignoring it")
 	new_armor.tag = null // Don't put custom armor into locate() cache
+	new_armor.datum_flags &= ~DF_USE_TAG
 	return new_armor
 
 /// Generate a brand new armor datum with the values given, if a value is not present it carries over
@@ -175,6 +182,7 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 		else
 			new_armor.vars[armor_rating] = vars[armor_rating]
 	new_armor.tag = null // Don't put custom armor into locate() cache
+	new_armor.datum_flags &= ~DF_USE_TAG
 	return new_armor
 
 /// Gets the rating of armor for the specified rating
@@ -183,5 +191,33 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 	if(!(rating in ARMOR_LIST_ALL()))
 		CRASH("Attempted to get a rating '[rating]' that doesnt exist")
 	return vars[rating]
+
+
+//У меня уже жопа горит от этой тупой реализации armor. Я просто взял проки с новоТГ, потом надо будет
+//сделать броню иначе.
+//Реверенс Novastation: code\datums\armor\_atom_armor.dm Novastation
+//                      code\datums\armor\_armor.dm
+
+/atom
+	var/datum/armor/armor_type = /datum/armor/none
+	var/datum/armor/armor
+
+/datum/armor/none
+
+/atom/proc/normal_set_armor(datum/armor/armor)
+	if(src.armor == armor)
+		return
+	if(!(src.armor?.type in GLOB.armor_by_type))
+		qdel(src.armor)
+	src.armor = ispath(armor) ? new_tg_get_armor_by_type(armor) : armor
+
+/proc/new_tg_get_armor_by_type(armor_type)
+	var/armor = locate(replacetext("[armor_type]", "/", "-"))
+	if(armor)
+		return armor
+	if(armor_type == /datum/armor)
+		CRASH("Attempted to get the base armor type, you probably meant to use /datum/armor/none")
+	CRASH("Attempted to get an armor type that did not exist! '[armor_type]'")
+
 
 #undef ARMORID

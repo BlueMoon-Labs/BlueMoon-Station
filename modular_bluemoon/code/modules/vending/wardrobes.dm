@@ -278,6 +278,7 @@
 		/obj/item/clothing/mask/balaclava/breath/redscarf/yellowscarf = 4,
 		/obj/item/radio/headset/headset_cargo = 3,
 		/obj/item/mailmat_deployer = 3,
+		/obj/item/mod/construction/armor/cargo_worker = 3,
 	)
 	premium = list(
 		/obj/item/clothing/head/mailman = 1,
@@ -582,7 +583,7 @@
 	vend_reply = "Спасибо за использование DeusVend!"
 	products = list(
 		/obj/item/choice_beacon/holy = 1,
-		/obj/item/staff/bostaff/chaplain = 1,
+		// /obj/item/staff/bostaff/chaplain = 1,
 		/obj/item/storage/backpack/cultpack = 2,
 		/obj/item/clothing/accessory/pocketprotector/cosmetology = 2,
 		/obj/item/clothing/under/rank/civilian/chaplain = 2,

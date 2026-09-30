@@ -964,7 +964,7 @@
 	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
 		return
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "[initial(icon_state)]_[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()
@@ -1151,3 +1151,15 @@
 		"blue" = list("icon_state" = "caligram_fatigues_blue"),
 		"tan" = list("icon_state" = "caligram_fatigues_tan"),
 	)
+
+/obj/item/clothing/under/donator/bm/skeleton_suit
+	name = "Skeleton suit"
+	desc = "Tight black suit with bone like drawing"
+	icon_state = "skeleton_suit"
+	item_state = "skeleton_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
+	can_adjust = FALSE

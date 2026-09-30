@@ -93,24 +93,27 @@
 
 	stored_research = new_web
 
-/// BLUEMOON ADD: сеть ближайшего РНД-сервера в радиусе max_dist от источника, либо null.
-/proc/find_nearest_rnd_techweb(atom/source, max_dist = RND_SERVER_LINK_RANGE)
+/// BLUEMOON ADD: сеть ближайшего РНД-сервера на том же Z-уровне, что и источник, либо null.
+/proc/find_nearest_rnd_techweb(atom/source)
 	var/turf/source_turf = get_turf(source)
 	if(!source_turf)
 		return null
 	var/obj/machinery/rnd/server/nearest
-	var/best_dist = max_dist
-	for(var/obj/machinery/rnd/server/S in orange(max_dist, source_turf))
-		var/dist = get_dist(source_turf, get_turf(S))
+	var/best_dist = INFINITY
+	for(var/obj/machinery/rnd/server/S as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/rnd/server))
+		var/turf/server_turf = get_turf(S)
+		if(!server_turf || server_turf.z != source_turf.z)
+			continue
+		var/dist = get_dist(source_turf, server_turf)
 		if(dist <= best_dist)
 			best_dist = dist
 			nearest = S
 	return nearest?.stored_research
 
-/// BLUEMOON ADD: авто-подключение устройства к сети: ближайший сервер в радиусе,
+/// BLUEMOON ADD: авто-подключение устройства к сети: сервер на том же Z-уровне,
 /// иначе на станции — глобальная научная сеть (как раньше), вне станции — null (подключается вручную).
-/proc/find_rnd_network_for_object(atom/source, max_dist = RND_SERVER_LINK_RANGE)
-	var/datum/techweb/nearest = find_nearest_rnd_techweb(source, max_dist)
+/proc/find_rnd_network_for_object(atom/source)
+	var/datum/techweb/nearest = find_nearest_rnd_techweb(source)
 	if(nearest)
 		return nearest
 	var/turf/source_turf = get_turf(source)

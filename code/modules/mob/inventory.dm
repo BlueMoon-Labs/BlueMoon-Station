@@ -57,8 +57,8 @@
 //Rights:2, 4, 6, 8...
 /mob/proc/get_empty_held_index_for_side(side = "left", all = FALSE)
 	var/start = 0
-	var/static/list/lefts = list("l" = TRUE,"L" = TRUE,"LEFT" = TRUE,"left" = TRUE)
-	var/static/list/rights = list("r" = TRUE,"R" = TRUE,"RIGHT" = TRUE,"right" = TRUE) //"to remain silent"
+	var/static/list/lefts = list("l" = TRUE,"L" = TRUE,"LEFT" = TRUE,"left" = TRUE, BODY_ZONE_L_ARM = TRUE)
+	var/static/list/rights = list("r" = TRUE,"R" = TRUE,"RIGHT" = TRUE,"right" = TRUE, BODY_ZONE_R_ARM = TRUE) //"to remain silent"
 	if(lefts[side])
 		start = 1
 	else if(rights[side])
@@ -218,6 +218,12 @@
 /mob/proc/put_in_r_hand(obj/item/I)
 	return put_in_hand(I, get_empty_held_index_for_side("r"))
 
+/mob/proc/calculate_emply_hand_slots()
+	var/empty_hand_count
+	for(var/item in held_items)
+		if(!item)
+			empty_hand_count++
+	return empty_hand_count
 
 /mob/proc/put_in_hand_check(obj/item/I)
 	if(incapacitated() && !(I.item_flags&ABSTRACT)) //Cit change - Changes lying to incapacitated so that it's plausible to pick things up while on the ground
@@ -225,7 +231,6 @@
 	if(!istype(I))
 		return FALSE
 	return TRUE
-
 
 //Puts the item into our active hand if possible. returns TRUE on success.
 /mob/proc/put_in_active_hand(obj/item/I, forced = FALSE, ignore_animation = TRUE)

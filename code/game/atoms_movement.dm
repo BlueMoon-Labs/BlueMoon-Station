@@ -245,12 +245,16 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
+	if(hud_memberships)
+		update_hud_z_group(new_z)
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
 ///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
 /atom/movable/proc/onEnteredNullspace(old_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	if(hud_memberships)
+		update_hud_z_group(null)
 	for(var/atom/movable/movable_content as anything in src)
 		movable_content.onEnteredNullspace(old_z)
 

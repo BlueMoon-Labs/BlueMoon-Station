@@ -96,14 +96,19 @@
 /mob/living/carbon/proc/breathe()
 	var/obj/item/organ/lungs = getorganslot(ORGAN_SLOT_LUNGS)
 	if(reagents?.has_reagent(/datum/reagent/toxin/lexorin))
+		breathing_loop.stop()
 		return
 	if(istype(loc, /obj/machinery/atmospherics/components/unary/cryo_cell))
+		breathing_loop.stop()
 		return
 	if(istype(loc, /obj/item/dogborg/sleeper))
+		breathing_loop.stop()
 		return
 	if(ismob(loc))
+		breathing_loop.stop()
 		return
 	if(isbelly(loc))
+		breathing_loop.stop()
 		return
 
 	var/datum/gas_mixture/environment
@@ -111,6 +116,7 @@
 		environment = loc.return_air()
 
 	var/datum/gas_mixture/breath
+	var/is_on_internals = FALSE
 
 	if(!getorganslot(ORGAN_SLOT_BREATHING_TUBE))
 		if(health <= HEALTH_THRESHOLD_FULLCRIT || (pulledby && pulledby.grab_state >= GRAB_KILL) || HAS_TRAIT(src, TRAIT_MAGIC_CHOKE) || (lungs && lungs.organ_flags & ORGAN_FAILING))
@@ -145,11 +151,13 @@
 					if(HAS_TRAIT(src, TRAIT_WATER_BREATHING))
 						failed_last_breath = FALSE
 						clear_alert("not_enough_oxy")
+						breathing_loop.stop()
 						return FALSE
 					var/obj/item/clothing/mouth_cover = get_item_by_slot(ITEM_SLOT_MASK)
 					if(mouth_cover && (mouth_cover.flags_cover & MASKCOVERSMOUTH))
 						failed_last_breath = FALSE
 						clear_alert("not_enough_oxy")
+						breathing_loop.stop()
 						return FALSE
 					breath = null // uh oh where'd the air go
 					check_breath(breath)
@@ -162,6 +170,7 @@
 						qdel(tempr)
 						visible_message("<span class='warning'>[src] chokes on [our_turf.liquids.reagents_to_text()]!</span>", \
 									"<span class='userdanger'>You're choking on [our_turf.liquids.reagents_to_text()]!</span>")
+					breathing_loop.stop()
 					return FALSE
 
 				var/breath_ratio = 0
@@ -170,13 +179,22 @@
 
 				breath = loc.remove_air_ratio(breath_ratio)
 		else //Breathe from loc as obj again
+			is_on_internals = TRUE
 			if(istype(loc, /obj/))
 				var/obj/loc_as_obj = loc
 				loc_as_obj.handle_internal_lifeform(src,0)
 
 	if(breath)
 		breath.set_volume(BREATH_VOLUME)
-	check_breath(breath)
+	var/successful_breath = check_breath(breath)
+	if(successful_breath && is_on_internals)
+		// Дышим из баллона и вдох удался - включаем/поддерживаем звук дыхания.
+		if(client?.prefs?.toggles & SOUND_BREATHING && !HAS_TRAIT(src, TRAIT_DEAF))
+			breathing_loop.start()
+		else
+			breathing_loop.stop()
+	else
+		breathing_loop.stop()
 
 	// Always return breath to environment and qdel to prevent gas mixture leak - each breath creates a new mixture via remove_air_ratio
 	if(breath)
@@ -609,24 +627,27 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 			src = null
 			spawn(0)
 				if(C)
-					temp = amplitude * sin(saved_dizz * world.time)
+					temp = round(amplitude * sin(saved_dizz * world.time), 1)
 					pixel_x_diff += temp
 					C.pixel_x += temp
-					temp = amplitude * cos(saved_dizz * world.time)
+					temp = round(amplitude * cos(saved_dizz * world.time), 1)
 					pixel_y_diff += temp
 					C.pixel_y += temp
 					sleep(3)
 					if(C)
-						temp = amplitude * sin(saved_dizz * world.time)
+						temp = round(amplitude * sin(saved_dizz * world.time), 1)
 						pixel_x_diff += temp
 						C.pixel_x += temp
-						temp = amplitude * cos(saved_dizz * world.time)
+						temp = round(amplitude * cos(saved_dizz * world.time), 1)
 						pixel_y_diff += temp
 						C.pixel_y += temp
 					sleep(3)
 					if(C)
 						C.pixel_x -= pixel_x_diff
 						C.pixel_y -= pixel_y_diff
+						var/mob/living/carbon/dizzy_mob = oldsrc
+						if(!QDELETED(dizzy_mob) && !dizzy_mob.dizziness && C.mob == dizzy_mob)
+							dizzy_mob.reset_client_pixel_offset()
 			src = oldsrc
 		dizziness = max(dizziness - restingpwr, 0)
 

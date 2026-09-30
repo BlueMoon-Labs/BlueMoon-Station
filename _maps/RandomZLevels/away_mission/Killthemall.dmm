@@ -701,6 +701,17 @@
 	icon_state = "black"
 	},
 /area/awaymission/Killthemall/start)
+"me" = (
+/obj/structure/flora/ash/tall_shroom,
+/mob/living/simple_animal/hostile/asteroid/hivelord/legion{
+	inertia_move_delay = 0;
+	stop_automated_movement = 1;
+	stop_automated_movement_when_pulled = 1
+	},
+/turf/open/floor/plating/asteroid/basalt{
+	initial_gas_mix = "o2=19;n2=32;TEMP=293.15"
+	},
+/area/awaymission/Killthemall/Level)
 "mk" = (
 /turf/closed/wall/mineral/titanium,
 /area/awaymission/Killthemall/Level)
@@ -1841,6 +1852,14 @@
 "DJ" = (
 /obj/structure/barricade/wooden/snowed,
 /turf/open/floor/mineral/plastitanium/red,
+/area/awaymission/Killthemall/Level)
+"DQ" = (
+/mob/living/simple_animal/hostile/asteroid/lobstrosity/lava{
+	inertia_move_delay = 0;
+	stop_automated_movement = 1;
+	stop_automated_movement_when_pulled = 1
+	},
+/turf/open/lava,
 /area/awaymission/Killthemall/Level)
 "DR" = (
 /obj/structure/anvil,
@@ -17040,7 +17059,7 @@ Zr
 Zr
 Zr
 qF
-qF
+DQ
 kH
 kH
 xO
@@ -18313,10 +18332,10 @@ ab
 xO
 kH
 kH
-Qc
 Zr
 Zr
-EQ
+Zr
+Zr
 Zr
 Zr
 Zr
@@ -19095,7 +19114,7 @@ ue
 Zr
 rp
 Zr
-fq
+Zr
 ON
 kH
 kH
@@ -19607,7 +19626,7 @@ Zr
 Zr
 Zr
 Zr
-Qc
+Zr
 Zr
 Zr
 ON
@@ -19867,7 +19886,7 @@ Zr
 Zr
 Zr
 Zr
-Lv
+me
 kH
 kH
 xO
@@ -20635,7 +20654,7 @@ Lv
 ON
 ON
 Zr
-Qc
+Zr
 Zr
 ON
 Zr
@@ -21150,7 +21169,7 @@ Zr
 Zr
 Zr
 Zr
-EQ
+Zr
 Zr
 Zr
 kH
@@ -21403,7 +21422,7 @@ ON
 ON
 Zr
 Zr
-fq
+Zr
 Zr
 Vl
 Zr
@@ -21912,7 +21931,7 @@ xO
 kH
 kH
 Zr
-Zr
+Qc
 Zr
 Zr
 Zr
@@ -21923,7 +21942,7 @@ Zr
 Zr
 Zr
 Zr
-Zr
+EQ
 kH
 kH
 xO

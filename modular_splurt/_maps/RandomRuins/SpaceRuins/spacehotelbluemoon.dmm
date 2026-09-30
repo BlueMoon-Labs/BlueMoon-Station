@@ -294,9 +294,7 @@
 /obj/structure/rack,
 /obj/effect/turf_decal/bot/yellow,
 /obj/item/melee/classic_baton/telescopic,
-/obj/machinery/door/window/brigdoor/security/cell/westleft{
-	req_access = list("205")
-	},
+/obj/item/melee/classic_baton/telescopic,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "bx" = (
@@ -405,6 +403,8 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
+/obj/item/gun/ballistic/automatic/mk60/vector,
+/obj/item/gun/ballistic/automatic/mk60/vector,
 /obj/item/gun/ballistic/automatic/mk60/vector,
 /obj/item/gun/ballistic/automatic/mk60/vector,
 /turf/open/floor/plasteel/textured/large,
@@ -2825,6 +2825,8 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "oU" = (
@@ -4983,6 +4985,8 @@
 	dir = 1;
 	layer = 2.9
 	},
+/obj/item/clothing/gloves/tackler/combat,
+/obj/item/clothing/gloves/tackler/combat,
 /obj/item/clothing/gloves/tackler/combat,
 /obj/item/clothing/gloves/tackler/combat,
 /turf/open/floor/plasteel/textured/large,

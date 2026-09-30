@@ -2,6 +2,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 
+
 /obj/item/clothing/suit/hooded/bm/donator
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
@@ -11,6 +12,18 @@
 /obj/item/clothing/head/hooded/bm/donator
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
+
+/obj/item/clothing/suit/hooded/wintercoat/bm/donator
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+
+/obj/item/clothing/head/hooded/winterhood/bm/donator
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+
 
 /obj/item/clothing/suit/donator/bm/krieg_shinel
 	name = "Шенель Крига"
@@ -288,6 +301,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "renegat"
 	item_state = "renegat"
+	can_flashlight = TRUE
 
 /obj/item/clothing/suit/armor/armor_shield
 	name = "Heavy Peacekeeper Armor Shield"
@@ -307,6 +321,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "shield"
 	item_state = "shield"
+	can_flashlight = TRUE
 
 /obj/item/clothing/head/helmet/sec/adler_skull
 	name = "Tactical Skull Helmet"
@@ -400,7 +415,7 @@
 	tail_state = "hahun_exosuit"
 	icon_state = "hahun_exosuit"
 	item_state = "hahun_exosuit"
-	flags_inv = HIDESHOES|HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDESHOES|HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	hoodtype = /obj/item/clothing/head/hooded/winterhood/hahun_exohood
 
 /obj/item/clothing/head/hooded/winterhood/hahun_exohood
@@ -555,6 +570,8 @@
 
 //-------cnaperdodo_items_END-------
 
+///////////////////////////////////////////////////
+
 /obj/item/clothing/suit/donator/bm/long_fancy_kimono
 	name = "Long Fancy Kimono"
 	desc = "A traditional piece of clothing from Japan. Special edition."
@@ -562,7 +579,7 @@
 	icon_state = "long_fancy_kimono"
 	item_state = "long_fancy_kimono"
 	body_parts_covered = CHEST|GROIN|ARMS
-	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC
 	always_reskinnable = TRUE
 	unique_reskin = list(
@@ -576,6 +593,46 @@
 			RESKIN_ICON_STATE = "long_fancy_kimono_N"
 		)
 	)
+
+#define NO_BOOTS_SKIN "No Boots"
+
+/obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
+	name = "Long Winter Coat"
+	desc = "A heavy fur jacket with metal-coated aerogel inserts that provide excellent heat retention."
+	icon_state = "long_wintercoat"
+	taur_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/suit_taur.dmi'
+	lefthand_file = /obj/item/clothing/suit/hooded/wintercoat::lefthand_file
+	righthand_file = /obj/item/clothing/suit/hooded/wintercoat::righthand_file
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|HIDETAIL
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON|STYLE_PAW_TAURIC|STYLE_SNEK_TAURIC
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
+	cold_protection = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
+	heat_protection = CHEST|GROIN|LEGS|ARMS|HANDS|FEET
+	hoodtype = /obj/item/clothing/head/hooded/winterhood/bm/donator/long_wintercoat
+	no_t = TRUE
+	unique_reskin = list(
+		NO_BOOTS_SKIN = list(
+			RESKIN_ICON_STATE = "long_wintercoat_noboots"
+		),
+		"With Boots" = list(
+			RESKIN_ICON_STATE = "long_wintercoat"
+		),
+	)
+	always_reskinnable = TRUE
+
+/obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat/reskin_obj(mob/user)
+	. = ..()
+	if(current_skin == NO_BOOTS_SKIN)
+		DISABLE_BITFIELD(flags_inv, HIDETAUR|HIDETAIL)
+	else
+		ENABLE_BITFIELD(flags_inv, HIDETAUR|HIDETAIL)
+
+#undef NO_BOOTS_SKIN
+
+/obj/item/clothing/head/hooded/winterhood/bm/donator/long_wintercoat
+	icon_state = "long_winterhood"
+
+///////////////////////////////////////////////////
 
 /obj/item/clothing/suit/donator/bm/ranger_coat
 	name = "Ranger Coat"
@@ -864,6 +921,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "wypmc_helmet"
 	item_state = "wypmc_helmet"
+	can_flashlight = TRUE
 
 /obj/item/modkit/wypmchelmet
 	name = "Arctic PMC helmet Kit"
@@ -944,12 +1002,6 @@
 		)
 	)
 
-/obj/item/modkit/kumiko_ncr_riot
-	name = "NCR ranger riot kit"
-	desc = "A modkit for making a riot armor into a ncr ranger duster."
-	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
-	fromitem = list(/obj/item/clothing/suit/armor/riot)
-
 /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
 	name = "NCR ranger elite desert duster"
 	desc = "An upgraded version of the standard riot gear, featuring reinforced plating against melee."
@@ -958,12 +1010,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/modkit/kumiko_ncr_bulletproof
-	name = "NCR ranger bulletproof kit"
-	desc = "A modkit for making a bulletproof armor into a ncr ranger duster."
-	product = /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
-	fromitem = list(/obj/item/clothing/suit/armor/bulletproof)
 
 /obj/item/clothing/suit/armor/bulletproof/kumiko_ncr_custom
 	name = "NCR custom duster"
@@ -974,13 +1020,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
-/obj/item/modkit/kumiko_ncr_plate_carrier
-	name = "NCR plate carrier kit"
-	desc = "A modkit for making a plate carrier into a ncr duster."
-	product = /obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
-	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
-
-/obj/item/clothing/suit/armor/hos/platecarrier/kumiko_ncr_ranger
+/obj/item/clothing/suit/armor/vest/alt/kumiko_ncr_ranger
 	name = "NCR ranger duster"
 	desc = "Highly advanced armor used by the NCR Veteran Rangers."
 	icon_state = "reclaimed_desert_ranger"
@@ -988,54 +1028,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet
-	name = "NCR ranger helmet"
-	desc = "Matching helmet for the NCR Ranger duster."
-	icon_state = "ranger"
-	item_state = "ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	unique_reskin = list(
-		"Ranger" = list(
-			"icon_state" = "ranger",
-			"item_state" = "ranger",
-			"name" = "NCR ranger helmet"
-		),
-		"Desert" = list(
-			"icon_state" = "oldranger",
-			"item_state" = "oldranger",
-			"name" = "NCR desert ranger helmet"
-		)
-	)
-
-/obj/item/modkit/kumiko_ncr_riot_helmet
-	name = "NCR riot helmet kit"
-	desc = "A modkit for making a riot helmet into ncr riot helmet."
-	product = /obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
-	fromitem = list(/obj/item/clothing/head/helmet/riot)
-
-/obj/item/clothing/head/helmet/riot/kumiko_ncr_riot_helmet
-	name = "NCR elite desert ranger helmet"
-	desc = "NCR ranger riot helmet"
-	icon_state = "desert_ranger"
-	item_state = "desert_ranger"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-
-/obj/item/modkit/kumiko_ncr_bulletproof_helmet
-	name = "NCR plate bulletproof helmet kit"
-	desc = "A modkit for making a bulletproof helmet into ncr bulletproof helmet."
-	product = /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
-	fromitem = list(/obj/item/clothing/head/helmet/alt)
-
-/obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
-	name = "Custom NCR ranger helmet"
-	desc = "NCR ranger bulletproof helmet"
-	icon_state = "rangercustom"
-	item_state = "rangercustom"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
 /obj/item/modkit/light_plate_carrier
 	name = "Light plate carrier Armor Kit"

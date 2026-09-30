@@ -6,7 +6,7 @@
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
 "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
-"blatoff", "regiska", "lander231" \
+"blatoff", "regiska", "lander231", "exkessa" \
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
@@ -343,12 +343,12 @@
 	icon_state = "multiphasecarabin"
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler/karabiner_m13, /obj/item/ammo_casing/energy/laser/hos/karabiner_m13, /obj/item/ammo_casing/energy/ion/hos/karabiner_m13, /obj/item/ammo_casing/energy/electrode/hos/karabiner_m13)
 	ammo_x_offset = 0
-	pickup_sound = "modular_bluemoon/flaffs/sound/weapon/Karabiner-M13/GrabCarabine.ogg"
+	pickup_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/GrabCarabine.ogg'
 	flight_x_offset = 25
 	flight_y_offset = 5
 
 /obj/item/ammo_casing/energy/disabler/karabiner_m13
-	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/DisablerOni.ogg'
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/DisablerOni.ogg'
 
 /obj/item/ammo_casing/energy/laser/hos/karabiner_m13
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/LaserOni.ogg'
@@ -357,7 +357,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/IonOni.ogg'
 
 /obj/item/ammo_casing/energy/electrode/hos/karabiner_m13
-	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Karabiner-M13/TaserOni.ogg'
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/H-Wal-2572/TaserOni.ogg'
 
 /obj/item/modkit/karabiner_kit
 	name = "Karabiner-M13 Kit"

@@ -1,3 +1,6 @@
+GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
+//увы в дефайны МОДов этот список не пихнуть, потому что дефайны слотов компилятся позже
+
 /obj/item/mod
 	name = "Base MOD"
 	desc = "Вы не должны это видеть, кричите на кодера!"
@@ -41,7 +44,7 @@
 
 	var/skin = "standard"
 	var/ui_theme = "ntos"
-
+	var/have_emp_special = FALSE
 	var/seconds_electrified = MACHINE_NOT_ELECTRIFIED
 	var/interface_break = FALSE
 	var/complexity_max = DEFAULT_MAX_COMPLEXITY
@@ -59,6 +62,7 @@
 		MOD_PART_GLOVES = /obj/item/clothing/mod_part/gloves,
 		MOD_PART_FEET = /obj/item/clothing/mod_part/shoes,
 		MOD_PART_CELL = null,
+		MOD_PART_SELF = null,
 	)
 
 	var/list/initial_modules = list()
@@ -72,122 +76,6 @@
 	var/current_armor_module_installed = 0
 	var/max_armor_module_count = 2
 	var/allowed_genital_overlays = FALSE
-
-/obj/item/mod/control/proc/get_mod_part_by_index(index)
-	return mod_parts[index]
-
-/// TRUE, если предмет лежит в одном из слотов mod_parts.
-/// Штатный поиск по списку тут не годится: у alist он идёт по КЛЮЧАМ, а ключи -
-/// числа, поэтому поиск части всегда возвращал ноль.
-/obj/item/mod/control/proc/is_mod_part(obj/item/part)
-	if(isnull(part))
-		return FALSE
-	for(var/index in mod_parts)
-		if(mod_parts[index] == part)
-			return TRUE
-	return FALSE
-
-/// Убирает часть из mod_parts, находя её ключ. Возвращает TRUE, если часть нашлась.
-/// Писать `mod_parts -= part` нельзя: alist вычитает по ключу, а не по значению,
-/// и костюм молча остаётся со ссылкой на удалённую часть.
-/obj/item/mod/control/proc/clear_mod_part(obj/item/part)
-	if(isnull(part))
-		return FALSE
-	var/found_index
-	for(var/index in mod_parts)
-		if(mod_parts[index] == part)
-			found_index = index
-			break
-	if(isnull(found_index))
-		return FALSE
-	mod_parts -= found_index
-	return TRUE
-
-/// Возвращает список частей костюма (значения mod_parts), пропуская пустые слоты.
-/// Перебирать alist напрямую нельзя: `for(var/obj/item/part in mod_parts)` выдаёт
-/// КЛЮЧИ, и фильтр по типу отбрасывает их все - тело такого цикла не исполняется.
-/obj/item/mod/control/proc/get_mod_parts(include_cell = TRUE)
-	var/list/parts = list()
-	for(var/index in mod_parts)
-		if(!include_cell && index == MOD_PART_CELL)
-			continue
-		var/obj/item/part = mod_parts[index]
-		if(isnull(part))
-			continue
-		parts += part
-	return parts
-
-/obj/item/mod/control/proc/get_helmet()
-	return mod_parts[MOD_PART_HEAD]
-
-/obj/item/mod/control/proc/get_chestplate()
-	return mod_parts[MOD_PART_CHEST]
-
-/obj/item/mod/control/proc/get_gauntlets()
-	return mod_parts[MOD_PART_GLOVES]
-
-/obj/item/mod/control/proc/get_boots()
-	return mod_parts[MOD_PART_FEET]
-
-/obj/item/mod/control/get_cell()
-	return mod_parts[MOD_PART_CELL]
-
-/obj/item/mod/control/proc/can_activate()
-	if(theme?.can_activate_without_deploy_all_parts)
-		return TRUE
-	return all_parts_deployed() //результат прока.
-
-//Проверяет, надет ли этот элемент одежды, а так же включён ли МОД
-/obj/item/mod/control/proc/check_module_ready_by_mod_index(mod_index)
-	var/obj/item/clothing/mod_part/part = get_mod_part_by_index(mod_index)
-	return part?.check_module_ready()
-
-/obj/item/mod/control/proc/all_parts_deployed()
-	if(!wearer)
-		return FALSE
-
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		if(part.loc != wearer)
-			return FALSE //Нафиг тут ретурн стоит... Потом поправлю.
-
-	return TRUE
-
-/obj/item/mod/control/proc/one_of_parts_deployed()
-	if(!wearer)
-		return FALSE
-
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		if(part.loc == wearer)
-			return TRUE
-
-	return FALSE
-
-/obj/item/mod/control/proc/is_malfunctioning()
-	return CHECK_BITFIELD(status_flags, MOD_MALFUNCTION) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/is_active()
-	return CHECK_BITFIELD(status_flags, MOD_ACTIVE) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/is_activating()
-	return CHECK_BITFIELD(status_flags, MOD_ACTIVATING) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/is_open()
-	return CHECK_BITFIELD(status_flags, MOD_OPEN) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/is_welded()
-	return CHECK_BITFIELD(status_flags, MOD_WELDED) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/is_dna_locked()
-	return CHECK_BITFIELD(status_flags, MOD_DNA_LOCKED) ? TRUE : FALSE
-
-/obj/item/mod/control/proc/toggle_state(flag)
-	TOGGLE_BITFIELD(status_flags, flag)
 
 /obj/item/mod/control/Initialize(mapload, new_theme, new_skin, list/parts)
 	. = ..()
@@ -205,6 +93,7 @@
 		var/obj/item/clothing/mod_part/part = new part_type
 		mod_parts[index] = part
 		part.mod = src
+	mod_parts[MOD_PART_SELF] = src
 	theme.setup_theme(src, new_skin)
 	update_flags()
 	update_speed()
@@ -213,33 +102,20 @@
 		install(module)
 	RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
+	mod_parts[MOD_PART_SELF] = src
 
 /obj/item/mod/control/Destroy()
 	if(is_active())
 		STOP_PROCESSING(SSobj, src)
-	//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
-	//forceMove'ом мимо dropped: костюм держал тело и две подписки на нём до конца смены
 	if(wearer)
-		// Хардлайт-оверлеи лежат в layers_for_apply_effect носителя вместе с нашим
-		// hardlight_effect (датум плюс его /icon): без снятия тело держало их до конца смены.
 		wearer.clear_bodypart_overlays()
 		unset_wearer()
 	QDEL_NULL(hardlight_effect)
-	// mod_parts это alist, и вычитание из него идёт по КЛЮЧУ, а не по значению.
-	// Прежний `mod_parts -= deleting_atom` получал на вход саму часть и потому не
-	// удалял ничего: костюм продолжал держать qdel-нутые части, те не собирались
-	// GC и уходили в харддел. Батарея в харддел не попадала только потому, что её
-	// чистил QDEL_NULL(MOD_CELL) - макрос разворачивается в lvalue и зануляет слот.
-	// Обход по копии: удаление ключа правит тот же alist.
 	for(var/index in mod_parts.Copy())
 		var/obj/item/part = mod_parts[index]
 		mod_parts -= index
 		if(QDELETED(part))
 			continue
-		// part.mod НЕ зануляем до qdel: цепочка Destroy части читает mod.wearer,
-		// а от повторного удаления костюма её страхует QDELETED(mod) в
-		// /obj/item/clothing/mod_part/Destroy - qdel выставляет gc_destroyed до
-		// вызова Destroy, так что для части костюм уже помечен уничтожаемым.
 		qdel(part)
 	for(var/obj/item/mod/module/module as anything in modules.Copy())
 		module.mod = null
@@ -268,15 +144,15 @@
 	cell.charge = max(0, cell.charge - (cell_drain + malfunctioning_charge_drain)*delta_time)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
-		if(is_malfunctioning() && module.active && DT_PROB(5, delta_time))
+		if(is_malfunctioning() && module.active && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time))
 			module.on_deactivation()
 		module.on_process(delta_time)
-	if(is_malfunctioning() && DT_PROB(5, delta_time)) //Случайное отключение/включение при ЕМП
+	if(is_malfunctioning() && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time)) //Случайное отключение/включение при ЕМП
 		toggle_activate()
 
 /obj/item/mod/control/equipped(mob/user, slot)
 	..()
-	if(slot == ITEM_SLOT_BACK || slot == ITEM_SLOT_BELT)
+	if(slot == slot_flags)
 		set_wearer(user)
 	else if(wearer)
 		unset_wearer()
@@ -288,10 +164,6 @@
 
 /obj/item/mod/control/dropped(mob/user)
 	. = ..()
-	// Части убираются ДО unset_wearer(): on_dropped первым делом проверяет mod.wearer и
-	// молча выходит без него, а conceal() и remove_hardlight() работают через wearer.
-	// С обратным порядком цикл не делал ничего, и снятый силой костюм (gib, крио,
-	// принудительный дроп) оставлял шлем и сапоги на теле с TRAIT_NODROP навсегда.
 	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		part.on_dropped(user, part, TRUE, drop_location())
 	if(wearer)
@@ -321,12 +193,12 @@
 	if(is_active())
 		balloon_alert(wearer, "Отключите МОД!")
 		return playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		if(part.loc != null)
-			balloon_alert(wearer, "выдвиньте элементы МОДа!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
-			return
+
+	if(one_of_parts_deployed())
+		balloon_alert(wearer, "выдвиньте элементы МОДа!")
+		playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
+		return
+
 	if(!wearer.incapacitated())
 		var/atom/movable/screen/inventory/hand/ui_hand = over_object
 		if(wearer.putItemFromInventoryInHandIfPossible(src, ui_hand.held_index))
@@ -352,7 +224,7 @@
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()
 		return
-	if(!one_of_parts_deployed() || GetComponent(/datum/component/storage))
+	if(!is_active() || GetComponent(/datum/component/storage))
 		return ..()
 
 /obj/item/mod/control/AltClick(mob/user)
@@ -421,66 +293,67 @@
 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
-//TODO: Вынести каждый кейс в отдельный proc. Эта функция становится трудночитаемой.
+/obj/item/mod/control/welder_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(is_open() || !tool.tool_start_check(user, amount=5))
+		return
+
+	if(tool.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
+		balloon_alert(user, "Успешно")
+		toggle_state(MOD_WELDED)
+		return
+
+/obj/item/mod/control/wirecutter_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(!is_open())
+		return
+	wires.interact(user)
+
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(istype(attacking_item, /obj/item/weldingtool) && !is_open())
-		if(!attacking_item.tool_start_check(user, amount=5))
-			return
-		if(attacking_item.use_tool(src, user, MOD_WELD_TIME, volume=100, amount=MOD_WELD_FUEL_COST))
-			balloon_alert(user, "Успешно")
-			toggle_state(MOD_WELDED)
-			return
+	// if(!is_open() && !attacking_item.tool_behaviour)
+	// 	balloon_alert(user, "Откройте панель!")
+	// 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+	// 	return FALSE
 	if(istype(attacking_item, /obj/item/paicard))
-		if(!is_open()) //mod must be open
-			balloon_alert(user, "панель костюма должна быть открыта!")
-			return FALSE
-		if(can_install_pai)
-			insert_pai(user, attacking_item)
-			return TRUE
+		return handle_paicard_insertion(attacking_item, user)
+
 	if(istype(attacking_item, /obj/item/slimepotion))
-		var/obj/item/slimepotion/potion = attacking_item
-		for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
-			potion.afterattack(piece, user)
-		return TRUE
+		return handle_slimepotion_effect(attacking_item, user)
+
 	if(istype(attacking_item, /obj/item/mod/module))
-		if(!is_open())
-			balloon_alert(user, "сначала откройте панель!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
-		install(attacking_item, user)
-		return TRUE
+		return handle_module_inserting(attacking_item, user)
+
 	else if(istype(attacking_item, /obj/item/stock_parts/cell))
-		if(!is_open())
-			balloon_alert(user, "сначала откройте панель!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
-		if(cell)
-			if(!do_after(user, 1 SECONDS, target = src))
-				balloon_alert(user, "прервано!")
-				return FALSE
-			playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
-			cell.forceMove(drop_location())
-			user.put_in_hands(cell)
-		attacking_item.moveToNullspace()
-		mod_parts[MOD_PART_CELL] = attacking_item
-		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
-		update_cell_alert()
-		return TRUE
-	else if(is_wire_tool(attacking_item) && is_open())
-		wires.interact(user)
-		return TRUE
-	else if(is_open() && attacking_item.GetID())
-		update_access(user, attacking_item)
-		return TRUE
+		return handle_attack_cell(attacking_item, cell, user)
+
+	else if(attacking_item.GetID())
+		handle_change_access(attacking_item, user)
 	return ..()
+
+/obj/item/mod/control/proc/disable_emp_status()
+	if(!is_malfunctioning() || QDELETED(src))
+		return
+	DISABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	interface_break = FALSE
+	if(wearer)
+		balloon_alert(wearer, "Системы вернулись в норму")
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
 	to_chat(wearer, span_notice("Обнаружен [severity > 1 ? "слабый" : "сильный"] электромагнитный импульс!"))
 	if(!is_active() || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
+	//Так как модули находятся в null спейсе, emp_act до них не доходит. Приходится вручную перебирать
+	for(var/obj/item/mod/module/emp_target as anything in modules)
+		emp_target.emp_act(severity)
+	ENABLE_BITFIELD(status_flags, MOD_MALFUNCTION)
+	addtimer(CALLBACK(src, PROC_REF(disable_emp_status)), 5 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 	selected_module = null
+	if(have_emp_special) //некоторые особые модули дают высокую уязвимость к ЕМП носителю.
+		emp_special(severity) //если есть ЕМП защита, то до этого прока даже не доходит.
+
+/obj/item/mod/control/proc/emp_special(severity)
 	wearer.apply_damage(severity*0.2, BURN, spread_damage=TRUE)
 	to_chat(wearer, span_danger("Вы ощущаете как [src] нагревается из-за ЭМИ и обжигает вас!"))
 	if (wearer.stat < UNCONSCIOUS && prob(10))
@@ -488,7 +361,7 @@
 
 /obj/item/mod/control/on_outfit_equip(mob/living/carbon/human/outfit_wearer, visuals_only, item_slot)
 	if(visuals_only)
-		set_wearer(outfit_wearer) //we need to set wearer manually since it doesnt call equipped
+		set_wearer(outfit_wearer)
 	quick_activation()
 
 /obj/item/mod/control/proc/check_can_item_can_unlock(obj/item/target_item)
@@ -510,17 +383,12 @@
 
 	if(!toggle_activate(stripper, force_deactivate = TRUE))
 		return
-	// conceal() снимает часть с носителя, поэтому без носителя тут делать нечего:
-	// прежний цикл перебирал ключи alist и не исполнялся ни разу, так что этот путь
-	// раньше просто не работал.
+
 	var/mob/living/carbon/human/stripped_wearer = wearer
 	if(!stripped_wearer)
 		return ..()
 	for(var/obj/item/part as anything in get_mod_parts(include_cell = FALSE))
 		conceal(null, part)
-	// Снятие оверлеев стоит полного обновления иконок, поэтому один раз на весь
-	// разбор, а не на каждую часть. Носителя держим в локальной копии: conceal()
-	// снимает часть и может по дороге обнулить wearer.
 	stripped_wearer.clear_bodypart_overlays()
 	return ..()
 
@@ -538,8 +406,6 @@
 	wearer = user
 	RegisterSignal(wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	RegisterSignal(wearer, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(on_borg_charge))
-	//крио уносит надетый костюм forceMove'ом мимо dropped(), а коробка с ним живёт
-	//в stored_packages до конца смены - без этой подписки МОД держал тело весь раунд
 	RegisterSignal(wearer, COMSIG_PARENT_QDELETING, PROC_REF(on_wearer_deleted), override = TRUE)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
@@ -552,16 +418,18 @@
 /obj/item/mod/control/proc/unset_wearer()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_unequip()
+
+	for(var/datum/action/cooldown/module_action/action in wearer.actions)
+		action.Remove(wearer)
+		qdel(action)
+
 	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, COMSIG_PARENT_QDELETING))
 	wearer.clear_alert("mod_charge")
 	wearer = null
 
 /obj/item/mod/control/proc/update_flags()
 	var/list/used_skin = theme.skins[skin]
-	for(var/index in mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
 		part.update_flags(used_skin)
 
 /obj/item/mod/control/proc/quick_module(mob/user, right_click = FALSE)
@@ -588,7 +456,8 @@
 	return right_click ? generate_ability_button(selected_module) : selected_module.on_select()
 
 /obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
-	var/datum/action/cooldown/module_action/new_action = new(module = M)
+	// Target обязан быть модулем: на его QDELETING действие удаляет себя само
+	var/datum/action/cooldown/module_action/new_action = new(M, M)
 	new_action.Grant(wearer)
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
@@ -631,42 +500,22 @@
 /obj/item/mod/control/proc/install(module, mob/user)
 	var/obj/item/mod/module/new_module = module
 	for(var/obj/item/mod/module/old_module as anything in modules)
-		if(is_type_in_list(new_module, old_module.incompatible_modules) || is_type_in_list(old_module, new_module.incompatible_modules))
-			if(user)
-				balloon_alert(user, "[new_module] несовместим с [old_module]!")
-				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+		if(!check_modules_in_restricted_list(old_module, new_module, module, user))
 			return
-		if(new_module.module_type == MODULE_ARMOR)
+		if(new_module.is_armor_module())
 			var/obj/item/mod/module/armor/armor_module = module
-			if(!armor_module.armor_type)
-				balloon_alert(user, "Модуль не завершен!")
-				to_chat(user, span_alertwarning("Для завершения модуля брони вам нужно добавить в него материал. Для просмотра рецепта осмотрите сам модуль дважды"))
+			if(!check_compatible_theme_with_armor(user) || !armor_module.check_unfinished_armor_state(user))
 				return
 			var/armor_by_type_num = 0
 			for(var/obj/item/mod/module/armor/also_module in modules)
-				if(armor_module.armor_type != also_module.armor_type)
+				if(armor_module.armor_module_type != also_module.armor_module_type)
 					continue
 				armor_by_type_num += 1
-			if(armor_by_type_num >= max_armor_module_count)
-				balloon_alert(user, "Превышен лимит модулей брони [armor_module.armor_type] типа!")
-				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+			if(!check_max_count_armor(armor_by_type_num, armor_module, user))
 				return
-	if(is_type_in_list(module, theme.module_blacklist))
-		if(user)
-			balloon_alert(user, "[src] не принимает [new_module]!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
+	if(!check_new_complexity(new_module, user))
 		return
-	var/complexity_with_module = complexity
-	complexity_with_module += new_module.complexity
-	if(complexity_with_module > complexity_max)
-		if(user)
-			balloon_alert(user, "[new_module] превышает вместимость [src]!")
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-		return
-	new_module.moveToNullspace()
-	modules += new_module
-	complexity += new_module.complexity
-	new_module.mod = src
+	handle_pre_install(new_module)
 	new_module.on_install()
 	if(wearer)
 		new_module.on_equip()
@@ -674,14 +523,9 @@
 		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
-/// deleting = TRUE приходит из Destroy() самого модуля: тогда on_uninstall() не имеет
-/// права звать qdel(src) - это и был qdel-луп у /obj/item/mod/module/armor/prebuild.
 /obj/item/mod/control/proc/uninstall(module, user, deleting = FALSE)
 	var/obj/item/mod/module/old_module = module
 	if(!(old_module in modules))
-		// Повторный заход: on_uninstall() модуля сам позвал qdel(), и Destroy() пришёл
-		// сюда ещё раз. Снимать уже нечего, а второй проход портил бы complexity и
-		// дважды дёргал on_unequip().
 		old_module.mod = null
 		return
 	modules -= old_module
@@ -701,7 +545,7 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	req_access = card.access.Copy()
-	balloon_alert(user, "access updated")
+	balloon_alert(user, "доступ обновлён")
 
 /obj/item/mod/control/proc/update_cell_alert()
 	var/obj/item/stock_parts/cell/cell = get_cell()
@@ -724,15 +568,13 @@
 			wearer.throw_alert("mod_charge", /atom/movable/screen/alert/emptycell)
 
 /obj/item/mod/control/proc/update_speed()
-	// Замедление делится между ЧАСТЯМИ ОДЕЖДЫ: батарея в alist тоже лежит, но
-	// slowdown у неё нет, а деление на полную длину alist раздавало частям лишь 4/5 номинала.
 	var/list/parts = get_mod_parts(include_cell = FALSE)
 	if(!length(parts))
 		return
 	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
 	for(var/obj/item/clothing/mod_part/part as anything in parts)
 		if(obj_flags & SPEED_POTION_EFFECT && !part.slowdown)
-			return FALSE //уже применялось, обновлять скорость не требуется. Иначе сбросится модификатор
+			return FALSE
 		part.slowdown = part_slowdown
 	wearer?.update_equipment_speed_mods()
 
@@ -742,12 +584,10 @@
 
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)
 	SIGNAL_HANDLER
-	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(part.loc == src)
+	if(part.loc == src || part == src)
 		return
+	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(part == cell)
-		// Зануляли локальную копию, а слот в mod_parts продолжал держать вынутую
-		// батарею - и ссылка на неё жила до конца раунда.
 		mod_parts[MOD_PART_CELL] = null
 		update_cell_alert()
 		return
@@ -766,13 +606,8 @@
 	var/on = is_active()
 	if(!wearer || is_activating())
 		return FALSE
-	for(var/index in mod_parts)
-		var/obj/item/clothing/mod_part/part = mod_parts[index]
-		if(index == MOD_PART_CELL)
-			continue
-
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE, include_mod = FALSE))
 		ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
-
 		if(part.loc == null)
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 				part.seal_part(seal = on)
@@ -781,7 +616,6 @@
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
 				part.seal_part(seal = on)
 				conceal(wearer, part)
-
 		DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 	return TRUE
 

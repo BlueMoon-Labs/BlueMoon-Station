@@ -127,25 +127,31 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 
 	// Looping through the player list has the added bonus of working for mobs inside containers
 	var/sound/S = sound(get_sfx(soundin))
+	var/source_pressure
+	var/list/source_echo
+	if(pressure_affected)
+		var/datum/gas_mixture/source_env = turf_source.return_air()
+		source_pressure = source_env ? source_env.return_pressure() : 0
+		source_echo = sound_echo_for(envdry, envwet)
 
 	for(var/mob/M as anything in listeners)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
 	for(var/mob/M as anything in extra_listeners_1)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
 	for(var/mob/M as anything in extra_listeners_2)
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
 	for(var/mob/M as anything in extra_dead_listeners)
 		if(M in listeners) //уже получил звук из канала CLIENTS (был в поле зрения)
 			continue
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
-			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
+			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry, null, source_pressure, source_echo)
 
 /*! playsound
 
@@ -197,12 +203,12 @@ GLOBAL_LIST_EMPTY(sound_echo_cache)
 	return built
 
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance,
-	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer)
+	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer, source_pressure, list/source_echo)
 	if(QDELETED(src))
 		return
 	if(audiovisual_redirect)
 		virtual_hearer = get_turf(src)
-		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer)
+		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer, source_pressure)
 		//No return here, as we want to deliberately support the possibility of shenanigans in which mobs with clients can have active AV redirects to completely different players
 	if(!client)
 		return
@@ -248,10 +254,12 @@ GLOBAL_LIST_EMPTY(sound_echo_cache)
 			//Atmosphere affects sound
 			var/pressure_factor = 1
 			var/datum/gas_mixture/hearer_env = T.return_air()
-			var/datum/gas_mixture/source_env = turf_source.return_air()
+			if(isnull(source_pressure))
+				var/datum/gas_mixture/source_env = turf_source.return_air()
+				source_pressure = source_env ? source_env.return_pressure() : 0
 
-			if(hearer_env && source_env)
-				var/pressure = min(hearer_env.return_pressure(), source_env.return_pressure())
+			if(hearer_env)
+				var/pressure = min(hearer_env.return_pressure(), source_pressure)
 				if(pressure < ONE_ATMOSPHERE)
 					pressure_factor = max((pressure - SOUND_MINIMUM_PRESSURE)/(ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 0)
 			else //space
@@ -264,7 +272,7 @@ GLOBAL_LIST_EMPTY(sound_echo_cache)
 			//End Atmosphere affecting sound
 
 			/// Citadel edit - Citadel reverb
-			S.echo = sound_echo_for(envdry, envwet)
+			S.echo = source_echo || sound_echo_for(envdry, envwet)
 			/// End
 
 		if(S.volume <= 0)

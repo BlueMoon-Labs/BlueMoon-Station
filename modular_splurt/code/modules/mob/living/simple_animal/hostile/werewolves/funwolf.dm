@@ -218,7 +218,7 @@
 
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "sound/effects/snap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -446,7 +446,7 @@
 
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "sound/effects/snap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -675,7 +675,7 @@
 
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "sound/effects/snap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -904,7 +904,7 @@
 
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "sound/effects/snap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 

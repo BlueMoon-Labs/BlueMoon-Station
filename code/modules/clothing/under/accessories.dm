@@ -55,11 +55,15 @@
 	layer = NECK_LAYER
 	plane = FLOAT_PLANE
 
-	if (islist(cloth.armor) || isnull(cloth.armor)) 										// This proc can run before /obj/Initialize has run for cloth and src,
-		cloth.armor = getArmor(arglist(cloth.armor))	// we have to check that the armor list has been transformed into a datum before we try to call a proc on it
-																					// This is safe to do as /obj/Initialize only handles setting up the datum if actually needed.
+	if (islist(cloth.armor) || isnull(cloth.armor))
+		var/datum/armor/blank_armor = new()
+		cloth.armor = blank_armor.generate_new_with_specific(cloth.armor)
+		qdel(blank_armor)
+
 	if (islist(armor) || isnull(armor))
-		armor = getArmor(arglist(armor))
+		var/datum/armor/blank_armor = new()
+		armor = blank_armor.generate_new_with_specific(armor)
+		qdel(blank_armor)
 
 	cloth.armor = cloth.armor.attachArmor(armor)
 

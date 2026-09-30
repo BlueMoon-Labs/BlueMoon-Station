@@ -30,6 +30,8 @@
 	var/vary = FALSE
 	var/max_loops
 	var/direct
+	var/mid_length_vary = 0
+	var/pressure_affected = TRUE
 	var/extra_range = 0
 	var/falloff_exponent
 	var/timerid
@@ -102,7 +104,7 @@
 	// без игроков) насчитала 1.6 млн /sound, половина из них рождалась тут и
 	// не доезжала ни до одного клиента. Громкость, vary и extra_range и раньше
 	// приезжали отдельными аргументами playsound(), обёртка их не несла.
-	playsound(parent, soundfile, volume, vary, extra_range, falloff_exponent = falloff_exponent, falloff_distance = falloff_distance)
+	playsound(parent, soundfile, volume, vary, extra_range, falloff_exponent = falloff_exponent, pressure_affected = pressure_affected, falloff_distance = falloff_distance)
 
 /datum/looping_sound/proc/get_sound(starttime, _mid_sounds)
 	. = _mid_sounds || mid_sounds

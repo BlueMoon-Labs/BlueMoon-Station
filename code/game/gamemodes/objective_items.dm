@@ -179,6 +179,12 @@
 	difficulty = 5
 	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
 
+/datum/objective_item/steal/mod_constructor
+	name = "усовершенствованный модуль строительства из МОД костюма Главного Инженера."
+	targetitem =  /obj/item/mod/module/constructor
+	difficulty = 5
+	excludefromjob = list("Chief Engineer", "Station Engineer", "Atmospheric Technician")
+
 /datum/objective_item/steal/capmedal
 	name = "медаль Капитана."
 	targetitem = /obj/item/clothing/accessory/medal/gold/captain
@@ -322,7 +328,8 @@
 			break
 	if(!istype(capt)) // если капитана уже нету в игре еще до выдачи цельки, то искать трусы не особо интересно
 		return FALSE
-	if(capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR))
+	var/obj/item/clothing/underwear/briefs/worn_briefs = capt.get_item_by_slot(ITEM_SLOT_UNDERWEAR)
+	if(istype(worn_briefs) && worn_briefs.worn_by_captain)
 		return TRUE
 	for(var/obj/item/clothing/underwear/briefs/B in world)
 		if(B.worn_by_captain)

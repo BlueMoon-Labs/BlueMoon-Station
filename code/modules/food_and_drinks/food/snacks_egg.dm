@@ -19,6 +19,7 @@
 	cooked_type = /obj/item/reagent_containers/food/snacks/boiledegg
 	filling_color = "#F0E68C"
 	foodtype = MEAT
+	bitesize = 4
 	grind_results = list()
 
 /obj/item/reagent_containers/food/snacks/egg/gland
@@ -92,7 +93,7 @@
 	desc = "A fried egg with a side of bacon. Delicious!"
 	icon_state = "baconegg"
 	bonus_reagents = list(/datum/reagent/consumable/nutriment = 1, /datum/reagent/consumable/nutriment/vitamin = 1)
-	bitesize = 2
+	bitesize = 3
 	filling_color = "#FFFFF0"
 	tastes = list("egg" = 2, "bacon" = 2, "salt" = 1, "pepper" = 1)
 	foodtype = MEAT | FRIED | BREAKFAST
@@ -114,7 +115,7 @@
 	trash = /obj/item/trash/plate
 	bonus_reagents = list(/datum/reagent/consumable/nutriment = 1, /datum/reagent/consumable/nutriment/vitamin = 2)
 	list_reagents = list(/datum/reagent/consumable/nutriment = 8, /datum/reagent/consumable/nutriment/vitamin = 1)
-	bitesize = 2
+	bitesize = 4
 	w_class = WEIGHT_CLASS_NORMAL
 	tastes = list("egg" = 1, "cheese" = 1)
 	foodtype = MEAT | BREAKFAST

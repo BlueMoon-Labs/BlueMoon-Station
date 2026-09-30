@@ -191,7 +191,7 @@
 
 /obj/item/clothing/shoes/jackboots/alliance/Initialize()
 	. = ..()
-	AddComponent(/datum/component/squeak, list('sound/effects/footstep/jackboot1.ogg' = 1,'sound/effects/footstep/jackboot2.ogg' = 1), 75)
+	AddComponent(/datum/component/squeak, list('sound/effects/suitstep1.ogg' = 1,'sound/effects/suitstep2.ogg' = 1), 75)
 
 /obj/item/clothing/shoes/jackboots/fast
 	slowdown = -1

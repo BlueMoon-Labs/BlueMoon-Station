@@ -677,7 +677,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	// Обработка искажения речи от масок
 	var/muzzle_strength = get_muzzle_strength()
-	if(muzzle_strength > 0 && !src.is_muzzled())
+	if(!skip_vocal_stutter && muzzle_strength > 0 && !src.is_muzzled())
 		message = muffledspeech(message, muzzle_strength)
 
 	// BLUEMOON EDIT END

@@ -7,7 +7,7 @@ Nowhere else to really put this.
 /obj/structure/fluff/destroyed_nuclear_reactor
 	name = "Destroyed Nuclear Reactor"
 	desc = "What in the hell happened here?"
-	icon = 'modular_splurt/icons/obj/machinery/rbmk.dmi'
+	icon = 'icons/obj/machines/rbmk.dmi'
 	icon_state = "reactor_slagged"
 	pixel_x = -32
 	pixel_y = -32

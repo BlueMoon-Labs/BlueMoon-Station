@@ -1,0 +1,11 @@
+# Исключения для tools/asset_lint. Каждой записи - причина после #.
+#   unused <путь или glob>      файл ни на что не ссылается, но удалять его нельзя
+#   duplicate <путь или glob>   файл совпадает с другим; группа прощается, только если прикрыты все её члены
+# Запись, которая больше ничего не прикрывает, валит проверку - удаляйте её вместе с причиной.
+
+unused icons/effects/parallax/goon/weather/clouds_1.dmi  # маски без цвета, ждут своей окраски, см. layers/weather.dm
+unused icons/effects/parallax/goon/weather/clouds_2.dmi  # то же
+unused icons/turf/floors/catwalk_plating.dmi  # нужен турфу из PR #3920
+
+duplicate modular_sand/icons/hud/screen_*/*.dmi  # ui_style_modular() собирает путь из каталога стиля, одинаковые листы у стилей нормальны
+duplicate modular_bluemoon/fluffs/icons/mob/inhands/security_*hand.dmi  # правую руку не дорисовали, это копия левой

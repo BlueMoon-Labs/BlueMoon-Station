@@ -69,7 +69,6 @@
 								'sound/voice/human/manlaugh2.ogg')
 			if(!soft)
 				choosen_sound.Add('sound/voice/laugh_m1.ogg',
-								'sound/voice/laugh_m2.ogg',
 								'sound/voice/laugh_m3.ogg')
 		if("Female")
 			choosen_sound += 'sound/voice/human/womanlaugh.ogg'

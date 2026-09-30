@@ -1459,10 +1459,11 @@
 /atom/proc/update_filters()
 	filters = null
 	filter_data = sortTim(filter_data, GLOBAL_PROC_REF(cmp_filter_data_priority), TRUE)
-	for(var/f in filter_data)
-		var/list/data = filter_data[f]
+	for(var/filter_name in filter_data)
+		var/list/data = filter_data[filter_name]
 		var/list/arguments = data.Copy()
 		arguments -= "priority"
+		arguments["name"] = filter_name
 		filters += filter(arglist(arguments))
 	UNSETEMPTY(filter_data)
 
@@ -1495,10 +1496,11 @@
 /atom/proc/get_filter(name)
 	if(!length(filter_data) || !filter_data[name])
 		return
-	var/filter_index = filter_data.Find(name)
-	if(!filter_index || filter_index > length(filters))
-		return
-	return filters[filter_index]
+	// Движок не принимает пустую строку как имя фильтра.
+	if(name == "")
+		var/filter_index = filter_data.Find(name)
+		return filter_index && filter_index <= length(filters) ? filters[filter_index] : null
+	return filters[name]
 
 /// Returns the indice in filters of the given filter name.
 /// If it is not found, returns null.
@@ -1713,8 +1715,11 @@
 	var/extra_lines = 0
 	var/extra_context = ""
 	var/auxiliary_name = ""
-
-	if(ishuman(src))
+	var/display_name = name
+	if(isliving(user) && user.stat == UNCONSCIOUS && src != user && (ishuman(src) || iscyborg(src)))
+		display_name = "Неизвестный"
+		auxiliary_name = ""
+	else if(ishuman(src))
 		var/mob/living/carbon/human/H = src
 		if(istype(H.wear_neck, /obj/item/clothing/neck/petcollar))
 			var/obj/item/clothing/neck/petcollar/collar = H.wear_neck
@@ -1800,8 +1805,7 @@
 	if (screentips_enabled == SCREENTIP_PREFERENCE_CONTEXT_ONLY && extra_context == "")
 		active_hud.screentip_text.maptext = ""
 	else
-		//We inline a MAPTEXT() here, because there's no good way to statically add to a string like this
-		active_hud.screentip_text.maptext = "<span class='context' style='text-align: center; color: [user.client.prefs.screentip_color]'>[name] [auxiliary_name][extra_context]</span>"
+		active_hud.screentip_text.maptext = "<span class='context' style='text-align: center; color: [user.client.prefs.screentip_color]'>[display_name] [auxiliary_name][extra_context]</span>"
 
 /**
  * Recursive getter method to return a list of all ghosts orbitting this atom

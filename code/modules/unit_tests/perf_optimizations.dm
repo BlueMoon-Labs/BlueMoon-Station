@@ -498,6 +498,31 @@
 	TEST_ASSERT_EQUAL(icon_state_has_directional_frames(runtime_icon, runtime_state), runtime_expected, "icon_state_has_directional_frames must stay correct for runtime /icon datums")
 
 
+/// Кэш направлений различает сохранённый FALSE и отсутствие ключа.
+/datum/unit_test/flat_icon_directional_cached_results
+	var/list/original_cache
+
+/datum/unit_test/flat_icon_directional_cached_results/Run()
+	original_cache = GLOB.cached_icon_state_directional
+	GLOB.cached_icon_state_directional = list()
+	var/test_icon = 'icons/effects/effects.dmi'
+	var/list/states = icon_states(test_icon)
+	TEST_ASSERT(length(states), "У тестового DMI нет состояний")
+	var/state = states[1]
+	var/key = "[test_icon]|[state]"
+	var/cold_result = icon_state_has_directional_frames(test_icon, state)
+	TEST_ASSERT_EQUAL(GLOB.cached_icon_state_directional[key], cold_result, "Промах не заполнил кэш")
+	for(var/cached_result in list(FALSE, TRUE))
+		GLOB.cached_icon_state_directional[key] = cached_result
+		TEST_ASSERT_EQUAL(icon_state_has_directional_frames(test_icon, state), cached_result, "Сохранённое значение пересчитано вместо чтения из кэша")
+		TEST_ASSERT_EQUAL(length(GLOB.cached_icon_state_directional), 1, "Попадание в кэш добавило лишние ключи")
+
+/datum/unit_test/flat_icon_directional_cached_results/Destroy()
+	if(original_cache)
+		GLOB.cached_icon_state_directional = original_cache
+	original_cache = null
+	return ..()
+
 /datum/unit_test/flat_icon_smoke/Run()
 	var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human)
 

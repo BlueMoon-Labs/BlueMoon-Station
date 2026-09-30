@@ -354,7 +354,7 @@
 
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/proc/slap(mob/living/M)
-	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "sound/effects/snap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> шлёпает [M] по заднице!"), \
 			span_userdanger("\The [src]</b> шлёпает [M] по заднице!"), null, COMBAT_MESSAGE_RANGE)
 

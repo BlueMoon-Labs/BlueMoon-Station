@@ -610,6 +610,13 @@ const MutationInfo = (props) => {
         <LabeledList.Item label="Нестабильность">
           {mutation.Instability}
         </LabeledList.Item>
+        <LabeledList.Item label="Код для печати мутатора">
+          <Box color={mutation.CanPrintMutator ? 'label' : 'bad'}>
+            {mutation.MutatorSecurityLevel
+              ? `${mutation.MutatorSecurityLevel} или выше`
+              : 'Без ограничений'}
+          </Box>
+        </LabeledList.Item>
       </LabeledList>
       <Divider />
       <Box>
@@ -649,8 +656,9 @@ const MutationInfo = (props) => {
               })} />
             <Button
               icon="syringe"
-              disabled={!isInjectorReady || !mutation.Active}
-              content="Напечатать мутаген"
+              disabled={!isInjectorReady || !mutation.Active
+                || !mutation.CanPrintMutator}
+              content="Напечатать мутатор"
               onClick={() => act('print_injector', {
                 mutref: mutation.ByondRef,
                 is_activator: 0,
@@ -1384,7 +1392,13 @@ const DnaConsoleAdvancedInjectors = (props) => {
             <>
               <Button
                 icon="syringe"
-                disabled={!isInjectorReady}
+                disabled={!isInjectorReady || injector.mutations.some(
+                  mutation => !mutation.CanPrintMutator)}
+                tooltip={injector.mutations
+                  .filter(mutation => !mutation.CanPrintMutator)
+                  .map(mutation => `${mutation.Name}: код ${
+                    mutation.MutatorSecurityLevel} или выше`)
+                  .join('; ')}
                 content="Напечатать"
                 onClick={() => act('print_adv_inj', {
                   name: injector.name,

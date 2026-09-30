@@ -102,7 +102,7 @@
 /////////////////////////////////////////
 /datum/antagonist/ert/engineer_squadleader
 	role = "Бригадир"
-	outfit = /datum/outfit/ert/engineer/alert
+	outfit = /datum/outfit/ert/engineer
 	skill_modifiers = list(/datum/skill_modifier/job/level/wiring)
 	leader = TRUE
 

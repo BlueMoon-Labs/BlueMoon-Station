@@ -6,6 +6,7 @@
 	bubble_icon = "robot"
 	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/flash_protect = FALSE
+	var/datum/armor/borg_plating_armor
 
 /mob/living/silicon/robot/get_cell()
 	return cell
@@ -97,7 +98,21 @@
 
 	add_verb(src, /mob/living/proc/lay_down) //CITADEL EDIT gimmie rest verb kthx
 	add_verb(src, /mob/living/silicon/robot/proc/rest_style)
+	init_unconscious_appearance()
 
+/mob/living/silicon/robot/init_unconscious_appearance()
+	var/image/static_overlay = image('icons/effects/effects.dmi', null, "static_base")
+	static_overlay.blend_mode = BLEND_INSET_OVERLAY
+	var/image/static_image = image('icons/mob/robots.dmi', src, "robot")
+	static_image.appearance_flags |= KEEP_TOGETHER
+	static_image.overlays += static_overlay
+	static_image.override = TRUE
+	static_image.name = "unknown cyborg"
+	var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA = add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity, "[REF(src)]_unconscious", static_image, NONE)
+	if(AA)
+		for(var/mob/living/viewer in GLOB.mob_living_list)
+			if(viewer.stat == UNCONSCIOUS && viewer != src)
+				AA.add_hud_to(viewer)
 /mob/living/silicon/robot/proc/create_modularInterface()
 	if(!modularInterface)
 		modularInterface = new /obj/item/modular_computer/tablet/integrated(src)
@@ -144,6 +159,11 @@
 		alert_control.ui_interact(src)
 
 	return
+
+/mob/living/silicon/robot/getarmor(def_zone, type)
+	if(borg_plating_armor && type)
+		return borg_plating_armor.getRating(type)
+	return ..()
 
 /mob/living/silicon/robot/proc/pick_module()
 	if(module.type != /obj/item/robot_module)
@@ -1011,6 +1031,7 @@
 	vtec_disabled = FALSE
 	vtec_drain = 0
 	ionpulse = FALSE
+	SEND_SIGNAL(src, COMSIG_ROBOT_RESET_MODULE)
 	revert_shell()
 
 	return TRUE

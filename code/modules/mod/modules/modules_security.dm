@@ -13,6 +13,7 @@
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
 	incompatible_modules = list(/obj/item/mod/module/stealth)
 	cooldown_time = 5 SECONDS
+	need_full_deploy = TRUE
 	/// Whether or not the cloak turns off on bumping.
 	var/bumpoff = TRUE
 	/// The alpha applied when the cloak is on.
@@ -69,11 +70,11 @@
 	name = "MOD magnetic harness module"
 	desc = "Основано на старых комплектах подвесок TerraGov, эта магнитная система автоматически возвращает упавшее оружие к носителю."
 	icon_state = "mag_harness"
-	complexity = 2
+	complexity = 1
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/magnetic_harness)
 	/// Time before we activate the magnet.
-	var/magnet_delay = 0.8 SECONDS
+	var/magnet_delay = 0.5 SECONDS
 	/// The typecache of all guns we allow.
 	var/static/list/guns_typecache
 	/// The guns already allowed by the modsuit chestplate.
@@ -88,7 +89,7 @@
 /obj/item/mod/module/magnetic_harness/on_install()
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
 	already_allowed_guns = guns_typecache & chestplate.allowed
-	chestplate.allowed |= guns_typecache
+	chestplate.allowed = chestplate.allowed += guns_typecache
 
 /obj/item/mod/module/magnetic_harness/on_uninstall(deleting = FALSE)
 	var/obj/item/clothing/mod_part/suit/chestplate = mod.get_chestplate()
@@ -131,7 +132,7 @@
 		некоторые представители правопорядка предпочитают, чтобы кобура выдвигалась из бедра."
 	icon_state = "holster"
 	module_type = MODULE_USABLE
-	complexity = 2
+	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/holster)
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
@@ -218,9 +219,9 @@
 	minimum_cell_charge = MOD_MINIMUM_CELL_CHARGE_SHIELD
 	incompatible_modules = list(
 		/obj/item/mod/module/anomaly_locked/antigrav,
-		/obj/item/mod/module/armor,
+		/obj/item/mod/module/energy_shield,
 		)
-	var/max_charges = 2
+	var/max_charges = 3
 	var/current_charges
 	var/recharge_delay = 25 SECONDS //на 5 больше, чем дефолт у рига.
 	var/recharge_rate = 1
@@ -228,6 +229,10 @@
 	var/used_modificator = MOD_DEFAULT_SHIELD_CELL_DRAIN_MODIFICATOR
 	var/need_drain_power = TRUE
 	var/datum/component/shielded/shield_comp
+
+/obj/item/mod/module/energy_shield/Initialize(mapload)
+	. = ..()
+	cooldown_time = recharge_delay //чтобы нельзя было включить/отключить модуль для фулл перезарядки.
 
 /obj/item/mod/module/energy_shield/emp_act(severity)
 	. = ..()
@@ -271,7 +276,31 @@
 	recharge_delay = 18 SECONDS
 	max_charges = 4 //в два раза больше станционного
 
-//СДЕЛАТЬ ЗАРяДКУ МОДА ИНДУЦЕРОМ
+/obj/item/mod/module/directional_shield
+	name = "Directional Shield module"
+	desc = "Экспериментальна версия направленного щита. Очень энергоэффективна и способна поддерживать сама себя. \
+	Однако, не пошла в серийное производство и довольно редка. Поставляется только для сотрудников должности Синий Щит."
+	icon_state = "directional_shield"
+	module_type = MODULE_ACTIVE
+	device = /obj/item/shield/adamantineshield/mod_lesser
+	required_modpart_index = MOD_PART_GLOVES
+	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
+	removable = FALSE
+
+/obj/item/shield/adamantineshield/mod_lesser
+	name = "MOD Energy Shield"
+	desc = "Огромный щит, созданный голопроекторами поля в перчатках МОД костюма."
+	icon = 'icons/mecha/durand_shield.dmi'
+	lefthand_file = 'icons/mecha/durand_shield.dmi'
+	righthand_file = 'icons/mecha/durand_shield.dmi'
+	item_state = "shield_mod_static"
+	icon_state = "shield"
+	item_flags = null
+	force = 15
+
+/obj/item/shield/adamantineshield/mod_lesser/on_shield_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance)
+	. = ..()
+	playsound(src, 'sound/mecha/mech_shield_deflect.ogg', 100, TRUE)
 
 ///Criminal Capture
 

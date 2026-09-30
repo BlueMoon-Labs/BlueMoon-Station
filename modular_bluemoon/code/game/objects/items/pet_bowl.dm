@@ -4,6 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/food/pet_bowl.dmi'
 	icon_state = "pet_bowl"
 	// interaction_flags_item = NONE
+	flags_1 = CONDUCT_1
 	item_flags = NO_PIXEL_RANDOM_DROP
 	resistance_flags = NONE
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 40, 50, 80)
@@ -13,6 +14,7 @@
 	ingMax = 6
 	custom_materials = list(/datum/material/iron = 500)
 	w_class = WEIGHT_CLASS_NORMAL
+	nutrition_check = FALSE
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/Initialize(mapload)
 	. = ..()

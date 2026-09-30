@@ -712,22 +712,55 @@ This is here to make the tiles around the station mininuke change when it's arme
 			if(!(process_tick % 30))
 				visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
 		if(last_disk_move < world.time - 5000 && prob((world.time - 5000 - last_disk_move)*0.0001 / max(disk_comfort_level,1)))
-			var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
-			if(istype(loneop) && loneop.occurrences < loneop.max_occurrences)
-				loneop.weight += 1
-				if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1 && (CONFIG_GET(flag/admin_disk_inactive_msg))) //players count now
-					message_admins("[src] is stationary in [ADMIN_VERBOSEJMP(newturf)]. The weight of Lone Operative is now [loneop.weight].")
-				log_game("[src] is stationary for too long in [loc_name(newturf)], and has increased the weight of the Lone Operative event to [loneop.weight].")
+			grow_operative_weights(newturf)
 
 	else
 		lastlocation = newturf
 		last_disk_move = world.time
-		var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
-		if(istype(loneop) && loneop.occurrences < loneop.max_occurrences && prob(loneop.weight))
-			loneop.weight = max(loneop.weight - 1, 0)
-			if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1)
-				message_admins("[src] is on the move (currently in [ADMIN_VERBOSEJMP(newturf)]). The weight of Lone Operative is now [loneop.weight].")
-			log_game("[src] being on the move has reduced the weight of the Lone Operative event to [loneop.weight].")
+		decay_operative_weights(newturf)
+
+/// Оперативные контролы, чей вес вправе расти в этом профиле. Боевой одиночка и защитник
+/// диска разделены по типам раундов (operative.dm), так что в пуле всегда ровно один из
+/// них, а растущий вес читается как "диск лежит". Контролу, недоступному текущему профилю,
+/// вес не трогаем: ненулевой вес там был бы мёртвым числом в панели и в логах.
+/obj/item/disk/nuclear/proc/operative_controls()
+	var/list/controls = list()
+	// Без as anything: типизированный for отсекает все прочие события директора
+	for(var/datum/round_event_control/operative/control in SSdirector.event_controls())
+		if(control.required_round_type && !(GLOB.round_type in control.required_round_type))
+			continue
+		controls += control
+	return controls
+
+/// +1 к весу оперативных событий, пока диск лежит. Стартовый вес обоих контролов нулевой,
+/// поэтому неподвижность диска остаётся единственной причиной оперативника в раунде.
+/obj/item/disk/nuclear/proc/grow_operative_weights(turf/where)
+	for(var/datum/round_event_control/operative/control as anything in operative_controls())
+		if(control.occurrences >= control.max_occurrences)
+			continue
+		control.weight += 1
+		// Вес растёт на единицу каждый тик, то есть примерно раз в пару секунд. Логировать
+		// каждое изменение - значит писать в лог по две сотни строк за лежащий диск.
+		if(control.weight % 10)
+			continue
+		log_game("[src] is stationary for too long in [loc_name(where)], and has increased the weight of the [control.name] event to [control.weight].")
+		// В админ-чат рост веса идёт только если админ сам включил флаг: лежащий диск -
+		// обычно скучная рутина, а не повод для сообщений.
+		if(SSticker.totalPlayers > 1 && CONFIG_GET(flag/admin_disk_inactive_msg))
+			message_admins("[src] is stationary in [ADMIN_VERBOSEJMP(where)]. The weight of [control.name] is now [control.weight].")
+
+/// -1 к весу, пока диск носят: оперативник должен прилетать по лежащему диску, а не
+/// через полчаса после того, как его давно унесли (жалоба прода "спавнится рандомно").
+/obj/item/disk/nuclear/proc/decay_operative_weights(turf/where)
+	for(var/datum/round_event_control/operative/control as anything in operative_controls())
+		if(control.occurrences >= control.max_occurrences || !prob(control.weight))
+			continue
+		control.weight = max(control.weight - 1, 0)
+		// Затухание веса в админ-чат не выводится вовсе: сообщение о том, что вес упал с 5
+		// до 4, не сообщает админу ничего, а флага-гейта у него, в отличие от роста, нет.
+		if(control.weight % 10)
+			continue
+		log_game("[src] being on the move has reduced the weight of the [control.name] event to [control.weight].")
 
 /obj/item/disk/nuclear/examine(mob/user)
 	. = ..()

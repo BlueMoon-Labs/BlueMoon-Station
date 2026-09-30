@@ -80,7 +80,13 @@
 	display_results(user, target, "<span class='notice'>You dissect [target], and add your [points_earned] point\s worth of discoveries to the research database!</span>",
 	"[user] dissects [target], discovering [points_earned] point\s of data!",
 	"[user] dissects [target]!")
-	var/datum/techweb/web = find_rnd_network_for_object(src)
+	var/turf/T = get_turf(target)
+	var/obj/structure/table/optable/table = locate(/obj/structure/table/optable, T)
+	var/datum/techweb/web = null
+	if(table && table.computer)
+		web = table.computer.linked_techweb
+	else
+		web = find_rnd_network_for_object(src)
 	if(web)
 		web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_earned))
 		var/obj/item/bodypart/L = target.get_bodypart(BODY_ZONE_CHEST)
@@ -94,7 +100,13 @@
 	display_results(user, target, "<span class='notice'>You dissect [target], but do not find anything particularly interesting.</span>",
 	"[user] dissects [target], however it seems [user.ru_who()] didn't find anything useful.",
 	"[user] dissects [target], but looks a little dissapointed.")
-	var/datum/techweb/web = find_rnd_network_for_object(src)
+	var/turf/T = get_turf(target)
+	var/obj/structure/table/optable/table = locate(/obj/structure/table/optable, T)
+	var/datum/techweb/web = null
+	if(table && table.computer)
+		web = table.computer.linked_techweb
+	else
+		web = find_rnd_network_for_object(src)
 	if(web)
 		web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = (round(check_value(target, surgery) * 0.01))))
 		var/obj/item/bodypart/L = target.get_bodypart(BODY_ZONE_CHEST)

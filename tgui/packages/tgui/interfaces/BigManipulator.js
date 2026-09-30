@@ -213,7 +213,7 @@ export const BigManipulator = (props) => {
                         minValue={1}
                         maxValue={60}
                         value={task.time || 1}
-                        onDrag={(value) =>
+                        onDrag={(e, value) =>
                           act('adjust_task_param', {
                             taskId: task.id,
                             param: 'set_wait_time',

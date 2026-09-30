@@ -37,7 +37,7 @@
 	supernova.power_mod = 0
 
 /datum/round_event/supernova/announce()
-	var/message = "[station_name()]: Наша Тахионно-Доплеровская матрица обнаружила сверхновую в вашей окрестности. Пиковый поток от сверхновой оценивается как [round(power,0.1)] в раз больше текущего солнечного потока; если волна сверхновой приблизится к вашей Звезде, ваши солнечные панели смогут получить это как прибавку к мощности.[power > 1 ? " Возможны короткие вспышки радиации, поэтому подготовьтесь соответствующим образом." : "Судя по датчикам, вашей станции не следует ожидать ещё больше радиационных всплесков."] Мы надеемся, что вам понравится свет от взрыва Сверхновой!"
+	var/message = "[station_name()]: Наша тахионно-доплеровская станция обнаружила сверхновую в вашей окрестности. Пиковый поток от сверхновой оценивается как в [round(power,0.1)] раз больше текущего солнечного потока; если излучение сверхновой приблизится к вашей системе, ваши солнечные панели смогут получить как прибавку к мощности.[power > 1 ? " Возможны короткие вспышки радиации, поэтому подготовьтесь соответствующим образом." : "Судя по датчикам, вашей станции не следует ожидать мощных радиационных всплесков."] Мы надеемся, что вам понравится свет от взрыва сверхновой!"
 	if(prob(power * 25))
 		priority_announce(message, sender_override = "Отдел метеорологии NanoTrasen", has_important_message = TRUE)
 		announced = TRUE
@@ -55,7 +55,7 @@
 	if(power > 1 && SSticker.mode.bloodsucker_sunlight?.time_til_cycle > 90)
 		var/obj/effect/sunlight/sucker_light = SSticker.mode.bloodsucker_sunlight
 		sucker_light.time_til_cycle = 90
-		sucker_light.warn_daylight(1,"<span class = 'danger'>A supernova will bombard the station with dangerous UV in [90 / 60] minutes. <b>Prepare to seek cover in a coffin or closet.</b></span>")
+		sucker_light.warn_daylight(1, span_danger("Сверхновая звезда будет облучать станцию опасными объёмами ультрафиолета в течение приблизительно [80 + rand(1, 20)] секунд. <b>Приготовьтесь искать укрытие в гробах или шкафчиках.</b>"))
 		sucker_light.give_home_power()
 
 /datum/round_event/supernova/tick()
@@ -72,7 +72,7 @@
 	SSsun.suns -= supernova
 	qdel(supernova)
 	if(announced)
-		priority_announce("The supernova's flux is now negligible. Radiation storms have ceased. Have a pleasant shift, [station_name()], and thank you for bearing with nature.",
+		priority_announce("Поток излучения сверхновой звезды спал до пренебрежительно малых значений. Радиационные штормы прекратились. Приятной смены, [station_name()], и спасибо, что отнеслись с пониманием к капризам природы.",
 		sender_override = "Nanotrasen Meteorology Division")
 
 /datum/weather/rad_storm/supernova
@@ -81,4 +81,5 @@
 	telegraph_duration = 200
 	radiation_intensity = 50
 	weather_sound = null
-	telegraph_message = "<span class='userdanger'>The air begins to grow very warm!</span>"
+	telegraph_message = span_userdanger("Воздух вокруг становится очень горячим!")
+	priority_end_message = "Волна ультрафиолетового излучения сверхновой звезды прошла мимо станции. Метеорологи дают прогноз о возможном повторе, будьте наготове."

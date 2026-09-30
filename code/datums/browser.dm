@@ -122,6 +122,7 @@
 <html>
 	<head>
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+		<meta name='referrer' content='no-referrer'>
 		[built_head_content]
 	</head>
 	<body scroll=auto>

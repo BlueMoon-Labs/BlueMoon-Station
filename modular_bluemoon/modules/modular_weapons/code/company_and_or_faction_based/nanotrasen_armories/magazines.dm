@@ -36,7 +36,7 @@
 	base_icon_state = "jager_mag"
 	ammo_type = /obj/item/ammo_casing/shotgun
 	caliber = "shotgun"
-	max_ammo = 4
+	max_ammo = 5
 
 /obj/item/ammo_box/magazine/jager/rubbershot
 	ammo_type = /obj/item/ammo_casing/shotgun/rubbershot

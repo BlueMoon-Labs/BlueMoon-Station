@@ -1,6 +1,6 @@
-#define CHALLENGE_TELECRYSTALS 280
-#define CHALLENGE_TIME_LIMIT (5 MINUTES)
-#define CHALLENGE_SHUTTLE_DELAY (25 MINUTES) // 25 minutes, so the ops have at least 5 minutes before the shuttle is callable.
+#define CHALLENGE_TELECRYSTALS 500
+#define CHALLENGE_TIME_LIMIT (15 MINUTES)
+#define CHALLENGE_SHUTTLE_DELAY (15 MINUTES) // 25 minutes, so the ops have at least 5 minutes before the shuttle is callable.
 #define CHALLENGE_MIN_PLAYERS 5 // Minimum crew count to declare war (prevents empty station declarations)
 
 GLOBAL_LIST_EMPTY(jam_on_wardec)

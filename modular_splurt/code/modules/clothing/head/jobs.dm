@@ -67,6 +67,7 @@
 	desc = "Keep your head safe while under fire."
 	icon_state = "secmed_helmet"
 	item_state = "secmed_helmet"
+	can_flashlight = TRUE
 
 /obj/item/clothing/head/beret/sec/bitch
 	name = "security's bitch beret"

@@ -1,8 +1,8 @@
 /obj/machinery/poweredfans
 	icon = 'icons/obj/poweredfans.dmi'
 	icon_state = "mfan_powered"
-	name = "micro powered fan"
-	desc = "A handmade fan, releasing a thin gust of air."
+	name = "powered microfan"
+	desc = "Самодельный лопастной вентилятор, выпускающий тонкий поток воздуха."
 	use_power = ACTIVE_POWER_USE
 	power_channel = ENVIRON
 	idle_power_usage = 5
@@ -36,8 +36,8 @@
 	qdel(src)
 
 /obj/machinery/poweredfans/wirecutter_act(mob/living/user, obj/item/I)
-	user.visible_message("<span class='warning'>[user] removes the wires from the [src].</span>",
-		"<span class='notice'>You start to remove the wires from the [src]...</span>", "You hear clanking and banging noises.")
+	user.visible_message(span_warning("[user] обрезает провода у [src]."),
+		span_notice("Вы начинаете обрезать проводку внутри корпуса [src]..."), "Вы слышите клацающие ножничные звуки.")
 	if(I.use_tool(src, user, 30, volume=50))
 		deconstruct()
 	return TRUE
@@ -49,6 +49,7 @@
 	else
 		assembly = new(src)
 		assembly.build_state = 3
+	AddComponent(/datum/component/requires_floor)
 	refresh_atmos_barrier(TRUE)
 
 // Барьер поверфана держит и тепло - ровно пока держит воздух (то есть пока

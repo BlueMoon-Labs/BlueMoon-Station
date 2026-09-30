@@ -223,6 +223,16 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
+/datum/design/alienrcd
+	name = "ARCD"
+	desc = "Улучшенный РЦД работающий даже на расстоянии"
+	id = "alien_rcd"
+	build_path = /obj/item/construction/rcd/arcd
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2000, /datum/material/silver = 1500, /datum/material/plasma = 500, /datum/material/titanium = 1500)
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
+
 /datum/design/alienhemostat
 	name = "Alien Hemostat"
 	desc = "An advanced hemostat obtained through Abductor technology."
@@ -259,7 +269,7 @@
 	id = "alien_drill"
 	build_path = /obj/item/surgicaldrill/alien
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 10000, /datum/material/silver = 2500, /datum/material/plasma = 1000, /datum/material/titanium = 1500)
+	materials = list(/datum/material/iron = 6000, /datum/material/silver = 2500, /datum/material/plasma = 1000, /datum/material/titanium = 1500)
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
@@ -273,19 +283,62 @@
 	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
+///////////////////////////////////////////////
+/////////Alien Combi Surgical Tools////////////
+///////////////////////////////////////////////
+
+/datum/design/alien_combi_scalpel
+	name = "Alien Combi Scalpel"
+	desc = "An advanced combi scalpel and saw obtained through Abductor technology."
+	id = "alien_combi_scalpel"
+	build_path = /obj/item/scalpel/advanced/alien
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 12000, /datum/material/silver = 2500, /datum/material/plasma = 1500, /datum/material/titanium = 2000)
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/alien_combi_retractor
+	name = "Alien Combi Retractor"
+	desc = "An advanced combi retractor and hemostat obtained through Abductor technology."
+	id = "alien_combi_retractor"
+	build_path = /obj/item/retractor/advanced/alien
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 4000, /datum/material/silver = 2500, /datum/material/plasma = 1000, /datum/material/titanium = 1500)
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
+
+/datum/design/alien_combi_drill
+	name = "Alien Combi Drill"
+	desc = "An advanced combi drill and cautery obtained through Abductor technology."
+	id = "alien_combi_drill"
+	build_path = /obj/item/surgicaldrill/advanced/alien
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 6500, /datum/material/silver = 2000, /datum/material/plasma = 1000, /datum/material/titanium = 1500)
+	category = list("Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 //////////////////////
 //Adv. Surgery Tools//
 //////////////////////
 
 /datum/design/drapes
-	name = "Plastic Drapes"
+	name = "Surgical Drapes"
 	desc = "A large surgery drape made of plastic."
 	id = "drapes"
 	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/plastic = 2500)
 	build_path = /obj/item/surgical_drapes
 	category = list("Initial", "Medical", "Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+
+/datum/design/drapes_adv
+	name = "Smart Surgical Drapes"
+	desc = "A smart set of drapes synced with the station's research network, allowing advanced surgeries without an operating computer."
+	id = "drapes_adv"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/plastic = 2500, /datum/material/silver = 2000, /datum/material/gold = 2000, /datum/material/diamond = 500)
+	build_path = /obj/item/surgical_drapes/advanced
+	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/retractor_adv
