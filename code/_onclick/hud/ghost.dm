@@ -45,6 +45,24 @@
 	var/mob/dead/observer/G = usr
 	G.open_spawners_menu()
 
+/// Guests are usually ghosts, and the Join Deathmatch verb is easy to miss in
+/// the verb list, so it gets a button. Uses the sleeper icon because the ghost
+/// icon file has nothing that reads as a game.
+/atom/movable/screen/ghost/deathmatch
+	name = "Join Deathmatch"
+	icon = 'icons/obj/machines/sleeper.dmi'
+	icon_state = "sleeper"
+
+/atom/movable/screen/ghost/deathmatch/Click()
+	var/mob/dead/observer/G = usr
+	if(isnull(get_joinable_deathmatch_lobby()))
+		to_chat(G, span_danger("No deathmatch game is open right now."))
+		return
+	G.deathmatch_join_game()
+
+/atom/movable/screen/ghost/deathmatch/MouseEntered()
+	return
+
 /datum/hud/ghost/New(mob/owner)
 	..()
 	var/atom/movable/screen/using
@@ -67,6 +85,10 @@
 
 	using = new /atom/movable/screen/ghost/spawners(null, src)
 	using.screen_loc = ui_ghost_spawners
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/deathmatch(null, src)
+	using.screen_loc = ui_ghost_deathmatch
 	static_inventory += using
 
 	// Z

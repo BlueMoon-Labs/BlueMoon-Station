@@ -7,7 +7,7 @@ export const VrSleeper = (props) => {
   return (
     <Window
       width={475}
-      height={340}>
+      height={620}>
       <Window.Content>
         {!!data.emagged && (
           <Section>
@@ -77,6 +77,56 @@ export const VrSleeper = (props) => {
               }}>
               Delete VR avatar
             </Button>
+          )}
+        </Section>
+        <Section title="Deathmatch">
+          {data.is_hosting_deathmatch ? (
+            <Box>
+              <Box color="good">
+                Hosting {data.hosting_deathmatch.name} with{' '}
+                {data.hosting_deathmatch.players} player(s).
+              </Box>
+              <Button.Confirm
+                color={'red'}
+                icon={'stop'}
+                onClick={() => act('end_deathmatch')}>
+                End game
+              </Button.Confirm>
+            </Box>
+          ) : (
+            <Box>
+              {(data.deathmatch_modes || []).length === 0 ? (
+                <Box color="bad">No deathmatch modes are compiled in.</Box>
+              ) : (
+                data.deathmatch_modes.map((mode) => (
+                  <Button
+                    key={mode.id}
+                    icon={mode.id === data.selected_deathmatch_mode
+                      ? 'check'
+                      : 'play'}
+                    color={mode.id === data.selected_deathmatch_mode
+                      ? 'green'
+                      : 'blue'}
+                    tooltip={mode.description}
+                    onClick={() => act('select_deathmatch_mode', { mode: mode.id })}>
+                    {mode.name} ({mode.players})
+                  </Button>
+                ))
+              )}
+              <Button.Confirm
+                color={'good'}
+                icon={'play'}
+                disabled={!data.can_start_deathmatch
+                  || !data.selected_deathmatch_mode}
+                onClick={() => act('start_deathmatch')}>
+                Start deathmatch
+              </Button.Confirm>
+              {!data.isoccupant && (
+                <Box color="bad">
+                  Lie in the sleeper to host a game.
+                </Box>
+              )}
+            </Box>
           )}
         </Section>
       </Window.Content>
