@@ -76,22 +76,16 @@
 /obj/item/electropack/vibrator/proc/item_inserting(datum/source, obj/item/organ/genital/G, mob/user)
 	. = TRUE
 	if(!(G.owner.client?.prefs?.erppref == "Yes"))
-		to_chat(user, span_warning("They don't want you to do that!"))
-		return FALSE
-
-	if(locate(src.type) in G.contents)
-		if(user == G.owner)
-			to_chat(user, span_notice("You already have a vibrator inside your [G]!"))
-		else
-			to_chat(user, span_notice("\The <b>[G.owner]</b>'s [G] already has a vibrator inside!"))
+		var/gender_name = (G.owner.gender == MALE) ? "он" : "она"
+		to_chat(user, span_warning("Кажется [gender_name], не хочет этого."))
 		return FALSE
 
 	if(user == G.owner)
-		G.owner.visible_message(span_warning("\The <b>[user]</b> is trying to [style == "long" ? "insert" : "attach"] a vibrator [style == "long" ? "inside" : "to"] themselves!"),\
-			span_warning("You try to [style == "long" ? "insert" : "attach"] a vibrator [style == "long" ? "inside" : "to"] yourself!"))
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить вибратор внутрь себя!"),\
+			span_notice("Вы пытаетесь вставить вибратор внутрь себя!"))
 	else
-		G.owner.visible_message(span_warning("\The <b>[user]</b> is trying to [style == "long" ? "insert" : "attach"] a vibrator [style == "long" ? "inside" : "to"] \the <b>[G.owner]</b>!"),\
-			span_warning("\The <b>[user]</b> is trying to [style == "long" ? "insert" : "attach"] a vibrator [style == "long" ? "inside" : "to"] you!"))
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить вибратор внутрь <b>[G.owner]</b>!"),\
+			span_notice("[user] пытается вставить вибратор внутрь вас!"))
 
 	if(!do_mob(user, G.owner, 5 SECONDS))
 		return FALSE
