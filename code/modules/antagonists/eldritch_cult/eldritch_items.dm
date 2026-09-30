@@ -524,3 +524,11 @@
 		hud.infodisplay -= src
 		INVOKE_ASYNC(hud, TYPE_PROC_REF(/datum/hud, show_hud), hud.hud_version)
 	return ..()
+
+/obj/item/eldritch_shard
+	name = "eldritch shard"
+	desc = "Странный кристалл фиолетовых оттенков, обжигающий руку. Он излучает странную, едва заметную энергию."
+	icon = 'icons/obj/eldritch.dmi'
+	icon_state = "eldritch_shard"
+	w_class = WEIGHT_CLASS_NORMAL
+	resistance_flags = FIRE_PROOF | ACID_PROOF
