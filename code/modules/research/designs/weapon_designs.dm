@@ -851,10 +851,10 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_GREEN 
 
-/datum/design/exorcist_rubber
+/datum/design/exorcist_lethal
 	id = "exorcist_lethal"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 3000)
+	materials = list(/datum/material/iron = 1000)
 	build_path = /obj/item/ammo_casing/cal410/lethal
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY

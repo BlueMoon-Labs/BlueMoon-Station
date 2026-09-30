@@ -108,7 +108,7 @@
 	"vendatray", "space_heater", "electrolyzer", "beaker", "large_beaker","sec_shellclip", "xlarge_beaker", "spray_bottle", "mop", "bucket", "broom", "hypovial", "large_hypovial", "syringe", "pillbottle",
 	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal", "sec_missiles",
 	"rglass","plasteel","plastitanium","plasmaglass","plasmareinforcedglass","titaniumglass","plastitaniumglass", "salestagger",
-	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "bountyvend", "contrabandpad", "contrabandpadterminal", "infiltrator_case_science", "astro_sensor", "41_rubber", "41_lethal")
+	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "bountyvend", "contrabandpad", "contrabandpadterminal", "infiltrator_case_science", "astro_sensor", "41_rubber", "41_lethal", "exorcist_rubber", "exorcist_lethal")
 	// Астрометрический сенсор доступен сразу: наблюдать явление за бортом надо в тот
 	// раунд, когда оно идёт, а не после того, как его исследуют.
 	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler" //ещё один add- ammoworkbench staff
