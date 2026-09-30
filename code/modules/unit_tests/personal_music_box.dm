@@ -22,7 +22,7 @@
 /// rust-g читает файлы с диска и в .rsc не заглядывает, а tools/deploy.sh каталог sound/
 /// в деплой не кладёт - в CI мир стартует из ci_test/, где "sound/machines/ping.ogg"
 /// просто нет, и путь из репозитория даёт длину 0. Заливка трека в игре меряет ровно
-/// такой же свежескопированный файл (fcopy в GLOB.log_directory), так что тест повторяет
+/// такой же свежескопированный файл (fcopy в PERSONAL_MUSIC_BOX_UPLOAD_DIR), так что тест повторяет
 /// боевой путь один в один.
 /datum/unit_test/personal_music_box/proc/stage_file(resource, filename)
 	var/path = "[GLOB.log_directory || "data/logs"]/unit_test_music_box_[filename]"
@@ -163,3 +163,43 @@
 	TEST_ASSERT(!findtext(box.get_upload_block_reason(user), "лимит"), "Лимит сработал раньше [limit] загрузок")
 	library += list(list("path" = second_path, "name" = "дубль", "length" = 7, "duration" = "7 секунд"))
 	TEST_ASSERT(findtext(box.get_upload_block_reason(user), "лимит"), "После [limit] загрузок лимит не сработал")
+
+/// Залитый трек ложится в каталог загрузок раунда, а не в логи, и сносится вместе с каталогом.
+/datum/unit_test/personal_music_box_upload_storage
+	requires_full_map = FALSE
+	var/test_ckey = "unittestmusicboxupload"
+	var/source_path
+	var/old_last_upload
+
+/datum/unit_test/personal_music_box_upload_storage/Destroy()
+	GLOB.personal_music_boxes_library -= test_ckey
+	GLOB.personal_music_boxes_last_player_upload -= test_ckey
+	GLOB.personal_music_boxes_last_upload = old_last_upload
+	if(source_path)
+		fdel(source_path)
+	return ..()
+
+/datum/unit_test/personal_music_box_upload_storage/Run()
+	source_path = "[GLOB.log_directory || "data/logs"]/unit_test_music_box_upload_source.ogg"
+	fdel(source_path)
+	fcopy('sound/machines/ping.ogg', source_path)
+	old_last_upload = GLOB.personal_music_boxes_last_upload
+	GLOB.personal_music_boxes_last_upload = world.time - 1 HOURS
+
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	user.ckey = test_ckey
+	var/obj/item/personal_music_box/box = allocate(/obj/item/personal_music_box)
+	TEST_ASSERT(user.put_in_hands(box), "Шкатулка не легла в руки")
+	TEST_ASSERT(box.store_upload(user, file(source_path), "C:\\music\\Тестовый трек.ogg"), "Загрузка трека не прошла")
+
+	var/list/library = GLOB.personal_music_boxes_library[test_ckey]
+	TEST_ASSERT_EQUAL(length(library), 1, "Трек не попал в библиотеку")
+	var/list/entry = library[1]
+	var/stored_path = entry["path"]
+	TEST_ASSERT_EQUAL(findtext(stored_path, PERSONAL_MUSIC_BOX_UPLOAD_DIR), 1, "Трек лёг не в каталог загрузок: [stored_path]")
+	TEST_ASSERT(fexists(stored_path), "Файл трека не лёг на диск")
+	TEST_ASSERT_EQUAL(box.curfile_path, stored_path, "Залитый трек не встал в шкатулку")
+	TEST_ASSERT_EQUAL(box.song_name, "Тестовый трек", "Название трека не взято из имени файла")
+
+	fdel(PERSONAL_MUSIC_BOX_UPLOAD_DIR)
+	TEST_ASSERT(!fexists(stored_path), "fdel каталога загрузок, как в /world/New(), не снёс залитый трек")

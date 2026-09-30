@@ -72,6 +72,8 @@ GLOBAL_LIST(topic_status_cache)
 		GLOB.restart_counter = text2num(trim(file2text(RESTART_COUNTER_PATH)))
 		fdel(RESTART_COUNTER_PATH)
 
+	fdel(PERSONAL_MUSIC_BOX_UPLOAD_DIR)
+
 	if(NO_INIT_PARAMETER in params)
 		return
 

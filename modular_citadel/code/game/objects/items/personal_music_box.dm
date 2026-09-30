@@ -1,6 +1,5 @@
 /// Личная музыкальная шкатулка из спонсорского лоадаута: игрок заливает свои .ogg и играет их рядом с собой.
 
-#define PERSONAL_MUSIC_BOX_MAX_FILE_SIZE (6 * 1024 * 1024)
 /// Сколько треков игрок может залить за раунд. Это же размер его библиотеки.
 #define PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND 10
 /// Пауза между заливками одного игрока
@@ -22,7 +21,7 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 /// ckey -> world.time последней заливки. Кулдаун на игроке, а не на шкатулке, иначе его обходят второй шкатулкой.
 GLOBAL_LIST_EMPTY(personal_music_boxes_last_player_upload)
 /// ckey -> залитые за раунд треки, list("path", "name", "length", "duration").
-/// Файлы лежат в папке логов раунда и не удаляются: на них ссылаются логи, а библиотека переживает шкатулку.
+/// Файлы лежат в PERSONAL_MUSIC_BOX_UPLOAD_DIR до конца раунда: библиотека переживает шкатулку.
 GLOBAL_LIST_EMPTY(personal_music_boxes_library)
 /// ckey тех, у кого прямо сейчас открыт диалог выбора файла
 GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
@@ -280,42 +279,42 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	var/infile = input(user, "Выберите файл .ogg:", name) as null|file
 	if(!infile || QDELETED(src) || QDELETED(user))
 		return
+	store_upload(user, infile, "[infile]")
+
+/// Проверяет залитый файл, копирует его в каталог загрузок раунда и ставит в шкатулку
+/obj/item/personal_music_box/proc/store_upload(mob/living/user, infile, filename)
 	var/block_reason = get_upload_block_reason(user, ignore_own_lock = TRUE)
 	if(block_reason)
 		to_chat(user, span_warning(block_reason))
-		return
-
-	var/filename = "[infile]"
+		return FALSE
 	if(!findtext(lowertext(filename), ".ogg", -4))
 		to_chat(user, span_warning("Трек должен быть в формате .ogg."))
-		return
+		return FALSE
 	var/file_size = length(infile)
 	if(file_size > PERSONAL_MUSIC_BOX_MAX_FILE_SIZE)
 		to_chat(user, span_warning("Файл слишком большой. Максимум 6 МБ."))
-		return
-	if(!GLOB.log_directory)
-		to_chat(user, span_warning("Загрузка треков недоступна до начала раунда."))
-		return
+		return FALSE
 
-	var/logged_filename = "[GLOB.log_directory]/jukebox_upload_[user.ckey]_[num2text(world.time, 12)].ogg"
-	fdel(logged_filename)
-	if(!fcopy(infile, logged_filename) || length(file(logged_filename)) != file_size)
-		fdel(logged_filename)
+	var/stored_path = "[PERSONAL_MUSIC_BOX_UPLOAD_DIR][user.ckey]_[num2text(world.time, 12)].ogg"
+	fdel(stored_path)
+	if(!fcopy(infile, stored_path) || length(file(stored_path)) != file_size)
+		fdel(stored_path)
 		to_chat(user, span_warning("Не удалось загрузить трек."))
-		return
-	var/track_length = get_audio_track_length(logged_filename)
+		return FALSE
+	var/track_length = get_audio_track_length(stored_path)
 	if(!track_length)
-		fdel(logged_filename)
+		fdel(stored_path)
 		to_chat(user, span_warning("Файл не распознан как аудио."))
-		return
+		return FALSE
 
 	GLOB.personal_music_boxes_last_player_upload[user.ckey] = world.time
 	GLOB.personal_music_boxes_last_upload = world.time
-	user.log_message("uploaded personal music box track: [logged_filename]", LOG_GAME)
+	var/track_name = get_personal_music_box_track_name(filename)
+	user.log_message("uploaded personal music box track \"[track_name]\" ([file_size] bytes): [stored_path]", LOG_GAME)
 
 	var/list/entry = list(
-		"path" = logged_filename,
-		"name" = get_personal_music_box_track_name(filename),
+		"path" = stored_path,
+		"name" = track_name,
 		"length" = track_length,
 		"duration" = DisplayTimeText(track_length),
 	)
@@ -326,6 +325,7 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	library += list(entry)
 	load_track(entry)
 	to_chat(user, span_notice("Трек «[song_name]» загружен."))
+	return TRUE
 
 /obj/item/personal_music_box/proc/load_track(list/entry)
 	curfile_path = entry["path"]
@@ -403,7 +403,6 @@ GLOBAL_LIST_EMPTY(personal_music_boxes_uploading)
 	track_label = trim(strip_html_simple(track_label), PERSONAL_MUSIC_BOX_MAX_TRACK_NAME_LEN + 1)
 	return length(track_label) ? track_label : "Свой трек"
 
-#undef PERSONAL_MUSIC_BOX_MAX_FILE_SIZE
 #undef PERSONAL_MUSIC_BOX_MAX_UPLOADS_PER_ROUND
 #undef PERSONAL_MUSIC_BOX_PLAYER_UPLOAD_COOLDOWN
 #undef PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN
