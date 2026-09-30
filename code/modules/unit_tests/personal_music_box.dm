@@ -86,3 +86,80 @@
 		"Шкатулка не в руках - причина отказа в загрузке обязана уйти в интерфейс")
 	TEST_ASSERT_EQUAL(data["upload_block_reason"], box.get_upload_block_reason(user), \
 		"ui_data отдал не ту причину отказа, что даёт get_upload_block_reason")
+
+	jukebox.set_volume(0)
+	data = box.ui_data(user)
+	TEST_ASSERT_EQUAL(data["volume"], 0, "Нулевая громкость ушла в интерфейс не нулём")
+
+	TEST_ASSERT_EQUAL(get_personal_music_box_track_name("C:\\music\\<Песня>.ogg"), "Песня", \
+		"Из названия трека не вычищены < и > или не срезан путь с расширением")
+	var/long_name = get_personal_music_box_track_name("[repeat_string(100, "ж")].ogg")
+	TEST_ASSERT_EQUAL(length_char(long_name), 64, "Длинное название трека не обрезано до 64 символов")
+	TEST_ASSERT_EQUAL(long_name, repeat_string(64, "ж"), "Кириллица в названии порвана при обрезке")
+	TEST_ASSERT_EQUAL(get_personal_music_box_track_name(".ogg"), "Свой трек", "Пустое название не заменено заглушкой")
+
+/// Библиотека шкатулки: лимит загрузок считается по ней, выбор залитого трека не тратит ни загрузку, ни кулдаун.
+/datum/unit_test/personal_music_box_library
+	requires_full_map = FALSE
+	var/list/staged_files = list()
+	var/test_ckey = "unittestmusicboxlibrary"
+
+/datum/unit_test/personal_music_box_library/Destroy()
+	GLOB.personal_music_boxes_library -= test_ckey
+	GLOB.personal_music_boxes_last_player_upload -= test_ckey
+	for(var/path in staged_files)
+		fdel(path)
+	staged_files.Cut()
+	return ..()
+
+/datum/unit_test/personal_music_box_library/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	user.ckey = test_ckey
+	var/obj/item/personal_music_box/box = allocate(/obj/item/personal_music_box)
+	TEST_ASSERT(user.put_in_hands(box), "Шкатулка не легла в руки")
+	var/datum/component/jukebox/personal_music_box/jukebox = box.get_jukebox_component()
+
+	var/first_path = "[GLOB.log_directory || "data/logs"]/unit_test_music_box_library_1.ogg"
+	var/second_path = "[GLOB.log_directory || "data/logs"]/unit_test_music_box_library_2.ogg"
+	for(var/path in list(first_path, second_path))
+		fdel(path)
+		fcopy('sound/machines/ping.ogg', path)
+		staged_files += path
+	var/list/library = list(
+		list("path" = first_path, "name" = "первый", "length" = 5, "duration" = "5 секунд"),
+		list("path" = second_path, "name" = "второй", "length" = 7, "duration" = "7 секунд"),
+	)
+	GLOB.personal_music_boxes_library[test_ckey] = library
+
+	TEST_ASSERT(box.select_library_track(user, 2), "Выбор второго трека из библиотеки не сработал")
+	TEST_ASSERT_EQUAL(box.curfile_path, second_path, "В шкатулку встал не тот файл")
+	TEST_ASSERT_EQUAL(box.song_name, "второй", "В шкатулку встало не то название")
+	TEST_ASSERT_EQUAL(jukebox.custom_track?.song_length, 7, "Длина трека из библиотеки не дошла до компонента")
+	TEST_ASSERT_NULL(GLOB.personal_music_boxes_last_player_upload[test_ckey], "Выбор из библиотеки запустил кулдаун загрузки")
+
+	TEST_ASSERT(!box.select_library_track(user, 3), "Выбор за пределами библиотеки прошёл")
+	TEST_ASSERT(!box.select_library_track(user, 1.5), "Дробный индекс прошёл")
+	TEST_ASSERT(!box.select_library_track(user, null), "Пустой индекс прошёл")
+
+	var/list/data = box.ui_data(user)
+	var/list/library_data = data["library"]
+	TEST_ASSERT_EQUAL(length(library_data), 2, "Интерфейс получил не всю библиотеку")
+	var/list/first_entry_data = library_data[1]
+	var/list/second_entry_data = library_data[2]
+	TEST_ASSERT(!first_entry_data["current"] && second_entry_data["current"], "Интерфейс неверно отметил текущий трек")
+
+	jukebox.active = TRUE
+	TEST_ASSERT(!box.select_library_track(user, 1), "Трек сменился на играющей шкатулке")
+	jukebox.active = FALSE
+
+	fdel(first_path)
+	TEST_ASSERT(!box.select_library_track(user, 1), "Выбран трек, файла которого нет на диске")
+	TEST_ASSERT_EQUAL(box.curfile_path, second_path, "Отказ в выборе всё равно сменил трек")
+
+	var/limit = data["uploads_max"]
+	TEST_ASSERT(limit > 3, "Лимит загрузок за раунд снова урезан до трёх")
+	while(length(library) < limit - 1)
+		library += list(list("path" = second_path, "name" = "дубль", "length" = 7, "duration" = "7 секунд"))
+	TEST_ASSERT(!findtext(box.get_upload_block_reason(user), "лимит"), "Лимит сработал раньше [limit] загрузок")
+	library += list(list("path" = second_path, "name" = "дубль", "length" = 7, "duration" = "7 секунд"))
+	TEST_ASSERT(findtext(box.get_upload_block_reason(user), "лимит"), "После [limit] загрузок лимит не сработал")

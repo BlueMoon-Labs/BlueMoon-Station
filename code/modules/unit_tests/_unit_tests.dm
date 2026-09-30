@@ -327,6 +327,7 @@
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
 #include "jukebox_catchup_offset.dm"
+#include "jukebox_component_fixes.dm"
 #include "jukebox_import.dm"
 #include "jukebox_send_range.dm"
 #include "personal_music_box.dm"

@@ -53,6 +53,11 @@
 /// Default range at which sound distance multiplier applies
 #define SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE 7
 
+#define JUKEBOX_MAX_VOLUME 100
+#define JUKEBOX_MAX_VOLUME_EMAGGED 1000
+/// Громкость джукбокса делится на это число и уходит в SSjukeboxes как falloff
+#define JUKEBOX_VOLUME_TO_FALLOFF 35
+
 
 #define SOUND_MINIMUM_PRESSURE 10
 /// remove
