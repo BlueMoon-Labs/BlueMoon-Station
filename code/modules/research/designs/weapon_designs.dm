@@ -750,7 +750,7 @@
 
 // 41 cal ревики сбух
 	
-/datum/design/cal41_rubber
+/datum/design/cal41_rubber_sp
 	name = "Speed Loader (.41 rubber)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_rubber_sp"
@@ -761,7 +761,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_GREEN
 
-/datum/design/cal41_lethal
+/datum/design/cal41_lethal_sp
 	name = "Speed Loader (.41 lethal)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_lethal_sp"
