@@ -489,7 +489,12 @@
 				available++
 		var/shortfall = requirements[required_type] - available
 		if(shortfall > 0)
-			missing += "[heretic_ritual_ingredient_name(required_type)] ×[shortfall]"
+			var/near_miss = ""
+			for(var/obj/item/candidate in available_atoms)
+				if(candidate.type != required_type && ispath(required_type, candidate.type))
+					near_miss = " ([heretic_ritual_ingredient_name(candidate.type)] не подходит)"
+					break
+			missing += "[heretic_ritual_ingredient_name(required_type)] ×[shortfall][near_miss]"
 	if(length(missing))
 		var/summon_hint = ""
 		if(ritual.type == /datum/eldritch_knowledge/living_heart)
@@ -880,10 +885,24 @@
 	minds -= heretic
 
 /obj/effect/reality_smash/proc/can_harvest(mob/living/user, obj/item/forbidden_book/book)
-	if(QDELETED(src) || QDELETED(user) || QDELETED(book) || user.incapacitated() || !Adjacent(user) || !(book in user.GetAllContents()))
-		return FALSE
+	return !harvest_failure_reason(user, book)
+
+/obj/effect/reality_smash/proc/harvest_failure_reason(mob/living/user, obj/item/forbidden_book/book)
+	if(QDELETED(src) || QDELETED(user))
+		return "Разлом закрылся."
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
-	return heretic && heretic.influences_harvested < HERETIC_INFLUENCE_LIMIT && !(user.mind in harvested_minds)
+	if(!heretic)
+		return "Разлом отвечает только еретику."
+	if(user.mind in harvested_minds)
+		return "Этот разлом вы уже исследовали."
+	if(heretic.influences_harvested >= HERETIC_INFLUENCE_LIMIT)
+		return "Исследовано разломов: [heretic.influences_harvested]/[HERETIC_INFLUENCE_LIMIT]. Дальше знания дают только подношения."
+	if(QDELETED(book) || !(book in user.GetAllContents()))
+		return "Кодекс должен быть при вас."
+	if(!Adjacent(user))
+		return "Подойдите к разлому вплотную."
+	if(user.incapacitated())
+		return "Сейчас разлом не исследовать: мешают наручники, оглушение или захват."
 
 /obj/effect/reality_smash/proc/perceived_by(mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -908,7 +927,11 @@
 		return rift
 
 /obj/effect/reality_smash/proc/harvest(mob/living/user, obj/item/forbidden_book/book)
-	if(!can_harvest(user, book) || (user.mind in harvesting_minds))
+	var/reason = harvest_failure_reason(user, book)
+	if(reason)
+		to_chat(user, span_warning(reason))
+		return FALSE
+	if(user.mind in harvesting_minds)
 		return FALSE
 	var/datum/mind/researcher = user.mind
 	var/datum/antagonist/heretic/original_heretic = IS_HERETIC(user)
@@ -917,6 +940,9 @@
 	var/completed = do_after(user, 10 SECONDS, src, extra_checks = CALLBACK(src, PROC_REF(can_harvest), user, book))
 	harvesting_minds -= researcher
 	if(QDELETED(src) || !completed || user.mind != researcher || IS_HERETIC(user) != original_heretic || !can_harvest(user, book))
+		reason = harvest_failure_reason(user, book)
+		if(reason && !QDELETED(user))
+			to_chat(user, span_warning(reason))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = researcher.has_antag_datum(/datum/antagonist/heretic)
 	harvested_minds |= researcher

@@ -38,7 +38,7 @@
 		/obj/item/clothing/suit = "Верхняя одежда",
 		/obj/item/flashlight = "Фонарик",
 		/obj/item/clothing/shoes = "Пара обуви",
-		/obj/item/flashlight/lantern = "Фонарь",
+		/obj/item/flashlight/lantern = "Шахтёрский фонарь",
 		/obj/item/hatchet = "Топорик",
 		/obj/item/hemostat = "Хирургический зажим",
 		/obj/item/kitchen/fork = "Вилка",

@@ -88,6 +88,15 @@
 		var/datum/eldritch_knowledge/knowledge = researched_knowledge[knowledge_type]
 		knowledge.on_lose(owner?.current)
 	QDEL_LIST(summon_items)
+	qdel(personal_codex?.resolve())
+	personal_codex = null
+	for(var/obj/item/living_heart/heart as anything in GLOB.living_heart_cache.Copy())
+		if(heart.owner_mind == owner)
+			qdel(heart)
+	var/obj/item/injector = starter_essence?.resolve()
+	if(injector && owner?.current && (injector in owner.current.GetAllContents()))
+		qdel(injector)
+	starter_essence = null
 	clear_hunt()
 	QDEL_NULL(pocket)
 	if(!silent && owner?.current)
@@ -218,6 +227,7 @@
 	RegisterSignal(current, COMSIG_MOB_DEATH, PROC_REF(on_death))
 	RegisterSignal(current, COMSIG_PARENT_QDELETING, PROC_REF(on_innate_body_deleted))
 	RegisterSignal(current, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_unarmed_attack))
+	RegisterSignal(current, COMSIG_MOB_ITEM_AFTERATTACK, PROC_REF(on_item_afterattack))
 	update_combat_resource_alert(FALSE, current)
 	update_codex_alert(current)
 
@@ -233,7 +243,7 @@
 	if(owner)
 		handle_clown_mutation(current, removing = FALSE)
 	current.faction -= "heretics"
-	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
+	UnregisterSignal(current, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, COMSIG_MOB_ITEM_AFTERATTACK))
 
 /datum/antagonist/heretic/proc/on_innate_body_deleted(mob/living/source)
 	SIGNAL_HANDLER
@@ -241,6 +251,17 @@
 
 /datum/antagonist/heretic/proc/on_unarmed_attack(mob/living/source, atom/target)
 	SIGNAL_HANDLER
+	var/obj/effect/reality_smash/rift = heretic_rift_at(target, source)
+	rift?.touch_by(source)
+
+/// Кодекс и хватка исследуют разлом сами, остальные предметы в руке не должны глушить касание.
+/datum/antagonist/heretic/proc/on_item_afterattack(mob/living/source, atom/target, mob/user, proximity_flag, click_parameters)
+	SIGNAL_HANDLER
+	if(!proximity_flag)
+		return
+	var/obj/item/held = source.get_active_held_item()
+	if(istype(held, /obj/item/forbidden_book) || istype(held, /obj/item/melee/touch_attack))
+		return
 	var/obj/effect/reality_smash/rift = heretic_rift_at(target, source)
 	rift?.touch_by(source)
 

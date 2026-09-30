@@ -2,12 +2,14 @@
 
 /datum/antagonist/heretic
 	var/starter_essence_given = FALSE
+	var/datum/weakref/starter_essence
 
 /datum/antagonist/heretic/proc/give_starter_essence(mob/living/carbon/user)
 	if(starter_essence_given || role_removed || QDELETED(user) || owner?.current != user)
 		return
 	starter_essence_given = TRUE
 	var/obj/item/reagent_containers/hypospray/medipen/eldritch/injector = new(get_turf(user))
+	starter_essence = WEAKREF(injector)
 	var/where = user.equip_in_one_of_slots(injector, list("рюкзак" = ITEM_SLOT_BACKPACK, "левый карман" = ITEM_SLOT_LPOCKET, "правый карман" = ITEM_SLOT_RPOCKET), qdel_on_fail = FALSE)
 	if(!where)
 		where = user.put_in_hands(injector) ? "в руках" : "на полу под вами"

@@ -906,7 +906,7 @@ const HuntChapter = ({ retargetDeadline, openHelp }: { retargetDeadline: number;
         </ul>
         <button type="button" className="HereticBook__guideLink" onClick={() => openHelp('hunt')}>Все правила жертвы - в Помощи</button>
         <h3>Разломы</h3>
-        <p>Изучено {hunt.influences_harvested} из {hunt.influence_limit}. {hunt.influences_harvested >= hunt.influence_limit ? 'Лимит достигнут. Получайте новые знания за жертвоприношения.' : 'Коснитесь разлома рукой, хваткой или кодексом, держа кодекс при себе, чтобы получить знания.'}</p>
+        <p>Изучено {hunt.influences_harvested} из {hunt.influence_limit}. {hunt.influences_harvested >= hunt.influence_limit ? 'Лимит достигнут. Получайте новые знания за жертвоприношения.' : 'Коснитесь разлома рукой, хваткой, кодексом или любым предметом в руке, держа кодекс при себе, чтобы получить знания.'}</p>
         <InfluenceSchedule hunt={hunt} />
       </Page>
     </>
@@ -951,7 +951,7 @@ const HelpChapter = ({ topic, openHelp }: { topic: HelpTopicId; openHelp: (topic
           </ul>
         </HelpTopic>
         <HelpTopic id="rifts" title="Разломы" open={topic === 'rifts'}>
-          <p>Коснитесь разлома рукой, хваткой или кодексом и дождитесь конца изучения. Кодекс должен быть при себе. За раунд можно изучить {hunt.influence_limit} {countNoun(hunt.influence_limit, ['разлом', 'разлома', 'разломов'])}.</p>
+          <p>Коснитесь разлома рукой, хваткой, кодексом или любым предметом в руке и дождитесь конца изучения. Кодекс должен быть при себе. За раунд можно изучить {hunt.influence_limit} {countNoun(hunt.influence_limit, ['разлом', 'разлома', 'разломов'])}.</p>
           <InfluenceSchedule hunt={hunt} />
           <ul className="HereticBook__details">
             <li>Чужое изучение не забирает ваши очки, поздние еретики тоже находят разломы.</li>

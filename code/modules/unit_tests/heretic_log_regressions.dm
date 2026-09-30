@@ -403,3 +403,60 @@
 	TEST_ASSERT(sacrifice.completed, "Набранные жертвы видны в панели.")
 	TEST_ASSERT(ascend.completed, "Вознесение видно в панели.")
 	heretic.objectives -= list(sacrifice, ascend)
+
+/// Отказ руны называет похожий, но неподходящий предмет: фонарик вместо шахтёрского фонаря.
+/datum/unit_test/heretic_log_ingredient_near_miss/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/spell/void_phase/recipe = allocate(/datum/eldritch_knowledge/spell/void_phase)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	allocate(/obj/item/flashlight, get_turf(user))
+	var/reason = rune.recipe_failure_reason(recipe, user)
+	TEST_ASSERT(findtext(reason, "Шахтёрский фонарь ×1"), "Отказ называет шахтёрский фонарь: [reason]")
+	TEST_ASSERT(findtext(reason, "Фонарик не подходит"), "Отказ объясняет, что фонарик не подходит: [reason]")
+
+/// Разлом называет причину отказа и принимает касание любым предметом в руке.
+/datum/unit_test/heretic_log_rift_failure_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.apply_innate_effects(user)
+	var/turf/rift_turf = get_step(user, EAST)
+	var/datum/reality_smash_tracker/tracker = allocate(/datum/reality_smash_tracker)
+	var/obj/effect/reality_smash/rift = allocate(/obj/effect/reality_smash, rift_turf, tracker)
+	rift.AddMind(user.mind)
+	var/obj/item/forbidden_book/loose_book = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, loose_book), "Кодекс"), "Без кодекса при себе причина - кодекс.")
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, user)
+	TEST_ASSERT_NULL(rift.harvest_failure_reason(user, book), "С кодексом рядом разлом доступен.")
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife)
+	user.put_in_active_hand(knife)
+	user.ClickOn(rift_turf, "icon-x=16;icon-y=16;left=1")
+	TEST_ASSERT(user.mind in rift.harvesting_minds, "Клик ножом в руке по клетке разлома начинает исследование.")
+	rift.harvesting_minds.Cut()
+	rift.harvested_minds |= user.mind
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "уже исследовали"), "Повторное исследование названо.")
+	rift.harvested_minds -= user.mind
+	heretic.influences_harvested = HERETIC_INFLUENCE_LIMIT
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "подношения"), "Исчерпанный лимит назван.")
+	heretic.influences_harvested = 0
+	user.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "вплотную"), "Дальность названа.")
+
+/// Снятие роли убирает личный кодекс и сердце, где бы они ни были, и стартовый инъектор у бывшего еретика.
+/datum/unit_test/heretic_log_removal_clears_items/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/forbidden_book/codex = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	heretic.personal_codex = WEAKREF(codex)
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart)
+	TEST_ASSERT(heart.bind(heretic.owner), "Сердце привязано к еретику.")
+	user.put_in_hands(heart)
+	var/obj/item/living_heart/stranger_heart = allocate(/obj/item/living_heart, run_loc_floor_top_right)
+	heretic.give_starter_essence(user)
+	var/obj/item/injector = heretic.starter_essence?.resolve()
+	TEST_ASSERT_NOTNULL(injector, "Инъектор выдан.")
+	heretic.clear_heretic()
+	TEST_ASSERT(QDELETED(codex), "Выданный кодекс исчезает вместе с ролью.")
+	TEST_ASSERT(QDELETED(heart), "Привязанное сердце исчезает вместе с ролью.")
+	TEST_ASSERT(QDELETED(injector), "Стартовый инъектор у бывшего еретика исчезает.")
+	TEST_ASSERT(!QDELETED(stranger_heart), "Непривязанное сердце остаётся.")
