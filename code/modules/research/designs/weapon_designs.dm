@@ -753,7 +753,7 @@
 /datum/design/cal41_rubber
 	name = "Speed Loader (.41 rubber)"
 	desc = "Designed to quickly reload revolvers."
-	id = "41_rubber"
+	id = "41_rubber_sp"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 10000)
 	build_path = /obj/item/ammo_box/cal41
@@ -764,7 +764,7 @@
 /datum/design/cal41_lethal
 	name = "Speed Loader (.41 lethal)"
 	desc = "Designed to quickly reload revolvers."
-	id = "41_lethal"
+	id = "41_lethal_sp"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 20000)
 	build_path = /obj/item/ammo_box/cal41/lethal
