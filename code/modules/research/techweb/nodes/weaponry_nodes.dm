@@ -131,6 +131,6 @@
 	display_name = "Desperate situations call for desperate measures"
 	description = "A dark age demands crude fury. When the world fractures, you do not weep—you weld the shards together and force the iron to scream."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
-	prereq_ids = list("weaponry", "ballistic_weapons")
+	prereq_ids = list("weaponry", "adv_weaponry")
 	design_ids = list("dies_irae", "liturgy")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
