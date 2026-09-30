@@ -53,7 +53,7 @@
 	var/obj/structure/disposalholder/holder
 	while((holder = locate() in src))
 		holder.active = FALSE
-		expel(holder, get_turf(src), 0)
+		expel(holder, get_turf(src), NONE)
 	stored = null //The qdel is handled in expel()
 	return ..()
 
