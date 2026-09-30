@@ -67,7 +67,7 @@
 	category = list("hacked", "Security")
 
 /datum/design/cal41_rubber
-	name = ".41"
+	name = ".41 rubber"
 	id = "41_rubber"
 	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 250)
