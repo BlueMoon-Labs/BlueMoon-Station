@@ -47,3 +47,23 @@
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/liturgy
+	name = "\improper Litugry revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Liturgy
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
+				/obj/item/weaponcrafting/gunkit/liturgy = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/dies_irae
+	name = "\improper Dies Irae revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Dies_Irae
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
+				/obj/item/weaponcrafting/gunkit/dies_irae = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON

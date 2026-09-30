@@ -116,3 +116,21 @@
 	prereq_ids = list("beam_weapons")
 	design_ids = list("immolator")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 15000) // Immolator
+
+/datum/techweb_node/speedloaders
+	id = "speedloaders"
+	display_name = "Special speedloaders for special situations"
+	description = "Feeling lucky, punk?"
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
+	prereq_ids = list("weaponry", "ballistic_weapons")
+	design_ids = list("41_dumdum", "41_incendiary", "41_magnum", "41_fmj")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
+
+/datum/techweb_node/revolver_conversions
+	id = "revolver_conversions"
+	display_name = "Desperate situations call for desperate measures"
+	description = "A dark age demands crude fury. When the world fractures, you do not weep—you weld the shards together and force the iron to scream."
+	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
+	prereq_ids = list("weaponry", "ballistic_weapons")
+	design_ids = list("dies_irae", "liturgy")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)

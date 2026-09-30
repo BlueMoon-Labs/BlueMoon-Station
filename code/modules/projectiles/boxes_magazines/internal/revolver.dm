@@ -29,3 +29,46 @@
 /obj/item/ammo_box/magazine/internal/rus357/Initialize(mapload)
 	stored_ammo += new ammo_type(src)
 	. = ..()
+
+/obj/item/ammo_box/magazine/internal/cylinder/cowboy
+	name = "Old Revolvers 45 long cylinder"
+	ammo_type = /obj/item/ammo_casing/g45l
+	caliber = list(".45l")
+	max_ammo = 6
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/apostle
+	name = "Apostle cylinder"
+	ammo_type = /obj/item/ammo_casing/cal41/rubber
+	caliber = list(".41cal")
+	max_ammo = 6
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/passing_bell
+	name = "Passing Bell cylinder"
+	ammo_type = /obj/item/ammo_casing/g4570
+	caliber = list("45-70")
+	max_ammo = 6
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/exorcist 
+	name = "Exorcist cylinder"
+	ammo_type = /obj/item/ammo_casing/cal410/rubber
+	caliber = list(".410cal")
+	max_ammo = 5
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/liturgy
+	name = "Liturgy cylinder"
+	ammo_type = /obj/item/ammo_casing/cal41/rubber
+	caliber = list(".41cal")
+	max_ammo = 18
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	name = "Dies irae cylinder"
+	ammo_type = /obj/item/ammo_casing/a308
+	caliber = list("308")
+	max_ammo = 6
+	multiload = 1
+

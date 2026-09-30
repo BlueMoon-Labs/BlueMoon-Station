@@ -747,3 +747,115 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_AMBER
+
+// 41 cal ревики сбух
+	
+/datum/design/cal41_rubber
+	name = "Speed Loader (.41 rubber)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_rubber"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/glass = 10000)
+	build_path = /obj/item/ammo_box/cal41
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_GREEN
+
+/datum/design/cal41_lethal
+	name = "Speed Loader (.41 lethal)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_lethal"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000)
+	build_path = /obj/item/ammo_box/cal41/lethal
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/cal41_dumdum
+	name = "Speed Loader (.41 dumdum)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_dumdum"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000)
+	build_path = /obj/item/ammo_box/cal41/dumdum
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER 
+
+/datum/design/cal41_incendiary
+	name = "Speed Loader (.41 incendiary)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_incendiary"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/glass = 10000, /datum/material/plasma = 10000)
+	build_path = /obj/item/ammo_box/cal41/incendiary
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+/datum/design/cal41_magnum
+	name = "Speed Loader (.41 magnum)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_magnum"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/titanium = 10000, /datum/material/plasma = 10000)
+	build_path = /obj/item/ammo_box/cal41/magnum
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_RED
+
+/datum/design/cal41_fmj
+	name = "Speed Loader (.41 fmj)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_fmj"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/titanium = 10000)
+	build_path = /obj/item/ammo_box/cal41/fmj
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+//апгрейды 41
+
+/datum/design/cal41_liturgy
+	name = "Enfrocer MK60 upgrade kit"
+	desc = "A set of spare parts for upgrading the enforcer pistol to the MK60 version. Can be used only on empty gun"
+	id = "liturgy"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/uranium = 2500, /datum/material/plastic = 1500)
+	build_path = /obj/item/weaponcrafting/gunkit/liturgy
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/cal41_dies_irae
+	name = "Enfrocer MK62 upgrade kit"
+	desc = "A set of spare parts for upgrading the MK60 pistol to the MK62 version. Can be used only on empty gun"
+	id = "dies_irae"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/gold = 1500, /datum/material/titanium = 1000 )
+	build_path = /obj/item/weaponcrafting/gunkit/dies_irae
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_RED
+
+// 410 cal дробь
+
+/datum/design/exorcist_rubber
+	id = "exorcist_rubber"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/glass = 1000)
+	build_path = /obj/item/ammo_casing/cal410/rubber
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_GREEN 
+
+/datum/design/exorcist_rubber
+	id = "exorcist_lethal"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 3000)
+	build_path = /obj/item/ammo_casing/cal410/lethal
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
