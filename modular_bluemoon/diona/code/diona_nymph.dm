@@ -305,6 +305,9 @@
 	adult.vocal_pitch_range = vocal_pitch_range
 	adult.real_name = adult.dna.species.random_name(MALE, FALSE)
 	adult.name = adult.real_name
+	for(var/obj/item/held_item in held_items)
+		if(dropItemToGround(held_item, TRUE))
+			adult.put_in_hands(held_item)
 	if(mind)
 		mind.transfer_to(adult)
 	else

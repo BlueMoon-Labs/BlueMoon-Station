@@ -144,6 +144,9 @@
 	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		// A ghost may have taken this sleeper through attack_ghost while the poll was open.
+		if(QDELETED(spawner))
+			continue
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
 			var/mob/living/spawned_raider = spawner.create(our_candidate.ckey)

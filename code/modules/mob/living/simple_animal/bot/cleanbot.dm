@@ -479,11 +479,12 @@
 		/obj/effect/decal/cleanable/semendrip,
 		/obj/effect/decal/cleanable/semen/femcum,
 		/obj/effect/decal/cleanable/generic,
-		/obj/effect/decal/cleanable/glass,,
+		/obj/effect/decal/cleanable/glass,
 		/obj/effect/decal/cleanable/cobweb,
 		/obj/effect/decal/cleanable/plant_smudge,
 		/obj/effect/decal/cleanable/chem_pile,
 		/obj/effect/decal/cleanable/shreds,
+		/obj/effect/decal/cleanable/wrapping,
 		/obj/effect/decal/cleanable/glitter,
 		/obj/effect/decal/remains,
 		/obj/effect/abstract/liquid_turf
