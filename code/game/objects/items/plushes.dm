@@ -753,6 +753,10 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 
 //спрайты молек (кроме оригинального) были спи...одолженны от сюда https://github.com/BeeStation/BeeStation-Hornet
 
+////////////////////////////////// MOTHS //////////////////////////////////
+
+//спрайты молек (кроме оригинального) были спи...одолженны от сюда https://github.com/BeeStation/BeeStation-Hornet
+
 /obj/item/toy/plush/mothplushie
 	name = "moth plushie"
 	desc = "An adorable stuffed toy that resembles some kind of insect."
