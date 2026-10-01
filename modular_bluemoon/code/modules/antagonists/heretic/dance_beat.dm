@@ -736,12 +736,6 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	last_phrase = index
 	return style.phrase(index)
 
-/datum/eldritch_knowledge/base_dance/proc/bolero_active()
-	return FALSE
-
-/datum/eldritch_knowledge/base_dance/proc/bolero_phrase()
-	return null
-
 /// Удар или Хватка по живому врагу: Такт, акцент в сильную долю, приём стиля.
 /datum/eldritch_knowledge/base_dance/proc/register_strike(mob/living/user, mob/living/victim, accuracy, strong, blade = FALSE)
 	if(!can_use(user) || !heretic_can_affect(user, victim, chargecost = 0, notify = FALSE))
@@ -782,9 +776,6 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 
 /datum/eldritch_knowledge/base_dance/proc/update_passive()
 	set_passive(combat_resource >= HERETIC_DANCE_PASSIVE_TAKT || bolero_keeps_passive(style_id))
-
-/datum/eldritch_knowledge/base_dance/proc/bolero_keeps_passive(id)
-	return FALSE
 
 /datum/eldritch_knowledge/base_dance/proc/set_passive(active)
 	if(passive_active == active || QDELETED(dance_body))
