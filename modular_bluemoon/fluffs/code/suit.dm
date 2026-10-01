@@ -279,12 +279,12 @@
 	icon_state = "opssrtarmor"
 	item_state = "opssrtarmor"
 	icon = 'modular_bluemoon/icons/obj/clothing/suits/armor.dmi'
-	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suits/armor.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST
-	mutantrace_variation = STYLE_DIGITIGRADE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/hos/dread_armor
 	name = "Броня Судьи"

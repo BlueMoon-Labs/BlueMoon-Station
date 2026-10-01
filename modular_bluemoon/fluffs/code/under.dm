@@ -842,7 +842,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniforms_digi.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/under/poly_maniac/ComponentInitialize()
 	. = ..()
