@@ -90,25 +90,25 @@
 	category = CAT_CHEMISTRY
 
 /datum/export/crack   // Всё ниженаписанное в два раза дешевле, чем в НовоТГ, адаптировано под экономику БлюМуна
-	cost = CARGO_CRATE_VALUE * 0.25
+	cost = CARGO_CRATE_VALUE * 0.5
 	unit_name = "crack"
 	export_types = list(/obj/item/reagent_containers/crack)
 	include_subtypes = FALSE
 
 /datum/export/crack/crackbrick
-	cost = CARGO_CRATE_VALUE * 1.5
+	cost = CARGO_CRATE_VALUE * 3
 	unit_name = "crack brick"
 	export_types = list(/obj/item/reagent_containers/crackbrick)
 	include_subtypes = FALSE
 
 /datum/export/cocaine
-	cost = CARGO_CRATE_VALUE * 0.2
+	cost = CARGO_CRATE_VALUE * 0.5
 	unit_name = "cocaine"
 	export_types = list(/obj/item/reagent_containers/cocaine)
 	include_subtypes = FALSE
 
 /datum/export/cocainebrick
-	cost = CARGO_CRATE_VALUE * 1.25
+	cost = CARGO_CRATE_VALUE * 3
 	unit_name = "cocaine brick"
 	export_types = list(/obj/item/reagent_containers/cocainebrick)
 	include_subtypes = FALSE

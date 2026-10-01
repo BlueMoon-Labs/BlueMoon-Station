@@ -64,7 +64,7 @@
 		return
 	var/obj/item/I = AM
 	if(I.juice_results || I.grind_results)
-		if(I.juice_results)
+		if(I.juice_results && !I.prefer_grind)
 			I.on_juice()
 			reagents.add_reagent_list(I.juice_results)
 			if(I.reagents)

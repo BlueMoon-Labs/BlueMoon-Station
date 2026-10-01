@@ -119,10 +119,10 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	if(dance_body)
 		restart_clock()
 
-/datum/eldritch_knowledge/base_dance/bolero_active()
+/datum/eldritch_knowledge/base_dance/proc/bolero_active()
 	return bolero_on && world.time >= bolero_silent_until
 
-/datum/eldritch_knowledge/base_dance/bolero_phrase()
+/datum/eldritch_knowledge/base_dance/proc/bolero_phrase()
 	if(bolero_bar_beat == beat_total && bolero_bar_phrase)
 		return bolero_bar_phrase
 	bolero_bar_beat = beat_total
@@ -133,7 +133,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		bolero_bar_phrase = pick(stage_phrases)
 	return bolero_bar_phrase
 
-/datum/eldritch_knowledge/base_dance/bolero_keeps_passive(id)
+/datum/eldritch_knowledge/base_dance/proc/bolero_keeps_passive(id)
 	if(!bolero_on)
 		return FALSE
 	var/index = GLOB.heretic_dance_styles.Find(id)
