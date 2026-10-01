@@ -27,7 +27,27 @@ GLOBAL_LIST_INIT(heretic_side_knowledge, list(
 
 /proc/init_heretic_paths()
 	var/list/paths = list()
-	for(var/datum/heretic_path/path_type as anything in subtypesof(/datum/heretic_path))
+	// subtypesof() идёт по порядку инклюдов, а порядок вкладок кодекса от него не зависит.
+	var/list/path_types = list(
+		/datum/heretic_path/ash,
+		/datum/heretic_path/rust,
+		/datum/heretic_path/flesh,
+		/datum/heretic_path/void,
+		/datum/heretic_path/blade,
+		/datum/heretic_path/moon,
+		/datum/heretic_path/cosmic,
+		/datum/heretic_path/lock,
+		/datum/heretic_path/blood,
+		/datum/heretic_path/echo,
+		/datum/heretic_path/glass,
+		/datum/heretic_path/tide,
+		/datum/heretic_path/sand,
+		/datum/heretic_path/spirit,
+		/datum/heretic_path/wax,
+		/datum/heretic_path/dance,
+	)
+	path_types |= subtypesof(/datum/heretic_path)
+	for(var/datum/heretic_path/path_type as anything in path_types)
 		if(!initial(path_type.id))
 			continue
 		var/datum/heretic_path/path = new path_type

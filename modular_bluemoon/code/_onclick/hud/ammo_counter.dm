@@ -9,12 +9,12 @@
 *	proc/turn_off
 *	proc/turn_on
 *	proc/set_hud
-*	Check the gun_hud.dmi for all available icons you can use.
+*	Check the modular_bluemoon/icons/screen/gun_hud.dmi for all available icons you can use.
 */
 
 /atom/movable/screen/ammo_counter
 	name = "ammo counter"
-	icon = 'modular_bluemoon/modular_skyrat/modules/gunhud/icons/gun_hud.dmi'
+	icon = 'modular_bluemoon/icons/screen/gun_hud.dmi'
 	icon_state = "backing"
 	screen_loc = ui_ammocounter
 	invisibility = INVISIBILITY_ABSTRACT
