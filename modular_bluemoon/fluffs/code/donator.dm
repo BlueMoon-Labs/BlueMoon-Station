@@ -2040,13 +2040,13 @@
 /datum/gear/donator/bm/opssrtclothes
 	name = "OPS-SRT Clothing"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/head/donator/bm/opssrtclothes
+	path = /obj/item/clothing/under/donator/opssrtclothes
 	ckeywhitelist = list("monolithxxv", "mishanok")
 
 /datum/gear/donator/bm/opssrtarmor
 	name = "OPS-SRT Plate Carrier"
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/head/donator/bm/opssrtarmor
+	path = /obj/item/clothing/suit/donator/bm/opssrtarmor
 	ckeywhitelist = list("monolithxxv", "mishanok")
 
 /datum/gear/donator/bm/mark50k_helmet
