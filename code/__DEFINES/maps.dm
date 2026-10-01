@@ -111,7 +111,7 @@ require only minor tweaks.
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_BASETURF = /turf/open/lava/smooth/lava_land_surface) //You see Ivan, defines can't be modularized.
 //SKYRAT CHANGES oh a jungle
-// ZTRAIT_UP/ZTRAIT_DOWN - смещение до соседа, а не номер уровня; пара лежит соседними z.
+// ZTRAIT_UP/ZTRAIT_DOWN - смещение до соседа, а не номер уровня; джунгли грузятся первыми, поверхность прямо над ними.
 #define ZTRAITS_LAVALAND_JUNGLE list(\
 	ZTRAIT_MINING = TRUE, \
 	ZTRAIT_LAVA_JUNGLE_RUINS = TRUE, \

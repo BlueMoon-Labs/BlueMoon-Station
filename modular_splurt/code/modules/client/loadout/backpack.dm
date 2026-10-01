@@ -9,8 +9,12 @@
 	path = /obj/item/storage/box/bulk_condoms
 
 /datum/gear/backpack/sounding
-	name = "Sounding rod"
+	name = "Уретральный стержень"
 	path = /obj/item/genital_equipment/sounding
+
+/datum/gear/backpack/urethral_plug
+	name = "Уретральная пробка"
+	path = /obj/item/genital_equipment/urethral_plug
 
 //Lipstick
 /datum/gear/backpack/lipstick

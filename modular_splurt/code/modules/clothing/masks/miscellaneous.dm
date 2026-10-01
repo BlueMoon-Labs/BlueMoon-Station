@@ -107,7 +107,7 @@
 /obj/item/clothing/glasses/brokenhud/security/night
 	name = "broken night vision security HUD"
 	desc = "An advanced heads-up display which provides id data and vision in complete darkness. However the electronics seem to no longer work."
-	icon_state = "securityhudnight"
+	icon_state = "hudnight_off"
 	glass_colour_type = /datum/client_colour/glass_colour/green
 
 /obj/item/clothing/glasses/brokenhud/health
@@ -119,7 +119,7 @@
 /obj/item/clothing/glasses/brokenhud/health/night
 	name = "broken night vision health scanner HUD"
 	desc = "An advanced medical heads-up display that allows doctors to find patients in complete darkness. However the electronics seem to no longer work"
-	icon_state = "healthhudnight"
+	icon_state = "hudnight_off"
 	item_state = "glasses"
 	glass_colour_type = /datum/client_colour/glass_colour/green
 

@@ -1823,7 +1823,7 @@
 /area/awaymission/research/interior/security)
 "dU" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/automatic/fal,
+/obj/item/gun/ballistic/automatic/wt550/standart,
 /obj/item/ammo_box/magazine/fal,
 /obj/item/ammo_box/magazine/fal,
 /obj/effect/turf_decal/tile/red{

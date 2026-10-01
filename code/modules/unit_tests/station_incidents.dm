@@ -35,6 +35,21 @@
 	check_manifest_access()
 	check_shipment_visuals()
 
+/// Клетка общая для всех тестов: живность, оставленная другими, не даёт горизонтальному ящику открыться.
+/datum/unit_test/station_incidents/proc/clear_crate_spot(turf/spot)
+	for(var/mob/living/stray in spot)
+		log_test("station_incidents: с клетки ящика убран [stray.type]")
+		qdel(stray)
+
+/// Живность на клетке ящика, которая не даёт ему открыться.
+/datum/unit_test/station_incidents/proc/describe_crate_blockers(obj/structure/closet/crate)
+	var/list/blockers = list()
+	for(var/mob/living/blocker in get_turf(crate))
+		if(!blocker.anchored && blocker.move_resist < MOVE_FORCE_VERY_STRONG && !(crate.horizontal && blocker.mob_size > MOB_SIZE_TINY && blocker.density))
+			continue
+		blockers += "[blocker.type] (density [blocker.density], size [blocker.mob_size], anchored [blocker.anchored], move_resist [blocker.move_resist])"
+	return length(blockers) ? ": на клетке [jointext(blockers, ", ")]" : ""
+
 /datum/unit_test/station_incidents/proc/check_target_limits()
 	var/datum/round_event_control/station_incident/test_targets/controller = allocate(/datum/round_event_control/station_incident/test_targets)
 	controller.target_type = /obj/item
@@ -182,10 +197,11 @@
 	// Выпущенные слаймы могут забраться на крышку следующего ящика и помешать открытию.
 	for(var/atom/thing as anything in repaired_shipment)
 		qdel(thing)
+	clear_crate_spot(run_loc_floor_top_right)
 	var/obj/structure/closet/crate/incident_shipment/poultry/unrepaired = allocate(/obj/structure/closet/crate/incident_shipment/poultry, run_loc_floor_top_right)
 	allocated += unrepaired.GetAllContents()
 	unrepaired.release_cargo()
-	TEST_ASSERT(unrepaired.opened, "Без ремонта неисправный затвор должен выпускать содержимое")
+	TEST_ASSERT(unrepaired.opened, "Без ремонта неисправный затвор должен выпускать содержимое[describe_crate_blockers(unrepaired)]")
 	var/chickens = 0
 	for(var/mob/living/simple_animal/chicken/bird in get_turf(unrepaired))
 		chickens++
@@ -249,6 +265,7 @@
 	TEST_ASSERT(QDELETED(cloud), "Удаление лотка должно сразу убирать его облако")
 
 /datum/unit_test/station_incidents/proc/check_manifest_access()
+	clear_crate_spot(run_loc_floor_top_right)
 	var/obj/structure/closet/crate/incident_shipment/repair_cache/crate = allocate(/obj/structure/closet/crate/incident_shipment/repair_cache, run_loc_floor_top_right)
 	allocated += crate.GetAllContents()
 	var/mob/living/carbon/human/reader = allocate(/mob/living/carbon/human)
@@ -258,7 +275,7 @@
 	TEST_ASSERT_NULL(crate.manifest, "Первое взаимодействие снимает накладную с крышки")
 	TEST_ASSERT_EQUAL(note.loc, reader, "Накладная должна оказаться в руках читателя")
 	crate.on_attack_hand(reader)
-	TEST_ASSERT(crate.opened, "После ознакомления ящик можно открыть обычным взаимодействием")
+	TEST_ASSERT(crate.opened, "После ознакомления ящик можно открыть обычным взаимодействием[describe_crate_blockers(crate)]")
 
 /// Проверяем закрытый и открытый вид, короткую анимацию и индикаторы затвора.
 /datum/unit_test/station_incidents/proc/check_shipment_visuals()
