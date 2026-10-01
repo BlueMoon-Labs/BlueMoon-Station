@@ -102,7 +102,7 @@
 	if(istype(PP))
 		PP.switch_tracking_mode(src)
 		return
-	return ..()
+	A.BorgAltClick(src)
 
 /atom/proc/BorgCtrlShiftClick(mob/living/silicon/robot/user) //forward to human click if not overridden
 	CtrlShiftClick(user)

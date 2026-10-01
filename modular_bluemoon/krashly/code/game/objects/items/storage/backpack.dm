@@ -40,6 +40,15 @@
 	item_state = "inteq_webbing"
 	content_overlays = FALSE
 
+/obj/item/storage/belt/military/inteq/full/PopulateContents()
+	new /obj/item/ammo_box/magazine/ak12/ap(src)
+	new /obj/item/ammo_box/magazine/ak12/ap(src)
+	new /obj/item/ammo_box/magazine/ak12/ap(src)
+	new /obj/item/grenade/plastic/x4(src)
+	new /obj/item/grenade/clusterbuster(src)
+	new /obj/item/grenade/syndieminibomb(src)
+	new /obj/item/grenade/syndieminibomb(src)
+
 //Duffels
 
 /obj/item/storage/backpack/duffelbag/syndie/inteq

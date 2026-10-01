@@ -138,8 +138,8 @@
 	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
 	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
 	var/disconnect_reason
-	/// Какой это по счёту вход этого ckey за раунд. Циклический реконнект видно сразу.
-	var/round_login_index = 1
+	/// Какой это по счёту вход этого ckey за раунд, 0 - соединение не дошло до Login.
+	var/round_login_index = 0
 
 	var/inprefs = FALSE
 	var/list/topiclimiter
@@ -200,6 +200,11 @@
 
 	/// whether our browser is ready or not yet
 	var/statbrowser_ready = FALSE
+
+	/// Имя персонажа из локального экспорта (client.Import()) уже прочитано в local_storage_name
+	var/local_storage_name_read = FALSE
+	/// Имя персонажа в локальном экспорте клиента, null - экспорта нет
+	var/local_storage_name
 
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE

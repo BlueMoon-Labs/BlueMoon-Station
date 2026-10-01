@@ -28,7 +28,7 @@
 	var/step_delay = slime_pawn.movement_delay()
 	if(step_delay <= 0)
 		step_delay = SLIME_AI_STEP_DELAY_FLOOR
-	movement_delay = step_delay + SLIME_AI_STEP_DELAY_SLACK
+	movement_delay = (step_delay + SLIME_AI_STEP_DELAY_SLACK) * GLOB.ai_move_delay_scale
 
 ///Погоня планируется только при живой цели от мозга Life; гейты исполнения
 ///повторяют выходы старого цикла - слайм стоит, но цель не бросает

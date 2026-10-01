@@ -129,7 +129,7 @@
 	icon_state = "henchmen"
 	item_state = "henchmen"
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS|HEAD
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEEARS|HIDEEYES|HIDEHAIR|HIDETAUR
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEEARS|HIDEEYES|HIDEHAIR|HIDETAUR|HIDETAIL
 	mutantrace_variation = STYLE_DIGITIGRADE
 	anthro_mob_worn_overlay = 'icons/mob/clothing/uniform_digi.dmi'
 

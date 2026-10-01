@@ -971,7 +971,7 @@
 	name = "cyborg plasma cutter"
 	desc = "Базовый вариант плазменного резака, встроенный в шасси киборга. Менее эффективен, чем обычные плазменные резаки."
 	force = 15
-	ammo_type = list(/obj/item/ammo_casing/energy/plasma/weak)
+	ammo_type = list(/obj/item/ammo_casing/energy/plasma/weak/cyborg)
 	can_charge = FALSE
 	selfcharge = EGUN_SELFCHARGE_BORG
 	cell_type = /obj/item/stock_parts/cell/secborg

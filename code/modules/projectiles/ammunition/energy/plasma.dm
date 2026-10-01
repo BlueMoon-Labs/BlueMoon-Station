@@ -17,3 +17,7 @@
 /obj/item/ammo_casing/energy/plasma/mech
 	projectile_type = /obj/item/projectile/plasma/adv/mech
 	e_cost = 240
+
+/obj/item/ammo_casing/energy/plasma/weak/cyborg
+	projectile_type = /obj/item/projectile/plasma/weak/cyborg
+	e_cost = 25

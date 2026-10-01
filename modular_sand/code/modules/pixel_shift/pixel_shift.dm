@@ -114,6 +114,17 @@
 		client?.pixel_x = pixel_x - base_pixel_x
 		client?.pixel_y = pixel_y - base_pixel_y
 
+/// Puts the camera back where pixel shift expects it, dropping any drift left by relative sways.
+/mob/living/proc/reset_client_pixel_offset()
+	if(!client)
+		return
+	if(is_shifted && client.prefs.view_pixelshift)
+		client.pixel_x = pixel_x - base_pixel_x
+		client.pixel_y = pixel_y - base_pixel_y
+	else
+		client.pixel_x = 0
+		client.pixel_y = 0
+
 /mob/living/CanAllowThrough(atom/movable/mover, turf/target)
 	// Make sure to not allow projectiles of any kind past where they normally wouldn't.
 	if(!istype(mover, /obj/item/projectile) && !mover.throwing && passthroughable)

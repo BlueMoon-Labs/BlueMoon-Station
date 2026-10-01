@@ -362,6 +362,7 @@
 			client.perspective = EYE_PERSPECTIVE
 			client.eye = loc
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
+	refresh_hud_view_group()
 	return TRUE
 
 //view() but with a signal, to allow blacklisting some of the otherwise visible atoms.

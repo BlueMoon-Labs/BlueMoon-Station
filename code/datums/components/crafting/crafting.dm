@@ -203,6 +203,8 @@
 	return TRUE
 
 /datum/component/personal_crafting/proc/construct_item(atom/a, datum/crafting_recipe/R)
+	if(!ispath(R?.result))
+		return ", invalid recipe."
 	var/list/contents = get_surroundings(a)
 	var/send_feedback = 1
 	if(check_contents(a, R, contents))

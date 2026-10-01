@@ -32,6 +32,10 @@
 	/// и подсовывать туда выровненное число значило бы пересоздавать цикл на
 	/// каждый запрос.
 	var/scheduled_delay = 1
+	/// Точная цена следующего шага (с диагональю). Её держат лупы подсистем с fractional_steps.
+	var/step_cost = 1
+	/// Сколько тиков расписание уже переплатило против step_cost; вычитается из следующего интервала.
+	var/step_remainder = 0
 	///The next time we should process
 	///Used primarially as a hint to be reasoned about by our [controller], and as the id of our bucket
 	///Should not be modified directly outside of [start_loop]
@@ -55,6 +59,7 @@
 
 	src.delay = max(delay, world.tick_lag) //Please...
 	src.scheduled_delay = movement_quantize_delay(src.delay, world.tick_lag)
+	step_cost = src.delay
 	src.lifetime = timeout
 	return TRUE
 
@@ -98,6 +103,7 @@
 /datum/move_loop/proc/set_delay(new_delay)
 	delay =  max(new_delay, world.tick_lag)
 	scheduled_delay = movement_quantize_delay(delay, world.tick_lag)
+	step_cost = delay
 
 ///Pauses the move loop for some passed in period
 ///This functionally means shifting its timer up, and clearing it from its current bucket
@@ -134,8 +140,14 @@
 
 	SEND_SIGNAL(src, COMSIG_MOVELOOP_POSTPROCESS, success, delay * visual_delay)
 
-	if(QDELETED(src) || !success) //Can happen
+	if(QDELETED(src))
 		return
+	if(!success)
+		step_remainder = 0
+		return
+
+	if(controller.fractional_steps)
+		scheduled_delay = plan_fractional_interval()
 
 	if(flags & MOVEMENT_LOOP_IGNORE_GLIDE)
 		return
@@ -143,6 +155,15 @@
 	// Расписание считается по выровненной цене, значит и glide обязан: иначе
 	// спрайт покроет тайл не за то число тиков, которое реально пройдёт.
 	moving.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(scheduled_delay, visual_delay))
+
+/// Интервал до следующего шага, кратный тику, с переносом остатка: в среднем ровно step_cost, как у дробного шага игрока.
+/datum/move_loop/proc/plan_fractional_interval()
+	var/cost = max(world.tick_lag, step_cost)
+	var/interval = movement_ticks_until(cost - step_remainder, 0, world.tick_lag) * world.tick_lag
+	step_remainder = clamp(interval - cost + step_remainder, 0, world.tick_lag)
+	if(step_remainder < MOVEMENT_TICK_EPSILON)
+		step_remainder = 0
+	return interval
 
 ///Handles the actual move, overriden by children
 ///Returns FALSE if nothing happen, TRUE otherwise
@@ -491,7 +512,9 @@
 	// По фактическому направлению: заблокированная диагональ может пройти одной
 	// кардинальной половиной, и за неё диагональной цены нет.
 	if(. && !QDELETED(moving))
-		scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(get_dir(old_loc, moving.loc)), world.tick_lag)
+		var/jps_diagonal = ISDIAGONALDIR(get_dir(old_loc, moving.loc))
+		scheduled_delay = movement_step_delay(delay, jps_diagonal, world.tick_lag)
+		step_cost = jps_diagonal ? delay * SQRT_2 : delay
 
 	// this check if we're on exactly the next tile may be overly brittle for dense objects who may get bumped slightly
 	// to the side while moving but could maybe still follow their path without needing a whole new path
@@ -789,6 +812,7 @@
 	// по scheduled_delay сразу после move(), и glide считается от него же.
 	var/actual_dir = get_dir(old_loc, moving.loc)
 	scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(actual_dir), world.tick_lag)
+	step_cost = ISDIAGONALDIR(actual_dir) ? delay * SQRT_2 : delay
 	return TRUE
 
 

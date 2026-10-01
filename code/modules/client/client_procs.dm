@@ -28,6 +28,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 #define CHURN_REPORT_THRESHOLD 10
 /// Сколько РАЗНЫХ ckey должны переподключиться за окно, чтобы это считалось штормом.
 #define CHURN_ALERT_DISTINCT_CKEYS 5
+/// Доля онлайна, с которой начинается шторм: при сотне игроков фон - около двух реконнектов за окно.
+#define CHURN_ALERT_ONLINE_FRACTION 0.1
 /// Окно наблюдения за переподключениями.
 #define CHURN_ALERT_WINDOW (2 MINUTES)
 /// Не чаще одного крика в эфир за этот срок.
@@ -51,7 +53,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			stale += key
 	GLOB.recent_reconnects -= stale
 	var/distinct = length(GLOB.recent_reconnects)
-	if(distinct < CHURN_ALERT_DISTINCT_CKEYS)
+	if(distinct < max(CHURN_ALERT_DISTINCT_CKEYS, round(length(GLOB.clients) * CHURN_ALERT_ONLINE_FRACTION)))
 		return
 	GLOB.last_churn_alert = world.time
 	var/list/who = list()
@@ -97,6 +99,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 #undef CHURN_REPORT_THRESHOLD
 #undef CHURN_ALERT_DISTINCT_CKEYS
+#undef CHURN_ALERT_ONLINE_FRACTION
 #undef CHURN_ALERT_WINDOW
 #undef CHURN_ALERT_COOLDOWN
 
@@ -695,6 +698,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/breaking_version = CONFIG_GET(number/client_error_version)
 	var/breaking_build = CONFIG_GET(number/client_error_build)
 	var/warn_version = CONFIG_GET(number/client_warn_version)
+	var/warn_build = CONFIG_GET(number/client_warn_build)
 	if (byond_version < breaking_version || (byond_version == breaking_version && byond_build < breaking_build))		//Out of date client.
 		to_chat_immediate(src, span_danger("<b>Your version of BYOND is too old:</b>"))
 		to_chat_immediate(src, CONFIG_GET(string/client_error_message))
@@ -708,19 +712,20 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			disconnect_reason = "сервер: версия BYOND ниже минимальной"
 			qdel(src)
 			return FALSE
-	else if (byond_version < warn_version)	// Bluemoon Edit: Better byond warning //We have words for this client.
+	else if (byond_version < warn_version || (byond_version == warn_version && byond_build < warn_build))
 		if(CONFIG_GET(flag/client_warn_popup))
-			var/msg = "<b>Your version of byond may be getting out of date:</b><br>"
+			var/msg = "<html><head><meta charset='UTF-8'><title>Версия BYOND</title></head><body>"
+			msg += "<b>Доступна рекомендуемая версия BYOND:</b><br>"
 			msg += CONFIG_GET(string/client_warn_message) + "<br><br>"
-			msg += "Your version: [byond_version]<br>"
-			msg += "Required version to remove this message: [warn_version] or later<br>" // Bluemoon Edit: Better byond warning
-			msg += "Visit <a href=\"https://secure.byond.com/download\">BYOND's website</a> to get the latest version of BYOND.<br>"
+			msg += "Ваша версия: [byond_version].[byond_build]<br>"
+			msg += "Рекомендуемая версия: [warn_version].[warn_build] или новее<br>"
+			msg += "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.<br></body></html>"
 			src << browse(msg, "window=warning_popup")
 		else
-			to_chat(src, "<span class='danger'><b>Your version of byond may be getting out of date:</b></span>")
+			to_chat(src, span_notice("<b>Доступна рекомендуемая версия BYOND:</b>"))
 			to_chat(src, CONFIG_GET(string/client_warn_message))
-			to_chat(src, "Your version: [byond_version]")
-			to_chat(src, "Required version to remove this message: [warn_version] or later") // Bluemoon Edit: Better byond warning
+			to_chat(src, "Ваша версия: [byond_version].[byond_build]. Рекомендуемая версия: [warn_version].[warn_build] или новее.")
+			to_chat(src, "Обновление доступно на <a href=\"https://www.byond.com/download/\">сайте BYOND</a>.")
 
 	if (connection == "web" && !connecting_admin)
 		if (!CONFIG_GET(flag/allow_webclient))
@@ -1308,7 +1313,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	return max(REALTIMEOFDAY - connection_realtimeofday, 0) / 10
 
 /client/proc/connection_forensics()
-	var/list/parts = list("вход №[round_login_index]")
+	var/list/parts = list(round_login_index ? "вход №[round_login_index]" : "не дошёл до входа")
 	if(connection_realtimeofday)
 		parts += "жил [round(connection_lifetime_seconds(), 0.1)]с"
 	if(connection_time)
@@ -1317,7 +1322,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		parts += "последний пинг [round((world.time - lastping_at) / 10, 0.1)]с назад, rtt [round(lastping_rtt_raw, 1)]мс (сред [round(avgping_rtt || 0, 1)], джиттер [round(avgping_jitter || 0, 1)])"
 	else
 		parts += "пинга не было ни разу"
-	parts += "без ввода [round(inactivity / 10, 0.1)]с"
+	parts += "без ввода [round((world.time - last_activity) / 10, 0.1)]с"
 	parts += "моб [mob ? "[mob.type]" : "нет"]"
 	parts += "инициатор: [disconnect_reason || "клиент/сеть"]"
 	return parts.Join(" | ")
@@ -1628,6 +1633,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	. = token
 	log_access("Failed Login: [key] [computer_id] [address] - CID randomizer check")
 	var/url = tracked_winget(src, null, "url")
+	disconnect_reason = "сервер: CID-проверка, редирект на реконнект с токеном"
 	//special javascript to make them reconnect under a new window.
 	src << browse({"<a id='link' href="byond://[url]?token=[token]">byond://[url]?token=[token]</a><script type="text/javascript">document.getElementById("link").click();window.location="byond://winset?command=.quit"</script>"}, "border=0;titlebar=0;size=1x1;window=redirect")
 	to_chat(src, {"<a href="byond://[url]?token=[token]">You will be automatically taken to the game, if not, click here to be taken manually</a>"})

@@ -140,7 +140,15 @@
 	if(!istype(boss))
 		return .
 	if(length(boss.enemies))
-		return (target in boss.enemies)
+		if(target in boss.enemies)
+			return TRUE
+		// The pilot is the recorded enemy, but only the vehicle itself can be targeted.
+		var/obj/vehicle/sealed/vehicle = target
+		if(istype(vehicle))
+			for(var/occupant in vehicle.occupants)
+				if(occupant in boss.enemies)
+					return TRUE
+		return FALSE
 	if(boss.peaceful)
 		return FALSE
 	return .

@@ -2017,7 +2017,7 @@
 	. += "blackhole-0"
 	if(!magazine || !magazine.max_ammo)
 		return
-	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/total = magazine.stored_ammo.len
 	var/fill_level = clamp(round(total / magazine.max_ammo * 2), 0, 2)
 	. += "blackhole-[fill_level]"
 

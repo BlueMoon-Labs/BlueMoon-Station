@@ -439,9 +439,7 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 			qdel(W)
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(keyslot || keyslot2)
-			for(var/ch_name in channels)
-				SSradio.remove_object(src, GLOB.radiochannels[ch_name])
-				secure_radio_connections[ch_name] = null
+			clearChannelConnections()
 
 			if(keyslot)
 				user.put_in_hands(keyslot)
@@ -488,6 +486,8 @@ GLOBAL_LIST_INIT(channel_tokens, list(
 			translate_binary = TRUE
 		if(keyslot2.syndie)
 			syndie = TRUE
+			if(!syndie_freq) //the first antagonist key decides which net the headset listens to
+				syndie_freq = keyslot2.syndie_freq
 		if (keyslot2.independent)
 			independent = TRUE
 
