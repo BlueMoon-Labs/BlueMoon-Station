@@ -1,14 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"aaD" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/light{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/department/crew_quarters/dorms)
 "aaa" = (
 /turf/open/space/basic,
 /area/space)
@@ -285,6 +275,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/maintenance/department/engine)
+"aaD" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/maintenance/department/crew_quarters/dorms)
 "aaE" = (
 /obj/machinery/light/small,
 /obj/machinery/space_heater,
@@ -519,9 +519,6 @@
 /obj/machinery/gear_painter,
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
-"abj" = (
-/turf/open/floor/plasteel/yellowsiding,
-/area/commons/fitness/pool)
 "abk" = (
 /obj/machinery/light{
 	dir = 4;
@@ -551,9 +548,6 @@
 	dir = 4
 	},
 /area/commons/fitness/pool)
-"abn" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "abo" = (
 /obj/structure/pool/ladder{
 	dir = 2;
@@ -576,9 +570,6 @@
 /turf/open/floor/plasteel/yellowsiding{
 	dir = 4
 	},
-/area/commons/fitness/pool)
-"abr" = (
-/turf/open/pool/water,
 /area/commons/fitness/pool)
 "abs" = (
 /obj/structure/pool/Lboard,
@@ -1788,21 +1779,6 @@
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/AIsatextAS)
-"aeC" = (
-/obj/structure/table,
-/obj/structure/bedsheetbin,
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/structure/window/reinforced,
-/obj/machinery/light/small{
-	dir = 4
-	},
-/turf/open/floor/plasteel/cafeteria,
-/area/security/prison)
 "aeD" = (
 /obj/machinery/biogenerator,
 /obj/structure/sign/poster/official/random{
@@ -2565,6 +2541,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -3909,6 +3886,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -51435,6 +51413,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
+	
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -64549,6 +64528,22 @@
 	dir = 1
 	},
 /area/hallway/secondary/entry)
+"whY" = (
+/obj/structure/table,
+/obj/structure/bedsheetbin,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/window/reinforced,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/cafeteria,
+/area/security/prison)
 "wig" = (
 /turf/open/floor/plasteel/freezer,
 /area/command/heads_quarters/ntr)
@@ -64676,16 +64671,6 @@
 /mob/living/simple_animal/butterfly,
 /turf/open/floor/grass/grass0,
 /area/medical/genetics)
-"wqP" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/light{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/maintenance/department/crew_quarters/dorms)
 "wrU" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -64963,6 +64948,13 @@
 /obj/machinery/light/small,
 /turf/open/floor/plating,
 /area/hallway/secondary/exit/departure_lounge)
+"wKu" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/dorms)
 "wLo" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
@@ -85698,7 +85690,7 @@ adR
 aaa
 aem
 aeo
-aeC
+whY
 afn
 afn
 agy
@@ -106289,7 +106281,7 @@ avl
 fIu
 epj
 aIh
-azA
+wKu
 dbi
 dbi
 aDk
@@ -107562,7 +107554,7 @@ aaG
 aaF
 aaS
 aaL
-abn
+aaO
 aaO
 aaO
 aaO
@@ -107818,7 +107810,7 @@ akn
 aaF
 aaF
 aaS
-abj
+aaL
 aaO
 aaO
 aaO
@@ -108078,7 +108070,7 @@ aaS
 aaL
 abo
 aaO
-abr
+aaO
 aaO
 aaO
 pjD
@@ -111159,7 +111151,7 @@ xgL
 lfj
 pbC
 pbC
-wqP
+aaD
 qgO
 pbC
 pbC

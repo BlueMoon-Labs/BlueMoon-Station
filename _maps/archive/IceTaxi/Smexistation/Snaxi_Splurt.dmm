@@ -808,7 +808,6 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -3221,7 +3220,6 @@
 /obj/structure/table/reinforced,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/regular,
@@ -14710,52 +14708,6 @@
 	},
 /turf/open/floor/engine,
 /area/engineering/main/reactor_core)
-"eSx" = (
-/obj/structure/closet/cabinet,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/clothing/shoes/winterboots,
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/radio/headset{
-	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
-	name = "prisoner headset";
-	prison_radio = 1
-	},
-/obj/item/clothing/suit/hooded/wintercoat,
-/obj/item/clothing/suit/hooded/wintercoat,
-/obj/item/clothing/suit/hooded/wintercoat,
-/obj/item/clothing/suit/hooded/wintercoat,
-/obj/item/clothing/suit/hooded/wintercoat,
-/obj/item/clothing/suit/hooded/wintercoat,
-/turf/open/floor/plasteel/dark,
-/area/security/prison)
 "eSJ" = (
 /obj/effect/turf_decal/tile/green{
 	dir = 4
@@ -22114,6 +22066,11 @@
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/hallway/secondary/exit/departure_lounge)
+"iaP" = (
+/obj/machinery/vending/sustenance,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/dark,
+/area/security/prison)
 "iaY" = (
 /turf/open/floor/wood,
 /area/command/corporate_showroom)
@@ -30350,9 +30307,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/closed/wall/mineral/wood,
 /area/maintenance/bar)
-"lHe" = (
-/turf/open/pool,
-/area/commons/fitness/pool)
 "lHl" = (
 /obj/machinery/atmospherics/pipe/simple/supply/visible,
 /obj/structure/railing{
@@ -34270,6 +34224,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
 /turf/open/floor/plasteel/dark,
@@ -35626,16 +35581,6 @@
 /obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
-"nXL" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/blue,
-/obj/structure/disposalpipe/segment{
-	dir = 9
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness)
 "nYb" = (
 /obj/structure/window/reinforced,
 /obj/machinery/conveyor{
@@ -37216,6 +37161,53 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat/service)
+"oEE" = (
+/obj/structure/closet/cabinet,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/clothing/shoes/winterboots,
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/radio/headset{
+	desc = "An updated, modular intercom that fits over the head. Takes encryption keys. It looks like it has been modified to not broadcast.";
+	name = "prisoner headset";
+	prison_radio = 1
+	},
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/item/clothing/suit/hooded/wintercoat,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/dark,
+/area/security/prison)
 "oEM" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -37788,6 +37780,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = -30;
+	
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 1
@@ -37960,6 +37953,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/structure/sign/poster/official/random{
 	pixel_x = 32
@@ -41939,6 +41933,14 @@
 "qDt" = (
 /turf/closed/wall,
 /area/maintenance/starboard/aft)
+"qDW" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness)
 "qDY" = (
 /obj/structure/fence/post,
 /obj/structure/cable{
@@ -46703,6 +46705,17 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/main)
+"sIx" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/structure/disposalpipe/segment{
+	dir = 9
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness)
 "sIT" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
@@ -48460,10 +48473,6 @@
 	},
 /turf/open/floor/engine/n2o,
 /area/engineering/atmos)
-"tvi" = (
-/obj/machinery/vending/sustenance,
-/turf/open/floor/plasteel/dark,
-/area/security/prison)
 "tvp" = (
 /obj/machinery/atmospherics/pipe/heat_exchanging/simple{
 	dir = 6
@@ -54000,9 +54009,6 @@
 /obj/structure/frame/machine,
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
-"vQk" = (
-/turf/open/pool,
-/area/commons/fitness/pool)
 "vQm" = (
 /obj/structure/closet/firecloset,
 /obj/effect/spawner/lootdrop/maintenance,
@@ -58215,18 +58221,6 @@
 "xDu" = (
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/main)
-"xDK" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/engine,
-/area/engineering/main/reactor_core)
 "xDQ" = (
 /obj/machinery/door/airlock/engineering{
 	name = "Port Quarter Solar Access";
@@ -59016,12 +59010,6 @@
 "xWq" = (
 /turf/closed/wall,
 /area/commons/storage/tools)
-"xWx" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible{
-	dir = 10
-	},
-/turf/closed/wall/r_wall,
-/area/engineering/atmos)
 "xWD" = (
 /obj/structure/extinguisher_cabinet{
 	pixel_y = -30
@@ -84755,7 +84743,7 @@ kii
 tpl
 jix
 adj
-tvi
+iaP
 pAz
 blI
 kfv
@@ -85783,7 +85771,7 @@ iBo
 bYg
 eiL
 mRz
-eSx
+oEE
 qFN
 rKH
 nxv
@@ -92635,7 +92623,7 @@ ptU
 uEz
 bqE
 bcy
-nXL
+sIx
 wWl
 wWl
 pgp
@@ -93149,17 +93137,17 @@ fHK
 mau
 dGc
 lZO
-igK
+qDW
 xPB
 xPB
 yjJ
 aDo
 oui
-lHe
-vQk
+dYL
+dYL
 tTS
-vQk
-vQk
+dYL
+dYL
 muX
 nsK
 yjJ
@@ -93412,11 +93400,11 @@ xeQ
 yjJ
 tOz
 oui
-vQk
-vQk
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
+dYL
+dYL
 muX
 tOz
 yjJ
@@ -93670,9 +93658,9 @@ yjJ
 tOz
 oui
 nAm
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
 gEZ
 muX
 nsK
@@ -93926,11 +93914,11 @@ uEz
 wyk
 tOz
 oui
-vQk
-vQk
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
+dYL
+dYL
 lsK
 lQJ
 yjJ
@@ -94183,11 +94171,11 @@ uEz
 uEz
 eYq
 eei
-vQk
-vQk
 dYL
-vQk
-vQk
+dYL
+dYL
+dYL
+dYL
 lNN
 qtG
 yjJ
@@ -94440,11 +94428,11 @@ qbs
 yjJ
 xrL
 cBZ
-vQk
-vQk
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
+dYL
+dYL
 lxL
 tOz
 yjJ
@@ -94698,9 +94686,9 @@ yjJ
 mSA
 cBZ
 nAm
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
 gEZ
 lxL
 nsK
@@ -94954,11 +94942,11 @@ ijl
 yjJ
 tOz
 cBZ
-vQk
-vQk
-vQk
-vQk
-vQk
+dYL
+dYL
+dYL
+dYL
+dYL
 lxL
 tOz
 yjJ
@@ -95211,11 +95199,11 @@ uEz
 yjJ
 aUC
 cBZ
-vQk
-vQk
+dYL
+dYL
 cOb
-vQk
-vQk
+dYL
+dYL
 lxL
 nsK
 yjJ
@@ -112674,7 +112662,7 @@ bRy
 aai
 iOH
 bRy
-xWx
+aai
 iOH
 bRy
 bKI
@@ -119393,7 +119381,7 @@ wHL
 vlF
 xHx
 mQf
-xDK
+tRf
 ecx
 ecx
 pAj

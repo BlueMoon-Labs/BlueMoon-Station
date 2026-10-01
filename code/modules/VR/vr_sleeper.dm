@@ -134,10 +134,14 @@
 				open_machine()
 			. = TRUE
 		if("select_deathmatch_mode")
+			// TEMP DEBUG
+			log_game("DMDBG select mode=[params["mode"]] found=[get_deathmatch_map(params["mode"])]")
 			if(get_deathmatch_map(params["mode"]))
 				selected_deathmatch_mode = params["mode"]
 			. = TRUE
 		if("start_deathmatch")
+			// TEMP DEBUG
+			log_game("DMDBG start usr=[usr] occupant=[occupant] sel=[selected_deathmatch_mode]")
 			// The host has to be the one lying in the machine: it is what their
 			// real body is, and where they get put back to when the game ends.
 			// Typed, because /obj/machinery/occupant is untyped and this codebase
@@ -215,6 +219,8 @@
 	data["hosting_deathmatch"] = null
 	if(data["is_hosting_deathmatch"])
 		data["hosting_deathmatch"] = list("name" = lobby.template.display_name, "players" = lobby.player_count())
+	// TEMP DEBUG
+	log_game("DMDBG isoccupant=[data["isoccupant"]] can_start=[data["can_start_deathmatch"]] sel=[selected_deathmatch_mode] modes=[modes]")
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something

@@ -707,11 +707,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/research)
-"acS" = (
-/obj/structure/window/reinforced/spawner/north,
-/obj/machinery/atmospherics/pipe/simple/yellow/visible,
-/turf/open/floor/plating/airless,
-/area/engineering/atmos)
 "aca" = (
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
@@ -740,11 +735,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/mixing)
-"acd" = (
-/obj/structure/window/reinforced/spawner/north,
-/obj/machinery/atmospherics/pipe/simple/yellow/visible,
-/turf/open/floor/plating/airless,
-/area/engineering/atmos)
 "ace" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -1068,6 +1058,7 @@
 	desc = "In Space, no one can hear you scream, especially if the microphone has been disabled.";
 	name = "Prison Intercom";
 	pixel_x = 32;
+	
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)
@@ -1082,6 +1073,11 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)
+"acS" = (
+/obj/structure/window/reinforced/spawner/north,
+/obj/machinery/atmospherics/pipe/simple/yellow/visible,
+/turf/open/floor/plating/airless,
+/area/engineering/atmos)
 "acT" = (
 /turf/closed/wall,
 /area/maintenance/department/security/brig)
@@ -3391,6 +3387,7 @@
 	desc = "In Space, no one can hear you scream, especially if the  microphone has been disabled.";
 	name = "Prison Intercom";
 	pixel_y = -32;
+	
 	},
 /turf/open/floor/plasteel,
 /area/security/prison)
@@ -4504,6 +4501,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -4531,6 +4529,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -4584,6 +4583,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -21401,6 +21401,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
+	
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4
@@ -21425,6 +21426,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
+	
 	},
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -65177,19 +65179,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/maintenance/disposal/incinerator)
-"eaG" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "eaU" = (
 /obj/structure/disposalpipe/segment,
 /obj/effect/turf_decal/trimline/neutral/filled/line{
@@ -70224,6 +70213,17 @@
 /obj/effect/turf_decal/trimline/blue/filled/line,
 /turf/open/floor/plasteel,
 /area/commons/fitness/pool)
+"hip" = (
+/obj/structure/chair/pedalgen{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-2";
+	pixel_y = 0
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/dark,
+/area/security/prison)
 "hir" = (
 /obj/structure/table/reinforced,
 /obj/machinery/computer/security/telescreen{
@@ -74665,6 +74665,20 @@
 /obj/machinery/meter,
 /turf/open/floor/plating,
 /area/maintenance/central)
+"kpT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness/recreation)
 "kqR" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable{
@@ -75261,6 +75275,13 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/hallway/secondary/construction)
+"kNF" = (
+/obj/effect/turf_decal/trimline/neutral/filled/corner{
+	dir = 4
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness/recreation)
 "kNG" = (
 /obj/effect/turf_decal/trimline/neutral/filled/line{
 	dir = 4
@@ -80687,12 +80708,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
-"orA" = (
-/obj/effect/turf_decal/trimline/neutral/filled/corner{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "osh" = (
 /obj/structure/table,
 /obj/item/stack/sheet/plasteel{
@@ -82916,9 +82931,6 @@
 	},
 /turf/open/floor/wood,
 /area/commons/vacant_room/office)
-"pLT" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "pMk" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -91998,11 +92010,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/zone2)
-"wor" = (
-/obj/effect/turf_decal/trimline/blue/filled/line,
-/obj/effect/turf_decal/trimline/blue/filled/line,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "woy" = (
 /obj/structure/bed/dogbed,
 /turf/open/floor/wood,
@@ -92686,16 +92693,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/circuit)
-"wNv" = (
-/obj/structure/chair/pedalgen{
-	dir = 8
-	},
-/obj/structure/cable{
-	icon_state = "0-2";
-	pixel_y = 0
-	},
-/turf/open/floor/plasteel/dark,
-/area/security/prison)
 "wOj" = (
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -93904,11 +93901,6 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/plating,
 /area/maintenance/aft)
-"xHL" = (
-/obj/effect/turf_decal/trimline/blue/filled/line,
-/obj/effect/turf_decal/trimline/blue/filled/line,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "xHW" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -135366,7 +135358,7 @@ abA
 abQ
 acm
 acR
-wNv
+hip
 adB
 ady
 afg
@@ -145783,7 +145775,7 @@ chB
 cji
 cjk
 cjZ
-acd
+acS
 uox
 pbg
 cnf
@@ -194332,7 +194324,7 @@ cFW
 jYJ
 qBE
 qBE
-wor
+him
 hjd
 hjd
 vKc
@@ -194589,12 +194581,12 @@ cFW
 jYJ
 qBE
 gCG
-xHL
+him
 hjd
 hjd
 hjd
 hjd
-pLT
+hjd
 wso
 dsn
 klj
@@ -195105,7 +195097,7 @@ qBE
 bcG
 him
 cJF
-pLT
+hjd
 hjd
 hjd
 hjd
@@ -199747,7 +199739,7 @@ spC
 jAU
 hQv
 jca
-orA
+kNF
 wEC
 mhb
 onC
@@ -200003,7 +199995,7 @@ kbU
 spC
 tIT
 tCX
-eaG
+kpT
 cwJ
 wEC
 vEc
@@ -200260,7 +200252,7 @@ dpd
 jAU
 jAU
 xjr
-eaG
+kpT
 suw
 qOD
 ifh

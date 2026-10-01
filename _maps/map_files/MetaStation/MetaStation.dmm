@@ -8643,6 +8643,11 @@
 /obj/machinery/holopad/secure,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
+"aEE" = (
+/obj/effect/spawner/structure/window,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plating,
+/area/security/prison/upper)
 "aEI" = (
 /obj/machinery/airalarm{
 	dir = 4;
@@ -70719,6 +70724,16 @@
 /obj/machinery/computer/security/wooden_tv,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
+"ogw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness/recreation)
 "ohf" = (
 /obj/effect/turf_decal/tile/red,
 /obj/effect/turf_decal/tile/red{
@@ -114172,7 +114187,7 @@ izT
 izT
 wNK
 rqn
-nEC
+aEE
 pCQ
 xAO
 xAO
@@ -115457,7 +115472,7 @@ izT
 izT
 mBZ
 hZd
-nEC
+aEE
 mvI
 pzy
 xAO
@@ -130653,7 +130668,7 @@ qSc
 qPw
 fGG
 fGG
-rKs
+ogw
 wVf
 gAV
 wfx
