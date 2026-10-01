@@ -449,7 +449,7 @@
 		else
 			playsound(owner.current, pick(killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 		COOLDOWN_START(src, killing_speech_cd, 10 SECONDS)
-	var/time_to_kill = istype(src, /datum/antagonist/jackal) ? 5 SECONDS : (chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS)
+	var/time_to_kill = istype(src, /datum/antagonist/jackal) ? 3 SECONDS : (chosen_high_gear == "Faster executions" ? 4 SECONDS : 6 SECONDS)
 	if(do_after(killer, time_to_kill, target))
 		target.visible_message(span_bolddanger("[killer] перерезает горло [target]!"), span_userdanger("[killer] перерезает твое горло!"))
 		knife.melee_attack_chain(killer, target, damage_multiplier = 100)
@@ -490,7 +490,7 @@
 			else
 				playsound(user, pick(Ha.killing_speech), vol = 100, vary = FALSE, ignore_walls = FALSE)
 			COOLDOWN_START(Ha, killing_speech_cd, 10 SECONDS)
-	var/new_ttk = is_jackal ? 5 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
+	var/new_ttk = is_jackal ? 3 SECONDS : (Ha.chosen_high_gear == "Faster executions" ? 7 SECONDS : 9 SECONDS)
 	. = ..(user, target, params, bypass_timer, time_to_kill = new_ttk)
 	if(!. || user == target || !is_glory)
 		return
@@ -501,12 +501,32 @@
 		// Jackal gets partial healing instead of full heal
 		var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
 		if(istype(J))
-			// Partial healing for Jackal: heal 30% of damage
+			// Partial healing for Jackal: heal 30 damage of each type
 			user.heal_overall_damage(30, 30, 0, FALSE, FALSE, FALSE, TRUE)
 			user.adjustToxLoss(-30, FALSE, TRUE)
 			user.adjustOxyLoss(-30, FALSE, TRUE)
 			user.adjustCloneLoss(-30, FALSE, TRUE)
 			user.updatehealth()
+			// Find Jackal revolver and increment glory kills counter
+			var/obj/item/gun/ballistic/revolver/jackal357/revolver = user.get_item_by_slot(ITEM_SLOT_BELT)
+			if(!istype(revolver))
+				revolver = user.get_item_by_slot(ITEM_SLOT_SUITSTORE)
+			if(!istype(revolver))
+				// Check hands
+				for(var/obj/item/held_item in user.held_items)
+					if(istype(held_item, /obj/item/gun/ballistic/revolver/jackal357))
+						revolver = held_item
+						break
+			if(istype(revolver))
+				revolver.glory_kills++
+				if(revolver.glory_kills == 5)
+					revolver.recoil = 0.2
+					revolver.spread = 0
+					revolver.fire_delay = 0.5
+					revolver.upgrade_ammo()
+					to_chat(user, span_userdanger("Кровавая маска проступает на [revolver]. Револьвер становится легче и быстрее в руке."))
+					message_admins("[ADMIN_LOOKUPFLW(user)]'s Jackal revolver upgraded to enhanced mode via knife execution. Recoil: [revolver.recoil], Spread: [revolver.spread], Fire delay: [revolver.fire_delay]")
+				revolver.update_icon()
 		else
 			user.fully_heal(TRUE) // the only way of healing for regular hatred
 		// user.do_adrenaline(150, TRUE, 0, 0, TRUE, list(/datum/reagent/medicine/inaprovaline = 10, /datum/reagent/medicine/synaptizine = 15, /datum/reagent/medicine/regen_jelly = 20, /datum/reagent/medicine/stimulants = 20), "<span class='boldnotice'>You feel a sudden surge of energy!</span>")

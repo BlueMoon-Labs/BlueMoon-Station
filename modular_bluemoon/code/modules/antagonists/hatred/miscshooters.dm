@@ -26,7 +26,7 @@
 	greet_text += "У тебя осталась лишь одна цель: [span_red(span_bold("закрыть этот финальный контракт, выкосив станцию подчистую"))], и красиво сгореть в неоновой вспышке собственной смерти под аплодисменты воображаемого друга.<br><br>"
 	greet_text += "Твои особые сигареты лечат тебя. Если в крови не останется алкоголя, Omnizine или стимуляторов, тело начнет постепенно разрушаться.<br>"
 	greet_text += "В холстере лежит один stimpack medipen, три эпипена и один боевой нож. Эпипены почти не лечат, зато останавливают кровотечение.<br>"
-	greet_text += "Казнь выполняется выстрелом из револьвера по критованной цели. После пяти казней револьвер станет ещё сильнее, уменьшая отдачу и увеличивая темп стрельбы.<br>"
+	greet_text += "Казнь выполняется выстрелом из револьвера или ножом по критованной цели. После пяти казней револьвер станет ещё сильнее, уменьшая отдачу и увеличивая темп стрельбы. Казни Шакала быстрее, но лечат лишь частично.<br>"
 	greet_text += span_red(span_bold("Докуривай сигарету — и погнали"))
 	to_chat(owner.current, greet_text)
 	antag_memory = greet_text
@@ -215,7 +215,7 @@
 
 /obj/item/gun/ballistic/revolver/jackal357
 	name = "Jackal .357 revolver"
-	desc = "A custom .357 revolver built for a single purpose: ending a fight before the target can react."
+	desc = "A custom .357 revolver built for a single purpose: ending a fight before the target can react. Massive penetration power ensures minimal armor protection."
 	icon = 'modular_bluemoon/code/modules/antagonists/hatred/miscweapons.dmi'
 	icon_state = "jackal357"
 	item_state = "jackal357"
@@ -244,11 +244,17 @@
 /obj/item/gun/ballistic/revolver/jackal357/check_glory_kill(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	. = ..()
 	if(!QDELETED(user) && user.mind?.has_antag_datum(/datum/antagonist/jackal) && (QDELETED(target) || target?.stat == DEAD))
+		// Partial healing for Jackal: heal 30 damage of each type
+		user.heal_overall_damage(30, 30, 0, FALSE, FALSE, FALSE, TRUE)
+		user.adjustToxLoss(-30, FALSE, TRUE)
+		user.adjustOxyLoss(-30, FALSE, TRUE)
+		user.adjustCloneLoss(-30, FALSE, TRUE)
+		user.updatehealth()
 		glory_kills++
 		if(glory_kills == 5)
 			recoil = 0.2
 			spread = 0
-			fire_delay = 0
+			fire_delay = 0.5
 			upgrade_ammo()
 			to_chat(user, span_userdanger("Кровавая маска проступает на [src]. Револьвер становится легче и быстрее в руке."))
 			// Debug logging to verify upgrade
@@ -273,7 +279,7 @@
 		else if(chambered)
 			message_admins("WARNING: Jackal revolver chambered non-enhanced round: [chambered.type]")
 
-/obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 5 SECONDS)
+/obj/item/gun/ballistic/revolver/jackal357/handle_suicide(mob/living/carbon/human/user, mob/living/carbon/human/target, params, bypass_timer, time_to_kill = 3 SECONDS)
 	var/datum/antagonist/jackal/J = user.mind?.has_antag_datum(/datum/antagonist/jackal)
 	if(!J || !ishuman(target) || !target.get_bodypart(BODY_ZONE_HEAD))
 		// Not a Jackal or invalid target: delegate to global hatred/handle_suicide override (hatred.dm:480)
@@ -637,16 +643,16 @@
 // Jackal specific projectiles - moved here from projectile/revolver.dm
 /obj/item/projectile/bullet/a357/jackal
 	name = ".357 Jackal bullet"
-	damage = 30  // Weaker than standard a357 (65) - 4 shots = 120 damage (~4 shots to kill with armor)
-	armour_penetration = BULLET_BR3  // Same penetration as standard a357
+	damage = 40  // Increased from 30 - stronger base damage
+	armour_penetration = BULLET_BR15  // Massive penetration (75) - much stronger than standard a357
 	wound_bonus = 12
 	ricochets_max = 2
 	ricochet_chance = 100
 
 /obj/item/projectile/bullet/a357/jackal/enhanced
 	name = ".357 Jackal enhanced bullet"
-	damage = 60  // Powerful enough for 2 shots = 120 damage (~2 shots to kill with armor)
-	armour_penetration = BULLET_BR4  // Slightly better penetration when enhanced
+	damage = 80  // Massive damage after blood mask upgrade
+	armour_penetration = BULLET_BR18  // Extreme penetration (90) - bypasses almost all armor
 	wound_bonus = 25
 	ricochets_max = 2
 	ricochet_chance = 100
