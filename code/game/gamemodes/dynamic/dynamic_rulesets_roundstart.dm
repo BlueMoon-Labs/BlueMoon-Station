@@ -162,7 +162,7 @@
 	cost = 12
 	scaling_cost = 9
 	intensity = 15
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,10,10,10,10,10,10,10,10,10)
 	antag_cap = 1 //BLUEMOON CHANGES
 

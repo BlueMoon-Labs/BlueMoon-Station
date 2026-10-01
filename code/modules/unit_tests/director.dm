@@ -1946,6 +1946,11 @@
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in changeling_control.required_round_type), "Changeling Meteor должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in revenant_control.required_round_type), "Spawn Revenant должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in disease_control.required_round_type), "Spawn Sentient Disease должен быть исключён из Dynamic Light")
+	for(var/heretic_type in list(/datum/dynamic_ruleset/roundstart/heretics, /datum/dynamic_ruleset/midround/crew_conversion/heretic, /datum/dynamic_ruleset/latejoin/heretic_smuggler))
+		var/datum/dynamic_ruleset/heretic_ruleset = new heretic_type
+		TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in heretic_ruleset.required_round_type), "[heretic_ruleset.name] должен быть исключён из Dynamic Light")
+		TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in heretic_ruleset.required_round_type, "[heretic_ruleset.name] должен оставаться на Dynamic Medium")
+		qdel(heretic_ruleset)
 	var/datum/dynamic_ruleset/midround/pirates/pirates_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/raiders/raiders_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/swarmers/swarmers_ruleset = locate() in SSdirector.actions
