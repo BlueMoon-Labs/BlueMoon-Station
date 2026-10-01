@@ -140,6 +140,9 @@
 			var/obj/vehicle/sealed/mecha/mecha = AM
 			for(var/O in mecha.occupants)
 				var/mob/living/occupant = O
+				if(elevator_mode && elevator_status == LIFT_PLATFORM_UNLOCKED)
+					open()
+					return
 				if(allowed(occupant))
 					open_and_close()
 					return
@@ -170,7 +173,9 @@
 	if(!src.requiresID())
 		user = null
 
-	if(allowed(user))
+	if(elevator_mode && elevator_status == LIFT_PLATFORM_UNLOCKED)
+		open()
+	else if(allowed(user))
 		open_and_close()
 	else
 		do_animate("deny")

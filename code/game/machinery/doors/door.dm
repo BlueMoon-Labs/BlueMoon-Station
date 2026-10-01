@@ -47,6 +47,12 @@
 	var/can_open_with_hands = TRUE
 	/// Whether or not this door can be opened through a door remote
 	var/opens_with_door_remote = FALSE
+	/// Special operating mode for elevator doors
+	var/elevator_mode = FALSE
+	/// Current elevator status for processing
+	var/elevator_status
+	/// What specific lift ID do we link with?
+	var/transport_linked_id
 
 /obj/machinery/door/examine(mob/user)
 	. = ..()
@@ -73,6 +79,12 @@
 	air_update_turf(TRUE)
 	register_context()
 	GLOB.airlocks += src
+	if(elevator_mode)
+		if(transport_linked_id)
+			elevator_status = LIFT_PLATFORM_LOCKED
+			GLOB.elevator_doors += src
+		else
+			stack_trace("Elevator door [src] ([x],[y],[z]) has no linked elevator ID!")
 	spark_system = new /datum/effect_system/spark_spread
 	spark_system.set_up(2, 1, src)
 
@@ -93,6 +105,8 @@
 /obj/machinery/door/Destroy()
 	update_freelook_sight()
 	GLOB.airlocks -= src
+	if(elevator_mode)
+		GLOB.elevator_doors -= src
 	if(spark_system)
 		qdel(spark_system)
 		spark_system = null
@@ -155,6 +169,8 @@
 /obj/machinery/door/proc/try_to_activate_door(mob/user, access_bypass = FALSE)
 	add_fingerprint(user)
 	if(operating || (obj_flags & EMAGGED) || !can_open_with_hands)
+		return
+	if(elevator_mode && elevator_status != LIFT_PLATFORM_UNLOCKED)
 		return
 	if(!requiresID())
 		user = null //so allowed(user) always succeeds
