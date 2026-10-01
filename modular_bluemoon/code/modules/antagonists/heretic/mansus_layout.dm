@@ -1,9 +1,3 @@
-#define HERETIC_MANSUS_ROOM_SIZE 33
-#define HERETIC_MANSUS_GRID 4
-#define HERETIC_MANSUS_CELL 7
-#define HERETIC_MANSUS_CELL_STRIDE 8
-#define HERETIC_MANSUS_EXTRA_EDGES 3
-
 /// Комнаты 7x7, строки с севера на юг. Середины краёв всегда проходимы: там проёмы в соседние комнаты.
 GLOBAL_LIST_INIT(heretic_mansus_templates, list(
 	list(
