@@ -69,7 +69,24 @@ All the important duct code:
 
 ///start looking around us for stuff to connect to
 /obj/machinery/duct/proc/attempt_connect()
+	// Each duct that joins the network asks its new neighbour to look around too; done recursively, a long run hits BYOND's recursion limit.
+	var/static/list/connect_queue
+	if(connect_queue)
+		connect_queue += src
+		return
+	connect_queue = list(src)
+	try
+		var/index = 1
+		while(index <= length(connect_queue))
+			var/obj/machinery/duct/current = connect_queue[index++]
+			if(!QDELETED(current))
+				current.scan_for_connections()
+	catch(var/exception/error)
+		connect_queue = null
+		throw error
+	connect_queue = null
 
+/obj/machinery/duct/proc/scan_for_connections()
 	for(var/atom/movable/AM in loc)
 		var/datum/component/plumbing/P = AM.GetComponent(/datum/component/plumbing)
 		if(P?.active)
