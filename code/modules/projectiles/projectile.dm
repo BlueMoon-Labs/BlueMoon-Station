@@ -729,11 +729,22 @@
 	var/seconds_per_step = pixel_increment_amount / pixels_per_second
 	var/allow_animation = elapsed_seconds <= (world.tick_lag * SSprojectiles.wait * 0.2)
 	var/steps_remaining = steps_this_process
+	var/pass_speed = pixels_per_second
+	var/pass_steps_left = FLOOR(SSprojectiles.max_pixels_per_process / pixel_increment_amount, 1)
 	while(steps_remaining > 0 && !QDELETED(src) && loc && trajectory)
 		var/steps_moved = pixel_move(steps_remaining, FALSE, seconds_per_step, SSprojectiles.global_projectile_speed_multiplier, allow_animation)
 		if(!isnum(steps_moved) || steps_moved <= 0)
 			break
 		steps_remaining -= steps_moved
+		pass_steps_left -= steps_moved
+		// Остаток хода был рассчитан по прежней скорости; предел прохода по-прежнему ограничивает трассу.
+		if(pixels_per_second != pass_speed && pixels_per_second > 0)
+			var/speed_ratio = pixels_per_second / pass_speed
+			var/remaining_pixels = steps_remaining * pixel_increment_amount * speed_ratio
+			steps_remaining = clamp(FLOOR(remaining_pixels / pixel_increment_amount, 1), 0, max(pass_steps_left, 0))
+			pixels_tick_leftover = (pixels_tick_leftover * speed_ratio) + remaining_pixels - (steps_remaining * pixel_increment_amount)
+			seconds_per_step = pixel_increment_amount / pixels_per_second
+			pass_speed = pixels_per_second
 	// A forceMove/override may deliberately interrupt the trace. Preserve only
 	// that unconsumed path; ordinary lag never becomes deferred movement debt.
 	if(steps_remaining > 0 && !QDELETED(src))
@@ -917,6 +928,7 @@
 	var/turf/oldloc = loc
 	var/old_px = pixel_x
 	var/old_py = pixel_y
+	var/start_speed = pixels_per_second
 	for(var/i in 1 to times)
 		// HOMING START - Too expensive to proccall at this point.
 		if(homing_target)
@@ -961,6 +973,8 @@
 			if(QDELETED(src))
 				return
 			pixels_range_leftover -= world.icon_size
+		if(pixels_per_second != start_speed)
+			break
 	if(!hitscanning && !forcemoved)
 		var/traj_px = round(trajectory.return_px(), 1)
 		var/traj_py = round(trajectory.return_py(), 1)

@@ -111,6 +111,7 @@
 	playsound(src.loc, 'sound/weapons/flash.ogg', 100, 1)
 	flick("[base_state]_flash", src)
 	flash_lighting_fx(FLASH_LIGHT_RANGE, light_power, light_color)
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_BRIGHT_FLASH, get_turf(src))
 	last_flash = world.time
 	use_power(1000)
 

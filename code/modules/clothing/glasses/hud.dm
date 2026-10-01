@@ -85,7 +85,7 @@
 
 /obj/item/clothing/glasses/hud/health
 	name = "health scanner HUD"
-	desc = "A heads-up display that scans the humans in view and provides accurate data about their health status."
+	desc = "Интерфейсный сканер, сканирующий живых существ в зоне видимости и предоставляющий точные данные об их состоянии здоровья."
 	icon_state = "healthhud"
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/lightblue
@@ -102,7 +102,7 @@
 
 /obj/item/clothing/glasses/hud/health/night
 	name = "night vision health scanner HUD"
-	desc = "An advanced medical heads-up display that allows doctors to find patients in complete darkness."
+	desc = "Продвинутые медицинские интерфейсные сканеры, позволяющие медперсоналу искать пациентов в полной темноте."
 	icon_state = "healthhudnight"
 	item_state = "glasses"
 	darkness_view = 8
@@ -111,19 +111,28 @@
 	color_cutoffs = list(20, 20, 45)
 	glass_colour_type = /datum/client_colour/glass_colour/green
 	actions_types = list(/datum/action/item_action/toggle_nv)
+	/// Эта переменная определяет, будет ли меняться спрайт, если очки умеют переключаться. Каким-нибудь /obj/item/clothing/glasses/hud/health/night/cultblind нужен FALSE
+	var/is_togglable = TRUE
 
 /obj/item/clothing/glasses/hud/health/night/update_icon_state()
 	. = ..()
+	if(is_togglable)
+		icon_state = length(color_cutoffs) ? initial(icon_state) : "hudnight_off"
 
 /obj/item/clothing/glasses/hud/health/night/syndicate
 	name = "combat night vision health scanner HUD"
-	desc = "An advanced shielded medical heads-up display that allows soldiers to approximate how much lead poisoning their allies have suffered in complete darkness."
+	desc = "Продвинутые, экранированные медицинские интерфейсные сканеры, позволяющие солдатам оценить степень перекормленности их сослуживцев свинцом, в условиях полной темноты."
+	icon_state = "combat_healthhudnight"
 	flash_protect = 1
 	vision_correction = 1
 
+/obj/item/clothing/glasses/hud/health/night/syndicate/update_icon_state()
+	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "combat_night_off"
+
 /obj/item/clothing/glasses/hud/health/sunglasses
 	name = "medical HUDSunglasses"
-	desc = "Sunglasses with a medical HUD."
+	desc = "Солнцезащитные очки со встроенным медицинским интерфейсом."
 	icon_state = "sunhudmed"
 	darkness_view = 1
 	flash_protect = 1
@@ -140,7 +149,7 @@
 
 /obj/item/clothing/glasses/hud/diagnostic
 	name = "diagnostic HUD"
-	desc = "A heads-up display capable of analyzing the integrity and status of robotics and exosuits."
+	desc = "Интерфейсный сканер, сканирующий целостность и статус различной робототехники и экзокостюмов."
 	icon_state = "diagnostichud"
 	hud_type = DATA_HUD_DIAGNOSTIC_BASIC
 	glass_colour_type = /datum/client_colour/glass_colour/lightorange
@@ -152,7 +161,7 @@
 
 /obj/item/clothing/glasses/hud/diagnostic/sunglasses
 	name = "diagnostic HUDSunglasses"
-	desc = "Sunglasses with a diagnostic HUD."
+	desc = "Солнцезащитные очки со встроенным диагностическим сканером."
 	icon_state = "sunhuddiag"
 	item_state = "glasses"
 	darkness_view = 1
@@ -169,7 +178,7 @@
 
 /obj/item/clothing/glasses/hud/diagnostic/night
 	name = "night vision diagnostic HUD"
-	desc = "A robotics diagnostic HUD fitted with a light amplifier."
+	desc = "Робототехнические диагностические сканеры со встроенными усилителями света."
 	icon_state = "diagnostichudnight"
 	item_state = "glasses"
 	darkness_view = 8
@@ -181,6 +190,7 @@
 
 /obj/item/clothing/glasses/hud/diagnostic/night/update_icon_state()
 	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "hudnight_off"
 
 ////////////
 //Sec Huds//
@@ -188,7 +198,7 @@
 
 /obj/item/clothing/glasses/hud/security
 	name = "security HUD"
-	desc = "A heads-up display that scans the humans in view and provides accurate data about their ID status and security records."
+	desc = "Интерфейсный сканер, сканирующий живых существ в зоне видимости и предоставляющий точные данные об их ID и записях базы данных службы безопасности."
 	icon_state = "securityhud"
 	hud_type = DATA_HUD_SECURITY_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/red
@@ -200,7 +210,7 @@
 
 /obj/item/clothing/glasses/hud/security/chameleon
 	name = "chameleon security HUD"
-	desc = "A stolen security HUD integrated with Syndicate chameleon technology. Provides flash protection."
+	desc = "Спёртый сканер службы безопасности со встроенной хамелеоной технологией Синдиката. Имеет экранирование от вспышек."
 	flash_protect = 1
 
 	// Yes this code is the same as normal chameleon glasses, but we don't
@@ -223,7 +233,7 @@
 
 /obj/item/clothing/glasses/hud/security/sunglasses
 	name = "security HUDSunglasses"
-	desc = "Sunglasses with a security HUD."
+	desc = "Солнцезащитные очки с интерфейсом службы безопасности."
 	icon_state = "sunhudsec"
 	darkness_view = 1
 	flash_protect = 1
@@ -232,7 +242,7 @@
 
 /obj/item/clothing/glasses/hud/security/securitygoggles
 	name = "security HUD Goggles"
-	desc = "Be on style! Who needs sunglasses when you have this!?"
+	desc = "Будь на стиле! Кому нужны солнцезащитные очки, когда есть это!?"
 	icon_state = "secgoggles-g"
 	item_state = "secgoggles-g"
 
@@ -306,7 +316,7 @@
 
 /obj/item/clothing/glasses/hud/security/night
 	name = "night vision security HUD"
-	desc = "An advanced heads-up display which provides id data and vision in complete darkness."
+	desc = "Продвинутые интерфейсные сканеры, предоставляющие данные об ID и видимость в полной темноте."
 	icon_state = "securityhudnight"
 	darkness_view = 8
 	flash_protect = -2 //You either are flashproof or you can see in the dark, pick one.
@@ -317,15 +327,18 @@
 
 /obj/item/clothing/glasses/hud/security/night/update_icon_state()
 	. = ..()
-
-/obj/item/clothing/glasses/night/syndicate/red // this lives here due to icon_state reference
-	icon_state = "securityhudnight"
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "hudnight_off"
 
 /obj/item/clothing/glasses/hud/security/night/combat
 	name = "combat night vision security  HUD"
-	desc = "An advanced shielded security heads-up display with flash protection and ability to see complete darkness."
+	desc = "Продвинутые и экранированные интерфейсные сканеры правоохранительных органов со встроенной защитой от вспышек и способностью видения в полной темноте."
+	icon_state = "combat_securityhudnight"
 	flash_protect = 1
 	vision_correction = 1
+
+/obj/item/clothing/glasses/hud/security/night/combat/update_icon_state()
+	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "combat_night_off"
 
 /obj/item/clothing/glasses/hud/security/sunglasses/gars
 	name = "\improper HUD gar glasses"

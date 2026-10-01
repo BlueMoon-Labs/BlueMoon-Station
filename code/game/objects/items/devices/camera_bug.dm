@@ -221,4 +221,9 @@
 			D[tag] = C
 	return D
 
+/obj/item/camera_bug/integrated_network
+	name = "integrated camera view"
+	desc = "Подключаемое устройство к общей сети камер интегральных схем для просмотра"
+	network = list("integrated")
+
 #undef DEFAULT_MAP_SIZE

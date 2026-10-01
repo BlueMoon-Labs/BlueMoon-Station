@@ -372,11 +372,17 @@
 	TEST_ASSERT(controller.able_to_run, "A resumed controller must be able to run")
 
 	ADD_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(!controller.able_to_run, "Добавление паузы через trait сразу останавливает контроллер.")
 	hunter.toggle_ai(AI_OFF)
 	hunter.toggle_ai(AI_ON)
 	TEST_ASSERT(HAS_TRAIT(hunter, TRAIT_AI_PAUSED), "toggle_ai(AI_ON) must not remove another pause source")
 	TEST_ASSERT(!controller.able_to_run, "Another pause source must keep the controller stopped")
 	REMOVE_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(controller.able_to_run, "Снятие последнего источника trait сразу возобновляет контроллер.")
+	ADD_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(!controller.able_to_run, "Повторное добавление trait снова останавливает контроллер.")
+	REMOVE_TRAITS_IN(hunter, "unit_test_pause")
+	TEST_ASSERT(controller.able_to_run, "Массовое снятие источника через прежний сигнал тоже возобновляет контроллер.")
 
 ///Типы, изначально выключенные для сценария/игрока, не активируются адаптером.
 /datum/unit_test/ai_adapter_respects_initial_ai_off/Run()

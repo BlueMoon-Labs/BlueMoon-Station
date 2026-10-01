@@ -23,6 +23,9 @@
 /datum/atom_hud/data/human/medical/basic
 
 /datum/atom_hud/data/human/medical/basic/proc/check_sensors(mob/living/carbon/human/H)
+	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = H
+	if(istype(reflection))
+		H = reflection.parent_mob
 	if(!istype(H))
 		return FALSE
 	var/obj/item/clothing/under/U = H.w_uniform

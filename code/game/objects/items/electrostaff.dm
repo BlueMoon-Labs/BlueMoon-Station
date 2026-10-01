@@ -189,7 +189,15 @@
 		return
 	if(iscyborg(target))
 		return ..()
-	var/list/return_list = list()
+	var/attack_damage = 0
+	var/attack_damage_type = user.a_intent == INTENT_HARM ? BURN : STAMINA
+	var/obj/item/stock_parts/cell/attack_cell = get_cell()
+	if(on && attack_cell?.charge)
+		var/attack_cost = attack_damage_type == BURN ? lethal_cost : stun_cost
+		attack_damage = attack_damage_type == BURN ? lethal_damage : stun_stamdmg
+		if(attack_cell.charge < attack_cost)
+			attack_damage *= round(attack_cell.charge / attack_cost, 0.1)
+	var/list/return_list = list(BLOCK_CONTEXT_DAMAGE = attack_damage, BLOCK_CONTEXT_DAMAGE_TYPE = attack_damage_type)
 	if(target.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, return_list) & BLOCK_SUCCESS) //No message; run_block() handles that
 		playsound(target, 'sound/weapons/genhit.ogg', 50, 1)
 		return FALSE
@@ -203,7 +211,7 @@
 		user.do_attack_animation(target)
 
 /obj/item/electrostaff/proc/stun_act(mob/living/target, mob/living/user, no_charge_and_force = FALSE, list/block_return = list())
-	var/stunforce = block_calculate_resultant_damage(stun_stamdmg, block_return)
+	var/stunforce = stun_stamdmg
 	if(!no_charge_and_force)
 		if(!on)
 			target.visible_message("<span class='warning'>[user] has bapped [target] with [src]. Luckily it was off.</span>", \
@@ -217,6 +225,9 @@
 			return FALSE
 		if(chargeleft < stun_cost)
 			stunforce *= round(chargeleft/stun_cost, 0.1)
+	stunforce = block_calculate_resultant_damage(stunforce, block_return)
+	if(stunforce <= 0)
+		return FALSE
 	target.adjustStaminaLoss(stunforce)
 	target.apply_effect(EFFECT_STUTTER, stunforce)
 	SEND_SIGNAL(target, COMSIG_LIVING_MINOR_SHOCK)
@@ -233,7 +244,7 @@
 	return TRUE
 
 /obj/item/electrostaff/proc/harm_act(mob/living/target, mob/living/user, no_charge_and_force = FALSE, list/block_return = list())
-	var/lethal_force = block_calculate_resultant_damage(lethal_damage, block_return)
+	var/lethal_force = lethal_damage
 	if(!no_charge_and_force)
 		if(!on)
 			return FALSE		//standard item attack
@@ -242,8 +253,9 @@
 		deductcharge(lethal_cost)
 		if(QDELETED(src) || QDELETED(C))		//boom
 			return FALSE
-		if(chargeleft < stun_cost)
+		if(chargeleft < lethal_cost)
 			lethal_force *= round(chargeleft/lethal_cost, 0.1)
+	lethal_force = block_calculate_resultant_damage(lethal_force, block_return)
 	target.adjustFireLoss(lethal_force)		//good against ointment spam
 	SEND_SIGNAL(target, COMSIG_LIVING_MINOR_SHOCK)
 	if(user)

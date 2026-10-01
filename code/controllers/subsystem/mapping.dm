@@ -190,6 +190,7 @@ SUBSYSTEM_DEF(mapping)
 	setup_map_transitions()
 	generate_station_area_list()
 	initialize_reserved_level(transit.z_value)
+	preload_training_levels()
 	return ..()
 
 /* Nuke threats, for making the blue tiles on the station go RED

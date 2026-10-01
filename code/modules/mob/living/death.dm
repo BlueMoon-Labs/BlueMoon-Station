@@ -123,7 +123,7 @@
 	tod = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	// Атрибуция активности антагов для директора: убийство чужого игрового персонажа - самый
 	// громкий сигнал. lastattackerckey ставится боевыми процами; клиент убийцы ищется по ckey.
-	if(mind && lastattackerckey && lastattackerckey != ckey)
+	if(!training_origin && mind && lastattackerckey && lastattackerckey != ckey)
 		var/client/killer_client = GLOB.directory[lastattackerckey]
 		var/datum/mind/killer_mind = killer_client?.mob?.mind
 		if(killer_mind && killer_mind != mind)
@@ -135,7 +135,7 @@
 	remove_from_alive_mob_list()
 	if(!gibbed)
 		add_to_dead_mob_list()
-	if(ckey)
+	if(ckey && !training_origin)
 		var/datum/preferences/P = GLOB.preferences_datums[ckey]
 		if(P)
 			P.respawn_time_of_death = world.time
@@ -156,12 +156,16 @@
 		addtimer(CALLBACK(src, PROC_REF(med_hud_set_status)), (DEFIB_TIME_LIMIT * 10) + 1)
 	stop_pulling()
 
-	var/signal = SEND_SIGNAL(src, COMSIG_MOB_DEATH, gibbed) | SEND_GLOBAL_SIGNAL(COMSIG_GLOB_MOB_DEATH, src, gibbed)
+	var/signal = SEND_SIGNAL(src, COMSIG_MOB_DEATH, gibbed)
+	if(training_origin)
+		signal |= COMPONENT_BLOCK_DEATH_BROADCAST
+	else
+		signal |= SEND_GLOBAL_SIGNAL(COMSIG_GLOB_MOB_DEATH, src, gibbed)
 
 	var/turf/T = get_turf(src)
 	if(mind && mind.name && mind.active && !istype(T.loc, /area/ctf) && !(signal & COMPONENT_BLOCK_DEATH_BROADCAST))
 		deadchat_broadcast(" has died at <b>[get_area_name(T)]</b>.", "<b>[mind.name]</b>", follow_target = src, turf_target = T, message_type=DEADCHAT_DEATHRATTLE)
-	if (client && client.prefs && client.prefs.auto_ooc)
+	if (!training_origin && client && client.prefs && client.prefs.auto_ooc)
 		if (!(client.prefs.chat_toggles & CHAT_OOC))
 			client.prefs.chat_toggles ^= CHAT_OOC
 	if (client)

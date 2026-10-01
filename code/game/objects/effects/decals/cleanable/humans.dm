@@ -11,6 +11,8 @@
 	beauty = -100
 	persistent = TRUE
 	var/fixed_color = FALSE
+	/// Старая кровь карты и пятна, загруженные из прошлого раунда.
+	var/dried = FALSE
 
 /obj/effect/decal/cleanable/blood/replace_decal(obj/effect/decal/cleanable/blood/C)
 	if(C.fixed_color)
@@ -51,11 +53,13 @@
 	name = "dried blood"
 	desc = "Looks like it's been here a while. Eew"
 	bloodiness = 0
+	dried = TRUE
 
 /obj/effect/decal/cleanable/blood/old
 	name = "dried blood"
 	desc = "Looks like it's been here a while. Eew."
 	bloodiness = 0
+	dried = TRUE
 
 /obj/effect/decal/cleanable/blood/old/Initialize(mapload, list/datum/disease/diseases)
 	. = ..()

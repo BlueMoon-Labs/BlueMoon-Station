@@ -49,8 +49,7 @@
 /datum/component/jukebox/UnregisterFromParent()
 	UnregisterSignal(parent, list(COMSIG_MOUSEDROP_ONTO, COMSIG_ITEM_ATTACK_SELF, COMSIG_ATOM_ATTACK_GHOST, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_EMAG_ACT))
 	QDEL_NULL(on_music_toggle)
-	if(privatized_area)
-		privatized_area.jukebox_privatized_by = null
+	release_privatized_area()
 	return ..()
 
 /datum/component/jukebox/proc/on_emag_act(atom/source)
@@ -226,11 +225,12 @@
 	if(.)
 		return
 	var/obj/box = parent
+	var/static/list/access_actions = list("toggle", "repeat", "move_queue", "clear_queue", "remove_from_queue", "set_volume")
+	if((action in access_actions) && !box.allowed(usr))
+		return
 	switch(action)
 		if("toggle")
 			if(QDELETED(src) || QDELETED(box))
-				return
-			if(!box.allowed(usr))
 				return
 			if(!active && !playing)
 				activate_music()
@@ -241,20 +241,7 @@
 			repeat = !repeat
 			return TRUE
 		if("move_queue")
-			var/track_index = params["index"]
-			if (!track_index || !queuedplaylist.len || track_index < 1 || track_index > queuedplaylist.len)
-				return
-			var/datum/track/track = queuedplaylist[track_index]
-			var/to_index = params["up"] ? queuedplaylist.Find(previous_list_item(track, queuedplaylist)) : queuedplaylist.Find(next_list_item(track, queuedplaylist))
-			if(to_index == queuedplaylist.len)
-				queuedplaylist.Cut(track_index, track_index+1)
-				queuedplaylist += track
-			else if(to_index == 1)
-				queuedplaylist.Cut(track_index, track_index+1)
-				queuedplaylist.Insert(to_index, track)
-			else
-				queuedplaylist.Swap(track_index, to_index)
-			return TRUE
+			return move_queued_track(params["index"], params["up"])
 		if("add_to_queue")
 			return add_to_queue(params["track"], usr, params["up"])
 		if("select_track")
@@ -264,21 +251,7 @@
 			selectedtrack = SSjukeboxes.songs_by_name[selected]
 			return TRUE
 		if("set_volume")
-			if(!box.allowed(usr))
-				return
-			var/new_volume = params["volume"]
-			if(new_volume  == "reset")
-				volume = initial(volume)
-			else if(new_volume == "min")
-				volume = 0
-			else if(new_volume == "max")
-				volume = ((box.obj_flags & EMAGGED) ? 1000 : 100)
-			else if(text2num(new_volume) != null)
-				volume = clamp(0, text2num(new_volume), ((box.obj_flags & EMAGGED) ? 1000 : 100))
-			var/wherejuke = SSjukeboxes.findjukeboxindex(box)
-			if(wherejuke)
-				SSjukeboxes.updatejukebox(wherejuke, jukefalloff = volume/35)
-			return TRUE
+			return set_volume(params["volume"])
 		if("clear_queue")
 			if(!LAZYLEN(queuedplaylist))
 				return
@@ -326,6 +299,44 @@
 					return prefs.favorite_tracks_move(track, params["up"])
 				if("set_favorite_index")
 					return prefs.favorite_track_set_index(params["index"], track)
+
+/// Сдвигает трек очереди на одну позицию; с края переносит на другой конец. Дубли в очереди - норма при повторе.
+/datum/component/jukebox/proc/move_queued_track(track_index, up)
+	var/queue_length = length(queuedplaylist)
+	if(!isnum(track_index) || track_index != round(track_index) || track_index < 1 || track_index > queue_length)
+		return FALSE
+	var/datum/track/track = queuedplaylist[track_index]
+	var/to_index = up ? track_index - 1 : track_index + 1
+	if(to_index < 1)
+		queuedplaylist.Cut(track_index, track_index + 1)
+		queuedplaylist += track
+	else if(to_index > queue_length)
+		queuedplaylist.Cut(track_index, track_index + 1)
+		queuedplaylist.Insert(1, track)
+	else
+		queuedplaylist.Swap(track_index, to_index)
+	return TRUE
+
+/// Принимает число или "reset"/"min"/"max" из интерфейса
+/datum/component/jukebox/proc/set_volume(new_volume)
+	var/obj/box = parent
+	var/max_volume = (box.obj_flags & EMAGGED) ? JUKEBOX_MAX_VOLUME_EMAGGED : JUKEBOX_MAX_VOLUME
+	switch(new_volume)
+		if("reset")
+			volume = initial(volume)
+		if("min")
+			volume = 0
+		if("max")
+			volume = max_volume
+		else
+			var/volume_number = isnum(new_volume) ? new_volume : text2num(new_volume)
+			if(!isnum(volume_number))
+				return FALSE
+			volume = clamp(volume_number, 0, max_volume)
+	var/juke_index = SSjukeboxes.findjukeboxindex(box)
+	if(juke_index)
+		SSjukeboxes.updatejukebox(juke_index, jukefalloff = volume / JUKEBOX_VOLUME_TO_FALLOFF)
+	return TRUE
 
 /datum/component/jukebox/proc/add_to_queue(list/tracks, mob/user, to_top = FALSE)
 	var/obj/box = parent
@@ -414,7 +425,7 @@
 		return FALSE
 	// BLUEMOON ADD END
 	playing = queuedplaylist[1]
-	var/jukeboxslottotake = SSjukeboxes.addjukebox(box, playing, volume/35)
+	var/jukeboxslottotake = SSjukeboxes.addjukebox(box, playing, volume / JUKEBOX_VOLUME_TO_FALLOFF)
 	if(jukeboxslottotake)
 		active = TRUE
 		START_PROCESSING(SSobj, src)
@@ -424,11 +435,11 @@
 			queuedplaylist += queuedplaylist[1]
 		// BLUEMOON ADD стационарные джукбоксы забирают приоритет зоны себе и если сидеть в этой зоне играет только их музыка
 		if(need_anchored)
-			if(privatized_area)
-				privatized_area.jukebox_privatized_by = null
+			release_privatized_area()
 			var/area/juke_area = get_area(parent)
-			juke_area.jukebox_privatized_by = box
-			privatized_area = juke_area
+			if(juke_area)
+				juke_area.jukebox_privatized_by = box
+				privatized_area = juke_area
 
 		//BLUEMOON ADD END
 		queuedplaylist.Cut(1, 2)
@@ -451,10 +462,15 @@
 			COOLDOWN_START(src, error_message_cooldown, error_message_cooldown_time)
 		return FALSE
 
+/// Зону мог перехватить взломанный джукбокс: снимаем только собственную приватизацию
+/datum/component/jukebox/proc/release_privatized_area()
+	if(privatized_area?.jukebox_privatized_by == parent)
+		privatized_area.jukebox_privatized_by = null
+	privatized_area = null
+
 /datum/component/jukebox/proc/dance_over()
 	var/obj/box = parent
-	if(privatized_area)
-		privatized_area.jukebox_privatized_by = null
+	release_privatized_area()
 	var/position = SSjukeboxes.findjukeboxindex(box)
 	if(!position)
 		return
@@ -664,7 +680,7 @@
 		glow = null
 		if(prob(2))  // Unique effects for the dance floor that show up randomly to mix things up
 			INVOKE_ASYNC(src, PROC_REF(hierofunk))
-		sleep(playing.song_beat)
+		sleep(max(playing.song_beat, world.tick_lag))
 
 #undef DISCO_INFENO_RANGE
 

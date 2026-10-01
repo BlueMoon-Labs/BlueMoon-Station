@@ -1044,16 +1044,52 @@
 /obj/item/clothing/under/donator/bm/longshirt
 	name = "Long Shirt"
 	desc = "Just a long shirt, no more"
-	icon_state = "longshirt"
-	item_state = "longshirt"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "longshirt_0"
 	fitted = NO_FEMALE_UNIFORM
-	body_parts_covered = NONE
-	can_adjust = TRUE
+	body_parts_covered = CHEST|GROIN|ARMS
 	alternate_worn_layer = GLOVES_LAYER
+	always_reskinnable = TRUE
+	can_adjust = FALSE
+	unique_reskin = list(
+		"Buttoned" = list("icon_state" = "longshirt_0"),
+		"Decollete" = list("icon_state" = "longshirt_1"),
+		"Unbuttoned" = list("icon_state" = "longshirt_2"),
+		"Spread out" = list("icon_state" = "longshirt_3"),
+	)
+
+/obj/item/clothing/under/donator/bm/longshirt/reskin_obj(mob/user)
+	switch(current_skin)
+		if("Buttoned")
+			body_parts_covered = CHEST|GROIN|ARMS
+			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+		if("Decollete")
+			body_parts_covered = ARMS
+			mutantrace_variation = USE_TAUR_CLIP_MASK
+		if("Unbuttoned")
+			body_parts_covered = ARMS
+			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
+		if("Spread out")
+			body_parts_covered = ARMS
+			mutantrace_variation = USE_TAUR_CLIP_MASK
+	user.update_inv_w_uniform()
+	user.update_body(TRUE)
+
+/obj/item/clothing/under/donator/bm/longshirt/set_to_maximum_sensor(user)
+	return
+
+/obj/item/clothing/under/donator/bm/longshirt/CtrlClick(mob/user)
+	. = ..()
+	if (!(item_flags & IN_INVENTORY))
+		return
+
+	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return
+
+	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", GLOVES_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
+	if(!desired_layer)
+		return
+	alternate_worn_layer = desired_layer
+	user.update_inv_w_uniform()
 
 /obj/item/clothing/under/donator/bm/fulted_plate_armor
 	name = "Fluted Plate Armor"

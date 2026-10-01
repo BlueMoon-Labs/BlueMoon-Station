@@ -24,11 +24,12 @@
 	icon_state = "candle[(wax > 400) ? ((wax > 750) ? 1 : 2) : 3][lit ? "_lit" : ""]"
 
 /obj/item/candle/attackby(obj/item/W, mob/user, params)
+	. = ..()
+	if(. & STOP_ATTACK_PROC_CHAIN)
+		return
 	var/msg = W.ignition_effect(src, user)
 	if(msg)
 		light(msg)
-	else
-		return ..()
 
 /obj/item/candle/fire_act(exposed_temperature, exposed_volume)
 	if(!lit)

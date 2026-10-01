@@ -2418,7 +2418,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(BRUTE)
 			H.damageoverlaytemp = 20
 			// BLUEMOON EDIT START
-			var/damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod * H.physiology.heretic_ascension_mod
 			// Да, проверка специально написана, до проверки на прочную кожу
 			if(HAS_TRAIT(H, TRAIT_MASO))
 				if(!(H.IsSleeping() || H.stat >= UNCONSCIOUS || H.IsUnconscious())) // BLUEMOON ADD - персонаж не спит, не без сознания и не мертв
@@ -2436,7 +2436,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			//BLUEMOON EDIT END
 		if(BURN)
 			H.damageoverlaytemp = 20
-			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod * H.physiology.heretic_ascension_mod
 			if(BP)
 				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
@@ -2452,9 +2452,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.clone_mod
 			H.adjustCloneLoss(damage_amount)
 		if(STAMINA)
-			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.stamina_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.stamina_mod * H.physiology.heretic_stamina_mod
 			if(BP)
-				if(damage > 0 ? BP.receive_damage(0, 0, damage_amount) : BP.heal_damage(0, 0, abs(damage * hit_percent * H.physiology.stamina_mod), only_robotic = FALSE, only_organic = FALSE))
+				if(damage > 0 ? BP.receive_damage(0, 0, damage_amount) : BP.heal_damage(0, 0, abs(damage * hit_percent * H.physiology.stamina_mod * H.physiology.heretic_stamina_mod), only_robotic = FALSE, only_organic = FALSE))
 					H.update_stamina()
 			else
 				H.adjustStaminaLoss(damage_amount)

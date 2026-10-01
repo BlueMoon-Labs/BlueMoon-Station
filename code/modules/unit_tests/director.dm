@@ -1946,6 +1946,11 @@
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in changeling_control.required_round_type), "Changeling Meteor должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in revenant_control.required_round_type), "Spawn Revenant должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in disease_control.required_round_type), "Spawn Sentient Disease должен быть исключён из Dynamic Light")
+	for(var/heretic_type in list(/datum/dynamic_ruleset/roundstart/heretics, /datum/dynamic_ruleset/midround/crew_conversion/heretic, /datum/dynamic_ruleset/latejoin/heretic_smuggler))
+		var/datum/dynamic_ruleset/heretic_ruleset = new heretic_type
+		TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in heretic_ruleset.required_round_type), "[heretic_ruleset.name] должен быть исключён из Dynamic Light")
+		TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in heretic_ruleset.required_round_type, "[heretic_ruleset.name] должен оставаться на Dynamic Medium")
+		qdel(heretic_ruleset)
 	var/datum/dynamic_ruleset/midround/pirates/pirates_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/raiders/raiders_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/swarmers/swarmers_ruleset = locate() in SSdirector.actions
@@ -3075,6 +3080,17 @@
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+
+/// Экипажная конверсия не выбирает игрока в крите или без сознания.
+/datum/unit_test/director_crew_conversion_skips_unconscious
+
+/datum/unit_test/director_crew_conversion_skips_unconscious/Run()
+	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/rule = allocate(/datum/dynamic_ruleset/midround/crew_conversion/heretic)
+	var/mob/living/carbon/human/candidate = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(rule.can_convert(candidate), "Член экипажа в сознании подходит для пробуждения")
+	candidate.adjustOxyLoss(160)
+	TEST_ASSERT_NOTEQUAL(candidate.stat, CONSCIOUS, "Удушье должно уронить кандидата в крит")
+	TEST_ASSERT(!rule.can_convert(candidate), "Игрок в крите не получает пробуждение")
 
 /// Гост-команды затухают по возрасту, а вне станции давят вполсилы: улетевшие с лутом
 /// рейдеры (прод-раунд: 45 нагрузки до конца смены) больше не запирают антаг-каналы

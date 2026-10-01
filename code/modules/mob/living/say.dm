@@ -409,6 +409,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	return message
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
+	SEND_SIGNAL(src, COMSIG_LIVING_SEND_SPEECH, message, message_range, source, bubble_type, spans, message_language, message_mode)
 	var/static/list/eavesdropping_modes = list(MODE_WHISPER = TRUE, MODE_WHISPER_CRIT = TRUE)
 	// Визуальный язык не звучит: его не разносит крик сквозь стены, его не слышно лучше
 	// острым ухом и он не порождает барков. Слушателей набирает get_hearers_in_view,
@@ -434,6 +435,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/list/the_dead = list()
 	for(var/_M in GLOB.player_list)
 		var/mob/M = _M
+		if(!isobserver(M) && training_origin != M.training_origin && (training_origin || M.training_origin))
+			continue
 		if(M.stat != DEAD) //not dead, not important
 			continue
 		if(!M.client || !client) //client is so that ghosts don't have to listen to mice

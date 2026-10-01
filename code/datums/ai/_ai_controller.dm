@@ -469,11 +469,12 @@ multiple modular subtrees with behaviors
 
 /datum/ai_controller/proc/setup_able_to_run()
 	//paused_until обрабатывается вручную в PauseAi()
+	RegisterSignal(pawn, SIGNAL_TRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 	RegisterSignal(pawn, SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 	RegisterSignal(pawn, SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 
 /datum/ai_controller/proc/clear_able_to_run()
-	UnregisterSignal(pawn, list(SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED)))
+	UnregisterSignal(pawn, list(SIGNAL_TRAIT(TRAIT_AI_PAUSED), SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED)))
 
 /datum/ai_controller/proc/update_able_to_run()
 	SIGNAL_HANDLER

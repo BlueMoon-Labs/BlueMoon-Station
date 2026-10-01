@@ -648,6 +648,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["sound_volume_instruments"] >> sound_volume_instruments
 	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
 	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
+	S["sound_volume_heretic_dance"] >> sound_volume_heretic_dance
+	S["sound_volume_heretic_sky"] >> sound_volume_heretic_sky
 	S["sound_volume_emote"] >> sound_volume_emote
 	S["sound_volume_mentorhelp"] >> sound_volume_mentorhelp
 	S["sound_volume_fax"] >> sound_volume_fax
@@ -803,6 +805,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	sound_volume_instruments = sanitize_integer(sound_volume_instruments, 0, 100, initial(sound_volume_instruments))
 	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
 	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
+	sound_volume_heretic_dance = sanitize_integer(sound_volume_heretic_dance, 0, 100, initial(sound_volume_heretic_dance))
+	sound_volume_heretic_sky = sanitize_integer(sound_volume_heretic_sky, 0, 100, initial(sound_volume_heretic_sky))
 	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
 	sound_volume_mentorhelp = sanitize_integer(sound_volume_mentorhelp, 0, 100, initial(sound_volume_mentorhelp))
 	sound_volume_fax = sanitize_integer(sound_volume_fax, 0, 100, initial(sound_volume_fax))
@@ -1289,6 +1293,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
 	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
 	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
+	WRITE_FILE(S["sound_volume_heretic_dance"], sound_volume_heretic_dance)
+	WRITE_FILE(S["sound_volume_heretic_sky"], sound_volume_heretic_sky)
 	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
 	WRITE_FILE(S["sound_volume_mentorhelp"], sound_volume_mentorhelp)
 	WRITE_FILE(S["sound_volume_fax"], sound_volume_fax)
