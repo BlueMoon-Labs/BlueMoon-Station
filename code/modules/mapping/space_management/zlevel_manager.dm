@@ -36,6 +36,7 @@
 
 /// Раскладывает z-уровни по вертикальным связкам, кэшируя сами связки, смещения плоскостей и соседей сверху-снизу.
 /datum/controller/subsystem/mapping/proc/build_z_stacks()
+	GLOB.hud_z_groups.Cut()
 	var/level_count = length(z_list)
 	var/list/old_plane_offsets = z_level_to_plane_offset
 	z_level_to_stack = new /list(level_count)

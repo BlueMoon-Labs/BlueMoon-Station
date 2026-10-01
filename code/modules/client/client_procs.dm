@@ -2077,6 +2077,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/atom/old_eye = eye
 	eye = new_eye
 	SEND_SIGNAL(src, COMSIG_CLIENT_SET_EYE, old_eye, new_eye)
+	mob?.refresh_hud_view_group()
 
 /// Clears the client's screen, aside from ones that opt out
 /client/proc/clear_screen()

@@ -258,17 +258,13 @@
 
 /// Свечение и экспозиция источника переезжают вместе с ним на нижний этаж и обратно.
 /datum/unit_test/multiz_lamp_overlays_follow_source/Run()
-	var/turf/lower_turf
-	for(var/datum/space_level/level as anything in SSmapping.z_list)
-		if(GET_Z_PLANE_OFFSET(level.z_value) == 1)
-			lower_turf = locate(1, 1, level.z_value)
-			break
+	var/turf/lower_turf = multiz_test_lower_turf()
 	if(!lower_turf)
 		var/datum/space_level/lower = SSmapping.add_new_zlevel("Тест свечения: нижний этаж", list())
 		var/datum/space_level/upper = SSmapping.add_new_zlevel("Тест свечения: верхний этаж", list())
 		var/datum/map_template/stack = allocate(/datum/map_template)
 		stack.link_template_stack(list(lower, upper))
-		lower_turf = locate(1, 1, lower.z_value)
+		lower_turf = locate(TRANSITIONEDGE + 2, TRANSITIONEDGE + 2, lower.z_value)
 	TEST_ASSERT_NOTNULL(lower_turf, "Для проверки нужен нижний этаж связки")
 	var/obj/item/source = allocate(/obj/item, run_loc_floor_bottom_left)
 	source.glow_icon_state = "bulb"

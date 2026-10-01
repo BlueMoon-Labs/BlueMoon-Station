@@ -1012,7 +1012,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			reset_perspective(null)
 		client.set_eye(mob_eye)
 		set_observetarget(mob_eye)
-		refresh_hud_view_group()
 		if(mob_eye.hud_used)
 			client.clear_screen()
 			mob_eye.hud_used.show_hud(mob_eye.hud_used.hud_version, src)
