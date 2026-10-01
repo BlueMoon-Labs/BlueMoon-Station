@@ -480,6 +480,7 @@
 #include "tick_spike_recorder.dm"
 #include "tile_pipe_placement.dm"
 #include "timestop_illusion.dm"
+#include "transport.dm"
 #include "update_icon_short_circuit.dm"
 #include "vent_label_numbering.dm"
 #include "weeds_growth.dm"
