@@ -8,22 +8,30 @@
 /**
  * Every arena map, instanced on first call.
  *
- * Nothing in this codebase instances /datum/map_template subtypes by itself:
- * SSmapping.preloadTemplates() only scans _maps/templates/ for .dmm files and
- * preloads ruin/shuttle/shelter subtypes by hand. Without this getter the mode
- * picker and the admin verb would both report that no deathmatch maps are
- * compiled in. It also keeps five .dmm headers from being parsed during init
- * for a game nobody plays.
+ * These are deliberately not registered with SSmapping.preloadTemplates(),
+ * which only scans _maps/templates/ and would parse all five .dmm headers
+ * during init for a game nobody plays. Enumerated with subtypesof() the way the
+ * ruin, shuttle and shelter loaders do, so a new arena map needs no bookkeeping
+ * here, and gated on mappath so the abstract base type is skipped.
  *
  * Always use this instead of touching GLOB.deathmatch_maps directly.
  */
 /proc/get_deathmatch_templates()
 	if(length(GLOB.deathmatch_maps))
 		return GLOB.deathmatch_maps
-	for(var/map_type as anything in GLOB.deathmatch_template_types)
-		var/datum/map_template/deathmatch/new_map = new(map_type)
-		if(isnull(new_map))
-			log_game("Deathmatch: could not instantiate the arena map [map_type].")
+	for(var/item in subtypesof(/datum/map_template/deathmatch))
+		var/datum/map_template/deathmatch/arena_type = item
+		if(!(initial(arena_type.mappath)))
+			continue
+		// new arena_type() with a space, never new(arena_type). The
+		// parenthesised form instantiates the *declared* type of the
+		// assignment and hands the first argument to New() as `path`, so the
+		// parent's `mappath = path` pointed preload_size() at a file called
+		// "/datum/map_template/deathmatch/..." and every arena died on
+		// "invalid filename" the first time the sleeper UI asked for a list.
+		var/datum/map_template/deathmatch/arena_map = new arena_type()
+		if(isnull(arena_map))
+			log_game("Deathmatch: could not instantiate the arena map [item].")
 	return GLOB.deathmatch_maps
 
 /datum/map_template/deathmatch

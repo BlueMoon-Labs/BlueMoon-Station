@@ -57,8 +57,6 @@ GLOBAL_LIST_EMPTY(deathmatch_player_spawns)
 GLOBAL_LIST_EMPTY(deathmatch_maps)
 /// Arenas that are currently loaded on a virtual reality z-level
 GLOBAL_LIST_EMPTY(deathmatch_arenas)
-//The /datum/map_template/deathmatch subtypes, which nothing instances on its own. Instantiated on demand by get_deathmatch_templates().
-GLOBAL_LIST_INIT(deathmatch_template_types, list(/datum/map_template/deathmatch/secu_ring, /datum/map_template/deathmatch/instagib, /datum/map_template/deathmatch/final_destination, /datum/map_template/deathmatch/sniper_elite, /datum/map_template/deathmatch/shooting_range))
 
 	//used by jump-to-area etc. Updated by area/updateName()
 GLOBAL_LIST_EMPTY(sortedAreas)

@@ -4,6 +4,12 @@ import { Window } from '../layouts';
 
 export const VrSleeper = (props) => {
   const { act, data } = useBackend();
+  // TDM cannot tell an empty DM list from an empty assoc list and hands the
+  // first over as {}, so this is not guaranteed to be an array. Normalised once
+  // here instead of guarding each use.
+  const deathmatchModes = Array.isArray(data.deathmatch_modes)
+    ? data.deathmatch_modes
+    : Object.values(data.deathmatch_modes || {});
   return (
     <Window
       width={475}
@@ -95,10 +101,10 @@ export const VrSleeper = (props) => {
             </Box>
           ) : (
             <Box>
-              {(data.deathmatch_modes || []).length === 0 ? (
+              {deathmatchModes.length === 0 ? (
                 <Box color="bad">No deathmatch modes are compiled in.</Box>
               ) : (
-                data.deathmatch_modes.map((mode) => (
+                deathmatchModes.map((mode) => (
                   <Button
                     key={mode.id}
                     icon={mode.id === data.selected_deathmatch_mode
