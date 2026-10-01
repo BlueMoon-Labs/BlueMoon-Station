@@ -474,3 +474,31 @@
 	vacuum.RemoveElement(/datum/element/turf_z_transparency, TRUE)
 	TEST_ASSERT(!HAS_TRAIT(vacuum, TURF_Z_TRANSPARENT_TRAIT), "Снятый элемент обязан убрать трейт прозрачности")
 	TEST_ASSERT_EQUAL(length(vacuum.underlays), before, "Снятый элемент обязан унести и свою подложку")
+
+/// Прутья, кликнутые в то, что видно сквозь дыру, кладут решётку в саму дыру под курсором; дальняя дыра не трогается.
+/datum/unit_test/multiz_openspace_click_builds_in_hole
+
+/datum/unit_test/multiz_openspace_click_builds_in_hole/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/builder = allocate(/mob/living/carbon/human, start)
+	var/obj/item/stack/rods/rods = allocate(/obj/item/stack/rods, start, 10)
+	builder.put_in_active_hand(rods)
+	var/turf/near_spot = locate(start.x + 1, start.y, start.z)
+	var/turf/far_spot = locate(start.x + 3, start.y, start.z)
+	var/turf/near_hole = near_spot.ChangeTurf(/turf/open/openspace/unit_test_survives_no_bottom)
+	var/turf/far_hole = far_spot.ChangeTurf(/turf/open/openspace/unit_test_survives_no_bottom)
+	TEST_ASSERT(isopenspaceturf(near_hole) && isopenspaceturf(far_hole), "Не удалось открыть дыры для теста")
+	var/turf/seen_below = locate(TRANSITIONEDGE + 2, TRANSITIONEDGE + 2, start.z == 1 ? 2 : 1)
+
+	rods.ranged_attack_chain(builder, seen_below, openspace_click_params(builder, far_hole))
+	TEST_ASSERT_NULL(locate(/obj/structure/lattice) in far_hole, "Дыра вне досягаемости не должна принимать прутья")
+
+	rods.ranged_attack_chain(builder, seen_below, openspace_click_params(builder, near_hole))
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/lattice) in locate(near_hole.x, near_hole.y, near_hole.z), "Клик сквозь дыру не положил решётку в саму дыру")
+
+/// Параметры клика по экранной клетке, на которой у clicker лежит turf.
+/datum/unit_test/multiz_openspace_click_builds_in_hole/proc/openspace_click_params(mob/clicker, turf/target)
+	var/list/view_size = getviewsize(world.view)
+	var/screen_x = target.x - clicker.x + round(view_size[1] / 2) + 1
+	var/screen_y = target.y - clicker.y + round(view_size[2] / 2) + 1
+	return list2params(list(SCREEN_LOC = "[screen_x]:16,[screen_y]:16"))
