@@ -787,14 +787,14 @@
 	TEST_ASSERT_EQUAL(storm.followed_area, first, "Буря привязана к первой области.")
 	storm.stage = MAIN_STAGE
 	storm.update_areas()
-	TEST_ASSERT_EQUAL(first.icon_state, storm.weather_overlay, "Буря видна в привязанной области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(first, storm.weather_overlay)), 1, "Буря видна в привязанной области.")
 	storm.move_to_area(second)
 	TEST_ASSERT_EQUAL(storm.followed_area, second, "Буря переместилась во вторую область.")
-	TEST_ASSERT_EQUAL(first.icon_state, "", "Переход снимает оверлей с прежней области.")
-	TEST_ASSERT_EQUAL(second.icon_state, storm.weather_overlay, "Буря появляется в новой области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(first, storm.weather_overlay)), 0, "Переход снимает оверлей с прежней области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(second, storm.weather_overlay)), 1, "Буря появляется в новой области.")
 	TEST_ASSERT_EQUAL(length(storm.impacted_areas), 1, "За владельцем следует ровно одна область.")
 	storm.end()
-	TEST_ASSERT_EQUAL(second.icon_state, "", "Завершение убирает последний оверлей.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(second, storm.weather_overlay)), 0, "Завершение убирает последний оверлей.")
 
 /// Кольцо Клятвы огня не тратит заряды защиты при периодическом воздействии.
 /datum/unit_test/heretic_fire_sworn_antimagic/Run()

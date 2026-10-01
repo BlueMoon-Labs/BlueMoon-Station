@@ -262,8 +262,9 @@
 	if(!lower_turf)
 		var/datum/space_level/lower = SSmapping.add_new_zlevel("Тест свечения: нижний этаж", list())
 		var/datum/space_level/upper = SSmapping.add_new_zlevel("Тест свечения: верхний этаж", list())
-		var/datum/map_template/stack = allocate(/datum/map_template)
+		var/datum/map_template/stack = new
 		stack.link_template_stack(list(lower, upper))
+		qdel(stack)
 		lower_turf = locate(TRANSITIONEDGE + 2, TRANSITIONEDGE + 2, lower.z_value)
 	TEST_ASSERT_NOTNULL(lower_turf, "Для проверки нужен нижний этаж связки")
 	var/obj/item/source = allocate(/obj/item, run_loc_floor_bottom_left)
